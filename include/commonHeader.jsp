@@ -18,10 +18,5 @@
         </td>
 
       </tr>
-<hideBlock>
-
-    <tr!--><td class="hi" colspan="2"><changePassword/><userLogOff html="user-login.html"/></td></tr-->
-</hideBlock>
-
     </table>
 
