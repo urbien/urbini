@@ -1,13 +1,13 @@
     <div id="textdiv1" class="popMenu">
        <div class="popMenuTitle" pda="T">
-         <table width="140" cellpadding="2">
+         <table width="180" cellpadding="2">
            <tr>
              <td><b><font color="FFFFFF">Search</font></b></td>
              <td align="right"><a title="Close" href="javascript://" onClick="menuOpenClose('textdiv1')"><IMG alt="Click here to close" src="images/button_popup_close.gif" border="0"/></a></td>
            </tr>
          </table>
        </div>
-      <table width="130" cellspacing="2" cellpadding="5" border="0">
+      <table width="180" cellspacing="2" cellpadding="5" border="0">
         <tbody>
           <tr>
             <td nonPda="T"><font color="darkblue"><b><text text="Search"/></b></font></td>
