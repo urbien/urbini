@@ -4,7 +4,7 @@
     <td>    
       <form name="rightPanelPropertySheet" id="filter" method="POST">
         <rightPanelPropertySheet />
-        <input type="hidden" name="action" value="searchLocal"></input>
+        <input type="hidden" name="-$action" value="searchLocal"></input>
       </form>
     </td>
   </tr>

@@ -31,7 +31,7 @@
        <input type="hidden" name="returnHtml" value="list.html"/>
        <input type="hidden" name="html" value="mkResource.html"/>
        <div align="right"><span class="xs"><measurement/></span></div>
-       <input type="hidden" name="action" value="mkResource"></input>
+       <input type="hidden" name="-$action" value="mkResource"></input>
        <br />
        <center>
          <input type="submit" name="submit" value="  Submit  "></input>

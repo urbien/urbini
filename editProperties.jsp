@@ -31,7 +31,7 @@
     <form name="tablePropertyList" method="post" id="filter" >
       <tablePropertyList />
       <div align="right"><measurement/></div>
-      <input type="hidden" name="action" value="showPropertiesForEdit"></input>
+      <input type="hidden" name="-$action" value="showPropertiesForEdit"></input>
       <br></br>
       <center>
         <input type="submit" name="submit" value="Submit changes"></input>

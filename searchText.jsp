@@ -1,7 +1,7 @@
 <div>
 <!--form name="searchForm" method="GET" action="searchResult.html" valign="middle"-->
  <nobr>
-   <input type="hidden" name="action"   value="searchText" ></input>
+   <input type="hidden" name="-$action"   value="searchText" ></input>
    <input type="text" class="input" size="12" name="q" value="-- Search --" onClick="onFormFieldClick(searchForm, this)" onChange="onFormFieldChange(searchForm, this, '-- Search --')" onBlur="onFormFieldChange(searchForm, this, '-- Search --')"/><fullTextSearchChoice/>&#160;
    <input type="submit" name="search" class="button1" value="Go"></input>
  </nobr>

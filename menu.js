@@ -450,7 +450,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   if (currentFormName == "siteResourceList") {
     url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri);
   }
-  var formAction = form.elements['action'].value;
+  var formAction = form.elements['-$action'].value;
   var allFields = true;
   if (formAction != "searchLocal" && formAction != "searchParallel") {
     if (enterFlag)
@@ -587,11 +587,11 @@ function popupOnSubmit(e) {
   target = getTargetElement(e);
   var form = target;
   
-  var action = form.attributes['action'];
+  var action = form.attributes['-$action'];
   // form url based on parameters that were set
   var url = "FormRedirect?JLANG=en"; // HACK: since form.action returns the value of '&action='
 
-  var formAction = form.elements['action'].value;
+  var formAction = form.elements['-$action'].value;
   var allFields = true;
   if (formAction != "searchLocal" && formAction != "searchParallel")
     allFields = false;
@@ -635,7 +635,7 @@ function popupOnSubmit(e) {
   url += '&$form=' + form.name;
 
   //url += '&$selectOnly=y';
-  url += "&type=" + form.type.value + "&action=" + formAction;
+  url += "&type=" + form.type.value + "&-$action=" + formAction;
   if (form.uri) 
     url += "&uri=" + encodeURIComponent(form.uri.value);
 
@@ -725,12 +725,13 @@ function popupRowOnClick(e) {
       select = currentResourceUri + ".$." + select;
 
     formField = form.elements[select];
+/*
     if (tr.id == '$more') { // click on row with 'more' link works like the 'more' link itself
       var anchors = tr.getElementsByTagName('a');
       document.location.href = anchors[0].href;
       return false;
     }
-
+*/
     if (tr.id == '$clear') {
       var currentLabel = chosenTextField.value;
       var initialLabel = getFormFieldInitialValue(chosenTextField);
@@ -1259,3 +1260,25 @@ function getFormFilters(form, allFields) {
   return p;
 }
 
+function chooser(element) {
+  var propName = element.name;
+  var form     = element.form.elements['$form'].value;
+  var editList = element.form.elements['$wasdEditList'];
+  var value    = element.value;
+  var id       = element.id;
+  
+  if (!id)
+    id = value;
+    
+  if (editList) {
+    var uri = element.form.elements['$rUri'];
+    window.opener.document.forms[form].elements[uri + ".$." + propName].value               = value;
+    window.opener.document.forms[form].elements[uri + ".$." + propName + "_select"].value   = id;
+    window.opener.document.forms[form].elements[uri + ".$." + propName + "_verified"].value = "y";
+  }
+  else {
+    window.opener.document.forms[form].elements[propName].value               = value;
+    window.opener.document.forms[form].elements[propName + "_select"].value   = id;
+    window.opener.document.forms[form].elements[propName + "_verified"].value = "y";
+  }
+}

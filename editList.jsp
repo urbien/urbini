@@ -27,7 +27,7 @@
       <addNewResource html="mkResource.html" /> 
       <continueUpdateCheckout />
       <!--showSetProperties /-->
-      <input type="hidden" name="action" value="updateResources"/>
+      <input type="hidden" name="-$action" value="updateResources"/>
     </form>
   </td>
     <!--td valign="top" align="left" bgcolor="eeeeee">
@@ -44,7 +44,7 @@
       <tr><td align="middle" class="title">
         <input type="submit" name="submit" class="button1" value="Filter"></input>
         <input type="submit" name="clear"  class="button1" value="Clear"></input>
-        <input type="hidden" name="action" value="list"></input>
+        <input type="hidden" name="-$action" value="list"></input>
       </td></tr></table>   
     </form>
   </td-->

@@ -3,7 +3,7 @@
   <tr>
     <td>    
       <form name="rightPanelPropertySheet" id="filter" method="POST">
-        <input type="hidden" name="action" value="searchParallel"></input>
+        <input type="hidden" name="-$action" value="searchParallel"></input>
       </form>
     </td>
   </tr>
