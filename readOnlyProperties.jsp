@@ -86,13 +86,13 @@
 <td width="50%">
         <edit html="editProperties.html"/>
         <delete/>
-        <invite/>
+        <invite/> 
+        <reloadDocuments/>
 </td>
         <td valign="top" width="50%"><subscribe/></td>
       </tr>
       </table>
 
-      <reloadDocuments/>
       <setAsHomePage />
 
     <br/><br/>
