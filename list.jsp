@@ -28,6 +28,7 @@
 <tr valign="top">
   <td width="110%" colspan="2">
     <div align="left"><backLink /></div>
+    <font color="red"><b><errorMessage /></b></font>
     <taskTreeControl/>
     <siteResourceList />
     <div align="right"><measurement/></div>
