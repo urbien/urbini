@@ -363,7 +363,7 @@ function onClickPopup(e) {
   onClickPopup1(imgId, form);      
 }
   
-function onClickPopup1(imgId, form, enteredText) {
+function onClickPopup1(imgId, form, enteredText, enter) {
   var propName1 = imgId.substring(0, imgId.length - "_filter".length);   // cut off "_filter"
   var idx = propName1.lastIndexOf('_');
   if (idx == -1)
@@ -419,7 +419,10 @@ function onClickPopup1(imgId, form, enteredText) {
     url = url + params;
 
   url = url + "&$form=" + currentFormName;
-  url = url + "&" + propName + "_filter=y&$selectOnly=y";
+  url = url + "&" + propName + "_filter=y";
+  if (!enter)  
+    url += "&$selectOnly=y";
+  
   if (enteredText)
     url += "&" + propName + "=" + encodeURIComponent(enteredText);
   // request listbox context from the server and load it into a 'popupFrame' iframe
@@ -513,7 +516,6 @@ function popupOnSubmit(e) {
   var target;
 
   e = (e) ? e : ((window.event) ? window.event : null);
-      
   if (!e) 
     return;
 
@@ -537,10 +539,10 @@ function popupOnSubmit(e) {
       submitButtonValue = elem.value;
     }  
   }  
-  
+
   if (!submitButtonName)
     return true;
-    
+
   var submit = submitButtonName + '=' + submitButtonValue;
   var hasQ = url.indexOf('?') != -1;
   if (!hasQ)
@@ -551,7 +553,8 @@ function popupOnSubmit(e) {
   if (params)
     url = url + params;   
   url += '&$form=' + form.name;
-  url += '&$selectOnly=y';
+
+  //url += '&$selectOnly=y';
   url += "&type=" + form.type.value + "&action=" + form.action.value;
   if (form.uri) 
     url += "&uri=" + encodeURIComponent(form.uri.value);
@@ -559,7 +562,7 @@ function popupOnSubmit(e) {
   form.method   = 'GET';
   form.onsubmit = null;
   
-	if (document.all || document.getElementById) {
+  if (document.all || document.getElementById) {
 //    form.submit.disabled = true; 
     form.submit.value = 'Please wait';
     form.submit.style.cursor = 'wait'; 
@@ -571,7 +574,7 @@ function popupOnSubmit(e) {
     else if (form.clear_)  
       cancel = form.clear_;
     cancel.style.visibility = HIDDEN; 
-	}
+  }
   
   document.location.href = url;
   return false; 
@@ -644,11 +647,19 @@ function popupRowOnClick(e) {
       chosenTextField.value = val.substring(idx + 1);
       formField.value = tr.id; // property value corresponding to a listitem
     }
-    chosenTextField.style.backgroundColor='#ffffff';
+    if (chosenTextField.style)
+      chosenTextField.style.backgroundColor='#ffffff';
   }
   else {
     var iclass = prop + "_class";
     var formFieldClass = form.elements[iclass];
+    var img = tr.getElementsByTagName("img")[0];    
+    
+    var imgId  = prop + "_class_img";
+    if (img) {
+      document.getElementById(imgId).src = img.src;
+      document.getElementById(imgId).title = img.title;
+    }
     formFieldClass.value = tr.id; // property value corresponding to a listitem
     openedPopups[currentDiv.id] = null;
     menuClose2(currentDiv)
@@ -832,10 +843,10 @@ function autoComplete(e) {
   keyPressedImgId     = propName + "_" + formName + "_filter";
   keyPressedElement   = target;
   keysPressedSnapshot = target.value + characterCode;
-  
+
   if (characterCode == 13) { // open popup (or close it on second Enter)
     onClickPopup1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
-    return false;            // tell browser not to do submit form on 'Enter'
+    return false;            // tell browser not to do submit on 'enter'
   }  
   else {
     if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
