@@ -13,6 +13,7 @@
         <menu toolbar="transport" activate="onMouseOver"/>
         <menu toolbar="search" activate="onMouseOver"/>
         <menu toolbar="toolbar3" activate="onMouseOver"/>
+        <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" activate="onMouseOver"/>
         <print image="images/printerIcon.gif"/>
         <saveInExcel allow="owner" image="images/excel.gif"/>
         <pdaToPc image="images/pda.gif"/>
