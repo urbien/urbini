@@ -316,25 +316,37 @@
        return;
 
      target = getTargetElement(e);
-     var tooltipText = target.attributes['tooltip'];
-     if (!tooltipText) {
-       tooltipText = target.attributes['title'];
-       if (tooltipText) {
-         target.setAttribute('tooltip', tooltipText.value);
+     var tooltip = target.attributes['tooltip'];
+     var tooltipText;
+     if (!tooltip) {
+       tooltip = target.attributes['title'];
+       if (tooltip) {
+         tooltipText = tooltip.value;
+         if (tooltipText == '')
+           return true;
+         target.setAttribute('tooltip', tooltipText);
+         target.setAttribute('title', null);
          target.removeAttribute('title');
+         var t = target.attributes['title'];
+         target.title = '';
        }
-     }  
-     if (tooltipText) {
+     }
+     else
+       tooltipText = tooltip.value;
+     if (tooltip) {
        var tooltipDiv = document.getElementById('system_tooltip');
        if (!tooltipDiv)
          return true;
-       tooltipDiv.innerHTML = tooltipText.value;
+       tooltipDiv.innerHTML = tooltipText;
        if (tooltipDiv.style.width != '') {
          alert(tooltipDiv.style.width);
        }  
        //setTimeout("setDivVisible1('" + tooltipDiv.id + "', '" + target + "', 7, 12)", 100);
        setDivVisible(tooltipDiv, target, 7, 12);
      } 
+     e.cancelBubble = true;
+     e.returnValue = false;
+     if (e.preventDefault) e.preventDefault();         
      return false;
    }
 
