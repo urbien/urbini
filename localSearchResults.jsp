@@ -273,6 +273,10 @@
 <table border="0" cellspacing="0" cellpadding="0">
   <tr><td><pieChart/></td></tr>
 </table>
+<form name="horizontalFilter" method="POST" action="FormRedirect">
+  <br/>
+    <horizontalFilter />
+</form>
 </pda>
 <br/>
 
