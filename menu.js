@@ -56,10 +56,9 @@ function menuOpenClose(divName, imgName) {
 			poptext.left = left;
 			poptext.top  = top;
 		}
-		DivSetVisible(true, divName);		
-		poptext.visibility = VISIBLE; // finally make div visible
-		var trs = divRef.getElementsByTagName("tr"); 
-		currentPopupRow =  trs[1];                   // make second tr - current row (1st tr is a header)
+                DivSetVisible(true, divName);
+                poptext.visibility = VISIBLE; // finally make div visible
+                currentPopupRow = firstRow(divRef);
 	} 
 	else {
 		//poptext.display = "none";
@@ -422,8 +421,10 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
     if (currentDiv.focus)
       currentDiv.focus();
     else {
-      var form = document.getElementById("_$focus_form"); 
-      if (form) form.elements[0].focus();
+      var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
+      if (elm) {
+        elm.focus();
+      }  
     }  
     return;
   }
@@ -481,8 +482,11 @@ function loadPopup() {
   if (currentDiv.focus)
     currentDiv.focus();
   else {
-    var form = document.getElementById("_$focus_form"); 
-    if (form) form.elements[0].focus();
+    var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
+    if (elm) {
+      //alert("t2");
+      elm.focus();
+    }  
   }  
      
 }
@@ -502,8 +506,10 @@ function interceptPopupEvents(div) {
   addEvent(div,  'mouseover', popupOnMouseOver, false);
   addEvent(div,  'mouseout',  popupOnMouseOut,  false);
   addEvent(img,  'mouseout',  popupOnMouseOut,  false);
-  addEvent(div,  'keypress',  popupRowOnKeyPress,  false);
-  addEvent(div,  'keydown',   popupRowOnKeyPress,  false);
+  if (document.all) // IE - works only on keydown
+    addEvent(div,  'keydown',   popupRowOnKeyPress,  false);
+  else              // Mozilla - only keypress allows to call e.preventDefault() to suppress browser's scrolling in popup
+    addEvent(div,  'keypress',  popupRowOnKeyPress,  false);
 
   var trs = table.getElementsByTagName("tr");
   for (i=0;i<trs.length; i++) {
@@ -739,13 +745,7 @@ function popupRowOnClick(e) {
   var div = document.getElementById(divId);
   menuClose2(div);
   clearOtherPopups(div);
-  if (tr.id == '$clear')
-    return false;
-  var clazz = form.elements[propertyShortName + "_class"];
-  if (typeof clazz == 'undefined')
-    return true;
-      
-  return true;
+  return false;
 }
 
 var keyPressedImgId;
@@ -943,8 +943,7 @@ function popupRowOnKeyPress(e) {
 
   var characterCode = getKeyCode(e); // code typed by the user
   var target;
-
-  tr = currentPopupRow;
+  var tr = currentPopupRow;
   if (!tr)
     return;
 
@@ -958,6 +957,9 @@ function popupRowOnKeyPress(e) {
       return false;  
     case 13:  //enter
       popupRowOnClick1(tr);
+    	e.cancelBubble = true;
+	    e.returnValue = false;
+	    if (e.preventDefault) e.preventDefault();   
       return false;
     default:
       return true;  
@@ -971,13 +973,9 @@ function popupRowOnKeyPress(e) {
 	    elem.style.backgroundColor = LightMenuItem;
 	  } 
 	
-	  nextTr = tr.nextSibling;
-	  if (nextTr == null) {
-	    var table = tr.parentNode;
-	    var trs = table.getElementsByTagName("tr");  
-	    nextTr = trs[1];
-	  }
+	  var nextTr = nextRow(tr);
 	  currentPopupRow = nextTr;
+
 	  tds = nextTr.getElementsByTagName("td");  
 	  for (i=0; i<tds.length; i++) {
 	    var elem = tds[i];
@@ -992,24 +990,62 @@ function popupRowOnKeyPress(e) {
 	    elem.style.backgroundColor = LightMenuItem;
 	  } 
 	
-	  nextTr = tr.previousSibling;
-	  var nextNext;
-	  if (nextTr != null) 
-	    nextNext = nextTr.previousSibling; // check to skip top row - header
-	  if (nextNext == null || nextTr == null) {
-	    var table = tr.parentNode;
-	    var trs = table.getElementsByTagName("tr");  
-	    nextTr = trs[trs.length - 1];
-	  }
-	  currentPopupRow = nextTr;
-	  tds = nextTr.getElementsByTagName("td");  
+	  prevTr = prevRow(tr);
+	  currentPopupRow = prevTr;
+	  
+	  tds = prevTr.getElementsByTagName("td");  
 	  for (i=0; i<tds.length; i++) {
 	    var elem = tds[i];
 	    elem.style.backgroundColor = DarkMenuItem;
 	  } 	
 	}
-	  
+	e.cancelBubble = true;
+	e.returnValue = false;
+	if (e.preventDefault) e.preventDefault();
   return false;
+}
+
+function nextRow(tr) {
+  var next = tr.nextSibling;
+
+  if (next == null) {
+    var table = tr.parentNode;
+    var trs = table.getElementsByTagName("tr");  
+    return trs[1]; // skip [0] tr since it is a header
+  }
+
+  if (next.tagName && next.tagName.toUpperCase() == 'TR') 
+    return next;
+  else  
+    return nextRow(next);    	    
+}	  
+
+function prevRow(tr) {
+  var prev = tr.previousSibling;
+
+  if (prev == null || prev.id == '$classLabel') {
+    var table = tr.parentNode;
+    var trs = table.getElementsByTagName("tr");  
+    return trs[trs.length - 1];
+  }
+  
+  if (prev.tagName && prev.tagName.toUpperCase() == 'TR') 
+    return prev;
+  else  
+    return prevRow(prev);    	    
+}	  
+
+function firstRow(div) {
+  var tables = div.getElementsByTagName("table");  
+  var trs;
+  for (i=0; i<tables.length; i++) {
+    trs = tables[i].getElementsByTagName("tr");
+    if (trs && trs[0] == '$classLabel')
+      break; 
+  }
+  if (!trs)
+    return;
+  return trs[1];
 }
 
 function popupOnMouseOver(e) {
