@@ -5,7 +5,7 @@
   
 		<include name="include/commonHeader"/>
 		
-		<script language="JavaScript" src="register/hashScript.js"></script>
+		<script src="register/hashScript.js" type="text/javascript" language="JavaScript"></script>
 		
 		<table width="100%" border="0" cellspacing="0" cellpadding="0">
 		<tr>
@@ -17,7 +17,7 @@
 		<br></br>
 		<include name="requiredFooter"/>
 		
-		<script language="JavaScript" src="register/focus.js"></script>
+		<script src="register/focus.js" type="text/javascript" language="JavaScript"></script>
 		
 		<include name="include/commonFooter"/>
 	</body>	

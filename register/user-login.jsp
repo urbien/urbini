@@ -9,12 +9,15 @@
               <td colspan="2"> 
                 <table width="100%" border="0" align="center" cellpadding="3" cellspacing="3" bgcolor="#FFFFFF">
                   <tr> 
-                    <td style="border:solid #808080 1px; filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, EndColorStr='#F0F2F6', StartColorStr='#C0C9D7'); color='#000000'"  valign="top" align="left"><a href="http://hudsonfog.com/" target="_blank"><img src="images/PoweredbyHudsonFog1.gif" border="0" valign="top"/></a><br/>
+                    <td style="border:solid #808080 1px; filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, EndColorStr='#F0F2F6', StartColorStr='#C0C9D7'); color='#000000'"  valign="top" align="left">
+                      <a href="http://hudsonfog.com/" target="_blank">
+                        <img src="images/PoweredbyHudsonFog1.gif" border="0" />
+                      </a><br/>
                     </td>
                   </tr>
                   <tr> 
                     <td align="CENTER"><img src="images/spacer.gif" border="0" height="10"/><br/>
-                      <hr size="1" color="#cbcbcb"/>
+                      <hr size="1" style="color:#cbcbcb"/>
                     </td>
                   </tr>
                 </table>
@@ -41,7 +44,7 @@
                 <table width="100%" border="0" align="center" cellpadding="3" cellspacing="3" bgcolor="#FFFFFF">
                   <tr> 
                     <td colspan="2" valign="bottom"> 
-                      <hr size="1" color="#cbcbcb"/>
+                      <hr size="1" style="color:#cbcbcb"/>
                     </td>
                   </tr>
                   <tr> 
