@@ -26,8 +26,8 @@
     <td colspan="2">
     <form name="tablePropertyList" action="FormRedirect">
       <!--siteHistory /-->
-      <tablePropertyList />
       <readOnlySiteInfo />
+      <tablePropertyList />
       <div align="right"><measurement/></div>
       <p/>
       <edit html="editProperties.html"/>
