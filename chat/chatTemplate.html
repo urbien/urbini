@@ -136,7 +136,7 @@
         <tr>
           <td>
             <form style="border:thin none; border-bottom:none; bottom:0px; height:20px; margin-bottom:0px;" name="formScrollLock">
-              <input type=hidden name="chatStartedAt"><table><tr><td><a href="javascript: var df = new Date(parseInt(serverTm.value));alert('serverMessageTime = '+df);alert('serverGmtOffset = '+serverGmtOffset.value + '; serverTm = ' + serverTm.value + '; clientSideOffset = ' + clientSideOffset.value);">C</a>hat session is open for</td><td><input readonly="true" onfocus="document.getElementById('message').focus();" type=text size=5 style="border:1; border-style: inset; background-color:#FFFFFF;" name="chatStart"></td></tr></table>
+              <input type=hidden name="chatStartedAt"><table><tr><td>Chat session is open for</td><td><input readonly="true" onfocus="document.getElementById('message').focus();" type=text size=5 style="border:1; border-style: inset; background-color:#FFFFFF;" name="chatStart"></td></tr></table>
             </form>
           </td>
           <td>			
@@ -202,10 +202,7 @@
     <div>
       <iframe id='post' name='post' src='chatRoom?frame=post&room=&[encodedRoom];' style='width: 0px; height: 0px; border: 0'></iframe>
     </div>  
-	
-	<input type="Hidden" id="serverGmtOffset">
-	<input type="Hidden" id="serverTm">
-	<input type="Hidden" id="clientSideOffset">
+
 
   </body>
 </html>
