@@ -11,7 +11,7 @@
     <tr  valign="top" class="keywordsearch"><td colspan="3" class="keywordsearch">
       <table width="100%" cellspacing="0" cellpadding="1" border="0">
       <tr>
-      <td valign="top" width="70%">
+      <td valign="top" width="85%">
       <img src="icons/icon.gif" width="16" height="16" align="middle" pda="T"/>
       <img src="icons/icon_divider.gif" align="middle" border="0" pda="T"/>
 
@@ -54,7 +54,7 @@
       <a href="javascript://" title="Chat Room" onclick="openChatWindow();"><img src="icons/webchat.gif" alt="Chat room for this page" border="0" width="16" height="16" align="middle"/></a>
       <showHideWindows/>
       </td>
-      <td valign="top" align="right" width="15%"><changePassword/><userLogOff html="user-login.html"/></td>
+      <!--td valign="top" align="right" width="15%"><changePassword/><userLogOff html="user-login.html"/></td-->
       <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
       <td valign="top" align="right" width="15%"><include name="searchText.jsp"/></td>
       </form>
