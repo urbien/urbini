@@ -61,7 +61,6 @@
 </pda>
 
 <pda pda="T">
-<br/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr  valign="top">
   <td valign="top" align="middle" width="100%">
@@ -87,11 +86,7 @@
 <br />
 
 <div>
-    <!--div id="tabDiv2">
-      <a href="javascript:hidepoptext2();"><img alt="Click here to close" src="images/popout_menu.gif" width="14" border="0" /></a>
-    </div-->
-
-    <div id="textdiv2">
+  <div id="textdiv2">
 
 <table border="0" cellspacing="0" cellpadding="0">
 <tr  valign="top">
