@@ -3,6 +3,9 @@ var MenuArray = new Array("textdiv", "textdiv1", "textdiv2", "textdiv3", "textdi
                           "warehousesDiv")
 function menuOpenClose(divName) {
 	for (i = 0; i < MenuArray.length; i++) {
+		if (document.getElementById(MenuArray[i]) == null) {
+			continue;
+		}
 		if (MenuArray[i] != divName) {
 			poptext = document.getElementById(MenuArray[i]).style;
 			if (poptext.visibility =="visible") {
