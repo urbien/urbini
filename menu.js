@@ -841,7 +841,7 @@ function popupRowOnClick(e) {
       var selectedItem;
       var selectedIdx = 0;
 
-      if (selectItems.length == 1 && selectItems.type.toLowerCase() == "hidden") 
+      if (!selectItems.length && selectItems.type.toLowerCase() == "hidden") 
         formField.value = tr.id; // property value corresponding to a listitem
       else {
         formField.value = '';
