@@ -1,7 +1,7 @@
 <div>
 <center>
 
-<table width="95%" border="0" cellspacing="0" cellpadding="0">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -61,8 +61,8 @@
 </tr></table>
 </td>
     </tr>
-    <tr> 
-    <td colspan="3"><br/>
+    <tr><td width="1%"></td><td width="98%"><br/>
+    <!--td colspan="3"><br/-->
       <font color="red"><center><b><errorMessage /></b></center></font>
       <!--siteHistory /-->
       <readOtherSiteInfo />
@@ -84,7 +84,7 @@
     <br/><br/>
       <comments /> 
       <newComment/>
-    </td></tr>
+    </td><td width="1%"></td></tr>
     </table>
 </td>
 </tr></table>
