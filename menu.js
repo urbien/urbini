@@ -346,7 +346,7 @@ function DivSetVisible(makeVisible, divn) {
      DivRef.style.display = "none";
      IfrRef.style.display = "none";
    }
-  }
+}
 
 var popupFrameLoaded = false;
 var originalProp = null;
@@ -429,10 +429,12 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   
   // Use existing DIV from cache (unless text was Enter-ed - in which case always redraw DIV)
   if (!enteredText && div != null) { 
+//    hideReset(div, );
     menuOpenClose(divId, imgId);
-    if (currentDiv.focus)
+    // make popup active for key input 
+    if (currentDiv.focus) // simple in IE
       currentDiv.focus();
-    else {
+    else {                // hack for Netscape (using an empty anchor element to focus on)
       var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
       if (elm) {
         elm.focus();
@@ -493,17 +495,17 @@ function loadPopup() {
   menuOpenClose(currentDiv.id, currentImgId);
   interceptPopupEvents(currentDiv);
   openedPopups[currentDiv.id] = currentDiv;
-     
-  if (currentDiv.focus)
+
+  // make popup active for key input    
+  if (currentDiv.focus) // IE
     currentDiv.focus();
-  else {
+  else {                // Netscape
     var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
     if (elm) {
-      //alert("t2");
       elm.focus();
     }  
   }  
-     
+  history.go(-1);
 }
 
 function interceptPopupEvents(div) {
@@ -725,9 +727,7 @@ function popupRowOnClick(e) {
       select = currentResourceUri + ".$." + select;
 
     formField = form.elements[select];
-
-    var items = tr.getElementsByTagName('td');
-    if (tr.id == '$more') {
+    if (tr.id == '$more') { // click on row with 'more' link works like the 'more' link itself
       var anchors = tr.getElementsByTagName('a');
       document.location.href = anchors[0].href;
       return false;
@@ -761,6 +761,7 @@ function popupRowOnClick(e) {
       }
     }
     else  {
+      var items = tr.getElementsByTagName('td');
       var val = items[1].innerHTML;
       var idx = val.lastIndexOf(">");
       chosenTextField.value = val.substring(idx + 1);

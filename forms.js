@@ -1,3 +1,18 @@
+// cross-browser - getCurrentTarget 
+function getTargetElement(evt) {
+  var elem;
+  if (evt.target) {
+    if (evt.currentTarget && (evt.currentTarget != evt.target))
+      elem = evt.currentTarget;
+    else
+      elem = evt.target;
+  } 
+  else {
+    elem = evt.srcElement;
+  }
+  return elem;
+}  
+
 function FormField(fieldRef, isModified) {
   this.fieldRef = fieldRef;
   this.isModified = isModified;
