@@ -204,12 +204,32 @@
 
      else if (window.name == "popupFrame")  
        addEvent(window, 'load', function() {setTimeout(onLoadPopup, 0);}, false);
+   } // only if on main (non-iframe) page
+   else {
+     // add handler to smartlistbox images  
+     if (typeof onClickPopup != 'undefined') {
+       var images = document.images;
+       for (i=0; i<images.length; i++) {
+         var image = images[i];
+         if (image.id.indexOf("_filter") == -1)
+           continue;
+         addEvent(image, 'click', onClickPopup, false);
+       }  
+     }
+     // add handler to autocomplete filter form text fields 
+     if (typeof autoComplete != 'undefined') {
+       var forms = document.forms;
+       for (i=0; i<forms.length; i++) {
+         var form = forms[i];
+         if (form.id != 'filter')
+           continue;
+         for (j=0; j<form.elements.length; j++) {
+           var elem = form.elements[j];
+           if (elem.type.toUpperCase() == 'TEXT') {
+             addEvent(elem, 'keypress', autoComplete, false);
+           }
+         }
+       }  
+     }
    }
 
-   var images = document.images;
-   for (i=0; i<images.length; i++) {
-     var image = images[i];
-     if (image.id.indexOf("_filter") == -1)
-       continue;
-     addEvent(image, 'click', onClickPopup, false);
-   }  

@@ -1,7 +1,9 @@
+/* 
+ * Popup Menu system 
+ */ 
 var MenuArray = new Array();
 
 function menuOpenClose(divName, imgName) {
-	
 	for (i = 0; i < MenuArray.length; i++) {
 		if (document.getElementById(MenuArray[i]) == null) {
 			continue;
@@ -19,20 +21,20 @@ function menuOpenClose(divName, imgName) {
 		//poptext.display = "inline";
 		DivSetVisible(true, divName);
 		if (imgName) {
-            	var divRef = document.getElementById(divName);
+     	var divRef = document.getElementById(divName);
 			divRef.style.left=0;
 			divRef.style.top=0;
-            	var left = docjslib_getImageXfromLeft(imgName);
-            	var top = docjslib_getImageYfromTop(imgName) + docjslib_getImageHeight(imgName);
+      var left = docjslib_getImageXfromLeft(imgName);
+      var top = docjslib_getImageYfromTop(imgName) + docjslib_getImageHeight(imgName);
 			var screenX = document.body.clientWidth;
 			var screenY = document.body.clientHeight;
 
-            	//Find out how close to the corner of the window
-            	var rightedge=document.body.clientWidth-left;
-            	var bottomedge=document.body.clientHeight-top;
+    	//Find out how close to the corner of the window
+    	var rightedge=document.body.clientWidth-left;
+    	var bottomedge=document.body.clientHeight-top;
 
-            	//if the horizontal distance isn't enough to accomodate the width of the context menu
-            	if (rightedge<divRef.offsetWidth)
+    	//if the horizontal distance isn't enough to accomodate the width of the context menu
+    	if (rightedge<divRef.offsetWidth)
 				//move the horizontal position of the menu to the left by its width
 				left=screenX-divRef.offsetWidth;
 
@@ -50,7 +52,8 @@ function menuOpenClose(divName, imgName) {
 	if (document.getElementById("menudiv_Email") != null &&
             document.getElementById("menudiv_Email").style.display == "inline"
         ) {
-	  document.getElementById("emailForm").subject.value = document.title;
+	  var e = document.getElementById("emailForm");
+	  if (e) e.subject.value = document.title;
 	}
 	if (document.getElementById("menudiv_Schedule") != null &&
             document.getElementById("menudiv_Schedule").style.display == "inline"
@@ -109,19 +112,22 @@ function menuOpen1(div, link) {
 	}
 
 	if (document.getElementById("menudiv_Email") != null &&
-            document.getElementById("menudiv_Email").style.display == "inline"
+      document.getElementById("menudiv_Email").style.display == "inline"
            ) {
 		document.forms["emailForm"].elements["subject"].value = document.title;
 	}
 	if (document.getElementById("menudiv_Schedule") != null &&
-            document.getElementById("menudiv_Schedule").style.display == "inline"
+      document.getElementById("menudiv_Schedule").style.display == "inline"
            ) {
 		document.forms["scheduleForm"].elements["name"].value = document.title;
 	}
 }
 
 function menuClose1(div) {
-  poptext = document.getElementById(div).style;
+  var d =document.getElementById(div);
+  if (!d)
+    return;
+  poptext = d.style;
   if (poptext.display == "inline") {
     poptextLeft = docjslib_getImageXfromLeft(div);
     poptextTop = docjslib_getImageYfromTop(div);
@@ -131,9 +137,24 @@ function menuClose1(div) {
         yMousePos < poptextTop || yMousePos > poptextTop + poptextHeight) {
         //poptext.display = "none";
       DivSetVisible(false, div);
+      currentDiv = null;
     } else {
       timeoutId = setTimeout("menuClose1('" + div + "')", 100);
     }
+  }
+}
+
+/* close div uncoditionally with no regard to mouse position */
+function menuClose2(divElem) {
+  poptext = divElem.style;
+  var div = divElem.id;
+  if (poptext.display == "inline") {
+    poptextLeft = docjslib_getImageXfromLeft(div);
+    poptextTop = docjslib_getImageYfromTop(div);
+    poptextWidth = docjslib_getImageWidth(div);
+    poptextHeight = docjslib_getImageHeight(div);
+    DivSetVisible(false, div);
+    currentDiv = null;
   }
 }
 
@@ -287,52 +308,76 @@ function captureMousePosition(e) {
   }
 }
 
-function DivSetVisible(state, divn)
-  {
+function DivSetVisible(state, divn) {
    var DivRef = document.getElementById(divn);
    var IfrRef = document.getElementById('DivShim');
-   if(state)
-   {
-    DivRef.style.display = "inline";
-    istyle=IfrRef.style;
-    istyle.width = DivRef.offsetWidth;
-    istyle.height = DivRef.offsetHeight;
-    istyle.top = DivRef.style.top;
-    istyle.left = DivRef.style.left;
-    //istyle.zIndex = DivRef.style.zIndex-1;
-    istyle.display = "inline";
+   if(state) {
+     DivRef.style.display = "inline";
+     istyle=IfrRef.style;
+     istyle.width  = DivRef.offsetWidth;
+     istyle.height = DivRef.offsetHeight;
+     istyle.top    = DivRef.style.top;
+     istyle.left   = DivRef.style.left;
+     //istyle.zIndex = DivRef.style.zIndex-1;
+     istyle.display = "inline";
    }
-   else
-   {
-    DivRef.style.display = "none";
-    IfrRef.style.display = "none";
+   else {
+     DivRef.style.display = "none";
+     IfrRef.style.display = "none";
    }
   }
 
-//var popupDivId = null; // global var to let iframe know the div into which to move iframe content
 var popupFrameLoaded = false;
 var originalProp = null;
 var propName = null;
 var openedPopups = new Array();
+var currentDiv = null;
+var currentImgId = null;
+var currentFormName = null;
 
-function onClickPopup(propName1, url) {
+/**
+ *  Opens the popup when icon is clicked
+ */
+function onClickPopup(e) {
+  target = getTargetElement(e);
+  if (!target)
+    return;
+  if (target.tagName != "IMG")  
+    return;
+  var imgId = target.id;
+  currentImgId = imgId;
+  var propName1 = imgId.substring(0, imgId.length - "_filter".length);  
+  var form = getFormNode(target);
+  currentFormName = form.name;
+  propName1 = propName1.substring(0, propName1.length - (form.name.length + 1));  
+
+  if (currentDiv)
+    menuClose2(currentDiv);
+  
   originalProp = propName1;
   var idx = propName1.indexOf(".");
   if (idx != -1)
     propName = propName1.substring(0, idx);
   else
     propName = propName1;
-//alert("propName = " + propName);
-//alert("originalProp = " + originalProp);
 
-  var popupDivId = openedPopups[propName];
-  if (popupDivId != null) {
-    menuOpenClose(popupDivId, propName + "_filter");
+  var divId = propName + "_" + form.name;
+  currentDiv = document.getElementById(divId);
+  var div = openedPopups[divId];
+  if (div != null) {
+    menuOpenClose(divId, imgId);
     return;
   }
 
-  var imgName = propName + "_filter";
-//  popupDivId = "smart_" + propName;
+  // form url based on parameters that were set
+  var url;
+  //url = "http://127.0.0.1/hudsonfog/smartPopup?pUri=http://www.hudsonfog.com/voc/software/crm/Bug/affectedComponent&selectOnly=y&affectedComponent_filter=y&action=explore&file=/localSearchResults.html&type=http://www.hudsonfog.com/voc/software/crm/Bug&$form=" + currentFormName;
+  url = "smartPopup?pUri=" + "http://www.hudsonfog.com/voc/software/crm/Bug/" + propName;
+  var params = getFormFilters(form);
+  url = url + params;
+  url = url + "&$form=" + form.name;
+  url = url + "&" + propName + "_filter=y&$selectOnly=y";
+  // request listbox context from the server and load it into a 'popupFrame' iframe
   var onClickPopupFrame = frames["popupFrame"];
   popupFrameLoaded = false;
   onClickPopupFrame.location.href = url; // load data from server into iframe
@@ -345,32 +390,25 @@ function loadPopup() {
     setTimeout(loadPopup, 100);
     return;
   }  
-  
+
   var bottomFrame = frames['popupFrame'];
-  var popupDivId = "smart_" + propName;
-  var popupDiv    = document.getElementById(popupDivId);
-
-//alert("popupDiv = " + popupDiv);  
-
-  if (popupDiv) {
+  if (currentDiv) {
     var body = bottomFrame.document.body;
     if (body) {
-      popupDiv.innerHTML = body.innerHTML;
-//alert("popupDiv.innerHTML = " + popupDiv.innerHTML);  
+      currentDiv.innerHTML = body.innerHTML;
     }
   }
-  
-  menuOpenClose(popupDivId, propName + "_filter");
-  interceptPopupEvents();
-  openedPopups[propName] = popupDivId;
+
+  menuOpenClose(currentDiv.id, currentImgId);
+  interceptPopupEvents(currentDiv);
+//alert("openedPopups=" + currentDiv.id);
+  openedPopups[currentDiv.id] = currentDiv;
 }
 
-function interceptPopupEvents() {
-  var table = document.getElementById("table_" + propName);
-  var div   = document.getElementById("smart_" + propName);
-//alert("interceptPopupEvents(): div = " + div.id);
-
-//alert("interceptPopupEvents(): propName = " + propName);
+function interceptPopupEvents(div) {
+  var tableId = "table_" + propName + "_" + currentFormName;
+//alert("tableId=" + tableId);
+  var table = document.getElementById(tableId);
 
   addEvent(div, 'mouseover', popupOnMouseOver, false);
   addEvent(div, 'mouseout',  popupOnMouseOut,  false);
@@ -384,6 +422,32 @@ function interceptPopupEvents() {
   }
 }
 
+function getFormFilters(form) {
+  var p = "";
+  var fields = form.elements;
+  for (i=0; i<fields.length; i++) {
+    var field = fields[i];
+    var value = field.value;
+    var name  = field.name;
+    var type  = field.type;
+
+    if (!type || !name || !value || value == "")
+      continue;
+    if (type.toUpperCase() == "SUBMIT") 
+      continue;
+    else if (type.toUpperCase() == "CHECKBOX" && name != "on") 
+      continue;
+    if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
+      continue;
+          
+    p += "&" + name + "=" + encodeURIComponent(value);
+  }
+  return p;
+}
+
+/**
+ *  Reacts to clicks inside the popup
+ */
 function popupOnClick(e) {
   var tr;
   var target;
@@ -397,48 +461,95 @@ function popupOnClick(e) {
   tr = getTrNode(target);
   if (!tr)
     return;
-  
-  var form = document.forms['rightPanelPropertySheet'];
-  
+  var form = getFormNode(target);
+   
   var table = tr.parentNode;
   var table1 = table.parentNode;
-//alert("found table1 = " + table1.id);
   
   var propertyShortName = table1.id.substring("table_".length);
-//alert("propertyShortName " + propertyShortName); 
+  propertyShortName = propertyShortName.substring(0, propertyShortName.length - (form.name.length + 1));
   var idx = propertyShortName.indexOf(".");
-  var divId = null;
+  var prop = null;
   if (idx == -1)
-    divId = propertyShortName; 
+    prop = propertyShortName; 
   else
-    divId = propertyShortName.substring(0, idx);
+    prop = propertyShortName.substring(0, idx);
 
-  var select = divId + "_select";
-  divId = "smart_" + divId;
-//alert("propertyShortName = " + propertyShortName);
-//alert("select = " + select);
-
+  var select = prop + "_select";
   var formField = form.elements[select];
 
   formField.value = tr.id; // property value corresponding to a listitem
-//  var chosenTextField = form.elements[propertyShortName];
   var chosenTextField = form.elements[originalProp];
 
   var items = tr.getElementsByTagName('td');
-//alert("items.length = " + items.length + "; items[0].text = " + items[0].text + "; items[1].text = " + items[1].text + "items[2].text = " + items[2].text);  
-//alert("items.length = " + items[0].length + "; items[0].text = " + items[0].innerHTML + "; items[1].text = " + items[1].innerText + "items[2].text = " + items[2].text);  
   var val = items[1].innerHTML;
   var idx = val.lastIndexOf(">");
   chosenTextField.value = val.substring(idx + 1);
-
-//alert("popupOnClick divId=" + divId);
-
-  menuClose(divId);
+  
+  var divId = prop + "_" + form.name;
+  var div = document.getElementById(divId);
+  menuClose2(div);
+  clearOtherPopups(div);
+  return true;
 }
 
+function clearOtherPopups(div) {
+//alert("div=" + div.id + ", openedPopups.length=" + openedPopups.length)    
+  for (i=0; openedPopups.length; i++) {
+    var p = openedPopups[i];
+    if (p == null)
+      continue;
+//alert("openedPopup=" + p.id)    
+    if (p != div) {
+      openedPopups[i] = null;
+    }  
+  }
+}
+
+function getFormNode(elem) {
+  var form = elem.parentNode;
+  if (form.tagName.toUpperCase() == "FORM") {
+    return form;
+  }  
+  else
+    return getFormNode(form);
+}
+
+var keysPressedSnapshot = "";
+var keyPressedElement;
+function autoComplete(e) {
+  var target;
+  e = (e) ? e : ((window.event) ? window.event : null);
+
+  if (!e) 
+    return;
+
+  target = getTargetElement(e);
+  if (!target)
+    return;
+
+  var form = target.form;
+  if (form.name != "rightPanelPropertySheet")
+    return true;
+
+  keyPressedElement = target;
+  keysPressedSnapshot = target.value + e.which;
+//    alert("popupKeyPress, target=" + target.tagName + ", value: " + keysPressedSnapshot); 
+  setTimeout(autoCompleteTimeout, 1000);
+  return true;
+}
+
+function autoCompleteTimeout() {
+  if (!keyPressedElement)
+    return;
+//  if (!keyPressedElement.hasFocus)
+//    return;
+//alert("autoCompleteTimeout, target=" + keyPressedElement.tagName);
+  if (keysPressedSnapshot == keyPressedElement.value)
+    alert("autoCompleteTimeout, target=" + keyPressedElement.tagName + ", value: " + keysPressedSnapshot); 
+}
 
 function popupOnMouseOver(e) {
-  var tr;
   var target;
 
   e = (e) ? e : ((window.event) ? window.event : null);
@@ -466,11 +577,10 @@ function popupOnMouseOut(e) {
   if (!target)
     return;
   
-  window.status=propName; 
-
-  var divId = target.id; 
-//alert("popupOnMouseOut divId=" + divId);
-  menuClose(divId);
+  window.status='';
+  
+  if (currentDiv) 
+    menuClose(currentDiv.id);
   return true;
 }
 

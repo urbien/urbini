@@ -13,7 +13,7 @@
           }
 	}
       </script>
-      <form name="rightPanelPropertySheet" method="POST" action="FormRedirect" onSubmit="disableSubmitButton(this)"><!-- onsubmit="clearUnModifiedFields(rightPanelPropertySheet_FIELDS)"-->
+      <form name="rightPanelPropertySheet" id="filter" method="POST" action="FormRedirect" onSubmit="disableSubmitButton(this)"><!-- onsubmit="clearUnModifiedFields(rightPanelPropertySheet_FIELDS)"-->
         <rightPanelPropertySheet />
         <input type="hidden" name="action" value="searchLocal"></input>
       </form>

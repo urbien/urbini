@@ -48,7 +48,7 @@
           }
 	}
         </script>
-        <form name="horizontalFilter" method="POST" action="FormRedirect" onSubmit="disableSubmitButtonH(this)"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
+        <form name="horizontalFilter" id="filter" method="POST" action="FormRedirect" onSubmit="disableSubmitButtonH(this)"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
           <br/>
           <horizontalFilter />
         </form>
@@ -121,7 +121,7 @@
           }
 	}
 </script>
-<form name="horizontalFilter" method="POST" action="FormRedirect" onSubmit="disableSubmitButtonH(this)"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
+<form name="horizontalFilter" id="filter" method="POST" action="FormRedirect" onSubmit="disableSubmitButtonH(this)"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
   <br/>
     <horizontalFilter />
 </form>
