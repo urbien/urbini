@@ -4,7 +4,7 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
-   <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="80%" valign="bottom">
+   <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="70%">
     <menu toolbar="toolbar1"  activate="onMouseOver"/>
     <menu toolbar="transport" activate="onMouseOver"/>
     <menu toolbar="search"    activate="onMouseOver"/>
@@ -16,8 +16,9 @@
     <pdaToPc image="images/pda.gif"/>
     <showHideWindows/>
     </td>
+    <td valign="top" align="right" width="20%"><changePassword/><userLogOff html="user-login.html"/>&#160;</td>
     <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
-      <td valign="top" align="right" width="20%"><include name="searchText.jsp"/></td>
+      <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
     </form>
     </tr></table></td>
   </tr>
@@ -41,16 +42,8 @@
     <br/><pieChart/>
     <script language="JavaScript">
       var horizontalFilter_FIELDS = new Array();
-	function disableSubmitButtonH(form) {
-	  if (document.all || document.getElementById) {
-            form.submit.disabled = true; 
-            form.submit.value = 'Please wait';
-            form.submit.style.cursor = 'wait'; 
-            form.clear_.style.visibility = 'hidden'; 
-          }
-	}
     </script>
-    <form name="horizontalFilter" method="POST" action="FormRedirect" onSubmit="disableSubmitButtonH(this)"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
+    <form name="horizontalFilter" method="POST" action="FormRedirect"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
       <br/>
       <horizontalFilter />
     </form>
@@ -110,16 +103,8 @@
 </table>
 <script language="JavaScript">
   var horizontalFilter_FIELDS = new Array();
-	function disableSubmitButtonH(form) {
-	  if (document.all || document.getElementById) {
-            form.submit.disabled = true; 
-            form.submit.value = 'Please wait';
-            form.submit.style.cursor = 'wait'; 
-            form.clear_.style.visibility = 'hidden'; 
-          }
-	}
 </script>
-<form name="horizontalFilter" method="POST" action="FormRedirect" onSubmit="disableSubmitButtonH(this)"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
+<form name="horizontalFilter" method="POST" action="FormRedirect"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
   <br/>
     <horizontalFilter />
 </form>
