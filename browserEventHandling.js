@@ -322,6 +322,14 @@
       return false;
     }
 
+    function tooltipMouseOut0(target) {    
+      var tooltipDiv = document.getElementById('system_tooltip');
+      var ifrRef = document.getElementById('tooltipIframe');
+     
+      setDivInvisible(tooltipDiv, ifrRef);
+      return false;
+    }
+
     function tooltipMouseOut(e) {
       var target;
 
@@ -330,14 +338,6 @@
         return;
       target = getTargetElement(e);
       return tooltipMouseOut0(target);
-    }
-
-    function tooltipMouseOut0(target) {    
-      var tooltipDiv = document.getElementById('system_tooltip');
-      var ifrRef = document.getElementById('tooltipIframe');
-     
-      setDivInvisible(tooltipDiv, ifrRef);
-      return false;
     }
 
     //***** Add smartlistbox handlers
