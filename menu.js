@@ -1,4 +1,4 @@
-4/* 
+/* 
  * Popup Menu system 
  */ 
 var MenuArray = new Array();
@@ -156,7 +156,6 @@ function menuClose1(div) {
 
 /* close div uncoditionally with no regard to mouse position */
 function menuClose2(divElem) {
-alert(divElem);
   poptext = divElem.style;
   var div = divElem.id;
   if (poptext.display == "inline") {
@@ -356,16 +355,20 @@ function onClickPopup(e) {
   if (target.tagName != "IMG")  
     return;
   var imgId = target.id;
-  currentImgId = imgId;
+  var form = getFormNode(target);
+//alert("form=" + currentFormName);
+//alert("target = " + target.id + "; parent = " + target.parentNode);  
+  onClickPopup1(imgId, form);      
+}
+  
+function onClickPopup1(imgId, form, enteredText) {
+
+  currentImgId  = imgId;
   var propName1 = imgId.substring(0, imgId.length - 7);   // cut off "_filter"
   var idx = propName1.lastIndexOf('_');
   if (idx == -1)
     return;
   currentFormName = propName1.substring(idx + 1);
-//alert("form=" + currentFormName);
-//alert("target = " + target.id + "; parent = " + target.parentNode);  
-
-  var form = getFormNode(target);
   
   propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));  
 
@@ -374,7 +377,6 @@ function onClickPopup(e) {
   
   originalProp = propName1;
   var idx = propName1.indexOf(".");
-  
   var divId;
   if (idx != -1) {
     propName = propName1.substring(0, idx);
@@ -393,19 +395,16 @@ function onClickPopup(e) {
       else {
         divId = propName + "_" + currentFormName;
         originalProp = propName + propName1.substring(propName.length + "_class".length);
-alert("originalProp = " + originalProp);
       }
     }
   }
-//alert("onClickPopup(): divId = " + divId + ": propName = " + propName);  
    
   currentDiv = document.getElementById(divId);
   var div = openedPopups[divId];
-  if (div != null) {
+  if (!enteredText && div != null) {
     menuOpenClose(divId, imgId);
     return;
   }
-
   // form url based on parameters that were set
   var url;
   url = "smartPopup?pUri=" + propName;
@@ -413,6 +412,8 @@ alert("originalProp = " + originalProp);
   url = url + params;
   url = url + "&$form=" + currentFormName;
   url = url + "&" + propName + "_filter=y&$selectOnly=y";
+  if (enteredText)
+    url += "&" + propName + "=" + encodeURIComponent(enteredText);
   // request listbox context from the server and load it into a 'popupFrame' iframe
   var onClickPopupFrame = frames["popupFrame"];
   popupFrameLoaded = false;
@@ -437,7 +438,6 @@ function loadPopup() {
 
   menuOpenClose(currentDiv.id, currentImgId);
   interceptPopupEvents(currentDiv);
-//alert("openedPopups=" + currentDiv.id);
   openedPopups[currentDiv.id] = currentDiv;
 }
 
@@ -445,13 +445,10 @@ function interceptPopupEvents(div) {
   var addToTableName = "";
   if (originalProp.indexOf("_class") != -1) {
     var field = propName + "_class";
-
-//alert("field=" + field + "; document.currentFormName.getElementByName(field) = " + document.forms[currentFormName].elements[field].value);
     if (document.forms[currentFormName].elements[field].value == "")
       addToTableName = "_class";
   }
   var tableId = "table_" + propName + addToTableName + "_" + currentFormName;
-//alert("tableId=" + tableId);
   var table = document.getElementById(tableId);
 
   addEvent(div, 'mouseover', popupOnMouseOver, false);
@@ -460,9 +457,10 @@ function interceptPopupEvents(div) {
   var trs = table.getElementsByTagName("tr");
   for (i=0;i<trs.length; i++) {
     var elem = trs[i];
-    addEvent(elem, 'click',     popupOnClick,        false);
+    addEvent(elem, 'click',     popupRowOnClick,     false);
     addEvent(elem, 'mouseover', popupRowOnMouseOver, false);
     addEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
+    //addEvent(elem, 'keypress',  popupRowOnKeyPress,  false);
   }
 }
 
@@ -492,7 +490,7 @@ function getFormFilters(form) {
 /**
  *  Reacts to clicks inside the popup
  */
-function popupOnClick(e) {
+function popupRowOnClick(e) {
   var tr;
   var target;
 
@@ -507,15 +505,13 @@ function popupOnClick(e) {
     return;
   var form = getFormNode(target);
    
-  var table = tr.parentNode;
+  var table  = tr.parentNode;
   var table1 = table.parentNode;
   
   var propertyShortName = table1.id.substring("table_".length);
   var idx = propertyShortName.lastIndexOf('_');
   var formName = propertyShortName.substring(idx + 1);
-//alert("formName = " + formName);
   propertyShortName = propertyShortName.substring(0, idx);
-//alert("propertyShortName=" + propertyShortName);
   var idx = propertyShortName.indexOf(".");
   var prop = null;
   if (idx == -1) {
@@ -531,7 +527,6 @@ function popupOnClick(e) {
   if (originalProp.indexOf("_class") == -1) {
     var select = prop + "_select";
     formField = form.elements[select];
-alert("formField.name=" + formField.name);
     formField.value = tr.id; // property value corresponding to a listitem
     var chosenTextField = form.elements[originalProp];
 
@@ -543,15 +538,19 @@ alert("formField.name=" + formField.name);
   }
   else {
     var iclass = prop + "_class";
-alert("iclass = " + iclass);
     formField = form.elements[iclass];
-alert("formField.name=" + formField.name + "; value = " + tr.id);
     formField.value = tr.id; // property value corresponding to a listitem
   }
   var divId = prop + "_" + formName;
   var div = document.getElementById(divId);
   menuClose2(div);
   clearOtherPopups(div);
+  
+  var clazz = form.elements[propertyShortName + "_class"];
+  if (typeof clazz == 'undefined')
+    return true;
+  
+      
   return true;
 }
 
@@ -570,9 +569,7 @@ function clearOtherPopups(div) {
 
 function getFormNode(elem) {
   var f = elem.parentNode;
-//alert("getFormNode() = " + f.tagName.toUpperCase());  
   if (f.tagName.toUpperCase() == "FORM") {
-//alert("getFormNode() = " + f.name + "; id = " + f.id);  
     return f;
   }  
   else
@@ -580,39 +577,133 @@ function getFormNode(elem) {
 }
 
 var keysPressedSnapshot = "";
+var keyPressedImgId;
 var keyPressedElement;
-function autoComplete(e) {
-return true;
-  var target;
+var autoCompleteTimeoutId;
+var keyPressedTime;
+
+function autoCompleteOnFocus(e) {
   e = (e) ? e : ((window.event) ? window.event : null);
 
   if (!e) 
     return;
 
+  var target;
+  target = getTargetElement(e);
+  if (!target)
+    return;
+    
+  target.select();  
+}
+
+function autoCompleteOnBlur(e) {
+  e = (e) ? e : ((window.event) ? window.event : null);
+
+  if (!e) 
+    return;
+
+  var target;
+  target = getTargetElement(e);
+  if (!target)
+    return;
+    
+//  target.deselect();  
+}
+
+function getKeyCode(e) {
+	if( typeof( e.keyCode ) == 'number'  ) {
+	    //IE, NS 6+, Mozilla 0.9+
+	    return e.keyCode;
+	} else if( typeof( e.charCode ) == 'number'  ) {
+	    //also NS 6+, Mozilla 0.9+
+	    return e.charCode;
+	} else if( typeof( e.which ) == 'number' ) {
+	    //NS 4, NS 6+, Mozilla 0.9+, Opera
+	    return e.which;
+	} else {
+	    //TOTAL FAILURE, WE HAVE NO WAY OF OBTAINING THE KEY CODE
+	    throw Error("can't detect the key pressed");
+	}
+}
+
+function autoComplete(e) {
+  keyPressedTime = new Date().getTime();
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e) 
+    return;
+
+  var characterCode = getKeyCode(e); // code typed by the user
+  var target;
+
   target = getTargetElement(e);
   if (!target)
     return;
 
-  var form = target.form;
-  // HACK!!!!!
-  if (form.name != "rightPanelPropertySheet")
-    return true;
+  if (currentDiv)
+    menuClose2(currentDiv);
 
+  var form = target.form;
+  if (characterCode == 13) {
+    return true;
+  }   
+  if (characterCode == 37)
+    return true;
+  switch (characterCode) {
+       case 38: //up arrow  
+       case 40: //down arrow
+       case 37: //left arrow
+       case 39: //right arrow
+       case 33: //page up  
+       case 34: //page down  
+       case 36: //home  
+       case 35: //end                  
+       case 13: //enter  
+       case 9: //tab  
+       case 27: //esc  
+       case 16: //shift  
+       case 17: //ctrl  
+       case 18: //alt  s
+       case 20: //caps lock
+//       case 8: //backspace  
+//       case 46: //delete
+           return true;
+           break;
+  }     
+
+//  if (characterCode < 27) {
+//    target.deselect();
+//  }   
+  
+  var propName = target.name;
+  var formName = target.id;
+  keyPressedImgId = propName + "_" + formName + "_filter";
   keyPressedElement = target;
-  keysPressedSnapshot = target.value + e.which;
+  keysPressedSnapshot = target.value + characterCode;
 //    alert("popupKeyPress, target=" + target.tagName + ", value: " + keysPressedSnapshot); 
-  setTimeout(autoCompleteTimeout, 1000);
+//  if (autoCompleteTimeoutId)
+//    cancelTimeout(autoCompleteTimeoutId);
+  autoCompleteTimeoutId =  setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 1000);
   return true;
 }
 
-function autoCompleteTimeout() {
-  if (!keyPressedElement)
+function autoCompleteTimeout(invocationTime) {
+  if (keyPressedTime > invocationTime)
     return;
-//  if (!keyPressedElement.hasFocus)
-//    return;
-//alert("autoCompleteTimeout, target=" + keyPressedElement.tagName);
-  if (keysPressedSnapshot == keyPressedElement.value)
-    alert("autoCompleteTimeout, target=" + keyPressedElement.tagName + ", value: " + keysPressedSnapshot); 
+//  autoCompleteTimeoutId = null;
+  if (!keyPressedImgId)
+    return;
+
+	var img = document.getElementById(keyPressedImgId);
+	if (!img)
+	  return true;
+	if (keyPressedElement.value.length == 0)
+	  return;
+	onClickPopup1(keyPressedImgId, form, keyPressedElement.value);
+}
+
+function popupRowOnKeyPress(e) {
+alert("keypress");
+  return(popupRowOnClick(e));
 }
 
 function popupOnMouseOver(e) {
