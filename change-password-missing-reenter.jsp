@@ -9,9 +9,9 @@
   <col width="10%"/>
   </colgroup>
 <tr>
-  <td valign="top" width="10%">
+  <!--td valign="top" width="10%">
     <include name="include/commonLeft" />
-  </td>
+  </td-->
   <td valign="top" align="middle" width="80%">
 
 <br />

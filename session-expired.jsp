@@ -1,11 +1,7 @@
 <html>
-<include name="include/commonHeader" />
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
-  <td valign="top" width="20%">
-    <include name="include/commonLeft" />
-  </td>
   <td valign="top" align="middle">
 
 <br />
@@ -43,6 +39,5 @@
 </form>
 </td></tr></table>
 
-<include name="include/commonFooter" />
 </body>
 </html>

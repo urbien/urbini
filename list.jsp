@@ -1,5 +1,4 @@
 <html>
-<include name="include/commonHeader" />
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <colgroup>
     <col width="10%" /> 
@@ -36,8 +35,8 @@
   </td>
   <td valign="top" align="left" width="10%" bgcolor="eeeeee">
     <include name="searchText.jsp" />
-    <form name="tablePropertyList" method="POST" action="FormRedirect">
-      <tablePropertyList />
+    <form name="rightPanelPropertySheet" method="POST" action="FormRedirect">
+      <rightPanelPropertySheet />
       <br></br>
       <center><input type="submit" name="submit" value="locate"></input></center>
       <input type="hidden" name="action" value="searchLocal"></input>
@@ -48,6 +47,5 @@
 </td></tr></table>
 <br />
 <div align="left"><span class="xs"><hudsonFog /></span></div>      <!-- link to Portal page for current category -->
-<include name="include/commonFooter" />
 </html>
 
