@@ -445,7 +445,7 @@
       if (!e)
         return;
       target = getTargetElement(e);
-      var url = 'editProperties.html?submit=Submit+changes&uri=';
+      var url = 'editProperties.html?submit=Submit+changes&User_Agent_UI=n&uri=';
       
       var rUri = target.id.substring(0, target.id.length - "_markedAsRead".length);
       var tooltip = target.getAttribute('tooltip');
