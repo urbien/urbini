@@ -1,23 +1,29 @@
 <div>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+  <td valign="top" width="95%">
+<center>
+<table width="98%" cellspacing="0" cellpadding="0" border="0">
+  <tr valign="top" class="keywordsearch">
+  <td valign="top" width="100%" class="keywordsearch">
+   <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="90%">
+    <menu toolbar="toolbar1"  activate="onMouseOver"/>
+    <menu toolbar="transport" activate="onMouseOver"/>
+    <menu toolbar="search"    activate="onMouseOver"/>
+    <menu toolbar="toolbar2"  activate="onMouseOver"/>
+    <menu toolbar="toolbar3"  activate="onMouseOver"/>
+    <pdaToPc image="images/pda.gif"/>
+    </td>
+    <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
+      <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
+    </form>
+    </tr></table></td>
+  </tr>
+</table></center></td></tr></table>
+<br/>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top" width="90%">
-
-    <table width="97%" align="center" cellspacing="0" cellpadding="0" border="0">
-    <tr valign="top">
-      <td valign="top" width="80%" class="topBar">
-        <span class="xs">
-        <menu toolbar="toolbar1"  activate="onMouseOver"/>
-        <menu toolbar="transport" activate="onMouseOver"/>
-        <menu toolbar="search"    activate="onMouseOver"/>
-        <menu toolbar="toolbar2"  activate="onMouseOver"/>
-        <!--menu toolbar="toolbar3"  activate="onMouseOver"/-->
-        <pdaToPc image="images/pda.gif"/>
-        </span>
-      </td>
-      <td valign="top" align="right" width="20%" class="topBar"><changePassword/><userLogOff html="user-login.html"/></td>
-    </tr>
-    </table>
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top"><td colspan="2">
      <font color="red"><center><b><errorMessage /></b></center></font>

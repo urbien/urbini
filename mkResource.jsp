@@ -14,13 +14,8 @@
     <menu toolbar="search"    activate="onMouseOver"/>
     <menu toolbar="toolbar2"  activate="onMouseOver"/>
     <menu toolbar="toolbar3"  activate="onMouseOver"/>
-    <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" activate="onMouseOver"/>
-    <print image="images/printerIcon.gif"/>
-    <saveInExcel allow="owner" image="images/excel.gif"/>
     <pdaToPc image="images/pda.gif"/>
-    <showHideWindows/>
     </td>
-    <!--td valign="top" align="right" width="20%"><changePassword/><userLogOff html="user-login.html"/>&#160;</td-->
     <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
       <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
     </form>
@@ -31,13 +26,6 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
   <td valign="top" width="95%">
-     <!--div align="right"><span class="xs"><language display="horizontal"/></span></div-->
-     <!--menu toolbar="toolbar1"  activate="onMouseOver"/>
-     <menu toolbar="search"    activate="onMouseOver"/>
-     <menu toolbar="toolbar2"  activate="onMouseOver"/-->
-     <!--menu toolbar="toolbar3" exclude="Support" activate="onMouseOver"/-->
-
-     <!--center><b><font color="red"><errorMessage /></font></b></center-->
      <form id="filter" name="tablePropertyList" method="post" >
        <tablePropertyList action="mkResource"/>
        <input type="hidden" name="returnHtml" value="list.html"/>
