@@ -58,12 +58,12 @@ function visi(nr, vis) {
     style = document.getElementById(nr).style;
   }
 
-alert("style: " + style.visibility);
+//alert("style: " + style.visibility);
   if (vis) 
     style.visibility = visible;
   else
     style.visibility = hidden;
-alert("style: " + style.visibility);
+//alert("style: " + style.visibility);
 }
 
 function draw(source, dep, numprojects) {
