@@ -6,6 +6,7 @@ td.sep {background-color:#e7ebf0; color:#000000; font-weight:bold; font-size:8pt
 th.sep {background-color:#cbcbcb; color:#000000; font-size:8pt;}
 input.chk {background-color:#cbcbcb; font-size:7pt}
 
+.title {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold}
 td.title {background-color:#cdcde4; height:8pt; color:#5766a5}
 tr.title {background-color:#cdcde4; height:8pt}
 
