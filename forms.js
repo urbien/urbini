@@ -68,12 +68,10 @@ function trim(s) {
 }
 
 /* used to show full text in a long text property, like Demand.description */
-function displayFullText(div, text) {
-  document.getElementById(div).innerHTML = text;
-}
-
-function displayFullText1(div, div1) {
-  document.getElementById(div).innerHTML = document.getElementById(div1).innerHTML;
+function displayFullText(div, moreDiv) {
+  document.getElementById(div).style.overflow = 'visible';
+  document.getElementById(div).style.display = 'inline';
+  document.getElementById(moreDiv).style.display = 'none';
 }
 
 function setTextHeight(div, divider) {
