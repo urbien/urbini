@@ -830,7 +830,7 @@ function autoCompleteTimeout(invocationTime) {
 }
 
 function popupRowOnKeyPress(e) {
-alert("keypress");
+//alert("keypress");
   return(popupRowOnClick(e));
 }
 

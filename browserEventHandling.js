@@ -232,7 +232,7 @@
        return false;
      }  
      else {
-       alert("modified: elem.name: " + elem.name + ", initialValue: " + initialValue);           
+       //alert("modified: elem.name: " + elem.name + ", initialValue: " + initialValue);           
        return true;
      }  
    }
