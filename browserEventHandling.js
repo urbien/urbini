@@ -399,3 +399,17 @@
      return false;
    }
 
+   // cross-browser - getCurrentTarget 
+   function getTargetElement(evt) {
+     var elem;
+     if (evt.target) {
+       if (evt.currentTarget && (evt.currentTarget != evt.target))
+         elem = evt.currentTarget;
+       else
+         elem = evt.target;
+     } 
+     else {
+       elem = evt.srcElement;
+     }
+     return elem;
+   }  
