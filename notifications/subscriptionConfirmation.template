@@ -2,11 +2,11 @@ Dear &[firstName]; &[lastName];,
 <br><br>
 
 You are now subscribed to alerts for the &[class];<br>
-<a href="&[url];">&[urlDisplayName];</a>
+<a href="&[url];" target=_blank>&[urlDisplayName];</a>
 
 <br><br>
 Customer Service
 <br>
 HudsonFog 
 <br><br>
-<b>Powered by</b> <a href="http://hudsonfog.com">HudsonFog</a>
+<b>Powered by</b> <a href="http://hudsonfog.com" target=_blank>HudsonFog</a>

@@ -3,12 +3,12 @@ Dear &[firstName]; &[lastName];,
 <br>
 
 You are invited to receive alerts for the &[class];<br>
-<a href="&[url];">&[urlDisplayName];</a>
+<a href="&[url];" target=_blank>&[urlDisplayName];</a>
 <br>
 &[comment];
 <br>
 
-To subscribe please click <a href="&[subscribe];">here</a>. 
+To subscribe please click <a href="&[subscribe];" target=_blank>here</a>. 
 <br>
 You can modify your subscription alert level or unsubscribe at any time.
 <br>
@@ -20,4 +20,4 @@ HudsonFog
 <br>
 
 
-<b>Powered by</b> <a href="http://hudsonfog.com">HudsonFog</a>
+<b>Powered by</b> <a href="http://hudsonfog.com" target=_blank>HudsonFog</a>

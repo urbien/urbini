@@ -1,10 +1,10 @@
 Dear &[firstName]; &[lastName];,
 <br>
 <br>
-The &[class]; <a href="&[url];">&[urlDisplayName];</a> has been modified. 
+The &[class]; <a href="&[url];" target=_blank>&[urlDisplayName];</a> has been modified. 
 <br><br>
 Customer Service
 <br>
 HudsonFog 
 <br><br>
-<b>Powered by</b> <a href="http://hudsonfog.com">HudsonFog</a>
+<b>Powered by</b> <a href="http://hudsonfog.com" target=_blank>HudsonFog</a>
