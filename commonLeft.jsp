@@ -50,7 +50,7 @@
 </tr>
 
 <tr>
-  <td><br/>&#160;&#160;<a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/delivery/PackListTrucks"><text text="Trucks"/></a><br/></td>
+  <td><br/>&#160;&#160;<a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/delivery/ReelShipmentByTruck"><text text="Trucks"/></a><br/></td>
 </tr>
 
 <tr>
