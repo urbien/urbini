@@ -63,6 +63,7 @@
       <A title="Wagons"    href="javascript://" onClick="menuOpenClose('wagonsDiv')"><IMG src="icons/wagon.gif" align="middle" border="0"/></A>
       <A title="Trains"    href="javascript://" onClick="menuOpenClose('trainsDiv')"><IMG src="icons/train.gif" align="middle" border="0"/></A>
       <A title="Trucks"    href="javascript://" onClick="menuOpenClose('trucksDiv')"><IMG src="icons/truck.gif" align="middle" border="0"/></A>
+      <A title="Support"    href="javascript://" onClick="menuOpenClose('supportDiv')"><IMG src="images/alert.gif" align="middle" border="0"/></A>
       <span class="xs"><div id="language" class="popMenu"><language/></div><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>
