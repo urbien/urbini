@@ -1,7 +1,7 @@
 Dear &[firstName]; &[lastName];,
 <br>
 <br>
-The &[class]; <a href="&[url];">&[urlDisplayName];</a> was modified. 
+The &[class]; <a href="&[url];">&[urlDisplayName];</a> has been modified. 
 <br><br>
 Customer Service
 <br>

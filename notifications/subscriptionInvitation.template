@@ -2,7 +2,8 @@ Dear &[firstName]; &[lastName];,
 <br>
 <br>
 
-You are invited to receive alerts on the &[class]; <a href="&[url];">&[urlDisplayName];</a>
+You are invited to receive alerts for the &[class];<br>
+<a href="&[url];">&[urlDisplayName];</a>
 <br>
 &[comment];
 <br>
