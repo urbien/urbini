@@ -3,7 +3,7 @@
   <include name="commonHead.jsp"/>
   <body id="body" text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
   
-		<include name="include/commonHeader"/>
+		<include name="include/commonHeader.jsp"/>
 		
 		<script src="register/hashScript.js" type="text/javascript" language="JavaScript"></script>
 		
