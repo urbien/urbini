@@ -6,6 +6,7 @@
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
       <tr valign="top">
         <td valign="top" width="110%" colspan="2">
+          <menu toolbar="resourceOperations" activate="onMouseOver"/>
           <menu toolbar="toolbar1"  activate="onMouseOver"/>
           <menu toolbar="transport" activate="onMouseOver"/>
           <menu toolbar="search"    activate="onMouseOver"/>
@@ -30,11 +31,7 @@
           </tr>
           </table>
           <div align="right"><measurement/></div>
-          <addNewResource html="mkResource.html"/> 
-          <delete/> 
-          <reloadDocuments/>
           <createResources/>
-          <showSetProperties />
         </form>
         <br/><pieChart/>
         <script language="JavaScript">
