@@ -44,7 +44,6 @@
       <center><input type="submit" name="submit" value="locate"></input></center>
       <input type="hidden" name="action" value="searchDatabase"></input>
       <br></br>
-      <!--showSetProperties /-->
     </form>
   </td>
 </tr></table>
