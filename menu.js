@@ -605,7 +605,9 @@ function popupOnSubmit(e) {
   url += '&$form=' + form.name;
 
   //url += '&$selectOnly=y';
-  //url += "&type=" + form.type.value + "&-$action=" + formAction;
+  
+  if (allFields == false)
+    url += "&type=" + form.type.value + "&-$action=" + formAction;
   if (form.uri) 
     url += "&uri=" + encodeURIComponent(form.uri.value);
 
@@ -1260,12 +1262,12 @@ function getFormFilters(form, allFields) {
       if (currentFormName != "horizontalFilter") {
         if (value == ''  ||  value == "All")
           continue;
-      if (type.toUpperCase() == "CHECKBOX" ) {
-        if (field.checked == false)
-          continue;
-      }
-      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
-        continue;
+        if (type.toUpperCase() == "CHECKBOX" ) {
+          if (field.checked == false)
+            continue;
+	      }
+	      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
+	         continue;
       }
     }
           
