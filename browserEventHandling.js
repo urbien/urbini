@@ -177,35 +177,7 @@
     }
     */
 
-   /* load bottomFrame iframe into a pane2 */
-   function onLoadPane2() {
-     loadDiv('bottomFrame', 'pane2');
-   }
-
-   function loadDiv(frameId, divId) {    
-     var bottomFrame = window.parent.frames[frameId];
-     var pane2       = window.parent.document.getElementById(divId);
-     if (pane2) {
-       var body = bottomFrame.document.body;
-       if (body) {
-         pane2.innerHTML = body.innerHTML;
-       }
-     }
-   }
-
-   function onLoadPopup() {
-     parent.popupFrameLoaded = true;
-   }
-
-   // add only if inside iframe
-   if (window.parent != window) {
-     if (window.name == "bottomFrame")
-       addEvent(window, 'load', function() {setTimeout(onLoadPane2, 0);}, false);
-
-     else if (window.name == "popupFrame")  
-       addEvent(window, 'load', function() {setTimeout(onLoadPopup, 0);}, false);
-   } // only if on main (non-iframe) page
-   else {
+   if (window.parent == window) {
      // add handler to smartlistbox images  
      if (typeof onClickPopup != 'undefined') {
        var images = document.images;
@@ -226,7 +198,10 @@
          for (j=0; j<form.elements.length; j++) {
            var elem = form.elements[j];
            if (elem.type.toUpperCase() == 'TEXT') {
-             addEvent(elem, 'keypress', autoComplete, false);
+             addEvent(elem, 'keypress', autoComplete,      false);
+             //addEvent(elem, 'change',   onFormFieldChange, false);
+             //addEvent(elem, 'blur',     onFormFieldChange, false);
+             //addEvent(elem, 'click',    onFormFieldClick,  false);
            }
          }
        }  

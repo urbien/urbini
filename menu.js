@@ -349,10 +349,16 @@ function onClickPopup(e) {
   var imgId = target.id;
   currentImgId = imgId;
   var propName1 = imgId.substring(0, imgId.length - "_filter".length);  
+  var idx = propName1.lastIndexOf('_');
+  if (idx == -1)
+    return;
+  currentFormName = propName1.substring(idx + 1);
+alert("form=" + currentFormName);
 //alert("target = " + target.id + "; parent = " + target.parentNode);  
+
   var form = getFormNode(target);
-  currentFormName = form.name;
-  propName1 = propName1.substring(0, propName1.length - (form.name.length + 1));  
+  
+  propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));  
 
   if (currentDiv)
     menuClose2(currentDiv);
@@ -364,7 +370,7 @@ function onClickPopup(e) {
   else
     propName = propName1;
 
-  var divId = propName + "_" + form.name;
+  var divId = propName + "_" + currentFormName;
   currentDiv = document.getElementById(divId);
   var div = openedPopups[divId];
   if (div != null) {
@@ -377,8 +383,7 @@ function onClickPopup(e) {
   url = "smartPopup?pUri=" + propName;
   var params = getFormFilters(form);
   url = url + params;
-  url = url + "&$form=" + form.name;
-//alert("$form = " + form.name);  
+  url = url + "&$form=" + currentFormName;
   url = url + "&" + propName + "_filter=y&$selectOnly=y";
   // request listbox context from the server and load it into a 'popupFrame' iframe
   var onClickPopupFrame = frames["popupFrame"];
@@ -470,7 +475,10 @@ function popupOnClick(e) {
   var table1 = table.parentNode;
   
   var propertyShortName = table1.id.substring("table_".length);
-  propertyShortName = propertyShortName.substring(0, propertyShortName.length - (form.name.length + 1));
+  var idx = propertyShortName.lastIndexOf('_');
+  var formName = propertyShortName.substring(idx + 1);
+  propertyShortName = propertyShortName.substring(0, idx);
+alert("propertyShortName=" + propertyShortName);
   var idx = propertyShortName.indexOf(".");
   var prop = null;
   if (idx == -1)
@@ -489,7 +497,7 @@ function popupOnClick(e) {
   var idx = val.lastIndexOf(">");
   chosenTextField.value = val.substring(idx + 1);
   chosenTextField.style.backgroundColor='#ffffff';
-  var divId = prop + "_" + form.name;
+  var divId = prop + "_" + formName;
   var div = document.getElementById(divId);
   menuClose2(div);
   clearOtherPopups(div);
@@ -534,6 +542,7 @@ function autoComplete(e) {
     return;
 
   var form = target.form;
+  // HACK!!!!!
   if (form.name != "rightPanelPropertySheet")
     return true;
 
