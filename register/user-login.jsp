@@ -34,7 +34,8 @@
                 </tr>
                 <tr>
                   <td width="1%" valign="bottom"><img src="images/loginhelp.jpg" border="0" /></td>
-                  <td valign="bottom"><span class="xxs">Logon help page</span></td>
+                    <td valign="bottom"><span class="xxs"><a href="logonfaq.html">Logon 
+                      help page</a></span></td>
                 </tr>
               </table></td>
             </tr>
