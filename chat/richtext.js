@@ -196,7 +196,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 		document.writeln('	</tr>');
 		document.writeln('</table>');
 	}
-	document.writeln('<iframe id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px"></iframe>');
+	document.writeln('<iframe id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
 	if (!readOnly) document.writeln('<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source');
 	document.writeln('<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>');
 	document.writeln('<input type="hidden" id="hdn' + rte + '" name="' + rte + '" value="">');
@@ -226,6 +226,10 @@ function enableDesignMode(rte, html, readOnly) {
 	frameHtml += "</html>";
 	
 	if (document.all) {
+	//alert(window.parent.frames[rte].document);
+	//alert(frames[rte].domain);
+	//alert(document.domain);
+//	frames[rte].domain = document.domain;
 		var oRTE = frames[rte].document;
 		oRTE.open();
 		oRTE.write(frameHtml);
@@ -259,8 +263,10 @@ function enableDesignMode(rte, html, readOnly) {
 }
 
 function updateRTEs() {
+    //alert(allRTEs);
 	var vRTEs = allRTEs.split(";");
 	for (var i = 0; i < vRTEs.length; i++) {
+	    //alert("updateRTE("+vRTEs[i]+");");
 		updateRTE(vRTEs[i]);
 	}
 }
@@ -467,33 +473,6 @@ function checkspell() {
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -62,7 +62,7 @@
 		var sendShortcut; // Shortcut of the message sending
 		var chatSoundPresent = 1; // Sound enabled in chat
 		var soundViaApplet = 0;
-		var isWindowInFocus = "focused";
+		var isWindowInFocus = "blured";
 		var sendMessage = 'no';
 		var titleScrollHandler;
 		var titleTimeOut;
@@ -88,12 +88,11 @@
 		
 		//window.onfocus=function() {isWindowInFocus = "focused";}
 		//window.onblur = function() {isWindowInFocus = "blured"; } 
-/*		
+		
 		window.onerror=myErrorHandler
 		function myErrorHandler() {
 			return true;
 		}
-*/		
 	
 		function checkOnlineStatus(){
 		  try {
@@ -234,38 +233,38 @@
 
 		//document.postForm.message.value = loadURL(document.postForm.message.value);
 
-		document.postForm.message.value = replaceAll(document.postForm.message.value, "<P>", "");
-		document.postForm.message.value = replaceAll(document.postForm.message.value, "</P>", "");
-		document.postForm.message.value = replaceAll(document.postForm.message.value, "<BR>", "\n");
-		document.postForm.message.value = replaceAll(document.postForm.message.value, "<br>", "\n");
+//-----START-----------------------------FORMING OF THE MESSAGE CONTENT------------------------------------------
+          //document.postForm.message.value = loadURL(document.postForm.message.value);
+		  //document.postForm.message.value = replaceAll(document.postForm.message.value, "\n", "");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<P>", "");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, "</P>", "");
+		  //document.postForm.message.value = replaceAll(document.postForm.message.value, "<BR>", "\n");
+		  //document.postForm.message.value = replaceAll(document.postForm.message.value, "<br>", "\n");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, "\n", "");
+		 
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=\"www.", "<A href=\"http://www.");
+          document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=", "<a target='_blank' href=");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<a href=\"www.", "<a href=\"http://www.");
+          document.postForm.message.value = replaceAll(document.postForm.message.value, "<a href=", "<a target='_blank' href=");
+		  
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":-)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":-(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ";)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ";-)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":-D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
+		  //alert(document.postForm.message.value);
+		  //alert(escape(document.postForm.message.value));
+		  if(document.postForm.message.value.lastIndexOf("<br>")==document.postForm.message.value.length-5 && document.postForm.message.value.lastIndexOf("<br>")!=-1)
+		  {
+		  	document.postForm.message.value = document.postForm.message.value.substring(0,document.postForm.message.value.length-5);
+		  }
+		  //alert(document.postForm.message.value);
+		  //alert(document.postForm.message.value.substring(document.postForm.message.value.length-6,document.postForm.message.value.length)=="<br>");
+//-----FINISH-----------------------------FORMING OF THE MESSAGE CONTENT------------------------------------------
 
-		document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=\"www.", "<A href=\"http://www.");
-        document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=", "<a target='_blank' href=");
-		document.postForm.message.value = replaceAll(document.postForm.message.value, "<a href=\"www.", "<a href=\"http://www.");
-        document.postForm.message.value = replaceAll(document.postForm.message.value, "<a href=", "<a target='_blank' href=");		
-		
-		document.postForm.message.value = replaceAll(document.postForm.message.value, ":)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
-		document.postForm.message.value = replaceAll(document.postForm.message.value, ":-)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
-		document.postForm.message.value = replaceAll(document.postForm.message.value, ":(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
-		document.postForm.message.value = replaceAll(document.postForm.message.value, ":-(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
-		document.postForm.message.value = replaceAll(document.postForm.message.value, ";)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
-		document.postForm.message.value = replaceAll(document.postForm.message.value, ";-)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
-		document.postForm.message.value = replaceAll(document.postForm.message.value, ":D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
-		document.postForm.message.value = replaceAll(document.postForm.message.value, ":-D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
-		
-/*
-		document.postForm.message.value = document.postForm.message.value
-		  .replaceAll(":)","<img src='icons/happyIcon.gif' width='17' height='17' align='bottom'>")
-		  .replace(":-)","<img src='icons/happyIcon.gif' width='17' height='17' align='bottom'>")
-		  .replace(":(","<img src='icons/sadIcon.gif' width='17' height='17' align='bottom'>")
-		  .replace(":-(","<img src='icons/sadIcon.gif' width='17' height='17' align='bottom'>")
-		  .replace(";)","<img src='icons/winkIcon.gif' width='17' height='17' align='bottom'>")
-		  .replace(";-)","<img src='icons/winkIcon.gif' width='17' height='17' align='bottom'>")
-		  .replace(":D","<img src='icons/laughtingIcon.gif' width='17' height='17' align='bottom'>")
-		  .replace(":-D","<img src='icons/laughtingIcon.gif' width='17' height='17' align='bottom'>");
-*/
-		//document.postForm.message.value = document.postForm.message.value.replace(":)","<img src='icons/happyIcon.gif' width='16' height='16' align='bottom'");
-				
         document.getElementById("postForm").submit(); 
         if (document.postForm.message.value != "") {
           var messageValue = document.postForm.message.value;		 
@@ -299,6 +298,7 @@
 		  //updateRTE('messageRTE');
 		  //alert(document.postForm.messageRTE.value);
 		  document.postForm.message.value = document.postForm.messageRTE.value;
+		  //alert(document.postForm.message.value);
 		  frames.messageRTE.document.body.innerHTML = '';
 		  //alert(frames.messageRTE.document.body.innerHTML);
 		  //frames.messageRTE.document.body.innerHTML = "";
@@ -310,12 +310,14 @@
 	    
 		  if (document.postForm.message.value.charAt(0) != "[")
             document.postForm.nameUser.value = "all";
+//-----START-----------------------------FORMING OF THE MESSAGE CONTENT------------------------------------------
           //document.postForm.message.value = loadURL(document.postForm.message.value);
 		  //document.postForm.message.value = replaceAll(document.postForm.message.value, "\n", "");
 		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<P>", "");
 		  document.postForm.message.value = replaceAll(document.postForm.message.value, "</P>", "");
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<BR>", "\n");
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<br>", "\n");
+		  //document.postForm.message.value = replaceAll(document.postForm.message.value, "<BR>", "\n");
+		  //document.postForm.message.value = replaceAll(document.postForm.message.value, "<br>", "\n");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, "\n", "");
 		 
 		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=\"www.", "<A href=\"http://www.");
           document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=", "<a target='_blank' href=");
@@ -330,6 +332,15 @@
 		  document.postForm.message.value = replaceAll(document.postForm.message.value, ";-)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
 		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
 		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":-D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
+		  //alert(document.postForm.message.value);
+		  //alert(escape(document.postForm.message.value));
+		  if(document.postForm.message.value.lastIndexOf("<br>")==document.postForm.message.value.length-5 && document.postForm.message.value.lastIndexOf("<br>")!=-1)
+		  {
+		  	document.postForm.message.value = document.postForm.message.value.substring(0,document.postForm.message.value.length-5);
+		  }
+		  //alert(document.postForm.message.value);
+		  //alert(document.postForm.message.value.substring(document.postForm.message.value.length-6,document.postForm.message.value.length)=="<br>");
+//-----FINISH-----------------------------FORMING OF THE MESSAGE CONTENT------------------------------------------
 		  
 		  document.getElementById("postForm").submit();
 
@@ -479,7 +490,8 @@
 		//document.inviteUser.message.value="!-invtUser <font color='#FFCC00'><strong>" + parent.document.getElementById("realUserName").value + "</strong></font> invites you to the chat room <a target=_top href=" + window.location + ">" + thread.windowTitle+ "</a>";
 		//document.getElementById('infoCP'+document.getElementById("aliasUserUri").value).value
 		var url = 'chatRoom?title=' + escape('Contact '+document.getElementById("realUserName").value) + '&#38;referer=' + escape(document.getElementById('infoCP'+document.getElementById("aliasUserUri").value).value);
-		document.inviteUser.message.value="!-invtUser <font color='#FFCC00'><strong>" + parent.document.getElementById("realUserName").value + "</strong></font> invites you to private chat room <a onclick='try{document.getElementById(\"nameUser\").value = \"" + document.getElementById("aliasUserUri").value + "\";document.inviteUser.message.value = \"!-invtPrvRoom"+url+"\";document.inviteUser.submit();}catch(er){}' target=_top href=" + url + ">here</a>"; //alert(document.postForm.nameUser.value);alert(document.postForm.message.value);
+		//document.inviteUser.message.value="!-invtUser <font color='#FFCC00'><strong>" + parent.document.getElementById("realUserName").value + "</strong></font> invites you to private chat room <a onclick='try{document.getElementById(\"nameUser\").value = \"" + document.getElementById("aliasUserUri").value + "\";document.inviteUser.message.value = \"!-invtPrvRoom"+url+"\";document.inviteUser.submit();}catch(er){}' target=_top href=" + url + "&privateRoom=true>here</a>"; //alert(document.postForm.nameUser.value);alert(document.postForm.message.value);
+		document.inviteUser.message.value="!-invtUser <font color='#FFCC00'><strong>" + parent.document.getElementById("realUserName").value + "</strong></font> invites you to private chat room <a onclick='try{document.getElementById(\"nameUser\").value = \"" + document.getElementById("aliasUserUri").value + "\";document.inviteUser.message.value = \"!-invt\"+document.getElementById(\"realUserName\").value+\" accepted your invitation to the one-on-one chat. Click <a href=\\\""+url+"\\\">here</a> to join.\";document.inviteUser.submit();}catch(er){}' target=_top href=" + url + "&privateRoom=true>here</a>"; //alert(document.postForm.nameUser.value);alert(document.postForm.message.value);
 		document.inviteUser.submit();
 		var dt = new Date();//alert(document.getElementById('sendPrivateMessagesToUserRealName').value);
 		thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("Your invitation to "+document.getElementById('sendPrivateMessagesToUserRealName').value+" was just sent.?alias1"));
@@ -652,6 +664,7 @@
       <table width="100%" height="100%" cellpadding="0" cellspacing="0" border="0">
 			<tr>
 				<form style="border : thin none; border-bottom : none; bottom : 0px; margin-bottom : 0px;" target='post' id='postForm' name='postForm'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
+				<!--form style="border : thin none; border-bottom : none; bottom : 0px; margin-bottom : 0px;" target='post' id='postForm' name='postForm'  method='post' action='chatRoom?frame=post&room=invitationChatRoom'//-->
 				  <td width="96%" height="100%">
 				    <input type="hidden" value="all" name="nameUser" id="nameUser">
 		            <input type="hidden" value="my" id="aliasUser" name="aliasUser">
@@ -718,7 +731,8 @@
     <div>
       <iframe id='post' name='post' src='about:blank' style='width: 0px; height: 0px; border: 0'></iframe>
     </div>  
-
+    <div id="soundAppletDiv" style="height:0;width:0"></div>
+<!--APPLET CODE="SoundApplet.class" height="100" width="100"></APPLET//-->
     <script language="JavaScript">
       //setTimeout("initFrames()", 501);
       window.onresize = onResizeEventHandler;
