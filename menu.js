@@ -688,6 +688,9 @@ function popupRowOnClick(e) {
   if (tr.previousSibling == null) // skip clicks on menu header (it is a first tr - has no prev sibling)
     return;
 
+  if (tr.id == '$noValue')
+    return;
+
   var form = getFormNode(tr);
 
   var table  = tr.parentNode;
