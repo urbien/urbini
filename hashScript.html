@@ -224,8 +224,8 @@ function hash(form, login_url) {
     if (document.all || document.getElementById) {
       form.logonButton.disabled = true;
       form.logonButton.value = "Please wait";
+      document.all("logonButton").style.cursor = 'wait';
     } // if
-
     var url;
     if (arguments.length > 1 && login_url != "") { // in case login_url is not passed in
       url = login_url;
