@@ -44,21 +44,21 @@
       </span>
       <pdaToPc image="images/pda.gif"/>
       
-      <script language="JavaScript">
+      <script language="JavaScript" itype="http://www.hudsonfog.com/voc/model/portal/CollaborationPoint">
         var w = 640/3, h = 480/3, cw = w/2, ch = h/2;
 
         function openChatWindow() {
           if (window.screen) {
-            w = Math.floor(screen.availWidth/2);
-            h = Math.floor(screen.availHeight/2);
-            cw = Math.floor(screen.availWidth/4);
-            ch = Math.floor((screen.availHeight)/4);
+            w = Math.floor(screen.availWidth*2/3);
+            h = Math.floor(screen.availHeight*2/3);
+            cw = Math.floor(screen.availWidth/6);
+            ch = Math.floor((screen.availHeight)/6);
           }
           var url = 'chatRoom?title=' + document.title + '&#38;referer=' + escape(window.location);
-          window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=no, location=no, toolbar=no, scrollbars=no, resizable=yes');
+          window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=0, location=no, toolbar=no, scrollbars=no, status=no, resizable=yes');
         }
       </script>
-      <a href="javascript://" title="Chat Room" onclick="openChatWindow();"><img src="icons/webchat.gif" alt="Chat room for this page" border="0" width="16" height="16" align="middle"/></a>
+      <a href="javascript://" title="Chat Room" onclick="openChatWindow();" itype="http://www.hudsonfog.com/voc/model/portal/CollaborationPoint"><img src="icons/webchat.gif" alt="Chat room for this page" border="0" width="16" height="16" align="middle"/></a>
       <showHideWindows/>
       </td>
 
