@@ -556,15 +556,6 @@ function popupOnSubmit(e) {
   if (form.uri) 
     url += "&uri=" + encodeURIComponent(form.uri.value);
 
-	  if (document.all || document.getElementById) {
-            form.submit.disabled = true; 
-            form.submit.value = 'Please wait';
-            form.submit.style.cursor = 'wait'; 
-            form.clear.style.visibility = 'hidden'; 
-          }
-	}
-      </script>
-
   form.method   = 'GET';
   form.onsubmit = null;
 	if (document.all || document.getElementById) {
