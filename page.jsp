@@ -7,10 +7,8 @@
 	<!-- link here filter file for desired data format:
 	see comments in filter files for formats descriptions -->
 	<script language="JavaScript" src="calendar/cal_tpl1.js"></script>
-	<script language="JavaScript" src="calendar/cal_tpl2.js"></script>
 	<script language="JavaScript" src="calendar/cal_strings.js"></script>
 	<script language="JavaScript" src="calendar/calendar.js"></script>
-	<script language="JavaScript" src="calendar/cals_init.js"></script>
 	<!-- define the view of calendar with css rules -->
 	<link rel="stylesheet" href="calendar/calendar.css"/>
 </head>
@@ -50,6 +48,9 @@
   </tr>
   </table>
 </div>
+
+<script language="JavaScript" src="calendar/cals_init.js"></script>
+
 </html>
 
 
