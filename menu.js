@@ -25,12 +25,12 @@ function menuOpenClose(divName, imgName) {
 	if (document.getElementById("menudiv_Email") != null &&
             document.getElementById("menudiv_Email").style.display == "inline"
            ) {
-		document.getElementById("emailForm").subject.value = document.title;
+		document.forms["emailForm"].elements["subject"].value = document.title;
 	}
 	if (document.getElementById("menudiv_Schedule") != null &&
             document.getElementById("menudiv_Schedule").style.display == "inline"
            ) {
-		document.getElementById("scheduleForm").name.value = document.title;
+		document.forms["scheduleForm"].elements["name"].value = document.title;
 	}
 }
 
