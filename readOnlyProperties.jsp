@@ -35,12 +35,17 @@
       <reloadDocuments/>
       <showSetProperties />
     </form>
+
+    <br/><br/>
+<table width="100%" cellpadding="0" cellspacing="0" border="1" class="comments"><tr><td><comments /></td></tr></table>
+ 
     </td></tr>
     </table>
 </td>
 </tr></table>
 <br></br>
-<div align="left"><span class="xs"><hudsonFog /></span></div>
-
+<!--table cellpadding="0" cellspacing="0" border="1" class="comments"><tr><td><comments /></td></tr></table-->
+<br/><br/><div align="left"><span class="xs"><hudsonFog />
+</span></div>
 
 </html>
