@@ -1,3 +1,5 @@
+var textAreas = new Array();
+
 // cross-browser - getCurrentTarget 
 function getTargetElement(evt) {
   var elem;

@@ -23,7 +23,6 @@ var currentImgId = null;
 var currentFormName = null;
 var currentResourceUri = null;
 var internalFocus = false;
-var textAreas = new Array();
 
 function menuOpenClose(divName, imgName) {
   if (currentDiv) {
