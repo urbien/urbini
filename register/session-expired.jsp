@@ -11,14 +11,14 @@
 <form name="loginform" method="post" action="j_security_check"  onsubmit="return hash(this, 'j_security_check')">
 <table cellpadding="0" border="0" cellspacing="0" width="356">
   <tr>
-    <td class="xl" colspan="2"><text text="sessionExpired"/><br/></td>
+    <td class="xl" colspan="2"><text text="Your session has expired. Please enter userid and password:"/><br/></td>
   </tr>
   <tr>
-    <td align="right"><text text="userId"/><img src="images/spacer.gif" border="0" width="5"/></td>
+    <td align="right"><text text="User ID:"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><input type="text" class="xxs" name="j_username" size="10" /></td>
   </tr>
   <tr>
-    <td align="right"><text text="password"/><img src="images/spacer.gif" border="0" width="5"/></td>
+    <td align="right"><text text="Password:"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><input type="password" class="xxs" name="j_password" size="10" />  </td>
   </tr>
 

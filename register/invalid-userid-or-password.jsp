@@ -11,14 +11,14 @@
 <form name="loginform" action="j_security_check" method="POST"  onsubmit="return hash(this, 'j_security_check')">
 <table cellpadding="0" border="0" cellspacing="0" width="356">
   <tr>
-    <td class="xl" colspan="2" align="middle"><text text="invalidUserIdOrPassword"/><br/><br/></td>
+    <td class="xl" colspan="2" align="middle"><text text="Invalid user ID or password"/><br/><br/></td>
   </tr>
   <tr>
-    <td align="right"><text text="userId"/></td>
+    <td align="right"><text text="User ID:"/></td>
     <td><input type="text" class="xxs" name="j_username" size="10" /></td>
   </tr>
   <tr>
-    <td align="right"><text text="password"/></td>
+    <td align="right"><text text="Password:"/></td>
     <td><input type="password" class="xxs" name="j_password" size="10" />  </td>
   </tr>
   <tr>

@@ -8,11 +8,11 @@
   
 <table border="0" cellpadding="0" cellspacing="3" width="256" cols="2">
   <tr>
-    <td align="RIGHT"><text text="userId"/><img src="images/spacer.gif" border="0" width="5"/></td>
+    <td align="RIGHT"><text text="User ID:"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><input type="Text" class="xxs" name="j_username" size="10" maxlength="50"/></td>
   </tr>
   <tr><td align="RIGHT">  
-    <text text="password"/><img src="images/spacer.gif" border="0" width="5"/></td>
+    <text text="Password:"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><input type="Password" class="xxs" name="j_password"  size="10" maxlength="50"/></td>
   </tr>
   <tr>
