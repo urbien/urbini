@@ -25,61 +25,21 @@ var currentResourceUri = null;
 var internalFocus = false;
 
 function menuOpenClose(divName, imgName) {
-  /*
-	for (i = 0; i < MenuArray.length; i++) {
-		if (document.getElementById(MenuArray[i]) == null) {
-			continue;
-		}
-		if (MenuArray[i] != divName) {
-			poptext = document.getElementById(MenuArray[i]).style;
-			if (poptext.display == "inline") {
-				//poptext.display = "none";
-				DivSetVisible(false, divName);
-			}
-		}
-	}
-	*/
-  if (currentDiv)
+  if (currentDiv) {
     menuClose2(currentDiv);
-	var divRef = document.getElementById(divName);
-	poptext = divRef.style;
-	if (poptext.display == "none" || poptext.display == "") {
-		poptext.visibility = HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
-		poptext.display    = 'inline'; // must make it inline here - otherwise coords will not get set
-		if (imgName) {
-			divRef.style.left = document.body.scrollLeft;
-			divRef.style.top  = document.body.scrollTop;
-			var left = docjslib_getImageXfromLeft(imgName);
-			var top  = docjslib_getImageYfromTop(imgName) + docjslib_getImageHeight(imgName);
-			var screenX = document.body.clientWidth;
-			var screenY = document.body.clientHeight;
-			// Find out how close to the corner of the window
-			var rightedge  = document.body.clientWidth + document.body.scrollLeft - left;
-			var bottomedge = document.body.clientHeight + document.body.scrollTop - top;
-
-			// If the horizontal distance isn't enough to accomodate the width of the context menu
-			if (rightedge < divRef.offsetWidth)
-				left = screenX - divRef.offsetWidth + document.body.scrollLeft; // move horizontal position of the menu to the left by its width
-
-			// Same concept with the vertical position
-			if (bottomedge < divRef.offsetHeight)
-				top = (document.body.scrollTop+screenY)-divRef.offsetHeight;
-
-			poptext.left = left;
-			poptext.top  = top;
-		}
-    DivSetVisible(true, divName);
-    poptext.visibility = VISIBLE; // finally make div visible
-    deselectRow(currentPopupRow);
-    currentDiv = divRef;
-    currentPopupRow = firstRow(divRef);
-	} 
-	else {
-		//poptext.display = "none";
-		DivSetVisible(false, divName);
     currentDiv = null;
-	}
-	if (document.getElementById("menudiv_Email") != null &&
+  }  
+  
+  var img = document.getElementById(imgName);
+  var divRef = document.getElementById(divName);
+ 
+  setDivVisible(divRef, img);
+  deselectRow(currentPopupRow);
+
+  currentDiv = divRef;
+  currentPopupRow = firstRow(divRef);
+
+  if (document.getElementById("menudiv_Email") != null &&
       document.getElementById("menudiv_Email").style.display == "inline") {
 	  var e = document.getElementById("emailForm");
 	  if (e) e.subject.value = document.title;
@@ -92,7 +52,6 @@ function menuOpenClose(divName, imgName) {
 }
 
 function menuClose1(divId) {
-  //alert("divId"+divId + ",currentDiv=" + currentDiv.id);  
   var divRef =document.getElementById(divId);
   if (!divRef)
     return;
@@ -102,14 +61,14 @@ function menuClose1(divId) {
   //}  
   poptext = divRef.style;
   if (poptext.display == "inline") {
-    poptextLeft   = docjslib_getImageXfromLeft(divId);
-    poptextTop    = docjslib_getImageYfromTop(divId);
-    poptextWidth  = docjslib_getImageWidth(divId);
-    poptextHeight = docjslib_getImageHeight(divId);
+    poptextLeft   = docjslib_getImageXfromLeft(divRef);
+    poptextTop    = docjslib_getImageYfromTop(divRef);
+    poptextWidth  = docjslib_getImageWidth(divRef);
+    poptextHeight = docjslib_getImageHeight(divRef);
     if (xMousePos < poptextLeft || xMousePos > poptextLeft + poptextWidth ||
         yMousePos < poptextTop || yMousePos > poptextTop + poptextHeight) {
         //poptext.display = "none";
-      DivSetVisible(false, divId);
+      setDivInvisible(divRef);
       currentDiv = null;
     } else {
       timeoutId = setTimeout("menuClose1('" + divId + "')", 100);
@@ -120,13 +79,12 @@ function menuClose1(divId) {
 /* close div uncoditionally with no regard to mouse position */
 function menuClose2(divElem) {
   poptext = divElem.style;
-  var divId = divElem.id;
   if (poptext.display == "inline") {
-    poptextLeft   = docjslib_getImageXfromLeft(divId);
-    poptextTop    = docjslib_getImageYfromTop(divId);
-    poptextWidth  = docjslib_getImageWidth(divId);
-    poptextHeight = docjslib_getImageHeight(divId);
-    DivSetVisible(false, divId);
+    poptextLeft   = docjslib_getImageXfromLeft(divElem);
+    poptextTop    = docjslib_getImageYfromTop(divElem);
+    poptextWidth  = docjslib_getImageWidth(divElem);
+    poptextHeight = docjslib_getImageHeight(divElem);
+    setDivInvisible(divElem);
     if (divElem == currentDiv)
       currentDiv = null;
   }
@@ -193,35 +151,35 @@ function onRecChange() {
 
 // Reference: http://www.webreference.com/js/column33/image.html
 
-function docjslib_getImageWidth(imgID) {
-  return document.getElementById(imgID).offsetWidth;
+function docjslib_getImageWidth(img) {
+  return img.offsetWidth;
 }
-function docjslib_getImageHeight(imgID) {
-  return document.getElementById(imgID).offsetHeight;
+function docjslib_getImageHeight(img) {
+  return img.offsetHeight;
 }
 var NS4 = document.layers;
-function docjslib_getImageXfromLeft(imgID) {
-  if (NS4) return document.getElementById(imgID).x
-  else return docjslib_getRealLeft(imgID);
+function docjslib_getImageXfromLeft(img) {
+  if (NS4) return img.x;
+  else return docjslib_getRealLeft(img);
 }
-function docjslib_getImageYfromTop(imgID) {
-  if (NS4) return document.getElementById(imgID).y
-  else return docjslib_getRealTop(imgID);
+function docjslib_getImageYfromTop(img) {
+  if (NS4) return img.y;
+  else return docjslib_getRealTop(img);
 }
-function docjslib_getRealLeft(imgElem) {
-  xPos = document.getElementById(imgElem).offsetLeft;
-  tempEl = document.getElementById(imgElem).offsetParent;
+function docjslib_getRealLeft(img) {
+  xPos   = img.offsetLeft;
+  tempEl = img.offsetParent;
   while (tempEl != null) {
-    xPos += tempEl.offsetLeft;
-    tempEl = tempEl.offsetParent;
+    xPos   += tempEl.offsetLeft;
+    tempEl  = tempEl.offsetParent;
   }
   return xPos;
 }
-function docjslib_getRealTop(imgElem) {
-  yPos = document.getElementById(imgElem).offsetTop;
-  tempEl = document.getElementById(imgElem).offsetParent;
+function docjslib_getRealTop(img) {
+  yPos   = img.offsetTop;
+  tempEl = img.offsetParent;
   while (tempEl != null) {
-    yPos += tempEl.offsetTop;
+    yPos  += tempEl.offsetTop;
     tempEl = tempEl.offsetParent;
   }
   return yPos;
@@ -307,6 +265,58 @@ function DivSetVisible(makeVisible, divn) {
      DivRef.style.display = "none";
      IfrRef.style.display = "none";
    }
+}
+
+function setDivVisible(divRef, img, offsetX, offsetY) {
+  var ifrRef = document.getElementById('DivShim');  
+  poptext = divRef.style;
+
+  poptext.visibility = HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
+  poptext.display    = 'inline'; // must make it inline here - otherwise coords will not get set 
+  if (img) {
+    divRef.style.left = document.body.scrollLeft;
+    divRef.style.top  = document.body.scrollTop;
+    var left = docjslib_getImageXfromLeft(img);
+    var top  = docjslib_getImageYfromTop(img) + docjslib_getImageHeight(img);
+//alert('left='+left + ', top='+top);    
+    var screenX = document.body.clientWidth;
+    var screenY = document.body.clientHeight;
+    // Find out how close to the corner of the window
+    var rightedge  = document.body.clientWidth + document.body.scrollLeft - left;
+    var bottomedge = document.body.clientHeight + document.body.scrollTop - top;
+
+    // If the horizontal distance isn't enough to accomodate the width of the context menu
+    if (rightedge < divRef.offsetWidth)
+      left = screenX - divRef.offsetWidth + document.body.scrollLeft; // move horizontal position of the menu to the left by its width
+
+    // Same concept with the vertical position
+    if (bottomedge < divRef.offsetHeight)
+      top = (document.body.scrollTop+screenY)-divRef.offsetHeight;
+
+    if (offsetX)
+      left = left + offsetX;
+    if (offsetY)
+      top = top + offsetY;
+    poptext.left = left;
+    poptext.top  = top;
+//alert('left='+left + ', top='+top);    
+  }
+
+  // Make position/size of iframe same as div's position/size
+  istyle         = ifrRef.style;
+  istyle.display = "inline";
+  istyle.width   = divRef.offsetWidth;
+  istyle.height  = divRef.offsetHeight;
+  istyle.top     = divRef.style.top;
+  istyle.left    = divRef.style.left;
+
+  poptext.visibility = VISIBLE; // finally make div visible  
+}
+
+function setDivInvisible(div) {
+  var IfrRef = document.getElementById('DivShim');
+  div.style.display    = "none";
+  IfrRef.style.display = "none";
 }
 
 /**
@@ -498,6 +508,7 @@ function loadPopup() {
   hideResetRow(currentDiv, currentFormName, originalProp);
   menuOpenClose(currentDiv.id, currentImgId);
   interceptPopupEvents(currentDiv, table);
+  replaceTooltips(currentDiv);
   openedPopups[currentDiv.id] = currentDiv;
 
   // make popup active for key input    
@@ -524,12 +535,14 @@ function interceptPopupEvents(div, table) {
     addEvent(div,  'keypress',  popupRowOnKeyPress,  false);
 
   var trs = table.getElementsByTagName("tr");
+  var k=0;
   for (i=0;i<trs.length; i++) {
     var elem = trs[i];
     addEvent(elem, 'click',     popupRowOnClick,     false);
+    //if (k++<2)
+    //  alert(elem.id);
     addEvent(elem, 'mouseover', popupRowOnMouseOver, false);
     addEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
-    //addEvent(elem, 'keypress',  popupRowOnKeyPress,  false);
   }
 }
 /*
@@ -1182,8 +1195,10 @@ function popupRowOnMouseOver(e) {
 
   target = getTargetElement(e);
   tr = getTrNode(target);
-  if (!tr)
+  
+  if (!tr) {
     return;
+  }  
   if (isFirstRow(tr))
     return;
 
@@ -1389,3 +1404,4 @@ function hideResetRow(div, currentFormName, originalProp) {
     tr.style.display    = "none";
   }  
 }
+

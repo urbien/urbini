@@ -34,18 +34,17 @@
         addEvent(document.links[i], 'click',   onClick,   false);
       }       
     }
-   
+
     var detectClick;
     function onKeyDown(e) {
-      //alert("1");
       detectClick = false;
     }
     function onKeyUp(e) {
       if (detectClick) {
-        //salert("2");
         return false;
       }  
     }
+
     /**
      * Registered to receive control on a click on any link.
      * Adds control key modifier as param to url, e.g. _ctrlKey=y 
@@ -61,13 +60,15 @@
         return;
 
       target = getTargetElement(e);
-/*
-      p = target.parentNode;
-      if (p.tagName.indexOf("smart_") == 0) {
-        onClickListBox(e);
+      url = getTargetAnchor(e);
+      if (!url)
         return;
-      }
-*/
+
+      //urlStr = removeModifier(url, '_shiftKey=y');
+      removeModifier(url, '_ctrlKey=y');
+      //urlStr = removeModifier(url, '_altKey=y');
+      urlStr = url.href;
+      
       if     (e.ctrlKey) {
         p = '_ctrlKey=y';
       }
@@ -81,22 +82,18 @@
         // show content in a second pane
         // 
         if (bottomFrame) {
-          url = getTargetAnchor(e);
-          url = url.href;
-          var finalUrl = url; 
-          var idx = url.indexOf('.html');
+          var finalUrl = urlStr; 
+          var idx = urlStr.indexOf('.html');
           if (idx != -1) {
-            var idx1 = url.lastIndexOf('/', idx);
-            finalUrl = url.substring(0, idx1 + 1) + 'plain/' + url.substring(idx1 + 1);  
+            var idx1 = urlStr.lastIndexOf('/', idx);
+            finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);  
           }
           
           bottomFrame.location.replace(finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y");
           return false;
         }
       }
-      else
-        return;
-      url = getTargetAnchor(e);
+
       if (p) {
         if (!url) {
           alert("onClick(): can't process control key modifier since event currentTarget is null: " + url);
@@ -106,11 +103,11 @@
           alert("onClick(): can't process control key modifier since event currentTarget.href is null: " + url.href);
           return;
         }
-        addUrlParam(url, p, target);
+        addUrlParam(url, p, null);
       }
     }
      
-    function addUrlParam(url, param, target) {
+    function addUrlParam(url, param, target) {    
       if (!url)
         return;
       if (!url.href)
@@ -162,6 +159,7 @@
     }
   
     addEvent(window, 'load', function() {setTimeout(interceptLinkClicks, 0);}, false);
+    addEvent(window, 'load', function() {setTimeout(replaceAllTooltips,  0);}, false);
     //addEvent(window, 'unload', function() {java.lang.System.out.println("unload");}, false);
     
     /* this function supposed to fix a problem (with above functions) on Mac IE5 
@@ -262,5 +260,87 @@
        }
      }
      return null;
+   }
+
+   /**
+    * remove modifier, like ctrl_y
+    */
+   function removeModifier(url, param) {
+     var urlStr = url.href;     
+     var idx = urlStr.indexOf(param);
+     if (idx == -1)
+       return url;
+     
+     var len = param.length;
+     if (urlStr.charAt(idx - 1) == '&') {
+       idx--;
+       len++;
+     }  
+     
+     var uBefore = urlStr.substring(0, idx);
+     var uAfter  = urlStr.substring(idx + len);
+     urlStr = uBefore + uAfter;
+     url.href = urlStr;
+     //alert('before='+uBefore + ', after=' + uAfter);
+   }
+
+   
+   /*********************************** Tootltips ************************************/
+   function replaceTooltips(divRef) {
+     var llen;
+     var images;
+     images = divRef.getElementsByTagName('img');
+     llen = images.length;
+     for (i=0;i<llen; i++) { 
+       addEvent(images[i], 'mouseout',    tooltipMouseOut,    false);
+       addEvent(images[i], 'mouseover',   tooltipMouseOver,   false);
+     } 
+   }
+
+   function replaceAllTooltips() {
+     var llen;
+     var images;
+     images = document.images;
+     llen = document.images.length;
+     for (i=0;i<llen; i++) { 
+       addEvent(images[i], 'mouseout',    tooltipMouseOut,    false);
+       addEvent(images[i], 'mouseover',   tooltipMouseOver,   false);
+     } 
+   }
+   function tooltipMouseOver(e) {
+     var p;
+     var target;
+
+     e = (e) ? e : ((window.event) ? window.event : null);
+     if (!e)
+       return;
+
+     target = getTargetElement(e);
+     var tooltipText = target.attributes['tooltip'];
+     if (!tooltipText) {
+       tooltipText = target.attributes['title'];
+       if (tooltipText) {
+         target.setAttribute('tooltip', tooltipText.value);
+         target.removeAttribute('title');
+       }
+     }  
+     if (tooltipText) {
+       var tooltipDiv = document.getElementById('system_tooltip');
+       if (!tooltipDiv)
+         return true;
+       tooltipDiv.innerHTML = tooltipText.value;
+       if (tooltipDiv.style.width != '') {
+         alert(tooltipDiv.style.width);
+       }  
+       //setTimeout("setDivVisible1('" + tooltipDiv.id + "', '" + target + "', 7, 12)", 100);
+       setDivVisible(tooltipDiv, target, 7, 12);
+     } 
+     return false;
+   }
+
+   function tooltipMouseOut(e) {
+     var tooltipDiv = document.getElementById('system_tooltip');
+     setDivInvisible(tooltipDiv);
+     return false;
    }
 
