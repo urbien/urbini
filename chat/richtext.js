@@ -118,10 +118,10 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 	}
 
 	if (buttons == true) {
-		document.writeln('<table class="rteBack" cellpadding=2 cellspacing=0 id="Buttons1_' + rte + '" width="' + tablewidth + '">');
-		document.writeln('	<tr>');
-		document.writeln('		<td>');
-		document.writeln('			<select id="formatblock_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">');
+		document.writeln('<table class="rteBack" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="' + tablewidth + '">');
+		document.writeln('	<tr style="white-space : nowrap; word-spacing : 0px; 	white-space : nowrap;">');
+		document.writeln('		<td width="100%" cellpadding=0 cellspacing=0 style="" valign="top">');
+		document.writeln('			<select style="width:75px;vertical-align : top;" id="formatblock_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">');
 		document.writeln('				<option value="">[Style]</option>');
 		document.writeln('				<option value="<p>">Paragraph</option>');
 		document.writeln('				<option value="<h1>">Heading 1 <h1></option>');
@@ -133,18 +133,14 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 		document.writeln('				<option value="<address>">Address <ADDR></option>');
 		document.writeln('				<option value="<pre>">Formatted <pre></option>');
 		document.writeln('			</select>');
-		document.writeln('		</td>');
-		document.writeln('		<td>');
-		document.writeln('			<select id="fontname_' + rte + '" onchange="Select(\'' + rte + '\', this.id)">');
+		document.writeln('			<select style="width:115px;vertical-align : top;" id="fontname_' + rte + '" onchange="Select(\'' + rte + '\', this.id)">');
 		document.writeln('				<option value="Font" selected>[Font]</option>');
 		document.writeln('				<option value="Arial, Helvetica, sans-serif">Arial</option>');
 		document.writeln('				<option value="Courier New, Courier, mono">Courier New</option>');
 		document.writeln('				<option value="Times New Roman, Times, serif">Times New Roman</option>');
 		document.writeln('				<option value="Verdana, Arial, Helvetica, sans-serif">Verdana</option>');
 		document.writeln('			</select>');
-		document.writeln('		</td>');
-		document.writeln('		<td>');
-		document.writeln('			<select unselectable="on" id="fontsize_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">');
+		document.writeln('			<select style="width:60px;vertical-align : top;" unselectable="on" id="fontsize_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">');
 		document.writeln('				<option value="Size">[Size]</option>');
 		document.writeln('				<option value="1">1</option>');
 		document.writeln('				<option value="2">2</option>');
@@ -154,37 +150,50 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 		document.writeln('				<option value="6">6</option>');
 		document.writeln('				<option value="7">7</option>');
 		document.writeln('			</select>');
-		document.writeln('		</td>');
+		document.writeln('			<select style="width:95px;vertical-align : top;" unselectable="on" id="smile_' + rte + '" onchange="frames.' + rte + '.document.body.innerHTML+=\'<img width=17 height=17 src=\'+this.value+\'>\';this.selectedIndex = 0;">');
+		document.writeln('				<option value="Smile" selected>[Smile]</option>');
+		document.writeln('				<option value="images/smileys/smiley.gif">smiley&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- :)</option>');
+		document.writeln('				<option value="images/smileys/wink.gif">wink&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - ;)</option>');
+		document.writeln('				<option value="images/smileys/sad.gif">sad&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - :(</option>');
+		document.writeln('				<option value="images/smileys/laughting.gif">laughting - :D</option>');
+		document.writeln('			</select>');
+
+/*
 		document.writeln('		<td width="100%">');
 		document.writeln('		</td>');
 		document.writeln('	</tr>');
 		document.writeln('</table>');
 		document.writeln('<table class="rteBack" cellpadding="0" cellspacing="0" id="Buttons2_' + rte + '" width="' + tablewidth + '">');
 		document.writeln('	<tr>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'bold.gif" width="25" height="24" alt="Bold" title="Bold" onClick="FormatText(\'' + rte + '\', \'bold\', \'\')"></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'italic.gif" width="25" height="24" alt="Italic" title="Italic" onClick="FormatText(\'' + rte + '\', \'italic\', \'\')"></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'underline.gif" width="25" height="24" alt="Underline" title="Underline" onClick="FormatText(\'' + rte + '\', \'underline\', \'\')"></td>');
-		document.writeln('		<td><img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt=""></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'left_just.gif" width="25" height="24" alt="Align Left" title="Align Left" onClick="FormatText(\'' + rte + '\', \'justifyleft\', \'\')"></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'centre.gif" width="25" height="24" alt="Center" title="Center" onClick="FormatText(\'' + rte + '\', \'justifycenter\', \'\')"></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'right_just.gif" width="25" height="24" alt="Align Right" title="Align Right" onClick="FormatText(\'' + rte + '\', \'justifyright\', \'\')"></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'justifyfull.gif" width="25" height="24" alt="Justify Full" title="Justify Full" onclick="FormatText(\'' + rte + '\', \'justifyfull\', \'\')"></td>');
-		document.writeln('		<td><img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt=""></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'hr.gif" width="25" height="24" alt="Horizontal Rule" title="Horizontal Rule" onClick="FormatText(\'' + rte + '\', \'inserthorizontalrule\', \'\')"></td>');
-		document.writeln('		<td><img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt=""></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'numbered_list.gif" width="25" height="24" alt="Ordered List" title="Ordered List" onClick="FormatText(\'' + rte + '\', \'insertorderedlist\', \'\')"></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'list.gif" width="25" height="24" alt="Unordered List" title="Unordered List" onClick="FormatText(\'' + rte + '\', \'insertunorderedlist\', \'\')"></td>');
-		document.writeln('		<td><img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt=""></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'outdent.gif" width="25" height="24" alt="Outdent" title="Outdent" onClick="FormatText(\'' + rte + '\', \'outdent\', \'\')"></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'indent.gif" width="25" height="24" alt="Indent" title="Indent" onClick="FormatText(\'' + rte + '\', \'indent\', \'\')"></td>');
-		document.writeln('		<td><div id="forecolor_' + rte + '"><img class="rteImage" src="' + imagesPath + 'textcolor.gif" width="25" height="24" alt="Text Color" title="Text Color" onClick="FormatText(\'' + rte + '\', \'forecolor\', \'\')"></div></td>');
-		document.writeln('		<td><div id="hilitecolor_' + rte + '"><img class="rteImage" src="' + imagesPath + 'bgcolor.gif" width="25" height="24" alt="Background Color" title="Background Color" onClick="FormatText(\'' + rte + '\', \'hilitecolor\', \'\')"></div></td>');
-		document.writeln('		<td><img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt=""></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'hyperlink.gif" width="25" height="24" alt="Insert Link" title="Insert Link" onClick="FormatText(\'' + rte + '\', \'createlink\')"></td>');
-		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'image.gif" width="25" height="24" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')"></td>');
+*/		
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'bold.gif" width="25" height="24" alt="Bold" title="Bold" onClick="FormatText(\'' + rte + '\', \'bold\', \'\')">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'italic.gif" width="25" height="24" alt="Italic" title="Italic" onClick="FormatText(\'' + rte + '\', \'italic\', \'\')">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'underline.gif" width="25" height="24" alt="Underline" title="Underline" onClick="FormatText(\'' + rte + '\', \'underline\', \'\')">');
+		document.writeln('		<img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt="">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'left_just.gif" width="25" height="24" alt="Align Left" title="Align Left" onClick="FormatText(\'' + rte + '\', \'justifyleft\', \'\')">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'centre.gif" width="25" height="24" alt="Center" title="Center" onClick="FormatText(\'' + rte + '\', \'justifycenter\', \'\')">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'right_just.gif" width="25" height="24" alt="Align Right" title="Align Right" onClick="FormatText(\'' + rte + '\', \'justifyright\', \'\')">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'justifyfull.gif" width="25" height="24" alt="Justify Full" title="Justify Full" onclick="FormatText(\'' + rte + '\', \'justifyfull\', \'\')">');
+		document.writeln('		<img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt="">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'hr.gif" width="25" height="24" alt="Horizontal Rule" title="Horizontal Rule" onClick="FormatText(\'' + rte + '\', \'inserthorizontalrule\', \'\')">');
+		document.writeln('		<img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt="">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'numbered_list.gif" width="25" height="24" alt="Ordered List" title="Ordered List" onClick="FormatText(\'' + rte + '\', \'insertorderedlist\', \'\')">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'list.gif" width="25" height="24" alt="Unordered List" title="Unordered List" onClick="FormatText(\'' + rte + '\', \'insertunorderedlist\', \'\')">');
+		document.writeln('		<img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt="">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'outdent.gif" width="25" height="24" alt="Outdent" title="Outdent" onClick="FormatText(\'' + rte + '\', \'outdent\', \'\')">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'indent.gif" width="25" height="24" alt="Indent" title="Indent" onClick="FormatText(\'' + rte + '\', \'indent\', \'\')">');
+		document.writeln('		<span id="forecolor_' + rte + '">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'textcolor.gif" width="25" height="24" alt="Text Color" title="Text Color" onClick="FormatText(\'' + rte + '\', \'forecolor\', \'\')"></span>');
+		document.writeln('		<span id="hilitecolor_' + rte + '"><img class="rteImage" src="' + imagesPath + 'bgcolor.gif" width="25" height="24" alt="Background Color" title="Background Color" onClick="FormatText(\'' + rte + '\', \'hilitecolor\', \'\')"></span>');
+		document.writeln('		<img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt="">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'hyperlink.gif" width="25" height="24" alt="Insert Link" title="Insert Link" onClick="FormatText(\'' + rte + '\', \'createlink\')">');
+		document.writeln('		<img class="rteImage" src="' + imagesPath + 'image.gif" width="25" height="24" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')">');
+		//if (!readOnly) document.writeln('<td><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source</td>');
 		if (isIE) {
-			document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'spellcheck.gif" width="25" height="24" alt="Spell Check" title="Spell Check" onClick="checkspell()"></td>');
+			document.writeln('		<img class="rteImage" src="' + imagesPath + 'spellcheck.gif" width="25" height="24" alt="Spell Check" title="Spell Check" onClick="checkspell()">');
 		}
+		document.writeln('		</td>');
+		//if (!readOnly) document.writeln('<td><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source</td>');
 //		document.writeln('		<td><img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt=""></td>');
 //		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'cut.gif" width="25" height="24" alt="Cut" title="Cut" onClick="FormatText(\'' + rte + '\', \'cut\')"></td>');
 //		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'copy.gif" width="25" height="24" alt="Copy" title="Copy" onClick="FormatText(\'' + rte + '\', \'copy\')"></td>');
@@ -192,7 +201,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 //		document.writeln('		<td><img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt=""></td>');
 //		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'undo.gif" width="25" height="24" alt="Undo" title="Undo" onClick="FormatText(\'' + rte + '\', \'undo\')"></td>');
 //		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'redo.gif" width="25" height="24" alt="Redo" title="Redo" onClick="FormatText(\'' + rte + '\', \'redo\')"></td>');
-		document.writeln('		<td width="100%"></td>');
+		//document.writeln('		<td width="100%"></td>');
 		document.writeln('	</tr>');
 		document.writeln('</table>');
 	}
@@ -200,7 +209,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 	if (!readOnly) document.writeln('<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source');
 	document.writeln('<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>');
 	document.writeln('<input type="hidden" id="hdn' + rte + '" name="' + rte + '" value="">');
-	//document.getElementById('hdn' + rte).value = html;
+	//!!Error!!document.getElementById('hdn' + rte).value = html;
 	enableDesignMode(rte, html, readOnly);
 }
 
@@ -319,8 +328,9 @@ function toggleHTMLSrc(rte) {
 	}
 
 	if (document.getElementById("chkSrc" + rte).checked) {
-		document.getElementById("Buttons1_" + rte).style.visibility = "hidden";
-		document.getElementById("Buttons2_" + rte).style.visibility = "hidden";
+	    //document.getElementById("Buttons1_" + rte).style.visibility = "hidden";
+		document.getElementById("Buttons1_" + rte).style.visibility = "visible";
+		//document.getElementById("Buttons2_" + rte).style.visibility = "hidden";
 		if (document.all) {
 			oRTE.body.innerText = oRTE.body.innerHTML;
 		} else {
@@ -330,7 +340,7 @@ function toggleHTMLSrc(rte) {
 		}
 	} else {
 		document.getElementById("Buttons1_" + rte).style.visibility = "visible";
-		document.getElementById("Buttons2_" + rte).style.visibility = "visible";
+		//document.getElementById("Buttons2_" + rte).style.visibility = "visible";
 		if (document.all) {
 			//fix for IE
 			var output = escape(oRTE.body.innerText);
@@ -374,7 +384,7 @@ function FormatText(rte, command, option) {
 			//position and show color palette
 			buttonElement = document.getElementById(command + '_' + rte);
 			// Ernst de Moor: Fix the amount of digging parents up, in case the RTE editor itself is displayed in a div.
-			document.getElementById('cp' + rte).style.left = getOffsetLeft(buttonElement, 4) + "px";
+			document.getElementById('cp' + rte).style.left = getOffsetLeft(buttonElement, 4) - 40 + "px";
 			//document.getElementById('cp' + rte).style.top = (getOffsetTop(buttonElement, 4) + buttonElement.offsetHeight + 4) + "px";
 			document.getElementById('cp' + rte).style.top = (getOffsetTop(buttonElement, 6) + buttonElement.offsetHeight + 4) + "px";
 			if (document.getElementById('cp' + rte).style.visibility == "hidden") {
