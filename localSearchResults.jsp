@@ -28,17 +28,18 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
       <tr valign="top">
       <td width="110%" colspan="2">
-        <form action="list.html" name="siteResourceList">
+        <!--form action="list.html" name="siteResourceList"-->
           <div align="left"><backLink /></div>
           <taskTreeControl/>
           <siteResourceList />
           <div align="right"><measurement/></div>
-        </form>
+        <!--/form-->
         <delete/> 
         <addNewResource html="mkResource.html"/> 
+        <edit html="localSearchResults.html"/>
         <reloadDocuments/>
         <createResources/>
-        <showSetProperties />
+        <!--showSetProperties /-->
         <br/><pieChart/>
         <script language="JavaScript">
           var horizontalFilter_FIELDS = new Array();

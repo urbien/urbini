@@ -30,7 +30,7 @@
   <td valign="top" align="middle">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr><td valign="top" width="110%">  
-    <form action="list.html" name="siteResourceList">
+    <!--form action="list.html" name="siteResourceList"-->
       <div align="left"><backLink /></div>
       <tree/>
       <siteResourceList />
@@ -38,8 +38,9 @@
       <br/>
       <readOtherSiteInfo />
       <addNewResource html="mkResource.html" /> 
-      <showSetProperties />
-    </form>
+      <edit html="list.html"/>
+      <!--showSetProperties /-->
+    <!--/form-->
   </td>
     <td width="10%" valign="top" align="left" bgcolor="eeeeee">
       <menu toolbar="filterList" type="onpage" title="false"/>
