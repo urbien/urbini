@@ -27,6 +27,7 @@
           <siteResourceList />
           <div align="right"><measurement/></div>
           <addNewResource html="mkResource.html"/> 
+          <delete/> 
           <reloadDocuments/>
           <createResources/>
           <showSetProperties />
