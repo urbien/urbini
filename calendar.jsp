@@ -31,10 +31,10 @@
           <div align="center"><monthCalendar /><weekCalendar /><day /></div>
         </form>
       </td>
-      <td width="100%" id="rightPanelPropertySheet" valign="top" align="left">
+      <!--td width="100%" id="rightPanelPropertySheet" valign="top" align="left">
         <br/>
         <menu toolbar="filterLocal" type="onpage" title="false"/>
-      </td>
+      </td-->
       </tr>
     </table>
   </td>
