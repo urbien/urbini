@@ -33,11 +33,20 @@ function onFormFieldChange(fieldProp, fieldRef, oldValue) {
   }
 }
 
-function hideShowDivOnClick(div) {
-  if (div.style.display == 'none')
+function hideShowDivOnClick(divId, imgId, plusImg, minusImg) {
+  div = document.getElementById(divId);
+  img = document.getElementById(imgId);
+  if (div.style.display == 'none') {
     div.style.display = 'inline';
-  else
+    if (img != null) {
+      img.src = minusImg;
+    }
+  } else {
     div.style.display = 'none';
+    if (img != null) {
+      img.src = plusImg;
+    }
+  }
 }
 
 function trim(s) {
