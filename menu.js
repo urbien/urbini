@@ -530,7 +530,18 @@ function popupOnSubmit(e) {
   var params = getFormFilters(form);
   var submitButtonName  = null;
   var submitButtonValue;
-
+/*
+  if (target.type.toUpperCase() == 'SUBMIT') {
+    if (target.name == "Clear")
+      url += "&clear=Clear";      
+    else
+      url += "&submit=y";
+  }
+  else 
+    url += "&submit=y";
+*/
+  url += "&submit=y";
+/*
   // figure out the name and the value of the Submit button
   for (i=0; i<form.elements.length; i++) {
     var elem = form.elements[i];
@@ -542,13 +553,12 @@ function popupOnSubmit(e) {
 
   if (!submitButtonName)
     return true;
-
-  var submit = submitButtonName + '=' + submitButtonValue;
   var hasQ = url.indexOf('?') != -1;
   if (!hasQ)
     url += '?' + submit;
   else  
     url += '&' + submit;
+*/
   
   if (params)
     url = url + params;   
@@ -561,7 +571,7 @@ function popupOnSubmit(e) {
 
   form.method   = 'GET';
   form.onsubmit = null;
-  
+
   if (document.all || document.getElementById) {
 //    form.submit.disabled = true; 
     form.submit.value = 'Please wait';
