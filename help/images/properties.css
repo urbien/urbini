@@ -1,0 +1,128 @@
+/* Volga's "Gray-Blue" color theme */
+.monospace { font-family:Courier,monospace; }
+
+tr.sep {background-color:#D0D9E7; height:8pt}
+
+td.sep {background-color:#D0D9E7; color:#000000; font-weight:bold; font-size:8pt;} 
+th.sep {background-color:#D0D9E7; color:#000000; font-size:8pt;}
+input.chk {background-color:#D0D9E7; font-size:7pt}
+
+/* tr.title {background-color:#cdcde4; height:8pt} */
+/* td.title {background-color:#cbcbe4; height:8pt} */
+td.title {background-color:#cdcde4; height:8pt}
+tr.title {background-color:#cdcde4; height:8pt}
+
+/* td.topBar {background-color:#3366CC; color:#ffffff; height:8pt} */
+/* tr.topBar {background-color:#3366CC; color:#ffffff; height:8pt}  */
+
+A, BODY, INPUT, OPTION, SELECT, TABLE, TD, TR,TT {font-family:sans-serif,arial; font-size:11px}
+
+tr.dark  {background-color:#eeeeee}
+td.dark  {background-color:#eeeeee}
+th.dark {font-weight:bold; font-size:8pt;}
+input.dark {font-size:8pt; background-color:#eeeeee}
+tr.total  {background-color:#ffffe0; font-weight:bold}
+td.total  {background-color:#ffffe0; font-weight:bold}
+
+tr.subtotal  {background-color:#cdcde4; font-weight:bold}
+td.error     {background-color:#ffcc00; font-weight:bold}
+tr.error     {background-color:#ffcc00; font-weight:bold}
+
+
+/* Below are more advanced things that allow you to fine tune font sizes and typeface. */
+/* Leave them as is for now                                                            */
+td {
+	font-family:sans-serif, arial;
+	font-size:8pt;
+	text-decoration: none;
+}
+
+th {font-family:sans-serif, arial; font-size:8pt;}
+input {font-family:sans-serif, arial; font-size:8pt;}
+
+
+select.xs {font-family:sans-serif, arial; font-size:8pt;}
+select.xxs {font-family:sans-serif, arial; font-size:8pt; font-weight:bold}
+
+
+form {font-family:sans-serif, arial; font-size:8pt;}
+a.xs {font-family:sans-serif, arial; font-size:8pt;}
+table.xs {font-family:sans-serif, arial; font-size:8pt;}
+
+input.button {font-size:8pt;}
+select.xs {font-size:8pt;}
+
+td.xs {font-family:sans-serif, arial; font-size:8pt;}
+td.xl {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
+
+span.xl  {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
+
+span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}
+
+span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
+span.xs  {font-family:sans-serif, arial; font-size:8pt;}
+span.rxs {color:red; font-family:sans-serif, arial; font-size:8pt;}
+/* span.rxs {color:#ffffff; font-family:sans-serif, arial; font-size:8pt;} */
+
+span.dark{color:#eeeeee}
+span.light {color:#ffffff}
+/* span.yxs {color:#ffff80; font-family:sans-serif, arial; font-size:9pt;} */
+
+/*input.xxs { font-family:Courier,monospace; font-size:8pt}*/
+
+a:link {
+	color: #0033CC;
+	text-decoration: none;
+}    
+/* a:visited { color: #663399; } */
+/* a:active { color: #62B530; }  */
+a:hover { color: #3399FF; }  
+.button1 {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: hand; font-size:11px}
+
+.select	  {color:#000066; background-color:#D6E7EF; font-size:11px}
+.selected {color:#664F2D; background-color:#D6E7EF; font-size:11px}
+
+input.xxs {font-size: 9px; font-family:verdana,helvetica,arial,sans-serif;}
+.text {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
+.input {font-size: 9px; font-family:verdana,helvetica,arial,sans-serif;}
+
+td.commenteven {background-color: #f8f4ef; color: darkblue}
+td.commentodd  {background-color: #e7ebf0; color: #000000}
+
+tr.commenteven {background-color: #f8f4ef; color: darkblue}
+tr.commentodd  {background-color: #e7ebf0; color: #000000}
+
+table.commentodd {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
+table.commenteven {border:solid #808080 1px; background-color: #f8f4ef; color: darkblue}
+
+Table.comments {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
+Table.comments1 {background-color: #f8f4ef; color: #000000}
+
+td.containers {background-color: #f8f4ef; color: #000000}
+
+tr.keywordsearch  {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
+
+table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #000000}
+
+td.propertySheet {border:solid #808080 1px; background-color: #ffffff; color: #000000}
+td.controlPanel {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
+td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
+
+
+td.tab  {border:solid #808080 1px; filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, EndColorStr='#F0F2F6', StartColorStr='#C0C9D7'); color='#000000'}
+
+table.allInOne {border:solid #808080 1px; background-color: #ffffff; color: #000000}
+
+
+table.chart {border:solid #808080 1px; color: #000000}
+tr.chart1 {background-color: #f8f4ef; color: darkblue}
+tr.chart2 {background-color: #e7ebf0; color: #000000}
+
+td.chart1 {border:solid #808080 1px; background-color: #f8f4ef; color: darkblue}
+td.chart2 {border:solid #808080 1px; background-color: #f8fcf0; color: #000000}
+
+.input {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;}
+.select {padding: 0px; background: #e7ebf0;color:#000066;height:18px;text-decoration:none;}
+.link {
+	text-decoration: none;
+}
