@@ -1,0 +1,138 @@
+<html>
+  <head>
+    &[title];
+    <link rel='stylesheet' type='text/css' href='chat/chat.css'/>
+    <script language='JavaScript'>
+	  var resizedWindow = 0;
+	  var timeStampsOn = 1;
+      function chatTimerActive() { 
+        var timerId = setInterval(
+              "document.formScrollLock.chatStartedAt.value = "
+            + "  parseInt(document.formScrollLock.chatStartedAt.value) + 1000;"
+            + "var dt = new Date();"
+            + "dt.setHours(0);"
+            + "dt.setMinutes(0);"
+            + "dt.setSeconds(0);"
+            + "dt.setMilliseconds(parseInt(document.formScrollLock.chatStartedAt.value));"
+            + "document.formScrollLock.chatStart.value=''+dt.getHours()+':'+dt.getMinutes()+':'+dt.getSeconds();", 1000);
+      }
+
+      function sendMessageOnButton() {
+        if (document.postForm.message.value.charAt(0) != "[")
+          document.postForm.nameUser.value = "all";
+        document.getElementById("message").focus();
+        document.getElementById("postForm").submit(); 
+        if (document.getElementById("message").value != "") {
+          var messageValue = document.getElementById("message").value;
+          document.getElementById("message").value = "";
+          var dt = new Date(); 
+          var def = dt.getTimezoneOffset()/60;
+          thread.insertMessages(-def, dt.getTime(), 
+              frames['userList'].document.getElementById('c'+document.getElementById("realUserName").value).color,
+              document.getElementById("realUserName").value,
+              new Array(messageValue+'?'+document.getElementById("aliasUser").value));
+        }
+        document.getElementById("message").value = ""; 
+      }    
+    
+      function handleKey(e) {
+        var kk = navigator.appName == 'Netscape' ? e.which : e.keyCode;
+        if (kk == 13) {
+          if (document.postForm.message.value.charAt(0) != "[")
+            document.postForm.nameUser.value = "all";
+          document.getElementById("postForm").submit();
+          if (document.getElementById("message").value != "") {
+            var dt = new Date(); 
+            var def = dt.getTimezoneOffset()/60;
+            thread.insertMessages(-def,
+                dt.getTime(),
+                frames['userList'].document.getElementById('c'+document.getElementById("realUserName").value).color,
+                document.getElementById("realUserName").value,
+                new Array(document.getElementById("message").value+'?'+document.getElementById("aliasUser").value));
+          }
+          document.getElementById("message").value = ""; 
+          document.getElementById("message").focus();
+        } else if (document.getElementById('message').value.length%10 == 0) {
+          document.getElementById("postFormWritingStatus").submit();
+          document.getElementById("message").focus();
+        }
+      }
+
+    </script>   
+  </head>
+  <body onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' style='cursor : default;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5'> 
+    <input type='hidden' name='realUserName' id='realUserName' value="&[realUserName];">
+
+    <table cellspacing="0" cellpadding="0" border="1" bordercolor="#ff0000">
+    <tr>
+      <td>
+        <table border=0>
+        <tr>
+          <td>
+            <form style="border:thin none; border-bottom:none; bottom:0px; height:20px; margin-bottom:0px;" name="formScrollLock">
+              <input type=hidden name="chatStartedAt">Chat session is open for <input readonly="true" onfocus="document.getElementById('message').focus();" type=text size=5 style="border:none;background-color:#EFEFEF;" name="chatStart">
+            </form>
+          </td>
+          <td>
+            <img src='icons/chatHistory.gif' width='23' height='20' onclick="if(resizedWindow==1) { resizedWindow=0; this.src='icons/chatHistory.gif'; window.resizeBy(-150,0); document.getElementById('historyiFrame').style.width=0; } else { resizedWindow=1; this.src='icons/chatHistoryActive.gif'; window.resizeBy(150,0); document.getElementById('historyiFrame').style.width=150; }">
+            <img src="icons/clockOn.png" width='16' height='16' onClick="if(timeStampsOn==1){this.src='icons/clock.gif';timeStampsOn=0;var i = 0;while(window.frames['chatContents'].document.getElementById('timeNid['+i+']')){frames['chatContents'].document.getElementById('timeNid['+i+']').style.display='none';i++;}}else {this.src='icons/clockOn.png';timeStampsOn = 1;var i = 0;while(window.frames['chatContents'].document.getElementById('timeNid['+i+']')){frames['chatContents'].document.getElementById('timeNid['+i+']').style.display='inline';i++;}}document.getElementById('message').focus();">
+          </td>
+        </tr>
+        </table>
+        <script language='JavaScript'>
+          chatTimerActive();
+        </script>
+      </td>
+  
+      <td rowspan="3">  
+        <iframe frameborder="0" marginheight="2" marginwidth="2" id='userList' name='userList' src='chatRoom?frame=userList&room=&[encodedRoom];' style='width: 150px; height: 310px; border: 1'></iframe>
+      </td>               
+        
+      <td rowspan="3">
+        <iframe id='historyiFrame' frameborder="0" src='chat/&[roomNameCleanOffSymbols];/index.html' marginwidth="1" marginheight="2" style='width: 0px; height: 310px; border: 0'></iframe>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <iframe frameborder="0" id=chatContents name=chatContents src='chatRoom?frame=content&room=&[encodedRoom];' style='width:100%; height:260' border=0 frameborder=0></iframe>
+      </td>
+    </tr>
+
+    <tr valign="middle">
+      <td valign="top">
+        <form style="border : thin none; border-bottom : none; bottom : 0px; height : 25px; margin-bottom : 0px;" target='post' id='postForm' name='postForm'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
+          <table width='100%' height='0'>
+          <tr>
+            <td width='80%'>
+              <input type="hidden" value="all" name="nameUser">
+              <input type="hidden" value="my" id="aliasUser" name="aliasUser">
+              <textarea style="border:1 solid #000;background:#f0f0f0;width:330;height:20" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="var kk = navigator.appName == 'Netscape' ? event.which : event.keyCode;if (kk == 13)this.value = '';"></textarea>
+              <script language='JavaScript'>
+                document.getElementById('message').value="";
+                document.getElementById('message').focus();
+              </script>
+            </td>
+            <td>
+              <input type='button' value='Send' style="border:2 solid #000;borderColor:#000000;background:#f0f0f0;cursor:hand;height:20;width:70" onclick='sendMessageOnButton()'/>
+            </td>
+          </tr>
+          </table>
+        </form>
+      </td>
+    </tr>
+    </table>
+    
+    <form target='post' id='postFormWritingStatus' name='postFormWritingStatus'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
+      <input type="hidden" value="all"  name="nameUser">
+      <input type="hidden" value="my" name="aliasUser">
+      <input type=hidden name='message' value='..w..'>
+    </form>
+    
+    <iframe id='thread' name='thread' src='chatRoom?frame=thread&room=&[encodedRoom];' style='width:0px; height: 0px; border: 0'></iframe>
+    <div>
+      <iframe id='post' name='post' src='chatRoom?frame=post&room=&[encodedRoom];' style='width: 0px; height: 0px; border: 0'></iframe>
+    </div>    
+
+  </body>
+</html>
+ 
