@@ -505,7 +505,7 @@ function loadPopup() {
       elm.focus();
     }  
   }  
-  history.go(-1);
+  //history.go(-1);
 }
 
 function interceptPopupEvents(div) {
