@@ -16,9 +16,7 @@
     <showHideWindows/>
     </td>
     <td valign="top" align="right" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
-     <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
-      <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
-    </form>
+    <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
 </tr></table></td>
 </tr></table><table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr valign="top">

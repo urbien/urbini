@@ -14,9 +14,7 @@
     <menu toolbar="toolbar3"  activate="onMouseOver"/>
     <pdaToPc image="images/pda.gif"/>
     </td>
-    <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
-      <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
-    </form>
+    <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
     </tr></table></td>
   </tr>
 </table></center></td></tr></table>

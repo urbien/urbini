@@ -62,9 +62,7 @@
       </td>
 
       <!--td valign="top" align="right" width="15%"><changePassword/><userLogOff html="user-login.html"/></td-->
-      <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
-        <td valign="top" align="right" width="15%"><include name="searchText.jsp"/></td>
-      </form>
+      <td valign="top" align="right" width="15%"><include name="searchText.jsp"/></td>
       </tr>
 
       </table>

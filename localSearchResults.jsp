@@ -20,9 +20,9 @@
     <showHideWindows/>
     </td>
     <!--td valign="top" align="right" width="20%"><changePassword/><userLogOff html="user-login.html"/>&#160;</td-->
-    <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
-      <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
-    </form>
+    <td valign="top" align="right" width="10%">
+      <include name="searchText.jsp"/>
+    </td>
     </tr></table></td>
   </tr>
 </table>
