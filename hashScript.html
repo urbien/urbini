@@ -225,6 +225,16 @@ function hash(form, login_url) {
     } else {
       url = "j_security_check";
     }
+
+//    if (!url.startsWith("http://")) {
+  base = document.getElementById('baseId');
+//java.lang.System.out.println("base.href = " + base.href);
+//      if (url.startsWith("/"))
+//        url = base.href + url.substring(1);
+//      else  
+        url = base.href + url;
+//    }
+
     url += "?";
       
     if (valid_js()) {
