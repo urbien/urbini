@@ -46,6 +46,7 @@
       <siteResourceList />
       <div align="right"><measurement/></div>
       <addNewResource html="mkResource.html"/> 
+      <reloadDocuments/>
       <showSetProperties />
     </form>
     </td>

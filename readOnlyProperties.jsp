@@ -17,6 +17,7 @@
       <div align="right"><measurement/></div>
       <p/>
       <edit html="editProperties.html"/>
+      <reloadDocuments/>
       <showSetProperties />
     </form>
     </td></tr>
