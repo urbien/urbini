@@ -12,14 +12,17 @@
   <td width="10%"></td>
 </tr>
 <tr>
-  <td colspan="2"><span class="xs"><language/>|<print image="images/printerIcon.gif"/></span></td>
-  <td align="right"><userLogOff html="user-login.html"/></td>
-</tr>
-<tr>
   <td valign="top" width="10%">
     <include name="include/commonLeft" />
   </td>
+  <!--td align="right"><userLogOff html="user-login.html"/></td-->
   <td valign="top" align="middle">
+    <table width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tr valign="top">
+      <td valign="top" width="80%"><span class="xs"><language/>|<print image="images/printerIcon.gif"/></span></td>
+      <td valign="top" align="right" width="20%"><changePassword/><userLogOff html="user-login.html"/></td>
+    </tr>
+    <tr><td valign="top">  
     <!--div align="left"><siteHistory/></div-->
     <form action="list.html" name="siteResourceList">
       <div align="left"><backLink /></div>
@@ -37,10 +40,10 @@
       <center><input type="submit" name="submit" value="  Locate  "></input></center>
       <input type="hidden" name="action" value="searchLocal"></input>
       <br></br>
-      <!--showSetProperties /-->
     </form>
   </td>
-</tr></table>
+  </tr></table>
+</td></tr></table>
 <br />
 <div align="left"><span class="xs"><hudsonFog /></span></div>      <!-- link to Portal page for current category -->
 <include name="include/commonFooter" />
