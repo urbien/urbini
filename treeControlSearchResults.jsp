@@ -26,8 +26,8 @@
           <div align="left"><backLink /></div>
           <table width="100%" cellspacing="0" cellpadding="0" border="0">
           <tr>
-            <td width="20%"><taskTreeControl/><folderTreeControl/></td>
-            <td width="80%"><siteResourceList /></td>
+            <td width="20%" valign="top"><folderTreeControl/></td>
+            <td width="80%" valign="top"><siteResourceList /></td>
           </tr>
           </table>
           <div align="right"><measurement/></div>
