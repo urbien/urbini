@@ -1,3 +1,5 @@
+var MenuArray = new Array();
+
 function menuOpenClose(divName, imgName) {
 	for (i = 0; i < MenuArray.length; i++) {
 		if (document.getElementById(MenuArray[i]) == null) {
