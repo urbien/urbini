@@ -1,4 +1,4 @@
-/* 
+4/* 
  * Popup Menu system 
  */ 
 var MenuArray = new Array();
@@ -156,6 +156,7 @@ function menuClose1(div) {
 
 /* close div uncoditionally with no regard to mouse position */
 function menuClose2(divElem) {
+alert(divElem);
   poptext = divElem.style;
   var div = divElem.id;
   if (poptext.display == "inline") {
@@ -345,7 +346,6 @@ var openedPopups = new Array();
 var currentDiv = null;
 var currentImgId = null;
 var currentFormName = null;
-
 /**
  *  Opens the popup when icon is clicked
  */
@@ -357,7 +357,7 @@ function onClickPopup(e) {
     return;
   var imgId = target.id;
   currentImgId = imgId;
-  var propName1 = imgId.substring(0, imgId.length - "_filter".length);  
+  var propName1 = imgId.substring(0, imgId.length - 7);   // cut off "_filter"
   var idx = propName1.lastIndexOf('_');
   if (idx == -1)
     return;
@@ -374,12 +374,31 @@ function onClickPopup(e) {
   
   originalProp = propName1;
   var idx = propName1.indexOf(".");
-  if (idx != -1)
+  
+  var divId;
+  if (idx != -1) {
     propName = propName1.substring(0, idx);
-  else
-    propName = propName1;
-
-  var divId = propName + "_" + currentFormName;
+    divId = propName + "_" + currentFormName;
+  }
+  else {
+    idx = propName1.indexOf("_class");
+    if (idx == -1)  {
+      propName = propName1;
+      divId = propName + "_" + currentFormName;
+    }
+    else {
+      propName = propName1.substring(0, idx);
+      if (document.forms[currentFormName].elements[propName + "_class"].value == "") 
+        divId = propName + "_class_" + currentFormName;
+      else {
+        divId = propName + "_" + currentFormName;
+        originalProp = propName + propName1.substring(propName.length + "_class".length);
+alert("originalProp = " + originalProp);
+      }
+    }
+  }
+//alert("onClickPopup(): divId = " + divId + ": propName = " + propName);  
+   
   currentDiv = document.getElementById(divId);
   var div = openedPopups[divId];
   if (div != null) {
@@ -423,7 +442,15 @@ function loadPopup() {
 }
 
 function interceptPopupEvents(div) {
-  var tableId = "table_" + propName + "_" + currentFormName;
+  var addToTableName = "";
+  if (originalProp.indexOf("_class") != -1) {
+    var field = propName + "_class";
+
+//alert("field=" + field + "; document.currentFormName.getElementByName(field) = " + document.forms[currentFormName].elements[field].value);
+    if (document.forms[currentFormName].elements[field].value == "")
+      addToTableName = "_class";
+  }
+  var tableId = "table_" + propName + addToTableName + "_" + currentFormName;
 //alert("tableId=" + tableId);
   var table = document.getElementById(tableId);
 
@@ -486,26 +513,41 @@ function popupOnClick(e) {
   var propertyShortName = table1.id.substring("table_".length);
   var idx = propertyShortName.lastIndexOf('_');
   var formName = propertyShortName.substring(idx + 1);
+//alert("formName = " + formName);
   propertyShortName = propertyShortName.substring(0, idx);
 //alert("propertyShortName=" + propertyShortName);
   var idx = propertyShortName.indexOf(".");
   var prop = null;
-  if (idx == -1)
-    prop = propertyShortName; 
-  else
+  if (idx == -1) {
+    idx = propertyShortName.indexOf("_class");
+    if (idx != -1)
+      prop = propertyShortName.substring(0, propertyShortName.length - 6); 
+    else
+      prop = propertyShortName; 
+  }
+  else 
     prop = propertyShortName.substring(0, idx);
+  var formField;
+  if (originalProp.indexOf("_class") == -1) {
+    var select = prop + "_select";
+    formField = form.elements[select];
+alert("formField.name=" + formField.name);
+    formField.value = tr.id; // property value corresponding to a listitem
+    var chosenTextField = form.elements[originalProp];
 
-  var select = prop + "_select";
-  var formField = form.elements[select];
-
-  formField.value = tr.id; // property value corresponding to a listitem
-  var chosenTextField = form.elements[originalProp];
-
-  var items = tr.getElementsByTagName('td');
-  var val = items[1].innerHTML;
-  var idx = val.lastIndexOf(">");
-  chosenTextField.value = val.substring(idx + 1);
-  chosenTextField.style.backgroundColor='#ffffff';
+    var items = tr.getElementsByTagName('td');
+    var val = items[1].innerHTML;
+    var idx = val.lastIndexOf(">");
+    chosenTextField.value = val.substring(idx + 1);
+    chosenTextField.style.backgroundColor='#ffffff';
+  }
+  else {
+    var iclass = prop + "_class";
+alert("iclass = " + iclass);
+    formField = form.elements[iclass];
+alert("formField.name=" + formField.name + "; value = " + tr.id);
+    formField.value = tr.id; // property value corresponding to a listitem
+  }
   var divId = prop + "_" + formName;
   var div = document.getElementById(divId);
   menuClose2(div);
