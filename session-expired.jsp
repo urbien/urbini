@@ -26,10 +26,10 @@
     <td><input type="password" name="j_password" size="15" />  </td>
   </tr>
 
-  <tr>
+  <!--tr>
     <td></td>
     <td><userLogin html="new-user.html" title="registerMe" /></td>
-  </tr>
+  </tr-->
   <tr>
     <td></td>
     <td><br/><input type="submit" name="s" value="logOn" />  </td>
