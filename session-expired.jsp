@@ -15,7 +15,7 @@
 <form method="post" action="j_security_check">
 <table cellpadding="0" border="0" cellspacing="0" width="%1">
   <tr>
-    <td class="xl" colspan="2">Your session has expired. Please enter userid and password: <br/></td>
+    <td class="xl" colspan="2"><text text="sessionExpired"/><br/></td>
   </tr>
   <tr>
     <td align="right">Fog ID:</td>
@@ -32,7 +32,7 @@
   </tr>
   <tr>
     <td></td>
-    <td><input type="submit" name="s" value="Log in" />  </td>
+    <td><br/><input type="submit" name="s" value="logOn" />  </td>
   </tr>
   <!--tr>
     <td colspan="2">

@@ -35,7 +35,7 @@
   </tr>
   <tr>
     <td></td>
-    <td><input type="submit" name="s" value="Log in" /></td>
+    <td><br/><input type="submit" name="s" value="logOn" /></td>
   </tr>
 </table>
 <returnUri />

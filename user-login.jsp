@@ -1,6 +1,5 @@
 <HTML>
 <include name="include/commonHeader.html" />
-<!--include name="script.html" /-->
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
@@ -25,7 +24,7 @@
   <tr>
     <td align="CENTER" colspan="2">
       <br />
-      <input type="Submit" value=" Log On "/>
+      <input type="Submit" value="logOn"/>
     </td>
   </tr>
 </table>

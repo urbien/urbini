@@ -29,12 +29,12 @@
   <tr>
     <td></td>
     <td>
-      <userLogin html="new-user.html" title="I am not a member, register me please" />
+      <userLogin html="new-user.html" title="registerMe" />
     </td>
   </tr>
   <tr>
     <td></td>
-    <td><input type="submit" name="s" value="Log in" />  </td>
+    <td><br/><input type="submit" name="s" value="logOn" />  </td>
   </tr>
 </table>
 <returnUri />
