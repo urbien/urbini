@@ -28,6 +28,7 @@
       <div align="left"><backLink /></div>
       <siteResourceList />
       <div align="right"><measurement/></div>
+      <readOnlySiteInfo />
       <addNewResource html="mkResource.html" /> 
       <showSetProperties />
     </form>
