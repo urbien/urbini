@@ -268,21 +268,25 @@
         return;
 
       target = getTargetElement(e);
+      return tooltipMouseOver0(target);
+    }  
+    
+    function tooltipMouseOver0(target) {
       var tooltip = target.getAttribute('tooltip'); // using getAttrbute() - as workaround for IE5.5 custom attibutes bug
       var tooltipText;
       if (!tooltip) {
-        tooltip = target.attributes['title'];
+        tooltip = target.getAttribute('title');
         if (tooltip) {
-          tooltipText = tooltip.value;
+          tooltipText = tooltip;
           if (tooltipText == '')
             return true;
           window.status = tooltipText;
           // merge tooltip on IMG with tooltip on its parent A tag 
           var parentA = target.parentNode;
           if (parentA && parentA.tagName.toUpperCase() == 'A') {
-            var linkTooltip = parentA.attributes['title'];
+            var linkTooltip = parentA.getAttribute('title');
             if (linkTooltip) {
-              var linkTooltipText = linkTooltip.value;
+              var linkTooltipText = linkTooltip;
               if (linkTooltipText && linkTooltipText != '') {
                 tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';
               }  
@@ -321,7 +325,10 @@
       if (!e)
         return;
       target = getTargetElement(e);
-     
+      return tooltipMouseOut0(target);
+    }
+
+    function tooltipMouseOut0(target) {    
       var tooltipDiv = document.getElementById('system_tooltip');
       var ifrRef = document.getElementById('tooltipIframe');
      
@@ -422,10 +429,11 @@
         var elem = elements[i];
         if (elem.id  &&  elem.id.indexOf("_markedAsRead", elem.id.length - "_markedAsRead".length) != -1) {
           addEvent(elem, 'click', markedAsRead, false);
-//          addEvent(elem, 'mouseover',   tooltipMouseOver,   false);
+          elem.style.cursor = 'pointer';
         }
       } 
     }
+
     function markedAsRead(e) {
       var target;
 
@@ -436,22 +444,24 @@
       var url = 'editProperties.html?submit=Submit+changes&uri=';
       
       var rUri = target.id.substring(0, target.id.length - "_markedAsRead".length);
-      var tooltip = target.attributes['tooltip'];
+      var tooltip = target.getAttribute('tooltip');
       var pValue;
-      if (tooltip  &&  tooltip.length != 0  &&  tooltip.value == "Yes")
+      if (tooltip  &&  tooltip.length != 0  &&  tooltip == "Yes")
         pValue = "No";
       else
         pValue = "Yes";
       target.setAttribute('tooltip', pValue);
       if (pValue == "Yes")
-        target.src = target.attributes['yesIcon'].value;
+        target.src = target.getAttribute('yesIcon');
       else
-        target.src = target.attributes['noIcon'].value;
+        target.src = target.getAttribute('noIcon');
       url += encodeURIComponent(rUri) + "&markedAsRead=" + pValue;
       
       var onClickPopupFrame = frames["popupFrame"];
       popupFrameLoaded = false;
       onClickPopupFrame.location.replace(url); // load data from server into iframe
+      tooltipMouseOut0(target);
+      tooltipMouseOver0(target);
     }
     
     var formInitialValues;
