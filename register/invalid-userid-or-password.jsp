@@ -23,7 +23,7 @@
   </tr>
   <tr>
     <td></td>
-    <td><br/><input type="submit" name="s" value="logOn" />  </td>
+    <td><br/><input type="submit" name="s" value="Log on" />  </td>
   </tr>
 </table>
 <returnUri />

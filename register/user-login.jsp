@@ -18,7 +18,7 @@
   <tr>
     <td align="CENTER" colspan="2">
       <br />
-      <input type="submit" value="logOn"/>
+      <input type="submit" value="Log on"/>
     </td>
   </tr>
 </table>
