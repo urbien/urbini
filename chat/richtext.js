@@ -174,31 +174,33 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 		document.writeln('<table class="rteBack" cellpadding="0" cellspacing="0" id="Buttons2_' + rte + '" width="' + tablewidth + '">');
 		document.writeln('	<tr>');
 */		
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'bold.gif" width="25" height="24" alt="Bold" title="Bold" onClick="FormatText(\'' + rte + '\', \'bold\', \'\')">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'italic.gif" width="25" height="24" alt="Italic" title="Italic" onClick="FormatText(\'' + rte + '\', \'italic\', \'\')">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'underline.gif" width="25" height="24" alt="Underline" title="Underline" onClick="FormatText(\'' + rte + '\', \'underline\', \'\')">');
-		document.writeln('		<img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt="">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'left_just.gif" width="25" height="24" alt="Align Left" title="Align Left" onClick="FormatText(\'' + rte + '\', \'justifyleft\', \'\')">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'centre.gif" width="25" height="24" alt="Center" title="Center" onClick="FormatText(\'' + rte + '\', \'justifycenter\', \'\')">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'right_just.gif" width="25" height="24" alt="Align Right" title="Align Right" onClick="FormatText(\'' + rte + '\', \'justifyright\', \'\')">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'justifyfull.gif" width="25" height="24" alt="Justify Full" title="Justify Full" onclick="FormatText(\'' + rte + '\', \'justifyfull\', \'\')">');
-		document.writeln('		<img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt="">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'hr.gif" width="25" height="24" alt="Horizontal Rule" title="Horizontal Rule" onClick="FormatText(\'' + rte + '\', \'inserthorizontalrule\', \'\')">');
-		document.writeln('		<img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt="">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'numbered_list.gif" width="25" height="24" alt="Ordered List" title="Ordered List" onClick="FormatText(\'' + rte + '\', \'insertorderedlist\', \'\')">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'list.gif" width="25" height="24" alt="Unordered List" title="Unordered List" onClick="FormatText(\'' + rte + '\', \'insertunorderedlist\', \'\')">');
-		document.writeln('		<img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt="">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'outdent.gif" width="25" height="24" alt="Outdent" title="Outdent" onClick="FormatText(\'' + rte + '\', \'outdent\', \'\')">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'indent.gif" width="25" height="24" alt="Indent" title="Indent" onClick="FormatText(\'' + rte + '\', \'indent\', \'\')">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'bold1.gif" width="13" height="13" alt="Bold" title="Bold" onClick="FormatText(\'' + rte + '\', \'bold\', \'\')">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'italic1.gif" width="13" height="13" alt="Italic" title="Italic" onClick="FormatText(\'' + rte + '\', \'italic\', \'\')">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'underline1.gif" width="13" height="13" alt="Underline" title="Underline" onClick="FormatText(\'' + rte + '\', \'underline\', \'\')">');
+		document.writeln('		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'left_just1.gif" width="13" height="13" alt="Align Left" title="Align Left" onClick="FormatText(\'' + rte + '\', \'justifyleft\', \'\')">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'centre1.gif" width="13" height="13" alt="Center" title="Center" onClick="FormatText(\'' + rte + '\', \'justifycenter\', \'\')">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'right_just1.gif" width="13" height="13" alt="Align Right" title="Align Right" onClick="FormatText(\'' + rte + '\', \'justifyright\', \'\')">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'justifyfull1.gif" width="13" height="13" alt="Justify Full" title="Justify Full" onclick="FormatText(\'' + rte + '\', \'justifyfull\', \'\')">');
+		document.writeln('		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'hr1.gif" width="13" height="13" alt="Horizontal Rule" title="Horizontal Rule" onClick="FormatText(\'' + rte + '\', \'inserthorizontalrule\', \'\')">');
+///*
+		document.writeln('		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'numbered_list1.gif" width="13" height="13" alt="Ordered List" title="Ordered List" onClick="FormatText(\'' + rte + '\', \'insertorderedlist\', \'\')">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'list1.gif" width="13" height="13" alt="Unordered List" title="Unordered List" onClick="FormatText(\'' + rte + '\', \'insertunorderedlist\', \'\')">');
+		document.writeln('		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'outdent1.gif" width="13" height="13" alt="Outdent" title="Outdent" onClick="FormatText(\'' + rte + '\', \'outdent\', \'\')">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'indent1.gif" width="13" height="13" alt="Indent" title="Indent" onClick="FormatText(\'' + rte + '\', \'indent\', \'\')">');
 		document.writeln('		<span id="forecolor_' + rte + '">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'textcolor.gif" width="25" height="24" alt="Text Color" title="Text Color" onClick="FormatText(\'' + rte + '\', \'forecolor\', \'\')"></span>');
-		document.writeln('		<span id="hilitecolor_' + rte + '"><img class="rteImage" src="' + imagesPath + 'bgcolor.gif" width="25" height="24" alt="Background Color" title="Background Color" onClick="FormatText(\'' + rte + '\', \'hilitecolor\', \'\')"></span>');
-		document.writeln('		<img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt="">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'hyperlink.gif" width="25" height="24" alt="Insert Link" title="Insert Link" onClick="FormatText(\'' + rte + '\', \'createlink\')">');
-		document.writeln('		<img class="rteImage" src="' + imagesPath + 'image.gif" width="25" height="24" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'textcolor1.gif" width="13" height="13" alt="Text Color" title="Text Color" onClick="FormatText(\'' + rte + '\', \'forecolor\', \'\')"></span>');
+		document.writeln('		<span id="hilitecolor_' + rte + '"><img class="rteImage" src="' + imagesPath + 'bgcolor1.gif" width="13" height="13" alt="Background Color" title="Background Color" onClick="FormatText(\'' + rte + '\', \'hilitecolor\', \'\')"></span>');
+		document.writeln('		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'hyperlink1.gif" width="13" height="13" alt="Insert Link" title="Insert Link" onClick="FormatText(\'' + rte + '\', \'createlink\')">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'image1.gif" width="13" height="13" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')">');
+//*/		
 		//if (!readOnly) document.writeln('<td><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source</td>');
 		if (isIE) {
-			document.writeln('		<img class="rteImage" src="' + imagesPath + 'spellcheck.gif" width="25" height="24" alt="Spell Check" title="Spell Check" onClick="checkspell()">');
+			document.writeln('		<img  align="absmiddle"class="rteImage" src="' + imagesPath + 'spellcheck1.gif" width="13" height="13" alt="Spell Check" title="Spell Check" onClick="checkspell()">');
 		}
 		document.writeln('		</td>');
 		//if (!readOnly) document.writeln('<td><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source</td>');
