@@ -211,7 +211,6 @@ function computeRequestDigest(form) {
     var request_digest = MD5(A1 + ":" + form.challenge.value + ":" + A2);
     var url = request_digest + "&realm=" + escape(form.realm.value) + "&nonce=" + form.challenge.value + "&digest_uri=" + escape(form.digest_uri.value);
     
-("JAVA SCRIPT: challenge="  + form.challenge).toString();
     return url;
 }
 
@@ -231,30 +230,29 @@ function hash(form, login_url) {
     if (valid_js()) {
       var js = 0;
 
-      for(i=0; i<form.elements.length; i++){
-        if(form.elements[i].name.length <=0) {
+      var j=0;
+      for(; j<form.elements.length; j++) {
+        if(form.elements[j].name.length <=0) {
           continue;
         }
-        if(i > 0){
+        if(j > 0){
           url += "&";
         }
-        url += form.elements[i].name;
+        url += form.elements[j].name;
         url += "=";
-        if(form.elements[i].name == "j_password"){
+        if(form.elements[j].name == "j_password"){
           url += computeRequestDigest(form);
-//java.lang.System.out.println("url=" + url);
-        } else if (form.elements[i].type == "checkbox" && !form.elements[i].checked) {
+        } else if (form.elements[j].type == "checkbox" && !form.elements[j].checked) {
           url += "";
-        } else if (form.elements[i].type == "radio" && !form.elements[i].checked) {
+        } else if (form.elements[j].type == "radio" && !form.elements[j].checked) {
           url += "";
-        } else if (form.elements[i].name == ".save"){
+        } else if (form.elements[j].name == ".save"){
           url += "1"; // "Sign in" causes problem with the space
-        } else if (form.elements[i].name == ".js"){
+        } else if (form.elements[j].name == ".js"){
           js = 1;
           url += "1"; 
         } else {
-
-          url += escape(form.elements[i].value);
+          url += escape(form.elements[j].value);
         }
       }
       // indicate the password is hashed.
