@@ -242,6 +242,8 @@ function hash(form, login_url) {
         url += "=";
         if(form.elements[j].name == "j_password"){
           url += computeRequestDigest(form);
+        } else if (form.elements[j].type == "submit") {
+          continue;
         } else if (form.elements[j].type == "checkbox" && !form.elements[j].checked) {
           url += "";
         } else if (form.elements[j].type == "radio" && !form.elements[j].checked) {
