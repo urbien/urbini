@@ -1324,11 +1324,9 @@ function hideResetRow(div, currentFormName, originalProp) {
     valueIsSet = false;
 
   if (valueIsSet) {
-    tr.style.display    = "inline";
-    tr.style.visibility = VISIBLE;
+    tr.style.display    = '';
   }  
   else {
-    tr.style.visibility = HIDDEN;
     tr.style.display    = "none";
   }  
 }
