@@ -31,8 +31,8 @@ function showDeps(source, dep, numprojects) {
 
   if (last != source) {
     if (counter%2 != 0) {
+//      alert(source + " " + dep + " " + k);
       draw(source, dep, numprojects);
-//    alert(source + " " + dep + " " + k);
     }
   }
   last = source;
@@ -42,18 +42,28 @@ function showDeps(source, dep, numprojects) {
 }
 
 function visi(nr, i) {
+//  alert("invisi");
   var hidden =  'hidden';
   var visible = 'visible';
+  var style = null;
 	
   if (document.layers) {
-    var style = document.layers[nr]; 
-    var hidden = 'hide';
-    var visible = 'show';	
+//    alert("invisi1");
+    style = document.layers[nr]; 
+    hidden = 'hide';
+    visible = 'show';	
   }
-  else if (document.all)
-    var style = document.all[nr].style;
-  else if (document.getElementById) 
-    var style = document.getElementById(nr).style;
+  else if (document.all) {
+//    alert("here");
+    style = document.all[nr].style;
+  }
+  else if (document.getElementById) {
+//    alert("invisi2");
+    style = document.getElementById(nr).style;
+//    alert("invisi2 again" + style==null);
+  }
+
+//  alert("invisi, style= " + style==null);
 
   if (i == 0) 
     style.visibility = visible;
@@ -62,6 +72,7 @@ function visi(nr, i) {
 }
 
 function draw(source, dep, numprojects) {
+//      alert("drawing");
       var td = document.getElementById("thisOne");
       var tdL = td.offsetLeft;
       while (td.offsetParent != null) {
@@ -90,7 +101,7 @@ function draw(source, dep, numprojects) {
 
       var bar2 = document.getElementById(dep);
       if (bar2 == null) {
-	alert("bar2 is null, this is the id: " + dep.substring(60));
+//	alert("bar2 is null, this is the id: " + dep.substring(60));
       }
 
       if (bar2 != null) {
@@ -161,6 +172,9 @@ function draw(source, dep, numprojects) {
 	style2.width = 2;
 
 //        alert("here4");
+//	var cellpadding = 'cellpadding';
+//	var obj = getObject(cellpadding);
+//	alert(obj==bull);
 
 	if (bar2 != null) {
 		style2.height = temp1 - temp;
@@ -211,4 +225,16 @@ function getStyle() {
   else if (document.getElementById) 
     style = document.getElementById(this).style;
   return style;  
+}
+
+function getObject(obj) {
+  var object = null;
+  if (document.layers) {
+    object = document.layers[obj]; 
+  }
+  else if (document.all)
+    object = document.all[obj];
+  else if (document.getElementById(obj)) 
+    object = document.getElementById(obj);
+  return object;  
 }
