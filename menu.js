@@ -779,6 +779,7 @@ function popupRowOnClick(e) {
       select = currentResourceUri + ".$." + select;
 
     formField = form.elements[select];
+    var selectItems = form.elements[select];
     if (tr.id.indexOf('$clear') == 0) {
       if (len > 1) {
         if (currentFormName != "tablePropertyList")
@@ -792,6 +793,9 @@ function popupRowOnClick(e) {
         else
           chosenTextField.value   = '';
       }
+      if (chosenTextField.style)
+        chosenTextField.style.backgroundColor = '';
+      
       formField.value         = '';
       if (formFieldClass)
         formFieldClass.value  = '';
@@ -801,6 +805,14 @@ function popupRowOnClick(e) {
         fieldLabel.style.display    = "none";
       if (formFieldVerified)
         formFieldVerified.value = 'n';
+      if (selectItems) {
+        for (i=0; i<selectItems.length; i++) {
+          if (selectItems[i].type == "checkbox")
+            selectItems[i].checked = false;
+          else
+            selectItems[i].value = null;
+        }
+      }
       if (currentDiv) openedPopups[currentDiv.id] = null;
       var imgId  = prop + "_class_img";
       var img = document.getElementById(imgId);
@@ -821,9 +833,17 @@ function popupRowOnClick(e) {
         chosenTextField.style.backgroundColor = '#ffffff';
       formField.value = tr.id; // property value corresponding to a listitem
       // show property label since label inside input field is now overwritten
-      if (form.id == 'rightPanelPropertySheet') {
+      if (currentFormName == 'rightPanelPropertySheet') {
         if (fieldLabel)
           fieldLabel.style.display = '';
+      }
+      if (selectItems.length != 1) {
+        for (i=0; i<selectItems.length; i++) {
+          if (selectItems[i].value == tr.id) {
+            selectItems[i].checked = true;
+            break;
+          }
+        }
       }
     }
   }
@@ -1441,6 +1461,50 @@ function chooser(element) {
     window.opener.document.forms[form].elements[propName].value                    = value;
     window.opener.document.forms[form].elements[shortPropName + "_select"].value   = id;
     window.opener.document.forms[form].elements[shortPropName + "_verified"].value = "y";
+  }
+}
+
+function chooser1(element) {
+  var propName = element.name;
+  var idx = propName.indexOf(".");
+  var shortPropName = propName;
+  if (idx != -1)
+    shortPropName = propName.substring(0, idx);
+  var form     = element.form.elements['$form'].value;
+  var editList = element.form.elements['$wasEditList'];
+  var value    = element.value;
+  var id       = element.id;
+
+  if (!id)
+    id = value;
+
+  if (editList) {
+    var uri = element.form.elements['$rUri'].value;
+    window.opener.document.forms[form].elements[uri + ".$." + propName].value                    = value;
+    window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_select"].value   = id;
+    window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_verified"].value = "y";
+  }
+  else {
+    var selectItems = window.opener.document.forms[form].elements[shortPropName + "_select"];
+    var len = selectItems.length;
+    var tr = getTrNode(selectItems[len - 1]);
+    var table = tr.parentNode;
+    var newRow = tr.cloneNode(true);
+    newRow.id = id;
+    table.appendChild(newRow);
+    selectItems = window.opener.document.forms[form].elements[shortPropName + "_select"];
+    selectItems[len].value = id;
+    selectItems[len].checked = true;
+    window.opener.document.forms[form].elements[propName].value                        = value;
+//    window.opener.document.forms[form].elements[shortPropName + "_select"][len].value  = id;
+    window.opener.document.forms[form].elements[shortPropName + "_verified"].value     = "y";
+    if (window.opener.document.forms[form].elements[propName].style)
+      window.opener.document.forms[form].elements[propName].style.backgroundColor = '#ffffff';
+    if (currentFormName == 'rightPanelPropertySheet') {
+      var filterLabel = window.opener.document.getElementById(shortPropName + "_span");
+      if (filterLabel)
+        filterLabel.style.display = '';
+    }
   }
 }
 
