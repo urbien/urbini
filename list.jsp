@@ -19,7 +19,7 @@
   <td valign="top" align="middle">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top">
-      <td valign="top" width="80%"><span class="xs"><language/>|<print image="images/printerIcon.gif"/></span></td>
+      <td valign="top" width="80%"><span class="xs"><language/>|<print image="images/printerIcon.gif"/>|<saveInExcel image="images/excel.gif"/></span></td>
       <td valign="top" align="right" width="20%"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr><td valign="top">  
