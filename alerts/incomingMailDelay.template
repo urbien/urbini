@@ -1,11 +1,12 @@
+<%dataset%>
 
 Dear <%data name="firstname"%> <%data name="lastname"%>
 
-There has been a delay of <%data name="delay"%> in message arrival 
+There has been a delay of <%data name="delay"%> hours in message arrival 
 to email account: <%data name="mailAccount"%>
 
-Second alert is scheduled to be sent in <%data name="nextDelay">
-to <%data name="escalationEmails">.
+Second alert is scheduled to be sent in <%data name="nextDelay"> hours
+to <%data name="escalationEmails"%>.
 
 Customer Service
 HudsonFog 
