@@ -60,7 +60,7 @@ span.light {color:#ffffff}
 a:link { color: #0033CC; }    
 /* a:visited { color: #663399; } */
 /* a:active { color: #62B530; }  */
-a:hover { color: #3399FF; }  
+a:hover { text-decoration: underline; color: #3399FF; }  
 .button1 {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: hand; font-size:11px}
 
 .select	{color:#000066;background-color:#D6E7EF;font-size:11px}
