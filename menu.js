@@ -139,23 +139,28 @@ function menuOpen1(div, link) {
 	}
 }
 
-function menuClose1(div) {
-  var d =document.getElementById(div);
-  if (!d)
+function menuClose1(divId) {
+  //alert("divId"+divId + ",currentDiv=" + currentDiv.id);  
+  var divRef =document.getElementById(divId);
+  if (!divRef)
     return;
-  poptext = d.style;
+
+  if (divRef != currentDiv) {
+    return;
+  }  
+  poptext = divRef.style;
   if (poptext.display == "inline") {
-    poptextLeft   = docjslib_getImageXfromLeft(div);
-    poptextTop    = docjslib_getImageYfromTop(div);
-    poptextWidth  = docjslib_getImageWidth(div);
-    poptextHeight = docjslib_getImageHeight(div);
+    poptextLeft   = docjslib_getImageXfromLeft(divId);
+    poptextTop    = docjslib_getImageYfromTop(divId);
+    poptextWidth  = docjslib_getImageWidth(divId);
+    poptextHeight = docjslib_getImageHeight(divId);
     if (xMousePos < poptextLeft || xMousePos > poptextLeft + poptextWidth ||
         yMousePos < poptextTop || yMousePos > poptextTop + poptextHeight) {
         //poptext.display = "none";
-      DivSetVisible(false, div);
+      DivSetVisible(false, divId);
       currentDiv = null;
     } else {
-      timeoutId = setTimeout("menuClose1('" + div + "')", 100);
+      timeoutId = setTimeout("menuClose1('" + divId + "')", 100);
     }
   }
 }
@@ -163,14 +168,14 @@ function menuClose1(div) {
 /* close div uncoditionally with no regard to mouse position */
 function menuClose2(divElem) {
   poptext = divElem.style;
-  var div = divElem.id;
+  var divId = divElem.id;
   if (poptext.display == "inline") {
-    poptextLeft   = docjslib_getImageXfromLeft(div);
-    poptextTop    = docjslib_getImageYfromTop(div);
-    poptextWidth  = docjslib_getImageWidth(div);
-    poptextHeight = docjslib_getImageHeight(div);
-    DivSetVisible(false, div);
-    currentDiv = null;
+    poptextLeft   = docjslib_getImageXfromLeft(divId);
+    poptextTop    = docjslib_getImageYfromTop(divId);
+    poptextWidth  = docjslib_getImageWidth(divId);
+    poptextHeight = docjslib_getImageHeight(divId);
+    DivSetVisible(false, divId);
+    if (divElem == currentDiv) currentDiv = null;
   }
 }
 
@@ -440,7 +445,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
     else {                // hack for Netscape (using an empty anchor element to focus on)
       var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
       if (elm) {
-        elm.focus();
+        if (elm.focus) elm.focus();
       }  
     }  
     return;
@@ -476,28 +481,48 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   var onClickPopupFrame = frames["popupFrame"];
   popupFrameLoaded = false;
   onClickPopupFrame.location.replace(url); // load data from server into iframe
+  timeoutCount = 0;
   setTimeout(loadPopup, 100);
 }
 
+var timeoutCount;
 /**
  *  Loads the popup into the div from the iframe
  */
 function loadPopup() {
   if (!popupFrameLoaded) {
-    setTimeout(loadPopup, 100);
+    if (timeoutCount++ < 20)
+      setTimeout(loadPopup, 100);
+    else
+      alert("Warning: server did not return listbox data - check connection to server");
     return;
   }  
 
   var popupFrame = frames['popupFrame'];
   if (currentDiv) {
     var body = popupFrame.document.getElementById('popupFrameBody');
-    if (body) {
-      currentDiv.innerHTML = body.innerHTML;
+    if (!body) {
+      alert("Warning: server did not return listbox data - check connection to server");
+      return;
     }
+    currentDiv.innerHTML = body.innerHTML;
   }
+  var addToTableName = "";  
+  if (originalProp.indexOf("_class") != -1) {
+    var field = propName + "_class";
+    if (document.forms[currentFormName].elements[field].value == "")
+      addToTableName = "_class";
+  }
+  var tableId = "table_" + propName + addToTableName + "_" + currentFormName;
+  var table   = document.getElementById(tableId);
+  if (!table) {
+    alert("Warning: server did not return listbox data - check connection to server");
+    return;
+  }
+    
   hideResetRow(currentDiv, currentFormName, originalProp);
   menuOpenClose(currentDiv.id, currentImgId);
-  interceptPopupEvents(currentDiv);
+  interceptPopupEvents(currentDiv, table);
   openedPopups[currentDiv.id] = currentDiv;
 
   // make popup active for key input    
@@ -506,23 +531,13 @@ function loadPopup() {
   else {                // Netscape
     var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
     if (elm) {
-      elm.focus();
+      if (elm.focus) 
+        elm.focus();
     }  
   }  
 }
 
-function interceptPopupEvents(div) {
-  var addToTableName = "";
-
-  if (originalProp.indexOf("_class") != -1) {
-    var field = propName + "_class";
-    if (document.forms[currentFormName].elements[field].value == "")
-      addToTableName = "_class";
-  }
-  var tableId = "table_" + propName + addToTableName + "_" + currentFormName;
-//alert("propName = " + propName);  
-//alert("tableId = " + tableId);
-  var table   = document.getElementById(tableId);
+function interceptPopupEvents(div, table) {
   var img     = document.getElementById(currentImgId);
 
   addEvent(div,  'mouseover', popupOnMouseOver, false);
@@ -737,9 +752,13 @@ function popupRowOnClick(e) {
         if (formFieldClass)
           formFieldClass.value  = '';
       }
+      // hide property label that is displayed on top of the text field
+      var fieldLabel = document.getElementById(propName + "_span");
+      if (fieldLabel)
+        fieldLabel.style.display    = "none";
       if (formFieldVerified) 
         formFieldVerified.value = 'n';
-      openedPopups[currentDiv.id] = null;
+      if (currentDiv) openedPopups[currentDiv.id] = null;
       var imgId  = prop + "_class_img";
       var img = document.getElementById(imgId);
       if (img) {
@@ -821,7 +840,7 @@ function autoCompleteOnMouseout(e) {
 	  return true;
 
   if (currentDiv) {
-    menuClose2(currentDiv);
+    menuClose(currentDiv.id);
   }  
 }
 
