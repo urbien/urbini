@@ -121,8 +121,12 @@ function menuOpen1(div, link) {
 }
 
 function menuClose1(div) {
-	
-	poptext = document.getElementById(div).style;
+	var d = document.getElementById(div);
+        if (!d) 
+          return;
+	poptext = d.style;
+        if (!poptext)
+          return;
 	if (poptext.display == "inline") {
 		poptextLeft = docjslib_getImageXfromLeft(div);
 		poptextTop = docjslib_getImageYfromTop(div);
@@ -327,6 +331,7 @@ function openClose() {
     setTimeout(openClose, 100);
     return;
   }  
+  popupFrameLoaded = false;
   var propName = popupDivId.substring(6);
   menuOpenClose(popupDivId, propName + "_filter");
   interceptPopupEvents(popupDivId);

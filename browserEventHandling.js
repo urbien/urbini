@@ -191,25 +191,20 @@
    function loadDiv(frameId, divId) {    
      var bottomFrame = window.parent.frames[frameId];
      var pane2       = window.parent.document.getElementById(divId);
-//alert("pane2 = " + pane2.tagName);
      if (pane2) {
        var body = bottomFrame.document.body;
        if (body) {
          pane2.innerHTML = body.innerHTML;
-//alert("pane2.innerHtml = " + pane2.innerHtml);
        }
      }
    }
 
-//alert("window.name = " +  window.name);
    // add only if inside iframe
    if (window.parent != window) {
-//alert("window.name = " +  window.name);
      if (window.name == "bottomFrame")
        addEvent(window, 'load', function() {setTimeout(loadPane2, 0);}, false);
 
-     else if (window.name == "popupFrame")  
+     else if (window.name == "popupFrame") {
        addEvent(window, 'load', function() {setTimeout(loadPopup, 0);}, false);
-     
-//       addEvent(window, 'load', function() {setTimeout(showPopup, 0); setTimeout(interceptAllClicks, 0);}, false);
+     }
    }
