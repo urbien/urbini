@@ -600,8 +600,9 @@ function popupOnSubmit(e) {
   var submitButtonName  = null;
   var submitButtonValue;
 /*
-  if (target.type.toUpperCase() == 'SUBMIT') {
-    if (target.name == "Clear")
+  var t = target.attributes['type'];
+  if (t.toUpperCase() == 'SUBMIT') {
+    if (target.attributes['name'] == "Clear")
       url += "&clear=Clear";      
     else
       url += "&submit=y";
@@ -712,6 +713,8 @@ function popupRowOnClick(e) {
   if (currentResourceUri)
     verified = currentResourceUri + ".$." + verified;
   
+  var iclass = prop + "_class";    
+  var formFieldClass = form.elements[iclass];
   var formFieldVerified = form.elements[verified];
   if (formFieldVerified) 
     formFieldVerified.value = 'y'; // value was modified and is verified since it is not typed but is chosen from the list
@@ -724,26 +727,42 @@ function popupRowOnClick(e) {
     formField = form.elements[select];
 
     var items = tr.getElementsByTagName('td');
-    var val = items[1].innerHTML;
-    var idx = val.lastIndexOf(">");
+    if (tr.id == '$more') {
+      var anchors = tr.getElementsByTagName('a');
+      document.location.href = anchors[0].href;
+      return false;
+    }
+
     if (tr.id == '$clear') {
-      chosenTextField.value = getFormFieldInitialValue(chosenTextField);
-      formField.value =  getFormFieldInitialValue(formField);
+      var currentLabel = chosenTextField.value;
+      var initialLabel = getFormFieldInitialValue(chosenTextField);
+      // reset to initial value
+      if (currentLabel != initialLabel) {
+        chosenTextField.value   = initialLabel;
+        formField.value         = getFormFieldInitialValue(formField);
+        if (formFiledClass)
+          formFieldClass.value  = getFormFieldInitialValue(formClassField);
+      }
+      // reset to no-value
+      else {
+        chosenTextField.value   = '';
+        formField.value         = '';
+        if (formFieldClass)
+          formFieldClass.value  = '';
+      }
       if (formFieldVerified) 
         formFieldVerified.value = 'n';
-      var iclass = prop + "_class";
-      var formFieldClass = form.elements[iclass];
-      if (formFieldClass)
-        formFieldClass.value = getFormFieldInitialValue(formClassField);
       openedPopups[currentDiv.id] = null;
       var imgId  = prop + "_class_img";
       var img = document.getElementById(imgId);
       if (img) {
         document.getElementById(imgId).src = "icons/blank.gif";
         document.getElementById(imgId).title = "";
-      }  
+      }
     }
     else  {
+      var val = items[1].innerHTML;
+      var idx = val.lastIndexOf(">");
       chosenTextField.value = val.substring(idx + 1);
       formField.value = tr.id; // property value corresponding to a listitem
     }
@@ -751,10 +770,7 @@ function popupRowOnClick(e) {
       chosenTextField.style.backgroundColor='#ffffff';
   }
   else {
-    var iclass = prop + "_class";
-    var formFieldClass = form.elements[iclass];
     var img = tr.getElementsByTagName("img")[0];    
-    
     var imgId  = prop + "_class_img";
     if (img) {
       document.getElementById(imgId).src   = img.src;
