@@ -2,26 +2,29 @@
 <siteTitle />
 
 <div nonPda="T">
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-<tr valign="top">
-  <td valign="top" align="middle" width="100%">
-    <table width="100%" cellspacing="0" cellpadding="0" border="0">
-      <tr valign="top">
-        <td valign="top" width="110%" colspan="2">
-          <menu toolbar="toolbar1" activate="onMouseOver"/>
-          <menu toolbar="transport" activate="onMouseOver"/>
-          <menu toolbar="search" activate="onMouseOver"/>
-          <menu toolbar="toolbar3" activate="onMouseOver"/>
-          <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" activate="onMouseOver"/>
-          <print image="images/printerIcon.gif"/>
-          <saveInExcel allow="owner" image="images/excel.gif"/>
-          <pdaToPc image="images/pda.gif"/>
-          <showHideWindows/>
-        </td>
-      </tr>
 
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr valign="top">
+    <td valign="top" width="80%">
+    <menu toolbar="toolbar1" activate="onMouseOver"/>
+    <menu toolbar="transport" activate="onMouseOver"/>
+    <menu toolbar="search" activate="onMouseOver"/>
+    <menu toolbar="toolbar3" activate="onMouseOver"/>
+    <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" activate="onMouseOver"/>
+    <print image="images/printerIcon.gif"/>
+    <saveInExcel allow="owner" image="images/excel.gif"/>
+    <pdaToPc image="images/pda.gif"/>
+    <showHideWindows/>
+    </td>
+    <td valign="top" align="right" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
+     <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
+      <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
+    </form>
+</tr></table>
+
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
       <tr valign="top">
-      <td width="100%">
+      <td width="110%" colspan="2">
         <form action="list.html" name="siteResourceList">
           <div align="left"><backLink /></div>
           <taskTreeControl/>
@@ -42,15 +45,12 @@
           <horizontalFilter />
         </form>
       </td>
-      <td width="10%" id="rightPanelPropertySheet" valign="top" align="left">
+      <td width="5%" id="rightPanelPropertySheet" valign="top" align="left">
         <br/>
         <menu toolbar="filterLocal" type="onpage" title="false"/>
       </td>
       </tr>
     </table>
-  </td>
-</tr>
-</table>
 <br />
 </div>
 

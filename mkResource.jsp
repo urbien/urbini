@@ -16,6 +16,7 @@
    <br />
   <center>
     <input type="submit" name="saveAndCancel" value="  Submit  "></input>
+    &#160;&#160;<input type="submit" name="cancel" value="  Cancel  "></input>
   </center>
   <showSetProperties/>
 </form>

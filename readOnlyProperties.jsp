@@ -1,12 +1,13 @@
 <html>
 <siteTitle />
 <center>
+
 <table width="95%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
-    <tr valign="top">
-      <td valign="top" width="70%" class="topBar">
+    <tr  valign="top" class="keywordsearch">
+      <td valign="top" width="70%">
       <subscribeNote/>
       <img src="icons/icon.gif" width="16" height="16" align="middle" pda="T"/>
       <img src="icons/icon_divider.gif" align="middle" border="0" pda="T"/>
@@ -46,10 +47,13 @@
       <a href="javascript://" title="Chat Room" onclick="openChatWindow();"><img src="icons/webchat.png" alt="Chat room for this page" border="0" width="20" height="20" align="middle"/></a>
       <showHideWindows/>
       </td>
-      <td valign="top" align="right" width="30%" class="topBar"><!--changePassword/><userLogOff html="user-login.html"/--></td>
+      <td valign="top" align="right" width="15%"><changePassword/><userLogOff html="user-login.html"/></td>
+<form name="searchForm" method="GET" action="searchResult.html" valign="middle">
+      <td valign="top" align="right" width="15%"><include name="searchText.jsp"/></td>
+</form>
     </tr>
     <tr> 
-    <td colspan="2">
+    <td colspan="3">
       <font color="red"><center><b><errorMessage /></b></center></font>
       <!--siteHistory /-->
       <readOtherSiteInfo />
@@ -68,7 +72,9 @@
       </table>
       <reloadDocuments/>
     <br/><br/>
+<newComment/>
       <comments /> 
+
     </td></tr>
     </table>
 </td>
