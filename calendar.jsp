@@ -16,7 +16,6 @@
     <pdaToPc image="images/pda.gif"/>
     <showHideWindows/>
     </td>
-    <td valign="top" align="right" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
     <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
 </tr></table></td>
 </tr></table><table width="100%" border="0" cellspacing="0" cellpadding="0">
