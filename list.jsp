@@ -1,11 +1,4 @@
 <html>
-<script language="JavaScript">
-
-<include name="calendar/calendar1.html"/>
-<!--script language="JavaScript" src="calendar1.js"-->
-
-</script>
-
 <siteTitle />
 
 <pda nonPda="T">
@@ -56,13 +49,13 @@
 <tr  valign="top">
   <td valign="top" align="middle" width="100%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
-    <tr valign="top">
-      <td valign="top"><img src="icons/icon.gif"/>
-      <A title="Shortcuts" href="javascript://" onClick="hidepoptext()" ><IMG src="images/shortcuts.gif" width="22" align="middle" border="0"/></A>&#160;
-      <A title="Search"    href="javascript://" onClick="hidepoptext1()"><IMG src="images/search.gif" width="22" align="middle" border="0"/></A>&#160;
-      <A title="Filter"    href="javascript://" onClick="hidepoptext2()"><IMG src="images/filter.gif" width="22" align="middle" border="0"/></A>&#160;
-      <A title="Email"     href="javascript://" onClick="hidepoptext3()"><IMG src="images/email.jpg" align="middle" border="0"/></A>
-      <A title="Schedule"  href="javascript://" onClick="hidepoptext4()"><IMG src="images/calendar.jpg" align="middle" border="0"/></A>
+    <tr valign="top"> <td valign="top">      
+      <img src="icons/icon.gif" width="16" height="16" align="middle"/>
+      <A title="Shortcuts" href="javascript://" onClick="hidepoptext()" ><IMG src="images/shortcuts.gif" width="16" height="16" align="middle" border="0"/></A>&#160;
+      <A title="Search"    href="javascript://" onClick="hidepoptext1()"><IMG src="images/search.gif" width="16" height="16" align="middle" border="0"/></A>&#160;
+      <A title="Filter"    href="javascript://" onClick="hidepoptext2()"><IMG src="images/filter.gif" width="16" height="16" align="middle" border="0"/></A>&#160;
+      <A title="Email"     href="javascript://" onClick="hidepoptext3()"><IMG src="images/email.gif" width="16" height="16" align="middle" border="0"/></A>
+      <A title="Schedule"  href="javascript://" onClick="hidepoptext4()"><IMG src="images/calendar.gif" width="16" height="16" align="middle" border="0"/></A>
       <span class="xs"><language/><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>

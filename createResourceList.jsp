@@ -1,8 +1,4 @@
 <html>
-<script language="JavaScript">
-  <include name="calendar/calendar1.html"/>
-</script>
-
 <siteTitle />
 
 <pda nonPda="T">
@@ -22,7 +18,7 @@
     </tr>
 
     <tr valign="top"><td>
-    <form action="editList.html?update=1" name="siteResourceList" method="POST">
+    <form action="editList.html" name="siteResourceList" method="POST">
       <div align="left"><backLink /></div>
       <siteResourceList />
       <div align="right"><measurement/></div>
@@ -66,10 +62,11 @@
   <td valign="top" align="middle" width="100%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top"><td valign="top">
-      <img src="icons/icon.gif" width="16"/>
-      <A title="Shortcuts" href="javascript://" onClick="hidepoptext()" ><IMG src="images/shortcuts.gif" width="22" align="middle" border="0"/></A>&#160;
-      <A title="Search"    href="javascript://" onClick="hidepoptext1()"><IMG src="images/search.gif" width="22" align="middle" border="0"/></A>&#160;
-      <A title="Filter"    href="javascript://" onClick="hidepoptext2()"><IMG src="images/filter.gif" width="22" align="middle" border="0"/></A>
+      <img src="icons/icon.gif" width="16" height="16" align="middle"/>
+      <A title="Shortcuts" href="javascript://" onClick="hidepoptext()" ><IMG src="images/shortcuts.gif"  width="16" height="16" align="middle" border="0"/></A>&#160;
+      <A title="Search"    href="javascript://" onClick="hidepoptext1()"><IMG src="images/search.gif"  width="16" height="16" align="middle" border="0"/></A>&#160;
+      <A title="Filter"    href="javascript://" onClick="hidepoptext2()"><IMG src="images/filter.gif"  width="16" height="16" align="middle" border="0"/></A>&#160;
+      <A title="Email"     href="javascript://" onClick="hidepoptext3()"><IMG src="images/email.gif"  width="16" height="16" align="middle" border="0"/></A>&#160;
       
       <span class="xs"><language/></span><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
       <pdaToPc image="images/pda.gif"/><changePassword/><userLogOff html="user-login.html"/></td>

@@ -1,4 +1,5 @@
 <html>
+ <script language="JavaScript" src="calendar/calendar1.html"></script>
 <pda nonPda="T">
   <include name="include/commonHeader"/>
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
