@@ -16,8 +16,26 @@ function menuOpenClose(divName, imgName) {
 	}
 	poptext = document.getElementById(divName).style;
 	if (imgName) {
-            poptext.left = docjslib_getImageXfromLeft(imgName);
-            poptext.top = docjslib_getImageYfromTop(imgName) + docjslib_getImageHeight(imgName) + 2;
+            left = docjslib_getImageXfromLeft(imgName);
+            top = docjslib_getImageYfromTop(imgName) + docjslib_getImageHeight(imgName);
+
+            //Find out how close to the corner of the window
+            var rightedge=document.all? document.body.clientWidth-left : window.innerWidth-left;
+            var bottomedge=document.all? document.body.clientHeight-top : window.innerHeight-top;
+
+            //if the horizontal distance isn't enough to accomodate the width of the context menu
+            if (rightedge<poptext.offsetWidth)
+              //move the horizontal position of the menu to the left by its width
+              left=left-poptext.offsetWidth;
+
+            //same concept with the vertical position
+            if (bottomedge<poptext.offsetHeight)
+              top=document.all? document.body.scrollTop+document.body.offsetHeight-poptext.offsetHeight : window.pageYOffset+window.innerHeight-poptext.offsetHeight;
+            else
+              top = top + 2;
+
+            poptext.left = left;
+            poptext.top = top;
 	}
 	if (poptext.display == "none" || poptext.display == "") {
 		//poptext.display = "inline";
@@ -289,9 +307,146 @@ function DivSetVisible(state, divn)
    }
   }
 
+var popupDivId = null; // global var to let iframe know the div into which to move iframe content
+var popupFrameLoaded = false;
 function smartPopup(propName, url) {
-alert("SMARTPOPUP in session: " + propName);
-  var smartPopupFrame = frames[propName];
-  smartPopupFrame.location.href = url;
-  menuOpenClose(propName, propName + "_filter");
+  var imgName = propName + "_filter";
+  popupDivId = "smart_" + propName;
+  var smartPopupFrame = frames["popupFrame"];
+  popupFrameLoaded = false;
+  smartPopupFrame.location.href = url; // load data from server into iframe
+                                       // iframe onLoad will copy content into popupDiv
+  setTimeout(openClose, 100);
+}
+
+function openClose() {
+  if (!popupFrameLoaded) {
+    setTimeout(openClose, 100);
+    return;
+  }  
+  var propName = popupDivId.substring(6);
+  menuOpenClose(popupDivId, propName + "_filter");
+  interceptPopupEvents(popupDivId);
+}
+
+
+function interceptPopupEvents(divId) {
+  var div = document.getElementById(divId);
+  //var table = div.child;
+  var table = div.getElementsByTagName("table")[0];
+  var trs = table.getElementsByTagName("tr");
+  for (i=0;i<trs.length; i++) {
+    var elem = trs[i];
+    addEvent(elem, 'click',     popupOnClick,     false);
+    addEvent(elem, 'mouseover', popupOnMouseOver, false);
+    addEvent(elem, 'mouseout',  popupOnMouseOut,  false);
+  }
+}
+
+function popupOnClick(e) {
+  var tr;
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+      
+  if (!e) 
+    return;
+
+  target = getTargetElement(e);
+  tr = getTrNode(target);
+  if (!tr)
+    return;
+  
+  var form = document.forms['rightPanelPropertySheet'];
+  
+  var table = tr.parentNode;
+  var table1 = table.parentNode;
+alert("found table1 = " + table1.id);
+  
+  var propertyShortName = table1.id.substring("table_".length);
+  var select = propertyShortName + "_select";
+  var formField = form.elements[select];
+
+  formField.value = tr.id; // property value corresponding to a listitem
+  var chosenTextField = form.elements[propertyShortName];
+  var items = tr.getElementsByTagName('td');
+//alert("items.length = " + items.length + "; items[0].text = " + items[0].text + "; items[1].text = " + items[1].text + "items[2].text = " + items[2].text);  
+//alert("items.length = " + items[0].length + "; items[0].text = " + items[0].innerHTML + "; items[1].text = " + items[1].innerText + "items[2].text = " + items[2].text);  
+  var val = items[1].innerHTML;
+  var idx = val.lastIndexOf(">");
+  chosenTextField.value = val.substring(idx + 1);
+}
+
+
+function popupOnMouseOver(e) {
+  var tr;
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+      
+  if (!e) 
+    return;
+
+  target = getTargetElement(e);
+  tr = getTrNode(target);
+  if (!tr)
+    return;
+  
+  var form = document.forms['rightPanelPropertySheet'];
+  if (!form)
+    return true;
+  
+  var table = tr.parentNode;
+  if (!table)
+    return true;
+  var table1 = table.parentNode;
+
+  if (!table1)
+    return true;
+  var propertyShortName = table1.id.substring("table_".length);
+  window.status=propertyShortName; 
+  return true;
+}
+
+function popupOnMouseOut(e) {
+  window.status='';
+  var tr;
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+      
+  if (!e) 
+    return;
+
+  target = getTargetElement(e);
+  tr = getTrNode(target);
+  if (!tr)
+    return;
+  
+  var form = document.forms['rightPanelPropertySheet'];
+  if (!form)
+    return true;
+  
+  var table = tr.parentNode;
+  if (!table)
+    return true;
+  var table1 = table.parentNode;
+  if (!table1)
+    return true;
+  var propertyShortName = table1.id.substring("table_".length);
+  var divId = "smart_" + propertyShortName; 
+  menuClose(divId);
+  return true;
+}
+
+function getTrNode(elem) { 
+  var e;
+
+  if (elem.tagName.toUpperCase() == 'TR')
+    return elem;
+  e = elem.parentNode;
+  if (e)
+    return getTrNode(e);
+  else
+    return null;
 }

@@ -118,8 +118,6 @@
 
 
 <!--div align="left"><span class="xs"><hudsonFog /></span></div-->   <!-- link to Portal page for current category -->
-<iframe name="bottomFrame" id="bottomFrame" src="javascript:false;" 
-        scrolling="no" marginwidth="0" marginheight="0" frameborder="0" vspace="0" hspace="0" style="overflow:visible; width:100%; display:none" height="1000"> 
-</iframe>  
+<iframe name="bottomFrame" id="bottomFrame" src="javascript:false;" scrolling="no" frameborder="0" style="overflow:visible; display:none"> </iframe>  
 
 </div>
