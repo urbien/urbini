@@ -8,8 +8,8 @@
   <link href="styles/tree.css"       type="text/css" rel="stylesheet" />
   <link href="calendar/calendar.css" type="text/css" rel="stylesheet" /> 
 
-  <script language="JavaScript" src="menu.js">                </script>
   <script language="JavaScript" src="forms.js">               </script>
+  <script language="JavaScript" src="menu.js">                </script>
   <script language="JavaScript" src="calendar/cal_tpl1.js">   </script>
   <script language="JavaScript" src="calendar/cal_strings.js"></script>
   <script language="JavaScript" src="calendar/calendar.js">   </script>
