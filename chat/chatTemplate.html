@@ -177,7 +177,7 @@
 	  function inviteToChatRoomIconClick()
 	  {
 	  	frames["userList"].document.getElementById("nameUser").value=document.getElementById('sendPrivateMessagesToUserRealName').value; 
-		frames["userList"].document.getElementById("message").value="!-invtUser " + parent.document.getElementById("realUserName").value + " invites you to the chat room <a target=_top href=" + window.location + ">" + document.title+ "</a>";
+		frames["userList"].document.getElementById("message").value="!-invtUser <font color='#FFCC00'><strong>" + parent.document.getElementById("realUserName").value + "</strong></font> invites you to the chat room <a target=_top href=" + window.location + ">" + document.title+ "</a>";
 		frames["userList"].document.inviteUser.submit();
 	  }
 	  function highlightMessagesIconClick() 
