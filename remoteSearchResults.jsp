@@ -33,13 +33,13 @@
     
     <form name="rightPanelPropertySheet" method="POST" action="remoteSearchResults.html">
       <table border="1" cellpadding="3" cellspacing="0"><tr><td align="middle" class="title">
-      <input type="submit" name="submit" value="filter"></input>
-      <input type="submit" name="clear" value="clear"></input>
+      <input type="submit" name="submit" class="button1" value="filter"></input>
+      <input type="submit" name="clear" class="button1" value="clear"></input>
       </td></tr>
       <tr><td><rightPanelPropertySheet /></td></tr>
       <tr><td align="middle" class="title">
-      <input type="submit" name="submit" value="filter"></input>
-      <input type="submit" name="clear" value="clear"></input>
+      <input type="submit" name="submit" class="button1" value="filter"></input>
+      <input type="submit" name="clear" class="button1" value="clear"></input>
       <input type="hidden" name="action" value="searchParallel"></input>
       </td></tr></table>   
       <!--br></br-->
