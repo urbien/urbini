@@ -8,18 +8,8 @@
         var rightPanelPropertySheet_FIELDS = new Array();
       </script>
       <form name="rightPanelPropertySheet" method="POST" action="FormRedirect" onsubmit="clearUnModifiedFields(rightPanelPropertySheet_FIELDS)">
-        <table border="1" cellpadding="3" cellspacing="0">
-          <tr><td align="middle" class="title">
-            <input type="submit" name="submit"  class="button1" value="Filter"></input>
-            <input type="submit" name="clear"  class="button1" value="Clear"></input>
-          </td></tr>
-          <tr><td><rightPanelPropertySheet /></td></tr>
-          <tr><td align="middle" class="title">
-            <input type="submit" name="submit" class="button1" value="Filter"></input>
-            <input type="submit" name="clear"  class="button1" value="Clear"></input>
-            <input type="hidden" name="action" value="searchParallel"></input>
-          </td></tr>
-        </table>   
+        <rightPanelPropertySheet />
+        <input type="hidden" name="action" value="searchParallel"></input>
       </form>
     </td>
   </tr>
