@@ -81,13 +81,14 @@ function setTextHeight(div, divider) {
     var h = Math.floor(screen.availHeight/divider);
     divRef.style.height = h;
     divRef.style.overflow = "hidden";
-    if (spanRef.offsetHeight > divRef.offsetHeight) {
-      moreRef.style.display = "block";
-    } else {
-      moreRef.style.display = "none";
-      divRef.style.height = spanRef.offsetHeight;
-      divRef.style.overflow = "visible";
-    }
+    if (spanRef != null && moreRef != null)
+      if (spanRef.offsetHeight > divRef.offsetHeight) {
+        moreRef.style.display = "block";
+      } else {
+        moreRef.style.display = "none";
+        divRef.style.height = spanRef.offsetHeight;
+        divRef.style.overflow = "visible";
+      }
   }
 }
 function setTextHeightAll(divider) {
