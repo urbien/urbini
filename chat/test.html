@@ -1,0 +1,24 @@
+<html>
+
+<head>
+<script language="JavaScript">
+  var w = 640/3, h = 480/3, cw = w/2, ch = h/2;
+
+  function openChatWindow(url, target) {
+    if (window.screen) {
+      w = Math.floor(screen.availWidth/2);
+      h = Math.floor(screen.availHeight/2);
+      cw = Math.floor(screen.availWidth/4);
+      ch = Math.floor((screen.availHeight)/4);
+    }
+
+    window.open(url,target,'width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=no, location=no, toolbar=no, scrollbars=no, resizable=yes');
+  }
+</script>
+</head>
+
+<body>
+<a href="javascript://" onclick="openChatWindow('http://127.0.0.1/volga/chatRoom?room=test', 'chat');">test</a>
+</body>
+
+</html>

@@ -1,0 +1,25 @@
+fieldset{
+  background-color: #eeeeee;
+}
+legend{
+  background-color: #eeeeee;
+  border: 1px solid #808080;
+  font-weight: bold;
+}
+#chatContents{
+  height: 200px;
+  width: 500px;
+  border: 1px solid #888888;
+  margin: 0px 0px 0px 0px;
+  background-color: #ffffff;
+}
+div.#chatContents{
+  padding: 4px;
+  overflow: auto;
+}
+.sestesso span{
+  color: #ff0000;
+}
+.altro span{
+  color: #0088ff;
+}
