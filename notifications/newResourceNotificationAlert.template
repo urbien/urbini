@@ -1,0 +1,10 @@
+Dear &[firstName]; &[lastName];,
+<br>
+<br>
+The &[class]; <a href="&[url];" target=_blank>&[urlDisplayName];</a> has been created. 
+<br><br>
+Customer Service
+<br>
+HudsonFog 
+<br><br>
+<b>Powered by</b> <a href="http://hudsonfog.com" target=_blank>HudsonFog</a>
