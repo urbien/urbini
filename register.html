@@ -1,0 +1,26 @@
+<table border="0" cellpadding="0" cellspacing="0" width="256" cols="2">
+<form name="usernameform" action="#" method="POST" onSubmit="document.passwordform.j_password.focus(); return false;">
+  <tr>
+    <td align="RIGHT">User ID:<img src="images/spacer.gif" border=0 width=5></td>
+    <td><input type="Text" name="j_username" size="15" maxlength="20"></td>
+  </tr>
+  <tr><td align=right>
+</form>
+<form name="passwordform" method="post" action="#" onSubmit="document.passwordreenterform.j_password_reenter.focus(); return false;">
+    Password:<img src="images/spacer.gif" border=0 width=5></td>
+    <td><input type="Password" name="j_password" size="15" maxlength="10"></td>
+  </tr>
+  <tr><td align=right>
+</form>
+<form name="passwordreenterform" method="post" action="#" onSubmit="insertValues();return check_all_fields();">
+    Confirm Password:<img src="images/spacer.gif" border=0 width=5></td>
+    <td><input type="Password" name="j_password_reenter" size="15" maxlength="10"></td>
+  </tr>
+  <tr>
+    <td align="CENTER" colspan="3">
+      <br>
+      <input type="Submit" value=" Register me please ">
+    </td>
+  </tr>
+  </table>
+</form>

@@ -1,0 +1,21 @@
+<SCRIPT>
+  function check_all_fields()
+  {
+    if ((document.usernameform.j_username.value.length<1)      ||
+        (document.loginform.j_password.value.length<1)         ||
+        (document.loginform.j_password_reenter.value.length<1))
+      alert("Please fill out all the fields.");
+    else
+      document.loginform.submit();
+    return false;
+  }
+  function insertValues()
+  {
+    var dl=document.loginform;
+    dl.j_username.value=document.usernameform.j_username.value.toLowerCase();
+    dl.j_password.value=document.passwordform.j_password.value.toLowerCase();
+    dl.j_password_reenter.value=document.passwordreenterform.j_password_reenter.value.toLowerCase();
+  }
+  function setFocus()
+  { document.usernameform.j_username.focus();   }
+</SCRIPT>
