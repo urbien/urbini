@@ -1,5 +1,5 @@
 <div>
-  <form name="emailForm" action="page2email" method="GET">
+  <form name="emailForm" id="emailForm" action="page2email" method="GET">
     <table cellpadding="5">
       <tr nonPda="T"> 
         <td><b><text text="E-mail:"/></b></td>
