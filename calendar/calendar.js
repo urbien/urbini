@@ -508,17 +508,17 @@ function TC0B() {
 
   TC0c.TC0e('</table></div>');
 
-//  if (TC9.TC0f) {
-//    TC0c.TC0e('<iframe id="cal_iframe',
-//              this.TCC,
-//              '" src="',
-//              'about:blank',
-//              '"  name="cal_iframe',
-//              this.TCC,
-//              '" style="position: absolute; left:0; top:0; width:0; height:0; visibility:hidden; filter:alpha(opacity=0); z-index: ',
-//              (this.TCC),
-//              '"></iframe>')
-//  }
+  if (TC9.TC0f) {
+    TC0c.TC0e('<iframe id="cal_iframe',
+              this.TCC,
+              '" src="',
+              'about:blank',
+              '"  name="cal_iframe',
+              this.TCC,
+              '" style="position: absolute; left:0; top:0; width:0; height:0; visibility:hidden; filter:alpha(opacity=0); z-index: ',
+              (this.TCC),
+              '"></iframe>')
+  }
 
   document.write(TC0c.TC0g());
   this.TC0h = this.TCE('cal_mon' + this.TCC);
@@ -526,8 +526,8 @@ function TC0B() {
   this.TC0j = this.TCE('cal_grid' + this.TCC);
   this.TC0k = this.TCE('caldiv' + this.TCC);
 
-//  if (TC9.TC0f)
-//    this.TC0l = this.TCE('cal_iframe' + this.TCC);
+  if (TC9.TC0f)
+    this.TC0l = this.TCE('cal_iframe' + this.TCC);
 
   this.TC0m = this.TCE(this.TCH, 'form');
   this.TC0m.value = this.TC09;
@@ -1369,10 +1369,10 @@ function TC0P() {
   this.TC0k.style.left = this.TC0n.x ? this.TC0n.x : (this.TC0Q('Left') + TC28);
   this.TC0k.style.top = this.TC0n.y ? this.TC0n.y : (this.TC0Q('Top') + TC29);
 
-//  if (TC9.TC0f) {
-//    this.TC0l.style.left = this.TC0k.style.left;
-//    this.TC0l.style.top = this.TC0k.style.top
-//  }
+  if (TC9.TC0f) {
+    this.TC0l.style.left = this.TC0k.style.left;
+    this.TC0l.style.top = this.TC0k.style.top
+  }
 }
 
 function TC0R(TC2C) {
@@ -1391,8 +1391,8 @@ function TC0S() {
   if (!document.body || !document.body.innerHTML)
     return;
 
-//  if (TC9.TC0f)
-//    var TC2F = String(this.TC0l.style.visibility).toLowerCase();
+  if (TC9.TC0f)
+    var TC2F = String(this.TC0l.style.visibility).toLowerCase();
 
   var TC2G = String(this.TC0k.style.visibility).toLowerCase();
 
@@ -1401,9 +1401,9 @@ function TC0S() {
 
     this.TC0k.style.visibility = 'hidden';
 
-//    if (TC9.TC0f) {
-//      this.TC0l.style.visibility = 'hidden'
-//    }
+    if (TC9.TC0f) {
+      this.TC0l.style.visibility = 'hidden'
+    }
     if (this.TCG == 1)
       this.TC0o.src = this.TCB.caliconshow.src
   }
@@ -1425,8 +1425,8 @@ function TC0S() {
         if (i != this.TCC) {
           A_CALENDARS[i].TC0k.style.visibility = 'hidden';
 
-//          if (TC9.TC0f)
-//            A_CALENDARS[i].TC0l.style.visibility = 'hidden';
+          if (TC9.TC0f)
+            A_CALENDARS[i].TC0l.style.visibility = 'hidden';
           if (A_CALENDARS[i].TCG == 1)
             A_CALENDARS[i].TC0o.src = A_CALENDARS[i].TCB.caliconshow.src
         }
@@ -1435,12 +1435,12 @@ function TC0S() {
 
     this.TC0k.style.visibility = 'visible';
 
-//    if (TC9.TC0f) {
-//      this.TC0l.style.width = this.TC0k.offsetWidth;
-//
-//      this.TC0l.style.height = this.TC0k.offsetHeight;
-//      this.TC0l.style.visibility = 'visible'
-//    }
+    if (TC9.TC0f) {
+      this.TC0l.style.width = this.TC0k.offsetWidth;
+
+      this.TC0l.style.height = this.TC0k.offsetHeight;
+      this.TC0l.style.visibility = 'visible'
+    }
 
     this.TC1k = true;
     if (this.TCG == 1)
