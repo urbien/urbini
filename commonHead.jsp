@@ -22,4 +22,7 @@
   <script language="JavaScript" src="gantt/dependencies.js"></script>
   <script language="JavaScript" src="pngfix.js"></script>
   <script language="JavaScript" src="browserEventHandling.js"></script>
+
+  <siteTitle />
+
 </div>
