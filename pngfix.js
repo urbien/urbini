@@ -16,6 +16,8 @@ function correctPNG()
 		 var imgStyle = "display:inline-block;" + img.style.cssText 
 		 if (img.align == "left") imgStyle = "float:left;" + imgStyle
 		 if (img.align == "right") imgStyle = "float:right;" + imgStyle
+		 if (img.align == "middle") imgStyle = "float:middle;" + imgStyle
+
 		 if (img.parentElement.href) imgStyle = "cursor:hand;" + imgStyle		
 		 var strNewHTML = "<span " + imgID + imgClass + imgTitle
 		 + " style=\"" + "width:" + img.width + "px; height:" + img.height + "px;" + imgStyle + ";"
