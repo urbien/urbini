@@ -15,7 +15,7 @@
 	  <td bgcolor="#e3e2df">
           <select name="format" onchange="onRecChange()" class="formMenuInput">
 	    <option value="html">HTML</option>
-	    <option value="xls">Excel</option>
+	    <option value="excel">Excel</option>
 	    </select>
         </td>
 	</tr>
