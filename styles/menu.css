@@ -1,55 +1,27 @@
 .popMenu {
-      display: none; 
-      POSITION: absolute;
+	DISPLAY: none; POSITION: absolute; z-index:50
 }
 .popMenuTitle {
 	POSITION: relative; BACKGROUND-COLOR: #3366cc
 }
 .cswmItem {
-  font-family:\"MS Sans Serif\", Arial, Helvetica, Tahoma, sans-serif; 
-  font-size:11px; 
-  font-weight:normal; 
-  font-style:normal; 
-  color:#000000; 
-  text-decoration:none; 
-  padding:3 10 3 4;
-  cursor: pointer;
-  cursor: hand;
+	PADDING-RIGHT: 10px; PADDING-LEFT: 4px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; CURSOR: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none
 }
 .cswmItemSubtitle {
-  font-family:\"MS Sans Serif\", Arial, Helvetica, Tahoma, sans-serif; 
-  font-size:11px; 
-  font-weight:normal; 
-  font-style:normal; 
-  color:#000000; 
-  text-decoration:none; 
-  padding:3 10 3 4;
+	PADDING-RIGHT: 10px; PADDING-LEFT: 4px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none
 }
 .formMenuInput {
-  font-family:\"MS Sans Serif\", Arial, Helvetica, Tahoma, sans-serif; 
-  font-size:11px; 
-  font-weight:normal; 
-  font-style:normal; 
-  color:#000000; 
-  text-decoration:none; 
+	FONT-WEIGHT: normal; FONT-SIZE: 11px; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none
 }
 .langLink {
-  font-family:\"MS Sans Serif\", Arial, Helvetica, Tahoma, sans-serif; 
-  font-size:11px; 
-  font-weight:normal; 
-  font-style:normal; 
+	FONT-WEIGHT: normal; FONT-SIZE: 11px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif
 }
 .langCurrent {
-  font-family:\"MS Sans Serif\", Arial, Helvetica, Tahoma, sans-serif; 
-  font-size:11px; 
-  font-weight:normal; 
-  font-style:normal;
-  color:red; 
+	FONT-WEIGHT: normal; FONT-SIZE: 11px; COLOR: red; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif
 }
 .cswmExpand {
-  cursor: pointer;
-  cursor: hand;
+	CURSOR: hand
 }
 .cswmExpandSubtitle {
-  cursor:default
+	CURSOR: default
 }
