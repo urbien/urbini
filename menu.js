@@ -431,15 +431,21 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   // form url based on parameters that were set
   var url;
   url = "smartPopup?pUri=" + propName;
-  var params = getFormFilters(form, true); // all form fields
+
+  var formAction = form.elements['action'].value;
+  var allFields = true;
+  if (formAction != "searchLocal" && formAction != "searchParallel") {
+    if (enterFlag)
+      allFields = false;
+  }
+  var params = getFormFilters(form, allFields);
   if (params)
     url = url + params;
 
-  url = url + "&$form=" + currentFormName;
-  url = url + "&" + propName + "_filter=y";
+  url += "&$form=" + currentFormName;
+  url += "&" + propName + "_filter=y"; 
   if (!enterFlag)  
     url += "&$selectOnly=y";
-  
   if (enteredText)
     url += "&" + propName + "=" + encodeURIComponent(enteredText);
   // request listbox context from the server and load it into a 'popupFrame' iframe
@@ -489,6 +495,7 @@ function interceptPopupEvents(div) {
       addToTableName = "_class";
   }
   var tableId = "table_" + propName + addToTableName + "_" + currentFormName;
+//alert("tableId = " + tableId);
   var table   = document.getElementById(tableId);
   var img     = document.getElementById(currentImgId);
 
@@ -504,9 +511,45 @@ function interceptPopupEvents(div) {
     addEvent(elem, 'click',     popupRowOnClick,     false);
     addEvent(elem, 'mouseover', popupRowOnMouseOver, false);
     addEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
+    //addEvent(elem, 'keypress',  popupRowOnKeyPress,  false);
+  }
+}
+
+function getFormFilters(form, allFields) {
+  var p = "";
+  var fields = form.elements;
+  var formAction = form.action.value; // HACK
+  
+  for (i=0; i<fields.length; i++) {
+    var field = fields[i];
+    var value = field.value;
+    var name  = field.name;
+    var type  = field.type;
+    if (!type || !name)
+      continue;
+    if (type.toUpperCase() == "SUBMIT") 
+      continue;
+    if (allFields == false) {
+      if (!wasFormFieldModified(field)) 
+        continue;
+    }  
+    else {
+      if (!value || value == '')
+        continue;
+
+      if (type.toUpperCase() == "CHECKBOX" && name != "on") 
+        continue;
+      if (value == "All")
+        continue;
+      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1) 
+        continue;
+    }
+          
+    p += "&" + name + "=" + encodeURIComponent(value);
 //    addEvent(elem, 'keypress',  popupRowOnKeyPress,  false);
 //    addEvent(elem, 'keydown',   popupRowOnKeyPress,  false);
   }
+  return p;
 }
 
 /*
@@ -522,12 +565,16 @@ function popupOnSubmit(e) {
   target = getTargetElement(e);
   var form = target;
   
+  var action = form.attributes['action'];
   // form url based on parameters that were set
-  var url;
-  url = form.action;
-  url = "FormRedirect?JLANG=en"; // HACK: since form.action returns the value of '&action='
+  var url = "FormRedirect?JLANG=en"; // HACK: since form.action returns the value of '&action='
 
-  var params = getFormFilters(form);
+  var formAction = form.elements['action'].value;
+  var allFields = true;
+  if (formAction != "searchLocal" && formAction != "searchParallel")
+    allFields = false;
+    
+  var params = getFormFilters(form, allFields);
   var submitButtonName  = null;
   var submitButtonValue;
 /*
@@ -758,6 +805,19 @@ function getKeyCode(e) {
 	    //TOTAL FAILURE, WE HAVE NO WAY OF OBTAINING THE KEY CODE
 	    throw Error("can't detect the key pressed");
 	}
+}
+
+function autoCompleteOnKeyDown(e) {
+  if( typeof( e.keyCode ) == 'number') {
+    if (e.keyCode == 8 || e.keyCode == 127) { // backspace, ctrl-enter
+      var flag = autoComplete(e);
+      return flag;
+    }  
+    else if (e.keyCode == 9)                 // tab
+      return autoComplete(e);
+    else  
+      return true;   
+  }
 }
 
 /**
