@@ -12,7 +12,7 @@
     <td colspan="2">
     <form name="tablePropertyList" action="FormRedirect">
       <!--siteHistory /-->
-      <readOnlySiteInfo />
+      <readOtherSiteInfo />
       <tablePropertyList />
       <div align="right"><measurement/></div>
       <p/>

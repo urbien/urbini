@@ -1,11 +1,7 @@
 <html>
-<include name="include/commonHeader" />
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
-  <td valign="top" width="10%">
-    <include name="include/commonLeft" />
-  </td>
-  <td width="80%" valign="top" align="middle">
+  <td width="90%" valign="top" align="middle">
     <!--fullTextSearchResult /-->
     <excelsSearch excelsUri = "text/search/excels"/>
   </td>
@@ -14,5 +10,4 @@
   </td>
 </tr></table>
 <br />
-<include name="include/commonFooter" />
 </html>

@@ -1,21 +1,6 @@
 <html>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
-  <colgroup>
-    <col width="10%" /> 
-    <col width="80%" />
-    <col width="10%" />
-  </colgroup>
 <tr>
-  <td width="10%"></td>
-  <td width="80%"></td>
-  <td width="10%"></td>
-</tr>
-<tr>
-  <td valign="top" width="10%">
-    <include name="include/commonLeft" />
-    <include name="commonLeft.jsp" />
-  </td>
-  <!--td align="right"><userLogOff html="user-login.html"/></td-->
   <td valign="top" align="middle">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top">
@@ -28,12 +13,13 @@
       <div align="left"><backLink /></div>
       <siteResourceList />
       <div align="right"><measurement/></div>
-      <readOnlySiteInfo />
+      <br/>
+      <readOtherSiteInfo />
       <addNewResource html="mkResource.html" /> 
       <showSetProperties />
     </form>
   </td>
-  <td valign="top" align="left" width="10%" bgcolor="eeeeee">
+  <td valign="top" align="left" width="20%" bgcolor="eeeeee">
     <include name="searchText.jsp" />
     <form name="rightPanelPropertySheet" method="POST" action="FormRedirect">
       <rightPanelPropertySheet />
