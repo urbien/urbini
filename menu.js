@@ -1259,12 +1259,12 @@ function getFormFilters(form, allFields) {
       if (currentFormName != "horizontalFilter") {
         if (value == ''  ||  value == "All")
           continue;
-	      if (type.toUpperCase() == "CHECKBOX" ) {
-	        if (field.checked == false)
-  	        continue;
-	      }
-	      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
-	        continue;
+      if (type.toUpperCase() == "CHECKBOX" ) {
+        if (field.checked == false)
+          continue;
+      }
+      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
+        continue;
       }
     }
           
@@ -1315,20 +1315,20 @@ function hideResetRow(div, currentFormName, originalProp) {
   var form = document.forms[currentFormName];
   var elem = form.elements[originalProp];
 
-	var value = elem.value;
-	var valueIsSet = true;
+  var value = elem.value;
+  var valueIsSet = true;
 	  
-	if (!value || value == '')  
-	  valueIsSet = false;
-	if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
-	  valueIsSet = false;
+  if (!value || value == '')  
+    valueIsSet = false;
+  if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
+    valueIsSet = false;
 
-	if (valueIsSet) {
-	  tr.style.display    = "inline";
-	  tr.style.visibility = VISIBLE;
-	}  
-	else {
-	  tr.style.visibility = HIDDEN;
-	  tr.style.display    = "none";
-	}  
+  if (valueIsSet) {
+    tr.style.display    = "inline";
+    tr.style.visibility = VISIBLE;
+  }  
+  else {
+    tr.style.visibility = HIDDEN;
+    tr.style.display    = "none";
+  }  
 }
