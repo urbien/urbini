@@ -39,7 +39,7 @@
       <tr><td align="middle" class="title">
       <input type="submit" name="submit" class="button1" value="filter"></input>
       <input type="submit" name="clear"  class="button1" value="clear"></input>
-      <input type="hidden" name="action" value="searchLocal"></input>
+      <input type="hidden" name="action"     value="list"></input>
       </td></tr></table>   
     </form>
   </td>
