@@ -28,14 +28,13 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
       <tr valign="top">
       <td width="110%" colspan="2">
-        <!--form action="list.html" name="siteResourceList"-->
-          <div align="left"><backLink /></div>
-          <taskTreeControl/>
-          <siteResourceList />
-          <div align="right"><measurement/></div>
-        <!--/form-->
-        <delete/> 
+        <div align="left"><backLink /></div>
+        <taskTreeControl/>
+        <siteResourceList />
+        <div align="right"><measurement/></div>
+        <br/>
         <addNewResource html="mkResource.html"/> 
+        <delete/> 
         <edit html="localSearchResults.html"/>
         <reloadDocuments/>
         <createResources/>

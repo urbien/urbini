@@ -39,6 +39,13 @@
       <readOtherSiteInfo />
       <addNewResource html="mkResource.html" /> 
       <edit html="list.html"/>
+        <script language="JavaScript">
+          var horizontalFilter_FIELDS = new Array();
+        </script>
+        <form name="horizontalFilter" method="POST" action="FormRedirect"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
+          <br/>
+          <horizontalFilter />
+        </form>
       <!--showSetProperties /-->
     <!--/form-->
   </td>
