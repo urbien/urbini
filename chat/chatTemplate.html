@@ -112,32 +112,34 @@
 
     </script>   
   </head>
-  <body onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' style='cursor : default;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5'> 
+  <body onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' style='cursor : default;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#E3EAEB"> 
     <input type='hidden' name='realUserName' id='realUserName' value="&[realUserName];">
 
-    <table cellspacing="0" cellpadding="0" border="1" bordercolor="#ff0000" width="100%" height="100%">
+    <table cellspacing="0" cellpadding="0" border="0" width="100%" height="100%">
     <tr>
-      <td width="80%" height="1%">
+      <td width="80%" height="1%" bgcolor="#E3EAEB">
         <table border=0 height="10">
         <tr>
           <td>
             <form style="border:thin none; border-bottom:none; bottom:0px; height:20px; margin-bottom:0px;" name="formScrollLock">
-              <input type=hidden name="chatStartedAt">Chat session is open for <input readonly="true" onfocus="document.getElementById('message').focus();" type=text size=5 style="border:none;background-color:#EFEFEF;" name="chatStart">
+              <input type=hidden name="chatStartedAt"><table><tr><td>Chat session is open for</td><td><input readonly="true" onfocus="document.getElementById('message').focus();" type=text size=5 style="border:1; border-style: inset; background-color:#FFFFFF;" name="chatStart"></td></tr></table>
             </form>
           </td>
-          <td>
-            <img src='icons/chatHistory.gif' width='23' height='20' onclick="chatHistoryImageOnClick(this)">
-            <img src="icons/clockOn.png" width='16' height='16' onClick="clockOn(this);">
+          <td>			
+            <img src='icons/chatHistory.gif' width='23' height='20' onclick="chatHistoryImageOnClick(this)" alt="Chat history" title="Chat history">
+            <img src="icons/clockOn.png" width='16' height='16' onClick="clockOn(this);" alt="display time in Message log" title="display time in Message log">
+	    	<a href="&[openedFrom];" title="link to the page from which the chat was opened" target="_blank"><img src="icons/status_postponed.gif" width='12' height='12' border="0" alt="link to the page from which the chat was opened"></a>
           </td>
         </tr>
         </table>
         <script language='JavaScript'>
           chatTimerActive();
+		  window.focus();
         </script>
       </td>
   
       <td rowspan="3" valign="top">
-        <iframe frameborder="0" marginheight="2" marginwidth="2" id='userList' name='userList' src='chatRoom?frame=userList&room=&[encodedRoom];' style='width: 150px; height: 100%; border: 1'></iframe>
+        <iframe marginheight="2" marginwidth="2" id='userList' name='userList' src='chatRoom?frame=userList&room=&[encodedRoom];' style='width: 150px; height: 100%; border-style: groove; border-width: 1'></iframe>
       </td>               
         
       <td rowspan="3" valign="top" height="100%">
@@ -147,19 +149,19 @@
     </tr>
     <tr>
       <td height="100%" valign="top" width="100%">
-        <iframe style="width:100%;height:100%; border: 0" frameborder="0" id="chatContents" name="chatContents" src="chatRoom?frame=content&room=&[encodedRoom];"></iframe>
+        <iframe style="width:100%;height:100%; border: 2; border-style: inset" frameborder="2" id="chatContents" name="chatContents" src="chatRoom?frame=content&room=&[encodedRoom];"></iframe>
       </td>
     </tr>
 
     <tr valign="middle">
-      <td valign="top" height="70">
+      <td valign="top" height="70" bgcolor="#E3EAEB">
         <form style="border : thin none; border-bottom : none; bottom : 0px; height : 25px; margin-bottom : 0px;" target='post' id='postForm' name='postForm'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
           <table width="100%" height="20" border="0">
           <tr>
             <td width='85%' height="100%">
               <input type="hidden" value="all" name="nameUser">
               <input type="hidden" value="my" id="aliasUser" name="aliasUser">
-              <textarea style="border:1 solid #000;background:#f0f0f0;width:100%;height:50;" rows="3" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="var kk = navigator.appName == 'Netscape' ? event.which : event.keyCode;if (kk == 10 || (e.ctrlKey && kk==13))this.value = '';"></textarea>
+              <textarea style="border:1 solid #000;background:#f0f0f0;width:100%;" rows="3" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="var kk = navigator.appName == 'Netscape' ? event.which : event.keyCode;if (kk == 10 || (e.ctrlKey && kk==13))this.value = '';"></textarea>
               <script language='JavaScript'>
                 document.getElementById('message').value="";
                 document.getElementById('message').focus();
