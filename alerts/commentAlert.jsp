@@ -10,10 +10,7 @@ Dear <property name="to" href="y"/>
 Comment <property name="comment"/> <br/>
 has been added to the <property name="forum" type="y"/><property name="forum" href="y"/>
 
-<propertySheet name="comment" href="y"/> 
-<!--br/><br/>
-<b><property name="comment.description"/></b>
-<br/><br/-->
+<propertySheet name="comment"/> 
 
 <br/><br/>
 Customer Service
