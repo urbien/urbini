@@ -1,9 +1,6 @@
 <html>
-<include name="include/commonHeader"/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
-<tr><td valign="top">
-<include name="include/commonLeft"/>
-</td>
+<tr>
 <td valign="top">
 <form name="searchPropertyList" method="POST" action="FormRedirect">
   <searchPropertyList />
@@ -19,5 +16,4 @@
 
 <br></br>
 <div align="left"><span class="xs"><hudsonFog /></span></div>
-<include name="include/commonFooter"/>
 </html>

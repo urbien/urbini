@@ -1,16 +1,6 @@
 <html>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
-  <colgroup>
-    <col width="10%" /> 
-    <col width="90%" />
-  </colgroup>
 <tr>
-  <td width="10%"></td>
-  <td width="90%"></td>
-</tr>
-
-<tr>
-  <td valign="top" width="10%"><include name="include/commonLeft"/></td>
   <td valign="top" width="90%">
 
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
