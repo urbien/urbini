@@ -79,9 +79,9 @@
       if (!url)
         return;
 
-      //urlStr = removeModifier(url, '_shiftKey=y');
+      removeModifier(url, '_shiftKey=y');
       removeModifier(url, '_ctrlKey=y');
-      //urlStr = removeModifier(url, '_altKey=y');
+      removeModifier(url, '_altKey=y');
       urlStr = url.href;
       
       if     (e.ctrlKey) {
@@ -105,6 +105,9 @@
           }
           
           bottomFrame.location.replace(finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y");
+          e.cancelBubble = true;
+          e.returnValue = false;
+          if (e.preventDefault) e.preventDefault();         
           return false;
         }
       }
@@ -119,6 +122,11 @@
           return;
         }
         addUrlParam(url, p, null);
+        document.location.href = url.href;
+        e.cancelBubble = true;
+        e.returnValue = false;
+        if (e.preventDefault) e.preventDefault();         
+        return false;
       }
     }
      
