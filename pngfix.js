@@ -2,7 +2,7 @@
 // Correctly handle PNG transparency in Win IE 5.5 or higher.
 // http://homepage.ntlworld.com/bobosola. Updated 02-March-2004
 
-if (document.layers) {
+if (document.getElementById) {
   function correctPNG() {
     for(var i=0; i<document.images.length; i++) {
       var img = document.images[i]
