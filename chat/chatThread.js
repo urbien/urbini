@@ -163,23 +163,48 @@ var timeDelta = 0; // difference between server and client time
 		  }
         
 		var timeNiD = 0; 
-		while(doc.getElementById('timeNid['+timeNiD+']')){timeNiD++;}
-        messageStringTimeN += ' id="timeNid['+timeNiD+']">'; timeN.id = 'timeNid['+timeNiD+']';
-        if(userId!='ChatAdministrator'){ messageString+=userId;userN.appendChild(doc.createTextNode(userId))};messageString+="</font>";
-        messageStringTimeN += ' [' + time + '] </font>'; timeN.appendChild(doc.createTextNode(' [' + time + ']'));
+		while(doc.getElementById('timeNid['+timeNiD+']'))
+		    {timeNiD++;}
+        messageStringTimeN += ' id="timeNid['+timeNiD+']">'; 
+		timeN.id = 'timeNid['+timeNiD+']';
+        if(userId!='ChatAdministrator')
+		{ 
+		    messageString+=userId;
+		    userN.appendChild(doc.createTextNode(userId))
+		}
+		messageString+="</font>";
+        messageStringTimeN += ' [' + time + '] </font>'; 
+		timeN.appendChild(doc.createTextNode(' [' + time + ']'));
         bodyRef.innerHTML+=messageStringTimeN + messageString + ': </span> ';
         var usernameString = '';
-        if(userId=='ChatAdministrator'){usernameString += '<span class=xs><font color=' + messageArray[0].substring(0,messageArray[0].indexOf('-')-1) + '>'; username = doc.createElement('font');username.color=messageArray[0].substring(0,messageArray[0].indexOf('-')-1);
-        	usernameString += messageArray[0].substring(messageArray[0].indexOf('-')+1,messageArray[0].indexOf(' '));         username.appendChild(doc.createTextNode(messageArray[0].substring(messageArray[0].indexOf('-')+1,messageArray[0].indexOf(' '))));         usernameString += '</font>';         usernameString += messageArray[0].substring(messageArray[0].indexOf(' '),messageArray[0].length) + '</span><br>';         bodyRef.innerHTML += usernameString;}
-        else for (i = 0; i < messageArray.length; i++) {
-          loadUrl(messageArray[i],bodyRef,doc,userId);
-          var newBR = doc.createElement('br');
-          bodyRef.appendChild(newBR);
-        }
+        //alert( messageArray[0]);
+		if(userId=='ChatAdministrator')
+		{
+		    usernameString += '<span class=xs><font color=' + messageArray[0].substring(0,messageArray[0].indexOf('-')-1) + '>'; 
+		    username = doc.createElement('font');
+		    username.color=messageArray[0].substring(0,messageArray[0].indexOf('-')-1);        	
+		    usernameString += messageArray[0].substring(messageArray[0].indexOf('-')+1,messageArray[0].indexOf('+ ')+1);
+		    usernameString=usernameString.replace("+","");
+		    username.appendChild(doc.createTextNode(messageArray[0].substring(messageArray[0].indexOf('-')+1,messageArray[0].indexOf(' '))));
+		    usernameString += '</font>';     
+		    //messageArray[0]=messageArray[0].replace("+","");	    
+		    var messageS = messageArray[0].substring(messageArray[0].indexOf('+ '),messageArray[0].length);
+		    messageS = messageS.replace("+","");
+		    usernameString += messageS + '</span><br>';
+		    //usernameString += messageArray[0].substring(messageArray[0].indexOf('+ '),messageArray[0].length) + '</span><br>';
+		    bodyRef.innerHTML += usernameString;
+		}
+        else 
+		  for (i = 0; i < messageArray.length; i++) 
+		  {
+              loadUrl(messageArray[i],bodyRef,doc,userId);
+              var newBR = doc.createElement('br');
+              bodyRef.appendChild(newBR);
+          }
         if(autoScrolling == 'yes')
 		{
-        	var contentWindow = parent.document.getElementById('chatContents').contentWindow;
-        	contentWindow.scrollTo(0,contentWindow.document.body.scrollHeight);
+            var contentWindow = parent.document.getElementById('chatContents').contentWindow;
+            contentWindow.scrollTo(0,contentWindow.document.body.scrollHeight);
 		}
     }
 
@@ -218,9 +243,13 @@ var timeDelta = 0; // difference between server and client time
 	
 	function loadUrl(stringWithUrl,bodyRef,doc,userAlias)
 	{
-               var firstEntrance = stringWithUrl.indexOf('http:\/\/');
-		var httpPresent = true;
-		if(firstEntrance == -1){ firstEntrance = stringWithUrl.indexOf('www.');httpPresent = false;}
+        var firstEntrance = stringWithUrl.indexOf('http:\/\/');
+	    var httpPresent = true;
+	    if(firstEntrance == -1)
+		{ 
+		    firstEntrance = stringWithUrl.indexOf('www.');
+		    httpPresent = false;
+		}
 		;if(firstEntrance != -1)
 		{
 			var idexOfTheEndOfTheUrl = firstEntrance;
@@ -233,26 +262,36 @@ var timeDelta = 0; // difference between server and client time
 					break;
 				}
 			}
-			if(stringWithUrl.charAt(idexOfTheEndOfTheUrl-1)=='.'){idexOfTheEndOfTheUrl--;}
+		if(stringWithUrl.charAt(idexOfTheEndOfTheUrl-1)=='.')
+		    {idexOfTheEndOfTheUrl--;}
      	var spanObj = doc.createElement('span');
      	spanObj.className = 'xs';
      	bodyRef.appendChild(spanObj);
 		var fontMes = doc.createElement('font');
 		fontMes.color='#000000';
 		var numberId = 0;
-		if(doc.getElementById(userAlias+'['+numberId+']')){ var color = doc.getElementById(userAlias+'['+numberId+']').style.background;fontMes.style.background = color;}
-		while(doc.getElementById(userAlias+'['+numberId+']'))numberId++;
+		if(doc.getElementById(userAlias+'['+numberId+']'))
+		{ 
+		    var color = doc.getElementById(userAlias+'['+numberId+']').style.background;fontMes.style.background = color;
+		}
+		while(doc.getElementById(userAlias+'['+numberId+']'))
+		    numberId++;
 		fontMes.id=userAlias+'['+numberId+']';
 		fontMes.appendChild(doc.createTextNode(stringWithUrl.substring(0,firstEntrance)));
      	spanObj.appendChild(fontMes);
 		var urlLink = doc.createElement('a');
-		if(!httpPresent)urlLink.href='http:\/\/' + stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
-			else urlLink.href=stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
+		
+		if(!httpPresent)
+		    urlLink.href='http:\/\/' + stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
+		else 
+		    urlLink.href=stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
+		
 		urlLink.appendChild(doc.createTextNode(stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl)));
 		urlLink.target='_blank';
 		bodyRef.appendChild(urlLink);
 		loadUrl(stringWithUrl.substring(idexOfTheEndOfTheUrl,stringWithUrl.length),bodyRef,doc,userAlias);
-		} else
+		} 
+		else
 		  {
      			var spanObj = doc.createElement('span');
      			spanObj.className = 'xs';
@@ -261,7 +300,10 @@ var timeDelta = 0; // difference between server and client time
 				var fontMes = doc.createElement('font');
 				fontMes.color='#000000';
 				var numberId = 0;
-				if(doc.getElementById(userAlias+'['+numberId+']')) var color = doc.getElementById(userAlias+'['+numberId+']').style.background;else color='#ffffff'
+				if(doc.getElementById(userAlias+'['+numberId+']')) 
+				    var color = doc.getElementById(userAlias+'['+numberId+']').style.background;
+				else 
+				    color='#ffffff'
 				fontMes.style.background = color;
 				while(doc.getElementById(userAlias+'['+numberId+']'))numberId++;
 				fontMes.id=userAlias+'['+numberId+']';
@@ -274,9 +316,11 @@ var timeDelta = 0; // difference between server and client time
 	{ 
 		if (elm.addEventListener){ 
 		  elm.addEventListener(evType, function () {window.parent.showOpsMenu(realName, color,nameOfTheInsertedFont,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay);}, useCapture); 
-		} else if (elm.attachEvent){ 
-			var r = elm.attachEvent("on"+evType, function () {window.parent.showOpsMenu(realName, color,nameOfTheInsertedFont,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay);} ); 
-	 	} 
+		} 
+		else 
+		    if (elm.attachEvent){ 
+			    var r = elm.attachEvent("on"+evType, function () {window.parent.showOpsMenu(realName, color,nameOfTheInsertedFont,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay);} ); 
+	 	    } 
 	}
 	
 	function memberIcon_addEventMOver(elm,evType,useCapture,time)
@@ -304,6 +348,7 @@ var timeDelta = 0; // difference between server and client time
 	}
     
 	function insertMembers(membersArray,usersInfArray) {
+	  //alert(membersArray);
 	 //parent.frames['userList'].divUsersContainer.removeNode(true);
 	 var docum = parent.frames['userList'].document;
 	 docum.getElementById("bodyMembersKeeper").removeChild(docum.getElementById("divUsersContainer"));  if(docum.getElementById("divUsersInvite"))docum.getElementById("bodyMembersKeeper").removeChild(docum.getElementById("divUsersInvite"));
