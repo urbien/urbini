@@ -8,7 +8,6 @@
       <subscribeNote/>
     </td></tr>
     <tr  valign="top" class="keywordsearch"><td colspan="3" class="keywordsearch">
-<form name="searchForm" method="GET" action="searchResult.html" valign="middle">
       <table width="100%" cellspacing="0" cellpadding="1" border="0">
       <tr>
       <td valign="top" width="70%">
@@ -57,7 +56,6 @@
       <td valign="top" align="right" width="15%"><include name="searchText.jsp"/></td>
     </form>
 </tr></table>
-</form>
 </td>
     </tr>
     <tr> 

@@ -74,7 +74,6 @@ input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 .dashedBlock {border-style:dashed; border-width: 2px; border-color:#ADADD5 #ADADD5 #ADADD5 #ADADD5}
 
 td.tab  {border:solid #808080 1px; filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, EndColorStr='#F0F2F6', StartColorStr='#C0C9D7'); color='#000000'}
-table.allInOne {border:solid #808080 1px; background-color: #ffffff; color: #000000}
 td.containers  {background-color: #e7ebf0; color: #000000}
 
 tr.keywordsearch  {background-color: #e7ebf0; color: #000000}
@@ -103,3 +102,7 @@ td.propertySheet {border:solid #808080 1px; background-color: #ffffff; color: #0
 td.controlPanel {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}
+
+/* Properties for backlink resource list that is dipslayed inline on property sheet page */
+table.displayInline {border:solid #808080 1px; background-color: #ffffff; color: #000000}
+tr.displayInline {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
