@@ -14,7 +14,9 @@
     </tr>
     </table>
 
-    <br></br>
+    <!--br></br-->
+    <center><codeBehindThePage allow="admin"/> </center>
+    <br/><br/>
     <include name="requiredFooter"/>
 <hideBlock>      
     <include name="include/commonFooter"/>
