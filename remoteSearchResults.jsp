@@ -26,10 +26,16 @@
     <include name="searchText.jsp" />
     
     <form name="tablePropertyList" method="POST" action="remoteSearchResults.html">
-      <tablePropertyList />
-      <br></br>
-      <center><input type="submit" name="submit" value="filter"></input></center>
+      <table border="1" cellpadding="3" cellspacing="0"><tr><td align="middle" class="title">
+      <input width="100%" type="submit" name="submit" value="filter"></input>
+      <!--input type="hidden" name="action" value="searchLocal"></input-->
+      </td></tr>
+      <tr><td><tablePropertyList /></td></tr>
+      <!--tr><td><rightPanelPropertySheet /></td></tr-->
+      <tr><td align="middle" class="title">
+      <input type="submit" name="submit" value="filter"></input>
       <input type="hidden" name="action" value="searchDatabase"></input>
+      </td></tr></table>   
       <br></br>
     </form>
   </td>

@@ -27,11 +27,16 @@
     <include name="searchText.jsp" />
     
     <form name="rightPanelPropertySheet" method="POST" action="FormRedirect">
-      <rightPanelPropertySheet />
-      <br></br>
-      <center><input type="submit" name="submit" value="filter"></input></center>
+      <table border="1" cellpadding="3" cellspacing="0"><tr><td align="middle" class="title">
+      <input width="100%" type="submit" name="submit" value="filter"></input>
+      <!--input type="hidden" name="action" value="searchLocal"></input-->
+      </td></tr>
+      <tr><td><rightPanelPropertySheet /></td></tr>
+      <tr><td align="middle" class="title">
+      <input type="submit" name="submit" value="filter"></input>
       <input type="hidden" name="action" value="searchLocal"></input>
-      <br></br>
+      </td></tr></table>   
+      <!--br></br-->
       <!--showSetProperties /-->
     </form>
   </td>
