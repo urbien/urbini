@@ -1,6 +1,7 @@
 Dear &[firstName]; &[lastName];,
 
-You were successfully subscribed for
+New subscriber registered for the &[class]; to which you subscribe.
+Click on the link below to see the details:
 
 &[url];
 

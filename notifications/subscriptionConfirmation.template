@@ -1,6 +1,6 @@
 Dear &[firstName]; &[lastName];,
 
-You are now subscribed to alerts on the &[class] specified below.
+You are now subscribed to alerts on the &[class]; specified below.
 Please click on the link to see the details:
 
 &[url];

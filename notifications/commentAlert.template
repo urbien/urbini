@@ -1,6 +1,6 @@
 Dear &[firstName]; &[lastName];,
 
-Comment was added to the &[class] to which you subscribe.
+Comment was added to the &[class]; to which you subscribe.
 Click on the link below to see the details:
 
 &[url];
