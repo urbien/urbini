@@ -362,6 +362,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
     currentResourceUri = propName1.substring(0, idx);
   }
   else {
+    currentResourceUri = null;
     idx = propName1.indexOf(".");
     if (idx != -1) {
       propName = propName1.substring(0, idx);
@@ -747,9 +748,10 @@ function popupRowOnClick(e) {
         chosenTextField.style.backgroundColor = '#ffffff';
       formField.value = tr.id; // property value corresponding to a listitem
       // show property label since label inside input field is now overwritten
-      var resourceListEditMode = formField.id == 'horizontalFilter';
-      if (fieldLabel && !resourceListEditMode)
-        fieldLabel.style.display = '';     
+      if (form.id == 'rightPanelPropertySheet') { 
+        if (fieldLabel) 
+          fieldLabel.style.display = '';
+      }  
     }
   }
   else {
