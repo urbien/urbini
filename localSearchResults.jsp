@@ -1,12 +1,10 @@
 <div>
-
 <div nonPda="T">
 
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top" class="keywordsearch">
-    <td valign="top" width="100%" class="keywordsearch">
-<table width="100%" cellspacing="0" cellpadding="0" border="0">
-  <tr><td width="80%">
+  <td valign="top" width="100%" class="keywordsearch">
+   <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="80%">
     <menu toolbar="toolbar1"  activate="onMouseOver"/>
     <menu toolbar="transport" activate="onMouseOver"/>
     <menu toolbar="search"    activate="onMouseOver"/>
@@ -19,42 +17,43 @@
     <showHideWindows/>
     </td>
     <td valign="top" align="right" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
-     <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
+    <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
       <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
     </form>
-</tr></table></td>
-</tr></table>
-
+    </tr></table></td>
+  </tr>
+</table>
+<!--br/-->
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
-      <tr valign="top">
-      <td width="110%" colspan="2">
-        <div align="left"><backLink /></div>
-        <taskTreeControl/>
-        <siteResourceList />
-        <div align="right"><measurement/></div>
-        <br/>
-        <addNewResource html="mkResource.html"/> 
-        <delete/> 
-        <edit html="localSearchResults.html"/><br/>
-        <reloadDocuments/>
-        <createResources/><br/>
-        <setAsHomePage />
-        <!--showSetProperties /-->
-        <br/><pieChart/>
-        <script language="JavaScript">
-          var horizontalFilter_FIELDS = new Array();
-        </script>
-        <form name="horizontalFilter" method="POST" action="FormRedirect"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
-          <br/>
-          <horizontalFilter />
-        </form>
-      </td>
-      <td width="5%" id="rightPanelPropertySheet" valign="top" align="left">
-        <br/>
-        <menu toolbar="filterLocal" type="onpage" title="false"/>
-      </td>
-      </tr>
-    </table>
+<tr valign="top">
+  <td width="110%" colspan="2">
+    <font color="red"><b><errorMessage /></b></font>
+    <div align="left"><backLink /></div>
+    <taskTreeControl/>
+    <siteResourceList />
+    <div align="right"><measurement/></div>
+    <readOtherSiteInfo />
+    <addNewResource html="mkResource.html"/> 
+    <delete/> 
+    <edit html="localSearchResults.html"/><br/>
+    <reloadDocuments/>
+    <createResources/><br/>
+    <setAsHomePage />
+    <br/><pieChart/>
+    <script language="JavaScript">
+      var horizontalFilter_FIELDS = new Array();
+    </script>
+    <form name="horizontalFilter" method="POST" action="FormRedirect"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
+      <br/>
+      <horizontalFilter />
+    </form>
+  </td>
+  <td width="5%" id="rightPanelPropertySheet" valign="top" align="left">
+    <br/>
+    <menu toolbar="filterLocal" type="onpage" title="false"/>
+  </td>
+  </tr>
+</table>
 <br />
 </div>
 

@@ -2,10 +2,9 @@
 <div nonPda="T">
 
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
-  <tr  class="keywordsearch" valign="top">
-    <td valign="top" width="80%"  class="keywordsearch">
-
-   <table width="100%" cellspacing="0" cellpadding="1" border="0"><tr><td width="70%">
+  <tr valign="top" class="keywordsearch">
+  <td valign="top" width="100%" class="keywordsearch">
+   <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="80%">
     <menu toolbar="toolbar1"  activate="onMouseOver"/>
     <menu toolbar="transport" activate="onMouseOver"/>
     <menu toolbar="search"    activate="onMouseOver"/>
@@ -18,36 +17,35 @@
     <showHideWindows/>
     </td>
     <td valign="top" align="right" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
-     <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
+    <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
       <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
     </form>
     </tr></table></td>
   </tr>
 </table>
 <br/>
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-<tr>
-  <td valign="top" align="middle">
-    <table width="100%" cellspacing="0" cellpadding="0" border="0">
-    <tr><td valign="top" width="110%">  
-    <!--form action="list.html" name="siteResourceList"-->
-      <div align="left"><backLink /></div>
-      <taskTreeControl/>
-      <siteResourceList />
-      <div align="right"><measurement/></div>
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr valign="top">
+  <td width="110%" colspan="2">
+    <div align="left"><backLink /></div>
+    <taskTreeControl/>
+    <siteResourceList />
+    <div align="right"><measurement/></div>
+    <br/>
+    <readOtherSiteInfo />
+    <addNewResource html="mkResource.html"/> 
+    <edit html="localSearchResults.html"/><br/>
+    <reloadDocuments/>
+    <createResources/><br/>
+    <setAsHomePage />
+    <br/><pieChart/>
+    <script language="JavaScript">
+      var horizontalFilter_FIELDS = new Array();
+    </script>
+    <form name="horizontalFilter" method="POST" action="FormRedirect"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
       <br/>
-      <readOtherSiteInfo />
-      <addNewResource html="mkResource.html" /> 
-      <edit html="list.html"/>
-        <script language="JavaScript">
-          var horizontalFilter_FIELDS = new Array();
-        </script>
-        <form name="horizontalFilter" method="POST" action="FormRedirect"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
-          <br/>
-          <horizontalFilter />
-        </form>
-      <!--showSetProperties /-->
-    <!--/form-->
+      <horizontalFilter />
+    </form>
   </td>
     <td width="10%" valign="top" align="left" bgcolor="eeeeee">
       <menu toolbar="filterList" type="onpage" title="false"/>
