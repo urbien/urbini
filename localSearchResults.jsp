@@ -132,7 +132,7 @@
   <table cellpadding="5"><tr><td>
     <table border="1" cellpadding="5">
       <tr><td><b>Subject:</b></td><td><input name="name"/></td></tr>
-      <tr><td><b>Recurrency:</b></td>
+      <tr><td><b>Repeat:</b></td>
       <td>
         <select name="rec" onchange="onRecChange()">
           <option value="day">Daily</option>
