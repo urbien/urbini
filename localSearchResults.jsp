@@ -35,7 +35,7 @@
         <script language="JavaScript">
           var horizontalFilter_FIELDS = new Array();
         </script>
-        <form name="horizontalFilter" method="POST" action="FormRedirect" onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)">
+        <form name="horizontalFilter" method="POST" action="FormRedirect"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
           <br/>
           <horizontalFilter />
         </form>
@@ -92,7 +92,7 @@
 <script language="JavaScript">
   var horizontalFilter_FIELDS = new Array();
 </script>
-<form name="horizontalFilter" method="POST" action="FormRedirect" onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)">
+<form name="horizontalFilter" method="POST" action="FormRedirect"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
   <br/>
     <horizontalFilter />
 </form>
