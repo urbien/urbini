@@ -73,7 +73,7 @@
     </tr>
 
     <tr><td width="1%"></td><td width="98%"><br/>
-      <font color="red"><center><b><errorMessage /></b></center></font>
+      <div align="center"><font color="red"><b><errorMessage /></b></font></div>
       <readOtherSiteInfo />
       <tablePropertyList />
 <hideBlock id="hideBlock1">      

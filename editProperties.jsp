@@ -26,7 +26,7 @@
   <td valign="top" width="90%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top"><td colspan="2">
-     <font color="red"><center><b><errorMessage /></b></center></font>
+      <div align="center"><font color="red"><b><errorMessage /></b></font></div>
    
     <form name="tablePropertyList" method="post" id="filter" >
       <tablePropertyList />
