@@ -44,8 +44,9 @@
         }
       </script>
       <a href="javascript://" title="Chat Room" onclick="openChatWindow();"><img src="icons/webchat.png" alt="chat" border="0" align="middle" width="20"/></a>
+      <showHideWindows/>
       </td>
-      <td valign="top" align="right" width="30%" class="topBar"><changePassword/><userLogOff html="user-login.html"/></td>
+      <td valign="top" align="right" width="30%" class="topBar"><!--changePassword/><userLogOff html="user-login.html"/--></td>
     </tr>
     <tr> 
     <td colspan="2">
