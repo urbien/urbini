@@ -273,12 +273,14 @@ function menu_onmouseover(itemcode) {
   document.getElementById(itemcode + 'td1').style.backgroundColor='#B6BDD2';
   document.getElementById(itemcode + 'td2').style.backgroundColor='#B6BDD2';
   document.getElementById(itemcode + 'td3').style.backgroundColor='#B6BDD2';
+  return true;
 }
 
 function menu_onmouseout(itemcode) {
   document.getElementById(itemcode + 'td1').style.backgroundColor='';
   document.getElementById(itemcode + 'td2').style.backgroundColor='';
   document.getElementById(itemcode + 'td3').style.backgroundColor='';
+  return true;
 }
 
 
@@ -294,6 +296,7 @@ if (document.layers) { // Netscape
 } else if (document.getElementById) { // Netcsape 6
   document.onmousemove = captureMousePosition;
 }
+
 
 // Global variables
 xMousePos = 0; // Horizontal position of the mouse on the screen
@@ -1040,6 +1043,9 @@ function deselectRow(tr) {
 
 function selectRow(tr) {
   if (!tr)
+    return;
+    
+  if (tr.id == '$noValue')
     return;
   var tds = tr.getElementsByTagName("td");  
   for (i=0; i<tds.length; i++) {
