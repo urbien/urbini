@@ -37,11 +37,11 @@ var timeDelta = 0; // difference between server and client time
 		if(messageArray[0].indexOf('!-invt')==0) 
 		{
 			if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured')window.focus();
-    			else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New message in chat room');
+    			else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New mes came to your chat room');
     				else if(notificationMode==2 && parent.isWindowInFocus=='blured')
 					{
 						newwindow=window.open('','newMes','height=100,width=350'); 
-						newwindow.document.writeln("'New message in chat room!<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
+						newwindow.document.writeln("new mes came to the chat room!<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
 					};
            if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
 		   try 
@@ -98,11 +98,11 @@ var timeDelta = 0; // difference between server and client time
 		}
 		
 		if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured')window.focus();
-    		else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New message in chat room');
+    		else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New mes came to your chat room');
     			else if(notificationMode==2 && parent.isWindowInFocus=='blured')
 				{
 					newwindow=window.open('','newMes','height=100,width=350'); 
-					newwindow.document.writeln("New message in chat room!<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
+					newwindow.document.writeln("new mes came to the chat room!<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
 				};
   		
 		if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
@@ -184,7 +184,8 @@ var timeDelta = 0; // difference between server and client time
 		    username = doc.createElement('font');
 		    username.color=messageArray[0].substring(0,messageArray[0].indexOf('-')-1);        	
 		    usernameString += messageArray[0].substring(messageArray[0].indexOf('-')+1,messageArray[0].indexOf('+ ')+1);
-		    usernameString=usernameString.replace("+","");
+		    //usernameString=usernameString.replace("+","");
+			usernameString=usernameString.substring(0,usernameString.length-1);
 		    username.appendChild(doc.createTextNode(messageArray[0].substring(messageArray[0].indexOf('-')+1,messageArray[0].indexOf(' '))));
 		    usernameString += '</font>';     
 		    //messageArray[0]=messageArray[0].replace("+","");	    

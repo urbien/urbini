@@ -6,8 +6,16 @@
 	<link href="styles.css" type="text/css" rel="stylesheet" />
 
     <script language='JavaScript'>
-		var isWindowInFocus = "focused";
+		var postLoaded = 0;     // ==1 when the post iframe is loaded
+		var contentLoaded = 0;  // ==1 when the content iframe is loaded
+		var usersLoaded = 0;    // ==1 when the users iframe is loaded
 		
+		var encodedRoom = '&[encodedRoom];';
+		var sendDivTimeOut;
+		var sendShortcut;
+		var isWindowInFocus = "focused";
+		var sendMessage = 'no';
+
 		addEvent(window, 'focus', function() {isWindowInFocus="focused";}); //alert("focused");
 		addEvent(window, 'blur', function() {isWindowInFocus="blured";}); //alert("blured");
 		function addEvent(obj, evType, fn){
@@ -70,9 +78,17 @@
       }    
     
       function handleKey(e) {
-		var kk = navigator.appName == 'Netscape' ? e.which : e.keyCode;
-        if (kk == 10 || (e.ctrlKey && kk==13)) {
-          if (document.postForm.message.value.charAt(0) != "[")
+	  //alert(sendShortcut);
+	  	var kk = navigator.appName == 'Netscape' ? e.which : e.keyCode;
+        if (
+			//((kk == 10 || (e.ctrlKey && kk==13))&&document.getElementById("sendCtrlEnterCh").checked)   ||
+			((kk == 10 || (e.ctrlKey && kk==13))&&(sendShortcut == 1))   ||
+			//(kk==13 && document.getElementById("sendEnterCh").checked && !e.ctrlKey && !e.altKey && !e.shiftKey)
+			(kk==13 && sendShortcut==2 && !e.ctrlKey && !e.altKey && !e.shiftKey)
+		   )
+		{
+		  sendMessage = 'yes';
+		  if (document.postForm.message.value.charAt(0) != "[")
             document.postForm.nameUser.value = "all";
           document.getElementById("postForm").submit();
           if (document.getElementById("message").value != "") {
@@ -316,15 +332,41 @@
 				<td width="99%" height="100%">
 					  <input type="hidden" value="all" name="nameUser" id="nameUser">
 		              <input type="hidden" value="my" id="aliasUser" name="aliasUser">
-					  <span class=xs><textarea style="width:100%;height:99%; border:solid #808080 1px; margin: 0px" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="var kk = navigator.appName == 'Netscape' ? event.which : event.keyCode;if (kk == 10 || (event.ctrlKey && kk==13))this.value = '';"></textarea></span>
+					  <span class=xs><textarea style="width:100%;height:99%; border:solid #808080 1px; margin: 0px" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="if(sendMessage == 'yes'){this.value = '';sendMessage = 'no';}"></textarea></span>
 					  <script language='JavaScript'>
     	    	        document.getElementById('message').value="";
 	    	            document.getElementById('message').focus();
               		  </script>
 				</td>
-				<td width="1%">
-					<img onclick='sendMessageOnButton()' border="0" src="images/sendEmpty.gif" alt="send message" title="send message" width="29" height="32" align="right">
+				<td width="1%" height="100%">
+<!--
+					<table border="0" height="100%">
+						<tr>
+							<td height="100%">
+//-->							
+							<img onclick='sendMessageOnButton()' border="0" src="images/sendEmpty.gif" alt="send message" title="send message" width="29" height="32" align="right"></td>
+<!--
+						</tr>
+						<tr>
+							<td>
+								<img onclick="document.getElementById('sendingSet').style.display='inline';document.getElementById('sendingSet').style.left = document.body.offsetWidth - 130;" border="0" src="icons/reprocess.gif" title="keys kombination for sending" align="right">
+								<div onmouseout="sendDivTimeOut = setTimeout('document.getElementById(\'sendingSet\').style.display=\'none\'',2000);" onmouseover="clearTimeout(sendDivTimeOut);" id="sendingSet" style="background : '#F4F4F4';
+													width:300;
+													height:35;
+													border : thin ridge;
+													border-color : '#E0E0E0';
+													bottom : 12px;
+													display : none;
+													position : absolute;">
+												<input id="sendEnterCh" type="radio" name="sendSetting" onclick="setTimeout('document.getElementById(\'sendingSet\').style.display=\'none\'',300);document.getElementById('message').focus();">Send on Enter<br>
+												<input id="sendCtrlEnterCh" checked type="radio" name="sendSetting" onclick="setTimeout('document.getElementById(\'sendingSet\').style.display=\'none\'',300);document.getElementById('message').focus();">Send on Ctrl+Enter
+								</div>
+							</td>
+						</tr>
+					</table>
+
 				</td>
+//-->				
 				</form>
 			</tr>
 		</table>
@@ -337,7 +379,7 @@
 </tr>
 </table>
      <bgsound id="sound">
-     <embed src='chat/newMessage.wav' height="0" autostart=false hidden=true id="sound1" enablejavascript="true">	
+     <embed src='chat/DingDong.wav' height="0" autostart=false hidden=true id="sound1" enablejavascript="true">	
     <form target='post' id='postFormWritingStatus' name='postFormWritingStatus'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
       <input type="hidden" value="all"  name="nameUser">
       <input type="hidden" value="my" name="aliasUser">
@@ -351,16 +393,17 @@
     <script language="JavaScript">
       //setTimeout("initFrames()", 501);
       function initFrames() {
-        var threadDiv = document.getElementById('thread');
-        threadDiv.src='chatRoom?frame=thread&room=&[encodedRoom];';
-		threadDiv.style.width = 100;
-		threadDiv.style.height = 100;
-        var postDiv = document.getElementById('post');
-        postDiv.src='chatRoom?frame=post&room=&[encodedRoom];'
-        var contentDiv = document.getElementById('chatContents');
-        contentDiv.src='chatRoom?frame=content&room=&[encodedRoom];'
         var userDiv = document.getElementById('userList');
         userDiv.src='chatRoom?frame=userList&room=&[encodedRoom];'
+		
+        //var contentDiv = document.getElementById('chatContents');
+        //contentDiv.src='chatRoom?frame=content&room=&[encodedRoom];'
+
+        //var threadDiv = document.getElementById('thread');
+        //threadDiv.src='chatRoom?frame=thread&room=&[encodedRoom];';
+        
+		//var postDiv = document.getElementById('post');
+        //postDiv.src='chatRoom?frame=post&room=&[encodedRoom];'
       }
     </script>
 
