@@ -140,14 +140,14 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 		document.writeln('				<option value="<address>">Address <ADDR></option>');
 		document.writeln('				<option value="<pre>">Formatted <pre></option>');
 		document.writeln('			</select>');
-		document.writeln('			<select style="width:115px;vertical-align : top;" id="fontname_' + rte + '" onchange="Select(\'' + rte + '\', this.id)">');
+		document.writeln('			<select style="width:113px;vertical-align : top;" id="fontname_' + rte + '" onchange="Select(\'' + rte + '\', this.id)">');
 		document.writeln('				<option value="Font" selected>[Font]</option>');
 		document.writeln('				<option value="Arial, Helvetica, sans-serif">Arial</option>');
 		document.writeln('				<option value="Courier New, Courier, mono">Courier New</option>');
 		document.writeln('				<option value="Times New Roman, Times, serif">Times New Roman</option>');
 		document.writeln('				<option value="Verdana, Arial, Helvetica, sans-serif">Verdana</option>');
 		document.writeln('			</select>');
-		document.writeln('			<select style="width:60px;vertical-align : top;" unselectable="on" id="fontsize_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">');
+		document.writeln('			<select style="width:57px;vertical-align : top;" unselectable="on" id="fontsize_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">');
 		document.writeln('				<option value="Size">[Size]</option>');
 		document.writeln('				<option value="1">1</option>');
 		document.writeln('				<option value="2">2</option>');
@@ -196,6 +196,8 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 		document.writeln('		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">');
 		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'hyperlink1.gif" width="13" height="13" alt="Insert Link" title="Insert Link" onClick="FormatText(\'' + rte + '\', \'createlink\')">');
 		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'image1.gif" width="13" height="13" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')">');
+		document.writeln('		<span id="table_' + rte + '"><img class="rteImage" align="absmiddle" src="' + imagesPath + 'insert_table1.gif" width="15" height="13" alt="Insert Table" title="Insert Table" onClick="dlgInsertTable(\'' + rte + '\', \'table\', \'\')"></span>');
+
 //*/		
 		//if (!readOnly) document.writeln('<td><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source</td>');
 		if (isIE) {
@@ -214,7 +216,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 		document.writeln('	</tr>');
 		document.writeln('</table>');
 	}
-	document.writeln('<iframe id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
+	document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
 	if (!readOnly) document.writeln('<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source');
 	document.writeln('<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>');
 	document.writeln('<input type="hidden" id="hdn' + rte + '" name="' + rte + '" value="">');
@@ -397,6 +399,7 @@ function updateRTE(rte) {
 			&& oHdnMessage.value.toLowerCase().search("<img") == -1) oHdnMessage.value = "";
 		//fix for gecko
 		if (escape(oHdnMessage.value) == "%3Cbr%3E%0D%0A%0D%0A%0D%0A") oHdnMessage.value = "";
+		//oHdnMessage.value = escape(oHdnMessage.value);
 	}
 }
 
@@ -732,4 +735,41 @@ function trim(inputString) {
       retValue = retValue.substring(0, retValue.indexOf("  ")) + retValue.substring(retValue.indexOf("  ")+1, retValue.length);
    }
    return retValue; // Return the trimmed string back to the user
+}
+
+function dlgInsertTable(rte, command) {
+	//function to open/close insert table dialog
+	//save current values
+	parent.command = command;
+	currentRTE = rte;
+	InsertTable = popUpWin(includesPath + 'insert_table.htm', 'InsertTable', 360, 180, '');
+}
+
+function popUpWin (url, win, width, height, options) {
+	var leftPos = (screen.availWidth - width) / 2;
+	var topPos = (screen.availHeight - height) / 2;
+	options += 'width=' + width + ',height=' + height + ',left=' + leftPos + ',top=' + topPos;
+	return window.open(url, win, options);
+}
+
+function insertHTML(html) {
+	//function to add HTML -- thanks dannyuk1982
+	var rte = currentRTE;
+	
+	var oRTE;
+	if (document.all) {
+		oRTE = frames[rte];
+	} else {
+		oRTE = document.getElementById(rte).contentWindow;
+	}
+	
+	oRTE.focus();
+	if (document.all) {
+		var oRng = oRTE.document.selection.createRange();
+		oRng.pasteHTML(html);
+		oRng.collapse(false);
+		oRng.select();
+	} else {
+		oRTE.document.execCommand('insertHTML', false, html);
+	}
 }
