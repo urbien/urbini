@@ -375,7 +375,8 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
       }
       else {
         propName = propName1.substring(0, idx);
-        if (document.forms[currentFormName].elements[propName + "_class"].value == "") 
+        var el = document.forms[currentFormName].elements[propName + "_class"];
+        if (!el.value || el.value == "") 
           divId = propName + "_class_" + currentFormName;
         else {
           divId = propName + "_" + currentFormName;
