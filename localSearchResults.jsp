@@ -113,7 +113,7 @@
 </div>
 
 <div id="textdiv3">
-<form name="emailForm" action="/page2email" method="GET">
+<form name="emailForm" action="page2email" method="GET">
   <table border="1" cellpadding="3" cellspacing="0">
     <tr><td>E-mail:</td><td><input name="to"></input></td></tr>
     <tr><td>Subject:</td><td><input name="subject"></input></td></tr>
