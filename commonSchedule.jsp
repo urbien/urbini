@@ -15,8 +15,15 @@
     <tr><td>
     <table border="0" cellpadding="3" cellspacing="2">
       <tr><td bgcolor="#DCDCEB"><b>Subject:</b></td><td bgcolor="#DCDCEB"><input name="name"/></td></tr>
+		<tr> 
+		  <td bgcolor="#DCDCEB"><b>Format:</b></td>
+		  <td bgcolor="#DCDCEB"> <select name="format" onchange="onRecChange()">
+			  <option value="html">HTML</option>
+			  <option value="xls">Excel</option>
+			</select></td>
+		</tr>
       <tr><td bgcolor="#DCDCEB"><b>Repeat:</b></td>
-      <td bgcolor="#DCDCEB">
+	  <td bgcolor="#DCDCEB">
         <select name="rec" onchange="onRecChange()">
           <option value="day">Daily</option>
           <option value="week">Weekly</option>

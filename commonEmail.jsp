@@ -26,7 +26,7 @@
             </tr>
             <tr> 
               <td bgcolor="#DCDCEB"><b>Format:</b></td>
-              <td bgcolor="#DCDCEB"> <select name="rec" onchange="onRecChange()">
+              <td bgcolor="#DCDCEB"> <select name="format" onchange="onRecChange()">
                   <option value="html">HTML</option>
                   <option value="xls">Excel</option>
                 </select> </td>
