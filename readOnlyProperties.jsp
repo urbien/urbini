@@ -43,7 +43,7 @@
           window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=no, location=no, toolbar=no, scrollbars=no, resizable=yes');
         }
       </script>
-      <a href="javascript://" title="Chat Room" onclick="openChatWindow();"><img src="chat/chat.jpg" alt="chat" border="0" align="middle" width="20"/></a>
+      <a href="javascript://" title="Chat Room" onclick="openChatWindow();"><img src="icons/webchat.png" alt="chat" border="0" align="middle" width="20"/></a>
       </td>
       <td valign="top" align="right" width="30%" class="topBar"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
