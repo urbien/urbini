@@ -48,7 +48,7 @@ var CAL_TPL1 = {
 		'border': 0,
 		'bgcolor' : '#999999',
 		'class' : 'calOuterTable',
-		'width': 180
+		'width': 160
 	},
 	// month & year navigation table (TABLE)
 	'navtable': {

@@ -1,5 +1,4 @@
 <html>
-<script language="JavaScript" src="calendar/calendar1.html"></script>
 <siteTitle />
 
 <div nonPda="T">
@@ -15,12 +14,9 @@
       <td valign="top" width="90%">
         <span class="xs">
         <menu toolbar="toolbar1" activate="onMouseOver"/>
-        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
         <menu toolbar="transport" activate="onMouseOver"/>
-        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
         <menu toolbar="search" activate="onMouseOver"/>
         <menu toolbar="toolbar3" activate="onMouseOver"/>
-        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
         <print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/></span><pdaToPc image="images/pda.gif"/></td>
       <td valign="top" align="right" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
@@ -53,14 +49,10 @@
 
         <!-- Auto-generated menus -->
         <menu toolbar="toolbar1"/>
-        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
         <menu toolbar="transport"/>
-        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
         <menu toolbar="search"/>
         <menu toolbar="filterParallel"/>
-        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
         <menu toolbar="toolbar3"/>
-        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
 
         <print image="images/printerIcon.gif"/>
         <saveInExcel allow="owner" image="images/excel.gif"/>

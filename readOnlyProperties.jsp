@@ -12,12 +12,9 @@
 
       <!-- Auto-generated menus -->
       <menu toolbar="toolbar1" activate="onMouseOver"/>
-      <img src="icons/icon_divider.gif" align="middle" border="0"></img>
       <menu toolbar="transport" activate="onMouseOver"/>
-      <img src="icons/icon_divider.gif" align="middle" border="0"></img>
       <menu toolbar="search" activate="onMouseOver"/>
       <menu toolbar="toolbar3" activate="onMouseOver"/>
-      <img src="icons/icon_divider.gif" align="middle" border="0"></img>
       <span class="xs">
         <print image="images/printerIcon.gif"/>
       </span>
