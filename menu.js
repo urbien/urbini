@@ -1,8 +1,7 @@
 /* 
  * Popup Menu system 
  */ 
-var MenuArray = new Array();
-var currentPopupRow;
+//var MenuArray = new Array();
 
 var DarkMenuItem  = '#B6BDD2';
 var LightMenuItem = '';  
@@ -15,7 +14,19 @@ if (document.layers) {
   VISIBLE = 'show';	
 }
 
+var popupFrameLoaded = false;
+var originalProp = null;
+var propName = null;
+var openedPopups = new Array();
+var currentDiv = null;
+var closeTimeoutId;
+var currentPopupRow;
+var currentImgId = null;
+var currentFormName = null;
+var currentResourceUri = null;
+
 function menuOpenClose(divName, imgName) {
+  /*
 	for (i = 0; i < MenuArray.length; i++) {
 		if (document.getElementById(MenuArray[i]) == null) {
 			continue;
@@ -28,7 +39,9 @@ function menuOpenClose(divName, imgName) {
 			}
 		}
 	}
-	
+	*/
+  if (currentDiv)
+    menuClose2(currentDiv);
 	var divRef = document.getElementById(divName);
 	poptext = divRef.style;
 	if (poptext.display == "none" || poptext.display == "") {
@@ -59,11 +72,13 @@ function menuOpenClose(divName, imgName) {
     DivSetVisible(true, divName);
     poptext.visibility = VISIBLE; // finally make div visible
     deselectRow(currentPopupRow);
+    currentDiv = divRef;
     currentPopupRow = firstRow(divRef);
 	} 
 	else {
 		//poptext.display = "none";
 		DivSetVisible(false, divName);
+    currentDiv = null;
 	}
 	if (document.getElementById("menudiv_Email") != null &&
       document.getElementById("menudiv_Email").style.display == "inline") {
@@ -77,77 +92,15 @@ function menuOpenClose(divName, imgName) {
 	}
 }
 
-var closeTimeoutId;
-var openTimeoutId;
-
-function menuOpen(div, link) {
-  openTimeoutId = setTimeout("menuOpen1('" + div + "', '" + link + "')", 100);
-}
-
-function menuOpen1(div, link) {
-	poptext = document.getElementById(div).style;
-	if (poptext.display == "none" || poptext.display == "") {
-		linkLeft = docjslib_getImageXfromLeft(link);
-		linkTop = docjslib_getImageYfromTop(link);
-		linkWidth = docjslib_getImageWidth(link);
-		linkHeight = docjslib_getImageHeight(link);
-
-		if (xMousePos < linkLeft || xMousePos > linkLeft + linkWidth ||
-        yMousePos < linkTop  || yMousePos > linkTop  + linkHeight) {
-			return;
-		}
-	} 
-	else {
-		return;
-  }
-
-	if (openTimeoutId != null) {
-     clearTimeout(openTimeoutId);
-     openTimeoutId = null;
-  }
-	if (closeTimeoutId != null) {
-     clearTimeout(closeTimeoutId);
-     closeTimeoutId = null;
-  }
-	for (i = 0; i < MenuArray.length; i++) {
-		if (document.getElementById(MenuArray[i]) == null) {
-			continue;
-		}
-		if (MenuArray[i] != div) {
-			poptext = document.getElementById(MenuArray[i]).style;
-			if (poptext.display == "inline") {
-				poptext.display = "none";
-			}
-		}
-	}
-	poptext = document.getElementById(div).style;
-  poptext.left = docjslib_getImageXfromLeft(link);
-  poptext.top = docjslib_getImageYfromTop(link) + docjslib_getImageHeight(link) + 2;
-	if (poptext.display == "none" || poptext.display == "") {
-		poptext.display = "inline";
-	}
-
-	if (document.getElementById("menudiv_Email") != null &&
-      document.getElementById("menudiv_Email").style.display == "inline") {
-		var e = document.forms["emailForm"];
-		if (e) e.elements["subject"].value = document.title;
-	}
-	if (document.getElementById("menudiv_Schedule") != null &&
-      document.getElementById("menudiv_Schedule").style.display == "inline") {
-    var s = document.forms["scheduleForm"];
-    if (s) s.elements["name"].value = document.title;
-	}
-}
-
 function menuClose1(divId) {
   //alert("divId"+divId + ",currentDiv=" + currentDiv.id);  
   var divRef =document.getElementById(divId);
   if (!divRef)
     return;
 
-  if (divRef != currentDiv) {
-    return;
-  }  
+  //if (divRef != currentDiv) {
+  //  return;
+  //}  
   poptext = divRef.style;
   if (poptext.display == "inline") {
     poptextLeft   = docjslib_getImageXfromLeft(divId);
@@ -175,7 +128,8 @@ function menuClose2(divElem) {
     poptextWidth  = docjslib_getImageWidth(divId);
     poptextHeight = docjslib_getImageHeight(divId);
     DivSetVisible(false, divId);
-    if (divElem == currentDiv) currentDiv = null;
+    if (divElem == currentDiv)
+      currentDiv = null;
   }
 }
 
@@ -356,14 +310,6 @@ function DivSetVisible(makeVisible, divn) {
    }
 }
 
-var popupFrameLoaded = false;
-var originalProp = null;
-var propName = null;
-var openedPopups = new Array();
-var currentDiv = null;
-var currentImgId = null;
-var currentFormName = null;
-var currentResourceUri = null;
 /**
  *  Opens the popup when icon is clicked
  */
