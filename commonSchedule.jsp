@@ -6,14 +6,25 @@
     </tr>
     <tr><td>
     <table border="0" cellpadding="3" cellspacing="2">
-      <tr><td bgcolor="#e3e2df" class="cswmItemSubtitle">Subject:</td><td bgcolor="#e3e2df"><input name="name" class="formMenuInput"/></td></tr>
-		<tr> 
-		  <td bgcolor="#e3e2df" class="cswmItemSubtitle">Format:</td>
-		  <td bgcolor="#e3e2df"> <select name="format" onchange="onRecChange()" class="formMenuInput">
-			  <option value="html">HTML</option>
-			  <option value="xls">Excel</option>
-			</select></td>
-		</tr>
+      <tr>
+        <td bgcolor="#e3e2df" class="cswmItemSubtitle">Subject:</td>
+        <td bgcolor="#e3e2df"><input name="name" class="formMenuInput"/></td>
+      </tr>
+	<tr id="schedule_formatTr" style="display:block"> 
+	  <td bgcolor="#e3e2df" class="cswmItemSubtitle">Format:</td>
+	  <td bgcolor="#e3e2df">
+          <select name="format" onchange="onRecChange()" class="formMenuInput">
+	    <option value="html">HTML</option>
+	    <option value="xls">Excel</option>
+	    </select>
+        </td>
+	</tr>
+      <script language="JavaScript">
+        var url = new String(window.location);
+        if (url.indexOf("readOnlyProperties.html") != -1) {
+          document.getElementById("schedule_formatTr").style.display="none";
+        }
+      </script>
       <tr><td bgcolor="#e3e2df" class="cswmItemSubtitle">Repeat:</td>
 	  <td bgcolor="#e3e2df">
         <select name="rec" onchange="onRecChange()" class="formMenuInput">
