@@ -26,13 +26,20 @@
     <tr> 
     <td colspan="2">
       <font color="red"><center><b><errorMessage /></b></center></font>
-      <subscribe/>
+      <subscribeNote/>
       <!--siteHistory /-->
       <readOtherSiteInfo />
       <tablePropertyList />
       <div align="right"><measurement/></div>
       <p/>
-      <edit html="editProperties.html"/>
+      <table width="100%" cellpadding="3" cellspacing="0" border="0">
+      <tr class="dark">
+        <td valign="top" width="5%"><edit html="editProperties.html"/></td>
+        <td valign="top" width="5%"><delete/></td>
+        <td width="30%">&#160;</td>
+        <td width="60%" valign="top"><subscribe/></td>
+      </tr>
+      </table>
       <reloadDocuments/>
     <br/><br/>
       <comments /> 

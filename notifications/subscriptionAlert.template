@@ -1,6 +1,7 @@
 Dear &[firstName]; &[lastName];,
 
-New subscriber registered for the &[class]; to which you subscribe.
+
+&[newFirstName]; &[newLastName]; registered for the &[class];.
 Click on the link below to see the details:
 
 &[url];
