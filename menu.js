@@ -1018,12 +1018,12 @@ function popupRowOnKeyPress(e) {
         autoComplete1(e, inputField);
         if (characterCode == 8) {
           inputField.value = inputField.value.substring(0, inputField.value.length - 1);
-        }  
-        e.cancelBubble = true;
-        e.returnValue = false;
-        if (e.preventDefault) e.preventDefault();         
-        return false;
-      }
+        }
+      }  
+      e.cancelBubble = true;
+      e.returnValue = false;
+      if (e.preventDefault) e.preventDefault();         
+      return false;
   }     
 
   // down arrow
