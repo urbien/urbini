@@ -274,9 +274,7 @@ function enableDesignMode(rte, html, readOnly) {
 			//gecko may take some time to enable design mode.
 			//Keep looping until able to set.
 			if (isGecko) {
-			    //var s = replaceAll(html, "'", "\\\\'");
 				//var s = replaceAll(html, "'", "&#39;");
-				//var s = replaceAll(html, "'", "aaaaaaaaaaaaaaaaaaaaaaaa");
 				s = html;
 				//setTimeout("enableDesignMode('" + rte + "', '" + html + "', " + readOnly + ");", 10);
 				setTimeout("enableDesignMode('" + rte + "', '" + s + "', " + readOnly + ");", 10);
@@ -287,22 +285,81 @@ function enableDesignMode(rte, html, readOnly) {
 	}
 }
 
+function processURLs(stringWithUrl) { // function that looks for all URLs in RTE to replace them with word link f.e.
+  var httpPresent = false;
+  firstEntrance = -1;
+
+  var firstEntrance_1 = stringWithUrl.indexOf('http:\/\/');
+  var firstEntrance_2 = stringWithUrl.indexOf('www.');
+
+  if(firstEntrance_1==-1 && firstEntrance_2==-1) return stringWithUrl;
+	  
+  if(firstEntrance_1!=-1 && firstEntrance_2==-1) {firstEntrance = firstEntrance_1; httpPresent = true;}
+    else 
+	  if(firstEntrance_1==-1 && firstEntrance_2!=-1) firstEntrance = firstEntrance_2;
+	    else
+		  if(firstEntrance_1 < firstEntrance_2) {firstEntrance = firstEntrance_1; httpPresent = true;}
+		    else
+			  if(firstEntrance_2 < firstEntrance_1) firstEntrance = firstEntrance_2;
+
+  if(firstEntrance != -1)
+  {
+	var urlLink = "";
+	var idexOfTheEndOfTheUrl = firstEntrance;
+	for(;idexOfTheEndOfTheUrl < stringWithUrl.length;idexOfTheEndOfTheUrl++)
+	{
+		if(stringWithUrl.charAt(idexOfTheEndOfTheUrl)==' ' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=='<' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=='"')
+		{
+			if(stringWithUrl.charAt(idexOfTheEndOfTheUrl-1)=='.')
+				idexOfTheEndOfTheUrl=idexOfTheEndOfTheUrl-1;
+			break;
+		}
+    }
+
+    if(stringWithUrl.charAt(idexOfTheEndOfTheUrl-1)=='.')
+	  idexOfTheEndOfTheUrl--;
+
+	urlLink += stringWithUrl.substring(0,firstEntrance);
+
+    if(stringWithUrl.substring(firstEntrance-6,firstEntrance)=='href="' || stringWithUrl.substring(firstEntrance-6,firstEntrance)=='title=' || stringWithUrl.substring(firstEntrance-5,firstEntrance)=='src="') {
+         if(!httpPresent)
+           urlLink_href='http:\/\/' + stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
+          else 
+            urlLink_href=stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
+
+         urlLink += urlLink_href;
+	}
+	 else {
+         if(!httpPresent)
+           urlLink_href='http:\/\/' + stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
+          else 
+            urlLink_href=stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
+	   //alert(urlLink.substring(urlLink.length-1,urlLink.length)); 
+	   urlLink = urlLink.substring(0,urlLink.length-1);
+	   urlLink += " target='_blank'><img src='/images/wysiwyg/hyperlink.gif' title=\""+urlLink_href+"\" width='24' height='24' border='0'>";
+	 }
+		
+	var restUrl = stringWithUrl.substring(idexOfTheEndOfTheUrl, stringWithUrl.length);
+
+       return urlLink + processURLs(restUrl);
+  }	
+}
+
 function updateRTEs() {
-    //alert(allRTEs);
 	var vRTEs = allRTEs.split(";");
 	for (var i = 0; i < vRTEs.length; i++) {
-	    //alert("updateRTE("+vRTEs[i]+");");
-		//alert(frames[RTEs[i]].document);
+		frames[vRTEs[i]].document.body.innerHTML = processURLs(frames[vRTEs[i]].document.body.innerHTML);
 		updateRTE(vRTEs[i]);
-		//if(document.getElementById(vRTEs[i]+'content'))document.getElementById(vRTEs[i]+'content').value = ;
-		//alert(frames[RTEs[i]].document.body.innerHTML);
-		//alert(document.getElementById(vRTEs[i]).document.body.innerHTML);
-		
-		//alert(vRTEs[i]);
+		//!!!alert(frames[vRTEs[i]].document.body.innerHTML);
 	}
 }
 
 function updateRTE(rte) {
+		//---- Replacing of all urls with link image not to make the page too wide cuz of long url
+		//frames[rte].document.body.innerHTML = processURLs(frames[rte].document.body.innerHTML);
+		//frames[vRTEs[i]].document.body.innerHTML = processURLs(frames[vRTEs[i]].document.body.innerHTML);
+		//-----------------------------------------------------		
+
     if(document.getElementById(rte+'content'))document.getElementById(rte+'content').value = frames[rte].document.body.innerHTML;
 	
     //alert(frames[rte].document.body.innerHTML);
