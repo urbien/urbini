@@ -293,27 +293,39 @@
 
    
    /*********************************** Tootltips ************************************/
-   function replaceTooltips(divRef) {
-     var llen;
-     var images;
-     images = divRef.getElementsByTagName('img');
-     llen = images.length;
-     for (i=0;i<llen; i++) { 
-       addEvent(images[i], 'mouseout',    tooltipMouseOut,    false);
-       addEvent(images[i], 'mouseover',   tooltipMouseOver,   false);
-     } 
-   }
-
    function replaceAllTooltips() {
      var llen;
-     var images;
-     images = document.images;
-     llen = document.images.length;
-     for (i=0;i<llen; i++) { 
-       addEvent(images[i], 'mouseout',    tooltipMouseOut,    false);
-       addEvent(images[i], 'mouseover',   tooltipMouseOver,   false);
+     var elements;
+     elements = document.getElementsByTagName('img');
+     replaceTooltips0(elements);
+     elements = document.getElementsByTagName('span');
+     replaceTooltips0(elements);
+     elements = document.getElementsByTagName('a');
+     replaceTooltips0(elements);
+     elements = document.getElementsByTagName('input');
+     replaceTooltips0(elements);
+     elements = document.getElementsByTagName('tt');
+     replaceTooltips0(elements);
+   }
+
+   function replaceTooltips(divRef) {
+     var elements;
+     elements = divRef.getElementsByTagName('img');
+     replaceTooltips0(elements);
+   }
+   
+   function replaceTooltips0(elements) {
+     var llen;
+     llen = elements.length;
+     for (i=0;i<llen; i++) {
+       var elem = elements[i];
+       if (elem.attributes['title']) {
+         addEvent(elem, 'mouseout',    tooltipMouseOut,    false);
+         addEvent(elem, 'mouseover',   tooltipMouseOver,   false);
+       }
      } 
    }
+   
    function tooltipMouseOver(e) {
      var p;
      var target;
@@ -359,6 +371,13 @@
    }
 
    function tooltipMouseOut(e) {
+     var target;
+
+     e = (e) ? e : ((window.event) ? window.event : null);
+     if (!e)
+       return;
+     target = getTargetElement(e);
+     
      var tooltipDiv = document.getElementById('system_tooltip');
      var ifrRef = document.getElementById('tooltipIframe');
      

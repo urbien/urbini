@@ -331,7 +331,8 @@ function setDivInvisible(div, iframeRef) {
   else
     ifrRef = document.getElementById('popupIframe');  
   
-  div.style.display    = "none";
+  if (div && div.style)
+    div.style.display    = "none";
   ifrRef.style.display = "none";
 }
 
