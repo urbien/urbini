@@ -1,0 +1,76 @@
+<html>
+<head>
+  <title>new comment template</title>
+  <script>
+  function onsubmitFunction(form) {
+    if (document.all || document.getElementById) { 
+      form.elements['submit'].disabled     = true; 
+      form.elements['submit'].value        = 'Please wait'; 
+      form.elements['submit'].style.cursor = 'wait';
+    }
+  }
+  </script>
+</head>
+<body>
+<table>
+  <tbody>
+    <tr>
+      <td style="vertical-align: bottom;"><img src="images/email.gif" border="0" width="25"></td>
+      <td style="vertical-align: bottom;">
+        <a href="&[mailto];">
+         Email comment
+        </a> or
+      </td>
+      <td style="vertical-align: bottom;">
+         <img alt="Submit online" title="Submit online and see the results immediately" src="icons/web.gif" style="width: 22px; height: 22px;">
+      </td>
+      <td style="vertical-align: bottom;">
+        <a href="about:blank" onClick="document.getElementById('newCommentTable').style.display=''; return false;" title="Submit online and see the results immediately">Submit comment</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+<form id="newComment" name="newComment" action="comments" method="get" width="100%" onsubmit="onsubmitFunction(this);">
+<table class="comments" id="newCommentTable" cellpadding="0" cellspacing="0" width="100%" style="display: none">
+  <tbody>
+    <tr>
+      <td>
+
+        <input name="forum"    value="&[forum];" type="hidden"> 
+        <input name="rProp"    value="&[rProp];" type="hidden">
+        <input name="noRating" value="true"      type="hidden"> 
+        <input name="url"      value="&[url];"   type="hidden"> 
+        <input name="user"     value="&[user];"  type="hidden">
+        <table class="comments1" style="width: 100%;" border="0" cellpadding="5">
+          <tbody>
+            <tr>
+              <td style="width: 10%; vertical-align: middle; text-align: left;"><span class="xs"><b><nobr>Title</nobr></b></span> </td>
+              <td><span class="xs"><input class="xs" size="106" name="title"></span></td>
+            </tr>
+            <tr>
+              <td><span class="xs"><b><nobr>Comment</nobr></b></span> </td>
+              <td><textarea name="body" rows="5" cols="80" wrap="soft"></textarea></td>
+            </tr>
+          </tbody>
+        </table>
+
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <input value="Set-up and Testing" name="dn" type="hidden">
+        <center>
+          <input value="Submit comment" name="submit" type="submit">
+          <input value="mkResource" name="-$action" type="hidden">
+        </center>
+        <br> 
+      </td>
+    </tr>
+  </tbody>
+</table>
+</form>
+
+</body>
+</html>
