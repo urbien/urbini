@@ -18,7 +18,7 @@
               <text text="Reel #" /> 
                 <table>
                   <tr>
-                    <td><input type="text" size="7" name="http://www.hudsonfog.com/voc/views/delivery/SingleReelShipmentDeatils/number" value="" class="text" /></td>
+                    <td><input type="text" size="7" name="http://www.hudsonfog.com/voc/views/delivery/SingleReelShipment/number" value="" class="text" /></td>
                     <td valign="middle"><input type="image" border="0" width="28" src="images/gogif.gif" name="submit" /> </td>
                   </tr>
                 </table>
