@@ -431,7 +431,7 @@
       llen = elements.length;
       for (i=0;i<llen; i++) {
         var elem = elements[i];
-        if (elem.id  &&  elem.id.indexOf("_markedAsRead", elem.id.length - "_markedAsRead".length) != -1) {
+        if (elem.id  &&  elem.id.indexOf("_boolean", elem.id.length - "_boolean".length) != -1) {
           addEvent(elem, 'click', markedAsRead, false);
           elem.style.cursor = 'pointer';
         }
@@ -447,7 +447,16 @@
       target = getTargetElement(e);
       var url = 'editProperties.html?submit=Submit+changes&User_Agent_UI=n&uri=';
       
-      var rUri = target.id.substring(0, target.id.length - "_markedAsRead".length);
+      var rUri = target.id.substring(0, target.id.length - "_boolean".length);
+      var idx = rUri.lastIndexOf("_");
+      var propShort = rUri.substring(idx + 1);
+      rUri = rUri.substring(0, idx);
+      var bUri = null;
+      idx = rUri.indexOf(".$.");
+      if (idx != -1) {
+        bUri = rUri.substring(idx + 3);
+        rUri = rUri.substring(0, idx);
+      }
       var tooltip = target.getAttribute('tooltip');
       var pValue;
       if (tooltip  &&  tooltip.length != 0  &&  tooltip == "Yes")
@@ -459,7 +468,9 @@
         target.src = target.getAttribute('yesIcon');
       else
         target.src = target.getAttribute('noIcon');
-      url += encodeURIComponent(rUri) + "&markedAsRead=" + pValue;
+      url += encodeURIComponent(rUri) + "&" + propShort + "=" + pValue;
+      if (bUri != null) 
+        url += "&bUri=" + encodeURIComponent(bUri);
       
       var onClickPopupFrame = frames["popupFrame"];
       popupFrameLoaded = false;
