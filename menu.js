@@ -15,31 +15,34 @@ function menuOpenClose(divName, imgName) {
 		}
 	}
 	poptext = document.getElementById(divName).style;
-	if (imgName) {
-            left = docjslib_getImageXfromLeft(imgName);
-            top = docjslib_getImageYfromTop(imgName) + docjslib_getImageHeight(imgName);
-
-            //Find out how close to the corner of the window
-            var rightedge=document.all? document.body.clientWidth-left : window.innerWidth-left;
-            var bottomedge=document.all? document.body.clientHeight-top : window.innerHeight-top;
-
-            //if the horizontal distance isn't enough to accomodate the width of the context menu
-            if (rightedge<poptext.offsetWidth)
-              //move the horizontal position of the menu to the left by its width
-              left=left-poptext.offsetWidth;
-
-            //same concept with the vertical position
-            if (bottomedge<poptext.offsetHeight)
-              top=document.all? document.body.scrollTop+document.body.offsetHeight-poptext.offsetHeight : window.pageYOffset+window.innerHeight-poptext.offsetHeight;
-            else
-              top = top + 2;
-
-            poptext.left = left;
-            poptext.top = top;
-	}
 	if (poptext.display == "none" || poptext.display == "") {
 		//poptext.display = "inline";
 		DivSetVisible(true, divName);
+		if (imgName) {
+            	var divRef = document.getElementById(divName);
+			divRef.style.left=0;
+			divRef.style.top=0;
+            	var left = docjslib_getImageXfromLeft(imgName);
+            	var top = docjslib_getImageYfromTop(imgName) + docjslib_getImageHeight(imgName);
+			var screenX = document.body.clientWidth;
+			var screenY = document.body.clientHeight;
+
+            	//Find out how close to the corner of the window
+            	var rightedge=document.body.clientWidth-left;
+            	var bottomedge=document.body.clientHeight-top;
+
+            	//if the horizontal distance isn't enough to accomodate the width of the context menu
+            	if (rightedge<divRef.offsetWidth)
+				//move the horizontal position of the menu to the left by its width
+				left=screenX-divRef.offsetWidth;
+
+			//same concept with the vertical position
+			if (bottomedge<divRef.offsetHeight)
+				top=document.body.scrollTop+document.body.offsetHeight-divRef.offsetHeight;
+
+			poptext.left = left;
+			poptext.top = top;
+		}
 	} else {
 		//poptext.display = "none";
 		DivSetVisible(false, divName);
