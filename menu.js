@@ -1,15 +1,15 @@
-/* 
- * Popup Menu system 
- */ 
+/*
+ * Popup Menu system
+ */
 var DarkMenuItem  = '#dee6e6';
-var LightMenuItem = '';  
+var LightMenuItem = '';
 
 var HIDDEN  =  'hidden';
 var VISIBLE =  'visible';
 
 if (document.layers) {
   HIDDEN  = 'hide';
-  VISIBLE = 'show';	
+  VISIBLE = 'show';
 }
 
 var popupFrameLoaded = false;
@@ -28,11 +28,11 @@ function menuOpenClose(divName, imgName) {
   if (currentDiv) {
     menuClose2(currentDiv);
     currentDiv = null;
-  }  
-  
+  }
+
   var img = document.getElementById(imgName);
   var divRef = document.getElementById(divName);
- 
+
   setDivVisible(divRef, img);
   deselectRow(currentPopupRow);
 
@@ -58,7 +58,7 @@ function menuClose1(divId) {
 
   //if (divRef != currentDiv) {
   //  return;
-  //}  
+  //}
   poptext = divRef.style;
   if (poptext.display == "inline") {
     poptextLeft   = docjslib_getImageXfromLeft(divRef);
@@ -223,25 +223,25 @@ function captureMousePosition(e) {
     // When the page scrolls in Netscape, the event's mouse position
     // reflects the absolute position on the screen. innerHight/Width
     // is the position from the top/left of the screen that the user is
-    // looking at. pageX/YOffset is the amount that the user has 
+    // looking at. pageX/YOffset is the amount that the user has
     // scrolled into the page. So the values will be in relation to
     // each other as the total offsets into the page, no matter if
     // the user has scrolled or not.
     xMousePos = e.pageX;
     yMousePos = e.pageY;
   } else if (document.all) {
-    // When the page scrolls in IE, the event's mouse position 
-    // reflects the position from the top/left of the screen the 
+    // When the page scrolls in IE, the event's mouse position
+    // reflects the position from the top/left of the screen the
     // user is looking at. scrollLeft/Top is the amount the user
     // has scrolled into the page. clientWidth/Height is the height/
     // width of the current page the user is looking at. So, to be
     // consistent with Netscape (above), add the scroll offsets to
-    // both so we end up with an absolute value on the page, no 
+    // both so we end up with an absolute value on the page, no
     // matter if the user has scrolled or not.
     xMousePos = window.event.x+document.body.scrollLeft;
     yMousePos = window.event.y+document.body.scrollTop;
   } else if (document.getElementById) {
-    // Netscape 6 behaves the same as Netscape 4 in this regard 
+    // Netscape 6 behaves the same as Netscape 4 in this regard
     xMousePos = e.pageX;
     yMousePos = e.pageY;
   }
@@ -274,19 +274,19 @@ function setDivVisible(divRef, img, offsetX, offsetY, iframeRef) {
   if (iframeRef)
     ifrRef = iframeRef;
   else
-    ifrRef = document.getElementById('popupIframe');  
+    ifrRef = document.getElementById('popupIframe');
   var poptext = divRef.style;
   var istyle  = ifrRef.style;
 
   poptext.visibility = HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
-  poptext.display    = 'inline'; // must make it inline here - otherwise coords will not get set 
+  poptext.display    = 'inline'; // must make it inline here - otherwise coords will not get set
 
   if (img) {
-    //divRef.style.left = document.body.scrollLeft;
-    //divRef.style.top  = document.body.scrollTop;
+    divRef.style.left = document.body.scrollLeft;
+    divRef.style.top  = document.body.scrollTop;
     var left = docjslib_getImageXfromLeft(img);
     var top  = docjslib_getImageYfromTop(img) + docjslib_getImageHeight(img);
-//alert('left='+left + ', top='+top);    
+//alert('left='+left + ', top='+top);
     var screenX = document.body.clientWidth;
     var screenY = document.body.clientHeight;
     // Find out how close to the corner of the window
@@ -307,20 +307,20 @@ function setDivVisible(divRef, img, offsetX, offsetY, iframeRef) {
       top = top + offsetY;
     poptext.left = left;
     poptext.top  = top;
-//alert('left='+left + ', top='+top);    
+//alert('left='+left + ', top='+top);
   }
   istyle.top     = divRef.style.top;
   istyle.left    = divRef.style.left;
 
   // Make position/size of iframe same as div's position/size
-  
+
   istyle         = ifrRef.style;
   istyle.display = "inline";
   istyle.width   = divRef.offsetWidth;
   istyle.height  = divRef.offsetHeight;
   istyle.visibility  = VISIBLE;
-  
-  poptext.visibility = VISIBLE; // finally make div visible  
+
+  poptext.visibility = VISIBLE; // finally make div visible
 }
 
 function setDivInvisible(div, iframeRef) {
@@ -328,8 +328,8 @@ function setDivInvisible(div, iframeRef) {
   if (iframeRef)
     ifrRef = iframeRef;
   else
-    ifrRef = document.getElementById('popupIframe');  
-  
+    ifrRef = document.getElementById('popupIframe');
+
   if (div && div.style)
     div.style.display    = "none";
   if (ifrRef && ifrRef.style)
@@ -343,13 +343,13 @@ function onClickPopup(e) {
   target = getTargetElement(e);
   if (!target)
     return;
-  if (target.tagName != "IMG")  
+  if (target.tagName != "IMG")
     return;
   var imgId = target.id;
   var form = getFormNode(target);
-  onClickPopup1(imgId, form);      
+  onClickPopup1(imgId, form);
 }
-  
+
 /**
  *  Opens the popup when needed, e.g. on click, on enter
  */
@@ -359,19 +359,19 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   if (idx == -1)
     return;
   currentFormName = propName1.substring(idx + 1);
-  propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));  
+  propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
 
   var d = currentDiv;
-  if (currentDiv) {    
+  if (currentDiv) {
     menuClose2(currentDiv);
   }
   if (imgId == currentImgId && d != null)
     return;
   currentImgId  = imgId;
-    
+
   originalProp = propName1;
   var idx = -1;
-  
+
   var divId;
   var isInterface;
   if (currentFormName == "siteResourceList") {
@@ -405,7 +405,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
         isInterface = true;
         propName = propName1.substring(0, idx);
         var el = document.forms[currentFormName].elements[propName + "_class"];
-        if (!el.value || el.value == "") 
+        if (!el.value || el.value == "")
           divId = propName + "_class_" + currentFormName;
         else {
           divId = propName + "_" + currentFormName;
@@ -413,29 +413,29 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
         }
       }
     }
-  } 
+  }
   currentDiv = document.getElementById(divId);
   var div = openedPopups[divId];
-  
+
   // Use existing DIV from cache (unless text was Enter-ed - in which case always redraw DIV)
-  if (!enteredText && div != null) { 
+  if (!enteredText && div != null) {
     hideResetRow(div, currentFormName, originalProp);
     menuOpenClose(divId, imgId);
-    // make popup active for key input 
+    // make popup active for key input
     if (currentDiv.focus) {// simple in IE
       try { currentDiv.focus(); } catch(e) {};
-    }  
+    }
     else {                // hack for Netscape (using an empty anchor element to focus on)
-      var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
+      var elm = document.getElementById(currentDiv.id + "_$focus_link");
       if (elm) {
         if (elm.focus) {
           try { elm.focus(); } catch(e) {};
-        }  
-      }  
-    }  
+        }
+      }
+    }
     return;
   }
-  
+
   // form url based on parameters that were set
   var url;
   var formAction = form.elements['-$action'].value;
@@ -444,7 +444,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   if (currentFormName == "siteResourceList") {
     url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.elements['type'].value;
   }
-  else { 
+  else {
     if (formAction != "showPropertiesForEdit" && formAction != "mkresource") {
       var allFields = true;
       if (formAction != "searchLocal" && formAction != "searchParallel") {
@@ -453,28 +453,28 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
       }
       else if (currentFormName == "horizontalFilter")
         allFields = true;
- 
+
       var params = getFormFilters(form, allFields);
       if (params)
         url = url + params;
     }
     else {
       url = url + "&type=" + form.elements['type'].value + "&-$action=" + formAction;
-      
-    }  
+
+    }
   }
   url += "&$form=" + currentFormName;
-  url += "&" + propName + "_filter=y"; 
-  if (!enterFlag)  
+  url += "&" + propName + "_filter=y";
+  if (!enterFlag)
     url += "&$selectOnly=y";
   if (enteredText)
     url += "&" + propName + "=" + encodeURIComponent(enteredText);
-  if (isInterface) { 
+  if (isInterface) {
     var classValue = form.elements[propName + "_class"].value;
     if (classValue != null && classValue.length != 0)
       url += "&" + propName + "_class=" + classValue;
   }
-  
+
   // request listbox context from the server and load it into a 'popupFrame' iframe
   var onClickPopupFrame = frames["popupFrame"];
   popupFrameLoaded = false;
@@ -495,14 +495,14 @@ function loadPopup() {
 //      alert("Warning: server did not return listbox data - check connection to server");
     setTimeout(loadPopup, 100);
     return;
-  }  
+  }
 
   var popupFrame = frames['popupFrame'];
   var body = popupFrame.document.getElementById('popupFrameBody');
   if (!body) {
     alert("Warning: server did not return listbox data - check connection to server");
     return;
-  }  
+  }
   var redirect = popupFrame.document.getElementById('$redirect');
   if (redirect) {
     document.location.href = redirect.href;
@@ -511,23 +511,23 @@ function loadPopup() {
   if (currentDiv) {
     currentDiv.innerHTML = body.innerHTML;
   }
-   
-  var addToTableName = "";  
+
+  var addToTableName = "";
   if (originalProp.indexOf("_class") != -1) {
     var field = propName + "_class";
     if (document.forms[currentFormName].elements[field].value == "")
       addToTableName = "_class";
   }
-  
+
   //var tableId = "table_" + propName + addToTableName + "_" + currentFormName;
-  //var table   = document.getElementById(tableId);  
+  //var table   = document.getElementById(tableId);
   var tables = currentDiv.getElementsByTagName('table');
-  if (!tables || !tables[1]) { 
+  if (!tables || !tables[1]) {
     alert("Warning: server did not return listbox data - check connection to server");
     return;
   }
   var table = tables[1];
-  
+
   var img = document.getElementById(currentImgId);
   hideResetRow(currentDiv, currentFormName, originalProp);
   menuOpenClose(currentDiv.id, currentImgId);
@@ -535,18 +535,18 @@ function loadPopup() {
   replaceTooltips(currentDiv);
   openedPopups[currentDiv.id] = currentDiv;
 
-  // make popup active for key input    
-  if (currentDiv.focus) { // IE 
+  // make popup active for key input
+  if (currentDiv.focus) { // IE
     try { currentDiv.focus(); } catch(e) {};
-  }  
+  }
   else {                // Netscape
-    var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
+    var elm = document.getElementById(currentDiv.id + "_$focus_link");
     if (elm) {
       if (elm.focus) {
         try { elm.focus(); } catch(e) {};
-      }  
-    }  
-  }  
+      }
+    }
+  }
 }
 
 function interceptPopupEvents(img, div, table) {
@@ -572,7 +572,7 @@ function interceptPopupEvents(img, div, table) {
 
 function removePopupRowEventHandlers(div) {
   var tables = div.getElementsByTagName('table');
-  if (!tables || !tables[1]) 
+  if (!tables || !tables[1])
     return;
   var table = tables[1];
   var trs = table.getElementsByTagName("tr");
@@ -595,12 +595,12 @@ function popupOnSubmit(e) {
   var target;
 
   e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e) 
+  if (!e)
     return;
 
   target = getTargetElement(e);
   var form = target;
-  
+
   var action = form.attributes['-$action'];
   // form url based on parameters that were set
   var url = "FormRedirect?JLANG=en"; // HACK: since form.action returns the value of '&action='
@@ -611,7 +611,7 @@ function popupOnSubmit(e) {
     allFields = false;
   else if (currentFormName == "horizontalFilter")
     allFields = true;
-    
+
   var params = getFormFilters(form, allFields);
   var submitButtonName  = null;
   var submitButtonValue;
@@ -619,11 +619,11 @@ function popupOnSubmit(e) {
   var t = target.attributes['type'];
   if (t.toUpperCase() == 'SUBMIT') {
     if (target.attributes['name'] == "Clear")
-      url += "&clear=Clear";      
+      url += "&clear=Clear";
     else
       url += "&submit=y";
   }
-  else 
+  else
     url += "&submit=y";
 */
   url += "&submit=y"; // HACK: since target.type return the value of &type instead of an input field's type property
@@ -634,27 +634,27 @@ function popupOnSubmit(e) {
     if (elem.type.toUpperCase() == 'SUBMIT') {
       submitButtonName  = elem.name;
       submitButtonValue = elem.value;
-    }  
-  }  
+    }
+  }
 
   if (!submitButtonName)
     return true;
   var hasQ = url.indexOf('?') != -1;
   if (!hasQ)
     url += '?' + submit;
-  else  
+  else
     url += '&' + submit;
 */
-  
+
   if (params)
-    url = url + params;   
+    url = url + params;
   url += '&$form=' + form.name;
 
   //url += '&$selectOnly=y';
-  
+
   if (allFields == false)
     url += "&type=" + form.type.value + "&-$action=" + formAction;
-  if (form.uri) 
+  if (form.uri)
     url += "&uri=" + encodeURIComponent(form.uri.value);
 
   form.onsubmit = null;
@@ -663,24 +663,24 @@ function popupOnSubmit(e) {
 //    form.submit.disabled = true; // HACK: for some reason can not disable this button - the form would not get submitted
     var submit = form.elements['submit'];
     submit.value = 'Please wait';
-    submit.style.cursor = 'wait'; 
+    submit.style.cursor = 'wait';
     var cancel;
     cancel = form.elements['cancel'];
     if (!cancel)
-      cancel = form.elements['clear'];  
+      cancel = form.elements['clear'];
     if (!cancel)
       cancel = form.elements['horizontal_clear'];
-    if (cancel) 
-      cancel.style.visibility = HIDDEN; 
+    if (cancel)
+      cancel.style.visibility = HIDDEN;
   }
 
 // submit as GET with all parameters collected manually
-//  form.method   = 'GET';  
+//  form.method   = 'GET';
 //  document.location.href = url;
 // 	e.cancelBubble = true;
 //  e.returnValue = false;
 //  if (e.preventDefault) e.preventDefault();
-//  return false; 
+//  return false;
   form.method = 'POST';
   form.action = "FormRedirect";
   return true;
@@ -694,28 +694,28 @@ function popupRowOnClick(e) {
   var target;
 
   e = (e) ? e : ((window.event) ? window.event : null);
-      
-  if (!e) 
+
+  if (!e)
     return;
 
   target = getTargetElement(e);
   tr = getTrNode(target);
   if (!tr)
     return;
-    
+
   var ret = popupRowOnClick1(tr);
 /*
   if (ret == false) {
     e.cancelBubble = true;
     e.returnValue = false;
-    if (e.preventDefault) e.preventDefault();         
+    if (e.preventDefault) e.preventDefault();
   }
-*/  
+*/
   return ret;
 }
- 
+
  function popupRowOnClick1(tr) {
-  //alert("popupRowOnClick1: " + tr.id);           
+  //alert("popupRowOnClick1: " + tr.id);
   if (tr.previousSibling == null) // skip clicks on menu header (it is a first tr - has no prev sibling)
     return;
 
@@ -728,16 +728,16 @@ function popupRowOnClick(e) {
     if (currentDiv) {
       openedPopups[currentDiv.id] = null;
       menuClose2(currentDiv);
-    }  
+    }
     if (anchors[0].click)
       anchors[0].click();
 	  return true;
   }
-  
+
   var form = getFormNode(tr);
   var table  = tr.parentNode;
   var table1 = table.parentNode;
-  
+
   var propertyShortName = table1.id.substring("table_".length);
   var idx = propertyShortName.lastIndexOf('_');
   var formName = propertyShortName.substring(idx + 1);
@@ -748,11 +748,11 @@ function popupRowOnClick(e) {
   if (idx == -1) {
     idx = propertyShortName.indexOf("_class");
     if (idx != -1)
-      prop = propertyShortName.substring(0, propertyShortName.length - 6); 
+      prop = propertyShortName.substring(0, propertyShortName.length - 6);
     else
-      prop = propertyShortName; 
+      prop = propertyShortName;
   }
-  else 
+  else
     prop = propertyShortName.substring(0, idx);
 
   var formField;
@@ -761,12 +761,12 @@ function popupRowOnClick(e) {
   var verified = prop + "_verified";
   if (currentResourceUri)
     verified = currentResourceUri + ".$." + verified;
-  var fieldLabel = document.getElementById(prop + "_span");  
-  
-  var iclass = prop + "_class";    
+  var fieldLabel = document.getElementById(prop + "_span");
+
+  var iclass = prop + "_class";
   var formFieldClass    = form.elements[iclass];
   var formFieldVerified = form.elements[verified];
-  
+
   var deleteCurrentDiv = false;
   if (formFieldVerified) {
     if (formFieldVerified.value == 'n')
@@ -781,25 +781,25 @@ function popupRowOnClick(e) {
     formField = form.elements[select];
     if (tr.id.indexOf('$clear') == 0) {
       if (len > 1) {
-        if (currentFormName != "tablePropertyList") 
+        if (currentFormName != "tablePropertyList")
           chosenTextField[0].value   = tr.id.substring(6);
-        else 
+        else
           chosenTextField[0].value   = '';
       }
       else {
-        if (currentFormName != "tablePropertyList") 
+        if (currentFormName != "tablePropertyList")
           chosenTextField.value   = tr.id.substring(6);
-        else 
+        else
           chosenTextField.value   = '';
       }
       formField.value         = '';
       if (formFieldClass)
         formFieldClass.value  = '';
-      
+
       // hide property label that is displayed on top of the text field
       if (fieldLabel)
         fieldLabel.style.display    = "none";
-      if (formFieldVerified) 
+      if (formFieldVerified)
         formFieldVerified.value = 'n';
       if (currentDiv) openedPopups[currentDiv.id] = null;
       var imgId  = prop + "_class_img";
@@ -821,14 +821,14 @@ function popupRowOnClick(e) {
         chosenTextField.style.backgroundColor = '#ffffff';
       formField.value = tr.id; // property value corresponding to a listitem
       // show property label since label inside input field is now overwritten
-      if (form.id == 'rightPanelPropertySheet') { 
-        if (fieldLabel) 
+      if (form.id == 'rightPanelPropertySheet') {
+        if (fieldLabel)
           fieldLabel.style.display = '';
-      }  
+      }
     }
   }
   else {
-    var img = tr.getElementsByTagName("img")[0];    
+    var img = tr.getElementsByTagName("img")[0];
     var imgId  = prop + "_class_img";
     if (img) {
       document.getElementById(imgId).src   = img.src;
@@ -863,42 +863,42 @@ function autoCompleteOnFocus(e) {
   }
   e = (e) ? e : ((window.event) ? window.event : null);
 
-  if (!e) 
+  if (!e)
     return;
 
   var target;
   target = getTargetElement(e);
   if (!target)
     return;
-    
-  target.select();  
+
+  target.select();
 }
 
 function autoCompleteOnBlur(e) {
   e = (e) ? e : ((window.event) ? window.event : null);
 
-  if (!e) 
+  if (!e)
     return;
 }
 
 function autoCompleteOnMouseout(e) {
   e = (e) ? e : ((window.event) ? window.event : null);
 
-  if (!e) 
+  if (!e)
     return;
 
   var target;
   target = getTargetElement(e);
   if (!target)
     return;
-    
+
 	var img = document.getElementById(keyPressedImgId);
 	if (!img)
 	  return true;
 
   if (currentDiv) {
     menuClose(currentDiv.id);
-  }  
+  }
 }
 
 function getKeyCode(e) {
@@ -922,25 +922,25 @@ function autoCompleteOnKeyDown(e) {
     if (e.keyCode == 8 || e.keyCode == 127) { // backspace, ctrl-enter
       var flag = autoComplete(e);
       return flag;
-    }  
+    }
     else if (e.keyCode == 9)                  // tab
       return autoComplete(e);
-    else  
-      return true;   
+    else
+      return true;
   }
 }
 
 /**
- * Show popup for the text entered in input field (by capturing keyPress events). 
+ * Show popup for the text entered in input field (by capturing keyPress events).
  * Show popup only when the person stopped typing (timeout).
- * Special processing for Enter: 
+ * Special processing for Enter:
  *   - in Filter mode     - let it submit the form.
  *   - in Data Entry mode - on Enter show popup immediately,
  *                          and close popup if hit Enter twice.
  */
 function autoComplete(e) {
   e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e) 
+  if (!e)
     return;
 
   var target;
@@ -952,38 +952,38 @@ function autoComplete(e) {
 function autoComplete1(e, target) {
   if (!target)
     return;
-  
+
   keyPressedTime = new Date().getTime();
   if (currentDiv)
     menuClose2(currentDiv);
-  
+
   var form = target.form;
-  var characterCode = getKeyCode(e); // code typed by the user  
+  var characterCode = getKeyCode(e); // code typed by the user
   switch (characterCode) {
-    case 38:  //up arrow  
+    case 38:  //up arrow
     case 40:  //down arrow
     case 37:  //left arrow
     case 39:  //right arrow
-    case 33:  //page up  
-    case 34:  //page down  
-    case 36:  //home  
-    case 35:  //end                  
-    case 27:  //esc  
-    case 16:  //shift  
-    case 17:  //ctrl  
+    case 33:  //page up
+    case 34:  //page down
+    case 36:  //home
+    case 35:  //end
+    case 27:  //esc
+    case 16:  //shift
+    case 17:  //ctrl
     case 18:  //alt  s
     case 20:  //caps lock
       return true;
-    case 8:   //backspace  
+    case 8:   //backspace
     case 46:  //delete
     case 127: //ctrl-enter
-    case 13:  //enter  
+    case 13:  //enter
       break;
     case 9:   //tab
       if (currentDiv)
         menuClose2(currentDiv);
       return true;
-  }     
+  }
   var propName  = target.name;
   var formName  = target.id;
   var propName1 = propName;
@@ -1006,11 +1006,11 @@ function autoComplete1(e, target) {
     keyPressedImgId     = propName + "_" + formName + "_filter";
   keyPressedElement   = target;
   keyPressedElement.style.backgroundColor='#ffffff';
-  
+
   if (characterCode == 13) { // open popup (or close it on second Enter)
     onClickPopup1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
     return false;            // tell browser not to do submit on 'enter'
-  }  
+  }
 
   if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
   if (fieldSelect)   fieldSelect.value = ''; // value was modified and is not verified yet (i.e. not chose from the list)
@@ -1023,7 +1023,7 @@ function autoComplete1(e, target) {
   if (characterCode == 8)
     return false;
   else
-    return true; 
+    return true;
 }
 
 function autoCompleteTimeout(invocationTime) {
@@ -1036,8 +1036,8 @@ function autoCompleteTimeout(invocationTime) {
 	var img = document.getElementById(keyPressedImgId);
 	if (!img) {
 	  return true;
-	}  
-	
+	}
+
 	if (keyPressedElement.value.length == 0) // avoid showing popup for empty fields
 	  return;
 	onClickPopup1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
@@ -1051,11 +1051,11 @@ function autoCompleteOnKeyDown(e) {
     if (e.keyCode == 8 || e.keyCode == 127) { // backspace, ctrl-enter
       var flag = autoComplete(e);
       return flag;
-    }  
+    }
     else if (e.keyCode == 9)                  // tab
       return autoComplete(e);
-    else  
-      return true;   
+    else
+      return true;
   }
 }
 
@@ -1064,7 +1064,7 @@ function autoCompleteOnKeyDown(e) {
  */
 function popupRowOnKeyPress(e) {
   e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e) 
+  if (!e)
     return;
 
   var characterCode = getKeyCode(e); // code typed by the user
@@ -1074,7 +1074,7 @@ function popupRowOnKeyPress(e) {
     return;
 
   switch (characterCode) {
-    case 38:  //up arrow  
+    case 38:  //up arrow
     case 40:  //down arrow
       break;
     case 9:   //tab
@@ -1083,22 +1083,22 @@ function popupRowOnKeyPress(e) {
         var inputField = form.elements[originalProp];
         try { inputField.focus(); } catch(e) {};
         menuClose2(currentDiv);
-      }  
+      }
       e.cancelBubble = true;
       e.returnValue = false;
-      if (e.preventDefault) e.preventDefault();         
+      if (e.preventDefault) e.preventDefault();
       return false;
-    case 27:  //esc  
+    case 27:  //esc
       if (currentDiv)
         menuClose2(currentDiv);
-      return false;  
+      return false;
     case 13:  //enter
       popupRowOnClick1(tr);
     	e.cancelBubble = true;
 	    e.returnValue = false;
-	    if (e.preventDefault) e.preventDefault();   
+	    if (e.preventDefault) e.preventDefault();
       return false;
-    default:  
+    default:
     case 8:   //backspace
       if (currentDiv) {
         var form = getFormNode(currentPopupRow);
@@ -1109,12 +1109,12 @@ function popupRowOnKeyPress(e) {
         if (characterCode == 8) {
           inputField.value = inputField.value.substring(0, inputField.value.length - 1);
         }
-      }  
+      }
       e.cancelBubble = true;
       e.returnValue = false;
-      if (e.preventDefault) e.preventDefault();         
+      if (e.preventDefault) e.preventDefault();
       return false;
-  }     
+  }
 
   // down arrow
   if (characterCode == 40) {
@@ -1122,7 +1122,7 @@ function popupRowOnKeyPress(e) {
     var nextTr = nextRow(tr);
 	  currentPopupRow = nextTr;
     selectRow(currentPopupRow);
-	} 
+	}
 	// up arrow
 	else if (characterCode == 38) {
 	  deselectRow(currentPopupRow);
@@ -1139,24 +1139,24 @@ function popupRowOnKeyPress(e) {
 function deselectRow(tr) {
   if (!tr)
     return;
-  var tds = tr.getElementsByTagName("td");  
+  var tds = tr.getElementsByTagName("td");
   for (i=0; i<tds.length; i++) {
     var elem = tds[i];
     elem.style.backgroundColor = LightMenuItem;
-  } 
+  }
 }
 
 function selectRow(tr) {
   if (!tr)
     return;
-    
+
   if (tr.id == '$noValue')
     return;
-  var tds = tr.getElementsByTagName("td");  
+  var tds = tr.getElementsByTagName("td");
   for (i=0; i<tds.length; i++) {
     var elem = tds[i];
     elem.style.backgroundColor = DarkMenuItem;
-  } 
+  }
 }
 
 function nextRow(tr) {
@@ -1164,45 +1164,45 @@ function nextRow(tr) {
 
   if (next == null) {
     var table = tr.parentNode;
-    var trs = table.getElementsByTagName("tr");  
+    var trs = table.getElementsByTagName("tr");
     return trs[1]; // skip [0] tr since it is a header
   }
 
-  if (next.tagName && next.tagName.toUpperCase() == 'TR') 
+  if (next.tagName && next.tagName.toUpperCase() == 'TR')
     return next;
-  else  
-    return nextRow(next);    	    
-}	  
+  else
+    return nextRow(next);
+}
 
 function prevRow(tr) {
   var prev = tr.previousSibling;
 
   if (prev == null || isFirstRow(prev)) {
     var table = tr.parentNode;
-    var trs = table.getElementsByTagName("tr");  
+    var trs = table.getElementsByTagName("tr");
     return trs[trs.length - 1];
   }
-  
-  if (prev.tagName && prev.tagName.toUpperCase() == 'TR') 
+
+  if (prev.tagName && prev.tagName.toUpperCase() == 'TR')
     return prev;
-  else  
-    return prevRow(prev);    	    
-}	  
+  else
+    return prevRow(prev);
+}
 
 function isFirstRow(tr) {
   if (tr && tr.id == '$classLabel')
     return true;
   else
-    return false;  
+    return false;
 }
 
 function firstRow(div) {
-  var tables = div.getElementsByTagName("table");  
+  var tables = div.getElementsByTagName("table");
   var trs;
   for (i=0; i<tables.length; i++) {
     trs = tables[i].getElementsByTagName("tr");
     if (trs && isFirstRow(trs[0]))
-      break; 
+      break;
   }
   if (!trs)
     return;
@@ -1213,20 +1213,20 @@ function popupOnMouseOver(e) {
   var target;
 
   e = (e) ? e : ((window.event) ? window.event : null);
-      
-  if (!e) 
+
+  if (!e)
     return;
 
   target = getTargetElement(e);
   if (!target)
     return;
-  
+
 	if (closeTimeoutId != null) {
      clearTimeout(closeTimeoutId);
      closeTimeoutId = null;
-  }  
-  window.status = propName; 
-  
+  }
+  window.status = propName;
+
   return true;
 }
 
@@ -1234,17 +1234,17 @@ function popupOnMouseOut(e) {
   var target;
 
   e = (e) ? e : ((window.event) ? window.event : null);
-      
-  if (!e) 
+
+  if (!e)
     return;
 
   target = getTargetElement(e);
   if (!target)
     return;
-  
+
   window.status='';
-  
-  if (currentDiv) 
+
+  if (currentDiv)
     menuClose(currentDiv.id);
   return true;
 }
@@ -1253,16 +1253,16 @@ function popupRowOnMouseOver(e) {
   var tr;
   var target;
   e = (e) ? e : ((window.event) ? window.event : null);
-      
-  if (!e) 
+
+  if (!e)
     return;
 
   target = getTargetElement(e);
   tr = getTrNode(target);
-  
+
   if (!tr) {
     return;
-  }  
+  }
   if (isFirstRow(tr))
     return;
 
@@ -1280,8 +1280,8 @@ function popupRowOnMouseOut(e) {
   var target;
 
   e = (e) ? e : ((window.event) ? window.event : null);
-      
-  if (!e) 
+
+  if (!e)
     return;
 
   target = getTargetElement(e);
@@ -1294,14 +1294,14 @@ function popupRowOnMouseOut(e) {
     var elem = tds[i];
     elem.style.backgroundColor='';
   }
- 
+
   return true;
 }
 
 function textAreaOnFocus(e) {
   e = (e) ? e : ((window.event) ? window.event : null);
-      
-  if (!e) 
+
+  if (!e)
     return;
 
   var target = getTargetElement(e);
@@ -1314,18 +1314,18 @@ function textAreaOnFocus(e) {
   if (!cols) {
     target.setAttributes('cols', 10);
     cols = 10;
-  }  
+  }
   var c = target.attributes['cols'];
   if (c) {
     c.value = cols;
     target.style.width = "96%";
-  }  
+  }
 }
 
 function textAreaOnBlur(e) {
   e = (e) ? e : ((window.event) ? window.event : null);
-      
-  if (!e) 
+
+  if (!e)
     return;
 
   var target = getTargetElement(e);
@@ -1333,20 +1333,20 @@ function textAreaOnBlur(e) {
     target.attributes['rows'].value = 1;
     target.attributes['cols'].value = 10;
     target.style.width = null;
-  }  
+  }
 }
 
 /************************************************* Helper functions ***************************************/
 function clearOtherPopups(div) {
-//alert("div=" + div.id + ", openedPopups.length=" + openedPopups.length)    
+//alert("div=" + div.id + ", openedPopups.length=" + openedPopups.length)
   for (i in openedPopups) {
     var p = openedPopups[i];
     if (p == null)
       continue;
-//alert("openedPopup=" + p.id)    
+//alert("openedPopup=" + p.id)
     if (p != div) {
       openedPopups[i] = null;
-    }  
+    }
   }
 }
 
@@ -1362,7 +1362,7 @@ function getFormNode(elem) {
     return getFormNode(f);
 }
 
-function getTrNode(elem) { 
+function getTrNode(elem) {
   var e;
 
   if (elem.tagName.toUpperCase() == 'TR')
@@ -1391,12 +1391,12 @@ function getFormFilters(form, allFields) {
 
     if (!type || !name)
       continue;
-    if (type.toUpperCase() == "SUBMIT") 
+    if (type.toUpperCase() == "SUBMIT")
       continue;
     if (!allFields) {
       if (!wasFormFieldModified(field))
         continue;
-    }  
+    }
     else {
       if (!value)
         continue;
@@ -1411,7 +1411,7 @@ function getFormFilters(form, allFields) {
 	         continue;
       }
     }
-          
+
     p += "&" + name + "=" + encodeURIComponent(value);
   }
   return p;
@@ -1427,10 +1427,10 @@ function chooser(element) {
   var editList = element.form.elements['$wasEditList'];
   var value    = element.value;
   var id       = element.id;
-  
+
   if (!id)
     id = value;
-    
+
   if (editList) {
     var uri = element.form.elements['$rUri'].value;
     window.opener.document.forms[form].elements[uri + ".$." + propName].value                    = value;
@@ -1450,7 +1450,7 @@ function hideResetRow(div, currentFormName, originalProp) {
   var trs = div.getElementsByTagName('tr');
   var i;
   var found = false;
-  
+
   var form = document.forms[currentFormName];
   if (form.elements[originalProp + "_class"])
     return;
@@ -1459,7 +1459,7 @@ function hideResetRow(div, currentFormName, originalProp) {
       found = true;
       break;
     }
-  }  
+  }
 
   if (!found)
     return;
@@ -1468,25 +1468,25 @@ function hideResetRow(div, currentFormName, originalProp) {
   var tr = trs[i];
 
   var elem = form.elements[originalProp];
-  
+
   var value;
   if (elem.length > 1)
     value = elem[0].value;
-  else 
+  else
     value = elem.value;
   var valueIsSet = true;
-	  
-  if (!value || value == '')  
+
+  if (!value || value == '')
     valueIsSet = false;
   else if (value.indexOf(" --", value.length - 3) != -1)
     valueIsSet = false;
 
   if (valueIsSet) {
     tr.style.display    = '';
-  }  
+  }
   else {
     tr.style.display    = "none";
-  }  
+  }
 }
 
 /*********************************** Menu ***********************************/
@@ -1496,11 +1496,11 @@ function initMenus() {
   var l = menuIcons.length;
   for (i=0; i<l; i++) {
     var m = menuIcons[i];
-    if (m.id.indexOf('menuicon_') == 0) { 
+    if (m.id.indexOf('menuicon_') == 0) {
       addEvent(m, 'click', menuOnClick, false);
-    }  
+    }
   }
-  
+
   var menuDivs = document.getElementsByTagName('div');
   var l = menuDivs.length;
   var uniqueDivs = new Array();
@@ -1515,8 +1515,8 @@ function initMenus() {
         var imgId = 'menuicon_' + div.id.substring('menudiv_'.length);
         var img = document.getElementById(imgId);
         interceptPopupEvents(img, div, tables[1]);
-      }  
-    }  
+      }
+    }
   }
 }
 
@@ -1527,51 +1527,51 @@ function menuOnClick(e) {
   var target;
 
   e = (e) ? e : ((window.event) ? window.event : null);
-      
-  if (!e) 
+
+  if (!e)
     return;
 
   target = getTargetElement(e);
   if (!target)
     return;
-  
+
   var imgId = target.id;
   var d = currentDiv;
-  if (currentDiv) {    
+  if (currentDiv) {
     menuClose2(currentDiv);
   }
   if (imgId == currentImgId && d != null)
     return;
   currentImgId  = imgId;
-    
+
   var divId = 'menudiv_' + imgId.substring('menuicon_'.length);
   currentDiv = document.getElementById(divId);
-  
+
   menuResetRow(currentDiv);
   menuOpenClose(divId, imgId);
-  
-  // make popup active for key input 
+
+  // make popup active for key input
   if (currentDiv.focus) { // simple in IE
     try { currentDiv.focus(); } catch(e) {};
-  }  
+  }
   else {                // hack for Netscape (using an empty anchor element to focus on)
-    var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
+    var elm = document.getElementById(currentDiv.id + "_$focus_link");
     if (elm) {
       if (elm.focus) {
         try { elm.focus(); } catch(e) {};
       }
-    }  
-  }  
+    }
+  }
 }
 
 function menuResetRow(div) {
   var trs = div.getElementsByTagName('tr');
   var i;
   var found = false;
-  
+
   for (i=0; i<trs.length; i++) {
     trs[i].style.display = ''; // clear highlighted background in all rows
-  }  
+  }
 }
 
 /*********************************** Tooltips ************************************/
@@ -1584,7 +1584,7 @@ function replaceTooltips0(elements) {
       addEvent(elem, 'mouseout',    tooltipMouseOut,    false);
       addEvent(elem, 'mouseover',   tooltipMouseOver,   false);
     }
-  } 
+  }
 }
 
 function replaceAllTooltips() {
@@ -1618,7 +1618,7 @@ function tooltipMouseOver0(target) {
       if (tooltipText == '')
         return true;
       window.status = tooltipText;
-      // merge tooltip on IMG with tooltip on its parent A tag 
+      // merge tooltip on IMG with tooltip on its parent A tag
       var parentA = target.parentNode;
       if (parentA && parentA.tagName.toUpperCase() == 'A') {
         var linkTooltip = parentA.getAttribute('title');
@@ -1626,10 +1626,10 @@ function tooltipMouseOver0(target) {
           var linkTooltipText = linkTooltip;
           if (linkTooltipText && linkTooltipText != '') {
             tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';
-          }  
+          }
           parentA.title = '';
         }
-       
+
       }
       target.setAttribute('tooltip', tooltipText);
       target.title = '';
@@ -1644,11 +1644,11 @@ function tooltipMouseOver0(target) {
     tooltipDiv.innerHTML = tooltipText;
     if (tooltipDiv.style.width != '') {
       alert(tooltipDiv.style.width);
-    }  
+    }
     //setTimeout("setDivVisible1('" + tooltipDiv.id + "', '" + target + "', 7, 12)", 100);
     var ifrRef = document.getElementById('tooltipIframe');
     setDivVisible(tooltipDiv, target, 7, 12, ifrRef);
-  } 
+  }
   return false;
 }
 
@@ -1666,15 +1666,15 @@ function tooltipMouseOver(e) {
     e.returnValue = false;
     if (e.preventDefault) e.preventDefault();
     return false;
-  }  
+  }
   else
     return true;
-}  
+}
 
-function tooltipMouseOut0(target) {    
+function tooltipMouseOut0(target) {
   var tooltipDiv = document.getElementById('system_tooltip');
   var ifrRef = document.getElementById('tooltipIframe');
- 
+
   setDivInvisible(tooltipDiv, ifrRef);
   return false;
 }
