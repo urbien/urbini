@@ -2,6 +2,7 @@
   <head>
     &[title];
     <link rel='stylesheet' type='text/css' href='chat/chat.css'/>
+    <link rel='stylesheet' type='text/css' href='styles/properties.css'/>
     <script language='JavaScript'>
 		window.onerror=myErrorHandler
 		function myErrorHandler() {
@@ -131,12 +132,12 @@
 
     <table cellspacing="0" cellpadding="0" border="0" width="100%" height="100%">
     <tr>
-      <td width="80%" height="1%" bgcolor="#E3EAEB">
+      <td width="80%" height="10%" bgcolor="#E3EAEB">
         <table border=0 height="10">
         <tr>
           <td>
             <form style="border:thin none; border-bottom:none; bottom:0px; height:20px; margin-bottom:0px;" name="formScrollLock">
-              <input type=hidden name="chatStartedAt"><table><tr><td>Chat session is open for</td><td><input readonly="true" onfocus="document.getElementById('message').focus();" type=text size=5 style="border:1; border-style: inset; background-color:#FFFFFF;" name="chatStart"></td></tr></table>
+              <input type=hidden name="chatStartedAt"><table><tr><td><span class=xs><b>Chat session is open for&nbsp;</b></span></td><td><input readonly="true" onfocus="document.getElementById('message').focus();" type=text size=10 style="border:1; border-style: inset; background-color:#FFFFFF;" name="chatStart"></td></tr></table>
             </form>
           </td>
           <td>			
@@ -163,27 +164,27 @@
       </td>
     </tr>
     <tr>
-      <td height="100%" valign="top" width="100%">
+      <td height="70%" valign="top" width="100%">
         <iframe style="width:100%;height:100%; border: 2; border-style: inset" frameborder="2" id="chatContents" name="chatContents" src="chatRoom?frame=content&room=&[encodedRoom];"></iframe>
       </td>
     </tr>
 
     <tr valign="middle">
-      <td valign="top" height="70" bgcolor="#E3EAEB">
-        <form style="border : thin none; border-bottom : none; bottom : 0px; height : 25px; margin-bottom : 0px;" target='post' id='postForm' name='postForm'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
-          <table width="100%" height="20" border="0">
+      <td valign="top" height="20%" bgcolor="#E3EAEB">
+        <form style="border : thin none; border-bottom : none; bottom : 0px; margin-bottom : 0px;" target='post' id='postForm' name='postForm'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
+          <table width="100%" border="0">
           <tr>
-            <td width='85%' height="100%">
+            <td width='85%'>
               <input type="hidden" value="all" name="nameUser" id="nameUser">
               <input type="hidden" value="my" id="aliasUser" name="aliasUser">
-              <textarea style="border:1 solid #000;background:#f0f0f0; width:100%;" rows="3" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="var kk = navigator.appName == 'Netscape' ? event.which : event.keyCode;if (kk == 10 || (event.ctrlKey && kk==13))this.value = '';"></textarea>
+              <span class=xs><textarea style="width:100%;" rows="5" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="var kk = navigator.appName == 'Netscape' ? event.which : event.keyCode;if (kk == 10 || (event.ctrlKey && kk==13))this.value = '';"></textarea></span>
               <script language='JavaScript'>
                 document.getElementById('message').value="";
                 document.getElementById('message').focus();
               </script>
             </td>
-            <td>
-              <input align="middle" type='button' value='Send' style="border:2 solid #000;borderColor:#000000;background:#f0f0f0;cursor:hand;height:20;width:100%;height:100%" onclick='sendMessageOnButton()'/>
+            <td valign=top>
+              <input type='button' value='Send' style="cursor:hand;width:100%;height:40px" onclick='sendMessageOnButton()'/>
             </td>
           </tr>
           </table>
