@@ -121,25 +121,20 @@ function menuOpen1(div, link) {
 }
 
 function menuClose1(div) {
-	var d = document.getElementById(div);
-        if (!d) 
-          return;
-	poptext = d.style;
-        if (!poptext)
-          return;
-	if (poptext.display == "inline") {
-		poptextLeft = docjslib_getImageXfromLeft(div);
-		poptextTop = docjslib_getImageYfromTop(div);
-		poptextWidth = docjslib_getImageWidth(div);
-		poptextHeight = docjslib_getImageHeight(div);
-		if (xMousePos < poptextLeft || xMousePos > poptextLeft + poptextWidth ||
-                yMousePos < poptextTop || yMousePos > poptextTop + poptextHeight) {
-			//poptext.display = "none";
-			DivSetVisible(false, div);
-		} else {
-			timeoutId = setTimeout("menuClose1('" + div + "')", 100);
-		}
-	}
+  poptext = document.getElementById(div).style;
+  if (poptext.display == "inline") {
+    poptextLeft = docjslib_getImageXfromLeft(div);
+    poptextTop = docjslib_getImageYfromTop(div);
+    poptextWidth = docjslib_getImageWidth(div);
+    poptextHeight = docjslib_getImageHeight(div);
+    if (xMousePos < poptextLeft || xMousePos > poptextLeft + poptextWidth ||
+        yMousePos < poptextTop || yMousePos > poptextTop + poptextHeight) {
+        //poptext.display = "none";
+      DivSetVisible(false, div);
+    } else {
+      timeoutId = setTimeout("menuClose1('" + div + "')", 100);
+    }
+  }
 }
 
 function menuClose(div) {
@@ -314,40 +309,78 @@ function DivSetVisible(state, divn)
    }
   }
 
-var popupDivId = null; // global var to let iframe know the div into which to move iframe content
+//var popupDivId = null; // global var to let iframe know the div into which to move iframe content
 var popupFrameLoaded = false;
-function smartPopup(propName, url) {
+var originalProp = null;
+var propName = null;
+var openedPopups = new Array();
+
+function onClickPopup(propName1, url) {
+  originalProp = propName1;
+  var idx = propName1.indexOf(".");
+  if (idx != -1)
+    propName = propName1.substring(0, idx);
+  else
+    propName = propName1;
+//alert("propName = " + propName);
+//alert("originalProp = " + originalProp);
+
+  var popupDivId = openedPopups[propName];
+  if (popupDivId != null) {
+    menuOpenClose(popupDivId, propName + "_filter");
+    return;
+  }
+
   var imgName = propName + "_filter";
-  popupDivId = "smart_" + propName;
-  var smartPopupFrame = frames["popupFrame"];
+//  popupDivId = "smart_" + propName;
+  var onClickPopupFrame = frames["popupFrame"];
   popupFrameLoaded = false;
-  smartPopupFrame.location.href = url; // load data from server into iframe
-                                       // iframe onLoad will copy content into popupDiv
-  setTimeout(openClose, 100);
+  onClickPopupFrame.location.href = url; // load data from server into iframe
+                                         // iframe onLoad will copy content into popupDiv
+  setTimeout(loadPopup, 100);
 }
 
-function openClose() {
+function loadPopup() {
   if (!popupFrameLoaded) {
-    setTimeout(openClose, 100);
+    setTimeout(loadPopup, 100);
     return;
   }  
-  popupFrameLoaded = false;
-  var propName = popupDivId.substring(6);
+  
+  var bottomFrame = frames['popupFrame'];
+  var popupDivId = "smart_" + propName;
+  var popupDiv    = document.getElementById(popupDivId);
+
+//alert("popupDiv = " + popupDiv);  
+
+  if (popupDiv) {
+    var body = bottomFrame.document.body;
+    if (body) {
+      popupDiv.innerHTML = body.innerHTML;
+//alert("popupDiv.innerHTML = " + popupDiv.innerHTML);  
+    }
+  }
+  
   menuOpenClose(popupDivId, propName + "_filter");
-  interceptPopupEvents(popupDivId);
+  interceptPopupEvents();
+  openedPopups[propName] = popupDivId;
 }
 
+function interceptPopupEvents() {
+  var table = document.getElementById("table_" + propName);
+  var div   = document.getElementById("smart_" + propName);
+//alert("interceptPopupEvents(): div = " + div.id);
 
-function interceptPopupEvents(divId) {
-  var div = document.getElementById(divId);
-  //var table = div.child;
-  var table = div.getElementsByTagName("table")[0];
+//alert("interceptPopupEvents(): propName = " + propName);
+
+  addEvent(div, 'mouseover', popupOnMouseOver, false);
+  addEvent(div, 'mouseout',  popupOnMouseOut,  false);
+
   var trs = table.getElementsByTagName("tr");
   for (i=0;i<trs.length; i++) {
     var elem = trs[i];
-    addEvent(elem, 'click',     popupOnClick,     false);
-    addEvent(elem, 'mouseover', popupOnMouseOver, false);
-    addEvent(elem, 'mouseout',  popupOnMouseOut,  false);
+    addEvent(elem, 'click',     popupOnClick,        false);
+    addEvent(elem, 'mouseover', popupRowOnMouseOver, false);
+    addEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
   }
 }
 
@@ -369,20 +402,38 @@ function popupOnClick(e) {
   
   var table = tr.parentNode;
   var table1 = table.parentNode;
-alert("found table1 = " + table1.id);
+//alert("found table1 = " + table1.id);
   
   var propertyShortName = table1.id.substring("table_".length);
-  var select = propertyShortName + "_select";
+//alert("propertyShortName " + propertyShortName); 
+  var idx = propertyShortName.indexOf(".");
+  var divId = null;
+  if (idx == -1)
+    divId = propertyShortName; 
+  else
+    divId = propertyShortName.substring(0, idx);
+
+  var select = divId + "_select";
+  divId = "smart_" + divId;
+//alert("propertyShortName = " + propertyShortName);
+//alert("select = " + select);
+
   var formField = form.elements[select];
 
   formField.value = tr.id; // property value corresponding to a listitem
-  var chosenTextField = form.elements[propertyShortName];
+//  var chosenTextField = form.elements[propertyShortName];
+  var chosenTextField = form.elements[originalProp];
+
   var items = tr.getElementsByTagName('td');
 //alert("items.length = " + items.length + "; items[0].text = " + items[0].text + "; items[1].text = " + items[1].text + "items[2].text = " + items[2].text);  
 //alert("items.length = " + items[0].length + "; items[0].text = " + items[0].innerHTML + "; items[1].text = " + items[1].innerText + "items[2].text = " + items[2].text);  
   var val = items[1].innerHTML;
   var idx = val.lastIndexOf(">");
   chosenTextField.value = val.substring(idx + 1);
+
+//alert("popupOnClick divId=" + divId);
+
+  menuClose(divId);
 }
 
 
@@ -396,29 +447,14 @@ function popupOnMouseOver(e) {
     return;
 
   target = getTargetElement(e);
-  tr = getTrNode(target);
-  if (!tr)
+  if (!target)
     return;
   
-  var form = document.forms['rightPanelPropertySheet'];
-  if (!form)
-    return true;
-  
-  var table = tr.parentNode;
-  if (!table)
-    return true;
-  var table1 = table.parentNode;
-
-  if (!table1)
-    return true;
-  var propertyShortName = table1.id.substring("table_".length);
-  window.status=propertyShortName; 
+  window.status=propName; 
   return true;
 }
 
 function popupOnMouseOut(e) {
-  window.status='';
-  var tr;
   var target;
 
   e = (e) ? e : ((window.event) ? window.event : null);
@@ -427,22 +463,13 @@ function popupOnMouseOut(e) {
     return;
 
   target = getTargetElement(e);
-  tr = getTrNode(target);
-  if (!tr)
+  if (!target)
     return;
   
-  var form = document.forms['rightPanelPropertySheet'];
-  if (!form)
-    return true;
-  
-  var table = tr.parentNode;
-  if (!table)
-    return true;
-  var table1 = table.parentNode;
-  if (!table1)
-    return true;
-  var propertyShortName = table1.id.substring("table_".length);
-  var divId = "smart_" + propertyShortName; 
+  window.status=propName; 
+
+  var divId = target.id; 
+//alert("popupOnMouseOut divId=" + divId);
   menuClose(divId);
   return true;
 }
@@ -457,4 +484,53 @@ function getTrNode(elem) {
     return getTrNode(e);
   else
     return null;
+}
+
+function popupRowOnMouseOver(e) {
+  window.status='';
+  var tr;
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+      
+  if (!e) 
+    return;
+
+  target = getTargetElement(e);
+//alert("target = " + target.tagName)
+  tr = getTrNode(target);
+  if (!tr)
+    return;
+
+  var tds = tr.getElementsByTagName("td");
+  for (i=0; i<tds.length; i++) {
+    var elem = tds[i];
+    elem.style.backgroundColor='#B6BDD2';
+  }
+ 
+  return true;
+}
+
+function popupRowOnMouseOut(e) {
+  window.status='';
+  var tr;
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+      
+  if (!e) 
+    return;
+
+  target = getTargetElement(e);
+  tr = getTrNode(target);
+  if (!tr)
+    return;
+
+  var tds = tr.getElementsByTagName("td");
+  for (i=0; i<tds.length; i++) {
+    var elem = tds[i];
+    elem.style.backgroundColor='';
+  }
+ 
+  return true;
 }

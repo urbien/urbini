@@ -178,14 +178,8 @@
     */
 
    /* load bottomFrame iframe into a pane2 */
-   function loadPane2() {
+   function onLoadPane2() {
      loadDiv('bottomFrame', 'pane2');
-   }
-
-   function loadPopup() {
-     var popupDivId = parent.popupDivId;
-     loadDiv('popupFrame', popupDivId);
-     parent.popupFrameLoaded = true;
    }
 
    function loadDiv(frameId, divId) {    
@@ -199,12 +193,15 @@
      }
    }
 
+   function onLoadPopup() {
+     parent.popupFrameLoaded = true;
+   }
+
    // add only if inside iframe
    if (window.parent != window) {
      if (window.name == "bottomFrame")
-       addEvent(window, 'load', function() {setTimeout(loadPane2, 0);}, false);
+       addEvent(window, 'load', function() {setTimeout(onLoadPane2, 0);}, false);
 
-     else if (window.name == "popupFrame") {
-       addEvent(window, 'load', function() {setTimeout(loadPopup, 0);}, false);
-     }
+     else if (window.name == "popupFrame")  
+       addEvent(window, 'load', function() {setTimeout(onLoadPopup, 0);}, false);
    }
