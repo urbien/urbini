@@ -611,7 +611,6 @@ function popupOnSubmit(e) {
   if (form.uri) 
     url += "&uri=" + encodeURIComponent(form.uri.value);
 
-  form.method   = 'GET';
   form.onsubmit = null;
 
   if (document.all || document.getElementById) {
@@ -627,12 +626,17 @@ function popupOnSubmit(e) {
       cancel = form.clear_;
     cancel.style.visibility = HIDDEN; 
   }
-  
- 	e.cancelBubble = true;
-  e.returnValue = false;
-  if (e.preventDefault) e.preventDefault();   
-  document.location.href = url;
-  return false; 
+
+// submit as GET with all parameters collected manually
+//  form.method   = 'GET';  
+//  document.location.href = url;
+// 	e.cancelBubble = true;
+//  e.returnValue = false;
+//  if (e.preventDefault) e.preventDefault();
+//  return false; 
+    form.method = 'POST';
+    form.action = "FormRedirect";
+    return true;
 }
 
 /**
