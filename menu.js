@@ -714,7 +714,7 @@ function popupRowOnClick(e) {
     verified = currentResourceUri + ".$." + verified;
   
   var iclass = prop + "_class";    
-  var formFieldClass = form.elements[iclass];
+  var formFieldClass    = form.elements[iclass];
   var formFieldVerified = form.elements[verified];
   if (formFieldVerified) 
     formFieldVerified.value = 'y'; // value was modified and is verified since it is not typed but is chosen from the list
@@ -740,8 +740,8 @@ function popupRowOnClick(e) {
       if (currentLabel != initialLabel) {
         chosenTextField.value   = initialLabel;
         formField.value         = getFormFieldInitialValue(formField);
-        if (formFiledClass)
-          formFieldClass.value  = getFormFieldInitialValue(formClassField);
+        if (formFieldClass)
+          formFieldClass.value  = getFormFieldInitialValue(formFieldClass);
       }
       // reset to no-value
       else {
