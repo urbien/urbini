@@ -11,10 +11,18 @@
       <img src="icons/icon_divider.gif" align="middle" border="0" pda="T"/>
 
       <!-- Auto-generated menus -->
+      <span class="xs" nonPda="T">
       <menu toolbar="toolbar1" activate="onMouseOver"/>
       <menu toolbar="transport" activate="onMouseOver"/>
       <menu toolbar="search" activate="onMouseOver"/>
       <menu toolbar="toolbar3" activate="onMouseOver"/>
+      </span>
+      <span class="xs" pda="T">
+      <menu toolbar="toolbar1"/>
+      <menu toolbar="transport"/>
+      <menu toolbar="search"/>
+      <menu toolbar="toolbar3"/>
+      </span>
       <span class="xs">
         <print image="images/printerIcon.gif"/>
       </span>
