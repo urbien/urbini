@@ -22,16 +22,70 @@ function menuOpenClose(divName, imgName) {
 	} else {
 		poptext.visibility = "hidden";
 	}
-	if (document.getElementById("textdiv3") != null &&
-            document.getElementById("textdiv3").style.visibility == "visible"
+	if (document.getElementById("menudiv_Email") != null &&
+            document.getElementById("menudiv_Email").style.visibility == "visible"
            ) {
 		document.getElementById("emailForm").subject.value = document.title;
 	}
-	if (document.getElementById("textdiv4") != null &&
-            document.getElementById("textdiv4").style.visibility == "visible"
+	if (document.getElementById("menudiv_Schedule") != null &&
+            document.getElementById("menudiv_Schedule").style.visibility == "visible"
            ) {
 		document.getElementById("scheduleForm").name.value = document.title;
 	}
+}
+
+var timeoutId;
+function menuOpen(div, link) {
+	if (timeoutId != null)
+        clearTimeout(timeoutId);
+	for (i = 0; i < MenuArray.length; i++) {
+		if (document.getElementById(MenuArray[i]) == null) {
+			continue;
+		}
+		if (MenuArray[i] != div) {
+			poptext = document.getElementById(MenuArray[i]).style;
+			if (poptext.visibility =="visible") {
+				poptext.visibility = "hidden";
+			}
+		}
+	}
+	poptext = document.getElementById(div).style;
+      poptext.left = docjslib_getImageXfromLeft(link);
+      poptext.top = docjslib_getImageYfromTop(link) + docjslib_getImageHeight(link) + 2;
+	if (poptext.visibility == "hidden" || poptext.visibility == "") {
+		poptext.visibility = "visible";
+	}
+
+	if (document.getElementById("menudiv_Email") != null &&
+            document.getElementById("menudiv_Email").style.visibility == "visible"
+           ) {
+		document.forms["emailForm"].elements["subject"].value = document.title;
+	}
+	if (document.getElementById("menudiv_Schedule") != null &&
+            document.getElementById("menudiv_Schedule").style.visibility == "visible"
+           ) {
+		document.forms["scheduleForm"].elements["name"].value = document.title;
+	}
+}
+
+function menuClose1(div) {
+	poptext = document.getElementById(div).style;
+	if (poptext.visibility == "visible") {
+		poptextLeft = docjslib_getImageXfromLeft(div);
+		poptextTop = docjslib_getImageYfromTop(div);
+		poptextWidth = docjslib_getImageWidth(div);
+		poptextHeight = docjslib_getImageHeight(div);
+		if (xMousePos < poptextLeft || xMousePos > poptextLeft + poptextWidth ||
+                yMousePos < poptextTop || yMousePos > poptextTop + poptextHeight) {
+			poptext.visibility = "hidden";
+		} else {
+			timeoutId = setTimeout("menuClose1('" + div + "')", 1000);
+		}
+	}
+}
+
+function menuClose(div) {
+  timeoutId = setTimeout("menuClose1('" + div + "')", 1000);
 }
 
 function onRecChange() {
@@ -90,10 +144,10 @@ function onRecChange() {
 // Reference: http://www.webreference.com/js/column33/image.html
 
 function docjslib_getImageWidth(imgID) {
-  return document.getElementById(imgID).width;
+  return document.getElementById(imgID).offsetWidth;
 }
 function docjslib_getImageHeight(imgID) {
-  return document.getElementById(imgID).height;
+  return document.getElementById(imgID).offsetHeight;
 }
 var NS4 = document.layers;
 function docjslib_getImageXfromLeft(imgID) {
@@ -133,4 +187,49 @@ function menu_onmouseout(itemcode) {
   document.getElementById(itemcode + 'td1').style.backgroundColor='';
   document.getElementById(itemcode + 'td2').style.backgroundColor='';
   document.getElementById(itemcode + 'td3').style.backgroundColor='';
+}
+
+
+// Set Netscape up to run the "captureMousePosition" function whenever
+// the mouse is moved. For Internet Explorer and Netscape 6, you can capture
+// the movement a little easier.
+if (document.layers) { // Netscape
+  document.captureEvents(Event.MOUSEMOVE);
+  document.onmousemove = captureMousePosition;
+} else if (document.all) { // Internet Explorer
+  document.onmousemove = captureMousePosition;
+} else if (document.getElementById) { // Netcsape 6
+  document.onmousemove = captureMousePosition;
+}
+// Global variables
+xMousePos = 0; // Horizontal position of the mouse on the screen
+yMousePos = 0; // Vertical position of the mouse on the screen
+
+function captureMousePosition(e) {
+  if (document.layers) {
+    // When the page scrolls in Netscape, the event's mouse position
+    // reflects the absolute position on the screen. innerHight/Width
+    // is the position from the top/left of the screen that the user is
+    // looking at. pageX/YOffset is the amount that the user has 
+    // scrolled into the page. So the values will be in relation to
+    // each other as the total offsets into the page, no matter if
+    // the user has scrolled or not.
+    xMousePos = e.pageX;
+    yMousePos = e.pageY;
+  } else if (document.all) {
+    // When the page scrolls in IE, the event's mouse position 
+    // reflects the position from the top/left of the screen the 
+    // user is looking at. scrollLeft/Top is the amount the user
+    // has scrolled into the page. clientWidth/Height is the height/
+    // width of the current page the user is looking at. So, to be
+    // consistent with Netscape (above), add the scroll offsets to
+    // both so we end up with an absolute value on the page, no 
+    // matter if the user has scrolled or not.
+    xMousePos = window.event.x+document.body.scrollLeft;
+    yMousePos = window.event.y+document.body.scrollTop;
+  } else if (document.getElementById) {
+    // Netscape 6 behaves the same as Netscape 4 in this regard 
+    xMousePos = e.pageX;
+    yMousePos = e.pageY;
+  }
 }

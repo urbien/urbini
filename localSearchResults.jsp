@@ -14,12 +14,12 @@
       <tr valign="top">
         <td valign="top" width="90%">
           <span class="xs">
-          <menu toolbar="toolbar1"/>
+          <menu toolbar="toolbar1" activate="onMouseOver"/>
           <img src="icons/icon_divider.gif" align="middle" border="0"></img>
-          <menu toolbar="transport"/>
+          <menu toolbar="transport" activate="onMouseOver"/>
           <img src="icons/icon_divider.gif" align="middle" border="0"></img>
-          <menu toolbar="search"/>
-          <menu toolbar="toolbar3"/>
+          <menu toolbar="search" activate="onMouseOver"/>
+          <menu toolbar="toolbar3" activate="onMouseOver"/>
           <img src="icons/icon_divider.gif" align="middle" border="0"></img>
           <print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span></td>
         <td valign="bottom" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
