@@ -4,7 +4,10 @@
   </tr>
   <tr>
     <td>    
-      <form name="rightPanelPropertySheet" method="POST" action="FormRedirect">
+      <script language="JavaScript">
+        var rightPanelPropertySheet_FIELDS = new Array();
+      </script>
+      <form name="rightPanelPropertySheet" method="POST" action="FormRedirect" onsubmit="clearUnModifiedFields(rightPanelPropertySheet_FIELDS)">
         <table border="1" cellpadding="3" cellspacing="0">
           <tr><td align="middle" class="title">
             <input type="submit" name="submit"  class="button1" value="Filter"></input>

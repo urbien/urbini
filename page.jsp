@@ -3,6 +3,7 @@
   <LINK HREF="styles/common.css" TYPE="text/css" rel="stylesheet" />
   <link href="styles/menu.css" type="text/css" rel="stylesheet" />
   <SCRIPT language="JavaScript" src="menu.js"></SCRIPT>
+  <SCRIPT language="JavaScript" src="forms.js"></SCRIPT>
 
 	<!-- link here filter file for desired data format:
 	see comments in filter files for formats descriptions -->
