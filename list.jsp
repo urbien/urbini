@@ -62,8 +62,9 @@
 <tr  valign="top">
   <td valign="top" align="middle" width="100%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
-    <tr valign="top"> <td valign="top">      
-      <img src="icons/icon.gif" width="16" height="16" align="middle"/>
+    <tr valign="top"> 
+      <td valign="top">      
+        <img src="icons/icon.gif" width="16" height="16" align="middle"/>
         <img src="icons/icon_divider.gif" align="middle" border="0"></img>
 
         <!-- Auto-generated menus -->
@@ -74,7 +75,15 @@
         <menu toolbar="toolbar2"/>
         <menu toolbar="toolbar3"/>
 
-      <span class="xs"><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span><changePassword/><userLogOff html="user-login.html"/></td>
+        <span class="xs"><print image="images/printerIcon.gif"/>
+        <saveInExcel allow="owner" image="images/excel.gif"/>
+        <pdaToPc image="images/pda.gif"/>
+        </span>
+        <changePassword/><userLogOff html="user-login.html"/>
+      </td>
+      <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
+        <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
+      </form>
     </tr>
     <tr valign="top"><td>
     <form action="list.html" name="siteResourceList">
