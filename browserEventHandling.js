@@ -199,9 +199,10 @@
            var elem = form.elements[j];
            if (elem.type.toUpperCase() == 'TEXT' && // only on TEXT fields 
                elem.id) {                           // and those that have ID
-             addEvent(elem, 'keypress', autoComplete,             false);
-             addEvent(elem, 'focus',    autoCompleteOnFocus,      false);
-             addEvent(elem, 'blur',     autoCompleteOnBlur,       false);
+             addEvent(elem, 'keypress', autoComplete,              false);
+             addEvent(elem, 'keydown',  autoCompleteBackspaceHack, false);
+             addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
+             addEvent(elem, 'blur',     autoCompleteOnBlur,        false);
              //addEvent(elem, 'change',   onFormFieldChange, false);
              //addEvent(elem, 'blur',     onFormFieldChange, false);
              //addEvent(elem, 'click',    onFormFieldClick,  false);

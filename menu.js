@@ -626,6 +626,11 @@ function autoCompleteOnBlur(e) {
     return;
     
 //  target.deselect();  
+	var img = document.getElementById(keyPressedImgId);
+	if (!img)
+	  return true;
+//alert("blur");	  
+	onClickPopup1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
 }
 
 function getKeyCode(e) {
@@ -642,6 +647,14 @@ function getKeyCode(e) {
 	    //TOTAL FAILURE, WE HAVE NO WAY OF OBTAINING THE KEY CODE
 	    throw Error("can't detect the key pressed");
 	}
+}
+
+function autoCompleteBackspaceHack(e) {
+  if( typeof( e.keyCode ) == 'number'  ) {
+    if (e.keyCode == 8 || e.keyCode == 127) 
+      return autoComplete(e);
+  }
+  return true;
 }
 
 function autoComplete(e) {
@@ -677,14 +690,21 @@ function autoComplete(e) {
        case 17: //ctrl  
        case 18: //alt  s
        case 20: //caps lock
-//       case 8: //backspace  
+       case 8: //backspace  
+       case 127:
+         break;
 //       case 46: //delete
            return true;
            break;
   }     
   var propName = target.name;
   var formName = target.id;
-  var fieldVerified = form[propName + '_verified'];
+  var propName1 = propName;
+  var idx = propName.indexOf(".");
+  if (idx != -1)
+    propName1 = propName1.substring(0, idx);
+
+  var fieldVerified = form[propName1 + '_verified'];
 
   if (characterCode == 13) { // enter
     var form = target.form;
