@@ -725,7 +725,8 @@ function popupRowOnClick(e) {
       openedPopups[currentDiv.id] = null;
       menuClose2(currentDiv);
     }  
-    anchors[0].click();
+    if (anchors[0].click)
+      anchors[0].click();
 	  return true;
   }
   
