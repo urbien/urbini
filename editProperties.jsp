@@ -5,7 +5,7 @@
 <tr>
   <td valign="top" width="90%">
 
-    <table width="100%" cellspacing="0" cellpadding="0" border="0">
+    <table width="97%" align="center" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top">
       <td valign="top" width="80%" class="topBar"><span class="xs">
         <menu toolbar="toolbar3" exclude="Support"/>
@@ -13,6 +13,8 @@
         <print image="images/printerIcon.gif"/></span></td>
       <td valign="top" align="right" width="20%" class="topBar"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
+    </table>
+    <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top"><td colspan="2">
 
     <form name="tablePropertyList" method="post" action="FormRedirect?edit=true">
