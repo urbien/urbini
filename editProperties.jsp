@@ -6,10 +6,15 @@
     <table width="97%" align="center" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top">
       <td valign="top" width="80%" class="topBar">
-        <!--span class="xs">
-        <menu toolbar="toolbar3" exclude="Support" activate="onMouseOver"/>
-        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
-        <print image="images/printerIcon.gif"/></span--></td>
+        <span class="xs">
+        <menu toolbar="toolbar1"  activate="onMouseOver"/>
+        <menu toolbar="transport" activate="onMouseOver"/>
+        <menu toolbar="search"    activate="onMouseOver"/>
+        <menu toolbar="toolbar2"  activate="onMouseOver"/>
+        <!--menu toolbar="toolbar3"  activate="onMouseOver"/-->
+        <pdaToPc image="images/pda.gif"/>
+        </span>
+      </td>
       <td valign="top" align="right" width="20%" class="topBar"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     </table>
