@@ -5,7 +5,6 @@
 <!--base/-->
 <link rel="stylesheet" href="style.css" type="text/css"/>
 </head>
-<include name="include/commonHeader"/>
 
 <CENTER>
 <anyTag/>
