@@ -247,9 +247,10 @@ function captureMousePosition(e) {
   }
 }
 
+/*
 function DivSetVisible(makeVisible, divn) {
    var DivRef = document.getElementById(divn);
-   var IfrRef = document.getElementById('DivShim');
+   var IfrRef = document.getElementById('popupIframe');
    if(makeVisible) {
      DivRef.style.display = "inline";
      // Make position/size of iframe same as div's position/size
@@ -266,13 +267,20 @@ function DivSetVisible(makeVisible, divn) {
      IfrRef.style.display = "none";
    }
 }
+*/
 
-function setDivVisible(divRef, img, offsetX, offsetY) {
-  var ifrRef = document.getElementById('DivShim');  
-  poptext = divRef.style;
+function setDivVisible(divRef, img, offsetX, offsetY, iframeRef) {
+  var ifrRef;
+  if (iframeRef)
+    ifrRef = iframeRef;
+  else
+    ifrRef = document.getElementById('popupIframe');  
+  var poptext = divRef.style;
+  var istyle  = ifrRef.style;
 
   poptext.visibility = HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
   poptext.display    = 'inline'; // must make it inline here - otherwise coords will not get set 
+
   if (img) {
     divRef.style.left = document.body.scrollLeft;
     divRef.style.top  = document.body.scrollTop;
@@ -301,22 +309,29 @@ function setDivVisible(divRef, img, offsetX, offsetY) {
     poptext.top  = top;
 //alert('left='+left + ', top='+top);    
   }
+  istyle.top     = divRef.style.top;
+  istyle.left    = divRef.style.left;
 
   // Make position/size of iframe same as div's position/size
+  
   istyle         = ifrRef.style;
   istyle.display = "inline";
   istyle.width   = divRef.offsetWidth;
   istyle.height  = divRef.offsetHeight;
-  istyle.top     = divRef.style.top;
-  istyle.left    = divRef.style.left;
-
+  istyle.visibility  = VISIBLE;
+  
   poptext.visibility = VISIBLE; // finally make div visible  
 }
 
-function setDivInvisible(div) {
-  var IfrRef = document.getElementById('DivShim');
+function setDivInvisible(div, iframeRef) {
+  var ifrRef;
+  if (iframeRef)
+    ifrRef = iframeRef;
+  else
+    ifrRef = document.getElementById('popupIframe');  
+  
   div.style.display    = "none";
-  IfrRef.style.display = "none";
+  ifrRef.style.display = "none";
 }
 
 /**
@@ -405,8 +420,9 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
     hideResetRow(div, currentFormName, originalProp);
     menuOpenClose(divId, imgId);
     // make popup active for key input 
-    if (currentDiv.focus) // simple in IE
+    if (currentDiv.focus) {// simple in IE
       currentDiv.focus();
+    }  
     else {                // hack for Netscape (using an empty anchor element to focus on)
       var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
       if (elm) {
@@ -498,22 +514,27 @@ function loadPopup() {
     if (document.forms[currentFormName].elements[field].value == "")
       addToTableName = "_class";
   }
-  var tableId = "table_" + propName + addToTableName + "_" + currentFormName;
-  var table   = document.getElementById(tableId);
-  if (!table) {
+  
+  //var tableId = "table_" + propName + addToTableName + "_" + currentFormName;
+  //var table   = document.getElementById(tableId);  
+  var tables = currentDiv.getElementsByTagName('table');
+  if (!tables || !tables[1]) { 
     alert("Warning: server did not return listbox data - check connection to server");
     return;
   }
-    
+  var table = tables[1];
+  
+  var img = document.getElementById(currentImgId);
   hideResetRow(currentDiv, currentFormName, originalProp);
   menuOpenClose(currentDiv.id, currentImgId);
-  interceptPopupEvents(currentDiv, table);
+  interceptPopupEvents(img, currentDiv, table);
   replaceTooltips(currentDiv);
   openedPopups[currentDiv.id] = currentDiv;
 
   // make popup active for key input    
-  if (currentDiv.focus) // IE
+  if (currentDiv.focus) { // IE 
     currentDiv.focus();
+  }  
   else {                // Netscape
     var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
     if (elm) {
@@ -523,9 +544,7 @@ function loadPopup() {
   }  
 }
 
-function interceptPopupEvents(div, table) {
-  var img     = document.getElementById(currentImgId);
-
+function interceptPopupEvents(img, div, table) {
   addEvent(div,  'mouseover', popupOnMouseOver, false);
   addEvent(div,  'mouseout',  popupOnMouseOut,  false);
   addEvent(img,  'mouseout',  popupOnMouseOut,  false);
@@ -545,6 +564,24 @@ function interceptPopupEvents(div, table) {
     addEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
   }
 }
+
+function removePopupRowEventHandlers(div) {
+  var tables = div.getElementsByTagName('table');
+  if (!tables || !tables[1]) 
+    return;
+  var table = tables[1];
+  var trs = table.getElementsByTagName("tr");
+  var k=0;
+  for (i=0;i<trs.length; i++) {
+    var elem = trs[i];
+    removeEvent(elem, 'click',     popupRowOnClick,     false);
+    //if (k++<2)
+    //  alert(elem.id);
+    removeEvent(elem, 'mouseover', popupRowOnMouseOver, false);
+    removeEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
+  }
+}
+
 /*
  * Receives control on form submit events
  */
@@ -1187,7 +1224,6 @@ function popupOnMouseOut(e) {
 function popupRowOnMouseOver(e) {
   var tr;
   var target;
-
   e = (e) ? e : ((window.event) ? window.event : null);
       
   if (!e) 
@@ -1275,6 +1311,8 @@ function clearOtherPopups(div) {
 function getFormNode(elem) {
   var f = elem.parentNode;
   if (!f)
+    return null;
+  if (!f.tagName)
     return null;
   if (f.tagName.toUpperCase() == "FORM")
     return f;
@@ -1405,3 +1443,84 @@ function hideResetRow(div, currentFormName, originalProp) {
   }  
 }
 
+/*********************************** Menu ***********************************/
+function initMenus() {
+  return;
+  var menuIcons = document.getElementsByTagName('img');
+  var l = menuIcons.length;
+  for (i=0; i<l; i++) {
+    var m = menuIcons[i];
+    if (m.id.indexOf('menuicon_') == 0) { 
+      addEvent(m, 'click', menuOnClick, false);
+    }  
+  }
+  
+  var menuDivs = document.getElementsByTagName('div');
+  var l = menuDivs.length;
+  var uniqueDivs = new Array();
+  for (i=0; i<l; i++) {
+    var div = menuDivs[i];
+    if (div.id.indexOf('menudiv_') == 0) {
+      if (uniqueDivs[div.id])
+        continue;
+      uniqueDivs[div.id] = div;
+      var tables = div.getElementsByTagName('table');
+      if (tables && tables[1]) {
+        var imgId = 'menuicon_' + div.id.substring('menudiv_'.length);
+        var img = document.getElementById(imgId);
+        interceptPopupEvents(img, div, tables[1]);
+      }  
+    }  
+  }
+}
+
+/**
+ *  Opens the menu when needed, e.g. on click, on enter
+ */
+function menuOnClick(e) {
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+      
+  if (!e) 
+    return;
+
+  target = getTargetElement(e);
+  if (!target)
+    return;
+  
+  var imgId = target.id;
+  var d = currentDiv;
+  if (currentDiv) {    
+    menuClose2(currentDiv);
+  }
+  if (imgId == currentImgId && d != null)
+    return;
+  currentImgId  = imgId;
+    
+  var divId = 'menudiv_' + imgId.substring('menuicon_'.length);
+  currentDiv = document.getElementById(divId);
+  
+  menuResetRow(currentDiv);
+  menuOpenClose(divId, imgId);
+  
+  // make popup active for key input 
+  if (currentDiv.focus) // simple in IE
+    currentDiv.focus();
+  else {                // hack for Netscape (using an empty anchor element to focus on)
+    var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
+    if (elm) {
+      if (elm.focus) elm.focus();
+    }  
+  }  
+}
+
+function menuResetRow(div) {
+  var trs = div.getElementsByTagName('tr');
+  var i;
+  var found = false;
+  
+  for (i=0; i<trs.length; i++) {
+    trs[i].style.display = ''; // clear highlighted background in all rows
+  }  
+}

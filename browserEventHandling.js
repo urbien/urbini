@@ -182,6 +182,7 @@
     
    var formInitialValues;
    if (window.parent == window) {
+     //initMenus();
      // add handler to smartlistbox images  
      if (typeof onClickPopup != 'undefined') {
        var images = document.images;
@@ -342,7 +343,8 @@
          alert(tooltipDiv.style.width);
        }  
        //setTimeout("setDivVisible1('" + tooltipDiv.id + "', '" + target + "', 7, 12)", 100);
-       setDivVisible(tooltipDiv, target, 7, 12);
+       var ifrRef = document.getElementById('tooltipIframe');
+       setDivVisible(tooltipDiv, target, 7, 12, ifrRef);
      } 
      e.cancelBubble = true;
      e.returnValue = false;
@@ -352,7 +354,9 @@
 
    function tooltipMouseOut(e) {
      var tooltipDiv = document.getElementById('system_tooltip');
-     setDivInvisible(tooltipDiv);
+     var ifrRef = document.getElementById('tooltipIframe');
+     
+     setDivInvisible(tooltipDiv, ifrRef);
      return false;
    }
 

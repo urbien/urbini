@@ -1,9 +1,10 @@
 <div>
-<iframe id="popupFrame"  name="popupFrame"  src="about:blank" scrolling="no" frameborder="0" style="position:absolute; top:0px; left:0px; display:none;"> </iframe>  
-<iframe id='DivShim'                        src="about:blank" scrolling='no' frameborder='0' style="position:absolute; top:0px; left:0px; display:none;"> </iframe>
-<script src="browserEventHandling.js" language="JavaScript" type="text/javascript"></script>
-<script src="iframe.js"               language="JavaScript" type="text/javascript"></script>
-<script src="calendar/cals_init.js"   language="JavaScript" type="text/javascript"></script>
-<div id="system_tooltip" style="padding: 3px; display:none; border:1px solid blue; position:absolute; background-color:#fffedc; font-size:9pt; max-width:200px;  ">
+  <iframe id="popupFrame"  name="popupFrame"  src="about:blank" scrolling="no" frameborder="0" style="position:absolute; top:0px; left:0px; visibility:hidden; display:none;"> </iframe>  
+  <iframe id='popupIframe'                    src="about:blank" scrolling='no' frameborder='0' style="position:absolute; top:0px; left:0px; visibility:hidden; display:none;"> </iframe>
+  <iframe id='tooltipIframe'                  src="about:blank" scrolling='no' frameborder='0' style="position:absolute; top:0px; left:0px; visibility:hidden; display:none;"> </iframe>
+  <script src="browserEventHandling.js" language="JavaScript" type="text/javascript"></script>
+  <script src="iframe.js"               language="JavaScript" type="text/javascript"></script>
+  <script src="calendar/cals_init.js"   language="JavaScript" type="text/javascript"></script>
+  <div id="system_tooltip" style="padding: 3px; visibility:hidden; display:none; border:1px solid blue; position:absolute; background-color:#fffedc; font-size:9pt; max-width:200px;"> </div>
 </div>
 <!--iframe src="chatRoom?frame=inviteFrame" width="0" height="0"></iframe-->
