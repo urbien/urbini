@@ -30,7 +30,10 @@
       <showSetProperties />
     </form>
   <br/><pieChart/>
-
+<form name="horizontalFilter" method="POST" action="FormRedirect">
+  <br/>
+    <horizontalFilter />
+</form>
     </td>
     <td valign="top" align="left" bgcolor="eeeeee">
 
@@ -49,6 +52,7 @@
       </td></tr></table>   
     </form>
   </td>
+
 </tr>
 
 </table>
