@@ -19,7 +19,7 @@
 
 <pda pda="T">
   <include name="commonHeader"/>
-  <BODY  onload="init(); hidepoptext(); hidepoptext1()" text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
+  <BODY  onload="init();" text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
 
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
