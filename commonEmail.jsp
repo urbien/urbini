@@ -16,7 +16,7 @@
               <td bgcolor="#e3e2df"><input name="to" class="formMenuInput"></input>
                 </td>
             </tr>
-            <tr id="email_formatTr" style="display:block"> 
+            <tr id="email_formatTr" style="display:block" allow="owner"> 
               <td bgcolor="#e3e2df" class="cswmItemSubtitle">Format:</td>
               <td bgcolor="#e3e2df"> 
                 <select name="format" onchange="onRecChange()" class="formMenuInput">
@@ -27,7 +27,7 @@
             </tr>
             <script language="JavaScript">
               var url = new String(window.location);
-              if (url.indexOf("readOnlyProperties.html") != -1) {
+              if (url.indexOf("readOnlyProperties.html") != -1 && document.getElementById("email_formatTr")) {
                 document.getElementById("email_formatTr").style.display="none";
               }
             </script>

@@ -10,7 +10,7 @@
         <td bgcolor="#e3e2df" class="cswmItemSubtitle">Subject:</td>
         <td bgcolor="#e3e2df"><input name="name" class="formMenuInput"/></td>
       </tr>
-	<tr id="schedule_formatTr" style="display:block"> 
+	<tr id="schedule_formatTr" style="display:block" allow="owner"> 
 	  <td bgcolor="#e3e2df" class="cswmItemSubtitle">Format:</td>
 	  <td bgcolor="#e3e2df">
           <select name="format" onchange="onRecChange()" class="formMenuInput">
@@ -21,7 +21,7 @@
 	</tr>
       <script language="JavaScript">
         var url = new String(window.location);
-        if (url.indexOf("readOnlyProperties.html") != -1) {
+        if (url.indexOf("readOnlyProperties.html") != -1 && document.getElementById("schedule_formatTr")) {
           document.getElementById("schedule_formatTr").style.display="none";
         }
       </script>
