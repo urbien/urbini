@@ -33,20 +33,21 @@ function onFormFieldChange(fieldProp, fieldRef, oldValue) {
   }
 }
 
-function hideShowDivOnClick(divId, imgId, plusImg, minusImg) {
+function hideShowDivOnClick(divId, imgId){//, plusImg, minusImg) {
   div = document.getElementById(divId);
   img = document.getElementById(imgId);
   if (div.style.display == 'none') {
-    div.style.display = 'inline';
-    if (img != null) {
-      img.src = minusImg;
-    }
-  } else {
-    div.style.display = 'none';
-    if (img != null) {
-      img.src = plusImg;
-    }
-  }
+    div.style.display = 'block';
+    img.style.display = 'none';
+//    if (img != null) {
+//      img.src = minusImg;
+//    }
+  }// else {
+//    div.style.display = 'none';
+//    if (img != null) {
+//      img.src = plusImg;
+//    }
+//  }
 }
 
 function trim(s) {
