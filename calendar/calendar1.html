@@ -32,10 +32,10 @@ function calendar1(obj_target) {
 	this.popup    = cal_popup1;
 
 	// validate input parameters
-	if (!obj_target)
+	if (obj_target == null)
 		return cal_error("Error calling the calendar: no target control specified");
 	if (obj_target.value == null)
-		return cal_error("Error calling the calendar: parameter specified is not valid tardet control");
+		return cal_error("Error calling the calendar: parameter specified is not valid target control");
 	this.target = obj_target;
 	this.time_comp = BUL_TIMECOMPONENT;
 	this.year_scroll = BUL_YEARSCROLL;
