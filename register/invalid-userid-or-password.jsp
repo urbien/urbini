@@ -9,21 +9,21 @@
 
 <br />
 <form name="loginform" action="j_security_check" method="POST"  onsubmit="return hash(this, 'j_security_check')">
-<table cellpadding="0" border="0" cellspacing="0" width="50%">
+<table cellpadding="0" border="0" cellspacing="0" width="356">
   <tr>
-    <td class="xl" colspan="2"><text text="invalidUserIdOrPassword"/></td>
-  </tr>
-  <tr><td colspan="2"></td></tr>
-  <tr>
-    <td width="1%"><text text="userId"/></td>
-    <td><input type="text" class="xxs" name="j_username" size="15" /></td>
+    <td class="xl" colspan="2" align="middle"><text text="invalidUserIdOrPassword"/><br/><br/></td>
   </tr>
   <tr>
-    <td><text text="password"/></td>
-    <td><input type="password" class="xxs" name="j_password" size="15" />  </td>
+    <td align="right"><text text="userId"/></td>
+    <td><input type="text" class="xxs" name="j_username" size="10" /></td>
   </tr>
   <tr>
-    <td colspan="2"><br/><input type="submit" name="s" value="logOn" />  </td>
+    <td align="right"><text text="password"/></td>
+    <td><input type="password" class="xxs" name="j_password" size="10" />  </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td><br/><input type="submit" name="s" value="logOn" />  </td>
   </tr>
 </table>
 <returnUri />
