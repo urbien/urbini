@@ -350,7 +350,7 @@
            if (linkTooltip) {
              var linkTooltipText = linkTooltip.value;
              if (linkTooltipText && linkTooltipText != '') {
-               tooltipText += '<hr><i><small>' + linkTooltipText + '</small></i>';    
+               tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';    
              }
              parentA.setAttribute('title', null); // remove 'title' so browser does not show its standard tooltip
              parentA.removeAttribute('title');    // (do both - remove and set to null - to work in all browsers)
