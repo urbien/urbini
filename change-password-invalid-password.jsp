@@ -24,15 +24,15 @@
   </tr>
   <tr><td align="RIGHT">  
     Enter your old password:<img src="images/spacer.gif" border="0" width="5"/></td>
-    <td><input type="Password" name="j_password"  size="10" maxlength="10"/></td>
+    <td><input type="Password" name="j_password"  size="10" maxlength="50"/></td>
   </tr>
   <tr><td align="RIGHT">  
     Enter your new password:<img src="images/spacer.gif" border="0" width="5"/></td>
-    <td><input type="Password" name="j_password_new"  size="10" maxlength="10"/></td>
+    <td><input type="Password" name="j_password_new"  size="10" maxlength="50"/></td>
   </tr>
   <tr><td align="RIGHT">  
     Re-Enter your new password:<img src="images/spacer.gif" border="0" width="5"/></td>
-    <td><input type="Password" name="j_password_reenter"  size="10" maxlength="10"/></td>
+    <td><input type="Password" name="j_password_reenter"  size="10" maxlength="50"/></td>
   </tr>
   <tr>
     <td align="CENTER" colspan="2">

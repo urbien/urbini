@@ -16,11 +16,11 @@
 <table border="0" cellpadding="0" cellspacing="0" width="256" cols="2">
   <tr>
     <td align="RIGHT">User ID:<img src="images/spacer.gif" border="0" width="5"/></td>
-    <td><input type="Text" name="j_username" size="10" maxlength="20"/></td>
+    <td><input type="Text" name="j_username" size="10" maxlength="50"/></td>
   </tr>
   <tr><td align="RIGHT">  
     Password:<img src="images/spacer.gif" border="0" width="5"/></td>
-    <td><input type="Password" name="j_password"  size="10" maxlength="10"/></td>
+    <td><input type="Password" name="j_password"  size="10" maxlength="50"/></td>
   </tr>
   <tr>
     <td align="CENTER" colspan="2">
