@@ -2,6 +2,13 @@
   <head>
     <!--include name="commonHead.jsp"/-->  
   <title />
+
+  <object id="VMLRender" classid="CLSID:10072CEC-8CC1-11D1-986E-00A0C955B42E"></object>
+  <style>
+    vml\:* { behavior: url(#VMLRender) }
+    A {behavior: url(#default#AnchorClick);}
+  </style>
+
   <link rel="SHORTCUT ICON"                href="icons/icon.ico" />
   <link rel="ICON"                         href="icons/icon.ico" />
   <link rel="stylesheet"   type="text/css" href="styles/properties.css" />
@@ -19,21 +26,10 @@
   <script language="JavaScript" src="calendar/cal_strings.js"></script>
   <script language="JavaScript" src="calendar/calendar.js"></script>
   <script language="JavaScript" src="gantt/dependencies.js"></script>
-  <script type="text/javascript" src="pngfix.js"></script>
+  <script language="JavaScript" src="pngfix.js"></script>
   <!--[if gte IE 5.5000]> our xml parser removes all comments :-(
   <![endif]-->
 
-  <!---- enable VML -->
-  <object id="VMLRender" classid="CLSID:10072CEC-8CC1-11D1-986E-00A0C955B42E"></object>
-  <style>
-    vml\:* { behavior: url(#VMLRender) }
-  </style>
-
-  <!---- enable Web Folders links -->
-  <!--   will open WebDAV folder if link contains 'folder=' attribute -->
-  <style>
-    A {behavior: url(#default#AnchorClick);}
-  </style>
 
   </head>
 
