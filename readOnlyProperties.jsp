@@ -1,5 +1,6 @@
 <html>
 <siteTitle />
+<center>
 <table width="95%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top">
@@ -53,6 +54,8 @@
     </table>
 </td>
 </tr></table>
+</center>
+
 <br/><br/><div align="left"><span class="xs"><hudsonFog />
 </span></div>
 </html>
