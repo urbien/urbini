@@ -177,6 +177,7 @@ function MD5(str)
 
 function valid_js() {
    // anything that claims NS 4 or higher functionality better work 
+//java.lang.System.out.println("user-agent=");
    if (navigator.userAgent.indexOf("Mozilla/") == 0) {
      return (parseInt(navigator.appVersion) >= 4);
    }
@@ -189,17 +190,18 @@ function computeRequestDigest(form) {
 //      A1  = H( username-value ":" realm-value ":" passwd)
 //      A2  = Method ":" digest-uri-value
 
-java.lang.System.out.println("JAVA SCRIPT: j_username=" + form.j_username);
-java.lang.System.out.println("JAVA SCRIPT: realm="      + form.realm);
-java.lang.System.out.println("JAVA SCRIPT: j_password=" + form.j_password);
-java.lang.System.out.println("JAVA SCRIPT: digest_uri=" + form.digest_uri);
+//java.lang.System.out.println("JAVA SCRIPT: j_username=" + form.j_username);
+//java.lang.System.out.println("JAVA SCRIPT: realm="      + form.realm);
+//java.lang.System.out.println("JAVA SCRIPT: j_password=" + form.j_password);
+//java.lang.System.out.println("JAVA SCRIPT: digest_uri=" + form.digest_uri);
+//java.lang.System.out.println("JAVA SCRIPT: challenge="  + form.challenge);
     
     if (!form.realm)
-      return null;
+      return "";
     if (!form.digest_uri)
-      return null;
+      return "";
     if (!form.challenge)
-      return null;
+      return "";
     var A1 = MD5(form.j_username.value + ":" + 
                  form.realm.value      + ":" +
                  form.j_password.value);
@@ -207,15 +209,18 @@ java.lang.System.out.println("JAVA SCRIPT: digest_uri=" + form.digest_uri);
     var A2 = MD5("POST" + ":" + form.digest_uri.value);
     
     var request_digest = MD5(A1 + ":" + form.challenge.value + ":" + A2);
-    return request_digest + "&realm=" + escape(form.realm.value) + "&nonce=" + form.challenge.value + "&digest_uri=" + escape(form.digest_uri.value);
+    var url = request_digest + "&realm=" + escape(form.realm.value) + "&nonce=" + form.challenge.value + "&digest_uri=" + escape(form.digest_uri.value);
+    
+("JAVA SCRIPT: challenge="  + form.challenge).toString();
+    return url;
 }
 
-function hash(form,login_url) {
-    // this is Javascript enabled browser
+function hash(form, login_url) {
+//java.lang.System.out.println("JAVA SCRIPT: Here we are");
+// this is Javascript enabled browser
     //document.login_form[".js"].value=1;
     // rudimentary check for a 4.x brower. should catch IE4+ and NS4.*
     var url;
-
     if (arguments.length > 1 && login_url != "") { // in case login_url is not passed in
       url = login_url;
     } else {
@@ -237,6 +242,7 @@ function hash(form,login_url) {
         url += "=";
         if(form.elements[i].name == "j_password"){
           url += computeRequestDigest(form);
+//java.lang.System.out.println("url=" + url);
         } else if (form.elements[i].type == "checkbox" && !form.elements[i].checked) {
           url += "";
         } else if (form.elements[i].type == "radio" && !form.elements[i].checked) {

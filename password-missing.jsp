@@ -1,5 +1,5 @@
 <HTML>
-<body onload="document.loginform.j_username.focus();"/>
+<body onload="document.loginform.j_username.focus();" >
 <include name="hashScript.html"/>
 <br />
 <center>
@@ -29,8 +29,8 @@
     <td><br/><input type="submit" name="s" value="logOn" />  </td>
   </tr>
 </table>
-<returnUri />
 <challenge />
+<returnUri />
 </form>
 
 </HTML>
