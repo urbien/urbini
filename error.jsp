@@ -1,7 +1,6 @@
 <html>
 <head>
   <base href="serverName"/>
-<!--base/-->
 <link rel="stylesheet" href="style.css" type="text/css"/>
 </head>
 
