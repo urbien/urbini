@@ -1,15 +1,9 @@
 <HTML>
-<include name="include/commonHeader" />
-
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-<tr>
-  <td valign="top" width="20%">
-    <include name="include/commonLeft" />
-  </td>
-  <td valign="top" align="middle">
-
+<body onload="document.loginform.j_username.focus();"/>
+<include name="hashScript.html"/>
 <br />
-<form method="post" action="j_security_check">
+<center>
+<form name="loginform" action="j_security_check" method="POST"  onsubmit="return hash(this, 'j_security_check')">
 <table cellpadding="0" border="0" cellspacing="0" width="50%">
   <tr>
     <td class="xl" colspan="2"><text text="missingPassword"/></td>
@@ -28,7 +22,7 @@
     <td></td>
     <!--td>
       <userLogin html="new-user.html" title="registerMe" />
-    </td-->
+   </td-->
   </tr>
   <tr>
     <td></td>
@@ -36,12 +30,7 @@
   </tr>
 </table>
 <returnUri />
+<challenge />
 </form>
-<!--span class="xs">If you do not remember your Password, click &quot;Give me a new Password&quot; and we will send it to the email address you specified when you registered.</span-->
-</td></tr></table>
-
-<div align="left"><span class="xs"><hudsonFog /></span></div>      <!-- link to Portal page for current category -->
-<include name="include/commonFooter" />
-</BODY>
 
 </HTML>

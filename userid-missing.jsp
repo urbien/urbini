@@ -1,11 +1,14 @@
 <HTML>
 
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<body onload="document.loginform.j_username.focus();"/>
+<include name="hashScript.html"/>
+
+<table width="356" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top" align="middle">
 
 <br />
-<form method="post" action="j_security_check">
+<form name="loginform" action="j_security_check" method="POST"  onsubmit="return hash(this, 'j_security_check')">
 <table cellpadding="0" border="0" cellspacing="0" width="50%">
   <tr>
     <td class="xl" colspan="2"><text text="userIdMissing" /></td>
@@ -32,6 +35,7 @@
   </tr>
 </table>
 <returnUri />
+<challenge />
 </form>
 
 <!--span class="xs">If you do not remember your Password, click "Give me a new Password" and we will send it to the email address you specified when you registered.</span-->
