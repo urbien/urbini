@@ -21,7 +21,7 @@
       <td valign="top" align="right" width="20%" class="topBar"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr></table>
     <form name="tablePropertyList" action="FormRedirect">
-      <siteHistory />
+      <!--siteHistory /-->
       <tablePropertyList />
       <readOnlySiteInfo />
       <div align="right"><measurement/></div>

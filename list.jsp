@@ -20,7 +20,7 @@
     <include name="include/commonLeft" />
   </td>
   <td valign="top" align="middle">
-    <div align="left"><siteHistory/></div>
+    <!--div align="left"><siteHistory/></div-->
     <form action="list.html" name="siteResourceList">
       <div align="left"><backLink /></div>
       <siteResourceList />

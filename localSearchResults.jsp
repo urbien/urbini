@@ -25,7 +25,7 @@
       <td valign="top" align="right" width="20%"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>
-    <div align="left"><siteHistory/></div>
+    <!--div align="left"><siteHistory/></div-->
     <form action="list.html" name="siteResourceList">
       <div align="left"><backLink /></div>
       <siteResourceList />
