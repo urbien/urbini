@@ -15,7 +15,7 @@
   
 <table border="0" cellpadding="0" cellspacing="0" width="256" cols="2">
   <tr>
-    <td class="xl" colspan="2">Password is missing reenter please<br/></td>
+    <td class="xl" colspan="2">Password is invalid reenter please<br/></td>
   </tr>
   
   <tr>
