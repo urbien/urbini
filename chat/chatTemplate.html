@@ -6,6 +6,22 @@
 	<link href="styles.css" type="text/css" rel="stylesheet" />
 
     <script language='JavaScript'>
+		var isWindowInFocus = "focused";
+		
+		addEvent(window, 'focus', function() {isWindowInFocus="focused";}); 
+		addEvent(window, 'blur', function() {isWindowInFocus="blured";}); 
+		function addEvent(obj, evType, fn){
+ 			if (obj.addEventListener){
+		    	obj.addEventListener(evType, fn, true);
+		    	return true;
+			 } else if (obj.attachEvent){
+		    var r = obj.attachEvent("on"+evType, fn);
+		    return r;
+			 } else {
+			    return false;
+			 }
+		} 
+		
 		//window.onfocus=function() {alert('onfocus');}
 		//window.onblur = function() { windowHasFocus = 'false'; } ;
 		//window.onfocus = function() { windowHasFocus = 'true'; };
@@ -212,7 +228,7 @@
 	  }
     </script>   
   </head>
-  <body style='cursor : default;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#E3EAEB"> <!--onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' //--> 
+  <body onload="initFrames()" style='cursor : default;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#E3EAEB"> <!--onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' //--> 
 
     <script language="JavaScript">
 		window.resizeTo(Math.floor(2*screen.availWidth/3),Math.floor(screen.availHeight*2/3));
@@ -327,7 +343,7 @@
       <iframe id='post' name='post' src='about:blank' style='width: 0px; height: 0px; border: 0'></iframe>
     </div>  
     <script language="JavaScript">
-      setTimeout("initFrames()", 100);
+      //setTimeout("initFrames()", 501);
       function initFrames() {
         var postDiv = document.getElementById('post');
         postDiv.src='chatRoom?frame=post&room=&[encodedRoom];'
