@@ -93,7 +93,7 @@
 <input type="image" border="0" width="28" src="images/gogif.gif" name="submit"/>
 </td></tr></table>
       <input type="hidden" name="action" value="searchParallel"></input>
-      <input type="hidden" name="type"   value="http://www.hudsonfog.com/voc/views/delivery/SingleReelShipment"></input>
+      <input type="hidden" name="type"   value="http://www.hudsonfog.com/voc/views/delivery/SingleReelShipmentDetails"></input>
     </form>
 </td></tr>
 <tr>

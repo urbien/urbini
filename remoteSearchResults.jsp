@@ -1,4 +1,5 @@
 <html>
+<script language="JavaScript" src="calendar/calendar1.html"></script>
 <siteTitle />
 
 <pda nonPda="T">
@@ -20,6 +21,7 @@
       <parallelResourceList />
       <div align="right"><measurement/></div>
       <addNewResource html="mkResource.html"/> 
+      <createResources/>
       <showSetProperties />
     </form>
     </td>
