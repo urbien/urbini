@@ -13,6 +13,9 @@
 #textdiv2 {
 	BORDER-TOP-WIDTH: 1px; PADDING-RIGHT: 5px; PADDING-LEFT: 5px; BORDER-LEFT-WIDTH: 1px; Z-INDEX: 1; BORDER-LEFT-COLOR: #000099; LEFT: 0px; VISIBILITY: hidden; BORDER-BOTTOM-WIDTH: 10px; BORDER-BOTTOM-COLOR: #000099; PADDING-BOTTOM: 10px; WIDTH: 150px; COLOR: black; BORDER-TOP-COLOR: #000099; PADDING-TOP: 1px; POSITION: absolute; TOP: 45px; BACKGROUND-COLOR: #eeeeff; BORDER-RIGHT-WIDTH: 1px; BORDER-RIGHT-COLOR: #000099
 }
+#textdiv3 {
+	BORDER-TOP-WIDTH: 1px; PADDING-RIGHT: 5px; PADDING-LEFT: 5px; BORDER-LEFT-WIDTH: 1px; Z-INDEX: 1; BORDER-LEFT-COLOR: #000099; LEFT: 0px; VISIBILITY: hidden; BORDER-BOTTOM-WIDTH: 10px; BORDER-BOTTOM-COLOR: #000099; PADDING-BOTTOM: 10px; WIDTH: 150px; COLOR: black; BORDER-TOP-COLOR: #000099; PADDING-TOP: 1px; POSITION: absolute; TOP: 45px; BACKGROUND-COLOR: #eeeeff; BORDER-RIGHT-WIDTH: 1px; BORDER-RIGHT-COLOR: #000099
+}
 </STYLE>
 
 <SCRIPT language=JavaScript1.2>
@@ -31,6 +34,9 @@
 			else if (tabShow2 == 1) {
 				hidepoptext2();
 			}
+			else if (tabShow3 == 1) {
+				hidepoptext3();
+			}			
 			poptext.visibility = "visible";
 			tabShow = 1;
 		}
@@ -51,6 +57,9 @@
 			else if (tabShow2 == 1) {
 				hidepoptext2();
 			}
+			else if (tabShow3 == 1) {
+				hidepoptext3();
+			}			
 			poptext1.visibility = "visible";
 			tabShow1 = 1;
 		}
@@ -71,8 +80,34 @@
 			else if (tabShow1 == 1) {
 				hidepoptext1();
 			}
+			else if (tabShow3 == 1) {
+				hidepoptext3();
+			}			
 			poptext2.visibility = "visible";
 			tabShow2 = 1;
+		}
+	}
+
+	var tabShow3=0;
+	function hidepoptext3() {
+		poptext3 = textdiv3.style;
+		if (tabShow3 == 1) {
+			poptext3.visibility = "hidden";
+			tabShow3 = 0;
+			return;
+		}
+		if (tabShow3 == 0) {
+			if (tabShow == 1) {
+				hidepoptext();
+			}
+			else if (tabShow1 == 1) {
+				hidepoptext1();
+			}
+			else if (tabShow2 == 1) {
+				hidepoptext2();
+			}
+			poptext3.visibility = "visible";
+			tabShow3 = 1;
 		}
 	}
 </SCRIPT>
