@@ -19,7 +19,9 @@
     <tr valign="top">
       <td valign="top" width="80%" class="topBar"><span class="xs"><language/>|<print image="images/printerIcon.gif"/></span></td>
       <td valign="top" align="right" width="20%" class="topBar"><changePassword/><userLogOff html="user-login.html"/></td>
-    </tr></table>
+    </tr>
+    <tr> 
+    <td colspan="2">
     <form name="tablePropertyList" action="FormRedirect">
       <!--siteHistory /-->
       <tablePropertyList />
@@ -29,7 +31,9 @@
       <edit html="editProperties.html"/>
       <showSetProperties />
     </form>
-  </td>
+    </td></tr>
+    </table>
+</td>
 </tr></table>
 <br></br>
 <div align="left"><span class="xs"><hudsonFog /></span></div>
