@@ -94,6 +94,7 @@
       <div align="right"><measurement/></div>
     </form>
     </td></tr>
+
     </table>
 </td></tr></table>
 <br />
@@ -112,6 +113,5 @@
 <br/>
 
 
-<!--div align="left"><span class="xs"><hudsonFog /></span></div-->      <!-- link to Portal page for current category -->
-
+<!--div align="left"><span class="xs"><hudsonFog /></span></div-->   <!-- link to Portal page for current category -->
 </div>

@@ -14,7 +14,7 @@ function showDeps(source, dep, numprojects) {
     if (last == source)
       last = null;
     for (var i = 1; i <= ((numprojects - 1)*5); i++) {
-      visi('line' + i, 1);
+      visi('line' + i, false);
 //      alert("erasing " + "line" + i);
 //      document.getElementById('line' + i).from = "0,0";
 //      document.getElementById('line' + i).to   = "0,0";
@@ -41,34 +41,29 @@ function showDeps(source, dep, numprojects) {
   k += 5;
 }
 
-function visi(nr, i) {
-//  alert("invisi");
+function visi(nr, vis) {
   var hidden =  'hidden';
   var visible = 'visible';
   var style = null;
 	
   if (document.layers) {
-//    alert("invisi1");
-    style = document.layers[nr]; 
-    hidden = 'hide';
+    style   = document.layers[nr]; 
+    hidden  = 'hide';
     visible = 'show';	
   }
   else if (document.all) {
-//    alert("here");
     style = document.all[nr].style;
   }
   else if (document.getElementById) {
-//    alert("invisi2");
     style = document.getElementById(nr).style;
-//    alert("invisi2 again" + style==null);
   }
 
-//  alert("invisi, style= " + style==null);
-
-  if (i == 0) 
+alert("style: " + style.visibility);
+  if (vis) 
     style.visibility = visible;
   else
     style.visibility = hidden;
+alert("style: " + style.visibility);
 }
 
 function draw(source, dep, numprojects) {
@@ -159,7 +154,7 @@ function draw(source, dep, numprojects) {
 	}
 
 	for (var hello = 0; hello < 5; hello++) {
-		visi('line' + (k + hello), 0);
+		visi('line' + (k + hello), true);
 	}
 
 	style1.left = tdL + "px";
@@ -189,7 +184,7 @@ function draw(source, dep, numprojects) {
 		style4.width = 5;
 		style4.height = 9;
 
-		visi('line' + (k + 4), 1);
+		visi('line' + (k + 4), false);
 	}
 
 	if (bar2 == null) {
@@ -204,8 +199,8 @@ function draw(source, dep, numprojects) {
 //		alert(height);
 	        last += 23;
 //		alert(last);
-		visi('line' + (k + 2), 1);
-		visi('line' + (k + 3), 1);
+		visi('line' + (k + 2), false);
+		visi('line' + (k + 3), false);
 		style2.height = last - temp;
 		style5.left = tdL - 3;
 		style5.top = j + last - temp + "px";

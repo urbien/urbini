@@ -39,12 +39,29 @@
     function onClick(e) {
       var url;
       var p;
+      var target;
 
       e = (e) ? e : ((window.event) ? window.event : null);
       if (e) {
-        if     (e.ctrlKey)  p = '_ctrlKey=y';
-        else if(e.shiftKey) p = '_shiftKey=y';
-        else if(e.altKey)   p = '_altKey=y';
+        if     (e.ctrlKey) {
+          p = '_ctrlKey=y';
+        }
+        else if(e.shiftKey) {
+          p = '_shiftKey=y';
+        }
+        else if(e.altKey) {
+          p = '_altKey=y';  
+          var frameId = 'bottomFrame';
+          var bottomFrame = frames[frameId];
+          if (bottomFrame) {
+            url = getTargetElement(e);
+
+            bottomFrame.location.href = url + "&pda=T&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y";
+            document.getElementById('pane2').innerHTML = bottomFrame.document.body.innerHTML; //firstChild.nodeValue
+
+            return false;
+          }
+        }
 
         url = getTargetElement(e);
         if (p) {
@@ -56,23 +73,26 @@
             alert("onClick(): can't process control key modifier since event currentTarget.href is null: " + url.href);
             return;
           }
-          addUrlParam(url, p);
+          addUrlParam(url, p, target);
         }
       }
     }
      
-    function addUrlParam(url, param) {
+    function addUrlParam(url, param, target) {
       if (!url)
         return;
       if (!url.href)
         return;
       if (url.href.indexOf('?') == -1) {
         url.href = url.href + '?' + param;
+        if (target)
+          url.target = target;
       }
       else {
         url.href = url.href + '&' + param;
-      }
-      
+        if (target)
+          url.target = target;
+      }      
     }
 
     // cross-browser - getCurrentTarget 
