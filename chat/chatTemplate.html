@@ -5,7 +5,7 @@
     <script language='JavaScript'>
 		window.onerror=myErrorHandler
 		function myErrorHandler() {
-			return true
+			return true;
 		}
 
 	  var resizedWindow = 0;
@@ -114,10 +114,15 @@
 				document.getElementById('historyiFrame').style.width=150; 
 			}
 	  }
+	  
+	  function openInvitationWindow(){
+			var urlInv = 'chatRoom?frame=invitationWindow&#38;resourceURL=' + escape('&[openedFrom];') + '&#38;title=' + document.title;
+			window.open(urlInv,'Invitation','width=600,height=150,resizable=no,toolbar=no');
+		}
 
     </script>   
   </head>
-  <body onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' style='cursor : default;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#E3EAEB"> 
+  <body style='cursor : default;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#E3EAEB"> <!--onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' //--> 
     <script language="JavaScript">
 		window.resizeTo(Math.floor(screen.availWidth/2),Math.floor(screen.availHeight/2));
 		window.moveTo(Math.floor(screen.availWidth/4),Math.floor((screen.availHeight)/4));
@@ -131,13 +136,14 @@
         <tr>
           <td>
             <form style="border:thin none; border-bottom:none; bottom:0px; height:20px; margin-bottom:0px;" name="formScrollLock">
-              <input type=hidden name="chatStartedAt"><table><tr><td>Chat session is open for</td><td><input readonly="true" onfocus="document.getElementById('message').focus();" type=text size=5 style="border:1; border-style: inset; background-color:#FFFFFF;" name="chatStart"></td></tr></table>
+              <input type=hidden name="chatStartedAt"><table><tr><td><a href="javascript: var df = new Date(parseInt(serverTm.value));alert('serverMessageTime = '+df);alert('serverGmtOffset = '+serverGmtOffset.value + '; serverTm = ' + serverTm.value + '; clientSideOffset = ' + clientSideOffset.value);">C</a>hat session is open for</td><td><input readonly="true" onfocus="document.getElementById('message').focus();" type=text size=5 style="border:1; border-style: inset; background-color:#FFFFFF;" name="chatStart"></td></tr></table>
             </form>
           </td>
           <td>			
             <img src='icons/chatHistory.gif' width='23' height='20' onclick="chatHistoryImageOnClick(this)" alt="Chat history" title="Chat history">
             <img src="icons/clockOn.png" width='16' height='16' onClick="clockOn(this);" alt="display time in Message log" title="display time in Message log">
 	    	<a href="&[openedFrom];" title="link to the page from which the chat was opened" target="_blank"><img src="icons/status_postponed.gif" width='12' height='12' border="0" alt="link to the page from which the chat was opened"></a>
+			<!-- a href="javascript://" title="Invitation to the chat Room" onclick="openInvitationWindow();"><img src="icons/webchat1.gif" alt="Invitation to the Chat room" border="0" width="16" height="16" align="middle"/></a //-->
           </td>
         </tr>
         </table>
@@ -195,7 +201,11 @@
     <iframe id='thread' name='thread' src='chatRoom?frame=thread&room=&[encodedRoom];' style='width:0px; height: 0px; border: 0'></iframe>
     <div>
       <iframe id='post' name='post' src='chatRoom?frame=post&room=&[encodedRoom];' style='width: 0px; height: 0px; border: 0'></iframe>
-    </div>    
+    </div>  
+	
+	<input type="Hidden" id="serverGmtOffset">
+	<input type="Hidden" id="serverTm">
+	<input type="Hidden" id="clientSideOffset">
 
   </body>
 </html>

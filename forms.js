@@ -72,6 +72,10 @@ function displayFullText(div, text) {
   document.getElementById(div).innerHTML = text;
 }
 
+function displayFullText1(div, div1) {
+  document.getElementById(div).innerHTML = document.getElementById(div1).innerHTML;
+}
+
 /*************************  Form fields adding/removing *******************/
 function addField(form, fieldType, fieldName, fieldValue) {
   if (document.getElementById) {
