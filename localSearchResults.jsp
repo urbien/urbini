@@ -29,7 +29,7 @@
     <form name="rightPanelPropertySheet" method="POST" action="FormRedirect">
       <rightPanelPropertySheet />
       <br></br>
-      <center><input type="submit" name="submit" value="locate"></input></center>
+      <center><input type="submit" name="submit" value="filter"></input></center>
       <input type="hidden" name="action" value="searchLocal"></input>
       <br></br>
       <!--showSetProperties /-->

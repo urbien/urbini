@@ -1,5 +1,5 @@
 <HTML>
-<body onload="document.loginform.j_username.focus();"/>
+<body onload="document.loginform.j_password.focus();"/>
 <include name="hashScript.html"/>
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
