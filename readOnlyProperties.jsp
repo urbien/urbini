@@ -1,4 +1,5 @@
-<div><center>
+<div>
+<center>
 
 <table width="95%" border="0" cellspacing="0" cellpadding="0">
 <tr>
@@ -16,11 +17,11 @@
 
       <!-- Auto-generated menus -->
       <span class="xs" nonPda="T">
-      <menu toolbar="toolbar1"  activate="onMouseOver"/>
+      <menu toolbar="toolbar1" activate="onMouseOver"/>
       <menu toolbar="transport" activate="onMouseOver"/>
-      <menu toolbar="search"    activate="onMouseOver"/>
-      <menu toolbar="toolbar2"  activate="onMouseOver"/>
-      <menu toolbar="toolbar3"  activate="onMouseOver"/>
+      <menu toolbar="search" activate="onMouseOver"/>
+      <menu toolbar="toolbar2" activate="onMouseOver"/>
+      <menu toolbar="toolbar3" activate="onMouseOver"/>
       <menu toolbar="calendarAndChart" activate="onMouseOver"/>
       </span>
       <span class="xs" pda="T">
@@ -47,16 +48,16 @@
             ch = Math.floor((screen.availHeight)/4);
           }
           var url = 'chatRoom?title=' + document.title + '&#38;referer=' + escape(window.location);
-          window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=no, location=no, toolbar=no, scrollbars=no, resizable=yes');
+          window.open(url, 'chat','width=568,height=325px,top='+ch+',left='+cw+', menubar=no, status=no, location=no, toolbar=no, scrollbars=no, resizable=no');
         }
       </script>
       <a href="javascript://" title="Chat Room" onclick="openChatWindow();"><img src="icons/webchat.gif" alt="Chat room for this page" border="0" width="16" height="16" align="middle"/></a>
       <showHideWindows/>
       </td>
       <td valign="top" align="right" width="15%"><changePassword/><userLogOff html="user-login.html"/></td>
-     <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
+      <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
       <td valign="top" align="right" width="15%"><include name="searchText.jsp"/></td>
-    </form>
+      </form>
 </tr></table>
 </td>
     </tr>
