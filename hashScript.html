@@ -226,15 +226,10 @@ function hash(form, login_url) {
       url = "j_security_check";
     }
 
-//    if (!url.startsWith("http://")) {
-  base = document.getElementById('baseId');
-//java.lang.System.out.println("base.href = " + base.href);
-//      if (url.startsWith("/"))
-//        url = base.href + url.substring(1);
-//      else  
-        url = base.href + url;
-//    }
+    form.method = "POST"; 
 
+//    base = document.getElementById('baseId');
+//    url = base.href + url;
     url += "?";
       
     if (valid_js()) {

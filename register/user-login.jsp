@@ -3,7 +3,7 @@
 <include name="hashScript.html"/>
 <br />
 <center>
-<form name="loginform" action="j_security_check" method="POST"  onsubmit="return hash(this, 'j_security_check')">
+<form name="loginform" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')">
   
 <table border="0" cellpadding="0" cellspacing="3" width="256" cols="2">
   <tr>
@@ -17,7 +17,7 @@
   <tr>
     <td align="CENTER" colspan="2">
       <br />
-      <input type="Submit" value="logOn"/>
+      <input type="submit" value="logOn"/>
     </td>
   </tr>
 </table>
