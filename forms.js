@@ -33,6 +33,13 @@ function onFormFieldChange(fieldProp, fieldRef, oldValue) {
   }
 }
 
+function hideShowDivOnClick(div) {
+  if (div.style.display == 'none')
+    div.style.display = 'inline';
+  else
+    div.style.display = 'none';
+}
+
 function trim(s) {
   while (s.substring(0,1) == ' ') {
     s = s.substring(1,s.length);

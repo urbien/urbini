@@ -80,7 +80,7 @@ var CAL_TPL1 = {
 	// icon image to open the calendar instance (IMG), 
 	// not for on-page mode
 	'caliconshow': {
-		'src': 'calendar/img/cal.gif',
+		'src': 'images/calendar.gif',
 		'width': 16,
 		'height': 16,
 		'border' : 0,
@@ -89,7 +89,7 @@ var CAL_TPL1 = {
 	// icon image to close the calendar instance (IMG)
 	// for modal mode only
 	'caliconhide': {
-		'src': 'calendar/img/no_cal.gif'
+		'src': 'images/calendar.gif'
 	},
 	// input text field to store the date & time selected (INPUT type="text")
 	'datacontrol': {
