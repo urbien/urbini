@@ -43,10 +43,10 @@ var CAL_TPL1 = {
 
 	// outer table (TABLE)
 	'outertable': {
-		'cellpadding': 3,
+		'cellpadding': 0,
 		'cellspacing': 0,
 		'border': 0,
-		'bgcolor' : 'black',
+		'bgcolor' : '#FFC0C0',
 		'class' : 'calOuterTable',
 		'width': 180
 	},
@@ -59,7 +59,7 @@ var CAL_TPL1 = {
 	},
 	// today icon cell (TD); if omited no today button will be displayed
 	'todaycell': {
-		'width': 10
+		'width': 20
 	},
 	// time navigation table (TABLE)
 	'timetable': {
@@ -258,7 +258,7 @@ var CAL_TPL1 = {
 	// calendar grid (TABLE)
 	'gridtable': {
 		'cellpadding': 2,
-		'cellspacing': 0,
+		'cellspacing': 1,
 		'border': 0,
 		'width': '100%'
 	},

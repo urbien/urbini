@@ -1,16 +1,16 @@
 /* Table containing whole calendar - TABLE */
 .calOuterTable {
 	border: 1px solid silver;
-	width: 170px;
+	width: 160px;
 }
 /* Month Selector - INPUT */
 /* Year Selector - INPUT */
 .calCtrl {
-	font: 14px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
+	font: 12px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
 }
 /* Week Day Title - TD */
 .calWTitle {
-	font: 14px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
+	font: 12px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
 	background: #808080;
 	text-align: center;
 	color: #FFFFFF;
@@ -24,7 +24,7 @@
 }
 /* Sat. and Sun. - TD */
 .calDayWeekend {
-	background: silver;
+	background: #77BBEF;
 	width: 20px;
 }
 /* Sat. and Sun. - TD */
@@ -39,19 +39,19 @@
 }
 /* Days of current month - A */
 .calThisMonth {
-	font: 14px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
+	font: 12px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
 	color: #000000;
 	text-decoration: none;
 }
 /* Days of other month - A */
 .calOtherMonth {
-	font: 14px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
+	font: 12px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
 	color: #909090;
 	text-decoration: none;
 }
 /* Days not allowed by limits - SPAN */
 .calForbDate {
-	font: 14px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
+	font: 12px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
 	color: red;
 }
 /* Time navigation table = TABLE */
