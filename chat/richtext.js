@@ -192,7 +192,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'indent1.gif" width="13" height="13" alt="Indent" title="Indent" onClick="FormatText(\'' + rte + '\', \'indent\', \'\')">');
 		document.writeln('		<span id="forecolor_' + rte + '">');
 		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'textcolor1.gif" width="13" height="13" alt="Text Color" title="Text Color" onClick="FormatText(\'' + rte + '\', \'forecolor\', \'\')"></span>');
-		document.writeln('		<span id="hilitecolor_' + rte + '"><img class="rteImage" src="' + imagesPath + 'bgcolor1.gif" width="13" height="13" alt="Background Color" title="Background Color" onClick="FormatText(\'' + rte + '\', \'hilitecolor\', \'\')"></span>');
+		document.writeln('		<span id="hilitecolor_' + rte + '"><img align="absmiddle" class="rteImage" src="' + imagesPath + 'bgcolor1.gif" width="13" height="13" alt="Background Color" title="Background Color" onClick="FormatText(\'' + rte + '\', \'hilitecolor\', \'\')"></span>');
 		document.writeln('		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">');
 		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'hyperlink1.gif" width="13" height="13" alt="Insert Link" title="Insert Link" onClick="FormatText(\'' + rte + '\', \'createlink\')">');
 		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'image1.gif" width="13" height="13" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')">');
@@ -468,7 +468,7 @@ function FormatText(rte, command, option) {
 			// Ernst de Moor: Fix the amount of digging parents up, in case the RTE editor itself is displayed in a div.
 			document.getElementById('cp' + rte).style.left = getOffsetLeft(buttonElement, 4) - 40 + "px";
 			//document.getElementById('cp' + rte).style.top = (getOffsetTop(buttonElement, 4) + buttonElement.offsetHeight + 4) + "px";
-			document.getElementById('cp' + rte).style.top = (getOffsetTop(buttonElement, 6) + buttonElement.offsetHeight + 4) + "px";
+			document.getElementById('cp' + rte).style.top = (getOffsetTop(buttonElement, 6) + buttonElement.offsetHeight + 4) + 50 + "px";
 			if (document.getElementById('cp' + rte).style.visibility == "hidden") {
 				document.getElementById('cp' + rte).style.visibility = "visible";
 				document.getElementById('cp' + rte).style.display = "inline";
@@ -493,8 +493,37 @@ function FormatText(rte, command, option) {
 	} catch (e) {
 		alert(e);
 	}
-}
+	
+	//-------------------------TRY------------------------------
+/*
+		var oRTE;
+	if (document.all) {
+		oRTE = frames[rte].document;
+	} else {
+		oRTE = document.getElementById(rte).contentWindow.document;
+	}
 
+		if (document.all) {//
+		//alert(oRTE.body.innerText);alert(oRTE.body.innerHTML); alert(unescape(oRTE.body.innerHTML));
+		//oRTE.body.innerText = oRTE.body.innerHTML;
+          var s = oRTE.body.innerHTML;
+		  var a = document.createElement('div');
+          s = replaceAllRecursion(s, "<","&lt;");
+          s = replaceAllRecursion(s, ">","&gt;");
+          a.innerHTML=s;
+          oRTE.body.innerText = a.innerText;
+		} 
+*/		
+	//------------------------------------------------------------
+}
+function replaceAllRecursion(str, replStr, replWithStr)
+{
+  if(str.indexOf(replStr)>=0) 
+    return replaceAllRecursion(str.replace(replStr, replWithStr), replStr, replWithStr)
+   else 
+	return str;
+}
+	
 //Function to set color
 function setColor(color) {
 	var rte = currentRTE;
