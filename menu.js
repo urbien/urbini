@@ -35,8 +35,8 @@ function menuOpenClose(divName, imgName) {
 		poptext.visibility = HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
 		poptext.display    = 'inline'; // must make it inline here - otherwise coords will not get set
 		if (imgName) {
-			divRef.style.left = 0;
-			divRef.style.top  = 0;
+			divRef.style.left = document.body.scrollLeft;
+			divRef.style.top  = document.body.scrollTop;
 			var left = docjslib_getImageXfromLeft(imgName);
 			var top  = docjslib_getImageYfromTop(imgName) + docjslib_getImageHeight(imgName);
 			var screenX = document.body.clientWidth;
@@ -51,7 +51,7 @@ function menuOpenClose(divName, imgName) {
 
 			// Same concept with the vertical position
 			if (bottomedge < divRef.offsetHeight)
-				top = document.body.scrollTop+document.body.offsetHeight-divRef.offsetHeight;
+				top = (document.body.scrollTop+screenY)-divRef.offsetHeight;
 
 			poptext.left = left;
 			poptext.top  = top;
