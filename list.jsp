@@ -1,4 +1,10 @@
 <html>
+<script language="JavaScript">
+
+<include name="calendar/calendar1.html"/>
+<!--script language="JavaScript" src="calendar1.js"-->
+
+</script>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top" align="middle">
