@@ -1,11 +1,7 @@
 <HTML>
-<include name="include/commonHeader" />
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
-  <td valign="top" width="20%">
-    <include name="include/commonLeft" />
-  </td>
   <td valign="top" align="middle">
 
 <br />
@@ -42,7 +38,6 @@
 </td></tr></table>
 
 <div align="left"><span class="xs"><hudsonFog /></span></div>      <!-- link to Portal page for current category -->
-<include name="include/commonFooter" />
 </BODY>
 
 </HTML>

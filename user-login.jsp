@@ -1,12 +1,5 @@
 <HTML>
 
-<!--table width="100%" border="0" cellspacing="0" cellpadding="0">
-<tr>
-  <td valign="top" width="20%">
-    <include name="include/commonLeft" />
-  </td>
-  <td valign="top" align="middle">
--->
 <br />
 <center>
 <form name="loginform" action="j_security_check" method="POST">
@@ -30,9 +23,5 @@
   <returnUri />
 </form>
 </center>
-<!--span class="xs">If you do not remember your Password, click &quot;Give me a new Password&quot; and we will send it to the email address you specified when you registered.</span-->
-<!--/td></tr></table-->
-
-</BODY>
 
 </HTML>
