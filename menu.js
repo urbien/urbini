@@ -32,7 +32,7 @@ function menuOpenClose(divName) {
 }
 
 function onRecChange() {
-  if (document.scheduleForm.rec.value == 'week') {
+  if (document.getElementById("scheduleForm").rec.value == 'week') {
     document.getElementById("titleDiv").innerHTML = '<b>Day:</b>';
     document.getElementById("valueDiv").innerHTML = '<select name="weekDay">' +
                          '<option value="Mon">Monday</option>' +
@@ -43,7 +43,7 @@ function onRecChange() {
                          '<option value="Sat">Saturday</option>' +
                          '<option value="Sun">Sunday</option>' +
                          '</select>';
-  } else if (document.scheduleForm.rec.value == 'month') {
+  } else if (document.getElementById("scheduleForm").rec.value == 'month') {
     document.getElementById("titleDiv").innerHTML = '<b>Day:</b>';
     document.getElementById("valueDiv").innerHTML = '<select name="day">' +
                          '<option>01</option>' +

@@ -78,7 +78,7 @@
       <A title="Trains"    href="javascript://" onClick="menuOpenClose('trainsDiv')"><IMG src="icons/train.gif" align="middle" border="0"/></A>&#160;
       <A title="Trucks"    href="javascript://" onClick="menuOpenClose('trucksDiv')"><IMG src="icons/truck.gif" align="middle" border="0"/></A>&#160;
       
-      <span class="xs"><language/></span><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
+      <span class="xs"><div id="language" class="popMenu"><language/></div></span><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
       <pdaToPc image="images/pda.gif"/><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>
@@ -97,10 +97,14 @@
   <div id="textdiv2" class="popMenu">
 
 <table border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td><b><text text="Filter:"/></b></td>
+      <td align="right"><a title="Close" href="javascript://" onClick="menuOpenClose('textdiv2')"><IMG alt="Click here to close" src="images/button_popup_close.gif" border="0"/></a></td>
+    </tr>
 <tr  valign="top">
-  <td><include name="searchText.jsp" /></td>
+  <td><br/><include name="searchText.jsp" /></td>
 </tr>
-<tr><td>    
+<tr><td>
     <form name="rightPanelPropertySheet" method="POST" action="FormRedirect">
       <table border="1" cellpadding="3" cellspacing="0">
       <tr><td align="middle" class="title">
@@ -120,6 +124,10 @@
 <div id="textdiv3" class="popMenu">
 <form name="emailForm" action="page2email" method="GET">
   <table cellpadding="5">
+    <tr>
+      <td><b><text text="E-mail:"/></b></td>
+      <td align="right"><a title="Close" href="javascript://" onClick="menuOpenClose('textdiv3')"><IMG alt="Click here to close" src="images/button_popup_close.gif" border="0"/></a></td>
+    </tr>
     <tr><td>
       <table border="1" cellpadding="5">
         <tr><td><b>Subject:</b></td><td><input name="subject"></input></td></tr>
@@ -133,7 +141,12 @@
 
 <div id="textdiv4" class="popMenu">
 <form name="scheduleForm" action="page2schedule" method="GET">
-  <table cellpadding="5"><tr><td>
+  <table cellpadding="5">
+    <tr>
+      <td><b><text text="Schedule:"/></b></td>
+      <td align="right"><a title="Close" href="javascript://" onClick="menuOpenClose('textdiv4')"><IMG alt="Click here to close" src="images/button_popup_close.gif" border="0"/></a></td>
+    </tr>
+    <tr><td>
     <table border="1" cellpadding="5">
       <tr><td><b>Subject:</b></td><td><input name="name"/></td></tr>
       <tr><td><b>Repeat:</b></td>
