@@ -33,12 +33,12 @@
           <taskTreeControl/>
           <siteResourceList />
           <div align="right"><measurement/></div>
-          <addNewResource html="mkResource.html"/> 
-          <delete/> 
-          <reloadDocuments/>
-          <createResources/>
-          <showSetProperties />
         </form>
+        <delete/> 
+        <addNewResource html="mkResource.html"/> 
+        <reloadDocuments/>
+        <createResources/>
+        <showSetProperties />
         <br/><pieChart/>
         <script language="JavaScript">
           var horizontalFilter_FIELDS = new Array();
