@@ -374,7 +374,7 @@ function onClickPopup(e) {
   // form url based on parameters that were set
   var url;
   //url = "http://127.0.0.1/hudsonfog/smartPopup?pUri=http://www.hudsonfog.com/voc/software/crm/Bug/affectedComponent&selectOnly=y&affectedComponent_filter=y&action=explore&file=/localSearchResults.html&type=http://www.hudsonfog.com/voc/software/crm/Bug&$form=" + currentFormName;
-  url = "smartPopup?pUri=" + "http://www.hudsonfog.com/voc/software/crm/Bug/" + propName;
+  url = "smartPopup?pUri=" + propName;
   var params = getFormFilters(form);
   url = url + params;
   url = url + "&$form=" + form.name;
@@ -409,7 +409,7 @@ function loadPopup() {
 
 function interceptPopupEvents(div) {
   var tableId = "table_" + propName + "_" + currentFormName;
-//alert("tableId=" + tableId);
+alert("tableId=" + tableId);
   var table = document.getElementById(tableId);
 
   addEvent(div, 'mouseover', popupOnMouseOver, false);
