@@ -3,6 +3,7 @@
   <tr>
   <td valign="top" width="95%">
 <center>
+      <div align="center"><font color="red"><b><errorMessage /></b></font></div>
 <table width="98%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
@@ -24,7 +25,6 @@
   <td valign="top" width="90%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top"><td colspan="2">
-      <div align="center"><font color="red"><b><errorMessage /></b></font></div>
    
     <form name="tablePropertyList" method="post" id="filter" >
       <tablePropertyList />
