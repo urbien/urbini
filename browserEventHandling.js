@@ -436,17 +436,18 @@
       var url = 'editProperties.html?submit=Submit+changes&uri=';
       
       var rUri = target.id.substring(0, target.id.length - "_markedAsRead".length);
-      var pValue = target.attributes['propertyValue'].value;
-      if (pValue  &&  pValue == "Yes")
+      var tooltip = target.attributes['tooltip'];
+      var pValue;
+      if (tooltip  &&  tooltip.length != 0  &&  tooltip.value == "Yes")
         pValue = "No";
       else
         pValue = "Yes";
-      target.attributes['propertyValue'].value = pValue;
+      target.setAttribute('tooltip', pValue);
       if (pValue == "Yes")
         target.src = target.attributes['yesIcon'].value;
       else
         target.src = target.attributes['noIcon'].value;
-      url += encodeUrlComponent(rUri) + "&markedAsRead=" + target.propertyValue;
+      url += encodeURIComponent(rUri) + "&markedAsRead=" + pValue;
       
       var onClickPopupFrame = frames["popupFrame"];
       popupFrameLoaded = false;
