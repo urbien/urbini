@@ -657,16 +657,17 @@ function popupOnSubmit(e) {
 
   if (document.all || document.getElementById) {
 //    form.submit.disabled = true; // HACK: for some reason can not disable this button - the form would not get submitted
-    form.submit.value = 'Please wait';
-    form.submit.style.cursor = 'wait'; 
+    var submit = form.elements['submit'];
+    submit.value = 'Please wait';
+    submit.style.cursor = 'wait'; 
     var cancel;
-    if (form.cancel)
-      cancel = form.cancel;
-    else if (form.clear)  
-      cancel = form.clear;
-    else if (form.clear_)  
-      cancel = form.clear_;
-    cancel.style.visibility = HIDDEN; 
+    cancel = form.elements['cancel'];
+    if (!cancel)
+      cancel = form.elements['clear'];  
+    if (!cancel)
+      cancel = form.elements['horizontal_clear'];
+    if (cancel) 
+      cancel.style.visibility = HIDDEN; 
   }
 
 // submit as GET with all parameters collected manually
@@ -676,9 +677,9 @@ function popupOnSubmit(e) {
 //  e.returnValue = false;
 //  if (e.preventDefault) e.preventDefault();
 //  return false; 
-    form.method = 'POST';
-    form.action = "FormRedirect";
-    return true;
+  form.method = 'POST';
+  form.action = "FormRedirect";
+  return true;
 }
 
 /**

@@ -158,258 +158,265 @@
         return null;
     }
   
-    addEvent(window, 'load', function() {setTimeout(interceptLinkClicks, 0);}, false);
-    addEvent(window, 'load', function() {setTimeout(replaceAllTooltips,  0);}, false);
-    //addEvent(window, 'unload', function() {java.lang.System.out.println("unload");}, false);
     
-    /* this function supposed to fix a problem (with above functions) on Mac IE5 
-     * but it fails on Win IE6 ... so may be somebody can figure it out - see source of info:
-     * http://simon.incutio.com/archive/2004/05/26/addLoadEvent
+    // returns true if the field was modified since the page load
+    function wasFormFieldModified(elem) {
+      var initialValue = getFormFieldInitialValue(elem);
+      if (initialValue == null)
+        return true; // assume it was modified if no info exists
+      if (elem.value == initialValue) {
+        //alert("not modified: elem.name: " + elem.name + ", initialValue: " + initialValue);
+        return false;
+      }  
+      else {
+        //alert("modified: elem.name: " + elem.name + ", initialValue: " + initialValue);           
+        return true;
+      }  
+    }
+    // returns value of the field saved right after the page load (does not support multiple selections)
+    function getFormFieldInitialValue(elem, attribute) {
+      if (formInitialValues) {
+        var formValues = formInitialValues[elem.form.name];
+        if (formValues) {
+          if (attribute)
+            return formValues[elem.name + '.attributes.' + attribute];
+          else
+            return formValues[elem.name];        
+        }
+      }
+      return null;
+    }
+
+    /**
+     * remove modifier, like ctrl_y
      */
-    /*function addLoadEvent(func) {
-      var oldonload = window.onload;
-      if (typeof window.onload != 'function') {
-        window.onload = func;
+    function removeModifier(url, param) {
+      var urlStr = url.href;     
+      var idx = urlStr.indexOf(param);
+      if (idx == -1)
+        return url;
+     
+      var len = param.length;
+      if (urlStr.charAt(idx - 1) == '&') {
+        idx--;
+        len++;
+      }  
+     
+      var uBefore = urlStr.substring(0, idx);
+      var uAfter  = urlStr.substring(idx + len);
+      urlStr = uBefore + uAfter;
+      url.href = urlStr;
+      // alert('before='+uBefore + ', after=' + uAfter);
+    }
+
+   
+    /*********************************** Tootltips ************************************/
+    function replaceAllTooltips() {
+      var llen;
+      var elements;
+      elements = document.getElementsByTagName('img');
+      replaceTooltips0(elements);
+      elements = document.getElementsByTagName('span');
+      replaceTooltips0(elements);
+      //elements = document.getElementsByTagName('a');
+      //replaceTooltips0(elements);
+      elements = document.getElementsByTagName('input');
+      replaceTooltips0(elements);
+      elements = document.getElementsByTagName('tt');
+      replaceTooltips0(elements);
+    }
+
+    function replaceTooltips(divRef) {
+      var elements;
+      elements = divRef.getElementsByTagName('img');
+      replaceTooltips0(elements);
+    }
+   
+    function replaceTooltips0(elements) {
+      var llen;
+      llen = elements.length;
+      for (i=0;i<llen; i++) {
+        var elem = elements[i];
+        if (elem.attributes['title']) {
+          addEvent(elem, 'mouseout',    tooltipMouseOut,    false);
+          addEvent(elem, 'mouseover',   tooltipMouseOver,   false);
+        }
+      } 
+    }
+   
+    function tooltipMouseOver(e) {
+      var p;
+      var target;
+
+      e = (e) ? e : ((window.event) ? window.event : null);
+      if (!e)
+        return;
+
+      target = getTargetElement(e);
+      var tooltip = target.attributes['tooltip'];
+      var tooltipText;
+      if (!tooltip) {
+        tooltip = target.attributes['title'];
+        if (tooltip) {
+          tooltipText = tooltip.value;
+          if (tooltipText == '')
+            return true;
+          // merge tooltip on IMG with tooltip on its parent A tag 
+          var parentA = target.parentNode;
+          if (parentA && parentA.tagName.toUpperCase() == 'A') {
+            var linkTooltip = parentA.attributes['title'];
+            if (linkTooltip) {
+              var linkTooltipText = linkTooltip.value;
+              if (linkTooltipText && linkTooltipText != '') {
+                tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';    
+              }
+              parentA.setAttribute('title', null); // remove 'title' so browser does not show its standard tooltip
+              parentA.removeAttribute('title');    // (do both - remove and set to null - to work in all browsers)
+            }
+           
+          }
+          target.setAttribute('tooltip', tooltipText);
+          target.setAttribute('title', null);      // remove 'title' so browser does not show its standard tooltip
+          target.removeAttribute('title');         // (do both - remove and set to null - to work in all browsers) 
+          var t = target.attributes['title'];
+          target.title = '';
+        }
+      }
+      else
+        tooltipText = tooltip.value;
+      if (tooltip) {
+        var tooltipDiv = document.getElementById('system_tooltip');
+        if (!tooltipDiv)
+          return true;
+        tooltipDiv.innerHTML = tooltipText;
+        if (tooltipDiv.style.width != '') {
+          alert(tooltipDiv.style.width);
+        }  
+        //setTimeout("setDivVisible1('" + tooltipDiv.id + "', '" + target + "', 7, 12)", 100);
+        var ifrRef = document.getElementById('tooltipIframe');
+        setDivVisible(tooltipDiv, target, 7, 12, ifrRef);
+      } 
+      e.cancelBubble = true;
+      e.returnValue = false;
+      if (e.preventDefault) e.preventDefault();         
+      return false;
+    }
+
+    function tooltipMouseOut(e) {
+      var target;
+
+      e = (e) ? e : ((window.event) ? window.event : null);
+      if (!e)
+        return;
+      target = getTargetElement(e);
+     
+      var tooltipDiv = document.getElementById('system_tooltip');
+      var ifrRef = document.getElementById('tooltipIframe');
+     
+      setDivInvisible(tooltipDiv, ifrRef);
+      return false;
+    }
+
+    // cross-browser - getCurrentTarget 
+    function getTargetElement(evt) {
+      var elem;
+      if (evt.target) {
+        if (evt.currentTarget && (evt.currentTarget != evt.target))
+          elem = evt.currentTarget;
+        else
+          elem = evt.target;
       } 
       else {
-        window.onload = function() {
-          oldonload();
-          func();
+        elem = evt.srcElement;
+      }
+      return elem;
+    }  
+
+    //***** Add smartlistbox handlers
+    function addHandlers() {
+      addEvent(window, 'load', function() {setTimeout(interceptLinkClicks, 0);}, false);
+      addEvent(window, 'load', function() {setTimeout(replaceAllTooltips,  0);}, false);
+    //addEvent(window, 'unload', function() {java.lang.System.out.println("unload");}, false);
+    
+      /* this function supposed to fix a problem (with above functions) on Mac IE5 
+       * but it fails on Win IE6 ... so may be somebody can figure it out - see source of info:
+       * http://simon.incutio.com/archive/2004/05/26/addLoadEvent
+       */
+      /*function addLoadEvent(func) {
+          var oldonload = window.onload;
+          if (typeof window.onload != 'function') {
+            window.onload = func;
+          } 
+          else {
+            window.onload = function() {
+              oldonload();
+              func();
+            }
+          }
+        }
+      */
+    
+      if (window.parent != window) 
+        return;
+      //initMenus();
+      // add handler to smartlistbox images  
+      if (typeof onClickPopup != 'undefined') {
+        var images = document.images;
+        for (i=0; i<images.length; i++) {
+          var image = images[i];
+          if (image.id.indexOf("_filter") == -1)
+            continue;
+          addEvent(image, 'click', onClickPopup, false);
+        }  
+      }
+     
+      // 1. add handler to autocomplete filter form text fields
+      // 2. save initial values of all fields
+      if (typeof autoComplete == 'undefined')
+        return;
+      var forms = document.forms;
+      formInitialValues = new Array(forms.length);
+      for (i=0; i<forms.length; i++) {
+        var form = forms[i];
+        var initialValues = new Array(form.elements.length);
+        formInitialValues[form.name] = initialValues;
+        if (form.id != 'filter')
+          continue;
+        addEvent(form, 'submit', popupOnSubmit, false);         
+        for (j=0; j<form.elements.length; j++) {
+          var elem = form.elements[j];
+          initialValues[elem.name] = elem.value;
+                    
+          if (elem.type.toUpperCase() == 'TEXT' && // only on TEXT fields 
+              elem.id) {                                         // and those that have ID
+            addEvent(elem, 'keypress', autoComplete,              false);
+            addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
+            addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
+            addEvent(elem, 'blur',     autoCompleteOnBlur,        false);
+            addEvent(elem, 'mouseout', autoCompleteOnMouseout,    false);
+            //addEvent(elem, 'change',   onFormFieldChange, false);
+            //addEvent(elem, 'blur',     onFormFieldChange, false);
+            //addEvent(elem, 'click',    onFormFieldClick,  false);
+          }
+          else if (elem.type.toUpperCase() == 'TEXTAREA') {
+            var rows = elem.attributes['rows'];
+            var cols = elem.attributes['cols'];
+            if (rows)
+              initialValues[elem.name + '.attributes.rows'] = rows.value;          
+            if (cols)
+              initialValues[elem.name + '.attributes.cols'] = cols.value;
+            if (!elem.value || elem.value == '') {
+              elem.setAttribute('rows', 1);
+              elem.setAttribute('cols', 10);
+              //elem.attributes['cols'].value = 10;
+              addEvent(elem, 'focus', textAreaOnFocus,  false);
+              addEvent(elem, 'blur',  textAreaOnBlur,   false);
+            }  
+          }
         }
       }
     }
-    */
+
     
-   var formInitialValues;
-   if (window.parent == window) {
-     //initMenus();
-     // add handler to smartlistbox images  
-     if (typeof onClickPopup != 'undefined') {
-       var images = document.images;
-       for (i=0; i<images.length; i++) {
-         var image = images[i];
-         if (image.id.indexOf("_filter") == -1)
-           continue;
-         addEvent(image, 'click', onClickPopup, false);
-       }  
-     }
-     
-     // 1. add handler to autocomplete filter form text fields
-     // 2. save initial values of all fields
-     if (typeof autoComplete != 'undefined') {
-       var forms = document.forms;
-       formInitialValues = new Array(forms.length);
-       for (i=0; i<forms.length; i++) {
-         var form = forms[i];
-         var initialValues = new Array(form.elements.length);
-         formInitialValues[form.name] = initialValues;
-         if (form.id != 'filter')
-           continue;
-         addEvent(form, 'submit', popupOnSubmit, false);         
-         for (j=0; j<form.elements.length; j++) {
-           var elem = form.elements[j];
-           initialValues[elem.name] = elem.value;
-                      
-           if (elem.type.toUpperCase() == 'TEXT' && // only on TEXT fields 
-               elem.id) {                                         // and those that have ID
-             addEvent(elem, 'keypress', autoComplete,              false);
-             addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
-             addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
-             addEvent(elem, 'blur',     autoCompleteOnBlur,        false);
-             addEvent(elem, 'mouseout', autoCompleteOnMouseout,    false);
-             //addEvent(elem, 'change',   onFormFieldChange, false);
-             //addEvent(elem, 'blur',     onFormFieldChange, false);
-             //addEvent(elem, 'click',    onFormFieldClick,  false);
-           }
-           else if (elem.type.toUpperCase() == 'TEXTAREA') {
-             var rows = elem.attributes['rows'];
-             var cols = elem.attributes['cols'];
-             if (rows)
-               initialValues[elem.name + '.attributes.rows'] = rows.value;          
-             if (cols)
-               initialValues[elem.name + '.attributes.cols'] = cols.value;
-             if (!elem.value || elem.value == '') {
-               elem.setAttribute('rows', 1);
-               elem.setAttribute('cols', 10);
-               //elem.attributes['cols'].value = 10;
-               addEvent(elem, 'focus', textAreaOnFocus,  false);
-               addEvent(elem, 'blur',  textAreaOnBlur,   false);
-             }  
-           }
-         }
-       }  
-     }
-   }
-
-   // returns true if the field was modified since the page load
-   function wasFormFieldModified(elem) {
-     var initialValue = getFormFieldInitialValue(elem);
-     if (initialValue == null)
-       return true; // assume it was modified if no info exists
-     if (elem.value == initialValue) {
-       //alert("not modified: elem.name: " + elem.name + ", initialValue: " + initialValue);
-       return false;
-     }  
-     else {
-       //alert("modified: elem.name: " + elem.name + ", initialValue: " + initialValue);           
-       return true;
-     }  
-   }
-   // returns value of the field saved right after the page load (does not support multiple selections)
-   function getFormFieldInitialValue(elem, attribute) {
-     if (formInitialValues) {
-       var formValues = formInitialValues[elem.form.name];
-       if (formValues) {
-         if (attribute)
-           return formValues[elem.name + '.attributes.' + attribute];
-         else
-           return formValues[elem.name];        
-       }
-     }
-     return null;
-   }
-
-   /**
-    * remove modifier, like ctrl_y
-    */
-   function removeModifier(url, param) {
-     var urlStr = url.href;     
-     var idx = urlStr.indexOf(param);
-     if (idx == -1)
-       return url;
-     
-     var len = param.length;
-     if (urlStr.charAt(idx - 1) == '&') {
-       idx--;
-       len++;
-     }  
-     
-     var uBefore = urlStr.substring(0, idx);
-     var uAfter  = urlStr.substring(idx + len);
-     urlStr = uBefore + uAfter;
-     url.href = urlStr;
-     //alert('before='+uBefore + ', after=' + uAfter);
-   }
-
-   
-   /*********************************** Tootltips ************************************/
-   function replaceAllTooltips() {
-     var llen;
-     var elements;
-     elements = document.getElementsByTagName('img');
-     replaceTooltips0(elements);
-     elements = document.getElementsByTagName('span');
-     replaceTooltips0(elements);
-     //elements = document.getElementsByTagName('a');
-     //replaceTooltips0(elements);
-     elements = document.getElementsByTagName('input');
-     replaceTooltips0(elements);
-     elements = document.getElementsByTagName('tt');
-     replaceTooltips0(elements);
-   }
-
-   function replaceTooltips(divRef) {
-     var elements;
-     elements = divRef.getElementsByTagName('img');
-     replaceTooltips0(elements);
-   }
-   
-   function replaceTooltips0(elements) {
-     var llen;
-     llen = elements.length;
-     for (i=0;i<llen; i++) {
-       var elem = elements[i];
-       if (elem.attributes['title']) {
-         addEvent(elem, 'mouseout',    tooltipMouseOut,    false);
-         addEvent(elem, 'mouseover',   tooltipMouseOver,   false);
-       }
-     } 
-   }
-   
-   function tooltipMouseOver(e) {
-     var p;
-     var target;
-
-     e = (e) ? e : ((window.event) ? window.event : null);
-     if (!e)
-       return;
-
-     target = getTargetElement(e);
-     var tooltip = target.attributes['tooltip'];
-     var tooltipText;
-     if (!tooltip) {
-       tooltip = target.attributes['title'];
-       if (tooltip) {
-         tooltipText = tooltip.value;
-         if (tooltipText == '')
-           return true;
-         // merge tooltip on IMG with tooltip on its parent A tag 
-         var parentA = target.parentNode;
-         if (parentA && parentA.tagName.toUpperCase() == 'A') {
-           var linkTooltip = parentA.attributes['title'];
-           if (linkTooltip) {
-             var linkTooltipText = linkTooltip.value;
-             if (linkTooltipText && linkTooltipText != '') {
-               tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';    
-             }
-             parentA.setAttribute('title', null); // remove 'title' so browser does not show its standard tooltip
-             parentA.removeAttribute('title');    // (do both - remove and set to null - to work in all browsers)
-           }
-           
-         }
-         target.setAttribute('tooltip', tooltipText);
-         target.setAttribute('title', null);      // remove 'title' so browser does not show its standard tooltip
-         target.removeAttribute('title');         // (do both - remove and set to null - to work in all browsers) 
-         var t = target.attributes['title'];
-         target.title = '';
-       }
-     }
-     else
-       tooltipText = tooltip.value;
-     if (tooltip) {
-       var tooltipDiv = document.getElementById('system_tooltip');
-       if (!tooltipDiv)
-         return true;
-       tooltipDiv.innerHTML = tooltipText;
-       if (tooltipDiv.style.width != '') {
-         alert(tooltipDiv.style.width);
-       }  
-       //setTimeout("setDivVisible1('" + tooltipDiv.id + "', '" + target + "', 7, 12)", 100);
-       var ifrRef = document.getElementById('tooltipIframe');
-       setDivVisible(tooltipDiv, target, 7, 12, ifrRef);
-     } 
-     e.cancelBubble = true;
-     e.returnValue = false;
-     if (e.preventDefault) e.preventDefault();         
-     return false;
-   }
-
-   function tooltipMouseOut(e) {
-     var target;
-
-     e = (e) ? e : ((window.event) ? window.event : null);
-     if (!e)
-       return;
-     target = getTargetElement(e);
-     
-     var tooltipDiv = document.getElementById('system_tooltip');
-     var ifrRef = document.getElementById('tooltipIframe');
-     
-     setDivInvisible(tooltipDiv, ifrRef);
-     return false;
-   }
-
-   // cross-browser - getCurrentTarget 
-   function getTargetElement(evt) {
-     var elem;
-     if (evt.target) {
-       if (evt.currentTarget && (evt.currentTarget != evt.target))
-         elem = evt.currentTarget;
-       else
-         elem = evt.target;
-     } 
-     else {
-       elem = evt.srcElement;
-     }
-     return elem;
-   }  
+    var formInitialValues;
+    addHandlers();
