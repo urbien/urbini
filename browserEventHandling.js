@@ -436,21 +436,20 @@
       var url = 'editProperties.html?submit=Submit+changes&uri=';
       
       var rUri = target.id.substring(0, target.id.length - "_markedAsRead".length);
-      var idx = rUri.indexOf("_$$$Yes_");
-      var iconSrc;
-      if (idx != -1) {
-        url += encodeURIComponent(rUri.substring(0, idx)) + "&markedAsRead=Yes";
-        iconSrc = rUri.substring(idx + 8);
-      }
-      else {
-        idx = rUri.indexOf("_$$$No_");
-        url += encodeURIComponent(rUri.substring(0, idx)) + "&markedAsRead=No";
-        iconSrc = rUri.substring(idx + 7);
-      }
+      var pValue = target.attributes['propertyValue'].value;
+      if (pValue  &&  pValue == "Yes")
+        pValue = "No";
+      else
+        pValue = "Yes";
+      target.attributes['propertyValue'].value = pValue;
+      if (pValue == "Yes")
+        target.src = target.attributes['yesIcon'].value;
+      else
+        target.src = target.attributes['noIcon'].value;
+      url += encodeUrlComponent(rUri) + "&markedAsRead=" + target.propertyValue;
       
       var onClickPopupFrame = frames["popupFrame"];
       popupFrameLoaded = false;
-      target.src = iconSrc;
       onClickPopupFrame.location.replace(url); // load data from server into iframe
     }
     
