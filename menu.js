@@ -75,7 +75,7 @@ var closeTimeoutId;
 var openTimeoutId;
 
 function menuOpen(div, link) {
-  openTimeoutId = setTimeout("menuOpen1('" + div + "', '" + link + "')", 600);
+  openTimeoutId = setTimeout("menuOpen1('" + div + "', '" + link + "')", 100);
 }
 
 function menuOpen1(div, link) {
@@ -169,7 +169,7 @@ function menuClose2(divElem) {
 }
 
 function menuClose(div) {
-  closeTimeoutId = setTimeout("menuClose1('" + div + "')", 100);
+  closeTimeoutId = setTimeout("menuClose1('" + div + "')", 600);
 }
 
 function onRecChange() {
@@ -428,9 +428,9 @@ function loadPopup() {
     return;
   }  
 
-  var bottomFrame = frames['popupFrame'];
+  var popupFrame = frames['popupFrame'];
   if (currentDiv) {
-    var body = bottomFrame.document.body;
+    var body = popupFrame.document.getElementById('popupFrameBody');
     if (body) {
       currentDiv.innerHTML = body.innerHTML;
     }
@@ -682,7 +682,7 @@ function autoComplete(e) {
 //    alert("popupKeyPress, target=" + target.tagName + ", value: " + keysPressedSnapshot); 
 //  if (autoCompleteTimeoutId)
 //    cancelTimeout(autoCompleteTimeoutId);
-  autoCompleteTimeoutId =  setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 1000);
+  autoCompleteTimeoutId =  setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
   return true;
 }
 
@@ -718,6 +718,10 @@ function popupOnMouseOver(e) {
   if (!target)
     return;
   
+	if (closeTimeoutId != null) {
+     clearTimeout(closeTimeoutId);
+     closeTimeoutId = null;
+  }  
   window.status=propName; 
   return true;
 }
