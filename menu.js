@@ -1297,9 +1297,15 @@ function chooser(element) {
 }
 
 function hideResetRow(div, currentFormName, originalProp) {
+  if (originalProp.indexOf("_class") != -1)
+    return;
   var trs = div.getElementsByTagName('tr');
   var i;
   var found = false;
+  
+  var form = document.forms[currentFormName];
+  if (form.elements[originalProp + "_class"])
+    return;
   for (i=0; i<trs.length; i++) {
     if (trs[i].id.indexOf('$clear') == 0) {
       found = true;
@@ -1310,9 +1316,9 @@ function hideResetRow(div, currentFormName, originalProp) {
   if (!found)
     return;
 
+
   var tr = trs[i];
 
-  var form = document.forms[currentFormName];
   var elem = form.elements[originalProp];
 
   var value = elem.value;
