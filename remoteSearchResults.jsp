@@ -2,6 +2,9 @@
 <script language="JavaScript">
 <include name="calendar/calendar1.html"/>
 </script>
+
+<siteTitle />
+
 <pda nonPda="T">
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr  valign="top">
