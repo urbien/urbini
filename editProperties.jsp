@@ -18,7 +18,6 @@
     <form name="tablePropertyList" method="post" action="FormRedirect?edit=true">
       <tablePropertyList />
       <div align="right"><measurement/></div>
-      <!--input type="hidden" name="action" value="update"></input-->
       <input type="hidden" name="action" value="showPropertiesForEdit"></input>
       <br></br>
       <center><input type="submit" name="submit" value="Submit changes"></input></center>

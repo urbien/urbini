@@ -6,6 +6,7 @@
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top">
       <td valign="top" width="70%" class="topBar">
+      <subscribeNote/>
       <img src="icons/icon.gif" width="16" height="16" align="middle" pda="T"/>
       <img src="icons/icon_divider.gif" align="middle" border="0" pda="T"/>
 
@@ -27,7 +28,6 @@
     <tr> 
     <td colspan="2">
       <font color="red"><center><b><errorMessage /></b></center></font>
-      <subscribeNote/>
       <!--siteHistory /-->
       <readOtherSiteInfo />
       <tablePropertyList />
