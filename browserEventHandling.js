@@ -26,17 +26,32 @@
     }
 
     function interceptLinkClicks() {
+      //addEvent(document, 'keydown', onKeyDown, false);
+      //addEvent(document, 'keyup',   onKeyUp,   false);
+      
       var llen = document.links.length;
       for (i=0;i<llen; i++) { 
-        addEvent(document.links[i], 'click', onClick, false);
+        addEvent(document.links[i], 'click',   onClick,   false);
       }       
     }
    
+    var detectClick;
+    function onKeyDown(e) {
+      //alert("1");
+      detectClick = false;
+    }
+    function onKeyUp(e) {
+      if (detectClick) {
+        //salert("2");
+        return false;
+      }  
+    }
     /**
      * Registered to receive control on a click on any link.
      * Adds control key modifier as param to url, e.g. _ctrlKey=y 
      */
     function onClick(e) {
+      detectClick = true;
       var url;
       var p;
       var target;
@@ -67,7 +82,15 @@
         // 
         if (bottomFrame) {
           url = getTargetAnchor(e);
-          bottomFrame.location.href = url + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y";
+          url = url.href;
+          var finalUrl = url; 
+          var idx = url.indexOf('.html');
+          if (idx != -1) {
+            var idx1 = url.lastIndexOf('/', idx);
+            finalUrl = url.substring(0, idx1 + 1) + 'plain/' + url.substring(idx1 + 1);  
+          }
+          
+          bottomFrame.location.href = finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y";
           return false;
         }
       }
@@ -205,11 +228,11 @@
            initialValues[elem.name] = elem.value;
            if (elem.type.toUpperCase() == 'TEXT' && // only on TEXT fields 
                elem.id) {                           // and those that have ID
-         //    addEvent(elem, 'keypress', autoComplete,              false);
-         //    addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
-         //    addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
-         //    addEvent(elem, 'blur',     autoCompleteOnBlur,        false);
-         //    addEvent(elem, 'mouseout', autoCompleteOnMouseout,    false);
+             addEvent(elem, 'keypress', autoComplete,              false);
+             addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
+             addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
+             addEvent(elem, 'blur',     autoCompleteOnBlur,        false);
+             addEvent(elem, 'mouseout', autoCompleteOnMouseout,    false);
              //addEvent(elem, 'change',   onFormFieldChange, false);
              //addEvent(elem, 'blur',     onFormFieldChange, false);
              //addEvent(elem, 'click',    onFormFieldClick,  false);
