@@ -21,6 +21,7 @@
       <menu toolbar="search"    activate="onMouseOver"/>
       <menu toolbar="toolbar2"  activate="onMouseOver"/>
       <menu toolbar="toolbar3"  activate="onMouseOver"/>
+      <menu toolbar="calendarAndChart" activate="onMouseOver"/>
       </span>
       <span class="xs" pda="T">
       <menu toolbar="toolbar1"/>
@@ -28,6 +29,7 @@
       <menu toolbar="search"/>
       <menu toolbar="toolbar2"/>
       <menu toolbar="toolbar3"/>
+      <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/company/Contact" activate="onMouseOver"/>
       </span>
       <span class="xs">
         <print image="images/printerIcon.gif"/>
@@ -77,6 +79,7 @@
       </tr>
       </table>
       <reloadDocuments/>
+      <setAsHomePage />
     <br/><br/>
       <comments /> 
       <newComment/>

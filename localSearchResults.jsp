@@ -37,7 +37,8 @@
         <delete/> 
         <edit html="localSearchResults.html"/>
         <reloadDocuments/>
-        <createResources/>
+        <createResources/><br/>
+        <setAsHomePage />
         <!--showSetProperties /-->
         <br/><pieChart/>
         <script language="JavaScript">
