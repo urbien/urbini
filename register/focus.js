@@ -1,7 +1,8 @@
   function focusOnUserName() {
-    var f = document.loginform;
-    if (f != null) {
-      if (f.j_username.type != null && f.j_username.type != "hidden")
+    var f = document.forms['loginform'];
+    if (f) {
+      var u = f.elements['j_username'];
+      if (u && u.type && u.type != 'hidden')
          f.j_username.focus();
     } 
     return true;
