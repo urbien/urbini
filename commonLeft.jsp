@@ -4,7 +4,7 @@
 </tr>
 
 <tr>
-  <td><a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/delivery/PackList"><text text="Packing lists"/></a></td>
+  <td><a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/delivery/PackingList"><text text="Packing lists"/></a></td>
 </tr>
 
 
