@@ -85,6 +85,7 @@
       <p/>
       <newComment/>
 </hideBlock>      
+    <table width="30%"><tr><td><chatHistory/></td></tr></table>
     </td><td width="1%"></td></tr>
     </table>
 </td>
