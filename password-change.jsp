@@ -4,16 +4,20 @@
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
-  <td valign="top" width="20%">
+  <td valign="top" width="10%">
     <include name="include/commonLeft.html" />
   </td>
-  <td valign="top" align="middle">
+  <td valign="top" align="middle" width="90%">
 
 <br />
 
 <form name="loginform" action="j_security_check" method="POST">
   
-<table border="0" cellpadding="0" cellspacing="0" width="256" cols="2">
+<table border="0" cellpadding="0" cellspacing="0" width="100%" cols="2">
+  <colgroup>
+  <col width="50%"/>
+  <col width="50%"/>
+  </colgroup>
   <tr>
     <td align="RIGHT">User ID:<img src="images/spacer.gif" border="0" width="5"/></td>
     <td><userId/></td>
@@ -36,7 +40,7 @@
       <input type="Submit" value=" Submit changes "/>
       <input type="hidden" name="j_password_change" value="x"/>
     </td>
-  </tr
+  </tr>
 </table>
   <returnUri />
 </form>
