@@ -17,7 +17,7 @@
       <col width="10%" />
     </colgroup>
     <tr valign="top">
-      <td valign="top" width="90%"><img src="icons/icon.gif"/><span class="xs"><language/><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span></td>
+      <td valign="top" width="90%"><span class="xs"><language/><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span></td>
       <td valign="top" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
 
@@ -66,11 +66,11 @@
 <tr  valign="top">
   <td valign="top" align="middle" width="100%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
-    <tr valign="top">
-      <td valign="top"><img src="icons/icon.gif"/>
-      <A title="Shortcuts" href="javascript://" onClick="hidepoptext()"><IMG src="images/shortcuts.gif" width="22" align="middle" border="0"/></A>&#160;
-      <A title="Search" href="javascript://" onClick="hidepoptext1()"><IMG src="images/search.gif" width="22" align="middle" border="0"/></A>&#160;
-      <A title="Filter" href="javascript://" onClick="hidepoptext2()"><IMG src="images/filter.gif" width="22" align="middle" border="0"/></A>
+    <tr valign="top"><td valign="top">
+      <img src="icons/icon.gif" width="16"/>
+      <A title="Shortcuts" href="javascript://" onClick="hidepoptext()" ><IMG src="images/shortcuts.gif" width="22" align="middle" border="0"/></A>&#160;
+      <A title="Search"    href="javascript://" onClick="hidepoptext1()"><IMG src="images/search.gif" width="22" align="middle" border="0"/></A>&#160;
+      <A title="Filter"    href="javascript://" onClick="hidepoptext2()"><IMG src="images/filter.gif" width="22" align="middle" border="0"/></A>
       
       <span class="xs"><language/></span><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
       <pdaToPc image="images/pda.gif"/><changePassword/><userLogOff html="user-login.html"/></td>
