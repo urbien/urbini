@@ -238,7 +238,7 @@
                         <td><span class="xs">Operations available for user <span id="userOpsPanelUserName" class="xs"></span>:&nbsp;</span></td>
 				<td><a style="cursor:pointer;"><img style="display:none" id="userInfoDisplay" src="images/info.gif" border="0" style="cursor:pointer;" alt="user info" title="user info" onclick="showUserInfWindow();"></a></td>
 				<td><a style="cursor:pointer;"><img style="display:none" id="sendPrivMessageDisplay" src="images/sendPrivateMessage.gif" border="0" style="cursor:pointer;" height="18" alt="send private messages to user" title="send private messages to user" onclick="privateMessageIconClick()"><input type="hidden" id="sendPrivateMessagesToUser"><input type="hidden" id="sendPrivateMessagesToUserRealName"></a></td>
-				<td><a style="cursor:pointer;"><img style="display:none" id="inviteToPrivChatDisplay" src="images/inviteToPrivateChat.gif" border="0" style="cursor:pointer;" height="18" alt="invite user to private chat room" title="invite user to private chat room"></a></td>
+				<td><a style="cursor:pointer;"><img style="display:none" id="inviteToPrivChatDisplay" src="images/inviteToPrivateChat.gif" border="0" style="cursor:pointer;" height="18" alt="invite user to this chat room" title="invite user to this chat room"></a></td>
 				<td><a style="cursor:pointer;"><img style="display:none" id="inviteToChatRoomDisplay" src="images/Invited.gif" border="0" style="cursor:pointer;" alt="invite user to this chat room" title="invite user to this chat room" width="18" height="18" onclick="inviteToChatRoomIconClick()"></a></td>
 				<td><a style="cursor:pointer;"><img style="display:none" id="highlightDisplay" src="images/highlight.gif" border="0" style="cursor:pointer;" alt="highlight messages of the user" title="highlight messages of the user" width="16" height="16" align="absmiddle" onclick="highlightMessagesIconClick()"></a></td>
                       </tr></table>
@@ -329,14 +329,14 @@
     <script language="JavaScript">
       setTimeout("initFrames()", 100);
       function initFrames() {
-        var threadDiv = document.getElementById('thread');
-        threadDiv.src='chatRoom?frame=thread&room=&[encodedRoom];';
         var postDiv = document.getElementById('post');
         postDiv.src='chatRoom?frame=post&room=&[encodedRoom];'
         var contentDiv = document.getElementById('chatContents');
         contentDiv.src='chatRoom?frame=content&room=&[encodedRoom];'
         var userDiv = document.getElementById('userList');
         userDiv.src='chatRoom?frame=userList&room=&[encodedRoom];'
+        var threadDiv = document.getElementById('thread');
+        threadDiv.src='chatRoom?frame=thread&room=&[encodedRoom];';
       }
     </script>
 
