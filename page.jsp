@@ -15,7 +15,7 @@
 
   <br></br>
   <include name="include/commonFooter"/>
-</nonPda>
+</pda>
 
 <pda pda="T">
   <include name="commonHeader"/>
