@@ -14,12 +14,14 @@
 	<link rel="stylesheet" href="calendar/calendar.css"/>
 </head>
 <div nonPda="T">
-  <table width="100%" border="0">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
     <td width="80%" valign="top"><resourceTypeLabel/></td>
     <td width="20%"><include name="include/commonHeader"/><div align="right"><font face="verdana, sans-serif, arial" color="darkBlue">powered by  <b>HudsonFog</b></font></div></td>
-  </tr></table>
+  </tr>
+</table>
 
+   <include name="searchText.jsp"/>
 
   <!--include name="include/commonHeader"/-->
   <table width="100%" border="0" cellspacing="0" cellpadding="0">

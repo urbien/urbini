@@ -19,7 +19,7 @@
           <menu toolbar="search" activate="onMouseOver"/>
           <menu toolbar="toolbar3" activate="onMouseOver"/>
           <print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span></td>
-        <td valign="bottom" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
+        <td valign="bottom" width="10%"><!--changePassword/><userLogOff html="user-login.html"/--></td>
       </tr>
 
       <tr valign="top">
@@ -42,7 +42,7 @@
           <horizontalFilter />
         </form>
       </td>
-      <td valign="top" align="left" bgcolor="eeeeee">
+      <td id="rightPanelPropertySheet" valign="top" align="left" bgcolor="eeeeee">
         <menu toolbar="filterLocal" type="onpage" title="false"/>
       </td>
       </tr>

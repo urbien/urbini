@@ -18,7 +18,7 @@
         <pdaToPc image="images/pda.gif"/>
         </span>
       </td>
-      <td valign="top" align="right" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
+      <td valign="top" align="right" width="10%"><!--changePassword/><userLogOff html="user-login.html"/--></td>
     </tr>
     <tr>
       <td valign="top">  

@@ -7,7 +7,7 @@
   <td valign="top" align="middle">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top">
-      <td valign="top" width="90%">
+      <td valign="top" width="90%" >
         <span class="xs">
         <menu toolbar="toolbar1" activate="onMouseOver"/>
         <menu toolbar="transport" activate="onMouseOver"/>
@@ -17,8 +17,7 @@
         <saveInExcel allow="owner" image="images/excel.gif"/>
         <pdaToPc image="images/pda.gif"/>
         </span>
-      </td>
-      <td valign="top" align="right" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
+      </td><td width="10%"></td>
     </tr>
     <tr><td valign="top">  
     <form action="list.html" name="siteResourceList">
