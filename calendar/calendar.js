@@ -146,6 +146,8 @@ var TC1 = 'aAdDFhHilmMsUYy',
     TC9;
 
 function calendar(TCA, TCB) {
+  this.initialized = false;
+
   var TCC = this.TCC = A_CALENDARS.length;
 
   A_CALENDARS[this.TCC] = this;
@@ -283,7 +285,7 @@ function calendar(TCA, TCB) {
 
       if (this.TC0A & 4)
         document.write(
-            '<a href="javascript:A_CALENDARS[' + this.TCC + '].showcal();" ><img ' + this.TCO('caliconshow') + ' name="'
+            '<a href="javascript:A_CALENDARS[' + this.TCC + '].create(); A_CALENDARS[' + this.TCC + '].showcal();" ><img ' + this.TCO('caliconshow') + ' name="'
                 + this.TCI + '"      id="' + this.TCI + '"></a>');
       else if (this.TC0A & 8)
         document.write('<input type="button"  ' + this.TCO('calbutton') + ' name="' + this.TCI + '" id="' + this.TCI
@@ -318,6 +320,7 @@ function calendar(TCA, TCB) {
     document.write('</table>');
 
   this.create = TC0B;
+  this.create1 = create1;
   this.TC0C = TC0D;
   this.TC0E = TC0F;
   this.TC0G = TC0H;
@@ -365,14 +368,11 @@ function TCN(TC0W, TC0X, TC0Y) {
   return (TC0Z.exec(TC0W) ? new Date(TC0X.valueOf() + new Number(TC0W * 864e5)) : this.TCc(TC0W))
 }
 
-function TC0B() {
+
+function create1() {
   if (!document.body || !document.body.innerHTML)
     return;
 
-  if (this.TC02 != 2)
-    this.TC04.setSeconds(0);
-
-  var signal = TC9.TC0b ? 'onclick' : 'onchange';
   var TC0c = new TC0d();
   TC0c.TC0e('<div id="caldiv',
             this.TCC,
@@ -380,7 +380,37 @@ function TC0B() {
             this.TCC,
             '" style=" position: absolute; left:12; top:12; width:170; height:170; visibility:hidden; z-index: ',
             this.TCC + 1,
-            '"><table ',
+            '"></div>');
+
+  if (TC9.TC0f) {
+    TC0c.TC0e('<iframe id="cal_iframe',
+              this.TCC,
+              '" src="',
+              'about:blank',
+              '"  name="cal_iframe',
+              this.TCC,
+              '" style="position: absolute; left:0; top:0; width:0; height:0; visibility:hidden; filter:alpha(opacity=0); z-index: ',
+              (this.TCC),
+              '"></iframe>')
+  }
+
+  document.write(TC0c.TC0g());
+}
+
+function TC0B() {
+  var calRef = document.getElementById('caldiv' + this.TCC);
+
+  if (!document.body || !document.body.innerHTML || this.initialized)
+    return;
+
+  this.initialized = true;
+
+  if (this.TC02 != 2)
+    this.TC04.setSeconds(0);
+
+  var signal = TC9.TC0b ? 'onclick' : 'onchange';
+  var TC0c = new TC0d();
+  TC0c.TC0e('<table ',
             this.TCO('outertable'),
             '><tr><td><table',
             this.TCO('navtable'),
@@ -506,21 +536,10 @@ function TC0B() {
     TC0c.TC0e('</tr></table></td></tr>')
   }
 
-  TC0c.TC0e('</table></div>');
+  TC0c.TC0e('</table>');
 
-  if (TC9.TC0f) {
-    TC0c.TC0e('<iframe id="cal_iframe',
-              this.TCC,
-              '" src="',
-              'about:blank',
-              '"  name="cal_iframe',
-              this.TCC,
-              '" style="position: absolute; left:0; top:0; width:0; height:0; visibility:hidden; filter:alpha(opacity=0); z-index: ',
-              (this.TCC),
-              '"></iframe>')
-  }
+  calRef.innerHTML = TC0c.TC0g();
 
-  document.write(TC0c.TC0g());
   this.TC0h = this.TCE('cal_mon' + this.TCC);
   this.TC0i = this.TCE('cal_year' + this.TCC);
   this.TC0j = this.TCE('cal_grid' + this.TCC);
@@ -1422,6 +1441,8 @@ function TC0S() {
 
     if (this.TCA.replace) {
       for (i = 0; i < A_CALENDARS.length; i++) {
+        if (A_CALENDARS[i].initialized == false)
+          continue;
         if (i != this.TCC) {
           A_CALENDARS[i].TC0k.style.visibility = 'hidden';
 
