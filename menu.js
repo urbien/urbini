@@ -56,9 +56,10 @@ function menuOpenClose(divName, imgName) {
 			poptext.left = left;
 			poptext.top  = top;
 		}
-                DivSetVisible(true, divName);
-                poptext.visibility = VISIBLE; // finally make div visible
-                currentPopupRow = firstRow(divRef);
+    DivSetVisible(true, divName);
+    poptext.visibility = VISIBLE; // finally make div visible
+    deselectRow(currentPopupRow);
+    currentPopupRow = firstRow(divRef);
 	} 
 	else {
 		//poptext.display = "none";
@@ -507,6 +508,7 @@ function loadPopup() {
 
 function interceptPopupEvents(div) {
   var addToTableName = "";
+
   if (originalProp.indexOf("_class") != -1) {
     var field = propName + "_class";
     if (document.forms[currentFormName].elements[field].value == "")
@@ -725,18 +727,21 @@ function popupRowOnClick(e) {
     var val = items[1].innerHTML;
     var idx = val.lastIndexOf(">");
     if (tr.id == '$clear') {
-      chosenTextField.value = '';
-      formField.value = '';
+      chosenTextField.value = getFormFieldInitialValue(chosenTextField);
+      formField.value =  getFormFieldInitialValue(formField);
       if (formFieldVerified) 
         formFieldVerified.value = 'n';
       var iclass = prop + "_class";
       var formFieldClass = form.elements[iclass];
       if (formFieldClass)
-        formFieldClass.value = '';
+        formFieldClass.value = getFormFieldInitialValue(formClassField);
       openedPopups[currentDiv.id] = null;
       var imgId  = prop + "_class_img";
-      document.getElementById(imgId).src = "icons/blank.gif";
-      document.getElementById(imgId).title = "";
+      var img = document.getElementById(imgId);
+      if (img) {
+        document.getElementById(imgId).src = "icons/blank.gif";
+        document.getElementById(imgId).title = "";
+      }  
     }
     else  {
       chosenTextField.value = val.substring(idx + 1);
@@ -752,7 +757,7 @@ function popupRowOnClick(e) {
     
     var imgId  = prop + "_class_img";
     if (img) {
-      document.getElementById(imgId).src = img.src;
+      document.getElementById(imgId).src   = img.src;
       document.getElementById(imgId).title = img.title;
     }
     formFieldClass.value = tr.id; // property value corresponding to a listitem
@@ -989,42 +994,42 @@ function popupRowOnKeyPress(e) {
 
   // down arrow
   if (characterCode == 40) {
-	  var tds = tr.getElementsByTagName("td");  
-	  for (i=0; i<tds.length; i++) {
-	    var elem = tds[i];
-	    elem.style.backgroundColor = LightMenuItem;
-	  } 
-	
-	  var nextTr = nextRow(tr);
+    deselectRow(currentPopupRow);
+    var nextTr = nextRow(tr);
 	  currentPopupRow = nextTr;
-
-	  tds = nextTr.getElementsByTagName("td");  
-	  for (i=0; i<tds.length; i++) {
-	    var elem = tds[i];
-	    elem.style.backgroundColor = DarkMenuItem;
-	  } 
+    selectRow(currentPopupRow);
 	} 
 	// up arrow
 	else if (characterCode == 38) {
-	  var tds = tr.getElementsByTagName("td");  
-	  for (i=0; i<tds.length; i++) {
-	    var elem = tds[i];
-	    elem.style.backgroundColor = LightMenuItem;
-	  } 
-	
+	  deselectRow(currentPopupRow);
 	  prevTr = prevRow(tr);
 	  currentPopupRow = prevTr;
-	  
-	  tds = prevTr.getElementsByTagName("td");  
-	  for (i=0; i<tds.length; i++) {
-	    var elem = tds[i];
-	    elem.style.backgroundColor = DarkMenuItem;
-	  } 	
+    selectRow(currentPopupRow);
 	}
 	e.cancelBubble = true;
 	e.returnValue = false;
 	if (e.preventDefault) e.preventDefault();
   return false;
+}
+
+function deselectRow(tr) {
+  if (!tr)
+    return;
+  var tds = tr.getElementsByTagName("td");  
+  for (i=0; i<tds.length; i++) {
+    var elem = tds[i];
+    elem.style.backgroundColor = LightMenuItem;
+  } 
+}
+
+function selectRow(tr) {
+  if (!tr)
+    return;
+  var tds = tr.getElementsByTagName("td");  
+  for (i=0; i<tds.length; i++) {
+    var elem = tds[i];
+    elem.style.backgroundColor = DarkMenuItem;
+  } 
 }
 
 function nextRow(tr) {
@@ -1045,7 +1050,7 @@ function nextRow(tr) {
 function prevRow(tr) {
   var prev = tr.previousSibling;
 
-  if (prev == null || prev.id == '$classLabel') {
+  if (prev == null || isFirstRow(prev)) {
     var table = tr.parentNode;
     var trs = table.getElementsByTagName("tr");  
     return trs[trs.length - 1];
@@ -1057,12 +1062,19 @@ function prevRow(tr) {
     return prevRow(prev);    	    
 }	  
 
+function isFirstRow(tr) {
+  if (tr && tr.id == '$classLabel')
+    return true;
+  else
+    return false;  
+}
+
 function firstRow(div) {
   var tables = div.getElementsByTagName("table");  
   var trs;
   for (i=0; i<tables.length; i++) {
     trs = tables[i].getElementsByTagName("tr");
-    if (trs && trs[0] == '$classLabel')
+    if (trs && isFirstRow(trs[0]))
       break; 
   }
   if (!trs)
@@ -1123,24 +1135,15 @@ function popupRowOnMouseOver(e) {
   tr = getTrNode(target);
   if (!tr)
     return;
+  if (isFirstRow(tr))
+    return;
 
-  // clear current row
-  if (currentPopupRow) {
-	  var tds = currentPopupRow.getElementsByTagName("td");
-	  for (i=0; i<tds.length; i++) {
-	    var elem = tds[i];
-	    elem.style.backgroundColor = LightMenuItem;
-	  }
-	}  
+  if (currentPopupRow)
+    deselectRow(currentPopupRow);
 
   // darken new current row
   currentPopupRow = tr;
-  var tds = tr.getElementsByTagName("td");
-  for (i=0; i<tds.length; i++) {
-    var elem = tds[i];
-    elem.style.backgroundColor = DarkMenuItem;
-  }
- 
+  selectRow(currentPopupRow);
   return true;
 }
 
