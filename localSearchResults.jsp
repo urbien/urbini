@@ -166,7 +166,6 @@
             <option>21</option>
             <option>22</option>
             <option>23</option>
-            <option>24</option>
           </select>
         </td>
         <td>:</td>
@@ -231,7 +230,6 @@
             <option>57</option>
             <option>58</option>
             <option>59</option>
-            <option>60</option>
           </select>
         </td></tr></table>
       </td></tr></table>
