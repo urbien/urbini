@@ -300,8 +300,8 @@
      replaceTooltips0(elements);
      elements = document.getElementsByTagName('span');
      replaceTooltips0(elements);
-     elements = document.getElementsByTagName('a');
-     replaceTooltips0(elements);
+     //elements = document.getElementsByTagName('a');
+     //replaceTooltips0(elements);
      elements = document.getElementsByTagName('input');
      replaceTooltips0(elements);
      elements = document.getElementsByTagName('tt');
@@ -343,9 +343,23 @@
          tooltipText = tooltip.value;
          if (tooltipText == '')
            return true;
+         // merge tooltip on IMG with tooltip on its parent A tag 
+         var parentA = target.parentNode;
+         if (parentA && parentA.tagName.toUpperCase() == 'A') {
+           var linkTooltip = parentA.attributes['title'];
+           if (linkTooltip) {
+             var linkTooltipText = linkTooltip.value;
+             if (linkTooltipText && linkTooltipText != '') {
+               tooltipText += '<hr><i><small>' + linkTooltipText + '</small></i>';    
+             }
+             parentA.setAttribute('title', null); // remove 'title' so browser does not show its standard tooltip
+             parentA.removeAttribute('title');    // (do both - remove and set to null - to work in all browsers)
+           }
+           
+         }
          target.setAttribute('tooltip', tooltipText);
-         target.setAttribute('title', null);
-         target.removeAttribute('title');
+         target.setAttribute('title', null);      // remove 'title' so browser does not show its standard tooltip
+         target.removeAttribute('title');         // (do both - remove and set to null - to work in all browsers) 
          var t = target.attributes['title'];
          target.title = '';
        }
