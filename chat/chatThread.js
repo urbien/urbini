@@ -37,11 +37,11 @@ var timeDelta = 0; // difference between server and client time
 		if(messageArray[0].indexOf('!-invt')==0) 
 		{
 			if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured')window.focus();
-    			else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New mes came to your chat room');
+    			else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New mesage in chat room');
     				else if(notificationMode==2 && parent.isWindowInFocus=='blured')
 					{
 						newwindow=window.open('','newMes','height=100,width=350'); 
-						newwindow.document.writeln("new mes came to the chat room!<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
+						newwindow.document.writeln("New mesage in chat room<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
 					};
            if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
 		   try 
@@ -98,11 +98,11 @@ var timeDelta = 0; // difference between server and client time
 		}
 		
 		if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured')window.focus();
-    		else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New mes came to your chat room');
+    		else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New mesage in chat room');
     			else if(notificationMode==2 && parent.isWindowInFocus=='blured')
 				{
 					newwindow=window.open('','newMes','height=100,width=350'); 
-					newwindow.document.writeln("new mes came to the chat room!<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
+					newwindow.document.writeln("New mesage in chat room<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
 				};
   		
 		if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
