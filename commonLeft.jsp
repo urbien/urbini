@@ -20,20 +20,13 @@
   <td><br/><a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/paper/delivery/ReelStockLevel"><b><text text="Inventory"/></b></a></td>
 </tr>
 
+<tr rdfType="http://www.hudsonfog.com/voc/views/delivery/ReelStock">
+  <td>&#160;&#160;<a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/delivery/ReelStock"><text text="per order"/></a></td>
+</tr>
 
 <tr rdfType="http://www.hudsonfog.com/voc/paper/delivery/ShipmentDamage">
   <td><a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/paper/delivery/ShipmentDamage"><b><text text="Damages"/></b></a></td>
 </tr>
-
-<!--tr><br/>
-  <td><br/><a href="localSearchResults.html?action=explore&amp;type=http://www.hudsonfog.com/voc/paper/work/ProductionPerOrder"><text text="Production"/></a></td>
-</tr-->
-
-
-<!--tr>
-  <td><br/><nobr><b><font color="darkblue"><text text="TransportationUnits"/></font></b></nobr></td>
-</tr-->
-
 
 <tr>
   <td><br/><nobr><b><font color="darkblue"><text text="Containers"/></font></b></nobr></td>
