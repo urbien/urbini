@@ -1,6 +1,7 @@
 <div>
 <div nonPda="T">
 
+<font color="red"><b><errorMessage /></b></font>
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
@@ -27,7 +28,6 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
   <td width="110%" colspan="2">
-    <font color="red"><b><errorMessage /></b></font>
     <div align="left"><backLink /></div>
     <taskTreeControl/>
     <siteResourceList />

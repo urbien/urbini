@@ -392,7 +392,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   var idx = -1;
   
   var divId;
-  if (currentFormName = "siteResourceList") {
+  if (currentFormName == "siteResourceList") {
     idx = propName1.indexOf(".$.");
     var idx1 = propName1.indexOf(".", idx + 3);
     propName = propName1.substring(0, idx1);
@@ -444,7 +444,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   var url;
 
   url = "smartPopup?pUri=" + encodeURIComponent(propName);
-  if (currentFormName = "siteResourceList") {
+  if (currentFormName == "siteResourceList") {
     url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri);
   }
   var formAction = form.elements['action'].value;
