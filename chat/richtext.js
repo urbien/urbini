@@ -105,6 +105,14 @@ function lowerButton(e) {
 	}
 }
 
+function insertSmile(rte, smile)
+{
+	var oRTE = frames[rte];
+	oRTE.focus();
+    oRTE.document.execCommand('InsertImage', false, smile);
+	oRTE.focus();
+}
+
 function writeRTE(rte, html, width, height, buttons, readOnly) {
 	if (readOnly) buttons = false;
 
@@ -150,7 +158,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 		document.writeln('				<option value="6">6</option>');
 		document.writeln('				<option value="7">7</option>');
 		document.writeln('			</select>');
-		document.writeln('			<select style="width:95px;vertical-align : top;" unselectable="on" id="smile_' + rte + '" onchange="frames.' + rte + '.document.body.innerHTML+=\'<img width=17 height=17 src=\'+this.value+\'>\';this.selectedIndex = 0;">');
+		document.writeln('			<select style="width:95px;vertical-align : top;" unselectable="on" id="smile_' + rte + '" onchange="insertSmile(\''+rte+'\',this.value);this.selectedIndex = 0;">'); //frames.' + rte + '.document.body.innerHTML+=\'<img width=17 height=17 src=\'+this.value+\'>\';this.selectedIndex = 0;
 		document.writeln('				<option value="Smile" selected>[Smile]</option>');
 		document.writeln('				<option value="images/smileys/smiley.gif">smiley&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- :)</option>');
 		document.writeln('				<option value="images/smileys/wink.gif">wink&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - ;)</option>');
