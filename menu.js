@@ -639,7 +639,6 @@ function popupRowOnClick(e) {
       if (formFieldClass)
         formFieldClass.value = '';
       openedPopups[currentDiv.id] = null;
-//      clearThisPopup(currentDiv);
     }
     else  {
       chosenTextField.value = val.substring(idx + 1);
@@ -651,6 +650,10 @@ function popupRowOnClick(e) {
     var iclass = prop + "_class";
     var formFieldClass = form.elements[iclass];
     formFieldClass.value = tr.id; // property value corresponding to a listitem
+    openedPopups[currentDiv.id] = null;
+    menuClose2(currentDiv)
+    onClickPopup1(currentImgId, form);
+    return true;
   }
   var divId = prop + "_" + formName;
   var div = document.getElementById(divId);
@@ -769,8 +772,9 @@ function autoCompleteOnKeyDown(e) {
     }  
     else if (e.keyCode == 9)                 // tab
       return autoComplete(e);
+    else  
+      return true;   
   }
-  return false;
 }
 
 function autoComplete(e) {
@@ -781,7 +785,6 @@ function autoComplete(e) {
 
   var characterCode = getKeyCode(e); // code typed by the user
   var target;
-
   target = getTargetElement(e);
   if (!target)
     return;
@@ -822,21 +825,22 @@ function autoComplete(e) {
   var fieldVerified = form[propName1 + '_verified'];
 
   if (characterCode == 13) { // enter
-    if (!fieldVerified) { // proceed to show popup on Enter only in data entry mode (indicated by presence of _verified field)
+    if (!fieldVerified) { // show popup on Enter only in data entry mode (indicated by the presence of _verified field)
       return true;
     }
   }
   keyPressedImgId     = propName + "_" + formName + "_filter";
   keyPressedElement   = target;
   keysPressedSnapshot = target.value + characterCode;
-
-  if (characterCode == 13) {
+  
+  if (characterCode == 13) { // open popup (or close it on second Enter)
     onClickPopup1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
-    return false;            // tell browser not to do submit on 'enter'
+    return false;            // tell browser not to do submit form on 'Enter'
   }  
   else {
     if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
     setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
+    clearOtherPopups(currentDiv);
     return true;
   }  
 }
