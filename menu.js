@@ -350,9 +350,15 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   if (currentFormName == "siteResourceList") {
     idx = propName1.indexOf(".$.");
     var idx1 = propName1.indexOf(".", idx + 3);
-    propName = propName1.substring(0, idx1);
+    if (idx1 == -1)
+      propName = propName1;
+    else
+      propName = propName1.substring(0, idx1);
     divId = propName + "_" + currentFormName;
-    propName = propName.substring(idx + 3, idx1);
+    if (idx1 == -1)
+      propName = propName.substring(idx + 3);
+    else
+      propName = propName.substring(idx + 3, idx1);
     currentResourceUri = propName1.substring(0, idx);
   }
   else {
@@ -402,7 +408,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
 
   url = "smartPopup?pUri=" + encodeURIComponent(propName);
   if (currentFormName == "siteResourceList") {
-    url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri);
+    url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.type.value;
   }
   var formAction = form.elements['-$action'].value;
   var allFields = true;
@@ -412,10 +418,12 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   }
   else if (currentFormName == "horizontalFilter")
     allFields = true;
-  var params = getFormFilters(form, allFields);
-  if (params)
-    url = url + params;
 
+  if (currentFormName != "siteResourceList") {
+     var params = getFormFilters(form, allFields);
+    if (params)
+      url = url + params;
+  }
   url += "&$form=" + currentFormName;
   url += "&" + propName + "_filter=y"; 
   if (!enterFlag)  
@@ -446,14 +454,20 @@ function loadPopup() {
   }  
 
   var popupFrame = frames['popupFrame'];
+  var body = popupFrame.document.getElementById('popupFrameBody');
+  if (!body) {
+    alert("Warning: server did not return listbox data - check connection to server");
+    return;
+  }  
+  var redirect = popupFrame.document.getElementById('$redirect');
+  if (redirect) {
+    document.location.href = redirect.href;
+    return;
+  }
   if (currentDiv) {
-    var body = popupFrame.document.getElementById('popupFrameBody');
-    if (!body) {
-      alert("Warning: server did not return listbox data - check connection to server");
-      return;
-    }
     currentDiv.innerHTML = body.innerHTML;
   }
+   
   var addToTableName = "";  
   if (originalProp.indexOf("_class") != -1) {
     var field = propName + "_class";
