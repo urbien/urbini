@@ -1,6 +1,6 @@
 <HTML>
 <include name="include/commonHeader.html" />
-<include name="script.html" />
+<!--include name="script.html" /-->
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
@@ -11,12 +11,24 @@
 
 <br />
 
-<include name="login.html" />
-  <!--userLogin html="new-user.html" title="I am not a member, register me please" /-->
-
 <form name="loginform" action="j_security_check" method="POST">
-  <input type="hidden" name="j_username" value="" />
-  <input type="hidden" name="j_password" value="" />
+  
+<table border="0" cellpadding="0" cellspacing="0" width="256" cols="2">
+  <tr>
+    <td align="RIGHT">User ID:<img src="images/spacer.gif" border="0" width="5"/></td>
+    <td><input type="Text" name="j_username" size="10" maxlength="20"/></td>
+  </tr>
+  <tr><td align="RIGHT">  
+    Password:<img src="images/spacer.gif" border="0" width="5"/></td>
+    <td><input type="Password" name="j_password"  size="10" maxlength="10"/></td>
+  </tr>
+  <tr>
+    <td align="CENTER" colspan="2">
+      <br />
+      <input type="Submit" value=" Log On "/>
+    </td>
+  </tr>
+</table>
   <returnUri />
 </form>
 
