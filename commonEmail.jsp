@@ -5,10 +5,10 @@
 <div style="border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7">
 <table border="0" cellpadding="0" cellspacing="0">
 <tr>
-  <td unselectable="on" bgcolor="#0055e6" class="cswmItem" style="padding-left:3" colspan="2">
+  <td unselectable="on" bgcolor="#0055e6" class="cswmItem" style="padding-left:3">
     <b><font color="FFFFFF">E-mail</font></b>
   </td>
-  <td unselectable="on" bgcolor="#0055e6" style="padding-right:3; padding-top:3; padding-bottom:3">
+  <td unselectable="on" bgcolor="#0055e6" style="padding-right:3; padding-top:3; padding-bottom:3" align="right">
     <A title="Close" onclick="menuOpenClose('textdiv3')" 
        href="javascript://"><IMG alt="Click here to close" 
        src="images/button_popup_close.gif" 
@@ -17,8 +17,7 @@
   </td>
 </tr>
 <tr>
-  <td bgcolor="#DBD8D1" width="15" class="cswmItem"></td>
-  <td bgcolor="#FFFFFF">
+  <td bgcolor="#FFFFFF" colspan="2">
 
   <form name="emailForm" action="page2email" method="GET">
     <table cellpadding="5">
@@ -28,18 +27,18 @@
       <tr> 
         <td> <table border="0" cellspacing="2" cellpadding="3">
             <tr> 
-              <td bgcolor="#e3e2df" class="cswmItem"><b>Subject:</b></td>
-              <td bgcolor="#e3e2df"><input name="subject"></input>
+              <td bgcolor="#e3e2df" class="cswmItemSubtitle">Subject:</td>
+              <td bgcolor="#e3e2df"><input name="subject" class="formMenuInput"></input>
                 </td>
             </tr>
             <tr> 
-              <td bgcolor="#e3e2df" class="cswmItem"><b>E-mail:</b></td>
-              <td bgcolor="#e3e2df"><input name="to"></input>
+              <td bgcolor="#e3e2df" class="cswmItemSubtitle">E-mail:</td>
+              <td bgcolor="#e3e2df"><input name="to" class="formMenuInput"></input>
                 </td>
             </tr>
             <tr> 
-              <td bgcolor="#e3e2df" class="cswmItem"><b>Format:</b></td>
-              <td bgcolor="#e3e2df"> <select name="format" onchange="onRecChange()">
+              <td bgcolor="#e3e2df" class="cswmItemSubtitle">Format:</td>
+              <td bgcolor="#e3e2df"> <select name="format" onchange="onRecChange()" class="formMenuInput">
                   <option value="html">HTML</option>
                   <option value="xls">Excel</option>
                 </select> </td>
@@ -47,12 +46,12 @@
           </table></td>
       </tr>
       <tr>
-        <td><input type="submit" value="Send"></input>
+        <td><input type="submit" value="Send" class="cswmItemSubtitle"></input>
         </td>
       </tr>
     </table>
   </form>
-</td><td bgcolor="#FFFFFF"></td></tr>
+</td></tr>
 </table>
 </div></div>
 </td></tr>

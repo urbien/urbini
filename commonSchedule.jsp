@@ -5,10 +5,10 @@
 <div style="border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7">
 <table border="0" cellpadding="0" cellspacing="0">
 <tr>
-  <td unselectable="on" bgcolor="#0055e6" class="cswmItem" style="padding-left:3" colspan="2">
+  <td unselectable="on" bgcolor="#0055e6" class="cswmItem" style="padding-left:3">
     <b><font color="FFFFFF">Schedule</font></b>
   </td>
-  <td unselectable="on" bgcolor="#0055e6" style="padding-right:3; padding-top:3; padding-bottom:3">
+  <td unselectable="on" bgcolor="#0055e6" style="padding-right:3; padding-top:3; padding-bottom:3" align="right">
     <A title="Close" onclick="menuOpenClose('textdiv4')" 
        href="javascript://"><IMG alt="Click here to close" 
        src="images/button_popup_close.gif" 
@@ -17,8 +17,7 @@
   </td>
 </tr>
 <tr>
-  <td bgcolor="#DBD8D1" width="15" class="cswmItem"></td>
-  <td bgcolor="#FFFFFF">
+  <td bgcolor="#FFFFFF" colspan="2">
 
 <form name="scheduleForm" action="page2schedule" method="GET">
   <table cellpadding="5">
@@ -27,28 +26,28 @@
     </tr>
     <tr><td>
     <table border="0" cellpadding="3" cellspacing="2">
-      <tr><td bgcolor="#e3e2df" class="cswmItem"><b>Subject:</b></td><td bgcolor="#e3e2df"><input name="name"/></td></tr>
+      <tr><td bgcolor="#e3e2df" class="cswmItemSubtitle">Subject:</td><td bgcolor="#e3e2df"><input name="name" class="formMenuInput"/></td></tr>
 		<tr> 
-		  <td bgcolor="#e3e2df" class="cswmItem"><b>Format:</b></td>
-		  <td bgcolor="#e3e2df"> <select name="format" onchange="onRecChange()">
+		  <td bgcolor="#e3e2df" class="cswmItemSubtitle">Format:</td>
+		  <td bgcolor="#e3e2df"> <select name="format" onchange="onRecChange()" class="formMenuInput">
 			  <option value="html">HTML</option>
 			  <option value="xls">Excel</option>
 			</select></td>
 		</tr>
-      <tr><td bgcolor="#e3e2df" class="cswmItem"><b>Repeat:</b></td>
+      <tr><td bgcolor="#e3e2df" class="cswmItemSubtitle">Repeat:</td>
 	  <td bgcolor="#e3e2df">
-        <select name="rec" onchange="onRecChange()">
+        <select name="rec" onchange="onRecChange()" class="formMenuInput">
           <option value="day">Daily</option>
           <option value="week">Weekly</option>
           <option value="month">Monthly</option>
         </select>
       </td>
       </tr>
-      <tr><td bgcolor="#e3e2df" class="cswmItem"><div id="titleDiv"></div></td><td bgcolor="#e3e2df"><div id="valueDiv"></div></td></tr>
-      <tr><td bgcolor="#e3e2df" class="cswmItem"><b>Time:</b></td>
+      <tr><td bgcolor="#e3e2df" class="cswmItemSubtitle"><div id="titleDiv"></div></td><td bgcolor="#e3e2df"><div id="valueDiv"></div></td></tr>
+      <tr><td bgcolor="#e3e2df" class="cswmItemSubtitle">Time:</td>
       <td bgcolor="#e3e2df">
         <table><tr><td>
-          <select name="hour">
+          <select name="hour" class="formMenuInput">
             <option>00</option>
             <option>01</option>
             <option>02</option>
@@ -77,7 +76,7 @@
         </td>
         <td>:</td>
         <td>
-          <select name="min">
+          <select name="min" class="formMenuInput">
             <option>00</option>
             <option>01</option>
             <option>02</option>
@@ -141,10 +140,10 @@
         </td></tr></table>
       </td></tr></table>
     </td></tr>
-    <tr><td><input type="submit" value="Schedule"/></td></tr>
+    <tr><td><input type="submit" value="Schedule" class="cswmItemSubtitle"/></td></tr>
   </table>
 </form>
-</td><td bgcolor="#FFFFFF"></td></tr>
+</td></tr>
 </table>
 </div></div>
 </td></tr>

@@ -100,10 +100,10 @@
 <div style="border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7">
 <table border="0" cellpadding="0" cellspacing="0">
 <tr>
-  <td unselectable="on" bgcolor="#0055e6" class="cswmItem" style="padding-left:3" colspan="2">
+  <td unselectable="on" bgcolor="#0055e6" class="cswmItem" style="padding-left:3">
     <b><font color="FFFFFF">Filter</font></b>
   </td>
-  <td unselectable="on" bgcolor="#0055e6" style="padding-right:3; padding-top:3; padding-bottom:3">
+  <td unselectable="on" bgcolor="#0055e6" style="padding-right:3; padding-top:3; padding-bottom:3" align="right">
     <A title="Close" onclick="menuOpenClose('textdiv2')" 
        href="javascript://"><IMG alt="Click here to close" 
        src="images/button_popup_close.gif" 
@@ -112,8 +112,7 @@
   </td>
 </tr>
 <tr>  
-  <td bgcolor="#DBD8D1" width="15" class="cswmItem"></td>
-  <td bgcolor="#FFFFFF">
+  <td bgcolor="#FFFFFF" colspan="2">
       <table width="100%" cellspacing="0" cellpadding="5" border="0">
         <tbody>
           <tr>
@@ -138,7 +137,7 @@
     </form>
 </td></tr></table>
 </td></tr></table>
-</td><td bgcolor="#FFFFFF"></td></tr>
+</td></tr>
 </table>
 </div></div>
 </td></tr>

@@ -34,8 +34,8 @@ function menuOpenClose(divName, imgName) {
 
 function onRecChange() {
   if (document.getElementById("scheduleForm").rec.value == 'week') {
-    document.getElementById("titleDiv").innerHTML = '<b>Day:</b>';
-    document.getElementById("valueDiv").innerHTML = '<select name="weekDay">' +
+    document.getElementById("titleDiv").innerHTML = 'Day:';
+    document.getElementById("valueDiv").innerHTML = '<select name="weekDay" class="formMenuInput">' +
                          '<option value="Mon">Monday</option>' +
                          '<option value="Tue">Tuesday</option>' +
                          '<option value="Wed">Wednesday</option>' +
@@ -45,8 +45,8 @@ function onRecChange() {
                          '<option value="Sun">Sunday</option>' +
                          '</select>';
   } else if (document.getElementById("scheduleForm").rec.value == 'month') {
-    document.getElementById("titleDiv").innerHTML = '<b>Day:</b>';
-    document.getElementById("valueDiv").innerHTML = '<select name="day">' +
+    document.getElementById("titleDiv").innerHTML = 'Day:';
+    document.getElementById("valueDiv").innerHTML = '<select name="day" class="formMenuInput">' +
                          '<option>01</option>' +
                          '<option>02</option>' +
                          '<option>03</option>' +
