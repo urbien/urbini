@@ -221,11 +221,13 @@ function hash(form, login_url) {
     // rudimentary check for a 4.x brower. should catch IE4+ and NS4.*
 
 // works only for IE 4+ and NS 6
+
     if (document.all || document.getElementById) {
       form.logonButton.disabled = true;
       form.logonButton.value = "Please wait";
-      document.all("logonButton").style.cursor = 'wait';
-    } // if
+      form.logonButton.style.cursor = 'wait';
+    } 
+
     var url;
     if (arguments.length > 1 && login_url != "") { // in case login_url is not passed in
       url = login_url;
