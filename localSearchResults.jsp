@@ -70,7 +70,8 @@
       <img src="icons/icon.gif" width="16"/>
       <A title="Shortcuts" href="javascript://" onClick="hidepoptext()" ><IMG src="images/shortcuts.gif" width="22" align="middle" border="0"/></A>&#160;
       <A title="Search"    href="javascript://" onClick="hidepoptext1()"><IMG src="images/search.gif" width="22" align="middle" border="0"/></A>&#160;
-      <A title="Filter"    href="javascript://" onClick="hidepoptext2()"><IMG src="images/filter.gif" width="22" align="middle" border="0"/></A>
+      <A title="Filter"    href="javascript://" onClick="hidepoptext2()"><IMG src="images/filter.gif" width="22" align="middle" border="0"/></A>&#160;
+      <A title="Email"    href="javascript://" onClick="hidepoptext3()"><IMG src="images/filter.gif" width="22" align="middle" border="0"/></A>&#160;
       
       <span class="xs"><language/></span><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
       <pdaToPc image="images/pda.gif"/><changePassword/><userLogOff html="user-login.html"/></td>
@@ -110,6 +111,17 @@
     </form>
 </td></tr></table>
 </div>
+
+<div id="textdiv3">
+<form name="emailForm" action="/page2email" method="GET">
+  <table border="1" cellpadding="3" cellspacing="0">
+    <tr><td>E-mail:</td><td><input name="to"></input></td></tr>
+    <tr><td>Subject:</td><td><input name="subject"></input></td></tr>
+    <tr><td colspan="2"><input type="submit" value="Send"></input></td></tr>
+  </table>
+</form>
+</div>
+
 </div>
 <table border="0" cellspacing="0" cellpadding="0">
   <tr><td><pieChart/></td></tr>
