@@ -53,7 +53,7 @@
             ch = Math.floor((screen.availHeight)/4);
           }
           var url = 'chatRoom?title=' + document.title + '&#38;referer=' + escape(window.location);
-          window.open(url, 'chat','width=568,height=325px,top='+ch+',left='+cw+', menubar=no, status=no, location=no, toolbar=no, scrollbars=no, resizable=no');
+          window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=no, location=no, toolbar=no, scrollbars=no, resizable=yes');
         }
       </script>
       <a href="javascript://" title="Chat Room" onclick="openChatWindow();"><img src="icons/webchat.gif" alt="Chat room for this page" border="0" width="16" height="16" align="middle"/></a>
