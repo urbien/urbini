@@ -539,7 +539,6 @@ function interceptPopupEvents(div) {
 function getFormFilters(form, allFields) {
   var p = "";
   var fields = form.elements;
-  var formAction = form.action.value; // HACK
   
   for (i=0; i<fields.length; i++) {
     var field = fields[i];
