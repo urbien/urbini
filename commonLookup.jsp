@@ -18,11 +18,11 @@
               <text text="Reel #" /> 
                 <table>
                   <tr>
-                    <td><input type="text" size="7" name="http://www.hudsonfog.com/voc/views/delivery/SingleReelShipment/number" value="" class="text" /></td>
+                    <td><input type="text" size="7" name="http://www.hudsonfog.com/voc/views/delivery/SingleReelShipmentDeatils/number" value="" class="text" /></td>
                     <td valign="middle"><input type="image" border="0" width="28" src="images/gogif.gif" name="submit" /> </td>
                   </tr>
                 </table>
-                <input type="hidden" name="action" value="searchParallel" /> <input type="hidden" name="type" value="http://www.hudsonfog.com/voc/views/delivery/SingleReelShipment" />
+                <input type="hidden" name="action" value="searchParallel" /> <input type="hidden" name="type" value="http://www.hudsonfog.com/voc/views/delivery/SingleReelShipmentDetails" />
               </form>
               <form name="container" action="remoteSearchResults.html">
               <text text="Container #" /> 
@@ -68,7 +68,7 @@
               <text text="BL #" /> 
                 <table>
                   <tr>
-                    <td><input type="text" size="7" name="http://www.hudsonfog.com/voc/model/delivery/BillOfLading/number" value="" class="text" /></td>
+                    <td><input type="text" size="7" name="http://www.hudsonfog.com/voc/views/delivery/BillOfLading2/number" value="" class="text" /></td>
                     <td valign="middle"><input type="image" border="0" width="28" src="images/gogif.gif" name="submit" /> </td>
                   </tr>
                 </table>
