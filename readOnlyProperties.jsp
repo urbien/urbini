@@ -85,10 +85,10 @@
       <table width="100%" cellpadding="3" cellspacing="0" border="0">
       <tr class="dark">
 <td width="50%">
-        <edit html="editProperties.html"/>
+        <!--edit html="editProperties.html"/>
         <delete/>
         <invite/> 
-        <reloadDocuments/>
+        <reloadDocuments/-->
 </td>
         <td valign="top" width="50%"><subscribe/></td>
       </tr>
