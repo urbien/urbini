@@ -18,17 +18,17 @@
     <td class="xl" colspan="2"><text text="sessionExpired"/><br/></td>
   </tr>
   <tr>
-    <td align="right">Fog ID:</td>
+    <td align="right"><text text="userId"/></td>
     <td><input type="text" name="j_username" size="15" /></td>
   </tr>
   <tr>
-    <td align="right">Password:</td>
+    <td align="right"><text text="password"/></td>
     <td><input type="password" name="j_password" size="15" />  </td>
   </tr>
 
   <tr>
     <td></td>
-    <td><userLogin html="new-user.html" title="I am not a member, register me please" /></td>
+    <td><userLogin html="new-user.html" title="registerMe" /></td>
   </tr>
   <tr>
     <td></td>

@@ -19,25 +19,25 @@
   <col width="50%"/>
   </colgroup>
   <tr>
-    <td align="RIGHT">User ID:<img src="images/spacer.gif" border="0" width="5"/></td>
+    <td align="RIGHT"><text text="userId"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><userId/></td>
   </tr>
   <tr><td align="RIGHT">  
-    Enter your old password:<img src="images/spacer.gif" border="0" width="5"/></td>
+    <text text="enterOldPassword"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><input type="Password" name="j_password"  size="10" maxlength="50"/></td>
   </tr>
   <tr><td align="RIGHT">  
-    Enter your new password:<img src="images/spacer.gif" border="0" width="5"/></td>
+    <text text="enterNewPassword"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><input type="Password" name="j_password_new"  size="10" maxlength="50"/></td>
   </tr>
   <tr><td align="RIGHT">  
-    Re-Enter your new password:<img src="images/spacer.gif" border="0" width="5"/></td>
+    <text text="reenterNewPassword"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><input type="Password" name="j_password_reenter"  size="10" maxlength="50"/></td>
   </tr>
   <tr>
     <td align="CENTER" colspan="2">
       <br />
-      <input type="Submit" value=" Submit changes "/>
+      <input type="Submit" value="submitChanges"/>
       <input type="hidden" name="j_password_change" value="x"/>
     </td>
   </tr>

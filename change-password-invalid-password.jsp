@@ -19,7 +19,7 @@
   </tr>
   
   <tr>
-    <td align="RIGHT">User ID:<img src="images/spacer.gif" border="0" width="5"/></td>
+    <td align="RIGHT"><text text="userId"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><userId/></td>
   </tr>
   <tr><td align="RIGHT">  

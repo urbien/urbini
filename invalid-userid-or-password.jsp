@@ -18,11 +18,11 @@
   </tr>
   <tr><td colspan="2"></td></tr>
   <tr>
-    <td width="1%">Fog ID:</td>
+    <td width="1%"><text text="userId"/></td>
     <td><input type="text" name="j_username" size="15" /></td>
   </tr>
   <tr>
-    <td>Password:</td>
+    <td><text text="password"/></td>
     <td><input type="password" name="j_password" size="15" />  </td>
   </tr>
 

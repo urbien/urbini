@@ -17,16 +17,16 @@
     <td class="xl" colspan="2"><text text="createUserFailed"/><td>
   </tr>
   <tr>
-    <td align="right">User ID:</td>
+    <td align="right"><text text="userId"/></td>
     <td><input type="text" name="j_username" size="15"/></td>
   </tr>
   <tr>
-    <td align="right">Password:</td>
+    <td align="right"><text text="password"/></td>
     <td><input type="password" name="j_password" size="15" />  </td>
   </tr>
 
   <tr>
-    <td align="right">Retype password:</td>
+    <td align="right"><text text="reenterPassword"/></td>
     <td><input type="password" name="j_password_reenter" size="15" /> </td>
   </tr>
 
