@@ -2,7 +2,6 @@
   <include name="commonHead.jsp" />  
   <body id="body" text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
 
-<getResource/>
   <div nonPda="T">
     <include name="include/commonHeader.jsp"/>
     <changePassword/><userLogOff html="user-login.html"/>

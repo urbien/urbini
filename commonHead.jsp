@@ -17,5 +17,6 @@
   <script src="gantt/dependencies.js"    language="JavaScript" type="text/javascript"></script>
   <script src="pngfix.js"                language="JavaScript" type="text/javascript"></script>
 
+  <getResource/>
   <siteTitle />
 </head>
