@@ -2,6 +2,7 @@
 <div nonPda="T">
 
 <font color="red"><b><errorMessage /></b></font>
+<hideBlock id="hideBlock">      
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
@@ -24,6 +25,7 @@
     </tr></table></td>
   </tr>
 </table>
+</hideBlock>
 <!--br/-->
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
@@ -33,18 +35,18 @@
     <siteResourceList />
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
+
+<hideBlock>      
     <div id="pane2">
-
-
-<br/>
-<table width="100%" cellpadding="0" border="0" cellspacing="0">
-<tr class="commentodd"><td>
-      <edit html="localSearchResults.html"/>
-      <delete/> 
-      <reloadDocuments/>
-      <addNewResource html="mkResource.html"/> 
-</td></tr>
-</table>
+    <br/>
+    <table width="100%" cellpadding="0" border="0" cellspacing="0">
+      <tr class="commentodd"><td>
+        <edit html="localSearchResults.html"/>
+        <delete/> 
+        <reloadDocuments/>
+        <addNewResource html="mkResource.html"/> 
+      </td></tr>
+    </table>
       <createResources/><br/>
 <br/><br/>
       <setAsHomePage />
@@ -58,11 +60,14 @@
       <br/>
       <horizontalFilter />
     </form>
+</hideBlock>
 
   </td>
   <td width="5%" id="rightPanelPropertySheet" valign="top" align="left">
+<hideBlock>
     <br/>
     <menu toolbar="filterLocal" type="onpage" title="false"/>
+</hideBlock>
   </td>
   </tr>
 </table>
