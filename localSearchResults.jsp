@@ -23,7 +23,7 @@
       <col width="10%" />
     </colgroup>
     <tr valign="top">
-      <td valign="top" width="90%"><span class="xs"><language/><print image="images/printerIcon.gif"/><saveInExcel image="images/excel.gif"/></span></td>
+      <td valign="top" width="90%"><span class="xs"><language/><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/></span></td>
       <td valign="top" align="right" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>
