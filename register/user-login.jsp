@@ -29,12 +29,11 @@
             </tr>
             <tr><td colspan="2"> 
               <table width="100%" border="0" align="center" cellpadding="3" cellspacing="3" bgcolor="#FFFFFF">
-                <!--tr><td><hr size="1" color="#cbcbcb"/><br/><img src="images/loginhelp.jpg" border="0" /><span class="xxs" valign="middle">Logon help</span></td></tr-->
                 <tr> 
                   <td colspan="2" valign="bottom"><hr size="1" color="#cbcbcb"/></td>
                 </tr>
                 <tr>
-                  <td width="1%" valign="bottom"><img src="images/help.jpg" border="0" /></td>
+                  <td width="1%" valign="bottom"><img src="images/loginhelp.jpg" border="0" /></td>
                   <td valign="bottom"><span class="xxs">Logon help page</span></td>
                 </tr>
               </table></td>
