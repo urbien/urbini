@@ -9,11 +9,9 @@
     A {behavior: url(#default#AnchorClick);}
   </style>
 
-  <link rel="SHORTCUT ICON"                href="icons/icon.ico" />
-  <link rel="ICON"                         href="icons/icon.ico" />
-
-  <link rel="stylesheet"             type="text/css" href="styles/properties.css" />
-
+  <link href="icons/icon.ico"                        rel="SHORTCUT ICON" />
+  <link href="icons/icon.ico"                        rel="ICON"          />
+  <link href="styles/properties.css" type="text/css" rel="stylesheet" />
   <link href="styles/common.css"     type="text/css" rel="stylesheet" />
   <link href="styles/menu.css"       type="text/css" rel="stylesheet" />
   <link href="styles/tree.css"       type="text/css" rel="stylesheet" />
@@ -55,8 +53,8 @@
     </table>
 
     <br></br>
-    <include name="include/commonFooter"/>
     <include name="requiredFooter"/>
+    <include name="include/commonFooter"/>
   </div>
 
   <div pda="T">
