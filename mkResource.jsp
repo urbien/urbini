@@ -4,8 +4,11 @@
 <td valign="top" width="95%">
 <form name="tablePropertyList" method="post" action="FormRedirect">
    <!--div align="right"><span class="xs"><language display="horizontal"/></span></div-->
-   <!--menu toolbar="toolbar3" exclude="Support" activate="onMouseOver"/>
-   <img src="icons/icon_divider.gif" align="middle" border="0"></img-->
+   <menu toolbar="toolbar1"  activate="onMouseOver"/>
+   <menu toolbar="search"    activate="onMouseOver"/>
+   <menu toolbar="toolbar2"  activate="onMouseOver"/>
+   <!--menu toolbar="toolbar3" exclude="Support" activate="onMouseOver"/-->
+
    <font color="red"><center><b><errorMessage /></b></center></font>
    <tablePropertyList action="mkResource"/>
    <input type="hidden" name="returnHtml" value="list.html"/>
