@@ -23,10 +23,17 @@
   <!--[if gte IE 5.5000]> our xml parser removes all comments :-(
   <![endif]-->
 
+  <!---- enable VML -->
   <object id="VMLRender" classid="CLSID:10072CEC-8CC1-11D1-986E-00A0C955B42E"></object>
   <style>
     vml\:* { behavior: url(#VMLRender) }
-  </style>                                              
+  </style>
+
+  <!---- enable Web Folders links -->
+  <!--   will open WebDAV folder if link contains 'folder=' attribute -->
+  <style>
+    A {behavior: url(#default#AnchorClick);}
+  </style>
 
   </head>
 
