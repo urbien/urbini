@@ -83,11 +83,11 @@
 
       <table width="100%" cellpadding="3" cellspacing="0" border="0">
       <tr class="dark">
-        <td valign="top" width="5%"><edit html="editProperties.html"/></td>
-        <td valign="top" width="5%"><delete/></td>
-        <td valign="top" width="20%"><b><invite/></b></td>
-        <!--td valign="top" width="20%"><b><approve itype="http://www.hudsonfog.com/voc/system/parse/WorkItem"/></b></td-->
-        <!--td valign="top" width="%"></td-->
+<td width="50%">
+        <edit html="editProperties.html"/>
+        <delete/>
+        <invite/>
+</td>
         <td valign="top" width="50%"><subscribe/></td>
       </tr>
       </table>

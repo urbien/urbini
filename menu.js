@@ -715,7 +715,7 @@ function popupRowOnClick(e) {
       return false;
     }
 
-    if (tr.id == '$clear') {
+    if (tr.id.indexOf('$clear') == 0) {
       var currentLabel = chosenTextField.value;
       var initialLabel = getFormFieldInitialValue(chosenTextField);
       // reset to initial value
@@ -729,7 +729,10 @@ function popupRowOnClick(e) {
       }
       // reset to no-value
       else {
-        chosenTextField.value   = '';
+        if (currentFormName != "tablePropertyList")
+          chosenTextField.value   = tr.id.substring(6);
+        else
+          chosenTextField.value   = '';
         formField.value         = '';
         if (formFieldClass)
           formFieldClass.value  = '';
@@ -1308,7 +1311,7 @@ function hideResetRow(div, currentFormName, originalProp) {
   var i;
   var found = false;
   for (i=0; i<trs.length; i++) {
-    if (trs[i].id == '$clear') {
+    if (trs[i].id.indexOf('$clear') == 0) {
       found = true;
       break;
     }

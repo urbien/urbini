@@ -34,19 +34,19 @@
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
     <div id="pane2">
-<!--hr size="1"/-->
 
 
+<br/>
 <table width="100%" cellpadding="0" border="0" cellspacing="0">
 <tr class="commentodd"><td>
       <edit html="localSearchResults.html"/>
       <delete/> 
       <reloadDocuments/>
-</td><td>
       <addNewResource html="mkResource.html"/> 
 </td></tr>
 </table>
       <createResources/><br/>
+<br/><br/>
       <setAsHomePage />
       <br/><pieChart/>
     </div>
