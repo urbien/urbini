@@ -1,7 +1,5 @@
 <html>
-  <head>
-    <include name="commonHead.jsp" />  
-  </head>
+  <include name="commonHead.jsp" />  
   <body id="body" text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
 
   <div nonPda="T">

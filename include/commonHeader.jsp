@@ -20,7 +20,7 @@
       </tr>
 <hideBlock>
 
-    <tr><td class="hi" valign="right" colspan="2"><changePassword/><userLogOff html="user-login.html"/></td></tr>
+    <tr><td class="hi" colspan="2"><changePassword/><userLogOff html="user-login.html"/></td></tr>
 </hideBlock>
 
     </table>

@@ -1,6 +1,6 @@
 <html>
 
-<include name="requiredHeader.jsp"/>
+<include name="commonHead.jsp"/>
 <include name="include/commonHeader"/>
 
 <script language="JavaScript" src="register/hashScript.js"></script>
