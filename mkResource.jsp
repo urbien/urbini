@@ -14,9 +14,9 @@
    <input type="hidden" name="action" value="mkResource"></input>
    <br />
   <center>
-    <input type="submit" name="saveAndCancel" value="Save"></input>
-    <input type="submit" name="saveAndAdd"    value="Save and Add new resource"></input>
-    <input type="submit" name="cancel"        value="Cancel"></input>
+    <input type="submit" name="saveAndCancel" value="saveAndCancel"></input>
+    <input type="submit" name="saveAndAdd"    value="saveAndAdd"></input>
+    <input type="submit" name="cancel"        value="cancel"></input>
   </center>
   <showSetProperties/>
 </form>
