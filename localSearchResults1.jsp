@@ -12,6 +12,7 @@
 <tr  valign="top">
   <td valign="top" width="10%">
     <include name="include/commonLeft" />
+    <include name="commonLeft.jsp" />
   </td>
 
   <td valign="top" align="middle" width="90%">

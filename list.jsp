@@ -39,7 +39,7 @@
     <form name="tablePropertyList" method="POST" action="FormRedirect">
       <tablePropertyList />
       <br></br>
-      <center><input type="submit" name="submit" value="  Locate  "></input></center>
+      <center><input type="submit" name="submit" value="locate"></input></center>
       <input type="hidden" name="action" value="searchLocal"></input>
       <br></br>
     </form>
