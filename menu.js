@@ -349,6 +349,7 @@ function onClickPopup(e) {
   var imgId = target.id;
   currentImgId = imgId;
   var propName1 = imgId.substring(0, imgId.length - "_filter".length);  
+//alert("target = " + target.id + "; parent = " + target.parentNode);  
   var form = getFormNode(target);
   currentFormName = form.name;
   propName1 = propName1.substring(0, propName1.length - (form.name.length + 1));  
@@ -373,11 +374,11 @@ function onClickPopup(e) {
 
   // form url based on parameters that were set
   var url;
-  //url = "http://127.0.0.1/hudsonfog/smartPopup?pUri=http://www.hudsonfog.com/voc/software/crm/Bug/affectedComponent&selectOnly=y&affectedComponent_filter=y&action=explore&file=/localSearchResults.html&type=http://www.hudsonfog.com/voc/software/crm/Bug&$form=" + currentFormName;
   url = "smartPopup?pUri=" + propName;
   var params = getFormFilters(form);
   url = url + params;
   url = url + "&$form=" + form.name;
+//alert("$form = " + form.name);  
   url = url + "&" + propName + "_filter=y&$selectOnly=y";
   // request listbox context from the server and load it into a 'popupFrame' iframe
   var onClickPopupFrame = frames["popupFrame"];
@@ -509,12 +510,14 @@ function clearOtherPopups(div) {
 }
 
 function getFormNode(elem) {
-  var form = elem.parentNode;
-  if (form.tagName.toUpperCase() == "FORM") {
-    return form;
+  var f = elem.parentNode;
+//alert("getFormNode() = " + f.tagName.toUpperCase());  
+  if (f.tagName.toUpperCase() == "FORM") {
+alert("getFormNode() = " + f.name + "; id = " + f.id);  
+    return f;
   }  
   else
-    return getFormNode(form);
+    return getFormNode(f);
 }
 
 var keysPressedSnapshot = "";
