@@ -7,6 +7,7 @@
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
    <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="90%">
+    <menu toolbar="listResourceOperations" activate="onMouseOver"/>
     <menu toolbar="toolbar1"  activate="onMouseOver"/>
     <menu toolbar="transport" activate="onMouseOver"/>
     <menu toolbar="search"    activate="onMouseOver"/>
@@ -41,10 +42,11 @@
     <br/>
     <table width="100%" cellpadding="0" border="0" cellspacing="0">
       <tr class="commentodd"><td>
-        <edit html="localSearchResults.html"/>
+        <!--edit html="localSearchResults.html"/>
         <delete/> 
         <reloadDocuments/>
-        <addNewResource html="mkResource.html"/> 
+        <addNewResource html="mkResource.html"/--> 
+        <uploadMsProject/>
       </td></tr>
     </table>
       <createResources/><br/>

@@ -21,6 +21,7 @@
 
       <!-- Auto-generated menus -->
       <span class="xs" nonPda="T">
+      <menu toolbar="resourceOperations" activate="onMouseOver"/>
       <menu toolbar="toolbar1" activate="onMouseOver"/>
       <menu toolbar="transport" activate="onMouseOver"/>
       <menu toolbar="search" activate="onMouseOver"/>
@@ -96,7 +97,7 @@
       <setAsHomePage />
 
     <br/><br/>
-      <comments /> 
+      <!--comments /--> 
       <newComment/>
 </hideBlock>      
     </td><td width="1%"></td></tr>
