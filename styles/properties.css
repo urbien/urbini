@@ -6,9 +6,7 @@ td.sep {background-color:#cbcbcb; color:#000000; font-weight:bold; font-size:8pt
 th.sep {background-color:#cbcbcb; color:#000000; font-size:8pt;}
 input.chk {background-color:#cbcbcb; font-size:7pt}
 
-/* tr.title {background-color:#cdcde4; height:8pt} */
-/* td.title {background-color:#cbcbe4; height:8pt} */
-td.title {background-color:#cdcde4; height:8pt}
+td.title {background-color:#cdcde4; height:8pt; color:#5766a5}
 tr.title {background-color:#cdcde4; height:8pt}
 
 /* td.topBar {background-color:#3366CC; color:#ffffff; height:8pt} */
