@@ -6,13 +6,13 @@
     <include name="include/commonLeft" />
   </td>
   <td width="80%" valign="top" align="middle">
-    <fullTextSearchResult />
+    <!--fullTextSearchResult /-->
+    <resourcesSearch resourcesUri = "/sql/text/search/resources"/>
+    <filesSearch     filesUri     = "text/search/files" />
+    <excelsSearch    excelsUri    = "text/search/excels" />
   </td>
   <td width="10%" valign="top">
     <include name="searchText.jsp" />
-    <resources />
-    <documents />
-    <excels />
   </td>
 </tr></table>
 <br />
