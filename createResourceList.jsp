@@ -29,25 +29,10 @@
       <input type="submit" name="submit"/>
     </form>
     </td>
-    <td valign="top" align="left" bgcolor="eeeeee">
-
-    <include name="searchText.jsp" />
-    
-    <form name="rightPanelPropertySheet" method="POST" action="FormRedirect">
-      <table border="1" cellpadding="3" cellspacing="0"><tr><td align="middle" class="title">
-      <input type="submit" name="submit"  class="button1" value="Filter"></input>
-      <input type="submit" name="clear"  class="button1" value="Clear"></input>
-      </td></tr>
-      <tr><td><rightPanelPropertySheet /></td></tr>
-      <tr><td align="middle" class="title">
-      <input type="submit" name="submit" class="button1" value="Filter"></input>
-      <input type="submit" name="clear"  class="button1" value="Clear"></input>
-      <input type="hidden" name="action" value="searchLocal"></input>
-      <input type="hidden" name="action1" value="createResources"/>
-      <input type="hidden" name="create"  value="1"/>
-      </td></tr></table>   
-    </form>
-  </td>
+    <td width="10%" id="rightPanelPropertySheet" valign="top" align="left">
+      <br/>
+      <menu toolbar="filterLocalCallOff" type="onpage" title="false"/>
+    </td>
 </tr>
 
 </table>
@@ -71,7 +56,7 @@
       <menu toolbar="toolbar1"/>
       <menu toolbar="transport"/>
       <menu toolbar="search"/>
-      <menu toolbar="filterLocal"/>
+      <menu toolbar="filterLocalCallOff"/>
       <menu toolbar="toolbar3"/>
       
       <print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
