@@ -7,9 +7,11 @@
 
     <table width="97%" align="center" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top">
-      <td valign="top" width="80%" class="topBar"><span class="xs">
+      <td valign="top" width="80%" class="topBar">
+        <!--span class="xs">
         <menu toolbar="toolbar3" exclude="Support" activate="onMouseOver"/>
-        <print image="images/printerIcon.gif"/></span></td>
+        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
+        <print image="images/printerIcon.gif"/></span--></td>
       <td valign="top" align="right" width="20%" class="topBar"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     </table>
