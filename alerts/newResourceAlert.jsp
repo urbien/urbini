@@ -14,3 +14,4 @@ Customer Service
 HudsonFog 
 <br/>
 <b>Powered by</b> <a href="http://hudsonfog.com" target="_blank">HudsonFog</a>
+</div>
