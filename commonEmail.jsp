@@ -16,13 +16,21 @@
               <td bgcolor="#e3e2df"><input name="to" class="formMenuInput"></input>
                 </td>
             </tr>
-            <tr> 
+            <tr id="formatTr" style="display:block"> 
               <td bgcolor="#e3e2df" class="cswmItemSubtitle">Format:</td>
-              <td bgcolor="#e3e2df"> <select name="format" onchange="onRecChange()" class="formMenuInput">
+              <td bgcolor="#e3e2df"> 
+                <select name="format" onchange="onRecChange()" class="formMenuInput">
                   <option value="html">HTML</option>
                   <option value="xls">Excel</option>
-                </select> </td>
+                </select>
+              </td>
             </tr>
+            <script language="JavaScript">
+              var url = new String(window.location);
+              if (url.indexOf("readOnlyProperties.html") != -1) {
+                document.getElementById("formatTr").style.display="none";
+              }
+            </script>
           </table></td>
       </tr>
       <tr>
