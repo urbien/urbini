@@ -1250,6 +1250,10 @@ function getFormFilters(form, allFields) {
 
 function chooser(element) {
   var propName = element.name;
+  var idx = propName.indexOf(".");
+  var shortPropName = propName;
+  if (idx != -1)
+    shortPropName = propName.substring(0, idx);
   var form     = element.form.elements['$form'].value;
   var editList = element.form.elements['$wasdEditList'];
   var value    = element.value;
@@ -1260,14 +1264,14 @@ function chooser(element) {
     
   if (editList) {
     var uri = element.form.elements['$rUri'];
-    window.opener.document.forms[form].elements[uri + ".$." + propName].value               = value;
-    window.opener.document.forms[form].elements[uri + ".$." + propName + "_select"].value   = id;
-    window.opener.document.forms[form].elements[uri + ".$." + propName + "_verified"].value = "y";
+    window.opener.document.forms[form].elements[uri + ".$." + propName].value                    = value;
+    window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_select"].value   = id;
+    window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_verified"].value = "y";
   }
   else {
-    window.opener.document.forms[form].elements[propName].value               = value;
-    window.opener.document.forms[form].elements[propName + "_select"].value   = id;
-    window.opener.document.forms[form].elements[propName + "_verified"].value = "y";
+    window.opener.document.forms[form].elements[propName].value                    = value;
+    window.opener.document.forms[form].elements[shortPropName + "_select"].value   = id;
+    window.opener.document.forms[form].elements[shortPropName + "_verified"].value = "y";
   }
 }
 
