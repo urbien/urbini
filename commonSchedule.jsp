@@ -1,15 +1,22 @@
 <div id="textdiv4" class="popMenu" pda="T">
+  <div class="popMenuTitle" pda="T">
+    <table width="330" cellpadding="2">
+      <tr>
+        <td><b><font color="FFFFFF">Schedule</font></b></td>
+        <td align="right"><a title="Close" href="javascript://" onClick="menuOpenClose('textdiv4')"><IMG alt="Click here to close" src="images/button_popup_close.gif" border="0"/></a></td>
+      </tr>
+    </table>
+  </div>
 <form name="scheduleForm" action="page2schedule" method="GET">
   <table cellpadding="5">
-    <tr>
+    <tr nonPda="T">
       <td><b><text text="Schedule:"/></b></td>
-      <td align="right"><a title="Close" href="javascript://" onClick="menuOpenClose('textdiv4')"><IMG alt="Click here to close" src="images/button_popup_close.gif" border="0"/></a></td>
     </tr>
     <tr><td>
-    <table border="1" cellpadding="5">
-      <tr><td><b>Subject:</b></td><td><input name="name"/></td></tr>
-      <tr><td><b>Repeat:</b></td>
-      <td>
+    <table border="0" cellpadding="3" cellspacing="2">
+      <tr><td bgcolor="#DCDCEB"><b>Subject:</b></td><td bgcolor="#DCDCEB"><input name="name"/></td></tr>
+      <tr><td bgcolor="#DCDCEB"><b>Repeat:</b></td>
+      <td bgcolor="#DCDCEB">
         <select name="rec" onchange="onRecChange()">
           <option value="day">Daily</option>
           <option value="week">Weekly</option>
@@ -17,9 +24,9 @@
         </select>
       </td>
       </tr>
-      <tr><td><div id="titleDiv"></div></td><td><div id="valueDiv"></div></td></tr>
-      <tr><td><b>Time:</b></td>
-      <td>
+      <tr><td bgcolor="#DCDCEB"><div id="titleDiv"></div></td><td bgcolor="#DCDCEB"><div id="valueDiv"></div></td></tr>
+      <tr><td bgcolor="#DCDCEB"><b>Time:</b></td>
+      <td bgcolor="#DCDCEB">
         <table><tr><td>
           <select name="hour">
             <option>00</option>
