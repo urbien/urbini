@@ -22,11 +22,12 @@
     </tr>
 
     <tr valign="top"><td>
-    <form action="list.html" name="siteResourceList">
+    <form action="editList.html?update=1" name="siteResourceList" method="POST">
       <div align="left"><backLink /></div>
       <siteResourceList />
       <div align="right"><measurement/></div>
       <input type="hidden" name="action" value="createResources" />
+      <input type="hidden" name="create"  value="1"/>
       <input type="submit" name="submit"/>
     </form>
     </td>
@@ -44,7 +45,7 @@
       <input type="submit" name="submit" class="button1" value="Filter"></input>
       <input type="submit" name="clear"  class="button1" value="Clear"></input>
       <input type="hidden" name="action" value="searchLocal"></input>
-      <input type="hidden" name="action1" value="createList"/>
+      <input type="hidden" name="action1" value="createResources"/>
       <input type="hidden" name="create"  value="1"/>
       </td></tr></table>   
     </form>
@@ -74,12 +75,13 @@
       <pdaToPc image="images/pda.gif"/><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>
-    <form action="list.html" name="siteResourceList">
+    <form action="editList.html" name="siteResourceList" method="POST">
       <div align="left"><backLink /></div>
       <siteResourceList />
       <input type="hidden" name="action" value="createResources" />
       <div align="right"><measurement/></div>
       <input type="submit" name="submit"/>
+      <input type="hidden" name="create" value="1"/>
     </form>
     </td></tr>
     </table>
