@@ -759,9 +759,12 @@ function popupRowOnClick(e) {
   var formFieldClass    = form.elements[iclass];
   var formFieldVerified = form.elements[verified];
   
-  if (formFieldVerified) 
+  var deleteCurrentDiv = false;
+  if (formFieldVerified) {
+    if (formFieldVerified.value == 'n')
+      deleteCurrentDiv = true;
     formFieldVerified.value = 'y'; // value was modified and is verified since it is not typed but is chosen from the list
-
+  }
   if (originalProp.indexOf("_class") == -1) {
     var select = prop + "_select";
     if (currentResourceUri)
@@ -822,6 +825,8 @@ function popupRowOnClick(e) {
   if (currentResourceUri != null)
     divId = currentResourceUri + ".$." + divId;
   var div = document.getElementById(divId);
+  if (deleteCurrentDiv == true)
+    openedPopups[currentDiv.id] = null;
   menuClose2(div);
   clearOtherPopups(div);
   return false;
