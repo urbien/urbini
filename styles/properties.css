@@ -111,3 +111,4 @@ tr.displayInline {border:solid #808080 1px; background-color: #e7ebf0; color: #0
 td.hi {background-color: #f8f4ef; color: darkblue}
 font.warn {color:#A01E00}
 td.shading {border:solid #808080 1px; filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, EndColorStr='#F0F2F6', StartColorStr='#C0C9D7'); color='#000000'}
+span.comment { font-family: Verdana, Arial, Helvetica, sans-serif; color: #5766a5; font-weight:bold; font-size: 8pt}
