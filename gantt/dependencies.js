@@ -1,22 +1,27 @@
 var clicker = false;
 var counter = 0;
+var k       = 1;
 var last    = "";
 
 function showDeps(source, dep, numprojects) {
+//  alert("showDeps ");
   // clean all lines
   if (clicker) {
     if (last != source) 
       counter = 0;
     counter++;
     for (var i = 1; i <= ((numprojects - 1)*3); i++) {
-      alert("clean " + i);
+//      alert("clean " + i);
       document.getElementById('line' + i).from = "0,0";
       document.getElementById('line' + i).to   = "0,0";
     }
     k = 1;
   }
   if (!clicker && last == source) {
-    if (counter%2 != 2) {
+//    alert("draw ");
+
+    if (counter%2 != 0) {
+//      alert("draw 1");
       var i = document.getElementById(source).offsetLeft;
       var j = document.getElementById(source).offsetTop;
       j += 10;
@@ -34,6 +39,8 @@ function showDeps(source, dep, numprojects) {
     }
   }
   if (last != source) {
+//      alert("draw 2");
+
       var i  = document.getElementById(source).offsetLeft;
       var j  = document.getElementById(source).offsetTop;
       j += 10;
