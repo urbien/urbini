@@ -9,6 +9,7 @@
    <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="90%">
     <menu toolbar="resourceOperations" activate="onMouseOver"/>
     <menu toolbar="toolbar1"  activate="onMouseOver"/>
+    <menu toolbar="helpdesk"  activate="onMouseOver" allow="admin" />
     <menu toolbar="transport" activate="onMouseOver"/>
     <menu toolbar="search"    activate="onMouseOver"/>
     <menu toolbar="toolbar2"  activate="onMouseOver"/>
@@ -34,20 +35,6 @@
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
     <br/>
-    <!--form id="filter" name="tablePropertyList" method="post">
-      <tablePropertyList action="mkResource"/>
-      <input type="hidden" name="returnHtml" value="list.html"/>
-      <input type="hidden" name="html" value="mkResource.html"/>
-      <div align="right"><span class="xs"><measurement/></span></div>
-      <input type="hidden" name="-$action" value="mkResource"></input>
-      <input type="hidden" name="resourceList" value="y"/>
-      <br />
-      <center>
-        <input type="submit" name="submit" value="  Submit  "></input>
-        &#160;&#160;
-        <input type="submit" name="cancel" value="  Cancel  "></input>
-      </center>
-    </form-->
 <hideBlock>      
     <div id="pane2">
     <br/>
