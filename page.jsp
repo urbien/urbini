@@ -3,8 +3,17 @@
   <LINK HREF="styles/common.css" TYPE="text/css" rel="stylesheet" />
   <link href="styles/menu.css" type="text/css" rel="stylesheet" />
   <SCRIPT language="JavaScript" src="menu.js"></SCRIPT>
+
+	<!-- link here filter file for desired data format:
+	see comments in filter files for formats descriptions -->
+	<script language="JavaScript" src="calendar/cal_tpl1.js"></script>
+	<script language="JavaScript" src="calendar/cal_tpl2.js"></script>
+	<script language="JavaScript" src="calendar/cal_strings.js"></script>
+	<script language="JavaScript" src="calendar/calendar.js"></script>
+	<script language="JavaScript" src="calendar/cals_init.js"></script>
+	<!-- define the view of calendar with css rules -->
+	<link rel="stylesheet" href="calendar/calendar.css"/>
 </head>
- <script language="JavaScript" src="calendar/calendar1.html"></script>
 <div nonPda="T">
   <include name="include/commonHeader"/>
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -40,7 +49,6 @@
     </td>
   </tr>
   </table>
-
 </div>
 </html>
 

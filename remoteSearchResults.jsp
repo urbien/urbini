@@ -84,5 +84,6 @@
 </div>
 <br />
 <div align="left"><span class="xs"><hudsonFog /></span></div>      <!-- link to Portal page for current category -->
+	<script language="JavaScript" src="calendar/cals_init.js"></script>
 </html>
 
