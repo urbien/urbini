@@ -26,6 +26,7 @@
     <tr> 
     <td colspan="2">
     <form name="tablePropertyList" action="FormRedirect">
+      <subscribe/>
       <!--siteHistory /-->
       <readOtherSiteInfo />
       <tablePropertyList />
@@ -33,7 +34,7 @@
       <p/>
       <edit html="editProperties.html"/>
       <reloadDocuments/>
-      <showSetProperties />
+      <!--showSetProperties /-->
     </form>
 
     <br/><br/>
