@@ -655,9 +655,11 @@ function popupRowOnClick(e) {
   // if there is a link on this row - follow it
   var anchors = tr.getElementsByTagName('a');
   if (anchors  &&  anchors.length != 0) {
-//	  document.location.target = anchors[0].target;
-//	  document.location.href   = anchors[0].href;
-    anchors[0].handleEvent();
+    if (currentDiv) {
+      openedPopups[currentDiv.id] = null;
+      menuClose2(currentDiv);
+    }  
+    anchors[0].click();
 	  return true;
   }
   
