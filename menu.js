@@ -728,7 +728,12 @@ function autoComplete(e) {
 //    clearTimeout(autoCompleteTimeoutId);
 
   autoCompleteTimeoutId =  setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
-  return true;
+  if (characterCode == 13) {
+//alert(propName1 + '_verified: ' + fieldVerified.tagName);
+    return false;
+  }  
+  else  
+    return true;
 }
 
 function autoCompleteTimeout(invocationTime) {
