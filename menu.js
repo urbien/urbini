@@ -1,132 +1,18 @@
-var tabShow=0;
-function hidepoptext() {
-	poptext = textdiv.style;
-	if (tabShow == 1) {
-		poptext.visibility = "hidden";
-		tabShow = 0;
-		return;
+var MenuArray = new Array("textdiv", "textdiv1", "textdiv2", "textdiv3", "textdiv4")
+function menuOpenClose(divName) {
+	for (i = 0; i < MenuArray.length; i++) {
+		if (MenuArray[i] != divName) {
+			poptext = document.getElementById(MenuArray[i]).style;
+			if (poptext.visibility =="visible") {
+				poptext.visibility = "hidden";
+			}
+		}
 	}
-	if (tabShow == 0) {
-		if (tabShow1 == 1) {
-			hidepoptext1();
-		}
-		else if (tabShow2 == 1) {
-			hidepoptext2();
-		}
-		else if (tabShow3 == 1) {
-			hidepoptext3();
-		}			
-		else if (tabShow4 == 1) {
-			hidepoptext4();
-		}
+	poptext = document.getElementById(divName).style;
+	if (poptext.visibility == "hidden" || poptext.visibility == "") {
 		poptext.visibility = "visible";
-		tabShow = 1;
-	}
-}
-
-var tabShow1=0;
-function hidepoptext1() {
-	poptext1 = textdiv1.style;
-	if (tabShow1 == 1) {
-		poptext1.visibility = "hidden";
-		tabShow1 = 0;
-		return;
-	}
-	if (tabShow1 == 0) {
-		if (tabShow == 1) {
-			hidepoptext();
-		}
-		else if (tabShow2 == 1) {
-			hidepoptext2();
-		}
-		else if (tabShow3 == 1) {
-			hidepoptext3();
-		}			
-		else if (tabShow4 == 1) {
-			hidepoptext4();
-		}
-		poptext1.visibility = "visible";
-		tabShow1 = 1;
-	}
-}
-
-var tabShow2=0;
-function hidepoptext2() {
-	poptext2 = textdiv2.style;
-	if (tabShow2 == 1) {
-		poptext2.visibility = "hidden";
-		tabShow2 = 0;
-		return;
-	}
-	if (tabShow2 == 0) {
-		if (tabShow == 1) {
-			hidepoptext();
-		}
-		else if (tabShow1 == 1) {
-			hidepoptext1();
-		}
-		else if (tabShow3 == 1) {
-			hidepoptext3();
-		}			
-		else if (tabShow4 == 1) {
-			hidepoptext4();
-		}
-		poptext2.visibility = "visible";
-		tabShow2 = 1;
-	}
-}
-
-var tabShow3=0;
-function hidepoptext3() {
-	poptext3 = textdiv3.style;
-	if (tabShow3 == 1) {
-		poptext3.visibility = "hidden";
-		tabShow3 = 0;
-		return;
-	}
-	if (tabShow3 == 0) {
-		if (tabShow == 1) {
-			hidepoptext();
-		}
-		else if (tabShow1 == 1) {
-			hidepoptext1();
-		}
-		else if (tabShow2 == 1) {
-			hidepoptext2();
-		}
-		else if (tabShow4 == 1) {
-			hidepoptext4();
-		}
-		poptext3.visibility = "visible";
-		tabShow3 = 1;
-                document.emailForm.subject.value = document.title;
-	}
-}
-
-var tabShow4=0;
-function hidepoptext4() {
-	poptext4 = textdiv4.style;
-	if (tabShow4 == 1) {
-		poptext4.visibility = "hidden";
-		tabShow4 = 0;
-		return;
-	}
-	if (tabShow4 == 0) {
-		if (tabShow == 1) {
-			hidepoptext();
-		}
-		else if (tabShow1 == 1) {
-			hidepoptext1();
-		}
-		else if (tabShow2 == 1) {
-			hidepoptext2();
-		}
-		else if (tabShow3 == 1) {
-			hidepoptext3();
-		}
-		poptext4.visibility = "visible";
-		tabShow4 = 1;
-                document.scheduleForm.name.value = document.title;
+	} else {
+		poptext.visibility = "hidden";
 	}
 }
 
