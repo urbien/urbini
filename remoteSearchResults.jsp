@@ -34,7 +34,7 @@
       <!--tr><td><rightPanelPropertySheet /></td></tr-->
       <tr><td align="middle" class="title">
       <input type="submit" name="submit" value="filter"></input>
-      <input type="hidden" name="action" value="searchDatabase"></input>
+      <input type="hidden" name="action" value="searchParallel"></input>
       </td></tr></table>   
       <br></br>
     </form>

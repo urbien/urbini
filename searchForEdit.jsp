@@ -8,7 +8,7 @@
   <center>
   <input type="submit" name="submit" value="search"></input>  
   </center>
-  <input type="hidden" name="action" value="searchDatabaseForEdit"></input>
+  <input type="hidden" name="action" value="searchParallelForEdit"></input>
   <br></br>
   <showSetProperties />
 </form>
