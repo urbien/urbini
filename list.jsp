@@ -62,6 +62,7 @@
       <A title="Search"    href="javascript://" onClick="hidepoptext1()"><IMG src="images/search.gif" width="22" align="middle" border="0"/></A>&#160;
       <A title="Filter"    href="javascript://" onClick="hidepoptext2()"><IMG src="images/filter.gif" width="22" align="middle" border="0"/></A>&#160;
       <A title="Email"     href="javascript://" onClick="hidepoptext3()"><IMG src="images/filter.gif" width="22" align="middle" border="0"/></A>
+      <A title="Schedule"  href="javascript://" onClick="hidepoptext4()"><IMG src="images/filter.gif" width="22" align="middle" border="0"/></A>
       <span class="xs"><language/><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>
