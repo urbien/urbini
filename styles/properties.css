@@ -106,3 +106,4 @@ span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:20
 /* Properties for backlink resource list that is dipslayed inline on property sheet page */
 table.displayInline {border:solid #808080 1px; background-color: #ffffff; color: #000000}
 tr.displayInline {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
+td.hi {background-color: #f8f4ef; color: darkblue}
