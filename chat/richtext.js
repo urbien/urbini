@@ -21,29 +21,29 @@ var cssFile;
 function initRTE(imgPath, incPath, css) {
 	//set browser vars
 	var ua = navigator.userAgent.toLowerCase();
-	isIE = ((ua.indexOf("msie") != -1) && (ua.indexOf("opera") == -1) && (ua.indexOf("webtv") == -1)); 
+	isIE = ((ua.indexOf("msie") != -1) && (ua.indexOf("opera") == -1) && (ua.indexOf("webtv") == -1));
 	isGecko = (ua.indexOf("gecko") != -1);
 	isSafari = (ua.indexOf("safari") != -1);
 	isKonqueror = (ua.indexOf("konqueror") != -1);
-	
+
 	//check to see if designMode mode is available
 	if (document.getElementById && document.designMode && !isSafari && !isKonqueror) {
 		isRichText = true;
 	}
-	
+
 	if (!isIE) document.captureEvents(Event.MOUSEOVER | Event.MOUSEOUT | Event.MOUSEDOWN | Event.MOUSEUP);
 	document.onmouseover = raiseButton;
 	document.onmouseout  = normalButton;
 	document.onmousedown = lowerButton;
 	document.onmouseup   = raiseButton;
-	
+
 	//set paths vars
 	imagesPath = imgPath;
 	includesPath = incPath;
 	cssFile = css;
-	
+
 	if (isRichText) document.writeln('<style type="text/css">@import "' + includesPath + 'rte.css";</style>');
-	
+
 	//for testing standard textarea, uncomment the following line
 	//isRichText = false;
 }
@@ -72,7 +72,7 @@ function raiseButton(e) {
 	} else {
 		var el= e.target;
 	}
-	
+
 	className = el.className;
 	if (className == 'rteImage' || className == 'rteImageLowered') {
 		el.className = 'rteImageRaised';
@@ -85,7 +85,7 @@ function normalButton(e) {
 	} else {
 		var el= e.target;
 	}
-	
+
 	className = el.className;
 	if (className == 'rteImageRaised' || className == 'rteImageLowered') {
 		el.className = 'rteImage';
@@ -98,7 +98,7 @@ function lowerButton(e) {
 	} else {
 		var el= e.target;
 	}
-	
+
 	className = el.className;
 	if (className == 'rteImage' || className == 'rteImageRaised') {
 		el.className = 'rteImageLowered';
@@ -107,7 +107,7 @@ function lowerButton(e) {
 
 function writeRTE(rte, html, width, height, buttons, readOnly) {
 	if (readOnly) buttons = false;
-	
+
 	//adjust minimum table widths
 	if (isIE) {
 		if (buttons && (width < 600)) width = 600;
@@ -116,7 +116,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 		if (buttons && (width < 500)) width = 500;
 		var tablewidth = width + 4;
 	}
-	
+
 	if (buttons == true) {
 		document.writeln('<table class="rteBack" cellpadding=2 cellspacing=0 id="Buttons1_' + rte + '" width="' + tablewidth + '">');
 		document.writeln('	<tr>');
@@ -200,7 +200,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 	if (!readOnly) document.writeln('<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source');
 	document.writeln('<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>');
 	document.writeln('<input type="hidden" id="hdn' + rte + '" name="' + rte + '" value="">');
-	document.getElementById('hdn' + rte).value = html;
+	//document.getElementById('hdn' + rte).value = html;
 	enableDesignMode(rte, html, readOnly);
 }
 
@@ -224,7 +224,7 @@ function enableDesignMode(rte, html, readOnly) {
 	frameHtml += html + "\n";
 	frameHtml += "</body>\n";
 	frameHtml += "</html>";
-	
+
 	if (document.all) {
 	//alert(window.parent.frames[rte].document);
 	//alert(frames[rte].domain);
@@ -273,35 +273,35 @@ function updateRTEs() {
 
 function updateRTE(rte) {
 	if (!isRichText) return;
-	
+
 	//set message value
 	var oHdnMessage = document.getElementById('hdn' + rte);
 	var oRTE = document.getElementById(rte);
 	var readOnly = false;
-	
+
 	//check for readOnly mode
 	if (document.all) {
 		if (frames[rte].document.designMode != "On") readOnly = true;
 	} else {
 		if (document.getElementById(rte).contentDocument.designMode != "on") readOnly = true;
 	}
-	
+
 	if (isRichText && !readOnly) {
 		//if viewing source, switch back to design view
 		if (document.getElementById("chkSrc" + rte).checked) {
 			document.getElementById("chkSrc" + rte).checked = false;
 			toggleHTMLSrc(rte);
 		}
-		
+
 		if (oHdnMessage.value == null) oHdnMessage.value = "";
 		if (document.all) {
 			oHdnMessage.value = frames[rte].document.body.innerHTML;
 		} else {
 			oHdnMessage.value = oRTE.contentWindow.document.body.innerHTML;
 		}
-		
+
 		//if there is no content (other than formatting) set value to nothing
-		if (stripHTML(oHdnMessage.value.replace("&nbsp;", " ")) == "" 
+		if (stripHTML(oHdnMessage.value.replace("&nbsp;", " ")) == ""
 			&& oHdnMessage.value.toLowerCase().search("<hr") == -1
 			&& oHdnMessage.value.toLowerCase().search("<img") == -1) oHdnMessage.value = "";
 		//fix for gecko
@@ -317,7 +317,7 @@ function toggleHTMLSrc(rte) {
 	} else {
 		oRTE = document.getElementById(rte).contentWindow.document;
 	}
-	
+
 	if (document.getElementById("chkSrc" + rte).checked) {
 		document.getElementById("Buttons1_" + rte).style.visibility = "hidden";
 		document.getElementById("Buttons2_" + rte).style.visibility = "hidden";
@@ -336,7 +336,7 @@ function toggleHTMLSrc(rte) {
 			var output = escape(oRTE.body.innerText);
 			output = output.replace("%3CP%3E%0D%0A%3CHR%3E", "%3CHR%3E");
 			output = output.replace("%3CHR%3E%0D%0A%3C/P%3E", "%3CHR%3E");
-			
+
 			oRTE.body.innerHTML = unescape(output);
 		} else {
 			var htmlSrc = oRTE.body.ownerDocument.createRange();
@@ -351,26 +351,26 @@ function FormatText(rte, command, option) {
 	var oRTE;
 	if (document.all) {
 		oRTE = frames[rte];
-		
+
 		//get current selected range
-		var selection = oRTE.document.selection; 
+		var selection = oRTE.document.selection;
 		if (selection != null) {
 			rng = selection.createRange();
 		}
 	} else {
 		oRTE = document.getElementById(rte).contentWindow;
-		
+
 		//get currently selected range
 		var selection = oRTE.getSelection();
 		rng = selection.getRangeAt(selection.rangeCount - 1).cloneRange();
 	}
-	
+
 	try {
 		if ((command == "forecolor") || (command == "hilitecolor")) {
 			//save current values
 			parent.command = command;
 			currentRTE = rte;
-			
+
 			//position and show color palette
 			buttonElement = document.getElementById(command + '_' + rte);
 			// Ernst de Moor: Fix the amount of digging parents up, in case the RTE editor itself is displayed in a div.
@@ -412,11 +412,11 @@ function setColor(color) {
 	} else {
 		oRTE = document.getElementById(rte).contentWindow;
 	}
-	
+
 	var parentCommand = parent.command;
 	if (document.all) {
 		//retrieve selected range
-		var sel = oRTE.document.selection; 
+		var sel = oRTE.document.selection;
 		if (parentCommand == "hilitecolor") parentCommand = "backcolor";
 		if (sel != null) {
 			var newRng = sel.createRange();
@@ -436,21 +436,21 @@ function AddImage(rte) {
 	var oRTE;
 	if (document.all) {
 		oRTE = frames[rte];
-		
+
 		//get current selected range
-		var selection = oRTE.document.selection; 
+		var selection = oRTE.document.selection;
 		if (selection != null) {
 			rng = selection.createRange();
 		}
 	} else {
 		oRTE = document.getElementById(rte).contentWindow;
-		
+
 		//get currently selected range
 		var selection = oRTE.getSelection();
 		rng = selection.getRangeAt(selection.rangeCount - 1).cloneRange();
 	}
-	
-	imagePath = prompt('Enter Image URL:', 'http://');				
+
+	imagePath = prompt('Enter Image URL:', 'http://');
 	if ((imagePath != null) && (imagePath != "")) {
 		oRTE.focus();
 		oRTE.document.execCommand('InsertImage', false, imagePath);
@@ -485,7 +485,7 @@ function checkspell() {
 function getOffsetTop(elm, parents_up) {
 	var mOffsetTop = elm.offsetTop;
 	var mOffsetParent = elm.offsetParent;
-	
+
 	if(!parents_up) {
 		parents_up = 10000; // arbitrary big number
 	}
@@ -494,7 +494,7 @@ function getOffsetTop(elm, parents_up) {
 		mOffsetParent = mOffsetParent.offsetParent;
 		parents_up--;
 	}
-	
+
 	return mOffsetTop;
 }
 
@@ -502,7 +502,7 @@ function getOffsetTop(elm, parents_up) {
 function getOffsetLeft(elm, parents_up) {
 	var mOffsetLeft = elm.offsetLeft;
 	var mOffsetParent = elm.offsetParent;
-	
+
 	if(!parents_up) {
 		parents_up = 10000; // arbitrary big number
 	}
@@ -511,7 +511,7 @@ function getOffsetLeft(elm, parents_up) {
 		mOffsetParent = mOffsetParent.offsetParent;
 		parents_up--;
 	}
-	
+
 	return mOffsetLeft;
 }
 
@@ -519,20 +519,20 @@ function Select(rte, selectname) {
 	var oRTE;
 	if (document.all) {
 		oRTE = frames[rte];
-		
+
 		//get current selected range
-		var selection = oRTE.document.selection; 
+		var selection = oRTE.document.selection;
 		if (selection != null) {
 			rng = selection.createRange();
 		}
 	} else {
 		oRTE = document.getElementById(rte).contentWindow;
-		
+
 		//get currently selected range
 		var selection = oRTE.getSelection();
 		rng = selection.getRangeAt(selection.rangeCount - 1).cloneRange();
 	}
-	
+
 	var idx = document.getElementById(selectname).selectedIndex;
 	// First one is always a label
 	if (idx != 0) {
@@ -547,7 +547,7 @@ function Select(rte, selectname) {
 
 function kb_handler(evt) {
 	var rte = evt.target.id;
-	
+
 	//contributed by Anti Veeranna (thanks Anti!)
 	if (evt.ctrlKey) {
 		var key = String.fromCharCode(evt.charCode).toLowerCase();
@@ -574,15 +574,15 @@ function docChanged (evt) {
 
 function stripHTML(oldString) {
 	var newString = oldString.replace(/(<([^>]+)>)/ig,"");
-	
+
 	//replace carriage returns and line feeds
    newString = newString.replace(/\r\n/g," ");
    newString = newString.replace(/\n/g," ");
    newString = newString.replace(/\r/g," ");
-	
+
 	//trim string
 	newString = trim(newString);
-	
+
 	return newString;
 }
 
@@ -593,18 +593,18 @@ function trim(inputString) {
    if (typeof inputString != "string") return inputString;
    var retValue = inputString;
    var ch = retValue.substring(0, 1);
-	
+
    while (ch == " ") { // Check for spaces at the beginning of the string
       retValue = retValue.substring(1, retValue.length);
       ch = retValue.substring(0, 1);
    }
    ch = retValue.substring(retValue.length-1, retValue.length);
-	
+
    while (ch == " ") { // Check for spaces at the end of the string
       retValue = retValue.substring(0, retValue.length-1);
       ch = retValue.substring(retValue.length-1, retValue.length);
    }
-	
+
 	// Note that there are two spaces in the string - look for multiple spaces within the string
    while (retValue.indexOf("  ") != -1) {
 		// Again, there are two spaces in each of the strings
