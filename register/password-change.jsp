@@ -25,7 +25,7 @@
   <tr>
     <td align="CENTER" colspan="2">
       <br />
-      <input type="Submit" value="submitChanges"/>
+      <input type="Submit" value=" Submit changes "  name="logonButton"/>
       <input type="hidden" name="j_password_change" value="x"/>
     </td>
   </tr>
