@@ -4,6 +4,7 @@
 
   <div nonPda="T">
     <include name="include/commonHeader.jsp"/>
+<changePassword/><userLogOff html="user-login.html"/>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td valign="top" width="100%">
