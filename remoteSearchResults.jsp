@@ -28,7 +28,7 @@
     <!--div align="left"><siteHistory/></div-->
     <form action="list.html" name="siteResourceList">
       <div align="left"><backLink /></div>
-      <siteResourceList />
+      <parallelResourceList />
       <div align="right"><measurement/></div>
       <addNewResource html="mkResource.html"/> 
       <showSetProperties />

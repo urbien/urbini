@@ -14,6 +14,7 @@
 <tr>
   <td valign="top">
     <include name="include/commonLeft"/>
+    <include name="commonLeft.jsp"/>
   </td>
   <td width="90%" valign="top">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">

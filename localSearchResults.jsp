@@ -12,7 +12,8 @@
   </tr>
 <tr  valign="top">
   <td valign="top" width="10%">
-    <include name="include/commonLeft" />
+    <!--include name="include/commonLeft" /-->
+    <include name="commonLeft.jsp" />
   </td>
 
   <td valign="top" align="middle" width="90%">
@@ -22,7 +23,7 @@
       <col width="10%" />
     </colgroup>
     <tr valign="top">
-      <td valign="top" width="90%"><span class="xs"><language/>|<print image="images/printerIcon.gif"/>|<saveInExcel image="images/excel.gif"/></span></td>
+      <td valign="top" width="90%"><span class="xs"><language/><print image="images/printerIcon.gif"/><saveInExcel image="images/excel.gif"/></span></td>
       <td valign="top" align="right" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>
@@ -39,8 +40,8 @@
 
     <include name="searchText.jsp" />
     
-    <form name="tablePropertyList" method="POST" action="FormRedirect">
-      <tablePropertyList />
+    <form name="rightPanelPropertySheet" method="POST" action="FormRedirect">
+      <rightPanelPropertySheet />
       <br></br>
       <center><input type="submit" name="submit" value="locate"></input></center>
       <input type="hidden" name="action" value="searchLocal"></input>
