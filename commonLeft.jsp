@@ -19,12 +19,12 @@
 <tr>
   <td><br/><P class="active"><nobr><b><text text="Inventory"/></b></nobr></P></td>
 </tr>
-<tr rdfType="http://www.hudsonfog.com/voc/paper/delivery/ReelStockLevel">
+<tr rdfType="http://www.hudsonfog.com/voc/paper/delivery/Inventory">
   <td><br/><a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/delivery/LastInventory"><text text="per order"/></a></td>
 </tr>
 
-<tr rdfType="http://www.hudsonfog.com/voc/views/delivery/ReelStock">
-  <td>&#160;&#160;<a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/delivery/ReelStock"><text text="per format"/></a></td>
+<tr rdfType="http://www.hudsonfog.com/voc/views/delivery/InventoryItem">
+  <td>&#160;&#160;<a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/delivery/InventoryItem"><text text="per format"/></a></td>
 </tr>
 
 <tr rdfType="http://www.hudsonfog.com/voc/paper/delivery/ShipmentDamage">
