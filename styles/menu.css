@@ -10,6 +10,9 @@
 .cswmItem {
 	PADDING-RIGHT: 10px; PADDING-LEFT: 4px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; CURSOR: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none
 }
+.cswmItemGreyedOut { // wanted to use CSS2's COLOR: GrayText, but IE6 does not support it
+	PADDING-RIGHT: 10px; PADDING-LEFT: 4px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; CURSOR: hand; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none
+}
 .cswmItemSubtitle {
 	PADDING-RIGHT: 10px; PADDING-LEFT: 4px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none
 }
