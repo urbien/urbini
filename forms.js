@@ -73,12 +73,35 @@ function displayFullText(div, moreDiv) {
   document.getElementById(div).style.display = 'inline';
   document.getElementById(moreDiv).style.display = 'none';
 }
-
 function setTextHeight(div, divider) {
   if (window.screen) {
+    var divRef = document.getElementById(div);
+    var spanRef = document.getElementById(div + '_span');
+    var moreRef = document.getElementById(div + '_more');
     var h = Math.floor(screen.availHeight/divider);
-    document.getElementById(div).style.height = h;
+    divRef.style.height = h;
+    divRef.style.overflow = "hidden";
+    if (spanRef.offsetHeight > divRef.offsetHeight) {
+      moreRef.style.display = "block";
+    } else {
+      moreRef.style.display = "none";
+      divRef.style.height = spanRef.offsetHeight;
+      divRef.style.overflow = "visible";
+    }
   }
+}
+function setTextHeightAll(divider) {
+  for (i = 0; i < textAreas.length; i++) {
+    if (textAreas[i] != null)
+      setTextHeight(textAreas[i], divider);
+  }
+}
+function textAreaExists(textAreaName) {
+  for (i = 0; i < textAreas.length; i++) {
+    if (textAreas[i] != null && textAreaName == textAreas[i])
+      return true;
+  }
+  return false;
 }
 
 /*************************  Form fields adding/removing *******************/
