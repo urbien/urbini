@@ -1,5 +1,4 @@
 <HTML>
-
 <body onload="document.loginform.j_username.focus();">
 <include name="hashScript.html"/>
 <br />
