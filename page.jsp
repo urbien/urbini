@@ -1,11 +1,9 @@
-<html xmlns:vml="urn:schemas-microsoft-com:vml">
+<html>
   <head>
     <!--include name="commonHead.jsp"/-->  
   <title />
 
-  <object id="VMLRender" classid="CLSID:10072CEC-8CC1-11D1-986E-00A0C955B42E"></object>
   <style>
-    vml\:* { behavior: url(#VMLRender) }
     A {behavior: url(#default#AnchorClick);}
   </style>
 
