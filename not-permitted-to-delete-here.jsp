@@ -7,7 +7,7 @@
 </td>
 <td valign="top" width="90%">
 <br/><br/>
-<span class="xl"><center>You do not have a permission to delete this information</center></span>
+<span class="xl"><center><text text="noPermissionToDelete"/></center></span>
 </td></tr></table>
 
 <include name="include/commonFooter"/>

@@ -7,7 +7,7 @@
 </td>
 <td valign="top" width="90%">
 <br/><br/>
-<span class="xl"><center><text text="noPermissionToEnterHere"/></center></span>
+<span class="xl"><center><text text="noPermissionToMkResource"/></center></span>
 </td></tr></table>
 
 <include name="include/commonFooter"/>
