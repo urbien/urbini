@@ -7,6 +7,8 @@ var LightMenuItem = '';
 var HIDDEN  =  'hidden';
 var VISIBLE =  'visible';
 
+var rteUpdated = 'false';
+
 if (document.layers) {
   HIDDEN  = 'hide';
   VISIBLE = 'show';
@@ -591,7 +593,7 @@ function removePopupRowEventHandlers(div) {
  * Receives control on form submit events
  */
 function popupOnSubmit(e) {
-  try{updateRTEs();}catch(ex){}
+  try{if(rteUpdated == 'false'){updateRTEs(); rteUpdated = 'true';}}catch(ex){}
   var target;
 
   e = (e) ? e : ((window.event) ? window.event : null);
