@@ -346,6 +346,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   var idx = -1;
   
   var divId;
+  var isInterface;
   if (currentFormName == "siteResourceList") {
     idx = propName1.indexOf(".$.");
     var idx1 = propName1.indexOf(".", idx + 3);
@@ -373,6 +374,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
         divId = propName + "_" + currentFormName;
       }
       else {
+        isInterface = true;
         propName = propName1.substring(0, idx);
         var el = document.forms[currentFormName].elements[propName + "_class"];
         if (!el.value || el.value == "") 
@@ -436,7 +438,12 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
     url += "&$selectOnly=y";
   if (enteredText)
     url += "&" + propName + "=" + encodeURIComponent(enteredText);
-
+  if (isInterface) { 
+    var classValue = form.elements[propName + "_class"].value;
+    if (classValue != null && classValue.length != 0)
+      url += "&" + propName + "_class=" + classValue;
+  }
+  
   // request listbox context from the server and load it into a 'popupFrame' iframe
   var onClickPopupFrame = frames["popupFrame"];
   popupFrameLoaded = false;
