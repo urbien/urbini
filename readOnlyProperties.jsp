@@ -4,33 +4,33 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <colgroup>
     <col width="10%" /> 
-    <col width="80%" />
-    <col width="10%" />
+    <col width="90%" />
   </colgroup>
 <tr>
   <td width="10%"></td>
-  <td width="80%"></td>
-  <td width="10%"></td>
+  <td width="90%"></td>
 </tr>
 <tr>
-  <td colspan="2"><span class="xs"><language/>|<print image="images/printerIcon.gif" /></span></td>
-  <td align="right"><userLogOff html="user-login.html"/></td>
-</tr>
-<tr><td valign="top">
-<include name="include/commonLeft"/>
-</td><td valign="top" align="left">
-<form name="tablePropertyList" action="FormRedirect">
-  <siteHistory />
-  <!--div align="right"><language/><print image="images/printerIcon.gif" /></div-->
-  <tablePropertyList />
-  <readOnlySiteInfo />
-  <div align="right"><measurement/></div>
-  <p/>
-  <edit html="editProperties.html"/>
-  <showSetProperties />
-</form>
-</td></tr>
-</table>
+  <td valign="top">
+    <include name="include/commonLeft"/>
+  </td>
+  <td width="90%" valign="top">
+    <table width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tr valign="top">
+      <td valign="top" width="80%" class="topBar"><span class="xs"><language/>|<print image="images/printerIcon.gif"/></span></td>
+      <td valign="top" align="right" width="20%" class="topBar"><changePassword/><userLogOff html="user-login.html"/></td>
+    </tr></table>
+    <form name="tablePropertyList" action="FormRedirect">
+      <siteHistory />
+      <tablePropertyList />
+      <readOnlySiteInfo />
+      <div align="right"><measurement/></div>
+      <p/>
+      <edit html="editProperties.html"/>
+      <showSetProperties />
+    </form>
+  </td>
+</tr></table>
 <br></br>
 <div align="left"><span class="xs"><hudsonFog /></span></div>
 <include name="include/commonFooter"/>
