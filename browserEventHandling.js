@@ -333,7 +333,7 @@
     function addHandlers() {
       addEvent(window, 'load', function() {setTimeout(interceptLinkClicks, 0);}, false);
       addEvent(window, 'load', function() {setTimeout(replaceAllTooltips,  0);}, false);
-    //addEvent(window, 'unload', function() {java.lang.System.out.println("unload");}, false);
+      //addEvent(window, 'unload', function() {java.lang.System.out.println("unload");}, false);
     
       /* this function supposed to fix a problem (with above functions) on Mac IE5 
        * but it fails on Win IE6 ... so may be somebody can figure it out - see source of info:
@@ -361,7 +361,7 @@
         var images = document.images;
         for (i=0; i<images.length; i++) {
           var image = images[i];
-          if (image.id.indexOf("_filter") == -1)
+          if (image.id.indexOf("_filter", image.id.length - "_filter".length) == -1)
             continue;
           addEvent(image, 'click', onClickPopup, false);
         }  
@@ -412,8 +412,47 @@
           }
         }
       }
+      addEvent(window, 'load', function() {setTimeout(resourceListEdit,  0);}, false);
     }
 
+    function resourceListEdit() {
+      var elements = document.getElementsByTagName('img');
+      llen = elements.length;
+      for (i=0;i<llen; i++) {
+        var elem = elements[i];
+        if (elem.id  &&  elem.id.indexOf("_markedAsRead", elem.id.length - "_markedAsRead".length) != -1) {
+          addEvent(elem, 'click', markedAsRead, false);
+//          addEvent(elem, 'mouseover',   tooltipMouseOver,   false);
+        }
+      } 
+    }
+    function markedAsRead(e) {
+      var target;
+
+      e = (e) ? e : ((window.event) ? window.event : null);
+      if (!e)
+        return;
+      target = getTargetElement(e);
+      var url = 'editProperties.html?submit=Submit+changes&uri=';
+      
+      var rUri = target.id.substring(0, target.id.length - "_markedAsRead".length);
+      var idx = rUri.indexOf("_$$$Yes_");
+      var iconSrc;
+      if (idx != -1) {
+        url += encodeURIComponent(rUri.substring(0, idx)) + "&markedAsRead=Yes";
+        iconSrc = rUri.substring(idx + 8);
+      }
+      else {
+        idx = rUri.indexOf("_$$$No_");
+        url += encodeURIComponent(rUri.substring(0, idx)) + "&markedAsRead=No";
+        iconSrc = rUri.substring(idx + 7);
+      }
+      
+      var onClickPopupFrame = frames["popupFrame"];
+      popupFrameLoaded = false;
+      target.src = iconSrc;
+      onClickPopupFrame.location.replace(url); // load data from server into iframe
+    }
     
     var formInitialValues;
     addHandlers();
