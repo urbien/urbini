@@ -17,7 +17,7 @@
   <script language="JavaScript" src="calendar/calendar.js"></script>
   <script language="JavaScript" src="gantt/dependencies.js"></script>
   <script language="JavaScript" src="pngfix.js"></script>
-  <script language="JavaScript" src="browserEventHandling.js"></script>
+  <!--script language="JavaScript" src="browserEventHandling.js"></script-->
 
   <siteTitle />
 
