@@ -10,6 +10,9 @@
   </td>
   <td width="10%" valign="top">
     <include name="searchText.jsp" />
+    <resources />
+    <documents />
+    <excels />
   </td>
 </tr></table>
 <br />
