@@ -1,5 +1,5 @@
 .popMenu {
-	DISPLAY: none; POSITION: absolute; z-index:50
+	DISPLAY: none; POSITION: absolute; z-index:50; -moz-user-input: enabled; -moz-user-focus: normal
 }
 .popupFrameBody {
        -moz-user-input: enabled; -moz-user-focus: normal

@@ -354,6 +354,7 @@ var openedPopups = new Array();
 var currentDiv = null;
 var currentImgId = null;
 var currentFormName = null;
+var currentResourceUri = null;
 /**
  *  Opens the popup when icon is clicked
  */
@@ -377,7 +378,6 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   if (idx == -1)
     return;
   currentFormName = propName1.substring(idx + 1);
-  
   propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));  
 
   var d = currentDiv;
@@ -389,29 +389,40 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   currentImgId  = imgId;
     
   originalProp = propName1;
-  var idx = propName1.indexOf(".");
+  var idx = -1;
+  
   var divId;
-  if (idx != -1) {
-    propName = propName1.substring(0, idx);
+  if (currentFormName = "siteResourceList") {
+    idx = propName1.indexOf(".$.");
+    var idx1 = propName1.indexOf(".", idx + 3);
+    propName = propName1.substring(0, idx1);
     divId = propName + "_" + currentFormName;
+    propName = propName.substring(idx + 3, idx1);
+    currentResourceUri = propName1.substring(0, idx);
   }
   else {
-    idx = propName1.indexOf("_class");
-    if (idx == -1)  {
-      propName = propName1;
+    idx = propName1.indexOf(".");
+    if (idx != -1) {
+      propName = propName1.substring(0, idx);
       divId = propName + "_" + currentFormName;
     }
     else {
-      propName = propName1.substring(0, idx);
-      if (document.forms[currentFormName].elements[propName + "_class"].value == "") 
-        divId = propName + "_class_" + currentFormName;
-      else {
+      idx = propName1.indexOf("_class");
+      if (idx == -1)  {
+        propName = propName1;
         divId = propName + "_" + currentFormName;
-        originalProp = propName + propName1.substring(propName.length + "_class".length);
+      }
+      else {
+        propName = propName1.substring(0, idx);
+        if (document.forms[currentFormName].elements[propName + "_class"].value == "") 
+          divId = propName + "_class_" + currentFormName;
+        else {
+          divId = propName + "_" + currentFormName;
+          originalProp = propName + propName1.substring(propName.length + "_class".length);
+        }
       }
     }
-  }
-   
+  } 
   currentDiv = document.getElementById(divId);
   var div = openedPopups[divId];
   
@@ -431,8 +442,11 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   
   // form url based on parameters that were set
   var url;
-  url = "smartPopup?pUri=" + propName;
 
+  url = "smartPopup?pUri=" + encodeURIComponent(propName);
+  if (currentFormName = "siteResourceList") {
+    url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri);
+  }
   var formAction = form.elements['action'].value;
   var allFields = true;
   if (formAction != "searchLocal" && formAction != "searchParallel") {
@@ -499,6 +513,7 @@ function interceptPopupEvents(div) {
       addToTableName = "_class";
   }
   var tableId = "table_" + propName + addToTableName + "_" + currentFormName;
+//alert("propName = " + propName);  
 //alert("tableId = " + tableId);
   var table   = document.getElementById(tableId);
   var img     = document.getElementById(currentImgId);
@@ -692,12 +707,18 @@ function popupRowOnClick(e) {
 
   var formField;
   var chosenTextField = form.elements[originalProp];
-  var formFieldVerified = form.elements[propertyShortName + "_verified"];
+  var verified = prop + "_verified";
+  if (currentResourceUri)
+    verified = currentResourceUri + ".$." + verified;
+  
+  var formFieldVerified = form.elements[verified];
   if (formFieldVerified) 
     formFieldVerified.value = 'y'; // value was modified and is verified since it is not typed but is chosen from the list
 
   if (originalProp.indexOf("_class") == -1) {
     var select = prop + "_select";
+    if (currentResourceUri)
+      select = currentResourceUri + ".$." + select;
 
     formField = form.elements[select];
 
@@ -742,6 +763,8 @@ function popupRowOnClick(e) {
     return true;
   }
   var divId = prop + "_" + formName;
+  if (currentResourceUri != null)
+    divId = currentResourceUri + ".$." + divId;
   var div = document.getElementById(divId);
   menuClose2(div);
   clearOtherPopups(div);
