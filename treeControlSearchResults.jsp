@@ -24,8 +24,12 @@
       <td width="100%">
         <form action="list.html" name="siteResourceList">
           <div align="left"><backLink /></div>
-          <taskTreeControl/>
-          <siteResourceList />
+          <table width="100%" cellspacing="0" cellpadding="0" border="0">
+          <tr>
+            <td width="20%"><taskTreeControl/><folderTreeControl/></td>
+            <td width="80%"><siteResourceList /></td>
+          </tr>
+          </table>
           <div align="right"><measurement/></div>
           <addNewResource html="mkResource.html"/> 
           <delete/> 
@@ -79,7 +83,6 @@
     <tr valign="top"><td>
     <form action="list.html" name="siteResourceList">
       <div align="left"><backLink /></div>
-      <tree/>
       <siteResourceList />
       <createResources/>
       <div align="right"><measurement/></div>
