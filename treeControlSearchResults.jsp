@@ -44,7 +44,7 @@
             form.submit.disabled = true; 
             form.submit.value = 'Please wait';
             form.submit.style.cursor = 'wait'; 
-            form.clear.style.visibility = 'hidden'; 
+            form.clear_.style.visibility = 'hidden'; 
           }
 	}
         </script>
@@ -117,7 +117,7 @@
             form.submit.disabled = true; 
             form.submit.value = 'Please wait';
             form.submit.style.cursor = 'wait'; 
-            form.clear.style.visibility = 'hidden'; 
+            form.clear_.style.visibility = 'hidden'; 
           }
 	}
 </script>
