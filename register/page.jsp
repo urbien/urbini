@@ -17,8 +17,8 @@
 <script type="text/javascript" language="JavaScript">
   function focusOnUserName() {
     var f = document.loginform;
-    if (f == null) alert("form lot loaded yet");
-    f.j_username.focus();
+    if (f != null)
+      f.j_username.focus();
     return true;
   }
   addEvent(window, 'load', function() {setTimeout(focusOnUserName, 0);}, false);
