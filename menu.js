@@ -756,6 +756,7 @@ function popupRowOnClick(e) {
 
   var formField;
   var chosenTextField = form.elements[originalProp];
+  var len = chosenTextField.length;
   var verified = prop + "_verified";
   if (currentResourceUri)
     verified = currentResourceUri + ".$." + verified;
@@ -777,11 +778,19 @@ function popupRowOnClick(e) {
       select = currentResourceUri + ".$." + select;
 
     formField = form.elements[select];
-    if (tr.id.indexOf('$clear') == 0) {     
-      if (currentFormName != "tablePropertyList")
-        chosenTextField.value   = tr.id.substring(6);
-      else
-        chosenTextField.value   = '';
+    if (tr.id.indexOf('$clear') == 0) {
+      if (len > 1) {
+        if (currentFormName != "tablePropertyList") 
+          chosenTextField[0].value   = tr.id.substring(6);
+        else 
+          chosenTextField[0].value   = '';
+      }
+      else {
+        if (currentFormName != "tablePropertyList") 
+          chosenTextField.value   = tr.id.substring(6);
+        else 
+          chosenTextField.value   = '';
+      }
       formField.value         = '';
       if (formFieldClass)
         formFieldClass.value  = '';
@@ -803,7 +812,10 @@ function popupRowOnClick(e) {
       var items = tr.getElementsByTagName('td');
       var val = items[1].innerHTML;
       var idx = val.lastIndexOf(">");
-      chosenTextField.value = val.substring(idx + 1);
+      if (len > 1)
+        chosenTextField[0].value = val.substring(idx + 1);
+      else
+        chosenTextField.value = val.substring(idx + 1);
       if (chosenTextField.style)
         chosenTextField.style.backgroundColor = '#ffffff';
       formField.value = tr.id; // property value corresponding to a listitem
@@ -1455,13 +1467,17 @@ function hideResetRow(div, currentFormName, originalProp) {
   var tr = trs[i];
 
   var elem = form.elements[originalProp];
-
-  var value = elem.value;
+  
+  var value;
+  if (elem.length > 1)
+    value = elem[0].value;
+  else 
+    value = elem.value;
   var valueIsSet = true;
 	  
   if (!value || value == '')  
     valueIsSet = false;
-  if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
+  else if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
     valueIsSet = false;
 
   if (valueIsSet) {
