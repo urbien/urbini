@@ -205,3 +205,11 @@
      else if (window.name == "popupFrame")  
        addEvent(window, 'load', function() {setTimeout(onLoadPopup, 0);}, false);
    }
+
+   var images = document.images;
+   for (i=0; i<images.length; i++) {
+     var image = images[i];
+     if (image.id.indexOf("_filter") == -1)
+       continue;
+     addEvent(image, 'click', onClickPopup, false);
+   }  
