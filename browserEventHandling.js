@@ -223,127 +223,12 @@
       url.href = urlStr;
       // alert('before='+uBefore + ', after=' + uAfter);
     }
-
    
-    /*********************************** Tootltips ************************************/
-    function replaceAllTooltips() {
-      var llen;
-      var elements;
-      elements = document.getElementsByTagName('img');
-      replaceTooltips0(elements);
-      elements = document.getElementsByTagName('span');
-      replaceTooltips0(elements);
-      //elements = document.getElementsByTagName('a');
-      //replaceTooltips0(elements);
-      elements = document.getElementsByTagName('input');
-      replaceTooltips0(elements);
-      elements = document.getElementsByTagName('tt');
-      replaceTooltips0(elements);
-    }
-
-    function replaceTooltips(divRef) {
-      var elements;
-      elements = divRef.getElementsByTagName('img');
-      replaceTooltips0(elements);
-    }
-   
-    function replaceTooltips0(elements) {
-      var llen;
-      llen = elements.length;
-      for (i=0;i<llen; i++) {
-        var elem = elements[i];
-        if (elem.attributes['title']) {
-          addEvent(elem, 'mouseout',    tooltipMouseOut,    false);
-          addEvent(elem, 'mouseover',   tooltipMouseOver,   false);
-        }
-      } 
-    }
-   
-    function tooltipMouseOver(e) {
-      var p;
-      var target;
-
-      e = (e) ? e : ((window.event) ? window.event : null);
-      if (!e)
-        return;
-
-      target = getTargetElement(e);
-      if (!tooltipMouseOver0(target)) {
-        e.cancelBubble = true;
-        e.returnValue = false;
-        if (e.preventDefault) e.preventDefault();
-        return false;
-      }  
-      else
-        return true;
-    }  
-    
-    function tooltipMouseOver0(target) {
-      var tooltip = target.getAttribute('tooltip'); // using getAttrbute() - as workaround for IE5.5 custom attibutes bug
-      var tooltipText;
-      if (!tooltip) {
-        tooltip = target.getAttribute('title');
-        if (tooltip) {
-          tooltipText = tooltip;
-          if (tooltipText == '')
-            return true;
-          window.status = tooltipText;
-          // merge tooltip on IMG with tooltip on its parent A tag 
-          var parentA = target.parentNode;
-          if (parentA && parentA.tagName.toUpperCase() == 'A') {
-            var linkTooltip = parentA.getAttribute('title');
-            if (linkTooltip) {
-              var linkTooltipText = linkTooltip;
-              if (linkTooltipText && linkTooltipText != '') {
-                tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';
-              }  
-              parentA.title = '';
-            }
-           
-          }
-          target.setAttribute('tooltip', tooltipText);
-          target.title = '';
-        }
-      }
-      else
-        tooltipText = tooltip;
-      if (tooltip) {
-        var tooltipDiv = document.getElementById('system_tooltip');
-        if (!tooltipDiv)
-          return true;
-        tooltipDiv.innerHTML = tooltipText;
-        if (tooltipDiv.style.width != '') {
-          alert(tooltipDiv.style.width);
-        }  
-        //setTimeout("setDivVisible1('" + tooltipDiv.id + "', '" + target + "', 7, 12)", 100);
-        var ifrRef = document.getElementById('tooltipIframe');
-        setDivVisible(tooltipDiv, target, 7, 12, ifrRef);
-      } 
-      return false;
-    }
-
-    function tooltipMouseOut0(target) {    
-      var tooltipDiv = document.getElementById('system_tooltip');
-      var ifrRef = document.getElementById('tooltipIframe');
-     
-      setDivInvisible(tooltipDiv, ifrRef);
-      return false;
-    }
-
-    function tooltipMouseOut(e) {
-      var target;
-
-      e = (e) ? e : ((window.event) ? window.event : null);
-      if (!e)
-        return;
-      target = getTargetElement(e);
-      return tooltipMouseOut0(target);
-    }
-
     //***** Add smartlistbox handlers
     function addHandlers() {
       addEvent(window, 'load', function() {setTimeout(interceptLinkClicks, 0);}, false);
-      addEvent(window, 'load', function() {setTimeout(replaceAllTooltips,  0);}, false);
+      if (typeof replaceAllTooltips != 'undefined')
+        addEvent(window, 'load', function() {setTimeout(replaceAllTooltips,  0);}, false);
       //addEvent(window, 'unload', function() {java.lang.System.out.println("unload");}, false);
     
       /* this function supposed to fix a problem (with above functions) on Mac IE5 
@@ -395,7 +280,7 @@
           var elem = form.elements[j];
           initialValues[elem.name] = elem.value;
                     
-          if (elem.type.toUpperCase() == 'TEXT' && // only on TEXT fields 
+          if (!elem.type || elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT fields 
               elem.id) {                                         // and those that have ID
             addEvent(elem, 'keypress', autoComplete,              false);
             addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
@@ -406,7 +291,7 @@
             //addEvent(elem, 'blur',     onFormFieldChange, false);
             //addEvent(elem, 'click',    onFormFieldClick,  false);
           }
-          else if (elem.type.toUpperCase() == 'TEXTAREA') {
+          else if (elem.type && elem.type.toUpperCase() == 'TEXTAREA') {
             var rows = elem.attributes['rows'];
             var cols = elem.attributes['cols'];
             if (rows)

@@ -423,12 +423,14 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
     menuOpenClose(divId, imgId);
     // make popup active for key input 
     if (currentDiv.focus) {// simple in IE
-      currentDiv.focus();
+      try { currentDiv.focus(); } catch(e) {};
     }  
     else {                // hack for Netscape (using an empty anchor element to focus on)
       var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
       if (elm) {
-        if (elm.focus) elm.focus();
+        if (elm.focus) {
+          try { elm.focus(); } catch(e) {};
+        }  
       }  
     }  
     return;
@@ -535,13 +537,14 @@ function loadPopup() {
 
   // make popup active for key input    
   if (currentDiv.focus) { // IE 
-    currentDiv.focus();
+    try { currentDiv.focus(); } catch(e) {};
   }  
   else {                // Netscape
     var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
     if (elm) {
-      if (elm.focus) 
-        elm.focus();
+      if (elm.focus) {
+        try { elm.focus(); } catch(e) {};
+      }  
     }  
   }  
 }
@@ -1065,7 +1068,7 @@ function popupRowOnKeyPress(e) {
       if (currentDiv) {
         var form = getFormNode(currentPopupRow);
         var inputField = form.elements[originalProp];
-        inputField.focus();
+        try { inputField.focus(); } catch(e) {};
         menuClose2(currentDiv);
       }  
       e.cancelBubble = true;
@@ -1088,7 +1091,7 @@ function popupRowOnKeyPress(e) {
         var form = getFormNode(currentPopupRow);
         var inputField = form.elements[originalProp];
         internalFocus = true;
-        inputField.focus();
+        try { inputField.focus(); } catch(e) {};
         autoComplete1(e, inputField);
         if (characterCode == 8) {
           inputField.value = inputField.value.substring(0, inputField.value.length - 1);
@@ -1531,12 +1534,15 @@ function menuOnClick(e) {
   menuOpenClose(divId, imgId);
   
   // make popup active for key input 
-  if (currentDiv.focus) // simple in IE
-    currentDiv.focus();
+  if (currentDiv.focus) { // simple in IE
+    try { currentDiv.focus(); } catch(e) {};
+  }  
   else {                // hack for Netscape (using an empty anchor element to focus on)
     var elm = document.getElementById(currentDiv.id + "_$focus_link"); 
     if (elm) {
-      if (elm.focus) elm.focus();
+      if (elm.focus) {
+        try { elm.focus(); } catch(e) {};
+      }
     }  
   }  
 }
@@ -1550,3 +1556,119 @@ function menuResetRow(div) {
     trs[i].style.display = ''; // clear highlighted background in all rows
   }  
 }
+
+/*********************************** Tootltips ************************************/
+function replaceTooltips0(elements) {
+  var llen;
+  llen = elements.length;
+  for (i=0;i<llen; i++) {
+    var elem = elements[i];
+    if (elem.attributes['title']) {
+      addEvent(elem, 'mouseout',    tooltipMouseOut,    false);
+      addEvent(elem, 'mouseover',   tooltipMouseOver,   false);
+    }
+  } 
+}
+
+function replaceAllTooltips() {
+  var llen;
+  var elements;
+  elements = document.getElementsByTagName('img');
+  replaceTooltips0(elements);
+  elements = document.getElementsByTagName('span');
+  replaceTooltips0(elements);
+  //elements = document.getElementsByTagName('a');
+  //replaceTooltips0(elements);
+  elements = document.getElementsByTagName('input');
+  replaceTooltips0(elements);
+  elements = document.getElementsByTagName('tt');
+  replaceTooltips0(elements);
+}
+
+function replaceTooltips(divRef) {
+  var elements;
+  elements = divRef.getElementsByTagName('img');
+  replaceTooltips0(elements);
+}
+
+function tooltipMouseOver0(target) {
+  var tooltip = target.getAttribute('tooltip'); // using getAttrbute() - as workaround for IE5.5 custom attibutes bug
+  var tooltipText;
+  if (!tooltip) {
+    tooltip = target.getAttribute('title');
+    if (tooltip) {
+      tooltipText = tooltip;
+      if (tooltipText == '')
+        return true;
+      window.status = tooltipText;
+      // merge tooltip on IMG with tooltip on its parent A tag 
+      var parentA = target.parentNode;
+      if (parentA && parentA.tagName.toUpperCase() == 'A') {
+        var linkTooltip = parentA.getAttribute('title');
+        if (linkTooltip) {
+          var linkTooltipText = linkTooltip;
+          if (linkTooltipText && linkTooltipText != '') {
+            tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';
+          }  
+          parentA.title = '';
+        }
+       
+      }
+      target.setAttribute('tooltip', tooltipText);
+      target.title = '';
+    }
+  }
+  else
+    tooltipText = tooltip;
+  if (tooltip) {
+    var tooltipDiv = document.getElementById('system_tooltip');
+    if (!tooltipDiv)
+      return true;
+    tooltipDiv.innerHTML = tooltipText;
+    if (tooltipDiv.style.width != '') {
+      alert(tooltipDiv.style.width);
+    }  
+    //setTimeout("setDivVisible1('" + tooltipDiv.id + "', '" + target + "', 7, 12)", 100);
+    var ifrRef = document.getElementById('tooltipIframe');
+    setDivVisible(tooltipDiv, target, 7, 12, ifrRef);
+  } 
+  return false;
+}
+
+function tooltipMouseOver(e) {
+  var p;
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e)
+    return;
+
+  target = getTargetElement(e);
+  if (!tooltipMouseOver0(target)) {
+    e.cancelBubble = true;
+    e.returnValue = false;
+    if (e.preventDefault) e.preventDefault();
+    return false;
+  }  
+  else
+    return true;
+}  
+
+function tooltipMouseOut0(target) {    
+  var tooltipDiv = document.getElementById('system_tooltip');
+  var ifrRef = document.getElementById('tooltipIframe');
+ 
+  setDivInvisible(tooltipDiv, ifrRef);
+  return false;
+}
+
+function tooltipMouseOut(e) {
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e)
+    return;
+  target = getTargetElement(e);
+  return tooltipMouseOut0(target);
+}
+
