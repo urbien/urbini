@@ -19,6 +19,16 @@ function menuOpenClose(divName) {
 	} else {
 		poptext.visibility = "hidden";
 	}
+	if (document.getElementById("textdiv3") != null &&
+            document.getElementById("textdiv3").style.visibility == "visible"
+           ) {
+		document.getElementById("emailForm").subject.value = document.title;
+	}
+	if (document.getElementById("textdiv4") != null &&
+            document.getElementById("textdiv4").style.visibility == "visible"
+           ) {
+		document.getElementById("scheduleForm").name.value = document.title;
+	}
 }
 
 function onRecChange() {
