@@ -33,7 +33,7 @@ function onFormFieldClick(fieldProp, fieldRef) {
   fieldProp.modifiedByUser = true;
   if (fieldProp.isModified == true) 
     return; 
-  fieldRef.value='';
+  fieldRef.select();
 }
 
 function onFormFieldChange(fieldProp, fieldRef, oldValue) {
