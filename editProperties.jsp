@@ -22,7 +22,7 @@
     <tr valign="top"><td colspan="2">
      <font color="red"><center><b><errorMessage /></b></center></font>
    
-    <form name="tablePropertyList" method="post" id="filter" action="FormRedirect?edit=true">
+    <form name="tablePropertyList" method="post" id="filter" >
       <tablePropertyList />
       <div align="right"><measurement/></div>
       <input type="hidden" name="action" value="showPropertiesForEdit"></input>

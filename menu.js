@@ -279,6 +279,7 @@ function menu_onmouseout(itemcode) {
 // Set Netscape up to run the "captureMousePosition" function whenever
 // the mouse is moved. For Internet Explorer and Netscape 6, you can capture
 // the movement a little easier.
+
 if (document.layers) { // Netscape
   document.captureEvents(Event.MOUSEMOVE);
   document.onmousemove = captureMousePosition;
@@ -287,6 +288,7 @@ if (document.layers) { // Netscape
 } else if (document.getElementById) { // Netcsape 6
   document.onmousemove = captureMousePosition;
 }
+
 // Global variables
 xMousePos = 0; // Horizontal position of the mouse on the screen
 yMousePos = 0; // Vertical position of the mouse on the screen
@@ -358,8 +360,6 @@ function onClickPopup(e) {
     return;
   var imgId = target.id;
   var form = getFormNode(target);
-//alert("form=" + currentFormName);
-//alert("target = " + target.id + "; parent = " + target.parentNode);  
   onClickPopup1(imgId, form);      
 }
   
@@ -410,11 +410,14 @@ function onClickPopup1(imgId, form, enteredText) {
     menuOpenClose(divId, imgId);
     return;
   }
+  
   // form url based on parameters that were set
   var url;
   url = "smartPopup?pUri=" + propName;
-  var params = getFormFilters(form);
-  url = url + params;
+  var params = getFormFilters(form, true); // all form fields
+  if (params)
+    url = url + params;
+
   url = url + "&$form=" + currentFormName;
   url = url + "&" + propName + "_filter=y&$selectOnly=y";
   if (enteredText)
@@ -472,7 +475,8 @@ function interceptPopupEvents(div) {
   }
 }
 
-function getFormFilters(form) {
+function getFormFilters(form, allFields) {
+
   var p = "";
   var fields = form.elements;
   for (i=0; i<fields.length; i++) {
@@ -481,18 +485,97 @@ function getFormFilters(form) {
     var name  = field.name;
     var type  = field.type;
 
-    if (!type || !name || !value || value == "")
+    if (!type || !name)
       continue;
     if (type.toUpperCase() == "SUBMIT") 
       continue;
-    else if (type.toUpperCase() == "CHECKBOX" && name != "on") 
-      continue;
-    if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
-      continue;
+    if (!allFields) {
+      if (!wasFormFieldModified(field))
+        continue;
+    }  
+    else {
+    
+      if (!value || value == '')
+        continue;
+
+      if (type.toUpperCase() == "CHECKBOX" && name != "on") 
+        continue;
+      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
+        continue;
+    }
           
     p += "&" + name + "=" + encodeURIComponent(value);
   }
   return p;
+}
+
+function popupOnSubmit(e) {
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+      
+  if (!e) 
+    return;
+
+  target = getTargetElement(e);
+  var form = target;
+  
+  // form url based on parameters that were set
+  var url;
+  url = form.action;
+  url = "FormRedirect?JLANG=en"; // HACK: since form.action returns '&action='
+
+  var params = getFormFilters(form);
+  var submitButtonName  = null;
+  var submitButtonValue;
+
+  // figure out the name and the value of the Submit button
+  for (i=0; i<form.elements.length; i++) {
+    var elem = form.elements[i];
+    if (elem.type.toUpperCase() == 'SUBMIT') {
+      submitButtonName  = elem.name;
+      submitButtonValue = elem.value;
+    }  
+  }  
+  
+  if (!submitButtonName)
+    return true;
+    
+  var submit = submitButtonName + '=' + submitButtonValue;
+  var hasQ = url.indexOf('?') != -1;
+  if (!hasQ)
+    url += '?' + submit;
+  else  
+    url += '&' + submit;
+  
+  if (params)
+    url = url + params;   
+  url += '&$form=' + form.name;
+  url += '&$selectOnly=y';
+  url += "&type=" + form.type.value + "&action=" + form.action.value;
+  if (form.uri) 
+    url += "&uri=" + encodeURIComponent(form.uri.value);
+
+	  if (document.all || document.getElementById) {
+            form.submit.disabled = true; 
+            form.submit.value = 'Please wait';
+            form.submit.style.cursor = 'wait'; 
+            form.clear.style.visibility = 'hidden'; 
+          }
+	}
+      </script>
+
+  form.method   = 'GET';
+  form.onsubmit = null;
+	if (document.all || document.getElementById) {
+    form.submit.disabled = true; 
+    form.submit.value = 'Please wait';
+    form.submit.style.cursor = 'wait'; 
+    form.clear.style.visibility = 'hidden'; 
+	}
+  
+  document.location.href = url;
+  return false; 
 }
 
 /**
@@ -557,8 +640,9 @@ function popupRowOnClick(e) {
     formField.value = tr.id; // property value corresponding to a listitem
   }
   var formFieldVerified = form.elements[propertyShortName + "_verified"];
-  if (formFieldVerified)
-    formFieldVerified = 'y'; // value was modified and is verified since it is not typed but is chosen from the list
+  if (formFieldVerified) {
+    formFieldVerified.value = 'y'; // value was modified and is verified since it is not typed but is chosen from the list
+  }  
   var divId = prop + "_" + formName;
   var div = document.getElementById(divId);
   menuClose2(div);
@@ -657,15 +741,16 @@ function getKeyCode(e) {
 	}
 }
 
-function autoCompleteBackspaceHack(e) {
+function autoCompleteOnKeyDown(e) {
   if( typeof( e.keyCode ) == 'number') {
-    if (e.keyCode == 8 || e.keyCode == 127)  // enter, ctrl-enter
-      return autoComplete(e);
+    if (e.keyCode == 8 || e.keyCode == 127) { // backspace, ctrl-enter
+      var flag = autoComplete(e);
+      return flag;
+    }  
     else if (e.keyCode == 9)                 // tab
       return autoComplete(e);
   }
-  
-  return true;
+  return false;
 }
 
 function autoComplete(e) {
@@ -686,28 +771,29 @@ function autoComplete(e) {
 
   var form = target.form;
   switch (characterCode) {
-       case 38: //up arrow  
-       case 40: //down arrow
-       case 37: //left arrow
-       case 39: //right arrow
-       case 33: //page up  
-       case 34: //page down  
-       case 36: //home  
-       case 35: //end                  
-//       case 13: //enter  
-       case 9: //tab  
-       case 27: //esc  
-       case 16: //shift  
-       case 17: //ctrl  
-       case 18: //alt  s
-       case 20: //caps lock
-//       case 8: //backspace  
-//       case 127: // ctrl-enter
-//       case 46: //delete
-           return true;
+    case 38:  //up arrow  
+    case 40:  //down arrow
+    case 37:  //left arrow
+    case 39:  //right arrow
+    case 33:  //page up  
+    case 34:  //page down  
+    case 36:  //home  
+    case 35:  //end                  
+    case 27:  //esc  
+    case 16:  //shift  
+    case 17:  //ctrl  
+    case 18:  //alt  s
+    case 20:  //caps lock
+      return true;
+    case 9:   //tab  
+    case 8:   //backspace  
+    case 46:  //delete
+    case 127: //ctrl-enter
+    case 13:  //enter  
+      break;
   }     
-  var propName = target.name;
-  var formName = target.id;
+  var propName  = target.name;
+  var formName  = target.id;
   var propName1 = propName;
   var idx = propName.indexOf(".");
   if (idx != -1)
@@ -716,36 +802,37 @@ function autoComplete(e) {
   var fieldVerified = form[propName1 + '_verified'];
 
   if (characterCode == 13) { // enter
-    var form = target.form;
-    if (!fieldVerified) // proceed to show popup on Enter only in data entry mode (indicated by presence of _verified field)
-      return;
+    if (!fieldVerified) { // proceed to show popup on Enter only in data entry mode (indicated by presence of _verified field)
+      return true;
+    }
   }
-  if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
-  keyPressedImgId = propName + "_" + formName + "_filter";
-  keyPressedElement = target;
+  keyPressedImgId     = propName + "_" + formName + "_filter";
+  keyPressedElement   = target;
   keysPressedSnapshot = target.value + characterCode;
-//    alert("popupKeyPress, target=" + target.tagName + ", value: " + keysPressedSnapshot); 
-//  if (autoCompleteTimeoutId)
-//    clearTimeout(autoCompleteTimeoutId);
 
-  autoCompleteTimeoutId =  setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
-  if (characterCode == 13) { 
+  if (characterCode == 13) {
+    onClickPopup1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
     return false;            // tell browser not to do submit on 'enter'
   }  
-  else  
+  else {
+    if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
+    setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
     return true;
+  }  
 }
 
 function autoCompleteTimeout(invocationTime) {
-  if (keyPressedTime > invocationTime)
+  if (keyPressedTime > invocationTime) {
     return;
-//  autoCompleteTimeoutId = null;
+  }
   if (!keyPressedImgId)
     return;
 
 	var img = document.getElementById(keyPressedImgId);
-	if (!img)
+	if (!img) {
 	  return true;
+	}  
+	
 	if (keyPressedElement.value.length == 0)
 	  return;
 	onClickPopup1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);

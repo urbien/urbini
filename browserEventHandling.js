@@ -156,9 +156,10 @@
       else
         return null;
     }
-
+  
     addEvent(window, 'load', function() {setTimeout(interceptLinkClicks, 0);}, false);
-
+    //addEvent(window, 'unload', function() {java.lang.System.out.println("unload");}, false);
+    
     /* this function supposed to fix a problem (with above functions) on Mac IE5 
      * but it fails on Win IE6 ... so may be somebody can figure it out - see source of info:
      * http://simon.incutio.com/archive/2004/05/26/addLoadEvent
@@ -176,7 +177,8 @@
       }
     }
     */
-
+    
+   var formInitialValues;
    if (window.parent == window) {
      // add handler to smartlistbox images  
      if (typeof onClickPopup != 'undefined') {
@@ -188,22 +190,29 @@
          addEvent(image, 'click', onClickPopup, false);
        }  
      }
-     // add handler to autocomplete filter form text fields 
+     
+     // 1. add handler to autocomplete filter form text fields
+     // 2. save initial values of all fields
      if (typeof autoComplete != 'undefined') {
        var forms = document.forms;
+       formInitialValues = new Array(forms.length);
        for (i=0; i<forms.length; i++) {
          var form = forms[i];
+         var initialValues = new Array(form.elements.length);
+         formInitialValues[form.name] = initialValues;
          if (form.id != 'filter')
            continue;
+         addEvent(form, 'submit', popupOnSubmit, false);         
          for (j=0; j<form.elements.length; j++) {
            var elem = form.elements[j];
+           initialValues[elem.name] = elem.value;
            if (elem.type.toUpperCase() == 'TEXT' && // only on TEXT fields 
                elem.id) {                           // and those that have ID
-             addEvent(elem, 'keypress', autoComplete,              false);
-             addEvent(elem, 'keydown',  autoCompleteBackspaceHack, false);
-             addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
-             addEvent(elem, 'blur',     autoCompleteOnBlur,        false);
-             addEvent(elem, 'mouseout', autoCompleteOnMouseout,    false);
+         //    addEvent(elem, 'keypress', autoComplete,              false);
+         //    addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
+         //    addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
+         //    addEvent(elem, 'blur',     autoCompleteOnBlur,        false);
+         //    addEvent(elem, 'mouseout', autoCompleteOnMouseout,    false);
              //addEvent(elem, 'change',   onFormFieldChange, false);
              //addEvent(elem, 'blur',     onFormFieldChange, false);
              //addEvent(elem, 'click',    onFormFieldClick,  false);
@@ -211,5 +220,32 @@
          }
        }  
      }
+   }
+
+   // returns true if the field was modified since the page load
+   function wasFormFieldModified(elem) {
+     var initialValue = getFormFieldInitialValue(elem);
+     if (initialValue == null)
+       return true; // assume it was modified if no info exists
+     if (elem.value == initialValue) {
+       //alert("not modified: elem.name: " + elem.name + ", initialValue: " + initialValue);
+       return false;
+     }  
+     else {
+       alert("modified: elem.name: " + elem.name + ", initialValue: " + initialValue);           
+       return true;
+     }  
+   }
+   // returns value of the field saved right after the page load (does not support multiple selections)
+   function getFormFieldInitialValue(elem) {
+     if (formInitialValues) {
+       var formValues = formInitialValues[elem.form.name];
+       if (formValues) {
+         var value = formValues[elem.name];
+//         alert("formValues[" + elem.name + "]=" + formValues[elem.name]);         
+         return value;
+       }
+     }
+     return null;
    }
 

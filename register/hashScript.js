@@ -267,23 +267,22 @@ function hash(form, login_url) {
           url += "1"; 
         } else {
           url += escape(form.elements[j].value);
-        }
-      }
+        }      
+      }    
       // indicate the password is hashed.
       url += "&.hash=1";
       if(js == 0){
         url += "&.js=1";
       }
       url += "&.md5=1";
-      //alert("url=" + url);
-      location.href=url;
       // prevent from running this again. Allow the server response to submit the form directly
-      form.onsubmit=null;
-//java.lang.System.out.println("JAVA SCRIPT: " + url);
+      form.onsubmit = null;
+      location.href = url;     
+//java.lang.System.out.println("JAVA SCRIPT1: " + url);
       // abort normal form submission
       return false;
     }
-//java.lang.System.out.println("JAVA SCRIPT: " + url);          
+//java.lang.System.out.println("JAVA SCRIPT2: " + url);          
     // allow normal form submission
     return true;
 }

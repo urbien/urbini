@@ -9,7 +9,7 @@
      <!--menu toolbar="toolbar3" exclude="Support" activate="onMouseOver"/-->
 
      <center><b><font color="red"><errorMessage /></font></b></center>
-     <form action="FormRedirect" id="filter" name="tablePropertyList" method="post" >
+     <form id="filter" name="tablePropertyList" method="post" >
        <tablePropertyList action="mkResource"/>
        <input type="hidden" name="returnHtml" value="list.html"/>
        <input type="hidden" name="html" value="mkResource.html"/>
