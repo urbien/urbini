@@ -34,12 +34,16 @@
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
     <div id="pane2">
+<table width="100%">
+<tr>
+      <edit html="localSearchResults.html"/>
       <addNewResource html="mkResource.html"/> 
       <delete/> 
-      <edit html="localSearchResults.html"/><br/>
-      <reloadDocuments/>
       <createResources/><br/>
+      <reloadDocuments/>
       <setAsHomePage />
+</tr>
+</table>
       <br/><pieChart/>
     </div>
 
