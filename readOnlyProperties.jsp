@@ -26,6 +26,7 @@
     <tr> 
     <td colspan="2">
     <!--form name="tablePropertyList" action="FormRedirect"-->
+      <span class="xl"><center><errorMessage /></center></span>
       <subscribe/>
       <!--siteHistory /-->
       <readOtherSiteInfo />
