@@ -1573,7 +1573,7 @@ function menuResetRow(div) {
   }  
 }
 
-/*********************************** Tootltips ************************************/
+/*********************************** Tooltips ************************************/
 function replaceTooltips0(elements) {
   var llen;
   llen = elements.length;
