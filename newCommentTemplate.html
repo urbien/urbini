@@ -15,17 +15,17 @@
 <table>
   <tbody>
     <tr>
-      <td style="vertical-align: bottom;"><img src="images/email.gif" align="absmiddle" border="0" width="22"></td>
-      <td style="vertical-align: bottom;">
-        <a href="&[mailto];">
-         Email comment
-        </a> or
-      </td>
       <td style="vertical-align: bottom;">
          <img alt="Submit online" title="Submit online and see the results immediately" src="icons/web.gif" style="width: 22px; height: 22px;">
       </td>
       <td style="vertical-align: bottom;">
-        <a href="about:blank" onClick="document.getElementById('newCommentTable').style.display=''; return false;" title="Submit online and see the results immediately">Submit comment</a>
+        <a href="about:blank" onClick="document.getElementById('newCommentTable').style.display=''; document.forms['newComment'].elements['title'].focus(); return false;" title="Submit online and see the results immediately">Submit comment</a> or
+      </td>
+      <td style="vertical-align: bottom;"><img src="images/email.gif" align="absmiddle" border="0" style="width: 22px; height: 22px;" title="submit using mailer istalled on your PC, e.g Outlook, Thunderbird, Eudora"></td>
+      <td style="vertical-align: bottom;">
+        <a href="&[mailto];" title="submit using mailer istalled on your PC, e.g Outlook, Thunderbird, Eudora">
+         Email comment
+        </a>
       </td>
     </tr>
   </tbody>
@@ -47,11 +47,11 @@
           <tbody>
             <tr>
               <td style="width: 10%; vertical-align: middle; text-align: left;"><span class="xs"><b><nobr>Title</nobr></b></span> </td>
-              <td><span class="xs"><input class="xs" size="106" name="title"></span></td>
+              <td><span class="xs"><input class="xs" size="110" name="title"></span></td>
             </tr>
             <tr>
               <td><span class="xs"><b><nobr>Comment</nobr></b></span> </td>
-              <td><textarea name="body" rows="5" cols="80" wrap="soft"></textarea></td>
+              <td><span class="xs"><textarea name="body" rows="5" cols="130" wrap="soft"></textarea></span></td>
             </tr>
           </tbody>
         </table>
