@@ -1406,7 +1406,7 @@ function getFormFilters(form, allFields) {
           if (field.checked == false)
             continue;
 	      }
-	      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
+	      if (value.indexOf(" --", value.length - 3) != -1)
 	         continue;
       }
     }
@@ -1477,7 +1477,7 @@ function hideResetRow(div, currentFormName, originalProp) {
 	  
   if (!value || value == '')  
     valueIsSet = false;
-  else if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
+  else if (value.indexOf(" --", value.length - 3) != -1)
     valueIsSet = false;
 
   if (valueIsSet) {
