@@ -1,0 +1,128 @@
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<LINK href="styles/properties.css" type=text/css rel=stylesheet>
+<LINK href="styles/stora.css" type=text/css rel=stylesheet>
+<META content="MSHTML 6.00.2800.1106" name=GENERATOR>
+
+<style>
+	#tabdiv { z-index: 2; left: 165px; position: absolute; top: 95px }
+	#textdiv { z-index: 1; padding-top: 1px; position: absolute; top: 85px; 
+	              border-top-width: 1px; padding-right: 5px; padding-left: 5px; 
+	              border-left-width: 1px; border-left-color: #000099; left: 15px; 
+	              border-bottom-width: 10px; border-bottom-color: #000099; 
+	              padding-bottom: 10px; width: 150px; color: black; border-top-color: #000099; 
+                    background-color: #eeeeff; border-right-width: 1px; border-right-color: #000099
+               }
+	#tabdiv1 { z-index: 2; left: 165px; position: absolute; top: 165px }
+	#textdiv1 { z-index: 1; padding-top: 1px; position: absolute; top: 85px; 
+	              border-top-width: 1px; padding-right: 5px; padding-left: 5px; 
+	              border-left-width: 1px; border-left-color: #000099; left: 15px; 
+	              border-bottom-width: 10px; border-bottom-color: #000099; 
+	              padding-bottom: 10px; width: 150px; color: black; border-top-color: #000099; 
+                    background-color: #eeeeff; border-right-width: 1px; border-right-color: #000099
+               }
+</style>
+
+<SCRIPT language=JavaScript1.2>
+	// Courtesy of SimplytheBest.net (http://simplythebest.net/info/dhtml_scripts.html)
+
+	if (document.layers) {n=1;ie=0}
+	if (document.all) {n=0;ie=1}
+
+	function init() {
+		if (n) {
+			tab = document.tabDiv;
+			poptext = document.textdiv;
+			tab1 = document.tabDiv1;
+			poptext1 = document.textdiv1;
+		}
+		if (ie) {
+			tab = tabDiv.style;
+			poptext = textdiv.style;
+			tab1 = tabDiv1.style;
+			poptext1 = textdiv1.style;
+		}
+	}
+
+	var tabShow=1;
+	function hidepoptext() {
+		if (tabShow == 1) {
+			if (n) {
+				tab.visibility = "hide";
+				tab.left = 0;
+				tab.visibility = "show";
+				poptext.visibility = "hide";
+				tabShow = 0;
+				return;
+			}
+			if (ie) {
+				tab.visibility = "hidden";
+				tab.left = 0;
+				tab.visibility = "visible";
+				poptext.visibility = "hidden";
+				tabShow = 0;
+				return;
+			}
+		}
+		if (tabShow == 0) {
+			if (tabShow1 == 1)
+				hidepoptext1();
+			if (n) {
+				tab.visibility = "hide";
+				tab.left = 165;
+				tab.visibility = "show";
+				poptext.visibility = "show";
+				tabShow = 1;
+			}
+			if (ie) {
+				tab.visibility = "hidden";
+				tab.left = 165;
+				tab.visibility = "visible";
+				poptext.visibility = "visible";
+				tabShow = 1;
+			}
+		}
+	}
+
+	var tabShow1=1;
+	function hidepoptext1() {
+		if (tabShow1 == 1) {
+			if (n) {
+				tab1.visibility = "hide";
+				tab1.left = 0;
+				tab1.visibility = "show";
+				poptext1.visibility = "hide";
+				tabShow1 = 0;
+				return;
+			}
+			if (ie) {
+				tab1.visibility = "hidden";
+				tab1.left = 0;
+				tab1.visibility = "visible";
+				poptext1.visibility = "hidden";
+				tabShow1 = 0;
+				return;
+			}
+		}
+		if (tabShow1 == 0) {
+			if (tabShow == 1)
+				hidepoptext();
+			if (n) {
+				tab1.visibility = "hide";
+				tab1.left = 165;
+				tab1.visibility = "show";
+				poptext1.visibility = "show";
+				tabShow1 = 1;
+			}
+			if (ie) {
+				tab1.visibility = "hidden";
+				tab1.left = 165;
+				tab1.visibility = "visible";
+				poptext1.visibility = "visible";
+				tabShow1 = 1;
+			}
+		}
+	}
+</SCRIPT>
+</head>
+
