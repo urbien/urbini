@@ -17,7 +17,7 @@
        <input type="hidden" name="action" value="mkResource"></input>
        <br />
        <center>
-         <input type="submit" name="saveAndCancel" value="  Submit  "></input>
+         <input type="submit" name="submit" value="  Submit  "></input>
          &#160;&#160;
          <input type="submit" name="cancel" value="  Cancel  "></input>
        </center>

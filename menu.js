@@ -616,31 +616,42 @@ function popupRowOnClick(e) {
     prop = propertyShortName.substring(0, idx);
 
   var formField;
+  var chosenTextField = form.elements[originalProp];
+  var formFieldVerified = form.elements[propertyShortName + "_verified"];
+  if (formFieldVerified) 
+    formFieldVerified.value = 'y'; // value was modified and is verified since it is not typed but is chosen from the list
+
   if (originalProp.indexOf("_class") == -1) {
     var select = prop + "_select";
 
     formField = form.elements[select];
-    formField.value = tr.id; // property value corresponding to a listitem
-    var chosenTextField = form.elements[originalProp];
 
     var items = tr.getElementsByTagName('td');
     var val = items[1].innerHTML;
     var idx = val.lastIndexOf(">");
-    if (tr.id == '$clear') 
+    if (tr.id == '$clear') {
       chosenTextField.value = '';
-    else 
+      formField.value = '';
+      if (formFieldVerified) 
+        formFieldVerified.value = 'n';
+      var iclass = prop + "_class";
+      var formFieldClass = form.elements[iclass];
+      if (formFieldClass)
+        formFieldClass.value = '';
+      openedPopups[currentDiv.id] = null;
+//      clearThisPopup(currentDiv);
+    }
+    else  {
       chosenTextField.value = val.substring(idx + 1);
+      formField.value = tr.id; // property value corresponding to a listitem
+    }
     chosenTextField.style.backgroundColor='#ffffff';
   }
   else {
     var iclass = prop + "_class";
-    formField = form.elements[iclass];
-    formField.value = tr.id; // property value corresponding to a listitem
+    var formFieldClass = form.elements[iclass];
+    formFieldClass.value = tr.id; // property value corresponding to a listitem
   }
-  var formFieldVerified = form.elements[propertyShortName + "_verified"];
-  if (formFieldVerified) {
-    formFieldVerified.value = 'y'; // value was modified and is verified since it is not typed but is chosen from the list
-  }  
   var divId = prop + "_" + formName;
   var div = document.getElementById(divId);
   menuClose2(div);
@@ -650,7 +661,6 @@ function popupRowOnClick(e) {
   var clazz = form.elements[propertyShortName + "_class"];
   if (typeof clazz == 'undefined')
     return true;
-  
       
   return true;
 }
@@ -664,6 +674,17 @@ function clearOtherPopups(div) {
 //alert("openedPopup=" + p.id)    
     if (p != div) {
       openedPopups[i] = null;
+    }  
+  }
+}
+
+function clearThisPopup(div) {
+//alert("div=" + div.id + ", openedPopups.length=" + openedPopups.length)    
+  for (i in openedPopups) {
+    var p = openedPopups[i];
+    if (p == div) {
+      openedPopups[i] = null;
+      break;
     }  
   }
 }
