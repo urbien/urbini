@@ -2,6 +2,7 @@
 <div nonPda="T">
 <font color="red"><b><errorMessage /></b></font>
 <hideBlock id="hideBlock">      
+<watchNote/>
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
