@@ -20,7 +20,8 @@
     </table>
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top"><td colspan="2">
-
+     <font color="red"><center><b><errorMessage /></b></center></font>
+   
     <form name="tablePropertyList" method="post" action="FormRedirect?edit=true">
       <tablePropertyList />
       <div align="right"><measurement/></div>

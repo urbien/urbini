@@ -1,13 +1,12 @@
 Dear &[firstName]; &[lastName];,
+<br><br>
 
-Comment was added to the &[class]; to which you subscribe.
-Click on the link below to see the details:
-
-&[url];
+Comment was added to the &[class]: <a href="&[url];">&[urlDisplayName];</a> 
 
 <br><br>
 Customer Service
 <br>
 HudsonFog 
 
-<b><b>Powered by <a href="http://hudsonfog.com">HudsonFog</a>
+<br><br>
+Powered by <a href="http://hudsonfog.com">HudsonFog</a>

@@ -1,13 +1,10 @@
 Dear &[firstName]; &[lastName];,
+<br><br>
 
-You are now subscribed to alerts on the &[class]; specified below.
-Please click on the link to see the details:
-
-&[url];
+You are now subscribed to alerts on the &[class]: <a href="&[url];">&[urlDisplayName];</a>
 
 <br><br>
 Customer Service
 <br>
 HudsonFog 
-
-<b><b>Powered by <a href="http://hudsonfog.com">HudsonFog</a>
+<br><br>Powered by <a href="http://hudsonfog.com">HudsonFog</a>
