@@ -73,31 +73,12 @@
     </tr>
 
     <tr><td width="1%"></td><td width="98%"><br/>
-    <!--td colspan="3"><br/-->
       <font color="red"><center><b><errorMessage /></b></center></font>
-      <!--siteHistory /-->
       <readOtherSiteInfo />
       <tablePropertyList />
 <hideBlock id="hideBlock1">      
       <div align="right"><measurement/></div>
       <p/>
-
-      <table width="100%" cellpadding="3" cellspacing="0" border="0">
-      <tr class="dark">
-<td width="50%">
-        <!--edit html="editProperties.html"/>
-        <delete/>
-        <invite/> 
-        <reloadDocuments/-->
-</td>
-        <td valign="top" width="50%"><subscribe/></td>
-      </tr>
-      </table>
-
-      <setAsHomePage />
-
-    <br/><br/>
-      <!--comments /--> 
       <newComment/>
 </hideBlock>      
     </td><td width="1%"></td></tr>
