@@ -24,9 +24,6 @@
   <script language="JavaScript" src="calendar/calendar.js"></script>
   <script language="JavaScript" src="gantt/dependencies.js"></script>
   <script language="JavaScript" src="pngfix.js"></script>
-  <!--[if gte IE 5.5000]> our xml parser removes all comments :-(
-  <![endif]-->
-
 
   </head>
 
