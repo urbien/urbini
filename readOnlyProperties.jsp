@@ -7,6 +7,7 @@
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr><td colspan="3">
       <subscribeNote/>
+      <div align="center"><font color="red"><b><errorMessage /></b></font></div>
     </td></tr>
     
     <tr  valign="top" class="keywordsearch">
@@ -71,7 +72,6 @@
     </tr>
 
     <tr><td width="1%"></td><td width="98%"><br/>
-      <div align="center"><font color="red"><b><errorMessage /></b></font></div>
       <readOtherSiteInfo />
       <tablePropertyList />
 <hideBlock id="hideBlock1">      
