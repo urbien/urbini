@@ -23,6 +23,7 @@
     <tr><td valign="top">  
     <form action="list.html" name="siteResourceList">
       <div align="left"><backLink /></div>
+      <tree/>
       <siteResourceList />
       <div align="right"><measurement/></div>
       <br/>
@@ -60,6 +61,7 @@
     <tr valign="top"><td>
     <form action="list.html" name="siteResourceList">
       <div align="left"><backLink /></div>
+      <tree/>
       <siteResourceList />
       <div align="right"><measurement/></div>
     </form>
