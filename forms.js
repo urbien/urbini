@@ -51,3 +51,8 @@ function trim(s) {
   }
   return s; 
 }
+
+/* used to show full text in a long text property, like Demand.description */
+function displayFullText(div, text) {
+  document.getElementById(div).innerHTML = text;
+}
