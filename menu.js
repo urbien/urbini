@@ -708,6 +708,9 @@ function popupRowOnClick(e) {
       if (formFieldClass)
         formFieldClass.value = '';
       openedPopups[currentDiv.id] = null;
+      var imgId  = prop + "_class_img";
+      document.getElementById(imgId).src = "icons/blank.gif";
+      document.getElementById(imgId).title = "";
     }
     else  {
       chosenTextField.value = val.substring(idx + 1);
