@@ -1,8 +1,4 @@
 <html>
-<head>
-  <base href="serverName"/>
-<link rel="stylesheet" href="style.css" type="text/css"/>
-</head>
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
