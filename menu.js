@@ -3,7 +3,8 @@
  */ 
 //var MenuArray = new Array();
 
-var DarkMenuItem  = '#B6BDD2';
+//var DarkMenuItem  = '#B6BDD2';
+var DarkMenuItem  = '#dee6e6';
 var LightMenuItem = '';  
 
 var HIDDEN  =  'hidden';
@@ -229,9 +230,9 @@ function docjslib_getRealTop(imgElem) {
 }
 
 function menu_onmouseover(itemcode) {
-  document.getElementById(itemcode + 'td1').style.backgroundColor = '#B6BDD2';
-  document.getElementById(itemcode + 'td2').style.backgroundColor = '#B6BDD2';
-  document.getElementById(itemcode + 'td3').style.backgroundColor = '#B6BDD2';
+  document.getElementById(itemcode + 'td1').style.backgroundColor = DarkMenuItem;
+  document.getElementById(itemcode + 'td2').style.backgroundColor = DarkMenuItem;
+  document.getElementById(itemcode + 'td3').style.backgroundColor = DarkMenuItem;
   return true;
 }
 
