@@ -50,6 +50,4 @@
 </tr></table>
 <br/><br/><div align="left"><span class="xs"><hudsonFog />
 </span></div>
-
-	<script language="JavaScript" src="calendar/cals_init.js"></script>
 </html>

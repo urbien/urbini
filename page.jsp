@@ -28,6 +28,7 @@
 
   <br></br>
   <include name="include/commonFooter"/>
+  <include name="requiredFooter"/>
 </div>
 
 <div pda="T">
@@ -47,9 +48,8 @@
     </td>
   </tr>
   </table>
+  <include name="requiredFooter"/>
 </div>
-
-<script language="JavaScript" src="calendar/cals_init.js"></script>
 
 </html>
 

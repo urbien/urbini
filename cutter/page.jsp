@@ -13,4 +13,5 @@
 
 <br></br>
 <include name="include/commonFooter"/>
+  <include name="requiredFooter"/>
 </html>
