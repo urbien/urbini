@@ -30,7 +30,7 @@
     </td>
     <td width="10%" id="rightPanelPropertySheet" valign="top" align="left">
       <br/>
-      <menu toolbar="filterParallelCallOff" type="onpage" title="false"/>
+      <menu toolbar="filterParallelCreateList" type="onpage" title="false"/>
     </td>
 </tr>
 
@@ -55,7 +55,7 @@
       <menu toolbar="toolbar1"/>
       <menu toolbar="transport"/>
       <menu toolbar="search"/>
-      <menu toolbar="filterParallelCallOff"/>
+      <menu toolbar="filterParallelCreateList"/>
       <menu toolbar="toolbar3"/>
       
       <print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
