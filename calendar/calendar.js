@@ -388,24 +388,25 @@ function TCN(TC0W, TC0X, TC0Y) {
 function create1() {
   //if (!document.body || !document.body.innerHTML)
   //  return;
+  var thistcc = this.TCC;
   var TC0c = new TC0d();
   TC0c.TC0e('<div id="caldiv',
-            this.TCC,
+            thistcc,
             '" name="caldiv',
-            this.TCC,
-            '" style=" position: absolute; left:12; top:12; width:170; height:170; visibility:hidden; z-index: ',
-            this.TCC + 1,
+            thistcc,
+            '" style=" position: absolute; left:12; top:12; visibility:hidden; z-index: ',
+            thistcc + 1,
             '"></div>');
 
   if (TC9.TC0f) {
     TC0c.TC0e('<iframe id="cal_iframe',
-              this.TCC,
+              thistcc,
               '" src="',
               'about:blank',
               '"  name="cal_iframe',
-              this.TCC,
+              thistcc,
               '" style="position: absolute; left:0; top:0; width:0; height:0; visibility:hidden; filter:alpha(opacity=0); z-index: ',
-              (this.TCC),
+              (thistcc),
               '"></iframe>')
   }
   //alert(TC0c.TC0g());
@@ -413,140 +414,143 @@ function create1() {
 }
 
 function TC0B() {
-  var calRef = document.getElementById('caldiv' + this.TCC);
+  var thistcc = this.TCC;
+  var calRef = document.getElementById('caldiv' + thistcc);
 
-  if (!document.body || !document.body.innerHTML || this.initialized)
+  //if (!document.body || !document.body.innerHTML || this.initialized)
+   // return;
+if (this.initialized)
     return;
-
   this.initialized = true;
 
   if (this.TC02 != 2)
     this.TC04.setSeconds(0);
-
+  
   var signal = TC9.TC0b ? 'onclick' : 'onchange';
   var TC0c = new TC0d();
+  
   TC0c.TC0e('<table ',
             this.TCO('outertable'),
             '><tr><td><table',
             this.TCO('navtable'),
             '><tr>',
             (this.TCB.todaycell && this.TCB.todayimage ? '<td rowspan="2"' + this.TCO('todaycell')
-                + '><a href="javascript:  A_CALENDARS[' + this.TCC + '].TC0G(null, '
-                + this.TCU(this.TC03) + ');"><img name="cal_itoday' + this.TCC + '"' + this.TCO(
+                + '><a href="javascript:  A_CALENDARS[' + thistcc + '].TC0G(null, '
+                + this.TCU(this.TC03) + ');"><img name="cal_itoday' + thistcc + '"' + this.TCO(
                                                                                            'todayimage') + '></a></td>'
                 : ''),
             '');
   TC0c.TC0e('<td rowspan="2"',            this.TCO('monthselectorcell'),
-            '><select name="cal_mon',     this.TCC + '"',
+            '><select name="cal_mon',     thistcc + '"',
             this.TCO('monthselector'),    ' id="cal_mon',
-            this.TCC,                     '"  ',
+            thistcc,                     '"  ',
             signal,                       '="A_CALENDARS[',
-            this.TCC,                     '].TC0G(\'mon\')"></select></td><td',
+            thistcc,                     '].TC0G(\'mon\')"></select></td><td',
             this.TCO('monthscrollcell'),  '><a href="#" name="cal_amminus',
-            this.TCC,                     '" id="cal_amminus',
-            this.TCC,                     '"><img name="cal_imminus',
-            this.TCC,                     '" id="cal_imminus',
-            this.TCC,                     '" ',
+            thistcc,                     '" id="cal_amminus',
+            thistcc,                     '"><img name="cal_imminus',
+            thistcc,                     '" id="cal_imminus',
+            thistcc,                     '" ',
             this.TCO('monthminusimage'),  '></a></td><td rowspan="2"',
             this.TCO('yearselectorcell'), '><select name="cal_year',
-            this.TCC,                     '"',
+            thistcc,                     '"',
             this.TCO('yearselector'),     ' id="cal_year',
-            this.TCC,                     '"  ',
+            thistcc,                     '"  ',
             signal,                       '="A_CALENDARS[',
-            this.TCC,                     '].TC0G(\'year\')"></select></td><td',
+            thistcc,                     '].TC0G(\'year\')"></select></td><td',
             this.TCO('yearscrollcell'),   '><a href="#"  name="cal_ayminus',
-            this.TCC,                     '" id="cal_ayminus',
-            this.TCC,                     '" ><img name="cal_iyminus',
-            this.TCC,                     '" id="cal_iyminus',
-            this.TCC,                     '" ',
+            thistcc,                     '" id="cal_ayminus',
+            thistcc,                     '" ><img name="cal_iyminus',
+            thistcc,                     '" id="cal_iyminus',
+            thistcc,                     '" ',
             this.TCO('yearminusimage'),   '></a></td></tr><tr><td',
             this.TCO('monthscrollcell'),  '><a href="#" name="cal_amplus',
-            this.TCC,                     '" id="cal_amplus',
-            this.TCC,                     '"><img name="cal_implus',
-            this.TCC,                     '" id="cal_implus',
-            this.TCC,                     '" ',
+            thistcc,                     '" id="cal_amplus',
+            thistcc,                     '"><img name="cal_implus',
+            thistcc,                     '" id="cal_implus',
+            thistcc,                     '" ',
             this.TCO('monthplusimage'),   '></a></td><td',
             this.TCO('yearscrollcell'),   '><a href="#" name="cal_ayplus',
-            this.TCC,                     '" id="cal_ayplus',
-            this.TCC,                     '"><img name="cal_iyplus',
-            this.TCC,                     '" id="cal_iyplus',
-            this.TCC,                     '" ',
+            thistcc,                     '" id="cal_ayplus',
+            thistcc,                     '"><img name="cal_iyplus',
+            thistcc,                     '" id="cal_iyplus',
+            thistcc,                     '" ',
             this.TCO('yearplusimage'),    '></a></td></tr></table></td></tr><tr><td id="cal_grid',
-            this.TCC,                     '"',
+            thistcc,                     '"',
             this.TCO('gridcell'),         '>',
             this.TC0C(),                  '</td></tr>');
 
   if (this.TC02) {
     TC0c.TC0e('<tr><td align="center"><table', this.TCO('timetable'),            '><tr><td rowspan="2"',
-              this.TCO('timeselectorcell'),    '><select name="cal_hour',        this.TCC,
-              '" id="cal_hour',                this.TCC,                         '"   ',
+              this.TCO('timeselectorcell'),    '><select name="cal_hour',        thistcc,
+              '" id="cal_hour',                thistcc,                         '"   ',
               this.TCO('timeselector'),        ' ',                              signal,
-              '="A_CALENDARS[',                this.TCC,                         '].TC0G(\'time\')"></select></td><td',
-              this.TCO('timescrollcell'),      '><a href="#" name="cal_ahminus', this.TCC,
-              '" id="cal_ahminus',             this.TCC,                         '"><img name="cal_ihminus',
-              this.TCC,                        '" id="cal_ihminus',              this.TCC,
+              '="A_CALENDARS[',                thistcc,                         '].TC0G(\'time\')"></select></td><td',
+              this.TCO('timescrollcell'),      '><a href="#" name="cal_ahminus', thistcc,
+              '" id="cal_ahminus',             thistcc,                         '"><img name="cal_ihminus',
+              thistcc,                        '" id="cal_ihminus',              thistcc,
               '" ',                            this.TCO('hourminusimage'),       '></a></td><td rowspan="2"',
-              this.TCO('timeselectorcell'),    '><select name="cal_min',         this.TCC,
-              '" id="cal_min',                 this.TCC,                         '" ',
+              this.TCO('timeselectorcell'),    '><select name="cal_min',         thistcc,
+              '" id="cal_min',                 thistcc,                         '" ',
               this.TCO('timeselector'),        ' ',                              signal,
-              '="A_CALENDARS[',                this.TCC,                         '].TC0G(\'time\')"></select></td><td',
-              this.TCO('timescrollcell'),      '><a href="#" name="cal_aiminus', this.TCC,
-              '" id="cal_aiminus',             this.TCC,                         '"><img name="cal_iiminus',
-              this.TCC,                        '" id="cal_iiminus',              this.TCC,
+              '="A_CALENDARS[',                thistcc,                         '].TC0G(\'time\')"></select></td><td',
+              this.TCO('timescrollcell'),      '><a href="#" name="cal_aiminus', thistcc,
+              '" id="cal_aiminus',             thistcc,                         '"><img name="cal_iiminus',
+              thistcc,                        '" id="cal_iiminus',              thistcc,
               '" ',                            this.TCO('minminusimage'),        '></a></td>');
 
     if (this.TC02 == 1)
       TC0c.TC0e('<td rowspan="2"',                                                   this.TCO('timeselectorcell'),
-                '><select name="cal_ap',                                             this.TCC,
-                '" id="cal_ap',                                                      this.TCC,
+                '><select name="cal_ap',                                             thistcc,
+                '" id="cal_ap',                                                      thistcc,
                 '" ',                                                                this.TCO('timeselector'),
                 ' ',                                                                 signal,
-                '="A_CALENDARS[',                                                    this.TCC,
-                '].TC0G(\'time\')"></select></td><td><a href="#" name="cal_aaminus', this.TCC,
-                '" id="cal_aaminus',                                                 this.TCC,
-                '"><img name="cal_iaminus',                                          this.TCC,
-                '" id="cal_iaminus',                                                 this.TCC,
+                '="A_CALENDARS[',                                                    thistcc,
+                '].TC0G(\'time\')"></select></td><td><a href="#" name="cal_aaminus', thistcc,
+                '" id="cal_aaminus',                                                 thistcc,
+                '"><img name="cal_iaminus',                                          thistcc,
+                '" id="cal_iaminus',                                                 thistcc,
                 '" ',                                                                this.TCO('apminusimage'),
                 '></a></td>');
 
     if (this.TC02 == 2)
       TC0c.TC0e('<td rowspan="2"',                                                   this.TCO('timeselectorcell'),
-                '><select name="cal_sec',                                            this.TCC,
-                '" id="cal_sec',                                                     this.TCC,
+                '><select name="cal_sec',                                            thistcc,
+                '" id="cal_sec',                                                     thistcc,
                 '" ',                                                                this.TCO('timeselector'),
                 ' ',                                                                 signal,
-                '="A_CALENDARS[',                                                    this.TCC,
-                '].TC0G(\'time\')"></select></td><td><a href="#" name="cal_asminus', this.TCC,
-                '" id="cal_asminus',                                                 this.TCC,
-                '"><img name="cal_isminus',                                          this.TCC,
-                '" id="cal_isminus',                                                 this.TCC,
+                '="A_CALENDARS[',                                                    thistcc,
+                '].TC0G(\'time\')"></select></td><td><a href="#" name="cal_asminus', thistcc,
+                '" id="cal_asminus',                                                 thistcc,
+                '"><img name="cal_isminus',                                          thistcc,
+                '" id="cal_isminus',                                                 thistcc,
                 '" ',                                                                this.TCO('secminusimage'),
                 '></a></td>');
 
-    TC0c.TC0e('</tr><tr><td><a href="#" name="cal_ahplus',  this.TCC,
-              '" id="cal_ahplus',                           this.TCC,
-              '"><img name="cal_ihplus',                    this.TCC,
-              '" id="cal_ihplus',                           this.TCC,
+    TC0c.TC0e('</tr><tr><td><a href="#" name="cal_ahplus',  thistcc,
+              '" id="cal_ahplus',                           thistcc,
+              '"><img name="cal_ihplus',                    thistcc,
+              '" id="cal_ihplus',                           thistcc,
               '" ',                                         this.TCO('hourplusimage'),
-              '></a></td><td><a href="#" name="cal_aiplus', this.TCC,
-              '" id="cal_aiplus',                           this.TCC,
-              '"><img name="cal_iimplus',                   this.TCC,
-              '" id="cal_iiplus',                           this.TCC,
+              '></a></td><td><a href="#" name="cal_aiplus', thistcc,
+              '" id="cal_aiplus',                           thistcc,
+              '"><img name="cal_iimplus',                   thistcc,
+              '" id="cal_iiplus',                           thistcc,
               '" ',                                         this.TCO('minplusimage'),
               '></a></td>');
 
     if (this.TC02 == 1)
       TC0c.TC0e('<td',                     this.TCO('timescrollcell'), '><a href="#" name="cal_aaplus',
-                this.TCC,                  '" id="cal_aaplus',         this.TCC,
-                '"><img name="cal_iaplus', this.TCC,                   '" id="cal_iaplus',
-                this.TCC,                  '" ',                       this.TCO('applusimage'),
+                thistcc,                  '" id="cal_aaplus',         thistcc,
+                '"><img name="cal_iaplus', thistcc,                   '" id="cal_iaplus',
+                thistcc,                  '" ',                       this.TCO('applusimage'),
                 '></a></td>');
 
     if (this.TC02 == 2)
       TC0c.TC0e('<td',                     this.TCO('timescrollcell'), '><a href="#" name="cal_asplus',
-                this.TCC,                  '" id="cal_asplus',         this.TCC,
-                '"><img name="cal_isplus', this.TCC,                   '" id="cal_isplus',
-                this.TCC,                  '" ',                       this.TCO('secplusimage'),
+                thistcc,                  '" id="cal_asplus',         thistcc,
+                '"><img name="cal_isplus', thistcc,                   '" id="cal_isplus',
+                thistcc,                  '" ',                       this.TCO('secplusimage'),
                 '></a></td>');
     TC0c.TC0e('</tr></table></td></tr>')
   }
@@ -555,13 +559,13 @@ function TC0B() {
 
   calRef.innerHTML = TC0c.TC0g();
 
-  this.TC0h = this.TCE('cal_mon' + this.TCC);
-  this.TC0i = this.TCE('cal_year' + this.TCC);
-  this.TC0j = this.TCE('cal_grid' + this.TCC);
-  this.TC0k = this.TCE('caldiv' + this.TCC);
+  this.TC0h = this.TCE('cal_mon' + thistcc);
+  this.TC0i = this.TCE('cal_year' + thistcc);
+  this.TC0j = this.TCE('cal_grid' + thistcc);
+  this.TC0k = this.TCE('caldiv' + thistcc);
 
   if (TC9.TC0f)
-    this.TC0l = this.TCE('cal_iframe' + this.TCC);
+    this.TC0l = this.TCE('cal_iframe' + thistcc);
 
   this.TC0m = this.TCE(this.TCH, 'form');
   this.TC0m.value = this.TC09;
@@ -571,43 +575,43 @@ function TC0B() {
     this.TC0o = this.TCE(this.TCI, 'img')
   }
 
-  this.TC0p = this.TCE('cal_implus' + this.TCC, 'img');
-  this.TC0q = this.TCE('cal_imminus' + this.TCC, 'img');
-  this.TC0r = this.TCE('cal_iyplus' + this.TCC, 'img');
-  this.TC0s = this.TCE('cal_iyminus' + this.TCC, 'img');
-  this.TC0t = this.TCE('cal_amplus' + this.TCC);
-  this.TC0u = this.TCE('cal_amminus' + this.TCC);
-  this.TC0v = this.TCE('cal_ayplus' + this.TCC);
-  this.TC0w = this.TCE('cal_ayminus' + this.TCC);
+  this.TC0p = this.TCE('cal_implus' + thistcc, 'img');
+  this.TC0q = this.TCE('cal_imminus' + thistcc, 'img');
+  this.TC0r = this.TCE('cal_iyplus' + thistcc, 'img');
+  this.TC0s = this.TCE('cal_iyminus' + thistcc, 'img');
+  this.TC0t = this.TCE('cal_amplus' + thistcc);
+  this.TC0u = this.TCE('cal_amminus' + thistcc);
+  this.TC0v = this.TCE('cal_ayplus' + thistcc);
+  this.TC0w = this.TCE('cal_ayminus' + thistcc);
 
   if (this.TC02) {
-    this.TC0x = this.TCE('cal_hour' + this.TCC);
+    this.TC0x = this.TCE('cal_hour' + thistcc);
 
-    this.TC0y = this.TCE('cal_min' + this.TCC);
-    this.TC0z = this.TCE('cal_ihplus' + this.TCC, 'img');
-    this.TC10 = this.TCE('cal_ihminus' + this.TCC, 'img');
-    this.TC11 = this.TCE('cal_ahplus' + this.TCC);
-    this.TC12 = this.TCE('cal_ahminus' + this.TCC);
-    this.TC13 = this.TCE('cal_iiplus' + this.TCC, 'img');
-    this.TC14 = this.TCE('cal_iiminus' + this.TCC, 'img');
-    this.TC15 = this.TCE('cal_aiplus' + this.TCC);
-    this.TC16 = this.TCE('cal_aiminus' + this.TCC);
+    this.TC0y = this.TCE('cal_min' + thistcc);
+    this.TC0z = this.TCE('cal_ihplus' + thistcc, 'img');
+    this.TC10 = this.TCE('cal_ihminus' + thistcc, 'img');
+    this.TC11 = this.TCE('cal_ahplus' + thistcc);
+    this.TC12 = this.TCE('cal_ahminus' + thistcc);
+    this.TC13 = this.TCE('cal_iiplus' + thistcc, 'img');
+    this.TC14 = this.TCE('cal_iiminus' + thistcc, 'img');
+    this.TC15 = this.TCE('cal_aiplus' + thistcc);
+    this.TC16 = this.TCE('cal_aiminus' + thistcc);
 
     if (this.TC02 == 2) {
-      this.TC17 = this.TCE('cal_sec' + this.TCC);
+      this.TC17 = this.TCE('cal_sec' + thistcc);
 
-      this.TC18 = this.TCE('cal_isplus' + this.TCC, 'img');
-      this.TC19 = this.TCE('cal_isminus' + this.TCC, 'img');
-      this.TC1A = this.TCE('cal_asplus' + this.TCC);
-      this.TC1B = this.TCE('cal_asminus' + this.TCC)
+      this.TC18 = this.TCE('cal_isplus' + thistcc, 'img');
+      this.TC19 = this.TCE('cal_isminus' + thistcc, 'img');
+      this.TC1A = this.TCE('cal_asplus' + thistcc);
+      this.TC1B = this.TCE('cal_asminus' + thistcc)
     }
     if (this.TC02 == 1) {
-      this.TC1C = this.TCE('cal_ap' + this.TCC);
+      this.TC1C = this.TCE('cal_ap' + thistcc);
 
-      this.TC1D = this.TCE('cal_iaplus' + this.TCC, 'img');
-      this.TC1E = this.TCE('cal_iaminus' + this.TCC, 'img');
-      this.TC1F = this.TCE('cal_aaplus' + this.TCC);
-      this.TC1G = this.TCE('cal_aaminus' + this.TCC)
+      this.TC1D = this.TCE('cal_iaplus' + thistcc, 'img');
+      this.TC1E = this.TCE('cal_iaminus' + thistcc, 'img');
+      this.TC1F = this.TCE('cal_aaplus' + thistcc);
+      this.TC1G = this.TCE('cal_aaminus' + thistcc)
     }
   }
 
@@ -971,6 +975,7 @@ function TCr(TC1I) {
 }
 
 function TC0H(TC1c, TC1d, TC1J) {
+	
   var TC1e = TC1d ? new Date(TC1d) : new Date(this.TC04);
 
   if (!TC1d) {
@@ -1000,6 +1005,7 @@ function TC0H(TC1c, TC1d, TC1J) {
       }
       else {
         if (TC1c == 'year') {
+          
           var TC1h = this.TC0i.options[this.TC0i.selectedIndex].text;
 
           var TC1i = this.TC0i.options[this.TC0i.selectedIndex].value;
@@ -1383,7 +1389,6 @@ function TC0J(TC26) {
       }
     }
   }
-
   if (TC1J && this.TCA.onclickdayall && typeof (this.TCA.onclickdayall) == 'function') {
     TC27 = this.TCA.onclickdayall;
     TC27(this.TCC, TC1n, TC26)
@@ -1413,7 +1418,7 @@ function TC0R(TC2C) {
   var TC2D = 0, TC2E = this.TC0n;
 
   while (TC2E) {
-    TC2D += TC2E["offset" + TC2C];
+    TC2D =TC2D+TC2E["offset" + TC2C];//mike
 
     TC2E = TC2E.offsetParent
   }
@@ -1422,11 +1427,11 @@ function TC0R(TC2C) {
 }
 
 function TC0S() {
-  if (!document.body || !document.body.innerHTML)
-    return;
+  //if (!document.body || !document.body.innerHTML)
+  //  return;
 
-  if (TC9.TC0f)
-    var TC2F = String(this.TC0l.style.visibility).toLowerCase();
+  //if (TC9.TC0f)
+  //  var TC2F = String(this.TC0l.style.visibility).toLowerCase();
 
   var TC2G = String(this.TC0k.style.visibility).toLowerCase();
 
@@ -1455,16 +1460,17 @@ function TC0S() {
     }
 
     if (this.TCA.replace) {
-      for (i = 0; i < A_CALENDARS.length; i++) {
-        if (A_CALENDARS[i].initialized == false)
+      for (i = 0,len = A_CALENDARS.length; i < len; i++) {
+        var ac =A_CALENDARS[i];//mike
+        if (ac.initialized == false)
           continue;
         if (i != this.TCC) {
-          A_CALENDARS[i].TC0k.style.visibility = 'hidden';
+          ac.TC0k.style.visibility = 'hidden';
 
           if (TC9.TC0f)
-            A_CALENDARS[i].TC0l.style.visibility = 'hidden';
-          if (A_CALENDARS[i].TCG == 1)
-            A_CALENDARS[i].TC0o.src = A_CALENDARS[i].TCB.caliconshow.src
+            ac.TC0l.style.visibility = 'hidden';
+          if (ac.TCG == 1)
+            ac.TC0o.src = ac.TCB.caliconshow.src
         }
       }
     }
@@ -1472,10 +1478,11 @@ function TC0S() {
     this.TC0k.style.visibility = 'visible';
 
     if (TC9.TC0f) {
-      this.TC0l.style.width = this.TC0k.offsetWidth;
+      thistcol=this.TC0l.style;
+      thistcol.width = this.TC0k.offsetWidth;
 
-      this.TC0l.style.height = this.TC0k.offsetHeight;
-      this.TC0l.style.visibility = 'visible'
+      thistcol.height = this.TC0k.offsetHeight;
+      thistcol.visibility = 'visible'
     }
 
     this.TC1k = true;
