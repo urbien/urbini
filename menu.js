@@ -1,5 +1,6 @@
 var MenuArray = new Array("textdiv", "textdiv1", "textdiv2", "textdiv3", "textdiv4",
-                          "vesselsDiv", "wagonsDiv", "trainsDiv", "trucksDiv")
+                          "vesselsDiv", "wagonsDiv", "trainsDiv", "trucksDiv",
+                          "warehousesDiv")
 function menuOpenClose(divName) {
 	for (i = 0; i < MenuArray.length; i++) {
 		if (MenuArray[i] != divName) {
