@@ -54,21 +54,25 @@
     <tr valign="top">
       <td valign="top">
         <img src="icons/icon.gif" width="16" height="16" align="middle"/>
-        <A title="Manufacturer" href="javascript://" onClick="menuOpenClose('textdiv')" ><IMG src="images/shortcuts.gif"  width="16" height="16" align="middle" border="0"/></A>
-        <A title="Search"    href="javascript://" onClick="menuOpenClose('textdiv1')"><IMG src="images/search.gif"  width="16" height="16" align="middle" border="0"/></A>
-        <A title="Filter"    href="javascript://" onClick="menuOpenClose('textdiv2')"><IMG src="images/filter.gif"  width="16" height="16" align="middle" border="0"/></A>
-        <A title="Email"     href="javascript://" onClick="menuOpenClose('textdiv3')"><IMG src="images/email.gif"  width="16" height="16" align="middle" border="0"/></A>
-        <A title="Schedule"  href="javascript://" onClick="menuOpenClose('textdiv4')"><IMG src="images/calendar.gif"  width="16" height="16" align="middle" border="0"/></A>
-        <A title="Languages"  href="javascript://" onClick="menuOpenClose('language')"><IMG src="images/globus.gif" align="middle" border="0"/></A>
-        <A title="Warehouses" href="javascript://" onClick="menuOpenClose('warehousesDiv')"><IMG src="icons/warehouse.gif" align="middle" border="0"/></A>
-        <A title="Printing"   href="javascript://" onClick="menuOpenClose('printingDiv')"><IMG src="icons/newspaper.gif" align="middle" border="0"/></A>
-        <A title="Vessels"   href="javascript://" onClick="menuOpenClose('vesselsDiv')"><IMG src="icons/vessel.gif" align="middle" border="0"/></A>
-        <A title="Wagons"    href="javascript://" onClick="menuOpenClose('wagonsDiv')"><IMG src="icons/wagon.gif" align="middle" border="0"/></A>
-        <A title="Trains"    href="javascript://" onClick="menuOpenClose('trainsDiv')"><IMG src="icons/train.gif" align="middle" border="0"/></A>
-        <A title="Trucks"    href="javascript://" onClick="menuOpenClose('trucksDiv')"><IMG src="icons/truck.gif" align="middle" border="0"/></A>
-        <A title="Support"    href="javascript://" onClick="menuOpenClose('supportDiv')"><IMG src="images/alert.gif" align="middle" border="0"/></A>
+        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
 
-        <span class="xs"><language/><print image="images/printerIcon.gif"/> <saveInExcel allow="owner" image="images/excel.gif"/></span><pdaToPc image="images/pda.gif"/><changePassword/><userLogOff html="user-login.html"/></td>
+        <!-- Auto-generated menus -->
+        <menu additionalDivs="textdiv1 textdiv2 textdiv3 textdiv4 menudiv_language"/>
+
+        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
+        <A title="Search"    href="javascript://" onClick="menuOpenClose('textdiv1', 'searchImg')"><IMG id="searchImg" src="images/search.gif"  width="16" height="16" align="middle" border="0"/></A>
+        <A title="Filter"    href="javascript://" onClick="menuOpenClose('textdiv2', 'filterImg')"><IMG id="filterImg" src="images/filter.gif"  width="16" height="16" align="middle" border="0"/></A>
+        <A title="Email"     href="javascript://" onClick="menuOpenClose('textdiv3', 'emailImg')"><IMG id="emailImg" src="images/email.gif"  width="16" height="16" align="middle" border="0"/></A>
+        <A title="Schedule"  href="javascript://" onClick="menuOpenClose('textdiv4', 'scheduleImg')"><IMG id="scheduleImg" src="images/calendar.gif"  width="16" height="16" align="middle" border="0"/></A>
+        <A title="Languages"  href="javascript://" onClick="menuOpenClose('menudiv_language', 'menuicon_language')"><IMG id="menuicon_language" src="images/globus.gif" align="middle" border="0"/></A>
+        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
+        <print image="images/printerIcon.gif"/>
+        <saveInExcel allow="owner" image="images/excel.gif"/>
+        <pdaToPc image="images/pda.gif"/>
+        <changePassword/>
+        <userLogOff html="user-login.html"/>
+        <language/>
+      </td>
     </tr>
     <tr valign="top"><td>
     <form action="list.html" name="siteResourceList">
@@ -84,37 +88,86 @@
 <br />
 <div>
 <div>
-  <div id="textdiv2" class="popMenu">
-  <div class="popMenuTitle" pda="T">
-    <table width="135" cellpadding="2">
-      <tr>
-        <td><b><font color="FFFFFF">Filter</font></b></td>
-        <td align="right"><a title="Close" href="javascript://" onClick="menuOpenClose('textdiv2')"><IMG alt="Click here to close" src="images/button_popup_close.gif" border="0"/></a></td>
-      </tr>
-    </table>
-  </div>
-<table border="0" cellspacing="0" cellpadding="0">
+
+<table border="0" cellspacing="0" cellpadding="0" nonPda="T">
 <tr  valign="top">
   <td valign="top"><br/><include name="searchText.jsp" /></td>
 </tr>
 <tr><td>    
     
     <form name="rightPanelPropertySheet" method="POST" action="remoteSearchResults.html">
-      <table border="1" cellpadding="3" cellspacing="0"><tr><td align="middle" class="title">
-      <input type="submit" name="submit" class="button1" value="Filter"></input>
-      <input type="submit" name="clear" class="button1" value="Clear"></input>
-      </td></tr>
-      <tr><td><rightPanelPropertySheet /></td></tr>
-      <tr><td align="middle" class="title">
-      <input type="submit" name="submit" class="button1" value="Filter"></input>
-      <input type="submit" name="clear" class="button1" value="Clear"></input>
-      <input type="hidden" name="action" value="searchParallel"></input>
-      <input type="hidden" name="site" value=""></input>
-      </td></tr></table>   
+      <table border="1" cellpadding="3" cellspacing="0">
+        <tr><td align="middle" class="title">
+          <input type="submit" name="submit" class="button1" value="Filter"></input>
+          <input type="submit" name="clear" class="button1" value="Clear"></input>
+        </td></tr>
+        <tr><td><rightPanelPropertySheet /></td></tr>
+        <tr><td align="middle" class="title">
+          <input type="submit" name="submit" class="button1" value="Filter"></input>
+          <input type="submit" name="clear" class="button1" value="Clear"></input>
+          <input type="hidden" name="action" value="searchParallel"></input>
+          <input type="hidden" name="site" value=""></input>
+        </td></tr>
+      </table>   
+    </form>
+  </td>
+</tr></table>
+
+  <div id="textdiv2" class="popMenu" pda="T">
+<table bgcolor="#FFFFFF" border="0" cellpadding="0" cellspacing="0">
+<tr><td>
+<div style="border-style:solid; border-width: 1px; border-color:#666666 #666666 #666666 #666666">
+<div style="border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7">
+<table border="0" cellpadding="0" cellspacing="0">
+<tr>
+  <td unselectable="on" bgcolor="#003070" class="cswmItem" style="padding-left:3" colspan="2">
+    <b><font color="FFFFFF">Filter</font></b>
+  </td>
+  <td unselectable="on" bgcolor="#003070" style="padding-right:3; padding-top:3; padding-bottom:3">
+    <A title="Close" onclick="menuOpenClose('textdiv2')" 
+       href="javascript://"><IMG alt="Click here to close" 
+       src="images/button_popup_close.gif" 
+       border="0" style="display:block"></IMG>
+    </A>
+  </td>
+</tr>
+<tr>  
+  <td bgcolor="#DBD8D1" width="15" class="cswmItem"></td>
+  <td bgcolor="#FFFFFF">
+      <table width="100%" cellspacing="0" cellpadding="5" border="0">
+        <tbody>
+          <tr>
+            <td>
+<table border="0" cellspacing="0" cellpadding="0">
+<tr  valign="top">
+  <td valign="top"><include name="searchText.jsp" /></td>
+</tr>
+<tr><td>
+    <form name="rightPanelPropertySheet" method="POST" action="remoteSearchResults.html">
+      <table border="1" cellpadding="3" cellspacing="0">
+        <tr><td align="middle" class="title">
+          <input type="submit" name="submit" class="button1" value="Filter"></input>
+          <input type="submit" name="clear" class="button1" value="Clear"></input>
+        </td></tr>
+        <tr><td><rightPanelPropertySheet /></td></tr>
+        <tr><td align="middle" class="title">
+          <input type="submit" name="submit" class="button1" value="Filter"></input>
+          <input type="submit" name="clear" class="button1" value="Clear"></input>
+          <input type="hidden" name="action" value="searchParallel"></input>
+          <input type="hidden" name="site" value=""></input>
+        </td></tr>
+      </table>   
     </form>
   </td>
 </tr></table>
 </td></tr></table>
+</td><td bgcolor="#FFFFFF"></td></tr>
+</table>
+</div></div>
+</td></tr>
+  </table>
+</div>
+
 </div>
 </div>
 </pda>

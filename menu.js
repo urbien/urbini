@@ -1,7 +1,4 @@
-var MenuArray = new Array("textdiv", "textdiv1", "textdiv2", "textdiv3", "textdiv4",
-                          "vesselsDiv", "wagonsDiv", "trainsDiv", "trucksDiv",
-                          "warehousesDiv", "language", "printingDiv", "supportDiv")
-function menuOpenClose(divName) {
+function menuOpenClose(divName, imgName) {
 	for (i = 0; i < MenuArray.length; i++) {
 		if (document.getElementById(MenuArray[i]) == null) {
 			continue;
@@ -14,6 +11,10 @@ function menuOpenClose(divName) {
 		}
 	}
 	poptext = document.getElementById(divName).style;
+	if (imgName) {
+            poptext.left = docjslib_getImageXfromLeft(imgName);
+            poptext.top = docjslib_getImageYfromTop(imgName) + docjslib_getImageHeight(imgName) + 2;
+	}
 	if (poptext.visibility == "hidden" || poptext.visibility == "") {
 		poptext.visibility = "visible";
 	} else {
@@ -82,4 +83,52 @@ function onRecChange() {
     document.getElementById("titleDiv").innerHTML = '';
     document.getElementById("valueDiv").innerHTML = '';
   }
+}
+
+// Reference: http://www.webreference.com/js/column33/image.html
+
+function docjslib_getImageWidth(imgID) {
+  return document.getElementById(imgID).width;
+}
+function docjslib_getImageHeight(imgID) {
+  return document.getElementById(imgID).height;
+}
+var NS4 = document.layers;
+function docjslib_getImageXfromLeft(imgID) {
+  if (NS4) return document.getElementById(imgID).x
+  else return docjslib_getRealLeft(imgID);
+}
+function docjslib_getImageYfromTop(imgID) {
+  if (NS4) return document.getElementById(imgID).y
+  else return docjslib_getRealTop(imgID);
+}
+function docjslib_getRealLeft(imgElem) {
+  xPos = document.getElementById(imgElem).offsetLeft;
+  tempEl = document.getElementById(imgElem).offsetParent;
+  while (tempEl != null) {
+    xPos += tempEl.offsetLeft;
+    tempEl = tempEl.offsetParent;
+  }
+  return xPos;
+}
+function docjslib_getRealTop(imgElem) {
+  yPos = document.getElementById(imgElem).offsetTop;
+  tempEl = document.getElementById(imgElem).offsetParent;
+  while (tempEl != null) {
+    yPos += tempEl.offsetTop;
+    tempEl = tempEl.offsetParent;
+  }
+  return yPos;
+}
+
+function menu_onmouseover(itemcode) {
+  document.getElementById(itemcode + 'td1').style.backgroundColor='#B6BDD2';
+  document.getElementById(itemcode + 'td2').style.backgroundColor='#B6BDD2';
+  document.getElementById(itemcode + 'td3').style.backgroundColor='#B6BDD2';
+}
+
+function menu_onmouseout(itemcode) {
+  document.getElementById(itemcode + 'td1').style.backgroundColor='';
+  document.getElementById(itemcode + 'td2').style.backgroundColor='';
+  document.getElementById(itemcode + 'td3').style.backgroundColor='';
 }

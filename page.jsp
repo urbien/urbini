@@ -3,7 +3,7 @@
   <LINK HREF="styles/common.css" TYPE="text/css" rel="stylesheet" />
 </head>
  <script language="JavaScript" src="calendar/calendar1.html"></script>
-<pda nonPda="T">
+<div nonPda="T">
   <include name="include/commonHeader"/>
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
@@ -24,9 +24,9 @@
 
   <br></br>
   <include name="include/commonFooter"/>
-</pda>
+</div>
 
-<pda pda="T">
+<div pda="T">
   <include name="commonHeader"/>
   <BODY text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
   <!--img src="icons/icon.gif" width="16"/-->
@@ -44,7 +44,7 @@
   </tr>
   </table>
 
-</pda>
+</div>
 </html>
 
 
