@@ -1,4 +1,5 @@
 <html>
+
 <include name="requiredHeader.jsp"/>
 <include name="include/commonHeader"/>
 
@@ -14,18 +15,7 @@
 <br></br>
 <include name="requiredFooter"/>
 
-<script type="text/javascript" language="JavaScript">
-  function focusOnUserName() {
-    var f = document.loginform;
-    if (f != null) {
-      //alert(f.j_username.hidden);
-      if (f.j_username.hidden != null && f.j_username.hidden == "no"))
-         f.j_username.focus();
-    } 
-    return true;
-  }
-  addEvent(window, 'load', function() {setTimeout(focusOnUserName, 0);}, false);
-</script>
+<script language="JavaScript" src="register/focus.js"></script>
 
 <include name="include/commonFooter"/>
 
