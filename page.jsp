@@ -35,7 +35,7 @@
       <tr>
         <td width="80%" valign="top"><resourceTypeLabel/></td>
         <td width="20%"><include name="include/commonHeader"/>
-          <div align="right"><a href="http://hudsonfog.com"><font face="verdana, sans-serif, arial" color="darkBlue">powered by  <b>HudsonFog</b></font></a></div>
+          <div align="right"><a href="http://hudsonfog.com"><font face="verdana, sans-serif, arial" color="darkBlue"><small>powered by  <b>HudsonFog</b></small></font></a></div>
         </td>
       </tr>
     </table>

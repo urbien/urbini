@@ -81,3 +81,26 @@ td.containers  {background-color: #e7ebf0; color: #000000}
 tr.keywordsearch  {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 
 .checkbox { padding: 0px; margin: 0px; }
+
+td.commenteven {background-color: #f8f4ef; color: darkblue}
+td.commentodd  {background-color: #e7ebf0; color: #000000}
+
+tr.commenteven {background-color: #f8f4ef; color: darkblue}
+tr.commentodd  {background-color: #e7ebf0; color: #000000}
+
+table.commentodd {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
+table.commenteven {border:solid #808080 1px; background-color: #f8f4ef; color: darkblue}
+
+Table.comments {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
+Table.comments1 {background-color: #f8f4ef; color: #000000}
+
+td.containers {background-color: #f8f4ef; color: #000000}
+
+tr.keywordsearch  {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
+
+table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #000000}
+
+td.propertySheet {border:solid #808080 1px; background-color: #ffffff; color: #000000}
+td.controlPanel {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
+td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
+span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}
