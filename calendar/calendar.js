@@ -32,6 +32,7 @@
 // Notes: This Script is shareware. Please visit url above for registration details.
 
 var A_CALENDARS = [], TC0 = [];
+
 var TC1 = 'aAdDFhHilmMsUYy',
     TC2 = 'dMDFhHimsUYy',
     TC3 = { 'a': "([a-z]{2})",   'A': "([A-Z]{2})",   'd': "([0-9]{0,2})",  'D': "([A-z]{3})",    'F': "([A-z]{0,10})",
@@ -200,12 +201,13 @@ function calendar(TCA, TCB) {
   this.TCB = TCB;
   this.TCA = TCA;
   var TCt = this.TCu = !this.TCA.dataformat ? 'Y-d-m' : this.TCA.dataformat;
-  var TCv, TCw = 0, TCx = [];
+  //var TCv, TCw = 0, TCx = [];
+  var TCw = 0, TCx = [];
   this.TCy = [];
   var TCz = ["\\\\", "\\/", "\\.", "\\+", "\\*", "\\?", "\\$", "\\^", "\\|"];
 
-  for (i = 0; i < TCt.length; i++) {
-    TCv = TCt.substr(i, 1);
+  for (i = 0, len1=TCt.length; i < len1; i++) {
+    var TCv = TCt.substr(i, 1);
 
     if (TC1.indexOf(TCv) != -1 && TCv != '') {
       TCx[TCw] = TCv;
@@ -217,10 +219,12 @@ function calendar(TCA, TCB) {
   var TCx = TCx.sort();
 
   for (i in TCz) {
-    TCt = TCt.replace(eval("/" + TCz[i] + "/g"), TCz[i])
+    TCt = TCt.replace(("/" + TCz[i] + "/g"), TCz[i])
+    //TCt = TCt.replace(eval("/" + TCz[i] + "/g"), TCz[i]) // mike: old code
   }
 
-  for (i = 0; i < TCx.length; i++) {
+for (i = 0, len = TCx.length; i < len; i++) {
+  //for (i = 0; i < TCx.length; i++) { // Mike: old code
     TC00 = new RegExp(TCx[i]);
 
     TCt = TCt.replace(TC00, TC3[TCx[i]])
@@ -261,64 +265,100 @@ function calendar(TCA, TCB) {
   this.TC09 = this.TCA.watch == true ? this.TCe(this.TC04) : '';
   this.TC0A = this.TCY();
 
-  if (this.TC0A & 64 && document.body && document.body.innerHTML) {
-    document.write('<table cellpadding="0" cellspacing="0" border="0" ><tr>')
+  //var db=document.body && document.body.innerHTML; // mike
+  var db=true;
+  var tc0a64 = this.TC0A & 64;
+  var tc0a2 = this.TC0A & 2;
+  var tc0a4 = this.TC0A & 4;
+  var tc0a8 = this.TC0A & 8;
+  var outp = "";
+  if (tc0a64 && db) {	
+  //if (this.TC0A & 64 && document.body && document.body.innerHTML) { //mike 
+    //document.write('<table cellpadding="0" cellspacing="0" border="0" ><tr>')
+    outp='<table cellpadding="0" cellspacing="0" border="0" ><tr>';
   }
-
-  if (this.TC0A & 2) {
-    if (this.TC0A & 64)
-      document.write('<td>');
-
-    document.write('<input type="Text" id="', this.TCH, '"   name="', this.TCH, '" value="', this.TC09, '" ',
-                   this.TCO('datacontrol'),   '>');
-    if (this.TC0A & 64)
-      document.write('</td>')
-  }
-
-  if (document.body && document.body.innerHTML) {
-    if (this.TCG != 3) {
-      if (this.TC0A & 64 && (this.TC0A & 2 && (this.TC0A & 4 || this.TC0A & 8)))
-        document.write('<td><img ' + this.TCO('pixel') + '></td>');
-
-      if (this.TC0A & 64 && (this.TC0A & 4 || this.TC0A & 8))
-        document.write('<td>');
-
-      if (this.TC0A & 4)
-        document.write(
-            '<a href="javascript:A_CALENDARS[' + this.TCC + '].create(); A_CALENDARS[' + this.TCC + '].showcal();" ><img ' + this.TCO('caliconshow') + ' name="'
-                + this.TCI + '"      id="' + this.TCI + '"></a>');
-      else if (this.TC0A & 8)
-        document.write('<input type="button"  ' + this.TCO('calbutton') + ' name="' + this.TCI + '" id="' + this.TCI
-                           + '" onclick="A_CALENDARS[' + this.TCC + '].showcal();return false;">');
-      if (this.TC0A & 64 && (this.TC0A & 4 || this.TC0A & 8))
-        document.write('</td>')
+ 
+  if (tc0a2) {
+  	
+    if (tc0a64){
+      outp=outp+'<td>';
+      //document.write(outp);
+      //document.write('<td>');
+    }
+    //document.write('<input type="Text" id="', this.TCH, '"   name="', this.TCH, '" value="', this.TC09, '" ', this.TCO('datacontrol'),   '>');
+    outp=outp+'<input type="Text" id="'+ this.TCH+ '"   name="'+ this.TCH+ '" value="'+ this.TC09+ '" '+ this.TCO('datacontrol')+   '>';
+    if (tc0a64){
+      outp=outp+'<td>';
+      //document.write(outp);
+      //document.write('</td>')
     }
   }
 
-  if (this.TC0A & 64 && (this.TC0A & 2 || (this.TC0A & 4 || this.TC0A & 8)))
-    document.write('</tr>');
-
-  if (this.TC0A & 32) {
-    if (this.TC0A & 64)
-      document.write('<tr>');
-
-    if (this.TC0A & 64)
-      document.write('<td>');
-
-    document.write('<img ' + this.TCO('pixel') + '  name="' + this.TCJ + '" id="' + this.TCJ + '">');
-
-    if (this.TC0A & 64)
-      document.write('</td>');
-
-    if (this.TC0A & 64 && (this.TC0A & 2 && (this.TC0A & 4 || this.TC0A & 8)))
-      document.write('<td></td><td></td>');
-    if (this.TC0A & 64)
-      document.write('</tr>')
+  if (db) {
+  //if (document.body && document.body.innerHTML) { //mike
+    if (this.TCG != 3) {
+      if (tc0a64 && (tc0a2 && (tc0a4 || tc0a6))){
+        outp=outp+'<td><img ' + this.TCO('pixel') + '></td>';
+        //document.write('<td><img ' + this.TCO('pixel') + '></td>');
+      }
+      if (tc0a64 && (tc0a4 || tc0a6)){
+      	outp=outp+'<td>';
+        //document.write('<td>');
+	}
+      if (tc0a4){
+      	outp=outp+'<a href="javascript:A_CALENDARS[' + this.TCC + '].create(); A_CALENDARS[' + this.TCC + '].showcal();" ><img ' + this.TCO('caliconshow') + ' name="'
+                + this.TCI + '"      id="' + this.TCI + '"></a>';
+        //document.write(
+        //    '<a href="javascript:A_CALENDARS[' + this.TCC + '].create(); A_CALENDARS[' + this.TCC + '].showcal();" ><img ' + this.TCO('caliconshow') + ' name="'
+         //       + this.TCI + '"      id="' + this.TCI + '"></a>');
+      }
+      else if (tc0a6){
+      	outp=outp+'<input type="button"  ' + this.TCO('calbutton') + ' name="' + this.TCI + '" id="' + this.TCI
+                           + '" onclick="A_CALENDARS[' + this.TCC + '].showcal();return false;">';
+        //document.write('<input type="button"  ' + this.TCO('calbutton') + ' name="' + this.TCI + '" id="' + this.TCI
+        //                   + '" onclick="A_CALENDARS[' + this.TCC + '].showcal();return false;">');
+      }
+      if (tc0a64 && (tc0a4 || tc0a6)){
+      outp=outp+'<td>';
+        //document.write('</td>')
+        }
+    }
   }
 
-  if (this.TC0A & 64 && document.body && document.body.innerHTML)
-    document.write('</table>');
-
+  if (tc0a64 && (tc0a2 || (tc0a4 || tc0a6))){
+    outp=outp+'</tr>';
+    //document.write('</tr>');
+}
+  if (this.TC0A & 32) {
+    if (tc0a64){
+      outp=outp+'<tr><td>';
+      //document.write('<tr><td>');//mike
+}
+    //if (tc0a64)
+     // document.write('<td>');
+    outp=outp+'<img ' + this.TCO('pixel') + '  name="' + this.TCJ + '" id="' + this.TCJ + '">';
+    //document.write('<img ' + this.TCO('pixel') + '  name="' + this.TCJ + '" id="' + this.TCJ + '">');
+    //document.write(outp);
+    if (tc0a64){
+    	outp=outp+'<td>';
+      //document.write('</td>');
+    }
+    if (tc0a64 && (tc0a2 && (tc0a4 || tc0a6))){
+    	outp=outp+'<td></td><td></td>';
+      //document.write('<td></td><td></td>');
+    }
+    if (tc0a64){
+    	outp=outp+'<tr>';
+      //document.write('</tr>')
+    }
+  }
+if (tc0a64 && db){
+  //if (tc0a64 && document.body && document.body.innerHTML) // mike
+    outp=outp+'</table>';
+    //document.write('</table>');
+}
+//alert(outp);
+document.write(outp);
   this.create = TC0B;
   this.create1 = create1;
   this.TC0C = TC0D;
@@ -356,7 +396,7 @@ function TCZ() {
 
   if ((TC0V & 2 && TC0V & 32) || (TC0V & 2 && (TC0V & 4 || TC0V & 8)) || ((TC0V & 4 || TC0V & 8) && TC0V & 32))
     TC0V |= 64;
-
+  
   return TC0V
 }
 
@@ -370,9 +410,8 @@ function TCN(TC0W, TC0X, TC0Y) {
 
 
 function create1() {
-  if (!document.body || !document.body.innerHTML)
-    return;
-
+  //if (!document.body || !document.body.innerHTML)
+  //  return;
   var TC0c = new TC0d();
   TC0c.TC0e('<div id="caldiv',
             this.TCC,
@@ -393,7 +432,7 @@ function create1() {
               (this.TCC),
               '"></iframe>')
   }
-
+  //alert(TC0c.TC0g());
   document.write(TC0c.TC0g());
 }
 
