@@ -21,7 +21,6 @@
   <td valign="top" width="10%"><include name="include/commonLeft.html"/></td>
   <td valign="top" width="90%">
 <form name="tablePropertyList" method="post" action="FormRedirect">
-  <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tablePropertyList />
   <div align="right"><measurement/></div>
   <input type="hidden" name="action" value="submitChanges"></input>
