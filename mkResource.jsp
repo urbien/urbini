@@ -5,6 +5,8 @@
 <td valign="top" width="95%">
 <form name="tablePropertyList" method="post" action="FormRedirect">
    <div align="right"><span class="xs"><language/></span></div>
+   <!--menu toolbar="toolbar3" exclude="Support" activate="onMouseOver"/>
+   <img src="icons/icon_divider.gif" align="middle" border="0"></img-->
    <tablePropertyList action="mkResource"/>
    <input type="hidden" name="returnHtml" value="list.html"/>
    <input type="hidden" name="html" value="mkResource.html"/>
