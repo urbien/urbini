@@ -1,5 +1,4 @@
 <html>
-
 <siteTitle />
 
 <div nonPda="T">
@@ -8,14 +7,14 @@
   <td valign="top" align="middle" width="100%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
       <tr valign="top">
-        <td valign="top" width="100%">
+        <td valign="top" width="110%" colspan="2">
           <menu toolbar="toolbar1" activate="onMouseOver"/>
           <menu toolbar="transport" activate="onMouseOver"/>
           <menu toolbar="search" activate="onMouseOver"/>
           <menu toolbar="toolbar3" activate="onMouseOver"/>
           <print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/>
         </td>
-        <td valign="bottom" width="10%"><!--changePassword/><userLogOff html="user-login.html"/--></td>
+        <!--td valign="bottom" width="10%"><changePassword/><userLogOff html="user-login.html"/></td-->
       </tr>
 
       <tr valign="top">

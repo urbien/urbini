@@ -1,4 +1,4 @@
-<html>
+<html xmlns:vml="urn:schemas-microsoft-com:vml">
 <head>
   <LINK HREF="styles/common.css" TYPE="text/css" rel="stylesheet" />
   <link href="styles/menu.css" type="text/css" rel="stylesheet" />
@@ -12,6 +12,12 @@
 	<script language="JavaScript" src="calendar/calendar.js"></script>
 	<!-- define the view of calendar with css rules -->
 	<link rel="stylesheet" href="calendar/calendar.css"/>
+    <object id="VMLRender" 
+      classid="CLSID:10072CEC-8CC1-11D1-986E-00A0C955B42E">
+    </object>
+    <style>
+      vml\:* { behavior: url(#VMLRender) }
+    </style>
 </head>
 <div nonPda="T">
   <table width="100%" border="0" cellpadding="0" cellspacing="0">

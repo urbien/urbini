@@ -74,3 +74,7 @@ input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 .errorTextStd {font-size:12px;font-weight:bold;font-family:Arial, Helvetica, Sans Serif;color:#A01E00}
 
 .dashedBlock {border-style:dashed; border-width: 2px; border-color:#ADADD5 #ADADD5 #ADADD5 #ADADD5}
+
+td.tab  {border:solid #808080 1px; filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, EndColorStr='#F0F2F6', StartColorStr='#C0C9D7'); color='#000000'}
+table.allInOne {border:solid #808080 1px; background-color: #ffffff; color: #000000}
+td.containers  {background-color: #e7ebf0; color: #000000}
