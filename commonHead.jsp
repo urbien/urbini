@@ -11,12 +11,13 @@
 
   <script src="forms.js"                 language="JavaScript" type="text/javascript"></script>
   <script src="menu.js"                  language="JavaScript" type="text/javascript"></script>
-  <script src="chat/chat.js"             language="JavaScript" type="text/javascript"></script>
+  <script src="chat/chat.js"                  language="JavaScript" type="text/javascript"></script>
   <script src="calendar/cal_tpl1.js"     language="JavaScript" type="text/javascript"></script>
   <script src="calendar/cal_strings.js"  language="JavaScript" type="text/javascript"></script>
   <script src="calendar/calendar.js"     language="JavaScript" type="text/javascript"></script>
   <script src="gantt/dependencies.js"    language="JavaScript" type="text/javascript"></script>
   <script src="pngfix.js"                language="JavaScript" type="text/javascript"></script>
+  <script src="chat/richtext.js"         language="JavaScript" type="text/javascript"></script>
 
   <getResource/>
   <siteTitle />

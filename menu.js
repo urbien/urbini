@@ -282,8 +282,8 @@ function setDivVisible(divRef, img, offsetX, offsetY, iframeRef) {
   poptext.display    = 'inline'; // must make it inline here - otherwise coords will not get set 
 
   if (img) {
-    divRef.style.left = document.body.scrollLeft;
-    divRef.style.top  = document.body.scrollTop;
+    //divRef.style.left = document.body.scrollLeft;
+    //divRef.style.top  = document.body.scrollTop;
     var left = docjslib_getImageXfromLeft(img);
     var top  = docjslib_getImageYfromTop(img) + docjslib_getImageHeight(img);
 //alert('left='+left + ', top='+top);    
@@ -591,6 +591,7 @@ function removePopupRowEventHandlers(div) {
  * Receives control on form submit events
  */
 function popupOnSubmit(e) {
+  try{updateRTEs();}catch(ex){}
   var target;
 
   e = (e) ? e : ((window.event) ? window.event : null);
