@@ -17,7 +17,6 @@ var imagesPath;
 var includesPath;
 var cssFile;
 
-
 function initRTE(imgPath, incPath, css) {
 	//set browser vars
 	var ua = navigator.userAgent.toLowerCase();
@@ -239,7 +238,9 @@ function enableDesignMode(rte, html, readOnly) {
 		frameHtml += "</style>\n";
 	}
 	frameHtml += "</head>\n";
+	//frameHtml += "<body onload=\"" + rte + ".document.body.innerHTML = parent.document.getElementById('" + rte + "content').value;alert(parent.document.getElementById('" + rte + "content').value);setTimeout('alert(parent.document.getElementById(\\'" + rte + "content\\').value)',3000)\">\n";
 	frameHtml += "<body>\n";
+	//frameHtml += "<body onload=\"alert(parent.document.getElementById('" + rte + "content').value);\">\n";
 	frameHtml += html + "\n";
 	frameHtml += "</body>\n";
 	frameHtml += "</html>";
@@ -273,7 +274,12 @@ function enableDesignMode(rte, html, readOnly) {
 			//gecko may take some time to enable design mode.
 			//Keep looping until able to set.
 			if (isGecko) {
-				setTimeout("enableDesignMode('" + rte + "', '" + html + "', " + readOnly + ");", 10);
+			    //var s = replaceAll(html, "'", "\\\\'");
+				//var s = replaceAll(html, "'", "&#39;");
+				//var s = replaceAll(html, "'", "aaaaaaaaaaaaaaaaaaaaaaaa");
+				s = html;
+				//setTimeout("enableDesignMode('" + rte + "', '" + html + "', " + readOnly + ");", 10);
+				setTimeout("enableDesignMode('" + rte + "', '" + s + "', " + readOnly + ");", 10);
 			} else {
 				return false;
 			}
@@ -286,11 +292,20 @@ function updateRTEs() {
 	var vRTEs = allRTEs.split(";");
 	for (var i = 0; i < vRTEs.length; i++) {
 	    //alert("updateRTE("+vRTEs[i]+");");
+		//alert(frames[RTEs[i]].document);
 		updateRTE(vRTEs[i]);
+		//if(document.getElementById(vRTEs[i]+'content'))document.getElementById(vRTEs[i]+'content').value = ;
+		//alert(frames[RTEs[i]].document.body.innerHTML);
+		//alert(document.getElementById(vRTEs[i]).document.body.innerHTML);
+		
+		//alert(vRTEs[i]);
 	}
 }
 
 function updateRTE(rte) {
+    if(document.getElementById(rte+'content'))document.getElementById(rte+'content').value = frames[rte].document.body.innerHTML;
+	
+    //alert(frames[rte].document.body.innerHTML);
 	if (!isRichText) return;
 
 	//set message value
