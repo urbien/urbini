@@ -558,11 +558,19 @@ function popupOnSubmit(e) {
 
   form.method   = 'GET';
   form.onsubmit = null;
+  
 	if (document.all || document.getElementById) {
-    form.submit.disabled = true; 
+//    form.submit.disabled = true; 
     form.submit.value = 'Please wait';
     form.submit.style.cursor = 'wait'; 
-    form.clear.style.visibility = 'hidden'; 
+    var cancel;
+    if (form.cancel)
+      cancel = form.cancel;
+    else if (form.clear)  
+      cancel = form.clear;
+    else if (form.clear_)  
+      cancel = form.clear_;
+    cancel.style.visibility = HIDDEN; 
 	}
   
   document.location.href = url;
@@ -585,6 +593,7 @@ function popupRowOnClick(e) {
   tr = getTrNode(target);
   if (!tr)
     return;
+    
   var form = getFormNode(target);
    
   var table  = tr.parentNode;
@@ -605,24 +614,22 @@ function popupRowOnClick(e) {
   }
   else 
     prop = propertyShortName.substring(0, idx);
-//alert("originalProp = " + originalProp + "; prop = " + prop);
-  var formField;
 
+  var formField;
   if (originalProp.indexOf("_class") == -1) {
     var select = prop + "_select";
 
     formField = form.elements[select];
-//alert("propName = " + select + "; current formField.name = " + form.elements[select]);
-//alert("current formField.value = " + formField.value);
     formField.value = tr.id; // property value corresponding to a listitem
-//alert("new formField.value = " + formField.value);
     var chosenTextField = form.elements[originalProp];
-//alert("chosenTextField = " + chosenTextField);
 
     var items = tr.getElementsByTagName('td');
     var val = items[1].innerHTML;
     var idx = val.lastIndexOf(">");
-    chosenTextField.value = val.substring(idx + 1);
+    if (tr.id == '$clear') 
+      chosenTextField.value = '';
+    else 
+      chosenTextField.value = val.substring(idx + 1);
     chosenTextField.style.backgroundColor='#ffffff';
   }
   else {
@@ -638,7 +645,8 @@ function popupRowOnClick(e) {
   var div = document.getElementById(divId);
   menuClose2(div);
   clearOtherPopups(div);
-  
+  if (tr.id == '$clear')
+    return false;
   var clazz = form.elements[propertyShortName + "_class"];
   if (typeof clazz == 'undefined')
     return true;
