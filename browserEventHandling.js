@@ -52,7 +52,7 @@
             alert("onClick(): can't process control key modifier since event currentTarget is null: " + url);
             return;
           }
-          else if(!url.href) {
+          else if(!url.href || url.href == null) {
             alert("onClick(): can't process control key modifier since event currentTarget.href is null: " + url.href);
             return;
           }
@@ -66,10 +66,13 @@
         return;
       if (!url.href)
         return;
-      if (url.href.indexOf('?') == -1) 
+      if (url.href.indexOf('?') == -1) {
         url.href = url.href + '?' + param;
-      else
+      }
+      else {
         url.href = url.href + '&' + param;
+      }
+      
     }
 
     // cross-browser - getCurrentTarget 
@@ -85,25 +88,19 @@
         elem = evt.srcElement;
         elem = getANode(elem);
 
-//        if (!elem.href) {
-//          elem = elem.parentNode;
-//          if (!elem.href) {
-//            elem = elem.parentNode;
-//            alert("2:" + elem.href);
-//          }
-//          else
-//            alert("1:" + elem.href);
-//        }
-//        else
-//          alert("2:" + elem.href);
       }
       return elem;
     }  
 
     function getANode(elem) { 
       var e;
-      if (elem.href) 
-        return elem;
+
+      if (elem.tagName.toUpperCase() == 'A') {
+        if (elem.href) 
+          return elem;
+        else
+          return null;
+      }
 
       e = elem.parentNode;
       if (e)
