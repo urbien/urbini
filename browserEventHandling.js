@@ -1,3 +1,18 @@
+    // cross-browser - getCurrentTarget 
+    function getTargetElement(evt) {
+      var elem;
+      if (evt.target) {
+        if (evt.currentTarget && (evt.currentTarget != evt.target))
+          elem = evt.currentTarget;
+        else
+          elem = evt.target;
+      } 
+      else {
+        elem = evt.srcElement;
+      }
+      return elem;
+    }  
+
     /* 
      * Generic cross-browser method of adding event handlers
      * taken from: http://www.scottandrew.com/weblog/jsjunk#events 
@@ -313,21 +328,6 @@
       setDivInvisible(tooltipDiv, ifrRef);
       return false;
     }
-
-    // cross-browser - getCurrentTarget 
-    function getTargetElement(evt) {
-      var elem;
-      if (evt.target) {
-        if (evt.currentTarget && (evt.currentTarget != evt.target))
-          elem = evt.currentTarget;
-        else
-          elem = evt.target;
-      } 
-      else {
-        elem = evt.srcElement;
-      }
-      return elem;
-    }  
 
     //***** Add smartlistbox handlers
     function addHandlers() {
