@@ -6,7 +6,7 @@
 <form name="loginform" action="j_security_check" method="POST"  onsubmit="return hash(this, 'j_security_check')">
 <table cellpadding="0" border="0" cellspacing="0" width="50%">
   <tr>
-    <td class="xl" colspan="2"><text text="missingPassword"/></td>
+    <td class="xl" colspan="2"><text text="Password is missing reenter please"/></td>
   </tr>
   <tr><td colspan="2"></td></tr>
   <tr>
