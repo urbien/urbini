@@ -1,4 +1,10 @@
 <html>
+<script language="JavaScript">
+
+<include name="calendar/calendar1.html"/>
+<!--script language="JavaScript" src="calendar1.js"-->
+
+</script>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr  valign="top">
   <td valign="top" align="middle" width="95%">
@@ -25,19 +31,31 @@
 
     <include name="searchText.jsp" />
     
-    <form name="tablePropertyList" method="POST" action="remoteSearchResults.html">
+    <form name="rightPanelPropertySheet" method="POST" action="remoteSearchResults.html">
+      <table border="1" cellpadding="3" cellspacing="0"><tr><td align="middle" class="title">
+      <input type="submit" name="submit" value="filter"></input>
+      <input type="submit" name="clear" value="clear"></input>
+      </td></tr>
+      <tr><td><rightPanelPropertySheet /></td></tr>
+      <tr><td align="middle" class="title">
+      <input type="submit" name="submit" value="filter"></input>
+      <input type="submit" name="clear" value="clear"></input>
+      <input type="hidden" name="action" value="searchParallel"></input>
+      </td></tr></table>   
+      <!--br></br-->
+      <!--showSetProperties /-->
+    </form>
+    <!--form name="tablePropertyList" method="POST" action="remoteSearchResults.html">
       <table border="1" cellpadding="3" cellspacing="0"><tr><td align="middle" class="title">
       <input width="100%" type="submit" name="submit" value="filter"></input>
-      <!--input type="hidden" name="action" value="searchLocal"></input-->
       </td></tr>
       <tr><td><tablePropertyList /></td></tr>
-      <!--tr><td><rightPanelPropertySheet /></td></tr-->
       <tr><td align="middle" class="title">
       <input type="submit" name="submit" value="filter"></input>
       <input type="hidden" name="action" value="searchParallel"></input>
       </td></tr></table>   
       <br></br>
-    </form>
+    </form-->
   </td>
 </tr></table>
 </td></tr></table>

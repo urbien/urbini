@@ -55,12 +55,14 @@
     
     <form name="rightPanelPropertySheet" method="POST" action="FormRedirect">
       <table border="1" cellpadding="3" cellspacing="0"><tr><td align="middle" class="title">
-      <input width="100%" type="submit" name="submit" value="filter"></input>
+      <input type="submit" name="submit" value="filter"></input>
+      <input type="submit" name="clear" value="clear"></input>
       <!--input type="hidden" name="action" value="searchLocal"></input-->
       </td></tr>
       <tr><td><rightPanelPropertySheet /></td></tr>
       <tr><td align="middle" class="title">
       <input type="submit" name="submit" value="filter"></input>
+      <input type="submit" name="clear" value="clear"></input>
       <input type="hidden" name="action" value="searchLocal"></input>
       </td></tr></table>   
       <!--br></br-->
