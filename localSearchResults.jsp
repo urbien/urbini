@@ -51,8 +51,8 @@
     </table>
       <createResources/><br/>
 <br/><br/>
-      <setAsHomePage />
-      <br/><pieChart/>
+      <!--setAsHomePage /-->
+      <!--br/--><pieChart/>
     </div>
 
     <script language="JavaScript">
