@@ -41,7 +41,7 @@ var timeDelta = 0; // difference between server and client time
     				else if(notificationMode==2 && parent.isWindowInFocus=='blured')
 					{
 						newwindow=window.open('','newMes','height=100,width=350'); 
-						newwindow.document.writeln("New mesage in chat room<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
+						newwindow.document.writeln("New mesage in chat room <font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
 					};
            if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
 		   try 
@@ -102,7 +102,7 @@ var timeDelta = 0; // difference between server and client time
     			else if(notificationMode==2 && parent.isWindowInFocus=='blured')
 				{
 					newwindow=window.open('','newMes','height=100,width=350'); 
-					newwindow.document.writeln("New mesage in chat room<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
+					newwindow.document.writeln("New mesage in chat room <font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
 				};
   		
 		if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
