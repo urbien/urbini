@@ -40,5 +40,5 @@
    </tr>
    </table>
 </td></tr></table>
-<div align="left"><span class="xs"><hudsonFog /></span></div>
+<!--div align="left"><span class="xs"><hudsonFog /></span></div--> <!-- commented out to avoid distraction during data entry -->
 </div>
