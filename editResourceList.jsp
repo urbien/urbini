@@ -107,6 +107,7 @@
 </tr>
 <tr>  
   <td bgcolor="#FFFFFF" colspan="2">
+    <div style="height:350; overflow:auto">
       <table width="100%" cellspacing="0" cellpadding="5" border="0">
         <tbody>
           <tr>
@@ -131,6 +132,7 @@
     </form>
 </td></tr></table>
 </td></tr></table>
+</div>
 </td></tr>
 </table>
 </div></div>
