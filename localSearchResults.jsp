@@ -28,7 +28,7 @@
       <div align="right"><measurement/></div>
       <addNewResource html="mkResource.html"/> 
       <reloadDocuments/>
-      <editResources/>
+      <createResources/>
       <showSetProperties />
     </form>
   <br/><pieChart/>
@@ -79,6 +79,7 @@
     <form action="list.html" name="siteResourceList">
       <div align="left"><backLink /></div>
       <siteResourceList />
+      <createResources/>
       <div align="right"><measurement/></div>
     </form>
     </td></tr>
