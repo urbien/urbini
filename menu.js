@@ -1690,7 +1690,18 @@ function chooser1(element) {
     selectItems = window.opener.document.forms[form].elements[shortPropName + "_select"];
     selectItems[len].value = id;
     selectItems[len].checked = true;
-    window.opener.document.forms[form].elements[propName].value                        = value;
+    var nmbOfSelected = 0;
+    for (var i=0; i<len; i++) {
+      if (selectedItems[i].checked) {
+        nmbOfSelected++;
+        if (nmbOfSelected > 1)
+          break;
+      }
+    }
+    if (nmbOfSelected > 1)
+      window.opener.document.forms[form].elements[propName].value                        = value;
+    else
+      window.opener.document.forms[form].elements[propName].value                        = "<...>";
 //    window.opener.document.forms[form].elements[shortPropName + "_select"][len].value  = id;
     window.opener.document.forms[form].elements[shortPropName + "_verified"].value     = "y";
     if (window.opener.document.forms[form].elements[propName].style)
