@@ -409,7 +409,7 @@ function loadPopup() {
 
 function interceptPopupEvents(div) {
   var tableId = "table_" + propName + "_" + currentFormName;
-alert("tableId=" + tableId);
+//alert("tableId=" + tableId);
   var table = document.getElementById(tableId);
 
   addEvent(div, 'mouseover', popupOnMouseOver, false);
@@ -487,7 +487,7 @@ function popupOnClick(e) {
   var val = items[1].innerHTML;
   var idx = val.lastIndexOf(">");
   chosenTextField.value = val.substring(idx + 1);
-  
+  chosenTextField.style.backgroundColor='#ffffff';
   var divId = prop + "_" + form.name;
   var div = document.getElementById(divId);
   menuClose2(div);
