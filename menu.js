@@ -619,18 +619,26 @@ function autoCompleteOnBlur(e) {
 
   if (!e) 
     return;
+}
+
+function autoCompleteOnMouseout(e) {
+  e = (e) ? e : ((window.event) ? window.event : null);
+
+  if (!e) 
+    return;
 
   var target;
   target = getTargetElement(e);
   if (!target)
     return;
     
-//  target.deselect();  
 	var img = document.getElementById(keyPressedImgId);
 	if (!img)
 	  return true;
-//alert("blur");	  
-	onClickPopup1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
+
+  if (currentDiv) {
+    menuClose2(currentDiv);
+  }  
 }
 
 function getKeyCode(e) {

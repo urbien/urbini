@@ -203,6 +203,7 @@
              addEvent(elem, 'keydown',  autoCompleteBackspaceHack, false);
              addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
              addEvent(elem, 'blur',     autoCompleteOnBlur,        false);
+             addEvent(elem, 'mouseout', autoCompleteOnMouseout,    false);
              //addEvent(elem, 'change',   onFormFieldChange, false);
              //addEvent(elem, 'blur',     onFormFieldChange, false);
              //addEvent(elem, 'click',    onFormFieldClick,  false);
