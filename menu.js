@@ -168,8 +168,10 @@ function menuClose2(divElem) {
   }
 }
 
-function menuClose(div) {
-  closeTimeoutId = setTimeout("menuClose1('" + div + "')", 600);
+function menuClose(div, timeout) {
+  if (!timeout)
+    timeout = 600;
+  closeTimeoutId = setTimeout("menuClose1('" + div + "')", timeout);
 }
 
 function onRecChange() {
@@ -362,9 +364,7 @@ function onClickPopup(e) {
 }
   
 function onClickPopup1(imgId, form, enteredText) {
-
-  currentImgId  = imgId;
-  var propName1 = imgId.substring(0, imgId.length - 7);   // cut off "_filter"
+  var propName1 = imgId.substring(0, imgId.length - "_filter".length);   // cut off "_filter"
   var idx = propName1.lastIndexOf('_');
   if (idx == -1)
     return;
@@ -372,9 +372,14 @@ function onClickPopup1(imgId, form, enteredText) {
   
   propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));  
 
-  if (currentDiv)
+  var d = currentDiv;
+  if (currentDiv) {    
     menuClose2(currentDiv);
-  
+  }
+  if (imgId == currentImgId && d != null)
+    return;
+  currentImgId  = imgId;
+    
   originalProp = propName1;
   var idx = propName1.indexOf(".");
   var divId;
@@ -449,10 +454,12 @@ function interceptPopupEvents(div) {
       addToTableName = "_class";
   }
   var tableId = "table_" + propName + addToTableName + "_" + currentFormName;
-  var table = document.getElementById(tableId);
+  var table   = document.getElementById(tableId);
+  var img     = document.getElementById(currentImgId);
 
   addEvent(div, 'mouseover', popupOnMouseOver, false);
   addEvent(div, 'mouseout',  popupOnMouseOut,  false);
+  addEvent(img, 'mouseout',  popupOnMouseOut,  false);
 
   var trs = table.getElementsByTagName("tr");
   for (i=0;i<trs.length; i++) {
