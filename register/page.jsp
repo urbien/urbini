@@ -1,6 +1,7 @@
 <html>
 <head>
   <base href="serverName"/>
+<title>Login</title>
 </head>
 <include name="include/commonHeader"/>
 
