@@ -1,10 +1,10 @@
 Dear &[firstName]; &[lastName];,
-
-The &[class]; to which you subscribed was modified. 
-Click on the link below to see the details:
-
-&[url];
-
-
+<br>
+<br>
+The &[class]; <a href="&[url];">&[urlDisplayName];</a> was modified. 
+<br><br>
 Customer Service
+<br>
 HudsonFog 
+
+<b><b>Powered by <a href="http://hudsonfog.com">HudsonFog</a>

@@ -1,13 +1,21 @@
 Dear &[firstName]; &[lastName];,
+<br>
+<br>
 
-You are invited to receive alerts on the &[class]; specified below.
-Please click on the link to see the details:
+You are invited to receive alerts on the &[class]; <a href="&[url];">&[urlDisplayName];</a>
+<br>
+<br>
 
-&[url];
-
-To become a subscriber for this &[class]; please click here:
-
-&[subscribe];
-
+To subscribe please click <a href="&[subscribe];">here</a>. 
+<br>
+You can modify your subscription alert level or unsubscribe at any time.
+<br>
+<br>
 Customer Service
+<br>
 HudsonFog 
+<br>
+<br>
+
+
+Powered by <a href="http://hudsonfog.com">HudsonFog</a>
