@@ -1,7 +1,7 @@
 Dear &[firstName]; &[lastName];,
 <br><br>
 
-You are now subscribed to alerts on the &[class]: <a href="&[url];">&[urlDisplayName];</a>
+You are now subscribed to alerts on the &[class]; <a href="&[url];">&[urlDisplayName];</a>
 
 <br><br>
 Customer Service
