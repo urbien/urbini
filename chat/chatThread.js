@@ -48,7 +48,7 @@ var timeDelta = 0; // difference between server and client time
 						newwindow=window.open('','newMes','height=100,width=350,resizable=yes'); 
 						//newwindow.document.writeln("invitation message came to the chat room!<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
 						newwindow.document.writeln("");
-		                        newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='invitation message came to the chat room!'><span class=xs><font color='#63B4EF' id='timeNid["+timeNiD+"]'>["+getTimeStr(gmtOffset,tm)+"]</font><img src='icons/classes/invited.gif'>: <font onclick='window.close()' color=''>"+messageArray[0].replace("!-invt","").replace("target=_top","target='chat'")+"</font></span><img src='images/show.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
+                        newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='invitation message came to the chat room!'><span class=xs><font color='#63B4EF' id='timeNid["+timeNiD+"]'>["+getTimeStr(gmtOffset,tm)+"]</font><img src='icons/classes/invited.gif'>: <font onclick='window.close()' color=''>"+messageArray[0].replace("!-invt","").replace("target=_top","target='chat'")+"</font></span><img src='images/show.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
 					};
            if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
 		   try 
@@ -222,7 +222,6 @@ var timeDelta = 0; // difference between server and client time
 
     function getTimeStr(gmtOffset,tm) 
 	{
-
         var date = new Date(tm); 
         var time = '';
 
