@@ -32,23 +32,22 @@ function menuOpenClose(divName, imgName) {
 	var divRef = document.getElementById(divName);
 	poptext = divRef.style;
 	if (poptext.display == "none" || poptext.display == "") {
-    poptext.visibility = HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
-    poptext.display    = 'inline'; // must make it inline here - otherwise coords will not get set
+		poptext.visibility = HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
+		poptext.display    = 'inline'; // must make it inline here - otherwise coords will not get set
 		if (imgName) {
 			divRef.style.left = 0;
 			divRef.style.top  = 0;
-      var left = docjslib_getImageXfromLeft(imgName);
-      var top  = docjslib_getImageYfromTop(imgName) + docjslib_getImageHeight(imgName);
+			var left = docjslib_getImageXfromLeft(imgName);
+			var top  = docjslib_getImageYfromTop(imgName) + docjslib_getImageHeight(imgName);
 			var screenX = document.body.clientWidth;
 			var screenY = document.body.clientHeight;
+			// Find out how close to the corner of the window
+			var rightedge  = document.body.clientWidth + document.body.scrollLeft - left;
+			var bottomedge = document.body.clientHeight + document.body.scrollTop - top;
 
-    	// Find out how close to the corner of the window
-    	var rightedge  = document.body.clientWidth  - left;
-    	var bottomedge = document.body.clientHeight - top;
-
-    	// If the horizontal distance isn't enough to accomodate the width of the context menu
-    	if (rightedge < divRef.offsetWidth)
-				left = screenX - divRef.offsetWidth; // move horizontal position of the menu to the left by its width
+			// If the horizontal distance isn't enough to accomodate the width of the context menu
+			if (rightedge < divRef.offsetWidth)
+				left = screenX - divRef.offsetWidth + document.body.scrollLeft; // move horizontal position of the menu to the left by its width
 
 			// Same concept with the vertical position
 			if (bottomedge < divRef.offsetHeight)
@@ -57,10 +56,10 @@ function menuOpenClose(divName, imgName) {
 			poptext.left = left;
 			poptext.top  = top;
 		}
-		DivSetVisible(true, divName);
-    poptext.visibility = VISIBLE; // finally make div visible
-    var trs = divRef.getElementsByTagName("tr"); 
-    currentPopupRow =  trs[1];                   // make second tr - current row (1st tr is a header)
+		DivSetVisible(true, divName);		
+		poptext.visibility = VISIBLE; // finally make div visible
+		var trs = divRef.getElementsByTagName("tr"); 
+		currentPopupRow =  trs[1];                   // make second tr - current row (1st tr is a header)
 	} 
 	else {
 		//poptext.display = "none";
