@@ -686,10 +686,12 @@ function popupRowOnClick(e) {
   var verified = prop + "_verified";
   if (currentResourceUri)
     verified = currentResourceUri + ".$." + verified;
+  var fieldLabel = document.getElementById(prop + "_span");  
   
   var iclass = prop + "_class";    
   var formFieldClass    = form.elements[iclass];
   var formFieldVerified = form.elements[verified];
+  
   if (formFieldVerified) 
     formFieldVerified.value = 'y'; // value was modified and is verified since it is not typed but is chosen from the list
 
@@ -730,7 +732,6 @@ function popupRowOnClick(e) {
           formFieldClass.value  = '';
       }
       // hide property label that is displayed on top of the text field
-      var fieldLabel = document.getElementById(propName + "_span");
       if (fieldLabel)
         fieldLabel.style.display    = "none";
       if (formFieldVerified) 
@@ -751,6 +752,8 @@ function popupRowOnClick(e) {
       if (chosenTextField.style)
         chosenTextField.style.backgroundColor = '#ffffff';
       formField.value = tr.id; // property value corresponding to a listitem
+      if (fieldLabel)
+        fieldLabel.style.display = '';     
     }
   }
   else {
@@ -904,8 +907,8 @@ function autoComplete(e) {
   if (idx != -1)
     propName1 = propName1.substring(0, idx);
 
-  var fieldVerified = form[propName1 + '_verified'];
-  var fieldSelect   = form[propName1 + '_select'];
+  var fieldVerified = form.elements[propName1 + '_verified'];
+  var fieldSelect   = form.elements[propName1 + '_select'];
 
   if (characterCode == 13) { // enter
     if (!fieldVerified) { // show popup on Enter only in data entry mode (indicated by the presence of _verified field)
@@ -925,6 +928,10 @@ function autoComplete(e) {
     if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
     if (fieldSelect)   fieldSelect.value = ''; // value was modified and is not verified yet (i.e. not chose from the list)
     autoCompleteTimeoutId = setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
+    // make property label visible since overwritten inside the field
+    var filterLabel = document.getElementById(propName1 + "_span");
+    if (filterLabel)
+      filterLabel.style.display = '';
     clearOtherPopups(currentDiv);
     return true;
   }  
