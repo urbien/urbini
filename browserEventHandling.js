@@ -253,7 +253,7 @@
         return;
 
       target = getTargetElement(e);
-      var tooltip = target.attributes['tooltip'];
+      var tooltip = target.getAttribute('tooltip'); // using getAttrbute() - as workaround for IE5.5 custom attibutes bug
       var tooltipText;
       if (!tooltip) {
         tooltip = target.attributes['title'];
@@ -280,7 +280,7 @@
         }
       }
       else
-        tooltipText = tooltip.value;
+        tooltipText = tooltip;
       if (tooltip) {
         var tooltipDiv = document.getElementById('system_tooltip');
         if (!tooltipDiv)
