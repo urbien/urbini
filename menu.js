@@ -701,13 +701,14 @@ function popupRowOnClick(e) {
       select = currentResourceUri + ".$." + select;
 
     formField = form.elements[select];
-/*
+
     if (tr.id == '$more') { // click on row with 'more' link works like the 'more' link itself
       var anchors = tr.getElementsByTagName('a');
-      document.location.href = anchors[0].href;
+      document.location.target = anchors[0].target;
+      document.location.href   = anchors[0].href;
       return false;
     }
-*/
+
     if (tr.id == '$clear') {
       var currentLabel = chosenTextField.value;
       var initialLabel = getFormFieldInitialValue(chosenTextField);
