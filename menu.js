@@ -34,10 +34,37 @@ function menuOpenClose(divName, imgName) {
 	}
 }
 
-var timeoutId;
+var closeTimeoutId;
+var openTimeoutId;
+
 function menuOpen(div, link) {
-	if (timeoutId != null)
-        clearTimeout(timeoutId);
+  openTimeoutId = setTimeout("menuOpen1('" + div + "', '" + link + "')", 600);
+}
+
+function menuOpen1(div, link) {
+	poptext = document.getElementById(div).style;
+	if (poptext.visibility == "hidden" || poptext.visibility == "") {
+		linkLeft = docjslib_getImageXfromLeft(link);
+		linkTop = docjslib_getImageYfromTop(link);
+		linkWidth = docjslib_getImageWidth(link);
+		linkHeight = docjslib_getImageHeight(link);
+
+		if (xMousePos < linkLeft || xMousePos > linkLeft + linkWidth ||
+                yMousePos < linkTop || yMousePos > linkTop + linkHeight) {
+			return;
+		}
+	} else {
+		return;
+      }
+
+	if (openTimeoutId != null) {
+        clearTimeout(openTimeoutId);
+        openTimeoutId = null;
+      }
+	if (closeTimeoutId != null) {
+        clearTimeout(closeTimeoutId);
+        closeTimeoutId = null;
+      }
 	for (i = 0; i < MenuArray.length; i++) {
 		if (document.getElementById(MenuArray[i]) == null) {
 			continue;
@@ -85,7 +112,7 @@ function menuClose1(div) {
 }
 
 function menuClose(div) {
-  timeoutId = setTimeout("menuClose1('" + div + "')", 1000);
+  closeTimeoutId = setTimeout("menuClose1('" + div + "')", 1000);
 }
 
 function onRecChange() {
