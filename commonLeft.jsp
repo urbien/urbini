@@ -16,12 +16,15 @@
   <td><a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/invoice/Invoice"><text text="Invoices"/></a></td>
 </tr>
 
+<tr>
+  <td><br/><P class="active"><nobr><b><text text="Inventory"/></b></nobr></P></td>
+</tr>
 <tr rdfType="http://www.hudsonfog.com/voc/paper/delivery/ReelStockLevel">
-  <td><br/><a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/paper/delivery/ReelStockLevel"><b><text text="Inventory"/></b></a></td>
+  <td><br/><a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/delivery/LastInventory"><text text="per order"/></a></td>
 </tr>
 
 <tr rdfType="http://www.hudsonfog.com/voc/views/delivery/ReelStock">
-  <td>&#160;&#160;<a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/delivery/ReelStock"><text text="per order"/></a></td>
+  <td>&#160;&#160;<a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/delivery/ReelStock"><text text="per format"/></a></td>
 </tr>
 
 <tr rdfType="http://www.hudsonfog.com/voc/paper/delivery/ShipmentDamage">
