@@ -161,7 +161,7 @@
             <td width='85%' height="100%">
               <input type="hidden" value="all" name="nameUser">
               <input type="hidden" value="my" id="aliasUser" name="aliasUser">
-              <textarea style="border:1 solid #000;background:#f0f0f0;width:100%;" rows="3" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="var kk = navigator.appName == 'Netscape' ? event.which : event.keyCode;if (kk == 10 || (e.ctrlKey && kk==13))this.value = '';"></textarea>
+              <textarea style="border:1 solid #000;background:#f0f0f0; width:100%;" rows="3" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="var kk = navigator.appName == 'Netscape' ? event.which : event.keyCode;if (kk == 10 || (event.ctrlKey && kk==13))this.value = '';"></textarea>
               <script language='JavaScript'>
                 document.getElementById('message').value="";
                 document.getElementById('message').focus();
