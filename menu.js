@@ -652,6 +652,7 @@ function popupRowOnClick(e) {
   if (tr.id == '$noValue')
     return;
 
+  // if there is a link on this row - follow it
   var anchors = tr.getElementsByTagName('a');
   if (anchors  &&  anchors.length != 0) {
 //	  document.location.target = anchors[0].target;
@@ -659,8 +660,8 @@ function popupRowOnClick(e) {
     anchors[0].handleEvent();
 	  return true;
   }
+  
   var form = getFormNode(tr);
-
   var table  = tr.parentNode;
   var table1 = table.parentNode;
   
@@ -701,15 +702,8 @@ function popupRowOnClick(e) {
       select = currentResourceUri + ".$." + select;
 
     formField = form.elements[select];
-/*
-    if (tr.id == '$more') { // click on row with 'more' link works like the 'more' link itself
-      var anchors = tr.getElementsByTagName('a');
-      document.location.target = anchors[0].target;
-      document.location.href   = anchors[0].href;
-      return false;
-    }
-*/
     if (tr.id.indexOf('$clear') == 0) {
+/*
       var currentLabel = chosenTextField.value;
       var initialLabel = getFormFieldInitialValue(chosenTextField);
       // reset to initial value
@@ -723,14 +717,17 @@ function popupRowOnClick(e) {
       }
       // reset to no-value
       else {
-        if (currentFormName != "tablePropertyList")
-          chosenTextField.value   = tr.id.substring(6);
-        else
-          chosenTextField.value   = '';
-        formField.value         = '';
-        if (formFieldClass)
-          formFieldClass.value  = '';
-      }
+*/
+      
+      if (currentFormName != "tablePropertyList")
+        chosenTextField.value   = tr.id.substring(6);
+      else
+        chosenTextField.value   = '';
+      formField.value         = '';
+      if (formFieldClass)
+        formFieldClass.value  = '';
+// } end reset initial value if/else
+      
       // hide property label that is displayed on top of the text field
       if (fieldLabel)
         fieldLabel.style.display    = "none";
@@ -752,6 +749,7 @@ function popupRowOnClick(e) {
       if (chosenTextField.style)
         chosenTextField.style.backgroundColor = '#ffffff';
       formField.value = tr.id; // property value corresponding to a listitem
+      // show property label since label inside input field is now overwritten
       if (fieldLabel)
         fieldLabel.style.display = '';     
     }
