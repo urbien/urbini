@@ -634,11 +634,13 @@ function popupRowOnClick(e) {
     return;
     
   var ret = popupRowOnClick1(tr);
+/*
   if (ret == false) {
     e.cancelBubble = true;
     e.returnValue = false;
     if (e.preventDefault) e.preventDefault();         
   }
+*/  
   return ret;
 }
  
@@ -650,6 +652,13 @@ function popupRowOnClick(e) {
   if (tr.id == '$noValue')
     return;
 
+  var anchors = tr.getElementsByTagName('a');
+  if (anchors  &&  anchors.length != 0) {
+//	  document.location.target = anchors[0].target;
+//	  document.location.href   = anchors[0].href;
+    anchors[0].handleEvent();
+	  return true;
+  }
   var form = getFormNode(tr);
 
   var table  = tr.parentNode;
@@ -690,14 +699,14 @@ function popupRowOnClick(e) {
       select = currentResourceUri + ".$." + select;
 
     formField = form.elements[select];
-
+/*
     if (tr.id == '$more') { // click on row with 'more' link works like the 'more' link itself
       var anchors = tr.getElementsByTagName('a');
       document.location.target = anchors[0].target;
       document.location.href   = anchors[0].href;
       return false;
     }
-
+*/
     if (tr.id.indexOf('$clear') == 0) {
       var currentLabel = chosenTextField.value;
       var initialLabel = getFormFieldInitialValue(chosenTextField);
