@@ -720,7 +720,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       formFieldClass.value = tr.id; // property value corresponding to a listitem
       loadedPopups[currentDiv.id] = null;
       Popup.close0(currentDiv.id)
-      listboxOnClick1(currentImgId, form);
+      listboxOnClick1(currentImgId);
       return true;
     }
 
@@ -971,7 +971,7 @@ function listboxOnClick(e) {
 /**
  *  Opens the popup when needed, e.g. on click, on enter
  */
-function listboxOnClick1(imgId, enteredText, enterFlag, invalidatePopupCache) {
+function listboxOnClick1(imgId, enteredText, enterFlag) {
   if (Popup.openTimeoutId) {                  // clear any prior delayed popup open
     clearTimeout(Popup.openTimeoutId);
     Popup.openTimeoutId = null;
@@ -1276,7 +1276,7 @@ function autoComplete1(e, target) {
   var currentPopup = Popup.getPopup(divId);
 
   if (characterCode == 13) { // open popup (or close it on second Enter)
-    listboxOnClick1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
+    listboxOnClick1(keyPressedImgId, keyPressedElement.value);
     return false;            // tell browser not to do submit on 'enter'
   }
 
@@ -1402,7 +1402,7 @@ function autoCompleteTimeout(invocationTime) {
 
   if (keyPressedElement.value.length == 0) // avoid showing popup for empty fields
     return;
-  listboxOnClick1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
+  listboxOnClick1(keyPressedImgId, keyPressedElement.value);
 }
 
 /**
