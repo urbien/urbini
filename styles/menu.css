@@ -1,6 +1,9 @@
 .popMenu {
 	DISPLAY: none; POSITION: absolute; z-index:50
 }
+.popupFrameBody {
+       -moz-user-input: enabled; -moz-user-focus: normal
+}
 .popMenuTitle {
 	POSITION: relative; BACKGROUND-COLOR: #3366cc
 }

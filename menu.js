@@ -2,10 +2,14 @@
  * Popup Menu system 
  */ 
 var MenuArray = new Array();
+var currentPopupRow;
+
+var DarkMenuItem  = '#B6BDD2';
+var LightMenuItem = '';  
 
 var HIDDEN  =  'hidden';
 var VISIBLE =  'visible';
-	
+
 if (document.layers) {
   HIDDEN  = 'hide';
   VISIBLE = 'show';	
@@ -24,12 +28,13 @@ function menuOpenClose(divName, imgName) {
 			}
 		}
 	}
-	poptext = document.getElementById(divName).style;
+	
+	var divRef = document.getElementById(divName);
+	poptext = divRef.style;
 	if (poptext.display == "none" || poptext.display == "") {
     poptext.visibility = HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
     poptext.display    = 'inline'; // must make it inline here - otherwise coords will not get set
 		if (imgName) {
-     	var divRef = document.getElementById(divName);
 			divRef.style.left = 0;
 			divRef.style.top  = 0;
       var left = docjslib_getImageXfromLeft(imgName);
@@ -52,8 +57,10 @@ function menuOpenClose(divName, imgName) {
 			poptext.left = left;
 			poptext.top  = top;
 		}
-		DivSetVisible(true, divName);		
+		DivSetVisible(true, divName);
     poptext.visibility = VISIBLE; // finally make div visible
+    var trs = divRef.getElementsByTagName("tr"); 
+    currentPopupRow =  trs[1];                   // make second tr - current row (1st tr is a header)
 	} 
 	else {
 		//poptext.display = "none";
@@ -363,7 +370,10 @@ function onClickPopup(e) {
   onClickPopup1(imgId, form);      
 }
   
-function onClickPopup1(imgId, form, enteredText, enter) {
+/**
+ *  Opens the popup when needed, e.g. on click, on enter
+ */
+function onClickPopup1(imgId, form, enteredText, enterFlag) {
   var propName1 = imgId.substring(0, imgId.length - "_filter".length);   // cut off "_filter"
   var idx = propName1.lastIndexOf('_');
   if (idx == -1)
@@ -406,8 +416,16 @@ function onClickPopup1(imgId, form, enteredText, enter) {
    
   currentDiv = document.getElementById(divId);
   var div = openedPopups[divId];
-  if (!enteredText && div != null) {
+  
+  // Use existing DIV from cache (unless text was Enter-ed - in which case always redraw DIV)
+  if (!enteredText && div != null) { 
     menuOpenClose(divId, imgId);
+    if (currentDiv.focus)
+      currentDiv.focus();
+    else {
+      var form = document.getElementById("_$focus_form"); 
+      if (form) form.elements[0].focus();
+    }  
     return;
   }
   
@@ -420,7 +438,7 @@ function onClickPopup1(imgId, form, enteredText, enter) {
 
   url = url + "&$form=" + currentFormName;
   url = url + "&" + propName + "_filter=y";
-  if (!enter)  
+  if (!enterFlag)  
     url += "&$selectOnly=y";
   
   if (enteredText)
@@ -434,6 +452,9 @@ function onClickPopup1(imgId, form, enteredText, enter) {
   setTimeout(loadPopup, 100);
 }
 
+/**
+ *  Loads the popup into the div from the iframe
+ */
 function loadPopup() {
   if (!popupFrameLoaded) {
     setTimeout(loadPopup, 100);
@@ -451,6 +472,14 @@ function loadPopup() {
   menuOpenClose(currentDiv.id, currentImgId);
   interceptPopupEvents(currentDiv);
   openedPopups[currentDiv.id] = currentDiv;
+     
+  if (currentDiv.focus)
+    currentDiv.focus();
+  else {
+    var form = document.getElementById("_$focus_form"); 
+    if (form) form.elements[0].focus();
+  }  
+     
 }
 
 function interceptPopupEvents(div) {
@@ -464,9 +493,11 @@ function interceptPopupEvents(div) {
   var table   = document.getElementById(tableId);
   var img     = document.getElementById(currentImgId);
 
-  addEvent(div, 'mouseover', popupOnMouseOver, false);
-  addEvent(div, 'mouseout',  popupOnMouseOut,  false);
-  addEvent(img, 'mouseout',  popupOnMouseOut,  false);
+  addEvent(div,  'mouseover', popupOnMouseOver, false);
+  addEvent(div,  'mouseout',  popupOnMouseOut,  false);
+  addEvent(img,  'mouseout',  popupOnMouseOut,  false);
+  addEvent(div,  'keypress',  popupRowOnKeyPress,  false);
+  addEvent(div,  'keydown',   popupRowOnKeyPress,  false);
 
   var trs = table.getElementsByTagName("tr");
   for (i=0;i<trs.length; i++) {
@@ -474,44 +505,14 @@ function interceptPopupEvents(div) {
     addEvent(elem, 'click',     popupRowOnClick,     false);
     addEvent(elem, 'mouseover', popupRowOnMouseOver, false);
     addEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
-    //addEvent(elem, 'keypress',  popupRowOnKeyPress,  false);
+//    addEvent(elem, 'keypress',  popupRowOnKeyPress,  false);
+//    addEvent(elem, 'keydown',   popupRowOnKeyPress,  false);
   }
 }
 
-function getFormFilters(form, allFields) {
-
-  var p = "";
-  var fields = form.elements;
-  for (i=0; i<fields.length; i++) {
-    var field = fields[i];
-    var value = field.value;
-    var name  = field.name;
-    var type  = field.type;
-
-    if (!type || !name)
-      continue;
-    if (type.toUpperCase() == "SUBMIT") 
-      continue;
-    if (!allFields) {
-      if (!wasFormFieldModified(field))
-        continue;
-    }  
-    else {
-    
-      if (!value || value == '')
-        continue;
-
-      if (type.toUpperCase() == "CHECKBOX" && name != "on") 
-        continue;
-      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
-        continue;
-    }
-          
-    p += "&" + name + "=" + encodeURIComponent(value);
-  }
-  return p;
-}
-
+/*
+ * Receives control on form submit events
+ */
 function popupOnSubmit(e) {
   var target;
 
@@ -525,7 +526,7 @@ function popupOnSubmit(e) {
   // form url based on parameters that were set
   var url;
   url = form.action;
-  url = "FormRedirect?JLANG=en"; // HACK: since form.action returns '&action='
+  url = "FormRedirect?JLANG=en"; // HACK: since form.action returns the value of '&action='
 
   var params = getFormFilters(form);
   var submitButtonName  = null;
@@ -540,7 +541,7 @@ function popupOnSubmit(e) {
   else 
     url += "&submit=y";
 */
-  url += "&submit=y";
+  url += "&submit=y"; // HACK: since target.type return the value of &type instead of an input field's type property
 /*
   // figure out the name and the value of the Submit button
   for (i=0; i<form.elements.length; i++) {
@@ -573,7 +574,7 @@ function popupOnSubmit(e) {
   form.onsubmit = null;
 
   if (document.all || document.getElementById) {
-//    form.submit.disabled = true; 
+//    form.submit.disabled = true; // HACK: for some reason can not disable this button - the form would not get submitted
     form.submit.value = 'Please wait';
     form.submit.style.cursor = 'wait'; 
     var cancel;
@@ -607,8 +608,16 @@ function popupRowOnClick(e) {
   if (!tr)
     return;
     
-  var form = getFormNode(target);
-   
+  return popupRowOnClick1(tr);  
+ }
+ 
+ function popupRowOnClick1(tr) {
+  //alert("popupRowOnClick1: " + tr.id);           
+  if (tr.previousSibling == null) // skip clicks on menu header (it is a first tr - has no prev sibling)
+    return;
+
+  var form = getFormNode(tr);
+
   var table  = tr.parentNode;
   var table1 = table.parentNode;
   
@@ -618,6 +627,7 @@ function popupRowOnClick(e) {
   propertyShortName = propertyShortName.substring(0, idx);
   var idx = propertyShortName.indexOf(".");
   var prop = null;
+
   if (idx == -1) {
     idx = propertyShortName.indexOf("_class");
     if (idx != -1)
@@ -689,40 +699,6 @@ function popupRowOnClick(e) {
   return true;
 }
 
-function clearOtherPopups(div) {
-//alert("div=" + div.id + ", openedPopups.length=" + openedPopups.length)    
-  for (i in openedPopups) {
-    var p = openedPopups[i];
-    if (p == null)
-      continue;
-//alert("openedPopup=" + p.id)    
-    if (p != div) {
-      openedPopups[i] = null;
-    }  
-  }
-}
-
-function clearThisPopup(div) {
-//alert("div=" + div.id + ", openedPopups.length=" + openedPopups.length)    
-  for (i in openedPopups) {
-    var p = openedPopups[i];
-    if (p == div) {
-      openedPopups[i] = null;
-      break;
-    }  
-  }
-}
-
-function getFormNode(elem) {
-  var f = elem.parentNode;
-  if (f.tagName.toUpperCase() == "FORM") {
-    return f;
-  }  
-  else
-    return getFormNode(f);
-}
-
-var keysPressedSnapshot = "";
 var keyPressedImgId;
 var keyPressedElement;
 var autoCompleteTimeoutId;
@@ -785,19 +761,14 @@ function getKeyCode(e) {
 	}
 }
 
-function autoCompleteOnKeyDown(e) {
-  if( typeof( e.keyCode ) == 'number') {
-    if (e.keyCode == 8 || e.keyCode == 127) { // backspace, ctrl-enter
-      var flag = autoComplete(e);
-      return flag;
-    }  
-    else if (e.keyCode == 9)                 // tab
-      return autoComplete(e);
-    else  
-      return true;   
-  }
-}
-
+/**
+ * Show popup for the text entered in input field (by capturing keyPress events). 
+ * Show popup only when the person stopped typing (timeout).
+ * Special processing for Enter: 
+ *   - in Filter mode     - let it submit the form.
+ *   - in Data Entry mode - on Enter show popup immediately,
+ *                          and close popup if hit Enter twice.
+ */
 function autoComplete(e) {
   keyPressedTime = new Date().getTime();
   e = (e) ? e : ((window.event) ? window.event : null);
@@ -828,6 +799,7 @@ function autoComplete(e) {
     case 17:  //ctrl  
     case 18:  //alt  s
     case 20:  //caps lock
+
       return true;
     case 9:   //tab  
     case 8:   //backspace  
@@ -852,8 +824,8 @@ function autoComplete(e) {
   }
   keyPressedImgId     = propName + "_" + formName + "_filter";
   keyPressedElement   = target;
-  keysPressedSnapshot = target.value + characterCode;
-
+  keyPressedElement.style.backgroundColor='#ffffff';
+  
   if (characterCode == 13) { // open popup (or close it on second Enter)
     onClickPopup1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
     return false;            // tell browser not to do submit on 'enter'
@@ -878,14 +850,104 @@ function autoCompleteTimeout(invocationTime) {
 	  return true;
 	}  
 	
-	if (keyPressedElement.value.length == 0)
+	if (keyPressedElement.value.length == 0) // avoid showing popup for empty fields
 	  return;
 	onClickPopup1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
 }
 
+/**
+ * This onKeyDown handler is needed since some browsers do not capture certain special keys on keyPress.
+ */
+function autoCompleteOnKeyDown(e) {
+  if( typeof( e.keyCode ) == 'number') {
+    if (e.keyCode == 8 || e.keyCode == 127) { // backspace, ctrl-enter
+      var flag = autoComplete(e);
+      return flag;
+    }  
+    else if (e.keyCode == 9)                  // tab
+      return autoComplete(e);
+    else  
+      return true;   
+  }
+}
+
+/**
+ * This handler allows to use arrow keys to move through the menu and Enter to choose the menu element.
+ */
 function popupRowOnKeyPress(e) {
-//alert("keypress");
-  return(popupRowOnClick(e));
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e) 
+    return;
+
+  var characterCode = getKeyCode(e); // code typed by the user
+  var target;
+
+  tr = currentPopupRow;
+  if (!tr)
+    return;
+
+  switch (characterCode) {
+    case 38:  //up arrow  
+    case 40:  //down arrow
+      break;
+    case 27:  //esc  
+      if (currentDiv)
+        menuClose2(currentDiv);
+      return false;  
+    case 13:  //enter
+      popupRowOnClick1(tr);
+      return false;
+    default:
+      return true;  
+  }     
+
+  // down arrow
+  if (characterCode == 40) {
+	  var tds = tr.getElementsByTagName("td");  
+	  for (i=0; i<tds.length; i++) {
+	    var elem = tds[i];
+	    elem.style.backgroundColor = LightMenuItem;
+	  } 
+	
+	  nextTr = tr.nextSibling;
+	  if (nextTr == null) {
+	    var table = tr.parentNode;
+	    var trs = table.getElementsByTagName("tr");  
+	    nextTr = trs[1];
+	  }
+	  currentPopupRow = nextTr;
+	  tds = nextTr.getElementsByTagName("td");  
+	  for (i=0; i<tds.length; i++) {
+	    var elem = tds[i];
+	    elem.style.backgroundColor = DarkMenuItem;
+	  } 
+	} 
+	// up arrow
+	else if (characterCode == 38) {
+	  var tds = tr.getElementsByTagName("td");  
+	  for (i=0; i<tds.length; i++) {
+	    var elem = tds[i];
+	    elem.style.backgroundColor = LightMenuItem;
+	  } 
+	
+	  nextTr = tr.previousSibling;
+	  var nextNext;
+	  if (nextTr != null) 
+	    nextNext = nextTr.previousSibling; // check to skip top row - header
+	  if (nextNext == null || nextTr == null) {
+	    var table = tr.parentNode;
+	    var trs = table.getElementsByTagName("tr");  
+	    nextTr = trs[trs.length - 1];
+	  }
+	  currentPopupRow = nextTr;
+	  tds = nextTr.getElementsByTagName("td");  
+	  for (i=0; i<tds.length; i++) {
+	    var elem = tds[i];
+	    elem.style.backgroundColor = DarkMenuItem;
+	  } 	
+	}
+	  
+  return false;
 }
 
 function popupOnMouseOver(e) {
@@ -904,7 +966,8 @@ function popupOnMouseOver(e) {
      clearTimeout(closeTimeoutId);
      closeTimeoutId = null;
   }  
-  window.status=propName; 
+  window.status = propName; 
+  
   return true;
 }
 
@@ -927,18 +990,6 @@ function popupOnMouseOut(e) {
   return true;
 }
 
-function getTrNode(elem) { 
-  var e;
-
-  if (elem.tagName.toUpperCase() == 'TR')
-    return elem;
-  e = elem.parentNode;
-  if (e)
-    return getTrNode(e);
-  else
-    return null;
-}
-
 function popupRowOnMouseOver(e) {
   var tr;
   var target;
@@ -949,15 +1000,25 @@ function popupRowOnMouseOver(e) {
     return;
 
   target = getTargetElement(e);
-//alert("target = " + target.tagName)
   tr = getTrNode(target);
   if (!tr)
     return;
 
+  // clear current row
+  if (currentPopupRow) {
+	  var tds = currentPopupRow.getElementsByTagName("td");
+	  for (i=0; i<tds.length; i++) {
+	    var elem = tds[i];
+	    elem.style.backgroundColor = LightMenuItem;
+	  }
+	}  
+
+  // darken new current row
+  currentPopupRow = tr;
   var tds = tr.getElementsByTagName("td");
   for (i=0; i<tds.length; i++) {
     var elem = tds[i];
-    elem.style.backgroundColor='#B6BDD2';
+    elem.style.backgroundColor = DarkMenuItem;
   }
  
   return true;
@@ -985,3 +1046,78 @@ function popupRowOnMouseOut(e) {
  
   return true;
 }
+
+/************************************************* Helper functions ***************************************/
+function clearOtherPopups(div) {
+//alert("div=" + div.id + ", openedPopups.length=" + openedPopups.length)    
+  for (i in openedPopups) {
+    var p = openedPopups[i];
+    if (p == null)
+      continue;
+//alert("openedPopup=" + p.id)    
+    if (p != div) {
+      openedPopups[i] = null;
+    }  
+  }
+}
+
+function getFormNode(elem) {
+  var f = elem.parentNode;
+  if (!f)
+    return null;
+  if (f.tagName.toUpperCase() == "FORM")
+    return f;
+  else
+    return getFormNode(f);
+}
+
+function getTrNode(elem) { 
+  var e;
+
+  if (elem.tagName.toUpperCase() == 'TR')
+    return elem;
+  e = elem.parentNode;
+  if (e)
+    return getTrNode(e);
+  else
+    return null;
+}
+
+/**
+ * Helper function - gathers the parameters (from form elements) to build a URL
+ * If allFields is true - we are in a Filter panel - need to take into account all input fields
+ * Otherwise - it is a Data Entry mode, i.e. - take only fields that were modified by the user
+ */
+function getFormFilters(form, allFields) {
+
+  var p = "";
+  var fields = form.elements;
+  for (i=0; i<fields.length; i++) {
+    var field = fields[i];
+    var value = field.value;
+    var name  = field.name;
+    var type  = field.type;
+
+    if (!type || !name)
+      continue;
+    if (type.toUpperCase() == "SUBMIT") 
+      continue;
+    if (!allFields) {
+      if (!wasFormFieldModified(field))
+        continue;
+    }  
+    else {
+      if (!value || value == '')
+        continue;
+
+      if (type.toUpperCase() == "CHECKBOX" && name != "on") 
+        continue;
+      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
+        continue;
+    }
+          
+    p += "&" + name + "=" + encodeURIComponent(value);
+  }
+  return p;
+}
+
