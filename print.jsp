@@ -11,7 +11,6 @@
 </CENTER>
 
 <br></br>
-<include name="include/commonFooter"/>
 </html>
 </BODY>
 </HTML>    
