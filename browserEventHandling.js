@@ -222,11 +222,16 @@
              //addEvent(elem, 'click',    onFormFieldClick,  false);
            }
            else if (elem.type.toUpperCase() == 'TEXTAREA') {
-             initialValues[elem.name + '.attributes.rows'] = elem.attributes['rows'].value;
-             initialValues[elem.name + '.attributes.cols'] = elem.attributes['cols'].value;
+             var rows = elem.attributes['rows'];
+             var cols = elem.attributes['cols'];
+             if (rows)
+               initialValues[elem.name + '.attributes.rows'] = rows.value;          
+             if (cols)
+               initialValues[elem.name + '.attributes.cols'] = cols.value;
              if (!elem.value || elem.value == '') {
-               elem.attributes['rows'].value = 1;
-               elem.attributes['cols'].value = 10;
+               elem.setAttribute('rows', 1);
+               elem.setAttribute('cols', 10);
+               //elem.attributes['cols'].value = 10;
                addEvent(elem, 'focus', textAreaOnFocus,  false);
                addEvent(elem, 'blur',  textAreaOnBlur,   false);
              }  
@@ -251,13 +256,14 @@
      }  
    }
    // returns value of the field saved right after the page load (does not support multiple selections)
-   function getFormFieldInitialValue(elem) {
+   function getFormFieldInitialValue(elem, attribute) {
      if (formInitialValues) {
        var formValues = formInitialValues[elem.form.name];
        if (formValues) {
-         var value = formValues[elem.name];
-//         alert("formValues[" + elem.name + "]=" + formValues[elem.name]);         
-         return value;
+         if (attribute)
+           return formValues[elem.name + '.attributes.' + attribute];
+         else
+           return formValues[elem.name];        
        }
      }
      return null;

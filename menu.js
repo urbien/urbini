@@ -1283,8 +1283,21 @@ function textAreaOnFocus(e) {
     return;
 
   var target = getTargetElement(e);
-  target.attributes['rows'].value = 5;
-  target.attributes['cols'].value = 50;
+  var rows = getFormFieldInitialValue(target, 'rows');
+  if (rows)
+    target.attributes['rows'].value = rows;
+  else
+    target.attributes['rows'].value = 1;
+  var cols = getFormFieldInitialValue(target, 'cols');
+  if (!cols) {
+    target.setAttributes('cols', 10);
+    cols = 10;
+  }  
+  var c = target.attributes['cols'];
+  if (c) {
+    c.value = cols;
+    target.style.width = "96%";
+  }  
 }
 
 function textAreaOnBlur(e) {
@@ -1297,6 +1310,7 @@ function textAreaOnBlur(e) {
   if (!target.value || target.value == '') {
     target.attributes['rows'].value = 1;
     target.attributes['cols'].value = 10;
+    target.style.width = null;
   }  
 }
 
