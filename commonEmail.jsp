@@ -1,3 +1,4 @@
+<div>
   <form name="emailForm" action="page2email" method="GET">
     <table cellpadding="5">
       <tr nonPda="T"> 
@@ -30,3 +31,4 @@
       </tr>
     </table>
   </form>
+</div>

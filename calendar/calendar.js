@@ -1,27 +1,3 @@
-/*                                                                     */
-/*                   Thank you for evaluating Trita!                   */
-/*                                                                     */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/*                                                                     */
-/*                          Buy Trita today!                           */
-/*                                                                     */
-/*                           www.trita.com                             */
-/*                                                                     */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/*                                                                     */
-/* These comments do not appear in the registered version.            */
-/* Random watermark comments follow...                                 */
-/* Please do not change, except to delete entirely: 145244399452946947 */
-  /*
- This file was formatted with an evaluation copy of Trita.
- */
-
- /*  CcrixziuJqevfp
- */
-
-   /*  Kxnvjqyp VcdwglizDonp
- */
-
 // Title: Tigra Calendar PRO
 // Description: Tigra Calendar PRO is flexible JavaScript Calendar offering
 //	high reliability and wide browsers support.

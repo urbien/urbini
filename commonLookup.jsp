@@ -1,3 +1,4 @@
+<div>
       <table width="100%" cellspacing="0" cellpadding="5" border="0">
         <tbody>
           <tr>
@@ -107,3 +108,4 @@
           </tr>
         </tbody>
       </table>
+</div>

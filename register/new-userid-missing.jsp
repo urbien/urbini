@@ -1,14 +1,4 @@
-<HTML>
-<include name="include/commonHeader" />
-
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-<tr>
-  <td valign="top" width="20%">
-    <include name="include/commonLeft" />
-  </td>
-  <td valign="top" align="middle">
-
-<br />
+<div>
 <form method="post" action="j_security_check">
 <table cellpadding="0" border="0" cellspacing="0" width="50%">
   <tr>
@@ -40,11 +30,6 @@
     </td>
   </tr>
 </table>
-<returnUri />
+<returnUri />   <challenge />
 </form>
-</td></tr></table>
-
-<include name="include/commonFooter" />
-</BODY>
-
-</HTML>
+</div>

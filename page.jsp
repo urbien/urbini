@@ -1,30 +1,6 @@
 <html>
   <head>
-    <!--include name="commonHead.jsp"/-->  
-  <title />
-
-  <style>
-    A {behavior: url(#default#AnchorClick);}
-  </style>
-
-  <link href="icons/icon.ico"                        rel="SHORTCUT ICON" />
-  <link href="icons/icon.ico"                        rel="ICON"          />
-  <link href="styles/properties.css" type="text/css" rel="stylesheet" />
-  <link href="styles/common.css"     type="text/css" rel="stylesheet" />
-  <link href="styles/menu.css"       type="text/css" rel="stylesheet" />
-  <link href="styles/tree.css"       type="text/css" rel="stylesheet" />
-  <link href="calendar/calendar.css" type="text/css" rel="stylesheet" /> 
-
-  <SCRIPT language="JavaScript" src="menu.js"></SCRIPT>
-  <SCRIPT language="JavaScript" src="forms.js"></SCRIPT>
-
-
-  <script language="JavaScript" src="calendar/cal_tpl1.js"></script>
-  <script language="JavaScript" src="calendar/cal_strings.js"></script>
-  <script language="JavaScript" src="calendar/calendar.js"></script>
-  <script language="JavaScript" src="gantt/dependencies.js"></script>
-  <script language="JavaScript" src="pngfix.js"></script>
-
+    <include name="commonHead.jsp" />  
   </head>
 
   <div nonPda="T">
@@ -53,8 +29,10 @@
   </div>
 
   <div pda="T">
-    <include name="commonHeader"/>
-    <BODY text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
+    <head>
+      <include name="commonHead.jsp" />  
+    </head>
+    <body text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
     <!--img src="icons/icon.gif" width="16"/-->
 
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -65,6 +43,7 @@
     </tr>
     </table>
     <include name="requiredFooter"/>
+    </body>
   </div>
 </html>
 

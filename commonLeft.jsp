@@ -1,3 +1,4 @@
+<div>
 <table width="130" cellpadding="2" cellspacing="5" border="0">
 <tr>
   <td><a href="remoteSearchResults.html?action=searchParallel&amp;type=http://www.hudsonfog.com/voc/views/orders/Order"><text text="Orders"/></a></td>
@@ -162,3 +163,4 @@
 </tr>
 
 </table>
+</div>

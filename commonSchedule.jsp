@@ -1,3 +1,4 @@
+<div>
 <form name="scheduleForm" action="page2schedule" method="GET">
   <table cellpadding="5">
     <tr nonPda="T">
@@ -122,3 +123,4 @@
     <tr><td><input type="submit" value="Schedule" class="cswmItemSubtitle"/></td></tr>
   </table>
 </form>
+</div>

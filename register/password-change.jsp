@@ -1,13 +1,4 @@
-<HTML>
-<body onload="document.loginform.j_password.focus();">
-<include name="hashScript.html"/>
-
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-<tr>
-  <td valign="top" align="middle" width="90%">
-
-<br />
-
+<div>
 <form name="loginform" action="j_security_check" method="POST"  onsubmit="return hash(this, 'j_security_check')">
   
 <table border="0" cellpadding="0" cellspacing="0" width="100%" cols="2">
@@ -44,8 +35,4 @@
 </form>
 
 <!--span class="xs">If you do not remember your Password, click &quot;Give me a new Password&quot; and we will send it to the email address you specified when you registered.</span-->
-</td></tr></table>
-
-</BODY>
-
-</HTML>
+</div>

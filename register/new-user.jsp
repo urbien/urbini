@@ -1,7 +1,4 @@
-<HTML>
-<include name="include/commonHeader" />
-<include name="registerScript.html" />
-
+<div>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top" width="20%">
@@ -30,11 +27,8 @@
     </td>
   </tr>
 </table>
-  <returnUri />
+  <returnUri /> <challenge />
 </form>
 
 </td></tr></table>
-<include name="include/commonFooter" />
-</BODY>
-
-</HTML>
+</div>

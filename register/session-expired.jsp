@@ -1,6 +1,4 @@
-<HTML>
-<body onload="document.loginform.j_username.focus();">
-<include name="hashScript.html"/> <br />
+<div>
 <form name="loginform" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')">
   <table width="430" align="center" bgcolor="#cbcbcb" cellpadding="2" cellspacing="0">
     <tr> 
@@ -64,5 +62,4 @@
   </table>
   <returnUri /> <challenge /> 
 </form>
-</body>
-</HTML>
+</div>

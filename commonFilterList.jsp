@@ -1,3 +1,4 @@
+<div>
 <table border="0" cellspacing="0" cellpadding="0">
   <tr>
     <td>    
@@ -11,3 +12,4 @@
     </td>
   </tr>
 </table>
+</div>

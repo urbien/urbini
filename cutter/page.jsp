@@ -1,10 +1,6 @@
 <html>
-<head>
-  <base href="serverName"/>
-<title>Login</title>
-</head>
-<include name="include/commonHeader"/>
-
+<include name="requiredHeader.jsp"/>
+<include name="include/commonheader"/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
 <td valign="top" width="90%">
@@ -12,6 +8,6 @@
 </td></tr></table>
 
 <br></br>
+<include name="requiredFooter"/>
 <include name="include/commonFooter"/>
-  <include name="requiredFooter"/>
 </html>
