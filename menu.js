@@ -846,7 +846,7 @@ function autoCompleteOnKeyDown(e) {
       var flag = autoComplete(e);
       return flag;
     }  
-    else if (e.keyCode == 9)                 // tab
+    else if (e.keyCode == 9)                  // tab
       return autoComplete(e);
     else  
       return true;   
@@ -891,14 +891,16 @@ function autoComplete(e) {
     case 17:  //ctrl  
     case 18:  //alt  s
     case 20:  //caps lock
-
       return true;
-    case 9:   //tab  
     case 8:   //backspace  
     case 46:  //delete
     case 127: //ctrl-enter
     case 13:  //enter  
       break;
+    case 9:   //tab
+      if (currentDiv)
+        menuClose2(currentDiv);
+      return true;
   }     
   var propName  = target.name;
   var formName  = target.id;
@@ -988,6 +990,18 @@ function popupRowOnKeyPress(e) {
     case 38:  //up arrow  
     case 40:  //down arrow
       break;
+    case 9:   //tab
+      if (currentDiv) {
+        var form = getFormNode(currentPopupRow);
+        var inputField = form.elements[originalProp];
+        //alert(inputField.tagName);
+        inputField.focus();
+        menuClose2(currentDiv);
+      }  
+      e.cancelBubble = true;
+      e.returnValue = false;
+      if (e.preventDefault) e.preventDefault();         
+      return false;
     case 27:  //esc  
       if (currentDiv)
         menuClose2(currentDiv);
