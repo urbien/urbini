@@ -437,10 +437,11 @@ var timeoutCount;
  */
 function loadPopup() {
   if (!popupFrameLoaded) {
-    if (timeoutCount++ < 20)
-      setTimeout(loadPopup, 100);
-    else
-      alert("Warning: server did not return listbox data - check connection to server");
+//    if (timeoutCount++ < 20)
+//      setTimeout(loadPopup, 100);
+//    else
+//      alert("Warning: server did not return listbox data - check connection to server");
+    setTimeout(loadPopup, 100);
     return;
   }  
 
