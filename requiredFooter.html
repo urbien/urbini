@@ -1,8 +1,25 @@
 <script language="JavaScript" src="browserEventHandling.js"></script>
 <script language="JavaScript" src="calendar/cals_init.js"></script>
 
-<iframe name="bottomFrame" id="bottomFrame" src="javascript:false;" 
-        scrolling="no" marginwidth="0" marginheight="0" frameborder="0" vspace="0" hspace="0" style="overflow:visible; width:100%; display:none" height="1000"> 
-</iframe>  
+<script>
 
-<div id="pane2"></div> 
+   function loadPane2() {
+     var frameId     = 'bottomFrame';
+     var bottomFrame = window.parent.frames[frameId];
+     var pane2       = window.parent.document.getElementById('pane2');
+//alert("pane2 =" + pane2);
+     if (pane2) {
+       var body = bottomFrame.document.body;
+//alert("bottomFrame.document.body=" + bottomFrame.document.body);
+       if (body) {
+         pane2.innerHTML = body.innerHTML;
+       }
+     }
+   }
+
+   if (window.parent != window) {
+     addEvent(window, 'load', function() {setTimeout(loadPane2, 0);}, false);
+   }
+</script>
+
+

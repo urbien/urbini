@@ -33,13 +33,16 @@
     <siteResourceList />
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
-    <addNewResource html="mkResource.html"/> 
-    <delete/> 
-    <edit html="localSearchResults.html"/><br/>
-    <reloadDocuments/>
-    <createResources/><br/>
-    <setAsHomePage />
-    <br/><pieChart/>
+    <div id="pane2">
+      <addNewResource html="mkResource.html"/> 
+      <delete/> 
+      <edit html="localSearchResults.html"/><br/>
+      <reloadDocuments/>
+      <createResources/><br/>
+      <setAsHomePage />
+      <br/><pieChart/>
+    </div>
+
     <script language="JavaScript">
       var horizontalFilter_FIELDS = new Array();
     </script>
@@ -47,6 +50,7 @@
       <br/>
       <horizontalFilter />
     </form>
+
   </td>
   <td width="5%" id="rightPanelPropertySheet" valign="top" align="left">
     <br/>
@@ -114,4 +118,8 @@
 
 
 <!--div align="left"><span class="xs"><hudsonFog /></span></div-->   <!-- link to Portal page for current category -->
+<iframe name="bottomFrame" id="bottomFrame" src="javascript:false;" 
+        scrolling="no" marginwidth="0" marginheight="0" frameborder="0" vspace="0" hspace="0" style="overflow:visible; width:100%; display:none" height="1000"> 
+</iframe>  
+
 </div>

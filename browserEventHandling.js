@@ -53,12 +53,14 @@
           p = '_altKey=y';  
           var frameId = 'bottomFrame';
           var bottomFrame = frames[frameId];
+          // show content in a second pane
+          // 
           if (bottomFrame) {
             url = getTargetElement(e);
 
             bottomFrame.location.href = url + "&pda=T&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y";
-            document.getElementById('pane2').innerHTML = bottomFrame.document.body.innerHTML; //firstChild.nodeValue
-
+// do not do it here - let iframe do it upon loading
+//            document.getElementById('pane2').innerHTML = bottomFrame.document.body.innerHTML; //firstChild.nodeValue
             return false;
           }
         }
@@ -149,3 +151,20 @@
     }
     */
 
+   /* load bottomFrame iframe into a pane2 */
+   function loadPane2() {
+     var frameId     = 'bottomFrame';
+     var bottomFrame = window.parent.frames[frameId];
+     var pane2       = window.parent.document.getElementById('pane2');
+     if (pane2) {
+       var body = bottomFrame.document.body;
+       if (body) {
+         pane2.innerHTML = body.innerHTML;
+       }
+     }
+   }
+
+   // add even only if inside iframe
+   if (window.parent != window) {
+     addEvent(window, 'load', function() {setTimeout(loadPane2, 0);}, false);
+   }
