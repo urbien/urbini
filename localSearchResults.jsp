@@ -78,7 +78,7 @@
       <A title="Trains"    href="javascript://" onClick="menuOpenClose('trainsDiv')"><IMG src="icons/train.gif" align="middle" border="0"/></A>&#160;
       <A title="Trucks"    href="javascript://" onClick="menuOpenClose('trucksDiv')"><IMG src="icons/truck.gif" align="middle" border="0"/></A>&#160;
       
-      <span class="xs"><div id="language" class="popMenu"><language/></div></span><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
+      <span class="xs"><language/></span><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
       <pdaToPc image="images/pda.gif"/><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>
