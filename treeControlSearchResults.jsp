@@ -39,8 +39,16 @@
         <br/><pieChart/>
         <script language="JavaScript">
           var horizontalFilter_FIELDS = new Array();
+	function disableSubmitButtonH(form) {
+	  if (document.all || document.getElementById) {
+            form.submit.disabled = true; 
+            form.submit.value = 'Please wait';
+            form.submit.style.cursor = 'wait'; 
+            form.clear.style.visibility = 'hidden'; 
+          }
+	}
         </script>
-        <form name="horizontalFilter" method="POST" action="FormRedirect"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
+        <form name="horizontalFilter" method="POST" action="FormRedirect" onSubmit="disableSubmitButtonH(this)"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
           <br/>
           <horizontalFilter />
         </form>
@@ -104,8 +112,16 @@
 </table>
 <script language="JavaScript">
   var horizontalFilter_FIELDS = new Array();
+	function disableSubmitButtonH(form) {
+	  if (document.all || document.getElementById) {
+            form.submit.disabled = true; 
+            form.submit.value = 'Please wait';
+            form.submit.style.cursor = 'wait'; 
+            form.clear.style.visibility = 'hidden'; 
+          }
+	}
 </script>
-<form name="horizontalFilter" method="POST" action="FormRedirect"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
+<form name="horizontalFilter" method="POST" action="FormRedirect" onSubmit="disableSubmitButtonH(this)"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
   <br/>
     <horizontalFilter />
 </form>
