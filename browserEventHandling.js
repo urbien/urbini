@@ -268,7 +268,14 @@
         return;
 
       target = getTargetElement(e);
-      return tooltipMouseOver0(target);
+      if (!tooltipMouseOver0(target)) {
+        e.cancelBubble = true;
+        e.returnValue = false;
+        if (e.preventDefault) e.preventDefault();
+        return false;
+      }  
+      else
+        return true;
     }  
     
     function tooltipMouseOver0(target) {
@@ -312,9 +319,6 @@
         var ifrRef = document.getElementById('tooltipIframe');
         setDivVisible(tooltipDiv, target, 7, 12, ifrRef);
       } 
-      e.cancelBubble = true;
-      e.returnValue = false;
-      if (e.preventDefault) e.preventDefault();         
       return false;
     }
 
