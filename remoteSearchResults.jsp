@@ -81,12 +81,17 @@
 
 <br />
 <div>
+<div>
   <div id="textdiv2" class="popMenu">
+  <div class="popMenuTitle" pda="T">
+    <table width="220" cellpadding="2">
+      <tr>
+        <td><b><font color="FFFFFF">Filter</font></b></td>
+        <td align="right"><a title="Close" href="javascript://" onClick="menuOpenClose('textdiv2')"><IMG alt="Click here to close" src="images/button_popup_close.gif" border="0"/></a></td>
+      </tr>
+    </table>
+  </div>
 <table border="0" cellspacing="0" cellpadding="0">
-    <tr>
-      <td><b><text text="Filter"/></b></td>
-      <td align="right"><a title="Close" href="javascript://" onClick="menuOpenClose('textdiv2')"><IMG alt="Click here to close" src="images/button_popup_close.gif" border="0"/></a></td>
-    </tr>
 <tr  valign="top">
   <td valign="top"><br/><include name="searchText.jsp" /></td>
 </tr>
