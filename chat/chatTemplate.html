@@ -8,8 +8,8 @@
     <script language='JavaScript'>
 		var isWindowInFocus = "focused";
 		
-		addEvent(window, 'focus', function() {isWindowInFocus="focused";}); 
-		addEvent(window, 'blur', function() {isWindowInFocus="blured";}); 
+		addEvent(window, 'focus', function() {isWindowInFocus="focused";}); //alert("focused");
+		addEvent(window, 'blur', function() {isWindowInFocus="blured";}); //alert("blured");
 		function addEvent(obj, evType, fn){
  			if (obj.addEventListener){
 		    	obj.addEventListener(evType, fn, true);
@@ -22,9 +22,9 @@
 			 }
 		} 
 		
-		//window.onfocus=function() {alert('onfocus');}
-		//window.onblur = function() { windowHasFocus = 'false'; } ;
-		//window.onfocus = function() { windowHasFocus = 'true'; };
+		//window.onfocus=function() {isWindowInFocus = "focused";}
+		//window.onblur = function() {isWindowInFocus = "blured"; } 
+
 		window.onerror=myErrorHandler
 		function myErrorHandler() {
 			return true;
@@ -353,6 +353,8 @@
       function initFrames() {
         var threadDiv = document.getElementById('thread');
         threadDiv.src='chatRoom?frame=thread&room=&[encodedRoom];';
+		threadDiv.style.width = 100;
+		threadDiv.style.height = 100;
         var postDiv = document.getElementById('post');
         postDiv.src='chatRoom?frame=post&room=&[encodedRoom];'
         var contentDiv = document.getElementById('chatContents');
