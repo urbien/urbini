@@ -25,7 +25,7 @@
       <div align="left"><backLink /></div>
       <siteResourceList />
       <div align="right"><measurement/></div>
-      <addNewResource html="mkResource.html" label="Add new" /> 
+      <addNewResource html="mkResource.html" /> 
       <showSetProperties />
     </form>
   </td>
