@@ -28,7 +28,7 @@
       <tr valign="top">
       <td width="90%">
         <form action="list.html" name="siteResourceList">
-          <div align="left"><backLink /></div>
+          <!--div align="left"><backLink /></div-->
           <div align="center"><monthCalendar /><weekCalendar /><day /></div>
         </form>
       </td>
