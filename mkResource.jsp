@@ -4,7 +4,7 @@
 <tr>
 <td valign="top" width="95%">
 <form name="tablePropertyList" method="post" action="FormRedirect">
-   <div align="right"><span class="xs"><language display="horizontal"/></span></div>
+   <!--div align="right"><span class="xs"><language display="horizontal"/></span></div-->
    <!--menu toolbar="toolbar3" exclude="Support" activate="onMouseOver"/>
    <img src="icons/icon_divider.gif" align="middle" border="0"></img-->
    <font color="red"><center><b><errorMessage /></b></center></font>
