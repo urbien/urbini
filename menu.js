@@ -633,7 +633,7 @@ function popupOnSubmit(e) {
   url += '&$form=' + form.name;
 
   //url += '&$selectOnly=y';
-  url += "&type=" + form.type.value + "&action=" + form.action.value;
+  url += "&type=" + form.type.value + "&action=" + formAction;
   if (form.uri) 
     url += "&uri=" + encodeURIComponent(form.uri.value);
 
