@@ -5,7 +5,7 @@
 <form name="tablePropertyList" method="post" action="FormRedirect">
    <div align="right"><span class="xs"><language display="horizontal"/></span></div>
    <tablePropertyList action="mkResource"/>
-   <input type="hidden" name="action" value="mkResource"></input>
+   <input type="hidden" name="-$action" value="mkResource"></input>
    <br />
   <center>
     <input type="submit" name="saveAndCancel" value="  Submit  "></input>
