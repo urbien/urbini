@@ -18,40 +18,46 @@
     <pdaToPc image="images/pda.gif"/>
     <showHideWindows/>
     </td>
-    <!--td valign="top" align="right" width="20%"><changePassword/><userLogOff html="user-login.html"/>&#160;</td-->
     <td valign="top" align="right" width="10%">
       <include name="searchText.jsp"/>
     </td>
-    </tr></table></td>
+   </tr></table></td>
   </tr>
 </table>
 </hideBlock>
-<!--br/-->
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
   <td width="110%" colspan="2"><!--br/-->
-    <!--div align="left"><backLink /></div-->
     <taskTreeControl/>
     <siteResourceList />
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
-
+    <br/>
+    <!--form id="filter" name="tablePropertyList" method="post">
+      <tablePropertyList action="mkResource"/>
+      <input type="hidden" name="returnHtml" value="list.html"/>
+      <input type="hidden" name="html" value="mkResource.html"/>
+      <div align="right"><span class="xs"><measurement/></span></div>
+      <input type="hidden" name="-$action" value="mkResource"></input>
+      <input type="hidden" name="resourceList" value="y"/>
+      <br />
+      <center>
+        <input type="submit" name="submit" value="  Submit  "></input>
+        &#160;&#160;
+        <input type="submit" name="cancel" value="  Cancel  "></input>
+      </center>
+    </form-->
 <hideBlock>      
     <div id="pane2">
     <br/>
     <table width="100%" cellpadding="0" border="0" cellspacing="0">
       <tr class="commentodd"><td>
-        <!--edit html="localSearchResults.html"/>
-        <delete/> 
-        <reloadDocuments/>
-        <addNewResource html="mkResource.html"/--> 
         <uploadMsProject/>
       </td></tr>
     </table>
       <createResources/><br/>
 <br/><br/>
-      <!--setAsHomePage /-->
-      <!--br/--><pieChart/>
+      <pieChart/>
     </div>
 
     <script language="JavaScript">
@@ -62,7 +68,6 @@
       <horizontalFilter />
     </form>
 </hideBlock>
-
   </td>
   <td width="5%" id="rightPanelPropertySheet" valign="top" align="left">
 <hideBlock>
