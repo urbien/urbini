@@ -976,14 +976,17 @@ function autoComplete1(e, target) {
 
   var fieldVerified = form.elements[propName1 + '_verified'];
   var fieldSelect   = form.elements[propName1 + '_select'];
-
+  var fieldClass    = form.elements[propName1 + '_class'];
   if (characterCode == 13) { // enter
     if (!fieldVerified) { // show popup on Enter only in data entry mode (indicated by the presence of _verified field)
       if (autoCompleteTimeoutId) clearTimeout(autoCompleteTimeoutId);
       return true;
     }
   }
-  keyPressedImgId     = propName + "_" + formName + "_filter";
+  if (fieldClass)
+    keyPressedImgId     = propName + "_class_" + formName + "_filter";
+  else
+    keyPressedImgId     = propName + "_" + formName + "_filter";
   keyPressedElement   = target;
   keyPressedElement.style.backgroundColor='#ffffff';
   
