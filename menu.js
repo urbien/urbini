@@ -406,7 +406,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   // form url based on parameters that were set
   var url;
 
-  url = "smartPopup?pUri=" + encodeURIComponent(propName);
+  url = "smartPopup?prop=" + encodeURIComponent(propName);
   if (currentFormName == "siteResourceList") {
     url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.type.value;
   }
