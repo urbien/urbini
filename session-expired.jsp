@@ -19,11 +19,11 @@
   </tr>
   <tr>
     <td align="right"><text text="userId"/></td>
-    <td><input type="text" name="j_username" size="15" /></td>
+    <td><input type="text" class="xxs" name="j_username" size="10" /></td>
   </tr>
   <tr>
     <td align="right"><text text="password"/></td>
-    <td><input type="password" name="j_password" size="15" />  </td>
+    <td><input type="password" class="xxs" name="j_password" size="10" />  </td>
   </tr>
 
   <!--tr>

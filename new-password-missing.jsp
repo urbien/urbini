@@ -19,16 +19,16 @@
   <tr><td colspan="2"></td></tr>
   <tr>
     <td align="right">Fog ID:</td>
-    <td><input type="text" name="j_username" size="15" /></td>
+    <td><input type="text" class="xxs" name="j_username" size="15" /></td>
   </tr>
   <tr>
     <td  align="right">Password:</td>
-    <td><input type="password" name="j_password" size="15" />  </td>
+    <td><input type="password" class="xxs" name="j_password" size="15" />  </td>
   </tr>
 
   <tr>
     <td align="right">Retype password:</td>
-    <td><input type="password" name="j_password_reenter" size="15" />  </td>
+    <td><input type="password" class="xxs" name="j_password_reenter" size="15" />  </td>
   </tr>
 
   <tr>
