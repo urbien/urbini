@@ -353,7 +353,7 @@ function onClickPopup(e) {
   if (idx == -1)
     return;
   currentFormName = propName1.substring(idx + 1);
-alert("form=" + currentFormName);
+//alert("form=" + currentFormName);
 //alert("target = " + target.id + "; parent = " + target.parentNode);  
 
   var form = getFormNode(target);
@@ -478,7 +478,7 @@ function popupOnClick(e) {
   var idx = propertyShortName.lastIndexOf('_');
   var formName = propertyShortName.substring(idx + 1);
   propertyShortName = propertyShortName.substring(0, idx);
-alert("propertyShortName=" + propertyShortName);
+//alert("propertyShortName=" + propertyShortName);
   var idx = propertyShortName.indexOf(".");
   var prop = null;
   if (idx == -1)
@@ -521,7 +521,7 @@ function getFormNode(elem) {
   var f = elem.parentNode;
 //alert("getFormNode() = " + f.tagName.toUpperCase());  
   if (f.tagName.toUpperCase() == "FORM") {
-alert("getFormNode() = " + f.name + "; id = " + f.id);  
+//alert("getFormNode() = " + f.name + "; id = " + f.id);  
     return f;
   }  
   else
@@ -531,6 +531,7 @@ alert("getFormNode() = " + f.name + "; id = " + f.id);
 var keysPressedSnapshot = "";
 var keyPressedElement;
 function autoComplete(e) {
+return true;
   var target;
   e = (e) ? e : ((window.event) ? window.event : null);
 
