@@ -270,16 +270,16 @@ function docjslib_getRealTop(imgElem) {
 }
 
 function menu_onmouseover(itemcode) {
-  document.getElementById(itemcode + 'td1').style.backgroundColor='#B6BDD2';
-  document.getElementById(itemcode + 'td2').style.backgroundColor='#B6BDD2';
-  document.getElementById(itemcode + 'td3').style.backgroundColor='#B6BDD2';
+  document.getElementById(itemcode + 'td1').style.backgroundColor = '#B6BDD2';
+  document.getElementById(itemcode + 'td2').style.backgroundColor = '#B6BDD2';
+  document.getElementById(itemcode + 'td3').style.backgroundColor = '#B6BDD2';
   return true;
 }
 
 function menu_onmouseout(itemcode) {
-  document.getElementById(itemcode + 'td1').style.backgroundColor='';
-  document.getElementById(itemcode + 'td2').style.backgroundColor='';
-  document.getElementById(itemcode + 'td3').style.backgroundColor='';
+  document.getElementById(itemcode + 'td1').style.backgroundColor = '';
+  document.getElementById(itemcode + 'td2').style.backgroundColor = '';
+  document.getElementById(itemcode + 'td3').style.backgroundColor = '';
   return true;
 }
 
@@ -432,7 +432,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   
   // Use existing DIV from cache (unless text was Enter-ed - in which case always redraw DIV)
   if (!enteredText && div != null) { 
-    hideReset(div, currentFormName, originalProp);
+    hideResetRow(div, currentFormName, originalProp);
     menuOpenClose(divId, imgId);
     // make popup active for key input 
     if (currentDiv.focus) // simple in IE
@@ -495,7 +495,7 @@ function loadPopup() {
       currentDiv.innerHTML = body.innerHTML;
     }
   }
-
+  hideResetRow(currentDiv, currentFormName, originalProp);
   menuOpenClose(currentDiv.id, currentImgId);
   interceptPopupEvents(currentDiv);
   openedPopups[currentDiv.id] = currentDiv;
@@ -714,6 +714,8 @@ function popupRowOnClick(e) {
       // reset to initial value
       if (currentLabel != initialLabel) {
         chosenTextField.value   = initialLabel;
+        if (chosenTextField)
+          chosenTextField.style.backgroundColor = '';          
         formField.value         = getFormFieldInitialValue(formField);
         if (formFieldClass)
           formFieldClass.value  = getFormFieldInitialValue(formFieldClass);
@@ -740,10 +742,10 @@ function popupRowOnClick(e) {
       var val = items[1].innerHTML;
       var idx = val.lastIndexOf(">");
       chosenTextField.value = val.substring(idx + 1);
+      if (chosenTextField.style)
+        chosenTextField.style.backgroundColor = '#ffffff';
       formField.value = tr.id; // property value corresponding to a listitem
     }
-    if (chosenTextField.style)
-      chosenTextField.style.backgroundColor='#ffffff';
   }
   else {
     var img = tr.getElementsByTagName("img")[0];    
@@ -901,6 +903,7 @@ function autoComplete(e) {
 
   if (characterCode == 13) { // enter
     if (!fieldVerified) { // show popup on Enter only in data entry mode (indicated by the presence of _verified field)
+      if (autoCompleteTimeoutId) clearTimeout(autoCompleteTimeoutId);
       return true;
     }
   }
@@ -915,7 +918,7 @@ function autoComplete(e) {
   else {
     if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
     if (fieldSelect)   fieldSelect.value = ''; // value was modified and is not verified yet (i.e. not chose from the list)
-    setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
+    autoCompleteTimeoutId = setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
     clearOtherPopups(currentDiv);
     return true;
   }  
@@ -1238,10 +1241,7 @@ function getFormFilters(form, allFields) {
   var fields = form.elements;
   for (i=0; i<fields.length; i++) {
     var field = fields[i];
-    var value = field.attributes['value'];
-    if (value)
-      value = value.value;
-    
+    var value = field.value;
     var name  = field.name;
     var type  = field.type;
 
@@ -1259,8 +1259,10 @@ function getFormFilters(form, allFields) {
       if (currentFormName != "horizontalFilter") {
         if (value == ''  ||  value == "All")
           continue;
-	      if (type.toUpperCase() == "CHECKBOX"  &&  value != "on") 
-	        continue;
+	      if (type.toUpperCase() == "CHECKBOX" ) {
+	        if (field.checked == false)
+  	        continue;
+	      }
 	      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
 	        continue;
       }
@@ -1294,7 +1296,7 @@ function chooser(element) {
   }
 }
 
-function hideReset(div, currentFormName, originalProp) {
+function hideResetRow(div, currentFormName, originalProp) {
   var trs = div.getElementsByTagName('tr');
   var i;
   var found = false;
@@ -1307,21 +1309,26 @@ function hideReset(div, currentFormName, originalProp) {
 
   if (!found)
     return;
+
   var tr = trs[i];
 
-	var value = document.forms[currentFormName].elements[originalProp].value;
-	if (!value)
-	  return;
-	
+  var form = document.forms[currentFormName];
+  var elem = form.elements[originalProp];
+
+	var value = elem.value;
 	var valueIsSet = true;
 	  
 	if (!value || value == '')  
 	  valueIsSet = false;
 	if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
 	  valueIsSet = false;
-	
-	if (valueIsSet)  
+
+	if (valueIsSet) {
+	  tr.style.display    = "inline";
 	  tr.style.visibility = VISIBLE;
-	else
+	}  
+	else {
 	  tr.style.visibility = HIDDEN;
+	  tr.style.display    = "none";
+	}  
 }
