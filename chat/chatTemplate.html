@@ -114,7 +114,37 @@
 		    }
 		  return null;
 		}
-		
+
+		function onResizeEventHandler() {
+		  document.getElementById("chatContents").style.width = 0;
+	      document.getElementById("userList").style.width = 0;
+		  
+		  //document.getElementById("chatContents").style.height = 10;
+		  //alert(document.getElementById("chatContents").style.height);
+		  document.getElementById("chatContents").style.height = 10;
+	      document.getElementById("userList").style.height = 10;		  
+		  //alert(document.getElementById("chatContents").style.height);
+		  //alert(parseInt(document.getElementById("chatContents").clientHeight));
+	      //document.getElementById("chatContents").style.height = parseInt(document.getElementById("chatContents").clientHeight)-30;
+	      //document.getElementById("userList").style.height = parseInt(document.getElementById("userList").clientHeight) - 30;
+          
+		  document.getElementById("chatContents").style.width = document.getElementById("tdChatContents").clientWidth;
+		  document.getElementById("userList").style.width = document.getElementById("tdUserList").clientWidth;
+
+          document.getElementById("chatContents").style.height = document.getElementById("tdChatContents").clientHeight - 2;
+		  document.getElementById("chatContents").style.height = document.getElementById("tdChatContents").clientHeight - 2;
+		  document.getElementById("chatContents").style.height = document.getElementById("tdChatContents").clientHeight - 2;
+          document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight - 2;
+		  document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight - 2;
+		  document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight - 2;
+		  document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight - 2;
+          document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight - 2;
+		  document.getElementById("chatContents").style.height = document.getElementById("tdChatContents").clientHeight - 2;
+		  //document.getElementById("chatContents").style.height -=10;
+		  //document.getElementById("userList").style.height -=10;
+
+		}
+		/*
 		function onResizeEventHandler() {
 	      //alert(document.getElementById("tdChatContents").clientHeight);
 	      //alert(document.getElementById("chatContents").style.height);
@@ -139,7 +169,7 @@
 		  //document.getElementById("chatContents").style.height -=10;
 		  //document.getElementById("userList").style.height -=10;
 		}
-
+        */
 	  var resizedWindow = 0;
 	  var timeStampsOn = 1;
       function chatTimerActive() { 
@@ -427,15 +457,22 @@
 		//alert(document.getElementById('timeActive'));
 	  }
       function showOpsMenu(userContactURI,user, userColor, privateTo,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay,linkToResource,joinChatRoom) {
+        var oldDisplay = document.getElementById("userOpsPanel").style.display.indexOf("none");
+		
 		if (document.all)
-          {document.getElementById("userOpsPanel").style.display = "inline";onResizeEventHandler();}
+          {document.getElementById("userOpsPanel").style.display = "inline";}//onResizeEventHandler();}
         else
-          {document.getElementById("userOpsPanel").style.display = "table-row";onResizeEventHandler();}
-        
+          {document.getElementById("userOpsPanel").style.display = "table-row";}//onResizeEventHandler();}
+        //alert(document.getElementById("userOpsPanel").style.display);
+		if(oldDisplay>=0) {
+		  document.getElementById("chatContents").style.height = parseInt(document.getElementById("chatContents").clientHeight) - parseInt(document.getElementById("userOpsPanel").clientHeight);
+	      document.getElementById("userList").style.height = parseInt(document.getElementById("userList").clientHeight) - parseInt(document.getElementById("userOpsPanel").clientHeight);
+		}
+				
 		if((s = document.getElementById(user+'[0]'))&&(s.style.background == '#ffffff' || s.style.background.search('255, 255, 255')>0))
 			document.getElementById("highlightDisplay").src="images/highlight.gif";
 		  else document.getElementById("highlightDisplay").src="images/fadelight.gif";
-			
+		try {	
 		document.getElementById("sendPrivateMessagesToUser").value = privateTo;
 		document.getElementById("sendPrivateMessagesToUserRealName").value = user;
 		
@@ -449,8 +486,8 @@
 		document.getElementById("highlightDisplay").style.display = highlightDisplay;
 		document.getElementById("linkToResource").style.display = linkToResource;
 		document.getElementById("joinChatRoom").style.display = joinChatRoom;
-		
-		//onResizeEventHandler();
+		} catch(ex){}
+		onResizeEventHandler();
       }
       function hideOpsMenu() {
         document.getElementById("userOpsPanel").style.display = "none";
