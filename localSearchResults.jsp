@@ -1,7 +1,5 @@
 <html>
-<script language="JavaScript">
-  <include name="calendar/calendar1.html"/>
-</script>
+<script language="JavaScript" src="calendar/calendar1.html"/>
 
 <siteTitle />
 
