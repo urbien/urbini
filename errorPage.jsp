@@ -7,7 +7,7 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr><td valign="top" width="10%">
 <include name="include/commonLeft"/>
-<include name="commonLeft.jsp"/>
+<!--include name="commonLeft.jsp"/-->
 
 </td>
 <td valign="top" width="90%">
