@@ -459,6 +459,8 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
     if (enterFlag)
       allFields = false;
   }
+  else if (currentFormName == "horizontalFilter")
+    allFields = true;
   var params = getFormFilters(form, allFields);
   if (params)
     url = url + params;
@@ -540,43 +542,6 @@ function interceptPopupEvents(div) {
     //addEvent(elem, 'keypress',  popupRowOnKeyPress,  false);
   }
 }
-
-function getFormFilters(form, allFields) {
-  var p = "";
-  var fields = form.elements;
-  
-  for (i=0; i<fields.length; i++) {
-    var field = fields[i];
-    var value = field.value;
-    var name  = field.name;
-    var type  = field.type;
-    if (!type || !name)
-      continue;
-    if (type.toUpperCase() == "SUBMIT") 
-      continue;
-    if (allFields == false) {
-      if (!wasFormFieldModified(field)) 
-        continue;
-    }  
-    else {
-      if (!value || value == '')
-        continue;
-
-      if (type.toUpperCase() == "CHECKBOX" && name != "on") 
-        continue;
-      if (value == "All")
-        continue;
-      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1) 
-        continue;
-    }
-          
-    p += "&" + name + "=" + encodeURIComponent(value);
-//    addEvent(elem, 'keypress',  popupRowOnKeyPress,  false);
-//    addEvent(elem, 'keydown',   popupRowOnKeyPress,  false);
-  }
-  return p;
-}
-
 /*
  * Receives control on form submit events
  */
@@ -598,6 +563,8 @@ function popupOnSubmit(e) {
   var allFields = true;
   if (formAction != "searchLocal" && formAction != "searchParallel")
     allFields = false;
+  else if (currentFormName == "horizontalFilter")
+    allFields = true;
     
   var params = getFormFilters(form, allFields);
   var submitButtonName  = null;
@@ -638,7 +605,7 @@ function popupOnSubmit(e) {
   url += '&$form=' + form.name;
 
   //url += '&$selectOnly=y';
-  url += "&type=" + form.type.value + "&-$action=" + formAction;
+  //url += "&type=" + form.type.value + "&-$action=" + formAction;
   if (form.uri) 
     url += "&uri=" + encodeURIComponent(form.uri.value);
 
@@ -659,6 +626,9 @@ function popupOnSubmit(e) {
     cancel.style.visibility = HIDDEN; 
   }
   
+ 	e.cancelBubble = true;
+  e.returnValue = false;
+  if (e.preventDefault) e.preventDefault();   
   document.location.href = url;
   return false; 
 }
@@ -927,6 +897,7 @@ function autoComplete(e) {
     propName1 = propName1.substring(0, idx);
 
   var fieldVerified = form[propName1 + '_verified'];
+  var fieldSelect   = form[propName1 + '_select'];
 
   if (characterCode == 13) { // enter
     if (!fieldVerified) { // show popup on Enter only in data entry mode (indicated by the presence of _verified field)
@@ -943,6 +914,7 @@ function autoComplete(e) {
   }  
   else {
     if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
+    if (fieldSelect)   fieldSelect.value = ''; // value was modified and is not verified yet (i.e. not chose from the list)
     setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
     clearOtherPopups(currentDiv);
     return true;
@@ -1242,7 +1214,10 @@ function getFormFilters(form, allFields) {
   var fields = form.elements;
   for (i=0; i<fields.length; i++) {
     var field = fields[i];
-    var value = field.value;
+    var value = field.attributes['value'];
+    if (value)
+      value = value.value;
+    
     var name  = field.name;
     var type  = field.type;
 
@@ -1255,13 +1230,16 @@ function getFormFilters(form, allFields) {
         continue;
     }  
     else {
-      if (!value || value == '')
+      if (!value)
         continue;
-
-      if (type.toUpperCase() == "CHECKBOX" && name != "on") 
-        continue;
-      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
-        continue;
+      if (currentFormName != "horizontalFilter") {
+        if (value == ''  ||  value == "All")
+          continue;
+	      if (type.toUpperCase() == "CHECKBOX"  &&  value != "on") 
+	        continue;
+	      if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
+	        continue;
+      }
     }
           
     p += "&" + name + "=" + encodeURIComponent(value);
