@@ -26,11 +26,7 @@
   <!--include name="include/commonHeader"/-->
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
-    <td valign="top" width="1%">
-      <!--include name="include/commonLeft"/-->
-      <!--include name="commonLeft.jsp"/-->
-    </td>
-    <td valign="top" width="99%">
+    <td valign="top" width="100%">
       <file/>
     </td>
    </tr>
