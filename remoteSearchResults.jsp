@@ -31,13 +31,13 @@
     
     <form name="rightPanelPropertySheet" method="POST" action="remoteSearchResults.html">
       <table border="1" cellpadding="3" cellspacing="0"><tr><td align="middle" class="title">
-        <input type="submit" name="submit" class="button1" value="filter"></input>
-        <input type="submit" name="clear" class="button1" value="clear"></input>
+        <input type="submit" name="submit" class="button1" value="Filter"></input>
+        <input type="submit" name="clear" class="button1" value="Clear"></input>
       </td></tr>
       <tr><td><rightPanelPropertySheet /></td></tr>
       <tr><td align="middle" class="title">
-        <input type="submit" name="submit" class="button1" value="filter"></input>
-        <input type="submit" name="clear" class="button1" value="clear"></input>
+        <input type="submit" name="submit" class="button1" value="Filter"></input>
+        <input type="submit" name="clear" class="button1" value="Clear"></input>
         <input type="hidden" name="action" value="searchParallel"></input>
         <input type="hidden" name="site" value=""></input>
       </td></tr></table>   
@@ -84,7 +84,7 @@
   <div id="textdiv2" class="popMenu">
 <table border="0" cellspacing="0" cellpadding="0">
     <tr>
-      <td><b><text text="Filter:"/></b></td>
+      <td><b><text text="Filter"/></b></td>
       <td align="right"><a title="Close" href="javascript://" onClick="menuOpenClose('textdiv2')"><IMG alt="Click here to close" src="images/button_popup_close.gif" border="0"/></a></td>
     </tr>
 <tr  valign="top">
@@ -94,13 +94,13 @@
     
     <form name="rightPanelPropertySheet" method="POST" action="remoteSearchResults.html">
       <table border="1" cellpadding="3" cellspacing="0"><tr><td align="middle" class="title">
-      <input type="submit" name="submit" class="button1" value="filter"></input>
-      <input type="submit" name="clear" class="button1" value="clear"></input>
+      <input type="submit" name="submit" class="button1" value="Filter"></input>
+      <input type="submit" name="clear" class="button1" value="Clear"></input>
       </td></tr>
       <tr><td><rightPanelPropertySheet /></td></tr>
       <tr><td align="middle" class="title">
-      <input type="submit" name="submit" class="button1" value="filter"></input>
-      <input type="submit" name="clear" class="button1" value="clear"></input>
+      <input type="submit" name="submit" class="button1" value="Filter"></input>
+      <input type="submit" name="clear" class="button1" value="Clear"></input>
       <input type="hidden" name="action" value="searchParallel"></input>
       <input type="hidden" name="site" value=""></input>
       </td></tr></table>   
