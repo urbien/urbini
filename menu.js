@@ -531,6 +531,7 @@ function popupRowOnClick(e) {
   else 
     prop = propertyShortName.substring(0, idx);
   var formField;
+
   if (originalProp.indexOf("_class") == -1) {
     var select = prop + "_select";
     formField = form.elements[select];
@@ -548,6 +549,9 @@ function popupRowOnClick(e) {
     formField = form.elements[iclass];
     formField.value = tr.id; // property value corresponding to a listitem
   }
+  var formFieldVerified = form.elements[propertyShortName + "_verified"];
+  if (!formFieldVerified)
+    formFieldVerified = 'y';
   var divId = prop + "_" + formName;
   var div = document.getElementById(divId);
   menuClose2(div);
@@ -650,11 +654,6 @@ function autoComplete(e) {
     menuClose2(currentDiv);
 
   var form = target.form;
-  if (characterCode == 13) {
-    return true;
-  }   
-  if (characterCode == 37)
-    return true;
   switch (characterCode) {
        case 38: //up arrow  
        case 40: //down arrow
@@ -664,7 +663,7 @@ function autoComplete(e) {
        case 34: //page down  
        case 36: //home  
        case 35: //end                  
-       case 13: //enter  
+//       case 13: //enter  
        case 9: //tab  
        case 27: //esc  
        case 16: //shift  
@@ -676,19 +675,24 @@ function autoComplete(e) {
            return true;
            break;
   }     
-
-//  if (characterCode < 27) {
-//    target.deselect();
-//  }   
-  
+ 
   var propName = target.name;
   var formName = target.id;
+  var fieldVerified = form[propName + '_verified'];
+
+  if (characterCode == 13) { // enter
+    var form = target.form;
+    if (!fieldVerified) // proceed to show popup on Enter only in data entry mode (indicated by presence of _verified field)
+      return;
+  }
+  fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
   keyPressedImgId = propName + "_" + formName + "_filter";
   keyPressedElement = target;
   keysPressedSnapshot = target.value + characterCode;
 //    alert("popupKeyPress, target=" + target.tagName + ", value: " + keysPressedSnapshot); 
 //  if (autoCompleteTimeoutId)
-//    cancelTimeout(autoCompleteTimeoutId);
+//    clearTimeout(autoCompleteTimeoutId);
+
   autoCompleteTimeoutId =  setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
   return true;
 }
@@ -705,7 +709,7 @@ function autoCompleteTimeout(invocationTime) {
 	  return true;
 	if (keyPressedElement.value.length == 0)
 	  return;
-	onClickPopup1(keyPressedImgId, form, keyPressedElement.value);
+	onClickPopup1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
 }
 
 function popupRowOnKeyPress(e) {
