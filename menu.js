@@ -333,7 +333,8 @@ function setDivInvisible(div, iframeRef) {
   
   if (div && div.style)
     div.style.display    = "none";
-  ifrRef.style.display = "none";
+  if (ifrRef && ifrRef.style)
+    ifrRef.style.display = "none";
 }
 
 /**
