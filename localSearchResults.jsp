@@ -118,8 +118,8 @@
   <table cellpadding="5">
     <tr><td>
       <table border="1" cellpadding="5">
-        <tr><td><b>E-mail:</b></td><td><input name="to"></input></td></tr>
         <tr><td><b>Subject:</b></td><td><input name="subject"></input></td></tr>
+        <tr><td><b>E-mail:</b></td><td><input name="to"></input></td></tr>
       </table>
     </td></tr>
     <tr><td><input type="submit" value="Send"></input></td></tr>

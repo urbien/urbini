@@ -99,6 +99,7 @@ function hidepoptext3() {
 		}
 		poptext3.visibility = "visible";
 		tabShow3 = 1;
+                document.emailForm.subject.value = document.title;
 	}
 }
 
@@ -125,6 +126,7 @@ function hidepoptext4() {
 		}
 		poptext4.visibility = "visible";
 		tabShow4 = 1;
+                document.scheduleForm.name.value = document.title;
 	}
 }
 
