@@ -1,12 +1,12 @@
 <HTML>
-<include name="include/commonHeader.html" />
+<include name="include/commonHeader" />
 
 <body bgcolor="#ffffff" link="#000099" vlink="#660099" alink="#cc0033">
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top" width="20%">
-    <include name="include/commonLeft.html" />
+    <include name="include/commonLeft" />
   </td>
   <td valign="top" align="middle">
 
@@ -14,7 +14,7 @@
 <form method="post" action="j_security_check">
 <table cellpadding="0" border="0" cellspacing="0" width="50%">
   <tr>
-    <td class="xl" colspan="2">Password is missing</td>
+    <td class="xl" colspan="2"><text text="missingPassword"/></td>
   </tr>
   <tr><td colspan="2"></td></tr>
   <tr>
@@ -43,7 +43,7 @@
 </td></tr></table>
 
 <div align="left"><span class="xs"><hudsonFog /></span></div>      <!-- link to Portal page for current category -->
-<include name="include/commonFooter.html" />
+<include name="include/commonFooter" />
 </BODY>
 
 </HTML>

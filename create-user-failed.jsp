@@ -1,12 +1,12 @@
 <HTML>
-<include name="include/commonHeader.html" />
+<include name="include/commonHeader" />
 
 <body bgcolor="#ffffff" link="#000099" vlink="#660099" alink="#cc0033">
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top" width="20%">
-    <include name="include/commonLeft.html" />
+    <include name="include/commonLeft" />
   </td>
   <td valign="top" align="middle">
 
@@ -14,7 +14,7 @@
 <form method="post" action="j_security_check">
 <table cellpadding="0" border="0" cellspacing="0" width="50%">
   <tr>
-    <td class="xl" colspan="2">Create user failed try another userid</td>
+    <td class="xl" colspan="2"><text text="createUserFailed"/><td>
   </tr>
   <tr>
     <td align="right">User ID:</td>
@@ -32,7 +32,7 @@
 
   <tr>
     <td></td>
-    <td><input type="submit" name="s" value=" Register me please " /></td>
+    <td><input type="submit" name="s" value="register" /></td>
   </tr>
   <tr>
     <td></td>
@@ -47,7 +47,7 @@
 <!--span class="xs">If you do not remember your Password, click &quot;Give me a new Password&quot; and we will send it to the email address you specified when you registered.</span-->
 </td></tr></table>
 
-<include name="include/commonFooter.html" />
+<include name="include/commonFooter" />
 </BODY>
 
 </HTML>

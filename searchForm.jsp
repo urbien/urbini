@@ -1,8 +1,8 @@
 <html>
-<include name="include/commonHeader.html"/>
+<include name="include/commonHeader"/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr><td valign="top">
-<include name="include/commonLeft.html"/>
+<include name="include/commonLeft"/>
 </td>
 <td valign="top">
 <form name="tablePropertyList" method="POST">
@@ -11,9 +11,9 @@
   <tablePropertiesList />
   <input type="hidden" name="action" value="searchDatabase"></input>
   <br></br>
-  <center><input type="submit" name="submit" value="   Search   "></input></center>
+  <center><input type="submit" name="submit" value="search"></input></center>
 </form>
 </td></tr></table>
 <div align="left"><span class="xs"><hudsonFog /></span></div>
-<include name="include/commonFooter.html"/>
+<include name="include/commonFooter"/>
 </html>

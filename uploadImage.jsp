@@ -1,10 +1,10 @@
 <html>
-<include name="include/commonHeader.html" />
+<include name="include/commonHeader" />
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top" width="20%">
-    <include name="include/commonLeft.html" />
+    <include name="include/commonLeft" />
   </td>
   <td valign="top" align="middle">
     <form name="uploadImage" action="FormRedirect" method="POST" enctype="multipart/form-data">
@@ -19,7 +19,7 @@
   </td>
 </tr></table>
 <br />
-<include name="include/commonFooter.html" />
+<include name="include/commonFooter" />
 </html>
 
 </body>

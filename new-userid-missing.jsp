@@ -1,12 +1,12 @@
 <HTML>
-<include name="include/commonHeader.html" />
+<include name="include/commonHeader" />
 
 <body bgcolor="#ffffff" link="#000099" vlink="#660099" alink="#cc0033">
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top" width="20%">
-    <include name="include/commonLeft.html" />
+    <include name="include/commonLeft" />
   </td>
   <td valign="top" align="middle">
 
@@ -14,7 +14,7 @@
 <form method="post" action="j_security_check">
 <table cellpadding="0" border="0" cellspacing="0" width="50%">
   <tr>
-    <td class="xl" colspan="2">User ID is missing</td>
+    <td class="xl" colspan="2"><text text="userIdMissing"/></td>
   </tr>
   <tr><td colspan="2"></td></tr>
   <tr>
@@ -32,7 +32,7 @@
 
   <tr>
     <td></td>
-    <td><input type="submit" name="s" value=" Register me please " /></td>
+    <td><input type="submit" name="s" value="register" /></td>
   </tr>
   <tr>
     <td></td>
@@ -46,7 +46,7 @@
 </form>
 </td></tr></table>
 
-<include name="include/commonFooter.html" />
+<include name="include/commonFooter" />
 </BODY>
 
 </HTML>

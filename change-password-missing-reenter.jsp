@@ -1,11 +1,11 @@
 <HTML>
-<include name="include/commonHeader.html" />
+<include name="include/commonHeader" />
 <!--include name="script.html" /-->
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top" width="20%">
-    <include name="include/commonLeft.html" />
+    <include name="include/commonLeft" />
   </td>
   <td valign="top" align="middle">
 
@@ -15,7 +15,7 @@
   
 <table border="0" cellpadding="0" cellspacing="0" width="256" cols="2">
   <tr>
-    <td class="xl" colspan="2">Password is missing reenter please<br/></td>
+    <td class="xl" colspan="2"><text text="Password is missing reenter please"/><br/></td>
   </tr>
   
   <tr>
@@ -48,7 +48,7 @@
 <!--span class="xs">If you do not remember your Password, click &quot;Give me a new Password&quot; and we will send it to the email address you specified when you registered.</span-->
 </td></tr></table>
 
-<include name="include/commonFooter.html" />
+<include name="include/commonFooter" />
 </BODY>
 
 </HTML>

@@ -1,5 +1,5 @@
 <html>
-<include name="include/commonHeader.html"/>
+<include name="include/commonHeader"/>
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <colgroup>
@@ -17,7 +17,7 @@
   <td align="right"><userLogOff html="user-login.html"/></td>
 </tr>
 <tr><td valign="top">
-<include name="include/commonLeft.html"/>
+<include name="include/commonLeft"/>
 </td><td valign="top" align="left">
 <form name="tablePropertyList" action="FormRedirect">
   <siteHistory />
@@ -33,5 +33,5 @@
 </table>
 <br></br>
 <div align="left"><span class="xs"><hudsonFog /></span></div>
-<include name="include/commonFooter.html"/>
+<include name="include/commonFooter"/>
 </html>

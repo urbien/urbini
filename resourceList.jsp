@@ -1,8 +1,8 @@
 <html>
-<include name="include/commonHeader.html"/>
+<include name="include/commonHeader"/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr><td valign="top" width="10%">
-<include name="include/commonLeft.html"/>
+<include name="include/commonLeft"/>
 </td>
 <td valign="top" width="90%">
 <form action="FormRedirect" name="tableResourceList" method="POST">
@@ -11,8 +11,8 @@
   <br />
   <center>
   <font face="sans-serif,arial" size="-1">
-  <input type="submit" name="submit"          value="Confirm"></input>
-  <input type="submit" name="addResource" value="Add new resource"></input>
+  <input type="submit" name="submit"          value="confirm"></input>
+  <input type="submit" name="addResource" value="addNewResource"></input>
 </font>
 </center>
 <showSetProperties/>
@@ -20,5 +20,5 @@
 </td></tr></table>
 <br></br>
 <div align="left"><span class="xs"><hudsonFog /></span></div>
-<include name="include/commonFooter.html"/>
+<include name="include/commonFooter"/>
 </html>

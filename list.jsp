@@ -1,5 +1,5 @@
 <html>
-<include name="include/commonHeader.html" />
+<include name="include/commonHeader" />
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <colgroup>
     <col width="10%" /> 
@@ -17,7 +17,7 @@
 </tr>
 <tr>
   <td valign="top" width="10%">
-    <include name="include/commonLeft.html" />
+    <include name="include/commonLeft" />
   </td>
   <td valign="top" align="middle">
     <div align="left"><siteHistory/></div>
@@ -43,6 +43,6 @@
 </tr></table>
 <br />
 <div align="left"><span class="xs"><hudsonFog /></span></div>      <!-- link to Portal page for current category -->
-<include name="include/commonFooter.html" />
+<include name="include/commonFooter" />
 </html>
 
