@@ -658,10 +658,13 @@ function getKeyCode(e) {
 }
 
 function autoCompleteBackspaceHack(e) {
-  if( typeof( e.keyCode ) == 'number'  ) {
-    if (e.keyCode == 8 || e.keyCode == 127) 
+  if( typeof( e.keyCode ) == 'number') {
+    if (e.keyCode == 8 || e.keyCode == 127)  // enter, ctrl-enter
+      return autoComplete(e);
+    else if (e.keyCode == 9)                 // tab
       return autoComplete(e);
   }
+  
   return true;
 }
 
@@ -698,12 +701,10 @@ function autoComplete(e) {
        case 17: //ctrl  
        case 18: //alt  s
        case 20: //caps lock
-       case 8: //backspace  
-       case 127:
-         break;
+//       case 8: //backspace  
+//       case 127: // ctrl-enter
 //       case 46: //delete
            return true;
-           break;
   }     
   var propName = target.name;
   var formName = target.id;
@@ -728,9 +729,8 @@ function autoComplete(e) {
 //    clearTimeout(autoCompleteTimeoutId);
 
   autoCompleteTimeoutId =  setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
-  if (characterCode == 13) {
-//alert(propName1 + '_verified: ' + fieldVerified.tagName);
-    return false;
+  if (characterCode == 13) { 
+    return false;            // tell browser not to do submit on 'enter'
   }  
   else  
     return true;
