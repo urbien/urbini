@@ -54,6 +54,7 @@ function draw(source, dep, numprojects) {
       }
 
       var bar2 = document.getElementById(dep);
+//      alert(document.getElementById(dep));
       var i1 = bar2.offsetLeft;
       while (bar2.offsetParent != null) {
 	i1 += bar2.offsetParent.offsetLeft;
