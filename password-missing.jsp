@@ -1,8 +1,6 @@
 <HTML>
 <include name="include/commonHeader" />
 
-<body bgcolor="#ffffff" link="#000099" vlink="#660099" alink="#cc0033">
-
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top" width="20%">
@@ -28,9 +26,9 @@
 
   <tr>
     <td></td>
-    <td>
+    <!--td>
       <userLogin html="new-user.html" title="registerMe" />
-    </td>
+    </td-->
   </tr>
   <tr>
     <td></td>
