@@ -62,6 +62,10 @@
     }
      
     function addUrlParam(url, param) {
+      if (!url)
+        return;
+      if (!url.href)
+        return;
       if (url.href.indexOf('?') == -1) 
         url.href = url.href + '?' + param;
       else
