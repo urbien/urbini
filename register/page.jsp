@@ -1,6 +1,7 @@
 <html>
 <head>
   <base href="serverName"/>
+<LINK HREF="styles/common.css" TYPE="text/css" rel="stylesheet" />
 <title>Login</title>
 </head>
 <include name="include/commonHeader"/>
