@@ -83,7 +83,14 @@
     <tr valign="top"><td>
     <form action="list.html" name="siteResourceList">
       <div align="left"><backLink /></div>
-      <siteResourceList />
+ 
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tr>
+          <td width="20%" valign="top"><folderTreeControl/></td>
+          <td width="80%" valign="top"><siteResourceList /></td>
+        </tr>
+      </table>
+
       <createResources/>
       <div align="right"><measurement/></div>
     </form>

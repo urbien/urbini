@@ -79,7 +79,7 @@
     <tr valign="top"><td>
     <form action="list.html" name="siteResourceList">
       <div align="left"><backLink /></div>
-      <tree/>
+      <taskTreeControl/>
       <siteResourceList />
       <div align="right"><measurement/></div>
     </form>
