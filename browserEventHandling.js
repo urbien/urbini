@@ -261,6 +261,7 @@
           tooltipText = tooltip.value;
           if (tooltipText == '')
             return true;
+          window.status = tooltipText;
           // merge tooltip on IMG with tooltip on its parent A tag 
           var parentA = target.parentNode;
           if (parentA && parentA.tagName.toUpperCase() == 'A') {
@@ -268,17 +269,13 @@
             if (linkTooltip) {
               var linkTooltipText = linkTooltip.value;
               if (linkTooltipText && linkTooltipText != '') {
-                tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';    
-              }
-              parentA.setAttribute('title', null); // remove 'title' so browser does not show its standard tooltip
-              parentA.removeAttribute('title');    // (do both - remove and set to null - to work in all browsers)
+                tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';
+              }  
+              parentA.title = '';
             }
            
           }
           target.setAttribute('tooltip', tooltipText);
-          target.setAttribute('title', null);      // remove 'title' so browser does not show its standard tooltip
-          target.removeAttribute('title');         // (do both - remove and set to null - to work in all browsers) 
-          var t = target.attributes['title'];
           target.title = '';
         }
       }
