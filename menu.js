@@ -703,7 +703,7 @@ function popupRowOnClick(e) {
   if (!tr)
     return;
 
-  var ret = popupRowOnClick1(tr);
+  var ret = popupRowOnClick1(tr, target);
 /*
   if (ret == false) {
     e.cancelBubble = true;
@@ -714,7 +714,7 @@ function popupRowOnClick(e) {
   return ret;
 }
 
- function popupRowOnClick1(tr) {
+ function popupRowOnClick1(tr, target) {
   //alert("popupRowOnClick1: " + tr.id);
   if (tr.previousSibling == null) // skip clicks on menu header (it is a first tr - has no prev sibling)
     return;
@@ -860,14 +860,17 @@ function popupRowOnClick(e) {
     onClickPopup1(currentImgId, form);
     return true;
   }
-  var divId = prop + "_" + formName;
-  if (currentResourceUri != null)
-    divId = currentResourceUri + ".$." + divId;
-  var div = document.getElementById(divId);
-  if (deleteCurrentDiv == true)
-    openedPopups[currentDiv.id] = null;
-  menuClose2(div);
-  clearOtherPopups(div);
+  var isInput = (target.tagName.toLowerCase() == 'input'); 
+  if (!isInput) {
+    var divId = prop + "_" + formName;
+    if (currentResourceUri != null)
+      divId = currentResourceUri + ".$." + divId;
+    var div = document.getElementById(divId);
+    if (deleteCurrentDiv == true)
+      openedPopups[currentDiv.id] = null;
+    menuClose2(div);
+    clearOtherPopups(div);
+  }
   return false;
 }
 
@@ -1753,3 +1756,21 @@ function tooltipMouseOut(e) {
   return tooltipMouseOut0(target);
 }
 
+function getTargetElement(evt) { 
+  var elem; 
+  var elem1 = evt.target;
+  if (evt.target) { 
+    if (evt.currentTarget && (evt.currentTarget != elem1)) { 
+      if (elem1.tagName.toLowerCase() == 'input' && elem1.type.toLowerCase() == 'checkbox') 
+        elem = elem1; 
+      else 
+        elem = evt.currentTarget; 
+    } 
+    else 
+      elem = elem1; 
+  } 
+  else { 
+    elem = evt.srcElement; 
+  } 
+  return elem; 
+} 

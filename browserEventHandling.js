@@ -1,18 +1,23 @@
     // cross-browser - getCurrentTarget 
-    function getTargetElement(evt) {
-      var elem;
-      if (evt.target) {
-        if (evt.currentTarget && (evt.currentTarget != evt.target))
-          elem = evt.currentTarget;
-        else
-          elem = evt.target;
+    function getTargetElement(evt) { 
+      var elem; 
+      var elem1 = evt.target;
+      if (evt.target) { 
+        if (evt.currentTarget && (evt.currentTarget != elem1)) { 
+          if (elem1.tagName.toLowerCase() == 'input' && elem1.type.toLowerCase() == 'checkbox') 
+            elem = elem1; 
+          else 
+            elem = evt.currentTarget; 
+        } 
+        else 
+          elem = elem1; 
       } 
-      else {
-        elem = evt.srcElement;
-      }
-      return elem;
-    }  
-
+      else { 
+        elem = evt.srcElement; 
+      } 
+      return elem; 
+    } 
+    
     /* 
      * Generic cross-browser method of adding event handlers
      * taken from: http://www.scottandrew.com/weblog/jsjunk#events 
@@ -289,7 +294,7 @@
           initialValues[elem.name] = elem.value;
                     
           if (!elem.type || elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT fields 
-              elem.id) {                                         // and those that have ID
+              elem.id  && !elem.valueType) {                      // and those that have ID
             addEvent(elem, 'keypress', autoComplete,              false);
             addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
             addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
