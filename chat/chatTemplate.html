@@ -253,7 +253,7 @@
         </td>
       </tr>
       <tr>
-        <td rowspan="3" height="75%" width="80%"><iframe src="chatRoom?frame=content&room=&[encodedRoom];" id="chatContents" name="chatContents" frameborder="0" style="width:100%;height:100%; background: #FFFFFF; border:solid #808080 1px"></iframe></td>
+        <td rowspan="3" height="75%" width="80%"><iframe src="about:blank" id="chatContents" name="chatContents" frameborder="0" style="width:100%;height:100%; background: #FFFFFF; border:solid #808080 1px"></iframe></td>
       </tr>
       <tr>
         <td height="10%" width="20%">
@@ -282,7 +282,7 @@
       </tr>
       <tr>
         <td height="65%" width="20%">
-	    <iframe id='userList' name='userList' width="100%" height="100%" frameborder="0" style="border:solid #808080 1px; background: #ffffff" src="chatRoom?frame=userList&room=&[encodedRoom];"></iframe>
+	    <iframe id='userList' name='userList' width="100%" height="100%" frameborder="0" style="border:solid #808080 1px; background: #ffffff" src="about:blank"></iframe>
 	  </td>
       </tr>
 </tr>
@@ -322,10 +322,23 @@
       <input type=hidden name='message' value='..w..'>
     </form>
 
-    <iframe id='thread' name='thread' src='chatRoom?frame=thread&room=&[encodedRoom];' style='width:0px; height: 0px; border: 0'></iframe>
+    <iframe id='thread' name='thread' src='about:blank' style='width:0px; height: 0px; border: 0'></iframe>
     <div>
-      <iframe id='post' name='post' src='chatRoom?frame=post&room=&[encodedRoom];' style='width: 0px; height: 0px; border: 0'></iframe>
+      <iframe id='post' name='post' src='about:blank' style='width: 0px; height: 0px; border: 0'></iframe>
     </div>  
+    <script language="JavaScript">
+      setTimeout("initFrames()", 100);
+      function initFrames() {
+        var threadDiv = document.getElementById('thread');
+        threadDiv.src='chatRoom?frame=thread&room=&[encodedRoom];';
+        var postDiv = document.getElementById('post');
+        postDiv.src='chatRoom?frame=post&room=&[encodedRoom];'
+        var contentDiv = document.getElementById('chatContents');
+        contentDiv.src='chatRoom?frame=content&room=&[encodedRoom];'
+        var userDiv = document.getElementById('userList');
+        userDiv.src='chatRoom?frame=userList&room=&[encodedRoom];'
+      }
+    </script>
 
 </body>
 </html>
