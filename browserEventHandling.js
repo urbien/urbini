@@ -83,11 +83,6 @@
       if (!url)
         return;
 
-      removeModifier(url, '_shiftKey=y');
-      removeModifier(url, '_ctrlKey=y');
-      removeModifier(url, '_altKey=y');
-      urlStr = url.href;
-
       if     (e.ctrlKey) {
         p = '_ctrlKey=y';
       }
@@ -101,6 +96,10 @@
         // show content in a second pane
         //
         if (bottomFrame) {
+          removeModifier(url, '_shiftKey=y');
+          removeModifier(url, '_ctrlKey=y');
+          removeModifier(url, '_altKey=y');
+          urlStr = url.href;
           var finalUrl = urlStr;
           var idx = urlStr.indexOf('.html');
           if (idx != -1) {
@@ -117,23 +116,27 @@
         }
       }
 
-      if (p) {
-        if (!url) {
-          alert("onClick(): can't process control key modifier since event currentTarget is null: " + url);
-          return;
-        }
-        else if(!url.href || url.href == null) {
-          alert("onClick(): can't process control key modifier since event currentTarget.href is null: " + url.href);
-          return;
-        }
-        addUrlParam(url, p, null);
-        document.location.href = url.href;
-        e.cancelBubble = true;
-        e.returnValue = false;
-        if (e.preventDefault)  e.preventDefault();
-        if (e.stopPropagation) e.stopPropagation();
-        return false;
+      if (!p)
+        return true;
+
+      if (!url) {
+        alert("onClick(): can't process control key modifier since event currentTarget is null: " + url);
+        return;
       }
+      else if(!url.href || url.href == null) {
+        alert("onClick(): can't process control key modifier since event currentTarget.href is null: " + url.href);
+        return;
+      }
+      removeModifier(url, '_shiftKey=y');
+      removeModifier(url, '_ctrlKey=y');
+      removeModifier(url, '_altKey=y');
+      addUrlParam(url, p, null);
+      document.location.href = url.href;
+      e.cancelBubble = true;
+      e.returnValue = false;
+      if (e.preventDefault)  e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+      return false;
     }
 
     function addUrlParam(url, param, target) {

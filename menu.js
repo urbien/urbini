@@ -462,6 +462,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.interceptEvents = function () {
     var div     = self.div;
     var hotspot = self.hotspot;
+    //var isMenu  = div.id.indexOf('menudiv_') == 0 ? true false;
 
     addEvent(div,     'mouseover', this.popupOnMouseOver, false);
     addEvent(div,     'mouseout',  this.popupOnMouseOut,  false);
@@ -485,9 +486,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var k=0;
     for (i=0;i<trs.length; i++) {
       var elem = trs[i];
-      if (div.id.indexOf('menudiv_') == 0);
-      else
-        addEvent(elem, 'click',   self.popupRowOnClick,     false);
+      addEvent(elem, 'click',   self.popupRowOnClick,     false);
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
       addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
     }
@@ -558,8 +557,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       case 9:   //tab
         if (currentDiv) {
           var form = document.forms[currentFormName];
-          var inputField = form.elements[originalProp];
-          try { inputField.focus(); } catch(e) {};
+          if (form) {
+            var inputField = form.elements[originalProp];
+            try { inputField.focus(); } catch(e) {};
+          }
           Popup.close0(currentDiv.id);
         }
         e.cancelBubble = true;
@@ -583,12 +584,14 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         if (currentDiv) {
           //var form = getFormNode(currentPopupRow);
           var form = document.forms[currentFormName];
-          var inputField = form.elements[originalProp];
-          internalFocus = true;
-          try { inputField.focus(); } catch(e) {};
-          autoComplete1(e, inputField);
-          if (characterCode == 8) {
-            inputField.value = inputField.value.substring(0, inputField.value.length - 1);
+          if (form) {
+            var inputField = form.elements[originalProp];
+            internalFocus = true;
+            try { inputField.focus(); } catch(e) {};
+            autoComplete1(e, inputField);
+            if (characterCode == 8) {
+              inputField.value = inputField.value.substring(0, inputField.value.length - 1);
+            }
           }
         }
         e.cancelBubble = true;
@@ -637,13 +640,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return;
 
     var ret = self.popupRowOnClick1(tr, target);
-  /*
-    if (ret == false) {
-      e.cancelBubble = true;
-      e.returnValue = false;
-      if (e.preventDefault) e.preventDefault();
-    }
-  */
     return ret;
   }
 
@@ -662,8 +658,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         loadedPopups[currentDiv.id] = null;
         Popup.close0(currentDiv.id);
       }
-      if (anchors[0].click)
-        anchors[0].click();
+      //if (anchors[0].click)
+      //  anchors[0].click();
+      location.href = anchors[0].href;
       return true;
     }
 
@@ -1761,7 +1758,7 @@ function initMenus() {
       addEvent(m, 'click', menuOnClick, false);
     }
   }
-
+/*
   var menuDivs = document.getElementsByTagName('div');
   var l = menuDivs.length;
   var uniqueDivs = new Array();
@@ -1773,12 +1770,15 @@ function initMenus() {
       uniqueDivs[div.id] = div;
       var tables = div.getElementsByTagName('table');
       if (tables && tables[1]) {
-        var imgId = 'menuicon_' + div.id.substring('menudiv_'.length);
-        var img = document.getElementById(imgId);
-        var popup = Popup.getPopup(div.id);
+        var trs = tables[1].getElementsByTagName('tr');
+        for (int j; i<trs.length; j++) {
+          trs[i];
+
+        }
       }
     }
   }
+*/
 }
 
 /**
@@ -1799,30 +1799,49 @@ function menuOnClick(e) {
   var imgId = target.id;
   var divId = 'menudiv_' + imgId.substring('menuicon_'.length);
   var popup = Popup.open(divId, target, null, 0, 19);
+  e.cancelBubble = true;
+  e.returnValue = false;
+  if (e.preventDefault)  e.preventDefault();
+  if (e.stopPropagation) e.stopPropagation();
+  return false;
 }
-
-/*
-function menuResetRow(div) {
-  var trs = div.getElementsByTagName('tr');
-  var i;
-  var found = false;
-
-  for (i=0; i<trs.length; i++) {
-    trs[i].style.display = ''; // clear highlighted background in all rows
-  }
-}
-*/
 
 /**
- * return href of the first A tag inside a menu item's TD
+ * act on the first A tag inside a menu item's TD
  * this is needed to make the whole menu item row clickable (not just the A tag's text)
  */
-function menuItemHandler(itemcode) {
-  var td = document.getElementById(itemcode + 'td2');
+/*
+function menuItemOnClick(e) {
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+
+  if (!e)
+    return;
+
+  target = getTargetElement(e);
+  if (!target)
+    return;
+
+  var tds = target.getElementsByTagName('td');
+  if (tds == null || tds.length < 2) {
+    throw new Error("invalid menu structure: expected TR to contain at least two TDs");
+  }
+  var td = tds[1];
   var anchors = td.getElementsByTagName("a");
+  if (anchors == null || anchors.length != 1) {
+    throw new Error("invalid menu structure: expected second TD in TR to contain one A");
+  }
+
   var anchor = anchors[0];
-  return anchor.href;
+  location.href = anchor.href;
+  e.cancelBubble = true;
+  e.returnValue = false;
+  if (e.preventDefault)  e.preventDefault();
+  if (e.stopPropagation) e.stopPropagation();
+  return false;
 }
+*/
 
 /*********************************** Tooltips ************************************/
 function replaceTooltips0(elements) {
