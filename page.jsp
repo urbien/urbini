@@ -4,6 +4,7 @@
 
   <div nonPda="T">
     <include name="include/commonHeader.jsp"/>
+    <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" /></a>
     <changePassword/><userLogOff html="user-login.html"/>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
