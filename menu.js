@@ -2005,11 +2005,11 @@ function Dim() {
   }
 }
 
-Popup.w3c =(document.getElementById)                               ? true : false;
-Popup.ns4 =(document.layers)                                       ? true : false;
-Popup.ie4 =(document.all && !this.w3c)                             ? true : false;
-Popup.ie5 =(document.all && this.w3c)                              ? true : false;
-Popup.ns6 =(this.w3c && navigator.appName.indexOf("Netscape")>=0 ) ? true : false;
+Popup.w3c =(document.getElementById)                                ? true : false;
+Popup.ns4 =(document.layers)                                        ? true : false;
+Popup.ie4 =(document.all && !this.w3c)                              ? true : false;
+Popup.ie5 =(document.all && this.w3c)                               ? true : false;
+Popup.ns6 =(Popup.w3c && navigator.appName.indexOf("Netscape")>=0 ) ? true : false;
 
 function getElementCoords(elem) {
   var dim = new Dim();
