@@ -5,7 +5,7 @@
   <td valign="top">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top">
-      <td valign="top" width="70%" class="topBar"><span class="xs"><language/>|<print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/></span></td>
+      <td valign="top" width="70%" class="topBar"><pda pda="T"><img src="icons/icon.gif"/></pda><span class="xs"><language/>|<print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/></span><pdaToPc image="images/pda.gif"/></td>
       <td valign="top" align="right" width="30%" class="topBar"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr> 
