@@ -28,6 +28,22 @@
         <print image="images/printerIcon.gif"/>
       </span>
       <pdaToPc image="images/pda.gif"/>
+      
+      <script language="JavaScript">
+        var w = 640/3, h = 480/3, cw = w/2, ch = h/2;
+
+        function openChatWindow() {
+          if (window.screen) {
+            w = Math.floor(screen.availWidth/2);
+            h = Math.floor(screen.availHeight/2);
+            cw = Math.floor(screen.availWidth/4);
+            ch = Math.floor((screen.availHeight)/4);
+          }
+          var url = 'chatRoom?title=' + document.title + '&#38;referer=' + escape(window.location);
+          window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=no, location=no, toolbar=no, scrollbars=no, resizable=yes');
+        }
+      </script>
+      <a href="javascript://" title="Chat Room" onclick="openChatWindow();"><img src="chat/chat.jpg" alt="chat" border="0" align="middle" width="20"/></a>
       </td>
       <td valign="top" align="right" width="30%" class="topBar"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
