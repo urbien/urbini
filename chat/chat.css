@@ -15,6 +15,7 @@ legend{
   overflow: auto;
   background : #ffffff;
   padding: 4 px;
+  cursor: text;
 }
 
 #userList{
@@ -22,6 +23,7 @@ legend{
 	border: solid #808080 1px;
 	background: #ffffff;
 	position : static;
+	cursor: text;
 }
 
 #userOpsPanelTable{
@@ -32,6 +34,7 @@ legend{
 #timePanel{
 	border:solid #808080 1px; 
 	background: #ffffff;
+	cursor: text;
 }
 
 .sestesso span{

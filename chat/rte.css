@@ -1,6 +1,6 @@
 .rteImage {
-	background: #D3D3D3;
-	border: 1px solid #D3D3D3;
+	background: #E0E0E0;
+	border: 1px solid #E0E0E0;
 	cursor: pointer;
 	cursor: hand;
 }
@@ -24,13 +24,13 @@
 }
 
 .rteBack {
-	background: #D3D3D3;
-	border: 1px outset;
+	background: #E0E0E0;
+	border: 1px solid #D3D3D3;
 	letter-spacing: 0;
 	padding: 2px;
 }
 
 .rteBack tbody tr td, .rteBack tr td {
-	background: #D3D3D3;
+	background: #E0E0E0;
 	padding: 0;
 }
