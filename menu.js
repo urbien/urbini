@@ -420,6 +420,7 @@ function onClickPopup1(imgId, form, enteredText) {
   if (enteredText)
     url += "&" + propName + "=" + encodeURIComponent(enteredText);
   // request listbox context from the server and load it into a 'popupFrame' iframe
+//alert("url = " + url);
   var onClickPopupFrame = frames["popupFrame"];
   popupFrameLoaded = false;
   onClickPopupFrame.location.href = url; // load data from server into iframe
@@ -530,13 +531,19 @@ function popupRowOnClick(e) {
   }
   else 
     prop = propertyShortName.substring(0, idx);
+//alert("originalProp = " + originalProp + "; prop = " + prop);
   var formField;
 
   if (originalProp.indexOf("_class") == -1) {
     var select = prop + "_select";
+
     formField = form.elements[select];
+//alert("propName = " + select + "; current formField.name = " + form.elements[select]);
+//alert("current formField.value = " + formField.value);
     formField.value = tr.id; // property value corresponding to a listitem
+//alert("new formField.value = " + formField.value);
     var chosenTextField = form.elements[originalProp];
+//alert("chosenTextField = " + chosenTextField);
 
     var items = tr.getElementsByTagName('td');
     var val = items[1].innerHTML;
@@ -550,8 +557,8 @@ function popupRowOnClick(e) {
     formField.value = tr.id; // property value corresponding to a listitem
   }
   var formFieldVerified = form.elements[propertyShortName + "_verified"];
-  if (!formFieldVerified)
-    formFieldVerified = 'y';
+  if (formFieldVerified)
+    formFieldVerified = 'y'; // value was modified and is verified since it is not typed but is chosen from the list
   var divId = prop + "_" + formName;
   var div = document.getElementById(divId);
   menuClose2(div);
@@ -675,7 +682,6 @@ function autoComplete(e) {
            return true;
            break;
   }     
- 
   var propName = target.name;
   var formName = target.id;
   var fieldVerified = form[propName + '_verified'];
@@ -685,7 +691,7 @@ function autoComplete(e) {
     if (!fieldVerified) // proceed to show popup on Enter only in data entry mode (indicated by presence of _verified field)
       return;
   }
-  fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
+  if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
   keyPressedImgId = propName + "_" + formName + "_filter";
   keyPressedElement = target;
   keysPressedSnapshot = target.value + characterCode;

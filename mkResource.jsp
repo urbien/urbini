@@ -8,7 +8,7 @@
      <menu toolbar="toolbar2"  activate="onMouseOver"/>
      <!--menu toolbar="toolbar3" exclude="Support" activate="onMouseOver"/-->
 
-     <font color="red"><center><b><errorMessage /></b></center></font>
+     <center><b><font color="red"><errorMessage /></font></b></center>
      <form action="FormRedirect" id="filter" name="tablePropertyList" method="post" >
        <tablePropertyList action="mkResource"/>
        <input type="hidden" name="returnHtml" value="list.html"/>
@@ -17,8 +17,9 @@
        <input type="hidden" name="action" value="mkResource"></input>
        <br />
        <center>
-       <input type="submit" name="saveAndCancel" value="  Submit  "></input>
-       &#160;&#160;<input type="submit" name="cancel" value="  Cancel  "></input>
+         <input type="submit" name="saveAndCancel" value="  Submit  "></input>
+         &#160;&#160;
+         <input type="submit" name="cancel" value="  Cancel  "></input>
        </center>
        <showSetProperties/>
      </form>
