@@ -8,11 +8,12 @@
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
    <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="90%">
-    <menu toolbar="toolbar1"  activate="onMouseOver"/>
-    <menu toolbar="transport" activate="onMouseOver"/>
-    <menu toolbar="search"    activate="onMouseOver"/>
-    <menu toolbar="toolbar2"  activate="onMouseOver"/>
-    <menu toolbar="toolbar3"  activate="onMouseOver"/>
+    <menu toolbar="toolbar1"        activate="onMouseOver"/>
+    <menu toolbar="transport"       activate="onMouseOver"/>
+    <menu toolbar="search"          activate="onMouseOver"/>
+    <menu toolbar="toolbar2"        activate="onMouseOver"/>
+    <menu toolbar="support"         activate="onMouseOver" allow="admin"/>
+    <menu toolbar="personalization" activate="onMouseOver"/>
     <pdaToPc image="images/pda.gif"/>
     </td>
     <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>

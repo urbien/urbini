@@ -6,11 +6,13 @@
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top">
       <td valign="top" width="90%"><span class="xs">
-        <menu toolbar="toolbar1"  activate="onMouseOver"/>
-        <menu toolbar="transport" activate="onMouseOver"/>
-        <menu toolbar="search"    activate="onMouseOver"/>
-        <menu toolbar="toolbar2"  activate="onMouseOver"/>
-        <menu toolbar="toolbar3"  activate="onMouseOver"/>
+        <menu toolbar="toolbar1"        activate="onMouseOver"/>
+        <menu toolbar="transport"       activate="onMouseOver"/>
+        <menu toolbar="search"          activate="onMouseOver"/>
+        <menu toolbar="toolbar2"        activate="onMouseOver"/>
+        <menu toolbar="support"         activate="onMouseOver" allow="admin"/>
+        <menu toolbar="personalization" activate="onMouseOver"/>
+
         <print image="images/printerIcon.gif"/>
         <saveInExcel allow="owner" image="images/excel.gif"/>
         <pdaToPc image="images/pda.gif"/></span>
@@ -68,7 +70,9 @@
         <menu toolbar="search"/>
         <menu toolbar="filterLocal"/>
         <menu toolbar="toolbar2"/>
-        <menu toolbar="toolbar3"/>
+        <menu toolbar="support"         allow="admin"/>
+        <menu toolbar="personalization"/>
+
 
       <span class="xs"><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>

@@ -23,19 +23,22 @@
       <!-- Auto-generated menus -->
       <span class="xs" nonPda="T">
       <menu toolbar="resourceOperations" activate="onMouseOver"/>
-      <menu toolbar="toolbar1" activate="onMouseOver"/>
-      <menu toolbar="transport" activate="onMouseOver"/>
-      <menu toolbar="search" activate="onMouseOver"/>
-      <menu toolbar="toolbar2" activate="onMouseOver"/>
-      <menu toolbar="toolbar3" activate="onMouseOver"/>
-      <menu toolbar="calendarAndChart" activate="onMouseOver"/>
+      <menu toolbar="toolbar1"           activate="onMouseOver"/>
+      <menu toolbar="transport"          activate="onMouseOver"/>
+      <menu toolbar="search"             activate="onMouseOver"/>
+      <menu toolbar="toolbar2"           activate="onMouseOver"/>
+      <menu toolbar="support"            activate="onMouseOver" allow="admin"/>
+      <menu toolbar="personalization"    activate="onMouseOver"/>
+      <menu toolbar="calendarAndChart"   activate="onMouseOver"/>
       </span>
       <span class="xs" pda="T">
       <menu toolbar="toolbar1"/>
       <menu toolbar="transport"/>
       <menu toolbar="search"/>
       <menu toolbar="toolbar2"/>
-      <menu toolbar="toolbar3"/>
+      <menu toolbar="support"         allow="admin"/>
+      <menu toolbar="personalization"/>
+
       <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/company/Contact" activate="onMouseOver"/>
       </span>
 

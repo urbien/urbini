@@ -12,8 +12,8 @@
     </colgroup>
     <tr valign="top">
       <td valign="top" width="110%"><span class="xs" colspan="2">
-        <menu toolbar="toolbar2"                   activate="onMouseOver"/>
-        <menu toolbar="toolbar3" exclude="Support" activate="onMouseOver"/>
+        <menu toolbar="toolbar2"        activate="onMouseOver"/>
+        <menu toolbar="personalization" activate="onMouseOver"/>
         <print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span></td>
     </tr>
 
@@ -56,7 +56,9 @@
       <menu toolbar="search"/>
       <menu toolbar="filterLocalCreateList"/>
       <menu toolbar="toolbar2"/>
-      <menu toolbar="toolbar3"/>
+      <menu toolbar="support"         allow="admin"/>
+      <menu toolbar="personalization"/>
+
       
       <print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
       <pdaToPc image="images/pda.gif"/><changePassword/><userLogOff html="user-login.html"/></td>

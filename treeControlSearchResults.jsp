@@ -7,11 +7,12 @@
       <tr valign="top">
         <td valign="top" width="110%" colspan="2">
           <menu toolbar="resourceOperations" activate="onMouseOver"/>
-          <menu toolbar="toolbar1"  activate="onMouseOver"/>
-          <menu toolbar="transport" activate="onMouseOver"/>
-          <menu toolbar="search"    activate="onMouseOver"/>
-          <menu toolbar="toolbar2"  activate="onMouseOver"/>
-          <menu toolbar="toolbar3"  activate="onMouseOver"/>
+          <menu toolbar="toolbar1"        activate="onMouseOver"/>
+          <menu toolbar="transport"       activate="onMouseOver"/>
+          <menu toolbar="search"          activate="onMouseOver"/>
+          <menu toolbar="toolbar2"        activate="onMouseOver"/>
+          <menu toolbar="support"         activate="onMouseOver" allow="admin"/>
+          <menu toolbar="personalization" activate="onMouseOver"/>
           <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" activate="onMouseOver"/>
           <print image="images/printerIcon.gif"/>
           <saveInExcel allow="owner" image="images/excel.gif"/>
@@ -77,7 +78,8 @@
         <menu toolbar="search"/>
         <menu toolbar="filterLocal"/>
         <menu toolbar="toolbar2"/>
-        <menu toolbar="toolbar3"/>
+        <menu toolbar="support"         allow="admin"/>
+        <menu toolbar="personalization"/>
         <menu toolbar="calendarAndChart"/>
       
         <print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>

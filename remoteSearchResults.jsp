@@ -11,11 +11,13 @@
     <tr valign="top">
       <td valign="top" width="90%">
         <span class="xs">
-        <menu toolbar="toolbar1"  activate="onMouseOver"/>
-        <menu toolbar="transport" activate="onMouseOver"/>
-        <menu toolbar="search"    activate="onMouseOver"/>
-        <menu toolbar="toolbar2"  activate="onMouseOver"/>
-        <menu toolbar="toolbar3"  activate="onMouseOver"/>
+        <menu toolbar="toolbar1"        activate="onMouseOver"/>
+        <menu toolbar="transport"       activate="onMouseOver"/>
+        <menu toolbar="search"          activate="onMouseOver"/>
+        <menu toolbar="toolbar2"        activate="onMouseOver"/>
+        <menu toolbar="support"         activate="onMouseOver" allow="admin"/>
+        <menu toolbar="personalization" activate="onMouseOver"/>
+
         <print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/></span><pdaToPc image="images/pda.gif"/></td>
       <td valign="top" align="right" width="10%"><!--changePassword/><userLogOff html="user-login.html"/--></td>
     </tr>
@@ -52,7 +54,8 @@
         <menu toolbar="search"/>
         <menu toolbar="filterParallel"/>
         <menu toolbar="toolbar2"/>
-        <menu toolbar="toolbar3"/>
+        <menu toolbar="support"         allow="admin"/>
+        <menu toolbar="personalization"/>
 
         <print image="images/printerIcon.gif"/>
         <saveInExcel allow="owner" image="images/excel.gif"/>
