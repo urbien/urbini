@@ -51,7 +51,7 @@
           }
 	}
     </script>
-    <form name="horizontalFilter" id="filter" method="POST" action="FormRedirect" onSubmit="disableSubmitButtonH(this)"><!-- onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)"-->
+    <form name="horizontalFilter" id="filter" method="POST">
       <br/>
       <horizontalFilter />
     </form>

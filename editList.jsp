@@ -34,7 +34,7 @@
 
     <include name="searchText.jsp" />
     
-    <form name="rightPanelPropertySheet" method="POST" action="FormRedirect">
+    <form name="rightPanelPropertySheet" method="POST">
       <table border="1" cellpadding="3" cellspacing="0">
       <tr><td align="middle" class="title">
         <input type="submit" name="submit"  class="button1" value="Filter"></input>

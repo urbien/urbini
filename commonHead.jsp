@@ -1,6 +1,6 @@
 <div>
-  <link href="icons/icon.ico"                        rel="SHORTCUT ICON" />
-  <link href="icons/icon.ico"                        rel="ICON"          />
+  <link href="icons/icon.ico"        type="image/x-icon" rel="SHORTCUT ICON" />
+  <link href="icons/icon.ico"        type="image/x-icon" rel="ICON"          />
 
   <link href="styles/properties.css" type="text/css" rel="stylesheet" />
   <link href="styles/common.css"     type="text/css" rel="stylesheet" />

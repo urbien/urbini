@@ -210,8 +210,9 @@
          for (j=0; j<form.elements.length; j++) {
            var elem = form.elements[j];
            initialValues[elem.name] = elem.value;
+                      
            if (elem.type.toUpperCase() == 'TEXT' && // only on TEXT fields 
-               elem.id) {                           // and those that have ID
+               elem.id) {                                         // and those that have ID
              addEvent(elem, 'keypress', autoComplete,              false);
              addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
              addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
@@ -220,6 +221,16 @@
              //addEvent(elem, 'change',   onFormFieldChange, false);
              //addEvent(elem, 'blur',     onFormFieldChange, false);
              //addEvent(elem, 'click',    onFormFieldClick,  false);
+           }
+           else if (elem.type.toUpperCase() == 'TEXTAREA') {
+             initialValues[elem.name + '.attributes.rows'] = elem.attributes['rows'].value;
+             initialValues[elem.name + '.attributes.cols'] = elem.attributes['cols'].value;
+             if (!elem.value || elem.value == '') {
+               elem.attributes['rows'].value = 1;
+               elem.attributes['cols'].value = 10;
+               addEvent(elem, 'focus', textAreaOnFocus,  false);
+               addEvent(elem, 'blur',  textAreaOnBlur,   false);
+             }  
            }
          }
        }  

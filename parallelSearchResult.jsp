@@ -2,7 +2,7 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
 <td valign="top">
-<form name="searchPropertyList" method="POST" action="FormRedirect">
+<form name="searchPropertyList" id="filter" method="POST">
   <searchPropertyList />
   <br></br>
   <center>

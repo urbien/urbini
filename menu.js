@@ -432,7 +432,7 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   
   // Use existing DIV from cache (unless text was Enter-ed - in which case always redraw DIV)
   if (!enteredText && div != null) { 
-//    hideReset(div, );
+    hideReset(div, currentFormName, originalProp);
     menuOpenClose(divId, imgId);
     // make popup active for key input 
     if (currentDiv.focus) // simple in IE
@@ -1167,6 +1167,30 @@ function popupRowOnMouseOut(e) {
   return true;
 }
 
+function textAreaOnFocus(e) {
+  e = (e) ? e : ((window.event) ? window.event : null);
+      
+  if (!e) 
+    return;
+
+  var target = getTargetElement(e);
+  target.attributes['rows'].value = 5;
+  target.attributes['cols'].value = 50;
+}
+
+function textAreaOnBlur(e) {
+  e = (e) ? e : ((window.event) ? window.event : null);
+      
+  if (!e) 
+    return;
+
+  var target = getTargetElement(e);
+  if (!target.value || target.value == '') {
+    target.attributes['rows'].value = 1;
+    target.attributes['cols'].value = 10;
+  }  
+}
+
 /************************************************* Helper functions ***************************************/
 function clearOtherPopups(div) {
 //alert("div=" + div.id + ", openedPopups.length=" + openedPopups.length)    
@@ -1268,4 +1292,36 @@ function chooser(element) {
     window.opener.document.forms[form].elements[propName + "_select"].value   = id;
     window.opener.document.forms[form].elements[propName + "_verified"].value = "y";
   }
+}
+
+function hideReset(div, currentFormName, originalProp) {
+  var trs = div.getElementsByTagName('tr');
+  var i;
+  var found = false;
+  for (i=0; i<trs.length; i++) {
+    if (trs[i].id == '$clear') {
+      found = true;
+      break;
+    }
+  }  
+
+  if (!found)
+    return;
+  var tr = trs[i];
+
+	var value = document.forms[currentFormName].elements[originalProp].value;
+	if (!value)
+	  return;
+	
+	var valueIsSet = true;
+	  
+	if (!value || value == '')  
+	  valueIsSet = false;
+	if (value.indexOf("-- ") == 0 && value.indexOf(" --", value.length - 3) != -1)
+	  valueIsSet = false;
+	
+	if (valueIsSet)  
+	  tr.style.visibility = VISIBLE;
+	else
+	  tr.style.visibility = HIDDEN;
 }
