@@ -10,7 +10,7 @@
         <td bgcolor="#e3e2df" class="cswmItemSubtitle">Subject:</td>
         <td bgcolor="#e3e2df"><input name="name" class="formMenuInput"/></td>
       </tr>
-	<tr id="schedule_formatTr" style="display:block" allow="owner"> 
+	<tr id="schedule_formatTr" style="display:tableRow" allow="owner"> 
 	  <td bgcolor="#e3e2df" class="cswmItemSubtitle">Format:</td>
 	  <td bgcolor="#e3e2df">
           <select name="format" onchange="onRecChange()" class="formMenuInput">
@@ -19,12 +19,6 @@
 	    </select>
         </td>
 	</tr>
-      <script language="JavaScript">
-        var url = new String(window.location);
-        if (url.indexOf("readOnlyProperties.html") != -1 && document.getElementById("schedule_formatTr")) {
-          document.getElementById("schedule_formatTr").style.display="none";
-        }
-      </script>
       <tr><td bgcolor="#e3e2df" class="cswmItemSubtitle">Repeat:</td>
 	  <td bgcolor="#e3e2df">
         <select name="rec" onchange="onRecChange()" class="formMenuInput">
@@ -132,8 +126,15 @@
       </td></tr></table>
     </td></tr>
     <tr><td><input type="submit" value="Schedule" class="cswmItemSubtitle"/>
-            <button class="cswmItemSubtitle" onClick="menuClose2(document.getElementById('menudiv_Schedule')); return false">Cancel</button>
+            <input type="submit" value="Cancel" class="cswmItemSubtitle" onClick="menuClose2(document.getElementById('menudiv_Schedule')); return false"/>
 </td></tr>
   </table>
 </form>
+
+<script language="JavaScript">
+  var url = new String(window.location);
+  if (url.indexOf("readOnlyProperties.html") != -1 &amp;&amp; document.getElementById("schedule_formatTr")) {
+    document.getElementById("schedule_formatTr").style.display="none";
+  }
+</script>
 </div>
