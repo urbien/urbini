@@ -24,6 +24,7 @@
       <td width="100%">
         <form action="list.html" name="siteResourceList">
           <div align="left"><backLink /></div>
+          <tree/>
           <siteResourceList />
           <div align="right"><measurement/></div>
           <addNewResource html="mkResource.html"/> 
