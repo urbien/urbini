@@ -288,3 +288,10 @@ function DivSetVisible(state, divn)
     IfrRef.style.display = "none";
    }
   }
+
+function smartPopup(propName, url) {
+alert("SMARTPOPUP in session: " + propName);
+  var smartPopupFrame = frames[propName];
+  smartPopupFrame.location.href = url;
+  menuOpenClose(propName, propName + "_filter");
+}
