@@ -767,6 +767,7 @@ function popupRowOnClick(e) {
   var formFieldClass    = form.elements[iclass];
   var formFieldVerified = form.elements[verified];
 
+  var isInput = (target.tagName.toLowerCase() == 'input'); 
   var deleteCurrentDiv = false;
   if (formFieldVerified) {
     if (formFieldVerified.value == 'n')
@@ -831,19 +832,59 @@ function popupRowOnClick(e) {
         chosenTextField.value = val.substring(idx + 1);
       if (chosenTextField.style)
         chosenTextField.style.backgroundColor = '#ffffff';
-      formField.value = tr.id; // property value corresponding to a listitem
       // show property label since label inside input field is now overwritten
       if (currentFormName == 'rightPanelPropertySheet') {
         if (fieldLabel)
           fieldLabel.style.display = '';
       }
-      if (selectItems.length != 1) {
+      var nmbChecked = 0;
+      var selectedItem;
+      var selectedIdx = 0;
+
+      if (selectItems.length == 1 && selectItems.type.toLowerCase() == "hidden") 
+        formField.value = tr.id; // property value corresponding to a listitem
+      else {
+        formField.value = '';
         for (i=0; i<selectItems.length; i++) {
-          if (selectItems[i].value == tr.id) {
-            selectItems[i].checked = true;
-            break;
+          if (selectItems[i].type.toLowerCase() == "hidden") {
+            selectItems[i].value = null;
+            continue;
           }
+          if (selectItems[i].value == tr.id) {
+            if (!isInput) 
+              selectItems[i].checked = true;
+          }
+          if (selectItems[i].checked == true) {
+            selectedItem = selectItems[i];
+            selectedIdx = i;
+            nmbChecked++;
+          }
+        } 
+        if (nmbChecked == 0) {
+          if (fieldLabel) {
+            fieldLabel.style.display    = "none";
+            var textContent = fieldLabel.textContent;
+            var idx = textContent.indexOf("\r");
+            if (idx != -1)
+              textContent = textContent.substring(0, idx);
+            chosenTextField.value = textContent + " --";
+          }
+          else
+            chosenTextField.value = "";
         }
+        else if (nmbChecked == 1) {
+          var trNode = getTrNode(selectedItem);
+          var items = trNode.getElementsByTagName('td');
+          var val = items[1].innerHTML;
+          var idx = val.lastIndexOf(">");
+          
+          if (len > 1)
+            chosenTextField[0].value = val.substring(idx + 1);
+          else
+            chosenTextField.value = val.substring(idx + 1);
+        }
+        else
+          chosenTextField.value = '<...>';
       }
     }
   }
@@ -860,7 +901,6 @@ function popupRowOnClick(e) {
     onClickPopup1(currentImgId, form);
     return true;
   }
-  var isInput = (target.tagName.toLowerCase() == 'input'); 
   if (!isInput) {
     var divId = prop + "_" + formName;
     if (currentResourceUri != null)
