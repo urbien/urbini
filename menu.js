@@ -1293,7 +1293,7 @@ function chooser(element) {
   if (idx != -1)
     shortPropName = propName.substring(0, idx);
   var form     = element.form.elements['$form'].value;
-  var editList = element.form.elements['$wasdEditList'];
+  var editList = element.form.elements['$wasEditList'];
   var value    = element.value;
   var id       = element.id;
   
@@ -1301,7 +1301,7 @@ function chooser(element) {
     id = value;
     
   if (editList) {
-    var uri = element.form.elements['$rUri'];
+    var uri = element.form.elements['$rUri'].value;
     window.opener.document.forms[form].elements[uri + ".$." + propName].value                    = value;
     window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_select"].value   = id;
     window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_verified"].value = "y";
