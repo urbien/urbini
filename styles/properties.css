@@ -2,7 +2,7 @@
 .monospace { font-family:Courier,monospace; }
 tr.sep {background-color:#cbcbcb; height:8pt}
 
-td.sep {background-color:#e7ebf0; color:#000000; font-weight:bold; font-size:8pt;} 
+td.sep {background-color:#e7ebf0; color:#000000; font-weight:bold; font-size:8pt;}
 th.sep {background-color:#cbcbcb; color:#000000; font-size:8pt;}
 input.chk {background-color:#cbcbcb; font-size:7pt}
 
@@ -59,10 +59,10 @@ span.light {color:#ffffff}
 
 /*input.xxs { font-family:Courier,monospace; font-size:8pt}*/
 
-a:link { color: #0033CC; }    
+a:link { color: #0033CC; }
 /* a:visited { color: #663399; } */
 /* a:active { color: #62B530; }  */
-a:hover { text-decoration: underline; color: #3399FF; }  
+a:hover { text-decoration: underline; color: #3399FF; }
 .button1 {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: hand; font-size:11px}
 
 .select	{color:#000066;background-color:#D6E7EF;font-size:11px}
@@ -71,7 +71,7 @@ input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 .text {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 /*.input {font-size: 11px; font-family:verdana,helvetica,arial,sans-serif;}*/
 .input1 {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:16px;text-decoration:none;}
-.input {background: rgb(231, 235, 240) url(../icons/blankSheet2.gif) no-repeat; padding-left: 16px;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:16px;text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt;}
+.input {background: rgb(231, 235, 240) url(../icons/blankSheet2.gif) no-repeat; padding-left: 17px;  border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px;text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt;}
 
 .errorTextStd {font-size:12px;font-weight:bold;font-family:Arial, Helvetica, Sans Serif;color:#A01E00}
 
