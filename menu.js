@@ -7,8 +7,8 @@ function menuOpenClose(divName, imgName) {
 		}
 		if (MenuArray[i] != divName) {
 			poptext = document.getElementById(MenuArray[i]).style;
-			if (poptext.visibility =="visible") {
-				poptext.visibility = "hidden";
+			if (poptext.display == "inline") {
+				poptext.display = "none";
 			}
 		}
 	}
@@ -17,18 +17,18 @@ function menuOpenClose(divName, imgName) {
             poptext.left = docjslib_getImageXfromLeft(imgName);
             poptext.top = docjslib_getImageYfromTop(imgName) + docjslib_getImageHeight(imgName) + 2;
 	}
-	if (poptext.visibility == "hidden" || poptext.visibility == "") {
-		poptext.visibility = "visible";
+	if (poptext.display == "none" || poptext.display == "") {
+		poptext.display = "inline";
 	} else {
-		poptext.visibility = "hidden";
+		poptext.display = "none";
 	}
 	if (document.getElementById("menudiv_Email") != null &&
-            document.getElementById("menudiv_Email").style.visibility == "visible"
+            document.getElementById("menudiv_Email").style.display == "inline"
            ) {
 		document.getElementById("emailForm").subject.value = document.title;
 	}
 	if (document.getElementById("menudiv_Schedule") != null &&
-            document.getElementById("menudiv_Schedule").style.visibility == "visible"
+            document.getElementById("menudiv_Schedule").style.display == "inline"
            ) {
 		document.getElementById("scheduleForm").name.value = document.title;
 	}
@@ -43,7 +43,7 @@ function menuOpen(div, link) {
 
 function menuOpen1(div, link) {
 	poptext = document.getElementById(div).style;
-	if (poptext.visibility == "hidden" || poptext.visibility == "") {
+	if (poptext.display == "none" || poptext.display == "") {
 		linkLeft = docjslib_getImageXfromLeft(link);
 		linkTop = docjslib_getImageYfromTop(link);
 		linkWidth = docjslib_getImageWidth(link);
@@ -71,25 +71,25 @@ function menuOpen1(div, link) {
 		}
 		if (MenuArray[i] != div) {
 			poptext = document.getElementById(MenuArray[i]).style;
-			if (poptext.visibility =="visible") {
-				poptext.visibility = "hidden";
+			if (poptext.display == "inline") {
+				poptext.display = "none";
 			}
 		}
 	}
 	poptext = document.getElementById(div).style;
       poptext.left = docjslib_getImageXfromLeft(link);
       poptext.top = docjslib_getImageYfromTop(link) + docjslib_getImageHeight(link) + 2;
-	if (poptext.visibility == "hidden" || poptext.visibility == "") {
-		poptext.visibility = "visible";
+	if (poptext.display == "none" || poptext.display == "") {
+		poptext.display = "inline";
 	}
 
 	if (document.getElementById("menudiv_Email") != null &&
-            document.getElementById("menudiv_Email").style.visibility == "visible"
+            document.getElementById("menudiv_Email").style.display == "inline"
            ) {
 		document.forms["emailForm"].elements["subject"].value = document.title;
 	}
 	if (document.getElementById("menudiv_Schedule") != null &&
-            document.getElementById("menudiv_Schedule").style.visibility == "visible"
+            document.getElementById("menudiv_Schedule").style.display == "inline"
            ) {
 		document.forms["scheduleForm"].elements["name"].value = document.title;
 	}
@@ -97,14 +97,14 @@ function menuOpen1(div, link) {
 
 function menuClose1(div) {
 	poptext = document.getElementById(div).style;
-	if (poptext.visibility == "visible") {
+	if (poptext.display == "inline") {
 		poptextLeft = docjslib_getImageXfromLeft(div);
 		poptextTop = docjslib_getImageYfromTop(div);
 		poptextWidth = docjslib_getImageWidth(div);
 		poptextHeight = docjslib_getImageHeight(div);
 		if (xMousePos < poptextLeft || xMousePos > poptextLeft + poptextWidth ||
                 yMousePos < poptextTop || yMousePos > poptextTop + poptextHeight) {
-			poptext.visibility = "hidden";
+			poptext.display = "none";
 		} else {
 			timeoutId = setTimeout("menuClose1('" + div + "')", 1000);
 		}

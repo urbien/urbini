@@ -1,5 +1,5 @@
 .popMenu {
-      VISIBILITY: hidden; 
+      display: none; 
       POSITION: absolute;
 }
 .popMenuTitle {
