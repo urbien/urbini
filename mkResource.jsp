@@ -36,7 +36,6 @@
          &#160;&#160;
          <input type="submit" name="cancel" value="  Cancel  "></input>
        </center>
-       <showSetProperties/>
      </form>
    </td>
    </tr>

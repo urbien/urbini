@@ -3,6 +3,7 @@
   <tr>
   <td valign="top" width="95%">
 <center>
+<getResource/>
 <table width="98%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
