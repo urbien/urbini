@@ -1,5 +1,5 @@
 fieldset{
-  background-color: #eeeeee;
+	background-color: #eeeeee;
 }
 legend{
   background-color: #eeeeee;
@@ -9,14 +9,31 @@ legend{
 #chatContents{
   height: 200px;
   width: 500px;
-  border: 1px solid #888888;
+  border: 1px solid #808080;
   margin: 0px 0px 0px 0px;
   background-color: #ffffff;
-}
-div.#chatContents{
-  padding: 4px;
   overflow: auto;
+  background : #ffffff;
+  padding: 4 px;
 }
+
+#userList{
+	overflow: auto;
+	border: solid #808080 1px;
+	background: #ffffff;
+	position : static;
+}
+
+#userOpsPanelTable{
+	border:solid #808080 1px; 
+	background: #ffffff;
+}
+
+#timePanel{
+	border:solid #808080 1px; 
+	background: #ffffff;
+}
+
 .sestesso span{
   color: #ff0000;
 }

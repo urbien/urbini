@@ -1,4 +1,4 @@
-var autoScrolling = 'yes';var windowTitle = parent.document.title;var pos=0;var titleScrollHandler;var titleTimeOut;var windowHasFocus='true';
+var autoScrolling = 'yes';var windowTitle = parent.document.title;var pos=0;var titleTimeOut;var windowHasFocus='true';
 var timeDelta = 0; // difference between server and client time
 
     function isScrollBarActivated()
@@ -25,7 +25,7 @@ var timeDelta = 0; // difference between server and client time
     {
        if(parent.document.getElementById(idElementWritingStatus)!=null)parent.document.getElementById(idElementWritingStatus).src = 'icons/chatWritingStatus.gif';
        timeId = setInterval("if(parent.document.getElementById('" + idElementWritingStatus + "')!=null)parent.document.getElementById('"+idElementWritingStatus+"').src = 'icons/chatWritingStatus.gif'",1000);
-       setTimeout("if(parent.document.getElementById('" + idElementWritingStatus + "')!=null) parent.document.getElementById('"+idElementWritingStatus+"').src = 'icons/chatNotWritingStatus.gif';clearInterval("+timeId+");",5001);
+       setTimeout("if(parent.document.getElementById('" + idElementWritingStatus + "')!=null) parent.document.getElementById('"+idElementWritingStatus+"').src = 'icons/chatNotWritingStatus.gif';clearInterval("+timeId+");",5001); 
     }
 
     function scrollTitle()
@@ -35,7 +35,13 @@ var timeDelta = 0; // difference between server and client time
     } 
 	   
     function insertMessages(gmtOffset,tm,userColor,userId, messageArray,notificationMode) 
-    {
+    {   
+	    if(messageArray[messageArray.length-2] == "")
+	    {
+		  messageArray[messageArray.length-2] = messageArray[messageArray.length-1];
+		  messageArray.length = messageArray.length - 1;
+		}
+		
 		if(isScrollBarAtBottom())autoScrolling = 'yes';else autoScrolling = 'no';
 
        	// this is an invitation message
@@ -50,7 +56,7 @@ var timeDelta = 0; // difference between server and client time
 						newwindow.document.writeln("");
                         newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='invitation message came to the chat room!'><span class=xs><font color='#63B4EF' id='timeNid["+timeNiD+"]'>["+getTimeStr(gmtOffset,tm)+"]</font><img src='icons/classes/invited.gif'>: <font onclick='window.close()' color=''>"+messageArray[0].replace("!-invt","").replace("target=_top","target='chat'")+"</font></span><img src='images/show.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
 					};
-           if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
+           if(parent.chatSoundPresent == 1 && parent.soundViaApplet == 0 && parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
 		   try 
 		   {
              parent.document.getElementById('sound1').Play();
@@ -61,6 +67,7 @@ var timeDelta = 0; // difference between server and client time
                	parent.document.all.sound.src = 'chat/DingDong.wav';
              	}
            	 }
+			 //else if(parent.chatSoundPresent == 1 && parent.soundViaApplet == 1) {parent.document.getElementById("soundAppletDiv").innerHTML = "<APPLET CODE='chat/SoundApplet.class' height='0' width='0'> <param name=play value=yes> </APPLET>";}
           var timeNiD = 0; 
 		  while(parent.document.getElementById('timeNid['+timeNiD+']')){timeNiD++;}
           parent.document.getElementById('body1').innerHTML += " <span class=xs><font color='#63B4EF' id='timeNid["+timeNiD+"]'>["+getTimeStr(gmtOffset,tm)+"]</font><img src='icons/classes/invited.gif'>: "+messageArray[0].replace("!-invt","").replace("target='_self'","target='_top'")+"</span><br>";
@@ -86,13 +93,13 @@ var timeDelta = 0; // difference between server and client time
         }
 		
     	//alert(parent.isWindowInFocus);
-		clearTimeout(titleTimeOut);
+		clearTimeout(parent.titleTimeOut);
 		if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
 		   //userId!="ChatAdministrator" &&)
 		{
-			clearInterval(titleScrollHandler);
-			titleScrollHandler = setInterval("scrollTitle()",100);
-			titleTimeOut=setTimeout("clearInterval(titleScrollHandler);parent.document.title=windowTitle;",5000);
+			clearInterval(parent.titleScrollHandler);
+			parent.titleScrollHandler = setInterval("scrollTitle()",100);
+			parent.titleTimeOut=setTimeout("clearInterval(parent.titleScrollHandler);parent.document.title=windowTitle;",5000);
 		}
 		
 		/*
@@ -105,16 +112,18 @@ var timeDelta = 0; // difference between server and client time
 			};
 		*/
   		
-		if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
-		try {
-		 parent.document.getElementById('sound1').Play();
-  		} catch(e) 
-		  {
-    		if (document.all) 
-			{
-      			parent.document.all.sound.src = 'chat/DingDong.wav';
-    		}
-  		  }
+           if(parent.chatSoundPresent == 1 && parent.soundViaApplet == 0 && parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
+		   try 
+		   {
+             parent.document.getElementById('sound1').Play();
+           } catch(e) 
+		   	 {
+             	if (document.all) 
+			 	{
+               	parent.document.all.sound.src = 'chat/DingDong.wav';
+             	}
+           	 }
+			 //else if(parent.chatSoundPresent == 1 && parent.soundViaApplet == 1) {parent.document.getElementById("soundAppletDiv").innerHTML = "<APPLET CODE='chat/SoundApplet.class' height='0' width='0'> <param name=play value=yes> </APPLET>";}
         
 		var userAlias = messageArray[messageArray.length-1];
         userAlias = userAlias.substring(userAlias.lastIndexOf('?alias')+1,userAlias.length);
@@ -197,21 +206,25 @@ var timeDelta = 0; // difference between server and client time
 		    bodyRef.innerHTML += usernameString;
 		}
         else 
+		{
+		  if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured')window.focus();
+    	    else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New mes came to your chat room');
+    	      else if(notificationMode==2 && parent.isWindowInFocus=='blured')
+			    {
+				  var mesStr = "";
+				  for (i = 0; i < messageArray.length; i++) mesStr += messageArray[i];
+				  newwindow=window.open('','newMes','height=100,width=350,resizable=yes'); 
+			      //newwindow.document.writeln("new mes came to the chat room<br>" + messageStringTimeN + messageString + " </span>" + messageArray[i] + "<br><font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><span class=xs>Set focus to the chat window</span></font><hr>");
+				  newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='new mes came to the chat room'>" + messageStringTimeN + messageString + " </span>" + mesStr + " <img src='images/show.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
+			    };
+				
 		  for (i = 0; i < messageArray.length; i++) 
 		  {
-            if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured')window.focus();
-    	      else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New mes came to your chat room');
-    	        else if(notificationMode==2 && parent.isWindowInFocus=='blured')
-			    {
-			      newwindow=window.open('','newMes','height=100,width=350,resizable=yes'); 
-			      //newwindow.document.writeln("new mes came to the chat room<br>" + messageStringTimeN + messageString + " </span>" + messageArray[i] + "<br><font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><span class=xs>Set focus to the chat window</span></font><hr>");
-				  newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='new mes came to the chat room'>" + messageStringTimeN + messageString + " </span>" + messageArray[i] + " <img src='images/show.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
-			    };
-
 	 		  addMessageText(messageArray[i],bodyRef,doc,userId,userAlias);
               var newBR = doc.createElement('br');
               bodyRef.appendChild(newBR);
           }
+		}
         if(autoScrolling == 'yes')
 		{
             parent.document.getElementById('chatContents').scrollTop = parent.document.getElementById('chatContents').scrollHeight;
@@ -284,7 +297,7 @@ var timeDelta = 0; // difference between server and client time
 	 	} 
 	}
     
-	function insertMembersForInvitation(membersArray,timeMembersArray,nameRoomUserIn,linkToResourcePage, aliasesArray) 
+	function insertMembersForInvitation(membersArray,timeMembersArray,nameRoomUserIn,linkToResourcePage, aliasesArray, linkToContactPageArray) 
 	{
 		var showPanel = 0;
 		var bodyRef = parent.document.getElementById('divUsersInvite');
@@ -299,7 +312,7 @@ var timeDelta = 0; // difference between server and client time
 		   if(!parent.document.getElementById(aliasesArray[i]))
 		   {    
 		       var onlineSince = new Date(parseInt(timeMembersArray[i]));
-			   bodyRef.innerHTML += "<input type='hidden' id='userRoomIn"+membersArray[i]+"' value='"+nameRoomUserIn[i]+"'><input type='hidden' id='info"+membersArray[i]+"' value='"+timeMembersArray[i]+"'><img id='inv"+membersArray[i]+"' onMouseOver='var d = new Date(parseInt("+timeMembersArray[i]+"));var d1 = new Date();var dif=d1-d;d1.setHours(0);d1.setMinutes(0);d1.setSeconds(0);d1.setMilliseconds(dif);this.title=this.title.substring(0,this.title.search(\" for\"))+\" for \" +d1.getHours()+\":\"+d1.getMinutes()+\":\"+d1.getSeconds();' title='"+parent.setTitleToUserIcon(membersArray[i],timeMembersArray[i],nameRoomUserIn[i])+" for' src='images/icon_mini_profile.gif' width='16' height='16'><span class=xs><font onMouseOver='var d = new Date(parseInt("+timeMembersArray[i]+"));var d1 = new Date();var dif=d1-d;d1.setHours(0);d1.setMinutes(0);d1.setSeconds(0);d1.setMilliseconds(dif);this.title=this.title.substring(0,this.title.search(\" for\"))+\" for \" +d1.getHours()+\":\"+d1.getMinutes()+\":\"+d1.getSeconds();' style='cursor:pointer' title='"+parent.setTitleToUserIcon(membersArray[i],timeMembersArray[i],nameRoomUserIn[i])+" for' onclick='window.parent.showOpsMenu(\""+aliasesArray[i]+"\",\"" + membersArray[i] + "\", \"\",\"" + aliasesArray[i] + "\",\"inline\",\"none\",\"inline\",\"inline\",\"none\",\"inline\",\"inline\");'>" + membersArray[i] + "</font></span><input id='linkToResource"+membersArray[i]+"' onclick='alert(this.id)' type='hidden' value="+linkToResourcePage[i]+"><br>";
+			   bodyRef.innerHTML += "<input type='hidden' id='infoCP"+ aliasesArray[i] +"' value='"+ linkToContactPageArray[i] +"'><input type='hidden' id='userRoomIn"+membersArray[i]+"' value='"+nameRoomUserIn[i]+"'><input type='hidden' id='info"+membersArray[i]+"' value='"+timeMembersArray[i]+"'><img id='inv"+membersArray[i]+"' onMouseOver='var d = new Date(parseInt("+timeMembersArray[i]+"));var d1 = new Date();var dif=d1-d;d1.setHours(0);d1.setMinutes(0);d1.setSeconds(0);d1.setMilliseconds(dif);this.title=this.title.substring(0,this.title.search(\" for\"))+\" for \" +d1.getHours()+\":\"+d1.getMinutes()+\":\"+d1.getSeconds();' title='"+parent.setTitleToUserIcon(membersArray[i],timeMembersArray[i],nameRoomUserIn[i])+" for' src='images/icon_mini_profile.gif' width='16' height='16'><span class=xs><font onMouseOver='var d = new Date(parseInt("+timeMembersArray[i]+"));var d1 = new Date();var dif=d1-d;d1.setHours(0);d1.setMinutes(0);d1.setSeconds(0);d1.setMilliseconds(dif);this.title=this.title.substring(0,this.title.search(\" for\"))+\" for \" +d1.getHours()+\":\"+d1.getMinutes()+\":\"+d1.getSeconds();' style='cursor:pointer' title='"+parent.setTitleToUserIcon(membersArray[i],timeMembersArray[i],nameRoomUserIn[i])+" for' onclick='window.parent.showOpsMenu(\""+aliasesArray[i]+"\",\"" + membersArray[i] + "\", \"\",\"" + aliasesArray[i] + "\",\"inline\",\"none\",\"inline\",\"inline\",\"none\",\"inline\",\"inline\");'>" + membersArray[i] + "</font></span><input id='linkToResource"+membersArray[i]+"' onclick='alert(this.id)' type='hidden' value="+linkToResourcePage[i]+"><br>";
                if(parent.document.getElementById('userOpsPanelUserName').innerHTML==membersArray[i])
                    window.parent.showOpsMenu(aliasesArray[i],membersArray[i], '#000000',membersArray[i],'inline','none','inline','inline','none','inline','inline');
            }
@@ -308,7 +321,7 @@ var timeDelta = 0; // difference between server and client time
 	   		if(!(document.getElementById('inv'+parent.document.getElementById('userOpsPanelUserName')) || document.getElementById('c'+parent.document.getElementById('userOpsPanelUserName'))) )parent.hideOpsMenu();
 	}
     
-	function insertMembers(membersArray,usersInfArray) {//alert(membersArray);
+	function insertMembers(membersArray,usersInfArray,linkToContactPageArray) {//alert(membersArray);
 	 var docum = parent.document;
 	 docum.getElementById("bodyMembersKeeper").removeChild(docum.getElementById("divUsersContainer"));  if(docum.getElementById("divUsersInvite"))docum.getElementById("bodyMembersKeeper").removeChild(docum.getElementById("divUsersInvite"));
 	 var bodyRef = docum.getElementById('bodyMembersKeeper');
@@ -319,6 +332,7 @@ var timeDelta = 0; // difference between server and client time
          divUsersInvite.id = 'divUsersInvite';
          for (i = 0; i < membersArray.length; i+=2)
          {
+		    // alert(linkToContactPageArray[i]); // alerts link to the contact home page (information page)
 			 var nameUserOnline = membersArray[i+1];
             var realUserName = membersArray[i].substring(0,membersArray[i].lastIndexOf('-'));
             //if(parent.document.getElementById('userOpsPanelUserName').innerHTML==realUserName)
@@ -330,9 +344,14 @@ var timeDelta = 0; // difference between server and client time
             userI.title = 'member is present since ' + getTimeStr(0,parseInt(usersInfArray[i]))+' for';
             memberIcon_addEventMOver(userI,"mouseover",false,parseInt(usersInfArray[i]));
             divUsers.appendChild(userI);
-            userInf = docum.createElement('input');
+            
+			var userInfCP = docum.createElement('input'); // link to the contact home page (information page)
+            userInfCP.type='hidden';
+            userInfCP.value=linkToContactPageArray[i];
+			userInfCP.id='infoCP'+nameUserOnline;
+			divUsers.appendChild(userInfCP);
 			
-			
+			userInf = docum.createElement('input');
             userInf.type='hidden';
             userInf.value=usersInfArray[i];
             userInf.id='info'+realUserName;

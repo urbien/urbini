@@ -3,7 +3,60 @@
     &[title];
     <link rel='stylesheet' type='text/css' href='chat/chat.css'/>
     <link rel='stylesheet' type='text/css' href='styles/properties.css'/>
-	<link href="styles.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" /> 
+
+    <SCRIPT LANGUAGE="JavaScript">
+    if (document.layers) {
+      window.captureEvents(Event.KEYPRESS);
+      window.onkeypress = function (evt) {
+        alert(evt.type + ' with key ' + evt.which);
+      }
+    }
+
+    function keyHandler (evt) {
+      //alert(evt.type + ' with key ' + (evt.which || evt.charCode || evt.keyCode));
+	  handleKey(evt);
+    }
+
+    function initEventHandling() { 
+      if (!document.all && !document.layers)
+        for (var f = 0; f < frames.length; f++)
+		{
+          frames[f].document.addEventListener('keydown', keyHandler, true);
+		  frames[f].document.addEventListener('keyup', function () {if(sendMessage == 'yes'){frames.messageRTE.document.body.innerHTML = '';sendMessage = 'no';}}, true);
+		}
+    }
+    </SCRIPT>
+    <SCRIPT LANGUAGE="JScript">
+    function initEventHandling () {
+      for (var f = 0; f < frames.length; f++)
+	  {
+        frames[f].document.attachEvent('onkeydown', ieFrameChecker);
+		frames[f].document.attachEvent('onkeyup', function () {if(sendMessage == 'yes'){frames.messageRTE.document.body.innerHTML = '';sendMessage = 'no';}});
+	  }
+    }
+    function ieFrameChecker () {
+      for (var f = 0; f < frames.length; f++) {
+        try {
+          var event = frames[f].event;
+          var type = frames[f].event.type;
+          event.frame = frames[f];
+          keyHandler(event);
+        }
+        catch (e) {
+      // ignore e as we are just looking for the 
+      // frame which has a valid event object
+        }
+      }
+    }
+    /*  
+    function keyHandler (evt) {
+      //alert(evt.type + ' in frame ' + evt.frame.name + ' with key ' +  evt.keyCode);
+	  handleKey(evt);
+    }
+	*/
+
+    </SCRIPT>
 
     <script language='JavaScript'>
 		var postLoaded = 0;     // ==1 when the post iframe is loaded
@@ -12,11 +65,15 @@
 		
 		var encodedRoom = '&[encodedRoom];';
 		var sendDivTimeOut;
-		var sendShortcut;
+		var sendShortcut; // Shortcut of the message sending
+		var chatSoundPresent = 1; // Sound enabled in chat
+		var soundViaApplet = 0;
 		var isWindowInFocus = "focused";
 		var sendMessage = 'no';
+		var titleScrollHandler;
+		var titleTimeOut;
 
-		addEvent(window, 'focus', function() {isWindowInFocus="focused";}); //alert("focused");
+		addEvent(window, 'focus', function() {isWindowInFocus="focused";clearInterval(titleTimeOut);}); //alert("focused");
 		addEvent(window, 'blur', function() {isWindowInFocus="blured";}); //alert("blured");
 		function addEvent(obj, evType, fn){
  			if (obj.addEventListener){
@@ -36,6 +93,29 @@
 		window.onerror=myErrorHandler
 		function myErrorHandler() {
 			return true;
+		}
+		
+		function onResizeEventHandler() {
+	  //alert(document.getElementById("tdChatContents").clientHeight);
+	  //alert(document.getElementById("chatContents").style.height);
+	    document.getElementById("chatContents").style.width = 0;
+	    document.getElementById("userList").style.width = 0;
+	    document.getElementById("chatContents").style.height = 0;
+	    document.getElementById("userList").style.height = 0;
+	  
+        document.getElementById("chatContents").style.width = document.getElementById("tdChatContents").clientWidth;
+		//document.getElementById("chatContents").style.width = document.getElementById("tdChatContents").clientWidth;
+		document.getElementById("userList").style.width = document.getElementById("tdUserList").clientWidth;
+
+        document.getElementById("chatContents").style.height = document.getElementById("tdChatContents").clientHeight;
+		document.getElementById("chatContents").style.height = document.getElementById("tdChatContents").clientHeight;
+		document.getElementById("chatContents").style.height = document.getElementById("tdChatContents").clientHeight;
+        document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight;
+		document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight;
+		document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight;
+		document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight;
+        document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight;
+		document.getElementById("chatContents").style.height = document.getElementById("tdChatContents").clientHeight;
 		}
 
 	  var resizedWindow = 0;
@@ -101,14 +181,68 @@
 		var restUrl = stringWithUrl.substring(idexOfTheEndOfTheUrl, stringWithUrl.length);
         return urlLink + loadURL(restUrl);
 	  }
-	}	  
+	}	
+	
+	function replaceAllRecursion(str, replStr, replWithStr)
+	{
+	  if(str.indexOf(replStr)>=0) 
+	    return f(str.replace(replStr, replWithStr), replStr, replWithStr)
+	   else 
+	     return str;
+	}
+	
+	function replaceAll(str, replStr, replWithStr)
+	{
+	  while(str.indexOf(replStr)>=0)
+	    str = str.replace(replStr, replWithStr);
+	  return str;
+	}  
 
       function sendMessageOnButton() {
+	    updateRTE('messageRTE');
+		//alert(document.postForm.messageRTE.value);
+		document.postForm.message.value = document.postForm.messageRTE.value;
+		frames.messageRTE.document.body.innerHTML = '';
+		//alert(document.postForm.messageRTE.value);
+		
         if (document.postForm.message.value.charAt(0) != "[")
           document.postForm.nameUser.value = "all";
-        document.postForm.message.focus();
+        //document.postForm.message.focus();
 
-		document.postForm.message.value = loadURL(document.postForm.message.value);
+		//document.postForm.message.value = loadURL(document.postForm.message.value);
+
+		document.postForm.message.value = replaceAll(document.postForm.message.value, "<P>", "");
+		document.postForm.message.value = replaceAll(document.postForm.message.value, "</P>", "");
+		document.postForm.message.value = replaceAll(document.postForm.message.value, "<BR>", "\n");
+		document.postForm.message.value = replaceAll(document.postForm.message.value, "<br>", "\n");
+
+		document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=\"www.", "<A href=\"http://www.");
+        document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=", "<a target='_blank' href=");
+		document.postForm.message.value = replaceAll(document.postForm.message.value, "<a href=\"www.", "<a href=\"http://www.");
+        document.postForm.message.value = replaceAll(document.postForm.message.value, "<a href=", "<a target='_blank' href=");		
+		
+		document.postForm.message.value = replaceAll(document.postForm.message.value, ":)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
+		document.postForm.message.value = replaceAll(document.postForm.message.value, ":-)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
+		document.postForm.message.value = replaceAll(document.postForm.message.value, ":(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
+		document.postForm.message.value = replaceAll(document.postForm.message.value, ":-(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
+		document.postForm.message.value = replaceAll(document.postForm.message.value, ";)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
+		document.postForm.message.value = replaceAll(document.postForm.message.value, ";-)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
+		document.postForm.message.value = replaceAll(document.postForm.message.value, ":D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
+		document.postForm.message.value = replaceAll(document.postForm.message.value, ":-D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
+		
+/*
+		document.postForm.message.value = document.postForm.message.value
+		  .replaceAll(":)","<img src='icons/happyIcon.gif' width='17' height='17' align='bottom'>")
+		  .replace(":-)","<img src='icons/happyIcon.gif' width='17' height='17' align='bottom'>")
+		  .replace(":(","<img src='icons/sadIcon.gif' width='17' height='17' align='bottom'>")
+		  .replace(":-(","<img src='icons/sadIcon.gif' width='17' height='17' align='bottom'>")
+		  .replace(";)","<img src='icons/winkIcon.gif' width='17' height='17' align='bottom'>")
+		  .replace(";-)","<img src='icons/winkIcon.gif' width='17' height='17' align='bottom'>")
+		  .replace(":D","<img src='icons/laughtingIcon.gif' width='17' height='17' align='bottom'>")
+		  .replace(":-D","<img src='icons/laughtingIcon.gif' width='17' height='17' align='bottom'>");
+*/
+		//document.postForm.message.value = document.postForm.message.value.replace(":)","<img src='icons/happyIcon.gif' width='16' height='16' align='bottom'");
+				
         document.getElementById("postForm").submit(); 
         if (document.postForm.message.value != "") {
           var messageValue = document.postForm.message.value;		 
@@ -131,6 +265,7 @@
       }    
     
       function handleKey(e) {
+	    updateRTE('messageRTE');
 	  	var kk = navigator.appName == 'Netscape' ? e.which : e.keyCode;
         if (
 			((kk == 10 || (e.ctrlKey && kk==13))&&(sendShortcut == 1))   ||
@@ -138,9 +273,41 @@
 		   )
 		{
 		  sendMessage = 'yes';
+		  //updateRTE('messageRTE');
+		  //alert(document.postForm.messageRTE.value);
+		  document.postForm.message.value = document.postForm.messageRTE.value;
+		  frames.messageRTE.document.body.innerHTML = '';
+		  //alert(frames.messageRTE.document.body.innerHTML);
+		  //frames.messageRTE.document.body.innerHTML = "";
+		  //document.postForm.messageRTE.value = "";
+		  //updateRTE('messageRTE');
+		  //alert(frames.messageRTE.document.body.innerHTML);
+		  //alert(document.postForm.messageRTE.value);
+		  
+	    
 		  if (document.postForm.message.value.charAt(0) != "[")
             document.postForm.nameUser.value = "all";
-          document.postForm.message.value = loadURL(document.postForm.message.value);
+          //document.postForm.message.value = loadURL(document.postForm.message.value);
+		  //document.postForm.message.value = replaceAll(document.postForm.message.value, "\n", "");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<P>", "");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, "</P>", "");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<BR>", "\n");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<br>", "\n");
+		 
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=\"www.", "<A href=\"http://www.");
+          document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=", "<a target='_blank' href=");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<a href=\"www.", "<a href=\"http://www.");
+          document.postForm.message.value = replaceAll(document.postForm.message.value, "<a href=", "<a target='_blank' href=");
+		  
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":-)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":-(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ";)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ";-)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
+		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":-D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
+		  
 		  document.getElementById("postForm").submit();
 
           if (document.postForm.message.value != "") {
@@ -156,13 +323,16 @@
                 document.getElementById("realUserName").value,
 				messageValue);
           }
-          document.postForm.message.value = ""; 
-          document.postForm.message.focus();
+
+          frames.messageRTE.document.body.innerHTML = '';
+		  document.postForm.message.value = ""; 
+          //document.postForm.message.focus();
 		  document.postForm.nameUser.value = "all";
-        } else if (document.postForm.message.value.length%10 == 0) {
-          document.getElementById("postFormWritingStatus").submit();
-		  //alert('%10');
-          document.postForm.message.focus();
+        } //else if (document.postForm.message.value.length%10 == 0) {
+		  else if (document.postForm.messageRTE.value.length%10 == 0) {
+            document.getElementById("postFormWritingStatus").submit();
+		  //alert(document.postForm.messageRTE.value.length);		  
+          //document.postForm.message.focus();
         }
       }
 	  
@@ -219,13 +389,14 @@
 
 	  function Start()
 	  {
-		var timer = setInterval("var dt = new Date();document.getElementById('timeActive').value=dt.getHours()+':'+dt.getMinutes()+':'+dt.getSeconds();",1000);
+		//var timer = setInterval("var dt = new Date();document.getElementById('timeActive').value=dt.getHours()+':'+dt.getMinutes()+':'+dt.getSeconds();",1000);
+		//alert(document.getElementById('timeActive'));
 	  }
       function showOpsMenu(userContactURI,user, userColor, privateTo,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay,linkToResource,joinChatRoom) {
-        if (document.all)
-          document.getElementById("userOpsPanel").style.display = "inline";
+		if (document.all)
+          {document.getElementById("userOpsPanel").style.display = "inline";onResizeEventHandler();}
         else
-          document.getElementById("userOpsPanel").style.display = "table-row";
+          {document.getElementById("userOpsPanel").style.display = "table-row";onResizeEventHandler();}
         
 		if((s = document.getElementById(user+'[0]'))&&(s.style.background == '#ffffff' || s.style.background.search('255, 255, 255')>0))
 			document.getElementById("highlightDisplay").src="images/highlight.gif";
@@ -244,23 +415,30 @@
 		document.getElementById("highlightDisplay").style.display = highlightDisplay;
 		document.getElementById("linkToResource").style.display = linkToResource;
 		document.getElementById("joinChatRoom").style.display = joinChatRoom;
+		
+		//onResizeEventHandler();
       }
       function hideOpsMenu() {
         document.getElementById("userOpsPanel").style.display = "none";
+		onResizeEventHandler();
       }
 	  function privateMessageIconClick()
 	  {
 		if(document.postForm.nameUser.value.indexOf("all")==-1)
 		{
 			document.postForm.nameUser.value="all";
-			if(document.postForm.message.value.indexOf("[")==0 && document.postForm.message.value.indexOf("]: ")>0)
+			//if(document.postForm.message.value.indexOf("[")==0 && document.postForm.message.value.indexOf("]: ")>0)
+			if(frames.messageRTE.document.body.innerHTML.indexOf("[")==0 && frames.messageRTE.document.body.innerHTML.indexOf("]: ")>0)
 			{
-				document.postForm.message.value = document.postForm.message.value.substring(document.postForm.message.value.indexOf("]:")+3,document.postForm.message.value.length);
+				//document.postForm.message.value = document.postForm.message.value.substring(document.postForm.message.value.indexOf("]:")+3,document.postForm.message.value.length);
+				frames.messageRTE.document.body.innerHTML = frames.messageRTE.document.body.innerHTML.substring(frames.message.document.body.innerHTML.indexOf("]:")+3,frames.messageRTE.document.body.innerHTML);
 			}
 			return;
 		}
+
 		document.postForm.nameUser.value = document.getElementById('sendPrivateMessagesToUser').value; 
-		document.postForm.message.value = '['+document.getElementById('sendPrivateMessagesToUserRealName').value + ']: ' + document.postForm.message.value;
+		//document.postForm.message.value = '['+document.getElementById('sendPrivateMessagesToUserRealName').value + ']: ' + document.postForm.message.value;
+		frames.messageRTE.document.body.innerHTML = '['+document.getElementById('sendPrivateMessagesToUserRealName').value + ']: ' + frames.messageRTE.document.body.innerHTML;
 	  }
 	  function inviteToChatRoomIconClick()
 	  {
@@ -273,7 +451,7 @@
 	  }
 	  function highlightMessagesIconClick() 
 	  {
-		parent.document.postForm.message.focus();
+		//parent.document.postForm.message.focus();
 		var doc = document;
 		//alert(doc.getElementById(document.getElementById("sendPrivateMessagesToUserRealName").value+'[0]').style.background.search('255, 255, 255'));
 		if((s = doc.getElementById('alias'+document.getElementById("sendPrivateMessagesToUser").value+'[0]'))&&(s.style.backgroundColor == '#ffffff' || s.style.backgroundColor.search('255, 255, 255')>0))
@@ -291,6 +469,7 @@
 		var time = thread.getTimeStr(0,parseInt(document.getElementById('info'+document.getElementById('userOpsPanelUserName').innerHTML).value));
 		infWind.document.write("user <font color="+document.getElementById('info'+document.getElementById('userOpsPanelUserName').innerHTML).color+"><b>" + document.getElementById('userOpsPanelUserName').innerHTML + "</b></font> is online since:  " + time);
 		infWind.document.write("<br>Chat room the user is present in:  "+document.getElementById('userRoomIn'+document.getElementById('userOpsPanelUserName').innerHTML).value);
+		//alert(document.getElementById('infoCP'+document.getElementById('userOpsPanelUserName').value));
 	  }
 
 	  function setTitleToUserIcon(user,time,roomName)
@@ -301,8 +480,7 @@
 	  }
     </script>   
   </head>
-  <body onload="initFrames()" style='cursor : default;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#E3EAEB"> <!--onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' //--> 
-
+  <body onload="initFrames(); initEventHandling();" onclick="isWindowInFocus='focused';clearInterval(titleTimeOut);" onfocus="isWindowInFocus='focused';clearInterval(titleTimeOut);" onblur="isWindowInFocus='blured';" style='cursor : pointer;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#E3EAEB"> <!--onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' //--> 
     <script language="JavaScript">
 		window.resizeTo(Math.floor(2*screen.availWidth/3),Math.floor(screen.availHeight*2/3));
 		window.moveTo(Math.floor(screen.availWidth/6),Math.floor((screen.availHeight)/6));
@@ -313,47 +491,59 @@
 	Start();
 </script>
 
-<table width="100%" height="100%" style="border : medium groove #CCCCCC; background : #EDEDED;">
+<table width="100%" height="98%" style="border : medium groove #CCCCCC; background : #EDEDED;">
 <tr>
   <td>
-    <table width="100%" height="100%" border="0" cellpadding="0" cellspacing="4">
-      <tr id="userOpsPanel" style="display: none">
+
+  
+  
+<table cellspacing="1" cellpadding="0" border="0" width="100%" height="100%">
+
+<!-----------------------------------------------START---------OPERATIONAL PANEL DEFINITION ------------------------------------------------------------------>
+    <tr id="userOpsPanel" style="display: none">
         <td colspan="2" height="7%" width="100%">
-		<table width="100%" height="100%" style="border:solid #808080 1px; background: #ffffff">
-		  <tr><td>
+		<table width="100%" height="100%" id="userOpsPanelTable">
+		  <tr>
+		    <td>
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                  <tr><td align="left">
-                      <table border="0" cellpadding="1" cellspacing="0"><tr>
-                        <td><span class="xs">Operations available for user <span id="userOpsPanelUserName" class="xs"></span>:&nbsp;</span></td>
-				<td><a style="cursor:pointer;"><img style="display:none" id="userInfoDisplay" src="images/info.gif" border="0" style="cursor:pointer;" alt="user info" title="user info" onclick="showUserInfWindow();"></a></td>
-				<td><a style="cursor:pointer;"><img style="display:none" id="sendPrivMessageDisplay" src="images/sendPrivateMessage.gif" border="0" style="cursor:pointer;" height="18" alt="send private messages to user" title="send private messages to user" onclick="privateMessageIconClick()"><input type="hidden" id="sendPrivateMessagesToUser"><input type="hidden" id="sendPrivateMessagesToUserRealName"></a></td>
-				<td><a style="cursor:pointer;"><img style="display:none" id="inviteToPrivChatDisplay" src="images/inviteToPrivateChat.gif" border="0" style="cursor:pointer;" height="18" alt="invite user to private chat room" title="invite user to private chat room"></a></td>
-				<td><a style="cursor:pointer;"><img style="display:none" id="inviteToChatRoomDisplay" src="images/Invited.gif" border="0" style="cursor:pointer;" alt="invite user to this chat room" title="invite user to this chat room" width="18" height="18" onclick="inviteToChatRoomIconClick()"></a></td>
-				<td><a style="cursor:pointer;"><img style="display:none" id="highlightDisplay" src="images/highlight.gif" border="0" style="cursor:pointer;" alt="highlight messages of the user" title="highlight messages of the user" width="16" height="16" align="absmiddle" onclick="highlightMessagesIconClick()"></a></td>
-				<td><a style="cursor:pointer;" target="_blank" id="AlinkToResource"><img style="display:none;cursor:pointer" id="linkToResource" src="icons/status_postponed.gif" border="0" width="15" height="15" alt="Link to the resource the chat is opened for" title="Link to the resource the chat is opened for" onclick="document.getElementById('AlinkToResource').href=document.getElementById('linkToResource'+document.getElementById('sendPrivateMessagesToUserRealName').value).value"></a></td>
-                <td><a style="cursor:pointer;" id="AjoinChatRoom"><img style="display:none;cursor:pointer" id="joinChatRoom" src="icons/webchat.gif" border="0" width="15" height="15" alt="Join the room where the user is present." title="Join the room where the user is present." onclick="document.getElementById('AjoinChatRoom').href = 'chatRoom?title='+document.getElementById('userRoomIn'+document.getElementById('userOpsPanelUserName').innerHTML).value + '&#38;referer=' + escape(document.getElementById('linkToResource'+document.getElementById('sendPrivateMessagesToUserRealName').value).value)"></a></td>
-				      </tr></table>
-                   </td>
-                   <td align="right" valign="center">
-                     <img src="icons/hide.gif" alt="Close" title="Close user operations panel" onClick="hideOpsMenu()" style="cursor:pointer">&nbsp;
-                   </td>
-                   </tr>
+                  <tr>
+				    <td align="left">
+                      <table border="0" cellpadding="1" cellspacing="0">
+					    <tr>
+                          <td><span class="xs">Operations available for user <span id="userOpsPanelUserName" class="xs"></span>:&nbsp;</span></td>
+				          <td><a style="cursor:pointer;" href="" target="_blank" onclick="this.href = document.getElementById('infoCP'+document.getElementById('sendPrivateMessagesToUser').value).value"><img style="display:none" id="userInfoDisplay" src="images/info.gif" border="0" style="cursor:pointer;" alt="user info" title="user info" onclick="/*showUserInfWindow();*/"></a></td>
+  				          <td><a style="cursor:pointer;"><img style="display:none" id="sendPrivMessageDisplay" src="images/sendPrivateMessage.gif" border="0" style="cursor:pointer;" height="18" alt="send private messages to user" title="send private messages to user" onclick="privateMessageIconClick()"><input type="hidden" id="sendPrivateMessagesToUser"><input type="hidden" id="sendPrivateMessagesToUserRealName"></a></td>
+				          <td><a style="cursor:pointer;"><img style="display:none" id="inviteToPrivChatDisplay" src="images/inviteToPrivateChat.gif" border="0" style="cursor:pointer;" height="18" alt="invite user to private chat room" title="invite user to private chat room"></a></td>
+				          <td><a style="cursor:pointer;"><img style="display:none" id="inviteToChatRoomDisplay" src="images/Invited.gif" border="0" style="cursor:pointer;" alt="invite user to this chat room" title="invite user to this chat room" width="18" height="18" onclick="inviteToChatRoomIconClick()"></a></td>
+				          <td><a style="cursor:pointer;"><img style="display:none" id="highlightDisplay" src="images/highlight.gif" border="0" style="cursor:pointer;" alt="highlight messages of the user" title="highlight messages of the user" width="16" height="16" align="absmiddle" onclick="highlightMessagesIconClick()"></a></td>
+				          <td><a style="cursor:pointer;" target="_blank" id="AlinkToResource"><img style="display:none;cursor:pointer" id="linkToResource" src="icons/status_postponed.gif" border="0" width="15" height="15" alt="Link to the resource the chat is opened for" title="Link to the resource the chat is opened for" onclick="document.getElementById('AlinkToResource').href=document.getElementById('linkToResource'+document.getElementById('sendPrivateMessagesToUserRealName').value).value"></a></td>
+                          <td><a style="cursor:pointer;" id="AjoinChatRoom"><img style="display:none;cursor:pointer" id="joinChatRoom" src="icons/webchat.gif" border="0" width="15" height="15" alt="Join the room where the user is present." title="Join the room where the user is present." onclick="document.getElementById('AjoinChatRoom').href = 'chatRoom?title='+document.getElementById('userRoomIn'+document.getElementById('userOpsPanelUserName').innerHTML).value + '&#38;referer=' + escape(document.getElementById('linkToResource'+document.getElementById('sendPrivateMessagesToUserRealName').value).value)"></a></td>
+				        </tr>
+					  </table>
+                    </td>
+                    <td align="right" valign="center">
+                      <img src="icons/hide.gif" alt="Close" title="Close user operations panel" onClick="hideOpsMenu();" style="cursor:pointer">&nbsp;
+                    </td>
+                  </tr>
                 </table>
-              </td></tr>
+            </td>
+		  </tr>
 		</table>
         </td>
-      </tr>
-      <tr>
-        <td rowspan="3" height="75%" width="80%" id="tdChatContents" bgcolor="#EDEDED" valign="top">
-		  <!-- iframe src="about:blank" id="chatContents" name="chatContents" frameborder="0" style="width:100%;height:100%; background: #FFFFFF; border:solid #808080 1px"></iframe //-->
-          <div id='chatContents' name='chatContents' style="overflow: auto;	border: solid #808080 1px; background: #ffffff;">
-            <div id="body1"></div>
-          </div>
+    </tr>
+<!-----------------------------------------------FINISH---------OPERATIONAL PANEL DEFINITION ------------------------------------------------------------------>
+
+    <tr>
+<!-----------------------------------------------START---------CHAT CONTENTS PANEL DEFINITION ------------------------------------------------------------------>
+        <td rowspan="2" height="20" width="80%" id="tdChatContents" bgcolor="#EDEDED"  cellspacing="0" cellpadding="0"> <!-- chat contents bgcolor="#EDEDED" -->
+		    <div id='chatContents' name='chatContents'>
+                <div id="body1"></div>
+            </div>
 		</td>
-      </tr>
-      <tr>
-        <td height="10%" width="100%" valign="top" bgcolor="#EDEDED" style="height:1">
-          <div height="100%" width="100%" style="border:solid #808080 1px; background: #ffffff">
+<!-----------------------------------------------FINISH---------CHAT CONTENTS PANEL DEFINITION ------------------------------------------------------------------>
+<!-----------------------------------------------START---------TIME PANEL DEFINITION ------------------------------------------------------------------>
+        <td height="5%" width="20%" valign="top" bgcolor="#EDEDED" style="height:1">  <!-- bgcolor="#EDEDED" //--> <!-- TIME panel //-->
+          <div height="100%" width="100%" id="timePanel">
               <table border="0" cellpadding="0" cellspacing="0">
                 <tr>
 				  <td>
@@ -397,11 +587,12 @@
               </table>
           </div>
         </td>
-      </tr>
-      <tr>
-        <td height="90%" width="100%" id="tdUserList" valign="top" bgcolor="#EDEDED">
-	    <!-- iframe id='userList' name='userList' width="100%" height="100%" frameborder="0" style="border:solid #808080 1px; background: #ffffff" src="about:blank"></iframe //-->
-            <div id='userList' name='userList' style="overflow: auto; border: solid #808080 1px; background: #ffffff">
+<!-----------------------------------------------FINISH---------TIME PANEL DEFINITION ------------------------------------------------------------------>
+    </tr>
+<tr>
+<!-----------------------------------------------START---------USERS LIST PANEL DEFINITION ------------------------------------------------------------------>
+    <td height="95%" id="tdUserList" cellspacing="0" cellpadding="0"> <!-- USERS LIST//-->
+            <div id='userList' name='userList'>
 			  <form name='inviteUser' method='post' target="post" action='chatRoom?frame=post&room=invitationChatRoom'>
         	    <font color='#33A3D2'>
         		  <span class=xs><b>Current Room:</b></span>
@@ -411,41 +602,70 @@
 				  </div>
 				</div>
 			  </form>
-			</div>
-	    </td>
-      </tr>
+			</div>	
+	</td>
+<!-----------------------------------------------FINISH---------USERS LIST PANEL DEFINITION ------------------------------------------------------------------>
 </tr>
 <tr>
-    <td colspan="2" height="25%">
-		<table width="100%" height="100%" cellpadding="0" cellspacing="0" border="0">
+<!-----------------------------------------------START---------RTE DEFINITION ------------------------------------------------------------------>
+  <td colspan="2"> <!-- RTE //-->
+      <table width="100%" height="100%" cellpadding="0" cellspacing="0" border="0">
 			<tr>
 				<form style="border : thin none; border-bottom : none; bottom : 0px; margin-bottom : 0px;" target='post' id='postForm' name='postForm'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
 				  <td width="99%" height="100%">
 				    <input type="hidden" value="all" name="nameUser" id="nameUser">
 		            <input type="hidden" value="my" id="aliasUser" name="aliasUser">
 				    <span class=xs>
-				      <textarea style="width:100%;height:99%; border:solid #808080 1px; margin: 0px" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="if(sendMessage == 'yes'){this.value = '';sendMessage = 'no';}"></textarea>
+                        <script language="JavaScript" type="text/javascript" src="chat/richtext.js"></script>
+                        <script language="JavaScript" type="text/javascript">
+                            function submitForm() {
+              	                updateRTE('messageRTE');
+	                            alert("message = " + document.postForm.messageRTE.value);
+	                           //document.postForm.message.value = "saf";
+     	                       //updateRTE('message');
+	                           //frames.message.document.body.innerHTML = "";
+                               return false;
+                            }
+                            //Usage: initRTE(imagesPath, includesPath, cssFile)
+                            initRTE("images/wysiwyg/", "chat/", "");
+                        </script>
+                        <script language="JavaScript" type="text/javascript">
+                            //Usage: writeRichText(fieldname, html, width, height, buttons)
+                            writeRichText('messageRTE', '', '100%', 50, true, false);
+                        </script>
+
+                      <input type="Hidden" name='message' id='message'>
+				      <!--textarea style="width:100%;height:99%; border:solid #808080 1px; margin: 0px" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="if(sendMessage == 'yes'){this.value = '';sendMessage = 'no';}"></textarea//-->
 				    </span>
 				    <script language='JavaScript'>
     	    	     document.postForm.message.value="";
-	    	         document.postForm.message.focus();
+	    	         //document.postForm.message.focus();
               	    </script>
 				  </td>
 				  <td width="1%" height="100%">
-				    <img onclick='sendMessageOnButton()' border="0" src="images/sendEmpty.gif" alt="send message" title="send message" width="29" height="32" align="right">
+				  <!-- button onclick="document.getElementById('chatContents').innerHTML+='isWindowInFocus='+isWindowInFocus+'<br>'">isWindowInFocus?</button //-->
+				    <img onclick="sendMessageOnButton()" border="0" id="sendMesButton" src="images/sendEmpty.gif" alt="send message" title="send message" width="29" height="32" align="right">
 				  </td>
 				</form>
 			</tr>
-		</table>
-	</td>
+		</table>  
+  </td>
+<!-----------------------------------------------FINISH---------RTE DEFINITION ------------------------------------------------------------------>
 </tr>
-</table>
+</table>  
+  
+  
 	
-</td>
+  </td>
 </tr>
 </table>
      <bgsound id="sound">
      <embed src='chat/DingDong.wav' height="0" autostart=false hidden=true id="sound1" enablejavascript="true">	
+	 <!--div id="soundAppletDiv" style="width:0; height:0">
+	   <APPLET CODE='http://127.0.0.1/hudsonfog/chat/SoundApplet.class' height=0 width=0>
+         <param name=play value=yes>
+       </APPLET>
+	 </div//-->
     <form target='post' id='postFormWritingStatus' name='postFormWritingStatus'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
       <input type="hidden" value="all"  name="nameUser">
       <input type="hidden" value="my" name="aliasUser">
@@ -459,22 +679,6 @@
     <script language="JavaScript">
       //setTimeout("initFrames()", 501);
       window.onresize = onResizeEventHandler;
-      function onResizeEventHandler() {
-	    document.getElementById("chatContents").style.width = 0;
-	    document.getElementById("userList").style.width = 0;
-	    document.getElementById("chatContents").style.height = 0;
-	    document.getElementById("userList").style.height = 0;
-	  
-        document.getElementById("chatContents").style.width = document.getElementById("tdChatContents").clientWidth;
-		document.getElementById("userList").style.width = document.getElementById("tdUserList").clientWidth;
-
-        document.getElementById("chatContents").style.height = document.getElementById("tdChatContents").clientHeight;
-        document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight;
-		document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight;
-		document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight;
-		document.getElementById("userList").style.height = document.getElementById("tdUserList").clientHeight;
-
-      }
 
 	  function initFrames() {
         onResizeEventHandler();
