@@ -90,7 +90,7 @@
             finalUrl = url.substring(0, idx1 + 1) + 'plain/' + url.substring(idx1 + 1);  
           }
           
-          bottomFrame.location.href = finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y";
+          bottomFrame.location.replace(finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y");
           return false;
         }
       }
@@ -140,22 +140,6 @@
         elem = evt.srcElement;
         elem = getANode(elem);
 
-      }
-      return elem;
-    }  
-
-
-    // cross-browser - getCurrentTarget 
-    function getTargetElement(evt) {
-      var elem;
-      if (evt.target) {
-        if (evt.currentTarget && (evt.currentTarget != evt.target))
-          elem = evt.currentTarget;
-        else
-          elem = evt.target;
-      } 
-      else {
-        elem = evt.srcElement;
       }
       return elem;
     }  

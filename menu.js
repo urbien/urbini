@@ -466,12 +466,11 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
     url += "&$selectOnly=y";
   if (enteredText)
     url += "&" + propName + "=" + encodeURIComponent(enteredText);
+
   // request listbox context from the server and load it into a 'popupFrame' iframe
-//alert("url = " + url);
   var onClickPopupFrame = frames["popupFrame"];
   popupFrameLoaded = false;
-  onClickPopupFrame.location.href = url; // load data from server into iframe
-                                         // iframe onLoad will copy content into popupDiv
+  onClickPopupFrame.location.replace(url); // load data from server into iframe
   setTimeout(loadPopup, 100);
 }
 
@@ -505,7 +504,6 @@ function loadPopup() {
       elm.focus();
     }  
   }  
-  //history.go(-1);
 }
 
 function interceptPopupEvents(div) {

@@ -10,7 +10,6 @@ if (window.parent != window) {
      var bottomFrame = window.parent.frames[frameId];
      var pane2       = window.parent.document.getElementById(divId);
      if (pane2) {
-
        var body = bottomFrame.document.body;
        if (body) {
          pane2.innerHTML = body.innerHTML;
