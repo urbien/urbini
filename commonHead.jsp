@@ -1,8 +1,4 @@
 <div>
-  <style>
-    A {behavior: url(#default#AnchorClick);}
-  </style>                                              
-
   <link href="icons/icon.ico"                        rel="SHORTCUT ICON" />
   <link href="icons/icon.ico"                        rel="ICON"          />
 
