@@ -76,6 +76,13 @@ function displayFullText1(div, div1) {
   document.getElementById(div).innerHTML = document.getElementById(div1).innerHTML;
 }
 
+function setTextHeight(div, divider) {
+  if (window.screen) {
+    var h = Math.floor(screen.availHeight/divider);
+    document.getElementById(div).style.height = h;
+  }
+}
+
 /*************************  Form fields adding/removing *******************/
 function addField(form, fieldType, fieldName, fieldValue) {
   if (document.getElementById) {
