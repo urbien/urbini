@@ -35,6 +35,7 @@
       </tr>
       <tr>
         <td><input type="submit" value="Send" class="cswmItemSubtitle"></input>
+            <button class="cswmItemSubtitle" onClick="menuClose2(document.getElementById('menudiv_Email')); return false">Cancel</button>
         </td>
       </tr>
     </table>

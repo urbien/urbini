@@ -1,5 +1,5 @@
 <div>
-<form name="scheduleForm" action="page2schedule" method="GET">
+<form name="scheduleForm" id="scheduleForm" action="page2schedule" method="GET">
   <table cellpadding="5">
     <tr nonPda="T">
       <td><b><text text="Schedule:"/></b></td>
@@ -131,7 +131,9 @@
         </td></tr></table>
       </td></tr></table>
     </td></tr>
-    <tr><td><input type="submit" value="Schedule" class="cswmItemSubtitle"/></td></tr>
+    <tr><td><input type="submit" value="Schedule" class="cswmItemSubtitle"/>
+            <button class="cswmItemSubtitle" onClick="menuClose2(document.getElementById('menudiv_Schedule')); return false">Cancel</button>
+</td></tr>
   </table>
 </form>
 </div>
