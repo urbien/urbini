@@ -67,10 +67,7 @@
         // 
         if (bottomFrame) {
           url = getTargetAnchor(e);
-
-          bottomFrame.location.href = url + "&pda=T&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y";
-// do not do it here - let iframe do it upon loading
-//            document.getElementById('pane2').innerHTML = bottomFrame.document.body.innerHTML; //firstChild.nodeValue
+          bottomFrame.location.href = url + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y";
           return false;
         }
       }
