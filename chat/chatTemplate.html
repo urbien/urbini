@@ -193,6 +193,21 @@
 		{s.style.backgroundColor=color;i++;}
 		//8044 2965563   
 	  }	  
+	  	  	  
+	  function showUserInfWindow() 
+	  {
+		var infWind = window.open("user Information","userInf","width=500,height=100");
+		var time = thread.getTimeStr(0,parseInt(userList.document.getElementById('info'+document.getElementById('userOpsPanelUserName').innerHTML).value));
+		infWind.document.write("user <font color="+userList.document.getElementById('info'+document.getElementById('userOpsPanelUserName').innerHTML).color+"><b>" + document.getElementById('userOpsPanelUserName').innerHTML + "</b></font> is online since:  " + time);
+		infWind.document.write("<br>Chat room the user is present in:  "+userList.document.getElementById('userRoomIn'+document.getElementById('userOpsPanelUserName').innerHTML).value);
+	  }
+
+	  function setTitleToUserIcon(user,time,roomName)
+	  {	
+		var time = parent.thread.getTimeStr(0,parseInt(time));
+		var s = "member is present in chat room \""+roomName+"\" since " + time;
+		return s;
+	  }
 	</script>
 <link href="styles.css" type="text/css" rel="stylesheet" />
 </head>
@@ -214,7 +229,7 @@
                   <tr><td align="left">
                       <table border="0" cellpadding="1" cellspacing="0"><tr>
                         <td><span class="xs">Operations available for user <span id="userOpsPanelUserName" class="xs"></span>:&nbsp;</span></td>
-				<td><a style="cursor:pointer;"><img style="display:none" id="userInfoDisplay" src="images/info.gif" border="0" style="cursor:pointer;" alt="user info" title="user info"></a></td>
+				<td><a style="cursor:pointer;"><img style="display:none" id="userInfoDisplay" src="images/info.gif" border="0" style="cursor:pointer;" alt="user info" title="user info" onclick="showUserInfWindow();"></a></td>
 				<td><a style="cursor:pointer;"><img style="display:none" id="sendPrivMessageDisplay" src="images/sendPrivateMessage.gif" border="0" style="cursor:pointer;" height="18" alt="send private messages to user" title="send private messages to user" onclick="privateMessageIconClick()"><input type="hidden" id="sendPrivateMessagesToUser"><input type="hidden" id="sendPrivateMessagesToUserRealName"></a></td>
 				<td><a style="cursor:pointer;"><img style="display:none" id="inviteToPrivChatDisplay" src="images/inviteToPrivateChat.gif" border="0" style="cursor:pointer;" height="18" alt="invite user to private chat room" title="invite user to private chat room"></a></td>
 				<td><a style="cursor:pointer;"><img style="display:none" id="inviteToChatRoomDisplay" src="images/Invited.gif" border="0" style="cursor:pointer;" alt="invite user to this chat room" title="invite user to this chat room" width="18" height="18" onclick="inviteToChatRoomIconClick()"></a></td>
@@ -279,7 +294,7 @@
               		  </script>
 				</td>
 				<td width="1%">
-					<img onclick='sendMessageOnButton()' border="0" src="images/sendButton1.gif" alt="send message" title="send message" align="right" style="cursor: hand">
+					<img onclick='sendMessageOnButton()' border="0" src="images/sendEmpty.gif" alt="send message" title="send message" width="29" height="32" align="right">
 				</td>
 				</form>
 			</tr>
@@ -298,7 +313,7 @@
       <input type=hidden name='message' value='..w..'>
     </form>
     
-    <iframe id='thread' name='thread' src='chatRoom?frame=thread&room=&[encodedRoom];' style='width:0px; height: 0px; border: 0'></iframe>
+    <iframe id='thread' name='thread' src='chatRoom?frame=thread&room=&[encodedRoom];' style='width:100px; height: 100px; border: 0'></iframe>
     <div>
       <iframe id='post' name='post' src='chatRoom?frame=post&room=&[encodedRoom];' style='width: 0px; height: 0px; border: 0'></iframe>
     </div>  
