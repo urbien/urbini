@@ -3,6 +3,11 @@
     &[title];
     <link rel='stylesheet' type='text/css' href='chat/chat.css'/>
     <script language='JavaScript'>
+		window.onerror=myErrorHandler
+		function myErrorHandler() {
+			return true
+		}
+
 	  var resizedWindow = 0;
 	  var timeStampsOn = 1;
       function chatTimerActive() { 
@@ -113,7 +118,11 @@
     </script>   
   </head>
   <body onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' style='cursor : default;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#E3EAEB"> 
-    <input type='hidden' name='realUserName' id='realUserName' value="&[realUserName];">
+    <script language="JavaScript">
+		window.resizeTo(Math.floor(screen.availWidth/2),Math.floor(screen.availHeight/2));
+		window.moveTo(Math.floor(screen.availWidth/4),Math.floor((screen.availHeight)/4));
+	</script>
+	<input type='hidden' name='realUserName' id='realUserName' value="&[realUserName];">
 
     <table cellspacing="0" cellpadding="0" border="0" width="100%" height="100%">
     <tr>
@@ -144,7 +153,7 @@
         
       <td rowspan="3" valign="top" height="100%">
         <!--iframe id='historyiFrame' frameborder="0" src='chat/&[roomNameCleanOffSymbols];/index.html' marginwidth="1" marginheight="2" style='width: 0px; height: 350; border: 0'></iframe//-->
-		<iframe id='historyiFrame' height="100%" frameborder="0" src='&[roomNameCleanOffSymbols];/index.html' marginwidth="1" marginheight="2" style='width: 0px; height: 100%; border: 0'></iframe>
+		<iframe id='historyiFrame' height="100%" frameborder="1" src='&[roomNameCleanOffSymbols];/index.html' marginwidth="2" marginheight="2" style='width: 0px; height: 100%; border-style: groove; border-width: 1'></iframe>
       </td>
     </tr>
     <tr>
@@ -168,7 +177,7 @@
               </script>
             </td>
             <td>
-              <input align="middle" type='button' value='Send' style="border:2 solid #000;borderColor:#000000;background:#f0f0f0;cursor:hand;height:20;width:100%;height:50%" onclick='sendMessageOnButton()'/>
+              <input align="middle" type='button' value='Send' style="border:2 solid #000;borderColor:#000000;background:#f0f0f0;cursor:hand;height:20;width:100%;height:100%" onclick='sendMessageOnButton()'/>
             </td>
           </tr>
           </table>
