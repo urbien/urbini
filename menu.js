@@ -618,8 +618,14 @@ function popupRowOnClick(e) {
   if (!tr)
     return;
     
-  return popupRowOnClick1(tr);  
- }
+  var ret = popupRowOnClick1(tr);
+  if (ret == false) {
+    e.cancelBubble = true;
+    e.returnValue = false;
+    if (e.preventDefault) e.preventDefault();         
+  }
+  return ret;
+}
  
  function popupRowOnClick1(tr) {
   //alert("popupRowOnClick1: " + tr.id);           
