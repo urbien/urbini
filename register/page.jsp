@@ -17,8 +17,11 @@
 <script type="text/javascript" language="JavaScript">
   function focusOnUserName() {
     var f = document.loginform;
-    if (f != null)
-      f.j_username.focus();
+    if (f != null) {
+      //alert(f.j_username.hidden);
+      if (f.j_username.hidden != null && f.j_username.hidden == "no"))
+         f.j_username.focus();
+    } 
     return true;
   }
   addEvent(window, 'load', function() {setTimeout(focusOnUserName, 0);}, false);
