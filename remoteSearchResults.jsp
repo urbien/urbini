@@ -41,6 +41,7 @@
       <input type="submit" name="submit" class="button1" value="filter"></input>
       <input type="submit" name="clear" class="button1" value="clear"></input>
       <input type="hidden" name="action" value="searchParallel"></input>
+      <input type="hidden" name="site" value=""></input>
       </td></tr></table>   
       <!--br></br-->
       <!--showSetProperties /-->
