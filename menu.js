@@ -1,7 +1,7 @@
 var MenuArray = new Array("textdiv", "textdiv1", "textdiv2", "textdiv3", "textdiv4")
 function menuOpenClose(divName) {
 	for (i = 0; i < MenuArray.length; i++) {
-		if (MenuArray[i] != divName) {
+		if (MenuArray[i] != divName && document.getElementById(MenuArray[i]) != null) {
 			poptext = document.getElementById(MenuArray[i]).style;
 			if (poptext.visibility =="visible") {
 				poptext.visibility = "hidden";
