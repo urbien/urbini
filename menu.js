@@ -25,6 +25,7 @@ var currentPopupRow;
 var currentImgId = null;
 var currentFormName = null;
 var currentResourceUri = null;
+var internalFocus = false;
 
 function menuOpenClose(divName, imgName) {
   /*
@@ -769,6 +770,10 @@ var autoCompleteTimeoutId;
 var keyPressedTime;
 
 function autoCompleteOnFocus(e) {
+  if (internalFocus) {
+    internalFocus = false;
+    return;
+  }
   e = (e) ? e : ((window.event) ? window.event : null);
 
   if (!e) 
@@ -847,21 +852,26 @@ function autoCompleteOnKeyDown(e) {
  *                          and close popup if hit Enter twice.
  */
 function autoComplete(e) {
-  keyPressedTime = new Date().getTime();
   e = (e) ? e : ((window.event) ? window.event : null);
   if (!e) 
     return;
 
-  var characterCode = getKeyCode(e); // code typed by the user
   var target;
+
   target = getTargetElement(e);
+  return autoComplete1(e, target);
+}
+
+function autoComplete1(e, target) {
   if (!target)
     return;
-
+  
+  keyPressedTime = new Date().getTime();
   if (currentDiv)
     menuClose2(currentDiv);
-
+  
   var form = target.form;
+  var characterCode = getKeyCode(e); // code typed by the user  
   switch (characterCode) {
     case 38:  //up arrow  
     case 40:  //down arrow
@@ -911,17 +921,19 @@ function autoComplete(e) {
     onClickPopup1(keyPressedImgId, keyPressedElement.form, keyPressedElement.value);
     return false;            // tell browser not to do submit on 'enter'
   }  
-  else {
-    if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
-    if (fieldSelect)   fieldSelect.value = ''; // value was modified and is not verified yet (i.e. not chose from the list)
-    autoCompleteTimeoutId = setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
-    // make property label visible since overwritten inside the field
-    var filterLabel = document.getElementById(propName1 + "_span");
-    if (filterLabel)
-      filterLabel.style.display = '';
-    clearOtherPopups(currentDiv);
-    return true;
-  }  
+
+  if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
+  if (fieldSelect)   fieldSelect.value = ''; // value was modified and is not verified yet (i.e. not chose from the list)
+  autoCompleteTimeoutId = setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 600);
+  // make property label visible since overwritten inside the field
+  var filterLabel = document.getElementById(propName1 + "_span");
+  if (filterLabel)
+    filterLabel.style.display = '';
+  clearOtherPopups(currentDiv);
+  if (characterCode == 8)
+    return false;
+  else
+    return true; 
 }
 
 function autoCompleteTimeout(invocationTime) {
@@ -979,7 +991,6 @@ function popupRowOnKeyPress(e) {
       if (currentDiv) {
         var form = getFormNode(currentPopupRow);
         var inputField = form.elements[originalProp];
-        //alert(inputField.tagName);
         inputField.focus();
         menuClose2(currentDiv);
       }  
@@ -997,8 +1008,22 @@ function popupRowOnKeyPress(e) {
 	    e.returnValue = false;
 	    if (e.preventDefault) e.preventDefault();   
       return false;
-    default:
-      return true;  
+    default:  
+    case 8:   //backspace
+      if (currentDiv) {
+        var form = getFormNode(currentPopupRow);
+        var inputField = form.elements[originalProp];
+        internalFocus = true;
+        inputField.focus();
+        autoComplete1(e, inputField);
+        if (characterCode == 8) {
+          inputField.value = inputField.value.substring(0, inputField.value.length - 1);
+        }  
+        e.cancelBubble = true;
+        e.returnValue = false;
+        if (e.preventDefault) e.preventDefault();         
+        return false;
+      }
   }     
 
   // down arrow
