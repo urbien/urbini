@@ -23,7 +23,7 @@
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
     <td width="80%" valign="top"><resourceTypeLabel/></td>
-    <td width="20%"><include name="include/commonHeader"/><div align="right"><font face="verdana, sans-serif, arial" color="darkBlue">powered by  <b>HudsonFog</b></font></div></td>
+    <td width="20%"><include name="include/commonHeader"/><div align="right"><a href="http://hudsonfog.com"><font face="verdana, sans-serif, arial" color="darkBlue">powered by  <b>HudsonFog</b></font></a></div></td>
   </tr>
 </table>
 

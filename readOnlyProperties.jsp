@@ -43,8 +43,9 @@
       <tr class="dark">
         <td valign="top" width="5%"><edit html="editProperties.html"/></td>
         <td valign="top" width="5%"><delete/></td>
-        <td width="30%"></td>
-        <td width="60%" valign="top"><subscribe/></td>
+        <td valign="top" width="30%"><b><invite/></b></td>
+        <!--td valign="top" width="%"></td-->
+        <td valign="top" width="60%"><subscribe/></td>
       </tr>
       </table>
       <reloadDocuments/>
