@@ -28,6 +28,7 @@
       <div align="right"><measurement/></div>
       <addNewResource html="mkResource.html"/> 
       <reloadDocuments/>
+      <editResources/>
       <showSetProperties />
     </form>
   <br/><pieChart/>
