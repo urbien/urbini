@@ -6,9 +6,14 @@
 <tr>
   <td valign="top">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
-    <tr  valign="top" class="keywordsearch">
-      <td valign="top" width="70%">
+    <tr><td colspan="3">
       <subscribeNote/>
+    </td></tr>
+    <tr  valign="top" class="keywordsearch"><td colspan="3" class="keywordsearch">
+<form name="searchForm" method="GET" action="searchResult.html" valign="middle">
+      <table width="100%" cellspacing="0" cellpadding="1" border="0">
+      <tr>
+      <td valign="top" width="70%">
       <img src="icons/icon.gif" width="16" height="16" align="middle" pda="T"/>
       <img src="icons/icon_divider.gif" align="middle" border="0" pda="T"/>
 
@@ -48,12 +53,13 @@
       <showHideWindows/>
       </td>
       <td valign="top" align="right" width="15%"><changePassword/><userLogOff html="user-login.html"/></td>
-<form name="searchForm" method="GET" action="searchResult.html" valign="middle">
       <td valign="top" align="right" width="15%"><include name="searchText.jsp"/></td>
+</tr></table>
 </form>
+</td>
     </tr>
     <tr> 
-    <td colspan="3">
+    <td colspan="3"><br/>
       <font color="red"><center><b><errorMessage /></b></center></font>
       <!--siteHistory /-->
       <readOtherSiteInfo />
@@ -72,9 +78,8 @@
       </table>
       <reloadDocuments/>
     <br/><br/>
-<newComment/>
       <comments /> 
-
+      <newComment/>
     </td></tr>
     </table>
 </td>
