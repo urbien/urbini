@@ -205,10 +205,10 @@
 <table width="100%" height="100%" style="border : medium groove #CCCCCC; background : #EDEDED;">
 <tr>
   <td>
-    <table width="100%" height="100%" border="0">
+    <table width="100%" height="100%" border="0" cellpadding="0" cellspacing="4">
       <tr id="userOpsPanel" style="display: none">
         <td colspan="2" height="7%" width="100%">
-		<table border="1" width="100%" height="100%" style="border : thin inset; background: #ffffff">
+		<table width="100%" height="100%" style="border:solid #808080 1px; background: #ffffff">
 		  <tr><td>
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
                   <tr><td align="left">
@@ -231,16 +231,16 @@
         </td>
       </tr>
       <tr>
-        <td rowspan="3" height="90%" width="80%"><iframe src="chatRoom?frame=content&room=&[encodedRoom];" border="0" id="chatContents" name="chatContents" frameborder="0" style="width:100%;height:100%; background: #FFFFFF"></iframe></td>
+        <td rowspan="3" height="75%" width="80%"><iframe src="chatRoom?frame=content&room=&[encodedRoom];" id="chatContents" name="chatContents" frameborder="0" style="width:100%;height:100%; background: #FFFFFF; border:solid #808080 1px"></iframe></td>
       </tr>
       <tr>
-        <td height="10%">
-          <table border="1" height="100%" width="100%" style="border: thin inset; background: #ffffff">
-            <tr><td>
+        <td height="10%" width="20%">
+          <div height="100%" width="100%" style="border:solid #808080 1px; background: #ffffff">
               <table border="0" cellpadding="0" cellspacing="0">
                 <tr><td>
 					<table>
 						<tr><td><img src="images/clock.gif" width="18" height="19" align="top" alt="Chat session is open for..." title="Chat session is open for..."></td><td colspan="2"><form style="border:thin none; border-bottom:none; bottom:0px; height:20px; margin-bottom:0px;" name="formScrollLock"><input type=hidden name="chatStartedAt"><input readonly="true" onfocus="document.getElementById('message').focus();" type=text size=10 style="border: none; background: #ffffff;" name="chatStart"></form></td></tr></td></tr></table>
+                </td></tr>
 	          <tr><td>
                   <table>
                     <tr>
@@ -255,25 +255,24 @@
                   </table>
                 </td></tr>
               </table>
-            </td></tr>
-          </table>
+          </div>
         </td>
       </tr>
       <tr>
-        <td height="68%">
-	    <iframe id='userList' name='userList'  width="100%" height="100%" frameborder="0" style="border : thin outset; background: #ffffff" src="chatRoom?frame=userList&room=&[encodedRoom];"></iframe>
+        <td height="65%" width="20%">
+	    <iframe id='userList' name='userList' width="100%" height="100%" frameborder="0" style="border:solid #808080 1px; background: #ffffff" src="chatRoom?frame=userList&room=&[encodedRoom];"></iframe>
 	  </td>
       </tr>
 </tr>
 <tr>
     <td colspan="2" height="25%">
-		<table width="100%" height="100%" border="0">
+		<table width="100%" height="100%" cellpadding="0" cellspacing="0" border="0">
 			<tr>
 				<form style="border : thin none; border-bottom : none; bottom : 0px; margin-bottom : 0px;" target='post' id='postForm' name='postForm'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
 				<td width="99%" height="100%">
 					  <input type="hidden" value="all" name="nameUser" id="nameUser">
 		              <input type="hidden" value="my" id="aliasUser" name="aliasUser">
-					  <span class=xs><textarea style="width:100%;height:100%"  style="border : thin outset;" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="var kk = navigator.appName == 'Netscape' ? event.which : event.keyCode;if (kk == 10 || (event.ctrlKey && kk==13))this.value = '';"></textarea></span>
+					  <span class=xs><textarea style="width:100%;height:99%; border:solid #808080 1px; margin: 0px" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="var kk = navigator.appName == 'Netscape' ? event.which : event.keyCode;if (kk == 10 || (event.ctrlKey && kk==13))this.value = '';"></textarea></span>
 					  <script language='JavaScript'>
     	    	        document.getElementById('message').value="";
 	    	            document.getElementById('message').focus();
