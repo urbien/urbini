@@ -17,7 +17,7 @@
     <td class="xl" colspan="2">Create user failed try another userid</td>
   </tr>
   <tr>
-    <td align="right">Fog ID:</td>
+    <td align="right">User ID:</td>
     <td><input type="text" name="j_username" size="15"/></td>
   </tr>
   <tr>

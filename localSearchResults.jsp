@@ -13,7 +13,7 @@
   </tr>
 <tr>
   <td colspan="2"><span class="xs"><language/>|<print image="images/printerIcon.gif"/></span></td>
-  <td align="right"><userLogOff html="user-login.html"/></td>
+  <td align="right"><changePassword/><userLogOff html="user-login.html"/></td>
 </tr>
 <tr>
   <td valign="top" width="10%">
