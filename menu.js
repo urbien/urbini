@@ -705,23 +705,7 @@ function popupRowOnClick(e) {
       select = currentResourceUri + ".$." + select;
 
     formField = form.elements[select];
-    if (tr.id.indexOf('$clear') == 0) {
-/*
-      var currentLabel = chosenTextField.value;
-      var initialLabel = getFormFieldInitialValue(chosenTextField);
-      // reset to initial value
-      if (currentLabel != initialLabel) {
-        chosenTextField.value   = initialLabel;
-        if (chosenTextField)
-          chosenTextField.style.backgroundColor = '';          
-        formField.value         = getFormFieldInitialValue(formField);
-        if (formFieldClass)
-          formFieldClass.value  = getFormFieldInitialValue(formFieldClass);
-      }
-      // reset to no-value
-      else {
-*/
-      
+    if (tr.id.indexOf('$clear') == 0) {     
       if (currentFormName != "tablePropertyList")
         chosenTextField.value   = tr.id.substring(6);
       else
@@ -729,7 +713,6 @@ function popupRowOnClick(e) {
       formField.value         = '';
       if (formFieldClass)
         formFieldClass.value  = '';
-// } end reset initial value if/else
       
       // hide property label that is displayed on top of the text field
       if (fieldLabel)
@@ -753,7 +736,8 @@ function popupRowOnClick(e) {
         chosenTextField.style.backgroundColor = '#ffffff';
       formField.value = tr.id; // property value corresponding to a listitem
       // show property label since label inside input field is now overwritten
-      if (fieldLabel)
+      var resourceListEditMode = formField.id == 'horizontalFilter';
+      if (fieldLabel && !resourceListEditMode)
         fieldLabel.style.display = '';     
     }
   }
