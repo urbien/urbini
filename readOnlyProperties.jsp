@@ -56,8 +56,14 @@
           var url = 'chatRoom?title=' + document.title + '&#38;referer=' + escape(window.location);
           window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=no, location=no, toolbar=no, scrollbars=no, resizable=yes');
         }
+		
+	function openInvitationWindow(){
+		var urlInv = 'chatRoom?frame=invitationWindow&#38;resourceURL=' + escape(window.location) + "&#38;title=" + document.title;
+		window.open(urlInv,'Invitation','width=600,height=150,resizable=no,toolbar=no');
+	}
       </script>
       <a href="javascript://" title="Chat Room" onclick="openChatWindow();"><img src="icons/webchat.gif" alt="Chat room for this page" border="0" width="16" height="16" align="middle"/></a>
+      <a href="javascript://" title="Invitation to the chat Room" onclick="openInvitationWindow();"><img src="icons/webchat1.gif" alt="Invitation to the Chat room" border="0" width="16" height="16" align="middle"/></a>
       <showHideWindows/>
       </td>
 
