@@ -14,8 +14,10 @@
     </tr>
     </table>
 
-    <!--br></br-->
+    <br></br>
+<hideBlock>      
     <center><codeBehindThePage allow="admin"/> </center>
+</hideBlock>      
     <br/><br/>
     <include name="requiredFooter"/>
 <hideBlock>      
