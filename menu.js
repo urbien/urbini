@@ -114,12 +114,14 @@ function menuOpen1(div, link) {
 	if (document.getElementById("menudiv_Email") != null &&
       document.getElementById("menudiv_Email").style.display == "inline"
            ) {
-		document.forms["emailForm"].elements["subject"].value = document.title;
+		var e = document.forms["emailForm"];
+		if (e) e.elements["subject"].value = document.title;
 	}
 	if (document.getElementById("menudiv_Schedule") != null &&
       document.getElementById("menudiv_Schedule").style.display == "inline"
            ) {
-		document.forms["scheduleForm"].elements["name"].value = document.title;
+    var s = document.forms["scheduleForm"];
+    if (s) s.elements["name"].value = document.title;
 	}
 }
 
@@ -495,7 +497,7 @@ function popupOnClick(e) {
 
 function clearOtherPopups(div) {
 //alert("div=" + div.id + ", openedPopups.length=" + openedPopups.length)    
-  for (i=0; openedPopups.length; i++) {
+  for (i in openedPopups) {
     var p = openedPopups[i];
     if (p == null)
       continue;
