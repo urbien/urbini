@@ -20,13 +20,12 @@
       <A title="Languages"  href="javascript://" onClick="menuOpenClose('menudiv_language', 'menuicon_language')"><IMG id="menuicon_language" src="images/globus.gif" align="middle" border="0"/></A>
       <img src="icons/icon_divider.gif" align="middle" border="0"></img>
 
-      </pda><span class="xs"><language/><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/></span><pdaToPc image="images/pda.gif"/></td>
+      </pda><span class="xs"><language/><print image="images/printerIcon.gif"/></span><pdaToPc image="images/pda.gif"/></td>
       <td valign="top" align="right" width="30%" class="topBar"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr> 
     <td colspan="2">
-    <!--form name="tablePropertyList" action="FormRedirect"-->
-      <span class="xl"><center><errorMessage /></center></span>
+      <font color="red"><center><b><errorMessage /></b></center></font>
       <subscribe/>
       <!--siteHistory /-->
       <readOtherSiteInfo />
@@ -35,8 +34,6 @@
       <p/>
       <edit html="editProperties.html"/>
       <reloadDocuments/>
-    <!--/form-->
-
     <br/><br/>
       <comments /> 
     </td></tr>
