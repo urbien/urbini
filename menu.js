@@ -1,9 +1,6 @@
 /* 
  * Popup Menu system 
  */ 
-//var MenuArray = new Array();
-
-//var DarkMenuItem  = '#B6BDD2';
 var DarkMenuItem  = '#dee6e6';
 var LightMenuItem = '';  
 
@@ -408,24 +405,30 @@ function onClickPopup1(imgId, form, enteredText, enterFlag) {
   
   // form url based on parameters that were set
   var url;
+  var formAction = form.elements['-$action'].value;
 
   url = "smartPopup?prop=" + encodeURIComponent(propName);
   if (currentFormName == "siteResourceList") {
-    url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.type.value;
+    url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.elements['type'].value;
   }
-  var formAction = form.elements['-$action'].value;
-  var allFields = true;
-  if (formAction != "searchLocal" && formAction != "searchParallel") {
-    if (enterFlag)
-      allFields = false;
-  }
-  else if (currentFormName == "horizontalFilter")
-    allFields = true;
-
-  if (currentFormName != "siteResourceList") {
-     var params = getFormFilters(form, allFields);
-    if (params)
-      url = url + params;
+  else { 
+    if (formAction != "showPropertiesForEdit" && formAction != "mkresource") {
+      var allFields = true;
+      if (formAction != "searchLocal" && formAction != "searchParallel") {
+        if (enterFlag)
+          allFields = false;
+      }
+      else if (currentFormName == "horizontalFilter")
+        allFields = true;
+ 
+      var params = getFormFilters(form, allFields);
+      if (params)
+        url = url + params;
+    }
+    else {
+      url = url + "&type=" + form.elements['type'].value + "&-$action=" + formAction;
+      
+    }  
   }
   url += "&$form=" + currentFormName;
   url += "&" + propName + "_filter=y"; 
