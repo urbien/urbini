@@ -84,7 +84,10 @@
 <table border="0" cellspacing="0" cellpadding="0">
   <tr><td><pieChart/></td></tr>
 </table>
-<form name="horizontalFilter" method="POST" action="FormRedirect">
+<script language="JavaScript">
+  var horizontalFilter_FIELDS = new Array();
+</script>
+<form name="horizontalFilter" method="POST" action="FormRedirect" onsubmit="clearUnModifiedFields(horizontalFilter_FIELDS)">
   <br/>
     <horizontalFilter />
 </form>
