@@ -59,7 +59,7 @@
 </tr>
 
 <tr>
-  <td><br/><nobr><b><font color="darkblue"><text text="Errors, warnings"/></font></b></nobr></td>
+  <td><br/><nobr><b><font color="darkblue"><text text="Errors"/></font></b></nobr></td>
 </tr>
 
 <tr allow="owner" rdftype="http://www.hudsonfog.com/voc/views/parse/ErrorInExcelFile">
