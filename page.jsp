@@ -11,11 +11,12 @@
 
   <link rel="SHORTCUT ICON"                href="icons/icon.ico" />
   <link rel="ICON"                         href="icons/icon.ico" />
-  <link rel="stylesheet"   type="text/css" href="styles/properties.css" />
+
+  <link rel="stylesheet"             type="text/css" href="styles/properties.css" />
 
   <link href="styles/common.css"     type="text/css" rel="stylesheet" />
   <link href="styles/menu.css"       type="text/css" rel="stylesheet" />
-  <link href="styles/tree.css" type="text/css" rel="stylesheet" />
+  <link href="styles/tree.css"       type="text/css" rel="stylesheet" />
   <link href="calendar/calendar.css" type="text/css" rel="stylesheet" /> 
 
   <SCRIPT language="JavaScript" src="menu.js"></SCRIPT>
