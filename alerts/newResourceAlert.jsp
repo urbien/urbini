@@ -11,7 +11,7 @@ The <property name="forum" type="y"/> <property name="forum" href="y"/> has been
 
 Customer Service
 <br/>
-HudsonFog 
+<siteOwner/>
 <br/>
 <b>Powered by</b> <a href="http://hudsonfog.com" target="_blank">HudsonFog</a>
 </div>

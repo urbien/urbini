@@ -73,6 +73,7 @@
 </td>
 </tr></table>
 </center>
-<br/><br/><div align="left"><span class="xs"><hudsonFog />
-</span></div>
+<hideBlock>
+  <br/><br/><div align="left"><span class="xs"><hudsonFog /></span></div>
+</hideBlock>
 </div>

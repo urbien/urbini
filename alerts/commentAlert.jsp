@@ -15,7 +15,7 @@ has been added to the <property name="forum" type="y"/><property name="forum" hr
 <br/><br/>
 Customer Service
 <br/>
-HudsonFog 
+<siteOwner/>
 
 <br/><br/>
 <b>Powered by</b> <a href="http://hudsonfog.com" target="_blank">HudsonFog</a>

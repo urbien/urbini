@@ -4,8 +4,10 @@
 
   <div nonPda="T">
     <include name="include/commonHeader.jsp"/>
+<hideBlock>    
     <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" /></a>
     <changePassword/><userLogOff html="user-login.html"/>
+</hideBlock>    
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td valign="top" width="100%">
