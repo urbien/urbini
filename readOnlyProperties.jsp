@@ -88,9 +88,6 @@
 </td>
 </tr></table>
 </center>
-
-<script language="JavaScript" type="text/JavaScript" src="tooltips/wz_tooltip.js"></script>
-
 <br/><br/><div align="left"><span class="xs"><hudsonFog />
 </span></div>
 </div>
