@@ -35,7 +35,7 @@
         <br/>
         <addNewResource html="mkResource.html"/> 
         <delete/> 
-        <edit html="localSearchResults.html"/>
+        <edit html="localSearchResults.html"/><br/>
         <reloadDocuments/>
         <createResources/><br/>
         <setAsHomePage />
