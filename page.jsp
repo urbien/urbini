@@ -4,15 +4,7 @@
   </head>
 
   <div nonPda="T">
-    <table width="100%" border="0" cellpadding="0" cellspacing="0">
-      <tr>
-        <td width="80%" valign="top"><resourceTypeLabel/></td>
-        <td width="20%"><include name="include/commonHeader"/>
-          <div align="right"><a href="http://hudsonfog.com"><font face="verdana, sans-serif, arial" color="darkBlue"><small>powered by  <b>HudsonFog</b></small></font></a></div>
-        </td>
-      </tr>
-    </table>
-
+    <include name="include/commonHeader.jsp"/>
     <!--include name="searchText.jsp"/-->
  
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
