@@ -1,6 +1,6 @@
 <div>
 <center>
-  <form name="loginform" action="j_security_check" method="POST">
+  <form name="loginform" action="j_register" method="POST">
     <table width="430" align="center" bgcolor="#cbcbcb" cellpadding="2" cellspacing="0">
       <tr> 
         <td> 
@@ -25,7 +25,7 @@
             </tr>
             <tr> 
               <td align="center" rowspan="3" width="40%"><img src="images/keys.gif" border="0" /></td>
-              <td><text text="User name:"/><br/>
+              <td><errMsg/><text text="User name:"/><br/>
                 <input type="Text" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px" name="j_username" size="30" maxlength="50"/>
               </td>
             </tr>
