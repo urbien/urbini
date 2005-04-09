@@ -7,14 +7,14 @@
 .popMenuTitle {
 	POSITION: relative; BACKGROUND-COLOR: #3366cc
 }
-.cswmItem {
-	PADDING-RIGHT: 10px; PADDING-LEFT: 4px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; CURSOR: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none
+.menuItem {
+	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; CURSOR: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: no-wrap;
 }
-.cswmItemGreyedOut { // wanted to use CSS2's COLOR: GrayText, but IE6 does not support it
-	PADDING-RIGHT: 10px; PADDING-LEFT: 4px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; CURSOR: hand; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none
+.menuItemGreyedOut { // wanted to use CSS2's COLOR: GrayText, but IE6 does not support it
+	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; CURSOR: hand; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: no-wrap;
 }
-.cswmItemSubtitle {
-	PADDING-RIGHT: 10px; PADDING-LEFT: 4px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none
+.menuItemSubtitle {
+	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: no-wrap;
 }
 .formMenuInput {
 	FONT-WEIGHT: normal; FONT-SIZE: 11px; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none
@@ -25,9 +25,9 @@
 .langCurrent {
 	FONT-WEIGHT: normal; FONT-SIZE: 11px; COLOR: red; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif
 }
-.cswmExpand {
+.menuExpand {
 	CURSOR: hand
 }
-.cswmExpandSubtitle {
+.menuExpandSubtitle {
 	CURSOR: default
 }
