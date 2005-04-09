@@ -30,6 +30,7 @@ function getTargetElement(evt) {
 Popup.currentDivs          = new Array(); // distinct divs that can be open at the same time (since they have different canvases)
 Popup.popups               = new Array(); // pool of all popups with different divId(s)
 Popup.openTimeoutId        = null; // timeout after which we need to open the delayed popup
+Popup.lastClickTime        = null; // last time user clicked on anything
 Popup.lastOpenTime         = null; // moment when last popup was opened
 Popup.delayedPopupOpenTime = null; // moment when delayed popup was requested
 Popup.tooltipPopup         = null;
@@ -43,6 +44,9 @@ if (document.layers) {
   Popup.VISIBLE = 'show';
 }
 
+/**
+ * returns iframe that serves as a canvas for this popup (overlaying the underlying form fields)
+ */
 Popup.getCanvas = function (frameRef) {
   var defaultCanvas = 'popupIframe';
   var iframe;
@@ -54,6 +58,25 @@ Popup.getCanvas = function (frameRef) {
       throw new Error("document structure invalid: iframe '" + defaultCanvas + "' is missing");
   }
   return iframe;
+}
+
+Popup.allowTooltip = function (target) {
+  var noOpenPopups = true;
+  for (var i in Popup.popups) {
+    var popup = Popup.popups[i];
+    if (popup.isOpen() &&         // if popup is already open then we need only tooltips in it (and not the tooltips on areas outside popup)
+        !popup.isTooltip()) {     //    but if open popup is a tooltip - ignore it
+      noOpenPopups = false;
+      if (popup.contains(target))
+        return true;
+      else
+        continue;
+    }
+  }
+  if (noOpenPopups) // if no open popups - allow tooltip
+    return true;
+  else
+    return false;
 }
 
 /**
@@ -72,8 +95,10 @@ Popup.getPopup = function (divId) {
  * Open popup after delay
  */
 Popup.openAfterDelay = function (divId, offsetX, offsetY) {
-  if (Popup.lastOpenTime && (Popup.lastOpenTime > Popup.delayedPopupOpenTime)) {
-    //alert("already opened another popup '" + (Popup.lastOpenTime - Popup.delayedPopupOpenTime) + "' millis ago");
+  if ( (Popup.lastOpenTime   && (Popup.lastOpenTime  > Popup.delayedPopupOpenTime)) ||
+       (Popup.lastClickTime  && (Popup.lastClickTime > Popup.delayedPopupOpenTime)) ||
+       (keyPressedTime       && (keyPressedTime      > Popup.delayedPopupOpenTime))
+      ) {
     return; // do not open delayed popup if other popup was already opened during the timeout
   }
   var popup = Popup.getPopup(divId);
@@ -146,7 +171,7 @@ Popup.load = function (divId) {
   var div = popup.div;
 
   var tables = div.getElementsByTagName('table');
-  if (!tables || !tables[1]) {
+  if (popup.firstRow() == null) {
     alert("Warning: server did not return listbox data - check connection to server");
     return;
   }
@@ -185,14 +210,16 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.hotspot        = hotspotRef; // hotspot that triggered this popup
   this.contents       = contents;
   this.resourceUri    = null;       // popup was activated for one of the properties of the Resource in resource list (RL). resourceUri is this resource's URI.
-  this.currentRow     = 0;          // currently selected row in this popup
-  this.originalProp   = null;       // Resource property for which popup was activated
-  this.propName       = null;       //   same, but encoded - has extra info such as HTML form name, interface name, etc.
-  this.formName       = null;       // name of the HTML form which element generated last event in the popup
+
+  //this.originalProp   = null;       // Resource property for which popup was activated
+  //this.propName       = null;       //   same, but encoded - has extra info such as HTML form name, interface name, etc.
+  //this.formName       = null;       // name of the HTML form which element generated last event in the popup
   this.closeTimeoutId = null;       // timeout after which we need to close this popup
   this.offsetX        = null;       // position at which we have opened last time
   this.offsetY        = null;       // ...
   this.popupClosed    = true;
+  this.items          = new Array(); // items of this popup (i.e. menu rows)
+  this.currentRow     = null;       // currently selected row in this popup
 
   var self = this;
 
@@ -226,12 +253,25 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     Popup.currentDivs[self.iframe.id] = null;
   }
 
+  this.contains = function (target) {
+    var nodes = self.div.childNodes;
+    for (var i in nodes) {
+      if (nodes[i] == target)
+        return true;
+    }
+  }
+
+  this.isTooltip = function () {
+    return contents != null;
+  }
+
   this.open1 = function (offsetX, offsetY) {
     var hotspotDim = getElementCoords(self.hotspot);
     if (Popup.tooltipPopup) {
       Popup.tooltipPopup.close();
       Popup.tooltipPopup = null;
     }
+
     var currentDiv = self.getCurrentDiv();
     if (currentDiv) {
       var curDivId = currentDiv.id;
@@ -260,11 +300,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (self.contents)
       self.setInnerHtml(self.contents)
     self.setVisible(offsetX, offsetY);
-    popupClosed = false;
-    deselectRow(currentPopupRow);
+    self.popupClosed = false;
+    self.deselectRow();
 
     self.setCurrentDiv();
-    currentPopupRow = firstRow(self.div);
     self.interceptEvents();
 
     // make popup active for key input
@@ -272,18 +311,25 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       try { self.div.focus(); } catch(e) {};
     }
     else {                // hack for Netscape (using an empty anchor element to focus on)
-      var elm = document.getElementById(self.div.id + "_$focus_link");
-      if (elm) {
-        if (elm.focus) {
-          try { elm.focus(); } catch(e) {};
+      var as = self.div.getElementsByTagName('a');
+
+      if (as && as[0]) {
+        if (as[0].focus) {
+          try { as[0].focus(); } catch(e) {};
         }
       }
     }
-    if (contents)
+    if (contents) {
       Popup.tooltipPopup = self;
+      self.delayedClose(20000);
+    }
     else
       Popup.tooltipPopup = null;
     return self;
+  }
+
+  this.isOpen = function() {
+    return !(self.popupClosed);
   }
 
   this.moveTo = function (x, y) {
@@ -314,10 +360,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Open delayed popup: initialize a delayed popup and quit
    */
   this.openDelayed = function (offsetX, offsetY, delay) {
-
     Popup.lastOpenTime = new Date().getTime();
     Popup.delayedPopupOpenTime = new Date().getTime();
-    //alert("delaying '" + divId + "' by timeout: " + timeout);
 
     if (Popup.openTimeoutId) {                  // clear any prior delayed popup open
       clearTimeout(Popup.openTimeoutId);
@@ -432,9 +476,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    *  close popup uncoditionally and immediately with no regard to mouse position
    */
   this.close = function () {
-    //if (popupClosed)
+    //if (self.popupClosed)
     //  return;
-    popupClosed = true;
+    self.popupClosed = true;
     var div      = self.div;
     var divStyle = div.style;
     if (divStyle.display == "inline") {
@@ -464,17 +508,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var hotspot = self.hotspot;
     //var isMenu  = div.id.indexOf('menudiv_') == 0 ? true false;
 
-    addEvent(div,     'mouseover', this.popupOnMouseOver, false);
-    addEvent(div,     'mouseout',  this.popupOnMouseOut,  false);
-    addEvent(hotspot, 'mouseout',  this.popupOnMouseOut,  false);
+    addEvent(div,     'mouseover', self.popupOnMouseOver, false);
+    addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
+    addEvent(hotspot, 'mouseout',  self.popupOnMouseOut,  false);
 
-    var tables = div.getElementsByTagName('table');
-    if (!tables || !tables[1]) {
-      return;
-    }
-    var table = tables[1];
-    if (!table)
-      return;
+    var firstRow = self.firstRow();
+    if (firstRow == null)
+      return; // incorrect popup structure
 
     //popup contains rows that can be selected
     if (document.all) // IE - works only on keydown
@@ -482,13 +522,15 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     else              // Mozilla - only keypress allows to call e.preventDefault() to suppress browser's scrolling in popup
       addEvent(div,  'keypress',  self.popupRowOnKeyPress,  false);
 
-    var trs = table.getElementsByTagName("tr");
-    var k=0;
-    for (i=0;i<trs.length; i++) {
-      var elem = trs[i];
-      addEvent(elem, 'click',   self.popupRowOnClick,     false);
+    var elem = firstRow;
+    var n = self.rowCount();
+    for (var i=0; i<n; i++) {
+      var popupItem = new PopupItem(elem, i);
+      self.items[popupItem.id];
+      addEvent(elem, 'click',     self.popupRowOnClick,     false);
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
       addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
+      elem = self.nextRow();
     }
   }
 
@@ -529,7 +571,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     target = getTargetElement(e);
     if (!target)
       return;
-
+//window.status("mouseout: " + target.id);
     self.delayedClose(600);
     return true;
   }
@@ -546,7 +588,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var currentDiv = self.getCurrentDiv();
     var characterCode = getKeyCode(e); // code typed by the user
     var target;
-    var tr = currentPopupRow;
+    var tr = self.currentRow;
     if (!tr)
       return;
 
@@ -582,7 +624,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       default:
       case 8:   //backspace
         if (currentDiv) {
-          //var form = getFormNode(currentPopupRow);
+          //var form = getFormNode(self.currentRow);
           var form = document.forms[currentFormName];
           if (form) {
             var inputField = form.elements[originalProp];
@@ -601,20 +643,17 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         return false;
     }
 
-    // down arrow
-    if (characterCode == 40) {
-      deselectRow(currentPopupRow);
-      var nextTr = nextRow(tr);
-      currentPopupRow = nextTr;
-      selectRow(currentPopupRow);
+    if (characterCode == 40) {       // down arrow
+      self.deselectRow();
+      self.nextRow();
+      self.selectRow();
     }
-    // up arrow
-    else if (characterCode == 38) {
-      deselectRow(currentPopupRow);
-      prevTr = prevRow(tr);
-      currentPopupRow = prevTr;
-      selectRow(currentPopupRow);
+    else if (characterCode == 38) {  // up arrow
+      self.deselectRow();
+      self.prevRow();
+      self.selectRow();
     }
+
     e.cancelBubble = true;
     e.returnValue = false;
     if (e.preventDefault) e.preventDefault();
@@ -644,8 +683,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.popupRowOnClick1 = function (tr, target) {
+    Popup.lastClickTime = new Date().getTime();
     var currentDiv = self.getCurrentDiv();
-    if (tr.previousSibling == null) // skip clicks on menu header (it is a first tr - has no prev sibling)
+    if (self.isHeaderRow(tr)) // skip clicks on menu header
       return;
 
     if (tr.id == '$noValue')
@@ -710,8 +750,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     // row clicked corresponds to a property with range 'interface', meaning that
     // we need to open a list of classes that implement this interface
-    if (originalProp.indexOf("_class") != -1) {
-      var img = tr.getElementsByTagName("img")[0];
+    if (originalProp.indexOf('_class') != -1) {
+      var img = tr.getElementsByTagName('img')[0];
       var imgId  = prop + "_class_img";
       if (img) {
         document.getElementById(imgId).src   = img.src;
@@ -861,18 +901,17 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     target = getTargetElement(e);
     tr = getTrNode(target);
 
-    if (!tr) {
-      return;
-    }
-    if (isFirstRow(tr))
+    if (!tr)
       return;
 
-    if (currentPopupRow)
-      deselectRow(currentPopupRow);
+    if (self.isHeaderRow(tr))
+      return;
+
+    self.deselectRow();
 
     // darken new current row
-    currentPopupRow = tr;
-    selectRow(currentPopupRow);
+    self.currentRow = tr;
+    self.selectRow();
     return true;
   }
 
@@ -890,17 +929,182 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (!tr)
       return;
 
-    var tds = tr.getElementsByTagName("td");
+    self.deselectRow();
+    self.currentRow = null;
+    /*
+    var tds = tr.getElementsByTagName('td');
     for (i=0; i<tds.length; i++) {
       var elem = tds[i];
       elem.style.backgroundColor='';
     }
-
+    */
     return true;
   }
 
+  this.deselectRow = function () {
+    if (self.currentRow == null)
+      return;
 
+    if (self.currentRow.tagName && self.currentRow.tagName.toLowerCase() == 'tr') {
+      var tds = self.currentRow.getElementsByTagName('td');
+      for (i=0; i<tds.length; i++) {
+        var elem = tds[i];
+        elem.style.backgroundColor = Popup.LightMenuItem;
+      }
+    }
+  }
 
+  this.selectRow = function () {
+    if (self.currentRow == null)
+      return;
+
+    if (self.currentRow.id == '$noValue')
+      return;
+
+    if (self.currentRow.tagName && self.currentRow.tagName.toLowerCase() == 'tr') {
+      var tds = self.currentRow.getElementsByTagName("td");
+      for (i=0; i<tds.length; i++) {
+        var elem = tds[i];
+        //alert(elem.id);
+        elem.style.backgroundColor = Popup.DarkMenuItem;
+      }
+    }
+  }
+
+  this.nextRow = function () {
+    if (self.currentRow == null) {
+      self.currentRow = self.firstRow();
+      //self.selectRow();
+      return self.currentRow;
+    }
+
+    var next = self.currentRow.nextSibling;
+
+    if (next == null) {
+      //self.deselectRow();
+      self.currentRow = self.firstRow();
+      //self.selectRow();
+      return self.currentRow;
+    }
+
+    if (next.tagName && next.tagName.toUpperCase() == 'TR' && next.id != 'divider') {
+      //self.deselectRow();
+      self.currentRow = next;
+      //self.selectRow();
+      return next;
+    }
+    else {
+      self.currentRow = next;
+      return self.nextRow();
+    }
+  }
+
+  this.prevRow = function () {
+    if (self.currentRow == null) {
+      self.currentRow = self.firstRow();
+      return self.prevRow();
+    }
+
+    var prev = self.currentRow.previousSibling;
+
+    if (prev == null || self.isHeaderRow(prev)) {
+      //self.deselectRow();
+      self.currentRow = self.lastRow();
+      //self.selectRow();
+      return self.currentRow;
+    }
+
+    if (prev.tagName && prev.tagName.toUpperCase() == 'TR' && prev.id != 'divider') {
+      //self.deselectRow();
+      self.currentRow = prev;
+      //self.selectRow();
+      return prev;
+    }
+    else {
+      self.currentRow = prev;
+      return self.prevRow();
+    }
+  }
+
+  this.isHeaderRow = function (tr) {
+    //if (tr && tr.id == '$classLabel')
+    if (tr && (tr.previousSibling == null || tr.id == '$classLabel'))
+      return true;
+    else
+      return false;
+  }
+
+  /**
+   * return first row in popup
+   */
+  this.firstRow = function() {
+    var tables = self.div.getElementsByTagName('table');
+    if (!tables || !tables[1])
+      return null;
+
+    var trs = tables[1].getElementsByTagName('tr');
+    if (trs == null)
+      return null;
+
+    for (i=0; i<trs.length; i++) {
+      if (!self.isHeaderRow(trs[i]))
+        break;
+    }
+    return trs[i];
+  }
+
+  /**
+   * return last row in popup
+   */
+  this.lastRow = function() {
+    var tables = self.div.getElementsByTagName('table');
+    if (!tables || !tables[1])
+      return null;
+
+    var trs = tables[1].getElementsByTagName('tr');
+    if (trs == null)
+      return null;
+
+    return trs[trs.length - 1];
+  }
+
+  /**
+   * return number of rows in popup
+   */
+  this.rowCount = function() {
+    var tables = self.div.getElementsByTagName('table');
+    if (!tables || !tables[1])
+      return null;
+
+    var trs = tables[1].getElementsByTagName('tr');
+    if (trs == null)
+      return null;
+    return trs.length;
+  }
+
+  /**
+   * Returns popup item by its name. Usually popup item corresponds to a row in popup.
+   */
+  this.getPopupItem = function(itemName) {
+    return self.items[itemName];
+  }
+
+}
+
+/**
+ * Individual element in popup, usually represented by one row.
+ */
+function PopupItem(element, seq) {
+  this.id        = element.id; // item id
+  this.seq       = seq;        // sequence number of this item from the top of popup
+
+  this.checked   = false;      // item may be checked (true) or not (false)
+  this.selected  = false;      // item may be currently selected (highlighted) or not
+  this.onChosen  = null;       // event handler that receives control when user clicked on this popup element or pressed Enter
+  this.onOver    = null;       // event handler that receives control when this popup element is selected (highlighted)
+  this.onOut     = null;       // event handler that receives control when this popup element is unselected (becomes passive)
+  this.onCheck   = null;       // event handler that receives control when item is checked
+  this.onUncheck = null;       // event handler that receives control when item is unchecked
 }
 
 var originalProp = null;
@@ -909,7 +1113,6 @@ var loadedPopups = new Array();
 var div2frame = new Array();
 var currentDiv = null;
 var closeTimeoutId;
-var currentPopupRow;
 var currentImgId = null;
 var currentFormName = null;
 var currentResourceUri = null;
@@ -1422,79 +1625,6 @@ function autoCompleteOnKeyDown(e) {
 }
 
 
-function deselectRow(tr) {
-  if (!tr)
-    return;
-  var tds = tr.getElementsByTagName("td");
-  for (i=0; i<tds.length; i++) {
-    var elem = tds[i];
-    elem.style.backgroundColor = Popup.LightMenuItem;
-  }
-}
-
-function selectRow(tr) {
-  if (!tr)
-    return;
-
-  if (tr.id == '$noValue')
-    return;
-  var tds = tr.getElementsByTagName("td");
-  for (i=0; i<tds.length; i++) {
-    var elem = tds[i];
-    elem.style.backgroundColor = Popup.DarkMenuItem;
-  }
-}
-
-function nextRow(tr) {
-  var next = tr.nextSibling;
-
-  if (next == null) {
-    var table = tr.parentNode;
-    var trs = table.getElementsByTagName("tr");
-    return trs[1]; // skip [0] tr since it is a header
-  }
-
-  if (next.tagName && next.tagName.toUpperCase() == 'TR')
-    return next;
-  else
-    return nextRow(next);
-}
-
-function prevRow(tr) {
-  var prev = tr.previousSibling;
-
-  if (prev == null || isFirstRow(prev)) {
-    var table = tr.parentNode;
-    var trs = table.getElementsByTagName("tr");
-    return trs[trs.length - 1];
-  }
-
-  if (prev.tagName && prev.tagName.toUpperCase() == 'TR')
-    return prev;
-  else
-    return prevRow(prev);
-}
-
-function isFirstRow(tr) {
-  if (tr && tr.id == '$classLabel')
-    return true;
-  else
-    return false;
-}
-
-function firstRow(div) {
-  var tables = div.getElementsByTagName("table");
-  var trs;
-  for (i=0; i<tables.length; i++) {
-    trs = tables[i].getElementsByTagName("tr");
-    if (trs && isFirstRow(trs[0]))
-      break;
-  }
-  if (!trs)
-    return;
-  return trs[1];
-}
-
 function textAreaOnFocus(e) {
   e = (e) ? e : ((window.event) ? window.event : null);
 
@@ -1861,7 +1991,7 @@ function replaceTooltips0(elements) {
   for (i=0;i<llen; i++) {
     var elem = elements[i];
     if (elem.attributes['title']) {
-  //    addEvent(elem, 'mouseout',    tooltipMouseOut,    false);
+      //addEvent(elem, 'mouseout',    tooltipMouseOut,    false);
       addEvent(elem, 'mouseover',   tooltipMouseOver,   false); // method that will create a popup specific for this hotspot
     }
   }
@@ -1874,8 +2004,8 @@ function replaceAllTooltips() {
   replaceTooltips0(elements);
   elements = document.getElementsByTagName('span');
   replaceTooltips0(elements);
-  //elements = document.getElementsByTagName('a');
-  //replaceTooltips0(elements);
+  elements = document.getElementsByTagName('a');
+  replaceTooltips0(elements);
   elements = document.getElementsByTagName('input');
   replaceTooltips0(elements);
   elements = document.getElementsByTagName('tt');
@@ -1889,28 +2019,34 @@ function replaceTooltips(divRef) {
 }
 
 function tooltipMouseOver0(target) {
+  if (!Popup.allowTooltip(target)) {
+    return false;
+  }
   var tooltip = target.getAttribute('tooltip'); // using getAttrbute() - as workaround for IE5.5 custom attibutes bug
   var tooltipText;
   if (!tooltip) {
     tooltip = target.getAttribute('title');
     if (tooltip) {
       tooltipText = tooltip;
+      window.status = tooltipText;
       if (tooltipText == '')
         return true;
       window.status = tooltipText;
+
       // merge tooltip on IMG with tooltip on its parent A tag
       var parentA = target.parentNode;
       if (parentA && parentA.tagName.toUpperCase() == 'A') {
         var linkTooltip = parentA.getAttribute('title');
         if (linkTooltip) {
           var linkTooltipText = linkTooltip;
-          if (linkTooltipText && linkTooltipText != '') {
+          if (linkTooltipText && linkTooltipText != '' && tooltipText != linkTooltipText) {
             tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';
           }
           parentA.title = '';
         }
 
       }
+
       //tooltipText = "<table border=0 style='display: block' cellpadding=0 cellspacing=0><tr><td>" + tooltipText + "</td></tr></table>";
       //tooltipText = "<span id='tooltipspan' style='display:table-cell'>" + tooltipText + "</span>";
       target.setAttribute('tooltip', tooltipText);
@@ -1951,6 +2087,161 @@ function tooltipMouseOver(e) {
   else
     return true;
 }
+/*
+function tooltipMouseOut(e) {
+  var p;
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e)
+    return;
+
+  target = getTargetElement(e);
+
+var tooltipDiv = document.getElementById('system_tooltip');
+if (!tooltipDiv)
+  return true;
+
+}
+*/
+//************************************* intercept all clicks ***********************************
+function interceptLinkClicks() {
+  //addEvent(document, 'keydown', onKeyDown, false);
+  //addEvent(document, 'keyup',   onKeyUp,   false);
+
+  var llen = document.links.length;
+  for (i=0;i<llen; i++) {
+    addEvent(document.links[i], 'click',   onClick,   false);
+  }
+}
+
+/**
+ * Registered to receive control on a click on any link.
+ * Adds control key modifier as param to url, e.g. _ctrlKey=y
+ */
+function onClick(e) {
+  detectClick = true;
+  var url;
+  var p;
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e)
+    return;
+
+  target = getTargetElement(e);
+  url = getTargetAnchor(e);
+  if (!url)
+    return;
+
+  if     (e.ctrlKey) {
+    p = '_ctrlKey=y';
+  }
+  else if(e.shiftKey) {
+    p = '_shiftKey=y';
+  }
+  else if(e.altKey) {
+    p = '_altKey=y';
+    var frameId = 'bottomFrame';
+    var bottomFrame = frames[frameId];
+    // show content in a second pane
+    //
+    if (bottomFrame) {
+      removeModifier(url, '_shiftKey=y');
+      removeModifier(url, '_ctrlKey=y');
+      removeModifier(url, '_altKey=y');
+      urlStr = url.href;
+      var finalUrl = urlStr;
+      var idx = urlStr.indexOf('.html');
+      if (idx != -1) {
+        var idx1 = urlStr.lastIndexOf('/', idx);
+        finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
+      }
+
+      bottomFrame.location.replace(finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y");
+      e.cancelBubble = true;
+      e.returnValue = false;
+      if (e.preventDefault)  e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+      return false;
+    }
+  }
+
+  if (!p)
+    return true;
+
+  if (!url) {
+    alert("onClick(): can't process control key modifier since event currentTarget is null: " + url);
+    return;
+  }
+  else if(!url.href || url.href == null) {
+    alert("onClick(): can't process control key modifier since event currentTarget.href is null: " + url.href);
+    return;
+  }
+  removeModifier(url, '_shiftKey=y');
+  removeModifier(url, '_ctrlKey=y');
+  removeModifier(url, '_altKey=y');
+  addUrlParam(url, p, null);
+  document.location.href = url.href;
+  e.cancelBubble = true;
+  e.returnValue = false;
+  if (e.preventDefault)  e.preventDefault();
+  if (e.stopPropagation) e.stopPropagation();
+  return false;
+}
+
+function addUrlParam(url, param, target) {
+  if (!url)
+    return;
+  if (!url.href)
+    return;
+  if (url.href.indexOf('?') == -1) {
+    url.href = url.href + '?' + param;
+    if (target)
+      url.target = target;
+  }
+  else {
+    url.href = url.href + '&' + param;
+    if (target)
+      url.target = target;
+  }
+}
+
+// cross-browser - getCurrentTarget
+function getTargetAnchor(evt) {
+  var elem;
+  if (evt.target) {
+    if (evt.currentTarget && (evt.currentTarget != evt.target))
+      elem = evt.currentTarget;
+    else
+      elem = evt.target;
+  }
+  else {
+    elem = evt.srcElement;
+    elem = getANode(elem);
+
+  }
+  return elem;
+}
+
+function getANode(elem) {
+  var e;
+
+  if (elem.tagName.toUpperCase() == 'A') {
+    if (elem.href)
+      return elem;
+    else
+      return null;
+  }
+
+  e = elem.parentNode;
+  if (e)
+    return getANode(e);
+  else
+    return null;
+}
+
+//********************* helper functions ********************************
 
 /**
  * the source of this function and getScrollXY is: http://www.howtocreate.co.uk/tutorials/index.php?tut=0&part=16
@@ -2110,5 +2401,25 @@ function findPosY(obj) {
   else if (obj.y)
     curtop += obj.y;
   return curtop;
+}
+
+/**
+ * function that adds a title (taken from page HEAD) of current page to a url that is passed as a parameter
+ */
+function addPageTitleToUrl(tr) {
+  var title = document.title;
+  if (!title)
+    return;
+
+  var aa = tr.getElementsByTagName("a");
+  if (!aa)
+    return;
+  a = aa[0];
+
+  var idx = a.href.indexOf('?');
+  if (idx != -1)
+    a.href = a.href + "&title=" + encodeURIComponent(title) + "#";  // add hash to avoid page reloading
+  else
+    a.href = a.href + "?title=" + encodeURIComponent(title) + "#";
 }
 

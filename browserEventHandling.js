@@ -44,153 +44,6 @@
       }
     }
 
-    function interceptLinkClicks() {
-      //addEvent(document, 'keydown', onKeyDown, false);
-      //addEvent(document, 'keyup',   onKeyUp,   false);
-
-      var llen = document.links.length;
-      for (i=0;i<llen; i++) {
-        addEvent(document.links[i], 'click',   onClick,   false);
-      }
-    }
-
-    var detectClick;
-    function onKeyDown(e) {
-      detectClick = false;
-    }
-    function onKeyUp(e) {
-      if (detectClick) {
-        return false;
-      }
-    }
-
-    /**
-     * Registered to receive control on a click on any link.
-     * Adds control key modifier as param to url, e.g. _ctrlKey=y
-     */
-    function onClick(e) {
-      detectClick = true;
-      var url;
-      var p;
-      var target;
-
-      e = (e) ? e : ((window.event) ? window.event : null);
-      if (!e)
-        return;
-
-      target = getTargetElement(e);
-      url = getTargetAnchor(e);
-      if (!url)
-        return;
-
-      if     (e.ctrlKey) {
-        p = '_ctrlKey=y';
-      }
-      else if(e.shiftKey) {
-        p = '_shiftKey=y';
-      }
-      else if(e.altKey) {
-        p = '_altKey=y';
-        var frameId = 'bottomFrame';
-        var bottomFrame = frames[frameId];
-        // show content in a second pane
-        //
-        if (bottomFrame) {
-          removeModifier(url, '_shiftKey=y');
-          removeModifier(url, '_ctrlKey=y');
-          removeModifier(url, '_altKey=y');
-          urlStr = url.href;
-          var finalUrl = urlStr;
-          var idx = urlStr.indexOf('.html');
-          if (idx != -1) {
-            var idx1 = urlStr.lastIndexOf('/', idx);
-            finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
-          }
-
-          bottomFrame.location.replace(finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y");
-          e.cancelBubble = true;
-          e.returnValue = false;
-          if (e.preventDefault)  e.preventDefault();
-          if (e.stopPropagation) e.stopPropagation();
-          return false;
-        }
-      }
-
-      if (!p)
-        return true;
-
-      if (!url) {
-        alert("onClick(): can't process control key modifier since event currentTarget is null: " + url);
-        return;
-      }
-      else if(!url.href || url.href == null) {
-        alert("onClick(): can't process control key modifier since event currentTarget.href is null: " + url.href);
-        return;
-      }
-      removeModifier(url, '_shiftKey=y');
-      removeModifier(url, '_ctrlKey=y');
-      removeModifier(url, '_altKey=y');
-      addUrlParam(url, p, null);
-      document.location.href = url.href;
-      e.cancelBubble = true;
-      e.returnValue = false;
-      if (e.preventDefault)  e.preventDefault();
-      if (e.stopPropagation) e.stopPropagation();
-      return false;
-    }
-
-    function addUrlParam(url, param, target) {
-      if (!url)
-        return;
-      if (!url.href)
-        return;
-      if (url.href.indexOf('?') == -1) {
-        url.href = url.href + '?' + param;
-        if (target)
-          url.target = target;
-      }
-      else {
-        url.href = url.href + '&' + param;
-        if (target)
-          url.target = target;
-      }
-    }
-
-    // cross-browser - getCurrentTarget
-    function getTargetAnchor(evt) {
-      var elem;
-      if (evt.target) {
-        if (evt.currentTarget && (evt.currentTarget != evt.target))
-          elem = evt.currentTarget;
-        else
-          elem = evt.target;
-      }
-      else {
-        elem = evt.srcElement;
-        elem = getANode(elem);
-
-      }
-      return elem;
-    }
-
-    function getANode(elem) {
-      var e;
-
-      if (elem.tagName.toUpperCase() == 'A') {
-        if (elem.href)
-          return elem;
-        else
-          return null;
-      }
-
-      e = elem.parentNode;
-      if (e)
-        return getANode(e);
-      else
-        return null;
-    }
-
-
     // returns true if the field was modified since the page load
     function wasFormFieldModified(elem) {
       var initialValue = getFormFieldInitialValue(elem);
@@ -377,8 +230,12 @@
       var listboxFrame = frames["popupFrame"];
       popupFrameLoaded = false;
       listboxFrame.location.replace(url); // load data from server into iframe
-      tooltipMouseOut0(target);           // remove and ...
-      tooltipMouseOver0(target);          // repaint the tooltip on this boolean icon
+      if (Popup.tooltipPopup) {
+        Popup.tooltipPopup.close();
+        Popup.tooltipPopup = null;
+      }
+      //tooltipMouseOut0(target);           // remove and ...
+      //tooltipMouseOver0(target);          // repaint the tooltip on this boolean icon
     }
 
     var formInitialValues;
