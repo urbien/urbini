@@ -17,6 +17,18 @@ var imagesPath;
 var includesPath;
 var cssFile;
 
+function addEvent(obj, evType, fn, useCapture) {
+  if (obj.addEventListener) { // NS
+   obj.addEventListener(evType, fn, useCapture);
+   return true;
+ } else if (obj.attachEvent) { // IE
+     var r = obj.attachEvent("on" + evType, fn);
+     return r;
+   } else {
+       alert("You need to upgrade to a newer browser. Error: 'handler could not be attached'");
+     }
+}
+
 function initRTE(imgPath, incPath, css) {
 	//set browser vars
 	var ua = navigator.userAgent.toLowerCase();
@@ -125,7 +137,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 	}
 
 	if (buttons == true) {
-		document.writeln('<table class="rteBack" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="' + tablewidth + '">');
+		document.writeln('<table class="rteBack" style="display:none" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">');
 		document.writeln('	<tr style="white-space : nowrap; word-spacing : 0px; 	white-space : nowrap;">');
 		document.writeln('		<td width="100%" cellpadding=0 cellspacing=0 style="" valign="top">');
 		document.writeln('			<select style="width:75px;vertical-align : top;" id="formatblock_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">');
@@ -214,9 +226,11 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 //		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'redo.gif" width="25" height="24" alt="Redo" title="Redo" onClick="FormatText(\'' + rte + '\', \'redo\')"></td>');
 		//document.writeln('		<td width="100%"></td>');
 		document.writeln('	</tr>');
-		document.writeln('</table>');
+		document.writeln('</table><br>');
 	}
-	document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
+	//document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
+	document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="40px" height="30px" src="'+document.domain+'" scrolling="auto"></iframe>');
+	
 	if (!readOnly) document.writeln('<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source');
 	document.writeln('<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>');
 	document.writeln('<input type="hidden" id="hdn' + rte + '" name="' + rte + '" value="">');
@@ -257,6 +271,9 @@ function enableDesignMode(rte, html, readOnly) {
 		oRTE.write(frameHtml);
 		oRTE.close();
 		if (!readOnly) oRTE.designMode = "On";
+        //Buttons1_' + rte + '
+		//addEvent(frames[rte].document, 'click', function() {alert('df');}, false);
+		addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
 	} else {
     if (document.getElementById(rte) == null) {
       //gecko may take some time to enable design mode.
@@ -269,7 +286,7 @@ function enableDesignMode(rte, html, readOnly) {
       }
     }
     else {
-      if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
+	  if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
 			try {
 				var oRTE = document.getElementById(rte).contentWindow.document;
 				oRTE.open();
@@ -278,6 +295,8 @@ function enableDesignMode(rte, html, readOnly) {
 				if (isGecko && !readOnly) {
 					//attach a keyboard handler for gecko browsers to make keyboard shortcuts work
 					oRTE.addEventListener("keypress", kb_handler, true);
+                    //addEvent(frames[rte].document, 'click', function() {alert('df');}, false);
+					addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
 				}
 			} catch (e) {
 				alert("Error preloading content.");
