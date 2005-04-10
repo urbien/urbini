@@ -172,7 +172,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 		document.writeln('</table>');
 		document.writeln('<table class="rteBack" cellpadding="0" cellspacing="0" id="Buttons2_' + rte + '" width="' + tablewidth + '">');
 		document.writeln('	<tr>');
-*/		
+*/
 		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'bold1.gif" width="13" height="13" alt="Bold" title="Bold" onClick="FormatText(\'' + rte + '\', \'bold\', \'\')">');
 		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'italic1.gif" width="13" height="13" alt="Italic" title="Italic" onClick="FormatText(\'' + rte + '\', \'italic\', \'\')">');
 		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'underline1.gif" width="13" height="13" alt="Underline" title="Underline" onClick="FormatText(\'' + rte + '\', \'underline\', \'\')">');
@@ -198,7 +198,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'image1.gif" width="13" height="13" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')">');
 		document.writeln('		<span id="table_' + rte + '"><img class="rteImage" align="absmiddle" src="' + imagesPath + 'insert_table1.gif" width="15" height="13" alt="Insert Table" title="Insert Table" onClick="dlgInsertTable(\'' + rte + '\', \'table\', \'\')"></span>');
 
-//*/		
+//*/
 		//if (!readOnly) document.writeln('<td><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source</td>');
 		if (isIE) {
 			document.writeln('		<img  align="absmiddle"class="rteImage" src="' + imagesPath + 'spellcheck1.gif" width="13" height="13" alt="Spell Check" title="Spell Check" onClick="checkspell()">');
@@ -258,8 +258,18 @@ function enableDesignMode(rte, html, readOnly) {
 		oRTE.close();
 		if (!readOnly) oRTE.designMode = "On";
 	} else {
-		try {
-			if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
+    if (document.getElementById(rte) == null) {
+      //gecko may take some time to enable design mode.
+      //Keep looping until able to set.
+      if (isGecko) {
+        setTimeout("enableDesignMode('" + rte + "', '" + html + "', " + readOnly + ");", 10);
+      }
+      else { // should not have happened - do not know what to do
+        return false;
+      }
+    }
+    else {
+      if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
 			try {
 				var oRTE = document.getElementById(rte).contentWindow.document;
 				oRTE.open();
@@ -272,18 +282,7 @@ function enableDesignMode(rte, html, readOnly) {
 			} catch (e) {
 				alert("Error preloading content.");
 			}
-		} catch (e) {
-			//gecko may take some time to enable design mode.
-			//Keep looping until able to set.
-			if (isGecko) {
-				//var s = replaceAll(html, "'", "&#39;");
-				s = html;
-				//setTimeout("enableDesignMode('" + rte + "', '" + html + "', " + readOnly + ");", 10);
-				setTimeout("enableDesignMode('" + rte + "', '" + s + "', " + readOnly + ");", 10);
-			} else {
-				return false;
-			}
-		}
+    }
 	}
 }
 
@@ -295,9 +294,9 @@ function processURLs(stringWithUrl) { // function that looks for all URLs in RTE
   var firstEntrance_2 = stringWithUrl.indexOf('www.');
 
   if(firstEntrance_1==-1 && firstEntrance_2==-1) return stringWithUrl;
-	  
+
   if(firstEntrance_1!=-1 && firstEntrance_2==-1) {firstEntrance = firstEntrance_1; httpPresent = true;}
-    else 
+    else
 	  if(firstEntrance_1==-1 && firstEntrance_2!=-1) firstEntrance = firstEntrance_2;
 	    else
 		  if(firstEntrance_1 < firstEntrance_2) {firstEntrance = firstEntrance_1; httpPresent = true;}
@@ -326,7 +325,7 @@ function processURLs(stringWithUrl) { // function that looks for all URLs in RTE
     if(stringWithUrl.substring(firstEntrance-6,firstEntrance)=='href="' || stringWithUrl.substring(firstEntrance-6,firstEntrance)=='title=' || stringWithUrl.substring(firstEntrance-5,firstEntrance)=='src="') {
          if(!httpPresent)
            urlLink_href='http:\/\/' + stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
-          else 
+          else
             urlLink_href=stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
 
          urlLink += urlLink_href;
@@ -334,17 +333,17 @@ function processURLs(stringWithUrl) { // function that looks for all URLs in RTE
 	 else {
          if(!httpPresent)
            urlLink_href='http:\/\/' + stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
-          else 
+          else
             urlLink_href=stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
-	   //alert(urlLink.substring(urlLink.length-1,urlLink.length)); 
+	   //alert(urlLink.substring(urlLink.length-1,urlLink.length));
 	   urlLink = urlLink.substring(0,urlLink.length-1);
 	   urlLink += " target='_blank'><img src='/images/wysiwyg/hyperlink.gif' title=\""+urlLink_href+"\" width='24' height='24' border='0'>";
 	 }
-		
+
 	var restUrl = stringWithUrl.substring(idexOfTheEndOfTheUrl, stringWithUrl.length);
 
        return urlLink + processURLs(restUrl);
-  }	
+  }
 }
 
 function updateRTEs() {
@@ -360,10 +359,10 @@ function updateRTE(rte) {
 		//---- Replacing of all urls with link image not to make the page too wide cuz of long url
 		//frames[rte].document.body.innerHTML = processURLs(frames[rte].document.body.innerHTML);
 		//frames[vRTEs[i]].document.body.innerHTML = processURLs(frames[vRTEs[i]].document.body.innerHTML);
-		//-----------------------------------------------------		
+		//-----------------------------------------------------
 
     if(document.getElementById(rte+'content'))document.getElementById(rte+'content').value = frames[rte].document.body.innerHTML;
-	
+
     //alert(frames[rte].document.body.innerHTML);
 	if (!isRichText) return;
 
@@ -496,7 +495,7 @@ function FormatText(rte, command, option) {
 	} catch (e) {
 		alert(e);
 	}
-	
+
 	//-------------------------TRY------------------------------
 /*
 		var oRTE;
@@ -515,18 +514,18 @@ function FormatText(rte, command, option) {
           s = replaceAllRecursion(s, ">","&gt;");
           a.innerHTML=s;
           oRTE.body.innerText = a.innerText;
-		} 
-*/		
+		}
+*/
 	//------------------------------------------------------------
 }
 function replaceAllRecursion(str, replStr, replWithStr)
 {
-  if(str.indexOf(replStr)>=0) 
+  if(str.indexOf(replStr)>=0)
     return replaceAllRecursion(str.replace(replStr, replWithStr), replStr, replWithStr)
-   else 
+   else
 	return str;
 }
-	
+
 //Function to set color
 function setColor(color) {
 	var rte = currentRTE;
@@ -755,14 +754,14 @@ function popUpWin (url, win, width, height, options) {
 function insertHTML(html) {
 	//function to add HTML -- thanks dannyuk1982
 	var rte = currentRTE;
-	
+
 	var oRTE;
 	if (document.all) {
 		oRTE = frames[rte];
 	} else {
 		oRTE = document.getElementById(rte).contentWindow;
 	}
-	
+
 	oRTE.focus();
 	if (document.all) {
 		var oRng = oRTE.document.selection.createRange();
