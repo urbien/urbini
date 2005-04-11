@@ -516,6 +516,14 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (firstRow == null)
       return; // incorrect popup structure
 
+    var tables = div.getElementsByTagName('table');
+    if (!tables || !tables[1]) {
+      return;
+    }
+    var table = tables[1];
+    if (!table)
+      return;
+
     //popup contains rows that can be selected
     if (document.all) // IE - works only on keydown
       addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
@@ -813,7 +821,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
     else  {
       var items = tr.getElementsByTagName('td');
-      var val = items[1].innerHTML;
+      var val = items[2].innerHTML;
       var idx = val.lastIndexOf(">");
       if (len > 1)
         chosenTextField[0].value = val.substring(idx + 1);
@@ -864,7 +872,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         else if (nmbChecked == 1) {
           var trNode = getTrNode(selectedItem);
           var items = trNode.getElementsByTagName('td');
-          var val = items[1].innerHTML;
+          var val = items[2].innerHTML;
           var idx = val.lastIndexOf(">");
 
           if (len > 1)
@@ -1279,7 +1287,12 @@ window.status = divId;
     }
     else {
       url = url + "&type=" + form.elements['type'].value + "&-$action=" + formAction;
-
+      var s = getFormFiltersForInterface(form, propName);
+      if (s)
+        url = url + s;
+      var uri = form.elements['uri'];
+      if (uri)
+        url = url + "&$rootFolder=" + encodeURIComponent(uri.value);
     }
   }
   url += "&$form=" + currentFormName;
@@ -1301,6 +1314,64 @@ window.status = divId;
   timeoutCount = 0;
   setTimeout("Popup.load('" + divId + "')", 100);
 
+}
+function getFormFiltersForInterface(form, propName) {
+
+  var field = form.elements[propName];
+  if (field == null) {
+    field = form.elements[propName + "_select"];
+    if (field == null)
+      return null;
+  }
+  var trNode = getTrNode(field);
+  var elem = trNode.getElementsByTagName("div");
+  if (!elem)
+    return null;
+  var interfaceUri = null;
+  if (elem.length) {
+    for (var i=0; i<elem.length; i++) {
+      if (elem[i].id && elem[i].id.indexOf("http://") == 0) {
+        interfaceUri = elem[i].id;
+        break;
+      }
+    }
+    if (interfaceUri == null)
+      return null;
+  }
+  else if (!elem.id || elem.id.indexOf("http://") != 0)
+    return null;
+  else
+    interfaceUri = elem.id; 
+  
+  var p = "";
+  var fields = form.elements;
+  for (i=0; i<fields.length; i++) {
+    field = fields[i];
+    var value = field.value;
+    var name  = field.name;
+    var type  = field.type;
+
+    if (!type || !name || !value)
+      continue;
+    if (type.toUpperCase() == "SUBMIT")
+      continue;
+    if (name )
+    var trNode = getTrNode(field);
+    elem = trNode.getElementsByTagName("div");
+    if (!elem)
+      continue;
+    if (elem.length) {
+      for (var ii=0; ii<elem.length; ii++) {
+        if (elem[ii].id && elem[ii].id == interfaceUri) {
+          p += "&" + name + "=" + encodeURIComponent(value);
+          break;
+        }
+      }
+    }
+    else if (elem.id  &&  elem.id == interfaceUri)
+      p += "&" + name + "=" + encodeURIComponent(value);
+  }
+  return p;
 }
 
 function removePopupRowEventHandlers(div) {
