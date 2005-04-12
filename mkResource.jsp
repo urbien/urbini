@@ -1,6 +1,7 @@
 <div align="center">
 <font color="red"><b><errorMessage /></b></font>
 
+<hideBlock>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
   <td valign="top" width="95%">
@@ -22,6 +23,7 @@
     </tr></table></td>
   </tr>
 </table></center></td></tr></table>
+</hideBlock>
 <br/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
