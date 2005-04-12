@@ -168,6 +168,9 @@ Popup.load = function (divId) {
 
   var popup = Popup.getPopup(divId);
   popup.setInnerHtml(body.innerHTML)
+  //document = body.onDivLoad; 
+  //body.onDivLoad();
+  popupFrame.onDivLoad();
   var div = popup.div;
 
   var tables = div.getElementsByTagName('table');

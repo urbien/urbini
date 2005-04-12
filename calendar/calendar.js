@@ -347,6 +347,8 @@ document.write(outp);
   this.TC0Q = TC0R;
   this.showcal = TC0S;
   this.TC0T = TC0U
+
+  this.create1();
 }
 
 function TC0U() {
