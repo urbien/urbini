@@ -2221,15 +2221,7 @@ function onClick(e) {
       removeModifier(url, '_shiftKey=y');
       removeModifier(url, '_ctrlKey=y');
       removeModifier(url, '_altKey=y');
-      urlStr = url.href;
-      var finalUrl = urlStr;
-      var idx = urlStr.indexOf('.html');
-      if (idx != -1) {
-        var idx1 = urlStr.lastIndexOf('/', idx);
-        finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
-      }
-
-      bottomFrame.location.replace(finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y");
+      displayInner(url.href);
       e.cancelBubble = true;
       e.returnValue = false;
       if (e.preventDefault)  e.preventDefault();
@@ -2310,6 +2302,24 @@ function getANode(elem) {
     return getANode(e);
   else
     return null;
+}
+
+function displayInner(urlStr) {
+  var frameId = 'bottomFrame';
+  var bottomFrame = frames[frameId];
+  // show content in a second pane
+  //
+  if (!bottomFrame)
+    return;
+  
+  var finalUrl = urlStr;
+  var idx = urlStr.indexOf('.html');
+  if (idx != -1) {
+    var idx1 = urlStr.lastIndexOf('/', idx);
+    finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
+  }
+
+  bottomFrame.location.replace(finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y#pane2");
 }
 
 //********************* helper functions ********************************
@@ -2492,5 +2502,27 @@ function addPageTitleToUrl(tr) {
     a.href = a.href + "&title=" + encodeURIComponent(title) + "#";  // add hash to avoid page reloading
   else
     a.href = a.href + "?title=" + encodeURIComponent(title) + "#";
+  displayInner(a.href);
 }
+
+/**
+ * function that adds a title (taken from page HEAD) of current page to a url that is passed as a parameter
+ */
+function showPageInner(tr) {
+  var title = document.title;
+  if (!title)
+    return;
+
+  var aa = tr.getElementsByTagName("a");
+  if (!aa)
+    return;
+  a = aa[0];
+
+  var idx = a.href.indexOf('?');
+  if (idx != -1)
+    a.href = a.href + "&title=" + encodeURIComponent(title) + "#";  // add hash to avoid page reloading
+  else
+    a.href = a.href + "?title=" + encodeURIComponent(title) + "#";
+}
+
 
