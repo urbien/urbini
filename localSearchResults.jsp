@@ -29,6 +29,10 @@
   </tr>
 </table>
 </hideBlock>
+
+<a target="pane2"> </a>
+<div id="pane2" />
+
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
   <td width="110%" colspan="2"><!--br/-->
@@ -38,7 +42,7 @@
     <readOtherSiteInfo />
     <br/>
 <hideBlock>      
-    <div id="pane2">
+    <div id="pane3">
     <br/>
     <table width="100%" cellpadding="0" border="0" cellspacing="0">
       <tr class="commentodd"><td>
