@@ -147,7 +147,7 @@ function calendar(TCA, TCB) {
     return
   }
 
-  if (!document.forms[TCA.formname]) {
+  if (!document.opener.document.forms[TCA.formname]) {
     this.datemessage('form_not_found', TCA.formname);
     return
   }
@@ -348,7 +348,7 @@ document.write(outp);
   this.showcal = TC0S;
   this.TC0T = TC0U
 
-  this.create1();
+  create1();
 }
 
 function TC0U() {
