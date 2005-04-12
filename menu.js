@@ -2320,6 +2320,12 @@ function displayInner(urlStr) {
   }
 
   bottomFrame.location.replace(finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y#pane2");
+  
+  e.cancelBubble = true;
+  e.returnValue = false;
+  if (e.preventDefault)  e.preventDefault();
+  if (e.stopPropagation) e.stopPropagation();
+  return false;
 }
 
 //********************* helper functions ********************************
