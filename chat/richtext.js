@@ -59,11 +59,11 @@ function initRTE(imgPath, incPath, css) {
 	//isRichText = false;
 }
 
-function writeRichText(rte, html, width, height, buttons, readOnly) {
+function writeRichText(rte, html, width, height, buttons, readOnly, minimized) {
 	if (isRichText) {
 		if (allRTEs.length > 0) allRTEs += ";";
 		allRTEs += rte;
-		writeRTE(rte, html, width, height, buttons, readOnly);
+		writeRTE(rte, html, width, height, buttons, readOnly, minimized);
 	} else {
 		writeDefault(rte, html, width, height, buttons, readOnly);
 	}
@@ -124,7 +124,7 @@ function insertSmile(rte, smile)
 	oRTE.focus();
 }
 
-function writeRTE(rte, html, width, height, buttons, readOnly) {
+function writeRTE(rte, html, width, height, buttons, readOnly, minimized) {
 	if (readOnly) buttons = false;
 
 	//adjust minimum table widths
@@ -137,7 +137,9 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 	}
 
 	if (buttons == true) {
-		document.writeln('<table class="rteBack" style="display:none" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">');
+		if(minimized)
+		  document.writeln('<table class="rteBack" style="display:none" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">');
+		 else document.writeln('<table class="rteBack" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">');
 		document.writeln('	<tr style="white-space : nowrap; word-spacing : 0px; 	white-space : nowrap;">');
 		document.writeln('		<td width="100%" cellpadding=0 cellspacing=0 style="" valign="top">');
 		document.writeln('			<select style="width:75px;vertical-align : top;" id="formatblock_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">');
@@ -226,19 +228,23 @@ function writeRTE(rte, html, width, height, buttons, readOnly) {
 //		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'redo.gif" width="25" height="24" alt="Redo" title="Redo" onClick="FormatText(\'' + rte + '\', \'redo\')"></td>');
 		//document.writeln('		<td width="100%"></td>');
 		document.writeln('	</tr>');
-		document.writeln('</table><br>');
+		document.writeln('</table>');
+		if(minimized) document.writeln('<br>');
 	}
 	//document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
-	document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="40px" height="30px" src="'+document.domain+'" scrolling="auto"></iframe>');
+	if(minimized)
+	  document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="40px" height="30px" src="'+document.domain+'" scrolling="auto"></iframe>');
+	 else 
+	   document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
 	
 	if (!readOnly) document.writeln('<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source');
 	document.writeln('<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>');
 	document.writeln('<input type="hidden" id="hdn' + rte + '" name="' + rte + '" value="">');
 	//!!Error!!document.getElementById('hdn' + rte).value = html;
-	enableDesignMode(rte, html, readOnly);
+	enableDesignMode(rte, html, readOnly, minimized);
 }
 
-function enableDesignMode(rte, html, readOnly) {
+function enableDesignMode(rte, html, readOnly, minimized) {
 	var frameHtml = "<html id=\"" + rte + "\">\n";
 	frameHtml += "<head>\n";
 	//to reference your stylesheet, set href property below to your stylesheet path and uncomment
@@ -271,15 +277,21 @@ function enableDesignMode(rte, html, readOnly) {
 		oRTE.write(frameHtml);
 		oRTE.close();
 		if (!readOnly) oRTE.designMode = "On";
+		
         //Buttons1_' + rte + '
 		//addEvent(frames[rte].document, 'click', function() {alert('df');}, false);
-		addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
+		if(minimized){
+		  //addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
+		  addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight + 10; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
+		  addEvent(frames[rte].document, 'keyup', function() {if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
+		  //frames[rte].document.attachEvent("onkeypress", function () {alert(document.getElementById(rte).height); document.getElementById(rte).height = 200; alert(document.getElementById(rte).height);});
+		}
 	} else {
     if (document.getElementById(rte) == null) {
       //gecko may take some time to enable design mode.
       //Keep looping until able to set.
       if (isGecko) {
-        setTimeout("enableDesignMode('" + rte + "', '" + html + "', " + readOnly + ");", 10);
+        setTimeout("enableDesignMode('" + rte + "', '" + html + "', " + readOnly + ", " + minimized + ");", 10);
       }
       else { // should not have happened - do not know what to do
         return false;
@@ -296,7 +308,10 @@ function enableDesignMode(rte, html, readOnly) {
 					//attach a keyboard handler for gecko browsers to make keyboard shortcuts work
 					oRTE.addEventListener("keypress", kb_handler, true);
                     //addEvent(frames[rte].document, 'click', function() {alert('df');}, false);
-					addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
+					if(minimized)
+					  //addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
+					  addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
+					  addEvent(frames[rte].document, 'keyup', function() {if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
 				}
 			} catch (e) {
 				alert("Error preloading content.");
