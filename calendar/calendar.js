@@ -122,7 +122,7 @@ var TC1 = 'aAdDFhHilmMsUYy',
 }] }, TC8,
     TC9;
 
-function calendar(TCA, TCB) {
+function calendar(TCA, TCB, inputFieldDiv) {
   this.initialized = false;
 
   var TCC = this.TCC = A_CALENDARS.length;
@@ -147,7 +147,9 @@ function calendar(TCA, TCB) {
     return
   }
 
-  if (!document.opener.document.forms[TCA.formname]) {
+  //this.forms = document.opener.document.forms;
+  this.forms = parent.document.forms;
+  if (!this.forms[TCA.formname]) {
     this.datemessage('form_not_found', TCA.formname);
     return
   }
@@ -199,7 +201,7 @@ function calendar(TCA, TCB) {
     //TCt = TCt.replace(eval("/" + TCz[i] + "/g"), TCz[i]) // mike: old code
   }
 
-for (i = 0, len = TCx.length; i < len; i++) {
+  for (i = 0, len = TCx.length; i < len; i++) {
   //for (i = 0; i < TCx.length; i++) { // Mike: old code
     TC00 = new RegExp(TCx[i]);
 
@@ -248,14 +250,14 @@ for (i = 0, len = TCx.length; i < len; i++) {
   var tc0a4 = this.TC0A & 4;
   var tc0a8 = this.TC0A & 8;
   var outp = "";
-  if (tc0a64 && db) {	
-  //if (this.TC0A & 64 && document.body && document.body.innerHTML) { //mike 
+  if (tc0a64 && db) {
+  //if (this.TC0A & 64 && document.body && document.body.innerHTML) { //mike
     //document.write('<table cellpadding="0" cellspacing="0" border="0" ><tr>')
     outp='<table cellpadding="0" cellspacing="0" border="0" ><tr>';
   }
- 
+
   if (tc0a2) {
-  	
+
     if (tc0a64){
       outp=outp+'<td>';
       //document.write(outp);
@@ -280,7 +282,7 @@ for (i = 0, len = TCx.length; i < len; i++) {
       if (tc0a64 && (tc0a4 || tc0a6)){
       	outp=outp+'<td>';
         //document.write('<td>');
-	}
+	    }
       if (tc0a4){
       	outp=outp+'<a href="javascript:A_CALENDARS[' + this.TCC + '].create(); A_CALENDARS[' + this.TCC + '].showcal();" ><img ' + this.TCO('caliconshow') + ' name="'
                 + this.TCI + '"      id="' + this.TCI + '"></a>';
@@ -295,21 +297,21 @@ for (i = 0, len = TCx.length; i < len; i++) {
         //                   + '" onclick="A_CALENDARS[' + this.TCC + '].showcal();return false;">');
       }
       if (tc0a64 && (tc0a4 || tc0a6)){
-      outp=outp+'<td>';
+        outp=outp+'<td>';
         //document.write('</td>')
-        }
+      }
     }
   }
 
-  if (tc0a64 && (tc0a2 || (tc0a4 || tc0a6))){
+  if (tc0a64 && (tc0a2 || (tc0a4 || tc0a6))) {
     outp=outp+'</tr>';
     //document.write('</tr>');
-}
+  }
   if (this.TC0A & 32) {
-    if (tc0a64){
+    if (tc0a64) {
       outp=outp+'<tr><td>';
       //document.write('<tr><td>');//mike
-}
+    }
     //if (tc0a64)
      // document.write('<td>');
     outp=outp+'<img ' + this.TCO('pixel') + '  name="' + this.TCJ + '" id="' + this.TCJ + '">';
@@ -328,13 +330,17 @@ for (i = 0, len = TCx.length; i < len; i++) {
       //document.write('</tr>')
     }
   }
-if (tc0a64 && db){
+  if (tc0a64 && db){
   //if (tc0a64 && document.body && document.body.innerHTML) // mike
     outp=outp+'</table>';
     //document.write('</table>');
-}
-//alert(outp);
-document.write(outp);
+  }
+alert(outp);
+  //document.write(outp);
+  var calRef = document.getElementById(inputFieldDiv);
+  if (calRef)
+    calRef.innerHTML = outp;
+
   this.create = TC0B;
   this.create1 = create1;
   this.TC0C = TC0D;
@@ -346,9 +352,10 @@ document.write(outp);
   this.TC0O = TC0P;
   this.TC0Q = TC0R;
   this.showcal = TC0S;
-  this.TC0T = TC0U
+  this.TC0T = TC0U;
 
-  create1();
+  //create1(shortPropName);
+
 }
 
 function TC0U() {
@@ -374,8 +381,8 @@ function TCZ() {
 
   if ((TC0V & 2 && TC0V & 32) || (TC0V & 2 && (TC0V & 4 || TC0V & 8)) || ((TC0V & 4 || TC0V & 8) && TC0V & 32))
     TC0V |= 64;
-  
-  return TC0V
+
+  return TC0V;
 }
 
 function TCN(TC0W, TC0X, TC0Y) {
@@ -387,7 +394,7 @@ function TCN(TC0W, TC0X, TC0Y) {
 }
 
 
-function create1() {
+function create1(shortPropName) {
   //if (!document.body || !document.body.innerHTML)
   //  return;
   var thistcc = this.TCC;
@@ -411,8 +418,11 @@ function create1() {
               (thistcc),
               '"></iframe>')
   }
-  //alert(TC0c.TC0g());
-  document.write(TC0c.TC0g());
+  alert(TC0c.TC0g());
+  //document.write(TC0c.TC0g());
+  var calRef = document.getElementById('caldiv' + shortPropName);
+  if (calRef)
+    calRef.innerHTML = TC0c.TC0g();
 }
 
 function TC0B() {
@@ -421,16 +431,16 @@ function TC0B() {
 
   //if (!document.body || !document.body.innerHTML || this.initialized)
    // return;
-if (this.initialized)
+  if (this.initialized)
     return;
   this.initialized = true;
 
   if (this.TC02 != 2)
     this.TC04.setSeconds(0);
-  
+
   var signal = TC9.TC0b ? 'onclick' : 'onchange';
   var TC0c = new TC0d();
-  
+
   TC0c.TC0e('<table ',
             this.TCO('outertable'),
             '><tr><td><table',
@@ -977,7 +987,7 @@ function TCr(TC1I) {
 }
 
 function TC0H(TC1c, TC1d, TC1J) {
-	
+
   var TC1e = TC1d ? new Date(TC1d) : new Date(this.TC04);
 
   if (!TC1d) {
@@ -1007,7 +1017,7 @@ function TC0H(TC1c, TC1d, TC1J) {
       }
       else {
         if (TC1c == 'year') {
-          
+
           var TC1h = this.TC0i.options[this.TC0i.selectedIndex].text;
 
           var TC1i = this.TC0i.options[this.TC0i.selectedIndex].value;
@@ -1604,7 +1614,7 @@ function TCR(TC2M, TC1J) {
 
 function TCF(TC2Y, TC1J) {
   if (TC1J == 'form')
-    TC2Z = document.forms[this.TCK].elements[TC2Y];
+    TC2Z = this.forms[this.TCK].elements[TC2Y];
   else if (TC1J == 'img')
     TC2Z = document.all ? document.all[TC2Y] : document.images ? document.images[TC2Y] : document.getElementById(TC2Y);
   else
