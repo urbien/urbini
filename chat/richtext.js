@@ -234,9 +234,9 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized) {
 	//document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
 	if(minimized)
 	  document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="40px" height="30px" src="'+document.domain+'" scrolling="auto"></iframe>');
-	 else 
+	 else
 	   document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
-	
+
 	if (!readOnly) document.writeln('<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source');
 	document.writeln('<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>');
 	document.writeln('<input type="hidden" id="hdn' + rte + '" name="' + rte + '" value="">');
@@ -277,7 +277,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 		oRTE.write(frameHtml);
 		oRTE.close();
 		if (!readOnly) oRTE.designMode = "On";
-		
+
         //Buttons1_' + rte + '
 		//addEvent(frames[rte].document, 'click', function() {alert('df');}, false);
 		if(minimized){
@@ -383,7 +383,10 @@ function processURLs(stringWithUrl) { // function that looks for all URLs in RTE
 function updateRTEs() {
 	var vRTEs = allRTEs.split(";");
 	for (var i = 0; i < vRTEs.length; i++) {
-		frames[vRTEs[i]].document.body.innerHTML = processURLs(frames[vRTEs[i]].document.body.innerHTML);
+    var frame = frames[vRTEs[i]];
+    if (!frame)
+      continue;
+		frame.document.body.innerHTML = processURLs(frame.document.body.innerHTML);
 		updateRTE(vRTEs[i]);
 		//!!!alert(frames[vRTEs[i]].document.body.innerHTML);
 	}
