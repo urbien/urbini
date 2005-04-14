@@ -165,7 +165,18 @@ Popup.load = function (divId) {
     document.location.href = redirect.href;
     return;
   }
-
+  var popup = Popup.getPopup(divId);  
+  popup.setInnerHtml(body.innerHTML);  
+///  
+  var idx = propName.indexOf(".");  
+  var shortPropName = propName;  
+  if (idx != -1)  
+    shortPropName = propName.substring(0, idx);  
+///  
+  //var calInitName = 'CAL_INIT_' + shortPropName;  
+  //var calInit = eval('popupFrame.' + calInitName);  
+  new calendar(popupFrame.CAL_INIT_, CAL_TPL1, shortPropName + '_From');  
+  new calendar(popupFrame.CAL_INIT_, CAL_TPL1, shortPropName + '_To');  
   var popup = Popup.getPopup(divId);
   popup.setInnerHtml(body.innerHTML)
   window.onDivLoad = popupFrame.onDivLoad;  

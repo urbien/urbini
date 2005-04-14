@@ -122,7 +122,10 @@ var TC1 = 'aAdDFhHilmMsUYy',
 }] }, TC8,
     TC9;
 
-function calendar(TCA, TCB, inputFieldDiv) {
+
+
+// CALENDAR CLASS
+function calendar(TCA, TCB, controlName) {
   this.initialized = false;
 
   var TCC = this.TCC = A_CALENDARS.length;
@@ -138,7 +141,8 @@ function calendar(TCA, TCB, inputFieldDiv) {
   this.datemessage = TCD;
   this.TCE = TCF;
   this.TCG = (TCA.picttype == 'img' ? 1 : TCA.picttype == 'button' ? 2 : TCA.picttype == 'others' ? 3 : 1);
-  this.TCH = (TCA.controlname ? TCA.controlname : 'datetime_' + this.TCC);
+//  this.TCH = (TCA.controlname ? TCA.controlname : 'datetime_' + this.TCC);
+  this.TCH = controlName;
   this.TCI = (TCA.pictname ? TCA.pictname : 'calicon_' + this.TCC);
   this.TCJ = (TCA.positionname ? TCA.positionname : 'calpos_' + this.TCC);
 
@@ -266,7 +270,7 @@ function calendar(TCA, TCB, inputFieldDiv) {
     //document.write('<input type="Text" id="', this.TCH, '"   name="', this.TCH, '" value="', this.TC09, '" ', this.TCO('datacontrol'),   '>');
     outp=outp+'<input type="Text" id="'+ this.TCH+ '"   name="'+ this.TCH+ '" value="'+ this.TC09+ '" '+ this.TCO('datacontrol')+   '>';
     if (tc0a64){
-      outp=outp+'<td>';
+      outp=outp+'</td>';
       //document.write(outp);
       //document.write('</td>')
     }
@@ -297,7 +301,7 @@ function calendar(TCA, TCB, inputFieldDiv) {
         //                   + '" onclick="A_CALENDARS[' + this.TCC + '].showcal();return false;">');
       }
       if (tc0a64 && (tc0a4 || tc0a6)){
-        outp=outp+'<td>';
+        outp=outp+'</td>';
         //document.write('</td>')
       }
     }
@@ -318,7 +322,7 @@ function calendar(TCA, TCB, inputFieldDiv) {
     //document.write('<img ' + this.TCO('pixel') + '  name="' + this.TCJ + '" id="' + this.TCJ + '">');
     //document.write(outp);
     if (tc0a64){
-    	outp=outp+'<td>';
+    	outp=outp+'</td>';
       //document.write('</td>');
     }
     if (tc0a64 && (tc0a2 && (tc0a4 || tc0a6))){
@@ -326,7 +330,7 @@ function calendar(TCA, TCB, inputFieldDiv) {
       //document.write('<td></td><td></td>');
     }
     if (tc0a64){
-    	outp=outp+'<tr>';
+    	outp=outp+'</tr>';
       //document.write('</tr>')
     }
   }
@@ -337,9 +341,9 @@ function calendar(TCA, TCB, inputFieldDiv) {
   }
 alert(outp);
   //document.write(outp);
-  var calRef = document.getElementById(inputFieldDiv);
+  var calRef = document.getElementById("calendar_" + controlName);
   if (calRef)
-    calRef.innerHTML = outp;
+    calRef.innerHTML = "VASYA"; //outp;
 
   this.create = TC0B;
   this.create1 = create1;
