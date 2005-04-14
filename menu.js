@@ -169,7 +169,7 @@ Popup.load = function (divId) {
   var popup = Popup.getPopup(divId);
   popup.setInnerHtml(body.innerHTML)
   window.onDivLoad = popupFrame.onDivLoad;  
-  window.onDivLoad();
+//  window.onDivLoad();
   //body.onDivLoad();
   var div = popup.div;
 
@@ -845,13 +845,14 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         formField.value = tr.id; // property value corresponding to a listitem
       else {
         formField.value = '';
+        // go over selected items and count all checked
         for (i=0; i<selectItems.length; i++) {
           if (selectItems[i].type.toLowerCase() == "hidden") {
             selectItems[i].value = null;
             continue;
           }
-          if (selectItems[i].value == tr.id) {
-            if (!isInput)
+          if (selectItems[i].value == tr.id) { // check that item was selected by clicking on popup row no explicitely on checkbox
+            if (!isInput) 
               selectItems[i].checked = true;
           }
           if (selectItems[i].checked == true) {
