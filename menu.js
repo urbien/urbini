@@ -175,13 +175,11 @@ Popup.load = function (divId) {
 ///  
   //var calInitName = 'CAL_INIT_' + shortPropName;  
   //var calInit = eval('popupFrame.' + calInitName);  
-  new calendar(popupFrame.CAL_INIT_, CAL_TPL1, shortPropName + '_From');  
-  new calendar(popupFrame.CAL_INIT_, CAL_TPL1, shortPropName + '_To');  
   var popup = Popup.getPopup(divId);
   popup.setInnerHtml(body.innerHTML)
-  window.onDivLoad = popupFrame.onDivLoad;  
-//  window.onDivLoad();
-  //body.onDivLoad();
+  new calendar(popupFrame.CAL_INIT_, CAL_TPL1, shortPropName + '_From');  
+  new calendar(popupFrame.CAL_INIT_, CAL_TPL1, shortPropName + '_To');  
+
   var div = popup.div;
 
   var tables = div.getElementsByTagName('table');

@@ -127,7 +127,7 @@ var TC1 = 'aAdDFhHilmMsUYy',
 // CALENDAR CLASS
 function calendar(TCA, TCB, controlName) {
   this.initialized = false;
-
+  this.controlName = controlName;
   var TCC = this.TCC = A_CALENDARS.length;
 
   A_CALENDARS[this.TCC] = this;
@@ -339,11 +339,11 @@ function calendar(TCA, TCB, controlName) {
     outp=outp+'</table>';
     //document.write('</table>');
   }
-alert(outp);
+//alert(outp);
   //document.write(outp);
   var calRef = document.getElementById("calendar_" + controlName);
   if (calRef)
-    calRef.innerHTML = "VASYA"; //outp;
+    calRef.innerHTML = outp;
 
   this.create = TC0B;
   this.create1 = create1;
@@ -358,7 +358,7 @@ alert(outp);
   this.showcal = TC0S;
   this.TC0T = TC0U;
 
-  //create1(shortPropName);
+  create1(this);
 
 }
 
@@ -398,10 +398,10 @@ function TCN(TC0W, TC0X, TC0Y) {
 }
 
 
-function create1(shortPropName) {
+function create1(calendar) {
   //if (!document.body || !document.body.innerHTML)
   //  return;
-  var thistcc = this.TCC;
+  var thistcc = calendar.TCC;
   var TC0c = new TC0d();
   TC0c.TC0e('<div id="caldiv',
             thistcc,
@@ -424,9 +424,10 @@ function create1(shortPropName) {
   }
   alert(TC0c.TC0g());
   //document.write(TC0c.TC0g());
-  var calRef = document.getElementById('caldiv' + shortPropName);
+  var calRef = document.getElementById("calendar_" + calendar.controlName);
+//  var calRef = document.getElementById('caldiv' + thistcc);
   if (calRef)
-    calRef.innerHTML = TC0c.TC0g();
+    calRef.innerHTML = calRef.innerHTML + TC0c.TC0g();
 }
 
 function TC0B() {
