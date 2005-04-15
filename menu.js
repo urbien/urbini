@@ -134,6 +134,17 @@ Popup.delayedClose0 = function (divId) {
   popup.delayedClose();
 }
 
+// part of delayed close after the timeout
+Popup.delayedClose1 = function (divId) {
+  var popup = Popup.getPopup(divId);
+  if (!popup)
+    return;
+
+  if (!popup.delayedCloseIssued) // delayed close canceled
+    return;
+  popup.close();
+}
+
 Popup.close0 = function (divId) {
   var popup = Popup.getPopup(divId);
   if (!popup)
@@ -154,6 +165,7 @@ Popup.load = function (divId) {
     return;
   }
 
+  // now it is loaded
   var popupFrame = frames['popupFrame'];
   var body = popupFrame.document.getElementById('popupFrameBody');
   if (!body) {
@@ -165,21 +177,21 @@ Popup.load = function (divId) {
     document.location.href = redirect.href;
     return;
   }
-  var popup = Popup.getPopup(divId);  
-  popup.setInnerHtml(body.innerHTML);  
-///  
-  var idx = propName.indexOf(".");  
-  var shortPropName = propName;  
-  if (idx != -1)  
-    shortPropName = propName.substring(0, idx);  
-///  
-  //var calInitName = 'CAL_INIT_' + shortPropName;  
-  //var calInit = eval('popupFrame.' + calInitName);  
+  var popup = Popup.getPopup(divId);
+  popup.setInnerHtml(body.innerHTML);
+///
+  var idx = propName.indexOf(".");
+  var shortPropName = propName;
+  if (idx != -1)
+    shortPropName = propName.substring(0, idx);
+///
+  //var calInitName = 'CAL_INIT_' + shortPropName;
+  //var calInit = eval('popupFrame.' + calInitName);
   var popup = Popup.getPopup(divId);
   popup.setInnerHtml(body.innerHTML)
   if (popupFrame.CAL_INIT_) {
-    new calendar(popupFrame.CAL_INIT_, CAL_TPL1, shortPropName + '_From');  
-    new calendar(popupFrame.CAL_INIT_, CAL_TPL1, shortPropName + '_To');  
+    new calendar(popupFrame.CAL_INIT_, CAL_TPL1, shortPropName + '_From');
+    new calendar(popupFrame.CAL_INIT_, CAL_TPL1, shortPropName + '_To');
   }
   var div = popup.div;
 
@@ -222,6 +234,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.iframe         = Popup.getCanvas(frameRef); // iframe beneath this popup (to cover input elements on the page below popup)
   this.hotspot        = hotspotRef; // hotspot that triggered this popup
   this.contents       = contents;
+  this.isTooltipFlag  = contents ? true : false;
+
   this.resourceUri    = null;       // popup was activated for one of the properties of the Resource in resource list (RL). resourceUri is this resource's URI.
 
   //this.originalProp   = null;       // Resource property for which popup was activated
@@ -233,6 +247,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.popupClosed    = true;
   this.items          = new Array(); // items of this popup (i.e. menu rows)
   this.currentRow     = null;       // currently selected row in this popup
+  this.delayedCloseIssued = false;
 
   var self = this;
 
@@ -243,6 +258,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     this.hotspot        = hotspotRef;
     this.iframe         = Popup.getCanvas(frameRef); // iframe beneath this popup (to cover input elements on the page below popup)
     this.contents       = contents;
+    this.isTooltipFlag  = contents ? true : false;
   }
 
   /**
@@ -275,7 +291,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.isTooltip = function () {
-    return contents != null;
+    return self.isTooltipFlag;
   }
 
   this.open1 = function (offsetX, offsetY) {
@@ -310,7 +326,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
-    if (self.contents)
+    if (self.isTooltip())
       self.setInnerHtml(self.contents)
     self.setVisible(offsetX, offsetY);
     self.popupClosed = false;
@@ -332,7 +348,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         }
       }
     }
-    if (contents) {
+    if (self.isTooltip()) {
       Popup.tooltipPopup = self;
       self.delayedClose(20000);
     }
@@ -459,8 +475,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     //  Make position/size of the underlying iframe same as div's position/size
     istyle.top     = div.style.top;
     istyle.left    = div.style.left;
-    istyle.width   = div.style.width;
-    istyle.height  = div.style.height;
 
     // hack for Opera (at least at ver. 7.54) - somehow iframe is always on top of div - no matter how hard we try to set zIndex
     // so we have to live without iframe in Opera
@@ -507,10 +521,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.delayedClose = function (timeout) {
     var div   = self.div;
     var divId = div.id;
-
     if (!timeout)
       timeout = 600;
-    self.closeTimeoutId = setTimeout("Popup.close0('" + divId + "')", timeout);
+    self.delayedCloseIssued = true;
+    self.closeTimeoutId = setTimeout("Popup.delayedClose1('" + divId + "')", timeout);
   }
 
   /**
@@ -548,7 +562,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     for (var i=0; i<n; i++) {
       var popupItem = new PopupItem(elem, i);
       self.items[popupItem.id];
-      addEvent(elem, 'click',     self.popupRowOnClick,     false);
+      //addEvent(elem, 'click',     self.popupRowOnClick,     false);
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
       addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
       elem = self.nextRow();
@@ -570,10 +584,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (!target)
       return;
 
-    // detect re-enter into the popup - thus clear a timeout
+    // detected re-entering into the popup - thus clear a timeout
+    self.delayedCloseIssued = false;
     if (self.closeTimeoutId != null) {
-       clearTimeout(self.closeTimeoutId);
-       self.closeTimeoutId = null;
+      self.delayedCloseIssued = false;
+      clearTimeout(self.closeTimeoutId);
+      self.closeTimeoutId = null;
     }
     return true;
   }
@@ -592,7 +608,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     target = getTargetElement(e);
     if (!target)
       return;
-//window.status("mouseout: " + target.id);
+
     self.delayedClose(600);
     return true;
   }
@@ -712,8 +728,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (tr.id == '$noValue')
       return;
     var isCalendar = tr.id.indexOf("_$calendar") != -1;
-    if (isCalendar)
-      return false;
+    if (isCalendar) {
+      return true;
+    }
     // if there is a link on this row - follow it
     var anchors = tr.getElementsByTagName('a');
     if (anchors  &&  anchors.length != 0) {
@@ -826,7 +843,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             selectItems[i].value = null;
         }
       }
-      if (currentDiv) loadedPopups[currentDiv.id] = null;
+      if (currentDiv)
+        loadedPopups[currentDiv.id] = null;
       var imgId  = prop + "_class_img";
       var img = document.getElementById(imgId);
       if (img) {
@@ -864,7 +882,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             continue;
           }
           if (selectItems[i].value == tr.id) { // check that item was selected by clicking on popup row no explicitely on checkbox
-            if (!isInput) 
+            if (!isInput)
               selectItems[i].checked = true;
           }
           if (selectItems[i].checked == true) {
@@ -906,7 +924,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       if (currentResourceUri != null)
         divId = currentResourceUri + ".$." + divId;
       var div = document.getElementById(divId);
-      if (deleteCurrentDiv == true)
+      if (deleteCurrentDiv == true && currentDiv)
         loadedPopups[currentDiv.id] = null;
       Popup.close0(div.id);
       clearOtherPopups(div);
@@ -955,13 +973,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     self.deselectRow();
     self.currentRow = null;
-    /*
-    var tds = tr.getElementsByTagName('td');
-    for (i=0; i<tds.length; i++) {
-      var elem = tds[i];
-      elem.style.backgroundColor='';
-    }
-    */
     return true;
   }
 
@@ -1010,8 +1021,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       //self.selectRow();
       return self.currentRow;
     }
-
-    if (next.tagName && next.tagName.toUpperCase() == 'TR' && next.id != 'divider') {
+    if (next.tagName && next.tagName.toUpperCase() == 'TR' && next.id != 'divider' && next.id.indexOf("_$calendar") == -1) {
       //self.deselectRow();
       self.currentRow = next;
       //self.selectRow();
@@ -1038,7 +1048,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return self.currentRow;
     }
 
-    if (prev.tagName && prev.tagName.toUpperCase() == 'TR' && prev.id != 'divider') {
+    if (prev.tagName && prev.tagName.toUpperCase() == 'TR' && prev.id != 'divider' && next.id.indexOf("_$calendar") == -1) {
       //self.deselectRow();
       self.currentRow = prev;
       //self.selectRow();
@@ -1357,8 +1367,8 @@ function getFormFiltersForInterface(form, propName) {
   else if (!elem.id || elem.id.indexOf("http://") != 0)
     return null;
   else
-    interfaceUri = elem.id; 
-  
+    interfaceUri = elem.id;
+
   var p = "";
   var fields = form.elements;
   for (i=0; i<fields.length; i++) {
@@ -1654,14 +1664,8 @@ function autoCompleteOnMouseout(e) {
   if (!img)
     return true;
 
-/*
-  var popup = Popup.getPopupByHotspot(keyPressedImgId);
-  if (popup) {
-    popup.delayedClose();
-  }
- */
   if (currentDiv) {
-    delayedClose0(currentDiv.id);
+    Popup.delayedClose0(currentDiv.id);
   }
 }
 
@@ -2079,7 +2083,7 @@ function replaceTooltips0(elements) {
     var elem = elements[i];
     if (elem.attributes['title']) {
       //addEvent(elem, 'mouseout',    tooltipMouseOut,    false);
-      addEvent(elem, 'mouseover',   tooltipMouseOver,   false); // method that will create a popup specific for this hotspot
+      //addEvent(elem, 'mouseover',   tooltipMouseOver,   false); // method that will create a popup specific for this hotspot
     }
   }
 }
@@ -2327,7 +2331,7 @@ function displayInner(urlStr) {
   //
   if (!bottomFrame)
     return;
-  
+
   var finalUrl = urlStr;
   var idx = urlStr.indexOf('.html');
   if (idx != -1) {
@@ -2336,7 +2340,7 @@ function displayInner(urlStr) {
   }
 
   bottomFrame.location.replace(finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y#pane2");
-  
+
   e.cancelBubble = true;
   e.returnValue = false;
   if (e.preventDefault)  e.preventDefault();
