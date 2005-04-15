@@ -210,6 +210,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized) {
 		document.writeln('		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">');
 		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'hyperlink1.gif" width="13" height="13" alt="Insert Link" title="Insert Link" onClick="FormatText(\'' + rte + '\', \'createlink\')">');
 		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'image1.gif" width="13" height="13" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')">');
+		document.writeln('		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'readOnly.gif" width="13" height="13" alt="view source" title="view source" onclick="var chk = document.getElementById(\'chkSrc' + rte + '\'); if(chk.checked==true)chk.checked=false; else chk.checked=true; toggleHTMLSrc(\'' + rte + '\');">');
 		document.writeln('		<span id="table_' + rte + '"><img class="rteImage" align="absmiddle" src="' + imagesPath + 'insert_table1.gif" width="15" height="13" alt="Insert Table" title="Insert Table" onClick="dlgInsertTable(\'' + rte + '\', \'table\', \'\')"></span>');
 
 //*/
@@ -234,10 +235,11 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized) {
 	//document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
 	if(minimized)
 	  document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="40px" height="30px" src="'+document.domain+'" scrolling="auto"></iframe>');
-	 else
+	 else 
 	   document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
-
-	if (!readOnly) document.writeln('<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source');
+	document.writeln('<textarea id="txtArea' + rte + '" width="' + width + 'px" readonly style="display:none"></textarea>');
+	if (!readOnly) document.writeln('<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" style="display:none" />');//&nbsp;View Source');
+	
 	document.writeln('<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>');
 	document.writeln('<input type="hidden" id="hdn' + rte + '" name="' + rte + '" value="">');
 	//!!Error!!document.getElementById('hdn' + rte).value = html;
@@ -277,7 +279,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 		oRTE.write(frameHtml);
 		oRTE.close();
 		if (!readOnly) oRTE.designMode = "On";
-
+		
         //Buttons1_' + rte + '
 		//addEvent(frames[rte].document, 'click', function() {alert('df');}, false);
 		if(minimized){
@@ -383,10 +385,7 @@ function processURLs(stringWithUrl) { // function that looks for all URLs in RTE
 function updateRTEs() {
 	var vRTEs = allRTEs.split(";");
 	for (var i = 0; i < vRTEs.length; i++) {
-    var frame = frames[vRTEs[i]];
-    if (!frame)
-      continue;
-		frame.document.body.innerHTML = processURLs(frame.document.body.innerHTML);
+		frames[vRTEs[i]].document.body.innerHTML = processURLs(frames[vRTEs[i]].document.body.innerHTML);
 		updateRTE(vRTEs[i]);
 		//!!!alert(frames[vRTEs[i]].document.body.innerHTML);
 	}
@@ -440,6 +439,7 @@ function updateRTE(rte) {
 }
 
 function toggleHTMLSrc(rte) {
+//document.getElementById(rte).style.display = 'none';
 	//contributed by Bob Hutzel (thanks Bob!)
 	var oRTE;
 	if (document.all) {
@@ -452,27 +452,42 @@ function toggleHTMLSrc(rte) {
 	    //document.getElementById("Buttons1_" + rte).style.visibility = "hidden";
 		document.getElementById("Buttons1_" + rte).style.visibility = "visible";
 		//document.getElementById("Buttons2_" + rte).style.visibility = "hidden";
+		var inHTML = oRTE.body.innerHTML;
 		if (document.all) {
+		    //document.getElementById('txtArea' + rte).value = oRTE.body.innerHTML;
+			//document.getElementById('txtArea' + rte).style.height = document.getElementById(rte).style.height;
+			//document.getElementById('txtArea' + rte).style.width = document.getElementById(rte).style.width;
 			oRTE.body.innerText = oRTE.body.innerHTML;
+			//document.getElementById(rte).style.display = 'none';
+			//document.getElementById('txtArea' + rte).style.display = 'inline';
+			
 		} else {
 			var htmlSrc = oRTE.createTextNode(oRTE.body.innerHTML);
 			oRTE.body.innerHTML = "";
 			oRTE.body.appendChild(htmlSrc);
 		}
+		document.getElementById('txtArea' + rte).value = inHTML;
+		document.getElementById('txtArea' + rte).style.height = document.getElementById(rte).style.height;
+		document.getElementById('txtArea' + rte).style.width = document.getElementById(rte).style.width;
+		document.getElementById(rte).style.display = 'none';
+		document.getElementById('txtArea' + rte).style.display = 'inline';
 	} else {
 		document.getElementById("Buttons1_" + rte).style.visibility = "visible";
 		//document.getElementById("Buttons2_" + rte).style.visibility = "visible";
+		document.getElementById('txtArea' + rte).style.display = 'none';
+		document.getElementById(rte).style.display = 'inline';
 		if (document.all) {
 			//fix for IE
 			var output = escape(oRTE.body.innerText);
 			output = output.replace("%3CP%3E%0D%0A%3CHR%3E", "%3CHR%3E");
 			output = output.replace("%3CHR%3E%0D%0A%3C/P%3E", "%3CHR%3E");
-
+			
 			oRTE.body.innerHTML = unescape(output);
 		} else {
 			var htmlSrc = oRTE.body.ownerDocument.createRange();
 			htmlSrc.selectNodeContents(oRTE.body);
 			oRTE.body.innerHTML = htmlSrc.toString();
+            document.getElementById(rte).contentDocument.designMode = 'on';
 		}
 	}
 }
