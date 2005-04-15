@@ -422,7 +422,7 @@ function create1(calendar) {
               (thistcc),
               '"></iframe>')
   }
-  alert(TC0c.TC0g());
+//  alert(TC0c.TC0g());
   //document.write(TC0c.TC0g());
   var calRef = document.getElementById("calendar_" + calendar.controlName);
 //  var calRef = document.getElementById('caldiv' + thistcc);
