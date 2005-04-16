@@ -189,10 +189,11 @@ Popup.load = function (divId) {
   //var calInit = eval('popupFrame.' + calInitName);
   var popup = Popup.getPopup(divId);
   popup.setInnerHtml(body.innerHTML)
-  if (popupFrame.CAL_INIT_) {
-    new calendar(popupFrame.CAL_INIT_, CAL_TPL1, shortPropName + '_From');
-    new calendar(popupFrame.CAL_INIT_, CAL_TPL1, shortPropName + '_To');
-  }
+  if (popupFrame.CAL_INIT_From) 
+    new calendar(popupFrame.CAL_INIT_From, CAL_TPL1, shortPropName + '_From');
+  if (popupFrame.CAL_INIT_To) 
+    new calendar(popupFrame.CAL_INIT_To, CAL_TPL1, shortPropName + '_To');
+  
   var div = popup.div;
 
   var tables = div.getElementsByTagName('table');
@@ -562,7 +563,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     for (var i=0; i<n; i++) {
       var popupItem = new PopupItem(elem, i);
       self.items[popupItem.id];
-      //addEvent(elem, 'click',     self.popupRowOnClick,     false);
+      addEvent(elem, 'click',     self.popupRowOnClick,     false);
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
       addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
       elem = self.nextRow();
@@ -2340,11 +2341,12 @@ function displayInner(urlStr) {
   }
 
   bottomFrame.location.replace(finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y#pane2");
-
+/*  
   e.cancelBubble = true;
   e.returnValue = false;
   if (e.preventDefault)  e.preventDefault();
   if (e.stopPropagation) e.stopPropagation();
+*/  
   return false;
 }
 
