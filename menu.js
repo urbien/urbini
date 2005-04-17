@@ -621,14 +621,14 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.popupRowOnKeyPress = function(e) {
     e = (e) ? e : ((window.event) ? window.event : null);
     if (!e)
-      return;
+      return stopEventPropagation(e);
 
     var currentDiv = self.getCurrentDiv();
     var characterCode = getKeyCode(e); // code typed by the user
     var target;
     var tr = self.currentRow;
     if (!tr)
-      return;
+      return stopEventPropagation(e);
 
     switch (characterCode) {
       case 38:  //up arrow
@@ -643,22 +643,14 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           }
           Popup.close0(currentDiv.id);
         }
-        e.cancelBubble = true;
-        e.returnValue = false;
-        if (e.preventDefault)  e.preventDefault();
-        if (e.stopPropagation) e.stopPropagation();
-        return false;
+        return stopEventPropagation(e);
       case 27:  //esc
         if (currentDiv)
           Popup.close0(currentDiv.id);
         return false;
       case 13:  //enter
         self.popupRowOnClick1(tr);
-        e.cancelBubble = true;
-        e.returnValue = false;
-        if (e.preventDefault) e.preventDefault();
-        if (e.stopPropagation) e.stopPropagation();
-        return false;
+        return stopEventPropagation(e);
       default:
       case 8:   //backspace
         if (currentDiv) {
@@ -674,11 +666,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             }
           }
         }
-        e.cancelBubble = true;
-        e.returnValue = false;
-        if (e.preventDefault) e.preventDefault();
-        if (e.stopPropagation) e.stopPropagation();
-        return false;
+        return stopEventPropagation(e);
     }
 
     if (characterCode == 40) {       // down arrow
@@ -692,11 +680,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       self.selectRow();
     }
 
-    e.cancelBubble = true;
-    e.returnValue = false;
-    if (e.preventDefault) e.preventDefault();
-    if (e.stopPropagation) e.stopPropagation();
-    return false;
+    return stopEventPropagation(e);
   }
 
   /**
@@ -709,18 +693,26 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     e = (e) ? e : ((window.event) ? window.event : null);
 
     if (!e)
-      return;
+      return stopEventPropagation(e);
 
     target = getTargetElement(e);
     tr = getTrNode(target);
     if (!tr)
-      return;
+      return stopEventPropagation(e);
 
-    var isProcessed = tr.getAttribute('clickProcessed');
-    if (isProcessed && isProcessed == 'true') {
-      tr.setAttribute('clickProcessed', 'false');
-      return;
+    // in both IE and Mozilla on menu click (if menu has onClick handler) onclick event comes one more time
+    var isProcessed = tr.getAttribute('eventProcessed');
+    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true)) {
+      tr.setAttribute('eventProcessed', 'false');
+      return stopEventPropagation(e);
     }
+    // in IE on menu click (if menu has onClick handler) this same event comes yet another time
+    if (e.getAttribute) {
+      var isProcessed = e.getAttribute('eventProcessed');
+      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+        return stopEventPropagation(e);
+    }
+
 
     var ret = self.popupRowOnClick1(tr, target);
     return ret;
@@ -927,7 +919,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
     // if checkbox was clicked, then do not close popup so that user can check checboxes, if needed
     if (checkboxClicked)
-      return false;
+      return stopEventPropagation(e);
 
     // close popup
     var divId = prop + "_" + currentFormName;
@@ -1739,7 +1731,7 @@ function textAreaOnFocus(e) {
     target.attributes['rows'].value = 1;
   var cols = getFormFieldInitialValue(target, 'cols');
   if (!cols) {
-    target.setAttributes('cols', 10);
+    target.setAttribute('cols', 10);
     cols = 10;
   }
   var c = target.attributes['cols'];
@@ -2499,8 +2491,12 @@ function addPageTitleToUrl(e) {
   if (!e)
     return;
 
-  var tr = getTargetElement(e);
-  tr.setAttribute('clickProcessed', 'true');
+  var target = getTargetElement(e);
+  var tr = getTrNode(target);
+  if (!tr)
+    return;
+
+  tr.setAttribute('eventProcessed', 'true');
   var aa = tr.getElementsByTagName("a");
   if (!aa)
     return;
@@ -2512,7 +2508,6 @@ function addPageTitleToUrl(e) {
   var title = document.title;
   if (title)
     title = encodeURIComponent(title);
-
   var ret = displayInner(e, a.href + delim + 'title=' + title);
   return ret;
 }
@@ -2541,7 +2536,7 @@ function displayInner(e, urlStr) {
       , 100);
 */
   e.cancelBubble = true;
-  e.returnValue = false;
+  e.returnValue  = true;
   if (e.preventDefault)  e.preventDefault();
   if (e.stopPropagation) e.stopPropagation();
   bottomFrame.location.replace(finalUrl);
@@ -2576,3 +2571,11 @@ function showPageInner(tr) {
 }
 
 
+function stopEventPropagation(e) {
+  e.cancelBubble = true;
+  e.returnValue  = true;
+  if (e.preventDefault)  e.preventDefault();
+  if (e.stopPropagation) e.stopPropagation();
+  if (e.setAttribute)    e.setAttribute('eventProcessed', 'true');
+  return false;
+}
