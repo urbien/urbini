@@ -189,11 +189,11 @@ Popup.load = function (divId) {
   //var calInit = eval('popupFrame.' + calInitName);
   var popup = Popup.getPopup(divId);
   popup.setInnerHtml(body.innerHTML)
-  if (popupFrame.CAL_INIT_From) 
+  if (popupFrame.CAL_INIT_From)
     new calendar(popupFrame.CAL_INIT_From, CAL_TPL1, shortPropName + '_From');
-  if (popupFrame.CAL_INIT_To) 
+  if (popupFrame.CAL_INIT_To)
     new calendar(popupFrame.CAL_INIT_To, CAL_TPL1, shortPropName + '_To');
-  
+
   var div = popup.div;
 
   var tables = div.getElementsByTagName('table');
@@ -716,6 +716,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (!tr)
       return;
 
+    var isProcessed = tr.getAttribute('clickProcessed');
+    if (isProcessed && isProcessed == 'true') {
+      tr.setAttribute('clickProcessed', 'false');
+      return;
+    }
+
     var ret = self.popupRowOnClick1(tr, target);
     return ret;
   }
@@ -781,7 +787,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var formFieldClass    = form.elements[iclass];
     var formFieldVerified = form.elements[verified];
 
-    var isInput = (target && target.tagName.toLowerCase() == 'input');
+    var checkboxClicked = (target && target.tagName.toLowerCase() == 'input' && target.type.toLowerCase() == 'checkbox');
     var deleteCurrentDiv = false;
     if (formFieldVerified) {
       if (formFieldVerified.value == 'n')
@@ -882,8 +888,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             selectItems[i].value = null;
             continue;
           }
-          if (selectItems[i].value == tr.id) { // check that item was selected by clicking on popup row no explicitely on checkbox
-            if (!isInput)
+          if (selectItems[i].value == tr.id) { // check that item was selected by clicking on popup row not explicitely on checkbox
+            if (!checkboxClicked)              // mark row's checkbox
               selectItems[i].checked = true;
           }
           if (selectItems[i].checked == true) {
@@ -919,17 +925,19 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           chosenTextField.value = '<...>';
       }
     }
-    // close popup (unless checkbox was clicked, then do not close to let user set other checboxes if needed)
-    if (!isInput) {
-      var divId = prop + "_" + currentFormName;
-      if (currentResourceUri != null)
-        divId = currentResourceUri + ".$." + divId;
-      var div = document.getElementById(divId);
-      if (deleteCurrentDiv == true && currentDiv)
-        loadedPopups[currentDiv.id] = null;
-      Popup.close0(div.id);
-      clearOtherPopups(div);
-    }
+    // if checkbox was clicked, then do not close popup so that user can check checboxes, if needed
+    if (checkboxClicked)
+      return false;
+
+    // close popup
+    var divId = prop + "_" + currentFormName;
+    if (currentResourceUri != null)
+      divId = currentResourceUri + ".$." + divId;
+    var div = document.getElementById(divId);
+    if (deleteCurrentDiv && currentDiv)
+      loadedPopups[currentDiv.id] = null;
+    Popup.close0(div.id);
+    clearOtherPopups(div);
     return false;
   }
 
@@ -2242,12 +2250,7 @@ function onClick(e) {
       removeModifier(url, '_shiftKey=y');
       removeModifier(url, '_ctrlKey=y');
       removeModifier(url, '_altKey=y');
-      displayInner(url.href);
-      e.cancelBubble = true;
-      e.returnValue = false;
-      if (e.preventDefault)  e.preventDefault();
-      if (e.stopPropagation) e.stopPropagation();
-      return false;
+      return displayInner(e, url.href);
     }
   }
 
@@ -2323,31 +2326,6 @@ function getANode(elem) {
     return getANode(e);
   else
     return null;
-}
-
-function displayInner(urlStr) {
-  var frameId = 'bottomFrame';
-  var bottomFrame = frames[frameId];
-  // show content in a second pane
-  //
-  if (!bottomFrame)
-    return;
-
-  var finalUrl = urlStr;
-  var idx = urlStr.indexOf('.html');
-  if (idx != -1) {
-    var idx1 = urlStr.lastIndexOf('/', idx);
-    finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
-  }
-
-  bottomFrame.location.replace(finalUrl + "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y#pane2");
-/*  
-  e.cancelBubble = true;
-  e.returnValue = false;
-  if (e.preventDefault)  e.preventDefault();
-  if (e.stopPropagation) e.stopPropagation();
-*/  
-  return false;
 }
 
 //********************* helper functions ********************************
@@ -2515,22 +2493,66 @@ function findPosY(obj) {
 /**
  * function that adds a title (taken from page HEAD) of current page to a url that is passed as a parameter
  */
-function addPageTitleToUrl(tr) {
-  var title = document.title;
-  if (!title)
+function addPageTitleToUrl(e) {
+  e = (e) ? e : ((window.event) ? window.event : null);
+
+  if (!e)
     return;
 
+  var tr = getTargetElement(e);
+  tr.setAttribute('clickProcessed', 'true');
   var aa = tr.getElementsByTagName("a");
   if (!aa)
     return;
   a = aa[0];
 
   var idx = a.href.indexOf('?');
-  if (idx != -1)
-    a.href = a.href + "&title=" + encodeURIComponent(title) + "#";  // add hash to avoid page reloading
-  else
-    a.href = a.href + "?title=" + encodeURIComponent(title) + "#";
-  displayInner(a.href);
+  var delim = idx != -1 ? '&' : '?';
+
+  var title = document.title;
+  if (title)
+    title = encodeURIComponent(title);
+
+  var ret = displayInner(e, a.href + delim + 'title=' + title);
+  return ret;
+}
+
+function displayInner(e, urlStr) {
+  var frameId = 'bottomFrame';
+  var bottomFrame = frames[frameId];
+  // show content in a second pane
+  //
+  if (!bottomFrame)
+    return null;
+
+  var finalUrl = urlStr;
+  var idx = urlStr.indexOf('.html');
+  if (idx != -1) {
+    var idx1 = urlStr.lastIndexOf('/', idx);
+    finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
+  }
+
+  finalUrl += "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y&-inner=y#pane2";
+/*
+  setTimeout(
+      "changeLocation('" +
+      frameId     + "', '" +
+      finalUrl    + "')"
+      , 100);
+*/
+  e.cancelBubble = true;
+  e.returnValue = false;
+  if (e.preventDefault)  e.preventDefault();
+  if (e.stopPropagation) e.stopPropagation();
+  bottomFrame.location.replace(finalUrl);
+  return false;
+}
+
+function changeLocation(frameId, url) {
+  var frame = frames[frameId];
+  if (!frame)
+    return;
+  frame.location.replace(url);
 }
 
 /**
