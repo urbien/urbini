@@ -289,7 +289,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 		  //frames[rte].document.attachEvent("onkeypress", function () {alert(document.getElementById(rte).height); document.getElementById(rte).height = 200; alert(document.getElementById(rte).height);});
 		}
 	} else {
-    if (document.getElementById(rte).contentDocument == null) {
+    if (document.getElementById(rte) == null) {
       //gecko may take some time to enable design mode.
       //Keep looping until able to set.
       if (isGecko) {
@@ -299,7 +299,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
         return false;
       }
     }
-    else {//alert((document.getElementById(rte).contentDocument == null));
+    else {//alert((document.getElementById(rte).contentDocument == null));//alert(document.getElementById(rte).contentDocument);
 	  if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
 			try {
 				var oRTE = document.getElementById(rte).contentWindow.document;
