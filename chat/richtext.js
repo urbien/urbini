@@ -289,7 +289,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 		  //frames[rte].document.attachEvent("onkeypress", function () {alert(document.getElementById(rte).height); document.getElementById(rte).height = 200; alert(document.getElementById(rte).height);});
 		}
 	} else {
-    if (document.getElementById(rte) == null) {
+    if (document.getElementById(rte).contentDocument == null) {
       //gecko may take some time to enable design mode.
       //Keep looping until able to set.
       if (isGecko) {
@@ -299,7 +299,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
         return false;
       }
     }
-    else {
+    else {//alert((document.getElementById(rte).contentDocument == null));
 	  if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
 			try {
 				var oRTE = document.getElementById(rte).contentWindow.document;
@@ -310,10 +310,11 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 					//attach a keyboard handler for gecko browsers to make keyboard shortcuts work
 					oRTE.addEventListener("keypress", kb_handler, true);
                     //addEvent(frames[rte].document, 'click', function() {alert('df');}, false);
-					if(minimized)
+					if(minimized) {
 					  //addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
 					  addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
 					  addEvent(frames[rte].document, 'keyup', function() {if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
+					}
 				}
 			} catch (e) {
 				alert("Error preloading content.");
