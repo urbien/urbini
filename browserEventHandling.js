@@ -99,85 +99,12 @@
       addEvent(window, 'load', function() {setTimeout(interceptLinkClicks, 0);}, false);
       if (typeof replaceAllTooltips != 'undefined')
         addEvent(window, 'load', function() {setTimeout(replaceAllTooltips,  0);}, false);
-      //addEvent(window, 'unload', function() {java.lang.System.out.println("unload");}, false);
-
-      /* this function supposed to fix a problem (with above functions) on Mac IE5
-       * but it fails on Win IE6 ... so may be somebody can figure it out - see source of info:
-       * http://simon.incutio.com/archive/2004/05/26/addLoadEvent
-       */
-      /*function addLoadEvent(func) {
-          var oldonload = window.onload;
-          if (typeof window.onload != 'function') {
-            window.onload = func;
-          }
-          else {
-            window.onload = function() {
-              oldonload();
-              func();
-            }
-          }
-        }
-      */
 
       if (window.parent != window)
         return;
       initMenus();
-      // add handler to smartlistbox images
-      if (typeof listboxOnClick != 'undefined') {
-        var images = document.images;
-        for (i=0; i<images.length; i++) {
-          var image = images[i];
-          if (image.id.indexOf("_filter", image.id.length - "_filter".length) == -1)
-            continue;
-          addEvent(image, 'click', listboxOnClick, false);
-        }
-      }
+      initListBoxes();
 
-      // 1. add handler to autocomplete filter form text fields
-      // 2. save initial values of all fields
-      if (typeof autoComplete == 'undefined')
-        return;
-      var forms = document.forms;
-      formInitialValues = new Array(forms.length);
-      for (i=0; i<forms.length; i++) {
-        var form = forms[i];
-        var initialValues = new Array(form.elements.length);
-        formInitialValues[form.name] = initialValues;
-        if (form.id != 'filter')
-          continue;
-        addEvent(form, 'submit', popupOnSubmit, false);
-        for (j=0; j<form.elements.length; j++) {
-          var elem = form.elements[j];
-          initialValues[elem.name] = elem.value;
-
-          if (!elem.type || elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT fields
-              elem.id  && !elem.valueType) {                      // and those that have ID
-            addEvent(elem, 'keypress', autoComplete,              false);
-            addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
-            addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
-            addEvent(elem, 'blur',     autoCompleteOnBlur,        false);
-            addEvent(elem, 'mouseout', autoCompleteOnMouseout,    false);
-            //addEvent(elem, 'change',   onFormFieldChange, false);
-            //addEvent(elem, 'blur',     onFormFieldChange, false);
-            //addEvent(elem, 'click',    onFormFieldClick,  false);
-          }
-          else if (elem.type && elem.type.toUpperCase() == 'TEXTAREA') {
-            var rows = elem.attributes['rows'];
-            var cols = elem.attributes['cols'];
-            if (rows)
-              initialValues[elem.name + '.attributes.rows'] = rows.value;
-            if (cols)
-              initialValues[elem.name + '.attributes.cols'] = cols.value;
-            if (!elem.value || elem.value == '') {
-              elem.setAttribute('rows', 1);
-              elem.setAttribute('cols', 10);
-              //elem.attributes['cols'].value = 10;
-              addEvent(elem, 'focus', textAreaOnFocus,  false);
-              addEvent(elem, 'blur',  textAreaOnBlur,   false);
-            }
-          }
-        }
-      }
       addEvent(window, 'load', function() {setTimeout(resourceListEdit,  0);}, false);
     }
 
@@ -236,6 +163,74 @@
       }
       //tooltipMouseOut0(target);           // remove and ...
       //tooltipMouseOver0(target);          // repaint the tooltip on this boolean icon
+    }
+
+    function initListBoxes(div) {
+      // add handler to smartlistbox images
+      if (typeof listboxOnClick == 'undefined')
+        return;
+
+      var images;
+      if (div)
+        images = div.getElementsByTagName('img');
+      else
+        images = document.images;
+      for (i=0; i<images.length; i++) {
+        var image = images[i];
+        if (image.id.indexOf("_filter", image.id.length - "_filter".length) == -1)
+          continue;
+        addEvent(image, 'click', listboxOnClick, false);
+      }
+
+      // 1. add handler to autocomplete filter form text fields
+      // 2. save initial values of all fields
+      if (typeof autoComplete == 'undefined')
+        return;
+      var forms;
+      if (div)
+        forms = div.getElementsByTagName('form');
+      else
+        forms = document.forms;
+      formInitialValues = new Array(forms.length);
+      for (i=0; i<forms.length; i++) {
+        var form = forms[i];
+        var initialValues = new Array(form.elements.length);
+        formInitialValues[form.name] = initialValues;
+        if (form.id != 'filter')
+          continue;
+        addEvent(form, 'submit', popupOnSubmit, false);
+        for (j=0; j<form.elements.length; j++) {
+          var elem = form.elements[j];
+          initialValues[elem.name] = elem.value;
+
+          if (!elem.type || elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT fields
+              elem.id  && !elem.valueType) {                      // and those that have ID
+            addEvent(elem, 'keypress', autoComplete,              false);
+            addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
+            addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
+            addEvent(elem, 'blur',     autoCompleteOnBlur,        false);
+            addEvent(elem, 'mouseout', autoCompleteOnMouseout,    false);
+            //addEvent(elem, 'change',   onFormFieldChange, false);
+            //addEvent(elem, 'blur',     onFormFieldChange, false);
+            //addEvent(elem, 'click',    onFormFieldClick,  false);
+          }
+          else if (elem.type && elem.type.toUpperCase() == 'TEXTAREA') {
+            var rows = elem.attributes['rows'];
+            var cols = elem.attributes['cols'];
+            if (rows)
+              initialValues[elem.name + '.attributes.rows'] = rows.value;
+            if (cols)
+              initialValues[elem.name + '.attributes.cols'] = cols.value;
+            if (!elem.value || elem.value == '') {
+              elem.setAttribute('rows', 1);
+              elem.setAttribute('cols', 10);
+              //elem.attributes['cols'].value = 10;
+              addEvent(elem, 'focus', textAreaOnFocus,  false);
+              addEvent(elem, 'blur',  textAreaOnBlur,   false);
+            }
+          }
+        }
+      }
     }
 
     var formInitialValues;
