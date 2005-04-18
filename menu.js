@@ -1979,27 +1979,6 @@ function initMenus() {
       addEvent(m, 'click', menuOnClick, false);
     }
   }
-/*
-  var menuDivs = document.getElementsByTagName('div');
-  var l = menuDivs.length;
-  var uniqueDivs = new Array();
-  for (i=0; i<l; i++) {
-    var div = menuDivs[i];
-    if (div.id.indexOf('menudiv_') == 0) {
-      if (uniqueDivs[div.id])
-        continue;
-      uniqueDivs[div.id] = div;
-      var tables = div.getElementsByTagName('table');
-      if (tables && tables[1]) {
-        var trs = tables[1].getElementsByTagName('tr');
-        for (int j; i<trs.length; j++) {
-          trs[i];
-
-        }
-      }
-    }
-  }
-*/
 }
 
 /**
@@ -2020,49 +1999,9 @@ function menuOnClick(e) {
   var imgId = target.id;
   var divId = 'menudiv_' + imgId.substring('menuicon_'.length);
   var popup = Popup.open(divId, target, null, 0, 19);
-  e.cancelBubble = true;
-  e.returnValue = false;
-  if (e.preventDefault)  e.preventDefault();
-  if (e.stopPropagation) e.stopPropagation();
-  return false;
+  return stopEventPropagation(e);
 }
 
-/**
- * act on the first A tag inside a menu item's TD
- * this is needed to make the whole menu item row clickable (not just the A tag's text)
- */
-/*
-function menuItemOnClick(e) {
-  var target;
-
-  e = (e) ? e : ((window.event) ? window.event : null);
-
-  if (!e)
-    return;
-
-  target = getTargetElement(e);
-  if (!target)
-    return;
-
-  var tds = target.getElementsByTagName('td');
-  if (tds == null || tds.length < 2) {
-    throw new Error("invalid menu structure: expected TR to contain at least two TDs");
-  }
-  var td = tds[1];
-  var anchors = td.getElementsByTagName("a");
-  if (anchors == null || anchors.length != 1) {
-    throw new Error("invalid menu structure: expected second TD in TR to contain one A");
-  }
-
-  var anchor = anchors[0];
-  location.href = anchor.href;
-  e.cancelBubble = true;
-  e.returnValue = false;
-  if (e.preventDefault)  e.preventDefault();
-  if (e.stopPropagation) e.stopPropagation();
-  return false;
-}
-*/
 
 /*********************************** Tooltips ************************************/
 function replaceTooltips0(elements) {
@@ -2157,13 +2096,8 @@ function tooltipMouseOver(e) {
     return;
 
   target = getTargetElement(e);
-  if (!tooltipMouseOver0(target)) {
-    e.cancelBubble = true;
-    e.returnValue = false;
-    if (e.preventDefault)  e.preventDefault();
-    if (e.stopPropagation) e.stopPropagation();
-    return false;
-  }
+  if (!tooltipMouseOver0(target))
+    return stopEventPropagation(e);
   else
     return true;
 }
@@ -2249,12 +2183,9 @@ function onClick(e) {
   removeModifier(url, '_ctrlKey=y');
   removeModifier(url, '_altKey=y');
   addUrlParam(url, p, null);
+
   document.location.href = url.href;
-  e.cancelBubble = true;
-  e.returnValue = false;
-  if (e.preventDefault)  e.preventDefault();
-  if (e.stopPropagation) e.stopPropagation();
-  return false;
+  return stopEventPropagation(e);
 }
 
 function addUrlParam(url, param, target) {
@@ -2560,5 +2491,6 @@ function setInnerHtml(div, text) {
     div.style.height = null;
     // insert html fragment
     div.innerHTML = text;
+    //window.parent.focus();
   }
 }
