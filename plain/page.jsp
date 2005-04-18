@@ -1,5 +1,5 @@
 <html>
-  <include name="commonHead.jsp" />  
+  <include name="commonHead.jsp" />
   <body id="body" text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
 
   <div nonPda="T">
@@ -12,7 +12,7 @@
     </table>
 
     <br></br>
-    <include name="requiredFooter"/>
+    <include name="requiredFooter.jsp"/>
   </div>
 
   </body>
