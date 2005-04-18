@@ -61,6 +61,8 @@
     </tr>
 
     <tr><td width="1%"></td><td width="98%"><br/>
+<a target="pane2"> </a>
+<div id="pane2" />
       <readOtherSiteInfo />
       <tablePropertyList />
 <hideBlock id="hideBlock1">      
@@ -76,4 +78,5 @@
 <hideBlock>
   <br/><br/><div align="left"><span class="xs"><hudsonFog /></span></div>
 </hideBlock>
+<iframe name="bottomFrame" id="bottomFrame" src="about:blank" scrolling="no" frameborder="0" style="overflow:visible; display:none"> </iframe>  
 </div>
