@@ -156,18 +156,17 @@ Popup.close0 = function (divId) {
  *  Loads the popup into the div from the iframe
  */
 Popup.load = function (divId) {
-  if (!popupFrameLoaded) {
-//    if (timeoutCount++ < 20)
-//      setTimeout(loadPopup, 100);
-//    else
-//      alert("Warning: server did not return listbox data - check connection to server");
+  var frameId     = 'popupFrame';
+  var frameBodyId = 'popupFrameBody';
+
+  if (!frameLoaded[frameId]) {
     setTimeout("Popup.load('" + divId + "')", 100);
     return;
   }
 
   // now it is loaded
-  var popupFrame = frames['popupFrame'];
-  var body = popupFrame.document.getElementById('popupFrameBody');
+  var popupFrame = frames[frameId];
+  var body = popupFrame.document.getElementById(frameBodyId);
   if (!body) {
     alert("Warning: server did not return listbox data - check connection to server");
     return;
@@ -368,18 +367,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.setInnerHtml = function (text) {
-    if (Popup.ns4) {
-      self.div.document.open();
-      self.div.document.write(text);
-      self.div.document.close();
-    }
-    else {
-      //  hack to remove current div dimensions, otherwise div will not auto-adjust to the text inserted into it (hack needed at least in firefox 1.0)
-      self.div.style.width  = null;
-      self.div.style.height = null;
-      // insert text
-      self.div.innerHTML = text;
-    }
+    setInnerHtml(self.div, text);
   }
 
   /**
@@ -1149,7 +1137,7 @@ var currentFormName = null;
 var currentResourceUri = null;
 
 var internalFocus = false;
-var popupFrameLoaded = false;
+var frameLoaded = new Array();
 
 var rteUpdated = 'false';
 
@@ -1332,7 +1320,7 @@ window.status = divId;
 
   // request listbox context from the server and load it into a 'popupFrame' iframe
   var listboxFrame = frames["popupFrame"];
-  popupFrameLoaded = false;
+  frameLoaded["popupFrame"] = false;
   listboxFrame.location.replace(url); // load data from server into iframe
   timeoutCount = 0;
   setTimeout("Popup.load('" + divId + "')", 100);
@@ -2524,48 +2512,27 @@ function displayInner(e, urlStr) {
   }
 
   finalUrl += "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y&-inner=y#pane2";
-/*
-  setTimeout(
-      "changeLocation('" +
-      frameId     + "', '" +
-      finalUrl    + "')"
-      , 100);
-*/
-  e.cancelBubble = true;
-  e.returnValue  = true;
-  if (e.preventDefault)  e.preventDefault();
-  if (e.stopPropagation) e.stopPropagation();
+  stopEventPropagation(e);
+
   bottomFrame.location.replace(finalUrl);
+  setTimeout( "copyInnerHtml('" + frameId  + "', '" + 'pane2' + "')", 100 );
   return false;
 }
 
-function changeLocation(frameId, url) {
-  var frame = frames[frameId];
-  if (!frame)
-    return;
-  frame.location.replace(url);
-}
-
 /**
- * function that adds a title (taken from page HEAD) of current page to a url that is passed as a parameter
+ *  Loads the popup into the div from the iframe
  */
-function showPageInner(tr) {
-  var title = document.title;
-  if (!title)
+function copyInnerHtml(frameId, divId) {
+  if (!frameLoaded[frameId]) {
+    setTimeout( "copyInnerHtml('" + frameId  + "', '" + divId + "')", 100 );
     return;
-
-  var aa = tr.getElementsByTagName("a");
-  if (!aa)
-    return;
-  a = aa[0];
-
-  var idx = a.href.indexOf('?');
-  if (idx != -1)
-    a.href = a.href + "&title=" + encodeURIComponent(title) + "#";  // add hash to avoid page reloading
-  else
-    a.href = a.href + "?title=" + encodeURIComponent(title) + "#";
+  }
+  frameLoaded[frameId] = false;
+  var div = document.getElementById(divId);
+  var frameBody = frames[frameId].document.body;
+  setInnerHtml(div, frameBody.innerHTML);
+  initListBoxes(div);
 }
-
 
 function stopEventPropagation(e) {
   e.cancelBubble = true;
@@ -2574,4 +2541,20 @@ function stopEventPropagation(e) {
   if (e.stopPropagation) e.stopPropagation();
   if (e.setAttribute)    e.setAttribute('eventProcessed', 'true');
   return false;
+}
+
+function setInnerHtml(div, text) {
+  if (Popup.ns4) {
+    div.document.open();
+    div.document.write(text);
+    div.document.close();
+  }
+  else {
+    div.innerHTML = '';
+    //  hack to remove current div dimensions, otherwise div will not auto-adjust to the text inserted into it (hack needed at least in firefox 1.0)
+    div.style.width  = null;
+    div.style.height = null;
+    // insert html fragment
+    div.innerHTML = text;
+  }
 }
