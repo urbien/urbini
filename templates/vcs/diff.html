@@ -1,0 +1,106 @@
+ 
+<table width="100%" border="0" cellspacing="0" cellpadding="5">
+  <tr> 
+    <td>
+      <table width="100%" border="1" cellspacing="0" cellpadding="3" bgcolor="#CCCCFF">
+        <tbody> 
+        <tr>
+          <td><a id="TOP" name="TOP"></a><a href="&[fileNameLink];">&[fileName];</a></td>
+        </tr>
+        </tbody> 
+      </table>
+    </td>
+  </tr>
+  <tr> 
+    <td> 
+      <hr noshade />
+    </td>
+  </tr>
+  <tr> 
+    <td> 
+      <table cellspacing="0" cellpadding="0" width="100%" bgcolor="#f0f0f0" border="0">
+        <tbody> 
+        <tr> 
+          <td align="middle" colspan="2" bgcolor="#c0c0f0"> 
+            <table cellpadding="3" width="100%" border="1">
+              <tbody> 
+              <tr> 
+                <td align="middle" colspan="2"><b><a href="#RAW">Diff</a>&#160;of 
+                  &[shortFileName];</b></td>
+              </tr>
+              <tr bgcolor="#e0e0e0"> 
+                <th align="middle" width="50%"><b>Version&#160;&[leftRevision];</b></th>
+                <th align="middle" width="50%"><b>Version&#160;&[rightRevision];</b></th>
+              </tr>
+              </tbody> 
+            </table>
+          </td>
+        </tr>
+        <[lines]> 
+        <tr> 
+          <td width="50%" bgcolor="#99cccc"> 
+            <table cellpadding="3" width="100%" border="1">
+              <tbody> 
+              <tr> 
+                <td><b>Line&#160;&[leftMin];</b></td>
+              </tr>
+              </tbody> 
+            </table>
+          </td>
+          <td width="50%" bgcolor="#99cccc"> 
+            <table cellpadding="3" width="100%" border="1">
+              <tbody> 
+              <tr> 
+                <td><b>Line&#160;&[rightMin];</b></td>
+              </tr>
+              </tbody> 
+            </table>
+          </td>
+        </tr>
+        <tr> 
+          <td bgcolor="&[leftBackground];" width="50%"><font face="Arial, Helvetica, sans-serif" size="-1">&[leftLines];</font></td>
+          <td bgcolor="&[rightBackground];" width="50%"><font face="Arial, Helvetica, sans-serif" size="-1">&[rightLines];</font></td>
+        </tr>
+        <@> 
+        <tr> 
+          <td colspan="2" bgcolor="#ff6200"> 
+            <table width="100%" border="1">
+              <tbody> 
+              <tr bgcolor="#ffffff"> 
+                <td align="middle"> <strong>-- Legend --</strong><br />
+                  <table cellspacing="0" cellpadding="2" width="100%" border="0">
+                    <tbody> 
+                    <tr> 
+                      <td align="middle" width="50%" bgcolor="#ffcccc">Removed 
+                        in v.&[leftRevision];</td>
+                      <td width="50%" bgcolor="#cccccc">&#160;</td>
+                    </tr>
+                    <tr bgcolor="#99ff99"> 
+                      <td align="middle" colspan="2">changed lines</td>
+                    </tr>
+                    <tr> 
+                      <td width="50%" bgcolor="#cccccc">&#160;</td>
+                      <td align="middle" width="50%" bgcolor="#ccccff">Inserted 
+                        in v.&[rightRevision];</td>
+                    </tr>
+                    </tbody> 
+                  </table>
+                </td>
+              </tr>
+              </tbody> 
+            </table>
+          </td>
+        </tr>
+        </tbody> 
+      </table>
+    </td>
+  </tr>
+  <tr> 
+    <td><a id="RAW" name="RAW"></a><a href="#TOP">Back To Top</a></td>
+  </tr>
+  <tr> 
+    <td> 
+      <pre>&[rawDiff];</pre>
+    </td>
+  </tr>
+</table>

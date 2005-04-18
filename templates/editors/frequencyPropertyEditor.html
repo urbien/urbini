@@ -1,0 +1,319 @@
+<style>
+fieldset{
+  border-style: groove;
+  border-color: #bbbbbb;
+  border-width: 2px;
+}
+legend {
+  font-family: \"MS Sans Serif\", Arial, Helvetica, Tahoma, sans-serif;
+  font-size:11px;
+  font-weight:normal;
+  font-style:normal;
+}
+td {
+  font-family: \"MS Sans Serif\", Arial, Helvetica, Tahoma, sans-serif;
+  font-size:11px;
+  font-weight:normal;
+  font-style:normal;
+}
+input {
+  font-family: \"MS Sans Serif\", Arial, Helvetica, Tahoma, sans-serif;
+  font-size:11px;
+  font-weight:normal;
+  font-style:normal;
+}
+select {
+  font-family: \"MS Sans Serif\", Arial, Helvetica, Tahoma, sans-serif;
+  font-size:11px;
+  font-weight:normal;
+  font-style:normal;
+}
+</style>
+<script language="JavaScript">
+  function showRecurrencePanel() {
+    if (document.&[formName];.&[propertyName];_recur[0].checked == true) {
+      document.getElementById('frequencyStartEndBlock').style.display = 'none';
+    } else {
+      document.getElementById('frequencyStartEndBlock').style.display = 'inline';
+    }
+    for (i = 0; i < 5; i++) {
+      if (document.&[formName];.&[propertyName];_recur[i].checked == true) {
+        for (j = 0; j < 5; j++) {
+          if (j != i) {
+            document.getElementById(document.&[formName];.&[propertyName];_recur[j].value + 'Block').style.display = 'none';
+          }
+        }
+        document.getElementById(document.&[formName];.&[propertyName];_recur[i].value + 'Block').style.display = 'inline';
+        return;
+      }
+    }
+  }
+</script>
+<div style="width: 60%">
+  <fieldset>
+  <legend>Recurrence pattern</legend>
+  <input name="&[propertyName];" type="hidden" value="&[propertyValue];">
+  <table cellspacing=6>
+    <tr>
+      <td align="left" valign="middle"> <table>
+          <tr>
+            <td><input type=radio name=&[propertyName];_recur value=once &[recurOnceChecked]; onClick="showRecurrencePanel()"></td>
+            <td>Once</td>
+          </tr>
+          <tr>
+            <td><input type=radio name=&[propertyName];_recur value=daily &[recurDailyChecked]; onClick="showRecurrencePanel()"></td>
+            <td>Daily</td>
+          </tr>
+          <tr>
+            <td><input type=radio name=&[propertyName];_recur value=weekly &[recurWeeklyChecked]; onClick="showRecurrencePanel()"></td>
+            <td>Weekly</td>
+          </tr>
+          <tr>
+            <td><input type=radio name=&[propertyName];_recur value=monthly &[recurMonthlyChecked]; onClick="showRecurrencePanel()"></td>
+            <td>Monthly</td>
+          </tr>
+          <tr>
+            <td><input type=radio name=&[propertyName];_recur value=yearly &[recurYearlyChecked]; onClick="showRecurrencePanel()"></td>
+            <td>Yearly</td>
+          </tr>
+        </table></td>
+      <td background="divider.gif"> </td>
+      <td valign=top> <table id=onceBlock style="display: none" cellpadding=0 cellspacing=0>
+          <tr>
+            <td> <table width="80%">
+                <tr>
+                  <td>Start</td>
+                </tr>
+              </table></td>
+            <td background="divider.gif"></td>
+            <td valign=top> <table id=timeBlock style="display: inline">
+                <tr>
+                  <td><!--script language="JavaScript">
+    var &[propertyName];_init_start_once = {
+    // a name of HTML form containing the calendar
+    'formname' : '&[formName];',
+    // data format the calendar operates with
+    'dataformat' : 'M-d-Y',
+    // weather to hide any other opened calendar if opeining current one
+    'replace' : true,
+	&[currentDateJSString];
+	//'selected' : '',
+	//'watch' : true,
+    'controlname' : '&[propertyName];_start_once'
+    };
+  new calendar(&[propertyName];_init_start_once, CAL_TPL1);
+                  </script--></td>
+                  <td>at</td>
+                  <td> <select name=&[propertyName];_hour_once><[hour]>
+                      &[hourLine];
+				<@> </select> </td>
+                  <td>:</td>
+                  <td> <select name=&[propertyName];_min_once><[min]>
+                      &[minLine];
+				<@> </select> </td>
+                </tr>
+              </table></td>
+          </tr>
+        </table>
+        <table id=dailyBlock style="display: none">
+          <tr>
+            <td><table>
+                <tr>
+                  <td><input type=radio name=&[propertyName];_dailyRecur value=everyFewDays &[dailyRecur_everyFewDays];></td>
+                  <td>Every</td>
+                  <td><input name=&[propertyName];_dayRecurrence value=&[dayRecurrenceValue]; size=2></td>
+                  <td>day(s)</td>
+                </tr>
+              </table></td>
+          </tr>
+          <tr>
+            <td><table>
+                <tr>
+                  <td><input type=radio name=&[propertyName];_dailyRecur value=everyWeekday &[dailyRecur_everyWeekday];></td>
+                  <td colspan=3>Every weekday</td>
+                </tr>
+              </table></td>
+          </tr>
+          <tr>
+            <td><table>
+                <tr>
+                  <td>at</td>
+                  <td> <select name=&[propertyName];_hour_daily><[hourDaily]> &[hourLineDaily];
+				      <@> </select> </td>
+                  <td>:</td>
+                  <td> <select name=&[propertyName];_min_daily><[minDaily]>
+                      &[minLineDaily];
+				<@> </select> </td>
+                </tr>
+              </table></td>
+          </tr>
+        </table>
+        <table id=weeklyBlock style="display: none" cellpadding=0 cellspacing=0>
+          <tr>
+            <td>&[weekDayCheckBoxes];</td>
+          </tr>
+          <tr>
+            <td><table>
+                <tr>
+                  <td>at</td>
+                  <td> <select name=&[propertyName];_hour_weekly><[hourWeekly]>
+                      &[hourLineWeekly];
+				      <@> </select> </td>
+                  <td>:</td>
+                  <td> <select name=&[propertyName];_min_weekly><[minWeekly]>
+                      &[minLineWeekly];
+				<@> </select> </td>
+                </tr>
+              </table></td>
+          </tr>
+        </table>
+        <table id=monthlyBlock style="display: none" cellpadding=0 cellspacing=0>
+          <tr>
+            <td><table>
+                <tr>
+                  <td><input type=radio name=&[propertyName];_monthlyRecur value=byMonthDay &[monthlyRecur_byMonthDay]; checked></td>
+                  <td>Day</td>
+                  <td><input name=&[propertyName];_monthDay value=&[monthDayValue]; size=2></td>
+                  <td>of every</td>
+                  <td><input name=&[propertyName];_monthsRecur value=&[monthsRecurValue]; size=2></td>
+                  <td>month(s)</td>
+                </tr>
+              </table></td>
+          </tr>
+          <tr>
+            <td><table>
+                <tr>
+                  <td><input type=radio name=&[propertyName];_monthlyRecur value=byWeekDay &[monthlyRecur_byWeekDay];></td>
+                  <td>The</td>
+                  <td><select name=&[propertyName];_weekDayRecur size=1><[weekDayRecur]> &[weekDayRecurLine];
+					 <@> </select></td>
+                  <td><select name=&[propertyName];_weekDay size=1><[weekDay]> &[weekDayLine];
+					 <@> </select></td>
+                  <td nowrap>of every</td>
+                  <td><input name=&[propertyName];_monthRecur value=&[monthRecurValue]; size=2></td>
+                  <td>month(s)</td>
+                </tr>
+              </table></td>
+          </tr>
+          <tr>
+            <td><table>
+                <tr>
+                  <td>at</td>
+                  <td> <select name=&[propertyName];_hour_monthly><[hourMonthly]>
+                      &[hourLineMonthly];
+				      <@> </select> </td>
+                  <td>:</td>
+                  <td> <select name=&[propertyName];_min_monthly><[minMonthly]>
+                      &[minLineMonthly];
+				<@> </select> </td>
+                </tr>
+              </table></td>
+          </tr>
+        </table>
+        <table id=yearlyBlock style="display: none" cellpadding=0 cellspacing=0>
+          <tr>
+            <td><table>
+                <tr>
+                  <td><input type=radio name=&[propertyName];_yearlyRecur value=byMonth &[yearlyRecur_byMonth]; checked></td>
+                  <td>Every</td>
+                  <td> <select name=&[propertyName];_monthYearly size=1><[monthYearly]> &[monthYearlyLine];
+					  <@> </select> </td>
+                  <td><input name=&[propertyName];_monthDayYearly value=&[monthDayYearlyValue]; size=2></tr>
+              </table></td>
+          </tr>
+          <tr>
+            <td><table>
+                <tr>
+                  <td><input type=radio name=&[propertyName];_yearlyRecur value=byWeekDay &[yearlyRecur_byWeekDay];></td>
+                  <td>The</td>
+                  <td><select name=&[propertyName];_weekDayRecurYearly size=1><[weekDayRecurYearly]> &[weekDayRecurYearlyLine];
+					  <@> </select></td>
+                  <td><select name=&[propertyName];_weekDayYearly size=1><[weekDayYearly]> &[weekDayYearlyLine];
+					  <@> </select></td>
+                  <td>of</td>
+                  <td> <select name=&[propertyName];_monthYearly1 size=1><[monthYearly1]> &[monthYearly1Line];
+					  <@> </select> </td>
+                </tr>
+              </table></td>
+          </tr>
+          <tr>
+            <td><table>
+                <tr>
+                  <td>at</td>
+                  <td> <select name=&[propertyName];_hour_yearly><[hourYearly]>
+                      &[hourLineYearly];
+				      <@> </select> </td>
+                  <td>:</td>
+                  <td> <select name=&[propertyName];_min_yearly><[minYearly]>
+                      &[minLineYearly];
+				<@> </select> </td>
+                </tr>
+              </table></td>
+          </tr>
+        </table></td>
+    </tr>
+    <tr>
+      <td align="left" valign="middle" colspan=3> <table id=frequencyStartEndBlock style="display: none" cellspacing=0 cellpadding=0>
+          <tr>
+            <td> <table width="80%">
+                <tr>
+                  <td>Start</td>
+                </tr>
+              </table></td>
+            <td background="divider.gif"></td>
+            <td valign=top> <table id=timeBlock style="display: inline">
+                <tr>
+                  <td> <!--script language="JavaScript">
+                      var &[propertyName];_init_start = {
+                      // a name of HTML form containing the calendar
+                      'formname' : '&[formName];',
+                      // data format the calendar operates with
+                      'dataformat' : 'M-d-Y',
+                      // weather to hide any other opened calendar if opeining current one
+                      'replace' : true,
+					  &[currentDateJSStringStart];
+                      'controlname' : '&[propertyName];_start'
+                      };
+                      new calendar(&[propertyName];_init_start, CAL_TPL1);
+                    </script--> </td>
+                </tr>
+              </table></td>
+          </tr>
+          <tr>
+            <td align="center"> <table width="80%">
+                <tr>
+                  <td>End</td>
+                </tr>
+              </table></td>
+            <td background="divider.gif"></td>
+            <td valign=top> <table id=timeBlock style="display: inline">
+                <tr>
+                  <td width="21"> <!--script language="JavaScript">
+                      var &[propertyName];_init_end = {
+                      // a name of HTML form containing the calendar
+                      'formname' : '&[formName];',
+                      // data format the calendar operates with
+                      'dataformat' : 'M-d-Y',
+                      // weather to hide any other opened calendar if opeining current one
+                      'replace' : true,
+					  &[currentDateJSStringEndBy];
+                      'controlname' : '&[propertyName];_endBy'
+                      };
+                      new calendar(&[propertyName];_init_end, CAL_TPL1);
+                    </script--> </td>
+                </tr>
+              </table></td>
+          </tr>
+          <tr>
+            <td align="center">&nbsp;</td>
+            <td background="divider.gif"></td>
+            <td valign=top>if no end date - leave it blank</td>
+          </tr>
+        </table></td>
+    </tr>
+  </table>
+  </fieldset>
+</div>
+<script>
+showRecurrencePanel();
+</script>
