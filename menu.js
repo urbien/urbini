@@ -184,11 +184,15 @@ Popup.load = function (divId) {
 ///
   var popup = Popup.getPopup(divId);
   popup.setInnerHtml(body.innerHTML)
+  // filter calendar
   if (popupFrame.CAL_INIT_From)
     new calendar(popupFrame.CAL_INIT_From, CAL_TPL1, shortPropName + '_From');
   if (popupFrame.CAL_INIT_To)
     new calendar(popupFrame.CAL_INIT_To, CAL_TPL1, shortPropName + '_To');
-
+  // data entry calendar
+  if (popupFrame.CAL_INIT) 
+    new calendar(popupFrame.CAL_INIT, CAL_TPL1, shortPropName);
+  
   var div = popup.div;
 
   var tables = div.getElementsByTagName('table');
