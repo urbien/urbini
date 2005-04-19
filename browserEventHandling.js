@@ -203,7 +203,7 @@
           var elem = form.elements[j];
           initialValues[elem.name] = elem.value;
 
-          if (!elem.type || elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT fields
+          if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT fields
               elem.id  && !elem.valueType) {                      // and those that have ID
             addEvent(elem, 'keypress', autoComplete,              false);
             addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
