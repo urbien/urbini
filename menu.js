@@ -2461,7 +2461,7 @@ function displayInner(e, urlStr) {
 }
 
 /**
- *  Loads the popup into the div from the iframe
+ *  copies doc loaded to iframe into a div
  */
 function copyInnerHtml(frameId, divId) {
   if (!frameLoaded[frameId]) {
@@ -2472,6 +2472,12 @@ function copyInnerHtml(frameId, divId) {
   var div = document.getElementById(divId);
   var frameBody = frames[frameId].document.body;
   setInnerHtml(div, frameBody.innerHTML);
+
+  // scroll to second pane into which we have loaded doc
+  var s = document.location.href;
+  s = s.indexOf('pane2') == -1 ? s + '#pane2' : s;
+  document.location.replace(s);
+
   initListBoxes(div);
 }
 
@@ -2497,9 +2503,6 @@ function setInnerHtml(div, text) {
     div.style.height = null;
     // insert html fragment
     div.innerHTML = text;
-    var s = document.location.href;
-    s = s.indexOf('pane2') == -1 ? s + '#pane2' : s;
-    document.location.replace(s);
     //window.parent.focus();
   }
 }
