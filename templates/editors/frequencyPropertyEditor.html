@@ -29,26 +29,6 @@ select {
   font-style:normal;
 }
 </style>
-<script language="JavaScript">
-  function showRecurrencePanel() {
-    if (document.&[formName];.&[propertyName];_recur[0].checked == true) {
-      document.getElementById('frequencyStartEndBlock').style.display = 'none';
-    } else {
-      document.getElementById('frequencyStartEndBlock').style.display = 'inline';
-    }
-    for (i = 0; i < 5; i++) {
-      if (document.&[formName];.&[propertyName];_recur[i].checked == true) {
-        for (j = 0; j < 5; j++) {
-          if (j != i) {
-            document.getElementById(document.&[formName];.&[propertyName];_recur[j].value + 'Block').style.display = 'none';
-          }
-        }
-        document.getElementById(document.&[formName];.&[propertyName];_recur[i].value + 'Block').style.display = 'inline';
-        return;
-      }
-    }
-  }
-</script>
 <div style="width: 60%">
   <fieldset>
   <legend>Recurrence pattern</legend>
@@ -57,23 +37,23 @@ select {
     <tr>
       <td align="left" valign="middle"> <table>
           <tr>
-            <td><input type=radio name=&[propertyName];_recur value=once &[recurOnceChecked]; onClick="showRecurrencePanel()"></td>
+            <td><input type=radio name=&[propertyName];_recur value=once &[recurOnceChecked]; onClick="showRecurrencePanel('&[formName];', '&[propertyName];')"></td>
             <td>Once</td>
           </tr>
           <tr>
-            <td><input type=radio name=&[propertyName];_recur value=daily &[recurDailyChecked]; onClick="showRecurrencePanel()"></td>
+            <td><input type=radio name=&[propertyName];_recur value=daily &[recurDailyChecked]; onClick="showRecurrencePanel('&[formName];', '&[propertyName];')"></td>
             <td>Daily</td>
           </tr>
           <tr>
-            <td><input type=radio name=&[propertyName];_recur value=weekly &[recurWeeklyChecked]; onClick="showRecurrencePanel()"></td>
+            <td><input type=radio name=&[propertyName];_recur value=weekly &[recurWeeklyChecked]; onClick="showRecurrencePanel('&[formName];', '&[propertyName];')"></td>
             <td>Weekly</td>
           </tr>
           <tr>
-            <td><input type=radio name=&[propertyName];_recur value=monthly &[recurMonthlyChecked]; onClick="showRecurrencePanel()"></td>
+            <td><input type=radio name=&[propertyName];_recur value=monthly &[recurMonthlyChecked]; onClick="showRecurrencePanel('&[formName];', '&[propertyName];')"></td>
             <td>Monthly</td>
           </tr>
           <tr>
-            <td><input type=radio name=&[propertyName];_recur value=yearly &[recurYearlyChecked]; onClick="showRecurrencePanel()"></td>
+            <td><input type=radio name=&[propertyName];_recur value=yearly &[recurYearlyChecked]; onClick="showRecurrencePanel('&[formName];', '&[propertyName];')"></td>
             <td>Yearly</td>
           </tr>
         </table></td>
@@ -315,5 +295,5 @@ select {
   </fieldset>
 </div>
 <script>
-showRecurrencePanel();
+showRecurrencePanel('&[formName];', '&[propertyName];');
 </script>

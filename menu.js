@@ -2503,3 +2503,29 @@ function setInnerHtml(div, text) {
     //window.parent.focus();
   }
 }
+
+/**
+ * Used in FrequencyPropertyEditor (e.g. for Scheduled Report)
+ */
+function showRecurrencePanel(formName, propertyName) {
+  var form     = document.forms[formName];
+  var elements = form.elements[propertyName + '_recur'];
+
+  if (elements[0].checked == true) {
+    document.getElementById('frequencyStartEndBlock').style.display = 'none';
+  }
+  else {
+    document.getElementById('frequencyStartEndBlock').style.display = 'inline';
+  }
+  for (i = 0; i < 5; i++) {
+    if (elements[i].checked == true) {
+      for (j = 0; j < 5; j++) {
+        if (j != i) {
+          document.getElementById(elements[j].value + 'Block').style.display = 'none';
+        }
+      }
+      document.getElementById(elements[i].value + 'Block').style.display = 'inline';
+      return;
+    }
+  }
+}
