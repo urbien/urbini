@@ -2497,7 +2497,9 @@ function setInnerHtml(div, text) {
     div.style.height = null;
     // insert html fragment
     div.innerHTML = text;
-    document.location.replace(document.location.href + '#pane2');
+    var s = document.location.href;
+    s = s.indexOf('pane2') == -1 ? s + '#pane2' : s;
+    document.location.replace(s);
     //window.parent.focus();
   }
 }
