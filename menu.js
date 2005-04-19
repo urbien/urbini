@@ -2123,7 +2123,7 @@ function tooltipOnMouseOut(e) {
   target = getTargetElement(e);
   var popup = Popup.getPopup('system_tooltip');
   if (popup.isOpen())
-    return ture;
+    return true;
 
   if (Popup.delayedPopup.isTooltip()) {
     clearTimeout(Popup.openTimeoutId);
