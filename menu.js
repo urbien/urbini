@@ -30,6 +30,7 @@ function getTargetElement(evt) {
 Popup.currentDivs          = new Array(); // distinct divs that can be open at the same time (since they have different canvases)
 Popup.popups               = new Array(); // pool of all popups with different divId(s)
 Popup.openTimeoutId        = null; // timeout after which we need to open the delayed popup
+Popup.delayedPopup         = null; // the delayed popup
 Popup.lastClickTime        = null; // last time user clicked on anything
 Popup.lastOpenTime         = null; // moment when last popup was opened
 Popup.delayedPopupOpenTime = null; // moment when delayed popup was requested
@@ -101,6 +102,7 @@ Popup.openAfterDelay = function (divId, offsetX, offsetY) {
       ) {
     return; // do not open delayed popup if other popup was already opened during the timeout
   }
+  Popup.delayedPopup = null;
   var popup = Popup.getPopup(divId);
   if (popup) {
     popup.open1(offsetX, offsetY);
@@ -393,6 +395,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         offsetX      + ", " +
         offsetY      + ")"
         , delay);
+    Popup.delayedPopup = self;
   }
 
   /**
@@ -2015,8 +2018,8 @@ function replaceTooltips0(elements) {
   for (i=0;i<llen; i++) {
     var elem = elements[i];
     if (elem.attributes['title']) {
-      //addEvent(elem, 'mouseout',    tooltipMouseOut,    false);
-      addEvent(elem, 'mouseover',   tooltipMouseOver,   false); // method that will create a popup specific for this hotspot
+      addEvent(elem, 'mouseout',    tooltipOnMouseOut,    false);
+      addEvent(elem, 'mouseover',   tooltipOnMouseOver,   false); // method that will create a popup specific for this hotspot
     }
   }
 }
@@ -2042,7 +2045,7 @@ function replaceTooltips(divRef) {
   replaceTooltips0(elements);
 }
 
-function tooltipMouseOver0(target) {
+function tooltipOnMouseOver0(target) {
   if (!Popup.allowTooltip(target)) {
     return true; // ignore this tooltip and return true allow mouseover processing to continue
   }
@@ -2094,7 +2097,7 @@ function tooltipMouseOver0(target) {
   return false;
 }
 
-function tooltipMouseOver(e) {
+function tooltipOnMouseOver(e) {
   var p;
   var target;
 
@@ -2103,13 +2106,13 @@ function tooltipMouseOver(e) {
     return;
 
   target = getTargetElement(e);
-  if (!tooltipMouseOver0(target))
+  if (!tooltipOnMouseOver0(target))
     return stopEventPropagation(e);
   else
     return true;
 }
-/*
-function tooltipMouseOut(e) {
+
+function tooltipOnMouseOut(e) {
   var p;
   var target;
 
@@ -2118,12 +2121,17 @@ function tooltipMouseOut(e) {
     return;
 
   target = getTargetElement(e);
+  var popup = Popup.getPopup('system_tooltip');
+  if (popup.isOpen())
+    return ture;
 
-  var tooltipDiv = document.getElementById('system_tooltip');
-  if (!tooltipDiv)
-    return true;
+  if (Popup.delayedPopup.isTooltip()) {
+    clearTimeout(Popup.openTimeoutId);
+    Popup.openTimeoutId = null;
+  }
+  return stopEventPropagation(e);
 }
-*/
+
 //************************************* intercept all clicks ***********************************
 function interceptLinkClicks() {
   //addEvent(document, 'keydown', onKeyDown, false);
