@@ -63,7 +63,7 @@ function writeRichText(rte, html, width, height, buttons, readOnly, minimized) {
 	if (isRichText) {
 		if (allRTEs.length > 0) allRTEs += ";";
 		allRTEs += rte;
-		writeRTE(rte, html, width, height, buttons, readOnly, minimized);
+		//writeRTE(rte, html, width, height, buttons, readOnly, minimized);
 	} else {
 		writeDefault(rte, html, width, height, buttons, readOnly);
 	}
@@ -235,11 +235,11 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized) {
 	//document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
 	if(minimized)
 	  document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="40px" height="30px" src="'+document.domain+'" scrolling="auto"></iframe>');
-	 else 
+	 else
 	   document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
 	document.writeln('<textarea id="txtArea' + rte + '" width="' + width + 'px" readonly style="display:none"></textarea>');
 	if (!readOnly) document.writeln('<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" style="display:none" />');//&nbsp;View Source');
-	
+
 	document.writeln('<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>');
 	document.writeln('<input type="hidden" id="hdn' + rte + '" name="' + rte + '" value="">');
 	//!!Error!!document.getElementById('hdn' + rte).value = html;
@@ -279,7 +279,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 		oRTE.write(frameHtml);
 		oRTE.close();
 		if (!readOnly) oRTE.designMode = "On";
-		
+
         //Buttons1_' + rte + '
 		//addEvent(frames[rte].document, 'click', function() {alert('df');}, false);
 		if(minimized){
@@ -300,8 +300,9 @@ function enableDesignMode(rte, html, readOnly, minimized) {
       }
     }
     else {//alert((document.getElementById(rte).contentDocument == null));//alert(document.getElementById(rte).contentDocument);
-	  if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
+      if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
 			try {
+        if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
 				var oRTE = document.getElementById(rte).contentWindow.document;
 				oRTE.open();
 				oRTE.write(frameHtml);
@@ -317,7 +318,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 					}
 				}
 			} catch (e) {
-				alert("Error preloading content.");
+				//alert("Error preloading content.");
 			}
     }
 	}
@@ -386,7 +387,10 @@ function processURLs(stringWithUrl) { // function that looks for all URLs in RTE
 function updateRTEs() {
 	var vRTEs = allRTEs.split(";");
 	for (var i = 0; i < vRTEs.length; i++) {
-		frames[vRTEs[i]].document.body.innerHTML = processURLs(frames[vRTEs[i]].document.body.innerHTML);
+    var frame = frames[vRTEs[i]];
+    if (!frame)
+      continue;
+		frame.document.body.innerHTML = processURLs(frame.document.body.innerHTML);
 		updateRTE(vRTEs[i]);
 		//!!!alert(frames[vRTEs[i]].document.body.innerHTML);
 	}
@@ -461,7 +465,7 @@ function toggleHTMLSrc(rte) {
 			oRTE.body.innerText = oRTE.body.innerHTML;
 			//document.getElementById(rte).style.display = 'none';
 			//document.getElementById('txtArea' + rte).style.display = 'inline';
-			
+
 		} else {
 			var htmlSrc = oRTE.createTextNode(oRTE.body.innerHTML);
 			oRTE.body.innerHTML = "";
@@ -482,7 +486,7 @@ function toggleHTMLSrc(rte) {
 			var output = escape(oRTE.body.innerText);
 			output = output.replace("%3CP%3E%0D%0A%3CHR%3E", "%3CHR%3E");
 			output = output.replace("%3CHR%3E%0D%0A%3C/P%3E", "%3CHR%3E");
-			
+
 			oRTE.body.innerHTML = unescape(output);
 		} else {
 			var htmlSrc = oRTE.body.ownerDocument.createRange();
