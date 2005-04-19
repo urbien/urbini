@@ -190,9 +190,9 @@ Popup.load = function (divId) {
   if (popupFrame.CAL_INIT_To)
     new calendar(popupFrame.CAL_INIT_To, CAL_TPL1, shortPropName + '_To');
   // data entry calendar
-  if (popupFrame.CAL_INIT) 
+  if (popupFrame.CAL_INIT)
     new calendar(popupFrame.CAL_INIT, CAL_TPL1, shortPropName);
-  
+
   var div = popup.div;
 
   var tables = div.getElementsByTagName('table');
@@ -326,8 +326,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
-    if (self.isTooltip())
+    if (self.isTooltip()) {
       self.setInnerHtml(self.contents)
+    }
     self.setVisible(offsetX, offsetY);
     self.popupClosed = false;
     self.deselectRow();
@@ -403,7 +404,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var hotspot  = self.hotspot;
 
     var istyle   = iframe.style;
-    istyle.visibility   = Popup.HIDDEN;
+    istyle.visibility    = Popup.HIDDEN;
     div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
 
     if (!hotspot) {
@@ -464,6 +465,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     //  Make position/size of the underlying iframe same as div's position/size
     istyle.top     = div.style.top;
     istyle.left    = div.style.left;
+    istyle.width   = divCoords.width  + 'px';
+    istyle.height  = divCoords.height + 'px';
 
     // hack for Opera (at least at ver. 7.54) - somehow iframe is always on top of div - no matter how hard we try to set zIndex
     // so we have to live without iframe in Opera
@@ -472,7 +475,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       istyle.visibility  = Popup.VISIBLE;
     istyle.display       = 'inline';
     div.style.display    = 'inline';
+    div.style.zIndex = 1001;
     div.style.visibility = Popup.VISIBLE; // finally make div visible
+
   }
 
   /**
@@ -2011,7 +2016,7 @@ function replaceTooltips0(elements) {
     var elem = elements[i];
     if (elem.attributes['title']) {
       //addEvent(elem, 'mouseout',    tooltipMouseOut,    false);
-      //addEvent(elem, 'mouseover',   tooltipMouseOver,   false); // method that will create a popup specific for this hotspot
+      addEvent(elem, 'mouseover',   tooltipMouseOver,   false); // method that will create a popup specific for this hotspot
     }
   }
 }
@@ -2039,51 +2044,53 @@ function replaceTooltips(divRef) {
 
 function tooltipMouseOver0(target) {
   if (!Popup.allowTooltip(target)) {
-    return false;
+    return true; // ignore this tooltip and return true allow mouseover processing to continue
   }
   var tooltip = target.getAttribute('tooltip'); // using getAttrbute() - as workaround for IE5.5 custom attibutes bug
   var tooltipText;
   if (!tooltip) {
     tooltip = target.getAttribute('title');
-    if (tooltip) {
-      tooltipText = tooltip;
-      window.status = tooltipText;
-      if (tooltipText == '')
-        return true;
-      window.status = tooltipText;
 
-      // merge tooltip on IMG with tooltip on its parent A tag
-      var parentA = target.parentNode;
-      if (parentA && parentA.tagName.toUpperCase() == 'A') {
-        var linkTooltip = parentA.getAttribute('title');
-        if (linkTooltip) {
-          var linkTooltipText = linkTooltip;
-          if (linkTooltipText && linkTooltipText != '' && tooltipText != linkTooltipText) {
-            tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';
-          }
-          parentA.title = '';
+    if (!tooltip) // no title attribute - get out of here
+      return true;
+    tooltipText = tooltip;
+    window.status = tooltipText;
+    if (tooltipText == '')
+      return true;
+    window.status = tooltipText;
+    // merge tooltip on IMG with tooltip on its parent A tag
+    var parentA = target.parentNode;
+    if (parentA && parentA.tagName.toUpperCase() == 'A') {
+      var linkTooltip = parentA.getAttribute('title');
+      if (linkTooltip) {
+        var linkTooltipText = linkTooltip;
+        if (linkTooltipText && linkTooltipText != '' && tooltipText != linkTooltipText) {
+          tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';
         }
-
+        parentA.title = '';
       }
 
-      //tooltipText = "<table border=0 style='display: block' cellpadding=0 cellspacing=0><tr><td>" + tooltipText + "</td></tr></table>";
-      //tooltipText = "<span id='tooltipspan' style='display:table-cell'>" + tooltipText + "</span>";
-      target.setAttribute('tooltip', tooltipText);
-      target.title = '';
     }
+    //tooltipText = "<table border=0 style='display: block' cellpadding=0 cellspacing=0><tr><td>" + tooltipText + "</td></tr></table>";
+    //tooltipText = "<span id='tooltipspan' style='display:table-cell'>" + tooltipText + "</span>";
+    target.setAttribute('tooltip', tooltipText);
+    target.title = '';
   }
   else
     tooltipText = tooltip;
-  if (tooltip) {
-    var tooltipDiv = document.getElementById('system_tooltip');
-    if (!tooltipDiv)
-      return true;
-    //if (tooltipDiv.style.width != '') {
-    //  alert(tooltipDiv.style.width);
-    //}
-    var ifrRef = document.getElementById('tooltipIframe');
-    Popup.open(tooltipDiv.id, target, ifrRef, 20, 25, 1000, tooltipText); // open with delay
-  }
+
+  var divId    = 'system_tooltip';
+  var iframeId = 'tooltipIframe';
+  var tooltipDiv = document.getElementById(divId);
+  if (!tooltipDiv)
+    throw new Error("document must contain div '" + divId + "' to display enhanced tooltip");
+  //if (tooltipDiv.style.width != '') {
+  //  alert(tooltipDiv.style.width);
+  //}
+  var ifrRef = document.getElementById(iframeId);
+  if (!ifrRef)
+    throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
+  Popup.open(divId, target, ifrRef, 20, 25, 1000, tooltipText); // open with delay
   return false;
 }
 
@@ -2112,10 +2119,9 @@ function tooltipMouseOut(e) {
 
   target = getTargetElement(e);
 
-var tooltipDiv = document.getElementById('system_tooltip');
-if (!tooltipDiv)
-  return true;
-
+  var tooltipDiv = document.getElementById('system_tooltip');
+  if (!tooltipDiv)
+    return true;
 }
 */
 //************************************* intercept all clicks ***********************************
@@ -2446,7 +2452,7 @@ function displayInner(e, urlStr) {
     finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
   }
 
-  finalUrl += "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y&-inner=y#pane2";
+  finalUrl += "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y&-inner=y";
   stopEventPropagation(e);
 
   bottomFrame.location.replace(finalUrl);
@@ -2491,6 +2497,7 @@ function setInnerHtml(div, text) {
     div.style.height = null;
     // insert html fragment
     div.innerHTML = text;
+    document.location.replace(document.location.href + '#pane2');
     //window.parent.focus();
   }
 }
