@@ -186,7 +186,9 @@ Popup.load = function (divId) {
 ///
   var popup = Popup.getPopup(divId);
   popup.setInnerHtml(body.innerHTML)
+
   // filter calendar
+
   if (popupFrame.CAL_INIT_From)
     new calendar(popupFrame.CAL_INIT_From, CAL_TPL1, shortPropName + '_From');
   if (popupFrame.CAL_INIT_To)
@@ -331,6 +333,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (self.isTooltip()) {
       self.setInnerHtml(self.contents)
     }
+
     self.setVisible(offsetX, offsetY);
     self.popupClosed = false;
     self.deselectRow();
@@ -2125,7 +2128,7 @@ function tooltipOnMouseOut(e) {
   if (popup.isOpen())
     return true;
 
-  if (Popup.delayedPopup.isTooltip()) {
+  if (Popup.delayedPopup && Popup.delayedPopup.isTooltip()) {
     clearTimeout(Popup.openTimeoutId);
     Popup.openTimeoutId = null;
   }
@@ -2539,4 +2542,33 @@ function showRecurrencePanel(formName, propertyName) {
       return;
     }
   }
+}
+
+/**
+ *
+ */
+function initCalendarsFromTo(div, formName, fromDateField, toDateField) {
+  var contents =  "<script>" +
+                  "var _init_from = { " +
+                  "      'formname' : '" + formName + "', " +
+                  "      'dataformat' : 'M-d-Y', " +
+                  "      'replace' : true, " +
+                  "      'selected', new Date(), " +
+                  "      'watch', true, " +
+                  //"      'controlname' : '" + fromDateField + "' "
+                  "};" +
+
+                  "var _init_to = { " +
+                  "      'formname' : '" + formName + "', " +
+                  "      'dataformat' : 'M-d-Y', " +
+                  "      'replace' : true, " +
+                  "      'selected', new Date(), " +
+                  "      'watch', true, " +
+                  //"      'controlname' : '" + toDateField + "' "
+                  "};" +
+
+                  "var from    = new calendar(_init_from, CAL_TPL1, " + "fromDateField);" +
+                  "var to      = new calendar(_init_to,   CAL_TPL1, " + "toDateField);" +
+                  "</script>";
+  div.setInnerHtml(contents);
 }
