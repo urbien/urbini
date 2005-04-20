@@ -2125,7 +2125,7 @@ function tooltipOnMouseOut(e) {
 
   target = getTargetElement(e);
   var popup = Popup.getPopup('system_tooltip');
-  if (popup.isOpen())
+  if (popup && popup.isOpen())
     return true;
 
   if (Popup.delayedPopup && Popup.delayedPopup.isTooltip()) {
