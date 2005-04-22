@@ -391,6 +391,7 @@ function processURLs(stringWithUrl) { // function that looks for all URLs in RTE
 }
 
 function updateRTEs() {
+    //if(rteList && rteList!='') allRTEs = rteList;
 	var vRTEs = allRTEs.split(";");
 	for (var i = 0; i < vRTEs.length; i++) {
 		//---- Replacing of all urls with link image not to make the page too wide cuz of long url
@@ -408,9 +409,8 @@ function updateRTE(rte) {
 
     if(document.getElementById(rte+'content'))document.getElementById(rte+'content').value = frames[rte].document.body.innerHTML;
 
-    //alert(frames[rte].document.body.innerHTML);
 	if (!isRichText) return;
-
+	 
 	//set message value
 	var oHdnMessage = document.getElementById('hdn' + rte);
 	var oRTE = document.getElementById(rte);
@@ -424,6 +424,7 @@ function updateRTE(rte) {
 	}
 
 	if (isRichText && !readOnly) {
+	//if (!readOnly) {
 		//if viewing source, switch back to design view
 		if (document.getElementById("chkSrc" + rte).checked) {
 			document.getElementById("chkSrc" + rte).checked = false;
