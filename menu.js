@@ -1155,6 +1155,7 @@ var internalFocus = false;
 var frameLoaded = new Array();
 
 var rteUpdated = 'false';
+var allRTEs = '';
 
 // Reference: http://www.webreference.com/js/column33/image.html
 
@@ -1490,7 +1491,7 @@ function popupOnSubmit(e) {
   if (document.all || document.getElementById) {
 //    form.submit.disabled = true; // HACK: for some reason can not disable this button - the form would not get submitted
     var submit = form.elements['submit'];
-    submit.value = 'Please wait';
+	submit.value = 'Please wait';
     submit.style.cursor = 'wait';
     var cancel;
     cancel = form.elements['cancel'];
@@ -2482,7 +2483,8 @@ function copyInnerHtml(frameId, divId) {
   frameLoaded[frameId] = false;
   var div = document.getElementById(divId);
   var frameBody = frames[frameId].document.body;
-  setInnerHtml(div, frameBody.innerHTML);
+  var frameBodyText = frameBody.innerHTML;
+  setInnerHtml(div, frameBodyText, frames[frameId]);
 
   // scroll to second pane into which we have loaded doc
   var s = document.location.href;
@@ -2501,20 +2503,41 @@ function stopEventPropagation(e) {
   return false;
 }
 
-function setInnerHtml(div, text) {
+function setInnerHtml(div, text, frame) {
   if (Popup.ns4) {
     div.document.open();
     div.document.write(text);
     div.document.close();
   }
   else {
-    div.innerHTML = '';
+	div.innerHTML = '';
     //  hack to remove current div dimensions, otherwise div will not auto-adjust to the text inserted into it (hack needed at least in firefox 1.0)
     div.style.width  = null;
     div.style.height = null;
     // insert html fragment
     div.innerHTML = text;
+	//frame.location = "about:blank";
     //window.parent.focus();
+	//parent.initRTE('images/wysiwyg/', 'chat/', '');
+	parent.cssFile = '';
+	try{
+	  if(frame)
+	  if(frame.allRTEs){
+	    allRTEs = frame.allRTEs;
+		isRichText = frame.isRichText;
+		cssFile = frame.cssFile;
+	    var vRTEs = frame.allRTEs.split(";");
+	    for (var i = 0; i < vRTEs.length; i++) {//vRTEs[i]
+	      parent.enableDesignMode(vRTEs[i], '', false, true);
+		  rte = vRTEs[i];
+		  if(!document.all){
+		    addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
+		    addEvent(frames[rte].document, 'keyup', function() {if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
+		  }
+	    }
+	  }
+	}catch(ex){}
+	//parent.enableDesignMode('notes', '', false, true);
   }
 }
 
