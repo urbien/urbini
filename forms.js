@@ -81,15 +81,15 @@ function setTextHeight(div, divider) {
     var spanRef = document.getElementById(div + '_span');
     var moreRef = document.getElementById(div + '_more');
     var h = Math.floor(screen.availHeight/divider);
-    divRef.style.height = h;
+	divRef.style.height = h;
     divRef.style.overflow = "hidden";
     if (spanRef != null && moreRef != null)
       if (spanRef.offsetHeight > divRef.offsetHeight) {
         moreRef.style.display = "block";
       } else {
-        moreRef.style.display = "none";
-        divRef.style.height = spanRef.offsetHeight;
-        divRef.style.overflow = "visible";
+        //moreRef.style.display = "none";
+        divRef.style.height = 40;//spanRef.offsetHeight;
+        //divRef.style.overflow = "visible";
       }
   }
 }
