@@ -799,8 +799,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         document.getElementById(imgId).title = img.title;
       }
       formFieldClass.value = tr.id; // property value corresponding to a listitem
-      loadedPopups[currentDiv.id] = null;
-      Popup.close0(currentDiv.id)
+      if (currentDiv) {
+        loadedPopups[currentDiv.id] = null;
+        Popup.close0(currentDiv.id)
+      }
       listboxOnClick1(currentImgId);
       return true;
     }
