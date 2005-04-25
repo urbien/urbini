@@ -346,7 +346,7 @@ function processURLs(stringWithUrl) { // function that looks for all URLs in RTE
 	var idexOfTheEndOfTheUrl = firstEntrance;
 	for(;idexOfTheEndOfTheUrl < stringWithUrl.length;idexOfTheEndOfTheUrl++)
 	{
-		if(stringWithUrl.charAt(idexOfTheEndOfTheUrl)==' ' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=='<' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=='"')
+		if(stringWithUrl.charAt(idexOfTheEndOfTheUrl)==' ' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=='<' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=='"' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=="'")
 		{
 			if(stringWithUrl.charAt(idexOfTheEndOfTheUrl-1)=='.')
 				idexOfTheEndOfTheUrl=idexOfTheEndOfTheUrl-1;
