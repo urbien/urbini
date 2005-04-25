@@ -723,12 +723,15 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (self.isHeaderRow(tr)) // skip clicks on menu header
       return;
 
+    if (!tr.id)
+      return;
+
     if (tr.id == '$noValue')
       return;
-    var isCalendar = tr.id.indexOf("_$calendar") != -1;
-    if (isCalendar) {
+    var isCalendar = tr.id.indexOf("_$calendar") != -1 ? true: false;
+    if (isCalendar)
       return true;
-    }
+
     // if there is a link on this row - follow it
     var anchors = tr.getElementsByTagName('a');
     if (anchors  &&  anchors.length != 0) {
@@ -1048,7 +1051,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return self.currentRow;
     }
 
-    if (prev.tagName && prev.tagName.toUpperCase() == 'TR' && prev.id != 'divider' && next.id.indexOf("_$calendar") == -1) {
+    if (prev.tagName && prev.tagName.toUpperCase() == 'TR' && prev.id != 'divider' && prev.id.indexOf("_$calendar") == -1) {
       //self.deselectRow();
       self.currentRow = prev;
       //self.selectRow();
