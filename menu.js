@@ -884,9 +884,36 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             selectItems[i].value = null;
             continue;
           }
-          if (selectItems[i].value == tr.id) { // check that item was selected by clicking on popup row not explicitely on checkbox
-            if (!checkboxClicked)              // mark row's checkbox
-              selectItems[i].checked = true;
+          if (!selectItems[i].checked) {
+            var sValue = selectItems[i].value;
+            var sidx = sValue.indexOf("displayname__");
+            if (sidx != -1) {
+              sidx = sValue.indexOf("=");
+              var s = "";
+              var first = true;
+              while (true) {
+                var sidx1 = sValue.indexOf("&", sidx);
+                if (!first)
+                  s += ' ';
+                else
+                  first = false;
+                if (sidx1 == -1) {
+                  s += sValue.substring(sidx + 1);
+                  break;
+                }
+                else {
+                  s += sValue.substring(sidx + 1, sidx1);
+                  sidx = sValue.indexOf("=", sidx1 + 1);
+                  if (sidx == -1)
+                    break
+                }
+              }
+              sValue = s;
+            }
+            if (sValue == tr.id) { // check that item was selected by clicking on popup row not explicitely on checkbox
+              if (!checkboxClicked)              // mark row's checkbox
+                selectItems[i].checked = true;
+            }
           }
           if (selectItems[i].checked == true) {
             selectedItem = selectItems[i];
@@ -1323,8 +1350,12 @@ window.status = divId;
       if (s)
         url = url + s;
       var uri = form.elements['uri'];
-      if (uri)
-        url = url + "&$rootFolder=" + encodeURIComponent(uri.value);
+      if (uri) {
+        if (formAction == "showPropertiesForEdit")
+          url = url + "&uri=" + encodeURIComponent(uri.value);
+        else
+          url = url + "&$rootFolder=" + encodeURIComponent(uri.value);
+      }
     }
   }
   url += "&$form=" + currentFormName;
