@@ -957,10 +957,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (deleteCurrentDiv && currentDiv)
       loadedPopups[currentDiv.id] = null;
     // if checkbox was clicked, then do not close popup so that user can check checboxes, if needed
-    if (!checkboxClicked) 
+    if (!checkboxClicked)
       Popup.close0(div.id);
     clearOtherPopups(div);
-    return stopEventPropagation(e);
+    return false;
   }
 
   this.popupRowOnMouseOver = function (e) {
