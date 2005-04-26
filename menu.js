@@ -1181,6 +1181,7 @@ var closeTimeoutId;
 var currentImgId = null;
 var currentFormName = null;
 var currentResourceUri = null;
+var innerUrls = new Array();
 
 var internalFocus = false;
 var frameLoaded = new Array();
@@ -2491,7 +2492,6 @@ function displayInner(e, urlStr) {
   //
   if (!bottomFrame)
     return null;
-
   var finalUrl = urlStr;
   var idx = urlStr.indexOf('.html');
   if (idx != -1) {
@@ -2502,8 +2502,11 @@ function displayInner(e, urlStr) {
   finalUrl += "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y&-inner=y";
   stopEventPropagation(e);
 
+  var timeOutFunction = "copyInnerHtml('" + frameId  + "', '" + 'pane2' + "')";
+//  alert(timeOutFunction);
+  setTimeout(timeOutFunction, 100);
+//  setTimeout(copyInnerHtml, 100);
   bottomFrame.location.replace(finalUrl);
-  setTimeout( "copyInnerHtml('" + frameId  + "', '" + 'pane2' + "')", 100 );
   return false;
 }
 
@@ -2511,16 +2514,23 @@ function displayInner(e, urlStr) {
  *  copies doc loaded to iframe into a div
  */
 function copyInnerHtml(frameId, divId) {
+  if (!frameId)
+    frameId = 'bottomFrame';
+  if (!divId)
+    divId = 'pane2';
+  alert(frameId);
   if (!frameLoaded[frameId]) {
     setTimeout( "copyInnerHtml('" + frameId  + "', '" + divId + "')", 100 );
     return;
   }
+  
   frameLoaded[frameId] = false;
   var div = document.getElementById(divId);
   var frameBody = frames[frameId].document.body;
   var frameBodyText = frameBody.innerHTML;
   setInnerHtml(div, frameBodyText, frames[frameId]);
 
+alert(frameBodyText);
   // scroll to second pane into which we have loaded doc
   var s = document.location.href;
   s = s.indexOf('pane2') == -1 ? s + '#pane2' : s;
