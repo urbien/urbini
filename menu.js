@@ -2502,11 +2502,10 @@ function displayInner(e, urlStr) {
   finalUrl += "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y&-inner=y";
   stopEventPropagation(e);
 
-  var timeOutFunction = "copyInnerHtml('" + frameId  + "', '" + 'pane2' + "')";
-//  alert(timeOutFunction);
-  setTimeout(timeOutFunction, 100);
-//  setTimeout(copyInnerHtml, 100);
   bottomFrame.location.replace(finalUrl);
+  var timeOutFunction = "copyInnerHtml('" + frameId  + "', '" + 'pane2' + "')";
+  setTimeout(timeOutFunction, 100);
+  
   return false;
 }
 
@@ -2518,7 +2517,6 @@ function copyInnerHtml(frameId, divId) {
     frameId = 'bottomFrame';
   if (!divId)
     divId = 'pane2';
-  alert(frameId);
   if (!frameLoaded[frameId]) {
     setTimeout( "copyInnerHtml('" + frameId  + "', '" + divId + "')", 100 );
     return;
@@ -2530,7 +2528,6 @@ function copyInnerHtml(frameId, divId) {
   var frameBodyText = frameBody.innerHTML;
   setInnerHtml(div, frameBodyText, frames[frameId]);
 
-alert(frameBodyText);
   // scroll to second pane into which we have loaded doc
   var s = document.location.href;
   s = s.indexOf('pane2') == -1 ? s + '#pane2' : s;
