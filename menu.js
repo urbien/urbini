@@ -948,9 +948,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           chosenTextField.value = '<...>';
       }
     }
-    // if checkbox was clicked, then do not close popup so that user can check checboxes, if needed
-    if (checkboxClicked)
-      return stopEventPropagation(e);
 
     // close popup
     var divId = prop + "_" + currentFormName;
@@ -959,9 +956,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var div = document.getElementById(divId);
     if (deleteCurrentDiv && currentDiv)
       loadedPopups[currentDiv.id] = null;
-    Popup.close0(div.id);
+    // if checkbox was clicked, then do not close popup so that user can check checboxes, if needed
+    if (!checkboxClicked) 
+      Popup.close0(div.id);
     clearOtherPopups(div);
-    return false;
+    return stopEventPropagation(e);
   }
 
   this.popupRowOnMouseOver = function (e) {
