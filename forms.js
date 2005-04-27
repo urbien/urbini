@@ -80,6 +80,11 @@ function setTextHeight(div, divider) {
     var divRef = document.getElementById(div);
     var spanRef = document.getElementById(div + '_span');
     var moreRef = document.getElementById(div + '_more');
+	if(divRef.offsetHeight < 40 && document.all){
+	  document.getElementById(div).style.height=divRef.offsetHeight;
+	  displayFullText(div, div+"_more");
+	  return;
+	}
     var h = Math.floor(screen.availHeight/divider);
 	divRef.style.height = h;
     divRef.style.overflow = "hidden";
