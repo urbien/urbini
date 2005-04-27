@@ -2568,6 +2568,7 @@ function setInnerHtml(div, text, frame) {
 	    allRTEs = frame.allRTEs;
 		isRichText = frame.isRichText;
 		cssFile = frame.cssFile;
+		includesPath = frame.includesPath;
 	    var vRTEs = frame.allRTEs.split(";");
 	    for (var i = 0; i < vRTEs.length; i++) {//vRTEs[i]
 	      parent.enableDesignMode(vRTEs[i], '', false, true);
