@@ -17,6 +17,8 @@ var imagesPath;
 var includesPath;
 var cssFile;
 
+var textChanged = false;
+
 function addEvent(obj, evType, fn, useCapture) {
   if (obj.addEventListener) { // NS
    obj.addEventListener(evType, fn, useCapture);
@@ -285,7 +287,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 		if(minimized){
 		  //addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
 		  addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight + 10; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
-		  addEvent(frames[rte].document, 'keyup', function() {if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
+		  addEvent(frames[rte].document, 'keyup', function() {textChanged = true;if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
 		  //frames[rte].document.attachEvent("onkeypress", function () {alert(document.getElementById(rte).height); document.getElementById(rte).height = 200; alert(document.getElementById(rte).height);});
 		}
 	} else {
@@ -313,7 +315,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 					if(minimized) {
 					  //addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
 					  addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
-					  addEvent(frames[rte].document, 'keyup', function() {if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
+					  addEvent(frames[rte].document, 'keyup', function() {textChanged = true; if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
 					}
 				}
 			} catch (e) {
@@ -406,6 +408,8 @@ function updateRTEs() {
 }
 
 function updateRTE(rte) {
+
+    if(!textChanged)return;
 
     if(document.getElementById(rte+'content'))document.getElementById(rte+'content').value = frames[rte].document.body.innerHTML;
 
