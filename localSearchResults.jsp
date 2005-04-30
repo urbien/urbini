@@ -27,9 +27,10 @@
     </td>
    </tr></table></td>
   </tr>
+  <!--tr><td colspan="2"></td>&#160;</tr-->
+  <tr><td colspan="2" align="middle"><alphabeticIndex/></td></tr>
 </table>
 </hideBlock>
-
 <a target="pane2"> </a>
 <div id="pane2" />
 
