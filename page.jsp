@@ -8,10 +8,21 @@
     <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" /></a>
     <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
 </hideBlock>
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr>
-      <td valign="top" width="100%">
+      <td valign="top" colspan="2">
+        <include name="${type}_top.jsp"/>
+        <!--table width="100%"><tr><td class="folders"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;jobCategory_groupBy=on&amp;-adTitle=Job+categories"/></td></tr></table-->
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">
         <file/>
+      </td>
+      <td valign="top">
+        <include name="${type}_right.jsp"/>
+        <include name="${type}_right2.jsp"/>
+        <!--table width="100%"><tr><td class="folders"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;jobCategory_groupBy=on&amp;-adTitle=Job+categories"/></td></tr></table-->
       </td>
     </tr>
     </table>
