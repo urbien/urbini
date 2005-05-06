@@ -60,7 +60,7 @@
       </td>
     </tr>
 
-    <tr><td width="1%"></td><td width="98%"><br/>
+    <tr><td colspan="3"><br/>
 <a target="pane2"> </a>
 <div id="pane2" />
       <readOtherSiteInfo />
@@ -70,7 +70,7 @@
       <p/>
       <newComment/>
 </hideBlock>      
-    </td><td width="1%"></td></tr>
+    </td></tr>
     </table>
 </td>
 </tr></table>

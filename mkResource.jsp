@@ -4,9 +4,9 @@
 <hideBlock>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
-  <td valign="top" width="95%">
+  <td valign="top">
 <center>
-<table width="98%" cellspacing="0" cellpadding="0" border="0">
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
    <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="90%">
@@ -18,16 +18,16 @@
     <menu toolbar="personalization" activate="onMouseOver"/>
 
     <pdaToPc image="images/pda.gif"/>
-    </td>
-    <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
-    </tr></table></td>
+  </td>
+  <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
+  </tr></table></td>
   </tr>
 </table></center></td></tr></table>
 </hideBlock>
 <br/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
-  <td valign="top" width="95%">
+  <td valign="top">
      <form id="filter" name="tablePropertyList" method="post" >
        <tablePropertyList action="mkResource"/>
        <input type="hidden" name="returnHtml" value="list.html"/>
