@@ -94,14 +94,21 @@
       // alert('before='+uBefore + ', after=' + uAfter);
     }
 
+    //***** upon iframe loading inform the parent 
+    function onLoadPopup() {
+      parent.frameLoaded[window.name] = true;
+    }
+    
     //***** Add smartlistbox handlers
     function addHandlers() {
       addEvent(window, 'load', function() {setTimeout(interceptLinkClicks, 0);}, false);
+      if (window.parent != window) {
+        addEvent(window, 'load', function() {setTimeout(onLoadPopup, 0);}, false);
+        return;
+      }
       if (typeof replaceAllTooltips != 'undefined')
         addEvent(window, 'load', function() {setTimeout(replaceAllTooltips,  0);}, false);
 
-      if (window.parent != window)
-        return;
       initMenus();
       initListBoxes();
 

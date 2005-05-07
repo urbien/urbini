@@ -185,7 +185,7 @@ Popup.load = function (divId) {
     shortPropName = propName.substring(0, idx);
 ///
   var popup = Popup.getPopup(divId);
-  popup.setInnerHtml(body.innerHTML)
+  popup.setInnerHtml(body.innerHTML);
 
   // filter calendar
 
@@ -331,7 +331,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       Popup.openTimeoutId = null;
     }
     if (self.isTooltip()) {
-      self.setInnerHtml(self.contents)
+      self.setInnerHtml(self.contents);
     }
 
     self.setVisible(offsetX, offsetY);
@@ -2126,7 +2126,7 @@ function tooltipOnMouseOver0(target) {
   var iframeId = 'tooltipIframe';
   var tooltipDiv = document.getElementById(divId);
   if (!tooltipDiv)
-    throw new Error("document must contain div '" + divId + "' to display enhanced tooltip");
+    throw new Error("document must contain div '" + divId + "' to display enhanced tooltip: " + tooltipText);
   //if (tooltipDiv.style.width != '') {
   //  alert(tooltipDiv.style.width);
   //}
@@ -2552,12 +2552,13 @@ function setInnerHtml(div, text, frame) {
     div.document.close();
   }
   else {
-	div.innerHTML = '';
+    div.innerHTML = '';
     //  hack to remove current div dimensions, otherwise div will not auto-adjust to the text inserted into it (hack needed at least in firefox 1.0)
     div.style.width  = null;
     div.style.height = null;
     // insert html fragment
     div.innerHTML = text;
+    replaceTooltips(div);
 	//frame.location = "about:blank";
     //window.parent.focus();
 	//parent.initRTE('images/wysiwyg/', 'chat/', '');

@@ -5,7 +5,6 @@
   <iframe id='tooltipIframe' name="tooltipIframe" src="about:blank" scrolling='no' frameborder='0' style="position:absolute; top:0px; left:0px; visibility:hidden; display:none;"> </iframe>
 </hideBlock>
   <script src="browserEventHandling.js" language="JavaScript" type="text/javascript"></script>
-  <script src="iframe.js"               language="JavaScript" type="text/javascript"></script>
   <!--script src="calendar/cals_init.js"   language="JavaScript" type="text/javascript"></script-->
 
 <hideBlock>
