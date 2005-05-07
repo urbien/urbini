@@ -31,7 +31,7 @@
     function initEventHandling () {
       for (var f = 0; f < frames.length; f++)
 	  {
-        frames[f].document.attachEvent('onkeydown', ieFrameChecker);
+		frames[f].document.attachEvent('onkeydown', ieFrameChecker);
 		frames[f].document.attachEvent('onkeyup', function () {if(sendMessage == 'yes'){frames.messageRTE.document.body.innerHTML = '';sendMessage = 'no';}});
 	  }
     }
@@ -66,6 +66,7 @@
 		var sendMessage = 'no';
 		var titleScrollHandler;
 		var titleTimeOut;
+		var privateR = '&[privateR];';
 //---------START------------------------These variables are used in chat reconnect chat task ------------------------------------
 		var threadIframeContent = 0; // this variable contains the length of the thread iframe content. 
 		var connectTimeOut = ""; // check Connection task - reconnect chat
@@ -88,10 +89,22 @@
 		
 		//window.onfocus=function() {isWindowInFocus = "focused";}
 		//window.onblur = function() {isWindowInFocus = "blured"; } 
-		
+
 		window.onerror=myErrorHandler
 		function myErrorHandler() {
 			return true;
+		}
+		
+		function closeChatWindow()
+		{
+		  var moveToPriv = confirm('Would you like to leave a room but stay in rts? You will be moved to your private room.'); 
+		  var url = 'chatRoom?title=' + escape('Contact '+document.getElementById('realUserName').value) + '&#38;privateR=true&#38;referer=' + escape(document.getElementById('infoCP'+document.getElementById('aliasUserUri').value).value); 
+		  //alert(url);
+		  if(moveToPriv) {
+		    window.location = url;
+			//window.open(url, 'chat','menubar=no, status=0, location=no, toolbar=no, scrollbars=no, status=no, resizable=yes');
+	      } 
+		  else window.close();
 		}
 	
 		function checkOnlineStatus(){
@@ -317,6 +330,7 @@
       }    
     
       function handleKey(e) {
+	    textChanged = true;
 	    updateRTE('messageRTE');
 	  	var kk = navigator.appName == 'Netscape' ? e.which : e.keyCode;
         if (
@@ -661,6 +675,9 @@
 						</td>
 	                    <td>
 						  <img src="images/icon_mini_faq.gif" width="16" height="16" align="top" alt="Help" title="Help">
+						</td>
+						<td>
+						  <img src="icons/hide.gif" width="16" height="16" align="top" title="exit room" onclick="closeChatWindow()" style="cursor:pointer">
 						</td>
 					  </tr>
 						<script language='JavaScript'>
