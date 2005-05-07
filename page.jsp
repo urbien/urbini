@@ -21,7 +21,6 @@
       </td>
       <td valign="top">
         <include name="${type}_right.jsp"/>
-        <include name="${type}_right2.jsp"/>
         <!--table width="100%"><tr><td class="folders"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;jobCategory_groupBy=on&amp;-adTitle=Job+categories"/></td></tr></table-->
       </td>
     </tr>
