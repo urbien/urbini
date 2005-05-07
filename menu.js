@@ -739,9 +739,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         loadedPopups[currentDiv.id] = null;
         Popup.close0(currentDiv.id);
       }
-      //if (anchors[0].click)
-      //  anchors[0].click();
-      location.href = anchors[0].href;
+      if (anchors[0].click)
+        anchors[0].click();
+      //location.href = anchors[0].href;
       return true;
     }
 
@@ -924,11 +924,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         if (nmbChecked == 0) {
           if (fieldLabel) {
             fieldLabel.style.display    = "none";
-            var textContent = fieldLabel.textContent;
-            var idx = textContent.indexOf("\r");
-            if (idx != -1)
-              textContent = textContent.substring(0, idx);
-            chosenTextField.value = textContent + " --";
+            var textContent = getTextContent(fieldLabel);            
+            if (textContent) {
+              var idx = textContent.indexOf("\r");
+              if (idx != -1)
+                textContent = textContent.substring(0, idx);
+              chosenTextField.value = textContent + " --";
+            }  
           }
           else
             chosenTextField.value = "";
@@ -1950,7 +1952,7 @@ function chooser1(element) {
     selectItems[len].checked = true;
     var nmbOfSelected = 0;
     for (var i=0; i<len; i++) {
-      if (selectedItems[i].checked) {
+      if (selectItems[i].checked) {
         nmbOfSelected++;
         if (nmbOfSelected > 1)
           break;
@@ -2642,4 +2644,32 @@ function initCalendarsFromTo(div, formName, fromDateField, toDateField) {
                   "var to      = new calendar(_init_to,   CAL_TPL1, " + "toDateField);" +
                   "</script>";
   div.setInnerHtml(contents);
+}
+
+
+/**
+ * cross-browser way to get text inside tag (like inside span)
+ */
+function getTextContent(elm) {
+  var text = null;
+
+  if (!elm)  
+    throw new Error("parameter is null");
+  
+  if (typeof elm.textContent != "undefined") {                // W3C DOM Level 3
+    text = elm.textContent;
+  }  
+  else if (elm.childNodes && elm.childNodes.length) {         // W3C DOM Level 2
+    for (var i = elm.childNodes.length; i--;) {
+      var o = elm.childNodes[i];
+      if (o.nodeType == ((Node && Node.TEXT_NODE) || 3))
+        text = o.nodeValue + text;
+      else
+        text = getTextContent(o) + text;
+    }
+  }
+  else if (typeof elm.innerText != "undefined") {             // proprietary: IE4+
+    text = elm.innerText;
+  }
+  return text;
 }
