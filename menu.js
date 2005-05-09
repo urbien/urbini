@@ -5,6 +5,11 @@
  * Support stacking up one popup on top of another (e.g.
  */
 
+var keyPressedImgId;
+var keyPressedElement;
+var autoCompleteTimeoutId;
+var keyPressedTime;
+
 /**
  * Utility that discovers the html element which generated the event
  */
@@ -1552,12 +1557,6 @@ function popupOnSubmit(e) {
   form.action = "FormRedirect";
   return true;
 }
-
-
-var keyPressedImgId;
-var keyPressedElement;
-var autoCompleteTimeoutId;
-var keyPressedTime;
 
 //*************************************** AUTOCOMPLETE *********************************************
 /**
