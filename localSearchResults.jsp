@@ -111,7 +111,7 @@
       </form>
 
     </tr>
-    <tr valign="top"><td>
+    <tr valign="top"><td colspan="2">
     <form action="list.html" name="siteResourceList">
       <div align="left"><backLink /></div>
       <taskTreeControl/>
