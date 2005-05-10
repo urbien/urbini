@@ -579,7 +579,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    */
   this.popupOnMouseOver = function (e) {
     var target;
-
+//alert("reenter");
     e = (e) ? e : ((window.event) ? window.event : null);
 
     if (!e)
@@ -593,9 +593,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.delayedCloseIssued = false;
     if (self.closeTimeoutId != null) {
       self.delayedCloseIssued = false;
+     
       clearTimeout(self.closeTimeoutId);
       self.closeTimeoutId = null;
-    }
+    }   
     return true;
   }
 
@@ -985,16 +986,23 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     e = (e) ? e : ((window.event) ? window.event : null);
 
     if (!e)
-      return;
-
+      return true;
+    // in IE for some reason same event comes two times
+    if (e.getAttribute) {
+      var isProcessed = e.getAttribute('eventProcessed');
+      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+        return false;
+      e.setAttribute('eventProcessed', 'true');
+    }
+    
     target = getTargetElement(e);
     tr = getTrNode(target);
 
     if (!tr)
-      return;
+      return true;
 
     if (self.isHeaderRow(tr))
-      return;
+      return true;
 
     self.deselectRow();
 
@@ -1011,12 +1019,19 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     e = (e) ? e : ((window.event) ? window.event : null);
 
     if (!e)
-      return;
-
+      return true;
+    // in IE for some reason same event comes two times
+    if (e.getAttribute) {
+      var isProcessed = e.getAttribute('eventProcessed');
+      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+        return false;
+      e.setAttribute('eventProcessed', 'true');
+    }
+    
     target = getTargetElement(e);
     tr = getTrNode(target);
     if (!tr)
-      return;
+      return true;
 
     self.deselectRow();
     self.currentRow = null;
