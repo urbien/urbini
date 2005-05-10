@@ -2584,6 +2584,7 @@ function setInnerHtml(div, text, frame) {
     // insert html fragment
     div.innerHTML = text;
     replaceTooltips(div);
+	frame.location.replace("about:blank");
 	//frame.location = "about:blank";
     //window.parent.focus();
 	//parent.initRTE('images/wysiwyg/', 'chat/', '');

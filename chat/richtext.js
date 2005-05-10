@@ -277,16 +277,16 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 	//alert(document.domain);
 //	frames[rte].domain = document.domain;
 		var oRTE = frames[rte].document;
-		oRTE.open();
-		oRTE.write(frameHtml);
-		oRTE.close();
+		//oRTE.open();
+		//oRTE.write(frameHtml);
+		//oRTE.close();
 		if (!readOnly) oRTE.designMode = "On";
 		
         //Buttons1_' + rte + '
 		//addEvent(frames[rte].document, 'click', function() {alert('df');}, false);
 		if(minimized){
 		  //addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
-		  addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight + 10; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
+		  addEvent(frames[rte].document, 'click', function() {frames[rte].document.body.style.margin = 0;document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight + 10; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
 		  addEvent(frames[rte].document, 'keyup', function() {textChanged = true;if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
 		  //frames[rte].document.attachEvent("onkeypress", function () {alert(document.getElementById(rte).height); document.getElementById(rte).height = 200; alert(document.getElementById(rte).height);});
 		}
@@ -409,7 +409,11 @@ function updateRTEs() {
 
 function updateRTE(rte) {
 
-    if(!textChanged)return;
+    if(!textChanged){
+	  if(document.getElementById(rte+'content'))
+	    document.getElementById('hdn' + rte).value = document.getElementById(rte+'content').value;
+	  return;
+	}
 
     if(document.getElementById(rte+'content'))document.getElementById(rte+'content').value = frames[rte].document.body.innerHTML;
 
