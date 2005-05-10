@@ -11,19 +11,17 @@
 </hideBlock>
     <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr>
-      <td valign="top" colspan="2">
+      <td valign="top">
         <include name="${type}_top.jsp"/>
-        <!--table width="100%"><tr><td class="folders"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;jobCategory_groupBy=on&amp;-adTitle=Job+categories"/></td></tr></table-->
       </td>
     </tr>
+    </table>
+    <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr>
       <td valign="top">
         <file/>
       </td>
-      <td valign="top">
-        <include name="${type}_right.jsp"/>
-        <!--table width="100%"><tr><td class="folders"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;jobCategory_groupBy=on&amp;-adTitle=Job+categories"/></td></tr></table-->
-      </td>
+      <include name="${type}_right.jsp"/>
     </tr>
     </table>
 
