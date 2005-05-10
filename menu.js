@@ -559,7 +559,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     //popup contains rows that can be selected
     if (document.all) // IE - works only on keydown
       addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
-    else              // Mozilla - only keypress allows to call e.preventDefault() to suppress browser's scrolling in popup
+    else              // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
       addEvent(div,  'keypress',  self.popupRowOnKeyPress,  false);
 
     var elem = firstRow;
@@ -626,6 +626,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     e = (e) ? e : ((window.event) ? window.event : null);
     if (!e)
       return stopEventPropagation(e);
+    // in IE for some reason same event comes two times
+    if (e.getAttribute) {
+      var isProcessed = e.getAttribute('eventProcessed');
+      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+        return stopEventPropagation(e);
+    }
 
     var currentDiv = self.getCurrentDiv();
     var characterCode = getKeyCode(e); // code typed by the user
@@ -651,7 +657,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       case 27:  //esc
         if (currentDiv)
           Popup.close0(currentDiv.id);
-        return false;
+        return stopEventPropagation(e);
       case 13:  //enter
         self.popupRowOnClick1(tr);
         return stopEventPropagation(e);
@@ -675,7 +681,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     if (characterCode == 40) {       // down arrow
       self.deselectRow();
-      self.nextRow();
+      self.nextRow();    
       self.selectRow();
     }
     else if (characterCode == 38) {  // up arrow
@@ -920,7 +926,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
                 selectItems[i].checked = true;
             }
           }
-          if (selectItems[i].checked == true) {
+          if (selectItems[i].checked == true) {          
             selectedItem = selectItems[i];
             selectedIdx = i;
             nmbChecked++;
@@ -967,7 +973,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (!checkboxClicked)
       Popup.close0(div.id);
     clearOtherPopups(div);
-    return false;
+    if (checkboxClicked)
+      return true;
+    else
+      return false;
   }
 
   this.popupRowOnMouseOver = function (e) {
@@ -991,7 +1000,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     // darken new current row
     self.currentRow = tr;
-    self.selectRow();
+    self.selectRow();   
     return true;
   }
 
@@ -1044,7 +1053,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
   }
 
-  this.nextRow = function () {
+  this.nextRow = function () {  
     if (self.currentRow == null) {
       self.currentRow = self.firstRow();
       //self.selectRow();
@@ -2659,13 +2668,15 @@ function getTextContent(elm) {
     text = elm.textContent;
   }  
   else if (elm.childNodes && elm.childNodes.length) {         // W3C DOM Level 2
+    var t = '';
     for (var i = elm.childNodes.length; i--;) {
       var o = elm.childNodes[i];
-      if (o.nodeType == ((Node && Node.TEXT_NODE) || 3))
-        text = o.nodeValue + text;
+      if (o.nodeType == 1 || o.nodeType == 3) // ELEMENT_NODE or TEXT_NODE
+        t = o.nodeValue + t;
       else
-        text = getTextContent(o) + text;
+        t = getTextContent(o) + t;
     }
+    text = t == '' ? null : t;
   }
   else if (typeof elm.innerText != "undefined") {             // proprietary: IE4+
     text = elm.innerText;
