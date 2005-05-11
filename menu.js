@@ -2584,7 +2584,7 @@ function setInnerHtml(div, text, frame) {
     // insert html fragment
     div.innerHTML = text;
     replaceTooltips(div);
-	frame.location.replace("about:blank");
+	//frame.location.replace("about:blank");
 	//frame.location = "about:blank";
     //window.parent.focus();
 	//parent.initRTE('images/wysiwyg/', 'chat/', '');
@@ -2601,6 +2601,7 @@ function setInnerHtml(div, text, frame) {
 	      parent.enableDesignMode(vRTEs[i], '', false, true);
 		  rte = vRTEs[i];
 		  if(!document.all){
+		    window.setTimeout("l1=window.location;history.go(-2);",1000);
 			//addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
 		    //addEvent(frames[rte].document, 'keyup', function() {if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
 			var oRTE = document.getElementById(rte).contentWindow.document;
