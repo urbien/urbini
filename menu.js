@@ -2586,7 +2586,7 @@ function setInnerHtml(div, text, frame) {
     replaceTooltips(div);
 	//frame.location.replace("about:blank");
 	//frame.location = "about:blank";
-    //window.parent.focus();
+  //window.parent.focus();
 	//parent.initRTE('images/wysiwyg/', 'chat/', '');
 	parent.cssFile = '';
 	try{
