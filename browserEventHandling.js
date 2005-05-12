@@ -101,18 +101,16 @@
     
     //***** Add smartlistbox handlers
     function addHandlers() {
-      addEvent(window, 'load', function() {setTimeout(interceptLinkClicks, 0);}, false);
+      setTimeout(interceptLinkClicks, 0);
       if (window.parent != window) {
-        addEvent(window, 'load', function() {setTimeout(onLoadPopup, 0);}, false);
+        setTimeout(onLoadPopup, 0);
         return;
       }
       if (typeof replaceAllTooltips != 'undefined')
-        addEvent(window, 'load', function() {setTimeout(replaceAllTooltips,  0);}, false);
-
-      initMenus();
-      initListBoxes();
-
-      addEvent(window, 'load', function() {setTimeout(resourceListEdit,  0);}, false);
+        setTimeout(replaceAllTooltips, 0);
+      setTimeout(initMenus, 0);      
+      setTimeout("initListBoxes(null)", 0);
+      setTimeout(resourceListEdit, 0);
     }
 
     function resourceListEdit() {
@@ -121,13 +119,16 @@
       for (i=0;i<llen; i++) {
         var elem = elements[i];
         if (elem.id  &&  elem.id.indexOf("_boolean", elem.id.length - "_boolean".length) != -1) {
-          addEvent(elem, 'click', markedAsRead, false);
+          addEvent(elem, 'click', changeBoolean, false);
           elem.style.cursor = 'pointer';
         }
       }
     }
 
-    function markedAsRead(e) {
+    /**
+     * Change boolean value (in non-edit mode)
+     */
+    function changeBoolean(e) {
       var target;
 
       e = (e) ? e : ((window.event) ? window.event : null);
@@ -241,4 +242,5 @@
     }
 
     var formInitialValues;
-    addHandlers();
+    addEvent(window, 'load', function() {setTimeout(addHandlers,  200);}, false);
+    

@@ -10,28 +10,6 @@ var keyPressedElement;
 var autoCompleteTimeoutId;
 var keyPressedTime;
 
-/**
- * Utility that discovers the html element which generated the event
- */
-function getTargetElement(evt) {
-  var elem;
-  var elem1 = evt.target;
-  if (evt.target) {
-    if (evt.currentTarget && (evt.currentTarget != elem1)) {
-      if (elem1.tagName.toLowerCase() == 'input' && elem1.type.toLowerCase() == 'checkbox')
-        elem = elem1;
-      else
-        elem = evt.currentTarget;
-    }
-    else
-      elem = elem1;
-  }
-  else {
-    elem = evt.srcElement;
-  }
-  return elem;
-}
-
 Popup.currentDivs          = new Array(); // distinct divs that can be open at the same time (since they have different canvases)
 Popup.popups               = new Array(); // pool of all popups with different divId(s)
 Popup.openTimeoutId        = null; // timeout after which we need to open the delayed popup
@@ -584,7 +562,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     if (!e)
       return;
-
+    
     target = getTargetElement(e);
     if (!target)
       return;
@@ -1717,8 +1695,7 @@ function autoCompleteOnMouseout(e) {
   if (!e)
     return;
 
-  var target;
-  target = getTargetElement(e);
+  var target = getTargetElement(e);
   if (!target)
     return;
 
@@ -2150,8 +2127,10 @@ function tooltipOnMouseOver0(target) {
   var divId    = 'system_tooltip';
   var iframeId = 'tooltipIframe';
   var tooltipDiv = document.getElementById(divId);
-  if (!tooltipDiv)
-    throw new Error("document must contain div '" + divId + "' to display enhanced tooltip: " + tooltipText);
+  if (!tooltipDiv) {
+    //throw new Error("document must contain div '" + divId + "' to display enhanced tooltip: " + tooltipText);
+    return false; // in FF for some reason if page not fully loaded this div is not yet defined
+  }  
   //if (tooltipDiv.style.width != '') {
   //  alert(tooltipDiv.style.width);
   //}
@@ -2700,3 +2679,26 @@ function getTextContent(elm) {
   }
   return text;
 }
+
+/**
+ * Utility that discovers the html element which generated the event
+ */
+function getTargetElement(evt) {
+  var elem;
+  var elem1 = evt.target;
+  if (evt.target) {
+    if (evt.currentTarget && (evt.currentTarget != elem1)) {
+      if (elem1.tagName.toLowerCase() == 'input' && elem1.type.toLowerCase() == 'checkbox')
+        elem = elem1;
+      else
+        elem = evt.currentTarget;
+    }
+    else
+      elem = elem1;
+  }
+  else {
+    elem = evt.srcElement;
+  }
+  return elem;
+}
+
