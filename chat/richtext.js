@@ -137,7 +137,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized) {
 		if (buttons && (width < 500)) width = 500;
 		var tablewidth = width + 4;
 	}
-
+  // building of the RTE structure. First the RTE panel is built.
 	if (buttons == true) {
 		if(minimized)
 		  document.writeln('<table class="rteBack" style="display:none" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">');
@@ -180,7 +180,6 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized) {
 		document.writeln('				<option value="images/smileys/sad.gif">sad&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - :(</option>');
 		document.writeln('				<option value="images/smileys/laughting.gif">laughting - :D</option>');
 		document.writeln('			</select>');
-
 /*
 		document.writeln('		<td width="100%">');
 		document.writeln('		</td>');
@@ -235,7 +234,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized) {
 		if(minimized) document.writeln('<br>');
 	}
 	//document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
-	if(minimized)
+	if(minimized) // if RTE is minimized, the iframe must have limited size: width="40px" height="30px"
 	  document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="40px" height="30px" src="'+document.domain+'" scrolling="auto"></iframe>');
 	 else 
 	   document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
@@ -244,8 +243,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized) {
 	
 	document.writeln('<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>');
 	document.writeln('<input type="hidden" id="hdn' + rte + '" name="' + rte + '" value="">');
-	//!!Error!!document.getElementById('hdn' + rte).value = html;
-	enableDesignMode(rte, html, readOnly, minimized);
+  enableDesignMode(rte, html, readOnly, minimized); // Enable iframe design mode
 }
 
 function enableDesignMode(rte, html, readOnly, minimized) {
@@ -264,33 +262,48 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 		frameHtml += "</style>\n";
 	}
 	frameHtml += "</head>\n";
-	//frameHtml += "<body onload=\"" + rte + ".document.body.innerHTML = parent.document.getElementById('" + rte + "content').value;alert(parent.document.getElementById('" + rte + "content').value);setTimeout('alert(parent.document.getElementById(\\'" + rte + "content\\').value)',3000)\">\n";
 	frameHtml += "<body>\n";
-	//frameHtml += "<body onload=\"alert(parent.document.getElementById('" + rte + "content').value);\">\n";
 	frameHtml += html + "\n";
 	frameHtml += "</body>\n";
 	frameHtml += "</html>";
 
-	if (document.all) {
-	//alert(window.parent.frames[rte].document);
-	//alert(frames[rte].domain);
-	//alert(document.domain);
-//	frames[rte].domain = document.domain;
+	if (document.all) { // Internet Explorer (IE) case
 		var oRTE = frames[rte].document;
 		//oRTE.open();
-		//oRTE.write(frameHtml);
-		//oRTE.close();
+		//oRTE.write(frameHtml);  // frameHtml is not loaded in the Internet Explorer (IE) case. This breaks the BACK button in IE.
+ 		//oRTE.close();           // THe necessary styles are added later - on window load event (in TextareaPropertyEditor.java)
 		if (!readOnly) oRTE.designMode = "On";
 		
-        //Buttons1_' + rte + '
-		//addEvent(frames[rte].document, 'click', function() {alert('df');}, false);
-		if(minimized){
+		if(minimized){ // the RTE is minimized (i.e. RTE panell is not displayed and RTE area width="40px" height="30px")
+                   // In this section click and keyup events are added to the RTE iframe using addEvent function so that
+                   // onclick RTE area must suit the entered text. click event makes the RTE input text area as big as the text inside,
+                   // but not bigger than 330 px (The height is set to 330px in this case).
+                   // keyup event is used to check the height of the RTE area and the text inside of it the  so that the area must be as big
+                   // as the text inside but not more than 330px. This event is hadled when the used types anything inside the area.
 		  //addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
-		  addEvent(frames[rte].document, 'click', function() {frames[rte].document.body.style.margin = 0;document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight + 10; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
-		  addEvent(frames[rte].document, 'keyup', function() {textChanged = true;if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
-		  //frames[rte].document.attachEvent("onkeypress", function () {alert(document.getElementById(rte).height); document.getElementById(rte).height = 200; alert(document.getElementById(rte).height);});
+		  addEvent(frames[rte].document, 'click', function() {
+                                                frames[rte].document.body.style.margin = 0;
+                                                document.getElementById('Buttons1_' + rte).style.display = 'inline'; 
+                                                if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) 
+                                                   && frames[rte].document.body.scrollHeight < 330) 
+                                                  document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight + 10; 
+                                                 else 
+                                                   document.getElementById(rte).style.height = 330; 
+                                                document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;
+                                              }, false);
+		  addEvent(frames[rte].document, 'keyup', function() {
+                                                textChanged = true;
+                                                if(frames[rte].document.body.scrollHeight >= 330) 
+                                                  document.getElementById(rte).style.height = 330; 
+                                                 else {
+                                                   if(this.attachEvent)
+                                                     document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;
+                                                    else 
+                                                      document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;
+                                                 }
+                                              },false);
 		}
-	} else {
+	} else { // FireFox (FF) case
     if (document.getElementById(rte) == null) {
       //gecko may take some time to enable design mode.
       //Keep looping until able to set.
@@ -301,7 +314,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
         return false;
       }
     }
-    else {//alert(document.getElementById(rte).contentDocument.designMode);//alert(document.getElementById(rte).contentDocument);
+    else {
 	  if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
 			try {
 				var oRTE = document.getElementById(rte).contentWindow.document;
@@ -311,11 +324,33 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 				if (isGecko && !readOnly) {
 					//attach a keyboard handler for gecko browsers to make keyboard shortcuts work
 					oRTE.addEventListener("keypress", kb_handler, true);
-                    //addEvent(frames[rte].document, 'click', function() {alert('df');}, false);
-					if(minimized) {
+					if(minimized) { // the RTE is minimized (i.e. RTE panell is not displayed and RTE area width="40px" height="30px")
+                          // In this section click and keyup events are added to the RTE iframe using addEvent function so that
+                          // onclick RTE area must suit the entered text. click event makes the RTE input text area as big as the text inside,
+                          // but not bigger than 330 px (The height is set to 330px in this case).
+                          // keyup event is used to check the height of the RTE area and the text inside of it the  so that the area must be as big
+                          // as the text inside but not more than 330px. This event is hadled when the used types anything inside the area.
 					  //addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
-					  addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
-					  addEvent(frames[rte].document, 'keyup', function() {textChanged = true; if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
+					  addEvent(frames[rte].document, 'click', function() {
+                                                      document.getElementById('Buttons1_' + rte).style.display = 'inline'; 
+                                                      if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) 
+                                                        && frames[rte].document.body.scrollHeight < 330) 
+                                                        document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight; 
+                                                       else 
+                                                         document.getElementById(rte).style.height = 330; 
+                                                      document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;
+                                                    }, false);
+					  addEvent(frames[rte].document, 'keyup', function() {
+                                                      textChanged = true; 
+                                                      if(frames[rte].document.body.scrollHeight >= 330) 
+                                                        document.getElementById(rte).style.height = 330; 
+                                                       else {
+                                                         if(this.attachEvent)
+                                                           document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;
+                                                          else 
+                                                            document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;
+                                                       }
+                                                    },false);
 					}
 				}
 			} catch (e) {
@@ -325,7 +360,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 	}
 }
 
-function processURLs(stringWithUrl) { // function that looks for all URLs in RTE to replace them with word link f.e.
+function processURLs(stringWithUrl) { // recursive function that looks for all URLs in RTE to replace them with link image and the title (title is a link itself).
   var httpPresent = false;
   firstEntrance = -1;
 
@@ -344,56 +379,51 @@ function processURLs(stringWithUrl) { // function that looks for all URLs in RTE
 
   if(firstEntrance != -1)
   {
-	var urlLink = "";
-	var idexOfTheEndOfTheUrl = firstEntrance;
-	for(;idexOfTheEndOfTheUrl < stringWithUrl.length;idexOfTheEndOfTheUrl++)
-	{
-		if(stringWithUrl.charAt(idexOfTheEndOfTheUrl)==' ' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=='<' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=='"' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=="'")
-		{
-			if(stringWithUrl.charAt(idexOfTheEndOfTheUrl-1)=='.')
-				idexOfTheEndOfTheUrl=idexOfTheEndOfTheUrl-1;
-			break;
-		}
+	  var urlLink = "";
+	  var idexOfTheEndOfTheUrl = firstEntrance;
+	  for(;idexOfTheEndOfTheUrl < stringWithUrl.length;idexOfTheEndOfTheUrl++)
+	  {
+		  if(stringWithUrl.charAt(idexOfTheEndOfTheUrl)==' ' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=='<' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=='"' || stringWithUrl.charAt(idexOfTheEndOfTheUrl)=="'")
+		  {
+			  if(stringWithUrl.charAt(idexOfTheEndOfTheUrl-1)=='.')
+				  idexOfTheEndOfTheUrl=idexOfTheEndOfTheUrl-1;
+			  break;
+		  }
     }
 
     if(stringWithUrl.charAt(idexOfTheEndOfTheUrl-1)=='.')
 	  idexOfTheEndOfTheUrl--;
 
-	urlLink += stringWithUrl.substring(0,firstEntrance);
+	  urlLink += stringWithUrl.substring(0,firstEntrance);
 
     if(stringWithUrl.substring(firstEntrance-6,firstEntrance)=='href="' || stringWithUrl.substring(firstEntrance-6,firstEntrance)=='title=' || stringWithUrl.substring(firstEntrance-5,firstEntrance)=='src="' || stringWithUrl.substring(firstEntrance-7,firstEntrance)=='title="') {
-         if(!httpPresent)
-           urlLink_href='http:\/\/' + stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
-          else
-            urlLink_href=stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
-
-         urlLink += urlLink_href;
+      if(!httpPresent)
+        urlLink_href='http:\/\/' + stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
+       else
+         urlLink_href=stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
+      urlLink += urlLink_href;
 	}
-	 else {
-         if(!httpPresent)
-           urlLink_href='http:\/\/' + stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
-          else
-            urlLink_href=stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
-	   //alert(urlLink.substring(urlLink.length-1,urlLink.length));
+	else {
+    if(!httpPresent)
+      urlLink_href='http:\/\/' + stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
+     else
+       urlLink_href=stringWithUrl.substring(firstEntrance,idexOfTheEndOfTheUrl);
 	   var chkURL = urlLink.substring(urlLink.length-2, urlLink.length);
 	   if(chkURL!='">') {
 	     urlLink +="<a href='"+urlLink_href+"'><img src='/images/wysiwyg/hyperlink.gif' title=\""+urlLink_href+"\" width='24' height='24' border='0'></a>";
 	   }
-	    else
-		{
-	      urlLink = urlLink.substring(0,urlLink.length-1);
-	      urlLink += " target='_blank'><img src='/images/wysiwyg/hyperlink.gif' title=\""+urlLink_href+"\" width='24' height='24' border='0'>";
-		}
-	 }
+	   else {
+	     urlLink = urlLink.substring(0,urlLink.length-1);
+	     urlLink += " target='_blank'><img src='/images/wysiwyg/hyperlink.gif' title=\""+urlLink_href+"\" width='24' height='24' border='0'>";
+     }
+	}
 
 	var restUrl = stringWithUrl.substring(idexOfTheEndOfTheUrl, stringWithUrl.length);
-
-       return urlLink + processURLs(restUrl);
+  return urlLink + processURLs(restUrl);
   }
 }
 
-function updateRTEs() {
-    //if(rteList && rteList!='') allRTEs = rteList;
+function updateRTEs() { // this function is called when there are a lot of RTEs on the page. It uses allRTEs variable to get the list of names into the array. Then updateRTE() is called for every  RTE
 	var vRTEs = allRTEs.split(";");
 	for (var i = 0; i < vRTEs.length; i++) {
 		//---- Replacing of all urls with link image not to make the page too wide cuz of long url
@@ -403,7 +433,6 @@ function updateRTEs() {
 		frames[vRTEs[i]].document.body.innerHTML = processURLs(frames[vRTEs[i]].document.body.innerHTML);
 		//alert(frames[vRTEs[i]].document.body.innerHTML);
 		updateRTE(vRTEs[i]);
-		//!!!alert(frames[vRTEs[i]].document.body.innerHTML);
 	}
 }
 
