@@ -31,6 +31,9 @@ tr.error     {background-color:#ffcc00; font-weight:bold}
 /* Leave them as is for now                                                            */
 td {font-family:sans-serif, arial; font-size:9pt;}
 
+/* text in link. You an see it in 'Hi "contactName"' */
+A {text-decoration : none;; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
+
 th {font-family:sans-serif, arial; font-size:9pt;}
 input {font-family:sans-serif, arial; font-size:9pt;}
 select.xs {font-family:sans-serif, arial font-size:8pt;}
