@@ -565,11 +565,13 @@ function FormatText(rte, command, option) {
 			currentRTE = rte;
 
 			//position and show color palette
+      // OffsetLeft is defined in document.getElementById('cp' + rte).style.left 
+      // OffsetTop  is defined in document.getElementById('cp' + rte).style.top
 			buttonElement = document.getElementById(command + '_' + rte);
 			// Ernst de Moor: Fix the amount of digging parents up, in case the RTE editor itself is displayed in a div.
-			document.getElementById('cp' + rte).style.left = getOffsetLeft(buttonElement, 4) - 40 + "px";
+			document.getElementById('cp' + rte).style.left = getOffsetLeft(buttonElement, 4) - 50 + "px";
 			//document.getElementById('cp' + rte).style.top = (getOffsetTop(buttonElement, 4) + buttonElement.offsetHeight + 4) + "px";
-			document.getElementById('cp' + rte).style.top = (getOffsetTop(buttonElement, 6) + buttonElement.offsetHeight + 4) + 50 + "px";
+			document.getElementById('cp' + rte).style.top = getOffsetTop(buttonElement, 17) - 105 + "px";
 			if (document.getElementById('cp' + rte).style.visibility == "hidden") {
 				document.getElementById('cp' + rte).style.visibility = "visible";
 				document.getElementById('cp' + rte).style.display = "inline";
