@@ -424,7 +424,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       div.style.display    = 'none';   // must hide it again to avoid screen flicker
 
       // move box to the left of the hostspot if the distance to window border isn't enough to accomodate the whole div box
-      var margin = 25;
+      var margin = 40;
       if (distanceToRightEdge < divCoords.width + margin) {
         left = screenX - divCoords.width + scrollX; // move horizontal position of the menu to the left by its width
         if (left - margin > 0) left -= margin; // adjust for a scrollbar;
