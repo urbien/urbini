@@ -2563,35 +2563,55 @@ function setInnerHtml(div, text, frame) {
     // insert html fragment
     div.innerHTML = text;
     replaceTooltips(div);
-	//frame.location.replace("about:blank");
-	//frame.location = "about:blank";
-  //window.parent.focus();
-	//parent.initRTE('images/wysiwyg/', 'chat/', '');
-	parent.cssFile = '';
-	try{
-	  if(frame)
-	  if(frame.allRTEs){
-	    allRTEs = frame.allRTEs;
-		isRichText = frame.isRichText;
-		cssFile = frame.cssFile;
-		includesPath = frame.includesPath;
-	    var vRTEs = frame.allRTEs.split(";");
-	    for (var i = 0; i < vRTEs.length; i++) {//vRTEs[i]
-	      parent.enableDesignMode(vRTEs[i], '', false, true);
-		  rte = vRTEs[i];
-		  if(!document.all){
-		    window.setTimeout("l1=window.location;history.go(-2);",1000);
-			//addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
-		    //addEvent(frames[rte].document, 'keyup', function() {if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
-			var oRTE = document.getElementById(rte).contentWindow.document;
-			oRTE.addEventListener('click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (document.getElementById(rte).contentWindow.document.body.scrollHeight + 15) && document.getElementById(rte).contentWindow.document.body.scrollHeight < 330) document.getElementById(rte).style.height = document.getElementById(rte).contentWindow.document.body.scrollHeight; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
-			oRTE.addEventListener('keyup', function() {textChanged = true; if(document.getElementById(rte).contentWindow.document.body.offsetHeight >= 330) document.getElementById(rte).style.height = 330; else document.getElementById(rte).style.height = document.getElementById(rte).contentWindow.document.body.offsetHeight+10; },false);
-			oRTE.addEventListener("keypress", parent.kb_handler, true);
-		  }
+    //window.parent.focus();
+    
+	  // -------<<RTE in Bookmarks correction>>
+    // set setInnerHtml function copies just generated html structure from the loaded hidden iframe (width:0;heigth:0 for iframe,
+    // but not display:none) to the div. Another thing that needs to be done is the RTE functionality assigning to the correct
+    // RTE html structure.
+    // enableDesignMode function from rishtext.js is called for this. It assigns the necessary functionality to the generated RTE 
+    // html structure.
+    // enableDesignMode is called for every RTE that are on the page. THe list of the RTEs is in the allRTEs string. They are 
+    // delimited by ";".
+    // So, the next TRY block assigns functionality to the RTEs on the page using enableDesignMode(vRTEs[i], '', false, true)
+    // and add events (click, keyup, keypress) to the "working" RTEs via addEventListener function
+	  parent.cssFile = '';
+	  try{
+	    if(frame && frame.allRTEs) {
+	      allRTEs = frame.allRTEs;
+		    isRichText = frame.isRichText;
+		    cssFile = frame.cssFile;
+		    includesPath = frame.includesPath;
+	      var vRTEs = frame.allRTEs.split(";");
+	      for (var i = 0; i < vRTEs.length; i++) {
+	        parent.enableDesignMode(vRTEs[i], '', false, true);
+		      rte = vRTEs[i];
+		      if(!document.all){
+		        //window.setTimeout("l1=window.location;history.go(-2);",1000);
+			      //addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline'; if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) && frames[rte].document.body.scrollHeight < 330) document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight; else document.getElementById(rte).style.height = 330; document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
+		        //addEvent(frames[rte].document, 'keyup', function() {if(frames[rte].document.body.scrollHeight >= 330) document.getElementById(rte).style.height = 330; else {if(this.attachEvent)document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;else document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;}},false);
+			      var oRTE = document.getElementById(rte).contentWindow.document;
+            oRTE.addEventListener('click', function() {
+                                             document.getElementById('Buttons1_' + rte).style.display = 'inline'; 
+                                             if(document.getElementById(rte).height < (document.getElementById(rte).contentWindow.document.body.scrollHeight + 15) 
+                                                && document.getElementById(rte).contentWindow.document.body.scrollHeight < 330) 
+                                               document.getElementById(rte).style.height = document.getElementById(rte).contentWindow.document.body.scrollHeight;
+                                              else 
+                                                document.getElementById(rte).style.height = 330; 
+                                             document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;
+                                           }, false);
+            oRTE.addEventListener('keyup', function() {
+                                             textChanged = true; 
+                                             if(document.getElementById(rte).contentWindow.document.body.offsetHeight >= 330) 
+                                               document.getElementById(rte).style.height = 330; 
+                                              else 
+                                                document.getElementById(rte).style.height = document.getElementById(rte).contentWindow.document.body.offsetHeight+10; 
+                                           },false);
+            oRTE.addEventListener("keypress", parent.kb_handler, true);
+		      }
+	      }
 	    }
-	  }
-	}catch(ex){}
-	//parent.enableDesignMode('notes', '', false, true);
+	  }catch(ex){}
   }
 }
 
