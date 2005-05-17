@@ -22,14 +22,20 @@
       <td valign="top" align="right" width="10%"><!--changePassword/><userLogOff html="user-login.html"/--></td>
     </tr>
     <tr valign="top"><td>
-    <form action="list.html" name="siteResourceList">
+    <!--form action="list.html" name="siteResourceList"-->
+<form name="categoryTextSearch"> 
+  <searchHistory/>
+  <categoryTextSearch />
+  <resourcesSearch resourcesUri="/sql/text/search/resources" />
+  <filesSearch filesUri="text/search/files" />
+</form>
       <div align="left"><backLink /></div>
       <parallelResourceList />
       <div align="right"><measurement/></div>
       <addNewResource html="mkResource.html"/> 
       <createResources/>
       <showSetProperties />
-    </form>
+    <!--/form-->
     </td>
     <td valign="top" align="left" bgcolor="eeeeee">
         <menu toolbar="filterParallel" type="onpage" title="false"/>
