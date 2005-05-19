@@ -849,12 +849,16 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var items = tr.getElementsByTagName('td');
       var val = items[2].innerHTML;
       var idx = val.lastIndexOf(">");
-      if (len > 1)
+      if (len > 1) {
         chosenTextField[0].value = val.substring(idx + 1);
-      else
+        if (chosenTextField[0].style)
+          chosenTextField[0].style.backgroundColor = '#ffffff';
+      }
+      else {
         chosenTextField.value = val.substring(idx + 1);
-      if (chosenTextField.style)
-        chosenTextField.style.backgroundColor = '#ffffff';
+        if (chosenTextField.style)
+          chosenTextField.style.backgroundColor = '#ffffff';
+      }
       // show property label since label inside input field is now overwritten
       if (currentFormName == 'rightPanelPropertySheet') {
         if (fieldLabel)
