@@ -32,9 +32,9 @@
       <div align="left"><backLink /></div>
       <parallelResourceList />
       <div align="right"><measurement/></div>
-      <addNewResource html="mkResource.html"/> 
+      <!--addNewResource html="mkResource.html"/> 
       <createResources/>
-      <showSetProperties />
+      <showSetProperties /-->
     <!--/form-->
     </td>
     <td valign="top" align="left" bgcolor="eeeeee">
