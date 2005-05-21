@@ -2187,7 +2187,13 @@ function interceptLinkClicks() {
 
   var llen = document.links.length;
   for (i=0;i<llen; i++) {
-    addEvent(document.links[i], 'click',   onClick,   false);
+    var id = document.links[i].id;
+    if (id && id.indexOf("-inner.") == 0) {
+      var propName = id.substring(7);
+      addEvent(document.links[i], 'click',   function(event) {var r = displayInner(event, innerUrls[propName]); return r;},   false);
+    }
+    else
+      addEvent(document.links[i], 'click',   onClick,   false);
   }
 }
 
