@@ -2191,7 +2191,6 @@ function interceptLinkClicks() {
     var id = document.links[i].id;
     if (id && id.indexOf("-inner.") == 0) {
       var propName = id.substring(7);
-alert(id);      
       addEvent(document.links[i], 'click',  onClickDisplayInner,   false);
     }
     else
