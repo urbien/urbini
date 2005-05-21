@@ -63,6 +63,7 @@
     <tr><td colspan="3"><br/>
 <a target="pane2"> </a>
 <div id="pane2" />
+<include name="${type}_insert.jsp"/>
       <readOtherSiteInfo />
       <tablePropertyList />
 <hideBlock id="hideBlock1">      
