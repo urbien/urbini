@@ -829,7 +829,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       if (formFieldVerified)
         formFieldVerified.value = 'n';
       if (selectItems) {
-        for (i=0; i<selectItems.length; i++) {
+        for (var i=0; i<selectItems.length; i++) {
           if (selectItems[i].type.toLowerCase() == "checkbox")
             selectItems[i].checked = false;
           else
@@ -873,7 +873,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       else {
         formField.value = '';
         // go over selected items and count all checked
-        for (i=0; i<selectItems.length; i++) {
+        for (var i=0; i<selectItems.length; i++) {
           if (selectItems[i].type.toLowerCase() == "hidden") {
             selectItems[i].value = null;
             continue;
@@ -1026,7 +1026,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     if (self.currentRow.tagName && self.currentRow.tagName.toLowerCase() == 'tr') {
       var tds = self.currentRow.getElementsByTagName('td');
-      for (i=0; i<tds.length; i++) {
+      for (var i=0; i<tds.length; i++) {
         var elem = tds[i];
         elem.style.backgroundColor = Popup.LightMenuItem;
       }
@@ -1042,7 +1042,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     if (self.currentRow.tagName && self.currentRow.tagName.toLowerCase() == 'tr') {
       var tds = self.currentRow.getElementsByTagName("td");
-      for (i=0; i<tds.length; i++) {
+      for (var i=0; i<tds.length; i++) {
         var elem = tds[i];
         //alert(elem.id);
         elem.style.backgroundColor = Popup.DarkMenuItem;
@@ -1124,7 +1124,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (trs == null)
       return null;
 
-    for (i=0; i<trs.length; i++) {
+    for (var i=0; i<trs.length; i++) {
       if (!self.isHeaderRow(trs[i]))
         break;
     }
@@ -1421,7 +1421,7 @@ function getFormFiltersForInterface(form, propName) {
 
   var p = "";
   var fields = form.elements;
-  for (i=0; i<fields.length; i++) {
+  for (var i=0; i<fields.length; i++) {
     field = fields[i];
     var value = field.value;
     var name  = field.name;
@@ -1457,7 +1457,7 @@ function removePopupRowEventHandlers(div) {
   var table = tables[1];
   var trs = table.getElementsByTagName("tr");
   var k=0;
-  for (i=0;i<trs.length; i++) {
+  for (var i=0;i<trs.length; i++) {
     var elem = trs[i];
     removeEvent(elem, 'click',     popupRowOnClick,     false);
     removeEvent(elem, 'mouseover', popupRowOnMouseOver, false);
@@ -1816,6 +1816,7 @@ function getKeyCode(e) {
 
 function clearOtherPopups(div) {
 //alert("div=" + div.id + ", loadedPopups.length=" + openedPopups.length)
+  var i;
   for (i in loadedPopups) {
     var p = loadedPopups[i];
     if (p == null)
@@ -1862,7 +1863,7 @@ function getFormFilters(form, allFields) {
 
   var p = "";
   var fields = form.elements;
-  for (i=0; i<fields.length; i++) {
+  for (var i=0; i<fields.length; i++) {
     var field = fields[i];
     var value = field.value;
     var name  = field.name;
@@ -1988,7 +1989,7 @@ function hideResetRow(div, currentFormName, originalProp) {
   var form = document.forms[currentFormName];
   if (form.elements[originalProp + "_class"])
     return;
-  for (i=0; i<trs.length; i++) {
+  for (var i=0; i<trs.length; i++) {
     if (trs[i].id.indexOf('$clear') == 0) {
       found = true;
       break;
@@ -2027,7 +2028,7 @@ function hideResetRow(div, currentFormName, originalProp) {
 function initMenus() {
   var menuIcons = document.getElementsByTagName('img');
   var l = menuIcons.length;
-  for (i=0; i<l; i++) {
+  for (var i=0; i<l; i++) {
     var m = menuIcons[i];
     if (m.id.indexOf('menuicon_') == 0) {
       addEvent(m, 'click', menuOnClick, false);
@@ -2061,7 +2062,7 @@ function menuOnClick(e) {
 function replaceTooltips0(elements) {
   var llen;
   llen = elements.length;
-  for (i=0;i<llen; i++) {
+  for (var i=0;i<llen; i++) {
     var elem = elements[i];
     if (elem.attributes['title']) {
       addEvent(elem, 'mouseout',    tooltipOnMouseOut,    false);
@@ -2186,15 +2187,33 @@ function interceptLinkClicks() {
   //addEvent(document, 'keyup',   onKeyUp,   false);
 
   var llen = document.links.length;
-  for (i=0;i<llen; i++) {
+  for (var i=0;i<llen; i++) {
     var id = document.links[i].id;
     if (id && id.indexOf("-inner.") == 0) {
       var propName = id.substring(7);
-      addEvent(document.links[i], 'click',   function(event) {var r = displayInner(event, innerUrls[propName]); return r;},   false);
+alert(id);      
+      addEvent(document.links[i], 'click',  onClickDisplayInner,   false);
     }
     else
       addEvent(document.links[i], 'click',   onClick,   false);
   }
+}
+
+function onClickDisplayInner (e) {
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e)
+    return;
+
+  target = getTargetElement(e);
+
+  if (!target || !target.id)
+    return;
+  
+  var propName = target.id.substring(7); 
+  var r = displayInner(e, innerUrls[propName]); 
+  return r;
 }
 
 /**
@@ -2638,7 +2657,7 @@ function showRecurrencePanel(formName, propertyName) {
   else {
     document.getElementById('frequencyStartEndBlock').style.display = 'inline';
   }
-  for (i = 0; i < 5; i++) {
+  for (var i = 0; i < 5; i++) {
     if (elements[i].checked == true) {
       for (j = 0; j < 5; j++) {
         if (j != i) {

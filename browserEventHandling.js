@@ -116,7 +116,7 @@
     function resourceListEdit() {
       var elements = document.getElementsByTagName('img');
       llen = elements.length;
-      for (i=0;i<llen; i++) {
+      for (var i=0;i<llen; i++) {
         var elem = elements[i];
         if (elem.id  &&  elem.id.indexOf("_boolean", elem.id.length - "_boolean".length) != -1) {
           addEvent(elem, 'click', changeBoolean, false);
@@ -183,7 +183,7 @@
         images = div.getElementsByTagName('img');
       else
         images = document.images;
-      for (i=0; i<images.length; i++) {
+      for (var i=0; i<images.length; i++) {
         var image = images[i];
         if (image.id.indexOf("_filter", image.id.length - "_filter".length) == -1)
           continue;
@@ -200,7 +200,7 @@
       else
         forms = document.forms;
       formInitialValues = new Array(forms.length);
-      for (i=0; i<forms.length; i++) {
+      for (var i=0; i<forms.length; i++) {
         var form = forms[i];
         var initialValues = new Array(form.elements.length);
         formInitialValues[form.name] = initialValues;
