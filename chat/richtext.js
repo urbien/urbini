@@ -361,6 +361,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 }
 
 function processURLs(stringWithUrl) { // recursive function that looks for all URLs in RTE to replace them with link image and the title (title is a link itself).
+return   stringWithUrl;
   var httpPresent = false;
   firstEntrance = -1;
 
