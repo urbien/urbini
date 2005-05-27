@@ -873,8 +873,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       else {
         formField.value = '';
         // go over selected items and count all checked
+        var hiddenSelectedItem;
         for (var i=0; i<selectItems.length; i++) {
           if (selectItems[i].type.toLowerCase() == "hidden") {
+            hiddenSelectedItem = selectItems[i];
             selectItems[i].value = null;
             continue;
           }
@@ -930,6 +932,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             chosenTextField.value = "";
         }
         else if (nmbChecked == 1) {
+          if (hiddenSelectedItem != null)
+            hiddenSelectedItem.value = selectedItem.value;
           var trNode = getTrNode(selectedItem);
           var items = trNode.getElementsByTagName('td');
           var val = items[2].innerHTML;
@@ -940,8 +944,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           else
             chosenTextField.value = val.substring(idx + 1);
         }
-        else
+        else {
+          if (hiddenSelectedItem != null)
+            hiddenSelectedItem.value = selectedItem.value;
           chosenTextField.value = '<...>';
+        }
       }
     }
 
