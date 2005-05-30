@@ -270,7 +270,7 @@
 		//alert(document.postForm.messageRTE.value);
 		
         if (document.postForm.message.value.charAt(0) != "[")
-          document.postForm.nameUser.value = "all";
+          document.postForm.nameUser.value = "all"; // nameUser is the contact's uri. Contact that receives private message.
         //document.postForm.message.focus();
 
 		//document.postForm.message.value = loadURL(document.postForm.message.value);
@@ -714,6 +714,7 @@
 				    <input type="hidden" value="all" name="nameUser" id="nameUser">
 		            <input type="hidden" value="my" id="aliasUser" name="aliasUser">
 				    <span class=xs>
+                       <div id="messageRTEdv"></div> 
                         <script language="JavaScript" type="text/javascript" src="chat/richtext.js"></script>
                         <script language="JavaScript" type="text/javascript">
                             function submitForm() {
@@ -729,7 +730,7 @@
                         </script>
                         <script language="JavaScript" type="text/javascript">
                             //Usage: writeRichText(fieldname, html, width, height, buttons)
-                            writeRichText('messageRTE', '', '100%', 50, true, false);
+                            writeRichText('messageRTE', '', '100%', 50, true, false, false, true);
                         </script>
 
                       <input type="Hidden" name='message' id='message'>
@@ -772,7 +773,7 @@
       <input type=hidden name='message' value='..w..'>
     </form>
 
-    <iframe id='thread' name='thread' src='about:blank' style='width:0px; height: 0px; border: 0'></iframe><!--onload="alert('ytgyuyuufuuy')"//-->
+    <iframe id='thread' name='thread' src='about:blank' style='width:100px; height: 100px; border: 0'></iframe><!--onload="alert('ytgyuyuufuuy')"//-->
     <div>
       <iframe id='post' name='post' src='about:blank' style='width: 0px; height: 0px; border: 0'></iframe>
     </div>  

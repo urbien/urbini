@@ -63,11 +63,11 @@ function initRTE(imgPath, incPath, css, rte) {
 	//isRichText = false;
 }
 
-function writeRichText(rte, html, width, height, buttons, readOnly, minimized) {
+function writeRichText(rte, html, width, height, buttons, readOnly, minimized, isChat) {
 	if (isRichText) {
 		if (allRTEs.length > 0) allRTEs += ";";
 		allRTEs += rte;
-		writeRTE(rte, html, width, height, buttons, readOnly, minimized);
+		writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat);
 	} else {
 		writeDefault(rte, html, width, height, buttons, readOnly);
 	}
@@ -128,7 +128,7 @@ function insertSmile(rte, smile)
 	oRTE.focus();
 }
 
-function writeRTE(rte, html, width, height, buttons, readOnly, minimized) {
+function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat) {
 	if (readOnly) buttons = false;
 
 	var divRTEcontainerObj = document.getElementById(rte+'dv');// div that contains RTE inside
@@ -250,10 +250,10 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized) {
 	rteHtmlStructure += '<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>';
 	rteHtmlStructure += '<input type="hidden" id="hdn' + rte + '" name="' + rte + '" value="">';
   divRTEcontainerObj.innerHTML = rteHtmlStructure;
-  enableDesignMode(rte, html, readOnly, minimized); // Enable iframe design mode
+  enableDesignMode(rte, html, readOnly, minimized, isChat); // Enable iframe design mode
 }
 
-function enableDesignMode(rte, html, readOnly, minimized) {
+function enableDesignMode(rte, html, readOnly, minimized, isChat) {
 	var frameHtml = "<html id=\"" + rte + "\">\n";
 	frameHtml += "<head>\n";
 	//to reference your stylesheet, set href property below to your stylesheet path and uncomment
@@ -281,7 +281,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
  		//oRTE.close();           // THe necessary styles are added later - on window load event (in TextareaPropertyEditor.java)
 		if (!readOnly) oRTE.designMode = "On";
 		
-		//if(minimized){ // the RTE is minimized (i.e. RTE panell is not displayed and RTE area width="40px" height="30px")
+		if(!minimized && !isChat){ // the RTE is minimized (i.e. RTE panell is not displayed and RTE area width="40px" height="30px")
                    // In this section click and keyup events are added to the RTE iframe using addEvent function so that
                    // onclick RTE area must suit the entered text. click event makes the RTE input text area as big as the text inside,
                    // but not bigger than 330 px (The height is set to 330px in this case).
@@ -309,7 +309,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
                                                       document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;
                                                  }
                                               },false);
-		//}
+		}
 	} else { // FireFox (FF) case
     if (document.getElementById(rte) == null) {
       //gecko may take some time to enable design mode.
@@ -331,7 +331,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
 				if (isGecko && !readOnly) {
 					//attach a keyboard handler for gecko browsers to make keyboard shortcuts work
 					oRTE.addEventListener("keypress", kb_handler, true);
-					//if(minimized) { // the RTE is minimized (i.e. RTE panell is not displayed and RTE area width="40px" height="30px")
+					if(!minimized && !isChat) { // the RTE is minimized (i.e. RTE panell is not displayed and RTE area width="40px" height="30px")
                           // In this section click and keyup events are added to the RTE iframe using addEvent function so that
                           // onclick RTE area must suit the entered text. click event makes the RTE input text area as big as the text inside,
                           // but not bigger than 330 px (The height is set to 330px in this case).
@@ -359,7 +359,7 @@ function enableDesignMode(rte, html, readOnly, minimized) {
                                                        }
                                                     },false);
 					}
-				//}
+				}
 			} catch (e) {
 				alert("Error preloading content.");
 			}
