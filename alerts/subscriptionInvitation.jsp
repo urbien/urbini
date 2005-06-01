@@ -13,7 +13,7 @@ You are invited to receive alerts for the <property name="forum" type="y"/> <pro
 <property name="subscription.comment"/>
 <br/>
 
-To subscribe please click <subscribe property="forum"/>
+To subscribe please click <subscribe property="accepted" value="true"/>
 <br/>
 You can modify your subscription alert level or unsubscribe at any time.
 <br/>
