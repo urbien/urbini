@@ -23,9 +23,6 @@
 .dtree a.nodeSel {
 	background-color: #c0d2ec;
 }
-.dtree .clip {
-	overflow: hidden;
-}
 .dtree td {
 	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
 	font-size: 11px;
