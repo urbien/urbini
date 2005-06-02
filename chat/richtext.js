@@ -146,40 +146,44 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
   // building of the RTE structure. First the RTE panel is built.
 	if (buttons == true) {
 		if(minimized)
-		  rteHtmlStructure += '<table class="rteBack" style="display:none" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">';
-		 else rteHtmlStructure += '<table class="rteBack" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">';
+		  rteHtmlStructure += '<table align="center" class="rteBack" style="display:none" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">';
+		 else rteHtmlStructure += '<table align="center" class="rteBack" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">';
 		 rteHtmlStructure += '	<tr style="white-space : nowrap; word-spacing : 0px; 	white-space : nowrap;">' +
-		 '		<td width="100%" cellpadding=0 cellspacing=0 style="" valign="top">' +
-		 '			<select style="width:75px;vertical-align : top;" id="formatblock_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">' +
-		 '				<option value="">[Style]</option>' +
-		 '				<option value="<p>">Paragraph</option>' +
-		 '				<option value="<h1>">Heading 1 <h1></option>' +
-		 '				<option value="<h2>">Heading 2 <h2></option>' +
-		 '				<option value="<h3>">Heading 3 <h3></option>' +
-		 '				<option value="<h4>">Heading 4 <h4></option>' +
-		 '				<option value="<h5>">Heading 5 <h5></option>' +
-		 '				<option value="<h6>">Heading 6 <h6></option>' +
-		 '				<option value="<address>">Address <ADDR></option>' +
-		 '				<option value="<pre>">Formatted <pre></option>' +
-		 '			</select>' +
-		 '			<select style="width:113px;vertical-align : top;" id="fontname_' + rte + '" onchange="Select(\'' + rte + '\', this.id)">' +
-		 '				<option value="Font" selected>[Font]</option>' +
-		 '				<option value="Arial, Helvetica, sans-serif">Arial</option>' +
-		 '				<option value="Courier New, Courier, mono">Courier New</option>' +
-		 '				<option value="Times New Roman, Times, serif">Times New Roman</option>' +
-		 '				<option value="Verdana, Arial, Helvetica, sans-serif">Verdana</option>' +
-		 '			</select>' +
-		 '			<select style="width:57px;vertical-align : top;" unselectable="on" id="fontsize_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">' +
-		 '				<option value="Size">[Size]</option>' +
-		 '				<option value="1">1</option>' +
-		 '				<option value="2">2</option>' +
-		 '				<option value="3">3</option>' +
-		 '				<option value="4">4</option>' +
-		 '				<option value="5">5</option>' +
-		 '				<option value="6">6</option>' +
-		 '				<option value="7">7</option>' +
-		 '			</select>' +
-		 '			<select style="width:95px;vertical-align : top;" unselectable="on" id="smile_' + rte + '" onchange="insertSmile(\''+rte+'\',this.value);this.selectedIndex = 0;">' +
+		 '		<td width="100%" cellpadding=0 cellspacing=0 style="" valign="top">';
+		 if( !isChat ) {
+       rteHtmlStructure += '			<select style="width:75px;vertical-align : top;" id="formatblock_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">';
+		   rteHtmlStructure += '				<option value="">[Style]</option>';
+		   rteHtmlStructure += '				<option value="<p>">Paragraph</option>';
+		   rteHtmlStructure += '				<option value="<h1>">Heading 1 <h1></option>';
+		   rteHtmlStructure += '				<option value="<h2>">Heading 2 <h2></option>';
+		   rteHtmlStructure += '				<option value="<h3>">Heading 3 <h3></option>';
+		   rteHtmlStructure += '				<option value="<h4>">Heading 4 <h4></option>';
+		   rteHtmlStructure += '				<option value="<h5>">Heading 5 <h5></option>';
+		   rteHtmlStructure += '				<option value="<h6>">Heading 6 <h6></option>';
+		   rteHtmlStructure += '				<option value="<address>">Address <ADDR></option>';
+		   rteHtmlStructure += '				<option value="<pre>">Formatted <pre></option>';
+		   rteHtmlStructure += '			</select>';
+     
+       rteHtmlStructure += '			<select style="width:113px;vertical-align : top;" id="fontname_' + rte + '" onchange="Select(\'' + rte + '\', this.id)">';
+		   rteHtmlStructure += '				<option value="Font" selected>[Font]</option>';
+		   rteHtmlStructure += '				<option value="Arial, Helvetica, sans-serif">Arial</option>';
+		   rteHtmlStructure += '				<option value="Courier New, Courier, mono">Courier New</option>';
+		   rteHtmlStructure += '				<option value="Times New Roman, Times, serif">Times New Roman</option>';
+		   rteHtmlStructure += '				<option value="Verdana, Arial, Helvetica, sans-serif">Verdana</option>';
+		   rteHtmlStructure += '			</select>';
+     
+		   rteHtmlStructure += '			<select style="width:57px;vertical-align : top;" unselectable="on" id="fontsize_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">';
+		   rteHtmlStructure += '				<option value="Size">[Size]</option>';
+		   rteHtmlStructure += '				<option value="1">1</option>';
+		   rteHtmlStructure += '				<option value="2">2</option>';
+		   rteHtmlStructure += '				<option value="3">3</option>';
+		   rteHtmlStructure += '				<option value="4">4</option>';
+		   rteHtmlStructure += '				<option value="5">5</option>';
+		   rteHtmlStructure += '				<option value="6">6</option>';
+		   rteHtmlStructure += '				<option value="7">7</option>';
+		   rteHtmlStructure += '			</select>';
+     }
+		 rteHtmlStructure += '			<select style="width:95px;vertical-align : top;" unselectable="on" id="smile_' + rte + '" onchange="insertSmile(\''+rte+'\',this.value);this.selectedIndex = 0;">' +
 		 '				<option value="Smile" selected>[Smile]</option>' +
 		 '				<option value="images/smileys/smiley.gif">smiley&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- :)</option>' +
 		 '				<option value="images/smileys/wink.gif">wink&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - ;)</option>' +
@@ -216,13 +220,15 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
 		 '		<span id="hilitecolor_' + rte + '"><img align="absmiddle" class="rteImage" src="' + imagesPath + 'bgcolor1.gif" width="13" height="13" alt="Background Color" title="Background Color" onClick="FormatText(\'' + rte + '\', \'hilitecolor\', \'\')"></span>' +
 		 '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">' +
 		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'hyperlink1.gif" width="13" height="13" alt="Insert Link" title="Insert Link" onClick="FormatText(\'' + rte + '\', \'createlink\')">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'image1.gif" width="13" height="13" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'readOnly.gif" width="13" height="13" alt="view source" title="view source" onclick="var chk = document.getElementById(\'chkSrc' + rte + '\'); if(chk.checked==true)chk.checked=false; else chk.checked=true; toggleHTMLSrc(\'' + rte + '\');">' +
-		 '		<span id="table_' + rte + '"><img class="rteImage" align="absmiddle" src="' + imagesPath + 'insert_table1.gif" width="15" height="13" alt="Insert Table" title="Insert Table" onClick="dlgInsertTable(\'' + rte + '\', \'table\', \'\')"></span>';
+		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'image1.gif" width="13" height="13" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')">';
+	   if( !isChat ) {
+       rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'readOnly.gif" width="13" height="13" alt="view source" title="view source" onclick="var chk = document.getElementById(\'chkSrc' + rte + '\'); if(chk.checked==true)chk.checked=false; else chk.checked=true; toggleHTMLSrc(\'' + rte + '\');">';
+       rteHtmlStructure += '		<span id="table_' + rte + '"><img class="rteImage" align="absmiddle" src="' + imagesPath + 'insert_table1.gif" width="15" height="13" alt="Insert Table" title="Insert Table" onClick="dlgInsertTable(\'' + rte + '\', \'table\', \'\')"></span>';
+     }
 
 //*/
 		//if (!readOnly) document.writeln('<td><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source</td>');
-		if (isIE) {
+		if (isIE && !isChat) {
 			rteHtmlStructure += '		<img  align="absmiddle"class="rteImage" src="' + imagesPath + 'spellcheck1.gif" width="13" height="13" alt="Spell Check" title="Spell Check" onClick="checkspell()">';
 		}
 		rteHtmlStructure += '		</td>';
