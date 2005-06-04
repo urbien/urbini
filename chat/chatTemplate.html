@@ -731,6 +731,7 @@
                         <script language="JavaScript" type="text/javascript">
                             //Usage: writeRichText(fieldname, html, width, height, buttons)
                             writeRichText('messageRTE', '', '100%', 50, true, false, false, true);
+                            addEvent(frames['messageRTE'].document, 'click', function() {frames['messageRTE'].document.body.style.margin = 0;}, false);
                         </script>
 
                       <input type="Hidden" name='message' id='message'>
