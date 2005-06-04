@@ -88,10 +88,12 @@ function raiseButton(e) {
 		var el= e.target;
 	}
 
-	className = el.className;
-	if (className == 'rteImage' || className == 'rteImageLowered') {
-		el.className = 'rteImageRaised';
-	}
+	try{
+    className = el.className;
+	  if (className == 'rteImage' || className == 'rteImageLowered') {
+		  el.className = 'rteImageRaised';
+	  }
+  }catch(ex){}
 }
 
 function normalButton(e) {
@@ -148,7 +150,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
 		if(minimized)
 		  rteHtmlStructure += '<table align="center" class="rteBack" style="display:none" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">';
 		 else rteHtmlStructure += '<table align="center" class="rteBack" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">';
-		 rteHtmlStructure += '	<tr style="white-space : nowrap; word-spacing : 0px; 	white-space : nowrap;">' +
+		 rteHtmlStructure += '	<tr align="center" style="white-space : nowrap; word-spacing : 0px; 	white-space : nowrap;">' +
 		 '		<td width="100%" cellpadding=0 cellspacing=0 style="" valign="top">';
 		 if( !isChat ) {
        rteHtmlStructure += '			<select style="width:75px;vertical-align : top;" id="formatblock_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">';
@@ -201,21 +203,22 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
 		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'bold1.gif" width="13" height="13" alt="Bold" title="Bold" onClick="FormatText(\'' + rte + '\', \'bold\', \'\')">' +
 		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'italic1.gif" width="13" height="13" alt="Italic" title="Italic" onClick="FormatText(\'' + rte + '\', \'italic\', \'\')">' +
 		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'underline1.gif" width="13" height="13" alt="Underline" title="Underline" onClick="FormatText(\'' + rte + '\', \'underline\', \'\')">' +
-		 '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'left_just1.gif" width="13" height="13" alt="Align Left" title="Align Left" onClick="FormatText(\'' + rte + '\', \'justifyleft\', \'\')">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'centre1.gif" width="13" height="13" alt="Center" title="Center" onClick="FormatText(\'' + rte + '\', \'justifycenter\', \'\')">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'right_just1.gif" width="13" height="13" alt="Align Right" title="Align Right" onClick="FormatText(\'' + rte + '\', \'justifyright\', \'\')">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'justifyfull1.gif" width="13" height="13" alt="Justify Full" title="Justify Full" onclick="FormatText(\'' + rte + '\', \'justifyfull\', \'\')">' +
-		 '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'hr1.gif" width="13" height="13" alt="Horizontal Rule" title="Horizontal Rule" onClick="FormatText(\'' + rte + '\', \'inserthorizontalrule\', \'\')">' +
-///*
-		 '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'numbered_list1.gif" width="13" height="13" alt="Ordered List" title="Ordered List" onClick="FormatText(\'' + rte + '\', \'insertorderedlist\', \'\')">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'list1.gif" width="13" height="13" alt="Unordered List" title="Unordered List" onClick="FormatText(\'' + rte + '\', \'insertunorderedlist\', \'\')">' +
-		 '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'outdent1.gif" width="13" height="13" alt="Outdent" title="Outdent" onClick="FormatText(\'' + rte + '\', \'outdent\', \'\')">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'indent1.gif" width="13" height="13" alt="Indent" title="Indent" onClick="FormatText(\'' + rte + '\', \'indent\', \'\')">' +
-		 '		<span id="forecolor_' + rte + '">' +
+		 '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">';
+		 if( !isChat ) {
+       rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'left_just1.gif" width="13" height="13" alt="Align Left" title="Align Left" onClick="FormatText(\'' + rte + '\', \'justifyleft\', \'\')">';
+		   rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'centre1.gif" width="13" height="13" alt="Center" title="Center" onClick="FormatText(\'' + rte + '\', \'justifycenter\', \'\')">';
+		   rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'right_just1.gif" width="13" height="13" alt="Align Right" title="Align Right" onClick="FormatText(\'' + rte + '\', \'justifyright\', \'\')">';
+		   rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'justifyfull1.gif" width="13" height="13" alt="Justify Full" title="Justify Full" onclick="FormatText(\'' + rte + '\', \'justifyfull\', \'\')">';
+		   rteHtmlStructure += '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">';
+  		 rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'hr1.gif" width="13" height="13" alt="Horizontal Rule" title="Horizontal Rule" onClick="FormatText(\'' + rte + '\', \'inserthorizontalrule\', \'\')">';
+		   rteHtmlStructure += '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">';
+       rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'numbered_list1.gif" width="13" height="13" alt="Ordered List" title="Ordered List" onClick="FormatText(\'' + rte + '\', \'insertorderedlist\', \'\')">';
+		   rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'list1.gif" width="13" height="13" alt="Unordered List" title="Unordered List" onClick="FormatText(\'' + rte + '\', \'insertunorderedlist\', \'\')">';
+		   rteHtmlStructure += '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">';
+		   rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'outdent1.gif" width="13" height="13" alt="Outdent" title="Outdent" onClick="FormatText(\'' + rte + '\', \'outdent\', \'\')">';
+		   rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'indent1.gif" width="13" height="13" alt="Indent" title="Indent" onClick="FormatText(\'' + rte + '\', \'indent\', \'\')">';
+		 }
+     rteHtmlStructure += '		<span id="forecolor_' + rte + '">' +
 		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'textcolor1.gif" width="13" height="13" alt="Text Color" title="Text Color" onClick="FormatText(\'' + rte + '\', \'forecolor\', \'\')"></span>' +
 		 '		<span id="hilitecolor_' + rte + '"><img align="absmiddle" class="rteImage" src="' + imagesPath + 'bgcolor1.gif" width="13" height="13" alt="Background Color" title="Background Color" onClick="FormatText(\'' + rte + '\', \'hilitecolor\', \'\')"></span>' +
 		 '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">' +
@@ -297,24 +300,38 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
 		  addEvent(frames[rte].document, 'click', function() {
                                                 frames[rte].document.body.style.margin = 0;
                                                 document.getElementById('Buttons1_' + rte).style.display = 'inline'; 
-                                                if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) 
-                                                   && frames[rte].document.body.scrollHeight < 330) 
-                                                  document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight + 10; 
-                                                 else 
-                                                   document.getElementById(rte).style.height = 330; 
-                                                document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;
-                                              }, false);
-		  addEvent(frames[rte].document, 'keyup', function() {
-                                                textChanged = true;
                                                 if(frames[rte].document.body.scrollHeight >= 330) 
                                                   document.getElementById(rte).style.height = 330; 
                                                  else {
                                                    if(this.attachEvent)
-                                                     document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;
+                                                     document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
+                                                    else 
+                                                      document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;
+                                                 }
+                                                document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;
+                                              }, false);
+		  addEvent(frames[rte].document, 'keyup', function() {
+                                                textChanged = true;
+                                                frames[rte].document.body.style.margin = 0;
+                                                if(frames[rte].document.body.scrollHeight >= 330) 
+                                                  document.getElementById(rte).style.height = 330; 
+                                                 else {
+                                                   if(this.attachEvent)
+                                                     document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
                                                     else 
                                                       document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;
                                                  }
                                               },false);
+      // Show rte with the text inside and set correct RTE sizes 
+      html = replaceAllRecursion(html,"\n","<br>");
+      html = replaceAllRecursion(html,"\r","");
+      setTimeout("frames['"+rte+"'].document.body.innerHTML = '"+html+"';" +
+                 "frames['"+rte+"'].focus();" +
+                 "frames['"+rte+"'].document.body.style.margin = 0;" +
+                 "if(frames['"+rte+"'].document.body.scrollHeight >= 330)"+
+                 "  document.getElementById('"+rte+"').style.height = 330;"+ 
+                 " else"+
+                 "   document.getElementById('"+rte+"').style.height = frames['"+rte+"'].document.body.scrollHeight+20;",300);
 		}
 	} else { // FireFox (FF) case
     if (document.getElementById(rte) == null) {
@@ -331,6 +348,7 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
 	  if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
 			try {
 				var oRTE = document.getElementById(rte).contentWindow.document;
+        frames[rte].focus();
 				oRTE.open();
 				oRTE.write(frameHtml);
 				oRTE.close();
@@ -345,13 +363,17 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
                           // as the text inside but not more than 330px. This event is hadled when the used types anything inside the area.
 					  //addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
 					  addEvent(frames[rte].document, 'click', function() {
+                                                      frames[rte].document.body.style.margin = 0;
                                                       document.getElementById('Buttons1_' + rte).style.display = 'inline'; 
-                                                      if(document.getElementById(rte).height < (frames[rte].document.body.scrollHeight + 15) 
-                                                        && frames[rte].document.body.scrollHeight < 330) 
-                                                        document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight; 
-                                                       else 
-                                                         document.getElementById(rte).style.height = 330; 
-                                                      document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;
+                                                      if(frames[rte].document.body.scrollHeight >= 330) 
+                                                        document.getElementById(rte).style.height = 330; 
+                                                       else {
+                                                         if(this.attachEvent)
+                                                           document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
+                                                          else 
+                                                            document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+20;
+                                                       }
+                                                       document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;
                                                     }, false);
 					  addEvent(frames[rte].document, 'keyup', function() {
                                                       textChanged = true; 
@@ -361,9 +383,16 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
                                                          if(this.attachEvent)
                                                            document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;
                                                           else 
-                                                            document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;
+                                                            document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+20;
                                                        }
                                                     },false);
+            // set correct RTE size when RTE is initiated. The RTE size must be "suitable" to it's content.
+            if(frames[rte].document.body.scrollHeight >= 330) 
+              document.getElementById(rte).style.height = 330; 
+               if(this.attachEvent)
+                 document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;
+                else 
+                  document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+20;
 					}
 				}
 			} catch (e) {
