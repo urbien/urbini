@@ -68,29 +68,49 @@ select {
             <td background="divider.gif"></td>
             <td valign=top> <table id=timeBlock style="display: inline">
                 <tr>
-                  <td><!--script language="JavaScript">
-    var &[propertyName];_init_start_once = {
-    // a name of HTML form containing the calendar
-    'formname' : '&[formName];',
-    // data format the calendar operates with
-    'dataformat' : 'M-d-Y',
-    // weather to hide any other opened calendar if opeining current one
-    'replace' : true,
-	&[currentDateJSString];
-	//'selected' : '',
-	//'watch' : true,
-    'controlname' : '&[propertyName];_start_once'
-    };
-  new calendar(&[propertyName];_init_start_once, CAL_TPL1);
-                  </script--></td>
+                  <td>
+                    <!--script language="JavaScript">
+                        var &[propertyName];_init_start_once = {
+                        // a name of HTML form containing the calendar
+                        'formname' : '&[formName];',
+                        // data format the calendar operates with
+                        'dataformat' : 'M-d-Y',
+                        // weather to hide any other opened calendar if opeining current one
+                        'replace' : true,
+                        &[currentDateJSString];
+                        //'selected' : '',
+                        //'watch' : true,
+                        'controlname' : '&[propertyName];_start_once'
+                        };
+                      new calendar(&[propertyName];_init_start_once, CAL_TPL1);
+                    </script-->
+                    <table border="0" cellpadding="0" cellspacing="0"> <tbody> <tr>
+                        <td> <input id="&[propertyName];_start_once" name="&[propertyName];_start_once" value="&[currentDateJSString];" maxlength="100" class="xxs" type="text" width="10"> </td>
+                        <td> </td>
+                        <td>     <img src="calendar/img/pixel.gif" border="0" height="1" width="1"> </td>
+                        <td>
+                            <a href="about:blank" onClick="return getCalendar('&[formName];', '&[propertyName];_start_once', '&[currentDateJSString];');">
+                              <img src="images/calendar.gif" alt="click to select date from the calendar" name="calicon_&[formName];_&[propertyName];_start_once" id="calicon_&[formName];_&[propertyName];_start_once" border="0" height="16" width="16">
+                            </a>
+                        </td>
+                        <td> </td>
+                        </tr> <tr>
+                        <td>     <img src="calendar/img/pixel.gif" name="calpos_&[formName];_&[propertyName];_start_once" id="calpos_&[formName];_&[propertyName];_start_once" border="0" height="1" width="1"> </td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                        </tr> <tr> </tr> </tbody>
+                    </table>
+                    <div id="&[propertyName];_start_once_div"></div>
+                  </td>
                   <td>at</td>
                   <td> <select name=&[propertyName];_hour_once><[hour]>
                       &[hourLine];
-				<@> </select> </td>
+        <@> </select> </td>
                   <td>:</td>
                   <td> <select name=&[propertyName];_min_once><[min]>
                       &[minLine];
-				<@> </select> </td>
+        <@> </select> </td>
                 </tr>
               </table></td>
           </tr>
@@ -119,11 +139,11 @@ select {
                 <tr>
                   <td>at</td>
                   <td> <select name=&[propertyName];_hour_daily><[hourDaily]> &[hourLineDaily];
-				      <@> </select> </td>
+              <@> </select> </td>
                   <td>:</td>
                   <td> <select name=&[propertyName];_min_daily><[minDaily]>
                       &[minLineDaily];
-				<@> </select> </td>
+        <@> </select> </td>
                 </tr>
               </table></td>
           </tr>
@@ -138,11 +158,11 @@ select {
                   <td>at</td>
                   <td> <select name=&[propertyName];_hour_weekly><[hourWeekly]>
                       &[hourLineWeekly];
-				      <@> </select> </td>
+              <@> </select> </td>
                   <td>:</td>
                   <td> <select name=&[propertyName];_min_weekly><[minWeekly]>
                       &[minLineWeekly];
-				<@> </select> </td>
+        <@> </select> </td>
                 </tr>
               </table></td>
           </tr>
@@ -166,9 +186,9 @@ select {
                   <td><input type=radio name=&[propertyName];_monthlyRecur value=byWeekDay &[monthlyRecur_byWeekDay];></td>
                   <td>The</td>
                   <td><select name=&[propertyName];_weekDayRecur size=1><[weekDayRecur]> &[weekDayRecurLine];
-					 <@> </select></td>
+           <@> </select></td>
                   <td><select name=&[propertyName];_weekDay size=1><[weekDay]> &[weekDayLine];
-					 <@> </select></td>
+           <@> </select></td>
                   <td nowrap>of every</td>
                   <td><input name=&[propertyName];_monthRecur value=&[monthRecurValue]; size=2></td>
                   <td>month(s)</td>
@@ -181,11 +201,11 @@ select {
                   <td>at</td>
                   <td> <select name=&[propertyName];_hour_monthly><[hourMonthly]>
                       &[hourLineMonthly];
-				      <@> </select> </td>
+              <@> </select> </td>
                   <td>:</td>
                   <td> <select name=&[propertyName];_min_monthly><[minMonthly]>
                       &[minLineMonthly];
-				<@> </select> </td>
+        <@> </select> </td>
                 </tr>
               </table></td>
           </tr>
@@ -197,7 +217,7 @@ select {
                   <td><input type=radio name=&[propertyName];_yearlyRecur value=byMonth &[yearlyRecur_byMonth]; checked></td>
                   <td>Every</td>
                   <td> <select name=&[propertyName];_monthYearly size=1><[monthYearly]> &[monthYearlyLine];
-					  <@> </select> </td>
+            <@> </select> </td>
                   <td><input name=&[propertyName];_monthDayYearly value=&[monthDayYearlyValue]; size=2></tr>
               </table></td>
           </tr>
@@ -207,12 +227,12 @@ select {
                   <td><input type=radio name=&[propertyName];_yearlyRecur value=byWeekDay &[yearlyRecur_byWeekDay];></td>
                   <td>The</td>
                   <td><select name=&[propertyName];_weekDayRecurYearly size=1><[weekDayRecurYearly]> &[weekDayRecurYearlyLine];
-					  <@> </select></td>
+            <@> </select></td>
                   <td><select name=&[propertyName];_weekDayYearly size=1><[weekDayYearly]> &[weekDayYearlyLine];
-					  <@> </select></td>
+            <@> </select></td>
                   <td>of</td>
                   <td> <select name=&[propertyName];_monthYearly1 size=1><[monthYearly1]> &[monthYearly1Line];
-					  <@> </select> </td>
+            <@> </select> </td>
                 </tr>
               </table></td>
           </tr>
@@ -222,11 +242,11 @@ select {
                   <td>at</td>
                   <td> <select name=&[propertyName];_hour_yearly><[hourYearly]>
                       &[hourLineYearly];
-				      <@> </select> </td>
+              <@> </select> </td>
                   <td>:</td>
                   <td> <select name=&[propertyName];_min_yearly><[minYearly]>
                       &[minLineYearly];
-				<@> </select> </td>
+        <@> </select> </td>
                 </tr>
               </table></td>
           </tr>
@@ -243,7 +263,8 @@ select {
             <td background="divider.gif"></td>
             <td valign=top> <table id=timeBlock style="display: inline">
                 <tr>
-                  <td> <!--script language="JavaScript">
+                  <td>
+                    <!--script language="JavaScript">
                       var &[propertyName];_init_start = {
                       // a name of HTML form containing the calendar
                       'formname' : '&[formName];',
@@ -251,11 +272,31 @@ select {
                       'dataformat' : 'M-d-Y',
                       // weather to hide any other opened calendar if opeining current one
                       'replace' : true,
-					  &[currentDateJSStringStart];
+                      &[currentDateJSStringStart];
                       'controlname' : '&[propertyName];_start'
                       };
                       new calendar(&[propertyName];_init_start, CAL_TPL1);
-                    </script--> </td>
+                    </script-->
+                    
+                    <table border="0" cellpadding="0" cellspacing="0"> <tbody> <tr>
+                        <td> <input id="&[propertyName];_init_start" name="&[propertyName];_init_start" value="&[currentDateJSStringStart];" maxlength="100" class="xxs" type="text" width="10"> </td>
+                        <td> </td>
+                        <td>     <img src="calendar/img/pixel.gif" border="0" height="1" width="1"> </td>
+                        <td>
+                            <a href="about:blank" onClick="return getCalendar('&[formName];', '&[propertyName];_init_start', '&[currentDateJSStringStart];');">
+                              <img src="images/calendar.gif" alt="click to select date from the calendar" name="calicon_&[formName];_&[propertyName];_init_start" id="calicon_&[formName];_&[propertyName];_init_start" border="0" height="16" width="16">
+                            </a>
+                        </td>
+                        <td> </td>
+                        </tr> <tr>
+                        <td>     <img src="calendar/img/pixel.gif" name="calpos_&[formName];_&[propertyName];_init_start" id="calpos_&[formName];_&[propertyName];_init_start" border="0" height="1" width="1"> </td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                        </tr> <tr> </tr> </tbody>
+                    </table>
+                    <div id="&[propertyName];_init_start_div"></div>
+                  </td>
                 </tr>
               </table></td>
           </tr>
@@ -268,7 +309,8 @@ select {
             <td background="divider.gif"></td>
             <td valign=top> <table id=timeBlock style="display: inline">
                 <tr>
-                  <td width="21"> <!--script language="JavaScript">
+                  <td width="21"> 
+                     <!--script language="JavaScript">
                       var &[propertyName];_init_end = {
                       // a name of HTML form containing the calendar
                       'formname' : '&[formName];',
@@ -276,11 +318,31 @@ select {
                       'dataformat' : 'M-d-Y',
                       // weather to hide any other opened calendar if opeining current one
                       'replace' : true,
-					  &[currentDateJSStringEndBy];
+                      &[currentDateJSStringEndBy];
                       'controlname' : '&[propertyName];_endBy'
                       };
                       new calendar(&[propertyName];_init_end, CAL_TPL1);
-                    </script--> </td>
+                      </script--> 
+                    <table border="0" cellpadding="0" cellspacing="0"> <tbody> <tr>
+                        <td> <input id="&[propertyName];_init_end" name="&[propertyName];_init_end" value="&[currentDateJSStringEndBy];" maxlength="100" class="xxs" type="text" width="10"> </td>
+                        <td> </td>
+                        <td>     <img src="calendar/img/pixel.gif" border="0" height="1" width="1"> </td>
+                        <td>
+                            <a href="about:blank" onClick="return getCalendar('&[formName];', '&[propertyName];_init_end', '&[currentDateJSStringEndBy];');">
+                              <img src="images/calendar.gif" alt="click to select date from the calendar" name="calicon_&[formName];_&[propertyName];_init_end" id="calicon_&[formName];_&[propertyName];_init_end" border="0" height="16" width="16">
+                            </a>
+                        </td>
+                        <td> </td>
+                        </tr> <tr>
+                        <td>     <img src="calendar/img/pixel.gif" name="calpos_&[formName];_&[propertyName];_init_end" id="calpos_&[formName];_&[propertyName];_init_end" border="0" height="1" width="1"> </td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                        </tr> <tr> </tr> </tbody>
+                    </table>
+                    <div id="&[propertyName];_init_end_div" ></div>
+                      
+                  </td>
                 </tr>
               </table></td>
           </tr>

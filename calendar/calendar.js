@@ -1,12 +1,3 @@
-// Title: Tigra Calendar PRO
-// Description: Tigra Calendar PRO is flexible JavaScript Calendar offering
-//	high reliability and wide browsers support.
-// URL: http://www.softcomplex.com/products/tigra_calendar_pro/
-// Version: 2.1.5 (modal mode)
-// Date: 03/31/2003 (mm/dd/yyyy)
-// Technical Support: support@softcomplex.com (specify product title and order ID)
-// Notes: This Script is shareware. Please visit url above for registration details.
-
 var A_CALENDARS = [], TC0 = [];
 
 var TC1 = 'aAdDFhHilmMsUYy',
@@ -122,13 +113,14 @@ var TC1 = 'aAdDFhHilmMsUYy',
 }] }, TC8,
     TC9;
 
+var tc0a6 = false;
 
+function calendar(TCA, TCB) {
 
-// CALENDAR CLASS
-function calendar(TCA, TCB, controlName) {
   this.initialized = false;
-  this.controlName = controlName;
-  var TCC = this.TCC = A_CALENDARS.length;
+
+//  var TCC = this.TCC = A_CALENDARS.length;
+  var TCC = this.TCC = TCA.formname + '_' + TCA.controlname;
 
   A_CALENDARS[this.TCC] = this;
   this.flag_error = false;
@@ -141,8 +133,7 @@ function calendar(TCA, TCB, controlName) {
   this.datemessage = TCD;
   this.TCE = TCF;
   this.TCG = (TCA.picttype == 'img' ? 1 : TCA.picttype == 'button' ? 2 : TCA.picttype == 'others' ? 3 : 1);
-//  this.TCH = (TCA.controlname ? TCA.controlname : 'datetime_' + this.TCC);
-  this.TCH = controlName;
+  this.TCH = (TCA.controlname ? TCA.controlname : 'datetime_' + this.TCC);
   this.TCI = (TCA.pictname ? TCA.pictname : 'calicon_' + this.TCC);
   this.TCJ = (TCA.positionname ? TCA.positionname : 'calpos_' + this.TCC);
 
@@ -151,9 +142,7 @@ function calendar(TCA, TCB, controlName) {
     return
   }
 
-  //this.forms = document.opener.document.forms;
-  this.forms = parent.document.forms;
-  if (!this.forms[TCA.formname]) {
+  if (!document.forms[TCA.formname]) {
     this.datemessage('form_not_found', TCA.formname);
     return
   }
@@ -204,7 +193,7 @@ function calendar(TCA, TCB, controlName) {
     TCt = TCt.replace(("/" + TCz[i] + "/g"), TCz[i])
     //TCt = TCt.replace(eval("/" + TCz[i] + "/g"), TCz[i]) // mike: old code
   }
-
+ 
   for (i = 0, len = TCx.length; i < len; i++) {
   //for (i = 0; i < TCx.length; i++) { // Mike: old code
     TC00 = new RegExp(TCx[i]);
@@ -254,14 +243,14 @@ function calendar(TCA, TCB, controlName) {
   var tc0a4 = this.TC0A & 4;
   var tc0a8 = this.TC0A & 8;
   var outp = "";
-  if (tc0a64 && db) {
-  //if (this.TC0A & 64 && document.body && document.body.innerHTML) { //mike
+  if (tc0a64 && db) {	
+  //if (this.TC0A & 64 && document.body && document.body.innerHTML) { //mike 
     //document.write('<table cellpadding="0" cellspacing="0" border="0" ><tr>')
     outp='<table cellpadding="0" cellspacing="0" border="0" ><tr>';
   }
-
+ 
   if (tc0a2) {
-
+  	
     if (tc0a64){
       outp=outp+'<td>';
       //document.write(outp);
@@ -270,7 +259,7 @@ function calendar(TCA, TCB, controlName) {
     //document.write('<input type="Text" id="', this.TCH, '"   name="', this.TCH, '" value="', this.TC09, '" ', this.TCO('datacontrol'),   '>');
     outp=outp+'<input type="Text" id="'+ this.TCH+ '"   name="'+ this.TCH+ '" value="'+ this.TC09+ '" '+ this.TCO('datacontrol')+   '>';
     if (tc0a64){
-      outp=outp+'</td>';
+      outp=outp+'<td>';
       //document.write(outp);
       //document.write('</td>')
     }
@@ -286,9 +275,9 @@ function calendar(TCA, TCB, controlName) {
       if (tc0a64 && (tc0a4 || tc0a6)){
       	outp=outp+'<td>';
         //document.write('<td>');
-	    }
+	}
       if (tc0a4){
-      	outp=outp+'<a href="javascript:A_CALENDARS[' + this.TCC + '].create(); A_CALENDARS[' + this.TCC + '].showcal();" ><img ' + this.TCO('caliconshow') + ' name="'
+      	outp=outp+'<a href="javascript:A_CALENDARS[\'' + this.TCC + '\'].create(); A_CALENDARS[\'' + this.TCC + '\'].showcal();" ><img ' + this.TCO('caliconshow') + ' name="'
                 + this.TCI + '"      id="' + this.TCI + '"></a>';
         //document.write(
         //    '<a href="javascript:A_CALENDARS[' + this.TCC + '].create(); A_CALENDARS[' + this.TCC + '].showcal();" ><img ' + this.TCO('caliconshow') + ' name="'
@@ -296,18 +285,18 @@ function calendar(TCA, TCB, controlName) {
       }
       else if (tc0a6){
       	outp=outp+'<input type="button"  ' + this.TCO('calbutton') + ' name="' + this.TCI + '" id="' + this.TCI
-                           + '" onclick="A_CALENDARS[' + this.TCC + '].showcal();return false;">';
+                           + '" onclick="A_CALENDARS[\'' + this.TCC + '\'].showcal();return false;">';
         //document.write('<input type="button"  ' + this.TCO('calbutton') + ' name="' + this.TCI + '" id="' + this.TCI
         //                   + '" onclick="A_CALENDARS[' + this.TCC + '].showcal();return false;">');
       }
       if (tc0a64 && (tc0a4 || tc0a6)){
-        outp=outp+'</td>';
+      outp=outp+'<td>';
         //document.write('</td>')
-      }
+        }
     }
   }
 
-  if (tc0a64 && (tc0a2 || (tc0a4 || tc0a6))) {
+  if (tc0a64 && (tc0a2 || (tc0a4 || tc0a6))){
     outp=outp+'</tr>';
     //document.write('</tr>');
   }
@@ -322,7 +311,7 @@ function calendar(TCA, TCB, controlName) {
     //document.write('<img ' + this.TCO('pixel') + '  name="' + this.TCJ + '" id="' + this.TCJ + '">');
     //document.write(outp);
     if (tc0a64){
-    	outp=outp+'</td>';
+    	outp=outp+'<td>';
       //document.write('</td>');
     }
     if (tc0a64 && (tc0a2 && (tc0a4 || tc0a6))){
@@ -330,23 +319,21 @@ function calendar(TCA, TCB, controlName) {
       //document.write('<td></td><td></td>');
     }
     if (tc0a64){
-    	outp=outp+'</tr>';
+    	outp=outp+'<tr>';
       //document.write('</tr>')
     }
   }
   if (tc0a64 && db){
-  //if (tc0a64 && document.body && document.body.innerHTML) // mike
+    //if (tc0a64 && document.body && document.body.innerHTML) // mike
     outp=outp+'</table>';
     //document.write('</table>');
   }
 //alert(outp);
-  //document.write(outp);
-  var calRef = document.getElementById("calendar_" + controlName);
-  if (calRef)
-    calRef.innerHTML = outp;
-
+//  var d = document.getElementById(this.TCH + "_div");
+//  d.innerHTML = outp;
   this.create = TC0B;
   this.create1 = create1;
+  this.createDiv = createDiv;
   this.TC0C = TC0D;
   this.TC0E = TC0F;
   this.TC0G = TC0H;
@@ -356,10 +343,7 @@ function calendar(TCA, TCB, controlName) {
   this.TC0O = TC0P;
   this.TC0Q = TC0R;
   this.showcal = TC0S;
-  this.TC0T = TC0U;
-
-  create1(this);
-
+  this.TC0T = TC0U
 }
 
 function TC0U() {
@@ -385,8 +369,8 @@ function TCZ() {
 
   if ((TC0V & 2 && TC0V & 32) || (TC0V & 2 && (TC0V & 4 || TC0V & 8)) || ((TC0V & 4 || TC0V & 8) && TC0V & 32))
     TC0V |= 64;
-
-  return TC0V;
+  
+  return TC0V
 }
 
 function TCN(TC0W, TC0X, TC0Y) {
@@ -396,12 +380,11 @@ function TCN(TC0W, TC0X, TC0Y) {
   var TC0Z = /^[+-]?\d+$/, TC0a;
   return (TC0Z.exec(TC0W) ? new Date(TC0X.valueOf() + new Number(TC0W * 864e5)) : this.TCc(TC0W))
 }
-
-
-function create1(calendar) {
+ 
+function createDiv() {
   //if (!document.body || !document.body.innerHTML)
   //  return;
-  var thistcc = calendar.TCC;
+  var thistcc = this.TCC;
   var TC0c = new TC0d();
   TC0c.TC0e('<div id="caldiv',
             thistcc,
@@ -422,12 +405,12 @@ function create1(calendar) {
               (thistcc),
               '"></iframe>')
   }
-//  alert(TC0c.TC0g());
-  //document.write(TC0c.TC0g());
-  var calRef = document.getElementById("calendar_" + calendar.controlName);
-//  var calRef = document.getElementById('caldiv' + thistcc);
-  if (calRef)
-    calRef.innerHTML = calRef.innerHTML + TC0c.TC0g();
+  //alert(TC0c.TC0g());
+  return TC0c.TC0g();
+}
+
+function create1() {
+  document.write(this.createDiv());
 }
 
 function TC0B() {
@@ -442,17 +425,17 @@ function TC0B() {
 
   if (this.TC02 != 2)
     this.TC04.setSeconds(0);
-
+  
   var signal = TC9.TC0b ? 'onclick' : 'onchange';
   var TC0c = new TC0d();
-
+  
   TC0c.TC0e('<table ',
             this.TCO('outertable'),
             '><tr><td><table',
             this.TCO('navtable'),
             '><tr>',
             (this.TCB.todaycell && this.TCB.todayimage ? '<td rowspan="2"' + this.TCO('todaycell')
-                + '><a href="javascript:  A_CALENDARS[' + thistcc + '].TC0G(null, '
+                + '><a href="javascript:  A_CALENDARS[\'' + thistcc + '\'].TC0G(null, '
                 + this.TCU(this.TC03) + ');"><img name="cal_itoday' + thistcc + '"' + this.TCO(
                                                                                            'todayimage') + '></a></td>'
                 : ''),
@@ -461,8 +444,8 @@ function TC0B() {
             '><select name="cal_mon',     thistcc + '"',
             this.TCO('monthselector'),    ' id="cal_mon',
             thistcc,                     '"  ',
-            signal,                       '="A_CALENDARS[',
-            thistcc,                     '].TC0G(\'mon\')"></select></td><td',
+            signal,                       '="A_CALENDARS[\'',
+            thistcc,                     '\'].TC0G(\'mon\')"></select></td><td',
             this.TCO('monthscrollcell'),  '><a href="#" name="cal_amminus',
             thistcc,                     '" id="cal_amminus',
             thistcc,                     '"><img name="cal_imminus',
@@ -473,8 +456,8 @@ function TC0B() {
             thistcc,                     '"',
             this.TCO('yearselector'),     ' id="cal_year',
             thistcc,                     '"  ',
-            signal,                       '="A_CALENDARS[',
-            thistcc,                     '].TC0G(\'year\')"></select></td><td',
+            signal,                       '="A_CALENDARS[\'',
+            thistcc,                     '\'].TC0G(\'year\')"></select></td><td',
             this.TCO('yearscrollcell'),   '><a href="#"  name="cal_ayminus',
             thistcc,                     '" id="cal_ayminus',
             thistcc,                     '" ><img name="cal_iyminus',
@@ -502,7 +485,7 @@ function TC0B() {
               this.TCO('timeselectorcell'),    '><select name="cal_hour',        thistcc,
               '" id="cal_hour',                thistcc,                         '"   ',
               this.TCO('timeselector'),        ' ',                              signal,
-              '="A_CALENDARS[',                thistcc,                         '].TC0G(\'time\')"></select></td><td',
+              '="A_CALENDARS[\'',                thistcc,                         '\'].TC0G(\'time\')"></select></td><td',
               this.TCO('timescrollcell'),      '><a href="#" name="cal_ahminus', thistcc,
               '" id="cal_ahminus',             thistcc,                         '"><img name="cal_ihminus',
               thistcc,                        '" id="cal_ihminus',              thistcc,
@@ -510,7 +493,7 @@ function TC0B() {
               this.TCO('timeselectorcell'),    '><select name="cal_min',         thistcc,
               '" id="cal_min',                 thistcc,                         '" ',
               this.TCO('timeselector'),        ' ',                              signal,
-              '="A_CALENDARS[',                thistcc,                         '].TC0G(\'time\')"></select></td><td',
+              '="A_CALENDARS[\'',                thistcc,                         '\'].TC0G(\'time\')"></select></td><td',
               this.TCO('timescrollcell'),      '><a href="#" name="cal_aiminus', thistcc,
               '" id="cal_aiminus',             thistcc,                         '"><img name="cal_iiminus',
               thistcc,                        '" id="cal_iiminus',              thistcc,
@@ -522,8 +505,8 @@ function TC0B() {
                 '" id="cal_ap',                                                      thistcc,
                 '" ',                                                                this.TCO('timeselector'),
                 ' ',                                                                 signal,
-                '="A_CALENDARS[',                                                    thistcc,
-                '].TC0G(\'time\')"></select></td><td><a href="#" name="cal_aaminus', thistcc,
+                '="A_CALENDARS[\'',                                                    thistcc,
+                '\'].TC0G(\'time\')"></select></td><td><a href="#" name="cal_aaminus', thistcc,
                 '" id="cal_aaminus',                                                 thistcc,
                 '"><img name="cal_iaminus',                                          thistcc,
                 '" id="cal_iaminus',                                                 thistcc,
@@ -536,8 +519,8 @@ function TC0B() {
                 '" id="cal_sec',                                                     thistcc,
                 '" ',                                                                this.TCO('timeselector'),
                 ' ',                                                                 signal,
-                '="A_CALENDARS[',                                                    thistcc,
-                '].TC0G(\'time\')"></select></td><td><a href="#" name="cal_asminus', thistcc,
+                '="A_CALENDARS[\'',                                                    thistcc,
+                '\'].TC0G(\'time\')"></select></td><td><a href="#" name="cal_asminus', thistcc,
                 '" id="cal_asminus',                                                 thistcc,
                 '"><img name="cal_isminus',                                          thistcc,
                 '" id="cal_isminus',                                                 thistcc,
@@ -641,79 +624,79 @@ function TC0L() {
 
   if (this.TC05 && this.TC04.getFullYear() - 1 < this.TC05.getFullYear()) {
     this.TC0s.src = this.TCB.disminusimage.src;
-    this.TC0w.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0T()"
+    this.TC0w.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0T()"
   }
   else {
     this.TC0s.src = this.TCB.yearminusimage.src;
-    this.TC0w.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0G(null, " + this.TCU(this.TC04, null, -1) + ");"
+    this.TC0w.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0G(null, " + this.TCU(this.TC04, null, -1) + ");"
   }
 
   if (this.TC06 && this.TC04.getFullYear() + 1 > this.TC06.getFullYear()) {
     this.TC0r.src = this.TCB.displusimage.src;
-    this.TC0v.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0T()"
+    this.TC0v.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0T()"
   }
   else {
     this.TC0r.src = this.TCB.yearplusimage.src;
-    this.TC0v.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0G(null, " + this.TCU(this.TC04, null, +1) + ");"
+    this.TC0v.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0G(null, " + this.TCU(this.TC04, null, +1) + ");"
   }
 
   if (this.TC05 && (TC1H & 4096) && (TC1H & 8192)) {
     this.TC0q.src = this.TCB.disminusimage.src;
-    this.TC0u.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0T()"
+    this.TC0u.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0T()"
   }
   else {
     this.TC0q.src = this.TCB.monthminusimage.src;
-    this.TC0u.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0G(null, " + this.TCU(this.TC04, -1, null) + ");"
+    this.TC0u.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0G(null, " + this.TCU(this.TC04, -1, null) + ");"
   }
 
   if (this.TC06 && (TC1H & 131072) && (TC1H & 262144)) {
     this.TC0p.src = this.TCB.displusimage.src;
-    this.TC0t.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0T()"
+    this.TC0t.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0T()"
   }
   else {
     this.TC0p.src = this.TCB.monthplusimage.src;
-    this.TC0t.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0G(null, " + this.TCU(this.TC04, +1, null) + ");"
+    this.TC0t.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0G(null, " + this.TCU(this.TC04, +1, null) + ");"
   }
 
   if (this.TC02) {
     if (this.TC05 && (TC1H & 16384) && (TC1H & 8192) && (TC1H & 4096) && (TC1H & 4194304)) {
       this.TC10.src = this.TCB.disminusimage.src;
-      this.TC12.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0T()"
+      this.TC12.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0T()"
     }
     else {
       this.TC10.src = this.TCB.hourminusimage.src;
-      this.TC12.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0G(null, " + this.TCU(this.TC04, null, null,
+      this.TC12.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0G(null, " + this.TCU(this.TC04, null, null,
                                                                                            -1) + ");"
     }
 
     if (this.TC06 && (TC1H & 524288) && (TC1H & 131072) && (TC1H & 262144) && (TC1H & 8388608)) {
       this.TC0z.src = this.TCB.displusimage.src;
-      this.TC11.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0T()"
+      this.TC11.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0T()"
     }
     else {
       this.TC0z.src = this.TCB.hourplusimage.src;
-      this.TC11.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0G(null, " + this.TCU(this.TC04, null, null,
+      this.TC11.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0G(null, " + this.TCU(this.TC04, null, null,
                                                                                            +1) + ");"
     }
 
     if (this.TC05 && (TC1H & 32768) && (TC1H & 16384) && (TC1H & 8192) && (TC1H & 4096) && (TC1H & 4194304)) {
       this.TC14.src = this.TCB.disminusimage.src;
-      this.TC16.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0T()"
+      this.TC16.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0T()"
     }
     else {
       this.TC14.src = this.TCB.minminusimage.src;
-      this.TC16.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0G(null, " + this.TCU(
+      this.TC16.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0G(null, " + this.TCU(
                                                                                       this.TC04, null, null, null,
                                                                                       -1) + ");"
     }
 
     if (this.TC06 && (TC1H & 1048576) && (TC1H & 524288) && (TC1H & 131072) && (TC1H & 262144) && (TC1H & 8388608)) {
       this.TC13.src = this.TCB.displusimage.src;
-      this.TC15.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0T()"
+      this.TC15.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0T()"
     }
     else {
       this.TC13.src = this.TCB.minplusimage.src;
-      this.TC15.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0G(null, " + this.TCU(
+      this.TC15.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0G(null, " + this.TCU(
                                                                                       this.TC04, null, null, null,
                                                                                       +1) + ");"
     }
@@ -722,22 +705,22 @@ function TC0L() {
       if (this.TC05 && (TC1H & 65536) && (TC1H & 32768) && (TC1H & 16384) && (TC1H & 8192) && (TC1H & 4096)
           && (TC1H & 4194304)) {
         this.TC19.src = this.TCB.disminusimage.src;
-        this.TC1B.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0T()"
+        this.TC1B.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0T()"
       }
       else {
         this.TC19.src = this.TCB.secminusimage.src;
-        this.TC1B.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0G(null, " + this.TCU(
+        this.TC1B.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0G(null, " + this.TCU(
                                                                                         this.TC04, null, null, null,
                                                                                         null,      -1) + ");"
       }
       if (this.TC06 && (TC1H & 2097152) && (TC1H & 1048576) && (TC1H & 524288) && (TC1H & 131072) && (TC1H & 262144)
           && (TC1H & 8388608)) {
         this.TC18.src = this.TCB.displusimage.src;
-        this.TC1A.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0T()"
+        this.TC1A.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0T()"
       }
       else {
         this.TC18.src = this.TCB.secplusimage.src;
-        this.TC1A.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0G(null, " + this.TCU(
+        this.TC1A.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0G(null, " + this.TCU(
                                                                                         this.TC04, null, null, null,
                                                                                         null,      +1) + ");"
       }
@@ -746,22 +729,22 @@ function TC0L() {
       if (this.TC04.getHours() < 12
           || (this.TC05 && (TC1H & 16384) && (TC1H & 8192) && (TC1H & 4096) && (TC1H & 4194304))) {
         this.TC1E.src = this.TCB.disminusimage.src;
-        this.TC1G.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0T()"
+        this.TC1G.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0T()"
       }
       else {
         this.TC1E.src = this.TCB.apminusimage.src;
-        this.TC1G.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0G(null, " + this.TCU(
+        this.TC1G.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0G(null, " + this.TCU(
                                                                                         this.TC04, null, null, -12,
                                                                                         null,      0) + ");"
       }
       if (this.TC04.getHours() >= 12
           || (this.TC06 && (TC1H & 524288) && (TC1H & 131072) && (TC1H & 262144) && (TC1H & 8388608))) {
         this.TC1D.src = this.TCB.displusimage.src;
-        this.TC1F.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0T()"
+        this.TC1F.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0T()"
       }
       else {
         this.TC1D.src = this.TCB.applusimage.src;
-        this.TC1F.href = "javascript:  A_CALENDARS[" + this.TCC + "].TC0G(null, " + this.TCU(
+        this.TC1F.href = "javascript:  A_CALENDARS['" + this.TCC + "'].TC0G(null, " + this.TCU(
                                                                                         this.TC04, null, null, +12,
                                                                                         null,      0) + ");"
       }
@@ -992,7 +975,7 @@ function TCr(TC1I) {
 }
 
 function TC0H(TC1c, TC1d, TC1J) {
-
+	
   var TC1e = TC1d ? new Date(TC1d) : new Date(this.TC04);
 
   if (!TC1d) {
@@ -1022,7 +1005,7 @@ function TC0H(TC1c, TC1d, TC1J) {
       }
       else {
         if (TC1c == 'year') {
-
+          
           var TC1h = this.TC0i.options[this.TC0i.selectedIndex].text;
 
           var TC1i = this.TC0i.options[this.TC0i.selectedIndex].value;
@@ -1247,7 +1230,7 @@ function TC0F(TC22) {
   else
     TC23 = 'daynormal';
 
-  var TC24 = (TC1H & 1 ? '<a href="javascript: A_CALENDARS[' + this.TCC + '].TC0I(' + TC22.valueOf() + ');"' + this.TCO(
+  var TC24 = (TC1H & 1 ? '<a href="javascript: A_CALENDARS[\'' + this.TCC + '\'].TC0I(' + TC22.valueOf() + ');"' + this.TCO(
                                                                                                                    TC23)
                  + '>' + TC22.getDate() + '</a>' : '<span ' + this.TCO(TC23) + '>' + TC22.getDate() + '</span>');
 
@@ -1619,7 +1602,7 @@ function TCR(TC2M, TC1J) {
 
 function TCF(TC2Y, TC1J) {
   if (TC1J == 'form')
-    TC2Z = this.forms[this.TCK].elements[TC2Y];
+    TC2Z = document.forms[this.TCK].elements[TC2Y];
   else if (TC1J == 'img')
     TC2Z = document.all ? document.all[TC2Y] : document.images ? document.images[TC2Y] : document.getElementById(TC2Y);
   else
@@ -1789,4 +1772,34 @@ function TC0d() {
   this.TC0g = function() {
     return this.TC30.join('')
   }
+}
+/**
+ * Retrieves calendar using formName + name as a key.
+ * If does not exist - creates one.
+ */
+var initialized_calendars = new Array();
+function getCalendar(formName, name, initialValue) {
+  var cal = initialized_calendars[formName + '_' + name];
+  if (cal) {
+    cal.showcal();
+    return false;
+  }  
+  var initParams = {
+      // a name of HTML form containing the calendar
+      'formname' : formName,
+      // data format the calendar operates with
+      'dataformat' : 'M-d-Y',
+      // whether to hide any other opened calendar if opening current one
+      'replace' : true,
+      'selected' : initialValue,
+      'watch' : true,
+      'controlname' : name
+  };
+  cal = new calendar(initParams, CAL_TPL1);
+  var div = document.getElementById(name + "_div");
+  div.innerHTML = cal.createDiv(); 
+  cal.create();
+  initialized_calendars[formName + '_' + name] = cal;
+  cal.showcal();
+  return false;
 }
