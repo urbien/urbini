@@ -391,7 +391,7 @@ function createDiv() {
             '" name="caldiv',
             thistcc,
             '" style=" position: absolute; left:12; top:12; visibility:hidden; z-index: ',
-            thistcc + 1,
+            1,
             '"></div>');
 
   if (TC9.TC0f) {
@@ -402,7 +402,7 @@ function createDiv() {
               '"  name="cal_iframe',
               thistcc,
               '" style="position: absolute; left:0; top:0; width:0; height:0; visibility:hidden; filter:alpha(opacity=0); z-index: ',
-              (thistcc),
+              0,
               '"></iframe>')
   }
   //alert(TC0c.TC0g());
@@ -1777,9 +1777,8 @@ function TC0d() {
  * Retrieves calendar using formName + name as a key.
  * If does not exist - creates one.
  */
-var initialized_calendars = new Array();
 function getCalendar(formName, name, initialValue) {
-  var cal = initialized_calendars[formName + '_' + name];
+  var cal = A_CALENDARS[formName + '_' + name];
   if (cal) {
     cal.showcal();
     return false;
@@ -1799,7 +1798,7 @@ function getCalendar(formName, name, initialValue) {
   var div = document.getElementById(name + "_div");
   div.innerHTML = cal.createDiv(); 
   cal.create();
-  initialized_calendars[formName + '_' + name] = cal;
+  A_CALENDARS[formName + '_' + name] = cal;
   cal.showcal();
   return false;
 }
