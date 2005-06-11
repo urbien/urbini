@@ -10,6 +10,27 @@ var keyPressedElement;
 var autoCompleteTimeoutId;
 var keyPressedTime;
 
+/**
+ *  Since Internet Explorer does not define the Node interface constants, 
+ *  which let you easily identify the type of node, one of the first things to do 
+ *  in a DOM script for the Web is to make sure you define one yourself, if it's missing.
+ */
+if (!window['Node']) {
+  window.Node = new Object();
+  Node.ELEMENT_NODE = 1;
+  Node.ATTRIBUTE_NODE = 2;
+  Node.TEXT_NODE = 3;
+  Node.CDATA_SECTION_NODE = 4;
+  Node.ENTITY_REFERENCE_NODE = 5;
+  Node.ENTITY_NODE = 6;
+  Node.PROCESSING_INSTRUCTION_NODE = 7;
+  Node.COMMENT_NODE = 8;
+  Node.DOCUMENT_NODE = 9;
+  Node.DOCUMENT_TYPE_NODE = 10;
+  Node.DOCUMENT_FRAGMENT_NODE = 11;
+  Node.NOTATION_NODE = 12;
+}
+
 Popup.currentDivs          = new Array(); // distinct divs that can be open at the same time (since they have different canvases)
 Popup.popups               = new Array(); // pool of all popups with different divId(s)
 Popup.openTimeoutId        = null; // timeout after which we need to open the delayed popup
@@ -2206,7 +2227,7 @@ function interceptLinkClicks() {
   var llen = document.links.length;
   for (var i=0;i<llen; i++) {
     var id = document.links[i].id;
-    if (id && id.indexOf("-inner.") == 0) {
+    if (id && id.indexOf("-inner.") == 0) {    
       var propName = id.substring(7);
       addEvent(document.links[i], 'click',  onClickDisplayInner,   false);
     }
@@ -2216,18 +2237,14 @@ function interceptLinkClicks() {
 }
 
 function onClickDisplayInner (e) {
-  var target;
-
   e = (e) ? e : ((window.event) ? window.event : null);
   if (!e)
     return;
-
-  target = getTargetElement(e);
-
-  if (!target || !target.id)
+ 
+  var url = getTargetAnchor(e);
+  if (!url || !url.id)
     return;
-  
-  var propName = target.id.substring(7); 
+  var propName = url.id.substring(7); 
   var r = displayInner(e, innerUrls[propName]); 
   return r;
 }
@@ -2600,6 +2617,13 @@ function setInnerHtml(div, text, frame) {
     div.document.write(text);
     div.document.close();
   }
+//  else if (Popup.ns6) {
+//    var r = div.ownerDocument.createRange();
+//    r.selectNodeContents(div);
+//    r.deleteContents();
+//    var df = r.createContextualFragment(text);
+//    div.appendChild(df); 
+//  }
   else {
     div.innerHTML = '';
     //  hack to remove current div dimensions, otherwise div will not auto-adjust to the text inserted into it (hack needed at least in firefox 1.0)
