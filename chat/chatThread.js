@@ -1,4 +1,8 @@
-var autoScrolling = 'yes';var windowTitle = parent.document.title;var pos=0;var titleTimeOut;var windowHasFocus='true';
+var autoScrolling = 'yes';
+var windowTitle = parent.document.title;
+var pos=0;
+var titleTimeOut;
+var windowHasFocus='true';
 var timeDelta = 0; // difference between server and client time
 
     function isScrollBarActivated()
@@ -34,58 +38,56 @@ var timeDelta = 0; // difference between server and client time
         pos=(pos+1)%windowTitle.length;
     } 
 	   
-    function insertMessages(gmtOffset,tm,userColor,userId, messageArray,notificationMode) 
-    {   
-	    if(messageArray[messageArray.length-2] == "")
-	    {
-		  messageArray[messageArray.length-2] = messageArray[messageArray.length-1];
-		  messageArray.length = messageArray.length - 1;
-		}
+    // ------- START ------- INSERT MESSAGES -------------------------------------
+    function insertMessages(gmtOffset,tm,userColor,userId, messageArray,notificationMode) {   
+	    if(messageArray[messageArray.length-2] == "") {
+		    messageArray[messageArray.length-2] = messageArray[messageArray.length-1];
+		    messageArray.length = messageArray.length - 1;
+		  }
 		
-		if(isScrollBarAtBottom())autoScrolling = 'yes';else autoScrolling = 'no';
+		  if(isScrollBarAtBottom())
+        autoScrolling = 'yes';
+       else autoScrolling = 'no';
 
+      //--------------------------  START -------------  INVITATION MESSAGES ------------------------
        	// this is an invitation message
-		if(messageArray[0].indexOf('!-invt')==0) 
-		{
-			if(messageArray[0].indexOf('!-invtPrvRoom')==0)
-			{
-			  messageArray[0] = messageArray[0].replace("!-invtPrvRoom","");
-			  //alert(parent.window.location);
-			  //alert(messageArray[0]);
-			  parent.window.location = messageArray[0];
-			  return;
-			}
+		  if(messageArray[0].indexOf('!-invt')==0) {
+			  if(messageArray[0].indexOf('!-invtPrvRoom')==0) {
+			    messageArray[0] = messageArray[0].replace("!-invtPrvRoom","");
+			    parent.window.location = messageArray[0];
+			    return;
+			  }
 			  
-			if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured')window.focus();
+			  if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured')window.focus();
     			else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New mes came to your chat room');
-    				else if(notificationMode==2 && parent.isWindowInFocus=='blured')
-					{
-						newwindow=window.open('','newMes','height=100,width=350,resizable=yes'); 
-						//newwindow.document.writeln("invitation message came to the chat room!<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
-						newwindow.document.writeln("");
-                        newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='invitation message came to the chat room!'><span class=xs><font color='#63B4EF' id='timeNid["+timeNiD+"]'>["+getTimeStr(gmtOffset,tm)+"]</font><img src='icons/classes/invited.gif'>: <font onclick='window.close()' color=''>"+messageArray[0].replace("!-invt","").replace("target=_top","target='chat'")+"</font></span><img src='images/show.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
-					};
-           if(parent.chatSoundPresent == 1 && parent.soundViaApplet == 0 && parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
-		   try 
-		   {
-             parent.document.getElementById('sound1').Play();
-           } catch(e) 
-		   	 {
-             	if (document.all) 
-			 	{
+    				else if(notificationMode==2 && parent.isWindowInFocus=='blured') {
+						  newwindow=window.open('','newMes','height=100,width=350,resizable=yes'); 
+						  //newwindow.document.writeln("invitation message came to the chat room!<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
+						  newwindow.document.writeln("");
+              newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='invitation message came to the chat room!'><span class=xs><font color='#63B4EF' id='timeNid["+timeNiD+"]'>["+getTimeStr(gmtOffset,tm)+"]</font><img src='icons/classes/invited.gif'>: <font onclick='window.close()' color=''>"+messageArray[0].replace("!-invt","").replace("target=_top","target='chat'")+"</font></span><img src='images/show.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
+					  }
+        if(parent.chatSoundPresent == 1 && parent.soundViaApplet == 0 && parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
+		      try {
+            parent.document.getElementById('sound1').Play();
+          } catch(e) {
+             	if (document.all) {
                	parent.document.all.sound.src = 'chat/DingDong.wav';
              	}
-           	 }
-			 else if(parent.chatSoundPresent == 1 && parent.soundViaApplet == 1 && parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId) {parent.document.getElementById("soundAppletDiv").innerHTML = "<APPLET CODE='SoundApplet.class' height='0' width='0'></APPLET>";}
-          var timeNiD = 0; 
-		  while(parent.document.getElementById('timeNid['+timeNiD+']')){timeNiD++;}
-          parent.document.getElementById('body1').innerHTML += " <font size='-2' color='#63B4EF' id='timeNid["+timeNiD+"]'>["+getTimeStr(gmtOffset,tm)+"]</font><img src='icons/classes/invited.gif'>: "+messageArray[0].replace("!-invt","").replace("target='_self'","target='_top'")+"<br>";
-          if(autoScrolling == 'yes')
-		  {
+           	}
+			   else 
+           if(parent.chatSoundPresent == 1 && parent.soundViaApplet == 1 && parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId) {
+             parent.document.getElementById("soundAppletDiv").innerHTML = "<APPLET CODE='SoundApplet.class' height='0' width='0'></APPLET>";
+           }
+        var timeNiD = 0; 
+		    while(parent.document.getElementById('timeNid['+timeNiD+']')) 
+          timeNiD++;
+        parent.document.getElementById('body1').innerHTML += " <font size='-2' color='#63B4EF' id='timeNid["+timeNiD+"]'>["+getTimeStr(gmtOffset,tm)+"]</font><img src='icons/classes/invited.gif'>: "+messageArray[0].replace("!-invt","").replace("target='_self'","target='_top'")+"<br>";
+        if(autoScrolling == 'yes')  {
 	       	 parent.document.getElementById('chatContents').scrollTop = parent.document.getElementById('chatContents').scrollHeight;
-          }
-          return;
         }
+        return;
+      }
+      //--------------------------  FINISH -------------  INVITATION MESSAGES ------------------------      
 		/*
 		if(messageArray[0].indexOf('!-forwardToPrivRm')==0) 
 		{
@@ -94,224 +96,197 @@ var timeDelta = 0; // difference between server and client time
         }
 		*/
 
-        // message that says the chat creation time
-		if((userId == "ChatAdministrator")&&(messageArray[0]=="?alias")) 
-		{
-		   parent.document.formScrollLock.chatStartedAt.value = tm;
-           return;
-		 }
+      // message that says the chat creation time
+      // correct time is loaded and function breaks.
+		  if((userId == "ChatAdministrator")&&(messageArray[0]=="?alias")) {
+		    parent.document.formScrollLock.chatStartedAt.value = tm;
+        return;
+      }
 		 
-        // message that says the about somebody's writing status
-		if(messageArray[messageArray.length-1].substring(0,messageArray[messageArray.length-1].lastIndexOf('?alias'))=="..w..")
-        {
-           var idWriting = 'w'+userId;funSetWritingStatus(idWriting);
-		   return;
-        }
+      // message that says the about somebody's writing status
+		  if(messageArray[messageArray.length-1].substring(0,messageArray[messageArray.length-1].lastIndexOf('?alias'))=="..w..") {
+        var idWriting = 'w'+userId;funSetWritingStatus(idWriting);
+		    return;
+      }
 		
-    	//alert(parent.isWindowInFocus);
-		clearTimeout(parent.titleTimeOut);
-		if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
-		   //userId!="ChatAdministrator" &&)
-		{
-			clearInterval(parent.titleScrollHandler);
-			parent.titleScrollHandler = setInterval("scrollTitle()",100);
-			parent.titleTimeOut=setTimeout("clearInterval(parent.titleScrollHandler);parent.document.title=windowTitle;",5000);
-		}
-		
-		/*
-		if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured')window.focus();
-    	  else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New mes came to your chat room');
-    	    else if(notificationMode==2 && parent.isWindowInFocus=='blured')
-			{
-			  newwindow=window.open('','newMes','height=100,width=350'); 
-			  newwindow.document.writeln("new mes came to the chat room!<font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'>Set focus to the chat window</font><br>");
-			};
-		*/
-  		
-           if(parent.chatSoundPresent == 1 && parent.soundViaApplet == 0 && parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
-		   try 
-		   {
-             parent.document.getElementById('sound1').Play();
-           } catch(e) 
-		   	 {
-             	if (document.all) 
-			 	{
-               	parent.document.all.sound.src = 'chat/DingDong.wav';
-             	}
-           	 }
-			 else if(parent.chatSoundPresent == 1 && parent.soundViaApplet == 1 && parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId) {parent.document.getElementById("soundAppletDiv").innerHTML = "<APPLET CODE='SoundApplet.class' height='0' width='0'></APPLET>";}
-        
-		var userAlias = messageArray[messageArray.length-1];
-        userAlias = userAlias.substring(userAlias.lastIndexOf('?alias')+1,userAlias.length);
-        messageArray[messageArray.length-1] = messageArray[messageArray.length-1].substring(0,messageArray[messageArray.length-1].lastIndexOf('?alias'));
-        var doc = parent.document;
-        var bodyRef = doc.getElementById('body1');
-        if (bodyRef == null) return;
-        var messageString = '';
-        if(userId=='ChatAdministrator')
-		{ 
-			messageString+="<img src='icons/information.gif' align=bottom><span class=xs>"; 
-			userN = doc.createElement('img');
-			userN.src='icons/information.gif'; 
-			userN.align='bottom'
-		} else {
-        	messageString += '<span class=xs><font color='+userColor+'>'; 
-			userN = doc.createElement('font'); 
-			userN.color = userColor;
+		  clearTimeout(parent.titleTimeOut); // Stop title scrolling
+		  
+      // Start title scrolling in the cases that are in the if statement.
+      // Title must scroll for 5 seconds.
+      if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>") {
+			  clearInterval(parent.titleScrollHandler);
+			  parent.titleScrollHandler = setInterval("scrollTitle()",100);
+			  parent.titleTimeOut=setTimeout("clearInterval(parent.titleScrollHandler);parent.document.title=windowTitle;",5000);
 		  }
+  		
+      // ---- START --- Play sound via browsers sound support (inbuild Internet Explorer opportunity to play sound and FireFox plugins)
+      if(parent.chatSoundPresent == 1 && parent.soundViaApplet == 0 && parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>")
+		    try {
+          parent.document.getElementById('sound1').Play();
+        } catch(e) {
+            if (document.all) {
+              parent.document.all.sound.src = 'chat/DingDong.wav';
+            }
+          }
+			 else 
+         if(parent.chatSoundPresent == 1 && parent.soundViaApplet == 1 && parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId) {
+           parent.document.getElementById("soundAppletDiv").innerHTML = "<APPLET CODE='SoundApplet.class' height='0' width='0'></APPLET>";
+         }
+      // ---- Finish --- Play sound via browsers sound support (inbuild Internet Explorer opportunity to play sound and FireFox plugins)
+        
+		  var userAlias = messageArray[messageArray.length-1];
+      userAlias = userAlias.substring(userAlias.lastIndexOf('?alias')+1,userAlias.length);
+      messageArray[messageArray.length-1] = messageArray[messageArray.length-1].substring(0,messageArray[messageArray.length-1].lastIndexOf('?alias'));
+      var doc = parent.document;
+      var bodyRef = doc.getElementById('body1');
+      if (bodyRef == null) return;
+      var messageString = '';
+    
+      if(userId=='ChatAdministrator') { 
+			  messageString+="<img src='icons/information.gif' align=bottom><span class=xs>"; 
+			  userN = doc.createElement('img');
+			  userN.src='icons/information.gif'; 
+			  userN.align='bottom'
+		  } else {
+          messageString += '<span class=xs><font color='+userColor+'>'; 
+			    userN = doc.createElement('font'); 
+			    userN.color = userColor;
+		    }
 
     	var time = getTimeStr(gmtOffset,tm-timeDelta);
-        var messageStringTimeN ='';
-		messageStringTimeN+="<font size='-2'"; 
-		var timeN = doc.createElement('font');
-        timeN.size -= 1;
-        if(userId=='ChatAdministrator')
-		{
-			messageStringTimeN += ' style="color:#63B4EF;'; 
-			timeN.style.color = '#63B4EF';
-		}else {
-			messageStringTimeN += ' style="color:'+userColor+';> ';
-		 }
-        if(doc.getElementById('timeNid[0]') != null) 
-		{
-			if(doc.getElementById('timeNid[0]').style.display!='none')
-			{
-				messageStringTimeN+='display:inline" '; 
-				timeN.style.display='inline';
-			}else {
-				messageStringTimeN+='display:none" '; 
-				timeN.style.display='none';
-			 }
-		} else {
-			messageStringTimeN+='display:inline"'; 
-			timeN.style.display='inline';
-		  }
+      var messageStringTimeN ='';
+		  messageStringTimeN+="<font size='-2'"; 
+		  var timeN = doc.createElement('font');
+      timeN.size -= 1;
+      if(userId=='ChatAdministrator') {
+			  messageStringTimeN += ' style="color:#63B4EF;'; 
+			  timeN.style.color = '#63B4EF';
+		  } else {
+			    messageStringTimeN += ' style="color:'+userColor+';> ';
+		    }
+      if(doc.getElementById('timeNid[0]') != null) {
+			  if(doc.getElementById('timeNid[0]').style.display!='none') {
+				  messageStringTimeN+='display:inline" '; 
+				  timeN.style.display='inline';
+			  } else {
+				    messageStringTimeN+='display:none" '; 
+				    timeN.style.display='none';
+			    }
+		  } else {
+			    messageStringTimeN+='display:inline"'; 
+			    timeN.style.display='inline';
+		    }
         
-		var timeNiD = 0; 
-		while(doc.getElementById('timeNid['+timeNiD+']'))
-		    {timeNiD++;}
-        messageStringTimeN += ' id="timeNid['+timeNiD+']">'; 
-		timeN.id = 'timeNid['+timeNiD+']';
-        if(userId!='ChatAdministrator')
-		{ 
+		  var timeNiD = 0; 
+		  
+      // get "time index" of the time elements.
+      // timeNiD will contain the last "free" index of the time objects (fonts that display time)
+      // the reason of the creation of such objects array is the "display/disable timestamps" feature.
+      while(doc.getElementById('timeNid['+timeNiD+']'))
+		    timeNiD++;
+      
+      messageStringTimeN += ' id="timeNid['+timeNiD+']">'; 
+		  timeN.id = 'timeNid['+timeNiD+']';
+      if(userId!='ChatAdministrator') { 
 		    messageString+=userId;
 		    userN.appendChild(doc.createTextNode(userId))
-		}
-		messageString+="</font>";
-        messageStringTimeN += ' [' + time + '] </font>'; 
-		timeN.appendChild(doc.createTextNode(' [' + time + ']'));
-        bodyRef.innerHTML+=messageStringTimeN + messageString + ': </span> ';
-        var usernameString = '';
-        //alert( messageArray[0]);
+      }
+		  messageString+="</font>";
+      messageStringTimeN += ' [' + time + '] </font>'; 
+		  timeN.appendChild(doc.createTextNode(' [' + time + ']'));
+      bodyRef.innerHTML+=messageStringTimeN + messageString + ': </span> ';
+      var usernameString = '';
 		
-		if(userId=='ChatAdministrator')
-		{
+	    if(userId=='ChatAdministrator') {
 		    usernameString += '<span class=xs><font color=' + messageArray[0].substring(0,messageArray[0].indexOf('-')-1) + '>'; 
 		    username = doc.createElement('font');
 		    username.color=messageArray[0].substring(0,messageArray[0].indexOf('-')-1);        	
 		    usernameString += messageArray[0].substring(messageArray[0].indexOf('-')+1,messageArray[0].indexOf('+ ')+1);
-		    //usernameString=usernameString.replace("+","");
-			usernameString=usernameString.substring(0,usernameString.length-1);
+			  usernameString=usernameString.substring(0,usernameString.length-1);
 		    username.appendChild(doc.createTextNode(messageArray[0].substring(messageArray[0].indexOf('-')+1,messageArray[0].indexOf(' '))));
 		    usernameString += '</font>';     
-		    //messageArray[0]=messageArray[0].replace("+","");	    
 		    var messageS = messageArray[0].substring(messageArray[0].indexOf('+ '),messageArray[0].length);
 		    messageS = messageS.replace("+","");
 		    usernameString += messageS + '</span><br>';
-		    //usernameString += messageArray[0].substring(messageArray[0].indexOf('+ '),messageArray[0].length) + '</span><br>';
 		    bodyRef.innerHTML += usernameString;
-		}
-        else 
-		{
-		  if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured')window.focus();
-    	    else if (notificationMode==1 && parent.isWindowInFocus=='blured')alert('New mes came to your chat room');
-    	      else if(notificationMode==2 && parent.isWindowInFocus=='blured')
-			    {
-				  var mesStr = "";
-				  for (i = 0; i < messageArray.length; i++) mesStr += messageArray[i];
-				  newwindow=window.open('','newMes','height=100,width=350,resizable=yes'); 
-			      //newwindow.document.writeln("new mes came to the chat room<br>" + messageStringTimeN + messageString + " </span>" + messageArray[i] + "<br><font color='blue' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><span class=xs>Set focus to the chat window</span></font><hr>");
-				  newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='new mes came to the chat room'>" + messageStringTimeN + messageString + " </span>" + mesStr + " <img src='images/show.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
-			    };
-			
+      } else {
+		      if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured') window.focus();
+    	     else if (notificationMode==1 && parent.isWindowInFocus=='blured') alert('New mes came to your chat room');
+    	      else 
+              if(notificationMode==2 && parent.isWindowInFocus=='blured') {
+				        var mesStr = "";
+				        for (i = 0; i < messageArray.length; i++) 
+                  mesStr += messageArray[i];
+				        newwindow=window.open('','newMes','height=100,width=350,resizable=yes'); 
+				        newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='new mes came to the chat room'>" + messageStringTimeN + messageString + " </span>" + mesStr + " <img src='images/show.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
+			        }
 		  
-		  
-		  var messageFull = "";	
-		  for (i = 0; i < messageArray.length; i++)
-		    messageFull += messageArray[i] + "<br>";
-		  //for (i = 0; i < messageArray.length; i++) 
-		  //{
-	 		  //addMessageText(messageArray[i],bodyRef,doc,userId,userAlias);
-			  addMessageText(messageFull,bodyRef,doc,userId,userAlias);
-            //  var newBR = doc.createElement('br');
-           //   bodyRef.appendChild(newBR);
-          //}
-		  
-		  
-		}
-        if(autoScrolling == 'yes')
-		{
-            parent.document.getElementById('chatContents').scrollTop = parent.document.getElementById('chatContents').scrollHeight;
-		}
-
+		      var messageFull = "";	
+		      for (i = 0; i < messageArray.length; i++)
+		        messageFull += messageArray[i] + "<br>";
+			    addMessageText(messageFull,doc,userId,userAlias);
+        }
+        
+      if(autoScrolling == 'yes') {
+        parent.document.getElementById('chatContents').scrollTop = parent.document.getElementById('chatContents').scrollHeight;
+		  }
     }
+    // ------- FINISH ------- INSERT MESSAGES -------------------------------------
 
+    function getTimeStr(gmtOffset,tm) {
+      var date = new Date(tm); 
+      var time = '';
 
-    function getTimeStr(gmtOffset,tm) 
-	{
-        var date = new Date(tm); 
-        var time = '';
+      var hours = date.getHours();
+      if (hours > 12)
+        hours = hours - 12;
+      time += hours + ':';
 
-        var hours = date.getHours();
-        if (hours > 12)
-          hours = hours - 12;
-        time += hours + ':';
+      var min = date.getMinutes();
+      if (min < 10)
+        time += '0';
+      time += min + ':';
 
-        var min = date.getMinutes();
-        if (min < 10)
-          time += '0';
-        time += min + ':';
+      var sec = date.getSeconds();
+      if (sec < 10)
+        time += '0';
+      time += sec;
 
-        var sec = date.getSeconds();
-        if (sec < 10)
-          time += '0';
-        time += sec;
-
-        var ampm=' AM';
-        if (date.getHours() > 12)
-          ampm=' PM';
-        time += ampm;
-        return time;
+      var ampm=' AM';
+      if (date.getHours() > 12)
+        ampm=' PM';
+      time += ampm;
+      return time;
     }
     
-	function setUserAlias(alias)
-    {
-    	parent.document.postForm.aliasUser.value = alias; parent.document.postFormWritingStatus.aliasUser.value = alias;
+	  function setUserAlias(alias) {
+      parent.document.postForm.aliasUser.value = alias; parent.document.postFormWritingStatus.aliasUser.value = alias;
     }
 	
-	//function loadUrl(stringWithUrl,bodyRef,doc,userAlias, contactURI)
-	function addMessageText(stringWithUrl,bodyRef,doc,userAlias, contactURI)
-	{
-	    var color = '#ffffff';
-		var numberId = 0;
-		if(doc.getElementById(contactURI+'['+numberId+']')) 
-		  color = doc.getElementById(contactURI+'['+numberId+']').style.backgroundColor;
-		while(doc.getElementById(contactURI+'['+numberId+']')) numberId++;
-		var inHTML = "<span class='xs'><font style='background-color:" + color + "' id=\"" + contactURI+"["+numberId+"]" + "\">" + stringWithUrl + "</font></span>";
-		bodyRef.innerHTML += inHTML;
-		//alert(bodyRef.innerHTML);
-	}
+	  function addMessageText(stringWithUrl,doc,userAlias, contactURI) {
+      // stringWithUrl - text to insert 
+      // userAlias - members name - "Nikolay Skripnik" f.e.
+      // contactURI - members uri
+      
+      var bodyRef = doc.getElementById('body1');       // bodyRef - the place where the text should be inserted to
+      var color = '#ffffff';
+		  var numberId = 0;
+		  if(doc.getElementById(contactURI+'['+numberId+']')) 
+		    color = doc.getElementById(contactURI+'['+numberId+']').style.backgroundColor;
+		  while(doc.getElementById(contactURI+'['+numberId+']')) 
+        numberId++;
+		  var inHTML = "<span class='xs'><font style='background-color:" + color + "' id=\"" + contactURI+"["+numberId+"]" + "\">" + stringWithUrl + "</font></span>";
+		  bodyRef.innerHTML += inHTML;
+	  }
 	
-	function ss_addEvent(elm, evType, useCapture, contactURI,nameOfTheInsertedFont,realName,color,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay) 
-	{ 
-		if (elm.addEventListener){ 
-		  elm.addEventListener(evType, function () {window.parent.showOpsMenu(contactURI, realName, color,nameOfTheInsertedFont,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay);}, useCapture); 
-		} 
-		else 
-		    if (elm.attachEvent){ 
-			    var r = elm.attachEvent("on"+evType, function () {window.parent.showOpsMenu(contactURI, realName, color,nameOfTheInsertedFont,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay);} ); 
-	 	    } 
-	}
+	  function ss_addEvent(elm, evType, useCapture, contactURI,nameOfTheInsertedFont,realName,color,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay) { 
+		  if (elm.addEventListener){ 
+		    elm.addEventListener(evType, function () {window.parent.showOpsMenu(contactURI, realName, color,nameOfTheInsertedFont,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay);}, useCapture); 
+		  } else 
+		      if (elm.attachEvent) { 
+			      var r = elm.attachEvent("on"+evType, function () {window.parent.showOpsMenu(contactURI, realName, color,nameOfTheInsertedFont,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay);} ); 
+	 	      } 
+	  }
 	
 	function memberIcon_addEventMOver(elm,evType,useCapture,time)
 	{
@@ -323,6 +298,30 @@ var timeDelta = 0; // difference between server and client time
 	}
     
 	function insertMembersForInvitation(membersArray,timeMembersArray,nameRoomUserIn,linkToResourcePage, aliasesArray, linkToContactPageArray) 
+	{
+		var showPanel = 0;
+		var bodyRef = parent.document.getElementById('divUsersInvite');
+		
+		for(i=0;i<membersArray.length;i++)if(parent.document.getElementById(aliasesArray[i])==null){showPanel=1;break;}
+		if(showPanel==0)return;
+	    
+		//if(membersArray.length>1)
+		    bodyRef.innerHTML += "<br><font color=\"#33A3D2\"><span class=xs><b>Other Chats:</b></span><br>"
+		for(i=0;i<membersArray.length;i++)
+		{	
+		   if(!parent.document.getElementById(aliasesArray[i]))
+		   {    
+		       var onlineSince = new Date(parseInt(timeMembersArray[i]));
+			   bodyRef.innerHTML += "<input type='hidden' id='infoCP"+ aliasesArray[i] +"' value='"+ linkToContactPageArray[i] +"'><input type='hidden' id='userRoomIn"+membersArray[i]+"' value='"+nameRoomUserIn[i]+"'><input type='hidden' id='info"+membersArray[i]+"' value='"+timeMembersArray[i]+"'><img id='inv"+membersArray[i]+"' onMouseOver='var d = new Date(parseInt("+timeMembersArray[i]+"));var d1 = new Date();var dif=d1-d;d1.setHours(0);d1.setMinutes(0);d1.setSeconds(0);d1.setMilliseconds(dif);this.title=this.title.substring(0,this.title.search(\" for\"))+\" for \" +d1.getHours()+\":\"+d1.getMinutes()+\":\"+d1.getSeconds();' title='"+parent.setTitleToUserIcon(membersArray[i],timeMembersArray[i],nameRoomUserIn[i])+" for' src='images/icon_mini_profile.gif' width='16' height='16'><span class=xs><font onMouseOver='var d = new Date(parseInt("+timeMembersArray[i]+"));var d1 = new Date();var dif=d1-d;d1.setHours(0);d1.setMinutes(0);d1.setSeconds(0);d1.setMilliseconds(dif);this.title=this.title.substring(0,this.title.search(\" for\"))+\" for \" +d1.getHours()+\":\"+d1.getMinutes()+\":\"+d1.getSeconds();' style='cursor:pointer' title='"+parent.setTitleToUserIcon(membersArray[i],timeMembersArray[i],nameRoomUserIn[i])+" for' onclick='window.parent.showOpsMenu(\""+aliasesArray[i]+"\",\"" + membersArray[i] + "\", \"\",\"" + aliasesArray[i] + "\",\"inline\",\"inline\",\"inline\",\"inline\",\"none\",\"inline\",\"inline\");'>" + membersArray[i] + "</font></span><input id='linkToResource"+membersArray[i]+"' onclick='alert(this.id)' type='hidden' value="+linkToResourcePage[i]+"><br>";
+               if(parent.document.getElementById('userOpsPanelUserName').innerHTML==membersArray[i])
+                   window.parent.showOpsMenu(aliasesArray[i],membersArray[i], '#000000',membersArray[i],'inline','inline','inline','inline','none','inline','inline');
+           }
+		};
+	        bodyRef.innerHTML += "<br><br><br><br><!--input type='hidden' value='' name='message' id='message'//--><!--input type='hidden' name='nameUser' id='nameUser' value=''//--></form>"
+	   		if(!(document.getElementById('inv'+parent.document.getElementById('userOpsPanelUserName')) || document.getElementById('c'+parent.document.getElementById('userOpsPanelUserName'))) )parent.hideOpsMenu();
+	}
+  
+  function insertOfflineMembers(membersArray,timeMembersArray,nameRoomUserIn,linkToResourcePage, aliasesArray, linkToContactPageArray) 
 	{
 		var showPanel = 0;
 		var bodyRef = parent.document.getElementById('divUsersInvite');
