@@ -56,8 +56,8 @@ function initRTE(imgPath, incPath, css, rte) {
 	cssFile = css;
 
 	var divRTEcontainerObj = document.getElementById(rte+'dv');// div that contains RTE inside
-  divRTEcontainerObj.innerHTML = '';
-  if (isRichText) divRTEcontainerObj.innerHTML = '<style type="text/css">@import "' + includesPath + 'rte.css";</style>';
+  if(divRTEcontainerObj && divRTEcontainerObj.innerHTML) divRTEcontainerObj.innerHTML = '';
+  if (isRichText && divRTEcontainerObj) divRTEcontainerObj.innerHTML = '<style type="text/css">@import "' + includesPath + 'rte.css";</style>';
 
 	//for testing standard textarea, uncomment the following line
 	//isRichText = false;
@@ -131,7 +131,7 @@ function insertSmile(rte, smile)
 }
 
 function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat) {
-	if (readOnly) buttons = false;
+  if (readOnly) buttons = false;
 
 	var divRTEcontainerObj = document.getElementById(rte+'dv');// div that contains RTE inside
   //divRTEcontainerObj.innerHTML = '';
@@ -192,14 +192,6 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
 		 '				<option value="images/smileys/sad.gif">sad&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - :(</option>' +
 		 '				<option value="images/smileys/laughting.gif">laughting - :D</option>' +
 		 '			</select>' +
-/*
-		document.writeln('		<td width="100%">');
-		document.writeln('		</td>');
-		document.writeln('	</tr>');
-		document.writeln('</table>');
-		document.writeln('<table class="rteBack" cellpadding="0" cellspacing="0" id="Buttons2_' + rte + '" width="' + tablewidth + '">');
-		document.writeln('	<tr>');
-*/
 		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'bold1.gif" width="13" height="13" alt="Bold" title="Bold" onClick="FormatText(\'' + rte + '\', \'bold\', \'\')">' +
 		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'italic1.gif" width="13" height="13" alt="Italic" title="Italic" onClick="FormatText(\'' + rte + '\', \'italic\', \'\')">' +
 		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'underline1.gif" width="13" height="13" alt="Underline" title="Underline" onClick="FormatText(\'' + rte + '\', \'underline\', \'\')">' +
@@ -218,52 +210,41 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
 		   rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'outdent1.gif" width="13" height="13" alt="Outdent" title="Outdent" onClick="FormatText(\'' + rte + '\', \'outdent\', \'\')">';
 		   rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'indent1.gif" width="13" height="13" alt="Indent" title="Indent" onClick="FormatText(\'' + rte + '\', \'indent\', \'\')">';
 		 }
-     rteHtmlStructure += '		<span id="forecolor_' + rte + '">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'textcolor1.gif" width="13" height="13" alt="Text Color" title="Text Color" onClick="FormatText(\'' + rte + '\', \'forecolor\', \'\')"></span>' +
-		 '		<span id="hilitecolor_' + rte + '"><img align="absmiddle" class="rteImage" src="' + imagesPath + 'bgcolor1.gif" width="13" height="13" alt="Background Color" title="Background Color" onClick="FormatText(\'' + rte + '\', \'hilitecolor\', \'\')"></span>' +
-		 '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'hyperlink1.gif" width="13" height="13" alt="Insert Link" title="Insert Link" onClick="FormatText(\'' + rte + '\', \'createlink\')">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'image1.gif" width="13" height="13" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')">';
+//     rteHtmlStructure += '		<span id="forecolor_' + rte + '">';
+//		 rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'textcolor1.gif" width="13" height="13" alt="Text Color" title="Text Color" onClick="FormatText(\'' + rte + '\', \'forecolor\', \'\')"></span>';
+//		 rteHtmlStructure += '		<span id="hilitecolor_' + rte + '"><img align="absmiddle" class="rteImage" src="' + imagesPath + 'bgcolor1.gif" width="13" height="13" alt="Background Color" title="Background Color" onClick="FormatText(\'' + rte + '\', \'hilitecolor\', \'\')"></span>';
+		 rteHtmlStructure += '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">';
+		 rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'hyperlink1.gif" width="13" height="13" alt="Insert Link" title="Insert Link" onClick="FormatText(\'' + rte + '\', \'createlink\')">';
+		 rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'image1.gif" width="13" height="13" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')">';
 	   if( !isChat ) {
        rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'readOnly.gif" width="13" height="13" alt="view source" title="view source" onclick="var chk = document.getElementById(\'chkSrc' + rte + '\'); if(chk.checked==true)chk.checked=false; else chk.checked=true; toggleHTMLSrc(\'' + rte + '\');">';
        rteHtmlStructure += '		<span id="table_' + rte + '"><img class="rteImage" align="absmiddle" src="' + imagesPath + 'insert_table1.gif" width="15" height="13" alt="Insert Table" title="Insert Table" onClick="dlgInsertTable(\'' + rte + '\', \'table\', \'\')"></span>';
      }
 
-//*/
-		//if (!readOnly) document.writeln('<td><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source</td>');
-		if (isIE && !isChat) {
-			rteHtmlStructure += '		<img  align="absmiddle"class="rteImage" src="' + imagesPath + 'spellcheck1.gif" width="13" height="13" alt="Spell Check" title="Spell Check" onClick="checkspell()">';
-		}
 		rteHtmlStructure += '		</td>';
-		//if (!readOnly) document.writeln('<td><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" />&nbsp;View Source</td>');
-//		document.writeln('		<td><img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt=""></td>');
-//		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'cut.gif" width="25" height="24" alt="Cut" title="Cut" onClick="FormatText(\'' + rte + '\', \'cut\')"></td>');
-//		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'copy.gif" width="25" height="24" alt="Copy" title="Copy" onClick="FormatText(\'' + rte + '\', \'copy\')"></td>');
-//		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'paste.gif" width="25" height="24" alt="Paste" title="Paste" onClick="FormatText(\'' + rte + '\', \'paste\')"></td>');
-//		document.writeln('		<td><img class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="20" border="0" alt=""></td>');
-//		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'undo.gif" width="25" height="24" alt="Undo" title="Undo" onClick="FormatText(\'' + rte + '\', \'undo\')"></td>');
-//		document.writeln('		<td><img class="rteImage" src="' + imagesPath + 'redo.gif" width="25" height="24" alt="Redo" title="Redo" onClick="FormatText(\'' + rte + '\', \'redo\')"></td>');
-		//document.writeln('		<td width="100%"></td>');
 		rteHtmlStructure += '	</tr>';
 		rteHtmlStructure += '</table>';
 		if(minimized) rteHtmlStructure += '<br>';
 	}
 	//document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
-	if(minimized) // if RTE is minimized, the iframe must have limited size: width="40px" height="30px"
+	/*
+  if(minimized) // if RTE is minimized, the iframe must have limited size: width="40px" height="30px"
 	  rteHtmlStructure += '<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="40px" height="30px" src="'+document.domain+'" scrolling="auto"></iframe>';
 	 else 
 	   rteHtmlStructure += '<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>';
-	rteHtmlStructure += '<textarea id="txtArea' + rte + '" width="' + width + 'px" readonly style="display:none"></textarea>';
+	*/
+  rteHtmlStructure += '<textarea id="txtArea' + rte + '" width="' + width + 'px" readonly style="display:none"></textarea>';
 	if (!readOnly) rteHtmlStructure += '<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" style="display:none" />';//&nbsp;View Source');
 	
-	rteHtmlStructure += '<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>';
-	rteHtmlStructure += '<input type="hidden" id="hdn' + rte + '" name="' + rte + '" value="">';
+	//rteHtmlStructure += '<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>';
+  //rteHtmlStructure += '<div style="width:154;height:104;background-color:#560989;visibility:hidden; display: none; position: absolute;" id="cp' + rte + '"></div>';
+	//rteHtmlStructure += '<input type="hidden" id="hdn' + rte + '" name="hdn' + rte + '" value="">';
   divRTEcontainerObj.innerHTML = rteHtmlStructure;
-  enableDesignMode(rte, html, readOnly, minimized, isChat); // Enable iframe design mode
+  enableDesignMode(rte, html, readOnly, minimized, isChat); // Enable iframe design mode 
 }
 
 function enableDesignMode(rte, html, readOnly, minimized, isChat) {
-	var frameHtml = "<html id=\"" + rte + "\">\n";
+  var frameHtml = "<html id=\"" + rte + "\">\n";
 	frameHtml += "<head>\n";
 	//to reference your stylesheet, set href property below to your stylesheet path and uncomment
 	if (cssFile.length > 0) {
@@ -283,46 +264,54 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
 	frameHtml += "</body>\n";
 	frameHtml += "</html>";
 
-	if (document.all) { // Internet Explorer (IE) case
+	document.getElementById('Buttons1_' + rte).style.display = 'inline'; 
+  if (document.all) { // Internet Explorer (IE) case
 		var oRTE = frames[rte].document;
 		//oRTE.open();
 		//oRTE.write(frameHtml);  // frameHtml is not loaded in the Internet Explorer (IE) case. This breaks the BACK button in IE.
  		//oRTE.close();           // THe necessary styles are added later - on window load event (in TextareaPropertyEditor.java)
 		if (!readOnly) oRTE.designMode = "On";
 		
-		if(!minimized && !isChat){ // the RTE is minimized (i.e. RTE panell is not displayed and RTE area width="40px" height="30px")
+		if(!minimized && !isChat){ // this is not chat and RTE is not minimized
                    // In this section click and keyup events are added to the RTE iframe using addEvent function so that
                    // onclick RTE area must suit the entered text. click event makes the RTE input text area as big as the text inside,
                    // but not bigger than 330 px (The height is set to 330px in this case).
                    // keyup event is used to check the height of the RTE area and the text inside of it the  so that the area must be as big
                    // as the text inside but not more than 330px. This event is hadled when the used types anything inside the area.
-		  //addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
 		  addEvent(frames[rte].document, 'click', function() {
-                                                frames[rte].document.body.style.margin = 0;
-                                                document.getElementById('Buttons1_' + rte).style.display = 'inline'; 
+                                                frames[rte].document.body.style.margin = 0; // set RTE margin to 0 so that there is no space between RTE's iframe left border and the entered text
+                                                document.getElementById('Buttons1_' + rte).style.display = 'inline'; // show RTE panel
                                                 if(frames[rte].document.body.scrollHeight >= 330) 
                                                   document.getElementById(rte).style.height = 330; 
-                                                 else {
+                                                 else
                                                    if(this.attachEvent)
                                                      document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
                                                     else 
                                                       document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;
-                                                 }
-                                                document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;
+                                                if(rte == 'notes') // if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that i smoved to the necessary place.
+                                                                   // this section is used to make the feeling that the floated iframe is integrated to the page (elseway when the iframe grows - it overlaps the page below it)
+                                                                   // that is why the RteIframe div becomes resized when the iframe is resized ( when it's height is changed )
+                                                  document.getElementById('RteIframe').style.height = document.getElementById(rte).offsetHeight;
                                               }, false);
 		  addEvent(frames[rte].document, 'keyup', function() {
                                                 textChanged = true;
-                                                frames[rte].document.body.style.margin = 0;
+                                                frames[rte].document.body.style.margin = 0; // set RTE margin to 0 so that there is no space between RTE's iframe left border and the entered text
+                                                document.getElementById('Buttons1_' + rte).style.display = 'inline'; // show RTE panel
                                                 if(frames[rte].document.body.scrollHeight >= 330) 
                                                   document.getElementById(rte).style.height = 330; 
-                                                 else {
+                                                 else 
                                                    if(this.attachEvent)
                                                      document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
                                                     else 
                                                       document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;
-                                                 }
+                                                 if(rte == 'notes')// if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that i smoved to the necessary place.
+                                                                   // this section is used to make the feeling that the floated iframe is integrated to the page (elseway when the iframe grows - it overlaps the page below it)
+                                                                   // that is why the RteIframe div becomes resized when the iframe is resized ( when it's height is changed )
+                                                   document.getElementById('RteIframe').style.height = document.getElementById(rte).offsetHeight;
                                               },false);
       // Show rte with the text inside and set correct RTE sizes 
+      // THis must happen after 300 ms to let iframe initiated on the page.
+      // This is an IE specific. FF is fine.
       html = replaceAllRecursion(html,"\n","<br>");
       html = replaceAllRecursion(html,"\r","");
       setTimeout("frames['"+rte+"'].document.body.innerHTML = '"+html+"';" +
@@ -345,54 +334,70 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
       }
     }
     else {
-	  if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
+	    if (!readOnly) document.getElementById(rte).contentDocument.designMode = "on";
 			try {
+        frames[rte].document.body.innerHTML = html;
 				var oRTE = document.getElementById(rte).contentWindow.document;
         frames[rte].focus();
-				oRTE.open();
-				oRTE.write(frameHtml);
-				oRTE.close();
+				//oRTE.open();
+				//oRTE.write(frameHtml);
+				//oRTE.close();
 				if (isGecko && !readOnly) {
 					//attach a keyboard handler for gecko browsers to make keyboard shortcuts work
 					oRTE.addEventListener("keypress", kb_handler, true);
-					if(!minimized && !isChat) { // the RTE is minimized (i.e. RTE panell is not displayed and RTE area width="40px" height="30px")
+					if(!minimized && !isChat) { // the RTE is not minimized (i.e. RTE panell is not displayed and RTE area width="40px" height="30px") and this is not chat RTE
                           // In this section click and keyup events are added to the RTE iframe using addEvent function so that
                           // onclick RTE area must suit the entered text. click event makes the RTE input text area as big as the text inside,
                           // but not bigger than 330 px (The height is set to 330px in this case).
                           // keyup event is used to check the height of the RTE area and the text inside of it the  so that the area must be as big
                           // as the text inside but not more than 330px. This event is hadled when the used types anything inside the area.
-					  //addEvent(frames[rte].document, 'click', function() {document.getElementById('Buttons1_' + rte).style.display = 'inline';document.getElementById(rte).style.height = 75;document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;}, false);
 					  addEvent(frames[rte].document, 'click', function() {
-                                                      frames[rte].document.body.style.margin = 0;
-                                                      document.getElementById('Buttons1_' + rte).style.display = 'inline'; 
+                                                      frames[rte].document.body.style.margin = 0; // set RTE margin to 0 so that there is no space between RTE's iframe left border and the entered text
                                                       if(frames[rte].document.body.scrollHeight >= 330) 
                                                         document.getElementById(rte).style.height = 330; 
-                                                       else {
+                                                       else if(frames[rte].document.body.offsetHeight > 20)
                                                          if(this.attachEvent)
                                                            document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
                                                           else 
                                                             document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+20;
-                                                       }
-                                                       document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).width;
+                                                         else document.getElementById(rte).style.height = 40;   
+                                                      if(rte == 'notes' || (rte == 'description' && window.location.toString().indexOf('readOnlyProperties.html')>0)) 
+                                                                   // if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that i smoved to the necessary place.
+                                                                   // this section is used to make the feeling that the floated iframe is integrated to the page (elseway when the iframe grows - it overlaps the page below it)
+                                                                   // that is why the RteIframe div becomes resized when the iframe is resized ( when it's height is changed )
+                                                                   // THere is another specification when 'description' RTE is used for writing comment but not description on the edit page f.e.
+                                                                   // THat is why window.location is checked.
+                                                        document.getElementById('RteIframe').style.height = document.getElementById(rte).offsetHeight; 
                                                     }, false);
 					  addEvent(frames[rte].document, 'keyup', function() {
                                                       textChanged = true; 
-                                                      if(frames[rte].document.body.scrollHeight >= 330) 
+                                                      frames[rte].document.body.style.margin = 0; // set RTE margin to 0 so that there is no space between RTE's iframe left border and the entered text
+                                                      if(frames[rte].document.body.offsetHeight >= 330) 
                                                         document.getElementById(rte).style.height = 330; 
-                                                       else {
+                                                       else if(frames[rte].document.body.offsetHeight > 20)
                                                          if(this.attachEvent)
                                                            document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;
                                                           else 
                                                             document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+20;
-                                                       }
+                                                        else document.getElementById(rte).style.height = 40;
+                                                      if(rte == 'notes' || (rte == 'description' && window.location.toString().indexOf('readOnlyProperties.html')>0))
+                                                                   // if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that i smoved to the necessary place.
+                                                                   // this section is used to make the feeling that the floated iframe is integrated to the page (elseway when the iframe grows - it overlaps the page below it)
+                                                                   // that is why the RteIframe div becomes resized when the iframe is resized ( when it's height is changed )
+                                                                   // THere is another specification when 'description' RTE is used for writing comment but not description on the edit page f.e.
+                                                                   // THat is why window.location is checked.
+                                                        document.getElementById('RteIframe').style.height = document.getElementById(rte).offsetHeight;
                                                     },false);
+            frames[rte].document.body.style.margin = 0;
             // set correct RTE size when RTE is initiated. The RTE size must be "suitable" to it's content.
             if(frames[rte].document.body.scrollHeight >= 330) 
-              document.getElementById(rte).style.height = 330; 
-               if(this.attachEvent)
-                 document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;
-                else 
-                  document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+20;
+              document.getElementById(rte).style.height = 330;
+             else
+               document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
+            if(html == '' || window.location.toString().indexOf('readOnlyProperties.html')>0) { // if no content could be loaded to RTE then the height must be 40px
+              document.getElementById(rte).style.height = 40;
+              document.getElementById(rte).style.width = document.getElementById('Buttons1_'+rte).offsetWidth;
+            }
 					}
 				}
 			} catch (e) {
@@ -403,7 +408,7 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
 }
 
 function processURLs(stringWithUrl) { // recursive function that looks for all URLs in RTE to replace them with link image and the title (title is a link itself).
-return   stringWithUrl;
+  return   stringWithUrl;
   var httpPresent = false;
   firstEntrance = -1;
 
@@ -480,14 +485,15 @@ function updateRTEs() { // this function is called when there are a lot of RTEs 
 }
 
 function updateRTE(rte) {
-
-    if(!textChanged){
+  if(!textChanged){
 	  if(document.getElementById(rte+'content'))
 	    document.getElementById('hdn' + rte).value = document.getElementById(rte+'content').value;
 	  return;
 	}
-
-    if(document.getElementById(rte+'content'))document.getElementById(rte+'content').value = frames[rte].document.body.innerHTML;
+  // if there is textarea for RTE to contain it's content for BACK/FORWARD browsers buttons preserving
+  // then the content of RTE is copied to this textarea
+  if(document.getElementById(rte+'content'))
+    document.getElementById(rte+'content').value = frames[rte].document.body.innerHTML;
 
 	if (!isRichText) return;
 	 
