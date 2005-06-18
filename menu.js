@@ -2765,3 +2765,18 @@ function getTargetElement(evt) {
   return elem;
 }
 
+function checkAll(formName) {
+  var form = document.forms[formName];
+  var fields = form.elements;
+  var checkAll = form.elements["-checkAll"];
+  var isChecked = checkAll.checked == true;
+  for (var i=0; i<fields.length; i++) {
+    var type  = fields[i].type;
+    if (type  &&  type.toUpperCase() == "CHECKBOX") {
+      if (isChecked)
+        fields[i].checked = true;
+      else
+        fields[i].checked = false;
+    }
+  }
+}
