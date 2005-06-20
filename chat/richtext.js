@@ -1,6 +1,5 @@
 // Cross-Browser Rich Text Editor
 // http://www.kevinroth.com/rte/demo.htm
-// Written by Kevin Roth (kevin@NOSPAMkevinroth.com - remove NOSPAM)
 
 //init variables
 var isRichText = false;
@@ -122,6 +121,7 @@ function lowerButton(e) {
 	}
 }
 
+// inserts smile icon to the cursor position
 function insertSmile(rte, smile)
 {
 	var oRTE = frames[rte];
@@ -145,7 +145,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
 		if (buttons && (width < 500)) width = 500;
 		var tablewidth = width + 4;
 	}
-  // building of the RTE structure. First the RTE panel is built.
+  // ---- start------ building of the RTE structure. First the RTE panel is built.
 	if (buttons == true) {
 		if(minimized)
 		  rteHtmlStructure += '<table align="center" class="rteBack" style="display:none" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">';
@@ -210,9 +210,11 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
 		   rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'outdent1.gif" width="13" height="13" alt="Outdent" title="Outdent" onClick="FormatText(\'' + rte + '\', \'outdent\', \'\')">';
 		   rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'indent1.gif" width="13" height="13" alt="Indent" title="Indent" onClick="FormatText(\'' + rte + '\', \'indent\', \'\')">';
 		 }
-//     rteHtmlStructure += '		<span id="forecolor_' + rte + '">';
-//		 rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'textcolor1.gif" width="13" height="13" alt="Text Color" title="Text Color" onClick="FormatText(\'' + rte + '\', \'forecolor\', \'\')"></span>';
-//		 rteHtmlStructure += '		<span id="hilitecolor_' + rte + '"><img align="absmiddle" class="rteImage" src="' + imagesPath + 'bgcolor1.gif" width="13" height="13" alt="Background Color" title="Background Color" onClick="FormatText(\'' + rte + '\', \'hilitecolor\', \'\')"></span>';
+
+     rteHtmlStructure += '		<span id="forecolor_' + rte + '">';
+		 rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'textcolor1.gif" width="13" height="13" alt="Text Color" title="Text Color" onClick="FormatText(\'' + rte + '\', \'forecolor\', \'\')"></span>';
+
+		 rteHtmlStructure += '		<span id="hilitecolor_' + rte + '"><img align="absmiddle" class="rteImage" src="' + imagesPath + 'bgcolor1.gif" width="13" height="13" alt="Background Color" title="Background Color" onClick="FormatText(\'' + rte + '\', \'hilitecolor\', \'\')"></span>';
 		 rteHtmlStructure += '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">';
 		 rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'hyperlink1.gif" width="13" height="13" alt="Insert Link" title="Insert Link" onClick="FormatText(\'' + rte + '\', \'createlink\')">';
 		 rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'image1.gif" width="13" height="13" alt="Add Image" title="Add Image" onClick="AddImage(\'' + rte + '\')">';
@@ -226,23 +228,107 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
 		rteHtmlStructure += '</table>';
 		if(minimized) rteHtmlStructure += '<br>';
 	}
-	//document.writeln('<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>');
-	/*
-  if(minimized) // if RTE is minimized, the iframe must have limited size: width="40px" height="30px"
-	  rteHtmlStructure += '<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="40px" height="30px" src="'+document.domain+'" scrolling="auto"></iframe>';
-	 else 
-	   rteHtmlStructure += '<iframe style="border : 1px outset;" id="' + rte + '" name="' + rte + '" width="' + width + 'px" height="' + height + 'px" src="'+document.domain+'"></iframe>';
-	*/
+  // ---- finish------ building of the RTE structure. First the RTE panel is built.
+  
   rteHtmlStructure += '<textarea id="txtArea' + rte + '" width="' + width + 'px" readonly style="display:none"></textarea>';
-	if (!readOnly) rteHtmlStructure += '<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" style="display:none" />';//&nbsp;View Source');
+
+  //View Source checkbox
+	if (!readOnly) rteHtmlStructure += '<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" style="display:none" />';
 	
-	//rteHtmlStructure += '<iframe width="154" height="104" id="cp' + rte + '" src="' + includesPath + 'palette.htm" marginwidth="0" marginheight="0" scrolling="no" style="visibility:hidden; display: none; position: absolute;"></iframe>';
-  //rteHtmlStructure += '<div style="width:154;height:104;background-color:#560989;visibility:hidden; display: none; position: absolute;" id="cp' + rte + '"></div>';
-	//rteHtmlStructure += '<input type="hidden" id="hdn' + rte + '" name="hdn' + rte + '" value="">';
-  divRTEcontainerObj.innerHTML = rteHtmlStructure;
+  // ---- start ------- define a color palette table --------------
+  rteHtmlStructure += '<table cellpadding="0" cellspacing="1" border="1" align="center" id="cp' + rte + '" style="visibility:hidden; display: none; position: absolute; width:130; height:80">';
+	rteHtmlStructure += '<tr>';
+	rteHtmlStructure += '	<td id="#FFFFFF" bgcolor="#FFFFFF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FFCCCC" bgcolor="#FFCCCC" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FFCC99" bgcolor="#FFCC99" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FFFF99" bgcolor="#FFFF99" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FFFFCC" bgcolor="#FFFFCC" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#99FF99" bgcolor="#99FF99" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#99FFFF" bgcolor="#99FFFF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#CCFFFF" bgcolor="#CCFFFF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#CCCCFF" bgcolor="#CCCCFF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FFCCFF" bgcolor="#FFCCFF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '</tr>';
+	rteHtmlStructure += '<tr>';
+	rteHtmlStructure += '	<td id="#CCCCCC" bgcolor="#CCCCCC" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FF6666" bgcolor="#FF6666" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FF9966" bgcolor="#FF9966" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FFFF66" bgcolor="#FFFF66" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FFFF33" bgcolor="#FFFF33" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#66FF99" bgcolor="#66FF99" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#33FFFF" bgcolor="#33FFFF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#66FFFF" bgcolor="#66FFFF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#9999FF" bgcolor="#9999FF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FF99FF" bgcolor="#FF99FF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '</tr>';
+	rteHtmlStructure += '<tr>';
+	rteHtmlStructure += '	<td id="#C0C0C0" bgcolor="#C0C0C0" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FF0000" bgcolor="#FF0000" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FF9900" bgcolor="#FF9900" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FFCC66" bgcolor="#FFCC66" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FFFF00" bgcolor="#FFFF00" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#33FF33" bgcolor="#33FF33" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#66CCCC" bgcolor="#66CCCC" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#33CCFF" bgcolor="#33CCFF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#6666CC" bgcolor="#6666CC" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#CC66CC" bgcolor="#CC66CC" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '</tr>';
+	rteHtmlStructure += '<tr>';
+	rteHtmlStructure += '	<td id="#999999" bgcolor="#999999" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#CC0000" bgcolor="#CC0000" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FF6600" bgcolor="#FF6600" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FFCC33" bgcolor="#FFCC33" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#FFCC00" bgcolor="#FFCC00" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#33CC00" bgcolor="#33CC00" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#00CCCC" bgcolor="#00CCCC" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#3366FF" bgcolor="#3366FF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#6633FF" bgcolor="#6633FF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#CC33CC" bgcolor="#CC33CC" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '</tr>';
+	rteHtmlStructure += '<tr>';
+	rteHtmlStructure += '	<td id="#666666" bgcolor="#666666" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#990000" bgcolor="#990000" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#CC6600" bgcolor="#CC6600" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#CC9933" bgcolor="#CC9933" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#999900" bgcolor="#999900" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#009900" bgcolor="#009900" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#339999" bgcolor="#339999" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#3333FF" bgcolor="#3333FF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#6600CC" bgcolor="#6600CC" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#993399" bgcolor="#993399" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '</tr>';
+	rteHtmlStructure += '<tr>';
+	rteHtmlStructure += '	<td id="#333333" bgcolor="#333333" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#660000" bgcolor="#660000" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#993300" bgcolor="#993300" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#996633" bgcolor="#996633" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#666600" bgcolor="#666600" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#006600" bgcolor="#006600" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#336666" bgcolor="#336666" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#000099" bgcolor="#000099" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#333399" bgcolor="#333399" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#663366" bgcolor="#663366" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '</tr>';
+	rteHtmlStructure += '<tr>';
+	rteHtmlStructure += '	<td id="#000000" bgcolor="#000000" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#330000" bgcolor="#330000" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#663300" bgcolor="#663300" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#663333" bgcolor="#663333" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#333300" bgcolor="#333300" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#003300" bgcolor="#003300" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#003333" bgcolor="#003333" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#000066" bgcolor="#000066" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#330099" bgcolor="#330099" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '	<td id="#330033" bgcolor="#330033" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
+	rteHtmlStructure += '</tr>';
+  rteHtmlStructure += '</table>';
+  // ---- finish ------- define a color palette table --------------
+  
+  divRTEcontainerObj.innerHTML = rteHtmlStructure; // write html structure to the div that will contain RTE.
   enableDesignMode(rte, html, readOnly, minimized, isChat); // Enable iframe design mode 
 }
 
+// switch RTE iframe design mode on. THis function also loads the content (any value) to RTE.
 function enableDesignMode(rte, html, readOnly, minimized, isChat) {
   var frameHtml = "<html id=\"" + rte + "\">\n";
 	frameHtml += "<head>\n";
@@ -267,9 +353,6 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
 	document.getElementById('Buttons1_' + rte).style.display = 'inline'; 
   if (document.all) { // Internet Explorer (IE) case
 		var oRTE = frames[rte].document;
-		//oRTE.open();
-		//oRTE.write(frameHtml);  // frameHtml is not loaded in the Internet Explorer (IE) case. This breaks the BACK button in IE.
- 		//oRTE.close();           // THe necessary styles are added later - on window load event (in TextareaPropertyEditor.java)
 		if (!readOnly) oRTE.designMode = "On";
 		
 		if(!minimized && !isChat){ // this is not chat and RTE is not minimized
@@ -295,6 +378,8 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
                                               }, false);
 		  addEvent(frames[rte].document, 'keyup', function() {
                                                 textChanged = true;
+                                                if(document.getElementById(rte+'content'))
+                                                  document.getElementById(rte+'content').value = frames[rte].document.body.innerHTML;
                                                 frames[rte].document.body.style.margin = 0; // set RTE margin to 0 so that there is no space between RTE's iframe left border and the entered text
                                                 document.getElementById('Buttons1_' + rte).style.display = 'inline'; // show RTE panel
                                                 if(frames[rte].document.body.scrollHeight >= 330) 
@@ -339,9 +424,6 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
         frames[rte].document.body.innerHTML = html;
 				var oRTE = document.getElementById(rte).contentWindow.document;
         frames[rte].focus();
-				//oRTE.open();
-				//oRTE.write(frameHtml);
-				//oRTE.close();
 				if (isGecko && !readOnly) {
 					//attach a keyboard handler for gecko browsers to make keyboard shortcuts work
 					oRTE.addEventListener("keypress", kb_handler, true);
@@ -371,6 +453,8 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
                                                     }, false);
 					  addEvent(frames[rte].document, 'keyup', function() {
                                                       textChanged = true; 
+                                                      if(document.getElementById(rte+'content'))
+                                                        document.getElementById(rte+'content').value = frames[rte].document.body.innerHTML;
                                                       frames[rte].document.body.style.margin = 0; // set RTE margin to 0 so that there is no space between RTE's iframe left border and the entered text
                                                       if(frames[rte].document.body.offsetHeight >= 330) 
                                                         document.getElementById(rte).style.height = 330; 
@@ -390,13 +474,17 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
                                                     },false);
             frames[rte].document.body.style.margin = 0;
             // set correct RTE size when RTE is initiated. The RTE size must be "suitable" to it's content.
-            if(frames[rte].document.body.scrollHeight >= 330) 
-              document.getElementById(rte).style.height = 330;
-             else
-               document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
+            document.getElementById(rte).style.height = 10; // hack - some height value must be set to make FF initiate all iframe variables like offsetHeight
+            if(frames[rte].document.body.offsetHeight >= 330) 
+              document.getElementById(rte).style.height = 330; 
+             else if(frames[rte].document.body.offsetHeight > 20)
+                    document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight + 20;
+              else document.getElementById(rte).style.height = 40;
             if(html == '' || window.location.toString().indexOf('readOnlyProperties.html')>0) { // if no content could be loaded to RTE then the height must be 40px
               document.getElementById(rte).style.height = 40;
-              document.getElementById(rte).style.width = document.getElementById('Buttons1_'+rte).offsetWidth;
+              document.getElementById(rte).style.width = 10;
+              // FF needs any time to load correct Buttons1_ rte panel width value
+              setTimeout("document.getElementById('"+rte+"').style.width = document.getElementById('Buttons1_"+rte+"').offsetWidth;",300); 
             }
 					}
 				}
@@ -407,7 +495,9 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
 	}
 }
 
-function processURLs(stringWithUrl) { // recursive function that looks for all URLs in RTE to replace them with link image and the title (title is a link itself).
+// recursive function that looks for all URLs in RTE to replace them with link
+// image and the title (title is a link itself).
+function processURLs(stringWithUrl) { 
   return   stringWithUrl;
   var httpPresent = false;
   firstEntrance = -1;
@@ -471,7 +561,10 @@ function processURLs(stringWithUrl) { // recursive function that looks for all U
   }
 }
 
-function updateRTEs() { // this function is called when there are a lot of RTEs on the page. It uses allRTEs variable to get the list of names into the array. Then updateRTE() is called for every  RTE
+// this function is called when there are a lot of RTEs on the page. 
+// It uses allRTEs variable to get the list of names into the array. 
+// Then updateRTE() is called for every RTE.
+function updateRTEs() { 
 	var vRTEs = allRTEs.split(";");
 	for (var i = 0; i < vRTEs.length; i++) {
 		//---- Replacing of all urls with link image not to make the page too wide cuz of long url
@@ -484,6 +577,11 @@ function updateRTEs() { // this function is called when there are a lot of RTEs 
 	}
 }
 
+// "updates RTE". RTE is created together with the hidden HTML object (<input type="Hidden">). This hidden field
+// has the same name RTE has (to submit form with the needed RTE content) but it has another 
+// id (to get correct access to it via getElementById).
+// Forms can not get directly design mode iframe content when submitting it. That is why hidden field with the same
+// name is created. THis function copies the RTE content to the hidden field.
 function updateRTE(rte) {
   if(!textChanged){
 	  if(document.getElementById(rte+'content'))
@@ -534,9 +632,9 @@ function updateRTE(rte) {
 	}
 }
 
+// switch "view source" mode on/off.
+// iframe in design mode will containe it's innerText if "view source" is on.
 function toggleHTMLSrc(rte) {
-//document.getElementById(rte).style.display = 'none';
-	//contributed by Bob Hutzel (thanks Bob!)
 	var oRTE;
 	if (document.all) {
 		oRTE = frames[rte].document;
@@ -545,18 +643,10 @@ function toggleHTMLSrc(rte) {
 	}
 
 	if (document.getElementById("chkSrc" + rte).checked) {
-	    //document.getElementById("Buttons1_" + rte).style.visibility = "hidden";
 		document.getElementById("Buttons1_" + rte).style.visibility = "visible";
-		//document.getElementById("Buttons2_" + rte).style.visibility = "hidden";
 		var inHTML = oRTE.body.innerHTML;
 		if (document.all) {
-		    //document.getElementById('txtArea' + rte).value = oRTE.body.innerHTML;
-			//document.getElementById('txtArea' + rte).style.height = document.getElementById(rte).style.height;
-			//document.getElementById('txtArea' + rte).style.width = document.getElementById(rte).style.width;
 			oRTE.body.innerText = oRTE.body.innerHTML;
-			//document.getElementById(rte).style.display = 'none';
-			//document.getElementById('txtArea' + rte).style.display = 'inline';
-			
 		} else {
 			var htmlSrc = oRTE.createTextNode(oRTE.body.innerHTML);
 			oRTE.body.innerHTML = "";
@@ -569,7 +659,6 @@ function toggleHTMLSrc(rte) {
 		document.getElementById('txtArea' + rte).style.display = 'inline';
 	} else {
 		document.getElementById("Buttons1_" + rte).style.visibility = "visible";
-		//document.getElementById("Buttons2_" + rte).style.visibility = "visible";
 		document.getElementById('txtArea' + rte).style.display = 'none';
 		document.getElementById(rte).style.display = 'inline';
 		if (document.all) {
@@ -613,14 +702,13 @@ function FormatText(rte, command, option) {
 			parent.command = command;
 			currentRTE = rte;
 
-			//position and show color palette
+			// position and show color palette
       // OffsetLeft is defined in document.getElementById('cp' + rte).style.left 
       // OffsetTop  is defined in document.getElementById('cp' + rte).style.top
 			buttonElement = document.getElementById(command + '_' + rte);
 			// Ernst de Moor: Fix the amount of digging parents up, in case the RTE editor itself is displayed in a div.
 			document.getElementById('cp' + rte).style.left = getOffsetLeft(buttonElement, 4) - 50 + "px";
-			//document.getElementById('cp' + rte).style.top = (getOffsetTop(buttonElement, 4) + buttonElement.offsetHeight + 4) + "px";
-			document.getElementById('cp' + rte).style.top = getOffsetTop(buttonElement, 17) - 105 + "px";
+			document.getElementById('cp' + rte).style.top = getOffsetTop(buttonElement, 17) - 80 + "px";
 			if (document.getElementById('cp' + rte).style.visibility == "hidden") {
 				document.getElementById('cp' + rte).style.visibility = "visible";
 				document.getElementById('cp' + rte).style.display = "inline";
@@ -645,28 +733,6 @@ function FormatText(rte, command, option) {
 	} catch (e) {
 		alert(e);
 	}
-
-	//-------------------------TRY------------------------------
-/*
-		var oRTE;
-	if (document.all) {
-		oRTE = frames[rte].document;
-	} else {
-		oRTE = document.getElementById(rte).contentWindow.document;
-	}
-
-		if (document.all) {//
-		//alert(oRTE.body.innerText);alert(oRTE.body.innerHTML); alert(unescape(oRTE.body.innerHTML));
-		//oRTE.body.innerText = oRTE.body.innerHTML;
-          var s = oRTE.body.innerHTML;
-		  var a = document.createElement('div');
-          s = replaceAllRecursion(s, "<","&lt;");
-          s = replaceAllRecursion(s, ">","&gt;");
-          a.innerHTML=s;
-          oRTE.body.innerText = a.innerText;
-		}
-*/
-	//------------------------------------------------------------
 }
 function replaceAllRecursion(str, replStr, replWithStr)
 {
@@ -747,14 +813,7 @@ function checkspell() {
 	}
 }
 
-
-
-
-
-
-
-
-// Ernst de Moor: Fix the amount of digging parents up, in case the RTE editor itself is displayed in a div.
+// Fix the amount of digging parents up, in case the RTE editor itself is displayed in a div.
 function getOffsetTop(elm, parents_up) {
 	var mOffsetTop = elm.offsetTop;
 	var mOffsetParent = elm.offsetParent;
