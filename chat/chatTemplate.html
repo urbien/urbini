@@ -507,7 +507,7 @@
 				                        <td><a style="cursor:pointer;"><img style="display:none" id="inviteToPrivChatDisplay" src="images/inviteToPrivateChat.gif" border="0" style="cursor:pointer;" height="18" alt="invite user to private chat room" title="invite user to private chat room" onclick="inviteToPrivateChatRoomIconClick()"></a></td>
 				                        <td><a style="cursor:pointer;"><img style="display:none" id="inviteToChatRoomDisplay" src="images/Invited.gif" border="0" style="cursor:pointer;" alt="invite user to this chat room" title="invite user to this chat room" width="18" height="18" onclick="inviteToChatRoomIconClick()"></a></td>
 				                        <td><a style="cursor:pointer;"><img style="display:none" id="highlightDisplay" src="images/highlight.gif" border="0" style="cursor:pointer;" alt="highlight messages of the user" title="highlight messages of the user" width="16" height="16" align="absmiddle" onclick="highlightMessagesIconClick()"></a></td>
-				                        <td><a style="cursor:pointer;" target="_blank" id="AlinkToResource"><img style="display:none;cursor:pointer" id="linkToResource" src="icons/status_postponed.gif" border="0" width="15" height="15" alt="Link to the resource the chat is opened for" title="Link to the resource the chat is opened for" onclick="document.getElementById('AlinkToResource').href=document.getElementById('linkToResource'+document.getElementById('sendPrivateMessagesToUserRealName').value).value"></a></td>
+				                        <td><a style="cursor:pointer;" target="_blank" id="AlinkToResource"><img style="display:none;cursor:pointer" id="linkToResource" src="icons/openFor.gif" border="0" width="16" height="18" alt="Link to the resource the chat is opened for" title="Link to the resource the chat is opened for" onclick="document.getElementById('AlinkToResource').href=document.getElementById('linkToResource'+document.getElementById('sendPrivateMessagesToUserRealName').value).value"></a></td>
                                 <td><a style="cursor:pointer;" id="AjoinChatRoom"><img style="display:none;cursor:pointer" id="joinChatRoom" src="icons/webchat.gif" border="0" width="15" height="15" alt="Join the room where the user is present." title="Join the room where the user is present." onclick="document.getElementById('AjoinChatRoom').href = 'chatRoom?title='+document.getElementById('userRoomIn'+document.getElementById('userOpsPanelUserName').innerHTML).value + '&#38;referer=' + escape(document.getElementById('linkToResource'+document.getElementById('sendPrivateMessagesToUserRealName').value).value)"></a></td>
 				                      </tr>
 					                  </table>
@@ -560,7 +560,7 @@
                           </td>
 	                        <td>
 		          				      <a href="&[openedFrom];" title="link to the page from which the chat was opened" target="_blank">
-		          					      <img border="0" src="icons/status_postponed.gif" width="15" height="15" align="top" alt="Link to the resource this chat is opened for" title="Link to the resource this chat is opened for">
+		          					      <img border="0" src="icons/openFor.gif" width="16" height="19" align="top" alt="Link to the resource this chat is opened for" title="Link to the resource this chat is opened for">
 	          					      </a>
 	          					    </td>
 	                        <td>
