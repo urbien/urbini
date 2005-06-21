@@ -4,9 +4,12 @@
 <hideBlock id="hideBlock">      
 <watchNote/>
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
-  <tr valign="top" class="keywordsearch">
-  <td valign="top" width="100%" class="keywordsearch">
-   <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="90%">
+  <tr valign="top">
+  <td valign="top" width="100%">
+   <table width="100%" cellspacing="0" cellpadding="0" border="0">
+   <tr style="background-image: url('images/toolbar_bg.gif')">
+    <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
+    <td  height="23" style="PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold">
     <menu toolbar="resourceOperations" activate="onMouseOver"/>
     <menu toolbar="toolbar1"        activate="onMouseOver"/>
     <menu toolbar="helpdesk"        activate="onMouseOver" allow="admin" />
@@ -22,9 +25,10 @@
     <pdaToPc image="images/pda.gif"/>
     <showHideWindows/>
     </td>
-    <td valign="top" align="right" width="10%">
+    <td valign="middle" align="right" width="100">
       <include name="searchText.jsp"/>
     </td>
+    <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
    </tr></table></td>
   </tr>
   <!--tr><td colspan="2"></td>&#160;</tr-->
@@ -51,12 +55,8 @@
 <hideBlock>      
     <div id="pane3">
     <br/>
-    <table width="100%" cellpadding="0" border="0" cellspacing="0">
-      <tr class="commentodd"><td>
-        <uploadMsProject/>
-      </td></tr>
-    </table>
-      <createResources/><br/>
+    <uploadMsProject/>
+    <createResources/><br/>
 <br/><br/>
       <pieChart/>
     </div>

@@ -1,3 +1,16 @@
+TABLE.toolbar {
+  background-image: url('images/toolbar_bg.gif');  
+} 
+
+TD.toolbar {
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 12px;
+  background: #EEEEEE;
+  color: Black;
+  font-weight: bold;
+  font-variant: normal;
+  background-image: url('images/toolbar_bg.gif');  
+}
 .popMenu {
 	DISPLAY: none; POSITION: absolute; z-index:50; -moz-user-input: enabled; -moz-user-focus: normal
 }

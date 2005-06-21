@@ -12,13 +12,14 @@
       <div align="center"><font color="red"><b><errorMessage /></b></font></div>
     </td></tr>
     
-    <tr  valign="top" class="keywordsearch">
-      <td colspan="3" class="keywordsearch">
+    <tr  valign="top">
+      <td colspan="3">
 <hideBlock id="hideBlock">      
-      <table width="100%" cellspacing="0" cellpadding="1" border="0">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+      <tr style="background-image: url('images/toolbar_bg.gif')">
+      <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
+      <td  height="23" style="PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold">
 
-      <tr>
-      <td valign="top" width="85%">
       <img src="icons/icon.gif" width="16" height="16" align="middle" pda="T"/>
       <img src="icons/icon_divider.gif" align="middle" border="0" pda="T"/>
 
@@ -54,7 +55,8 @@
       </td>
 
       <!--td valign="top" align="right" width="15%"><changePassword/><userLogOff html="user-login.html"/></td-->
-      <td valign="top" align="right" width="15%"><include name="searchText.jsp"/></td>
+      <td valign="middle" align="right" width="15%"><include name="searchText.jsp"/></td>
+      <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
       </tr>
 
       </table>
