@@ -68,7 +68,7 @@
 <a target="pane2"> </a>
 <div id="pane2" />
       <readOtherSiteInfo />
-      <tablePropertyList />
+      <include name="${type}_details_main.jsp" alt="propertySheet.jsp" />
 <hideBlock id="hideBlock1">      
       <div align="right"><measurement/></div>
       <p/>
