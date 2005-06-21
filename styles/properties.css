@@ -121,3 +121,6 @@ font.warn {color:#A01E00}
 td.shading {border:solid #808080 1px; filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, EndColorStr='#F0F2F6', StartColorStr='#C0C9D7'); color='#000000'}
 span.comment { font-family: Verdana, Arial, Helvetica, sans-serif; color: #5766a5; font-weight:bold; font-size: 8pt}
 tr.editMode  {background-color:#D6E7EF;}
+span.bigLetterTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16pt; color:#00309C;} 
+/* To display big letter title when full text search criteria was there */
+span.bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#00309C;}
