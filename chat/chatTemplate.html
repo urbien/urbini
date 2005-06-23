@@ -20,11 +20,10 @@
 
     function initEventHandling() { 
       if (!document.all && !document.layers)
-        for (var f = 0; f < frames.length; f++)
-		{
+        for (var f = 0; f < frames.length; f++) {
           frames[f].document.addEventListener('keydown', keyHandler, true);
-		  frames[f].document.addEventListener('keyup', function () {if(sendMessage == 'yes'){frames.messageRTE.document.body.innerHTML = '';sendMessage = 'no';}}, true);
-		}
+		      frames[f].document.addEventListener('keyup', function () {if(sendMessage == 'yes'){frames.messageRTE.document.body.innerHTML = '';sendMessage = 'no';}}, true);
+	    	}
     }
     </SCRIPT>
     <SCRIPT LANGUAGE="JScript">
@@ -150,6 +149,8 @@
 	  var timeStampsOn = 1;
       
       
+    // chat room was opened and time of how long this chat room is already opened is counted.
+    // Time when the chat room was opened is loaded from servlet and the difference between current time and the loaded time is displayed.
     function chatTimerActive() { 
       var timerId = setInterval(
               "document.formScrollLock.chatStartedAt.value = "
@@ -159,7 +160,16 @@
             + "dt.setMinutes(0);"
             + "dt.setSeconds(0);"
             + "dt.setMilliseconds(parseInt(document.formScrollLock.chatStartedAt.value));"
-            + "if(parseInt(document.formScrollLock.chatStartedAt.value))document.formScrollLock.chatStart.value=''+dt.getHours()+':'+dt.getMinutes()+':'+dt.getSeconds();else document.formScrollLock.chatStart.value='loading time...';", 1000);
+            + "var getHours =  dt.getHours();"
+            + "var getMinutes = dt.getMinutes();"
+            + "var getSeconds = dt.getSeconds();"
+            + "if(dt.getHours() < 10) getHours = '0'+getHours;"
+            + "if(getMinutes < 10) getMinutes = '0'+getMinutes;"
+            + "if(getSeconds < 10) getSeconds = '0'+getSeconds;"
+            + "if(parseInt(document.formScrollLock.chatStartedAt.value)){"
+            +   "document.formScrollLock.chatStart.value=''+getHours+':'+getMinutes+':'+getSeconds;"
+            +  "}"
+            +  "else document.formScrollLock.chatStart.value='loading time...';", 1000);
     }
 	  
     function loadURL(stringWithUrl) {
@@ -486,14 +496,14 @@
 	  <input type='hidden' name='realUserName' id='realUserName' value="&[realUserName];">
 	  <input type='hidden' name='aliasUserUri' id='aliasUserUri' value="&[aliasUserUri];">
 
-    <table width="100%" height="100%" style="border : medium groove #CCCCCC; background : #EDEDED;">
+    <table onmouseover="" width="100%" height="100%" style="border : medium groove #CCCCCC; background : #EDEDED;">
       <tr>
         <td>
           <table cellspacing="1" cellpadding="0" border="0" width="100%" height="100%">
           <!-----------------------------------------------START---------OPERATIONAL PANEL DEFINITION ------------------------------------------------------------------>
             <tr id="userOpsPanel" style="display: none">
-              <td colspan="2" height="7%" width="100%">
-		            <table width="100%" height="100%" id="userOpsPanelTable">
+              <td colspan="2" height="30" width="100%">
+		            <table width="100%" height="100%" id="userOpsPanelTable" style="height:30; background : url(images/chat_toolbar_bg.gif);">
 		              <tr>
 		                <td>
                       <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -501,7 +511,7 @@
 				                  <td align="left">
                             <table border="0" cellpadding="1" cellspacing="0">
                               <tr>
-                                <td><span class="xs">Operations available for user <span id="userOpsPanelUserName" class="xs"></span>:&nbsp;</span></td>
+                                <td><span class="xs">Operations available for <span id="userOpsPanelUserName" class="xs"></span>:&nbsp;</span></td>
 				                        <td><a style="cursor:pointer;" href="" target="_blank" onclick="this.href = document.getElementById('infoCP'+document.getElementById('sendPrivateMessagesToUser').value).value"><img style="display:none" id="userInfoDisplay" src="images/info.gif" border="0" style="cursor:pointer;" alt="user info" title="user info" onclick="/*showUserInfWindow();*/"></a></td>
   				                      <td><a style="cursor:pointer;"><img style="display:none" id="sendPrivMessageDisplay" src="images/sendPrivateMessage.gif" border="0" style="cursor:pointer;" height="18" alt="send private messages to user" title="send private messages to user" onclick="privateMessageIconClick()"><input type="hidden" id="sendPrivateMessagesToUser"><input type="hidden" id="sendPrivateMessagesToUserRealName"></a></td>
 				                        <td><a style="cursor:pointer;"><img style="display:none" id="inviteToPrivChatDisplay" src="images/inviteToPrivateChat.gif" border="0" style="cursor:pointer;" height="18" alt="invite user to private chat room" title="invite user to private chat room" onclick="inviteToPrivateChatRoomIconClick()"></a></td>
@@ -605,45 +615,35 @@
             <tr>
 <!-----------------------------------------------START---------RTE DEFINITION ------------------------------------------------------------------>
               <td colspan="2"> <!-- RTE //-->
-                <table width="100%" height="100%" cellpadding="0" cellspacing="0" border="0">
-	            		<tr>
-            			  <form style="border : thin none; border-bottom : none; bottom : 0px; margin-bottom : 0px;" target='post' id='postForm' name='postForm'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
-	            			  <td width="96%" height="100%">
-	            			    <input type="hidden" value="all" name="nameUser" id="nameUser">
-	            	        <input type="hidden" value="my" id="aliasUser" name="aliasUser">
-		            		    <span class=xs>
-                          <div id="messageRTEdv"></div> 
-                          <iframe style='background-color:#ffffff;border : 1px outset;' id='messageRTE' name='messageRTE' width="100%" height="50"></iframe>
-                          <input type="hidden" id="hdnmessageRTE" name="messageRTE" value="">
-                          <script language="JavaScript" type="text/javascript" src="chat/richtext.js"></script>
-                          <script language="JavaScript" type="text/javascript">
-                            function submitForm() {
-                              updateRTE('messageRTE');
-	                            alert("message = " + document.postForm.messageRTE.value);
-                              return false;
-                            }
-                            //Usage: initRTE(imagesPath, includesPath, cssFile)
-                            initRTE("images/wysiwyg/", "chat/", "");
-                          </script>
-                          <script language="JavaScript" type="text/javascript">
-                            //Usage: writeRichText(fieldname, html, width, height, buttons)
-                            writeRichText('messageRTE', '', '100%', 50, true, false, false, true);
-                            addEvent(frames['messageRTE'].document, 'click', function() {frames['messageRTE'].document.body.style.margin = 0;}, false);
-                          </script>
-                          <input type="Hidden" name='message' id='message'> <!--the cleaned message will be laoded to this hidden object named 'message'//-->
-			  	                <!--textarea style="width:100%;height:99%; border:solid #808080 1px; margin: 0px" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="if(sendMessage == 'yes'){this.value = '';sendMessage = 'no';}"></textarea//-->
-			            	    </span>
-			            	    <script language='JavaScript'>
-                	    	  document.postForm.message.value="";
-                        </script>
-	          		  	  </td>
-	          			    <td width="4%" height="100%" valign="bottom" align="right">
-  	          			    <img onclick="sendMessageOnButton()" border="0" id="sendMesButton" src="images/sendEmpty.gif" alt="send message" title="send message" width="29" height="32">
-	            				  <br><br style="height:15">
-		            		  </td>
-	            		  </form>
-		              </tr>
-	              </table>  
+                <form style="border : thin none; border-bottom : none; bottom : 0px; margin-bottom : 0px;" target='post' id='postForm' name='postForm'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
+	            	  <input type="hidden" value="all" name="nameUser" id="nameUser">
+	            	  <input type="hidden" value="my" id="aliasUser" name="aliasUser">
+                  <!-- RTE's panel will be loaded to this div//-->
+                  <div id="messageRTEdv" style="height:0" align="center"></div> 
+                  <!-- RTE's iframe together with the send button image//-->
+                  <table width="100%">
+                    <tr>
+                      <td width="100%"><iframe style='background-color:#ffffff;border : 1px outset;' id='messageRTE' name='messageRTE' width="100%" height="50"></iframe></td>
+	                    <td><img onclick="sendMessageOnButton()" border="0" id="sendMesButton" src="icons/Chat-large.gif" alt="send message" title="send message" width="29" height="32"></td>
+                    </tr>
+                  </table>
+                  <input type="hidden" id="hdnmessageRTE" name="messageRTE" value="">
+                  <script language="JavaScript" type="text/javascript" src="chat/richtext.js"></script>
+                  <script language="JavaScript" type="text/javascript">
+                    //Usage: initRTE(imagesPath, includesPath, cssFile)
+                    initRTE("images/wysiwyg/", "chat/", "");
+                  </script>
+                  <script language="JavaScript" type="text/javascript">
+                    //Usage: writeRichText(fieldname, html, width, height, buttons)
+                    writeRichText('messageRTE', '', '100%', 0, true, false, false, true);
+                    addEvent(frames['messageRTE'].document, 'click', function() {frames['messageRTE'].document.body.style.margin = 0;}, false);
+                  </script>
+                  <input type="Hidden" name='message' id='message'> <!--the cleaned message will be loaded to this hidden object named 'message'//-->
+			  	        <!--textarea style="width:100%;height:99%; border:solid #808080 1px; margin: 0px" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="if(sendMessage == 'yes'){this.value = '';sendMessage = 'no';}"></textarea//-->
+			            <script language='JavaScript'>
+                	  document.postForm.message.value="";
+                  </script>
+	              </form>
               </td>
 <!-----------------------------------------------FINISH---------RTE DEFINITION ------------------------------------------------------------------>
             </tr>
