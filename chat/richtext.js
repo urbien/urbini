@@ -150,8 +150,8 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
 		if(minimized)
 		  rteHtmlStructure += '<table align="center" class="rteBack" style="display:none" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">';
 		 else rteHtmlStructure += '<table align="center" class="rteBack" cellpadding=0 cellspacing=0 id="Buttons1_' + rte + '" width="100%">';
-		 rteHtmlStructure += '	<tr align="center" style="white-space : nowrap; word-spacing : 0px; 	white-space : nowrap;">' +
-		 '		<td width="100%" cellpadding=0 cellspacing=0 style="" valign="top">';
+		 rteHtmlStructure += '	<tr align="center" style="white-space : nowrap; word-spacing : 0px; 	white-space : nowrap;">';
+		 rteHtmlStructure += '		<td width="100%" cellpadding=0 cellspacing=0 valign="top" align="center" id="Buttons1_td' + rte + '">';
 		 if( !isChat ) {
        rteHtmlStructure += '			<select style="width:75px;vertical-align : top;" id="formatblock_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">';
 		   rteHtmlStructure += '				<option value="">[Style]</option>';
@@ -185,17 +185,17 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
 		   rteHtmlStructure += '				<option value="7">7</option>';
 		   rteHtmlStructure += '			</select>';
      }
-		 rteHtmlStructure += '			<select style="width:95px;vertical-align : top;" unselectable="on" id="smile_' + rte + '" onchange="insertSmile(\''+rte+'\',this.value);this.selectedIndex = 0;">' +
-		 '				<option value="Smile" selected>[Smile]</option>' +
-		 '				<option value="images/smileys/smiley.gif">smiley&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- :)</option>' +
-		 '				<option value="images/smileys/wink.gif">wink&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - ;)</option>' +
-		 '				<option value="images/smileys/sad.gif">sad&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - :(</option>' +
-		 '				<option value="images/smileys/laughting.gif">laughting - :D</option>' +
-		 '			</select>' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'bold1.gif" width="13" height="13" alt="Bold" title="Bold" onClick="FormatText(\'' + rte + '\', \'bold\', \'\')">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'italic1.gif" width="13" height="13" alt="Italic" title="Italic" onClick="FormatText(\'' + rte + '\', \'italic\', \'\')">' +
-		 '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'underline1.gif" width="13" height="13" alt="Underline" title="Underline" onClick="FormatText(\'' + rte + '\', \'underline\', \'\')">' +
-		 '		<img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">';
+		 rteHtmlStructure += '			<select style="width:95px;vertical-align : top;" unselectable="on" id="smile_' + rte + '" onchange="insertSmile(\''+rte+'\',this.value);this.selectedIndex = 0;">';
+		 rteHtmlStructure += '				<option value="Smile" selected>[Smile]</option>';
+		 rteHtmlStructure += '				<option value="images/smileys/smiley.gif">smiley&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- :)</option>';
+		 rteHtmlStructure += '				<option value="images/smileys/wink.gif">wink&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - ;)</option>';
+		 rteHtmlStructure += '				<option value="images/smileys/sad.gif">sad&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - :(</option>';
+		 rteHtmlStructure += '				<option value="images/smileys/laughting.gif">laughting - :D</option>';
+		 rteHtmlStructure += '			</select>';
+		 rteHtmlStructure += '		  <img align="absmiddle" class="rteImage" src="' + imagesPath + 'bold1.gif" width="13" height="13" alt="Bold" title="Bold" onClick="FormatText(\'' + rte + '\', \'bold\', \'\')">';
+		 rteHtmlStructure += '		  <img align="absmiddle" class="rteImage" src="' + imagesPath + 'italic1.gif" width="13" height="13" alt="Italic" title="Italic" onClick="FormatText(\'' + rte + '\', \'italic\', \'\')">';
+		 rteHtmlStructure += '		  <img align="absmiddle" class="rteImage" src="' + imagesPath + 'underline1.gif" width="13" height="13" alt="Underline" title="Underline" onClick="FormatText(\'' + rte + '\', \'underline\', \'\')">';
+		 rteHtmlStructure += '		  <img align="absmiddle" class="rteVertSep" src="' + imagesPath + 'blackdot.gif" width="1" height="13" border="0" alt="">';
 		 if( !isChat ) {
        rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'left_just1.gif" width="13" height="13" alt="Align Left" title="Align Left" onClick="FormatText(\'' + rte + '\', \'justifyleft\', \'\')">';
 		   rteHtmlStructure += '		<img align="absmiddle" class="rteImage" src="' + imagesPath + 'centre1.gif" width="13" height="13" alt="Center" title="Center" onClick="FormatText(\'' + rte + '\', \'justifycenter\', \'\')">';
@@ -326,6 +326,9 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
   
   divRTEcontainerObj.innerHTML = rteHtmlStructure; // write html structure to the div that will contain RTE.
   enableDesignMode(rte, html, readOnly, minimized, isChat); // Enable iframe design mode 
+  // the RTE panel must be visible. THat is why the div that containes it must have correct height (the height of the RTE panel)
+  if(isChat)
+    divRTEcontainerObj.style.height = document.getElementById("Buttons1_" + rte).offsetHeight + 5;
 }
 
 // switch RTE iframe design mode on. THis function also loads the content (any value) to RTE.
