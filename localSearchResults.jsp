@@ -7,7 +7,7 @@
   <tr valign="top">
   <td valign="top" width="100%">
    <table width="100%" cellspacing="0" cellpadding="0" border="0">
-   <tr style="background-image: url('images/toolbar_bg.gif')">
+   <tr style="background-image: url('images/toolbar_bg.gif')" NOWRAP="y">
     <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
     <td  height="23" style="PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold">
     <menu toolbar="resourceOperations" activate="onMouseOver"/>
