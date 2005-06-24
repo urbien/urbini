@@ -1,6 +1,6 @@
 <div>
 <!-- THe next iframe is the floating iframe for RTE for writing comments//-->
-<iframe style='border : 1px outset;position:absolute;background-color:#ffffff' id='description' name='description' width='0' height='0'></iframe>
+<iframe style='border : 0px outset;position:absolute;background-color:#ffffff' id='description' name='description' width='0' height='0'></iframe>
 <center>
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -16,7 +16,7 @@
       <td colspan="3">
 <hideBlock id="hideBlock">      
       <table width="100%" cellspacing="0" cellpadding="0" border="0">
-      <tr style="background-image: url('images/toolbar_bg.gif')">
+      <tr style="background-image: url('images/toolbar_bg.gif')" NOWRAP="y">
         <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
         <td  height="23" style="PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold">
 
