@@ -15,24 +15,23 @@
 
     function keyHandler (evt) {
       //alert(evt.type + ' with key ' + (evt.which || evt.charCode || evt.keyCode));
-	  handleKey(evt);
+	    handleKey(evt);
     }
 
     function initEventHandling() { 
       if (!document.all && !document.layers)
         for (var f = 0; f < frames.length; f++) {
           frames[f].document.addEventListener('keydown', keyHandler, true);
-		      frames[f].document.addEventListener('keyup', function () {if(sendMessage == 'yes'){frames.messageRTE.document.body.innerHTML = '';sendMessage = 'no';}}, true);
+		      frames[f].document.addEventListener('keyup', function () {if(sendMessage == 'yes'){sendMessage = 'no';}}, true);
 	    	}
     }
     </SCRIPT>
     <SCRIPT LANGUAGE="JScript">
     function initEventHandling () {
-      for (var f = 0; f < frames.length; f++)
-	  {
-		frames[f].document.attachEvent('onkeydown', ieFrameChecker);
-		frames[f].document.attachEvent('onkeyup', function () {if(sendMessage == 'yes'){frames.messageRTE.document.body.innerHTML = '';sendMessage = 'no';}});
-	  }
+      for (var f = 0; f < frames.length; f++) {
+		    frames[f].document.attachEvent('onkeydown', ieFrameChecker);
+		    frames[f].document.attachEvent('onkeyup', function () {if(sendMessage == 'yes'){sendMessage = 'no';}});
+	    }
     }
     function ieFrameChecker () {
       for (var f = 0; f < frames.length; f++) {
@@ -229,115 +228,128 @@
 	    return str;
 	  }  
 
-    function sendMessageOnButton() {
-	    updateRTE('messageRTE');
-		  document.postForm.message.value = document.postForm.messageRTE.value;
-		  frames.messageRTE.document.body.innerHTML = '';
-      if (document.postForm.message.value.charAt(0) != "[")
-        document.postForm.nameUser.value = "all"; // nameUser is the contact's uri. Contact that receives private message.
-//-----START-----------------------------FORMING OF THE MESSAGE CONTENT------------------------------------------
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<P>", "");
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, "</P>", "");
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, "\n", "");
+    function cleanChatMessage(message) {
+		  message = replaceAll(message, "<P>", "");
+		  message = replaceAll(message, "</P>", "");
+		  message = replaceAll(message, "\n", "");
+      if(!document.all) message = replaceAll(message, "\r", ""); // just FF needs this correction. Elseway FF ads additional line.
 		 
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=\"www.", "<A href=\"http://www.");
-      document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=", "<a target='_blank' href=");
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, "<a href=\"www.", "<a href=\"http://www.");
-      document.postForm.message.value = replaceAll(document.postForm.message.value, "<a href=", "<a target='_blank' href=");
-		  
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":-)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":-(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, ";)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, ";-)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
-		  document.postForm.message.value = replaceAll(document.postForm.message.value, ":-D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
+		  message = replaceAll(message, "<A href=\"www.", "<A href=\"http://www.");
+      message = replaceAll(message, "<A href=", "<a target='_blank' href=");
+		  message = replaceAll(message, "<a href=\"www.", "<a href=\"http://www.");
+      message = replaceAll(message, "<a href=", "<a target='_blank' href=");
+      
+		  message = replaceAll(message, ":)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
+		  message = replaceAll(message, ":-)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
+		  message = replaceAll(message, ":(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
+		  message = replaceAll(message, ":-(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
+		  message = replaceAll(message, ";)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
+		  message = replaceAll(message, ";-)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
+		  message = replaceAll(message, ":D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
+		  message = replaceAll(message, ":-D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
 
-		  if(document.postForm.message.value.lastIndexOf("<br>")==document.postForm.message.value.length-5 && document.postForm.message.value.lastIndexOf("<br>")!=-1) {
-		  	document.postForm.message.value = document.postForm.message.value.substring(0,document.postForm.message.value.length-5);
-		  }
-//-----FINISH-----------------------------FORMING OF THE MESSAGE CONTENT------------------------------------------
-      document.getElementById("postForm").submit(); 
-      if (document.postForm.message.value != "") {
-        var messageValue = document.postForm.message.value;		 
-        document.postForm.message.value = "";
-        var dt = new Date(); 		  
-        var def = dt.getTimezoneOffset()/60;  
-	  
-		    messageValue = messageValue.split("\n");
-    	  messageValue[messageValue.length-1] += '?alias'+document.getElementById("aliasUser").value;			
-		    thread.insertMessages(-def, dt.getTime(), 
-			  document.getElementById(document.getElementById("aliasUser").value).color,
+      return message;
+    }
+
+   /* "immediate sending messages" feature. The general idea is that the message must be sent immdeiately for the sender.
+    * This means that the sender must see his sent message immediately on on the chat content div. So, thread.insertMessages
+    * function is used to send the message to himself and the sent message is not added to the messages list for this member on the
+    * server's side.
+    */    
+    function sendImmediateMessage(messageValue) {
+      // offset definition
+      var dt = new Date(); 
+      var def = dt.getTimezoneOffset()/60;
+      // alias of the sender is added
+      messageValue[messageValue.length-1] += '?alias'+document.getElementById("aliasUser").value;
+			// insertMessages function is called from thread iframe for immediate sending of the message for the sender
+      thread.insertMessages(-def,
+        dt.getTime(),
+        document.getElementById(document.getElementById("aliasUser").value).color,
         document.getElementById("realUserName").value,
-			  messageValue);
+				messageValue);
+    }
+    
+    // this function submits the message for all chat members and runs sendImmediateMessage function for immediate message sending for the sender
+    function sendMessageF() {
+		  // checks whether it is a private message. If the message doesn't start with "[" then it is not a private
+      // message and this is a message to all chat members
+      if (document.postForm.message.value.charAt(0) != "[") 
+        document.postForm.nameUser.value = "all"; // nameUser is the contact's uri (contact that receives private message).
+          
+      // "clean" the message. Looking for smiles and "www." entries are reolaced with "http://www.".
+      document.postForm.message.value = cleanChatMessage(document.postForm.message.value); 
+      // submits the message - submitting of html form "postForm"
+		  document.getElementById("postForm").submit();
+
+     /* "immediate sending messages" feature. The general idea is that the message must be sent immdeiately for the sender.
+      * This means that the sender must see his sent message immediately on on the chat content div. So, thread.insertMessages
+      * function is used to send the message to himself and the sent message is not added to the messages list for this member on the
+      * server's side.
+      */
+      if (document.postForm.message.value != "") {
+        sendImmediateMessage(document.postForm.message.value.split("\n")); 
       }
       document.postForm.message.value = ""; 
       document.postForm.nameUser.value = "all";
+     /* FireFox doesn't show cursor in RTE's iframe if the iframe doesn't have anything inside it.
+      * This is why <br> tag is added to the content to show cursor is there is nothing in RTE chat's iframe.
+      * User's entered text is added in front of the <br> tag (before it) when the chat member starts typing anything.
+      * That is why this <br> tag is removed when the member sends the message
+      */
+      if(!document.all)
+        frames.messageRTE.document.body.innerHTML = '<br>';
+       else frames.messageRTE.document.body.innerHTML = '';	
+    }
+    
+    // send message when the chat member sends the message via pushing on the send button
+    function sendMessageOnButton() {
+     /* FireFox doesn't show cursor in RTE's iframe if the iframe doesn't have anything inside it.
+      * This is why <br> tag is added to the content to show cursor is there is nothing in RTE chat's iframe.
+      * User's entered text is added in front of the <br> tag (before it) when the chat member starts typing anything.
+      * That is why this <br> tag is removed when the member sends the message
+      */      
+      if(!document.all && frames.messageRTE.document.body.innerHTML.lastIndexOf('<br>') == frames.messageRTE.document.body.innerHTML.length - 4)
+        frames.messageRTE.document.body.innerHTML = frames.messageRTE.document.body.innerHTML.substring(0,frames.messageRTE.document.body.innerHTML.length - 4);
+
+	    updateRTE('messageRTE'); // updates RTE content. This means the content of the RTE's design mode iframe is loaded to document.postForm.messageRTE.value
+		  document.postForm.message.value = document.postForm.messageRTE.value;
+      // sends the message itself. postForm form is submitted. Immediate sending feature is also run here.
+      sendMessageF();
     }    
     
+    // key handling for chat RTE's iframe. Sending of messages on shortcuts.
     function handleKey(e) {
 	    textChanged = true;
-	    updateRTE('messageRTE');
+	    updateRTE('messageRTE'); // updates RTE content. This means the content of the RTE's design mode iframe is loaded to document.postForm.messageRTE.value
 	  	var kk = navigator.appName == 'Netscape' ? e.which : e.keyCode;
       if (
 			  ((kk == 10 || (e.ctrlKey && kk==13))&&(sendShortcut == 1))   ||
 			  (kk==13 && sendShortcut==2 && !e.ctrlKey && !e.altKey && !e.shiftKey) 
       ) {
 		    sendMessage = 'yes';
-		    document.postForm.message.value = document.postForm.messageRTE.value;
-		    frames.messageRTE.document.body.innerHTML = '';
-	    
-		    if (document.postForm.message.value.charAt(0) != "[")
-          document.postForm.nameUser.value = "all";
-//-----START-----------------------------FORMING OF THE MESSAGE CONTENT------------------------------------------
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, "<P>", "");
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, "</P>", "");
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, "\n", "");
-		 
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=\"www.", "<A href=\"http://www.");
-        document.postForm.message.value = replaceAll(document.postForm.message.value, "<A href=", "<a target='_blank' href=");
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, "<a href=\"www.", "<a href=\"http://www.");
-        document.postForm.message.value = replaceAll(document.postForm.message.value, "<a href=", "<a target='_blank' href=");
-		  
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, ":)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, ":-)","<img src='images/smileys/smiley.gif' width='17' height='17' align='bottom'>");
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, ":(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, ":-(","<img src='images/smileys/sad.gif' width='17' height='17' align='bottom'>");
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, ";)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, ";-)","<img src='images/smileys/wink.gif' width='17' height='17' align='bottom'>");
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, ":D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
-		    document.postForm.message.value = replaceAll(document.postForm.message.value, ":-D","<img src='images/smileys/laughting.gif' width='17' height='17' align='bottom'>");
 
-		    if(document.postForm.message.value.lastIndexOf("<br>")==document.postForm.message.value.length-5 && document.postForm.message.value.lastIndexOf("<br>")!=-1) {
-		  	  document.postForm.message.value = document.postForm.message.value.substring(0,document.postForm.message.value.length-5);
-		    }
-//-----FINISH-----------------------------FORMING OF THE MESSAGE CONTENT------------------------------------------
-		    document.getElementById("postForm").submit();
-
-        if (document.postForm.message.value != "") {
-          var dt = new Date(); 
-          var def = dt.getTimezoneOffset()/60;
-			
-			    messageValue = document.postForm.message.value.split("\n");
-          messageValue[messageValue.length-1] += '?alias'+document.getElementById("aliasUser").value;
-			
-			    thread.insertMessages(-def,
-                dt.getTime(),
-                document.getElementById(document.getElementById("aliasUser").value).color,
-                document.getElementById("realUserName").value,
-				        messageValue);
+       /* FireFox doesn't show cursor in RTE's iframe if the iframe doesn't have anything inside it.
+        * This is why <br> tag is added to the content to show cursor is there is nothing in RTE chat's iframe.
+        * User's entered text is added in front of the <br> tag (before it) when the chat member starts typing anything.
+        * That is why this <br> tag is removed when the member sends the message
+        */
+        if(!document.all && (frames.messageRTE.document.body.innerHTML.lastIndexOf('<br>') == frames.messageRTE.document.body.innerHTML.length - 4)) {
+          frames.messageRTE.document.body.innerHTML = frames.messageRTE.document.body.innerHTML.substring(0,frames.messageRTE.document.body.innerHTML.length - 4);
         }
+        updateRTE('messageRTE'); // updates RTE content. This means the content of the RTE's design mode iframe is loaded to document.postForm.messageRTE.value
+		    document.postForm.message.value = document.postForm.messageRTE.value;
 
-        frames.messageRTE.document.body.innerHTML = '';
-		    document.postForm.message.value = ""; 
-		    document.postForm.nameUser.value = "all";
-      } //else if (document.postForm.message.value.length%10 == 0) {
+        // sends the message itself. postForm form is submitted. Immediate sending feature is also run here.
+        sendMessageF();
+      } 
+      // chat member's writing status. Member's writing status alert is sent every 10 chars (including the first char)
 		  else if (document.postForm.messageRTE.value.length%10 == 0) {
         document.getElementById("postFormWritingStatus").submit();
       }
     }
 	  
+    // Show/hide timestamps
 	  function clockOn(obj) {
 	    if(timeStampsOn==1)	{
 			  obj.src='icons/clock.gif';
@@ -635,7 +647,9 @@
                   </script>
                   <script language="JavaScript" type="text/javascript">
                     //Usage: writeRichText(fieldname, html, width, height, buttons)
-                    writeRichText('messageRTE', '', '100%', 0, true, false, false, true);
+                    var rteString = "";
+                    if(!document.all) rteString = "<BR>";
+                    writeRichText('messageRTE', rteString, '100%', 0, true, false, false, true);
                     addEvent(frames['messageRTE'].document, 'click', function() {frames['messageRTE'].document.body.style.margin = 0;}, false);
                   </script>
                   <input type="Hidden" name='message' id='message'> <!--the cleaned message will be loaded to this hidden object named 'message'//-->
