@@ -5,51 +5,6 @@
     <!--link rel='stylesheet' type='text/css' href='styles/properties.css'/ //-->
 	  <link href="styles.css" type="text/css" rel="stylesheet" /> 
 
-    <SCRIPT LANGUAGE="JavaScript">
-    if (document.layers) {
-      window.captureEvents(Event.KEYPRESS);
-      window.onkeypress = function (evt) {
-        alert(evt.type + ' with key ' + evt.which);
-      }
-    }
-
-    function keyHandler (evt) {
-      //alert(evt.type + ' with key ' + (evt.which || evt.charCode || evt.keyCode));
-	    handleKey(evt);
-    }
-
-    function initEventHandling() { 
-      if (!document.all && !document.layers)
-        for (var f = 0; f < frames.length; f++) {
-          frames[f].document.addEventListener('keydown', keyHandler, true);
-		      frames[f].document.addEventListener('keyup', function () {if(sendMessage == 'yes'){sendMessage = 'no';}}, true);
-	    	}
-    }
-    </SCRIPT>
-    <SCRIPT LANGUAGE="JScript">
-    function initEventHandling () {
-      for (var f = 0; f < frames.length; f++) {
-		    frames[f].document.attachEvent('onkeydown', ieFrameChecker);
-		    frames[f].document.attachEvent('onkeyup', function () {if(sendMessage == 'yes'){sendMessage = 'no';}});
-	    }
-    }
-    function ieFrameChecker () {
-      for (var f = 0; f < frames.length; f++) {
-        try {
-          var event = frames[f].event;
-          var type = frames[f].event.type;
-          event.frame = frames[f];
-          keyHandler(event);
-        }
-        catch (e) {
-      // ignore e as we are just looking for the 
-      // frame which has a valid event object
-        }
-      }
-    }
-
-    </SCRIPT>
-
     <script language='JavaScript'>
 		var postLoaded = 0;     // ==1 when the post iframe is loaded
 		var contentLoaded = 0;  // ==1 when the content iframe is loaded
@@ -61,7 +16,6 @@
 		var chatSoundPresent = 1; // Sound enabled in chat
 		var soundViaApplet = 0;
 		var isWindowInFocus = "blured";
-		var sendMessage = 'no';
 		var titleScrollHandler;
 		var titleTimeOut;
 		var privateR = '&[privateR];';
@@ -71,9 +25,10 @@
 		                         // this variable is used in checkOnlineStatus() to handle setTimeout("checkOnlineStatus()",5000);
 //---------FINISH------------------------These variables are used in chat reconnect chat task ------------------------------------								 
 
-		addEvent(window, 'focus', function() {isWindowInFocus="focused";clearInterval(titleTimeOut);}); //alert("focused");
+		addEvent(window, 'focus', function() {isWindowInFocus="focused";clearInterval(titleTimeOut);}); 
 		addEvent(window, 'blur', function() {isWindowInFocus="blured";}); //alert("blured");
-		function addEvent(obj, evType, fn){
+
+    function addEvent(obj, evType, fn){
  			if (obj.addEventListener){
 		    	obj.addEventListener(evType, fn, true);
 		    	return true;
@@ -84,28 +39,23 @@
 			    return false;
 			 }
 		} 
-		
-		//window.onfocus=function() {isWindowInFocus = "focused";}
-		//window.onblur = function() {isWindowInFocus = "blured"; } 
 
 		window.onerror=myErrorHandler
 		function myErrorHandler() {
 			return true;
 		}
 		
-		function closeChatWindow()
-		{
+		function closeChatWindow() {
 		  var moveToPriv = confirm('Would you like to leave a room but stay in rts? You will be moved to your private room.'); 
 		  var url = 'chatRoom?title=' + escape('Contact '+document.getElementById('realUserName').value) + '&#38;privateR=true&#38;referer=' + escape(document.getElementById('infoCP'+document.getElementById('aliasUserUri').value).value); 
 		  //alert(url);
 		  if(moveToPriv) {
 		    window.location = url;
-			//window.open(url, 'chat','menubar=no, status=0, location=no, toolbar=no, scrollbars=no, status=no, resizable=yes');
-	      } 
+	    } 
 		  else window.close();
 		}
 	
-		function checkOnlineStatus(){
+		function checkOnlineStatus() {
 		  try {
 		    if(thread.document.body.innerHTML.length == 0 || threadIframeContent == 0) 
 			  threadIframeContent = thread.document.body.innerHTML.length;
@@ -147,7 +97,6 @@
 	  var resizedWindow = 0;
 	  var timeStampsOn = 1;
       
-      
     // chat room was opened and time of how long this chat room is already opened is counted.
     // Time when the chat room was opened is loaded from servlet and the difference between current time and the loaded time is displayed.
     function chatTimerActive() { 
@@ -171,6 +120,7 @@
             +  "else document.formScrollLock.chatStart.value='loading time...';", 1000);
     }
 	  
+    // looks for URLs in the message
     function loadURL(stringWithUrl) {
 	    var httpPresent = false;
 	    firstEntrance = -1;
@@ -214,20 +164,26 @@
 	    }
 	  }	
 	
-	  function replaceAllRecursion(str, replStr, replWithStr) {
+	  // JS replaceAll function
+    function replaceAllRecursion(str, replStr, replWithStr) {
 	    if(str.indexOf(replStr)>=0) 
 	      return f(str.replace(replStr, replWithStr), replStr, replWithStr)
 	     else 
 	       return str;
   	}
 	
-	  // recursive replace all function
+	  // JS recursive replace all function
     function replaceAll(str, replStr, replWithStr) {
 	    while(str.indexOf(replStr)>=0)
 	      str = str.replace(replStr, replWithStr);
 	    return str;
 	  }  
 
+   /* "cleans" chat message content
+    * This function removes additional but not needed lines that were added by RTE (cuz of iframe in design mode specific and difference between FireFox and Internet Explorer)
+    * This function replaces <A href="www. with <A href="http://www.
+    * This function looks for images signs in the message and replaces these signes with html <img> that will be displayed instead of the image
+    */
     function cleanChatMessage(message) {
 		  message = replaceAll(message, "<P>", "");
 		  message = replaceAll(message, "</P>", "");
@@ -327,8 +283,6 @@
 			  ((kk == 10 || (e.ctrlKey && kk==13))&&(sendShortcut == 1))   ||
 			  (kk==13 && sendShortcut==2 && !e.ctrlKey && !e.altKey && !e.shiftKey) 
       ) {
-		    sendMessage = 'yes';
-
        /* FireFox doesn't show cursor in RTE's iframe if the iframe doesn't have anything inside it.
         * This is why <br> tag is added to the content to show cursor is there is nothing in RTE chat's iframe.
         * User's entered text is added in front of the <br> tag (before it) when the chat member starts typing anything.
@@ -635,8 +589,13 @@
                   <!-- RTE's iframe together with the send button image//-->
                   <table width="100%">
                     <tr>
-                      <td width="100%"><iframe style='background-color:#ffffff;border : 1px outset;' id='messageRTE' name='messageRTE' width="100%" height="50"></iframe></td>
-	                    <td><img onclick="sendMessageOnButton()" border="0" id="sendMesButton" src="icons/Chat-large.gif" alt="send message" title="send message" width="29" height="32"></td>
+                      <td width="100%">
+                        <iframe style='background-color:#ffffff;border : 1px outset;' id='messageRTE' name='messageRTE' width="100%" height="50">
+                        </iframe>
+                      </td>
+	                    <td>
+                        <img onclick="sendMessageOnButton()" border="0" id="sendMesButton" src="icons/Chat-large.gif" alt="send message" title="send message" width="29" height="32">
+                      </td>
                     </tr>
                   </table>
                   <input type="hidden" id="hdnmessageRTE" name="messageRTE" value="">
@@ -650,10 +609,14 @@
                     var rteString = "";
                     if(!document.all) rteString = "<BR>";
                     writeRichText('messageRTE', rteString, '100%', 0, true, false, false, true);
+                    // set iframe's margin to 0 on keydown or click
                     addEvent(frames['messageRTE'].document, 'click', function() {frames['messageRTE'].document.body.style.margin = 0;}, false);
+                    addEvent(frames['messageRTE'].document, 'keydown', function() {frames['messageRTE'].document.body.style.margin = 0;}, false);
+                    // add keydown handler to RTE's iframe. This is done for handling shortcuts to send the message and
+                    // for handling chat member's typing event (for checking member's writing status)
+                    addEvent(frames['messageRTE'].document, 'keydown', handleKey, false);
                   </script>
                   <input type="Hidden" name='message' id='message'> <!--the cleaned message will be loaded to this hidden object named 'message'//-->
-			  	        <!--textarea style="width:100%;height:99%; border:solid #808080 1px; margin: 0px" name='message' id='message' onKeyPress="handleKey(event)" onKeyUp="if(sendMessage == 'yes'){this.value = '';sendMessage = 'no';}"></textarea//-->
 			            <script language='JavaScript'>
                 	  document.postForm.message.value="";
                   </script>
