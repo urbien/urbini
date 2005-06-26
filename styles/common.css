@@ -1,3 +1,8 @@
 H1 {font-family: arial, Verdana, geneva; font-size: 17px; font-weight: bold;  color: #00309C}
 H2 {font-family: arial, Verdana, geneva; font-weight: normal; font-size: medium; color: #6699CC}
 H3 {font-family: arial, Verdana, geneva; font-size: 15px; font-weight: normal; color: #3366aa}
+
+img {
+  filter:alpha(opacity=60);
+  -moz-opacity:0.6;
+}

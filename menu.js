@@ -2069,8 +2069,10 @@ function initMenus() {
   for (var i=0; i<l; i++) {
     var m = menuIcons[i];
     if (m.id.indexOf('menuicon_') == 0) {
-      addEvent(m, 'click', menuOnClick, false);
+      addEvent(m, 'click',     menuOnClick, false);    
     }
+    addEvent(m, 'mouseover', slowhigh,    false);
+    addEvent(m, 'mouseout',  slowlow,     false);     
   }
 }
 
@@ -2779,4 +2781,60 @@ function checkAll(formName) {
         fields[i].checked = false;
     }
   }
+}
+
+//*********************************** Icon/Image effects **************************************
+/***********************************************
+* Gradual Highlight image script- © Dynamic Drive DHTML code library (www.dynamicdrive.com)
+* This notice MUST stay intact for legal use
+* Visit Dynamic Drive at http://www.dynamicdrive.com/ for full source code
+***********************************************/
+
+var baseopacity=60;
+var fadingImage;
+function slowhigh(e) {
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e)
+    return; 
+  var target = getTargetElement(e);
+  if (!target)
+    return;
+
+  browserdetect = target.filters? "ie" : typeof target.style.MozOpacity=="string"? "mozilla" : "";
+  instantset(target, baseopacity);
+  fadingImage = target;
+  highlighting = setInterval("gradualfade(fadingImage)", 50);
+}
+
+function slowlow(e) {
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e)
+    return; 
+  var target = getTargetElement(e);
+  if (!target)
+    return;
+  
+  cleartimer();
+  instantset(target, baseopacity);
+}
+
+function instantset(imgobj, degree) {
+  if (browserdetect=="mozilla")
+    imgobj.style.MozOpacity=degree/100;
+  else if (browserdetect=="ie")
+    imgobj.filters.alpha.opacity=degree;
+}
+
+function cleartimer(){
+  if (window.highlighting) 
+    clearInterval(highlighting);
+}
+
+function gradualfade(cur2){
+  if (browserdetect == "mozilla" && cur2.style.MozOpacity < 1)
+    cur2.style.MozOpacity = Math.min(parseFloat(cur2.style.MozOpacity)+0.1, 0.99);
+  else if (browserdetect == "ie" && cur2.filters.alpha.opacity <100 )
+    cur2.filters.alpha.opacity+=10;
+  else if (window.highlighting)
+    clearInterval(highlighting);
 }
