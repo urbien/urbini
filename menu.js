@@ -2637,17 +2637,19 @@ function setInnerHtml(div, text, frame) {
   else {
     div.innerHTML = '';
     // the size of the floating iframes must be set to 0. Size and position (window offsetLeft and offsetTop) will be set on textarea's onclick
-    document.getElementById('notes').style.width = 0;
-    document.getElementById('notes').style.height = 0;
-    document.getElementById('notes').style.left = 0;
-    document.getElementById('notes').style.top = 0;
+    var rteNotes = document.getElementById('notes');
+    rteNotes.style.width = 0;
+    rteNotes.style.height = 0;
+    rteNotes.style.left = 0;
+    rteNotes.style.top = 0;
     // the size of the floating iframes must be set to 0. Size and position (window offsetLeft and offsetTop) will be set on textarea's onclick
     // this happens if this is description RTE and this RTE is in the pane2 div (the same - it is on the readOnlyProperties.html page)
-    if(document.getElementById('description') && parent.window.location.toString().indexOf('readOnlyProperties.html')>0) {
-      document.getElementById('description').style.width = 0;
-      document.getElementById('description').style.height = 0;
-      document.getElementById('description').style.left = 0;
-      document.getElementById('description').style.top = 0;
+    var rteDescription = document.getElementById('description');
+    if(rteDescription && parent.window.location.toString().indexOf('readOnlyProperties.html')>0) {
+      rteDescription.style.width = 0;
+      rteDescription.style.height = 0;
+      rteDescription.style.left = 0;
+      rteDescription.style.top = 0;
     }
 
     //  hack to remove current div dimensions, otherwise div will not auto-adjust to the text inserted into it (hack needed at least in firefox 1.0)
