@@ -235,7 +235,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
   //View Source checkbox
 	if (!readOnly) rteHtmlStructure += '<br /><input type="checkbox" id="chkSrc' + rte + '" onclick="toggleHTMLSrc(\'' + rte + '\');" style="display:none" />';
 	
-  // ---- start ------- define a color palette table --------------
+  // ---- start ------- color palette table --------------
   rteHtmlStructure += '<table cellpadding="0" cellspacing="1" border="1" align="center" id="cp' + rte + '" style="visibility:hidden; display: none; position: absolute; width:130; height:80">';
 	rteHtmlStructure += '<tr>';
 	rteHtmlStructure += '	<td id="#FFFFFF" bgcolor="#FFFFFF" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
@@ -322,7 +322,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
 	rteHtmlStructure += '	<td id="#330033" bgcolor="#330033" width="10" height="10" onclick="self.parent.setColor(this.id);" onmouseout="this.style.border=\'1px solid gray\';" onmouseover="this.style.border=\'1px dotted white\';"><img width="1" height="1"></td>';
 	rteHtmlStructure += '</tr>';
   rteHtmlStructure += '</table>';
-  // ---- finish ------- define a color palette table --------------
+  // ---- finish ------- color palette table --------------
   
   divRTEcontainerObj.innerHTML = rteHtmlStructure; // write html structure to the div that will contain RTE.
   enableDesignMode(rte, html, readOnly, minimized, isChat); // Enable iframe design mode 
@@ -358,25 +358,26 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
 		var oRTE = frames[rte].document;
 		if (!readOnly) oRTE.designMode = "On";
 		
+   /* 
+    * In this section click and keyup events are added to the RTE iframe using addEvent function so that
+    * onclick RTE area must suit the entered text. click event makes the RTE input text area as big as the text inside,
+    * but not bigger than 330 px (The height is set to 330px in this case).
+    * keyup event is used to check the height of the RTE area and the text inside of it the  so that the area must be as big
+    * as the text inside but not more than 330px. This event is hadled when the used types anything inside the area.
+    */
 		if(!minimized && !isChat){ // this is not chat and RTE is not minimized
-                   // In this section click and keyup events are added to the RTE iframe using addEvent function so that
-                   // onclick RTE area must suit the entered text. click event makes the RTE input text area as big as the text inside,
-                   // but not bigger than 330 px (The height is set to 330px in this case).
-                   // keyup event is used to check the height of the RTE area and the text inside of it the  so that the area must be as big
-                   // as the text inside but not more than 330px. This event is hadled when the used types anything inside the area.
 		  addEvent(frames[rte].document, 'click', function() {
                                                 frames[rte].document.body.style.margin = 0; // set RTE margin to 0 so that there is no space between RTE's iframe left border and the entered text
                                                 document.getElementById('Buttons1_' + rte).style.display = 'inline'; // show RTE panel
                                                 if(frames[rte].document.body.scrollHeight >= 330) 
                                                   document.getElementById(rte).style.height = 330; 
                                                  else
-                                                   if(this.attachEvent)
-                                                     document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
-                                                    else 
-                                                      document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;
-                                                if(rte == 'notes') // if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that i smoved to the necessary place.
-                                                                   // this section is used to make the feeling that the floated iframe is integrated to the page (elseway when the iframe grows - it overlaps the page below it)
-                                                                   // that is why the RteIframe div becomes resized when the iframe is resized ( when it's height is changed )
+                                                   document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
+                                               /* if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that i smoved to the necessary place.
+                                                * this section is used to make the feeling that the floated iframe is integrated to the page (elseway when the iframe grows - it overlaps the page below it)
+                                                * that is why the RteIframe div becomes resized when the iframe is resized ( when it's height is changed )
+                                                */
+                                                if(rte == 'notes') 
                                                   document.getElementById('RteIframe').style.height = document.getElementById(rte).offsetHeight;
                                               }, false);
 		  addEvent(frames[rte].document, 'keyup', function() {
@@ -388,18 +389,17 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
                                                 if(frames[rte].document.body.scrollHeight >= 330) 
                                                   document.getElementById(rte).style.height = 330; 
                                                  else 
-                                                   if(this.attachEvent)
-                                                     document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
-                                                    else 
-                                                      document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+10;
+                                                   document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
                                                  if(rte == 'notes')// if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that i smoved to the necessary place.
                                                                    // this section is used to make the feeling that the floated iframe is integrated to the page (elseway when the iframe grows - it overlaps the page below it)
                                                                    // that is why the RteIframe div becomes resized when the iframe is resized ( when it's height is changed )
                                                    document.getElementById('RteIframe').style.height = document.getElementById(rte).offsetHeight;
                                               },false);
-      // Show rte with the text inside and set correct RTE sizes 
-      // THis must happen after 300 ms to let iframe initiated on the page.
-      // This is an IE specific. FF is fine.
+     /* 
+      * Show rte with the text inside and set correct RTE sizes 
+      * THis must happen after 300 ms to let iframe initiated on the page.
+      * This is an IE specific. FF is fine.
+      */
       html = replaceAllRecursion(html,"\n","<br>");
       html = replaceAllRecursion(html,"\r","");
       setTimeout("frames['"+rte+"'].document.body.innerHTML = '"+html+"';" +
@@ -426,69 +426,76 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
 			try {
         frames[rte].document.body.innerHTML = html;
 				var oRTE = document.getElementById(rte).contentWindow.document;
+        var rteDocId = document.getElementById(rte);
         frames[rte].focus();
 				if (isGecko && !readOnly) {
 					//attach a keyboard handler for gecko browsers to make keyboard shortcuts work
 					oRTE.addEventListener("keypress", kb_handler, true);
-					if(!minimized && !isChat) { // the RTE is not minimized (i.e. RTE panell is not displayed and RTE area width="40px" height="30px") and this is not chat RTE
-                          // In this section click and keyup events are added to the RTE iframe using addEvent function so that
-                          // onclick RTE area must suit the entered text. click event makes the RTE input text area as big as the text inside,
-                          // but not bigger than 330 px (The height is set to 330px in this case).
-                          // keyup event is used to check the height of the RTE area and the text inside of it the  so that the area must be as big
-                          // as the text inside but not more than 330px. This event is hadled when the used types anything inside the area.
+				 /* 
+          * RTE is not minimized (i.e. RTE panell is not displayed and RTE area width="40px" height="30px") and this is not chat RTE
+          * In this section click and keyup events are added to the RTE iframe using addEvent function so that
+          * onclick RTE area must suit the entered text. click event makes the RTE input text area as big as the text inside,
+          * but not bigger than 330 px (The height is set to 330px in this case).
+          * keyup event is used to check the height of the RTE area and the text inside of it the  so that the area must be as big
+          * as the text inside but not more than 330px. This event is hadled when the used types anything inside the area.
+          */
+          if(!minimized && !isChat) { 
 					  addEvent(frames[rte].document, 'click', function() {
                                                       frames[rte].document.body.style.margin = 0; // set RTE margin to 0 so that there is no space between RTE's iframe left border and the entered text
-                                                      if(frames[rte].document.body.scrollHeight >= 330) 
-                                                        document.getElementById(rte).style.height = 330; 
-                                                       else if(frames[rte].document.body.offsetHeight > 20)
-                                                         if(this.attachEvent)
-                                                           document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
-                                                          else 
-                                                            document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+20;
-                                                         else document.getElementById(rte).style.height = 40;   
+                                                      if(frames[rte].document.body.offsetHeight <= 20)
+                                                        rteDocId.style.height = 40;   
+                                                      if(frames[rte].document.body.offsetHeight > 20 && frames[rte].document.body.scrollHeight < 330)
+                                                        rteDocId.style.height = frames[rte].document.body.offsetHeight+20;
+                                                      if(frames[rte].document.body.scrollHeight >= 330)
+                                                        rteDocId.style.height = 330; 
+                                                      /*
+                                                       * if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that is moved to the necessary place.
+                                                       * this section is used to make the feeling that the floated iframe is integrated to the page (elseway when the iframe grows - it overlaps the page below it)
+                                                       * that is why the RteIframe div becomes resized when the iframe is resized ( when it's height is changed )
+                                                       * THere is another specification when 'description' RTE is used for writing comment but not description on the edit page f.e.
+                                                       * THat is why window.location is checked.
+                                                       */
                                                       if(rte == 'notes' || (rte == 'description' && window.location.toString().indexOf('readOnlyProperties.html')>0)) 
-                                                                   // if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that i smoved to the necessary place.
-                                                                   // this section is used to make the feeling that the floated iframe is integrated to the page (elseway when the iframe grows - it overlaps the page below it)
-                                                                   // that is why the RteIframe div becomes resized when the iframe is resized ( when it's height is changed )
-                                                                   // THere is another specification when 'description' RTE is used for writing comment but not description on the edit page f.e.
-                                                                   // THat is why window.location is checked.
-                                                        document.getElementById('RteIframe').style.height = document.getElementById(rte).offsetHeight; 
+                                                        document.getElementById('RteIframe').style.height = rteDocId.offsetHeight; 
                                                     }, false);
 					  addEvent(frames[rte].document, 'keyup', function() {
                                                       textChanged = true; 
+                                                      frames[rte].document.body.style.margin = 0; // set RTE margin to 0 so that there is no space between RTE's iframe left border and the entered text
+                                                      if(frames[rte].document.body.offsetHeight <= 20)
+                                                        rteDocId.style.height = 40;
+                                                      if(frames[rte].document.body.offsetHeight > 20 && frames[rte].document.body.offsetHeight < 330)
+                                                        rteDocId.style.height = frames[rte].document.body.offsetHeight+20;
+                                                      if(frames[rte].document.body.offsetHeight >= 330)
+                                                        rteDocId.style.height = 330; 
+                                                      /*
+                                                       * if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that i smoved to the necessary place.
+                                                       * this section is used to make the feeling that the floated iframe is integrated to the page (elseway when the iframe grows - it overlaps the page below it)
+                                                       * that is why the RteIframe div becomes resized when the iframe is resized ( when it's height is changed )
+                                                       * THere is another specification when 'description' RTE is used for writing comment but not description on the edit page f.e.
+                                                       * THat is why window.location is checked.
+                                                       */
+                                                      if(rte == 'notes' || (rte == 'description' && window.location.toString().indexOf('readOnlyProperties.html')>0))
+                                                        document.getElementById('RteIframe').style.height = rteDocId.offsetHeight;
+                                                      // textarea that is on the page and is changed when keyup event is handled. This textarea is used for back/forvard button to preserve RTE content
                                                       if(document.getElementById(rte+'content'))
                                                         document.getElementById(rte+'content').value = frames[rte].document.body.innerHTML;
-                                                      frames[rte].document.body.style.margin = 0; // set RTE margin to 0 so that there is no space between RTE's iframe left border and the entered text
-                                                      if(frames[rte].document.body.offsetHeight >= 330) 
-                                                        document.getElementById(rte).style.height = 330; 
-                                                       else if(frames[rte].document.body.offsetHeight > 20)
-                                                         if(this.attachEvent)
-                                                           document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+10;
-                                                          else 
-                                                            document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight+20;
-                                                        else document.getElementById(rte).style.height = 40;
-                                                      if(rte == 'notes' || (rte == 'description' && window.location.toString().indexOf('readOnlyProperties.html')>0))
-                                                                   // if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that i smoved to the necessary place.
-                                                                   // this section is used to make the feeling that the floated iframe is integrated to the page (elseway when the iframe grows - it overlaps the page below it)
-                                                                   // that is why the RteIframe div becomes resized when the iframe is resized ( when it's height is changed )
-                                                                   // THere is another specification when 'description' RTE is used for writing comment but not description on the edit page f.e.
-                                                                   // THat is why window.location is checked.
-                                                        document.getElementById('RteIframe').style.height = document.getElementById(rte).offsetHeight;
                                                     },false);
+           
             frames[rte].document.body.style.margin = 0;
             // set correct RTE size when RTE is initiated. The RTE size must be "suitable" to it's content.
-            document.getElementById(rte).style.height = 10; // hack - some height value must be set to make FF initiate all iframe variables like offsetHeight
-            if(frames[rte].document.body.offsetHeight >= 330) 
-              document.getElementById(rte).style.height = 330; 
-             else if(frames[rte].document.body.offsetHeight > 20)
-                    document.getElementById(rte).style.height = frames[rte].document.body.offsetHeight + 20;
-              else document.getElementById(rte).style.height = 40;
+            rteDocId.style.height = 10; // hack - some height value must be set to make FF initiate all iframe variables like offsetHeight
             if(html == '' || window.location.toString().indexOf('readOnlyProperties.html')>0) { // if no content could be loaded to RTE then the height must be 40px
-              document.getElementById(rte).style.height = 40;
-              document.getElementById(rte).style.width = 10;
+              rteDocId.style.height = 40;
+              rteDocId.style.width = 10;
               // FF needs any time to load correct Buttons1_ rte panel width value
               setTimeout("document.getElementById('"+rte+"').style.width = document.getElementById('Buttons1_"+rte+"').offsetWidth;",300); 
             }
+            if(frames[rte].document.body.offsetHeight <= 20)
+              rteDocId.style.height = 40;
+            if(frames[rte].document.body.offsetHeight > 20 && frames[rte].document.body.offsetHeight < 330)
+              rteDocId.style.height = frames[rte].document.body.offsetHeight + 20;
+            if(frames[rte].document.body.offsetHeight >= 330) 
+              rteDocId.style.height = 330; 
 					}
 				}
 			} catch (e) {
