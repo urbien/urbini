@@ -413,12 +413,26 @@
 		  thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("Your invitation to "+document.getElementById('sendPrivateMessagesToUserRealName').value+" was just sent.?alias1"));
 	  }
 	  
-	  function inviteToPrivateChatRoomIconClick() {
+	  /* 
+     * invitation to the private room.
+     * THe message "User Surname Name invites you to private chat room here"
+     * "here" is a link. This is a link with onclick handler. If the chat member accepts the invitation he clicks on
+     * "here" link and the message (notification) is sent to the invitation sender as an onclick event.
+     */
+    function inviteToPrivateChatRoomIconClick() {
 	    document.getElementById("nameUser").value = document.getElementById("sendPrivateMessagesToUser").value;
 		  var url = 'chatRoom?title=' + escape('Contact '+document.getElementById("realUserName").value) + '&#38;referer=' + escape(document.getElementById('infoCP'+document.getElementById("aliasUserUri").value).value);
 		  document.inviteUser.message.value = "!-invtUser <font color='#FFCC00'><strong>" + 
                                           parent.document.getElementById("realUserName").value + 
-                                          "</strong></font> invites you to private chat room <a onclick='try{document.getElementById(\"nameUser\").value = \"" + document.getElementById("aliasUserUri").value + "\";document.inviteUser.message.value = \"!-invt\"+document.getElementById(\"realUserName\").value+\" accepted your invitation to the one-on-one chat. Click <a href=\\\""+url+"&privateRoom=true\\\">here</a> to join.\";document.inviteUser.submit();}catch(er){}' target=_top href=" + url + "&privateRoom=true>here</a>"; 
+                                          "</strong></font>" +
+                                          " invites you to private chat room" +
+                                          "<a onclick=\"" +
+                                            "try {" +
+                                              "document.getElementById('nameUser').value = '" + document.getElementById("aliasUserUri").value + "';" +
+                                              "document.inviteUser.message.value = '!-invt'+document.getElementById('realUserName').value+ ' accepted your invitation to the one-on-one chat. Click <a href=\\'"+url+"&privateRoom=true\\'>" +
+                                                                                    "here</a> to join.';document.inviteUser.submit();" +
+                                            "}catch(er){}\" target=_top href=" + url + "&privateRoom=true>" +
+                                          " here</a>"; 
 		  document.inviteUser.submit();
 		  var dt = new Date();
 		  thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("Your invitation to "+document.getElementById('sendPrivateMessagesToUserRealName').value+" was just sent.?alias1"));
