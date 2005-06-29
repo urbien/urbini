@@ -20,7 +20,7 @@
     <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr>
       <td valign="top">
-        <file/>
+        <div id="corePageContent"> <file/> </div>
       </td>
       <include name="${type}_right.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
       <include name="${type}_details_right.jsp"/> <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->

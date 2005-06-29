@@ -2593,6 +2593,11 @@ function copyInnerHtml(frameId, divId) {
   frameLoaded[frameId] = false;
   var div = document.getElementById(divId);
   var frameBody = frames[frameId].document.body;
+  var frameDoc  = frames[frameId].document;
+  var frameBody = frameDoc.body;
+  var d = frameDoc.getElementById("corePageContent");
+  if (d)
+    frameBody = d;  
   // if there is div RteIframe with iframe in it than innerHTML of this div must be set to ""
   // because the copying of the iframe from the hidden iframe to the parent page causes problems with
   // FireFox back button - it becomes necessary to click 3 and more times to go to the previous page
@@ -2794,6 +2799,8 @@ function checkAll(formName) {
 
 var baseopacity=60;
 var fadingImage;
+var browserdetect;
+
 function slowhigh(e) {
   e = (e) ? e : ((window.event) ? window.event : null);
   if (!e)
