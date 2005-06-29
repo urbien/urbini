@@ -283,6 +283,11 @@
 			  ((kk == 10 || (e.ctrlKey && kk==13))&&(sendShortcut == 1))   ||
 			  (kk==13 && sendShortcut==2 && !e.ctrlKey && !e.altKey && !e.shiftKey) 
       ) {
+        if(e.type == "keyup") { // clear RTE content on keyUp on shortCut
+          frames.messageRTE.document.body.innerHTML = ""; 
+          if(!document.all) frames.messageRTE.document.body.innerHTML = '<br>';
+          return;
+        }
        /* FireFox doesn't show cursor in RTE's iframe if the iframe doesn't have anything inside it.
         * This is why <br> tag is added to the content to show cursor is there is nothing in RTE chat's iframe.
         * User's entered text is added in front of the <br> tag (before it) when the chat member starts typing anything.
@@ -293,7 +298,7 @@
         }
         updateRTE('messageRTE'); // updates RTE content. This means the content of the RTE's design mode iframe is loaded to document.postForm.messageRTE.value
 		    document.postForm.message.value = document.postForm.messageRTE.value;
-
+        
         // sends the message itself. postForm form is submitted. Immediate sending feature is also run here.
         sendMessageF();
       } 
@@ -470,8 +475,8 @@
   </head>
   <body onload="initFrames(); initEventHandling();checkOnlineStatus();" onclick="isWindowInFocus='focused';clearInterval(titleTimeOut);" onfocus="isWindowInFocus='focused';clearInterval(titleTimeOut);" onblur="isWindowInFocus='blured';" style='cursor : pointer;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#EDEDED"> <!--onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' //--> 
     <script language="JavaScript">
-		  window.resizeTo(Math.floor(2*screen.availWidth/3),Math.floor(screen.availHeight*2/3));
-		  window.moveTo(Math.floor(screen.availWidth/6),Math.floor((screen.availHeight)/6));
+		  //window.resizeTo(Math.floor(screen.availWidth*2/3),Math.floor(screen.availHeight*2/3));
+		  //window.moveTo(Math.floor(screen.availWidth/6),Math.floor((screen.availHeight)/6));
 	  </script>
 	  <input type='hidden' name='realUserName' id='realUserName' value="&[realUserName];">
 	  <input type='hidden' name='aliasUserUri' id='aliasUserUri' value="&[aliasUserUri];">
@@ -629,6 +634,7 @@
                     // add keydown handler to RTE's iframe. This is done for handling shortcuts to send the message and
                     // for handling chat member's typing event (for checking member's writing status)
                     addEvent(frames['messageRTE'].document, 'keydown', handleKey, false);
+                    addEvent(frames['messageRTE'].document, 'keyup', handleKey, false); // clear RTE content if sending on Enter. Elseway additional ampty first line is left.
                   </script>
                   <input type="Hidden" name='message' id='message'> <!--the cleaned message will be loaded to this hidden object named 'message'//-->
 			            <script language='JavaScript'>
