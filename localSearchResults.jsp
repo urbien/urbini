@@ -23,6 +23,7 @@
     <print image="images/printerIcon.gif"/>
     <saveInExcel allow="owner" image="images/excel.gif"/>
     <pdaToPc image="images/pda.gif"/>
+    <listGrid/>
     <showHideWindows/>
     </td>
     <td valign="middle" align="right" width="100">
