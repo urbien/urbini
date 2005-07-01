@@ -155,6 +155,7 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
 		 if( !isChat ) {
        rteHtmlStructure += '			<select style="width:75px;vertical-align : top;" id="formatblock_' + rte + '" onchange="Select(\'' + rte + '\', this.id);">';
 		   rteHtmlStructure += '				<option value="">[Style]</option>';
+       rteHtmlStructure += '				<option value="p">Plain text</option>';
 		   rteHtmlStructure += '				<option value="<p>">Paragraph</option>';
 		   rteHtmlStructure += '				<option value="<h1>">Heading 1 <h1></option>';
 		   rteHtmlStructure += '				<option value="<h2>">Heading 2 <h2></option>';
@@ -901,8 +902,10 @@ function kb_handler(evt) {
 		};
 
 		if (cmd) {
-			FormatText(rte, cmd, true);
-			//evt.target.ownerDocument.execCommand(cmd, false, true);
+			if(document.all)
+        FormatText(rte, cmd, true);
+			 else
+         evt.target.ownerDocument.execCommand(cmd, false, true);
 			// stop the event bubble
 			evt.preventDefault();
 			evt.stopPropagation();
