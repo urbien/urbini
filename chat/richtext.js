@@ -481,7 +481,10 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
                                                       if(document.getElementById(rte+'content'))
                                                         document.getElementById(rte+'content').value = frames[rte].document.body.innerHTML;
                                                     },false);
-           
+            // add blank image and than remove it form the content. This is done to "unlock" FireFox. FF locks deletition before any text is entered. This way it is "unlocked".
+            frames[rte].document.execCommand('InsertImage',false,"http://" + document.domain + "/hudsonfog/images/whitepixel.gif"); 
+            frames[rte].document.body.innerHTML = frames[rte].document.body.innerHTML.replace('<img src="http://' + document.domain + '/hudsonfog/images/whitepixel.gif">','');
+            
             frames[rte].document.body.style.margin = 0;
             // set correct RTE size when RTE is initiated. The RTE size must be "suitable" to it's content.
             rteDocId.style.height = 10; // hack - some height value must be set to make FF initiate all iframe variables like offsetHeight
