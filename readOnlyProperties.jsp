@@ -1,6 +1,6 @@
 <div>
 <!-- THe next iframe is the floating iframe for RTE for writing comments//-->
-<iframe style='border : 0px outset;position:absolute;background-color:#ffffff' id='description' name='description' width='0' height='0'></iframe>
+<iframe style='border : 1px outset;position:absolute;background-color:#ffffff;display:none;' id='description' name='description' width='0' height='0'></iframe>
 <center>
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
