@@ -391,7 +391,7 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
                                                   document.getElementById(rte).style.height = 330; 
                                                  else 
                                                    document.getElementById(rte).style.height = frames[rte].document.body.scrollHeight+20;
-                                                 if(rte == 'notes')// if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that i smoved to the necessary place.
+                                                 if(rte == 'notes'  || (rte == 'description' && window.location.toString().indexOf('readOnlyProperties.html')>0))// if rte is 'notes' RTE on the page then RTE's iframe is a floating iframe that i smoved to the necessary place.
                                                                    // this section is used to make the feeling that the floated iframe is integrated to the page (elseway when the iframe grows - it overlaps the page below it)
                                                                    // that is why the RteIframe div becomes resized when the iframe is resized ( when it's height is changed )
                                                    document.getElementById('RteIframe').style.height = document.getElementById(rte).offsetHeight;
