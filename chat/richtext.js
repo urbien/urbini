@@ -353,7 +353,13 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
 	frameHtml += html + "\n";
 	frameHtml += "</body>\n";
 	frameHtml += "</html>";
-
+  addEvent(window,'resize',function() {
+                             if(document.getElementById('Buttons1_' + rte) && (rte == 'notes'  || (rte == 'description' && window.location.toString().indexOf('readOnlyProperties.html')>0))){ //this is floating RTE on the page (inner make resource)
+                               document.getElementById(rte).style.left = findPosX(document.getElementById('Buttons1_' + rte));
+                               document.getElementById(rte).style.top  = findPosY(document.getElementById('Buttons1_' + rte)) + document.getElementById('Buttons1_' + rte).offsetHeight;
+                               document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).offsetWidth;
+                             }
+                           },false);
 	document.getElementById('Buttons1_' + rte).style.display = 'inline'; 
   if (document.all) { // Internet Explorer (IE) case
 		var oRTE = frames[rte].document;
