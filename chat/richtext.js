@@ -353,6 +353,7 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
 	frameHtml += html + "\n";
 	frameHtml += "</body>\n";
 	frameHtml += "</html>";
+  // "floating RTEs" in innerMakeResourses must change their position when the window is resized.
   addEvent(window,'resize',function() {
                              if(document.getElementById('Buttons1_' + rte) && (rte == 'notes'  || (rte == 'description' && window.location.toString().indexOf('readOnlyProperties.html')>0))){ //this is floating RTE on the page (inner make resource)
                                document.getElementById(rte).style.left = findPosX(document.getElementById('Buttons1_' + rte));
