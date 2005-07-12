@@ -2,10 +2,10 @@
 
 function openChatWindow(title, resUrl) {
   if (window.screen) {
-    w = Math.floor(screen.availWidth*3/5);
-    h = Math.floor(screen.availHeight*3/5);
-    cw = Math.floor(screen.availWidth/6);
-    ch = Math.floor(screen.availHeight/6);
+    w = Math.floor(screen.availWidth/2)+50;
+    h = Math.floor(screen.availHeight/2);
+    cw = Math.floor(screen.availWidth/4);
+    ch = Math.floor(screen.availHeight/4);
   }
   var url = 'chatRoom?title=' + title + '&referer=' + resUrl;
   window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=0, location=no, toolbar=no, scrollbars=no, status=no, resizable=yes');
