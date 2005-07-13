@@ -1882,10 +1882,13 @@ function getFormNode(elem) {
 
 function getTrNode(elem) {
   var e;
-
-  if (elem.tagName.toUpperCase() == 'TR')
+  
+  var elem_ = elem;
+  if (elem.length > 1) 
+    elem_ = elem[0];
+  if (elem_.tagName.toUpperCase() == 'TR')
     return elem;
-  e = elem.parentNode;
+  e = elem_.parentNode;
   if (e)
     return getTrNode(e);
   else
