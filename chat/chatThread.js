@@ -210,17 +210,17 @@ var timeDelta = 0; // difference between server and client time
 		    usernameString += messageS + '</span><br>';
 		    bodyRef.innerHTML += usernameString;
       } else {
-		      if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured') window.focus();
-    	     else if (notificationMode==1 && parent.isWindowInFocus=='blured') alert('New mes came to your chat room');
-    	      else 
-              if(notificationMode==2 && parent.isWindowInFocus=='blured') {
-				        var mesStr = "";
-				        for (i = 0; i < messageArray.length; i++) 
-                  mesStr += messageArray[i];
-				        newwindow=window.open('','newMes','height=100,width=350,resizable=yes'); 
-				        newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='new mes came to the chat room'>" + messageStringTimeN + messageString + " </span>" + mesStr + " <img src='images/show.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
-			        }
-		  
+          if(userAlias.substring(5,userAlias.length) != parent.document.getElementById('aliasUser').value){ // no notification will be done to the sender
+		        if (notificationMode==0 && window.focus && parent.isWindowInFocus=='blured') window.focus();
+    	        else if (notificationMode==1 && parent.isWindowInFocus=='blured') alert('New mes came to your chat room');
+    	          else if(notificationMode==2 && parent.isWindowInFocus=='blured') {
+				               var mesStr = "";
+				               for (i = 0; i < messageArray.length; i++) 
+                       mesStr += messageArray[i];
+				               newwindow=window.open('','newMes','height=100,width=350,resizable=yes'); 
+				               newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='new mes came to the chat room'>" + messageStringTimeN + messageString + " </span>" + mesStr + " <img src='images/show.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
+			          }
+		      }
 		      var messageFull = "";	
 		      for (i = 0; i < messageArray.length; i++)
 		        messageFull += messageArray[i] + "<br>";
