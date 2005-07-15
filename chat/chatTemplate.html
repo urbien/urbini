@@ -29,10 +29,10 @@
 		addEvent(window, 'focus', function() {isWindowInFocus="focused";clearInterval(titleTimeOut);}); 
 		addEvent(window, 'blur', function() {isWindowInFocus="blured";}); 
 
-		window.onerror=myErrorHandler;
+		//window.onerror=myErrorHandler;
     </script>   
   </head>
-  <body onload="initFrames(); initEventHandling();checkOnlineStatus();" onclick="isWindowInFocus='focused';clearInterval(titleTimeOut);" onfocus="isWindowInFocus='focused';clearInterval(titleTimeOut);" onblur="isWindowInFocus='blured';" style='cursor : pointer;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#EDEDED"> <!--onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' //--> 
+  <body onload="initFrames(); checkOnlineStatus();" onclick="isWindowInFocus='focused';clearInterval(titleTimeOut);" onfocus="isWindowInFocus='focused';clearInterval(titleTimeOut);" onblur="isWindowInFocus='blured';" style='cursor : pointer;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#EDEDED"> <!--onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' //--> 
     <script language="JavaScript">
 		  //window.resizeTo(Math.floor(screen.availWidth*2/3),Math.floor(screen.availHeight*2/3));
 		  //window.moveTo(Math.floor(screen.availWidth/6),Math.floor((screen.availHeight)/6));
@@ -122,6 +122,9 @@
                           </td>
 		          				    <td>
 		          				      <img src="icons/hide.gif" width="16" height="16" align="top" title="exit room" onclick="closeChatWindow()" style="cursor:pointer">
+                          </td>
+                          <td>
+                            <img src="/images/icon_mini_profile_online.gif" width="16" height="16" align="top" title="Status" onclick="showAwailableOnlineModes(this)" onmouseout="onlineStatusIconMouseOut()" style="cursor:pointer">
                           </td>
                         </tr>
 		          				  <script language='JavaScript'>
@@ -217,5 +220,25 @@
         postDiv.src='chatRoom?frame=post&room=&[encodedRoom];'
       }
     </script>
+    
+    <!-- online status table //-->
+    <table cellpadding="1" border="1" rules="groups" cellspacing="0" onmouseover="clearTimeoutForStatusMenu()" onmouseout="statusMenuMouseOut();" style="cursor : text;display:none;position:absolute;background-color:#ffffff;border : 1px solid Silver;" id="dvOnlineStatus">
+      <tr>
+	      <td bgcolor="#D4D4D4"><img src="/images/icon_mini_profile_online.gif" width="16" height="16" align="top" title="Online" onclick="changeOnlineStatus('online');onlineStatusIconMouseOut();" style="cursor:pointer"></td>
+      	<td>online</td>
+      </tr>
+      <tr>
+      	<td bgcolor="#D4D4D4"><img src="/images/icon_mini_profile_away.gif" width="16" height="16" align="top" title="away" onclick="changeOnlineStatus('away');onlineStatusIconMouseOut();" style="cursor:pointer"></td>
+      	<td>away</td>
+      </tr>
+      <tr>
+      	<td bgcolor="#D4D4D4"><img src="/images/icon_mini_profile_DND.gif" width="16" height="16" align="top" title="DND" onclick="changeOnlineStatus('DND');onlineStatusIconMouseOut();" style="cursor:pointer"></td>
+      	<td>dnd</td>
+      </tr>
+      <tr>
+      	<td bgcolor="#D4D4D4"><img src="/images/icon_mini_profile_na.gif" width="16" height="16" align="top" title="NA" onclick="changeOnlineStatus('na');onlineStatusIconMouseOut();" style="cursor:pointer"></td>
+      	<td>na</td>
+      </tr>
+    </table>
 </body>
 </html>
