@@ -5,41 +5,42 @@ var titleTimeOut;
 var windowHasFocus='true';
 var timeDelta = 0; // difference between server and client time
 
-    function isScrollBarActivated()
-    {
-	   if(parent.document.getElementById('chatContents').scrollHeight < parent.document.getElementById('chatContents').clientHeight)
-          return 0;
+    function isScrollBarActivated() {
+	    if(parent.document.getElementById('chatContents').scrollHeight < parent.document.getElementById('chatContents').clientHeight)
+        return 0;
        else return 1;
     }
 
-    function isScrollBarAtBottom()
-    {
-       var obj = parent.document.getElementById('chatContents'); 
-	   var a = obj.scrollTop;  obj.scrollTop = obj.scrollTop + 2; 
-	   if(Math.abs(a - obj.scrollTop)<=1)
-	     {return 1;}
-	    else 
-		{
-		   obj.scrollTop = obj.scrollTop - 2; 
-		   return 0;
-		}
-	   return 1;
+    function isScrollBarAtBottom() {
+      var obj = parent.document.getElementById('chatContents'); 
+	    var a = obj.scrollTop;  obj.scrollTop = obj.scrollTop + 2; 
+	    if(Math.abs(a - obj.scrollTop)<=1)
+	      return 1;
+	     else {
+		     obj.scrollTop = obj.scrollTop - 2; 
+		     return 0;
+		   }
+	    return 1;
     }
-    function funSetWritingStatus(idElementWritingStatus)
-    {
-       if(parent.document.getElementById(idElementWritingStatus)!=null)parent.document.getElementById(idElementWritingStatus).src = 'icons/chatWritingStatus.gif';
-       timeId = setInterval("if(parent.document.getElementById('" + idElementWritingStatus + "')!=null)parent.document.getElementById('"+idElementWritingStatus+"').src = 'icons/chatWritingStatus.gif'",1000);
-       setTimeout("if(parent.document.getElementById('" + idElementWritingStatus + "')!=null) parent.document.getElementById('"+idElementWritingStatus+"').src = 'icons/chatNotWritingStatus.gif';clearInterval("+timeId+");",5001); 
+    
+    function funSetWritingStatus(idElementWritingStatus) {
+      if(parent.document.getElementById(idElementWritingStatus)!=null)
+        parent.document.getElementById(idElementWritingStatus).src = 'icons/chatWritingStatus.gif';
+      timeId = setInterval("if(parent.document.getElementById('" + idElementWritingStatus + "')!=null)parent.document.getElementById('"+idElementWritingStatus+"').src = 'icons/chatWritingStatus.gif'",1000);
+      setTimeout("if(parent.document.getElementById('" + idElementWritingStatus + "')!=null) parent.document.getElementById('"+idElementWritingStatus+"').src = 'icons/chatNotWritingStatus.gif';clearInterval("+timeId+");",5001); 
     }
 
-    function scrollTitle()
-    { 
-   	 	parent.document.title=windowTitle.substring(pos,windowTitle.length)+windowTitle.substring(0,pos);
-        pos=(pos+1)%windowTitle.length;
+    function scrollTitle() { 
+   	 	parent.document.title = windowTitle.substring(pos,windowTitle.length)+windowTitle.substring(0,pos);
+        pos = (pos + 1) % windowTitle.length;
     } 
 	   
     // ------- START ------- INSERT MESSAGES -------------------------------------
     function insertMessages(gmtOffset,tm,userColor,userId, messageArray,notificationMode) {   
+      if(messageArray[0].indexOf('!-statusUser') == 0) { // if this is a message that changes chat member status than ...
+        parent.setOnlineStatus(userId, messageArray[0].substring(12,messageArray[0].length-6)); // function in chatJS.js that changes icon near the chat member according to the status (away, online, DND, na)
+        return;
+      }
 	    if(messageArray[messageArray.length-2] == "") {
 		    messageArray[messageArray.length-2] = messageArray[messageArray.length-1];
 		    messageArray.length = messageArray.length - 1;
@@ -88,13 +89,6 @@ var timeDelta = 0; // difference between server and client time
         return;
       }
       //--------------------------  FINISH -------------  INVITATION MESSAGES ------------------------      
-		/*
-		if(messageArray[0].indexOf('!-forwardToPrivRm')==0) 
-		{
-          //....
-          return;
-        }
-		*/
 
       // message that says the chat creation time
       // correct time is loaded and function breaks.
@@ -260,14 +254,14 @@ var timeDelta = 0; // difference between server and client time
     }
     
 	  function setUserAlias(alias) {
-      parent.document.postForm.aliasUser.value = alias; parent.document.postFormWritingStatus.aliasUser.value = alias;
+      parent.document.postForm.aliasUser.value = alias; 
+      parent.document.postFormWritingStatus.aliasUser.value = alias;
     }
 	
-	  function addMessageText(stringWithUrl,doc,userAlias, contactURI) {
-      // stringWithUrl - text to insert 
-      // userAlias - members name - "Nikolay Skripnik" f.e.
-      // contactURI - members uri
-      
+	  function addMessageText(stringWithUrl,  // stringWithUrl - text to insert 
+                            doc,            // userAlias - members name - "Nikolay Skripnik" f.e.
+                            userAlias, 
+                            contactURI) {   // contactURI - members uri
       var bodyRef = doc.getElementById('body1');       // bodyRef - the place where the text should be inserted to
       var color = '#ffffff';
 		  var numberId = 0;
@@ -275,124 +269,227 @@ var timeDelta = 0; // difference between server and client time
 		    color = doc.getElementById(contactURI+'['+numberId+']').style.backgroundColor;
 		  while(doc.getElementById(contactURI+'['+numberId+']')) 
         numberId++;
-		  var inHTML = "<span class='xs'><font style='background-color:" + color + "' id=\"" + contactURI+"["+numberId+"]" + "\">" + stringWithUrl + "</font></span>";
+		  var inHTML = "<span class='xs'>";
+      inHTML +=    "<font style='background-color:" + color + "' id=\"" + contactURI+"["+numberId+"]" + "\">";
+      inHTML +=     stringWithUrl;
+      inHTML +=    "</font>";
+      inHTML +=    "</span>";
 		  bodyRef.innerHTML += inHTML;
 	  }
 	
-	  function ss_addEvent(elm, evType, useCapture, contactURI,nameOfTheInsertedFont,realName,color,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay) { 
-		  if (elm.addEventListener){ 
-		    elm.addEventListener(evType, function () {window.parent.showOpsMenu(contactURI, realName, color,nameOfTheInsertedFont,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay);}, useCapture); 
-		  } else 
-		      if (elm.attachEvent) { 
-			      var r = elm.attachEvent("on"+evType, function () {window.parent.showOpsMenu(contactURI, realName, color,nameOfTheInsertedFont,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay);} ); 
-	 	      } 
-	  }
+	function ss_addEvent(elm, 
+                       evType, 
+                       useCapture, 
+                       contactURI,
+                       nameOfTheInsertedFont,
+                       realName,color,
+                       userInfoDisplay,
+                       sendPrivMessageDisplay,
+                       inviteToPrivChatDisplay,
+                       inviteToChatRoomDisplay,
+                       highlightDisplay) { 
+    if (elm.addEventListener){ 
+		  elm.addEventListener(evType, function () {
+                                     window.parent.showOpsMenu(contactURI, 
+                                                               realName, 
+                                                               color,
+                                                               nameOfTheInsertedFont,
+                                                               userInfoDisplay,
+                                                               sendPrivMessageDisplay,
+                                                               inviteToPrivChatDisplay,
+                                                               inviteToChatRoomDisplay,
+                                                               highlightDisplay);
+                                   }, useCapture); 
+		} else if (elm.attachEvent) { 
+			    var r = elm.attachEvent("on"+evType, function () {
+                                                 window.parent.showOpsMenu(contactURI, 
+                                                                           realName, 
+                                                                           color,
+                                                                           nameOfTheInsertedFont,
+                                                                           userInfoDisplay,
+                                                                           sendPrivMessageDisplay,
+                                                                           inviteToPrivChatDisplay,
+                                                                           inviteToChatRoomDisplay,
+                                                                           highlightDisplay);
+                                               } ); 
+	 	    } 
+	}
 	
-	function memberIcon_addEventMOver(elm,evType,useCapture,time)
-	{
+	function memberIcon_addEventMOver(elm,
+                                    evType,
+                                    useCapture,
+                                    time) {
 		if (elm.addEventListener){ 
-		  elm.addEventListener(evType, function () {var d = new Date(time); var d1 = new Date(); var dif=d1-d;d1.setHours(0);d1.setMinutes(0);d1.setSeconds(0);d1.setMilliseconds(dif);	elm.title=elm.title.substring(0,elm.title.search(' for'))+' for ' +d1.getHours()+':'+d1.getMinutes()+':'+d1.getSeconds()}, useCapture);
+		  elm.addEventListener(evType, function () {
+                                     var d = new Date(time); 
+                                     var d1 = new Date(); 
+                                     var dif = d1-d;
+                                     d1.setHours(0);
+                                     d1.setMinutes(0);
+                                     d1.setSeconds(0);
+                                     d1.setMilliseconds(dif);	
+                                     elm.title = elm.title.substring(0,elm.title.search(' for'))+' for ' +d1.getHours()+':'+d1.getMinutes()+':'+d1.getSeconds()
+                                   }, useCapture);
 		} else if (elm.attachEvent){ 
-			var r = elm.attachEvent("on"+evType, function () {var d = new Date(time); var d1 = new Date(); var dif=d1-d;d1.setHours(0);d1.setMinutes(0);d1.setSeconds(0);d1.setMilliseconds(dif);	elm.title=elm.title.substring(0,elm.title.search(' for'))+' for ' +d1.getHours()+':'+d1.getMinutes()+':'+d1.getSeconds();}); 
-	 	} 
+			  var r = elm.attachEvent("on"+evType, function () {
+                                               var d = new Date(time);
+                                               var d1 = new Date(); 
+                                               var dif = d1-d;
+                                               d1.setHours(0);
+                                               d1.setMinutes(0);
+                                               d1.setSeconds(0);
+                                               d1.setMilliseconds(dif);	
+                                               elm.title=elm.title.substring(0,elm.title.search(' for'))+' for ' +d1.getHours()+':'+d1.getMinutes()+':'+d1.getSeconds();
+                                             }); 
+	 	  } 
 	}
     
-	function insertMembersForInvitation(membersArray,timeMembersArray,nameRoomUserIn,linkToResourcePage, aliasesArray, linkToContactPageArray) 
-	{
+	// LIST OF MEMBERS IN OTHER CHAT ROOMS, THAT CAN BE INVITEd
+  function insertMembersForInvitation(membersArray,
+                                      timeMembersArray,
+                                      nameRoomUserIn,
+                                      linkToResourcePage, 
+                                      aliasesArray, 
+                                      linkToContactPageArray, 
+                                      membersOnlineStatusArray) {
 		var showPanel = 0;
 		var bodyRef = parent.document.getElementById('divUsersInvite');
 		
-		for(i=0;i<membersArray.length;i++)if(parent.document.getElementById(aliasesArray[i])==null){showPanel=1;break;}
-		if(showPanel==0)return;
-	    
-		//if(membersArray.length>1)
-		    bodyRef.innerHTML += "<br><font color=\"#33A3D2\"><span class=xs><b>Other Chats:</b></span><br>"
-		for(i=0;i<membersArray.length;i++)
-		{	
-		   if(!parent.document.getElementById(aliasesArray[i]))
-		   {    
-		       var onlineSince = new Date(parseInt(timeMembersArray[i]));
-			   bodyRef.innerHTML += "<input type='hidden' id='infoCP"+ aliasesArray[i] +"' value='"+ linkToContactPageArray[i] +"'><input type='hidden' id='userRoomIn"+membersArray[i]+"' value='"+nameRoomUserIn[i]+"'><input type='hidden' id='info"+membersArray[i]+"' value='"+timeMembersArray[i]+"'><img id='inv"+membersArray[i]+"' onMouseOver='var d = new Date(parseInt("+timeMembersArray[i]+"));var d1 = new Date();var dif=d1-d;d1.setHours(0);d1.setMinutes(0);d1.setSeconds(0);d1.setMilliseconds(dif);this.title=this.title.substring(0,this.title.search(\" for\"))+\" for \" +d1.getHours()+\":\"+d1.getMinutes()+\":\"+d1.getSeconds();' title='"+parent.setTitleToUserIcon(membersArray[i],timeMembersArray[i],nameRoomUserIn[i])+" for' src='images/icon_mini_profile.gif' width='16' height='16'><span class=xs><font onMouseOver='var d = new Date(parseInt("+timeMembersArray[i]+"));var d1 = new Date();var dif=d1-d;d1.setHours(0);d1.setMinutes(0);d1.setSeconds(0);d1.setMilliseconds(dif);this.title=this.title.substring(0,this.title.search(\" for\"))+\" for \" +d1.getHours()+\":\"+d1.getMinutes()+\":\"+d1.getSeconds();' style='cursor:pointer' title='"+parent.setTitleToUserIcon(membersArray[i],timeMembersArray[i],nameRoomUserIn[i])+" for' onclick='window.parent.showOpsMenu(\""+aliasesArray[i]+"\",\"" + membersArray[i] + "\", \"\",\"" + aliasesArray[i] + "\",\"inline\",\"inline\",\"inline\",\"inline\",\"none\",\"inline\",\"inline\");'>" + membersArray[i] + "</font></span><input id='linkToResource"+membersArray[i]+"' onclick='alert(this.id)' type='hidden' value="+linkToResourcePage[i]+"><br>";
-               if(parent.document.getElementById('userOpsPanelUserName').innerHTML==membersArray[i])
-                   window.parent.showOpsMenu(aliasesArray[i],membersArray[i], '#000000',membersArray[i],'inline','inline','inline','inline','none','inline','inline');
-           }
-		};
-	        bodyRef.innerHTML += "<br><br><br><br><!--input type='hidden' value='' name='message' id='message'//--><!--input type='hidden' name='nameUser' id='nameUser' value=''//--></form>"
-	   		if(!(document.getElementById('inv'+parent.document.getElementById('userOpsPanelUserName')) || document.getElementById('c'+parent.document.getElementById('userOpsPanelUserName'))) )parent.hideOpsMenu();
+		for(i=0; i<membersArray.length; i++) {
+      if(parent.document.getElementById(aliasesArray[i])==null){
+        showPanel=1;
+        break;
+      }
+    }
+		if(showPanel==0)
+      return;
+	  
+    var inHTML = "";  
+		inHTML += "<br>";
+    inHTML += "<font color=\"#33A3D2\">";
+    inHTML += "<span class=xs>";
+    inHTML += "<b>Other Chats:</b>";
+    inHTML += "</span></font><br>";
+		for(i=0; i<membersArray.length; i++) {	
+		  if( !parent.document.getElementById(aliasesArray[i]) ) {
+         if(membersOnlineStatusArray[i] == 'null') 
+           membersOnlineStatusArray[i] = 'online';
+		     var onlineSince = new Date(parseInt(timeMembersArray[i]));
+			   inHTML += "<input type='hidden' id='infoCP"+ aliasesArray[i] +"' value='"+ linkToContactPageArray[i] +"'>";
+         inHTML += "<input type='hidden' id='userRoomIn"+membersArray[i]+"' value='"+nameRoomUserIn[i]+"'>";
+         inHTML += "<input type='hidden' id='info"+membersArray[i]+"' value='"+timeMembersArray[i]+"'>";
+         // START -- icon. onMouseOver event is attached to this icon. Information about chat user is deisplayed when mouse over
+         inHTML += "<img id='infoCP"+ aliasesArray[i] +"icon' onMouseOver='";
+         inHTML +=   "var d = new Date(parseInt("+timeMembersArray[i]+"));";
+         inHTML +=   "var d1 = new Date();";
+         inHTML +=   "var dif = d1-d;";
+         inHTML +=   "d1.setHours(0);";
+         inHTML +=   "d1.setMinutes(0);";
+         inHTML +=   "d1.setSeconds(0);";
+         inHTML +=   "d1.setMilliseconds(dif);";
+         inHTML +=   "this.title = this.title.substring(";
+         inHTML +=       "0,";
+         inHTML +=       "this.title.search(\" for\")";
+         inHTML +=     ")";
+         inHTML +=     "+\" for \" + d1.getHours() + \":\" + d1.getMinutes() + \":\" + d1.getSeconds();";
+         inHTML += "'";
+         inHTML += " title='"+parent.setTitleToUserIcon(membersArray[i],timeMembersArray[i],nameRoomUserIn[i])+" for'";
+         inHTML += " src='images/icon_mini_profile_" + membersOnlineStatusArray[i] + ".gif'";
+         inHTML += " width='16'";
+         inHTML += " height='16'";
+         inHTML += ">";
+         // FINISH -- icon. onMouseOver event is attached to this icon. Information about chat user is deisplayed when mouse over
+         inHTML += "<span class=xs>";
+
+         inHTML += "<font onMouseOver='";
+         inHTML +=   "var d = new Date(parseInt("+timeMembersArray[i]+"));";
+         inHTML +=   "var d1 = new Date();";
+         inHTML +=   "var dif = d1 - d;";
+         inHTML +=   "d1.setHours(0);";
+         inHTML +=   "d1.setMinutes(0);";
+         inHTML +=   "d1.setSeconds(0);";
+         inHTML +=   "d1.setMilliseconds(dif);";
+         inHTML +=   "this.title = this.title.substring(0,this.title.search(\" for\")) + \" for \" + d1.getHours() + \":\" + d1.getMinutes() + \":\" + d1.getSeconds();' ";
+         inHTML += "style='cursor:pointer' ";
+         inHTML += "title='"+parent.setTitleToUserIcon(membersArray[i],timeMembersArray[i],nameRoomUserIn[i])+" for' ";
+         inHTML += "onclick='window.parent.showOpsMenu(\"" + aliasesArray[i] + "\",\"" + membersArray[i] + "\", \"\",\"" + aliasesArray[i] + "\",\"inline\",\"inline\",\"inline\",\"inline\",\"none\",\"inline\",\"inline\");'";
+         inHTML += ">";
+         inHTML += membersArray[i];
+         inHTML += "</font>";
+
+         inHTML += "</span>";
+         inHTML += "<input id='linkToResource" + membersArray[i] + "' onclick='alert(this.id)' type='hidden' value=" + linkToResourcePage[i] + ">";
+         inHTML += "<br>";
+         if(parent.document.getElementById('userOpsPanelUserName').innerHTML==membersArray[i])
+         window.parent.showOpsMenu(aliasesArray[i],membersArray[i], '#000000',membersArray[i],'inline','inline','inline','inline','none','inline','inline');
+       }
+		}
+	  inHTML += "<br><br><br><br><!--input type='hidden' value='' name='message' id='message'//--><!--input type='hidden' name='nameUser' id='nameUser' value=''//-->";
+    inHTML += "</form>";
+    bodyRef.innerHTML += inHTML;
+    
+	  if(!(document.getElementById('inv'+parent.document.getElementById('userOpsPanelUserName')) || 
+         document.getElementById('c'+parent.document.getElementById('userOpsPanelUserName'))
+        ))
+      parent.hideOpsMenu();
 	}
   
-  function insertOfflineMembers(membersArray,timeMembersArray,nameRoomUserIn,linkToResourcePage, aliasesArray, linkToContactPageArray) 
-	{
-		var showPanel = 0;
-		var bodyRef = parent.document.getElementById('divUsersInvite');
-		
-		for(i=0;i<membersArray.length;i++)if(parent.document.getElementById(aliasesArray[i])==null){showPanel=1;break;}
-		if(showPanel==0)return;
-	    
-		//if(membersArray.length>1)
-		    bodyRef.innerHTML += "<br><font color=\"#33A3D2\"><span class=xs><b>Other Chats:</b></span><br>"
-		for(i=0;i<membersArray.length;i++)
-		{	
-		   if(!parent.document.getElementById(aliasesArray[i]))
-		   {    
-		       var onlineSince = new Date(parseInt(timeMembersArray[i]));
-			   bodyRef.innerHTML += "<input type='hidden' id='infoCP"+ aliasesArray[i] +"' value='"+ linkToContactPageArray[i] +"'><input type='hidden' id='userRoomIn"+membersArray[i]+"' value='"+nameRoomUserIn[i]+"'><input type='hidden' id='info"+membersArray[i]+"' value='"+timeMembersArray[i]+"'><img id='inv"+membersArray[i]+"' onMouseOver='var d = new Date(parseInt("+timeMembersArray[i]+"));var d1 = new Date();var dif=d1-d;d1.setHours(0);d1.setMinutes(0);d1.setSeconds(0);d1.setMilliseconds(dif);this.title=this.title.substring(0,this.title.search(\" for\"))+\" for \" +d1.getHours()+\":\"+d1.getMinutes()+\":\"+d1.getSeconds();' title='"+parent.setTitleToUserIcon(membersArray[i],timeMembersArray[i],nameRoomUserIn[i])+" for' src='images/icon_mini_profile.gif' width='16' height='16'><span class=xs><font onMouseOver='var d = new Date(parseInt("+timeMembersArray[i]+"));var d1 = new Date();var dif=d1-d;d1.setHours(0);d1.setMinutes(0);d1.setSeconds(0);d1.setMilliseconds(dif);this.title=this.title.substring(0,this.title.search(\" for\"))+\" for \" +d1.getHours()+\":\"+d1.getMinutes()+\":\"+d1.getSeconds();' style='cursor:pointer' title='"+parent.setTitleToUserIcon(membersArray[i],timeMembersArray[i],nameRoomUserIn[i])+" for' onclick='window.parent.showOpsMenu(\""+aliasesArray[i]+"\",\"" + membersArray[i] + "\", \"\",\"" + aliasesArray[i] + "\",\"inline\",\"inline\",\"inline\",\"inline\",\"none\",\"inline\",\"inline\");'>" + membersArray[i] + "</font></span><input id='linkToResource"+membersArray[i]+"' onclick='alert(this.id)' type='hidden' value="+linkToResourcePage[i]+"><br>";
-               if(parent.document.getElementById('userOpsPanelUserName').innerHTML==membersArray[i])
-                   window.parent.showOpsMenu(aliasesArray[i],membersArray[i], '#000000',membersArray[i],'inline','inline','inline','inline','none','inline','inline');
-           }
-		};
-	        bodyRef.innerHTML += "<br><br><br><br><!--input type='hidden' value='' name='message' id='message'//--><!--input type='hidden' name='nameUser' id='nameUser' value=''//--></form>"
-	   		if(!(document.getElementById('inv'+parent.document.getElementById('userOpsPanelUserName')) || document.getElementById('c'+parent.document.getElementById('userOpsPanelUserName'))) )parent.hideOpsMenu();
-	}
-    
-	function insertMembers(membersArray,usersInfArray,linkToContactPageArray) {//alert(membersArray);
-	 var docum = parent.document;
-	 docum.getElementById("bodyMembersKeeper").removeChild(docum.getElementById("divUsersContainer"));  if(docum.getElementById("divUsersInvite"))docum.getElementById("bodyMembersKeeper").removeChild(docum.getElementById("divUsersInvite"));
-	 var bodyRef = docum.getElementById('bodyMembersKeeper');
-         if (bodyRef == null) return;
-         var divUsers = docum.createElement('div');
-         divUsers.id = 'divUsersContainer';
-         var divUsersInvite = docum.createElement('div');
-         divUsersInvite.id = 'divUsersInvite';
-         for (i = 0; i < membersArray.length; i+=2)
-         {
-		    // alert(linkToContactPageArray[i]); // alerts link to the contact home page (information page)
-			 var nameUserOnline = membersArray[i+1];
-            var realUserName = membersArray[i].substring(0,membersArray[i].lastIndexOf('-'));
-            //if(parent.document.getElementById('userOpsPanelUserName').innerHTML==realUserName)
+	function insertMembers(membersArray,usersInfArray,linkToContactPageArray, membersOnlineStatusArray) {
+	  var docum = parent.document;
+	  docum.getElementById("bodyMembersKeeper").removeChild(docum.getElementById("divUsersContainer"));
+    if(docum.getElementById("divUsersInvite"))
+      docum.getElementById("bodyMembersKeeper").removeChild(docum.getElementById("divUsersInvite"));
+	  var bodyRef = docum.getElementById('bodyMembersKeeper');
+    if (bodyRef == null) 
+      return;
+    var divUsers = docum.createElement('div');
+    divUsers.id = 'divUsersContainer';
+    var divUsersInvite = docum.createElement('div');
+    divUsersInvite.id = 'divUsersInvite';
+    for (i = 0; i < membersArray.length; i+=2) {
+		  // alert(linkToContactPageArray[i]); // alerts link to the contact home page (information page)
+			var nameUserOnline = membersArray[i+1];
+      var realUserName = membersArray[i].substring(0,membersArray[i].lastIndexOf('-'));
+      //if(parent.document.getElementById('userOpsPanelUserName').innerHTML==realUserName)
 			if(parent.document.getElementById('sendPrivateMessagesToUser').innerHTML==membersArray[i+1])
-			       	window.parent.showOpsMenu(nameUserOnline, realUserName, membersArray[i].substring(membersArray[i].lastIndexOf('-')+1,membersArray[i].length),nameUserOnline,'inline','inline','inline','none','inline','none','none');
-            userI = docum.createElement('img');
-            userI.src='images/icon_mini_profile.gif';
-            userI.width = 16; userI.height = 16;
-            userI.title = 'member is present since ' + getTimeStr(0,parseInt(usersInfArray[i]))+' for';
-            memberIcon_addEventMOver(userI,"mouseover",false,parseInt(usersInfArray[i]));
-            divUsers.appendChild(userI);
+			  window.parent.showOpsMenu(nameUserOnline, realUserName, membersArray[i].substring(membersArray[i].lastIndexOf('-')+1,membersArray[i].length),nameUserOnline,'inline','inline','inline','none','inline','none','none');
+      
+      userI = docum.createElement('img');
+      userI.id = 'infoCP'+ nameUserOnline + 'icon';
+      if(membersOnlineStatusArray[i] == 'null') 
+        membersOnlineStatusArray[i] = 'online';
+      userI.src='images/icon_mini_profile_' + membersOnlineStatusArray[i] + '.gif';
+      userI.width = 16; 
+      userI.height = 16;
+      userI.title = 'member is present since ' + getTimeStr(0,parseInt(usersInfArray[i]))+' for';
+      memberIcon_addEventMOver(userI,"mouseover",false,parseInt(usersInfArray[i]));
+      divUsers.appendChild(userI);
             
 			var userInfCP = docum.createElement('input'); // link to the contact home page (information page)
-            userInfCP.type='hidden';
-            userInfCP.value=linkToContactPageArray[i];
+      userInfCP.type='hidden';
+      userInfCP.value=linkToContactPageArray[i];
 			userInfCP.id='infoCP'+nameUserOnline;
 			divUsers.appendChild(userInfCP);
 			
 			userInf = docum.createElement('input');
-            userInf.type='hidden';
-            userInf.value=usersInfArray[i];
-            userInf.id='info'+realUserName;
-            userInf.color=membersArray[i].substring(membersArray[i].lastIndexOf('-')+1,membersArray[i].length);
-            divUsers.appendChild(userInf);
-			 var spanF = docum.createElement('span');
-			 spanF.className = 'xs';
-			 divUsers.appendChild(spanF);
-            var userF = docum.createElement('font');
-            userF.title = 'member is present since ' + getTimeStr(0,parseInt(usersInfArray[i])) + ' for';
-            memberIcon_addEventMOver(userF,"mouseover",false,parseInt(usersInfArray[i]));
-            userF.style.cursor='pointer';
-            userF.color = membersArray[i].substring(membersArray[i].lastIndexOf('-')+1,membersArray[i].length);
-	     	 userF.id='c'+membersArray[i].substring(0,membersArray[i].lastIndexOf('-'));
-            ss_addEvent(userF,"click",false,nameUserOnline,nameUserOnline,membersArray[i].substring(0,membersArray[i].lastIndexOf('-')),userF.color,'inline','inline','inline','none','inline');
+      userInf.type='hidden';
+      userInf.value=usersInfArray[i];
+      userInf.id='info'+realUserName;
+      userInf.color=membersArray[i].substring(membersArray[i].lastIndexOf('-')+1,membersArray[i].length);
+      divUsers.appendChild(userInf);
+			
+      var spanF = docum.createElement('span');
+			spanF.className = 'xs';
+			divUsers.appendChild(spanF);
+      var userF = docum.createElement('font');
+      userF.title = 'member is present since ' + getTimeStr(0,parseInt(usersInfArray[i])) + ' for';
+      memberIcon_addEventMOver(userF,"mouseover",false,parseInt(usersInfArray[i]));
+      userF.style.cursor='pointer';
+      userF.color = membersArray[i].substring(membersArray[i].lastIndexOf('-')+1,membersArray[i].length);
+	    userF.id='c'+membersArray[i].substring(0,membersArray[i].lastIndexOf('-'));
+      ss_addEvent(userF,"click",false,nameUserOnline,nameUserOnline,membersArray[i].substring(0,membersArray[i].lastIndexOf('-')),userF.color,'inline','inline','inline','none','inline');
 			userF.appendChild(docum.createTextNode(membersArray[i].substring(0,membersArray[i].lastIndexOf('-'))));
-   		    spanF.appendChild(userF);
+   		spanF.appendChild(userF);
 
 			var contactUriField = docum.createElement('input');
 			contactUriField.type = "hidden";
@@ -401,19 +498,19 @@ var timeDelta = 0; // difference between server and client time
 			contactUriField.color = membersArray[i].substring(membersArray[i].lastIndexOf('-')+1,membersArray[i].length);
 			spanF.appendChild(contactUriField);
 			
-	     	 if(realUserName!=parent.document.getElementById("realUserName").value) {divUsers.appendChild(docum.createTextNode(' '));
-             var statusWriting = docum.createElement('img');
-             statusWriting.id = 'w'+membersArray[i].substring(0,membersArray[i].lastIndexOf('-'));
-             statusWriting.style.width=14; statusWriting.style.height=14;
-             statusWriting.src='icons/chatNotWritingStatus.gif';
-            statusWriting.style.verticalAlign='top';
-            statusWriting.alt='"typing/not typing" status';
-            statusWriting.title='"typing/not typing" status';
-            divUsers.appendChild(statusWriting);}
+	    if(realUserName!=parent.document.getElementById("realUserName").value) {
+        divUsers.appendChild(docum.createTextNode(' '));
+        var statusWriting = docum.createElement('img');
+        statusWriting.id = 'w'+membersArray[i].substring(0,membersArray[i].lastIndexOf('-'));
+        statusWriting.style.width=14; statusWriting.style.height=14;
+        statusWriting.src='icons/chatNotWritingStatus.gif';
+        statusWriting.style.verticalAlign='top';
+        statusWriting.alt='"typing/not typing" status';
+        statusWriting.title='"typing/not typing" status';
+        divUsers.appendChild(statusWriting);}
 		    divUsers.appendChild(docum.createElement('br'));
-	
-         }
-         bodyRef.appendChild(divUsers);
-         bodyRef.appendChild(divUsersInvite);
       }
-                                                                                    
+      
+      bodyRef.appendChild(divUsers);
+      bodyRef.appendChild(divUsersInvite);
+    }
