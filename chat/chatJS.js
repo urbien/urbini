@@ -35,7 +35,7 @@
 			    disconnectWindow.document.write("<a href='' onclick='window.opener.document.getElementById(\"thread\").src = window.opener.document.getElementById(\"thread\").src; window.close()' title='reconnect chat'><font face='Arial'>Reconnect chat</font></a>     <a href='' onclick='window.close();window.opener.close();' title='reconnect chat'><font face='Arial'>Close chat</font></a></center>");
 			  }
 		    threadIframeContent = thread.document.body.innerHTML.length;
-		    tmOut = setTimeout("checkOnlineStatus()",2500);
+		    tmOut = setTimeout("checkOnlineStatus()",60000);
 		  } catch (er) {
 			    var disconnectWindow = window.open("about:blank","","width=240,height=70,toolbar=0,resizable=no");
 			    disconnectWindow.document.write("<center>The connection with the chat server was lost!<br>");
@@ -448,4 +448,70 @@
       addEvent(frames['messageRTE'].document, 'keydown', handleKey, false);
       addEvent(frames['messageRTE'].document, 'keyup', handleKey, false); // clear RTE content if sending on Enter. Elseway additional ampty first line is left.
 
+    }
+// --------START----------------   ONLINE STATUS -------(ONLINE, AWAY, DND, NA)--------------------------------------    
+    // function that sends the new status of the user to all chat rooms to all chat member.
+    function changeOnlineStatus(status){
+      parent.document.postForm.nameUser.value = 'allChats'; // notes that all chat members in all rooms must receive the message
+      parent.document.postForm.message.value="!-statusUser" + status; // message containes "!-statusUser" mask to notify that this is the message with the new member's status. status - is the new status: away, online, DND, na
+      parent.document.postForm.submit();
+      parent.document.postForm.nameUser.value = "all";
+      setOnlineStatus(document.getElementById('aliasUserUri').value, status); // change status for the sender
+    }
+    
+    // function that changes icon near the chat member according to the status (away, online, DND, na)
+    function setOnlineStatus(userId, status) {
+      if(document.getElementById("infoCP" + userId + "icon"))
+        document.getElementById("infoCP" + userId + "icon").src = "/images/icon_mini_profile_" + status + ".gif";
+    }
+    
+    var onlineStatusMenuTimer; //timer for online status menu. Menu must disappear if more than 2 seconds passed
+
+    // show awailable chat member modes (away, online, DND, na) to let the chat meber choose the status for himself
+    function showAwailableOnlineModes(obj) {
+      document.getElementById('dvOnlineStatus').style.display='inline';
+      document.getElementById('dvOnlineStatus').style.top=findPosY(obj) + obj.offsetHeight;
+      document.getElementById('dvOnlineStatus').style.left=findPosX(obj) - 5;
+    }
+    
+    // hide online statuses menu after 2 seconds after mouse out event
+    function onlineStatusIconMouseOut() {
+      clearTimeout(onlineStatusMenuTimer);
+      onlineStatusMenuTimer = setTimeout("document.getElementById('dvOnlineStatus').style.display='none';",2000);
+    }
+    
+    // mouse out. Statuses menu must not be visible any more. It must dissappear in 2 seconds.
+    function clearTimeoutForStatusMenu(){
+      clearTimeout(onlineStatusMenuTimer);
+    }
+    
+    function statusMenuMouseOut() {
+      onlineStatusIconMouseOut()
+    }
+// --------FINISH----------------   ONLINE STATUS -------(ONLINE, AWAY, DND, NA)--------------------------------------    
+
+    function findPosX(obj) {
+      var curleft = 0;
+      if (obj.offsetParent) {
+        while (obj.offsetParent) {
+          curleft += obj.offsetLeft;
+          obj = obj.offsetParent;
+        }
+      }
+      else if (obj.x)
+        curleft += obj.x;
+      return curleft;
+    }
+
+    function findPosY(obj) {
+      var curtop = 0;
+      if (obj.offsetParent) {
+        while (obj.offsetParent) {
+          curtop += obj.offsetTop;
+          obj = obj.offsetParent;
+        }
+      }
+      else if (obj.y)
+        curtop += obj.y;
+      return curtop;
     }
