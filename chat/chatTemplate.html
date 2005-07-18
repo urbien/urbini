@@ -17,8 +17,6 @@
 		var chatSoundPresent = 1; // Sound enabled in chat
 		var soundViaApplet = 0;
 		var isWindowInFocus = "blured";
-		var titleScrollHandler;
-		var titleTimeOut;
 		var privateR = '&[privateR];';
 //---------START------------------------These variables are used in chat reconnect chat task ------------------------------------
 		var threadIframeContent = 0; // this variable contains the length of the thread iframe content. 
@@ -26,13 +24,13 @@
 		                         // this variable is used in checkOnlineStatus() to handle setTimeout("checkOnlineStatus()",5000);
 //---------FINISH------------------------These variables are used in chat reconnect chat task ------------------------------------								 
 
-		addEvent(window, 'focus', function() {isWindowInFocus="focused";clearInterval(titleTimeOut);}); 
+		addEvent(window, 'focus', function() {isWindowInFocus="focused";}); 
 		addEvent(window, 'blur', function() {isWindowInFocus="blured";}); 
 
 		//window.onerror=myErrorHandler;
     </script>   
   </head>
-  <body onload="initFrames(); checkOnlineStatus();" onclick="isWindowInFocus='focused';clearInterval(titleTimeOut);" onfocus="isWindowInFocus='focused';clearInterval(titleTimeOut);" onblur="isWindowInFocus='blured';" style='cursor : pointer;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#EDEDED"> <!--onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' //--> 
+  <body onload="initFrames(); checkOnlineStatus();" onclick="isWindowInFocus='focused';" onfocus="isWindowInFocus='focused';" onblur="isWindowInFocus='blured';" style='cursor : pointer;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#EDEDED"> <!--onLoad='alert("session finished! If you want to be present in this chat room you have to reenter the room.")' //--> 
     <script language="JavaScript">
 		  //window.resizeTo(Math.floor(screen.availWidth*2/3),Math.floor(screen.availHeight*2/3));
 		  //window.moveTo(Math.floor(screen.availWidth/6),Math.floor((screen.availHeight)/6));

@@ -2,6 +2,7 @@ var autoScrolling = 'yes';
 var windowTitle = parent.document.title;
 var pos=0;
 var titleTimeOut;
+var titleScrollHandler;
 var windowHasFocus='true';
 var timeDelta = 0; // difference between server and client time
 
@@ -31,8 +32,10 @@ var timeDelta = 0; // difference between server and client time
     }
 
     function scrollTitle() { 
-   	 	parent.document.title = windowTitle.substring(pos,windowTitle.length)+windowTitle.substring(0,pos);
+   	 	if(parent.isWindowInFocus == "blured") {
+        parent.document.title = windowTitle.substring(pos,windowTitle.length)+windowTitle.substring(0,pos);
         pos = (pos + 1) % windowTitle.length;
+      }
     } 
 	   
     // ------- START ------- INSERT MESSAGES -------------------------------------
@@ -103,14 +106,16 @@ var timeDelta = 0; // difference between server and client time
 		    return;
       }
 		
-		  clearTimeout(parent.titleTimeOut); // Stop title scrolling
-		  
       // Start title scrolling in the cases that are in the if statement.
-      // Title must scroll for 5 seconds.
-      if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>") {
-			  clearInterval(parent.titleScrollHandler);
-			  parent.titleScrollHandler = setInterval("scrollTitle()",100);
-			  parent.titleTimeOut=setTimeout("clearInterval(parent.titleScrollHandler);parent.document.title=windowTitle;",5000);
+      // Title must scroll for 3 seconds.
+      clearInterval(titleScrollHandler); // stop scrolling
+      clearTimeout(titleTimeOut);
+      parent.document.title=windowTitle;
+      if(parent.isWindowInFocus == "blured" && parent.document.getElementById('realUserName').value!=userId && userId!="<img src='icons/information.gif' width='19' height='17'>" && userId != "ChatAdministrator") {
+			  //clearInterval(titleScrollHandler);
+        //clearTimeout(titleTimeOut);
+			  titleScrollHandler = setInterval("scrollTitle()",100);
+			  titleTimeOut = setTimeout("parent.document.title=windowTitle; clearInterval(titleScrollHandler);",3000);
 		  }
   		
       // ---- START --- Play sound via browsers sound support (inbuild Internet Explorer opportunity to play sound and FireFox plugins)
@@ -212,7 +217,7 @@ var timeDelta = 0; // difference between server and client time
 				               for (i = 0; i < messageArray.length; i++) 
                        mesStr += messageArray[i];
 				               newwindow=window.open('','newMes','height=100,width=350,resizable=yes'); 
-				               newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='new mes came to the chat room'>" + messageStringTimeN + messageString + " </span>" + mesStr + " <img src='images/show.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
+				               newwindow.document.writeln("<img src='images/alert.gif' width='16' height='16' title='new mes came to the chat room'>" + messageStringTimeN + messageString + " </span>" + mesStr + " <img src='images/openFor.gif' width='16' height='16' title='Set focus to the chat window' style='cursor:pointer' onclick='chatwindow=window.open(\"\",\"chat\");chatwindow.focus();window.close();'><hr>");
 			          }
 		      }
 		      var messageFull = "";	
