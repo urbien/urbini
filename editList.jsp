@@ -13,7 +13,7 @@
         <menu toolbar="support"         activate="onMouseOver" allow="admin"/>
         <menu toolbar="personalization" activate="onMouseOver"/>
 
-        <print image="images/printerIcon.gif"/>
+        <print image="icons/printerIcon.gif"/>
         <saveInExcel allow="owner" image="images/excel.gif"/>
         <pdaToPc image="images/pda.gif"/></span>
       </td>
@@ -74,7 +74,7 @@
         <menu toolbar="personalization"/>
 
 
-      <span class="xs"><print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span><changePassword/><userLogOff html="user-login.html"/></td>
+      <span class="xs"><print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>
     <form action="list.html" name="siteResourceList">

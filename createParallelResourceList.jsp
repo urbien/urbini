@@ -14,7 +14,7 @@
       <td valign="top" width="110%"><span class="xs" colspan="2">
         <menu toolbar="toolbar2"        activate="onMouseOver"/>
         <menu toolbar="personalization" activate="onMouseOver"/>
-        <print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span></td>
+        <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span></td>
     </tr>
 
     <tr valign="top"><td width="100%">
@@ -60,7 +60,7 @@
       <menu toolbar="personalization"/>
 
       
-      <print image="images/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
+      <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
       <pdaToPc image="images/pda.gif"/><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>
