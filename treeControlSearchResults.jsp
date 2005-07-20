@@ -16,7 +16,7 @@
           <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" activate="onMouseOver"/>
           <print image="icons/printerIcon.gif"/>
           <saveInExcel allow="owner" image="images/excel.gif"/>
-          <pdaToPc image="images/pda.gif"/>
+          <pdaToPc image="icons/pda.gif"/>
           <showHideWindows/>
         </td>
       </tr>
@@ -83,7 +83,7 @@
         <menu toolbar="calendarAndChart"/>
       
         <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
-        <pdaToPc image="images/pda.gif"/><changePassword/><userLogOff html="user-login.html"/>
+        <pdaToPc image="icons/pda.gif"/><changePassword/><userLogOff html="user-login.html"/>
         <showHideWindows/>
       </td>
     </tr>

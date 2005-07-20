@@ -14,7 +14,7 @@
       <td valign="top" width="110%"><span class="xs" colspan="2">
         <menu toolbar="toolbar2"        activate="onMouseOver"/>
         <menu toolbar="personalization" activate="onMouseOver"/>
-        <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span></td>
+        <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="icons/pda.gif"/></span></td>
     </tr>
 
     <tr valign="top"><td width="100%">
@@ -61,7 +61,7 @@
 
       
       <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
-      <pdaToPc image="images/pda.gif"/><changePassword/><userLogOff html="user-login.html"/></td>
+      <pdaToPc image="icons/pda.gif"/><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>
     <form action="editList.html" name="siteResourceList" method="POST">

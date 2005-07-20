@@ -22,7 +22,7 @@
     <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" activate="onMouseOver"/>
     <print image="icons/printerIcon.gif"/>
     <saveInExcel allow="owner" image="images/excel.gif"/>
-    <pdaToPc image="images/pda.gif"/>
+    <pdaToPc image="icons/pda.gif"/>
     <listGrid/>
     <showHideWindows/>
     </td>
@@ -105,7 +105,7 @@
       
         <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
         <showHideWindows/>
-        <pdaToPc image="images/pda.gif"/><changePassword/><userLogOff html="user-login.html"/>
+        <pdaToPc image="icons/pda.gif"/><changePassword/><userLogOff html="user-login.html"/>
       </td>
       <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
         <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>

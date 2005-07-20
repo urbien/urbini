@@ -15,7 +15,7 @@
 
         <print image="icons/printerIcon.gif"/>
         <saveInExcel allow="owner" image="images/excel.gif"/>
-        <pdaToPc image="images/pda.gif"/></span>
+        <pdaToPc image="icons/pda.gif"/></span>
       </td>
       <td valign="top" align="right" width="10%"><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
@@ -74,7 +74,7 @@
         <menu toolbar="personalization"/>
 
 
-      <span class="xs"><print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="images/pda.gif"/></span><changePassword/><userLogOff html="user-login.html"/></td>
+      <span class="xs"><print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="icons/pda.gif"/></span><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
     <tr valign="top"><td>
     <form action="list.html" name="siteResourceList">

@@ -18,7 +18,7 @@
         <menu toolbar="support"         activate="onMouseOver" allow="admin"/>
         <menu toolbar="personalization" activate="onMouseOver"/>
 
-        <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/></span><pdaToPc image="images/pda.gif"/></td>
+        <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/></span><pdaToPc image="icons/pda.gif"/></td>
       <td valign="top" align="right" width="10%"><!--changePassword/><userLogOff html="user-login.html"/--></td>
     </tr>
     <tr valign="top"><td>
@@ -65,7 +65,7 @@
 
         <print image="icons/printerIcon.gif"/>
         <saveInExcel allow="owner" image="images/excel.gif"/>
-        <pdaToPc image="images/pda.gif"/>
+        <pdaToPc image="icons/pda.gif"/>
         <changePassword/>
         <userLogOff html="user-login.html"/>
       </td>

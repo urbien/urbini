@@ -16,7 +16,7 @@
 	     <menu toolbar="toolbar2"        activate="onMouseOver"/>
 	     <menu toolbar="support"         activate="onMouseOver" allow="admin"/>
 	     <menu toolbar="personalization" activate="onMouseOver"/>
- 	     <pdaToPc image="images/pda.gif"/>
+ 	     <pdaToPc image="icons/pda.gif"/>
     </td>
     <td valign="top" align="right" width="10%">
       <include name="searchText.jsp"/>
