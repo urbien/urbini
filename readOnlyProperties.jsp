@@ -46,7 +46,7 @@
 		      </span>
 		
 		      <span class="xs">
-		        <print image="images/printerIcon.gif"/>
+		        <print image="icons/printerIcon.gif"/>
 		      </span>
 		      <pdaToPc image="images/pda.gif"/>
 		      
@@ -67,6 +67,7 @@
     <tr><td colspan="3"><br/>
 <a target="pane2"> </a>
 <div id="pane2" />
+    <div id="allowSearchHighlighting2">
       <readOtherSiteInfo />
       <include name="${type}_details_main.jsp" alt="propertySheet.jsp" />
 <hideBlock id="hideBlock1">      
@@ -75,10 +76,13 @@
 <include name="${type}_details_bottom_1.jsp"/>
       <newComment/>
 </hideBlock>      
-    </td></tr>
+    </div>
+    </td>
+    </tr>
     </table>
 </td>
 </tr></table>
+
 </center>
 <hideBlock>
   <br/><br/><div align="left"><span class="xs"><hudsonFog /></span></div>
