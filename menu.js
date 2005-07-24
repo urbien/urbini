@@ -1932,8 +1932,10 @@ function getFormFilters(form, allFields) {
 	         continue;
       }
     }
-
-    p += "&" + name + "=" + encodeURIComponent(value);
+    if (name == "type")
+      p += "&" + name + "=" + value;
+    else
+      p += "&" + name + "=" + encodeURIComponent(value);
   }
   return p;
 }
@@ -2074,8 +2076,10 @@ function initMenus() {
     if (m.id.indexOf('menuicon_') == 0) {
       addEvent(m, 'click',     menuOnClick, false);    
     }
-    addEvent(m, 'mouseover', slowhigh,    false);
-    addEvent(m, 'mouseout',  slowlow,     false);     
+    if (m.className  &&  m.className == 'fade') {
+	    addEvent(m, 'mouseover', slowhigh,    false);
+	    addEvent(m, 'mouseout',  slowlow,     false);     
+    }
   }
 }
 
@@ -2849,4 +2853,17 @@ function gradualfade(cur2){
     cur2.filters.alpha.opacity+=10;
   else if (window.highlighting)
     clearInterval(highlighting);
+}
+
+function createUrlForBacklink(formName, prop) {
+  var form = document.forms[formName];
+  var url = "smartPopup?";
+  
+  var formAction = form.elements['-$action'].value;
+  if (!formAction)
+    url += "-$action=" + formAction;
+  var url = "smartPopup?urlForBacklink=y&prop=" + prop;
+  var param = getFormFilters(form, true);
+  url += param + "&type=" + form.elements['type'].value;
+  document.location.href = url; // load data from server into iframe
 }
