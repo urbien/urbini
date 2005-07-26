@@ -138,7 +138,7 @@
  a.null31 {font-size: 10px;}
  td.null30 {padding: 8px 0px 4px 8px;}
  td.null29 {padding: 0px;}
- td.null28 {background-image: url(http://img.icbdr.com/images/js/elements/corners/qjs_drop_bg_r.gif); background-repeat: repeat-y;}
+ td.null28 {background-image: url(images/jobs/template/qjs_drop_bg_r.gif); background-repeat: repeat-y;}
  td.null27 {padding: 7px 0px 5px;}
  td.null26 {padding: 7px 0px 0px 10px;}
  tr.null25 {background-color: rgb(255, 153, 0);}
@@ -182,9 +182,9 @@
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tbody>
                 <tr>
-                  <td class="null1"><a id="hlSignInLink" href="http://careerbuilder.com/Share/Login.aspx">Sign In</a></td>
+                  <td class="null1"><a id="hlSignInLink" href="register/user-login.html">Sign In</a></td>
 
-                  <td class="null2"><a id="hlHelpLink" href="http://careerbuilder.com/JobSeeker/Help/">Help</a>&#160;&#160;|&#160;&#160;Customer&#160;Service:&#160;866-438-1485</td>
+                  <td class="null2"><a id="hlHelpLink" href="">Help</a>&#160;&#160;|&#160;&#160;Customer&#160;Service:&#160;866-438-1485</td>
                 </tr>
               </tbody>
             </table>
@@ -200,21 +200,21 @@
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tbody>
                 <tr valign="top">
-                  <td class="null4" align="left"><a id="Hyperlink1"><img src="images/jobs/template/logocb.gif" id="Img1" border="0" height="40" width="180" /></a></td>
+                  <td class="null4" align="left"><a href=""><img src="images/jobs/template/logo.gif" id="Img1" border="0" height="40" width="180" /></a></td>
 
                   <td class="null8" align="right">
                     <table border="0" cellpadding="0" cellspacing="0">
                       <tbody>
                         <tr valign="top">
-                          <td width="22"><a id="hlWomanIcon" href="http://careerbuilder.com/jobposter/?sc_cmp2=JS_HP1_Nav_WomanIcon"><img src="images/jobs/template/woman_sml.gif" border="0" height="36" width="22" /></a></td>
+                          <td width="22"><a href=""><img src="images/jobs/template/woman_sml.gif" border="0" height="36" width="22" /></a></td>
 
                           <td class="null7" align="right">
                             <table border="0" cellpadding="0" cellspacing="0">
                               <tbody>
                                 <tr>
-                                  <td><a id="hlNeedToHire" href="http://careerbuilder.com/jobposter/?sc_cmp2=JS_HP1_Nav_NeedToHire"><img src="images/jobs/template/need_to_hire.gif" border="0" height="13" width="97" /></a></td>
+                                  <td><a href=""><img src="images/jobs/template/need_to_hire.gif" border="0" height="13" width="97" /></a></td>
 
-                                  <td><a id="hlJPPostJobs" href="http://careerbuilder.com/JobPoster/?sc_cmp2=JS_HP1_Nav_PostJobNow">Post Jobs</a>&#160;&#160;|&#160; <a id="hlJPSearchResumes" href="http://careerbuilder.com/JobPoster/?sc_cmp2=JS_HP1_Nav_SearchResumes">Search Resumes</a>&#160;&#160;|&#160; <a id="hlJPSignIn" href="http://careerbuilder.com/share/login.aspx?sc_cmp2=JS_HP1_Nav_SignIn">Sign In</a></td>
+                                  <td><a href="">Post Jobs</a>&#160;&#160;|&#160; <a href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Resume">Search Resumes</a>&#160;&#160;|&#160; <a id="hlJPSignIn" href="register/user-login.html">Sign In</a></td>
                                 </tr>
                               </tbody>
                             </table>
@@ -222,7 +222,7 @@
                             <table border="0" cellpadding="0" cellspacing="0">
                               <tbody>
                                 <tr>
-                                  <td class="null5">Now Featuring the <a id="hlSmallBus" href="http://careerbuilder.com/jobposter/smallbiz/?sc_cmp2=JS_HP1_Nav_SmallBiz">Small Business Advisor</a></td>
+                                  <td class="null5">Now Featuring the <a href="">Small Business Advisor</a></td>
 
                                   <td class="null6"><img src="images/jobs/template/new.gif" /></td>
                                 </tr>
@@ -249,7 +249,7 @@
           <td>&#160;</td>
 
           <td class="null17"><nobr>
-            <a onmouseover="imageSwap('Home', 'images/jobs/template/tabHome_on.gif')" onmouseout="imageSwap('Home', 'images/jobs/template/tabHome_on.gif')" href="plain/Jobs.html"><img id="Home" src="images/jobs/template/tabHome_on.gif" alt="Home" class="null10" border="0" /></a><a onmouseover="imageSwap('FindJobs', 'images/jobs/template/tabFindJobs2_on.gif')" onmouseout="imageSwap('FindJobs', 'images/jobs/template/tabFindJobs2.gif')" href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job"><img id="FindJobs" src="images/jobs/template/tabFindJobs2.gif" alt="Find Jobs" class="null11" border="0" /></a><a onmouseover="imageSwap('PostResumes', 'images/jobs/template/tabPostResumes_on.gif')" onmouseout="imageSwap('PostResumes', 'images/jobs/template/tabPostResumes.gif')" href="mkResource.html?-$action=mkResource&amp;$browser=y&amp;displayProps=yes&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Resume"><img id="PostResumes" src="images/jobs/template/tabPostResumes.gif" alt="Post Resumes" class="null12" border="0" /></a><a onmouseover="imageSwap('JobAlerts', 'images/jobs/template/tabjobalerts_on.gif')" onmouseout="imageSwap('JobAlerts', 'images/jobs/template/tabjobalerts.gif')" href="http://careerbuilder.com/JobSeeker/jobalerts/setupjobalert.aspx?sc_cmp2=JS_HP1_Nav_Job+Alerts"><img id="JobAlerts" src="images/jobs/template/tabjobalerts.gif" alt="Job Alerts" class="null13" border="0" /></a><a onmouseover="imageSwap('MyCareerBuilder', 'images/jobs/template/tabMyCareerBuilder_on.gif')" onmouseout="imageSwap('MyCareerBuilder', 'images/jobs/template/tabMyCareerBuilder.gif')" href="http://careerbuilder.com/Share/Login.aspx?sc_cmp2=JS_HP1_Nav_MyCB"><img id="MyCareerBuilder" src="images/jobs/template/tabMyCareerBuilder.gif" alt="My CareerBuilder" class="null14" border="0" /></a><a onmouseover="imageSwap('Advice', 'images/jobs/template/tabAdvice_on.gif')" onmouseout="imageSwap('Advice', 'images/jobs/template/tabAdvice.gif')" href="http://careerbuilder.com/JobSeeker/Resources/CareerResources.aspx?sc_cmp2=JS_HP1_Nav_Advice"><img id="Advice" src="images/jobs/template/tabAdvice.gif" alt="Advice &amp; Resources" class="null15" border="0" /></a><a onmouseover="imageSwap('CareerFairs', 'images/jobs/template/tabCareerFairs_on.gif')" onmouseout="imageSwap('CareerFairs', 'images/jobs/template/tabCareerFairs.gif')" href="http://careerbuilder.com/JobSeeker/CareerFairs/default.aspx?sc_cmp2=JS_HP1_Nav_Career+Fairs"><img id="CareerFairs" src="images/jobs/template/tabCareerFairs.gif" alt="Career Fairs" class="null16" border="0" /></a></nobr>
+            <a onmouseover="imageSwap('Home', 'images/jobs/template/tabHome_on.gif')" onmouseout="imageSwap('Home', 'images/jobs/template/tabHome_on.gif')" href="plain/Jobs.html"><img id="Home" src="images/jobs/template/tabHome_on.gif" alt="Home" class="null10" border="0" /></a><a onmouseover="imageSwap('FindJobs', 'images/jobs/template/tabFindJobs2_on.gif')" onmouseout="imageSwap('FindJobs', 'images/jobs/template/tabFindJobs2.gif')" href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job"><img id="FindJobs" src="images/jobs/template/tabFindJobs2.gif" alt="Find Jobs" class="null11" border="0" /></a><a onmouseover="imageSwap('PostResumes', 'images/jobs/template/tabPostResumes_on.gif')" onmouseout="imageSwap('PostResumes', 'images/jobs/template/tabPostResumes.gif')" href="mkResource.html?-$action=mkResource&amp;$browser=y&amp;displayProps=yes&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Resume"><img id="PostResumes" src="images/jobs/template/tabPostResumes.gif" alt="Post Resumes" class="null12" border="0" /></a><a onmouseover="imageSwap('JobAlerts', 'images/jobs/template/tabjobalerts_on.gif')" onmouseout="imageSwap('JobAlerts', 'images/jobs/template/tabjobalerts.gif')" href="subscribe.html?-$action=watch&amp;-isWatch=y&amp;&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job"><img id="JobAlerts" src="images/jobs/template/tabjobalerts.gif" alt="Job Alerts" class="null13" border="0" /></a><a onmouseover="imageSwap('MyCareerBuilder', 'images/jobs/template/tabMyCareerBuilder_on.gif')" onmouseout="imageSwap('MyCareerBuilder', 'images/jobs/template/tabMyCareerBuilder.gif')" href="register/user-login.html"><img id="MyCareerBuilder" src="images/jobs/template/tabMyCareerBuilder.gif" alt="My CareerBuilder" class="null14" border="0" /></a><a onmouseover="imageSwap('Advice', 'images/jobs/template/tabAdvice_on.gif')" onmouseout="imageSwap('Advice', 'images/jobs/template/tabAdvice.gif')" href=""><img id="Advice" src="images/jobs/template/tabAdvice.gif" alt="Advice &amp; Resources" class="null15" border="0" /></a><a onmouseover="imageSwap('CareerFairs', 'images/jobs/template/tabCareerFairs_on.gif')" onmouseout="imageSwap('CareerFairs', 'images/jobs/template/tabCareerFairs.gif')" href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/JobFair"><img id="CareerFairs" src="images/jobs/template/tabCareerFairs.gif" alt="Career Fairs" class="null16" border="0" /></a></nobr>
           </td>
 
           <td class="null18" align="right">
@@ -283,7 +283,7 @@
                 <tr>
                   <td align="left"><img src="images/jobs/template/welcome_new_user.gif" height="20" width="490" /></td>
 
-                  <td class="null23" align="right">Already Registered? <a href="http://careerbuilder.com/Share/Login.aspx?sc_cmp2=JS_HP1_NavMsg_SignIn" onmouseover="imageSwap('SignIn', 'http://img.icbdr.com/images/js/widgets/btn_sign_in_on.gif')" onmouseout="imageSwap('SignIn', 'http://img.icbdr.com/images/js/widgets/btn_sign_in.gif')"><img src="images/jobs/template/btn_sign_in.gif" name="SignIn" align="middle" border="0" height="15" width="59" /></a></td>
+                  <td class="null23" align="right">Already Registered? <a href="register/user-login.html" onmouseover="imageSwap('SignIn', 'images/jobs/template/btn_sign_in_on.gif')" onmouseout="imageSwap('SignIn', 'images/jobs/template/btn_sign_in.gif')"><img src="images/jobs/template/btn_sign_in.gif" name="SignIn" align="middle" border="0" height="15" width="59" /></a></td>
                 </tr>
               </tbody>
             </table>
@@ -549,10 +549,7 @@ function toggleDisplay(id){
 
                                     <td class="null39">-&#160;<a id="cblSearchCategory" onclick="s_objectID='';" href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Employer">Search by Company</a><br />
                                      -&#160;<a id="cblSearchIndustry" onclick="s_objectID='';" href="localSearchResults.html?file=/localSearchResults.html&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;industry_groupBy=on&amp;origFile=/localSearchResults.html&amp;submit=Please+wait&amp;-$action=searchLocal">Search by Industry</a>
-                                     <!--br />
-                                     -&#160;<a id="cblSearchEspanol" onclick="s_objectID='';" href="http://careerbuilder.com/JobSeeker/es_Index.htm?sc_cmp2=JS_HP1_QSB_Spanish">Search en Espa&#195;&#177;ol</a><br />
-                                     -&#160;<a id="cblSearchInternational" onclick="s_objectID='';" href="http://careerbuilder.com/JobSeeker/Jobs/jobfindil.asp?sc_cmp2=JS_HP1_QSB_Intl">Search International Jobs</a>
-                                     --></td>
+                                    </td>
 
                                     <td bgcolor="#ffffff">
                                     </td>
@@ -600,7 +597,7 @@ function toggleDisplay(id){
                                           </tr>
 
                                           <tr>
-                                            <td class="null40" valign="top"><a id="cblJobAlertDish" onclick="s_objectID='';" href="http://careerbuilder.com/JobSeeker/JobAlerts/SetupJobAlert.aspx?sc_cmp2=JS_HP1_MA_JobAlertDish"><img src="images/jobs/template/icon_sat_dish.gif" border="0" height="44" width="40" /></a></td>
+                                            <td class="null40" valign="top"><a id="cblJobAlertDish" onclick="s_objectID='';" href=""><img src="images/jobs/template/icon_sat_dish.gif" border="0" height="44" width="40" /></a></td>
 
                                             <td class="null41">Find out when your favorite Saved<br />
                                             Search has new results -- via email.<br />
@@ -644,7 +641,7 @@ function toggleDisplay(id){
                                           <tr valign="top">
                                             <td class="null47"><img src="images/jobs/template/icon_clock.gif" height="10" width="10" /></td>
 
-                                            <td class="null48"><a id="cblHourly" onclick="s_objectID='';" href="http://careerbuilder.com/JobSeeker/Resumes/HourlyResume.aspx?sc_cmp2=JS_HP1_MA_Hourly"><nobr>Hourly workers: Apply here</nobr></a></td>
+                                            <td class="null48"><a id="cblHourly" onclick="s_objectID='';" href=""><nobr>Hourly workers: Apply here</nobr></a></td>
                                           </tr>
                                         </tbody>
                                       </table>
@@ -672,7 +669,7 @@ function toggleDisplay(id){
                                                   }
                                                   if ( MM_FlashCanPlay ) {
                                                     document.write('<OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"');
-                                                    document.write(' codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,29,0" ');
+                                                    document.write(' codebase="" ');
                                                     document.write(' width="127" height="158">');
                                                     document.write('<param name="movie" value="images/jobs/template/js/elements/hpanim/people_switch.swf">');
                                                     document.write('<PARAM NAME=quality VALUE=best>');
@@ -702,7 +699,7 @@ function toggleDisplay(id){
                                   <tr valign="top">
                                     <td width="9"><img src="images/jobs/template/yel_drop_bl_9_27.gif" height="27" width="9" /></td>
 
-                                    <td class="null51" background="images/jobs/template/yel_drop_bg.gif" width="238"><img src="images/jobs/template/icon_plus.gif" align="left" height="10" vspace="3" width="10" />&#160;&#160;<a id="cblJobAlertTxt" onclick="s_objectID='';" href="http://127.0.0.1/hudsonfog/subscribe.html?-$action=watch&amp;-isWatch=y&amp;&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job">Add a Search / Job Alert</a></td>
+                                    <td class="null51" background="images/jobs/template/yel_drop_bg.gif" width="238"><img src="images/jobs/template/icon_plus.gif" align="left" height="10" vspace="3" width="10" />&#160;&#160;<a id="cblJobAlertTxt" onclick="s_objectID='';" href="subscribe.html?-$action=watch&amp;-isWatch=y&amp;&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job">Add a Search / Job Alert</a></td>
 
                                     <td class="null52" background="images/jobs/template/yel_drop_bg.gif" width="160"><img src="images/jobs/template/icon_plus.gif" align="left" height="10" vspace="3" width="10" />&#160;&#160;<a id="cblPostResumeTxt" onclick="s_objectID='';" href="mkResource.html?-$action=mkResource&amp;$browser=y&amp;displayProps=yes&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Resume">Post a resume now</a></td>
                                   </tr>
@@ -904,7 +901,7 @@ function toggleDisplay(id){
                                                 </tbody>
                                               </table>
                                               <img src="images/jobs/template/pixel.gif" height="5" width="1" /><br />
-                                              <a id="cblFeatEmpTxt" onclick="s_objectID='';" href="http://careerbuilder.com/JobSeeker/FeaturedEmployers.aspx?sc_cmp2=JS_HP1_MoreFtEmp">More Featured Employers <span class="inlNoDec">&gt;&gt;</span></a>
+                                              <a href="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Employer&amp;featuredEmployer_select=Yes&amp;featuredEmployer_verified=y">More Featured Employers <span class="inlNoDec">&gt;&gt;</span></a>
                                             </td>
 
                                             <td><img src="images/jobs/template/pixel.gif" height="1" width="1" /></td>
@@ -927,7 +924,6 @@ function toggleDisplay(id){
                           </tr>
                         </tbody>
                       </table>
-</form>
 
 <!--form name="rightPanelPropertySheet" id="filter" method="POST">
 			<rightPanelPropertySheet width="186" rType="http://www.hudsonfog.com/voc/classifieds/jobs/Job" properties="jobCategory,city"/>
