@@ -1,6 +1,6 @@
 <div>
 <style type="text/css">
- .cb_style table { text-align: left; } 
+ .cb_style table { text-align: left; }
 </style>
 <link rel="stylesheet" type="text/css" href="images/jobs/template/global.css" />
 <style type="text/css">
@@ -11,19 +11,19 @@
   .inlBumpLeft  {
     padding-left: 10px;
   }
-  
+
   .inlBumpRight {
     padding-right: 10px;
   }
-  
+
   .inlQSBTitle  {
     font-weight:bold;
   }
-  
+
   .inlQSBTxt  {
     width:160px;
   }
-  
+
   .inlQSBDD {
     width:160px;
   }
@@ -80,7 +80,7 @@
   font-size: 14px;
   color: #ff6600;
   }
-  
+
   .bluelink{
     color:#0000CC
   }
@@ -329,7 +329,7 @@ function toggleDisplay(id){
 }
 </script>
 </span>
-                     
+
 
                     <div class="null62">
                       <table border="0" cellpadding="0" cellspacing="0">
@@ -441,8 +441,8 @@ function toggleDisplay(id){
 																		   <input type="hidden" name="-isTemplate" value="y"/>
 													       	 		 <input type="hidden" name="-$action" value="searchLocal"></input>
 																		</td>
-																	</tr>			
-																	<tr>	
+																	</tr>
+																	<tr>
 																		<td class="inlBumpLeft" colspan="2">
 			<rightPanelPropertySheet width="186" properties="country,region,city,postalCode,jobCategory" type="http://www.hudsonfog.com/voc/classifieds/jobs/Job" noTable="y" />
 			                              </td>
@@ -453,7 +453,7 @@ function toggleDisplay(id){
 														    </tbody>
 														  </table>
 
-                              
+
                               <table bgcolor="#FFFFCC" border="0" cellpadding="0" cellspacing="0" width="190">
                                 <tbody>
                                   <tr>
@@ -487,7 +487,7 @@ function toggleDisplay(id){
 					<td bgcolor="#ffcc66" width="4"></td>
 				</tr>
 			</tbody></table>
-</form>   
+</form>
 
 <form name="searchByWebID" action="localSearchResults.html">
      <table bgcolor="#f1f1f1" border="0" cellpadding="0" cellspacing="0" width="186">
@@ -519,7 +519,7 @@ function toggleDisplay(id){
 			</tbody></table>
 </form>
                               <!-- More Job Search Options -->
-                                    
+
                               <!--img src="images/jobs/template/pixel.gif" height="10" width="1" /-->
 
                               <table bgcolor="#ffffff" border="0" cellpadding="0" cellspacing="0" width="186">
@@ -558,7 +558,7 @@ function toggleDisplay(id){
 <table width="100%">
 <tr>
   <td vlign="top" class="propertySheetNoBorder"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;jobStatus_select=Open&amp;file=/localSearchResults.html&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;position_groupBy=on&amp;origFile=/localSearchResults.html&amp;salary_groupBy=on&amp;salary=&gt;80000&amp;jobStatus=Open&amp;-viewCols=position&amp;-adTitle=Earn+&gt;$80K&amp;limit=5&amp;-suppressClassIcon=y" /></td>
-</tr>  
+</tr>
 </table>
 </td></tr>
                                   <tr>
@@ -572,7 +572,7 @@ function toggleDisplay(id){
                                 </tbody>
                               </table>
 
-                              
+
                               <!--  End More Job Search Options  -->
                             </td><!--spacer row-->
 
@@ -647,52 +647,8 @@ function toggleDisplay(id){
                                       </table>
                                     </td>
 
-                                    <td rowspan="2" class="null50" align="right" valign="bottom"><!--script language="JavaScript1.1">
-                                                  var MM_contentVersion = 7;
-                                                  var plugin = (navigator.mimeTypes && navigator.mimeTypes["application/x-shockwave-flash"]) ? navigator.mimeTypes["application/x-shockwave-flash"].enabledPlugin : 0;
-                                                  if ( plugin ) {
-                                                    var words = navigator.plugins["Shockwave Flash"].description.split(" ");
-                                                    for (var i = 0; i < words.length; ++i)
-                                                    {
-                                                    if (isNaN(parseInt(words[i])))
-                                                    continue;
-                                                    var MM_PluginVersion = words[i];
-                                                    }
-                                                    var MM_FlashCanPlay = MM_PluginVersion >= MM_contentVersion;
-                                                  }
-                                                  else if (navigator.userAgent && navigator.userAgent.indexOf("MSIE")>=0
-                                                    && (navigator.appVersion.indexOf("Win") != -1)) {
-                                                    document.write('<SCR' + 'IPT LANGUAGE=VBScript\> \n'); //FS hide this from IE4.5 Mac by splitting the tag
-                                                    document.write('on error resume next \n');
-                                                    document.write('MM_FlashCanPlay = ( IsObject(CreateObject("ShockwaveFlash.ShockwaveFlash." & MM_contentVersion)))\n');
-                                                    document.write('</SCR' + 'IPT\> \n');
-                                                  }
-                                                  if ( MM_FlashCanPlay ) {
-                                                    document.write('<OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"');
-                                                    document.write(' codebase="" ');
-                                                    document.write(' width="127" height="158">');
-                                                    document.write('<param name="movie" value="images/jobs/template/js/elements/hpanim/people_switch.swf">');
-                                                    document.write('<PARAM NAME=quality VALUE=best>');
-                                                    // document.write(' <param name="wmode" value="transparent"> ');
-                                                    document.write('<EMBED src="images/jobs/template/js/elements/hpanim/people_switch.swf" quality=best');
-                                                    document.write(' PLUGINSPAGE="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash"');
-                                                    document.write(' TYPE="application/x-shockwave-flash" width= "127" height = "158">');
-                                                    document.write(' </EMBED>');
-                                                    document.write(' </OBJECT>');
-                                                  } else{
-                                                    var ImageNum = 4;
-                                                    var randNum= Math.random() ;
-                                                    var rand2 = Math.round( (ImageNum-1) * randNum) + 1 ;
-                                                    var ShowImages = new Array
-                                                    ShowImages[1] = "images/jobs/template/photo_static1.jpg"
-                                                    ShowImages[2] = "images/jobs/template/photo_static2.jpg"
-                                                    ShowImages[3] = "images/jobs/template/photo_static3.jpg"
-                                                    ShowImages[4] = "images/jobs/template/photo_static4.jpg"
-                                                    var di = ShowImages[rand2];
-                                                    document.write('<img src="' + di + '" width="127" height="158" />');
-
-                                                  }
-                                                </script><object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,29,0" height="158" width="127"><param name="movie" value="images/jobs/template/js/elements/hpanim/people_switch.swf"><param name="quality" value="best"><embed src="images/jobs/template/people_switch.swf" quality="best" pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash" type="application/x-shockwave-flash" height="158" width="127">  </object><noscript--><img src="images/jobs/template/photo_static1.jpg" width="127" height="158" />
+                                    <td rowspan="2" class="null50" align="right" valign="bottom">
+                                                <img src="images/jobs/template/photo_static1.jpg" width="127" height="158" />
                                               </td>
                                   </tr>
 
@@ -872,7 +828,7 @@ function toggleDisplay(id){
                                           </tr>
                                         </tbody>
                                       </table>
-                                      
+
                                       <img src="images/jobs/template/pixel.gif" height="10" width="1" /><br />
                                       <a id="cblTV" onclick="javascript:window.open('http://careerbuilder.employ.com/?sc_cmp2=JS_HP1_sbpromo', '', 'width=700,height=500,resizable=1,left=10,top=10,toolbar,status,scrollbars,menubar,location');return false;" href="http://careerbuilder.employ.com/?sc_cmp2=JS_HP1_sbpromo"><img src="images/jobs/template/careerchannel_234x60_6k.gif" alt="Career Advice in Action" border="0" /></a>
                                     </td>
@@ -1002,8 +958,8 @@ function toggleDisplay(id){
 <script type="text/javascript" language="JavaScript">
 var s_account = "cbglobal"
 </script>
-<script type="text/javascript" language="JavaScript" src="images/jobs/template/SiteCatalystH.js">
-</script>
+<!--script type="text/javascript" language="JavaScript" src="images/jobs/template/SiteCatalystH.js">
+</script--->
 <img src="images/jobs/template/s48818340614349.gif" name="s_i_cbglobal" alt="" border="0" height="1" width="1" /> <script type="text/javascript" language="JavaScript">
 /* You may give each page an identifying name, server, and channel on the next lines. */
 s_cb.pageName = " - HP1"
