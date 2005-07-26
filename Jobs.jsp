@@ -2,7 +2,8 @@
 <style type="text/css">
  .cb_style table { text-align: left; } 
 </style>
-<link rel="stylesheet" type="text/css" href="images/jobs/template/global.css" /><style type="text/css">
+<link rel="stylesheet" type="text/css" href="images/jobs/template/global.css" />
+<style type="text/css">
   .inlNoDec{
     text-decoration:none;
   }
@@ -115,7 +116,7 @@
  a.null53 {text-decoration: none;}
  td.null52 {padding-top: 3px; padding-left: 18px; padding-bottom: 6px;}
  td.null51 {padding-top: 3px; padding-left: 51px; padding-bottom: 6px;}
- td.null50 {background-image: url(http://img.icbdr.com/images/js/elements/corners/w_drop_r.gif); background-position: right top; background-repeat: repeat-y;}
+ td.null50 {background-image: url(images/jobs/template/w_drop_r.gif); background-position: right top; background-repeat: repeat-y;}
  td.null49 {padding-left: 20px; padding-top: 10px; padding-bottom: 7px;}
  td.null48 {padding-top: 11px;}
  td.null47 {padding-top: 14px; padding-right: 3px;}
@@ -165,6 +166,9 @@
  td.null3 {padding-top: 2px; padding-bottom: 3px;}
  td.null2 {font-family: verdana; font-style: normal; font-variant: normal; font-size: 10px; line-height: normal; font-size-adjust: none; font-stretch: normal; font-weight: bold; text-align: right;}
  td.null1 {font-family: verdana; font-style: normal; font-variant: normal; font-size: 10px; line-height: normal; font-size-adjust: none; font-stretch: normal; font-weight: bold;}
+// Ovewrite HudsonFog styles to fit the style of the page
+  .input {background-color: #F1F1F1; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:000088; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; }
+  tr.dark {background-color: #FFFFCC; padding-left: 10px;}
 </style>
 <script language="JavaScript" src="images/jobs/template/Common.js" type="text/javascript">
 </script>
@@ -244,8 +248,9 @@
         <tr>
           <td>&#160;</td>
 
-<td class="null17"><nobr>
-          <a onmouseover="imageSwap('Home', 'images/jobs/template/tabHome_on.gif')" onmouseout="imageSwap('Home', 'images/jobs/template/tabHome_on.gif')" href="plain/Jobs.html"><img id="Home" src="images/jobs/template/tabHome_on.gif" alt="Home" class="null10" border="0" /></a><a onmouseover="imageSwap('FindJobs', 'images/jobs/template/tabFindJobs2_on.gif')" onmouseout="imageSwap('FindJobs', 'images/jobs/template/tabFindJobs2.gif')" href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job"><img id="FindJobs" src="images/jobs/template/tabFindJobs2.gif" alt="Find Jobs" class="null11" border="0" /></a><a onmouseover="imageSwap('PostResumes', 'images/jobs/template/tabPostResumes_on.gif')" onmouseout="imageSwap('PostResumes', 'images/jobs/template/tabPostResumes.gif')" href="mkResource.html?-$action=mkResource&amp;$browser=y&amp;displayProps=yes&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Resume"><img id="PostResumes" src="images/jobs/template/tabPostResumes.gif" alt="Post Resumes" class="null12" border="0" /></a><a onmouseover="imageSwap('JobAlerts', 'images/jobs/template/tabjobalerts_on.gif')" onmouseout="imageSwap('JobAlerts', 'images/jobs/template/tabjobalerts.gif')" href="http://careerbuilder.com/JobSeeker/jobalerts/setupjobalert.aspx?sc_cmp2=JS_HP1_Nav_Job+Alerts"><img id="JobAlerts" src="images/jobs/template/tabjobalerts.gif" alt="Job Alerts" class="null13" border="0" /></a><a onmouseover="imageSwap('MyCareerBuilder', 'images/jobs/template/tabMyCareerBuilder_on.gif')" onmouseout="imageSwap('MyCareerBuilder', 'images/jobs/template/tabMyCareerBuilder.gif')" href="http://careerbuilder.com/Share/Login.aspx?sc_cmp2=JS_HP1_Nav_MyCB"><img id="MyCareerBuilder" src="images/jobs/template/tabMyCareerBuilder.gif" alt="My CareerBuilder" class="null14" border="0" /></a><a onmouseover="imageSwap('Advice', 'images/jobs/template/tabAdvice_on.gif')" onmouseout="imageSwap('Advice', 'images/jobs/template/tabAdvice.gif')" href="http://careerbuilder.com/JobSeeker/Resources/CareerResources.aspx?sc_cmp2=JS_HP1_Nav_Advice"><img id="Advice" src="images/jobs/template/tabAdvice.gif" alt="Advice &amp; Resources" class="null15" border="0" /></a><a onmouseover="imageSwap('CareerFairs', 'images/jobs/template/tabCareerFairs_on.gif')" onmouseout="imageSwap('CareerFairs', 'images/jobs/template/tabCareerFairs.gif')" href="http://careerbuilder.com/JobSeeker/CareerFairs/default.aspx?sc_cmp2=JS_HP1_Nav_Career+Fairs"><img id="CareerFairs" src="images/jobs/template/tabCareerFairs.gif" alt="Career Fairs" class="null16" border="0" /></a></nobr></td>
+          <td class="null17"><nobr>
+            <a onmouseover="imageSwap('Home', 'images/jobs/template/tabHome_on.gif')" onmouseout="imageSwap('Home', 'images/jobs/template/tabHome_on.gif')" href="plain/Jobs.html"><img id="Home" src="images/jobs/template/tabHome_on.gif" alt="Home" class="null10" border="0" /></a><a onmouseover="imageSwap('FindJobs', 'images/jobs/template/tabFindJobs2_on.gif')" onmouseout="imageSwap('FindJobs', 'images/jobs/template/tabFindJobs2.gif')" href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job"><img id="FindJobs" src="images/jobs/template/tabFindJobs2.gif" alt="Find Jobs" class="null11" border="0" /></a><a onmouseover="imageSwap('PostResumes', 'images/jobs/template/tabPostResumes_on.gif')" onmouseout="imageSwap('PostResumes', 'images/jobs/template/tabPostResumes.gif')" href="mkResource.html?-$action=mkResource&amp;$browser=y&amp;displayProps=yes&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Resume"><img id="PostResumes" src="images/jobs/template/tabPostResumes.gif" alt="Post Resumes" class="null12" border="0" /></a><a onmouseover="imageSwap('JobAlerts', 'images/jobs/template/tabjobalerts_on.gif')" onmouseout="imageSwap('JobAlerts', 'images/jobs/template/tabjobalerts.gif')" href="http://careerbuilder.com/JobSeeker/jobalerts/setupjobalert.aspx?sc_cmp2=JS_HP1_Nav_Job+Alerts"><img id="JobAlerts" src="images/jobs/template/tabjobalerts.gif" alt="Job Alerts" class="null13" border="0" /></a><a onmouseover="imageSwap('MyCareerBuilder', 'images/jobs/template/tabMyCareerBuilder_on.gif')" onmouseout="imageSwap('MyCareerBuilder', 'images/jobs/template/tabMyCareerBuilder.gif')" href="http://careerbuilder.com/Share/Login.aspx?sc_cmp2=JS_HP1_Nav_MyCB"><img id="MyCareerBuilder" src="images/jobs/template/tabMyCareerBuilder.gif" alt="My CareerBuilder" class="null14" border="0" /></a><a onmouseover="imageSwap('Advice', 'images/jobs/template/tabAdvice_on.gif')" onmouseout="imageSwap('Advice', 'images/jobs/template/tabAdvice.gif')" href="http://careerbuilder.com/JobSeeker/Resources/CareerResources.aspx?sc_cmp2=JS_HP1_Nav_Advice"><img id="Advice" src="images/jobs/template/tabAdvice.gif" alt="Advice &amp; Resources" class="null15" border="0" /></a><a onmouseover="imageSwap('CareerFairs', 'images/jobs/template/tabCareerFairs_on.gif')" onmouseout="imageSwap('CareerFairs', 'images/jobs/template/tabCareerFairs.gif')" href="http://careerbuilder.com/JobSeeker/CareerFairs/default.aspx?sc_cmp2=JS_HP1_Nav_Career+Fairs"><img id="CareerFairs" src="images/jobs/template/tabCareerFairs.gif" alt="Career Fairs" class="null16" border="0" /></a></nobr>
+          </td>
 
           <td class="null18" align="right">
           </td>
@@ -410,6 +415,7 @@ function toggleDisplay(id){
                             <!--custom quick search box-->
 
                             <td width="190">
+<form name="rightPanelPropertySheet" id="filter" method="POST">
                               <table bgcolor="#FFFFCC" border="0" cellpadding="0" cellspacing="0" width="190">
                                 <tbody>
                                   <tr>
@@ -422,487 +428,44 @@ function toggleDisplay(id){
                                   </tr>
                                   <tr>
                                     <td class="inlBumpLeft inlQSBTitle">Enter Keywords</td>
-
-                                    <td class="inlBumpRight" align="right"><a href="http://www.fuzeqna.com/careerbuilder/consumer/search.asp?catID=26&amp;simplesearch=true" target="_new" onclick="window.open('http://www.fuzeqna.com/careerbuilder/consumer/search.asp?catID=26&amp;simplesearch=true', 'wndSearchHelp', 'width=500,height=415,address=0,status=1,scrollbars=1,resizable=yes'); return false;">Help</a></td>
                                   </tr>
+                                  <tr>
+                          					<td class="inlBumpLeft" colspan="2">(i.e. job title, company name)</td>
+                                  </tr>
+													        <tr>
+																		<td class="inlBumpLeft" colspan="2">
+																		   <input type="text" class="input"  size="21" name="-q" value="-- Search --" onClick="onFormFieldClick(searchForm, this)" onChange="onFormFieldChange(searchForm, this, '-- Search --')" onBlur="onFormFieldChange(searchForm, this, '-- Search --')"/>
+																		   <input type="hidden" name="type" value="http://www.hudsonfog.com/voc/classifieds/jobs/Job" />
+																		   <input type="hidden" name="-cat" value="on"/>
+																		   <input type="hidden" name="resourcesUri" value="/sql/text/search/resources" />
+																		   <input type="hidden" name="-isTemplate" value="y"/>
+													       	 		 <input type="hidden" name="-$action" value="searchLocal"></input>
+																		</td>
+																	</tr>			
+																	<tr>	
+																		<td class="inlBumpLeft" colspan="2">
+			<rightPanelPropertySheet width="186" properties="country,region,city,postalCode,jobCategory" type="http://www.hudsonfog.com/voc/classifieds/jobs/Job" noTable="y" />
+			                              </td>
+			                            </tr>
+													        <tr>
+																		<td class="inlBumpLeft" colspan="2" style="padding: 0px 0px 10px;" align="center"></td>
+																	</tr>
+														    </tbody>
+														  </table>
 
-                                </tbody>
-                              </table>
-<form name="rightPanelPropertySheet" id="filter" method="POST">
                               
-			<rightPanelPropertySheet width="186" rType="http://www.hudsonfog.com/voc/classifieds/jobs/Job" properties="country,region,city,postalCode"/>
-			<input type="hidden" name="-$action" value="searchLocal"></input>
                               <table bgcolor="#FFFFCC" border="0" cellpadding="0" cellspacing="0" width="190">
                                 <tbody>
-                                  <tr><td colspan="3"></td></tr>
                                   <tr>
-                                    <td width="*">&#160;<input type="image" src="images/jobs/template/qjs_btn_search.gif" name="submit" value="Filter" alt="Search" tabindex="5" height="28" width="66" /></td>
                                     <td class="inlBumpLeft" width="*"><a href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job" class="null31">Advanced search</a></td>
-                                    <td rowspan="10" background="images/jobs/template/qjs_drop_bg_r.gif" width="4"></td>
+
+                                    <td width="*"><input type="image" src="images/jobs/template/qjs_btn_search.gif" name="submit" value="Filter" alt="Search" tabindex="5" height="28" width="66" /></td>
+
+                                    <td rowspan="10" background="images/jobs/template/qjs_drop_bg_r.gif" width="4">
+                                    </td>
                                   </tr>
                                 </tbody>
                               </table>
-</form>                              
-                              <!--  Additional Cateories Table  -->
-
-                              <table id="advSearch" class="null34" bgcolor="#FFFFCC" border="0" cellpadding="0" cellspacing="0" width="190">
-                                <tbody>
-                                  <tr>
-                                    <td class="inlBumpLeft" width="*"><select name="MXJOBSRCHCRITERIA_JobTypes" class="inlQSBDD" tabindex="4">
-                                      <option value="All" selected="selected">
-                                        &#160;&#226;&#128;&#147;&#160;All Job Categories&#160;&#226;&#128;&#147;&#160;
-                                      </option>
-
-                                      <option value="jn001">
-                                        Accounting
-                                      </option>
-
-                                      <option value="jn002">
-                                        Admin &amp; Clerical
-                                      </option>
-
-                                      <option value="jn054">
-                                        Automotive
-                                      </option>
-
-                                      <option value="jn038">
-                                        Banking
-                                      </option>
-
-                                      <option value="jn053">
-                                        Biotech
-                                      </option>
-
-                                      <option value="jn047">
-                                        Broadcast - Journalism
-                                      </option>
-
-                                      <option value="jn019">
-                                        Business Development
-                                      </option>
-
-                                      <option value="jn043">
-                                        Construction
-                                      </option>
-
-                                      <option value="jn020">
-                                        Consultant
-                                      </option>
-
-                                      <option value="jn003">
-                                        Customer Service
-                                      </option>
-
-                                      <option value="jn021">
-                                        Design
-                                      </option>
-
-                                      <option value="jn027">
-                                        Distribution - Shipping
-                                      </option>
-
-                                      <option value="jn031">
-                                        Education
-                                      </option>
-
-                                      <option value="jn004">
-                                        Engineering
-                                      </option>
-
-                                      <option value="jn022">
-                                        Entry Level
-                                      </option>
-
-                                      <option value="jn018">
-                                        Executive
-                                      </option>
-
-                                      <option value="jn017">
-                                        Facilities
-                                      </option>
-
-                                      <option value="jn005">
-                                        Finance
-                                      </option>
-
-                                      <option value="jn006">
-                                        General Business
-                                      </option>
-
-                                      <option value="jn051">
-                                        General Labor
-                                      </option>
-
-                                      <option value="jn046">
-                                        Government
-                                      </option>
-
-                                      <option value="jn055">
-                                        Grocery
-                                      </option>
-
-                                      <option value="jn023">
-                                        Healthcare
-                                      </option>
-
-                                      <option value="jn040">
-                                        Hospitality - Hotel
-                                      </option>
-
-                                      <option value="jn007">
-                                        Human Resources
-                                      </option>
-
-                                      <option value="jn008">
-                                        Information Technology
-                                      </option>
-
-                                      <option value="jn056">
-                                        Installation - Maint - Repair
-                                      </option>
-
-                                      <option value="jn034">
-                                        Insurance
-                                      </option>
-
-                                      <option value="jn015">
-                                        Inventory
-                                      </option>
-
-                                      <option value="jn030">
-                                        Legal
-                                      </option>
-
-                                      <option value="jn041">
-                                        Legal Admin
-                                      </option>
-
-                                      <option value="jn037">
-                                        Management
-                                      </option>
-
-                                      <option value="jn029">
-                                        Manufacturing
-                                      </option>
-
-                                      <option value="jn009">
-                                        Marketing
-                                      </option>
-
-                                      <option value="jn058">
-                                        Nonprofit - Social Services
-                                      </option>
-
-                                      <option value="jn050">
-                                        Nurse
-                                      </option>
-
-                                      <option value="jn010">
-                                        Other
-                                      </option>
-
-                                      <option value="jn049">
-                                        Pharmaceutical
-                                      </option>
-
-                                      <option value="jn024">
-                                        Professional Services
-                                      </option>
-
-                                      <option value="jn016">
-                                        Purchasing - Procurement
-                                      </option>
-
-                                      <option value="jn025">
-                                        QA - Quality Control
-                                      </option>
-
-                                      <option value="jn057">
-                                        Real Estate
-                                      </option>
-
-                                      <option value="jn026">
-                                        Research
-                                      </option>
-
-                                      <option value="jn035">
-                                        Restaurant - Food Service
-                                      </option>
-
-                                      <option value="jn033">
-                                        Retail
-                                      </option>
-
-                                      <option value="jn011">
-                                        Sales
-                                      </option>
-
-                                      <option value="jn012">
-                                        Science
-                                      </option>
-
-                                      <option value="jn013">
-                                        Skilled Labor - Trades
-                                      </option>
-
-                                      <option value="jn028">
-                                        Strategy - Planning
-                                      </option>
-
-                                      <option value="jn014">
-                                        Supply Chain
-                                      </option>
-
-                                      <option value="jn048">
-                                        Telecommunications
-                                      </option>
-
-                                      <option value="jn032">
-                                        Training
-                                      </option>
-
-                                      <option value="jn044">
-                                        Transportation
-                                      </option>
-
-                                      <option value="jn045">
-                                        Warehouse
-                                      </option>
-                                    </select></td>
-
-                                    <td id="Td1" rowspan="2" name="Td1" background="images/jobs/template/qjs_drop_bg_r.gif" width="4">
-                                    </td>
-                                  </tr>
-
-                                  <tr>
-                                    <td class="inlBumpLeft null33" colspan="2"><select name="MXJOBSRCHCRITERIA_JobTypes" class="inlQSBDD" tabindex="4">
-                                      <option value="All" selected="selected">
-                                        &#160;&#226;&#128;&#147;&#160;All Job Categories&#160;&#226;&#128;&#147;&#160;
-                                      </option>
-
-                                      <option value="jn001">
-                                        Accounting
-                                      </option>
-
-                                      <option value="jn002">
-                                        Admin &amp; Clerical
-                                      </option>
-
-                                      <option value="jn054">
-                                        Automotive
-                                      </option>
-
-                                      <option value="jn038">
-                                        Banking
-                                      </option>
-
-                                      <option value="jn053">
-                                        Biotech
-                                      </option>
-
-                                      <option value="jn047">
-                                        Broadcast - Journalism
-                                      </option>
-
-                                      <option value="jn019">
-                                        Business Development
-                                      </option>
-
-                                      <option value="jn043">
-                                        Construction
-                                      </option>
-
-                                      <option value="jn020">
-                                        Consultant
-                                      </option>
-
-                                      <option value="jn003">
-                                        Customer Service
-                                      </option>
-
-                                      <option value="jn021">
-                                        Design
-                                      </option>
-
-                                      <option value="jn027">
-                                        Distribution - Shipping
-                                      </option>
-
-                                      <option value="jn031">
-                                        Education
-                                      </option>
-
-                                      <option value="jn004">
-                                        Engineering
-                                      </option>
-
-                                      <option value="jn022">
-                                        Entry Level
-                                      </option>
-
-                                      <option value="jn018">
-                                        Executive
-                                      </option>
-
-                                      <option value="jn017">
-                                        Facilities
-                                      </option>
-
-                                      <option value="jn005">
-                                        Finance
-                                      </option>
-
-                                      <option value="jn006">
-                                        General Business
-                                      </option>
-
-                                      <option value="jn051">
-                                        General Labor
-                                      </option>
-
-                                      <option value="jn046">
-                                        Government
-                                      </option>
-
-                                      <option value="jn055">
-                                        Grocery
-                                      </option>
-
-                                      <option value="jn023">
-                                        Healthcare
-                                      </option>
-
-                                      <option value="jn040">
-                                        Hospitality - Hotel
-                                      </option>
-
-                                      <option value="jn007">
-                                        Human Resources
-                                      </option>
-
-                                      <option value="jn008">
-                                        Information Technology
-                                      </option>
-
-                                      <option value="jn056">
-                                        Installation - Maint - Repair
-                                      </option>
-
-                                      <option value="jn034">
-                                        Insurance
-                                      </option>
-
-                                      <option value="jn015">
-                                        Inventory
-                                      </option>
-
-                                      <option value="jn030">
-                                        Legal
-                                      </option>
-
-                                      <option value="jn041">
-                                        Legal Admin
-                                      </option>
-
-                                      <option value="jn037">
-                                        Management
-                                      </option>
-
-                                      <option value="jn029">
-                                        Manufacturing
-                                      </option>
-
-                                      <option value="jn009">
-                                        Marketing
-                                      </option>
-
-                                      <option value="jn058">
-                                        Nonprofit - Social Services
-                                      </option>
-
-                                      <option value="jn050">
-                                        Nurse
-                                      </option>
-
-                                      <option value="jn010">
-                                        Other
-                                      </option>
-
-                                      <option value="jn049">
-                                        Pharmaceutical
-                                      </option>
-
-                                      <option value="jn024">
-                                        Professional Services
-                                      </option>
-
-                                      <option value="jn016">
-                                        Purchasing - Procurement
-                                      </option>
-
-                                      <option value="jn025">
-                                        QA - Quality Control
-                                      </option>
-
-                                      <option value="jn057">
-                                        Real Estate
-                                      </option>
-
-                                      <option value="jn026">
-                                        Research
-                                      </option>
-
-                                      <option value="jn035">
-                                        Restaurant - Food Service
-                                      </option>
-
-                                      <option value="jn033">
-                                        Retail
-                                      </option>
-
-                                      <option value="jn011">
-                                        Sales
-                                      </option>
-
-                                      <option value="jn012">
-                                        Science
-                                      </option>
-
-                                      <option value="jn013">
-                                        Skilled Labor - Trades
-                                      </option>
-
-                                      <option value="jn028">
-                                        Strategy - Planning
-                                      </option>
-
-                                      <option value="jn014">
-                                        Supply Chain
-                                      </option>
-
-                                      <option value="jn048">
-                                        Telecommunications
-                                      </option>
-
-                                      <option value="jn032">
-                                        Training
-                                      </option>
-
-                                      <option value="jn044">
-                                        Transportation
-                                      </option>
-
-                                      <option value="jn045">
-                                        Warehouse
-                                      </option>
-                                    </select></td>
-                                  </tr><!--End JobTypes Safety Valve Placeholder-->
-                                </tbody>
-                              </table><!--
-                                    
-                                    End Additional Cateories Table
-                                    
-                                    --><input name="st" value="q" type="hidden" /> <input value="df" name="ob" type="hidden" /> <input value="all" name="use" type="hidden" /> <input value="SQ" name="ipath" type="hidden" /> 
 
                               <table border="0" cellpadding="0" cellspacing="0" width="190">
                                 <tbody>
@@ -914,43 +477,50 @@ function toggleDisplay(id){
                                     <td align="right" width="4"><img src="images/jobs/template/qjs_drop_bot_br.gif" height="14" width="16" /></td>
                                   </tr>
                                 </tbody>
-                              </table><input name="st" value="q" type="hidden" /> <input value="df" name="ob" type="hidden" /> <input value="All" name="Use" type="hidden" /> <input value="webid" name="ipath" type="hidden" /> 
-
-                              <table bgcolor="#F1F1F1" border="0" cellpadding="0" cellspacing="0" width="190">
-                                <tbody>
-                                  <tr>
-                                    <td class="null35" align="right" width="65">Search by<br />
-                                    <a href="http://careerbuilder.com/JobSeeker/Jobs/SearchHelp.asp#saved9" target="_new" onclick="window.open('/JobSeeker/Jobs/SearchHelp.asp#saved9', 'wndSearchHelp', 'height=333,width=417,scrollbars=1,resizable=yes'); return false;" class="null31">Web ID</a></td>
-
-                                    <td align="right" width="60"><input name="MXJOBSRCHCRITERIA_Rawwords" class="null36" type="text" /></td>
-
-                                    <td class="null37" width="61"><input value="Go" type="submit" /></td>
-
-                                    <td class="null38" width="4">
-                                    </td>
-                                  </tr>
-                                </tbody>
                               </table>
 
-                              <table bgcolor="#F1F1F1" border="0" cellpadding="0" cellspacing="0" width="190">
-                                <tbody>
-                                  <tr>
-                                    <td><img src="images/jobs/template/gry_org_10_8_bl.gif" height="8" width="10" /></td>
+			<table bgcolor="#f1f1f1" border="0" cellpadding="0" cellspacing="0" width="190">
+				<tbody><tr>
+					<td><img src="images/jobs/template/gry_org_10_8_bl.gif" height="8" width="10"/></td>
+					<td><img src="images/jobs/template/pixel.gif" height="1" width="1"/></td>
+					<td align="right"><img src="images/jobs/template/gry_org_10_8_br.gif" height="8" width="10"/></td>
+					<td bgcolor="#ffcc66" width="4"></td>
+				</tr>
+			</tbody></table>
+</form>   
 
-                                    <td><img src="images/jobs/template/pixel.gif" height="1" width="1" /></td>
+<form name="searchByWebID" action="localSearchResults.html">
+     <table bgcolor="#f1f1f1" border="0" cellpadding="0" cellspacing="0" width="186">
+     <tbody>
+      <tr>
+        <td><img src="images/jobs/template/org_w_10_tl.gif" height="10" width="10" /></td>
+        <td colspan="2" bgcolor="#ffffff"><img src="images/jobs/template/pixel.gif" height="1" width="166" /></td>
+        <td><img src="images/jobs/template/org_w_10_tr.gif" height="10" width="10" /></td>
+      </tr>
 
-                                    <td align="right"><img src="images/jobs/template/gry_org_10_8_br.gif" height="8" width="10" /></td>
+      <tr>
+        <td bgcolor="#ffffff"></td>
+        <td bgcolor="#ffffff" valign="top"  style="font-size: 10px;">
+          Search by<br/> Web ID
+          <input type="hidden" name="-$action" value="searchLocal"/>
+          <input type="hidden" name="type" width="5" value="http://www.hudsonfog.com/voc/classifieds/jobs/Job"/>
+        </td>
+        <td bgcolor="#ffffff"><input type="text" style="width: 52px;" name="jobId" value=""/><input type="submit" name="Filter" value="Go"/></td>
+        <td bgcolor="#ffffff">
+        </td>
+      </tr>
+		  <tr>
+        <td><img src="images/jobs/template/org_w_10_bl.gif" height="10" width="10" /></td>
 
-                                    <td bgcolor="#FFCC66" width="4">
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table><!--
+        <td colspan="2" bgcolor="#ffffff"></td>
+
+        <td><img src="images/jobs/template/org_w_10_br.gif" height="10" width="10" /></td>
+      </tr>
+			</tbody></table>
+</form>
+                              <!-- More Job Search Options -->
                                     
-                                    More Job Search Options
-                                    
-                                    --><img src="images/jobs/template/pixel.gif" height="10" width="1" /><!--
-                                    -->
+                              <!--img src="images/jobs/template/pixel.gif" height="10" width="1" /-->
 
                               <table bgcolor="#ffffff" border="0" cellpadding="0" cellspacing="0" width="186">
                                 <tbody>
@@ -987,7 +557,13 @@ function toggleDisplay(id){
                                     <td bgcolor="#ffffff">
                                     </td>
                                   </tr>
-
+<tr><td colspan="3">
+<table width="100%">
+<tr>
+  <td vlign="top" class="propertySheetNoBorder"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;jobStatus_select=Open&amp;file=/localSearchResults.html&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;position_groupBy=on&amp;origFile=/localSearchResults.html&amp;salary_groupBy=on&amp;salary=&gt;80000&amp;jobStatus=Open&amp;-viewCols=position&amp;-adTitle=Earn+&gt;$80K&amp;limit=5&amp;-suppressClassIcon=y" /></td>
+</tr>  
+</table>
+</td></tr>
                                   <tr>
                                     <td><img src="images/jobs/template/org_w_10_bl.gif" height="10" width="10" /></td>
 
@@ -999,11 +575,6 @@ function toggleDisplay(id){
                                 </tbody>
                               </table>
 
-<table width="100%">
-<tr>
-  <td vlign="top" class="propertySheet"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;jobStatus_select=Open&amp;file=/localSearchResults.html&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;position_groupBy=on&amp;origFile=/localSearchResults.html&amp;salary_groupBy=on&amp;salary=&gt;80000&amp;jobStatus=Open&amp;-viewCols=position&amp;-adTitle=Earn+&gt;$80K&amp;limit=5" /></td>
-</tr>  
-</table>
                               
                               <!--  End More Job Search Options  -->
                             </td><!--spacer row-->
@@ -1076,8 +647,7 @@ function toggleDisplay(id){
                                             <td class="null48"><a id="cblHourly" onclick="s_objectID='';" href="http://careerbuilder.com/JobSeeker/Resumes/HourlyResume.aspx?sc_cmp2=JS_HP1_MA_Hourly"><nobr>Hourly workers: Apply here</nobr></a></td>
                                           </tr>
                                         </tbody>
-                                      </table><!--
-                                                -->
+                                      </table>
                                     </td>
 
                                     <td rowspan="2" class="null50" align="right" valign="bottom"><!--script language="JavaScript1.1">
@@ -1104,10 +674,10 @@ function toggleDisplay(id){
                                                     document.write('<OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"');
                                                     document.write(' codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,29,0" ');
                                                     document.write(' width="127" height="158">');
-                                                    document.write('<param name="movie" value="http://img.icbdr.com/images/js/elements/hpanim/people_switch.swf">');
+                                                    document.write('<param name="movie" value="images/jobs/template/js/elements/hpanim/people_switch.swf">');
                                                     document.write('<PARAM NAME=quality VALUE=best>');
                                                     // document.write(' <param name="wmode" value="transparent"> ');
-                                                    document.write('<EMBED src="http://img.icbdr.com/images/js/elements/hpanim/people_switch.swf" quality=best');
+                                                    document.write('<EMBED src="images/jobs/template/js/elements/hpanim/people_switch.swf" quality=best');
                                                     document.write(' PLUGINSPAGE="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash"');
                                                     document.write(' TYPE="application/x-shockwave-flash" width= "127" height = "158">');
                                                     document.write(' </EMBED>');
@@ -1117,16 +687,16 @@ function toggleDisplay(id){
                                                     var randNum= Math.random() ;
                                                     var rand2 = Math.round( (ImageNum-1) * randNum) + 1 ;
                                                     var ShowImages = new Array
-                                                    ShowImages[1] = "http://img.icbdr.com/images/js/elements/hpanim/photo_static1.jpg"
-                                                    ShowImages[2] = "http://img.icbdr.com/images/js/elements/hpanim/photo_static2.jpg"
-                                                    ShowImages[3] = "http://img.icbdr.com/images/js/elements/hpanim/photo_static3.jpg"
-                                                    ShowImages[4] = "http://img.icbdr.com/images/js/elements/hpanim/photo_static4.jpg"
+                                                    ShowImages[1] = "images/jobs/template/photo_static1.jpg"
+                                                    ShowImages[2] = "images/jobs/template/photo_static2.jpg"
+                                                    ShowImages[3] = "images/jobs/template/photo_static3.jpg"
+                                                    ShowImages[4] = "images/jobs/template/photo_static4.jpg"
                                                     var di = ShowImages[rand2];
                                                     document.write('<img src="' + di + '" width="127" height="158" />');
 
                                                   }
-                                                </script><object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,29,0" height="158" width="127"><param name="movie" value="http://img.icbdr.com/images/js/elements/hpanim/people_switch.swf"><param name="quality" value="best"><embed src="images/jobs/template/people_switch.swf" quality="best" pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash" type="application/x-shockwave-flash" height="158" width="127">  </object><noscript--><img src="http://img.icbdr.com/images/js/elements/hpanim/photo_static1.jpg" width="127" height="158" /><!--/noscript--><!--
-                                              --></td>
+                                                </script><object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,29,0" height="158" width="127"><param name="movie" value="images/jobs/template/js/elements/hpanim/people_switch.swf"><param name="quality" value="best"><embed src="images/jobs/template/people_switch.swf" quality="best" pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash" type="application/x-shockwave-flash" height="158" width="127">  </object><noscript--><img src="images/jobs/template/photo_static1.jpg" width="127" height="158" />
+                                              </td>
                                   </tr>
 
                                   <tr valign="top">
@@ -1155,7 +725,6 @@ function toggleDisplay(id){
 
                                   <tr bgcolor="#ffffff">
                                     <td><img src="images/jobs/template/pixel.gif" height="1" width="1" /></td>
-
                                     <td>
                                       <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                         <tbody>
@@ -1168,66 +737,19 @@ function toggleDisplay(id){
                                           </tr>
                                         </tbody>
                                       </table>
-
-
-                                      <!--table id="sdl_dl" class="null55" border="0" cellpadding="1" cellspacing="0">
-                                        <tbody>
-                                          <tr>
-                                            <td>- <a id="sdl_dl__ctl0_cbl" onclick="s_objectID='';" href="http://accounting.careerbuilder.com/?sc_cmp2=JS_HP1_SD_AG">Accounting</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl5_cbl" onclick="s_objectID='';" href="http://customer-service.careerbuilder.com/?sc_cmp2=JS_HP1_SD_CS">Customer Service</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl10_cbl" onclick="s_objectID='';" href="http://healthcare.careerbuilder.com/?sc_cmp2=JS_HP1_SD_HC">Healthcare</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl15_cbl" onclick="s_objectID='';" href="http://nonprofit.careerbuilder.com/?sc_cmp2=JS_HP1_SD_NP">Nonprofit</a></td>
-                                          </tr>
-
-                                          <tr>
-                                            <td>- <a id="sdl_dl__ctl1_cbl" onclick="s_objectID='';" href="http://admin-clerical.careerbuilder.com/?sc_cmp2=JS_HP1_SD_AC">Admin &amp; Clerical</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl6_cbl" onclick="s_objectID='';" href="http://diversity.careerbuilder.com/?sc_cmp2=JS_HP1_SD_DI">Diversity</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl11_cbl" onclick="s_objectID='';" href="http://hospitality.careerbuilder.com/?sc_cmp2=JS_HP1_SD_HP">Hospitality</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl16_cbl" onclick="s_objectID='';" href="http://part-time.careerbuilder.com/?sc_cmp2=JS_HP1_SD_PT">Part-Time<img id="imgNew" runat="server" src="images/jobs/template/new.gif" border="0" /></a></td>
-                                          </tr>
-
-                                          <tr>
-                                            <td>- <a id="sdl_dl__ctl2_cbl" onclick="s_objectID='';" href="http://banking-finance.careerbuilder.com/?sc_cmp2=JS_HP1_SD_BF">Banking &amp; Finance</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl7_cbl" onclick="s_objectID='';" href="http://engineering.careerbuilder.com/?sc_cmp2=JS_HP1_SD_EN">Engineering</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl12_cbl" onclick="s_objectID='';" href="http://human-resources.careerbuilder.com/?sc_cmp2=JS_HP1_SD_HR">Human Resources</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl17_cbl" onclick="s_objectID='';" href="http://retail.careerbuilder.com/?sc_cmp2=JS_HP1_SD_RT">Retail</a></td>
-                                          </tr>
-
-                                          <tr>
-                                            <td>- <a id="sdl_dl__ctl3_cbl" onclick="s_objectID='';" href="http://college.careerbuilder.com/?sc_cmp2=JS_HP1_SD_CO">College</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl8_cbl" onclick="s_objectID='';" href="http://executive.careerbuilder.com/?sc_cmp2=JS_HP1_SD_EX">Executive</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl13_cbl" onclick="s_objectID='';" href="http://information-technology.careerbuilder.com/?sc_cmp2=JS_HP1_SD_IT">Information Technology</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl18_cbl" onclick="s_objectID='';" href="http://sales-marketing.careerbuilder.com/?sc_cmp2=JS_HP1_SD_SM">Sales &amp; Marketing</a></td>
-                                          </tr>
-
-                                          <tr>
-                                            <td>- <a id="sdl_dl__ctl4_cbl" onclick="s_objectID='';" href="http://www.sologig.com/?sc_cmp2=JS_HP1_SD_AL">Contract/Freelance</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl9_cbl" onclick="s_objectID='';" href="http://gov.careerbuilder.com/?sc_cmp2=JS_HP1_SD_GV">Government</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl14_cbl" onclick="s_objectID='';" href="http://manufacturing.careerbuilder.com/?sc_cmp2=JS_HP1_SD_MF">Manufacturing</a></td>
-
-                                            <td>- <a id="sdl_dl__ctl19_cbl" onclick="s_objectID='';" href="http://science-biotech.careerbuilder.com/?sc_cmp2=JS_HP1_SD_SB">Science &amp; Biotech</a></td>
-                                          </tr>
-                                        </tbody>
-                                      </table-->
                                     </td>
-
                                     <td><img src="images/jobs/template/pixel.gif" height="1" width="1" /></td>
                                   </tr>
 
+<tr bgcolor="#ffffff">
+ <td colspan="3">
+	<table width="100%">
+	<tr>
+	  <td vlign="top" class="propertySheetNoBorder"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;jobStatus_select=Open&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;industry_groupBy=on&amp;jobStatus=Open&amp;-inRow=3&amp;-viewCols=industry&amp;limit=21&amp;-suppressClassIcon=y&amp;-suppressHeader=y" /></td>
+	</tr>
+	</table>
+</td>
+</tr>
                                   <tr>
                                     <td bgcolor="#ffffff"><img src="images/jobs/template/pixel.gif" height="10" width="10" /></td>
 
@@ -1237,11 +759,6 @@ function toggleDisplay(id){
                                   </tr>
                                 </tbody>
                               </table>
-<table width="100%">
-<tr>
-  <td vlign="top" class="propertySheet"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;jobStatus_select=Open&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;industry_groupBy=on&amp;jobStatus=Open&amp;-inRow=3&amp;-viewCols=industry&amp;limit=21&amp;-suppressClassIcon=y&amp;-suppressHeader=y" /></td>
-</tr>  
-</table>
 
                               <table border="0" cellpadding="0" cellspacing="0" width="554">
                                 <tbody>
@@ -1258,42 +775,6 @@ function toggleDisplay(id){
                                             <td colspan="3" class="null56">-&#160;<b>Featured Category:</b>&#160;&#160;Over 48,000 IT jobs</td>
                                           </tr>
                                           <tr>
-                                            <td><img src="images/jobs/template/or_gry_9_BL.gif" height="9" width="9" /></td>
-
-                                            <td><img src="images/jobs/template/pixel.gif" height="1" width="262" /></td>
-
-                                            <td><img src="images/jobs/template/or_gry_9_BR.gif" height="9" width="9" /></td>
-                                          </tr>
-                                        </tbody>
-                                      </table>
-<form name="rightPanelPropertySheet_1" id="filter" method="POST">
-			<rightPanelPropertySheet width="200" rType="http://www.hudsonfog.com/voc/classifieds/jobs/Job" properties="jobCategory,city"/>
-			<input type="hidden" name="-$action" value="searchLocal"></input>
-                              <table bgcolor="#FFFFCC" border="0" cellpadding="0" cellspacing="0" width="200">
-                                <tbody>
-                                  <tr><td colspan="3"></td></tr>
-                                  <tr>
-                                    <td width="*">&#160;<input type="image" src="images/jobs/template/qjs_btn_search.gif" name="submit" value="Filter" alt="Search" tabindex="5" height="28" width="66" /></td>
-                                    <td class="inlBumpLeft" width="*"><a href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job" class="null31">Advanced search</a></td>
-                                    <td rowspan="10" background="images/jobs/template/qjs_drop_bg_r.gif" width="4"></td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                              <table border="0" cellpadding="0" cellspacing="0" width="200">
-                                <tbody>
-                                  <tr>
-                                    <td><img src="images/jobs/template/qjs_drop_bot_bl.gif" height="14" width="16" /></td>
-
-                                    <td background="images/jobs/template/qjs_drop_bot.gif" width="168">&#160;</td>
-
-                                    <td align="right" width="4"><img src="images/jobs/template/qjs_drop_bot_br.gif" height="14" width="16" /></td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                              
-</form>
-
-                                          <!--tr>
                                             <td colspan="3" class="null57"><select onchange="window.location=this.options[this.selectedIndex].value;" class="Standard">
                                               <option value="http://information-technology.careerbuilder.com/it.ic/?sc_cmp2=JS_HP1_FC_IT" selected="selected">
                                                 Select a City:
@@ -1383,12 +864,21 @@ function toggleDisplay(id){
                                                 More Search Options
                                               </option>
                                             </select></td>
-                                          </tr-->
+                                          </tr>
 
+                                          <tr>
+                                            <td><img src="images/jobs/template/or_gry_9_BL.gif" height="9" width="9" /></td>
+
+                                            <td><img src="images/jobs/template/pixel.gif" height="1" width="262" /></td>
+
+                                            <td><img src="images/jobs/template/or_gry_9_BR.gif" height="9" width="9" /></td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
                                       
-                                    </td>
                                       <img src="images/jobs/template/pixel.gif" height="10" width="1" /><br />
                                       <a id="cblTV" onclick="javascript:window.open('http://careerbuilder.employ.com/?sc_cmp2=JS_HP1_sbpromo', '', 'width=700,height=500,resizable=1,left=10,top=10,toolbar,status,scrollbars,menubar,location');return false;" href="http://careerbuilder.employ.com/?sc_cmp2=JS_HP1_sbpromo"><img src="images/jobs/template/careerchannel_234x60_6k.gif" alt="Career Advice in Action" border="0" /></a>
+                                    </td>
 
                                     <td class="null61" align="center" width="250">
 
@@ -1437,6 +927,13 @@ function toggleDisplay(id){
                           </tr>
                         </tbody>
                       </table>
+</form>
+
+<!--form name="rightPanelPropertySheet" id="filter" method="POST">
+			<rightPanelPropertySheet width="186" rType="http://www.hudsonfog.com/voc/classifieds/jobs/Job" properties="jobCategory,city"/>
+			<input type="hidden" name="-$action" value="searchLocal"></input>
+</form-->
+
 </div>
                     <br />
                     &#160;<!--lrSPF-->
