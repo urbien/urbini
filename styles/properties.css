@@ -124,3 +124,4 @@ tr.editMode  {background-color:#D6E7EF;}
 span.bigLetterTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16pt; color:#00309C;} 
 /* To display big letter title when full text search criteria was there */
 span.bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#00309C;}
+td.horizontalFilter { filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#C0C9D7', EndColorStr='#ffffff') }
