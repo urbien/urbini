@@ -437,7 +437,6 @@ function toggleDisplay(id){
 																		   <input type="text" class="input"  size="21" name="-q" value="-- Search --" onClick="onFormFieldClick(searchForm, this)" onChange="onFormFieldChange(searchForm, this, '-- Search --')" onBlur="onFormFieldChange(searchForm, this, '-- Search --')"/>
 																		   <input type="hidden" name="type" value="http://www.hudsonfog.com/voc/classifieds/jobs/Job" />
 																		   <input type="hidden" name="-cat" value="on"/>
-																		   <input type="hidden" name="resourcesUri" value="/sql/text/search/resources" />
 																		   <input type="hidden" name="-isTemplate" value="y"/>
 													       	 		 <input type="hidden" name="-$action" value="searchLocal"></input>
 																		</td>
@@ -461,8 +460,7 @@ function toggleDisplay(id){
 
                                     <td width="*"><input type="image" src="images/jobs/template/qjs_btn_search.gif" name="submit" value="Filter" alt="Search" tabindex="5" height="28" width="66" /></td>
 
-                                    <td rowspan="10" background="images/jobs/template/qjs_drop_bg_r.gif" width="4">
-                                    </td>
+                                    <td rowspan="10" background="images/jobs/template/qjs_drop_bg_r.gif" width="4"></td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -557,7 +555,7 @@ function toggleDisplay(id){
 <tr><td colspan="3">
 <table width="100%">
 <tr>
-  <td vlign="top" class="propertySheetNoBorder"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;jobStatus_select=Open&amp;file=/localSearchResults.html&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;position_groupBy=on&amp;origFile=/localSearchResults.html&amp;salary_groupBy=on&amp;salary=&gt;80000&amp;jobStatus=Open&amp;-viewCols=position&amp;-adTitle=Earn+&gt;$80K&amp;limit=5&amp;-suppressClassIcon=y" /></td>
+  <td vlign="top" class="propertySheetNoBorder"><siteResourceList noExtraSearches="y" uri="localSearchResults.html?-$action=searchLocal&amp;jobStatus_select=Open&amp;file=/localSearchResults.html&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;position_groupBy=on&amp;origFile=/localSearchResults.html&amp;salary_groupBy=on&amp;salary=&gt;80000&amp;jobStatus=Open&amp;-viewCols=position&amp;-adTitle=Earn%20%20$80K%2B&amp;-noTitleIcon=y&amp;limit=5&amp;-suppressClassIcon=y" /></td>
 </tr>
 </table>
 </td></tr>
@@ -698,7 +696,7 @@ function toggleDisplay(id){
  <td colspan="3">
 	<table width="100%">
 	<tr>
-	  <td vlign="top" class="propertySheetNoBorder"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;jobStatus_select=Open&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;industry_groupBy=on&amp;jobStatus=Open&amp;-inRow=3&amp;-viewCols=industry&amp;limit=21&amp;-suppressClassIcon=y&amp;-suppressHeader=y" /></td>
+	  <td valign="top" class="propertySheetNoBorder"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;jobStatus_select=Open&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;industry_groupBy=on&amp;jobStatus=Open&amp;-inRow=3&amp;-viewCols=industry&amp;limit=21&amp;-suppressClassIcon=y&amp;-suppressHeader=y" /></td>
 	</tr>
 	</table>
 </td>
@@ -718,7 +716,8 @@ function toggleDisplay(id){
                                   <tr valign="top">
                                     <td class="null58" width="254">
 
-                                      <table bgcolor="#F1F1F1" border="0" cellpadding="0" cellspacing="0" width="200">
+  																    <form name="horizontalFilter" id="filter" method="POST">
+                                      <table bgcolor="#F1F1F1" border="0" cellpadding="0" cellspacing="0" width="280">
                                         <tbody>
                                           <tr>
                                             <td colspan="3" bgcolor="#E6E6E6"><img src="images/jobs/template/pixel.gif" height="1" width="1" /></td>
@@ -728,97 +727,12 @@ function toggleDisplay(id){
                                             <td colspan="3" class="null56">-&#160;<b>Featured Category:</b>&#160;&#160;Over 48,000 IT jobs</td>
                                           </tr>
                                           <tr>
-                                            <td colspan="3" class="null57"><select onchange="window.location=this.options[this.selectedIndex].value;" class="Standard">
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/?sc_cmp2=JS_HP1_FC_IT" selected="selected">
-                                                Select a City:
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Georgia_Atlanta?sc_cmp2=HP1_FC_IT">
-                                                Atlanta
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Maryland_Baltimore?sc_cmp2=HP1_FC_IT">
-                                                Baltimore
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Massachusetts_Boston?sc_cmp2=HP1_FC_IT">
-                                                Boston
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Illinois_Chicago?sc_cmp2=HP1_FC_IT">
-                                                Chicago
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Texas_Dallas?sc_cmp2=HP1_FC_IT">
-                                                Dallas
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Michigan_Detroit?sc_cmp2=HP1_FC_IT">
-                                                Detroit
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Florida_FortLauderdale?sc_cmp2=HP1_FC_IT">
-                                                Fort Lauderdale
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Connecticut_Hartford?sc_cmp2=HP1_FC_IT">
-                                                Hartford
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Texas_Houston?sc_cmp2=HP1_FC_IT">
-                                                Houston
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/California_LosAngeles?sc_cmp2=HP1_FC_IT">
-                                                Los Angeles
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Florida_Miami?sc_cmp2=HP1_FC_IT">
-                                                Miami
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Connecticut_NewHaven?sc_cmp2=HP1_FC_IT">
-                                                New Haven
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/NewYork_NewYork?sc_cmp2=HP1_FC_IT">
-                                                New York
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/California_Oakland?sc_cmp2=HP1_FC_IT">
-                                                Oakland
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Florida_Orlando?sc_cmp2=HP1_FC_IT">
-                                                Orlando
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Pennsylvania_Philadelphia?sc_cmp2=HP1_FC_IT">
-                                                Philadelphia
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/California_SanFrancisco?sc_cmp2=HP1_FC_IT">
-                                                San Francisco
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/Washington_Seattle?sc_cmp2=HP1_FC_IT">
-                                                Seattle
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/DC_Washington?sc_cmp2=HP1_FC_IT">
-                                                Washington D.C.
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/?sc_cmp2=JS_HP1_FC_IT">
-                                                -------------------
-                                              </option>
-
-                                              <option value="http://information-technology.careerbuilder.com/it.ic/?sc_cmp2=JS_HP1_FC_IT">
-                                                More Search Options
-                                              </option>
-                                            </select></td>
-                                          </tr>
-
+																				    <td colspan="3">
+																				      <horizontalFilter properties="city" type="http://www.hudsonfog.com/voc/classifieds/jobs/Job" isInsert="y" filter="Search" rollup="n"/>
+																						   <input type="hidden" name="-isTemplate" value="y"/>
+																	       	 		 <input type="hidden" name="-$action" value="searchLocal"></input>
+																	       	 	</td>
+	                                        </tr>
                                           <tr>
                                             <td><img src="images/jobs/template/or_gry_9_BL.gif" height="9" width="9" /></td>
 
@@ -828,7 +742,8 @@ function toggleDisplay(id){
                                           </tr>
                                         </tbody>
                                       </table>
-
+	  															    </form>
+  
                                       <img src="images/jobs/template/pixel.gif" height="10" width="1" /><br />
                                       <a id="cblTV" onclick="javascript:window.open('http://careerbuilder.employ.com/?sc_cmp2=JS_HP1_sbpromo', '', 'width=700,height=500,resizable=1,left=10,top=10,toolbar,status,scrollbars,menubar,location');return false;" href="http://careerbuilder.employ.com/?sc_cmp2=JS_HP1_sbpromo"><img src="images/jobs/template/careerchannel_234x60_6k.gif" alt="Career Advice in Action" border="0" /></a>
                                     </td>
