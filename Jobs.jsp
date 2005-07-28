@@ -170,8 +170,8 @@
   .input {background-color: #F1F1F1; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:000088; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; }
   tr.dark {background-color: #FFFFCC; padding-left: 10px;}
 </style>
-<script language="JavaScript" src="images/jobs/template/Common.js" type="text/javascript">
-</script>
+<!--script language="JavaScript" src="images/jobs/template/Common.js" type="text/javascript">
+</script-->
 
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
       <tbody>
@@ -184,7 +184,7 @@
                 <tr>
                   <td class="null1"><a id="hlSignInLink" href="register/user-login.html">Sign In</a></td>
 
-                  <td class="null2"><a id="hlHelpLink" href="">Help</a>&#160;&#160;|&#160;&#160;Customer&#160;Service:&#160;866-438-1485</td>
+                  <td class="null2"><a id="hlHelpLink" href="">Help</a>&#160;&#160;|&#160;&#160;<a href="chatWithAgent">Talk to Customer Service</a></td>
                 </tr>
               </tbody>
             </table>
@@ -304,30 +304,7 @@
               <tbody>
                 <tr valign="top">
                   <td align="left" width="100%">
-                    <!-- NetFo(TS=7/23/2005 8:04:05 PM; LMN=REBEL22; SVR=careerbuilder.com) -->
-                    <!--lrSPH-->
- <span class="cb_style"><script type="text/javascript">
-function toggleDisplay(id){
-  if (document.all) {
-      if (document.all[id].style.display == 'none') {
-          document.all[id].style.display = '' ;
-          document.jsearchfrm.action = "/jobseeker/jobs/jobresults.aspx?sc_cmp2=JS_HP1_QSB_FORM_EXPANDED";
-      } else {
-          document.all[id].style.display = 'none';
-          document.jsearchfrm.action = "/jobseeker/jobs/jobresults.aspx?sc_cmp2=JS_HP1_QSB_FORM";
-      }
-  }
-  else if (document.getElementById) {
-      if(document.getElementById(id).style.display == 'none'){
-          document.getElementById(id).style.display = '' ;
-          document.jsearchfrm.action = "/jobseeker/jobs/jobresults.aspx?sc_cmp2=JS_HP1_QSB_FORM_EXPANDED";
-      } else  {
-          document.getElementById(id).style.display = 'none';
-          document.jsearchfrm.action = "/jobseeker/jobs/jobresults.aspx?sc_cmp2=JS_HP1_QSB_FORM";
-      }
-  }
-}
-</script>
+ <span class="cb_style">
 </span>
 
 
@@ -545,8 +522,8 @@ function toggleDisplay(id){
                                     <td bgcolor="#ffffff">
                                     </td>
 
-                                    <td class="null39">-&#160;<a id="cblSearchCategory" onclick="s_objectID='';" href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Employer">Search by Company</a><br />
-                                     -&#160;<a id="cblSearchIndustry" onclick="s_objectID='';" href="localSearchResults.html?file=/localSearchResults.html&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;industry_groupBy=on&amp;origFile=/localSearchResults.html&amp;submit=Please+wait&amp;-$action=searchLocal">Search by Industry</a>
+                                    <td class="null39">-&#160;<a href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Employer">Search by Company</a><br />
+                                     -&#160;<a href="localSearchResults.html?file=/localSearchResults.html&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;industry_groupBy=on&amp;origFile=/localSearchResults.html&amp;submit=Please+wait&amp;-$action=searchLocal">Search by Industry</a>
                                     </td>
 
                                     <td bgcolor="#ffffff">
@@ -595,7 +572,7 @@ function toggleDisplay(id){
                                           </tr>
 
                                           <tr>
-                                            <td class="null40" valign="top"><a id="cblJobAlertDish" onclick="s_objectID='';" href=""><img src="images/jobs/template/icon_sat_dish.gif" border="0" height="44" width="40" /></a></td>
+                                            <td class="null40" valign="top"><a href=""><img src="images/jobs/template/icon_sat_dish.gif" border="0" height="44" width="40" /></a></td>
 
                                             <td class="null41">Find out when your favorite Saved<br />
                                             Search has new results -- via email.<br />
@@ -639,7 +616,7 @@ function toggleDisplay(id){
                                           <tr valign="top">
                                             <td class="null47"><img src="images/jobs/template/icon_clock.gif" height="10" width="10" /></td>
 
-                                            <td class="null48"><a id="cblHourly" onclick="s_objectID='';" href=""><nobr>Hourly workers: Apply here</nobr></a></td>
+                                            <td class="null48"><a href=""><nobr>Hourly workers: Apply here</nobr></a></td>
                                           </tr>
                                         </tbody>
                                       </table>
@@ -653,9 +630,9 @@ function toggleDisplay(id){
                                   <tr valign="top">
                                     <td width="9"><img src="images/jobs/template/yel_drop_bl_9_27.gif" height="27" width="9" /></td>
 
-                                    <td class="null51" background="images/jobs/template/yel_drop_bg.gif" width="238"><img src="images/jobs/template/icon_plus.gif" align="left" height="10" vspace="3" width="10" />&#160;&#160;<a id="cblJobAlertTxt" onclick="s_objectID='';" href="subscribe.html?-$action=watch&amp;-isWatch=y&amp;&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job">Add a Search / Job Alert</a></td>
+                                    <td class="null51" background="images/jobs/template/yel_drop_bg.gif" width="238"><img src="images/jobs/template/icon_plus.gif" align="left" height="10" vspace="3" width="10" />&#160;&#160;<a href="subscribe.html?-$action=watch&amp;-isWatch=y&amp;&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job">Add a Search / Job Alert</a></td>
 
-                                    <td class="null52" background="images/jobs/template/yel_drop_bg.gif" width="160"><img src="images/jobs/template/icon_plus.gif" align="left" height="10" vspace="3" width="10" />&#160;&#160;<a id="cblPostResumeTxt" onclick="s_objectID='';" href="mkResource.html?-$action=mkResource&amp;$browser=y&amp;displayProps=yes&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Resume">Post a resume now</a></td>
+                                    <td class="null52" background="images/jobs/template/yel_drop_bg.gif" width="160"><img src="images/jobs/template/icon_plus.gif" align="left" height="10" vspace="3" width="10" />&#160;&#160;<a href="mkResource.html?-$action=mkResource&amp;$browser=y&amp;displayProps=yes&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Resume">Post a resume now</a></td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -681,10 +658,10 @@ function toggleDisplay(id){
                                         <tbody>
                                           <tr>
                                             <td class="null54" valign="bottom">
-                                              <h1 class="mpj"><a onclick="s_objectID='';" href="localSearchResults.html?jobStatus_select=Open&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;industry_groupBy=on&amp;-$action=searchLocal&amp;jobStatus=Open" class="null53">Most Popular Industries</a></h1>
+                                              <h1 class="mpj"><a href="localSearchResults.html?jobStatus_select=Open&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;industry_groupBy=on&amp;-$action=searchLocal&amp;jobStatus=Open" class="null53">Most Popular Industries</a></h1>
                                             </td>
 
-                                            <td align="right" valign="top"><a id="cblAllCommunities" onclick="s_objectID='';" href="localSearchResults.html?jobStatus_select=Open&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;industry_groupBy=on&amp;-$action=searchLocal&amp;jobStatus=Open" class="null31">See all industries</a></td>
+                                            <td align="right" valign="top"><a href="localSearchResults.html?jobStatus_select=Open&amp;jobStatus_verified=y&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;industry_groupBy=on&amp;-$action=searchLocal&amp;jobStatus=Open" class="null31">See all industries</a></td>
                                           </tr>
                                         </tbody>
                                       </table>
@@ -728,7 +705,7 @@ function toggleDisplay(id){
                                           </tr>
                                           <tr>
 																				    <td colspan="3">
-																				      <horizontalFilter properties="city" type="http://www.hudsonfog.com/voc/classifieds/jobs/Job" isInsert="y" filter="Search" rollup="n"/>
+																				      <horizontalFilter properties="city,postalCode" type="http://www.hudsonfog.com/voc/classifieds/jobs/Job" isInsert="y" filter="Search" rollup="n"/>
 																						   <input type="hidden" name="-isTemplate" value="y"/>
 																	       	 		 <input type="hidden" name="-$action" value="searchLocal"></input>
 																	       	 	</td>
@@ -745,7 +722,7 @@ function toggleDisplay(id){
 	  															    </form>
   
                                       <img src="images/jobs/template/pixel.gif" height="10" width="1" /><br />
-                                      <a id="cblTV" onclick="javascript:window.open('http://careerbuilder.employ.com/?sc_cmp2=JS_HP1_sbpromo', '', 'width=700,height=500,resizable=1,left=10,top=10,toolbar,status,scrollbars,menubar,location');return false;" href="http://careerbuilder.employ.com/?sc_cmp2=JS_HP1_sbpromo"><img src="images/jobs/template/careerchannel_234x60_6k.gif" alt="Career Advice in Action" border="0" /></a>
+                                      <a id="cblTV" href=""><img src="images/jobs/template/careerchannel_234x60_6k.gif" alt="Career Advice in Action" border="0" /></a>
                                     </td>
 
                                     <td class="null61" align="center" width="250">
@@ -767,7 +744,7 @@ function toggleDisplay(id){
                                               <table id="mxsFeatEmpHP" class="null59" border="0" cellspacing="0">
                                                 <tbody>
                                                   <tr>
-                                                    <td><a onclick="s_objectID='';" href="http://careerbuilder.com/JobSeeker/Companies/CompanyDetails.aspx?Comp_DID=C8C1Z272FLWJR4L43KK"><img src="images/jobs/template/I8C6X56DLTW1N1VN9TC.gif" alt="Aflac" border="0" /></a></td>
+                                                    <td><a href=""><img src="images/jobs/template/I8C6X56DLTW1N1VN9TC.gif" alt="Aflac" border="0" /></a></td>
                                                   </tr>
                                                 </tbody>
                                               </table>
@@ -825,7 +802,7 @@ function toggleDisplay(id){
         </tr>
 
         <tr class="null65">
-          <td class="null68" align="center"><img src="images/jobs/template/oFaces.gif" alt="" class="null66" align="middle" border="0" />&#160;CareerBuilder.com Customer Service: <b>866-438-1485</b>&#160;&#160;&#160;&#160;|&#160;&#160;&#160;&#160;<a href="http://careerbuilder.com/JobSeeker/Help/" class="null67">Help</a> &#160;&#160;&#160;|&#160;&#160;&#160;<a href="http://careerbuilder.com/JobSeeker/NewUsers.htm" class="null67">New Users</a>&#160;&#160;&#160;|&#160;&#160;&#160;<a onclick="window.open('http://www.fuzeqna.com/careerbuilder/consumer/question.asp', 'wndFeedback', 'width=550,height=400,menubar=1,toolbar=0,statusbar=0,scrollbars=1,resizable=1'); return false" href="http://www.fuzeqna.com/careerbuilder/consumer/question.asp" target="_blank" class="null67">Feedback</a></td>
+          <td class="null68" align="center"><img src="images/jobs/template/oFaces.gif" alt="" class="null66" align="middle" border="0" />&#160;recruiter123.com: <a href="chatWithAgent">Talk live with Customer Service Agent</a>&#160;&#160;&#160;&#160;|&#160;&#160;&#160;&#160;<a href="marketing/Help.html" class="null67">Help</a> &#160;&#160;&#160;|&#160;&#160;&#160;<a href="NewUsers.htm" class="null67">New Users</a>&#160;&#160;&#160;|&#160;&#160;&#160;<a href="" target="_blank" class="null67">Feedback</a></td>
         </tr>
 
         <tr class="null65">
@@ -841,7 +818,7 @@ function toggleDisplay(id){
     <table class="null19" border="0" cellpadding="0" cellspacing="0">
       <tbody>
         <tr>
-          <td class="null70" align="center"><img src="images/jobs/template/pixel.gif" alt="" class="null69" /><a onclick="window.open('/share/EmailPage.asp?url=http%3a%2f%2fcareerbuilder.com%2fDefault.aspx%3fcbsid%3d67b2afe4eabd49baa5ad52a3b8582ff1-175464245-tb-1%26cbRecursionCnt%3d1', 'wndEmailThisJob', 'height=475,width=373,resizable=yes'); return false;" href="http://careerbuilder.com/share/EmailPage.asp?url=http%3a%2f%2fcareerbuilder.com%2fDefault.aspx%3fcbsid%3d67b2afe4eabd49baa5ad52a3b8582ff1-175464245-tb-1%26cbRecursionCnt%3d1"><img src="images/jobs/template/Envelope.gif" alt="" border="0" /><img src="images/jobs/template/pixel.gif" alt="" class="null69" />Email this page to a friend</a></td>
+          <td class="null70" align="center"><img src="images/jobs/template/pixel.gif" alt="" class="null69" /><a href=""><img src="images/jobs/template/Envelope.gif" alt="" border="0" /><img src="images/jobs/template/pixel.gif" alt="" class="null69" />Email this page to a friend</a></td>
         </tr>
       </tbody>
     </table>
@@ -849,7 +826,7 @@ function toggleDisplay(id){
     <table class="null19" border="0" cellpadding="0" cellspacing="0">
       <tbody>
         <tr>
-          <td class="null68" align="center"><a href="http://careerbuilder.com/share/AboutUs/default.aspx" class="null67">About Us</a> | <a href="http://careerbuilder.com/share/AboutUs/affiliate_program.htm" class="null67">Affiliate Program</a> | <a href="http://careerbuilder.com/JobSeeker/Info/Advertise.htm" class="null67">Advertising Info</a> | <a href="http://careerbuilder.com/JobSeeker/Info/Privacy.htm" class="null67">Privacy</a> | <a href="http://careerbuilder.com/JobSeeker/Info/HHTerms.htm" class="null67">Terms</a><br />
+          <td class="null68" align="center"><a href="marketing/About.html" class="null67">About Us</a> | <a href="">Affiliate Program</a> | <a href="" class="null67">Advertising Info</a> | <a href="" class="null67">Privacy</a> | <a href="" class="null67">Terms</a><br />
           </td>
         </tr>
       </tbody>
@@ -861,57 +838,17 @@ function toggleDisplay(id){
           <td bgcolor="#CCCCCC"><img src="images/jobs/template/pixel.gif" height="1" width="1" /></td>
         </tr>
 
-        <tr>
+        <!--tr>
           <td class="null71" align="center">Partner Sites:&#160;<a href="http://www.sologig.com/" class="null67">Contract &amp; Freelance Jobs</a> &#160;|&#160; <a href="http://www.findtuition.com/" class="null67">College Scholarships</a> &#160;|&#160; <a href="http://www.intelligenthire.com/" class="null67">Candidate Screening</a> &#160;|&#160; <a href="http://www.shoplocal.com/" class="null67">Shopping</a> &#160;|&#160; <a href="http://www.apartments.com/" class="null67">Apartments</a> &#160;|&#160; <a href="http://www.cars.com/" class="null67">Cars</a> &#160;|&#160; <a href="http://www.homescape.com/" class="null67">Real Estate</a></td>
-        </tr>
+        </tr-->
 
-        <tr>
+        <!--tr>
           <td class="null72" align="center">Local Newspaper Sites by City:&#160;<a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#A" class="null67">A</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#B" class="null67">B</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#C" class="null67">C</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#D" class="null67">D</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#E" class="null67">E</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#F" class="null67">F</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#G" class="null67">G</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#H" class="null67">H</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#I" class="null67">I</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#J" class="null67">J</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#K" class="null67">K</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#L" class="null67">L</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#M" class="null67">M</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#N" class="null67">N</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#O" class="null67">O</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#P" class="null67">P</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#Q" class="null67">Q</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#R" class="null67">R</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#S" class="null67">S</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#T" class="null67">T</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#U" class="null67">U</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#V" class="null67">V</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#W" class="null67">W</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#X" class="null67">X</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#Y" class="null67">Y</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm#Z" class="null67">Z</a> &#160;|&#160; <a href="http://careerbuilder.com/share/AboutUs/Partners/newspapers.htm" class="null67">Show all</a></td>
-        </tr>
+        </tr-->
       </tbody>
     </table>
-<script type="text/javascript" language="JavaScript">
-var s_account = "cbglobal"
-</script>
-<!--script type="text/javascript" language="JavaScript" src="images/jobs/template/SiteCatalystH.js">
-</script--->
-<img src="images/jobs/template/s48818340614349.gif" name="s_i_cbglobal" alt="" border="0" height="1" width="1" /> <script type="text/javascript" language="JavaScript">
-/* You may give each page an identifying name, server, and channel on the next lines. */
-s_cb.pageName = " - HP1"
-s_cb.server = "careerbuilder.com"
-s_cb.channel = ""
-s_cb.pageType = ""
-s_cb.prop1 = "HP1"
-s_cb.prop2 = "JobSeeker (All)"
-s_cb.prop3 = "JobSeeker"
-s_cb.prop4 = ""
-s_cb.prop5 = ""
-/* E-commerce Variables */
-s_cb.campaign = ""
-s_cb.state = ""
-s_cb.zip = ""
-s_cb.events = ""
-s_cb.products = ""
-s_cb.purchaseID = ""
-s_cb.eVar1 = ""
-s_cb.eVar2 = ""
-s_cb.eVar3 = ""
-s_cb.eVar4 = ""
-s_cb.eVar5 = ""
-s_cb.eVar6 = ""
-s_cb.eVar7 = ""
-s_cb.eVar8 = ""
-s_cb.eVar9 = ""
-s_cb.eVar10 = ""
-s_cb.eVar11 = "NotRegistered"
-s_cb.eVar12 = ""
-s_cb.eVar13 = ""
-s_cb.eVar14 = ""
-s_cb.eVar15 = "NO_NotRegistered"
-s_cb.eVar16 = ""
-/************* DO NOT ALTER ANYTHING BELOW THIS LINE ! **************/
-var s_code=s_cb.t();if(s_code)document.write(s_code)
-</script>
+
+<img src="images/jobs/template/s48818340614349.gif" name="s_i_cbglobal" alt="" border="0" height="1" width="1" /> 
 <script type="text/javascript" language="JavaScript">
 if(navigator.appVersion.indexOf('MSIE')>=0)document.write(unescape('%3C')+'\!-'+'-')
 </script>
