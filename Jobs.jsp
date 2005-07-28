@@ -802,7 +802,7 @@
         </tr>
 
         <tr class="null65">
-          <td class="null68" align="center"><img src="images/jobs/template/oFaces.gif" alt="" class="null66" align="middle" border="0" />&#160;recruiter123.com: <a href="chatWithAgent">Talk live with Customer Service Agent</a>&#160;&#160;&#160;&#160;|&#160;&#160;&#160;&#160;<a href="marketing/Help.html" class="null67">Help</a> &#160;&#160;&#160;|&#160;&#160;&#160;<a href="NewUsers.htm" class="null67">New Users</a>&#160;&#160;&#160;|&#160;&#160;&#160;<a href="" target="_blank" class="null67">Feedback</a></td>
+          <td class="null68" align="center"><img src="images/jobs/template/oFaces.gif" alt="" class="null66" align="middle" border="0" />&#160;recruiter123.com: <a href="chatWithAgent">Talk live with Customer Service Agent</a>&#160;&#160;&#160;&#160;|&#160;&#160;&#160;&#160;<a href="" class="null67">Help</a> &#160;&#160;&#160;|&#160;&#160;&#160;<a href="NewUsers.htm" class="null67">New Users</a>&#160;&#160;&#160;|&#160;&#160;&#160;<a href="" target="_blank" class="null67">Feedback</a></td>
         </tr>
 
         <tr class="null65">
@@ -826,7 +826,7 @@
     <table class="null19" border="0" cellpadding="0" cellspacing="0">
       <tbody>
         <tr>
-          <td class="null68" align="center"><a href="marketing/About.html" class="null67">About Us</a> | <a href="">Affiliate Program</a> | <a href="" class="null67">Advertising Info</a> | <a href="" class="null67">Privacy</a> | <a href="" class="null67">Terms</a><br />
+          <td class="null68" align="center"><a href="" class="null67">About Us</a> | <a href="">Affiliate Program</a> | <a href="" class="null67">Advertising Info</a> | <a href="" class="null67">Privacy</a> | <a href="" class="null67">Terms</a><br />
           </td>
         </tr>
       </tbody>
