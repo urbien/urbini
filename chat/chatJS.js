@@ -268,7 +268,7 @@
 		    document.postForm.message.value = document.postForm.messageRTE.value;
         
         // sends the message itself. postForm form is submitted. Immediate sending feature is also run here.
-        sendMessageF();
+        setTimeout("sendMessageF()",200);
       } 
       // chat member's writing status. Member's writing status alert is sent every 10 chars (including the first char)
 		  else if (document.postForm.messageRTE.value.length%10 == 0) {
@@ -448,6 +448,22 @@
       addEvent(frames['messageRTE'].document, 'keydown', handleKey, false);
       addEvent(frames['messageRTE'].document, 'keyup', handleKey, false); // clear RTE content if sending on Enter. Elseway additional ampty first line is left.
 
+    }
+    
+// ASK for help in chat. THe people that are responsible for support will help.
+    function askForHelp(){
+      parent.document.postForm.nameUser.value = 'allChatsHelp'; // notes that all chat members that are responsible for support in all rooms must receive the message
+      var alertToSupportInvitation = "helpSubmitted(&#39;" + document.getElementById("realUserName").value + "&amp#39;s ask for support submitted&#39;)";
+      parent.document.postForm.message.value="<font color=\"#ff0000\"><strong>Need support. Click <a onmousedown=\"" + alertToSupportInvitation + "\" href=\"" + window.location + "\">here</a> to join in chat.</strong></font>"; 
+      parent.document.postForm.submit();
+      parent.document.postForm.nameUser.value = "all";
+    }
+    function helpSubmitted(messageText){
+      parent.document.postForm.aliasUser.value = parent.document.getElementById('aliasUserUri').value;
+      parent.document.postForm.nameUser.value = 'allChatsHelp'; // notes that all chat members that are responsible for support in all rooms must receive the message
+      parent.document.postForm.message.value = messageText; 
+      parent.document.postForm.submit();
+      parent.document.postForm.nameUser.value = "all";
     }
 // --------START----------------   ONLINE STATUS -------(ONLINE, AWAY, DND, NA)--------------------------------------    
     // function that sends the new status of the user to all chat rooms to all chat member.

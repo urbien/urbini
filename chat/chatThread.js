@@ -44,6 +44,7 @@ var timeDelta = 0; // difference between server and client time
         parent.setOnlineStatus(userId, messageArray[0].substring(12,messageArray[0].length-6)); // function in chatJS.js that changes icon near the chat member according to the status (away, online, DND, na)
         return;
       }
+      
 	    if(messageArray[messageArray.length-2] == "") {
 		    messageArray[messageArray.length-2] = messageArray[messageArray.length-1];
 		    messageArray.length = messageArray.length - 1;
@@ -153,6 +154,8 @@ var timeDelta = 0; // difference between server and client time
 		    }
 
     	var time = getTimeStr(gmtOffset,tm-timeDelta);
+      if(tm == 0)
+        time = "";
       var messageStringTimeN ='';
 		  messageStringTimeN+="<font size='-2'"; 
 		  var timeN = doc.createElement('font');
@@ -191,7 +194,9 @@ var timeDelta = 0; // difference between server and client time
 		    userN.appendChild(doc.createTextNode(userId))
       }
 		  messageString+="</font>";
-      messageStringTimeN += ' [' + time + '] </font>'; 
+      if(time != "")
+        messageStringTimeN += ' [' + time + '] </font>'; 
+       else messageStringTimeN += '</font>'; 
 		  timeN.appendChild(doc.createTextNode(' [' + time + ']'));
       bodyRef.innerHTML+=messageStringTimeN + messageString + ': </span> ';
       var usernameString = '';
@@ -356,7 +361,8 @@ var timeDelta = 0; // difference between server and client time
                                       linkToResourcePage, 
                                       aliasesArray, 
                                       linkToContactPageArray, 
-                                      membersOnlineStatusArray) {
+                                      membersOnlineStatusArray,
+                                      isInSupportGroupArray) {
 		var showPanel = 0;
 		var bodyRef = parent.document.getElementById('divUsersInvite');
 		
@@ -403,6 +409,11 @@ var timeDelta = 0; // difference between server and client time
          inHTML += " width='16'";
          inHTML += " height='16'";
          inHTML += ">";
+         
+         if(isInSupportGroupArray[i] == "true") {
+           inHTML += "<img title='This chat member is in support group. Click to ask this contact to help you.' src='icons/help.gif' width='16' height='16' style='cursor:pointer'> "
+         }
+         
          // FINISH -- icon. onMouseOver event is attached to this icon. Information about chat user is deisplayed when mouse over
          inHTML += "<span class=xs>";
 
@@ -439,7 +450,7 @@ var timeDelta = 0; // difference between server and client time
       parent.hideOpsMenu();
 	}
   
-	function insertMembers(membersArray,usersInfArray,linkToContactPageArray, membersOnlineStatusArray) {
+	function insertMembers(membersArray,usersInfArray,linkToContactPageArray, membersOnlineStatusArray, isInSupportGroupArray) {
 	  var docum = parent.document;
 	  docum.getElementById("bodyMembersKeeper").removeChild(docum.getElementById("divUsersContainer"));
     if(docum.getElementById("divUsersInvite"))
@@ -457,7 +468,17 @@ var timeDelta = 0; // difference between server and client time
       var realUserName = membersArray[i].substring(0,membersArray[i].lastIndexOf('-'));
       //if(parent.document.getElementById('userOpsPanelUserName').innerHTML==realUserName)
 			if(parent.document.getElementById('sendPrivateMessagesToUser').innerHTML==membersArray[i+1])
-			  window.parent.showOpsMenu(nameUserOnline, realUserName, membersArray[i].substring(membersArray[i].lastIndexOf('-')+1,membersArray[i].length),nameUserOnline,'inline','inline','inline','none','inline','none','none');
+			  window.parent.showOpsMenu(nameUserOnline, 
+                                  realUserName, 
+                                  membersArray[i].substring(membersArray[i].lastIndexOf('-')+1,
+                                  membersArray[i].length),nameUserOnline,
+                                  'inline',
+                                  'inline',
+                                  'inline',
+                                  'none',
+                                  'inline',
+                                  'none',
+                                  'none');
       
       userI = docum.createElement('img');
       userI.id = 'infoCP'+ nameUserOnline + 'icon';
@@ -469,6 +490,16 @@ var timeDelta = 0; // difference between server and client time
       userI.title = 'member is present since ' + getTimeStr(0,parseInt(usersInfArray[i]))+' for';
       memberIcon_addEventMOver(userI,"mouseover",false,parseInt(usersInfArray[i]));
       divUsers.appendChild(userI);
+      
+      if(isInSupportGroupArray[i] == "true") {
+        userSupport = docum.createElement('img');
+        userSupport.src='icons/help.gif';
+        userSupport.width = 16; 
+        userSupport.height = 16;
+        userSupport.title = 'This chat member is in support group. Click to ask this contact to help you.';
+        userSupport.style.cursor = 'pointer';
+        divUsers.appendChild(userSupport);
+      }
             
 			var userInfCP = docum.createElement('input'); // link to the contact home page (information page)
       userInfCP.type='hidden';
@@ -490,7 +521,7 @@ var timeDelta = 0; // difference between server and client time
       userF.title = 'member is present since ' + getTimeStr(0,parseInt(usersInfArray[i])) + ' for';
       memberIcon_addEventMOver(userF,"mouseover",false,parseInt(usersInfArray[i]));
       userF.style.cursor='pointer';
-      userF.color = membersArray[i].substring(membersArray[i].lastIndexOf('-')+1,membersArray[i].length);
+      userF.color = membersArray[i].substring(membersArray[i].lastIndexOf('-')+1, membersArray[i].length);
 	    userF.id='c'+membersArray[i].substring(0,membersArray[i].lastIndexOf('-'));
       ss_addEvent(userF,"click",false,nameUserOnline,nameUserOnline,membersArray[i].substring(0,membersArray[i].lastIndexOf('-')),userF.color,'inline','inline','inline','none','inline');
 			userF.appendChild(docum.createTextNode(membersArray[i].substring(0,membersArray[i].lastIndexOf('-'))));
