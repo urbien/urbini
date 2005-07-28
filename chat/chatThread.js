@@ -411,7 +411,7 @@ var timeDelta = 0; // difference between server and client time
          inHTML += ">";
          
          if(isInSupportGroupArray[i] == "true") {
-           inHTML += "<img title='This chat member is in support group. Click to ask this contact to help you.' src='icons/help.gif' width='16' height='16' style='cursor:pointer'> "
+           inHTML += "<img title='This chat member is in support group.' src='icons/help.gif' width='16' height='16' style='cursor:pointer'> "
          }
          
          // FINISH -- icon. onMouseOver event is attached to this icon. Information about chat user is deisplayed when mouse over
@@ -496,7 +496,7 @@ var timeDelta = 0; // difference between server and client time
         userSupport.src='icons/help.gif';
         userSupport.width = 16; 
         userSupport.height = 16;
-        userSupport.title = 'This chat member is in support group. Click to ask this contact to help you.';
+        userSupport.title = 'This chat member is in support group.';
         userSupport.style.cursor = 'pointer';
         divUsers.appendChild(userSupport);
       }
