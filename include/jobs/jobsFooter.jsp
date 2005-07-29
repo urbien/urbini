@@ -10,7 +10,7 @@
         </tr>
 
         <tr class="null65">
-          <td class="null68" align="center"><img src="images/jobs/template/oFaces.gif" alt="" class="null66" align="middle" border="0" />&#160;recruiter123.com: <a href="chatWithAgent">Talk live with Customer Service Agent</a>&#160;&#160;&#160;&#160;|&#160;&#160;&#160;&#160;<a href="" class="null67">Help</a> &#160;&#160;&#160;|&#160;&#160;&#160;<a href="NewUsers.htm" class="null67">New Users</a>&#160;&#160;&#160;|&#160;&#160;&#160;<a href="" target="_blank" class="null67">Feedback</a></td>
+          <td class="null68" align="center"><img src="images/jobs/template/oFaces.gif" alt="" class="null66" align="middle" border="0" />&#160;recruiting123.com: <a href="chatWithAgent">Talk live with Customer Service Agent</a>&#160;&#160;&#160;&#160;|&#160;&#160;&#160;&#160;<a href="" class="null67">Help</a> &#160;&#160;&#160;|&#160;&#160;&#160;<a href="NewUsers.htm" class="null67">New Users</a>&#160;&#160;&#160;|&#160;&#160;&#160;<a href="" target="_blank" class="null67">Feedback</a></td>
         </tr>
 
         <tr class="null65">
@@ -56,7 +56,7 @@
       </tbody>
     </table>
 
-<img src="images/jobs/template/s48818340614349.gif" name="s_i_cbglobal" alt="" border="0" height="1" width="1" /> 
+<img src="images/jobs/template/s48818340614349.gif" name="s_i_cbglobal" alt="" border="0" height="1" width="1" />
 <script type="text/javascript" language="JavaScript">
 if(navigator.appVersion.indexOf('MSIE')>=0)document.write(unescape('%3C')+'\!-'+'-')
 </script>
