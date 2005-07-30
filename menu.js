@@ -1921,17 +1921,17 @@ function getFormFilters(form, allFields) {
     else {
       if (!value)
         continue;
-      if (currentFormName != "horizontalFilter") {
-        if (value == ''  ||  value == "All")
-          continue;
-        if (type.toLowerCase() == "checkbox" ) {
-          if (field.checked == false)
-            continue;
+//      if (currentFormName != "horizontalFilter") {
+	    if (value == ''  ||  value == "All")
+	      continue;
+	    if (type.toLowerCase() == "checkbox" ) {
+	      if (field.checked == false)
+	        continue;
 	      }
 	      if (value.indexOf(" --", value.length - 3) != -1)
 	         continue;
-      }
-    }
+  	  }
+//    }
     if (name == "type")
       p += "&" + name + "=" + value;
     else

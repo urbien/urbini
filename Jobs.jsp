@@ -420,6 +420,9 @@
                                   <tr valign="top">
                                     <td class="null58" width="254">
 
+<script language="JavaScript">
+      var horizontalFilter_FIELDS = new Array();
+</script>	
   																    <form name="horizontalFilter" id="filter" method="POST">
                                       <table bgcolor="#F1F1F1" border="0" cellpadding="0" cellspacing="0" width="280">
                                         <tbody>
@@ -432,7 +435,7 @@
                                           </tr>
                                           <tr>
 																				    <td colspan="3">
-																				      <horizontalFilter properties="city,postalCode" type="http://www.hudsonfog.com/voc/classifieds/jobs/Job" isInsert="y" filter="Search" rollup="n"/>
+																			      <horizontalFilter properties="city,postalCode" type="http://www.hudsonfog.com/voc/classifieds/jobs/Job" isInsert="y" filter="Search" rollup="n"/>
 																						   <input type="hidden" name="-isTemplate" value="y"/>
 																	       	 		 <input type="hidden" name="-$action" value="searchLocal"></input>
 																	       	 	</td>
