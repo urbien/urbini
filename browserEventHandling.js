@@ -94,11 +94,11 @@
       // alert('before='+uBefore + ', after=' + uAfter);
     }
 
-    //***** upon iframe loading inform the parent 
+    //***** upon iframe loading inform the parent
     function onLoadPopup() {
       parent.frameLoaded[window.name] = true;
     }
-    
+
     //***** Add smartlistbox handlers
     function addHandlers() {
       setTimeout(interceptLinkClicks, 0);
@@ -108,9 +108,11 @@
       }
       if (typeof replaceAllTooltips != 'undefined')
         setTimeout(replaceAllTooltips, 0);
-      setTimeout(initMenus, 0);      
+      setTimeout(initMenus, 0);
       setTimeout("initListBoxes(null)", 0);
       setTimeout(resourceListEdit, 0);
+      if (typeof searchHighlighting != 'undefined')
+        searchHighlighting();
     }
 
     function resourceListEdit() {
@@ -243,4 +245,3 @@
 
     var formInitialValues;
     addEvent(window, 'load', function() {setTimeout(addHandlers,  200);}, false);
-    
