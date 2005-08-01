@@ -6,13 +6,8 @@
   <include name="classifieds/jobs/jobsHeader.jsp"/>
   <div nonPda="T">
     <include name="requiredHeader.jsp"/>
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-    <tr>
-      <td valign="top">
-        <include name="${type}_top.jsp"/>          <!-- this jsp will be included in ResourceList page only-->
-        <include name="${type}_details_top.jsp"/>  <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->      </td>
-    </tr>
-    </table>
+    <include name="${type}_top.jsp"/>          <!-- this jsp will be included in ResourceList page only-->
+    <include name="${type}_details_top.jsp"/>  <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td valign="top" width="100%">
