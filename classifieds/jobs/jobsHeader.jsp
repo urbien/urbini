@@ -184,7 +184,7 @@
                 <tr>
                   <td class="null1"><changePassword/><a href="register/user-login.html">Sign In</a></td>
 
-                  <td class="null2"><a id="hlHelpLink" href="">Help</a>&#160;&#160;|&#160;&#160;<a href="chatWithAgent">Talk to Customer Service</a></td>
+                  <td class="null2"><a id="hlHelpLink" href="">Help</a>&#160;&#160;|&#160;&#160;<a href="chatWithAgent"><img src="icons/chat.gif" border="0" width="16" height="16" />Talk to Customer Service</a></td>
                 </tr>
               </tbody>
             </table>
