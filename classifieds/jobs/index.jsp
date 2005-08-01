@@ -350,7 +350,7 @@
                                     </td>
 
                                     <td rowspan="2" class="null50" align="right" valign="bottom">
-                                                <img src="images/jobs/template/photo_static1.jpg" width="127" height="158" />
+                                                <img src="images/jobs/template/photo_static1.jpg" align="absbottom" width="127" height="158" />
                                               </td>
                                   </tr>
 
@@ -371,9 +371,9 @@
                                   </tr>
 
                                   <tr>
-                                    <td width="10"><img src="images/jobs/template/org_w_10_tl.gif" height="10" width="10" /></td>
+                                    <td bgcolor="#ffffff" width="10"><img src="images/jobs/template/org_w_10_tl.gif" height="10" width="10" /></td>
 
-                                    <td bgcolor="#ffffff" width="*"><img src="images/jobs/template/pixel.gif" height="1" width="1" /></td>
+                                    <td bgcolor="#ffffff" width="*"><img src="images/jobs/template/pixel.gif" height="1" width="534" /></td>
 
                                     <td width="10"><img src="images/jobs/template/org_w_10_tr.gif" height="10" width="10" /></td>
                                   </tr>

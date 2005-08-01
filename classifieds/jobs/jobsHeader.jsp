@@ -1,9 +1,6 @@
 <div>
 <style type="text/css">
- .cb_style table { text-align: left; }
-</style>
-<link rel="stylesheet" type="text/css" href="images/jobs/template/global.css" />
-<style type="text/css">
+  .cb_style table { text-align: left; }
   .inlNoDec{
     text-decoration:none;
   }
@@ -84,9 +81,7 @@
   .bluelink{
     color:#0000CC
   }
-</style>
-<style type="text/css">
- body {
+  body {
   background-color: white;
   color: #333333;
  }
