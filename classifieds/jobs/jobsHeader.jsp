@@ -182,7 +182,7 @@
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tbody>
                 <tr>
-                  <td class="null1"><a id="hlSignInLink" href="register/user-login.html">Sign In</a></td>
+                  <td class="null1"><changePassword/><a href="register/user-login.html">Sign In</a></td>
 
                   <td class="null2"><a id="hlHelpLink" href="">Help</a>&#160;&#160;|&#160;&#160;<a href="chatWithAgent">Talk to Customer Service</a></td>
                 </tr>
