@@ -1364,10 +1364,16 @@ window.status = divId;
   }
 
   // form url based on parameters that were set
-  var url;
-  var formAction = form.elements['-$action'].value;
 
-  url = "smartPopup?prop=" + encodeURIComponent(propName);
+  var formAction = form.elements['-$action'].value;
+  var baseUriO = document.getElementsByTagName('base');
+  var baseUri = "";
+  if (baseUriO) {
+    baseUri = baseUriO[0].href;
+    if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
+      baseUri += "/";
+  }
+  var url = baseUri + "smartPopup?prop=" + encodeURIComponent(propName);
   if (currentFormName == "siteResourceList") {
     url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.elements['type'].value;
   }
@@ -1412,8 +1418,9 @@ window.status = divId;
   }
 
   // request listbox context from the server and load it into a 'popupFrame' iframe
-  var listboxFrame = frames["popupFrame"];
+//  var listboxFrame = frames["popupFrame"];
   frameLoaded["popupFrame"] = false;
+  var listboxFrame = frames["popupFrame"];
   listboxFrame.location.replace(url); // load data from server into iframe
   timeoutCount = 0;
   setTimeout("Popup.load('" + divId + "')", 100);
