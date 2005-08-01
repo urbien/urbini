@@ -62,8 +62,7 @@
                                     <td colspan="2"><img src="images/jobs/template/pixel.gif" height="1" width="186" /></td>
                                   </tr>
                                 </tbody>
-                              </table><!--
-                                  -->
+                              </table>
                             </td><!--spacer row-->
 
                             <td width="6"><img src="images/jobs/template/pixel.gif" height="1" width="6" /></td>
@@ -110,8 +109,7 @@
                                     <td align="right" width="14"><img src="images/jobs/template/qjs_drop_bg_r.gif" height="1" width="4" /></td>
                                   </tr>
                                 </tbody>
-                              </table><!--
-                                  -->
+                              </table>
                             </td>
                           </tr><!--main content-->
 
@@ -141,7 +139,6 @@
 																		   <input type="text" class="input"  size="21" name="-q" value="-- Search --" onClick="onFormFieldClick(searchForm, this)" onChange="onFormFieldChange(searchForm, this, '-- Search --')" onBlur="onFormFieldChange(searchForm, this, '-- Search --')"/>
 																		   <input type="hidden" name="type" value="http://www.hudsonfog.com/voc/classifieds/jobs/Job" />
 																		   <input type="hidden" name="-cat" value="on"/>
-																		   <input type="hidden" name="-isTemplate" value="y"/>
 													       	 		 <input type="hidden" name="-$action" value="searchLocal"></input>
 																		</td>
 																	</tr>
