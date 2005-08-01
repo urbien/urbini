@@ -435,8 +435,7 @@
                                           </tr>
                                           <tr>
 																				    <td colspan="3">
-																			      <horizontalFilter properties="city,postalCode" type="http://www.hudsonfog.com/voc/classifieds/jobs/Job" isInsert="y" filter="Search" rollup="n"/>
-																						   <input type="hidden" name="-isTemplate" value="y"/>
+																			      <horizontalFilter properties="city,postalCode" type="http://www.hudsonfog.com/voc/classifieds/jobs/Job" filter="Search" rollup="n"/>
 																	       	 		 <input type="hidden" name="-$action" value="searchLocal"></input>
 																	       	 	</td>
 	                                        </tr>
@@ -503,14 +502,14 @@
                         </tbody>
                       </table>
 
-<!--form name="rightPanelPropertySheet" id="filter" method="POST">
-			<rightPanelPropertySheet width="186" rType="http://www.hudsonfog.com/voc/classifieds/jobs/Job" properties="jobCategory,city"/>
+<form name="rightPanelPropertySheet" id="filter" method="POST">
+			<rightPanelPropertySheet width="186" type="http://www.hudsonfog.com/voc/classifieds/jobs/Job" properties="jobCategory,city"/>
 			<input type="hidden" name="-$action" value="searchLocal"></input>
-</form-->
+</form>
 
 </div>
                     <br />
-                    &#160;<!--lrSPF-->
+                    &#160;
                     <!--End Body Table-->
                   </td>
                 </tr>
