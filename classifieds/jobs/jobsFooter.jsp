@@ -53,8 +53,4 @@
       </tbody>
     </table>
 
-<img src="images/jobs/template/s48818340614349.gif" name="s_i_cbglobal" alt="" border="0" height="1" width="1" />
-<script type="text/javascript" language="JavaScript">
-if(navigator.appVersion.indexOf('MSIE')>=0)document.write(unescape('%3C')+'\!-'+'-')
-</script>
 </div>
