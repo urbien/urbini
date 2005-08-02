@@ -466,6 +466,7 @@
       parent.document.postForm.message.value += "to join in chat.";
       parent.document.postForm.message.value += "</strong>";
       parent.document.postForm.message.value += "</font>";
+      parent.document.postForm.aliasUser.value = parent.document.getElementById('aliasUserUri').value;
       parent.document.postForm.submit();
       parent.document.postForm.nameUser.value = "all";
       // write an alert to the ask for help sender that his alert was sent
