@@ -2626,6 +2626,7 @@ function copyInnerHtml(frameId, divId) {
   rteNotes.style.height = 0;
   rteNotes.style.left = 0;
   rteNotes.style.top = 0;
+  rteNotes.style.display = 'none';
   // the size of the floating iframes must be set to 0. Size and position (window offsetLeft and offsetTop) will be set on textarea's onclick
   // this happens if this is description RTE and this RTE is in the pane2 div (the same - it is on the readOnlyProperties.html page)
   var rteDescription = document.getElementById('description');
@@ -2634,6 +2635,7 @@ function copyInnerHtml(frameId, divId) {
     rteDescription.style.height = 0;
     rteDescription.style.left = 0;
     rteDescription.style.top = 0;
+    rteDescription.style.display = 'none';
   }
     
   var frameBodyText = frameBody.innerHTML;
