@@ -468,6 +468,9 @@
       parent.document.postForm.message.value += "</font>";
       parent.document.postForm.submit();
       parent.document.postForm.nameUser.value = "all";
+      // write an alert to the ask for help sender that his alert was sent
+      var dt = new Date();
+      thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("<font color=#ff0000><strong>Your ask for support was just sent</strong></font>.?alias1"));
     }
     function helpSubmitted(messageText){
       parent.document.postForm.aliasUser.value = parent.document.getElementById('aliasUserUri').value;
