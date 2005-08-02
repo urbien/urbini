@@ -453,8 +453,19 @@
 // ASK for help in chat. THe people that are responsible for support will help.
     function askForHelp(){
       parent.document.postForm.nameUser.value = 'allChatsHelp'; // notes that all chat members that are responsible for support in all rooms must receive the message
-      var alertToSupportInvitation = "helpSubmitted(&#39;" + document.getElementById("realUserName").value + "&amp#39;s ask for support submitted&#39;)";
-      parent.document.postForm.message.value="<font color=\"#ff0000\"><strong>Need support. Click <a onmousedown=\"" + alertToSupportInvitation + "\" href=\"" + window.location + "\">here</a> to join in chat.</strong></font>"; 
+      var alertToSupportInvitation = "helpSubmitted(&#39;<font color=#ff0000><strong>" + document.getElementById("realUserName").value + "&amp#39;s ask for support submitted</strong></font>&#39;)";
+      var windowLocation = "" + window.location;
+      if(windowLocation.indexOf('&isChatWithTheAgent=true') > 0)
+        windowLocation = windowLocation.substring(0, windowLocation.indexOf('&isChatWithTheAgent=true'));
+      parent.document.postForm.message.value =  "<font color=\"#ff0000\">";
+      parent.document.postForm.message.value += "<strong>"; 
+      parent.document.postForm.message.value += "Need support. Click ";
+      parent.document.postForm.message.value += "<u><a style=\"cursor:pointer\" onclick=\"" + alertToSupportInvitation + "; setTimeout(&quot;window.location = &#39;" + windowLocation + "&#39;&quot;,1000);\">";  // href=\"" + windowLocation + "\"
+      parent.document.postForm.message.value += "here";
+      parent.document.postForm.message.value += "</a></u> ";
+      parent.document.postForm.message.value += "to join in chat.";
+      parent.document.postForm.message.value += "</strong>";
+      parent.document.postForm.message.value += "</font>";
       parent.document.postForm.submit();
       parent.document.postForm.nameUser.value = "all";
     }
@@ -464,6 +475,11 @@
       parent.document.postForm.message.value = messageText; 
       parent.document.postForm.submit();
       parent.document.postForm.nameUser.value = "all";
+    }
+    
+    function isChatWithTheAgent(chatWithTheAgent) { // if chat is opened with the isChatWithTheAgent == true paremeter, than askForHelp() must be called
+      if(chatWithTheAgent == 'true')
+        setTimeout("askForHelp();",2000);
     }
 // --------START----------------   ONLINE STATUS -------(ONLINE, AWAY, DND, NA)--------------------------------------    
     // function that sends the new status of the user to all chat rooms to all chat member.

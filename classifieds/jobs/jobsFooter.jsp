@@ -10,7 +10,7 @@
         </tr>
 
         <tr class="null65">
-          <td class="null68" align="center"><img src="icons/chat.gif" alt="" width="16" height="16" align="middle" border="0" />&#160;recruiting123: <a href="chatWithAgent">Talk live with Customer Service Agent</a>&#160;&#160;&#160;&#160;|&#160;&#160;&#160;&#160;<a href="" class="null67">Help</a> &#160;&#160;&#160;|&#160;&#160;&#160;<a href="NewUsers.htm" class="null67">New Users</a>&#160;&#160;&#160;|&#160;&#160;&#160;<a href="" target="_blank" class="null67">Feedback</a></td>
+          <td class="null68" align="center"><img src="icons/chat.gif" alt="" width="16" height="16" align="middle" border="0" />&#160;recruiting123: <a href="javascript://" title="Chat with the agent" onclick="openChatWindow(escape(document.title), escape(window.location), 'true');">Talk live with Customer Service Agent</a>&#160;&#160;&#160;&#160;|&#160;&#160;&#160;&#160;<a href="" class="null67">Help</a> &#160;&#160;&#160;|&#160;&#160;&#160;<a href="NewUsers.htm" class="null67">New Users</a>&#160;&#160;&#160;|&#160;&#160;&#160;<a href="" target="_blank" class="null67">Feedback</a></td>
         </tr>
 
         <tr class="null65">

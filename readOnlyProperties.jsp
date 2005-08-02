@@ -50,7 +50,8 @@
 		      </span>
 		      <pdaToPc image="icons/pda.gif"/>
 		      
-		      <a href="javascript://" title="Chat Room" onclick="openChatWindow(escape(document.title), escape(window.location));" itype="http://www.hudsonfog.com/voc/model/portal/Annotated"><img src="icons/webchat.gif" alt="Chat room for this page" border="0" width="16" height="16" align="middle"/></a>
+		      <a href="javascript://" title="Chat Room" onclick="openChatWindow(escape(document.title), escape(window.location), 'false');" itype="http://www.hudsonfog.com/voc/model/portal/Annotated"><img src="icons/webchat.gif" alt="Chat room for this page" border="0" width="16" height="16" align="middle"/></a>
+          <a href="javascript://" title="Chat with the agent" onclick="openChatWindow(escape(document.title), escape(window.location), 'true');" itype="http://www.hudsonfog.com/voc/model/portal/Annotated"><img src="icons/webchat.gif" alt="Chat with the agent" border="0" width="16" height="16" align="middle"/></a>
 		      <showHideWindows/>
 	      </td>
 	

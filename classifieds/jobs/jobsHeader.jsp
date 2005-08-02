@@ -179,7 +179,7 @@
                 <tr>
                   <td class="null1"><changePassword/><userLogOff html="user-login.html"/></td>
 
-                  <td class="null2"><a id="hlHelpLink" href="">Help</a>&#160;&#160;|&#160;&#160;<a href="chatWithAgent"><img src="icons/chat.gif" border="0" width="16" height="16" />Talk to Customer Service</a></td>
+                  <td class="null2"><a id="hlHelpLink" href="">Help</a>&#160;&#160;|&#160;&#160;<a  href="javascript://" title="Chat with the agent" onclick="openChatWindow(escape(document.title), escape(window.location), 'true');"><img src="icons/chat.gif" border="0" width="16" height="16" />Talk to Customer Service</a></td>
                 </tr>
               </tbody>
             </table>
