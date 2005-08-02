@@ -177,15 +177,6 @@
                                   </tr>
                                 </tbody>
                               </table>
-
-			<table bgcolor="#f1f1f1" border="0" cellpadding="0" cellspacing="0" width="190">
-				<tbody><tr>
-					<td><img src="images/jobs/template/gry_org_10_8_bl.gif" height="8" width="10"/></td>
-					<td><img src="images/jobs/template/pixel.gif" height="1" width="1"/></td>
-					<td align="right"><img src="images/jobs/template/gry_org_10_8_br.gif" height="8" width="10"/></td>
-					<td bgcolor="#ffcc66" width="4"></td>
-				</tr>
-			</tbody></table>
 </form>
 
 <form name="searchByWebID" action="localSearchResults.html">
