@@ -490,10 +490,10 @@
                         </tbody>
                       </table>
 
-<form name="rightPanelPropertySheet" id="filter" method="POST">
+<!--form name="rightPanelPropertySheet" id="filter" method="POST">
 			<rightPanelPropertySheet width="186" type="http://www.hudsonfog.com/voc/classifieds/jobs/Job" properties="jobCategory,city"/>
 			<input type="hidden" name="-$action" value="searchLocal"></input>
-</form>
+</form-->
 
 </div>
                     <br />
