@@ -1,6 +1,6 @@
 //var w = 640/3, h = 480/3, cw = w/2, ch = h/2;
 
-function openChatWindow(title, resUrl) {
+function openChatWindow(title, resUrl, isChatWithTheAgent) {
   if (window.screen) {
     w = Math.floor(screen.availWidth/2) + 50;
     h = Math.floor(screen.availHeight/2)-125;
@@ -9,7 +9,19 @@ function openChatWindow(title, resUrl) {
     ch = 0;
     cw = screen.availWidth - w - 15;
   }
-  var url = 'chatRoom?title=' + title + '&referer=' + resUrl;
+  var url = 'http://' + window.location.host + '/hudsonfog/';
+  url += 'chatRoom?title=' + title;
+  if(resUrl.indexOf('uri')<0){
+    if(document.getElementById('loggedContact').href==null){
+      alert('Sorry, you should sign in first');
+      return;
+    }
+    url += '&referer=' + escape(document.getElementById('loggedContact').href);
+  }
+   else
+     url += '&referer=' + resUrl;
+  if(isChatWithTheAgent == "true")
+   url += '&isChatWithTheAgent=true';
   window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=0, location=no, toolbar=no, scrollbars=no, status=no, resizable=yes');
 }
 
