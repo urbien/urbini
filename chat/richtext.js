@@ -332,6 +332,16 @@ function writeRTE(rte, html, width, height, buttons, readOnly, minimized, isChat
     divRTEcontainerObj.style.height = document.getElementById("Buttons1_" + rte).offsetHeight + 5;
 }
 
+// window onResize function. It is used to show RTE's iframe correctly if this is a "floating" iframe on the page and the window rte is displayed on is resized.
+// the floatining iframe is used in several situations. THe fix of BACK button needed this change in the RTE imlementation.
+function onWindowResize(rte) {
+  if(document.getElementById('Buttons1_' + rte) && (rte == 'notes'  || (rte == 'description' && window.location.toString().indexOf('readOnlyProperties.html')>0))){ //this is floating RTE on the page (inner make resource)
+    document.getElementById(rte).style.left = findPosX(document.getElementById('Buttons1_' + rte));
+    document.getElementById(rte).style.top  = findPosY(document.getElementById('Buttons1_' + rte)) + document.getElementById('Buttons1_' + rte).offsetHeight;
+    document.getElementById(rte).style.width = document.getElementById('Buttons1_' + rte).offsetWidth;
+  }
+}
+
 // switch RTE iframe design mode on. THis function also loads the content (any value) to RTE.
 function enableDesignMode(rte, html, readOnly, minimized, isChat) {
   var frameHtml = "<html id=\"" + rte + "\">\n";
@@ -514,6 +524,8 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
 			}
     }
 	}
+  // make rte's iframe be properly alligned with the rte panel in the situation of the floating iframe
+  setTimeout("onWindowResize("+rte+");",1000);
 }
 
 // recursive function that looks for all URLs in RTE to replace them with link
