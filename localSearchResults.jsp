@@ -11,13 +11,18 @@
     <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
     <td  height="23" style="PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold">
     <menu toolbar="resourceOperations" activate="onMouseOver"/>
-    <menu toolbar="toolbar1"        activate="onMouseOver"/>
-    <menu toolbar="helpdesk"        activate="onMouseOver" allow="admin" />
-    <menu toolbar="transport"       activate="onMouseOver"/>
-    <menu toolbar="search"          activate="onMouseOver"/>
-    <menu toolbar="toolbar2"        activate="onMouseOver"/>
-    <menu toolbar="support"         activate="onMouseOver" allow="admin"/>
-    <menu toolbar="personalization" activate="onMouseOver"/>
+    <include name="${package}_menu.jsp"/>
+    <menu toolbar="trades"            activate="onMouseOver"/>
+    <menu toolbar="crm"               activate="onMouseOver"/>
+    <menu toolbar="projectManagement" activate="onMouseOver"/>
+    <menu toolbar="realEstate"        activate="onMouseOver"/>
+    <menu toolbar="helpdesk"          activate="onMouseOver" allow="admin" />
+    <menu toolbar="transport"         activate="onMouseOver"/>
+    <menu toolbar="search"            activate="onMouseOver"/>
+    <menu toolbar="toolbar2"          activate="onMouseOver"/>
+    <menu toolbar="support"           activate="onMouseOver" allow="admin"/>
+    <menu toolbar="personalization"   activate="onMouseOver"/>
+    <!--menu toolbar="applications"    activate="onMouseOver"/-->
 
     <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" activate="onMouseOver"/>
     <print image="icons/printerIcon.gif"/>

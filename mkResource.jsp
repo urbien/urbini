@@ -10,7 +10,11 @@
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
    <table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td width="90%">
-    <menu toolbar="toolbar1"        activate="onMouseOver"/>
+    <include name="${package}_menu.jsp"/>
+    <menu toolbar="trades"            activate="onMouseOver"/>
+    <menu toolbar="crm"               activate="onMouseOver"/>
+    <menu toolbar="projectManagement" activate="onMouseOver"/>
+    <menu toolbar="realEstate"        activate="onMouseOver"/>
     <menu toolbar="transport"       activate="onMouseOver"/>
     <menu toolbar="search"          activate="onMouseOver"/>
     <menu toolbar="toolbar2"        activate="onMouseOver"/>

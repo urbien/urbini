@@ -25,8 +25,13 @@
 		
 		      <!-- Auto-generated menus -->
 		      <span class="xs" nonPda="T">
+				    <include name="${package}_menu.jsp"/>
+				    <menu toolbar="trades"            activate="onMouseOver"/>
+				    <menu toolbar="crm"               activate="onMouseOver"/>
+				    <menu toolbar="projectManagement" activate="onMouseOver"/>
+				    <menu toolbar="realEstate"        activate="onMouseOver"/>
+
 			      <menu toolbar="resourceOperations" activate="onMouseOver"/>
-			      <menu toolbar="toolbar1"           activate="onMouseOver"/>
 			      <menu toolbar="transport"          activate="onMouseOver"/>
 			      <menu toolbar="search"             activate="onMouseOver"/>
 			      <menu toolbar="toolbar2"           activate="onMouseOver"/>
