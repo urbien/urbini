@@ -136,7 +136,7 @@
                                   </tr>
 													        <tr>
 																		<td class="inlBumpLeft" colspan="2">
-																		   <input type="text" class="input"  size="21" name="-q" value="-- Search --" onClick="onFormFieldClick(searchForm, this)" onChange="onFormFieldChange(searchForm, this, '-- Search --')" onBlur="onFormFieldChange(searchForm, this, '-- Search --')"/>
+																		   <input type="text" class="input"  size="21" name="-q" value="-- Search --" />
 																		   <input type="hidden" name="type" value="http://www.hudsonfog.com/voc/classifieds/jobs/Job" />
 																		   <input type="hidden" name="-cat" value="on"/>
 													       	 		 <input type="hidden" name="-$action" value="searchLocal"></input>
@@ -461,7 +461,7 @@
                                               <table id="mxsFeatEmpHP" class="null59" border="0" cellspacing="0">
                                                 <tbody>
                                                   <tr>
-                                                    <td><a href=""><img src="images/jobs/template/I8C6X56DLTW1N1VN9TC.gif" alt="Aflac" border="0" /></a></td>
+                                                    <td><rotatingResource uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Employer&amp;featuredEmployer_select=Yes&amp;featuredEmployer_verified=y"/><!--a href=""><img src="images/jobs/template/I8C6X56DLTW1N1VN9TC.gif" alt="Aflac" border="0" /></a--></td>
                                                   </tr>
                                                 </tbody>
                                               </table>
