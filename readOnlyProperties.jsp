@@ -15,16 +15,16 @@
     <tr  valign="top">
       <td colspan="3">
 <hideBlock id="hideBlock">      
-      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+      <!--table width="100%" cellspacing="0" cellpadding="0" border="0">
       <tr style="background-image: url('images/toolbar_bg.gif')" NOWRAP="y">
         <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
         <td  height="23" style="PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold">
 
 		      <img src="icons/icon.gif" width="16" height="16" align="middle" pda="T"/>
-		      <img src="icons/icon_divider.gif" align="middle" border="0" pda="T"/>
+		      <img src="icons/icon_divider.gif" align="middle" border="0" pda="T"/-->
 		
 		      <!-- Auto-generated menus -->
-		      <span class="xs" nonPda="T">
+		      <!--span class="xs" nonPda="T">
 				    <include name="${package}_menu.jsp"/>
 				    <menu toolbar="trades"            activate="onMouseOver"/>
 				    <menu toolbar="crm"               activate="onMouseOver"/>
@@ -58,14 +58,14 @@
 		      <a href="javascript://" title="Chat Room" onclick="openChatWindow(escape(document.title), escape(window.location), 'false');" itype="http://www.hudsonfog.com/voc/model/portal/Annotated"><img src="icons/webchat.gif" alt="Chat room for this page" border="0" width="16" height="16" align="middle"/></a>
           <a href="javascript://" title="Chat with the agent" onclick="openChatWindow(escape(document.title), escape(window.location), 'true');" itype="http://www.hudsonfog.com/voc/model/portal/Annotated"><img src="icons/webchat.gif" alt="Chat with the agent" border="0" width="16" height="16" align="middle"/></a>
 		      <showHideWindows/>
-	      </td>
+	      </td-->
 	
 	      <!--td valign="top" align="right" width="15%"><changePassword/><userLogOff html="user-login.html"/></td-->
-	      <td valign="middle" align="right" width="15%"><include name="searchText.jsp"/></td>
+	      <!--td valign="middle" align="right" width="15%"><include name="searchText.jsp"/></td>
 	      <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
       </tr>
 
-      </table>
+      </table-->
 </hideBlock>
       </td>
     </tr>
