@@ -1,7 +1,7 @@
 <div align="center">
 <font color="red"><b><errorMessage /></b></font>
 
-<hideBlock>
+<!--hideBlock>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
   <td valign="top">
@@ -26,8 +26,9 @@
   <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
   </tr></table></td>
   </tr>
-</table></center></td></tr></table>
-</hideBlock>
+</table>
+</center></td></tr></table>
+</hideBlock-->
 <br/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
