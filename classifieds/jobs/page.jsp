@@ -12,6 +12,17 @@
 		     <table border="0" cellpadding="0" cellspacing="0" align="center">
 			     <tr>
 				     <td><menu toolbar="resourceOperations" activate="onMouseOver" /></td>
+		         <td class="oneTab" id="1fade">
+		           <table border="0" cellspacing="0" cellpadding="0" align="center" height="33">
+		             <tr>
+		             <td class="left" id="1"> </td>
+		             <td class="middle" id="2">
+		                <a href="classifieds/jobs/"><img src="icons/homePage.gif" width="16" height="16" border="0" align="absmiddle" /> Home </a>
+		             </td>
+		             <td class="right" id="3"> </td>
+		            </tr>
+		          </table>
+		         </td>
  				     <td><menu toolbar="recruiting"         activate="onMouseOver" /></td>
 	 			     <td><menu toolbar="helpdesk"           activate="onMouseOver" allow="admin" /></td>
 				     <td><menu toolbar="search"             activate="onMouseOver"/></td>
