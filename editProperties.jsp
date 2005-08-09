@@ -4,7 +4,7 @@
   <td valign="top" width="100%">
 <center>
       <div align="center"><font color="red"><b><errorMessage /></b></font></div>
-<table width="100%" cellspacing="0" cellpadding="0" border="0">
+<!--table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
    <table width="100%" cellspacing="0" cellpadding="0" border="0">
@@ -28,7 +28,7 @@
   </tr>
   </table></td>
   </tr>
-</table></center></td></tr></table>
+</table--></center></td></tr></table>
 <br/>
 <a target="pane2"> </a>
 <div id="pane2" />
