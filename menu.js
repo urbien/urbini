@@ -11,8 +11,8 @@ var autoCompleteTimeoutId;
 var keyPressedTime;
 
 /**
- *  Since Internet Explorer does not define the Node interface constants, 
- *  which let you easily identify the type of node, one of the first things to do 
+ *  Since Internet Explorer does not define the Node interface constants,
+ *  which let you easily identify the type of node, one of the first things to do
  *  in a DOM script for the Web is to make sure you define one yourself, if it's missing.
  */
 if (!window['Node']) {
@@ -583,7 +583,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     if (!e)
       return;
-    
+
     target = getTargetElement(e);
     if (!target)
       return;
@@ -592,10 +592,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.delayedCloseIssued = false;
     if (self.closeTimeoutId != null) {
       self.delayedCloseIssued = false;
-     
+
       clearTimeout(self.closeTimeoutId);
       self.closeTimeoutId = null;
-    }   
+    }
     return true;
   }
 
@@ -603,16 +603,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Popup's and hotspot's on mouseout handler
    */
   this.popupOnMouseOut = function (e) {
-    var target;
-
     e = (e) ? e : ((window.event) ? window.event : null);
-
     if (!e)
       return;
 
-    target = getTargetElement(e);
+    var target = getMouseOutTarget(e);
     if (!target)
-      return;
+      return true;
 
     self.delayedClose(600);
     return true;
@@ -681,7 +678,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     if (characterCode == 40) {       // down arrow
       self.deselectRow();
-      self.nextRow();    
+      self.nextRow();
       self.selectRow();
     }
     else if (characterCode == 38) {  // up arrow
@@ -932,7 +929,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
                 selectItems[i].checked = true;
             }
           }
-          if (selectItems[i].checked == true) {          
+          if (selectItems[i].checked == true) {
             selectedItem = selectItems[i];
             selectedIdx = i;
             nmbChecked++;
@@ -941,13 +938,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         if (nmbChecked == 0) {
           if (fieldLabel) {
             fieldLabel.style.display    = "none";
-            var textContent = getTextContent(fieldLabel);            
+            var textContent = getTextContent(fieldLabel);
             if (textContent) {
               var idx = textContent.indexOf("\r");
               if (idx != -1)
                 textContent = textContent.substring(0, idx);
               chosenTextField.value = textContent + " --";
-            }  
+            }
           }
           else
             chosenTextField.value = "";
@@ -997,6 +994,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     if (!e)
       return true;
+
     // in IE for some reason same event comes two times
     if (e.getAttribute) {
       var isProcessed = e.getAttribute('eventProcessed');
@@ -1004,7 +1002,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         return false;
       e.setAttribute('eventProcessed', 'true');
     }
-    
+
     target = getTargetElement(e);
     tr = getTrNode(target);
 
@@ -1018,18 +1016,20 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     // darken new current row
     self.currentRow = tr;
-    self.selectRow();   
+    self.selectRow();
     return true;
   }
 
   this.popupRowOnMouseOut = function (e) {
     var tr;
-    var target;
-
     e = (e) ? e : ((window.event) ? window.event : null);
-
     if (!e)
       return true;
+
+    var target = getMouseOutTarget(e);
+    if (!target)
+      return true;
+
     // in IE for some reason same event comes two times
     if (e.getAttribute) {
       var isProcessed = e.getAttribute('eventProcessed');
@@ -1037,8 +1037,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         return false;
       e.setAttribute('eventProcessed', 'true');
     }
-    
-    target = getTargetElement(e);
+
     tr = getTrNode(target);
     if (!tr)
       return true;
@@ -1078,7 +1077,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
   }
 
-  this.nextRow = function () {  
+  this.nextRow = function () {
     if (self.currentRow == null) {
       self.currentRow = self.firstRow();
       //self.selectRow();
@@ -1590,11 +1589,11 @@ function popupOnSubmit(e) {
     else {
       for (j=0; j<form.elements.length; j++) {
         var elem = form.elements[j];
-        if (elem.type && elem.type.toUpperCase() == 'SUBMIT') 
+        if (elem.type && elem.type.toUpperCase() == 'SUBMIT')
           elem.value = 'Please wait';
       }
     }
-///    
+///
   }
 
 // submit as GET with all parameters collected manually
@@ -1740,13 +1739,12 @@ function autoCompleteOnBlur(e) {
 
 function autoCompleteOnMouseout(e) {
   e = (e) ? e : ((window.event) ? window.event : null);
-
   if (!e)
     return;
 
-  var target = getTargetElement(e);
+  var target = getMouseOutTarget(e);
   if (!target)
-    return;
+    return true;
 
   var img = document.getElementById(keyPressedImgId);
   if (!img)
@@ -1889,9 +1887,9 @@ function getFormNode(elem) {
 
 function getTrNode(elem) {
   var e;
-  
+
   var elem_ = elem;
-  if (elem.length > 1) 
+  if (elem.length > 1)
     elem_ = elem[0];
   if (elem_.tagName.toUpperCase() == 'TR')
     return elem;
@@ -2076,16 +2074,39 @@ function hideResetRow(div, currentFormName, originalProp) {
 
 /*********************************** Menu ***********************************/
 function initMenus() {
-  var menuIcons = document.getElementsByTagName('img');
-  var l = menuIcons.length;
+  var menuLinks = document.getElementsByTagName('A');
+  var l = menuLinks.length;
   for (var i=0; i<l; i++) {
-    var m = menuIcons[i];
-    if (m.id.indexOf('menuicon_') == 0) {
-      addEvent(m, 'click',     menuOnClick, false);    
+    var m = menuLinks[i];
+    if (m.id.indexOf('menuLink_') == 0) {
+      addEvent(m, 'click',     menuOnClick, false);
     }
-    if (m.className  &&  m.className == 'fade') {
-	    addEvent(m, 'mouseover', slowhigh,    false);
-	    addEvent(m, 'mouseout',  slowlow,     false);     
+    if (m.className  &&  m.className.indexOf('fade', m.className.length - 4) != -1) {
+      if (m.attachEvent) { // hack for IE use 'traditional' event handling model - to avoid event bubbling and make IE set 'this' to the element that fired the event
+        //m.onmouseover = unfadeOnMouseOver;
+        //m.onmouseout  = fadeOnMouseOut;
+      }
+      else {
+	      //addEvent(m, 'mouseover', unfadeOnMouseOver, false);
+	      //addEvent(m, 'mouseout',  fadeOnMouseOut,    false);
+	    }
+    }
+  }
+
+  // fading of td elements with id ending with 'fade'
+  menuLinks = document.getElementsByTagName('td');
+  l = menuLinks.length;
+  for (var i=0; i<l; i++) {
+    var m = menuLinks[i];
+    if (m.id  &&  m.id.indexOf('fade', m.id.length - 4) != -1) {
+      if (m.attachEvent) { // hack for IE use 'traditional' event handling model - to avoid event bubbling and make IE set 'this' to the element that fired the event
+        //m.onmouseover = fadeOnMouseOver;
+        //m.onmouseout  = unfadeOnMouseOut;
+      }
+      else {
+	      //addEvent(m, 'mouseover', fadeOnMouseOver, false);
+	      //addEvent(m, 'mouseout',  unfadeOnMouseOut,    false);
+	    }
     }
   }
 }
@@ -2105,8 +2126,13 @@ function menuOnClick(e) {
   if (!target)
     return;
 
-  var imgId = target.id;
-  var divId = 'menudiv_' + imgId.substring('menuicon_'.length);
+  var id = target.id;
+  var title;
+  if (id.indexOf('menuLink_') == 0)
+    title = id.substring('menuLink_'.length);
+  else
+    title = id.substring('menuicon_'.length);
+  var divId = 'menudiv_' + title;
   var popup = Popup.open(divId, target, null, 0, 19);
   return stopEventPropagation(e);
 }
@@ -2189,7 +2215,7 @@ function tooltipOnMouseOver0(target) {
   if (!tooltipDiv) {
     //throw new Error("document must contain div '" + divId + "' to display enhanced tooltip: " + tooltipText);
     return false; // in FF for some reason if page not fully loaded this div is not yet defined
-  }  
+  }
   //if (tooltipDiv.style.width != '') {
   //  alert(tooltipDiv.style.width);
   //}
@@ -2217,13 +2243,15 @@ function tooltipOnMouseOver(e) {
 
 function tooltipOnMouseOut(e) {
   var p;
-  var target;
 
   e = (e) ? e : ((window.event) ? window.event : null);
   if (!e)
     return;
 
-  target = getTargetElement(e);
+  var target = getMouseOutTarget(e);
+  if (!target)
+    return true;
+
   var popup = Popup.getPopup('system_tooltip');
   if (popup && popup.isOpen())
     return true;
@@ -2243,7 +2271,9 @@ function interceptLinkClicks() {
   var llen = document.links.length;
   for (var i=0;i<llen; i++) {
     var id = document.links[i].id;
-    if (id && id.indexOf("-inner.") == 0) {    
+    if (id.indexOf('menuLink_') == 0) // menu clicks are processed by their own event handler
+      continue;
+    if (id && id.indexOf("-inner.") == 0) {
       var propName = id.substring(7);
       addEvent(document.links[i], 'click',  onClickDisplayInner,   false);
     }
@@ -2256,12 +2286,12 @@ function onClickDisplayInner (e) {
   e = (e) ? e : ((window.event) ? window.event : null);
   if (!e)
     return;
- 
+
   var url = getTargetAnchor(e);
   if (!url || !url.id)
     return;
-  var propName = url.id.substring(7); 
-  var r = displayInner(e, innerUrls[propName]); 
+  var propName = url.id.substring(7);
+  var r = displayInner(e, innerUrls[propName]);
   return r;
 }
 
@@ -2587,7 +2617,7 @@ function displayInner(e, urlStr) {
   bottomFrame.location.replace(finalUrl);
   var timeOutFunction = "copyInnerHtml('" + frameId  + "', '" + 'pane2' + "')";
   setTimeout(timeOutFunction, 100);
-  
+
   return false;
 }
 
@@ -2603,7 +2633,7 @@ function copyInnerHtml(frameId, divId) {
     setTimeout( "copyInnerHtml('" + frameId  + "', '" + divId + "')", 100 );
     return;
   }
-  
+
   frameLoaded[frameId] = false;
   var div = document.getElementById(divId);
   var frameBody = frames[frameId].document.body;
@@ -2611,7 +2641,7 @@ function copyInnerHtml(frameId, divId) {
   var frameBody = frameDoc.body;
   var d = frameDoc.getElementById("corePageContent");
   if (d)
-    frameBody = d;  
+    frameBody = d;
   // if there is div RteIframe with iframe in it than innerHTML of this div must be set to ""
   // because the copying of the iframe from the hidden iframe to the parent page causes problems with
   // FireFox back button - it becomes necessary to click 3 and more times to go to the previous page
@@ -2619,7 +2649,7 @@ function copyInnerHtml(frameId, divId) {
     frames[frameId].document.getElementById('RteIframe').innerHTML = "";
   if(frames[frameId].document.getElementById('footerRteIframeDivNotes'))
     frames[frameId].document.getElementById('footerRteIframeDivNotes').innerHTML = "";
- 
+
   // the size of the floating iframes must be set to 0. Size and position (window offsetLeft and offsetTop) will be set on textarea's onclick
   var rteNotes = document.getElementById('notes');
   rteNotes.style.width = 0;
@@ -2637,7 +2667,7 @@ function copyInnerHtml(frameId, divId) {
     rteDescription.style.top = 0;
     rteDescription.style.display = 'none';
   }
-    
+
   var frameBodyText = frameBody.innerHTML;
   setInnerHtml(div, frameBodyText, frames[frameId]);
 
@@ -2669,7 +2699,7 @@ function setInnerHtml(div, text, frame) {
 //    r.selectNodeContents(div);
 //    r.deleteContents();
 //    var df = r.createContextualFragment(text);
-//    div.appendChild(df); 
+//    div.appendChild(df);
 //  }
   else {
     div.innerHTML = '';
@@ -2745,12 +2775,12 @@ function initCalendarsFromTo(div, formName, fromDateField, toDateField) {
 function getTextContent(elm) {
   var text = null;
 
-  if (!elm)  
+  if (!elm)
     throw new Error("parameter is null");
-  
+
   if (typeof elm.textContent != "undefined") {                // W3C DOM Level 3
     text = elm.textContent;
-  }  
+  }
   else if (elm.childNodes && elm.childNodes.length) {         // W3C DOM Level 2
     var t = '';
     for (var i = elm.childNodes.length; i--;) {
@@ -2787,7 +2817,54 @@ function getTargetElement(evt) {
   else {
     elem = evt.srcElement;
   }
+
   return elem;
+}
+
+//* Because of event bubbling mousing over the link inside a div will send a mouseout for the enclosing div
+//* So we need to discard such events - return null in this case;
+function getMouseOutTarget(e) {
+  var tg = getTargetElement(e);
+  if (!tg)
+    return null;
+  var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement; // ignore event if element to which mouse has moved is a child of a target element
+  if (!reltg)
+    return tg;
+  while (reltg != tg && reltg.nodeName != 'BODY')
+    reltg = reltg.parentNode;
+  if (reltg == tg)
+    return null;
+  return tg;
+}
+
+//* Because of event bubbling mousing over the link inside a div will send a mouseover for this div
+//* So we need to discard such events - return null in this case;
+function getMouseOverTarget(e) {
+  var tg = getTargetElement(e);
+  if (!tg)
+    return null;
+  return tg;
+
+  /*
+  var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement; // ignore event if element to which mouse has moved is a child of a target element
+  if (!reltg)
+    return tg;
+  while (reltg != tg && reltg.nodeName != 'BODY')
+    reltg = reltg.parentNode;
+  if (reltg == tg)
+    return null;
+  return tg;
+  */
+
+  /*
+  // only interested in direct events, not those that bubble up
+  if (!tg.attachEvent && this && this.contains && this.contains(tg)) {
+    alert("canceling mouseover");
+    return null;
+  }
+  else
+    return tg;
+  */
 }
 
 function checkAll(formName) {
@@ -2807,67 +2884,152 @@ function checkAll(formName) {
 }
 
 //*********************************** Icon/Image effects **************************************
-/***********************************************
-* Gradual Highlight image script- © Dynamic Drive DHTML code library (www.dynamicdrive.com)
-* This notice MUST stay intact for legal use
-* Visit Dynamic Drive at http://www.dynamicdrive.com/ for full source code
-***********************************************/
+var lowOpacity  = 60;
+var highOpacity = 100;
+var browserDetect;
+var timeouts = new Array();
 
-var baseopacity=60;
-var fadingImage;
-var browserdetect;
-
-function slowhigh(e) {
+function unfadeOnMouseOut(e) {
   e = (e) ? e : ((window.event) ? window.event : null);
   if (!e)
-    return; 
-  var target = getTargetElement(e);
-  if (!target)
     return;
+  var target = getMouseOutTarget(e);
+  if (!target) {
+    target = getTargetElement(e);
+    //alert("unfade canceled for: " + target + ", id: " + target.id + ", target.tagName: " + target.tagName);
+    return false;
+  }
 
-  browserdetect = target.filters? "ie" : typeof target.style.MozOpacity=="string"? "mozilla" : "";
-  instantset(target, baseopacity);
-  fadingImage = target;
-  highlighting = setInterval("gradualfade(fadingImage)", 50);
+	return unfade(target);
 }
 
-function slowlow(e) {
+function unfadeOnMouseOver(e) {
   e = (e) ? e : ((window.event) ? window.event : null);
   if (!e)
-    return; 
-  var target = getTargetElement(e);
-  if (!target)
     return;
-  
-  cleartimer();
-  instantset(target, baseopacity);
+  var target = getMouseOverTarget(e);
+  if (!target) {
+    target = getTargetElement(e);
+    //alert("unfade canceled for: " + target + ", id: " + target.id + ", target.tagName: " + target.tagName);
+    alert("unfade canceled: e.target: " + e.target + ", e.srcElement: " + e.srcElement + ", e.currentElement: " + e.currentElement);
+    return false;
+  }
+
+	return unfade(target);
 }
 
-function instantset(imgobj, degree) {
-  if (browserdetect=="mozilla")
-    imgobj.style.MozOpacity=degree/100;
-  else if (browserdetect=="ie")
-    imgobj.filters.alpha.opacity=degree;
+function fadeOnMouseOver(e) {
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e)
+    return;
+
+  var target = getMouseOverTarget(e);
+  if (!target)
+    return true;
+
+	return fade(target);
 }
 
-function cleartimer(){
-  if (window.highlighting) 
-    clearInterval(highlighting);
+function fadeOnMouseOut(e) {
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e)
+    return;
+
+  var target = getMouseOutTarget(e);
+  if (!target)
+    return false;
+
+	return fade(target);
 }
 
-function gradualfade(cur2){
-  if (browserdetect == "mozilla" && cur2.style.MozOpacity < 1)
-    cur2.style.MozOpacity = Math.min(parseFloat(cur2.style.MozOpacity)+0.1, 0.99);
-  else if (browserdetect == "ie" && cur2.filters.alpha.opacity <100 )
-    cur2.filters.alpha.opacity+=10;
-  else if (window.highlighting)
-    clearInterval(highlighting);
+function unfade(target) {
+  if (!target)
+    return false;
+
+  if (!target.id || target.id == '')
+    return false;
+  //alert("highlighting: " + target.id);
+  browserDetect = target.filters? "ie" : typeof target.style.MozOpacity=="string"? "mozilla" : "";
+
+  var timeout = timeouts[target.id];
+  if (timeout) {
+    clearTimeout(timeout);
+    timeouts[target.id] = null;
+  }
+  timeout = setTimeout("incrementallyChangeOpacity('" + target.id + "', false)", 50);
+  timeouts[target.id] = timeout;
+}
+
+
+function fade(target) {
+  if (!target)
+    return false;
+
+  if (!target.id || target.id == '')
+    return false;
+
+  browserDetect = target.filters? "ie" : typeof target.style.MozOpacity=="string"? "mozilla" : "";
+  var timeout = timeouts[target.id];
+  if (timeout) {
+    clearTimeout(timeout);
+    timeouts[target.id] = null;
+  }
+  timeout = setTimeout("incrementallyChangeOpacity('" + target.id + "', true)", 50);
+  timeouts[target.id] = timeout;
+}
+
+function incrementallyChangeOpacity(targetId, fade) {
+  var target = document.getElementById(targetId);
+  if (target == null)
+    return;
+  var targetOpacity = fade ? lowOpacity : highOpacity;
+  var opacityChangeStep = 10.0;
+
+  if (browserDetect == "mozilla") {
+    targetOpacity  = fade ? lowOpacity / 100.0 : (highOpacity - 1) / 100.0;
+    opacityChangeStep /= 100.0;
+    if (target.style.MozOpacity == null || isNaN(parseFloat(target.style.MozOpacity))) {
+      target.style.MozOpacity = fade ? (highOpacity - 1) / 100.0 : lowOpacity / 100.0;
+    }
+
+    if (fade) {
+      if (target.style.MozOpacity > targetOpacity) {
+        target.style.MozOpacity = parseFloat(target.style.MozOpacity) - opacityChangeStep;
+        setTimeout("incrementallyChangeOpacity('" + target.id + "', true)", 50);
+      }
+    }
+    else {
+      if (target.style.MozOpacity < targetOpacity) {
+        target.style.MozOpacity = parseFloat(target.style.MozOpacity) + opacityChangeStep;
+        setTimeout("incrementallyChangeOpacity('" + target.id + "', false)", 50);
+      }
+    }
+  }
+  else if (browserDetect == "ie") {
+    if (target.filters == null || target.filters.alpha == null)
+      return;
+    if (target.filters.alpha.opacity == null) {
+      target.filters.alpha.opacity = fade ? highOpacity : lowOpacity;
+    }
+    if (fade) {
+      if (target.filters.alpha.opacity > targetOpacity ) {
+        target.filters.alpha.opacity -= opacityChangeStep;
+        setTimeout("incrementallyChangeOpacity('" + target.id + "', true)", 50);
+      }
+    }
+    else {
+      if (target.filters.alpha.opacity < targetOpacity) {
+        target.filters.alpha.opacity += opacityChangeStep;
+        setTimeout("incrementallyChangeOpacity('" + target.id + "', false)", 50);
+      }
+    }
+  }
 }
 
 function createUrlForBacklink(formName, prop) {
   var form = document.forms[formName];
   var url = "smartPopup?";
-  
+
   var formAction = form.elements['-$action'].value;
   if (!formAction)
     url += "-$action=" + formAction;
