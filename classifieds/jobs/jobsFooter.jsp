@@ -26,7 +26,7 @@
     <table class="null19" border="0" cellpadding="0" cellspacing="0">
       <tbody>
         <tr>
-          <td class="null70" align="center"><img src="images/jobs/template/pixel.gif" alt="" class="null69" /><a href=""><img src="images/jobs/template/Envelope.gif" alt="" border="0" /><img src="images/jobs/template/pixel.gif" alt="" class="null69" />Email this page to a friend</a></td>
+          <td class="null70" align="center"><img src="images/jobs/template/pixel.gif" alt="" class="null69" /><a href=""><img width="22" height="22" src="images/email.gif" alt="" border="0" /><img src="images/jobs/template/pixel.gif" alt="" class="null69" />Email this page to a friend</a></td>
         </tr>
       </tbody>
     </table>
