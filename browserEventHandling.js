@@ -18,29 +18,35 @@
     }
 
     /*
-     * Generic cross-browser method of adding event handlers
-     * taken from: http://www.scottandrew.com/weblog/jsjunk#events
+     * Cross-browser method of adding event handlers.
+     * If useCapture is true - handler is registered for 'capture phase', otherwise for 'bubbling phase'.
+     * Although IE6- does not support capture - so we always pass false.
      */
     function addEvent(obj, evType, fn, useCapture) {
       if (obj.addEventListener) { // NS
        obj.addEventListener(evType, fn, useCapture);
        return true;
-      } else if (obj.attachEvent) { // IE
+      }
+      else if (obj.attachEvent) { // IE
         var r = obj.attachEvent("on" + evType, fn);
         return r;
-      } else {
-        alert("You need to upgrade to a newer browser. Error: 'handler could not be attached'");
+      }
+      else {
+        alert("You need to upgrade to a newer browser. Error: 'event handler could not be be added'");
       }
     }
+
     function removeEvent(obj, evType, fn, useCapture) {
       if (obj.removeEventListener) {
         obj.removeEventListener(evType, fn, useCapture);
         return true;
-      } else if (obj.detachEvent) {
+      }
+      else if (obj.detachEvent) {
         var r = obj.detachEvent("on" + evType, fn);
         return r;
-      } else {
-        alert("You need to upgrade to a newer browser. Error: 'handler could not be removed'");
+      }
+      else {
+        alert("You need to upgrade to a newer browser. Error: 'event handler could not be removed'");
       }
     }
 
@@ -96,7 +102,8 @@
 
     //***** upon iframe loading inform the parent
     function onLoadPopup() {
-      parent.frameLoaded[window.name] = true;
+      if (parent && parent.frameLoaded)
+        parent.frameLoaded[window.name] = true;
     }
 
     //***** Add smartlistbox handlers
