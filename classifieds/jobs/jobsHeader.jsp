@@ -1,5 +1,6 @@
 <div>
 <style type="text/css">
+
   .cb_style table { text-align: left; }
   .inlNoDec{
     text-decoration:none;
@@ -165,8 +166,6 @@
   .input {background-color: #F1F1F1; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:000088; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; }
 //  tr.dark {background-color: #FFFFCC; padding-left: 10px;}
 </style>
-<script language="JavaScript" src="images/jobs/template/Common.js" type="text/javascript">
-</script>
 
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
       <tbody>
@@ -177,9 +176,9 @@
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tbody>
                 <tr>
-                  <td class="null1"><changePassword/><userLogOff html="user-login.html"/></td>
+                  <td class="null1"><changePassword/><a href="register/user-login.html">Sign In</a></td>
 
-                  <td class="null2"><a id="hlHelpLink" href="">Help</a>&#160;&#160;|&#160;&#160;<a  href="javascript://" title="Chat with the agent" onclick="openChatWindow(escape(document.title), escape(window.location), 'true');"><img src="icons/chat.gif" border="0" width="16" height="16" />Talk to Customer Service</a></td>
+                  <td class="null2"><!--img src="icons/help.gif" border="0" align="middle" /--><a id="hlHelpLink" href="help.html">Help</a>&#160;&#160;|&#160;&#160;<a  href="javascript://" title="Chat with the agent" onclick="openChatWindow(escape(document.title), escape(window.location), 'true');"><img src="icons/chat.gif" border="0" width="16" height="16" />Talk to Customer Service</a></td>
                 </tr>
               </tbody>
             </table>
@@ -242,32 +241,61 @@
       </tbody>
     </table>
 
-    <table class="null19" border="0" cellpadding="0" cellspacing="0">
-      <tbody>
-        <tr>
-          <td>&#160;</td>
+    <!--table class="tabs" border="0" cellpadding="0" cellspacing="0" align="center">
+    <tr>
+    <td>
+    <table border="0" cellpadding="0" cellspacing="0" align="center">
+      <tr>
 
-          <td class="null17"><nobr>
-            <a onmouseover="imageSwap('Home', 'images/jobs/template/tabHome_on.gif')" onmouseout="imageSwap('Home', 'images/jobs/template/tabHome_on.gif')" href="classifieds/jobs"><img id="Home" src="images/jobs/template/tabHome_on.gif" alt="Home" class="null10" border="0" /></a><a onmouseover="imageSwap('FindJobs', 'images/jobs/template/tabFindJobs2_on.gif')" onmouseout="imageSwap('FindJobs', 'images/jobs/template/tabFindJobs2.gif')" href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job"><img id="FindJobs" src="images/jobs/template/tabFindJobs2.gif" alt="Find Jobs" class="null11" border="0" /></a><a onmouseover="imageSwap('PostResumes', 'images/jobs/template/tabPostResumes_on.gif')" onmouseout="imageSwap('PostResumes', 'images/jobs/template/tabPostResumes.gif')" href="mkResource.html?-$action=mkResource&amp;$browser=y&amp;displayProps=yes&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Resume"><img id="PostResumes" src="images/jobs/template/tabPostResumes.gif" alt="Post Resumes" class="null12" border="0" /></a><a onmouseover="imageSwap('JobAlerts', 'images/jobs/template/tabjobalerts_on.gif')" onmouseout="imageSwap('JobAlerts', 'images/jobs/template/tabjobalerts.gif')" href="subscribe.html?-$action=watch&amp;-isWatch=y&amp;&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job"><img id="JobAlerts" src="images/jobs/template/tabjobalerts.gif" alt="Job Alerts" class="null13" border="0" /></a><a onmouseover="imageSwap('MyRecruiting', 'images/jobs/template/tabMyRecruiting123_on.gif')" onmouseout="imageSwap('MyRecruiting123', 'images/jobs/template/tabMyRecruiting123.gif')" href="homePage"><img id="MyRecruiting" src="images/jobs/template/tabMyRecruiting123.gif" alt="My Recruiting123" class="null14" border="0" /></a><a onmouseover="imageSwap('Advice', 'images/jobs/template/tabAdvice_on.gif')" onmouseout="imageSwap('Advice', 'images/jobs/template/tabAdvice.gif')" href=""><img id="Advice" src="images/jobs/template/tabAdvice.gif" alt="Advice &amp; Resources" class="null15" border="0" /></a><a onmouseover="imageSwap('CareerFairs', 'images/jobs/template/tabCareerFairs_on.gif')" onmouseout="imageSwap('CareerFairs', 'images/jobs/template/tabCareerFairs.gif')" href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/JobFair"><img id="CareerFairs" src="images/jobs/template/tabCareerFairs.gif" alt="Career Fairs" class="null16" border="0" /></a></nobr>
-          </td>
+        <td class="oneTab" id="1fade">
+          <table border="0" cellspacing="0" cellpadding="0" align="center" height="33">
+            <tr>
+            <td class="left" id="1"> </td>
+            <td class="middle" id="2">
+               <a href="classifieds/jobs/"><img src="icons/homeIcon.gif"         border="0" align="middle" /> Home </a>
+            </td>
+            <td class="right" id="3"> </td>
+            </tr>
+          </table>
+        </td>
+        <td class="oneTab" id="2fade">
+          <table border="0" cellspacing="0" cellpadding="0" align="center" height="33">
+            <tr>
+            <td class="left"> </td>
+            <td class="middle">
+              <a href="classifieds/jobs/"> <img src="icons/classes/jobs-Job.gif" border="0" align="middle"/> Find Jobs</a>
+            </td>
+            <td class="right"> </td>
+            </tr>
+          </table>
+        </td>
+        <td class="oneTab" id="3fade">
+          <table border="0" cellspacing="0" cellpadding="0" align="center" height="33">
+            <tr>
+            <td class="left"> </td>
+            <td class="middle">
+              <a href="homePage">          <img src="icons/classes/Resume.gif"   border="0" align="middle"/> Find Resumes</a>
+            </td>
+            <td class="right"> </td>
+            </tr>
+          </table>
+        </td>
+        <td class="oneTab1" id="4fade">
+          <table border="0" cellspacing="0" cellpadding="0" align="center" height="33">
+            <tr>
+            <td class="left"> </td>
+            <td class="middle">
+              <a href="homePage">          <img src="icons/classes/OpenHouse.gif"   border="0" align="middle"/> Open Houses</a>
+            </td>
+            <td class="right"> </td>
+            </tr>
+          </table>
+        </td>
 
-          <td class="null18" align="right">
-          </td>
-
-          <td>&#160;</td>
         </tr>
-      </tbody>
     </table>
+    </td>
+    </tr>
+    </table-->
 
-    <table class="null19" border="0" cellpadding="0" cellspacing="0">
-      <tbody>
-        <tr class="null22">
-          <td>&#160;</td>
-
-          <td class="null21"><nobr><img src="images/jobs/template/pixel.gif" alt="" class="null20" border="0" vspace="12" /></nobr></td>
-
-          <td>&#160;</td>
-        </tr>
-      </tbody>
-    </table>
 </div>

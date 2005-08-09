@@ -13,7 +13,7 @@
                 <tr>
                   <td align="left"><img src="images/jobs/template/welcome_new_user.gif" height="20" width="490" /></td>
 
-                  <td class="null23" align="right">Already Registered? <a href="register/user-login.html" onmouseover="imageSwap('SignIn', 'images/jobs/template/btn_sign_in_on.gif')" onmouseout="imageSwap('SignIn', 'images/jobs/template/btn_sign_in.gif')"><img src="images/jobs/template/btn_sign_in.gif" name="SignIn" align="middle" border="0" height="15" width="59" /></a></td>
+                  <td class="null23" align="right">Already Registered? <a href="register/user-login.html"> <img src="images/jobs/template/btn_sign_in.gif" name="SignIn" align="middle" border="0" height="15" width="59" /></a></td>
                 </tr>
               </tbody>
             </table>
@@ -410,7 +410,7 @@
 
 <script language="JavaScript">
       var horizontalFilter_FIELDS = new Array();
-</script>	
+</script>
   																    <form name="horizontalFilter" id="filter" method="POST">
                                       <table bgcolor="#F1F1F1" border="0" cellpadding="0" cellspacing="0" width="280">
                                         <tbody>
@@ -437,7 +437,7 @@
                                         </tbody>
                                       </table>
 	  															    </form>
-  
+
                                       <img src="images/jobs/template/pixel.gif" height="10" width="1" /><br />
                                       <a id="cblTV" href=""><img src="images/jobs/template/careerchannel_234x60_6k.gif" alt="Career Advice in Action" border="0" /></a>
                                     </td>
