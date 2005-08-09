@@ -112,7 +112,7 @@
  a.null53 {text-decoration: none;}
  td.null52 {padding-top: 3px; padding-left: 18px; padding-bottom: 6px;}
  td.null51 {padding-top: 3px; padding-left: 51px; padding-bottom: 6px;}
- td.null50 {background-image: url(images/jobs/template/w_drop_r.gif); background-position: right top; background-repeat: repeat-y;}
+ td.null50 {background-image: url(classifieds/jobs/images/w_drop_r.gif); background-position: right top; background-repeat: repeat-y;}
  td.null49 {padding-left: 20px; padding-top: 10px; padding-bottom: 7px;}
  td.null48 {padding-top: 11px;}
  td.null47 {padding-top: 14px; padding-right: 3px;}
@@ -134,7 +134,7 @@
  a.null31 {font-size: 10px;}
  td.null30 {padding: 8px 0px 4px 8px;}
  td.null29 {padding: 0px;}
- td.null28 {background-image: url(images/jobs/template/qjs_drop_bg_r.gif); background-repeat: repeat-y;}
+ td.null28 {background-image: url(classifieds/jobs/images/qjs_drop_bg_r.gif); background-repeat: repeat-y;}
  td.null27 {padding: 7px 0px 5px;}
  td.null26 {padding: 7px 0px 0px 10px;}
  tr.null25 {background-color: rgb(255, 153, 0);}
@@ -170,7 +170,7 @@
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
       <tbody>
         <tr bgcolor="#F1F1F1">
-          <td width="*"><img src="images/jobs/template/pixel.gif" height="1" width="1" /></td>
+          <td width="*"><img src="classifieds/jobs/images/pixel.gif" height="1" width="1" /></td>
 
           <td class="null3" width="750">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -184,11 +184,11 @@
             </table>
           </td>
 
-          <td width="*"><img src="images/jobs/template/pixel.gif" height="1" width="1" /></td>
+          <td width="*"><img src="classifieds/jobs/images/pixel.gif" height="1" width="1" /></td>
         </tr>
 
         <tr valign="top">
-          <td width="*"><img src="images/jobs/template/pixel.gif" height="1" width="1" /></td>
+          <td width="*"><img src="classifieds/jobs/images/pixel.gif" height="1" width="1" /></td>
 
           <td class="null9" width="750">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -196,21 +196,21 @@
                 <tr valign="top">
                   <td class="null4" align="left"><a href="">
 <hideTitle>
-    <resourceTypeLabel placeHolderImage="images/jobs/template/logo.gif" height="40" width="180" />
+    <resourceTypeLabel placeHolderImage="classifieds/jobs/images/logo.gif" height="40" width="180" />
 </hideTitle>
-                  <!--img src="images/jobs/template/logo.gif" border="0" height="40" width="180" /--></a></td>
+                  <!--img src="classifieds/jobs/images/logo.gif" border="0" height="40" width="180" /--></a></td>
 
                   <td class="null8" align="right">
                     <table border="0" cellpadding="0" cellspacing="0">
                       <tbody>
                         <tr valign="top">
-                          <td width="22"><a href=""><img src="images/jobs/template/woman_sml.gif" border="0" height="36" width="22" /></a></td>
+                          <td width="22"><a href=""><img src="classifieds/jobs/images/woman_sml.gif" border="0" height="36" width="22" /></a></td>
 
                           <td class="null7" align="right">
                             <table border="0" cellpadding="0" cellspacing="0">
                               <tbody>
                                 <tr>
-                                  <td><a href=""><img src="images/jobs/template/need_to_hire.gif" border="0" height="13" width="97" /></a></td>
+                                  <td><a href=""><span style="color:rgb(237,95,0);font-weight:bold;font-family:arial-narrow,sans-serif;font-size:10pt">NEED TO HIRE?&#160;</span></a></td>
 
                                   <td><a href="">Post Jobs</a>&#160;&#160;|&#160; <a href="localSearchResults.html?-$action=explore&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Resume">Search Resumes</a>&#160;&#160;|&#160; <a id="hlJPSignIn" href="register/user-login.html">Sign In</a></td>
                                 </tr>
@@ -222,7 +222,7 @@
                                 <tr>
                                   <td class="null5">Now Featuring the <a href="">Small Business Advisor</a></td>
 
-                                  <td class="null6"><img src="images/jobs/template/new.gif" /></td>
+                                  <td class="null6"><img src="classifieds/jobs/images/new.gif" /></td>
                                 </tr>
                               </tbody>
                             </table>
@@ -236,7 +236,7 @@
             </table>
           </td>
 
-          <td width="*"><img src="images/jobs/template/pixel.gif" height="1" width="1" /></td>
+          <td width="*"><img src="classifieds/jobs/images/pixel.gif" height="1" width="1" /></td>
         </tr>
       </tbody>
     </table>
