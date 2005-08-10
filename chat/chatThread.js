@@ -144,13 +144,8 @@ var timeDelta = 0; // difference between server and client time
     
       if(userId=='ChatAdministrator') { 
 			  messageString+="<img src='icons/information.gif' align=bottom><span class=xs>"; 
-			  userN = doc.createElement('img');
-			  userN.src='icons/information.gif'; 
-			  userN.align='bottom'
 		  } else {
           messageString += '<span class=xs><font color='+userColor+'>'; 
-			    userN = doc.createElement('font'); 
-			    userN.color = userColor;
 		    }
 
     	var time = getTimeStr(gmtOffset,tm-timeDelta);
@@ -158,25 +153,19 @@ var timeDelta = 0; // difference between server and client time
         time = "";
       var messageStringTimeN ='';
 		  messageStringTimeN+="<font size='-2'"; 
-		  var timeN = doc.createElement('font');
-      timeN.size -= 1;
       if(userId=='ChatAdministrator') {
 			  messageStringTimeN += ' style="color:#63B4EF;'; 
-			  timeN.style.color = '#63B4EF';
 		  } else {
 			    messageStringTimeN += ' style="color:'+userColor+';> ';
 		    }
       if(doc.getElementById('timeNid[0]') != null) {
 			  if(doc.getElementById('timeNid[0]').style.display!='none') {
 				  messageStringTimeN+='display:inline" '; 
-				  timeN.style.display='inline';
 			  } else {
 				    messageStringTimeN+='display:none" '; 
-				    timeN.style.display='none';
 			    }
 		  } else {
 			    messageStringTimeN+='display:inline"'; 
-			    timeN.style.display='inline';
 		    }
         
 		  var timeNiD = 0; 
@@ -188,26 +177,20 @@ var timeDelta = 0; // difference between server and client time
 		    timeNiD++;
       
       messageStringTimeN += ' id="timeNid['+timeNiD+']">'; 
-		  timeN.id = 'timeNid['+timeNiD+']';
       if(userId!='ChatAdministrator') { 
 		    messageString+=userId;
-		    userN.appendChild(doc.createTextNode(userId))
       }
 		  messageString+="</font>";
       if(time != "")
         messageStringTimeN += ' [' + time + '] </font>'; 
        else messageStringTimeN += '</font>'; 
-		  timeN.appendChild(doc.createTextNode(' [' + time + ']'));
       bodyRef.innerHTML+=messageStringTimeN + messageString + ': </span> ';
       var usernameString = '';
 		
 	    if(userId=='ChatAdministrator') {
 		    usernameString += '<span class=xs><font color=' + messageArray[0].substring(0,messageArray[0].indexOf('-')-1) + '>'; 
-		    username = doc.createElement('font');
-		    username.color=messageArray[0].substring(0,messageArray[0].indexOf('-')-1);        	
 		    usernameString += messageArray[0].substring(messageArray[0].indexOf('-')+1,messageArray[0].indexOf('+ ')+1);
 			  usernameString=usernameString.substring(0,usernameString.length-1);
-		    username.appendChild(doc.createTextNode(messageArray[0].substring(messageArray[0].indexOf('-')+1,messageArray[0].indexOf(' '))));
 		    usernameString += '</font>';     
 		    var messageS = messageArray[0].substring(messageArray[0].indexOf('+ '),messageArray[0].length);
 		    messageS = messageS.replace("+","");
@@ -234,6 +217,8 @@ var timeDelta = 0; // difference between server and client time
       if(autoScrolling == 'yes') {
         parent.document.getElementById('chatContents').scrollTop = parent.document.getElementById('chatContents').scrollHeight;
 		  }
+
+      return true;
     }
     // ------- FINISH ------- INSERT MESSAGES -------------------------------------
 
@@ -411,7 +396,7 @@ var timeDelta = 0; // difference between server and client time
          inHTML += ">";
          
          if(isInSupportGroupArray[i] == "true") {
-           inHTML += "<img title='This chat member is in support group.' src='icons/help.gif' width='16' height='16' style='cursor:pointer'> "
+           inHTML += "<img onclick=askForHelp('"+ aliasesArray[i] +"') title='This chat member is in support group.' src='icons/help.gif' width='16' height='16' style='cursor:pointer'> "
          }
          
          // FINISH -- icon. onMouseOver event is attached to this icon. Information about chat user is deisplayed when mouse over
@@ -497,7 +482,7 @@ var timeDelta = 0; // difference between server and client time
         userSupport.width = 16; 
         userSupport.height = 16;
         userSupport.title = 'This chat member is in support group.';
-        userSupport.style.cursor = 'pointer';
+        //userSupport.style.cursor = 'pointer';
         divUsers.appendChild(userSupport);
       }
             

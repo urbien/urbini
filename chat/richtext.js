@@ -525,7 +525,7 @@ function enableDesignMode(rte, html, readOnly, minimized, isChat) {
     }
 	}
   // make rte's iframe be properly alligned with the rte panel in the situation of the floating iframe
-  setTimeout("onWindowResize("+rte+");",1000);
+  setTimeout("onWindowResize("+rte+");",3000);
 }
 
 // recursive function that looks for all URLs in RTE to replace them with link
