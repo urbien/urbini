@@ -451,8 +451,11 @@
     }
     
 // ASK for help in chat. THe people that are responsible for support will help.
-    function askForHelp(){
-      parent.document.postForm.nameUser.value = 'allChatsHelp'; // notes that all chat members that are responsible for support in all rooms must receive the message
+    function askForHelp(askTo){
+      if(askTo != null) 
+        parent.document.postForm.nameUser.value = askTo; // ask concrete support member for help
+       else
+         parent.document.postForm.nameUser.value = 'allChatsHelp'; // notes that all chat members that are responsible for support in all rooms must receive the message
       var alertToSupportInvitation = "helpSubmitted(&#39;<font color=#ff0000><strong>" + document.getElementById("realUserName").value + "&amp#39;s ask for support submitted</strong></font>&#39;)";
       var windowLocation = "" + window.location;
       if(windowLocation.indexOf('&isChatWithTheAgent=true') > 0)
@@ -470,9 +473,23 @@
       parent.document.postForm.submit();
       parent.document.postForm.nameUser.value = "all";
       // write an alert to the ask for help sender that his alert was sent
-      var dt = new Date();
-      thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("<font color=#ff0000><strong>Your ask for support was just sent</strong></font>.?alias1"));
+      addHelpSendNotification(); // adds alert to the ask for help sender that his alert was sent
     }
+    
+    function addHelpSendNotification(){
+      var dt = new Date();
+      /*
+      if(thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("<font color=#ff0000><strong>Your ask for support was just sent</strong></font>.?alias1")))
+        return true;
+      setTimeout("addHelpSendNotification()", 1000);
+      */
+      try {
+        thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("<font color=#ff0000><strong>Your ask for support was just sent</strong></font>.?alias1"));
+      } catch (ex){
+          setTimeout("addHelpSendNotification()", 1000);
+        }
+    }
+    
     function helpSubmitted(messageText){
       parent.document.postForm.aliasUser.value = parent.document.getElementById('aliasUserUri').value;
       parent.document.postForm.nameUser.value = 'allChatsHelp'; // notes that all chat members that are responsible for support in all rooms must receive the message
