@@ -461,7 +461,7 @@
                                               <table id="mxsFeatEmpHP" class="null59" border="0" cellspacing="0">
                                                 <tbody>
                                                   <tr>
-                                                    <td><rotatingResource uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Employer&amp;featuredEmployer_select=Yes&amp;featuredEmployer_verified=y"/><!--a href=""><img src="classifieds/jobs/images/I8C6X56DLTW1N1VN9TC.gif" alt="Aflac" border="0" /></a--></td>
+                                                    <td><rotatingResource uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Employer&amp;featuredEmployer_select=Yes&amp;featuredEmployer_verified=y" image="logo"/></td>
                                                   </tr>
                                                 </tbody>
                                               </table>
