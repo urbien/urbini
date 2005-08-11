@@ -21,10 +21,12 @@ img.fade {
 }
 
 .tabs a:link, .tabs a:visited {
-//		font-size: 12px;
+		font-size: 8pt;
 		//line-height: 11px;
     //font-weight: bold;
+    font-weight: normal;
 		text-decoration: none;
+		font-family: Verdana, Arial, Helvetica, sans-serif;
 		//font-family: ariel-narrow, tahoma, sans-serif;
 		//white-space: nowrap;
 }
