@@ -20,7 +20,7 @@
       <table width="100%" cellpadding="0" cellspacing="0">
       <tr><td>
 		    <menu toolbar="resourceOperations" activate="onMouseOver"/>
-		    <include name="${package}_menu.jsp"/>
+		    <!--include name="${package}_menu.jsp"/-->
 		    <menu toolbar="trades"            activate="onMouseOver"/>
 		    <menu toolbar="crm"               activate="onMouseOver"/>
 		    <menu toolbar="projectManagement" activate="onMouseOver"/>

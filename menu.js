@@ -1951,8 +1951,9 @@ function chooser(element) {
   var shortPropName = propName;
   if (idx != -1)
     shortPropName = propName.substring(0, idx);
-  var form     = element.form.elements['$form'].value;
-  var editList = element.form.elements['$wasEditList'];
+  var form       = element.form.elements['$form'].value;
+  var editList   = element.form.elements['$wasEditList'];
+  var isHrefChange = element.form.id == "tree";
   var value    = element.value;
   var id       = element.id;
 
@@ -1966,6 +1967,13 @@ function chooser(element) {
     window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_verified"].value = "y";
   }
   else {
+    if (isHrefChange) {
+      var aa = window.opener.document.getElementById("a_" + shortPropName);
+      var idx = id.lastIndexOf("/");
+      aa.innerHTML = id.substring(idx + 1);
+      idx = id.lastIndexOf("=");
+      aa.href = id.substring(idx + 1);
+    }
     window.opener.document.forms[form].elements[propName].value                    = value;
     window.opener.document.forms[form].elements[shortPropName + "_select"].value   = id;
     window.opener.document.forms[form].elements[shortPropName + "_verified"].value = "y";
