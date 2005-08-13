@@ -170,7 +170,12 @@
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
       <tbody>
         <tr bgcolor="#F1F1F1">
-          <td width="*"><img src="classifieds/jobs/images/pixel.gif" height="1" width="1" /></td>
+          <td valign="middle" width="*">
+          <a href="http://hudsonfog.com">
+            <img src="icons/icon.gif" align="absmiddle" border="0"/><font face="verdana, sans-serif, arial" color="darkBlue"><small>powered by  <b>HudsonFog</b></small></font>
+          </a>
+          
+          <!--img src="classifieds/jobs/images/pixel.gif" height="1" width="1" /--></td>
 
           <td class="null3" width="750">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
