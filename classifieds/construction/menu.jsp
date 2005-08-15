@@ -1,1 +1,0 @@
-<menu toolbar="trade"       activate="onMouseOver"/>
