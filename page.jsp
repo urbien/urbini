@@ -19,24 +19,24 @@
     <td height="23" style="PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold">
       <table cellpadding="0" cellspacing="0">
       <tr>
-        <td NOWRAP="y"><menu toolbar="resourceOperations" activate="onMouseOver"/></td>
+            <td NOWRAP="y"><menu toolbar="file" activate="onMouseOver"/></td>
 		    <!--include name="${package}_menu.jsp"/-->
-		    <td NOWRAP="y"><menu toolbar="trades"            activate="onMouseOver"/></td>
-		    <td NOWRAP="y"><menu toolbar="crm"               activate="onMouseOver"/></td>
-		    <td NOWRAP="y"><menu toolbar="projectManagement" activate="onMouseOver"/></td>
-		    <td NOWRAP="y"><menu toolbar="realEstate"        activate="onMouseOver"/></td>
-		    <td NOWRAP="y"><menu toolbar="helpdesk"          activate="onMouseOver" allow="admin" /></td>
-		    <td NOWRAP="y"><menu toolbar="transport"         activate="onMouseOver"/></td>
-		    <td NOWRAP="y"><menu toolbar="search"            activate="onMouseOver"/></td>
-		    <td NOWRAP="y"><menu toolbar="toolbar2"          activate="onMouseOver"/></td>
-		    <td NOWRAP="y"><menu toolbar="support"           activate="onMouseOver" allow="admin"/></td>
-		    <td NOWRAP="y"><menu toolbar="personalization"   activate="onMouseOver"/></td>
-		    <td NOWRAP="y"><menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" activate="onMouseOver"/></td>
+		    <td NOWRAP="y"><menu toolbar="trades"              /></td>
+		    <td NOWRAP="y"><menu toolbar="crm"                 /></td>
+		    <td NOWRAP="y"><menu toolbar="projectManagement"   /></td>
+		    <td NOWRAP="y"><menu toolbar="realEstate"          /></td>
+		    <td NOWRAP="y"><menu toolbar="helpdesk"           allow="admin" /></td>
+		    <td NOWRAP="y"><menu toolbar="transport"           /></td>
+		    <td NOWRAP="y"><menu toolbar="search"              /></td>
+		    <td NOWRAP="y"><menu toolbar="toolbar2"            /></td>
+		    <td NOWRAP="y"><menu toolbar="support"            allow="admin"/></td>
+		    <td NOWRAP="y"><menu toolbar="personalization"     /></td>
+		    <td NOWRAP="y"><menu toolbar="calendarAndChart"   itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" /></td>
 		    <td NOWRAP="y"><print image="icons/printerIcon.gif"/></td>
 		    <td NOWRAP="y"><saveInExcel allow="owner" image="images/excel.gif"/></td>
-		    <td NOWRAP="y"><pdaToPc image="icons/pda.gif"/></td>
-		    <td NOWRAP="y"><listGrid/></td>
-		    <td NOWRAP="y"><showHideWindows/></td>
+		    <td NOWRAP="y"><pdaToPc image="icons/pda.gif"      /></td>
+		    <td NOWRAP="y"><listGrid                           /></td>
+		    <td NOWRAP="y"><showHideWindows                    /></td>
 	    </tr></table>
     </td>
     <td valign="middle" align="right" width="100">
@@ -79,7 +79,7 @@
   </div>
 
   <div pda="T">
-    <include name="requiredHeader.jsp"/>  
+    <include name="requiredHeader.jsp"/>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td valign="top" width="100%">
