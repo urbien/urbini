@@ -31,8 +31,5 @@
 </tr></table>
 
 </center>
-<hideBlock>
-  <br/><br/><div align="left"><span class="xs"><hudsonFog /></span></div>
-</hideBlock>
 <iframe name="bottomFrame" id="bottomFrame" src="about:blank" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>  
 </div>
