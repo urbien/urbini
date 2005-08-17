@@ -1,45 +1,8 @@
 <div>
 <div nonPda="T">
 <font color="red"><b><errorMessage /></b></font>
-<hideBlock id="hideBlock">      
+<hideBlock id="hideBlock">
 <watchNote/>
-<!--table width="100%" cellspacing="0" cellpadding="0" border="0">
-  <tr valign="top">
-  <td valign="top" width="100%">
-   <table width="100%" cellspacing="0" cellpadding="0" border="0">
-   <tr style="background-image: url('images/toolbar_bg.gif')" NOWRAP="y">
-    <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
-    <td  height="23" style="PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold">
-    <table width="100%" cellpadding="0" cellspacing="0">
-    <tr>
-	    <td><menu toolbar="resourceOperations" activate="onMouseOver"/></td>
-	    <td><include name="${package}_menu.jsp"/></td>
-	    <td><menu toolbar="trades"            activate="onMouseOver"/></td>
-	    <td><menu toolbar="crm"               activate="onMouseOver"/></td>
-	    <td><menu toolbar="projectManagement" activate="onMouseOver"/></td>
-	    <td><menu toolbar="realEstate"        activate="onMouseOver"/></td>
-	    <td><menu toolbar="helpdesk"          activate="onMouseOver" allow="admin" /></td>
-	    <td><menu toolbar="transport"         activate="onMouseOver"/></td>
-	    <td><menu toolbar="search"            activate="onMouseOver"/></td>
-	    <td><menu toolbar="toolbar2"          activate="onMouseOver"/></td>
-	    <td><menu toolbar="support"           activate="onMouseOver" allow="admin"/></td>
-	    <td><menu toolbar="personalization"   activate="onMouseOver"/></td>
-	    <td><menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" activate="onMouseOver"/>
-	    <print image="icons/printerIcon.gif"/>
-	    <saveInExcel allow="owner" image="images/excel.gif"/>
-	    <pdaToPc image="icons/pda.gif"/>
-	    <listGrid/>
-	    <showHideWindows/></td>
-	    </tr></table>
-    </td>
-    <td valign="middle" align="right" width="100">
-      <include name="searchText.jsp"/>
-    </td>
-    <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
-   </tr></table></td>
-  </tr>
-  <tr><td colspan="2" align="middle"><alphabeticIndex/></td></tr>
-</table-->
 </hideBlock>
 <a target="pane2"> </a>
 <div id="pane2" />
@@ -47,7 +10,7 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
   <td width="110%" colspan="2"><!--br/-->
-<form name="categoryTextSearch"> 
+<form name="categoryTextSearch">
   <searchHistory/>
   <categoryTextSearch />
   <resourcesSearch resourcesUri="/sql/text/search/resources" />
@@ -58,7 +21,7 @@
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
     <br/>
-<hideBlock>      
+<hideBlock>
     <div id="pane3">
     <br/>
     <uploadMsProject/>
@@ -107,7 +70,7 @@
         <menu toolbar="personalization"/>
 
         <menu toolbar="calendarAndChart"/>
-      
+
         <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
         <showHideWindows/>
         <pdaToPc image="icons/pda.gif"/><changePassword/><userLogOff html="user-login.html"/>
@@ -146,6 +109,6 @@
 
 
 <!--div align="left"><span class="xs"><hudsonFog /></span></div-->   <!-- link to Portal page for current category -->
-<iframe name="bottomFrame" id="bottomFrame" src="about:blank" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>  
+<iframe name="bottomFrame" id="bottomFrame" src="about:blank" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>
 
 </div>
