@@ -2,33 +2,12 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
   <td valign="top" width="100%">
-<center>
-      <div align="center"><font color="red"><b><errorMessage /></b></font></div>
-<!--table width="100%" cellspacing="0" cellpadding="0" border="0">
-  <tr valign="top" class="keywordsearch">
-  <td valign="top" width="100%" class="keywordsearch">
-   <table width="100%" cellspacing="0" cellpadding="0" border="0">
-   <tr>
-     <td width="90%">
-	     <include name="${package}_menu.jsp"/>
-	     <menu toolbar="trades"            activate="onMouseOver"/>
-	     <menu toolbar="crm"               activate="onMouseOver"/>
-	     <menu toolbar="projectManagement" activate="onMouseOver"/>
-	     <menu toolbar="realEstate"        activate="onMouseOver"/>
-	     <menu toolbar="transport"       activate="onMouseOver"/>
-	     <menu toolbar="search"          activate="onMouseOver"/>
-	     <menu toolbar="toolbar2"        activate="onMouseOver"/>
-	     <menu toolbar="support"         activate="onMouseOver" allow="admin"/>
-	     <menu toolbar="personalization" activate="onMouseOver"/>
- 	     <pdaToPc image="icons/pda.gif"/>
-    </td>
-    <td valign="top" align="right" width="10%">
-      <include name="searchText.jsp"/>
-    </td>
+	  <center>
+	    <div align="center"><font color="red"><b><errorMessage /></b></font></div>
+	  </center>
+  </td>
   </tr>
-  </table></td>
-  </tr>
-</table--></center></td></tr></table>
+</table>
 <br/>
 <a target="pane2"> </a>
 <div id="pane2" />
