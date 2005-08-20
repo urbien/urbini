@@ -3046,3 +3046,33 @@ function createUrlForBacklink(formName, prop) {
   url += param + "&type=" + form.elements['type'].value;
   document.location.href = url; // load data from server into iframe
 }
+
+function changeCurrentStyle(target, idName) {
+  var curActiveImg = document.getElementById(idName); 
+  curActiveImg.id='';
+  target.id = idName;
+
+  var td = getTdNode(curActiveImg);
+  td.className = 'box';
+  var td1 = getTdNode(target);
+  td1.className = 'redbox';
+  var a = document.getElementById('a_currentImage');
+  td1 = getTdNode(td1);
+  var thisA = td1.getElementsByTagName('a');
+  if (thisA  &&  thisA.length)
+    a.href = thisA[0].href;
+}
+
+function getTdNode(elem) {
+  var e;
+  var elem_ = elem;
+  if (elem.length > 1)
+    elem_ = elem[0];
+  if (elem_.tagName.toUpperCase() == 'TD')
+    return elem;
+  e = elem_.parentNode;
+  if (e)
+    return getTdNode(e);
+  else
+    return null;
+}
