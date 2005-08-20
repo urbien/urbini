@@ -1,25 +1,27 @@
 /* Volga's "Gray-Blue" color theme */
+
+textarea  {  font-family: Verdana, Arial, Helvetica; font-size: 10px }
+input   {  font-family: Verdana, Arial, Helvetica; font-size: 9px; font-style: normal; line-height: normal; font-weight: normal;}
+a:hover {  color: #000080; }
+A:hover {color: #6BBDBE; text-decoration : underline;}
+
+td {font-family:sans-serif, arial; font-size:9pt;}
+
+/* text in link. You an see it in 'Hi "contactName"' */
+A {text-decoration : none;; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
+
+Body {font-family: Verdana, geneva, arial; font-size: 8px; font-weight: normal; color: #999999;}
+
 .monospace { font-family:Courier,monospace; }
-tr.sep {background-color:#cbcbcb; height:8pt}
 
-tr.rlHeader {background-color:#e7ebf0; color:#000000; font-weight:bold; font-size:8pt;}
-input.chk {background-color:#cbcbcb; font-size:7pt}
+tr.rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
+/* input.chk {background-color:#cbcbcb; font-size:7pt} */
 
-.title {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold}
-td.title {background-color:#cdcde4; height:8pt; color:#5766a5}
-tr.title {background-color:#cdcde4; height:8pt}
-
-/* td.topBar {background-color:#3366CC; color:#ffffff; height:8pt} */
-/* tr.topBar {background-color:#3366CC; color:#ffffff; height:8pt}  */
-
-/*A, BODY, INPUT, OPTION, SELECT, TABLE, TD, TR {font-family:sans-serif,arial; font-size:11px}*/
+.title {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold;}
 
 tr.dark  {background-color:#eeeeee}
-td.dark  {background-color:#eeeeee}
-th.dark {font-weight:bold; font-size:8pt;}
-input.dark {font-size:8pt; background-color:#eeeeee}
+
 tr.total  {background-color:#ffffe0; font-weight:bold}
-td.total  {background-color:#ffffe0; font-weight:bold}
 
 tr.subtotal  {background-color:#cdcde4; font-weight:bold}
 td.error     {background-color:#ffcc00; font-weight:bold}
@@ -28,30 +30,28 @@ tr.error     {background-color:#ffcc00; font-weight:bold}
 
 /* Below are more advanced things that allow you to fine tune font sizes and typeface. */
 /* Leave them as is for now                                                            */
-td {font-family:sans-serif, arial; font-size:9pt;}
-
-/* text in link. You an see it in 'Hi "contactName"' */
-A {text-decoration : none;; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
 
 th {font-family:sans-serif, arial; font-size:9pt;}
 input {font-family:sans-serif, arial; font-size:9pt;}
-select.xs {font-family:sans-serif, arial font-size:8pt;}
 select.xxs {font-family:sans-serif, arial font-size:7pt;}
 form {font-family:sans-serif, arial; font-size:9pt;}
-a.xs {font-family:sans-serif, arial; font-size:8pt;}
-table.xs {font-family:sans-serif, arial; font-size:8pt;}
 
 input.button {font-size:8pt;}
-select.xs {font-size:8pt;}
 
-td.xs {font-family:sans-serif, arial; font-size:8pt;}
+span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:16pt;}
+span.xl1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt;}
+/*
 td.xl {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
 
 span.xl  {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
 span.xxl {font-family:sans-serif, arial; font-weight:bold; font-size:16pt;}
 span.xl1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt;}
 span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
-span.xs  {font-family:sans-serif, arial; font-size:8pt;}
+*/
+
+
+.xs {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;}
+
 span.rxs {color:red; font-family:sans-serif, arial; font-size:8pt;}
 
 span.dark{color:#eeeeee}
@@ -112,8 +112,13 @@ td.shading {border:solid #808080 1px; filter:progid:DXImageTransform.Microsoft.G
 span.comment { font-family: Verdana, Arial, Helvetica, sans-serif; color: #5766a5; font-weight:bold; font-size: 8pt}
 tr.editMode  {background-color:#D6E7EF;}
 span.bigLetterTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16pt; color:#00309C;} 
+
 /* To display big letter title when full text search criteria was there */
 span.bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#00309C;}
+
+/* to display large image in resource list */
+td.largeImage {padding-top:20px; padding-bottom:20px; padding-left:20px; padding-right:20px; border:solid #808080 1px; background-color: #ffffff; color: #000000}
+
 td.horizontalFilter { filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#C0C9D7', EndColorStr='#ffffff') }
 /* To display property groups in edit mode */
 .propertyGroup { font-family: sans-serif, Arial, Verdana, Geneva, Helvetica; font-size: 12px; font-weight: bold; text-transform: uppercase;}
@@ -122,4 +127,10 @@ td.horizontalFilter { filter:progid:DXImageTransform.Microsoft.Gradient(Gradient
    border-right : 1px solid #3E4144;  
    border-bottom : 1px solid #3E4144;  
    border-left : 1px solid #c7c9cc;  
+}
+.redbox {  
+   border-top : 1px solid red;  
+   border-right : 1px solid red;  
+   border-bottom : 1px solid red;  
+   border-left : 1px solid red;  
 }
