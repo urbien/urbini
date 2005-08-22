@@ -9,7 +9,7 @@
     <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" /></a>
     <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
 </hideBlock>
-
+<hideBlock>
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top">
   <td valign="top" width="100%">
@@ -19,7 +19,7 @@
     <td height="23" style="PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold">
       <table cellpadding="0" cellspacing="0">
       <tr>
-            <td NOWRAP="y"><menu toolbar="file" activate="onMouseOver"/></td>
+        <td NOWRAP="y"><menu toolbar="file" activate="onMouseOver"/></td>
 		    <!--include name="${package}_menu.jsp"/-->
 		    <td NOWRAP="y"><menu toolbar="trades"              /></td>
 		    <td NOWRAP="y"><menu toolbar="crm"                 /></td>
@@ -47,7 +47,7 @@
   </tr>
   <tr><td colspan="2" align="middle"><alphabeticIndex/></td></tr>
 </table>
-
+</hideBlock>
     <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr>
       <td valign="top">
