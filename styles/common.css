@@ -8,40 +8,33 @@ img.fade {
   -moz-opacity:   0.6;
    opacity:       0.6;
 }
-
-.tabs {
-  height: 33px;
-  white-space: nowrap;
-  //background-image:url(../images/skins/orange/tabs-line.gif);
-  //background-repeat: no-repeat;
-}
-
 .tabs .oneTab {
   height: 33px;
 }
 
 .tabs a:link, .tabs a:visited {
-		font-size: 8pt;
-		//line-height: 11px;
-    //font-weight: bold;
-    font-weight: normal;
-		text-decoration: none;
-		font-family: Verdana, Arial, Helvetica, sans-serif;
-		//font-family: ariel-narrow, tahoma, sans-serif;
-		//white-space: nowrap;
+  font-size: 8pt;
+  font-weight: normal;
+  text-decoration: none;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
 }
-.tabs .left {
-  background-image:url(../images/skin/orange/tab-left.gif);
-  background-repeat: no-repeat;
+
+.tabs .left, .rigth {
   width:12px;
 }
-.tabs .middle {
-  background-image:url(../images/skin/orange/tab-middle.gif);
+
+.tabs TD.left {
+  background-image:url(../images/skin/blue/tab-left.gif);
+  background-repeat: no-repeat;
+}
+.tabs TD.middle {
+  background-image:url(../images/skin/blue/tab-middle.gif);
   background-repeat: no-repeat;
   text-align: center;
+  white-space: nowrap;
 }
-.tabs .right {
-  background-image:url(../images/skin/orange/tab-right.gif);
+.tabs TD.right {
+  background-image:url(../images/skin/blue/tab-right.gif);
   background-repeat: no-repeat;
-  width:12px;
 }
+
