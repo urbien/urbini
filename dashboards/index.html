@@ -1,75 +1,79 @@
 <form action="dashBoard" method="get" name="dashBoardForm">
-  <script type="text/javascript" language="JavaScript">
-    function selectItemToAddToDashboard(panel){
-      if(document.getElementById('itemToAdd').value == 'null') {
-        alert("nothing to add. Please, select the panel you'd like to add.");
-        return;
-      }
-      document.getElementById('location').value = window.location; 
-      document.getElementById('panelToUpdate').value = panel; 
-      dashBoardForm.submit();
-    }
-  
-    function setItemToAdd(value) {
-      document.getElementById('itemToAdd').value = value;
-    }
-  </script>
-   <input type="Hidden" name="location" id="location" value="" />
-   <input type="Hidden" name="panelToUpdate" id="panelToUpdate" value="" />
-   <input type="Hidden" name="itemToAdd" id="itemToAdd" value="" />
-   
+  <script type="text/javascript" src="dashboards/wz_dragdrop.js"></script>
+  <script src="dashboards/dashboard.js" language="JavaScript" type="text/javascript"></script>
+ 
+  <input type="Hidden" name="location" id="location" value="" />
+  <input type="Hidden" name="panelToUpdate" id="panelToUpdate" value="" />
+  <input type="Hidden" name="itemToAdd" id="itemToAdd" value="" />
+ 
   <table style="height:100%; width:100%">
     <tr>
-      <td valign="top" id="firstPanel" width="30%"></td>
-      <td valign="top" id="secondPanel" width="35%"></td>
-      <td valign="top" id="thirdPanel" width="30%"></td>
+      <td>
+        <div id="panel1">.</div>
+      </td>
+      <td>
+        <div id="panel2">.</div>
+      </td>
+      <td>
+        <div id="panel3">.</div>
+      </td>
     </tr>
-    <tr>
-      <td align="center">
+    <tr valign="bottom">
+      <td id="addRemovePanel">
         Add Content to Left Column 
         <select onchange="setItemToAdd(this.value)">
-          <option value="none">
+          <option value="">
             Select content
           </option>
-          <option value="http://127.0.0.1/hudsonfog/localSearchResults.html?-$action=explore&amp;amp;type=http://www.hudsonfog.com/voc/software/crm/Bug">
+          <option value="http://127.0.0.1/hudsonfog/">
             Heading 1
           </option>
           <option value="http://127.0.0.1/hudsonfog/localSearchResults.html?-$action=explore&amp;amp;type=http://www.hudsonfog.com/voc/software/crm/Bug">
             Heading 2
           </option>
         </select>
-        <img src="icons/add-medium.gif" onclick="selectItemToAddToDashboard('firstPanel')" />
+        <img src="icons/add-medium.gif" onclick="selectItemToAddToDashboard('panel1')" />
+        <input type="Hidden" width="300" id="panel1URIs" name="panel1URIs" value="" />
       </td>
       <td align="center">
         Add Content to Middle Column 
         <select onchange="setItemToAdd(this.value)">
-          <option value="none">
+          <option value="">
             Select content
           </option>
-          <option value="http://127.0.0.1/hudsonfog/localSearchResults.html?-$action=explore&amp;amp;type=http://www.hudsonfog.com/voc/software/crm/Bug">
+          <option value="http://127.0.0.1/hudsonfog/">
             Heading 1
           </option>
           <option value="http://127.0.0.1/hudsonfog/localSearchResults.html?-$action=explore&amp;amp;type=http://www.hudsonfog.com/voc/software/crm/Bug">
             Heading 2
           </option>
         </select>
-        <img src="icons/add-medium.gif" onclick="selectItemToAddToDashboard('secondPanel')" />
+        <img src="icons/add-medium.gif" onclick="selectItemToAddToDashboard('panel2')" />
+        <input type="Hidden" width="300" id="panel2URIs" name="panel2URIs" value="" />
       </td>
       <td align="center">
         Add Content to Right Column 
         <select onchange="setItemToAdd(this.value)">
-          <option value="none">
+          <option value="">
             Select content
           </option>
-          <option value="http://127.0.0.1/hudsonfog/localSearchResults.html?-$action=explore&amp;amp;type=http://www.hudsonfog.com/voc/software/crm/Bug">
+          <option value="http://127.0.0.1/hudsonfog/">
             Heading 1
           </option>
           <option value="http://127.0.0.1/hudsonfog/localSearchResults.html?-$action=explore&amp;amp;type=http://www.hudsonfog.com/voc/software/crm/Bug">
             Heading 2
           </option>
         </select>
-        <img src="icons/add-medium.gif" onclick="selectItemToAddToDashboard('thirdPanel')" />
+        <img src="icons/add-medium.gif" onclick="selectItemToAddToDashboard('panel3')" />
+        <input type="Hidden" width="300" id="panel3URIs" name="panel3URIs" value="" />
       </td>
     </tr>
   </table>
+  
+  <script type="text/javascript" src="dashboards/dB.js"></script>
+  <script type="text/javascript" language="JavaScript">
+    makeBoardsAlligned(); 
+    makeAddRemovePanelAlligned();
+    setPanelsURIsLists();
+  </script>
 </form>
