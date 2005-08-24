@@ -137,3 +137,26 @@ td.horizontalFilter { filter:progid:DXImageTransform.Microsoft.Gradient(Gradient
 .welcome {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;}
 .guestUser {  font-family: Verdana, Arial, Helvetica, sans-serif; color: lightblue; font-size: 8pt; font-weight: bold;}
 .user      {color:darkblue; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight:bold; text-decoration:none font-size:8px;}
+
+  .tabs .oneTab {
+    height: 33px;
+  }
+
+  .tabs .left, .right {
+    width:12px;
+  }
+
+	.tabs TD.left {
+	  background-image:url(images/skin/blue/tab-left.gif);
+	  background-repeat: no-repeat;
+	}
+	.tabs TD.middle {
+	  background-image:url(images/skin/blue/tab-middle.gif);
+	  background-repeat: no-repeat;
+	  text-align: center;
+    white-space: nowrap;
+	}
+	.tabs TD.right {
+	  background-image:url(images/skin/blue/tab-right.gif);
+	  background-repeat: no-repeat;
+	}
