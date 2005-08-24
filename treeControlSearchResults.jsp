@@ -6,14 +6,14 @@
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
       <tr valign="top">
         <td valign="top" width="110%" colspan="2">
-          <menu toolbar="resourceOperations" activate="onMouseOver"/>
-          <menu toolbar="toolbar1"        activate="onMouseOver"/>
-          <menu toolbar="transport"       activate="onMouseOver"/>
-          <menu toolbar="search"          activate="onMouseOver"/>
-          <menu toolbar="toolbar2"        activate="onMouseOver"/>
-          <menu toolbar="support"         activate="onMouseOver" allow="admin"/>
-          <menu toolbar="personalization" activate="onMouseOver"/>
-          <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" activate="onMouseOver"/>
+          <menu toolbar="file"/>
+          <menu toolbar="toolbar1"/>
+          <menu toolbar="transport"/>
+          <menu toolbar="search"/>
+          <menu toolbar="toolbar2"/>
+          <menu toolbar="support"          allow="admin"/>
+          <menu toolbar="personalization"/>
+          <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" />
           <print image="icons/printerIcon.gif"/>
           <saveInExcel allow="owner" image="images/excel.gif"/>
           <pdaToPc image="icons/pda.gif"/>
@@ -39,10 +39,10 @@
           var horizontalFilter_FIELDS = new Array();
 	function disableSubmitButtonH(form) {
 	  if (document.all || document.getElementById) {
-            form.submit.disabled = true; 
+            form.submit.disabled = true;
             form.submit.value = 'Please wait';
-            form.submit.style.cursor = 'wait'; 
-            form.clear_.style.visibility = 'hidden'; 
+            form.submit.style.cursor = 'wait';
+            form.clear_.style.visibility = 'hidden';
           }
 	}
         </script>
@@ -81,7 +81,7 @@
         <menu toolbar="support"         allow="admin"/>
         <menu toolbar="personalization"/>
         <menu toolbar="calendarAndChart"/>
-      
+
         <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
         <pdaToPc image="icons/pda.gif"/><changePassword/><userLogOff html="user-login.html"/>
         <showHideWindows/>
@@ -90,7 +90,7 @@
     <tr valign="top"><td>
     <form action="list.html" name="siteResourceList">
       <div align="left"><backLink /></div>
- 
+
       <table width="100%" cellspacing="0" cellpadding="0" border="0">
         <tr>
           <td width="20%" valign="top"><folderTreeControl/></td>
@@ -113,10 +113,10 @@
   var horizontalFilter_FIELDS = new Array();
 	function disableSubmitButtonH(form) {
 	  if (document.all || document.getElementById) {
-            form.submit.disabled = true; 
+            form.submit.disabled = true;
             form.submit.value = 'Please wait';
-            form.submit.style.cursor = 'wait'; 
-            form.clear_.style.visibility = 'hidden'; 
+            form.submit.style.cursor = 'wait';
+            form.clear_.style.visibility = 'hidden';
           }
 	}
 </script>
