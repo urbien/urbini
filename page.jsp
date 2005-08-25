@@ -31,7 +31,6 @@
 		    <td NOWRAP="y"><menu toolbar="transport"           /></td>
 		    <td NOWRAP="y"><menu toolbar="search"              /></td>
 		    <td NOWRAP="y"><menu toolbar="toolbar2"            /></td>
-		    <td NOWRAP="y"><menu toolbar="support"            allow="admin"/></td>
 		    <td NOWRAP="y"><menu toolbar="personalization"     /></td>
 		    <td NOWRAP="y"><menu toolbar="calendarAndChart"   itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" /></td>
 		    <td NOWRAP="y"><print image="icons/printerIcon.gif"/></td>
