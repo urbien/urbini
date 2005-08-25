@@ -38,3 +38,55 @@ img.fade {
   background-repeat: no-repeat;
 }
 
+/* ----- Buttons ----- */
+.button_blue, .button_green, .button_white {
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+}
+
+.but_left, .but_right {
+	width:12px;
+	height:33px;
+}
+
+.but_center {
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	font-weight:bold;
+	padding:0px 2px 0px 2px;
+}
+.but_center A {
+	text-decoration: none
+}
+
+.button_blue TD.but_left {
+	background-image:url(../images/skin/blue/button-left.gif);  background-repeat: no-repeat;
+}
+
+.button_blue TD.but_right {
+	background-image:url(../images/skin/blue/button-right.gif); background-repeat: no-repeat;
+}
+.button_blue TD.but_center {
+	background-image:url(../images/skin/blue/button-middle.gif); background-repeat: repeat-x;
+	color:#FFF;
+  text-vertical-align: center;
+}
+.button_blue A, .button_blue A:hover {
+	color:#FFF;
+}
+
+.button_white TD.but_left {
+	background-image:url(../images/skin/grey/button-left.gif);  background-repeat: no-repeat;
+}
+.button_white TD.but_right {
+	background-image:url(../images/skin/grey/button-right.gif); background-repeat: no-repeat;
+}
+.button_white TD.but_center {
+	background-image:url(../images/skin/grey/button-middle.gif); background-repeat: repeat-x;
+	color:#000;
+}
+.button_white A, .button_white A:hover {
+	color:#000;
+}
+
+/* ----- End of Buttons ----- */
