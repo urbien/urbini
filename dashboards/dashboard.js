@@ -1,44 +1,52 @@
     function selectItemToAddToDashboard(panel){
+      // alert must be done if nothing was selected to add
       if(document.getElementById('itemToAdd').value == "") {
         alert("nothing to add. Please, select the panel you'd like to add.");
         return;
       }
-      /*
-      if(document.getElementById(panel+'URIs').value.indexOf(document.getElementById('itemToAdd').value+";")>=0) {
-        alert("nothing to add. The panel is already present in this column.");
-        return;
-      }
-      */
+      // since new board is added then target must be ampty
       document.getElementById("dashBoard").target = '';
+
+      // panel1URIs, panel2URIs, panel3URIs contain the list of id's of the divs according to the panel (column of boards).
+      // This ids contain the URI of the board that is displayed together with the random int number gererated on the server side.
+      // setPanelsClearURIsLists() cleans this lists and leave just URI's of the boards that must be displayed
       setPanelsClearURIsLists();
-      document.getElementById('location').value = window.location; 
-      document.getElementById('panelToUpdate').value = panel; 
-      document.getElementById(panel + 'URIs').value += document.getElementById('itemToAdd').value + ";"; 
+
+      document.getElementById('location').value = window.location;
+
+      // corresponding panel(i)URIs value must be appended by the URI that must be added to this column.
+      document.getElementById(panel + 'URIs').value = document.getElementById('itemToAdd').value + ";" + document.getElementById(panel + 'URIs').value; 
+
+      // submit dashboard form
       dashBoardForm.submit();
     }
  
+    // bookmark that must be added
     function setItemToAdd(value) {
       document.getElementById('itemToAdd').value = value;
     }
     
+    // constructs panel(i)URIs values so that they will contain the id's of the boards that are displayed
+    // id is something like this lyr_randomInt|_bookmarkURI
     function setPanelsURIsLists() {
       document.getElementById('panel1URIs').value = replaceAllRecursion(getURIsListForPanel('panel1'), "amp;amp;", "&");
       document.getElementById('panel2URIs').value = replaceAllRecursion(getURIsListForPanel('panel2'), "amp;amp;", "&");
       document.getElementById('panel3URIs').value = replaceAllRecursion(getURIsListForPanel('panel3'), "amp;amp;", "&");
     }
-    
+
+    // constructs panel(i)URIs values so that they will contain just the bookmarks URIs that must be displayed
     function setPanelsClearURIsLists() {
       document.getElementById('panel1URIs').value = replaceAllRecursion(getClearURIsListForPanel('panel1'), "amp;amp;", "&");
       document.getElementById('panel2URIs').value = replaceAllRecursion(getClearURIsListForPanel('panel2'), "amp;amp;", "&");
       document.getElementById('panel3URIs').value = replaceAllRecursion(getClearURIsListForPanel('panel3'), "amp;amp;", "&");
     }
     
+    // constructs panel(i)URIs values so that they will contain the id's of the boards that are displayed
+    // id is something like this lyr_randomInt|_bookmarkURI
     function getURIsListForPanel(panelName) {
       var s = "";
       if(panelName == "panel1") {
         for(i=0;i<aElts[0].length;i++)
-          //s += aElts[0][i].name.substring(11,aElts[0][i].name.length) + ";";
-          //s += aElts[0][i].name.substring(aElts[0][i].name.indexOf("|_")+2,aElts[0][i].name.length) + ";";
           s += aElts[0][i].name + ";";
         return s;
       }
@@ -49,12 +57,12 @@
       }
       if(panelName == "panel3") {
         for(i=0;i<aElts[2].length;i++)
-          //s += aElts[2][i].name.substring(aElts[2][i].name.indexOf("|_")+2,aElts[2][i].name.length) + ";";
           s += aElts[2][i].name + ";";
         return s;
       }
     }
     
+    // constructs panel(i)URIs values so that they will contain just the bookmarks URIs that must be displayed
     function getClearURIsListForPanel(panelName) {
       var s = "";
       if(panelName == "panel1") {

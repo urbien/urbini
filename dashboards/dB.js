@@ -14,11 +14,6 @@ SET_DHTML(s);
 // Array intended to reflect the order of the draggable items
 // {
 var aElts = new Array([],[],[]);
-/*
-alert(document.getElementById('panel1').innerHTML);
-alert(document.getElementById('panel2').innerHTML);
-alert(document.getElementById('panel3').innerHTML);
-*/
 for(j=1;j<=3;j++) {
 var ar = document.getElementById('panel'+j).getElementsByTagName('div');
   for(i=0;i<ar.length;i++){
@@ -133,28 +128,6 @@ function my_DropFuncD(pN) {
   document.getElementById('isClosePanel').value = 'false';
   document.getElementById("dashBoard").target=window;
   // ----Finish ---- New boards position must be saved----
-
-// ---------TEst variant-------- NEEDS OPTIMIZATION ---------------------------  
-// make boards be aligned good. THis is needed to remove spaces between boards after moving the board to another place
-/*
-  try{
-    if(aElts[0].length > 0) 
-    aElts[0][0].moveTo(100, 50);
-    for(j=1;j<aElts[0].length;j++)
-      aElts[0][j].moveTo(100, aElts[0][j-1].y+dy);
-
-    if(aElts[1].length > 0)
-    aElts[1][0].moveTo(500, 50);
-    for(j=1;j<aElts[1].length;j++)
-      aElts[1][j].moveTo(500, aElts[1][j-1].y+dy);
-    
-    if(aElts[2].length > 0)
-    aElts[2][0].moveTo(900, 50);
-    for(j=1;j<aElts[2].length;j++)
-      aElts[2][j].moveTo(900, aElts[2][j-1].y+dy);
-  } catch (er) {}
-*/  
-// ---------TEst variant--------- NEEDS OPTIMIZATION ---------------------------    
 }
 
 // remove the board from the array (from the old position)
