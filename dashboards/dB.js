@@ -28,7 +28,7 @@ var ar = document.getElementById('panel'+j).getElementsByTagName('div');
 }
 // }
 
-var dy      = 200;
+var dy      = 225;
 var margTop = 50;
 var posOld;
 
@@ -123,6 +123,16 @@ function my_DropFuncD(pN) {
   // }
    
   makeBoardsAlligned();
+  
+  // ----Start ---- New boards position must be saved----
+  document.getElementById("dashBoard").target='dashboardIframe';
+  setPanelsClearURIsLists();
+  document.getElementById('location').value = window.location; 
+  document.getElementById('isClosePanel').value = 'true';
+  dashBoardForm.submit();
+  document.getElementById('isClosePanel').value = 'false';
+  document.getElementById("dashBoard").target=window;
+  // ----Finish ---- New boards position must be saved----
 
 // ---------TEst variant-------- NEEDS OPTIMIZATION ---------------------------  
 // make boards be aligned good. THis is needed to remove spaces between boards after moving the board to another place
@@ -154,11 +164,12 @@ function remove(a,element,ex) {
  for(i=0;i<a.length;i++) {
    if(i==ex)
      continue;
-   for(j=0;j<a[i].length;j++)
-     if(a[i][j]==element){
+   for(j=0;j<a[i].length;j++){
+     if(a[i][j].id==element.id){
        found = true;
        break;
      }
+   }
    if(found) {
      for(;j<a[i].length;j++)
        a[i][j]=a[i][j+1];
