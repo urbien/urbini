@@ -9,8 +9,8 @@
 <hideBlock>
             <table width="100%" cellspacing="0" cellpadding="0" border="0">
               <tr>
-               <td valign="top" aligh="right">
-                 <a href=""><IMG src="images/logo.gif" border="0" align="right" /></a>
+               <td valign="top" align="right">
+                 <a href="#"><IMG src="images/logo.gif" border="0" align="right" /></a>
                </td>
               </tr>
             </table>
