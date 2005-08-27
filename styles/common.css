@@ -26,27 +26,33 @@ img.fade {
 .tabs TD.left {
   background-image:url(../images/skin/blue/tab-left.gif);
   background-repeat: no-repeat;
+  background-position: middle;
+  vertical-align: middle;
 }
 .tabs TD.middle {
   background-image:url(../images/skin/blue/tab-middle.gif);
   background-repeat: no-repeat;
+  background-position: middle;
   text-align: center;
   white-space: nowrap;
+  vertical-align: middle;
 }
 .tabs TD.right {
   background-image:url(../images/skin/blue/tab-right.gif);
   background-repeat: no-repeat;
+  background-position: middle;
+  vertical-align: middle;
 }
 
 /* ----- Buttons ----- */
-.button_blue, .button_green, .button_white {
+.button_blue, .button_green, .button_grey, button.orange {
 	margin: 0px 0px 0px 0px;
 	padding: 0px 0px 0px 0px;
 }
 
 .but_left, .but_right {
-	width:12px;
-	height:33px;
+	width:14px;
+	height:23px;
 }
 
 .but_center {
@@ -62,31 +68,57 @@ img.fade {
 .button_blue TD.but_left {
 	background-image:url(../images/skin/blue/button-left.gif);  background-repeat: no-repeat;
 }
-
 .button_blue TD.but_right {
 	background-image:url(../images/skin/blue/button-right.gif); background-repeat: no-repeat;
 }
 .button_blue TD.but_center {
 	background-image:url(../images/skin/blue/button-middle.gif); background-repeat: repeat-x;
 	color:#FFF;
-  text-vertical-align: center;
 }
 .button_blue A, .button_blue A:hover {
 	color:#FFF;
 }
 
-.button_white TD.but_left {
+.button_grey TD.but_left {
 	background-image:url(../images/skin/grey/button-left.gif);  background-repeat: no-repeat;
 }
-.button_white TD.but_right {
+.button_grey TD.but_right {
 	background-image:url(../images/skin/grey/button-right.gif); background-repeat: no-repeat;
 }
-.button_white TD.but_center {
+.button_grey TD.but_center {
 	background-image:url(../images/skin/grey/button-middle.gif); background-repeat: repeat-x;
 	color:#000;
 }
-.button_white A, .button_white A:hover {
+.button_grey A, .button_grey A:hover {
 	color:#000;
+}
+
+.button_orange TD.but_left {
+	background-image:url(../images/skin/orange/button-left.gif);  background-repeat: no-repeat;
+}
+.button_orange TD.but_right {
+	background-image:url(../images/skin/orange/button-right.gif); background-repeat: no-repeat;
+}
+.button_orange TD.but_center {
+	background-image:url(../images/skin/orange/button-middle.gif); background-repeat: repeat-x;
+	color:#FFF;
+}
+.button_orange A, .button_orange A:hover {
+	color:#FFF;
+}
+
+.button_green TD.but_left {
+	background-image:url(../images/skin/green/button-left.gif);  background-repeat: no-repeat;
+}
+.button_green TD.but_right {
+	background-image:url(../images/skin/green/button-right.gif); background-repeat: no-repeat;
+}
+.button_green TD.but_center {
+	background-image:url(../images/skin/green/button-middle.gif); background-repeat: repeat-x;
+	color:#FFF;
+}
+.button_green A, .button_green A:hover {
+	color:#FFF;
 }
 
 /* ----- End of Buttons ----- */
