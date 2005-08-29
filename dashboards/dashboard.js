@@ -1,3 +1,5 @@
+    addEvent(window, 'resize', function() {makeBoardsAlligned();}, false);
+    
     function selectItemToAddToDashboard(panel){
       // alert must be done if nothing was selected to add
       if(document.getElementById('itemToAdd').value == "") {
@@ -126,4 +128,16 @@
         return replaceAllRecursion(str.replace(replStr, replWithStr), replStr, replWithStr)
        else
 	       return str;
+    }
+    
+    function addEvent(obj, evType, fn){
+ 	    if (obj.addEventListener){
+  	    obj.addEventListener(evType, fn, true);
+	  	  return true;
+		  } else if (obj.attachEvent){
+  		    var r = obj.attachEvent("on"+evType, fn);
+	  	    return r;
+		  	 } else {
+			      return false;
+  			   }
     }
