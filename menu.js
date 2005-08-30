@@ -1532,8 +1532,10 @@ function popupOnSubmit(e) {
   if (t.toUpperCase() == 'SUBMIT') {
     if (target.attributes['name'] == "Clear")
       url += "&clear=Clear";
-    else
+    else if (currentFormName == "horizontalFilter")
       url += "&submit=y";
+    else if (currentFormName == "rightPanelPropertySheet")
+      url += "&submitFilter=y";
   }
   else
     url += "&submit=y";
@@ -1573,7 +1575,7 @@ function popupOnSubmit(e) {
 
   if (document.all || document.getElementById) {
 //    form.submit.disabled = true; // HACK: for some reason can not disable this button - the form would not get submitted
-    var submit = form.elements['submit'];
+    var submit = form.elements['submitFilter'];
     if (submit) {
   	  submit.value = 'Please wait';
       submit.style.cursor = 'wait';
@@ -2838,7 +2840,7 @@ function getMouseOutTarget(e) {
   var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement; // ignore event if element to which mouse has moved is a child of a target element
   if (!reltg)
     return tg;
-  while (reltg != tg && reltg.nodeName != 'BODY')
+  while (reltg != tg  &&  reltg.tagName != 'BODY')
     reltg = reltg.parentNode;
   if (reltg == tg)
     return null;
@@ -3076,3 +3078,42 @@ function getTdNode(elem) {
   else
     return null;
 }
+
+function showLargeImage(current, largeImageUri) {
+	if (!document.getElementById)
+	  return true;
+
+  var div = document.getElementById('galery');
+  var img = document.getElementById('galeryImage');
+	if (div.style.display == "block") {
+	  div.style.display = "none";
+	  if (img.src == largeImageUri)
+  	  return false;
+	}
+  div.style.left = getLeft(current) + 50 + "px";
+  div.style.top  = getTop(current) + 50 + "px";
+  div.style.display = "block";
+  img.src = largeImageUri;
+	return false;
+}
+
+function getLeft(overlay){
+	var totaloffset = overlay.offsetLeft;
+	var parentEl = overlay.offsetParent;
+	while (parentEl != null) {
+    totaloffset = totaloffset + parentEl.offsetLeft;
+    parentEl = parentEl.offsetParent;
+	}
+	return totaloffset;
+}
+
+function getTop(overlay, offsettype){
+	var totaloffset = overlay.offsetTop;
+	var parentEl = overlay.offsetParent;
+	while (parentEl != null) {
+    totaloffset = totaloffset + parentEl.offsetTop;
+    parentEl = parentEl.offsetParent;
+	}
+	return totaloffset;
+}
+
