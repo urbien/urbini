@@ -235,6 +235,8 @@ Popup.closeIfOut0 = function (divId) {
 function Popup(divRef, hotspotRef, frameRef, contents) {
   if (typeof difRef == 'string')
     throw new Error("div parameter must be an object, not a string");
+  if (!divRef.id)
+    throw new Error("div passes as parameter has no id: " + difRef);
   if (typeof hotspotRef == 'string')
     throw new Error("hostspot parameter must be an object, not a string");
 
@@ -2835,16 +2837,20 @@ function getTargetElement(evt) {
 //* So we need to discard such events - return null in this case;
 function getMouseOutTarget(e) {
   var tg = getTargetElement(e);
+  return tg;
+
+  /* stopped running the code below since reltg.tagName gives permission exception in FF (when mousing over the Filter area)
   if (!tg)
     return null;
   var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement; // ignore event if element to which mouse has moved is a child of a target element
   if (!reltg)
     return tg;
-  while (reltg != tg  &&  reltg.tagName != 'BODY')
+  while (reltg != tg && reltg.tagName && reltg.tagName != 'BODY')
     reltg = reltg.parentNode;
   if (reltg == tg)
     return null;
   return tg;
+  */
 }
 
 //* Because of event bubbling mousing over the link inside a div will send a mouseover for this div
@@ -3050,7 +3056,7 @@ function createUrlForBacklink(formName, prop) {
 }
 
 function changeCurrentStyle(target, idName) {
-  var curActiveImg = document.getElementById(idName); 
+  var curActiveImg = document.getElementById(idName);
   curActiveImg.id='';
   target.id = idName;
 
