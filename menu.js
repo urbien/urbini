@@ -3093,6 +3093,7 @@ function showLargeImage(current, largeImageUri) {
   var img = document.getElementById('galeryImage');
 	if (div.style.display == "block") {
 	  div.style.display = "none";
+	  // img.src always has host in it; largeImageUri not always that is why using indexOf
 	  if (img.src.indexOf(largeImageUri) == img.src.length - largeImageUri.length)
   	  return false;
 	}
