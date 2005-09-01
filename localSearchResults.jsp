@@ -7,6 +7,12 @@
 <a target="pane2"> </a>
 <div id="pane2" />
 
+<div id="galery" style="display:none;position:absolute">
+  <table>
+    <tr><td class="largeImage"><img id="galeryImage" src="#"></img></td></tr>
+  </table>
+</div>
+
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
   <td width="110%" colspan="2"><!--br/-->
