@@ -3093,11 +3093,11 @@ function showLargeImage(current, largeImageUri) {
   var img = document.getElementById('galeryImage');
 	if (div.style.display == "block") {
 	  div.style.display = "none";
-	  if (img.src == largeImageUri)
+	  if (img.src.indexOf(largeImageUri) == img.src.length - largeImageUri.length)
   	  return false;
 	}
-  div.style.left = getLeft(current) + 50 + "px";
-  div.style.top  = getTop(current) + 50 + "px";
+  div.style.left = getLeft(current) + 10 + "px";
+  div.style.top  = getTop(current) - 50 + "px";
   div.style.display = "block";
   img.src = largeImageUri;
 	return false;
