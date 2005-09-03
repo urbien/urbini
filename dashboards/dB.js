@@ -1,7 +1,9 @@
+var numberOfcolumns = 3;
+
 // array of parameters for SET_DHTML
 // {
 var s = [CURSOR_MOVE];
-for(j=1;j<=3;j++) {
+for(j=1;j<=numberOfcolumns;j++) {
 var ar = document.getElementById('panel'+j).getElementsByTagName('div');
   for(i=0;i<ar.length;i++)
     if(ar[i].id.indexOf("lyr") == 0)
@@ -37,6 +39,7 @@ function my_PickFunc() { // onPick event
 
 function my_DragFunc() { // onDrag event
   availWindowWidth = document.body.offsetWidth;
+  
   //if(dd.obj.x < 450)
   if(dd.obj.x < availWindowWidth/3)
     pN = 0; // 0 - first panel
@@ -46,6 +49,8 @@ function my_DragFunc() { // onDrag event
   //if(dd.obj.x >= 650)
   if(dd.obj.x >= availWindowWidth*2/3)
     pN = 2; // 2 - third panel
+    
+  //pN = Math.round(dd.obj.x / (availWindowWidth/ numberOfcolumns));
   
   if(pN >= 0) {
     // Calculate the snap position which is closest to the drop coordinates
@@ -74,14 +79,11 @@ function my_DropFunc() {  // onDrop event
     for(k=0;k<aElts[z].length;k++)
       document.getElementById(aElts[z][k].name).style.backgroundColor = '#ffffff';
   // }
-
-  //if(dd.obj.x < 450)
+  
   if(dd.obj.x < availWindowWidth/3)
     my_DropFuncD(0); // 0 - first panel
-  //if(dd.obj.x >= 450 && dd.obj.x < 650)
   if(dd.obj.x >= availWindowWidth/3 && dd.obj.x < availWindowWidth*2/3)
     my_DropFuncD(1); // 1 - second panel
-  //if(dd.obj.x >= 650)
   if(dd.obj.x >= availWindowWidth*2/3)
     my_DropFuncD(2); // 2 - third panel
     
@@ -163,32 +165,15 @@ function remove(a,element,ex) {
 function makeBoardsAlligned() {
   availWindowWidth = document.body.offsetWidth - 100;
   
-  if(aElts[0].length > 0) {
-    aElts[0][0].moveTo(20, 50); 
-    document.getElementById(aElts[0][0].name).style.width = availWindowWidth/3;
-    for(j=1;j<aElts[0].length;j++) {
-      aElts[0][j].moveTo(20, aElts[0][j-1].y+dy);
-      document.getElementById(aElts[0][j].name).style.width = availWindowWidth/3;
+  for(i=0;i<=2;i++) 
+    if(aElts[i].length > 0) {
+      aElts[i][0].moveTo(i*20 + i*availWindowWidth/3 + 20, 50);
+      document.getElementById(aElts[i][0].name).style.width = availWindowWidth/3;
+      for(j=1;j<aElts[i].length;j++) {
+        aElts[i][j].moveTo(i*20 + i*availWindowWidth/3 + 20, aElts[i][j-1].y+dy);
+        document.getElementById(aElts[i][j].name).style.width = availWindowWidth/3;
+      }
     }
-  }
-
-  if(aElts[1].length > 0) {
-    aElts[1][0].moveTo(20 + availWindowWidth/3 + 20, 50);
-    document.getElementById(aElts[1][0].name).style.width = availWindowWidth/3;
-    for(j=1;j<aElts[1].length;j++) {
-      aElts[1][j].moveTo(20 + availWindowWidth/3 + 20, aElts[1][j-1].y+dy);
-      document.getElementById(aElts[1][j].name).style.width = availWindowWidth/3;
-    }
-  }
- 
-  if(aElts[2].length > 0) {
-    aElts[2][0].moveTo(2*20 + availWindowWidth*2/3 + 20, 50);
-    document.getElementById(aElts[2][0].name).style.width = availWindowWidth/3;
-    for(j=1;j<aElts[2].length;j++) {
-      aElts[2][j].moveTo(2*20 + availWindowWidth*2/3 + 20, aElts[2][j-1].y+dy);
-      document.getElementById(aElts[2][j].name).style.width = availWindowWidth/3;
-    }
-  }
-
+  
   makeAddRemovePanelAlligned();
 }
