@@ -183,7 +183,7 @@ Popup.load = function (divId) {
     return;
   }
 ///
-  var idx = propName.indexOf(".");
+  var idx = propName.indexOf(".", 1);
   var shortPropName = propName;
   if (idx != -1)
     shortPropName = propName.substring(0, idx);
@@ -766,7 +766,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var propertyShortName = table1.id.substring("table_".length);
     var idx = propertyShortName.lastIndexOf('_');
     propertyShortName = propertyShortName.substring(0, idx);
-    var idx = propertyShortName.indexOf(".");
+    var idx = propertyShortName.indexOf(".", 1);
     var prop = null;
 
     if (idx == -1) {
@@ -778,13 +778,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
     else
       prop = propertyShortName.substring(0, idx);
-
     var formField;
     var chosenTextField = form.elements[originalProp];
     var len = chosenTextField.length;
     var verified = prop + "_verified";
     if (currentResourceUri)
-      verified = currentResourceUri + ".$." + verified;
+      verified = currentResourceUri + ".$" + verified;
     var fieldLabel = document.getElementById(prop + "_span");
 
     var iclass = prop + "_class";
@@ -819,7 +818,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     var select = prop + "_select";
     if (currentResourceUri)
-      select = currentResourceUri + ".$." + select;
+      select = currentResourceUri + ".$" + select;
 
     formField = form.elements[select];
     var selectItems = form.elements[select];
@@ -1319,7 +1318,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   }
   else {
     currentResourceUri = null;
-    idx = propName1.indexOf(".");
+    idx = propName1.indexOf(".", 1);
     if (idx != -1) {
       propName = propName1.substring(0, idx);
       divId = propName + "_" + currentFormName;
@@ -1643,7 +1642,7 @@ function autoComplete1(e, target) {
   var propName  = target.name;
   var formName  = target.id;
   var propName1 = propName;
-  var idx = propName.indexOf(".");
+  var idx = propName.indexOf(".", 1);
   if (idx != -1)
     propName1 = propName1.substring(0, idx);
 
@@ -1951,7 +1950,7 @@ function getFormFilters(form, allFields) {
 
 function chooser(element) {
   var propName = element.name;
-  var idx = propName.indexOf(".");
+  var idx = propName.indexOf(".", 1);
   var shortPropName = propName;
   if (idx != -1)
     shortPropName = propName.substring(0, idx);
@@ -1986,7 +1985,7 @@ function chooser(element) {
 
 function chooser1(element) {
   var propName = element.name;
-  var idx = propName.indexOf(".");
+  var idx = propName.indexOf(".", 1);
   var shortPropName = propName;
   if (idx != -1)
     shortPropName = propName.substring(0, idx);
