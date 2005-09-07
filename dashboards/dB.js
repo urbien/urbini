@@ -123,11 +123,12 @@ function my_DropFuncD(pN) {
   document.getElementById('location').value = window.location; 
   document.getElementById('isClosePanel').value = 'true';
   
-  document.dashBoard.panel1URIs.value = document.getElementById('panel1URIs').value;
-  document.dashBoard.panel2URIs.value = document.getElementById('panel2URIs').value;
-  document.dashBoard.panel3URIs.value = document.getElementById('panel3URIs').value;
-  document.dashBoard.location.value = document.getElementById('location').value;
-  document.dashBoard.isClosePanel.value = document.getElementById('isClosePanel').value;  
+  document.getElementById('dashBoardPanel1URIs').value = document.getElementById('panel1URIs').value;
+  document.getElementById('dashBoardPanel2URIs').value = document.getElementById('panel2URIs').value;
+  document.getElementById('dashBoardPanel3URIs').value = document.getElementById('panel3URIs').value;
+  document.getElementById('dashBoardLocation').value = document.getElementById('location').value;
+  document.getElementById('dashBoardIsClosePanel').value = document.getElementById('isClosePanel').value;
+ 
   dashBoardForm.submit();
   
   document.getElementById('isClosePanel').value = 'false';
