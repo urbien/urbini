@@ -3093,8 +3093,10 @@ function showLargeImage(current, largeImageUri) {
 	if (div.style.display == "block") {
 	  div.style.display = "none";
 	  // img.src always has host in it; largeImageUri not always that is why using indexOf
-	  if (img.src.indexOf(largeImageUri) == img.src.length - largeImageUri.length)
+	  if (img.src.indexOf(largeImageUri) == img.src.length - largeImageUri.length) {
+  	  img.src = "";
   	  return false;
+  	}
 	}
   div.style.left = getLeft(current) + 10 + "px";
   div.style.top  = getTop(current) - 50 + "px";
