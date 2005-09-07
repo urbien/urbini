@@ -15,13 +15,15 @@ SET_DHTML(s);
 
 // Array intended to reflect the order of the draggable items
 // {
-var aElts = new Array([],[],[]);
-for(j=1;j<=3;j++) {
-var ar = document.getElementById('panel'+j).getElementsByTagName('div');
+var aElts = new Array(numberOfcolumns);
+for(j=1;j<=numberOfcolumns;j++) {
+  var tmpArray = new Array();
+  var ar = document.getElementById('panel'+j).getElementsByTagName('div');
   for(i=0;i<ar.length;i++){
     if(ar[i].id.indexOf("lyr") == 0)
-      aElts[j-1][aElts[j-1].length] = dd.elements[(ar[i].id)];
+      tmpArray[tmpArray.length] = dd.elements[(ar[i].id)];
   }
+  aElts[j-1] = tmpArray;
 }
 // }
 
@@ -40,17 +42,8 @@ function my_PickFunc() { // onPick event
 function my_DragFunc() { // onDrag event
   availWindowWidth = document.body.offsetWidth;
   
-  //if(dd.obj.x < 450)
-  if(dd.obj.x < availWindowWidth/3)
-    pN = 0; // 0 - first panel
-  //if(dd.obj.x >= 450 && dd.obj.x < 650)
-  if(dd.obj.x >= availWindowWidth/3 && dd.obj.x < availWindowWidth*2/3)
-    pN = 1; // 1 - second panel
-  //if(dd.obj.x >= 650)
-  if(dd.obj.x >= availWindowWidth*2/3)
-    pN = 2; // 2 - third panel
-    
-  //pN = Math.round(dd.obj.x / (availWindowWidth/ numberOfcolumns));
+  // calculate panel position 
+  pN = Math.round(dd.obj.x / ((availWindowWidth + dd.obj.w/2)/ numberOfcolumns));
   
   if(pN >= 0) {
     // Calculate the snap position which is closest to the drop coordinates
@@ -80,13 +73,9 @@ function my_DropFunc() {  // onDrop event
       document.getElementById(aElts[z][k].name).style.backgroundColor = '#ffffff';
   // }
   
-  if(dd.obj.x < availWindowWidth/3)
-    my_DropFuncD(0); // 0 - first panel
-  if(dd.obj.x >= availWindowWidth/3 && dd.obj.x < availWindowWidth*2/3)
-    my_DropFuncD(1); // 1 - second panel
-  if(dd.obj.x >= availWindowWidth*2/3)
-    my_DropFuncD(2); // 2 - third panel
-    
+  var panelN = Math.round(dd.obj.x / ((availWindowWidth + dd.obj.w/2)/ numberOfcolumns));
+  my_DropFuncD(panelN);
+ 
   setPanelsURIsLists();
 }
 
@@ -133,7 +122,14 @@ function my_DropFuncD(pN) {
   setPanelsClearURIsLists();
   document.getElementById('location').value = window.location; 
   document.getElementById('isClosePanel').value = 'true';
+  
+  document.dashBoard.panel1URIs.value = document.getElementById('panel1URIs').value;
+  document.dashBoard.panel2URIs.value = document.getElementById('panel2URIs').value;
+  document.dashBoard.panel3URIs.value = document.getElementById('panel3URIs').value;
+  document.dashBoard.location.value = document.getElementById('location').value;
+  document.dashBoard.isClosePanel.value = document.getElementById('isClosePanel').value;  
   dashBoardForm.submit();
+  
   document.getElementById('isClosePanel').value = 'false';
   document.getElementById("dashBoard").target=window;
   // ----Finish ---- New boards position must be saved----
@@ -165,13 +161,13 @@ function remove(a,element,ex) {
 function makeBoardsAlligned() {
   availWindowWidth = document.body.offsetWidth - 100;
   
-  for(i=0;i<=2;i++) 
+  for(i=0;i<numberOfcolumns;i++) 
     if(aElts[i].length > 0) {
-      aElts[i][0].moveTo(i*20 + i*availWindowWidth/3 + 20, 50);
-      document.getElementById(aElts[i][0].name).style.width = availWindowWidth/3;
+      aElts[i][0].moveTo(i*20 + i*availWindowWidth/numberOfcolumns + 20, 50);
+      document.getElementById(aElts[i][0].name).style.width = availWindowWidth/numberOfcolumns;
       for(j=1;j<aElts[i].length;j++) {
-        aElts[i][j].moveTo(i*20 + i*availWindowWidth/3 + 20, aElts[i][j-1].y+dy);
-        document.getElementById(aElts[i][j].name).style.width = availWindowWidth/3;
+        aElts[i][j].moveTo(i*20 + i*availWindowWidth/numberOfcolumns + 20, aElts[i][j-1].y+dy);
+        document.getElementById(aElts[i][j].name).style.width = availWindowWidth/numberOfcolumns;
       }
     }
   

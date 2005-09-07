@@ -19,7 +19,13 @@
       // corresponding panel(i)URIs value must be appended by the URI that must be added to this column.
       document.getElementById(panel + 'URIs').value = document.getElementById('itemToAdd').value + ";" + document.getElementById(panel + 'URIs').value; 
 
+      //alert(document.dashBoard.panel1URIs.value);
       // submit dashboard form
+      document.dashBoard.panel1URIs.value = document.getElementById('panel1URIs').value;
+      document.dashBoard.panel2URIs.value = document.getElementById('panel2URIs').value;
+      document.dashBoard.panel3URIs.value = document.getElementById('panel3URIs').value;
+      document.dashBoard.location.value = document.getElementById('location').value;
+      document.dashBoard.isClosePanel.value = document.getElementById('isClosePanel').value;
       dashBoardForm.submit();
     }
  
@@ -31,9 +37,13 @@
     // constructs panel(i)URIs values so that they will contain the id's of the boards that are displayed
     // id is something like this lyr_randomInt|_bookmarkURI
     function setPanelsURIsLists() {
+      //for(i=1;i<numberOfcolumns;i++)
+      //  document.getElementById('panel'+i+'URIs').value = replaceAllRecursion(getURIsListForPanel('panel'+i), "amp;amp;", "&");
+      
       document.getElementById('panel1URIs').value = replaceAllRecursion(getURIsListForPanel('panel1'), "amp;amp;", "&");
       document.getElementById('panel2URIs').value = replaceAllRecursion(getURIsListForPanel('panel2'), "amp;amp;", "&");
       document.getElementById('panel3URIs').value = replaceAllRecursion(getURIsListForPanel('panel3'), "amp;amp;", "&");
+      
     }
 
     // constructs panel(i)URIs values so that they will contain just the bookmarks URIs that must be displayed
@@ -47,41 +57,23 @@
     // id is something like this lyr_randomInt|_bookmarkURI
     function getURIsListForPanel(panelName) {
       var s = "";
-      if(panelName == "panel1") {
-        for(i=0;i<aElts[0].length;i++)
-          s += aElts[0][i].name + ";";
-        return s;
-      }
-      if(panelName == "panel2") {
-        for(i=0;i<aElts[1].length;i++)
-          s += aElts[1][i].name + ";";
-        return s;
-      }
-      if(panelName == "panel3") {
-        for(i=0;i<aElts[2].length;i++)
-          s += aElts[2][i].name + ";";
-        return s;
-      }
+      for(j=1;j<=numberOfcolumns;j++)
+        if(panelName == "panel" + j) {
+          for(i=0;i<aElts[j-1].length;i++)
+            s += aElts[j-1][i].name + ";";
+          return s;
+        }
     }
     
     // constructs panel(i)URIs values so that they will contain just the bookmarks URIs that must be displayed
     function getClearURIsListForPanel(panelName) {
       var s = "";
-      if(panelName == "panel1") {
-        for(i=0;i<aElts[0].length;i++)
-          s += aElts[0][i].name.substring(aElts[0][i].name.indexOf("|_")+2,aElts[0][i].name.length) + ";";
-        return s;
-      }
-      if(panelName == "panel2") {
-        for(i=0;i<aElts[1].length;i++)
-          s += aElts[1][i].name.substring(aElts[1][i].name.indexOf("|_")+2,aElts[1][i].name.length) + ";";
-        return s;
-      }
-      if(panelName == "panel3") {
-        for(i=0;i<aElts[2].length;i++)
-          s += aElts[2][i].name.substring(aElts[2][i].name.indexOf("|_")+2,aElts[2][i].name.length) + ";";
-        return s;
-      }
+      for(j=1;j<=numberOfcolumns;j++)
+        if(panelName == "panel" + j) {
+          for(i=0;i<aElts[j-1].length;i++)
+            s += aElts[j-1][i].name.substring(aElts[j-1][i].name.indexOf("|_")+2,aElts[j-1][i].name.length) + ";";
+          return s;
+        }
     }
 
     // "add" board panel must be in the bottom of the page
@@ -105,7 +97,14 @@
       setPanelsClearURIsLists();
       document.getElementById('location').value = window.location; 
       document.getElementById('isClosePanel').value = 'true';
+      
+      document.dashBoard.panel1URIs.value = document.getElementById('panel1URIs').value;
+      document.dashBoard.panel2URIs.value = document.getElementById('panel2URIs').value;
+      document.dashBoard.panel3URIs.value = document.getElementById('panel3URIs').value;
+      document.dashBoard.location.value = document.getElementById('location').value;
+      document.dashBoard.isClosePanel.value = document.getElementById('isClosePanel').value;
       dashBoardForm.submit();
+      
       document.getElementById('isClosePanel').value = 'false';
       document.getElementById("dashBoard").target=window;
     }
