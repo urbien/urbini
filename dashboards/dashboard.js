@@ -91,7 +91,7 @@
         for(j=0;j<aElts[i].length;j++) 
           if(findPosY(aElts[i][j]) > maxHeight)
             maxHeight = findPosY(aElts[i][j]);
-      document.getElementById('addRemovePanel').style.height = maxHeight + 250;
+      document.getElementById('addRemovePanel').style.height = maxHeight + 150;
     }
     
     // function that removes board from the page

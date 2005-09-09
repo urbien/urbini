@@ -30,7 +30,7 @@ for(j=1;j<=numberOfcolumns;j++) {
 var availWindowWidth = document.body.offsetWidth;
 availWindowWidth -= 100;
 var dy      = 225;
-var margTop = 50;
+var margTop = 120;
 var posOld;
 
 function my_PickFunc() { // onPick event
@@ -164,7 +164,7 @@ function makeBoardsAlligned() {
   
   for(i=0;i<numberOfcolumns;i++) 
     if(aElts[i].length > 0) {
-      aElts[i][0].moveTo(i*20 + i*availWindowWidth/numberOfcolumns + 20, 50);
+      aElts[i][0].moveTo(i*20 + i*availWindowWidth/numberOfcolumns + 20, 120);
       document.getElementById(aElts[i][0].name).style.width = availWindowWidth/numberOfcolumns;
       for(j=1;j<aElts[i].length;j++) {
         aElts[i][j].moveTo(i*20 + i*availWindowWidth/numberOfcolumns + 20, aElts[i][j-1].y+dy);
