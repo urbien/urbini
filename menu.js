@@ -1647,7 +1647,7 @@ function autoComplete1(e, target) {
     propName1 = propName1.substring(0, idx);
 
   var fieldVerified = form.elements[propName1 + '_verified'];
-  var fieldSelect   = form.elements[propName1 + '_select'];
+  var selectItems   = form.elements[propName1 + '_select'];
   var fieldClass    = form.elements[propName1 + '_class'];
   if (characterCode == 13) { // enter
     if (!fieldVerified) { // show popup on Enter only in data entry mode (indicated by the presence of _verified field)
@@ -1701,7 +1701,19 @@ function autoComplete1(e, target) {
 
 
   if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
-  if (fieldSelect)   fieldSelect.value   = '';  // value was modified and is not verified yet (i.e. not chose from the list)
+  if (selectItems) {
+    var len = selectItems.length;
+	  if (len) {
+	    for (var i=0; i<selectItems.length; i++) {
+	      if (selectItems[i].type.toLowerCase() == "checkbox")
+	        selectItems[i].checked = false;
+	      else
+	        selectItems[i].value = '';
+	    }
+	  }
+	  else
+      selectItems.value   = '';  // value was modified and is not verified yet (i.e. not chose from the list)
+  }
   autoCompleteTimeoutId = setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 500);
   // make property label visible since overwritten inside the field
   var filterLabel = document.getElementById(propName1 + "_span");
