@@ -34,7 +34,8 @@
       document.getElementById('dashBoardLocation').value = document.getElementById('location').value;
       document.getElementById('dashBoardIsClosePanel').value = document.getElementById('isClosePanel').value;
 
-      dashBoardForm.submit();
+      //dashBoardForm.submit();
+      document.getElementById('dashBoard').submit();
     }
  
     // bookmark that must be added
@@ -111,7 +112,8 @@
       document.getElementById('dashBoardPanel3URIs').value = document.getElementById('panel3URIs').value;
       document.getElementById('dashBoardLocation').value = document.getElementById('location').value;
       document.getElementById('dashBoardIsClosePanel').value = document.getElementById('isClosePanel').value;
-      dashBoardForm.submit();
+      //dashBoardForm.submit();
+      document.getElementById('dashBoard').submit();
       
       document.getElementById('isClosePanel').value = 'false';
       document.getElementById("dashBoard").target=window;

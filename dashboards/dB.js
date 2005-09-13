@@ -1,4 +1,8 @@
 var numberOfcolumns = 3;
+if(document.getElementById('loggedContact').href == null) {
+  alert('sorry, you can not edit dashboard. Please login.');
+  window.location = (this.window.location+"").replace("Edit.html",".html");
+}
 
 // array of parameters for SET_DHTML
 // {
@@ -30,7 +34,9 @@ for(j=1;j<=numberOfcolumns;j++) {
 var availWindowWidth = document.body.offsetWidth;
 availWindowWidth -= 100;
 var dy      = 225;
-var margTop = 120;
+var margTop = findPosY(document.getElementById('dashboardsTable'));//120;
+if(margTop == 0)margTop = 250; // error when calculating findPosY - IE problem
+//alert(findPosY(document.getElementById('imgT')));
 var posOld;
 
 function my_PickFunc() { // onPick event
@@ -129,7 +135,8 @@ function my_DropFuncD(pN) {
   document.getElementById('dashBoardLocation').value = document.getElementById('location').value;
   document.getElementById('dashBoardIsClosePanel').value = document.getElementById('isClosePanel').value;
  
-  dashBoardForm.submit();
+  //dashBoardForm.submit();
+  document.getElementById('dashBoard').submit();
   
   document.getElementById('isClosePanel').value = 'false';
   document.getElementById("dashBoard").target=window;
@@ -164,7 +171,7 @@ function makeBoardsAlligned() {
   
   for(i=0;i<numberOfcolumns;i++) 
     if(aElts[i].length > 0) {
-      aElts[i][0].moveTo(i*20 + i*availWindowWidth/numberOfcolumns + 20, 120);
+      aElts[i][0].moveTo(i*20 + i*availWindowWidth/numberOfcolumns + 20, margTop);
       document.getElementById(aElts[i][0].name).style.width = availWindowWidth/numberOfcolumns;
       for(j=1;j<aElts[i].length;j++) {
         aElts[i][j].moveTo(i*20 + i*availWindowWidth/numberOfcolumns + 20, aElts[i][j-1].y+dy);
