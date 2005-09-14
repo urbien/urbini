@@ -1,3 +1,5 @@
+    var numberOfcolumns = 3;
+    
     addEvent(window, 'resize', function() {makeBoardsAlligned();}, false);
     
     function selectItemToAddToDashboard(panel){
