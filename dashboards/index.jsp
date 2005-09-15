@@ -1,8 +1,4 @@
 <div>
-  <div align="center" style="width:100%">
-    <a href="javascript:if(document.getElementById('loggedContact').href != null){window.location = (window.location+'').replace('.html','Edit.html');}else alert('sorry, you must login to edit');" style="align:right"><img src="images/EditMode.gif" border="0" title="Edit this Page"/></a>
-  </div>
-
   <table style="height:100%; width:100%" border="0">
     <tr valign="top" align="center">
       <td width="33%">
@@ -16,4 +12,7 @@
       </td>
     </tr>
   </table>
+  <div align="right" style="width:100%">
+    <a href="javascript:if(document.getElementById('loggedContact').href != null){window.location = (window.location+'').replace('.html','Edit.html');}else alert('sorry, you must login to edit');" style="align:right"><img src="images/EditMode.gif" border="0" title="Edit this Page"/></a>
+  </div>
 </div>
