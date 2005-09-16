@@ -6,10 +6,6 @@
   <input type="Hidden" name="location" id="location" value="" />
   <input type="Hidden" id="itemToAdd" value="" />
 
-  <div align="center" style="width:100%">
-    <a href="javascript:window.location = (window.location+'').replace('Edit.html','.html');" style="align:right"><img src="images/readOnlyMode.gif" border="0" title="View readonly"/></a>
-  </div>
-  
   <table style="height:100%; width:100%" border="0" id="dashboardsTable">
     <tr>
       <td>
@@ -25,21 +21,21 @@
     <tr valign="bottom">
       <td id="addRemovePanel" align="center">
         Add Content to Left Column 
-        <img src="icons/add-medium.gif" onclick="selectItemToAddToDashboard('panel1')" />
+        <img src="icons/add-medium.gif" onclick="selectItemToAddToDashboard('panel1')" style="cursor:pointer" />
         <input type="Hidden" id="panel1URIs" name="panel1URIs" value="" />
         <br/>
         <BookmarksList/>
       </td>
       <td align="center">
         Add Content to Middle Column 
-        <img src="icons/add-medium.gif" onclick="selectItemToAddToDashboard('panel2')" />
+        <img src="icons/add-medium.gif" onclick="selectItemToAddToDashboard('panel2')" style="cursor:pointer" />
         <input type="Hidden" id="panel2URIs" name="panel2URIs" value="" />
         <br />
         <BookmarksList/>
       </td>
       <td align="center">
         Add Content to Right Column 
-        <img src="icons/add-medium.gif" onclick="selectItemToAddToDashboard('panel3')" />
+        <img src="icons/add-medium.gif" onclick="selectItemToAddToDashboard('panel3')" style="cursor:pointer" />
         <input type="Hidden" id="panel3URIs" name="panel3URIs" value="" />
         <br/>
         <BookmarksList/>
@@ -65,4 +61,8 @@
   <input type="Hidden" name="panel3URIs" id="dashBoardPanel3URIs" value="" />
   <input type="Hidden" name="isClosePanel" id="dashBoardIsClosePanel" value="false" />
 </form>
+
+  <div align="right" style="width:100%">
+    <font color="#75BDFF">View readonly</font> <a href="javascript:window.location = (window.location+'').replace('Edit.html','.html');" style="align:right"><img src="images/readOnlyMode.gif" border="0" title="View readonly"/></a>
+  </div>
 </div>

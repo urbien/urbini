@@ -32,7 +32,7 @@ for(j=1;j<=numberOfcolumns;j++) {
 // }
 
 var availWindowWidth = document.body.offsetWidth;
-availWindowWidth -= 100;
+availWindowWidth -= 50;
 var dy      = 225;
 var margTop = findPosY(document.getElementById('dashboardsTable'));//120;
 if(margTop == 0)margTop = 250; // error when calculating findPosY - IE problem
@@ -167,15 +167,15 @@ function remove(a,element,ex) {
 }
 
 function makeBoardsAlligned() {
-  availWindowWidth = document.body.offsetWidth - 100;
+  availWindowWidth = document.body.offsetWidth - 50;
   
   for(i=0;i<numberOfcolumns;i++) 
     if(aElts[i].length > 0) {
-      aElts[i][0].moveTo(i*20 + i*availWindowWidth/numberOfcolumns + 20, margTop);
-      document.getElementById(aElts[i][0].name).style.width = availWindowWidth/numberOfcolumns;
+      aElts[i][0].moveTo(i*10 + i*availWindowWidth/numberOfcolumns + 10, margTop);
+      document.getElementById(aElts[i][0].name).style.width = availWindowWidth/numberOfcolumns -10;
       for(j=1;j<aElts[i].length;j++) {
-        aElts[i][j].moveTo(i*20 + i*availWindowWidth/numberOfcolumns + 20, aElts[i][j-1].y+dy);
-        document.getElementById(aElts[i][j].name).style.width = availWindowWidth/numberOfcolumns;
+        aElts[i][j].moveTo(i*10 + i*availWindowWidth/numberOfcolumns + 10, aElts[i][j-1].y+dy);
+        document.getElementById(aElts[i][j].name).style.width = availWindowWidth/numberOfcolumns - 10;
       }
     }
   
