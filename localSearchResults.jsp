@@ -7,9 +7,9 @@
 <a target="pane2"> </a>
 <div id="pane2" />
 
-<div id="galery" style="display:none;position:absolute">
+<div id="gallery" style="display:none;position:absolute">
   <table>
-    <tr><td class="largeImage"><img id="galeryImage" src="#"></img></td></tr>
+    <tr><td class="largeImage"><img id="galleryImage" src="#"></img></td></tr>
   </table>
 </div>
 

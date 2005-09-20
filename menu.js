@@ -3100,8 +3100,8 @@ function showLargeImage(current, largeImageUri) {
 	if (!document.getElementById)
 	  return true;
 
-  var div = document.getElementById('galery');
-  var img = document.getElementById('galeryImage');
+  var div = document.getElementById('gallery');
+  var img = document.getElementById('galleryImage');
 	if (div.style.display == "block") {
 	  div.style.display = "none";
 	  // img.src always has host in it; largeImageUri not always that is why using indexOf

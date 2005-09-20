@@ -14,6 +14,12 @@
     <tr><td colspan="3"><br/>
 <a target="pane2"> </a>
 <div id="pane2" />
+<div id="gallery" style="display:none;position:absolute">
+  <table>
+    <tr><td class="largeImage"><img id="galleryImage" src="#"></img></td></tr>
+  </table>
+</div>
+
     <div id="allowSearchHighlighting2">
       <readOtherSiteInfo />
       <include name="${type}_details_main.jsp" alt="propertySheet.jsp" />
