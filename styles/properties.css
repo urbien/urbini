@@ -119,6 +119,7 @@ span.bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size
 
 /* to display large image in resource list */
 td.largeImage {padding-top:20px; padding-bottom:20px; padding-left:20px; padding-right:20px; border:solid #808080 1px; background-color: #ffffff; color: #000000}
+td.largeImageWithHide {padding-top:20px; padding-bottom:20px; padding-left:20px; padding-right:4px; border:solid #808080 1px; background-color: #ffffff; color: #000000}
 
 td.horizontalFilter { filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#C0C9D7', EndColorStr='#ffffff') }
 /* To display property groups in edit mode */
