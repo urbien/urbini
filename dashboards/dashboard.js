@@ -95,6 +95,7 @@
           if(findPosY(aElts[i][j]) > maxHeight)
             maxHeight = findPosY(aElts[i][j]);
       document.getElementById('addRemovePanel').style.height = maxHeight + 150;
+      fadeBoards(); // d&d bug: if draggable layer contains link directly under mouse cursor - link is clicked on drop
     }
     
     // function that removes board from the page
@@ -119,6 +120,20 @@
       
       document.getElementById('isClosePanel').value = 'false';
       document.getElementById("dashBoard").target=window;
+    }
+    
+    function fadeBoards() {
+      try{  
+        for(i=0;i<numberOfcolumns;i++) 
+          if(aElts[i].length > 0) {
+            for(j=0;j<aElts[i].length;j++) {
+              document.getElementById(aElts[i][j].name+'hide').style.top    = parseInt(document.getElementById(aElts[i][j].name).style.top) + 16;
+              document.getElementById(aElts[i][j].name+'hide').style.left   = document.getElementById(aElts[i][j].name).style.left;
+              document.getElementById(aElts[i][j].name+'hide').style.width  = document.getElementById(aElts[i][j].name).style.width;
+              document.getElementById(aElts[i][j].name+'hide').style.height = parseInt(document.getElementById(aElts[i][j].name).style.height) -16;
+            }
+          }
+      } catch(ex){}
     }
     
     function findPosY(obj) {

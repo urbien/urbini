@@ -10,7 +10,7 @@ var s = [CURSOR_MOVE];
 for(j=1;j<=numberOfcolumns;j++) {
 var ar = document.getElementById('panel'+j).getElementsByTagName('div');
   for(i=0;i<ar.length;i++)
-    if(ar[i].id.indexOf("lyr") == 0)
+    if(ar[i].id.indexOf("lyr") == 0 && ar[i].id.indexOf("hide") != ar[i].id.length-4)
       s[s.length] = ar[i].id;
 }
 // }
@@ -24,7 +24,7 @@ for(j=1;j<=numberOfcolumns;j++) {
   var tmpArray = new Array();
   var ar = document.getElementById('panel'+j).getElementsByTagName('div');
   for(i=0;i<ar.length;i++){
-    if(ar[i].id.indexOf("lyr") == 0)
+    if(ar[i].id.indexOf("lyr") == 0 && ar[i].id.indexOf("hide") != ar[i].id.length-4)
       tmpArray[tmpArray.length] = dd.elements[(ar[i].id)];
   }
   aElts[j-1] = tmpArray;
@@ -38,6 +38,7 @@ var margTop = findPosY(document.getElementById('dashboardsTable'));//120;
 if(margTop == 0)margTop = 250; // error when calculating findPosY - IE problem
 //alert(findPosY(document.getElementById('imgT')));
 var posOld;
+
 
 function my_PickFunc() { // onPick event
   // Store position of the item about to be dragged
@@ -68,6 +69,8 @@ function my_DragFunc() { // onDrag event
         document.getElementById(aElts[pN][i].name).style.backgroundColor = '#A8D3FF';
     } catch (ex) {}
   }
+  
+  fadeBoards(); // d&d bug: if draggable layer contains link directly under mouse cursor - link is clicked on drop
 }
 
 function my_DropFunc() {  // onDrop event
@@ -141,6 +144,7 @@ function my_DropFuncD(pN) {
   document.getElementById('isClosePanel').value = 'false';
   document.getElementById("dashBoard").target=window;
   // ----Finish ---- New boards position must be saved----
+  
 }
 
 // remove the board from the array (from the old position)
