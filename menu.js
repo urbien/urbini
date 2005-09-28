@@ -816,28 +816,33 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return true;
     }
 
-    var select = prop + "_select";
+    var select;
+    if (currentFormName == "viewColsList") 
+      select = prop;
+    else
+      select = prop + "_select";
     if (currentResourceUri)
       select = currentResourceUri + ".$" + select;
 
     formField = form.elements[select];
     var selectItems = form.elements[select];
     if (tr.id.indexOf('$clear') == 0) {
-      if (len > 1) {
-        if (currentFormName != "tablePropertyList")
-          chosenTextField[0].value   = tr.id.substring(6);
-        else
-          chosenTextField[0].value   = '';
+      if (currentFormName != "viewColsList") {
+	      if (len > 1) {
+	        if (currentFormName != "tablePropertyList")
+	          chosenTextField[0].value   = tr.id.substring(6);
+	        else
+	          chosenTextField[0].value   = '';
+	      }
+	      else {
+	        if (currentFormName != "tablePropertyList")
+	          chosenTextField.value   = tr.id.substring(6);
+	        else
+	          chosenTextField.value   = '';
+	      }
+	      if (chosenTextField.style)
+	        chosenTextField.style.backgroundColor = '';
       }
-      else {
-        if (currentFormName != "tablePropertyList")
-          chosenTextField.value   = tr.id.substring(6);
-        else
-          chosenTextField.value   = '';
-      }
-      if (chosenTextField.style)
-        chosenTextField.style.backgroundColor = '';
-
       formField.value         = '';
       if (formFieldClass)
         formFieldClass.value  = '';
@@ -868,15 +873,17 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var items = tr.getElementsByTagName('td');
       var val = items[2].innerHTML;
       var idx = val.lastIndexOf(">");
-      if (len > 1) {
-        chosenTextField[0].value = val.substring(idx + 1);
-        if (chosenTextField[0].style)
-          chosenTextField[0].style.backgroundColor = '#ffffff';
-      }
-      else {
-        chosenTextField.value = val.substring(idx + 1);
-        if (chosenTextField.style)
-          chosenTextField.style.backgroundColor = '#ffffff';
+      if (currentFormName != "viewColsList") {
+	      if (len > 1) {
+	        chosenTextField[0].value = val.substring(idx + 1);
+	        if (chosenTextField[0].style)
+	          chosenTextField[0].style.backgroundColor = '#ffffff';
+	      }
+	      else {
+	        chosenTextField.value = val.substring(idx + 1);
+	        if (chosenTextField.style)
+	          chosenTextField.style.backgroundColor = '#ffffff';
+	      }
       }
       // show property label since label inside input field is now overwritten
       if (currentFormName == 'rightPanelPropertySheet') {
@@ -907,7 +914,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
               var s = "";
               var first = true;
               while (true) {
-                var sidx1 = sValue.indexOf("&", sidx);
+                var sidx1 = sValue.indexOf("&amp;", sidx);
                 if (!first)
                   s += ' ';
                 else
@@ -918,9 +925,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
                 }
                 else {
                   s += sValue.substring(sidx + 1, sidx1);
-                  sidx = sValue.indexOf("=", sidx1 + 1);
+                  sidx = sValue.indexOf("=", sidx1 + 3);
                   if (sidx == -1)
-                    break
+                    break;
                 }
               }
               sValue = s;
@@ -936,37 +943,39 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             nmbChecked++;
           }
         }
-        if (nmbChecked == 0) {
-          if (fieldLabel) {
-            fieldLabel.style.display    = "none";
-            var textContent = getTextContent(fieldLabel);
-            if (textContent) {
-              var idx = textContent.indexOf("\r");
-              if (idx != -1)
-                textContent = textContent.substring(0, idx);
-              chosenTextField.value = textContent + " --";
-            }
-          }
-          else
-            chosenTextField.value = "";
-        }
-        else if (nmbChecked == 1) {
-          if (hiddenSelectedItem != null)
-            hiddenSelectedItem.value = selectedItem.value;
-          var trNode = getTrNode(selectedItem);
-          var items = trNode.getElementsByTagName('td');
-          var val = items[2].innerHTML;
-          var idx = val.lastIndexOf(">");
-
-          if (len > 1)
-            chosenTextField[0].value = val.substring(idx + 1);
-          else
-            chosenTextField.value = val.substring(idx + 1);
-        }
-        else {
-          if (hiddenSelectedItem != null)
-            hiddenSelectedItem.value = selectedItem.value;
-          chosenTextField.value = '<...>';
+        if (currentFormName != "viewColsList") {
+	        if (nmbChecked == 0) {
+	          if (fieldLabel) {
+	            fieldLabel.style.display    = "none";
+	            var textContent = getTextContent(fieldLabel);
+	            if (textContent) {
+	              var idx = textContent.indexOf("\r");
+	              if (idx != -1)
+	                textContent = textContent.substring(0, idx);
+	              chosenTextField.value = textContent + " --";
+	            }
+	          }
+	          else
+	            chosenTextField.value = "";
+	        }
+	        else if (nmbChecked == 1) {
+	          if (hiddenSelectedItem != null)
+	            hiddenSelectedItem.value = selectedItem.value;
+	          var trNode = getTrNode(selectedItem);
+	          var items = trNode.getElementsByTagName('td');
+	          var val = items[2].innerHTML;
+	          var idx = val.lastIndexOf(">");
+	
+	          if (len > 1)
+	            chosenTextField[0].value = val.substring(idx + 1);
+	          else
+	            chosenTextField.value = val.substring(idx + 1);
+	        }
+	        else {
+	          if (hiddenSelectedItem != null)
+	            hiddenSelectedItem.value = selectedItem.value;
+	          chosenTextField.value = '<...>';
+	        }
         }
       }
     }
@@ -1980,6 +1989,9 @@ function chooser(element) {
     window.opener.document.forms[form].elements[uri + ".$." + propName].value                    = value;
     window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_select"].value   = id;
     window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_verified"].value = "y";
+  }
+  else if (currentFormName != "viewColsList") {
+    window.opener.document.forms[form].elements[shortPropName].value   = id;
   }
   else {
     if (isHrefChange) {
@@ -3102,6 +3114,7 @@ function showLargeImage(current, largeImageUri) {
 
   var div = document.getElementById('gallery');
   var img = document.getElementById('galleryImage');
+  	  img.src = "";
 	if (div.style.display == "block") {
 	  div.style.display = "none";
 	  // img.src always has host in it; largeImageUri not always that is why using indexOf
@@ -3110,9 +3123,54 @@ function showLargeImage(current, largeImageUri) {
   	  return false;
   	}
 	}
-  div.style.left = getLeft(current) + 10 + "px";
-  div.style.top  = getTop(current) - 50 + "px";
+
+//////////// SOME CODE FROM POPUP	
+      var coords = getElementCoords(current);
+      var left = coords.left;
+      var top  = coords.top;
+
+      var screenXY = getWindowSize();
+      var screenX = screenXY[0];
+      var screenY = screenXY[1];
+
+      // Find out how close to the corner of the window
+      var distanceToRightEdge  = screenX + scrollX - left;
+      var distanceToBottomEdge = screenY + scrollY - top;
+
+      // first position the div box in the top left corner in order to measure its dimensions
+      // (otherwise, if position coirrectly and only then measure dimensions - the width/height will get cut off at the scroll boundary - at least in firefox 1.0)
+      div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
+      self.moveTo(0, 0);
+      var divCoords = getElementCoords(div);
+      div.style.display    = 'none';   // must hide it again to avoid screen flicker
+      var offsetX;
+      var offsetY;
+      // move box to the left of the hostspot if the distance to window border isn't enough to accomodate the whole div box
+      var margin = 40;
+      if (distanceToRightEdge < divCoords.width + margin) {
+        left = screenX - divCoords.width + scrollX; // move horizontal position of the menu to the left by its width
+        if (left - margin > 0) left -= margin; // adjust for a scrollbar;
+      }
+      else { // apply user requested offset only if no adjustment
+        if (offsetX)
+          left = left + offsetX;
+      }
+
+      // adjust position of the div box vertically - using the same approach as above
+      if (distanceToBottomEdge < divCoords.height + margin) {
+        top = (scrollY + screenY) - divCoords.height;
+        if (top - margin > 0) top -= margin; // adjust for a scrollbar;
+      }
+      else { // apply user requested offset only if no adjustment
+        if (offsetY)
+          top = top + offsetY;
+      }
+  
+  
+  div.style.left = left; //getLeft(current) + 10 + "px";
+  div.style.top  = top;  //getTop(current) - 50 + "px";
   div.style.display = "block";
+
   img.src = largeImageUri;
 	return false;
 }
@@ -3137,3 +3195,9 @@ function getTop(overlay, offsettype){
 	return totaloffset;
 }
 
+function hide(target) {
+  if (typeof target == 'string')
+    target = document.getElementById(target);
+	target.style.display = "none";
+	return false;
+}
