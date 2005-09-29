@@ -95,13 +95,15 @@
           if(findPosY(aElts[i][j]) > maxHeight)
             maxHeight = findPosY(aElts[i][j]);
       document.getElementById('addRemovePanel').style.height = maxHeight + 150;
-      fadeBoards(); // d&d bug: if draggable layer contains link directly under mouse cursor - link is clicked on drop
+      //fadeBoards(); // d&d bug: if draggable layer contains link directly under mouse cursor - link is clicked on drop
     }
     
     // function that removes board from the page
     function removeBoard(boardId, panelName) {
       remove(aElts,document.getElementById(boardId),10); // remove from the array of boards on the page
-      document.getElementById(boardId).parentNode.removeChild(document.getElementById(boardId)); // remove board as html document object
+      var parentContainer = document.getElementById(boardId).parentNode;
+      parentContainer.removeChild(document.getElementById(boardId)); // remove board as html document object
+      parentContainer.removeChild(document.getElementById('main'+boardId)); // remove board as html document object
       document.getElementById(panelName+'URIs').value = document.getElementById(panelName+'URIs').value.replace(boardId+';',''); // remove board from the list of boards in the column (in the panel)
       makeBoardsAlligned();
 
@@ -122,6 +124,7 @@
       document.getElementById("dashBoard").target=window;
     }
     
+    /*
     function fadeBoards() {
       try{  
         for(i=0;i<numberOfcolumns;i++) 
@@ -135,6 +138,7 @@
           }
       } catch(ex){}
     }
+    */
     
     function findPosY(obj) {
       var curtop = 0;
@@ -147,6 +151,19 @@
       else if (obj.y)
         curtop += obj.y;
       return curtop;
+    }
+    
+    function findPosX(obj) {
+      var curleft = 0;
+      if (obj.offsetParent) {
+        while (obj.offsetParent) {
+          curleft += obj.offsetLeft;
+          obj = obj.offsetParent;
+        }
+      }
+      else if (obj.x)
+        curleft += obj.x;
+      return curleft;
     }
     
     function replaceAllRecursion(str, replStr, replWithStr) {

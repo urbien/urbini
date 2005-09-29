@@ -10,7 +10,7 @@ var s = [CURSOR_MOVE];
 for(j=1;j<=numberOfcolumns;j++) {
 var ar = document.getElementById('panel'+j).getElementsByTagName('div');
   for(i=0;i<ar.length;i++)
-    if(ar[i].id.indexOf("lyr") == 0 && ar[i].id.indexOf("hide") != ar[i].id.length-4)
+    if(ar[i].id.indexOf("lyr") == 0 && ar[i].id.indexOf("hide") != ar[i].id.length-4)// && ar[i].id.indexOf("main") != ar[i].id.length-4)
       s[s.length] = ar[i].id;
 }
 // }
@@ -68,9 +68,14 @@ function my_DragFunc() { // onDrag event
       if(aElts[pN][i] != dd.obj)
         document.getElementById(aElts[pN][i].name).style.backgroundColor = '#A8D3FF';
     } catch (ex) {}
+    
+    //makeBoardsAttached();
+    // make boards be attached to the draggable title
+    document.getElementById('main' + dd.obj.name).style.top  = dd.obj.y+dd.obj.h;
+    document.getElementById('main' + dd.obj.name).style.left  = dd.obj.x;
   }
   
-  fadeBoards(); // d&d bug: if draggable layer contains link directly under mouse cursor - link is clicked on drop
+  //fadeBoards(); // d&d bug: if draggable layer contains link directly under mouse cursor - link is clicked on drop
 }
 
 function my_DropFunc() {  // onDrop event
@@ -177,6 +182,7 @@ function makeBoardsAlligned() {
     if(aElts[i].length > 0) {
       aElts[i][0].moveTo(i*10 + i*availWindowWidth/numberOfcolumns + 10, margTop);
       document.getElementById(aElts[i][0].name).style.width = availWindowWidth/numberOfcolumns -10;
+      
       for(j=1;j<aElts[i].length;j++) {
         aElts[i][j].moveTo(i*10 + i*availWindowWidth/numberOfcolumns + 10, aElts[i][j-1].y+dy);
         document.getElementById(aElts[i][j].name).style.width = availWindowWidth/numberOfcolumns - 10;
@@ -184,4 +190,25 @@ function makeBoardsAlligned() {
     }
   
   makeAddRemovePanelAlligned();
+  makeBoardsAttached();
+}
+
+function makeBoardsAttached() {
+  availWindowWidth = document.body.offsetWidth - 50;
+  
+  for(i=0;i<numberOfcolumns;i++) 
+    if(aElts[i].length > 0) {
+      document.getElementById('main' + aElts[i][0].name).style.width = parseInt(document.getElementById(aElts[i][0].name).style.width);
+      if(!document.all)
+        document.getElementById('main' + aElts[i][0].name).style.width = parseInt(document.getElementById('main' + aElts[i][0].name).style.width) - 10;
+      document.getElementById('main' + aElts[i][0].name).style.left  = document.getElementById(aElts[i][0].name).style.left;
+      document.getElementById('main' + aElts[i][0].name).style.top   = parseInt(document.getElementById(aElts[i][0].name).style.top) + parseInt(document.getElementById(aElts[i][0].name).style.height);
+      for(j=1;j<aElts[i].length;j++) {
+        document.getElementById('main' + aElts[i][j].name).style.width = document.getElementById(aElts[i][j].name).style.width;
+        if(!document.all)
+          document.getElementById('main' + aElts[i][j].name).style.width = parseInt(document.getElementById('main' + aElts[i][j].name).style.width) - 10;
+        document.getElementById('main' + aElts[i][j].name).style.left  = document.getElementById(aElts[i][j].name).style.left;
+        document.getElementById('main' + aElts[i][j].name).style.top   = parseInt(document.getElementById(aElts[i][j].name).style.top) + parseInt(document.getElementById(aElts[i][j].name).style.height);
+      }
+    }
 }
