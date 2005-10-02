@@ -817,7 +817,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
 
     var select;
-    if (currentFormName == "viewColsList") 
+    var isViewCols = currentFormName == "viewColsList"  ||  currentFormName == "filterColsList";
+    if (isViewCols) 
       select = prop;
     else
       select = prop + "_select";
@@ -827,7 +828,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     formField = form.elements[select];
     var selectItems = form.elements[select];
     if (tr.id.indexOf('$clear') == 0) {
-      if (currentFormName != "viewColsList") {
+      if (!isViewCols) {
 	      if (len > 1) {
 	        if (currentFormName != "tablePropertyList")
 	          chosenTextField[0].value   = tr.id.substring(6);
@@ -873,7 +874,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var items = tr.getElementsByTagName('td');
       var val = items[2].innerHTML;
       var idx = val.lastIndexOf(">");
-      if (currentFormName != "viewColsList") {
+      if (!isViewCols) {
 	      if (len > 1) {
 	        chosenTextField[0].value = val.substring(idx + 1);
 	        if (chosenTextField[0].style)
@@ -943,7 +944,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             nmbChecked++;
           }
         }
-        if (currentFormName != "viewColsList") {
+        if (!isViewCols) {
 	        if (nmbChecked == 0) {
 	          if (fieldLabel) {
 	            fieldLabel.style.display    = "none";
@@ -1990,7 +1991,7 @@ function chooser(element) {
     window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_select"].value   = id;
     window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_verified"].value = "y";
   }
-  else if (currentFormName != "viewColsList") {
+  else if (currentFormName == "viewColsList"  ||  currentFormName == "filterColsList") {
     window.opener.document.forms[form].elements[shortPropName].value   = id;
   }
   else {
