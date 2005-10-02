@@ -165,3 +165,5 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 	  background-image:url(images/skin/blue/tab-right.gif);
 	  background-repeat: no-repeat;
 	}
+.group {background:#f8f4ef;PADDING-RIGHT: 10px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; CURSOR: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: no-wrap;}
+	
