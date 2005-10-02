@@ -26,15 +26,16 @@
     <siteResourceList />
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
-    <br/>
-<hideBlock>
     <div id="pane3">
+<hideBlock>
     <br/>
     <uploadMsProject/>
     <createResources/><br/>
 <br/><br/>
+</hideBlock>
       <pieChart/>
     </div>
+<hideBlock>
 
     <script language="JavaScript">
       var horizontalFilter_FIELDS = new Array();
