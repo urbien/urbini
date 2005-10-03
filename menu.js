@@ -828,6 +828,37 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     formField = form.elements[select];
     var selectItems = form.elements[select];
     if (tr.id.indexOf('$clear') == 0) {
+      if (isViewCols) {
+			  // form url based on parameters that were set
+			  var formAction = form.elements['-$action'].value;
+			  var allFields = true;
+			  if (formAction == "showproperties")
+			    allFields = false;
+			  var params;
+			  var arr = new Array(3);
+			  if (currentFormName == "viewColsList") {
+          arr["-viewCols"] = "-viewCols";
+          arr[".-viewCols"] = ".-viewCols";
+          arr["-curViewCols"] = "-curViewCols";
+		    }
+		    else {
+		      arr["-filterCols"] = "-filterCols";
+		      arr[".-filterCols"] = ".-filterCols";
+		      arr["-curFilterCols"] = "-curFilterCols";
+		    }
+	      params = getFormFilters(form, allFields, arr);
+			  var formAction = form.elements['-$action'].value;
+			  var baseUriO = document.getElementsByTagName('base');
+			  var baseUri = "";
+			  if (baseUriO) {
+			    baseUri = baseUriO[0].href;
+			    if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
+			      baseUri += "/";
+			  }
+			  var url = baseUri + "localSearchResults.html?" + params;
+			  document.location.replace(url);
+			  return;
+      }
       if (!isViewCols) {
 	      if (len > 1) {
 	        if (currentFormName != "tablePropertyList")
@@ -1930,14 +1961,17 @@ function getTrNode(elem) {
  * If allFields is true - we are in a Filter panel - need to take into account all input fields
  * Otherwise - it is a Data Entry mode, i.e. - take only fields that were modified by the user
  */
-function getFormFilters(form, allFields) {
+function getFormFilters(form, allFields, exclude) {
 
   var p = "";
   var fields = form.elements;
+  
   for (var i=0; i<fields.length; i++) {
     var field = fields[i];
     var value = field.value;
     var name  = field.name;
+    if (exclude &&  exclude[name])
+      continue;
     var type  = field.type;
 
     if (!type || !name)
