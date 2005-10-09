@@ -91,10 +91,13 @@
     function makeAddRemovePanelAlligned() {
       var maxHeight = 0;
       for(i=0;i<aElts.length;i++)
-        for(j=0;j<aElts[i].length;j++) 
-          if(findPosY(aElts[i][j]) > maxHeight)
-            maxHeight = findPosY(aElts[i][j]);
-      document.getElementById('addRemovePanel').style.height = maxHeight + 150;
+        for(j=0;j<aElts[i].length;j++) {
+          //if(findPosY(aElts[i][j]) > maxHeight)
+          if(aElts[i][j].y + document.getElementById('main' + aElts[i][j].name).offsetHeight > maxHeight)
+            //maxHeight = findPosY(aElts[i][j]);
+            maxHeight = aElts[i][j].y + document.getElementById('main' + aElts[i][j].name).offsetHeight;
+        }
+      document.getElementById('addRemovePanel').style.height = maxHeight - 50;// + 50;
       //fadeBoards(); // d&d bug: if draggable layer contains link directly under mouse cursor - link is clicked on drop
     }
     

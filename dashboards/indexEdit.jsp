@@ -5,7 +5,13 @@
   
   <input type="Hidden" name="location" id="location" value="" />
   <input type="Hidden" id="itemToAdd" value="" />
-
+  <!--
+  The panel the board is currently on:<input type="Text" value="" id="currentPanel" style="border : thin dashed;width:40" />
+  The offsetTop of the board on the page:<input type="Text" value="" id="boardTopOffset" style="border : thin dashed;width:40" />
+  The number of boards in the column:<input type="Text" value="" id="numberOfBoardsInTheColumn" style="border : thin dashed;width:40" />
+  The top offsets of the boards in the column and their height:<input type="Text" value="" id="boardsColumnTopHeight" style="border : thin dashed;width:140" />
+  New board position:<input type="Text" value="" id="newBoardPosition" style="border : thin dashed;width:140" />
+  //-->
   <table style="height:100%; width:100%" border="0" id="dashboardsTable">
     <tr>
       <td>
@@ -45,8 +51,9 @@
   
   <script type="text/javascript" src="dashboards/dB.js"></script>
   <script type="text/javascript" language="JavaScript">
+    //setTimeout("makeBoardsAlligned(); makeAddRemovePanelAlligned(); setPanelsURIsLists();",500);
     makeBoardsAlligned(); 
-    makeAddRemovePanelAlligned();
+    makeAddRemovePanelAlligned(); 
     setPanelsURIsLists();
   </script>
  <input type="Hidden" value="false" id="isClosePanel" name="isClosePanel" />
@@ -65,4 +72,8 @@
   <div align="right" style="width:100%">
     <font color="#75BDFF">View readonly</font> <a href="javascript:window.location = (window.location+'').replace('Edit.html','.html');" style="align:right"><img src="images/readOnlyMode.gif" border="0" title="View readonly"/></a>
   </div>
+  <script type="text/javascript" language="JavaScript">
+    setTimeout("makeBoardsAlligned(); makeBoardsAttached();",500);
+    //makeBoardsAlligned(); 
+  </script>
 </div>
