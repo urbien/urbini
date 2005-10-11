@@ -233,10 +233,14 @@ Popup.closeIfOut0 = function (divId) {
 }
 
 function Popup(divRef, hotspotRef, frameRef, contents) {
+  if (!divRef)
+    throw new Error("divRef parameter is null");
   if (typeof difRef == 'string')
     throw new Error("div parameter must be an object, not a string");
   if (!divRef.id)
-    throw new Error("div passes as parameter has no id: " + difRef);
+    throw new Error("divRef parameter has no id: " + difRef);
+  if (!hotspotRef)
+    throw new Error("hotspotRef parameter is null");
   if (typeof hotspotRef == 'string')
     throw new Error("hostspot parameter must be an object, not a string");
 
@@ -444,6 +448,23 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
       self.moveTo(0, 0);
       var divCoords = getElementCoords(div);
+
+      // cut popup dimensions to fit the screen
+      var fixed = false;
+      if (divCoords.width > screenX - 50) {
+        div.style.width = screenX - 50 + 'px';
+        fixed = true;
+        //alert("divCoords.width = " + divCoords.width + ", " + "screenX = " + screenX);
+      }
+      if (divCoords.height > screenY - 50) {
+        div.style.height = screenY - 50 + 'px';
+        fixed = true;
+        //alert("divCoords.height = " + divCoords.height + ", " + "screenY = " + screenY);
+      }
+      if (fixed) { // recalc coords and add scrolling if we fixed dimensions
+        div.style.overflow = "auto";
+        divCoords = getElementCoords(div);
+      }
       div.style.display    = 'none';   // must hide it again to avoid screen flicker
 
       // move box to the left of the hostspot if the distance to window border isn't enough to accomodate the whole div box
@@ -818,7 +839,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     var select;
     var isViewCols = currentFormName == "viewColsList"  ||  currentFormName == "filterColsList";
-    if (isViewCols) 
+    if (isViewCols)
       select = prop;
     else
       select = prop + "_select";
@@ -997,7 +1018,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 	          var items = trNode.getElementsByTagName('td');
 	          var val = items[2].innerHTML;
 	          var idx = val.lastIndexOf(">");
-	
+
 	          if (len > 1)
 	            chosenTextField[0].value = val.substring(idx + 1);
 	          else
@@ -2480,7 +2501,7 @@ function getANode(elem) {
 /**
  * the source of this function and getScrollXY is: http://www.howtocreate.co.uk/tutorials/index.php?tut=0&part=16
  */
-function getWindowSize() {
+function getWindowSize1() {
   var myWidth = 0, myHeight = 0;
   myHeight = (Popup.ie5 || Popup.ie4) ? document.body.clientHeight : window.innerHeight;
   myWidth  = (Popup.ie5 || Popup.ie4) ? document.body.clientWidth  : window.innerWidth;
@@ -2490,7 +2511,7 @@ function getWindowSize() {
 /**
  * the source of this function and getScrollXY is: http://www.howtocreate.co.uk/tutorials/index.php?tut=0&part=16
  */
-function getWindowSize1() {
+function getWindowSize() {
   var myWidth = 0, myHeight = 0;
   if( typeof( window.innerWidth ) == 'number' ) {
     //Non-IE
@@ -2509,7 +2530,7 @@ function getWindowSize1() {
   return [ myWidth, myHeight ];
 }
 
-function getScrollXY() {
+function getScrollXY1() {
   var scrOfX = 0, scrOfY = 0;
 
   if (Popup.ie5 || Popup.ie4) {
@@ -2523,7 +2544,7 @@ function getScrollXY() {
   return [ scrOfX, scrOfY ];
 }
 
-function getScrollXY1() {
+function getScrollXY() {
   var scrOfX = 0, scrOfY = 0;
   if( typeof( window.pageYOffset ) == 'number' ) {
     //Netscape compliant
@@ -2876,7 +2897,7 @@ function getTargetElement(evt) {
   var elem1 = evt.target;
   if (evt.target) {
     if (evt.currentTarget && (evt.currentTarget != elem1)) {
-      if (elem1.tagName.toLowerCase() == 'input' && elem1.type.toLowerCase() == 'checkbox')
+      if (elem1.tagName && elem1.tagName.toLowerCase() == 'input' && elem1.type.toLowerCase() == 'checkbox')
         elem = elem1;
       else
         elem = evt.currentTarget;
@@ -3143,13 +3164,21 @@ function getTdNode(elem) {
     return null;
 }
 
+var hotspot1;
+
+function largeImageOnLoad(e) {
+  Popup.open('gallery', hotspot1, null, 0, 19);
+  return true;
+}
+
 function showLargeImage(current, largeImageUri) {
 	if (!document.getElementById)
 	  return true;
 
   var div = document.getElementById('gallery');
   var img = document.getElementById('galleryImage');
-  	  img.src = "";
+  img.src = "";
+
 	if (div.style.display == "block") {
 	  div.style.display = "none";
 	  // img.src always has host in it; largeImageUri not always that is why using indexOf
@@ -3159,56 +3188,12 @@ function showLargeImage(current, largeImageUri) {
   	}
 	}
 
-//////////// SOME CODE FROM POPUP	
-      var coords = getElementCoords(current);
-      var left = coords.left;
-      var top  = coords.top;
-
-      var screenXY = getWindowSize();
-      var screenX = screenXY[0];
-      var screenY = screenXY[1];
-
-      // Find out how close to the corner of the window
-      var distanceToRightEdge  = screenX + scrollX - left;
-      var distanceToBottomEdge = screenY + scrollY - top;
-
-      // first position the div box in the top left corner in order to measure its dimensions
-      // (otherwise, if position coirrectly and only then measure dimensions - the width/height will get cut off at the scroll boundary - at least in firefox 1.0)
-      div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
-      self.moveTo(0, 0);
-      var divCoords = getElementCoords(div);
-      div.style.display    = 'none';   // must hide it again to avoid screen flicker
-      var offsetX;
-      var offsetY;
-      // move box to the left of the hostspot if the distance to window border isn't enough to accomodate the whole div box
-      var margin = 40;
-      if (distanceToRightEdge < divCoords.width + margin) {
-        left = screenX - divCoords.width + scrollX; // move horizontal position of the menu to the left by its width
-        if (left - margin > 0) left -= margin; // adjust for a scrollbar;
-      }
-      else { // apply user requested offset only if no adjustment
-        if (offsetX)
-          left = left + offsetX;
-      }
-
-      // adjust position of the div box vertically - using the same approach as above
-      if (distanceToBottomEdge < divCoords.height + margin) {
-        top = (scrollY + screenY) - divCoords.height;
-        if (top - margin > 0) top -= margin; // adjust for a scrollbar;
-      }
-      else { // apply user requested offset only if no adjustment
-        if (offsetY)
-          top = top + offsetY;
-      }
-  
-  
-  div.style.left = left; //getLeft(current) + 10 + "px";
-  div.style.top  = top;  //getTop(current) - 50 + "px";
-  div.style.display = "block";
-
+  hotspot1 = current;
+  addEvent(img, 'load',  largeImageOnLoad,  false);
   img.src = largeImageUri;
-	return false;
+	return true;
 }
+
 
 function getLeft(overlay){
 	var totaloffset = overlay.offsetLeft;
