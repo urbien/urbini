@@ -1,6 +1,6 @@
 <div>
 <!-- THe next iframe is the floating iframe for RTE for writing comments//-->
-<iframe style='border : 1px outset;position:absolute;background-color:#ffffff;display:none;' id='description' name='description' width='0' height='0'></iframe>
+<iframe style='border : 1px outset;position:absolute;background-color:#ffffff;display:none;' id='description' name='description' width='0' height='0' src="javascript: ;"></iframe>
 <center>
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -23,12 +23,12 @@
     <div id="allowSearchHighlighting2">
       <readOtherSiteInfo />
       <include name="${type}_details_main.jsp" alt="propertySheet.jsp" />
-<hideBlock id="hideBlock1">      
+<hideBlock id="hideBlock1">
       <div align="right"><measurement/></div>
       <p/>
 <include name="${type}_details_bottom_1.jsp"/>
       <newComment/>
-</hideBlock>      
+</hideBlock>
     </div>
     </td>
     </tr>
@@ -37,5 +37,5 @@
 </tr></table>
 
 </center>
-<iframe name="bottomFrame" id="bottomFrame" src="about:blank" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>  
+<iframe name="bottomFrame" id="bottomFrame" src="javascript: ;" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>
 </div>

@@ -32,6 +32,6 @@
     </table>
 </td></tr></table>
 <br/>
-<iframe name="bottomFrame" id="bottomFrame" src="about:blank" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>  
+<iframe name="bottomFrame" id="bottomFrame" src="javascript: ;" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>
 <!--div align="left"><span class="xs"><hudsonFog /></span></div--> <!-- commented out to avoid distraction during data entry -->
 </div>
