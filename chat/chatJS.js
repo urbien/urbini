@@ -378,7 +378,7 @@
 		  document.inviteUser.message.value="!-invtUser <font color='#FFCC00'><strong>" + parent.document.getElementById("realUserName").value + "</strong></font> invites you to the chat room <a target=_top href=" + window.location + ">" + thread.windowTitle+ "</a>";
 		  document.inviteUser.submit();
 		  var dt = new Date();
-		  thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("Your invitation to "+document.getElementById('sendPrivateMessagesToUserRealName').value+" was just sent.?alias1"));
+		  thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("Your invitation to "+document.getElementById('sendPrivateMessagesToUserRealName').value+" was sent.?alias1"));
 	  }
 	  
 	  /* 
@@ -403,7 +403,7 @@
                                           " here</a>"; 
 		  document.inviteUser.submit();
 		  var dt = new Date();
-		  thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("Your invitation to "+document.getElementById('sendPrivateMessagesToUserRealName').value+" was just sent.?alias1"));
+		  thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("Your invitation to "+document.getElementById('sendPrivateMessagesToUserRealName').value+" was sent.?alias1"));
 	  }
 	  
 	  function highlightMessagesIconClick() {
@@ -456,35 +456,35 @@
         parent.document.postForm.nameUser.value = askTo; // ask concrete support member for help
        else
          parent.document.postForm.nameUser.value = 'allChatsHelp'; // notes that all chat members that are responsible for support in all rooms must receive the message
-      var alertToSupportInvitation = "helpSubmitted(&#39;<font color=#ff0000><strong>" + document.getElementById("realUserName").value + "&amp#39;s ask for support submitted</strong></font>&#39;)";
+      var alertToSupportInvitation = "helpSubmitted(&#39;<font color=#ff0000><strong>" + document.getElementById("realUserName").value + "&amp#39;s request for help submitted</strong></font>&#39;)";
       var windowLocation = "" + window.location;
       if(windowLocation.indexOf('&isChatWithTheAgent=true') > 0)
         windowLocation = windowLocation.substring(0, windowLocation.indexOf('&isChatWithTheAgent=true'));
       parent.document.postForm.message.value =  "<font color=\"#ff0000\">";
       parent.document.postForm.message.value += "<strong>"; 
-      parent.document.postForm.message.value += "Need support. Click ";
+      parent.document.postForm.message.value += "requested help. ";
       parent.document.postForm.message.value += "<u><a style=\"cursor:pointer\" onclick=\"" + alertToSupportInvitation + "; setTimeout(&quot;window.location = &#39;" + windowLocation + "&#39;&quot;,1000);\">";  // href=\"" + windowLocation + "\"
-      parent.document.postForm.message.value += "here";
+      parent.document.postForm.message.value += "Click to respond";
       parent.document.postForm.message.value += "</a></u> ";
-      parent.document.postForm.message.value += "to join in chat.";
+      parent.document.postForm.message.value += ".";
       parent.document.postForm.message.value += "</strong>";
       parent.document.postForm.message.value += "</font>";
       parent.document.postForm.aliasUser.value = parent.document.getElementById('aliasUserUri').value;
       parent.document.postForm.submit();
       parent.document.postForm.nameUser.value = "all";
-      // write an alert to the ask for help sender that his alert was sent
+      // write an alert to help sender - tell him his alert was sent
       addHelpSendNotification(); // adds alert to the ask for help sender that his alert was sent
     }
     
     function addHelpSendNotification(){
       var dt = new Date();
       /*
-      if(thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("<font color=#ff0000><strong>Your ask for support was just sent</strong></font>.?alias1")))
+      if(thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("<font color=#ff0000><strong>Your request for help was sent. Please wait for the response in this chat room</strong></font>.?alias1")))
         return true;
       setTimeout("addHelpSendNotification()", 1000);
       */
       try {
-        thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("<font color=#ff0000><strong>Your ask for support was just sent</strong></font>.?alias1"));
+        thread.insertMessages(0, dt.getTime(), '#63B4EF', "<img src='icons/information.gif' width='19' height='17'>",	new Array("<font color=#ff0000><strong>Your request for help was sent. Please wait for the response in this chat room</strong></font>.?alias1"));
       } catch (ex){
           setTimeout("addHelpSendNotification()", 1000);
         }
