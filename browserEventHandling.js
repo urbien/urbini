@@ -3,7 +3,7 @@
       var elem;
       if (evt.target) {
         if (evt.currentTarget && (evt.currentTarget != evt.target)) {
-          if (evt.target.tagName.toLowerCase() == 'input' && evt.target.type.toLowerCase() == 'checkbox')
+          if (evt.target.tagName && evt.target.tagName.toLowerCase() == 'input' && evt.target.type.toLowerCase() == 'checkbox')
             elem = evt.target;
           else
             elem = evt.currentTarget;
