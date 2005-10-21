@@ -4,25 +4,26 @@
 <hideBlock id="hideBlock">
 <watchNote/>
 </hideBlock>
+
 <a target="pane2"> </a>
 <div id="pane2" />
 
 <div id="gallery" style="display:none;position:absolute">
   <table bgcolor="#1b62b6">
-    <tr valign="top"><td class="largeImageWithHide" valign="top"><img id="galleryImage" src="about:blank"></img><img src="icons/hide.gif" border="0" width="16" height="16" align="top" onclick="return hide('gallery')" style="cursor: pointer" title="click to close"></img></td></tr>
+    <tr valign="top"><td class="largeImage" valign="top"><img id="galleryImage" src="about:blank"></img></td></tr>
+    <!--tr valign="top"><td class="largeImageWithHide" valign="top"><img id="galleryImage" src="about:blank"></img><img src="icons/hide.gif" border="0" width="16" height="16" align="top" onclick="return hide('gallery')" style="cursor: pointer" title="click to close"></img></td></tr-->
   </table>
 </div>
 
-  <filter/>
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
   <td width="110%" colspan="2"><!--br/-->
-<form name="categoryTextSearch">
-  <searchHistory/>
-  <categoryTextSearch />
-  <resourcesSearch resourcesUri="/sql/text/search/resources" />
-  <filesSearch filesUri="text/search/files" />
-</form>
+		<form name="categoryTextSearch">
+		  <searchHistory/>
+		  <categoryTextSearch />
+		  <resourcesSearch resourcesUri="/sql/text/search/resources" />
+		  <filesSearch filesUri="text/search/files" />
+		</form>
     <taskTreeControl/>
     <siteResourceList />
     <div align="right"><measurement/></div>

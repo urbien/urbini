@@ -1,6 +1,6 @@
 <div>
 <!--include name="readOnlyResourceTitle.jsp" /-->
-<hideBlock id="hideBlock">      
+<!--hideBlock id="hideBlock">      
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
@@ -21,7 +21,7 @@
    </tr></table></td>
   </tr>
 </table>
-</hideBlock>
+</hideBlock-->
 <form name="categoryTextSearch"> 
   <searchHistory/>
   <categoryTextSearch />
