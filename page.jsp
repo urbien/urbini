@@ -11,7 +11,7 @@
     <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" /></a>
     <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
 </hideBlock>
-<hideBlock>
+<hideMenu>
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top">
   <td valign="top" width="100%">
@@ -48,7 +48,8 @@
   </tr>
   <tr><td colspan="2" align="middle"><alphabeticIndex/></td></tr>
 </table>
-</hideBlock>
+</hideMenu>
+<hideBlock>
     <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr>
       <td valign="top">
@@ -57,13 +58,17 @@
       </td>
     </tr>
     </table>
+</hideBlock>
+    <filter/>
     <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr>
       <td valign="top">
         <div id="corePageContent"> <file/> </div>
       </td>
+<hideBlock>
       <include name="${type}_right.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
       <include name="${type}_details_right.jsp"/> <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
+</hideBlock>
     </tr>
     </table>
 
