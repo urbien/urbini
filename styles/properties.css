@@ -69,6 +69,7 @@ input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 .input1 {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:16px;text-decoration:none;}
 /* used in filter input text fields */
 .input {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; }
+.textarea {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; }
 
 .errorTextStd {font-size:12px;font-weight:bold;font-family:Arial, Helvetica, Sans Serif;color:#A01E00}
 
@@ -116,10 +117,11 @@ span.bigLetterTitle  {font-family:sans-serif, arial; font-weight:bold; font-size
 
 /* To display big letter title when full text search criteria was there */
 span.bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#00309C;}
-
+/* To display window titles on a dashboard */
+span.dashboardBlockTitle {font-family:Verdana,sans-serif,arial; font-weight:bold; font-size:12px; color:#00309C;}
 /* to display large image in resource list */
 td.largeImage {padding-top:20px; padding-bottom:20px; padding-left:20px; padding-right:20px; border:solid #808080 1px; background-color: #ffffff; color: #000000}
-td.largeImageWithHide {padding-top:20px; padding-bottom:20px; padding-left:20px; padding-right:4px; border:solid #808080 1px; background-color: #ffffff; color: #000000}
+/*td.largeImageWithHide {padding-top:20px; padding-bottom:20px; padding-left:20px; padding-right:4px; border:solid #808080 1px; background-color: #ffffff; color: #000000}*/
 
 /*td.horizontalFilter { filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#C0C9D7', EndColorStr='#ffffff') }*/
 td.horizontalFilter {background-color:#E7EBF0}
