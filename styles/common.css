@@ -19,10 +19,11 @@ img.fade {
   font-family: Verdana, Arial, Helvetica, sans-serif;
 }
 
-.tabs .left, .rigth {
+.tabs .left, .right {
   width:12px;
 }
 
+/*
 .tabs TD.left {
   background-image:url(../images/skin/blue/tab-left.gif);
   background-repeat: no-repeat;
@@ -43,7 +44,7 @@ img.fade {
   background-position: middle;
   vertical-align: middle;
 }
-
+*/
 /* ----- Buttons ----- */
 .button_blue, .button_green, .button_grey, button.orange {
 	margin: 0px 0px 0px 0px;
