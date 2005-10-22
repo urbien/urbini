@@ -146,27 +146,25 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .guestUser {  font-family: Verdana, Arial, Helvetica, sans-serif; color: lightblue; font-size: 8pt; font-weight: bold;}
 .user      {color:darkblue; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight:bold; text-decoration:none font-size:8px;}
 
-  .tabs .oneTab {
-    height: 33px;
-  }
-
-  .tabs .left, .right {
-    width:12px;
-  }
-
-	.tabs TD.left {
-	  background-image:url(images/skin/blue/tab-left.gif);
-	  background-repeat: no-repeat;
-	}
-	.tabs TD.middle {
-	  background-image:url(images/skin/blue/tab-middle.gif);
-	  background-repeat: no-repeat;
-	  text-align: center;
-    white-space: nowrap;
-	}
-	.tabs TD.right {
-	  background-image:url(images/skin/blue/tab-right.gif);
-	  background-repeat: no-repeat;
-	}
+.tabs TD.left {
+  background-image:url(../images/skin/blue/tab-left.gif);
+  background-repeat: no-repeat;
+  background-position: middle;
+  vertical-align: middle;
+}
+.tabs TD.middle {
+  background-image:url(../images/skin/blue/tab-middle.gif);
+  background-repeat: no-repeat;
+  background-position: middle;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.tabs TD.right {
+  background-image:url(../images/skin/blue/tab-right.gif);
+  background-repeat: no-repeat;
+  background-position: middle;
+  vertical-align: middle;
+}
 .group {background:#f8f4ef;PADDING-RIGHT: 10px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; CURSOR: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: no-wrap;}
 	
