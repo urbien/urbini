@@ -47,7 +47,7 @@
     <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
    </tr></table></td>
   </tr>
-  <tr><td class="line" height="30" valign="middle"></td></tr>
+  <tr><td class="line" height="40" valign="middle"><!--resourceTypeLabel/--></td></tr>
   <tr><td colspan="2" align="middle"><alphabeticIndex/></td></tr>
 </table>
 </hideMenu>
