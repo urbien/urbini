@@ -1986,7 +1986,7 @@ function getFormFilters(form, allFields, exclude) {
 
   var p = "";
   var fields = form.elements;
-  
+
   for (var i=0; i<fields.length; i++) {
     var field = fields[i];
     var value = field.value;
@@ -2224,6 +2224,9 @@ function menuOnClick(e) {
   else
     title = id.substring('menuicon_'.length);
   var divId = 'menudiv_' + title;
+  var divRef = document.getElementById(divId); // this is a menu item without popup, exit
+  if (!divRef)
+    return true;
   var popup = Popup.open(divId, target, null, 0, 19);
   return stopEventPropagation(e);
 }
@@ -2258,6 +2261,8 @@ function replaceAllTooltips() {
 }
 
 function replaceTooltips(divRef) {
+  if (!divRef)
+    return;
   var elements;
   elements = divRef.getElementsByTagName('img');
   replaceTooltips0(elements);
