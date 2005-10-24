@@ -73,7 +73,8 @@
     <font color="#75BDFF">View readonly</font> <a href="javascript:window.location = (window.location+'').replace('Edit.html','.html');" style="align:right"><img src="images/readOnlyMode.gif" border="0" title="View readonly"/></a>
   </div>
   <script type="text/javascript" language="JavaScript">
-    setTimeout("makeBoardsAlligned(); makeBoardsAttached();",500);
+    //setTimeout("makeBoardsAlligned(); makeBoardsAttached();",500);
+    var allignBoardsInterval = setInterval("makeBoardsAlligned(); makeBoardsAttached();",2000);
     //makeBoardsAlligned(); 
   </script>
 </div>

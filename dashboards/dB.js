@@ -40,12 +40,15 @@ var availWindowWidth = document.body.offsetWidth;
 availWindowWidth -= 50;
 var dy      = 225;
 var margTop = findPosY(document.getElementById('dashboardsTable'));//120;
-if(margTop == 0)margTop = 250; // error when calculating findPosY - IE problem
+if(margTop == 0)margTop = 200; // error when calculating findPosY - IE problem
 //alert(findPosY(document.getElementById('imgT')));
 var posOld;
 
 
 function my_PickFunc() { // onPick event
+  alert(allignBoardsInterval);
+  clearInterval(parent.allignBoardsInterval);
+  alert(allignBoardsInterval);
   // Store position of the item about to be dragged
   // so we can interchange positions of items when the drag operation ends
   posOld = dd.obj.y;
