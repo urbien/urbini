@@ -46,9 +46,7 @@ var posOld;
 
 
 function my_PickFunc() { // onPick event
-  alert(allignBoardsInterval);
   clearInterval(parent.allignBoardsInterval);
-  alert(allignBoardsInterval);
   // Store position of the item about to be dragged
   // so we can interchange positions of items when the drag operation ends
   posOld = dd.obj.y;
