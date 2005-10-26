@@ -46,6 +46,7 @@ var posOld;
 
 
 function my_PickFunc() { // onPick event
+
   //clearInterval(parent.allignBoardsInterval);
   // Store position of the item about to be dragged
   // so we can interchange positions of items when the drag operation ends
@@ -61,27 +62,24 @@ function my_PickFunc() { // onPick event
 }
 
 function my_DragFunc() { // onDrag event
+
+  // the board that is currently dragged must have the highest z-index
+  // {
+  for(i=0;i<numberOfcolumns;i++)
+    for(j=0;j<aElts[i].length;j++){
+      document.getElementById('main' + aElts[i][j].name).style.zIndex = 0;
+      document.getElementById(aElts[i][j].name).style.zIndex = 0;
+    }
+  document.getElementById('main' + dd.obj.name).style.zIndex = 10;
+  document.getElementById(dd.obj.name).style.zIndex = 10;
+  // }
+  
   availWindowWidth = document.body.offsetWidth;
   
   // calculate panel position 
   pN = Math.round(dd.obj.x / ((availWindowWidth + dd.obj.w/2)/ numberOfcolumns));
   
   if(pN >= 0) {
-    
-    /*
-    //alert(pNold + "  " + HminOld + "  " + HmaxOld + "  " + positionOld);
-    document.getElementById('currentPanel').value = pN;
-    document.getElementById('boardTopOffset').value = dd.obj.y;
-    document.getElementById('numberOfBoardsInTheColumn').value = aElts[pN].length;
-    document.getElementById('boardsColumnTopHeight').value = "";
-    for(z=0;z<aElts[pN].length;z++)
-      document.getElementById('boardsColumnTopHeight').value += aElts[pN][z].y + "__" + document.getElementById('main' + aElts[pN][z].name).offsetHeight + ";  ";
-    for(z=0;z<aElts[pN].length;z++)
-      if(dd.obj.name!=aElts[pN][z].name && ((dd.obj.y + document.getElementById('main' + dd.obj.name).offsetHeight/2) > aElts[pN][z].y) && ((dd.obj.y+document.getElementById('main' + dd.obj.name).offsetHeight/2) < (aElts[pN][z].y + document.getElementById('main' + aElts[pN][z].name).offsetHeight))  )
-        document.getElementById('newBoardPosition').value = z;
-    */
-    //pNold, HminOld, HmaxOld, positionOld.
-    
     for(z=0;z<aElts[pN].length;z++)
       if(dd.obj.name!=aElts[pN][z].name && 
          ((dd.obj.y+document.getElementById('main' + dd.obj.name).offsetHeight/2) > aElts[pN][z].y) && 
@@ -89,10 +87,17 @@ function my_DragFunc() { // onDrag event
         ) {
         i = z;
       }
+    //if(aElts[pN].length == 0)
+    //  i = 0;
 
-    if(aElts[pN].length == 0)
+    if(i > aElts[pN].length && pNold != pN)
+      i = aElts[pN].length;
+    if(i >= aElts[pN].length && pNold == pN)
+      i = aElts[pN].length-1;
+    if(aElts[pN].length == 1 && pNold == pN)
       i = 0;
       
+
     if(pNold == pN)
       if((dd.obj.y+document.getElementById('main' + dd.obj.name).offsetHeight/2) > HminOld &&
          (dd.obj.y+document.getElementById('main' + dd.obj.name).offsetHeight/2) < HmaxOld)
@@ -136,9 +141,17 @@ function my_DropFunc() {  // onDrop event
       i = z;
     }
   
-  if(aElts[panelN].length == 0)
-    i = 0;
+  //if(aElts[panelN].length == 0)
+  //  i = 0;
   
+  if(i > aElts[panelN].length && pNold != panelN)
+    i = aElts[panelN].length;
+  if(i >= aElts[panelN].length && pNold == panelN){
+    i = aElts[panelN].length-1;
+  }
+  if(aElts[panelN].length == 1 && pNold == panelN)
+    i = 0;
+
   if(pNold == panelN)
     if((dd.obj.y+document.getElementById('main' + dd.obj.name).offsetHeight/2) > HminOld &&
        (dd.obj.y+document.getElementById('main' + dd.obj.name).offsetHeight/2) < HmaxOld)
