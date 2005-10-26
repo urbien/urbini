@@ -74,7 +74,8 @@
   </div>
   <script type="text/javascript" language="JavaScript">
     //setTimeout("makeBoardsAlligned(); makeBoardsAttached();",500);
-    var allignBoardsInterval = setInterval("makeBoardsAlligned(); makeBoardsAttached();",2000);
+    //var allignBoardsInterval = setInterval("makeBoardsAlligned(); makeBoardsAttached();",2000);
+	var allignBoardsInterval = setInterval("makeBoardsAllignedInterval()",2000);
     //makeBoardsAlligned(); 
   </script>
 </div>

@@ -97,8 +97,8 @@
             //maxHeight = findPosY(aElts[i][j]);
             maxHeight = aElts[i][j].y + document.getElementById('main' + aElts[i][j].name).offsetHeight;
         }
-      if(maxHeight == 0) maxHeight = 100;
-      document.getElementById('addRemovePanel').style.height = maxHeight - 50;// + 50;
+      if(maxHeight == 0) maxHeight = 50;
+      document.getElementById('addRemovePanel').style.height = maxHeight - 20;// + 50;
       //fadeBoards(); // d&d bug: if draggable layer contains link directly under mouse cursor - link is clicked on drop
     }
     

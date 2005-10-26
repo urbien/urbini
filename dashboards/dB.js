@@ -46,7 +46,7 @@ var posOld;
 
 
 function my_PickFunc() { // onPick event
-  clearInterval(parent.allignBoardsInterval);
+  //clearInterval(parent.allignBoardsInterval);
   // Store position of the item about to be dragged
   // so we can interchange positions of items when the drag operation ends
   posOld = dd.obj.y;
@@ -90,6 +90,9 @@ function my_DragFunc() { // onDrag event
         i = z;
       }
 
+    if(aElts[pN].length == 0)
+      i = 0;
+      
     if(pNold == pN)
       if((dd.obj.y+document.getElementById('main' + dd.obj.name).offsetHeight/2) > HminOld &&
          (dd.obj.y+document.getElementById('main' + dd.obj.name).offsetHeight/2) < HmaxOld)
@@ -123,6 +126,8 @@ function my_DragFunc() { // onDrag event
 function my_DropFunc() {  // onDrop event
 
   var panelN = Math.round(dd.obj.x / ((availWindowWidth + dd.obj.w/2)/ numberOfcolumns));
+  // panelN is the nuber of the column to which the boards is moved;
+  
   for(z=0;z<aElts[panelN].length;z++)
     if(dd.obj.name!=aElts[panelN][z].name && 
        ((dd.obj.y+document.getElementById('main' + dd.obj.name).offsetHeight/2) > aElts[panelN][z].y) && 
@@ -130,6 +135,10 @@ function my_DropFunc() {  // onDrop event
       ) {
       i = z;
     }
+  
+  if(aElts[panelN].length == 0)
+    i = 0;
+  
   if(pNold == panelN)
     if((dd.obj.y+document.getElementById('main' + dd.obj.name).offsetHeight/2) > HminOld &&
        (dd.obj.y+document.getElementById('main' + dd.obj.name).offsetHeight/2) < HmaxOld)
@@ -191,14 +200,11 @@ function my_DropFuncD(pN, numb) {
   setPanelsClearURIsLists();
   document.getElementById('location').value = window.location; 
   document.getElementById('isClosePanel').value = 'true';
-  
   document.getElementById('dashBoardPanel1URIs').value = document.getElementById('panel1URIs').value;
   document.getElementById('dashBoardPanel2URIs').value = document.getElementById('panel2URIs').value;
   document.getElementById('dashBoardPanel3URIs').value = document.getElementById('panel3URIs').value;
   document.getElementById('dashBoardLocation').value = document.getElementById('location').value;
   document.getElementById('dashBoardIsClosePanel').value = document.getElementById('isClosePanel').value;
- 
-  //dashBoardForm.submit();
   document.getElementById('dashBoard').submit();
   
   document.getElementById('isClosePanel').value = 'false';
@@ -230,6 +236,9 @@ function remove(a,element,ex) {
  } catch(er){}
 }
 
+// ------- START ---------- BOARDS ALINGMENT ON THE PAGE ----------------------------------------------------
+// make boards alligned on the page. This means that the top boards must be alligned on the top and the other 
+// boards bust be alligned according to their columns
 function makeBoardsAlligned() {
   availWindowWidth = document.body.offsetWidth - 50;
   
@@ -239,8 +248,6 @@ function makeBoardsAlligned() {
       document.getElementById(aElts[i][0].name).style.width = availWindowWidth/numberOfcolumns -10;
       
       for(j=1;j<aElts[i].length;j++) {
-        //aElts[i][j].moveTo(i*10 + i*availWindowWidth/numberOfcolumns + 10, aElts[i][j-1].y+dy);
-        //dd.obj.y+document.getElementById('main' + dd.obj.name).offsetHeight
         aElts[i][j].moveTo(i*10 + i*availWindowWidth/numberOfcolumns + 10, aElts[i][j-1].y + document.getElementById('main' + aElts[i][j-1].name).offsetHeight + 20);
         document.getElementById(aElts[i][j].name).style.width = availWindowWidth/numberOfcolumns - 10;
       }
@@ -250,6 +257,32 @@ function makeBoardsAlligned() {
   makeBoardsAttached();
 }
 
+// this function is called in the setInterval block in indexEdit.html. It checkes whether the boards are already well alligned.
+// if they are well alligned then the interval is cleared. The good allignment is checked using the height of the boards on the page.
+// this hack is in generally used because of the behavior FF loads the boards.
+function makeBoardsAllignedInterval() {
+  makeBoardsAlligned();
+
+  availWindowWidth = document.body.offsetWidth - 50;
+  alligned = true;
+  for(i=0;i<numberOfcolumns;i++) 
+    if(aElts[i].length > 0) {
+      aElts[i][0].moveTo(i*10 + i*availWindowWidth/numberOfcolumns + 10, margTop);
+      document.getElementById(aElts[i][0].name).style.width = availWindowWidth/numberOfcolumns -10;
+      // for all boards in the column
+      for(j=1;j<aElts[i].length;j++) {
+        // if the next boards in the column is not alligned properly that return; happens and this function is called in 1 second.
+        if(aElts[i][j].y != (aElts[i][j-1].y + document.getElementById('main' + aElts[i][j-1].name).offsetHeight + 20) ) {
+          alligned = false;
+          return;
+        }
+      }
+    }
+  // all boards are well alligned and the interval can be cleared.
+  clearInterval(parent.allignBoardsInterval);
+}             
+
+// Boards must be aligned with the top panel they belong to and that is used to drag the boards 
 function makeBoardsAttached() {
   availWindowWidth = document.body.offsetWidth - 50;
   
@@ -269,3 +302,4 @@ function makeBoardsAttached() {
       }
     }
 }
+// ------- FINISH ---------- BOARDS ALINGMENT ON THE PAGE ----------------------------------------------------
