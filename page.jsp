@@ -74,11 +74,11 @@
     </tr>
     </table>
 
-    <br></br>
 <hideBlock>
+    <br></br>
     <center><codeBehindThePage allow="admin"/> </center>
-</hideBlock>
     <br/><br/>
+</hideBlock>
     <include name="requiredFooter.jsp"/>
 <hideBlock>
     <include name="include/commonFooter"/>
