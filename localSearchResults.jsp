@@ -32,6 +32,7 @@
 <hideBlock>
     <br/>
     <uploadMsProject/>
+    <uploadToDelegatedFileSystem/>
     <createResources/><br/>
 <br/><br/>
 </hideBlock>
