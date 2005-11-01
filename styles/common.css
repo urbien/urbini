@@ -121,5 +121,15 @@ img.fade {
 .button_green A, .button_green A:hover {
 	color:#FFF;
 }
-.pieTitle {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;} 
+.pieTitle {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;}
 /* ----- End of Buttons ----- */
+
+/* -- powered by on blue, larger letters */
+.large-poweredBy   {padding-left:4px; padding-top:6px; font-family:Times; font-size:18pt; color:#FFFFFF; text-decoration: none;}
+.large-poweredBy-b {padding-left:0px; padding-top:6px; font-family:Times; font-size:18pt; color:#94C7F1; text-decoration: none;}
+
+/* -- powered by on white */
+.poweredBy     {font-family:Times; font-size:8pt; color:#4088CF; text-decoration: none;}
+.poweredBy-b   {font-family:Times; font-size:8pt; color:#68B6EF; text-decoration: none;}
+
+.poweredBy-td {background:URL(../images/poweredBy-bg.gif); background-repeat:no-repeat; background-position:bottom; border:solid #808080 1px; color='#000000'; }
