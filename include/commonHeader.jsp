@@ -15,8 +15,8 @@
               </tr>
             </table>
 
-          <div align="right"><a href="http://hudsonfog.com">
-            <font face="verdana, sans-serif, arial" color="darkBlue"><small>powered by  <b>HudsonFog</b></small></font></a>
+          <div align="right">
+            <a href="#" class="poweredBy">on Universal<span class="poweredBy-b">Platform</span></a>
           </div>
 </hideBlock>
         </td>
