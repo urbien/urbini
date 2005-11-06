@@ -2091,7 +2091,6 @@ function chooser1(element) {
     var newRow = tr.cloneNode(true);
     newRow.id = id;
     table.appendChild(newRow);
-    selectItems = window.opener.document.forms[form].elements[shortPropName + "_select"];
     selectItems[len].value = id;
     selectItems[len].checked = true;
     var nmbOfSelected = 0;
@@ -2103,9 +2102,9 @@ function chooser1(element) {
       }
     }
     if (nmbOfSelected > 1)
-      window.opener.document.forms[form].elements[propName].value                        = value;
-    else
       window.opener.document.forms[form].elements[propName].value                        = "<...>";
+    else
+      window.opener.document.forms[form].elements[propName].value                        = value;
 //    window.opener.document.forms[form].elements[shortPropName + "_select"][len].value  = id;
     window.opener.document.forms[form].elements[shortPropName + "_verified"].value     = "y";
     if (window.opener.document.forms[form].elements[propName].style)
