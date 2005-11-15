@@ -3225,3 +3225,35 @@ function hide(target) {
 	target.style.display = "none";
 	return false;
 }
+
+function addAndShow(td, e) {
+  try {
+	  e = (e) ? e : ((window.event) ? window.event : null);
+	  if (!e)
+	    return stopEventPropagation(e);
+	
+	  var a = td.getElementsByTagName("a");
+	  var iframeId = "resourceList";
+	  var iframe = document.getElementById(iframeId);
+//	  iframe.style.display    = "none";  
+	
+	  var anchor = a[0].href;
+	  var iframeWindow = frames[iframeId];
+	  
+	  var div = document.getElementById(iframeId + "_div");
+	  var tag = div.getElementsByTagName('a');
+	  var retUri = tag[0].href;
+	  iframeWindow.location.replace(anchor + "&$returnUri=" + encodeURIComponent(retUri)); // load data from server into iframe
+	  iframe.style.width  = div.style.width;
+	  iframe.style.height = div.style.height;
+    iframe.scrolling = "yes";
+	  div.style.display    = "none";
+//	  div.innerHTML = "";
+	  iframe.style.visibility = Popup.VISIBLE;
+	  iframe.style.display   = 'inline';
+	  iframe.style.zIndex = 1000;
+  } catch (er) {
+    alert(er);
+  }
+  return stopEventPropagation(e);
+}
