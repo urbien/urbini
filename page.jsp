@@ -24,6 +24,8 @@
 		    <!--include name="${package}_menu.jsp"/-->
 		    <td NOWRAP="y"><menu toolbar="toolbar1"            /></td>
 		    <td NOWRAP="y"><menu toolbar="trades"              /></td>
+		    <td NOWRAP="y"><menu toolbar="scheduling"          /></td>
+		    <td NOWRAP="y"><menu toolbar="products"            /></td>
 		    <td NOWRAP="y"><menu toolbar="crm"                 /></td>
 		    <td NOWRAP="y"><menu toolbar="projectManagement"   /></td>
 		    <td NOWRAP="y"><menu toolbar="realEstate"          /></td>
