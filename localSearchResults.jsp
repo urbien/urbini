@@ -25,7 +25,9 @@
 		  <filesSearch filesUri="text/search/files" />
 		</form>
     <taskTreeControl/>
-    <siteResourceList />
+    <div id="siteResourceList"/>
+      <siteResourceList />
+    </div>
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
     <div id="pane3">
