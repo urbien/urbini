@@ -169,6 +169,7 @@ Popup.load = function (divId, frameId) {
     setTimeout("Popup.load('" + divId + "')", 100);
     return;
   }
+  frameLoaded[frameId] = false;
 
   // now it is loaded
   var popupFrame = frames[frameId];
@@ -1480,7 +1481,6 @@ window.status = divId;
   }
 
   // request listbox context from the server and load it into a 'popupFrame' iframe
-//  var listboxFrame = frames["popupFrame"];
   frameLoaded["popupFrame"] = false;
   var listboxFrame = frames["popupFrame"];
   listboxFrame.location.replace(url); // load data from server into iframe
@@ -2728,8 +2728,8 @@ function copyInnerHtml(frameId, divId) {
     setTimeout( "copyInnerHtml('" + frameId  + "', '" + divId + "')", 100 );
     return;
   }
-
   frameLoaded[frameId] = false;
+
   var div = document.getElementById(divId);
   var frameBody = frames[frameId].document.body;
   var frameDoc  = frames[frameId].document;
@@ -3231,29 +3231,33 @@ function addAndShow(td, e) {
 	  e = (e) ? e : ((window.event) ? window.event : null);
 	  if (!e)
 	    return stopEventPropagation(e);
-	
+
 	  var a = td.getElementsByTagName("a");
 	  var iframeId = "resourceList";
 	  var iframe = document.getElementById(iframeId);
-//	  iframe.style.display    = "none";  
-	
+//	  iframe.style.display    = "none";
+
 	  var anchor = a[0].href;
 	  var iframeWindow = frames[iframeId];
+	  var newUri;
 	  if (anchor.indexOf("$returnUri=") == -1) {
  	    var div = document.getElementById(iframeId + "_div");
 	    var tag = div.getElementsByTagName('a');
 	    var retUri = tag[0].href;
-	    iframeWindow.location.replace(anchor + "&$returnUri=" + encodeURIComponent(retUri)); // load data from server into iframe
+	    newUri = anchor + "&$returnUri=" + encodeURIComponent(retUri);
 	  }
 	  else
-  	   iframeWindow.location.replace(anchor); // load data from server into iframe
+  	  newUri = anchor;
+    iframeWindow.location.replace(newUri); // load data from server into iframe
+//    window.open(newUri);
+//    return;
 	  setTimeout(addAndShowWait, 100);
     return stopEventPropagation(e);
   } catch (er) {
     alert(er);
   }
 }
-	
+
 function addAndShowWait()	{
   var frameId = "resourceList";
   var frameBodyId = "siteResourceList";
@@ -3261,11 +3265,20 @@ function addAndShowWait()	{
     setTimeout(addAndShowWait, 100);
     return;
   }
-  var iframe = document.getElementById(frameId);
+  frameLoaded[frameId] = false;
 
+  var iframe = document.getElementById(frameId);
   var iframeWindow = frames[frameId];
   var body = iframeWindow.document.getElementById(frameBodyId);
+  if (!body) {
+    alert("Warning: server did not return resource list data - check connection to server");
+    return;
+  }
 
-  var divCopyTo = document.getElementById(frameId +"_div");
-  divCopyTo.innerHTML = body.innerHTML;  
+  var divCopyTo = document.getElementById(frameId + "_div");
+  if (!divCopyTo) {
+    alert("Warning: target div not found: " + frameId + "_div");
+    return;
+  }
+  divCopyTo.innerHTML = body.innerHTML;
 }

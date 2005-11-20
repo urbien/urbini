@@ -118,6 +118,7 @@
       setTimeout(initMenus, 0);
       setTimeout("initListBoxes(null)", 0);
       setTimeout(resourceListEdit, 0);
+      uiFocus('tablePropertyList');
       if (typeof searchHighlighting != 'undefined')
         searchHighlighting();
     }
@@ -249,6 +250,16 @@
         }
       }
     }
+	  function uiFocus(formName) {
+	    var f = document.forms[formName];
+	    if (f) {
+	      var u = f.getElementById('uiFocus');
+	      if (u && u.type && u.type != 'hidden')
+	         u.focus();
+	    }
+	    return true;
+	  }
 
     var formInitialValues;
     addEvent(window, 'load', function() {setTimeout(addHandlers,  200);}, false);
+

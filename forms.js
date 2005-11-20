@@ -1,6 +1,6 @@
 var textAreas = new Array();
 
-// cross-browser - getCurrentTarget 
+// cross-browser - getCurrentTarget
 function getTargetElement(evt) {
   var elem;
   if (evt.target) {
@@ -8,12 +8,12 @@ function getTargetElement(evt) {
       elem = evt.currentTarget;
     else
       elem = evt.target;
-  } 
+  }
   else {
     elem = evt.srcElement;
   }
   return elem;
-}  
+}
 
 function FormField(fieldRef, isModified) {
   this.fieldRef = fieldRef;
@@ -31,15 +31,15 @@ function clearUnModifiedFields(formFields) {
 
 function onFormFieldClick(fieldProp, fieldRef) {
   fieldProp.modifiedByUser = true;
-  if (fieldProp.isModified == true) 
-    return; 
+  if (fieldProp.isModified == true)
+    return;
   fieldRef.select();
 }
 
 function onFormFieldChange(fieldProp, fieldRef, oldValue) {
   if (fieldProp.modifiedByUser == false)
     return;
-  fieldProp.isModified = true; 
+  fieldProp.isModified = true;
   newValue = fieldRef.value;
   if (newValue != null && newValue != '')
     newValue = trim(newValue);
@@ -64,9 +64,9 @@ function trim(s) {
     s = s.substring(1,s.length);
   }
   while (s.substring(s.length-1,s.length) == ' ') {
-    s = s.substring(0,s.length-1); 
+    s = s.substring(0,s.length-1);
   }
-  return s; 
+  return s;
 }
 
 /* used to show full text in a long text property, like Demand.description */
@@ -80,9 +80,9 @@ function setTextHeight(div, divider) {
     var divRef = document.getElementById(div);
     var spanRef = document.getElementById(div + '_span');
     var moreRef = document.getElementById(div + '_more');
-	if(divRef.offsetHeight < 40 && document.all){                        // If the height of the div content is less then 40px, 
-	  document.getElementById(div).style.height=divRef.offsetHeight;     // then the height of the div is set to the height 
-	  displayFullText(div, div+"_more");                                 // of the div content and "more>>" link is disabled. 
+	if(divRef.offsetHeight < 40 && document.all){                        // If the height of the div content is less then 40px,
+	  document.getElementById(div).style.height=divRef.offsetHeight;     // then the height of the div is set to the height
+	  displayFullText(div, div+"_more");                                 // of the div content and "more>>" link is disabled.
 	  return;
 	}
     var h = Math.floor(screen.availHeight/divider);
@@ -91,7 +91,7 @@ function setTextHeight(div, divider) {
     if (spanRef != null && moreRef != null)
       if (spanRef.offsetHeight > divRef.offsetHeight) {
         moreRef.style.display = "block";
-      } else { // div must have "minimized view". Then the user clicks on "more>>" link and the style of the div is changed 
+      } else { // div must have "minimized view". Then the user clicks on "more>>" link and the style of the div is changed
                // from (overflow:hidden) to (display:inline; overflow:visible). This is done on line #73 (function displayFullText(div, moreDiv))
         //moreRef.style.display = "none";
         divRef.style.height = 40;//spanRef.offsetHeight;
@@ -141,7 +141,7 @@ function getField (form, fieldName) {
       if (form.elements[e].name == fieldName)
         return form.elements[e];
   return null;
-}        
+}
 function removeField (form, fieldName) {
   var field = getField (form, fieldName);
   if (field && !field.length)
@@ -154,3 +154,42 @@ function toggleField (form, fieldName, value) {
   else
     addField (form, 'hidden', fieldName, value);
 }
+  function processCreditCardTracks(inputField) {
+    var tracks = inputField.value;
+    var form = inputField.form;
+
+    if (tracks.charAt(0) != '%'
+        || tracks.charAt(1) != 'B'
+        || tracks.charAt(tracks.length - 2) != '?'
+        || tracks.charAt(tracks.length - 1) != '>'
+        ) {
+      return;
+    }
+    var qIdx = tracks.indexOf('?', 2);
+    if (qIdx == -1) {
+      return;
+    }
+    var semIdx = tracks.indexOf(';', qIdx + 1);
+    if (semIdx == -1) {
+      return;
+    }
+
+    var track1 = tracks.substring(1, qIdx);
+    var track2 = tracks.substring(semIdx + 1, tracks.length - 2);
+
+    var splitArray = track1.split('^');
+
+    var accountNumber = splitArray[0].substring(1);
+    var name = splitArray[1];
+    var yearMonth = splitArray[2];
+    var year = yearMonth.substring(0, 2);
+    var month = yearMonth.substring(2, 4);
+
+    form.name.value = name;
+    form.cardNumber.value = accountNumber;
+    form.expirationDate.value = month + '/' + year;
+    form.track1.value = track1;
+    form.track2.value = track2;
+
+   //    form.submit();
+  }

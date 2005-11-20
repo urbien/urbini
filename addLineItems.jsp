@@ -86,8 +86,6 @@
 </div>
 <br/>
 
-
-<!--div align="left"><span class="xs"><hudsonFog /></span></div-->   <!-- link to Portal page for current category -->
-<iframe name="bottomFrame" id="bottomFrame" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0" src="javascript: ;"> </iframe>
+<script src="browserEventHandling.js" language="JavaScript" type="text/javascript"></script>
 
 </div>
