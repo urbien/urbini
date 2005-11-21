@@ -1634,7 +1634,7 @@ function popupOnSubmit(e) {
   if (form.uri)
     url += "&uri=" + encodeURIComponent(form.uri.value);
 
-  form.onsubmit = null;
+  //form.onsubmit = null;
 
   if (document.all || document.getElementById) {
 //    form.submit.disabled = true; // HACK: for some reason can not disable this button - the form would not get submitted
@@ -3289,10 +3289,15 @@ function processTransaction(e) {
     return;
 
   var target = getTargetElement(e);
-  var form = target;
+  var form = target.form;
   var params = getFormFilters(form, true);
   var url = "FormRedirect?JLANG=en" + params; // HACK: since form.action returns the value of '&action='
   url += "&-applet=y";
 
-  window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=0, location=no, toolbar=no, scrollbars=no, status=no, resizable=yes');
+  var w     = 400;
+  var h     = 400;
+  var top   = 100;
+  var left  = 100;
+  window.open(url, 'Transaction','width=' + w + ',height=' + h + ',top=' + top + ',left=' + left + ', menubar=no, status=0, location=no, toolbar=no, scrollbars=no, status=no, resizable=yes');
+  return stopEventPropagation(e);
 }

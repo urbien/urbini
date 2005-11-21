@@ -252,8 +252,10 @@
     }
 	  function uiFocus(formName) {
       var u = document.getElementById('uiFocus');
-      if (u && u.type && u.type != 'hidden')
+      if (u && u.type && u.type != 'hidden') {
          u.focus();
+         //u.select();
+      }
 	    return true;
 	  }
 
