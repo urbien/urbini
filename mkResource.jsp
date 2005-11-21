@@ -33,7 +33,7 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
   <td valign="top">
-     <form id="filter" name="tablePropertyList" method="post" >
+     <form id="filter" name="tablePropertyList" method="post" action="FormRedirect">
        <tablePropertyList action="mkResource"/>
        <input type="hidden" name="returnHtml" value="list.html"/>
        <input type="hidden" name="html" value="mkResource.html"/>

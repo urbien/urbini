@@ -17,7 +17,7 @@
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr valign="top">
 	    <td colspan="2">
-				<form name="tablePropertyList" method="post" id="filter" >
+				<form name="tablePropertyList" method="post" id="filter" action="FormRedirect">
 				  <tablePropertyList />
 				  <div align="right"><measurement/></div>
 				  <input type="hidden" name="-$action" value="showPropertiesForEdit"></input>
