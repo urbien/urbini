@@ -158,36 +158,37 @@ function toggleField (form, fieldName, value) {
     var tracks = inputField.value;
     var form = inputField.form;
 
-    if (tracks.charAt(0) != '%'
-        || tracks.charAt(1) != 'B'
-        || tracks.charAt(tracks.length - 2) != '?'
-        || tracks.charAt(tracks.length - 1) != '>'
-        ) {
+    var startIdx = tracks.indexOf('%B');
+    if (startIdx == -1) {
       return;
     }
-    var qIdx = tracks.indexOf('?', 2);
-    if (qIdx == -1) {
+    var endIdx = tracks.indexOf('?>');
+    if (endIdx == -1) {
       return;
     }
-    var semIdx = tracks.indexOf(';', qIdx + 1);
-    if (semIdx == -1) {
-      return;
-    }
+    tracks = tracks.substring(startIdx + 1, endIdx);
 
-    var track1 = tracks.substring(1, qIdx);
-    var track2 = tracks.substring(semIdx + 1, tracks.length - 2);
+    var middleIdx = tracks.indexOf('?;');
+    if (middleIdx == -1) {
+      var track1 = tracks;
+    } else {
+      var track1 = tracks.substring(0, middleIdx);
+      var track2 = tracks.substring(middleIdx + 2, tracks.length);
+    }
 
     var splitArray = track1.split('^');
 
     var accountNumber = splitArray[0].substring(1);
     var name = splitArray[1];
+    var names = name.split('/');
+    name = names[1] + ' ' + names[0];
     var yearMonth = splitArray[2];
     var year = yearMonth.substring(0, 2);
     var month = yearMonth.substring(2, 4);
 
     form.elements['nameOnCard'].value = name;
     form.elements['number'].value = accountNumber;
-    form.elements['expirationDate'].value = month + '/' + year;
+    form.elements['expirationDate'].value = month + '/' + '20' + year;
     form.track1.value = track1;
     form.track2.value = track2;
 
