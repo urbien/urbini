@@ -3282,3 +3282,17 @@ function addAndShowWait()	{
   }
   divCopyTo.innerHTML = body.innerHTML;
 }
+
+function processTransaction(e) {
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e)
+    return;
+
+  var target = getTargetElement(e);
+  var form = target;
+  var params = getFormFilters(form, true);
+  var url = "FormRedirect?JLANG=en" + params; // HACK: since form.action returns the value of '&action='
+  url += "&-applet=y";
+
+  window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=0, location=no, toolbar=no, scrollbars=no, status=no, resizable=yes');
+}
