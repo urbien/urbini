@@ -1,5 +1,4 @@
 var textAreas = new Array();
-
 // cross-browser - getCurrentTarget
 function getTargetElement(evt) {
   var elem;
@@ -188,8 +187,17 @@ function toggleField (form, fieldName, value) {
 
     form.elements['nameOnCard'].value = name;
     form.elements['number'].value = accountNumber;
-    form.elements['expirationDate___Month'].value = month;
-    form.elements['expirationDate___Year'].value = '20' + year;
+    if (month.indexOf('0') == 0)
+      month = month.substring(1);
+    form.elements['expirationDate___Month'].selectedIndex = month;
+    var years = form.elements['expirationDate___Year'];
+    var len = years.length;
+    for (var i=0; i<len; i++) {
+      if (years.options[i].value.indexOf(year) == 2) {
+        years.selectedIndex = i;
+        break
+      }
+    }
     form.track1.value = track1;
     form.track2.value = track2;
 
