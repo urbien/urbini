@@ -39,4 +39,5 @@
 
 </center>
 <iframe name="bottomFrame" id="bottomFrame" src="javascript: ;" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>
+<PointOfSale/>
 </div>
