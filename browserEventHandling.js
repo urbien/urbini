@@ -251,12 +251,9 @@
       }
     }
 	  function uiFocus(formName) {
-	    var f = document.forms[formName];
-	    if (f) {
-	      var u = f.getElementById('uiFocus');
-	      if (u && u.type && u.type != 'hidden')
-	         u.focus();
-	    }
+      var u = document.getElementById('uiFocus');
+      if (u && u.type && u.type != 'hidden')
+         u.focus();
 	    return true;
 	  }
 
