@@ -16,11 +16,11 @@
 		</form>
     <taskTreeControl/>
     <table width="100%" cellspacing="10" cellpadding="0" border="0">
-    <tr> 
+    <tr valign="top"> 
 	    <td width="70%"><mkResourceForLineItems/></td>
 	    <td width="30%"><div id="resourceList_div"><siteResourceList/></div></td>
     <tr> 
-<iframe id="resourceList"    name="resourceList"    style="display:none;" scrolling="no" frameborder="0" src="about:blank"> </iframe>
+    <iframe id="resourceList" name="resourceList" style="display:none;" scrolling="no" frameborder="0" src="about:blank"> </iframe>
     </table>
     <div align="right"><measurement/></div>
   </td>
