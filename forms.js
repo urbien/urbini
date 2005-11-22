@@ -187,9 +187,7 @@ function toggleField (form, fieldName, value) {
 
     form.elements['nameOnCard'].value = name;
     form.elements['number'].value = accountNumber;
-    if (month.indexOf('0') == 0)
-      month = month.substring(1);
-    form.elements['expirationDate___Month'].selectedIndex = month + 1;
+    form.elements['expirationDate___Month'].selectedIndex = parseInt(month, 10);
     var years = form.elements['expirationDate___Year'];
     var len = years.length;
     for (var i=0; i<len; i++) {
