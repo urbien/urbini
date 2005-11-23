@@ -3,7 +3,7 @@
     if (f) {
       var u = f.elements['j_username'];
       if (u && u.type && u.type != 'hidden')
-         f.j_username.focus();
+         u.focus();
     } 
     return true;
   }
