@@ -7,9 +7,9 @@
 
       <tr valign="top">
       <td width="90%">
-        <form action="list.html" name="siteResourceList">
+        <!--form action="list.html" name="siteResourceList"-->
           <div align="center"><monthCalendar /><weekCalendar /><day /></div>
-        </form>
+        <!--/form-->
       </td>
       </tr>
     </table>
