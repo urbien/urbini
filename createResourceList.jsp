@@ -7,16 +7,17 @@
   <td valign="top" align="middle" width="90%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <colgroup>
-      <col width="90%" /> 
+      <col width="90%" />
       <col width="10%" />
     </colgroup>
+    <menuBar>
     <tr valign="top">
       <td valign="top" width="110%"><span class="xs" colspan="2">
         <menu toolbar="toolbar2"        activate="onMouseOver"/>
         <menu toolbar="personalization" activate="onMouseOver"/>
         <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="icons/pda.gif"/></span></td>
     </tr>
-
+    </menuBar>
     <tr valign="top"><td width="100%">
     <form action="editList.html" name="siteResourceList" method="POST">
       <div align="left"><backLink /></div>
@@ -29,7 +30,9 @@
     </td>
     <td width="10%" id="rightPanelPropertySheet" valign="top" align="left">
       <br/>
+      <menuBar>
       <menu toolbar="filterLocalCreateList" type="onpage" title="false"/>
+      </menuBar>
     </td>
 </tr>
 
@@ -46,6 +49,7 @@
 <tr  valign="top">
   <td valign="top" align="middle" width="100%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
+    <menuBar>
     <tr valign="top"><td valign="top">
       <img src="icons/icon.gif" width="16" height="16" align="middle"/>
       <img src="icons/icon_divider.gif" align="middle" border="0"></img>
@@ -59,10 +63,11 @@
       <menu toolbar="support"         allow="admin"/>
       <menu toolbar="personalization"/>
 
-      
+
       <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
       <pdaToPc image="icons/pda.gif"/><changePassword/><userLogOff html="user-login.html"/></td>
     </tr>
+    </menuBar>
     <tr valign="top"><td>
     <form action="editList.html" name="siteResourceList" method="POST">
       <div align="left"><backLink /></div>

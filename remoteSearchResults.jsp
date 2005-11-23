@@ -5,10 +5,10 @@
   <td valign="top" align="middle" width="95%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <colgroup>
-      <col width="90%" /> 
+      <col width="90%" />
       <col width="10%" />
     </colgroup>
-    <tr valign="top">
+    <!--tr valign="top">
       <td valign="top" width="90%">
         <span class="xs">
         <menu toolbar="toolbar1"        activate="onMouseOver"/>
@@ -20,10 +20,10 @@
 
         <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/></span><pdaToPc image="icons/pda.gif"/></td>
       <td valign="top" align="right" width="10%"><!--changePassword/><userLogOff html="user-login.html"/--></td>
-    </tr>
+    </tr-->
     <tr valign="top"><td>
     <!--form action="list.html" name="siteResourceList"-->
-<form name="categoryTextSearch"> 
+<form name="categoryTextSearch">
   <searchHistory/>
   <categoryTextSearch />
   <resourcesSearch resourcesUri="/sql/text/search/resources" />
@@ -32,7 +32,7 @@
       <div align="left"><backLink /></div>
       <parallelResourceList />
       <div align="right"><measurement/></div>
-      <!--addNewResource html="mkResource.html"/> 
+      <!--addNewResource html="mkResource.html"/>
       <createResources/>
       <showSetProperties /-->
     <!--/form-->
@@ -75,11 +75,11 @@
       <div align="left"><backLink /></div>
       <parallelResourceList />
       <div align="right"><measurement/></div>
-      <addNewResource html="mkResource.html"/> 
+      <addNewResource html="mkResource.html"/>
       <showSetProperties />
     </form>
   </td></tr></table>
- </td></tr></table>   
+ </td></tr></table>
 
 <br />
 </div>

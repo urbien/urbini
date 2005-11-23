@@ -4,6 +4,7 @@
 <tr valign="top">
   <td valign="top" align="middle" width="100%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
+      <!--menuBar>
       <tr valign="top">
         <td valign="top" width="110%" colspan="2">
           <menu toolbar="file"/>
@@ -20,7 +21,7 @@
           <showHideWindows/>
         </td>
       </tr>
-
+      <menuBar-->
       <tr valign="top">
       <td width="100%">
         <form action="list.html" name="siteResourceList">

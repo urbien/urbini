@@ -108,16 +108,16 @@
 
     //***** Add smartlistbox handlers
     function addHandlers() {
-      setTimeout(interceptLinkClicks, 0);
+      interceptLinkClicks();
       if (window.parent != window) {
-        setTimeout(onLoadPopup, 0);
+        onLoadPopup();
         return;
       }
       if (typeof replaceAllTooltips != 'undefined')
-        setTimeout(replaceAllTooltips, 0);
-      setTimeout(initMenus, 0);
-      setTimeout("initListBoxes(null)", 0);
-      setTimeout(resourceListEdit, 0);
+        replaceAllTooltips();
+      //initMenus();
+      initListBoxes(null);
+      resourceListEdit();
       uiFocus('tablePropertyList');
       if (typeof searchHighlighting != 'undefined')
         searchHighlighting();
@@ -260,5 +260,5 @@
 	  }
 
     var formInitialValues;
-    addEvent(window, 'load', function() {setTimeout(addHandlers,  200);}, false);
+    addEvent(window, 'load', function() {setTimeout(addHandlers,  10);}, false);
 
