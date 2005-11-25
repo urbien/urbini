@@ -6,56 +6,56 @@
 /* Month Selector - INPUT */
 /* Year Selector - INPUT */
 .calCtrl {
-	font: 12px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
+	font: 8pt sans-serif, Verdana, Arrial Narrow;
 }
 /* Week Day Title - TD */
 .calWTitle {
-	font: 12px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
+	font: 8pt sans-serif, Verdana, Arrial Narrow;
 	background: #808080;
 	text-align: center;
 	color: #FFFFFF;
-	height: 20px;
-	width: 20px;
+	height: 15px;
+	width: 15px;
 }
 /* Selected Date - TD */
 .calDayCurrent {
 	background: #FFC0C0;
-	width: 20px;
+	width: 15px;
 }
 /* Sat. and Sun. - TD */
 .calDayWeekend {
 	background: silver;
-	width: 20px;
+	width: 15px;
 }
 /* Sat. and Sun. - TD */
 .calDayHoliday {
 	background: gray;
-	width: 20px;
+	width: 15px;
 }
 /* Not Sat. and Sun. - TD */
 .calDayWorking {
 	background: #FFFFFF;
-	width: 20px;
+	width: 15px;
 }
 /* Days of current month - A */
 .calThisMonth {
-	font: 12px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
+	font: 8pt sans-serif, Verdana, Arrial Narrow;
 	color: #000000;
 	text-decoration: none;
 }
 /* Days of other month - A */
 .calOtherMonth {
-	font: 12px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
+	font: 8pt sans-serif, Verdana, Arrial Narrow;
 	color: #909090;
 	text-decoration: none;
 }
 /* Days not allowed by limits - SPAN */
 .calForbDate {
-	font: 12px Haettenschweiler, Arrial Narrow, Verdana, sans-serif;
+	font: 8pt sans-serif, Verdana, Arrial Narrow;
 	color: red;
 }
 /* Time navigation table = TABLE */
 .calTimetable{
 	font-family: Tahoma, Verdana, sans-serif;	
-	font-size: 12px;
+	font-size: 10px;
 }

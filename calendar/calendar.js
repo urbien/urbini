@@ -1777,7 +1777,7 @@ function TC0d() {
  * Retrieves calendar using formName + name as a key.
  * If does not exist - creates one.
  */
-function getCalendar(formName, name, initialValue) {
+function getCalendar(formName, name, initialValue, dateFormat) {
   var cal = A_CALENDARS[formName + '_' + name];
   if (cal) {
     cal.showcal();
@@ -1787,7 +1787,7 @@ function getCalendar(formName, name, initialValue) {
       // a name of HTML form containing the calendar
       'formname' : formName,
       // data format the calendar operates with
-      'dataformat' : 'M-d-Y',
+      'dataformat' : dateFormat,
       // whether to hide any other opened calendar if opening current one
       'replace' : true,
       'selected' : initialValue,
