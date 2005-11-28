@@ -1442,6 +1442,25 @@ window.status = divId;
   }
   else {
     if (formAction != "showPropertiesForEdit" && formAction != "mkresource") {
+		  /* Add full text search criteria to filter */
+		  if (form.id && form.id == 'filter') {
+			  var fullTextSearchForm = document.forms['searchForm'];
+			  if (fullTextSearchForm) {
+			    var criteria = fullTextSearchForm.elements['-q'];
+			    if (criteria  &&  criteria.value.indexOf('-- ') == -1) {
+			      var textSearchForType = fullTextSearchForm.elements['-cat'];
+			      if (textSearchForType  &&  textSearchForType.value == 'on') {
+					    var textSearchInFilter = form.elements['-q'];
+					    if (textSearchInFilter) {
+					      textSearchInFilter.value = criteria.value;
+					      var textSearchInFilterForType = form.elements['-cat'];
+					      if (textSearchInFilterForType)
+			   		      textSearchInFilterForType.value = 'on';
+					    }
+				    }
+			    }
+			  }
+		  }
       var allFields = true;
       if (formAction != "searchLocal" && formAction != "searchParallel") {
         if (enterFlag)
@@ -1575,7 +1594,26 @@ function popupOnSubmit(e) {
 
   target = getTargetElement(e);
   var form = target;
-
+  
+  /* Add full text search criteria to filter */
+  var fullTextSearchForm = document.forms['searchForm'];
+  if (fullTextSearchForm) {
+    if (form.id && form.id == 'filter') {
+	    var criteria = fullTextSearchForm.elements['-q'];
+	    if (criteria  &&  criteria.value.indexOf('-- ') == -1) {
+	      var textSearchForType = fullTextSearchForm.elements['-cat'];
+	      if (textSearchForType  &&  textSearchForType.value == 'on') {
+			    var textSearchInFilter = form.elements['-q'];
+			    if (textSearchInFilter) {
+			      textSearchInFilter.value = criteria.value;
+			      var textSearchInFilterForType = form.elements['-cat'];
+			      if (textSearchInFilterForType)
+	   		      textSearchInFilterForType.value = 'on';
+			    }
+		    }
+	    }
+    }
+  }
   var action = form.attributes['-$action'];
   // form url based on parameters that were set
   var url = "FormRedirect?JLANG=en"; // HACK: since form.action returns the value of '&action='
