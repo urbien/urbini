@@ -21,11 +21,11 @@
 				  <tablePropertyList />
 				  <div align="right"><measurement/></div>
 				  <input type="hidden" name="-$action" value="showPropertiesForEdit"></input>
-				  <!--br></br>
+				  <br></br>
 				  <center>
 				    <input type="submit" name="submit" value="Submit changes"></input>
 				    &#160;&#160;<input type="submit" name="cancel" value="  Cancel  "></input>
-				  </center-->
+				  </center>
 				</form>
 	    </td>
     </tr>
