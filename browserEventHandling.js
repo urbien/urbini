@@ -123,8 +123,12 @@
         searchHighlighting();
     }
 
-    function resourceListEdit() {
-      var elements = document.getElementsByTagName('img');
+    function resourceListEdit(div) {
+      var elements;
+      if (div) 
+        elements = div.getElementsByTagName('img');
+      else 
+        elements = document.getElementsByTagName('img');
       llen = elements.length;
       for (var i=0;i<llen; i++) {
         var elem = elements[i];
@@ -133,6 +137,7 @@
           elem.style.cursor = 'pointer';
         }
       }
+      
     }
 
     /**

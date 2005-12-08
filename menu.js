@@ -3319,6 +3319,7 @@ function addAndShowWait()	{
     return;
   }
   divCopyTo.innerHTML = body.innerHTML;
+  resourceListEdit(divCopyTo);
 }
 
 function processTransaction(e) {
