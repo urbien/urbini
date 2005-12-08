@@ -173,11 +173,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .available   {background-color:#f8f4ef}
 .notEnoughSpace {background-color:#ACE2CE}
 
-.chooserItem {
-   cursor: hand;
-   border-top : 1px solid #c7c9cc;  
-   border-right : 1px solid #3E4144;  
-   border-bottom : 1px solid #3E4144;  
-   border-left : 1px solid #c7c9cc;  
-}
-/**/
+.allButton      {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold; height:40pt; cursor: pointer;}
+.categoryButton {border:solid #808080 1px; background-color:#f8f4ef; color: darkblue; font-size:12pt;font-weight:bold; height:40pt; cursor: pointer;}
+.itemButton     {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:40pt;text-decoration:none; cursor: pointer}
+
