@@ -3340,3 +3340,16 @@ function processTransaction(e) {
   window.open(url, 'Transaction','width=' + w + ',height=' + h + ',top=' + top + ',left=' + left + ', menubar=no, status=0, location=no, toolbar=no, scrollbars=no, status=no, resizable=yes');
   return stopEventPropagation(e);
 }
+function showDiv(e, td, hideDivId) {
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e)
+    return;
+
+  var div = document.getElementById(hideDivId);
+  div.style.visibility = Popup.HIDDEN;
+  div.style.display = "none";
+  var divId = 'div_' + td.id;
+  div = document.getElementById(divId);
+  div.style.visibility = Popup.VISIBLE;
+  div.style.display = 'inline';
+}
