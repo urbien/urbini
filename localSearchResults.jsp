@@ -1,6 +1,6 @@
 <div>
 <div nonPda="T">
-<font color="red"><b><errorMessage /></b></font>
+<!--font color="red"><b><errorMessage /></b></font-->
 <hideBlock id="hideBlock">
 <watchNote/>
 </hideBlock>
@@ -26,6 +26,7 @@
 		</form>
     <taskTreeControl/>
     <div id="siteResourceList">
+      <font color="red"><b><errorMessage /></b></font>
       <siteResourceList />
     </div>
     <div align="right"><measurement/></div>
