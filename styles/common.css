@@ -27,13 +27,13 @@ img.fade {
 .tabs TD.left {
   background-image:url(../images/skin/blue/tab-left.gif);
   background-repeat: no-repeat;
-  background-position: middle;
+  background-position: center;
   vertical-align: middle;
 }
 .tabs TD.middle {
   background-image:url(../images/skin/blue/tab-middle.gif);
   background-repeat: no-repeat;
-  background-position: middle;
+  background-position: center;
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
@@ -41,7 +41,7 @@ img.fade {
 .tabs TD.right {
   background-image:url(../images/skin/blue/tab-right.gif);
   background-repeat: no-repeat;
-  background-position: middle;
+  background-position: center;
   vertical-align: middle;
 }
 */
@@ -132,7 +132,7 @@ img.fade {
 .poweredBy     {font-family:Times; font-size:8pt; color:#4088CF; text-decoration: none;}
 .poweredBy-b   {font-family:Times; font-size:8pt; color:#68B6EF; text-decoration: none;}
 
-.poweredBy-td {background:URL(../images/poweredBy-bg.gif); background-repeat:no-repeat; background-position:bottom; border:solid #808080 1px; color='#000000'; }
+.poweredBy-td {background:URL(../images/poweredBy-bg.gif); background-repeat:no-repeat; background-position:bottom; border:solid #808080 1px; color:#000000; }
 
 /**
 * textCol, iconCol, textCell, greyBorder are used to display h3 elements as icon, title and text

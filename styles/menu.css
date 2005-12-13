@@ -5,7 +5,7 @@ TD.toolbar {
   color: Black;
   font-weight: bold;
   font-variant: normal;
-  background-image: url('images/toolbar_bg.gif');  
+  background-image: url('images/toolbar_bg.gif');
 }
 .popMenu {
 	DISPLAY: none; POSITION: absolute; z-index:50; -moz-user-input: enabled; -moz-user-focus: normal
@@ -17,16 +17,17 @@ TD.toolbar {
 	POSITION: relative; BACKGROUND-COLOR: #3366cc
 }
 .menuItem {
-	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; CURSOR: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: no-wrap;
+	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
 }
 .menuItemChk {
-	PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; CURSOR: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: no-wrap;
+	PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
 }
-.menuItemGreyedOut { // wanted to use CSS2's COLOR: GrayText, but IE6 does not support it
-	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; CURSOR: hand; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: no-wrap;
+/* wanted to use CSS2's COLOR: GrayText, but IE6 does not support it */
+.menuItemGreyedOut {
+	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
 }
 .menuItemSubtitle {
-	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: no-wrap;
+	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
 }
 .formMenuInput {
 	FONT-WEIGHT: normal; FONT-SIZE: 11px; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none
@@ -38,7 +39,7 @@ TD.toolbar {
 	FONT-WEIGHT: normal; FONT-SIZE: 11px; COLOR: red; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif
 }
 .menuExpand {
-	CURSOR: hand
+	cursor: pointer; cursor: hand;
 }
 .menuExpandSubtitle {
 	CURSOR: default
