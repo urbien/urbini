@@ -3278,6 +3278,25 @@ function addAndShow(td, e) {
 	  var anchor = a[0].href;
 	  var iframeWindow = frames[iframeId];
 	  var newUri;
+    var aa = document.getElementById("currentItem");
+    if (aa) {
+      var currentItem = aa.href;
+      if (currentItem.indexOf("about") == -1) {
+        var idx = anchor.indexOf("-propToSet=");
+        var idx1 = anchor.indexOf("&", idx);
+        if (idx != -1) {
+          var shortProp;
+          if (idx1 == -1) 
+            shortProp = "." + anchor.substring(idx + 11);
+          else
+            shortProp = "." + anchor.substring(idx + 11, idx1);
+          var encCurrentItem = encodeURIComponent(currentItem);
+          anchor += "&" + shortProp + "_select=" + encCurrentItem + "&" + shortProp + "_verified=y";
+          anchor += "&-currentItem=" + encCurrentItem;
+        }
+      }
+    }
+    
 	  if (anchor.indexOf("$returnUri=") == -1) {
  	    var div = document.getElementById(iframeId + "_div");
 	    var tag = div.getElementsByTagName('a');
@@ -3304,7 +3323,7 @@ function addAndShowWait()	{
     return;
   }
   frameLoaded[frameId] = false;
-
+  var l = document.location;
   var iframe = document.getElementById(frameId);
   var iframeWindow = frames[frameId];
   var body = iframeWindow.document.getElementById(frameBodyId);
