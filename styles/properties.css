@@ -144,7 +144,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 .welcome {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;}
 .guestUser {  font-family: Verdana, Arial, Helvetica, sans-serif; color: lightblue; font-size: 8pt; font-weight: bold;}
-.user      {color:darkblue; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight:bold; text-decoration:none; font-size:8px;}
+.user      {color:darkblue; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight:bold; text-decoration:none; font-size:8pt;}
 
 .tabs TD.left {
   background-image:url(../images/skin/blue/tab-left.gif);
