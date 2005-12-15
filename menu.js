@@ -1614,10 +1614,18 @@ function popupOnSubmit(e) {
 	    }
     }
   }
-  var action = form.attributes['-$action'];
+//  var action = form.attributes['action'];
+  var action = form.action;
   // form url based on parameters that were set
-  var url = "FormRedirect?JLANG=en"; // HACK: since form.action returns the value of '&action='
-
+  var url;
+  if (action) {
+    url = action;
+    if (action.indexOf("?") == -1)
+      url += "?";
+  }
+  else 
+    url = "FormRedirect?"; // HACK: since form.action returns the value of '&action='
+  
   var formAction = form.elements['-$action'].value;
   var allFields = true;
   if (formAction != "searchLocal" && formAction != "searchParallel")
@@ -1641,7 +1649,7 @@ function popupOnSubmit(e) {
   else
     url += "&submit=y";
 */
-  url += "&submit=y"; // HACK: since target.type return the value of &type instead of an input field's type property
+  url += "submit=y"; // HACK: since target.type return the value of &type instead of an input field's type property
 /*
   // figure out the name and the value of the Submit button
   for (i=0; i<form.elements.length; i++) {
@@ -1707,7 +1715,8 @@ function popupOnSubmit(e) {
 //  if (e.preventDefault) e.preventDefault();
 //  return false;
   form.method = 'POST';
-  form.action = "FormRedirect";
+  if (!action)
+    form.action = "FormRedirect";
   return true;
 }
 
@@ -3300,8 +3309,12 @@ function addAndShow(td, e) {
 	  if (anchor.indexOf("$returnUri=") == -1) {
  	    var div = document.getElementById(iframeId + "_div");
 	    var tag = div.getElementsByTagName('a');
-	    var retUri = tag[0].href;
-	    newUri = anchor + "&$returnUri=" + encodeURIComponent(retUri);
+      if (tag.length) {
+  	    var retUri = tag[0].href;
+  	    newUri = anchor + "&$returnUri=" + encodeURIComponent(retUri);
+      }
+      else
+        newUri = anchor;
 	  }
 	  else
   	  newUri = anchor;
