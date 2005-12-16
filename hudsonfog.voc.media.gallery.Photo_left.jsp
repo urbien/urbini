@@ -7,7 +7,7 @@
   <td width="10"></td>
 </tr>
 <tr>
-  <td vlign="top" class="propertySheet"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Tag&amp;application_verified=y&amp;application_select=http://www.hudsonfog.com/voc/media/gallery/Photo&amp;-adTitle=Categories&amp;-noLabel=y&amp;-viewCols=tag,tagUse&amp;-suppressClassIcon=y"/></td>
+  <td vlign="top" class="propertySheet"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Tag&amp;application_verified=y&amp;application_select=http://www.hudsonfog.com/voc/media/gallery/Photo&amp;-adTitle=Categories&amp;-noLabel=y&amp;-viewCols=tag,tagUse&amp;-suppressClassIcon=y&amp;-inRow=1&amp;-showMore=y"/></td>
 </tr>
 <tr>
   <td width="10"></td>
