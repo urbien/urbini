@@ -38,7 +38,6 @@
 		    <td NOWRAP="y"><print image="icons/printerIcon.gif"/></td>
 		    <td NOWRAP="y"><saveInExcel allow="owner" image="images/excel.gif"/></td>
 		    <td NOWRAP="y"><pdaToPc image="icons/pda.gif"      /></td>
-		    <td NOWRAP="y"><listGrid                           /></td>
 		    <td NOWRAP="y"><showHideWindows                    /></td>
 	    </tr>
 	    </table>
