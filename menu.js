@@ -2429,10 +2429,10 @@ function onClickDisplayInner (e) {
   if (!e)
     return;
 
-  var url = getTargetAnchor(e);
-  if (!url || !url.id)
+  var anchor = getTargetAnchor(e);
+  if (!anchor || !anchor.id)
     return;
-  var propName = url.id.substring(7);
+  var propName = anchor.id.substring(7);
   var r = displayInner(e, innerUrls[propName]);
   return r;
 }
@@ -2746,7 +2746,20 @@ function displayInner(e, urlStr) {
   //
   if (!bottomFrame)
     return null;
-  var finalUrl = urlStr;
+
+  var finalUrl;
+  if (urlStr)
+    finalUrl = urlStr;
+  else {
+    e = (e) ? e : ((window.event) ? window.event : null);
+    if (!e)
+      return;
+
+    var anchor = getTargetAnchor(e);
+    if (!anchor)
+      return;
+    urlStr = anchor.href;
+  }
   var idx = urlStr.indexOf('.html');
   if (idx != -1) {
     var idx1 = urlStr.lastIndexOf('/', idx);
