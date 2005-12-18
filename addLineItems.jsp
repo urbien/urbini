@@ -30,6 +30,7 @@
       </td>
       <td></td>
     </tr>
+    <iframe name="bottomFrame" id="bottomFrame" src="javascript: ;" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe> 
     <iframe id="resourceList" name="resourceList" style="display:none;" scrolling="no" frameborder="0" src="about:blank"> </iframe>
     </table>
     <div align="right"><measurement/></div>
@@ -39,7 +40,7 @@
 <br />
 </div>
 
-<div pda="T">
+<!--div pda="T">
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr valign="top">
   <td valign="top" align="middle" width="100%">
@@ -50,7 +51,6 @@
         <img src="icons/icon.gif" width="16" height="16" align="middle"/>
         <img src="icons/icon_divider.gif" align="middle" border="0"></img>
 
-        <!-- Auto-generated menus -->
         <menu toolbar="toolbar1"/>
         <menu toolbar="transport"/>
         <menu toolbar="search"/>
@@ -85,21 +85,9 @@
     </table>
 
 </td></tr></table>
-<br />
+</div-->
 
-<table border="0" cellspacing="0" cellpadding="0">
-  <tr><td><pieChart/></td></tr>
-</table>
-<script language="JavaScript">
-  var horizontalFilter_FIELDS = new Array();
-</script>
-<form name="horizontalFilter" id="filter" method="POST">
-  <br/>
-    <horizontalFilter />
-</form>
-</div>
-<br/>
+<!--script src="browserEventHandling.js" language="JavaScript" type="text/javascript"></script-->
 
-<script src="browserEventHandling.js" language="JavaScript" type="text/javascript"></script>
 
 </div>
