@@ -15,6 +15,9 @@
 		  <filesSearch filesUri="text/search/files" />
 		</form>
     <taskTreeControl/>
+
+<a target="pane2"></a><div id="pane2"/>
+ 
     <table width="100%" cellspacing="10" cellpadding="0" border="0">
     <tr valign="top">
 	    <td width="70%"><mkResourceForLineItems/></td>
