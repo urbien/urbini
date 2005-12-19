@@ -693,6 +693,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             try { inputField.focus(); } catch(e) {};
             autoComplete1(e, inputField);
             if (characterCode == 8) {
+              // problem with IE - move line below to another place
               inputField.value = inputField.value.substring(0, inputField.value.length - 1);
             }
           }
@@ -1406,7 +1407,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
     }
   }
   //currentDiv = document.getElementById(divId);
-window.status = divId;
+
   var div = loadedPopups[divId];
   var hotspot = document.getElementById(imgId);
 
@@ -1468,7 +1469,6 @@ window.status = divId;
       }
       else if (currentFormName == "horizontalFilter")
         allFields = true;
-
       var params = getFormFilters(form, allFields);
       if (params)
         url = url + params;
@@ -1507,8 +1507,8 @@ window.status = divId;
   setTimeout("Popup.load('" + divId + "')", 100);
 
 }
-function getFormFiltersForInterface(form, propName) {
 
+function getFormFiltersForInterface(form, propName) {
   var field = form.elements[propName];
   if (field == null) {
     field = form.elements[propName + "_select"];
@@ -1547,7 +1547,7 @@ function getFormFiltersForInterface(form, propName) {
       continue;
     if (type.toUpperCase() == "SUBMIT")
       continue;
-    if (name )
+
     var trNode = getTrNode(field);
     elem = trNode.getElementsByTagName("div");
     if (!elem)
@@ -1594,7 +1594,7 @@ function popupOnSubmit(e) {
 
   target = getTargetElement(e);
   var form = target;
-  
+
   /* Add full text search criteria to filter */
   var fullTextSearchForm = document.forms['searchForm'];
   if (fullTextSearchForm) {
@@ -1623,9 +1623,9 @@ function popupOnSubmit(e) {
     if (action.indexOf("?") == -1)
       url += "?";
   }
-  else 
+  else
     url = "FormRedirect?"; // HACK: since form.action returns the value of '&action='
-  
+
   var formAction = form.elements['-$action'].value;
   var allFields = true;
   if (formAction != "searchLocal" && formAction != "searchParallel")
@@ -1777,7 +1777,7 @@ function autoComplete1(e, target) {
 
   if (characterCode == 13) { // open popup (or close it on second Enter)
     listboxOnClick1(keyPressedImgId, keyPressedElement.value);
-    return false;            // tell browser not to do submit on 'enter'
+    return stopEventPropagation(e); // tell browser not to do submit on 'enter'
   }
 
   switch (characterCode) {
@@ -1808,7 +1808,6 @@ function autoComplete1(e, target) {
   if (currentPopup)
     currentPopup.close();
 
-
   if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
   if (selectItems) {
     var len = selectItems.length;
@@ -1830,8 +1829,12 @@ function autoComplete1(e, target) {
     filterLabel.style.display = '';
   if (currentPopup)
     clearOtherPopups(currentPopup.div);
-  if (characterCode == 8)
-    return false;
+
+  if (characterCode == 8) {
+    // problem with IE - may be line below can be uncommented here
+    //keyPressedElement.value = keyPressedElement.value.substring(0, keyPressedElement.value.length - 1);
+    return stopEventPropagation(e);
+  }
   else
     return true;
 }
@@ -1879,6 +1882,9 @@ function autoCompleteOnMouseout(e) {
   }
 }
 
+/**
+ * This onKeyDown handler is needed since some browsers do not capture certain special keys on keyPress.
+ */
 function autoCompleteOnKeyDown(e) {
   if( typeof( e.keyCode ) == 'number') {
     if (e.keyCode == 8 || e.keyCode == 127) { // backspace, ctrl-enter
@@ -1907,22 +1913,6 @@ function autoCompleteTimeout(invocationTime) {
   if (keyPressedElement.value.length == 0) // avoid showing popup for empty fields
     return;
   listboxOnClick1(keyPressedImgId, keyPressedElement.value);
-}
-
-/**
- * This onKeyDown handler is needed since some browsers do not capture certain special keys on keyPress.
- */
-function autoCompleteOnKeyDown(e) {
-  if( typeof( e.keyCode ) == 'number') {
-    if (e.keyCode == 8 || e.keyCode == 127) { // backspace, ctrl-enter
-      var flag = autoComplete(e);
-      return flag;
-    }
-    else if (e.keyCode == 9)                  // tab
-      return autoComplete(e);
-    else
-      return true;
-  }
 }
 
 
@@ -2030,7 +2020,6 @@ function getTrNode(elem) {
  * Otherwise - it is a Data Entry mode, i.e. - take only fields that were modified by the user
  */
 function getFormFilters(form, allFields, exclude) {
-
   var p = "";
   var fields = form.elements;
 
@@ -2779,6 +2768,9 @@ function displayInner(e, urlStr) {
 /**
  *  copies doc loaded to iframe into a div
  */
+var ss_INTERVAL;
+var ss_STEPS = 25;
+
 function copyInnerHtml(frameId, divId) {
   if (!frameId)
     frameId = 'bottomFrame';
@@ -2824,14 +2816,61 @@ function copyInnerHtml(frameId, divId) {
   }
 
   var frameBodyText = frameBody.innerHTML;
+  var re = eval('/' + divId + '/g');
+  frameBodyText = frameBodyText.replace(re, divId + '-removed'); // prevent pane2 from appearing 2 times in the document
+
   setInnerHtml(div, frameBodyText, frames[frameId]);
 
   // scroll to second pane into which we have loaded doc
+  /*
   var s = document.location.href;
   s = s.indexOf('pane2') == -1 ? s + '#pane2' : s;
   document.location.replace(s);
+  */
+  //document.location.hash = '#pane2';
 
   initListBoxes(div);
+
+  // slow scroll to the inner html
+
+  // Find the destination's position
+  var divCoords = getElementCoords(div);
+  var destx = divCoords.left;
+  var desty = divCoords.top;
+
+  // Stop any current scrolling
+  clearInterval(ss_INTERVAL);
+  var cypos = getCurrentScrollYPos();
+  var ss_stepsize = parseInt((desty-cypos)/ss_STEPS);
+  ss_INTERVAL = setInterval('ss_scrollWindow('+ss_stepsize+','+desty+',"'+anchor+'")', 10);
+}
+
+function scrollWindow(scramount, dest, anchor) {
+  wascypos = getCurrentScrollYPos();
+  isAbove = (wascypos < dest);
+  window.scrollTo(0, wascypos + scramount);
+  iscypos = getCurrentScrollYPos();;
+  isAboveNow = (iscypos < dest);
+  if ((isAbove != isAboveNow) || (wascypos == iscypos)) {
+    // if we've just scrolled past the destination, or
+    // we haven't moved from the last scroll (i.e., we're at the
+    // bottom of the page) then scroll exactly to the link
+    window.scrollTo(0, dest);
+    // cancel the repeating timer
+    clearInterval(ss_INTERVAL);
+    // and jump to the link directly so the URL's right
+    location.hash = anchor;
+  }
+}
+
+function getCurrentScrollYPos() {
+ if (document.body && document.body.scrollTop)
+   return document.body.scrollTop;
+ if (document.documentElement && document.documentElement.scrollTop)
+   return document.documentElement.scrollTop;
+ if (window.pageYOffset)
+   return window.pageYOffset;
+ return 0;
 }
 
 function stopEventPropagation(e) {
@@ -3308,7 +3347,7 @@ function addAndShow(td, e) {
         var idx1 = anchor.indexOf("&", idx);
         if (idx != -1) {
           var shortProp;
-          if (idx1 == -1) 
+          if (idx1 == -1)
             shortProp = "." + anchor.substring(idx + 11);
           else
             shortProp = "." + anchor.substring(idx + 11, idx1);
@@ -3318,7 +3357,7 @@ function addAndShow(td, e) {
         }
       }
     }
-    
+
 	  if (anchor.indexOf("$returnUri=") == -1) {
  	    var div = document.getElementById(iframeId + "_div");
 	    var tag = div.getElementsByTagName('a');
@@ -3385,6 +3424,7 @@ function processTransaction(e) {
   window.open(url, 'Transaction','width=' + w + ',height=' + h + ',top=' + top + ',left=' + left + ', menubar=no, status=0, location=no, toolbar=no, scrollbars=no, status=no, resizable=yes');
   return stopEventPropagation(e);
 }
+
 function showDiv(e, td, hideDivId) {
   e = (e) ? e : ((window.event) ? window.event : null);
   if (!e)
