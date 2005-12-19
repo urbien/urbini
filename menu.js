@@ -2842,7 +2842,7 @@ function copyInnerHtml(frameId, divId) {
   clearInterval(ss_INTERVAL);
   var cypos = getCurrentScrollYPos();
   var ss_stepsize = parseInt((desty-cypos)/ss_STEPS);
-  ss_INTERVAL = setInterval('ss_scrollWindow('+ss_stepsize+','+desty+',"'+anchor+'")', 10);
+  //ss_INTERVAL = setInterval('ss_scrollWindow('+ss_stepsize+','+desty+',"'+divId+'")', 10);
 }
 
 function scrollWindow(scramount, dest, anchor) {
