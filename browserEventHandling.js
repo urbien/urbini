@@ -115,7 +115,6 @@
       }
       if (typeof replaceAllTooltips != 'undefined')
         replaceAllTooltips();
-      //initMenus();
       initListBoxes(null);
       resourceListEdit();
       uiFocus('tablePropertyList');
@@ -125,9 +124,9 @@
 
     function resourceListEdit(div) {
       var elements;
-      if (div) 
+      if (div)
         elements = div.getElementsByTagName('img');
-      else 
+      else
         elements = document.getElementsByTagName('img');
       llen = elements.length;
       for (var i=0;i<llen; i++) {
@@ -137,7 +136,7 @@
           elem.style.cursor = 'pointer';
         }
       }
-      
+
     }
 
     /**
