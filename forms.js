@@ -198,7 +198,7 @@ function toggleField (form, fieldName, value) {
     }
     form.elements['.track1'].value = track1;
     form.elements['.track2'].value = track2;
-    form.elements['cvvNumber'].value = "";
+    form.elements['cardholderVerificationCode'].value = "";
 
    //    form.submit();
   }
