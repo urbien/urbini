@@ -17,7 +17,7 @@
     <taskTreeControl/>
 
 <a target="pane2"></a><div id="pane2"/>
- 
+
     <table width="100%" cellspacing="10" cellpadding="0" border="0">
     <tr valign="top">
 	    <td width="70%"><mkResourceForLineItems/><!--a target="pane2"></a><div id="pane2"/--></td>
@@ -27,13 +27,13 @@
       <td width="70%">
         <table width="100%" cellspacing="5" cellpadding="0" border="0">
         <tr>
-          <td align="center" class="categoryButton" onClick="document.location.href='plain/Recall_Orders.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Booking&amp;status_select=Checked+In&amp;status_verified=y&amp;settled_select=false&amp;settled_verified=y&amp;$order=http://www.hudsonfog.com/voc/hospitality/spa/Booking/checkInTime&amp;-asc=-1&amp;-grid=1&amp;-inRow=2'">Recall orders</td>
+          <td align="center" class="categoryButton" onClick="document.location.href='plain/Recall_Orders.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Ticket&amp;status_select=Checked+In&amp;status_verified=y&amp;settled_select=false&amp;settled_verified=y&amp;$order=http://www.hudsonfog.com/voc/hospitality/spa/Ticket/checkInTime&amp;-asc=-1&amp;-grid=1&amp;-inRow=2'">Recall orders</td>
         </tr>
         </table>
       </td>
       <td></td>
     </tr>
-    <iframe name="bottomFrame" id="bottomFrame" src="javascript: ;" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe> 
+    <iframe name="bottomFrame" id="bottomFrame" src="javascript: ;" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>
     <iframe id="resourceList" name="resourceList" style="display:none;" scrolling="no" frameborder="0" src="about:blank"> </iframe>
     </table>
     <div align="right"><measurement/></div>
