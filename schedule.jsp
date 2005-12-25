@@ -20,7 +20,7 @@
 	         <input type="submit" name="cancel" value="  Cancel  "></input>
 	       </center>
 	     </form>
-  	    <div id="resourceList_div"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;editList=y&amp;ticket=-$this&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Treatment&amp;-addItems=y"/></div>
+  	    <div id="resourceList_div"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;editList=y&amp;ticket=-$this&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Treatment&amp;-addItems=y&amp;cancelled=false"/></div>
     <iframe name="bottomFrame" id="bottomFrame" src="javascript: ;" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>
     <iframe id="resourceList" name="resourceList" style="display:none;" scrolling="no" frameborder="0" src="about:blank"> </iframe>
       </td>
