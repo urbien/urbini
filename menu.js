@@ -2008,8 +2008,11 @@ function getTrNode(elem) {
   if (elem_.tagName.toUpperCase() == 'TR')
     return elem;
   e = elem_.parentNode;
-  if (e)
+  if (e) {
+    if (e == elem)
+      e = elem.parentNode; // if parent of the array element is self - get parent of array itself
     return getTrNode(e);
+  }  
   else
     return null;
 }
