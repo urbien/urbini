@@ -2012,7 +2012,7 @@ function getTrNode(elem) {
     if (e == elem)
       e = elem.parentNode; // if parent of the array element is self - get parent of array itself
     return getTrNode(e);
-  }  
+  }
   else
     return null;
 }
@@ -2079,14 +2079,29 @@ function chooser(element) {
   if (!id)
     id = value;
 
+  // need to find the first form with this name in parent window
+  var originalForm;
+  var l = window.opener.document.forms.length;
+  for (var i=0; i<l; i++) {
+    var forms = window.opener.document.forms;
+    if (forms[i].name == form) {
+      originalForm = forms[i];
+      break;
+    }
+  }
+  if (!originalForm) {
+    alert("form not found: " + form);
+    return;
+  }
+
   if (editList) {
     var uri = element.form.elements['$rUri'].value;
-    window.opener.document.forms[form].elements[uri + ".$." + propName].value                    = value;
-    window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_select"].value   = id;
-    window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_verified"].value = "y";
+    originalForm.elements[uri + ".$." + propName].value                    = value;
+    originalForm.elements[uri + ".$." + shortPropName + "_select"].value   = id;
+    originalForm.elements[uri + ".$." + shortPropName + "_verified"].value = "y";
   }
   else if (currentFormName == "viewColsList"  ||  currentFormName == "filterColsList") {
-    window.opener.document.forms[form].elements[shortPropName].value   = id;
+    originalForm.elements[shortPropName].value   = id;
   }
   else {
     if (isHrefChange) {
@@ -2096,9 +2111,9 @@ function chooser(element) {
       idx = id.lastIndexOf("=");
       aa.href = id.substring(idx + 1);
     }
-    window.opener.document.forms[form].elements[propName].value                    = value;
-    window.opener.document.forms[form].elements[shortPropName + "_select"].value   = id;
-    window.opener.document.forms[form].elements[shortPropName + "_verified"].value = "y";
+    originalForm.elements[propName].value                    = value;
+    originalForm.elements[shortPropName + "_select"].value   = id;
+    originalForm.elements[shortPropName + "_verified"].value = "y";
   }
 }
 
@@ -2116,14 +2131,29 @@ function chooser1(element) {
   if (!id)
     id = value;
 
+  // need to find the first form with this name in parent window
+  var originalForm;
+  var l = window.opener.document.forms.length;
+  for (var i=0; i<l; i++) {
+    var forms = window.opener.document.forms;
+    if (forms[i].name == form) {
+      originalForm = forms[i];
+      break;
+    }
+  }
+  if (!originalForm) {
+    alert("form not found: " + form);
+    return;
+  }
+
   if (editList) {
     var uri = element.form.elements['$rUri'].value;
-    window.opener.document.forms[form].elements[uri + ".$." + propName].value                    = value;
-    window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_select"].value   = id;
-    window.opener.document.forms[form].elements[uri + ".$." + shortPropName + "_verified"].value = "y";
+    originalForm.elements[uri + ".$." + propName].value                    = value;
+    originalForm.elements[uri + ".$." + shortPropName + "_select"].value   = id;
+    originalForm.elements[uri + ".$." + shortPropName + "_verified"].value = "y";
   }
   else {
-    var selectItems = window.opener.document.forms[form].elements[shortPropName + "_select"];
+    var selectItems = originalForm.elements[shortPropName + "_select"];
     var len = selectItems.length;
     var tr = getTrNode(selectItems[len - 1]);
     var table = tr.parentNode;
@@ -2141,13 +2171,13 @@ function chooser1(element) {
       }
     }
     if (nmbOfSelected > 1)
-      window.opener.document.forms[form].elements[propName].value                        = "<...>";
+      originalForm.elements[propName].value                        = "<...>";
     else
-      window.opener.document.forms[form].elements[propName].value                        = value;
-//    window.opener.document.forms[form].elements[shortPropName + "_select"][len].value  = id;
-    window.opener.document.forms[form].elements[shortPropName + "_verified"].value     = "y";
-    if (window.opener.document.forms[form].elements[propName].style)
-      window.opener.document.forms[form].elements[propName].style.backgroundColor = '#ffffff';
+      originalForm.elements[propName].value                        = value;
+//    originalForm.elements[shortPropName + "_select"][len].value  = id;
+    originalForm.elements[shortPropName + "_verified"].value     = "y";
+    if (originalForm.elements[propName].style)
+      originalForm.elements[propName].style.backgroundColor = '#ffffff';
     if (currentFormName == 'rightPanelPropertySheet') {
       var filterLabel = window.opener.document.getElementById(shortPropName + "_span");
       if (filterLabel)
