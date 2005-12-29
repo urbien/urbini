@@ -1707,6 +1707,13 @@ function popupOnSubmit(e) {
 ///
   }
 
+  for (j=0; j<form.elements.length; j++) {
+    var elem = form.elements[j];
+    var atts = elem.getAttribute('onSubmit');
+    var s = atts.replace(/this/, elem);
+    eval(s);
+  }
+
 // submit as GET with all parameters collected manually
 //  form.method   = 'GET';
 //  document.location.href = url;
@@ -1719,7 +1726,9 @@ function popupOnSubmit(e) {
     form.action = "FormRedirect";
   return true;
 }
-
+function setTime(elem) {
+  elem.value = new Date().getTime();
+}
 //*************************************** AUTOCOMPLETE *********************************************
 /**
  * Show popup for the text entered in input field (by capturing keyPress events).
@@ -2348,7 +2357,7 @@ function tooltipOnMouseOver0(target) {
     if (!tooltip) // no title attribute - get out of here
       return true;
     tooltipText = tooltip;
-    window.status = tooltipText;
+    //window.status = tooltipText;
     if (tooltipText == '')
       return true;
     window.status = tooltipText;
