@@ -1710,8 +1710,10 @@ function popupOnSubmit(e) {
   for (j=0; j<form.elements.length; j++) {
     var elem = form.elements[j];
     var atts = elem.getAttribute('onSubmit');
-    var s = atts.replace(/this/, elem);
-    eval(s);
+    if (atts) {
+      var s = atts.replace(/this/, elem);
+      eval(s);
+    }
   }
 
 // submit as GET with all parameters collected manually
