@@ -2119,6 +2119,11 @@ function chooser(element) {
 
   if (editList) {
     var uri = element.form.elements['$rUri'].value;
+    if (propName.indexOf(".") == 0)
+      propName = propName.substring(1);
+    if (shortPropName.indexOf(".") == 0)
+      shortPropName = shortPropName.substring(1);
+    
     originalForm.elements[uri + ".$." + propName].value                    = value;
     originalForm.elements[uri + ".$." + shortPropName + "_select"].value   = id;
     originalForm.elements[uri + ".$." + shortPropName + "_verified"].value = "y";
