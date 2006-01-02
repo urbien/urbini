@@ -580,7 +580,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return;
 
     //popup contains rows that can be selected
-    if (document.all) // IE - works only on keydown
+    if (document.all) // IE - some keys (like backspace) work only on keydown
       addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
     else              // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
       addEvent(div,  'keypress',  self.popupRowOnKeyPress,  false);
@@ -1711,8 +1711,9 @@ function popupOnSubmit(e) {
     var elem = form.elements[j];
     var atts = elem.getAttribute('onSubmit');
     if (atts) {
-      var s = atts.replace(/this/, elem);
-      eval(s);
+      var s = atts.replace(/\(this\)/, ''); // e.g. replace setTime(this) into setTime
+      elem.onSubmit = eval(s);
+      elem.onSubmit();
     }
   }
 
@@ -1728,9 +1729,11 @@ function popupOnSubmit(e) {
     form.action = "FormRedirect";
   return true;
 }
-function setTime(elem) {
-  elem.value = new Date().getTime();
+
+function setTime() {
+  this.value = new Date().getTime();
 }
+
 //*************************************** AUTOCOMPLETE *********************************************
 /**
  * Show popup for the text entered in input field (by capturing keyPress events).
@@ -1840,7 +1843,7 @@ function autoComplete1(e, target) {
     filterLabel.style.display = '';
   if (currentPopup)
     clearOtherPopups(currentPopup.div);
-
+/*
   if (characterCode == 8) {
     // problem with IE - may be line below can be uncommented here
     //keyPressedElement.value = keyPressedElement.value.substring(0, keyPressedElement.value.length - 1);
@@ -1848,6 +1851,8 @@ function autoComplete1(e, target) {
   }
   else
     return true;
+*/
+  return true;
 }
 
 function autoCompleteOnFocus(e) {
@@ -1860,12 +1865,13 @@ function autoCompleteOnFocus(e) {
   if (!e)
     return;
 
-  var target;
-  target = getTargetElement(e);
+  var target = getTargetElement(e);
   if (!target)
     return;
 
-  target.select();
+  // prevent issuing select() if we got onfocus because browser window was minimized and then restored
+  if (target.value != target.lastText)
+    target.select();
 }
 
 function autoCompleteOnBlur(e) {
@@ -1873,6 +1879,12 @@ function autoCompleteOnBlur(e) {
 
   if (!e)
     return;
+
+  var target = getTargetElement(e);
+  if (!target)
+    return;
+
+  target.lastText = target.value;
 }
 
 function autoCompleteOnMouseout(e) {
