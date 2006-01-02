@@ -227,11 +227,13 @@
 
           if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT fields
               elem.id  && !elem.valueType) {                      // and those that have ID
-            addEvent(elem, 'keypress', autoComplete,              false);
-            addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
-            addEvent(elem, 'focus',    autoCompleteOnFocus,       false);
-            addEvent(elem, 'blur',     autoCompleteOnBlur,        false);
-            addEvent(elem, 'mouseout', autoCompleteOnMouseout,    false);
+            if (document.all) // in IE - some keys (like backspace) work only on keydown
+              addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
+            else
+              addEvent(elem, 'keypress', autoComplete,              false);
+            addEvent(elem, 'focus',      autoCompleteOnFocus,       false);
+            addEvent(elem, 'blur',       autoCompleteOnBlur,        false);
+            addEvent(elem, 'mouseout',   autoCompleteOnMouseout,    false);
             //addEvent(elem, 'change',   onFormFieldChange, false);
             //addEvent(elem, 'blur',     onFormFieldChange, false);
             //addEvent(elem, 'click',    onFormFieldClick,  false);
