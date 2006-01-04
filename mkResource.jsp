@@ -5,9 +5,7 @@
   <tr>
   <td valign="top">
      <form id="filter" name="tablePropertyList" method="post" action="FormRedirect">
-       <tablePropertyList/><!-- action="mkResource"/-->
-       <input type="hidden" name="returnHtml" value="list.html"/>
-       <input type="hidden" name="html" value="mkResource.html"/>
+       <tablePropertyList/>
        <div align="right"><span class="xs"><measurement/></span></div>
        <input type="hidden" name="-$action" value="mkResource"></input>
        <br />
