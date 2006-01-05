@@ -840,7 +840,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
 
     var select;
-    var isViewCols = currentFormName == "viewColsList"  ||  currentFormName == "filterColsList";
+    var isViewCols = currentFormName.indexOf("viewColsList") == 0  ||  currentFormName.indexOf("filterColsList") == 0;
     if (isViewCols)
       select = prop;
     else
@@ -859,7 +859,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 			    allFields = false;
 			  var params;
 			  var arr = new Array(3);
-			  if (currentFormName == "viewColsList") {
+			  if (currentFormName.indexOf("viewColsList") == 0) {
           arr["-viewCols"] = "-viewCols";
           arr[".-viewCols"] = ".-viewCols";
           arr["-curViewCols"] = "-curViewCols";
@@ -883,14 +883,15 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 			  return;
       }
       if (!isViewCols) {
+        var isTablePropertyList = currentFormName.indexOf("tablePropertyList") == 0;
 	      if (len > 1) {
-	        if (currentFormName != "tablePropertyList")
+	        if (!isTablePropertyList)
 	          chosenTextField[0].value   = tr.id.substring(6);
 	        else
 	          chosenTextField[0].value   = '';
 	      }
 	      else {
-	        if (currentFormName != "tablePropertyList")
+	        if (!isTablePropertyList)
 	          chosenTextField.value   = tr.id.substring(6);
 	        else
 	          chosenTextField.value   = '';
@@ -941,7 +942,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 	      }
       }
       // show property label since label inside input field is now overwritten
-      if (currentFormName == 'rightPanelPropertySheet') {
+      if (currentFormName.indexOf('rightPanelPropertySheet') == 0) {
         if (fieldLabel)
           fieldLabel.style.display = '';
       }
@@ -1366,7 +1367,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
 
   var divId;
   var isInterface;
-  if (currentFormName == "siteResourceList") {
+  if (currentFormName.indexOf("siteResourceList") == 0) {
     idx = propName1.indexOf(".$.");
     var idx1 = propName1.indexOf(".", idx + 3);
     if (idx1 == -1)
@@ -1438,7 +1439,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
       baseUri += "/";
   }
   var url = baseUri + "smartPopup?prop=" + encodeURIComponent(propName);
-  if (currentFormName == "siteResourceList") {
+  if (currentFormName.indexOf("siteResourceList") == 0) {
     url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.elements['type'].value;
   }
   else {
@@ -1467,7 +1468,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
         if (enterFlag)
           allFields = false;
       }
-      else if (currentFormName == "horizontalFilter")
+      else if (currentFormName.indexOf("horizontalFilter") == 0)
         allFields = true;
       var params = getFormFilters(form, allFields);
       if (params)
@@ -1630,7 +1631,7 @@ function popupOnSubmit(e) {
   var allFields = true;
   if (formAction != "searchLocal" && formAction != "searchParallel")
     allFields = false;
-  else if (currentFormName == "horizontalFilter")
+  else if (currentFormName.indexOf("horizontalFilter") == 0)
     allFields = true;
 
   var params = getFormFilters(form, allFields);
@@ -2123,12 +2124,12 @@ function chooser(element) {
       propName = propName.substring(1);
     if (shortPropName.indexOf(".") == 0)
       shortPropName = shortPropName.substring(1);
-    
+
     originalForm.elements[uri + ".$." + propName].value                    = value;
     originalForm.elements[uri + ".$." + shortPropName + "_select"].value   = id;
     originalForm.elements[uri + ".$." + shortPropName + "_verified"].value = "y";
   }
-  else if (currentFormName == "viewColsList"  ||  currentFormName == "filterColsList") {
+  else if (currentFormName.indexOf("viewColsList") == 0  ||  currentFormName.indexOf("filterColsList") == 0) {
     originalForm.elements[shortPropName].value   = id;
   }
   else {
@@ -2206,7 +2207,7 @@ function chooser1(element) {
     originalForm.elements[shortPropName + "_verified"].value     = "y";
     if (originalForm.elements[propName].style)
       originalForm.elements[propName].style.backgroundColor = '#ffffff';
-    if (currentFormName == 'rightPanelPropertySheet') {
+    if (currentFormName.indexOf('rightPanelPropertySheet') == 0) {
       var filterLabel = window.opener.document.getElementById(shortPropName + "_span");
       if (filterLabel)
         filterLabel.style.display = '';
