@@ -22,7 +22,7 @@
     <tr valign="top">
 	    <td width="70%"><mkResourceForLineItems/><!--a target="pane2"></a><div id="pane2"/--></td>
 	    <td width="30%"><div id="resourceList_div"><siteResourceList/></div></td>
-    <tr>
+    </tr>
     <tr itype="http://www.hudsonfog.com/voc/hospitality/orders/BarItem">
       <td width="70%">
         <table width="100%" cellspacing="5" cellpadding="0" border="0">
@@ -30,6 +30,12 @@
           <td align="center" class="categoryButton" onClick="document.location.href='plain/Recall_Orders.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Ticket&amp;status_select=Checked+In&amp;status_verified=y&amp;settled_select=false&amp;settled_verified=y&amp;$order=http://www.hudsonfog.com/voc/hospitality/spa/Ticket/checkInTime&amp;-asc=-1&amp;-grid=1&amp;-inRow=2'">Recall orders</td>
         </tr>
         </table>
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td width="70%">
+        <backTo/>
       </td>
       <td></td>
     </tr>
