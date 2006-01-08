@@ -67,7 +67,7 @@ Popup.getCanvas = function (frameRef) {
 
 Popup.allowTooltip = function (target) {
   var noOpenPopups = true;
-  for (var i in Popup.popups) {
+  for (var i=0; i<Popup.popups.length; i++) {
     var popup = Popup.popups[i];
     if (popup.isOpen() &&         // if popup is already open then we need only tooltips in it (and not the tooltips on areas outside popup)
         !popup.isTooltip()) {     //    but if open popup is a tooltip - ignore it
@@ -299,7 +299,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
   this.contains = function (target) {
     var nodes = self.div.childNodes;
-    for (var i in nodes) {
+    for (var i=0; i<nodes.length; i++) {
       if (nodes[i] == target)
         return true;
     }
@@ -1998,7 +1998,7 @@ function getKeyCode(e) {
 function clearOtherPopups(div) {
 //alert("div=" + div.id + ", loadedPopups.length=" + openedPopups.length)
   var i;
-  for (i in loadedPopups) {
+  for (var i=0; i < loadedPopups.length; i++) {
     var p = loadedPopups[i];
     if (p == null)
       continue;
@@ -3000,9 +3000,9 @@ function showRecurrencePanel(formName, propertyName) {
   else {
     document.getElementById('frequencyStartEndBlock').style.display = 'inline';
   }
-  for (var i = 0; i < 5; i++) {
+  for (var i=0; i<5; i++) {
     if (elements[i].checked == true) {
-      for (j = 0; j < 5; j++) {
+      for (var j=0; j<5; j++) {
         if (j != i) {
           document.getElementById(elements[j].value + 'Block').style.display = 'none';
         }
