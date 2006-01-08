@@ -3421,15 +3421,15 @@ function addAndShow(td, e) {
 }
 
 var calendarCell; // last cell on which user clicked
-function addCalendarItem(this) {
-  var anchor = 'ticket?' // url of the servlet that adds calendar items
-               + this.href;
+function addCalendarItem(popupRowAnchor) {
+  var anchor = 'ticket?'; // url of the servlet that adds calendar items
+//               + popupRowAnchor.href;
 
   //--- extract parameters specific for popup row
-  var popupRow = getTrNode(this); // get tr on which user clicked in popup
+  var popupRow = getTrNode(popupRowAnchor); // get tr on which user clicked in popup
   if (!popupRow)
     throw Error("addCalendarItem: popup row not found for: " + anchor);
-  anchor += '&' + popupRow.id;
+  anchor += popupRow.id;
 
   //--- extract parameters specific for calendar row (e.g. time slot) for a cell on which user clicked
   var calendarRow = getTrNode(calendarCell);
@@ -3438,16 +3438,16 @@ function addCalendarItem(this) {
   anchor += '&' + calendarRow.id;
 
   //--- extract a contact corresponding to a poped up chooser
-  var contactDiv = getDivNode(tr);
+  var contactDiv = getDivNode(popupRow);
   if (!contactDiv)
     throw Error("addCalendarItem: contactDiv not found for: " + anchor);
   anchor += '&' + contactDiv.id;
 
   //--- collect parameters common to all calendar items on the page
   var pageParametersDiv = document.getElementById('pageParameters');
-  if (pageParametersDiv)
+  if (!pageParametersDiv)
     throw Error("addCalendarItem: pageParameters div not found for: " + anchor);
-  var pageParams = div.getElementsByTagName('a');
+  var pageParams = pageParametersDiv.getElementsByTagName('a');
   if (!pageParams || pageParams.length == 0)
     throw Error("addCalendarItem: pageParameters are empty for: " + anchor);
   for (var i in pageParams) {
