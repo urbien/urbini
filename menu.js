@@ -3412,8 +3412,6 @@ function addAndShow(td, e) {
 
 	var a = td.getElementsByTagName("a");
 
-	var iframeId = "resourceList";
-	var iframe = document.getElementById(iframeId);
 //	  iframe.style.display    = "none";
 
 	var anchor = a[0].href;
@@ -3421,7 +3419,7 @@ function addAndShow(td, e) {
 }
 
 var calendarCell; // last cell on which user clicked
-function addCalendarItem(popupRowAnchor) {
+function addCalendarItem(popupRowAnchor, event) {
   var anchor = 'ticket?'; // url of the servlet that adds calendar items
 //               + popupRowAnchor.href;
 
@@ -3441,6 +3439,16 @@ function addCalendarItem(popupRowAnchor) {
   var contactDiv = getDivNode(popupRow);
   if (!contactDiv)
     throw Error("addCalendarItem: contactDiv not found for: " + anchor);
+  if (!contactDiv.id) {
+    while (contactDiv  &&  !contactDiv.id) {
+      var parentNode = contactDiv.parentNode;
+      while (parentNode  &&  (parentNode.tagName.toUpperCase() != 'DIV' || !parentNode.id))
+        parentNode = parentNode.parentNode;
+      if (!parentNode)
+        throw Error("addCalendarItem: contactDiv not found for: " + anchor);
+      contactDiv = parentNode;
+    }
+  }
   anchor += '&' + contactDiv.id;
 
   //--- collect parameters common to all calendar items on the page
@@ -3450,14 +3458,17 @@ function addCalendarItem(popupRowAnchor) {
   var pageParams = pageParametersDiv.getElementsByTagName('a');
   if (!pageParams || pageParams.length == 0)
     throw Error("addCalendarItem: pageParameters are empty for: " + anchor);
-  for (var i in pageParams) {
-    anchor += '&' + pageParams[i].href;
-  }
+  for (var i=0; i<pageParams.length; i++)
+    anchor += '&' + pageParams[i].id;
 
-  return addAndShow1(anchor);
+  document.location.href = anchor;
+  return stopEventPropagation(event);
+//  return addAndShow1(anchor, event);
 }
 
-function addAndShow1(anchor) {
+function addAndShow1(anchor, event) {
+  var iframeId = "resourceList";
+  var iframe = document.getElementById(iframeId);
   try {
 	  var iframeWindow = frames[iframeId];
 	  var newUri;
@@ -3496,7 +3507,7 @@ function addAndShow1(anchor) {
 //    window.open(newUri);
 //    return;
 	  setTimeout(addAndShowWait, 100);
-    return stopEventPropagation(e);
+    return stopEventPropagation(event);
   } catch (er) {
     alert(er);
   }
