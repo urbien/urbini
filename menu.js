@@ -3388,17 +3388,31 @@ function hide(target) {
 }
 
 function addAndShow(td, e) {
-  try {
-	  e = (e) ? e : ((window.event) ? window.event : null);
-	  if (!e)
-	    return stopEventPropagation(e);
+  var e = (e) ? e : ((window.event) ? window.event : null);
+	if (!e)
+    return stopEventPropagation(e);
 
-	  var a = td.getElementsByTagName("a");
-	  var iframeId = "resourceList";
-	  var iframe = document.getElementById(iframeId);
+	var a = td.getElementsByTagName("a");
+
+	var iframeId = "resourceList";
+	var iframe = document.getElementById(iframeId);
 //	  iframe.style.display    = "none";
 
-	  var anchor = a[0].href;
+	var anchor = a[0].href;
+	return addAndShow1(anchor);
+}
+
+function addCalendarItem(this) {
+  var anchor = this.href;
+
+  var tr = getTrNode(this);
+  if (!tr)
+    alert("tr not found for: " + anchor);
+  return addAndShow1(anchor + '&' + tr.id); // add time from calendar row and go
+}
+
+function addAndShow1(anchor) {
+  try {
 	  var iframeWindow = frames[iframeId];
 	  var newUri;
     var aa = document.getElementById("currentItem");
