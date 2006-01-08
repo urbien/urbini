@@ -2041,6 +2041,24 @@ function getTrNode(elem) {
     return null;
 }
 
+function getDivNode(elem) {
+  var e;
+
+  var elem_ = elem;
+  if (elem.length > 1)
+    elem_ = elem[0];
+  if (elem_.tagName.toUpperCase() == 'DIV')
+    return elem;
+  e = elem_.parentNode;
+  if (e) {
+    if (e == elem)
+      e = elem.parentNode; // if parent of the array element is self - get parent of array itself
+    return getDivNode(e);
+  }
+  else
+    return null;
+}
+
 /**
  * Helper function - gathers the parameters (from form elements) to build a URL
  * If allFields is true - we are in a Filter panel - need to take into account all input fields
@@ -3402,13 +3420,41 @@ function addAndShow(td, e) {
 	return addAndShow1(anchor);
 }
 
+var calendarCell; // last cell on which user clicked
 function addCalendarItem(this) {
-  var anchor = this.href;
+  var anchor = 'ticket?' // url of the servlet that adds calendar items
+               + this.href;
 
-  var tr = getTrNode(this);
-  if (!tr)
-    alert("tr not found for: " + anchor);
-  return addAndShow1(anchor + '&' + tr.id); // add time from calendar row and go
+  //--- extract parameters specific for popup row
+  var popupRow = getTrNode(this); // get tr on which user clicked in popup
+  if (!popupRow)
+    throw Error("addCalendarItem: popup row not found for: " + anchor);
+  anchor += '&' + popupRow.id;
+
+  //--- extract parameters specific for calendar row (e.g. time slot) for a cell on which user clicked
+  var calendarRow = getTrNode(calendarCell);
+  if (!calendarRow)
+    throw Error("addCalendarItem: calendar row not found for: " + anchor);
+  anchor += '&' + calendarRow.id;
+
+  //--- extract a contact corresponding to a poped up chooser
+  var contactDiv = getDivNode(tr);
+  if (!contactDiv)
+    throw Error("addCalendarItem: contactDiv not found for: " + anchor);
+  anchor += '&' + contactDiv.id;
+
+  //--- collect parameters common to all calendar items on the page
+  var pageParametersDiv = document.getElementById('pageParameters');
+  if (pageParametersDiv)
+    throw Error("addCalendarItem: pageParameters div not found for: " + anchor);
+  var pageParams = div.getElementsByTagName('a');
+  if (!pageParams || pageParams.length == 0)
+    throw Error("addCalendarItem: pageParameters are empty for: " + anchor);
+  for (var i in pageParams) {
+    anchor += '&' + pageParams[i].href;
+  }
+
+  return addAndShow1(anchor);
 }
 
 function addAndShow1(anchor) {
