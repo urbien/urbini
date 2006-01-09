@@ -18,8 +18,8 @@
 	       <br />
 	       <center>
 	         <input type="submit" name="submit" value="  Submit  "></input>
-	         &#160;&#160;
-	         <input type="submit" name="cancel" value="  Cancel  "></input>
+	         <!--&#160;&#160;
+	         <input type="submit" name="cancel" value="  Cancel  "></input-->
 	       </center>
 	     </form>
 	     </div>
