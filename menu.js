@@ -3415,7 +3415,7 @@ function addAndShow(td, e) {
 //	  iframe.style.display    = "none";
 
 	var anchor = a[0].href;
-	return addAndShow1(anchor);
+	return addAndShow1(anchor, e);
 }
 
 var calendarCell; // last cell on which user clicked
