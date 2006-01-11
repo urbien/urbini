@@ -1468,8 +1468,8 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
         if (enterFlag)
           allFields = false;
       }
-      else if (currentFormName.indexOf("horizontalFilter") == 0)
-        allFields = true;
+//      else if (currentFormName.indexOf("horizontalFilter") == 0)
+//        allFields = true;
       var params = getFormFilters(form, allFields);
       if (params)
         url = url + params;
@@ -3420,19 +3420,27 @@ function addAndShow(td, e) {
 
 var calendarCell; // last cell on which user clicked
 function addCalendarItem(popupRowAnchor, event) {
-  var anchor = 'ticket?'; // url of the servlet that adds calendar items
-//               + popupRowAnchor.href;
+  var calendarRow = getTrNode(calendarCell);
+  if (!calendarRow)
+    throw Error("addCalendarItem: calendar row not found for: " + anchor);
+
+  var anchors = calendarCell.getElementsByTagName('a')
+  if (!anchors)
+
+    throw Error("addCalendarItem: calendar row has no anchor");
+
+  var anchor = anchors[0].href; // url of the servlet that adds calendar items
 
   //--- extract parameters specific for popup row
   var popupRow = getTrNode(popupRowAnchor); // get tr on which user clicked in popup
   if (!popupRow)
     throw Error("addCalendarItem: popup row not found for: " + anchor);
+  if (anchor.indexOf("?") != anchor.length - 1)
+    anchor += "&";
   anchor += popupRow.id;
 
+
   //--- extract parameters specific for calendar row (e.g. time slot) for a cell on which user clicked
-  var calendarRow = getTrNode(calendarCell);
-  if (!calendarRow)
-    throw Error("addCalendarItem: calendar row not found for: " + anchor);
   anchor += '&' + calendarRow.id;
 
   //--- extract a contact corresponding to a poped up chooser
