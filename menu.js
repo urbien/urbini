@@ -1631,7 +1631,7 @@ function popupOnSubmit(e) {
   var allFields = true;
   if (formAction != "searchLocal" && formAction != "searchParallel")
     allFields = false;
-  else if (currentFormName.indexOf("horizontalFilter") == 0)
+  else if (currentFormName && currentFormName.indexOf("horizontalFilter") == 0)
     allFields = true;
 
   var params = getFormFilters(form, allFields);
