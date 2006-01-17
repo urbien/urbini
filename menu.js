@@ -2147,7 +2147,7 @@ function chooser(element) {
     originalForm.elements[uri + ".$." + shortPropName + "_select"].value   = id;
     originalForm.elements[uri + ".$." + shortPropName + "_verified"].value = "y";
   }
-  else if (currentFormName.indexOf("viewColsList") == 0  ||  currentFormName.indexOf("filterColsList") == 0) {
+  else if (currentFormName  &&  (currentFormName.indexOf("viewColsList") == 0  ||  currentFormName.indexOf("filterColsList") == 0)) {
     originalForm.elements[shortPropName].value   = id;
   }
   else {
