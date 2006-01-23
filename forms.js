@@ -21,7 +21,7 @@ function FormField(fieldRef, isModified) {
 }
 
 function clearUnModifiedFields(formFields) {
-  for (i = 0; i < formFields.length; i++) {
+  for (var i = 0; i < formFields.length; i++) {
     if (formFields[i].isModified == false) {
       formFields[i].fieldRef.value = '';
     }
@@ -79,33 +79,34 @@ function setTextHeight(div, divider) {
     var divRef = document.getElementById(div);
     var spanRef = document.getElementById(div + '_span');
     var moreRef = document.getElementById(div + '_more');
-	if(divRef.offsetHeight < 40 && document.all){                        // If the height of the div content is less then 40px,
+  }  
+	if(divRef.offsetHeight < 40 && document.all) {                       // If the height of the div content is less then 40px,
 	  document.getElementById(div).style.height=divRef.offsetHeight;     // then the height of the div is set to the height
 	  displayFullText(div, div+"_more");                                 // of the div content and "more>>" link is disabled.
 	  return;
 	}
-    var h = Math.floor(screen.availHeight/divider);
+  var h = Math.floor(screen.availHeight/divider);
 	divRef.style.height = h;
-    divRef.style.overflow = "hidden";
-    if (spanRef != null && moreRef != null)
-      if (spanRef.offsetHeight > divRef.offsetHeight) {
-        moreRef.style.display = "block";
-      } else { // div must have "minimized view". Then the user clicks on "more>>" link and the style of the div is changed
-               // from (overflow:hidden) to (display:inline; overflow:visible). This is done on line #73 (function displayFullText(div, moreDiv))
-        //moreRef.style.display = "none";
-        divRef.style.height = 40;//spanRef.offsetHeight;
-        //divRef.style.overflow = "visible";
-      }
+  divRef.style.overflow = "hidden";
+	if (spanRef != null && moreRef != null) {
+	  if (spanRef.offsetHeight > divRef.offsetHeight) {
+	    moreRef.style.display = "block";
+	  } else { // div must have "minimized view". Then the user clicks on "more>>" link and the style of the div is changed
+	           // from (overflow:hidden) to (display:inline; overflow:visible). This is done on line #73 (function displayFullText(div, moreDiv))
+	    //moreRef.style.display = "none";
+	    divRef.style.height = 40;//spanRef.offsetHeight;
+	    //divRef.style.overflow = "visible";
+	  }
   }
 }
 function setTextHeightAll(divider) {
-  for (i = 0; i < textAreas.length; i++) {
+  for (var i = 0; i < textAreas.length; i++) {
     if (textAreas[i] != null)
       setTextHeight(textAreas[i], divider);
   }
 }
 function textAreaExists(textAreaName) {
-  for (i = 0; i < textAreas.length; i++) {
+  for (var i = 0; i < textAreas.length; i++) {
     if (textAreas[i] != null && textAreaName == textAreas[i])
       return true;
   }
