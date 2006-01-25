@@ -601,14 +601,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Popup's on mouseover handler
    */
   this.popupOnMouseOver = function (e) {
-    var target;
-//alert("reenter");
-    e = (e) ? e : ((window.event) ? window.event : null);
-
-    if (!e)
-      return;
-
-    target = getTargetElement(e);
+    var target = getTargetElement(e);
     if (!target)
       return;
 
@@ -627,10 +620,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Popup's and hotspot's on mouseout handler
    */
   this.popupOnMouseOut = function (e) {
-    e = (e) ? e : ((window.event) ? window.event : null);
-    if (!e)
-      return;
-
     var target = getMouseOutTarget(e);
     if (!target)
       return true;
@@ -644,9 +633,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * This handler allows to use arrow keys to move through the menu and Enter to choose the menu element.
    */
   this.popupRowOnKeyPress = function(e) {
-    e = (e) ? e : ((window.event) ? window.event : null);
-    if (!e)
-      return stopEventPropagation(e);
+    e = getDocumentEvent(e); if (!e) return;
     // in IE for some reason same event comes two times
     if (e.getAttribute) {
       var isProcessed = e.getAttribute('eventProcessed');
@@ -719,16 +706,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    *  Reacts to clicks inside the popup
    */
   this.popupRowOnClick = function (e) {
-    var tr;
-    var target;
-
-    e = (e) ? e : ((window.event) ? window.event : null);
-
-    if (!e)
-      return stopEventPropagation(e);
-
-    target = getTargetElement(e);
-    tr = getTrNode(target);
+    e = getDocumentEvent(e); if (!e) return;
+    var target = getTargetElement(e);
+    var tr = getTrNode(target);
     if (!tr)
       return stopEventPropagation(e);
 
@@ -1054,13 +1034,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.popupRowOnMouseOver = function (e) {
-    var tr;
-    var target;
-    e = (e) ? e : ((window.event) ? window.event : null);
-
-    if (!e)
-      return true;
-
+    e = getDocumentEvent(e); if (!e) return;
     // in IE for some reason same event comes two times
     if (e.getAttribute) {
       var isProcessed = e.getAttribute('eventProcessed');
@@ -1069,8 +1043,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       e.setAttribute('eventProcessed', 'true');
     }
 
-    target = getTargetElement(e);
-    tr = getTrNode(target);
+    var target = getTargetElement(e);
+    var tr = getTrNode(target);
 
     if (!tr)
       return true;
@@ -1087,11 +1061,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.popupRowOnMouseOut = function (e) {
-    var tr;
-    e = (e) ? e : ((window.event) ? window.event : null);
-    if (!e)
-      return true;
-
+    e = getDocumentEvent(e); if (!e) return;
     var target = getMouseOutTarget(e);
     if (!target)
       return true;
@@ -1104,7 +1074,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       e.setAttribute('eventProcessed', 'true');
     }
 
-    tr = getTrNode(target);
+    var tr = getTrNode(target);
     if (!tr)
       return true;
 
@@ -1587,13 +1557,8 @@ function removePopupRowEventHandlers(div) {
  */
 function popupOnSubmit(e) {
   try{if(rteUpdated == 'false'){updateRTEs(); rteUpdated = 'true';}}catch(ex){}
-  var target;
 
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
-
-  target = getTargetElement(e);
+  var target = getTargetElement(e);
   var form = target;
 
   /* Add full text search criteria to filter */
@@ -1745,13 +1710,8 @@ function setTime() {
  *                          and close popup if hit Enter twice.
  */
 function autoComplete(e) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
-
-  var target;
-
-  target = getTargetElement(e);
+  e = getDocumentEvent(e); if (!e) return;
+  var target = getTargetElement(e);
   return autoComplete1(e, target);
 }
 
@@ -1861,11 +1821,6 @@ function autoCompleteOnFocus(e) {
     internalFocus = false;
     return;
   }
-  e = (e) ? e : ((window.event) ? window.event : null);
-
-  if (!e)
-    return;
-
   var target = getTargetElement(e);
   if (!target)
     return;
@@ -1876,11 +1831,6 @@ function autoCompleteOnFocus(e) {
 }
 
 function autoCompleteOnBlur(e) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-
-  if (!e)
-    return;
-
   var target = getTargetElement(e);
   if (!target)
     return;
@@ -1889,10 +1839,6 @@ function autoCompleteOnBlur(e) {
 }
 
 function autoCompleteOnMouseout(e) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
-
   var target = getMouseOutTarget(e);
   if (!target)
     return true;
@@ -1910,6 +1856,7 @@ function autoCompleteOnMouseout(e) {
  * This onKeyDown handler is needed since some browsers do not capture certain special keys on keyPress.
  */
 function autoCompleteOnKeyDown(e) {
+  e = getDocumentEvent(e); if(!e) return;
   if( typeof( e.keyCode ) == 'number') {
     if (e.keyCode == 8 || e.keyCode == 127) { // backspace, ctrl-enter
       var flag = autoComplete(e);
@@ -1941,11 +1888,6 @@ function autoCompleteTimeout(invocationTime) {
 
 
 function textAreaOnFocus(e) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-
-  if (!e)
-    return;
-
   var target = getTargetElement(e);
   var rows = getFormFieldInitialValue(target, 'rows');
   if (rows)
@@ -1965,11 +1907,6 @@ function textAreaOnFocus(e) {
 }
 
 function textAreaOnBlur(e) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-
-  if (!e)
-    return;
-
   var target = getTargetElement(e);
   if (!target.value || target.value == '') {
     target.attributes['rows'].value = 1;
@@ -2126,7 +2063,7 @@ function chooser(element) {
   var l = window.opener.document.forms.length;
   for (var i=0; i<l; i++) {
     var forms = window.opener.document.forms;
-    if (forms[i].name == form) {
+    if (forms[i].name.indexOf(form) == 0) {
       originalForm = forms[i];
       break;
     }
@@ -2321,14 +2258,7 @@ function initMenus() {
  *  Opens the menu when needed, e.g. on click, on enter
  */
 function menuOnClick(e) {
-  var target;
-
-  e = (e) ? e : ((window.event) ? window.event : null);
-
-  if (!e)
-    return;
-
-  target = getTargetElement(e);
+  var target = getTargetElement(e);
   if (!target)
     return;
 
@@ -2438,14 +2368,7 @@ function tooltipOnMouseOver0(target) {
 }
 
 function tooltipOnMouseOver(e) {
-  var p;
-  var target;
-
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
-
-  target = getTargetElement(e);
+  var target = getTargetElement(e);
   if (!tooltipOnMouseOver0(target))
     return stopEventPropagation(e);
   else
@@ -2453,12 +2376,6 @@ function tooltipOnMouseOver(e) {
 }
 
 function tooltipOnMouseOut(e) {
-  var p;
-
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
-
   var target = getMouseOutTarget(e);
   if (!target)
     return true;
@@ -2494,10 +2411,6 @@ function interceptLinkClicks() {
 }
 
 function onClickDisplayInner (e) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
-
   var anchor = getTargetAnchor(e);
   if (!anchor || !anchor.id)
     return;
@@ -2512,16 +2425,10 @@ function onClickDisplayInner (e) {
  */
 function onClick(e) {
   detectClick = true;
-  var url;
   var p;
-  var target;
 
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
-
-  target = getTargetElement(e);
-  url = getTargetAnchor(e);
+  var target = getTargetElement(e);
+  var url = getTargetAnchor(e);
   if (!url)
     return;
 
@@ -2583,16 +2490,17 @@ function addUrlParam(url, param, target) {
 }
 
 // cross-browser - getCurrentTarget
-function getTargetAnchor(evt) {
+function getTargetAnchor(e) {
+  e = getDocumentEvent(e); if (!e) return;
   var elem;
-  if (evt.target) {
-    if (evt.currentTarget && (evt.currentTarget != evt.target))
-      elem = evt.currentTarget;
+  if (e.target) {
+    if (e.currentTarget && (e.currentTarget != e.target))
+      elem = e.currentTarget;
     else
-      elem = evt.target;
+      elem = e.target;
   }
   else {
-    elem = evt.srcElement;
+    elem = e.srcElement;
     elem = getANode(elem);
 
   }
@@ -2782,12 +2690,9 @@ function findPosY(obj) {
  * function that adds a title (taken from page HEAD) of current page to a url that is passed as a parameter
  */
 function addPageTitleToUrl(e) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-
-  if (!e)
-    return;
-
   var target = getTargetElement(e);
+  if (!target)
+    return;
   var tr = getTrNode(target);
   if (!tr)
     return;
@@ -2820,10 +2725,7 @@ function displayInner(e, urlStr) {
   if (urlStr)
     finalUrl = urlStr;
   else {
-    e = (e) ? e : ((window.event) ? window.event : null);
-    if (!e)
-      return;
-
+    e = getDocumentEvent(e); if (!e) return;
     var anchor = getTargetAnchor(e);
     if (!anchor)
       return;
@@ -3075,21 +2977,22 @@ function getTextContent(elm) {
 /**
  * Utility that discovers the html element which generated the event
  */
-function getTargetElement(evt) {
+function getTargetElement(e) {
+  e = getDocumentEvent(e); if (!e) return null;
   var elem;
-  var elem1 = evt.target;
-  if (evt.target) {
-    if (evt.currentTarget && (evt.currentTarget != elem1)) {
+  var elem1 = e.target;
+  if (e.target) {
+    if (e.currentTarget && (e.currentTarget != elem1)) {
       if (elem1.tagName && elem1.tagName.toLowerCase() == 'input' && elem1.type.toLowerCase() == 'checkbox')
         elem = elem1;
       else
-        elem = evt.currentTarget;
+        elem = e.currentTarget;
     }
     else
       elem = elem1;
   }
   else {
-    elem = evt.srcElement;
+    elem = e.srcElement;
   }
 
   return elem;
@@ -3168,9 +3071,6 @@ var browserDetect;
 var timeouts = new Array();
 
 function unfadeOnMouseOut(e) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
   var target = getMouseOutTarget(e);
   if (!target) {
     target = getTargetElement(e);
@@ -3182,9 +3082,6 @@ function unfadeOnMouseOut(e) {
 }
 
 function unfadeOnMouseOver(e) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
   var target = getMouseOverTarget(e);
   if (!target) {
     target = getTargetElement(e);
@@ -3197,10 +3094,6 @@ function unfadeOnMouseOver(e) {
 }
 
 function fadeOnMouseOver(e) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
-
   var target = getMouseOverTarget(e);
   if (!target)
     return true;
@@ -3209,10 +3102,6 @@ function fadeOnMouseOver(e) {
 }
 
 function fadeOnMouseOut(e) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
-
   var target = getMouseOutTarget(e);
   if (!target)
     return false;
@@ -3406,7 +3295,7 @@ function hide(target) {
 }
 
 function addAndShow(td, e) {
-  var e = (e) ? e : ((window.event) ? window.event : null);
+  e = getDocumentEvent(e);
 	if (!e)
     return stopEventPropagation(e);
 
@@ -3548,11 +3437,9 @@ function addAndShowWait()	{
 }
 
 function processTransaction(e) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
-
   var target = getTargetElement(e);
+  if (!target)
+    return;
   var form = target.form;
   var params = getFormFilters(form, true);
   var url = "FormRedirect?JLANG=en" + params; // HACK: since form.action returns the value of '&action='
@@ -3567,10 +3454,7 @@ function processTransaction(e) {
 }
 
 function showDiv(e, td, hideDivId) {
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
-
+  e = getDocumentEvent(e);
   var div = document.getElementById(hideDivId);
   div.style.visibility = Popup.HIDDEN;
   div.style.display = "none";
@@ -3578,4 +3462,13 @@ function showDiv(e, td, hideDivId) {
   div = document.getElementById(divId);
   div.style.visibility = Popup.VISIBLE;
   div.style.display = 'inline';
+}
+
+function getDocumentEvent(e) {
+  if (e) return e;
+  if (!window) return null;
+  if (window.event)
+    return window.event;
+  else
+    return null;
 }
