@@ -121,7 +121,7 @@ span.bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size
 /* To display window titles on a dashboard */
 span.dashboardBlockTitle {font-family:Verdana,sans-serif,arial; font-weight:bold; font-size:12px; color:#00309C;}
 /* to display large image in resource list */
-td.largeImage {padding-top:20px; padding-bottom:20px; padding-left:20px; padding-right:20px; border:solid #808080 1px; background-color: #ffffff; color: #000000}
+/*td.largeImage {padding-top:20px; padding-bottom:20px; padding-left:20px; padding-right:20px; border:solid #808080 1px; background-color: #ffffff; color: #000000}*/
 /*td.largeImageWithHide {padding-top:20px; padding-bottom:20px; padding-left:20px; padding-right:4px; border:solid #808080 1px; background-color: #ffffff; color: #000000}*/
 
 /*td.horizontalFilter { filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#C0C9D7', EndColorStr='#ffffff') }*/
@@ -176,6 +176,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 .allButton      {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold; height:40pt; cursor: pointer; cursor: hand;}
 .categoryButton {border:solid #808080 1px; background-color:#f8f4ef; color: darkblue; font-size:12pt;font-weight:bold; height:40pt; cursor: pointer; cursor: hand;}
-.itemButton     {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:40pt;text-decoration:none; cursor: pointer; cursor: hand;}
+/*.itemButton     {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:40pt;text-decoration:none; cursor: pointer; cursor: hand;}*/
+.ver_border	{width: 10px; height: 100%; margin: 0px; padding: 0px; border: 0px; background-color: #fff;}
 .backTo         {color:red}
 .viewAll        {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold}
