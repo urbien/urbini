@@ -591,6 +591,16 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var popupItem = new PopupItem(elem, i);
       self.items[popupItem.id];
       addEvent(elem, 'click',     self.popupRowOnClick,     false);
+
+      var anchors = elem.getElementsByTagName('a');
+      if (anchors  &&  anchors.length != 0) {
+        var onclick = anchors[0].onclick;
+        if (onclick) {
+          anchors[0].onclick = null;
+          anchors[0].onclick1 = onclick;
+        }
+      }
+
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
       addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
       elem = self.nextRow();
@@ -667,7 +677,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           Popup.close0(currentDiv.id);
         return stopEventPropagation(e);
       case 13:  //enter
-        self.popupRowOnClick1(tr);
+        self.popupRowOnClick1(e, tr);
         return stopEventPropagation(e);
       default:
       case 8:   //backspace
@@ -726,11 +736,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
 
 
-    var ret = self.popupRowOnClick1(tr, target);
+    var ret = self.popupRowOnClick1(e, tr, target);
     return ret;
   }
 
-  this.popupRowOnClick1 = function (tr, target) {
+  this.popupRowOnClick1 = function (e, tr, target) {
     Popup.lastClickTime = new Date().getTime();
     var currentDiv = self.getCurrentDiv();
     if (self.isHeaderRow(tr)) // skip clicks on menu header
@@ -752,9 +762,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         loadedPopups[currentDiv.id] = null;
         Popup.close0(currentDiv.id);
       }
-      if (anchors[0].click)
-        anchors[0].click();
-      //location.href = anchors[0].href;
+      if (anchors[0].onclick1)
+        anchors[0].onclick1(e);
+//        document.location.href = anchors[0].href;
       return true;
     }
 
@@ -3363,6 +3373,72 @@ function addCalendarItem(popupRowAnchor, event) {
 //  return addAndShow1(anchor, event);
 }
 
+function addSimpleCalendarItem(popupRowAnchor, event) {
+  var calendarRow = getTrNode(calendarCell);
+  if (!calendarRow)
+    throw Error("addCalendarItem: calendar row not found for: " + anchor);
+  //--- extract parameters specific for popup row
+  var popupRow = getTrNode(popupRowAnchor); // get tr on which user clicked in popup
+  if (!popupRow)
+    throw Error("addSimpleCalendarItem: popup row not found for: ");
+
+  var anchor = "mkResource.html?-$action=mkResource&type=http://www.hudsonfog.com/voc/model/work/CalendarItem&submit=Please+wait&";
+  var calendarRowId = calendarRow.id;
+  var idx = calendarRowId.indexOf("=");
+  calendarRowId = calendarRowId.substring(0, idx);
+  anchor += popupRow.id; // + "&.start_verified=y&.start_select=" + calendarRowId.substring(0, idx);
+  //--- extract a contact corresponding to a poped up chooser
+  var contactDiv = getDivNode(popupRow);
+  if (!contactDiv)
+    throw Error("addCalendarItem: contactDiv not found for: " + anchor);
+  if (!contactDiv.id) {
+    while (contactDiv  &&  !contactDiv.id) {
+      var parentNode = contactDiv.parentNode;
+      while (parentNode  &&  (parentNode.tagName.toUpperCase() != 'DIV' || !parentNode.id))
+        parentNode = parentNode.parentNode;
+      if (!parentNode)
+        throw Error("addCalendarItem: contactDiv not found for: " + anchor);
+      contactDiv = parentNode;
+    }
+  }
+  anchor += '&' + contactDiv.id;
+
+  var idx = contactDiv.id.indexOf("=frequency");
+  var frequencyPropName = contactDiv.id.substring(0, idx);
+  idx = frequencyPropName.lastIndexOf("&");
+  frequencyPropName = frequencyPropName.substring(idx + 1);
+  var start = calendarRowId.substring(0, idx);
+  idx = start.indexOf("+");
+  var startDate = start;
+  if (idx != -1)
+    startDate = start.substring(0, idx);
+  anchor += "&" + frequencyPropName + "_recur=once&" + frequencyPropName + "_start_once=" + startDate;
+  if (idx != -1) {
+    var idx1 = start.indexOf(":", idx);
+    if (idx1 != -1) {
+      anchor += "&" + frequencyPropName + "_hour_once=" + start.substring(idx + 1, idx1) +
+                "&" + frequencyPropName + "_min_once=" + start.substring(idx1 + 1);
+    }
+  }
+
+  //--- collect parameters common to all calendar items on the page
+  var pageParametersDiv = document.getElementById('pageParameters');
+  if (!pageParametersDiv)
+    throw Error("addCalendarItem: pageParameters div not found for: " + anchor);
+  var pageParams = pageParametersDiv.getElementsByTagName('a');
+  if (!pageParams || pageParams.length == 0)
+    throw Error("addCalendarItem: pageParameters are empty for: " + anchor);
+  for (var i=0; i<pageParams.length; i++) {
+    if (pageParams[i].id.indexOf("type=") == 0)
+      continue;
+    anchor += '&' + pageParams[i].id;
+  }
+
+  document.location.href = anchor;
+  return stopEventPropagation(event);
+//  return addAndShow1(anchor, event);
+}
+
 function addAndShow1(anchor, event) {
   var iframeId = "resourceList";
   var iframe = document.getElementById(iframeId);
@@ -3462,6 +3538,44 @@ function showDiv(e, td, hideDivId) {
   div = document.getElementById(divId);
   div.style.visibility = Popup.VISIBLE;
   div.style.display = 'inline';
+}
+
+function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
+  if (e.ctrlKey)  {// ctrl-enter
+    if (!maxDuration) {
+      Popup.open(divId2, hotSpot);
+      return;
+    }
+    var div = document.getElementById(divId2);
+    var tables = div.getElementsByTagName("table");
+    var table;
+    for (var i=0; i<tables.length && !table; i++) {
+      if (tables[i].id  &&  tables[i].id.indexOf("table_") == 0)
+        table = tables[i];
+    }
+    var trs = table.getElementsByTagName('tr');
+    var trLen = trs.length;
+    for (var i=1; i<trLen; i++) {
+      var tr = trs[i];
+      var anchor = tr.getElementsByTagName('a');
+      var s = anchor[0].innerHTML;
+      var idx = s.indexOf(" ");
+      s = s.substring(0, idx);
+      if (parseInt(s) > maxDuration) {
+        tr.style.visibility = Popup.HIDDEN;
+        tr.style.display = "none";
+      }
+      else {
+        tr.style.visibility = Popup.VISIBLE;
+        tr.style.display = "";
+      }
+    }
+    Popup.open(divId2, hotSpot);
+  }
+  else
+    Popup.open(divId1, hotSpot);
+  calendarCell = hotSpot;
+  return false;
 }
 
 function getDocumentEvent(e) {
