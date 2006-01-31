@@ -1028,8 +1028,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     // close popup
     var divId = prop + "_" + currentFormName;
-    if (currentResourceUri != null)
-      divId = currentResourceUri + ".$." + divId;
+    if (currentResourceUri != null) {
+      if (divId.indexOf(".") == 0)
+        divId = currentResourceUri + ".$" + divId;
+      else
+        divId = currentResourceUri + ".$." + divId;
+    }
     var div = document.getElementById(divId);
     if (deleteCurrentDiv && currentDiv)
       loadedPopups[currentDiv.id] = null;
