@@ -168,7 +168,8 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 .group {background:#f8f4ef;PADDING-RIGHT: 10px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}
 .line {background:#ACD2E2}
-.busy        {background-color:pink; font-weight:bold; FONT-SIZE: 11px;}
+.busy        {border:solid #808080 0px;background-color:pink; font-weight:bold; FONT-SIZE: 11px;}
+.orgbusy     {border:solid #808080 0px;background-color:E4BBF9; font-weight:bold; FONT-SIZE: 11px;}
 .unavailable {background-color:ACD2E2}
 .available   {background-color:#f8f4ef}
 .notEnoughSpace {background-color:#ACE2CE}
