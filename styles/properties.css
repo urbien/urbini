@@ -173,7 +173,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .unavailable {background-color:ACD2E2}
 .available   {background-color:#f8f4ef}
 .notEnoughSpace {background-color:#ACE2CE}
-.grayedOut   {background-color:#E2E2E2}
+.grayedOut   {border:solid #808080 0px;background-color:#E2E2E2}
 
 .allButton      {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold; height:40pt; cursor: pointer; cursor: hand;}
 .categoryButton {border:solid #808080 1px; background-color:#f8f4ef; color: darkblue; font-size:12pt;font-weight:bold; height:40pt; cursor: pointer; cursor: hand;}
