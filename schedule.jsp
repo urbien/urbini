@@ -10,7 +10,7 @@
       </td>
       <td>
       <div>
-	     <form id="filter" name="tablePropertyList" method="post" action="FormRedirect">
+	     <form id="filter" name="tablePropertyList" method="post" action="FormRedirect" AUTOCOMPLETE="off">
          <tablePropertyList type="http://www.hudsonfog.com/voc/hospitality/spa/Ticket"/>
 	       <!--input type="hidden" name="-$action" value="mkResource"></input-->
 	       <input type="hidden" name="-schedule" value="y"></input>
