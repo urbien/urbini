@@ -1871,6 +1871,8 @@ function autoCompleteOnMouseout(e) {
  */
 function autoCompleteOnKeyDown(e) {
   e = getDocumentEvent(e); if(!e) return;
+  return autoComplete(e);
+  /*
   if( typeof( e.keyCode ) == 'number') {
     if (e.keyCode == 8 || e.keyCode == 127) { // backspace, ctrl-enter
       var flag = autoComplete(e);
@@ -1881,6 +1883,7 @@ function autoCompleteOnKeyDown(e) {
     else
       return true;
   }
+  */
 }
 
 function autoCompleteTimeout(invocationTime) {
