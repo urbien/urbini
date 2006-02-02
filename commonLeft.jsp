@@ -66,11 +66,11 @@
   <td><br/><nobr><b><font color="darkblue"><text text="Errors"/></font></b></nobr></td>
 </tr>
 
-<tr allow="owner" rdftype="http://www.hudsonfog.com/voc/views/parse/ErrorInExcelFile">
-   <td>&#160;&#160;<a href="localSearchResults.html?action=searchLocal&amp;type=http://www.hudsonfog.com/voc/views/parse/ErrorInExcelFile"><text text="Errors"/></a></td>
+<tr allow="owner" rdftype="http://www.hudsonfog.com/voc/views/parse/ErrorInFile">
+   <td>&#160;&#160;<a href="localSearchResults.html?action=searchLocal&amp;type=http://www.hudsonfog.com/voc/views/parse/ErrorInFile"><text text="Errors"/></a></td>
 </tr>
-<tr allow="owner" rdftype="http://www.hudsonfog.com/voc/views/parse/WarningInExcelFile">
-   <td>&#160;&#160;<a href="localSearchResults.html?action=searchLocal&amp;type=http://www.hudsonfog.com/voc/views/parse/WarningInExcelFile"><text text="Warnings"/></a><br/></td>
+<tr allow="owner" rdftype="http://www.hudsonfog.com/voc/views/parse/WarningInFile">
+   <td>&#160;&#160;<a href="localSearchResults.html?action=searchLocal&amp;type=http://www.hudsonfog.com/voc/views/parse/WarningInFile"><text text="Warnings"/></a><br/></td>
 </tr>
 
 <tr><br/>
