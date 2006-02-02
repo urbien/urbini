@@ -178,7 +178,12 @@
 
       var listboxFrame = frames["popupFrame"];
       popupFrameLoaded = false;
-      listboxFrame.location.replace(url); // load data from server into iframe
+
+      var locationUrl = document.location.href;
+      if (locationUrl.indexOf("/schedule.html?") != -1)
+        document.location.replace(url);
+      else
+        listboxFrame.location.replace(url); // load data from server into iframe
       if (Popup.tooltipPopup) {
         Popup.tooltipPopup.close();
         Popup.tooltipPopup = null;
