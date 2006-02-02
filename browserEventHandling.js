@@ -180,8 +180,10 @@
       popupFrameLoaded = false;
 
       var locationUrl = document.location.href;
-      if (locationUrl.indexOf("/schedule.html?") != -1)
+      if (locationUrl.indexOf("/schedule.html?") != -1) {
+        url += "&$returnUri=" + encodeURIComponent(locationUrl);
         document.location.replace(url);
+      }
       else
         listboxFrame.location.replace(url); // load data from server into iframe
       if (Popup.tooltipPopup) {
