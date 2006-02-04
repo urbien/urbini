@@ -3476,13 +3476,14 @@ function addAndShow1(anchor, event) {
 	    var tag = div.getElementsByTagName('a');
       if (tag.length) {
   	    var retUri = tag[0].href;
-  	    newUri = anchor + "&$returnUri=" + encodeURIComponent(retUri);
+  	    newUri = anchor + "&$returnUri=" + encodeURIComponent(retUri + "&-addItems=y");
       }
       else
         newUri = anchor;
 	  }
 	  else
   	  newUri = anchor;
+    
     iframeWindow.location.replace(newUri); // load data from server into iframe
 //    window.open(newUri);
 //    return;
