@@ -504,8 +504,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     // hack for Opera (at least at ver. 7.54) - somehow iframe is always on top of div - no matter how hard we try to set zIndex
     // so we have to live without iframe in Opera
-    var opera = navigator.userAgent.indexOf("Opera") != -1;
-    if (!opera)
+    var opera     = navigator.userAgent.indexOf("Opera") != -1;
+    var konqueror = navigator.userAgent.indexOf("Konqueror") != -1;
+    if (!opera && !konqueror)
       istyle.visibility  = Popup.VISIBLE;
     istyle.display       = 'inline';
     div.style.display    = 'inline';
