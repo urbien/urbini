@@ -131,9 +131,14 @@
       llen = elements.length;
       for (var i=0;i<llen; i++) {
         var elem = elements[i];
-        if (elem.id  &&  elem.id.indexOf("_boolean", elem.id.length - "_boolean".length) != -1) {
-          addEvent(elem, 'click', changeBoolean, false);
-          elem.style.cursor = 'pointer';
+        if (elem.id) {
+          var elemId  = elem.id;
+          var elemLen = elemId.length;
+          if (elemId.indexOf("_boolean",          elemLen - "_boolean".length) != -1  ||
+              elem.id.indexOf("_boolean_refresh", elemLen - "_boolean_refresh".length) != -1) {
+            addEvent(elem, 'click', changeBoolean, false);
+            elem.style.cursor = 'pointer';
+          }
         }
       }
 
@@ -150,8 +155,8 @@
         return;
       target = getTargetElement(e);
       var url = 'editProperties.html?submit=Submit+changes&User_Agent_UI=n&uri=';
-
-      var rUri = target.id.substring(0, target.id.length - "_boolean".length);
+      var bIdx = target.id.indexOf("_boolean");
+      var rUri = target.id.substring(0, bIdx);
       var idx = rUri.lastIndexOf("_");
       var propShort = rUri.substring(idx + 1);
       rUri = rUri.substring(0, idx);
@@ -179,8 +184,8 @@
       var listboxFrame = frames["popupFrame"];
       popupFrameLoaded = false;
 
-      var locationUrl = document.location.href;
-      if (locationUrl.indexOf("/schedule.html?") != -1) {
+      if (target.id.indexOf("_boolean_refresh") != -1) {
+        var locationUrl = document.location.href;
         url += "&$returnUri=" + encodeURIComponent(locationUrl);
         document.location.replace(url);
       }
