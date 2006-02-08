@@ -3391,6 +3391,8 @@ function addSimpleCalendarItem(popupRowAnchor, event) {
   if (!calendarRow)
     throw Error("addCalendarItem: calendar row not found for: " + anchor);
   //--- extract parameters specific for popup row
+  var calendarTd = getTdNode(calendarCell);
+
   var popupRow = getTrNode(popupRowAnchor); // get tr on which user clicked in popup
   if (!popupRow)
     throw Error("addSimpleCalendarItem: popup row not found for: ");
@@ -3414,7 +3416,14 @@ function addSimpleCalendarItem(popupRowAnchor, event) {
       contactDiv = parentNode;
     }
   }
-  anchor += '&' + contactDiv.id;
+  var idx1 = contactDiv.id.indexOf(".propToSet=");
+  var idx2 = contactDiv.id.indexOf("&", idx1);
+  var propToSet = contactDiv.id.substring(idx1 + 11, idx2);
+  var value = calendarTd.className;
+  var v = 'Available';
+  if (value  &&  value == 'available')
+    v = 'Busy';
+  anchor += '&' + contactDiv.id.substring(0, idx1) + contactDiv.id.substring(idx2) + '&.' + propToSet + '=' + v;
 
   var idx = contactDiv.id.indexOf("=frequency");
   var frequencyPropName = contactDiv.id.substring(0, idx);
@@ -3554,7 +3563,7 @@ function showDiv(e, td, hideDivId) {
   div.style.display = 'inline';
 }
 
-function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
+function openPopup(divId1, divId2, availableBusy, hotSpot, e, maxDuration) {
   if (e.ctrlKey)  {// ctrl-enter
     if (!maxDuration) {
       Popup.open(divId2, hotSpot);
@@ -3586,8 +3595,10 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
     }
     Popup.open(divId2, hotSpot);
   }
-  else
-    Popup.open(divId1, hotSpot);
+  else {
+    if (divId1)
+      Popup.open(divId1, hotSpot);
+  }
   calendarCell = hotSpot;
   return false;
 }
