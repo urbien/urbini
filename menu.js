@@ -941,8 +941,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var selectedItem;
       var selectedIdx = 0;
 
-      if (!selectItems.length && selectItems.type.toLowerCase() == "hidden")
-        formField.value = tr.id; // property value corresponding to a listitem
+      if (!selectItems.length) {
+        var t = selectItems.type.toLowerCase();
+        if (t == "hidden")
+          formField.value = tr.id; // property value corresponding to a listitem
+        else if (t == "checkbox")
+          formField.value = tr.id; // property value corresponding to a listitem
+      }
       else {
         formField.value = '';
         // go over selected items and count all checked
@@ -3484,7 +3489,7 @@ function addAndShow1(anchor, event) {
 	  }
 	  else
   	  newUri = anchor;
-    
+
     iframeWindow.location.replace(newUri); // load data from server into iframe
 //    window.open(newUri);
 //    return;
