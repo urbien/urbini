@@ -3563,7 +3563,7 @@ function showDiv(e, td, hideDivId) {
   div.style.display = 'inline';
 }
 
-function openPopup(divId1, divId2, availableBusy, hotSpot, e, maxDuration) {
+function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
   if (e.ctrlKey)  {// ctrl-enter
     if (!maxDuration) {
       Popup.open(divId2, hotSpot);
