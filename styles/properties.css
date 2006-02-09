@@ -28,6 +28,7 @@ tr.subtotal  {background-color:#cdcde4; font-weight:bold}
 td.error     {background-color:#ffcc00; font-weight:bold}
 tr.error     {background-color:#ffcc00; font-weight:bold}
 
+tr.sep {background-color:#cbcbcb; height:9pt;}
 
 /* Below are more advanced things that allow you to fine tune font sizes and typeface. */
 /* Leave them as is for now                                                            */
@@ -130,22 +131,22 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 /* To display property groups in edit mode */
 .propertyGroup { font-family: sans-serif, Arial, Verdana, Geneva, Helvetica; font-size: 12px; font-weight: bold; text-transform: uppercase;}
+
+/* Simple border */
 .box {
    border-top : 1px solid #c7c9cc;
    border-right : 1px solid #3E4144;
    border-bottom : 1px solid #3E4144;
    border-left : 1px solid #c7c9cc;
 }
-.redbox {
-   border-top : 1px solid red;
-   border-right : 1px solid red;
-   border-bottom : 1px solid red;
-   border-left : 1px solid red;
-}
+
 .welcome {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;}
+
+/* Contact name that appears at the top of the page style */
 .guestUser {  font-family: Verdana, Arial, Helvetica, sans-serif; color: lightblue; font-size: 8pt; font-weight: bold;}
 .user      {color:darkblue; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight:bold; text-decoration:none; font-size:8pt;}
 
+/* Menu TABS styles */
 .tabs TD.left {
   background-image:url(../images/skin/blue/tab-left.gif);
   background-repeat: no-repeat;
@@ -166,19 +167,28 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   background-position: center;
   vertical-align: middle;
 }
-.group {background:#f8f4ef;PADDING-RIGHT: 10px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}
+/*.group {background:#f8f4ef;PADDING-RIGHT: 10px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}*/
+
+/* Under menu line style (usually the same color as tabs */
 .line {background:#ACD2E2}
-.busy        {border:solid #808080 0px;background-color:pink; font-weight:bold; FONT-SIZE: 11px;}
-.orgbusy     {border:solid #808080 0px;background-color:E4BBF9; font-weight:bold; FONT-SIZE: 11px;}
-.unavailable {background-color:ACD2E2}
-.available   {background-color:#f8f4ef}
+
+/* Scheduling page styles */
+.schedule    {border:solid #808080 1px;border-collapse: collapse};
+.busy        {border:solid #808080 0px; background-color:pink; font-weight:bold; FONT-SIZE: 11px;}
+.orgbusy     {border:solid #808080 0px; background-color:#E4BBF9; font-weight:bold; FONT-SIZE: 11px;}
+.unavailable {background-color:#ACD2E2}
+.available   {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse}
 .notEnoughSpace {background-color:#ACE2CE}
 .grayedOut   {border:solid #808080 0px;background-color:#E2E2E2}
 
+/* Recall_orders page styles */
 .allButton      {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold; height:40pt; cursor: pointer; cursor: hand;}
 .categoryButton {border:solid #808080 1px; background-color:#f8f4ef; color: darkblue; font-size:12pt;font-weight:bold; height:40pt; cursor: pointer; cursor: hand;}
 .itemButton     {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:40pt;text-decoration:none; cursor: pointer; cursor: hand;}
+
+/* Picture frame styles */
 .ver_border	{width: 10px; height: 100%; margin: 0px; padding: 0px; border: 0px; background-color: #fff;}
+
+/* Add items styles */
 .backTo         {color:red}
 .viewAll        {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold}
-tr.sep {background-color:#cbcbcb; height:9pt;}
