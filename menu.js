@@ -3416,32 +3416,46 @@ function addSimpleCalendarItem(popupRowAnchor, event) {
       contactDiv = parentNode;
     }
   }
-  var idx1 = contactDiv.id.indexOf(".propToSet=");
-  var idx2 = contactDiv.id.indexOf("&", idx1);
-  var propToSet = contactDiv.id.substring(idx1 + 11, idx2);
-  var value = calendarTd.className;
-  var v = 'Available';
-  if (value  &&  value == 'available')
-    v = 'Busy';
-  anchor += '&' + contactDiv.id.substring(0, idx1) + contactDiv.id.substring(idx2) + '&.' + propToSet + '=' + v;
+  anchor += '&' + contactDiv.id;
+  var blockReleaseDiv = document.getElementById('blockReleaseParameters');
+  if (!blockReleaseDiv)
+    throw Error("addCalendarItem: blockReleaseParameters div not found for: " + anchor);
+  var brParams = blockReleaseDiv.getElementsByTagName('a');
+  if (!brParams || brParams.length == 0)
+    throw Error("addCalendarItem: blockReleaseParameters are empty for: " + anchor);
+  for (var i=0; i<brParams.length; i++) {
+    if (brParams[i].id.indexOf(".propToSet=") == -1) {
+      anchor += '&' + brParams[i].id;
+      continue;
+    }
 
-  var idx = contactDiv.id.indexOf("=frequency");
-  var frequencyPropName = contactDiv.id.substring(0, idx);
-  idx = frequencyPropName.lastIndexOf("&");
-  frequencyPropName = frequencyPropName.substring(idx + 1);
-  var start = calendarRowId.substring(0, idx);
-  idx = start.indexOf("+");
-  var startDate = start;
-  if (idx != -1)
-    startDate = start.substring(0, idx);
-  anchor += "&" + frequencyPropName + "_recur=once&" + frequencyPropName + "_start_once=" + startDate;
-  if (idx != -1) {
-    var idx1 = start.indexOf(":", idx);
-    if (idx1 != -1) {
-      anchor += "&" + frequencyPropName + "_hour_once=" + start.substring(idx + 1, idx1) +
-                "&" + frequencyPropName + "_min_once=" + start.substring(idx1 + 1);
+    var idx1 = brParams[i].id.indexOf(".propToSet=");
+    var idx2 = brParams[i].id.indexOf("&", idx1);
+    var propToSet = brParams[i].id.substring(idx1 + 11, idx2);
+    var value = calendarTd.className;
+    var v = 'Available';
+    if (value  &&  value == 'available')
+      v = 'Busy';
+    anchor += '&' + brParams[i].id.substring(0, idx1) + brParams[i].id.substring(idx2) + '&.' + propToSet + '=' + v;
+    var idx = brParams[i].id.indexOf("=frequency");
+    var frequencyPropName = brParams[i].id.substring(0, idx);
+    idx = frequencyPropName.lastIndexOf("&");
+    frequencyPropName = frequencyPropName.substring(idx + 1);
+    var start = calendarRowId.substring(0, idx);
+    idx = start.indexOf("+");
+    var startDate = start;
+    if (idx != -1)
+      startDate = start.substring(0, idx);
+    anchor += "&" + frequencyPropName + "_recur=once&" + frequencyPropName + "_start_once=" + startDate;
+    if (idx != -1) {
+      var idx1 = start.indexOf(":", idx);
+      if (idx1 != -1) {
+        anchor += "&" + frequencyPropName + "_hour_once=" + start.substring(idx + 1, idx1) +
+                  "&" + frequencyPropName + "_min_once=" + start.substring(idx1 + 1);
+      }
     }
   }
+
 
   //--- collect parameters common to all calendar items on the page
   var pageParametersDiv = document.getElementById('pageParameters');
