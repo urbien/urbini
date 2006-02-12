@@ -792,7 +792,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
     else
       prop = propertyShortName.substring(0, idx);
-    var formField;
+
     var chosenTextField = form.elements[originalProp];
     var len = chosenTextField.length;
     var verified = prop + "_verified";
@@ -839,7 +839,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (currentResourceUri)
       select = currentResourceUri + ".$" + select;
 
-    formField = form.elements[select];
+    var formField = form.elements[select];
     var selectItems = form.elements[select];
     if (tr.id.indexOf('$clear') == 0) {
       if (isViewCols) {
@@ -873,7 +873,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 			  document.location.replace(url);
 			  return;
       }
-      if (!isViewCols) {
+      else {
         var isTablePropertyList = currentFormName.indexOf("tablePropertyList") == 0;
 	      if (len > 1) {
 	        if (!isTablePropertyList)
@@ -944,12 +944,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       if (!selectItems.length) {
         var t = selectItems.type.toLowerCase();
         if (t == "hidden")
-          formField.value = tr.id; // property value corresponding to a listitem
-        else if (t == "checkbox")
-          formField.value = tr.id; // property value corresponding to a listitem
+          selectItems.value = tr.id; // property value corresponding to a listitem
+//        else if (t == "checkbox")
+//          selectItems.value = tr.id; // property value corresponding to a listitem
       }
       else {
-        formField.value = '';
+        selectItems.value = '';
         // go over selected items and count all checked
         var hiddenSelectedItem;
         for (var i=0; i<selectItems.length; i++) {
