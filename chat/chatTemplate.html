@@ -4,14 +4,14 @@
     &[title];
     <link rel='stylesheet' type='text/css' href='chat/chat.css'/>
     <!--link rel='stylesheet' type='text/css' href='styles/properties.css'/ //-->
-	  <link href="styles.css" type="text/css" rel="stylesheet" /> 
+	  <link href="styles.css" type="text/css" rel="stylesheet" />
     <script src="chat/chatJS.js" language="JavaScript" type="text/javascript"></script>
 
     <script language='JavaScript' type="text/javascript">
 		var postLoaded = 0;     // ==1 when the post iframe is loaded
 		var contentLoaded = 0;  // ==1 when the content iframe is loaded
 		var usersLoaded = 0;    // ==1 when the users iframe is loaded
-		
+
 		var encodedRoom = '&[encodedRoom];';
 		var sendDivTimeOut;
 		var sendShortcut; // Shortcut of the message sending
@@ -20,18 +20,18 @@
 		var isWindowInFocus = "blured";
 		var privateR = '&[privateR];';
 //---------START------------------------These variables are used in chat reconnect chat task ------------------------------------
-		var threadIframeContent = 0; // this variable contains the length of the thread iframe content. 
+		var threadIframeContent = 0; // this variable contains the length of the thread iframe content.
 		var connectTimeOut = ""; // check Connection task - reconnect chat
 		                         // this variable is used in checkOnlineStatus() to handle setTimeout("checkOnlineStatus()",5000);
-//---------FINISH------------------------These variables are used in chat reconnect chat task ------------------------------------								 
+//---------FINISH------------------------These variables are used in chat reconnect chat task ------------------------------------
 
-		addEvent(window, 'focus', function() {isWindowInFocus="focused";}); 
-		addEvent(window, 'blur', function() {isWindowInFocus="blured";}); 
+		addEvent(window, 'focus', function() {isWindowInFocus="focused";});
+		addEvent(window, 'blur', function() {isWindowInFocus="blured";});
 
 		//window.onerror=myErrorHandler;
-    </script>   
+    </script>
   </head>
-  <body onload="initFrames(); checkOnlineStatus(); isChatWithTheAgent('&[isChatWithTheAgent];');" onclick="isWindowInFocus='focused';" onfocus="isWindowInFocus='focused';" onblur="isWindowInFocus='blured';" style='cursor : pointer;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#EDEDED"> 
+  <body onload="initFrames(); checkOnlineStatus(); isChatWithTheAgent('&[isChatWithTheAgent];');" onclick="isWindowInFocus='focused';" onfocus="isWindowInFocus='focused';" onblur="isWindowInFocus='blured';" style='cursor : pointer;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#EDEDED">
 	  <input type='hidden' name='realUserName' id='realUserName' value="&[realUserName];">
 	  <input type='hidden' name='aliasUserUri' id='aliasUserUri' value="&[aliasUserUri];">
 
@@ -172,7 +172,7 @@
                      <input type='hidden' value='' name='message' id='message'>
                      <input type='hidden' name='nameUser' id='nameUser' value=''>
                      <font color='#33A3D2'>
-                       <span class=xs><b>Current Room:</b></span>
+                       <span class=xs><b>Contacts</b></span>
                      </font>
                      <br>
                      <div id=bodyMembersKeeper bgcolor='#E3EAEB'>
@@ -180,7 +180,7 @@
                        </div>
                      </div>
               		</form>
-	            	</div>	
+	            	</div>
 	            </td>
 <!-----------------------------------------------FINISH---------USERS LIST PANEL DEFINITION ------------------------------------------------------------------>
             </tr>
@@ -191,7 +191,7 @@
 	            	  <input type="hidden" value="all" name="nameUser" id="nameUser">
 	            	  <input type="hidden" value="my" id="aliasUser" name="aliasUser">
                   <!-- RTE's panel will be loaded to this div//-->
-                  <div id="messageRTEdv" style="height:0" align="center"></div> 
+                  <div id="messageRTEdv" style="height:0" align="center"></div>
                   <!-- RTE's iframe together with the send button image//-->
                   <table width="100%">
                     <tr>
@@ -209,7 +209,7 @@
                   <script language="JavaScript" type="text/javascript">
                     //Usage: initRTE(imagesPath, includesPath, cssFile)
                     initRTE("images/wysiwyg/", "chat/", "");
-                    // add RTE to chat 
+                    // add RTE to chat
                     addRTE();
                   </script>
                   <input type="Hidden" name='message' id='message'> <!--the cleaned message will be loaded to this hidden object named 'message'//-->
@@ -220,13 +220,13 @@
               </td>
 <!-----------------------------------------------FINISH---------RTE DEFINITION ------------------------------------------------------------------>
             </tr>
-         </table>  
+         </table>
 
         </td>
       </tr>
     </table>
     <bgsound id="sound">
-    <embed src='chat/DingDong.wav' height="0" autostart=false hidden=true id="sound1" enablejavascript="true" height="0"> 	
+    <embed src='chat/DingDong.wav' height="0" autostart=false hidden=true id="sound1" enablejavascript="true" height="0">
     <form target='post' id='postFormWritingStatus' name='postFormWritingStatus'  method='post' action='chatRoom?frame=post&room=&[encodedRoom];'>
       <input type="hidden" value="all"  name="nameUser">
       <input type="hidden" value="my" name="aliasUser">
@@ -235,7 +235,7 @@
     <iframe id='thread' name='thread' src='about:blank' style='width:0px; height: 0px; border: 0'></iframe>
     <div>
       <iframe id='post' name='post' src='about:blank' style='width: 0px; height: 0px; border: 0'></iframe>
-    </div>  
+    </div>
     <div id="soundAppletDiv" style="height:0;width:0"></div>
     <script language="JavaScript" type="text/javascript">
       window.onresize = onResizeEventHandler;
@@ -245,7 +245,7 @@
         postDiv.src='chatRoom?frame=post&room=&[encodedRoom];'
       }
     </script>
-    
+
     <!-- online status table //-->
     <table cellpadding="1" border="1" rules="groups" cellspacing="0" onmouseover="clearTimeoutForStatusMenu()" onmouseout="statusMenuMouseOut();" style="cursor : text;display:none;position:absolute;background-color:#ffffff;border : 1px solid Silver;" id="dvOnlineStatus">
       <tr>
