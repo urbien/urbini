@@ -277,7 +277,8 @@ var timeDelta = 0; // difference between server and client time
                        useCapture,
                        contactURI,
                        nameOfTheInsertedFont,
-                       realName,color,
+                       realName,
+                       color,
                        userInfoDisplay,
                        sendPrivMessageDisplay,
                        inviteToPrivChatDisplay,
@@ -288,7 +289,7 @@ var timeDelta = 0; // difference between server and client time
                                      window.parent.showOpsMenu(contactURI,
                                                                realName,
                                                                color,
-                                                               nameOfTheInsertedFont,
+                                                               contactURI, // nameOfTheInsertedFont,
                                                                userInfoDisplay,
                                                                sendPrivMessageDisplay,
                                                                inviteToPrivChatDisplay,
@@ -300,7 +301,7 @@ var timeDelta = 0; // difference between server and client time
                                                  window.parent.showOpsMenu(contactURI,
                                                                            realName,
                                                                            color,
-                                                                           nameOfTheInsertedFont,
+                                                                           contactURI, // nameOfTheInsertedFont,
                                                                            userInfoDisplay,
                                                                            sendPrivMessageDisplay,
                                                                            inviteToPrivChatDisplay,
@@ -421,21 +422,23 @@ var timeDelta = 0; // difference between server and client time
          inHTML += "</span>";
          inHTML += "<input id='linkToResource" + membersArray[i] + "' onclick='alert(this.id)' type='hidden' value=" + linkToResourcePage[i] + ">";
          inHTML += "<br>";
-         if(parent.document.getElementById('userOpsPanelUserName').innerHTML==membersArray[i])
-         window.parent.showOpsMenu(aliasesArray[i],membersArray[i], '#000000',membersArray[i],'inline','inline','inline','inline','none','inline','inline');
+         if (parent.document.getElementById('userOpsPanelUserName').innerHTML == membersArray[i]) {
+           alert ("aliasesArray[i]: " + aliasesArray[i] + ", membersArray[i]: " + membersArray[i]);
+           window.parent.showOpsMenu(aliasesArray[i], membersArray[i], '#000000', aliasesArray[i], 'inline', 'inline', 'inline', 'inline', 'none', 'inline', 'inline');
+         }
        }
 		}
 	  inHTML += "<br><br><br><br><!--input type='hidden' value='' name='message' id='message'//--><!--input type='hidden' name='nameUser' id='nameUser' value=''//-->";
     inHTML += "</form>";
     bodyRef.innerHTML += inHTML;
 
-	  if(!(document.getElementById('inv'+parent.document.getElementById('userOpsPanelUserName')) ||
-         document.getElementById('c'+parent.document.getElementById('userOpsPanelUserName'))
+	  if (!(document.getElementById('inv' + parent.document.getElementById('userOpsPanelUserName')) ||
+          document.getElementById('c'   + parent.document.getElementById('userOpsPanelUserName'))
         ))
       parent.hideOpsMenu();
 	}
 
-	function insertMembers(membersArray,usersInfArray,linkToContactPageArray, membersOnlineStatusArray, isInSupportGroupArray) {
+	function insertMembers(membersArray, usersInfArray, linkToContactPageArray, membersOnlineStatusArray, isInSupportGroupArray) {
 	  var docum = parent.document;
 	  docum.getElementById("bodyMembersKeeper").removeChild(docum.getElementById("divUsersContainer"));
     if(docum.getElementById("divUsersInvite"))
@@ -452,11 +455,11 @@ var timeDelta = 0; // difference between server and client time
 			var nameUserOnline = membersArray[i+1];
       var realUserName = membersArray[i].substring(0,membersArray[i].lastIndexOf('-'));
       //if(parent.document.getElementById('userOpsPanelUserName').innerHTML==realUserName)
-			if(parent.document.getElementById('sendPrivateMessagesToUser').innerHTML==membersArray[i+1])
+			if (parent.document.getElementById('sendPrivateMessagesToUser').innerHTML == membersArray[i+1])
 			  window.parent.showOpsMenu(nameUserOnline,
                                   realUserName,
-                                  membersArray[i].substring(membersArray[i].lastIndexOf('-')+1,
-                                  membersArray[i].length),nameUserOnline,
+                                  membersArray[i].substring(membersArray[i].lastIndexOf('-') + 1, membersArray[i].length),
+                                  nameUserOnline,
                                   'inline',
                                   'inline',
                                   'inline',
