@@ -323,7 +323,7 @@ function hideOpsMenu() {
   document.getElementById("userOpsPanel").style.display = "none";
 }
 
-function showOpsMenu(userContactURI, user, userColor, privateTo, userInfoDisplay, sendPrivMessageDisplay, inviteToPrivChatDisplay, inviteToChatRoomDisplay, highlightDisplay, linkToResource, joinChatRoom) {
+function showOpsMenu(userContactURI,user, userColor, privateTo,userInfoDisplay,sendPrivMessageDisplay,inviteToPrivChatDisplay,inviteToChatRoomDisplay,highlightDisplay,linkToResource,joinChatRoom) {
   var oldDisplay = document.getElementById("userOpsPanel").style.display.indexOf("none");
 
   if (document.all) {
@@ -344,18 +344,18 @@ function showOpsMenu(userContactURI, user, userColor, privateTo, userInfoDisplay
     document.getElementById("highlightDisplay").src="images/fadelight.gif";
 
   try {
-    document.getElementById("sendPrivateMessagesToUser").value         = privateTo;
+    document.getElementById("sendPrivateMessagesToUser").value = privateTo;
     document.getElementById("sendPrivateMessagesToUserRealName").value = user;
-    document.getElementById("userOpsPanelUserName").innerHTML          = user;
-    document.getElementById("userOpsPanelUserName").style.color        = userColor;
+    document.getElementById("userOpsPanelUserName").innerHTML = user;
+    document.getElementById("userOpsPanelUserName").style.color = userColor;
 
-    document.getElementById("userInfoDisplay").style.display         = userInfoDisplay;
-    document.getElementById("sendPrivMessageDisplay").style.display  = sendPrivMessageDisplay;
+    document.getElementById("userInfoDisplay").style.display = userInfoDisplay;
+    document.getElementById("sendPrivMessageDisplay").style.display = sendPrivMessageDisplay;
     document.getElementById("inviteToPrivChatDisplay").style.display = inviteToPrivChatDisplay;
     document.getElementById("inviteToChatRoomDisplay").style.display = inviteToChatRoomDisplay;
-    document.getElementById("highlightDisplay").style.display        = highlightDisplay;
-    document.getElementById("linkToResource").style.display          = linkToResource;
-    document.getElementById("joinChatRoom").style.display            = joinChatRoom;
+    document.getElementById("highlightDisplay").style.display = highlightDisplay;
+    document.getElementById("linkToResource").style.display = linkToResource;
+    document.getElementById("joinChatRoom").style.display = joinChatRoom;
   } catch(ex){}
 
   onResizeEventHandler();
@@ -500,12 +500,11 @@ function hideOpsMenu() {
     }
 
     function helpSubmitted(messageText){
-      var form = parent.document.forms['postForm'];
-      form.elements['aliasUser'].value = parent.document.getElementById('aliasUserUri').value;
-      form.elements['nameUser'].value  = 'allChatsHelp'; // notes that all chat members that are responsible for support in all rooms must receive the message
-      form.elements['message'].value   = messageText;
-      form.submit();
-      form.elements['nameUser'].value = "all";
+      parent.document.postForm.aliasUser.value = parent.document.getElementById('aliasUserUri').value;
+      parent.document.postForm.nameUser.value = 'allChatsHelp'; // notes that all chat members that are responsible for support in all rooms must receive the message
+      parent.document.postForm.message.value = messageText;
+      parent.document.postForm.submit();
+      parent.document.postForm.nameUser.value = "all";
     }
 
     function isChatWithTheAgent(chatWithTheAgent) { // if chat is opened with the isChatWithTheAgent == true paremeter, than askForHelp() must be called
