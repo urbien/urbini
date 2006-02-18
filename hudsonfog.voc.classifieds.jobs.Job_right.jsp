@@ -2,7 +2,7 @@
 <br/>
 <table width="100%">
 <tr>
-  <td vlign="top" class="propertySheet"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;featuredJob_select=Yes&amp;featuredJob_verified=y&amp;-adTitle=Featured+jobs&amp;-viewCols=position,salary&amp;limit=10"/></td>
+  <td vlign="top" class="propertySheet"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;featuredJob_select=Yes&amp;featuredJob_verified=y&amp;-adTitle=Featured+jobs&amp;-viewCols=skillCategory,salary&amp;limit=10"/></td>
 </tr>
 <tr><td><br/></td></tr>
 <tr>
