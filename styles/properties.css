@@ -192,3 +192,9 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* Add items styles */
 .backTo         {color:red}
 .viewAll        {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold}
+
+.items {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #666;
+}
