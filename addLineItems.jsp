@@ -1,5 +1,4 @@
 <div>
-<div nonPda="T">
 <font color="red"><b><errorMessage /></b></font>
 <hideBlock id="hideBlock">
 <watchNote/>
@@ -16,11 +15,11 @@
 		</form>
     <taskTreeControl/>
 
-<a target="pane2"></a><div id="pane2"/>
+    <a target="pane2"></a><div id="pane2"/>
 
     <table width="100%" cellspacing="10" cellpadding="0" border="0">
     <tr valign="top">
-	    <td width="70%"><mkResourceForLineItems/><!--a target="pane2"></a><div id="pane2"/--></td>
+	    <td width="70%"><mkResourceForLineItems/></td>
 	    <td width="30%"><div id="resourceList_div"><siteResourceList/></div></td>
     </tr>
     <tr itype="http://www.hudsonfog.com/voc/hospitality/orders/BarItem">
@@ -46,57 +45,135 @@
   </td>
   </tr>
 </table>
-<br />
+<div id="keyboard" style="display:none">
+<style type="text/css">
+  .simpleButton {border:solid #808080 1px; color: darkblue; font-size:16pt; height:40pt; cursor: pointer; cursor: hand;}
+  .filterButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:30px;text-decoration:none}
+  .input {background-color:#EDF5F5; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:26px; text-decoration:none; }
+  .xxs {font-size:10pt;}
+</style>
+<script language="JavaScript1.2" type="text/javascript">
+	function clearAll() {
+	  document.getElementById('filter').elements['.title'].value = null;
+	}
+	function clear() {
+	  var v = document.getElementById('filter').elements['.title'].value;
+	  if (!v)
+	    return;
+	  if (v.length == 1)
+  	  document.getElementById('filter').elements['.title'].value = null;
+      document.getElementById('filter').elements['.title'].value = v.substring(0, v.length - 1);
+	}
+	function add(e) {
+	  var value = document.getElementById('filter').elements['.title'].value;
+    var ch = e.innerHTML;
+    if (ch == 'Space')
+	    ch = ' ';
+
+	  document.getElementById('filter').elements['.title'].value = value + ch;
+	}
+	function callAddAndShow(tr, event) {
+    addAndShowItems(tr, event);
+    document.getElementById('keyboard').style.display='none';
+	  document.getElementById('filter').elements['.title'].value = null;
+	}
+	function checkOnKeyPress(tr, event) {
+    var keyCode = getKeyCode(event);
+    if (keyCode == 13)
+      callAddAndShow(tr, event);
+//    else
+//      add(keyCode);
+	}
+</script>
+
+
+<form itype="http://www.hudsonfog.com/voc/hospitality/orders/BarItem" id="filter" method="post" action="FormRedirect" AUTOCOMPLETE="off">
+
+<table width="100%" border="0" cellspacing="10" cellpadding="0" cols="10">
+<tr>
+  <td align="left" colspan="10">
+    <table>
+	  <tr>
+	    <td>
+			  <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
+				<tr onClick="clearAll(); document.getElementById('keyboard').style.display='none';" style="cursor: pointer; cursor: hand;">
+				  <td width="17"></td>
+				  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0"/></td>
+				  <td class="but_center"><span style="color: rgb(75, 115, 75); ">CLOSE</span></td>
+				  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0"/></td>
+				</tr>
+			  </table>
+			</td>
+			<td>
+			  <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
+				<tr onClick="clear(this, event);" style="cursor: pointer; cursor: hand;">
+				  <td width="17"></td>
+				  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0"/></td>
+				  <td class="but_center"><span style="color: rgb(75, 115, 75); ">CLEAR</span></td>
+				  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0"/></td>
+  		  </tr>
+	  	  </table>
+	  	</td>
+	    <td>
+	      <input type="text" class="input" size="90" maxsize="200" name=".title" value="" onKeyPress="checkOnKeyPress(this, event);"/>
+	      <input type="hidden" name=".forum_select" value=""/>
+	    </td>
+	    <td>
+		    <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
+			  <tr onClick="addAndShowItems(this, event); document.getElementById('keyboard').style.display='none';" style="cursor: pointer; cursor: hand;"><!--"var form = document.getElementById('filter'); form.elements['.forum_verified'].value = 'y'; form.submit(); document.getElementById('keyboard').style.display='none';" style="cursor: pointer; cursor: hand;"-->
+			    <td width="17"></td>
+	  		  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0"/></td>
+		  	  <td class="but_center"><span style="color: rgb(75, 115, 75); ">SUBMIT</span></td>
+			    <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0"/></td>
+			  </tr>
+		    </table>
+			</td>
+		</tr>
+		</table>
+  </td>
+</tr>
+<tr>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">Q</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">W</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">E</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">R</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">T</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">Y</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">U</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">I</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">O</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">P</td>
+</tr>
+<tr>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">A</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">S</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">D</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">F</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">G</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">H</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">J</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">K</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">L</td>
+   <td></td>
+</tr>
+<tr>
+   <td></td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">Z</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">X</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">C</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">V</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">B</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">N</td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">M</td>
+   <td colspan="2"></td>
+</tr>
+<tr>
+   <td></td>
+   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" colspan="5">Space</td>
+   <td colspan="3"></td>
+</tr>
+</table>
+</form>
 </div>
-
-<!--div pda="T">
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-<tr valign="top">
-  <td valign="top" align="middle" width="100%">
-    <table width="100%" cellspacing="0" cellpadding="0" border="0">
-    <menuBar>
-    <tr valign="top">
-      <td valign="top">
-        <img src="icons/icon.gif" width="16" height="16" align="middle"/>
-        <img src="icons/icon_divider.gif" align="middle" border="0"></img>
-
-        <menu toolbar="toolbar1"/>
-        <menu toolbar="transport"/>
-        <menu toolbar="search"/>
-        <menu toolbar="filterLocal"/>
-        <menu toolbar="toolbar2"/>
-        <menu toolbar="support" allow="admin"/>
-        <menu toolbar="personalization"/>
-
-        <menu toolbar="calendarAndChart"/>
-
-        <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/>
-        <showHideWindows/>
-        <pdaToPc image="icons/pda.gif"/><changePassword/><userLogOff html="user-login.html"/>
-      </td>
-
-      <form name="searchForm" method="GET" action="searchResult.html" valign="middle">
-        <td valign="top" align="right" width="10%"><include name="searchText.jsp"/></td>
-      </form>
-
-    </tr>
-    </menuBar>
-    <tr valign="top"><td colspan="2">
-    <form action="list.html" name="siteResourceList">
-      <div align="left"><backLink /></div>
-      <taskTreeControl/>
-      <siteResourceList />
-      <createResources/>
-      <div align="right"><measurement/></div>
-    </form>
-    </td></tr>
-
-    </table>
-
-</td></tr></table>
-</div-->
-
-<!--script src="browserEventHandling.js" language="JavaScript" type="text/javascript"></script-->
-
-
+<br />
 </div>
