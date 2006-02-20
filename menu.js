@@ -3625,3 +3625,42 @@ function getDocumentEvent(e) {
   else
     return null;
 }
+
+function setCurrentItem (event, tr) {
+  tr.style.backgroundColor = '#F5ABE6';
+  var aa = document.getElementById('currentItem');
+  if (!aa)
+    return;
+  if (aa.href != tr.id) {
+    var elm = document.getElementById(aa.href);
+    var cName = elm.className;
+    if (cName)
+      elm.style.backgroundColor = '';
+    else
+      elm.style.backgroundColor = 'white';
+
+    aa.href = tr.id;
+  }
+  var div = document.getElementById('keyboard');
+  if (!div)
+    return;
+
+  var form = div.getElementsByTagName('form');
+  var forum = form[0].elements['.forum_select'];
+  forum.value = tr.id;
+}
+
+function addAndShowItems(tr, e) {
+  e = getDocumentEvent(e);
+  if (!e)
+    return stopEventPropagation(e);
+  var anchor = "mkResource.html?-$action=mkResource&type=http://www.hudsonfog.com/voc/model/portal/Comment&submit=Please+wait&.forum_verified=y&";
+  var form = document.getElementById('filter');
+  var forum = form.elements[".forum_select"].value;
+  var title = form.elements[".title"].value;
+  var href = document.location.href;
+  var idx = href.indexOf("?");
+  anchor += "&.forum_select=" + encodeURIComponent(forum) + "&.title=" + encodeURIComponent(title) + "&$returnUri="+ encodeURIComponent("localSearchResults.html?-addItems=y&-noRedirect=y&" + href.substring(idx + 1));
+
+  return addAndShow1(anchor, e);
+}
