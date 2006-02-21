@@ -41,6 +41,7 @@ Popup.delayedPopupOpenTime = null; // moment when delayed popup was requested
 Popup.tooltipPopup         = null;
 Popup.DarkMenuItem  = '#dee6e6';
 Popup.LightMenuItem = '';
+Popup.autoCompleteDefaultTimeout = 200;
 
 Popup.HIDDEN  =  'hidden';
 Popup.VISIBLE =  'visible';
@@ -353,6 +354,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.interceptEvents();
 
     // make popup active for key input
+/*
     if (self.div.focus) {// simple in IE
       try { self.div.focus(); } catch(e) {};
     }
@@ -365,6 +367,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         }
       }
     }
+*/
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
       self.delayedClose(20000);
@@ -744,6 +747,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.popupRowOnClick1 = function (e, tr, target) {
     Popup.lastClickTime = new Date().getTime();
     var currentDiv = self.getCurrentDiv();
+    if (!tr)
+      tr = self.currentRow;
     if (self.isHeaderRow(tr)) // skip clicks on menu header
       return;
 
@@ -1335,7 +1340,7 @@ function listboxOnClick(e) {
 }
 
 /**
- *  Opens the popup when needed, e.g. on click, on enter
+ *  Opens the popup when needed, e.g. on click, on enter, on autocomplete
  */
 function listboxOnClick1(imgId, enteredText, enterFlag) {
   if (Popup.openTimeoutId) {                  // clear any prior delayed popup open
@@ -1755,7 +1760,7 @@ function autoComplete1(e, target) {
   var fieldClass    = form.elements[propName1 + '_class'];
   if (characterCode == 13) { // enter
     if (!fieldVerified) { // show popup on Enter only in data entry mode (indicated by the presence of _verified field)
-      if (autoCompleteTimeoutId) clearTimeout(autoCompleteTimeoutId);
+      //if (autoCompleteTimeoutId) clearTimeout(autoCompleteTimeoutId);
       return true;
     }
   }
@@ -1769,22 +1774,48 @@ function autoComplete1(e, target) {
   keyPressedElement   = target;
   keyPressedElement.style.backgroundColor='#ffffff';
   var currentPopup = Popup.getPopup(divId);
-
-  if (characterCode == 13) { // open popup (or close it on second Enter)
-    listboxOnClick1(keyPressedImgId, keyPressedElement.value);
-    return stopEventPropagation(e); // tell browser not to do submit on 'enter'
+/*
+  !!!!!!!!!!!!! this below did not work to clear the previous popup
+  if (currentDiv) {
+    var p = Popup.getPopup(currentDiv);
+    if (p)
+      p.close();
   }
+*/
 
   switch (characterCode) {
    case 38:  //up arrow
+     if (currentPopup && currentPopup.isOpen()) {
+       currentPopup.deselectRow();
+       currentPopup.prevRow();
+       currentPopup.selectRow();
+     }
+     else {
+       listboxOnClick1(keyPressedImgId, keyPressedElement.value);
+     }
+     return stopEventPropagation(e);
    case 40:  //down arrow
+     if (currentPopup && currentPopup.isOpen()) {
+       currentPopup.deselectRow();
+       currentPopup.nextRow();
+       currentPopup.selectRow();
+     }
+     else {
+       listboxOnClick1(keyPressedImgId, keyPressedElement.value);
+     }
+     return stopEventPropagation(e);
    case 37:  //left arrow
    case 39:  //right arrow
    case 33:  //page up
    case 34:  //page down
    case 36:  //home
    case 35:  //end
+     return true;
    case 27:  //esc
+     if (currentPopup && currentPopup.isOpen()) {
+       currentPopup.close();
+     }
+     return stopEventPropagation(e);
    case 16:  //shift
    case 17:  //ctrl
    case 18:  //alt  s
@@ -1792,9 +1823,14 @@ function autoComplete1(e, target) {
      return true;
    case 8:   //backspace
    case 46:  //delete
+     return true;
    case 127: //ctrl-enter
    case 13:  //enter
-     break;
+     if (currentPopup && currentPopup.isOpen()) {
+       //listboxOnClick1(keyPressedImgId, keyPressedElement.value);
+       currentPopup.popupRowOnClick1(e);
+       return stopEventPropagation(e); // tell browser not to do submit on 'enter'
+     }
    case 9:   //tab
      if (currentDiv)
        currentPopup.close();
@@ -1817,7 +1853,7 @@ function autoComplete1(e, target) {
 	  else
       selectItems.value   = '';  // value was modified and is not verified yet (i.e. not chose from the list)
   }
-  autoCompleteTimeoutId = setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", 500);
+  autoCompleteTimeoutId = setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", Popup.autoCompleteDefaultTimeout);
   // make property label visible since overwritten inside the field
   var filterLabel = document.getElementById(propName1 + "_span");
   if (filterLabel)
