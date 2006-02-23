@@ -49,7 +49,7 @@
 <style type="text/css">
   .simpleButton {border:solid #808080 1px; color: darkblue; font-size:16pt; height:40pt; cursor: pointer; cursor: hand;}
   .filterButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:30px;text-decoration:none}
-  .input {background-color:#EDF5F5; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:26px; text-decoration:none; }
+  .input1 {background-color:#EDF5F5; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:26px; text-decoration:none; }
   .xxs {font-size:10pt;}
 </style>
 <script language="JavaScript1.2" type="text/javascript">
@@ -115,7 +115,7 @@
 	  	  </table>
 	  	</td>
 	    <td>
-	      <input type="text" class="input" size="90" maxsize="200" name=".title" value="" onKeyPress="checkOnKeyPress(this, event);"/>
+	      <input type="text" class="input1" size="90" maxsize="200" name=".title" value="" onKeyPress="checkOnKeyPress(this, event);"/>
 	      <input type="hidden" name=".forum_select" value=""/>
 	    </td>
 	    <td>
