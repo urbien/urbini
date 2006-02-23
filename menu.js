@@ -427,10 +427,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     istyle.visibility    = Popup.HIDDEN;
     div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
 
-    if (!hotspot) {
-      var t = "t";
-    }
-    else {
+    if (hotspot) {
       var scrollXY = getScrollXY();
       var scrollX = scrollXY[0];
       var scrollY = scrollXY[1];
@@ -454,14 +451,15 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var divCoords = getElementCoords(div);
 
       // cut popup dimensions to fit the screen
+      var margin = 40;
       var fixed = false;
-      if (divCoords.width > screenX - 50) {
-        div.style.width = screenX - 50 + 'px';
+      if (divCoords.width > screenX - margin) {
+        div.style.width = screenX - margin + 'px';
         fixed = true;
         //alert("divCoords.width = " + divCoords.width + ", " + "screenX = " + screenX);
       }
-      if (divCoords.height > screenY - 50) {
-        div.style.height = screenY - 50 + 'px';
+      if (divCoords.height > screenY - margin) {
+        div.style.height = screenY - margin + 'px';
         fixed = true;
         //alert("divCoords.height = " + divCoords.height + ", " + "screenY = " + screenY);
       }
@@ -472,10 +470,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       div.style.display    = 'none';   // must hide it again to avoid screen flicker
 
       // move box to the left of the hostspot if the distance to window border isn't enough to accomodate the whole div box
-      var margin = 40;
       if (distanceToRightEdge < divCoords.width + margin) {
-        left = screenX - divCoords.width + scrollX; // move horizontal position of the menu to the left by its width
-        if (left - margin > 0) left -= margin; // adjust for a scrollbar;
+        left = (screenX -  scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
+        //alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " + scrollX);
+        if (left - margin > 0)
+          left -= margin; // adjust for a scrollbar;
       }
       else { // apply user requested offset only if no adjustment
         if (offsetX)
@@ -484,8 +483,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
       // adjust position of the div box vertically - using the same approach as above
       if (distanceToBottomEdge < divCoords.height + margin) {
-        top = (scrollY + screenY) - divCoords.height;
-        if (top - margin > 0) top -= margin; // adjust for a scrollbar;
+        top = (screenY + scrollY) - divCoords.height;
+        if (top - margin > 0)
+          top -= margin; // adjust for a scrollbar;
       }
       else { // apply user requested offset only if no adjustment
         if (offsetY)
@@ -505,8 +505,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     istyle.width   = divCoords.width  + 'px';
     istyle.height  = divCoords.height + 'px';
 
-    // hack for Opera (at least at ver. 7.54) - somehow iframe is always on top of div - no matter how hard we try to set zIndex
-    // so we have to live without iframe in Opera
+    // hack for Opera (at least at ver. 7.54) and Konqueror
+    //  somehow iframe is always on top of div - no matter how hard we try to set zIndex
+    // so we have to live without iframe
     var opera     = navigator.userAgent.indexOf("Opera") != -1;
     var konqueror = navigator.userAgent.indexOf("Konqueror") != -1;
     if (!opera && !konqueror)
@@ -1358,6 +1359,8 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   currentImgId  = imgId;
 
   originalProp = propName1;
+  var chosenTextField = form.elements[originalProp];
+  chosenTextField.focus();
   var idx = -1;
 
   var divId;
@@ -1860,15 +1863,6 @@ function autoComplete1(e, target) {
     filterLabel.style.display = '';
   if (currentPopup)
     clearOtherPopups(currentPopup.div);
-/*
-  if (characterCode == 8) {
-    // problem with IE - may be line below can be uncommented here
-    //keyPressedElement.value = keyPressedElement.value.substring(0, keyPressedElement.value.length - 1);
-    return stopEventPropagation(e);
-  }
-  else
-    return true;
-*/
   return true;
 }
 
