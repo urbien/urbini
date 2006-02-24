@@ -1360,7 +1360,8 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
 
   originalProp = propName1;
   var chosenTextField = form.elements[originalProp];
-  chosenTextField.focus();
+  if (chosenTextField)
+    chosenTextField.focus();
   var idx = -1;
 
   var divId;
