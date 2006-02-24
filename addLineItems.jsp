@@ -56,12 +56,13 @@
 	function clearAll() {
 	  document.getElementById('filter').elements['.title'].value = null;
 	}
-	function clear() {
+	function clearOne() {
 	  var v = document.getElementById('filter').elements['.title'].value;
 	  if (!v)
 	    return;
 	  if (v.length == 1)
   	  document.getElementById('filter').elements['.title'].value = null;
+  	else
       document.getElementById('filter').elements['.title'].value = v.substring(0, v.length - 1);
 	}
 	function add(e) {
@@ -106,7 +107,7 @@
 			</td>
 			<td>
 			  <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
-				<tr onClick="clear(this, event);" style="cursor: pointer; cursor: hand;">
+				<tr onClick="clearOne();" style="cursor: pointer; cursor: hand;">
 				  <td width="17"></td>
 				  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0"/></td>
 				  <td class="but_center"><span style="color: rgb(75, 115, 75); ">CLEAR</span></td>
