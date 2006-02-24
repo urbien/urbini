@@ -1824,9 +1824,6 @@ function autoComplete1(e, target) {
    case 18:  //alt  s
    case 20:  //caps lock
      return true;
-   case 8:   //backspace
-   case 46:  //delete
-     return true;
    case 127: //ctrl-enter
    case 13:  //enter
      if (currentPopup && currentPopup.isOpen()) {
@@ -1838,6 +1835,9 @@ function autoComplete1(e, target) {
      if (currentDiv)
        currentPopup.close();
      return true;
+   case 8:   //backspace
+   case 46:  //delete
+     break;
   }
   if (currentPopup)
     currentPopup.close();
@@ -1908,18 +1908,6 @@ function autoCompleteOnMouseout(e) {
 function autoCompleteOnKeyDown(e) {
   e = getDocumentEvent(e); if(!e) return;
   return autoComplete(e);
-  /*
-  if( typeof( e.keyCode ) == 'number') {
-    if (e.keyCode == 8 || e.keyCode == 127) { // backspace, ctrl-enter
-      var flag = autoComplete(e);
-      return flag;
-    }
-    else if (e.keyCode == 9)                  // tab
-      return autoComplete(e);
-    else
-      return true;
-  }
-  */
 }
 
 function autoCompleteTimeout(invocationTime) {
