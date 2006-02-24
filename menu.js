@@ -3404,6 +3404,22 @@ function addCalendarItem(popupRowAnchor, event) {
 //  return addAndShow1(anchor, event);
 }
 
+function showAlert(alertName) {
+  var blockReleaseDiv = document.getElementById('blockReleaseParameters');
+  if (!blockReleaseDiv)
+    throw Error("showExpired: blockReleaseParameters div not found for: " + anchor);
+  var brParams = blockReleaseDiv.getElementsByTagName('a');
+  if (!brParams || brParams.length == 0)
+    throw Error("showExpired: blockReleaseParameters are empty for: " + anchor);
+  for (var i=0; i<brParams.length; i++) {
+    var alertId = brParams[i].id;
+    if (alertId.indexOf(alertName + "=") == 0) {
+      alert(alertId.substring(alertName.length + 1))
+      break;
+    }
+  }
+}
+
 function addSimpleCalendarItem(popupRowAnchor, event) {
   var calendarRow = getTrNode(calendarCell);
   if (!calendarRow)
@@ -3443,7 +3459,7 @@ function addSimpleCalendarItem(popupRowAnchor, event) {
     throw Error("addCalendarItem: blockReleaseParameters are empty for: " + anchor);
   for (var i=0; i<brParams.length; i++) {
     if (brParams[i].id.indexOf(".propToSet=") == -1) {
-      anchor += '&' + brParams[i].id;
+//      anchor += '&' + brParams[i].id;
       continue;
     }
 
@@ -3593,6 +3609,13 @@ function showDiv(e, td, hideDivId) {
   div = document.getElementById(divId);
   div.style.visibility = Popup.VISIBLE;
   div.style.display = 'inline';
+}
+
+function openPopup1(divId1, alertName, hotSpot, e) {
+  if (e.ctrlKey)  // ctrl-enter
+    showAlert(alertName);
+  else
+    openPopup(divId1, null, hotSpot, e);
 }
 
 function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
