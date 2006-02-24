@@ -195,3 +195,5 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 	font-size: 11px;
 	color: #666;
 }
+
+.nowrap {white-space: nowrap;}
