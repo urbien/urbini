@@ -1,5 +1,7 @@
 <div>
 <errorMessage/>
+<script>
+</script>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr valign="top">
   <td valign="top" align="middle" width="100%">
@@ -12,15 +14,9 @@
       <div>
 	     <form id="filter" name="tablePropertyList" method="post" action="FormRedirect" AUTOCOMPLETE="off">
          <tablePropertyList type="http://www.hudsonfog.com/voc/hospitality/spa/Ticket"/>
-	       <!--input type="hidden" name="-$action" value="mkResource"></input-->
 	       <input type="hidden" name="-schedule" value="y"></input>
 	       <input type="hidden" name="type" value="http://www.hudsonfog.com/voc/hospitality/spa/Ticket"></input>
 	       <br />
-	       <center>
-	         <input type="submit" name="submit" value="  Submit  "></input>
-	         <!--&#160;&#160;
-	         <input type="submit" name="cancel" value="  Cancel  "></input-->
-	       </center>
 	     </form>
 	     </div>
   	    <div id="resourceList_div">
