@@ -173,7 +173,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .line {background:#ACD2E2}
 
 /* Scheduling page styles */
-.schedule    {border:solid #808080 1px;border-collapse: collapse};
+.schedule    {border:solid #808080 1px;border-collapse: collapse}
 .busy        {border:solid #808080 0px; background-color:pink; font-weight:bold; FONT-SIZE: 11px;}
 .orgbusy     {border:solid #808080 0px; background-color:#E4BBF9; font-weight:bold; FONT-SIZE: 11px;}
 .unavailable {background-color:#ACD2E2}
