@@ -352,19 +352,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     self.setCurrentDiv();
     self.interceptEvents();
-
-    // make popup active for key input
-    var as = self.div.getElementsByTagName('a');
-    if (as && as[0] && as[0].href == 'about:blank') {
-      if (self.div.focus) {// simple in IE
-        try { self.div.focus(); } catch(e) {};
-      }
-      else {                // hack for Netscape (using an empty anchor element to focus on)
-        if (as[0].focus) {
-          try { as[0].focus(); } catch(e) {};
-        }
-      }
-    }
+    self.setFocus();
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
       self.delayedClose(20000);
@@ -582,10 +570,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return;
 
     //popup contains rows that can be selected
-    if (document.all) // IE - some keys (like backspace) work only on keydown
+    if (document.all) { // IE - some keys (like backspace) work only on keydown
       addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
-    else              // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
+    }
+    else {              // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
       addEvent(div,  'keypress',  self.popupRowOnKeyPress,  false);
+    }
 
     var elem = firstRow;
     var n = self.rowCount();
@@ -618,6 +608,31 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
       addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
       elem = self.nextRow();
+    }
+  }
+
+  /*
+   * set keyboard focus on this popup
+   */
+  this.setFocus = function () {
+    // make popup active for key input
+    var as = self.div.getElementsByTagName('a');
+    if (!as)
+      return;
+    var a = as[0];
+    if(!a)
+      return;
+
+    if (a.href == 'about:blank') { // special dummy A tag just to be able to set focus (if does not exist - no need to focus)
+      if (document.all) { // simple in IE
+        if (self.div.focus)
+          try { self.div.focus(); } catch(e) {};
+      }
+      else {                // hack for Netscape (using an empty anchor element to focus on)
+        if (a.focus) {
+          try { a.focus(); } catch(e) {};
+        }
+      }
     }
   }
 
@@ -1083,7 +1098,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         return false;
       e.setAttribute('eventProcessed', 'true');
     }
-
+    //self.setFocus();
     var target = getTargetElement(e);
     var tr = getTrNode(target);
 
