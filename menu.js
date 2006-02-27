@@ -39,7 +39,7 @@ Popup.lastClickTime        = null; // last time user clicked on anything
 Popup.lastOpenTime         = null; // moment when last popup was opened
 Popup.delayedPopupOpenTime = null; // moment when delayed popup was requested
 Popup.tooltipPopup         = null;
-Popup.DarkMenuItem  = '#dee6e6';
+Popup.DarkMenuItem  = '#AABFCD'; //'#95B0C3'; //'#dee6e6';
 Popup.LightMenuItem = '';
 Popup.autoCompleteDefaultTimeout = 200;
 
@@ -167,7 +167,7 @@ Popup.load = function (divId, frameId) {
   var frameBodyId = 'popupFrameBody';
 
   if (!frameLoaded[frameId]) {
-    setTimeout("Popup.load('" + divId + "')", 100);
+    setTimeout("Popup.load('" + divId + "')", 50);
     return;
   }
   frameLoaded[frameId] = false;
@@ -354,20 +354,17 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.interceptEvents();
 
     // make popup active for key input
-/*
-    if (self.div.focus) {// simple in IE
-      try { self.div.focus(); } catch(e) {};
-    }
-    else {                // hack for Netscape (using an empty anchor element to focus on)
-      var as = self.div.getElementsByTagName('a');
-
-      if (as && as[0]) {
+    var as = self.div.getElementsByTagName('a');
+    if (as && as[0] && as[0].href == 'about:blank') {
+      if (self.div.focus) {// simple in IE
+        try { self.div.focus(); } catch(e) {};
+      }
+      else {                // hack for Netscape (using an empty anchor element to focus on)
         if (as[0].focus) {
           try { as[0].focus(); } catch(e) {};
         }
       }
     }
-*/
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
       self.delayedClose(20000);
@@ -596,7 +593,15 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var popupItem = new PopupItem(elem, i);
       self.items[popupItem.id];
       addEvent(elem, 'click',     self.popupRowOnClick,     false);
-
+/*
+      var anchors = elem.getElementsByTagName('a');
+      if (anchors  &&  anchors.length != 0) {
+        var href = anchors[0].href;
+        elem.setAttribute('href', href);
+        anchors[0].disabled=true;
+        anchors[0].onclick="function(){return false;}";
+      }
+*/
       var anchors = elem.getElementsByTagName('a');
       if (anchors  &&  anchors.length != 0) {
         var onclick = anchors[0].onclick;
@@ -604,6 +609,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           anchors[0].onclick = null;
           anchors[0].onclick1 = onclick;
         }
+        var href = anchors[0].href;
+        elem.setAttribute('href', href);
+        anchors[0].disabled = true;
+        //anchors[0].onclick = "function(){return false;}";
       }
 
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
@@ -753,15 +762,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (self.isHeaderRow(tr)) // skip clicks on menu header
       return;
 
-    if (!tr.id)
-      return;
-
-    if (tr.id == '$noValue')
-      return;
-    var isCalendar = tr.id.indexOf("_$calendar") != -1 ? true: false;
-    if (isCalendar)
-      return true;
-
     // if there is a link on this row - follow it
     var anchors = tr.getElementsByTagName('a');
     if (anchors  &&  anchors.length != 0) {
@@ -769,11 +769,26 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         loadedPopups[currentDiv.id] = null;
         Popup.close0(currentDiv.id);
       }
-      if (anchors[0].onclick1)
+      if (anchors[0].onclick1) {
         anchors[0].onclick1(e);
-//        document.location.href = anchors[0].href;
+      }
+      else {
+        var href = tr.getAttribute('href', href);
+         if (href)
+          document.location.href = href;
+      }
+
       return true;
     }
+
+    if (!tr.id)
+      return;
+
+    if (tr.id && tr.id == '$noValue')
+      return;
+    var isCalendar = tr.id.indexOf("_$calendar") != -1 ? true: false;
+    if (isCalendar)
+      return true;
 
     //var form = getFormNode(tr);
     var form = document.forms[currentFormName];
@@ -1169,6 +1184,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.prevRow = function () {
     if (self.currentRow == null) {
       self.currentRow = self.firstRow();
+      if (self.currentRow == null)
+        return null;
       return self.prevRow();
     }
 
@@ -1504,8 +1521,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   var listboxFrame = frames["popupFrame"];
   listboxFrame.location.replace(url); // load data from server into iframe
   timeoutCount = 0;
-  setTimeout("Popup.load('" + divId + "')", 100);
-
+  setTimeout("Popup.load('" + divId + "')", 50);
 }
 
 function getFormFiltersForInterface(form, propName) {
@@ -1775,6 +1791,7 @@ function autoComplete1(e, target) {
     divId = propName + "_" + formName;
 
   keyPressedImgId     = divId + "_filter";
+  var hotspot = document.getElementById(keyPressedImgId);
   keyPressedElement   = target;
   keyPressedElement.style.backgroundColor='#ffffff';
   var currentPopup = Popup.getPopup(divId);
@@ -1796,6 +1813,7 @@ function autoComplete1(e, target) {
      }
      else {
        listboxOnClick1(keyPressedImgId, keyPressedElement.value);
+       //Popup.open(divId, hotspot, null, 0, 16);
      }
      return stopEventPropagation(e);
    case 40:  //down arrow
@@ -1806,6 +1824,7 @@ function autoComplete1(e, target) {
      }
      else {
        listboxOnClick1(keyPressedImgId, keyPressedElement.value);
+       //Popup.open(divId, hotspot, null, 0, 16);
      }
      return stopEventPropagation(e);
    case 37:  //left arrow
@@ -1918,14 +1937,17 @@ function autoCompleteTimeout(invocationTime) {
   if (!keyPressedImgId)
     return;
 
-  var img = document.getElementById(keyPressedImgId);
-  if (!img) {
+  var hotspot = document.getElementById(keyPressedImgId);
+  if (!hotspot) {
     return true;
   }
 
   if (keyPressedElement.value.length == 0) // avoid showing popup for empty fields
     return;
   listboxOnClick1(keyPressedImgId, keyPressedElement.value);
+
+  //var divId = keyPressedImgId.substring(0, keyPressedImgId.length() - '_filter'.length());
+  //Popup.open(divId, hotspot, null, 0, 16);
 }
 
 
@@ -2266,6 +2288,7 @@ function initMenus() {
     if (m.id.indexOf('menuLink_') == 0) {
       addEvent(m, 'click',     menuOnClick, false);
     }
+/*
     if (m.className  &&  m.className.indexOf('fade', m.className.length - 4) != -1) {
       if (m.attachEvent) { // hack for IE use 'traditional' event handling model - to avoid event bubbling and make IE set 'this' to the element that fired the event
         //m.onmouseover = unfadeOnMouseOver;
@@ -2276,8 +2299,9 @@ function initMenus() {
 	      //addEvent(m, 'mouseout',  fadeOnMouseOut,    false);
 	    }
     }
+*/
   }
-
+/*
   // fading of td elements with id ending with 'fade'
   menuLinks = document.getElementsByTagName('td');
   l = menuLinks.length;
@@ -2294,6 +2318,7 @@ function initMenus() {
 	    }
     }
   }
+*/
 }
 
 /**
@@ -2784,7 +2809,7 @@ function displayInner(e, urlStr) {
 
   bottomFrame.location.replace(finalUrl);
   var timeOutFunction = "copyInnerHtml('" + frameId  + "', '" + 'pane2' + "')";
-  setTimeout(timeOutFunction, 100);
+  setTimeout(timeOutFunction, 50);
 
   return false;
 }
@@ -2801,7 +2826,7 @@ function copyInnerHtml(frameId, divId) {
   if (!divId)
     divId = 'pane2';
   if (!frameLoaded[frameId]) {
-    setTimeout( "copyInnerHtml('" + frameId  + "', '" + divId + "')", 100 );
+    setTimeout( "copyInnerHtml('" + frameId  + "', '" + divId + "')", 50);
     return;
   }
   frameLoaded[frameId] = false;
@@ -3551,7 +3576,7 @@ function addAndShow1(anchor, event) {
     iframeWindow.location.replace(newUri); // load data from server into iframe
 //    window.open(newUri);
 //    return;
-	  setTimeout(addAndShowWait, 100);
+	  setTimeout(addAndShowWait, 50);
     return stopEventPropagation(event);
   } catch (er) {
     alert(er);
@@ -3562,7 +3587,7 @@ function addAndShowWait()	{
   var frameId = "resourceList";
   var frameBodyId = "siteResourceList";
   if (!frameLoaded[frameId]) {
-    setTimeout(addAndShowWait, 100);
+    setTimeout(addAndShowWait, 50);
     return;
   }
   frameLoaded[frameId] = false;
