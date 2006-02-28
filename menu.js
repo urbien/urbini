@@ -601,7 +601,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         }
         var href = anchors[0].href;
         elem.setAttribute('href', href);
-        anchors[0].disabled = true;
+        //anchors[0].disabled = true;
         //anchors[0].onclick = "function(){return false;}";
       }
 
