@@ -8,34 +8,16 @@
       <col width="90%" />
       <col width="10%" />
     </colgroup>
-    <!--tr valign="top">
-      <td valign="top" width="90%">
-        <span class="xs">
-        <menu toolbar="toolbar1"        activate="onMouseOver"/>
-        <menu toolbar="transport"       activate="onMouseOver"/>
-        <menu toolbar="search"          activate="onMouseOver"/>
-        <menu toolbar="toolbar2"        activate="onMouseOver"/>
-        <menu toolbar="support"         activate="onMouseOver" allow="admin"/>
-        <menu toolbar="personalization" activate="onMouseOver"/>
-
-        <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/></span><pdaToPc image="icons/pda.gif"/></td>
-      <td valign="top" align="right" width="10%"><!--changePassword/><userLogOff html="user-login.html"/--></td>
-    </tr-->
     <tr valign="top"><td>
-    <!--form action="list.html" name="siteResourceList"-->
-<form name="categoryTextSearch">
-  <searchHistory/>
-  <categoryTextSearch />
-  <resourcesSearch resourcesUri="/sql/text/search/resources" />
-  <filesSearch filesUri="text/search/files" />
-</form>
+			<form name="categoryTextSearch">
+			  <searchHistory/>
+			  <categoryTextSearch />
+			  <resourcesSearch resourcesUri="/sql/text/search/resources" />
+			  <filesSearch filesUri="text/search/files" />
+			</form>
       <div align="left"><backLink /></div>
       <parallelResourceList />
       <div align="right"><measurement/></div>
-      <!--addNewResource html="mkResource.html"/>
-      <createResources/>
-      <showSetProperties /-->
-    <!--/form-->
     </td>
     <td valign="top" align="left" bgcolor="eeeeee">
         <menu toolbar="filterParallel" type="onpage" title="false"/>
