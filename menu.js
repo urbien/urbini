@@ -1391,9 +1391,11 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   currentImgId  = imgId;
 
   originalProp = propName1;
-  var chosenTextField = form.elements[originalProp];
-  if (chosenTextField)
-    chosenTextField.focus();
+  if (currentFormName != "viewColsList") {
+    var chosenTextField = form.elements[originalProp];
+    if (chosenTextField)
+      chosenTextField.focus();
+  }
   var idx = -1;
 
   var divId;
