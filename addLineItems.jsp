@@ -115,7 +115,7 @@
 			  </table>
 			</td>
 	    <td>
-	      <input type="text" class="input1" size="30" maxsize="200" name=".title" value="" onKeyPress="checkOnKeyPress(this, event);"/>
+	      <input type="text" class="input1" size="27" maxsize="200" name=".title" value="" onKeyPress="checkOnKeyPress(this, event);"/>
 	      <input type="hidden" name=".forum_select" value=""/>
 	    </td>
 	    <td>
@@ -133,7 +133,7 @@
 				<tr onClick="clearOne();" style="cursor: pointer; cursor: hand;">
 				  <td width="17"></td>
 				  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0"/></td>
-				  <td class="but_center"><span style="color: rgb(75, 115, 75); ">Backspace</span></td>
+				  <td class="but_center"><span style="color: rgb(75, 115, 75); ">CLR</span></td>
 				  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0"/></td>
   		  </tr>
 	  	  </table>
