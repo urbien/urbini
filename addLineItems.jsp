@@ -49,7 +49,8 @@
 <style type="text/css">
   .simpleButton {border:solid #808080 1px; color: darkblue; font-size:16pt; height:40pt; cursor: pointer; cursor: hand;}
   .filterButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:30px;text-decoration:none}
-  .input1 {background-color:#EDF5F5; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:26px; text-decoration:none; }
+  .input1 {background-color:#EDF5F5; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:40px; text-decoration:none; font-weight:bold; font-size:35px;}
+  .specialKeys {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:40pt;text-decoration:none; cursor: pointer; cursor: hand; font-weight:bold; font-size:16pt;}
   .xxs {font-size:10pt;}
 </style>
 <script language="JavaScript1.2" type="text/javascript">
@@ -65,6 +66,14 @@
   	else
       document.getElementById('filter').elements['.title'].value = v.substring(0, v.length - 1);
 	}
+	/*
+	function delete(e, td) {
+	}
+	function moveRight(e, td) {
+	}
+	function moveLeft(e, td) {
+	}
+	*/
 	function add(e) {
 	  var value = document.getElementById('filter').elements['.title'].value;
     var ch = e.innerHTML;
@@ -105,18 +114,8 @@
 				</tr>
 			  </table>
 			</td>
-			<td>
-			  <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
-				<tr onClick="clearOne();" style="cursor: pointer; cursor: hand;">
-				  <td width="17"></td>
-				  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0"/></td>
-				  <td class="but_center"><span style="color: rgb(75, 115, 75); ">CLEAR</span></td>
-				  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0"/></td>
-  		  </tr>
-	  	  </table>
-	  	</td>
 	    <td>
-	      <input type="text" class="input1" size="90" maxsize="200" name=".title" value="" onKeyPress="checkOnKeyPress(this, event);"/>
+	      <input type="text" class="input1" size="30" maxsize="200" name=".title" value="" onKeyPress="checkOnKeyPress(this, event);"/>
 	      <input type="hidden" name=".forum_select" value=""/>
 	    </td>
 	    <td>
@@ -129,6 +128,16 @@
 			  </tr>
 		    </table>
 			</td>
+			<td>
+			  <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
+				<tr onClick="clearOne();" style="cursor: pointer; cursor: hand;">
+				  <td width="17"></td>
+				  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0"/></td>
+				  <td class="but_center"><span style="color: rgb(75, 115, 75); ">Backspace</span></td>
+				  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0"/></td>
+  		  </tr>
+	  	  </table>
+	  	</td>
 		</tr>
 		</table>
   </td>
@@ -155,7 +164,6 @@
    <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">J</td>
    <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">K</td>
    <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">L</td>
-   <td></td>
 </tr>
 <tr>
    <td></td>
@@ -166,11 +174,13 @@
    <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">B</td>
    <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">N</td>
    <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">M</td>
-   <td colspan="2"></td>
 </tr>
 <tr>
    <td></td>
-   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" colspan="5">Space</td>
+   <td bgcolor="#A2B5CD" align="middle" class="specialKeys" onClick="add(this)" colspan="6">Space</td>
+   <!--td bgcolor="#A2B5CD" align="middle" class="specialKeys" onClick="moveLeft(event, this);">&lt;</td>
+   <td bgcolor="#A2B5CD" align="middle" class="specialKeys" onClick="delete(event, this);">Del</td>
+   <td bgcolor="#A2B5CD" align="middle" class="specialKeys" onClick="moveRight(event, this);">&gt;</td-->
    <td colspan="3"></td>
 </tr>
 </table>
