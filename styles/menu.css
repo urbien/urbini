@@ -21,12 +21,30 @@ TD.toolbar {
 	PADDING-LEFT: 10px; PADDING-LEFT: 3px; FONT-WEIGHT: bold; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; COLOR: #FFFFFF; BACKGROUND-COLOR: #0067B1; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
 }
 
-.menuItem {
-	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
+.menuItemIcon {
+	cursor: pointer; cursor: hand; BACKGROUND-COLOR: #EDECF8; white-space: nowrap; width: 20px
 }
+
 .menuItemChk {
-	PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
+	PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap; width: 10px
 }
+
+.menuItem {
+	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
+}
+
+.menuItemReset {
+	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; BACKGROUND-COLOR: #f8f4ef; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
+}
+
+.menuItemNoChoices {
+	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; BACKGROUND-COLOR: #f8f4ef; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
+}
+
+.menuItem a:hover, .menuItem a:link, .menuItem a:active, .menuItem a:visited {
+  color: black; TEXT-DECORATION: none;
+}
+
 /* wanted to use CSS2's COLOR: GrayText, but IE6 does not support it */
 .menuItemGreyedOut {
 	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
