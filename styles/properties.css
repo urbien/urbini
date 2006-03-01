@@ -7,8 +7,8 @@ A:hover {color: #6BBDBE; text-decoration : underline;}
 
 td {font-family:sans-serif, arial; font-size:9pt;}
 
-/* text in link. You an see it in 'Hi "contactName"' */
-A {text-decoration : none;; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
+/* text in link. You can see it in 'Hi "contactName"' */
+A {text-decoration : none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
 
 /*Body {font-family: Verdana, geneva, arial; font-size: 8px; font-weight: normal; color: #999999;}*/
 Body {font-family: Verdana, geneva, arial; font-size: 8px; font-weight: normal; }
@@ -173,11 +173,11 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .line {background:#ACD2E2}
 
 /* Scheduling page styles */
-.schedule    {border:solid #808080 1px;border-collapse: collapse}
-.busy        {border:solid #808080 0px; background-color:pink; font-weight:bold; FONT-SIZE: 11px;}
-.orgbusy     {border:solid #808080 0px; background-color:#E4BBF9; font-weight:bold; FONT-SIZE: 11px;}
-.unavailable {background-color:#ACD2E2}
-.available   {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse}
+.schedule    {border:solid #808080 1px;border-collapse: collapse; }
+.busy        {border:solid #808080 0px; background-color:pink; font-weight:bold; FONT-SIZE: 11px; vertical-align:top}
+.orgbusy     {border:solid #808080 0px; background-color:#E4BBF9; font-weight:bold; FONT-SIZE: 11px; vertical-align:top}
+.unavailable {background-color:#ACD2E2l vertical-align:top}
+.available   {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top}
 .notEnoughSpace {background-color:#ACE2CE}
 .grayedOut   {border:solid #808080 0px;background-color:#E2E2E2}
 
