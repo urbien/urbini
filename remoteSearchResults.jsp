@@ -15,7 +15,7 @@
 			  <resourcesSearch resourcesUri="/sql/text/search/resources" />
 			  <filesSearch filesUri="text/search/files" />
 			</form>
-      <div align="left"><backLink /></div>
+      <!--div align="left"><backLink /></div-->
       <parallelResourceList />
       <div align="right"><measurement/></div>
     </td>
