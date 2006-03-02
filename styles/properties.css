@@ -176,7 +176,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .schedule    {border:solid #808080 1px;border-collapse: collapse; }
 .busy        {border:solid #808080 0px; background-color:pink; font-weight:bold; FONT-SIZE: 11px; vertical-align:top}
 .orgbusy     {border:solid #808080 0px; background-color:#E4BBF9; font-weight:bold; FONT-SIZE: 11px; vertical-align:top}
-.unavailable {background-color:#ACD2E2l vertical-align:top}
+.unavailable {background-color:#ACD2E2; vertical-align:top}
 .available   {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top}
 .notEnoughSpace {background-color:#ACE2CE; vertical-align:top}
 .grayedOut   {border:solid #808080 0px;background-color:#E2E2E2;vertical-align:top}
