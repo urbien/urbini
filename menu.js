@@ -793,7 +793,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           document.location.href = href;
       }
 
-      return true;
+      return false;
     }
 
     if (!tr.id)
@@ -3445,8 +3445,9 @@ function addCalendarItem(popupRowAnchor, event) {
   for (var i=0; i<pageParams.length; i++)
     anchor += '&' + pageParams[i].id;
 
+  var se = stopEventPropagation(event);
   document.location.href = anchor;
-  return stopEventPropagation(event);
+  return se;
 //  return addAndShow1(anchor, event);
 }
 
