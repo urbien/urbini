@@ -583,15 +583,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var popupItem = new PopupItem(elem, i);
       self.items[popupItem.id];
       addEvent(elem, 'click',     self.popupRowOnClick,     false);
-/*
-      var anchors = elem.getElementsByTagName('a');
-      if (anchors  &&  anchors.length != 0) {
-        var href = anchors[0].href;
-        elem.setAttribute('href', href);
-        anchors[0].disabled=true;
-        anchors[0].onclick="function(){return false;}";
-      }
-*/
       var anchors = elem.getElementsByTagName('a');
       if (anchors  &&  anchors.length != 0) {
         var onclick = anchors[0].onclick;
