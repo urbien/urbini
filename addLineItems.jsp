@@ -26,7 +26,7 @@
       <td width="70%">
         <table width="100%" cellspacing="5" cellpadding="0" border="0">
         <tr>
-          <td align="center" class="categoryButton" onClick="document.location.href='plain/Recall_Orders.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Ticket&amp;status_select=Checked+In&amp;status_verified=y&amp;settled_select=false&amp;settled_verified=y&amp;$order=http://www.hudsonfog.com/voc/hospitality/spa/Ticket/checkInTime&amp;-asc=-1&amp;-grid=1&amp;-inRow=2'">Recall orders</td>
+          <td align="center" class="categoryButton" onClick="document.location.href='Recall_Orders.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Ticket&amp;status_select=Checked+In&amp;status_verified=y&amp;settled_select=false&amp;settled_verified=y&amp;$order=http://www.hudsonfog.com/voc/hospitality/spa/Ticket/checkInTime&amp;-asc=-1&amp;-grid=1&amp;-inRow=2&amp;checkInTime_verified=y&amp;checkInTime_select=today&amp;hideHideBlock=y'">Recall orders</td>
         </tr>
         </table>
       </td>
