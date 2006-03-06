@@ -3,7 +3,7 @@
 <hideBlock id="hideBlock">
 <watchNote/>
 </hideBlock>
-
+<applet height="0" width="0" code="com.fog.jpos.BarPrinterApplet" codebase="applets" name="BarPrinterApplet"/>
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
   <td width="110%" colspan="2"><!--br/-->
@@ -120,7 +120,7 @@
 	    </td>
 	    <td>
 		    <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
-			  <tr onClick="addAndShowItems(this, event); document.getElementById('keyboard').style.display='none';" style="cursor: pointer; cursor: hand;"><!--"var form = document.getElementById('filter'); form.elements['.forum_verified'].value = 'y'; form.submit(); document.getElementById('keyboard').style.display='none';" style="cursor: pointer; cursor: hand;"-->
+			  <tr onClick="addAndShowItems(this, event); document.getElementById('keyboard').style.display='none'; clearAll();"  style="cursor: pointer; cursor: hand;">
 			    <td width="17"></td>
 	  		  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0"/></td>
 		  	  <td class="but_center"><span style="color: rgb(75, 115, 75); ">SUBMIT</span></td>
