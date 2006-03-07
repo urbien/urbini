@@ -29,12 +29,20 @@ TD.toolbar {
 	PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap; width: 10px
 }
 
+.menuItemNoChk {
+	PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap; width: 10px
+}
+
 .menuItem {
 	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
 }
 
+.menuItemChart {
+	PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap; width: 10px
+}
+
 .menuItemReset {
-	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; BACKGROUND-COLOR: #f8f4ef; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
+	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; BACKGROUND-COLOR: #DDDDDD; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
 }
 
 .menuItemNoChoices {
