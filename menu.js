@@ -1385,9 +1385,9 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   /* 'viewColsList' for does not have input fields where to set focus.
    *  form.elements[originalProp] returns list of viewCols properties to choose from to display in RL
    */
-  if (currentFormName != "viewColsList") {
+  if (form && currentFormName != "viewColsList") {
     var chosenTextField = form.elements[originalProp];
-    if (chosenTextField)
+    if (chosenTextField && chosenTextField.focus)
       chosenTextField.focus();
   }
   var idx = -1;
