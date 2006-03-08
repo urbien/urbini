@@ -112,7 +112,7 @@
 <script language="JavaScript">
   var horizontalFilter_FIELDS = new Array();
 </script>
-<form name="horizontalFilter" id="filter" method="POST">
+<form name="horizontalFilter" id="filter" method="POST" AUTOCOMPLETE="off">
   <br/>
     <horizontalFilter />
 </form>
