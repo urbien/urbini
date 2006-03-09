@@ -3,6 +3,51 @@
 <hideBlock id="hideBlock">
 <watchNote/>
 </hideBlock>
+
+<script language="JavaScript1.2" type="text/javascript">
+  var receipt = [];
+  var receiptId;
+	function clearAll() {
+	  document.getElementById('filter').elements['.title'].value = null;
+	}
+	function clearOne() {
+	  var v = document.getElementById('filter').elements['.title'].value;
+	  if (!v)
+	    return;
+	  if (v.length == 1)
+  	  document.getElementById('filter').elements['.title'].value = null;
+  	else
+      document.getElementById('filter').elements['.title'].value = v.substring(0, v.length - 1);
+	}
+	/*
+	function delete(e, td) {
+	}
+	function moveRight(e, td) {
+	}
+	function moveLeft(e, td) {
+	}
+	*/
+	function add(e) {
+	  var value = document.getElementById('filter').elements['.title'].value;
+    var ch = e.innerHTML;
+    if (ch == 'Space')
+	    ch = ' ';
+
+	  document.getElementById('filter').elements['.title'].value = value + ch;
+	}
+	function callAddAndShow(tr, event) {
+    addAndShowItems(tr, event);
+    document.getElementById('keyboard').style.display='none';
+	  document.getElementById('filter').elements['.title'].value = null;
+	}
+	function checkOnKeyPress(tr, event) {
+    var keyCode = getKeyCode(event);
+    if (keyCode == 13)
+      callAddAndShow(tr, event);
+//    else
+//      add(keyCode);
+	}
+</script>
 <applet height="0" width="0" code="com.fog.jpos.BarPrinterApplet" codebase="applets" name="BarPrinterApplet"/>
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
@@ -53,48 +98,6 @@
   .specialKeys {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:40pt;text-decoration:none; cursor: pointer; cursor: hand; font-weight:bold; font-size:16pt;}
   .xxs {font-size:10pt;}
 </style>
-<script language="JavaScript1.2" type="text/javascript">
-	function clearAll() {
-	  document.getElementById('filter').elements['.title'].value = null;
-	}
-	function clearOne() {
-	  var v = document.getElementById('filter').elements['.title'].value;
-	  if (!v)
-	    return;
-	  if (v.length == 1)
-  	  document.getElementById('filter').elements['.title'].value = null;
-  	else
-      document.getElementById('filter').elements['.title'].value = v.substring(0, v.length - 1);
-	}
-	/*
-	function delete(e, td) {
-	}
-	function moveRight(e, td) {
-	}
-	function moveLeft(e, td) {
-	}
-	*/
-	function add(e) {
-	  var value = document.getElementById('filter').elements['.title'].value;
-    var ch = e.innerHTML;
-    if (ch == 'Space')
-	    ch = ' ';
-
-	  document.getElementById('filter').elements['.title'].value = value + ch;
-	}
-	function callAddAndShow(tr, event) {
-    addAndShowItems(tr, event);
-    document.getElementById('keyboard').style.display='none';
-	  document.getElementById('filter').elements['.title'].value = null;
-	}
-	function checkOnKeyPress(tr, event) {
-    var keyCode = getKeyCode(event);
-    if (keyCode == 13)
-      callAddAndShow(tr, event);
-//    else
-//      add(keyCode);
-	}
-</script>
 
 
 <form itype="http://www.hudsonfog.com/voc/hospitality/orders/BarItem" id="filter" method="post" action="FormRedirect" AUTOCOMPLETE="off">
