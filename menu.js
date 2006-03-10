@@ -3743,3 +3743,14 @@ function addAndShowItems(tr, e) {
 
   return addAndShow1(anchor, e);
 }
+var receipts = [];
+function printReceipt(url) {
+  var thisReceipt = receipts[url];
+  if (thisReceipt  &&  thisReceipt.length) {
+    var appl = document.applets[0];
+    appl.open();
+    for (i=0; i<thisReceipt.length; i++)
+      appl.println(thisReceipt[i]);
+    appl.close();
+  }
+}
