@@ -244,7 +244,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   if (!hotspotRef)
     throw new Error("hotspotRef parameter is null");
   if (typeof hotspotRef == 'string')
-    throw new Error("hostspot parameter must be an object, not a string");
+    throw new Error("hotspot parameter must be an object, not a string");
 
   this.div            = divRef;     // div for this popup
   this.iframe         = Popup.getCanvas(frameRef); // iframe beneath this popup (to cover input elements on the page below popup)
@@ -348,7 +348,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     self.setVisible(offsetX, offsetY);
     self.popupClosed = false;
-    self.deselectRow();
+    if (divId != 'pane2')
+      self.deselectRow();
 
     self.setCurrentDiv();
     self.interceptEvents();
@@ -454,7 +455,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
       div.style.display    = 'none';   // must hide it again to avoid screen flicker
 
-      // move box to the left of the hostspot if the distance to window border isn't enough to accomodate the whole div box
+      // move box to the left of the hotspot if the distance to window border isn't enough to accomodate the whole div box
       if (distanceToRightEdge < divCoords.width + margin) {
         left = (screenX -  scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
         //alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " + scrollX);
@@ -489,7 +490,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     istyle.left    = div.style.left;
     istyle.width   = divCoords.width  + 'px';
     istyle.height  = divCoords.height + 'px';
-
     // hack for Opera (at least at ver. 7.54) and Konqueror
     //  somehow iframe is always on top of div - no matter how hard we try to set zIndex
     // so we have to live without iframe
@@ -499,9 +499,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       istyle.visibility  = Popup.VISIBLE;
     istyle.display       = 'inline';
     div.style.display    = 'inline';
-    div.style.zIndex = 1001;
+    div.style.zIndex = hotspot.style.zIndex + 10;
     div.style.visibility = Popup.VISIBLE; // finally make div visible
-
   }
 
   /**
@@ -1611,6 +1610,8 @@ function removePopupRowEventHandlers(div) {
 /*
  * Receives control on form submit events
  */
+fakeOnSubmit = new Function('return false');
+
 function popupOnSubmit(e) {
   try{if(rteUpdated == 'false'){updateRTEs(); rteUpdated = 'true';}}catch(ex){}
 
@@ -1702,10 +1703,27 @@ function popupOnSubmit(e) {
   if (form.uri)
     url += "&uri=" + encodeURIComponent(form.uri.value);
 
-  //form.onsubmit = null;
+/* do not understand why this still allowed second submit - so use fakeOnSubmit method instead for now
+  form.submit.disabled = true;
+  var wasSubmitted = form.getAttribute("wasSubmitted");
+  if (wasSubmitted) {
+    alert("Can not submit the same form twice");
+    return stopEventPropagation(event);
+  }
+  form.setAttribute("wasSubmitted", "true");
+  form.submit.disabled = false;
+*/
+
+	if (form.onsubmit == fakeOnSubmit) {
+	  alert("Already submitted - please wait");
+	  return false;
+	}
+	form.onsubmit = fakeOnSubmit;
 
   if (document.all || document.getElementById) {
-//    form.submit.disabled = true; // HACK: for some reason can not disable this button - the form would not get submitted
+    // form.submit.disabled = true; // weird, but the form would not get submitted if disabled
+
+/*
     var submit = form.elements['submitFilter'];
     if (submit) {
   	  submit.value = 'Please wait';
@@ -1722,10 +1740,13 @@ function popupOnSubmit(e) {
     else {
       for (j=0; j<form.elements.length; j++) {
         var elem = form.elements[j];
-        if (elem.type && elem.type.toUpperCase() == 'SUBMIT')
-          elem.value = 'Please wait';
+        if (elem.type && elem.type.toUpperCase() == 'SUBMIT') {
+          elem.style.visibility = Popup.HIDDEN;
+          //elem.value = 'Please wait';
+        }
       }
     }
+*/
 ///
   }
 
@@ -1742,10 +1763,7 @@ function popupOnSubmit(e) {
 // submit as GET with all parameters collected manually
 //  form.method   = 'GET';
 //  document.location.href = url;
-// 	e.cancelBubble = true;
-//  e.returnValue = false;
-//  if (e.preventDefault) e.preventDefault();
-//  return false;
+//  return stopEventPropagation(event);
   form.method = 'POST';
   if (!action)
     form.action = "FormRedirect";
@@ -2792,6 +2810,10 @@ function addPageTitleToUrl(e) {
 }
 
 function displayInner(e, urlStr) {
+  e = getDocumentEvent(e); if (!e) return;
+  var target = getTargetElement(e); if (!target) return;
+  var anchor = getTargetAnchor(e);
+
   var frameId = 'bottomFrame';
   var bottomFrame = frames[frameId];
   // show content in a second pane
@@ -2803,8 +2825,6 @@ function displayInner(e, urlStr) {
   if (urlStr)
     finalUrl = urlStr;
   else {
-    e = getDocumentEvent(e); if (!e) return;
-    var anchor = getTargetAnchor(e);
     if (!anchor)
       return;
     urlStr = anchor.href;
@@ -2819,7 +2839,8 @@ function displayInner(e, urlStr) {
   stopEventPropagation(e);
 
   bottomFrame.location.replace(finalUrl);
-  var timeOutFunction = "copyInnerHtml('" + frameId  + "', '" + 'pane2' + "')";
+  var hotspotId = target.id ? target.id : anchor.id;
+  var timeOutFunction = "copyInnerHtml('" + frameId  + "', '" + 'pane2' + "', '" + hotspotId + "')";
   setTimeout(timeOutFunction, 50);
 
   return false;
@@ -2831,17 +2852,17 @@ function displayInner(e, urlStr) {
 var ss_INTERVAL;
 var ss_STEPS = 25;
 
-function copyInnerHtml(frameId, divId) {
+function copyInnerHtml(frameId, divId, hotspotId) {
   if (!frameId)
     frameId = 'bottomFrame';
   if (!divId)
     divId = 'pane2';
   if (!frameLoaded[frameId]) {
-    setTimeout( "copyInnerHtml('" + frameId  + "', '" + divId + "')", 50);
+    setTimeout( "copyInnerHtml('" + frameId  + "', '" + divId + "', '" + hotspotId + "')", 50);
     return;
   }
   frameLoaded[frameId] = false;
-
+  var hotspotRef = document.getElementById(hotspotId);
   var div = document.getElementById(divId);
   var frameBody = frames[frameId].document.body;
   var frameDoc  = frames[frameId].document;
@@ -2881,28 +2902,10 @@ function copyInnerHtml(frameId, divId) {
 
   setInnerHtml(div, frameBodyText, frames[frameId]);
 
-  // scroll to second pane into which we have loaded doc
-  /*
-  var s = document.location.href;
-  s = s.indexOf('pane2') == -1 ? s + '#pane2' : s;
-  document.location.replace(s);
-  */
-  //document.location.hash = '#pane2';
-
   initListBoxes(div);
-
-  // slow scroll to the inner html
-
-  // Find the destination's position
-  var divCoords = getElementCoords(div);
-  var destx = divCoords.left;
-  var desty = divCoords.top;
-
-  // Stop any current scrolling
-  clearInterval(ss_INTERVAL);
-  var cypos = getCurrentScrollYPos();
-  var ss_stepsize = parseInt((desty-cypos)/ss_STEPS);
-  //ss_INTERVAL = setInterval('ss_scrollWindow('+ss_stepsize+','+desty+',"'+divId+'")', 10);
+  //if (divId == 'pane2')
+  //  divId = 'pane2-outer';
+  //Popup.open(divId, hotspotRef, null, 16, 16);
 }
 
 function scrollWindow(scramount, dest, anchor) {
@@ -3386,14 +3389,20 @@ function addAndShow(td, e) {
 }
 
 var calendarCell; // last cell on which user clicked
+var lastPopupRowAnchor;
+
 function addCalendarItem(popupRowAnchor, event) {
+  if (lastPopupRowAnchor) {
+    alert("Please wait till previous request is processed");
+    return stopEventPropagation(event);
+  }
+  lastPopupRowAnchor = popupRowAnchor;
   var calendarRow = getTrNode(calendarCell);
   if (!calendarRow)
     throw Error("addCalendarItem: calendar row not found for: " + anchor);
 
   var anchors = calendarCell.getElementsByTagName('a')
   if (!anchors)
-
     throw Error("addCalendarItem: calendar row has no anchor");
 
   var anchor = anchors[0].href; // url of the servlet that adds calendar items
