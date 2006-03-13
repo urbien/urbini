@@ -348,7 +348,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     self.setVisible(offsetX, offsetY);
     self.popupClosed = false;
-    if (divId != 'pane2')
+    if (self.div.id != 'pane2')
       self.deselectRow();
 
     self.setCurrentDiv();
