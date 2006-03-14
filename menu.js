@@ -760,6 +760,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.popupRowOnClick1 = function (e, tr, target) {
+    // prevent duplicate events (happens only in IE)
+    if (e.getAttribute) {
+      var isProcessed = e.getAttribute('eventProcessed');
+	  if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+	    return stopEventPropagation(e);
+	  e.setAttribute('eventProcessed', 'true');
+	}    
     Popup.lastClickTime = new Date().getTime();
     var currentDiv = self.getCurrentDiv();
     if (!tr)
