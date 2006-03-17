@@ -40,6 +40,11 @@
 				    if (menuGroupDiv)
 				      menuGroupDiv.style.display = 'inline';
 				    document.getElementById('pane2').style.display = 'none';
+					  var pane2 = document.getElementById('pane2');
+					  if (pane2) {
+					    pane2.innerHTML = null;
+					    pane2.style.display = 'inline';
+					  }
 					}
 
 					function clearOne() {
