@@ -3776,7 +3776,6 @@ function showKeyboard() {
   var kdiv = document.getElementById('keyboard');
   if (!kdiv)
     return;
-  menuGroupDiv = null;
   var divs = document.getElementsByTagName('div');
   for (var i=0; i<divs.length; i++) {
 //    if (divs[i].id == "div_Vodka")
