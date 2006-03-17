@@ -781,6 +781,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         loadedPopups[currentDiv.id] = null;
         Popup.close0(currentDiv.id);
       }
+      var trg = anchors[0].getAttribute('target');
+      if (trg)
+        return true;
+
       if (anchors[0].onclick1) {
         anchors[0].onclick1(e);
       }
