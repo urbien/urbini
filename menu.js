@@ -766,7 +766,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 	  if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
 	    return stopEventPropagation(e);
 	  e.setAttribute('eventProcessed', 'true');
-	}    
+	}
     Popup.lastClickTime = new Date().getTime();
     var currentDiv = self.getCurrentDiv();
     if (!tr)
@@ -3769,4 +3769,26 @@ function printReceipt(url) {
       appl.println(thisReceipt[i]);
     appl.close();
   }
+}
+
+var menuGroupDiv;
+function showKeyboard() {
+  var kdiv = document.getElementById('keyboard');
+  if (!kdiv)
+    return;
+  menuGroupDiv = null;
+  var divs = document.getElementsByTagName('div');
+  for (var i=0; i<divs.length; i++) {
+//    if (divs[i].id == "div_Vodka")
+//      alert(divs[i].style.display + "; " + divs[i].style.visibility);
+
+    if (divs[i].style.display == 'none')
+      continue;
+    if (divs[i].id  &&  divs[i].id.indexOf('div_') == 0) {
+      menuGroupDiv = divs[i];
+      menuGroupDiv.style.display = 'none';
+      break;
+    }
+  }
+  kdiv.style.display = 'inline';
 }
