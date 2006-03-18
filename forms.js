@@ -178,6 +178,7 @@ function processCreditCardTracks(inputField) {
   }
   var splitArray = track1.split('^');
   var accountNumber = splitArray[0].substring(1);
+  accountNumber = removeSpaces(accountNumber);
   var name = splitArray[1];
   var names = name.split('/');
   name = names[1] + ' ' + names[0];
@@ -199,4 +200,17 @@ function processCreditCardTracks(inputField) {
   form.elements['.track2'].value = track2;
   form.elements['cardholderVerificationCode'].value = "";
   return true;
+}
+
+function removeSpaces(str) {
+  if (str.indexOf(' ') == -1)
+    return str;
+  var buf = "";
+  for (var i = 0, l = str.length; i < l; i++) {
+    var c = str.charAt(i);
+    if (c == ' ')
+      continue;
+    buf += c;
+  }
+  return buf;
 }
