@@ -1480,7 +1480,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
     url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.elements['type'].value;
   }
   else {
-    if (formAction != "showPropertiesForEdit" && formAction != "mkresource") {
+//    if (formAction != "showPropertiesForEdit" && formAction != "mkResource") {
 		  /* Add full text search criteria to filter */
 		  if (form.id && form.id == 'filter') {
 			  var fullTextSearchForm = document.forms['searchForm'];
@@ -1510,6 +1510,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
       var params = getFormFilters(form, allFields);
       if (params)
         url = url + params;
+    /*
     }
     else {
       url = url + "&type=" + form.elements['type'].value + "&-$action=" + formAction;
@@ -1524,6 +1525,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
           url = url + "&$rootFolder=" + encodeURIComponent(uri.value);
       }
     }
+    */
   }
   url += "&$form=" + currentFormName;
   url += "&" + propName + "_filter=y";
@@ -1621,8 +1623,9 @@ function removePopupRowEventHandlers(div) {
 /*
  * Receives control on form submit events
  */
-fakeOnSubmit = new Function('return false');
-
+function fakeOnSubmit() {
+  return false;
+}
 function popupOnSubmit(e) {
   try{if(rteUpdated == 'false'){updateRTEs(); rteUpdated = 'true';}}catch(ex){}
 
