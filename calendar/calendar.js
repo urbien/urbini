@@ -1777,11 +1777,15 @@ function TC0d() {
  * Retrieves calendar using formName + name as a key.
  * If does not exist - creates one.
  */
-function getCalendar(e, formName, name, initialValue, dateFormat) {
+function getCalendar(event,
+                     formName,
+                     name,              // date input field id and name
+                     initialValue,      // initial value in date format shown below
+                     dateFormat) {      // dateFormat = (isEuropean) ? "d-m-Y" : "m-d-Y";
   var cal = A_CALENDARS[formName + '_' + name];
   if (cal) {
     cal.showcal();
-    return stopEventPropagation(e);
+    return stopEventPropagation(event);
   }
   var initParams = {
       // a name of HTML form containing the calendar
@@ -1800,5 +1804,5 @@ function getCalendar(e, formName, name, initialValue, dateFormat) {
   cal.create();
   A_CALENDARS[formName + '_' + name] = cal;
   cal.showcal();
-  return stopEventPropagation(e);
+  return stopEventPropagation(event);
 }
