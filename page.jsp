@@ -5,12 +5,22 @@
   <body id="body" text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
 
   <div nonPda="T">
+<hideBlock>
+<table width="100%" cellspacing="0" cellpadding="0" border="0" align="center">
+  <tr bgcolor="#F1F1F1">
+    <td valign="middle" width="*"  NOWRAP="y">
+      <a href="http://universalplatform.com/home"><img src="icons/up.gif" align="absmiddle" border="0"/><span  class="poweredBy" style="padding-left: 5px">on Universal</span><span class="poweredBy-b">Platform</span></a>
+    </td>
+    <td class="welcome" width="750">
+      <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" /></a>
+      <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
+    </td>
+  </tr>
+</table>
+</hideBlock>
     <include name="requiredHeader.jsp"/>
     <include name="include/commonHeader.jsp"/>
-<hideBlock>
-    <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" /></a>
-    <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
-</hideBlock>
+    <br/>
 <menuBar>
 <table width="100%" cellspacing="0" cellpadding="0" border="0" align="center">
   <tr valign="top">
@@ -46,10 +56,12 @@
     <td valign="middle" align="right" width="100">
       <include name="searchText.jsp"/>
     </td>
-    <td width="1"><img src="images/toolbar_bg2.gif" border="0" width="1" height="23"/></td>
+    <td valign="top" nowrap="y">
+      <a href="#"><IMG src="images/logo.gif" border="0" width="32" align="right" /></a>
+    </td>
    </tr></table></td>
   </tr>
-  <tr><td class="line" height="40" valign="middle"><!--resourceTypeLabel/--></td></tr>
+  <tr><td class="line" height="40" valign="middle"><resourceTypeLabel/></td></tr>
   <tr><td colspan="2" align="middle"><alphabeticIndex/></td></tr>
 </table>
 </menuBar>
