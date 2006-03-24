@@ -57,7 +57,7 @@
       <include name="searchText.jsp"/>
     </td>
     <td valign="top" nowrap="y">
-      <a href="#"><IMG src="images/logo.gif" border="0" width="32" align="right" /></a>
+      <a href="#"><IMG src="images/logo.gif" border="0" height="32" align="right" /></a>
     </td>
    </tr></table></td>
   </tr>
