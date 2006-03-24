@@ -193,7 +193,7 @@ function calendar(TCA, TCB) {
     TCt = TCt.replace(("/" + TCz[i] + "/g"), TCz[i])
     //TCt = TCt.replace(eval("/" + TCz[i] + "/g"), TCz[i]) // mike: old code
   }
- 
+
   for (i = 0, len = TCx.length; i < len; i++) {
   //for (i = 0; i < TCx.length; i++) { // Mike: old code
     TC00 = new RegExp(TCx[i]);
@@ -243,14 +243,14 @@ function calendar(TCA, TCB) {
   var tc0a4 = this.TC0A & 4;
   var tc0a8 = this.TC0A & 8;
   var outp = "";
-  if (tc0a64 && db) {	
-  //if (this.TC0A & 64 && document.body && document.body.innerHTML) { //mike 
+  if (tc0a64 && db) {
+  //if (this.TC0A & 64 && document.body && document.body.innerHTML) { //mike
     //document.write('<table cellpadding="0" cellspacing="0" border="0" ><tr>')
     outp='<table cellpadding="0" cellspacing="0" border="0" ><tr>';
   }
- 
+
   if (tc0a2) {
-  	
+
     if (tc0a64){
       outp=outp+'<td>';
       //document.write(outp);
@@ -369,7 +369,7 @@ function TCZ() {
 
   if ((TC0V & 2 && TC0V & 32) || (TC0V & 2 && (TC0V & 4 || TC0V & 8)) || ((TC0V & 4 || TC0V & 8) && TC0V & 32))
     TC0V |= 64;
-  
+
   return TC0V
 }
 
@@ -380,7 +380,7 @@ function TCN(TC0W, TC0X, TC0Y) {
   var TC0Z = /^[+-]?\d+$/, TC0a;
   return (TC0Z.exec(TC0W) ? new Date(TC0X.valueOf() + new Number(TC0W * 864e5)) : this.TCc(TC0W))
 }
- 
+
 function createDiv() {
   //if (!document.body || !document.body.innerHTML)
   //  return;
@@ -425,10 +425,10 @@ function TC0B() {
 
   if (this.TC02 != 2)
     this.TC04.setSeconds(0);
-  
+
   var signal = TC9.TC0b ? 'onclick' : 'onchange';
   var TC0c = new TC0d();
-  
+
   TC0c.TC0e('<table ',
             this.TCO('outertable'),
             '><tr><td><table',
@@ -975,7 +975,7 @@ function TCr(TC1I) {
 }
 
 function TC0H(TC1c, TC1d, TC1J) {
-	
+
   var TC1e = TC1d ? new Date(TC1d) : new Date(this.TC04);
 
   if (!TC1d) {
@@ -1005,7 +1005,7 @@ function TC0H(TC1c, TC1d, TC1J) {
       }
       else {
         if (TC1c == 'year') {
-          
+
           var TC1h = this.TC0i.options[this.TC0i.selectedIndex].text;
 
           var TC1i = this.TC0i.options[this.TC0i.selectedIndex].value;
@@ -1777,12 +1777,12 @@ function TC0d() {
  * Retrieves calendar using formName + name as a key.
  * If does not exist - creates one.
  */
-function getCalendar(formName, name, initialValue, dateFormat) {
+function getCalendar(e, formName, name, initialValue, dateFormat) {
   var cal = A_CALENDARS[formName + '_' + name];
   if (cal) {
     cal.showcal();
-    return false;
-  }  
+    return stopEventPropagation(e);
+  }
   var initParams = {
       // a name of HTML form containing the calendar
       'formname' : formName,
@@ -1796,9 +1796,9 @@ function getCalendar(formName, name, initialValue, dateFormat) {
   };
   cal = new calendar(initParams, CAL_TPL1);
   var div = document.getElementById(name + "_div");
-  div.innerHTML = cal.createDiv(); 
+  div.innerHTML = cal.createDiv();
   cal.create();
   A_CALENDARS[formName + '_' + name] = cal;
   cal.showcal();
-  return false;
+  return stopEventPropagation(e);
 }
