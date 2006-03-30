@@ -964,10 +964,21 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 	          chosenTextField[0].style.backgroundColor = '#ffffff';
 	      }
 	      else {
-	        chosenTextField.value = val.substring(idx + 1);
+          if (prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate rollup
+            chosenTextField.value = tr.id;
+            return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
+          }
+          else
+	          chosenTextField.value = val.substring(idx + 1);
 	        if (chosenTextField.style)
 	          chosenTextField.style.backgroundColor = '#ffffff';
 	      }
+        var fr = form.elements[originalProp + "_From"];
+        var to = form.elements[originalProp + "_To"];
+        if (fr)
+          fr.value = '';
+        else if (to)
+          to.value = '';
       }
       // show property label since label inside input field is now overwritten
       if (currentFormName.indexOf('rightPanelPropertySheet') == 0) {
@@ -1069,6 +1080,28 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
     }
 
+    // close popup
+    var divId = prop + "_" + currentFormName;
+    if (currentResourceUri != null) {
+      if (divId.indexOf(".") == 0)
+        divId = currentResourceUri + ".$" + divId;
+      else
+        divId = currentResourceUri + ".$." + divId;
+    }
+    var div = document.getElementById(divId);
+    if (deleteCurrentDiv && currentDiv)
+      loadedPopups[currentDiv.id] = null;
+    // if checkbox was clicked, then do not close popup so that user can check checboxes, if needed
+    if (!checkboxClicked)
+      Popup.close0(div.id);
+    clearOtherPopups(div);
+    if (checkboxClicked)
+      return true;
+    else
+      return false;
+  }
+
+  function closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked) {
     // close popup
     var divId = prop + "_" + currentFormName;
     if (currentResourceUri != null) {
@@ -2951,11 +2984,15 @@ function getCurrentScrollYPos() {
 }
 
 function stopEventPropagation(e) {
-  e.cancelBubble = true;
-  e.returnValue  = true;
-  if (e.preventDefault)  e.preventDefault();
-  if (e.stopPropagation) e.stopPropagation();
-  if (e.setAttribute)    e.setAttribute('eventProcessed', 'true');
+  try {
+    e.cancelBubble = true;
+    e.returnValue  = true;
+    if (e.preventDefault)  e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+    if (e.setAttribute)    e.setAttribute('eventProcessed', 'true');
+  }
+  catch (e) {
+  }
   return false;
 }
 
