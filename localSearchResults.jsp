@@ -18,12 +18,6 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
   <td width="110%" colspan="2"><!--br/-->
-		<form name="categoryTextSearch">
-		  <searchHistory/>
-		  <categoryTextSearch />
-		  <resourcesSearch resourcesUri="/sql/text/search/resources" />
-		  <filesSearch filesUri="text/search/files" />
-		</form>
     <taskTreeControl/>
     <div id="siteResourceList">
       <font color="red"><b><errorMessage /></b></font>
