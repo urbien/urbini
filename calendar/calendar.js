@@ -342,7 +342,7 @@ function calendar(TCA, TCB) {
   this.TC0M = TC0N;
   this.TC0O = TC0P;
   this.TC0Q = TC0R;
-  this.showcal = TC0S;
+  this.showcal = showcal;
   this.TC0T = TC0U
 }
 
@@ -1426,7 +1426,7 @@ function TC0R(TC2C) {
   return TC2D
 }
 
-function TC0S() {
+function showcal() {
   //if (!document.body || !document.body.innerHTML)
   //  return;
 
@@ -1744,7 +1744,7 @@ function TCd(TC2y) {
   var TC2z = [], i, TCw = 1, a = this.TC01.exec(TC2y);
 
   if (!a || typeof (a) != 'object') {
-    alert(ARR_STRINGS['not_meet']);
+    //alert(ARR_STRINGS['not_meet']);
     return new Date()
   }
 
@@ -1782,27 +1782,31 @@ function getCalendar(event,
                      name,              // date input field id and name
                      initialValue,      // initial value in date format shown below
                      dateFormat) {      // dateFormat = (isEuropean) ? "d-m-Y" : "m-d-Y";
-  var cal = A_CALENDARS[formName + '_' + name];
-  if (cal) {
-    cal.showcal();
-    return stopEventPropagation(event);
-  }
-  var initParams = {
-      // a name of HTML form containing the calendar
-      'formname' : formName,
-      // data format the calendar operates with
-      'dataformat' : dateFormat,
-      // whether to hide any other opened calendar if opening current one
-      'replace' : true,
-      'selected' : initialValue,
-      'watch' : true,
-      'controlname' : name
-  };
-  cal = new calendar(initParams, CAL_TPL1);
-  var div = document.getElementById(name + "_div");
-  div.innerHTML = cal.createDiv();
-  cal.create();
-  A_CALENDARS[formName + '_' + name] = cal;
-  cal.showcal();
+  try {
+	  var cal = A_CALENDARS[formName + '_' + name];
+	  if (cal) {
+	    cal.showcal();
+	    return stopEventPropagation(event);
+	  }
+	  var initParams = {
+	      // a name of HTML form containing the calendar
+	      'formname' : formName,
+	      // data format the calendar operates with
+	      'dataformat' : dateFormat,
+	      // whether to hide any other opened calendar if opening current one
+	      'replace' : true,
+	      'selected' : initialValue,
+	      'watch' : true,
+	      'controlname' : name
+	  };
+	  cal = new calendar(initParams, CAL_TPL1);
+	  var div = document.getElementById(name + "_div");
+	  div.innerHTML = cal.createDiv();
+	  cal.create();
+	  A_CALENDARS[formName + '_' + name] = cal;
+	  cal.showcal();
+	} catch (e) {
+	  alert(e);
+	}
   return stopEventPropagation(event);
 }
