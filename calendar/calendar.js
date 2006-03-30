@@ -130,20 +130,20 @@ function calendar(TCA, TCB) {
   TC0[TCC][2].src = TCB.disminusimage.src;
   TC0[TCC][3].src = TCB.displusimage.src;
   TC0[TCC][4].src = TCB.todayimage.src;
-  this.datemessage = TCD;
-  this.TCE = TCF;
+  this.dateMessage = dateMessage;
+  this.getElementId = getElementId;
   this.TCG = (TCA.picttype == 'img' ? 1 : TCA.picttype == 'button' ? 2 : TCA.picttype == 'others' ? 3 : 1);
   this.TCH = (TCA.controlname ? TCA.controlname : 'datetime_' + this.TCC);
   this.TCI = (TCA.pictname ? TCA.pictname : 'calicon_' + this.TCC);
-  this.TCJ = (TCA.positionname ? TCA.positionname : 'calpos_' + this.TCC);
+  this.calPosImageId = (TCA.positionname ? TCA.positionname : 'calpos_' + this.TCC);
 
   if (!TCA.formname) {
-    this.datemessage('need_form_name');
+    this.dateMessage('need_form_name');
     return
   }
 
   if (!document.forms[TCA.formname]) {
-    this.datemessage('form_not_found', TCA.formname);
+    this.dateMessage('form_not_found', TCA.formname);
     return
   }
 
@@ -211,7 +211,7 @@ function calendar(TCA, TCB) {
                                                                                     ? 99 : 1) : 0);
 
   if (this.TC02 == 99) {
-    this.datemessage('not_format');
+    this.dateMessage('not_format');
     return
   }
 
@@ -307,8 +307,8 @@ function calendar(TCA, TCB) {
     }
     //if (tc0a64)
      // document.write('<td>');
-    outp=outp+'<img ' + this.TCO('pixel') + '  name="' + this.TCJ + '" id="' + this.TCJ + '">';
-    //document.write('<img ' + this.TCO('pixel') + '  name="' + this.TCJ + '" id="' + this.TCJ + '">');
+    outp=outp+'<img ' + this.TCO('pixel') + '  name="' + this.calPosImageId + '" id="' + this.calPosImage + '">';
+    //document.write('<img ' + this.TCO('pixel') + '  name="' + this.calPosImageId + '" id="' + this.calPosImageId + '">');
     //document.write(outp);
     if (tc0a64){
     	outp=outp+'<td>';
@@ -340,8 +340,8 @@ function calendar(TCA, TCB) {
   this.TC0I = TC0J;
   this.TC0K = TC0L;
   this.TC0M = TC0N;
-  this.TC0O = TC0P;
-  this.TC0Q = TC0R;
+  this.setCalendarPosition = setCalendarPosition;
+  this.getOffset = getOffset;
   this.showcal = showcal;
   this.TC0T = TC0U
 }
@@ -352,19 +352,19 @@ function TC0U() {
 function TCZ() {
   var TC0V = 1;
 
-  if (!this.TCE(this.TCH, 'form'))
+  if (!this.getElementId(this.TCH, 'form'))
     TC0V |= 2;
 
   if (this.TCG != 3) {
-    if (this.TCG == 1 && !this.TCE(this.TCI, 'img'))
+    if (this.TCG == 1 && !this.getElementId(this.TCI, 'img'))
       TC0V |= 4;
-    if (this.TCG == 2 && !this.TCE(this.TCI, 'form'))
+    if (this.TCG == 2 && !this.getElementId(this.TCI, 'form'))
       TC0V |= 8
   }
   else
     TC0V |= 16;
 
-  if (!this.TCE(this.TCJ, 'img'))
+  if (!this.getElementId(this.calPosImageId, 'img'))
     TC0V |= 32;
 
   if ((TC0V & 2 && TC0V & 32) || (TC0V & 2 && (TC0V & 4 || TC0V & 8)) || ((TC0V & 4 || TC0V & 8) && TC0V & 32))
@@ -394,7 +394,7 @@ function createDiv() {
             1,
             '"></div>');
 
-  if (TC9.TC0f) {
+  if (TC9.needIframe) {
     TC0c.TC0e('<iframe id="cal_iframe',
               thistcc,
               '" src="',
@@ -559,64 +559,64 @@ function TC0B() {
 
   calRef.innerHTML = TC0c.TC0g();
 
-  this.TC0h = this.TCE('cal_mon' + thistcc);
-  this.TC0i = this.TCE('cal_year' + thistcc);
-  this.TC0j = this.TCE('cal_grid' + thistcc);
-  this.TC0k = this.TCE('caldiv' + thistcc);
+  this.TC0h = this.getElementId('cal_mon' + thistcc);
+  this.TC0i = this.getElementId('cal_year' + thistcc);
+  this.TC0j = this.getElementId('cal_grid' + thistcc);
+  this.caldiv = this.getElementId('caldiv' + thistcc);
 
-  if (TC9.TC0f)
-    this.TC0l = this.TCE('cal_iframe' + thistcc);
+  if (TC9.needIframe)
+    this.iframe = this.getElementId('cal_iframe' + thistcc);
 
-  this.TC0m = this.TCE(this.TCH, 'form');
-  this.TC0m.value = this.TC09;
-  this.TC0n = this.TCE(this.TCJ, 'img');
+  this.TC0m = this.getElementId(this.TCH, 'form');
+  this.TC0m.value  = this.TC09;
+  this.calPosImage = this.getElementId(this.calPosImageId, 'img');
 
   if (this.TCG == 1) {
-    this.TC0o = this.TCE(this.TCI, 'img')
+    this.TC0o = this.getElementId(this.TCI, 'img')
   }
 
-  this.TC0p = this.TCE('cal_implus' + thistcc, 'img');
-  this.TC0q = this.TCE('cal_imminus' + thistcc, 'img');
-  this.TC0r = this.TCE('cal_iyplus' + thistcc, 'img');
-  this.TC0s = this.TCE('cal_iyminus' + thistcc, 'img');
-  this.TC0t = this.TCE('cal_amplus' + thistcc);
-  this.TC0u = this.TCE('cal_amminus' + thistcc);
-  this.TC0v = this.TCE('cal_ayplus' + thistcc);
-  this.TC0w = this.TCE('cal_ayminus' + thistcc);
+  this.TC0p = this.getElementId('cal_implus' + thistcc, 'img');
+  this.TC0q = this.getElementId('cal_imminus' + thistcc, 'img');
+  this.TC0r = this.getElementId('cal_iyplus' + thistcc, 'img');
+  this.TC0s = this.getElementId('cal_iyminus' + thistcc, 'img');
+  this.TC0t = this.getElementId('cal_amplus' + thistcc);
+  this.TC0u = this.getElementId('cal_amminus' + thistcc);
+  this.TC0v = this.getElementId('cal_ayplus' + thistcc);
+  this.TC0w = this.getElementId('cal_ayminus' + thistcc);
 
   if (this.TC02) {
-    this.TC0x = this.TCE('cal_hour' + thistcc);
+    this.TC0x = this.getElementId('cal_hour' + thistcc);
 
-    this.TC0y = this.TCE('cal_min' + thistcc);
-    this.TC0z = this.TCE('cal_ihplus' + thistcc, 'img');
-    this.TC10 = this.TCE('cal_ihminus' + thistcc, 'img');
-    this.TC11 = this.TCE('cal_ahplus' + thistcc);
-    this.TC12 = this.TCE('cal_ahminus' + thistcc);
-    this.TC13 = this.TCE('cal_iiplus' + thistcc, 'img');
-    this.TC14 = this.TCE('cal_iiminus' + thistcc, 'img');
-    this.TC15 = this.TCE('cal_aiplus' + thistcc);
-    this.TC16 = this.TCE('cal_aiminus' + thistcc);
+    this.TC0y = this.getElementId('cal_min' + thistcc);
+    this.TC0z = this.getElementId('cal_ihplus' + thistcc, 'img');
+    this.TC10 = this.getElementId('cal_ihminus' + thistcc, 'img');
+    this.TC11 = this.getElementId('cal_ahplus' + thistcc);
+    this.TC12 = this.getElementId('cal_ahminus' + thistcc);
+    this.TC13 = this.getElementId('cal_iiplus' + thistcc, 'img');
+    this.TC14 = this.getElementId('cal_iiminus' + thistcc, 'img');
+    this.TC15 = this.getElementId('cal_aiplus' + thistcc);
+    this.TC16 = this.getElementId('cal_aiminus' + thistcc);
 
     if (this.TC02 == 2) {
-      this.TC17 = this.TCE('cal_sec' + thistcc);
+      this.TC17 = this.getElementId('cal_sec' + thistcc);
 
-      this.TC18 = this.TCE('cal_isplus' + thistcc, 'img');
-      this.TC19 = this.TCE('cal_isminus' + thistcc, 'img');
-      this.TC1A = this.TCE('cal_asplus' + thistcc);
-      this.TC1B = this.TCE('cal_asminus' + thistcc)
+      this.TC18 = this.getElementId('cal_isplus' + thistcc, 'img');
+      this.TC19 = this.getElementId('cal_isminus' + thistcc, 'img');
+      this.TC1A = this.getElementId('cal_asplus' + thistcc);
+      this.TC1B = this.getElementId('cal_asminus' + thistcc)
     }
     if (this.TC02 == 1) {
-      this.TC1C = this.TCE('cal_ap' + thistcc);
+      this.TC1C = this.getElementId('cal_ap' + thistcc);
 
-      this.TC1D = this.TCE('cal_iaplus' + thistcc, 'img');
-      this.TC1E = this.TCE('cal_iaminus' + thistcc, 'img');
-      this.TC1F = this.TCE('cal_aaplus' + thistcc);
-      this.TC1G = this.TCE('cal_aaminus' + thistcc)
+      this.TC1D = this.getElementId('cal_iaplus' + thistcc, 'img');
+      this.TC1E = this.getElementId('cal_iaminus' + thistcc, 'img');
+      this.TC1F = this.getElementId('cal_aaplus' + thistcc);
+      this.TC1G = this.getElementId('cal_aaminus' + thistcc)
     }
   }
 
   this.TC0G();
-  this.TC0O()
+  this.setCalendarPosition();
 }
 
 function TC0L() {
@@ -1137,13 +1137,13 @@ function TCb(TC1e) {
     if (this.TC02) {
       if ((TC1l & 1024)) {
         TC1e = this.TC05;
-        this.datemessage('min_date')
+        this.dateMessage('min_date')
       }
     }
     else if (TC1l & 256) {
       TC1e = this.TC05;
 
-      this.datemessage('min_date')
+      this.dateMessage('min_date')
     }
   }
 
@@ -1151,13 +1151,13 @@ function TCb(TC1e) {
     if (this.TC02) {
       if (TC1l & 2048) {
         TC1e = this.TC06;
-        this.datemessage('max_date')
+        this.dateMessage('max_date')
       }
     }
     else if (TC1l & 512) {
       TC1e = this.TC06;
 
-      this.datemessage('max_date')
+      this.dateMessage('max_date')
     }
   }
 
@@ -1342,7 +1342,7 @@ function TCX(TC22) {
   return TC0V
 }
 
-function TCD(TC1H, TC1J) {
+function dateMessage(TC1H, TC1J) {
   switch (TC1H) {
     case 'max_date':
       TC25 = ARR_STRINGS['max_date'].replace(/%max_date/g, this.TCe(this.TC06));
@@ -1395,8 +1395,9 @@ function TC0J(TC26) {
   }
 }
 
-function TC0P() {
+function setCalendarPosition() {
   var TC28 = 0, TC29 = 0;
+  var offsetX = offsetY = 0;
 
   if (TC9.TC2A && TC9.TC2B) {
     if (document.body.leftMargin)
@@ -1405,20 +1406,75 @@ function TC0P() {
       TC29 = document.body.topMargin * 1
   }
 
-  this.TC0k.style.left = this.TC0n.x ? this.TC0n.x : (this.TC0Q('Left') + TC28);
-  this.TC0k.style.top = this.TC0n.y ? this.TC0n.y : (this.TC0Q('Top') + TC29);
+  this.caldiv.style.left = this.calPosImage.x ? this.calPosImage.x : (this.getOffset('Left') + TC28);
+  this.caldiv.style.top  = this.calPosImage.y ? this.calPosImage.y : (this.getOffset('Top')  + TC29);
 
-  if (TC9.TC0f) {
-    this.TC0l.style.left = this.TC0k.style.left;
-    this.TC0l.style.top = this.TC0k.style.top
+  //*********** to avoid scrolling - adjust position of the calendar so it displayes in the visible part of browser window
+  var scrollXY = getScrollXY();
+  var scrollX = scrollXY[0];
+  var scrollY = scrollXY[1];
+
+  var coords = getElementCoords(this.calPosImage);
+  var left = coords.left;
+  var top  = coords.top;
+
+  var screenXY = getWindowSize();
+  var screenX = screenXY[0];
+  var screenY = screenXY[1];
+
+  // Find out how close to the corner of the window
+  var distanceToRightEdge  = screenX + scrollX - left;
+  var distanceToBottomEdge = screenY + scrollY - top;
+
+  // first position the div box in the top left corner in order to measure its dimensions
+  // (otherwise, if position coirrectly and only then measure dimensions - the width/height will get cut off at the scroll boundary - at least in firefox 1.0)
+  this.caldiv.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
+  this.caldiv.style.left = 0 + 'px';
+  this.caldiv.style.top  = 0 + 'px';
+
+  var divCoords = getElementCoords(this.caldiv);
+    var margin = 40;
+
+  // this.caldiv.style.display    = 'none';   // must hide it again to avoid screen flicker
+
+  // move box to the left of the hotspot if the distance to window border isn't enough to accomodate the whole div box
+  if (distanceToRightEdge < divCoords.width + margin) {
+    left = (screenX -  scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
+    //alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " + scrollX);
+    if (left - margin > 0)
+      left -= margin; // adjust for a scrollbar;
+  }
+  else { // apply user requested offset only if no adjustment
+    if (offsetX)
+      left = left + offsetX;
+  }
+
+  // adjust position of the div box vertically - using the same approach as above
+  if (distanceToBottomEdge < divCoords.height + margin) {
+    top = (screenY + scrollY) - divCoords.height;
+    if (top - margin > 0)
+      top -= margin; // adjust for a scrollbar;
+  }
+  else { // apply user requested offset only if no adjustment
+    if (offsetY)
+      top = top + offsetY;
+  }
+  //*********** end adjusting position on screen
+
+  this.caldiv.style.left = left + 'px';
+  this.caldiv.style.top  = top  + 'px';
+
+  if (TC9.needIframe) {
+    this.iframe.style.left = this.caldiv.style.left;
+    this.iframe.style.top  = this.caldiv.style.top
   }
 }
 
-function TC0R(TC2C) {
-  var TC2D = 0, TC2E = this.TC0n;
+function getOffset(TC2C) {
+  var TC2D = 0, TC2E = this.calPosImage;
 
   while (TC2E) {
-    TC2D =TC2D+TC2E["offset" + TC2C];//mike
+    TC2D = TC2D + TC2E["offset" + TC2C];//mike
 
     TC2E = TC2E.offsetParent
   }
@@ -1430,24 +1486,24 @@ function showcal() {
   //if (!document.body || !document.body.innerHTML)
   //  return;
 
-  //if (TC9.TC0f)
-  //  var TC2F = String(this.TC0l.style.visibility).toLowerCase();
+  //if (TC9.needIframe)
+  //  var TC2F = String(this.iframe.style.visibility).toLowerCase();
 
-  var TC2G = String(this.TC0k.style.visibility).toLowerCase();
+  var TC2G = String(this.caldiv.style.visibility).toLowerCase();
 
   if (TC2G == 'visible' || TC2G == 'show') {
     this.TC1k = false;
 
-    this.TC0k.style.visibility = 'hidden';
+    this.caldiv.style.visibility = 'hidden';
 
-    if (TC9.TC0f) {
-      this.TC0l.style.visibility = 'hidden'
+    if (TC9.needIframe) {
+      this.iframe.style.visibility = 'hidden'
     }
     if (this.TCG == 1)
-      this.TC0o.src = this.TCB.caliconshow.src
+      this.TC0o.src = this.TCB.caliconshow.src;
   }
   else {
-    this.TC0O();
+    this.setCalendarPosition();
 
     if (this.TC0m.value) {
       TC2H = this.TCc(this.TC0m.value + '');
@@ -1455,7 +1511,7 @@ function showcal() {
         TC2H = this.TCa(TC2H);
 
         this.TC04 = new Date(TC2H);
-        this.TC0G('chislo')
+        this.TC0G('chislo');
       }
     }
 
@@ -1465,29 +1521,29 @@ function showcal() {
         if (ac.initialized == false)
           continue;
         if (i != this.TCC) {
-          ac.TC0k.style.visibility = 'hidden';
+          ac.caldiv.style.visibility = 'hidden';
 
-          if (TC9.TC0f)
-            ac.TC0l.style.visibility = 'hidden';
+          if (TC9.needIframe)
+            ac.iframe.style.visibility = 'hidden';
           if (ac.TCG == 1)
-            ac.TC0o.src = ac.TCB.caliconshow.src
+            ac.TC0o.src = ac.TCB.caliconshow.src;
         }
       }
     }
 
-    this.TC0k.style.visibility = 'visible';
+    this.caldiv.style.visibility = 'visible';
 
-    if (TC9.TC0f) {
-      thistcol=this.TC0l.style;
-      thistcol.width = this.TC0k.offsetWidth;
+    if (TC9.needIframe) {
+      thistcol=this.iframe.style;
+      thistcol.width = this.caldiv.offsetWidth;
 
-      thistcol.height = this.TC0k.offsetHeight;
-      thistcol.visibility = 'visible'
+      thistcol.height = this.caldiv.offsetHeight;
+      thistcol.visibility = 'visible';
     }
 
     this.TC1k = true;
     if (this.TCG == 1)
-      this.TC0o.src = this.TCB.caliconhide.src
+      this.TC0o.src = this.TCB.caliconhide.src;
   }
 }
 
@@ -1600,7 +1656,7 @@ function TCR(TC2M, TC1J) {
   return TC2X
 }
 
-function TCF(TC2Y, TC1J) {
+function getElementId(TC2Y, TC1J) {
   if (TC1J == 'form')
     TC2Z = document.forms[this.TCK].elements[TC2Y];
   else if (TC1J == 'img')
@@ -1608,7 +1664,7 @@ function TCF(TC2Y, TC1J) {
   else
     TC2Z = document.all ? document.all[TC2Y] : document.getElementById(TC2Y);
 
-  return TC2Z
+  return TC2Z;
 }
 
 function TCL() {
@@ -1648,7 +1704,7 @@ function TCL() {
     }
   }
   else if (this.TC2A) {
-    this.TC2l = this.TC2m = this.TC2n = this.TC0f = false;
+    this.TC2l = this.TC2m = this.TC2n = this.needIframe = false;
 
     if (v.indexOf('MSIE 4') > 0) {
       this.TC2l = true;
@@ -1665,7 +1721,7 @@ function TCL() {
       this.v = 5.5
     }
     else if (v.indexOf('MSIE 6') > 0) {
-      this.TC0f = true;
+      this.needIframe = true;
 
       this.v = 6
     }
