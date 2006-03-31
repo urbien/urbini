@@ -911,6 +911,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 			  return;
       }
       else {
+        if (prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate rollup
+          chosenTextField.value = '';
+          this.hotspot.src = "icons/checkbox.gif";
+          return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
+        }
+        
         var isTablePropertyList = currentFormName.indexOf("tablePropertyList") == 0;
 	      if (len > 1) {
 	        if (!isTablePropertyList)
@@ -966,6 +972,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 	      else {
           if (prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate rollup
             chosenTextField.value = tr.id;
+            var dateImg = tr.getElementsByTagName('img');
+            this.hotspot.src = dateImg[0].src;
             return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
           }
           else
