@@ -916,7 +916,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           this.hotspot.src = "icons/checkbox.gif";
           return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
         }
-        
+
         var isTablePropertyList = currentFormName.indexOf("tablePropertyList") == 0;
 	      if (len > 1) {
 	        if (!isTablePropertyList)
@@ -1433,10 +1433,13 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   currentImgId  = imgId;
 
   originalProp = propName1;
+ var isGroupBy;
+ if (originalProp.indexOf("_groupBy") == originalProp.length - 8)
+   isGroupBy = true;
   /* 'viewColsList' for does not have input fields where to set focus.
    *  form.elements[originalProp] returns list of viewCols properties to choose from to display in RL
    */
-  if (form && currentFormName != "viewColsList") {
+  if (!isGroupBy  &&  form && currentFormName != "viewColsList") {
     var chosenTextField = form.elements[originalProp];
     if (chosenTextField && chosenTextField.focus)
       chosenTextField.focus();
