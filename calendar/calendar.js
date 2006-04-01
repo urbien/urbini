@@ -273,18 +273,18 @@ function calendar(TCA, TCB) {
         //document.write('<td><img ' + this.TCO('pixel') + '></td>');
       }
       if (tc0a64 && (tc0a4 || tc0a6)){
-      	outp=outp+'<td>';
+        outp=outp+'<td>';
         //document.write('<td>');
-	}
+  }
       if (tc0a4){
-      	outp=outp+'<a href="javascript:A_CALENDARS[\'' + this.TCC + '\'].create(); A_CALENDARS[\'' + this.TCC + '\'].showcal();" ><img ' + this.TCO('caliconshow') + ' name="'
+        outp=outp+'<a href="javascript:A_CALENDARS[\'' + this.TCC + '\'].create(); A_CALENDARS[\'' + this.TCC + '\'].showcal();" ><img ' + this.TCO('caliconshow') + ' name="'
                 + this.TCI + '"      id="' + this.TCI + '"></a>';
         //document.write(
         //    '<a href="javascript:A_CALENDARS[' + this.TCC + '].create(); A_CALENDARS[' + this.TCC + '].showcal();" ><img ' + this.TCO('caliconshow') + ' name="'
          //       + this.TCI + '"      id="' + this.TCI + '"></a>');
       }
       else if (tc0a6){
-      	outp=outp+'<input type="button"  ' + this.TCO('calbutton') + ' name="' + this.TCI + '" id="' + this.TCI
+        outp=outp+'<input type="button"  ' + this.TCO('calbutton') + ' name="' + this.TCI + '" id="' + this.TCI
                            + '" onclick="A_CALENDARS[\'' + this.TCC + '\'].showcal();return false;">';
         //document.write('<input type="button"  ' + this.TCO('calbutton') + ' name="' + this.TCI + '" id="' + this.TCI
         //                   + '" onclick="A_CALENDARS[' + this.TCC + '].showcal();return false;">');
@@ -311,15 +311,15 @@ function calendar(TCA, TCB) {
     //document.write('<img ' + this.TCO('pixel') + '  name="' + this.calPosImageId + '" id="' + this.calPosImageId + '">');
     //document.write(outp);
     if (tc0a64){
-    	outp=outp+'<td>';
+      outp=outp+'<td>';
       //document.write('</td>');
     }
     if (tc0a64 && (tc0a2 && (tc0a4 || tc0a6))){
-    	outp=outp+'<td></td><td></td>';
+      outp=outp+'<td></td><td></td>';
       //document.write('<td></td><td></td>');
     }
     if (tc0a64){
-    	outp=outp+'<tr>';
+      outp=outp+'<tr>';
       //document.write('</tr>')
     }
   }
@@ -343,6 +343,7 @@ function calendar(TCA, TCB) {
   this.setCalendarPosition = setCalendarPosition;
   this.getOffset = getOffset;
   this.showcal = showcal;
+  this.isShown = isShown;
   this.TC0T = TC0U
 }
 
@@ -1038,11 +1039,11 @@ function TC0H(TC1c, TC1d, TC1J) {
   this.TC0M(TC1c);
 
   if (this.TCA.watch == true) {
-    if (this.TC1k || this.TC0m.value)
+    if (this.shown || this.TC0m.value)
       this.TC0m.value = this.TCe(this.TC04)
   }
   else if (TC1c == 'chislo') {
-    if (this.TC1k || this.TC0m.value)
+    if (this.shown || this.TC0m.value)
       this.TC0m.value = this.TCe(this.TC04)
   }
 }
@@ -1433,7 +1434,7 @@ function setCalendarPosition() {
   this.caldiv.style.top  = 0 + 'px';
 
   var divCoords = getElementCoords(this.caldiv);
-    var margin = 40;
+  var margin = 40;
 
   // this.caldiv.style.display    = 'none';   // must hide it again to avoid screen flicker
 
@@ -1482,6 +1483,10 @@ function getOffset(TC2C) {
   return TC2D
 }
 
+function isShown() {
+  return this.shown;
+}
+
 function showcal() {
   //if (!document.body || !document.body.innerHTML)
   //  return;
@@ -1492,12 +1497,12 @@ function showcal() {
   var TC2G = String(this.caldiv.style.visibility).toLowerCase();
 
   if (TC2G == 'visible' || TC2G == 'show') {
-    this.TC1k = false;
+    this.shown = false;
 
     this.caldiv.style.visibility = 'hidden';
 
     if (TC9.needIframe) {
-      this.iframe.style.visibility = 'hidden'
+      this.iframe.style.visibility = 'hidden';
     }
     if (this.TCG == 1)
       this.TC0o.src = this.TCB.caliconshow.src;
@@ -1541,7 +1546,7 @@ function showcal() {
       thistcol.visibility = 'visible';
     }
 
-    this.TC1k = true;
+    this.shown = true;
     if (this.TCG == 1)
       this.TC0o.src = this.TCB.caliconhide.src;
   }
@@ -1839,30 +1844,36 @@ function getCalendar(event,
                      initialValue,      // initial value in date format shown below
                      dateFormat) {      // dateFormat = (isEuropean) ? "d-m-Y" : "m-d-Y";
   try {
-	  var cal = A_CALENDARS[formName + '_' + name];
-	  if (cal) {
-	    cal.showcal();
-	    return stopEventPropagation(event);
-	  }
-	  var initParams = {
-	      // a name of HTML form containing the calendar
-	      'formname' : formName,
-	      // data format the calendar operates with
-	      'dataformat' : dateFormat,
-	      // whether to hide any other opened calendar if opening current one
-	      'replace' : true,
-	      'selected' : initialValue,
-	      'watch' : true,
-	      'controlname' : name
-	  };
-	  cal = new calendar(initParams, CAL_TPL1);
-	  var div = document.getElementById(name + "_div");
-	  div.innerHTML = cal.createDiv();
-	  cal.create();
-	  A_CALENDARS[formName + '_' + name] = cal;
-	  cal.showcal();
-	} catch (e) {
-	  alert(e);
-	}
+    var cal = A_CALENDARS[formName + '_' + name];
+    if (cal && cal.isShown()) {
+      cal.showcal();
+      return stopEventPropagation(event);
+    }
+    for (var i in A_CALENDARS) {
+      var cal1 = A_CALENDARS[i];
+      if (cal1 && cal1.isShown())
+        cal1.showcal();
+    }
+
+    var initParams = {
+        // a name of HTML form containing the calendar
+        'formname' : formName,
+        // data format the calendar operates with
+        'dataformat' : dateFormat,
+        // whether to hide any other opened calendar if opening current one
+        'replace' : true,
+        'selected' : initialValue,
+        'watch' : true,
+        'controlname' : name
+    };
+    cal = new calendar(initParams, CAL_TPL1);
+    var div = document.getElementById(name + "_div");
+    div.innerHTML = cal.createDiv();
+    cal.create();
+    A_CALENDARS[formName + '_' + name] = cal;
+    cal.showcal();
+  } catch (e) {
+    alert(e);
+  }
   return stopEventPropagation(event);
 }
