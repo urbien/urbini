@@ -33,9 +33,10 @@ select {
   <fieldset>
   <legend>Recurrence pattern</legend>
   <input name="&[propertyName];" type="hidden" value="&[propertyValue];">
-  <table cellspacing=6>
+  <table cellspacing="6">
     <tr>
-      <td align="left" valign="middle"> <table>
+      <td align="left" valign="middle">
+        <table>
           <tr>
             <td><input type=radio name=&[propertyName];_recur value=once &[recurOnceChecked]; onClick="showRecurrencePanel('&[formName];', '&[propertyName];')"></td>
             <td>Once</td>
@@ -56,46 +57,36 @@ select {
             <td><input type=radio name=&[propertyName];_recur value=yearly &[recurYearlyChecked]; onClick="showRecurrencePanel('&[formName];', '&[propertyName];')"></td>
             <td>Yearly</td>
           </tr>
-        </table></td>
+        </table>
+      </td>
       <td > </td>
-      <td valign=top> <table id=onceBlock style="display: none" cellpadding=0 cellspacing=0>
+      <td valign=top>
+        <table id=onceBlock style="display: none" cellpadding=0 cellspacing=0>
           <tr>
-            <td> <table width="80%">
+            <td>
+              <table width="80%">
                 <tr>
                   <td>Start</td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
             <td ></td>
-            <td valign=top> <table id=timeBlock style="display: inline">
+            <td valign=top>
+              <table id=timeBlock style="display: inline">
                 <tr>
                   <td>
-                    <!--script language="JavaScript">
-                        var &[propertyName];_init_start_once = {
-                        // a name of HTML form containing the calendar
-                        'formname' : '&[formName];',
-                        // data format the calendar operates with
-                        'dataformat' : 'M-d-Y',
-                        // weather to hide any other opened calendar if opeining current one
-                        'replace' : true,
-                        &[currentDateJSString];
-                        //'selected' : '',
-                        //'watch' : true,
-                        'controlname' : '&[propertyName];_start_once'
-                        };
-                      new calendar(&[propertyName];_init_start_once, CAL_TPL1);
-                    </script-->
                     <table border="0" cellpadding="0" cellspacing="0"> <tbody> <tr>
                         <td> <input id="&[propertyName];_start_once" name="&[propertyName];_start_once" value="&[currentDateJSString];" maxlength="100" class="xxs" type="text" width="10"> </td>
                         <td> </td>
-                        <td>     <img src="calendar/img/pixel.gif" border="0" height="1" width="1"> </td>
+                        <td> </td>
                         <td>
-                            <a href="about:blank" onClick="return getCalendar(event, '&[formName];', '&[propertyName];_start_once', '&[currentDateJSString];', '&[dateFormat];');">
+                            <a href="javascript:;" onClick="return getCalendar(event, '&[formName];', '&[propertyName];_start_once', '&[currentDateJSString];', '&[dateFormat];');">
                               <img src="images/calendar.gif" alt="click to select date from the calendar" name="calicon_&[formName];_&[propertyName];_start_once" id="calicon_&[formName];_&[propertyName];_start_once" border="0" height="16" width="16">
                             </a>
                         </td>
                         <td> </td>
                         </tr> <tr>
-                        <td>     <img src="calendar/img/pixel.gif" name="calpos_&[formName];_&[propertyName];_start_once" id="calpos_&[formName];_&[propertyName];_start_once" border="0" height="1" width="1"> </td>
+                        <td>     <img src="calendar/img/pixel.gif" name="calpos_&[formName];_&[propertyName];_start_once" id="calpos_&[formName];_&[propertyName];_start_once" border="0" height="1" width="1"> </img></td>
                         <td> </td>
                         <td> </td>
                         <td> </td>
@@ -112,30 +103,36 @@ select {
                       &[minLine];
         <@> </select> </td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
           </tr>
         </table>
-        <table id=dailyBlock style="display: none">
+        <table id="dailyBlock" style="display: none">
           <tr>
-            <td><table>
+            <td>
+              <table>
                 <tr>
                   <td><input type=radio name=&[propertyName];_dailyRecur value=everyFewDays &[dailyRecur_everyFewDays];></td>
                   <td>Every</td>
                   <td><input name=&[propertyName];_dayRecurrence value=&[dayRecurrenceValue]; size=2></td>
                   <td>day(s)</td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
           </tr>
           <tr>
-            <td><table>
+            <td>
+              <table>
                 <tr>
                   <td><input type=radio name=&[propertyName];_dailyRecur value=everyWeekday &[dailyRecur_everyWeekday];></td>
                   <td colspan=3>Every weekday</td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
           </tr>
           <tr>
-            <td><table>
+            <td>
+              <table>
                 <tr>
                   <td>at</td>
                   <td> <select name=&[propertyName];_hour_daily><[hourDaily]> &[hourLineDaily];
@@ -145,7 +142,8 @@ select {
                       &[minLineDaily];
         <@> </select> </td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
           </tr>
         </table>
         <table id=weeklyBlock style="display: none" cellpadding=0 cellspacing=0>
@@ -153,7 +151,8 @@ select {
             <td>&[weekDayCheckBoxes];</td>
           </tr>
           <tr>
-            <td><table>
+            <td>
+              <table>
                 <tr>
                   <td>at</td>
                   <td> <select name=&[propertyName];_hour_weekly><[hourWeekly]>
@@ -164,12 +163,14 @@ select {
                       &[minLineWeekly];
         <@> </select> </td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
           </tr>
         </table>
         <table id=monthlyBlock style="display: none" cellpadding=0 cellspacing=0>
           <tr>
-            <td><table>
+            <td>
+              <table>
                 <tr>
                   <td><input type=radio name=&[propertyName];_monthlyRecur value=byMonthDay &[monthlyRecur_byMonthDay]; checked></td>
                   <td>Day</td>
@@ -178,10 +179,12 @@ select {
                   <td><input name=&[propertyName];_monthsRecur value=&[monthsRecurValue]; size=2></td>
                   <td>month(s)</td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
           </tr>
           <tr>
-            <td><table>
+            <td>
+              <table>
                 <tr>
                   <td><input type=radio name=&[propertyName];_monthlyRecur value=byWeekDay &[monthlyRecur_byWeekDay];></td>
                   <td>The</td>
@@ -190,13 +193,15 @@ select {
                   <td><select name=&[propertyName];_weekDay size=1><[weekDay]> &[weekDayLine];
            <@> </select></td>
                   <td nowrap>of every</td>
-                  <td><input name=&[propertyName];_monthRecur value=&[monthRecurValue]; size=2></td>
+                  <td><input name=&[propertyName];_monthRecur value=&[monthRecurValue]; size="2"></td>
                   <td>month(s)</td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
           </tr>
           <tr>
-            <td><table>
+            <td>
+              <table>
                 <tr>
                   <td>at</td>
                   <td> <select name=&[propertyName];_hour_monthly><[hourMonthly]>
@@ -207,10 +212,11 @@ select {
                       &[minLineMonthly];
         <@> </select> </td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
           </tr>
         </table>
-        <table id=yearlyBlock style="display: none" cellpadding=0 cellspacing=0>
+        <table id="yearlyBlock" style="display: none" cellpadding="0" cellspacing="0">
           <tr>
             <td><table>
                 <tr>
@@ -219,10 +225,12 @@ select {
                   <td> <select name=&[propertyName];_monthYearly size=1><[monthYearly]> &[monthYearlyLine];
             <@> </select> </td>
                   <td><input name=&[propertyName];_monthDayYearly value=&[monthDayYearlyValue]; size=2></tr>
-              </table></td>
+              </table>
+            </td>
           </tr>
           <tr>
-            <td><table>
+            <td>
+              <table>
                 <tr>
                   <td><input type=radio name=&[propertyName];_yearlyRecur value=byWeekDay &[yearlyRecur_byWeekDay];></td>
                   <td>The</td>
@@ -234,10 +242,12 @@ select {
                   <td> <select name=&[propertyName];_monthYearly1 size=1><[monthYearly1]> &[monthYearly1Line];
             <@> </select> </td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
           </tr>
           <tr>
-            <td><table>
+            <td>
+              <table>
                 <tr>
                   <td>at</td>
                   <td> <select name=&[propertyName];_hour_yearly><[hourYearly]>
@@ -248,48 +258,38 @@ select {
                       &[minLineYearly];
         <@> </select> </td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
           </tr>
-        </table></td>
+        </table>
+      </td>
     </tr>
     <tr>
       <td align="left" valign="middle" colspan=3> <table id=frequencyStartEndBlock style="display: none" cellspacing=0 cellpadding=0>
           <tr>
-            <td> <table width="80%">
+            <td>
+              <table width="80%">
                 <tr>
                   <td>Start</td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
             <td ></td>
             <td valign=top> <table id=timeBlock style="display: inline">
                 <tr>
                   <td>
-                    <!--script language="JavaScript">
-                      var &[propertyName];_init_start = {
-                      // a name of HTML form containing the calendar
-                      'formname' : '&[formName];',
-                      // data format the calendar operates with
-                      'dataformat' : 'M-d-Y',
-                      // weather to hide any other opened calendar if opeining current one
-                      'replace' : true,
-                      &[currentDateJSStringStart];
-                      'controlname' : '&[propertyName];_start'
-                      };
-                      new calendar(&[propertyName];_init_start, CAL_TPL1);
-                    </script-->
-
                     <table border="0" cellpadding="0" cellspacing="0"> <tbody> <tr>
                         <td> <input id="&[propertyName];_init_start" name="&[propertyName];_init_start" value="&[currentDateJSStringStart];" maxlength="100" class="xxs" type="text" width="10"> </td>
                         <td> </td>
-                        <td>     <img src="calendar/img/pixel.gif" border="0" height="1" width="1"> </td>
+                        <td> </td>
                         <td>
-                            <a href="about:blank" onClick="return getCalendar(event, '&[formName];', '&[propertyName];_init_start', '&[currentDateJSStringStart];', '&[dateFormat];');">
+                            <a href="javascript:;" onClick="return getCalendar(event, '&[formName];', '&[propertyName];_init_start', '&[currentDateJSStringStart];', '&[dateFormat];');">
                               <img src="images/calendar.gif" alt="click to select date from the calendar" name="calicon_&[formName];_&[propertyName];_init_start" id="calicon_&[formName];_&[propertyName];_init_start" border="0" height="16" width="16">
                             </a>
                         </td>
                         <td> </td>
                         </tr> <tr>
-                        <td>     <img src="calendar/img/pixel.gif" name="calpos_&[formName];_&[propertyName];_init_start" id="calpos_&[formName];_&[propertyName];_init_start" border="0" height="1" width="1"> </td>
+                        <td>     <img src="calendar/img/pixel.gif" name="calpos_&[formName];_&[propertyName];_init_start" id="calpos_&[formName];_&[propertyName];_init_start" border="0" height="1" width="1"> </img></td>
                         <td> </td>
                         <td> </td>
                         <td> </td>
@@ -301,40 +301,30 @@ select {
               </table></td>
           </tr>
           <tr>
-            <td align="center"> <table width="80%">
+            <td align="center">
+              <table width="80%">
                 <tr>
                   <td>End</td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
             <td></td>
-            <td valign=top> <table id=timeBlock style="display: inline">
+            <td valign=top>
+              <table id="timeBlock" style="display: inline">
                 <tr>
                   <td width="21">
-                     <!--script language="JavaScript">
-                      var &[propertyName];_init_end = {
-                      // a name of HTML form containing the calendar
-                      'formname' : '&[formName];',
-                      // data format the calendar operates with
-                      'dataformat' : 'M-d-Y',
-                      // weather to hide any other opened calendar if opeining current one
-                      'replace' : true,
-                      &[currentDateJSStringEndBy];
-                      'controlname' : '&[propertyName];_endBy'
-                      };
-                      new calendar(&[propertyName];_init_end, CAL_TPL1);
-                      </script-->
                     <table border="0" cellpadding="0" cellspacing="0"> <tbody> <tr>
                         <td> <input id="&[propertyName];_init_end" name="&[propertyName];_init_end" value="&[currentDateJSStringEndBy];" maxlength="100" class="xxs" type="text" width="10"> </td>
                         <td> </td>
-                        <td>     <img src="calendar/img/pixel.gif" border="0" height="1" width="1"> </td>
+                        <td> </td>
                         <td>
-                            <a href="about:blank" onClick="return getCalendar(event, '&[formName];', '&[propertyName];_init_end', '&[currentDateJSStringEndBy];', '&[dateFormat];');">
+                            <a href="javascript:;" onClick="return getCalendar(event, '&[formName];', '&[propertyName];_init_end', '&[currentDateJSStringEndBy];', '&[dateFormat];');">
                               <img src="images/calendar.gif" alt="click to select date from the calendar" name="calicon_&[formName];_&[propertyName];_init_end" id="calicon_&[formName];_&[propertyName];_init_end" border="0" height="16" width="16">
                             </a>
                         </td>
                         <td> </td>
                         </tr> <tr>
-                        <td>     <img src="calendar/img/pixel.gif" name="calpos_&[formName];_&[propertyName];_init_end" id="calpos_&[formName];_&[propertyName];_init_end" border="0" height="1" width="1"> </td>
+                        <td>     <img src="calendar/img/pixel.gif" name="calpos_&[formName];_&[propertyName];_init_end" id="calpos_&[formName];_&[propertyName];_init_end" border="0" height="1" width="1"> </img></td>
                         <td> </td>
                         <td> </td>
                         <td> </td>
@@ -344,7 +334,8 @@ select {
 
                   </td>
                 </tr>
-              </table></td>
+              </table>
+            </td>
           </tr>
           <tr>
             <td align="center">&nbsp;</td>
