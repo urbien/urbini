@@ -1,9 +1,9 @@
 /*
 	>>> THIS IS CALENDAR TEMPLATE FILE <<<
-	
+
 	Variable defined here (CAL_TPL) should be passed to calendar constructor
 	as second parameter.
-	
+
 
 	Notes:
 
@@ -17,8 +17,8 @@
 var CAL_TPL1 = {
 
 	// >>> Localization settings <<<
-	
-	
+
+
 	// months as they appear in the selection list
 	'months': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 
@@ -27,18 +27,18 @@ var CAL_TPL1 = {
 
 	// day week starts from (normally 1-Mo or 0-Su)
 	'weekstart': 0,
-	
+
 	// width of popup window (for Netscape 4.x only)
-	'w': 190, 
+	'w': 190,
 	// height of popup window (for Netscape 4.x only)
 	'h': 180,
-	
+
 	// >>> Navbar settings <<<
 
 	// in year selection box how many years to list relatively to current year
 	'yearsbefore': 4,
 	'yearsafter': 4,
-		
+
 	// >>> Appearence settings (HTML tags attributes) <<<
 
 	// outer table (TABLE)
@@ -75,12 +75,12 @@ var CAL_TPL1 = {
 		'src': 'calendar/img/pixel.gif',
 		'width': 1,
 		'height': 1,
-		'border' : 0		
+		'border' : 0
 	},
-	// icon image to open the calendar instance (IMG), 
+	// icon image to open the calendar instance (IMG),
 	// not for on-page mode
 	'caliconshow': {
-		'src': 'images/calendar.gif',
+		'src': 'icons/calendar-not-selected.gif',
 		'width': 16,
 		'height': 16,
 		'border' : 0,
@@ -89,7 +89,7 @@ var CAL_TPL1 = {
 	// icon image to close the calendar instance (IMG)
 	// for modal mode only
 	'caliconhide': {
-		'src': 'images/calendar.gif'
+		'src': 'icons/calendar-selected.gif'
 	},
 	// input text field to store the date & time selected (INPUT type="text")
 	'datacontrol': {
