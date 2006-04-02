@@ -911,7 +911,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 			  return;
       }
       else {
-        if (prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate rollup
+        if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate rollup
           chosenTextField.value = '';
           this.hotspot.src = "icons/checkbox.gif";
           return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
@@ -970,7 +970,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 	          chosenTextField[0].style.backgroundColor = '#ffffff';
 	      }
 	      else {
-          if (prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate rollup
+          if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate rollup
             chosenTextField.value = tr.id;
             var dateImg = tr.getElementsByTagName('img');
             this.hotspot.src = dateImg[0].src;
@@ -1434,7 +1434,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
 
   originalProp = propName1;
  var isGroupBy;
- if (originalProp.indexOf("_groupBy") == originalProp.length - 8)
+ if (originalProp.length > 8  &&  originalProp.indexOf("_groupBy") == originalProp.length - 8)
    isGroupBy = true;
   /* 'viewColsList' for does not have input fields where to set focus.
    *  form.elements[originalProp] returns list of viewCols properties to choose from to display in RL
