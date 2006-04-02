@@ -19,7 +19,7 @@
   <td width="10"></td>
 </tr>
 <tr>
-  <td vlign="top" class="propertySheet"><br/><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/media/gallery/Photo&amp;$order=http://www.hudsonfog.com/voc/media/gallery/Pic/viewCount&amp;-asc=-1&amp;-adTitle=Most+popular&amp;-viewCols=title,viewCount&amp;limit=3&amp;-inRow=1"/></td>
+  <td vlign="top" class="propertySheet"><siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/media/gallery/Photo&amp;$order=http://www.hudsonfog.com/voc/media/gallery/Pic/viewCount&amp;-asc=-1&amp;-adTitle=Most+popular&amp;-viewCols=title,viewCount&amp;limit=3&amp;-inRow=1"/></td>
 </tr>
 </table>
 
