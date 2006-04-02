@@ -18,6 +18,11 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
   <td width="110%" colspan="2"><!--br/-->
+		<div>
+		  <resourcesSearch resourcesUri="/sql/text/search/resources" />
+		  <filesSearch     filesUri="text/search/files" />
+      <excelsSearch    excelsUri    = "text/search/excels" />
+		</div>
     <taskTreeControl/>
     <div id="siteResourceList">
       <font color="red"><b><errorMessage /></b></font>
