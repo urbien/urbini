@@ -1433,13 +1433,13 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   currentImgId  = imgId;
 
   originalProp = propName1;
- var isGroupBy;
- if (originalProp.length > 8  &&  originalProp.indexOf("_groupBy") == originalProp.length - 8)
-   isGroupBy = true;
+  var isGroupBy;
+  if (originalProp.length > 8  &&  originalProp.indexOf("_groupBy") == originalProp.length - 8)
+    isGroupBy = true;
   /* 'viewColsList' for does not have input fields where to set focus.
    *  form.elements[originalProp] returns list of viewCols properties to choose from to display in RL
    */
-  if (!isGroupBy  &&  form && currentFormName != "viewColsList") {
+  if (!isGroupBy  &&  form  &&  currentFormName != "viewColsList"  && originalProp.indexOf("_class") == -1) {
     var chosenTextField = form.elements[originalProp];
     if (chosenTextField && chosenTextField.focus)
       chosenTextField.focus();
