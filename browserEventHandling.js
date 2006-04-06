@@ -117,9 +117,9 @@
         replaceAllTooltips();
       initListBoxes(null);
       resourceListEdit();
-      uiFocus('tablePropertyList');
-      if (typeof searchHighlighting != 'undefined')
-        searchHighlighting();
+      uiFocus();
+//      if (typeof searchHighlighting != 'undefined')
+//        searchHighlighting();
     }
 
     function resourceListEdit(div) {
@@ -268,14 +268,30 @@
         }
       }
     }
-	  function uiFocus(formName) {
-      var u = document.getElementById('uiFocus');
-      if (u && u.type && u.type != 'hidden') {
-         u.focus();
-         //u.select();
+
+    function uiFocus(div) {
+      if (!div)
+        div = document;
+
+      var fields = div.getElementsByTagName('input');
+      var firstField;
+
+      for (var i=0; i<fields.length; i++) {
+        var u = fields[i];
+        if (u && u.type && u.type != 'hidden') {
+          if (!firstField) {
+            firstField = u;
+          }
+          if (u.id && (u.id == 'uiFocus' || u.id.indexOf('_uiFocus') != -1)) {
+            u.focus();
+            return true;
+          }
+        }
       }
-	    return true;
-	  }
+      if (firstField && div != document)
+        firstField.focus();
+      return false;
+    }
 
     var formInitialValues;
     addEvent(window, 'load', function() {setTimeout(addHandlers,  10);}, false);
