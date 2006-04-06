@@ -115,12 +115,12 @@ var TC1 = 'aAdDFhHilmMsUYy',
 
 var tc0a6 = false;
 
-function calendar(TCA, TCB) {
+function calendar(initParams, TCB) {
 
   this.initialized = false;
 
 //  var TCC = this.TCC = A_CALENDARS.length;
-  var TCC = this.TCC = TCA.formname + '_' + TCA.controlname;
+  var TCC = this.TCC = initParams.formname + '_' + initParams.controlname;
 
   A_CALENDARS[this.TCC] = this;
   this.flag_error = false;
@@ -132,29 +132,29 @@ function calendar(TCA, TCB) {
   TC0[TCC][4].src = TCB.todayimage.src;
   this.dateMessage = dateMessage;
   this.getElementId = getElementId;
-  this.TCG = (TCA.picttype == 'img' ? 1 : TCA.picttype == 'button' ? 2 : TCA.picttype == 'others' ? 3 : 1);
-  this.TCH = (TCA.controlname ? TCA.controlname : 'datetime_' + this.TCC);
-  this.TCI = (TCA.pictname ? TCA.pictname : 'calicon_' + this.TCC);
-  this.calPosImageId = (TCA.positionname ? TCA.positionname : 'calpos_' + this.TCC);
+  this.TCG = (initParams.picttype == 'img' ? 1 : initParams.picttype == 'button' ? 2 : initParams.picttype == 'others' ? 3 : 1);
+  this.TCH = (initParams.controlname ? initParams.controlname : 'datetime_' + this.TCC);
+  this.TCI = (initParams.pictname ? initParams.pictname : 'calicon_' + this.TCC);
+  this.calPosImageId = (initParams.positionname ? initParams.positionname : 'calpos_' + this.TCC);
 
-  if (!TCA.formname) {
+  if (!initParams.formname) {
     this.dateMessage('need_form_name');
     return
   }
 
-  if (!document.forms[TCA.formname]) {
-    this.dateMessage('form_not_found', TCA.formname);
+  if (!document.forms[initParams.formname]) {
+    this.dateMessage('form_not_found', initParams.formname);
     return
   }
 
-  this.TCK = TCA.formname;
+  this.TCK = initParams.formname;
 
   if (!TC9)
     TC9 = new TCL();
 
   this.TCM = TCN;
   this.TCO = TCP;
-  this.TCQ = TCR;
+  this.getDateFor = getDateFor;
   this.TCS = TCT;
   this.TCU = TCV;
   this.TCW = TCX;
@@ -170,15 +170,15 @@ function calendar(TCA, TCB) {
   this.TCq = TCr;
   this.TCs = false;
   this.TCB = TCB;
-  this.TCA = TCA;
-  var TCt = this.TCu = !this.TCA.dataformat ? 'Y-d-m' : this.TCA.dataformat;
+  this.initParams = initParams;
+  var dateformat1 = this.dateformat = !this.initParams.dataformat ? 'Y-d-m' : this.initParams.dataformat;
   //var TCv, TCw = 0, TCx = [];
   var TCw = 0, TCx = [];
   this.TCy = [];
   var TCz = ["\\\\", "\\/", "\\.", "\\+", "\\*", "\\?", "\\$", "\\^", "\\|"];
 
-  for (i = 0, len1=TCt.length; i < len1; i++) {
-    var TCv = TCt.substr(i, 1);
+  for (i = 0, len1=dateformat1.length; i < len1; i++) {
+    var TCv = dateformat1.substr(i, 1);
 
     if (TC1.indexOf(TCv) != -1 && TCv != '') {
       TCx[TCw] = TCv;
@@ -190,23 +190,23 @@ function calendar(TCA, TCB) {
   var TCx = TCx.sort();
 
   for (i in TCz) {
-    TCt = TCt.replace(("/" + TCz[i] + "/g"), TCz[i])
-    //TCt = TCt.replace(eval("/" + TCz[i] + "/g"), TCz[i]) // mike: old code
+    dateformat1 = dateformat1.replace(("/" + TCz[i] + "/g"), TCz[i])
+    //dateformat1 = dateformat1.replace(eval("/" + TCz[i] + "/g"), TCz[i]) // mike: old code
   }
 
   for (i = 0, len = TCx.length; i < len; i++) {
   //for (i = 0; i < TCx.length; i++) { // Mike: old code
     TC00 = new RegExp(TCx[i]);
 
-    TCt = TCt.replace(TC00, TC3[TCx[i]])
+    dateformat1 = dateformat1.replace(TC00, TC3[TCx[i]])
   }
 
-  this.TC01 = new RegExp("^" + TCt.replace(/\s+/g, "\\s+") + "$");
-  this.TC02 = (this.TCu.indexOf(
-                   'H') != -1) ? (this.TCu.indexOf(
-                                      's') != -1 ? 2 : 3) : ((this.TCu.indexOf(
-                                                                  'h') != -1) ? ((this.TCu.indexOf(
-                                                                                      'a') < 0 && this.TCu.indexOf(
+  this.TC01 = new RegExp("^" + dateformat1.replace(/\s+/g, "\\s+") + "$");
+  this.TC02 = (this.dateformat.indexOf(
+                   'H') != -1) ? (this.dateformat.indexOf(
+                                      's') != -1 ? 2 : 3) : ((this.dateformat.indexOf(
+                                                                  'h') != -1) ? ((this.dateformat.indexOf(
+                                                                                      'a') < 0 && this.dateformat.indexOf(
                                                                                                       'A') < 0)
                                                                                     ? 99 : 1) : 0);
 
@@ -215,25 +215,28 @@ function calendar(TCA, TCB) {
     return
   }
 
-  this.TC03 = (TCA.today ? this.TCc(TCA.today) : (this.TC02 != 0 ? this.TCQ(null, true) : this.TCQ()));
-  this.TC04 = this.TCM(TCA.selected, this.TC03, true);
-  this.TC05 = TCA.mindate ? this.TCM(TCA.mindate, this.TC03) : null;
-  this.TC06 = TCA.maxdate ? this.TCM(TCA.maxdate, this.TC03) : null;
+  this.TC03 = (initParams.today ?
+               this.TCc(initParams.today) :
+               (this.TC02 != 0 ? this.getDateFor(null, true) :
+                  this.getDateFor()));
+  this.TC04 = this.TCM(initParams.selected, this.TC03, true);
+  this.TC05 = initParams.mindate ? this.TCM(initParams.mindate, this.TC03) : null;
+  this.TC06 = initParams.maxdate ? this.TCM(initParams.maxdate, this.TC03) : null;
   var TC07 = ['marked', 'allowed', 'forbidden'];
 
   for (var TC08 in TC07) {
-    this.TCS(TCA, TC07[TC08])
+    this.TCS(initParams, TC07[TC08])
   }
 
-  if (TCA.onclickday) {
-    this.TCS(TCA.onclickday, 'func')
+  if (initParams.onclickday) {
+    this.TCS(initParams.onclickday, 'func')
   }
 
   if (this.b_allowed) {
     this.TC04 = this.TCa(this.TC04)
   }
 
-  this.TC09 = this.TCA.watch == true ? this.TCe(this.TC04) : '';
+  this.TC09 = this.initParams.watch == true ? this.TCe(this.TC04) : '';
   this.TC0A = this.TCY();
 
   //var db=document.body && document.body.innerHTML; // mike
@@ -1038,7 +1041,7 @@ function TC0H(TC1c, TC1d, TC1J) {
   this.TC04 = this.TCa(this.TC04);
   this.TC0M(TC1c);
 
-  if (this.TCA.watch == true) {
+  if (this.initParams.watch == true) {
     if (this.shown || this.TC0m.value)
       this.TC0m.value = this.TCe(this.TC04)
   }
@@ -1102,7 +1105,7 @@ function TCb(TC1e) {
 
   if (!(TC1l & 1)) {
     if (TC1l & 64) {
-      var TC1m = this.TCQ(TC1e), TC1n = TC1e, TC1o = 1, TC1J = false, TC1p, TC1q;
+      var TC1m = this.getDateFor(TC1e), TC1n = TC1e, TC1o = 1, TC1J = false, TC1p, TC1q;
 
       while (!TC1J) {
         if (!TC1p) {
@@ -1163,7 +1166,7 @@ function TCb(TC1e) {
   }
 
   if (this.b_allowed && !(TC1l & 129)) {
-    var TC1m = this.TCQ(TC1e), TC1s = TC1t = TC1u = TC1v = 0;
+    var TC1m = this.getDateFor(TC1e), TC1s = TC1t = TC1u = TC1v = 0;
 
     for (i = 0; i < this.TC1w.length; i++) {
       if (TC1m.valueOf() < this.TC1w[i])
@@ -1201,7 +1204,7 @@ function TC0D() {
       TC0c.TC0e('<td', this.TCO('wdaytitle'), '>', this.TCB.weekdays[(this.TCB.weekstart + TC1z) % 7], '</td>');
 
   TC0c.TC0e('</tr>');
-  var TC20 = this.TCQ(new Date(TC1y), true);
+  var TC20 = this.getDateFor(new Date(TC1y), true);
 
   while (TC20.getMonth() == this.TC04.getMonth() || TC20.getMonth() == TC1y.getMonth()) {
     TC0c.TC0e('<tr>');
@@ -1253,17 +1256,17 @@ function TCX(TC22) {
   var TC0V = 1;
 
   TC1n = new Date(TC22);
-  var TC1n = this.TCQ(TC1n);
+  var TC1n = this.getDateFor(TC1n);
   var TC03 = new Date(this.TC03);
   var TC04 = new Date(this.TC04);
 
   if (this.b_allowed)
     TC0V = 0;
 
-  if (this.TCQ(TC03).valueOf() == TC1n.valueOf())
+  if (this.getDateFor(TC03).valueOf() == TC1n.valueOf())
     TC0V |= 2;
 
-  if (this.TCQ(TC04).valueOf() == TC1n.valueOf())
+  if (this.getDateFor(TC04).valueOf() == TC1n.valueOf())
     TC0V |= 4;
 
   if (TC1n.getDay() == 0 || TC1n.getDay() == 6)
@@ -1287,7 +1290,7 @@ function TCX(TC22) {
     TC0V |= 129;
 
   if (this.TC05) {
-    if (TC1n.valueOf() < this.TCQ(this.TC05).valueOf()) {
+    if (TC1n.valueOf() < this.getDateFor(this.TC05).valueOf()) {
       TC0V |= 256;
       TC0V&=~1
     }
@@ -1314,7 +1317,7 @@ function TCX(TC22) {
   }
 
   if (this.TC06) {
-    if (TC1n.valueOf() > this.TCQ(this.TC06).valueOf()) {
+    if (TC1n.valueOf() > this.getDateFor(this.TC06).valueOf()) {
       TC0V |= 512;
       TC0V&=~1
     }
@@ -1383,15 +1386,15 @@ function TC0J(TC26) {
   if (this.b_func) {
     var TC1n = new Date(TC26), TC1H = this.TCW(TC1n);
     if (TC1H & 33554432) {
-      TC27 = this.a_func[this.TCQ(TC1n).valueOf() + ''];
+      TC27 = this.a_func[this.getDateFor(TC1n).valueOf() + ''];
       if (TC27) {
         TC27(this.TCC, TC1n, TC26);
         TC1J = false
       }
     }
   }
-  if (TC1J && this.TCA.onclickdayall && typeof (this.TCA.onclickdayall) == 'function') {
-    TC27 = this.TCA.onclickdayall;
+  if (TC1J && this.initParams.onclickdayall && typeof (this.initParams.onclickdayall) == 'function') {
+    TC27 = this.initParams.onclickdayall;
     TC27(this.TCC, TC1n, TC26)
   }
 }
@@ -1520,8 +1523,8 @@ function showcal() {
       }
     }
 
-    if (this.TCA.replace) {
-      for (i = 0,len = A_CALENDARS.length; i < len; i++) {
+    if (this.initParams.replace) {
+      for (var i in A_CALENDARS) {
         var ac =A_CALENDARS[i];//mike
         if (ac.initialized == false)
           continue;
@@ -1617,7 +1620,7 @@ function TCT(TC2S, TC2L) {
       if (TC2S[TC08]) {
         var TC2W = this.TCc(TC08);
 
-        TC2W = this.TCQ(TC2W).valueOf() + '';
+        TC2W = this.getDateFor(TC2W).valueOf() + '';
         if (typeof (TC2S[TC08]) == 'function') {
           this[TC2T][TC2W] = TC2S[TC08]
         }
@@ -1632,9 +1635,9 @@ function TCT(TC2S, TC2L) {
       if (TC2U[TC08]) {
         var TC22 = this.TCc(TC2U[TC08]);
 
-        this[TC2T][String(this.TCQ(TC22).valueOf())] = 1;
+        this[TC2T][String(this.getDateFor(TC22).valueOf())] = 1;
         if (TC2L == 'allowed') {
-          this.TC1w[TC2V] = this.TCQ(TC22).valueOf();
+          this.TC1w[TC2V] = this.getDateFor(TC22).valueOf();
           TC2V++
         }
       }
@@ -1644,13 +1647,14 @@ function TCT(TC2S, TC2L) {
   }
 }
 
-function TCR(TC2M, TC1J) {
+
+function getDateFor(TC2M, needTime) {
   var TC2X = new Date();
 
   if (TC2M)
     TC2X = new Date(TC2M);
 
-  if (!TC1J) {
+  if (!needTime) {
     TC2X.setHours(0);
 
     TC2X.setMinutes(0);
@@ -1658,7 +1662,7 @@ function TCR(TC2M, TC1J) {
   }
 
   TC2X.setMilliseconds(0);
-  return TC2X
+  return TC2X;
 }
 
 function getElementId(TC2Y, TC1J) {
@@ -1777,7 +1781,7 @@ function TCf(TC2v) {
   var TC1x = new Date(TC2v);
 
   do {
-    TCv = this.TCu.substr(i, 1);
+    TCv = this.dateformat.substr(i, 1);
 
     if (TC1.indexOf(TCv) != -1 && TCv != '') {
       if (TCv == 'A' || TCv == 'a')
@@ -1796,7 +1800,7 @@ function TCf(TC2v) {
       TC2w += TCv;
 
     i++
-  }while (i < this.TCu.length)
+  }while (i < this.dateformat.length)
 
   return TC2w
 }
@@ -1806,7 +1810,7 @@ function TCd(TC2y) {
 
   if (!a || typeof (a) != 'object') {
     //alert(ARR_STRINGS['not_meet']);
-    return new Date()
+    return new Date();
   }
 
   for (i in this.TCy) {
@@ -1849,12 +1853,6 @@ function getCalendar(event,
       cal.showcal();
       return stopEventPropagation(event);
     }
-    for (var i in A_CALENDARS) {
-      var cal1 = A_CALENDARS[i];
-      if (cal1 && cal1.isShown())
-        cal1.showcal();
-    }
-
     var initParams = {
         // a name of HTML form containing the calendar
         'formname' : formName,
