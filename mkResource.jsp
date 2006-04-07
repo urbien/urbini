@@ -1,7 +1,7 @@
 <div align="center">
 <font color="red"><b><errorMessage /></b></font>
 
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
   <tr>
   <td valign="top">
      <form id="filter" name="tablePropertyList" method="post" action="FormRedirect" AUTOCOMPLETE="off">
