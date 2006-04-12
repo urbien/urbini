@@ -211,6 +211,8 @@
         images = document.images;
       for (var i=0; i<images.length; i++) {
         var image = images[i];
+        if (div)
+          image.style.zIndex = div.style.zIndex; // otherwise image has no zIndex and we will need hotspot's zIndex in setDivVisible
         if (image.id.indexOf("_filter", image.id.length - "_filter".length) == -1)
           continue;
         addEvent(image, 'click', listboxOnClick, false);
