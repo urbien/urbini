@@ -238,9 +238,8 @@
         for (j=0; j<form.elements.length; j++) {
           var elem = form.elements[j];
           initialValues[elem.name] = elem.value;
-
           if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT fields
-              elem.id  && !elem.valueType) {                      // and those that have ID
+              elem.id) {                                         // and those that have ID
             if (document.all) // in IE - some keys (like backspace) work only on keydown
               addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
             else
@@ -266,6 +265,9 @@
               addEvent(elem, 'focus', textAreaOnFocus,  false);
               addEvent(elem, 'blur',  textAreaOnBlur,   false);
             }
+          }
+          else  {
+             //         alert(elem.name + ", " + elem.type + ", " + elem.id + ", " + elem.valueType);
           }
         }
       }
