@@ -17,12 +17,9 @@
 		</form>
     <taskTreeControl/>
 
-    <!--a target="pane2"></a><div id="pane2"/-->
-
     <table width="100%" cellspacing="10" cellpadding="0" border="0">
     <tr valign="top">
 	    <td width="70%">
-        <!--a target="pane2"></a><div id="pane2"/-->
 	      <mkResourceForLineItems/>
 				<div id="keyboard" style="display:none">
 					<style type="text/css">
