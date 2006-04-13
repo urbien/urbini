@@ -1,5 +1,5 @@
 <div>
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" >
   <tr>
   <td valign="top" width="100%">
 	  <center>
@@ -9,8 +9,7 @@
   </tr>
 </table>
 <br/>
-<a target="pane2"> </a>
-<div id="pane2" />
+<div id="pane2"  style="position:absolute; visibility:hidden;" />
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top" width="90%">
@@ -33,4 +32,5 @@
 </td></tr></table>
 <br/>
 <iframe name="bottomFrame" id="bottomFrame" src="javascript: ;" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>
+
 </div>

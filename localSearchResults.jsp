@@ -5,8 +5,7 @@
 <watchNote/>
 </hideBlock>
 
-<a target="pane2"> </a>
-<div id="pane2" />
+<div id="pane2"  style="position:absolute; visibility:hidden;" />
 
 <div id="gallery" style="display:none;position:absolute">
   <table bgcolor="#1b62b6">

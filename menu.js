@@ -31,6 +31,13 @@ if (!window['Node']) {
   Node.NOTATION_NODE = 12;
 }
 
+// add contains function if it is missing
+if (window.Node && Node.prototype && !Node.prototype.contains)
+{
+  Node.prototype.contains = function (arg) {
+    return !!(this.compareDocumentPosition(arg) & 16)
+  }
+}
 Popup.currentDivs          = new Array(); // distinct divs that can be open at the same time (since they have different canvases)
 Popup.popups               = new Array(); // pool of all popups with different divId(s)
 Popup.openTimeoutId        = null; // timeout after which we need to open the delayed popup
@@ -49,6 +56,14 @@ if (document.layers) {
   Popup.HIDDEN  = 'hide';
   Popup.VISIBLE = 'show';
 }
+Popup.w3c  = (document.getElementById)                                ? true : false;
+Popup.ns4  = (document.layers)                                        ? true : false;
+Popup.ie4  = (document.all && !this.w3c)                              ? true : false;
+Popup.ie5  = (document.all && this.w3c)                               ? true : false;
+if (document.attachEvent) {
+  Popup.ie55 = true; // need better test since this one will include 5+ as well
+}
+Popup.ns6  = (Popup.w3c && navigator.appName.indexOf("Netscape")>=0 ) ? true : false;
 
 /**
  * returns iframe that serves as a canvas for this popup (overlaying the underlying form fields)
@@ -348,11 +363,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     self.setVisible(offsetX, offsetY);
     self.popupClosed = false;
-    if (self.div.id != 'pane2')
-      self.deselectRow();
+    self.deselectRow();
 
     self.setCurrentDiv();
-    self.interceptEvents();
+    if (self.div.id != 'pane2')
+      self.interceptEvents();
     self.setFocus();
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
@@ -365,15 +380,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
   this.isOpen = function() {
     return !(self.popupClosed);
-  }
-
-  this.moveTo = function (x, y) {
-    if (Popup.ns4)
-      self.div.moveTo(x, y);
-    else {
-      self.div.style.left = x + 'px';
-      self.div.style.top  = y + 'px';
-    }
   }
 
   this.setInnerHtml = function (text) {
@@ -405,102 +411,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Show popup
    */
   this.setVisible = function (offsetX, offsetY) {
-    var div      = self.div;
-    var iframe   = self.iframe;
-    var hotspot  = self.hotspot;
-
-    var istyle   = iframe.style;
-    istyle.visibility    = Popup.HIDDEN;
-    div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
-
-    if (hotspot) {
-      var scrollXY = getScrollXY();
-      var scrollX = scrollXY[0];
-      var scrollY = scrollXY[1];
-
-      var coords = getElementCoords(hotspot);
-      var left = coords.left;
-      var top  = coords.top;
-
-      var screenXY = getWindowSize();
-      var screenX = screenXY[0];
-      var screenY = screenXY[1];
-
-      // Find out how close to the corner of the window
-      var distanceToRightEdge  = screenX + scrollX - left;
-      var distanceToBottomEdge = screenY + scrollY - top;
-
-      // first position the div box in the top left corner in order to measure its dimensions
-      // (otherwise, if position coirrectly and only then measure dimensions - the width/height will get cut off at the scroll boundary - at least in firefox 1.0)
-      div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
-      self.moveTo(0, 0);
-      var divCoords = getElementCoords(div);
-
-      // cut popup dimensions to fit the screen
-      var margin = 40;
-      var fixed = false;
-      if (divCoords.width > screenX - margin) {
-        div.style.width = screenX - margin + 'px';
-        fixed = true;
-        //alert("divCoords.width = " + divCoords.width + ", " + "screenX = " + screenX);
-      }
-      if (divCoords.height > screenY - margin) {
-        div.style.height = screenY - margin + 'px';
-        fixed = true;
-        //alert("divCoords.height = " + divCoords.height + ", " + "screenY = " + screenY);
-      }
-      if (fixed) { // recalc coords and add scrolling if we fixed dimensions
-        div.style.overflow = "auto";
-        divCoords = getElementCoords(div);
-      }
-      div.style.display    = 'none';   // must hide it again to avoid screen flicker
-
-      // move box to the left of the hotspot if the distance to window border isn't enough to accomodate the whole div box
-      if (distanceToRightEdge < divCoords.width + margin) {
-        left = (screenX -  scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
-        //alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " + scrollX);
-        if (left - margin > 0)
-          left -= margin; // adjust for a scrollbar;
-      }
-      else { // apply user requested offset only if no adjustment
-        if (offsetX)
-          left = left + offsetX;
-      }
-
-      // adjust position of the div box vertically - using the same approach as above
-      if (distanceToBottomEdge < divCoords.height + margin) {
-        top = (screenY + scrollY) - divCoords.height;
-        if (top - margin > 0)
-          top -= margin; // adjust for a scrollbar;
-      }
-      else { // apply user requested offset only if no adjustment
-        if (offsetY)
-          top = top + offsetY;
-      }
-
-      self.moveTo(left, top); // move the div box to the adjusted position
-    }
-
-    // by now the width of the box got cut off at scroll boundary - fix it (needed at least for firefox 1.0)
-    div.style.width  = divCoords.width  + 'px';
-    div.style.height = divCoords.height + 'px';
-
-    //  Make position/size of the underlying iframe same as div's position/size
-    istyle.top     = div.style.top;
-    istyle.left    = div.style.left;
-    istyle.width   = divCoords.width  + 'px';
-    istyle.height  = divCoords.height + 'px';
-    // hack for Opera (at least at ver. 7.54) and Konqueror
-    //  somehow iframe is always on top of div - no matter how hard we try to set zIndex
-    // so we have to live without iframe
-    var opera     = navigator.userAgent.indexOf("Opera") != -1;
-    var konqueror = navigator.userAgent.indexOf("Konqueror") != -1;
-    if (!opera && !konqueror)
-      istyle.visibility  = Popup.VISIBLE;
-    istyle.display       = 'inline';
-    div.style.display    = 'inline';
-    div.style.zIndex = hotspot.style.zIndex + 10;
-    div.style.visibility = Popup.VISIBLE; // finally make div visible
+    return setDivVisible(self.div, self.iframe, self.hotspot, offsetX, offsetY);
   }
 
   /**
@@ -552,10 +463,16 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var hotspot = self.hotspot;
     //var isMenu  = div.id.indexOf('menudiv_') == 0 ? true false;
 
-    addEvent(div,     'mouseover', self.popupOnMouseOver, false);
-    addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
-    addEvent(hotspot, 'mouseout',  self.popupOnMouseOut,  false);
-
+    if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
+      addEvent(div,     'mouseenter',  self.popupOnMouseOver, false);
+      addEvent(div,     'mouseleave',  self.popupOnMouseOut,  false);
+      addEvent(hotspot, 'mouseleave',  self.popupOnMouseOut,  false);
+    }
+    else {
+      addEvent(div,     'mouseover', self.popupOnMouseOver, false);
+      addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
+      addEvent(hotspot, 'mouseout',  self.popupOnMouseOut,  false);
+    }
     var firstRow = self.firstRow();
     if (firstRow == null)
       return; // incorrect popup structure
@@ -584,15 +501,14 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       addEvent(elem, 'click',     self.popupRowOnClick,     false);
       var anchors = elem.getElementsByTagName('a');
       if (anchors  &&  anchors.length != 0) {
-        var onclick = anchors[0].onclick;
-        if (onclick) {
-          anchors[0].onclick = null;
-          anchors[0].onclick1 = onclick;
+        if (anchors[0].onclick) {
+          anchors[0].onclick1 = anchors[0].onclick;
+          anchors[0].onclick = '';
         }
         var href = anchors[0].href;
+        //anchors[0].href = 'javascript:;';
         elem.setAttribute('href', href);
         //anchors[0].disabled = true;
-        //anchors[0].onclick = "function(){return false;}";
       }
 
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
@@ -740,20 +656,21 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var tr = getTrNode(target);
     if (!tr)
       return stopEventPropagation(e);
-
+/*
     // in both IE and Mozilla on menu click (if menu has onClick handler) onclick event comes one more time
     var isProcessed = tr.getAttribute('eventProcessed');
     if (isProcessed != null && (isProcessed == 'true' || isProcessed == true)) {
       tr.setAttribute('eventProcessed', 'false');
       return stopEventPropagation(e);
     }
+
     // in IE on menu click (if menu has onClick handler) this same event comes yet another time
     if (e.getAttribute) {
       var isProcessed = e.getAttribute('eventProcessed');
       if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
         return stopEventPropagation(e);
     }
-
+*/
 
     var ret = self.popupRowOnClick1(e, tr, target);
     return ret;
@@ -763,10 +680,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     // prevent duplicate events (happens only in IE)
     if (e.getAttribute) {
       var isProcessed = e.getAttribute('eventProcessed');
-	  if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-	    return stopEventPropagation(e);
-	  e.setAttribute('eventProcessed', 'true');
-	}
+      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+        return stopEventPropagation(e);
+      e.setAttribute('eventProcessed', 'true');
+    }
+
     Popup.lastClickTime = new Date().getTime();
     var currentDiv = self.getCurrentDiv();
     if (!tr)
@@ -880,58 +798,58 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var selectItems = form.elements[select];
     if (tr.id.indexOf('$clear') == 0) {
       if (isViewCols) {
-			  // form url based on parameters that were set
-			  var formAction = form.elements['-$action'].value;
-			  var allFields = true;
-			  if (formAction == "showproperties")
-			    allFields = false;
-			  var params;
-			  var arr = new Array(3);
-			  if (currentFormName.indexOf("viewColsList") == 0) {
+        // form url based on parameters that were set
+        var formAction = form.elements['-$action'].value;
+        var allFields = true;
+        if (formAction == "showproperties")
+          allFields = false;
+        var params;
+        var arr = new Array(3);
+        if (currentFormName.indexOf("viewColsList") == 0) {
           arr["-viewCols"] = "-viewCols";
           arr[".-viewCols"] = ".-viewCols";
           arr["-curViewCols"] = "-curViewCols";
-		    }
-		    else {
-		      arr["-filterCols"] = "-filterCols";
-		      arr[".-filterCols"] = ".-filterCols";
-		      arr["-curFilterCols"] = "-curFilterCols";
-		    }
-	      params = getFormFilters(form, allFields, arr);
-			  var formAction = form.elements['-$action'].value;
-			  var baseUriO = document.getElementsByTagName('base');
-			  var baseUri = "";
-			  if (baseUriO) {
-			    baseUri = baseUriO[0].href;
-			    if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
-			      baseUri += "/";
-			  }
-			  var url = baseUri + "localSearchResults.html?" + params;
-			  document.location.replace(url);
-			  return;
+        }
+        else {
+          arr["-filterCols"] = "-filterCols";
+          arr[".-filterCols"] = ".-filterCols";
+          arr["-curFilterCols"] = "-curFilterCols";
+        }
+        params = getFormFilters(form, allFields, arr);
+        var formAction = form.elements['-$action'].value;
+        var baseUriO = document.getElementsByTagName('base');
+        var baseUri = "";
+        if (baseUriO) {
+          baseUri = baseUriO[0].href;
+          if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
+            baseUri += "/";
+        }
+        var url = baseUri + "localSearchResults.html?" + params;
+        document.location.replace(url);
+        return;
       }
       else {
         if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate rollup
           chosenTextField.value = '';
-          this.hotspot.src = "icons/checkbox.gif";
+          self.hotspot.src = "icons/checkbox.gif";
           return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
         }
 
         var isTablePropertyList = currentFormName.indexOf("tablePropertyList") == 0;
-	      if (len > 1) {
-	        if (!isTablePropertyList)
-	          chosenTextField[0].value   = tr.id.substring(6);
-	        else
-	          chosenTextField[0].value   = '';
-	      }
-	      else {
-	        if (!isTablePropertyList)
-	          chosenTextField.value   = tr.id.substring(6);
-	        else
-	          chosenTextField.value   = '';
-	      }
-	      if (chosenTextField.style)
-	        chosenTextField.style.backgroundColor = '';
+        if (len > 1) {
+          if (!isTablePropertyList)
+            chosenTextField[0].value   = tr.id.substring(6);
+          else
+            chosenTextField[0].value   = '';
+        }
+        else {
+          if (!isTablePropertyList)
+            chosenTextField.value   = tr.id.substring(6);
+          else
+            chosenTextField.value   = '';
+        }
+        if (chosenTextField.style)
+          chosenTextField.style.backgroundColor = '';
       }
       formField.value         = '';
       if (formFieldClass)
@@ -977,10 +895,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
           }
           else
-	          chosenTextField.value = val.substring(idx + 1);
-	        if (chosenTextField.style)
-	          chosenTextField.style.backgroundColor = '#ffffff';
-	      }
+            chosenTextField.value = val.substring(idx + 1);
+          if (chosenTextField.style)
+            chosenTextField.style.backgroundColor = '#ffffff';
+        }
         var fr = form.elements[originalProp + "_From"];
         var to = form.elements[originalProp + "_To"];
         if (fr)
@@ -1052,38 +970,38 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           }
         }
         if (!isViewCols) {
-	        if (nmbChecked == 0) {
-	          if (fieldLabel) {
-	            fieldLabel.style.display    = "none";
-	            var textContent = getTextContent(fieldLabel);
-	            if (textContent) {
-	              var idx = textContent.indexOf("\r");
-	              if (idx != -1)
-	                textContent = textContent.substring(0, idx);
-	              chosenTextField.value = textContent + " --";
-	            }
-	          }
-	          else
-	            chosenTextField.value = "";
-	        }
-	        else if (nmbChecked == 1) {
-	          if (hiddenSelectedItem != null)
-	            hiddenSelectedItem.value = selectedItem.value;
-	          var trNode = getTrNode(selectedItem);
-	          var items = trNode.getElementsByTagName('td');
-	          var val = items[2].innerHTML;
-	          var idx = val.lastIndexOf(">");
+          if (nmbChecked == 0) {
+            if (fieldLabel) {
+              fieldLabel.style.display    = "none";
+              var textContent = getTextContent(fieldLabel);
+              if (textContent) {
+                var idx = textContent.indexOf("\r");
+                if (idx != -1)
+                  textContent = textContent.substring(0, idx);
+                chosenTextField.value = textContent + " --";
+              }
+            }
+            else
+              chosenTextField.value = "";
+          }
+          else if (nmbChecked == 1) {
+            if (hiddenSelectedItem != null)
+              hiddenSelectedItem.value = selectedItem.value;
+            var trNode = getTrNode(selectedItem);
+            var items = trNode.getElementsByTagName('td');
+            var val = items[2].innerHTML;
+            var idx = val.lastIndexOf(">");
 
-	          if (len > 1)
-	            chosenTextField[0].value = val.substring(idx + 1);
-	          else
-	            chosenTextField.value = val.substring(idx + 1);
-	        }
-	        else {
-	          if (hiddenSelectedItem != null)
-	            hiddenSelectedItem.value = selectedItem.value;
-	          chosenTextField.value = '<...>';
-	        }
+            if (len > 1)
+              chosenTextField[0].value = val.substring(idx + 1);
+            else
+              chosenTextField.value = val.substring(idx + 1);
+          }
+          else {
+            if (hiddenSelectedItem != null)
+              hiddenSelectedItem.value = selectedItem.value;
+            chosenTextField.value = '<...>';
+          }
         }
       }
     }
@@ -1365,6 +1283,23 @@ var frameLoaded = new Array();
 var rteUpdated = 'false';
 var allRTEs = '';
 
+function reposition(div, x, y) {
+  var intLessTop  = 0;
+  var intLessLeft = 0;
+  var elm = div.offsetParent;
+
+  // absolute elements become relative to a container with position:relative
+  // so must decrease top, left
+  while (elm && elm.offsetParent != null) {
+    intLessTop  += elm.offsetTop;
+    intLessLeft += elm.offsetLeft;
+    elm = elm.offsetParent;
+  }
+  //alert(intLessLeft + "," + intLessTop + ", " + x + ", " + y);
+  div.style.left = x - intLessLeft + 'px';
+  div.style.top  = y - intLessTop  + 'px';
+}
+
 // Reference: http://www.webreference.com/js/column33/image.html
 
 function docjslib_getImageWidth(img) {
@@ -1408,6 +1343,7 @@ function listboxOnClick(e) {
   target = getTargetElement(e);
   if (!target)
     return;
+
   if (target.tagName != "IMG")
     return;
   var imgId = target.id;
@@ -1441,8 +1377,11 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
    */
   if (!isGroupBy  &&  form  &&  currentFormName != "viewColsList"  && originalProp.indexOf("_class") == -1) {
     var chosenTextField = form.elements[originalProp];
-    if (chosenTextField && chosenTextField.focus)
+    if (chosenTextField && chosenTextField.focus) {
       chosenTextField.focus();
+      //insertAtCursor(chosenTextField, '');
+      //setCaretToEnd(chosenTextField);
+    }
   }
   var idx = -1;
 
@@ -1525,25 +1464,25 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   }
   else {
 //    if (formAction != "showPropertiesForEdit" && formAction != "mkResource") {
-		  /* Add full text search criteria to filter */
-		  if (form.id && form.id == 'filter') {
-			  var fullTextSearchForm = document.forms['searchForm'];
-			  if (fullTextSearchForm) {
-			    var criteria = fullTextSearchForm.elements['-q'];
-			    if (criteria  &&  criteria.value.indexOf('-- ') == -1) {
-			      var textSearchForType = fullTextSearchForm.elements['-cat'];
-			      if (textSearchForType  &&  textSearchForType.value == 'on') {
-					    var textSearchInFilter = form.elements['-q'];
-					    if (textSearchInFilter) {
-					      textSearchInFilter.value = criteria.value;
-					      var textSearchInFilterForType = form.elements['-cat'];
-					      if (textSearchInFilterForType)
-			   		      textSearchInFilterForType.value = 'on';
-					    }
-				    }
-			    }
-			  }
-		  }
+      /* Add full text search criteria to filter */
+      if (form.id && form.id == 'filter') {
+        var fullTextSearchForm = document.forms['searchForm'];
+        if (fullTextSearchForm) {
+          var criteria = fullTextSearchForm.elements['-q'];
+          if (criteria  &&  criteria.value.indexOf('-- ') == -1) {
+            var textSearchForType = fullTextSearchForm.elements['-cat'];
+            if (textSearchForType  &&  textSearchForType.value == 'on') {
+              var textSearchInFilter = form.elements['-q'];
+              if (textSearchInFilter) {
+                textSearchInFilter.value = criteria.value;
+                var textSearchInFilterForType = form.elements['-cat'];
+                if (textSearchInFilterForType)
+                   textSearchInFilterForType.value = 'on';
+              }
+            }
+          }
+        }
+      }
       var allFields = true;
       if (formAction != "searchLocal" && formAction != "searchParallel") {
         if (enterFlag)
@@ -1664,35 +1603,48 @@ function removePopupRowEventHandlers(div) {
   }
 }
 
-/*
- * Receives control on form submit events
+/**
+ * Dummy function to help prevent duplicate form submits
  */
 function fakeOnSubmit() {
   return false;
 }
+/*
+ * Receives control on form submit events
+ */
 function popupOnSubmit(e) {
   try{if(rteUpdated == 'false'){updateRTEs(); rteUpdated = 'true';}}catch(ex){}
-
+  e = getDocumentEvent(e); if (!e) return;
   var target = getTargetElement(e);
   var form = target;
+  var buttonName = form.getAttribute("buttonClicked");
+  var button = form.elements[buttonName];
+
+  if (button && button.name.toUpperCase() == 'CANCEL') {    // cancel button clicked?
+    var pane2 = document.getElementById('pane2');
+    if (pane2.contains(form))  {   // inner frame?
+      pane2.style.display = "none";
+      return stopEventPropagation(e);
+    }
+  }
 
   /* Add full text search criteria to filter */
   var fullTextSearchForm = document.forms['searchForm'];
   if (fullTextSearchForm) {
     if (form.id && form.id == 'filter') {
-	    var criteria = fullTextSearchForm.elements['-q'];
-	    if (criteria  &&  criteria.value.indexOf('-- ') == -1) {
-	      var textSearchForType = fullTextSearchForm.elements['-cat'];
-	      if (textSearchForType  &&  textSearchForType.value == 'on') {
-			    var textSearchInFilter = form.elements['-q'];
-			    if (textSearchInFilter) {
-			      textSearchInFilter.value = criteria.value;
-			      var textSearchInFilterForType = form.elements['-cat'];
-			      if (textSearchInFilterForType)
-	   		      textSearchInFilterForType.value = 'on';
-			    }
-		    }
-	    }
+      var criteria = fullTextSearchForm.elements['-q'];
+      if (criteria  &&  criteria.value.indexOf('-- ') == -1) {
+        var textSearchForType = fullTextSearchForm.elements['-cat'];
+        if (textSearchForType  &&  textSearchForType.value == 'on') {
+          var textSearchInFilter = form.elements['-q'];
+          if (textSearchInFilter) {
+            textSearchInFilter.value = criteria.value;
+            var textSearchInFilterForType = form.elements['-cat'];
+            if (textSearchInFilterForType)
+               textSearchInFilterForType.value = 'on';
+          }
+        }
+      }
     }
   }
 //  var action = form.attributes['action'];
@@ -1761,52 +1713,24 @@ function popupOnSubmit(e) {
   if (form.uri)
     url += "&uri=" + encodeURIComponent(form.uri.value);
 
-/* do not understand why this still allowed second submit - so use fakeOnSubmit method instead for now
-  form.submit.disabled = true;
+  /* do not allow to submit form while current submit is still being processed */
   var wasSubmitted = form.getAttribute("wasSubmitted");
   if (wasSubmitted) {
     alert("Can not submit the same form twice");
-    return stopEventPropagation(event);
+    return stopEventPropagation(e);
   }
   form.setAttribute("wasSubmitted", "true");
-  form.submit.disabled = false;
-*/
+  //form.submit.disabled = true; // weird, but the form would not get submitted if disabled
 
-	if (form.onsubmit == fakeOnSubmit) {
-	  alert("Already submitted - please wait");
-	  return false;
-	}
-	form.onsubmit = fakeOnSubmit;
-
-  if (document.all || document.getElementById) {
-    // form.submit.disabled = true; // weird, but the form would not get submitted if disabled
-
-/*
-    var submit = form.elements['submitFilter'];
-    if (submit) {
-  	  submit.value = 'Please wait';
-      submit.style.cursor = 'wait';
-      var cancel;
-      cancel = form.elements['cancel'];
-      if (!cancel)
-        cancel = form.elements['clear'];
-      if (!cancel)
-        cancel = form.elements['horizontal_clear'];
-      if (cancel)
-        cancel.style.visibility = Popup.HIDDEN;
-    }
-    else {
-      for (j=0; j<form.elements.length; j++) {
-        var elem = form.elements[j];
-        if (elem.type && elem.type.toUpperCase() == 'SUBMIT') {
-          elem.style.visibility = Popup.HIDDEN;
-          //elem.value = 'Please wait';
-        }
-      }
-    }
-*/
-///
+  // this solution for duplicate-submit does not work in firefox 1.0 & mozilla 1.8b - fakeOnSubmit get control even on first form submit
+  // it has another drawback - page must be reloaded fro the form to be submitted second time - while previous solution works with back/forward
+  /*
+  if (form.onsubmit == fakeOnSubmit) {
+    alert("Already submitted - please wait");
+    return false;
   }
+  form.onsubmit = fakeOnSubmit;
+  */
 
   for (j=0; j<form.elements.length; j++) {
     var elem = form.elements[j];
@@ -1825,7 +1749,7 @@ function popupOnSubmit(e) {
   form.method = 'POST';
   if (!action)
     form.action = "FormRedirect";
-  return true;
+  return true; // tell browser to go ahead and continue processing this submit request
 }
 
 function setTime() {
@@ -1879,6 +1803,8 @@ function autoComplete1(e, target) {
 
   keyPressedImgId     = divId + "_filter";
   var hotspot = document.getElementById(keyPressedImgId);
+  if (!hotspot) // no image - this is not a listbox and thus needs no autocomplete
+    return true;
   keyPressedElement   = target;
   keyPressedElement.style.backgroundColor='#ffffff';
   var currentPopup = Popup.getPopup(divId);
@@ -1949,18 +1875,22 @@ function autoComplete1(e, target) {
   if (currentPopup)
     currentPopup.close();
 
+  // for numeric value - do not perform autocomplete (except arrow down, ESC, etc.)
+  if (target.valueType && target.valueType.toUpperCase() == 'NUMERIC')
+    return true;
+
   if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
   if (selectItems) {
     var len = selectItems.length;
-	  if (len) {
-	    for (var i=0; i<selectItems.length; i++) {
-	      if (selectItems[i].type.toLowerCase() == "checkbox")
-	        selectItems[i].checked = false;
-	      else
-	        selectItems[i].value = '';
-	    }
-	  }
-	  else
+    if (len) {
+      for (var i=0; i<selectItems.length; i++) {
+        if (selectItems[i].type.toLowerCase() == "checkbox")
+          selectItems[i].checked = false;
+        else
+          selectItems[i].value = '';
+      }
+    }
+    else
       selectItems.value   = '';  // value was modified and is not verified yet (i.e. not chose from the list)
   }
   autoCompleteTimeoutId = setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", Popup.autoCompleteDefaultTimeout);
@@ -2147,6 +2077,16 @@ function getDivNode(elem) {
     return null;
 }
 
+function getDocumentNode(obj) {
+  while (obj.parentNode) {
+    obj = obj.parentNode;
+    if (obj.location && obj.location.href)
+      return obj;
+  }
+  return null;
+}
+
+
 /**
  * Helper function - gathers the parameters (from form elements) to build a URL
  * If allFields is true - we are in a Filter panel - need to take into account all input fields
@@ -2176,15 +2116,15 @@ function getFormFilters(form, allFields, exclude) {
       if (!value)
         continue;
 //      if (currentFormName != "horizontalFilter") {
-	    if (value == ''  ||  value == "All")
-	      continue;
-	    if (type.toLowerCase() == "checkbox" ) {
-	      if (field.checked == false)
-	        continue;
-	      }
-	      if (value.indexOf(" --", value.length - 3) != -1)
-	         continue;
-  	  }
+      if (value == ''  ||  value == "All")
+        continue;
+      if (type.toLowerCase() == "checkbox" ) {
+        if (field.checked == false)
+          continue;
+        }
+        if (value.indexOf(" --", value.length - 3) != -1)
+           continue;
+      }
 //    }
     if (name == "type")
       p += "&" + name + "=" + value;
@@ -2382,9 +2322,9 @@ function initMenus() {
         //m.onmouseout  = fadeOnMouseOut;
       }
       else {
-	      //addEvent(m, 'mouseover', unfadeOnMouseOver, false);
-	      //addEvent(m, 'mouseout',  fadeOnMouseOut,    false);
-	    }
+        //addEvent(m, 'mouseover', unfadeOnMouseOver, false);
+        //addEvent(m, 'mouseout',  fadeOnMouseOut,    false);
+      }
     }
 */
   }
@@ -2400,9 +2340,9 @@ function initMenus() {
         //m.onmouseout  = unfadeOnMouseOut;
       }
       else {
-	      //addEvent(m, 'mouseover', fadeOnMouseOver, false);
-	      //addEvent(m, 'mouseout',  unfadeOnMouseOut,    false);
-	    }
+        //addEvent(m, 'mouseover', fadeOnMouseOver, false);
+        //addEvent(m, 'mouseout',  unfadeOnMouseOut,    false);
+      }
     }
   }
 */
@@ -2415,6 +2355,13 @@ function menuOnClick(e) {
   var target = getTargetElement(e);
   if (!target)
     return;
+  e = getDocumentEvent(e); if (!e) return;
+  // in IE for some reason same event comes two times
+  if (e.getAttribute) {
+    var isProcessed = e.getAttribute('eventProcessed');
+    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+      return stopEventPropagation(e);
+  }
 
   var id = target.id;
   var title;
@@ -2438,8 +2385,14 @@ function replaceTooltips0(elements) {
   for (var i=0;i<llen; i++) {
     var elem = elements[i];
     if (elem.attributes['title']) {
-      addEvent(elem, 'mouseout',    tooltipOnMouseOut,    false);
-      addEvent(elem, 'mouseover',   tooltipOnMouseOver,   false); // method that will create a popup specific for this hotspot
+      if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
+        addEvent(elem, 'mouseenter',  tooltipOnMouseOver,   false);
+        addEvent(elem, 'mouseleave',  tooltipOnMouseOut,    false);
+      }
+      else {
+        addEvent(elem, 'mouseover',   tooltipOnMouseOver,   false);
+        addEvent(elem, 'mouseout',    tooltipOnMouseOut,    false);
+      }
     }
   }
 }
@@ -2568,6 +2521,14 @@ function onClickDisplayInner (e) {
   var anchor = getTargetAnchor(e);
   if (!anchor || !anchor.id)
     return;
+  e = getDocumentEvent(e); if (!e) return;
+  // in IE for some reason same event comes two times
+  if (e.getAttribute) {
+    var isProcessed = e.getAttribute('eventProcessed');
+    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+      return stopEventPropagation(e);
+  }
+
   var propName = anchor.id.substring(7);
   var r = displayInner(e, innerUrls[propName]);
   return r;
@@ -2763,12 +2724,6 @@ function Dim() {
   }
 }
 
-Popup.w3c =(document.getElementById)                                ? true : false;
-Popup.ns4 =(document.layers)                                        ? true : false;
-Popup.ie4 =(document.all && !this.w3c)                              ? true : false;
-Popup.ie5 =(document.all && this.w3c)                               ? true : false;
-Popup.ns6 =(Popup.w3c && navigator.appName.indexOf("Netscape")>=0 ) ? true : false;
-
 function getElementCoords(elem) {
   var dim = new Dim();
 
@@ -2907,9 +2862,6 @@ function displayInner(e, urlStr) {
 /**
  *  copies doc loaded to iframe into a div
  */
-var ss_INTERVAL;
-var ss_STEPS = 25;
-
 function copyInnerHtml(frameId, divId, hotspotId) {
   if (!frameId)
     frameId = 'bottomFrame';
@@ -2920,7 +2872,10 @@ function copyInnerHtml(frameId, divId, hotspotId) {
     return;
   }
   frameLoaded[frameId] = false;
-  var hotspotRef = document.getElementById(hotspotId);
+  var hotspot = document.getElementById(hotspotId);
+  var iframe = document.getElementById(frameId);
+
+  //-------------------------------------------------
   var div = document.getElementById(divId);
   var frameBody = frames[frameId].document.body;
   var frameDoc  = frames[frameId].document;
@@ -2938,11 +2893,13 @@ function copyInnerHtml(frameId, divId, hotspotId) {
 
   // the size of the floating iframes must be set to 0. Size and position (window offsetLeft and offsetTop) will be set on textarea's onclick
   var rteNotes = document.getElementById('notes');
-  rteNotes.style.width = 0;
-  rteNotes.style.height = 0;
-  rteNotes.style.left = 0;
-  rteNotes.style.top = 0;
-  rteNotes.style.display = 'none';
+  if (rteNotes) {
+    rteNotes.style.width = 0;
+    rteNotes.style.height = 0;
+    rteNotes.style.left = 0;
+    rteNotes.style.top = 0;
+    rteNotes.style.display = 'none';
+  }
   // the size of the floating iframes must be set to 0. Size and position (window offsetLeft and offsetTop) will be set on textarea's onclick
   // this happens if this is description RTE and this RTE is in the pane2 div (the same - it is on the readOnlyProperties.html page)
   var rteDescription = document.getElementById('description');
@@ -2957,41 +2914,39 @@ function copyInnerHtml(frameId, divId, hotspotId) {
   var frameBodyText = frameBody.innerHTML;
   var re = eval('/' + divId + '/g');
   frameBodyText = frameBodyText.replace(re, divId + '-removed'); // prevent pane2 from appearing 2 times in the document
-
-  setInnerHtml(div, frameBodyText, frames[frameId]);
-
-  initListBoxes(div);
-  //if (divId == 'pane2')
-  //  divId = 'pane2-outer';
-  //Popup.open(divId, hotspotRef, null, 16, 16);
-}
-
-function scrollWindow(scramount, dest, anchor) {
-  wascypos = getCurrentScrollYPos();
-  isAbove = (wascypos < dest);
-  window.scrollTo(0, wascypos + scramount);
-  iscypos = getCurrentScrollYPos();;
-  isAboveNow = (iscypos < dest);
-  if ((isAbove != isAboveNow) || (wascypos == iscypos)) {
-    // if we've just scrolled past the destination, or
-    // we haven't moved from the last scroll (i.e., we're at the
-    // bottom of the page) then scroll exactly to the link
-    window.scrollTo(0, dest);
-    // cancel the repeating timer
-    clearInterval(ss_INTERVAL);
-    // and jump to the link directly so the URL's right
-    location.hash = anchor;
+  var re = eval('/' + frameId + '/g');
+  var frameBodyText1 = frameBodyText.replace(re, frameId + '-removed'); // prevent bottomFrame from appearing 2 times in the document
+  if (frameBodyText1 != frameBodyText) {
+    alert("bottomFrame removed");
+    frameBodyText = frameBodyText1;
   }
+  setInnerHtml(div, frameBodyText, frames[frameId]);
+  setDivVisible(div, iframe, hotspot, 16, 16);
+  uiFocus(div);
+  initListBoxes(div);
 }
 
-function getCurrentScrollYPos() {
- if (document.body && document.body.scrollTop)
-   return document.body.scrollTop;
- if (document.documentElement && document.documentElement.scrollTop)
-   return document.documentElement.scrollTop;
- if (window.pageYOffset)
-   return window.pageYOffset;
- return 0;
+/**
+ *  shows doc loaded into iframe
+ * Problem with this approach - in javascript functions document. points to main document, not ifrane
+ */
+function copyInnerHtml_iframe_only(frameId, divId, hotspotId) {
+  if (!frameId)
+    frameId = 'bottomFrame';
+  if (!divId)
+    divId = 'pane2';
+  if (!frameLoaded[frameId]) {
+    setTimeout( "copyInnerHtml('" + frameId  + "', '" + divId + "', '" + hotspotId + "')", 50);
+    return;
+  }
+  frameLoaded[frameId] = false;
+  var hotspotRef = document.getElementById(hotspotId);
+  var bottomFrameRef = document.getElementById(frameId);
+  var frameDoc  = frames[frameId].document;
+  var d = frameDoc.getElementById("corePageContent");
+  setIframeVisible(bottomFrameRef, d, hotspotRef, 16, 16);
+  initListBoxes(d);
+  return;
 }
 
 function stopEventPropagation(e) {
@@ -3221,7 +3176,7 @@ function unfadeOnMouseOut(e) {
     return false;
   }
 
-	return unfade(target);
+  return unfade(target);
 }
 
 function unfadeOnMouseOver(e) {
@@ -3233,7 +3188,7 @@ function unfadeOnMouseOver(e) {
     return false;
   }
 
-	return unfade(target);
+  return unfade(target);
 }
 
 function fadeOnMouseOver(e) {
@@ -3241,7 +3196,7 @@ function fadeOnMouseOver(e) {
   if (!target)
     return true;
 
-	return fade(target);
+  return fade(target);
 }
 
 function fadeOnMouseOut(e) {
@@ -3249,7 +3204,7 @@ function fadeOnMouseOut(e) {
   if (!target)
     return false;
 
-	return fade(target);
+  return fade(target);
 }
 
 function unfade(target) {
@@ -3386,72 +3341,90 @@ function largeImageOnLoad(e) {
   return true;
 }
 
-function showLargeImage(current, largeImageUri) {
-	if (!document.getElementById)
+function showLargeImage(e, current, largeImageUrl) {
+  if (!largeImageUrl) {
+    e = getDocumentEvent(e); if (!e) return;
+    var target = getTargetElement(e);
+
+    var thumbnailUrl = target.src;
+    var idx = thumbnailUrl.lastIndexOf('.');
+    var file = thumbnailUrl.substring(0, idx);
+    var ext  = thumbnailUrl.substring(idx);
+    var idx1 = file.lastIndexOf('_');
+    var file1 = file.substring(0, idx);
+    largeImageUrl = file1 + '_image' + ext;
+
+	  var div = document.getElementById('gallery');
+	  var img = document.getElementById('galleryImage');
+	  hotspot1 = target;
+	  addEvent(img, 'load',  largeImageOnLoad,  false);
+	  img.src = "";
+	  img.src = largeImageUrl;
 	  return true;
+  }
 
   var div = document.getElementById('gallery');
   var img = document.getElementById('galleryImage');
   img.src = "";
 
-	if (div.style.display == "block") {
-	  div.style.display = "none";
-	  // img.src always has host in it; largeImageUri not always that is why using indexOf
-	  if (img.src.indexOf(largeImageUri) == img.src.length - largeImageUri.length) {
-  	  img.src = "";
-  	  return false;
-  	}
-	}
+  if (div.style.display == "block") {
+    div.style.display = "none";
+    // img.src always has host in it; largeImageUrl not always that is why using indexOf
+    if (img.src.indexOf(largeImageUrl) == img.src.length - largeImageUrl.length) {
+      img.src = "";
+      return false;
+    }
+  }
 
   hotspot1 = current;
   addEvent(img, 'load',  largeImageOnLoad,  false);
-  img.src = largeImageUri;
-	return true;
+  img.src = largeImageUrl;
+  return true;
 }
 
 
 function getLeft(overlay){
-	var totaloffset = overlay.offsetLeft;
-	var parentEl = overlay.offsetParent;
-	while (parentEl != null) {
+  var totaloffset = overlay.offsetLeft;
+  var parentEl = overlay.offsetParent;
+  while (parentEl != null) {
     totaloffset = totaloffset + parentEl.offsetLeft;
     parentEl = parentEl.offsetParent;
-	}
-	return totaloffset;
+  }
+  return totaloffset;
 }
 
 function getTop(overlay, offsettype){
-	var totaloffset = overlay.offsetTop;
-	var parentEl = overlay.offsetParent;
-	while (parentEl != null) {
+  var totaloffset = overlay.offsetTop;
+  var parentEl = overlay.offsetParent;
+  while (parentEl != null) {
     totaloffset = totaloffset + parentEl.offsetTop;
     parentEl = parentEl.offsetParent;
-	}
-	return totaloffset;
+  }
+  return totaloffset;
 }
 
 function hide(target) {
   if (typeof target == 'string')
     target = document.getElementById(target);
-	target.style.display = "none";
-	return false;
+  target.style.display = "none";
+  return false;
 }
 
 function addAndShow(td, e) {
   e = getDocumentEvent(e);
-	if (!e)
+  if (!e)
     return stopEventPropagation(e);
 
-	var a = td.getElementsByTagName("a");
+  var a = td.getElementsByTagName("a");
 
 //	  iframe.style.display    = "none";
 
-	var anchor = a[0].href;
-	return addAndShow1(anchor, e);
+  var anchor = a[0].href;
+  return addAndShow1(anchor, e);
 }
 
 var calendarCell; // last cell on which user clicked
-var lastPopupRowAnchor;
+var lastPopupRowAnchor = null;
 
 function addCalendarItem(popupRowAnchor, event) {
   if (lastPopupRowAnchor) {
@@ -3459,6 +3432,7 @@ function addCalendarItem(popupRowAnchor, event) {
     return stopEventPropagation(event);
   }
   lastPopupRowAnchor = popupRowAnchor;
+
   var calendarRow = getTrNode(calendarCell);
   if (!calendarRow)
     throw Error("addCalendarItem: calendar row not found for: " + anchor);
@@ -3473,10 +3447,10 @@ function addCalendarItem(popupRowAnchor, event) {
   var popupRow = getTrNode(popupRowAnchor); // get tr on which user clicked in popup
   if (!popupRow)
     throw Error("addCalendarItem: popup row not found for: " + anchor);
+
   if (anchor.indexOf("?") != anchor.length - 1)
     anchor += "&";
   anchor += popupRow.id;
-
 
   //--- extract parameters specific for calendar row (e.g. time slot) for a cell on which user clicked
   anchor += '&' + calendarRow.id;
@@ -3508,6 +3482,14 @@ function addCalendarItem(popupRowAnchor, event) {
     anchor += '&' + pageParams[i].id;
 
   var se = stopEventPropagation(event);
+/*
+  if (lastPopupRowAnchor == anchor) {
+    alert("Please wait till previous request is processed");
+    return stopEventPropagation(event);
+  }
+  lastPopupRowAnchor = anchor;
+*/
+
   document.location.href = anchor;
   return se;
 //  return addAndShow1(anchor, event);
@@ -3622,8 +3604,8 @@ function addAndShow1(anchor, event) {
   var iframeId = "resourceList";
   var iframe = document.getElementById(iframeId);
   try {
-	  var iframeWindow = frames[iframeId];
-	  var newUri;
+    var iframeWindow = frames[iframeId];
+    var newUri;
     var aa = document.getElementById("currentItem");
     if (aa) {
       var currentItem = aa.href;
@@ -3643,23 +3625,23 @@ function addAndShow1(anchor, event) {
       }
     }
 
-	  if (anchor.indexOf("$returnUri=") == -1) {
- 	    var div = document.getElementById(iframeId + "_div");
-	    var tag = div.getElementsByTagName('a');
+    if (anchor.indexOf("$returnUri=") == -1) {
+       var div = document.getElementById(iframeId + "_div");
+      var tag = div.getElementsByTagName('a');
       if (tag.length) {
-  	    var retUri = tag[0].href;
-  	    newUri = anchor + "&$returnUri=" + encodeURIComponent(retUri + "&-addItems=y");
+        var retUri = tag[0].href;
+        newUri = anchor + "&$returnUri=" + encodeURIComponent(retUri + "&-addItems=y");
       }
       else
         newUri = anchor;
-	  }
-	  else
-  	  newUri = anchor;
+    }
+    else
+      newUri = anchor;
 
     iframeWindow.location.replace(newUri); // load data from server into iframe
 //    window.open(newUri);
 //    return;
-	  setTimeout(addAndShowWait, 50);
+    setTimeout(addAndShowWait, 50);
     return stopEventPropagation(event);
   } catch (er) {
     alert(er);
@@ -3845,4 +3827,215 @@ function showKeyboard() {
     }
   }
   kdiv.style.display = 'inline';
+}
+
+// usage:
+// insertAtCursor(document.formName.fieldName, ‘this value’);
+function insertAtCursor(myField, myValue) {
+  //IE support
+  if (document.selection) {
+    myField.focus();
+    sel = document.selection.createRange();
+    sel.text = myValue;
+  }
+  //MOZILLA/NETSCAPE support
+  else if (myField.selectionStart || myField.selectionStart == '0') {
+    var startPos = myField.selectionStart;
+    var endPos = myField.selectionEnd;
+    myField.value = myField.value.substring(0, startPos)
+    + myValue
+    + myField.value.substring(endPos, myField.value.length);
+  }
+  else {
+    myField.value += myValue;
+  }
+}
+
+function setCaretToEnd (el) {
+  if (el.createTextRange) {
+    var v = el.value;
+    var r = el.createTextRange();
+    r.moveStart('character', v.length);
+    r.select();
+  }
+}
+
+/**
+ * In the form that has several submit buttons - this is the way we detect which one was clicked
+ */
+function saveButtonClicked(e) {
+  e = getDocumentEvent(e); if (!e) return;
+  var target = getTargetElement(e);
+  if (!target)
+    return true;
+  var button = target;
+  var form = target.form;
+  form.setAttribute("buttonClicked", button.name);
+  return true;
+}
+
+function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
+  var istyle   = iframe.style;
+  istyle.visibility    = Popup.HIDDEN;
+  div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
+
+  if (hotspot) {
+    var scrollXY = getScrollXY();
+    var scrollX = scrollXY[0];
+    var scrollY = scrollXY[1];
+
+    var coords = getElementCoords(hotspot);
+    var left = coords.left;
+    var top  = coords.top;
+
+    var screenXY = getWindowSize();
+    var screenX = screenXY[0];
+    var screenY = screenXY[1];
+
+    // Find out how close to the corner of the window
+    var distanceToRightEdge  = screenX + scrollX - left;
+    var distanceToBottomEdge = screenY + scrollY - top;
+
+    // first position the div box in the top left corner in order to measure its dimensions
+    // (otherwise, if position coirrectly and only then measure dimensions - the width/height will get cut off at the scroll boundary - at least in firefox 1.0)
+    div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
+    reposition(div, 0, 0);
+    var divCoords = getElementCoords(div);
+    var margin = 40;
+
+    // cut popup dimensions to fit the screen
+    var mustCutDimenstion = div.id == 'pane2' ? false: true;
+    if (mustCutDimenstion) {
+      var fixed = false;
+      if (divCoords.width > screenX - margin) {
+        div.style.width = screenX - margin + 'px';
+        fixed = true;
+        //alert("divCoords.width = " + divCoords.width + ", " + "screenX = " + screenX);
+      }
+      if (divCoords.height > screenY - margin) {
+        div.style.height = screenY - margin + 'px';
+        fixed = true;
+        //alert("divCoords.height = " + divCoords.height + ", " + "screenY = " + screenY);
+      }
+      if (fixed) { // recalc coords and add scrolling if we fixed dimensions
+        div.style.overflow = "auto";
+        divCoords = getElementCoords(div);
+      }
+    }
+    div.style.display    = 'none';   // must hide it again to avoid screen flicker
+
+    // move box to the left of the hotspot if the distance to window border isn't enough to accomodate the whole div box
+    if (distanceToRightEdge < divCoords.width + margin) {
+      left = (screenX -  scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
+      //alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " + scrollX);
+      if (left - margin > 0)
+        left -= margin; // adjust for a scrollbar;
+    }
+    else { // apply user requested offset only if no adjustment
+      if (offsetX)
+        left = left + offsetX;
+    }
+
+    // adjust position of the div box vertically - using the same approach as above
+    if (distanceToBottomEdge < divCoords.height + margin) {
+      top = (screenY + scrollY) - divCoords.height;
+      if (top - margin > 0)
+        top -= margin; // adjust for a scrollbar;
+    }
+    else { // apply user requested offset only if no adjustment
+      if (offsetY)
+        top = top + offsetY;
+    }
+
+    //reposition(div, left, top); // move the div box to the adjusted position
+  }
+
+  // by now the width of the box got cut off at scroll boundary - fix it (needed at least for firefox 1.0)
+  div.style.width  = divCoords.width  + 'px';
+  div.style.height = divCoords.height + 'px';
+
+  //  Make position/size of the underlying iframe same as div's position/size
+  istyle.width     = divCoords.width  + 'px';
+  istyle.height    = divCoords.height + 'px';
+
+  var zIndex = hotspot.style.zIndex; // this relative zIndex allows stacking popups on top of each other
+  div.style.zIndex = zIndex + 2;
+  istyle.zIndex    = zIndex + 1;
+
+  // hack for Opera (at least at ver. 7.54) and Konqueror
+  //  somehow iframe is always on top of div - no matter how hard we try to set zIndex
+  // so we have to live without iframe
+  var opera     = navigator.userAgent.indexOf("Opera") != -1;
+  var konqueror = navigator.userAgent.indexOf("Konqueror") != -1;
+  istyle.display       = 'inline';
+  div.style.display    = 'inline';
+  reposition(div,    left, top); // move the div box to the adjusted position
+  reposition(iframe, left, top); // place iframe under div
+  if (!opera && !konqueror) {
+    //istyle.visibility  = Popup.VISIBLE;
+  }
+  div.style.visibility = Popup.VISIBLE; // finally make div visible
+}
+
+
+/**
+ * Show iframe
+ */
+setIframeVisible = function (iframe, div, hotspot, offsetX, offsetY) {
+  var istyle = iframe.style;
+  istyle.visibility    = Popup.HIDDEN;
+
+  var scrollXY = getScrollXY();
+  var scrollX = scrollXY[0];
+  var scrollY = scrollXY[1];
+
+  var coords = getElementCoords(hotspot);
+  var left = coords.left;
+  var top  = coords.top;
+
+  var screenXY = getWindowSize();
+  var screenX = screenXY[0];
+  var screenY = screenXY[1];
+
+  // Find out how close to the corner of the window
+  var distanceToRightEdge  = screenX + scrollX - left;
+  var distanceToBottomEdge = screenY + scrollY - top;
+
+  istyle.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
+  reposition(iframe, 0, 0);
+
+  var divCoords = getElementCoords(div);
+  var margin = 40;
+
+  // move box to the left of the hotspot if the distance to window border isn't enough to accomodate the whole div box
+  if (distanceToRightEdge < divCoords.width + margin) {
+    left = (screenX -  scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
+    //alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " + scrollX);
+    if (left - margin > 0)
+      left -= margin; // adjust for a scrollbar;
+  }
+  else { // apply user requested offset only if no adjustment
+    if (offsetX)
+      left = left + offsetX;
+  }
+
+  // adjust position of the div box vertically - using the same approach as above
+  if (distanceToBottomEdge < divCoords.height + margin) {
+    top = (screenY + scrollY) - divCoords.height;
+    if (top - margin > 0)
+      top -= margin; // adjust for a scrollbar;
+  }
+  else { // apply user requested offset only if no adjustment
+    if (offsetY)
+      top = top + offsetY;
+  }
+  // move the div box to the adjusted position
+  reposition(iframe, left, top);
+  istyle.width  = divCoords.width   + 'px';
+  istyle.height = divCoords.height  + 'px';
+
+
+  istyle.zIndex     = hotspot.style.zIndex + 1;
+  istyle.display    = 'inline';
+  istyle.visibility = Popup.VISIBLE; // finally make it visible
 }

@@ -199,4 +199,4 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .nowrap {white-space: nowrap;}
 .scheduleSubmit {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19pt;text-decoration:none;cursor: pointer; cursor: hand; font-size:12px; font-weight:bold}
 .cursor {cursor: pointer; cursor: hand;}
-.dataEntry {border:solid #808080 1px; }
+.dataEntry {background-color: #D6E7EF; }

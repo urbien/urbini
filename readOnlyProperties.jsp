@@ -13,10 +13,12 @@
     </td></tr>
     <tr><td colspan="3"><br/>
 <a target="pane2"> </a>
-<div id="pane2" />
+
+<div id="pane2" style="position:absolute; visibility:hidden;" />
+
 <div id="gallery" style="display:none;position:absolute">
   <table bgcolor="#1b62b6">
-    <tr valign="top"><td class="largeImage" valign="top"><img id="galleryImage" src="about:blank"></img></td></tr> 
+    <tr valign="top"><td class="largeImage" valign="top"><img id="galleryImage" src="about:blank"></img></td></tr>
     <!--tr valign="top"><td class="largeImageWithHide" valign="top"><img id="galleryImage" src="about:blank"></img><img src="icons/hide.gif" border="0" width="16" height="16" align="top" onclick="return hide('gallery')" style="cursor: pointer; cursor: hand;" title="click to close"></img></td></tr-->
   </table>
 </div>
@@ -38,6 +40,6 @@
 </tr></table>
 
 </center>
-<iframe name="bottomFrame" id="bottomFrame" src="javascript: ;" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>
+<iframe name="bottomFrame" id="bottomFrame" src="javascript: ;" scrolling="no" frameborder="0" style="position:absolute; visibility:hidden; display:none; top:0px; left:0px; width:0;height:0"> </iframe>
 <PointOfSale/>
 </div>
