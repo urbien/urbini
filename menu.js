@@ -3879,48 +3879,50 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   istyle.visibility    = Popup.HIDDEN;
   div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
 
+  var scrollXY = getScrollXY();
+  var scrollX = scrollXY[0];
+  var scrollY = scrollXY[1];
+
+  var left = 100;
+  var top  = 100;
   if (hotspot) {
-    var scrollXY = getScrollXY();
-    var scrollX = scrollXY[0];
-    var scrollY = scrollXY[1];
-
     var coords = getElementCoords(hotspot);
-    var left = coords.left;
-    var top  = coords.top;
+    left = coords.left;
+    top  = coords.top;
+  }
 
-    var screenXY = getWindowSize();
-    var screenX = screenXY[0];
-    var screenY = screenXY[1];
+  var screenXY = getWindowSize();
+  var screenX = screenXY[0];
+  var screenY = screenXY[1];
 
-    // Find out how close to the corner of the window
-    var distanceToRightEdge  = screenX + scrollX - left;
-    var distanceToBottomEdge = screenY + scrollY - top;
+  // Find out how close to the corner of the window
+  var distanceToRightEdge  = screenX + scrollX - left;
+  var distanceToBottomEdge = screenY + scrollY - top;
 
-    // first position the div box in the top left corner in order to measure its dimensions
-    // (otherwise, if position coirrectly and only then measure dimensions - the width/height will get cut off at the scroll boundary - at least in firefox 1.0)
-    div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
-    reposition(div, 0, 0);
-    var divCoords = getElementCoords(div);
-    var margin = 40;
+  // first position the div box in the top left corner in order to measure its dimensions
+  // (otherwise, if position coirrectly and only then measure dimensions - the width/height will get cut off at the scroll boundary - at least in firefox 1.0)
+  div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
+  reposition(div, 0, 0);
+  var divCoords = getElementCoords(div);
+  var margin = 40;
 
-    // cut popup dimensions to fit the screen
-    var mustCutDimenstion = div.id == 'pane2' ? false: true;
-    if (mustCutDimenstion) {
-      var fixed = false;
-      if (divCoords.width > screenX - margin) {
-        div.style.width = screenX - margin + 'px';
-        fixed = true;
-        //alert("divCoords.width = " + divCoords.width + ", " + "screenX = " + screenX);
-      }
-      if (divCoords.height > screenY - margin) {
-        div.style.height = screenY - margin + 'px';
-        fixed = true;
-        //alert("divCoords.height = " + divCoords.height + ", " + "screenY = " + screenY);
-      }
-      if (fixed) { // recalc coords and add scrolling if we fixed dimensions
-        div.style.overflow = "auto";
-        divCoords = getElementCoords(div);
-      }
+  // cut popup dimensions to fit the screen
+  var mustCutDimenstion = div.id == 'pane2' ? false: true;
+  if (mustCutDimenstion) {
+    var fixed = false;
+    if (divCoords.width > screenX - margin) {
+      div.style.width = screenX - margin + 'px';
+      fixed = true;
+      //alert("divCoords.width = " + divCoords.width + ", " + "screenX = " + screenX);
+    }
+    if (divCoords.height > screenY - margin) {
+      div.style.height = screenY - margin + 'px';
+      fixed = true;
+      //alert("divCoords.height = " + divCoords.height + ", " + "screenY = " + screenY);
+    }
+    if (fixed) { // recalc coords and add scrolling if we fixed dimensions
+      div.style.overflow = "auto";
+      divCoords = getElementCoords(div);
     }
     div.style.display    = 'none';   // must hide it again to avoid screen flicker
 
@@ -3958,7 +3960,7 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   istyle.width     = divCoords.width  + 'px';
   istyle.height    = divCoords.height + 'px';
 
-  var zIndex = hotspot.style.zIndex; // this relative zIndex allows stacking popups on top of each other
+  var zIndex = hotspot ? hotspot.style.zIndex : 1; // this relative zIndex allows stacking popups on top of each other
   div.style.zIndex = zIndex + 2;
   istyle.zIndex    = zIndex + 1;
 
