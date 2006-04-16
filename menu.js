@@ -418,13 +418,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Hide popup
    */
   this.setInvisible = function () {
-    var div      = self.div;
-    var iframe   = self.iframe;
-
-    if (div.style)
-      div.style.display    = "none";
-    if (iframe && iframe.style)
-      iframe.style.display = "none";
+    return setDivInvisible(self.div, self.iframe);
   }
 
   /**
@@ -1619,11 +1613,11 @@ function popupOnSubmit(e) {
   var form = target;
   var buttonName = form.getAttribute("buttonClicked");
   var button = form.elements[buttonName];
-
   if (button && button.name.toUpperCase() == 'CANCEL') {    // cancel button clicked?
-    var pane2 = document.getElementById('pane2');
+    var pane2       = document.getElementById('pane2');
+    var bottomFrame = document.getElementById('bottomFrame');
     if (pane2.contains(form))  {   // inner frame?
-      pane2.style.display = "none";
+      setDivInvisible(pane2, bottomFrame);
       return stopEventPropagation(e);
     }
   }
@@ -2654,7 +2648,7 @@ function getWindowSize1() {
 /**
  * the source of this function and getScrollXY is: http://www.howtocreate.co.uk/tutorials/index.php?tut=0&part=16
  */
-function getWindowSize() {
+function getWindowSize_no_viewport() {
   var myWidth = 0, myHeight = 0;
   if( typeof( window.innerWidth ) == 'number' ) {
     //Non-IE
@@ -2673,6 +2667,41 @@ function getWindowSize() {
   return [ myWidth, myHeight ];
 }
 
+function getWindowSize() {
+  var widthPlusScrollbar;
+  var heightPlusScrollbar;
+
+  if (typeof window.innerWidth != "undefined") {
+    widthPlusScrollbar = window.innerWidth ;
+    heightPlusScrollbar = window.innerHeight ;
+  }
+  else if (d.documentElement && typeof d.documentElement.offsetWidth != "undefined" && d.documentElement.offsetWidth != 0) {
+    widthPlusScrollbar  = document.documentElement.offsetWidth ;
+    heightPlusScrollbar = document.documentElement.offsetHeight ;
+  }
+  else if (d.body && typeof d.body.offsetWidth != "undefined") {
+    widthPlusScrollbar  = document.body.offsetWidth ;
+    heightPlusScrollbar = document.body.offsetHeight ;
+  };
+/*
+  if (d.documentElement && typeof d.documentElement.clientWidth != "undefined" && d.documentElement.clientWidth != 0) {
+    //d.documentElement.clientWidth/Height is currently not supported by Gecko; see bugzilla bug file 156388 on that.
+    d.FormName.WidthMinusScrollbar.value  = d.documentElement.clientWidth  + 2*parseInt(d.documentElement.currentStyle.borderWidth,10) ;
+    d.FormName.HeightMinusScrollbar.value = d.documentElement.clientHeight + 2*parseInt(d.documentElement.currentStyle.borderWidth,10) ;
+  }
+  else if (d.all && d.body && typeof d.body.clientWidth != "undefined") {
+    // d.styleSheets[0].rules[1].style.borderWidth,10 should work for MSIE 4
+    d.FormName.WidthMinusScrollbar.value = d.body.clientWidth + 2*parseInt(d.body.currentStyle.borderWidth,10) ;
+    d.FormName.HeightMinusScrollbar.value = d.body.clientHeight + 2*parseInt(d.body.currentStyle.borderWidth,10);
+  }
+  else if (d.body && typeof d.body.clientWidth != "undefined") {
+    d.FormName.WidthMinusScrollbar.value = d.body.clientWidth ;
+    d.FormName.HeightMinusScrollbar.value = d.body.clientHeight ;
+  };
+*/
+  return [ widthPlusScrollbar, heightPlusScrollbar ];
+
+}
 function getScrollXY1() {
   var scrOfX = 0, scrOfY = 0;
 
@@ -3878,7 +3907,6 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   var istyle   = iframe.style;
   istyle.visibility    = Popup.HIDDEN;
   div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
-
   var scrollXY = getScrollXY();
   var scrollX = scrollXY[0];
   var scrollY = scrollXY[1];
@@ -3905,10 +3933,11 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   reposition(div, 0, 0);
   var divCoords = getElementCoords(div);
   var margin = 40;
-
+  //alert(screenX + "," + screenY + ", " + scrollX + "," + scrollY + ", " + left + "," + top + ", " + divCoords.width + "," + divCoords.height);
   // cut popup dimensions to fit the screen
-  var mustCutDimenstion = div.id == 'pane2' ? false: true;
-  if (mustCutDimenstion) {
+  //var mustCutDimension = div.id == 'pane2' ? false: true;
+  var mustCutDimension = true;
+  if (mustCutDimension) {
     var fixed = false;
     if (divCoords.width > screenX - margin) {
       div.style.width = screenX - margin + 'px';
@@ -3924,32 +3953,30 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
       div.style.overflow = "auto";
       divCoords = getElementCoords(div);
     }
-    div.style.display    = 'none';   // must hide it again to avoid screen flicker
+  }
+  div.style.display    = 'none';   // must hide it again to avoid screen flicker
 
-    // move box to the left of the hotspot if the distance to window border isn't enough to accomodate the whole div box
-    if (distanceToRightEdge < divCoords.width + margin) {
-      left = (screenX -  scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
-      //alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " + scrollX);
-      if (left - margin > 0)
-        left -= margin; // adjust for a scrollbar;
-    }
-    else { // apply user requested offset only if no adjustment
-      if (offsetX)
-        left = left + offsetX;
-    }
+  // move box to the left of the hotspot if the distance to window border isn't enough to accomodate the whole div box
+  if (distanceToRightEdge < divCoords.width + margin) {
+    left = (screenX -  scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
+    //alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " + scrollX);
+    if (left - margin > 0)
+      left -= margin; // adjust for a scrollbar;
+  }
+  else { // apply user requested offset only if no adjustment
+    if (offsetX)
+      left = left + offsetX;
+  }
 
-    // adjust position of the div box vertically - using the same approach as above
-    if (distanceToBottomEdge < divCoords.height + margin) {
-      top = (screenY + scrollY) - divCoords.height;
-      if (top - margin > 0)
-        top -= margin; // adjust for a scrollbar;
-    }
-    else { // apply user requested offset only if no adjustment
-      if (offsetY)
-        top = top + offsetY;
-    }
-
-    //reposition(div, left, top); // move the div box to the adjusted position
+  // adjust position of the div box vertically - using the same approach as above
+  if (distanceToBottomEdge < divCoords.height + margin) {
+    top = (screenY + scrollY) - divCoords.height;
+    if (top - margin > 0)
+      top -= margin; // adjust for a scrollbar;
+  }
+  else { // apply user requested offset only if no adjustment
+    if (offsetY)
+      top = top + offsetY;
   }
 
   // by now the width of the box got cut off at scroll boundary - fix it (needed at least for firefox 1.0)
@@ -3974,11 +4001,17 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   reposition(div,    left, top); // move the div box to the adjusted position
   reposition(iframe, left, top); // place iframe under div
   if (!opera && !konqueror) {
-    //istyle.visibility  = Popup.VISIBLE;
+    istyle.visibility  = Popup.VISIBLE;
   }
   div.style.visibility = Popup.VISIBLE; // finally make div visible
 }
 
+function setDivInvisible(div, iframe) {
+  if (div.style)
+    div.style.display    = "none";
+  if (iframe && iframe.style)
+    iframe.style.display = "none";
+}
 
 /**
  * Show iframe
