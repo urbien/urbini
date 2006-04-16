@@ -2675,7 +2675,7 @@ function getWindowSize() {
     widthPlusScrollbar = window.innerWidth ;
     heightPlusScrollbar = window.innerHeight ;
   }
-  else if (d.documentElement && typeof d.documentElement.offsetWidth != "undefined" && d.documentElement.offsetWidth != 0) {
+  else if (document.documentElement && typeof document.documentElement.offsetWidth != "undefined" && document.documentElement.offsetWidth != 0) {
     widthPlusScrollbar  = document.documentElement.offsetWidth ;
     heightPlusScrollbar = document.documentElement.offsetHeight ;
   }
