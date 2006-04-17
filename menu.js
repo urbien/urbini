@@ -615,8 +615,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           var form = document.forms[currentFormName];
           if (form) {
             var inputField = form.elements[originalProp];
-            internalFocus = true;
-            try { inputField.focus(); } catch(e) {};
+            setKeyboardFocus(inputField);
             autoComplete1(e, inputField);
             if (characterCode == 8) {
               // problem with IE - move line below to another place
@@ -1271,7 +1270,6 @@ var currentFormName = null;
 var currentResourceUri = null;
 var innerUrls = new Array();
 
-var internalFocus = false;
 var frameLoaded = new Array();
 
 var rteUpdated = 'false';
@@ -1898,17 +1896,19 @@ function autoComplete1(e, target) {
 }
 
 function autoCompleteOnFocus(e) {
-  if (internalFocus) {
-    internalFocus = false;
-    return;
-  }
   var target = getTargetElement(e);
   if (!target)
     return;
 
+  if (target.internalFocus) {
+    target.internalFocus = false;
+    return true;
+  }
+
   // prevent issuing select() if we got onfocus because browser window was minimized and then restored
   if (target.value != target.lastText)
     target.select();
+  return true;
 }
 
 function autoCompleteOnBlur(e) {
@@ -2951,8 +2951,8 @@ function copyInnerHtml(frameId, divId, hotspotId) {
   }
   setInnerHtml(div, frameBodyText, frames[frameId]);
   setDivVisible(div, iframe, hotspot, 16, 16);
-  uiFocus(div);
   initListBoxes(div);
+  uiFocus(div);
 }
 
 /**
@@ -3994,13 +3994,14 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   // hack for Opera (at least at ver. 7.54) and Konqueror
   //  somehow iframe is always on top of div - no matter how hard we try to set zIndex
   // so we have to live without iframe
-  var opera     = navigator.userAgent.indexOf("Opera") != -1;
-  var konqueror = navigator.userAgent.indexOf("Konqueror") != -1;
-  istyle.display       = 'inline';
+  //var opera     = navigator.userAgent.indexOf("Opera") != -1;
+  //var konqueror = navigator.userAgent.indexOf("Konqueror") != -1;
   div.style.display    = 'inline';
+  //istyle.display       = 'inline';
   reposition(div,    left, top); // move the div box to the adjusted position
   reposition(iframe, left, top); // place iframe under div
-  if (!opera && !konqueror) {
+  //if (!opera && !konqueror) {
+  if (document.all) { // only IE has a problem with form elements 'showing through' the popup
     istyle.visibility  = Popup.VISIBLE;
   }
   div.style.visibility = Popup.VISIBLE; // finally make div visible
@@ -4073,4 +4074,14 @@ setIframeVisible = function (iframe, div, hotspot, offsetX, offsetY) {
   istyle.zIndex     = hotspot.style.zIndex + 1;
   istyle.display    = 'inline';
   istyle.visibility = Popup.VISIBLE; // finally make it visible
+}
+
+function setKeyboardFocus(element) {
+  element.internalFocus = true;
+  try {
+    if (element.focus)
+      element.focus();
+  }
+  catch (e) {
+  }
 }
