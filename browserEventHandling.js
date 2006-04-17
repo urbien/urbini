@@ -287,13 +287,16 @@
             firstField = u;
           }
           if (u.id && (u.id == 'uiFocus' || u.id.indexOf('_uiFocus') != -1)) {
+            u.focus(); // in IE (at least in IE6) first focus() is lost for some reason - we are forced to issue another focus()
             u.focus();
             return true;
           }
         }
       }
-      if (firstField && div != document)
+      if (firstField && div != document) {
         firstField.focus();
+        firstField.focus(); // second time for IE
+      }
       return false;
     }
 
