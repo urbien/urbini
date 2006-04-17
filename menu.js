@@ -1611,9 +1611,10 @@ function popupOnSubmit(e) {
   var form = target;
   var buttonName = form.getAttribute("buttonClicked");
   var button = form.elements[buttonName];
+  var pane2       = document.getElementById('pane2');
+  var bottomFrame = document.getElementById('bottomFrame');
+
   if (button && button.name.toUpperCase() == 'CANCEL') {    // cancel button clicked?
-    var pane2       = document.getElementById('pane2');
-    var bottomFrame = document.getElementById('bottomFrame');
     if (pane2.contains(form))  {   // inner frame?
       setDivInvisible(pane2, bottomFrame);
       return stopEventPropagation(e);
@@ -1741,6 +1742,11 @@ function popupOnSubmit(e) {
   form.method = 'POST';
   if (!action)
     form.action = "FormRedirect";
+
+  if (pane2.contains(form))  {   // inner frame?
+    setDivInvisible(pane2, bottomFrame);
+  }
+
   return true; // tell browser to go ahead and continue processing this submit request
 }
 
