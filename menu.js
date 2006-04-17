@@ -1506,7 +1506,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   url += "&" + propName + "_filter=y";
   if (!enterFlag)
     url += "&$selectOnly=y";
-  if (enteredText)
+  if (enteredText  &&  url.indexOf("&" + propName + "=" + encodeURIComponent(enteredText)) == -1)
     url += "&" + propName + "=" + encodeURIComponent(enteredText);
   if (isInterface) {
     var classValue = form.elements[propName + "_class"].value;
@@ -4082,6 +4082,42 @@ setIframeVisible = function (iframe, div, hotspot, offsetX, offsetY) {
   istyle.visibility = Popup.VISIBLE; // finally make it visible
 }
 
+function doConfirm(msg) {
+  var c = confirm(msg);
+  if (!c)
+    return;
+
+  var loc = document.location.href;
+
+  var idx = loc.lastIndexOf("-$action=");
+  if (idx != -1) {
+    idx1 = loc.indexOf("&", idx);
+    if (idx1 != -1) {
+      if (loc.charAt(idx - 1) == '?')
+        loc = loc.substring(0, idx) + loc.substring(idx1 + 1);
+      else
+        loc = loc.substring(0, idx) + loc.substring(idx1);
+    }
+    else
+      loc = loc.substring(0, idx);
+  }
+  idx = loc.indexOf("?");
+  loc = "localSearchResults.html?-$action=deleteAndExplore&del-yes=y&" + loc.substring(idx + 1);
+  idx = loc.indexOf("&errMsg=");
+  if (idx == -1) {
+    idx = loc.indexOf("?errMsg=");
+    idx++;
+  }
+
+  var idx1 = loc.indexOf("&", idx + 7);
+  if (idx1 == -1)
+    loc = loc.substring(0, idx)
+  else
+    loc = loc.substring(0, idx) + loc.substring(idx1);
+  document.location.replace(loc);
+  return;
+}
+
 function setKeyboardFocus(element) {
   element.internalFocus = true;
   try {
@@ -4091,3 +4127,4 @@ function setKeyboardFocus(element) {
   catch (e) {
   }
 }
+
