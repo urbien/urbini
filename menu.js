@@ -2860,7 +2860,9 @@ function addPageTitleToUrl(e) {
 function displayInner(e, urlStr) {
   e = getDocumentEvent(e); if (!e) return;
   var target = getTargetElement(e); if (!target) return;
-  var anchor = getTargetAnchor(e);
+  var anchor = target;
+  if (target.tagName.toUpperCase() != 'A')
+    anchor = getTargetAnchor(e);
 
   var frameId = 'bottomFrame';
   var bottomFrame = frames[frameId];
@@ -2887,7 +2889,7 @@ function displayInner(e, urlStr) {
   stopEventPropagation(e);
 
   bottomFrame.location.replace(finalUrl);
-  var hotspotId = target.id ? target.id : anchor.id;
+  var hotspotId = target.id ? target.id : anchor ? anchor.id : null;
   var timeOutFunction = "copyInnerHtml('" + frameId  + "', '" + 'pane2' + "', '" + hotspotId + "')";
   setTimeout(timeOutFunction, 50);
 
