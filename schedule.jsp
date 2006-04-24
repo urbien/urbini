@@ -1,6 +1,6 @@
 <div>
 <errorMessage/>
-<script src="tableScroll.js" language="JavaScript" type="text/javascript"></script>
+<!--script src="tableScroll.js" language="JavaScript" type="text/javascript"></script-->
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr valign="top">
