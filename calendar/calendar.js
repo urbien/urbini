@@ -1412,6 +1412,7 @@ function setCalendarPosition() {
 
   this.caldiv.style.left = this.calPosImage.x ? this.calPosImage.x : (this.getOffset('Left') + TC28);
   this.caldiv.style.top  = this.calPosImage.y ? this.calPosImage.y : (this.getOffset('Top')  + TC29);
+  this.caldiv.style.zIndex = this.calPosImage.style.zIndex + 2;
 
   //*********** to avoid scrolling - adjust position of the calendar so it displayes in the visible part of browser window
   var scrollXY = getScrollXY();
@@ -1433,8 +1434,7 @@ function setCalendarPosition() {
   // first position the div box in the top left corner in order to measure its dimensions
   // (otherwise, if position coirrectly and only then measure dimensions - the width/height will get cut off at the scroll boundary - at least in firefox 1.0)
   this.caldiv.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
-  this.caldiv.style.left = 0 + 'px';
-  this.caldiv.style.top  = 0 + 'px';
+  reposition(this.caldiv, 0, 0);
 
   var divCoords = getElementCoords(this.caldiv);
   var margin = 40;
@@ -1465,12 +1465,12 @@ function setCalendarPosition() {
   }
   //*********** end adjusting position on screen
 
-  this.caldiv.style.left = left + 'px';
-  this.caldiv.style.top  = top  + 'px';
+  reposition(this.caldiv, left, top);
 
   if (TC9.needIframe) {
-    this.iframe.style.left = this.caldiv.style.left;
-    this.iframe.style.top  = this.caldiv.style.top
+    this.iframe.style.left   = this.caldiv.style.left;
+    this.iframe.style.top    = this.caldiv.style.top;
+    this.iframe.style.zIndex = this.caldiv.style.zIndex - 1;
   }
 }
 
@@ -1838,6 +1838,24 @@ function TC0d() {
     return this.TC30.join('')
   }
 }
+
+function reposition(div, x, y) {
+  var intLessTop  = 0;
+  var intLessLeft = 0;
+  var elm = div.offsetParent;
+
+  // absolute elements become relative to a container with position:relative
+  // so must decrease top, left
+  while (elm && elm.offsetParent != null) {
+    intLessTop  += elm.offsetTop;
+    intLessLeft += elm.offsetLeft;
+    elm = elm.offsetParent;
+  }
+  //alert(intLessLeft + "," + intLessTop + ", " + x + ", " + y);
+  div.style.left = x - intLessLeft + 'px';
+  div.style.top  = y - intLessTop  + 'px';
+}
+
 /**
  * Retrieves calendar using formName + name as a key.
  * If does not exist - creates one.
