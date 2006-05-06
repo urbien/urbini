@@ -20,7 +20,10 @@
   <!--script src="pngfix.js"                language="JavaScript" type="text/javascript"></script-->
   <script src="chat/richtext.js"         language="JavaScript" type="text/javascript"></script>
   <script src="fixedColor/fixedColor.js" language="JavaScript" type="text/javascript"></script>
-  
-  <getResource/>
+
+  <script src="styleSheet/style_toolbar.js" language="JavaScript" type="text/javascript"></script>
+  <script src="styleSheet/style_sheet.js"   language="JavaScript" type="text/javascript"></script>  
+ 
+ <getResource/>
   <siteTitle />
 </div>
