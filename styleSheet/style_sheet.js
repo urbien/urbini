@@ -354,7 +354,8 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	
 	this.onBorderStyle = function(styleIdx) {
 		// on border style: "inset" and "outset", to unset border color.
-		if(BORDER_ARR[styleIdx] == "inset" || BORDER_ARR[styleIdx] == "outset") {
+		if(BORDER_ARR[styleIdx].indexOf("inset") != -1 ||
+				 BORDER_ARR[styleIdx].indexOf("outset") != -1) {
 			if(sampleDiv.style.borderColor != "")
 				i_am.borderColor = sampleDiv.style.borderColor;
 
@@ -394,7 +395,8 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	}
 	
 	this.setBorderColor = function(colorStr) {
-		if(sampleDiv.style.borderStyle == "inset" || sampleDiv.style.borderStyle == "outset") {
+		if(sampleDiv.style.borderStyle.indexOf("inset") != -1 ||
+					sampleDiv.style.borderStyle.indexOf("outset") != -1) {
 			i_am.borderColor = colorStr;
 		}
 		else {
