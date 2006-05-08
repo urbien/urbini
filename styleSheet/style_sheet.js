@@ -114,13 +114,16 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		var innerStr;
 		for(var i = 0; i < BORDER_WIDTH.length; i++) {
 			var divTmp = document.createElement('div');
-			if(i == 0)
+			if(i == 0) {
 				innerStr = "none";
-			else
-				innerStr = "<div style='width:99% height:0; margin-bottom:5; margin-top:5; border-style:solid; border-width:0; border-bottom-width:"
-				+ BORDER_WIDTH[i] + ";'></div>";
+				divTmp.style.paddingTop = divTmp.style.paddingBottom = 4;
+			}
+			else {
+				innerStr = "<div style='width:99% height:0; border-style:solid; border-width:0; border-bottom-width:"
+					+ BORDER_WIDTH[i] + ";'></div>";
+				divTmp.style.paddingTop = divTmp.style.paddingBottom = 8;
+			}
 			divTmp.innerHTML = innerStr;
-			divTmp.style.paddingTop = divTmp.style.paddingBottom = 1;
 			ddList.appendItem(divTmp);
 		}
 		
@@ -150,9 +153,10 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 			var divInnerTmp = document.createElement('div');
 			
 			divTmp.style.borderStyle = BORDER_ARR[i];
-			divTmp.style.width = 90;
-			divTmp.style.height = 11;
+			divTmp.style.width = 80;
+			divTmp.style.height = 12;
 			divTmp.style.borderWidth = 2;
+			divTmp.style.marginTop = 2;
 			divTmp.style.borderStyle = BORDER_ARR[i];
 			ddList.appendItem(divTmp);
 		}

@@ -177,8 +177,10 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn)
 	var IMAGES_FOLDER = "./styleSheet/images/";
 	this.LIST_BACKGROUND = "#ffffff";
 	var LIST_BORDER_COLOR = "#999";
-	var ARROW_BUTTON_WIDTH = 15;
-	var ARROW_BUTTON_HEIGHT = 18; // initially, equals to the field height
+	var FIELD_HEIGHT = 27;
+	var ARROW_BUTTON_WIDTH = 16;
+	var DECREASE_BTN = 2;
+	var ARROW_BUTTON_HEIGHT = FIELD_HEIGHT - DECREASE_BTN;
 
 	var i_am = this;
 	this.index = index; // index in the parent toolbar
@@ -212,7 +214,7 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn)
 		this.fieldDiv.style.left = this.left;
 		this.fieldDiv.style.top = this.top;
 		this.fieldDiv.style.width = this.fieldWidth;
-		this.fieldDiv.style.height = ARROW_BUTTON_HEIGHT;
+		this.fieldDiv.style.height = FIELD_HEIGHT;
 		this.fieldDiv.style.fontFamily = FONT_FAMILY;
 		this.fieldDiv.style.fontSize = FONT_SIZE;
 		this.fieldDiv.style.paddingLeft = this.fieldDiv.style.paddingRight = 4;
@@ -225,17 +227,25 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn)
 		this.toolbar.div.appendChild(this.fieldDiv);
 		
 		this.fieldWidth = this.fieldDiv.clientWidth;// get real size of the field; for FF
+		//debugger
+		if(this.fieldDiv.clientHeight != FIELD_HEIGHT)
+			this.fieldDiv.style.height = 2*FIELD_HEIGHT - this.fieldDiv.clientHeight;
 		
 		// 2. button to open list
 		// 2.1 create button & button image
 		this.buttonDiv = document.createElement('div');
 		this.buttonDiv.style.position = "absolute";
 		this.buttonDiv.style.left = this.left + this.fieldWidth + 3;
-		this.buttonDiv.style.top = this.top;
+		this.buttonDiv.style.top = this.top + DECREASE_BTN / 2;
 				
 		this.btnImg = document.createElement('IMG');
 		this.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
 		this.btnImg.style.cursor = "pointer"
+		
+		this.btnImg.width = ARROW_BUTTON_WIDTH;
+		this.btnImg.height = ARROW_BUTTON_HEIGHT;
+		
+		
 		// 2.2 set arrow button handlers
 		this.buttonDiv.onmouseover = this.onMouseOverBtn;
 		this.buttonDiv.onmouseout = this.onMouseOutBtn;
@@ -251,7 +261,7 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn)
 		this.listDiv.style.display = "block";//"none";
 		this.listDiv.style.position = "absolute";
 		this.listDiv.style.left = this.left;
-		this.listDiv.style.top = this.top + ARROW_BUTTON_HEIGHT + 1;
+		this.listDiv.style.top = this.top + FIELD_HEIGHT + 1;
 		this.listDiv.style.width = this.fieldWidth;
 		
 		this.listDiv.style.height = 0; // instead display = "none" <- to calculate items height
@@ -278,7 +288,7 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn)
 		
 		// 3.4
 		this.width = this.fieldWidth + ARROW_BUTTON_WIDTH;
-		this.height = ARROW_BUTTON_HEIGHT;
+		this.height = this.fieldDiv.clientHeight;
 	}
 	
 	this.appendItem = function(itemDiv) {
@@ -289,9 +299,6 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn)
 		this.itemsArr[idx] = new ListItem(idx, itemDiv, this);
 
 		this.listHeight += this.itemsArr[idx].height;
-	}
-	
-	this.resize = function() {
 	}
 	
 	this.getItemObject = function(idx) {
