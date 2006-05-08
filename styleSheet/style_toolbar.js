@@ -81,9 +81,9 @@ function ToolbarButton(index, callback, isToggle, icon, title, left, top, toolba
 	}	
 	
 	this.onMouseUp = function() {
-		//i_am.isPressed = !i_am.isPressed;
 		if(i_am.isToggle)
 			return;
+		
 		i_am.div.style.backgroundColor = "buttonface";
 		i_am.onMouseOut();
 		i_am.callback(i_am.isPressed);
@@ -221,6 +221,7 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn)
 		this.fieldDiv.style.borderWidth = "1px";
 		this.fieldDiv.style.borderStyle = "solid";
 		this.fieldDiv.style.overflow = "visible";
+		this.fieldDiv.title = this.title;
 		this.toolbar.div.appendChild(this.fieldDiv);
 		
 		this.fieldWidth = this.fieldDiv.clientWidth;// get real size of the field; for FF
@@ -231,8 +232,7 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn)
 		this.buttonDiv.style.position = "absolute";
 		this.buttonDiv.style.left = this.left + this.fieldWidth + 3;
 		this.buttonDiv.style.top = this.top;
-		this.buttonDiv.title = this.title;
-		
+				
 		this.btnImg = document.createElement('IMG');
 		this.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
 		this.btnImg.style.cursor = "pointer"
@@ -347,6 +347,58 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn)
 	this.create();
 }
 
+/***************************************************
+*	Titlestrip class
+****************************************************/
+function Titlestrip(parentDiv, toolbar)
+{
+	var HEIGHT = 25;
+	var TOP_PADDING = 7;
+	
+	var FONT_FAMILY = "verdana";
+	var FONT_SIZE = "12px";
+	this.parentDiv = parentDiv;
+	this.toolbar = toolbar;
+	this.div = null;
+	this.height = 0;
+	
+	this.create = function() {
+		// 1. create div
+		this.div = document.createElement('div');
+		this.div.style.position = "absolute";
+		this.div.style.left = 0;
+		this.div.style.top = 0;
+		this.div.style.width = "100%";
+		this.div.style.height = HEIGHT;
+		this.div.style.backgroundColor = "buttonface";
+		this.div.style.borderWidth = 0;
+		// 2. append to parent
+		this.parentDiv.appendChild(this.div);
+		
+		// get "real" height
+		this.height = this.div.clientHeight;
+	}
+	
+	this.appendTitle = function(left, text) {
+		var titleDivTmp = document.createElement('div');
+		titleDivTmp.style.position = "absolute";
+		titleDivTmp.style.left = left;
+		titleDivTmp.style.top = TOP_PADDING;
+		titleDivTmp.style.backgroundColor = "buttonface";
+		titleDivTmp.style.fontFamily = FONT_FAMILY;
+		titleDivTmp.style.fontSize = FONT_SIZE;
+		titleDivTmp.innerHTML = text;
+		this.div.appendChild(titleDivTmp);
+	}
+	
+	this.resize = function(width) {
+		this.div.style.width = width;
+	}
+	
+	// constructor's body
+	this.create();
+}
+
 /****************************************************
 *	Toolbar class
 *****************************************************/
@@ -354,22 +406,28 @@ function Toolbar(parentDiv, masterObj)
 {
 	var LEFT_PADDING = 15; // pix
 	var RIGHT_PADDING = 15;
-	var VER_PADDING = 15;
+	var TOP_PADDING = 2;
+	var BOTTOM_PADDING = 15;
+	
 	var BUTTONS_GAP = 10;
 	this.parentDiv = parentDiv;
 	this.masterObj = masterObj;
 	this.controlsArr = null;
 	this.div = null;
+	this.titlestrip = null;
 	var lastBtnEdge = 0;
 	
 	this.width = 0;
 	this.height = 0;
 	
 	this.create = function() {
+		// 1. create title bar
+		this.titlestrip = new Titlestrip(this.parentDiv, this);
+		// 2. create, namely, toolbar
 		this.div = document.createElement('div');
 		this.div.style.position = "absolute";
 		this.div.style.left = 0;
-		this.div.style.top = 0;
+		this.div.style.top = this.titlestrip.height;
 		this.div.style.width = this.width;
 		this.div.style.height = this.height;
 		this.div.style.backgroundColor = "buttonface";
@@ -384,7 +442,8 @@ function Toolbar(parentDiv, masterObj)
 		
 		var idx = this.controlsArr.length;
 		var left = (idx > 0) ? lastBtnEdge + BUTTONS_GAP : LEFT_PADDING;
-		this.controlsArr[idx] = new DropdownList(idx, callback, left, VER_PADDING, fieldWidth, title, this);
+		this.controlsArr[idx] = new DropdownList(idx, callback, left, TOP_PADDING, fieldWidth, title, this);
+		this.titlestrip.appendTitle(left, title);
 		
 		this.resize(idx);
 		
@@ -397,7 +456,7 @@ function Toolbar(parentDiv, masterObj)
 		
 		var idx = this.controlsArr.length;
 		var left = (idx > 0) ? lastBtnEdge + BUTTONS_GAP : LEFT_PADDING;
-		this.controlsArr[idx] = new ToolbarButton(idx, callback, isToggle, icon, title, left, VER_PADDING, this);
+		this.controlsArr[idx] = new ToolbarButton(idx, callback, isToggle, icon, title, left, TOP_PADDING, this);
 		this.resize(idx);
 		
 		return this.controlsArr[idx];
@@ -406,7 +465,7 @@ function Toolbar(parentDiv, masterObj)
 	// resize toolbar according to new appended button
 	this.resize = function(idx){
 		btnObj = this.controlsArr[idx];
-		var newHeight = btnObj.height + (2 * VER_PADDING);
+		var newHeight = btnObj.height + (TOP_PADDING + BOTTOM_PADDING);
 		if(this.height < newHeight)
 			this.height = newHeight
 					
@@ -416,13 +475,19 @@ function Toolbar(parentDiv, masterObj)
 			this.width += BUTTONS_GAP + btnObj.width;	
 
 		lastBtnEdge = this.width - RIGHT_PADDING;
-		
+				
 		this.div.style.width = this.width;
 		this.div.style.height = this.height;
+		
+		this.titlestrip.resize(this.width); // resize titlestrip
 	}
 	
 	this.getControlObj = function(idx) {
 		return this.controlsArr[idx];
+	}
+	
+	this.getHeight = function() {
+		return (this.height + this.titlestrip.height);
 	}
 	
 	/*****************************************

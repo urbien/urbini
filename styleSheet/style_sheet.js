@@ -53,10 +53,10 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		var fontClrBtn = toolBar.appendButton(this.onFontColor, false, IMAGES_FOLDER + "font_color.gif", "font color");
 		// background color
 		var bgClrBtn = toolBar.appendButton(this.onBackgroundColor, false, IMAGES_FOLDER + "background_color.gif", "background color");
-		// border style
-		this.borderStyleList = this.createBorderList(toolBar);
 		// border width
 		this.borderWidthList = this.createBorderWidthList(toolBar);
+		// border style
+		this.borderStyleList = this.createBorderList(toolBar);
 		// border color
 		var borderClrBtn = toolBar.appendButton(this.onBorderColor, false, IMAGES_FOLDER + "border_color.gif", "border color");
 		
@@ -74,7 +74,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	this.createFontList = function(toolBar) {
 		var FONT_SIZE = 14;
 		var FONT_FIELD_WIDTH = 120;
-		var ddList = toolBar.appendDropdownList(FONT_FIELD_WIDTH, "font", this.onFontFamily);
+		var ddList = toolBar.appendDropdownList(FONT_FIELD_WIDTH, "font:", this.onFontFamily);
 		for(var i = 0; i < FONT_ARR.length; i++) {
 			var divTmp = document.createElement('div');
 			divTmp.innerHTML = FONT_ARR[i];
@@ -93,7 +93,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	
 	this.createFontSizeList = function(toolBar) {
 		var FONT_FIELD_WIDTH = 50;
-		var ddList = toolBar.appendDropdownList(FONT_FIELD_WIDTH, "font", this.onFontSize);
+		var ddList = toolBar.appendDropdownList(FONT_FIELD_WIDTH, "size:", this.onFontSize);
 		for(var i = 0; i < FONT_SIZE_ARR.length; i++) {
 			var divTmp = document.createElement('div');
 			divTmp.innerHTML = FONT_SIZE_ARR[i];
@@ -108,9 +108,43 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		return ddList;
 	}
 	
+	this.createBorderWidthList = function(toolBar) {
+		var BORDER_FIELD_WIDTH = 90;
+		var ddList = toolBar.appendDropdownList(BORDER_FIELD_WIDTH, "border:", this.onBorderWidth);
+		var innerStr;
+		for(var i = 0; i < BORDER_WIDTH.length; i++) {
+			var divTmp = document.createElement('div');
+			if(i == 0)
+				innerStr = "none";
+			else
+				innerStr = "<div style='width:99% height:0; margin-bottom:5; margin-top:5; border-style:solid; border-width:0; border-bottom-width:"
+				+ BORDER_WIDTH[i] + ";'></div>";
+			divTmp.innerHTML = innerStr;
+			divTmp.style.paddingTop = divTmp.style.paddingBottom = 1;
+			ddList.appendItem(divTmp);
+		}
+		
+		// set current item in the list
+		var curBorderWidth = sampleDiv.style.borderWidth.toLowerCase();
+		// FF returns 4 words for each side. Extract 1st only.
+		var firstSpace = curBorderWidth.indexOf(" ");
+		if(firstSpace != -1)
+			curBorderWidth = curBorderWidth.substring(0, firstSpace);
+
+		var curIdx = this.getMemberArrayIdx(BORDER_WIDTH, curBorderWidth);
+		if(curIdx != null)
+			ddList.setSelectedItem(curIdx);
+		else {
+			sampleDiv.style.borderWidth = 0;
+			ddList.setSelectedItem(0);
+		}
+
+		return ddList;
+	}
+
 	this.createBorderList = function(toolBar) {
-		var BORDER_FIELD_WIDTH = 120;
-		var ddList = toolBar.appendDropdownList(BORDER_FIELD_WIDTH, "border style", this.onBorderStyle);
+		var BORDER_FIELD_WIDTH = 90;
+		var ddList = toolBar.appendDropdownList(BORDER_FIELD_WIDTH, "border style:", this.onBorderStyle);
 		for(var i = 0; i < BORDER_ARR.length; i++) {
 			var divTmp = document.createElement('div');
 			var divInnerTmp = document.createElement('div');
@@ -200,41 +234,10 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		this.borderPaletteDiv.style.top = top;
 	}
 
-	this.createBorderWidthList = function(toolBar) {
-		var BORDER_FIELD_WIDTH = 80;
-		var ddList = toolBar.appendDropdownList(BORDER_FIELD_WIDTH, "border width", this.onBorderWidth);
-		var innerStr;
-		for(var i = 0; i < BORDER_WIDTH.length; i++) {
-			var divTmp = document.createElement('div');
-			if(i == 0)
-				innerStr = "none";
-			else
-				innerStr = "<div style='width:99% height:0; margin-bottom:5; margin-top:5; border-style:solid; border-width:0; border-bottom-width:"
-				+ BORDER_WIDTH[i] + ";'></div>";
-				//"<hr style='height:" + BORDER_WIDTH[i] + "; background:#000; '>";
-			divTmp.innerHTML = innerStr;
-			divTmp.style.paddingTop = divTmp.style.paddingBottom = 1;
-			ddList.appendItem(divTmp);
-		}
-		
-		// set current item in the list
-		var curBorderWidth = sampleDiv.style.borderWidth.toLowerCase();
-		// FF returns 4 words for each side. Extract 1st only.
-		var firstSpace = curBorderWidth.indexOf(" ");
-		if(firstSpace != -1)
-			curBorderWidth = curBorderWidth.substring(0, firstSpace);
-
-		var curIdx = this.getMemberArrayIdx(BORDER_WIDTH, curBorderWidth);
-		if(curIdx != null)
-			ddList.setSelectedItem(curIdx);
-
-		return ddList;
-	}
-	
 	this.centeringSampleDiv = function() {
 		sampleDiv.style.left = (parentDiv.clientWidth - sampleDiv.clientWidth) / 2;
-		var top = toolBar.height + 
-			(parentDiv.clientHeight - toolBar.height - sampleDiv.clientHeight) / 2;
+		var top = toolBar.getHeight() + 
+			(parentDiv.clientHeight - toolBar.getHeight() - sampleDiv.clientHeight) / 2;
 		sampleDiv.style.top = top;
 	}
 
@@ -342,12 +345,16 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	}
 	
 	this.onFontColor = function() {
+		if(i_am.fontPaletteDiv.style.visibility == "visible")
+			return;
 		i_am.fontPaletteDiv.style.visibility = "visible";
 		toolBar.popupHandler(i_am.fontPaletteDiv, false);
 		
 	}
 	
 	this.onBackgroundColor = function() {
+		if(i_am.backgroundPaletteDiv.style.visibility == "visible")
+			return;
 		i_am.backgroundPaletteDiv.style.visibility = "visible";
 		toolBar.popupHandler(i_am.backgroundPaletteDiv, false);
 	}
@@ -377,6 +384,8 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	}
 
 	this.onBorderColor = function() {
+		if(i_am.borderPaletteDiv.style.visibility == "visible")
+			return;
 		i_am.borderPaletteDiv.style.visibility = "visible";
 		toolBar.popupHandler(i_am.borderPaletteDiv, false);
 	}
@@ -406,7 +415,9 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		i_am.putStyleStrInField();
 	}
 	
+	// UNREMARK !!!!!!!!!!!!!!!!!!
 	this.putStyleStrInField = function() {
+	/*
 		var fieldObj = this.frameObj[this.fieldName];
 		if(fieldObj != null) // IE
 			fieldObj.value = this.getStyleString();
@@ -414,6 +425,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 			formName = this.frameObj.id;
 			document.forms[formName].elements[this.fieldName].value = this.getStyleString() ;
 		}
+		*/
 	}
 	
 	// --------------------------------------------
