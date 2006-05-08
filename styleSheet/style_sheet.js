@@ -415,9 +415,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		i_am.putStyleStrInField();
 	}
 	
-	// UNREMARK !!!!!!!!!!!!!!!!!!
 	this.putStyleStrInField = function() {
-	/*
 		var fieldObj = this.frameObj[this.fieldName];
 		if(fieldObj != null) // IE
 			fieldObj.value = this.getStyleString();
@@ -425,7 +423,6 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 			formName = this.frameObj.id;
 			document.forms[formName].elements[this.fieldName].value = this.getStyleString() ;
 		}
-		*/
 	}
 	
 	// --------------------------------------------
