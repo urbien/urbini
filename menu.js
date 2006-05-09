@@ -1615,7 +1615,7 @@ function popupOnSubmit(e) {
   var bottomFrame = document.getElementById('bottomFrame');
 
   if (button && button.name.toUpperCase() == 'CANCEL') {    // cancel button clicked?
-    if (pane2.contains(form))  {   // inner frame?
+    if (pane2  &&  pane2.contains(form))  {   // inner frame?
       setDivInvisible(pane2, bottomFrame);
       return stopEventPropagation(e);
     }
@@ -1743,7 +1743,7 @@ function popupOnSubmit(e) {
   if (!action)
     form.action = "FormRedirect";
 
-  if (pane2.contains(form))  {   // inner frame?
+  if (pane2  &&  pane2.contains(form))  {   // inner frame?
     setDivInvisible(pane2, bottomFrame);
   }
 
@@ -3463,7 +3463,7 @@ function addAndShow(td, e) {
 var calendarCell; // last cell on which user clicked
 var lastPopupRowAnchor = null;
 
-function addCalendarItem(popupRowAnchor, event) {
+function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   if (lastPopupRowAnchor) {
     alert("Please wait till previous request is processed");
     return stopEventPropagation(event);
@@ -3490,23 +3490,31 @@ function addCalendarItem(popupRowAnchor, event) {
   anchor += popupRow.id;
 
   //--- extract parameters specific for calendar row (e.g. time slot) for a cell on which user clicked
-  anchor += '&' + calendarRow.id;
-
-  //--- extract a contact corresponding to a poped up chooser
-  var contactDiv = getDivNode(popupRow);
-  if (!contactDiv)
-    throw Error("addCalendarItem: contactDiv not found for: " + anchor);
-  if (!contactDiv.id) {
-    while (contactDiv  &&  !contactDiv.id) {
-      var parentNode = contactDiv.parentNode;
-      while (parentNode  &&  (parentNode.tagName.toUpperCase() != 'DIV' || !parentNode.id))
-        parentNode = parentNode.parentNode;
-      if (!parentNode)
-        throw Error("addCalendarItem: contactDiv not found for: " + anchor);
-      contactDiv = parentNode;
-    }
+  // popupRow == calendarRow when click came from the schedule cell because value corresponding to popup value already known.
+  var contactId;
+  if (popupRow == calendarRow) {
+    var pos = contactPropAndIdx.indexOf("=");
+    contactId = contactPropAndIdx.substring(0, pos + 1) + employees[contactPropAndIdx.substring(pos + 1)];
   }
-  anchor += '&' + contactDiv.id;
+  else  {
+    anchor += '&' + calendarRow.id;
+    var contactDiv = getDivNode(popupRow);
+    //--- extract a contact corresponding to a poped up chooser
+    if (!contactDiv)
+      throw Error("addCalendarItem: contactDiv not found for: " + anchor);
+    if (!contactDiv.id) {
+      while (contactDiv  &&  !contactDiv.id) {
+        var parentNode = contactDiv.parentNode;
+        while (parentNode  &&  (parentNode.tagName.toUpperCase() != 'DIV' || !parentNode.id))
+          parentNode = parentNode.parentNode;
+        if (!parentNode)
+          throw Error("addCalendarItem: contactDiv not found for: " + anchor);
+        contactDiv = parentNode;
+      }
+    }
+    contactId = contactDiv.id;
+  }
+  anchor += '&' + contactId;
 
   //--- collect parameters common to all calendar items on the page
   var pageParametersDiv = document.getElementById('pageParameters');
