@@ -308,10 +308,6 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		// 9. border color
 		style += "border-color: " + sampleDiv.style.borderColor + "; ";
 
-		// PADDING
-		style += "padding-left:1%;";
-		style += "padding-right:1%;";
-		
 		return style;
 	}
 
