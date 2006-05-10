@@ -2499,21 +2499,25 @@ function tooltipOnMouseOut(e) {
 }
 
 //************************************* intercept all clicks ***********************************
-function interceptLinkClicks() {
+function interceptLinkClicks(div) {
   //addEvent(document, 'keydown', onKeyDown, false);
   //addEvent(document, 'keyup',   onKeyUp,   false);
+  if (!div)
+    div = document;
 
-  var llen = document.links.length;
+  var anchors = div.getElementsByTagName('A');
+  var llen = anchors.length;
   for (var i=0;i<llen; i++) {
-    var id = document.links[i].id;
+    var anchor = anchors[i];
+    var id = anchor.id;
     if (id.indexOf('menuLink_') == 0) // menu clicks are processed by their own event handler
       continue;
     if (id && id.indexOf("-inner.") == 0) {
       var propName = id.substring(7);
-      addEvent(document.links[i], 'click',  onClickDisplayInner,   false);
+      addEvent(anchor, 'click',  onClickDisplayInner,   false);
     }
     else
-      addEvent(document.links[i], 'click',   onClick,   false);
+      addEvent(anchor, 'click',   onClick,   false);
   }
 }
 
@@ -2954,7 +2958,6 @@ function copyInnerHtml(frameId, divId, hotspotId) {
   var re = eval('/' + frameId + '/g');
   var frameBodyText1 = frameBodyText.replace(re, frameId + '-removed'); // prevent bottomFrame from appearing 2 times in the document
   if (frameBodyText1 != frameBodyText) {
-    alert("bottomFrame removed");
     frameBodyText = frameBodyText1;
   }
   setInnerHtml(div, frameBodyText, frames[frameId]);
@@ -3717,6 +3720,7 @@ function addAndShowWait()	{
   }
   divCopyTo.innerHTML = body.innerHTML;
   resourceListEdit(divCopyTo);
+  interceptLinkClicks(divCopyTo);
 }
 
 function processTransaction(e) {
@@ -3810,6 +3814,8 @@ function setCurrentItem (event, tr) {
     return;
   if (aa.href != tr.id) {
     var elm = document.getElementById(aa.href);
+    if (elm == null)
+      return;
     var cName = elm.className;
     if (cName)
       elm.style.backgroundColor = '';
@@ -4093,6 +4099,11 @@ setIframeVisible = function (iframe, div, hotspot, offsetX, offsetY) {
 }
 
 function doConfirm(msg) {
+  /*
+  if (document.deleteConfirmation == msg)
+    return;
+  document.deleteConfirmation = msg;
+  */
   var c = confirm(msg);
   if (!c)
     return;
