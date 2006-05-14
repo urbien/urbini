@@ -369,6 +369,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (self.div.id != 'pane2')
       self.interceptEvents();
     self.setFocus();
+    initListBoxes(self.div);
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
       self.delayedClose(20000);
