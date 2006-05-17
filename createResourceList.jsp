@@ -10,22 +10,13 @@
       <col width="90%" />
       <col width="10%" />
     </colgroup>
-    <menuBar>
-    <tr valign="top">
-      <td valign="top" width="110%"><span class="xs" colspan="2">
-        <menu toolbar="toolbar2"        activate="onMouseOver"/>
-        <menu toolbar="personalization" activate="onMouseOver"/>
-        <print image="icons/printerIcon.gif"/><saveInExcel allow="owner" image="images/excel.gif"/><pdaToPc image="icons/pda.gif"/></span></td>
-    </tr>
-    </menuBar>
     <tr valign="top"><td width="100%">
     <form action="editList.html" name="siteResourceList" method="POST">
-      <div align="left"><backLink /></div>
       <siteResourceList />
       <div align="right"><measurement/></div>
-      <input type="hidden" name="action" value="createResources" />
-      <input type="hidden" name="create"  value="1"/>
-      <input type="submit" name="submit"/>
+      <input type="hidden" name="-$action" value="createResources" />
+      <input type="hidden" name="-create"  value="1"/>
+      <center><input type="submit" name="submit"/></center>
     </form>
     </td>
     <td width="10%" id="rightPanelPropertySheet" valign="top" align="left">
@@ -72,7 +63,7 @@
     <form action="editList.html" name="siteResourceList" method="POST">
       <div align="left"><backLink /></div>
       <siteResourceList />
-      <input type="hidden" name="action" value="createResources" />
+      <input type="hidden" name="-$action" value="createResources" />
       <div align="right"><measurement/></div>
       <input type="submit" name="submit"/>
       <input type="hidden" name="create" value="1"/>
