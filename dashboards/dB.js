@@ -70,8 +70,8 @@ function my_DragFunc() { // onDrag event
       document.getElementById('main' + aElts[i][j].name).style.zIndex = 0;
       document.getElementById(aElts[i][j].name).style.zIndex = 0;
     }
-  document.getElementById('main' + dd.obj.name).style.zIndex = 10;
-  document.getElementById(dd.obj.name).style.zIndex = 10;
+  document.getElementById('main' + dd.obj.name).style.zIndex = 1;
+  document.getElementById(dd.obj.name).style.zIndex = 1;
   // }
   
   availWindowWidth = document.body.offsetWidth;
