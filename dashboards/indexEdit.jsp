@@ -69,7 +69,7 @@
   <input type="Hidden" name="isClosePanel" id="dashBoardIsClosePanel" value="false" />
 </form>
 
-  <div align="right" style="width:100%">
+  <div  style="float:left; margin-left:20;">
     <font color="#75BDFF">View readonly</font> <a href="javascript:window.location = (window.location+'').replace('Edit.html','.html');" style="align:right"><img src="images/readOnlyMode.gif" border="0" title="View readonly"/></a>
   </div>
   <script type="text/javascript" language="JavaScript">
