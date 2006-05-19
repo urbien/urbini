@@ -26,6 +26,7 @@
     <div id="siteResourceList">
       <font color="red"><b><errorMessage /></b></font>
       <siteResourceList />
+      <br/>
       <createResources/><br/>
     </div>
     <div align="right"><measurement/></div>
