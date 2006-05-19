@@ -26,6 +26,7 @@
     <div id="siteResourceList">
       <font color="red"><b><errorMessage /></b></font>
       <siteResourceList />
+      <createResources/><br/>
     </div>
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
@@ -34,7 +35,6 @@
     <br/>
     <uploadMsProject/>
     <uploadToDelegatedFileSystem/>
-    <createResources/><br/>
 <br/><br/>
 </hideBlock>
       <pieChart/>
