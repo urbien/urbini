@@ -4,7 +4,7 @@
 <watchNote/>
 </hideBlock>
 
-<applet height="0" width="0" code="com.fog.jpos.BarPrinterApplet" codebase="applets" name="BarPrinterApplet"/>
+<barApplet/>
 
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
