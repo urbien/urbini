@@ -19,9 +19,11 @@
       <parallelResourceList />
       <div align="right"><measurement/></div>
     </td>
+<hideBlock>    
     <td valign="top" align="left" bgcolor="eeeeee">
         <menu toolbar="filterParallel" type="onpage" title="false"/>
     </td>
+</hideBlock>    
 </tr></table>
 </td></tr></table>
 </div>
