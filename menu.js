@@ -1615,7 +1615,8 @@ function popupOnSubmit(e) {
   var pane2       = document.getElementById('pane2');
   var bottomFrame = document.getElementById('bottomFrame');
 
-  if (button && button.name.toUpperCase() == 'CANCEL') {    // cancel button clicked?
+  var isCancel = button && button.name.toUpperCase() == 'CANCEL';
+  if (isCancel) {    // cancel button clicked?
     if (pane2  &&  pane2.contains(form))  {   // inner frame?
       setDivInvisible(pane2, bottomFrame);
       return stopEventPropagation(e);
@@ -1707,6 +1708,8 @@ function popupOnSubmit(e) {
   if (form.uri)
     url += "&uri=" + encodeURIComponent(form.uri.value);
 
+  if (isCancel)
+    url += "&cancel=y";
   /* do not allow to submit form while current submit is still being processed */
   var wasSubmitted = form.getAttribute("wasSubmitted");
   if (wasSubmitted) {
