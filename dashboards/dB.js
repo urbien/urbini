@@ -20,6 +20,7 @@ var ar = document.getElementById('panel'+j).getElementsByTagName('div');
 }
 // }
 
+// debugger
 SET_DHTML(s);
 
 // Array intended to reflect the order of the draggable items
@@ -33,6 +34,8 @@ for(j=1;j<=numberOfcolumns;j++) {
       tmpArray[tmpArray.length] = dd.elements[(ar[i].id)];
   }
   aElts[j-1] = tmpArray;
+//    debugger
+
 }
 // }
 
@@ -50,6 +53,9 @@ function my_PickFunc() { // onPick event
   //clearInterval(parent.allignBoardsInterval);
   // Store position of the item about to be dragged
   // so we can interchange positions of items when the drag operation ends
+  if(document.getElementById('main' + dd.obj.name) == null)
+	return;
+	
   posOld = dd.obj.y;
   pNold = Math.round(dd.obj.x / ((availWindowWidth + dd.obj.w/2)/ numberOfcolumns));
   HminOld = dd.obj.y;
@@ -130,6 +136,11 @@ function my_DragFunc() { // onDrag event
 
 function my_DropFunc() {  // onDrop event
 
+  // prevents the drop handling on the close button click.	
+  e = getDocumentEvent(event);
+  if(e != null && e.srcElement.id == "close_board")
+	return;
+
   var panelN = Math.round(dd.obj.x / ((availWindowWidth + dd.obj.w/2)/ numberOfcolumns));
   // panelN is the nuber of the column to which the boards is moved;
   
@@ -170,6 +181,9 @@ function my_DropFunc() {  // onDrop event
 }
 
 function my_DropFuncD(pN, numb) { 
+
+//debugger
+
   // remove the object from the old place if the object is present in other columns 
   // (in the columns except pN)
   remove(aElts,dd.obj,pN);
