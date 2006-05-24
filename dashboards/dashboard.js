@@ -104,11 +104,23 @@
     
     // function that removes board from the page
     function removeBoard(boardId, panelName) {
-      remove(aElts,document.getElementById(boardId),10); // remove from the array of boards on the page
+      // 1. remove from the array of boards on the page
+      remove(aElts,document.getElementById(boardId),10);
       var parentContainer = document.getElementById(boardId).parentNode;
-      parentContainer.removeChild(document.getElementById(boardId)); // remove board as html document object
-      parentContainer.removeChild(document.getElementById('main'+boardId)); // remove board as html document object
-      document.getElementById(panelName+'URIs').value = document.getElementById(panelName+'URIs').value.replace(boardId+';',''); // remove board from the list of boards in the column (in the panel)
+
+	  // 2. remove board as DOM object
+	  // 2.1. remove the title.
+      var boardTitleObj = document.getElementById(boardId);
+	  parentContainer.removeChild(boardTitleObj);
+	
+	  // 2.2 remove the board body	
+      var boarContainerObj = document.getElementById('main'+boardId);
+	  // ' innerHTML = "" ' prevents from IE's crash.
+	  boarContainerObj.innerHTML = "";
+	  parentContainer.removeChild(boarContainerObj);
+	
+    
+	  document.getElementById(panelName+'URIs').value = document.getElementById(panelName+'URIs').value.replace(boardId + ';', ''); // remove board from the list of boards in the column (in the panel)
       makeBoardsAlligned();
 
       document.getElementById("dashBoard").target='dashboardIframe';
@@ -127,22 +139,6 @@
       document.getElementById('isClosePanel').value = 'false';
       document.getElementById("dashBoard").target=window;
     }
-    
-    /*
-    function fadeBoards() {
-      try{  
-        for(i=0;i<numberOfcolumns;i++) 
-          if(aElts[i].length > 0) {
-            for(j=0;j<aElts[i].length;j++) {
-              document.getElementById(aElts[i][j].name+'hide').style.top    = parseInt(document.getElementById(aElts[i][j].name).style.top) + 16;
-              document.getElementById(aElts[i][j].name+'hide').style.left   = document.getElementById(aElts[i][j].name).style.left;
-              document.getElementById(aElts[i][j].name+'hide').style.width  = document.getElementById(aElts[i][j].name).style.width;
-              document.getElementById(aElts[i][j].name+'hide').style.height = parseInt(document.getElementById(aElts[i][j].name).style.height) -16;
-            }
-          }
-      } catch(ex){}
-    }
-    */
     
     function findPosY(obj) {
       var curtop = 0;
@@ -188,3 +184,5 @@
 			      return false;
   			   }
     }
+        
+    
