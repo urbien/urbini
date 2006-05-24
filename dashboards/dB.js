@@ -135,9 +135,8 @@ function my_DragFunc() { // onDrag event
 }
 
 function my_DropFunc() {  // onDrop event
-
   // prevents the drop handling on the close button click.	
-  e = getDocumentEvent(event);
+  e = window.event;
   if(e != null && e.srcElement.id == "close_board")
 	return;
 
