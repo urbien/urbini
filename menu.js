@@ -3103,8 +3103,10 @@ function getTextContent(elm) {
     var t = '';
     for (var i = elm.childNodes.length; i--;) {
       var o = elm.childNodes[i];
-      if (o.nodeType == 1 || o.nodeType == 3) // ELEMENT_NODE or TEXT_NODE
-        t = o.nodeValue + t;
+      if (o.nodeType == 1 || o.nodeType == 3) { // ELEMENT_NODE or TEXT_NODE
+        if (o.nodeValue)
+          t = o.nodeValue + t;
+      }
       else
         t = getTextContent(o) + t;
     }
