@@ -1270,6 +1270,7 @@ var currentImgId = null;
 var currentFormName = null;
 var currentResourceUri = null;
 var innerUrls = new Array();
+var innerListUrls = new Array();
 
 var frameLoaded = new Array();
 
@@ -2516,12 +2517,10 @@ function interceptLinkClicks(div) {
     var id = anchor.id;
     if (id.indexOf('menuLink_') == 0) // menu clicks are processed by their own event handler
       continue;
-    if (id && id.indexOf("-inner.") == 0) {
-      var propName = id.substring(7);
+    if (id && id.indexOf("-inner.") == 0)
       addEvent(anchor, 'click',  onClickDisplayInner,   false);
-    }
     else
-      addEvent(anchor, 'click',   onClick,   false);
+      addEvent(anchor, 'click',  onClick,   false);
   }
 }
 
@@ -2538,7 +2537,11 @@ function onClickDisplayInner (e) {
   }
 
   var propName = anchor.id.substring(7);
-  var r = displayInner(e, innerUrls[propName]);
+  var r;
+  if (propName.indexOf("list.") == 0)
+    r = displayInner(e, innerListUrls[propName.substring(5)]);
+  else
+    r = displayInner(e, innerUrls[propName]);
   return r;
 }
 
@@ -2893,7 +2896,7 @@ function displayInner(e, urlStr) {
     finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
   }
 
-  finalUrl += "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y&-inner=y";
+  finalUrl += "&hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
   stopEventPropagation(e);
 
   bottomFrame.location.replace(finalUrl);
@@ -3757,6 +3760,13 @@ function showDiv(e, td, hideDivId) {
   div.style.display = 'inline';
 }
 
+function hideInnerDiv(e) {
+  var pane2       = document.getElementById('pane2');
+  var bottomFrame = document.getElementById('bottomFrame');
+  setDivInvisible(pane2, bottomFrame);
+  return stopEventPropagation(e);
+}
+
 function openPopup1(divId1, alertName, hotSpot, e) {
   if (e.ctrlKey)  // ctrl-enter
     showAlert(alertName);
@@ -3865,25 +3875,32 @@ function printReceipt(url) {
   }
 }
 
+// show on-screen keyboard on bar page
 var menuGroupDiv;
-function showKeyboard() {
+function showKeyboard(target, event) {
   var kdiv = document.getElementById('keyboard');
   if (!kdiv)
     return;
   var divs = document.getElementsByTagName('div');
   for (var i=0; i<divs.length; i++) {
-//    if (divs[i].id == "div_Vodka")
-//      alert(divs[i].style.display + "; " + divs[i].style.visibility);
-
-    if (divs[i].style.display == 'none')
+    if (divs[i].style.display == 'none') {
+//      divs[i].style.visibility = Popup.HIDDEN;
       continue;
+    }
     if (divs[i].id  &&  divs[i].id.indexOf('div_') == 0) {
       menuGroupDiv = divs[i];
       menuGroupDiv.style.display = 'none';
+//      menuGroupDiv.style.visibility = Popup.HIDDEN;
       break;
     }
   }
   kdiv.style.display = 'inline';
+  var td = getTdNode(target);
+  var anchors = td.getElementsByTagName('a');
+  if (!anchors  ||  !anchors[0]  ||  !anchors[0].href)
+    return;
+//  if (anchors[0].click)
+//    anchors[0].click();
 }
 
 // usage:
