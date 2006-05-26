@@ -120,6 +120,6 @@
 
 
 <!--div align="left"><span class="xs"><hudsonFog /></span></div-->   <!-- link to Portal page for current category -->
-<iframe name="bottomFrame" id="bottomFrame" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0" src="javascript: ;"> </iframe>
+<iframe name="bottomFrame" id="bottomFrame" scrolling="no" frameborder="0" style="overflow:hidden; display:none; width:0;height:0" src="javascript: ;"> </iframe>
 
 </div>
