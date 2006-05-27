@@ -328,4 +328,14 @@ function makeBoardsAttached() {
       }
     }
 }
+
+
+// remove a board from a "list" of dragable DIVs
+function removeDragableObj(objId) {
+	for(var i = 0; i < dd.elements.length; i++)
+		if(dd.elements[i].id == objId)
+			dd.elements.splice(i, 1);
+}
+
+
 // ------- FINISH ---------- BOARDS ALINGMENT ON THE PAGE ----------------------------------------------------

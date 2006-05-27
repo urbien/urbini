@@ -104,13 +104,16 @@
     
     // function that removes board from the page
     function removeBoard(boardId, panelName) {
+	  var boardTitleObj = document.getElementById(boardId);
+      if(boardTitleObj == null)
+			return;
+      
       // 1. remove from the array of boards on the page
-      remove(aElts,document.getElementById(boardId),10);
-      var parentContainer = document.getElementById(boardId).parentNode;
+      remove(aElts, boardTitleObj, 10);
+      var parentContainer = boardTitleObj.parentNode;
 
 	  // 2. remove board as DOM object
 	  // 2.1. remove the title.
-      var boardTitleObj = document.getElementById(boardId);
 	  parentContainer.removeChild(boardTitleObj);
 	
 	  // 2.2 remove the board body	
@@ -118,6 +121,10 @@
 	  // ' innerHTML = "" ' prevents from IE's crash.
 	  boarContainerObj.innerHTML = "";
 	  parentContainer.removeChild(boarContainerObj);
+		
+	 //	3.
+	 // remove a board from a "list" of dragable DIVs
+	 removeDragableObj(boardId);
 	
     
 	  document.getElementById(panelName+'URIs').value = document.getElementById(panelName+'URIs').value.replace(boardId + ';', ''); // remove board from the list of boards in the column (in the panel)
