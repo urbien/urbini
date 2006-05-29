@@ -23,6 +23,14 @@
      * Although IE6- does not support capture - so we always pass false.
      */
     function addEvent(obj, evType, fn, useCapture) {
+      if (obj.getAttribute) {
+	      var handler = obj.getAttribute('handler_' + evType);
+	      if (handler && handler == fn) {
+	        //alert("Error: duplicate " + evType + " event handler " + fn + " for " + obj.tagName + " with id " + obj.id);
+	        return;
+	      }
+	      obj.setAttribute('handler_' + evType, fn);
+	    }
       if (obj.addEventListener) { // NS
        obj.addEventListener(evType, fn, useCapture);
        return true;
@@ -108,20 +116,20 @@
 
     //***** Add smartlistbox handlers
     function addHandlers() {
-      interceptLinkClicks();
       if (window.parent != window) {
         onLoadPopup();
         return;
       }
-      if (typeof replaceAllTooltips != 'undefined')
-        replaceAllTooltips();
+      interceptLinkClicks();
       initListBoxes(null);
-      resourceListEdit();
       uiFocus();
 //      if (typeof searchHighlighting != 'undefined')
 //        searchHighlighting();
+//      if (typeof replaceAllTooltips != 'undefined')
+//        replaceAllTooltips();
     }
 
+    /*
     function resourceListEdit(div) {
       var elements;
       if (div)
@@ -131,17 +139,24 @@
       llen = elements.length;
       for (var i=0;i<llen; i++) {
         var elem = elements[i];
-        if (elem.id) {
-          var elemId  = elem.id;
-          var elemLen = elemId.length;
-          if (elemId.indexOf("_boolean",          elemLen - "_boolean".length) != -1  ||
-              elem.id.indexOf("_boolean_refresh", elemLen - "_boolean_refresh".length) != -1) {
-            addEvent(elem, 'click', changeBoolean, false);
-            elem.style.cursor = 'pointer';
-          }
-        }
+        addBooleanToggle(elem);
       }
+    }
+    */
 
+    function addBooleanToggle(elem) {
+      if (!elem)
+        return;
+      var elemId  = elem.id;
+      if (!elemId)
+	      return;
+
+      var elemLen = elemId.length;
+      if (elemId.indexOf("_boolean",          elemLen - "_boolean".length) != -1  ||
+          elem.id.indexOf("_boolean_refresh", elemLen - "_boolean_refresh".length) != -1) {
+        addEvent(elem, 'click', changeBoolean, false);
+        elem.style.cursor = 'pointer';
+      }
     }
 
     /**
@@ -200,10 +215,6 @@
     }
 
     function initListBoxes(div) {
-      // add handler to smartlistbox images
-      if (typeof listboxOnClick == 'undefined')
-        return;
-
       var images;
       if (div)
         images = div.getElementsByTagName('img');
@@ -211,11 +222,14 @@
         images = document.images;
       for (var i=0; i<images.length; i++) {
         var image = images[i];
-        if (div)
-          image.style.zIndex = div.style.zIndex; // otherwise image has no zIndex and we will need hotspot's zIndex in setDivVisible
-        if (image.id.indexOf("_filter", image.id.length - "_filter".length) == -1)
-          continue;
-        addEvent(image, 'click', listboxOnClick, false);
+        if (image.id.indexOf("_filter", image.id.length - "_filter".length) != -1) {
+          if (typeof listboxOnClick == 'undefined')
+            continue;
+          addEvent(image, 'click', listboxOnClick, false); // add handler to smartlistbox images
+        }
+        else
+          addBooleanToggle(image);
+        replaceTooltip(div, image);
       }
 
       // 1. add handler to autocomplete filter form text fields
@@ -237,6 +251,7 @@
         addEvent(form, 'submit', popupOnSubmit, false);
         for (j=0; j<form.elements.length; j++) {
           var elem = form.elements[j];
+          replaceTooltip(div, elem);
           initialValues[elem.name] = elem.value;
           if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT fields
               elem.id) {                                         // and those that have ID
