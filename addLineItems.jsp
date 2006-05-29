@@ -182,7 +182,6 @@
       </td>
       <td></td>
     </tr>
-    <iframe name="bottomFrame" id="bottomFrame" src="javascript: ;" scrolling="no" frameborder="0" style="overflow:visible; width:0;height:0"> </iframe>
     <iframe id="resourceList" name="resourceList" style="display:none;" scrolling="no" frameborder="0" src="about:blank"> </iframe>
     </table>
     <div align="right"><measurement/></div>

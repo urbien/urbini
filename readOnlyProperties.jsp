@@ -40,6 +40,5 @@
 </tr></table>
 
 </center>
-<iframe name="bottomFrame" id="bottomFrame" src="javascript: ;" scrolling="no" frameborder="0" style="position:absolute; visibility:hidden; display:none; top:0px; left:0px; width:0;height:0"> </iframe>
 <PointOfSale/>
 </div>
