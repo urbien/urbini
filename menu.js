@@ -175,49 +175,37 @@ Popup.close0 = function (divId) {
 }
 
 /**
- *  Loads the popup into the div from the iframe
+ *  Loads the ajax popup into the div
  */
-Popup.load = function (divId, frameId) {
+Popup.load = function (div, hotspot, content) {
   var frameId     = 'popupFrame';
   var frameBodyId = 'popupFrameBody';
 
-  if (!frameLoaded[frameId]) {
-    setTimeout("Popup.load('" + divId + "')", 50);
-    return;
-  }
-  frameLoaded[frameId] = false;
+  //content exists if we used ajax via httpRequest, otherwise we need not extract content from iframe
+  if (!content) {
+    if (!frameLoaded[frameId]) {
+      setTimeout(function () {Popup.load(div, hotspot)}, 50);
+      return;
+    }
+    frameLoaded[frameId] = false;
 
-  // now it is loaded
-  var popupFrame = frames[frameId];
-  var body = popupFrame.document.getElementById(frameBodyId);
-  if (!body) {
-    alert("Warning: server did not return listbox data - check connection to server");
-    return;
+    // now it is loaded
+    var popupFrame = frames[frameId];
+    var body = popupFrame.document.getElementById(frameBodyId);
+    if (!body) {
+      alert("Warning: server did not return listbox data - check connection to server");
+      return;
+    }
+    var redirect = popupFrame.document.getElementById('$redirect'); // redirect to login page
+    if (redirect) {
+      document.location.href = redirect.href;
+      return;
+    }
+    content = body.innerHTML;
   }
-  var redirect = popupFrame.document.getElementById('$redirect');
-  if (redirect) {
-    document.location.href = redirect.href;
-    return;
-  }
-///
-  var idx = propName.indexOf(".", 1);
-  var shortPropName = propName;
-  if (idx != -1)
-    shortPropName = propName.substring(0, idx);
-///
-  var popup = Popup.getPopup(divId);
-  popup.setInnerHtml(body.innerHTML);
 
-  // filter calendar
-/*
-  if (popupFrame.CAL_INIT_From)
-    new calendar(popupFrame.CAL_INIT_From, CAL_TPL1, shortPropName + '_From');
-  if (popupFrame.CAL_INIT_To)
-    new calendar(popupFrame.CAL_INIT_To, CAL_TPL1, shortPropName + '_To');
-  // data entry calendar
-  if (popupFrame.CAL_INIT)
-    new calendar(popupFrame.CAL_INIT, CAL_TPL1, shortPropName);
-*/
+  var popup = Popup.getPopup(div.id);
+  popup.setInnerHtml(content);
   var div = popup.div;
 
   var tables = div.getElementsByTagName('table');
@@ -225,7 +213,13 @@ Popup.load = function (divId, frameId) {
     alert("Warning: server did not return listbox data - check connection to server");
     return;
   }
-  replaceTooltips(div);
+
+  ///
+  var idx = propName.indexOf(".", 1);
+  var shortPropName = propName;
+  if (idx != -1)
+    shortPropName = propName.substring(0, idx);
+  ///
 
   var addToTableName = "";
   if (originalProp.indexOf("_class") != -1) {
@@ -279,7 +273,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.items          = new Array(); // items of this popup (i.e. menu rows)
   this.currentRow     = null;       // currently selected row in this popup
   this.delayedCloseIssued = false;
-
+  this.initialized    = false;      // it is not yet initialized - event handlers not added
   var self = this;
 
   // add to the list of popups
@@ -366,10 +360,15 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.deselectRow();
 
     self.setCurrentDiv();
-    if (self.div.id != 'pane2')
-      self.interceptEvents();
     self.setFocus();
-    initListBoxes(self.div);
+    if (!self.initialized) {
+      self.interceptEvents();
+      initListBoxes(self.div);
+      //if (!self.isTooltip())
+      var anchors = self.div.getElementsByTagName('a');
+      replaceTooltips(self.div, anchors);
+      self.initilized = true;
+    }
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
       self.delayedClose(20000);
@@ -399,12 +398,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       Popup.openTimeoutId = null;
     }
 
-    Popup.openTimeoutId = setTimeout(
-        "Popup.openAfterDelay('" +
-        self.div.id  + "', " +
-        offsetX      + ", " +
-        offsetY      + ")"
-        , delay);
+    Popup.openTimeoutId = setTimeout(function () {Popup.openAfterDelay(self.div.id, offsetX, offsetY, delay)});
     Popup.delayedPopup = self;
   }
 
@@ -444,10 +438,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.delayedClose = function (timeout) {
     var div   = self.div;
     var divId = div.id;
-    if (!timeout)
+    if (timeout == null)
       timeout = 600;
     self.delayedCloseIssued = true;
-    self.closeTimeoutId = setTimeout("Popup.delayedClose1('" + divId + "')", timeout);
+    self.closeTimeoutId = setTimeout(function() {Popup.delayedClose1(divId)}, timeout);
   }
 
   /**
@@ -490,7 +484,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     var elem = firstRow;
     var n = self.rowCount();
-    for (var i=0; i<n; i++) {
+    var cur = null;
+    for (var i=0; i<n; i++, elem = self.nextRow()) {
+      if (cur == elem)
+        continue;
       var popupItem = new PopupItem(elem, i);
       self.items[popupItem.id];
       addEvent(elem, 'click',     self.popupRowOnClick,     false);
@@ -508,7 +505,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
       addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
-      elem = self.nextRow();
+      cur = elem;
     }
   }
 
@@ -579,6 +576,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var isProcessed = e.getAttribute('eventProcessed');
       if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
         return stopEventPropagation(e);
+      e.setAttribute('eventProcessed', 'true');
     }
 
     var currentDiv = self.getCurrentDiv();
@@ -1124,29 +1122,55 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.nextRow = function () {
+    var cur = self.currentRow;
     if (self.currentRow == null) {
       self.currentRow = self.firstRow();
-      //self.selectRow();
+      //if (cur == self.currentRow)
+      //  a = 1;
       return self.currentRow;
     }
 
     var next = self.currentRow.nextSibling;
 
     if (next == null) {
-      //self.deselectRow();
       self.currentRow = self.firstRow();
-      //self.selectRow();
+      //if (cur == self.currentRow)
+      //  a = 1;
       return self.currentRow;
     }
-    if (next.tagName && next.tagName.toUpperCase() == 'TR' && next.id != 'divider' && next.id.indexOf("_$calendar") == -1) {
-      //self.deselectRow();
+
+    //  The following is needed to work around FireFox and other Netscape-based
+    //  browsers.  They will return a #text node for nextSibling instead of a TR.
+    //  However, the next TR sibling is the one we're after.
+    var exitIfBusted = 0;
+    var nextTr = next;
+    while (nextTr.nodeName && nextTr.nodeName.toUpperCase() != 'TR') {
+      nextTr = nextTr.nextSibling;
+      if (nextTr == null) {
+        self.currentRow = self.firstRow();
+        //if (cur == nextTr)
+        //  a = 1;
+        return self.currentRow;
+      }
+      exitIfBusted++;
+      if (exitIfBusted > 10) {
+        alert('could not locate next row for ' + self.currentRow.id);
+        return null;
+      }
+    }
+    next = nextTr;
+    if (next.id.indexOf('divider') == -1 && next.id.indexOf("_$calendar") == -1) {
       self.currentRow = next;
-      //self.selectRow();
+      //if (cur == next)
+      //  a = 1;
       return next;
     }
     else {
       self.currentRow = next;
-      return self.nextRow();
+      next = self.nextRow();
+      //if (cur == next)
+      //  a = 1;
+      return next;
     }
   }
 
@@ -1167,7 +1191,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return self.currentRow;
     }
 
-    if (prev.tagName && prev.tagName.toUpperCase() == 'TR' && prev.id != 'divider' && prev.id.indexOf("_$calendar") == -1) {
+    if (prev.tagName && prev.tagName.toUpperCase() == 'TR' && prev.id.indexOf('divider') == -1 && prev.id.indexOf("_$calendar") == -1) {
       //self.deselectRow();
       self.currentRow = prev;
       //self.selectRow();
@@ -1452,9 +1476,11 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
     if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
       baseUri += "/";
   }
-  var url = baseUri + "smartPopup?prop=" + encodeURIComponent(propName);
+  var url = baseUri + "smartPopup";
+
+  var params = "prop=" + encodeURIComponent(propName);
   if (currentFormName.indexOf("siteResourceList") == 0) {
-    url += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.elements['type'].value;
+    params += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.elements['type'].value;
   }
   else {
 //    if (formAction != "showPropertiesForEdit" && formAction != "mkResource") {
@@ -1484,9 +1510,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
       }
 //      else if (currentFormName.indexOf("horizontalFilter") == 0)
 //        allFields = true;
-      var params = getFormFilters(form, allFields);
-      if (params)
-        url = url + params;
+      params += getFormFilters(form, allFields);
     /*
     }
     else {
@@ -1504,24 +1528,20 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
     }
     */
   }
-  url += "&$form=" + currentFormName;
-  url += "&" + propName + "_filter=y";
+  params += "&$form=" + currentFormName;
+  params += "&" + propName + "_filter=y";
   if (!enterFlag)
-    url += "&$selectOnly=y";
-  if (enteredText  &&  url.indexOf("&" + propName + "=" + encodeURIComponent(enteredText)) == -1)
-    url += "&" + propName + "=" + encodeURIComponent(enteredText);
+    params += "&$selectOnly=y";
+  if (enteredText  &&  params.indexOf("&" + propName + "=" + encodeURIComponent(enteredText)) == -1)
+    params += "&" + propName + "=" + encodeURIComponent(enteredText);
   if (isInterface) {
     var classValue = form.elements[propName + "_class"].value;
     if (classValue != null && classValue.length != 0)
-      url += "&" + propName + "_class=" + classValue;
+      params += "&" + propName + "_class=" + classValue;
   }
 
-  // request listbox context from the server and load it into a 'popupFrame' iframe
-  frameLoaded["popupFrame"] = false;
-  var listboxFrame = frames["popupFrame"];
-  listboxFrame.location.replace(url); // load data from server into iframe
-  timeoutCount = 0;
-  setTimeout("Popup.load('" + divId + "')", 50);
+  // request listbox context from the server via ajax
+  postRequest(url, params, div, hotspot, Popup.load);
 }
 
 function getFormFiltersForInterface(form, propName) {
@@ -1607,19 +1627,27 @@ function fakeOnSubmit() {
  * Receives control on form submit events
  */
 function popupOnSubmit(e) {
-  try{if(rteUpdated == 'false'){updateRTEs(); rteUpdated = 'true';}}catch(ex){}
   e = getDocumentEvent(e); if (!e) return;
+  // prevent duplicate events (happens only in IE)
+  if (e.getAttribute) {
+    var isProcessed = e.getAttribute('eventProcessed');
+    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+      return stopEventPropagation(e);
+    e.setAttribute('eventProcessed', 'true');
+  }
+  try{if(rteUpdated == 'false'){updateRTEs(); rteUpdated = 'true';}}catch(ex){}
+
   var target = getTargetElement(e);
   var form = target;
   var buttonName = form.getAttribute("buttonClicked");
   var button = form.elements[buttonName];
-  var pane2       = document.getElementById('pane2');
-  var bottomFrame = document.getElementById('bottomFrame');
+  var pane2        = document.getElementById('pane2');
+  var dialogIframe = document.getElementById('dialogIframe');
 
   var isCancel = button && button.name.toUpperCase() == 'CANCEL';
   if (isCancel) {    // cancel button clicked?
     if (pane2  &&  pane2.contains(form))  {   // inner frame?
-      setDivInvisible(pane2, bottomFrame);
+      setDivInvisible(pane2, dialogIframe);
       return stopEventPropagation(e);
     }
   }
@@ -1748,8 +1776,8 @@ function popupOnSubmit(e) {
   if (!action)
     form.action = "FormRedirect";
 
-  if (pane2  &&  pane2.contains(form))  {   // inner frame?
-    setDivInvisible(pane2, bottomFrame);
+  if (pane2  &&  pane2.contains(form))  {   // dialog?
+    setDivInvisible(pane2, dialogIframe);
   }
 
   return true; // tell browser to go ahead and continue processing this submit request
@@ -1809,7 +1837,6 @@ function autoComplete1(e, target) {
   if (!hotspot) // no image - this is not a listbox and thus needs no autocomplete
     return true;
   keyPressedElement   = target;
-  keyPressedElement.style.backgroundColor='#ffffff';
   var currentPopup = Popup.getPopup(divId);
 /*
   !!!!!!!!!!!!! this below did not work to clear the previous popup
@@ -1879,9 +1906,10 @@ function autoComplete1(e, target) {
     currentPopup.close();
 
   // for numeric value - do not perform autocomplete (except arrow down, ESC, etc.)
-  if (target.valueType && target.valueType.toUpperCase() == 'NUMERIC')
+  if (target.valueType && target.valueType.toUpperCase() == 'NUMERIC') {
     return true;
-
+  }
+  keyPressedElement.style.backgroundColor='#ffffff';
   if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
   if (selectItems) {
     var len = selectItems.length;
@@ -2384,50 +2412,53 @@ function menuOnClick(e) {
 
 
 /*********************************** Tooltips ************************************/
-function replaceTooltips0(elements) {
-  var llen;
-  llen = elements.length;
-  for (var i=0;i<llen; i++) {
+function replaceTooltips(div, elements) {
+  if (!elements)
+    return;
+  var llen = elements.length;
+  for (var i=0; i<llen; i++) {
     var elem = elements[i];
-    if (elem.attributes['title']) {
-      if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
-        addEvent(elem, 'mouseenter',  tooltipOnMouseOver,   false);
-        addEvent(elem, 'mouseleave',  tooltipOnMouseOut,    false);
-      }
-      else {
-        addEvent(elem, 'mouseover',   tooltipOnMouseOver,   false);
-        addEvent(elem, 'mouseout',    tooltipOnMouseOut,    false);
-      }
-    }
+    replaceTooltip(div, elem);
   }
 }
 
+function replaceTooltip(div, elem) {
+  if (elem == null)
+    return;
+  if (div) {
+    if (div.style != null)
+      elem.style.zIndex = div.style.zIndex; // inherit zIndex - otherwise hotspot has no zIndex which we need to inherit further in setDivVisible
+  }
+  if (elem.getAttribute('title')) {
+    if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
+      addEvent(elem, 'mouseenter',  tooltipOnMouseOver,   false);
+      addEvent(elem, 'mouseleave',  tooltipOnMouseOut,    false);
+    }
+    else {
+      addEvent(elem, 'mouseover',   tooltipOnMouseOver,   false);
+      addEvent(elem, 'mouseout',    tooltipOnMouseOut,    false);
+    }
+  }
+}
+/*
 function replaceAllTooltips() {
   var llen;
   var elements;
   elements = document.getElementsByTagName('img');
-  replaceTooltips0(elements);
+  replaceTooltips0(null, elements);
   elements = document.getElementsByTagName('span');
-  replaceTooltips0(elements);
+  replaceTooltips0(null, elements);
   elements = document.getElementsByTagName('a');
-  replaceTooltips0(elements);
+  replaceTooltips0(null, elements);
   elements = document.getElementsByTagName('input');
-  replaceTooltips0(elements);
+  replaceTooltips0(null, elements);
   elements = document.getElementsByTagName('tt');
-  replaceTooltips0(elements);
+  replaceTooltips0(null, elements);
 }
-
-function replaceTooltips(divRef) {
-  if (!divRef)
-    return;
-  var elements;
-  elements = divRef.getElementsByTagName('img');
-  replaceTooltips0(elements);
-}
-
+*/
 function tooltipOnMouseOver0(target) {
   if (!Popup.allowTooltip(target)) {
-    return true; // ignore this tooltip and return true allow mouseover processing to continue
+    return true; // ignore this tooltip and return true to allow mouseover processing to continue
   }
   var tooltip = target.getAttribute('tooltip'); // using getAttrbute() - as workaround for IE5.5 custom attibutes bug
   var tooltipText;
@@ -2480,6 +2511,13 @@ function tooltipOnMouseOver0(target) {
 }
 
 function tooltipOnMouseOver(e) {
+  e = getDocumentEvent(e); if (!e) return;
+  if (e.getAttribute) {
+    var isProcessed = e.getAttribute('eventProcessed');
+    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+      return stopEventPropagation(e);
+    e.setAttribute('eventProcessed', 'true');
+  }
   var target = getTargetElement(e);
   if (!tooltipOnMouseOver0(target))
     return stopEventPropagation(e);
@@ -2488,6 +2526,13 @@ function tooltipOnMouseOver(e) {
 }
 
 function tooltipOnMouseOut(e) {
+  e = getDocumentEvent(e); if (!e) return;
+  if (e.getAttribute) {
+    var isProcessed = e.getAttribute('eventProcessed');
+    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+      return stopEventPropagation(e);
+    e.setAttribute('eventProcessed', 'true');
+  }
   var target = getMouseOutTarget(e);
   if (!target)
     return true;
@@ -2510,7 +2555,11 @@ function interceptLinkClicks(div) {
   if (!div)
     div = document;
 
-  var anchors = div.getElementsByTagName('A');
+  var anchors;
+  if (div)
+    anchors = div.getElementsByTagName('A');
+  else
+    anchors = document.getElementsByTagName('A');
   var llen = anchors.length;
   for (var i=0;i<llen; i++) {
     var anchor = anchors[i];
@@ -2521,6 +2570,7 @@ function interceptLinkClicks(div) {
       addEvent(anchor, 'click',  onClickDisplayInner,   false);
     else
       addEvent(anchor, 'click',  onClick,   false);
+    replaceTooltip(div, anchor);
   }
 }
 
@@ -2554,8 +2604,8 @@ function onClick(e) {
   var p;
 
   var target = getTargetElement(e);
-  var url = getTargetAnchor(e);
-  if (!url)
+  var link = getTargetAnchor(e);
+  if (!link)
     return;
 
   if     (e.ctrlKey) {
@@ -2564,6 +2614,7 @@ function onClick(e) {
   else if(e.shiftKey) {
     p = '_shiftKey=y';
   }
+/*
   else if(e.altKey) {
     p = '_altKey=y';
     var frameId = 'bottomFrame';
@@ -2571,30 +2622,30 @@ function onClick(e) {
     // show content in a second pane
     //
     if (bottomFrame) {
-      removeModifier(url, '_shiftKey=y');
-      removeModifier(url, '_ctrlKey=y');
-      removeModifier(url, '_altKey=y');
-      return displayInner(e, url.href);
+      removeModifier(link, '_shiftKey=y');
+      removeModifier(link, '_ctrlKey=y');
+      removeModifier(link, '_altKey=y');
+      return displayInner(e, link.href);
     }
   }
-
+*/
   if (!p)
     return true;
 
-  if (!url) {
-    alert("onClick(): can't process control key modifier since event currentTarget is null: " + url);
+  if (!link) {
+    alert("onClick(): can't process control key modifier since event currentTarget is null: " + link);
     return;
   }
-  else if(!url.href || url.href == null) {
-    alert("onClick(): can't process control key modifier since event currentTarget.href is null: " + url.href);
+  else if(!link.href || link.href == null) {
+    alert("onClick(): can't process control key modifier since event currentTarget.href is null: " + link.href);
     return;
   }
-  removeModifier(url, '_shiftKey=y');
-  removeModifier(url, '_ctrlKey=y');
-  removeModifier(url, '_altKey=y');
-  addUrlParam(url, p, null);
+  removeModifier(link, '_shiftKey=y');
+  removeModifier(link, '_ctrlKey=y');
+  removeModifier(link, '_altKey=y');
+  addUrlParam(link, p, null);
 
-  document.location.href = url.href;
+  document.location.href = link.href;
   return stopEventPropagation(e);
 }
 
@@ -2615,28 +2666,22 @@ function addUrlParam(url, param, target) {
   }
 }
 
-// cross-browser - getCurrentTarget
+// get link on which user clicked (it could be a A in TD or it could be A around IMG)
 function getTargetAnchor(e) {
-  e = getDocumentEvent(e); if (!e) return;
-  var elem;
-  if (e.target) {
-    if (e.currentTarget && (e.currentTarget != e.target))
-      elem = e.currentTarget;
-    else
-      elem = e.target;
-  }
-  else {
-    elem = e.srcElement;
-    elem = getANode(elem);
+  var target = getTargetElement(e);
+  if (target.tagName.toUpperCase() == 'A')
+    return target;
+  var anchors = target.getElementsByTagName('a');
+  if (anchors && anchors[0])
+    return anchors[0];
 
-  }
-  return elem;
+  return getANode(target);
 }
 
 function getANode(elem) {
   var e;
 
-  if (elem.tagName.toUpperCase() == 'A') {
+  if (elem.tagName && elem.tagName.toUpperCase() == 'A') {
     if (elem.href)
       return elem;
     else
@@ -2871,16 +2916,7 @@ function addPageTitleToUrl(e) {
 function displayInner(e, urlStr) {
   e = getDocumentEvent(e); if (!e) return;
   var target = getTargetElement(e); if (!target) return;
-  var anchor = target;
-  if (target.tagName.toUpperCase() != 'A')
-    anchor = getTargetAnchor(e);
-
-  var frameId = 'bottomFrame';
-  var bottomFrame = frames[frameId];
-  // show content in a second pane
-  //
-  if (!bottomFrame)
-    return null;
+  var anchor = getTargetAnchor(e);
 
   var finalUrl;
   if (urlStr)
@@ -2896,105 +2932,91 @@ function displayInner(e, urlStr) {
     finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
   }
 
-  finalUrl += "&hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
+  finalUrl += "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y&-inner=y";
   stopEventPropagation(e);
 
-  bottomFrame.location.replace(finalUrl);
-  var hotspotId = target.id ? target.id : anchor ? anchor.id : null;
-  var timeOutFunction = "copyInnerHtml('" + frameId  + "', '" + 'pane2' + "', '" + hotspotId + "')";
-  setTimeout(timeOutFunction, 50);
+  var hotspot = target ? target : anchor;
+  var url    = finalUrl;
+  var params = null;
+//  if (finalUrl.length > 2000) {
+    var idx = finalUrl.indexOf('?');
+    url    = finalUrl.substring(0, idx);
+    params = finalUrl.substring(idx + 1);
+//  }
+  var div = document.getElementById('pane2');
+  postRequest(url, params, div, hotspot, showDialog);
+  //bottomFrame.location.replace(finalUrl);
+  //var timeOutFunction = function () { showDialog(div, hotspot); };
+  //setTimeout(timeOutFunction, 50);
 
   return false;
 }
 
 /**
- *  copies doc loaded to iframe into a div
+ *  copies html loaded via ajax into a div
  */
-function copyInnerHtml(frameId, divId, hotspotId) {
-  if (!frameId)
-    frameId = 'bottomFrame';
-  if (!divId)
-    divId = 'pane2';
-  if (!frameLoaded[frameId]) {
-    setTimeout( "copyInnerHtml('" + frameId  + "', '" + divId + "', '" + hotspotId + "')", 50);
-    return;
-  }
-  frameLoaded[frameId] = false;
-  var hotspot = document.getElementById(hotspotId);
-  var iframe = document.getElementById(frameId);
+function showDialog(div, hotspot, content) {
+  var frameId = 'popupFrame';
 
-  //-------------------------------------------------
-  var div = document.getElementById(divId);
-  var frameBody = frames[frameId].document.body;
-  var frameDoc  = frames[frameId].document;
-  var frameBody = frameDoc.body;
-  var d = frameDoc.getElementById("corePageContent");
-  if (d)
-    frameBody = d;
-  // if there is div RteIframe with iframe in it than innerHTML of this div must be set to ""
-  // because the copying of the iframe from the hidden iframe to the parent page causes problems with
-  // FireFox back button - it becomes necessary to click 3 and more times to go to the previous page
-  if(frames[frameId].document.getElementById('RteIframe'))
-    frames[frameId].document.getElementById('RteIframe').innerHTML = "";
-  if(frames[frameId].document.getElementById('footerRteIframeDivNotes'))
-    frames[frameId].document.getElementById('footerRteIframeDivNotes').innerHTML = "";
+  if (!content) {
+    if (!frameLoaded[frameId]) {
+      var timeOutFunction = function () { showDialog(div, hotspot) };
+      setTimeout(timeOutFunction, 50);
+      return;
+    }
+    frameLoaded[frameId] = false;
 
-  // the size of the floating iframes must be set to 0. Size and position (window offsetLeft and offsetTop) will be set on textarea's onclick
-  var rteNotes = document.getElementById('notes');
-  if (rteNotes) {
-    rteNotes.style.width = 0;
-    rteNotes.style.height = 0;
-    rteNotes.style.left = 0;
-    rteNotes.style.top = 0;
-    rteNotes.style.display = 'none';
-  }
-  // the size of the floating iframes must be set to 0. Size and position (window offsetLeft and offsetTop) will be set on textarea's onclick
-  // this happens if this is description RTE and this RTE is in the pane2 div (the same - it is on the readOnlyProperties.html page)
-  var rteDescription = document.getElementById('description');
-  if(rteDescription && parent.window.location.toString().indexOf('readOnlyProperties.html')>0) {
-    rteDescription.style.width = 0;
-    rteDescription.style.height = 0;
-    rteDescription.style.left = 0;
-    rteDescription.style.top = 0;
-    rteDescription.style.display = 'none';
+    //-------------------------------------------------
+    var frameBody = frames[frameId].document.body;
+    var frameDoc  = frames[frameId].document;
+    var frameBody = frameDoc.body;
+    var d = frameDoc.getElementById("corePageContent");
+    if (d)
+      frameBody = d;
+    // if there is div RteIframe with iframe in it than innerHTML of this div must be set to ""
+    // because the copying of the iframe from the hidden iframe to the parent page causes problems with
+    // FireFox back button - it becomes necessary to click 3 and more times to go to the previous page
+    if(frames[frameId].document.getElementById('RteIframe'))
+      frames[frameId].document.getElementById('RteIframe').innerHTML = "";
+    if(frames[frameId].document.getElementById('footerRteIframeDivNotes'))
+      frames[frameId].document.getElementById('footerRteIframeDivNotes').innerHTML = "";
+
+    // the size of the floating iframes must be set to 0. Size and position (window offsetLeft and offsetTop) will be set on textarea's onclick
+    var rteNotes = document.getElementById('notes');
+    if (rteNotes) {
+      rteNotes.style.width = 0;
+      rteNotes.style.height = 0;
+      rteNotes.style.left = 0;
+      rteNotes.style.top = 0;
+      rteNotes.style.display = 'none';
+    }
+    // the size of the floating iframes must be set to 0. Size and position (window offsetLeft and offsetTop) will be set on textarea's onclick
+    // this happens if this is description RTE and this RTE is in the pane2 div (the same - it is on the readOnlyProperties.html page)
+    var rteDescription = document.getElementById('description');
+    if(rteDescription && parent.window.location.toString().indexOf('readOnlyProperties.html')>0) {
+      rteDescription.style.width = 0;
+      rteDescription.style.height = 0;
+      rteDescription.style.left = 0;
+      rteDescription.style.top = 0;
+      rteDescription.style.display = 'none';
+    }
+    content = frameBody.innerHTML;
   }
 
-  var frameBodyText = frameBody.innerHTML;
-  var re = eval('/' + divId + '/g');
-  frameBodyText = frameBodyText.replace(re, divId + '-removed'); // prevent pane2 from appearing 2 times in the document
+  var re = eval('/' + div.id + '/g');
+  content = content.replace(re, div.id + '-removed');  // prevent pane2        from appearing 2 times in the document
   var re = eval('/' + frameId + '/g');
-  var frameBodyText1 = frameBodyText.replace(re, frameId + '-removed'); // prevent bottomFrame from appearing 2 times in the document
-  if (frameBodyText1 != frameBodyText) {
-    frameBodyText = frameBodyText1;
-  }
-  setInnerHtml(div, frameBodyText, frames[frameId]);
+  content = content.replace(re, frameId + '-removed'); // prevent dialogIframe from appearing 2 times in the document
+
+  setInnerHtml(div, content);
+  var iframe = document.getElementById('dialogIframe');
   setDivVisible(div, iframe, hotspot, 16, 16);
   initListBoxes(div);
   uiFocus(div);
+  var anchors = div.getElementsByTagName('A');
+  replaceTooltips(div, anchors);
 }
 
-/**
- *  shows doc loaded into iframe
- * Problem with this approach - in javascript functions document. points to main document, not ifrane
- */
-function copyInnerHtml_iframe_only(frameId, divId, hotspotId) {
-  if (!frameId)
-    frameId = 'bottomFrame';
-  if (!divId)
-    divId = 'pane2';
-  if (!frameLoaded[frameId]) {
-    setTimeout( "copyInnerHtml('" + frameId  + "', '" + divId + "', '" + hotspotId + "')", 50);
-    return;
-  }
-  frameLoaded[frameId] = false;
-  var hotspotRef = document.getElementById(hotspotId);
-  var bottomFrameRef = document.getElementById(frameId);
-  var frameDoc  = frames[frameId].document;
-  var d = frameDoc.getElementById("corePageContent");
-  setIframeVisible(bottomFrameRef, d, hotspotRef, 16, 16);
-  initListBoxes(d);
-  return;
-}
 
 function stopEventPropagation(e) {
   try {
@@ -3009,7 +3031,7 @@ function stopEventPropagation(e) {
   return false;
 }
 
-function setInnerHtml(div, text, frame) {
+function setInnerHtml(div, text) {
   if (Popup.ns4) {
     div.document.open();
     div.document.write(text);
@@ -3029,8 +3051,6 @@ function setInnerHtml(div, text, frame) {
     div.style.height = null;
     // insert html fragment
     div.innerHTML = text;
-    replaceTooltips(div);
-    //window.parent.focus();
   }
 }
 
@@ -3728,7 +3748,11 @@ function addAndShowWait()	{
     return;
   }
   divCopyTo.innerHTML = body.innerHTML;
-  resourceListEdit(divCopyTo);
+  //resourceListEdit(divCopyTo);
+  var images = div.getElementsByTagName('img');
+  for (var i=0; i<images.length; i++) {
+    addBooleanToggle(images[i]);
+  }
   interceptLinkClicks(divCopyTo);
 }
 
@@ -3761,9 +3785,9 @@ function showDiv(e, td, hideDivId) {
 }
 
 function hideInnerDiv(e) {
-  var pane2       = document.getElementById('pane2');
-  var bottomFrame = document.getElementById('bottomFrame');
-  setDivInvisible(pane2, bottomFrame);
+  var pane2        = document.getElementById('pane2');
+  var dialogIframe = document.getElementById('dialogIframe');
+  setDivInvisible(pane2, dialogIframe);
   return stopEventPropagation(e);
 }
 
@@ -3875,32 +3899,25 @@ function printReceipt(url) {
   }
 }
 
-// show on-screen keyboard on bar page
 var menuGroupDiv;
-function showKeyboard(target, event) {
+function showKeyboard() {
   var kdiv = document.getElementById('keyboard');
   if (!kdiv)
     return;
   var divs = document.getElementsByTagName('div');
   for (var i=0; i<divs.length; i++) {
-    if (divs[i].style.display == 'none') {
-//      divs[i].style.visibility = Popup.HIDDEN;
+//    if (divs[i].id == "div_Vodka")
+//      alert(divs[i].style.display + "; " + divs[i].style.visibility);
+
+    if (divs[i].style.display == 'none')
       continue;
-    }
     if (divs[i].id  &&  divs[i].id.indexOf('div_') == 0) {
       menuGroupDiv = divs[i];
       menuGroupDiv.style.display = 'none';
-//      menuGroupDiv.style.visibility = Popup.HIDDEN;
       break;
     }
   }
   kdiv.style.display = 'inline';
-  var td = getTdNode(target);
-  var anchors = td.getElementsByTagName('a');
-  if (!anchors  ||  !anchors[0]  ||  !anchors[0].href)
-    return;
-//  if (anchors[0].click)
-//    anchors[0].click();
 }
 
 // usage:
@@ -4003,7 +4020,7 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
 
   // move box to the left of the hotspot if the distance to window border isn't enough to accomodate the whole div box
   if (distanceToRightEdge < divCoords.width + margin) {
-    left = (screenX -  scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
+    left = (screenX + scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
     //alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " + scrollX);
     if (left - margin > 0)
       left -= margin; // adjust for a scrollbar;
@@ -4016,7 +4033,11 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   // adjust position of the div box vertically - using the same approach as above
   if (distanceToBottomEdge < divCoords.height + margin) {
     top = (screenY + scrollY) - divCoords.height;
-    if (top - margin > 0)
+//  alert("distanceToBottomEdge = " + distanceToBottomEdge + ", divCoords.height = " + divCoords.height + ", screenY = " + screenY + ", scrollY = " + scrollY);
+    if (top < scrollY) {
+      top = scrollY;
+    }
+    if ((top - scrollY)- margin > 0)
       top -= margin; // adjust for a scrollbar;
   }
   else { // apply user requested offset only if no adjustment
@@ -4032,7 +4053,12 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   istyle.width     = divCoords.width  + 'px';
   istyle.height    = divCoords.height + 'px';
 
-  var zIndex = hotspot ? hotspot.style.zIndex : 1; // this relative zIndex allows stacking popups on top of each other
+  var zIndex = 1;
+  if (hotspot) {
+    var z = hotspot.style.zIndex; // this relative zIndex allows stacking popups on top of each other
+    if (z != null && z != '')
+      zIndex = z;
+  }
   div.style.zIndex = zIndex + 2;
   istyle.zIndex    = zIndex + 1;
 
@@ -4057,68 +4083,6 @@ function setDivInvisible(div, iframe) {
     div.style.display    = "none";
   if (iframe && iframe.style)
     iframe.style.display = "none";
-}
-
-/**
- * Show iframe
- */
-setIframeVisible = function (iframe, div, hotspot, offsetX, offsetY) {
-  var istyle = iframe.style;
-  istyle.visibility    = Popup.HIDDEN;
-
-  var scrollXY = getScrollXY();
-  var scrollX = scrollXY[0];
-  var scrollY = scrollXY[1];
-
-  var coords = getElementCoords(hotspot);
-  var left = coords.left;
-  var top  = coords.top;
-
-  var screenXY = getWindowSize();
-  var screenX = screenXY[0];
-  var screenY = screenXY[1];
-
-  // Find out how close to the corner of the window
-  var distanceToRightEdge  = screenX + scrollX - left;
-  var distanceToBottomEdge = screenY + scrollY - top;
-
-  istyle.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
-  reposition(iframe, 0, 0);
-
-  var divCoords = getElementCoords(div);
-  var margin = 40;
-
-  // move box to the left of the hotspot if the distance to window border isn't enough to accomodate the whole div box
-  if (distanceToRightEdge < divCoords.width + margin) {
-    left = (screenX -  scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
-    //alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " + scrollX);
-    if (left - margin > 0)
-      left -= margin; // adjust for a scrollbar;
-  }
-  else { // apply user requested offset only if no adjustment
-    if (offsetX)
-      left = left + offsetX;
-  }
-
-  // adjust position of the div box vertically - using the same approach as above
-  if (distanceToBottomEdge < divCoords.height + margin) {
-    top = (screenY + scrollY) - divCoords.height;
-    if (top - margin > 0)
-      top -= margin; // adjust for a scrollbar;
-  }
-  else { // apply user requested offset only if no adjustment
-    if (offsetY)
-      top = top + offsetY;
-  }
-  // move the div box to the adjusted position
-  reposition(iframe, left, top);
-  istyle.width  = divCoords.width   + 'px';
-  istyle.height = divCoords.height  + 'px';
-
-
-  istyle.zIndex     = hotspot.style.zIndex + 1;
-  istyle.display    = 'inline';
-  istyle.visibility = Popup.VISIBLE; // finally make it visible
 }
 
 function doConfirm(msg) {
@@ -4172,3 +4136,277 @@ function setKeyboardFocus(element) {
   }
 }
 
+//**************************************************** AJAX ******************************************
+// AJAX request.
+// Request content from the server to be loaded into a specified div.
+// Uses XMLHttpRequest when possible and hidden iframe otherwise.
+//
+// Basic ajax technique is described here:
+//   http://keelypavan.blogspot.com/2006/01/using-ajax.html
+//   http://developer.apple.com/internet/webcontent/xmlhttpreq.html
+function postRequest(url, parameters, div, hotspot, callback) {
+  var frameId = 'popupFrame';
+
+  var http_request;
+  if (window.XMLHttpRequest) { // Mozilla, Safari,...
+    http_request = new XMLHttpRequest();
+    if (http_request.overrideMimeType) {
+      http_request.overrideMimeType('text/xml');
+    }
+  }
+  else if (window.ActiveXObject) { // IE
+    try {
+      http_request = new ActiveXObject("Msxml2.XMLHTTP");
+    }
+    catch (e) {
+      try {
+        http_request = new ActiveXObject("Microsoft.XMLHTTP");
+      } catch (e) {}
+    }
+  }
+  if (!http_request) {
+    alert('Cannot create XMLHTTP instance, using iframe instead');
+    frameLoaded[frameId] = false;
+    var iframe = frames[frameId];
+    iframe.document.body.innerHTML = '<form method=post action=dummy id=ajaxForm><input type=submit name=n value=v></input> </form>';
+    var ajaxForm = iframe.document.getElementById('ajaxForm');
+    ajaxForm.action = url;
+    ajaxForm.submit();
+    // line below is an alternative simpler method to submitting a form - but fails in IE if URL is too long
+    // iframe.location.replace(url); // load data from server into iframe
+    timeoutCount = 0;
+    setTimeout(function () {Popup.load(div)}, 50);
+    return;
+  }
+
+  http_request.onreadystatechange = function() {
+    if (http_request.readyState == 4) {
+      if (http_request.status == 200) {
+        frameLoaded[frameId] = true;
+        callback(div, hotspot, http_request.responseText);
+      }
+      else if (http_request.status == 302) {
+        // reload current page - usually login due to timeout
+        document.location = http_request.getResponseHeader('Location');
+      }
+    }
+    else {
+      // other ajax states that we ignore for now: 0-Unintialized, 1-Loading, 2-Loaded, 3-Interactive
+    }
+  };
+  http_request.open('POST', url, true);
+  http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  // below 2 line commented - made IE wait with ~1 minute timeout
+  if (parameters) {
+    http_request.setRequestHeader("Content-length", parameters.length);
+  }
+  //http_request.setRequestHeader("Connection", "close");
+  http_request.send(parameters);
+}
+//******************************************** end AJAX ************************************************
+
+//****************************** form operations from forms.js *****************************************
+//
+//
+var textAreas = new Array();
+function FormField(fieldRef, isModified) {
+  this.fieldRef = fieldRef;
+  this.isModified = isModified;
+  this.modifiedByUser = true;
+}
+
+function clearUnModifiedFields(formFields) {
+  for (var i = 0; i < formFields.length; i++) {
+    if (formFields[i].isModified == false) {
+      formFields[i].fieldRef.value = '';
+    }
+  }
+}
+
+function onFormFieldClick(fieldProp, fieldRef) {
+  fieldProp.modifiedByUser = true;
+  if (fieldProp.isModified == true)
+    return;
+  fieldRef.select();
+}
+
+function onFormFieldChange(fieldProp, fieldRef, oldValue) {
+  if (fieldProp.modifiedByUser == false)
+    return;
+  fieldProp.isModified = true;
+  newValue = fieldRef.value;
+  if (newValue != null && newValue != '')
+    newValue = trim(newValue);
+  if (newValue == null || newValue == '') {
+    fieldRef.value = oldValue;
+    fieldProp.isModified = false;
+    fieldProp.modifiedByUser = false;
+  }
+}
+
+function hideShowDivOnClick(divId, imgId){//, plusImg, minusImg) {
+  div = document.getElementById(divId);
+  img = document.getElementById(imgId);
+  if (div.style.display == 'none') {
+    div.style.display = 'block';
+    img.style.display = 'none';
+  }
+}
+
+function trim(s) {
+  while (s.substring(0,1) == ' ') {
+    s = s.substring(1,s.length);
+  }
+  while (s.substring(s.length-1,s.length) == ' ') {
+    s = s.substring(0,s.length-1);
+  }
+  return s;
+}
+
+/* used to show full text in a long text property, like Demand.description */
+function displayFullText(div, moreDiv) {
+  document.getElementById(div).style.overflow = 'visible';
+  document.getElementById(div).style.display = 'inline';
+  document.getElementById(moreDiv).style.display = 'none';
+}
+function setTextHeight(div, divider) {
+  if (window.screen) {
+    var divRef = document.getElementById(div);
+    var spanRef = document.getElementById(div + '_span');
+    var moreRef = document.getElementById(div + '_more');
+  }
+  if(divRef.offsetHeight < 40 && document.all) {                       // If the height of the div content is less then 40px,
+    document.getElementById(div).style.height=divRef.offsetHeight;     // then the height of the div is set to the height
+    displayFullText(div, div+"_more");                                 // of the div content and "more>>" link is disabled.
+    return;
+  }
+  var h = Math.floor(screen.availHeight/divider);
+  divRef.style.height = h;
+  divRef.style.overflow = "hidden";
+  if (spanRef != null && moreRef != null) {
+    if (spanRef.offsetHeight > divRef.offsetHeight) {
+      moreRef.style.display = "block";
+    } else { // div must have "minimized view". Then the user clicks on "more>>" link and the style of the div is changed
+             // from (overflow:hidden) to (display:inline; overflow:visible). This is done on line #73 (function displayFullText(div, moreDiv))
+      //moreRef.style.display = "none";
+      divRef.style.height = 40;//spanRef.offsetHeight;
+      //divRef.style.overflow = "visible";
+    }
+  }
+}
+function setTextHeightAll(divider) {
+  for (var i = 0; i < textAreas.length; i++) {
+    if (textAreas[i] != null)
+      setTextHeight(textAreas[i], divider);
+  }
+}
+function textAreaExists(textAreaName) {
+  for (var i = 0; i < textAreas.length; i++) {
+    if (textAreas[i] != null && textAreaName == textAreas[i])
+      return true;
+  }
+  return false;
+}
+
+/*************************  Form fields adding/removing *******************/
+function addField(form, fieldType, fieldName, fieldValue) {
+  if (document.getElementById) {
+    var input = document.createElement('INPUT');
+      if (document.all) { // what follows should work
+                          // with NN6 but doesn't in M14
+        input.type = fieldType;
+        input.name = fieldName;
+        input.value = fieldValue;
+      }
+      else if (document.getElementById) { // so here is the
+                                          // NN6 workaround
+        input.setAttribute('type', fieldType);
+        input.setAttribute('name', fieldName);
+        input.setAttribute('value', fieldValue);
+      }
+    form.appendChild(input);
+  }
+}
+function getField (form, fieldName) {
+  if (!document.all)
+    return form[fieldName];
+  else  // IE has a bug not adding dynamically created field
+        // as named properties so we loop through the elements array
+    for (var e = 0; e < form.elements.length; e++)
+      if (form.elements[e].name == fieldName)
+        return form.elements[e];
+  return null;
+}
+function removeField (form, fieldName) {
+  var field = getField (form, fieldName);
+  if (field && !field.length)
+    field.parentNode.removeChild(field);
+}
+function toggleField (form, fieldName, value) {
+  var field = getField (form, fieldName);
+  if (field)
+    removeField (form, fieldName);
+  else
+    addField (form, 'hidden', fieldName, value);
+}
+
+function processCreditCardTracks(inputField) {
+  var tracks = inputField.value;
+  var form = inputField.form;
+
+  var startIdx = tracks.indexOf('%B');
+  if (startIdx == -1) {
+    return;
+  }
+  var endIdx = tracks.indexOf('?>');
+  if (endIdx == -1) {
+    return;
+  }
+  tracks = tracks.substring(startIdx + 1, endIdx);
+
+  var middleIdx = tracks.indexOf('?;');
+  if (middleIdx == -1) {
+    var track1 = tracks;
+  } else {
+    var track1 = tracks.substring(0, middleIdx);
+    var track2 = tracks.substring(middleIdx + 2, tracks.length);
+  }
+  var splitArray = track1.split('^');
+  var accountNumber = splitArray[0].substring(1);
+  accountNumber = removeSpaces(accountNumber);
+  var name = splitArray[1];
+  var names = name.split('/');
+  name = names[1] + ' ' + names[0];
+  var yearMonth = splitArray[2];
+  var year = yearMonth.substring(0, 2);
+  var month = yearMonth.substring(2, 4);
+  form.elements['nameOnCard'].value = name;
+  form.elements['number'].value = accountNumber;
+  form.elements['expirationDate___Month'].selectedIndex = parseInt(month, 10);
+  var years = form.elements['expirationDate___Year'];
+  var len = years.length;
+  for (var i=0; i<len; i++) {
+    if (years.options[i].value.indexOf(year) == 2) {
+      years.selectedIndex = i;
+      break;
+    }
+  }
+  form.elements['.track1'].value = track1;
+  form.elements['.track2'].value = track2;
+  form.elements['cardholderVerificationCode'].value = "";
+  return true;
+}
+
+function removeSpaces(str) {
+  if (str.indexOf(' ') == -1)
+    return str;
+  var buf = "";
+  for (var i = 0, l = str.length; i < l; i++) {
+    var c = str.charAt(i);
+    if (c == ' ')
+      continue;
+    buf += c;
+  }
+  return buf;
+}
+//******************************************************* from forms.js *************************************
