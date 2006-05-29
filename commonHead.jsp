@@ -9,7 +9,6 @@
   <link href="styles/tree.css"       type="text/css" rel="stylesheet" />
   <link href="calendar/calendar.css" type="text/css" rel="stylesheet" />
 
-  <script src="forms.js"                 language="JavaScript" type="text/javascript"></script>
   <script src="menu.js"                  language="JavaScript" type="text/javascript"></script>
   <!--script src="searchHighlighting.js"    language="JavaScript" type="text/javascript"></script-->
   <script src="chat/chat.js"             language="JavaScript" type="text/javascript"></script>
@@ -22,8 +21,8 @@
   <script src="fixedColor/fixedColor.js" language="JavaScript" type="text/javascript"></script>
 
   <script src="styleSheet/style_toolbar.js" language="JavaScript" type="text/javascript"></script>
-  <script src="styleSheet/style_sheet.js"   language="JavaScript" type="text/javascript"></script>  
- 
+  <script src="styleSheet/style_sheet.js"   language="JavaScript" type="text/javascript"></script>
+
  <getResource/>
   <siteTitle />
 </div>
