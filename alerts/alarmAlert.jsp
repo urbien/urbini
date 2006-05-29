@@ -7,10 +7,10 @@
 Dear <property name="to" href="y"/>
 <br/><br/>
 ATTENTION!!!<br/>
-<property name="message"/> 
+<property name="message"/>
 <br/>
 Customer Service
 <br/>
 <siteOwner/>
 <br/><br/>
-<b>Powered by</b> <a href="http://hudsonfog.com" target="_blank">HudsonFog</a>
+<b>Powered by</b> <a href="http://universalplatform.com" target="_blank">HudsonFog UniversalPlatform</a>

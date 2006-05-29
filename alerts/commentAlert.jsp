@@ -10,7 +10,7 @@ Dear <property name="to" href="y"/>
 Comment <property name="comment"/> <br/>
 has been added to the <property name="forum" type="y"/><property name="forum" href="y"/>
 
-<propertySheet name="comment"/> 
+<propertySheet name="comment"/>
 
 <br/><br/>
 Customer Service
@@ -18,6 +18,6 @@ Customer Service
 <siteOwner/>
 
 <br/><br/>
-<b>Powered by</b> <a href="http://hudsonfog.com" target="_blank">HudsonFog</a>
+<b>Powered by</b> <a href="http://universalplatform.com" target="_blank">HudsonFog UniversalPlatform</a>
 </td></tr></table>
 </div>

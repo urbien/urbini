@@ -24,5 +24,5 @@ Customer Service
 <br/>
 <br/>
 
-<b>Powered by</b> <a href="http://hudsonfog.com" target="_blank">HudsonFog</a>
+<b>Powered by</b> <a href="http://universalplatform.com" target="_blank">HudsonFog UniversalPlatform</a>
 </div>
