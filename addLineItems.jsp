@@ -160,10 +160,12 @@
 					</table>
 					</form>
 				</div>
-        <a target="pane2"></a><div id="pane2"/>
 
 	    </td>
-	    <td width="30%"><div id="resourceList_div"><siteResourceList/></div></td>
+	    <td width="30%">
+        <a target="pane2"></a><div id="pane2" style="position:absolute;"/>
+	      <div id="resourceList_div"><siteResourceList/></div>
+	    </td>
     </tr>
     <tr itype="http://www.hudsonfog.com/voc/hospitality/orders/BarItem">
       <td width="70%">
