@@ -390,7 +390,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Open delayed popup: initialize a delayed popup and quit
    */
   this.openDelayed = function (offsetX, offsetY, delay) {
-    Popup.lastOpenTime = new Date().getTime();
+    Popup.lastOpenTime         = new Date().getTime();
     Popup.delayedPopupOpenTime = new Date().getTime();
 
     if (Popup.openTimeoutId) {                  // clear any prior delayed popup open
@@ -2457,6 +2457,7 @@ function replaceAllTooltips() {
 }
 */
 function tooltipOnMouseOver0(target) {
+  //Packages.java.lang.System.out.println('tooltip mouseover: ' + target.tagName + ', ' + target.id);
   if (!Popup.allowTooltip(target)) {
     return true; // ignore this tooltip and return true to allow mouseover processing to continue
   }
@@ -2536,7 +2537,7 @@ function tooltipOnMouseOut(e) {
   var target = getMouseOutTarget(e);
   if (!target)
     return true;
-
+  //Packages.java.lang.System.out.println('tooltip mouseout: ' + target.tagName + ', ' + target.id);
   var popup = Popup.getPopup('system_tooltip');
   if (popup && popup.isOpen())
     return true;
@@ -3749,7 +3750,7 @@ function addAndShowWait()	{
   }
   divCopyTo.innerHTML = body.innerHTML;
   //resourceListEdit(divCopyTo);
-  var images = div.getElementsByTagName('img');
+  var images = divCopyTo.getElementsByTagName('img');
   for (var i=0; i<images.length; i++) {
     addBooleanToggle(images[i]);
   }
