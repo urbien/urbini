@@ -1,5 +1,5 @@
 <div align="center">
-<font color="red"><b><errorMessage /></b></font>
+<errorMessage />
 <getResource/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
   <tr>
