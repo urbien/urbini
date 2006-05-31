@@ -2934,7 +2934,7 @@ function displayInner(e, urlStr) {
 //    finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
   }
 
-  finalUrl += "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y&-inner=y";
+  finalUrl += "&hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
   stopEventPropagation(e);
 
   var hotspot = target ? target : anchor;
