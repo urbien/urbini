@@ -4,7 +4,7 @@
 <hideBlock id="hideBlock">
 <watchNote/>
 </hideBlock>
-
+<getResource/>
 <div id="pane2"  style="position:absolute; visibility:hidden;" />
 
 <div id="gallery" style="display:none;position:absolute">

@@ -2930,7 +2930,8 @@ function displayInner(e, urlStr) {
   var idx = urlStr.indexOf('.html');
   if (idx != -1) {
     var idx1 = urlStr.lastIndexOf('/', idx);
-    finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
+    finalUrl = urlStr.substring(0, idx1 + 1) + urlStr.substring(idx1 + 1);
+//    finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
   }
 
   finalUrl += "&hideComments=y&hideMenu=y&hideNewComment=y&hideHideBlock=y&-inner=y";
