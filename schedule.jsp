@@ -20,8 +20,6 @@
 	     </form>
 	     </div>
   	    <div id="resourceList_div">
-<a target="pane2"> </a>
-<div id="pane2" />
   	      <siteResourceList uri="localSearchResults.html?-$action=searchLocal&amp;ticket=-$this&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Treatment&amp;-schedule=y&amp;-addItems=y&amp;cancelled=false&amp;-noRedirect=y"/>
   	    </div>
     <iframe id="resourceList" name="resourceList" style="display:none;" scrolling="no" frameborder="0" src="about:blank"> </iframe>
