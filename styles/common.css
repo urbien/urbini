@@ -3,11 +3,9 @@ H2 {font-family: arial, Verdana, geneva; font-weight: normal; font-size: medium;
 H3 {font-family: arial, Verdana, geneva; font-size: 15px; font-weight: normal; color: #3366aa}
 
 img.fade {
-   filter:alpha(opacity=60);
-  -khtml-opacity: 0.6;
-  -moz-opacity:   0.6;
    opacity:       0.6;
 }
+
 .tabs .oneTab {
   height: 33px;
 }
