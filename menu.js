@@ -393,6 +393,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     Popup.lastOpenTime         = new Date().getTime();
     Popup.delayedPopupOpenTime = new Date().getTime();
 
+    // detected re-entering into the popup - thus clear a delayed close
+    self.delayedCloseIssued = false;
+    if (self.closeTimeoutId != null) {
+      clearTimeout(self.closeTimeoutId);
+      self.closeTimeoutId = null;
+    }
+
     if (Popup.openTimeoutId) {                  // clear any prior delayed popup open
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
@@ -426,7 +433,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var div      = self.div;
     var divStyle = div.style;
     if (divStyle.display == "inline") {
-      this.setInvisible();
+      self.setInvisible();
       self.closeTimeoutId = null;
     }
     self.unsetCurrentDiv();
@@ -538,15 +545,21 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Popup's on mouseover handler
    */
   this.popupOnMouseOver = function (e) {
+    e = getDocumentEvent(e); if (!e) return;
+    if (e.getAttribute) {
+      var isProcessed = e.getAttribute('eventProcessed');
+      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+        return stopEventPropagation(e);
+      e.setAttribute('eventProcessed', 'true');
+    }
     var target = getTargetElement(e);
     if (!target)
       return;
 
+// Packages.java.lang.System.out.println('mouseOver: target.tagName: ' + target.tagName + ', target.id: ' + target.id + ', div: ' + self.div.id);
     // detected re-entering into the popup - thus clear a timeout
     self.delayedCloseIssued = false;
     if (self.closeTimeoutId != null) {
-      self.delayedCloseIssued = false;
-
       clearTimeout(self.closeTimeoutId);
       self.closeTimeoutId = null;
     }
@@ -557,10 +570,18 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Popup's and hotspot's on mouseout handler
    */
   this.popupOnMouseOut = function (e) {
+    e = getDocumentEvent(e); if (!e) return;
+    if (e.getAttribute) {
+      var isProcessed = e.getAttribute('eventProcessed');
+      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+        return stopEventPropagation(e);
+      e.setAttribute('eventProcessed', 'true');
+    }
+
     var target = getMouseOutTarget(e);
     if (!target)
       return true;
-
+//Packages.java.lang.System.out.println('mouseout: target.tagName: ' + target.tagName + ', target.id: ' + target.id + ', div: ' + self.div.id);
     self.delayedClose(600);
     return true;
   }
@@ -2537,11 +2558,10 @@ function tooltipOnMouseOut(e) {
   var target = getMouseOutTarget(e);
   if (!target)
     return true;
-  //Packages.java.lang.System.out.println('tooltip mouseout: ' + target.tagName + ', ' + target.id);
   var popup = Popup.getPopup('system_tooltip');
   if (popup && popup.isOpen())
     return true;
-
+  //Packages.java.lang.System.out.println('tooltip mouseout: ' + target.tagName + ', ' + target.id);
   if (Popup.delayedPopup && Popup.delayedPopup.isTooltip()) {
     clearTimeout(Popup.openTimeoutId);
     Popup.openTimeoutId = null;
@@ -3994,7 +4014,7 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   // first position the div box in the top left corner in order to measure its dimensions
   // (otherwise, if position coirrectly and only then measure dimensions - the width/height will get cut off at the scroll boundary - at least in firefox 1.0)
   div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
-  reposition(div, 0, 0);
+  reposition(div,    0, 0);
   var divCoords = getElementCoords(div);
   var margin = 40;
   //alert(screenX + "," + screenY + ", " + scrollX + "," + scrollY + ", " + left + "," + top + ", " + divCoords.width + "," + divCoords.height);
@@ -4148,6 +4168,10 @@ function setKeyboardFocus(element) {
 //   http://developer.apple.com/internet/webcontent/xmlhttpreq.html
 function postRequest(url, parameters, div, hotspot, callback) {
   var frameId = 'popupFrame';
+  // visual cue that click was made
+  setInnerHtml(div, "<span style='border-color=yellow; border: 1px solid red; font-size: 12px; color:yellow; background-color:blue; position: absolute; display: inline'>loading</span>");
+  var iframe  = document.getElementById('popupIframe');
+  setDivVisible(div, iframe, hotspot, 16, 16);
 
   var http_request;
   if (window.XMLHttpRequest) { // Mozilla, Safari,...
