@@ -1,11 +1,9 @@
 <div>
 <div nonPda="T">
-<!--font color="red"><b><errorMessage /></b></font-->
 <hideBlock id="hideBlock">
 <watchNote/>
 </hideBlock>
 <getResource/>
-<div id="pane2"  style="position:absolute; visibility:hidden;" />
 
 <div id="gallery" style="display:none;position:absolute" itype="http://www.hudsonfog.com/voc/model/portal/ImageResource">
   <table bgcolor="#1b62b6">
@@ -24,24 +22,19 @@
 		</div>
     <taskTreeControl/>
     <div id="siteResourceList">
-      <font color="red"><b><errorMessage /></b></font>
+      <errorMessage />
       <siteResourceList />
       <br/>
       <createResources/><br/>
     </div>
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
-    <div id="pane3">
 <hideBlock>
     <br/>
     <uploadMsProject/>
     <uploadToDelegatedFileSystem/>
 <br/><br/>
-</hideBlock>
-      <pieChart/>
-    </div>
-<hideBlock>
-
+    <pieChart/>
     <script language="JavaScript">
       var horizontalFilter_FIELDS = new Array();
     </script>
@@ -59,7 +52,6 @@
   </td>
   </tr>
 </table>
-<br />
 </div>
 
 <div pda="T">
@@ -103,8 +95,9 @@
 
     </table>
 </td></tr></table>
-<br />
 
+<hideBlock>
+<br />
 <table border="0" cellspacing="0" cellpadding="0">
   <tr><td><pieChart/></td></tr>
 </table>
@@ -115,10 +108,7 @@
   <br/>
     <horizontalFilter />
 </form>
+</hideBlock>
 </div>
-<br/>
-
-
-<!--div align="left"><span class="xs"><hudsonFog /></span></div-->   <!-- link to Portal page for current category -->
 
 </div>
