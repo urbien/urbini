@@ -4413,3 +4413,50 @@ function removeSpaces(str) {
   return buf;
 }
 //******************************************************* from forms.js *************************************
+
+/**************************************
+*	drag & drop engine
+***************************************/
+var dragobject = {
+	z: 0, x: 0, y: 0, offsetx : null, offsety : null, targetobj : null, dragapproved : 0,
+	initialize: function(){
+		document.onmousedown = this.drag;
+		document.onmouseup = function(){this.dragapproved = 0;}
+		document.onmousemove = dragobject.moveit;
+	},
+	drag: function(e){
+		var evtobj = window.event? window.event : e;
+		var dragObj = window.event? event.srcElement : e.target;
+		if (dragObj.className == "drag") {
+			this.dragapproved = 1;
+
+			if(dragObj.id == "titleBar") {
+				// get the dialog object!
+				this.targetobj = document.getElementById('pane2'); 
+			}
+			else
+				this.targetobj = dragObj;
+				
+			if (isNaN(parseInt(this.targetobj.style.left))){this.targetobj.style.left = 0;}
+			if (isNaN(parseInt(this.targetobj.style.top))){this.targetobj.style.top = 0;}
+			this.offsetx = parseInt(this.targetobj.style.left);
+			this.offsety = parseInt(this.targetobj.style.top);
+			this.x=evtobj.clientX
+			this.y=evtobj.clientY
+			if (evtobj.preventDefault)
+				evtobj.preventDefault();
+		}
+	},
+	moveit: function(e){
+		var evtobj=window.event? window.event : e
+		if (this.dragapproved == 1){
+			this.targetobj.style.left = this.offsetx + evtobj.clientX - this.x+"px"
+			this.targetobj.style.top = this.offsety + evtobj.clientY - this.y+"px"
+			return false;
+		}
+	}
+}
+// initialize the drag & drop engine.
+dragobject.initialize();
+
+// ***********************************************************************************
