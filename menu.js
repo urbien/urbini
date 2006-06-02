@@ -4445,21 +4445,15 @@ var dragobject = {
 	z: 0, x: 0, y: 0, offsetx : null, offsety : null, targetobj : null, dragapproved : 0,
 	initialize: function(){
 		document.onmousedown = this.drag;
-		document.onmouseup = function(){this.dragapproved = 0;}
-		document.onmousemove = dragobject.moveit;
+		document.onmouseup = this.stopDrag;
+		document.onmousemove = this.moveit;
 	},
 	drag: function(e){
 		var evtobj = window.event? window.event : e;
 		var dragObj = window.event? event.srcElement : e.target;
-		if (dragObj.className == "drag") {
+		if(dragobject.isChildOf(dragObj, "titleBar")) {
 			this.dragapproved = 1;
-
-			if(dragObj.id == "titleBar") {
-				// get the dialog object!
 				this.targetobj = document.getElementById('pane2'); 
-			}
-			else
-				this.targetobj = dragObj;
 				
 			if (isNaN(parseInt(this.targetobj.style.left))){this.targetobj.style.left = 0;}
 			if (isNaN(parseInt(this.targetobj.style.top))){this.targetobj.style.top = 0;}
@@ -4478,6 +4472,20 @@ var dragobject = {
 			this.targetobj.style.top = this.offsety + evtobj.clientY - this.y+"px"
 			return false;
 		}
+	},
+	stopDrag: function() {
+		this.dragapproved = 0;
+	},
+	isChildOf: function(obj, parentId) {
+		if(obj == null)
+			return false;
+		if(obj.id == parentId)
+			return true;
+		while((obj = obj.parentNode) != null) {
+			if(obj.id == parentId)
+				return true;
+		}
+		return false;
 	}
 }
 // initialize the drag & drop engine.
