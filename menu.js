@@ -4019,8 +4019,8 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   var margin = 40;
   //alert(screenX + "," + screenY + ", " + scrollX + "," + scrollY + ", " + left + "," + top + ", " + divCoords.width + "," + divCoords.height);
   // cut popup dimensions to fit the screen
-  //var mustCutDimension = div.id == 'pane2' ? false: true;
-  var mustCutDimension = true;
+  var mustCutDimension = div.id == 'pane2' ? false: true;
+  //var mustCutDimension = false;
   if (mustCutDimension) {
     var fixed = false;
     if (divCoords.width > screenX - margin) {
@@ -4171,7 +4171,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
   // visual cue that click was made
   setInnerHtml(div, "<span style='border-color=yellow; border: 1px solid red; font-size: 12px; color:yellow; background-color:blue; position: absolute; display: inline'>loading</span>");
   var iframe  = document.getElementById('popupIframe');
-  setDivVisible(div, iframe, hotspot, 16, 16);
+  setDivVisible(div, iframe, hotspot, -16, -16);
 
   var http_request;
   if (window.XMLHttpRequest) { // Mozilla, Safari,...
@@ -4453,8 +4453,8 @@ var dragobject = {
 		var dragObj = window.event? event.srcElement : e.target;
 		if(dragobject.isChildOf(dragObj, "titleBar")) {
 			this.dragapproved = 1;
-				this.targetobj = document.getElementById('pane2'); 
-				
+      this.targetobj = document.getElementById('pane2');
+
 			if (isNaN(parseInt(this.targetobj.style.left))){this.targetobj.style.left = 0;}
 			if (isNaN(parseInt(this.targetobj.style.top))){this.targetobj.style.top = 0;}
 			this.offsetx = parseInt(this.targetobj.style.left);
