@@ -8,7 +8,7 @@ Dear <property name="to" href="y"/>
 <br/><br/>
 
 Comment <property name="comment"/> <br/>
-has been added to the <property name="forum" type="y"/><property name="forum" href="y"/>
+has been added to the <property name="forum" type="y"/> <property name="forum" href="y"/>
 
 <propertySheet name="comment"/>
 
