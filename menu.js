@@ -4168,11 +4168,22 @@ function setKeyboardFocus(element) {
 //   http://developer.apple.com/internet/webcontent/xmlhttpreq.html
 function postRequest(url, parameters, div, hotspot, callback) {
   var frameId = 'popupFrame';
-  // visual cue that click was made
-  setInnerHtml(div, "<span style='border-color=yellow; border: 1px solid red; font-size: 12px; color:yellow; background-color:blue; position: absolute; display: inline'>loading</span>");
-  var iframe  = document.getElementById('popupIframe');
-  setDivVisible(div, iframe, hotspot, -16, -16);
 
+  // visual cue that click was made, using the tooltip
+  var ttDiv = document.getElementById("system_tooltip");
+  var ttIframe = document.getElementById("tooltipIframe");
+  var loadingMsg = "<span style='font-size: 14px; color:darkblue; padding:10px;'><b>loading...</b></span>";
+  Popup.open(ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
+
+
+/*
+  setInnerHtml(div, "<span style='border-color=yellow; border: 1px solid red; font-size: 12px; color:yellow; background-color:blue; position: absolute; display: inline'>loading</span>");
+  setDivVisible(div, iframe, hotspot, -16, -16);
+ */
+ 
+  
+  var iframe  = document.getElementById('popupIframe');
+ 
   var http_request;
   if (window.XMLHttpRequest) { // Mozilla, Safari,...
     http_request = new XMLHttpRequest();
@@ -4210,10 +4221,14 @@ function postRequest(url, parameters, div, hotspot, callback) {
       if (http_request.status == 200) {
         frameLoaded[frameId] = true;
         callback(div, hotspot, http_request.responseText);
+        // close tooltip used for "loading..." statement.
+        Popup.tooltipPopup.close();
       }
       else if (http_request.status == 302) {
         // reload current page - usually login due to timeout
         document.location = http_request.getResponseHeader('Location');
+        // close tooltip used for "loading..." statement.
+        Popup.tooltipPopup.close();
       }
     }
     else {
