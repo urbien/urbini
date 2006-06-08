@@ -4167,23 +4167,12 @@ function setKeyboardFocus(element) {
 //   http://developer.apple.com/internet/webcontent/xmlhttpreq.html
 function postRequest(url, parameters, div, hotspot, callback) {
   var frameId = 'popupFrame';
+  var iframe  = document.getElementById('popupIframe');
+  var http_request;
 
   // visual cue that click was made, using the tooltip
-  var ttDiv = document.getElementById("system_tooltip");
-  var ttIframe = document.getElementById("tooltipIframe");
-  var loadingMsg = "<span style='font-size: 14px; color:darkblue; padding:10px;'><b>loading...</b></span>";
-  Popup.open(ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
+  loadingCueStart(hotspot);
 
-
-/*
-  setInnerHtml(div, "<span style='border-color=yellow; border: 1px solid red; font-size: 12px; color:yellow; background-color:blue; position: absolute; display: inline'>loading</span>");
-  setDivVisible(div, iframe, hotspot, -16, -16);
- */
-
-
-  var iframe  = document.getElementById('popupIframe');
-
-  var http_request;
   if (window.XMLHttpRequest) { // Mozilla, Safari,...
     http_request = new XMLHttpRequest();
     if (http_request.overrideMimeType) {
@@ -4220,16 +4209,12 @@ function postRequest(url, parameters, div, hotspot, callback) {
       if (http_request.status == 200) {
         frameLoaded[frameId] = true;
         callback(div, hotspot, http_request.responseText);
-        // close tooltip used for "loading..." statement.
-//        if (Popup.tooltipPopup)
-//          Popup.tooltipPopup.close();
+        loadingCueFinish();
       }
       else if (http_request.status == 302) {
         // reload current page - usually login due to timeout
         document.location = http_request.getResponseHeader('Location');
-        // close tooltip used for "loading..." statement.
-//        if (Popup.tooltipPopup)
-//          Popup.tooltipPopup.close();
+		loadingCueFinish();
       }
     }
     else {
@@ -4246,6 +4231,19 @@ function postRequest(url, parameters, div, hotspot, callback) {
   //http_request.setRequestHeader("Connection", "close");
   http_request.send(parameters);
 }
+
+function loadingCueStart(hotspot) {
+  var ttDiv = document.getElementById("system_tooltip");
+  var ttIframe = document.getElementById("tooltipIframe");
+  var loadingMsg = "<img src='icons/classes/Duration.gif'><span style='font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . . </b></span>";
+  
+  Popup.open(ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
+}
+function loadingCueFinish() {
+//        if (Popup.tooltipPopup)
+//          Popup.tooltipPopup.close();
+}
+
 //******************************************** end AJAX ************************************************
 
 //****************************** form operations from forms.js *****************************************
