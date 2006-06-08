@@ -1479,10 +1479,9 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   }
   else {
     var popup = Popup.getPopup(divId);
-    if (popup == null) {
-      div = document.getElementById(divId);
+    div = document.getElementById(divId);
+    if (popup == null) 
       popup = new Popup(div, hotspot);
-    }
     else
       popup.reset(hotspot);
   }
@@ -4180,10 +4179,10 @@ function postRequest(url, parameters, div, hotspot, callback) {
   setInnerHtml(div, "<span style='border-color=yellow; border: 1px solid red; font-size: 12px; color:yellow; background-color:blue; position: absolute; display: inline'>loading</span>");
   setDivVisible(div, iframe, hotspot, -16, -16);
  */
- 
-  
+
+
   var iframe  = document.getElementById('popupIframe');
- 
+
   var http_request;
   if (window.XMLHttpRequest) { // Mozilla, Safari,...
     http_request = new XMLHttpRequest();
@@ -4222,13 +4221,15 @@ function postRequest(url, parameters, div, hotspot, callback) {
         frameLoaded[frameId] = true;
         callback(div, hotspot, http_request.responseText);
         // close tooltip used for "loading..." statement.
-        Popup.tooltipPopup.close();
+//        if (Popup.tooltipPopup)
+//          Popup.tooltipPopup.close();
       }
       else if (http_request.status == 302) {
         // reload current page - usually login due to timeout
         document.location = http_request.getResponseHeader('Location');
         // close tooltip used for "loading..." statement.
-        Popup.tooltipPopup.close();
+//        if (Popup.tooltipPopup)
+//          Popup.tooltipPopup.close();
       }
     }
     else {
