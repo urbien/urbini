@@ -493,6 +493,10 @@ function Toolbar(parentDiv, masterObj)
 		return this.controlsArr[idx];
 	}
 	
+	this.getWidth = function() {
+		return this.width;
+	}
+	
 	this.getHeight = function() {
 		return (this.height + this.titlestrip.height);
 	}

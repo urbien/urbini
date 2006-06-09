@@ -10,8 +10,9 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	
 	var i_am = this;
 	var parentDiv = parentDivIn;
-	var toolBar;
+	var toolBar = null;
 	var sampleDiv = sampleDivIn; // the div to show a stylea of a sample
+	var styleViewDiv = null;
 	this.frameObj  = frameObjIn;
 	this.fieldName = fieldNameIn;
 	this.fieldObj = null;
@@ -31,15 +32,16 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	this.create = function() {
 		// init not initialized Sample's properties
 		this.initSampleProperties();
-
-		// 1. create the toolbar.
+		
+		// 1. create style view div
+		styleViewDiv = this.creteStyleViewDiv();
+		// 2. create the toolbar.
 		toolBar = new Toolbar(parentDiv, this);
-		// 2. create control objects.
+		// 3. create the toolbar's control objects.
 		// font family
 		this.fontFamilyList = this.createFontList(toolBar);
 		// font size
 		this.fontSizeList = this.createFontSizeList(toolBar);
-		
 		// bold
 		var boldBtn = toolBar.appendButton(this.onBoldBtn, true, IMAGES_FOLDER + "bold.gif", "bold");
 		if(sampleDiv.style.fontWeight.toLowerCase() == "bold")
@@ -49,7 +51,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		if(sampleDiv.style.fontStyle.toLowerCase() == "italic")
 			italicBtn.pressToggleButton()
 
-		// font color
+		// font color //
 		var fontClrBtn = toolBar.appendButton(this.onFontColor, false, IMAGES_FOLDER + "font_color.gif", "font color");
 		// background color
 		var bgClrBtn = toolBar.appendButton(this.onBackgroundColor, false, IMAGES_FOLDER + "background_color.gif", "background color");
@@ -59,16 +61,35 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		this.borderStyleList = this.createBorderList(toolBar);
 		// border color
 		var borderClrBtn = toolBar.appendButton(this.onBorderColor, false, IMAGES_FOLDER + "border_color.gif", "border color");
+		// CSS view
+		var styleViewBtn = toolBar.appendButton(this.onStyleView, true, IMAGES_FOLDER + "properties.gif", "CSS view");
 		
-		// create palettes
+		// 4. create palettes
 		this.createFontPalette(fontClrBtn);
 		this.createBackgroundPalette(bgClrBtn);
 		this.createBorderPalette(borderClrBtn);
 
-		// set parent div width
-		parentDiv.style.width = toolBar.div.clientWidth;
+		// 5. set parent div width
+		parentDiv.style.width = toolBar.getWidth();
 		// alighnment of the sample.
 		this.centeringSampleDiv();
+	}
+	
+	this.creteStyleViewDiv = function() {
+		var div = document.createElement('div');
+		div.style.position = "absolute";
+		div.style.overflow = "auto";
+		div.style.fontFamily = "Arial";
+		div.style.fontSize = "12px";
+		
+		div.style.borderStyle = "solid";
+		div.style.borderWidth = 1;
+		div.style.borderColor = "#ccc";
+		
+		div.style.visibility = "hidden";
+		parentDiv.appendChild(div);
+		
+		return div;
 	}
 	
 	this.createFontList = function(toolBar) {
@@ -239,9 +260,15 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	}
 
 	this.centeringSampleDiv = function() {
-		sampleDiv.style.left = (parentDiv.clientWidth - sampleDiv.clientWidth) / 2;
-		var top = toolBar.getHeight() + 
-			(parentDiv.clientHeight - toolBar.getHeight() - sampleDiv.clientHeight) / 2;
+		// different sample centering on styleViewDiv option.
+		if(styleViewDiv.style.visibility == "hidden") {
+			sampleDiv.style.left = (parentDiv.clientWidth - sampleDiv.clientWidth) / 2;
+		}
+		else {
+			sampleDiv.style.left = (parentDiv.clientWidth / 2 - sampleDiv.clientWidth) / 2;
+		}
+		
+		var top = toolBar.getHeight() + (parentDiv.clientHeight - toolBar.getHeight() - sampleDiv.clientHeight) / 2;
 		sampleDiv.style.top = top;
 	}
 
@@ -315,13 +342,13 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	this.onFontFamily = function(fontIdx) {
 		sampleDiv.style.fontFamily = FONT_ARR[fontIdx];
 		i_am.centeringSampleDiv();
-		i_am.putStyleStrInField();
+		i_am.putStyleStr();
 	}
 
 	this.onFontSize = function(fontSizeIdx) {
 		sampleDiv.style.fontSize = FONT_SIZE_ARR[fontSizeIdx];
 		i_am.centeringSampleDiv();
-		i_am.putStyleStrInField();
+		i_am.putStyleStr();
 	}
 	
 	this.onBoldBtn = function(isPressed) {
@@ -331,7 +358,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		else {
 			sampleDiv.style.fontWeight = "normal";
 		}
-		i_am.putStyleStrInField();
+		i_am.putStyleStr();
 	}
 	
 	this.onItalicBtn = function(isPressed) {
@@ -341,7 +368,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		else {
 			sampleDiv.style.fontStyle = "normal";
 		}
-		i_am.putStyleStrInField();
+		i_am.putStyleStr();
 	}
 	
 	this.onFontColor = function() {
@@ -375,12 +402,12 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 			}
 			sampleDiv.style.borderStyle = BORDER_ARR[styleIdx];
 		}
-		i_am.putStyleStrInField();
+		i_am.putStyleStr();
 	}
 
 	this.onBorderWidth = function(widthIdx) {
 		sampleDiv.style.borderWidth = BORDER_WIDTH[widthIdx];
-		i_am.putStyleStrInField();
+		i_am.putStyleStr();
 	}
 
 	this.onBorderColor = function() {
@@ -390,17 +417,33 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		toolBar.popupHandler(i_am.borderPaletteDiv, false);
 	}
 
+	this.onStyleView = function(isPressed) {
+		if(isPressed) {
+			var halfWidth = parentDiv.clientWidth / 2;
+			styleViewDiv.style.width = halfWidth - 10;
+			styleViewDiv.style.left = halfWidth + 5;
+			
+			styleViewDiv.style.top = toolBar.getHeight() + 5; // 5 is a margin
+			styleViewDiv.style.height = parentDiv.clientHeight - toolBar.getHeight() - 10;
+			styleViewDiv.style.visibility = "visible";
+		}
+		else 
+			styleViewDiv.style.visibility = "hidden";
+		
+		i_am.centeringSampleDiv();
+	}
+
 	// "setters" -------------------------
 	this.setFontColor = function(colorStr) {
 		sampleDiv.style.color = colorStr;
 		i_am.fontPaletteDiv.style.visibility = "hidden";
-		i_am.putStyleStrInField();
+		i_am.putStyleStr();
 	}
 	
 	this.setBackgroundColor = function(colorStr) {
 		sampleDiv.style.backgroundColor = colorStr;
 		i_am.backgroundPaletteDiv.style.visibility = "hidden";
-		i_am.putStyleStrInField();
+		i_am.putStyleStr();
 	}
 	
 	this.setBorderColor = function(colorStr) {
@@ -412,13 +455,18 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 			sampleDiv.style.borderColor = colorStr;
 		}
 		i_am.borderPaletteDiv.style.visibility = "hidden";
-		i_am.putStyleStrInField();
+		i_am.putStyleStr();
 	}
 	
-	this.putStyleStrInField = function() {
+	this.putStyleStr = function() {
+		// 1. set into styleViewDiv
+		var styleStr = this.getStyleString();
+		styleViewDiv.innerHTML = styleStr;
+
+		// 2. set into a form's field
 		var fieldObj = this.frameObj[this.fieldName];
 		if(fieldObj != null) // IE
-			fieldObj.value = this.getStyleString();
+			fieldObj.value = styleStr;
 		else { // FF !
 			formName = this.frameObj.id;
 			document.forms[formName].elements[this.fieldName].value = this.getStyleString() ;
@@ -529,5 +577,5 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 
 	// constructor's body -----------------------
 	this.create();
-	this.putStyleStrInField();
+	this.putStyleStr();
 }
