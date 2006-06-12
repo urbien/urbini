@@ -21,13 +21,16 @@
 				  <input type="hidden" name="-$action" value="showPropertiesForEdit"></input>
 				  <br></br>
 				  <center>
-				    <input type="submit" name="submit" value="Submit changes"></input>
-				    &#160;&#160;<input type="submit" name="cancel" value="  Cancel  "></input>
+	          <input type="submit" name="submit" value="Submit changes" onclick="return saveButtonClicked(event, this);"></input>
+	          &#160;&#160;
+	          <input type="submit" name="cancel" value="  Cancel  " onclick="return saveButtonClicked(event, this);"></input>
 				  </center>
 				</form>
 	    </td>
     </tr>
     </table>
-</td></tr></table>
+  </td>
+</tr>
+</table>
 <br/>
 </div>
