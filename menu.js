@@ -4021,21 +4021,30 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   var mustCutDimension = div.id == 'pane2' ? false: true;
   //var mustCutDimension = false;
   if (mustCutDimension) {
-    var fixed = false;
-    if (divCoords.width > screenX - margin) {
-      div.style.width = screenX - margin + 'px';
-      fixed = true;
+    var xFixed = false;
+    var yFixed = false;
+    if (divCoords.width > screenX - margin * 2) {
+      div.style.width = screenX - margin * 2 + 'px';
+      xFixed = true;
       //alert("divCoords.width = " + divCoords.width + ", " + "screenX = " + screenX);
     }
-    if (divCoords.height > screenY - margin) {
-      div.style.height = screenY - margin + 'px';
-      fixed = true;
+    if (divCoords.height > screenY - margin * 2) { // * 2 <- top & bottom margins
+      div.style.height = screenY - margin * 2 + 'px';
+      yFixed = true;
       //alert("divCoords.height = " + divCoords.height + ", " + "screenY = " + screenY);
     }
-    if (fixed) { // recalc coords and add scrolling if we fixed dimensions
-      div.style.overflow = "auto";
+    // recalc coords and add scrolling if we fixed dimensions
+    if (xFixed)
+      div.style.overflowX = "auto";
+    if (yFixed)
+      div.style.overflowY = "auto";
+	if (xFixed || yFixed)
       divCoords = getElementCoords(div);
-    }
+	// reset position of the scrolls (it could be scrolled from prev. using)
+	if(div.style.overflowX == "auto")
+		div.scrollLeft = 0;
+	if(div.style.overflowY == "auto")	
+		div.scrollTop = 0;
   }
   div.style.display    = 'none';   // must hide it again to avoid screen flicker
 
