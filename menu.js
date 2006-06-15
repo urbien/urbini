@@ -1480,7 +1480,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   else {
     var popup = Popup.getPopup(divId);
     div = document.getElementById(divId);
-    if (popup == null) 
+    if (popup == null)
       popup = new Popup(div, hotspot);
     else
       popup.reset(hotspot);
@@ -4043,7 +4043,7 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
 	// reset position of the scrolls (it could be scrolled from prev. using)
 	if(div.style.overflowX == "auto")
 		div.scrollLeft = 0;
-	if(div.style.overflowY == "auto")	
+	if(div.style.overflowY == "auto")
 		div.scrollTop = 0;
   }
   div.style.display    = 'none';   // must hide it again to avoid screen flicker
@@ -4213,6 +4213,26 @@ function postRequest(url, parameters, div, hotspot, callback) {
     return;
   }
 
+  if (callInProgress(this.lastRequest))
+    this.lastRequest.abort();
+  this.lastRequest = http_request;
+
+  function callInProgress() {
+    if (!this.lastRequest)
+      return false;
+    switch (this.lastRequest.readyState) {
+      // states that indicate request was not completed yet
+      case 1: case 2: case 3:
+        return true;
+      break;
+
+  //     Case 4 and 0
+      default:
+        return false;
+      break;
+    }
+  }
+
   http_request.onreadystatechange = function() {
     if (http_request.readyState == 4) {
       if (http_request.status == 200) {
@@ -4223,7 +4243,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
       else if (http_request.status == 302) {
         // reload current page - usually login due to timeout
         document.location = http_request.getResponseHeader('Location');
-		loadingCueFinish();
+        loadingCueFinish();
       }
     }
     else {
@@ -4245,12 +4265,13 @@ function loadingCueStart(hotspot) {
   var ttDiv = document.getElementById("system_tooltip");
   var ttIframe = document.getElementById("tooltipIframe");
   var loadingMsg = "<img src='icons/classes/Duration.gif'><span style='font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . . </b></span>";
-  
+
   Popup.open(ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
 }
+
 function loadingCueFinish() {
-//        if (Popup.tooltipPopup)
-//          Popup.tooltipPopup.close();
+  if (Popup.tooltipPopup)
+    Popup.tooltipPopup.close();
 }
 
 //******************************************** end AJAX ************************************************
