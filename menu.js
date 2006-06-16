@@ -1666,7 +1666,7 @@ function popupOnSubmit(e) {
 
   var isCancel = button && button.name.toUpperCase() == 'CANCEL';
   if (isCancel) {    // cancel button clicked?
-    if (pane2  &&  pane2.contains(form))  {   // inner frame?
+    if (pane2  &&  pane2.contains(form))  {   // inner dialog?
       setDivInvisible(pane2, dialogIframe);
       return stopEventPropagation(e);
     }
@@ -1697,11 +1697,9 @@ function popupOnSubmit(e) {
   var url;
   if (action) {
     url = action;
-    if (action.indexOf("?") == -1)
-      url += "?";
   }
   else
-    url = "FormRedirect?"; // HACK: since form.action returns the value of '&action='
+    url = "FormRedirect"; // HACK: if form.action is empty
 
   var formAction = form.elements['-$action'].value;
   var allFields = true;
@@ -1710,7 +1708,10 @@ function popupOnSubmit(e) {
   else if (currentFormName && currentFormName.indexOf("horizontalFilter") == 0)
     allFields = true;
 
-  var params = getFormFilters(form, allFields);
+  var params = "submit=y"; // HACK: since target.type return the value of &type instead of an input field's type property
+  var p1 = getFormFilters(form, allFields);
+  if (p1)
+    params += p1;
   var submitButtonName  = null;
   var submitButtonValue;
 /*
@@ -1726,7 +1727,7 @@ function popupOnSubmit(e) {
   else
     url += "&submit=y";
 */
-  url += "submit=y"; // HACK: since target.type return the value of &type instead of an input field's type property
+
 /*
   // figure out the name and the value of the Submit button
   for (i=0; i<form.elements.length; i++) {
@@ -1746,19 +1747,17 @@ function popupOnSubmit(e) {
     url += '&' + submit;
 */
 
-  if (params)
-    url = url + params;
-  url += '&$form=' + form.name;
+  params += '&$form=' + form.name;
 
   //url += '&$selectOnly=y';
 
   if (allFields == false)
-    url += "&type=" + form.type.value + "&-$action=" + formAction;
+    params += "&type=" + form.type.value + "&-$action=" + formAction;
   if (form.uri)
-    url += "&uri=" + encodeURIComponent(form.uri.value);
+    params += "&uri=" + encodeURIComponent(form.uri.value);
 
   if (isCancel)
-    url += "&cancel=y";
+    params += "&cancel=y";
   /* do not allow to submit form while current submit is still being processed */
   var wasSubmitted = form.getAttribute("wasSubmitted");
   if (wasSubmitted) {
@@ -1800,7 +1799,14 @@ function popupOnSubmit(e) {
     setDivInvisible(pane2, dialogIframe);
   }
 
-  return true; // tell browser to go ahead and continue processing this submit request
+  // if current form is inner dialog - submit as AJAX request
+  // upon AJAX response we will be able to choose between repainting the dialog or the whole page
+  if (pane2  &&  pane2.contains(form))  {   // inner dialog?
+    postRequest(url, params, pane2, getTargetElement(e), showDialog);
+    return stopEventPropagation(e);
+  }
+  else
+    return true; // tell browser to go ahead and continue processing this submit request
 }
 
 function setTime() {
@@ -3028,7 +3034,6 @@ function showDialog(div, hotspot, content) {
   content = content.replace(re, div.id + '-removed');  // prevent pane2        from appearing 2 times in the document
   var re = eval('/' + frameId + '/g');
   content = content.replace(re, frameId + '-removed'); // prevent dialogIframe from appearing 2 times in the document
-
   setInnerHtml(div, content);
   var iframe = document.getElementById('dialogIframe');
   setDivVisible(div, iframe, hotspot, 16, 16);
@@ -4175,6 +4180,43 @@ function setKeyboardFocus(element) {
 //   http://keelypavan.blogspot.com/2006/01/using-ajax.html
 //   http://developer.apple.com/internet/webcontent/xmlhttpreq.html
 function postRequest(url, parameters, div, hotspot, callback) {
+
+  this.XMLHTTP = ["Msxml2.XMLHTTP.6.0", "Msxml2.XMLHTTP.5.0", "Msxml2.XMLHTTP.4.0", "MSXML2.XMLHTTP.3.0", "MSXML2.XMLHTTP", "Microsoft.XMLHTTP"];
+  this.newActiveXObject = function(axarray) {
+    //  IE5 for the mac claims to support window.ActiveXObject, but throws an error when it's used
+    if (navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf("MSIE") >= 0) {
+      alert('we are sorry, you browser does not support AJAX, please upgrade or switch to another browser');
+      return null;
+    }
+
+    var returnValue;
+    for (var i = 0; i < axarray.length; i++) {
+      try {
+        returnValue = new ActiveXObject(axarray[i]);
+        break;
+      }
+      catch (ex) {
+      }
+    }
+    return returnValue;
+  };
+
+  function callInProgress() {
+    if (!this.lastRequest)
+      return false;
+    switch (this.lastRequest.readyState) {
+      // states that indicate request was not completed yet
+      case 1: case 2: case 3:
+        return true;
+      break;
+
+  //     Case 4 and 0
+      default:
+        return false;
+      break;
+    }
+  }
+
   var frameId = 'popupFrame';
   var iframe  = document.getElementById('popupIframe');
   var http_request;
@@ -4189,14 +4231,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
     }
   }
   else if (window.ActiveXObject) { // IE
-    try {
-      http_request = new ActiveXObject("Msxml2.XMLHTTP");
-    }
-    catch (e) {
-      try {
-        http_request = new ActiveXObject("Microsoft.XMLHTTP");
-      } catch (e) {}
-    }
+    http_request = this.newActiveXObject(this.XMLHTTP);
   }
   if (!http_request) {
     alert('Cannot create XMLHTTP instance, using iframe instead');
@@ -4217,33 +4252,39 @@ function postRequest(url, parameters, div, hotspot, callback) {
     this.lastRequest.abort();
   this.lastRequest = http_request;
 
-  function callInProgress() {
-    if (!this.lastRequest)
-      return false;
-    switch (this.lastRequest.readyState) {
-      // states that indicate request was not completed yet
-      case 1: case 2: case 3:
-        return true;
-      break;
-
-  //     Case 4 and 0
-      default:
-        return false;
-      break;
-    }
-  }
-
   http_request.onreadystatechange = function() {
+    var status;
     if (http_request.readyState == 4) {
-      if (http_request.status == 200) {
+      loadingCueFinish();
+      var location = http_request.getResponseHeader('Location');
+      try {
+        status = http_request.status;
+      } catch (e) { // hack since mozilla sometimes throws NS_ERROR_NOT_AVAILABLE here
+        // deduce status
+        if (location)
+          status = 302;
+        else if (http_request.responseText.length > 10)
+          status = 200;
+        else
+          status = 400;
+      }
+
+      if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
         frameLoaded[frameId] = true;
         callback(div, hotspot, http_request.responseText);
-        loadingCueFinish();
       }
-      else if (http_request.status == 302) {
-        // reload current page - usually login due to timeout
-        document.location = http_request.getResponseHeader('Location');
-        loadingCueFinish();
+      else if (status == 200) {
+        frameLoaded[frameId] = true;
+        callback(div, hotspot, http_request.responseText);
+      }
+      else if (status == 302) {
+        if (!location)
+          return;
+        var repaintDialog = location.indexOf('-inner=') != -1;
+        if (repaintDialog)
+          postRequest(location, parameters, div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
+        else
+          document.location = location;  // reload current page - usually happens at login due to timeout
       }
     }
     else {
