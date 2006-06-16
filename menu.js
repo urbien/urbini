@@ -364,6 +364,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (!self.initialized) {
       self.interceptEvents();
       initListBoxes(self.div);
+      interceptLinkClicks(self.div);
       //if (!self.isTooltip())
       var anchors = self.div.getElementsByTagName('a');
       replaceTooltips(self.div, anchors);
@@ -1703,7 +1704,7 @@ function popupOnSubmit(e) {
 
   var formAction = form.elements['-$action'].value;
   var allFields = true;
-  if (formAction != "searchLocal" && formAction != "searchParallel")
+  if (formAction != "searchLocal" && formAction != "searchParallel" && formAction != "mkResource")
     allFields = false;
   else if (currentFormName && currentFormName.indexOf("horizontalFilter") == 0)
     allFields = true;
@@ -2597,6 +2598,80 @@ function interceptLinkClicks(div) {
     else
       addEvent(anchor, 'click',  onClick,   false);
     replaceTooltip(div, anchor);
+  }
+}
+
+function initListBoxes(div) {
+  var images;
+  if (div)
+    images = div.getElementsByTagName('img');
+  else
+    images = document.images;
+  for (var i=0; i<images.length; i++) {
+    var image = images[i];
+    if (image.id.indexOf("_filter", image.id.length - "_filter".length) != -1) {
+      if (typeof listboxOnClick == 'undefined')
+        continue;
+      addEvent(image, 'click', listboxOnClick, false); // add handler to smartlistbox images
+    }
+    else
+      addBooleanToggle(image);
+    replaceTooltip(div, image);
+  }
+
+  // 1. add handler to autocomplete filter form text fields
+  // 2. save initial values of all fields
+  if (typeof autoComplete == 'undefined')
+    return;
+  var forms;
+  if (div)
+    forms = div.getElementsByTagName('form');
+  else
+    forms = document.forms;
+  formInitialValues = new Array(forms.length);
+  for (var i=0; i<forms.length; i++) {
+    var form = forms[i];
+    var initialValues = new Array(form.elements.length);
+    formInitialValues[form.name] = initialValues;
+    if (form.id != 'filter')
+      continue;
+    addEvent(form, 'submit', popupOnSubmit, false);
+    for (j=0; j<form.elements.length; j++) {
+      var elem = form.elements[j];
+      replaceTooltip(div, elem);
+      initialValues[elem.name] = elem.value;
+      if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT fields
+          elem.id) {                                         // and those that have ID
+        if (document.all) // in IE - some keys (like backspace) work only on keydown
+          addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
+        else
+          addEvent(elem, 'keypress', autoComplete,              false);
+        addEvent(elem, 'focus',      autoCompleteOnFocus,       false);
+        addEvent(elem, 'blur',       autoCompleteOnBlur,        false);
+        addEvent(elem, 'mouseout',   autoCompleteOnMouseout,    false);
+        //addEvent(elem, 'change',   onFormFieldChange, false);
+        //addEvent(elem, 'blur',     onFormFieldChange, false);
+        //addEvent(elem, 'click',    onFormFieldClick,  false);
+      }
+      else if (elem.type && elem.type.toUpperCase() == 'TEXTAREA') {
+        var rows = elem.attributes['rows'];
+        var cols = elem.attributes['cols'];
+        if (rows)
+          initialValues[elem.name + '.attributes.rows'] = rows.value;
+        if (cols)
+          initialValues[elem.name + '.attributes.cols'] = cols.value;
+        if (!elem.value || elem.value == '') {
+          elem.setAttribute('rows', 1);
+          elem.setAttribute('cols', 10);
+          //elem.attributes['cols'].value = 10;
+          addEvent(elem, 'focus', textAreaOnFocus,  false);
+          addEvent(elem, 'blur',  textAreaOnBlur,   false);
+        }
+      }
+      else  {
+         //         alert(elem.name + ", " + elem.type + ", " + elem.id + ", " + elem.valueType);
+      }
+    }
   }
 }
 
@@ -3947,7 +4022,7 @@ function showKeyboard() {
 }
 
 // usage:
-// insertAtCursor(document.formName.fieldName, ‘this value’);
+// insertAtCursor(document.formName.fieldName, ï¿½this valueï¿½);
 function insertAtCursor(myField, myValue) {
   //IE support
   if (document.selection) {
@@ -4256,9 +4331,10 @@ function postRequest(url, parameters, div, hotspot, callback) {
     var status;
     if (http_request.readyState == 4) {
       loadingCueFinish();
-      var location = http_request.getResponseHeader('Location');
+      var location;
       try {
         status = http_request.status;
+        location = http_request.getResponseHeader('Location');
       } catch (e) { // hack since mozilla sometimes throws NS_ERROR_NOT_AVAILABLE here
         // deduce status
         if (location)
