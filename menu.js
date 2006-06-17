@@ -1,3 +1,5 @@
+
+
 /**
  * Popup system.
  * Supports menu, dynamicaly generated listboxes, tooltips.
@@ -4255,6 +4257,9 @@ function setKeyboardFocus(element) {
 //   http://keelypavan.blogspot.com/2006/01/using-ajax.html
 //   http://developer.apple.com/internet/webcontent/xmlhttpreq.html
 function postRequest(url, parameters, div, hotspot, callback) {
+  /*@if (@_jscript_version >= 5)
+  //JScript gives us Conditional compilation, we can cope with old IE versions.
+  //and security blocked creation of the objects.
 
   this.XMLHTTP = ["Msxml2.XMLHTTP.6.0", "Msxml2.XMLHTTP.5.0", "Msxml2.XMLHTTP.4.0", "MSXML2.XMLHTTP.3.0", "MSXML2.XMLHTTP", "Microsoft.XMLHTTP"];
   this.newActiveXObject = function(axarray) {
@@ -4275,7 +4280,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
     }
     return returnValue;
   };
-
+  @end @*/
   function callInProgress() {
     if (!this.lastRequest)
       return false;
@@ -4284,7 +4289,6 @@ function postRequest(url, parameters, div, hotspot, callback) {
       case 1: case 2: case 3:
         return true;
       break;
-
   //     Case 4 and 0
       default:
         return false;
@@ -4299,14 +4303,23 @@ function postRequest(url, parameters, div, hotspot, callback) {
   // visual cue that click was made, using the tooltip
   loadingCueStart(hotspot);
 
-  if (window.XMLHttpRequest) { // Mozilla, Safari,...
-    http_request = new XMLHttpRequest();
-    if (http_request.overrideMimeType) {
-      http_request.overrideMimeType('text/xml');
-    }
+  if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla, Safari,...
+    try {
+      http_request = new XMLHttpRequest();
+      if (http_request.overrideMimeType) {
+        http_request.overrideMimeType('text/xml');
+      }
+    } catch(e) {}
   }
-  else if (window.ActiveXObject) { // IE
+  /*@if (@_jscript_version >= 5)
+  if (!http_request window.ActiveXObject) { // IE
     http_request = this.newActiveXObject(this.XMLHTTP);
+  }
+  @end @*/
+  if (!http_request && window.createRequest) { // IceBrowser
+    try {
+      http_request = window.createRequest();
+    } catch (e) {}
   }
   if (!http_request) {
     alert('Cannot create XMLHTTP instance, using iframe instead');
@@ -4335,7 +4348,11 @@ function postRequest(url, parameters, div, hotspot, callback) {
       try {
         status = http_request.status;
         location = http_request.getResponseHeader('Location');
-      } catch (e) { // hack since mozilla sometimes throws NS_ERROR_NOT_AVAILABLE here
+        var responseXML = http_request.responseXML;
+        if (responseXML && responseXML.baseURI)
+          url = responseXML.baseURI;
+      }
+      catch (e) { // hack since mozilla sometimes throws NS_ERROR_NOT_AVAILABLE here
         // deduce status
         if (location)
           status = 302;
@@ -4351,7 +4368,17 @@ function postRequest(url, parameters, div, hotspot, callback) {
       }
       else if (status == 200) {
         frameLoaded[frameId] = true;
-        callback(div, hotspot, http_request.responseText);
+        var repaintDialog = url.indexOf('-inner=') != -1;
+        if (repaintDialog)
+          callback(div, hotspot, http_request.responseText);
+        else {
+          //alert(http_request.responseText);
+          //document.innerHTML = http_request.responseText;
+          document.open();
+          document.write(http_request.responseText);
+          document.close();
+          window.focus();
+        }
       }
       else if (status == 302) {
         if (!location)
