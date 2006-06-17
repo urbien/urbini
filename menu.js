@@ -2693,8 +2693,13 @@ function onClickDisplayInner (e) {
   var r;
   if (propName.indexOf("list.") == 0)
     r = displayInner(e, innerListUrls[propName.substring(5)]);
-  else
-    r = displayInner(e, innerUrls[propName]);
+  else {
+    var a = anchor.href;
+    if (a != 'about:blank')
+      r = displayInner(e, a);
+    else
+      r = displayInner(e, innerUrls[propName]);
+  }
   return r;
 }
 
@@ -4368,17 +4373,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
       }
       else if (status == 200) {
         frameLoaded[frameId] = true;
-        var repaintDialog = url.indexOf('-inner=') != -1;
-        if (repaintDialog)
-          callback(div, hotspot, http_request.responseText);
-        else {
-          //alert(http_request.responseText);
-          //document.innerHTML = http_request.responseText;
-          document.open();
-          document.write(http_request.responseText);
-          document.close();
-          window.focus();
-        }
+        callback(div, hotspot, http_request.responseText);
       }
       else if (status == 302) {
         if (!location)
@@ -4388,6 +4383,11 @@ function postRequest(url, parameters, div, hotspot, callback) {
           postRequest(location, parameters, div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
         else
           document.location = location;  // reload current page - usually happens at login due to timeout
+      }
+      else if (status == 322) {
+        if (!location)
+          return;
+        document.location = location;  // reload current page - usually happens at login due to timeout
       }
     }
     else {
