@@ -4262,10 +4262,6 @@ function setKeyboardFocus(element) {
 //   http://keelypavan.blogspot.com/2006/01/using-ajax.html
 //   http://developer.apple.com/internet/webcontent/xmlhttpreq.html
 function postRequest(url, parameters, div, hotspot, callback) {
-  /*@if (@_jscript_version >= 5)
-  //JScript gives us Conditional compilation, we can cope with old IE versions.
-  //and security blocked creation of the objects.
-
   this.XMLHTTP = ["Msxml2.XMLHTTP.6.0", "Msxml2.XMLHTTP.5.0", "Msxml2.XMLHTTP.4.0", "MSXML2.XMLHTTP.3.0", "MSXML2.XMLHTTP", "Microsoft.XMLHTTP"];
   this.newActiveXObject = function(axarray) {
     //  IE5 for the mac claims to support window.ActiveXObject, but throws an error when it's used
@@ -4285,7 +4281,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
     }
     return returnValue;
   };
-  @end @*/
+
   function callInProgress() {
     if (!this.lastRequest)
       return false;
@@ -4316,11 +4312,11 @@ function postRequest(url, parameters, div, hotspot, callback) {
       }
     } catch(e) {}
   }
-  /*@if (@_jscript_version >= 5)
-  if (!http_request window.ActiveXObject) { // IE
+
+  if (!http_request && window.ActiveXObject) { // IE
     http_request = this.newActiveXObject(this.XMLHTTP);
   }
-  @end @*/
+
   if (!http_request && window.createRequest) { // IceBrowser
     try {
       http_request = window.createRequest();
