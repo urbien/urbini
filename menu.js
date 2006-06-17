@@ -4121,17 +4121,25 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
       //alert("divCoords.height = " + divCoords.height + ", " + "screenY = " + screenY);
     }
     // recalc coords and add scrolling if we fixed dimensions
-    if (xFixed)
-      div.style.overflowX = "auto";
-    if (yFixed)
-      div.style.overflowY = "auto";
-	if (xFixed || yFixed)
-      divCoords = getElementCoords(div);
-	// reset position of the scrolls (it could be scrolled from prev. using)
-	if(div.style.overflowX == "auto")
-		div.scrollLeft = 0;
-	if(div.style.overflowY == "auto")
-		div.scrollTop = 0;
+    if (typeof div.style.overflowX == 'undefined') {
+      if (xFixed || yFixed) {
+        div.style.overflow = "auto";
+        divCoords = getElementCoords(div);
+      }  
+    }
+    else {
+      if (xFixed)
+        div.style.overflowX = "auto";
+      if (yFixed)
+        div.style.overflowY = "auto";
+      if (xFixed || yFixed)
+        divCoords = getElementCoords(div);
+      // reset position of the scrolls (it could be scrolled from prev. using)
+      if(div.style.overflowX == "auto")
+      	div.scrollLeft = 0;
+      if(div.style.overflowY == "auto")
+      	div.scrollTop = 0;
+    }
   }
   div.style.display    = 'none';   // must hide it again to avoid screen flicker
 
