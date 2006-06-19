@@ -4125,7 +4125,7 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
       if (xFixed || yFixed) {
         div.style.overflow = "auto";
         divCoords = getElementCoords(div);
-      }  
+      }
     }
     else {
       if (xFixed)
@@ -4193,13 +4193,13 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   //var opera     = navigator.userAgent.indexOf("Opera") != -1;
   //var konqueror = navigator.userAgent.indexOf("Konqueror") != -1;
   div.style.display    = 'inline';
-  //istyle.display       = 'inline';
+  if (document.all)   // only IE has a problem with form elements 'showing through' the popup
+    istyle.display       = 'inline';
   reposition(div,    left, top); // move the div box to the adjusted position
   reposition(iframe, left, top); // place iframe under div
   //if (!opera && !konqueror) {
-  if (document.all) { // only IE has a problem with form elements 'showing through' the popup
+  if (document.all)   // only IE has a problem with form elements 'showing through' the popup
     istyle.visibility  = Popup.VISIBLE;
-  }
   div.style.visibility = Popup.VISIBLE; // finally make div visible
 }
 
@@ -4330,6 +4330,16 @@ function postRequest(url, parameters, div, hotspot, callback) {
       http_request = window.createRequest();
     } catch (e) {}
   }
+
+  if (parameters)
+    parameters += '&ajax=y';
+  else {
+    if (url.indexOf('?') != -1)
+      url += '&ajax=y';
+    else
+      url += '?ajax=y';
+  }
+
   if (!http_request) {
     alert('Cannot create XMLHTTP instance, using iframe instead');
     frameLoaded[frameId] = false;
@@ -4398,6 +4408,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
       // other ajax states that we ignore for now: 0-Unintialized, 1-Loading, 2-Loaded, 3-Interactive
     }
   };
+
   http_request.open('POST', url, true);
   http_request.setRequestHeader("Referer",      document.location.href);
   http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
