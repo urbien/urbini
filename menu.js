@@ -4336,12 +4336,12 @@ function postRequest(url, parameters, div, hotspot, callback) {
   }
 
   if (parameters)
-    parameters += '&ajax=y';
+    parameters += '&-ajax=y';
   else {
     if (url.indexOf('?') != -1)
-      url += '&ajax=y';
+      url += '&-ajax=y';
     else
-      url += '?ajax=y';
+      url += '?-ajax=y';
   }
 
   if (!http_request) {
@@ -4414,7 +4414,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
   };
 
   http_request.open('POST', url, true);
-  
+
   // browser does not allow Referer to be sent - so we send X-Referer and on server make it transparent to apps
   //http_request.setRequestHeader("Referer",      document.location.href);
   http_request.setRequestHeader("X-Referer",     document.location.href);
