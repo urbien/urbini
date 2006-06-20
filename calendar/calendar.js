@@ -137,6 +137,8 @@ function calendar(initParams, TCB) {
   this.TCI = (initParams.pictname ? initParams.pictname : 'calicon_' + this.TCC);
   this.calPosImageId = (initParams.positionname ? initParams.positionname : 'calpos_' + this.TCC);
 
+  this.titleStr = initParams.title;
+
   if (!initParams.formname) {
     this.dateMessage('need_form_name');
     return
@@ -433,9 +435,15 @@ function TC0B() {
   var signal = TC9.TC0b ? 'onclick' : 'onchange';
   var TC0c = new TC0d();
 
+  var title = "<div class='menuTitle'>" + this.titleStr + "</div>";
   TC0c.TC0e('<table ',
+			'style="padding:1px; background-color:#eef;"',
             this.TCO('outertable'),
-            '><tr><td><table',
+            '>',
+            '<tr><td>',
+            title,
+            '</td></tr>',
+            '<tr><td><table',
             this.TCO('navtable'),
             '><tr>',
             (this.TCB.todaycell && this.TCB.todayimage ? '<td rowspan="2"' + this.TCO('todaycell')
@@ -621,6 +629,9 @@ function TC0B() {
 
   this.TC0G();
   this.setCalendarPosition();
+
+  // set a handler which closes the calendar	  
+  popupHandler(this.caldiv);
 }
 
 function TC0L() {
@@ -1487,6 +1498,7 @@ function getOffset(TC2C) {
 }
 
 function isShown() {
+	this.shown = (this.caldiv.style.visibility == "hidden") ? false : true;
   return this.shown;
 }
 
@@ -1856,6 +1868,83 @@ function reposition(div, x, y) {
   div.style.top  = y - intLessTop  + 'px';
 }
 
+
+/*****************************************
+* popupHandler - closes a div on 
+* 1. esc, 2. click outside, 3. mouse leaving
+*****************************************/
+function popupHandler(popupDiv)
+{
+	var CLOSE_TIMEOUT = 500;
+	// only 1 popup can be opened concurrently
+	if(this.popupDiv != null)
+		this.closePopup();
+		
+	this.popupDiv = popupDiv;
+	this.oldOnKeyUp = null;
+	this.timerid = 0;
+	var i_am = this;
+	
+	this._onkeyup = function(evt) {
+		evt = (evt) ? evt : event;
+		var charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : 
+			((evt.which) ? evt.which : 0));
+		if (charCode == 27)
+			i_am.closePopup();
+	}
+
+	this._onmouseup = function(evt) {
+		i_am.closePopup();
+	}
+
+	this._onmouseover = function(event) {
+		var related;
+		if (window.event) related = window.event.toElement;
+		else related = event.relatedTarget;
+		if (i_am.popupDiv == related || i_am.contains(i_am.popupDiv, related))
+			clearInterval(i_am.timerid);
+	}
+	
+	this._onmouseout = function(event) {
+		var related;
+		if (window.event) related = window.event.toElement;
+		else related = event.relatedTarget;
+		if (i_am.popupDiv != related && !i_am.contains(i_am.popupDiv, related))
+			i_am.timerid = setInterval(i_am.suspendedClose, CLOSE_TIMEOUT);
+	}
+	
+	this.contains = function (a, b) {// Return true if node a contains node b.
+		while (b.parentNode)
+			if ((b = b.parentNode) == a) return true;
+		return false;
+	}
+	
+	this.suspendedClose = function() {
+		clearInterval(i_am.timerid);
+		i_am.closePopup();
+	}
+	
+	this.closePopup = function() {
+		if(this.popupDiv == null)
+			return;
+		this.popupDiv.style.visibility = "hidden";
+		document.onkeyup = this.oldOnKeyUp;
+		this.popupDiv.onmouseover = null;
+		this.popupDiv.onmouseout = null;
+		this.popupDiv = null;
+	}
+	
+	// constructor's body ----
+	this.oldOnKeyUp = document.onkeyup;
+	document.onkeyup = this._onkeyup;
+	document.onclick = this._onmouseup;
+
+	this.popupDiv.onmouseover = this._onmouseover;
+	this.popupDiv.onmouseout = this._onmouseout;
+}
+
+
+
 /**
  * Retrieves calendar using formName + name as a key.
  * If does not exist - creates one.
@@ -1864,13 +1953,21 @@ function getCalendar(event,
                      formName,
                      name,              // date input field id and name
                      initialValue,      // initial value in date format shown below
-                     dateFormat) {      // dateFormat = (isEuropean) ? "d-m-Y" : "m-d-Y";
+                     dateFormat,       // dateFormat = (isEuropean) ? "d-m-Y" : "m-d-Y";
+                     titleStr) {	   // title text
+  
+  var DEFAULT_TITLE = "select a day";
   try {
     var cal = A_CALENDARS[formName + '_' + name];
     if (cal && cal.isShown()) {
       cal.showcal();
       return stopEventPropagation(event);
     }
+    
+    //debugger
+    if(typeof titleStr == 'undefined')
+		titleStr = DEFAULT_TITLE;
+		
     var initParams = {
         // a name of HTML form containing the calendar
         'formname' : formName,
@@ -1880,7 +1977,8 @@ function getCalendar(event,
         'replace' : true,
         'selected' : initialValue,
         'watch' : true,
-        'controlname' : name
+        'controlname' : name,
+        'title' : titleStr
     };
     cal = new calendar(initParams, CAL_TPL1);
     var div = document.getElementById(name + "_div");
