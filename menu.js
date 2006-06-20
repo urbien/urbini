@@ -4128,21 +4128,25 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
       }
     }
     else {
-      if (xFixed)
-        div.style.overflowX = "auto";
-      if (yFixed)
-        div.style.overflowY = "auto";
+	  if(typeof div.style.overflowX != 'undefined') {
+		if (xFixed)
+			div.style.overflowX = "auto";
+		if (yFixed)
+			div.style.overflowY = "auto";
+	  }
+	  else {
+		if (xFixed || yFixed)
+			div.style.overflow = "auto";
+	  }
+	  // get div size after scrolling appending
       if (xFixed || yFixed)
         divCoords = getElementCoords(div);
       // reset position of the scrolls (it could be scrolled from prev. using)
-      if(div.style.overflowX == "auto")
-      	div.scrollLeft = 0;
-      if(div.style.overflowY == "auto")
-      	div.scrollTop = 0;
+      div.scrollLeft = 0;
+      div.scrollTop  = 0;
     }
   }
   div.style.display    = 'none';   // must hide it again to avoid screen flicker
-
   // move box to the left of the hotspot if the distance to window border isn't enough to accomodate the whole div box
   if (distanceToRightEdge < divCoords.width + margin) {
     left = (screenX + scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
