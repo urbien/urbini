@@ -12,7 +12,7 @@
        <br />
        <div style="text-align: center">
          <input type="submit" name="submit" value="  Submit  " onclick="return saveButtonClicked(event, this);"></input>
-         &#160;&#160;
+         <span style="width: 10px" /> 
          <input type="submit" name="cancel" value="  Cancel  " onclick="return saveButtonClicked(event, this);"></input>
        </div>
      </form>
