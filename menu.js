@@ -12,6 +12,18 @@ var keyPressedElement;
 var autoCompleteTimeoutId;
 var keyPressedTime;
 
+String.prototype.startsWith = function(s) {
+  var n = s.length;
+  var m = this.length;
+  if (m < n)
+    return false;
+  for (var i=0; i<n; i++) {
+    if (this.charAt(i) != s.charAt(i))
+      return false;
+  }
+  return true;
+}
+
 /**
  *  Since Internet Explorer does not define the Node interface constants,
  *  which let you easily identify the type of node, one of the first things to do
@@ -34,8 +46,7 @@ if (!window['Node']) {
 }
 
 // add contains function if it is missing
-if (window.Node && Node.prototype && !Node.prototype.contains)
-{
+if (window.Node && Node.prototype && !Node.prototype.contains) {
   Node.prototype.contains = function (arg) {
     return !!(this.compareDocumentPosition(arg) & 16)
   }
@@ -708,19 +719,24 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (self.isHeaderRow(tr)) // skip clicks on menu header
       return;
 
+    //
     // if there is a link on this row - follow it
-    var anchors = tr.getElementsByTagName('a');
+    //
+    var anchors = tr.getElementsByTagName('A');
     if (anchors  &&  anchors.length != 0) {
       if (currentDiv) {
         loadedPopups[currentDiv.id] = null;
         Popup.close0(currentDiv.id);
       }
-      var trg = anchors[0].getAttribute('target');
+      var anchor = anchors[0];
+      var trg = anchor.getAttribute('target');
       if (trg)
         return true;
 
-      if (anchors[0].onclick1) {
-        anchors[0].onclick1(e);
+      if (anchor.id.startsWith('-inner'))        // display as on-page dialog
+        return onClickDisplayInner(e, anchor);
+      if (anchor.onclick1) {
+        anchor.onclick1(e);
       }
       else {
         var href = tr.getAttribute('href', href);
@@ -2581,44 +2597,48 @@ function tooltipOnMouseOut(e) {
 function interceptLinkClicks(div) {
   //addEvent(document, 'keydown', onKeyDown, false);
   //addEvent(document, 'keyup',   onKeyUp,   false);
-  if (!div)
-    div = document;
-
   var anchors;
-  if (div)
+  var doc;
+  if (div) {
     anchors = div.getElementsByTagName('A');
-  else
-    anchors = document.getElementsByTagName('A');
+    doc = div;
+  }
+  else {
+    anchors = document.links;
+    doc = document;
+  }
   var llen = anchors.length;
   for (var i=0;i<llen; i++) {
     var anchor = anchors[i];
     var id = anchor.id;
-    if (id.indexOf('menuLink_') == 0) // menu clicks are processed by their own event handler
+    if (id && id.startsWith('menuLink_')) // menu clicks are processed by their own event handler
       continue;
-    if (id && id.indexOf("-inner.") == 0)
+    if (id && id.startsWith("-inner."))
       addEvent(anchor, 'click',  onClickDisplayInner,   false);
     else
       addEvent(anchor, 'click',  onClick,   false);
-    replaceTooltip(div, anchor);
+    replaceTooltip(doc, anchor);
   }
 }
 
 function initListBoxes(div) {
   var images;
-  if (div)
+  var doc;
+  if (div) {
     images = div.getElementsByTagName('img');
-  else
+    doc = div;
+  }
+  else {
     images = document.images;
+    doc = document;
+  }
   for (var i=0; i<images.length; i++) {
     var image = images[i];
-    if (image.id.indexOf("_filter", image.id.length - "_filter".length) != -1) {
-      if (typeof listboxOnClick == 'undefined')
-        continue;
+    if (image.id.indexOf("_filter", image.id.length - "_filter".length) != -1)
       addEvent(image, 'click', listboxOnClick, false); // add handler to smartlistbox images
-    }
     else
       addBooleanToggle(image);
-    replaceTooltip(div, image);
+    replaceTooltip(doc, image);
   }
 
   // 1. add handler to autocomplete filter form text fields
@@ -2640,7 +2660,7 @@ function initListBoxes(div) {
     addEvent(form, 'submit', popupOnSubmit, false);
     for (j=0; j<form.elements.length; j++) {
       var elem = form.elements[j];
-      replaceTooltip(div, elem);
+      replaceTooltip(doc, elem);
       initialValues[elem.name] = elem.value;
       if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT fields
           elem.id) {                                         // and those that have ID
@@ -2677,8 +2697,36 @@ function initListBoxes(div) {
   }
 }
 
-function onClickDisplayInner (e) {
-  var anchor = getTargetAnchor(e);
+function uiFocus(div) {
+  if (!div)
+    div = document;
+
+  var fields = div.getElementsByTagName('input');
+  var firstField;
+
+  for (var i=0; i<fields.length; i++) {
+    var u = fields[i];
+    if (u && u.type && u.type != 'hidden') {
+      if (!firstField) {
+        firstField = u;
+      }
+      if (u.id && (u.id == 'uiFocus' || u.id.indexOf('_uiFocus') != -1)) {
+        u.focus(); // in IE (at least in IE6) first focus() is lost for some reason - we are forced to issue another focus()
+        u.focus();
+        return true;
+      }
+    }
+  }
+  if (firstField && div != document) {
+    firstField.focus();
+    firstField.focus(); // second time for IE
+  }
+  return false;
+}
+
+function onClickDisplayInner(e, anchor) {
+  if (!anchor)
+    anchor = getTargetAnchor(e);
   if (!anchor || !anchor.id)
     return;
   e = getDocumentEvent(e); if (!e) return;
@@ -2755,6 +2803,28 @@ function onClick(e) {
 
   document.location.href = link.href;
   return stopEventPropagation(e);
+}
+
+/**
+ * remove modifier, like ctrl_y
+ */
+function removeModifier(url, param) {
+  var urlStr = url.href;
+  var idx = urlStr.indexOf(param);
+  if (idx == -1)
+    return url;
+
+  var len = param.length;
+  if (urlStr.charAt(idx - 1) == '&') {
+    idx--;
+    len++;
+  }
+
+  var uBefore = urlStr.substring(0, idx);
+  var uAfter  = urlStr.substring(idx + len);
+  urlStr = uBefore + uAfter;
+  url.href = urlStr;
+  // alert('before='+uBefore + ', after=' + uAfter);
 }
 
 function addUrlParam(url, param, target) {
@@ -4523,10 +4593,11 @@ function setTextHeight(div, divider) {
   if (spanRef != null && moreRef != null) {
     if (spanRef.offsetHeight > divRef.offsetHeight) {
       moreRef.style.display = "block";
-    } else { // div must have "minimized view". Then the user clicks on "more>>" link and the style of the div is changed
-             // from (overflow:hidden) to (display:inline; overflow:visible). This is done on line #73 (function displayFullText(div, moreDiv))
+    }
+    else { // div must have "minimized view". Then the user clicks on "more>>" link and the style of the div is changed
+           // from (overflow:hidden) to (display:inline; overflow:visible). This is done in (function displayFullText(div, moreDiv))
       //moreRef.style.display = "none";
-      divRef.style.height = 40;//spanRef.offsetHeight;
+      divRef.style.height = 4 * 1.33 + 'em'; // 4 rows //spanRef.offsetHeight;
       //divRef.style.overflow = "visible";
     }
   }
