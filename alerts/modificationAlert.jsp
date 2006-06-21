@@ -8,7 +8,7 @@ Dear <property name="to" href="y"/>
 <br/><br/>
 The <property name="forum" type="y"/> <property name="forum" href="y"/> was modified.
 <br/>
-Here are the modificaitions:
+Changes made by <property name="modification.partOf.contact" href="y"> are below:
 <propertySheet name="modification"/>
 Customer Service
 <br/>
