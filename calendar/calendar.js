@@ -221,7 +221,7 @@ function calendar(initParams, TCB) {
                this.TCc(initParams.today) :
                (this.TC02 != 0 ? this.getDateFor(null, true) :
                   this.getDateFor()));
-  this.TC04 = this.TCM(initParams.selected, this.TC03, true);
+  this.TC04 = this.TCM(initParams.selected, this.TC03, false);
   this.TC05 = initParams.mindate ? this.TCM(initParams.mindate, this.TC03) : null;
   this.TC06 = initParams.maxdate ? this.TCM(initParams.maxdate, this.TC03) : null;
   var TC07 = ['marked', 'allowed', 'forbidden'];
@@ -1894,7 +1894,10 @@ function popupHandler(popupDiv)
 	}
 
 	this._onmouseup = function(evt) {
-		i_am.closePopup();
+		var evt = evt || window.event;
+		var target = evt.target || evt.srcElement; 
+		if (i_am.contains(i_am.popupDiv, target) == false )
+			i_am.closePopup();
 	}
 
 	this._onmouseover = function(event) {
@@ -1914,6 +1917,8 @@ function popupHandler(popupDiv)
 	}
 	
 	this.contains = function (a, b) {// Return true if node a contains node b.
+		if(a == null || b == null)
+			return false;
 		while (b.parentNode)
 			if ((b = b.parentNode) == a) return true;
 		return false;
