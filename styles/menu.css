@@ -46,7 +46,7 @@ TD.toolbar {
 }
 
 .menuItemNoChoices {
-	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; BACKGROUND-COLOR: #f8f4ef; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
+	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; COLOR: black; BACKGROUND-COLOR: #f8f4ef; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
 }
 
 .menuItem a:hover, .menuItem a:link, .menuItem a:active, .menuItem a:visited {
