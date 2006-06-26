@@ -46,7 +46,7 @@ var CAL_TPL1 = {
 		'cellpadding': 0,
 		'cellspacing': 0,
 		'border': 0,
-		'bgcolor' : '#999999',
+		'bgcolor' : '#ffffff',
 		'class' : 'calOuterTable',
 		'width': 160
 	},

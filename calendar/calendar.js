@@ -118,7 +118,6 @@ var tc0a6 = false;
 function calendar(initParams, TCB) {
 
   this.initialized = false;
-
 //  var TCC = this.TCC = A_CALENDARS.length;
   var TCC = this.TCC = initParams.formname + '_' + initParams.controlname;
 
@@ -221,7 +220,7 @@ function calendar(initParams, TCB) {
                this.TCc(initParams.today) :
                (this.TC02 != 0 ? this.getDateFor(null, true) :
                   this.getDateFor()));
-  this.TC04 = this.TCM(initParams.selected, this.TC03, false);
+  this.TC04 = this.TCM(initParams.selected, this.TC03, true);
   this.TC05 = initParams.mindate ? this.TCM(initParams.mindate, this.TC03) : null;
   this.TC06 = initParams.maxdate ? this.TCM(initParams.maxdate, this.TC03) : null;
   var TC07 = ['marked', 'allowed', 'forbidden'];
@@ -435,7 +434,7 @@ function TC0B() {
   var signal = TC9.TC0b ? 'onclick' : 'onchange';
   var TC0c = new TC0d();
 
-  var title = "<div class='menuTitle'>" + this.titleStr + "</div>";
+  var title = "<div class='menuTitle' style='margin-bottom:1px'>" + this.titleStr + "</div>";
   TC0c.TC0e('<table ',
 			'style="padding:1px; background-color:#eef;"',
             this.TCO('outertable'),
@@ -580,7 +579,7 @@ function TC0B() {
     this.iframe = this.getElementId('cal_iframe' + thistcc);
 
   this.TC0m = this.getElementId(this.TCH, 'form');
-  this.TC0m.value  = this.TC09;
+  // this.TC0m.value  = this.TC09; //  commented out by A. L.
   this.calPosImage = this.getElementId(this.calPosImageId, 'img');
 
   if (this.TCG == 1) {
@@ -630,8 +629,8 @@ function TC0B() {
   this.TC0G();
   this.setCalendarPosition();
 
-  // set a handler which closes the calendar	  
-  popupHandler(this.caldiv);
+  // set a handler which hides the calendar	  
+  popupHandler.start(this.caldiv);
 }
 
 function TC0L() {
@@ -1051,14 +1050,20 @@ function TC0H(TC1c, TC1d, TC1J) {
   this.TC04 = new Date(TC1e);
   this.TC04 = this.TCa(this.TC04);
   this.TC0M(TC1c);
-
+  
   if (this.initParams.watch == true) {
-    if (this.shown || this.TC0m.value)
-      this.TC0m.value = this.TCe(this.TC04)
+    if (this.shown || this.TC0m.value) {
+       this.TC0m.value = this.TCe(this.TC04)
+    }
   }
   else if (TC1c == 'chislo') {
-    if (this.shown || this.TC0m.value)
-      this.TC0m.value = this.TCe(this.TC04)
+    if (this.shown || this.TC0m.value) {
+      // 'if' is a hack by A. L. - No change on the calendar openning.
+		if(typeof TC1d != 'undefined') {
+			this.TC0m.value = this.TCe(this.TC04);
+			popupHandler.end();
+		}
+      }
   }
 }
 
@@ -1873,79 +1878,84 @@ function reposition(div, x, y) {
 * popupHandler - closes a div on 
 * 1. esc, 2. click outside, 3. mouse leaving
 *****************************************/
-function popupHandler(popupDiv)
-{
-	var CLOSE_TIMEOUT = 500;
-	// only 1 popup can be opened concurrently
-	if(this.popupDiv != null)
-		this.closePopup();
-		
-	this.popupDiv = popupDiv;
-	this.oldOnKeyUp = null;
-	this.timerid = 0;
-	var i_am = this;
+var popupHandler = {
+
+	CLOSE_TIMEOUT : 500,
+	popupDiv : null,
+	oldOnKeyUp : null,
+	timerid : 0,
 	
-	this._onkeyup = function(evt) {
+	_onkeyup : function(evt) {
 		evt = (evt) ? evt : event;
 		var charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : 
 			((evt.which) ? evt.which : 0));
 		if (charCode == 27)
-			i_am.closePopup();
-	}
+			popupHandler.closePopup();
+	},
 
-	this._onmouseup = function(evt) {
+	_onmouseup : function(evt) {
 		var evt = evt || window.event;
 		var target = evt.target || evt.srcElement; 
-		if (i_am.contains(i_am.popupDiv, target) == false )
-			i_am.closePopup();
-	}
+		if (popupHandler.contains(popupHandler.popupDiv, target) == false )
+			popupHandler.closePopup();
+	},
 
-	this._onmouseover = function(event) {
+	_onmouseover : function(event) {
 		var related;
 		if (window.event) related = window.event.toElement;
 		else related = event.relatedTarget;
-		if (i_am.popupDiv == related || i_am.contains(i_am.popupDiv, related))
-			clearInterval(i_am.timerid);
-	}
+		if (popupHandler.popupDiv == related || popupHandler.contains(popupHandler.popupDiv, related))
+			clearInterval(popupHandler.timerid);
+	},
 	
-	this._onmouseout = function(event) {
+	_onmouseout : function(event) {
 		var related;
 		if (window.event) related = window.event.toElement;
 		else related = event.relatedTarget;
-		if (i_am.popupDiv != related && !i_am.contains(i_am.popupDiv, related))
-			i_am.timerid = setInterval(i_am.suspendedClose, CLOSE_TIMEOUT);
-	}
+		if (popupHandler.popupDiv != related && !popupHandler.contains(popupHandler.popupDiv, related))
+			popupHandler.timerid = setInterval(popupHandler.suspendedClose, popupHandler.CLOSE_TIMEOUT);
+	},
 	
-	this.contains = function (a, b) {// Return true if node a contains node b.
+	contains : function (a, b) {// Return true if node a contains node b.
 		if(a == null || b == null)
 			return false;
 		while (b.parentNode)
 			if ((b = b.parentNode) == a) return true;
 		return false;
-	}
+	},
 	
-	this.suspendedClose = function() {
-		clearInterval(i_am.timerid);
-		i_am.closePopup();
-	}
+	suspendedClose : function() {
+		clearInterval(popupHandler.timerid);
+		popupHandler.closePopup();
+	},
 	
-	this.closePopup = function() {
+	closePopup : function() {
 		if(this.popupDiv == null)
 			return;
 		this.popupDiv.style.visibility = "hidden";
+		this.end();
+	},
+	
+	start : function(div) {
+		// only 1 popup can be opened concurrently
+		if(this.popupDiv != null)
+			this.closePopup();
+
+		this.popupDiv = div;
+		this.oldOnKeyUp = document.onkeyup;
+		document.onkeyup = this._onkeyup;
+		document.onclick = this._onmouseup;
+
+		this.popupDiv.onmouseover = this._onmouseover;
+		this.popupDiv.onmouseout = this._onmouseout;
+	},
+	
+	end : function() { // end on selection; no hidding. 
 		document.onkeyup = this.oldOnKeyUp;
 		this.popupDiv.onmouseover = null;
 		this.popupDiv.onmouseout = null;
 		this.popupDiv = null;
 	}
-	
-	// constructor's body ----
-	this.oldOnKeyUp = document.onkeyup;
-	document.onkeyup = this._onkeyup;
-	document.onclick = this._onmouseup;
-
-	this.popupDiv.onmouseover = this._onmouseover;
-	this.popupDiv.onmouseout = this._onmouseout;
 }
 
 
@@ -1969,7 +1979,6 @@ function getCalendar(event,
       return stopEventPropagation(event);
     }
     
-    //debugger
     if(typeof titleStr == 'undefined')
 		titleStr = DEFAULT_TITLE;
 		
@@ -1980,8 +1989,8 @@ function getCalendar(event,
         'dataformat' : dateFormat,
         // whether to hide any other opened calendar if opening current one
         'replace' : true,
-        'selected' : initialValue,
-        'watch' : true,
+        'selected' : null,//initialValue,
+        'watch' : false,
         'controlname' : name,
         'title' : titleStr
     };
