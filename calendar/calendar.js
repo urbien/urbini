@@ -1912,8 +1912,11 @@ var popupHandler = {
 		var related;
 		if (window.event) related = window.event.toElement;
 		else related = event.relatedTarget;
-		if (popupHandler.popupDiv != related && !popupHandler.contains(popupHandler.popupDiv, related))
+		if(related == null)
+			return;
+		if (popupHandler.popupDiv != related && !popupHandler.contains(popupHandler.popupDiv, related)) {
 			popupHandler.timerid = setInterval(popupHandler.suspendedClose, popupHandler.CLOSE_TIMEOUT);
+		}
 	},
 	
 	contains : function (a, b) {// Return true if node a contains node b.
