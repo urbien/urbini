@@ -4483,7 +4483,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
   // browser does not allow Referer to be sent - so we send X-Referer and on server make it transparent to apps
   //http_request.setRequestHeader("Referer",      document.location.href);
   http_request.setRequestHeader("X-Referer",     document.location.href);
-  http_request.setRequestHeader("ajax",          "y");
+  http_request.setRequestHeader("X-Ajax",       "y");
   http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
   // below 2 line commented - made IE wait with ~1 minute timeout
   if (parameters) {
