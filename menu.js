@@ -2123,14 +2123,16 @@ function getTrNode(elem) {
   var e;
 
   var elem_ = elem;
-  if (elem.length > 1)
+  if (elem.length > 1) {
     elem_ = elem[0];
+    alert('getTrNode(): element is array: ' + elem + ', its first element is: ' + elem_);
+  }
   if (elem_.tagName.toUpperCase() == 'TR')
-    return elem;
+    return elem_;
   e = elem_.parentNode;
   if (e) {
-    if (e == elem)
-      e = elem.parentNode; // if parent of the array element is self - get parent of array itself
+    if (e == elem_)
+      e = elem.parentNode; // if parent of the array element is self - get parent of array
     return getTrNode(e);
   }
   else
@@ -2141,8 +2143,10 @@ function getDivNode(elem) {
   var e;
 
   var elem_ = elem;
-  if (elem.length > 1)
+  if (elem.length > 1) {
     elem_ = elem[0];
+    alert('getDivNode(): element is array: ' + elem + ', its first element is: ' + elem_);
+  }
   if (elem_.tagName.toUpperCase() == 'DIV')
     return elem;
   e = elem_.parentNode;
@@ -4405,15 +4409,6 @@ function postRequest(url, parameters, div, hotspot, callback) {
     } catch (e) {}
   }
 
-  if (parameters)
-    parameters += '&-ajax=y';
-  else {
-    if (url.indexOf('?') != -1)
-      url += '&-ajax=y';
-    else
-      url += '?-ajax=y';
-  }
-
   if (!http_request) {
     alert('Cannot create XMLHTTP instance, using iframe instead');
     frameLoaded[frameId] = false;
@@ -4488,6 +4483,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
   // browser does not allow Referer to be sent - so we send X-Referer and on server make it transparent to apps
   //http_request.setRequestHeader("Referer",      document.location.href);
   http_request.setRequestHeader("X-Referer",     document.location.href);
+  http_request.setRequestHeader("ajax",          "y");
   http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
   // below 2 line commented - made IE wait with ~1 minute timeout
   if (parameters) {
@@ -4722,6 +4718,7 @@ function removeSpaces(str) {
 /**************************************
 *	drag & drop engine
 ***************************************/
+/*
 var dragobject = {
 	z: 0, x: 0, y: 0, offsetx : null, offsety : null, targetobj : null, dragapproved : 0,
 	initialize: function(){
@@ -4771,5 +4768,5 @@ var dragobject = {
 }
 // initialize the drag & drop engine.
 dragobject.initialize();
-
+*/
 // ***********************************************************************************
