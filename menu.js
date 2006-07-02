@@ -4271,8 +4271,10 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   //var opera     = navigator.userAgent.indexOf("Opera") != -1;
   //var konqueror = navigator.userAgent.indexOf("Konqueror") != -1;
   div.style.display    = 'inline';
-  if (document.all)   // only IE has a problem with form elements 'showing through' the popup
-    istyle.display       = 'inline';
+  // commented out temporarily since listbox in dialog is not visible
+  // this unfortunately will cause a problem with popup over form fields
+  //if (document.all)   // only IE has a problem with form elements 'showing through' the popup
+  //  istyle.display       = 'inline';
   reposition(div,    left, top); // move the div box to the adjusted position
   reposition(iframe, left, top); // place iframe under div
   //if (!opera && !konqueror) {
