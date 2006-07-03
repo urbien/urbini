@@ -4,8 +4,10 @@ var HmaxOld = -1;
 var positionOld = -1;
 
 var numberOfcolumns = 3;
+
+// prevents to edit for unlogged user
 if(document.getElementById('loggedContact').href == null) {
-  alert('sorry, you can not edit dashboard. Please login.');
+  alert('Sorry, you can not edit dashboard.\nPlease login.');
   window.location = (this.window.location+"").replace("Edit.html",".html");
 }
 
@@ -229,7 +231,12 @@ function my_DropFuncD(pN, numb) {
   document.getElementById('dashBoardPanel1URIs').value = document.getElementById('panel1URIs').value;
   document.getElementById('dashBoardPanel2URIs').value = document.getElementById('panel2URIs').value;
   document.getElementById('dashBoardPanel3URIs').value = document.getElementById('panel3URIs').value;
-  document.getElementById('dashBoardLocation').value = document.getElementById('location').value;
+
+//  document.getElementById('dashBoardLocation').value = document.getElementById('location').value;
+  var params = getUrlParams();
+  document.getElementById('dashBoardParseFile').value = params.parseFile;
+  document.getElementById('dashBoardSaveFile').value = params.saveFile;
+
   document.getElementById('dashBoardIsClosePanel').value = document.getElementById('isClosePanel').value;
   document.getElementById('dashBoard').submit();
   

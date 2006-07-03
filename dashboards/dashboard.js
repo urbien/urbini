@@ -1,6 +1,8 @@
+	// onLoading section -------------
     var numberOfcolumns = 3;
-    
+    var g_dbNames = new Array(); // contains filenames of dashboards
     addEvent(window, 'resize', function() {makeBoardsAlligned();}, false);
+    addEvent(window, 'load', initDbList, false);
     
     function selectItemToAddToDashboard(panel){
       // alert must be done if nothing was selected to add
@@ -8,6 +10,7 @@
         alert("nothing to add. Please, select the panel you'd like to add.");
         return;
       }
+      
       // since new board is added then target must be ampty
       document.getElementById("dashBoard").target = '';
 
@@ -16,7 +19,7 @@
       // setPanelsClearURIsLists() cleans this lists and leave just URI's of the boards that must be displayed
       setPanelsClearURIsLists();
 
-      document.getElementById('location').value = window.location;
+      //document.getElementById('location').value = window.location;//getLocation();//window.location;
 
       // corresponding panel(i)URIs value must be appended by the URI that must be added to this column.
       document.getElementById(panel + 'URIs').value = document.getElementById('itemToAdd').value + ";" + document.getElementById(panel + 'URIs').value; 
@@ -33,9 +36,13 @@
       document.getElementById('dashBoardPanel1URIs').value = document.getElementById('panel1URIs').value;
       document.getElementById('dashBoardPanel2URIs').value = document.getElementById('panel2URIs').value;
       document.getElementById('dashBoardPanel3URIs').value = document.getElementById('panel3URIs').value;
-      document.getElementById('dashBoardLocation').value = document.getElementById('location').value;
       document.getElementById('dashBoardIsClosePanel').value = document.getElementById('isClosePanel').value;
 
+	  var params = getUrlParams();
+      document.getElementById('dashBoardParseFile').value = params.parseFile; //document.getElementById('location').value;
+	  document.getElementById('dashBoardSaveFile').value = params.saveFile;
+	  document.getElementById('dashBoardstartDashboard').value = params.startDashboard;
+      
       //dashBoardForm.submit();
       document.getElementById('dashBoard').submit();
     }
@@ -138,7 +145,7 @@
       document.getElementById('dashBoardPanel1URIs').value = document.getElementById('panel1URIs').value;
       document.getElementById('dashBoardPanel2URIs').value = document.getElementById('panel2URIs').value;
       document.getElementById('dashBoardPanel3URIs').value = document.getElementById('panel3URIs').value;
-      document.getElementById('dashBoardLocation').value = document.getElementById('location').value;
+      document.getElementById('dashBoardParseFile').value = document.getElementById('location').value;
       document.getElementById('dashBoardIsClosePanel').value = document.getElementById('isClosePanel').value;
       //dashBoardForm.submit();
       document.getElementById('dashBoard').submit();
@@ -191,5 +198,326 @@
 			      return false;
   			   }
     }
-        
+       
+    // There are 2 possible variant    
+    // 1. URL on existent dashboard; no parameter.    
+    // 2. New dashboard.
+    function getUrlParams() {
+    		var NEW_CREATOR = "blankEdit";
+	    var urlData = parseURL();
     
+		// new path for case of creation and the same for already exist file
+		var newPath = urlData.path.replace(NEW_CREATOR, urlData.name + "Edit");
+
+		return {parseFile: urlData.path, saveFile:newPath, startDashboard: urlData.startDashboard};
+    }
+    
+    // fillls in the dashboard list
+    // the data are in a global variable/string dbListData.
+    function initDbList() {
+   		// (meanwhile here) set tile in FF.
+   		var curDashUrl = unescape(window.location.href);
+		document.title = curDashUrl;
+		
+		// check if there are 2 strings at list.
+		if(typeof dbListData == 'undefined')
+			return;
+		
+		var dbArr = dbListData.split(";"); // ";" - separator
+		if(dbArr.length < 3) // <select> + 2 dashboards
+			return;
+			
+		var dbListDiv = document.getElementById("db_list_div");
+		if(dbListDiv == null)
+			return;
+		dbListDiv.style.visibility = "visible";
+		
+		var dbList = document.getElementById("db_list");
+		if(dbList == null)
+			return;
+		
+		dbList.onchange = goToOtherDashboard;
+				
+		// add options to the list
+		for(var i = 0; i < dbArr.length; i++) {
+			if(dbArr[i].length > 0) {
+				if(dbArr[i] == curDashUrl) // skip the current dashboard
+					continue;
+				var optObj = document.createElement("option");
+				optObj.value = dbArr[i];
+				
+				g_dbNames[i] = getDashboardFilename(dbArr[i]);
+				
+				var textObj = document.createTextNode(g_dbNames[i]);
+				optObj.appendChild(textObj);
+				dbList.appendChild(optObj);
+			}
+		}
+    }
+
+    function getDashboardFilename(fullPath) {
+		var start = fullPath.lastIndexOf("/") + 1;
+		var end   = fullPath.lastIndexOf(".");
+		
+		if(start == -1 || end == -1 || start > end)
+			return fullPath;
+		
+		return fullPath.substring(start, end);
+    }
+        
+    function goToOtherDashboard() {
+		var dbList = document.getElementById("db_list");
+		var newLoc = dbList.options[dbList.selectedIndex].value;
+		window.location = newLoc;
+    }
+    
+    function editDashboard() {
+		if(checkIfUserLogged() == false)
+			return;
+			
+		window.location = (window.location+'').replace('.html','Edit.html');
+    }
+    
+    function finishEdit() {
+		window.location = (window.location+'').replace('Edit.html','.html');
+	}
+    
+    function createNewDashboard(isStartDashboard) {
+		if(checkIfUserLogged() == false)
+			return;
+			
+		var newFileName = document.getElementById("fileName").value;
+		// check correct file name
+		if(newFileName == null || newFileName.length == 0) {
+			alert("Error.\nType a new dashboard name.");
+			return;
+		}
+		if(checkDashboardName(newFileName) == false)
+			return;
+
+		if(checkIfDashboardNameIsNew(newFileName) == false)
+			return;
+
+		// remove an extension if it was typed
+		if(newFileName.lastIndexOf(".htm") == -1) {
+			if(newFileName.lastIndexOf(".html") == -1)
+				newFileName.replace(".html", "");
+			else
+				newFileName.replace(".htm", "");
+		}
+		var curLocation = window.location.href;
+		var idx = curLocation.lastIndexOf("/") + 1;
+		var goLoc = curLocation.substring(0, idx) + "blankEdit.html?name=" + newFileName;
+		if(isStartDashboard)
+			goLoc += "&startDashboard=yes";
+		
+		window.location = goLoc; // URLEncoder(
+	}
+
+	function setAsStartDashboard() {
+		var DASHBOARD_MAP = "dashBoard"; // for the servlet calling.
+		if(checkIfUserLogged() == false)
+			return;
+
+		document.getElementById("startDashboard_button").visibility = "hidden";
+		document.getElementById("startDashboard").innerHTML = "processing...";
+		
+		// find the url to send a request. 
+		var url = window.location.protocol + "//" + window.location.host;
+		// give up folder and dashboard filename
+		var tmp1 = window.location.pathname.split("/");
+		for(var i = 0; i < tmp1.length - 2; i++)
+			url += tmp1[i] + "/";
+		url += DASHBOARD_MAP;
+
+		var parameters = "saveFile=" + window.location.href;
+		parameters += "&startDashboard=yes";
+		
+		postRequest_dashboard(url, parameters, onSetAsStartDashboard);
+	}
+	
+	function onSetAsStartDashboard(isOk) {
+		var CLR_OK = "#75BDFF";
+		var CLR_ERR = "#FF0000";
+	    var obj = document.getElementById("startDashboard");
+	    if(obj == null)
+			return;
+		if(isOk) {
+			obj.innerHTML = "it is a start dashboard";
+			obj.style.color = CLR_OK;
+		}
+		else {
+			obj.innerHTML = "faild to set as a start dashboard";
+			obj.style.color = CLR_ERR;
+		}
+	}
+
+	function parseURL(url) {
+		var retArr = new Array();
+		var loc;
+		if(typeof url != 'undefined')
+			loc = url;
+		else
+			loc = window.location.href;
+		
+		var tmp1 = loc.split("?");
+		retArr['path'] = tmp1[0];
+		
+		// required parameters
+		if(typeof tmp1[1] != 'undefined') {
+			var tmp2 = tmp1[1].split("&");
+			for(var i = 0; i < tmp2.length; i++) {
+				var tmp3 = tmp2[i].split("=");
+				retArr[tmp3[0]] = tmp3[1];
+			}
+		}
+		return retArr;
+	}
+
+/*****************************************************************
+* check functions
+******************************************************************/
+    function checkIfUserLogged() {
+		if(document.getElementById('loggedContact').href == null) {
+		    alert('You have to log on before making this operation.');
+			return false;
+		}
+		return true;
+    }
+
+    function checkDashboardName(name) {
+		var forbidden = [":", ";", "/", "&", "?"];
+		for(var i = 0; i < forbidden.length; i++) {
+			if(name.indexOf(forbidden[i]) != -1) {
+				alert('Sorry, the dasboard name may not contain:\n":", ";", "/", "&", "?"');
+				return false;
+			}
+		}
+		return true;
+    }
+
+	function checkIfDashboardNameIsNew(name) {
+		for(i = 0; i < g_dbNames.length; i++) {
+			if(name == g_dbNames[i]) {
+				alert("The dashboard with this name is already exist.");
+				return false;
+			}
+		}
+		return true;
+	}
+	
+
+
+/************************************************
+* ajax
+* returns true in 1st param of the -callback- function
+*************************************************/	
+function postRequest_dashboard(url, parameters, callback) {
+	var http_request;
+
+	// create XMLHttpRequest object
+	this.createXMLHttpObj = function() {	
+		if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla, Safari,...
+			try {
+			http_request = new XMLHttpRequest();
+			if (http_request.overrideMimeType) {
+				http_request.overrideMimeType('text/xml');
+			}
+			} catch(e) {}
+		}
+
+		if (!http_request && window.ActiveXObject) { // IE
+			http_request = this.newActiveXObject();
+		}
+
+		if (!http_request && window.createRequest) { // IceBrowser
+			try {
+			http_request = window.createRequest();
+			} catch (e) {}
+		}
+
+		if (!http_request) {
+			alert('Cannot create XMLHTTP instance, using iframe instead');
+			frameLoaded[frameId] = false;
+			var iframe = frames[frameId];
+			iframe.document.body.innerHTML = '<form method=post action=dummy id=ajaxForm><input type=submit name=n value=v></input> </form>';
+			var ajaxForm = iframe.document.getElementById('ajaxForm');
+			ajaxForm.action = url;
+			ajaxForm.submit();
+			// line below is an alternative simpler method to submitting a form - but fails in IE if URL is too long
+			// iframe.location.replace(url); // load data from server into iframe
+			return;
+		}
+	}
+
+	// newActiveXObject - auxiliary func.
+	this.newActiveXObject = function() {
+		var xmlHttpArr = ["Msxml2.XMLHTTP.6.0", "Msxml2.XMLHTTP.5.0", "Msxml2.XMLHTTP.4.0", "MSXML2.XMLHTTP.3.0", "MSXML2.XMLHTTP", "Microsoft.XMLHTTP"];
+		var returnValue = null;
+		//  IE5 for the mac claims to support window.ActiveXObject, but throws an error when it's used
+		if (navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf("MSIE") >= 0) {
+		alert('we are sorry, you browser does not support AJAX, please upgrade or switch to another browser');
+		return null;
+		}
+		for (var i = 0; i < xmlHttpArr.length; i++) {
+		try {
+			returnValue = new ActiveXObject(xmlHttpArr[i]);
+			break;
+		}
+		catch (ex) {
+		}
+		}
+		return returnValue;
+	};
+	
+	// send request
+	this.sendRequest = function() {
+		http_request.onreadystatechange = this._onreadystatechange;
+		http_request.open('POST', url, true);
+
+		// browser does not allow Referer to be sent - so we send X-Referer and on server make it transparent to apps
+		//http_request.setRequestHeader("Referer",      document.location.href);
+		http_request.setRequestHeader("X-Referer",     document.location.href);
+		http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		// below 2 line commented - made IE wait with ~1 minute timeout
+		if (parameters) {
+			http_request.setRequestHeader("Content-length", parameters.length);
+		}
+
+		http_request.send(parameters);
+	}
+
+	// onreadystatechange 
+	this._onreadystatechange = function() {
+		if (http_request.readyState != 4)
+			return;
+		
+		var status;
+		var responseText = null;
+		var responseXML = null;
+		try {
+			status = http_request.status;
+			responseText = http_request.responseText;
+			responseXML = http_request.responseXML;
+			if (responseXML && responseXML.baseURI)
+				url = responseXML.baseURI;
+		}
+		catch (e) { // hack since mozilla sometimes throws NS_ERROR_NOT_AVAILABLE here
+			// deduce status
+			var location = http_request.getResponseHeader('Location');
+			if (location)
+				status = 302;
+			else if (http_request.responseText.length > 10)
+				status = 200;
+			else
+				status = 400;
+		}
+		
+		// finish. call a callback function.
+		callback((status == 200), http_request.responseText, http_request.responseXML);
+	};
+
+	// "constructor" body ---------------
+	this.createXMLHttpObj();
+	this.sendRequest();
+}

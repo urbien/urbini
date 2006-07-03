@@ -1,18 +1,7 @@
 <div>
-  <table style="height:100%; width:100%" border="0">
-    <tr valign="top" align="center">
-      <td>
-        <div id="panel1" style="overflow: visible;"></div>
-      </td>
-      <td>
-        <div id="panel2" style="overflow: visible;"></div>
-      </td>
-      <td>
-        <div id="panel3" style="overflow: visible;"></div>
-      </td>
-    </tr>
-  </table>
-  <div style="float:left; margin-left:20;">
-    <font color="#75BDFF">Edit this Page</font> <a href="javascript:if(document.getElementById('loggedContact').href != null){window.location = (window.location+'').replace('.html','Edit.html');}else alert('sorry, you must login to edit');" style="align:right"><img src="images/EditMode.gif" border="0" title="Edit this Page"/></a>
-  </div>
+  <script src="dashboards/dashboard.js" language="JavaScript" type="text/javascript"></script>
+  <div style="color:#75BDFF; margin-left:50px; margin-top:50px">a new dashboard:
+	<input type="text" id="fileName" class="input" value="" size="35">
+	<input type="button" id="create" class="button1" value="create" onclick="createNewDashboard(true);">
+ </div>
 </div>
