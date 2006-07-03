@@ -4720,7 +4720,7 @@ function removeSpaces(str) {
 /**************************************
 *	drag & drop engine
 ***************************************/
-/*
+
 var dragobject = {
 	z: 0, x: 0, y: 0, offsetx : null, offsety : null, targetobj : null, dragapproved : 0,
 	initialize: function(){
@@ -4770,5 +4770,5 @@ var dragobject = {
 }
 // initialize the drag & drop engine.
 dragobject.initialize();
-*/
+
 // ***********************************************************************************
