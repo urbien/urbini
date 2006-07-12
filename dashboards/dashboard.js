@@ -255,7 +255,7 @@
 				var optObj = document.createElement("option");
 				optObj.value = dbArr[i];
 				
-				g_dbNames[i] = getDashboardFilename(dbArr[i]);
+				g_dbNames[i] = getDashboardName(dbArr[i]);
 				
 				var textObj = document.createTextNode(g_dbNames[i]);
 				optObj.appendChild(textObj);
@@ -271,8 +271,8 @@
 		return false;
 	}
 	
-	// returns filename including extension
-    function getDashboardFilename(fullPath) {
+	// returns filename (without extension!)
+    function getDashboardName(fullPath) {
 		if(typeof fullPath == 'undefined')
 			fullPath = window.location.href;
 		var start = fullPath.lastIndexOf("/") + 1;
@@ -297,7 +297,17 @@
     }
     
     function finishEdit() {
-		window.location = (window.location+'').replace('Edit.html','.html');
+		var loc = "";
+		var params = getUrlParams();
+		if(params.saveFile.localeCompare(params.parseFile) != 0) {
+		    // new file & not saved on the server. Then go to the index file.
+			var flName = getDashboardName(params.saveFile);
+			loc = params.saveFile.replace(flName, "index");
+		}
+		else
+			loc = params.saveFile;
+		
+		window.location = loc;
 	}
     
     function createDashboard(isHomeDashboard) {
@@ -389,7 +399,7 @@
 		if(isOk) {
 			var newName = document.getElementById("renameDashboard_input").value;
 			var oldLoc = window.location.href;
-			var newloc = oldLoc.replace(getDashboardFilename(oldLoc), newName);
+			var newloc = oldLoc.replace(getDashboardName(oldLoc), newName);
 			window.location = newloc;
 		}
 		else {
@@ -417,8 +427,6 @@
 	}
 	
 	function onDeleteDashboard(isOk, respText) {
-//debugger
-//	window.alert(respText);
 		var obj = document.getElementById("deleteDashboard_text");
 	    if(obj == null)
 			return;
