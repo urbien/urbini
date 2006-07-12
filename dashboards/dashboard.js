@@ -2,12 +2,12 @@
     var numberOfcolumns = 3;
     var g_dbNames = new Array(); // contains filenames of dashboards
     addEvent(window, 'resize', function() {makeBoardsAlligned();}, false);
-    addEvent(window, 'load', initDbList, false);
-    
+    addEvent(window, 'load', initDashboard, false);
+
     function selectItemToAddToDashboard(panel){
-      // alert must be done if nothing was selected to add
+      // window.alert must be done if nothing was selected to add
       if(document.getElementById('itemToAdd').value == "") {
-        alert("nothing to add. Please, select the panel you'd like to add.");
+        window.alert("nothing to add. Please, select the panel you'd like to add.");
         return;
       }
       
@@ -24,15 +24,8 @@
       // corresponding panel(i)URIs value must be appended by the URI that must be added to this column.
       document.getElementById(panel + 'URIs').value = document.getElementById('itemToAdd').value + ";" + document.getElementById(panel + 'URIs').value; 
 
-      //alert(document.dashBoard.panel1URIs.value);
+      //window.alert(document.dashBoard.panel1URIs.value);
       // submit dashboard form
-/*
-      document.dashBoard.panel1URIs.value = document.getElementById('panel1URIs').value;
-      document.dashBoard.panel2URIs.value = document.getElementById('panel2URIs').value;
-      document.dashBoard.panel3URIs.value = document.getElementById('panel3URIs').value;
-      document.dashBoard.location.value = document.getElementById('location').value;
-      document.dashBoard.isClosePanel.value = document.getElementById('isClosePanel').value;
-*/
       document.getElementById('dashBoardPanel1URIs').value = document.getElementById('panel1URIs').value;
       document.getElementById('dashBoardPanel2URIs').value = document.getElementById('panel2URIs').value;
       document.getElementById('dashBoardPanel3URIs').value = document.getElementById('panel3URIs').value;
@@ -41,9 +34,8 @@
 	  var params = getUrlParams();
       document.getElementById('dashBoardParseFile').value = params.parseFile; //document.getElementById('location').value;
 	  document.getElementById('dashBoardSaveFile').value = params.saveFile;
-	  document.getElementById('dashBoardstartDashboard').value = params.startDashboard;
+	  document.getElementById('dashBoardHomeDashboard').value = params.homeDashboard;
       
-      //dashBoardForm.submit();
       document.getElementById('dashBoard').submit();
     }
  
@@ -85,6 +77,8 @@
     
     // constructs panel(i)URIs values so that they will contain just the bookmarks URIs that must be displayed
     function getClearURIsListForPanel(panelName) {
+	  if(aElts == null)
+		return null;	
       var s = "";
       for(j=1;j<=numberOfcolumns;j++)
         if(panelName == "panel" + j) {
@@ -139,15 +133,20 @@
 
       document.getElementById("dashBoard").target='dashboardIframe';
       setPanelsClearURIsLists();
+      
+      // "saveFile" & "parseFile" must be without suffix Edit!
+      var loc = window.location.href.replace("Edit", "");
       document.getElementById('location').value = window.location; 
       document.getElementById('isClosePanel').value = 'true';
       
       document.getElementById('dashBoardPanel1URIs').value = document.getElementById('panel1URIs').value;
       document.getElementById('dashBoardPanel2URIs').value = document.getElementById('panel2URIs').value;
       document.getElementById('dashBoardPanel3URIs').value = document.getElementById('panel3URIs').value;
-      document.getElementById('dashBoardParseFile').value = document.getElementById('location').value;
+      document.getElementById('dashBoardParseFile').value = loc;
       document.getElementById('dashBoardIsClosePanel').value = document.getElementById('isClosePanel').value;
-      //dashBoardForm.submit();
+   	  // for existent dashboard, SaveFile is the same as ParseFile.
+	  document.getElementById('dashBoardSaveFile').value = loc;
+
       document.getElementById('dashBoard').submit();
       
       document.getElementById('isClosePanel').value = 'false';
@@ -181,6 +180,8 @@
     }
     
     function replaceAllRecursion(str, replStr, replWithStr) {
+	  if(str == null)
+		return;	
       if(str.indexOf(replStr)>=0)
         return replaceAllRecursion(str.replace(replStr, replWithStr), replStr, replWithStr)
        else
@@ -203,21 +204,39 @@
     // 1. URL on existent dashboard; no parameter.    
     // 2. New dashboard.
     function getUrlParams() {
-    		var NEW_CREATOR = "blankEdit";
+    	var NEW_CREATOR = "blankEdit";
 	    var urlData = parseURL();
     
+		// without "Edit" suffix
+		var creatorPath = urlData.path.replace("Edit", "");
 		// new path for case of creation and the same for already exist file
-		var newPath = urlData.path.replace(NEW_CREATOR, urlData.name + "Edit");
-
-		return {parseFile: urlData.path, saveFile:newPath, startDashboard: urlData.startDashboard};
+		var newPath = urlData.path.replace(NEW_CREATOR, urlData.name);
+		newPath = newPath.replace("Edit", "");
+		return {saveFile:newPath, parseFile: creatorPath, homeDashboard: urlData.homeDashboard};
+    }
+    
+    function initDashboard() {
+		// it ensures immediate allignment
+		if(typeof makeBoardsAlligned != 'undefined') {
+				makeBoardsAlligned(); 
+				makeAddRemovePanelAlligned(); 
+				setPanelsURIsLists();
+		}
+		// litbox
+		initDbList();
     }
     
     // fillls in the dashboard list
     // the data are in a global variable/string dbListData.
     function initDbList() {
+//alert("initDbList");
    		// (meanwhile here) set tile in FF.
    		var curDashUrl = unescape(window.location.href);
 		document.title = curDashUrl;
+		
+		var dbList = document.getElementById("db_list");
+		if(dbList == null)
+			return;
 		
 		// check if there are 2 strings at list.
 		if(typeof dbListData == 'undefined')
@@ -226,18 +245,8 @@
 		var dbArr = dbListData.split(";"); // ";" - separator
 		if(dbArr.length < 3) // <select> + 2 dashboards
 			return;
-			
-		var dbListDiv = document.getElementById("db_list_div");
-		if(dbListDiv == null)
-			return;
-		dbListDiv.style.visibility = "visible";
-		
-		var dbList = document.getElementById("db_list");
-		if(dbList == null)
-			return;
 		
 		dbList.onchange = goToOtherDashboard;
-				
 		// add options to the list
 		for(var i = 0; i < dbArr.length; i++) {
 			if(dbArr[i].length > 0) {
@@ -254,8 +263,18 @@
 			}
 		}
     }
-
+	
+	function isEditMode() {
+		var loc =  window.location.href;
+		if(loc.indexOf("Edit.html") != -1)
+			return true;
+		return false;
+	}
+	
+	// returns filename including extension
     function getDashboardFilename(fullPath) {
+		if(typeof fullPath == 'undefined')
+			fullPath = window.location.href;
 		var start = fullPath.lastIndexOf("/") + 1;
 		var end   = fullPath.lastIndexOf(".");
 		
@@ -274,7 +293,6 @@
     function editDashboard() {
 		if(checkIfUserLogged() == false)
 			return;
-			
 		window.location = (window.location+'').replace('.html','Edit.html');
     }
     
@@ -282,14 +300,14 @@
 		window.location = (window.location+'').replace('Edit.html','.html');
 	}
     
-    function createNewDashboard(isStartDashboard) {
+    function createDashboard(isHomeDashboard) {
 		if(checkIfUserLogged() == false)
 			return;
 			
-		var newFileName = document.getElementById("fileName").value;
+		var newFileName = document.getElementById("createDashboard").value;
 		// check correct file name
 		if(newFileName == null || newFileName.length == 0) {
-			alert("Error.\nType a new dashboard name.");
+			window.alert("Type a new dashboard name.");
 			return;
 		}
 		if(checkDashboardName(newFileName) == false)
@@ -308,47 +326,111 @@
 		var curLocation = window.location.href;
 		var idx = curLocation.lastIndexOf("/") + 1;
 		var goLoc = curLocation.substring(0, idx) + "blankEdit.html?name=" + newFileName;
-		if(isStartDashboard)
-			goLoc += "&startDashboard=yes";
+		if(isHomeDashboard)
+			goLoc += "&homeDashboard=yes";
 		
-		window.location = goLoc; // URLEncoder(
+		window.location = goLoc;
 	}
 
-	function setAsStartDashboard() {
-		var DASHBOARD_MAP = "dashBoard"; // for the servlet calling.
+	function setAsHomeDashboard() {
 		if(checkIfUserLogged() == false)
 			return;
-
-		document.getElementById("startDashboard_button").visibility = "hidden";
-		document.getElementById("startDashboard").innerHTML = "processing...";
+		document.getElementById("homeDashboard_ctrl").style.visibility = "hidden";
+		document.getElementById("homeDashboard_text").innerHTML = "processing...";
 		
-		// find the url to send a request. 
-		var url = window.location.protocol + "//" + window.location.host;
-		// give up folder and dashboard filename
-		var tmp1 = window.location.pathname.split("/");
-		for(var i = 0; i < tmp1.length - 2; i++)
-			url += tmp1[i] + "/";
-		url += DASHBOARD_MAP;
-
+		var url = getServletUrl();
 		var parameters = "saveFile=" + window.location.href;
-		parameters += "&startDashboard=yes";
+		parameters += "&homeDashboard=yes";
 		
-		postRequest_dashboard(url, parameters, onSetAsStartDashboard);
+		postRequest_dashboard(url, parameters, onSetAsHomeDashboard);
 	}
 	
-	function onSetAsStartDashboard(isOk) {
-		var CLR_OK = "#75BDFF";
-		var CLR_ERR = "#FF0000";
-	    var obj = document.getElementById("startDashboard");
+	function onSetAsHomeDashboard(isOk) {
+	    var obj = document.getElementById("homeDashboard_text");
 	    if(obj == null)
 			return;
 		if(isOk) {
-			obj.innerHTML = "it is a start dashboard";
-			obj.style.color = CLR_OK;
+			obj.innerHTML = "it is a home dashboard";
 		}
 		else {
-			obj.innerHTML = "faild to set as a start dashboard";
-			obj.style.color = CLR_ERR;
+			obj.innerHTML = "faild to set as a home dashboard";
+			obj.style.color = "#FF0000";
+		}
+	}
+
+	function renameDashboard() {
+		if(checkIfUserLogged() == false)
+			return;
+		var renInp = document.getElementById("renameDashboard_input");
+		var newName = renInp.value;
+		// check correct file name
+		if(newName == null || newName.length == 0) {
+			window.alert("Type a new name of the dashboard.");
+			return;
+		}
+		if(checkDashboardName(newName) == false)
+			return;
+		
+		renInp.style.visibility = "hidden";
+		document.getElementById("renameDashboard_ctrl").style.visibility = "hidden";
+		document.getElementById("renameDashboard_text").innerHTML = "processing...";
+		
+		url = getServletUrl();
+		var parameters = "saveFile=" + window.location.href;
+		parameters += "&newName=" + newName;
+		
+		postRequest_dashboard(url, parameters, onRenameDashboard);
+	}
+
+	function onRenameDashboard(isOk) {
+		var obj = document.getElementById("renameDashboard_text");
+	    if(obj == null)
+			return;
+		if(isOk) {
+			var newName = document.getElementById("renameDashboard_input").value;
+			var oldLoc = window.location.href;
+			var newloc = oldLoc.replace(getDashboardFilename(oldLoc), newName);
+			window.location = newloc;
+		}
+		else {
+			obj.innerHTML = "faild to rename the dashboard";
+			obj.style.color = "#FF0000";
+		}
+	}
+	
+	function deleteDashboard() {
+		if(checkIfUserLogged() == false)
+			return;
+
+		isConfirmed = window.confirm("To delete this dashboard?");
+		if(!isConfirmed)
+			return;
+		
+		document.getElementById("deleteDashboard_ctrl").style.visibility = "hidden";
+		document.getElementById("deleteDashboard_text").innerHTML = "processing...";
+		
+		url = getServletUrl();
+		var parameters = "saveFile=" + window.location.href;
+		parameters += "&delete=yes";
+		
+		postRequest_dashboard(url, parameters, onDeleteDashboard);
+	}
+	
+	function onDeleteDashboard(isOk, respText) {
+//debugger
+//	window.alert(respText);
+		var obj = document.getElementById("deleteDashboard_text");
+	    if(obj == null)
+			return;
+		if(isOk) {
+			//window.alert("The dashboard is deleted.\nHome dashboard will be loaded.");
+			obj.innerHTML = "Deleted. Home dashboard loading...";
+			window.location = respText;
+			 
+		}
+		else {
+			obj.innerHTML = "faild to delete the  dashboard";
+			obj.style.color = "#FF0000";
 		}
 	}
 
@@ -374,12 +456,24 @@
 		return retArr;
 	}
 
+	function getServletUrl() {
+		var DASHBOARD_MAP = "dashBoard"; // for the servlet calling.
+		var url = window.location.protocol + "//" + window.location.host;
+		// give up folder and dashboard filename
+		var tmp1 = window.location.pathname.split("/");
+		for(var i = 0; i < tmp1.length - 2; i++)
+			url += tmp1[i] + "/";
+		url += DASHBOARD_MAP;
+		
+		return url;
+	}
+
 /*****************************************************************
 * check functions
 ******************************************************************/
     function checkIfUserLogged() {
 		if(document.getElementById('loggedContact').href == null) {
-		    alert('You have to log on before making this operation.');
+		    window.alert('You have to log in before making this operation.');
 			return false;
 		}
 		return true;
@@ -389,7 +483,7 @@
 		var forbidden = [":", ";", "/", "&", "?"];
 		for(var i = 0; i < forbidden.length; i++) {
 			if(name.indexOf(forbidden[i]) != -1) {
-				alert('Sorry, the dasboard name may not contain:\n":", ";", "/", "&", "?"');
+				window.alert('Sorry, the dasboard name may not contain:\n":", ";", "/", "&", "?"');
 				return false;
 			}
 		}
@@ -399,19 +493,18 @@
 	function checkIfDashboardNameIsNew(name) {
 		for(i = 0; i < g_dbNames.length; i++) {
 			if(name == g_dbNames[i]) {
-				alert("The dashboard with this name is already exist.");
+				window.alert("The dashboard with this name is already exist.");
 				return false;
 			}
 		}
 		return true;
 	}
 	
-
-
 /************************************************
 * ajax
 * returns true in 1st param of the -callback- function
-*************************************************/	
+* format of callback(isOk, responseText, responseXML);	
+*************************************************/
 function postRequest_dashboard(url, parameters, callback) {
 	var http_request;
 
@@ -437,7 +530,7 @@ function postRequest_dashboard(url, parameters, callback) {
 		}
 
 		if (!http_request) {
-			alert('Cannot create XMLHTTP instance, using iframe instead');
+			window.alert('Cannot create XMLHTTP instance, using iframe instead');
 			frameLoaded[frameId] = false;
 			var iframe = frames[frameId];
 			iframe.document.body.innerHTML = '<form method=post action=dummy id=ajaxForm><input type=submit name=n value=v></input> </form>';
@@ -456,7 +549,7 @@ function postRequest_dashboard(url, parameters, callback) {
 		var returnValue = null;
 		//  IE5 for the mac claims to support window.ActiveXObject, but throws an error when it's used
 		if (navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf("MSIE") >= 0) {
-		alert('we are sorry, you browser does not support AJAX, please upgrade or switch to another browser');
+		window.alert('we are sorry, you browser does not support AJAX, please upgrade or switch to another browser');
 		return null;
 		}
 		for (var i = 0; i < xmlHttpArr.length; i++) {

@@ -52,9 +52,9 @@
   <script type="text/javascript" src="dashboards/dB.js"></script>
   <script type="text/javascript" language="JavaScript">
     //setTimeout("makeBoardsAlligned(); makeAddRemovePanelAlligned(); setPanelsURIsLists();",500);
-    makeBoardsAlligned(); 
-    makeAddRemovePanelAlligned(); 
-    setPanelsURIsLists();
+	makeBoardsAlligned(); 
+	makeAddRemovePanelAlligned(); 
+	setPanelsURIsLists();
   </script>
 
  <input type="Hidden" value="false" id="isClosePanel" name="isClosePanel" />
@@ -62,19 +62,19 @@
  <iframe id="dashboardIframe" name="dashboardIframe" style="display:none"></iframe>
 </form>
 
-<form action="dashBoard" id="dashBoard" method="get" name="dashBoardForm">
-  <input type="Hidden" name="parseFile" id="dashBoardParseFile" value="" />
-  <input type="Hidden" name="panel1URIs" id="dashBoardPanel1URIs" value="" />
-  <input type="Hidden" name="panel2URIs" id="dashBoardPanel2URIs" value="" />
-  <input type="Hidden" name="panel3URIs" id="dashBoardPanel3URIs" value="" />
-  <input type="Hidden" name="isClosePanel" id="dashBoardIsClosePanel" value="false" />
-  <input type="Hidden" name="saveFile" id="dashBoardSaveFile" value="" />
-  <input type="Hidden" name="startDashboard" id="dashBoardstartDashboard" value="" />
-</form>
-
-  <hr color="#75BDFF" />
+  <form action="dashBoard" id="dashBoard" method="get" name="dashBoardForm">
+	<input type="Hidden" name="parseFile" id="dashBoardParseFile" value="" />
+	<input type="Hidden" name="panel1URIs" id="dashBoardPanel1URIs" value="" />
+	<input type="Hidden" name="panel2URIs" id="dashBoardPanel2URIs" value="" />
+	<input type="Hidden" name="panel3URIs" id="dashBoardPanel3URIs" value="" />
+	<input type="Hidden" name="isClosePanel" id="dashBoardIsClosePanel" value="false" />
+	<input type="Hidden" name="saveFile" id="dashBoardSaveFile" value="" />
+	<input type="Hidden" name="homeDashboard" id="dashBoardHomeDashboard" value="" />
+  </form>
+  
+  <hr color="#6699CC" />
   <div  style="float:left; margin-left:20;">
-    <font color="#75BDFF">finish editing</font> <a href="javascript:finishEdit();" style="align:right"><img src="images/readOnlyMode.gif" border="0"/></a>
+    <span class="dashboardGrayedTitle">back to view mode</span> <a href="javascript: finishEdit();" style="align:right"><img src="icons/dashboards/view_button.gif" border="0"/></a>
   </div>
   
   <script type="text/javascript" language="JavaScript">

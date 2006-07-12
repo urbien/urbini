@@ -22,11 +22,9 @@ var ar = document.getElementById('panel'+j).getElementsByTagName('div');
 }
 // }
 
-// debugger
 SET_DHTML(s);
 
 // Array intended to reflect the order of the draggable items
-// {
 var aElts = new Array(numberOfcolumns);
 for(j=1;j<=numberOfcolumns;j++) {
   var tmpArray = new Array();
@@ -36,10 +34,8 @@ for(j=1;j<=numberOfcolumns;j++) {
       tmpArray[tmpArray.length] = dd.elements[(ar[i].id)];
   }
   aElts[j-1] = tmpArray;
-//    debugger
 
 }
-// }
 
 var availWindowWidth = document.body.offsetWidth;
 availWindowWidth -= 50;
@@ -182,9 +178,6 @@ function my_DropFunc() {  // onDrop event
 }
 
 function my_DropFuncD(pN, numb) { 
-
-//debugger
-
   // remove the object from the old place if the object is present in other columns 
   // (in the columns except pN)
   remove(aElts,dd.obj,pN);
@@ -338,9 +331,9 @@ function makeBoardsAttached() {
 
 
 // remove a board from a "list" of dragable DIVs
-function removeDragableObj(objId) {
+function removeDragableObj(delObjId) {
 	for(var i = 0; i < dd.elements.length; i++)
-		if(dd.elements[i].id == objId)
+		if(dd.elements[i].id == delObjId)
 			dd.elements.splice(i, 1);
 }
 
