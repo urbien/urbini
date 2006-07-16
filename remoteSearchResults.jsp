@@ -1,6 +1,6 @@
 <div>
 <div nonPda="T">
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<table id="resourceList" width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr  valign="top">
   <td valign="top" align="middle" width="95%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
