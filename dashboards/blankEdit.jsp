@@ -73,9 +73,25 @@
   </form>
   
   <hr color="#6699CC" />
-  <div  style="float:left; margin-left:20;">
-    <span class="dashboardGrayedTitle">back to view mode</span> <a href="javascript: finishEdit();" style="align:right"><img src="icons/dashboards/view_button.gif" border="0"/></a>
-  </div>
+  <table cellpadding="10" border="0">
+    <tr>
+      <td align="center">
+		 <span class="dashboardGrayedTitle">back to view mode</span> <a href="javascript: finishEdit();" style="align:right"><img src="icons/dashboards/view_button.gif" border="0"/></a>
+      </td>
+      <td>
+    	  <span id="homeDashboard_text" class="dashboardGrayedTitle">set as home dashboard</span> <a id="homeDashboard_ctrl" href="javascript: setAsHomeDashboard();" style="align:right"><img src="icons/dashboards/home_button.gif" border="0" /></a>
+      </td>
+	  <td>
+        <span id="renameDashboard_text" class="dashboardGrayedTitle">rename as:</span>
+        <input id="renameDashboard_input" type="text" class="input" value="" size="30" />
+        <a id="renameDashboard_ctrl" href="javascript: renameDashboard();" style="align:right"><img src="icons/dashboards/rename_button.gif" border="0" /></a>
+      </td>
+      <td>
+       	  <span id="deleteDashboard_text" class="dashboardGrayedTitle">delete</span> <a id="deleteDashboard_ctrl" href="javascript: deleteDashboard();" style="align:right"><img src="icons/dashboards/delete_button.gif" border="0" /></a>
+      </td>
+    </tr>
+  </table>
+  
   
   <script type="text/javascript" language="JavaScript">
     //setTimeout("makeBoardsAlligned(); makeBoardsAttached();",500);

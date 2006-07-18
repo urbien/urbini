@@ -297,6 +297,12 @@
     }
     
     function finishEdit() {
+   		if(window.location.href.indexOf("blankEdit.html") != -1) {
+			isConfirmed = window.confirm("Finish editing without added boards\nleads to the loss of the dashboard!");
+			if(!isConfirmed)
+				return;
+		}
+		
 		var loc = "";
 		var params = getUrlParams();
 		if(params.saveFile.localeCompare(params.parseFile) != 0) {
@@ -345,6 +351,9 @@
 	function setAsHomeDashboard() {
 		if(checkIfUserLogged() == false)
 			return;
+		if(checkIfDashboardIsSaved() == false)
+			return;
+			
 		document.getElementById("homeDashboard_ctrl").style.visibility = "hidden";
 		document.getElementById("homeDashboard_text").innerHTML = "processing...";
 		
@@ -371,6 +380,9 @@
 	function renameDashboard() {
 		if(checkIfUserLogged() == false)
 			return;
+		if(checkIfDashboardIsSaved() == false)
+			return;
+	
 		var renInp = document.getElementById("renameDashboard_input");
 		var newName = renInp.value;
 		// check correct file name
@@ -400,6 +412,10 @@
 			var newName = document.getElementById("renameDashboard_input").value;
 			var oldLoc = window.location.href;
 			var newloc = oldLoc.replace(getDashboardName(oldLoc), newName);
+			// add Edit suffix, because this command in edit mode now.
+			if(newloc.indexOf("Edit.html") == -1)
+				newloc = newloc.replace(".html", "Edit.html");
+				
 			window.location = newloc;
 		}
 		else {
@@ -410,6 +426,8 @@
 	
 	function deleteDashboard() {
 		if(checkIfUserLogged() == false)
+			return;
+		if(checkIfDashboardIsSaved() == false)
 			return;
 
 		isConfirmed = window.confirm("To delete this dashboard?");
@@ -506,6 +524,14 @@
 			}
 		}
 		return true;
+	}
+	
+	function checkIfDashboardIsSaved() {
+		if(window.location.href.indexOf("blankEdit.html") != -1) {
+			window.alert("You have to add, at least, one board\nbefore performance of this command.");
+			return false;			
+		}
+		return true;		
 	}
 	
 /************************************************
