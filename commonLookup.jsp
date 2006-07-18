@@ -4,7 +4,7 @@
       <tr>
         <td class="menuItemSubtitle">
           <text text="Reel #"/>
-          <form name="reel" action="localSearchResults.html">
+          <form name="reel" action="localSearchResults.html" style="margin-top: 0; margin-bottom: 0">
           <table>
             <tr>
 	            <td>
@@ -24,7 +24,7 @@
       <tr>
         <td class="menuItemSubtitle">
           <text text="Reel # (for tracking)" />
-          <form name="reel" action="remoteSearchResults.html">
+          <form name="reel" action="remoteSearchResults.html" style="margin-top: 0; margin-bottom: 0">
           <table>
             <tr>
 	            <td><input type="hidden" name="action" value="searchParallel" />
@@ -41,7 +41,7 @@
       <tr>
         <td class="menuItemSubtitle">
           <text text="Container #" />
-          <form name="container" action="remoteSearchResults.html">
+          <form name="container" action="remoteSearchResults.html" style="margin-top: 0; margin-bottom: 0">
           <table>
             <tr>
 	            <td>
@@ -58,7 +58,7 @@
       <tr>
         <td class="menuItemSubtitle">
           <text text="Vessel #" />
-          <form name="vessel" action="remoteSearchResults.html">
+          <form name="vessel" action="remoteSearchResults.html" style="margin-top: 0; margin-bottom: 0">
           <table>
             <tr>
 	            <td>
@@ -75,7 +75,7 @@
       <tr>
         <td class="menuItemSubtitle">
           <text text="Truck #" />
-          <form name="truck" action="remoteSearchResults.html">
+          <form name="truck" action="remoteSearchResults.html" style="margin-top: 0; margin-bottom: 0">
           <table>
             <tr>
 	            <td>
@@ -92,7 +92,7 @@
       <tr>
         <td class="menuItemSubtitle">
           <text text="Block train #" />
-          <form name="BlockTrain" action="remoteSearchResults.html">
+          <form name="BlockTrain" action="remoteSearchResults.html" style="margin-top: 0; margin-bottom: 0">
           <table>
 		        <tr>
 	            <td>
@@ -109,7 +109,7 @@
       <tr>
         <td class="menuItemSubtitle">
           <text text="BL #" />
-          <form name="BL" action="remoteSearchResults.html">
+          <form name="BL" action="remoteSearchResults.html" style="margin-top: 0; margin-bottom: 0">
           <table>
 		        <tr>
 	            <td>
