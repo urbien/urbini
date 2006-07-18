@@ -1,8 +1,8 @@
 <div>
-  <table width="100%" cellspacing="0" cellpadding="5" border="0">
+  <table width="100%" cellspacing="0" cellpadding="5" border="0" id="-not-menu">
     <tbody>
       <tr>
-        <td class="cswmItemSubtitle">
+        <td class="menuItemSubtitle">
           <text text="Reel #"/>
           <form name="reel" action="localSearchResults.html">
           <table>
@@ -22,7 +22,7 @@
         </td>
       </tr>
       <tr>
-        <td class="cswmItemSubtitle">
+        <td class="menuItemSubtitle">
           <text text="Reel # (for tracking)" />
           <form name="reel" action="remoteSearchResults.html">
           <table>
@@ -39,7 +39,7 @@
         </td>
       </tr>
       <tr>
-        <td class="cswmItemSubtitle">
+        <td class="menuItemSubtitle">
           <text text="Container #" />
           <form name="container" action="remoteSearchResults.html">
           <table>
@@ -56,7 +56,7 @@
         </td>
       </tr>
       <tr>
-        <td class="cswmItemSubtitle">
+        <td class="menuItemSubtitle">
           <text text="Vessel #" />
           <form name="vessel" action="remoteSearchResults.html">
           <table>
@@ -73,7 +73,7 @@
         </td>
       </tr>
       <tr>
-        <td class="cswmItemSubtitle">
+        <td class="menuItemSubtitle">
           <text text="Truck #" />
           <form name="truck" action="remoteSearchResults.html">
           <table>
@@ -90,7 +90,7 @@
         </td>
       </tr>
       <tr>
-        <td class="cswmItemSubtitle">
+        <td class="menuItemSubtitle">
           <text text="Block train #" />
           <form name="BlockTrain" action="remoteSearchResults.html">
           <table>
@@ -107,7 +107,7 @@
         </td>
       </tr>
       <tr>
-        <td class="cswmItemSubtitle">
+        <td class="menuItemSubtitle">
           <text text="BL #" />
           <form name="BL" action="remoteSearchResults.html">
           <table>
