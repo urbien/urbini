@@ -370,6 +370,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     self.setVisible(offsetX, offsetY);
     self.popupClosed = false;
+
     self.deselectRow();
 
     self.setCurrentDiv();
@@ -383,6 +384,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       replaceTooltips(self.div, anchors);
       self.initilized = true;
     }
+    
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
       self.delayedClose(20000);
@@ -485,7 +487,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
     var firstRow = self.firstRow();
     if (firstRow == null)
-      return; // incorrect popup structure
+      return; // popup structure without rows
 
     var tables = div.getElementsByTagName('table');
     if (!tables || !tables[1]) {
@@ -1256,9 +1258,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    */
   this.firstRow = function() {
     var tables = self.div.getElementsByTagName('table');
-    if (!tables || !tables[1])
+    if (!tables || !tables[1] || tables[1].id.startsWith('-not-menu') || (tables[2] && tables[2].id.startsWith('-not-menu')) )
       return null;
-
     var trs = tables[1].getElementsByTagName('tr');
     if (trs == null)
       return null;
