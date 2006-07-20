@@ -62,6 +62,7 @@ Popup.tooltipPopup         = null;
 Popup.DarkMenuItem  = '#AABFCD'; //'#95B0C3'; //'#dee6e6';
 Popup.LightMenuItem = '';
 Popup.autoCompleteDefaultTimeout = 200;
+Popup.isShiftRequired		= null;
 
 Popup.HIDDEN  =  'hidden';
 Popup.VISIBLE =  'visible';
@@ -2563,6 +2564,11 @@ function tooltipOnMouseOver0(target) {
 
 function tooltipOnMouseOver(e) {
   e = getDocumentEvent(e); if (!e) return;
+  
+  initShiftPref();
+  if(Popup.isShiftRequired && !e.shiftKey)
+	return;
+  
   if (e.getAttribute) {
     var isProcessed = e.getAttribute('eventProcessed');
     if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
@@ -2596,6 +2602,43 @@ function tooltipOnMouseOut(e) {
     Popup.openTimeoutId = null;
   }
   return stopEventPropagation(e);
+}
+
+function shiftPrefSwitch() {
+	Popup.isShiftRequired = !Popup.isShiftRequired;
+	var tooltip = Popup.getPopup('system_tooltip');
+	tooltip.delayedClose();
+
+	var shiftDiv = document.getElementById("shift_pref");
+	shiftDiv.innerHTML = "done";
+	// set cookie
+	date = new Date();
+	var sValue = Popup.isShiftRequired ? "yes" : "no";
+    document.cookie = "shift_pressed=" + escape(sValue);// + "; expires=" + date.toGMTString();
+}
+
+function initShiftPref() {
+	if(Popup.isShiftRequired == null) {
+		var aCookie = document.cookie.split("; ");
+		var bValue = false;
+		for (var i=0; i < aCookie.length; i++) {
+			// a name/value pair (a crumb) is separated by an equal sign
+			var aCrumb = aCookie[i].split("=");
+			if (aCrumb[0] == "shift_pressed") {
+				if(unescape(aCrumb[1]) == "yes")
+					bValue = true;
+				break;
+			}
+		}
+		Popup.isShiftRequired = bValue; 
+	}
+
+	var shiftDiv = document.getElementById("shift_pref");
+	if(Popup.isShiftRequired)
+		shiftDiv.innerHTML = "show tooltips always";
+	else
+		shiftDiv.innerHTML = "show tooltips only when shift pressed";
+	shiftDiv.style.visibility = "visible";
 }
 
 //************************************* intercept all clicks ***********************************
@@ -2876,6 +2919,25 @@ function getANode(elem) {
     return getANode(e);
   else
     return null;
+}
+
+
+function getChildById(parent, id) {
+	var children = parent.childNodes;
+	var len = children.length;
+	if(len == 0)
+		return null;
+	
+	for(var i = 0; i < len; i++) {
+		if(children[i].childNodes.length != 0) {
+			var reqChild = null;
+			if((reqChild = getChildById(children[i], id)) != null)
+				return reqChild;
+		}
+		if(children[i].id == id)
+			return children[i];
+	}
+	return null;
 }
 
 //********************* helper functions ********************************
@@ -3215,6 +3277,11 @@ function stopEventPropagation(e) {
 }
 
 function setInnerHtml(div, text) {
+// write in child with id = "content" if it exists.
+  var contentDiv = getChildById(div, "content");
+  if(contentDiv != null)
+	div = contentDiv;
+
   if (Popup.ns4) {
     div.document.open();
     div.document.write(text);
@@ -4499,8 +4566,11 @@ function postRequest(url, parameters, div, hotspot, callback) {
 function loadingCueStart(hotspot) {
   var ttDiv = document.getElementById("system_tooltip");
   var ttIframe = document.getElementById("tooltipIframe");
-  var loadingMsg = "<img src='icons/classes/Duration.gif'><span style='font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . . </b></span>";
+  var loadingMsg = "<img src='icons/classes/Duration.gif' style='vertical-align: middle;'><span style='vertical-align: middle; font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . . </b></span>";
 
+  var shiftDiv = document.getElementById("shift_pref");
+  shiftDiv.style.visibility = "hidden";
+  	  
   Popup.open(ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
 }
 
