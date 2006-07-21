@@ -2507,7 +2507,7 @@ function replaceAllTooltips() {
   replaceTooltips0(null, elements);
 }
 */
-function tooltipOnMouseOver0(target) {
+function tooltipOnMouseOver0(target, toShow) {
   //Packages.java.lang.System.out.println('tooltip mouseover: ' + target.tagName + ', ' + target.id);
   if (!Popup.allowTooltip(target)) {
     return true; // ignore this tooltip and return true to allow mouseover processing to continue
@@ -2544,6 +2544,9 @@ function tooltipOnMouseOver0(target) {
   }
   else
     tooltipText = tooltip;
+	
+	if(toShow == false) // if requered shift was not pressed
+		return false;
 
   var divId    = 'system_tooltip';
   var iframeId = 'tooltipIframe';
@@ -2566,8 +2569,7 @@ function tooltipOnMouseOver(e) {
   e = getDocumentEvent(e); if (!e) return;
   
   initShiftPref();
-  if(Popup.isShiftRequired && !e.shiftKey)
-	return;
+  var toShow = !(Popup.isShiftRequired && !e.shiftKey); 
   
   if (e.getAttribute) {
     var isProcessed = e.getAttribute('eventProcessed');
@@ -2576,7 +2578,7 @@ function tooltipOnMouseOver(e) {
     e.setAttribute('eventProcessed', 'true');
   }
   var target = getTargetElement(e);
-  if (!tooltipOnMouseOver0(target))
+  if (!tooltipOnMouseOver0(target, toShow))
     return stopEventPropagation(e);
   else
     return true;
