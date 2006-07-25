@@ -582,9 +582,9 @@ function TC0B() {
   // this.TC0m.value  = this.TC09; //  commented out by A. L.
   this.calPosImage = this.getElementId(this.calPosImageId, 'img');
 
-  if (this.TCG == 1) {
-    this.TC0o = this.getElementId(this.TCI, 'img')
-  }
+//  if (this.TCG == 1) { // icon is not used now
+//    this.TC0o = this.getElementId(this.TCI, 'img');
+//  }
 
   this.TC0p = this.getElementId('cal_implus' + thistcc, 'img');
   this.TC0q = this.getElementId('cal_imminus' + thistcc, 'img');
@@ -629,8 +629,8 @@ function TC0B() {
   this.TC0G();
   this.setCalendarPosition();
 
-  // set a handler which hides the calendar	  
-  popupHandler.start(this.caldiv);
+  // set a handler which hides the calendar	 
+  popupHandler.start(this.caldiv, this.iframe, this.TC0m);
 }
 
 function TC0L() {
@@ -1524,8 +1524,8 @@ function showcal() {
     if (TC9.needIframe) {
       this.iframe.style.visibility = 'hidden';
     }
-    if (this.TCG == 1)
-      this.TC0o.src = this.TCB.caliconshow.src;
+//    if (this.TCG == 1) // icon is not used now
+//      this.TC0o.src = this.TCB.caliconshow.src;
   }
   else {
     this.setCalendarPosition();
@@ -1550,8 +1550,8 @@ function showcal() {
 
           if (TC9.needIframe)
             ac.iframe.style.visibility = 'hidden';
-          if (ac.TCG == 1)
-            ac.TC0o.src = ac.TCB.caliconshow.src;
+//          if (ac.TCG == 1) // icon is not used now
+//            ac.TC0o.src = ac.TCB.caliconshow.src;
         }
       }
     }
@@ -1567,8 +1567,8 @@ function showcal() {
     }
 
     this.shown = true;
-    if (this.TCG == 1)
-      this.TC0o.src = this.TCB.caliconhide.src;
+//    if (this.TCG == 1) // icon is not used now
+//      this.TC0o.src = this.TCB.caliconhide.src;
   }
 }
 
@@ -1882,8 +1882,10 @@ var popupHandler = {
 
 	CLOSE_TIMEOUT : 500,
 	popupDiv : null,
+	iframe   : null,
+	inputObj : null,
 	oldOnKeyUp : null,
-	timerid : 0,
+	timerid  : 0,
 	
 	_onkeyup : function(evt) {
 		evt = (evt) ? evt : event;
@@ -1892,7 +1894,9 @@ var popupHandler = {
 		if (charCode == 27)
 			popupHandler.closePopup();
 	},
-
+	_onkeyup_input : function(evt) {
+			popupHandler.closePopup();
+	},
 	_onmouseup : function(evt) {
 		var evt = evt || window.event;
 		var target = evt.target || evt.srcElement; 
@@ -1936,21 +1940,27 @@ var popupHandler = {
 		if(this.popupDiv == null)
 			return;
 		this.popupDiv.style.visibility = "hidden";
+		if(typeof this.iframe != "undefined")
+			this.iframe.style.visibility = "hidden";
 		this.end();
 	},
 	
-	start : function(div) {
+	start : function(div, iframe, inputObj) {
 		// only 1 popup can be opened concurrently
 		if(this.popupDiv != null)
 			this.closePopup();
 
 		this.popupDiv = div;
+		this.iframe	  = iframe;
+		this.inputObj = inputObj;
 		this.oldOnKeyUp = document.onkeyup;
 		document.onkeyup = this._onkeyup;
 		document.onclick = this._onmouseup;
 
 		this.popupDiv.onmouseover = this._onmouseover;
-		this.popupDiv.onmouseout = this._onmouseout;
+		this.popupDiv.onmouseout  = this._onmouseout;
+		
+		this.inputObj.onkeyup = this._onkeyup_input;
 	},
 	
 	end : function() { // end on selection; no hidding. 
@@ -1973,9 +1983,9 @@ function getCalendar(event,
                      initialValue,      // initial value in date format shown below
                      dateFormat,       // dateFormat = (isEuropean) ? "d-m-Y" : "m-d-Y";
                      titleStr) {	   // title text
-  
-  var DEFAULT_TITLE = "select a day";
-  try {
+ 
+   var DEFAULT_TITLE = "select a day";
+   try {
     var cal = A_CALENDARS[formName + '_' + name];
     if (cal && cal.isShown()) {
       cal.showcal();
