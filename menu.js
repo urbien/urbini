@@ -2923,25 +2923,6 @@ function getANode(elem) {
     return null;
 }
 
-
-function getChildById(parent, id) {
-	var children = parent.childNodes;
-	var len = children.length;
-	if(len == 0)
-		return null;
-	
-	for(var i = 0; i < len; i++) {
-		if(children[i].childNodes.length != 0) {
-			var reqChild = null;
-			if((reqChild = getChildById(children[i], id)) != null)
-				return reqChild;
-		}
-		if(children[i].id == id)
-			return children[i];
-	}
-	return null;
-}
-
 //********************* helper functions ********************************
 
 /**
@@ -3483,6 +3464,38 @@ function checkAll(formName) {
   }
 }
 
+// returns a child of any nesting.
+function getChildById(parent, id) {
+	if(parent.id == id)
+		return parent;
+	var children = parent.childNodes;
+	var len = children.length;
+	if(len == 0)
+		return null;
+	for(var i = 0; i < len; i++) {
+		if(children[i].childNodes.length != 0) {
+			var reqChild = null;
+			if((reqChild = getChildById(children[i], id)) != null)
+				return reqChild;
+		}
+		if(children[i].id == id)
+			return children[i];
+	}
+	return null;
+}
+
+function getAncestorById(child, id) {
+	if(child.id == id)
+		return child;
+	var parent;
+	while((parent = child.parentNode) != null) {
+		if(parent.id == id)
+			return parent;
+		child = parent;
+	}
+	return null;
+}
+
 //*********************************** Icon/Image effects **************************************
 var lowOpacity  = 60;
 var highOpacity = 100;
@@ -3696,6 +3709,15 @@ function showLargeImage(e, current, largeImageUrl) {
       return false;
     }
   }
+  // se the title text
+  var titleObj = getChildById(gallery, "titleBar");
+  if(titleObj != null) {
+	var idx1 = largeImageUrl.lastIndexOf("/");
+	var idx2 = largeImageUrl.indexOf("_image", idx1); // always suffix "_image"
+	var fileName = largeImageUrl.substring(idx1 + 1, idx2);
+	titleObj.innerHTML = fileName;
+  }
+  	
 
   hotspot1 = current;
   addEvent(img, 'load',  largeImageOnLoad,  false);
@@ -4793,7 +4815,6 @@ function removeSpaces(str) {
 /**************************************
 *	drag & drop engine
 ***************************************/
-
 var dragobject = {
 	z: 0, x: 0, y: 0, offsetx : null, offsety : null, targetobj : null, dragapproved : 0,
 	initialize: function(){
@@ -4804,41 +4825,34 @@ var dragobject = {
 	drag: function(e){
 		var evtobj = window.event? window.event : e;
 		var dragObj = window.event? event.srcElement : e.target;
-		if(dragobject.isChildOf(dragObj, "titleBar")) {
+		var titleObj = null;
+		if( (titleObj =  getAncestorById(dragObj, "titleBar")) != null ) {
 			this.dragapproved = 1;
-      this.targetobj = document.getElementById('pane2');
-
-			if (isNaN(parseInt(this.targetobj.style.left))){this.targetobj.style.left = 0;}
-			if (isNaN(parseInt(this.targetobj.style.top))){this.targetobj.style.top = 0;}
-			this.offsetx = parseInt(this.targetobj.style.left);
-			this.offsety = parseInt(this.targetobj.style.top);
-			this.x=evtobj.clientX
-			this.y=evtobj.clientY
-			if (evtobj.preventDefault)
-				evtobj.preventDefault();
+		
+		var dragContainerStr = titleObj.getAttribute("dragcontainer");
+		if(dragContainerStr == null)
+			dragContainerStr = 'pane2'; // apply a default
+		this.targetobj = document.getElementById(dragContainerStr);
+		if (isNaN(parseInt(this.targetobj.style.left))) {this.targetobj.style.left = 0;}
+		if (isNaN(parseInt(this.targetobj.style.top)))  {this.targetobj.style.top = 0;}
+		this.offsetx = parseInt(this.targetobj.style.left);
+		this.offsety = parseInt(this.targetobj.style.top);
+		this.x = evtobj.clientX
+		this.y = evtobj.clientY
+		if (evtobj.preventDefault)
+			evtobj.preventDefault();
 		}
 	},
 	moveit: function(e){
 		var evtobj=window.event? window.event : e
 		if (this.dragapproved == 1){
-			this.targetobj.style.left = this.offsetx + evtobj.clientX - this.x+"px"
-			this.targetobj.style.top = this.offsety + evtobj.clientY - this.y+"px"
+			this.targetobj.style.left = this.offsetx + evtobj.clientX - this.x + "px"
+			this.targetobj.style.top  = this.offsety + evtobj.clientY - this.y + "px"
 			return false;
 		}
 	},
 	stopDrag: function() {
 		this.dragapproved = 0;
-	},
-	isChildOf: function(obj, parentId) {
-		if(obj == null)
-			return false;
-		if(obj.id == parentId)
-			return true;
-		while((obj = obj.parentNode) != null) {
-			if(obj.id == parentId)
-				return true;
-		}
-		return false;
 	}
 }
 // initialize the drag & drop engine.
