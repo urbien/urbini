@@ -203,5 +203,5 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .resourceListDialog {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); padding: 15px;}
 .dialogPanel {border:solid #5C9EBF 1px; padding: 15px}
 .drag {position: relative;}
-#titleBar {height: 22px; background:url(../images/skin/blue/title.gif); cursor:move;}
+#titleBar {height: 22px; background:url(../images/skin/blue/title.gif); cursor:move; padding-left:5px;}
 
