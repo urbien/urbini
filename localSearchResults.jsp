@@ -5,9 +5,12 @@
 </hideBlock>
 <getResource/>
 
-<div id="gallery" style="display:none;position:absolute" itype="http://www.hudsonfog.com/voc/model/portal/ImageResource">
-  <table bgcolor="#1b62b6">
-    <tr valign="top"><td class="largeImage" valign="top"><img id="galleryImage" src="about:blank"></img></td></tr>
+<div id="gallery" class = "box" style="width:auto !important; width:1px;height:auto !important; height:1px;display:none;position:absolute;" itype="http://www.hudsonfog.com/voc/model/portal/ImageResource">
+  <table bgcolor="#ffffff" cellpadding="0" cellspacing="0">
+  	<tr><td>
+	    <div id="titleBar" class="drag" dragcontainer="gallery"></div>
+    </td></tr>
+    <tr valign="top"><td class="largeImage" style="padding:5px;" valign="top"><img id="galleryImage" src="about:blank"></img></td></tr>
     <!--tr valign="top"><td class="largeImageWithHide" valign="top"><img id="galleryImage" src="about:blank"></img><img src="icons/hide.gif" border="0" width="16" height="16" align="top" onclick="return hide('gallery')" style="cursor: pointer; cursor: hand;" title="click to close"></img></td></tr-->
   </table>
 </div>
