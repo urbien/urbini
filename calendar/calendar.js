@@ -434,7 +434,7 @@ function TC0B() {
   var signal = TC9.TC0b ? 'onclick' : 'onchange';
   var TC0c = new TC0d();
 
-  var title = "<div class='menuTitle' style='margin-bottom:1px'>" + this.titleStr + "</div>";
+  var title = "<div class='menuTitle' style='margin-bottom:1px; overflow:visible;'>" + this.titleStr + "</div>";
   TC0c.TC0e('<table ',
 			'style="padding:1px; background-color:#eef;"',
             this.TCO('outertable'),
