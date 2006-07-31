@@ -2520,10 +2520,8 @@ function tooltipOnMouseOver0(target, toShow) {
     if (!tooltip) // no title attribute - get out of here
       return true;
     tooltipText = tooltip;
-    //window.status = tooltipText;
-    if (tooltipText == '')
+	if (tooltipText == '')
       return true;
-    window.status = tooltipText;
     // merge tooltip on IMG with tooltip on its parent A tag
     var parentA = target.parentNode;
     if (parentA && parentA.tagName.toUpperCase() == 'A') {
@@ -2544,9 +2542,12 @@ function tooltipOnMouseOver0(target, toShow) {
   }
   else
     tooltipText = tooltip;
-	
-	if(toShow == false) // if requered shift was not pressed
-		return false;
+
+  if(toShow == false) {// if requered shift was not pressed
+	var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
+	window.status = plainTooltipText;
+	return false;
+  }
 
   var divId    = 'system_tooltip';
   var iframeId = 'tooltipIframe';
@@ -2586,6 +2587,7 @@ function tooltipOnMouseOver(e) {
 
 function tooltipOnMouseOut(e) {
   e = getDocumentEvent(e); if (!e) return;
+  window.status = "";
   if (e.getAttribute) {
     var isProcessed = e.getAttribute('eventProcessed');
     if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
@@ -4195,7 +4197,7 @@ function showKeyboard() {
 }
 
 // usage:
-// insertAtCursor(document.formName.fieldName, �this value�);
+// insertAtCursor(document.formName.fieldName, ?this value?);
 function insertAtCursor(myField, myValue) {
   //IE support
   if (document.selection) {
