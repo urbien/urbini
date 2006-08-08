@@ -160,6 +160,10 @@
 					</table>
 					</form>
 				</div>
+    <form name="horizontalFilter" id="filter" method="POST" action="addLineItems.html" itype="http://www.hudsonfog.com/voc/hospitality/spa/RetailItem">
+      <br/>
+      <horizontalFilter />
+    </form>
 
 	    </td>
 	    <td width="30%">
