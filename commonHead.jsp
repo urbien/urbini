@@ -17,10 +17,10 @@
   <script src="calendar/calendar.js"     language="JavaScript" type="text/javascript"></script>
   <script src="gantt/dependencies.js"    language="JavaScript" type="text/javascript"></script>
   <!--script src="pngfix.js"                language="JavaScript" type="text/javascript"></script-->
-  <script src="chat/richtext.js"         language="JavaScript" type="text/javascript"></script>
+  <script src="richtext.js"         language="JavaScript" type="text/javascript"></script>
   <script src="fixedColor/fixedColor.js" language="JavaScript" type="text/javascript"></script>
 
-  <script src="styleSheet/style_toolbar.js" language="JavaScript" type="text/javascript"></script>
+  <script src="toolbar.js" language="JavaScript" type="text/javascript"></script>	
   <script src="styleSheet/style_sheet.js"   language="JavaScript" type="text/javascript"></script>
 
  <getResource/>
