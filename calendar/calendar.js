@@ -630,7 +630,7 @@ function TC0B() {
   this.setCalendarPosition();
 
   // set a handler which hides the calendar	 
-  popupHandler.start(this.caldiv, this.iframe, this.TC0m);
+  Calendar_popupHandler.start(this.caldiv, this.iframe, this.TC0m);
 }
 
 function TC0L() {
@@ -1061,7 +1061,7 @@ function TC0H(TC1c, TC1d, TC1J) {
       // 'if' is a hack by A. L. - No change on the calendar openning.
 		if(typeof TC1d != 'undefined') {
 			this.TC0m.value = this.TCe(this.TC04);
-			popupHandler.end();
+			Calendar_popupHandler.end();
 		}
       }
   }
@@ -1875,10 +1875,10 @@ function reposition(div, x, y) {
 
 
 /*****************************************
-* popupHandler - closes a div on 
+* Calendar_popupHandler - closes a div on 
 * 1. esc, 2. click outside, 3. mouse leaving
 *****************************************/
-var popupHandler = {
+var Calendar_popupHandler = {
 
 	CLOSE_TIMEOUT : 500,
 	popupDiv : null,
@@ -1892,24 +1892,24 @@ var popupHandler = {
 		var charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : 
 			((evt.which) ? evt.which : 0));
 		if (charCode == 27)
-			popupHandler.closePopup();
+			Calendar_popupHandler.closePopup();
 	},
 	_onkeyup_input : function(evt) {
-			popupHandler.closePopup();
+			Calendar_popupHandler.closePopup();
 	},
 	_onmouseup : function(evt) {
 		var evt = evt || window.event;
 		var target = evt.target || evt.srcElement; 
-		if (popupHandler.contains(popupHandler.popupDiv, target) == false )
-			popupHandler.closePopup();
+		if (Calendar_popupHandler.contains(Calendar_popupHandler.popupDiv, target) == false )
+			Calendar_popupHandler.closePopup();
 	},
 
 	_onmouseover : function(event) {
 		var related;
 		if (window.event) related = window.event.toElement;
 		else related = event.relatedTarget;
-		if (popupHandler.popupDiv == related || popupHandler.contains(popupHandler.popupDiv, related))
-			clearInterval(popupHandler.timerid);
+		if (Calendar_popupHandler.popupDiv == related || Calendar_popupHandler.contains(Calendar_popupHandler.popupDiv, related))
+			clearInterval(Calendar_popupHandler.timerid);
 	},
 	
 	_onmouseout : function(event) {
@@ -1918,8 +1918,8 @@ var popupHandler = {
 		else related = event.relatedTarget;
 		if(related == null)
 			return;
-		if (popupHandler.popupDiv != related && !popupHandler.contains(popupHandler.popupDiv, related)) {
-			popupHandler.timerid = setInterval(popupHandler.suspendedClose, popupHandler.CLOSE_TIMEOUT);
+		if (Calendar_popupHandler.popupDiv != related && !Calendar_popupHandler.contains(Calendar_popupHandler.popupDiv, related)) {
+			Calendar_popupHandler.timerid = setInterval(Calendar_popupHandler.suspendedClose, Calendar_popupHandler.CLOSE_TIMEOUT);
 		}
 	},
 	
@@ -1932,8 +1932,8 @@ var popupHandler = {
 	},
 	
 	suspendedClose : function() {
-		clearInterval(popupHandler.timerid);
-		popupHandler.closePopup();
+		clearInterval(Calendar_popupHandler.timerid);
+		Calendar_popupHandler.closePopup();
 	},
 	
 	closePopup : function() {
