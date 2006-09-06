@@ -1340,9 +1340,6 @@ var innerListUrls = new Array();
 
 var frameLoaded = new Array();
 
-var rteUpdated = 'false';
-var allRTEs = '';
-
 function reposition(div, x, y) {
   var intLessTop  = 0;
   var intLessLeft = 0;
@@ -1676,7 +1673,6 @@ function popupOnSubmit(e) {
       return stopEventPropagation(e);
     e.setAttribute('eventProcessed', 'true');
   }
-  try{if(rteUpdated == 'false'){updateRTEs(); rteUpdated = 'true';}}catch(ex){}
 
   var target = getTargetElement(e);
   var form = target;
@@ -1692,6 +1688,9 @@ function popupOnSubmit(e) {
       return stopEventPropagation(e);
     }
   }
+
+  // put rte data in the hidden field(s)	
+  RteEngine.putRteDataOfForm(form);	
 
   /* Add full text search criteria to filter */
   var fullTextSearchForm = document.forms['searchForm'];
@@ -3188,7 +3187,6 @@ function displayInner(e, urlStr) {
  */
 function showDialog(div, hotspot, content) {
   var frameId = 'popupFrame';
-
   if (!content) {
     if (!frameLoaded[frameId]) {
       var timeOutFunction = function () { showDialog(div, hotspot) };
@@ -3204,33 +3202,7 @@ function showDialog(div, hotspot, content) {
     var d = frameDoc.getElementById("corePageContent");
     if (d)
       frameBody = d;
-    // if there is div RteIframe with iframe in it than innerHTML of this div must be set to ""
-    // because the copying of the iframe from the hidden iframe to the parent page causes problems with
-    // FireFox back button - it becomes necessary to click 3 and more times to go to the previous page
-    if(frames[frameId].document.getElementById('RteIframe'))
-      frames[frameId].document.getElementById('RteIframe').innerHTML = "";
-    if(frames[frameId].document.getElementById('footerRteIframeDivNotes'))
-      frames[frameId].document.getElementById('footerRteIframeDivNotes').innerHTML = "";
 
-    // the size of the floating iframes must be set to 0. Size and position (window offsetLeft and offsetTop) will be set on textarea's onclick
-    var rteNotes = document.getElementById('notes');
-    if (rteNotes) {
-      rteNotes.style.width = 0;
-      rteNotes.style.height = 0;
-      rteNotes.style.left = 0;
-      rteNotes.style.top = 0;
-      rteNotes.style.display = 'none';
-    }
-    // the size of the floating iframes must be set to 0. Size and position (window offsetLeft and offsetTop) will be set on textarea's onclick
-    // this happens if this is description RTE and this RTE is in the pane2 div (the same - it is on the readOnlyProperties.html page)
-    var rteDescription = document.getElementById('description');
-    if(rteDescription && parent.window.location.toString().indexOf('readOnlyProperties.html')>0) {
-      rteDescription.style.width = 0;
-      rteDescription.style.height = 0;
-      rteDescription.style.left = 0;
-      rteDescription.style.top = 0;
-      rteDescription.style.display = 'none';
-    }
     content = frameBody.innerHTML;
   }
 
