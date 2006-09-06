@@ -1,7 +1,7 @@
 
 function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 {
-	var IMAGES_FOLDER = "./styleSheet/images/";
+	var IMAGES_FOLDER = "images/wysiwyg/";//"./styleSheet/images/";
 	var FONT_ARR = new Array("arial", "arial black", "comic sans ms", "courier", "courier new", "georgia", "helvetica", "impact", "palatino", "times new roman", "trebuchet ms", "verdana");
 	var FONT_SIZE_ARR = new Array("9px", "10px", "12px", "14px", "16px", "20px", "24px", "30px", "35px");
 	
@@ -28,6 +28,10 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	
 	this.borderColor; // used to store the value when borderColor is unseted on "inset" and "outset" border styles.
 	
+	this.fontClrBtn = null;
+	this.bgClrBtn = null;
+	this.borderClrBtn = null;
+
 	// create
 	this.create = function() {
 		// init not initialized Sample's properties
@@ -36,7 +40,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		// 1. create style view div
 		styleViewDiv = this.creteStyleViewDiv();
 		// 2. create the toolbar.
-		toolBar = new Toolbar(parentDiv, this);
+		toolBar = new Toolbar(parentDiv, this, 18);
 		// 3. create the toolbar's control objects.
 		// font family
 		this.fontFamilyList = this.createFontList(toolBar);
@@ -52,24 +56,19 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 			italicBtn.pressToggleButton()
 
 		// font color //
-		var fontClrBtn = toolBar.appendButton(this.onFontColor, false, IMAGES_FOLDER + "font_color.gif", "font color");
+		this.fontClrBtn = toolBar.appendButton(this.onFontColor, false, IMAGES_FOLDER + "font_color.gif", "font color");
 		// background color
-		var bgClrBtn = toolBar.appendButton(this.onBackgroundColor, false, IMAGES_FOLDER + "background_color.gif", "background color");
+		this.bgClrBtn = toolBar.appendButton(this.onBackgroundColor, false, IMAGES_FOLDER + "background_color.gif", "background color");
 		// border width
 		this.borderWidthList = this.createBorderWidthList(toolBar);
 		// border style
 		this.borderStyleList = this.createBorderList(toolBar);
 		// border color
-		var borderClrBtn = toolBar.appendButton(this.onBorderColor, false, IMAGES_FOLDER + "border_color.gif", "border color");
+		this.borderClrBtn = toolBar.appendButton(this.onBorderColor, false, IMAGES_FOLDER + "border_color.gif", "border color");
 		// CSS view
 		var styleViewBtn = toolBar.appendButton(this.onStyleView, true, IMAGES_FOLDER + "properties.gif", "CSS view");
-		
-		// 4. create palettes
-		this.createFontPalette(fontClrBtn);
-		this.createBackgroundPalette(bgClrBtn);
-		this.createBorderPalette(borderClrBtn);
 
-		// 5. set parent div width
+		// 4. set parent div width
 		parentDiv.style.width = toolBar.getWidth();
 		// alighnment of the sample.
 		this.centeringSampleDiv();
@@ -195,7 +194,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 
 		return ddList;
 	}
-
+/*
 	this.createFontPalette = function(fontClrBtn) {
 		this.fontPaletteDiv = document.createElement('div');
 		this.fontPaletteDiv.style.position = "absolute"
@@ -214,9 +213,9 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		var top = fontClrBtn.top + fontClrBtn.height + 7;
 		this.fontPaletteDiv.style.left = left;
 		this.fontPaletteDiv.style.top = top;
-
 	}
-
+*/
+/*
 	this.createBackgroundPalette = function(bgClrBtn) {
 		this.backgroundPaletteDiv = document.createElement('div');
 		this.backgroundPaletteDiv.style.position = "absolute"
@@ -236,7 +235,8 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		this.backgroundPaletteDiv.style.left = left;
 		this.backgroundPaletteDiv.style.top = top;
 	}
-
+*/
+/*
 	this.createBorderPalette = function(borderClrBtn) {
 		this.borderPaletteDiv = document.createElement('div');
 		this.borderPaletteDiv.innerHTML = this.getPaletteContent();
@@ -258,7 +258,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		this.borderPaletteDiv.style.left = left;
 		this.borderPaletteDiv.style.top = top;
 	}
-
+*/
 	this.centeringSampleDiv = function() {
 		// different sample centering on styleViewDiv option.
 		if(styleViewDiv.style.visibility == "hidden") {
@@ -372,18 +372,11 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	}
 	
 	this.onFontColor = function() {
-		if(i_am.fontPaletteDiv.style.visibility == "visible")
-			return;
-		i_am.fontPaletteDiv.style.visibility = "visible";
-		toolBar.popupHandler(i_am.fontPaletteDiv, false);
-		
+		PalettePopup.show(i_am.fontClrBtn, 'right', i_am.setFontColor);
 	}
 	
 	this.onBackgroundColor = function() {
-		if(i_am.backgroundPaletteDiv.style.visibility == "visible")
-			return;
-		i_am.backgroundPaletteDiv.style.visibility = "visible";
-		toolBar.popupHandler(i_am.backgroundPaletteDiv, false);
+		PalettePopup.show(i_am.bgClrBtn, 'right', i_am.setBackgroundColor);
 	}
 	
 	this.onBorderStyle = function(styleIdx) {
@@ -411,10 +404,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	}
 
 	this.onBorderColor = function() {
-		if(i_am.borderPaletteDiv.style.visibility == "visible")
-			return;
-		i_am.borderPaletteDiv.style.visibility = "visible";
-		toolBar.popupHandler(i_am.borderPaletteDiv, false);
+		PalettePopup.show(i_am.borderClrBtn, 'right', i_am.setBorderColor);
 	}
 
 	this.onStyleView = function(isPressed) {
@@ -436,13 +426,11 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	// "setters" -------------------------
 	this.setFontColor = function(colorStr) {
 		sampleDiv.style.color = colorStr;
-		i_am.fontPaletteDiv.style.visibility = "hidden";
 		i_am.putStyleStr();
 	}
 	
 	this.setBackgroundColor = function(colorStr) {
 		sampleDiv.style.backgroundColor = colorStr;
-		i_am.backgroundPaletteDiv.style.visibility = "hidden";
 		i_am.putStyleStr();
 	}
 	
@@ -454,7 +442,6 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		else {
 			sampleDiv.style.borderColor = colorStr;
 		}
-		i_am.borderPaletteDiv.style.visibility = "hidden";
 		i_am.putStyleStr();
 	}
 	
@@ -481,100 +468,6 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		}
 		return null;
 	}
-	
-	this.getPaletteContent = function()
-	{
-		var palette =
-			'<table cellpadding="0" cellspacing="1" border="1" align="left">' + '<tr>'//
-			+ '	<td bgcolor="#FFFFFF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FFCCCC" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FFCC99" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FFFF99" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FFFFCC" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#99FF99" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#99FFFF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#CCFFFF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#CCCCFF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FFCCFF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '</tr>'
-			+ '<tr>'
-			+ '	<td bgcolor="#CCCCCC" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FF6666" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FF9966" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FFFF66" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FFFF33" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#66FF99" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#33FFFF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#66FFFF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#9999FF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FF99FF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '</tr>'
-			+ '<tr>'
-			+ '	<td bgcolor="#C0C0C0" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FF0000" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FF9900" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FFCC66" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FFFF00" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#33FF33" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#66CCCC" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#33CCFF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#6666CC" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#CC66CC" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '</tr>'
-			+ '<tr>'
-			+ '	<td bgcolor="#999999" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#CC0000" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FF6600" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FFCC33" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#FFCC00" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#33CC00" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#00CCCC" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#3366FF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#6633FF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#CC33CC" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '</tr>'
-			+ '<tr>'
-			+ '	<td bgcolor="#666666" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#990000" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#CC6600" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#CC9933" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#999900" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#009900" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#339999" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#3333FF" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#6600CC" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#993399" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '</tr>'
-			+ '<tr>'
-			+ '	<td bgcolor="#333333" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#660000" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#993300" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#996633" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#666600" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#006600" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#336666" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#000099" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#333399" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#663366" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '</tr>'
-			+ '<tr>'
-			+ '	<td bgcolor="#000000" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#330000" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#663300" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#663333" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#333300" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#003300" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#003333" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#000066" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#330099" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '	<td bgcolor="#330033" width="10" height="10" onmouseover="this.style.cursor=\'pointer\';"></td>'
-			+ '</tr>'
-			+ '</table>';
-		
-		return palette;
-	}
-
-
 	// constructor's body -----------------------
 	this.create();
 	this.putStyleStr();
