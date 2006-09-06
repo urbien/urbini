@@ -7,8 +7,8 @@ function openChat() {
 
 function openChatWindow(title, resUrl, isChatWithTheAgent) {
   if (window.screen) {
-    w = Math.floor(screen.availWidth/2) + 50;
-    h = Math.floor(screen.availHeight/2)-125;
+    w = 700;//Math.floor(screen.availWidth/2) + 50;
+    h = 600;//Math.floor(screen.availHeight/2)-125;
     //cw = Math.floor(screen.availWidth/4);
     //ch = Math.floor(screen.availHeight/4);
     ch = 0;
@@ -26,7 +26,7 @@ function openChatWindow(title, resUrl, isChatWithTheAgent) {
     url += '&referer=' + resUrl;
   if (isChatWithTheAgent)
     url += '&isChatWithTheAgent=true';
-  window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=0, location=no, toolbar=no, scrollbars=no, status=no, resizable=yes');
+  window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=no, location=no, toolbar=no, scrollbars=no, resizable=yes');
 }
 
 function createCookie(name, value, days) {

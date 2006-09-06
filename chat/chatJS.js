@@ -241,7 +241,10 @@ function sendMessageOnButton() {
   if(!document.all && frames.messageRTE.document.body.innerHTML.lastIndexOf('<br>') == frames.messageRTE.document.body.innerHTML.length - 4)
     frames.messageRTE.document.body.innerHTML = frames.messageRTE.document.body.innerHTML.substring(0,frames.messageRTE.document.body.innerHTML.length - 4);
 
-  updateRTE('messageRTE'); // updates RTE content. This means the content of the RTE's design mode iframe is loaded to document.postForm.messageRTE.value
+  //updateRTE('messageRTE'); // updates RTE content. This means the content of the RTE's design mode iframe is loaded to document.postForm.messageRTE.value
+  var formObj = document.getElementById('postForm');
+  RteEngine.putRteDataOfForm(formObj, true);
+  
   document.postForm.message.value = document.postForm.messageRTE.value;
   // sends the message itself. postForm form is submitted. Immediate sending feature is also run here.
   sendMessageF();

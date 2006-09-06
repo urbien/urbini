@@ -6,6 +6,10 @@
     <!--link rel='stylesheet' type='text/css' href='styles/properties.css'/ //-->
 	  <!--link href="styles.css" type="text/css" rel="stylesheet" /-->
     <script src="chat/chatJS.js" language="JavaScript" type="text/javascript"></script>
+	
+	<script src="richtext.js" language="JavaScript" type="text/javascript"></script>
+    <script src="toolbar.js" language="JavaScript" type="text/javascript"></script>
+    <script src="menu.js" language="JavaScript" type="text/javascript"></script>
 
     <script language='JavaScript' type="text/javascript">
 		var postLoaded = 0;     // ==1 when the post iframe is loaded
@@ -31,11 +35,11 @@
 		//window.onerror=myErrorHandler;
     </script>
   </head>
-  <body onload="initFrames(); checkOnlineStatus(); isChatWithTheAgent('&[isChatWithTheAgent];');" onclick="isWindowInFocus='focused';" onfocus="isWindowInFocus='focused';" onblur="isWindowInFocus='blured';" style='cursor : pointer;' leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5' bgcolor="#EDEDED">
+  <body onload="initFrames(); checkOnlineStatus(); isChatWithTheAgent('&[isChatWithTheAgent];');" onclick="isWindowInFocus='focused';" onfocus="isWindowInFocus='focused';" onblur="isWindowInFocus='blured';" leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5'>
 	  <input type='hidden' name='realUserName' id='realUserName' value="&[realUserName];">
 	  <input type='hidden' name='aliasUserUri' id='aliasUserUri' value="&[aliasUserUri];">
 
-    <table onmouseover="" width="100%" height="100%" style="border : medium groove #CCCCCC; background : #EDEDED;">
+    <table onmouseover="" width="100%" height="100%" style="border : medium groove #CCCCCC; background : buttonface;">
       <tr>
         <td>
           <table cellspacing="1" cellpadding="0" border="0" width="100%" height="100%">
@@ -111,7 +115,7 @@
 		          </td>
           <!-----------------------------------------------FINISH---------CHAT CONTENTS PANEL DEFINITION ------------------------------------------------------------------>
           <!-----------------------------------------------START---------TIME PANEL DEFINITION ------------------------------------------------------------------>
-              <td height="5%" width="20%" valign="top" bgcolor="#EDEDED" style="height:1">  <!-- bgcolor="#EDEDED" //--> <!-- TIME panel //-->
+              <td height="5%" width="20%" valign="top" bgcolor="#EDEDED" style="">  <!-- bgcolor="#EDEDED" //--> <!-- TIME panel //-->
                 <div height="100%" width="100%" id="timePanel">
                 <table border="0" cellpadding="0" cellspacing="0">
                   <tr>
@@ -196,22 +200,23 @@
                   <table width="100%">
                     <tr>
                       <td width="100%">
-                        <iframe style='background-color:#ffffff;border : 1px outset;' id='messageRTE' name='messageRTE' width="100%" height="50">
+                      <div width="100%" style="position:relative;">
+                        <iframe style='background-color:#ffffff; border:1px outset;' id='messageRTE' name='messageRTE' width="100%" height="200"
+                        onload="RteEngine.register(this, '', RteEngine.chatRTE);">
                         </iframe>
+                        <!--
+                        id="hdnmessageRTE"
+                        -->
+                        <input type="hidden" id="rte_data" name="messageRTE" value="">
+
+                      </div>
                       </td>
 	                    <td>
-                        <img onclick="sendMessageOnButton()" border="0" id="sendMesButton" src="icons/Chat-large.gif" alt="send message" title="send message" width="29" height="32">
+                        <img onclick="sendMessageOnButton()" border="0" id="sendMesButton" src="icons/Chat-large.gif" alt="send message" title="send message" style='cursor : pointer;' width="29" height="32">
                       </td>
                     </tr>
                   </table>
-                  <input type="hidden" id="hdnmessageRTE" name="messageRTE" value="">
                   <script language="JavaScript" type="text/javascript" src="chat/richtext.js"></script>
-                  <script language="JavaScript" type="text/javascript">
-                    //Usage: initRTE(imagesPath, includesPath, cssFile)
-                    initRTE("images/wysiwyg/", "chat/", "");
-                    // add RTE to chat
-                    addRTE();
-                  </script>
                   <input type="Hidden" name='message' id='message'> <!--the cleaned message will be loaded to this hidden object named 'message'//-->
 			            <script language='JavaScript' type="text/javascript">
                 	  document.postForm.message.value="";
