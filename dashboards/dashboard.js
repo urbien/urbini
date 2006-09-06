@@ -287,13 +287,14 @@
     function goToOtherDashboard() {
 		var dbList = document.getElementById("db_list");
 		var newLoc = dbList.options[dbList.selectedIndex].value;
-		window.location = newLoc;
+		window.location = newLoc; // allow history record
     }
     
     function editDashboard() {
 		if(checkIfUserLogged() == false)
 			return;
-		window.location = (window.location+'').replace('.html','Edit.html');
+		var editLoc = (window.location+'').replace('.html','Edit.html');
+		document.location = editLoc;
     }
     
     function finishEdit() {
@@ -313,7 +314,7 @@
 		else
 			loc = params.saveFile;
 		
-		window.location = loc;
+		document.location = loc;
 	}
     
     function createDashboard(isHomeDashboard) {
@@ -345,7 +346,7 @@
 		if(isHomeDashboard)
 			goLoc += "&homeDashboard=yes";
 		
-		window.location = goLoc;
+		document.location = goLoc;
 	}
 
 	function setAsHomeDashboard() {
@@ -416,7 +417,7 @@
 			if(newloc.indexOf("Edit.html") == -1)
 				newloc = newloc.replace(".html", "Edit.html");
 				
-			window.location = newloc;
+			document.location.replace(newloc);
 		}
 		else {
 			obj.innerHTML = "faild to rename the dashboard";
@@ -451,7 +452,7 @@
 		if(isOk) {
 			//window.alert("The dashboard is deleted.\nHome dashboard will be loaded.");
 			obj.innerHTML = "Deleted. Home dashboard loading...";
-			window.location = respText;
+			document.location.replace(respText);
 			 
 		}
 		else {
@@ -565,6 +566,7 @@ function postRequest_dashboard(url, parameters, callback) {
 
 		if (!http_request) {
 			window.alert('Cannot create XMLHTTP instance, using iframe instead');
+			var frameId = 'popupFrame';
 			frameLoaded[frameId] = false;
 			var iframe = frames[frameId];
 			iframe.document.body.innerHTML = '<form method=post action=dummy id=ajaxForm><input type=submit name=n value=v></input> </form>';
