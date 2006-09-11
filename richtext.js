@@ -348,7 +348,9 @@ function Rte(iframeObj, text, rtePref) {
 	this.initFrameHeight = null;
 	
 	this.isIE = false;
-	this.skipClose = false;   // prevents blink for IE's commands without popup
+	this.applyToFF = false;
+	this.skipClose = false;   // prevents blink for IE's commands without popup &
+							  // closing on 'html view' for IE and FF.	
 	this.currentPopup = null; // prevents closing on popup opening
 	this.openedAtTime = 0;    // hack: prevents simultaneous openning and toolbar button execution
 
@@ -362,6 +364,7 @@ function Rte(iframeObj, text, rtePref) {
 	this.linkBtn = null;
 	this.imageBtn = null;
 	this.tableBtn = null;
+	this.htmlBtn = null;
 	
 	// init	
 	this.init = function() {
@@ -460,7 +463,7 @@ function Rte(iframeObj, text, rtePref) {
 			toolBar.appendButton(this.onUndo, false, RteEngine.IMAGES_FOLDER + "undo.gif", "undo");
 		}
 		if(this.rtePref.buttons.html) // html
-			toolBar.appendButton(this.onSource, true, RteEngine.IMAGES_FOLDER + "html.gif", "html view mode");
+			this.htmlBtn = toolBar.appendButton(this.onSource, true, RteEngine.IMAGES_FOLDER + "html.gif", "html view mode", "edit mode");
 
 		return toolBar;
 	}
@@ -502,8 +505,15 @@ function Rte(iframeObj, text, rtePref) {
 			
 		return true; 
 	}
-	this.getDocumentContent = function() {
-		return this.document.body.innerHTML;
+	this.getHtmlContent = function() {
+		if(this.isSourceView) {
+				if(typeof this.document.body.innerText == 'undefined')
+					return this.document.body.textContent;
+				else	
+					return this.document.body.innerText;
+			}
+		else
+			return this.document.body.innerHTML;
 	}
 	this.getDataField = function() {
 		if(this.dataField == null) {
@@ -513,7 +523,7 @@ function Rte(iframeObj, text, rtePref) {
 		return this.dataField;
 	}
 	this.putRteData = function() {
-		this.getDataField().value = this.getDocumentContent();
+		this.getDataField().value = this.getHtmlContent();
 	}
 	// handlers --------------
 	this.onfocus = function() {
@@ -530,8 +540,9 @@ function Rte(iframeObj, text, rtePref) {
 			return;
 		if(i_am.currentPopup != null && i_am.currentPopup.style.visibility == "visible")
 			return;
-		if(i_am.skipClose == true && i_am.isIE) {
+		if(i_am.skipClose == true && (i_am.isIE || i_am.applyToFF)) {
 			i_am.skipClose = false;
+			i_am.applyToFF = false
 			return;
 		}
 		i_am.iframeObj.style.height = i_am.initFrameHeight;
@@ -757,7 +768,15 @@ function Rte(iframeObj, text, rtePref) {
 			}
 		}
 		i_am.isSourceView = pressed;
-		//				i_am.skipClose = true;	
+
+		if(i_am.isSourceView)
+			i_am.toolbar.disableAllControls(i_am.htmlBtn);
+		else
+			i_am.toolbar.enableAllControls();
+
+		// prevent a closing		
+		i_am.skipClose = true;
+		i_am.applyToFF = true;
 	}
 
 	// "setters" (on selection in a popup) ----------
