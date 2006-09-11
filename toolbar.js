@@ -94,7 +94,7 @@ function FormPopup(innerFormHtml, parentElt) {
 /****************************************************
 *	ToolbarButton class
 *****************************************************/
-function ToolbarButton(index, callback, isToggle, icon, iconSize, title, left, top, toolbar)
+function ToolbarButton(index, callback, isToggle, icon, iconSize, left, top, toolbar, title, titlePressed)
 {
 	var i_am = this;
 	this.div = null;
@@ -103,8 +103,9 @@ function ToolbarButton(index, callback, isToggle, icon, iconSize, title, left, t
 	this.callback = callback;
 	this.isToggle = isToggle;
 	this.icon = icon;
-	this.title = title;
 	this.toolbar = toolbar;
+	this.title = title;
+	this.titlePressed = null;
 	
 	this.left = left;
 	this.top = top;
@@ -112,6 +113,7 @@ function ToolbarButton(index, callback, isToggle, icon, iconSize, title, left, t
 	this.height = null;
 
 	this.isPressed = false;
+	this.isDisabled = false;
 	
 	this.create = function(iconSize) { // create Button
 		this.div = document.createElement('div');
@@ -135,38 +137,62 @@ function ToolbarButton(index, callback, isToggle, icon, iconSize, title, left, t
 		this.div.onmouseup = this.onMouseUp;
 
 		this.width = this.height = iconSize + 2 * this.toolbar.BTN_PADDING;
-		
 		this.toolbar.div.appendChild(this.div);
 	}
 	
-	this.findButtonSize = function() {
+	this.enable = function() {
+		this._changeOpacity(1.0);
+		this.isDisabled = false; 
 	}
-
+	
+	this.disable = function() {
+		this._changeOpacity(0.3);
+		this.isDisabled = true;  
+	}
+	this._changeOpacity = function(level) {
+		try {
+			if(typeof this.div.style.MozOpacity != 'undefined')
+				this.div.style.MozOpacity = level;
+			else
+				this.div.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
+		}
+		catch(e){}
+	}
+	// mouse handlers ---------------	
 	this.onMouseOver = function() {
-		if(i_am.isPressed)
-			return;
+		if(i_am.isDisabled) return;
+		if(i_am.isPressed)  return;
+		
 		i_am.div.style.borderLeftColor = i_am.div.style.borderTopColor = "ButtonHighlight";
 		i_am.div.style.borderRightColor = i_am.div.style.borderBottomColor = "ButtonShadow";
 	}
 	
 	this.onMouseOut = function() {
-		if(i_am.isPressed)
-			return;
+		if(i_am.isDisabled) return;
+		if(i_am.isPressed)  return;
+		
 		i_am.div.style.borderLeftColor = i_am.div.style.borderTopColor = "buttonface";
 		i_am.div.style.borderRightColor = i_am.div.style.borderBottomColor = "buttonface";
 	}	
 	
 	this.onMouseDown = function() {
+		if(i_am.isDisabled)
+			return;
+
 		i_am.div.style.borderLeftColor = i_am.div.style.borderTopColor = "ButtonShadow";
 		i_am.div.style.borderRightColor = i_am.div.style.borderBottomColor = "ButtonHighlight";
 		if(i_am.isToggle) {
 			i_am.isPressed = !i_am.isPressed;
 			if(i_am.isPressed) {
 				i_am.div.style.backgroundColor = "buttonhighlight";
+				if(i_am.titlePressed != null)
+					i_am.div.title = i_am.titlePressed;
 			}
 			else {
 				i_am.div.style.backgroundColor = "buttonface";
 				i_am.onMouseOut();
+				if(i_am.titlePressed != null)
+					i_am.div.title = i_am.title;
 			}
 			i_am.callback(i_am.isPressed);
 		}
@@ -175,8 +201,8 @@ function ToolbarButton(index, callback, isToggle, icon, iconSize, title, left, t
 	}	
 	
 	this.onMouseUp = function(e) {
-		if(i_am.isToggle)
-			return;
+		if(i_am.isDisabled) return;
+		if(i_am.isToggle)	return;
 		
 		i_am.div.style.backgroundColor = "buttonface";
 		i_am.onMouseOut();
@@ -194,7 +220,9 @@ function ToolbarButton(index, callback, isToggle, icon, iconSize, title, left, t
 
 	// constructor's body
 	this.create(iconSize);
-	this.onMouseOut(); // draw "invisible" borders 	
+	this.onMouseOut(); // draw "invisible" borders 
+	if(typeof titlePressed != 'undefined')
+		this.titlePressed = titlePressed;	
 }
 
 /*********************************************
@@ -535,7 +563,6 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 		this.fieldWidth = this.div.clientWidth; // get real size of the field; for FF
 		this.list.setWidth(this.fieldWidth);
 
-		//debugger
 		if(this.div.clientHeight != FIELD_HEIGHT)
 			this.div.style.height = 2*FIELD_HEIGHT - this.div.clientHeight;
 		
@@ -585,6 +612,12 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 		i_am.itemCloneObj = i_am.getItemObject(itemIdx).getInnerDiv().cloneNode(true);
 		i_am.div.appendChild(i_am.itemCloneObj);
 		i_am.callback(itemIdx);
+	}
+	
+	// NOT IMPLEMENTED YET!
+	this.enable = function() {
+	}
+	this.disable = function() {
 	}
 	
 	// arrow button handlers
@@ -639,7 +672,6 @@ function Titlestrip(parentDiv, toolbar)
 		// get "real" height
 		this.height = this.div.clientHeight;
 	}
-	
 	this.appendTitle = function(left, text) {
 		var titleDivTmp = document.createElement('div');
 		titleDivTmp.style.position = "absolute";
@@ -655,6 +687,12 @@ function Titlestrip(parentDiv, toolbar)
 	}
 	this.resize = function(width) {
 		this.div.style.width = width;
+	}
+	this.isVisible = function() {
+		if(this.div.style.visibility == "visible")
+			return true;
+		else
+			return false;
 	}
 	
 	// constructor's body
@@ -691,7 +729,7 @@ function Toolbar(parentDiv, masterObj, iconSize)
 		this.div = document.createElement('div');
 		this.div.style.position = "absolute";
 		this.div.style.left = 0;
-		this.div.style.top = this.titlestrip.height;
+		this.div.style.top = 0;//this.titlestrip.height;
 		this.div.style.width = this.width;
 		this.div.style.height = this.height;
 		this.div.style.backgroundColor = "buttonface";
@@ -714,14 +752,14 @@ function Toolbar(parentDiv, masterObj, iconSize)
 		return this.controlsArr[idx];
 	}
 	
-	this.appendButton = function(callback, isToggle, icon, title) {
+	// titlePressed is optional parameter for toggle button
+	this.appendButton = function(callback, isToggle, icon, title, titlePressed) {
 		if(this.controlsArr == null)
 			this.controlsArr = new Array();
 		
 		var idx = this.controlsArr.length;
 		var left = (idx > 0) ? lastBtnEdge + BTN_GAP : LEFT_PADDING;
-	//	debugger
-		this.controlsArr[idx] = new ToolbarButton(idx, callback, isToggle, icon, this.iconSize, title, left, TOP_PADDING, this);
+		this.controlsArr[idx] = new ToolbarButton(idx, callback, isToggle, icon, this.iconSize, left, TOP_PADDING, this, title, titlePressed);
 		this.resize(idx);
 		
 		return this.controlsArr[idx];
@@ -756,7 +794,10 @@ function Toolbar(parentDiv, masterObj, iconSize)
 	}
 	
 	this.getHeight = function() {
-		return (this.height + this.titlestrip.height);
+		if(this.titlestrip.isVisible())
+			return (this.height + this.titlestrip.height);
+		else
+			return this.height;
 	}
 	this.show = function() {
 		this.div.style.visibility = "visible";
@@ -768,6 +809,20 @@ function Toolbar(parentDiv, masterObj, iconSize)
 	}
 	this.onTitleVisible = function() {
 		this.div.style.top = this.titlestrip.height;
+	}
+	
+	this.enableAllControls = function() {
+		for(var i = 0; i < this.controlsArr.length; i++)
+			this.controlsArr[i].enable();
+	}
+	this.disableAllControls = function(excludeCtrl) {
+		var exclIdx = -1;
+		if(typeof excludeCtrl != 'undefined')
+			exclIdx = excludeCtrl.index;
+			
+		for(var i = 0; i < this.controlsArr.length; i++)
+			if(i != exclIdx)
+				this.controlsArr[i].disable();
 	}
 	// Toolbar constructor's body
 	this.create();
@@ -784,7 +839,6 @@ var PopupHandler = {
 	oldOnClick : null,
 	timerid  : 0,
 	firstClick : true, // prevents a closing from button's onmouseup 
-
 	// div is a popup
 	// alignment: left, center, right
 	showRelatively : function(hotspot, alignment, div, autohide, parentDlg) {
@@ -833,7 +887,6 @@ var PopupHandler = {
 			return;
 		this.popupDiv.style.visibility = "hidden";
 		// set back popup's parent a document.body 
-		//debugger
 		document.body.appendChild(this.popupDiv);
 		this.resetHandlers();
 	},
