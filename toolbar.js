@@ -8,11 +8,18 @@ function FormPopup(innerFormHtml, parentElt) {
 	this.formDiv = null;
 	this.buttonsDiv = null;
 	this.callback = null;
+	this.initValues = null;
 	
 	this.create = function(innerFormHtml, parentElt) {
 		this.div = document.createElement('div');
 		this.div.style.visibility = "hidden";
-		this.div.style.position = "absolute";
+		var ua = navigator.userAgent.toLowerCase();
+		var isGecko = (ua.indexOf("gecko") != -1);
+		if(isGecko) {
+			this.div.style.position = "fixed"; // FF <-for visible cursor in <input>
+		}
+		else
+			this.div.style.position = "absolute"; // IE
 		this.div.style.backgroundColor = "#fff";
 		this.div.style.borderStyle = "solid";
 		this.div.style.borderWidth = 1;
@@ -55,12 +62,34 @@ function FormPopup(innerFormHtml, parentElt) {
 		this.callback = callback;
 		PopupHandler.showRelatively(btnObj.div, alignment ,this.div, false, parentDlg);
 		
-		//var inputs = this.formDiv.getElementsByTagName('input');
-		//inputs[0].focus();
+		// store init values to restore on closing
+		if(this.initValues == null)
+			this.initValues = this._handleControlsValue();
+		// set focus on 1st input
+		var inputs = this.formDiv.getElementsByTagName('input');
+		inputs[0].focus();
 	}
 
 	this._onok = function() {
-		var retArr = new Array();
+		var retArr = i_am._handleControlsValue();
+		i_am.callback(retArr);
+		i_am._hide();
+	}
+	
+	this._hide = function() {
+		PopupHandler.hide();
+		// restore values
+		i_am._handleControlsValue(i_am.initValues);
+	}
+	// get or set values of the controls
+	this._handleControlsValue = function(setArr) {
+		var getArr;
+		var toGet = false;
+		if(typeof setArr == 'undefined') {
+			toGet = true;
+			getArr = new Array();	
+		}
+		
 		var inpCol = i_am.formDiv.getElementsByTagName("input");
 		// inputs - only "text" realized
 		for(var i = 0; i < inpCol.length; i++) {
@@ -68,23 +97,32 @@ function FormPopup(innerFormHtml, parentElt) {
 			var type = inp.getAttribute("type");
 			var name = inp.getAttribute("name");
 			if(type == "text") {
-				retArr[name] = inp.value;
+				if(toGet)
+					getArr[name] = inp.value;
+				else
+					inp.value = setArr[name];
 			}
 		}
-		// selects
+		// selects; returns text value
 		var selectCol = i_am.formDiv.getElementsByTagName("select");
 		for(i = 0; i < selectCol.length; i++) {
-			var sel = selectCol[i];
-			var name = sel.getAttribute("name");
-				retArr[name] = inp.value;
-			}
-		i_am.callback(retArr);
-		i_am._hide();
+			var select = selectCol[i];
+			var options = select.options;
+			var name = select.getAttribute("name");
+				if(toGet)
+					getArr[name] = options[select.selectedIndex].value;
+				else {
+					for(var i = 0; i < options.length; i++)
+						if(options[i].value == setArr[name])
+							options[i].selected = true;		
+				}
+		}
+	
+		if(toGet)
+			return getArr;
 	}
 	
-	this._hide = function() {
-		PopupHandler.hide();
-	}
+
 
 	// constructor ---
 	parentElt = parentElt || document.body;
@@ -839,6 +877,16 @@ var PopupHandler = {
 	oldOnClick : null,
 	timerid  : 0,
 	firstClick : true, // prevents a closing from button's onmouseup 
+	
+	isAutoHide : true,
+	
+	// FF: fixed position --
+	isFixedPosition : false,
+	x : 0,
+	y : 0,
+	oldOnScroll : null,
+
+	
 	// div is a popup
 	// alignment: left, center, right
 	showRelatively : function(hotspot, alignment, div, autohide, parentDlg) {
@@ -852,15 +900,31 @@ var PopupHandler = {
 
 		var pos = this.findObjectPositio(hotspot, parentDlg);
 		if(alignment == 'left')
-			div.style.left = pos.left;
+			//div.style.left = pos.left;
+			this.x = pos.left;
 		else if(alignment == 'center') 
-			div.style.left = pos.left - (div.clientWidth - hotspot.clientWidth) / 2;
+			//div.style.left = pos.left - (div.clientWidth - hotspot.clientWidth) / 2;
+			this.x = pos.left - (div.clientWidth - hotspot.clientWidth) / 2;
 		else  // right
-			div.style.left = pos.left - (div.clientWidth - hotspot.clientWidth);
+			//div.style.left = pos.left - (div.clientWidth - hotspot.clientWidth);
+			this.x = pos.left - (div.clientWidth - hotspot.clientWidth);
+			
+		//div.style.top = pos.top + hotspot.clientHeight + OFFSET_Y;
+		this.y = pos.top + hotspot.clientHeight + OFFSET_Y;
+		
+		// FF: position "fixed"
+		if(div.style.position == 'fixed') {
+			this.isFixedPosition = true;
+			var scrl = getScrollXY1();
+			div.style.left = this.x - scrl[0];
+			div.style.top = this.y - scrl[1];
+		}
+		else {
+			this.isFixedPosition = false;
+			div.style.left = this.x;
+			div.style.top = this.y;
+		}
 
-		div.style.top = pos.top + hotspot.clientHeight + OFFSET_Y;
-		if(typeof autohide == 'undefined')
-			autohide = true;
 		this._show(div, autohide);
 	},
 	showAbsolutely : function(left, top, div, autohide) {
@@ -869,14 +933,15 @@ var PopupHandler = {
 
 		div.style.left = left;
 		div.style.top = top;
-		if(typeof autohide == 'undefined')
-			autohide = true;
 		this._show(div, autohide);
 	},
 	_show : function(div, autohide) {
 		this.popupDiv = div;
-		if(autohide)
-			this.setHandlers();
+		if(typeof autohide == 'undefined' || autohide) 
+			this.isAutoHide = true;
+		else
+			this.isAutoHide = false;
+		this.setHandlers();
 		
 		this.firstClick = true;
 		this.popupDiv.style.visibility = "visible";	
@@ -915,19 +980,36 @@ var PopupHandler = {
 		return {left: curLeft, top: curTop};
 	},
 	setHandlers : function() {
-		this.oldOnKeyUp = document.onkeyup;
-		this.oldOnClick = document.onclick;
-		
-		document.onkeyup = this._onkeyup;
-		document.onclick = this._onclick;
-		this.popupDiv.onmouseover = this._onmouseover;
-		this.popupDiv.onmouseout  = this._onmouseout;
+		if(this.isAutoHide) {
+			this.oldOnKeyUp = document.onkeyup;
+			this.oldOnClick = document.onclick;
+			
+			document.onkeyup = this._onkeyup;
+			document.onclick = this._onclick;
+			this.popupDiv.onmouseover = this._onmouseover;
+			this.popupDiv.onmouseout  = this._onmouseout;
+		}
+		// FF: fixed position
+		if(this.isFixedPosition) {
+			this.oldOnScroll = window.onscroll
+			window.onscroll = this._onscroll;	
+		}
+
+		//window.onscroll
+		//document.onkeyup = this.onscroll;
+		//addEvent(document, 'scroll', this._onscroll, false);
 	},
 	resetHandlers : function() {
-		document.onkeyup = this.oldOnKeyUp;
-		document.onclick = this.oldOnClick;
-		this.popupDiv.onmouseover = null;
-		this.popupDiv.onmouseout = null;
+		if(this.isAutoHide) {
+			document.onkeyup = this.oldOnKeyUp;
+			document.onclick = this.oldOnClick;
+			this.popupDiv.onmouseover = null;
+			this.popupDiv.onmouseout = null;
+		}
+		if(this.isFixedPosition) {
+			window.onscroll = this.oldOnScroll;
+		}
+
 		this.popupDiv = null;
 	},
 	// handlers --
@@ -964,6 +1046,12 @@ var PopupHandler = {
 		if (PopupHandler.popupDiv != related && !PopupHandler.contains(PopupHandler.popupDiv, related)) {
 			PopupHandler.timerid = setInterval(PopupHandler.suspendedHide, PopupHandler.CLOSE_TIMEOUT);
 		}
+	},
+	// used for FF and position=fixed. It is a hack for cursor in <input> over iframe
+	_onscroll : function(event) {
+		var scrl = getScrollXY1();
+		PopupHandler.popupDiv.style.left = PopupHandler.x - scrl[0];
+		PopupHandler.popupDiv.style.top = PopupHandler.y - scrl[1];
 	},
 	// Return true if node a contains node b.
 	contains : function (a, b) {
