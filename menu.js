@@ -4829,7 +4829,6 @@ var dragobject = {
 		this.dragapproved = 0;
 	}
 }
-// initialize the drag & drop engine.
-dragobject.initialize();
+// initialize the drag & drop engine in addHandlers function
 
 // ***********************************************************************************

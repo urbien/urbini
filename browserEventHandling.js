@@ -110,6 +110,8 @@
 //        searchHighlighting();
 //      if (typeof replaceAllTooltips != 'undefined')
 //        replaceAllTooltips();
+		// initialize the drag & drop engine.
+		dragobject.initialize();
     }
 
     /*
