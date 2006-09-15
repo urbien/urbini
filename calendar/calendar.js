@@ -769,6 +769,10 @@ function TC0L() {
 function TCh(TC1I) {
   var TC1J = true;
 
+  // by A.L. prevents repetitive creation
+  if(this.TC0i.options.length != 0) 
+	return;
+
   if (!TC1I)
     TC1I = new Date(this.TC04);
 
@@ -805,6 +809,7 @@ function TCh(TC1I) {
 }
 
 function TCj(TC1I) {
+//debugger
   var TC1J = true;
 
   var TC1P = 0;
@@ -813,7 +818,7 @@ function TCj(TC1I) {
     TC1I = new Date(this.TC04);
 
   if (TC1J) {
-    this.TC0h.options.length = 0;
+ //   this.TC0h.options.length = 0; // A. L.
 
     TC1Q = TC1R = new Date(TC1I);
     for (var TC1S = 0; TC1S < 12; TC1S++) {
@@ -830,7 +835,8 @@ function TCj(TC1I) {
       }
 
       if (TC1J) {
-        this.TC0h.options[TC1P] = new Option(this.TCB.months[TC1S], TC1S);
+		if(this.TC0h.options.length < 12) // A. L. prevents repetitive creation
+			this.TC0h.options[TC1P] = new Option(this.TCB.months[TC1S], TC1S);
 
         this.TC0h.options[TC1P].selected = (TC1S == TC1I.getMonth());
         TC1P++
@@ -848,7 +854,7 @@ function TCl(TC1I) {
     TC1I = new Date(this.TC04);
 
   TC1H = this.TCW(TC1I);
-  this.TC0x.options.length = 0;
+  //this.TC0x.options.length = 0;
 
   if (this.TC02 == 1) {
     var TC1U = (TC1I.getHours() > 12 ? 12 : 0);
@@ -862,7 +868,8 @@ function TCl(TC1I) {
       }
 
       if (TC1J) {
-        this.TC0x.options[TC1T] = new Option(TC1V, TC1V);
+		if(this.TC0x.options.length < 12)
+			this.TC0x.options[TC1T] = new Option(TC1V, TC1V);
 
         this.TC0x.options[TC1T].selected = (TC1V == (TC1I.getHours() > 12 ? TC1I.getHours() - 12 : TC1I.getHours()));
         TC1T++
@@ -880,7 +887,8 @@ function TCl(TC1I) {
       }
 
       if (TC1J) {
-        this.TC0x.options[TC1T] = new Option(TC1V, TC1V);
+		if(this.TC0x.options.length < 24)
+			this.TC0x.options[TC1T] = new Option(TC1V, TC1V);
 
         this.TC0x.options[TC1T].selected = (TC1V == TC1I.getHours());
         TC1T++
@@ -898,7 +906,7 @@ function TCn(TC1I) {
     TC1I = new Date(this.TC04);
 
   TC1H = this.TCW(TC1I);
-  this.TC0y.options.length = 0;
+  //this.TC0y.options.length = 0;
 
   for (TC1X = 0; TC1X < 60; TC1X++) {
     if (this.TC05 && (TC1H & 8192) && (TC1H & 4096) && (TC1H & 4194304) && (TC1H & 16384)) {
@@ -910,7 +918,8 @@ function TCn(TC1I) {
     }
 
     if (TC1J) {
-      this.TC0y.options[TC1W] = new Option(TC1X, TC1X);
+	  if(this.TC0y.options.length < 60)	
+		this.TC0y.options[TC1W] = new Option(TC1X, TC1X);
 
       this.TC0y.options[TC1W].selected = (TC1X == TC1I.getMinutes());
       TC1W++
@@ -927,7 +936,7 @@ function TCp(TC1I) {
     TC1I = new Date(this.TC04);
 
   TC1H = this.TCW(TC1I);
-  this.TC17.options.length = 0;
+  //this.TC17.options.length = 0;
 
   for (TC1Z = 0; TC1Z < 60; TC1Z++) {
     if (this.TC05 && (TC1H & 8192) && (TC1H & 4096) && (TC1H & 4194304) && (TC1H & 16384) && (TC1H & 32768)) {
@@ -940,7 +949,8 @@ function TCp(TC1I) {
     }
 
     if (TC1J) {
-      this.TC17.options[TC1Y] = new Option(TC1Z, TC1Z);
+      if(this.TC17.options.length < 60)
+		this.TC17.options[TC1Y] = new Option(TC1Z, TC1Z);
 
       this.TC17.options[TC1Y].selected = (TC1Z == TC1I.getSeconds());
       TC1Y++
@@ -955,7 +965,7 @@ function TCr(TC1I) {
     TC1I = new Date(this.TC04);
 
   TC1H = this.TCW(TC1I);
-  this.TC1C.options.length = 0;
+  //this.TC1C.options.length = 0;
 
   if (this.TC05 && (TC1H & 8192) && (TC1H & 4096) && (TC1H & 4194304)) {
     TC1V = this.TC05.getHours();
@@ -972,26 +982,25 @@ function TCr(TC1I) {
   }
 
   if (TC1a) {
-    TC1Y = this.TC1C.options.length;
-
-    this.TC1C.options[TC1Y] = new Option('am', 'am');
+    TC1Y = 0;//this.TC1C.options.length;
+    if(this.TC1C.options.length == 0)
+		this.TC1C.options[TC1Y] = new Option('am', 'am');
+		
     this.TC1C.options[TC1Y].selected = (TC1I.getHours() < 12);
     TC1Y++
   }
 
   if (TC1b) {
     TC1Y = this.TC1C.options.length;
-
-    this.TC1C.options[TC1Y] = new Option('pm', 'pm');
+	if(this.TC1C.options.length < 2)
+		this.TC1C.options[TC1Y] = new Option('pm', 'pm');
     this.TC1C.options[TC1Y].selected = (TC1I.getHours() >= 12);
     TC1Y++
   }
 }
 
 function TC0H(TC1c, TC1d, TC1J) {
-
   var TC1e = TC1d ? new Date(TC1d) : new Date(this.TC04);
-
   if (!TC1d) {
     if (this.TC0i.options.length != 0) {
       var TC1f = this.TC0h.options[this.TC0h.selectedIndex].value;
@@ -1046,7 +1055,6 @@ function TC0H(TC1c, TC1d, TC1J) {
       }
     }
   }
-
   this.TC04 = new Date(TC1e);
   this.TC04 = this.TCa(this.TC04);
   this.TC0M(TC1c);
@@ -1068,6 +1076,7 @@ function TC0H(TC1c, TC1d, TC1J) {
 }
 
 function TC0N(TC1c) {
+//debugger
   this.TC0K();
 
   if (TC1c != 'time') {
