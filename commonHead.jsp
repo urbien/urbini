@@ -9,8 +9,6 @@
   <link href="styles/tree.css"       type="text/css" rel="stylesheet" />
   <link href="calendar/calendar.css" type="text/css" rel="stylesheet" />
 
-  <script src="browserEventHandling.js" language="JavaScript" type="text/javascript"></script>
-
   <script src="menu.js"                  language="JavaScript" type="text/javascript"></script>
   <!--script src="searchHighlighting.js"    language="JavaScript" type="text/javascript"></script-->
   <script src="chat/chat.js"             language="JavaScript" type="text/javascript"></script>
