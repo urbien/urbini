@@ -22,7 +22,12 @@
 
     <div id="allowSearchHighlighting2">
       <readOtherSiteInfo />
+<getResource/>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
+  <tr><td>
       <include name="${type}_details_main.jsp" alt="propertySheet.jsp" />
+  </td></tr>    
+</table>      
 <hideBlock id="hideBlock1">
       <div align="right"><measurement/></div>
       <p/>
