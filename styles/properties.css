@@ -206,3 +206,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .drag {position: relative;}
 #titleBar {height: 22px; background:url(../images/skin/blue/title.gif); cursor:move; padding-left:5px;}
 
+span.checkout {font-family:verdana,sans-serif,arial;font-weight:bold;font-size:8pt;}
+tr.checkout   {background-image: url('../images/toolbar_bg.gif');}
+td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
