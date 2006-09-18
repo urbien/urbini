@@ -2088,7 +2088,7 @@ function getKeyCode(e) {
       return e.which;
   } else {
       //TOTAL FAILURE, WE HAVE NO WAY OF OBTAINING THE KEY CODE
-      throw Error("can't detect the key pressed");
+      throw new Error("can't detect the key pressed");
   }
 }
 
@@ -2126,7 +2126,8 @@ function getTrNode(elem) {
   var elem_ = elem;
   if (elem.length > 1) {
     elem_ = elem[0];
-    alert('getTrNode(): element is array: ' + elem + ', its first element is: ' + elem_);
+    if (elem_.length > 1)
+      alert('getTrNode(): element is array: ' + elem_ + ', its first element is: ' + elem_[0]);
   }
   if (elem_.tagName.toUpperCase() == 'TR')
     return elem_;
@@ -3752,18 +3753,18 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
 
   var calendarRow = getTrNode(calendarCell);
   if (!calendarRow)
-    throw Error("addCalendarItem: calendar row not found for: " + anchor);
+    throw new Error("addCalendarItem: calendar row not found for: " + anchor);
 
   var anchors = calendarCell.getElementsByTagName('a')
   if (!anchors)
-    throw Error("addCalendarItem: calendar row has no anchor");
+    throw new Error("addCalendarItem: calendar row has no anchor");
 
   var anchor = anchors[0].href; // url of the servlet that adds calendar items
 
   //--- extract parameters specific for popup row
   var popupRow = getTrNode(popupRowAnchor); // get tr on which user clicked in popup
   if (!popupRow)
-    throw Error("addCalendarItem: popup row not found for: " + anchor);
+    throw new Error("addCalendarItem: popup row not found for: " + anchor);
 
   if (anchor.indexOf("?") != anchor.length - 1)
     anchor += "&";
@@ -3781,14 +3782,14 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
     var contactDiv = getDivNode(popupRow);
     //--- extract a contact corresponding to a poped up chooser
     if (!contactDiv)
-      throw Error("addCalendarItem: contactDiv not found for: " + anchor);
+      throw new Error("addCalendarItem: contactDiv not found for: " + anchor);
     if (!contactDiv.id) {
       while (contactDiv  &&  !contactDiv.id) {
         var parentNode = contactDiv.parentNode;
         while (parentNode  &&  (parentNode.tagName.toUpperCase() != 'DIV' || !parentNode.id))
           parentNode = parentNode.parentNode;
         if (!parentNode)
-          throw Error("addCalendarItem: contactDiv not found for: " + anchor);
+          throw new Error("addCalendarItem: contactDiv not found for: " + anchor);
         contactDiv = parentNode;
       }
     }
@@ -3799,10 +3800,10 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   //--- collect parameters common to all calendar items on the page
   var pageParametersDiv = document.getElementById('pageParameters');
   if (!pageParametersDiv)
-    throw Error("addCalendarItem: pageParameters div not found for: " + anchor);
+    throw new Error("addCalendarItem: pageParameters div not found for: " + anchor);
   var pageParams = pageParametersDiv.getElementsByTagName('a');
   if (!pageParams || pageParams.length == 0)
-    throw Error("addCalendarItem: pageParameters are empty for: " + anchor);
+    throw new Error("addCalendarItem: pageParameters are empty for: " + anchor);
   for (var i=0; i<pageParams.length; i++)
     anchor += '&' + pageParams[i].id;
 
@@ -3823,10 +3824,10 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
 function showAlert(alertName) {
   var blockReleaseDiv = document.getElementById('blockReleaseParameters');
   if (!blockReleaseDiv)
-    throw Error("showExpired: blockReleaseParameters div not found for: " + anchor);
+    throw new Error("showExpired: blockReleaseParameters div not found for: " + anchor);
   var brParams = blockReleaseDiv.getElementsByTagName('a');
   if (!brParams || brParams.length == 0)
-    throw Error("showExpired: blockReleaseParameters are empty for: " + anchor);
+    throw new Error("showExpired: blockReleaseParameters are empty for: " + anchor);
   for (var i=0; i<brParams.length; i++) {
     var alertId = brParams[i].id;
     if (alertId.indexOf(alertName + "=") == 0) {
@@ -3839,13 +3840,13 @@ function showAlert(alertName) {
 function addSimpleCalendarItem(popupRowAnchor, event) {
   var calendarRow = getTrNode(calendarCell);
   if (!calendarRow)
-    throw Error("addCalendarItem: calendar row not found for: " + anchor);
+    throw new Error("addCalendarItem: calendar row not found for: " + anchor);
   //--- extract parameters specific for popup row
   var calendarTd = getTdNode(calendarCell);
 
   var popupRow = getTrNode(popupRowAnchor); // get tr on which user clicked in popup
   if (!popupRow)
-    throw Error("addSimpleCalendarItem: popup row not found for: ");
+    throw new Error("addSimpleCalendarItem: popup row not found for: ");
 
   var anchor = "mkResource.html?-$action=mkResource&type=http://www.hudsonfog.com/voc/model/work/CalendarItem&submit=Please+wait&";
   var calendarRowId = calendarRow.id;
@@ -3855,24 +3856,24 @@ function addSimpleCalendarItem(popupRowAnchor, event) {
   //--- extract a contact corresponding to a poped up chooser
   var contactDiv = getDivNode(popupRow);
   if (!contactDiv)
-    throw Error("addCalendarItem: contactDiv not found for: " + anchor);
+    throw new Error("addCalendarItem: contactDiv not found for: " + anchor);
   if (!contactDiv.id) {
     while (contactDiv  &&  !contactDiv.id) {
       var parentNode = contactDiv.parentNode;
       while (parentNode  &&  (parentNode.tagName.toUpperCase() != 'DIV' || !parentNode.id))
         parentNode = parentNode.parentNode;
       if (!parentNode)
-        throw Error("addCalendarItem: contactDiv not found for: " + anchor);
+        throw new Error("addCalendarItem: contactDiv not found for: " + anchor);
       contactDiv = parentNode;
     }
   }
   anchor += '&' + contactDiv.id;
   var blockReleaseDiv = document.getElementById('blockReleaseParameters');
   if (!blockReleaseDiv)
-    throw Error("addCalendarItem: blockReleaseParameters div not found for: " + anchor);
+    throw new Error("addCalendarItem: blockReleaseParameters div not found for: " + anchor);
   var brParams = blockReleaseDiv.getElementsByTagName('a');
   if (!brParams || brParams.length == 0)
-    throw Error("addCalendarItem: blockReleaseParameters are empty for: " + anchor);
+    throw new Error("addCalendarItem: blockReleaseParameters are empty for: " + anchor);
   for (var i=0; i<brParams.length; i++) {
     if (brParams[i].id.indexOf(".propToSet=") == -1) {
 //      anchor += '&' + brParams[i].id;
@@ -3910,10 +3911,10 @@ function addSimpleCalendarItem(popupRowAnchor, event) {
   //--- collect parameters common to all calendar items on the page
   var pageParametersDiv = document.getElementById('pageParameters');
   if (!pageParametersDiv)
-    throw Error("addCalendarItem: pageParameters div not found for: " + anchor);
+    throw new Error("addCalendarItem: pageParameters div not found for: " + anchor);
   var pageParams = pageParametersDiv.getElementsByTagName('a');
   if (!pageParams || pageParams.length == 0)
-    throw Error("addCalendarItem: pageParameters are empty for: " + anchor);
+    throw new Error("addCalendarItem: pageParameters are empty for: " + anchor);
   for (var i=0; i<pageParams.length; i++) {
     if (pageParams[i].id.indexOf("type=") == 0)
       continue;
