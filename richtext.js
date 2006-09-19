@@ -49,7 +49,7 @@ var RteEngine = {
 		{name:"Heading 5", value:"<h5>"}, {name:"Heading 6", value:"<h6>"}, {name:"Paragraph", value:"<p>"}, {name:"Address", value:"<address>"}, {name:"Formatted", value:"<pre>"}],
 	FONTS : ["arial", "arial black", "comic sans ms", "courier", "courier new", "georgia", "helvetica", "impact", "palatino", "times new roman", "trebuchet ms", "verdana"],
 	FONTS_FEW : ["arial", "arial black", "comic sans ms", "courier new", "helvetica", "times new roman", "verdana"],
-
+	FONT_SIZE : ["8pt", "10pt", "12pt", "14pt", "18pt", "24pt", "36pt"],
 	registeredIdArr : new Array(), // id's to prevent double registration
 	rteArr : new Array(), // objects
 	
@@ -238,9 +238,11 @@ var RteEngine = {
 	},
 	createSizePopup : function() {
 		this.sizePopup = new List();
-		for(var i = 1; i <= 7; i++) {
+		for(var i = 0; i < this.FONT_SIZE.length; i++) {
 			var itemDiv = document.createElement('div');
-			itemDiv.innerHTML = i;
+		//	itemDiv.innerHTML = "<NOBR><span style='font-size:" + this.FONT_SIZE[i] + ";'>" + (i + 1) + "</span>"
+		//		+ " (" + this.FONT_SIZE[i] + ")</NOBR>";
+			itemDiv.innerHTML = "<NOBR>" + (i + 1) + " (" + this.FONT_SIZE[i] + ")</NOBR>";
 			this.sizePopup.appendItem(itemDiv);
 		}
 		this.sizePopup.setWidth(50);
@@ -326,6 +328,18 @@ var RteEngine = {
 		for(var i = 0; i < this.registeredIdArr.length; i++)
 			if(this.registeredIdArr[i] != activeId)
 				this.rteArr[i].onlosefocus();
+	},
+	
+	getHostUrl : function() {
+//		debugger
+		var url = window.location.protocol + "//" + window.location.host + "/";
+		// give up folder and dashboard filename
+	/*
+		var tmp1 = window.location.pathname.split("/");
+		for(var i = 0; i < tmp1.length - 2; i++)
+			url += tmp1[i];
+	*/
+		return url;
 	}
 }
 
@@ -426,6 +440,10 @@ function Rte(iframeObj, text, rtePref) {
 			toolBar.appendButton(this.onItalic, false, RteEngine.IMAGES_FOLDER + "italic.gif", "italic");
 			toolBar.appendButton(this.onUnderline, false, RteEngine.IMAGES_FOLDER + "underline.gif", "underline");
 		}
+		if(this.rtePref.buttons.supsub) { // superscript + subscript
+			toolBar.appendButton(this.onSuperscript, false, RteEngine.IMAGES_FOLDER + "superscript.gif", "superscript");
+			toolBar.appendButton(this.onSubscript, false, RteEngine.IMAGES_FOLDER + "subscript.gif", "subscript");
+		}
 		if(this.rtePref.buttons.align) { // align: left + centre + right + justifyfull
 			toolBar.appendButton(this.onAlignLeft, false, RteEngine.IMAGES_FOLDER + "align_left.gif", "align left");
 			toolBar.appendButton(this.onAlignCenter, false, RteEngine.IMAGES_FOLDER + "align_center.gif", "align center");
@@ -454,10 +472,6 @@ function Rte(iframeObj, text, rtePref) {
 			toolBar.appendButton(this.onHorizontalRule, false, RteEngine.IMAGES_FOLDER + "hr.gif", "horizontal line");
 		if(this.rtePref.buttons.table) // table
 			this.tableBtn = toolBar.appendButton(this.onTable, false, RteEngine.IMAGES_FOLDER + "table.gif", "table");
-		if(this.rtePref.buttons.supsub) { // superscript + subscript
-			toolBar.appendButton(this.onSuperscript, false, RteEngine.IMAGES_FOLDER + "superscript.gif", "superscript");
-			toolBar.appendButton(this.onSubscript, false, RteEngine.IMAGES_FOLDER + "subscript.gif", "subscript");
-		}
 		if(this.rtePref.buttons.reundo) { // redo + undo
 			toolBar.appendButton(this.onRedo, false, RteEngine.IMAGES_FOLDER + "redo.gif", "redo");
 			toolBar.appendButton(this.onUndo, false, RteEngine.IMAGES_FOLDER + "undo.gif", "undo");
@@ -796,11 +810,12 @@ function Rte(iframeObj, text, rtePref) {
 	// 3
 	this.setSize = function(idx) {
 		var value = idx + 1;
-		i_am.performCommand("fontsize", value);
+		i_am.performCommand("fontsize", value); //value // RteEngine.FONT_SIZE[idx]
 	}
 	// 4
 	this.setSmile = function(idx) {
-		var imgPath = RteEngine.IMAGES_FOLDER + "smiles/" + (idx + 1) + ".gif";
+		var hostUrl = RteEngine.getHostUrl();
+		var imgPath = hostUrl + RteEngine.IMAGES_FOLDER + "smiles/" + (idx + 1) + ".gif";
 		i_am.insertHTML("<img src=" + imgPath + ">");
 	}
 	// 5
@@ -843,6 +858,7 @@ function Rte(iframeObj, text, rtePref) {
 	// -------------------------------------
 	// execute a command
 	this.performCommand = function(command, value) {
+		this.window.focus();
 		if(this.isSourceView)
 			return;
 		try {
