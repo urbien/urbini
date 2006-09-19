@@ -108,14 +108,14 @@
             <!-----------------------------------------------FINISH---------OPERATIONAL PANEL DEFINITION ------------------------------------------------------------------>
             <tr>
             <!-----------------------------------------------START---------CHAT CONTENTS PANEL DEFINITION ------------------------------------------------------------------>
-              <td valign="top" rowspan="2" height="20" width="80%" id="tdChatContents" bgcolor="#EDEDED"  cellspacing="0" cellpadding="0"> <!-- chat contents bgcolor="#EDEDED" -->
+              <td valign="top" rowspan="2" height="20" width="80%" id="tdChatContents" style="background:buttonface;"  cellspacing="0" cellpadding="0"> <!-- chat contents bgcolor="#EDEDED" -->
 		            <div id='chatContents' name='chatContents'>
                   <div id="body1"></div>
                 </div>
 		          </td>
           <!-----------------------------------------------FINISH---------CHAT CONTENTS PANEL DEFINITION ------------------------------------------------------------------>
           <!-----------------------------------------------START---------TIME PANEL DEFINITION ------------------------------------------------------------------>
-              <td height="5%" width="20%" valign="top" bgcolor="#EDEDED" style="">  <!-- bgcolor="#EDEDED" //--> <!-- TIME panel //-->
+              <td height="5%" width="20%" valign="top" style="background:buttonface;">  <!-- bgcolor="#EDEDED" //--> <!-- TIME panel //-->
                 <div height="100%" width="100%" id="timePanel">
                 <table border="0" cellpadding="0" cellspacing="0">
                   <tr>
@@ -253,20 +253,20 @@
 
     <!-- online status table //-->
     <table cellpadding="1" border="1" rules="groups" cellspacing="0" onmouseover="clearTimeoutForStatusMenu()" onmouseout="statusMenuMouseOut();" style="cursor : text;display:none;position:absolute;background-color:#ffffff;border : 1px solid Silver;" id="dvOnlineStatus">
-      <tr>
-	      <td bgcolor="#D4D4D4"><img src="/images/icon_mini_profile_online.gif" width="16" height="16" align="top" title="Online" onclick="changeOnlineStatus('online');onlineStatusIconMouseOut();" style="cursor:pointer"></td>
+      <tr style="cursor:pointer;" onclick="changeOnlineStatus('online'); onlineStatusIconMouseOut();" onmouseover="this.style.backgroundColor='#eee'" onmouseout="this.style.backgroundColor='#fff'">
+	      <td bgcolor="#D4D4D4"><img src="/images/icon_mini_profile_online.gif" width="16" height="16" align="top"></td>
       	<td>online</td>
       </tr>
-      <tr>
-      	<td bgcolor="#D4D4D4"><img src="/images/icon_mini_profile_away.gif" width="16" height="16" align="top" title="away" onclick="changeOnlineStatus('away');onlineStatusIconMouseOut();" style="cursor:pointer"></td>
+      <tr style="cursor:pointer;" onclick="changeOnlineStatus('away');onlineStatusIconMouseOut();" onmouseover="this.style.backgroundColor='#eee'" onmouseout="this.style.backgroundColor='#fff'">
+      	<td bgcolor="#D4D4D4"><img src="/images/icon_mini_profile_away.gif" width="16" height="16" align="top"></td>
       	<td>away</td>
       </tr>
-      <tr>
-      	<td bgcolor="#D4D4D4"><img src="/images/icon_mini_profile_DND.gif" width="16" height="16" align="top" title="DND" onclick="changeOnlineStatus('dnd');onlineStatusIconMouseOut();" style="cursor:pointer"></td>
+      <tr style="cursor:pointer;" onclick="changeOnlineStatus('dnd');onlineStatusIconMouseOut();" onmouseover="this.style.backgroundColor='#eee'" onmouseout="this.style.backgroundColor='#fff'">
+      	<td bgcolor="#D4D4D4"><img src="/images/icon_mini_profile_dnd.gif" width="16" height="16" align="top"></td>
       	<td>dnd</td>
       </tr>
-      <tr>
-      	<td bgcolor="#D4D4D4"><img src="/images/icon_mini_profile_na.gif" width="16" height="16" align="top" title="NA" onclick="changeOnlineStatus('na');onlineStatusIconMouseOut();" style="cursor:pointer"></td>
+      <tr style="cursor:pointer" onclick="changeOnlineStatus('na');onlineStatusIconMouseOut();" onmouseover="this.style.backgroundColor='#eee'" onmouseout="this.style.backgroundColor='#fff'">
+      	<td bgcolor="#D4D4D4"><img src="/images/icon_mini_profile_na.gif" width="16" height="16" align="top"></td>
       	<td>na</td>
       </tr>
     </table>
