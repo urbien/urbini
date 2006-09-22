@@ -1,14 +1,5 @@
 <div>
-<table width="100%" border="0" cellspacing="0" cellpadding="0" >
-  <tr>
-  <td valign="top" width="100%">
-	  <center>
-	    <div align="center"><font color="red"><b><errorMessage /></b></font></div>
-	  </center>
-  </td>
-  </tr>
-</table>
-<br/>
+<errorMessage />
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
   <td valign="top" width="90%">
