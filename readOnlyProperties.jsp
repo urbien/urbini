@@ -27,6 +27,7 @@
   <tr><td>
       <include name="${type}_details_main.jsp" alt="propertySheet.jsp" />
   </td></tr>    
+  <tr itype="http://www.hudsonfog.com/voc/aspects/commerce/SoftBuyable"><td align="middle"><download/></td></tr>
 </table>      
 <hideBlock id="hideBlock1">
       <div align="right"><measurement/></div>
