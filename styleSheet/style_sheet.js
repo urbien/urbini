@@ -40,7 +40,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		// 1. create style view div
 		styleViewDiv = this.creteStyleViewDiv();
 		// 2. create the toolbar.
-		toolBar = new Toolbar(parentDiv, this, 18);
+		toolBar = new Toolbar(parentDiv, this, 18, true);
 		// 3. create the toolbar's control objects.
 		// font family
 		this.fontFamilyList = this.createFontList(toolBar);

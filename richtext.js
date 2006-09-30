@@ -9,6 +9,7 @@ function addEvent(obj, evType, fn, useCapture) {
        alert("You need to upgrade to a newer browser. Error: 'handler could not be attached'");
      }
 }
+
 /*************************************************
 *	RteEngine
 **************************************************/
@@ -179,21 +180,21 @@ var RteEngine = {
 		if(this.linkPopup == null)
 			this.createLinkPopup();
 		var parentDlg = getAncestorById(btnObj.div, 'pane2');
-		this.linkPopup.show(btnObj, 'right', callback, parentDlg);
+		this.linkPopup.show(btnObj, 'center'/*'right'*/, callback, parentDlg);
 		return this.linkPopup.div;
 	},
 	launchImagePopup : function(btnObj, callback) {
 		if(this.imagePopup == null)
 			this.createImagePopup();
 		var parentDlg = getAncestorById(btnObj.div, 'pane2');
-		this.imagePopup.show(btnObj, 'right', callback, parentDlg);
+		this.imagePopup.show(btnObj, 'center'/*'right'*/, callback, parentDlg);
 		return this.imagePopup.div;
 	},
 	launchTablePopup : function(btnObj, callback) {
 		if(this.tablePopup == null)
 			this.createTablePopup();
 		var parentDlg = getAncestorById(btnObj.div, 'pane2');
-		this.tablePopup.show(btnObj, 'right', callback, parentDlg);
+		this.tablePopup.show(btnObj, 'center'/*'right'*/, callback, parentDlg);
 		return this.tablePopup.div;
 	},
 
@@ -240,9 +241,9 @@ var RteEngine = {
 		this.sizePopup = new List();
 		for(var i = 0; i < this.FONT_SIZE.length; i++) {
 			var itemDiv = document.createElement('div');
-		//	itemDiv.innerHTML = "<NOBR><span style='font-size:" + this.FONT_SIZE[i] + ";'>" + (i + 1) + "</span>"
-		//		+ " (" + this.FONT_SIZE[i] + ")</NOBR>";
-			itemDiv.innerHTML = "<NOBR>" + (i + 1) + " (" + this.FONT_SIZE[i] + ")</NOBR>";
+			itemDiv.innerHTML = "<NOBR><span style='font-size:" + this.FONT_SIZE[i] + ";'>" + (i + 1) + "</span>"
+				+ " (" + this.FONT_SIZE[i] + ")</NOBR>";
+		//	itemDiv.innerHTML = "<NOBR>" + (i + 1) + " (" + this.FONT_SIZE[i] + ")</NOBR>";
 			this.sizePopup.appendItem(itemDiv);
 		}
 		this.sizePopup.setWidth(50);
@@ -250,11 +251,14 @@ var RteEngine = {
 	createSmilePopup : function() {
 		var SMILES_AMT = 30;
 		var PADDING = 5;
+		var SMILE_SIZE = 19;
 		this.smilePopup = new List(5);
 		for(var i = 0; i < SMILES_AMT; i++) {
 			var itemDiv = document.createElement('div');
 			var imgPath = this.IMAGES_FOLDER + "smiles/" + (i + 1) + ".gif";
-			itemDiv.innerHTML = "<img src=" + imgPath + ">";
+			itemDiv.innerHTML =
+			  "<img src=" + imgPath + " width=" + SMILE_SIZE + " height=" + SMILE_SIZE + ">";
+			
 			itemDiv.style.padding = PADDING;
 			this.smilePopup.appendItem(itemDiv);
 		}
@@ -265,10 +269,10 @@ var RteEngine = {
 			+ ' <tr>'
 			+ ' <td align="left">Enter a URL:</td>'
 			+ ' </tr><tr>'
-			+ ' <td><input name="url" type="text" id="url" value="" size="50"></td>'
+			+ ' <td><input name="url" type="text" id="url" value="" size="35"></td>'
 			+ ' </tr>'
 			+ '</table></form>';
-		this.linkPopup = new FormPopup(innerFormHtml, null);
+		this.linkPopup = new FormPopup(innerFormHtml/*, null*/);
 	},
 	createImagePopup : function() {
 	// it is an temporary solution!
@@ -276,14 +280,14 @@ var RteEngine = {
 			+ ' <tr>'
 			+ ' <td align="left">Enter image URL:</td>'
 			+ ' </tr><tr>'
-			+ ' <td><input name="url" type="text" id="url" value="" size="50"></td>'
+			+ ' <td><input name="url" type="text" id="url" value="" size="35"></td>'
 			+ ' </tr>'
 			+ '</table>';
-		this.imagePopup = new FormPopup(innerFormHtml, null);
+		this.imagePopup = new FormPopup(innerFormHtml/*, null*/);
 	},
 	createTablePopup : function() {
 		var innerFormHtml = this.getInsertTableHtml();
-		this.tablePopup = new FormPopup(innerFormHtml, null);
+		this.tablePopup = new FormPopup(innerFormHtml/*, null*/);
 	},
 	
 	getInsertTableHtml : function() {
@@ -331,14 +335,7 @@ var RteEngine = {
 	},
 	
 	getHostUrl : function() {
-//		debugger
 		var url = window.location.protocol + "//" + window.location.host + "/";
-		// give up folder and dashboard filename
-	/*
-		var tmp1 = window.location.pathname.split("/");
-		for(var i = 0; i < tmp1.length - 2; i++)
-			url += tmp1[i];
-	*/
 		return url;
 	}
 }
@@ -347,8 +344,6 @@ var RteEngine = {
 * Rte - single rte elemnt.
 ***********************************/
 function Rte(iframeObj, text, rtePref) {
-	var FONT_ARR = new Array("arial", "arial black", "comic sans ms", "courier", "courier new", "georgia", "helvetica", "impact", "palatino", "times new roman", "trebuchet ms", "verdana");
-
 	var i_am = this;
 	this.iframeObj = iframeObj;
 	this.rtePref = rtePref;
@@ -362,9 +357,9 @@ function Rte(iframeObj, text, rtePref) {
 	this.initFrameHeight = null;
 	
 	this.isIE = false;
-	this.applyToFF = false;
-	this.skipClose = false;   // prevents blink for IE's commands without popup &
-							  // closing on 'html view' for IE and FF.	
+	this.skipCloseAll = false;
+	this.skipCloseIE = false;
+							 
 	this.currentPopup = null; // prevents closing on popup opening
 	this.openedAtTime = 0;    // hack: prevents simultaneous openning and toolbar button execution
 
@@ -400,15 +395,15 @@ function Rte(iframeObj, text, rtePref) {
 			this.toolbar.hide();
 		else
 			this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
-		// adjust parent width	
+		
+	/*  // adjust parent width	- NOW we use the overflow popup.
 		var tbWidth = this.toolbar.getWidth();		
-		if(this.parentDiv.clientWidth < tbWidth	&&
-				typeof this.parentDiv.width == "undefined") {
+		if(this.parentDiv.clientWidth < tbWidth	&& typeof this.parentDiv.width == "undefined") {
 			this.parentDiv.style.width = tbWidth;
 		}
-		
+	*/
 		if(document.all)
-		this.isIE = true;
+			this.isIE = true;
 	}
 	this.setHandlers = function() {
 		addEvent(this.iframeObj, "deactivate", this._ondeactivate, false);
@@ -425,8 +420,7 @@ function Rte(iframeObj, text, rtePref) {
 	}
 	
 	this.createToolbar = function() {
-		// 1. 
-		//debugger
+		// 1.
 		var toolBar = new Toolbar(this.parentDiv, this, 18);
 		// 2. add buttons
 		if(this.rtePref.buttons.style) // style
@@ -473,13 +467,18 @@ function Rte(iframeObj, text, rtePref) {
 		if(this.rtePref.buttons.table) // table
 			this.tableBtn = toolBar.appendButton(this.onTable, false, RteEngine.IMAGES_FOLDER + "table.gif", "table");
 		if(this.rtePref.buttons.reundo) { // redo + undo
-			toolBar.appendButton(this.onRedo, false, RteEngine.IMAGES_FOLDER + "redo.gif", "redo");
 			toolBar.appendButton(this.onUndo, false, RteEngine.IMAGES_FOLDER + "undo.gif", "undo");
+			toolBar.appendButton(this.onRedo, false, RteEngine.IMAGES_FOLDER + "redo.gif", "redo");
 		}
 		if(this.rtePref.buttons.html) // html
 			this.htmlBtn = toolBar.appendButton(this.onSource, true, RteEngine.IMAGES_FOLDER + "html.gif", "html view mode", "edit mode");
-
 		return toolBar;
+	}
+	
+	// interface function which be called by the toolbar
+	// "onOverflowBtn"
+	this.onOverflowBtn = function() {
+		this.skipCloseAll = true;
 	}
 	// putContent
 	this.putContent = function(text) {
@@ -507,7 +506,7 @@ function Rte(iframeObj, text, rtePref) {
 			this.curRange.collapse(false);
 			this.curRange.select();
 		}
-		this.skipClose = true;
+		this.skipCloseAll = true;
 	}
 	// not source view & (hack:) not immediate execution that autoclose the RTE
 	this.isAllowedToExecute = function() {
@@ -554,11 +553,16 @@ function Rte(iframeObj, text, rtePref) {
 			return;
 		if(i_am.currentPopup != null && i_am.currentPopup.style.visibility == "visible")
 			return;
-		if(i_am.skipClose == true && (i_am.isIE || i_am.applyToFF)) {
-			i_am.skipClose = false;
-			i_am.applyToFF = false
+	
+		if(i_am.skipCloseAll) {
+			i_am.skipCloseAll = false;
 			return;
 		}
+		if(i_am.skipCloseIE && i_am.isIE) {
+			i_am.skipCloseIE = false;
+			return;
+		}
+		
 		i_am.iframeObj.style.height = i_am.initFrameHeight;
 		i_am.iframeObj.style.marginTop = 0;
 		i_am.toolbar.hide();
@@ -574,7 +578,6 @@ function Rte(iframeObj, text, rtePref) {
 	}
 	this.fitHeightToVisible = function() {
 		// apply it if no scrolling
-		//debugger
 		if(this.iframeObj.scrolling != 'no')
 			return;
 		var docH = i_am.document.body.scrollHeight;
@@ -590,18 +593,21 @@ function Rte(iframeObj, text, rtePref) {
 	this.onStyle = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
+		i_am.skipCloseIE = true;
 		i_am.currentPopup = RteEngine.launchStylePopup(i_am.styleBtn, i_am.setStyle);
 	}
 	// 2
 	this.onFont = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
+		i_am.skipCloseIE = true;
 		i_am.currentPopup = RteEngine.launchFontPopup(i_am.fontBtn, i_am.setFont, i_am.rtePref.isFewFonts);
 	}
 	// 3
 	this.onSize = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
+		i_am.skipCloseIE = true;
 		i_am.currentPopup = RteEngine.launchSizePopup(i_am.sizeBtn, i_am.setSize);
 	}
 	// 4
@@ -611,88 +617,89 @@ function Rte(iframeObj, text, rtePref) {
 		i_am.currentPopup = RteEngine.launchSmilePopup(i_am.smileBtn, i_am.setSmile);
 	}
 	// 5
+	// return true - to close the overflow popup if the button is overflowed.
 	this.onBold = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;
 		i_am.performCommand("bold", null);
+		return true;
 	}
 	// 6
 	this.onItalic = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;
 		i_am.performCommand("italic", null);
+		return true;
 	}
 	// 7
 	this.onUnderline = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("underline", null);
+		return true;
 	}
 	// 8
 	this.onAlignLeft = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("justifyleft", null);
+		return true;
 	}
 	// 9
 	this.onAlignCenter = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("justifycenter", null);
+		return true;
 	}
 	// 10
 	this.onAlignRight = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("justifyright", null);
+		return true;
 	}
 	// 11
 	this.onAlignJustify = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("justifyfull", null);
+		return true;
 	}
 	// 12
 	this.onHorizontalRule = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;
 		i_am.performCommand("inserthorizontalrule", null);
+		return true;
 	}
 	// 13
 	this.onOrderedList = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("insertorderedlist", null);
+		return true;
 	}
 	// 14
 	this.onUnorderedList = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("insertunorderedlist", null);
+		return true;
 	}
 	// 15
 	this.onOutdent = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("outdent", null);
+		return true;
 	}
 	// 16
 	this.onIndent = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("indent", null);
+		return true;
 	}
 	// 17
 	this.onTextColor = function() {
@@ -710,7 +717,6 @@ function Rte(iframeObj, text, rtePref) {
 	this.onLink = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-			
 		i_am.currentPopup = RteEngine.launchLinkPopup(i_am.linkBtn, i_am.setLink);
 	}
 	// 20
@@ -728,26 +734,26 @@ function Rte(iframeObj, text, rtePref) {
 	this.onSuperscript = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("superscript", null);
+		return true;
 	}
 	this.onSubscript = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("subscript", null);
+		return true;
 	} 
 	this.onRedo = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("redo", null);
+		return true;
 	}
 	this.onUndo = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipClose = true;	
 		i_am.performCommand("undo", null);
+		return true;
 	}
 	// 0
 	this.onSource = function(pressed) {
@@ -789,15 +795,16 @@ function Rte(iframeObj, text, rtePref) {
 			i_am.toolbar.enableAllControls();
 
 		// prevent a closing		
-		i_am.skipClose = true;
-		i_am.applyToFF = true;
+		i_am.skipCloseAll = true;
+		return true;
 	}
 
 	// "setters" (on selection in a popup) ----------
 	// 1
 	this.setStyle = function(idx) {
 		var value = RteEngine.STYLES[idx].value;
-		i_am.performCommand("formatblock", value); 
+		i_am.performCommand("formatblock", value);
+		return true; 
 	}
 	// 2
 	this.setFont = function(idx) {
@@ -806,11 +813,13 @@ function Rte(iframeObj, text, rtePref) {
 		else
 			var value = RteEngine.FONTS_FEW[idx];
 		i_am.performCommand("fontname", value); 
+		return true;
 	}
 	// 3
 	this.setSize = function(idx) {
 		var value = idx + 1;
-		i_am.performCommand("fontsize", value); //value // RteEngine.FONT_SIZE[idx]
+		i_am.performCommand("fontsize", value);
+		return true;
 	}
 	// 4
 	this.setSmile = function(idx) {
@@ -821,21 +830,25 @@ function Rte(iframeObj, text, rtePref) {
 	// 5
 	this.setTextColor = function(color) {
 		i_am.performCommand("forecolor", color);
+		return true;
 	}
 	// 6
 	this.setBackgroundColor = function(color) {
 		if(i_am.performCommand("hilitecolor", color) == false) // FF
 			i_am.performCommand("backcolor", color) // IE
+		return true;
 	}
 	// 7
 	this.setLink = function(params) {
 		if(params.url.length != 0)
 			i_am.performCommand("createlink", params.url);
+		return true;
 	}
 	// 8
 	this.setImage = function(params) {
 		if(params.url.length != 0)
 			i_am.performCommand("insertimage", params.url);
+		return true;
 	}
 	// 9
 	this.setTable = function(params) {
@@ -872,8 +885,8 @@ function Rte(iframeObj, text, rtePref) {
 		}catch(e) {
 			return false;
 		}
-		
 		this.window.focus();
+		this.skipCloseIE = true;
 		return true;
 	}
 	// constructor body --

@@ -32,7 +32,7 @@ function FormPopup(innerFormHtml, parentElt) {
 		this.buttonsDiv = this.createButtons(); 
 		this.div.appendChild(this.formDiv);
 		this.div.appendChild(this.buttonsDiv);
-		parentElt.appendChild(this.div);
+	//	parentElt.appendChild(this.div);
 	}
 	
 	// ok, cancel
@@ -60,7 +60,7 @@ function FormPopup(innerFormHtml, parentElt) {
 	
 	this.show = function(btnObj, alignment, callback, parentDlg) {
 		this.callback = callback;
-		PopupHandler.showRelatively(btnObj.div, alignment ,this.div, false, parentDlg);
+		PopupHandler.showRelatively(btnObj, alignment ,this.div, false, parentDlg);
 		
 		// store init values to restore on closing
 		if(this.initValues == null)
@@ -130,9 +130,10 @@ function FormPopup(innerFormHtml, parentElt) {
 }
 
 /****************************************************
-*	ToolbarButton class
+* ToolbarButton class
+* callback: for overflowed case a button without a submenu should return false. 
 *****************************************************/
-function ToolbarButton(index, callback, isToggle, icon, iconSize, left, top, toolbar, title, titlePressed)
+function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, toolbar, title, titlePressed)
 {
 	var i_am = this;
 	this.div = null;
@@ -153,7 +154,9 @@ function ToolbarButton(index, callback, isToggle, icon, iconSize, left, top, too
 	this.isPressed = false;
 	this.isDisabled = false;
 	
-	this.create = function(iconSize) { // create Button
+	this.isOverflowed = false;
+	
+	this.create = function(iconWidth) { // create Button
 		this.div = document.createElement('div');
 		this.div.style.position = "absolute";
 		this.div.style.left = this.left;
@@ -165,17 +168,18 @@ function ToolbarButton(index, callback, isToggle, icon, iconSize, left, top, too
 		this.div.style.borderStyle = "solid";
 		this.div.title = this.title;
 		
-		this.div.innerHTML = '<img src = "' + icon + '" border="0"'
-			+ ' width=' + iconSize + ' height=' + iconSize + '>'; // width = height
-
+		var innerHTML = '<img src = "' + icon + '" border="0"'
+			+' width=' + iconWidth + ' height=' + this.toolbar.iconHeight + '>';
+		
+		this.div.innerHTML = innerHTML;
 		// register of handlers
 		this.div.onmouseover = this.onMouseOver;
 		this.div.onmouseout = this.onMouseOut;
 		this.div.onmousedown = this.onMouseDown;
 		this.div.onmouseup = this.onMouseUp;
 
-		this.width = this.height = iconSize + 2 * this.toolbar.BTN_PADDING;
-		this.toolbar.div.appendChild(this.div);
+		this.width = iconWidth + 2 * this.toolbar.BTN_PADDING;
+		this.height = this.toolbar.iconHeight + 2 * this.toolbar.BTN_PADDING;
 	}
 	
 	this.enable = function() {
@@ -244,7 +248,13 @@ function ToolbarButton(index, callback, isToggle, icon, iconSize, left, top, too
 		
 		i_am.div.style.backgroundColor = "buttonface";
 		i_am.onMouseOut();
-		i_am.callback(i_am.isPressed);
+		
+		// closePopup used only in the overflow pupup
+		// for a buttons that do not call a (sub)popup
+		var closePopup = i_am.callback(i_am.isPressed);
+		if(i_am.isOverflowed && closePopup)
+			PopupHandler.hide();
+		
 	}
 
 	// press toggle button without callback execution.
@@ -257,7 +267,7 @@ function ToolbarButton(index, callback, isToggle, icon, iconSize, left, top, too
 	}
 
 	// constructor's body
-	this.create(iconSize);
+	this.create(iconWidth);
 	this.onMouseOut(); // draw "invisible" borders 
 	if(typeof titlePressed != 'undefined')
 		this.titlePressed = titlePressed;	
@@ -275,7 +285,7 @@ var PalettePopup = {
 			this.create();
 		
 		this.callback = callback;
-		PopupHandler.showRelatively(hotspot.div, alignment, this.div, true, parentDlg);
+		PopupHandler.showRelatively(hotspot, alignment, this.div, true, parentDlg);
 	},
 	create : function() {
 		this.div = document.createElement('div');
@@ -288,7 +298,7 @@ var PalettePopup = {
 		this.div.style.padding = 1;
 
 		this.div.innerHTML = this.getPaletteStr();
-		document.body.appendChild(this.div);
+		//	document.body.appendChild(this.div);
 	},
 	_onmouseover : function(obj) {
 		obj.style.cursor = 'pointer';
@@ -447,8 +457,8 @@ function ListItem(index, innerDiv, parent, noHighlight)
 * use it as a popup.
 ******************************************************/
 // width - needs for dropdown list
-// default parameters: colAmt: 1; parentElt: document.body;
-function List(colAmt, parentElt) {
+// default parameters: colAmt: 1;
+function List(colAmt) {
 	var FONT_FAMILY = "verdana";
 	var FONT_SIZE = "12px";
 	this.LIST_BACKGROUND = "#ffffff";
@@ -480,23 +490,26 @@ function List(colAmt, parentElt) {
 		this.tablebody = document.createElement("tbody");
 		this.table.appendChild(this.tablebody);
 		
+		
+		this.div.onmouseup = function(e) {e = e || event; e.cancelBubble = true;}
+		
+		
 		this.div.appendChild(this.table);
-		parentElt.appendChild(this.div);
 	}
 	this.show = function(hotspot, alignment, callback, parentDlg) {
 		this.callback = callback;
-		PopupHandler.showRelatively(hotspot.div, alignment, this.div, true, parentDlg);
+		PopupHandler.showRelatively(hotspot, alignment, this.div, true, parentDlg);
 	}	
 	this.appendItem = function(innerDiv) {
 		if(this.itemsArr == null)
 			this.itemsArr = new Array();
-
+		
+		innerDiv.style.position = "static";
 		var idx = this.itemsArr.length;
 		if(this.isFirstRowItem(idx)) {
 			this.curRow = document.createElement("tr");
 			this.tablebody.appendChild(this.curRow);
 		}
-
 		this.itemsArr[idx] = new ListItem(idx, innerDiv, this);
 	}
 	// needs for dropdown menu
@@ -522,8 +535,10 @@ function List(colAmt, parentElt) {
 
 	// onItemSelection
 	this.onItemSelection = function(itemIdx) {
-		PopupHandler.hide();
-		this.callback(itemIdx);
+		if(this.callback != null) {
+			this.callback(itemIdx);
+			PopupHandler.hide();
+		}
 	}
 	this.getItemObject = function(idx) {
 		return this.itemsArr[idx];
@@ -533,8 +548,7 @@ function List(colAmt, parentElt) {
 	}
 	
 	// list's "constructor" --
-	parentElt = parentElt || document.body;
-	this.create(parentElt);
+	this.create();
 }
 
 /****************************************************
@@ -574,11 +588,12 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 	
 	this.selectedItemIdx = 0;
 	
+	this.isOverflowed = false;
 	// create -----------------
 	this.create = function() {
 		// 1. create the list
 		var listTop = this.top + FIELD_HEIGHT + 1;
-		this.list = new List(1, document.body); //this.toolbar.div
+		this.list = new List();
 
 		// 2. field - shows selected item
 		this.div = document.createElement('div');
@@ -740,26 +755,37 @@ function Titlestrip(parentDiv, toolbar)
 /****************************************************
 *	Toolbar class
 *****************************************************/
-function Toolbar(parentDiv, masterObj, iconSize)
+function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 {
 	var LEFT_PADDING = 10; // pix
 	var RIGHT_PADDING = 10;
 	var TOP_PADDING = 4;
 	var BOTTOM_PADDING = 5;
-	this.BTN_PADDING = 3;
-	var BTN_GAP = 5;
+	this.BTN_PADDING = 2;
+	var BTN_GAP = 4
 	
+	var i_am = this;
 	this.parentDiv = parentDiv;
 	this.masterObj = masterObj;
-	this.iconSize = iconSize;
-	this.controlsArr = null;
+	this.iconHeight = iconHeight;
+	this.noOverflow = noOverflow;
+	this.controlsArr = new Array();
 	this.div = null;
 	this.titlestrip = null;
+
 	var lastBtnEdge = 0;
 	
 	this.width = 0;
 	this.height = 0;
 	
+	// "overflow" --
+	var OVF_ICON_WIDTH = 10;
+	var OVF_POPUP_COL = 4;
+	var OVF_BTN_TITLE = "more options";
+	this.overflowBtn = null;
+	this.overflowPopup = null;
+	
+
 	this.create = function() {
 		// 1. create title bar
 		this.titlestrip = new Titlestrip(this.parentDiv, this);
@@ -767,50 +793,57 @@ function Toolbar(parentDiv, masterObj, iconSize)
 		this.div = document.createElement('div');
 		this.div.style.position = "absolute";
 		this.div.style.left = 0;
-		this.div.style.top = 0;//this.titlestrip.height;
+		this.div.style.top = 0;
 		this.div.style.width = this.width;
 		this.div.style.height = this.height;
 		this.div.style.backgroundColor = "buttonface";
 		this.div.style.borderWidth = 0;
-		
+
 		this.parentDiv.appendChild(this.div);
 	}
-	
+	// DropdownList is not support the overflow for now!
 	this.appendDropdownList = function(fieldWidth, title, callback) {
-		if(this.controlsArr == null)
-			this.controlsArr = new Array();
-		
 		var idx = this.controlsArr.length;
 		var left = (idx > 0) ? lastBtnEdge + BTN_GAP : LEFT_PADDING;
 		this.controlsArr[idx] = new DropdownList(idx, callback, left, TOP_PADDING, fieldWidth, title, this);
 		this.titlestrip.appendTitle(left, title);
 		
-		this.resize(idx);
+		this.resize(this.controlsArr[idx]);
 		
 		return this.controlsArr[idx];
 	}
-	
-	// titlePressed is optional parameter for toggle button
-	this.appendButton = function(callback, isToggle, icon, title, titlePressed) {
-		if(this.controlsArr == null)
-			this.controlsArr = new Array();
-		
+	// optional parameters:
+	// 1)titlePressed is for toggle button 2)iconWidth for icons with width != height
+	this.appendButton = function(callback, isToggle, icon, title, titlePressed, iconWidth) {
 		var idx = this.controlsArr.length;
 		var left = (idx > 0) ? lastBtnEdge + BTN_GAP : LEFT_PADDING;
-		this.controlsArr[idx] = new ToolbarButton(idx, callback, isToggle, icon, this.iconSize, left, TOP_PADDING, this, title, titlePressed);
-		this.resize(idx);
+		var top = 0;
 		
+		iconWidth = iconWidth || this.iconHeight;
+		this.controlsArr[idx] = new ToolbarButton(idx, callback, isToggle, icon, iconWidth, left, TOP_PADDING, this, title, titlePressed);
+
+		// insert a button
+		if(this.isOverflow(this.controlsArr[idx])) {
+			if(this.overflowPopup == null)
+				this.prepareToOverflow();
+			this.overflowPopup.appendItem(this.controlsArr[idx].div);
+			this.controlsArr[idx].isOverflowed = true;
+		}
+		else {
+			this.div.appendChild(this.controlsArr[idx].div);
+			this.resize(this.controlsArr[idx]);
+		}
 		return this.controlsArr[idx];
 	}
 	
 	// resize toolbar according to new appended button
-	this.resize = function(idx){
-		obj = this.controlsArr[idx];
+	this.resize = function(obj){ //idx
+		//obj = this.controlsArr[idx];
 		var newHeight = obj.height + (TOP_PADDING + BOTTOM_PADDING);
 		if(this.height < newHeight)
 			this.height = newHeight
 					
-		if(idx == 0)
+		if(this.controlsArr.length == 1)
 			this.width = LEFT_PADDING + obj.width + RIGHT_PADDING;
 		else
 			this.width += BTN_GAP + obj.width;	
@@ -862,6 +895,52 @@ function Toolbar(parentDiv, masterObj, iconSize)
 			if(i != exclIdx)
 				this.controlsArr[i].disable();
 	}
+	
+		// "overflow" popup ----------------
+	this.isOverflow = function(obj) {
+		if(this.noOverflow)
+			return false;
+		if(this.overflowPopup != null)
+			return true;
+		if(this.parentDiv.offsetWidth == 0)
+			return;
+		// new toolbar width including new object (btn) and the overflow button
+		var newTbWidth = lastBtnEdge + BTN_GAP + obj.width + BTN_GAP
+			 + OVF_ICON_WIDTH + this.BTN_PADDING * 2 + RIGHT_PADDING;
+		if(this.parentDiv.offsetWidth <= newTbWidth)
+			return true;
+		
+		return false;
+	}
+	
+	this.prepareToOverflow = function() {
+		var idx = this.controlsArr.length;
+		var left = lastBtnEdge + BTN_GAP;
+		var icon = "images/wysiwyg/overflow.gif";
+		// 1. create overflow button
+		this.overflowBtn = new ToolbarButton(idx, this.showOverflowPopup, false, icon, OVF_ICON_WIDTH, left, TOP_PADDING, this, OVF_BTN_TITLE);
+		this.div.appendChild(this.overflowBtn.div);
+		this.resize(this.overflowBtn);
+		// 2. create overflow list
+		this.overflowPopup = new List(OVF_POPUP_COL);
+	}
+	
+	this.showOverflowPopup = function(){
+		// hack: detects if it's in a 'pane2' dialog 
+		var parentDlg = getAncestorById(this.div, 'pane2');
+		
+		// "onOverflowBtn" - is an interface function
+		if(typeof i_am.masterObj.onOverflowBtn != 'undefined')
+			i_am.masterObj.onOverflowBtn();
+
+		if(i_am.overflowPopup.div.parentNode != document.body)
+			document.body.appendChild(i_am.overflowPopup.div);
+		
+		i_am.overflowPopup.show(i_am.overflowBtn, "right", null, parentDlg, false);
+	}
+	// END "overflow" --------
+
+	
 	// Toolbar constructor's body
 	this.create();
 }
@@ -872,7 +951,7 @@ function Toolbar(parentDiv, masterObj, iconSize)
 var PopupHandler = {
 	CLOSE_TIMEOUT : 500,
 	popupDiv : null,
-	//hotspot : null,
+	parentDlg : null,
 	oldOnKeyUp : null,
 	oldOnClick : null,
 	timerid  : 0,
@@ -886,31 +965,39 @@ var PopupHandler = {
 	y : 0,
 	oldOnScroll : null,
 
+	overflowPopup : null,
 	
 	// div is a popup
 	// alignment: left, center, right
+	// hotspot is a control object
 	showRelatively : function(hotspot, alignment, div, autohide, parentDlg) {
 		var OFFSET_Y = 5;
-		if(this.popupDiv != null) // only 1 popup can be opened concurrently
-			this.hide();
-
+		// only 1 popup can be opened concurrently, except the overflow popup
+		if(this.popupDiv != null)
+			this.hide(hotspot.isOverflowed);
+		// above the overflow popup
+		if(this.overflowPopup != null) { 
+			div.style.zIndex = this.overflowPopup.style.zIndex + 1; 
+		}
 		// set popup's parentDlg
 		if(parentDlg != null)
 			parentDlg.appendChild(div);
-
-		var pos = this.findObjectPositio(hotspot, parentDlg);
+		else // if(div.parentNode.id != 'body')
+			document.body.appendChild(div);
+			
+		var pos = this.findObjectPositio(hotspot.div, parentDlg);
 		if(alignment == 'left')
-			//div.style.left = pos.left;
 			this.x = pos.left;
 		else if(alignment == 'center') 
-			//div.style.left = pos.left - (div.clientWidth - hotspot.clientWidth) / 2;
-			this.x = pos.left - (div.clientWidth - hotspot.clientWidth) / 2;
+			this.x = pos.left - (div.clientWidth - hotspot.width) / 2;
 		else  // right
-			//div.style.left = pos.left - (div.clientWidth - hotspot.clientWidth);
-			this.x = pos.left - (div.clientWidth - hotspot.clientWidth);
+			this.x = pos.left - (div.clientWidth - hotspot.width);
 			
-		//div.style.top = pos.top + hotspot.clientHeight + OFFSET_Y;
-		this.y = pos.top + hotspot.clientHeight + OFFSET_Y;
+		this.y = pos.top + hotspot.height + OFFSET_Y;
+		// check if to open popup above a hotspot.
+		var screenHeight = getWindowSize()[1];
+		if(screenHeight < this.y + div.clientHeight)
+			this.y = pos.top - div.clientHeight - OFFSET_Y;
 		
 		// FF: position "fixed"
 		if(div.style.position == 'fixed') {
@@ -925,18 +1012,13 @@ var PopupHandler = {
 			div.style.top = this.y;
 		}
 
-		this._show(div, autohide);
-	},
-	showAbsolutely : function(left, top, div, autohide) {
-		if(this.popupDiv != null) // only 1 popup can be opened concurrently
-			this.hide();
-
-		div.style.left = left;
-		div.style.top = top;
-		this._show(div, autohide);
-	},
-	_show : function(div, autohide) {
+		// set new div  data
 		this.popupDiv = div;
+		this.parentDlg = parentDlg;
+		// make visible
+		this._show(autohide);
+	},
+	_show : function(autohide) {
 		if(typeof autohide == 'undefined' || autohide) 
 			this.isAutoHide = true;
 		else
@@ -946,23 +1028,32 @@ var PopupHandler = {
 		this.firstClick = true;
 		this.popupDiv.style.visibility = "visible";	
 	},
-	
-	hide : function() {
+	// not to hide the overflow popup
+	hide : function(isOverflowed) {
 		if(this.popupDiv == null)
 			return;
-		this.popupDiv.style.visibility = "hidden";
-		// set back popup's parent a document.body 
-		document.body.appendChild(this.popupDiv);
+		if(isOverflowed) {
+			if(this.overflowPopup == null)
+				this.overflowPopup = this.popupDiv;
+			else
+				this.popupDiv.style.visibility = "hidden";
+		}
+		else {
+			this.popupDiv.style.visibility = "hidden";
+			if(this.overflowPopup != null) {
+				this.overflowPopup.style.visibility = "hidden";
+				this.overflowPopup = null;
+			}
+		}
 		this.resetHandlers();
 	},
 	suspendedHide : function() {
 		clearInterval(PopupHandler.timerid);
 		PopupHandler.hide();
 	},
-	
 	// find position relative to the document.body (by default)
 	// or relative to the some ancestor.
-	findObjectPositio : function (obj, tillParent) {
+	findObjectPositio : function(obj, tillParent) {
 		var curLeft = 0;
 		var curTop = 0;
 		tillParent = tillParent || document.body;
