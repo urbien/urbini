@@ -54,7 +54,8 @@ span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:
 
 .xs {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;}
 
-span.rxs {color:red; font-family:sans-serif, arial; font-size:8pt;}
+span.imgTitle {color:red; font-family:sans-serif, arial; font-size:8pt; font-weight:bold}
+span.itemsCount {color:red; font-family:sans-serif, arial; font-size:10pt; font-weight:bold}
 
 span.dark{color:#eeeeee}
 span.light {color:#ffffff}
