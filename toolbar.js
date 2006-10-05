@@ -398,16 +398,13 @@ var PalettePopup = {
 	}
 }
 
-
-
-
 /****************************************************
 *	ListItem class
 *	parent is the List
 *****************************************************/
 function ListItem(index, innerDiv, parent, noHighlight) 
 {
-	var HIGHLIGHTED_BACKGROUND = "#eee";
+	var HIGHLIGHTED_BACKGROUND = "#e0e0e0";
 	var MARGIN = 2;
 	var i_am = this;
 	this.index = index;
