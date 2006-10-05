@@ -51,8 +51,11 @@ var RteEngine = {
 	FONTS : ["arial", "arial black", "comic sans ms", "courier", "courier new", "georgia", "helvetica", "impact", "palatino", "times new roman", "trebuchet ms", "verdana"],
 	FONTS_FEW : ["arial", "arial black", "comic sans ms", "courier new", "helvetica", "times new roman", "verdana"],
 	FONT_SIZE : ["8pt", "10pt", "12pt", "14pt", "18pt", "24pt", "36pt"],
+	
 	registeredIdArr : new Array(), // id's to prevent double registration
 	rteArr : new Array(), // objects
+	
+	isDocumentReady : false,
 	
 	// POPUPs; globals for all rte objects --
 	stylePopup : null,
@@ -82,8 +85,19 @@ var RteEngine = {
 			iframeObj.id = new Date().getTime();
 		this.registeredIdArr.push(iframeObj.id);
 		
+		// IE: init RTEs on document ready
+		if(this.registeredIdArr.length == 1) {
+			// IE
+			if(document.all && document.readyState != "complete") {
+				this.isDocumentReady = false;
+				addEvent(document, 'readystatechange', this.initOnDocumentReady, false); 
+			}
+			else // FF
+				this.isDocumentReady = true;
+		}
+		
 		try {
-			var rteObj = new Rte(iframeObj, text, rtePref);
+			var rteObj = new Rte(iframeObj, text, rtePref, this.isDocumentReady);
 		}catch(e) {
 			this.registeredIdArr.pop();
 			return;
@@ -102,6 +116,15 @@ var RteEngine = {
 		return false;
 	},
 	
+	// used for IE
+	initOnDocumentReady : function() {
+		if(document.readyState != "complete")
+			return;
+		RteEngine.isDocumentReady = true;
+		for(var i = 0; i < RteEngine.rteArr.length; i++)
+			RteEngine.rteArr[i].init();
+	},
+
 	getRteIndex : function(iframeObj) {
 		for(var i = 0; i < this.registeredIdArr.length; i++) {
 			if(this.registeredIdArr[i] == iframeObj.id)
@@ -342,8 +365,9 @@ var RteEngine = {
 
 /**********************************
 * Rte - single rte elemnt.
+* toInit used for IE and to prevent initialization before document complitly loaded
 ***********************************/
-function Rte(iframeObj, text, rtePref) {
+function Rte(iframeObj, text, rtePref, toInit) {
 	var i_am = this;
 	this.iframeObj = iframeObj;
 	this.rtePref = rtePref;
@@ -375,8 +399,15 @@ function Rte(iframeObj, text, rtePref) {
 	this.tableBtn = null;
 	this.htmlBtn = null;
 	
+	this.isInitialized = false;
+	
 	// init	
 	this.init = function() {
+		if(this.isInitialized)
+			return;
+		else
+			this.isInitialized = true;
+		
 		// set text and edit mode
 		this.window = this.iframeObj.contentWindow;
 		this.document = this.window.document;
@@ -889,6 +920,8 @@ function Rte(iframeObj, text, rtePref) {
 		this.skipCloseIE = true;
 		return true;
 	}
+	
 	// constructor body --
-	this.init();
+	if(toInit)
+		this.init();
 }
