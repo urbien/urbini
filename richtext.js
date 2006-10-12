@@ -72,10 +72,14 @@ var RteEngine = {
 
 	// functtion members
 	//register the RTEs.
-	register : function(iframeObj, text, rtePref) {
+	register : function(iframeObj, formFieldId, rtePref) {
 		if(this.isIframeRegistered(iframeObj))
 			return;
-
+    var field = document.getElementById(formFieldId);
+    if (field == null)
+      throw new Error("form field " + formFieldId + " not found");
+    var text = field.value;
+    //alert(text);
 		if(typeof rtePref == 'undefined')
 			rtePref = simpleRTE;
 		
@@ -567,7 +571,8 @@ function Rte(iframeObj, text, rtePref, toInit) {
 		return this.dataField;
 	}
 	this.putRteData = function() {
-		this.getDataField().value = this.getHtmlContent();
+    var text = this.getHtmlContent();
+		this.getDataField().value = text;
 	}
 	// handlers --------------
 	this.onfocus = function() {
