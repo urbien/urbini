@@ -46,8 +46,8 @@ var RteEngine = {
 	// ----------------------------
 	
 	IMAGES_FOLDER : "images/wysiwyg/",
-	STYLES : [{name:"Heading 1", value:"<h1>"}, {name:"Heading 2", value:"<h2>"}, {name:"Heading 3", value:"<h3>"}, {name:"Heading 4", value:"<h4>"},
-		{name:"Heading 5", value:"<h5>"}, {name:"Heading 6", value:"<h6>"}, {name:"Paragraph", value:"<p>"}, {name:"Address", value:"<address>"}, {name:"Formatted", value:"<pre>"}],
+	STYLES : [{name:"Paragraph", value:"<p>"}, {name:"Heading 1", value:"<h1>"}, {name:"Heading 2", value:"<h2>"}, {name:"Heading 3", value:"<h3>"}, {name:"Heading 4", value:"<h4>"},
+		{name:"Heading 5", value:"<h5>"}, {name:"Heading 6", value:"<h6>"}, {name:"Address", value:"<address>"}, {name:"Formatted", value:"<pre>"}],
 	FONTS : ["arial", "arial black", "comic sans ms", "courier", "courier new", "georgia", "helvetica", "impact", "palatino", "times new roman", "trebuchet ms", "verdana"],
 	FONTS_FEW : ["arial", "arial black", "comic sans ms", "courier new", "helvetica", "times new roman", "verdana"],
 	FONT_SIZE : ["8pt", "10pt", "12pt", "14pt", "18pt", "24pt", "36pt"],
@@ -72,14 +72,10 @@ var RteEngine = {
 
 	// functtion members
 	//register the RTEs.
-	register : function(iframeObj, formFieldId, rtePref) {
+	register : function(iframeObj, rteDataFieldId, rtePref) {
 		if(this.isIframeRegistered(iframeObj))
 			return;
-    var field = document.getElementById(formFieldId);
-    if (field == null)
-      throw new Error("form field " + formFieldId + " not found");
-    var text = field.value;
-    //alert(text);
+
 		if(typeof rtePref == 'undefined')
 			rtePref = simpleRTE;
 		
@@ -101,7 +97,7 @@ var RteEngine = {
 		}
 		
 		try {
-			var rteObj = new Rte(iframeObj, text, rtePref, this.isDocumentReady);
+			var rteObj = new Rte(iframeObj, rteDataFieldId, rtePref, this.isDocumentReady);
 		}catch(e) {
 			this.registeredIdArr.pop();
 			return;
@@ -371,14 +367,15 @@ var RteEngine = {
 * Rte - single rte elemnt.
 * toInit used for IE and to prevent initialization before document complitly loaded
 ***********************************/
-function Rte(iframeObj, text, rtePref, toInit) {
+function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 	var i_am = this;
 	this.iframeObj = iframeObj;
+	this.dataFieldId = dataFieldId;
 	this.rtePref = rtePref;
 	this.window = null; // window of the iframe
 	this.document = null; // document of the iframe
 	this.toolbar = null;
-	this.parentDiv = null;
+	this.parentDiv = this.iframeObj.parentNode;
 	this.dataField = null; // hidden field to transfer data
 	this.curRange = null;
 	this.isSourceView = false;
@@ -416,10 +413,8 @@ function Rte(iframeObj, text, rtePref, toInit) {
 		this.window = this.iframeObj.contentWindow;
 		this.document = this.window.document;
 		this.initFrameHeight = this.iframeObj.clientHeight;
-		if(typeof text != 'undefined');
-			this.putContent(text);
+		this.initContent();
 		this.document.designMode = "On";
-		this.parentDiv = this.iframeObj.parentNode;
 
 		// set handlers
 		this.setHandlers();
@@ -430,13 +425,7 @@ function Rte(iframeObj, text, rtePref, toInit) {
 			this.toolbar.hide();
 		else
 			this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
-		
-	/*  // adjust parent width	- NOW we use the overflow popup.
-		var tbWidth = this.toolbar.getWidth();		
-		if(this.parentDiv.clientWidth < tbWidth	&& typeof this.parentDiv.width == "undefined") {
-			this.parentDiv.style.width = tbWidth;
-		}
-	*/
+
 		if(document.all)
 			this.isIE = true;
 	}
@@ -515,6 +504,10 @@ function Rte(iframeObj, text, rtePref, toInit) {
 	this.onOverflowBtn = function() {
 		this.skipCloseAll = true;
 	}
+	this.initContent = function() {
+		var text = this.getDataField().value;
+		this.putContent(text);
+	}
 	// putContent
 	this.putContent = function(text) {
 		var frameHtml = "<html>\n";
@@ -566,13 +559,15 @@ function Rte(iframeObj, text, rtePref, toInit) {
 	this.getDataField = function() {
 		if(this.dataField == null) {
 			// data field is inside a parent div
-			this.dataField = getChildById(this.parentDiv, 'rte_data'); // id = 'rte_data'
+			this.dataField = getChildById(this.parentDiv, this.dataFieldId);
+		    if (this.dataField == null)
+		      throw new Error("form field " + this.dataFieldId + " not found");
 		}
 		return this.dataField;
 	}
 	this.putRteData = function() {
-    var text = this.getHtmlContent();
-		this.getDataField().value = text;
+		var text = this.getHtmlContent();
+			this.getDataField().value = text;
 	}
 	// handlers --------------
 	this.onfocus = function() {
