@@ -31,9 +31,10 @@
 </table>      
 <hideBlock id="hideBlock1">
       <div align="right"><measurement/></div>
-      <p/>
 <include name="${type}_details_bottom_1.jsp"/>
       <newComment/>
+      <p/><br/>
+      <chatHistory/>
 </hideBlock>
     </div>
     </td>
