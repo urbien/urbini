@@ -1,0 +1,354 @@
+
+
+div.g_uedge {
+	width:8.25em;
+	margin-bottom:10px;
+    background-image: url(/main/images/roundedBorders/green_vertical.gif);
+	background-position: top center;
+	background-repeat: repeat-x;}
+	 
+div.g_redge {
+
+   background-image: url(/main/images/roundedBorders/green_div.gif);
+	 background-position: top right;
+	 background-repeat: repeat-y;}
+	 
+div.g_bedge {
+
+    background-image: url(/main/images/roundedBorders/green_div.gif);
+		background-position: bottom left;
+		background-repeat: repeat-x;}
+		
+		
+div.g_ledge {
+
+    background-image: url(/main/images/roundedBorders/green_div.gif);
+		background-position: top left;
+		background-repeat: repeat-y;}
+		
+div.g_ulcorner {
+
+    background-image: url(/main/images/roundedBorders/green_topLeft.gif);
+		background-position: top left;
+		background-repeat: no-repeat;}
+		
+div.g_urcorner {
+
+    background-image: url(/main/images/roundedBorders/green_topRight.gif);
+		background-position: top right;
+		background-repeat: no-repeat;}
+				
+div.g_blcorner {
+
+    background-image: url(/main/images/roundedBorders/green_bottomLeft.gif);
+		background-position: bottom left;
+		background-repeat: no-repeat;}
+		
+div.g_brcorner {
+	padding-bottom:10px;
+    background-image: url(/main/images/roundedBorders/green_bottomRight.gif);
+		background-position: bottom right;
+		background-repeat: no-repeat;}
+
+
+
+
+div.b_uedge {
+	width:8.25em;
+	margin-bottom:10px;
+     background-image: url(/main/images/roundedBorders/blue_vertical.gif);
+	 background-position: top center;
+	 background-repeat: repeat-x;}
+	 
+div.b_redge {
+
+   background-image: url(/main/images/roundedBorders/blue_div.gif);
+	 background-position: top right;
+	 background-repeat: repeat-y;}
+	 
+div.b_bedge {
+    background-image: url(/main/images/roundedBorders/blue_div.gif);
+		background-position: bottom left;
+		background-repeat: repeat-x;}
+		
+		
+div.b_ledge {
+    background-image: url(/main/images/roundedBorders/blue_div.gif);
+		background-position: top left;
+		background-repeat: repeat-y;}
+		
+div.b_ulcorner {
+    background-image: url(/main/images/roundedBorders/blue_topLeft.gif);
+		background-position: top left;
+		background-repeat: no-repeat;}
+		
+div.b_urcorner {
+    background-image: url(/main/images/roundedBorders/blue_topRight.gif);
+		background-position: top right;
+		background-repeat: no-repeat;}
+				
+div.b_blcorner {
+    background-image: url(/main/images/roundedBorders/blue_bottomLeft.gif);
+		background-position: bottom left;
+		background-repeat: no-repeat;}
+		
+div.b_brcorner {
+		padding-bottom:10px;
+		background-image: url(/main/images/roundedBorders/blue_bottomRight.gif);
+		background-position: bottom right;
+		background-repeat: no-repeat;}
+
+
+
+
+
+
+div.r_uedge {
+	width:8.25em;
+     background-image: url(/main/images/roundedBorders/red_vertical.gif);
+	 background-position: top center;
+	 background-repeat: repeat-x;}
+	 
+div.r_redge {
+
+   background-image: url(/main/images/roundedBorders/red_div.gif);
+	 background-position: top right;
+	 background-repeat: repeat-y;}
+	 
+div.r_bedge {
+    background-image: url(/main/images/roundedBorders/red_div.gif);
+		background-position: bottom left;
+		background-repeat: repeat-x;}
+		
+		
+div.r_ledge {
+    background-image: url(/main/images/roundedBorders/red_div.gif);
+		background-position: top left;
+		background-repeat: repeat-y;}
+		
+div.r_ulcorner {
+    background-image: url(/main/images/roundedBorders/red_topLeft.gif);
+		background-position: top left;
+		background-repeat: no-repeat;}
+		
+div.r_urcorner {
+    background-image: url(/main/images/roundedBorders/red_topRight.gif);
+		background-position: top right;
+		background-repeat: no-repeat;}
+				
+div.r_blcorner {
+    background-image: url(/main/images/roundedBorders/red_bottomLeft.gif);
+		background-position: bottom left;
+		background-repeat: no-repeat;}
+		
+div.r_brcorner {
+		padding-bottom:10px;
+		background-image: url(/main/images/roundedBorders/red_bottomRight.gif);
+		background-position: bottom right;
+		background-repeat: no-repeat;}
+
+
+
+
+div.gray_uedge {
+        width:580px;        
+        background-image: url(/main/images/roundedBorders/gray_div.gif);
+        background-position: top left;
+	background-repeat: repeat-x;}
+	 
+div.gray_redge {
+
+   background-image: url(/main/images/roundedBorders/gray_div.gif);
+	 background-position: top right;
+	 background-repeat: repeat-y;}
+	 
+div.gray_bedge {
+    background-image: url(/main/images/roundedBorders/gray_div.gif);
+		background-position: bottom left;
+		background-repeat: repeat-x;}
+		
+		
+div.gray_ledge {
+    background-image: url(/main/images/roundedBorders/gray_div.gif);
+		background-position: top left;
+		background-repeat: repeat-y;}
+		
+div.gray_ulcorner {
+    background-image: url(/main/images/roundedBorders/gray_topLeft.gif);
+		background-position: top left;
+		background-repeat: no-repeat;}
+		
+div.gray_urcorner {
+    background-image: url(/main/images/roundedBorders/gray_topRight.gif);
+		background-position: top right;
+		background-repeat: no-repeat;}
+				
+div.gray_blcorner {
+    background-image: url(/main/images/roundedBorders/gray_bottomLeft.gif);
+		background-position: bottom left;
+		background-repeat: no-repeat;}
+		
+div.gray_brcorner {		
+		background-image: url(/main/images/roundedBorders/gray_bottomRight.gif);
+		background-position: bottom right;
+		background-repeat: no-repeat;}
+
+
+
+
+
+div.gradient_uedge {
+		padding-bottom:10px;
+        background-image: url(/main/images/roundedBorders/darkGray_div.gif);
+        background-position: top left;
+	background-repeat: repeat-x;}
+	 
+div.gradient_redge {
+
+   background-image: url(/main/images/roundedBorders/darkGray_div.gif);
+	 background-position: top right;
+	 background-repeat: repeat-y;}
+	 
+div.gradient_bedge {
+    background-image: url(/main/images/roundedBorders/lightGray_div.gif);
+		background-position: bottom left;
+		background-repeat: repeat-x;}
+		
+		
+div.gradient_ledge {
+    background-image: url(/main/images/roundedBorders/darkGray_div.gif);
+		background-position: top left;
+		background-repeat: repeat-y;}
+		
+div.gradient_ulcorner {
+    background-image: url(/main/images/roundedBorders/gray_topLeft.gif);
+		background-position: top left;
+		background-repeat: no-repeat;}
+		
+div.gradient_urcorner {
+    background-image: url(/main/images/roundedBorders/gray_topRight.gif);
+		background-position: top right;
+		background-repeat: no-repeat;}
+				
+div.gradient_blcorner {
+    background-image: url(/main/images/roundedBorders/grayGradient_bottomLeft.gif);
+		background-position: bottom left;
+		background-repeat: no-repeat;}
+		
+div.gradient_brcorner {		
+		height:50px;
+		background-image: url(/main/images/roundedBorders/grayGradient_bottomRight.gif);
+		background-position: bottom right;
+		background-repeat: no-repeat;}
+
+
+div.navigation_uedge {
+	background-color: #f9f9f9
+}
+div.navigation_redge {
+	background-position: right top; background-image: url(/main/images/roundedBorders/lightDiv.gif); background-repeat: repeat-y;
+}
+div.navigation_bedge {
+	background-position: left bottom; background-image: url(/main/images/roundedBorders/darkDiv.gif); background-repeat: repeat-x;
+}
+div.navigation_ledge {
+	background-position: left top; background-image: url(/main/images/roundedBorders/darkDiv.gif); background-repeat: repeat-y;
+}
+div.navigation_ulcorner {
+	background-position: left top; background-image: url(/main/images/roundedBorders/navigation_topLeft.gif); background-repeat: no-repeat;
+}
+div.navigation_urcorner {
+	background-position: right top; background-image: url(/main/images/roundedBorders/navigation_topRight.gif); background-repeat: no-repeat;
+}
+div.navigation_blcorner {
+	background-position: left bottom; background-image: url(/main/images/roundedBorders/navigation_bottomLeft.gif); background-repeat: no-repeat;
+}
+div.navigation_brcorner {
+	background-position: right bottom; background-image: url(/main/images/roundedBorders/navigation_bottomRight.gif); background-repeat: no-repeat; 
+}
+
+
+
+.backTopicTitle{  
+   margin-bottom:3px;
+   background-color:#f4f6fe; 
+   width:580px;   
+   color:#003399;
+   font-weight:bold;
+   font-size:22px;
+   background-image: url(/main/images/roundedBorders/solidBlueTopLeft.gif);
+   background-position: top left;
+   background-repeat: no-repeat;
+
+}
+
+.backTopicTitle div {
+   background-image: url(/main/images/roundedBorders/solidBlueTopRight.gif);
+   background-position: top right;
+   background-repeat: no-repeat;
+}
+.backTopicTitle div div{
+   background-image: url(/main/images/roundedBorders/solidBlueBottomLeft.gif);
+   background-position: bottom left;
+   background-repeat: no-repeat;
+}
+.backTopicTitle div div div{
+   background-image: url(/main/images/roundedBorders/solidBlueBottomRight.gif);
+   background-position: bottom right;
+   background-repeat: no-repeat;
+}
+
+
+
+
+
+
+.pageTools{
+   width:772px;
+   height:37px;
+   background-image: url(/main/images/roundedBorders/tools_div.gif);
+   background-position: top left;
+   background-repeat: repeat-x;
+}
+
+
+.pageTools div{
+   font-size:13px;
+   color:#003399;
+   height:37px;
+   background-image: url(/main/images/roundedBorders/tools_div.gif);
+   background-position: bottom left;
+   background-repeat: repeat-x;
+
+  
+}
+
+.pageTools div div{
+   height:37px;
+   background-image: url(/main/images/roundedBorders/tools_rightCorner.gif);
+   background-position: top right;
+   background-repeat: no-repeat;
+}
+
+.pageTools div div div{
+   height:37px;
+   background-image: url(/main/images/roundedBorders/tools_leftCorner.gif);
+   background-position: top left;
+   background-repeat: no-repeat;  
+  
+  
+}
+
+.pageTools a{
+  font-size:13px;
+  color:#003399;
+}
+
+.pageTools a:hover{
+  font-size:13px;
+  color:#316CA5;
+}
+
+.pageTools img{
+ vertical-align:middle;
+}

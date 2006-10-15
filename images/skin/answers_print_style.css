@@ -1,0 +1,87 @@
+body {width:99%; margin: 10px;}
+#body {width:99%; margin: 10px;}
+
+#header {
+width:100%;
+margin:0px;
+}
+
+#left {display:none;width:0px; }
+
+#right {display:none;width:0px; }
+
+.accoonaRight{display:none;width:0px;}
+
+img {border: 0;}
+
+#lsidebar{display:none;width:0px; }
+
+#middle {
+        margin: 0px;
+	width:100%;
+}
+
+#lookup{ width:100%;margin:0px;}
+
+div.content{
+ font-size:13px;
+ margin-left:6px;
+ margin-top:5px;
+ margin-bottom:12px;
+ width:95%;
+}
+
+div.gray_uedge {
+        width:100%;   
+        margin-bottom:10px;     
+}
+
+
+div.gradient_uedge {
+       width:100%;
+}
+
+.backTopicTitle{  
+      width:100%;
+}
+
+
+.copyrightImage {
+ vertical-align:middle;
+ border:0px;
+ float:right;
+ padding:7px 10px 0px 0px;
+}
+
+#copyrightTable{
+ padding:3px;
+ font-size:11px;
+ color:#595959;
+}
+
+.accoonaHeader{
+	width:100%;
+	
+}
+
+.accoona_header{
+  width:100%;
+}
+
+.accoonaSearch{
+	width:0%;
+	display:none;
+}
+
+.accoonaSpacer{
+   width:0px;
+   display:none;   
+}
+
+div.ads {
+	display:none;width:0px; 
+}
+
+.shoppingWide {
+	display:none;
+}
