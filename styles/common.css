@@ -177,6 +177,7 @@ border-right: #d7d7d7 1px solid; border-top: #d7d7d7 1px solid; border-left: #d7
 	  background-repeat: no-repeat;
 	  text-align: center;
     white-space: nowrap;
+	  color: #662d91;
 	}
 	.cpTabs TD.right {
 	  background-image:url(../images/skin/rustyrose/tab-right-small.gif);
@@ -196,17 +197,26 @@ border-right: #d7d7d7 1px solid; border-top: #d7d7d7 1px solid; border-left: #d7
   }
 
 	.currentCpTabs TD.left {
-	  background-image:url(../images/skin/rustyrose/tab-left-current.gif);
+	  background-image:url(../images/skin/orange/tab-left.gif);
 	  background-repeat: no-repeat;
 	}
 	.currentCpTabs TD.middle {
-	  background-image:url(../images/skin/rustyrose/tab-middle-current.gif);
+	  background-image:url(../images/skin/orange/tab-middle.gif);
 	  background-repeat: no-repeat;
 	  text-align: center;
     white-space: nowrap;
+	  color: #754c24;
+	  font-weight: bold;
 	}
 	.currentCpTabs TD.right {
-	  background-image:url(../images/skin/rustyrose/tab-right-current.gif);
+	  background-image:url(../images/skin/orange/tab-right.gif);
 	  background-repeat: no-repeat;
 	}
-	
+
+  .currentTabTitle {
+	  background-image:url(../images/skin/orange/tab-middle.gif);
+	  background-repeat: repeat-x;
+	  color: #754c24;
+	  font-weight: bold;
+	  font-size:14px;
+  }	
