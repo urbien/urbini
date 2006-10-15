@@ -162,3 +162,51 @@ color: #555;
 table.greyBorder {
 border-right: #d7d7d7 1px solid; border-top: #d7d7d7 1px solid; border-left: #d7d7d7 1px solid; border-bottom: #d7d7d7 1px solid
 }
+
+
+  .cpTabs {
+    height: 23px;
+  }
+
+	.cpTabs TD.left {
+	  background-image:url(../images/skin/rustyrose/tab-left-small.gif);
+	  background-repeat: no-repeat;
+	}
+	.cpTabs TD.middle {
+	  background-image:url(../images/skin/rustyrose/tab-middle-small.gif);
+	  background-repeat: no-repeat;
+	  text-align: center;
+    white-space: nowrap;
+	}
+	.cpTabs TD.right {
+	  background-image:url(../images/skin/rustyrose/tab-right-small.gif);
+	  background-repeat: no-repeat;
+	}
+  .cpTabs .left, .right {
+    width:8px;
+  }
+
+  .currentCpTabs {
+    height: 27px;
+  }
+
+
+  .currentCpTabs .left, .right {
+    width:12px;
+  }
+
+	.currentCpTabs TD.left {
+	  background-image:url(../images/skin/rustyrose/tab-left-current.gif);
+	  background-repeat: no-repeat;
+	}
+	.currentCpTabs TD.middle {
+	  background-image:url(../images/skin/rustyrose/tab-middle-current.gif);
+	  background-repeat: no-repeat;
+	  text-align: center;
+    white-space: nowrap;
+	}
+	.currentCpTabs TD.right {
+	  background-image:url(../images/skin/rustyrose/tab-right-current.gif);
+	  background-repeat: no-repeat;
+	}
+	
