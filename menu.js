@@ -4022,16 +4022,44 @@ function processTransaction(e) {
   return stopEventPropagation(e);
 }
 
-function showDiv(e, td, hideDivId) {
+function showDiv(e, td, hideDivId, unhideDivId) {
   e = getDocumentEvent(e);
-  var div = document.getElementById(hideDivId);
-  div.style.visibility = Popup.HIDDEN;
-  div.style.display = "none";
+  if (hideDivId  &&  hideDivId.length != 0) {
+    var tokens = hideDivId.split(',');
+    var len = tokens.length;  
+    for(var i = 0; i < len; i++) { 
+      var div = document.getElementById(tokens[i]);
+      div.style.visibility = Popup.HIDDEN;
+      div.style.display = "none";
+      var hideTD = document.getElementById(tokens[i].substring(4));
+      var ht = hideTD.getElementsByTagName("table");
+      if (ht.length != 0  &&  ht[0].className == "currentCpTabs")
+        ht[0].className = "cpTabs";
+    }
+  }
+  if (unhideDivId  &&  unhideDivId.length != 0) {
+    var tokens = unhideDivId.split(',');
+    var len = tokens.length;  
+    for(var i = 0; i < len; i++) { 
+      var div = document.getElementById(tokens[i]);
+      div.style.visibility = Popup.VISIBLE;
+      div.style.display = 'inline';
+      var uTD = document.getElementById(tokens[i].substring(4));
+      var uTable = uTD.getElementsByTagName("table");
+      if (uTable.length != 0  &&  uTable[0].className == "currentCpTabs")
+        uTable[0].className = "cpTabs";
+    }
+  }
   var divId = 'div_' + td.id;
   div = document.getElementById(divId);
   div.style.visibility = Popup.VISIBLE;
   div.style.display = 'inline';
+  
+  var t = td.getElementsByTagName("table");
+  if (t.length != 0  &&  t[0].className == "cpTabs")
+    t[0].className = "currentCpTabs";
 }
+
 
 function hideInnerDiv(e) {
   var pane2        = document.getElementById('pane2');
