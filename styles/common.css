@@ -219,4 +219,9 @@ border-right: #d7d7d7 1px solid; border-top: #d7d7d7 1px solid; border-left: #d7
 	  color: #754c24;
 	  font-weight: bold;
 	  font-size:14px;
+    height: 33;
   }	
+  .currentTabTitleHidden {
+    visibility:hidden; display:none;
+    height: 33;
+  }	  
