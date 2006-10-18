@@ -991,9 +991,9 @@ var PopupHandler = {
 			this.x = pos.left - (div.clientWidth - hotspot.width);
 			
 		this.y = pos.top + hotspot.height + OFFSET_Y;
-		// check if to open popup above a hotspot.
+		// check if to open popup above a hotspot. (take in account a scrolling)
 		var screenHeight = getWindowSize()[1];
-		if(screenHeight < this.y + div.clientHeight)
+		if(screenHeight < this.y - getScrollXY1()[1] + div.clientHeight)
 			this.y = pos.top - div.clientHeight - OFFSET_Y;
 		
 		// FF: position "fixed"
