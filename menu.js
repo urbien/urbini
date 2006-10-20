@@ -2672,7 +2672,28 @@ function interceptLinkClicks(div) {
     replaceTooltip(doc, anchor);
   }
 }
-
+function addEventOnSchedule() {
+  var table = document.getElementById("mainTable");
+  if (table == null) 
+    return;
+  var TRs = table.getElementsByTagName("tr");
+  for (var i=0; i<TRs.length; i++) {
+    var TDs = TRs[i].getElementsByTagName("td");
+    for (var j=0; j<TDs.length; j++) {
+      var td = TDs[j];
+      if (td.className == 'available') 
+        addEvent(td, 'dblclick', function(event) {openPopup('employee=' + employees[j], 'changeAlert', td, event); calendarCell = td; return false;} , false);
+      else if (td.className == 'openPopup1') 
+        addEvent(td, 'dblclick', function(event) {openPopup1('employee=' + employees[j], '.forResource_select=' + resourceCalendars[j], td, event); calendarCell = td; return false;} , false);
+      else if (td.className == 'busy') 
+        addEvent(td, 'dblclick', function(event) {openPopup(null, '.forResource_select=' + resourceCalendars[j], td, event); calendarCell = td; return false;} , false);
+      else if (td.className == 'expiredAlert')
+        addEvent(td, 'dblclick', function(event) {showAlert(expiredAlert);});
+      else if (td.className == 'changeAlert')
+        addEvent(td, 'dblclick', function(event) {showAlert(changeAlert);});
+    }
+  }
+}
 function initListBoxes(div) {
   var images;
   var doc;
@@ -4051,11 +4072,13 @@ function showTab(e, td, hideDivId, unhideDivId) {
         ht[0].className = "cpTabs";
       if (!isViewAll  &&  tt != null) {
         tt = document.getElementById('cp_' + tdId);
-        tt.className = "currentTabTitleHidden";
+        if (tt != null)
+          tt.className = "currentTabTitleHidden";
       }
     }
     var tt = document.getElementById('cp_' + td.id);
-    tt.className = "currentTabTitleHidden";
+    if (tt != null)
+      tt.className = "currentTabTitleHidden";
   }
   
   if (unhideDivId  &&  unhideDivId.length != 0) {
@@ -4109,6 +4132,7 @@ function openPopup1(divId1, alertName, hotSpot, e) {
 }
 
 function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
+  alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',  e=' + e + ', maxDuration=' + maxDuration);
   if (e.ctrlKey)  {// ctrl-enter
     if (!maxDuration) {
       Popup.open(divId2, hotSpot);

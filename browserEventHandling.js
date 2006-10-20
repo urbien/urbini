@@ -105,13 +105,14 @@
       initListBoxes(null);
 //      Packages.java.lang.System.out.println('onLoad 3: ' + new Date());
       uiFocus();
+      addEventOnSchedule()
 //      Packages.java.lang.System.out.println('onLoad 4: ' + new Date());
 //      if (typeof searchHighlighting != 'undefined')
 //        searchHighlighting();
 //      if (typeof replaceAllTooltips != 'undefined')
 //        replaceAllTooltips();
 		// initialize the drag & drop engine.
-		dragobject.initialize();
+		  dragobject.initialize();
     }
 
     /*
