@@ -136,35 +136,37 @@ img.fade {
 * textCol, iconCol, textCell, greyBorder are used to display h3 elements as icon, title and text
 */
 td.textCol {
-padding-top: 8px;
-padding-left: 4px;
-font-size: 70%;
-font-family: verdana;
-font-weight: bold;
-color: #337;
+  padding-top: 8px;
+	padding-left: 4px;
+	font-size: 70%;
+	font-family: verdana;
+	font-weight: bold;
+	color: #337;
 }
 
 td.iconCol {
-text-align: center;
-vertical-align: top;
-padding: 6px 6px;
+	text-align: center;
+	vertical-align: top;
+	padding: 6px 6px;
 }
 
 td.textCell {
-font-family: verdana;
-font-size: 70%;
-padding-left: 4px;
-padding-top: 10px;
-padding-bottom: 12px;
-color: #555;
+	font-family: verdana;
+	font-size: 70%;
+	padding-left: 4px;
+	padding-top: 10px;
+	padding-bottom: 12px;
+	color: #555;
 }
 
 table.greyBorder {
-border-right: #d7d7d7 1px solid; border-top: #d7d7d7 1px solid; border-left: #d7d7d7 1px solid; border-bottom: #d7d7d7 1px solid
+	border-right: #d7d7d7 1px solid; border-top: #d7d7d7 1px solid; border-left: #d7d7d7 1px solid; border-bottom: #d7d7d7 1px solid
 }
 
+/* Tabs for control panel and property sheet */
 
   .cpTabs {
+    cursor: pointer; cursor: hand;
     height: 23px;
   }
 
@@ -220,8 +222,8 @@ border-right: #d7d7d7 1px solid; border-top: #d7d7d7 1px solid; border-left: #d7
 	  font-weight: bold;
 	  font-size:14px;
     height: 33;
-  }	
+  }
   .currentTabTitleHidden {
     visibility:hidden; display:none;
     height: 33;
-  }	  
+  }
