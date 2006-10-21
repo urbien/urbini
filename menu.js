@@ -2677,16 +2677,27 @@ function addEventOnSchedule() {
   if (table == null) 
     return;
   var TRs = table.getElementsByTagName("tr");
-  for (var i=0; i<TRs.length; i++) {
+  var len = TRs.length;
+  for (var i=0; i<len; i++) {
     var TDs = TRs[i].getElementsByTagName("td");
-    for (var j=0; j<TDs.length; j++) {
+    var tdLen = TDs.length;
+    if (tdLen == 0)
+      continue;
+    for (var j=0; j<tdLen; j++) {
       var td = TDs[j];
-      if (td.className == 'available') 
-        addEvent(td, 'dblclick', function(event) {openPopup('employee=' + employees[j], 'changeAlert', td, event); calendarCell = td; return false;} , false);
-      else if (td.className == 'openPopup1') 
-        addEvent(td, 'dblclick', function(event) {openPopup1('employee=' + employees[j], '.forResource_select=' + resourceCalendars[j], td, event); calendarCell = td; return false;} , false);
-      else if (td.className == 'busy') 
-        addEvent(td, 'dblclick', function(event) {openPopup(null, '.forResource_select=' + resourceCalendars[j], td, event); calendarCell = td; return false;} , false);
+      if (td.className == 'available') { 
+        var employee = 'employee=' + employees[j];
+        addEvent(td, 'dblclick', function(event) {openPopup(employee, 'changeAlert', td, event); calendarCell = td; return false;} , false);
+      }
+      else if (td.className == 'openPopup1') { 
+        var employee = 'employee=' + employees[j];
+        var resCalendar = '.forResource_select=' + resourceCalendars[j];
+        addEvent(td, 'dblclick', function(event) {openPopup1(employee, resCalendar, td, event); calendarCell = td; return false;} , false);
+      }
+      else if (td.className == 'busy')  {
+        var resCalendar = '.forResource_select=' + resourceCalendars[j];
+        addEvent(td, 'dblclick', function(event) {openPopup(null, resCalendar, td, event); calendarCell = td; return false;} , false);
+      }
       else if (td.className == 'expiredAlert')
         addEvent(td, 'dblclick', function(event) {showAlert(expiredAlert);});
       else if (td.className == 'changeAlert')
@@ -3789,14 +3800,18 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
 
   if (anchor.indexOf("?") != anchor.length - 1)
     anchor += "&";
-  anchor += popupRow.id;
+  
+  var popupRowId = popupRow.id;
+  var ampIdx = popupRowId.indexOf("&");
+  var procedureIdx = parseInt(popupRowId.substring(0, ampIdx));
+  var duration = parseInt(popupRowId.substring(ampIdx + 1));
+  anchor += procedurePropName + "=" + procedures[procedureIdx] + "&duration=" + duration;  
 
   //--- extract parameters specific for calendar row (e.g. time slot) for a cell on which user clicked
   // popupRow == calendarRow when click came from the schedule cell because value corresponding to popup value already known.
   var contactId;
   if (popupRow == calendarRow) {
-    var pos = contactPropAndIdx.indexOf("=");
-    contactId = contactPropAndIdx.substring(0, pos + 1) + employees[contactPropAndIdx.substring(pos + 1)];
+    contactId = forEmployee + "=" + employees[contactPropAndIdx.substring(pos + 1)];
   }
   else  {
     anchor += '&' + calendarRow.id;
@@ -3873,7 +3888,11 @@ function addSimpleCalendarItem(popupRowAnchor, event) {
   var calendarRowId = calendarRow.id;
   var idx = calendarRowId.indexOf("=");
   calendarRowId = calendarRowId.substring(0, idx);
-  anchor += popupRow.id; // + "&.start_verified=y&.start_select=" + calendarRowId.substring(0, idx);
+  var popupRowId = popupRow.id;
+  var durationIdx = popupRowId.indexOf("=");
+  var durationProp = popupRowId.substring(0, durationIdx);
+  var minutes = parseInt(popupRowId.substring(durationIdx + 1));
+  anchor += durationProp + "=inlined&" + durationProp + ".seconds=" + minutes + "&" + durationProp + ".durationType=" + encodeURIComponent("minute(s)");
   //--- extract a contact corresponding to a poped up chooser
   var contactDiv = getDivNode(popupRow);
   if (!contactDiv)
@@ -3888,7 +3907,9 @@ function addSimpleCalendarItem(popupRowAnchor, event) {
       contactDiv = parentNode;
     }
   }
-  anchor += '&' + contactDiv.id;
+  var contactDivId = contactDiv.id;
+  var employeeIdx = parseInt(contactDivId.substring(1));
+  anchor += '&' + employeeCalendarItem + "_select=" + resourceCalendars[employeeIdx];
   var blockReleaseDiv = document.getElementById('blockReleaseParameters');
   if (!blockReleaseDiv)
     throw new Error("addCalendarItem: blockReleaseParameters div not found for: " + anchor);
@@ -4132,7 +4153,15 @@ function openPopup1(divId1, alertName, hotSpot, e) {
 }
 
 function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
-  alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',  e=' + e + ', maxDuration=' + maxDuration);
+  if (divId1 != null)
+    divId1 = forEmployee + "=" + employees[divId1]; 
+  if (divId2 != null) {
+    if (resourceCalendars[divId2] == null)
+      divId2 = null;
+    else
+      divId2 = "." + divId2;
+  }
+//  alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',  e=' + e + ', maxDuration=' + maxDuration);
   if (e.ctrlKey)  {// ctrl-enter
     if (!maxDuration) {
       Popup.open(divId2, hotSpot);
