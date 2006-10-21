@@ -54,7 +54,9 @@ span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:
 
 .xs {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;}
 
-span.imgTitle {color:red; font-family:sans-serif, arial; font-size:8pt; font-weight:bold}
+span.imgTitle {color:#da26cb; font-family:sans-serif, arial; font-size:8pt; font-weight:bold}
+
+.optionPropsTitle {border-bottom:solid #5C9EBF 1px; padding: 5px; background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); font-weight:bold; font-size:15px; font-family:sans-serif, arial; color:#00309C;}
 span.itemsCount {color:red; font-family:sans-serif, arial; font-size:10pt; font-weight:bold}
 
 span.dark{color:#eeeeee}
@@ -120,7 +122,7 @@ span.bigLetterTitle  {font-family:sans-serif, arial; font-weight:bold; font-size
 span.bigLetterTitleGrayed {font-family:sans-serif, arial; font-weight:bold; font-size:16pt; color:#FFFFFF;}
 
 /* To display big letter title when full text search criteria was there */
-span.bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#00309C;}
+.bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#00309C;}
 /* To display window titles on a dashboard */
 span.dashboardBlockTitle {font-family:Verdana,sans-serif,arial; font-weight:bold; font-size:12px; color:#00309C;}
 span.dashboardGrayedTitle {font-family:Verdana,sans-serif,arial; font-size:12px; color:#10106D;}
@@ -175,11 +177,16 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .line {background:#ACD2E2}
 
 /* Scheduling page styles */
-.schedule    {border:solid #808080 1px;border-collapse: collapse; }
-.busy        {border:solid #808080 1px; background-color:pink; font-weight:bold; FONT-SIZE: 11px; vertical-align:top}
-.orgbusy     {border:solid #808080 1px; background-color:#E4BBF9; font-weight:bold; FONT-SIZE: 11px; vertical-align:top}
-.unavailable {background-color:#ACD2E2; vertical-align:top}
-.available   {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top}
+.schedule     {border:solid #808080 1px;border-collapse: collapse; }
+.busy         {border:solid #808080 1px; background-color:pink; font-weight:bold; FONT-SIZE: 11px; vertical-align:top}
+.orgbusy      {border:solid #808080 1px; background-color:#E4BBF9; font-weight:bold; FONT-SIZE: 11px; vertical-align:top}
+.unavailable  {background-color:#ACD2E2; vertical-align:top}
+.available    {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top}
+/*
+.expiredAlert {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top}
+.changeAlert  {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top}
+.openPopup1   {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top}
+*/
 .notEnoughSpace {background-color:#ACE2CE; vertical-align:top}
 .grayedOut   {border:solid #808080 0px;background-color:#E2E2E2;vertical-align:top}
 
@@ -205,11 +212,27 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .resourceListDialog {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); padding: 15px;}
 .dialogPanel {border:solid #5C9EBF 1px; padding: 15px}
 .drag {position: relative;}
+
 /* Shows 'Search by barcode #' on add retail items screen in SPA */
 .barcoded {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); padding: 15px; border:solid #5C9EBF 1px;}
 
 #titleBar {height: 22px; background:url(../images/skin/blue/title.gif); cursor:move; padding-left:5px;}
 
 span.action {font-family:verdana,sans-serif,arial;font-weight:bold;font-size:8pt;color:#000066;}
-tr.checkout   {background-image: url('../images/toolbar_bg.gif');cursor: pointer; cursor: hand;}
+tr.submit     {background-image: url('../images/toolbar_bg.gif');cursor: pointer; cursor: hand; color:darkblue;}
+td.submit     {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
+tr.checkout   {background-image: url('../images/toolbar_bg.gif');cursor: pointer; cursor: hand; color:darkblue;}
 td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
+.requiredField { 
+	border-left: 5px solid #00aeef;
+  background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt;
+}
+
+.required { 
+  width: 3px; overflow: hidden;
+	border-left: 3px solid #00aeef;
+}
+.bgyellow {background:yellow}
+.outerPopup {border-style:solid; border-width: 1px; border-color:#666666 #666666 #666666 #666666}
+.innerPopup {border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7}
+.menuOnClick {backgroung-color: #0055e6; padding-right:3; padding-top:3; padding-bottom:3}
