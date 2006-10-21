@@ -105,7 +105,7 @@
       initListBoxes(null);
 //      Packages.java.lang.System.out.println('onLoad 3: ' + new Date());
       uiFocus();
-      addEventOnSchedule()
+//      addEventOnSchedule()
 //      Packages.java.lang.System.out.println('onLoad 4: ' + new Date());
 //      if (typeof searchHighlighting != 'undefined')
 //        searchHighlighting();
@@ -155,7 +155,7 @@
       if (!e)
         return;
       target = getTargetElement(e);
-      var url = 'editProperties.html?submit=Submit+changes&User_Agent_UI=n&uri=';
+      var url = 'editProperties.html?submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
       var bIdx = target.id.indexOf("_boolean");
       var rUri = target.id.substring(0, bIdx);
       var idx = rUri.lastIndexOf("_");
