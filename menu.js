@@ -385,7 +385,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       replaceTooltips(self.div, anchors);
       self.initilized = true;
     }
-    
+
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
       self.delayedClose(20000);
@@ -517,11 +517,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       addEvent(elem, 'click',     self.popupRowOnClick,     false);
       var anchors = elem.getElementsByTagName('a');
       if (anchors  &&  anchors.length != 0) {
-        if (anchors[0].onclick) {
-          anchors[0].onclick1 = anchors[0].onclick;
-          anchors[0].onclick = '';
+        var anchor = anchors[0];
+        if (anchor.onclick) {
+          anchor.onclick1 = anchor.onclick;
+          anchor.onclick = '';
         }
-        var href = anchors[0].href;
+        var href = anchor.href;
         //anchors[0].href = 'javascript:;';
         elem.setAttribute('href', href);
         //anchors[0].disabled = true;
@@ -736,7 +737,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       if (trg)
         return true;
 
-      if (anchor.id.startsWith('-inner'))        // display as on-page dialog
+      if (anchor.id.startsWith('-inner'))       // display as on-page dialog
         return onClickDisplayInner(e, anchor);
       if (anchor.onclick1) {
         anchor.onclick1(e);
@@ -1247,8 +1248,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.isHeaderRow = function (tr) {
-    //if (tr && tr.id == '$classLabel')
-    if (tr && (tr.previousSibling == null || tr.id == '$classLabel'))
+    if (tr && tr.className == 'menuTitle')
       return true;
     else
       return false;
@@ -1689,8 +1689,8 @@ function popupOnSubmit(e) {
     }
   }
 
-  // put rte data in the hidden field(s)	
-  RteEngine.putRteDataOfForm(form);	
+  // put rte data in the hidden field(s)
+  RteEngine.putRteDataOfForm(form);
 
   /* Add full text search criteria to filter */
   var fullTextSearchForm = document.forms['searchForm'];
@@ -2391,12 +2391,16 @@ function hideResetRow(div, currentFormName, originalProp) {
 }
 
 /*********************************** Menu ***********************************/
-function initMenus() {
-  var menuLinks = document.getElementsByTagName('A');
+function initMenus(menuBarId) {
+  var element = document.getElementById(menuBarId);
+  if (!element)
+    throw new Error('menuBar not found: ' + menuBarId);
+  var menuLinks = element.getElementsByTagName('A');
   var l = menuLinks.length;
   for (var i=0; i<l; i++) {
     var m = menuLinks[i];
-    if (m.id.indexOf('menuLink_') == 0) {
+    var id = m.id;
+    if (id && id.startsWith('menuLink_')) {
       addEvent(m, 'click',     menuOnClick, false);
     }
 /*
@@ -2568,10 +2572,10 @@ function tooltipOnMouseOver0(target, toShow) {
 
 function tooltipOnMouseOver(e) {
   e = getDocumentEvent(e); if (!e) return;
-  
+
   initShiftPref();
-  var toShow = !(Popup.isShiftRequired && !e.shiftKey); 
-  
+  var toShow = !(Popup.isShiftRequired && !e.shiftKey);
+
   if (e.getAttribute) {
     var isProcessed = e.getAttribute('eventProcessed');
     if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
@@ -2634,7 +2638,7 @@ function initShiftPref() {
 				break;
 			}
 		}
-		Popup.isShiftRequired = bValue; 
+		Popup.isShiftRequired = bValue;
 	}
 
 	var shiftDiv = document.getElementById("shift_pref");
@@ -2665,7 +2669,7 @@ function interceptLinkClicks(div) {
     var id = anchor.id;
     if (id && id.startsWith('menuLink_')) // menu clicks are processed by their own event handler
       continue;
-    if (id && id.startsWith("-inner."))
+    if (id && id.startsWith("-inner.")
       addEvent(anchor, 'click',  onClickDisplayInner,   false);
     else
       addEvent(anchor, 'click',  onClick,   false);
@@ -2674,7 +2678,7 @@ function interceptLinkClicks(div) {
 }
 function addEventOnSchedule() {
   var table = document.getElementById("mainTable");
-  if (table == null) 
+  if (table == null)
     return;
   var TRs = table.getElementsByTagName("tr");
   var len = TRs.length;
@@ -2685,11 +2689,11 @@ function addEventOnSchedule() {
       continue;
     for (var j=0; j<tdLen; j++) {
       var td = TDs[j];
-      if (td.className == 'available') { 
+      if (td.className == 'available') {
         var employee = 'employee=' + employees[j];
         addEvent(td, 'dblclick', function(event) {openPopup(employee, 'changeAlert', td, event); calendarCell = td; return false;} , false);
       }
-      else if (td.className == 'openPopup1') { 
+      else if (td.className == 'openPopup1') {
         var employee = 'employee=' + employees[j];
         var resCalendar = '.forResource_select=' + resourceCalendars[j];
         addEvent(td, 'dblclick', function(event) {openPopup1(employee, resCalendar, td, event); calendarCell = td; return false;} , false);
@@ -3724,7 +3728,7 @@ function showLargeImage(e, current, largeImageUrl) {
 	var fileName = largeImageUrl.substring(idx1 + 1, idx2);
 	titleObj.innerHTML = fileName;
   }
-  	
+
 
   hotspot1 = current;
   addEvent(img, 'load',  largeImageOnLoad,  false);
@@ -3800,12 +3804,12 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
 
   if (anchor.indexOf("?") != anchor.length - 1)
     anchor += "&";
-  
+
   var popupRowId = popupRow.id;
   var ampIdx = popupRowId.indexOf("&");
   var procedureIdx = parseInt(popupRowId.substring(0, ampIdx));
   var duration = parseInt(popupRowId.substring(ampIdx + 1));
-  anchor += procedurePropName + "=" + procedures[procedureIdx] + "&duration=" + duration;  
+  anchor += procedurePropName + "=" + procedures[procedureIdx] + "&duration=" + duration;
 
   //--- extract parameters specific for calendar row (e.g. time slot) for a cell on which user clicked
   // popupRow == calendarRow when click came from the schedule cell because value corresponding to popup value already known.
@@ -4081,8 +4085,8 @@ function showTab(e, td, hideDivId, unhideDivId) {
   var isViewAll = td.id == 'viewAll';
   if (hideDivId  &&  hideDivId.length != 0) {
     var tokens = hideDivId.split(',');
-    var len = tokens.length;  
-    for(var i = 0; i < len; i++) { 
+    var len = tokens.length;
+    for(var i = 0; i < len; i++) {
       var div = document.getElementById(tokens[i]);
       div.style.visibility = Popup.HIDDEN;
       div.style.display = "none";
@@ -4101,11 +4105,11 @@ function showTab(e, td, hideDivId, unhideDivId) {
     if (tt != null)
       tt.className = "currentTabTitleHidden";
   }
-  
+
   if (unhideDivId  &&  unhideDivId.length != 0) {
     var tokens = unhideDivId.split(',');
     var len = tokens.length;
-    for(var i = 0; i < len; i++) { 
+    for(var i = 0; i < len; i++) {
       var div = document.getElementById(tokens[i]);
       div.style.visibility = Popup.VISIBLE;
       div.style.display = 'inline';
@@ -4119,18 +4123,18 @@ function showTab(e, td, hideDivId, unhideDivId) {
         tt.className = "currentTabTitle";
       }
     }
-    
+
   }
   var divId = 'div_' + td.id;
   div = document.getElementById(divId);
   div.style.visibility = Popup.VISIBLE;
   div.style.display = 'inline';
-  
+
   var t = td.getElementsByTagName("table");
   if (t.length != 0  &&  t[0].className == "cpTabs")
     t[0].className = "currentCpTabs";
-  
-  if (isViewAll) { 
+
+  if (isViewAll) {
     var tr = document.getElementById(tokens.length + 'cp');
     if (tr != null)
       tr.className = "currentTabTitle";
@@ -4154,7 +4158,7 @@ function openPopup1(divId1, alertName, hotSpot, e) {
 
 function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
   if (divId1 != null)
-    divId1 = forEmployee + "=" + employees[divId1]; 
+    divId1 = forEmployee + "=" + employees[divId1];
   if (divId2 != null) {
     if (resourceCalendars[divId2] == null)
       divId2 = null;
@@ -4683,7 +4687,7 @@ function loadingCueStart(hotspot) {
 
   var shiftDiv = document.getElementById("shift_pref");
   shiftDiv.style.visibility = "hidden";
-  	  
+
   Popup.open(ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
 }
 
@@ -4917,7 +4921,7 @@ var dragobject = {
 		var titleObj = null;
 		if( (titleObj =  getAncestorById(dragObj, "titleBar")) != null ) {
 			this.dragapproved = 1;
-		
+
 		var dragContainerStr = titleObj.getAttribute("dragcontainer");
 		if(dragContainerStr == null)
 			dragContainerStr = 'pane2'; // apply a default
