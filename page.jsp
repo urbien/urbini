@@ -21,7 +21,7 @@
     <include name="requiredHeader.jsp"/>
     <include name="include/commonHeader.jsp"/>
     <br/>
-<menuBar>
+<menuBar id="menuBar1">
 <table width="100%" cellspacing="0" cellpadding="0" border="0" align="center">
   <tr valign="top">
   <td valign="top">

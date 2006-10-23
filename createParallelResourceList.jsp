@@ -50,8 +50,8 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr  valign="top">
   <td valign="top" align="middle" width="100%">
+    <menuBar id="menuBar1">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
-    <menuBar>
     <tr valign="top"><td valign="top">
       <img src="icons/icon.gif" width="16" height="16" align="middle"/>
       <img src="icons/icon_divider.gif" align="middle" border="0"></img>
