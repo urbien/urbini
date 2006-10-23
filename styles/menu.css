@@ -7,46 +7,59 @@ TD.toolbar {
   font-variant: normal;
   background-image: url('images/toolbar_bg.gif');
 }
+
 .popMenu {
-	DISPLAY: none; POSITION: absolute; z-index:50; -moz-user-input: enabled; -moz-user-focus: normal
+	DISPLAY: none; POSITION: absolute; z-index:50;
 }
+
+.popMenu td {
+  FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 2px; PADDING-TOP: 2px; FONT-STYLE: normal; FONT-FAMILY: Tahoma, Arial, Helvetica, sans-serif, "MS Sans Serif"; TEXT-DECORATION: none; white-space: nowrap; cursor: pointer; cursor: hand;
+}
+
 .popupFrameBody {
-       -moz-user-input: enabled; -moz-user-focus: normal
 }
+
 .popMenuTitle {
-	POSITION: relative; BACKGROUND-COLOR: #3366cc
+	cursor: text; POSITION: relative; BACKGROUND-COLOR: #3366cc
 }
 
 .menuTitle {
-	PADDING-LEFT: 10px; PADDING-LEFT: 3px; FONT-WEIGHT: bold; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; COLOR: #FFFFFF; BACKGROUND-COLOR: #0067B1; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
+	cursor: auto; PADDING-LEFT: 10px; PADDING-RIGHT: 10px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc;
+}
+
+.menuTitle td {
+	cursor: auto; PADDING-LEFT: 10px; PADDING-RIGHT: 10px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc;
 }
 
 .menuItemIcon {
-	cursor: pointer; cursor: hand; BACKGROUND-COLOR: #EDECF8; white-space: nowrap; width: 20px
+	PADDING-RIGHT: 2px; PADDING-LEFT: 2px; BACKGROUND-COLOR: #EDECF8; white-space: nowrap; width: 20px
+}
+
+.menuItemIcon img {
+  width: 16px; height: 16px; border: 0px; text-align:center; margin-top:0px; margin-bottom:0px; padding:0px;
 }
 
 .menuItemChk {
-	PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap; width: 10px
+	width: 10px
 }
 
 .menuItemNoChk {
-	PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap; width: 10px
+	PADDING-LEFT: 8px; width: 10px
 }
 
 .menuItem {
-	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
+  PADDING-LEFT: 2px;
 }
 
 .menuItemChart {
-	PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap; width: 10px
+  PADDING-RIGHT: 0px;	width: 10px;
 }
 
 .menuItemReset {
-	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: black; BACKGROUND-COLOR: #DDDDDD; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
 }
 
 .menuItemNoChoices {
-	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; COLOR: black; BACKGROUND-COLOR: #f8f4ef; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
+  cursor: default;
 }
 
 .menuItem a:hover, .menuItem a:link, .menuItem a:active, .menuItem a:visited {
@@ -55,23 +68,28 @@ TD.toolbar {
 
 /* wanted to use CSS2's COLOR: GrayText, but IE6 does not support it */
 .menuItemGreyedOut {
-	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
 }
+
 .menuItemSubtitle {
-	PADDING-RIGHT: 10px; PADDING-LEFT: 8px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;
+	COLOR: #000000;
 }
+
+.closePopup {
+  background-color: #0055e6; padding-right:3; padding-top:3; padding-bottom:3; text-align: right;
+}
+
 .formMenuInput {
-	FONT-WEIGHT: normal; FONT-SIZE: 11px; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none
+	PADDING: 0px; COLOR: #000000;
 }
 .langLink {
-	FONT-WEIGHT: normal; FONT-SIZE: 11px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif
 }
+
 .langCurrent {
-	FONT-WEIGHT: normal; FONT-SIZE: 11px; COLOR: red; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif
+	COLOR: red;
 }
 .menuExpand {
-	cursor: pointer; cursor: hand;
 }
+
 .menuExpandSubtitle {
 	CURSOR: default
 }
