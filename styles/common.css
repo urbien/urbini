@@ -199,11 +199,11 @@ table.greyBorder {
   }
 
 	.currentCpTabs TD.left {
-	  background-image:url(../images/skin/orange/tab-left.gif);
+	  background-image:url(../images/skin/orange/tab-left-medium.gif);
 	  background-repeat: no-repeat;
 	}
 	.currentCpTabs TD.middle {
-	  background-image:url(../images/skin/orange/tab-middle.gif);
+	  background-image:url(../images/skin/orange/tab-middle-medium.gif);
 	  background-repeat: no-repeat;
 	  text-align: center;
     white-space: nowrap;
@@ -211,7 +211,7 @@ table.greyBorder {
 	  font-weight: bold;
 	}
 	.currentCpTabs TD.right {
-	  background-image:url(../images/skin/orange/tab-right.gif);
+	  background-image:url(../images/skin/orange/tab-right-medium.gif);
 	  background-repeat: no-repeat;
 	}
 
@@ -221,9 +221,10 @@ table.greyBorder {
 	  color: #754c24;
 	  font-weight: bold;
 	  font-size:14px;
-    height: 33;
+    height: 27px;
   }
   .currentTabTitleHidden {
     visibility:hidden; display:none;
-    height: 33;
+    height: 27px;
   }
+
