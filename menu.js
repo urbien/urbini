@@ -2669,7 +2669,7 @@ function interceptLinkClicks(div) {
     var id = anchor.id;
     if (id && id.startsWith('menuLink_')) // menu clicks are processed by their own event handler
       continue;
-    if (id && id.startsWith("-inner.")
+    if (id && id.startsWith("-inner."))
       addEvent(anchor, 'click',  onClickDisplayInner,   false);
     else
       addEvent(anchor, 'click',  onClick,   false);
