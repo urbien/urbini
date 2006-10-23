@@ -36,7 +36,7 @@ function str2blks_MD5(str)
 }
 
 /*
- * Add integers, wrapping at 2^32. This uses 16-bit operations internally 
+ * Add integers, wrapping at 2^32. This uses 16-bit operations internally
  * to work around bugs in some JS interpreters.
  */
 function add(x, y)
@@ -89,7 +89,7 @@ function MD5(str)
   var b = -271733879;
   var c = -1732584194;
   var d =  271733878;
- 
+
   for(i = 0; i < x.length; i += 16)
   {
     var olda = a;
@@ -112,7 +112,7 @@ function MD5(str)
     a = ff(a, b, c, d, x[i+12], 7 ,  1804603682);
     d = ff(d, a, b, c, x[i+13], 12, -40341101);
     c = ff(c, d, a, b, x[i+14], 17, -1502002290);
-    b = ff(b, c, d, a, x[i+15], 22,  1236535329);    
+    b = ff(b, c, d, a, x[i+15], 22,  1236535329);
 
     a = gg(a, b, c, d, x[i+ 1], 5 , -165796510);
     d = gg(d, a, b, c, x[i+ 6], 9 , -1069501632);
@@ -130,7 +130,7 @@ function MD5(str)
     d = gg(d, a, b, c, x[i+ 2], 9 , -51403784);
     c = gg(c, d, a, b, x[i+ 7], 14,  1735328473);
     b = gg(b, c, d, a, x[i+12], 20, -1926607734);
-    
+
     a = hh(a, b, c, d, x[i+ 5], 4 , -378558);
     d = hh(d, a, b, c, x[i+ 8], 11, -2022574463);
     c = hh(c, d, a, b, x[i+11], 16,  1839030562);
@@ -173,15 +173,6 @@ function MD5(str)
   return rhex(a) + rhex(b) + rhex(c) + rhex(d);
 }
 
-function valid_js() {
-   // anything that claims NS 4 or higher functionality better work 
-//java.lang.System.out.println("user-agent=");
-   if (navigator.userAgent.indexOf("Mozilla/") == 0) {
-     return (parseInt(navigator.appVersion) >= 4);
-   }
-   return false;	
-}
- 
 function computeRequestDigest(form) {
 //     request-digest  = KD ( H(A1), nonce-value ":" H(A2) )
 //
@@ -193,96 +184,81 @@ function computeRequestDigest(form) {
 //java.lang.System.out.println("JAVA SCRIPT: j_password=" + form.j_password);
 //java.lang.System.out.println("JAVA SCRIPT: digest_uri=" + form.digest_uri);
 //java.lang.System.out.println("JAVA SCRIPT: challenge="  + form.challenge);
-    
+
     if (!form.realm)
       return "";
     if (!form.digest_uri)
       return "";
     if (!form.challenge)
       return "";
-    var A1 = MD5(form.j_username.value + ":" + 
+    var A1 = MD5(form.j_username.value + ":" +
                  form.realm.value      + ":" +
                  form.j_password.value);
-    
+
     var A2 = MD5("POST" + ":" + form.digest_uri.value);
-    
+
     var request_digest = MD5(A1 + ":" + form.challenge.value + ":" + A2);
     var url = request_digest + "&realm=" + escape(form.realm.value) + "&nonce=" + form.challenge.value + "&digest_uri=" + escape(form.digest_uri.value);
-    
     return url;
 }
 
 function hash(form, login_url) {
-//java.lang.System.out.println("JAVA SCRIPT: Here we are");
-// this is Javascript enabled browser
-    //document.login_form[".js"].value=1;
-    // rudimentary check for a 4.x brower. should catch IE4+ and NS4.*
+  if (document.all || document.getElementById) {
+    form.logonButton.disabled = true;
+    form.logonButton.value = "Please wait";
+    form.logonButton.style.cursor = 'wait';
+  }
 
-// works only for IE 4+ and NS 6
+  var url;
+  if (arguments.length > 1 && login_url != "") { // in case login_url is not passed in
+    url = login_url;
+  } else {
+    url = "j_security_check";
+  }
 
-    if (document.all || document.getElementById) {
-      form.logonButton.disabled = true;
-      form.logonButton.value = "Please wait";
-      form.logonButton.style.cursor = 'wait';
-    } 
-
-    var url;
-    if (arguments.length > 1 && login_url != "") { // in case login_url is not passed in
-      url = login_url;
-    } else {
-      url = "j_security_check";
-    }
-
-    form.method = "POST"; 
+  form.method = "POST";
 
 //    base = document.getElementById('baseId');
 //    url = base.href + url;
-    url += "?";
-      
-    if (valid_js()) {
-      var js = 0;
+  url += "?";
 
-      var j=0;
-      for(; j<form.elements.length; j++) {
-        if(form.elements[j].name.length <=0) {
-          continue;
-        }
-        if(j > 0){
-          url += "&";
-        }
-        url += form.elements[j].name;
-        url += "=";
-        if(form.elements[j].name == "j_password"){
-          url += computeRequestDigest(form);
-        } else if (form.elements[j].type == "submit") {
-          continue;
-        } else if (form.elements[j].type == "checkbox" && !form.elements[j].checked) {
-          url += "";
-        } else if (form.elements[j].type == "radio" && !form.elements[j].checked) {
-          url += "";
-        } else if (form.elements[j].name == ".save"){
-          url += "1"; // "Sign in" causes problem with the space
-        } else if (form.elements[j].name == ".js"){
-          js = 1;
-          url += "1"; 
-        } else {
-          url += escape(form.elements[j].value);
-        }      
-      }    
-      // indicate the password is hashed.
-      url += "&.hash=1";
-      if(js == 0){
-        url += "&.js=1";
-      }
-      url += "&.md5=1";
-      // prevent from running this again. Allow the server response to submit the form directly
-      form.onsubmit = null;
-      location.href = url;     
-//java.lang.System.out.println("JAVA SCRIPT1: " + url);
-      // abort normal form submission
-      return false;
+  var js = 0;
+
+  var j=0;
+  for(; j<form.elements.length; j++) {
+    if(form.elements[j].name.length <=0) {
+      continue;
     }
-//java.lang.System.out.println("JAVA SCRIPT2: " + url);          
-    // allow normal form submission
-    return true;
+    if(j > 0){
+      url += "&";
+    }
+    url += form.elements[j].name;
+    url += "=";
+    if(form.elements[j].name == "j_password"){
+      url += computeRequestDigest(form);
+    } else if (form.elements[j].type == "submit") {
+      continue;
+    } else if (form.elements[j].type == "checkbox" && !form.elements[j].checked) {
+      url += "";
+    } else if (form.elements[j].type == "radio" && !form.elements[j].checked) {
+      url += "";
+    } else if (form.elements[j].name == ".save"){
+      url += "1"; // "Sign in" causes problem with the space
+    } else if (form.elements[j].name == ".js"){
+      js = 1;
+      url += "1";
+    } else {
+      url += escape(form.elements[j].value);
+    }
+  }
+  // indicate the password is hashed.
+  url += "&.hash=1";
+  if(js == 0){
+    url += "&.js=1";
+  }
+  url += "&.md5=1";
+  // prevent from running this again. Allow the server response to submit the form directly
+  form.onsubmit = null;
+  location.href = url;
+  return false;
 }
