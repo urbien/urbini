@@ -179,18 +179,13 @@ function computeRequestDigest(form) {
 //      A1  = H( username-value ":" realm-value ":" passwd)
 //      A2  = Method ":" digest-uri-value
 
-//java.lang.System.out.println("JAVA SCRIPT: j_username=" + form.j_username);
-//java.lang.System.out.println("JAVA SCRIPT: realm="      + form.realm);
-//java.lang.System.out.println("JAVA SCRIPT: j_password=" + form.j_password);
-//java.lang.System.out.println("JAVA SCRIPT: digest_uri=" + form.digest_uri);
-//java.lang.System.out.println("JAVA SCRIPT: challenge="  + form.challenge);
-
     if (!form.realm)
-      return "";
+      throw new Error('form input field is missing: realm');
     if (!form.digest_uri)
-      return "";
+      throw new Error('form input field is missing: digest_uri');
     if (!form.challenge)
-      return "";
+      throw new Error('form input field is missing: challenge');
+    //alert("JAVA SCRIPT: j_username=" + form.j_username.value + ', realm=' + form.realm.value + ', j_password=' + form.j_password.value + ', digest_uri=' + form.digest_uri.value + ', challenge='  + form.challenge.value);
     var A1 = MD5(form.j_username.value + ":" +
                  form.realm.value      + ":" +
                  form.j_password.value);
@@ -234,7 +229,7 @@ function hash(form, login_url) {
     }
     url += form.elements[j].name;
     url += "=";
-    if(form.elements[j].name == "j_password"){
+    if(form.elements[j].name == "j_password") {
       url += computeRequestDigest(form);
     } else if (form.elements[j].type == "submit") {
       continue;
