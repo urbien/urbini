@@ -497,7 +497,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var table = tables[1];
     if (!table)
       return;
-
     //popup contains rows that can be selected
     if (document.all) { // IE - some keys (like backspace) work only on keydown
       addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
@@ -505,29 +504,31 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     else {              // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
       addEvent(div,  'keypress',  self.popupRowOnKeyPress,  false);
     }
-
     var elem = firstRow;
     var n = self.rowCount();
     var cur = null;
+    
     for (var i=0; i<n; i++, elem = self.nextRow()) {
       if (cur == elem)
         continue;
       var popupItem = new PopupItem(elem, i);
       self.items[popupItem.id];
-      addEvent(elem, 'click',     self.popupRowOnClick,     false);
-      var anchors = elem.getElementsByTagName('a');
-      if (anchors  &&  anchors.length != 0) {
-        var anchor = anchors[0];
-        if (anchor.onclick) {
-          anchor.onclick1 = anchor.onclick;
-          anchor.onclick = '';
+      // avoid per-row onClick handler if table has its own
+      if (!table.onclick) {
+        addEvent(elem, 'click',     self.popupRowOnClick,     false);
+        var anchors = elem.getElementsByTagName('a');
+        if (anchors  &&  anchors.length != 0) {
+          var anchor = anchors[0];
+          if (anchor.onclick) {
+            anchor.onclick1 = anchor.onclick;
+            anchor.onclick = '';
+          }
+          var href = anchor.href;
+          //anchors[0].href = 'javascript:;';
+          elem.setAttribute('href', href);
+          //anchors[0].disabled = true;
         }
-        var href = anchor.href;
-        //anchors[0].href = 'javascript:;';
-        elem.setAttribute('href', href);
-        //anchors[0].disabled = true;
       }
-
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
       addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
       cur = elem;
@@ -3835,14 +3836,15 @@ function addAndShow(td, e) {
 }
 
 var calendarCell; // last cell on which user clicked
-var lastPopupRowAnchor = null;
+var lastPopupRowTD = null;
 
 function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
-  if (lastPopupRowAnchor) {
+  if (lastPopupRowTD) {
     alert("Please wait till previous request is processed");
     return stopEventPropagation(event);
   }
-  lastPopupRowAnchor = popupRowAnchor;
+  var td = getEventTarget(event);
+  lastPopupRowTD = td;
 
   var calendarRow = getTrNode(calendarCell);
   if (!calendarRow)
@@ -3857,7 +3859,7 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   var idx = tdId.indexOf(":");
   anchor += tdId.substring(idx + 1);
   //--- extract parameters specific for popup row
-  var popupRow = getTrNode(popupRowAnchor); // get tr on which user clicked in popup
+  var popupRow = getTrNode(td); // get tr on which user clicked in popup
   if (!popupRow)
     throw new Error("addCalendarItem: popup row not found for: " + anchor);
 
@@ -3936,14 +3938,15 @@ function showAlert(alertName) {
   }
 }
 
-function addSimpleCalendarItem(popupRowAnchor, event) {
+function addSimpleCalendarItem(event) {
+  var td = getEventTarget(event);
   var calendarRow = getTrNode(calendarCell);
   if (!calendarRow)
     throw new Error("addCalendarItem: calendar row not found for: " + anchor);
   //--- extract parameters specific for popup row
   var calendarTd = getTdNode(calendarCell);
 
-  var popupRow = getTrNode(popupRowAnchor); // get tr on which user clicked in popup
+  var popupRow = getTrNode(td); // get tr on which user clicked in popup
   if (!popupRow)
     throw new Error("addSimpleCalendarItem: popup row not found for: ");
 
@@ -4239,10 +4242,12 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
     var trLen = trs.length;
     for (var i=1; i<trLen; i++) {
       var tr = trs[i];
-      var anchor = tr.getElementsByTagName('a');
-      var s = anchor[0].innerHTML;
-      var idx = s.indexOf(" ");
-      s = s.substring(0, idx);
+//      var anchor = tr.getElementsByTagName('a');
+//      var s = anchor[0].innerHTML;
+      var s = tr.id;
+      
+      var idx = s.indexOf("=");
+      s = s.substring(idx + 1);
       if (parseInt(s) > maxDuration) {
         tr.style.visibility = Popup.HIDDEN;
         tr.style.display = "none";
