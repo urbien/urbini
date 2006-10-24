@@ -177,11 +177,29 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .line {background:#ACD2E2}
 
 /* Scheduling page styles */
-.schedule     {border:solid #808080 1px;border-collapse: collapse; }
-.busy         {border:solid #808080 1px; background-color:pink; font-weight:bold; FONT-SIZE: 11px; vertical-align:top}
-.orgbusy      {border:solid #808080 1px; background-color:#E4BBF9; font-weight:bold; FONT-SIZE: 11px; vertical-align:top}
-.unavailable  {background-color:#ACD2E2; vertical-align:top}
-.available    {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top}
+.schedule     {
+  border:solid #808080 1px;border-collapse: collapse; 
+}
+
+/* styles for available and calendar item cells */
+.schedule .a, .ci, .aea {
+  background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top
+}
+/* styles for busy cells */
+.schedule .b {
+  border:solid #808080 1px; background-color:pink; font-weight:bold; FONT-SIZE: 11px; vertical-align:top
+}
+/* styles for unavailable cells */
+.schedule .ua {
+  background-color:#ACD2E2; vertical-align:top
+}
+/* styles for organization busy cells (ex. corporate lunch) */
+.schedule .ob {
+  border:solid #808080 1px; background-color:#E4BBF9; font-weight:bold; FONT-SIZE: 11px; vertical-align:top
+}
+.schedule .g   {
+  border:solid #808080 0px;background-color:#E2E2E2;vertical-align:top
+}
 /*
 .expiredAlert {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top}
 .changeAlert  {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top}
