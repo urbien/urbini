@@ -2676,10 +2676,66 @@ function interceptLinkClicks(div) {
     replaceTooltip(doc, anchor);
   }
 }
+
+function schedule(table, e) {
+  e = getDocumentEvent(e);
+  var target = getEventTarget(e);
+  if (target == null || target.className == null)
+    return;
+  
+  var className = target.className;
+  if (className == "b") { 
+    var tdId = target.id;
+    var idx = tdId.indexOf(":");
+    if (idx == -1)
+      return;
+    var calendarIdx = parseInt(tdId.substring(0, idx));
+    var duration = parseInt(tdId.substring(idx + 1));
+    openPopup(null, calendarIdx, target, e, duration);
+  }
+  else if (className == "a") {
+    var tdId = target.id;
+    var idx = tdId.indexOf(":");
+    if (idx == -1)  
+      return;
+    var duration = parseInt(tdId.substring(idx + 1));
+    
+    if (tdId.indexOf("-") == -1) {
+      var calendarIdx = parseInt(tdId.substring(0, idx));
+      openPopup(calendarIdx, calendarIdx, target, e, duration);
+    }  
+    else  {
+      var calendarIdx = parseInt(tdId.substring(1, idx));
+      openPopup1(parseInt(tdId), 'changeAlert', target, e, duration);
+    }
+  }
+  else if (className == "ci") {
+    calendarCell = target;
+    addCalendarItem(this, event, parseInt(tdId));
+  }
+  else if (className == "aea") 
+    showAlert(expiredAlert);    
+}
+
+/** 
+ * Utility that discovers the actual html element which generated the event 
+ * If handler is on table and click was on td - it returns td 
+ */ 
+function getEventTarget(e) { 
+  e = getDocumentEvent(e); if (!e) return null; 
+  if (e.target) 
+    return e.target; 
+  else 
+    return e.srcElement; 
+} 
+   
+
 function addEventOnSchedule() {
   var table = document.getElementById("mainTable");
   if (table == null)
     return;
+  addEvent(table, 'dblclick', function(event) {schedule(table, event);}, false);
+/*  
   var TRs = table.getElementsByTagName("tr");
   var len = TRs.length;
   for (var i=0; i<len; i++) {
@@ -2708,6 +2764,7 @@ function addEventOnSchedule() {
         addEvent(td, 'dblclick', function(event) {showAlert(changeAlert);});
     }
   }
+*/  
 }
 function initListBoxes(div) {
   var images;
@@ -3791,18 +3848,20 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   if (!calendarRow)
     throw new Error("addCalendarItem: calendar row not found for: " + anchor);
 
-  var anchors = calendarCell.getElementsByTagName('a')
-  if (!anchors)
-    throw new Error("addCalendarItem: calendar row has no anchor");
+//  var anchors = calendarCell.getElementsByTagName('a')
+//  if (!anchors)
+//    throw new Error("addCalendarItem: calendar row has no anchor");
 
-  var anchor = anchors[0].href; // url of the servlet that adds calendar items
-
+  var anchor = "ticket?availableDuration="; //anchors[0].href; // url of the servlet that adds calendar items
+  var tdId = calendarCell.id;
+  var idx = tdId.indexOf(":");
+  anchor += tdId.substring(idx + 1);
   //--- extract parameters specific for popup row
   var popupRow = getTrNode(popupRowAnchor); // get tr on which user clicked in popup
   if (!popupRow)
     throw new Error("addCalendarItem: popup row not found for: " + anchor);
 
-  if (anchor.indexOf("?") != anchor.length - 1)
+//  if (anchor.indexOf("?") != anchor.length - 1)
     anchor += "&";
 
   var popupRowId = popupRow.id;
@@ -3833,7 +3892,7 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
         contactDiv = parentNode;
       }
     }
-    contactId = contactDiv.id;
+    contactId = forEmployee + "=" + employees[parseInt(contactDiv.id)];
   }
   anchor += '&' + contactId;
 
@@ -3931,7 +3990,7 @@ function addSimpleCalendarItem(popupRowAnchor, event) {
     var propToSet = brParams[i].id.substring(idx1 + 11, idx2);
     var value = calendarTd.className;
     var v = 'Available';
-    if (value  &&  value == 'available')
+    if (value  &&  value == 'a')
       v = 'Busy';
     anchor += '&' + brParams[i].id.substring(0, idx1) + brParams[i].id.substring(idx2) + '&.' + propToSet + '=' + v;
     var idx = brParams[i].id.indexOf("=frequency");
@@ -4141,7 +4200,6 @@ function showTab(e, td, hideDivId, unhideDivId) {
   }
 }
 
-
 function hideInnerDiv(e) {
   var pane2        = document.getElementById('pane2');
   var dialogIframe = document.getElementById('dialogIframe');
@@ -4157,8 +4215,6 @@ function openPopup1(divId1, alertName, hotSpot, e) {
 }
 
 function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
-  if (divId1 != null)
-    divId1 = forEmployee + "=" + employees[divId1];
   if (divId2 != null) {
     if (resourceCalendars[divId2] == null)
       divId2 = null;
@@ -4169,6 +4225,7 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
   if (e.ctrlKey)  {// ctrl-enter
     if (!maxDuration) {
       Popup.open(divId2, hotSpot);
+      return stopEventPropagation(e);
       return;
     }
     var div = document.getElementById(divId2);
@@ -4202,7 +4259,8 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
       Popup.open(divId1, hotSpot);
   }
   calendarCell = hotSpot;
-  return false;
+  return stopEventPropagation(e);
+//  return false;
 }
 
 function getDocumentEvent(e) {
