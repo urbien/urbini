@@ -2736,36 +2736,6 @@ function addEventOnSchedule() {
   if (table == null)
     return;
   addEvent(table, 'dblclick', function(event) {schedule(table, event);}, false);
-/*  
-  var TRs = table.getElementsByTagName("tr");
-  var len = TRs.length;
-  for (var i=0; i<len; i++) {
-    var TDs = TRs[i].getElementsByTagName("td");
-    var tdLen = TDs.length;
-    if (tdLen == 0)
-      continue;
-    for (var j=0; j<tdLen; j++) {
-      var td = TDs[j];
-      if (td.className == 'available') {
-        var employee = 'employee=' + employees[j];
-        addEvent(td, 'dblclick', function(event) {openPopup(employee, 'changeAlert', td, event); calendarCell = td; return false;} , false);
-      }
-      else if (td.className == 'openPopup1') {
-        var employee = 'employee=' + employees[j];
-        var resCalendar = '.forResource_select=' + resourceCalendars[j];
-        addEvent(td, 'dblclick', function(event) {openPopup1(employee, resCalendar, td, event); calendarCell = td; return false;} , false);
-      }
-      else if (td.className == 'busy')  {
-        var resCalendar = '.forResource_select=' + resourceCalendars[j];
-        addEvent(td, 'dblclick', function(event) {openPopup(null, resCalendar, td, event); calendarCell = td; return false;} , false);
-      }
-      else if (td.className == 'expiredAlert')
-        addEvent(td, 'dblclick', function(event) {showAlert(expiredAlert);});
-      else if (td.className == 'changeAlert')
-        addEvent(td, 'dblclick', function(event) {showAlert(changeAlert);});
-    }
-  }
-*/  
 }
 function initListBoxes(div) {
   var images;
