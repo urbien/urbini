@@ -4230,7 +4230,7 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
     Popup.open(divId2, hotSpot);
   }
   else {
-    if (divId1)
+    if (divId1 != null)
       Popup.open(divId1, hotSpot);
   }
   calendarCell = hotSpot;
