@@ -3282,6 +3282,9 @@ function showDialog(div, hotspot, content) {
   uiFocus(div);
   var anchors = div.getElementsByTagName('A');
   replaceTooltips(div, anchors);
+  
+  // RTE
+  RteEngine.initRTEs(div);
 }
 
 
@@ -4171,6 +4174,9 @@ function showTab(e, td, hideDivId, unhideDivId) {
     if (tr != null)
       tr.className = "currentTabTitle";
   }
+  
+  // RTE
+  RteEngine.initRTEs(div); // pass div to show
 }
 
 function hideInnerDiv(e) {

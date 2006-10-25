@@ -9,7 +9,18 @@ function addEvent(obj, evType, fn, useCapture) {
        alert("You need to upgrade to a newer browser. Error: 'handler could not be attached'");
      }
 }
+// checks on visibility all ancestors of the object
+function isObjectTotallyVisible(obj) {
+	var parent = obj;
+	while(parent != null) {
+		if(typeof parent.style != 'undefined' && parent.style.visibility == 'hidden')
+			return false;
 
+		parent = obj.parentNode;
+		obj = parent;
+	}
+	return true;
+}
 /*************************************************
 *	RteEngine
 **************************************************/
@@ -57,6 +68,8 @@ var RteEngine = {
 	
 	isDocumentReady : false,
 	
+	uploadForm : null,
+	
 	// POPUPs; globals for all rte objects --
 	stylePopup : null,
 	fontPopup : null,
@@ -71,13 +84,46 @@ var RteEngine = {
 	tablePopup : null,
 
 	// functtion members
+	start : function() {
+		this.initRTEs(document.body);
+	},
+	// scans on RTEs
+	// realm object to scan
+	initRTEs : function(realm) {
+		if(realm == null)
+			return;
+			
+		var frames = realm.getElementsByTagName('iframe');
+		for(var i = 0; i < frames.length; i++) {
+			if(frames[i].className == "RTE") {
+				if(isObjectTotallyVisible(frames[i]) == false)
+					continue;
+				
+				var fldId = frames[i].getAttribute("fldId");
+				var type = frames[i].getAttribute("type");
+				var rtePref = eval("RteEngine." + type);
+				
+				this.register(frames[i], fldId, rtePref);
+			}
+		}
+	},
+	/*
+	// used for chat for example.
+	initParticularRte : function(frameObj) {
+		var fldId = frameObj.getAttribute("fldId");
+		var type = frameObj.getAttribute("type");
+		var rtePref = eval("RteEngine." + type);
+		
+		this.register(frameObj, fldId, rtePref);
+	},
+	*/
 	//register the RTEs.
 	register : function(iframeObj, rteDataFieldId, rtePref) {
 		if(this.isIframeRegistered(iframeObj))
 			return;
 
 		if(typeof rtePref == 'undefined')
-			rtePref = simpleRTE;
+			rtePref = this.simpleRTE;
 		
 		// to save it in registeredIdArr,
 		// because "new Rte" invokes document reload => register() one more.
@@ -113,6 +159,7 @@ var RteEngine = {
 		for(var i = 0; i < this.registeredIdArr.length; i++)
 			if(this.registeredIdArr[i] == iframeObj.id)
 				return true;
+
 		return false;
 	},
 	
@@ -150,6 +197,7 @@ var RteEngine = {
 			}
 		}
 	},
+	
 	// launch popups (create a popup on 1st demand) --
 	launchStylePopup : function(btnObj, callback) {
 		if(this.stylePopup == null)
@@ -229,7 +277,6 @@ var RteEngine = {
 		var len = this.STYLES.length;
 		for(var i = 0; i < len; i++) {
 			// on this moment use 'div' instead 'h1', etc.
-			//var itemDiv = document.createElement(this.STYLES[i].value);
 			var itemDiv = document.createElement('div');
 			itemDiv.style.margin = 0;
 			itemDiv.innerHTML = this.STYLES[i].name;
@@ -382,8 +429,9 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 	this.initFrameHeight = null;
 	
 	this.isIE = false;
+	this.isOpera = false;
 	this.skipCloseAll = false;
-	this.skipCloseIE = false;
+	this.skipClose_IE_Opera = false;
 							 
 	this.currentPopup = null; // prevents closing on popup opening
 	this.openedAtTime = 0;    // hack: prevents simultaneous openning and toolbar button execution
@@ -416,9 +464,6 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 		this.initContent();
 		this.document.designMode = "On";
 
-		// set handlers
-		this.setHandlers();
-
 		// create toolbar
 		this.toolbar = this.createToolbar();
 		if(this.rtePref.autoClose)
@@ -426,15 +471,25 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 		else
 			this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
 
-		if(document.all)
+		// browser detection
+		this.browserDetection();
+		// set handlers
+		this.setHandlers();
+	}
+	this.browserDetection = function() {
+		var brName = navigator.appName;
+		if(brName == "Microsoft Internet Explorer")
 			this.isIE = true;
+		else if(brName == "Opera")
+			this.isOpera = true;
+		//else "Netscape"
 	}
 	this.setHandlers = function() {
 		addEvent(this.iframeObj, "deactivate", this._ondeactivate, false);
 		addEvent(this.document, 'keyup', this._onkeyup, false);
 
 		if(this.rtePref.autoClose) {
-			if(document.all)
+			if(this.isIE)
 				addEvent(this.iframeObj, 'focus', this.onfocus, false);
 			else
 				addEvent(this.document, 'focus', this.onfocus, false);
@@ -589,8 +644,8 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 			i_am.skipCloseAll = false;
 			return;
 		}
-		if(i_am.skipCloseIE && i_am.isIE) {
-			i_am.skipCloseIE = false;
+		if(i_am.skipClose_IE_Opera && (i_am.isIE || i_am.isOpera)) {
+			i_am.skipClose_IE_Opera = false;
 			return;
 		}
 		
@@ -607,6 +662,7 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 	this._onkeyup = function(evt) {
 		i_am.fitHeightToVisible();
 	}
+
 	this.fitHeightToVisible = function() {
 		// apply it if no scrolling
 		if(this.iframeObj.scrolling != 'no')
@@ -619,26 +675,24 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 		if(frmH != docH)
 			i_am.iframeObj.style.height = docH;
 	}
-		
+	
+	// --------------------------------------	
 	// 1
 	this.onStyle = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipCloseIE = true;
 		i_am.currentPopup = RteEngine.launchStylePopup(i_am.styleBtn, i_am.setStyle);
 	}
 	// 2
 	this.onFont = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipCloseIE = true;
 		i_am.currentPopup = RteEngine.launchFontPopup(i_am.fontBtn, i_am.setFont, i_am.rtePref.isFewFonts);
 	}
 	// 3
 	this.onSize = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.skipCloseIE = true;
 		i_am.currentPopup = RteEngine.launchSizePopup(i_am.sizeBtn, i_am.setSize);
 	}
 	// 4
@@ -652,84 +706,84 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 	this.onBold = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("bold", null);
+		i_am.performCommand("bold", null, true);
 		return true;
 	}
 	// 6
 	this.onItalic = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("italic", null);
+		i_am.performCommand("italic", null, true);
 		return true;
 	}
 	// 7
 	this.onUnderline = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("underline", null);
+		i_am.performCommand("underline", null, true);
 		return true;
 	}
 	// 8
 	this.onAlignLeft = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("justifyleft", null);
+		i_am.performCommand("justifyleft", null, true);
 		return true;
 	}
 	// 9
 	this.onAlignCenter = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("justifycenter", null);
+		i_am.performCommand("justifycenter", null, true);
 		return true;
 	}
 	// 10
 	this.onAlignRight = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("justifyright", null);
+		i_am.performCommand("justifyright", null, true);
 		return true;
 	}
 	// 11
 	this.onAlignJustify = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("justifyfull", null);
+		i_am.performCommand("justifyfull", null, true);
 		return true;
 	}
 	// 12
 	this.onHorizontalRule = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("inserthorizontalrule", null);
+		i_am.performCommand("inserthorizontalrule", null, true);
 		return true;
 	}
 	// 13
 	this.onOrderedList = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("insertorderedlist", null);
+		i_am.performCommand("insertorderedlist", null, true);
 		return true;
 	}
 	// 14
 	this.onUnorderedList = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("insertunorderedlist", null);
+		i_am.performCommand("insertunorderedlist", null, true);
 		return true;
 	}
 	// 15
 	this.onOutdent = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("outdent", null);
+		i_am.performCommand("outdent", null, true);
 		return true;
 	}
 	// 16
 	this.onIndent = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("indent", null);
+		i_am.performCommand("indent", null, true);
 		return true;
 	}
 	// 17
@@ -765,25 +819,25 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 	this.onSuperscript = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("superscript", null);
+		i_am.performCommand("superscript", null, true);
 		return true;
 	}
 	this.onSubscript = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("subscript", null);
+		i_am.performCommand("subscript", null, true);
 		return true;
 	} 
 	this.onRedo = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("redo", null);
+		i_am.performCommand("redo", null, true);
 		return true;
 	}
 	this.onUndo = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.performCommand("undo", null);
+		i_am.performCommand("undo", null, true);
 		return true;
 	}
 	// 0
@@ -901,7 +955,7 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 	}
 	// -------------------------------------
 	// execute a command
-	this.performCommand = function(command, value) {
+	this.performCommand = function(command, value, skipClose) {
 		this.window.focus();
 		if(this.isSourceView)
 			return;
@@ -917,7 +971,9 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 			return false;
 		}
 		this.window.focus();
-		this.skipCloseIE = true;
+		
+		if(typeof skipClose != 'undefined' && skipClose == true)
+			this.skipClose_IE_Opera = true;
 		return true;
 	}
 	
