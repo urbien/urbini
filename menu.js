@@ -3823,14 +3823,16 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   if (!calendarRow)
     throw new Error("addCalendarItem: calendar row not found for: " + anchor);
 
-//  var anchors = calendarCell.getElementsByTagName('a')
-//  if (!anchors)
-//    throw new Error("addCalendarItem: calendar row has no anchor");
-
-  var anchor = "ticket?availableDuration="; //anchors[0].href; // url of the servlet that adds calendar items
-  var tdId = calendarCell.id;
-  var idx = tdId.indexOf(":");
-  anchor += tdId.substring(idx + 1);
+  var anchors = calendarCell.getElementsByTagName('a')
+  var anchor;
+  if (anchors != null  &&  anchors.length > 0)
+    anchor = anchors[0].href;
+  else {
+    anchor = "ticket?availableDuration="; //anchors[0].href; // url of the servlet that adds calendar items
+    var tdId = calendarCell.id;
+    var idx = tdId.indexOf(":");
+    anchor += tdId.substring(idx + 1);
+  }
   //--- extract parameters specific for popup row
   var popupRow = getTrNode(td); // get tr on which user clicked in popup
   if (!popupRow)
