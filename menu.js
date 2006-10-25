@@ -74,7 +74,8 @@ Popup.w3c  = (document.getElementById)                                ? true : f
 Popup.ns4  = (document.layers)                                        ? true : false;
 Popup.ie4  = (document.all && !this.w3c)                              ? true : false;
 Popup.ie5  = (document.all && this.w3c)                               ? true : false;
-if (document.attachEvent) {
+Popup.opera = typeof opera != 'undefined'                             ? true : false;
+if (document.attachEvent && !Popup.opera) {
   Popup.ie55 = true; // need better test since this one will include 5+ as well
 }
 Popup.ns6  = (Popup.w3c && navigator.appName.indexOf("Netscape")>=0 ) ? true : false;
@@ -507,7 +508,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var elem = firstRow;
     var n = self.rowCount();
     var cur = null;
-    
+
     for (var i=0; i<n; i++, elem = self.nextRow()) {
       if (cur == elem)
         continue;
@@ -2403,6 +2404,7 @@ function initMenus(menuBarId) {
     var id = m.id;
     if (id && id.startsWith('menuLink_')) {
       addEvent(m, 'click',     menuOnClick, false);
+      replaceTooltip(element, m);
     }
 /*
     if (m.className  &&  m.className.indexOf('fade', m.className.length - 4) != -1) {
@@ -2683,9 +2685,9 @@ function schedule(table, e) {
   var target = getEventTarget(e);
   if (target == null || target.className == null)
     return;
-  
+
   var className = target.className;
-  if (className == "b") { 
+  if (className == "b") {
     var tdId = target.id;
     var idx = tdId.indexOf(":");
     if (idx == -1)
@@ -2697,14 +2699,14 @@ function schedule(table, e) {
   else if (className == "a") {
     var tdId = target.id;
     var idx = tdId.indexOf(":");
-    if (idx == -1)  
+    if (idx == -1)
       return;
     var duration = parseInt(tdId.substring(idx + 1));
-    
+
     if (tdId.indexOf("-") == -1) {
       var calendarIdx = parseInt(tdId.substring(0, idx));
       openPopup(calendarIdx, calendarIdx, target, e, duration);
-    }  
+    }
     else  {
       var calendarIdx = parseInt(tdId.substring(1, idx));
       openPopup1(parseInt(tdId), 'changeAlert', target, e, duration);
@@ -2714,22 +2716,9 @@ function schedule(table, e) {
     calendarCell = target;
     addCalendarItem(this, event, parseInt(tdId));
   }
-  else if (className == "aea") 
-    showAlert(expiredAlert);    
+  else if (className == "aea")
+    showAlert(expiredAlert);
 }
-
-/** 
- * Utility that discovers the actual html element which generated the event 
- * If handler is on table and click was on td - it returns td 
- */ 
-function getEventTarget(e) { 
-  e = getDocumentEvent(e); if (!e) return null; 
-  if (e.target) 
-    return e.target; 
-  else 
-    return e.srcElement; 
-} 
-   
 
 function addEventOnSchedule() {
   var table = document.getElementById("mainTable");
@@ -3282,7 +3271,7 @@ function showDialog(div, hotspot, content) {
   uiFocus(div);
   var anchors = div.getElementsByTagName('A');
   replaceTooltips(div, anchors);
-  
+
   // RTE
   RteEngine.initRTEs(div);
 }
@@ -3417,7 +3406,20 @@ function getTextContent(elm) {
 }
 
 /**
- * Utility that discovers the html element which generated the event
+ * Utility that discovers the actual html element which generated the event
+ * If handler is on table and click was on td - it returns td
+ */
+function getEventTarget(e) {
+  e = getDocumentEvent(e); if (!e) return null;
+  if (e.target)
+    return e.target;
+  else
+    return e.srcElement;
+}
+
+/**
+ * Utility that discovers the html element on which this event is firing
+ * If handler is on table and click was on td - it returns table
  */
 function getTargetElement(e) {
   e = getDocumentEvent(e); if (!e) return null;
@@ -4176,7 +4178,7 @@ function showTab(e, td, hideDivId, unhideDivId) {
     if (tr != null)
       tr.className = "currentTabTitle";
   }
-  
+
   // RTE
   RteEngine.initRTEs(div); // pass div to show
 }
@@ -4223,7 +4225,7 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
 //      var anchor = tr.getElementsByTagName('a');
 //      var s = anchor[0].innerHTML;
       var s = tr.id;
-      
+
       var idx = s.indexOf("=");
       s = s.substring(idx + 1);
       if (parseInt(s) > maxDuration) {
