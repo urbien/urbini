@@ -5,24 +5,10 @@
   <body id="body" text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
 
   <div nonPda="T">
-<hideBlock>
-<table width="100%" cellspacing="0" cellpadding="0" border="0" align="center">
-  <tr bgcolor="#F1F1F1">
-    <td valign="middle" width="*"  NOWRAP="y">
-      <a href="http://universalplatform.com/home"><img src="icons/up.gif" align="absmiddle" border="0"/><span  class="poweredBy" style="padding-left: 5px">on Universal</span><span class="poweredBy-b">Platform</span></a>
-    </td>
-    <td class="welcome" width="750">
-      <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" /></a>
-      <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
-    </td>
-  </tr>
-</table>
-</hideBlock>
     <include name="requiredHeader.jsp"/>
     <include name="include/commonHeader.jsp"/>
-    <br/>
 <menuBar id="menuBar1">
-<table width="100%" cellspacing="0" cellpadding="0" border="0" align="center">
+<table width="100%" cellspacing="0" cellpadding="0" border="0" align="center" class="toppad">
   <tr valign="top">
   <td valign="top">
    <table cellspacing="0" cellpadding="0" border="0" class="tabs" align="center">
@@ -62,6 +48,21 @@
    </tr></table></td>
   </tr>
   <tr><td class="line" height="40" valign="middle"><resourceTypeLabel/></td></tr>
+  <tr bgcolor="#F1F1F1">
+  <td>
+	  <table width="100%" cellspacing="0" cellpadding="0" border="0" align="center">
+	  <tr>
+	    <td class="welcome" valign="top">
+	      <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" align="absmiddle"/></a>
+	      <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
+	    </td>
+	    <td valign="middle" NOWRAP="y"  align="right">
+	      <a href="http://universalplatform.com/home"><img src="icons/up.gif" align="absmiddle" border="0"/><span  class="poweredBy" style="padding-left: 5px">on Universal</span><span class="poweredBy-b">Platform</span></a>
+	    </td>
+	  </tr>
+	  </table>
+  </td>
+  </tr>
   <tr><td colspan="2" align="middle"><alphabeticIndex/></td></tr>
 </table>
 </menuBar>
