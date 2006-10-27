@@ -181,7 +181,9 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   border:solid #808080 1px;border-collapse: collapse; 
   table-layout: fixed;
 }
-
+.fixed {
+  table-layout: fixed;
+}
 .schedule th, .schedule td {
   width: 3em;
   overflow: hidden;
@@ -262,3 +264,4 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .outerPopup {border-style:solid; border-width: 1px; border-color:#666666 #666666 #666666 #666666}
 .innerPopup {border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7}
 .menuOnClick {backgroung-color: #0055e6; padding-right:3; padding-top:3; padding-bottom:3}
+.toppad {padding-top: 5px;}
