@@ -23,7 +23,7 @@
             </td>
           </tr>
           <tr>
-            <td class="xl" colspan="2" align="middle"><text text="Your session has expired. Please enter username and password"/><br/>
+            <td class="xl" colspan="2" align="middle"><span class="rxl"><text text="Your session has expired. Please enter username and password"/></span><br/>
               <br/>
             </td>
           </tr>
