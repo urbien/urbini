@@ -48,8 +48,8 @@ td.xl {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
 span.xl  {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
 span.xxl {font-family:sans-serif, arial; font-weight:bold; font-size:16pt;}
 span.xl1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt;}
-span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
 */
+span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:16pt;}
 
 
 .xs {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;}
@@ -69,7 +69,7 @@ a:hover { text-decoration: underline; color: #3399FF; }
 .select	{color:#000066;background-color:#D6E7EF;font-size:11px}
 .selected	{color:#000066;background-color:fffdc3;font-size:7pt}
 input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
-.text {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
+.text {font-size: 10px; font-family:arial,sans-serif;font-wight:bold;}
 .input1 {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:16px;text-decoration:none;}
 .barcode {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:20px;text-decoration:none;}
 /* used in filter input text fields */
@@ -108,7 +108,7 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 td.propertySheet {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000}
 td.controlPanel {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
-span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}
+/*span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}*/
 
 /* Properties for backlink resource list that is displayed inline on property sheet page */
 table.displayInline {border:solid #808080 1px; background-color: #ffffff; color: #000000}
@@ -171,7 +171,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   background-position: center;
   vertical-align: middle;
 }
-/*.group {background:#f8f4ef;PADDING-RIGHT: 10px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}*/
+.group {background:#f8f4ef;PADDING-RIGHT: 10px; FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-WEIGHT:bold; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}
 
 /* Under menu line style (usually the same color as tabs */
 .line {background:#ACD2E2}
