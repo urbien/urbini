@@ -107,16 +107,6 @@ var RteEngine = {
 			}
 		}
 	},
-	/*
-	// used for chat for example.
-	initParticularRte : function(frameObj) {
-		var fldId = frameObj.getAttribute("fldId");
-		var type = frameObj.getAttribute("type");
-		var rtePref = eval("RteEngine." + type);
-		
-		this.register(frameObj, fldId, rtePref);
-	},
-	*/
 	//register the RTEs.
 	register : function(iframeObj, rteDataFieldId, rtePref) {
 		if(this.isIframeRegistered(iframeObj))
@@ -126,7 +116,6 @@ var RteEngine = {
 			rtePref = this.simpleRTE;
 		
 		// to save it in registeredIdArr,
-		// because "new Rte" invokes document reload => register() one more.
 		if(iframeObj.id	== "")
 			iframeObj.id = new Date().getTime();
 		this.registeredIdArr.push(iframeObj.id);
@@ -313,7 +302,6 @@ var RteEngine = {
 			var itemDiv = document.createElement('div');
 			itemDiv.innerHTML = "<NOBR><span style='font-size:" + this.FONT_SIZE[i] + ";'>" + (i + 1) + "</span>"
 				+ " (" + this.FONT_SIZE[i] + ")</NOBR>";
-		//	itemDiv.innerHTML = "<NOBR>" + (i + 1) + " (" + this.FONT_SIZE[i] + ")</NOBR>";
 			this.sizePopup.appendItem(itemDiv);
 		}
 		this.sizePopup.setWidth(50);
@@ -602,6 +590,7 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 		return true; 
 	}
 	this.getHtmlContent = function() {
+
 		if(this.isSourceView) {
 				if(typeof this.document.body.innerText == 'undefined')
 					return this.document.body.textContent;
@@ -613,7 +602,6 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 	}
 	this.getDataField = function() {
 		if(this.dataField == null) {
-			// data field is inside a parent div
 			this.dataField = getChildById(this.parentDiv, this.dataFieldId);
 		    if (this.dataField == null)
 		      throw new Error("form field " + this.dataFieldId + " not found");
@@ -622,7 +610,22 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 	}
 	this.putRteData = function() {
 		var text = this.getHtmlContent();
-			this.getDataField().value = text;
+		
+		// some html cleanup
+		// 1. remove ending space.
+		text = trim(text);
+		// 2. remove new line that FF surrounds the text
+		text = text.replace(/\n/g, "");
+		// 3. convert all tags to lower case
+		// IE (Opera) returns in uppercase; FF in lower case. It can change RTE resource.
+		var upTags = text.match(/<.[A-Z]*.>/g);
+		if(upTags != null) {
+		  for(var i = 0; i < upTags.length; i++)
+        text = text.replace(upTags[i], upTags[i].toLowerCase());	  
+		}
+		
+		// set value in hidden data field.
+		this.getDataField().value = text;
 	}
 	// handlers --------------
 	this.onfocus = function() {
