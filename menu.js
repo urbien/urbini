@@ -4178,9 +4178,70 @@ function showTab(e, td, hideDivId, unhideDivId) {
     if (tr != null)
       tr.className = "currentTabTitle";
   }
-
   // RTE
   RteEngine.initRTEs(div); // pass div to show
+  return stopEventPropagation(e); 
+}
+
+function showRows(e, td, hideRowsId, unhideRowsId) {
+  e = getDocumentEvent(e);
+
+  var isViewAll = td.id == 'viewAll';
+  if (hideRowsId  &&  hideRowsId.length != 0) {
+    var tokens = hideRowsId.split(',');
+    var len = tokens.length;
+    for(var i = 0; i < len; i++) {
+      var rowgroup = document.getElementById(tokens[i]);
+      rowgroup.style.visibility = 'collapse';
+      var tdId = tokens[i].substring(4);
+      var hideTD = document.getElementById(tdId);
+      var ht = hideTD.getElementsByTagName("table");
+      if (ht.length != 0  &&  ht[0].className == "currentCpTabs")
+        ht[0].className = "cpTabs";
+      if (!isViewAll  &&  tt != null) {
+        tt = document.getElementById('cp_' + tdId);
+        if (tt != null)
+          tt.className = "currentTabTitleHidden";
+      }
+    }
+    var tt = document.getElementById('cp_' + td.id);
+    if (tt != null)
+      tt.className = "currentTabTitleHidden";
+  }
+
+  if (unhideRowsId  &&  unhideRowsId.length != 0) {
+    var tokens = unhideDivId.split(',');
+    var len = tokens.length;
+    for(var i = 0; i < len; i++) {
+      var rowgroup = document.getElementById(tokens[i]);
+      rowgroup.style.visibility = 'visible';
+      var tdId = tokens[i].substring(4);
+      var uTD = document.getElementById(tdId);
+      var uTable = uTD.getElementsByTagName("table");
+      if (uTable.length != 0  &&  uTable[0].className == "currentCpTabs")
+        uTable[0].className = "cpTabs";
+      if (isViewAll) {
+        var tt = document.getElementById('cp_' + tdId);
+        tt.className = "currentTabTitle";
+      }
+    }
+
+  }
+  var rowgroupId = 'div_' + td.id;
+  rowgroup = document.getElementById(rowgroupId);
+  rowgroup.style.visibility = Popup.VISIBLE;
+  rowgroup.style.display = 'inline';
+
+  var t = td.getElementsByTagName("table");
+  if (t.length != 0  &&  t[0].className == "cpTabs")
+    t[0].className = "currentCpTabs";
+
+  if (isViewAll) {
+    var tr = document.getElementById(tokens.length + 'cp');
+    if (tr != null)
+      tr.className = "currentTabTitle";
+  }
+  return stopEventPropagation(e); 
 }
 
 function hideInnerDiv(e) {
