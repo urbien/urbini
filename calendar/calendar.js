@@ -118,6 +118,9 @@ var tc0a6 = false;
 function calendar(initParams, TCB) {
 
   this.initialized = false;
+  
+  this.sceduleUrlPart = initParams['scedule']; // A.L.
+  
 //  var TCC = this.TCC = A_CALENDARS.length;
   var TCC = this.TCC = initParams.formname + '_' + initParams.controlname;
 
@@ -172,6 +175,8 @@ function calendar(initParams, TCB) {
   this.TCs = false;
   this.TCB = TCB;
   this.initParams = initParams;
+  this.applyForSchedule = applyForSchedule;
+  
   var dateformat1 = this.dateformat = !this.initParams.dataformat ? 'Y-d-m' : this.initParams.dataformat;
   //var TCv, TCw = 0, TCx = [];
   var TCw = 0, TCx = [];
@@ -434,7 +439,7 @@ function TC0B() {
   var signal = TC9.TC0b ? 'onclick' : 'onchange';
   var TC0c = new TC0d();
 
-  var title = "<div class='menuTitle' style='margin-bottom:1px; overflow:visible;'>" + this.titleStr + "</div>";
+  var title = "<div class='menuTitle' style='font-size:11; margin-bottom:1px; overflow:visible;'>" + this.titleStr + "</div>";
   TC0c.TC0e('<table ',
 			'style="padding:1px; background-color:#eef;"',
             this.TCO('outertable'),
@@ -809,7 +814,6 @@ function TCh(TC1I) {
 }
 
 function TCj(TC1I) {
-//debugger
   var TC1J = true;
 
   var TC1P = 0;
@@ -1066,17 +1070,37 @@ function TC0H(TC1c, TC1d, TC1J) {
   }
   else if (TC1c == 'chislo') {
     if (this.shown || this.TC0m.value) {
-      // 'if' is a hack by A. L. - No change on the calendar openning.
-		if(typeof TC1d != 'undefined') {
-			this.TC0m.value = this.TCe(this.TC04);
-			Calendar_popupHandler.end();
-		}
-      }
+      // 'if' is a hack by A.L. - No change on the calendar openning.
+		  var date = this.TCe(this.TC04);
+		  if(typeof TC1d != 'undefined') {
+			  this.TC0m.value = date;
+  			
+			  // scheduleTimeFromCalendar - Day .java // A.L.
+        if(typeof this.sceduleUrlPart != 'undefined' && this.sceduleUrlPart != null)
+          this.applyForSchedule(date);
+  			  
+			  Calendar_popupHandler.end();
+		  }
+    }
   }
 }
 
+function applyForSchedule(dateStr) {
+ // schedule uses format 'm-d-Y'
+ var dateArr = dateStr.split('-');
+ var day = dateArr[1];
+ var month = dateArr[0];
+ var year = dateArr[2];
+ 
+ var location = this.sceduleUrlPart
+  + "&$day=" + day
+  + "&$month=" + (month - 1) // 0-based month counting
+  + "&$year=" + year;
+
+ window.location = location;
+}
+
 function TC0N(TC1c) {
-//debugger
   this.TC0K();
 
   if (TC1c != 'time') {
@@ -1980,18 +2004,17 @@ var Calendar_popupHandler = {
 	}
 }
 
-
-
 /**
  * Retrieves calendar using formName + name as a key.
  * If does not exist - creates one.
  */
 function getCalendar(event,
                      formName,
-                     name,              // date input field id and name
-                     initialValue,      // initial value in date format shown below
+                     name,             // date input field id and name
+                     initialValue,     // initial value in date format shown below
                      dateFormat,       // dateFormat = (isEuropean) ? "d-m-Y" : "m-d-Y";
-                     titleStr) {	   // title text
+                     titleStr,	       // title text
+                     sceduleUrlPart) { // scedule; - Day.java
  
    var DEFAULT_TITLE = "select a day";
    try {
@@ -2011,10 +2034,11 @@ function getCalendar(event,
         'dataformat' : dateFormat,
         // whether to hide any other opened calendar if opening current one
         'replace' : true,
-        'selected' : null,//initialValue,
+        'selected' : initialValue,
         'watch' : false,
         'controlname' : name,
-        'title' : titleStr
+        'title' : titleStr,
+        'scedule' : sceduleUrlPart
     };
     cal = new calendar(initParams, CAL_TPL1);
     var div = document.getElementById(name + "_div");
