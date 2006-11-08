@@ -2709,7 +2709,7 @@ function schedule(table, e) {
     }
     else  {
       var calendarIdx = parseInt(tdId.substring(1, idx));
-      openPopup1(parseInt(tdId), 'changeAlert', target, e, duration);
+      openPopup1(parseInt(tdId.substring(1)), 'changeAlert', target, e, duration);
     }
   }
   else if (className == "ci") {
