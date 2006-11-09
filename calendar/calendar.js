@@ -456,12 +456,16 @@ function TC0B() {
                                                                                            'todayimage') + '></a></td>'
                 : ''),
             '');
+            
   TC0c.TC0e('<td rowspan="2"',            this.TCO('monthselectorcell'),
             '><select name="cal_mon',     thistcc + '"',
             this.TCO('monthselector'),    ' id="cal_mon',
             thistcc,                     '"  ',
             signal,                       '="A_CALENDARS[\'',
-            thistcc,                     '\'].TC0G(\'mon\')"></select></td><td',
+            thistcc,                     '\'].TC0G(\'mon\')"',
+            // A.L.      
+            ' onclick="Calendar_popupHandler.switchFix();"',
+            '></select></td><td',
             this.TCO('monthscrollcell'),  '><a href="#" name="cal_amminus',
             thistcc,                     '" id="cal_amminus',
             thistcc,                     '"><img name="cal_imminus',
@@ -473,7 +477,10 @@ function TC0B() {
             this.TCO('yearselector'),     ' id="cal_year',
             thistcc,                     '"  ',
             signal,                       '="A_CALENDARS[\'',
-            thistcc,                     '\'].TC0G(\'year\')"></select></td><td',
+            thistcc,                     '\'].TC0G(\'year\')"',
+            // A.L.
+            ' onclick="Calendar_popupHandler.switchFix();"',
+            '></select></td><td',
             this.TCO('yearscrollcell'),   '><a href="#"  name="cal_ayminus',
             thistcc,                     '" id="cal_ayminus',
             thistcc,                     '" ><img name="cal_iyminus',
@@ -1919,64 +1926,8 @@ var Calendar_popupHandler = {
 	inputObj : null,
 	oldOnKeyUp : null,
 	timerid  : 0,
-	
-	_onkeyup : function(evt) {
-		evt = (evt) ? evt : event;
-		var charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : 
-			((evt.which) ? evt.which : 0));
-		if (charCode == 27)
-			Calendar_popupHandler.closePopup();
-	},
-	_onkeyup_input : function(evt) {
-			Calendar_popupHandler.closePopup();
-	},
-	_onmouseup : function(evt) {
-		var evt = evt || window.event;
-		var target = evt.target || evt.srcElement; 
-		if (Calendar_popupHandler.contains(Calendar_popupHandler.popupDiv, target) == false )
-			Calendar_popupHandler.closePopup();
-	},
-
-	_onmouseover : function(event) {
-		var related;
-		if (window.event) related = window.event.toElement;
-		else related = event.relatedTarget;
-		if (Calendar_popupHandler.popupDiv == related || Calendar_popupHandler.contains(Calendar_popupHandler.popupDiv, related))
-			clearInterval(Calendar_popupHandler.timerid);
-	},
-	
-	_onmouseout : function(event) {
-		var related;
-		if (window.event) related = window.event.toElement;
-		else related = event.relatedTarget;
-		if(related == null)
-			return;
-		if (Calendar_popupHandler.popupDiv != related && !Calendar_popupHandler.contains(Calendar_popupHandler.popupDiv, related)) {
-			Calendar_popupHandler.timerid = setInterval(Calendar_popupHandler.suspendedClose, Calendar_popupHandler.CLOSE_TIMEOUT);
-		}
-	},
-	
-	contains : function (a, b) {// Return true if node a contains node b.
-		if(a == null || b == null)
-			return false;
-		while (b.parentNode)
-			if ((b = b.parentNode) == a) return true;
-		return false;
-	},
-	
-	suspendedClose : function() {
-		clearInterval(Calendar_popupHandler.timerid);
-		Calendar_popupHandler.closePopup();
-	},
-	
-	closePopup : function() {
-		if(this.popupDiv == null)
-			return;
-		this.popupDiv.style.visibility = "hidden";
-		if(typeof this.iframe != "undefined")
-			this.iframe.style.visibility = "hidden";
-		this.end();
-	},
+	fixed : false, // do not hide the calendar; used when month or year list is opened.
+	skipClose : false,
 	
 	start : function(div, iframe, inputObj) {
 		// only 1 popup can be opened concurrently
@@ -1996,11 +1947,92 @@ var Calendar_popupHandler = {
 		this.inputObj.onkeyup = this._onkeyup_input;
 	},
 	
+	suspendedClose : function() {
+		clearInterval(Calendar_popupHandler.timerid);
+		Calendar_popupHandler.closePopup();
+	},
+	
+	closePopup : function() {
+		if(this.popupDiv == null)
+			return;
+		this.popupDiv.style.visibility = "hidden";
+		if(typeof this.iframe != "undefined")
+			this.iframe.style.visibility = "hidden";
+		this.end();
+	},
+		
 	end : function() { // end on selection; no hidding. 
 		document.onkeyup = this.oldOnKeyUp;
 		this.popupDiv.onmouseover = null;
 		this.popupDiv.onmouseout = null;
 		this.popupDiv = null;
+		this.fixed = false;
+	},
+	
+	// Return true if node a contains node b.
+	// FF return "Permision denied" on parentNode. That' why skipClose was introduced.
+	contains : function (a, b) {
+		if(a == null || b == null)
+			return false;
+		while(b != null) {
+			try {
+			  if ((b = b.parentNode) == a) return true;
+			}
+			catch(e){ b = null; }
+		}
+		return false;
+	},
+	
+	switchFix : function() {
+	  this.fixed = !this.fixed;
+	  
+	  if(this.fixed == false)
+	    this.skipClose = true;
+	},
+	
+	// event handlers ---
+	_onkeyup : function(evt) {
+		evt = (evt) ? evt : event;
+		var charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : 
+			((evt.which) ? evt.which : 0));
+		if (charCode == 27)
+			Calendar_popupHandler.closePopup();
+	},
+	_onkeyup_input : function(evt) {
+			Calendar_popupHandler.closePopup();
+	},
+	_onmouseup : function(evt) {
+		var evt = evt || window.event;
+		var target = evt.target || evt.srcElement; 
+		if (Calendar_popupHandler.contains(Calendar_popupHandler.popupDiv, target) == false )
+			  Calendar_popupHandler.closePopup();
+	},
+
+	_onmouseover : function(event) {
+		var related;
+		if (window.event) related = window.event.toElement;
+		else related = event.relatedTarget;
+		if (Calendar_popupHandler.popupDiv == related || Calendar_popupHandler.contains(Calendar_popupHandler.popupDiv, related))
+			clearInterval(Calendar_popupHandler.timerid);
+	},
+	
+	_onmouseout : function(event) {
+		var related;
+		if(Calendar_popupHandler.fixed)
+		  return;
+		
+		if(Calendar_popupHandler.skipClose) {
+		  Calendar_popupHandler.skipClose = false;
+		  return;
+		}
+		
+		if (window.event) related = window.event.toElement;
+		else related = event.relatedTarget;
+		if(related == null)
+			return;
+		if (Calendar_popupHandler.popupDiv != related && !Calendar_popupHandler.contains(Calendar_popupHandler.popupDiv, related)) {
+			Calendar_popupHandler.timerid = setInterval(Calendar_popupHandler.suspendedClose, Calendar_popupHandler.CLOSE_TIMEOUT);
+		}
 	}
 }
 
@@ -2017,7 +2049,7 @@ function getCalendar(event,
                      sceduleUrlPart) { // scedule; - Day.java
  
    var DEFAULT_TITLE = "select a day";
-   try {
+//   try {
     var cal = A_CALENDARS[formName + '_' + name];
     if (cal && cal.isShown()) {
       cal.showcal();
@@ -2046,8 +2078,8 @@ function getCalendar(event,
     cal.create();
     A_CALENDARS[formName + '_' + name] = cal;
     cal.showcal();
-  } catch (e) {
-    alert(e);
-  }
+//  } catch (e) {
+//    alert(e);
+//  }
   return stopEventPropagation(event);
 }
