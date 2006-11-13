@@ -259,6 +259,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 	border-left: 3px solid #00aeef;
 }
 .bgyellow {background:yellow}
+.currentYellow {background:yellow; font-size:12px; font-weight:bold; color:#00309C;;}
 .yellow   {color:yellow}
 
 .outerPopup {border-style:solid; border-width: 1px; border-color:#666666 #666666 #666666 #666666}
