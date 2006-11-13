@@ -2717,7 +2717,7 @@ function schedule(table, e) {
     addCalendarItem(this, event, parseInt(tdId));
   }
   else if (className == "aea")
-    showAlert(expiredAlert);
+    showAlert('expiredAlert');
 }
 
 function addEventOnSchedule() {
@@ -3498,6 +3498,23 @@ function checkAll(formName) {
   var checkAll = form.elements["-checkAll"];
   var isChecked = checkAll.checked == true;
   for (var i=0; i<fields.length; i++) {
+    var type  = fields[i].type;
+    if (type  &&  type.toUpperCase() == "CHECKBOX") {
+      if (isChecked)
+        fields[i].checked = true;
+      else
+        fields[i].checked = false;
+    }
+  }
+}
+
+function checkAllInGroup(e, divId) {
+  var div = document.getElementById(divId);
+  var fields = div.getElementsByTagName('input');
+  
+  var groupField = getTargetElement(e);
+  var isChecked  = groupField.checked;
+  for (var i=1; i<fields.length; i++) {
     var type  = fields[i].type;
     if (type  &&  type.toUpperCase() == "CHECKBOX") {
       if (isChecked)
