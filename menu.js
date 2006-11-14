@@ -100,6 +100,8 @@ Popup.allowTooltip = function (target) {
   var noOpenPopups = true;
   for (var i=0; i<Popup.popups.length; i++) {
     var popup = Popup.popups[i];
+    if(typeof popup == 'undefined')
+      continue;
     if (popup.isOpen() &&         // if popup is already open then we need only tooltips in it (and not the tooltips on areas outside popup)
         !popup.isTooltip()) {     //    but if open popup is a tooltip - ignore it
       noOpenPopups = false;
