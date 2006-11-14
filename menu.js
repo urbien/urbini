@@ -2625,9 +2625,11 @@ function shiftPrefSwitch() {
 	var shiftDiv = document.getElementById("shift_pref");
 	shiftDiv.innerHTML = "done";
 	// set cookie
-	date = new Date();
 	var sValue = Popup.isShiftRequired ? "yes" : "no";
-    document.cookie = "shift_pressed=" + escape(sValue);// + "; expires=" + date.toGMTString();
+	var expiresData = new Date();
+  expiresData.setTime(expiresData.getTime() + (1000 * 86400 * 365));
+  document.cookie = "shift_pressed=" + escape(sValue)
+       + "; expires=" + expiresData.toGMTString();
 }
 
 function initShiftPref() {
