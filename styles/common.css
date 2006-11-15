@@ -227,4 +227,10 @@ table.greyBorder {
     visibility:hidden; display:none;
     height: 27px;
   }
+  .hiddenDiv {
+    visibility:hidden; display:none;
+  }
+  .colsCheckbox {
+    padding-left:4px;padding-right:3px;padding-top:2px;padding-bottom:2px;
+  }
 
