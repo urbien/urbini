@@ -9,7 +9,7 @@
       </td>
       <td>
       <div>
-	     <form id="filter" name="tablePropertyList" method="post" action="FormRedirect" AUTOCOMPLETE="off">
+	     <form id="filter" name="tablePropertyList" method="post" action="FormRedirect" autocomplete="off">
          <tablePropertyList type="http://www.hudsonfog.com/voc/hospitality/spa/Ticket"/>
 	       <input type="hidden" name="-schedule" value="y"></input>
 	       <input type="hidden" name="type" value="http://www.hudsonfog.com/voc/hospitality/spa/Ticket"></input>

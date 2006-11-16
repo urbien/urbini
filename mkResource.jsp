@@ -5,7 +5,7 @@
   <tr>
   <td valign="top">
      <div style="display: inline;">
-     <form id="filter" name="tablePropertyList" method="post" action="FormRedirect" AUTOCOMPLETE="off" style="display: inline; margin: 0;">
+     <form id="filter" name="tablePropertyList" method="post" action="FormRedirect" autocomplete="off" style="display: inline; margin: 0;">
        <tablePropertyList/>
        <div align="right"><span class="xs"><measurement/></span></div>
        <input type="hidden" name="-$action" value="mkResource"></input>
