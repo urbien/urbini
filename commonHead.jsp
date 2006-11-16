@@ -1,4 +1,4 @@
-<div>
+<container>
   <base href="serverName"/> <!-- needed to show images located under host/images-->
   <link href="icons/icon.ico"        type="image/x-icon" rel="SHORTCUT ICON" />
   <link href="icons/icon.ico"        type="image/x-icon" rel="ICON"          />
@@ -20,9 +20,9 @@
   <script src="richtext.js"         language="JavaScript" type="text/javascript"></script>
   <script src="fixedColor/fixedColor.js" language="JavaScript" type="text/javascript"></script>
 
-  <script src="toolbar.js" language="JavaScript" type="text/javascript"></script>	
+  <script src="toolbar.js" language="JavaScript" type="text/javascript"></script>
   <script src="styleSheet/style_sheet.js"   language="JavaScript" type="text/javascript"></script>
 
  <getResource/>
   <siteTitle />
-</div>
+</container>
