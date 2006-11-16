@@ -1,4 +1,10 @@
-/* Volga's "Gray-Blue" color theme */
+body {
+	font: 80% arial, helvetica, sans-serif;
+	padding: 0;
+	margin: 0;
+	background-color:#ffffff;
+	color: #000000;
+}
 
 textarea  {  font-family: Verdana, Arial, Helvetica; font-size: 10px }
 input   {  font-family: Verdana, Arial, Helvetica; font-size: 9px; font-style: normal; line-height: normal; font-weight: normal;}
@@ -69,7 +75,7 @@ a:hover { text-decoration: underline; color: #3399FF; }
 .select	{color:#000066;background-color:#D6E7EF;font-size:11px}
 .selected	{color:#000066;background-color:fffdc3;font-size:7pt}
 input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
-.text {font-size: 10px; font-family:arial,sans-serif;font-wight:bold;}
+.text {font-size: 10px; font-family:arial,sans-serif;font-weight:bold;}
 .input1 {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:16px;text-decoration:none;}
 .barcode {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:20px;text-decoration:none;}
 /* used in filter input text fields */
@@ -158,7 +164,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 .tabs TD.middle {
   background-image:url(../images/skin/blue/tab-middle.gif);
-  background-repeat: no-repeat;
+  background-repeat: repeat-x;
   background-position: center;
   text-align: center;
   white-space: nowrap;
@@ -177,7 +183,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 /* Scheduling page styles */
 .schedule     {
-  border:solid #808080 1px;border-collapse: collapse; 
+  border:solid #808080 1px;border-collapse: collapse;
   table-layout: fixed;
 }
 .fixed {
@@ -186,6 +192,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .schedule th, .schedule td {
   width: 3em;
   overflow: hidden;
+  height: 1em;
 }
 
 /* styles for available and calendar item cells */
@@ -248,12 +255,12 @@ tr.submit     {background-image: url('../images/toolbar_bg.gif');cursor: pointer
 td.submit     {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 tr.checkout   {background-image: url('../images/toolbar_bg.gif');cursor: pointer; cursor: hand; color:darkblue;}
 td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
-.requiredField { 
+.requiredField {
 	border-left: 5px solid #00aeef;
   background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt;
 }
 
-.required { 
+.required {
   width: 3px; overflow: hidden;
 	border-left: 3px solid #00aeef;
 }
@@ -264,6 +271,6 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 
 .outerPopup {border-style:solid; border-width: 1px; border-color:#666666 #666666 #666666 #666666}
 .innerPopup {border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7}
-.menuOnClick {backgroung-color: #0055e6; padding-right:3; padding-top:3; padding-bottom:3}
+.menuOnClick {background-color: #0055e6; padding-right:3; padding-top:3; padding-bottom:3}
 .toppad {padding-top: 5px;}
 .changeCols {display: inline; margin: 0;}
