@@ -2,7 +2,7 @@
   <head>
     <include name="commonHead.jsp" />
   </head>
-  <body id="body" text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
+  <body id="body">
 
   <div nonPda="T">
     <include name="requiredHeader.jsp"/>
@@ -11,38 +11,38 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0" align="center" class="toppad">
   <tr valign="top">
   <td valign="top">
-   <table cellspacing="0" cellpadding="0" border="0" class="tabs" align="center">
+   <table cellspacing="0" cellpadding="0" border="0" align="center">
    <tr>
     <td>
-      <table cellpadding="0" cellspacing="0">
+      <table cellpadding="0" cellspacing="0" class="tabs">
       <tr>
-        <td NOWRAP="y"><menu toolbar="file" activate="onMouseOver"/></td>
+        <td nowrap="nowrap"><menu toolbar="file" activate="onMouseOver"/></td>
 		    <!--include name="${package}_menu.jsp"/-->
-		    <td NOWRAP="y"><menu toolbar="toolbar1"            /></td>
-		    <td NOWRAP="y"><menu toolbar="trades"              /></td>
-		    <td NOWRAP="y"><menu toolbar="scheduling"          /></td>
-		    <td NOWRAP="y"><menu toolbar="products"            /></td>
-		    <td NOWRAP="y"><menu toolbar="crm"                 /></td>
-		    <td NOWRAP="y"><menu toolbar="projectManagement"   /></td>
-		    <td NOWRAP="y"><menu toolbar="realEstate"          /></td>
-		    <td NOWRAP="y"><menu toolbar="helpdesk"           allow="admin" /></td>
-		    <td NOWRAP="y"><menu toolbar="transport"           /></td>
-		    <td NOWRAP="y"><menu toolbar="search"              /></td>
-		    <td NOWRAP="y"><menu toolbar="toolbar2"            /></td>
-		    <td NOWRAP="y"><menu toolbar="personalization"     /></td>
-		    <td NOWRAP="y"><menu toolbar="calendarAndChart"   itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem,http://www.hudsonfog.com/voc/model/company/Contact" /></td>
-		    <td NOWRAP="y"><print image="icons/printerIcon.gif"/></td>
-		    <td NOWRAP="y"><saveInExcel allow="owner" image="images/excel.gif"/></td>
-		    <!--td NOWRAP="y"><pdaToPc image="icons/pda.gif"      /></td-->
-		    <td NOWRAP="y"><chat                               /></td>
-		    <td NOWRAP="y"><showHideWindows                    /></td>
+		    <td nowrap="nowrap"><menu toolbar="toolbar1"            /></td>
+		    <td nowrap="nowrap"><menu toolbar="trades"              /></td>
+		    <td nowrap="nowrap"><menu toolbar="scheduling"          /></td>
+		    <td nowrap="nowrap"><menu toolbar="products"            /></td>
+		    <td nowrap="nowrap"><menu toolbar="crm"                 /></td>
+		    <td nowrap="nowrap"><menu toolbar="projectManagement"   /></td>
+		    <td nowrap="nowrap"><menu toolbar="realEstate"          /></td>
+		    <td nowrap="nowrap"><menu toolbar="helpdesk"           allow="admin" /></td>
+		    <td nowrap="nowrap"><menu toolbar="transport"           /></td>
+		    <td nowrap="nowrap"><menu toolbar="search"              /></td>
+		    <td nowrap="nowrap"><menu toolbar="toolbar2"            /></td>
+		    <td nowrap="nowrap"><menu toolbar="personalization"     /></td>
+		    <td nowrap="nowrap"><menu toolbar="calendarAndChart"   itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem,http://www.hudsonfog.com/voc/model/company/Contact" /></td>
+		    <td nowrap="nowrap"><print image="icons/printerIcon.gif"/></td>
+		    <td nowrap="nowrap"><saveInExcel allow="owner" image="images/excel.gif"/></td>
+		    <!--td nowrap="nowrap"><pdaToPc image="icons/pda.gif"      /></td-->
+		    <td nowrap="nowrap"><chat                               /></td>
+		    <td nowrap="nowrap"><showHideWindows                    /></td>
 	    </tr>
 	    </table>
     </td>
     <td valign="middle" align="right" width="100">
       <include name="searchText.jsp"/>
     </td>
-    <td valign="top" nowrap="y">
+    <td valign="top" nowrap="nowrap">
       <a href="#"><IMG src="images/logo.gif" border="0" height="32" align="right" /></a>
     </td>
    </tr></table></td>
@@ -56,7 +56,7 @@
 	      <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" align="absmiddle"/></a>
 	      <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
 	    </td>
-	    <td valign="middle" NOWRAP="y"  align="right">
+	    <td valign="middle" nowrap="nowrap"  align="right">
 	      <a href="http://universalplatform.com/home"><img src="icons/up.gif" align="absmiddle" border="0"/><span  class="poweredBy" style="padding-left: 5px">on Universal</span><span class="poweredBy-b">Platform</span></a>
 	    </td>
 	  </tr>
