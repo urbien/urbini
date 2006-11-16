@@ -85,9 +85,9 @@
 							  <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
 								<tr onclick="clearAll();" style="cursor: pointer; cursor: hand;">
 								  <td width="17"></td>
-								  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0" alt=\"\"/></td>
+								  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0" alt=""/></td>
 								  <td class="but_center"><span style="color: rgb(75, 115, 75); ">CLOSE</span></td>
-								  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0" alt=\"\"/></td>
+								  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0" alt=""/></td>
 								</tr>
 							  </table>
 							</td>
@@ -99,9 +99,9 @@
 						    <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
 							  <tr onclick="addAndShowItems(this, event); document.getElementById('keyboard').style.display='none'; clearAll();" style="cursor: pointer; cursor: hand;">
 							    <td width="17"></td>
-					  		  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0" alt=\"\"/></td>
+					  		  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0" alt=""/></td>
 						  	  <td class="but_center"><span style="color: rgb(75, 115, 75); ">SUBMIT</span></td>
-							    <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0" alt=\"\"/></td>
+							    <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0" alt=""/></td>
 							  </tr>
 						    </table>
 							</td>
@@ -109,9 +109,9 @@
 							  <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
 								<tr onclick="clearOne();" style="cursor: pointer; cursor: hand;">
 								  <td width="17"></td>
-								  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0" alt=\"\"/></td>
+								  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0" alt=""/></td>
 								  <td class="but_center"><span style="color: rgb(75, 115, 75); ">CLR</span></td>
-								  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0" alt=\"\"/></td>
+								  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0" alt=""/></td>
 				  		  </tr>
 					  	  </table>
 					  	</td>
