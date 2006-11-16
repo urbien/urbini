@@ -1,3 +1,15 @@
+a img {
+	border: 0;
+}
+
+.requiredProp {
+  color: #ff0000; font-weight: bold;
+}
+
+.propLabel {
+  white-space: nowrap;
+}
+
 H1 {font-family: arial, Verdana, geneva; font-size: 17px; font-weight: bold;  color: #00309C}
 H2 {font-family: arial, Verdana, geneva; font-weight: normal; font-size: medium; color: #6699CC}
 H3 {font-family: arial, Verdana, geneva; font-size: 15px; font-weight: normal; color: #3366aa}
@@ -6,8 +18,12 @@ img.fade {
    opacity:       0.6;
 }
 
-.tabs .oneTab {
+.tabs {
   height: 33px;
+}
+
+.tabs img {
+  border: 0; width: 16px; height: 16px;
 }
 
 .tabs a:link, .tabs a:visited {
@@ -20,7 +36,6 @@ img.fade {
 .tabs .left, .right {
   width:12px;
 }
-
 /*
 .tabs TD.left {
   background-image:url(../images/skin/blue/tab-left.gif);
@@ -30,7 +45,7 @@ img.fade {
 }
 .tabs TD.middle {
   background-image:url(../images/skin/blue/tab-middle.gif);
-  background-repeat: no-repeat;
+  background-repeat: repeat-x;
   background-position: center;
   text-align: center;
   white-space: nowrap;
@@ -233,4 +248,17 @@ table.greyBorder {
   .colsCheckbox {
     padding-left:4px;padding-right:3px;padding-top:2px;padding-bottom:2px;
   }
+
+/* two column (both liquid) pure css tableless layout */
+.chooser {
+  left: 0.3em; top: 8.5em; width: 73.33333%; z-index: 2; position: absolute; margin: 0; padding: 0;
+}
+
+.items {
+  max-width: 30em;
+	left: 73.33333%; top: 7em; z-index: 2; position: absolute; margin: 0;
+	padding-top:  2.5em;
+	padding-left: 1em;
+}
+
 
