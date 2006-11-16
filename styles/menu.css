@@ -13,22 +13,19 @@ TD.toolbar {
 }
 
 .popMenu td {
-  FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 2px; PADDING-TOP: 2px; FONT-STYLE: normal; FONT-FAMILY: Tahoma, Arial, Helvetica, sans-serif, "MS Sans Serif"; TEXT-DECORATION: none; white-space: nowrap; cursor: pointer; cursor: hand;
+  FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 1px; PADDING-TOP: 1px; FONT-STYLE: normal; FONT-FAMILY: Tahoma, Arial, Helvetica, sans-serif, "MS Sans Serif"; TEXT-DECORATION: none; white-space: nowrap;
 }
 
 .popupFrameBody {
 }
 
 .popMenuTitle {
-	cursor: text; POSITION: relative; BACKGROUND-COLOR: #3366cc
+	POSITION: relative; BACKGROUND-COLOR: #3366cc
 }
 
-.menuTitle {
-	cursor: auto; PADDING-LEFT: 10px; PADDING-RIGHT: 10px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc;
-}
 
 .menuTitle td {
-	cursor: auto; PADDING-LEFT: 10px; PADDING-RIGHT: 10px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc;
+	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc;
 }
 
 .menuItemIcon {
@@ -48,7 +45,7 @@ TD.toolbar {
 }
 
 .menuItem {
-  PADDING-LEFT: 2px;
+  PADDING-LEFT: 2px; cursor: pointer; cursor: hand;
 }
 
 .menuItemChart {
@@ -59,7 +56,6 @@ TD.toolbar {
 }
 
 .menuItemNoChoices {
-  cursor: default;
 }
 
 .menuItem a:hover, .menuItem a:link, .menuItem a:active, .menuItem a:visited {
@@ -75,7 +71,10 @@ TD.toolbar {
 }
 
 .closePopup {
-  background-color: #0055e6; padding-right:3; padding-top:3; padding-bottom:3; text-align: right;
+  background-color: #0055e6;
+  cursor: pointer; cursor: hand;
+  background-image: url('../icons/hide.gif');
+  text-align: right;
 }
 
 .formMenuInput {
@@ -90,9 +89,10 @@ TD.toolbar {
 .menuExpand {
 }
 
-.menuExpandSubtitle {
-	CURSOR: default
+.menuDivider td.td2 {
+  background-color: #dbd8d1; cursor: text;
 }
+
 .outer {border-style:solid; border-width: 1px; border-color:#666666 #666666 #666666 #666666;}
 .inner {border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7;}
 
