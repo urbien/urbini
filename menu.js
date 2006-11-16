@@ -1509,8 +1509,8 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   }
 
   // form url based on parameters that were set
-
-  var formAction = form.elements['-$action'].value;
+  var formActionElm = form.elements['-$action'];
+  var formAction = formActionElm.value;
   var baseUriO = document.getElementsByTagName('base');
   var baseUri = "";
   if (baseUriO) {
@@ -1782,25 +1782,27 @@ function popupOnSubmit(e) {
 
   if (isCancel)
     params += "&cancel=y";
+
   /* do not allow to submit form while current submit is still being processed */
-  var wasSubmitted = form.getAttribute("wasSubmitted");
-  if (wasSubmitted) {
-    alert("Can not submit the same form twice");
-    return stopEventPropagation(e);
-  }
-  form.setAttribute("wasSubmitted", "true");
-  //form.submit.disabled = true; // weird, but the form would not get submitted if disabled
+  if (form.name.indexOf("tablePropertyList") != -1) { // is it a data entry form?
+    var wasSubmitted = form.getAttribute("wasSubmitted");
+    if (wasSubmitted) {
+      alert("Can not submit the same form twice");
+      return stopEventPropagation(e);
+    }
+    form.setAttribute("wasSubmitted", "true");
+    //form.submit.disabled = true; // weird, but the form would not get submitted if disabled
 
-  // this solution for duplicate-submit does not work in firefox 1.0 & mozilla 1.8b - fakeOnSubmit get control even on first form submit
-  // it has another drawback - page must be reloaded fro the form to be submitted second time - while previous solution works with back/forward
-  /*
-  if (form.onsubmit == fakeOnSubmit) {
-    alert("Already submitted - please wait");
-    return false;
+    // this solution for duplicate-submit does not work in firefox 1.0 & mozilla 1.8b - fakeOnSubmit get control even on first form submit
+    // it has another drawback - page must be reloaded fro the form to be submitted second time - while previous solution works with back/forward
+    /*
+    if (form.onsubmit == fakeOnSubmit) {
+      alert("Already submitted - please wait");
+      return false;
+    }
+    form.onsubmit = fakeOnSubmit;
+    */
   }
-  form.onsubmit = fakeOnSubmit;
-  */
-
   for (j=0; j<form.elements.length; j++) {
     var elem = form.elements[j];
     var atts = elem.getAttribute('onSubmit');
@@ -2870,7 +2872,7 @@ function onClick(e) {
 
   var target = getTargetElement(e);
   var link = getTargetAnchor(e);
-  if (!link)
+  if (!link || !link.href || link.href == null)
     return;
 
   if     (e.ctrlKey) {
@@ -2894,24 +2896,21 @@ function onClick(e) {
     }
   }
 */
-  if (!p)
-    return true;
+  if (p) {
+    removeModifier(link, '_shiftKey=y');
+    removeModifier(link, '_ctrlKey=y');
+    removeModifier(link, '_altKey=y');
+    addUrlParam(link, p, null);
 
-  if (!link) {
-    alert("onClick(): can't process control key modifier since event currentTarget is null: " + link);
-    return;
+    document.location.href = link.href;
+    return stopEventPropagation(e);
   }
-  else if(!link.href || link.href == null) {
-    alert("onClick(): can't process control key modifier since event currentTarget.href is null: " + link.href);
-    return;
+  else {
+    if (link.id.startsWith('-inner')) {      // display as on-page dialog
+      return onClickDisplayInner(e, link);
+    }
   }
-  removeModifier(link, '_shiftKey=y');
-  removeModifier(link, '_ctrlKey=y');
-  removeModifier(link, '_altKey=y');
-  addUrlParam(link, p, null);
-
-  document.location.href = link.href;
-  return stopEventPropagation(e);
+  return true;
 }
 
 /**
@@ -4201,7 +4200,7 @@ function showTab(e, td, hideDivId, unhideDivId) {
   }
   // RTE
   RteEngine.initRTEs(div); // pass div to show
-  return stopEventPropagation(e); 
+  return stopEventPropagation(e);
 }
 
 function showRows(e, td, hideRowsId, unhideRowsId) {
@@ -4262,7 +4261,7 @@ function showRows(e, td, hideRowsId, unhideRowsId) {
     if (tr != null)
       tr.className = "currentTabTitle";
   }
-  return stopEventPropagation(e); 
+  return stopEventPropagation(e);
 }
 
 function hideInnerDiv(e) {
@@ -5076,3 +5075,25 @@ var dragobject = {
 // initialize the drag & drop engine in addHandlers function
 
 // ***********************************************************************************
+
+/**
+ * check the checkbox if property related to it has changed value
+ * (used in Watch and Subscribe)
+ *
+ * The checkbox must be first checkbox in the same TR
+ */
+function setRelatedCheckbox(e) {
+  e = getDocumentEvent(e); if (!e) return;
+  var target = getTargetElement(e);
+  var tr = getTrNode(target);
+  if (!tr)
+    return stopEventPropagation(e);
+
+  var inputs = tr.getElementsByTagName('input');
+  if (inputs && inputs.length != 0) {
+    for (var i=0;  i <inputs.length; i++) {
+      if (inputs[i].type.toLowerCase() == "checkbox")
+        inputs[i].checked = false;
+    }
+  }
+}
