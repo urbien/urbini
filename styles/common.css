@@ -254,7 +254,7 @@ table.greyBorder {
   left: 0.3em; top: 8.5em; width: 73.33333%; z-index: 2; position: absolute; margin: 0; padding: 0;
 }
 
-.items {
+.addedItems {
   max-width: 30em;
 	left: 73.33333%; top: 7em; z-index: 2; position: absolute; margin: 0;
 	padding-top:  2.5em;
