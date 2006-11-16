@@ -21,7 +21,7 @@
     <tr valign="top">
 	    <td width="70%">
 	      <mkResourceForLineItems/>
-				<div id="keyboard" style="display:none">
+				<div id="keyboard" class="hiddenDiv">
 					<style type="text/css">
 					  .simpleButton {border:solid #808080 1px; color: darkblue; font-size:16pt; height:40pt; cursor: pointer; cursor: hand;}
 					  .filterButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:30px;text-decoration:none}
@@ -83,7 +83,7 @@
 					  <tr>
 					    <td>
 							  <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
-								<tr onclick="clearAll();" style="cursor: pointer; cursor: hand;">
+								<tr onclick="clearAll();" class="cursor">
 								  <td width="17"></td>
 								  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0" alt=""/></td>
 								  <td class="but_center"><span style="color: rgb(75, 115, 75); ">CLOSE</span></td>
@@ -97,7 +97,7 @@
 					    </td>
 					    <td>
 						    <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
-							  <tr onclick="addAndShowItems(this, event); document.getElementById('keyboard').style.display='none'; clearAll();" style="cursor: pointer; cursor: hand;">
+							  <tr onclick="addAndShowItems(this, event); document.getElementById('keyboard').style.display='none'; clearAll();" class="cursor">
 							    <td width="17"></td>
 					  		  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0" alt=""/></td>
 						  	  <td class="but_center"><span style="color: rgb(75, 115, 75); ">SUBMIT</span></td>
@@ -107,7 +107,7 @@
 							</td>
 							<td>
 							  <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
-								<tr onclick="clearOne();" style="cursor: pointer; cursor: hand;">
+								<tr onclick="clearOne();" class="cursor">
 								  <td width="17"></td>
 								  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0" alt=""/></td>
 								  <td class="but_center"><span style="color: rgb(75, 115, 75); ">CLR</span></td>
