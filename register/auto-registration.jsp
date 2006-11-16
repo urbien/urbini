@@ -1,6 +1,6 @@
 <div>
 <center>
-  <form name="loginform" action="j_register" method="POST" AUTOCOMPLETE="off">
+  <form name="loginform" action="j_register" method="POST" autocomplete="off">
     <table width="430" align="center" bgcolor="#cbcbcb" cellpadding="2" cellspacing="0">
       <tr>
         <td>

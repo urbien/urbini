@@ -1,6 +1,6 @@
 <div>
 <center>
-  <form name="loginform" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" AUTOCOMPLETE="off">
+  <form name="loginform" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
     <table width="430" align="center" bgcolor="#cbcbcb" cellpadding="2" cellspacing="0">
       <tr>
         <td>
