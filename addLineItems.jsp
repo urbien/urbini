@@ -74,7 +74,7 @@
 					}
 				</script>
 
-					<form itype="http://www.hudsonfog.com/voc/hospitality/orders/BarItem" id="filter" method="post" action="FormRedirect" AUTOCOMPLETE="off">
+					<form itype="http://www.hudsonfog.com/voc/hospitality/orders/BarItem" id="filter" method="post" action="FormRedirect" autocomplete="off">
 
 					<table width="100%" border="0" cellspacing="10" cellpadding="0" cols="10">
 					<tr>
@@ -83,11 +83,11 @@
 					  <tr>
 					    <td>
 							  <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
-								<tr onClick="clearAll();" style="cursor: pointer; cursor: hand;">
+								<tr onclick="clearAll();" style="cursor: pointer; cursor: hand;">
 								  <td width="17"></td>
-								  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0"/></td>
+								  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0" alt=\"\"/></td>
 								  <td class="but_center"><span style="color: rgb(75, 115, 75); ">CLOSE</span></td>
-								  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0"/></td>
+								  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0" alt=\"\"/></td>
 								</tr>
 							  </table>
 							</td>
@@ -97,21 +97,21 @@
 					    </td>
 					    <td>
 						    <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
-							  <tr onClick="addAndShowItems(this, event); document.getElementById('keyboard').style.display='none'; clearAll();" style="cursor: pointer; cursor: hand;">
+							  <tr onclick="addAndShowItems(this, event); document.getElementById('keyboard').style.display='none'; clearAll();" style="cursor: pointer; cursor: hand;">
 							    <td width="17"></td>
-					  		  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0"/></td>
+					  		  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0" alt=\"\"/></td>
 						  	  <td class="but_center"><span style="color: rgb(75, 115, 75); ">SUBMIT</span></td>
-							    <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0"/></td>
+							    <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0" alt=\"\"/></td>
 							  </tr>
 						    </table>
 							</td>
 							<td>
 							  <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">
-								<tr onClick="clearOne();" style="cursor: pointer; cursor: hand;">
+								<tr onclick="clearOne();" style="cursor: pointer; cursor: hand;">
 								  <td width="17"></td>
-								  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0"/></td>
+								  <td class="but_left"><img src="images/1x1.gif" class="but_left" border="0" alt=\"\"/></td>
 								  <td class="but_center"><span style="color: rgb(75, 115, 75); ">CLR</span></td>
-								  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0"/></td>
+								  <td class="but_right"><img src="images/1x1.gif" class="but_right" border="0" alt=\"\"/></td>
 				  		  </tr>
 					  	  </table>
 					  	</td>
@@ -120,41 +120,41 @@
 				  </td>
 					</tr>
 					<tr>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">Q</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">W</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">E</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">R</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">T</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">Y</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">U</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">I</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">O</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)" width="10%">P</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)" width="10%">Q</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)" width="10%">W</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)" width="10%">E</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)" width="10%">R</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)" width="10%">T</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)" width="10%">Y</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)" width="10%">U</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)" width="10%">I</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)" width="10%">O</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)" width="10%">P</td>
 					</tr>
 					<tr>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">A</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">S</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">D</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">F</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">G</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">H</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">J</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">K</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">L</td>
-					</tr>
-					<tr>
-					   <td></td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">Z</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">X</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">C</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">V</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">B</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">N</td>
-					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onClick="add(this)">M</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">A</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">S</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">D</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">F</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">G</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">H</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">J</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">K</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">L</td>
 					</tr>
 					<tr>
 					   <td></td>
-					   <td bgcolor="#A2B5CD" align="middle" class="specialKeys" onClick="add(this)" colspan="6">Space</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">Z</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">X</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">C</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">V</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">B</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">N</td>
+					   <td bgcolor="#A2B5CD" align="middle" class="simpleButton" onclick="add(this)">M</td>
+					</tr>
+					<tr>
+					   <td></td>
+					   <td bgcolor="#A2B5CD" align="middle" class="specialKeys" onclick="add(this)" colspan="6">Space</td>
 					   <td colspan="3"></td>
 					</tr>
 					</table>
@@ -175,7 +175,7 @@
       <td width="70%">
         <table width="100%" cellspacing="5" cellpadding="0" border="0">
         <tr>
-          <td align="center" class="categoryButton" onClick="document.location.href='Recall_Orders.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Ticket&amp;sealed_select=false&amp;sealed_verified=y&amp;$order=http://www.hudsonfog.com/voc/hospitality/spa/Ticket/checkInTime&amp;-asc=-1&amp;-grid=1&amp;-inRow=2&amp;serviceStart_From=today&amp;serviceStart=today&amp;serviceStart_To=today&amp;hideHideBlock=y'">Recall orders</td>
+          <td align="center" class="categoryButton" onclick="document.location.href='Recall_Orders.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Ticket&amp;sealed_select=false&amp;sealed_verified=y&amp;$order=http://www.hudsonfog.com/voc/hospitality/spa/Ticket/checkInTime&amp;-asc=-1&amp;-grid=1&amp;-inRow=2&amp;serviceStart_From=today&amp;serviceStart=today&amp;serviceStart_To=today&amp;hideHideBlock=y'">Recall orders</td>
         </tr>
 
         </table>

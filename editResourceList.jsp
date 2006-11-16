@@ -29,7 +29,7 @@
     </tr-->
 
     <tr valign="top"><td>
-    <form action="list.html" name="siteResourceList" AUTOCOMPLETE="off">
+    <form action="list.html" name="siteResourceList" autocomplete="off">
       <div align="left"><backLink /></div>
       <siteResourceList />
       <div align="right"><measurement/></div>
