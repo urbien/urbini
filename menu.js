@@ -2693,34 +2693,34 @@ function schedule(table, e) {
     return;
 
   var className = target.className;
+  var tdId = target.id;
+  var idx1 = tdId.indexOf(".") + 1;
+  var idx = tdId.indexOf(":");
   if (className == "b") {
-    var tdId = target.id;
-    var idx = tdId.indexOf(":");
     if (idx == -1)
       return;
-    var calendarIdx = parseInt(tdId.substring(0, idx));
+    var calendarIdx = parseInt(tdId.substring(idx1, idx));
     var duration = parseInt(tdId.substring(idx + 1));
     openPopup(null, calendarIdx, target, e, duration);
   }
   else if (className == "a") {
-    var tdId = target.id;
-    var idx = tdId.indexOf(":");
     if (idx == -1)
       return;
     var duration = parseInt(tdId.substring(idx + 1));
-
+ 
     if (tdId.indexOf("-") == -1) {
-      var calendarIdx = parseInt(tdId.substring(0, idx));
+      var calendarIdx = parseInt(tdId.substring(idx1, idx));
       openPopup(calendarIdx, calendarIdx, target, e, duration);
     }
     else  {
-      var calendarIdx = parseInt(tdId.substring(1, idx));
-      openPopup1(parseInt(tdId.substring(1)), 'changeAlert', target, e, duration);
+      var calendarIdx = parseInt(tdId.substring(idx1 + 1, idx));
+      openPopup1(parseInt(tdId.substring(idx1 + 1)), 'changeAlert', target, e, duration);
+//      openPopup1(parseInt(tdId.substring(1)), 'changeAlert', target, e, duration);
     }
   }
   else if (className == "ci") {
     calendarCell = target;
-    addCalendarItem(this, event, parseInt(tdId));
+    addCalendarItem(this, event, parseInt(tdId.substring(idx1)));
   }
   else if (className == "aea")
     showAlert('expiredAlert');
@@ -3891,7 +3891,9 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
         contactDiv = parentNode;
       }
     }
-    contactId = forEmployee + "=" + employees[parseInt(contactDiv.id)];
+    var contactDivId = contactDiv.id;
+    var cidx = contactDivId.indexOf(".");
+    contactId = forEmployee + "=" + employees[parseInt(contactDivId.substring(cidx + 1))];
   }
   anchor += '&' + contactId;
 
@@ -3971,7 +3973,8 @@ function addSimpleCalendarItem(event) {
     }
   }
   var contactDivId = contactDiv.id;
-  var employeeIdx = parseInt(contactDivId.substring(1));
+  var idx = contactDivId.indexOf(".");
+  var employeeIdx = parseInt(contactDivId.substring(idx + 1));
   anchor += '&' + employeeCalendarItem + "_select=" + resourceCalendars[employeeIdx];
   var blockReleaseDiv = document.getElementById('blockReleaseParameters');
   if (!blockReleaseDiv)
@@ -4283,7 +4286,7 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
     if (resourceCalendars[divId2] == null)
       divId2 = null;
     else
-      divId2 = "." + divId2;
+      divId2 = "a." + divId2;
   }
 //  alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',  e=' + e + ', maxDuration=' + maxDuration);
   if (e.ctrlKey)  {// ctrl-enter
@@ -4322,7 +4325,7 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
   }
   else {
     if (divId1 != null)
-      Popup.open(divId1, hotSpot);
+      Popup.open('e.' + divId1, hotSpot);
   }
   calendarCell = hotSpot;
   return stopEventPropagation(e);
