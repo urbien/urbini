@@ -3268,6 +3268,7 @@ function showDialog(div, hotspot, content) {
   var re = eval('/' + frameId + '/g');
   content = content.replace(re, frameId + '-removed'); // prevent dialogIframe from appearing 2 times in the document
   setInnerHtml(div, content);
+
   var iframe = document.getElementById('dialogIframe');
   setDivVisible(div, iframe, hotspot, 16, 16);
   initListBoxes(div);
@@ -3275,10 +3276,9 @@ function showDialog(div, hotspot, content) {
   var anchors = div.getElementsByTagName('A');
   replaceTooltips(div, anchors);
 
-  // RTE
-  RteEngine.initRTEs(div);
+  // execute JS code of innerHTML
+  execJS.runDivCode(div);
 }
-
 
 function stopEventPropagation(e) {
   try {
@@ -4201,8 +4201,9 @@ function showTab(e, td, hideDivId, unhideDivId) {
     if (tr != null)
       tr.className = "currentTabTitle";
   }
-  // RTE
-  RteEngine.initRTEs(div); // pass div to show
+
+  execJS.runDivCode(div);
+
   return stopEventPropagation(e);
 }
 
@@ -4596,6 +4597,8 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
 }
 
 function setDivInvisible(div, iframe) {
+  // release a popup (menu) belongs to the hidding div
+  PopupHandler.checkHidingDiv(div);
   if (div.style)
     div.style.display    = "none";
   if (iframe && iframe.style)
@@ -5100,3 +5103,62 @@ function setRelatedCheckbox(e) {
     }
   }
 }
+
+
+// execJS ====================================================
+// helps to handle dialog and tab cases; checks ready state (IE) as well.
+var execJS = {
+  runCodeArr : new Array(),
+  isWaitingOnReady : false,
+  
+  // executes js code if refObjId is visible - [hidden tab].
+  runRelativeCode : function(jsCode, refObjId) {
+    if(document.all && document.readyState != "complete") {
+			if(this.isWaitingOnReady == false) {
+			  addEvent(document, 'readystatechange', this._runOnDocumentReady, false);
+			  this.isWaitingOnReady = true; 
+			}
+			this.runCodeArr.push({"jsCode": jsCode, "refObjId": refObjId});
+		}
+		else {
+      if(this.isObjectTotallyVisible(refObjId))
+        window.eval(jsCode);
+    }
+  },
+  
+  // contDiv is a div that contain JS code - [dialog].
+  runDivCode : function(contDiv) {
+  //debugger
+    var scripts = contDiv.getElementsByTagName('script');
+    for(var i = 0; i < scripts.length; i++) {
+      if(scripts[i].text != "") {
+        //      od.msg(scripts[i].text, i);
+
+        window.eval(scripts[i].text);
+        scripts[i].text = ""; // prevents multiple execution for a edit tab. 
+      }
+    }
+  },
+  
+  // checks on visibility all ancestors of the object
+  // gets object or its id
+  isObjectTotallyVisible : function(objId) {
+    var obj = document.getElementById(objId);
+	  var parent = obj;
+	  while(parent != null) {
+		  if(typeof parent.style != 'undefined' && parent.style.visibility == 'hidden')
+			  return false;
+		  parent = obj.parentNode;
+		  obj = parent;
+	  }
+	  return true;
+  },
+  
+  _runOnDocumentReady : function() {
+    for(var i = 0; i < execJS.runCodeArr.length; i++) {
+      if(execJS.isObjectTotallyVisible(execJS.runCodeArr[i].refObjId))
+        window.eval(execJS.runCodeArr[i].jsCode);
+      }    
+   }
+}
+// ==================================================
