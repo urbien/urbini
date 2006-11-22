@@ -278,14 +278,23 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 **********************************************/
 var PalettePopup = {
 	div : null,
+	noClrCell : null,
 	callback : null,
-	//show 
-	show : function(hotspot, alignment, callback, parentDlg) {
+	//show
+	// noColorTitle is a text to show in noClrCell
+	show : function(hotspot, alignment, callback, parentDlg, noColorTitle) {
 		if(this.div == null)
 			this.create();
-		
+
+		if(typeof noColorTitle != 'undefined') {
+		  this.noClrCell.innerHTML = noColorTitle;
+		  this.noClrCell.style.display = "";
+		}
+		else
+ 		  this.noClrCell.style.display = "none";
+
 		this.callback = callback;
-		PopupHandler.showRelatively(hotspot, alignment, this.div, true, parentDlg);
+  	PopupHandler.showRelatively(hotspot, alignment, this.div, true, parentDlg);
 	},
 	create : function() {
 		this.div = document.createElement('div');
@@ -298,6 +307,7 @@ var PalettePopup = {
 		this.div.style.padding = 1;
 
 		this.div.innerHTML = this.getPaletteStr();
+		this.noClrCell = getChildById(this.div, "noClr");
 		//	document.body.appendChild(this.div);
 	},
 	_onmouseover : function(obj) {
@@ -309,7 +319,8 @@ var PalettePopup = {
 	},
 	getPaletteStr : function() {
 		var palette =
-			'<table width=130; height=80 cellpadding="0" cellspacing="1" border="0" align="left">' + '<tr>'
+		//  width=130; height=80 align="left"
+			'<table cellpadding="0" cellspacing="1" border="0">' + '<tr>'
 			+ '	<td bgcolor="#FFFFFF" onclick="PalettePopup._onclick(\'#FFFFFF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
 			+ '	<td bgcolor="#FFCCCC" onclick="PalettePopup._onclick(\'#FFCCCC\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
 			+ '	<td bgcolor="#FFCC99" onclick="PalettePopup._onclick(\'#FFCC99\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
@@ -393,6 +404,14 @@ var PalettePopup = {
 			+ '	<td bgcolor="#330099" onclick="PalettePopup._onclick(\'#330099\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
 			+ '	<td bgcolor="#330033" onclick="PalettePopup._onclick(\'#330033\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
 			+ '</tr>'
+			// no color row - empty string returns
+			+ '</tr>'
+			+ '<tr>'
+			+ '<td id="noClr" colspan="10" onclick="PalettePopup._onclick(\'\');" onmouseover="PalettePopup._onmouseover(this);" align="center"style="font-size:11px; font-name:arial;">My test</td>';
+			//+ '<td id="noClr" colspan="10">colspan test</td>';
+//			+ '<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>';
+			+ '</tr>';
+			
 			+ '</table>';
 		return palette;
 	}
@@ -683,8 +702,9 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 	this.onMouseUpBtn = function() {
 		i_am.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
 		var top = i_am.top + i_am.div.clientHeight + 1;
-		//var parentDlg = getAncestorById(i_am.div, 'pane2'); // hack: detects if it's in a 'pane2' dialog 
-		i_am.list.show(i_am, 'left', i_am.setSelectedItem); // , parentDlg
+		
+		var parentDlg = getAncestorById(i_am.div, 'pane2'); // hack: detects if it's in a 'pane2' dialog 
+		i_am.list.show(i_am, 'left', i_am.setSelectedItem, parentDlg);
 	}
 	// constructor's body
 	this.create();
@@ -1042,6 +1062,8 @@ var PopupHandler = {
 				this.overflowPopup = null;
 			}
 		}
+		// return to body
+		document.body.appendChild(this.popupDiv);
 		this.resetHandlers();
 	},
 	suspendedHide : function() {
@@ -1100,6 +1122,14 @@ var PopupHandler = {
 
 		this.popupDiv = null;
 	},
+	
+	checkHidingDiv : function(div) {
+	  if(this.parentDlg == null)
+	    return;
+	  if(this.parentDlg.id == div.id)
+	    this.hide();
+	},
+	
 	// handlers --
 	_onkeyup : function(evt) {
 		evt = (evt) ? evt : event;
