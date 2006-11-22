@@ -5126,18 +5126,15 @@ var execJS = {
     }
   },
   
+  // evaluates script blocks of the div with className = "execJS"  
   // contDiv is a div that contain JS code - [dialog].
   runDivCode : function(contDiv) {
-  //debugger
     var scripts = contDiv.getElementsByTagName('script');
     for(var i = 0; i < scripts.length; i++) {
-      if(scripts[i].text != "") {
-        //      od.msg(scripts[i].text, i);
-
+      if(scripts[i].className == "execJS" && scripts[i].text != "") {
         window.eval(scripts[i].text);
-        scripts[i].text = ""; // prevents multiple execution for a edit tab. 
+        scripts[i].text = ""; // prevents multiple execution for a tab. 
       }
-    }
   },
   
   // checks on visibility all ancestors of the object
