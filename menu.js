@@ -5135,6 +5135,7 @@ var execJS = {
         window.eval(scripts[i].text);
         scripts[i].text = ""; // prevents multiple execution for a tab. 
       }
+    }
   },
   
   // checks on visibility all ancestors of the object
