@@ -9,18 +9,7 @@ function addEvent(obj, evType, fn, useCapture) {
        alert("You need to upgrade to a newer browser. Error: 'handler could not be attached'");
      }
 }
-// checks on visibility all ancestors of the object
-function isObjectTotallyVisible(obj) {
-	var parent = obj;
-	while(parent != null) {
-		if(typeof parent.style != 'undefined' && parent.style.visibility == 'hidden')
-			return false;
 
-		parent = obj.parentNode;
-		obj = parent;
-	}
-	return true;
-}
 /*************************************************
 *	RteEngine
 **************************************************/
@@ -83,34 +72,9 @@ var RteEngine = {
 	imagePopup : null,
 	tablePopup : null,
 
-	// functtion members
-	start : function() {
-		this.initRTEs(document.body);
-	},
-	// scans on RTEs
-	// realm object to scan
-	initRTEs : function(realm) {
-		if(realm == null)
-			return;
-			
-		var frames = realm.getElementsByTagName('iframe');
-		for(var i = 0; i < frames.length; i++) {
-			if(frames[i].className == "RTE") {
-				if(isObjectTotallyVisible(frames[i]) == false)
-					continue;
-				
-				var fldId = frames[i].getAttribute("fldId");
-				var type = frames[i].getAttribute("type");
-				var rtePref = eval("RteEngine." + type);
-				
-				this.register(frames[i], fldId, rtePref);
-			}
-		}
-	},
 	//register the RTEs.
-	register : function(iframeObj, rteDataFieldId, rtePref) {
-		if(this.isIframeRegistered(iframeObj))
-			return;
+	register : function(iframeId, rteDataFieldId, rtePref) {
+    iframeObj = document.getElementById(iframeId);
 
 		if(typeof rtePref == 'undefined')
 			rtePref = this.simpleRTE;
@@ -119,20 +83,9 @@ var RteEngine = {
 		if(iframeObj.id	== "")
 			iframeObj.id = new Date().getTime();
 		this.registeredIdArr.push(iframeObj.id);
-		
-		// IE: init RTEs on document ready
-		if(this.registeredIdArr.length == 1) {
-			// IE
-			if(document.all && document.readyState != "complete") {
-				this.isDocumentReady = false;
-				addEvent(document, 'readystatechange', this.initOnDocumentReady, false); 
-			}
-			else // FF
-				this.isDocumentReady = true;
-		}
-		
+
 		try {
-			var rteObj = new Rte(iframeObj, rteDataFieldId, rtePref, this.isDocumentReady);
+			var rteObj = new Rte(iframeObj, rteDataFieldId, rtePref);
 		}catch(e) {
 			this.registeredIdArr.pop();
 			return;
@@ -142,23 +95,6 @@ var RteEngine = {
 			this.rteArr.push(rteObj);
 		else
 			this.registeredIdArr.pop();
-	},
-	
-	isIframeRegistered : function(iframeObj) {
-		for(var i = 0; i < this.registeredIdArr.length; i++)
-			if(this.registeredIdArr[i] == iframeObj.id)
-				return true;
-
-		return false;
-	},
-	
-	// used for IE
-	initOnDocumentReady : function() {
-		if(document.readyState != "complete")
-			return;
-		RteEngine.isDocumentReady = true;
-		for(var i = 0; i < RteEngine.rteArr.length; i++)
-			RteEngine.rteArr[i].init();
 	},
 
 	getRteIndex : function(iframeObj) {
@@ -402,7 +338,7 @@ var RteEngine = {
 * Rte - single rte elemnt.
 * toInit used for IE and to prevent initialization before document complitly loaded
 ***********************************/
-function Rte(iframeObj, dataFieldId, rtePref, toInit) {
+function Rte(iframeObj, dataFieldId, rtePref) {
 	var i_am = this;
 	this.iframeObj = iframeObj;
 	this.dataFieldId = dataFieldId;
@@ -981,6 +917,5 @@ function Rte(iframeObj, dataFieldId, rtePref, toInit) {
 	}
 	
 	// constructor body --
-	if(toInit)
-		this.init();
+	this.init();
 }
