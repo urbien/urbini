@@ -1,32 +1,37 @@
 
-function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
+function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 {
-	var IMAGES_FOLDER = "images/wysiwyg/";//"./styleSheet/images/";
-	var FONT_ARR = new Array("arial", "arial black", "comic sans ms", "courier", "courier new", "georgia", "helvetica", "impact", "palatino", "times new roman", "trebuchet ms", "verdana");
-	var FONT_SIZE_ARR = new Array("9px", "10px", "12px", "14px", "16px", "20px", "24px", "30px", "35px");
+	var IMAGES_FOLDER = "images/wysiwyg/";
+	var FONT_ARR = ["arial", "arial black", "comic sans ms", "courier", "courier new", "georgia", "helvetica", "impact", "palatino", "times new roman", "trebuchet ms", "verdana"];
+	var FONT_SIZE_ARR = ["9px", "10px", "12px", "14px", "16px", "20px", "24px", "30px", "35px"];
 	
-	var BORDER_ARR = new Array("dotted", "dashed", "solid", /*"double",*/ /*"groove",*/ /*"ridge",*/ "inset", /*"window-inset",*/ "outset");
-	var BORDER_WIDTH = new Array("0px", "1px", "2px", "3px");
+	var BORDER_APPLY_TO = [{name:"none", valueHtml:"", valueScr:""}, {name:"all", valueHtml:"border", valueScr:"border"},{name:"left", valueHtml:"border-left", valueScr:"borderLeft"},
+	  {name:"top", valueHtml:"border-top", valueScr:"borderTop"}, {name:"right", valueHtml:"border-right", valueScr:"borderRight"}, {name:"bottom", valueHtml:"border-bottom", valueScr:"borderBottom"}];
+	var BORDER_STYLE = ["dotted", "dashed", "solid", /*"double",*/ /*"groove",*/ /*"ridge",*/ "inset", /*"window-inset",*/ "outset"];
+	var BORDER_WIDTH = ["1px", "2px", "3px", "10px"];
 	
 	var i_am = this;
 	var parentDiv = parentDivIn;
 	var toolBar = null;
 	var sampleDiv = sampleDivIn; // the div to show a stylea of a sample
 	var styleViewDiv = null;
-	this.frameObj  = frameObjIn;
+	this.formObj  = formObjIn;
 	this.fieldName = fieldNameIn;
 	this.fieldObj = null;
 	
 	this.fontFamilyList = null;
 	this.fontSizeList = null;
-	this.borderStyleList = null;
+	
+	this.borderApplyToList = null;
 	this.borderWidthList = null;
+	this.borderStyleList = null;
 
 	this.fontPaletteDiv = null;
 	this.backgroundPaletteDiv = null;
 	this.borderPaletteDiv = null;
 	
-	this.borderColor; // used to store the value when borderColor is unseted on "inset" and "outset" border styles.
+	//this.borderColor; // used to store the value when borderColor is unseted on "inset" and "outset" border styles.
+	this.borderDesc = {"applyToIdx" : 0, "width" : "", "color" : "", "style" : ""};
 	
 	this.fontClrBtn = null;
 	this.bgClrBtn = null;
@@ -59,10 +64,12 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		this.fontClrBtn = toolBar.appendButton(this.onFontColor, false, IMAGES_FOLDER + "font_color.gif", "font color");
 		// background color
 		this.bgClrBtn = toolBar.appendButton(this.onBackgroundColor, false, IMAGES_FOLDER + "background_color.gif", "background color");
+		// border apply to
+		this.borderApplyToList = this.createBorderApplyTo(toolBar);
 		// border width
 		this.borderWidthList = this.createBorderWidthList(toolBar);
 		// border style
-		this.borderStyleList = this.createBorderList(toolBar);
+		this.borderStyleList = this.createBorderStyleList(toolBar);
 		// border color
 		this.borderClrBtn = toolBar.appendButton(this.onBorderColor, false, IMAGES_FOLDER + "border_color.gif", "border color");
 		// CSS view
@@ -73,7 +80,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		// alighnment of the sample.
 		this.centeringSampleDiv();
 	}
-	
+
 	this.creteStyleViewDiv = function() {
 		var div = document.createElement('div');
 		div.style.position = "absolute";
@@ -83,7 +90,7 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		
 		div.style.borderStyle = "solid";
 		div.style.borderWidth = 1;
-		div.style.borderColor = "#ccc";
+		//div.style.borderColor = "#ccc";
 		
 		div.style.visibility = "hidden";
 		parentDiv.appendChild(div);
@@ -127,138 +134,77 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 
 		return ddList;
 	}
-	
+	// border
+	this.createBorderApplyTo = function(toolBar) {
+   	var BORDER_FIELD_WIDTH = 60;
+  	var ddList = toolBar.appendDropdownList(BORDER_FIELD_WIDTH, "border:", this.onBorderApplyTo);
+		
+		for(var i = 0; i < BORDER_APPLY_TO.length; i++) {
+			var divTmp = document.createElement('div');
+			divTmp.innerHTML = BORDER_APPLY_TO[i].name;
+			ddList.appendItem(divTmp);
+		}
+		
+		// set current item in the list
+		ddList.setSelectedItem(this.borderDesc.applyToIdx);
+		return ddList;
+  }
+  // border width (1)
 	this.createBorderWidthList = function(toolBar) {
-		var BORDER_FIELD_WIDTH = 90;
-		var ddList = toolBar.appendDropdownList(BORDER_FIELD_WIDTH, "border:", this.onBorderWidth);
+		var BORDER_FIELD_WIDTH = 60;
+		var ddList = toolBar.appendDropdownList(BORDER_FIELD_WIDTH, "width:", this.onBorderWidth);
 		var innerStr;
 		for(var i = 0; i < BORDER_WIDTH.length; i++) {
 			var divTmp = document.createElement('div');
-			if(i == 0) {
-				innerStr = "none";
-				divTmp.style.paddingTop = divTmp.style.paddingBottom = 4;
-			}
-			else {
-				innerStr = "<div style='width:99% height:0; border-style:solid; border-width:0; border-bottom-width:"
-					+ BORDER_WIDTH[i] + ";'></div>";
-				divTmp.style.paddingTop = divTmp.style.paddingBottom = 8;
-			}
+			innerStr = "<div style='width:99% height:0; border-style:solid; border-width:0; border-bottom-width:"
+				+ BORDER_WIDTH[i] + ";'></div>";
+			divTmp.style.paddingTop = divTmp.style.paddingBottom = 8;
+
 			divTmp.innerHTML = innerStr;
 			ddList.appendItem(divTmp);
 		}
-		
 		// set current item in the list
-		var curBorderWidth = sampleDiv.style.borderWidth.toLowerCase();
-		// FF returns 4 words for each side. Extract 1st only.
-		var firstSpace = curBorderWidth.indexOf(" ");
-		if(firstSpace != -1)
-			curBorderWidth = curBorderWidth.substring(0, firstSpace);
-
-		var curIdx = this.getMemberArrayIdx(BORDER_WIDTH, curBorderWidth);
+		var curIdx = this.getMemberArrayIdx(BORDER_WIDTH, this.borderDesc.width);
 		if(curIdx != null)
 			ddList.setSelectedItem(curIdx);
-		else {
-			sampleDiv.style.borderWidth = 0;
+		else
 			ddList.setSelectedItem(0);
-		}
 
 		return ddList;
 	}
-
-	this.createBorderList = function(toolBar) {
-		var BORDER_FIELD_WIDTH = 90;
-		var ddList = toolBar.appendDropdownList(BORDER_FIELD_WIDTH, "border style:", this.onBorderStyle);
-		for(var i = 0; i < BORDER_ARR.length; i++) {
+  // border style (2)
+	this.createBorderStyleList = function(toolBar) {
+		var BORDER_FIELD_WIDTH = 60;
+		var ddList = toolBar.appendDropdownList(BORDER_FIELD_WIDTH, "style:", this.onBorderStyle);
+		for(var i = 0; i < BORDER_STYLE.length; i++) {
 			var divTmp = document.createElement('div');
 			var divInnerTmp = document.createElement('div');
 			
-			divTmp.style.borderStyle = BORDER_ARR[i];
-			divTmp.style.width = 80;
+			divTmp.style.borderStyle = BORDER_STYLE[i];
+			divTmp.style.width = 50;
 			divTmp.style.height = 12;
 			divTmp.style.borderWidth = 2;
 			divTmp.style.marginTop = 2;
-			divTmp.style.borderStyle = BORDER_ARR[i];
+			divTmp.style.borderStyle = BORDER_STYLE[i];
 			ddList.appendItem(divTmp);
 		}
-		
 		// set current item in the list
+/*
 		var curBorderStyle = sampleDiv.style.borderStyle.toLowerCase();
 		// FF returns 4 words for each side. Extract 1st only.
 		var firstSpace = curBorderStyle.indexOf(" ");
 		if(firstSpace != -1)
 			curBorderStyle = curBorderStyle.substring(0, firstSpace);
-			
-		var curIdx = this.getMemberArrayIdx(BORDER_ARR, curBorderStyle);
+*/			
+		var curIdx = this.getMemberArrayIdx(BORDER_STYLE, this.borderDesc.style);
 		if(curIdx != null)
 			ddList.setSelectedItem(curIdx);
+		else
+		  ddList.setSelectedItem(2);
 
 		return ddList;
 	}
-/*
-	this.createFontPalette = function(fontClrBtn) {
-		this.fontPaletteDiv = document.createElement('div');
-		this.fontPaletteDiv.style.position = "absolute"
-		this.fontPaletteDiv.style.backgroundColor = "#fff";
-		this.fontPaletteDiv.style.visibility = "hidden";
-		this.fontPaletteDiv.innerHTML = this.getPaletteContent();
-		var tdCol = this.fontPaletteDiv.getElementsByTagName("td");
-		for(var i = 0; i < tdCol.length; i++) {
-			eval("this._fontClr" + i + " = function() {i_am.setFontColor('" + tdCol[i].bgColor + "');}");
-			tdCol[i].onmouseup = eval("this._fontClr" + i);
-		}
-		
-		toolBar.div.appendChild(this.fontPaletteDiv);
-		
-		var left = fontClrBtn.left + fontClrBtn.width - this.fontPaletteDiv.clientWidth;
-		var top = fontClrBtn.top + fontClrBtn.height + 7;
-		this.fontPaletteDiv.style.left = left;
-		this.fontPaletteDiv.style.top = top;
-	}
-*/
-/*
-	this.createBackgroundPalette = function(bgClrBtn) {
-		this.backgroundPaletteDiv = document.createElement('div');
-		this.backgroundPaletteDiv.style.position = "absolute"
-		this.backgroundPaletteDiv.style.backgroundColor = "#fff";
-		this.backgroundPaletteDiv.style.visibility = "hidden";
-		this.backgroundPaletteDiv.innerHTML = this.getPaletteContent();
-		var tdCol = this.backgroundPaletteDiv.getElementsByTagName("td");
-		for(var i = 0; i < tdCol.length; i++) {
-			eval("this._bgClr" + i + " = function() {i_am.setBackgroundColor('" + tdCol[i].bgColor + "');}");
-			tdCol[i].onmouseup = eval("this._bgClr" + i);
-		}
-		
-		toolBar.div.appendChild(this.backgroundPaletteDiv);
-		
-		var left = bgClrBtn.left + bgClrBtn.width - this.backgroundPaletteDiv.clientWidth;
-		var top = bgClrBtn.top + bgClrBtn.height + 7;
-		this.backgroundPaletteDiv.style.left = left;
-		this.backgroundPaletteDiv.style.top = top;
-	}
-*/
-/*
-	this.createBorderPalette = function(borderClrBtn) {
-		this.borderPaletteDiv = document.createElement('div');
-		this.borderPaletteDiv.innerHTML = this.getPaletteContent();
-		this.borderPaletteDiv.style.position = "absolute"
-		this.borderPaletteDiv.style.backgroundColor = "#fff";
-		this.borderPaletteDiv.style.visibility = "hidden";
 
-		var tdCol = this.borderPaletteDiv.getElementsByTagName("td");
-		for(var i = 0; i < tdCol.length; i++) {
-			eval("this._borderClr" + i + " = function() {i_am.setBorderColor('" + tdCol[i].bgColor + "');}");
-			tdCol[i].onmouseup = eval("this._borderClr" + i);
-		}
-		
-		// append the palette
-		toolBar.div.appendChild(this.borderPaletteDiv);
-		
-		var left = borderClrBtn.left + borderClrBtn.width - this.borderPaletteDiv.clientWidth;
-		var top = borderClrBtn.top + borderClrBtn.height + 7;
-		this.borderPaletteDiv.style.left = left;
-		this.borderPaletteDiv.style.top = top;
-	}
-*/
 	this.centeringSampleDiv = function() {
 		// different sample centering on styleViewDiv option.
 		if(styleViewDiv.style.visibility == "hidden") {
@@ -292,26 +238,46 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		// 5. font color
 		if(sampleDiv.style.color == "")
 			sampleDiv.style.color = "#000000";
-		// 6. background color
-		if(sampleDiv.style.backgroundColor == "")
-			sampleDiv.style.backgroundColor = "#ffffff";
-		// 7. border style
-		if(sampleDiv.style.borderStyle == "")
-			sampleDiv.style.borderStyle = BORDER_ARR[2];
-		// 8. border width
-		if(sampleDiv.style.borderWidth == "")
-			sampleDiv.style.borderWidth = 0;
-		// 9. border color
-		// for bordy style "inset", "outset", borderColor should be unsetted.
-		if(sampleDiv.style.borderColor == "")
-			sampleDiv.style.borderColor = "#000000";
+		
+		// 6. borders
+		this.initBorderDesc();
 		
 		// PADDING
 		sampleDiv.style.padding = "5px";
-		// no need in height
+		// no need height
 		sampleDiv.style.height = "";
 		
 		sampleDiv.style.visibility = "visible";
+	}
+	
+	this.initBorderDesc = function() {
+    var stl = sampleDiv.style;
+    var applyToIdx = 0; // init: no borders
+    var bordersAmt = 0;
+    // 1. apply to
+    // check: left (idx 2), top, right, bottom 
+    for(var i = 2; i < BORDER_APPLY_TO.length; i++) {
+      if(stl[BORDER_APPLY_TO[i].valueScr].length != 0) {
+        applyToIdx = i;
+        bordersAmt++;
+      }
+    }
+    if(bordersAmt > 1)
+       this.borderDesc.applyToIdx = 1; // all b0rders
+    else if(bordersAmt == 1)
+      this.borderDesc.applyToIdx = applyToIdx;
+    
+    // 2. width
+    var widthName = BORDER_APPLY_TO[applyToIdx].valueScr + "Width";
+    this.borderDesc.width = stl[widthName];
+    
+    // 3. color
+    var colorName = BORDER_APPLY_TO[applyToIdx].valueScr + "Color";
+    this.borderDesc.color = stl[colorName];
+    
+    // 4. style
+    var styleName = BORDER_APPLY_TO[applyToIdx].valueScr + "Style";
+    this.borderDesc.style = stl[styleName];
 	}
 
 	this.getStyleString = function() {
@@ -327,17 +293,31 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		// 5. font color
 		style += "color: " + sampleDiv.style.color + "; ";
 		// 6. background color
-		style += "background-color: " + sampleDiv.style.backgroundColor + "; ";
-		// 7. border style
-		style += "border-style: " + sampleDiv.style.borderStyle + "; ";
-		// 8. border width
-		style += "border-width: " + sampleDiv.style.borderWidth + "; ";
-		// 9. border color
-		style += "border-color: " + sampleDiv.style.borderColor + "; ";
-
+		if(sampleDiv.style.backgroundColor != "")
+		  style += "background-color: " + sampleDiv.style.backgroundColor + "; ";
+		// border
+		var brdStl = this.getBorderStyleStr();
+		if(brdStl.length != 0) {
+      var applyTo = BORDER_APPLY_TO[this.borderDesc.applyToIdx].valueHtml;
+		  style += applyTo + ": " + brdStl + "; "
+		}
 		return style;
 	}
-
+  
+  this.getBorderStyleStr = function() {
+  	var brdStlStr = "";
+  	if(this.borderDesc.applyToIdx != 0) {
+	    var applyTo = BORDER_APPLY_TO[this.borderDesc.applyToIdx].valueScr;
+	    if(typeof this.borderDesc.width != 'undefined')
+	      brdStlStr += this.borderDesc.width + " ";
+ 	    if(typeof this.borderDesc.color != 'undefined')
+        brdStlStr += this.borderDesc.color + " ";
+	    if(typeof this.borderDesc.style != 'undefined')
+	      brdStlStr += this.borderDesc.style;
+	  }
+	  return brdStlStr;
+  }
+  
 	// HANDLERS ---------------------------
 	this.onFontFamily = function(fontIdx) {
 		sampleDiv.style.fontFamily = FONT_ARR[fontIdx];
@@ -372,39 +352,36 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	}
 	
 	this.onFontColor = function() {
-		PalettePopup.show(i_am.fontClrBtn, 'right', i_am.setFontColor);
+		var parentDlg = getAncestorById(i_am.fontClrBtn.div, 'pane2'); //'pane2' dialog 
+		PalettePopup.show(i_am.fontClrBtn, 'right', i_am.setFontColor, parentDlg);
 	}
 	
 	this.onBackgroundColor = function() {
-		PalettePopup.show(i_am.bgClrBtn, 'right', i_am.setBackgroundColor);
+		var parentDlg = getAncestorById(i_am.bgClrBtn.div, 'pane2'); //'pane2' dialog 
+		PalettePopup.show(i_am.bgClrBtn, 'right', i_am.setBackgroundColor, parentDlg, "no background");
 	}
 	
-	this.onBorderStyle = function(styleIdx) {
-		// on border style: "inset" and "outset", to unset border color.
-		if(BORDER_ARR[styleIdx].indexOf("inset") != -1 ||
-				 BORDER_ARR[styleIdx].indexOf("outset") != -1) {
-			if(sampleDiv.style.borderColor != "")
-				i_am.borderColor = sampleDiv.style.borderColor;
-
-			sampleDiv.style.borderColor = "";
-			sampleDiv.style.borderStyle = BORDER_ARR[styleIdx];
-		}
-		else {
-			if(sampleDiv.style.borderColor == "") {
-				sampleDiv.style.borderColor = i_am.borderColor;
-			}
-			sampleDiv.style.borderStyle = BORDER_ARR[styleIdx];
-		}
-		i_am.putStyleStr();
-	}
-
+  // borders --
+  this.onBorderApplyTo = function(applyToIdx) {
+    i_am.borderDesc.applyToIdx = applyToIdx;
+    i_am._setBorders();
+  }
+  // border width:
 	this.onBorderWidth = function(widthIdx) {
-		sampleDiv.style.borderWidth = BORDER_WIDTH[widthIdx];
-		i_am.putStyleStr();
+		//sampleDiv.style.borderWidth = BORDER_WIDTH[widthIdx];
+		i_am.borderDesc.width = BORDER_WIDTH[widthIdx];
+		i_am._setBorders();
 	}
-
+	// border style
+	this.onBorderStyle = function(styleIdx) {
+		//sampleDiv.style.borderStyle = BORDER_STYLE[styleIdx];
+		i_am.borderDesc.style = BORDER_STYLE[styleIdx];
+		i_am._setBorders();
+	}
+	// border color
 	this.onBorderColor = function() {
-		PalettePopup.show(i_am.borderClrBtn, 'right', i_am.setBorderColor);
+		var parentDlg = getAncestorById(i_am.borderClrBtn.div, 'pane2'); //'pane2' dialog 
+		PalettePopup.show(i_am.borderClrBtn, 'right', i_am.setBorderColor, parentDlg);
 	}
 
 	this.onStyleView = function(isPressed) {
@@ -430,20 +407,29 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 	}
 	
 	this.setBackgroundColor = function(colorStr) {
-		sampleDiv.style.backgroundColor = colorStr;
+	 // if(colorStr.length == 0)
+	 //   sampleDiv.style.backgroundColor = "transparent";
+	 // else
+	    sampleDiv.style.backgroundColor = colorStr;
 		i_am.putStyleStr();
 	}
 	
 	this.setBorderColor = function(colorStr) {
-		if(sampleDiv.style.borderStyle.indexOf("inset") != -1 ||
-					sampleDiv.style.borderStyle.indexOf("outset") != -1) {
-			i_am.borderColor = colorStr;
-		}
-		else {
-			sampleDiv.style.borderColor = colorStr;
-		}
-		i_am.putStyleStr();
+		//sampleDiv.style.borderColor = colorStr;
+		i_am.borderDesc.color = colorStr;
+		i_am._setBorders();
 	}
+	this._setBorders = function() {
+    // reset
+    sampleDiv.style.border = "";
+    var brdStlStr = this.getBorderStyleStr();
+    if(brdStlStr.length != 0) {
+      var applyTo = BORDER_APPLY_TO[this.borderDesc.applyToIdx].valueScr;
+      sampleDiv.style[applyTo] =  brdStlStr;
+    }
+	  i_am.putStyleStr();
+	}
+
 	
 	this.putStyleStr = function() {
 		// 1. set into styleViewDiv
@@ -451,11 +437,11 @@ function StyleSheet(parentDivIn, sampleDivIn, frameObjIn, fieldNameIn)
 		styleViewDiv.innerHTML = styleStr;
 
 		// 2. set into a form's field
-		var fieldObj = this.frameObj[this.fieldName];
+		var fieldObj = this.formObj[this.fieldName];
 		if(fieldObj != null) // IE
 			fieldObj.value = styleStr;
 		else { // FF !
-			formName = this.frameObj.id;
+			formName = this.formObj.id;
 			document.forms[formName].elements[this.fieldName].value = this.getStyleString() ;
 		}
 	}
