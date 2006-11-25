@@ -4098,13 +4098,94 @@ function addAndShowWait()	{
     alert("Warning: server did not return resource list data - check connection to server");
     return;
   }
-
   var divCopyTo = document.getElementById(frameId + "_div");
   if (!divCopyTo) {
     alert("Warning: target div not found: " + frameId + "_div");
     return;
   }
-  divCopyTo.innerHTML = body.innerHTML;
+  // Find new 'currentItem' anchor and substitute old one with new
+  var elms = body.getElementsByTagName('a');
+  var currentItem;
+  for (var j=0; j<elms.length; j++) {
+    if (elms[j].id  &&  elms[j].id == 'currentItem') {
+      currentItem = elms[j].href;
+      break;
+    }
+  }
+  // Find tr that needed to be inserted in the list
+  var elms = body.getElementsByTagName('tr');
+  var currentTR;
+  var resultsTR;
+  for (var j=0; j<elms.length; j++) {
+    if (elms[j].id  &&  elms[j].id == currentItem) {
+      currentTR = elms[j];
+      break;
+    }
+  }
+  // Find TR in previous list that was current and chnge style of the row
+  elms = divCopyTo.getElementsByTagName('a');
+  var oldCurrentItem;
+  for (var j=0; j<elms.length; j++) {
+    if (elms[j].id  &&  elms[j].id == 'currentItem') {
+      oldCurrentItem = elms[j].href;
+      elms[j].href = currentItem;
+      break;
+    }
+  }
+  if (oldCurrentItem) {
+    elms = divCopyTo.getElementsByTagName('tr');
+    for (var j=0; j<elms.length; j++) {
+      if (elms[j].id  &&  elms[j].id == oldCurrentItem) {
+        if (oldCurrentItem == currentItem) {
+          var tbody  = elms[j].parentNode;
+          tbody.removeChild(elms[j]);
+          if (j == elms.length)
+            tbody.appendChild(currentTR);
+          else {
+            tbody.insertBefore(currentTR, elms[j]);
+            return;
+          }
+        }
+        else
+          elms[j].style.backgroundColor = '';
+        break;
+      }
+    }
+  }
+//  divCopyTo.innerHTML = body.innerHTML;
+  elms = divCopyTo.getElementsByTagName("tr");
+  var oldResultsTR;
+  for (var j=0; j<elms.length; j++) {
+    var tr = elms[j];
+    if (!tr.id)
+      continue;
+    if (tr.id == 'results') {
+      var tds = tr.childNodes;
+      for (var i=0; i<tds.length; i++) {
+        if (tds[i].id && tds[i].id == 'results') {
+          var r = tds[i].innerHTML;
+          var idx = r.indexOf('-');
+          var idx1 = r.indexOf('<', idx);
+          var recs = r.substring(idx + 1, idx1);
+          var recsNmb = parseInt(recs) + 1;
+          var newInnerHTML = r.substring(0, idx + 1) + recsNmb;
+          idx = r.indexOf(recs, idx1);
+          
+          newInnerHTML += r.substring(idx1, idx) + recsNmb;
+          tds[i].innerHTML = newInnerHTML;
+        }
+      }
+    }
+    else if (tr.id == 'header') {
+      var tbody  = tr.parentNode;
+      var trElms = tbody.childNodes; 
+      if (trElms.size == 1)
+        tbody.appendChild(currentTR);
+      else
+        tbody.insertBefore(currentTR, trElms.item(1));
+      break;
+    }
+  }  
   //resourceListEdit(divCopyTo);
   var images = divCopyTo.getElementsByTagName('img');
   for (var i=0; i<images.length; i++) {
@@ -4378,7 +4459,16 @@ function addAndShowItems(tr, e) {
   var title = form.elements[".title"].value;
   var href = document.location.href;
   var idx = href.indexOf("?");
-  anchor += "&.forum_select=" + encodeURIComponent(forum) + "&.title=" + encodeURIComponent(title) + "&$returnUri="+ encodeURIComponent("localSearchResults.html?-addItems=y&-noRedirect=y&" + href.substring(idx + 1));
+  anchor += "&.forum_select=" + encodeURIComponent(forum) + "&.title=" + encodeURIComponent(title) + "&$returnUri=";
+  
+  var idx1 = href.indexOf("-currentItem=");
+  
+  if (idx1 == -1)
+    anchor += encodeURIComponent("localSearchResults.html?-addItems=y&-noRedirect=y&-currentItem=" + encodeURIComponent(forum) + "&" + href.substring(idx + 1));
+  else {
+    var idx2 = href.indexOf("&", idx1);
+    anchor += encodeURIComponent("localSearchResults.html?-addItems=y&-noRedirect=y&-currentItem=" + encodeURIComponent(forum) + "&" + href.substring(idx + 1, idx1) + href.substring(idx2));
+  }
 
   return addAndShow1(anchor, e);
 }
