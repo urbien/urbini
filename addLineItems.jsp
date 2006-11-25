@@ -21,7 +21,7 @@
     <tr valign="top">
 	    <td width="70%">
 	      <mkResourceForLineItems/>
-				<div id="keyboard" class="hiddenDiv">
+				<div id="keyboard" style="display:none">
 					<style type="text/css">
 					  .simpleButton {border:solid #808080 1px; color: darkblue; font-size:16pt; height:40pt; cursor: pointer; cursor: hand;}
 					  .filterButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:30px;text-decoration:none}
