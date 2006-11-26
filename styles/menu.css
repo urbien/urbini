@@ -16,16 +16,22 @@ TD.toolbar {
   FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 1px; PADDING-TOP: 1px; FONT-STYLE: normal; FONT-FAMILY: Tahoma, Arial, Helvetica, sans-serif, "MS Sans Serif"; TEXT-DECORATION: none; white-space: nowrap;
 }
 
+.popMenu tr {
+  cursor: pointer; PADDING-LEFT: 2px;
+}
+
 .popupFrameBody {
 }
 
 .popMenuTitle {
-	POSITION: relative; BACKGROUND-COLOR: #3366cc
+	POSITION: relative; BACKGROUND-COLOR: #3366cc; cursor: text;
 }
 
+.menuTitle {
+}
 
-.menuTitle td {
-	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc;
+.menuTitle td, .menuTitle th {
+	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
 }
 
 .menuItemIcon {
@@ -45,7 +51,6 @@ TD.toolbar {
 }
 
 .menuItem {
-  PADDING-LEFT: 2px; cursor: pointer; cursor: hand;
 }
 
 .menuItemChart {
@@ -58,7 +63,7 @@ TD.toolbar {
 .menuItemNoChoices {
 }
 
-.menuItem a:hover, .menuItem a:link, .menuItem a:active, .menuItem a:visited {
+.popMenu a:hover, .popMenu a:link, .popMenu a:active, .popMenu a:visited {
   color: black; TEXT-DECORATION: none;
 }
 
@@ -72,7 +77,7 @@ TD.toolbar {
 
 .closePopup {
   background-color: #0055e6;
-  cursor: pointer; cursor: hand;
+  cursor: pointer;
   background-image: url('../icons/hide.gif');
   text-align: right;
 }
@@ -87,6 +92,10 @@ TD.toolbar {
 	COLOR: red;
 }
 .menuExpand {
+}
+
+.menuDivider {
+  cursor: text;
 }
 
 .menuDivider td.td2 {
