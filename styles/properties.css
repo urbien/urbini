@@ -70,7 +70,7 @@ span.light {color:#ffffff}
 
 a:link { color: #0033CC; }
 a:hover { text-decoration: underline; color: #3399FF; }
-.button1 {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; cursor: hand; font-size:11px}
+.button1 {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 
 .select	{color:#000066;background-color:#D6E7EF;font-size:11px}
 .selected	{color:#000066;background-color:fffdc3;font-size:7pt}
@@ -167,6 +167,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   background-repeat: repeat-x;
   background-position: center;
   text-align: center;
+  overflow: hidden;
   white-space: nowrap;
   vertical-align: middle;
 }
@@ -176,7 +177,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   background-position: center;
   vertical-align: middle;
 }
-.group {background:#f8f4ef; FONT-WEIGHT: bold; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; cursor: hand; COLOR: #000000; PADDING-TOP: 3px; FONT-WEIGHT:bold; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}
+.group {background:#f8f4ef; FONT-WEIGHT: bold; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; COLOR: #000000; PADDING-TOP: 3px; FONT-WEIGHT:bold; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}
 
 /* Under menu line style (usually the same color as tabs */
 .line {background:#ACD2E2}
@@ -189,6 +190,11 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .fixed {
   table-layout: fixed;
 }
+
+.fixed th, .fixed td{
+  overflow: hidden;
+}
+
 .schedule th, .schedule td {
   width: 3em;
   overflow: hidden;
@@ -223,9 +229,9 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .grayedOut   {border:solid #808080 0px;background-color:#E2E2E2;vertical-align:top}
 
 /* Recall_orders page styles */
-.allButton      {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold; height:40pt; cursor: pointer; cursor: hand;}
-.categoryButton {border:solid #808080 1px; background-color:#f8f4ef; color: darkblue; font-size:12pt;font-weight:bold; height:40pt; cursor: pointer; cursor: hand;}
-.itemButton     {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:40pt;text-decoration:none; cursor: pointer; cursor: hand;}
+.allButton      {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold; height:40pt; cursor: pointer;}
+.categoryButton {border:solid #808080 1px; background-color:#f8f4ef; color: darkblue; font-size:12pt;font-weight:bold; height:40pt; cursor: pointer;}
+.itemButton     {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:40pt;text-decoration:none; cursor: pointer;}
 
 /* Add items styles */
 .backTo         {color:red}
@@ -238,8 +244,8 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 
 .nowrap {white-space: nowrap;}
-.scheduleSubmit {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19pt;text-decoration:none;cursor: pointer; cursor: hand; font-size:12px; font-weight:bold}
-.cursor {cursor: pointer; cursor: hand;}
+.scheduleSubmit {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19pt;text-decoration:none;cursor: pointer; font-size:12px; font-weight:bold}
+.cursor {cursor: pointer;}
 .dataEntryDialog {background-color: #D6E7EF; background:url(../images/skin/blue/dataEntryDialog.gif); padding: 15px;}
 .resourceListDialog {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); padding: 15px;}
 .dialogPanel {border:solid #5C9EBF 1px; padding: 15px}
@@ -251,9 +257,9 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 #titleBar {height: 22px; background:url(../images/skin/blue/title.gif); cursor:move; padding-left:5px;}
 
 span.action {font-family:verdana,sans-serif,arial;font-weight:bold;font-size:8pt;color:#000066;}
-tr.submit     {background-image: url('../images/toolbar_bg.gif');cursor: pointer; cursor: hand; color:darkblue;}
+tr.submit     {background-image: url('../images/toolbar_bg.gif');cursor: pointer; color:darkblue;}
 td.submit     {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
-tr.checkout   {background-image: url('../images/toolbar_bg.gif');cursor: pointer; cursor: hand; color:darkblue;}
+tr.checkout   {background-image: url('../images/toolbar_bg.gif');cursor: pointer; color:darkblue;}
 td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .requiredField {
 	border-left: 5px solid #00aeef;
