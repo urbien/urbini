@@ -2856,8 +2856,15 @@ function onClickDisplayInner(e, anchor) {
     var a = anchor.href;
     if (a != 'about:blank')
       r = displayInner(e, a);
-    else
-      r = displayInner(e, innerUrls[propName]);
+    else {
+      var ul = document.getElementById(propName);
+      if (!ul)
+        r = displayInner(e, innerUrls[propName]);
+      else {
+        var li = ul.getElementsByTagName("li");
+        r = displayInner(e, decodeURL(li[0].innerHTML));
+      }
+    }
   }
   return r;
 }
@@ -3198,6 +3205,54 @@ function addPageTitleToUrl(e) {
   var ret = displayInner(e, a.href + delim + 'title=' + title);
   return ret;
 }
+
+var xmlEntities = [];
+xmlEntities['quot'] = '"';
+xmlEntities['amp'] = '&';
+xmlEntities['lt'] = '<';
+xmlEntities['gt'] = '>';
+xmlEntities['apos'] = "'";
+xmlEntities['34'] = '"';
+xmlEntities['38'] = '&';
+xmlEntities['60'] = '<';
+xmlEntities['62'] = '>';
+xmlEntities['39'] = "'";
+
+function decodeURL(str) {
+  var buf = '';
+  for (var i = 0; i < str.length; ++i) {
+    var ch = str.charAt(i);
+    if (ch != '&') { 
+      buf += ch;
+      continue;
+    }
+    var semi = str.indexOf(';', i + 1);
+    if (semi == -1) {
+      buf += ch;
+      continue;
+    }
+    var entityName = str.substring(i + 1, semi);
+    var entityValue;
+    if (entityName.charAt(0) == '#') 
+      entityValue = entityName.substring(1);
+    else {
+      var e = xmlEntities[entityName];
+      if (e == null)
+        entityValue = -1;
+      else
+        entityValue = e;
+    }
+    if (entityValue == -1) {
+      buf += '&' + entityName + ';';
+    } else {
+      buf += entityValue;
+    }
+    i = semi;
+  }
+  return buf;
+}
+
+
 
 function displayInner(e, urlStr) {
   e = getDocumentEvent(e); if (!e) return;
@@ -4472,14 +4527,19 @@ function addAndShowItems(tr, e) {
 
   return addAndShow1(anchor, e);
 }
-var receipts = [];
 function printReceipt(url) {
-  var thisReceipt = receipts[url];
-  if (thisReceipt  &&  thisReceipt.length) {
+  var tr = document.getElementById(url);
+  if (!tr)
+    return;
+  var ul = tr.getElementsByTagName("ul");
+  if (!ul)
+    return;
+  var li = ul[0].getElementsByTagName("li");
+  if (li.length) {
     var appl = document.applets[0];
     appl.open();
-    for (i=0; i<thisReceipt.length; i++)
-      appl.println(thisReceipt[i]);
+    for (i=0; i<li.length; i++)
+      appl.println(li[i].innerHTML);
     appl.close();
   }
 }
@@ -5248,5 +5308,6 @@ var execJS = {
         window.eval(execJS.runCodeArr[i].jsCode);
       }    
    }
+  
 }
 // ==================================================
