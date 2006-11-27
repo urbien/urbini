@@ -4187,20 +4187,20 @@ function addAndShowWait()	{
       break;
     }
   }
- 
+  var oldCurrentTR;
   if (oldCurrentItem) {
     elms = divCopyTo.getElementsByTagName('tr');
     for (var j=0; j<elms.length; j++) {
       if (elms[j].id  &&  elms[j].id == oldCurrentItem) {
         if (oldCurrentItem == currentItem) {
           var tbody  = elms[j].parentNode;
+          oldCurrentTR = elms[j];
+          
           tbody.removeChild(elms[j]);
           if (j == elms.length)
             tbody.appendChild(currentTR);
-          else {
+          else 
             tbody.insertBefore(currentTR, elms[j]);
-            return;
-          }
         }
         else
           elms[j].style.backgroundColor = '';
@@ -4216,7 +4216,7 @@ function addAndShowWait()	{
     var tr = elms[j];
     if (!tr.id)
       continue;
-    if (tr.id == 'results') {
+    if (!oldCurrentTR  &&  tr.id == 'results') {
       var tds = tr.childNodes;
       for (var i=0; i<tds.length; i++) {
         if (tds[i].id && tds[i].id == 'results') {
@@ -4236,6 +4236,9 @@ function addAndShowWait()	{
     else if (tr.id == 'totals') {
       var tds = tr.getElementsByTagName('td');
       var curTrTds = currentTR.getElementsByTagName('td');
+      var oldCurTrTds;
+      if (oldCurrentTR)
+        oldCurTrTds = oldCurrentTR.getElementsByTagName('td');
       for (var i=0; i<tds.length; i++) {
         if (tds[i].id && tds[i].id.indexOf('tot_') == 0) {
           var tot = tds[i].innerHTML;
@@ -4250,12 +4253,16 @@ function addAndShowWait()	{
           var total = extractTotalFrom(tot);
           var curTotal = extractTotalFrom(curTrTds[i + 1].innerHTML);
           total += parseFloat(curTotal);
+          if (oldCurrentTR) {
+            var oldTotal = extractTotalFrom(oldCurTrTds[i + 1].innerHTML);
+            total -= oldTotal;
+          }
 //          total = Math.round(total * 100)/100;
           tds[i].innerHTML = tot.substring(0, startDigit) + total;
         }
       }
     }
-    else if (tr.id == 'header') {
+    else if (!oldCurrentTR  &&  tr.id == 'header') {
       var tbody  = tr.parentNode;
       var trElms = tbody.childNodes; 
       if (trElms.size == 1)
