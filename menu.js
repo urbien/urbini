@@ -4213,6 +4213,7 @@ function addAndShowWait()	{
   var totals;
   elms = divCopyTo.getElementsByTagName("tr");
   var oldResultsTR;
+  var totalsTR;
   for (var j=0; j<elms.length; j++) {
     var tr = elms[j];
     if (!tr.id)
@@ -4235,6 +4236,7 @@ function addAndShowWait()	{
       }
     }
     else if (tr.id == 'totals') {
+      totalsTR = tr;
       var tds = tr.getElementsByTagName('td');
       var curTrTds = currentTR.getElementsByTagName('td');
       var oldCurTrTds;
@@ -4252,6 +4254,7 @@ function addAndShowWait()	{
             }
           }
           var total = extractTotalFrom(tot);
+          // since first cell of Total tr has colspan=2, the column # in resources TR that referes to the same property will reside in # + 1 column 
           var curTotal = extractTotalFrom(curTrTds[i + 1].innerHTML);
           total += parseFloat(curTotal);
           if (oldCurrentTR) {
@@ -4272,6 +4275,15 @@ function addAndShowWait()	{
         tbody.insertBefore(currentTR, trElms.item(1));
     }
   }  
+  // This is the first element in RL. That means that 'Total' line was not formed
+  if (!totalsTR) {
+    var elms = body.getElementsByTagName('tr');
+    for (var j=0; j<elms.length; j++) {
+      var tr = elms[j]; 
+      if (tr.id == 'totals') 
+        tbody.appendChild(tr);
+    }
+  }
   //resourceListEdit(divCopyTo);
   var images = divCopyTo.getElementsByTagName('img');
   for (var i=0; i<images.length; i++) {
