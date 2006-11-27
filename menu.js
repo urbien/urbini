@@ -4187,6 +4187,7 @@ function addAndShowWait()	{
       break;
     }
   }
+ 
   if (oldCurrentItem) {
     elms = divCopyTo.getElementsByTagName('tr');
     for (var j=0; j<elms.length; j++) {
@@ -4208,6 +4209,7 @@ function addAndShowWait()	{
     }
   }
 //  divCopyTo.innerHTML = body.innerHTML;
+  var totals;
   elms = divCopyTo.getElementsByTagName("tr");
   var oldResultsTR;
   for (var j=0; j<elms.length; j++) {
@@ -4231,6 +4233,28 @@ function addAndShowWait()	{
         }
       }
     }
+    else if (tr.id == 'totals') {
+      var tds = tr.getElementsByTagName('td');
+      var curTrTds = currentTR.getElementsByTagName('td');
+      for (var i=0; i<tds.length; i++) {
+        if (tds[i].id && tds[i].id.indexOf('tot_') == 0) {
+          var tot = tds[i].innerHTML;
+          var startDigit = -1;
+          for (var ii=0; ii<tot.length; ii++) {
+            var ch = tot.charAt(ii);
+            if (isDigit(ch)) {
+              if (startDigit == -1) 
+                startDigit = ii;
+            }
+          }
+          var total = extractTotalFrom(tot);
+          var curTotal = extractTotalFrom(curTrTds[i + 1].innerHTML);
+          total += parseFloat(curTotal);
+//          total = Math.round(total * 100)/100;
+          tds[i].innerHTML = tot.substring(0, startDigit) + total;
+        }
+      }
+    }
     else if (tr.id == 'header') {
       var tbody  = tr.parentNode;
       var trElms = tbody.childNodes; 
@@ -4238,7 +4262,6 @@ function addAndShowWait()	{
         tbody.appendChild(currentTR);
       else
         tbody.insertBefore(currentTR, trElms.item(1));
-      break;
     }
   }  
   //resourceListEdit(divCopyTo);
@@ -4248,7 +4271,39 @@ function addAndShowWait()	{
   }
   interceptLinkClicks(divCopyTo);
 }
-
+function extractTotalFrom(tot) {
+  var ii = 0;
+  var dot = -1;
+  var startDigit = -1;
+  var endDigit = tot.length;
+  for (; ii<tot.length; ii++) {
+    var ch = tot.charAt(ii);
+    if (isDigit(ch)) {
+      if (startDigit == -1) 
+        startDigit = ii;
+    }
+    else if (startDigit == -1)
+      continue;
+    else if (dot != -1) {
+      endDigit = ii;
+      break;
+    }
+    else if (ch == '.')
+      dot = ii;
+  }
+  var total = 0;
+  if (startDigit != -1)
+    total = parseFloat(tot.substring(startDigit, endDigit));
+  return total;
+}
+function isDigit(num) {
+  if (num.length > 1) 
+    return false;
+  var string="1234567890";
+  if (string.indexOf(num)!=-1)
+    return true;
+  return false;
+}
 function processTransaction(e) {
   var target = getTargetElement(e);
   if (!target)
@@ -5308,6 +5363,7 @@ var execJS = {
         window.eval(execJS.runCodeArr[i].jsCode);
       }    
    }
-  
+
+
 }
 // ==================================================
