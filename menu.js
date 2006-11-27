@@ -4290,6 +4290,11 @@ function addAndShowWait()	{
       if (!totalsTR && tr.id == 'totals') 
         tbody.appendChild(tr);
       else if (!resultsTR && tr.id == 'results') {
+        var cells = tr.getElementsByTagName('td');
+        var cellsNmb = cells.length;
+        var headerCols = headerTR.getElementsByTagName('td').length;
+        if (cellsNmb != headerCols)
+          cells[0].colSpan = headerCols - cellsNmb + 1;
         tbody.insertBefore(tr, headerTR);
       }
     }
