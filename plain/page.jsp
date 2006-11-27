@@ -8,8 +8,17 @@
   <div nonPda="T">
     <include name="requiredHeader.jsp"/>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr bgcolor="#F1F1F1">
+	    <td class="welcome" valign="top">
+	      <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" align="absmiddle"/></a>
+	      <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
+	    </td>
+	    <td valign="middle" nowrap="nowrap"  align="right">
+	      <a href="http://universalplatform.com/home"><img src="icons/up.gif" align="absmiddle" border="0"/><span  class="poweredBy" style="padding-left: 5px">on Universal</span><span class="poweredBy-b">Platform</span></a>
+	    </td>
+	  </tr>
     <tr>
-      <td valign="top" width="100%">
+      <td valign="top" colspan="2" width="100%">
         <div id="corePageContent"> <file/> </div>
       </td>
     </tr>
