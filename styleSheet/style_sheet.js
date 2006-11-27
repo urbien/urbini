@@ -2,13 +2,20 @@
 function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 {
 	var IMAGES_FOLDER = "images/wysiwyg/";
-	var FONT_ARR = ["arial", "arial black", "comic sans ms", "courier", "courier new", "georgia", "helvetica", "impact", "palatino", "times new roman", "trebuchet ms", "verdana"];
-	var FONT_SIZE_ARR = ["9px", "10px", "12px", "14px", "16px", "20px", "24px", "30px", "35px"];
+	
+	var FONT_ARR = [{"name":"arial", "value":"arial"}, {"name":"arial black", "value":"arial black"}, {"name":"comic sans ms", "value":"comic sans ms"},
+	 {"name":"courier", "value":"courier"}, {"name":"courier new", "value":"courier new"}, {"name":"georgia", "value":"georgia"}, {"name":"helvetica", "value":"helvetica"}, {"name":"impact", "value":"impact"},
+	 {"name":"palatino", "value":"palatino"}, {"name":"times new roman", "value":"times new roman"}, {"name":"trebuchet ms", "value":"trebuchet ms"}, {"name":"verdana", "value":"verdana"}, {"name":"<i>default</i>", "value":""}];
+	
+	var FONT_SIZE_ARR = [{"name":"9px", "value":"9px"}, {"name":"10px", "value":"10px"}, {"name":"12px", "value":"12px"}, {"name":"14px", "value":"14px"},
+	  {"name":"16px", "value":"16px"}, {"name":"20px", "value":"20px"}, {"name":"24px", "value":"24px"}, {"name":"30px", "value":"30px"}, {"name":"35px", "value":"35px"}, {"name":"<i>default</i>", "value":""}];
 	
 	var BORDER_APPLY_TO = [{name:"none", valueHtml:"", valueScr:""}, {name:"all", valueHtml:"border", valueScr:"border"},{name:"left", valueHtml:"border-left", valueScr:"borderLeft"},
 	  {name:"top", valueHtml:"border-top", valueScr:"borderTop"}, {name:"right", valueHtml:"border-right", valueScr:"borderRight"}, {name:"bottom", valueHtml:"border-bottom", valueScr:"borderBottom"}];
-	var BORDER_STYLE = ["dotted", "dashed", "solid", /*"double",*/ /*"groove",*/ /*"ridge",*/ "inset", /*"window-inset",*/ "outset"];
-	var BORDER_WIDTH = ["1px", "2px", "3px", "10px"];
+	
+	var BORDER_STYLE = [{"name":"dotted", "value":"dotted"}, {"name":"dashed", "value":"dashed"}, {"name":"solid", "value":"solid"}, {"name":"inset", "value":"inset"}, {"name":"outset", "value":"outset"}, {"name":"<i>default</i>", "value":""}];
+	
+	var BORDER_WIDTH = [{"name":"1px", "value":"1px"}, {"name":"2px", "value":"2px"}, {"name":"3px", "value":"3px"}, {"name":"10px", "value":"10px"}, {"name":"<i>default</i>", "value":""}];
 	
 	var i_am = this;
 	var parentDiv = parentDivIn;
@@ -30,7 +37,6 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 	this.backgroundPaletteDiv = null;
 	this.borderPaletteDiv = null;
 	
-	//this.borderColor; // used to store the value when borderColor is unseted on "inset" and "outset" border styles.
 	this.borderDesc = {"applyToIdx" : 0, "width" : "", "color" : "", "style" : ""};
 	
 	this.fontClrBtn = null;
@@ -104,8 +110,8 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 		var ddList = toolBar.appendDropdownList(FONT_FIELD_WIDTH, "font:", this.onFontFamily);
 		for(var i = 0; i < FONT_ARR.length; i++) {
 			var divTmp = document.createElement('div');
-			divTmp.innerHTML = FONT_ARR[i];
-			divTmp.style.fontFamily = FONT_ARR[i];
+			divTmp.innerHTML = FONT_ARR[i].name;
+			divTmp.style.fontFamily = FONT_ARR[i].value;
 			divTmp.style.fontSize = FONT_SIZE;
 			ddList.appendItem(divTmp);
 		}
@@ -119,11 +125,11 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 	}
 	
 	this.createFontSizeList = function(toolBar) {
-		var FONT_FIELD_WIDTH = 50;
+		var FONT_FIELD_WIDTH = 60;
 		var ddList = toolBar.appendDropdownList(FONT_FIELD_WIDTH, "size:", this.onFontSize);
 		for(var i = 0; i < FONT_SIZE_ARR.length; i++) {
 			var divTmp = document.createElement('div');
-			divTmp.innerHTML = FONT_SIZE_ARR[i];
+			divTmp.innerHTML = FONT_SIZE_ARR[i].name;
 			ddList.appendItem(divTmp);
 		}
 		// set current item in the list
@@ -156,10 +162,13 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 		var innerStr;
 		for(var i = 0; i < BORDER_WIDTH.length; i++) {
 			var divTmp = document.createElement('div');
-			innerStr = "<div style='width:99% height:0; border-style:solid; border-width:0; border-bottom-width:"
-				+ BORDER_WIDTH[i] + ";'></div>";
-			divTmp.style.paddingTop = divTmp.style.paddingBottom = 8;
-
+			  if(BORDER_WIDTH[i].value != "") {
+			  innerStr = "<div style='width:99% height:0; border-style:solid; border-width:0; border-bottom-width:"
+				  + BORDER_WIDTH[i].name + ";'></div>";
+			  divTmp.style.paddingTop = divTmp.style.paddingBottom = 8;
+      }
+      else
+        innerStr = BORDER_WIDTH[i].name;
 			divTmp.innerHTML = innerStr;
 			ddList.appendItem(divTmp);
 		}
@@ -179,23 +188,20 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 		for(var i = 0; i < BORDER_STYLE.length; i++) {
 			var divTmp = document.createElement('div');
 			var divInnerTmp = document.createElement('div');
-			
-			divTmp.style.borderStyle = BORDER_STYLE[i];
-			divTmp.style.width = 50;
-			divTmp.style.height = 12;
-			divTmp.style.borderWidth = 2;
-			divTmp.style.marginTop = 2;
-			divTmp.style.borderStyle = BORDER_STYLE[i];
+			var style = divTmp.style;
+			if(BORDER_STYLE[i].value != "") {
+			  style.borderStyle = BORDER_STYLE[i].value;
+			  style.width = 50;
+			  style.height = 12;
+			  style.borderWidth = 2;
+			  style.marginTop = 2;
+			}
+			else
+			  divTmp.innerHTML = BORDER_STYLE[i].name;
+			  
 			ddList.appendItem(divTmp);
 		}
 		// set current item in the list
-/*
-		var curBorderStyle = sampleDiv.style.borderStyle.toLowerCase();
-		// FF returns 4 words for each side. Extract 1st only.
-		var firstSpace = curBorderStyle.indexOf(" ");
-		if(firstSpace != -1)
-			curBorderStyle = curBorderStyle.substring(0, firstSpace);
-*/			
 		var curIdx = this.getMemberArrayIdx(BORDER_STYLE, this.borderDesc.style);
 		if(curIdx != null)
 			ddList.setSelectedItem(curIdx);
@@ -221,6 +227,7 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 	this.initSampleProperties = function() {
 		sampleDiv.innerHTML = "Sample text";
 		sampleDiv.style.position = "absolute";
+/*
 		// 1. font family
 		if(sampleDiv.style.fontFamily == "")
 			sampleDiv.style.fontFamily = FONT_ARR[0];
@@ -238,7 +245,7 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 		// 5. font color
 		if(sampleDiv.style.color == "")
 			sampleDiv.style.color = "#000000";
-		
+	*/	
 		// 6. borders
 		this.initBorderDesc();
 		
@@ -263,13 +270,18 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
       }
     }
     if(bordersAmt > 1)
-       this.borderDesc.applyToIdx = 1; // all b0rders
+       this.borderDesc.applyToIdx = 1; // all borders
     else if(bordersAmt == 1)
       this.borderDesc.applyToIdx = applyToIdx;
     
+    // no borders
+    if(applyToIdx == 0)
+      return;
+      
     // 2. width
     var widthName = BORDER_APPLY_TO[applyToIdx].valueScr + "Width";
-    this.borderDesc.width = stl[widthName];
+    if(stl[widthName] != 'medium') // ignore default value 'medium'
+      this.borderDesc.width = stl[widthName];
     
     // 3. color
     var colorName = BORDER_APPLY_TO[applyToIdx].valueScr + "Color";
@@ -277,27 +289,33 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
     
     // 4. style
     var styleName = BORDER_APPLY_TO[applyToIdx].valueScr + "Style";
-    this.borderDesc.style = stl[styleName];
+    if(stl[styleName] != 'none') // ignore default value 'none'
+      this.borderDesc.style = stl[styleName];
 	}
 
 	this.getStyleString = function() {
 		var style = "";
 		// 1. font family
-		style += "font-family: " + sampleDiv.style.fontFamily + "; ";
+		if(sampleDiv.style.fontFamily != "")
+		  style += "font-family: " + sampleDiv.style.fontFamily + "; ";
 		// 2. font size
-		style += "font-size: " + sampleDiv.style.fontSize + "; ";
+		if(sampleDiv.style.fontSize != "")
+		  style += "font-size: " + sampleDiv.style.fontSize + "; ";
 		// 3. bold
-		style += "font-weight: " + sampleDiv.style.fontWeight + "; ";
+		if(sampleDiv.style.fontWeight != "")
+		  style += "font-weight: " + sampleDiv.style.fontWeight + "; ";
 		// 4. italic
-		style += "font-style: " + sampleDiv.style.fontStyle + "; ";
+		if(sampleDiv.style.fontStyle != "")
+		  style += "font-style: " + sampleDiv.style.fontStyle + "; ";
 		// 5. font color
-		style += "color: " + sampleDiv.style.color + "; ";
+		if(sampleDiv.style.color != "")
+		  style += "color: " + sampleDiv.style.color + "; ";
 		// 6. background color
 		if(sampleDiv.style.backgroundColor != "")
 		  style += "background-color: " + sampleDiv.style.backgroundColor + "; ";
 		// border
 		var brdStl = this.getBorderStyleStr();
-		if(brdStl.length != 0) {
+		if(brdStl.length != "") {
       var applyTo = BORDER_APPLY_TO[this.borderDesc.applyToIdx].valueHtml;
 		  style += applyTo + ": " + brdStl + "; "
 		}
@@ -308,25 +326,28 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
   	var brdStlStr = "";
   	if(this.borderDesc.applyToIdx != 0) {
 	    var applyTo = BORDER_APPLY_TO[this.borderDesc.applyToIdx].valueScr;
-	    if(typeof this.borderDesc.width != 'undefined')
-	      brdStlStr += this.borderDesc.width + " ";
- 	    if(typeof this.borderDesc.color != 'undefined')
-        brdStlStr += this.borderDesc.color + " ";
-	    if(typeof this.borderDesc.style != 'undefined')
-	      brdStlStr += this.borderDesc.style;
+	    
+	    if(this.borderDesc.width != "")
+	      brdStlStr += this.borderDesc.width;
+	      
+ 	    if(this.borderDesc.color != "")
+        brdStlStr += ((brdStlStr.length != 0) ? " " : "") + this.borderDesc.color + " ";
+	    
+	    if(this.borderDesc.style != "")
+	      brdStlStr += ((brdStlStr.length != 0) ? " " : "") + this.borderDesc.style;
 	  }
 	  return brdStlStr;
   }
   
 	// HANDLERS ---------------------------
 	this.onFontFamily = function(fontIdx) {
-		sampleDiv.style.fontFamily = FONT_ARR[fontIdx];
+		sampleDiv.style.fontFamily = FONT_ARR[fontIdx].value;
 		i_am.centeringSampleDiv();
 		i_am.putStyleStr();
 	}
 
 	this.onFontSize = function(fontSizeIdx) {
-		sampleDiv.style.fontSize = FONT_SIZE_ARR[fontSizeIdx];
+		sampleDiv.style.fontSize = FONT_SIZE_ARR[fontSizeIdx].value;
 		i_am.centeringSampleDiv();
 		i_am.putStyleStr();
 	}
@@ -336,7 +357,7 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 			sampleDiv.style.fontWeight = "bold";
 		}
 		else {
-			sampleDiv.style.fontWeight = "normal";
+			sampleDiv.style.fontWeight = "";//"normal";
 		}
 		i_am.putStyleStr();
 	}
@@ -346,14 +367,14 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 			sampleDiv.style.fontStyle = "italic";
 		}
 		else {
-			sampleDiv.style.fontStyle = "normal";
+			sampleDiv.style.fontStyle = "";//"normal";
 		}
 		i_am.putStyleStr();
 	}
 	
 	this.onFontColor = function() {
 		var parentDlg = getAncestorById(i_am.fontClrBtn.div, 'pane2'); //'pane2' dialog 
-		PalettePopup.show(i_am.fontClrBtn, 'right', i_am.setFontColor, parentDlg);
+		PalettePopup.show(i_am.fontClrBtn, 'right', i_am.setFontColor, parentDlg, "default");
 	}
 	
 	this.onBackgroundColor = function() {
@@ -368,20 +389,19 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
   }
   // border width:
 	this.onBorderWidth = function(widthIdx) {
-		//sampleDiv.style.borderWidth = BORDER_WIDTH[widthIdx];
-		i_am.borderDesc.width = BORDER_WIDTH[widthIdx];
+		i_am.borderDesc.width = BORDER_WIDTH[widthIdx].value;
 		i_am._setBorders();
 	}
 	// border style
 	this.onBorderStyle = function(styleIdx) {
 		//sampleDiv.style.borderStyle = BORDER_STYLE[styleIdx];
-		i_am.borderDesc.style = BORDER_STYLE[styleIdx];
+		i_am.borderDesc.style = BORDER_STYLE[styleIdx].value;
 		i_am._setBorders();
 	}
 	// border color
 	this.onBorderColor = function() {
 		var parentDlg = getAncestorById(i_am.borderClrBtn.div, 'pane2'); //'pane2' dialog 
-		PalettePopup.show(i_am.borderClrBtn, 'right', i_am.setBorderColor, parentDlg);
+		PalettePopup.show(i_am.borderClrBtn, 'right', i_am.setBorderColor, parentDlg, "default");
 	}
 
 	this.onStyleView = function(isPressed) {
@@ -407,9 +427,9 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 	}
 	
 	this.setBackgroundColor = function(colorStr) {
-	 // if(colorStr.length == 0)
-	 //   sampleDiv.style.backgroundColor = "transparent";
-	 // else
+	  if(colorStr.length == 0) // "no background"
+	    sampleDiv.style.backgroundColor = "transparent";
+	  else
 	    sampleDiv.style.backgroundColor = colorStr;
 		i_am.putStyleStr();
 	}
@@ -449,7 +469,7 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 	// --------------------------------------------
 	this.getMemberArrayIdx = function(array, value) {
 		for(var i = 0; i < array.length; i++) {
-			if(array[i] == value)
+			if(array[i].value == value)
 				return i;
 		}
 		return null;
