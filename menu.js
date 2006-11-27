@@ -4178,7 +4178,7 @@ function addAndShowWait()	{
       break;
     }
   }
-  // Find TR in previous list that was current and chnge style of the row
+  // Find TR in previous list that was current and change style of the row
   elms = divCopyTo.getElementsByTagName('a');
   var oldCurrentItem;
   for (var j=0; j<elms.length; j++) {
@@ -4214,12 +4214,16 @@ function addAndShowWait()	{
   elms = divCopyTo.getElementsByTagName("tr");
   var oldResultsTR;
   var totalsTR;
+  var resultsTR;
+  var headerTR;
+  var headerTRidx = 0;
   for (var j=0; j<elms.length; j++) {
     var tr = elms[j];
     if (!tr.id)
       continue;
     if (!oldCurrentTR  &&  tr.id == 'results') {
       var tds = tr.childNodes;
+      resultsTR = tr;
       for (var i=0; i<tds.length; i++) {
         if (tds[i].id && tds[i].id == 'results') {
           var r = tds[i].innerHTML;
@@ -4267,21 +4271,27 @@ function addAndShowWait()	{
       }
     }
     else if (!oldCurrentTR  &&  tr.id == 'header') {
+      headerTR = tr;
+      headerTRidx = j;
       var tbody  = tr.parentNode;
-      var trElms = tbody.childNodes; 
-      if (trElms.size == 1)
+      var trElms = tbody.getElementsByTagName('tr'); 
+      if (j + 1 == elms.length)
         tbody.appendChild(currentTR);
       else
-        tbody.insertBefore(currentTR, trElms.item(1));
+        tbody.insertBefore(currentTR, elms[j + 1]);
     }
   }  
   // This is the first element in RL. That means that 'Total' line was not formed
-  if (!totalsTR) {
+  if (oldCurrentItem != currentItem && (!totalsTR || !resultsTR)) {
     var elms = body.getElementsByTagName('tr');
     for (var j=0; j<elms.length; j++) {
-      var tr = elms[j]; 
-      if (tr.id == 'totals') 
+      var tr = elms[j];
+      tbody = headerTR.parentNode;
+      if (!totalsTR && tr.id == 'totals') 
         tbody.appendChild(tr);
+      else if (!resultsTR && tr.id == 'results') {
+        tbody.insertBefore(tr, headerTR);
+      }
     }
   }
   //resourceListEdit(divCopyTo);
