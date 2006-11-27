@@ -167,12 +167,12 @@
 
 	    </td>
 	    <td width="30%">
-        <a target="pane2"></a><div id="pane2" style="position:absolute;"/>
-	      <div id="resourceList_div"><siteResourceList/></div>
-	    </td>
-    </tr>
-    <tr itype="http://www.hudsonfog.com/voc/hospitality/orders/BarItem">
-      <td width="70%">
+	    <table width="100%">
+      <tr><td align="middle">
+   	    <property name="customer.firstName"/>&#160;<property name="customer.lastName"/>&#160;<property name="ticketNumber"/>&#160;<property name="locker"/>
+     	</td></tr>
+      <tr itype="http://www.hudsonfog.com/voc/hospitality/orders/BarItem">
+      <td>
         <table width="100%" cellspacing="5" cellpadding="0" border="0">
         <tr>
           <td align="center" class="categoryButton" onclick="document.location.href='Recall_Orders.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Ticket&amp;sealed_select=false&amp;sealed_verified=y&amp;$order=http://www.hudsonfog.com/voc/hospitality/spa/Ticket/checkInTime&amp;-asc=-1&amp;-grid=1&amp;-inRow=2&amp;serviceStart_From=today&amp;serviceStart=today&amp;serviceStart_To=today&amp;hideHideBlock=y'">Recall orders</td>
@@ -180,8 +180,14 @@
 
         </table>
       </td>
-      <td></td>
+      </tr>
+      <tr><td>
+        <a target="pane2"></a><div id="pane2" style="position:absolute;"/>
+	      <div id="resourceList_div"><siteResourceList/></div>
+	    </td>
     </tr>
+    </table>
+    </td>
     <tr>
       <td width="70%">
         <backTo/>
