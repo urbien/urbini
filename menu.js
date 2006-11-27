@@ -424,8 +424,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
-
-    Popup.openTimeoutId = setTimeout(function () {Popup.openAfterDelay(self.div.id, offsetX, offsetY, delay)});
+    //Popup.openTimeoutId = setTimeout(function () {Popup.openAfterDelay(self.div.id, offsetX, offsetY, delay)});
+    var exeStr = "Popup.openAfterDelay('" + self.div.id + "', " + offsetX + ", " + offsetY + ")";
+    Popup.openTimeoutId = setTimeout(exeStr, delay);
     Popup.delayedPopup = self;
   }
 
