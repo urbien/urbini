@@ -40,7 +40,7 @@
           </tr>
           <tr>
             <td align="CENTER" colspan="2"> <br />
-              <input type="submit" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; cursor: hand; font-size:11px" value="    Logon    " name="logonButton"/><registerNewUser/>
+              <input type="submit" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px" value="    Logon    " name="logonButton"/><registerNewUser/>
             </td>
           </tr>
           <tr>
