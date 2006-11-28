@@ -22,7 +22,7 @@ String.prototype.startsWith = function(s) {
       return false;
   }
   return true;
-}
+};
 
 /**
  *  Since Internet Explorer does not define the Node interface constants,
@@ -48,8 +48,8 @@ if (!window['Node']) {
 // add contains function if it is missing
 if (window.Node && Node.prototype && !Node.prototype.contains) {
   Node.prototype.contains = function (arg) {
-    return !!(this.compareDocumentPosition(arg) & 16)
-  }
+    return !!(this.compareDocumentPosition(arg) & 16);
+  };
 }
 Popup.currentDivs          = new Array(); // distinct divs that can be open at the same time (since they have different canvases)
 Popup.popups               = new Array(); // pool of all popups with different divId(s)
@@ -94,13 +94,13 @@ Popup.getCanvas = function (frameRef) {
       throw new Error("document structure invalid: iframe '" + defaultCanvas + "' is missing");
   }
   return iframe;
-}
+};
 
 Popup.allowTooltip = function (target) {
   var noOpenPopups = true;
   for (var i=0; i<Popup.popups.length; i++) {
     var popup = Popup.popups[i];
-    if(typeof popup == 'undefined')
+    if (typeof popup == 'undefined')
       continue;
     if (popup.isOpen() &&         // if popup is already open then we need only tooltips in it (and not the tooltips on areas outside popup)
         !popup.isTooltip()) {     //    but if open popup is a tooltip - ignore it
@@ -115,7 +115,7 @@ Popup.allowTooltip = function (target) {
     return true;
   else
     return false;
-}
+};
 
 /**
  * Static function.
@@ -127,7 +127,7 @@ Popup.getPopup = function (divId) {
     return popup;
   else
     return null;
-}
+};
 
 /**
  * Open popup after delay
@@ -144,7 +144,7 @@ Popup.openAfterDelay = function (divId, offsetX, offsetY) {
   if (popup) {
     popup.open1(offsetX, offsetY);
   }
-}
+};
 
 /**
  * Static function.
@@ -164,14 +164,14 @@ Popup.open = function (divId, hotspotRef, frameRef, offsetX, offsetY, delay, con
     return;
   }
   return popup.open1(offsetX, offsetY);
-}
+};
 
 Popup.delayedClose0 = function (divId) {
   var popup = Popup.getPopup(divId);
   if (!popup)
     return;
   popup.delayedClose();
-}
+};
 
 // part of delayed close after the timeout
 Popup.delayedClose1 = function (divId) {
@@ -182,14 +182,14 @@ Popup.delayedClose1 = function (divId) {
   if (!popup.delayedCloseIssued) // delayed close canceled
     return;
   popup.close();
-}
+};
 
 Popup.close0 = function (divId) {
   var popup = Popup.getPopup(divId);
   if (!popup)
     return;
   popup.close();
-}
+};
 
 /**
  *  Loads the ajax popup into the div
@@ -248,7 +248,7 @@ Popup.load = function (div, hotspot, content) {
   hideResetRow(div, currentFormName, originalProp);
   popup.open1(0, 16);
   loadedPopups[div.id] = div;
-}
+};
 
 /**
  * Close popup if mouse cursor is out
@@ -258,7 +258,7 @@ Popup.closeIfOut0 = function (divId) {
   if (!popup)
     return;
   popup.closeIfOut();
-}
+};
 
 function Popup(divRef, hotspotRef, frameRef, contents) {
   if (!divRef)
@@ -2687,6 +2687,7 @@ function interceptLinkClicks(div) {
   }
 }
 
+
 function schedule(table, e) {
   e = getDocumentEvent(e);
   var target = getEventTarget(e);
@@ -2708,7 +2709,7 @@ function schedule(table, e) {
     if (idx == -1)
       return;
     var duration = parseInt(tdId.substring(idx + 1));
- 
+
     if (tdId.indexOf("-") == -1) {
       var calendarIdx = parseInt(tdId.substring(idx1, idx));
       openPopup(calendarIdx, calendarIdx, target, e, duration);
@@ -3223,7 +3224,7 @@ function decodeURL(str) {
   var buf = '';
   for (var i = 0; i < str.length; ++i) {
     var ch = str.charAt(i);
-    if (ch != '&') { 
+    if (ch != '&') {
       buf += ch;
       continue;
     }
@@ -3234,7 +3235,7 @@ function decodeURL(str) {
     }
     var entityName = str.substring(i + 1, semi);
     var entityValue;
-    if (entityName.charAt(0) == '#') 
+    if (entityName.charAt(0) == '#')
       entityValue = entityName.substring(1);
     else {
       var e = xmlEntities[entityName];
@@ -3570,7 +3571,7 @@ function checkAll(formName) {
 function checkAllInGroup(e, divId) {
   var div = document.getElementById(divId);
   var fields = div.getElementsByTagName('input');
-  
+
   var groupField = getTargetElement(e);
   var isChecked  = groupField.checked;
   for (var i=1; i<fields.length; i++) {
@@ -3890,11 +3891,18 @@ var calendarCell; // last cell on which user clicked
 var lastPopupRowTD = null;
 
 function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
+  var td = getEventTarget(event);
+  //--- extract parameters specific for popup row
+  var popupRow = getTrNode(td); // get tr on which user clicked in popup
+  if (!popupRow)
+    throw new Error("addCalendarItem: popup row not found for: " + anchor);
+  if (popupRow.className == 'menuTitle')
+    return stopEventPropagation(event);
   if (lastPopupRowTD) {
     alert("Please wait till previous request is processed");
     return stopEventPropagation(event);
   }
-  var td = getEventTarget(event);
+
   lastPopupRowTD = td;
 
   var calendarRow = getTrNode(calendarCell);
@@ -3911,10 +3919,6 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
     var idx = tdId.indexOf(":");
     anchor += tdId.substring(idx + 1);
   }
-  //--- extract parameters specific for popup row
-  var popupRow = getTrNode(td); // get tr on which user clicked in popup
-  if (!popupRow)
-    throw new Error("addCalendarItem: popup row not found for: " + anchor);
 
 //  if (anchor.indexOf("?") != anchor.length - 1)
     anchor += "&";
@@ -4005,6 +4009,8 @@ function addSimpleCalendarItem(event) {
   if (!popupRow)
     throw new Error("addSimpleCalendarItem: popup row not found for: ");
 
+  if (popupRow.className == 'menuTitle')
+    return stopEventPropagation(event);
   var anchor = "mkResource.html?-$action=mkResource&type=http://www.hudsonfog.com/voc/model/work/CalendarItem&submit=Please+wait&";
   var calendarRowId = calendarRow.id;
   var idx = calendarRowId.indexOf("=");
@@ -4196,11 +4202,11 @@ function addAndShowWait()	{
         if (oldCurrentItem == currentItem) {
           var tbody  = elms[j].parentNode;
           oldCurrentTR = elms[j];
-          
+
           tbody.removeChild(elms[j]);
           if (j == elms.length)
             tbody.appendChild(currentTR);
-          else 
+          else
             tbody.insertBefore(currentTR, elms[j]);
         }
         else
@@ -4233,7 +4239,7 @@ function addAndShowWait()	{
           var recsNmb = parseInt(recs) + 1;
           var newInnerHTML = r.substring(0, idx + 1) + recsNmb;
           idx = r.indexOf(recs, idx1);
-          
+
           newInnerHTML += r.substring(idx1, idx) + recsNmb;
           tds[i].innerHTML = newInnerHTML;
         }
@@ -4253,12 +4259,12 @@ function addAndShowWait()	{
           for (var ii=0; ii<tot.length; ii++) {
             var ch = tot.charAt(ii);
             if (isDigit(ch)) {
-              if (startDigit == -1) 
+              if (startDigit == -1)
                 startDigit = ii;
             }
           }
           var total = extractTotalFrom(tot);
-          // since first cell of Total tr has colspan=2, the column # in resources TR that referes to the same property will reside in # + 1 column 
+          // since first cell of Total tr has colspan=2, the column # in resources TR that referes to the same property will reside in # + 1 column
           var curTotal = extractTotalFrom(curTrTds[i + 1].innerHTML);
           total += parseFloat(curTotal);
           if (oldCurrentTR) {
@@ -4274,20 +4280,20 @@ function addAndShowWait()	{
       headerTR = tr;
       headerTRidx = j;
       var tbody  = tr.parentNode;
-      var trElms = tbody.getElementsByTagName('tr'); 
+      var trElms = tbody.getElementsByTagName('tr');
       if (j + 1 == elms.length)
         tbody.appendChild(currentTR);
       else
         tbody.insertBefore(currentTR, elms[j + 1]);
     }
-  }  
+  }
   // This is the first element in RL. That means that 'Total' line was not formed
   if (oldCurrentItem != currentItem && (!totalsTR || !resultsTR)) {
     var elms = body.getElementsByTagName('tr');
     for (var j=0; j<elms.length; j++) {
       var tr = elms[j];
       tbody = headerTR.parentNode;
-      if (!totalsTR && tr.id == 'totals') 
+      if (!totalsTR && tr.id == 'totals')
         tbody.appendChild(tr);
       else if (!resultsTR && tr.id == 'results') {
         var cells = tr.getElementsByTagName('td');
@@ -4314,7 +4320,7 @@ function extractTotalFrom(tot) {
   for (; ii<tot.length; ii++) {
     var ch = tot.charAt(ii);
     if (isDigit(ch)) {
-      if (startDigit == -1) 
+      if (startDigit == -1)
         startDigit = ii;
     }
     else if (startDigit == -1)
@@ -4332,7 +4338,7 @@ function extractTotalFrom(tot) {
   return total;
 }
 function isDigit(num) {
-  if (num.length > 1) 
+  if (num.length > 1)
     return false;
   var string="1234567890";
   if (string.indexOf(num)!=-1)
@@ -4605,9 +4611,9 @@ function addAndShowItems(tr, e) {
   var href = document.location.href;
   var idx = href.indexOf("?");
   anchor += "&.forum_select=" + encodeURIComponent(forum) + "&.title=" + encodeURIComponent(title) + "&$returnUri=";
-  
+
   var idx1 = href.indexOf("-currentItem=");
-  
+
   if (idx1 == -1)
     anchor += encodeURIComponent("localSearchResults.html?-addItems=y&-noRedirect=y&-currentItem=" + encodeURIComponent(forum) + "&" + href.substring(idx + 1));
   else {
@@ -5345,18 +5351,18 @@ function setRelatedCheckbox(e) {
 }
 
 
-// execJS ====================================================
+// execJS **************************************************************
 // helps to handle dialog and tab cases; checks ready state (IE) as well.
 var execJS = {
   runCodeArr : new Array(),
   isWaitingOnReady : false,
-  
+
   // executes js code if refObjId is visible - [hidden tab].
   runRelativeCode : function(jsCode, refObjId) {
     if(document.all && document.readyState != "complete") {
 			if(this.isWaitingOnReady == false) {
 			  addEvent(document, 'readystatechange', this._runOnDocumentReady, false);
-			  this.isWaitingOnReady = true; 
+			  this.isWaitingOnReady = true;
 			}
 			this.runCodeArr.push({"jsCode": jsCode, "refObjId": refObjId});
 		}
@@ -5365,19 +5371,19 @@ var execJS = {
         window.eval(jsCode);
     }
   },
-  
-  // evaluates script blocks of the div with className = "execJS"  
+
+  // evaluates script blocks of the div with className = "execJS"
   // contDiv is a div that contain JS code - [dialog].
   runDivCode : function(contDiv) {
     var scripts = contDiv.getElementsByTagName('script');
     for(var i = 0; i < scripts.length; i++) {
       if(scripts[i].className == "execJS" && scripts[i].text != "") {
         window.eval(scripts[i].text);
-        scripts[i].text = ""; // prevents multiple execution for a tab. 
+        scripts[i].text = ""; // prevents multiple execution for a tab.
       }
     }
   },
-  
+
   // checks on visibility all ancestors of the object
   // gets object or its id
   isObjectTotallyVisible : function(objId) {
@@ -5391,14 +5397,88 @@ var execJS = {
 	  }
 	  return true;
   },
-  
+
   _runOnDocumentReady : function() {
     for(var i = 0; i < execJS.runCodeArr.length; i++) {
       if(execJS.isObjectTotallyVisible(execJS.runCodeArr[i].refObjId))
         window.eval(execJS.runCodeArr[i].jsCode);
-      }    
+      }
    }
 
 
 }
-// ==================================================
+// ***************************************
+
+/**
+ * toogle booleans
+ */
+function addBooleanToggle(elem) {
+  if (!elem)
+    return;
+  var elemId  = elem.id;
+  if (!elemId) {
+    return;
+  }
+
+  var elemLen = elemId.length;
+  if (elemId.indexOf("_boolean",         elemLen - "_boolean".length) != -1  ||
+      elemId.indexOf("_boolean_refresh", elemLen - "_boolean_refresh".length) != -1) {
+    addEvent(elem, 'click', changeBoolean, false);
+    elem.style.cursor = 'pointer';
+  }
+}
+
+/**
+ * Change boolean value (in non-edit mode)
+ */
+function changeBoolean(e) {
+  var target;
+
+  e = (e) ? e : ((window.event) ? window.event : null);
+  if (!e)
+    return;
+  target = getTargetElement(e);
+  var url = 'editProperties.html?submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
+  var bIdx = target.id.indexOf("_boolean");
+  var rUri = target.id.substring(0, bIdx);
+  var idx = rUri.lastIndexOf("_");
+  var propShort = rUri.substring(idx + 1);
+  rUri = rUri.substring(0, idx);
+  var bUri = null;
+  idx = rUri.indexOf(".$.");
+  if (idx != -1) {
+    bUri = rUri.substring(idx + 3);
+    rUri = rUri.substring(0, idx);
+  }
+  var tooltip = target.getAttribute('tooltip');
+  var pValue;
+  if (tooltip  &&  tooltip.length != 0  &&  tooltip == "Yes")
+    pValue = "No";
+  else
+    pValue = "Yes";
+  target.setAttribute('tooltip', pValue);
+  if (pValue == "Yes")
+    target.src = target.getAttribute('yesIcon');
+  else
+    target.src = target.getAttribute('noIcon');
+  url += encodeURIComponent(rUri) + "&" + propShort + "=" + pValue;
+  if (bUri != null)
+    url += "&bUri=" + encodeURIComponent(bUri);
+
+  var listboxFrame = frames["popupFrame"];
+  popupFrameLoaded = false;
+
+  if (target.id.indexOf("_boolean_refresh") != -1) {
+    var locationUrl = document.location.href;
+    url += "&$returnUri=" + encodeURIComponent(locationUrl);
+    document.location.replace(url);
+  }
+  else
+    listboxFrame.location.replace(url); // load data from server into iframe
+  if (Popup.tooltipPopup) {
+    Popup.tooltipPopup.close();
+    Popup.tooltipPopup = null;
+  }
+  //tooltipMouseOut0(target);           // remove and ...
+  //tooltipMouseOver0(target);          // repaint the tooltip on this boolean icon
+}

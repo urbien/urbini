@@ -1,22 +1,4 @@
     // cross-browser - getCurrentTarget
-    function getTargetElement(evt) {
-      var elem;
-      if (evt.target) {
-        if (evt.currentTarget && (evt.currentTarget != evt.target)) {
-          if (evt.target.tagName && evt.target.tagName.toLowerCase() == 'input' && evt.target.type.toLowerCase() == 'checkbox')
-            elem = evt.target;
-          else
-            elem = evt.currentTarget;
-        }
-        else
-          elem = evt.target;
-      }
-      else {
-        elem = evt.srcElement;
-      }
-      return elem;
-    }
-
     /*
      * Cross-browser method of adding event handlers.
      * If useCapture is true - handler is registered for 'capture phase', otherwise for 'bubbling phase'.
@@ -129,76 +111,6 @@
       }
     }
     */
-
-    function addBooleanToggle(elem) {
-      if (!elem)
-        return;
-      var elemId  = elem.id;
-      if (!elemId)
-	      return;
-
-      var elemLen = elemId.length;
-      if (elemId.indexOf("_boolean",         elemLen - "_boolean".length) != -1  ||
-          elemId.indexOf("_boolean_refresh", elemLen - "_boolean_refresh".length) != -1) {
-        addEvent(elem, 'click', changeBoolean, false);
-        elem.style.cursor = 'pointer';
-      }
-    }
-
-    /**
-     * Change boolean value (in non-edit mode)
-     */
-    function changeBoolean(e) {
-      var target;
-
-      e = (e) ? e : ((window.event) ? window.event : null);
-      if (!e)
-        return;
-      target = getTargetElement(e);
-      var url = 'editProperties.html?submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
-      var bIdx = target.id.indexOf("_boolean");
-      var rUri = target.id.substring(0, bIdx);
-      var idx = rUri.lastIndexOf("_");
-      var propShort = rUri.substring(idx + 1);
-      rUri = rUri.substring(0, idx);
-      var bUri = null;
-      idx = rUri.indexOf(".$.");
-      if (idx != -1) {
-        bUri = rUri.substring(idx + 3);
-        rUri = rUri.substring(0, idx);
-      }
-      var tooltip = target.getAttribute('tooltip');
-      var pValue;
-      if (tooltip  &&  tooltip.length != 0  &&  tooltip == "Yes")
-        pValue = "No";
-      else
-        pValue = "Yes";
-      target.setAttribute('tooltip', pValue);
-      if (pValue == "Yes")
-        target.src = target.getAttribute('yesIcon');
-      else
-        target.src = target.getAttribute('noIcon');
-      url += encodeURIComponent(rUri) + "&" + propShort + "=" + pValue;
-      if (bUri != null)
-        url += "&bUri=" + encodeURIComponent(bUri);
-
-      var listboxFrame = frames["popupFrame"];
-      popupFrameLoaded = false;
-
-      if (target.id.indexOf("_boolean_refresh") != -1) {
-        var locationUrl = document.location.href;
-        url += "&$returnUri=" + encodeURIComponent(locationUrl);
-        document.location.replace(url);
-      }
-      else
-        listboxFrame.location.replace(url); // load data from server into iframe
-      if (Popup.tooltipPopup) {
-        Popup.tooltipPopup.close();
-        Popup.tooltipPopup = null;
-      }
-      //tooltipMouseOut0(target);           // remove and ...
-      //tooltipMouseOver0(target);          // repaint the tooltip on this boolean icon
-    }
 
     var formInitialValues;
     addEvent(window, 'load', function() {setTimeout(addHandlers,  10);}, false);
