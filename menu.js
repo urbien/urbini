@@ -4195,8 +4195,8 @@ function addAndShowWait()	{
     }
   }
   var oldCurrentTR;
+  elms = divCopyTo.getElementsByTagName('tr');
   if (oldCurrentItem) {
-    elms = divCopyTo.getElementsByTagName('tr');
     for (var j=0; j<elms.length; j++) {
       if (elms[j].id  &&  elms[j].id == oldCurrentItem) {
         if (oldCurrentItem == currentItem) {
@@ -4217,7 +4217,6 @@ function addAndShowWait()	{
   }
 //  divCopyTo.innerHTML = body.innerHTML;
   var totals;
-  elms = divCopyTo.getElementsByTagName("tr");
   var oldResultsTR;
   var totalsTR;
   var resultsTR;
@@ -4280,11 +4279,18 @@ function addAndShowWait()	{
       headerTR = tr;
       headerTRidx = j;
       var tbody  = tr.parentNode;
-      var trElms = tbody.getElementsByTagName('tr');
-      if (j + 1 == elms.length)
+      var trElms = tbody.childNodes;
+      var pos = 1;
+      for (var ii=0; ii<trElms.length; ii++) {
+        if (trElms[ii].id == 'header')
+          break;
+        else
+          pos++;
+      }
+      if (pos == trElms.length)
         tbody.appendChild(currentTR);
       else
-        tbody.insertBefore(currentTR, elms[j + 1]);
+        tbody.insertBefore(currentTR, trElms[pos]);
     }
   }
   // This is the first element in RL. That means that 'Total' line was not formed
