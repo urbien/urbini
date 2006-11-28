@@ -49,6 +49,7 @@ img.fade {
   background-repeat: repeat-x;
   background-position: center;
   text-align: center;
+  overflow: hidden;
   white-space: nowrap;
   vertical-align: middle;
 }
@@ -182,7 +183,7 @@ table.greyBorder {
 /* Tabs for control panel and property sheet */
 
   .cpTabs {
-    cursor: pointer; cursor: hand;
+    cursor: pointer;
     height: 23px;
   }
 
@@ -194,6 +195,7 @@ table.greyBorder {
 	  background-image:url(../images/skin/rustyrose/tab-middle-small.gif);
 	  background-repeat: no-repeat;
 	  text-align: center;
+	  overflow: hidden;
     white-space: nowrap;
 	  color: #662d91;
 	}
