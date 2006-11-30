@@ -379,7 +379,7 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 	
 	this.onBackgroundColor = function() {
 		var parentDlg = getAncestorById(i_am.bgClrBtn.div, 'pane2'); //'pane2' dialog 
-		PalettePopup.show(i_am.bgClrBtn, 'right', i_am.setBackgroundColor, parentDlg, "no background");
+		PalettePopup.show(i_am.bgClrBtn, 'right', i_am.setBackgroundColor, parentDlg, "default");
 	}
 	
   // borders --
