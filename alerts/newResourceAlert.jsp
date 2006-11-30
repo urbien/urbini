@@ -8,6 +8,7 @@ Dear <property name="to" href="y"/>
 <br/><br/>
 The <property name="forum" type="y"/> <property name="forum" href="y"/> has been created.
 <propertySheet name="forum"/>
+<newComment/>
 
 Customer Service
 <br/>

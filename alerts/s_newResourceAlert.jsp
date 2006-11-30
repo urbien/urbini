@@ -10,6 +10,7 @@ You created resource:
 <br/><br/>
 <property name="forum" type="y"/> <property name="forum" href="y"/>
 <propertySheet name="forum"/>
+<newComment/>
 
 Customer Service
 <br/>

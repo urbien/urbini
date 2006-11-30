@@ -11,6 +11,7 @@ Comment <property name="comment"/> <br/>
 has been added to the <property name="forum" type="y"/> <property name="forum" href="y"/>
 
 <propertySheet name="comment"/>
+<newComment/>
 
 <br/><br/>
 Customer Service

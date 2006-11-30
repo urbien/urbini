@@ -11,6 +11,7 @@ You modified:
 <property name="forum" type="y"/> <property name="forum" href="y"/>
 <br/><br/>
 <propertySheet name="modification"/>
+<newComment/>
 Customer Service
 <br/>
 <siteOwner/>

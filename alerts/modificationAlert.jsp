@@ -10,6 +10,7 @@ The <property name="forum" type="y"/> <property name="forum" href="y"/> was modi
 <br/>
 Changes made by <property name="modification.partOf.contact" href="y"> are below:
 <propertySheet name="modification"/>
+<newComment/>
 Customer Service
 <br/>
 <siteOwner/>
