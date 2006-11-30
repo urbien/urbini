@@ -280,12 +280,22 @@ var PalettePopup = {
 	div : null,
 	noClrCell : null,
 	callback : null,
+	hotspotIdx : -1, // index of control calling the palette (-1 on hidden palette)
 	//show
 	// noColorTitle is a text to show in noClrCell
 	show : function(hotspot, alignment, callback, parentDlg, noColorTitle) {
 		if(this.div == null)
 			this.create();
-
+ 
+    // close the palette on calling of the same control.
+    if(this.hotspotIdx == hotspot.index && this.div.style.visibility == "visible" ) {
+      PopupHandler.hide(false);
+      this.hotspotIdx = -1;
+      return;
+    }
+    
+    this.hotspotIdx = hotspot.index;
+    
 		if(typeof noColorTitle != 'undefined') {
 		  this.noClrCell.innerHTML = noColorTitle;
 		  this.noClrCell.style.display = "";
@@ -514,6 +524,10 @@ function List(colAmt) {
 	}
 	this.show = function(hotspot, alignment, callback, parentDlg) {
 		this.callback = callback;
+    if(this.div.style.visibility == "visible") {
+      PopupHandler.hide(false);
+      return;
+    }
 		PopupHandler.showRelatively(hotspot, alignment, this.div, true, parentDlg);
 	}	
 	this.appendItem = function(innerDiv) {
@@ -578,9 +592,8 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 	var FONT_SIZE = "12px";
 	var IMAGES_FOLDER = "images/wysiwyg/";
 	var FIELD_HEIGHT = 27;
-	var ARROW_BUTTON_WIDTH = 16;
-	var DECREASE_BTN = 2;
-	var ARROW_BUTTON_HEIGHT = FIELD_HEIGHT - DECREASE_BTN;
+	var ARROW_BUTTON_WIDTH = 20;
+	var ARROW_BUTTON_HEIGHT = 20;
 
 	var i_am = this;
 	this.index = index; // index in the parent toolbar
@@ -640,7 +653,7 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 		this.buttonDiv = document.createElement('div');
 		this.buttonDiv.style.position = "absolute";
 		this.buttonDiv.style.left = this.left + this.fieldWidth + 3;
-		this.buttonDiv.style.top = this.top + DECREASE_BTN / 2;
+		this.buttonDiv.style.top = this.top + (FIELD_HEIGHT - ARROW_BUTTON_HEIGHT)/2;
 				
 		this.btnImg = document.createElement('IMG');
 		this.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
