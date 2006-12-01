@@ -4168,6 +4168,22 @@ function addAndShowWait()	{
     alert("Warning: target div not found: " + frameId + "_div");
     return;
   }
+  var tables = divCopyTo.getElementsByTagName("table");
+  for (var i=0; i<tables.length; i++) {
+    if (tables[i].id && tables[i].id == 'errorMessage') {
+      divCopyTo.removeChild(tables[i]);
+      tables = divCopyTo.getElementsByTagName("table");
+      break;
+    }
+  }
+  var bTables = body.getElementsByTagName("table");
+  for (var i=0; i<bTables.length; i++) {
+    if (bTables[i].id && bTables[i].id == 'errorMessage') {
+      divCopyTo.insertBefore(bTables[i], tables[0]);
+      return;
+    }
+  }  
+    
   // Find new 'currentItem' anchor and substitute old one with new
   var elms = body.getElementsByTagName('a');
   var currentItem;
