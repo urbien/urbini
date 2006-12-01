@@ -4180,8 +4180,10 @@ function addAndShowWait()	{
   var bdivs = body.getElementsByTagName("div");
   for (var i=0; i<bdivs.length; i++) {
     if (bdivs[i].id && bdivs[i].id == 'errorMessage') {
-      eDiv.innerHTML = bdivs[i].innerHTML;
-      return;
+      if (bdivs[i].innerHTML) {
+        eDiv.innerHTML = bdivs[i].innerHTML;
+        return;
+      }
     }
   }  
     
