@@ -4168,18 +4168,19 @@ function addAndShowWait()	{
     alert("Warning: target div not found: " + frameId + "_div");
     return;
   }
-  var tables = divCopyTo.getElementsByTagName("table");
-  for (var i=0; i<tables.length; i++) {
-    if (tables[i].id && tables[i].id == 'errorMessage') {
-      divCopyTo.removeChild(tables[i]);
-      tables = divCopyTo.getElementsByTagName("table");
+  var divs = divCopyTo.getElementsByTagName("div");
+  var eDiv;
+  for (var i=0; i<divs.length; i++) {
+    if (divs[i].id && divs[i].id == 'errorMessage') {
+      divs[i].innerHTML = '';
+      eDiv = divs[i];
       break;
     }
   }
-  var bTables = body.getElementsByTagName("table");
-  for (var i=0; i<bTables.length; i++) {
-    if (bTables[i].id && bTables[i].id == 'errorMessage') {
-      divCopyTo.insertBefore(bTables[i], tables[0]);
+  var bdivs = body.getElementsByTagName("div");
+  for (var i=0; i<bdivs.length; i++) {
+    if (bdivs[i].id && bdivs[i].id == 'errorMessage') {
+      eDiv.innerHTML = bdivs[i].innerHTML;
       return;
     }
   }  

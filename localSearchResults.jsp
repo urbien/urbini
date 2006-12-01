@@ -25,7 +25,7 @@
 		</div>
     <taskTreeControl/>
     <div id="siteResourceList">
-      <errorMessage />
+      <div id="errorMessage"><errorMessage /></div>
       <siteResourceList />
       <br/>
       <createResources/><br/>

@@ -183,7 +183,10 @@
       </tr>
       <tr><td>
         <a target="pane2"></a><div id="pane2" style="position:absolute;"/>
-	      <div id="resourceList_div"><siteResourceList/></div>
+	      <div id="resourceList_div">
+          <div id="errorMessage"><errorMessage /></div>
+	        <siteResourceList/>
+	      </div>
 	    </td>
     </tr>
     </table>
