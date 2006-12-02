@@ -4409,10 +4409,11 @@ function showTab(e, td, hideDivId, unhideDivId) {
     var tokens = hideDivId.split(',');
     var len = tokens.length;
     for(var i = 0; i < len; i++) {
-      var div = document.getElementById(tokens[i]);
+      var tok = trim(tokens[i]);
+      var div = document.getElementById(tok);
       div.style.visibility = Popup.HIDDEN;
       div.style.display = "none";
-      var tdId = tokens[i].substring(4);
+      var tdId = tok.substring(4);
       var hideTD = document.getElementById(tdId);
       var ht = hideTD.getElementsByTagName("table");
       if (ht.length != 0  &&  ht[0].className == "currentCpTabs")
