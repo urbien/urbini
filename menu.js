@@ -424,6 +424,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
+    //Popup.openTimeoutId = setTimeout(function () {Popup.openAfterDelay(self.div.id, offsetX, offsetY, delay)});
     var exeStr = "Popup.openAfterDelay('" + self.div.id + "', " + offsetX + ", " + offsetY + ")";
     Popup.openTimeoutId = setTimeout(exeStr, delay);
     Popup.delayedPopup = self;
@@ -2823,19 +2824,15 @@ function uiFocus(div) {
         firstField = u;
       }
       if (u.id && (u.id == 'uiFocus' || u.id.indexOf('_uiFocus') != -1)) {
-        if(execJS.isObjectTotallyVisible(u)) {
-          u.focus(); // in IE (at least in IE6) first focus() is lost for some reason - we are forced to issue another focus()
-          u.focus();
-        }
+        u.focus(); // in IE (at least in IE6) first focus() is lost for some reason - we are forced to issue another focus()
+        u.focus();
         return true;
       }
     }
   }
   if (firstField && div != document) {
-   if(execJS.isObjectTotallyVisible(firstField)) {
-      firstField.focus();
-      firstField.focus(); // second time for IE
-    }
+    firstField.focus();
+    firstField.focus(); // second time for IE
   }
   return false;
 }
@@ -4100,11 +4097,22 @@ function addSimpleCalendarItem(event) {
 }
 
 function addAndShow1(anchor, event) {
+  var hotspot = getTargetElement(event);
   var iframeId = "resourceList";
   var iframe = document.getElementById(iframeId);
   try {
     var iframeWindow = frames[iframeId];
-    var newUri;
+    var newUri = anchor;
+    var q = anchor.indexOf('?');
+    var params;
+    if (q != -1) {
+      params = anchor.substring(q + 1) + "&";
+      newUri = anchor.substring(0, q);
+    }
+    else
+      params = "";
+    params += "hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y";  // skip all navigation blocks
+
     var aa = document.getElementById("currentItem");
     if (aa) {
       var currentItem = aa.href;
@@ -4118,50 +4126,56 @@ function addAndShow1(anchor, event) {
           else
             shortProp = "." + anchor.substring(idx + 11, idx1);
           var encCurrentItem = encodeURIComponent(currentItem);
-          anchor += "&" + shortProp + "_select=" + encCurrentItem + "&" + shortProp + "_verified=y";
-          anchor += "&-currentItem=" + encCurrentItem;
+          params += "&" + shortProp + "_select=" + encCurrentItem + "&" + shortProp + "_verified=y";
+          params += "&-currentItem=" + encCurrentItem;
         }
       }
     }
 
-    if (anchor.indexOf("$returnUri=") == -1) {
+    if (params.indexOf("$returnUri=") == -1) {
        var div = document.getElementById(iframeId + "_div");
       var tag = div.getElementsByTagName('a');
       if (tag.length) {
         var retUri = tag[0].href;
-        newUri = anchor + "&$returnUri=" + encodeURIComponent(retUri + "&-addItems=y");
+        params += "&$returnUri=" + encodeURIComponent(retUri + "&-addItems=y");
       }
-      else
-        newUri = anchor;
     }
-    else
-      newUri = anchor;
-
+/*
     iframeWindow.location.replace(newUri); // load data from server into iframe
 //    window.open(newUri);
 //    return;
     setTimeout(addAndShowWait, 50);
+*/
+    var div = document.createElement('div');
+    div.style.display = "none";
+    postRequest(newUri, params, div, hotspot, addAndShowWait);
     return stopEventPropagation(event);
   } catch (er) {
     alert(er);
   }
 }
 
-function addAndShowWait()	{
+function addAndShowWait(body, hotspot, content)	{
   var frameId = "resourceList";
-  var frameBodyId = "siteResourceList";
-  if (!frameLoaded[frameId]) {
-    setTimeout(addAndShowWait, 50);
-    return;
+  var body;
+  if (!content) {
+    var frameBodyId = "siteResourceList";
+    if (!frameLoaded[frameId]) {
+      setTimeout(addAndShowWait, 50);
+      return;
+    }
+    frameLoaded[frameId] = false;
+    var l = document.location;
+    var iframe = document.getElementById(frameId);
+    var iframeWindow = frames[frameId];
+    body = iframeWindow.document.getElementById(frameBodyId);
+    if (!body) {
+      alert("Warning: server did not return resource list data - check connection to server");
+      return;
+    }
   }
-  frameLoaded[frameId] = false;
-  var l = document.location;
-  var iframe = document.getElementById(frameId);
-  var iframeWindow = frames[frameId];
-  var body = iframeWindow.document.getElementById(frameBodyId);
-  if (!body) {
-    alert("Warning: server did not return resource list data - check connection to server");
-    return;
+  else {
+    setInnerHtml(body, content);
   }
   var divCopyTo = document.getElementById(frameId + "_div");
   if (!divCopyTo) {
@@ -4185,8 +4199,8 @@ function addAndShowWait()	{
         return;
       }
     }
-  }  
-    
+  }
+
   // Find new 'currentItem' anchor and substitute old one with new
   var elms = body.getElementsByTagName('a');
   var currentItem;
@@ -4225,7 +4239,9 @@ function addAndShowWait()	{
           var tbody  = elms[j].parentNode;
           oldCurrentTR = elms[j];
 
+          var rowIndex = elms[j].rowIndex;
           tbody.removeChild(elms[j]);
+          //copyTableRow(tbody, rowIndex, currentTR);
           if (j == elms.length)
             tbody.appendChild(currentTR);
           else
@@ -4309,6 +4325,8 @@ function addAndShowWait()	{
         else
           pos++;
       }
+      //var newTr = document.importNode(currentTR, true);
+//      copyTableRow(tbody, pos, currentTR);
       if (pos == trElms.length)
         tbody.appendChild(currentTR);
       else
@@ -4462,10 +4480,9 @@ function showTab(e, td, hideDivId, unhideDivId) {
     if (tr != null)
       tr.className = "currentTabTitle";
   }
-  // run JS code containing in a tab
+
   execJS.runDivCode(div);
 
-  uiFocus(div);
   return stopEventPropagation(e);
 }
 
@@ -5054,16 +5071,24 @@ function postRequest(url, parameters, div, hotspot, callback) {
       else if (status == 302) {
         if (!location)
           return;
-        var repaintDialog = location.indexOf('-inner=') != -1;
-        if (repaintDialog)
+        var repaintDialog = location.indexOf('-inner=')    != -1;   // painting a dialog
+        if (repaintDialog) {
+          hotspot = null; // second time do not show 'loading...' popup
           postRequest(location, parameters, div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
+        }
         else
           document.location = location;  // reload current page - usually happens at login due to timeout
       }
       else if (status == 322) {
         if (!location)
           return;
-        document.location = location;  // reload current page - usually happens at login due to timeout
+        var repaintDialog = location.indexOf('-addItems=') != 1;    // adding a new item to the resource list (like in bar or retail)
+        if (repaintDialog) {
+          hotspot = null; // second time do not show 'loading...' popup
+          postRequest(location, parameters, div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
+        }
+        else
+          document.location = location;  // reload current page - usually happens at login due to timeout
       }
     }
     else {
@@ -5087,6 +5112,8 @@ function postRequest(url, parameters, div, hotspot, callback) {
 }
 
 function loadingCueStart(hotspot) {
+  if (!hotspot)
+    return;
   var ttDiv = document.getElementById("system_tooltip");
   var ttIframe = document.getElementById("tooltipIframe");
   var loadingMsg = "<img src='icons/classes/Duration.gif' style='vertical-align: middle;'><span style='vertical-align: middle; font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . . </b></span>";
@@ -5416,13 +5443,8 @@ var execJS = {
 
   // checks on visibility all ancestors of the object
   // gets object or its id
-  isObjectTotallyVisible : function(obj) {
-    if(typeof obj == "string")
-      obj = document.getElementById(obj);
-    
-    if(obj == null)
-      return false;
-      
+  isObjectTotallyVisible : function(objId) {
+    var obj = document.getElementById(objId);
 	  var parent = obj;
 	  while(parent != null) {
 		  if(typeof parent.style != 'undefined' && parent.style.visibility == 'hidden')
@@ -5516,4 +5538,99 @@ function changeBoolean(e) {
   }
   //tooltipMouseOut0(target);           // remove and ...
   //tooltipMouseOver0(target);          // repaint the tooltip on this boolean icon
+}
+
+if (!document.importNode) {
+  document.importNode = function(oNode, bImportChildren) {
+    var oNew;
+
+    if(oNode.nodeType == 3) {
+      oNew = document.createTextNode(oNode.nodeValue);
+    }
+    else {
+      oNew = document.createElement(oNode.nodeName);
+      for(var i = 0; i < oNode.attributes.length; i++) {
+        if (oNode.attributes[i].name != 'style')
+          oNew.setAttribute(oNode.attributes[i].name, oNode.attributes[i].value);
+      }
+      if (oNode.style.cssText) {
+        alert(oNode.style.cssText);
+        oNew.setAttribute('style', oNode.style.cssText);
+      }
+    }
+
+    if (bImportChildren && oNode.hasChildNodes()) {
+      for (var oChild = oNode.firstChild; oChild; oChild = oChild.nextSibling) {
+        oNew.appendChild(document.importNode(oChild, true));
+      }
+    }
+
+    return oNew;
+  }
+}
+
+function cloneNode(to, oNode) {
+  var oNew;
+
+  if(oNode.nodeType == 3) {
+    oNew = document.createTextNode(oNode.nodeValue);
+  }
+  else {
+    oNew = document.createElement(oNode.nodeName);
+    for(var i = 0; i < oNode.attributes.length; i++) {
+      if (oNode.attributes[i].name != 'style')
+        oNew.setAttribute(oNode.attributes[i].name, oNode.attributes[i].value);
+    }
+    oNew.setAttribute('style', oNode.style.cssText);
+  }
+
+  if (oNode.hasChildNodes()) {
+    for (var oChild = oNode.firstChild; oChild; oChild = oChild.nextSibling) {
+      var next = cloneNode(oNew, oChild);
+      oNew.appendChild(next);
+    }
+  }
+
+  return oNew;
+}
+
+function copyAttributes(oNode, oNew) {
+  for(var i = 0; i < oNode.attributes.length; i++) {
+    var a = oNode.attributes[i];
+    if (a.value == null || a.value == 'null' || a.value == '')
+      continue;
+    if (a.name == 'style')
+      continue;
+    var value;
+    if (a.value == 'false')
+      value = false;
+    else if (a.value == 'true')
+      value = true;
+    else
+      value = a.value;
+    if (a.name == 'disabled' && value == false)
+      continue;
+    oNew.setAttribute(a.name, a.value);
+    alert(a.name + ': ' + a.value)
+  }
+  oNew.setAttribute('style', oNode.style.cssText);
+  //oNew.style.cssText = oNode.style.cssText;
+}
+
+function copyTableRow(tbody, pos, oldTr) {
+  var newTr = document.createElement('tr');
+  var oldCells = oldTr.cells;
+  for (var i=0; i<oldCells.length; i++) {
+    var cell = document.createElement('td');
+    newTr.appendChild(cell);
+  }
+  if (pos == tbody.rows.length)
+    tbody.appendChild(newTr);
+  else
+    tbody.insertBefore(newTr, tbody.rows[pos]);
+  for (var i=0; i<oldCells.length; i++) {
+    //alert(oldCells[i].innerHTML);
+    newTr.cells[i].innerHTML = oldCells[i].innerHTML;
+  }
+  copyAttributes(oldTr, newTr);
 }
