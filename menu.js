@@ -5074,7 +5074,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
         var repaintDialog = location.indexOf('-inner=')    != -1;   // painting a dialog
         if (repaintDialog) {
           hotspot = null; // second time do not show 'loading...' popup
-          postRequest(location, parameters, div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
+          postRequest(location, null, div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
         }
         else
           document.location = location;  // reload current page - usually happens at login due to timeout
@@ -5085,7 +5085,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
         var repaintDialog = location.indexOf('-addItems=') != 1;    // adding a new item to the resource list (like in bar or retail)
         if (repaintDialog) {
           hotspot = null; // second time do not show 'loading...' popup
-          postRequest(location, parameters, div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
+          postRequest(location, null, div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
         }
         else
           document.location = location;  // reload current page - usually happens at login due to timeout
