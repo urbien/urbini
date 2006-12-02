@@ -5356,7 +5356,7 @@ var dragobject = {
 			this.dragapproved = 1;
 
 		var dragContainerStr = titleObj.getAttribute("dragcontainer");
-		if(dragContainerStr == null)
+		if(dragContainerStr == null || dragContainerStr.length == 0)
 			dragContainerStr = 'pane2'; // apply a default
 		this.targetobj = document.getElementById(dragContainerStr);
 		if (isNaN(parseInt(this.targetobj.style.left))) {this.targetobj.style.left = 0;}
