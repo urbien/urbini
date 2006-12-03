@@ -4157,7 +4157,6 @@ function addAndShow1(anchor, event) {
 
 function addAndShowWait(body, hotspot, content)	{
   var frameId = "resourceList";
-  var body;
   if (!content) {
     var frameBodyId = "siteResourceList";
     if (!frameLoaded[frameId]) {
