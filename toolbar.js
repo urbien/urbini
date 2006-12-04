@@ -1062,21 +1062,19 @@ var PopupHandler = {
 	hide : function(isOverflowed) {
 		if(this.popupDiv == null)
 			return;
-		if(isOverflowed) {
-			if(this.overflowPopup == null)
+			
+		if(isOverflowed && this.overflowPopup == null) {
 				this.overflowPopup = this.popupDiv;
-			else
-				this.popupDiv.style.visibility = "hidden";
 		}
 		else {
 			this.popupDiv.style.visibility = "hidden";
+  		document.body.appendChild(this.popupDiv);
 			if(this.overflowPopup != null) {
 				this.overflowPopup.style.visibility = "hidden";
+	  		document.body.appendChild(this.overflowPopup);
 				this.overflowPopup = null;
 			}
 		}
-		// return to body
-		document.body.appendChild(this.popupDiv);
 		this.resetHandlers();
 	},
 	suspendedHide : function() {
