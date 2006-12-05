@@ -2687,15 +2687,38 @@ function interceptLinkClicks(div) {
   }
 }
 
-
+var currentCell;
+var lastCellClickTime;
+var count = 0;
 function schedule(table, e) {
   e = getDocumentEvent(e);
   var target = getEventTarget(e);
   if (target == null || target.className == null)
     return;
-
-  var className = target.className;
+  
   var tdId = target.id;
+  
+  var newCellClickTime = new Date().getTime();
+  if (lastCellClickTime != null) {
+//    Packages.java.lang.System.out.println('prev-lastCellClickTime = ' + lastCellClickTime);
+    if ((newCellClickTime - lastCellClickTime) < 500)
+      return stopEventPropagation(e);
+  }  
+  lastCellClickTime = newCellClickTime;
+//  Packages.java.lang.System.out.println('lastCellClickTime = ' + lastCellClickTime);
+  if (!currentCell) {
+    currentCell = target;
+    currentCell.align = 'center';
+    currentCell.style.backgroundColor = "#00CCCC";
+    return;
+  }
+  else if (tdId != currentCell.id) {
+    currentCell.style.backgroundColor = '';
+    currentCell = target;
+    currentCell.style.backgroundColor = "#00CCCC";
+    return;
+  }
+  var className = target.className;
   var idx1 = tdId.indexOf(".") + 1;
   var idx = tdId.indexOf(":");
   if (className == "b") {
@@ -2732,7 +2755,7 @@ function addEventOnSchedule() {
   var table = document.getElementById("mainTable");
   if (table == null)
     return;
-  addEvent(table, 'dblclick', function(event) {schedule(table, event);}, false);
+  addEvent(table, 'click', function(event) {schedule(table, event);}, false);
 }
 function initListBoxes(div) {
   var images;
@@ -3891,6 +3914,11 @@ var calendarCell; // last cell on which user clicked
 var lastPopupRowTD = null;
 
 function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
+  var curCellClickTime = new Date().getTime();
+//  Packages.java.lang.System.out.println('curCellClickTime = ' + curCellClickTime);
+  
+  if ((curCellClickTime - lastCellClickTime) < 500)
+    return stopEventPropagation(event);
   var td = getEventTarget(event);
   //--- extract parameters specific for popup row
   var popupRow = getTrNode(td); // get tr on which user clicked in popup
@@ -3998,6 +4026,8 @@ function showAlert(alertName) {
 }
 
 function addSimpleCalendarItem(event) {
+  if ((new Date().getTime() - lastCellClickTime) < 500)
+    return stopEventPropagation(event);
   var td = getEventTarget(event);
   var calendarRow = getTrNode(calendarCell);
   if (!calendarRow)
@@ -4302,13 +4332,19 @@ function addAndShowWait(body, hotspot, content)	{
           var total = extractTotalFrom(tot);
           // since first cell of Total tr has colspan=2, the column # in resources TR that referes to the same property will reside in # + 1 column
           var curTotal = extractTotalFrom(curTrTds[i + 1].innerHTML);
-          total += parseFloat(curTotal);
+          total += curTotal;
           if (oldCurrentTR) {
             var oldTotal = extractTotalFrom(oldCurTrTds[i + 1].innerHTML);
             total -= oldTotal;
           }
-//          total = Math.round(total * 100)/100;
-          tds[i].innerHTML = tot.substring(0, startDigit) + total;
+          total = Math.round(total * 100)/100;
+          var totS = '' + total;
+          var itot = totS.indexOf(".");
+          if (itot == -1)
+            totS += ".00";
+          else if (itot == totS.length - 2)
+            totS += "0";
+          tds[i].innerHTML = tot.substring(0, startDigit) + totS;
         }
       }
     }
@@ -5072,22 +5108,30 @@ function postRequest(url, parameters, div, hotspot, callback) {
           return;
         var repaintDialog = location.indexOf('-inner=')    != -1;   // painting a dialog
         if (repaintDialog) {
+alert('repaintDialog');          
           hotspot = null; // second time do not show 'loading...' popup
-          postRequest(location, null, div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
+          postRequest(location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
         }
-        else
+        else {
+alert('changeLocation');          
           document.location = location;  // reload current page - usually happens at login due to timeout
+        }
       }
       else if (status == 322) {
         if (!location)
           return;
-        var repaintDialog = location.indexOf('-addItems=') != 1;    // adding a new item to the resource list (like in bar or retail)
-        if (repaintDialog) {
-          hotspot = null; // second time do not show 'loading...' popup
-          postRequest(location, null, div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
-        }
-        else
+        var paintInPage = http_request.getResponseHeader('Paint-In-Page');
+        if (paintInPage && paintInPage == 'false')
           document.location = location;  // reload current page - usually happens at login due to timeout
+        else {
+          var repaintDialog = location.indexOf('-addItems=') != 1;    // adding a new item to the resource list (like in bar or retail)
+          if (repaintDialog) {
+            hotspot = null; // second time do not show 'loading...' popup
+            postRequest(location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
+          }
+          else
+            document.location = location;  // reload current page - usually happens at login due to timeout
+        }
       }
     }
     else {
