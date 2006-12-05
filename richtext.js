@@ -52,11 +52,7 @@ var RteEngine = {
 	FONTS_FEW : ["arial", "arial black", "comic sans ms", "courier new", "helvetica", "times new roman", "verdana"],
 	FONT_SIZE : ["8pt", "10pt", "12pt", "14pt", "18pt", "24pt", "36pt"],
 	
-	registeredIdArr : new Array(), // id's to prevent double registration
 	rteArr : new Array(), // objects
-	
-	isDocumentReady : false,
-	
 	uploadForm : null,
 	
 	// POPUPs; globals for all rte objects --
@@ -79,33 +75,22 @@ var RteEngine = {
 		if(typeof rtePref == 'undefined')
 			rtePref = this.simpleRTE;
 		
-		// to save it in registeredIdArr,
 		if(iframeObj.id	== "")
 			iframeObj.id = new Date().getTime();
-		this.registeredIdArr.push(iframeObj.id);
-
+		
+		var rteObj = null;
 		try {
-			var rteObj = new Rte(iframeObj, rteDataFieldId, rtePref);
+			rteObj = new Rte(iframeObj, rteDataFieldId, rtePref);
 		}catch(e) {
-			this.registeredIdArr.pop();
-			return;
+		  rteObj = new TArea(iframeObj, rteDataFieldId, rtePref);
 		}
 		
 		if(rteObj != null)
 			this.rteArr.push(rteObj);
-		else
-			this.registeredIdArr.pop();
 	},
 
-	getRteIndex : function(iframeObj) {
-		for(var i = 0; i < this.registeredIdArr.length; i++) {
-			if(this.registeredIdArr[i] == iframeObj.id)
-				return i;
-		}
-		return -1; // iframe is not a RTE
-	},
 	// put RTE data into a hidden field
-	// keepRte means that RTE object is keeping fo further use.
+	// keepRte means that RTE object is keeping for further use.
 	// by default the RTE object will be removed from  RteEngine.
 	putRteDataOfForm : function(formObj, keepRte) {
 		var iframes = formObj.getElementsByTagName('iframe');
@@ -117,13 +102,30 @@ var RteEngine = {
 				// delete rte from the RteEngine
 				if(typeof keepRte == 'undefined' || keepRte == false) {
 					RteEngine.rteArr.splice(idx, 1);
-					RteEngine.registeredIdArr.splice(idx, 1); 
 				}
 			}
 		}
 	},
+	getRteIndex : function(iframeObj) {
+		for(var i = 0; i < this.rteArr.length; i++) {
+			if(this.rteArr[i].iframeObj.id == iframeObj.id)
+				return i;
+		}
+		return -1; // iframe is not a RTE
+	},
+	// close all disactived except in html preview mode
+	closeAllDisactived : function(activeId) {
+		for(var i = 0; i < this.rteArr.length; i++)
+			if(this.rteArr[i].iframeObj.id != activeId)
+				this.rteArr[i].onlosefocus();
+	},
 	
-	// launch popups (create a popup on 1st demand) --
+	getHostUrl : function() {
+		var url = window.location.protocol + "//" + window.location.host + "/";
+		return url;
+	},
+
+	// launch popups (create a popup on 1st demand) --------
 	launchStylePopup : function(btnObj, callback) {
 		if(this.stylePopup == null)
 			this.createStylePopup();
@@ -320,17 +322,6 @@ var RteEngine = {
 		+ ' </table>';
 		
 		return tblInsertHtml;
-	},
-	// close all disactived except in html preview mode
-	closeAllDisactived : function(activeId) {
-		for(var i = 0; i < this.registeredIdArr.length; i++)
-			if(this.registeredIdArr[i] != activeId)
-				this.rteArr[i].onlosefocus();
-	},
-	
-	getHostUrl : function() {
-		var url = window.location.protocol + "//" + window.location.host + "/";
-		return url;
 	}
 }
 
@@ -384,9 +375,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// set text and edit mode
 		this.window = this.iframeObj.contentWindow;
 		this.document = this.window.document;
+		if(typeof this.document.designMode == 'undefined')
+		  throw "designMode is not surpported";
+		this.document.designMode = "On";
 		this.initFrameHeight = this.iframeObj.clientHeight;
 		this.initContent();
-		this.document.designMode = "On";
+		
 
 		// create toolbar
 		this.toolbar = this.createToolbar();
@@ -918,4 +912,79 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	
 	// constructor body --
 	this.init();
+}
+
+/********   TArea used instead RTE if the last imposible to create   *********/
+function TArea(iframeObj, dataFieldId, rtePref) {
+	var i_am = this;
+	
+  this.textArea = null;
+	this.iframeObj = iframeObj;
+	this.dataFieldId = dataFieldId;
+	this.parentDiv = this.iframeObj.parentNode;
+	this.dataField = null; // hidden field to transfer data
+  this.initHeight = null;
+  
+  // substitute iframe with a text area
+  this.init = function() {
+    this.textArea = document.createElement('textarea');
+    this.textArea.style.width = "100%";
+    this.textArea.style.height = this.iframeObj.clientHeight;
+    this.initHeight = this.iframeObj.clientHeight;
+    this.textArea.style.fontSize = "14px";
+    this.textArea.id = this.iframeObj.id;
+    
+    // convert html into a plain text.
+    var plainTooltipText = this.getDataField().value.replace(/<\/?[^>]+(>|$)/g, " ")
+    this.textArea.value = plainTooltipText;
+    
+    // set handlers
+    addEvent(this.textArea, 'keyup', this._onkeyup, false);
+		addEvent(this.textArea, 'focus', this.onfocus, false);
+    addEvent(document, 'mouseup', this.onlosefocus, false);
+    
+    this.parentDiv.replaceChild(this.textArea, this.iframeObj);
+  }
+   
+  this.getDataField = function() {
+		if(this.dataField == null) {
+			this.dataField = getChildById(this.parentDiv, this.dataFieldId);
+		    if (this.dataField == null)
+		      throw new Error("form field " + this.dataFieldId + " not found");
+		}
+		return this.dataField;
+  }
+  
+  this.putRteData = function() {
+		this.getDataField().value = this.textArea.value; 
+  }
+  
+  // focus
+  this. onfocus = function() {
+    i_am.fitHeightToVisible();
+	  RteEngine.closeAllDisactived(i_am.iframeObj.id);
+  }
+  // losefocus
+  this.onlosefocus = function(e) {
+    i_am.textArea.style.height = i_am.initHeight;
+  }
+
+  // resize
+  this._onkeyup = function(evt) {
+		i_am.fitHeightToVisible();
+	}
+
+	this.fitHeightToVisible = function() {
+		var scrlH = i_am.textArea.scrollHeight; // not work with Opera 8.54
+		if(scrlH < i_am.initHeight)
+			return;
+		
+		var taH = i_am.textArea.clientHeight;
+		if(taH != scrlH) {
+			i_am.textArea.height = scrlH;
+		}
+	}
+  
+  // constructor body
+  this.init();
 }
