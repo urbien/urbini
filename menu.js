@@ -2769,14 +2769,15 @@ function schedule(e) {
     if (imgSrc.indexOf('calendar.gif') != -1) {
       // calendarIdx < 0 in cases when employee does not have its calendar
       if (calendarIdx < 0) {
-        calendarIdx *= -1;
+        calendarIdx = calendarIdx * -1;
         openPopup1(parseInt(tdId.substring(idx1 + 1)), 'changeAlert', target, e, duration);
       }
       else
         openPopup(calendarIdx, calendarIdx, target, e, duration);
     }
     else  {
-      calendarIdx *= -1;
+      if (calendarIdx < 0) 
+        calendarIdx = calendarIdx * -1;
       openPopup(calendarIdx, calendarIdx, target, e, duration);
 //      openPopup1(parseInt(tdId.substring(1)), 'changeAlert', target, e, duration);
     }
