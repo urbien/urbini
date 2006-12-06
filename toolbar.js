@@ -121,21 +121,31 @@ function FormPopup(innerFormHtml, parentElt) {
 		if(toGet)
 			return getArr;
 	}
-	
-
-
 	// constructor ---
 	parentElt = parentElt || document.body;
 	this.create(innerFormHtml, parentElt);
 }
 
+// "base class" of controls like ToolbarButton and DropdownList
+function CtrlBase() {
+  CtrlBase.prototype.changeOpacity = function(obj, level) {
+	  try {
+		  if(typeof obj.style.MozOpacity != 'undefined')
+			  obj.style.MozOpacity = level;
+		  else
+			  obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
+	  }
+	  catch(e){}
+  }
+}
 /****************************************************
 * ToolbarButton class
 * callback: for overflowed case a button without a submenu should return false. 
 *****************************************************/
+ToolbarButton.prototype = new CtrlBase();
 function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, toolbar, title, titlePressed)
 {
-	var i_am = this;
+  var i_am = this;
 	this.div = null;
 	
 	this.index = index;
@@ -183,14 +193,15 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 	}
 	
 	this.enable = function() {
-		this._changeOpacity(1.0);
+		this.changeOpacity(this.div, 1.0);
 		this.isDisabled = false; 
 	}
 	
 	this.disable = function() {
-		this._changeOpacity(0.3);
+		this.changeOpacity(this.div, 0.3);
 		this.isDisabled = true;  
 	}
+	/*
 	this._changeOpacity = function(level) {
 		try {
 			if(typeof this.div.style.MozOpacity != 'undefined')
@@ -200,6 +211,7 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		}
 		catch(e){}
 	}
+	*/
 	// mouse handlers ---------------	
 	this.onMouseOver = function() {
 		if(i_am.isDisabled) return;
@@ -272,7 +284,6 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 	if(typeof titlePressed != 'undefined')
 		this.titlePressed = titlePressed;	
 }
-
 /*********************************************
 * PALETTE gloabal object
 **********************************************/
@@ -587,6 +598,7 @@ function List(colAmt) {
 * the dropdown list contains a unique list objet
 * probably better to make tha list global, so to share it.
 *****************************************************/
+DropdownList.prototype = new CtrlBase();
 function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) {
 	var FONT_FAMILY = "verdana";
 	var FONT_SIZE = "12px";
@@ -696,12 +708,18 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 		i_am.callback(itemIdx);
 	}
 	
-	// NOT IMPLEMENTED YET!
 	this.enable = function() {
-	}
-	this.disable = function() {
+		this.changeOpacity(this.div, 1.0);
+		this.changeOpacity(this.buttonDiv, 1.0);
+		this.isDisabled = false; 
 	}
 	
+	this.disable = function() {
+		this.changeOpacity(this.div, 0.3);
+		this.changeOpacity(this.buttonDiv, 0.3);
+		this.isDisabled = true;  
+	}
+
 	// arrow button handlers
 	this.onMouseOverBtn = function() {
 		i_am.btnImg.src = IMAGES_FOLDER + "arrow_button_over.gif";
@@ -889,7 +907,18 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 	this.getControlObj = function(idx) {
 		return this.controlsArr[idx];
 	}
-	
+	this.getNextControlObj = function(obj) {
+	  var idx = obj.index + 1;
+	  if(typeof this.controlsArr[idx] != 'undefined')
+		  return this.controlsArr[idx];
+    return null;
+	}
+	this.getPrevControlObj = function(obj) {
+	  var idx = obj.index - 1;
+	  if(typeof this.controlsArr[idx] != 'undefined')
+		  return this.controlsArr[idx];
+    return null;
+	}
 	this.getWidth = function() {
 		return this.width;
 	}
