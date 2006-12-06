@@ -2688,15 +2688,25 @@ function interceptLinkClicks(div) {
 }
 
 var currentCell;
+var currentCellBackground;
 var lastCellClickTime;
 var count = 0;
-function schedule(table, e) {
+function schedule(e) {
   e = getDocumentEvent(e);
   var target = getEventTarget(e);
-  if (target == null || target.className == null)
-    return;
-  
+  if (target == null)
+    return stopEventPropagation(e);
+  var imgSrc;
+  if (!target.className || target.className.length == 0) {
+    if (target.tagName.toLowerCase() == 'img')
+      imgSrc = target.src;
+    target = getTdNode(target);
+  }
+  else if (target.className == 'g')
+    return stopEventPropagation(e);
   var tdId = target.id;
+  if (!tdId)
+    return;
   
   var newCellClickTime = new Date().getTime();
   if (lastCellClickTime != null) {
@@ -2706,21 +2716,43 @@ function schedule(table, e) {
   }  
   lastCellClickTime = newCellClickTime;
 //  Packages.java.lang.System.out.println('lastCellClickTime = ' + lastCellClickTime);
+  var calendarImg = "<img src='icons/calendar.gif' border='0' width='16' height='16'/>"
+  var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' border='0' width='16' height='16'>&#160;<img src='icons/calendar.gif' border='0' width='16' height='16'>";
+  var isAssignedCell = tdId.indexOf('ap.') == 0;  
   if (!currentCell) {
     currentCell = target;
-    currentCell.align = 'center';
+    currentCellBackground = currentCell.style.backgroundColor; 
     currentCell.style.backgroundColor = "#00CCCC";
+    if (!isAssignedCell) {
+      currentCell.align = 'center';
+      if (currentCell.className == 'b')
+        currentCell.innerHTML = calendarImg;
+      else
+        currentCell.innerHTML = schedImg; 
+    }
+    
     return;
   }
   else if (tdId != currentCell.id) {
-    currentCell.style.backgroundColor = '';
+    if (currentCell.id.indexOf("ap.") != 0)
+      currentCell.innerHTML = '';
+    currentCell.style.backgroundColor = currentCellBackground; 
     currentCell = target;
+    
+    if (!isAssignedCell) {
+      if (currentCell.className == 'b')
+        currentCell.innerHTML = calendarImg;
+      else
+        currentCell.innerHTML = schedImg; 
+    }
+    currentCellBackground = currentCell.style.backgroundColor; 
     currentCell.style.backgroundColor = "#00CCCC";
     return;
   }
   var className = target.className;
   var idx1 = tdId.indexOf(".") + 1;
   var idx = tdId.indexOf(":");
+  
   if (className == "b") {
     if (idx == -1)
       return;
@@ -2732,10 +2764,15 @@ function schedule(table, e) {
     if (idx == -1)
       return;
     var duration = parseInt(tdId.substring(idx + 1));
-
-    if (tdId.indexOf("-") == -1) {
+    if (imgSrc.indexOf('calendar.gif') != -1) {
       var calendarIdx = parseInt(tdId.substring(idx1, idx));
-      openPopup(calendarIdx, calendarIdx, target, e, duration);
+      // calendarIdx < 0 in cases when employee does not have its calendar
+      if (calendarIdx < 0) {
+        var calendarIdx = parseInt(tdId.substring(idx1 + 1, idx));
+        openPopup1(parseInt(tdId.substring(idx1 + 1)), 'changeAlert', target, e, duration);
+      }
+      else
+        openPopup(calendarIdx, calendarIdx, target, e, duration);
     }
     else  {
       var calendarIdx = parseInt(tdId.substring(idx1 + 1, idx));
@@ -2755,7 +2792,7 @@ function addEventOnSchedule() {
   var table = document.getElementById("mainTable");
   if (table == null)
     return;
-  addEvent(table, 'click', function(event) {schedule(table, event);}, false);
+  addEvent(table, 'click', function(event) {schedule(event);}, false);
 }
 function initListBoxes(div) {
   var images;
@@ -4590,7 +4627,11 @@ function hideInnerDiv(e) {
 }
 
 function openPopup1(divId1, alertName, hotSpot, e) {
-  if (e.ctrlKey)  // ctrl-enter
+  var etarget = getEventTarget(e);
+  var isCalendar = etarget.tagName.toLowerCase() == 'img'  &&  etarget.src.indexOf('calendar.gif') != -1;
+  
+//  alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',  e=' + e + ', maxDuration=' + maxDuration);
+  if (isCalendar  ||  e.ctrlKey)  // ctrl-enter
     showAlert(alertName);
   else
     openPopup(divId1, null, hotSpot, e);
@@ -4603,8 +4644,12 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
     else
       divId2 = "a." + divId2;
   }
+  var etarget = getEventTarget(e);
+  var isCalendar = etarget.tagName.toLowerCase() == 'img'  &&  etarget.src.indexOf('calendar.gif') != -1;
+  
+  
 //  alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',  e=' + e + ', maxDuration=' + maxDuration);
-  if (e.ctrlKey)  {// ctrl-enter
+  if (isCalendar  ||  e.ctrlKey)  {// ctrl-enter
     if (!maxDuration) {
       Popup.open(divId2, hotSpot);
       return stopEventPropagation(e);
@@ -4639,8 +4684,13 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
     Popup.open(divId2, hotSpot);
   }
   else {
-    if (divId1 != null)
-      Popup.open('e.' + divId1, hotSpot);
+    if (divId1 != null) {
+      var target = getTdNode(hotSpot); 
+      if (!currentCell || currentCell != target) 
+        schedule(e);
+      else
+        Popup.open('e.' + divId1, hotSpot);
+    }
   }
   calendarCell = hotSpot;
   return stopEventPropagation(e);
