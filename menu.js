@@ -2765,18 +2765,18 @@ function schedule(e) {
     if (imgSrc == null || idx == -1)
       return;
     var duration = parseInt(tdId.substring(idx + 1));
+    var calendarIdx = parseInt(tdId.substring(idx1, idx));
     if (imgSrc.indexOf('calendar.gif') != -1) {
-      var calendarIdx = parseInt(tdId.substring(idx1, idx));
       // calendarIdx < 0 in cases when employee does not have its calendar
       if (calendarIdx < 0) {
-        var calendarIdx = parseInt(tdId.substring(idx1 + 1, idx));
+        calendarIdx *= -1;
         openPopup1(parseInt(tdId.substring(idx1 + 1)), 'changeAlert', target, e, duration);
       }
       else
         openPopup(calendarIdx, calendarIdx, target, e, duration);
     }
     else  {
-      var calendarIdx = parseInt(tdId.substring(idx1, idx));
+      calendarIdx *= -1;
       openPopup(calendarIdx, calendarIdx, target, e, duration);
 //      openPopup1(parseInt(tdId.substring(1)), 'changeAlert', target, e, duration);
     }
