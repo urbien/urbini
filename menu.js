@@ -2716,8 +2716,8 @@ function schedule(e) {
   }  
   lastCellClickTime = newCellClickTime;
 //  Packages.java.lang.System.out.println('lastCellClickTime = ' + lastCellClickTime);
-  var calendarImg = "<img src='icons/calendar.gif' border='0' width='16' height='16'/>"
-  var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' border='0' width='16' height='16'>&#160;<img src='icons/calendar.gif' border='0' width='16' height='16'>";
+  var calendarImg = "<img src='icons/calendar.gif' align='absmiddle' border='0' width='16' height='16'/>"
+  var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' align='absmiddle' border='0' width='16' height='16'>&#160;<img src='icons/calendar.gif' align='absmiddle' border='0' width='16' height='16'>";
   var isAssignedCell = tdId.indexOf('ap.') == 0;  
   if (!currentCell) {
     currentCell = target;
@@ -2740,6 +2740,7 @@ function schedule(e) {
     currentCell = target;
     
     if (!isAssignedCell) {
+      currentCell.align = 'center';
       if (currentCell.className == 'b')
         currentCell.innerHTML = calendarImg;
       else
@@ -2754,14 +2755,14 @@ function schedule(e) {
   var idx = tdId.indexOf(":");
   
   if (className == "b") {
-    if (idx == -1)
+    if (imgSrc == null || idx == -1)
       return;
     var calendarIdx = parseInt(tdId.substring(idx1, idx));
     var duration = parseInt(tdId.substring(idx + 1));
     openPopup(null, calendarIdx, target, e, duration);
   }
   else if (className == "a") {
-    if (idx == -1)
+    if (imgSrc == null || idx == -1)
       return;
     var duration = parseInt(tdId.substring(idx + 1));
     if (imgSrc.indexOf('calendar.gif') != -1) {
