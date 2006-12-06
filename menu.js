@@ -2722,7 +2722,7 @@ function schedule(e) {
   if (!currentCell) {
     currentCell = target;
     currentCellBackground = currentCell.style.backgroundColor; 
-    currentCell.style.backgroundColor = "#00CCCC";
+    currentCell.style.backgroundColor = "#D7D8FB";
     if (!isAssignedCell) {
       currentCell.align = 'center';
       if (currentCell.className == 'b')
@@ -2747,7 +2747,7 @@ function schedule(e) {
         currentCell.innerHTML = schedImg; 
     }
     currentCellBackground = currentCell.style.backgroundColor; 
-    currentCell.style.backgroundColor = "#00CCCC";
+    currentCell.style.backgroundColor = "#D7D8FB";
     return;
   }
   var className = target.className;
