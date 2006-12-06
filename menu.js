@@ -2777,7 +2777,7 @@ function schedule(e) {
     }
     else  {
       var calendarIdx = parseInt(tdId.substring(idx1, idx));
-      openPopup1(parseInt(tdId.substring(idx1 + 1)), 'changeAlert', target, e, duration);
+      openPopup(calendarIdx, calendarIdx, target, e, duration);
 //      openPopup1(parseInt(tdId.substring(1)), 'changeAlert', target, e, duration);
     }
   }
