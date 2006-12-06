@@ -13,7 +13,7 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 	var BORDER_APPLY_TO = [{name:"none", valueHtml:"", valueScr:""}, {name:"all", valueHtml:"border", valueScr:"border"},{name:"left", valueHtml:"border-left", valueScr:"borderLeft"},
 	  {name:"top", valueHtml:"border-top", valueScr:"borderTop"}, {name:"right", valueHtml:"border-right", valueScr:"borderRight"}, {name:"bottom", valueHtml:"border-bottom", valueScr:"borderBottom"}];
 	
-	var BORDER_STYLE = [{"name":"dotted", "value":"dotted"}, {"name":"dashed", "value":"dashed"}, {"name":"solid", "value":"solid"}, {"name":"inset", "value":"inset"}, {"name":"outset", "value":"outset"}, {"name":"<i>default</i>", "value":""}];
+	var BORDER_STYLE = [{"name":"dotted", "value":"dotted"}, {"name":"dashed", "value":"dashed"}, {"name":"solid", "value":"solid"}, {"name":"inset", "value":"inset"}, {"name":"outset", "value":"outset"}];
 	
 	var BORDER_WIDTH = [{"name":"1px", "value":"1px"}, {"name":"2px", "value":"2px"}, {"name":"3px", "value":"3px"}, {"name":"10px", "value":"10px"}, {"name":"<i>default</i>", "value":""}];
 	
@@ -189,15 +189,12 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 			var divTmp = document.createElement('div');
 			var divInnerTmp = document.createElement('div');
 			var style = divTmp.style;
-			if(BORDER_STYLE[i].value != "") {
-			  style.borderStyle = BORDER_STYLE[i].value;
-			  style.width = 50;
-			  style.height = 12;
-			  style.borderWidth = 2;
-			  style.marginTop = 2;
-			}
-			else
-			  divTmp.innerHTML = BORDER_STYLE[i].name;
+			
+			style.borderStyle = BORDER_STYLE[i].value;
+			style.width = 50;
+			style.height = 12;
+			style.borderWidth = 2;
+			style.marginTop = 2;
 			  
 			ddList.appendItem(divTmp);
 		}
@@ -384,9 +381,37 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 	
   // borders --
   this.onBorderApplyTo = function(applyToIdx) {
+    // switch borders controls only if none ("0") involved.
+    var toswitchBorderCtrls = false;
+    if(i_am.borderDesc.applyToIdx == 0 || applyToIdx == 0)
+      toswitchBorderCtrls = true;
+      
     i_am.borderDesc.applyToIdx = applyToIdx;
     i_am._setBorders();
+    
+    if(toswitchBorderCtrls)
+      i_am.switchBorderCtrls();
   }
+  
+  this.switchBorderCtrls = function() {
+    applyToIdx = this.borderDesc.applyToIdx;
+    if(this.borderApplyToList != null) {
+	    var ctrl = this.borderApplyToList;
+ 	    // 1) width 2) style 3) brd clr
+ 	    for(var i = 0; i < 3; i++) {
+	      ctrl = toolBar.getNextControlObj(ctrl);
+ 	      if(ctrl == null)
+ 	        break;
+      
+        if(BORDER_APPLY_TO[applyToIdx].valueScr == "")
+	        ctrl.disable();
+	      else
+ 	        ctrl.enable();
+	    }
+	  }
+  
+  }   
+
   // border width:
 	this.onBorderWidth = function(widthIdx) {
 		i_am.borderDesc.width = BORDER_WIDTH[widthIdx].value;
@@ -394,7 +419,6 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 	}
 	// border style
 	this.onBorderStyle = function(styleIdx) {
-		//sampleDiv.style.borderStyle = BORDER_STYLE[styleIdx];
 		i_am.borderDesc.style = BORDER_STYLE[styleIdx].value;
 		i_am._setBorders();
 	}
@@ -435,7 +459,6 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 	}
 	
 	this.setBorderColor = function(colorStr) {
-		//sampleDiv.style.borderColor = colorStr;
 		i_am.borderDesc.color = colorStr;
 		i_am._setBorders();
 	}
@@ -476,5 +499,6 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 	}
 	// constructor's body -----------------------
 	this.create();
+	this.switchBorderCtrls();
 	this.putStyleStr();
 }
