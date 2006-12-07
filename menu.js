@@ -2698,15 +2698,22 @@ function schedule(e) {
     return stopEventPropagation(e);
   var imgSrc;
   if (!target.className || target.className.length == 0) {
-    if (target.tagName.toLowerCase() == 'img')
+    if (target.tagName.toLowerCase() == 'img') 
       imgSrc = target.src;
-    target = getTdNode(target);
+    if (target.tagName.toLowerCase() != 'td')
+      target = getTdNode(target);
   }
   else if (target.className == 'g')
     return stopEventPropagation(e);
   var tdId = target.id;
   if (!tdId)
     return;
+
+  var isAssignedCell = tdId.indexOf('ap.') == 0;  
+  if (!isAssignedCell && target.className != 'a' && target.className != 'b' && target.className != 'ci') {
+    alert(target.className + " " + target.id);
+    return stopEventPropagation(e);
+  }
   
   var newCellClickTime = new Date().getTime();
   if (lastCellClickTime != null) {
@@ -2716,43 +2723,49 @@ function schedule(e) {
   }  
   lastCellClickTime = newCellClickTime;
 //  Packages.java.lang.System.out.println('lastCellClickTime = ' + lastCellClickTime);
-  var calendarImg = "<img src='icons/calendar.gif' align='absmiddle' border='0' width='16' height='16'/>"
-  var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' align='absmiddle' border='0' width='16' height='16'>&#160;<img src='icons/calendar.gif' align='absmiddle' border='0' width='16' height='16'>";
-  var isAssignedCell = tdId.indexOf('ap.') == 0;  
+  var calendarImg = "<img src='icons/blank.gif' border='0' width='16' height='16'/>&#160;<img src='icons/calendar.gif' border='0' width='16' height='16'/>"
+  var schedImg = "<img src='icons/classes/TreatmentProcedure.gif'border='0' width='16' height='16'/>&#160;<img src='icons/calendar.gif' border='0' width='16' height='16'>";
   if (!currentCell) {
     currentCell = target;
     currentCellBackground = currentCell.style.backgroundColor; 
     currentCell.style.backgroundColor = "#D7D8FB";
     if (!isAssignedCell) {
-      currentCell.align = 'center';
+//      currentCell.align = 'center';
       if (currentCell.className == 'b')
         currentCell.innerHTML = calendarImg;
       else
         currentCell.innerHTML = schedImg; 
     }
-    else
+    else {
       currentCell.width='100px';
-    
+      var div = currentCell.childNodes[0];
+      div.style.whiteSpace = 'normal';
+    }
     return;
   }
   else if (tdId != currentCell.id) {
     if (currentCell.id.indexOf("ap.") != 0) 
       currentCell.innerHTML = '';
-    else
+    else {
+      var div = currentCell.childNodes[0];
+      div.style.whiteSpace = 'nowrap';
       currentCell.width='';
-    
+    }
     currentCell.style.backgroundColor = currentCellBackground; 
     currentCell = target;
     
     if (!isAssignedCell) {
-      currentCell.align = 'center';
+//      currentCell.align = 'center';
       if (currentCell.className == 'b')
         currentCell.innerHTML = calendarImg;
       else
         currentCell.innerHTML = schedImg; 
     }
-    else
+    else {
       currentCell.width='100px';
+      var div = currentCell.childNodes[0];
+      div.style.whiteSpace = 'normal';
+    }
     currentCellBackground = currentCell.style.backgroundColor; 
     currentCell.style.backgroundColor = "#D7D8FB";
     return;
