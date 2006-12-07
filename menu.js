@@ -2921,8 +2921,16 @@ function onClickDisplayInner(e, anchor) {
 
   var propName = anchor.id.substring(7);
   var r;
-  if (propName.indexOf("list.") == 0)
-    r = displayInner(e, innerListUrls[propName.substring(5)]);
+  if (propName.indexOf("list.") == 0) {
+    var strippedProp = propName.substring(5);
+    var ul = document.getElementById(strippedProp);
+    if (!ul)
+      r = displayInner(e, innerListUrls[strippedProp]);
+    else {
+      var li = ul.getElementsByTagName("li");
+      r = displayInner(e, decodeURL(li[0].innerHTML));
+    }
+  }
   else {
     var a = anchor.href;
     if (a != 'about:blank')
@@ -3400,7 +3408,9 @@ function showDialog(div, hotspot, content) {
   initListBoxes(div);
   uiFocus(div);
   var anchors = div.getElementsByTagName('A');
+  interceptLinkClicks(div);
   replaceTooltips(div, anchors);
+  
 
   // execute JS code of innerHTML
   execJS.runDivCode(div);
@@ -5735,4 +5745,12 @@ function copyTableRow(tbody, pos, oldTr) {
     newTr.cells[i].innerHTML = oldCells[i].innerHTML;
   }
   copyAttributes(oldTr, newTr);
+}
+
+function submitUpdate(formName) {
+  var f = document.forms[formName];
+  RteEngine.putRteDataOfForm(f);
+  f.elements['submitUpdate'].value = 'Submit changes';
+  f.submit();
+  return false;
 }
