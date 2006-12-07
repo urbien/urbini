@@ -2698,7 +2698,7 @@ function schedule(e) {
     return stopEventPropagation(e);
   var imgSrc;
   if (!target.className || target.className.length == 0) {
-    if (target.tagName.toLowerCase() == 'img') 
+    if (target.tagName.toLowerCase() == 'img')
       imgSrc = target.src;
     if (target.tagName.toLowerCase() != 'td')
       target = getTdNode(target);
@@ -2709,32 +2709,32 @@ function schedule(e) {
   if (!tdId)
     return;
 
-  var isAssignedCell = tdId.indexOf('ap.') == 0;  
+  var isAssignedCell = tdId.indexOf('ap.') == 0;
   if (!isAssignedCell && target.className != 'a' && target.className != 'b' && target.className != 'ci') {
     alert(target.className + " " + target.id);
     return stopEventPropagation(e);
   }
-  
+
   var newCellClickTime = new Date().getTime();
   if (lastCellClickTime != null) {
 //    Packages.java.lang.System.out.println('prev-lastCellClickTime = ' + lastCellClickTime);
     if ((newCellClickTime - lastCellClickTime) < 500)
       return stopEventPropagation(e);
-  }  
+  }
   lastCellClickTime = newCellClickTime;
 //  Packages.java.lang.System.out.println('lastCellClickTime = ' + lastCellClickTime);
   var calendarImg = "<img src='icons/blank.gif' border='0' width='16' height='16'/>&#160;<img src='icons/calendar.gif' border='0' width='16' height='16'/>"
   var schedImg = "<img src='icons/classes/TreatmentProcedure.gif'border='0' width='16' height='16'/>&#160;<img src='icons/calendar.gif' border='0' width='16' height='16'>";
   if (!currentCell) {
     currentCell = target;
-    currentCellBackground = currentCell.style.backgroundColor; 
+    currentCellBackground = currentCell.style.backgroundColor;
     currentCell.style.backgroundColor = "#D7D8FB";
     if (!isAssignedCell) {
 //      currentCell.align = 'center';
       if (currentCell.className == 'b')
         currentCell.innerHTML = calendarImg;
       else
-        currentCell.innerHTML = schedImg; 
+        currentCell.innerHTML = schedImg;
     }
     else {
       currentCell.width='100px';
@@ -2744,36 +2744,36 @@ function schedule(e) {
     return;
   }
   else if (tdId != currentCell.id) {
-    if (currentCell.id.indexOf("ap.") != 0) 
+    if (currentCell.id.indexOf("ap.") != 0)
       currentCell.innerHTML = '';
     else {
       var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'nowrap';
       currentCell.width='';
     }
-    currentCell.style.backgroundColor = currentCellBackground; 
+    currentCell.style.backgroundColor = currentCellBackground;
     currentCell = target;
-    
+
     if (!isAssignedCell) {
 //      currentCell.align = 'center';
       if (currentCell.className == 'b')
         currentCell.innerHTML = calendarImg;
       else
-        currentCell.innerHTML = schedImg; 
+        currentCell.innerHTML = schedImg;
     }
     else {
       currentCell.width='100px';
       var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'normal';
     }
-    currentCellBackground = currentCell.style.backgroundColor; 
+    currentCellBackground = currentCell.style.backgroundColor;
     currentCell.style.backgroundColor = "#D7D8FB";
     return;
   }
   var className = target.className;
   var idx1 = tdId.indexOf(".") + 1;
   var idx = tdId.indexOf(":");
-  
+
   if (className == "b") {
     if (imgSrc == null || idx == -1)
       return;
@@ -2796,7 +2796,7 @@ function schedule(e) {
         openPopup(calendarIdx, calendarIdx, target, e, duration);
     }
     else  {
-      if (calendarIdx < 0) 
+      if (calendarIdx < 0)
         calendarIdx = calendarIdx * -1;
       openPopup(calendarIdx, calendarIdx, target, e, duration);
 //      openPopup1(parseInt(tdId.substring(1)), 'changeAlert', target, e, duration);
@@ -3423,7 +3423,7 @@ function showDialog(div, hotspot, content) {
   var anchors = div.getElementsByTagName('A');
   interceptLinkClicks(div);
   replaceTooltips(div, anchors);
-  
+
 
   // execute JS code of innerHTML
   execJS.runDivCode(div);
@@ -3985,7 +3985,7 @@ var lastPopupRowTD = null;
 function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   var curCellClickTime = new Date().getTime();
 //  Packages.java.lang.System.out.println('curCellClickTime = ' + curCellClickTime);
-  
+
   if ((curCellClickTime - lastCellClickTime) < 500)
     return stopEventPropagation(event);
   var td = getEventTarget(event);
@@ -4661,7 +4661,7 @@ function hideInnerDiv(e) {
 function openPopup1(divId1, alertName, hotSpot, e) {
   var etarget = getEventTarget(e);
   var isCalendar = etarget.tagName.toLowerCase() == 'img'  &&  etarget.src.indexOf('calendar.gif') != -1;
-  
+
 //  alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',  e=' + e + ', maxDuration=' + maxDuration);
   if (isCalendar  ||  e.ctrlKey)  // ctrl-enter
     showAlert(alertName);
@@ -4678,8 +4678,8 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
   }
   var etarget = getEventTarget(e);
   var isCalendar = etarget.tagName.toLowerCase() == 'img'  &&  etarget.src.indexOf('calendar.gif') != -1;
-  
-  
+
+
 //  alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',  e=' + e + ', maxDuration=' + maxDuration);
   if (isCalendar  ||  e.ctrlKey)  {// ctrl-enter
     if (!maxDuration) {
@@ -4717,8 +4717,8 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
   }
   else {
     if (divId1 != null) {
-      var target = getTdNode(hotSpot); 
-      if (!currentCell || currentCell != target) 
+      var target = getTdNode(hotSpot);
+      if (!currentCell || currentCell != target)
         schedule(e);
       else
         Popup.open('e.' + divId1, hotSpot);
@@ -5190,12 +5190,10 @@ function postRequest(url, parameters, div, hotspot, callback) {
           return;
         var repaintDialog = location.indexOf('-inner=')    != -1;   // painting a dialog
         if (repaintDialog) {
-alert('repaintDialog');          
           hotspot = null; // second time do not show 'loading...' popup
           postRequest(location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
         }
         else {
-alert('changeLocation');          
           document.location = location;  // reload current page - usually happens at login due to timeout
         }
       }
@@ -5220,20 +5218,32 @@ alert('changeLocation');
       // other ajax states that we ignore for now: 0-Unintialized, 1-Loading, 2-Loaded, 3-Interactive
     }
   };
+  // opera 8.0 does not support setRequestHeaders()
+  if (typeof(req.setRequestHeader) == "function") {
+    http_request.open('POST', url, true);
 
-  http_request.open('POST', url, true);
-
-  // browser does not allow Referer to be sent - so we send X-Referer and on server make it transparent to apps
-  //http_request.setRequestHeader("Referer",      document.location.href);
-  http_request.setRequestHeader("X-Referer",     document.location.href);
-  http_request.setRequestHeader("X-Ajax",       "y");
-  http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  // below 2 line commented - made IE wait with ~1 minute timeout
-  if (parameters) {
-    http_request.setRequestHeader("Content-length", parameters.length);
+    // browser does not allow Referer to be sent - so we send X-Referer and on server make it transparent to apps
+    //http_request.setRequestHeader("Referer",      document.location.href);
+    http_request.setRequestHeader("X-Referer",     document.location.href);
+    http_request.setRequestHeader("X-Ajax",       "y");
+    http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    // below 2 line commented - made IE wait with ~1 minute timeout
+    if (parameters) {
+      http_request.setRequestHeader("Content-length", parameters.length);
+    }
+    //http_request.setRequestHeader("Connection", "close");
+    http_request.send(parameters);
   }
-  //http_request.setRequestHeader("Connection", "close");
-  http_request.send(parameters);
+  else {
+    var url1 = url;
+    var extras = 'X-Referer=' + document.location.href + '&X-Ajax=y';
+    if (parameters && parameters.length != 0)
+      url1 = url + '?' + parameters + '&' + extras;
+    else
+      url1 = url1 + '?' + extras;
+    http_request.open('GET', url1, true);
+    req.send(null);
+  }
 }
 
 function loadingCueStart(hotspot) {
