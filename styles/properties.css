@@ -61,6 +61,7 @@ span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:
 .xs {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;}
 
 span.imgTitle {color:#da26cb; font-family:sans-serif, arial; font-size:8pt; font-weight:bold}
+span.duration {color:#037f83; font-family:sans-serif, arial; font-size:8pt; font-weight:bold}
 
 .optionPropsTitle {border-bottom:solid #5C9EBF 1px; padding: 5px; background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); font-weight:bold; font-size:15px; font-family:sans-serif, arial; color:#00309C;}
 span.itemsCount {color:red; font-family:sans-serif, arial; font-size:10pt; font-weight:bold}
@@ -195,7 +196,12 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   overflow: hidden;
 }
 
-.schedule th, .schedule td {
+.schedule th {
+  width: 3em;
+  overflow: hidden;
+  height: 2em;
+}
+.schedule td {
   width: 3em;
   overflow: hidden;
   height: 1em;
@@ -203,11 +209,15 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 /* styles for available and calendar item cells */
 .schedule .a, .ci, .aea {
-  background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top
+  background-color:#f8f4ef; border:solid #808080 1px; vertical-align:top
 }
 /* styles for busy cells */
 .schedule .b {
-  border:solid #808080 1px; background-color:pink; font-weight:bold; FONT-SIZE: 11px; vertical-align:top
+  border:solid #808080 1px; background-color:pink; vertical-align:top
+}
+/* styles for current cells */
+.schedule .cc {
+  border:solid #808080 1px; background-color:rgb(117,208,241); vertical-align:top
 }
 /* styles for unavailable cells */
 .schedule .ua {
@@ -215,10 +225,10 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 /* styles for organization busy cells (ex. corporate lunch) */
 .schedule .ob {
-  border:solid #808080 1px; background-color:#E4BBF9; font-weight:bold; FONT-SIZE: 11px; vertical-align:top
+  border:solid #808080 1px; background-color:#E4BBF9; vertical-align:top
 }
 .schedule .g   {
-  border:solid #808080 0px;background-color:#E2E2E2;vertical-align:top
+  border-top:solid #838383 1px;background-color:#E2E2E2;vertical-align:top
 }
 /*
 .expiredAlert {background-color:#f8f4ef; FONT-SIZE: 11px;border:solid #808080 1px; border-collapse: collapse; vertical-align:top}
