@@ -2730,12 +2730,17 @@ function schedule(e) {
       else
         currentCell.innerHTML = schedImg; 
     }
+    else
+      currentCell.width='100px';
     
     return;
   }
   else if (tdId != currentCell.id) {
-    if (currentCell.id.indexOf("ap.") != 0)
+    if (currentCell.id.indexOf("ap.") != 0) 
       currentCell.innerHTML = '';
+    else
+      currentCell.width='';
+    
     currentCell.style.backgroundColor = currentCellBackground; 
     currentCell = target;
     
@@ -2746,6 +2751,8 @@ function schedule(e) {
       else
         currentCell.innerHTML = schedImg; 
     }
+    else
+      currentCell.width='100px';
     currentCellBackground = currentCell.style.backgroundColor; 
     currentCell.style.backgroundColor = "#D7D8FB";
     return;
