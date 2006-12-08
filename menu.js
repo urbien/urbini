@@ -2703,7 +2703,7 @@ function schedule(e) {
       imgSrc = target.src;
     else if (lTarget == 'a')
       return;
-    else if (lTarget != 'td')
+    if (lTarget != 'td')
       target = getTdNode(target);
   }
   else if (target.className == 'g')
