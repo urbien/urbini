@@ -207,6 +207,10 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   height: 1em;
 }
 
+.schedule td div {
+  white-space: nowrap;
+}
+
 /* styles for available and calendar item cells */
 .schedule .a, .ci, .aea {
   background-color:#f8f4ef; border:solid #808080 1px; vertical-align:top
