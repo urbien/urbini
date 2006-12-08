@@ -4788,13 +4788,11 @@ function addAndShowItems(tr, e) {
   return addAndShow1(anchor, e);
 }
 function printReceipt(url) {
-  var tr = document.getElementById(url);
-  if (!tr)
+  var curUL = document.getElementById(url);
+  if (!curUL)
     return;
-  var ul = tr.getElementsByTagName("ul");
-  if (!ul)
-    return;
-  var li = ul[0].getElementsByTagName("li");
+  
+  var li = curUL.getElementsByTagName("li");
   if (li.length) {
     var appl = document.applets[0];
     appl.open();
@@ -5120,9 +5118,11 @@ function postRequest(url, parameters, div, hotspot, callback) {
   if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla, Safari,...
     try {
       http_request = new XMLHttpRequest();
-      if (http_request.overrideMimeType) {
-        http_request.overrideMimeType('text/xml');
-      }
+//      if (!opera) { // not Opera 8.0 
+//        if (typeof(http_request.overrideMimeType) != 'undefined' && http_request.overrideMimeType) {
+//         http_request.overrideMimeType('text/xml');
+//        }
+//      }  
     } catch(e) {}
   }
 
@@ -5158,7 +5158,7 @@ function postRequest(url, parameters, div, hotspot, callback) {
   http_request.onreadystatechange = function() {
     var status;
     if (http_request.readyState == 4) {
-      loadingCueFinish();
+      //loadingCueFinish();
       var location;
       try {
         status = http_request.status;
@@ -5219,7 +5219,8 @@ function postRequest(url, parameters, div, hotspot, callback) {
     }
   };
   // opera 8.0 does not support setRequestHeaders()
-  if (typeof(req.setRequestHeader) == "function") {
+  //if (typeof(http_request.setRequestHeader) == "function") {
+/*  if (!opera) { */
     http_request.open('POST', url, true);
 
     // browser does not allow Referer to be sent - so we send X-Referer and on server make it transparent to apps
@@ -5233,17 +5234,19 @@ function postRequest(url, parameters, div, hotspot, callback) {
     }
     //http_request.setRequestHeader("Connection", "close");
     http_request.send(parameters);
+    /*  
   }
   else {
     var url1 = url;
-    var extras = 'X-Referer=' + document.location.href + '&X-Ajax=y';
+    var extras = 'X-Referer=' + encodeURIComponent(document.location.href) + '&X-Ajax=y';
     if (parameters && parameters.length != 0)
       url1 = url + '?' + parameters + '&' + extras;
     else
       url1 = url1 + '?' + extras;
     http_request.open('GET', url1, true);
-    req.send(null);
+    http_request.send('');
   }
+*/  
 }
 
 function loadingCueStart(hotspot) {
