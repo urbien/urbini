@@ -630,6 +630,9 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 	this.selectedItemIdx = 0;
 	
 	this.isOverflowed = false;
+	
+	this.isDisabled = false;
+	
 	// create -----------------
 	this.create = function() {
 		// 1. create the list
@@ -722,15 +725,23 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 
 	// arrow button handlers
 	this.onMouseOverBtn = function() {
+	  if(i_am.isDisabled)
+	    return;
 		i_am.btnImg.src = IMAGES_FOLDER + "arrow_button_over.gif";
 	}
 	this.onMouseOutBtn = function() {
+		  if(i_am.isDisabled)
+	    return;
 		i_am.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
 	}
 	this.onMouseDownBtn = function() {
+	  if(i_am.isDisabled)
+	    return;
 		i_am.btnImg.src = IMAGES_FOLDER + "arrow_button_pressed.gif";
 	}
 	this.onMouseUpBtn = function() {
+	  if(i_am.isDisabled)
+	    return;
 		i_am.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
 		var top = i_am.top + i_am.div.clientHeight + 1;
 		
