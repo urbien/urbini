@@ -2698,9 +2698,12 @@ function schedule(e) {
     return stopEventPropagation(e);
   var imgSrc;
   if (!target.className || target.className.length == 0) {
-    if (target.tagName.toLowerCase() == 'img')
+    var lTarget = target.tagName.toLowerCase();
+    if (lTarget == 'img')
       imgSrc = target.src;
-    if (target.tagName.toLowerCase() != 'td')
+    else if (lTarget == 'a')
+      return;
+    else if (lTarget != 'td')
       target = getTdNode(target);
   }
   else if (target.className == 'g')
