@@ -2938,8 +2938,10 @@ function onClickDisplayInner(e, anchor) {
   var propName = anchor.id.substring(7);
   var r;
   if (propName.indexOf("list.") == 0) {
-    var strippedProp = propName.substring(5);
-    var ul = document.getElementById(strippedProp);
+//    var strippedProp = propName.substring(5);
+//    var ul = document.getElementById(strippedProp);
+    var ul = document.getElementById(propName);
+    
     if (!ul)
       r = displayInner(e, innerListUrls[strippedProp]);
     else {
