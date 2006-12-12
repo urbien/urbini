@@ -4530,6 +4530,7 @@ function showTab(e, td, hideDivId, unhideDivId) {
   e = getDocumentEvent(e);
 
   var isViewAll = td.id == 'viewAll';
+  var hasPrefix;
   if (hideDivId  &&  hideDivId.length != 0) {
     var tokens = hideDivId.split(',');
     var len = tokens.length;
@@ -4538,7 +4539,13 @@ function showTab(e, td, hideDivId, unhideDivId) {
       var div = document.getElementById(tok);
       div.style.visibility = Popup.HIDDEN;
       div.style.display = "none";
-      var tdId = tok.substring(4);
+      var tdId;
+      if (tok.charAt(0) == 'i') {
+        tdId = tok.substring(5);
+        hasPrefix = true;
+      }
+      else
+        tdId = tok.substring(4);
       var hideTD = document.getElementById(tdId);
       var ht = hideTD.getElementsByTagName("table");
       if (ht.length != 0  &&  ht[0].className == "currentCpTabs")
@@ -4549,8 +4556,12 @@ function showTab(e, td, hideDivId, unhideDivId) {
           tt.className = "currentTabTitleHidden";
       }
     }
-    var tt = document.getElementById('cp_' + td.id);
-    if (tt != null)
+    var tt;
+    if (hasPrefix)
+      tt = document.getElementById('cp_i_' + td.id);
+    else
+      tt = document.getElementById('cp_' + td.id);
+    if (tt)
       tt.className = "currentTabTitleHidden";
   }
 
@@ -4561,19 +4572,34 @@ function showTab(e, td, hideDivId, unhideDivId) {
       var div = document.getElementById(tokens[i]);
       div.style.visibility = Popup.VISIBLE;
       div.style.display = 'inline';
-      var tdId = tokens[i].substring(4);
+      var tdId;
+      if (tokens[i].charAt(0) == 'i') {
+        tdId = tokens[i].substring(5);
+        hasPrefix = true;
+      }
+      else
+        tdId = tokens[i].substring(4);
       var uTD = document.getElementById(tdId);
       var uTable = uTD.getElementsByTagName("table");
       if (uTable.length != 0  &&  uTable[0].className == "currentCpTabs")
         uTable[0].className = "cpTabs";
       if (isViewAll) {
-        var tt = document.getElementById('cp_' + tdId);
+        var tt;
+        if (hasPrefix)
+          tt = document.getElementById('cp_i_' + tdId);
+        else
+          tt = document.getElementById('cp_' + tdId);
         tt.className = "currentTabTitle";
       }
     }
 
   }
-  var divId = 'div_' + td.id;
+  var divId;
+  if (hasPrefix)
+    divId = 'idiv_' + td.id;
+  else
+    divId = 'div_' + td.id;
+
   div = document.getElementById(divId);
   div.style.visibility = Popup.VISIBLE;
   div.style.display = 'inline';
@@ -5782,4 +5808,23 @@ function submitUpdate(formName) {
   f.elements['submitUpdate'].value = 'Submit changes';
   f.submit();
   return false;
+}
+
+function getTopDivForTab(e, divId) {
+  var target = getTargetElement(e);
+  var pDiv;
+  while (true) {
+    pDiv = getDivNode(target)
+    if (pDiv.id  &&  (pDiv.id == 'pane2' || pDiv.id == 'corePageContent'))
+      break; 
+    else
+      target = getDivNode(pDiv.parentNode);
+  }
+  var divs = pDiv.getElementsByTagName('div');
+  for (var i=0; i<divs.length; i++) {
+    var d = divs[i];
+    if (d.id  &&  d.id == divId)
+      return d;
+  }
+  return;
 }
