@@ -65,6 +65,7 @@ span.duration {color:#037f83; font-family:sans-serif, arial; font-size:8pt; font
 
 .optionPropsTitle {border-bottom:solid #5C9EBF 1px; padding: 5px; background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); font-weight:bold; font-size:15px; font-family:sans-serif, arial; color:#00309C;}
 span.itemsCount {color:red; font-family:sans-serif, arial; font-size:10pt; font-weight:bold}
+span.rollup {color:red; font-family:sans-serif, arial; font-size:9pt; font-weight:bold}
 
 span.dark{color:#eeeeee}
 span.light {color:#ffffff}
