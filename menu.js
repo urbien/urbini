@@ -2718,13 +2718,16 @@ function schedule(e) {
   }
   else if (target.className == 'g')
     return stopEventPropagation(e);
+  else if (target.className == "aea" || target.className == "bea") {
+    showAlert('expiredAlert');
+    return stopEventPropagation(e);
+  }
   var tdId = target.id;
   if (!tdId)
     return;
-
   var isAssignedCell = tdId.indexOf('ap.') == 0;
   if (!isAssignedCell && target.className != 'a' && target.className != 'b' && target.className != 'ci') {
-    alert(target.className + " " + target.id);
+//    alert(target.className + " " + target.id);
     return stopEventPropagation(e);
   }
 
@@ -2743,14 +2746,13 @@ function schedule(e) {
     currentCellBackground = currentCell.style.backgroundColor;
     currentCell.style.backgroundColor = "#D7D8FB";
     if (!isAssignedCell) {
-//      currentCell.align = 'center';
       if (currentCell.className == 'b')
         currentCell.innerHTML = calendarImg;
       else
         currentCell.innerHTML = schedImg;
     }
     else {
-      currentCell.width='100px';
+//      currentCell.width='100px';
       var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'normal';
     }
@@ -2766,16 +2768,14 @@ function schedule(e) {
     }
     currentCell.style.backgroundColor = currentCellBackground;
     currentCell = target;
-
     if (!isAssignedCell) {
-//      currentCell.align = 'center';
       if (currentCell.className == 'b')
         currentCell.innerHTML = calendarImg;
       else
         currentCell.innerHTML = schedImg;
     }
     else {
-      currentCell.width='100px';
+//      currentCell.width='100px';
       var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'normal';
     }
@@ -2819,8 +2819,6 @@ function schedule(e) {
     calendarCell = target;
     addCalendarItem(this, event, parseInt(tdId.substring(idx1)));
   }
-  else if (className == "aea")
-    showAlert('expiredAlert');
 }
 
 function addEventOnSchedule() {
@@ -2829,6 +2827,14 @@ function addEventOnSchedule() {
     return;
   addEvent(table, 'click', function(event) {schedule(event);}, false);
 }
+
+function addEventOnCancelItems() {
+  var div = document.getElementById("resourceList_div");
+  if (div == null)
+    return;
+  addEvent(div, 'click', function(event) {cancelItem(event);}, false);
+}
+
 function initListBoxes(div) {
   var images;
   var doc;
@@ -4439,6 +4445,107 @@ function addAndShow1(anchor, event) {
   } catch (er) {
     alert(er);
   }
+}
+
+function cancelItem(event) {
+  var hotspot = event.target;
+  
+  var id = hotspot.id;
+  if (!id  ||  id.indexOf('_boolean_refresh') == -1)
+    return stopEventPropagation(event);
+  var idx = id.indexOf(".$.");
+  var cancelUri = 'localSearchResults.html';
+  var params = '-$action=deleteAndExplore&-addItems=y&uri=' + encodeURIComponent(id.substring(0, idx));
+  try {
+    var div = document.createElement('div');
+    div.style.display = "none";
+    postRequest(event, cancelUri, params, div, hotspot, cancelItemAndWait);
+  } catch (er) {
+    alert(er);
+  }
+  return stopEventPropagation(event);
+}
+
+function cancelItemAndWait(event) {
+  var divId = "resourceList_div";
+  var divCopyTo = document.getElementById(divId);
+  var elms = divCopyTo.getElementsByTagName('a');
+  var currentItem;
+  for (var j=0; j<elms.length; j++) {
+    if (elms[j].id  &&  elms[j].id == 'currentItem') {
+      currentItem = elms[j].href;
+      break;
+    }
+  }
+  var divs = divCopyTo.getElementsByTagName("div");
+  var eDiv;
+  for (var i=0; i<divs.length; i++) {
+    if (divs[i].id && divs[i].id == 'errorMessage') {
+      divs[i].innerHTML = '';
+      eDiv = divs[i];
+      break;
+    }
+  }
+  elms = divCopyTo.getElementsByTagName('tr');
+  var currentTr;
+  var currentTds;
+  for (var j=0; j<elms.length; j++) {
+    var tr = elms[j];
+    if (!tr.id)
+      continue;
+    if (tr.id == currentItem) 
+      currentTr = tr;
+    else if (tr.id == 'results') {
+      var tds = tr.childNodes;
+      for (var i=0; i<tds.length; i++) {
+        if (tds[i].id && tds[i].id == 'results') {
+          var r = tds[i].innerHTML;
+          var idx = r.indexOf('-');
+          var idx1 = r.indexOf('<', idx);
+          var recs = r.substring(idx + 1, idx1);
+          var recsNmb = parseInt(recs) - 1;
+          var newInnerHTML = r.substring(0, idx + 1) + recsNmb;
+          idx = r.indexOf(recs, idx1);
+
+          newInnerHTML += r.substring(idx1, idx) + recsNmb;
+          tds[i].innerHTML = newInnerHTML;
+        }
+      }
+    }
+    else if (tr.id == 'totals') {
+      totalsTR = tr;
+      var tds = tr.getElementsByTagName('td');
+      var curTrTds = currentTr.getElementsByTagName('td');
+      for (var i=0; i<tds.length; i++) {
+        if (tds[i].id && tds[i].id.indexOf('tot_') == 0) {
+          var tot = tds[i].innerHTML;
+          var startDigit = -1;
+          for (var ii=0; ii<tot.length; ii++) {
+            var ch = tot.charAt(ii);
+            if (isDigit(ch)) {
+              if (startDigit == -1)
+                startDigit = ii;
+            }
+          }
+          var total = extractTotalFrom(tot);
+          // since first cell of Total tr has colspan=2, the column # in resources TR that referes to the same property will reside in # + 1 column
+          var curTotal = extractTotalFrom(curTrTds[i + 1].innerHTML);
+ 
+          total -= curTotal;
+          total = Math.round(total * 100)/100;
+          var totS = '' + total;
+          var itot = totS.indexOf(".");
+          if (itot == -1)
+            totS += ".00";
+          else if (itot == totS.length - 2)
+            totS += "0";
+          tds[i].innerHTML = tot.substring(0, startDigit) + totS;
+        }
+      }
+    }
+  }
+  var tbody  = currentTr.parentNode;
+  tbody.removeChild(currentTr);
 }
 
 function addAndShowWait(event, body, hotspot, content)	{
@@ -6084,8 +6191,7 @@ function cloneEvent(event) {
   var e = new Object();
   e.screenX = event.screenX;
   e.screenY = event.screenY;
-  e.pageX   = event.pageX;
-  e.pageY   = event.pageY;
+  e.pageX   = event.pageY;
   e.clientX = event.clientX;
   e.clientY = event.clientY;
   e.srcElement = getTargetElement(event);
