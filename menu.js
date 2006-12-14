@@ -12,7 +12,7 @@ var keyPressedElement;
 var autoCompleteTimeoutId;
 var keyPressedTime;
 
-String.prototype.startsWith = function(s) {
+String.prototype.startsWith = function startsWith(s) {
   var n = s.length;
   var m = this.length;
   if (m < n)
@@ -23,6 +23,7 @@ String.prototype.startsWith = function(s) {
   }
   return true;
 };
+
 
 /**
  *  Since Internet Explorer does not define the Node interface constants,
@@ -78,7 +79,9 @@ Popup.opera = typeof opera != 'undefined'                             ? true : f
 if (document.attachEvent && !Popup.opera) {
   Popup.ie55 = true; // need better test since this one will include 5+ as well
 }
-Popup.ns6  = (Popup.w3c && navigator.appName.indexOf("Netscape")>=0 ) ? true : false;
+Popup.ns6  = (Popup.w3c && navigator.appName.indexOf("Netscape")>= 0) ? true : false;
+Popup.maemo= (Popup.w3c && navigator.userAgent.indexOf("Maemo") >= 0) ? true : false;
+Popup.penBased = Popup.maemo ? true : false;
 
 /**
  * returns iframe that serves as a canvas for this popup (overlaying the underlying form fields)
@@ -132,7 +135,8 @@ Popup.getPopup = function (divId) {
 /**
  * Open popup after delay
  */
-Popup.openAfterDelay = function (divId, offsetX, offsetY) {
+Popup.openAfterDelay = function (event, divId, offsetX, offsetY) {
+  //alert('event.clientX: ' + event.clientX + ', offsetX: ' + offsetX + ', divId: ' + divId);
   if ( (Popup.lastOpenTime   && (Popup.lastOpenTime  > Popup.delayedPopupOpenTime)) ||
        (Popup.lastClickTime  && (Popup.lastClickTime > Popup.delayedPopupOpenTime)) ||
        (keyPressedTime       && (keyPressedTime      > Popup.delayedPopupOpenTime))
@@ -142,7 +146,7 @@ Popup.openAfterDelay = function (divId, offsetX, offsetY) {
   Popup.delayedPopup = null;
   var popup = Popup.getPopup(divId);
   if (popup) {
-    popup.open1(offsetX, offsetY);
+    popup.open1(event, offsetX, offsetY);
   }
 };
 
@@ -151,7 +155,7 @@ Popup.openAfterDelay = function (divId, offsetX, offsetY) {
  * Opens a menu with a specified DIV and places it on the screen relative to hotspot (IMG, link, etc).
  * Note: uses frameRef to draw this DIV on top of the iframe in order to block underlying form fields (which otherwise would show through).
  */
-Popup.open = function (divId, hotspotRef, frameRef, offsetX, offsetY, delay, contents) {
+Popup.open = function (event, divId, hotspotRef, frameRef, offsetX, offsetY, delay, contents) {
   var divRef = document.getElementById(divId);
   var popup = Popup.getPopup(divId);
   if (popup == null)
@@ -160,10 +164,10 @@ Popup.open = function (divId, hotspotRef, frameRef, offsetX, offsetY, delay, con
     popup.reset(hotspotRef, frameRef, contents);
 
   if (delay) {
-    popup.openDelayed(offsetX, offsetY, delay);
+    popup.openDelayed(event, offsetX, offsetY, delay);
     return;
   }
-  return popup.open1(offsetX, offsetY);
+  return popup.open1(event, offsetX, offsetY);
 };
 
 Popup.delayedClose0 = function (divId) {
@@ -194,14 +198,14 @@ Popup.close0 = function (divId) {
 /**
  *  Loads the ajax popup into the div
  */
-Popup.load = function (div, hotspot, content) {
+Popup.load = function (event, div, hotspot, content) {
   var frameId     = 'popupFrame';
   var frameBodyId = 'popupFrameBody';
 
   //content exists if we used ajax via httpRequest, otherwise we need not extract content from iframe
   if (!content) {
     if (!frameLoaded[frameId]) {
-      setTimeout(function () {Popup.load(div, hotspot)}, 50);
+      setTimeout(function () {Popup.load(event, div, hotspot)}, 50);
       return;
     }
     frameLoaded[frameId] = false;
@@ -246,7 +250,7 @@ Popup.load = function (div, hotspot, content) {
   }
 
   hideResetRow(div, currentFormName, originalProp);
-  popup.open1(0, 16);
+  popup.open1(event, 0, 16);
   loadedPopups[div.id] = div;
 };
 
@@ -336,13 +340,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     return self.isTooltipFlag;
   }
 
-  this.open1 = function (offsetX, offsetY) {
-    var hotspotDim = getElementCoords(self.hotspot);
+  this.open1 = function (event, offsetX, offsetY) {
+    var hotspotDim = getElementCoords(event, self.hotspot);
     if (Popup.tooltipPopup) {
       Popup.tooltipPopup.close();
       Popup.tooltipPopup = null;
     }
-
     var currentDiv = self.getCurrentDiv();
     if (currentDiv) {
       var curDivId = currentDiv.id;
@@ -371,8 +374,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (self.isTooltip()) {
       self.setInnerHtml(self.contents);
     }
-
-    self.setVisible(offsetX, offsetY);
+    //alert('visible');
+    self.setVisible(event, offsetX, offsetY, hotspotDim);
     self.popupClosed = false;
 
     self.deselectRow();
@@ -388,7 +391,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       replaceTooltips(self.div, anchors);
       self.initilized = true;
     }
-
+    //alert('end popup init');
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
       self.delayedClose(20000);
@@ -409,7 +412,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   /**
    * Open delayed popup: initialize a delayed popup and quit
    */
-  this.openDelayed = function (offsetX, offsetY, delay) {
+  this.openDelayed = function (event, offsetX, offsetY, delay) {
     Popup.lastOpenTime         = new Date().getTime();
     Popup.delayedPopupOpenTime = new Date().getTime();
 
@@ -424,17 +427,19 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
-    //Popup.openTimeoutId = setTimeout(function () {Popup.openAfterDelay(self.div.id, offsetX, offsetY, delay)});
-    var exeStr = "Popup.openAfterDelay('" + self.div.id + "', " + offsetX + ", " + offsetY + ")";
-    Popup.openTimeoutId = setTimeout(exeStr, delay);
+    //alert('event.clientX: ' + event.clientX + ', offsetX: ' + offsetX + ', divId: ' + self.div.id);
+    var event1 = cloneEvent(event); // hack: event object does not survive despite a js closure mechanism
+    event1.clonedEvent = event;
+    event = event1;
+    Popup.openTimeoutId = setTimeout(function () {Popup.openAfterDelay(event, self.div.id, offsetX, offsetY)}, delay);
     Popup.delayedPopup = self;
   }
 
   /**
    * Show popup
    */
-  this.setVisible = function (offsetX, offsetY) {
-    return setDivVisible(self.div, self.iframe, self.hotspot, offsetX, offsetY);
+  this.setVisible = function (event, offsetX, offsetY, hotspotDim) {
+    return setDivVisible(event, self.div, self.iframe, self.hotspot, offsetX, offsetY, hotspotDim);
   }
 
   /**
@@ -480,15 +485,17 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var hotspot = self.hotspot;
     //var isMenu  = div.id.indexOf('menudiv_') == 0 ? true false;
 
-    if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
-      addEvent(div,     'mouseenter',  self.popupOnMouseOver, false);
-      addEvent(div,     'mouseleave',  self.popupOnMouseOut,  false);
-      addEvent(hotspot, 'mouseleave',  self.popupOnMouseOut,  false);
-    }
-    else {
-      addEvent(div,     'mouseover', self.popupOnMouseOver, false);
-      addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
-      addEvent(hotspot, 'mouseout',  self.popupOnMouseOut,  false);
+    if (!Popup.penBased) {
+      if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
+        addEvent(div,     'mouseenter',  self.popupOnMouseOver, false);
+        addEvent(div,     'mouseleave',  self.popupOnMouseOut,  false);
+        addEvent(hotspot, 'mouseleave',  self.popupOnMouseOut,  false);
+      }
+      else {
+        addEvent(div,     'mouseover', self.popupOnMouseOver, false);
+        addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
+        addEvent(hotspot, 'mouseout',  self.popupOnMouseOut,  false);
+      }
     }
     var firstRow = self.firstRow();
     if (firstRow == null)
@@ -533,8 +540,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           //anchors[0].disabled = true;
         }
       }
-      addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
-      addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
+      if (!Popup.penBased) {
+        addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
+        addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
+      }
       cur = elem;
     }
   }
@@ -822,7 +831,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         loadedPopups[currentDiv.id] = null;
         Popup.close0(currentDiv.id)
       }
-      listboxOnClick1(currentImgId);
+      listboxOnClick1(e, currentImgId);
       return true;
     }
 
@@ -1409,13 +1418,13 @@ function listboxOnClick(e) {
   if (target.tagName != "IMG")
     return;
   var imgId = target.id;
-  listboxOnClick1(imgId);
+  listboxOnClick1(e, imgId);
 }
 
 /**
  *  Opens the popup when needed, e.g. on click, on enter, on autocomplete
  */
-function listboxOnClick1(imgId, enteredText, enterFlag) {
+function listboxOnClick1(e, imgId, enteredText, enterFlag) {
   if (Popup.openTimeoutId) {                  // clear any prior delayed popup open
     clearTimeout(Popup.openTimeoutId);
     Popup.openTimeoutId = null;
@@ -1497,7 +1506,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   // Use existing DIV from cache (unless text was Enter-ed - in which case always redraw DIV)
   if (!enteredText && div != null) {
     hideResetRow(div, currentFormName, originalProp);
-    Popup.open(divId, hotspot, null, 0, 16);
+    Popup.open(e, divId, hotspot, null, 0, 16);
     return;
   }
   else {
@@ -1584,7 +1593,7 @@ function listboxOnClick1(imgId, enteredText, enterFlag) {
   }
 
   // request listbox context from the server via ajax
-  postRequest(url, params, div, hotspot, Popup.load);
+  postRequest(e, url, params, div, hotspot, Popup.load);
 }
 
 function getFormFiltersForInterface(form, propName) {
@@ -1655,8 +1664,10 @@ function removePopupRowEventHandlers(div) {
   for (var i=0;i<trs.length; i++) {
     var elem = trs[i];
     removeEvent(elem, 'click',     popupRowOnClick,     false);
-    removeEvent(elem, 'mouseover', popupRowOnMouseOver, false);
-    removeEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
+    if (!Popup.penBased) {
+      removeEvent(elem, 'mouseover', popupRowOnMouseOver, false);
+      removeEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
+    }
   }
 }
 
@@ -1829,7 +1840,7 @@ function popupOnSubmit(e) {
   // if current form is inner dialog - submit as AJAX request
   // upon AJAX response we will be able to choose between repainting the dialog or the whole page
   if (pane2  &&  pane2.contains(form))  {   // inner dialog?
-    postRequest(url, params, pane2, getTargetElement(e), showDialog);
+    postRequest(e, url, params, pane2, getTargetElement(e), showDialog);
     return stopEventPropagation(e);
   }
   else
@@ -1908,8 +1919,8 @@ function autoComplete1(e, target) {
        currentPopup.selectRow();
      }
      else {
-       listboxOnClick1(keyPressedImgId, keyPressedElement.value);
-       //Popup.open(divId, hotspot, null, 0, 16);
+       listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
+       //Popup.open(e, divId, hotspot, null, 0, 16);
      }
      return stopEventPropagation(e);
    case 40:  //down arrow
@@ -1919,8 +1930,8 @@ function autoComplete1(e, target) {
        currentPopup.selectRow();
      }
      else {
-       listboxOnClick1(keyPressedImgId, keyPressedElement.value);
-       //Popup.open(divId, hotspot, null, 0, 16);
+       listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
+       //Popup.open(e, divId, hotspot, null, 0, 16);
      }
      return stopEventPropagation(e);
    case 37:  //left arrow
@@ -2047,10 +2058,7 @@ function autoCompleteTimeout(invocationTime) {
 
   if (keyPressedElement.value.length == 0) // avoid showing popup for empty fields
     return;
-  listboxOnClick1(keyPressedImgId, keyPressedElement.value);
-
-  //var divId = keyPressedImgId.substring(0, keyPressedImgId.length() - '_filter'.length());
-  //Popup.open(divId, hotspot, null, 0, 16);
+  listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
 }
 
 
@@ -2469,13 +2477,15 @@ function menuOnClick(e) {
   var divRef = document.getElementById(divId); // this is a menu item without popup, exit
   if (!divRef)
     return true;
-  var popup = Popup.open(divId, target, null, 0, 19);
+  var popup = Popup.open(e, divId, target, null, 0, 19);
   return stopEventPropagation(e);
 }
 
 
 /*********************************** Tooltips ************************************/
 function replaceTooltips(div, elements) {
+  if (Popup.penBased) // pen-based devices have problem with tooltips
+    return;
   if (!elements)
     return;
   var llen = elements.length;
@@ -2486,20 +2496,24 @@ function replaceTooltips(div, elements) {
 }
 
 function replaceTooltip(div, elem) {
+  if (Popup.penBased) // pen-based devices have problem with tooltips
+    return;
   if (elem == null)
     return;
   if (div) {
     if (div.style != null)
       elem.style.zIndex = div.style.zIndex; // inherit zIndex - otherwise hotspot has no zIndex which we need to inherit further in setDivVisible
   }
-  if (elem.getAttribute('title')) {
-    if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
-      addEvent(elem, 'mouseenter',  tooltipOnMouseOver,   false);
-      addEvent(elem, 'mouseleave',  tooltipOnMouseOut,    false);
-    }
-    else {
-      addEvent(elem, 'mouseover',   tooltipOnMouseOver,   false);
-      addEvent(elem, 'mouseout',    tooltipOnMouseOut,    false);
+  if (!Popup.penBased) {
+    if (elem.getAttribute('title')) {
+      if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
+        addEvent(elem, 'mouseenter',  tooltipOnMouseOver,   false);
+        addEvent(elem, 'mouseleave',  tooltipOnMouseOut,    false);
+      }
+      else {
+        addEvent(elem, 'mouseover',   tooltipOnMouseOver,   false);
+        addEvent(elem, 'mouseout',    tooltipOnMouseOut,    false);
+      }
     }
   }
 }
@@ -2519,7 +2533,7 @@ function replaceAllTooltips() {
   replaceTooltips0(null, elements);
 }
 */
-function tooltipOnMouseOver0(target, toShow) {
+function tooltipOnMouseOver0(e, target, toShow) {
   //Packages.java.lang.System.out.println('tooltip mouseover: ' + target.tagName + ', ' + target.id);
   if (!Popup.allowTooltip(target)) {
     return true; // ignore this tooltip and return true to allow mouseover processing to continue
@@ -2574,7 +2588,7 @@ function tooltipOnMouseOver0(target, toShow) {
   var ifrRef = document.getElementById(iframeId);
   if (!ifrRef)
     throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
-  Popup.open(divId, target, ifrRef, 20, 25, 1000, tooltipText); // open with delay
+  Popup.open(e, divId, target, ifrRef, 20, 25, 1000, tooltipText); // open with delay
   return false;
 }
 
@@ -2591,7 +2605,7 @@ function tooltipOnMouseOver(e) {
     e.setAttribute('eventProcessed', 'true');
   }
   var target = getTargetElement(e);
-  if (!tooltipOnMouseOver0(target, toShow))
+  if (!tooltipOnMouseOver0(e, target, toShow))
     return stopEventPropagation(e);
   else
     return true;
@@ -2941,7 +2955,7 @@ function onClickDisplayInner(e, anchor) {
 //    var strippedProp = propName.substring(5);
 //    var ul = document.getElementById(strippedProp);
     var ul = document.getElementById(propName);
-    
+
     if (!ul)
       r = displayInner(e, innerListUrls[strippedProp]);
     else {
@@ -3154,19 +3168,6 @@ function getWindowSize() {
   return [ widthPlusScrollbar, heightPlusScrollbar ];
 
 }
-function getScrollXY1() {
-  var scrOfX = 0, scrOfY = 0;
-
-  if (Popup.ie5 || Popup.ie4) {
-    scrOfX = document.body.scrollLeft;
-    scrOfY = document.body.scrollTop;
-  }
-  else {
-    scrOfX = window.pageXOffset;
-    scrOfY = window.pageYOffset;
-  }
-  return [ scrOfX, scrOfY ];
-}
 
 function getScrollXY() {
   var scrOfX = 0, scrOfY = 0;
@@ -3205,9 +3206,30 @@ function Dim() {
   }
 }
 
-function getElementCoords(elem) {
+function getElementCoords(event, elem) {
   var dim = new Dim();
+  var d = getElementDimensions(elem);
+  dim.width  = d.width;
+  dim.height = d.height;
 
+  var xy;
+  if (event && !event.type.startsWith('key')) {
+    xy = getMouseEventCoordinates(event);
+  }
+  else {
+    xy = getObjectUpperLeft(elem);
+  }
+  dim.left = xy.x;
+  dim.top  = xy.y;
+  //dim.left = findPosX(elem);
+  //dim.top  = findPosY(elem);
+  //alert('getElementCoords2');
+
+  return dim;
+}
+
+function getElementDimensions(elem) {
+  var dim = new Dim();
   if (Popup.ns4) {
     dim.width  = (elem.document.width)  ? elem.document.width  : elem.clip.width;
     dim.height = (elem.document.height) ? elem.document.height : elem.clip.height;
@@ -3220,9 +3242,6 @@ function getElementCoords(elem) {
     dim.width  = (elem.style.width)  ? parseInt(elem.style.width)  : parseInt(elem.offsetWidth);
     dim.height = (elem.style.height) ? parseInt(elem.style.height) : parseInt(elem.offsetHeight);
   }
-  dim.left = findPosX(elem);
-  dim.top  = findPosY(elem);
-
   return dim;
 }
 
@@ -3276,6 +3295,197 @@ function findPosY(obj) {
   return curtop;
 }
 
+/*-------------------------------------- tootip coordinates -------------------*/
+/* Get toolTip X,Y when not tracking mouse */
+function getCoordinates(obj) {
+
+    var xy = getObjectUpperLeft(obj);
+
+    /* Adjust position for screen right and bottom screen edge */
+    var x = fitWindowWidth(xy.x);
+    var y = fitWindowHeight(xy.y);
+
+    /* return object with coordinates as properties */
+    return {Xoffset: x, Yoffset: y};
+}//eof getCoordinates
+
+function getObjectUpperLeft(obj){
+    /* For postioning in reference to link */
+
+    var x = obj.offsetLeft;
+    var y = obj.offsetTop;
+
+    /* Calculate page X,Y of upper left corner of element
+        where toolTip is to be shown
+    */
+    obj = obj.offsetParent;
+    while (obj) {
+        x += obj.offsetLeft;
+        y += obj.offsetTop;
+
+        if (typeof obj.clientLeft != "undefined" && obj.tagName != "BODY") {
+                /*MS IE doesn't include borders in offset values;
+                these are obtained with clientLeft and Top and added in*/
+                x += obj.clientLeft;
+                y += obj.clientTop;
+        }
+
+        if (obj.tagName == "HTML") break; //KHTML KDE has an unidentified object above html
+        obj = obj.offsetParent;
+    }//endwhile
+
+    return {x:x, y:y};
+}//eof getObjectUpperLeft
+
+function getMouseEventCoordinates(e) {
+  var posx = 0;
+  var posy = 0;
+
+  var sc = getScrollXY();
+  if (e.pageX || e.pageY) {
+    posx = e.pageX;
+    posy = e.pageY;
+  }
+  else if (e.clientX || e.clientY) {
+    posx = e.clientX + sc[0];
+    posy = e.clientY + sc[1];
+  }
+  // posx and posy contain the mouse position relative to the document
+  return {x:posx, y:posy};
+}
+
+function fitWindowWidth(tipX) {
+    /* Determine best page X that keeps object in window. If object
+     * doesn't fit adjust to left edge ot window.
+     * Compare object X coordinate to max X not going out
+     * of window and use left most.
+     * Then check object X is not past left most visible
+     * page coordinate.
+     */
+
+    /*Don't go past right edge of window */
+
+    var rightMaxX = getRightPagePos() - (box.offsetWidth + 16); //16 for scrollbar
+
+    tipX = (rightMaxX < tipX) ? rightMaxX : tipX;
+
+    /* But, don't go past left edge of window either */
+    var leftMinX = getLeftPagePos();
+    tipX = (tipX < leftMinX) ? leftMinX : tipX;
+
+    return tipX;
+}//eof fitWindowWidth
+
+function getRightPagePos() {
+    /* Determine page offset at right of screen (it's different than window width)
+     * Here the pixles the page has been scrolled left is added to window width
+     */
+    var nRight;
+
+    if (typeof window.srcollX != "undefined") {
+        //"NN6+ FireFox, Mozilla etc."
+        nRight = window.innerWidth + window.scrollX;
+    }
+    else if (typeof window.pageXOffset != "undefined") {
+        //NN4 code still in NN6 + but scrollX was added
+        nRight = window.innerWidth + window.pageXOffset;
+    }
+    else if (document.documentElement && document.documentElement.clientWidth){
+        //document.compatMode == "CSS1Compat" that is IE6 standards mode"
+        nRight = document.documentElement.clientWidth + document.documentElement.scrollLeft;
+    }
+    else if (document.body && document.body.clientWidth) {
+        //document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE < 6 and Mac IE
+        nRight = document.body.clientWidth + document.body.scrollLeft;
+    }
+
+    return nRight;
+}//eof getRightPagePos
+
+function getLeftPagePos() {
+    var nLeft;
+
+    if (typeof window.srcollX != "undefined") {
+        //"NN6+ FireFox, Mozilla etc."
+        nLeft = window.scrollX;
+    }
+    else if (typeof window.pageXOffset != "undefined") {
+        //NN4 code still in NN6 + but scrollX was added
+        nLeft = window.pageXOffset;
+    }
+    else if (document.documentElement && document.documentElement.scrolLeft){
+        //document.compatMode == "CSS1Compat" that is IE6 standards mode"
+        nLeft = document.documentElement.scrollLeft;
+    }
+    else if (document.body && document.body.scrollLeft) {
+        //document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE < 6 and Mac IE
+        nLeft = document.body.scrollLeft;
+    }
+
+    return nLeft;
+}//eof getLeftPagePos
+
+function fitWindowHeight(tipY) {
+    /* Compare calculated max acceptable page offset to toolTip X and return smallest */
+
+    /* Don't go below bottom of window. Put above target if moved. */
+    var bottomMaxY = getBottomPagePos() - (box.offsetHeight);
+    tipY = (bottomMaxY < tipY ) ? tipY - (Yoffset + box.offsetHeight) : tipY;
+
+    /* But, don't go past the top of window either */
+    var topMinY = getTopPagePos();
+    tipY = (tipY < topMinY) ? topMinY : tipY;
+
+    return tipY
+}//eof fitWindowHeight
+
+function getBottomPagePos() {
+    /* Determine page offset at bottom of screen (it's different than window height)
+     * Here the pixles the page has been scrolled up is added to window height
+     */
+    var nBottom;
+
+    if (typeof window.scrollY != "undefined" ) {
+        //NN6+ FireFox, Mozilla etc.
+        nBottom = window.innerHeight + window.scrollY;
+    }
+    else if (typeof window.pageYOffset != "undefined") {
+        //NN4 still in NN6 + but NN6 and Mozilla added scrollY
+        nBottom = window.innerHeight + window.pageYOffset;
+    }
+    else if (document.documentElement && document.documentElement.clientHeight){
+        //document.compatMode == "CSS1Compat" that is IE6 standards mode
+        nBottom = document.documentElement.clientHeight + document.documentElement.scrollTop;
+    }
+    else if (document.body && document.body.clientHeight) {
+        //document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE < 6 and Mac IE
+        nBottom = document.body.clientHeight + document.body.scrollTop;
+    }
+    return nBottom;
+}//eof getBottomPagePos
+
+function getTopPagePos() {
+    var nTop;
+
+    if (typeof window.scrollY != "undefined" ) {
+        //NN6+ FireFox, Mozilla etc.
+        nTop= window.scrollY;
+    }
+    else if (typeof window.pageYOffset != "undefined") {
+        //NN4 still in NN6 + but NN6 and Mozilla added scrollY
+        nTop = window.pageYOffset;
+    }
+    else if (document.documentElement && document.documentElement.scrollTop){
+        //document.compatMode == "CSS1Compat" that is IE6 standards mode
+        nTop = document.documentElement.scrollTop;
+    }
+    else if (document.body && document.body.scrollTop) {
+        //document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE < 6 and Mac IE
+        nTop = document.body.scrollTop;
+    }
+    return nTop;
+}//eof getTopPagePos
+/*-------------------------------------- end tootip coordinates -------------------*/
 /**
  * function that adds a title (taken from page HEAD) of current page to a url that is passed as a parameter
  */
@@ -3383,7 +3593,7 @@ function displayInner(e, urlStr) {
     params = finalUrl.substring(idx + 1);
 //  }
   var div = document.getElementById('pane2');
-  postRequest(url, params, div, hotspot, showDialog);
+  postRequest(e, url, params, div, hotspot, showDialog);
   //bottomFrame.location.replace(finalUrl);
   //var timeOutFunction = function () { showDialog(div, hotspot); };
   //setTimeout(timeOutFunction, 50);
@@ -3394,11 +3604,11 @@ function displayInner(e, urlStr) {
 /**
  *  copies html loaded via ajax into a div
  */
-function showDialog(div, hotspot, content) {
+function showDialog(event, div, hotspot, content) {
   var frameId = 'popupFrame';
   if (!content) {
     if (!frameLoaded[frameId]) {
-      var timeOutFunction = function () { showDialog(div, hotspot) };
+      var timeOutFunction = function () { showDialog(event, div, hotspot) };
       setTimeout(timeOutFunction, 50);
       return;
     }
@@ -3422,13 +3632,12 @@ function showDialog(div, hotspot, content) {
   setInnerHtml(div, content);
 
   var iframe = document.getElementById('dialogIframe');
-  setDivVisible(div, iframe, hotspot, 16, 16);
+  setDivVisible(event, div, iframe, hotspot, 16, 16);
   initListBoxes(div);
   uiFocus(div);
   var anchors = div.getElementsByTagName('A');
   interceptLinkClicks(div);
   replaceTooltips(div, anchors);
-
 
   // execute JS code of innerHTML
   execJS.runDivCode(div);
@@ -3436,6 +3645,8 @@ function showDialog(div, hotspot, content) {
 
 function stopEventPropagation(e) {
   try {
+    if (e.clonedEvent)
+      e = e.clonedEvent;
     e.cancelBubble = true;
     e.returnValue  = true;
     if (e.preventDefault)  e.preventDefault();
@@ -3582,7 +3793,7 @@ function getTargetElement(e) {
   e = getDocumentEvent(e); if (!e) return null;
   var elem;
   var elem1 = e.target;
-  if (e.target) {
+  if (elem1) {
     if (e.currentTarget && (e.currentTarget != elem1)) {
       if (elem1.tagName && elem1.tagName.toLowerCase() == 'input' && elem1.type.toLowerCase() == 'checkbox')
         elem = elem1;
@@ -3889,7 +4100,7 @@ function getTdNode(elem) {
 var hotspot1;
 
 function largeImageOnLoad(e) {
-  Popup.open('gallery', hotspot1, null, 0, 19);
+  Popup.open(e, 'gallery', hotspot1, null, 0, 19);
   return true;
 }
 
@@ -4235,7 +4446,6 @@ function addAndShow1(anchor, event) {
         }
       }
     }
-
     if (params.indexOf("$returnUri=") == -1) {
        var div = document.getElementById(iframeId + "_div");
       var tag = div.getElementsByTagName('a');
@@ -4252,14 +4462,14 @@ function addAndShow1(anchor, event) {
 */
     var div = document.createElement('div');
     div.style.display = "none";
-    postRequest(newUri, params, div, hotspot, addAndShowWait);
+    postRequest(event, newUri, params, div, hotspot, addAndShowWait);
     return stopEventPropagation(event);
   } catch (er) {
     alert(er);
   }
 }
 
-function addAndShowWait(body, hotspot, content)	{
+function addAndShowWait(event, body, hotspot, content)	{
   var frameId = "resourceList";
   if (!content) {
     var frameBodyId = "siteResourceList";
@@ -4303,13 +4513,13 @@ function addAndShowWait(body, hotspot, content)	{
       }
     }
   }
-
   // Find new 'currentItem' anchor and substitute old one with new
   var elms = body.getElementsByTagName('a');
   var currentItem;
   for (var j=0; j<elms.length; j++) {
     if (elms[j].id  &&  elms[j].id == 'currentItem') {
       currentItem = elms[j].href;
+      //alert(currentItem);
       break;
     }
   }
@@ -4333,6 +4543,7 @@ function addAndShowWait(body, hotspot, content)	{
       break;
     }
   }
+
   var oldCurrentTR;
   elms = divCopyTo.getElementsByTagName('tr');
   if (oldCurrentItem) {
@@ -4347,8 +4558,10 @@ function addAndShowWait(body, hotspot, content)	{
           //copyTableRow(tbody, rowIndex, currentTR);
           if (j == elms.length)
             tbody.appendChild(currentTR);
-          else
+          else {
+            //alert(currentTR.id + ', ' + elms[j].innerHTML);
             tbody.insertBefore(currentTR, elms[j]);
+          }
         }
         else
           elms[j].style.backgroundColor = '';
@@ -4356,6 +4569,7 @@ function addAndShowWait(body, hotspot, content)	{
       }
     }
   }
+
 //  divCopyTo.innerHTML = body.innerHTML;
   var totals;
   var oldResultsTR;
@@ -4436,10 +4650,12 @@ function addAndShowWait(body, hotspot, content)	{
       }
       //var newTr = document.importNode(currentTR, true);
 //      copyTableRow(tbody, pos, currentTR);
-      if (pos == trElms.length)
+      if (pos == trElms.length) {
         tbody.appendChild(currentTR);
-      else
+      }
+      else {
         tbody.insertBefore(currentTR, trElms[pos]);
+      }
     }
   }
   // This is the first element in RL. That means that 'Total' line was not formed
@@ -4714,7 +4930,7 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
 //  alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',  e=' + e + ', maxDuration=' + maxDuration);
   if (isCalendar  ||  e.ctrlKey)  {// ctrl-enter
     if (!maxDuration) {
-      Popup.open(divId2, hotSpot);
+      Popup.open(e, divId2, hotSpot);
       return stopEventPropagation(e);
       return;
     }
@@ -4744,7 +4960,7 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
         tr.style.display = "";
       }
     }
-    Popup.open(divId2, hotSpot);
+    Popup.open(e, divId2, hotSpot);
   }
   else {
     if (divId1 != null) {
@@ -4752,7 +4968,7 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
       if (!currentCell || currentCell != target)
         schedule(e);
       else
-        Popup.open('e.' + divId1, hotSpot);
+        Popup.open(e, 'e.' + divId1, hotSpot);
     }
   }
   calendarCell = hotSpot;
@@ -4822,7 +5038,7 @@ function printReceipt(url) {
   var curUL = document.getElementById(url);
   if (!curUL)
     return;
-  
+
   var li = curUL.getElementsByTagName("li");
   if (li.length) {
     var appl = document.applets[0];
@@ -4899,7 +5115,7 @@ function saveButtonClicked(e) {
   return true;
 }
 
-function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
+function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
   var istyle   = iframe.style;
   istyle.visibility    = Popup.HIDDEN;
   div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
@@ -4909,8 +5125,13 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
 
   var left = 100;
   var top  = 100;
-  if (hotspot) {
-    var coords = getElementCoords(hotspot);
+
+  if (hotspotDim) {
+    left = hotspotDim.left;
+    top  = hotspotDim.top;
+  }
+  else if (event || hotspot) {
+    var coords = getElementCoords(event, hotspot);
     left = coords.left;
     top  = coords.top;
   }
@@ -4924,10 +5145,10 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
   var distanceToBottomEdge = screenY + scrollY - top;
 
   // first position the div box in the top left corner in order to measure its dimensions
-  // (otherwise, if position coirrectly and only then measure dimensions - the width/height will get cut off at the scroll boundary - at least in firefox 1.0)
+  // (otherwise, if position correctly and only then measure dimensions - the width/height will get cut off at the scroll boundary - at least in firefox 1.0)
   div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
   reposition(div,    0, 0);
-  var divCoords = getElementCoords(div);
+  var divCoords = getElementDimensions(div);
   var margin = 40;
   //alert(screenX + "," + screenY + ", " + scrollX + "," + scrollY + ", " + left + "," + top + ", " + divCoords.width + "," + divCoords.height);
   // cut popup dimensions to fit the screen
@@ -4950,23 +5171,23 @@ function setDivVisible(div, iframe, hotspot, offsetX, offsetY) {
     if (typeof div.style.overflowX == 'undefined') {
       if (xFixed || yFixed) {
         div.style.overflow = "auto";
-        divCoords = getElementCoords(div);
+        divCoords = getElementDimensions(div);
       }
     }
     else {
-	  if(typeof div.style.overflowX != 'undefined') {
-		if (xFixed)
-			div.style.overflowX = "auto";
-		if (yFixed)
-			div.style.overflowY = "auto";
-	  }
-	  else {
-		if (xFixed || yFixed)
-			div.style.overflow = "auto";
-	  }
-	  // get div size after scrolling appending
+      if (typeof div.style.overflowX != 'undefined') {
+        if (xFixed)
+			    div.style.overflowX = "auto";
+		    if (yFixed)
+			    div.style.overflowY = "auto";
+	    }
+	    else {
+		    if (xFixed || yFixed)
+			  div.style.overflow = "auto";
+	    }
+	    // get div size after scrolling appending
       if (xFixed || yFixed)
-        divCoords = getElementCoords(div);
+        divCoords = getElementDimensions(div);
       // reset position of the scrolls (it could be scrolled from prev. using)
       div.scrollLeft = 0;
       div.scrollTop  = 0;
@@ -5103,7 +5324,12 @@ function setKeyboardFocus(element) {
 // Basic ajax technique is described here:
 //   http://keelypavan.blogspot.com/2006/01/using-ajax.html
 //   http://developer.apple.com/internet/webcontent/xmlhttpreq.html
-function postRequest(url, parameters, div, hotspot, callback) {
+function postRequest(event, url, parameters, div, hotspot, callback) {
+  if (url == null)
+    throw new Error('postRequest url parameter is null');
+  url = trim(url);
+  if (url.length == 0)
+    throw new Error('postRequest url parameter is empty');
   this.XMLHTTP = ["Msxml2.XMLHTTP.6.0", "Msxml2.XMLHTTP.5.0", "Msxml2.XMLHTTP.4.0", "MSXML2.XMLHTTP.3.0", "MSXML2.XMLHTTP", "Microsoft.XMLHTTP"];
   this.newActiveXObject = function(axarray) {
     //  IE5 for the mac claims to support window.ActiveXObject, but throws an error when it's used
@@ -5144,16 +5370,27 @@ function postRequest(url, parameters, div, hotspot, callback) {
   var http_request;
 
   // visual cue that click was made, using the tooltip
-  loadingCueStart(hotspot);
+  if (!Popup.penBased)
+    loadingCueStart(event, hotspot);
 
+  var opera8;
   if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla, Safari,...
     try {
       http_request = new XMLHttpRequest();
-//      if (!opera) { // not Opera 8.0 
-//        if (typeof(http_request.overrideMimeType) != 'undefined' && http_request.overrideMimeType) {
-//         http_request.overrideMimeType('text/xml');
-//        }
-//      }  
+      var opera8; // opera 8 (before 8.5) had some issues
+      if (navigator.userAgent.indexOf("Opera") !=-1 ) {
+        var versionindex = navigator.userAgent.indexOf("Opera") + 6;
+        var ver = navigator.userAgent.substring(versionindex);
+        if (parseFloat(ver) < 8.5) {
+          opera8 = true;
+        }
+      }
+
+      if (!opera8) { // not Opera 8.0
+        if (typeof(http_request.overrideMimeType) != 'undefined' && http_request.overrideMimeType) {
+          http_request.overrideMimeType('text/xml');
+        }
+      }
     } catch(e) {}
   }
 
@@ -5178,80 +5415,91 @@ function postRequest(url, parameters, div, hotspot, callback) {
     // line below is an alternative simpler method to submitting a form - but fails in IE if URL is too long
     // iframe.location.replace(url); // load data from server into iframe
     timeoutCount = 0;
-    setTimeout(function () {Popup.load(div)}, 50);
+    setTimeout(function () {Popup.load(event, div)}, 50);
     return;
   }
 
   if (callInProgress(this.lastRequest))
     this.lastRequest.abort();
   this.lastRequest = http_request;
-
+  event = cloneEvent(event);
   http_request.onreadystatechange = function() {
     var status;
-    if (http_request.readyState == 4) {
-      //loadingCueFinish();
-      var location;
-      try {
-        status = http_request.status;
-        location = http_request.getResponseHeader('Location');
-        var responseXML = http_request.responseXML;
-        if (responseXML && responseXML.baseURI)
-          url = responseXML.baseURI;
+    if (http_request.readyState != 4) // ignore for now: 0-Unintialized, 1-Loading, 2-Loaded, 3-Interactive
+      return;
+    if (!Popup.penBased)
+      loadingCueFinish();
+    var location;
+    try {
+      status = http_request.status;
+      location = http_request.getResponseHeader('Location');
+      var responseXML = http_request.responseXML;
+      if (responseXML && responseXML.baseURI)
+        url = responseXML.baseURI;
+    }
+    catch (e) { // hack since mozilla sometimes throws NS_ERROR_NOT_AVAILABLE here
+      // deduce status
+      alert(e);
+      if (location)
+        status = 302;
+      else if (http_request.responseText.length > 10)
+        status = 200;
+      else
+        status = 400;
+    }
+    if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
+      frameLoaded[frameId] = true;
+      callback(event, div, hotspot, http_request.responseText);
+    }
+    else if (status == 200) {
+      frameLoaded[frameId] = true;
+      callback(event, div, hotspot, http_request.responseText);
+    }
+    else if (status == 302) {
+      if (!location)
+        return;
+      var repaintDialog = location.indexOf('-inner=')    != -1;   // painting a dialog
+      if (repaintDialog) {
+        hotspot = null; // second time do not show 'loading...' popup
+        postRequest(event, location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
       }
-      catch (e) { // hack since mozilla sometimes throws NS_ERROR_NOT_AVAILABLE here
-        // deduce status
-        if (location)
-          status = 302;
-        else if (http_request.responseText.length > 10)
-          status = 200;
-        else
-          status = 400;
+      else {
+        document.location = location;  // reload current page - usually happens at login due to timeout
       }
-
-      if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
-        frameLoaded[frameId] = true;
-        callback(div, hotspot, http_request.responseText);
-      }
-      else if (status == 200) {
-        frameLoaded[frameId] = true;
-        callback(div, hotspot, http_request.responseText);
-      }
-      else if (status == 302) {
+    }
+    else if (status == 322) {
+      if (!location) {
+        var response = responseXML.documentElement;
+        if (!response) {
+          var responseText = http_request.responseText;
+          var iframe = frames[frameId];
+          iframe.document.body.innerHTML = http_request.responseText;
+          response = iframe.document;
+        }
+        location = response.getElementById('$redirect').getAttribute('href');
+        //alert('status: ' + status + ', location: ' + location + ', responseXML.baseURI: ' + response);
         if (!location)
           return;
-        var repaintDialog = location.indexOf('-inner=')    != -1;   // painting a dialog
+      }
+      var paintInPage = http_request.getResponseHeader('Paint-In-Page');
+      if (paintInPage && paintInPage == 'false')
+        document.location = location;  // reload current page - usually happens at login due to timeout
+      else {
+        var repaintDialog = location.indexOf('-addItems=') != 1;    // adding a new item to the resource list (like in bar or retail)
         if (repaintDialog) {
           hotspot = null; // second time do not show 'loading...' popup
-          postRequest(location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
+          postRequest(event, location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
         }
-        else {
+        else
           document.location = location;  // reload current page - usually happens at login due to timeout
-        }
-      }
-      else if (status == 322) {
-        if (!location)
-          return;
-        var paintInPage = http_request.getResponseHeader('Paint-In-Page');
-        if (paintInPage && paintInPage == 'false')
-          document.location = location;  // reload current page - usually happens at login due to timeout
-        else {
-          var repaintDialog = location.indexOf('-addItems=') != 1;    // adding a new item to the resource list (like in bar or retail)
-          if (repaintDialog) {
-            hotspot = null; // second time do not show 'loading...' popup
-            postRequest(location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
-          }
-          else
-            document.location = location;  // reload current page - usually happens at login due to timeout
-        }
       }
     }
     else {
-      // other ajax states that we ignore for now: 0-Unintialized, 1-Loading, 2-Loaded, 3-Interactive
+      alert('status: ' + status + ', ' + url);
     }
   };
-  // opera 8.0 does not support setRequestHeaders()
-  //if (typeof(http_request.setRequestHeader) == "function") {
-/*  if (!opera) { */
+
+  if (!opera8) {
     http_request.open('POST', url, true);
 
     // browser does not allow Referer to be sent - so we send X-Referer and on server make it transparent to apps
@@ -5265,32 +5513,35 @@ function postRequest(url, parameters, div, hotspot, callback) {
     }
     //http_request.setRequestHeader("Connection", "close");
     http_request.send(parameters);
-    /*  
   }
-  else {
-    var url1 = url;
+  else {   // opera 8.0 does not support setRequestHeaders() - we will use GET
+    var url1;
     var extras = 'X-Referer=' + encodeURIComponent(document.location.href) + '&X-Ajax=y';
-    if (parameters && parameters.length != 0)
-      url1 = url + '?' + parameters + '&' + extras;
+    var hasQ = url.indexOf('?') != -1;
+    if (hasQ)
+      url1 = url + '&';
     else
-      url1 = url1 + '?' + extras;
+      url1 = url + '?';
+    if (parameters && parameters.length != 0)
+      url1 += parameters + '&' + extras;
+    else
+      url1 += extras;
     http_request.open('GET', url1, true);
     http_request.send('');
   }
-*/  
 }
 
-function loadingCueStart(hotspot) {
+function loadingCueStart(e, hotspot) {
   if (!hotspot)
     return;
   var ttDiv = document.getElementById("system_tooltip");
   var ttIframe = document.getElementById("tooltipIframe");
-  var loadingMsg = "<img src='icons/classes/Duration.gif' style='vertical-align: middle;'><span style='vertical-align: middle; font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . . </b></span>";
-
+  //var loadingMsg = "<img src='icons/classes/Duration.gif' style='vertical-align: middle;' /><span style='vertical-align: middle; font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . . </b></span>";
+  var loadingMsg = "<span style='vertical-align: middle; font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . . </b></span>";
   var shiftDiv = document.getElementById("shift_pref");
   shiftDiv.style.visibility = "hidden";
 
-  Popup.open(ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
+  Popup.open(e, ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
 }
 
 function loadingCueFinish() {
@@ -5818,7 +6069,7 @@ function getTopDivForTab(e, divId) {
   while (true) {
     pDiv = getDivNode(target)
     if (pDiv.id  &&  (pDiv.id == 'pane2' || pDiv.id == 'corePageContent'))
-      break; 
+      break;
     else
       target = getDivNode(pDiv.parentNode);
   }
@@ -5829,4 +6080,39 @@ function getTopDivForTab(e, divId) {
       return d;
   }
   return;
+}
+
+/**
+ * clone data object
+ */
+function clone (o, deep) {
+  var objectClone = new Object();
+  for (var property in o) {
+    var value = o[property];
+    if (typeof value == 'function') { // skip functions
+      continue;
+    }
+    if (!deep)
+      objectClone[property] = value;
+    else if (typeof value == 'object')
+      objectClone[property] = clone(value, deep);
+    else
+      objectClone[property] = value;
+  }
+  return objectClone;
+}
+
+// Event object does not survive (all coordinates become 0) despite a js closure mechanism
+// This happens on setTimeout or on postRequest.
+// So we are forced to clone the event object.
+// Unfortunately generic event clone() caused FF to throw exception in postRequest.
+// Thus the needs for this specific clone.
+function cloneEvent(event) {
+  var e = new Object();
+  e.screenX = event.screenX;
+  e.screenY = event.screenY;
+  e.pageX   = event.pageY;
+  e.clientX = event.clientX;
+  e.clientY = event.clientY;
+  e.srcElement = getTargetElement(event);
 }
