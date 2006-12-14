@@ -6089,7 +6089,11 @@ function cloneEvent(event) {
   e.clientX = event.clientX;
   e.clientY = event.clientY;
   e.srcElement = getTargetElement(event);
-  e.type = event.type;
+  if (typeof event.type == 'string')
+    e.type    = event.type; //strangly in FF it is xpobject sometimes (looks like only under Venckman debugger)
+  else
+    e.type = 'click';
+  e.target  = event.target;
   e.cloned = true;
   return e;
 }
