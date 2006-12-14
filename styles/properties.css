@@ -217,7 +217,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   background-color:#f8f4ef; border:solid #808080 1px; vertical-align:top
 }
 /* styles for busy cells */
-.schedule .b {
+.schedule .b, .bea {
   border:solid #808080 1px; background-color:pink; vertical-align:top
 }
 /* styles for current cells */
