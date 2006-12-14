@@ -341,7 +341,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.open1 = function (event, offsetX, offsetY) {
-    var hotspotDim = getElementCoords(event, self.hotspot);
+    var hotspotDim = getElementCoords(self.hotspot, event);
     if (Popup.tooltipPopup) {
       Popup.tooltipPopup.close();
       Popup.tooltipPopup = null;
@@ -427,11 +427,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
-    //alert('event.clientX: ' + event.clientX + ', offsetX: ' + offsetX + ', divId: ' + self.div.id);
-    var event1 = cloneEvent(event); // hack: event object does not survive despite a js closure mechanism
-    event1.clonedEvent = event;
-    event = event1;
-    Popup.openTimeoutId = setTimeout(function () {Popup.openAfterDelay(event, self.div.id, offsetX, offsetY)}, delay);
+    Popup.openTimeoutId = setTimeout(function () {Popup.openAfterDelay(cloneEvent(event), self.div.id, offsetX, offsetY)}, delay);
     Popup.delayedPopup = self;
   }
 
@@ -3206,7 +3202,7 @@ function Dim() {
   }
 }
 
-function getElementCoords(event, elem) {
+function getElementCoords(elem, event) {
   var dim = new Dim();
   var d = getElementDimensions(elem);
   dim.width  = d.width;
@@ -3245,30 +3241,6 @@ function getElementDimensions(elem) {
   return dim;
 }
 
-function getElementCoords1(elem) {
-  var dim = new Dim();
-
-  if (document.layers) {       // Netscape, use the event object passed to us.
-    //dim.x      = e.pageX;
-    //dim.y      = e.pageY;
-    dim.width  = elem.width;
-    dim.height = elem.height;
-  }
-  else if (document.all) {     // IE, use the common window.event object.
-    //dim.x      = window.event.x;
-    //dim.y      = window.event.y;
-    dim.width  = elem.offsetWidth;
-    dim.height = elem.offsetHeight;
-  }
-
-  dim.width  = elem.offsetWidth;
-  dim.height = elem.offsetHeight;
-
-  dim.left = findPosX(elem);
-  dim.top  = findPosY(elem);
-  return dim;
-}
-
 function findPosX(obj) {
   var curleft = 0;
   if (obj.offsetParent) {
@@ -3295,8 +3267,7 @@ function findPosY(obj) {
   return curtop;
 }
 
-/*-------------------------------------- tootip coordinates -------------------*/
-/* Get toolTip X,Y when not tracking mouse */
+/* Get X,Y when not tracking mouse */
 function getCoordinates(obj) {
 
     var xy = getObjectUpperLeft(obj);
@@ -3305,9 +3276,8 @@ function getCoordinates(obj) {
     var x = fitWindowWidth(xy.x);
     var y = fitWindowHeight(xy.y);
 
-    /* return object with coordinates as properties */
     return {Xoffset: x, Yoffset: y};
-}//eof getCoordinates
+}
 
 function getObjectUpperLeft(obj){
     /* For postioning in reference to link */
@@ -3343,10 +3313,12 @@ function getMouseEventCoordinates(e) {
 
   var sc = getScrollXY();
   if (e.pageX || e.pageY) {
+    //alert('e.pageY: ' + e.pageY);
     posx = e.pageX;
     posy = e.pageY;
   }
   else if (e.clientX || e.clientY) {
+    //alert('e.clientY: ' + e.clientY);
     posx = e.clientX + sc[0];
     posy = e.clientY + sc[1];
   }
@@ -3645,8 +3617,8 @@ function showDialog(event, div, hotspot, content) {
 
 function stopEventPropagation(e) {
   try {
-    if (e.clonedEvent)
-      e = e.clonedEvent;
+    if (e.cloned)
+      return false;
     e.cancelBubble = true;
     e.returnValue  = true;
     if (e.preventDefault)  e.preventDefault();
@@ -5131,7 +5103,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     top  = hotspotDim.top;
   }
   else if (event || hotspot) {
-    var coords = getElementCoords(event, hotspot);
+    var coords = getElementCoords(hotspot, event);
     left = coords.left;
     top  = coords.top;
   }
@@ -5422,7 +5394,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
   if (callInProgress(this.lastRequest))
     this.lastRequest.abort();
   this.lastRequest = http_request;
-  event = cloneEvent(event);
+  var clonedEvent = cloneEvent(event);
   http_request.onreadystatechange = function() {
     var status;
     if (http_request.readyState != 4) // ignore for now: 0-Unintialized, 1-Loading, 2-Loaded, 3-Interactive
@@ -5432,7 +5404,6 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     var location;
     try {
       status = http_request.status;
-      location = http_request.getResponseHeader('Location');
       var responseXML = http_request.responseXML;
       if (responseXML && responseXML.baseURI)
         url = responseXML.baseURI;
@@ -5449,25 +5420,27 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     }
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
-      callback(event, div, hotspot, http_request.responseText);
+      callback(clonedEvent, div, hotspot, http_request.responseText);
     }
     else if (status == 200) {
       frameLoaded[frameId] = true;
-      callback(event, div, hotspot, http_request.responseText);
+      callback(clonedEvent, div, hotspot, http_request.responseText);
     }
     else if (status == 302) {
+      try {location = http_request.getResponseHeader('Location');} catch(exception) {}
       if (!location)
         return;
       var repaintDialog = location.indexOf('-inner=')    != -1;   // painting a dialog
       if (repaintDialog) {
         hotspot = null; // second time do not show 'loading...' popup
-        postRequest(event, location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
+        postRequest(clonedEvent, location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
       }
       else {
         document.location = location;  // reload current page - usually happens at login due to timeout
       }
     }
     else if (status == 322) {
+      try {location = http_request.getResponseHeader('Location');} catch(exception) {}
       if (!location) {
         var response = responseXML.documentElement;
         if (!response) {
@@ -5488,7 +5461,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
         var repaintDialog = location.indexOf('-addItems=') != 1;    // adding a new item to the resource list (like in bar or retail)
         if (repaintDialog) {
           hotspot = null; // second time do not show 'loading...' popup
-          postRequest(event, location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
+          postRequest(clonedEvent, location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
         }
         else
           document.location = location;  // reload current page - usually happens at login due to timeout
@@ -6116,5 +6089,6 @@ function cloneEvent(event) {
   e.clientY = event.clientY;
   e.srcElement = getTargetElement(event);
   e.type = event.type;
+  e.cloned = true;
   return e;
 }
