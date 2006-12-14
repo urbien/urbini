@@ -1,5 +1,23 @@
+img {
+  vertical-align: middle;
+}
+
 a img {
 	border: 0;
+	vertical-align: middle;
+}
+
+a.icotxt {
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+a.icotxt img {
+	border: 0;
+	width: 16px;
+	height: 16px;
+	vertical-align: middle;
+	padding-right: 0.5em;
 }
 
 .requiredProp {
@@ -21,10 +39,11 @@ img.fade {
 
 .tabs {
   height: 33px;
+  cursor: pointer;
 }
 
 .tabs img {
-  border: 0; width: 16px; height: 16px;
+  border: 0;
 }
 
 .tabs a:link, .tabs a:visited {
@@ -34,7 +53,7 @@ img.fade {
   font-family: Verdana, Arial, Helvetica, sans-serif;
 }
 
-.tabs .left, .right {
+.tabs .left, .tabs .right {
   width:12px;
 }
 /*
@@ -53,6 +72,11 @@ img.fade {
   white-space: nowrap;
   vertical-align: middle;
 }
+
+.tabs TD.middle img {
+  width: 16px; height: 16px; padding-right: 5px;
+}
+
 .tabs TD.right {
   background-image:url(../images/skin/blue/tab-right.gif);
   background-repeat: no-repeat;
