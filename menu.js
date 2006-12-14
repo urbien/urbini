@@ -6084,7 +6084,8 @@ function cloneEvent(event) {
   var e = new Object();
   e.screenX = event.screenX;
   e.screenY = event.screenY;
-  e.pageX   = event.pageY;
+  e.pageX   = event.pageX;
+  e.pageY   = event.pageY;
   e.clientX = event.clientX;
   e.clientY = event.clientY;
   e.srcElement = getTargetElement(event);
