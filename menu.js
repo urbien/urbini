@@ -6115,4 +6115,6 @@ function cloneEvent(event) {
   e.clientX = event.clientX;
   e.clientY = event.clientY;
   e.srcElement = getTargetElement(event);
+  e.type = event.type;
+  return e;
 }
