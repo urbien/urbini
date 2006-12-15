@@ -427,7 +427,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
-    Popup.openTimeoutId = setTimeout(function () {Popup.openAfterDelay(cloneEvent(event), self.div.id, offsetX, offsetY)}, delay);
+    var clonedEvent = cloneEvent(event);
+    Popup.openTimeoutId = setTimeout(function () {Popup.openAfterDelay(clonedEvent, self.div.id, offsetX, offsetY)}, delay);
     Popup.delayedPopup = self;
   }
 
