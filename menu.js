@@ -4476,7 +4476,7 @@ function cancelItemAndWait(event) {
     var tr = elms[j];
     if (!tr.id)
       continue;
-    if (tr.id == currentItem) { 
+    if (tr.id == currentItem) {
       currentTr = tr;
       if (elms.length != 1) {
         if (j != headerRow + 1)
@@ -4485,9 +4485,9 @@ function cancelItemAndWait(event) {
           newCurrentTr = elms[headerRow + 2];
       }
     }
-    else if (tr.id == 'header') 
+    else if (tr.id == 'header')
       headerRow = j;
-    
+
     else if (tr.id == 'totals') {
       totalsTR = tr;
       var tds = tr.getElementsByTagName('td');
@@ -4506,7 +4506,7 @@ function cancelItemAndWait(event) {
           var total = extractTotalFrom(tot);
           // since first cell of Total tr has colspan=2, the column # in resources TR that referes to the same property will reside in # + 1 column
           var curTotal = extractTotalFrom(curTrTds[i + 1].innerHTML);
- 
+
           total -= curTotal;
           total = Math.round(total * 100)/100;
           var totS = '' + total;
@@ -4595,7 +4595,7 @@ function addAndShowWait(event, body, hotspot, content)	{
   var curResultsTR;
   for (var j=0; j<elms.length; j++) {
     if (elms[j].id) {
-      if (elms[j].id == currentItem) 
+      if (elms[j].id == currentItem)
         currentTR = elms[j];
       else if (elms[j].is == "results")
         curResultsTR = elms[j];
@@ -5553,7 +5553,9 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
         if (!location)
           return;
       }
-      var paintInPage = http_request.getResponseHeader('Paint-In-Page');
+
+      var paintInPage;
+      try { paintInPage = http_request.getResponseHeader('Paint-In-Page');} catch (exc) {}
       if (paintInPage && paintInPage == 'false')
         document.location = location;  // reload current page - usually happens at login due to timeout
       else {
@@ -6194,11 +6196,15 @@ function cloneEvent(event) {
   e.clientX = event.clientX;
   e.clientY = event.clientY;
   e.srcElement = getTargetElement(event);
-  if (typeof event.type == 'string')
-    e.type    = event.type; //strangly in FF it is xpobject sometimes (looks like only under Venckman debugger)
-  else
-    e.type = 'click';
   e.target  = event.target;
   e.cloned = true;
+  try {
+    if (typeof event.type == 'string')
+      e.type    = event.type; //strangly in FF it is xpobject sometimes (looks like only under Venckman debugger)
+    else
+      e.type = 'click';
+  } catch(exc) {
+    e.type = 'click';
+  }
   return e;
 }
