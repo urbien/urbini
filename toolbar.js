@@ -1066,13 +1066,13 @@ var PopupHandler = {
 		this.y = pos.top + hotspot.height + OFFSET_Y;
 		// check if to open popup above a hotspot. (take in account a scrolling)
 		var screenHeight = getWindowSize()[1];
-		if(screenHeight < this.y - getScrollXY1()[1] + div.clientHeight)
+		if(screenHeight < this.y - getScrollXY()[1] + div.clientHeight)
 			this.y = pos.top - div.clientHeight - OFFSET_Y;
 		
 		// FF: position "fixed"
 		if(div.style.position == 'fixed') {
 			this.isFixedPosition = true;
-			var scrl = getScrollXY1();
+			var scrl = getScrollXY();
 			div.style.left = this.x - scrl[0];
 			div.style.top = this.y - scrl[1];
 		}
@@ -1218,7 +1218,7 @@ var PopupHandler = {
 	},
 	// used for FF and position=fixed. It is a hack for cursor in <input> over iframe
 	_onscroll : function(event) {
-		var scrl = getScrollXY1();
+		var scrl = getScrollXY();
 		PopupHandler.popupDiv.style.left = PopupHandler.x - scrl[0];
 		PopupHandler.popupDiv.style.top = PopupHandler.y - scrl[1];
 	},
