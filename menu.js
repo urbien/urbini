@@ -4447,25 +4447,6 @@ function addAndShow1(anchor, event) {
   }
 }
 
-function cancelItem(event) {
-  var hotspot = event.target;
-  
-  var id = hotspot.id;
-  if (!id  ||  id.indexOf('_boolean_refresh') == -1)
-    return stopEventPropagation(event);
-  var idx = id.indexOf(".$.");
-  var cancelUri = 'localSearchResults.html';
-  var params = '-$action=deleteAndExplore&-addItems=y&uri=' + encodeURIComponent(id.substring(0, idx));
-  try {
-    var div = document.createElement('div');
-    div.style.display = "none";
-    postRequest(event, cancelUri, params, div, hotspot, cancelItemAndWait);
-  } catch (er) {
-    alert(er);
-  }
-  return stopEventPropagation(event);
-}
-
 function cancelItemAndWait(event) {
   var divId = "resourceList_div";
   var divCopyTo = document.getElementById(divId);
@@ -4489,29 +4470,24 @@ function cancelItemAndWait(event) {
   elms = divCopyTo.getElementsByTagName('tr');
   var currentTr;
   var currentTds;
+  var headerRow;
+  var newCurrentTr;
   for (var j=0; j<elms.length; j++) {
     var tr = elms[j];
     if (!tr.id)
       continue;
-    if (tr.id == currentItem) 
+    if (tr.id == currentItem) { 
       currentTr = tr;
-    else if (tr.id == 'results') {
-      var tds = tr.childNodes;
-      for (var i=0; i<tds.length; i++) {
-        if (tds[i].id && tds[i].id == 'results') {
-          var r = tds[i].innerHTML;
-          var idx = r.indexOf('-');
-          var idx1 = r.indexOf('<', idx);
-          var recs = r.substring(idx + 1, idx1);
-          var recsNmb = parseInt(recs) - 1;
-          var newInnerHTML = r.substring(0, idx + 1) + recsNmb;
-          idx = r.indexOf(recs, idx1);
-
-          newInnerHTML += r.substring(idx1, idx) + recsNmb;
-          tds[i].innerHTML = newInnerHTML;
-        }
+      if (elms.length != 1) {
+        if (j != headerRow + 1)
+          newCurrentTr = elms[headerRow + 1];
+        else
+          newCurrentTr = elms[headerRow + 2];
       }
     }
+    else if (tr.id == 'header') 
+      headerRow = j;
+    
     else if (tr.id == 'totals') {
       totalsTR = tr;
       var tds = tr.getElementsByTagName('td');
@@ -4542,6 +4518,17 @@ function cancelItemAndWait(event) {
           tds[i].innerHTML = tot.substring(0, startDigit) + totS;
         }
       }
+    }
+  }
+  var elms = divCopyTo.getElementsByTagName('a');
+  for (var j=0; j<elms.length; j++) {
+    if (elms[j].id  &&  elms[j].id == 'currentItem') {
+      var a = newCurrentTr.getElementsByTagName('a');
+      var h = a[0].href;
+      var idx = h.indexOf('&uri=');
+      var idx1 = h.indexOf('&uri=', idx + 1);
+      elms[j].href = decodeURIComponent(h.substring(idx + 5, idx1));
+      break;
     }
   }
   var tbody  = currentTr.parentNode;
@@ -4605,11 +4592,13 @@ function addAndShowWait(event, body, hotspot, content)	{
   // Find tr that needed to be inserted in the list
   var elms = body.getElementsByTagName('tr');
   var currentTR;
-  var resultsTR;
+  var curResultsTR;
   for (var j=0; j<elms.length; j++) {
-    if (elms[j].id  &&  elms[j].id == currentItem) {
-      currentTR = elms[j];
-      break;
+    if (elms[j].id) {
+      if (elms[j].id == currentItem) 
+        currentTR = elms[j];
+      else if (elms[j].is == "results")
+        curResultsTR = elms[j];
     }
   }
   // Find TR in previous list that was current and change style of the row
@@ -4631,7 +4620,6 @@ function addAndShowWait(event, body, hotspot, content)	{
         if (oldCurrentItem == currentItem) {
           var tbody  = elms[j].parentNode;
           oldCurrentTR = elms[j];
-
           var rowIndex = elms[j].rowIndex;
           tbody.removeChild(elms[j]);
           //copyTableRow(tbody, rowIndex, currentTR);
@@ -4667,6 +4655,10 @@ function addAndShowWait(event, body, hotspot, content)	{
         if (tds[i].id && tds[i].id == 'results') {
           var r = tds[i].innerHTML;
           var idx = r.indexOf('-');
+          if (idx == -1) {
+//            tds[i].innerHTML = curResultsTR.innerHTML;
+            continue;
+          }
           var idx1 = r.indexOf('<', idx);
           var recs = r.substring(idx + 1, idx1);
           var recsNmb = parseInt(recs) + 1;
@@ -5995,7 +5987,8 @@ function changeBoolean(e) {
   if (!e)
     return;
   target = getTargetElement(e);
-  var url = 'editProperties.html?submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
+  var url = 'editProperties.html';
+  var params = 'submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
   var bIdx = target.id.indexOf("_boolean");
   var rUri = target.id.substring(0, bIdx);
   var idx = rUri.lastIndexOf("_");
@@ -6018,20 +6011,26 @@ function changeBoolean(e) {
     target.src = target.getAttribute('yesIcon');
   else
     target.src = target.getAttribute('noIcon');
-  url += encodeURIComponent(rUri) + "&" + propShort + "=" + pValue;
+  params += encodeURIComponent(rUri) + "&" + propShort + "=" + pValue;
   if (bUri != null)
-    url += "&bUri=" + encodeURIComponent(bUri);
+    params += "&bUri=" + encodeURIComponent(bUri);
 
   var listboxFrame = frames["popupFrame"];
   popupFrameLoaded = false;
 
+  if (document.location.href.indexOf('addLineItems.html') != -1) {
+    var div = document.createElement('div');
+    div.style.display = "none";
+    postRequest(e, url, params, div, target, cancelItemAndWait);
+    return;
+  }
   if (target.id.indexOf("_boolean_refresh") != -1) {
     var locationUrl = document.location.href;
-    url += "&$returnUri=" + encodeURIComponent(locationUrl);
+    url +=  "?" + params + "&$returnUri=" + encodeURIComponent(locationUrl);
     document.location.replace(url);
   }
   else
-    listboxFrame.location.replace(url); // load data from server into iframe
+    listboxFrame.location.replace(url + "?" + params); // load data from server into iframe
   if (Popup.tooltipPopup) {
     Popup.tooltipPopup.close();
     Popup.tooltipPopup = null;
