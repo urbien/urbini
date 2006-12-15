@@ -4466,25 +4466,52 @@ function cancelItemAndWait(event) {
   
   elms = divCopyTo.getElementsByTagName('tr');
   var currentTr;
-  var currentTds;
-  var headerRow;
+  var resultsTr;
+  var totalsTr;
+
   var newCurrentTr;
+  var headerRow;
+  var recsNmb;
   for (var j=0; j<elms.length; j++) {
     var tr = elms[j];
     if (!tr.id)
       continue;
-    if (tr.id == currentItem) {
-      currentTr = tr;
-      if (elms.length > j + 2)
-        newCurrentTr = elms[j + 1];
-      else if (j - 1 != headerRow)
-        newCurrentTr = elms[j - 1];
+    if (tr.id == 'results') {
+      var tds = tr.childNodes;
+      for (var i=0; i<tds.length; i++) {
+        if (tds[i].id && tds[i].id == 'results') {
+          var r = tds[i].innerHTML;
+          var idx = r.indexOf('-');
+          var idx1 = r.indexOf('<', idx);
+          var recs = r.substring(idx + 1, idx1);
+          recsNmb = parseInt(recs) - 1;
+          if (recsNmb == 0) 
+            resultsTr = tr;
+          else {
+            var newInnerHTML = r.substring(0, idx + 1) + recsNmb;
+            idx = r.indexOf(recs, idx1);
+  
+            newInnerHTML += r.substring(idx1, idx) + recsNmb;
+            tds[i].innerHTML = newInnerHTML;
+          }
+        }
+      }
     }
     else if (tr.id == 'header')  
       headerRow = j;
-
+    else if (tr.id == currentItem) {
+      currentTr = tr;
+      if (recsNmb) {
+        if (elms.length > j + 2)
+          newCurrentTr = elms[j + 1];
+        else if (j - 1 != headerRow)
+          newCurrentTr = elms[j - 1];
+      }
+    }
     else if (tr.id == 'totals') {
-      totalsTR = tr;
+      totalsTr = tr;
+      if (recsNmb == 0)
+        break;
       var tds = tr.getElementsByTagName('td');
       var curTrTds = currentTr.getElementsByTagName('td');
       for (var i=0; i<tds.length; i++) {
@@ -4535,6 +4562,12 @@ function cancelItemAndWait(event) {
   }
   var tbody  = currentTr.parentNode;
   tbody.removeChild(currentTr);
+  if (recsNmb == 0) {
+    tbody = resultsTr.parentNode;
+    tbody.removeChild(resultsTr);
+    tbody = totalsTr.parentNode;
+    tbody.removeChild(totalsTr);
+  }
 }
 
 function addAndShowWait(event, body, hotspot, content)	{
@@ -5442,7 +5475,8 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
   var http_request;
 
   // visual cue that click was made, using the tooltip
-  if (!Popup.penBased)
+  var addLineItem = document.location.href.indexOf('addLineItem.html?') != null;
+  if (!Popup.penBased  &&  !addLineItem)
     loadingCueStart(event, hotspot);
 
   var opera8;
@@ -5499,7 +5533,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     var status;
     if (http_request.readyState != 4) // ignore for now: 0-Unintialized, 1-Loading, 2-Loaded, 3-Interactive
       return;
-    if (!Popup.penBased)
+    if (!Popup.penBased  &&  !addLineItem)
       loadingCueFinish();
     var location;
     try {
@@ -6024,7 +6058,7 @@ function changeBoolean(e) {
   if (document.location.href.indexOf('addLineItems.html') != -1) {
     var div = document.createElement('div');
     div.style.display = "none";
-    postRequest(e, url, params, div, target, cancelItemAndWait);
+    postRequest(e, url, params + "&-addItems=y", div, target, cancelItemAndWait);
     return;
   }
   if (target.id.indexOf("_boolean_refresh") != -1) {
