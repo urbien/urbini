@@ -2828,13 +2828,6 @@ function addEventOnSchedule() {
   addEvent(table, 'click', function(event) {schedule(event);}, false);
 }
 
-function addEventOnCancelItems() {
-  var div = document.getElementById("resourceList_div");
-  if (div == null)
-    return;
-  addEvent(div, 'click', function(event) {cancelItem(event);}, false);
-}
-
 function initListBoxes(div) {
   var images;
   var doc;
@@ -4452,8 +4445,10 @@ function cancelItemAndWait(event) {
   var divCopyTo = document.getElementById(divId);
   var elms = divCopyTo.getElementsByTagName('a');
   var currentItem;
+  var currentItemA;
   for (var j=0; j<elms.length; j++) {
     if (elms[j].id  &&  elms[j].id == 'currentItem') {
+      currentItemA = elms[j];
       currentItem = elms[j].href;
       break;
     }
@@ -4467,6 +4462,7 @@ function cancelItemAndWait(event) {
       break;
     }
   }
+  
   elms = divCopyTo.getElementsByTagName('tr');
   var currentTr;
   var currentTds;
@@ -4478,14 +4474,12 @@ function cancelItemAndWait(event) {
       continue;
     if (tr.id == currentItem) {
       currentTr = tr;
-      if (elms.length != 1) {
-        if (j != headerRow + 1)
-          newCurrentTr = elms[headerRow + 1];
-        else
-          newCurrentTr = elms[headerRow + 2];
-      }
+      if (elms.length > j + 2)
+        newCurrentTr = elms[j + 1];
+      else if (j - 1 != headerRow)
+        newCurrentTr = elms[j - 1];
     }
-    else if (tr.id == 'header')
+    else if (tr.id == 'header')  
       headerRow = j;
 
     else if (tr.id == 'totals') {
@@ -4520,16 +4514,23 @@ function cancelItemAndWait(event) {
       }
     }
   }
-  var elms = divCopyTo.getElementsByTagName('a');
-  for (var j=0; j<elms.length; j++) {
-    if (elms[j].id  &&  elms[j].id == 'currentItem') {
-      var a = newCurrentTr.getElementsByTagName('a');
-      var h = a[0].href;
-      var idx = h.indexOf('&uri=');
-      var idx1 = h.indexOf('&uri=', idx + 1);
-      elms[j].href = decodeURIComponent(h.substring(idx + 5, idx1));
-      break;
+  if (newCurrentTr) {
+    newCurrentTr.style.backgroundColor = '#F5ABE6';
+    var a = newCurrentTr.getElementsByTagName('a');
+    var h = a[0].href;
+    var idx = h.indexOf('&uri=');
+    var idx1 = h.indexOf('&', idx + 1);
+    var uri;
+    if (idx1 == -1)
+      uri = decodeURIComponent(h.substring(idx + 5));
+    else
+      uri = decodeURIComponent(h.substring(idx + 5, idx1));
+    if (uri.indexOf('/hosts/') != -1) {
+      idx = h.indexOf('/readOnlyProperties.html');
+      idx1 = uri.indexOf('/', 7);
+      uri = h.substring(0, idx) + uri.substring(idx1);
     }
+    currentItemA.href = uri;
   }
   var tbody  = currentTr.parentNode;
   tbody.removeChild(currentTr);
@@ -4620,7 +4621,6 @@ function addAndShowWait(event, body, hotspot, content)	{
         if (oldCurrentItem == currentItem) {
           var tbody  = elms[j].parentNode;
           oldCurrentTR = elms[j];
-          var rowIndex = elms[j].rowIndex;
           tbody.removeChild(elms[j]);
           //copyTableRow(tbody, rowIndex, currentTR);
           if (j == elms.length)
