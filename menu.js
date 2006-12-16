@@ -1985,7 +1985,8 @@ function autoComplete1(e, target) {
     else
       selectItems.value   = '';  // value was modified and is not verified yet (i.e. not chose from the list)
   }
-  autoCompleteTimeoutId = setTimeout("autoCompleteTimeout(" + keyPressedTime + ")", Popup.autoCompleteDefaultTimeout);
+  e = cloneEvent(e);
+  autoCompleteTimeoutId = setTimeout("autoCompleteTimeout(e, " + keyPressedTime + ")", Popup.autoCompleteDefaultTimeout);
   // make property label visible since overwritten inside the field
   var filterLabel = document.getElementById(propName1 + "_span");
   if (filterLabel)
@@ -2041,7 +2042,7 @@ function autoCompleteOnKeyDown(e) {
   return autoComplete(e);
 }
 
-function autoCompleteTimeout(invocationTime) {
+function autoCompleteTimeout(e, invocationTime) {
   if (keyPressedTime > invocationTime) {
     return;
   }
@@ -3202,15 +3203,15 @@ function Dim() {
   }
 }
 
-function getElementCoords(elem, event) {
+function getElementCoords(elem, e) {
   var dim = new Dim();
   var d = getElementDimensions(elem);
   dim.width  = d.width;
   dim.height = d.height;
 
   var xy;
-  if (event && !event.type.startsWith('key')) {
-    xy = getMouseEventCoordinates(event);
+  if (e && !e.type.startsWith('key')) {
+    xy = getMouseEventCoordinates(e);
   }
   else {
     xy = getObjectUpperLeft(elem);
@@ -6223,19 +6224,23 @@ function clone (o, deep) {
 // So we are forced to clone the event object.
 // Unfortunately generic event clone() caused FF to throw exception in postRequest.
 // Thus the needs for this specific clone.
-function cloneEvent(event) {
+function cloneEvent(eventObj) {
+  if(typeof eventObj.cloned != 'undefined' && eventObj.cloned == true)
+    return eventObj;
+    
   var e = new Object();
-  e.screenX = event.screenX;
-  e.screenY = event.screenY;
-  e.pageX   = event.pageY;
-  e.clientX = event.clientX;
-  e.clientY = event.clientY;
-  e.srcElement = getTargetElement(event);
-  e.target  = event.target;
+  e.screenX = eventObj.screenX;
+  e.screenY = eventObj.screenY;
+  e.pageX   = eventObj.pageX;
+  e.pageY   = eventObj.pageY;
+  e.clientX = eventObj.clientX;
+  e.clientY = eventObj.clientY;
+  e.srcElement = getTargetElement(eventObj);
+  e.target  = eventObj.target;
   e.cloned = true;
   try {
-    if (typeof event.type == 'string')
-      e.type    = event.type; //strangly in FF it is xpobject sometimes (looks like only under Venckman debugger)
+    if (typeof eventObj.type == 'string')
+      e.type    = eventObj.type; //strangly in FF it is xpobject sometimes (looks like only under Venckman debugger)
     else
       e.type = 'click';
   } catch(exc) {
