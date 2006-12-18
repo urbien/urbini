@@ -1787,9 +1787,10 @@ function TCL() {
 
       this.v = 5.5
     }
-    else if (v.indexOf('MSIE 6') > 0) {
+    // A.L. Opera 8.01  do not need iframe. 
+    // if this.TC2a = true then it is Opera (but not IE)
+    else if (v.indexOf('MSIE 6') > 0 && !this.TC2a) {  
       this.needIframe = true;
-
       this.v = 6
     }
   }
