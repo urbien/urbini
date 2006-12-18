@@ -140,6 +140,7 @@ function calendar(initParams, TCB) {
   this.calPosImageId = (initParams.positionname ? initParams.positionname : 'calpos_' + this.TCC);
 
   this.titleStr = initParams.title;
+  this.event = initParams.event;
 
   if (!initParams.formname) {
     this.dateMessage('need_form_name');
@@ -1475,7 +1476,7 @@ function setCalendarPosition() {
   var scrollX = scrollXY[0];
   var scrollY = scrollXY[1];
 
-  var coords = getElementCoords(this.calPosImage);
+  var coords = getElementCoords(this.calPosImage, this.event);
   var left = coords.left;
   var top  = coords.top;
 
@@ -1492,7 +1493,7 @@ function setCalendarPosition() {
   this.caldiv.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
   reposition(this.caldiv, 0, 0);
 
-  var divCoords = getElementCoords(this.caldiv);
+  var divCoords = getElementCoords(this.caldiv, this.event);
   var margin = 40;
 
   // this.caldiv.style.display    = 'none';   // must hide it again to avoid screen flicker
@@ -2049,7 +2050,7 @@ function getCalendar(event,
                      sceduleUrlPart) { // scedule; - Day.java
  
    var DEFAULT_TITLE = "select a day";
-//   try {
+   try {
     var cal = A_CALENDARS[formName + '_' + name];
     if (cal && cal.isShown()) {
       cal.showcal();
@@ -2058,8 +2059,10 @@ function getCalendar(event,
     
     if(typeof titleStr == 'undefined')
 		titleStr = DEFAULT_TITLE;
-		
+
+		var clonedEvent = cloneEvent(event);
     var initParams = {
+        'event' : clonedEvent,
         // a name of HTML form containing the calendar
         'formname' : formName,
         // data format the calendar operates with
@@ -2078,8 +2081,8 @@ function getCalendar(event,
     cal.create();
     A_CALENDARS[formName + '_' + name] = cal;
     cal.showcal();
-//  } catch (e) {
-//    alert(e);
-//  }
+  } catch (e) {
+    alert(e);
+  }
   return stopEventPropagation(event);
 }
