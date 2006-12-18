@@ -2953,8 +2953,10 @@ function onClickDisplayInner(e, anchor) {
 //    var ul = document.getElementById(strippedProp);
     var ul = document.getElementById(propName);
 
-    if (!ul)
+    if (!ul) {
+      var strippedProp = propName.substring(5);
       r = displayInner(e, innerListUrls[strippedProp]);
+    }
     else {
       var li = ul.getElementsByTagName("li");
       r = displayInner(e, decodeURL(li[0].innerHTML));
