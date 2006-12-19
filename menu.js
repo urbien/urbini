@@ -5663,7 +5663,7 @@ function openAjaxStatistics(http_request) {
     var hits = sql.substring(idx + 1, idx1);
     idx = sql.indexOf("=", idx1);
     var time = parseInt(sql.substring(idx + 1))/1000000;
-    a.innerHTML = hits + ' SQLs/' + Math.round(time * 100)/100 + 'ms';
+    a.innerHTML = hits + ' SQLs/' + Math.round((time * 100)/100) + 'ms';
 //    var tr = getTrNode(tdSql);
 //    tr.style.display = 'inline';
   }
@@ -5678,7 +5678,7 @@ function openAjaxStatistics(http_request) {
     var time = parseInt(cache.substring(idx + 1))/1000000;
     if (!time  &&  !hits)
       return;
-    a.innerHTML = hits + ' cache hits/' + Math.round(time * 100)/100 + 'ms speed-up';
+    a.innerHTML = hits + ' cache hits/' + Math.round((time * 100)/100) + 'ms speed-up';
 //    var tr = getTrNode(tdCache);
 //    tr.style.display = 'inline';
   }
