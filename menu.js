@@ -2920,15 +2920,19 @@ function uiFocus(div) {
         firstField = u;
       }
       if (u.id && (u.id == 'uiFocus' || u.id.indexOf('_uiFocus') != -1)) {
-        u.focus(); // in IE (at least in IE6) first focus() is lost for some reason - we are forced to issue another focus()
-        u.focus();
+        if(execJS.isObjectTotallyVisible(u)) {
+          u.focus(); // in IE (at least in IE6) first focus() is lost for some reason - we are forced to issue another focus()
+          u.focus();
+        }
         return true;
       }
     }
   }
   if (firstField && div != document) {
-    firstField.focus();
-    firstField.focus(); // second time for IE
+    if(execJS.isObjectTotallyVisible(firstField)) {
+      firstField.focus();
+      firstField.focus(); // second time for IE
+    }
   }
   return false;
 }
@@ -6017,8 +6021,13 @@ var execJS = {
 
   // checks on visibility all ancestors of the object
   // gets object or its id
-  isObjectTotallyVisible : function(objId) {
-    var obj = document.getElementById(objId);
+  isObjectTotallyVisible : function(obj) {
+    if(typeof obj == "string")
+      obj = document.getElementById(obj);
+    
+    if(obj == null)
+      return false;
+      
 	  var parent = obj;
 	  while(parent != null) {
 		  if(typeof parent.style != 'undefined' && parent.style.visibility == 'hidden')
