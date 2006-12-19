@@ -100,6 +100,12 @@ TD.closePopup {
   cursor: text;
 }
 
+.menuTextDivider {
+  font-weight: bold;
+  background-color: #e7ebf0; 
+  cursor: text; color: #0055e6;
+}
+
 .menuDivider td.td2 {
   background-color: #dbd8d1; cursor: text;
 }
