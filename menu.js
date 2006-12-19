@@ -3205,12 +3205,13 @@ function Dim() {
   }
 }
 
-function getElementCoords(elem, e) {
+function getElementCoords(elem, e, coordsOnly) {
   var dim = new Dim();
-  var d = getElementDimensions(elem);
-  dim.width  = d.width;
-  dim.height = d.height;
-
+  if(typeof coordsOnly == 'undefined' || coordsOnly == false) {
+    var d = getElementDimensions(elem);
+    dim.width  = d.width;
+    dim.height = d.height;
+  }
   var xy;
   if (e && !e.type.startsWith('key')) {
     xy = getMouseEventCoordinates(e);
@@ -5239,7 +5240,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     top  = hotspotDim.top;
   }
   else if (event || hotspot) {
-    var coords = getElementCoords(hotspot, event);
+    var coords = getElementCoords(hotspot, event, true);
     left = coords.left;
     top  = coords.top;
   }
