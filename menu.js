@@ -1986,7 +1986,8 @@ function autoComplete1(e, target) {
       selectItems.value   = '';  // value was modified and is not verified yet (i.e. not chose from the list)
   }
   e = cloneEvent(e);
-  autoCompleteTimeoutId = setTimeout("autoCompleteTimeout(e, " + keyPressedTime + ")", Popup.autoCompleteDefaultTimeout);
+  var f = function() { autoCompleteTimeout(e, keyPressedTime); };
+  autoCompleteTimeoutId = setTimeout(f, Popup.autoCompleteDefaultTimeout);
   // make property label visible since overwritten inside the field
   var filterLabel = document.getElementById(propName1 + "_span");
   if (filterLabel)
@@ -5653,6 +5654,12 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
 function openAjaxStatistics(http_request) {
   var tdSql = document.getElementById("ajax_sql");
   var logMarker = http_request.getResponseHeader("X-Request-Tracker");
+  var tdCache = document.getElementById("ajax_cache");
+  if (tdSql  && logMarker || tdCache) {
+    var tr = document.getElementById("ajax_title");
+    tr.style.visibility = Popup.VISIBLE;
+    tr.style.display = 'table-row';
+  }  
   var a;
   if (tdSql  &&  logMarker) {
     var sql = http_request.getResponseHeader("X-Sql-Statistics");
@@ -5669,10 +5676,10 @@ function openAjaxStatistics(http_request) {
     idx = sql.indexOf("=", idx1);
     var time = parseInt(sql.substring(idx + 1))/1000000;
     a.innerHTML = hits + ' SQLs/' + Math.round((time * 100)/100) + 'ms';
-//    var tr = getTrNode(tdSql);
-//    tr.style.display = 'inline';
+    var tr = getTrNode(tdSql);
+    tr.style.visibility = Popup.VISIBLE;
+    tr.style.display = 'table-row';
   }
-  var tdCache = document.getElementById("ajax_cache");
   if (tdCache) {
     var cache = http_request.getResponseHeader("X-Cache-Statistics");
     a = tdCache.childNodes[0];
@@ -5684,8 +5691,10 @@ function openAjaxStatistics(http_request) {
     if (!time  &&  !hits)
       return;
     a.innerHTML = hits + ' cache hits/' + Math.round((time * 100)/100) + 'ms speed-up';
-//    var tr = getTrNode(tdCache);
-//    tr.style.display = 'inline';
+    
+    var tr = getTrNode(tdCache);
+    tr.style.visibility = Popup.VISIBLE;
+    tr.style.display = 'table-row';
   }
 }
 
