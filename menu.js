@@ -1967,9 +1967,9 @@ function autoComplete1(e, target) {
     currentPopup.close();
 
   // for numeric value - do not perform autocomplete (except arrow down, ESC, etc.)
-  if (target.valueType && target.valueType.toUpperCase() == 'NUMERIC') {
+  var ac = target.getAttribute('autocomplete');
+  if (ac && ac == 'off') 
     return true;
-  }
   keyPressedElement.style.backgroundColor='#ffffff';
   if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
   if (selectItems) {
@@ -3562,14 +3562,20 @@ function displayInner(e, urlStr) {
 //    finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
   }
 
-  finalUrl += "&hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
+  var idx = finalUrl.indexOf('?');
+  if (idx == -1) {
+    idx = finalUrl.length;
+    finalUrl += '?';
+  }
+  else
+    finalUrl += '&';
+  finalUrl += "hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
   stopEventPropagation(e);
 
   var hotspot = target ? target : anchor;
   var url    = finalUrl;
   var params = null;
 //  if (finalUrl.length > 2000) {
-    var idx = finalUrl.indexOf('?');
     url    = finalUrl.substring(0, idx);
     params = finalUrl.substring(idx + 1);
 //  }
