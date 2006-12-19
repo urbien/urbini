@@ -5557,10 +5557,12 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     }
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
+      openAjaxStatistics(http_request);
       callback(clonedEvent, div, hotspot, http_request.responseText);
     }
     else if (status == 200) {
       frameLoaded[frameId] = true;
+      openAjaxStatistics(http_request);
       callback(clonedEvent, div, hotspot, http_request.responseText);
     }
     else if (status == 302) {
@@ -5640,6 +5642,45 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       url1 += extras;
     http_request.open('GET', url1, true);
     http_request.send('');
+  }
+}
+
+function openAjaxStatistics(http_request) {
+  var tdSql = document.getElementById("ajax_sql");
+  var logMarker = http_request.getResponseHeader("X-Request-Tracker");
+  var a;
+  if (tdSql  &&  logMarker) {
+    var sql = http_request.getResponseHeader("X-Sql-Statistics");
+    a = tdSql.childNodes[0];
+    var ahref = a.href;
+    var idx = ahref.indexOf("?LOG_MARKER=");
+    var idx1 = ahref.indexOf("&", idx1);
+    ahref = ahref.substring(0, idx + 12) + logMarker + ahref.substring(idx1);
+    a.href = ahref;
+
+    var idx = sql.indexOf("=");
+    var idx1 = sql.indexOf(";");
+    var hits = sql.substring(idx + 1, idx1);
+    idx = sql.indexOf("=", idx1);
+    var time = parseInt(sql.substring(idx + 1))/1000000;
+    a.innerHTML = hits + ' SQLs/' + Math.round(time * 100)/100 + 'ms';
+//    var tr = getTrNode(tdSql);
+//    tr.style.display = 'inline';
+  }
+  var tdCache = document.getElementById("ajax_cache");
+  if (tdCache) {
+    var cache = http_request.getResponseHeader("X-Cache-Statistics");
+    a = tdCache.childNodes[0];
+    var idx = cache.indexOf("=");
+    var idx1 = cache.indexOf(";");
+    var hits = cache.substring(idx + 1, idx1);
+    idx = cache.indexOf("=", idx1);
+    var time = parseInt(cache.substring(idx + 1))/1000000;
+    if (!time  &&  !hits)
+      return;
+    a.innerHTML = hits + ' cache hits/' + Math.round(time * 100)/100 + 'ms speed-up';
+//    var tr = getTrNode(tdCache);
+//    tr.style.display = 'inline';
   }
 }
 
