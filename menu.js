@@ -5569,12 +5569,12 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     }
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
-      openAjaxStatistics(http_request);
+      openAjaxStatistics(event, http_request);
       callback(clonedEvent, div, hotspot, http_request.responseText);
     }
     else if (status == 200) {
       frameLoaded[frameId] = true;
-      openAjaxStatistics(http_request);
+      openAjaxStatistics(event, http_request);
       callback(clonedEvent, div, hotspot, http_request.responseText);
     }
     else if (status == 302) {
@@ -5657,7 +5657,11 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
   }
 }
 
-function openAjaxStatistics(http_request) {
+function openAjaxStatistics(event, http_request) {
+  var target = event.target;
+  if (!target || target.tagName.toUpperCase != 'IMG' || target.id.indexOf('codeBehindThePage') == -1)
+    return;
+  
   var tdSql = document.getElementById("ajax_sql");
   var logMarker = http_request.getResponseHeader("X-Request-Tracker");
   var tdCache = document.getElementById("ajax_cache");
@@ -5666,6 +5670,8 @@ function openAjaxStatistics(http_request) {
     tr.style.visibility = Popup.VISIBLE;
     tr.style.display = 'table-row';
   }  
+  else
+    return;
   var a;
   if (tdSql  &&  logMarker) {
     var sql = http_request.getResponseHeader("X-Sql-Statistics");
