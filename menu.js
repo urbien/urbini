@@ -6034,8 +6034,12 @@ var execJS = {
     var scripts = contDiv.getElementsByTagName('script');
     for(var i = 0; i < scripts.length; i++) {
       if(scripts[i].className == "execJS" && scripts[i].text != "") {
-        window.eval(scripts[i].text);
-        scripts[i].text = ""; // prevents multiple execution for a tab.
+        var parent = scripts[i].parentNode;
+        // apply only to visible object
+        if(this.isObjectTotallyVisible(parent)) {
+          window.eval(scripts[i].text);
+          scripts[i].text = ""; // prevents multiple execution for a tab.
+        }
       }
     }
   },
