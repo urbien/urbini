@@ -3210,13 +3210,7 @@ function Dim() {
   }
 }
 
-function getElementCoords(elem, e, coordsOnly) {
-  var dim = new Dim();
-  if(typeof coordsOnly == 'undefined' || coordsOnly == false) {
-    var d = getElementDimensions(elem);
-    dim.width  = d.width;
-    dim.height = d.height;
-  }
+function getElementPosition(elem, e) {
   var xy;
   if (e && !e.type.startsWith('key')) {
     xy = getMouseEventCoordinates(e);
@@ -3224,12 +3218,18 @@ function getElementCoords(elem, e, coordsOnly) {
   else {
     xy = getObjectUpperLeft(elem);
   }
-  dim.left = xy.x;
-  dim.top  = xy.y;
-  //dim.left = findPosX(elem);
-  //dim.top  = findPosY(elem);
-  //alert('getElementCoords2');
+  return {left : xy.x, top : xy.y};
+}
 
+function getElementCoords(elem, e) {
+  var dim = new Dim();
+  var elemPos = getElementPosition(elem, e);
+  dim.left = elemPos.left;
+  dim.top  = elemPos.top;
+
+  var d = getElementDimensions(elem);
+  dim.width  = d.width;
+  dim.height = d.height;
   return dim;
 }
 
@@ -5251,7 +5251,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     top  = hotspotDim.top;
   }
   else if (event || hotspot) {
-    var coords = getElementCoords(hotspot, event, true);
+    var coords = getElementPosition(hotspot, event);
     left = coords.left;
     top  = coords.top;
   }
