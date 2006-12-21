@@ -4275,7 +4275,11 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   }
   lastPopupRowAnchor = anchor;
 */
-
+  
+  // close menu popup
+  Popup.close0(contactDivId);
+  document.body.style.cursor = "wait";
+  
   document.location.href = anchor;
   return se;
 //  return addAndShow1(anchor, event);
