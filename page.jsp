@@ -46,13 +46,18 @@
       <a href="#"><IMG src="images/logo.gif" border="0" height="32" align="right" /></a>
     </td>
    </tr></table></td>
+	  <td align="right">  
+<hideBlock>
+      <img allow="admin" id="menuLink_codeBehindThePage" title="View Source&lt;br&gt; This page is based solely on the declarative code that you can inspect by clicking on the links in popup" class="cursor" src="icons/codeBehindThePage.jpg" height="33" onclick="menuOnClick(event)"/>
+</hideBlock>
+	  </td>
   </tr>
-  <tr><td class="line" height="40" valign="middle"><resourceTypeLabel/></td></tr>
+  <tr><td colspan="2" class="line" height="40" valign="middle"><resourceTypeLabel/></td></tr>
   <tr bgcolor="#F1F1F1">
-  <td>
+    <td class="welcome" valign="top" colspan="2">
 	  <table width="100%" cellspacing="0" cellpadding="0" border="0" align="center">
 	  <tr>
-	    <td class="welcome" valign="top">
+	    <td>
 	      <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" align="absmiddle"/></a>
 	      <changePassword/><userLogOff html="user-login.html"/><registerNewUser/><myProfile property="inbox" />
 	    </td>
@@ -95,7 +100,7 @@
 
 <hideBlock>
     <br/><br/>
-    <center><codeBehindThePage allow="admin"/> </center>
+    <center><codeBehindThePage allow="admin" showDialog="y"/> </center>
     <br/><br/>
 </hideBlock>
     <include name="requiredFooter.jsp"/>
