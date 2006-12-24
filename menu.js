@@ -394,6 +394,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     //alert('end popup init');
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
+      // fit tooltip height (only on 1st launch)
+      var ie = (navigator.userAgent.indexOf('MSIE') != -1);
+      var stl = self.div.style;
+      if(ie && stl.height != "1px") stl.height = "1px";
+      else if(stl.height != "auto") stl.height = "auto";
+
       self.delayedClose(20000);
     }
     else
