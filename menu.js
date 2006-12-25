@@ -4279,12 +4279,13 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   }
   lastPopupRowAnchor = anchor;
 */
-  
   // close menu popup
   Popup.close0(contactDivId);
   document.body.style.cursor = "wait";
-  
-  document.location.href = anchor;
+
+  var idx = anchor.indexOf("?");
+  var div = document.createElement('div');
+  postRequest(event, anchor.substring(0, idx), anchor.substring(idx + 1), div, td, addAssignment);
   return se;
 //  return addAndShow1(anchor, event);
 }
@@ -4593,26 +4594,161 @@ function cancelItemAndWait(event) {
   }
 }
 
-function addAndShowWait(event, body, hotspot, content)	{
-  var frameId = "resourceList";
-  if (!content) {
-    var frameBodyId = "siteResourceList";
-    if (!frameLoaded[frameId]) {
-      setTimeout(addAndShowWait, 50);
-      return;
-    }
-    frameLoaded[frameId] = false;
-    var l = document.location;
-    var iframe = document.getElementById(frameId);
-    var iframeWindow = frames[frameId];
-    body = iframeWindow.document.getElementById(frameBodyId);
-    if (!body) {
-      alert("Warning: server did not return resource list data - check connection to server");
-      return;
+function addAssignment(event, body, hotspot, content)  {
+  setInnerHtml(body, content);
+
+  var errDiv = document.getElementById('errorMessage');
+  if (errDiv)
+    errDiv.innerHTML = '';
+  var bdivs = body.getElementsByTagName("div");
+  for (var i=0; i<bdivs.length; i++) {
+    if (bdivs[i].id && bdivs[i].id == 'errorMessage') {
+      if (bdivs[i].innerHTML) {
+        eDiv.innerHTML = bdivs[i].innerHTML;
+        return;
+      }
     }
   }
+  var tbodies = body.getElementsByTagName("tbody");
+  var curTR;
+  for (var i=0; i<tbodies.length; i++) {
+    var id = tbodies[i].id;
+    if (id  &&  id == 'newAssignment') {
+      curTR = tbodies[i].getElementsByTagName("tr")[0];
+      break;
+    }
+  }
+  if (!curTR)
+    return;
+  var trCopyTo = document.getElementById(curTR.id);
+  if (!trCopyTo) {
+    alert("Warning: target TR not found: " + curTR.id);
+    return;
+  }
+  var newTd = curTR.getElementsByTagName("td")[0];
+  
+  var tdId = newTd.id;
+  var tdIdx = tdId.lastIndexOf('.');
+  var emplIdx = parseInt(tdId.substring(tdIdx + 1));
+  
+  var tds = trCopyTo.getElementsByTagName("td");
+  var oldTbody = trCopyTo.parentNode;
+
+  var n = tds.length;
+//  var oldTd = tds[emplIdx];
+  var oldTd;
+  for (var i=1; i<n  &&  !oldTd; i++) {
+    var tId = tds[i].id; 
+    if (tId  &&  (tId.indexOf('.' + emplIdx + ':') != -1 || tId.indexOf('.-' + emplIdx + ':') != -1))
+      oldTd = tds[i]; 
+  }
+  rowspan = parseInt(newTd.rowSpan);
+  
+  var row = trCopyTo;
+  var trs = oldTbody.getElementsByTagName('tr');
+  
+  var rowIdx = row.rowIndex;// + 1;
+  row = trs[rowIdx];
+  if (row.id == trCopyTo.id)
+    row = trs[++rowIdx];
+  tds = row.getElementsByTagName("td");
+  rowIdx++;
+  for (var j=1; j<rowspan; j++, rowIdx++) {
+    for (var i=1; i<n; i++) {
+      var tId = tds[i].id; 
+      if (tId  &&  (tId.indexOf('.' + emplIdx + ':') != -1 || tId.indexOf('.-' + emplIdx + ':') != -1)) {
+        row.removeChild(tds[i]);
+        break; 
+      }
+    }
+    
+    row = trs[rowIdx];
+    tds = row.getElementsByTagName("td");
+  }
+  oldTd.rowSpan = newTd.rowSpan;
+  
+
+  oldTd.id = newTd.id;
+  oldTd.innerHTML = newTd.innerHTML;
+  oldTd.childNodes[0].style.whiteSpace = 'normal';
+  if (newTd.className)
+    oldTd.className = newTd.className;
   else {
-    setInnerHtml(body, content);
+    if (oldTd.className)
+      oldTd.className = '';
+    if (newTd.style)  
+      oldTd.setAttribute('style', newTd.style.cssText);
+  }
+  currentCell = oldTd;
+  currentCellBackground = newTd.style.backgroundColor;
+  currentCell.style.backgroundColor = "#D7D8FB";
+  oldTd.childNodes[0].whiteSpace = 'normal';
+
+  var row = trCopyTo;
+
+  var rowIdx = row.rowIndex;// + 1;
+  row = trs[rowIdx];
+  if (row.id == trCopyTo.id)
+    rowIdx++;
+  tds = trCopyTo.getElementsByTagName("td");
+  for (var j=0; j<rowspan; j++, rowIdx++) {
+    for (var i=0; i<tds.length; i++) {
+      if (tds[i].className == 'a' || tds[i].className == 'b')
+        tds[i].className = 'g';
+    }
+    row = trs[rowIdx];
+    tds = row.getElementsByTagName("td");
+  }
+  
+//  currentCell = oldTd;
+  
+  addEvent(oldTd, 'click', newTd.onclick, false);
+/*  
+  var newDivs = body.getElementsByTagNam("div");
+  var divCopyFr;
+  for (var i=0; i<newDivs.length &&  !divCopyFr; i++) {
+    if (newDivs[i].id  &&  newDivs[i].id == 'resourceList_div')
+      divCopyFr = newDivs[i];
+  }
+  if (divCopyFr) {
+    addAndShowWait(event, divCopyFr)
+  }
+  */
+  var divs = body.getElementsByTagName('div');
+  for (var i=0; i<divs.length; i++) {
+    if (divs[i].id  &&  divs[i].id == 'resourceList_div') {
+      addAndShowWait(event, divs[i], hotspot, content, true);
+      break;
+    }
+  }
+  document.body.style.cursor = "default";
+  
+  lastPopupRowTD = null;
+  return stopEventPropagation(event);
+}
+
+function addAndShowWait(event, body, hotspot, content, noInsert)	{
+  var frameId = "resourceList";
+  if (!noInsert) {
+    if (!content) {
+      var frameBodyId = "siteResourceList";
+      if (!frameLoaded[frameId]) {
+        setTimeout(addAndShowWait, 50);
+        return;
+      }
+      frameLoaded[frameId] = false;
+      var l = document.location;
+      var iframe = document.getElementById(frameId);
+      var iframeWindow = frames[frameId];
+      body = iframeWindow.document.getElementById(frameBodyId);
+      if (!body) {
+        alert("Warning: server did not return resource list data - check connection to server");
+        return;
+      }
+    }
+    else {
+      setInnerHtml(body, content);
+    }
   }
   var divCopyTo = document.getElementById(frameId + "_div");
   if (!divCopyTo) {
@@ -4655,9 +4791,11 @@ function addAndShowWait(event, body, hotspot, content)	{
     if (elms[j].id) {
       if (elms[j].id == currentItem)
         currentTR = elms[j];
-      else if (elms[j].is == "results")
+      else if (elms[j].id == "results")
         curResultsTR = elms[j];
     }
+    else if (noInsert)
+      currentTR = elms[j];
   }
   // Find TR in previous list that was current and change style of the row
   elms = divCopyTo.getElementsByTagName('a');
@@ -4768,7 +4906,7 @@ function addAndShowWait(event, body, hotspot, content)	{
       headerTR = tr;
       headerTRidx = j;
       var tbody  = tr.parentNode;
-      var trElms = tbody.childNodes;
+      var trElms = tbody.getElementsByTagName('tr');
       var pos = 1;
       for (var ii=0; ii<trElms.length; ii++) {
         if (trElms[ii].id == 'header')
@@ -5498,7 +5636,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
   var http_request;
 
   // visual cue that click was made, using the tooltip
-  var addLineItem = document.location.href.indexOf('addLineItem.html?') != null;
+  var addLineItem = document.location.href.indexOf('addLineItem.html?') != -1;
   if (!Popup.penBased  &&  !addLineItem)
     loadingCueStart(event, hotspot);
 
@@ -5615,7 +5753,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       }
 
       var paintInPage;
-      try { paintInPage = http_request.getResponseHeader('Paint-In-Page');} catch (exc) {}
+      try { paintInPage = http_request.getResponseHeader('X-Paint-In-Page');} catch (exc) {}
       if (paintInPage && paintInPage == 'false')
         document.location = location;  // reload current page - usually happens at login due to timeout
       else {
@@ -6150,7 +6288,16 @@ function changeBoolean(e) {
   }
   if (target.id.indexOf("_boolean_refresh") != -1) {
     var locationUrl = document.location.href;
-    url +=  "?" + params + "&$returnUri=" + encodeURIComponent(locationUrl);
+    url +=  "?" + params + "&$returnUri=";
+    var idx = locationUrl.indexOf("&errMsg=");
+    if (idx == -1)
+      url += encodeURIComponent(locationUrl);
+    else {
+      url += encodeURIComponent(locationUrl.substring(0, idx));
+      idx = locationUrl.indexOf("&", idx + 1);
+      if (idx != -1)
+        url += encodeURIComponent(locationUrl.substring(idx));
+    }
     document.location.replace(url);
   }
   else
@@ -6333,4 +6480,10 @@ function cloneEvent(eventObj) {
     e.type = 'click';
   }
   return e;
+}
+function setCssStyle(elem, newStyle) {
+  if ( typeof( elem.style.cssText ) != 'undefined' )
+    elem.style.cssText = newStyle;
+  else
+    elem.setAttribute('style', newStyle);
 }
