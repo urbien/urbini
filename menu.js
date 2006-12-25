@@ -1417,7 +1417,6 @@ function listboxOnClick(e) {
   target = getTargetElement(e);
   if (!target)
     return;
-
   if (target.tagName != "IMG")
     return;
   var imgId = target.id;
@@ -3799,7 +3798,6 @@ function getTargetElement(e) {
   else {
     elem = e.srcElement;
   }
-
   return elem;
 }
 
@@ -5669,7 +5667,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
 
 function openAjaxStatistics(event, http_request) {
   var target = event.target;
-  if (!target || target.tagName.toUpperCase != 'IMG' || target.id.indexOf('codeBehindThePage') == -1)
+  if (!target || !target.tagName || target.tagName.toUpperCase != 'IMG' || target.id.indexOf('codeBehindThePage') == -1)
     return;
   
   var tdSql = document.getElementById("ajax_sql");
