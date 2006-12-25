@@ -80,6 +80,8 @@ TD.closePopup {
   background-color: #0055e6;
   cursor: pointer;
   background-image: url('../icons/hide.gif');
+  background-repeat: no-repeat;
+  background-position: center;
   text-align: right;
 }
 
