@@ -2763,6 +2763,7 @@ function schedule(e) {
     }
     else {
       currentCell.style.height = '100px';
+      currentCell.style.width = '100px';
       var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'normal';
     }
