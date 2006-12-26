@@ -2757,7 +2757,7 @@ function schedule(e) {
         currentCell.innerHTML = schedImg;
     }
     else {
-//      currentCell.width='100px';
+      currentCell.style.height = '100px';
       var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'normal';
     }
@@ -2769,7 +2769,7 @@ function schedule(e) {
     else {
       var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'nowrap';
-      currentCell.width='';
+      currentCell.style.height = '1px';
     }
     currentCell.style.backgroundColor = currentCellBackground;
     currentCell = target;
@@ -2780,7 +2780,7 @@ function schedule(e) {
         currentCell.innerHTML = schedImg;
     }
     else {
-//      currentCell.width='100px';
+      currentCell.style.height = '100px';
       var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'normal';
     }
