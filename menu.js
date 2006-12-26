@@ -386,9 +386,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       self.interceptEvents();
       initListBoxes(self.div);
       interceptLinkClicks(self.div);
-      //if (!self.isTooltip())
-      var anchors = self.div.getElementsByTagName('a');
-      replaceTooltips(self.div, anchors);
       self.initilized = true;
     }
     //alert('end popup init');
@@ -1973,7 +1970,7 @@ function autoComplete1(e, target) {
 
   // for numeric value - do not perform autocomplete (except arrow down, ESC, etc.)
   var ac = target.getAttribute('autocomplete');
-  if (ac && ac == 'off') 
+  if (ac && ac == 'off')
     return true;
   keyPressedElement.style.backgroundColor='#ffffff';
   if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
@@ -2550,7 +2547,7 @@ function tooltipOnMouseOver0(e, target, toShow) {
     if (!tooltip) // no title attribute - get out of here
       return true;
     tooltipText = tooltip;
-	if (tooltipText == '')
+    if (tooltipText == '')
       return true;
     // merge tooltip on IMG with tooltip on its parent A tag
     var parentA = target.parentNode;
@@ -2573,10 +2570,10 @@ function tooltipOnMouseOver0(e, target, toShow) {
   else
     tooltipText = tooltip;
 
-  if(toShow == false) {// if requered shift was not pressed
-	var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
-	window.status = plainTooltipText;
-	return false;
+  if (toShow == false) { // if required shift was not pressed
+    var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
+    window.status = plainTooltipText;
+    return false;
   }
 
   var divId    = 'system_tooltip';
@@ -3627,9 +3624,7 @@ function showDialog(event, div, hotspot, content) {
   setDivVisible(event, div, iframe, hotspot, 16, 16);
   initListBoxes(div);
   uiFocus(div);
-  var anchors = div.getElementsByTagName('A');
   interceptLinkClicks(div);
-  replaceTooltips(div, anchors);
 
   // execute JS code of innerHTML
   execJS.runDivCode(div);
@@ -4487,7 +4482,7 @@ function cancelItemAndWait(event) {
       break;
     }
   }
-  
+
   elms = divCopyTo.getElementsByTagName('tr');
   var currentTr;
   var resultsTr;
@@ -4509,19 +4504,19 @@ function cancelItemAndWait(event) {
           var idx1 = r.indexOf('<', idx);
           var recs = r.substring(idx + 1, idx1);
           recsNmb = parseInt(recs) - 1;
-          if (recsNmb == 0) 
+          if (recsNmb == 0)
             resultsTr = tr;
           else {
             var newInnerHTML = r.substring(0, idx + 1) + recsNmb;
             idx = r.indexOf(recs, idx1);
-  
+
             newInnerHTML += r.substring(idx1, idx) + recsNmb;
             tds[i].innerHTML = newInnerHTML;
           }
         }
       }
     }
-    else if (tr.id == 'header')  
+    else if (tr.id == 'header')
       headerRow = j;
     else if (tr.id == currentItem) {
       currentTr = tr;
@@ -4626,11 +4621,11 @@ function addAssignment(event, body, hotspot, content)  {
     return;
   }
   var newTd = curTR.getElementsByTagName("td")[0];
-  
+
   var tdId = newTd.id;
   var tdIdx = tdId.lastIndexOf('.');
   var emplIdx = parseInt(tdId.substring(tdIdx + 1));
-  
+
   var tds = trCopyTo.getElementsByTagName("td");
   var oldTbody = trCopyTo.parentNode;
 
@@ -4638,15 +4633,15 @@ function addAssignment(event, body, hotspot, content)  {
 //  var oldTd = tds[emplIdx];
   var oldTd;
   for (var i=1; i<n  &&  !oldTd; i++) {
-    var tId = tds[i].id; 
+    var tId = tds[i].id;
     if (tId  &&  (tId.indexOf('.' + emplIdx + ':') != -1 || tId.indexOf('.-' + emplIdx + ':') != -1))
-      oldTd = tds[i]; 
+      oldTd = tds[i];
   }
   rowspan = parseInt(newTd.rowSpan);
-  
+
   var row = trCopyTo;
   var trs = oldTbody.getElementsByTagName('tr');
-  
+
   var rowIdx = row.rowIndex;// + 1;
   row = trs[rowIdx];
   if (row.id == trCopyTo.id)
@@ -4655,18 +4650,18 @@ function addAssignment(event, body, hotspot, content)  {
   rowIdx++;
   for (var j=1; j<rowspan; j++, rowIdx++) {
     for (var i=1; i<n; i++) {
-      var tId = tds[i].id; 
+      var tId = tds[i].id;
       if (tId  &&  (tId.indexOf('.' + emplIdx + ':') != -1 || tId.indexOf('.-' + emplIdx + ':') != -1)) {
         row.removeChild(tds[i]);
-        break; 
+        break;
       }
     }
-    
+
     row = trs[rowIdx];
     tds = row.getElementsByTagName("td");
   }
   oldTd.rowSpan = newTd.rowSpan;
-  
+
 
   oldTd.id = newTd.id;
   oldTd.innerHTML = newTd.innerHTML;
@@ -4676,7 +4671,7 @@ function addAssignment(event, body, hotspot, content)  {
   else {
     if (oldTd.className)
       oldTd.className = '';
-    if (newTd.style)  
+    if (newTd.style)
       oldTd.setAttribute('style', newTd.style.cssText);
   }
   currentCell = oldTd;
@@ -4699,11 +4694,11 @@ function addAssignment(event, body, hotspot, content)  {
     row = trs[rowIdx];
     tds = row.getElementsByTagName("td");
   }
-  
+
 //  currentCell = oldTd;
-  
+
   addEvent(oldTd, 'click', newTd.onclick, false);
-/*  
+/*
   var newDivs = body.getElementsByTagNam("div");
   var divCopyFr;
   for (var i=0; i<newDivs.length &&  !divCopyFr; i++) {
@@ -4722,7 +4717,7 @@ function addAssignment(event, body, hotspot, content)  {
     }
   }
   document.body.style.cursor = "default";
-  
+
   lastPopupRowTD = null;
   return stopEventPropagation(event);
 }
@@ -4949,6 +4944,7 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
   }
   interceptLinkClicks(divCopyTo);
 }
+
 function extractTotalFrom(tot) {
   var ii = 0;
   var dot = -1;
@@ -5590,6 +5586,7 @@ function setKeyboardFocus(element) {
 // Basic ajax technique is described here:
 //   http://keelypavan.blogspot.com/2006/01/using-ajax.html
 //   http://developer.apple.com/internet/webcontent/xmlhttpreq.html
+var lastRequest;
 function postRequest(event, url, parameters, div, hotspot, callback) {
   if (url == null)
     throw new Error('postRequest url parameter is null');
@@ -5617,9 +5614,9 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
   };
 
   function callInProgress() {
-    if (!this.lastRequest)
+    if (!lastRequest)
       return false;
-    switch (this.lastRequest.readyState) {
+    switch (lastRequest.readyState) {
       // states that indicate request was not completed yet
       case 1: case 2: case 3:
         return true;
@@ -5686,8 +5683,11 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     return;
   }
 
-  if (callInProgress(this.lastRequest))
-    this.lastRequest.abort();
+  if (callInProgress(lastRequest)) {
+    //lastRequest.abort();
+    //alert("please wait till your last request is processed");
+    return;
+  }
   this.lastRequest = http_request;
   var clonedEvent = cloneEvent(event);
   http_request.onreadystatechange = function() {
@@ -5807,7 +5807,7 @@ function openAjaxStatistics(event, http_request) {
   var target = event.target;
   if (!target || !target.tagName || target.tagName.toUpperCase != 'IMG' || target.id.indexOf('codeBehindThePage') == -1)
     return;
-  
+
   var tdSql = document.getElementById("ajax_sql");
   var logMarker = http_request.getResponseHeader("X-Request-Tracker");
   var tdCache = document.getElementById("ajax_cache");
@@ -5815,7 +5815,7 @@ function openAjaxStatistics(event, http_request) {
     var tr = document.getElementById("ajax_title");
     tr.style.visibility = Popup.VISIBLE;
     tr.style.display = 'table-row';
-  }  
+  }
   else
     return;
   var a;
@@ -5849,7 +5849,7 @@ function openAjaxStatistics(event, http_request) {
     if (!time  &&  !hits)
       return;
     a.innerHTML = hits + ' cache hits/' + Math.round((time * 100)/100) + 'ms speed-up';
-    
+
     var tr = getTrNode(tdCache);
     tr.style.visibility = Popup.VISIBLE;
     tr.style.display = 'table-row';
@@ -6195,10 +6195,10 @@ var execJS = {
   isObjectTotallyVisible : function(obj) {
     if(typeof obj == "string")
       obj = document.getElementById(obj);
-    
+
     if(obj == null)
       return false;
-      
+
 	  var parent = obj;
 	  while(parent != null) {
 		  if(typeof parent.style != 'undefined' && parent.style.visibility == 'hidden')
@@ -6244,10 +6244,7 @@ function addBooleanToggle(elem) {
  */
 function changeBoolean(e) {
   var target;
-
-  e = (e) ? e : ((window.event) ? window.event : null);
-  if (!e)
-    return;
+  e = getDocumentEvent(e); if (!e) return;
   target = getTargetElement(e);
   var url = 'editProperties.html';
   var params = 'submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
@@ -6308,6 +6305,7 @@ function changeBoolean(e) {
   }
   //tooltipMouseOut0(target);           // remove and ...
   //tooltipMouseOver0(target);          // repaint the tooltip on this boolean icon
+  return stopEventPropagation(e);
 }
 
 if (!document.importNode) {
@@ -6460,7 +6458,7 @@ function clone (o, deep) {
 function cloneEvent(eventObj) {
   if(typeof eventObj.cloned != 'undefined' && eventObj.cloned == true)
     return eventObj;
-    
+
   var e = new Object();
   e.screenX = eventObj.screenX;
   e.screenY = eventObj.screenY;
@@ -6481,9 +6479,11 @@ function cloneEvent(eventObj) {
   }
   return e;
 }
+
 function setCssStyle(elem, newStyle) {
   if ( typeof( elem.style.cssText ) != 'undefined' )
     elem.style.cssText = newStyle;
   else
     elem.setAttribute('style', newStyle);
 }
+
