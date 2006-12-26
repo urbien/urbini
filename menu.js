@@ -4595,6 +4595,7 @@ function cancelItemAndWait(event) {
   }
 }
 
+// Add assignment to schedule page without repainting the page
 function addAssignment(event, body, hotspot, content)  {
   setInnerHtml(body, content);
 
@@ -4654,8 +4655,10 @@ function addAssignment(event, body, hotspot, content)  {
     row = trs[++rowIdx];
   tds = row.getElementsByTagName("td");
   rowIdx++;
+  // Each row can have different number of tds since some of them due to rowspan > 1 removed
   for (var j=1; j<rowspan; j++, rowIdx++) {
-    for (var i=1; i<n; i++) {
+    var nn = tds.length;
+    for (var i=1; i<nn; i++) {
       var tId = tds[i].id;
       if (tId  &&  (tId.indexOf('.' + emplIdx + ':') != -1 || tId.indexOf('.-' + emplIdx + ':') != -1)) {
         row.removeChild(tds[i]);
