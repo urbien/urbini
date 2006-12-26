@@ -2728,8 +2728,13 @@ function schedule(e) {
     return stopEventPropagation(e);
   }
   var tdId = target.id;
-  if (!tdId)
-    return;
+  if (!tdId) {
+    var reqT = getTrNode(target);
+    if (!reqT  ||  !reqT.id || reqT.id != 'requests')
+      return;
+    target = getTdNode(reqT);
+    tdId = target.id;
+  }
   var isAssignedCell = tdId.indexOf('ap.') == 0;
   if (!isAssignedCell && target.className != 'a' && target.className != 'b' && target.className != 'ci') {
 //    alert(target.className + " " + target.id);
