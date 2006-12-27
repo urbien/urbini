@@ -4097,6 +4097,13 @@ function largeImageOnLoad(e) {
 }
 
 function showLargeImage(e, current, largeImageUrl) {
+  var div = document.getElementById('gallery');
+  var img = document.getElementById('galleryImage');
+  if(!div || !img)
+    return;
+
+  makeDivAutosize(div);
+
   if (!largeImageUrl) {
     e = getDocumentEvent(e); if (!e) return;
     var target = getTargetElement(e);
@@ -4109,8 +4116,6 @@ function showLargeImage(e, current, largeImageUrl) {
     var file1 = file.substring(0, idx);
     largeImageUrl = file1 + '_image' + ext;
 
-	  var div = document.getElementById('gallery');
-	  var img = document.getElementById('galleryImage');
 	  hotspot1 = target;
 	  addEvent(img, 'load',  largeImageOnLoad,  false);
 	  img.src = "";
@@ -4118,8 +4123,6 @@ function showLargeImage(e, current, largeImageUrl) {
 	  return true;
   }
 
-  var div = document.getElementById('gallery');
-  var img = document.getElementById('galleryImage');
   img.src = "";
 
   if (div.style.display == "block") {
@@ -4146,6 +4149,20 @@ function showLargeImage(e, current, largeImageUrl) {
   return true;
 }
 
+// makes div / container to fit to content size.
+function makeDivAutosize(div) {
+  var ie = (navigator.userAgent.indexOf('MSIE') != -1);
+  var stl = div.style;
+  if(ie && stl.width != "1px") { // IE6
+   stl.width = "1px";
+   stl.height = "1px";
+  }
+  else if(stl.width != "auto") {
+    stl.width = "auto";
+    stl.height = "auto";
+  }
+
+}
 
 function getLeft(overlay){
   var totaloffset = overlay.offsetLeft;
