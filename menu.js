@@ -358,7 +358,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 //      opening the same popup at the same place? - just quit
         if (self.div.id == curDivId &&
             self.hotspotDim.equals(hotspotDim) &&
-            (offsetX1 == offsetX && offsetY1 == offsetY)) {
+            (offsetX1 == offsetX && offsetY1 == offsetY) &&
+             self.div.style == 'visible') {
           return;
         }
       }
@@ -4136,10 +4137,11 @@ function showLargeImage(e, current, largeImageUrl) {
   // se the title text
   var titleObj = getChildById(gallery, "titleBar");
   if(titleObj != null) {
-	var idx1 = largeImageUrl.lastIndexOf("/");
-	var idx2 = largeImageUrl.indexOf("_image", idx1); // always suffix "_image"
-	var fileName = largeImageUrl.substring(idx1 + 1, idx2);
-	titleObj.innerHTML = fileName;
+	  var idx1 = largeImageUrl.lastIndexOf("/");
+	  var idx2 = largeImageUrl.indexOf("_image", idx1); // always suffix "_image"
+	  var fileName = largeImageUrl.substring(idx1 + 1, idx2);
+	  titleObj.innerHTML = fileName;
+	  titleObj.noWrap = true;
   }
 
 
