@@ -4929,17 +4929,23 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
       headerTR = tr;
       headerTRidx = j;
       var tbody  = tr.parentNode;
-      var trElms = tbody.getElementsByTagName('tr');
+      var trElms = tbody.childNodes;
       var pos = 1;
+      var trNmb = 0;
+      var headerIdx = 0;
       for (var ii=0; ii<trElms.length; ii++) {
-        if (trElms[ii].id == 'header')
+        if (trElms[ii].tagName != 'tr')
+          continue;
+        else if (headerIdx) {
+          pos = ii;
           break;
-        else
-          pos++;
+        }
+        if (!headerIdx  &&  trElms[ii].id == 'header')
+          headerIdx++;
       }
       //var newTr = document.importNode(currentTR, true);
 //      copyTableRow(tbody, pos, currentTR);
-      if (pos == trElms.length) {
+      if (pos == trNmb || pos == 0) {
         tbody.appendChild(currentTR);
       }
       else {
