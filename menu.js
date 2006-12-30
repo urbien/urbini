@@ -2750,8 +2750,8 @@ function schedule(e) {
   }
   lastCellClickTime = newCellClickTime;
 //  Packages.java.lang.System.out.println('lastCellClickTime = ' + lastCellClickTime);
-  var calendarImg = "<img src='icons/blank.gif' border='0' width='16' height='16'/>&#160;<img src='icons/calendar.gif' title='Change employee availability' border='0' width='16' height='16'/>"
-  var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' title='Schedule procedure' border='0' width='16' height='16'/>&#160;<img src='icons/calendar.gif' title='Change employee availability' border='0' width='16' height='16'>";
+  var calendarImg = "<img src='icons/blank.gif' width='16' height='16' align='left'/><img src='icons/calendar.gif' class='cursor' title='Change employee availability' width='16' height='16' align='right'/>"
+  var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' title='Schedule procedure' align='left' width='16' class='cursor' height='16'/><img src='icons/calendar.gif' class='cursor' title='Change employee availability' border='0' width='16' height='16' align='right'>";
   if (!currentCell) {
     currentCell = target;
     currentCellBackground = currentCell.style.backgroundColor;
@@ -5078,6 +5078,25 @@ function showTab(e, td, hideDivId, unhideDivId) {
     if (tt)
       tt.className = "currentTabTitleHidden";
   }
+  var divId;
+  if (hasPrefix)
+    divId = 'idiv_' + td.id;
+  else
+    divId = 'div_' + td.id;
+
+  div = document.getElementById(divId);
+  div.style.visibility = Popup.VISIBLE;
+  div.style.display = 'inline';
+
+  var t = td.getElementsByTagName("table");
+  if (t.length != 0  &&  t[0].className == "cpTabs")
+    t[0].className = "currentCpTabs";
+
+  if (isViewAll) {
+    var tr = document.getElementById(tokens.length + 'cp');
+    if (tr != null)
+      tr.className = "currentTabTitle";
+  }
 
   if (unhideDivId  &&  unhideDivId.length != 0) {
     var tokens = unhideDivId.split(',');
@@ -5107,25 +5126,6 @@ function showTab(e, td, hideDivId, unhideDivId) {
       }
     }
 
-  }
-  var divId;
-  if (hasPrefix)
-    divId = 'idiv_' + td.id;
-  else
-    divId = 'div_' + td.id;
-
-  div = document.getElementById(divId);
-  div.style.visibility = Popup.VISIBLE;
-  div.style.display = 'inline';
-
-  var t = td.getElementsByTagName("table");
-  if (t.length != 0  &&  t[0].className == "cpTabs")
-    t[0].className = "currentCpTabs";
-
-  if (isViewAll) {
-    var tr = document.getElementById(tokens.length + 'cp');
-    if (tr != null)
-      tr.className = "currentTabTitle";
   }
 
   execJS.runDivCode(div);
