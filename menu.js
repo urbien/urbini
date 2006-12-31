@@ -2750,8 +2750,8 @@ function schedule(e) {
   }
   lastCellClickTime = newCellClickTime;
 //  Packages.java.lang.System.out.println('lastCellClickTime = ' + lastCellClickTime);
-  var calendarImg = "<img src='icons/blank.gif' width='16' height='16' align='left'/><img src='icons/calendar.gif' class='cursor' title='Change employee availability' width='16' height='16' align='right'/>"
-  var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' title='Schedule procedure' align='left' width='16' class='cursor' height='16'/><img src='icons/calendar.gif' class='cursor' title='Change employee availability' border='0' width='16' height='16' align='right'>";
+  var calendarImg = "<img src='icons/blank.gif' width='16' height='16' align='left' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' align='right' />";
+  var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' title='Schedule procedure' width='16' height='16' align='left' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' align='right'>";
   if (!currentCell) {
     currentCell = target;
     currentCellBackground = currentCell.style.backgroundColor;
