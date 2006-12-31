@@ -345,8 +345,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	
 	this.isIE = false;
 	this.isOpera = false;
+	this.isNetscape = false;
+	
 	this.skipCloseAll = false;
 	this.skipClose_IE_Opera = false;
+	this.FFhacked = false;
 							 
 	this.currentPopup = null; // prevents closing on popup opening
 	this.openedAtTime = 0;    // hack: prevents simultaneous openning and toolbar button execution
@@ -371,7 +374,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			return;
 		else
 			this.isInitialized = true;
-		
+
+		// browser detection
+		this.browserDetection();
+
 		// set text and edit mode
 		this.window = this.iframeObj.contentWindow;
 		this.document = this.window.document;
@@ -381,16 +387,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		this.initFrameHeight = this.iframeObj.clientHeight;
 		this.initContent();
 		
-
 		// create toolbar
 		this.toolbar = this.createToolbar();
 		if(this.rtePref.autoClose)
 			this.toolbar.hide();
 		else
 			this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
-
-		// browser detection
-		this.browserDetection();
 		// set handlers
 		this.setHandlers();
 	}
@@ -400,7 +402,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			this.isIE = true;
 		else if(brName == "Opera")
 			this.isOpera = true;
-		//else "Netscape"
+		else if(brName == "Netscape") // FF
+		  this.isNetscape = true;
 	}
 	this.setHandlers = function() {
 		addEvent(this.iframeObj, "deactivate", this._ondeactivate, false);
@@ -479,6 +482,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	this.initContent = function() {
 		var text = this.getDataField().value;
+		// hack. FF does not show caret in empty RTE
+		if(this.isNetscape && text.length == 0) {
+		  text = "<br>";
+		}
+		
 		this.putContent(text);
 	}
 	// putContent
@@ -520,15 +528,22 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		return true; 
 	}
 	this.getHtmlContent = function() {
-
+	  var content = "";
 		if(this.isSourceView) {
 				if(typeof this.document.body.innerText == 'undefined')
-					return this.document.body.textContent;
+					content =  this.document.body.textContent;
 				else	
-					return this.document.body.innerText;
+					content =  this.document.body.innerText;
 			}
 		else
-			return this.document.body.innerHTML;
+			content =  this.document.body.innerHTML;
+		// hack. remove <br> appended in initContent()
+		if(this.isNetscape) {
+  		var brIdx = content.lastIndexOf("<br>")
+		  content = content.slice(0, brIdx);
+		}
+		
+		return content;
 	}
 	this.getDataField = function() {
 		if(this.dataField == null) {
