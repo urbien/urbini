@@ -3626,7 +3626,10 @@ function showDialog(event, div, hotspot, content) {
   var re = eval('/' + frameId + '/g');
   content = content.replace(re, frameId + '-removed'); // prevent dialogIframe from appearing 2 times in the document
   setInnerHtml(div, content);
+  showDialog1(event, div, hotspot);
+}
 
+function showDialog1(event, div, hotspot) {
   var iframe = document.getElementById('dialogIframe');
   setDivVisible(event, div, iframe, hotspot, 16, 16);
   initListBoxes(div);
