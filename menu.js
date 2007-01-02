@@ -2750,8 +2750,8 @@ function schedule(e) {
   }
   lastCellClickTime = newCellClickTime;
 //  Packages.java.lang.System.out.println('lastCellClickTime = ' + lastCellClickTime);
-  var calendarImg = "<img src='icons/blank.gif' width='16' height='16' align='left' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' align='right' />";
-  var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' title='Schedule procedure' width='16' height='16' align='left' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' align='right'>";
+  var calendarImg = "<img src='icons/blank.gif' width='16' height='16' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' />";
+  var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' title='Schedule procedure' width='16' height='16' align='left' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' align='right' />";
   if (!currentCell) {
     currentCell = target;
     currentCellBackground = currentCell.style.backgroundColor;
@@ -4621,15 +4621,16 @@ function cancelItemAndWait(event) {
 function addAssignment(event, body, hotspot, content)  {
   setInnerHtml(body, content);
 
-  var errDiv = document.getElementById('errorMessage');
+  var errDiv = document.getElementById('div_err');
   if (errDiv)
     errDiv.innerHTML = '';
   var bdivs = body.getElementsByTagName("div");
   for (var i=0; i<bdivs.length; i++) {
-    if (bdivs[i].id && bdivs[i].id == 'errorMessage') {
+    if (bdivs[i].id && bdivs[i].id == 'div_err') {
       if (bdivs[i].innerHTML) {
-        eDiv.innerHTML = bdivs[i].innerHTML;
-        return;
+        setInnerHtml(errDiv, bdivs[i].innerHTML);
+        alert("hahaha");
+        return stopEventPropagation(event);
       }
     }
   }
@@ -4668,15 +4669,27 @@ function addAssignment(event, body, hotspot, content)  {
   }
   rowspan = parseInt(newTd.rowSpan);
 
-  var row = trCopyTo;
-  var trs = oldTbody.getElementsByTagName('tr');
-
-  var rowIdx = row.rowIndex;// + 1;
-  row = trs[rowIdx];
-  if (row.id == trCopyTo.id)
-    row = trs[++rowIdx];
+  var nodes = oldTbody.childNodes;
+  var rowIdx = 0;
+  var ridx = 0;
+  var rows = [];
+  for (; rowIdx<nodes.length; rowIdx++) {
+    var node = nodes[rowIdx]; 
+    if (!node.tagName || node.tagName.toLowerCase() != 'tr')
+      continue;
+    if (node.id && node.id == trCopyTo.id) {
+      for (++rowIdx; rowIdx<nodes.length; rowIdx++) {
+        var node = nodes[rowIdx]; 
+        if (!node.tagName || node.tagName.toLowerCase() != 'tr')
+          continue;
+        row = node;
+        rows[ridx++] = rowIdx;
+        break;
+      }
+      break;
+    }
+  }
   tds = row.getElementsByTagName("td");
-  rowIdx++;
   // Each row can have different number of tds since some of them due to rowspan > 1 removed
   for (var j=1; j<rowspan; j++, rowIdx++) {
     var nn = tds.length;
@@ -4688,7 +4701,14 @@ function addAssignment(event, body, hotspot, content)  {
       }
     }
 
-    row = trs[rowIdx];
+    for (++rowIdx; rowIdx<nodes.length; rowIdx++) {
+      var node = nodes[rowIdx]; 
+      if (!node.tagName || node.tagName.toLowerCase() != 'tr')
+        continue;
+      row = node;
+      rows[ridx++] = rowIdx;
+      break;
+    }
     tds = row.getElementsByTagName("td");
   }
   oldTd.rowSpan = newTd.rowSpan;
@@ -4710,19 +4730,13 @@ function addAssignment(event, body, hotspot, content)  {
   currentCell.style.backgroundColor = "#D7D8FB";
   oldTd.childNodes[0].whiteSpace = 'normal';
 
-  var row = trCopyTo;
-
-  var rowIdx = row.rowIndex;// + 1;
-  row = trs[rowIdx];
-  if (row.id == trCopyTo.id)
-    rowIdx++;
   tds = trCopyTo.getElementsByTagName("td");
-  for (var j=0; j<rowspan; j++, rowIdx++) {
+  for (var j=0; j<rowspan; j++) {
     for (var i=0; i<tds.length; i++) {
       if (tds[i].className == 'a' || tds[i].className == 'b')
         tds[i].className = 'g';
     }
-    row = trs[rowIdx];
+    row = nodes[rows[j]];
     tds = row.getElementsByTagName("td");
   }
 
