@@ -4304,7 +4304,6 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
 */
   // close menu popup
   Popup.close0(contactDivId);
-  document.body.style.cursor = "wait";
 
   var idx = anchor.indexOf("?");
   var div = document.createElement('div');
@@ -4625,59 +4624,80 @@ function addAssignment(event, body, hotspot, content)  {
   if (errDiv)
     errDiv.innerHTML = '';
   var bdivs = body.getElementsByTagName("div");
-  for (var i=0; i<bdivs.length; i++) {
-    if (bdivs[i].id && bdivs[i].id == 'div_err') {
-      if (bdivs[i].innerHTML) {
+  try {
+    for (var i=0; i<bdivs.length; i++) {
+      if (bdivs[i].id  &&  bdivs[i].id == 'div_err'  &&  bdivs[i].innerHTML) {
         setInnerHtml(errDiv, bdivs[i].innerHTML);
-        alert("hahaha");
-        return stopEventPropagation(event);
+        return;
       }
     }
-  }
-  var tbodies = body.getElementsByTagName("tbody");
-  var curTR;
-  for (var i=0; i<tbodies.length; i++) {
-    var id = tbodies[i].id;
-    if (id  &&  id == 'newAssignment') {
-      curTR = tbodies[i].getElementsByTagName("tr")[0];
-      break;
+    var tbodies = body.getElementsByTagName("tbody");
+    var curTR;
+    for (var i=0; i<tbodies.length; i++) {
+      var id = tbodies[i].id;
+      if (id  &&  id == 'newAssignment') {
+        curTR = tbodies[i].getElementsByTagName("tr")[0];
+        break;
+      }
     }
-  }
-  if (!curTR)
-    return;
-  var trCopyTo = document.getElementById(curTR.id);
-  if (!trCopyTo) {
-    alert("Warning: target TR not found: " + curTR.id);
-    return;
-  }
-  var newTd = curTR.getElementsByTagName("td")[0];
-
-  var tdId = newTd.id;
-  var tdIdx = tdId.lastIndexOf('.');
-  var emplIdx = parseInt(tdId.substring(tdIdx + 1));
-
-  var tds = trCopyTo.getElementsByTagName("td");
-  var oldTbody = trCopyTo.parentNode;
-
-  var n = tds.length;
-//  var oldTd = tds[emplIdx];
-  var oldTd;
-  for (var i=1; i<n  &&  !oldTd; i++) {
-    var tId = tds[i].id;
-    if (tId  &&  (tId.indexOf('.' + emplIdx + ':') != -1 || tId.indexOf('.-' + emplIdx + ':') != -1))
-      oldTd = tds[i];
-  }
-  rowspan = parseInt(newTd.rowSpan);
-
-  var nodes = oldTbody.childNodes;
-  var rowIdx = 0;
-  var ridx = 0;
-  var rows = [];
-  for (; rowIdx<nodes.length; rowIdx++) {
-    var node = nodes[rowIdx]; 
-    if (!node.tagName || node.tagName.toLowerCase() != 'tr')
-      continue;
-    if (node.id && node.id == trCopyTo.id) {
+    if (!curTR)
+      return;
+    var trCopyTo = document.getElementById(curTR.id);
+    if (!trCopyTo) {
+      alert("Warning: target TR not found: " + curTR.id);
+      return;
+    }
+    var newTd = curTR.getElementsByTagName("td")[0];
+  
+    var tdId = newTd.id;
+    var tdIdx = tdId.lastIndexOf('.');
+    var emplIdx = parseInt(tdId.substring(tdIdx + 1));
+  
+    var tds = trCopyTo.getElementsByTagName("td");
+    var oldTbody = trCopyTo.parentNode;
+  
+    var n = tds.length;
+  //  var oldTd = tds[emplIdx];
+    var oldTd;
+    for (var i=1; i<n  &&  !oldTd; i++) {
+      var tId = tds[i].id;
+      if (tId  &&  (tId.indexOf('.' + emplIdx + ':') != -1 || tId.indexOf('.-' + emplIdx + ':') != -1))
+        oldTd = tds[i];
+    }
+    rowspan = parseInt(newTd.rowSpan);
+  
+    var nodes = oldTbody.childNodes;
+    var rowIdx = 0;
+    var ridx = 0;
+    var rows = [];
+    for (; rowIdx<nodes.length; rowIdx++) {
+      var node = nodes[rowIdx]; 
+      if (!node.tagName || node.tagName.toLowerCase() != 'tr')
+        continue;
+      if (node.id && node.id == trCopyTo.id) {
+        for (++rowIdx; rowIdx<nodes.length; rowIdx++) {
+          var node = nodes[rowIdx]; 
+          if (!node.tagName || node.tagName.toLowerCase() != 'tr')
+            continue;
+          row = node;
+          rows[ridx++] = rowIdx;
+          break;
+        }
+        break;
+      }
+    }
+    tds = row.getElementsByTagName("td");
+    // Each row can have different number of tds since some of them due to rowspan > 1 removed
+    for (var j=1; j<rowspan; j++, rowIdx++) {
+      var nn = tds.length;
+      for (var i=1; i<nn; i++) {
+        var tId = tds[i].id;
+        if (tId  &&  (tId.indexOf('.' + emplIdx + ':') != -1 || tId.indexOf('.-' + emplIdx + ':') != -1)) {
+          row.removeChild(tds[i]);
+          break;
+        }
+      }
+  
       for (++rowIdx; rowIdx<nodes.length; rowIdx++) {
         var node = nodes[rowIdx]; 
         if (!node.tagName || node.tagName.toLowerCase() != 'tr')
@@ -4686,85 +4706,61 @@ function addAssignment(event, body, hotspot, content)  {
         rows[ridx++] = rowIdx;
         break;
       }
-      break;
+      tds = row.getElementsByTagName("td");
     }
-  }
-  tds = row.getElementsByTagName("td");
-  // Each row can have different number of tds since some of them due to rowspan > 1 removed
-  for (var j=1; j<rowspan; j++, rowIdx++) {
-    var nn = tds.length;
-    for (var i=1; i<nn; i++) {
-      var tId = tds[i].id;
-      if (tId  &&  (tId.indexOf('.' + emplIdx + ':') != -1 || tId.indexOf('.-' + emplIdx + ':') != -1)) {
-        row.removeChild(tds[i]);
+    oldTd.rowSpan = newTd.rowSpan;
+  
+  
+    oldTd.id = newTd.id;
+    oldTd.innerHTML = newTd.innerHTML;
+    oldTd.childNodes[0].style.whiteSpace = 'normal';
+    if (newTd.className)
+      oldTd.className = newTd.className;
+    else {
+      if (oldTd.className)
+        oldTd.className = '';
+      if (newTd.style)
+        oldTd.setAttribute('style', newTd.style.cssText);
+    }
+    currentCell = oldTd;
+    currentCellBackground = newTd.style.backgroundColor;
+    currentCell.style.backgroundColor = "#D7D8FB";
+    oldTd.childNodes[0].whiteSpace = 'normal';
+  
+    tds = trCopyTo.getElementsByTagName("td");
+    for (var j=0; j<rowspan; j++) {
+      for (var i=0; i<tds.length; i++) {
+        if (tds[i].className == 'a' || tds[i].className == 'b')
+          tds[i].className = 'g';
+      }
+      row = nodes[rows[j]];
+      tds = row.getElementsByTagName("td");
+    }
+  
+  //  currentCell = oldTd;
+  
+    addEvent(oldTd, 'click', newTd.onclick, false);
+  /*
+    var newDivs = body.getElementsByTagNam("div");
+    var divCopyFr;
+    for (var i=0; i<newDivs.length &&  !divCopyFr; i++) {
+      if (newDivs[i].id  &&  newDivs[i].id == 'resourceList_div')
+        divCopyFr = newDivs[i];
+    }
+    if (divCopyFr) {
+      addAndShowWait(event, divCopyFr)
+    }
+    */
+    var divs = body.getElementsByTagName('div');
+    for (var i=0; i<divs.length; i++) {
+      if (divs[i].id  &&  divs[i].id == 'resourceList_div') {
+        addAndShowWait(event, divs[i], hotspot, content, true);
         break;
       }
     }
-
-    for (++rowIdx; rowIdx<nodes.length; rowIdx++) {
-      var node = nodes[rowIdx]; 
-      if (!node.tagName || node.tagName.toLowerCase() != 'tr')
-        continue;
-      row = node;
-      rows[ridx++] = rowIdx;
-      break;
-    }
-    tds = row.getElementsByTagName("td");
+  } finally  {
+    lastPopupRowTD = null;
   }
-  oldTd.rowSpan = newTd.rowSpan;
-
-
-  oldTd.id = newTd.id;
-  oldTd.innerHTML = newTd.innerHTML;
-  oldTd.childNodes[0].style.whiteSpace = 'normal';
-  if (newTd.className)
-    oldTd.className = newTd.className;
-  else {
-    if (oldTd.className)
-      oldTd.className = '';
-    if (newTd.style)
-      oldTd.setAttribute('style', newTd.style.cssText);
-  }
-  currentCell = oldTd;
-  currentCellBackground = newTd.style.backgroundColor;
-  currentCell.style.backgroundColor = "#D7D8FB";
-  oldTd.childNodes[0].whiteSpace = 'normal';
-
-  tds = trCopyTo.getElementsByTagName("td");
-  for (var j=0; j<rowspan; j++) {
-    for (var i=0; i<tds.length; i++) {
-      if (tds[i].className == 'a' || tds[i].className == 'b')
-        tds[i].className = 'g';
-    }
-    row = nodes[rows[j]];
-    tds = row.getElementsByTagName("td");
-  }
-
-//  currentCell = oldTd;
-
-  addEvent(oldTd, 'click', newTd.onclick, false);
-/*
-  var newDivs = body.getElementsByTagNam("div");
-  var divCopyFr;
-  for (var i=0; i<newDivs.length &&  !divCopyFr; i++) {
-    if (newDivs[i].id  &&  newDivs[i].id == 'resourceList_div')
-      divCopyFr = newDivs[i];
-  }
-  if (divCopyFr) {
-    addAndShowWait(event, divCopyFr)
-  }
-  */
-  var divs = body.getElementsByTagName('div');
-  for (var i=0; i<divs.length; i++) {
-    if (divs[i].id  &&  divs[i].id == 'resourceList_div') {
-      addAndShowWait(event, divs[i], hotspot, content, true);
-      break;
-    }
-  }
-  document.body.style.cursor = "default";
-
-  lastPopupRowTD = null;
-  return stopEventPropagation(event);
 }
 
 function addAndShowWait(event, body, hotspot, content, noInsert)	{
@@ -5768,11 +5764,13 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
       callback(clonedEvent, div, hotspot, http_request.responseText);
+      document.body.style.cursor = "default";
     }
     else if (status == 200) {
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
       callback(clonedEvent, div, hotspot, http_request.responseText);
+      document.body.style.cursor = "default";
     }
     else if (status == 302) {
       try {location = http_request.getResponseHeader('Location');} catch(exception) {}
@@ -5835,6 +5833,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       http_request.setRequestHeader("Content-length", parameters.length);
     }
     //http_request.setRequestHeader("Connection", "close");
+    document.body.style.cursor = "wait";
     http_request.send(parameters);
   }
   else {   // opera 8.0 does not support setRequestHeaders() - we will use GET
@@ -5850,6 +5849,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     else
       url1 += extras;
     http_request.open('GET', url1, true);
+    document.body.style.cursor = "wait";
     http_request.send('');
   }
 }
