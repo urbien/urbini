@@ -4158,7 +4158,7 @@ function showLargeImage(e, current, largeImageUrl) {
 function makeDivAutosize(div) {
   var ie = (navigator.userAgent.indexOf('MSIE') != -1);
   var stl = div.style;
-  if(ie && stl.width != "1px") { // IE6
+  if(ie) { // IE6
    stl.width = "1px";
    stl.height = "1px";
   }
@@ -4166,7 +4166,6 @@ function makeDivAutosize(div) {
     stl.width = "auto";
     stl.height = "auto";
   }
-
 }
 
 function getLeft(overlay){
