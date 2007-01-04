@@ -3578,7 +3578,7 @@ function displayInner(e, urlStr) {
   }
   else
     finalUrl += '&';
-  finalUrl += "hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
+  finalUrl += "-inner=y"; //"hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
   stopEventPropagation(e);
 
   var hotspot = target ? target : anchor;
