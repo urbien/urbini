@@ -76,13 +76,30 @@ Popup.ns4  = (document.layers)                                        ? true : f
 Popup.ie4  = (document.all && !this.w3c)                              ? true : false;
 Popup.ie5  = (document.all && this.w3c)                               ? true : false;
 Popup.opera = typeof opera != 'undefined'                             ? true : false;
+if (navigator.userAgent.indexOf("Opera") !=-1 ) {
+  var versionindex = navigator.userAgent.indexOf("Opera") + 6;
+  var ver = navigator.userAgent.substring(versionindex);
+  var v = parseFloat(ver);
+  if (v > 8 && v < 8.5) {
+    Popup.opera8 = true; // opera 8 (before 8.5) has some issues with XmlHttpRequest
+  }
+}
+else
+  Popup.opera8 = false;
+// Mozilla/5.0 (SymbianOS/9.2; U; [en]; Series60/3.1 Nokia3250/1.00 ) Profile/MIDP-2.0 Configuration/CLDC-1.1;   AppleWebKit/413 (KHTML, like Gecko) Safari/413
+if (navigator.userAgent.indexOf("AppleWebKit") !=-1 && navigator.userAgent.indexOf("Series60/3.1") != -1) {
+  Popup.s60Browser = true;
+}
+else
+  Popup.s60Browser = false;
+
 if (document.attachEvent && !Popup.opera) {
   Popup.ie55 = true; // need better test since this one will include 5+ as well
 }
 Popup.ns6  = (Popup.w3c && navigator.appName.indexOf("Netscape")>= 0) ? true : false;
 Popup.maemo= (Popup.w3c && navigator.userAgent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo ? true : false;
-
+Popup.joystickBased = Popup.s60Browser ? true : false;
 /**
  * returns iframe that serves as a canvas for this popup (overlaying the underlying form fields)
  */
@@ -486,7 +503,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var hotspot = self.hotspot;
     //var isMenu  = div.id.indexOf('menudiv_') == 0 ? true false;
 
-    if (!Popup.penBased) {
+    if (!Popup.penBased && !Popup.joystickBased) {
       if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
         addEvent(div,     'mouseenter',  self.popupOnMouseOver, false);
         addEvent(div,     'mouseleave',  self.popupOnMouseOut,  false);
@@ -541,10 +558,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           //anchors[0].disabled = true;
         }
       }
-      if (!Popup.penBased) {
-        addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
-        addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
-      }
+      addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
+      addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
       cur = elem;
     }
   }
@@ -1664,10 +1679,8 @@ function removePopupRowEventHandlers(div) {
   for (var i=0;i<trs.length; i++) {
     var elem = trs[i];
     removeEvent(elem, 'click',     popupRowOnClick,     false);
-    if (!Popup.penBased) {
-      removeEvent(elem, 'mouseover', popupRowOnMouseOver, false);
-      removeEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
-    }
+    removeEvent(elem, 'mouseover', popupRowOnMouseOver, false);
+    removeEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
   }
 }
 
@@ -4647,14 +4660,14 @@ function addAssignment(event, body, hotspot, content)  {
       return;
     }
     var newTd = curTR.getElementsByTagName("td")[0];
-  
+
     var tdId = newTd.id;
     var tdIdx = tdId.lastIndexOf('.');
     var emplIdx = parseInt(tdId.substring(tdIdx + 1));
-  
+
     var tds = trCopyTo.getElementsByTagName("td");
     var oldTbody = trCopyTo.parentNode;
-  
+
     var n = tds.length;
   //  var oldTd = tds[emplIdx];
     var oldTd;
@@ -4664,18 +4677,18 @@ function addAssignment(event, body, hotspot, content)  {
         oldTd = tds[i];
     }
     rowspan = parseInt(newTd.rowSpan);
-  
+
     var nodes = oldTbody.childNodes;
     var rowIdx = 0;
     var ridx = 0;
     var rows = [];
     for (; rowIdx<nodes.length; rowIdx++) {
-      var node = nodes[rowIdx]; 
+      var node = nodes[rowIdx];
       if (!node.tagName || node.tagName.toLowerCase() != 'tr')
         continue;
       if (node.id && node.id == trCopyTo.id) {
         for (++rowIdx; rowIdx<nodes.length; rowIdx++) {
-          var node = nodes[rowIdx]; 
+          var node = nodes[rowIdx];
           if (!node.tagName || node.tagName.toLowerCase() != 'tr')
             continue;
           row = node;
@@ -4696,9 +4709,9 @@ function addAssignment(event, body, hotspot, content)  {
           break;
         }
       }
-  
+
       for (++rowIdx; rowIdx<nodes.length; rowIdx++) {
-        var node = nodes[rowIdx]; 
+        var node = nodes[rowIdx];
         if (!node.tagName || node.tagName.toLowerCase() != 'tr')
           continue;
         row = node;
@@ -4708,8 +4721,8 @@ function addAssignment(event, body, hotspot, content)  {
       tds = row.getElementsByTagName("td");
     }
     oldTd.rowSpan = newTd.rowSpan;
-  
-  
+
+
     oldTd.id = newTd.id;
     oldTd.innerHTML = newTd.innerHTML;
     oldTd.childNodes[0].style.whiteSpace = 'normal';
@@ -4725,7 +4738,7 @@ function addAssignment(event, body, hotspot, content)  {
     currentCellBackground = newTd.style.backgroundColor;
     currentCell.style.backgroundColor = "#D7D8FB";
     oldTd.childNodes[0].whiteSpace = 'normal';
-  
+
     tds = trCopyTo.getElementsByTagName("td");
     for (var j=0; j<rowspan; j++) {
       for (var i=0; i<tds.length; i++) {
@@ -4735,9 +4748,9 @@ function addAssignment(event, body, hotspot, content)  {
       row = nodes[rows[j]];
       tds = row.getElementsByTagName("td");
     }
-  
+
   //  currentCell = oldTd;
-  
+
     addEvent(oldTd, 'click', newTd.onclick, false);
   /*
     var newDivs = body.getElementsByTagNam("div");
@@ -5460,7 +5473,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   var margin = 40;
   //alert(screenX + "," + screenY + ", " + scrollX + "," + scrollY + ", " + left + "," + top + ", " + divCoords.width + "," + divCoords.height);
   // cut popup dimensions to fit the screen
-  var mustCutDimension = div.id == 'pane2' ? false: true;
+  var mustCutDimension = (div.id == 'pane2' || Popup.joystickBased) ? false: true;
   //var mustCutDimension = false;
   if (mustCutDimension) {
     var xFixed = false;
@@ -5683,20 +5696,10 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
   if (!Popup.penBased  &&  !addLineItem)
     loadingCueStart(event, hotspot);
 
-  var opera8;
   if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla, Safari,...
     try {
       http_request = new XMLHttpRequest();
-      var opera8; // opera 8 (before 8.5) had some issues
-      if (navigator.userAgent.indexOf("Opera") !=-1 ) {
-        var versionindex = navigator.userAgent.indexOf("Opera") + 6;
-        var ver = navigator.userAgent.substring(versionindex);
-        if (parseFloat(ver) < 8.5) {
-          opera8 = true;
-        }
-      }
-
-      if (!opera8) { // not Opera 8.0
+      if (!Popup.opera8 && !Popup.s60Browser) { // not Opera 8.0
         if (typeof(http_request.overrideMimeType) != 'undefined' && http_request.overrideMimeType) {
           http_request.overrideMimeType('text/xml');
         }
@@ -5819,7 +5822,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     }
   };
 
-  if (!opera8) {
+  if (!Popup.opera8 && !Popup.s60Browser) { // s60 browser post comes with 0 bytes body on popup (although ok on dialog :-/ )
     http_request.open('POST', url, true);
 
     // browser does not allow Referer to be sent - so we send X-Referer and on server make it transparent to apps
