@@ -3353,6 +3353,13 @@ function getMouseEventCoordinates(e) {
     posx = e.clientX + sc[0];
     posy = e.clientY + sc[1];
   }
+  // in case if event object is "empty".
+  if(e.screenX == 0 && e.screenY == 0) {
+    var target = getEventTarget(e);
+    posx = findPosX(target);
+    posy = findPosY(target);
+  }
+
   // posx and posy contain the mouse position relative to the document
   return {x:posx, y:posy};
 }
