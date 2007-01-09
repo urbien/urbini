@@ -8,6 +8,7 @@
     <include name="requiredHeader.jsp"/>
     <include name="include/commonHeader.jsp"/>
 <menuBar id="menuBar1">
+<getResource/>
 <table width="100%" cellspacing="0" cellpadding="0" border="0" align="center" class="toppad">
   <tr valign="top">
   <td valign="top">
