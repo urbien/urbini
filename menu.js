@@ -3648,7 +3648,16 @@ function showDialog1(event, div, hotspot) {
   initListBoxes(div);
   uiFocus(div);
   interceptLinkClicks(div);
-
+  var childNodes = div.childNodes;
+  for (var i=0; i<childNodes.length; i++) {
+    if (childNodes[i].tagName && childNodes[i].tagName.toLowerCase() == 'div') {
+      if (childNodes[i].id == 'menuBar1') {
+        initMenus('menuBar1');
+        break;
+      }
+    }
+      
+  }
   // execute JS code of innerHTML
   execJS.runDivCode(div);
 }
@@ -5116,13 +5125,13 @@ function showTab(e, td, hideDivId, unhideDivId) {
   var t = td.getElementsByTagName("table");
   if (t.length != 0  &&  t[0].className == "cpTabs")
     t[0].className = "currentCpTabs";
-
-  if (isViewAll) {
+/*
+  if (isViewAll  &&  tokens) {
     var tr = document.getElementById(tokens.length + 'cp');
     if (tr != null)
       tr.className = "currentTabTitle";
   }
-
+*/
   if (unhideDivId  &&  unhideDivId.length != 0) {
     var tokens = unhideDivId.split(',');
     var len = tokens.length;
