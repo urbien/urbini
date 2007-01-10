@@ -1,10 +1,9 @@
 
 
 /**
- * Popup system.
- * Supports menu, dynamicaly generated listboxes, tooltips.
- * Supports row selection (one or many) in menu, listbox.
- * Support stacking up one popup on top of another (e.g.
+ * Popup system. Supports menu, dynamicaly generated listboxes, tooltips.
+ * Supports row selection (one or many) in menu, listbox. Support stacking up
+ * one popup on top of another (e.g.
  */
 
 var keyPressedImgId;
@@ -26,9 +25,10 @@ String.prototype.startsWith = function startsWith(s) {
 
 
 /**
- *  Since Internet Explorer does not define the Node interface constants,
- *  which let you easily identify the type of node, one of the first things to do
- *  in a DOM script for the Web is to make sure you define one yourself, if it's missing.
+ * Since Internet Explorer does not define the Node interface constants, which
+ * let you easily identify the type of node, one of the first things to do in a
+ * DOM script for the Web is to make sure you define one yourself, if it's
+ * missing.
  */
 if (!window['Node']) {
   window.Node = new Object();
@@ -52,15 +52,19 @@ if (window.Node && Node.prototype && !Node.prototype.contains) {
     return !!(this.compareDocumentPosition(arg) & 16);
   };
 }
-Popup.currentDivs          = new Array(); // distinct divs that can be open at the same time (since they have different canvases)
-Popup.popups               = new Array(); // pool of all popups with different divId(s)
-Popup.openTimeoutId        = null; // timeout after which we need to open the delayed popup
+Popup.currentDivs          = new Array(); // distinct divs that can be open at
+                                          // the same time (since they have
+                                          // different canvases)
+Popup.popups               = new Array(); // pool of all popups with different
+                                          // divId(s)
+Popup.openTimeoutId        = null; // timeout after which we need to open the
+                                    // delayed popup
 Popup.delayedPopup         = null; // the delayed popup
 Popup.lastClickTime        = null; // last time user clicked on anything
 Popup.lastOpenTime         = null; // moment when last popup was opened
 Popup.delayedPopupOpenTime = null; // moment when delayed popup was requested
 Popup.tooltipPopup         = null;
-Popup.DarkMenuItem  = '#AABFCD'; //'#95B0C3'; //'#dee6e6';
+Popup.DarkMenuItem  = '#AABFCD'; // '#95B0C3'; //'#dee6e6';
 Popup.LightMenuItem = '';
 Popup.autoCompleteDefaultTimeout = 200;
 Popup.isShiftRequired		= null;
@@ -81,12 +85,15 @@ if (navigator.userAgent.indexOf("Opera") !=-1 ) {
   var ver = navigator.userAgent.substring(versionindex);
   var v = parseFloat(ver);
   if (v > 8 && v < 8.5) {
-    Popup.opera8 = true; // opera 8 (before 8.5) has some issues with XmlHttpRequest
+    Popup.opera8 = true; // opera 8 (before 8.5) has some issues with
+                          // XmlHttpRequest
   }
 }
 else
   Popup.opera8 = false;
-// Mozilla/5.0 (SymbianOS/9.2; U; [en]; Series60/3.1 Nokia3250/1.00 ) Profile/MIDP-2.0 Configuration/CLDC-1.1;   AppleWebKit/413 (KHTML, like Gecko) Safari/413
+// Mozilla/5.0 (SymbianOS/9.2; U; [en]; Series60/3.1 Nokia3250/1.00 )
+// Profile/MIDP-2.0 Configuration/CLDC-1.1; AppleWebKit/413 (KHTML, like Gecko)
+// Safari/413
 if (navigator.userAgent.indexOf("AppleWebKit") !=-1 && navigator.userAgent.indexOf("Series60/3.1") != -1) {
   Popup.s60Browser = true;
 }
@@ -98,10 +105,11 @@ if (document.attachEvent && !Popup.opera) {
 }
 Popup.ns6  = (Popup.w3c && navigator.appName.indexOf("Netscape")>= 0) ? true : false;
 Popup.maemo= (Popup.w3c && navigator.userAgent.indexOf("Maemo") >= 0) ? true : false;
-Popup.penBased = Popup.maemo ? true : false;
+Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
 /**
- * returns iframe that serves as a canvas for this popup (overlaying the underlying form fields)
+ * returns iframe that serves as a canvas for this popup (overlaying the
+ * underlying form fields)
  */
 Popup.getCanvas = function (frameRef) {
   var defaultCanvas = 'popupIframe';
@@ -122,8 +130,10 @@ Popup.allowTooltip = function (target) {
     var popup = Popup.popups[i];
     if (typeof popup == 'undefined')
       continue;
-    if (popup.isOpen() &&         // if popup is already open then we need only tooltips in it (and not the tooltips on areas outside popup)
-        !popup.isTooltip()) {     //    but if open popup is a tooltip - ignore it
+    if (popup.isOpen() &&         // if popup is already open then we need only
+                                  // tooltips in it (and not the tooltips on
+                                  // areas outside popup)
+        !popup.isTooltip()) {     // but if open popup is a tooltip - ignore it
       noOpenPopups = false;
       if (popup.contains(target))
         return true;
@@ -138,8 +148,7 @@ Popup.allowTooltip = function (target) {
 };
 
 /**
- * Static function.
- * returns a Popup by divId if exists, otherwise - null
+ * Static function. returns a Popup by divId if exists, otherwise - null
  */
 Popup.getPopup = function (divId) {
   var popup = Popup.popups[divId];
@@ -153,12 +162,14 @@ Popup.getPopup = function (divId) {
  * Open popup after delay
  */
 Popup.openAfterDelay = function (event, divId, offsetX, offsetY) {
-  //alert('event.clientX: ' + event.clientX + ', offsetX: ' + offsetX + ', divId: ' + divId);
+  // alert('event.clientX: ' + event.clientX + ', offsetX: ' + offsetX + ',
+  // divId: ' + divId);
   if ( (Popup.lastOpenTime   && (Popup.lastOpenTime  > Popup.delayedPopupOpenTime)) ||
        (Popup.lastClickTime  && (Popup.lastClickTime > Popup.delayedPopupOpenTime)) ||
        (keyPressedTime       && (keyPressedTime      > Popup.delayedPopupOpenTime))
       ) {
-    return; // do not open delayed popup if other popup was already opened during the timeout
+    return; // do not open delayed popup if other popup was already opened
+            // during the timeout
   }
   Popup.delayedPopup = null;
   var popup = Popup.getPopup(divId);
@@ -168,9 +179,10 @@ Popup.openAfterDelay = function (event, divId, offsetX, offsetY) {
 };
 
 /**
- * Static function.
- * Opens a menu with a specified DIV and places it on the screen relative to hotspot (IMG, link, etc).
- * Note: uses frameRef to draw this DIV on top of the iframe in order to block underlying form fields (which otherwise would show through).
+ * Static function. Opens a menu with a specified DIV and places it on the
+ * screen relative to hotspot (IMG, link, etc). Note: uses frameRef to draw this
+ * DIV on top of the iframe in order to block underlying form fields (which
+ * otherwise would show through).
  */
 Popup.open = function (event, divId, hotspotRef, frameRef, offsetX, offsetY, delay, contents) {
   var divRef = document.getElementById(divId);
@@ -213,13 +225,14 @@ Popup.close0 = function (divId) {
 };
 
 /**
- *  Loads the ajax popup into the div
+ * Loads the ajax popup into the div
  */
 Popup.load = function (event, div, hotspot, content) {
   var frameId     = 'popupFrame';
   var frameBodyId = 'popupFrameBody';
 
-  //content exists if we used ajax via httpRequest, otherwise we need not extract content from iframe
+  // content exists if we used ajax via httpRequest, otherwise we need not
+  // extract content from iframe
   if (!content) {
     if (!frameLoaded[frameId]) {
       setTimeout(function () {Popup.load(event, div, hotspot)}, 50);
@@ -234,7 +247,9 @@ Popup.load = function (event, div, hotspot, content) {
       alert("Warning: server did not return listbox data - check connection to server");
       return;
     }
-    var redirect = popupFrame.document.getElementById('$redirect'); // redirect to login page
+    var redirect = popupFrame.document.getElementById('$redirect'); // redirect
+                                                                    // to login
+                                                                    // page
     if (redirect) {
       document.location.href = redirect.href;
       return;
@@ -252,12 +267,12 @@ Popup.load = function (event, div, hotspot, content) {
     return;
   }
 
-  ///
+  // /
   var idx = propName.indexOf(".", 1);
   var shortPropName = propName;
   if (idx != -1)
     shortPropName = propName.substring(0, idx);
-  ///
+  // /
 
   var addToTableName = "";
   if (originalProp.indexOf("_class") != -1) {
@@ -294,24 +309,35 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     throw new Error("hotspot parameter must be an object, not a string");
 
   this.div            = divRef;     // div for this popup
-  this.iframe         = Popup.getCanvas(frameRef); // iframe beneath this popup (to cover input elements on the page below popup)
+  this.iframe         = Popup.getCanvas(frameRef); // iframe beneath this popup
+                                                    // (to cover input elements
+                                                    // on the page below popup)
   this.hotspot        = hotspotRef; // hotspot that triggered this popup
   this.contents       = contents;
   this.isTooltipFlag  = contents ? true : false;
 
-  this.resourceUri    = null;       // popup was activated for one of the properties of the Resource in resource list (RL). resourceUri is this resource's URI.
+  this.resourceUri    = null;       // popup was activated for one of the
+                                    // properties of the Resource in resource
+                                    // list (RL). resourceUri is this resource's
+                                    // URI.
 
-  //this.originalProp   = null;       // Resource property for which popup was activated
-  //this.propName       = null;       //   same, but encoded - has extra info such as HTML form name, interface name, etc.
-  //this.formName       = null;       // name of the HTML form which element generated last event in the popup
-  this.closeTimeoutId = null;       // timeout after which we need to close this popup
-  this.offsetX        = null;       // position at which we have opened last time
+  // this.originalProp = null; // Resource property for which popup was
+  // activated
+  // this.propName = null; // same, but encoded - has extra info such as HTML
+  // form name, interface name, etc.
+  // this.formName = null; // name of the HTML form which element generated last
+  // event in the popup
+  this.closeTimeoutId = null;       // timeout after which we need to close this
+                                    // popup
+  this.offsetX        = null;       // position at which we have opened last
+                                    // time
   this.offsetY        = null;       // ...
   this.popupClosed    = true;
   this.items          = new Array(); // items of this popup (i.e. menu rows)
   this.currentRow     = null;       // currently selected row in this popup
   this.delayedCloseIssued = false;
-  this.initialized    = false;      // it is not yet initialized - event handlers not added
+  this.initialized    = false;      // it is not yet initialized - event
+                                    // handlers not added
   var self = this;
 
   // add to the list of popups
@@ -319,7 +345,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
   this.reset = function (hotspotRef, frameRef, contents) {
     this.hotspot        = hotspotRef;
-    this.iframe         = Popup.getCanvas(frameRef); // iframe beneath this popup (to cover input elements on the page below popup)
+    this.iframe         = Popup.getCanvas(frameRef); // iframe beneath this
+                                                      // popup (to cover input
+                                                      // elements on the page
+                                                      // below popup)
     this.contents       = contents;
     this.isTooltipFlag  = contents ? true : false;
   }
@@ -372,7 +401,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         var offsetX1 = currentPopup.offsetX;
         var offsetY1 = currentPopup.offsetY;
         currentPopup.close();
-//      opening the same popup at the same place? - just quit
+// opening the same popup at the same place? - just quit
         if (self.div.id == curDivId &&
             self.hotspotDim.equals(hotspotDim) &&
             (offsetX1 == offsetX && offsetY1 == offsetY) &&
@@ -384,7 +413,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.hotspotDim = hotspotDim;
     self.offsetX = offsetX; // save position at which we have opened last time
     self.offsetY = offsetY;
-    Popup.lastOpenTime = new Date().getTime();  // mark when we opened this popup
+    Popup.lastOpenTime = new Date().getTime();  // mark when we opened this
+                                                // popup
     if (Popup.openTimeoutId) {                  // clear any delayed popup open
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
@@ -392,7 +422,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (self.isTooltip()) {
       self.setInnerHtml(self.contents);
     }
-    //alert('visible');
+    // alert('visible');
     self.setVisible(event, offsetX, offsetY, hotspotDim);
     self.popupClosed = false;
 
@@ -406,7 +436,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       interceptLinkClicks(self.div);
       self.initilized = true;
     }
-    //alert('end popup init');
+    // alert('end popup init');
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
       // fit tooltip height (only on 1st launch)
@@ -444,7 +474,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       self.closeTimeoutId = null;
     }
 
-    if (Popup.openTimeoutId) {                  // clear any prior delayed popup open
+    if (Popup.openTimeoutId) {                  // clear any prior delayed popup
+                                                // open
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
@@ -468,11 +499,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   /**
-   *  close popup uncoditionally and immediately with no regard to mouse position
+   * close popup uncoditionally and immediately with no regard to mouse position
    */
   this.close = function () {
-    //if (self.popupClosed)
-    //  return;
+    // if (self.popupClosed)
+    // return;
     self.popupClosed = true;
     var div      = self.div;
     var divStyle = div.style;
@@ -501,10 +532,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.interceptEvents = function () {
     var div     = self.div;
     var hotspot = self.hotspot;
-    //var isMenu  = div.id.indexOf('menudiv_') == 0 ? true false;
+    // var isMenu = div.id.indexOf('menudiv_') == 0 ? true false;
 
     if (!Popup.penBased && !Popup.joystickBased) {
-      if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
+      if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout
+                        // unreliable
         addEvent(div,     'mouseenter',  self.popupOnMouseOver, false);
         addEvent(div,     'mouseleave',  self.popupOnMouseOut,  false);
         addEvent(hotspot, 'mouseleave',  self.popupOnMouseOut,  false);
@@ -526,11 +558,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var table = tables[1];
     if (!table)
       return;
-    //popup contains rows that can be selected
+    // popup contains rows that can be selected
     if (document.all) { // IE - some keys (like backspace) work only on keydown
       addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
     }
-    else {              // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
+    else {              // Mozilla - only keypress allows to call
+                        // e.preventDefault() to prevent default browser action,
+                        // like scrolling the page
       addEvent(div,  'keypress',  self.popupRowOnKeyPress,  false);
     }
     var elem = firstRow;
@@ -553,9 +587,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             anchor.onclick = '';
           }
           var href = anchor.href;
-          //anchors[0].href = 'javascript:;';
+          // anchors[0].href = 'javascript:;';
           elem.setAttribute('href', href);
-          //anchors[0].disabled = true;
+          // anchors[0].disabled = true;
         }
       }
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
@@ -576,12 +610,15 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if(!a)
       return;
 
-    if (a.href == 'about:blank') { // special dummy A tag just to be able to set focus (if does not exist - no need to focus)
+    if (a.href == 'about:blank') { // special dummy A tag just to be able to
+                                    // set focus (if does not exist - no need to
+                                    // focus)
       if (document.all) { // simple in IE
         if (self.div.focus)
           try { self.div.focus(); } catch(e) {};
       }
-      else {                // hack for Netscape (using an empty anchor element to focus on)
+      else {                // hack for Netscape (using an empty anchor element
+                            // to focus on)
         if (a.focus) {
           try { a.focus(); } catch(e) {};
         }
@@ -604,7 +641,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (!target)
       return;
 
-// Packages.java.lang.System.out.println('mouseOver: target.tagName: ' + target.tagName + ', target.id: ' + target.id + ', div: ' + self.div.id);
+// Packages.java.lang.System.out.println('mouseOver: target.tagName: ' +
+// target.tagName + ', target.id: ' + target.id + ', div: ' + self.div.id);
     // detected re-entering into the popup - thus clear a timeout
     self.delayedCloseIssued = false;
     if (self.closeTimeoutId != null) {
@@ -629,14 +667,17 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var target = getMouseOutTarget(e);
     if (!target)
       return true;
-//Packages.java.lang.System.out.println('mouseout: target.tagName: ' + target.tagName + ', target.id: ' + target.id + ', div: ' + self.div.id);
+// Packages.java.lang.System.out.println('mouseout: target.tagName: ' +
+// target.tagName + ', target.id: ' + target.id + ', div: ' + self.div.id);
     self.delayedClose(600);
     return true;
   }
 
-  //***************************************** row functions ****************************
+  // ***************************************** row functions
+  // ****************************
   /**
-   * This handler allows to use arrow keys to move through the menu and Enter to choose the menu element.
+   * This handler allows to use arrow keys to move through the menu and Enter to
+   * choose the menu element.
    */
   this.popupRowOnKeyPress = function(e) {
     e = getDocumentEvent(e); if (!e) return;
@@ -656,10 +697,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return stopEventPropagation(e);
 
     switch (characterCode) {
-      case 38:  //up arrow
-      case 40:  //down arrow
+      case 38:  // up arrow
+      case 40:  // down arrow
         break;
-      case 9:   //tab
+      case 9:   // tab
         if (currentDiv) {
           var form = document.forms[currentFormName];
           if (form) {
@@ -669,17 +710,17 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           Popup.close0(currentDiv.id);
         }
         return stopEventPropagation(e);
-      case 27:  //esc
+      case 27:  // esc
         if (currentDiv)
           Popup.close0(currentDiv.id);
         return stopEventPropagation(e);
-      case 13:  //enter
+      case 13:  // enter
         self.popupRowOnClick1(e, tr);
         return stopEventPropagation(e);
       default:
-      case 8:   //backspace
+      case 8:   // backspace
         if (currentDiv) {
-          //var form = getFormNode(self.currentRow);
+          // var form = getFormNode(self.currentRow);
           var form = document.forms[currentFormName];
           if (form) {
             var inputField = form.elements[originalProp];
@@ -709,7 +750,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   /**
-   *  Reacts to clicks inside the popup
+   * Reacts to clicks inside the popup
    */
   this.popupRowOnClick = function (e) {
     e = getDocumentEvent(e); if (!e) return;
@@ -718,20 +759,16 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (!tr)
       return stopEventPropagation(e);
 /*
-    // in both IE and Mozilla on menu click (if menu has onClick handler) onclick event comes one more time
-    var isProcessed = tr.getAttribute('eventProcessed');
-    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true)) {
-      tr.setAttribute('eventProcessed', 'false');
-      return stopEventPropagation(e);
-    }
-
-    // in IE on menu click (if menu has onClick handler) this same event comes yet another time
-    if (e.getAttribute) {
-      var isProcessed = e.getAttribute('eventProcessed');
-      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-        return stopEventPropagation(e);
-    }
-*/
+ * // in both IE and Mozilla on menu click (if menu has onClick handler) onclick
+ * event comes one more time var isProcessed =
+ * tr.getAttribute('eventProcessed'); if (isProcessed != null && (isProcessed ==
+ * 'true' || isProcessed == true)) { tr.setAttribute('eventProcessed', 'false');
+ * return stopEventPropagation(e); }
+ *  // in IE on menu click (if menu has onClick handler) this same event comes
+ * yet another time if (e.getAttribute) { var isProcessed =
+ * e.getAttribute('eventProcessed'); if (isProcessed != null && (isProcessed ==
+ * 'true' || isProcessed == true)) return stopEventPropagation(e); }
+ */
 
     var ret = self.popupRowOnClick1(e, tr, target);
     return ret;
@@ -790,7 +827,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (isCalendar)
       return true;
 
-    //var form = getFormNode(tr);
+    // var form = getFormNode(tr);
     var form = document.forms[currentFormName];
     if (form == null) {
       alert("not found html form for TR: " + tr.id);
@@ -830,10 +867,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (formFieldVerified) {
       if (formFieldVerified.value == 'n')
         deleteCurrentDiv = true;
-      formFieldVerified.value = 'y'; // value was modified and is verified since it is not typed but is chosen from the list
+      formFieldVerified.value = 'y'; // value was modified and is verified
+                                      // since it is not typed but is chosen
+                                      // from the list
     }
 
-    // row clicked corresponds to a property with range 'interface', meaning that
+    // row clicked corresponds to a property with range 'interface', meaning
+    // that
     // we need to open a list of classes that implement this interface
     if (originalProp.indexOf('_class') != -1) {
       var img = tr.getElementsByTagName('img')[0];
@@ -842,7 +882,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         document.getElementById(imgId).src   = img.src;
         document.getElementById(imgId).title = img.title;
       }
-      formFieldClass.value = tr.id; // property value corresponding to a listitem
+      formFieldClass.value = tr.id; // property value corresponding to a
+                                    // listitem
       if (currentDiv) {
         loadedPopups[currentDiv.id] = null;
         Popup.close0(currentDiv.id)
@@ -895,7 +936,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         return;
       }
       else {
-        if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate rollup
+        if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate
+                                                                                  // rollup
           chosenTextField.value = '';
           self.hotspot.src = "icons/checkbox.gif";
           return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
@@ -954,7 +996,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 	          chosenTextField[0].style.backgroundColor = '#ffffff';
 	      }
 	      else {
-          if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate rollup
+          if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate
+                                                                                    // rollup
             chosenTextField.value = tr.id;
             var dateImg = tr.getElementsByTagName('img');
             this.hotspot.src = dateImg[0].src;
@@ -984,9 +1027,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       if (!selectItems.length) {
         var t = selectItems.type.toLowerCase();
         if (t == "hidden")
-          selectItems.value = tr.id; // property value corresponding to a listitem
-//        else if (t == "checkbox")
-//          selectItems.value = tr.id; // property value corresponding to a listitem
+          selectItems.value = tr.id; // property value corresponding to a
+                                      // listitem
+// else if (t == "checkbox")
+// selectItems.value = tr.id; // property value corresponding to a listitem
       }
       else {
         selectItems.value = '';
@@ -1024,7 +1068,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
               }
               sValue = s;
             }
-            if (sValue == tr.id) { // check that item was selected by clicking on popup row not explicitely on checkbox
+            if (sValue == tr.id) { // check that item was selected by clicking
+                                    // on popup row not explicitely on checkbox
               if (!checkboxClicked)              // mark row's checkbox
                 selectItems[i].checked = true;
             }
@@ -1083,7 +1128,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var div = document.getElementById(divId);
     if (deleteCurrentDiv && currentDiv)
       loadedPopups[currentDiv.id] = null;
-    // if checkbox was clicked, then do not close popup so that user can check checboxes, if needed
+    // if checkbox was clicked, then do not close popup so that user can check
+    // checboxes, if needed
     if (!checkboxClicked)
       Popup.close0(div.id);
     clearOtherPopups(div);
@@ -1105,7 +1151,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var div = document.getElementById(divId);
     if (deleteCurrentDiv && currentDiv)
       loadedPopups[currentDiv.id] = null;
-    // if checkbox was clicked, then do not close popup so that user can check checboxes, if needed
+    // if checkbox was clicked, then do not close popup so that user can check
+    // checboxes, if needed
     if (!checkboxClicked)
       Popup.close0(div.id);
     clearOtherPopups(div);
@@ -1124,7 +1171,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         return false;
       e.setAttribute('eventProcessed', 'true');
     }
-    //self.setFocus();
+    // self.setFocus();
     var target = getTargetElement(e);
     var tr = getTrNode(target);
 
@@ -1189,7 +1236,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var tds = self.currentRow.getElementsByTagName("td");
       for (var i=0; i<tds.length; i++) {
         var elem = tds[i];
-        //alert(elem.id);
+        // alert(elem.id);
         elem.style.backgroundColor = Popup.DarkMenuItem;
       }
     }
@@ -1199,8 +1246,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var cur = self.currentRow;
     if (self.currentRow == null) {
       self.currentRow = self.firstRow();
-      //if (cur == self.currentRow)
-      //  a = 1;
+      // if (cur == self.currentRow)
+      // a = 1;
       return self.currentRow;
     }
 
@@ -1208,22 +1255,22 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     if (next == null) {
       self.currentRow = self.firstRow();
-      //if (cur == self.currentRow)
-      //  a = 1;
+      // if (cur == self.currentRow)
+      // a = 1;
       return self.currentRow;
     }
 
-    //  The following is needed to work around FireFox and other Netscape-based
-    //  browsers.  They will return a #text node for nextSibling instead of a TR.
-    //  However, the next TR sibling is the one we're after.
+    // The following is needed to work around FireFox and other Netscape-based
+    // browsers. They will return a #text node for nextSibling instead of a TR.
+    // However, the next TR sibling is the one we're after.
     var exitIfBusted = 0;
     var nextTr = next;
     while (nextTr.nodeName && nextTr.nodeName.toUpperCase() != 'TR') {
       nextTr = nextTr.nextSibling;
       if (nextTr == null) {
         self.currentRow = self.firstRow();
-        //if (cur == nextTr)
-        //  a = 1;
+        // if (cur == nextTr)
+        // a = 1;
         return self.currentRow;
       }
       exitIfBusted++;
@@ -1235,15 +1282,15 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     next = nextTr;
     if (next.id.indexOf('divider') == -1 && next.id.indexOf("_$calendar") == -1) {
       self.currentRow = next;
-      //if (cur == next)
-      //  a = 1;
+      // if (cur == next)
+      // a = 1;
       return next;
     }
     else {
       self.currentRow = next;
       next = self.nextRow();
-      //if (cur == next)
-      //  a = 1;
+      // if (cur == next)
+      // a = 1;
       return next;
     }
   }
@@ -1259,16 +1306,16 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var prev = self.currentRow.previousSibling;
 
     if (prev == null || self.isHeaderRow(prev)) {
-      //self.deselectRow();
+      // self.deselectRow();
       self.currentRow = self.lastRow();
-      //self.selectRow();
+      // self.selectRow();
       return self.currentRow;
     }
 
     if (prev.tagName && prev.tagName.toUpperCase() == 'TR' && prev.id.indexOf('divider') == -1 && prev.id.indexOf("_$calendar") == -1) {
-      //self.deselectRow();
+      // self.deselectRow();
       self.currentRow = prev;
-      //self.selectRow();
+      // self.selectRow();
       return prev;
     }
     else {
@@ -1332,7 +1379,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   /**
-   * Returns popup item by its name. Usually popup item corresponds to a row in popup.
+   * Returns popup item by its name. Usually popup item corresponds to a row in
+   * popup.
    */
   this.getPopupItem = function(itemName) {
     return self.items[itemName];
@@ -1345,15 +1393,23 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
  */
 function PopupItem(element, seq) {
   this.id        = element.id; // item id
-  this.seq       = seq;        // sequence number of this item from the top of popup
+  this.seq       = seq;        // sequence number of this item from the top of
+                                // popup
 
   this.checked   = false;      // item may be checked (true) or not (false)
-  this.selected  = false;      // item may be currently selected (highlighted) or not
-  this.onChosen  = null;       // event handler that receives control when user clicked on this popup element or pressed Enter
-  this.onOver    = null;       // event handler that receives control when this popup element is selected (highlighted)
-  this.onOut     = null;       // event handler that receives control when this popup element is unselected (becomes passive)
-  this.onCheck   = null;       // event handler that receives control when item is checked
-  this.onUncheck = null;       // event handler that receives control when item is unchecked
+  this.selected  = false;      // item may be currently selected (highlighted)
+                                // or not
+  this.onChosen  = null;       // event handler that receives control when user
+                                // clicked on this popup element or pressed
+                                // Enter
+  this.onOver    = null;       // event handler that receives control when this
+                                // popup element is selected (highlighted)
+  this.onOut     = null;       // event handler that receives control when this
+                                // popup element is unselected (becomes passive)
+  this.onCheck   = null;       // event handler that receives control when item
+                                // is checked
+  this.onUncheck = null;       // event handler that receives control when item
+                                // is unchecked
 }
 
 var originalProp = null;
@@ -1382,7 +1438,7 @@ function reposition(div, x, y) {
     intLessLeft += elm.offsetLeft;
     elm = elm.offsetParent;
   }
-  //alert(intLessLeft + "," + intLessTop + ", " + x + ", " + y);
+  // alert(intLessLeft + "," + intLessTop + ", " + x + ", " + y);
   div.style.left = x - intLessLeft + 'px';
   div.style.top  = y - intLessTop  + 'px';
 }
@@ -1424,7 +1480,7 @@ function docjslib_getRealTop(img) {
 }
 
 /**
- *  Opens the popup when icon is clicked
+ * Opens the popup when icon is clicked
  */
 function listboxOnClick(e) {
   target = getTargetElement(e);
@@ -1437,15 +1493,18 @@ function listboxOnClick(e) {
 }
 
 /**
- *  Opens the popup when needed, e.g. on click, on enter, on autocomplete
+ * Opens the popup when needed, e.g. on click, on enter, on autocomplete
  */
 function listboxOnClick1(e, imgId, enteredText, enterFlag) {
-  if (Popup.openTimeoutId) {                  // clear any prior delayed popup open
+  if (Popup.openTimeoutId) {                  // clear any prior delayed popup
+                                              // open
     clearTimeout(Popup.openTimeoutId);
     Popup.openTimeoutId = null;
   }
 
-  var propName1 = imgId.substring(0, imgId.length - "_filter".length);   // cut off "_filter"
+  var propName1 = imgId.substring(0, imgId.length - "_filter".length);   // cut
+                                                                          // off
+                                                                          // "_filter"
   var idx = propName1.lastIndexOf('_');
   if (idx == -1)
     return;
@@ -1458,15 +1517,17 @@ function listboxOnClick1(e, imgId, enteredText, enterFlag) {
   var isGroupBy;
   if (originalProp.length > 8  &&  originalProp.indexOf("_groupBy") == originalProp.length - 8)
     isGroupBy = true;
-  /* 'viewColsList' for does not have input fields where to set focus.
-   *  form.elements[originalProp] returns list of viewCols properties to choose from to display in RL
+  /*
+   * 'viewColsList' for does not have input fields where to set focus.
+   * form.elements[originalProp] returns list of viewCols properties to choose
+   * from to display in RL
    */
   if (!isGroupBy  &&  form  &&  currentFormName != "viewColsList"  && originalProp.indexOf("_class") == -1) {
     var chosenTextField = form.elements[originalProp];
     if (chosenTextField && chosenTextField.focus) {
       chosenTextField.focus();
-      //insertAtCursor(chosenTextField, '');
-      //setCaretToEnd(chosenTextField);
+      // insertAtCursor(chosenTextField, '');
+      // setCaretToEnd(chosenTextField);
     }
   }
   var idx = -1;
@@ -1513,12 +1574,13 @@ function listboxOnClick1(e, imgId, enteredText, enterFlag) {
       }
     }
   }
-  //currentDiv = document.getElementById(divId);
+  // currentDiv = document.getElementById(divId);
 
   var div = loadedPopups[divId];
   var hotspot = document.getElementById(imgId);
 
-  // Use existing DIV from cache (unless text was Enter-ed - in which case always redraw DIV)
+  // Use existing DIV from cache (unless text was Enter-ed - in which case
+  // always redraw DIV)
   if (!enteredText && div != null) {
     hideResetRow(div, currentFormName, originalProp);
     Popup.open(e, divId, hotspot, null, 0, 16);
@@ -1550,7 +1612,7 @@ function listboxOnClick1(e, imgId, enteredText, enterFlag) {
     params += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.elements['type'].value;
   }
   else {
-//    if (formAction != "showPropertiesForEdit" && formAction != "mkResource") {
+// if (formAction != "showPropertiesForEdit" && formAction != "mkResource") {
       /* Add full text search criteria to filter */
       if (form.id && form.id == 'filter') {
         var fullTextSearchForm = document.forms['searchForm'];
@@ -1575,25 +1637,17 @@ function listboxOnClick1(e, imgId, enteredText, enterFlag) {
         if (enterFlag)
           allFields = false;
       }
-//      else if (currentFormName.indexOf("horizontalFilter") == 0)
-//        allFields = true;
+// else if (currentFormName.indexOf("horizontalFilter") == 0)
+// allFields = true;
       params += getFormFilters(form, allFields);
     /*
-    }
-    else {
-      url = url + "&type=" + form.elements['type'].value + "&-$action=" + formAction;
-      var s = getFormFiltersForInterface(form, propName);
-      if (s)
-        url = url + s;
-      var uri = form.elements['uri'];
-      if (uri) {
-        if (formAction == "showPropertiesForEdit")
-          url = url + "&uri=" + encodeURIComponent(uri.value);
-        else
-          url = url + "&$rootFolder=" + encodeURIComponent(uri.value);
-      }
-    }
-    */
+     * } else { url = url + "&type=" + form.elements['type'].value +
+     * "&-$action=" + formAction; var s = getFormFiltersForInterface(form,
+     * propName); if (s) url = url + s; var uri = form.elements['uri']; if (uri) {
+     * if (formAction == "showPropertiesForEdit") url = url + "&uri=" +
+     * encodeURIComponent(uri.value); else url = url + "&$rootFolder=" +
+     * encodeURIComponent(uri.value); } }
+     */
   }
   params += "&$form=" + currentFormName;
   params += "&" + propName + "_filter=y";
@@ -1740,7 +1794,7 @@ function popupOnSubmit(e) {
       }
     }
   }
-//  var action = form.attributes['action'];
+// var action = form.attributes['action'];
   var action = form.action;
   // form url based on parameters that were set
   var url;
@@ -1757,48 +1811,33 @@ function popupOnSubmit(e) {
   else if (currentFormName && currentFormName.indexOf("horizontalFilter") == 0)
     allFields = true;
 
-  var params = "submit=y"; // HACK: since target.type return the value of &type instead of an input field's type property
+  var params = "submit=y"; // HACK: since target.type return the value of &type
+                            // instead of an input field's type property
   var p1 = getFormFilters(form, allFields);
   if (p1)
     params += p1;
   var submitButtonName  = null;
   var submitButtonValue;
 /*
-  var t = target.attributes['type'];
-  if (t.toUpperCase() == 'SUBMIT') {
-    if (target.attributes['name'] == "Clear")
-      url += "&clear=Clear";
-    else if (currentFormName == "horizontalFilter")
-      url += "&submit=y";
-    else if (currentFormName == "rightPanelPropertySheet")
-      url += "&submitFilter=y";
-  }
-  else
-    url += "&submit=y";
-*/
+ * var t = target.attributes['type']; if (t.toUpperCase() == 'SUBMIT') { if
+ * (target.attributes['name'] == "Clear") url += "&clear=Clear"; else if
+ * (currentFormName == "horizontalFilter") url += "&submit=y"; else if
+ * (currentFormName == "rightPanelPropertySheet") url += "&submitFilter=y"; }
+ * else url += "&submit=y";
+ */
 
 /*
-  // figure out the name and the value of the Submit button
-  for (i=0; i<form.elements.length; i++) {
-    var elem = form.elements[i];
-    if (elem.type.toUpperCase() == 'SUBMIT') {
-      submitButtonName  = elem.name;
-      submitButtonValue = elem.value;
-    }
-  }
-
-  if (!submitButtonName)
-    return true;
-  var hasQ = url.indexOf('?') != -1;
-  if (!hasQ)
-    url += '?' + submit;
-  else
-    url += '&' + submit;
-*/
+ * // figure out the name and the value of the Submit button for (i=0; i<form.elements.length;
+ * i++) { var elem = form.elements[i]; if (elem.type.toUpperCase() == 'SUBMIT') {
+ * submitButtonName = elem.name; submitButtonValue = elem.value; } }
+ * 
+ * if (!submitButtonName) return true; var hasQ = url.indexOf('?') != -1; if
+ * (!hasQ) url += '?' + submit; else url += '&' + submit;
+ */
 
   params += '&$form=' + form.name;
 
-  //url += '&$selectOnly=y';
+  // url += '&$selectOnly=y';
 
   if (allFields == false)
     params += "&type=" + form.type.value + "&-$action=" + formAction;
@@ -1809,39 +1848,41 @@ function popupOnSubmit(e) {
     params += "&cancel=y";
 
   /* do not allow to submit form while current submit is still being processed */
-  if (form.name.indexOf("tablePropertyList") != -1) { // is it a data entry form?
+  if (form.name.indexOf("tablePropertyList") != -1) { // is it a data entry
+                                                      // form?
     var wasSubmitted = form.getAttribute("wasSubmitted");
     if (wasSubmitted) {
       alert("Can not submit the same form twice");
       return stopEventPropagation(e);
     }
     form.setAttribute("wasSubmitted", "true");
-    //form.submit.disabled = true; // weird, but the form would not get submitted if disabled
+    // form.submit.disabled = true; // weird, but the form would not get
+    // submitted if disabled
 
-    // this solution for duplicate-submit does not work in firefox 1.0 & mozilla 1.8b - fakeOnSubmit get control even on first form submit
-    // it has another drawback - page must be reloaded fro the form to be submitted second time - while previous solution works with back/forward
+    // this solution for duplicate-submit does not work in firefox 1.0 & mozilla
+    // 1.8b - fakeOnSubmit get control even on first form submit
+    // it has another drawback - page must be reloaded fro the form to be
+    // submitted second time - while previous solution works with back/forward
     /*
-    if (form.onsubmit == fakeOnSubmit) {
-      alert("Already submitted - please wait");
-      return false;
-    }
-    form.onsubmit = fakeOnSubmit;
-    */
+     * if (form.onsubmit == fakeOnSubmit) { alert("Already submitted - please
+     * wait"); return false; } form.onsubmit = fakeOnSubmit;
+     */
   }
   for (j=0; j<form.elements.length; j++) {
     var elem = form.elements[j];
     var atts = elem.getAttribute('onSubmit');
     if (atts) {
-      var s = atts.replace(/\(this\)/, ''); // e.g. replace setTime(this) into setTime
+      var s = atts.replace(/\(this\)/, ''); // e.g. replace setTime(this) into
+                                            // setTime
       elem.onSubmit = eval(s);
       elem.onSubmit();
     }
   }
 
 // submit as GET with all parameters collected manually
-//  form.method   = 'GET';
-//  document.location.href = url;
-//  return stopEventPropagation(event);
+// form.method = 'GET';
+// document.location.href = url;
+// return stopEventPropagation(event);
   form.method = 'POST';
   if (!action)
     form.action = "FormRedirect";
@@ -1851,27 +1892,29 @@ function popupOnSubmit(e) {
   }
 
   // if current form is inner dialog - submit as AJAX request
-  // upon AJAX response we will be able to choose between repainting the dialog or the whole page
+  // upon AJAX response we will be able to choose between repainting the dialog
+  // or the whole page
   if (pane2  &&  pane2.contains(form))  {   // inner dialog?
     postRequest(e, url, params, pane2, getTargetElement(e), showDialog);
     return stopEventPropagation(e);
   }
   else
-    return true; // tell browser to go ahead and continue processing this submit request
+    return true; // tell browser to go ahead and continue processing this
+                  // submit request
 }
 
 function setTime() {
   this.value = new Date().getTime();
 }
 
-//*************************************** AUTOCOMPLETE *********************************************
+// *************************************** AUTOCOMPLETE
+// *********************************************
 /**
- * Show popup for the text entered in input field (by capturing keyPress events).
- * Show popup only when the person stopped typing (timeout).
- * Special processing for Enter:
- *   - in Filter mode     - let it submit the form.
- *   - in Data Entry mode - on Enter show popup immediately,
- *                          and close popup if hit Enter twice.
+ * Show popup for the text entered in input field (by capturing keyPress
+ * events). Show popup only when the person stopped typing (timeout). Special
+ * processing for Enter: - in Filter mode - let it submit the form. - in Data
+ * Entry mode - on Enter show popup immediately, and close popup if hit Enter
+ * twice.
  */
 function autoComplete(e) {
   e = getDocumentEvent(e); if (!e) return;
@@ -1898,8 +1941,9 @@ function autoComplete1(e, target) {
   var selectItems   = form.elements[propName1 + '_select'];
   var fieldClass    = form.elements[propName1 + '_class'];
   if (characterCode == 13) { // enter
-    if (!fieldVerified) { // show popup on Enter only in data entry mode (indicated by the presence of _verified field)
-      //if (autoCompleteTimeoutId) clearTimeout(autoCompleteTimeoutId);
+    if (!fieldVerified) { // show popup on Enter only in data entry mode
+                          // (indicated by the presence of _verified field)
+      // if (autoCompleteTimeoutId) clearTimeout(autoCompleteTimeoutId);
       return true;
     }
   }
@@ -1911,21 +1955,18 @@ function autoComplete1(e, target) {
 
   keyPressedImgId     = divId + "_filter";
   var hotspot = document.getElementById(keyPressedImgId);
-  if (!hotspot) // no image - this is not a listbox and thus needs no autocomplete
+  if (!hotspot) // no image - this is not a listbox and thus needs no
+                // autocomplete
     return true;
   keyPressedElement   = target;
   var currentPopup = Popup.getPopup(divId);
 /*
-  !!!!!!!!!!!!! this below did not work to clear the previous popup
-  if (currentDiv) {
-    var p = Popup.getPopup(currentDiv);
-    if (p)
-      p.close();
-  }
-*/
+ * !!!!!!!!!!!!! this below did not work to clear the previous popup if
+ * (currentDiv) { var p = Popup.getPopup(currentDiv); if (p) p.close(); }
+ */
 
   switch (characterCode) {
-   case 38:  //up arrow
+   case 38:  // up arrow
      if (currentPopup && currentPopup.isOpen()) {
        currentPopup.deselectRow();
        currentPopup.prevRow();
@@ -1933,10 +1974,10 @@ function autoComplete1(e, target) {
      }
      else {
        listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
-       //Popup.open(e, divId, hotspot, null, 0, 16);
+       // Popup.open(e, divId, hotspot, null, 0, 16);
      }
      return stopEventPropagation(e);
-   case 40:  //down arrow
+   case 40:  // down arrow
      if (currentPopup && currentPopup.isOpen()) {
        currentPopup.deselectRow();
        currentPopup.nextRow();
@@ -1944,50 +1985,54 @@ function autoComplete1(e, target) {
      }
      else {
        listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
-       //Popup.open(e, divId, hotspot, null, 0, 16);
+       // Popup.open(e, divId, hotspot, null, 0, 16);
      }
      return stopEventPropagation(e);
-   case 37:  //left arrow
-   case 39:  //right arrow
-   case 33:  //page up
-   case 34:  //page down
-   case 36:  //home
-   case 35:  //end
+   case 37:  // left arrow
+   case 39:  // right arrow
+   case 33:  // page up
+   case 34:  // page down
+   case 36:  // home
+   case 35:  // end
      return true;
-   case 27:  //esc
+   case 27:  // esc
      if (currentPopup && currentPopup.isOpen()) {
        currentPopup.close();
      }
      return stopEventPropagation(e);
-   case 16:  //shift
-   case 17:  //ctrl
-   case 18:  //alt  s
-   case 20:  //caps lock
+   case 16:  // shift
+   case 17:  // ctrl
+   case 18:  // alt s
+   case 20:  // caps lock
      return true;
-   case 127: //ctrl-enter
-   case 13:  //enter
+   case 127: // ctrl-enter
+   case 13:  // enter
      if (currentPopup && currentPopup.isOpen()) {
-       //listboxOnClick1(keyPressedImgId, keyPressedElement.value);
+       // listboxOnClick1(keyPressedImgId, keyPressedElement.value);
        currentPopup.popupRowOnClick1(e);
-       return stopEventPropagation(e); // tell browser not to do submit on 'enter'
+       return stopEventPropagation(e); // tell browser not to do submit on
+                                        // 'enter'
      }
-   case 9:   //tab
+   case 9:   // tab
      if (currentDiv)
        currentPopup.close();
      return true;
-   case 8:   //backspace
-   case 46:  //delete
+   case 8:   // backspace
+   case 46:  // delete
      break;
   }
   if (currentPopup)
     currentPopup.close();
 
-  // for numeric value - do not perform autocomplete (except arrow down, ESC, etc.)
+  // for numeric value - do not perform autocomplete (except arrow down, ESC,
+  // etc.)
   var ac = target.getAttribute('autocomplete');
   if (ac && ac == 'off')
     return true;
   keyPressedElement.style.backgroundColor='#ffffff';
-  if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not verified yet (i.e. not chose from the list)
+  if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not
+                                                // verified yet (i.e. not chose
+                                                // from the list)
   if (selectItems) {
     var len = selectItems.length;
     if (len) {
@@ -1999,7 +2044,8 @@ function autoComplete1(e, target) {
       }
     }
     else
-      selectItems.value   = '';  // value was modified and is not verified yet (i.e. not chose from the list)
+      selectItems.value   = '';  // value was modified and is not verified yet
+                                  // (i.e. not chose from the list)
   }
   e = cloneEvent(e);
   var f = function() { autoCompleteTimeout(e, keyPressedTime); };
@@ -2023,7 +2069,8 @@ function autoCompleteOnFocus(e) {
     return true;
   }
 
-  // prevent issuing select() if we got onfocus because browser window was minimized and then restored
+  // prevent issuing select() if we got onfocus because browser window was
+  // minimized and then restored
   if (target.value != target.lastText)
     target.select();
   return true;
@@ -2052,7 +2099,8 @@ function autoCompleteOnMouseout(e) {
 }
 
 /**
- * This onKeyDown handler is needed since some browsers do not capture certain special keys on keyPress.
+ * This onKeyDown handler is needed since some browsers do not capture certain
+ * special keys on keyPress.
  */
 function autoCompleteOnKeyDown(e) {
   e = getDocumentEvent(e); if(!e) return;
@@ -2071,7 +2119,8 @@ function autoCompleteTimeout(e, invocationTime) {
     return true;
   }
 
-  if (keyPressedElement.value.length == 0) // avoid showing popup for empty fields
+  if (keyPressedElement.value.length == 0) // avoid showing popup for empty
+                                            // fields
     return;
   listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
 }
@@ -2105,31 +2154,34 @@ function textAreaOnBlur(e) {
   }
 }
 
-/************************************************* Helper functions ***************************************/
+/**
+ * *********************************************** Helper functions
+ * **************************************
+ */
 function getKeyCode(e) {
   if( typeof( e.keyCode ) == 'number'  ) {
-      //IE, NS 6+, Mozilla 0.9+
+      // IE, NS 6+, Mozilla 0.9+
       return e.keyCode;
   } else if( typeof( e.charCode ) == 'number'  ) {
-      //also NS 6+, Mozilla 0.9+
+      // also NS 6+, Mozilla 0.9+
       return e.charCode;
   } else if( typeof( e.which ) == 'number' ) {
-      //NS 4, NS 6+, Mozilla 0.9+, Opera
+      // NS 4, NS 6+, Mozilla 0.9+, Opera
       return e.which;
   } else {
-      //TOTAL FAILURE, WE HAVE NO WAY OF OBTAINING THE KEY CODE
+      // TOTAL FAILURE, WE HAVE NO WAY OF OBTAINING THE KEY CODE
       throw new Error("can't detect the key pressed");
   }
 }
 
 function clearOtherPopups(div) {
-//alert("div=" + div.id + ", loadedPopups.length=" + openedPopups.length)
+// alert("div=" + div.id + ", loadedPopups.length=" + openedPopups.length)
   var i;
   for (var i=0; i < loadedPopups.length; i++) {
     var p = loadedPopups[i];
     if (p == null)
       continue;
-//alert("openedPopup=" + p.id)
+// alert("openedPopup=" + p.id)
     if (p != div) {
       loadedPopups[i] = null;
     }
@@ -2137,18 +2189,10 @@ function clearOtherPopups(div) {
 }
 
 /*
-function getFormNode(elem) {
-  var f = elem.parentNode;
-  if (!f)
-    return null;
-  if (!f.tagName)
-    return null;
-  if (f.tagName.toUpperCase() == "FORM")
-    return f;
-  else
-    return getFormNode(f);
-}
-*/
+ * function getFormNode(elem) { var f = elem.parentNode; if (!f) return null; if
+ * (!f.tagName) return null; if (f.tagName.toUpperCase() == "FORM") return f;
+ * else return getFormNode(f); }
+ */
 
 function getTrNode(elem) {
   var e;
@@ -2164,7 +2208,8 @@ function getTrNode(elem) {
   e = elem_.parentNode;
   if (e) {
     if (e == elem_)
-      e = elem.parentNode; // if parent of the array element is self - get parent of array
+      e = elem.parentNode; // if parent of the array element is self - get
+                            // parent of array
     return getTrNode(e);
   }
   else
@@ -2184,7 +2229,8 @@ function getDivNode(elem) {
   e = elem_.parentNode;
   if (e) {
     if (e == elem)
-      e = elem.parentNode; // if parent of the array element is self - get parent of array itself
+      e = elem.parentNode; // if parent of the array element is self - get
+                            // parent of array itself
     return getDivNode(e);
   }
   else
@@ -2203,8 +2249,9 @@ function getDocumentNode(obj) {
 
 /**
  * Helper function - gathers the parameters (from form elements) to build a URL
- * If allFields is true - we are in a Filter panel - need to take into account all input fields
- * Otherwise - it is a Data Entry mode, i.e. - take only fields that were modified by the user
+ * If allFields is true - we are in a Filter panel - need to take into account
+ * all input fields Otherwise - it is a Data Entry mode, i.e. - take only fields
+ * that were modified by the user
  */
 function getFormFilters(form, allFields, exclude) {
   var p = "";
@@ -2229,7 +2276,7 @@ function getFormFilters(form, allFields, exclude) {
     else {
       if (!value)
         continue;
-//      if (currentFormName != "horizontalFilter") {
+// if (currentFormName != "horizontalFilter") {
       if (value == ''  ||  value == "All")
         continue;
       if (type.toLowerCase() == "checkbox" ) {
@@ -2239,7 +2286,7 @@ function getFormFilters(form, allFields, exclude) {
         if (value.indexOf(" --", value.length - 3) != -1)
            continue;
       }
-//    }
+// }
     if (name == "type")
       p += "&" + name + "=" + value;
     else
@@ -2363,7 +2410,7 @@ function chooser1(element) {
       originalForm.elements[propName].value                        = "<...>";
     else
       originalForm.elements[propName].value                        = value;
-//    originalForm.elements[shortPropName + "_select"][len].value  = id;
+// originalForm.elements[shortPropName + "_select"][len].value = id;
     originalForm.elements[shortPropName + "_verified"].value     = "y";
     if (originalForm.elements[propName].style)
       originalForm.elements[propName].style.backgroundColor = '#ffffff';
@@ -2420,7 +2467,7 @@ function hideResetRow(div, currentFormName, originalProp) {
   }
 }
 
-/*********************************** Menu ***********************************/
+/** ********************************* Menu ********************************** */
 function initMenus(menuBarId) {
   var element = document.getElementById(menuBarId);
   if (!element)
@@ -2435,40 +2482,28 @@ function initMenus(menuBarId) {
       replaceTooltip(element, m);
     }
 /*
-    if (m.className  &&  m.className.indexOf('fade', m.className.length - 4) != -1) {
-      if (m.attachEvent) { // hack for IE use 'traditional' event handling model - to avoid event bubbling and make IE set 'this' to the element that fired the event
-        //m.onmouseover = unfadeOnMouseOver;
-        //m.onmouseout  = fadeOnMouseOut;
-      }
-      else {
-        //addEvent(m, 'mouseover', unfadeOnMouseOver, false);
-        //addEvent(m, 'mouseout',  fadeOnMouseOut,    false);
-      }
-    }
-*/
+ * if (m.className && m.className.indexOf('fade', m.className.length - 4) != -1) {
+ * if (m.attachEvent) { // hack for IE use 'traditional' event handling model -
+ * to avoid event bubbling and make IE set 'this' to the element that fired the
+ * event //m.onmouseover = unfadeOnMouseOver; //m.onmouseout = fadeOnMouseOut; }
+ * else { //addEvent(m, 'mouseover', unfadeOnMouseOver, false); //addEvent(m,
+ * 'mouseout', fadeOnMouseOut, false); } }
+ */
   }
 /*
-  // fading of td elements with id ending with 'fade'
-  menuLinks = document.getElementsByTagName('td');
-  l = menuLinks.length;
-  for (var i=0; i<l; i++) {
-    var m = menuLinks[i];
-    if (m.id  &&  m.id.indexOf('fade', m.id.length - 4) != -1) {
-      if (m.attachEvent) { // hack for IE use 'traditional' event handling model - to avoid event bubbling and make IE set 'this' to the element that fired the event
-        //m.onmouseover = fadeOnMouseOver;
-        //m.onmouseout  = unfadeOnMouseOut;
-      }
-      else {
-        //addEvent(m, 'mouseover', fadeOnMouseOver, false);
-        //addEvent(m, 'mouseout',  unfadeOnMouseOut,    false);
-      }
-    }
-  }
-*/
+ * // fading of td elements with id ending with 'fade' menuLinks =
+ * document.getElementsByTagName('td'); l = menuLinks.length; for (var i=0; i<l;
+ * i++) { var m = menuLinks[i]; if (m.id && m.id.indexOf('fade', m.id.length -
+ * 4) != -1) { if (m.attachEvent) { // hack for IE use 'traditional' event
+ * handling model - to avoid event bubbling and make IE set 'this' to the
+ * element that fired the event //m.onmouseover = fadeOnMouseOver;
+ * //m.onmouseout = unfadeOnMouseOut; } else { //addEvent(m, 'mouseover',
+ * fadeOnMouseOver, false); //addEvent(m, 'mouseout', unfadeOnMouseOut, false); } } }
+ */
 }
 
 /**
- *  Opens the menu when needed, e.g. on click, on enter
+ * Opens the menu when needed, e.g. on click, on enter
  */
 function menuOnClick(e) {
   var target = getTargetElement(e);
@@ -2489,7 +2524,8 @@ function menuOnClick(e) {
   else
     title = id.substring('menuicon_'.length);
   var divId = 'menudiv_' + title;
-  var divRef = document.getElementById(divId); // this is a menu item without popup, exit
+  var divRef = document.getElementById(divId); // this is a menu item without
+                                                // popup, exit
   if (!divRef)
     return true;
   var popup = Popup.open(e, divId, target, null, 0, 19);
@@ -2497,7 +2533,10 @@ function menuOnClick(e) {
 }
 
 
-/*********************************** Tooltips ************************************/
+/**
+ * ********************************* Tooltips
+ * ***********************************
+ */
 function replaceTooltips(div, elements) {
   if (Popup.penBased) // pen-based devices have problem with tooltips
     return;
@@ -2517,11 +2556,15 @@ function replaceTooltip(div, elem) {
     return;
   if (div) {
     if (div.style != null)
-      elem.style.zIndex = div.style.zIndex; // inherit zIndex - otherwise hotspot has no zIndex which we need to inherit further in setDivVisible
+      elem.style.zIndex = div.style.zIndex; // inherit zIndex - otherwise
+                                            // hotspot has no zIndex which we
+                                            // need to inherit further in
+                                            // setDivVisible
   }
   if (!Popup.penBased) {
     if (elem.getAttribute('title')) {
-      if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
+      if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout
+                        // unreliable
         addEvent(elem, 'mouseenter',  tooltipOnMouseOver,   false);
         addEvent(elem, 'mouseleave',  tooltipOnMouseOut,    false);
       }
@@ -2533,27 +2576,25 @@ function replaceTooltip(div, elem) {
   }
 }
 /*
-function replaceAllTooltips() {
-  var llen;
-  var elements;
-  elements = document.getElementsByTagName('img');
-  replaceTooltips0(null, elements);
-  elements = document.getElementsByTagName('span');
-  replaceTooltips0(null, elements);
-  elements = document.getElementsByTagName('a');
-  replaceTooltips0(null, elements);
-  elements = document.getElementsByTagName('input');
-  replaceTooltips0(null, elements);
-  elements = document.getElementsByTagName('tt');
-  replaceTooltips0(null, elements);
-}
-*/
+ * function replaceAllTooltips() { var llen; var elements; elements =
+ * document.getElementsByTagName('img'); replaceTooltips0(null, elements);
+ * elements = document.getElementsByTagName('span'); replaceTooltips0(null,
+ * elements); elements = document.getElementsByTagName('a');
+ * replaceTooltips0(null, elements); elements =
+ * document.getElementsByTagName('input'); replaceTooltips0(null, elements);
+ * elements = document.getElementsByTagName('tt'); replaceTooltips0(null,
+ * elements); }
+ */
 function tooltipOnMouseOver0(e, target, toShow) {
-  //Packages.java.lang.System.out.println('tooltip mouseover: ' + target.tagName + ', ' + target.id);
+  // Packages.java.lang.System.out.println('tooltip mouseover: ' +
+  // target.tagName + ', ' + target.id);
   if (!Popup.allowTooltip(target)) {
-    return true; // ignore this tooltip and return true to allow mouseover processing to continue
+    return true; // ignore this tooltip and return true to allow mouseover
+                  // processing to continue
   }
-  var tooltip = target.getAttribute('tooltip'); // using getAttrbute() - as workaround for IE5.5 custom attibutes bug
+  var tooltip = target.getAttribute('tooltip'); // using getAttrbute() - as
+                                                // workaround for IE5.5 custom
+                                                // attibutes bug
   var tooltipText;
   if (!tooltip) {
     tooltip = target.getAttribute('title');
@@ -2576,8 +2617,10 @@ function tooltipOnMouseOver0(e, target, toShow) {
       }
 
     }
-    //tooltipText = "<table border=0 style='display: block' cellpadding=0 cellspacing=0><tr><td>" + tooltipText + "</td></tr></table>";
-    //tooltipText = "<span id='tooltipspan' style='display:table-cell'>" + tooltipText + "</span>";
+    // tooltipText = "<table border=0 style='display: block' cellpadding=0
+    // cellspacing=0><tr><td>" + tooltipText + "</td></tr></table>";
+    // tooltipText = "<span id='tooltipspan' style='display:table-cell'>" +
+    // tooltipText + "</span>";
     target.setAttribute('tooltip', tooltipText);
     target.title = '';
   }
@@ -2594,16 +2637,19 @@ function tooltipOnMouseOver0(e, target, toShow) {
   var iframeId = 'tooltipIframe';
   var tooltipDiv = document.getElementById(divId);
   if (!tooltipDiv) {
-    //throw new Error("document must contain div '" + divId + "' to display enhanced tooltip: " + tooltipText);
-    return false; // in FF for some reason if page not fully loaded this div is not yet defined
+    // throw new Error("document must contain div '" + divId + "' to display
+    // enhanced tooltip: " + tooltipText);
+    return false; // in FF for some reason if page not fully loaded this div is
+                  // not yet defined
   }
-  //if (tooltipDiv.style.width != '') {
-  //  alert(tooltipDiv.style.width);
-  //}
+  // if (tooltipDiv.style.width != '') {
+  // alert(tooltipDiv.style.width);
+  // }
   var ifrRef = document.getElementById(iframeId);
   if (!ifrRef)
     throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
-  Popup.open(e, divId, target, ifrRef, 20, 25, 1000, tooltipText); // open with delay
+  Popup.open(e, divId, target, ifrRef, 20, 25, 1000, tooltipText); // open with
+                                                                    // delay
   return false;
 }
 
@@ -2641,7 +2687,8 @@ function tooltipOnMouseOut(e) {
   var popup = Popup.getPopup('system_tooltip');
   if (popup && popup.isOpen())
     return true;
-  //Packages.java.lang.System.out.println('tooltip mouseout: ' + target.tagName + ', ' + target.id);
+  // Packages.java.lang.System.out.println('tooltip mouseout: ' + target.tagName
+  // + ', ' + target.id);
   if (Popup.delayedPopup && Popup.delayedPopup.isTooltip()) {
     clearTimeout(Popup.openTimeoutId);
     Popup.openTimeoutId = null;
@@ -2688,10 +2735,11 @@ function initShiftPref() {
 	shiftDiv.style.visibility = "visible";
 }
 
-//************************************* intercept all clicks ***********************************
+// ************************************* intercept all clicks
+// ***********************************
 function interceptLinkClicks(div) {
-  //addEvent(document, 'keydown', onKeyDown, false);
-  //addEvent(document, 'keyup',   onKeyUp,   false);
+  // addEvent(document, 'keydown', onKeyDown, false);
+  // addEvent(document, 'keyup', onKeyUp, false);
   var anchors;
   var doc;
   if (div) {
@@ -2706,9 +2754,10 @@ function interceptLinkClicks(div) {
   for (var i=0;i<llen; i++) {
     var anchor = anchors[i];
     var id = anchor.id;
-    if (id && id.startsWith('menuLink_')) // menu clicks are processed by their own event handler
+    if (id && id.startsWith('menuLink_')) // menu clicks are processed by their
+                                          // own event handler
       continue;
-    if (id && id.startsWith("-inner."))
+    if (id && id.startsWith("-inner."))  
       addEvent(anchor, 'click',  onClickDisplayInner,   false);
     else
       addEvent(anchor, 'click',  onClick,   false);
@@ -2751,18 +2800,20 @@ function schedule(e) {
   }
   var isAssignedCell = tdId.indexOf('ap.') == 0;
   if (!isAssignedCell && target.className != 'a' && target.className != 'b' && target.className != 'ci') {
-//    alert(target.className + " " + target.id);
+// alert(target.className + " " + target.id);
     return stopEventPropagation(e);
   }
 
   var newCellClickTime = new Date().getTime();
   if (lastCellClickTime != null) {
-//    Packages.java.lang.System.out.println('prev-lastCellClickTime = ' + lastCellClickTime);
+// Packages.java.lang.System.out.println('prev-lastCellClickTime = ' +
+// lastCellClickTime);
     if ((newCellClickTime - lastCellClickTime) < 500)
       return stopEventPropagation(e);
   }
   lastCellClickTime = newCellClickTime;
-//  Packages.java.lang.System.out.println('lastCellClickTime = ' + lastCellClickTime);
+// Packages.java.lang.System.out.println('lastCellClickTime = ' +
+// lastCellClickTime);
   var calendarImg = "<img src='icons/blank.gif' width='16' height='16' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' />";
   var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' title='Schedule procedure' width='16' height='16' align='left' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' align='right' />";
   if (!currentCell) {
@@ -2837,7 +2888,7 @@ function schedule(e) {
       if (calendarIdx < 0)
         calendarIdx = calendarIdx * -1;
       openPopup(calendarIdx, calendarIdx, target, e, duration);
-//      openPopup1(parseInt(tdId.substring(1)), 'changeAlert', target, e, duration);
+// openPopup1(parseInt(tdId.substring(1)), 'changeAlert', target, e, duration);
     }
   }
   else if (className == "ci") {
@@ -2867,7 +2918,8 @@ function initListBoxes(div) {
   for (var i=0; i<images.length; i++) {
     var image = images[i];
     if (image.id.indexOf("_filter", image.id.length - "_filter".length) != -1)
-      addEvent(image, 'click', listboxOnClick, false); // add handler to smartlistbox images
+      addEvent(image, 'click', listboxOnClick, false); // add handler to
+                                                        // smartlistbox images
     else
       addBooleanToggle(image);
     replaceTooltip(doc, image);
@@ -2894,18 +2946,21 @@ function initListBoxes(div) {
       var elem = form.elements[j];
       replaceTooltip(doc, elem);
       initialValues[elem.name] = elem.value;
-      if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT fields
-          elem.id) {                                         // and those that have ID
-        if (document.all) // in IE - some keys (like backspace) work only on keydown
+      if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT
+                                                              // fields
+          elem.id) {                                         // and those that
+                                                              // have ID
+        if (document.all) // in IE - some keys (like backspace) work only on
+                          // keydown
           addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
         else
           addEvent(elem, 'keypress', autoComplete,              false);
         addEvent(elem, 'focus',      autoCompleteOnFocus,       false);
         addEvent(elem, 'blur',       autoCompleteOnBlur,        false);
         addEvent(elem, 'mouseout',   autoCompleteOnMouseout,    false);
-        //addEvent(elem, 'change',   onFormFieldChange, false);
-        //addEvent(elem, 'blur',     onFormFieldChange, false);
-        //addEvent(elem, 'click',    onFormFieldClick,  false);
+        // addEvent(elem, 'change', onFormFieldChange, false);
+        // addEvent(elem, 'blur', onFormFieldChange, false);
+        // addEvent(elem, 'click', onFormFieldClick, false);
       }
       else if (elem.type && elem.type.toUpperCase() == 'TEXTAREA') {
         var rows = elem.attributes['rows'];
@@ -2917,13 +2972,14 @@ function initListBoxes(div) {
         if (!elem.value || elem.value == '') {
           elem.setAttribute('rows', 1);
           elem.setAttribute('cols', 10);
-          //elem.attributes['cols'].value = 10;
+          // elem.attributes['cols'].value = 10;
           addEvent(elem, 'focus', textAreaOnFocus,  false);
           addEvent(elem, 'blur',  textAreaOnBlur,   false);
         }
       }
       else  {
-         //         alert(elem.name + ", " + elem.type + ", " + elem.id + ", " + elem.valueType);
+         // alert(elem.name + ", " + elem.type + ", " + elem.id + ", " +
+          // elem.valueType);
       }
     }
   }
@@ -2944,7 +3000,8 @@ function uiFocus(div) {
       }
       if (u.id && (u.id == 'uiFocus' || u.id.indexOf('_uiFocus') != -1)) {
         if(execJS.isObjectTotallyVisible(u)) {
-          u.focus(); // in IE (at least in IE6) first focus() is lost for some reason - we are forced to issue another focus()
+          u.focus(); // in IE (at least in IE6) first focus() is lost for some
+                      // reason - we are forced to issue another focus()
           u.focus();
         }
         return true;
@@ -2963,6 +3020,7 @@ function uiFocus(div) {
 function onClickDisplayInner(e, anchor) {
   if (!anchor)
     anchor = getTargetAnchor(e);
+  
   if (!anchor || !anchor.id)
     return;
   e = getDocumentEvent(e); if (!e) return;
@@ -2976,8 +3034,8 @@ function onClickDisplayInner(e, anchor) {
   var propName = anchor.id.substring(7);
   var r;
   if (propName.indexOf("list.") == 0) {
-//    var strippedProp = propName.substring(5);
-//    var ul = document.getElementById(strippedProp);
+// var strippedProp = propName.substring(5);
+// var ul = document.getElementById(strippedProp);
     var ul = document.getElementById(propName);
 
     if (!ul) {
@@ -2991,6 +3049,7 @@ function onClickDisplayInner(e, anchor) {
   }
   else {
     var a = anchor.href;
+    
     if (a != 'about:blank')
       r = displayInner(e, a);
     else {
@@ -3007,8 +3066,8 @@ function onClickDisplayInner(e, anchor) {
 }
 
 /**
- * Registered to receive control on a click on any link.
- * Adds control key modifier as param to url, e.g. _ctrlKey=y
+ * Registered to receive control on a click on any link. Adds control key
+ * modifier as param to url, e.g. _ctrlKey=y
  */
 function onClick(e) {
   detectClick = true;
@@ -3026,20 +3085,12 @@ function onClick(e) {
     p = '_shiftKey=y';
   }
 /*
-  else if(e.altKey) {
-    p = '_altKey=y';
-    var frameId = 'bottomFrame';
-    var bottomFrame = frames[frameId];
-    // show content in a second pane
-    //
-    if (bottomFrame) {
-      removeModifier(link, '_shiftKey=y');
-      removeModifier(link, '_ctrlKey=y');
-      removeModifier(link, '_altKey=y');
-      return displayInner(e, link.href);
-    }
-  }
-*/
+ * else if(e.altKey) { p = '_altKey=y'; var frameId = 'bottomFrame'; var
+ * bottomFrame = frames[frameId]; // show content in a second pane // if
+ * (bottomFrame) { removeModifier(link, '_shiftKey=y'); removeModifier(link,
+ * '_ctrlKey=y'); removeModifier(link, '_altKey=y'); return displayInner(e,
+ * link.href); } }
+ */
   if (p) {
     removeModifier(link, '_shiftKey=y');
     removeModifier(link, '_ctrlKey=y');
@@ -3096,7 +3147,8 @@ function addUrlParam(url, param, target) {
   }
 }
 
-// get link on which user clicked (it could be a A in TD or it could be A around IMG)
+// get link on which user clicked (it could be a A in TD or it could be A around
+// IMG)
 function getTargetAnchor(e) {
   var target = getTargetElement(e);
   if (target.tagName.toUpperCase() == 'A')
@@ -3125,10 +3177,11 @@ function getANode(elem) {
     return null;
 }
 
-//********************* helper functions ********************************
+// ********************* helper functions ********************************
 
 /**
- * the source of this function and getScrollXY is: http://www.howtocreate.co.uk/tutorials/index.php?tut=0&part=16
+ * the source of this function and getScrollXY is:
+ * http://www.howtocreate.co.uk/tutorials/index.php?tut=0&part=16
  */
 function getWindowSize1() {
   var myWidth = 0, myHeight = 0;
@@ -3138,21 +3191,22 @@ function getWindowSize1() {
 }
 
 /**
- * the source of this function and getScrollXY is: http://www.howtocreate.co.uk/tutorials/index.php?tut=0&part=16
+ * the source of this function and getScrollXY is:
+ * http://www.howtocreate.co.uk/tutorials/index.php?tut=0&part=16
  */
 function getWindowSize_no_viewport() {
   var myWidth = 0, myHeight = 0;
   if( typeof( window.innerWidth ) == 'number' ) {
-    //Non-IE
+    // Non-IE
     myWidth = window.innerWidth;
     myHeight = window.innerHeight;
   } else if( document.documentElement &&
       ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
-    //IE 6+ in 'standards compliant mode'
+    // IE 6+ in 'standards compliant mode'
     myWidth = document.documentElement.clientWidth;
     myHeight = document.documentElement.clientHeight;
   } else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
-    //IE 4 compatible
+    // IE 4 compatible
     myWidth = document.body.clientWidth;
     myHeight = document.body.clientHeight;
   }
@@ -3176,21 +3230,23 @@ function getWindowSize() {
     heightPlusScrollbar = document.body.offsetHeight ;
   };
 /*
-  if (d.documentElement && typeof d.documentElement.clientWidth != "undefined" && d.documentElement.clientWidth != 0) {
-    //d.documentElement.clientWidth/Height is currently not supported by Gecko; see bugzilla bug file 156388 on that.
-    d.FormName.WidthMinusScrollbar.value  = d.documentElement.clientWidth  + 2*parseInt(d.documentElement.currentStyle.borderWidth,10) ;
-    d.FormName.HeightMinusScrollbar.value = d.documentElement.clientHeight + 2*parseInt(d.documentElement.currentStyle.borderWidth,10) ;
-  }
-  else if (d.all && d.body && typeof d.body.clientWidth != "undefined") {
-    // d.styleSheets[0].rules[1].style.borderWidth,10 should work for MSIE 4
-    d.FormName.WidthMinusScrollbar.value = d.body.clientWidth + 2*parseInt(d.body.currentStyle.borderWidth,10) ;
-    d.FormName.HeightMinusScrollbar.value = d.body.clientHeight + 2*parseInt(d.body.currentStyle.borderWidth,10);
-  }
-  else if (d.body && typeof d.body.clientWidth != "undefined") {
-    d.FormName.WidthMinusScrollbar.value = d.body.clientWidth ;
-    d.FormName.HeightMinusScrollbar.value = d.body.clientHeight ;
-  };
-*/
+ * if (d.documentElement && typeof d.documentElement.clientWidth != "undefined" &&
+ * d.documentElement.clientWidth != 0) { //d.documentElement.clientWidth/Height
+ * is currently not supported by Gecko; see bugzilla bug file 156388 on that.
+ * d.FormName.WidthMinusScrollbar.value = d.documentElement.clientWidth +
+ * 2*parseInt(d.documentElement.currentStyle.borderWidth,10) ;
+ * d.FormName.HeightMinusScrollbar.value = d.documentElement.clientHeight +
+ * 2*parseInt(d.documentElement.currentStyle.borderWidth,10) ; } else if (d.all &&
+ * d.body && typeof d.body.clientWidth != "undefined") { //
+ * d.styleSheets[0].rules[1].style.borderWidth,10 should work for MSIE 4
+ * d.FormName.WidthMinusScrollbar.value = d.body.clientWidth +
+ * 2*parseInt(d.body.currentStyle.borderWidth,10) ;
+ * d.FormName.HeightMinusScrollbar.value = d.body.clientHeight +
+ * 2*parseInt(d.body.currentStyle.borderWidth,10); } else if (d.body && typeof
+ * d.body.clientWidth != "undefined") { d.FormName.WidthMinusScrollbar.value =
+ * d.body.clientWidth ; d.FormName.HeightMinusScrollbar.value =
+ * d.body.clientHeight ; };
+ */
   return [ widthPlusScrollbar, heightPlusScrollbar ];
 
 }
@@ -3198,16 +3254,16 @@ function getWindowSize() {
 function getScrollXY() {
   var scrOfX = 0, scrOfY = 0;
   if( typeof( window.pageYOffset ) == 'number' ) {
-    //Netscape compliant
+    // Netscape compliant
     scrOfY = window.pageYOffset;
     scrOfX = window.pageXOffset;
   } else if( document.body && ( document.body.scrollLeft || document.body.scrollTop ) ) {
-    //DOM compliant
+    // DOM compliant
     scrOfY = document.body.scrollTop;
     scrOfX = document.body.scrollLeft;
   } else if( document.documentElement &&
       ( document.documentElement.scrollLeft || document.documentElement.scrollTop ) ) {
-    //IE6 standards compliant mode
+    // IE6 standards compliant mode
     scrOfY = document.documentElement.scrollTop;
     scrOfX = document.documentElement.scrollLeft;
   }
@@ -3316,27 +3372,31 @@ function getObjectUpperLeft(obj){
     var x = obj.offsetLeft;
     var y = obj.offsetTop;
 
-    /* Calculate page X,Y of upper left corner of element
-        where toolTip is to be shown
-    */
+    /*
+     * Calculate page X,Y of upper left corner of element where toolTip is to be
+     * shown
+     */
     obj = obj.offsetParent;
     while (obj) {
         x += obj.offsetLeft;
         y += obj.offsetTop;
 
         if (typeof obj.clientLeft != "undefined" && obj.tagName != "BODY") {
-                /*MS IE doesn't include borders in offset values;
-                these are obtained with clientLeft and Top and added in*/
+                /*
+                 * MS IE doesn't include borders in offset values; these are
+                 * obtained with clientLeft and Top and added in
+                 */
                 x += obj.clientLeft;
                 y += obj.clientTop;
         }
 
-        if (obj.tagName == "HTML") break; //KHTML KDE has an unidentified object above html
+        if (obj.tagName == "HTML") break; // KHTML KDE has an unidentified
+                                          // object above html
         obj = obj.offsetParent;
-    }//endwhile
+    }// endwhile
 
     return {x:x, y:y};
-}//eof getObjectUpperLeft
+}// eof getObjectUpperLeft
 
 function getMouseEventCoordinates(e) {
   var posx = 0;
@@ -3344,12 +3404,12 @@ function getMouseEventCoordinates(e) {
 
   var sc = getScrollXY();
   if (e.pageX || e.pageY) {
-    //alert('e.pageY: ' + e.pageY);
+    // alert('e.pageY: ' + e.pageY);
     posx = e.pageX;
     posy = e.pageY;
   }
   else if (e.clientX || e.clientY) {
-    //alert('e.clientY: ' + e.clientY);
+    // alert('e.clientY: ' + e.clientY);
     posx = e.clientX + sc[0];
     posy = e.clientY + sc[1];
   }
@@ -3365,17 +3425,17 @@ function getMouseEventCoordinates(e) {
 }
 
 function fitWindowWidth(tipX) {
-    /* Determine best page X that keeps object in window. If object
-     * doesn't fit adjust to left edge ot window.
-     * Compare object X coordinate to max X not going out
-     * of window and use left most.
-     * Then check object X is not past left most visible
-     * page coordinate.
+    /*
+     * Determine best page X that keeps object in window. If object doesn't fit
+     * adjust to left edge ot window. Compare object X coordinate to max X not
+     * going out of window and use left most. Then check object X is not past
+     * left most visible page coordinate.
      */
 
-    /*Don't go past right edge of window */
+    /* Don't go past right edge of window */
 
-    var rightMaxX = getRightPagePos() - (box.offsetWidth + 16); //16 for scrollbar
+    var rightMaxX = getRightPagePos() - (box.offsetWidth + 16); // 16 for
+                                                                // scrollbar
 
     tipX = (rightMaxX < tipX) ? rightMaxX : tipX;
 
@@ -3384,59 +3444,66 @@ function fitWindowWidth(tipX) {
     tipX = (tipX < leftMinX) ? leftMinX : tipX;
 
     return tipX;
-}//eof fitWindowWidth
+}// eof fitWindowWidth
 
 function getRightPagePos() {
-    /* Determine page offset at right of screen (it's different than window width)
-     * Here the pixles the page has been scrolled left is added to window width
+    /*
+     * Determine page offset at right of screen (it's different than window
+     * width) Here the pixles the page has been scrolled left is added to window
+     * width
      */
     var nRight;
 
     if (typeof window.srcollX != "undefined") {
-        //"NN6+ FireFox, Mozilla etc."
+        // "NN6+ FireFox, Mozilla etc."
         nRight = window.innerWidth + window.scrollX;
     }
     else if (typeof window.pageXOffset != "undefined") {
-        //NN4 code still in NN6 + but scrollX was added
+        // NN4 code still in NN6 + but scrollX was added
         nRight = window.innerWidth + window.pageXOffset;
     }
     else if (document.documentElement && document.documentElement.clientWidth){
-        //document.compatMode == "CSS1Compat" that is IE6 standards mode"
+        // document.compatMode == "CSS1Compat" that is IE6 standards mode"
         nRight = document.documentElement.clientWidth + document.documentElement.scrollLeft;
     }
     else if (document.body && document.body.clientWidth) {
-        //document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE < 6 and Mac IE
+        // document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE <
+        // 6 and Mac IE
         nRight = document.body.clientWidth + document.body.scrollLeft;
     }
 
     return nRight;
-}//eof getRightPagePos
+}// eof getRightPagePos
 
 function getLeftPagePos() {
     var nLeft;
 
     if (typeof window.srcollX != "undefined") {
-        //"NN6+ FireFox, Mozilla etc."
+        // "NN6+ FireFox, Mozilla etc."
         nLeft = window.scrollX;
     }
     else if (typeof window.pageXOffset != "undefined") {
-        //NN4 code still in NN6 + but scrollX was added
+        // NN4 code still in NN6 + but scrollX was added
         nLeft = window.pageXOffset;
     }
     else if (document.documentElement && document.documentElement.scrolLeft){
-        //document.compatMode == "CSS1Compat" that is IE6 standards mode"
+        // document.compatMode == "CSS1Compat" that is IE6 standards mode"
         nLeft = document.documentElement.scrollLeft;
     }
     else if (document.body && document.body.scrollLeft) {
-        //document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE < 6 and Mac IE
+        // document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE <
+        // 6 and Mac IE
         nLeft = document.body.scrollLeft;
     }
 
     return nLeft;
-}//eof getLeftPagePos
+}// eof getLeftPagePos
 
 function fitWindowHeight(tipY) {
-    /* Compare calculated max acceptable page offset to toolTip X and return smallest */
+    /*
+     * Compare calculated max acceptable page offset to toolTip X and return
+     * smallest
+     */
 
     /* Don't go below bottom of window. Put above target if moved. */
     var bottomMaxY = getBottomPagePos() - (box.offsetHeight);
@@ -3447,57 +3514,62 @@ function fitWindowHeight(tipY) {
     tipY = (tipY < topMinY) ? topMinY : tipY;
 
     return tipY
-}//eof fitWindowHeight
+}// eof fitWindowHeight
 
 function getBottomPagePos() {
-    /* Determine page offset at bottom of screen (it's different than window height)
-     * Here the pixles the page has been scrolled up is added to window height
+    /*
+     * Determine page offset at bottom of screen (it's different than window
+     * height) Here the pixles the page has been scrolled up is added to window
+     * height
      */
     var nBottom;
 
     if (typeof window.scrollY != "undefined" ) {
-        //NN6+ FireFox, Mozilla etc.
+        // NN6+ FireFox, Mozilla etc.
         nBottom = window.innerHeight + window.scrollY;
     }
     else if (typeof window.pageYOffset != "undefined") {
-        //NN4 still in NN6 + but NN6 and Mozilla added scrollY
+        // NN4 still in NN6 + but NN6 and Mozilla added scrollY
         nBottom = window.innerHeight + window.pageYOffset;
     }
     else if (document.documentElement && document.documentElement.clientHeight){
-        //document.compatMode == "CSS1Compat" that is IE6 standards mode
+        // document.compatMode == "CSS1Compat" that is IE6 standards mode
         nBottom = document.documentElement.clientHeight + document.documentElement.scrollTop;
     }
     else if (document.body && document.body.clientHeight) {
-        //document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE < 6 and Mac IE
+        // document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE <
+        // 6 and Mac IE
         nBottom = document.body.clientHeight + document.body.scrollTop;
     }
     return nBottom;
-}//eof getBottomPagePos
+}// eof getBottomPagePos
 
 function getTopPagePos() {
     var nTop;
 
     if (typeof window.scrollY != "undefined" ) {
-        //NN6+ FireFox, Mozilla etc.
+        // NN6+ FireFox, Mozilla etc.
         nTop= window.scrollY;
     }
     else if (typeof window.pageYOffset != "undefined") {
-        //NN4 still in NN6 + but NN6 and Mozilla added scrollY
+        // NN4 still in NN6 + but NN6 and Mozilla added scrollY
         nTop = window.pageYOffset;
     }
     else if (document.documentElement && document.documentElement.scrollTop){
-        //document.compatMode == "CSS1Compat" that is IE6 standards mode
+        // document.compatMode == "CSS1Compat" that is IE6 standards mode
         nTop = document.documentElement.scrollTop;
     }
     else if (document.body && document.body.scrollTop) {
-        //document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE < 6 and Mac IE
+        // document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE <
+        // 6 and Mac IE
         nTop = document.body.scrollTop;
     }
     return nTop;
-}//eof getTopPagePos
+}// eof getTopPagePos
 /*-------------------------------------- end tootip coordinates -------------------*/
 /**
- * function that adds a title (taken from page HEAD) of current page to a url that is passed as a parameter
+ * function that adds a title (taken from page HEAD) of current page to a url
+ * that is passed as a parameter
  */
 function addPageTitleToUrl(e) {
   var target = getTargetElement(e);
@@ -3588,7 +3660,8 @@ function displayInner(e, urlStr) {
   if (idx != -1) {
     var idx1 = urlStr.lastIndexOf('/', idx);
     finalUrl = urlStr.substring(0, idx1 + 1) + urlStr.substring(idx1 + 1);
-//    finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 + 1);
+// finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 +
+// 1);
   }
 
   var idx = finalUrl.indexOf('?');
@@ -3598,27 +3671,27 @@ function displayInner(e, urlStr) {
   }
   else
     finalUrl += '&';
-  finalUrl += "-inner=y"; //"hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
-  stopEventPropagation(e);
+  finalUrl += "-inner=y"; // "hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
 
   var hotspot = target ? target : anchor;
   var url    = finalUrl;
   var params = null;
-//  if (finalUrl.length > 2000) {
+// if (finalUrl.length > 2000) {
     url    = finalUrl.substring(0, idx);
     params = finalUrl.substring(idx + 1);
-//  }
+// }
+
   var div = document.getElementById('pane2');
   postRequest(e, url, params, div, hotspot, showDialog);
-  //bottomFrame.location.replace(finalUrl);
-  //var timeOutFunction = function () { showDialog(div, hotspot); };
-  //setTimeout(timeOutFunction, 50);
+  // bottomFrame.location.replace(finalUrl);
+  // var timeOutFunction = function () { showDialog(div, hotspot); };
+  // setTimeout(timeOutFunction, 50);
 
-  return false;
+  return stopEventPropagation(e);
 }
 
 /**
- *  copies html loaded via ajax into a div
+ * copies html loaded via ajax into a div
  */
 function showDialog(event, div, hotspot, content) {
   var frameId = 'popupFrame';
@@ -3630,7 +3703,7 @@ function showDialog(event, div, hotspot, content) {
     }
     frameLoaded[frameId] = false;
 
-    //-------------------------------------------------
+    // -------------------------------------------------
     var frameBody = frames[frameId].document.body;
     var frameDoc  = frames[frameId].document;
     var frameBody = frameDoc.body;
@@ -3642,9 +3715,13 @@ function showDialog(event, div, hotspot, content) {
   }
 
   var re = eval('/' + div.id + '/g');
-  content = content.replace(re, div.id + '-removed');  // prevent pane2        from appearing 2 times in the document
+  content = content.replace(re, div.id + '-removed');  // prevent pane2 from
+                                                        // appearing 2 times in
+                                                        // the document
   var re = eval('/' + frameId + '/g');
-  content = content.replace(re, frameId + '-removed'); // prevent dialogIframe from appearing 2 times in the document
+  content = content.replace(re, frameId + '-removed'); // prevent dialogIframe
+                                                        // from appearing 2
+                                                        // times in the document
   setInnerHtml(div, content);
   showDialog1(event, div, hotspot);
 }
@@ -3663,7 +3740,6 @@ function showDialog1(event, div, hotspot) {
         break;
       }
     }
-      
   }
   // execute JS code of innerHTML
   execJS.runDivCode(div);
@@ -3695,16 +3771,17 @@ function setInnerHtml(div, text) {
     div.document.write(text);
     div.document.close();
   }
-//  else if (Popup.ns6) {
-//    var r = div.ownerDocument.createRange();
-//    r.selectNodeContents(div);
-//    r.deleteContents();
-//    var df = r.createContextualFragment(text);
-//    div.appendChild(df);
-//  }
+// else if (Popup.ns6) {
+// var r = div.ownerDocument.createRange();
+// r.selectNodeContents(div);
+// r.deleteContents();
+// var df = r.createContextualFragment(text);
+// div.appendChild(df);
+// }
   else {
     div.innerHTML = '';
-    //  hack to remove current div dimensions, otherwise div will not auto-adjust to the text inserted into it (hack needed at least in firefox 1.0)
+    // hack to remove current div dimensions, otherwise div will not auto-adjust
+    // to the text inserted into it (hack needed at least in firefox 1.0)
     div.style.width  = null;
     div.style.height = null;
     // insert html fragment
@@ -3739,7 +3816,7 @@ function showRecurrencePanel(formName, propertyName) {
 }
 
 /**
- *
+ * 
  */
 function initCalendarsFromTo(div, formName, fromDateField, toDateField) {
   var contents =  "<script>" +
@@ -3749,7 +3826,7 @@ function initCalendarsFromTo(div, formName, fromDateField, toDateField) {
                   "      'replace' : true, " +
                   "      'selected', new Date(), " +
                   "      'watch', true, " +
-                  //"      'controlname' : '" + fromDateField + "' "
+                  // " 'controlname' : '" + fromDateField + "' "
                   "};" +
 
                   "var _init_to = { " +
@@ -3758,7 +3835,7 @@ function initCalendarsFromTo(div, formName, fromDateField, toDateField) {
                   "      'replace' : true, " +
                   "      'selected', new Date(), " +
                   "      'watch', true, " +
-                  //"      'controlname' : '" + toDateField + "' "
+                  // " 'controlname' : '" + toDateField + "' "
                   "};" +
 
                   "var from    = new calendar(_init_from, CAL_TPL1, " + "fromDateField);" +
@@ -3793,15 +3870,16 @@ function getTextContent(elm) {
     }
     text = t == '' ? null : t;
   }
-  else if (typeof elm.innerText != "undefined") {             // proprietary: IE4+
+  else if (typeof elm.innerText != "undefined") {             // proprietary:
+                                                              // IE4+
     text = elm.innerText;
   }
   return text;
 }
 
 /**
- * Utility that discovers the actual html element which generated the event
- * If handler is on table and click was on td - it returns td
+ * Utility that discovers the actual html element which generated the event If
+ * handler is on table and click was on td - it returns td
  */
 function getEventTarget(e) {
   e = getDocumentEvent(e); if (!e) return null;
@@ -3812,8 +3890,8 @@ function getEventTarget(e) {
 }
 
 /**
- * Utility that discovers the html element on which this event is firing
- * If handler is on table and click was on td - it returns table
+ * Utility that discovers the html element on which this event is firing If
+ * handler is on table and click was on td - it returns table
  */
 function getTargetElement(e) {
   e = getDocumentEvent(e); if (!e) return null;
@@ -3835,28 +3913,26 @@ function getTargetElement(e) {
   return elem;
 }
 
-//* Because of event bubbling mousing over the link inside a div will send a mouseout for the enclosing div
-//* So we need to discard such events - return null in this case;
+// * Because of event bubbling mousing over the link inside a div will send a
+// mouseout for the enclosing div
+// * So we need to discard such events - return null in this case;
 function getMouseOutTarget(e) {
   var tg = getTargetElement(e);
   return tg;
 
-  /* stopped running the code below since reltg.tagName gives permission exception in FF (when mousing over the Filter area)
-  if (!tg)
-    return null;
-  var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement; // ignore event if element to which mouse has moved is a child of a target element
-  if (!reltg)
-    return tg;
-  while (reltg != tg && reltg.tagName && reltg.tagName != 'BODY')
-    reltg = reltg.parentNode;
-  if (reltg == tg)
-    return null;
-  return tg;
-  */
+  /*
+   * stopped running the code below since reltg.tagName gives permission
+   * exception in FF (when mousing over the Filter area) if (!tg) return null;
+   * var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement; // ignore
+   * event if element to which mouse has moved is a child of a target element if
+   * (!reltg) return tg; while (reltg != tg && reltg.tagName && reltg.tagName !=
+   * 'BODY') reltg = reltg.parentNode; if (reltg == tg) return null; return tg;
+   */
 }
 
-//* Because of event bubbling mousing over the link inside a div will send a mouseover for this div
-//* So we need to discard such events - return null in this case;
+// * Because of event bubbling mousing over the link inside a div will send a
+// mouseover for this div
+// * So we need to discard such events - return null in this case;
 function getMouseOverTarget(e) {
   var tg = getTargetElement(e);
   if (!tg)
@@ -3864,25 +3940,17 @@ function getMouseOverTarget(e) {
   return tg;
 
   /*
-  var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement; // ignore event if element to which mouse has moved is a child of a target element
-  if (!reltg)
-    return tg;
-  while (reltg != tg && reltg.nodeName != 'BODY')
-    reltg = reltg.parentNode;
-  if (reltg == tg)
-    return null;
-  return tg;
-  */
+   * var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement; // ignore
+   * event if element to which mouse has moved is a child of a target element if
+   * (!reltg) return tg; while (reltg != tg && reltg.nodeName != 'BODY') reltg =
+   * reltg.parentNode; if (reltg == tg) return null; return tg;
+   */
 
   /*
-  // only interested in direct events, not those that bubble up
-  if (!tg.attachEvent && this && this.contains && this.contains(tg)) {
-    alert("canceling mouseover");
-    return null;
-  }
-  else
-    return tg;
-  */
+   * // only interested in direct events, not those that bubble up if
+   * (!tg.attachEvent && this && this.contains && this.contains(tg)) {
+   * alert("canceling mouseover"); return null; } else return tg;
+   */
 }
 
 function checkAll(formName) {
@@ -3950,7 +4018,8 @@ function getAncestorById(child, id) {
 	return null;
 }
 
-//*********************************** Icon/Image effects **************************************
+// *********************************** Icon/Image effects
+// **************************************
 var lowOpacity  = 60;
 var highOpacity = 100;
 var browserDetect;
@@ -3960,7 +4029,8 @@ function unfadeOnMouseOut(e) {
   var target = getMouseOutTarget(e);
   if (!target) {
     target = getTargetElement(e);
-    //alert("unfade canceled for: " + target + ", id: " + target.id + ", target.tagName: " + target.tagName);
+    // alert("unfade canceled for: " + target + ", id: " + target.id + ",
+    // target.tagName: " + target.tagName);
     return false;
   }
 
@@ -3971,7 +4041,8 @@ function unfadeOnMouseOver(e) {
   var target = getMouseOverTarget(e);
   if (!target) {
     target = getTargetElement(e);
-    //alert("unfade canceled for: " + target + ", id: " + target.id + ", target.tagName: " + target.tagName);
+    // alert("unfade canceled for: " + target + ", id: " + target.id + ",
+    // target.tagName: " + target.tagName);
     alert("unfade canceled: e.target: " + e.target + ", e.srcElement: " + e.srcElement + ", e.currentElement: " + e.currentElement);
     return false;
   }
@@ -4001,7 +4072,7 @@ function unfade(target) {
 
   if (!target.id || target.id == '')
     return false;
-  //alert("highlighting: " + target.id);
+  // alert("highlighting: " + target.id);
   browserDetect = target.filters? "ie" : typeof target.style.MozOpacity=="string"? "mozilla" : "";
 
   var timeout = timeouts[target.id];
@@ -4160,7 +4231,8 @@ function showLargeImage(e, current, largeImageUrl) {
 
   if (div.style.display == "block") {
     div.style.display = "none";
-    // img.src always has host in it; largeImageUrl not always that is why using indexOf
+    // img.src always has host in it; largeImageUrl not always that is why using
+    // indexOf
     if (img.src.indexOf(largeImageUrl) == img.src.length - largeImageUrl.length) {
       img.src = "";
       return false;
@@ -4231,7 +4303,7 @@ function addAndShow(td, e) {
 
   var a = td.getElementsByTagName("a");
 
-//	  iframe.style.display    = "none";
+// iframe.style.display = "none";
 
   var anchor = a[0].href;
   return addAndShow1(anchor, e);
@@ -4242,12 +4314,13 @@ var lastPopupRowTD = null;
 
 function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   var curCellClickTime = new Date().getTime();
-//  Packages.java.lang.System.out.println('curCellClickTime = ' + curCellClickTime);
+// Packages.java.lang.System.out.println('curCellClickTime = ' +
+// curCellClickTime);
 
   if ((curCellClickTime - lastCellClickTime) < 500)
     return stopEventPropagation(event);
   var td = getEventTarget(event);
-  //--- extract parameters specific for popup row
+  // --- extract parameters specific for popup row
   var popupRow = getTrNode(td); // get tr on which user clicked in popup
   if (!popupRow)
     throw new Error("addCalendarItem: popup row not found for: " + anchor);
@@ -4269,13 +4342,14 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   if (anchors != null  &&  anchors.length > 0)
     anchor = anchors[0].href;
   else {
-    anchor = "ticket?availableDuration="; //anchors[0].href; // url of the servlet that adds calendar items
+    anchor = "ticket?availableDuration="; // anchors[0].href; // url of the
+                                          // servlet that adds calendar items
     var tdId = calendarCell.id;
     var idx = tdId.indexOf(":");
     anchor += tdId.substring(idx + 1);
   }
 
-//  if (anchor.indexOf("?") != anchor.length - 1)
+// if (anchor.indexOf("?") != anchor.length - 1)
     anchor += "&";
 
   var popupRowId = popupRow.id;
@@ -4284,8 +4358,10 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   var duration = parseInt(popupRowId.substring(ampIdx + 1));
   anchor += procedurePropName + "=" + procedures[procedureIdx] + "&duration=" + duration;
 
-  //--- extract parameters specific for calendar row (e.g. time slot) for a cell on which user clicked
-  // popupRow == calendarRow when click came from the schedule cell because value corresponding to popup value already known.
+  // --- extract parameters specific for calendar row (e.g. time slot) for a
+  // cell on which user clicked
+  // popupRow == calendarRow when click came from the schedule cell because
+  // value corresponding to popup value already known.
   var contactId;
   if (popupRow == calendarRow) {
     contactId = forEmployee + "=" + employees[contactPropAndIdx.substring(pos + 1)];
@@ -4293,7 +4369,7 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   else  {
     anchor += '&' + calendarRow.id;
     var contactDiv = getDivNode(popupRow);
-    //--- extract a contact corresponding to a poped up chooser
+    // --- extract a contact corresponding to a poped up chooser
     if (!contactDiv)
       throw new Error("addCalendarItem: contactDiv not found for: " + anchor);
     if (!contactDiv.id) {
@@ -4312,7 +4388,7 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   }
   anchor += '&' + contactId;
 
-  //--- collect parameters common to all calendar items on the page
+  // --- collect parameters common to all calendar items on the page
   var pageParametersDiv = document.getElementById('pageParameters');
   if (!pageParametersDiv)
     throw new Error("addCalendarItem: pageParameters div not found for: " + anchor);
@@ -4324,12 +4400,10 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
 
   var se = stopEventPropagation(event);
 /*
-  if (lastPopupRowAnchor == anchor) {
-    alert("Please wait till previous request is processed");
-    return stopEventPropagation(event);
-  }
-  lastPopupRowAnchor = anchor;
-*/
+ * if (lastPopupRowAnchor == anchor) { alert("Please wait till previous request
+ * is processed"); return stopEventPropagation(event); } lastPopupRowAnchor =
+ * anchor;
+ */
   // close menu popup
   Popup.close0(contactDivId);
 
@@ -4337,7 +4411,7 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   var div = document.createElement('div');
   postRequest(event, anchor.substring(0, idx), anchor.substring(idx + 1), div, td, addAssignment);
   return se;
-//  return addAndShow1(anchor, event);
+// return addAndShow1(anchor, event);
 }
 
 function showAlert(alertName) {
@@ -4363,7 +4437,7 @@ function addSimpleCalendarItem(event) {
   var calendarRow = getTrNode(calendarCell);
   if (!calendarRow)
     throw new Error("addCalendarItem: calendar row not found for: " + anchor);
-  //--- extract parameters specific for popup row
+  // --- extract parameters specific for popup row
   var calendarTd = getTdNode(calendarCell);
 
   var popupRow = getTrNode(td); // get tr on which user clicked in popup
@@ -4381,7 +4455,7 @@ function addSimpleCalendarItem(event) {
   var durationProp = popupRowId.substring(0, durationIdx);
   var minutes = parseInt(popupRowId.substring(durationIdx + 1));
   anchor += durationProp + "=inlined&" + durationProp + ".seconds=" + minutes + "&" + durationProp + ".durationType=" + encodeURIComponent("minute(s)");
-  //--- extract a contact corresponding to a poped up chooser
+  // --- extract a contact corresponding to a poped up chooser
   var contactDiv = getDivNode(popupRow);
   if (!contactDiv)
     throw new Error("addCalendarItem: contactDiv not found for: " + anchor);
@@ -4407,7 +4481,7 @@ function addSimpleCalendarItem(event) {
     throw new Error("addCalendarItem: blockReleaseParameters are empty for: " + anchor);
   for (var i=0; i<brParams.length; i++) {
     if (brParams[i].id.indexOf(".propToSet=") == -1) {
-//      anchor += '&' + brParams[i].id;
+// anchor += '&' + brParams[i].id;
       continue;
     }
 
@@ -4439,7 +4513,7 @@ function addSimpleCalendarItem(event) {
   }
 
 
-  //--- collect parameters common to all calendar items on the page
+  // --- collect parameters common to all calendar items on the page
   var pageParametersDiv = document.getElementById('pageParameters');
   if (!pageParametersDiv)
     throw new Error("addCalendarItem: pageParameters div not found for: " + anchor);
@@ -4454,7 +4528,7 @@ function addSimpleCalendarItem(event) {
 
   document.location.href = anchor;
   return stopEventPropagation(event);
-//  return addAndShow1(anchor, event);
+// return addAndShow1(anchor, event);
 }
 
 function addAndShow1(anchor, event) {
@@ -4472,7 +4546,10 @@ function addAndShow1(anchor, event) {
     }
     else
       params = "";
-    params += "hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y";  // skip all navigation blocks
+    params += "hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y";  // skip
+                                                                                // all
+                                                                                // navigation
+                                                                                // blocks
 
     var aa = document.getElementById("currentItem");
     if (aa) {
@@ -4501,11 +4578,9 @@ function addAndShow1(anchor, event) {
       }
     }
 /*
-    iframeWindow.location.replace(newUri); // load data from server into iframe
-//    window.open(newUri);
-//    return;
-    setTimeout(addAndShowWait, 50);
-*/
+ * iframeWindow.location.replace(newUri); // load data from server into iframe //
+ * window.open(newUri); // return; setTimeout(addAndShowWait, 50);
+ */
     var div = document.createElement('div');
     div.style.display = "none";
     postRequest(event, newUri, params, div, hotspot, addAndShowWait);
@@ -4600,7 +4675,9 @@ function cancelItemAndWait(event) {
             }
           }
           var total = extractTotalFrom(tot);
-          // since first cell of Total tr has colspan=2, the column # in resources TR that referes to the same property will reside in # + 1 column
+          // since first cell of Total tr has colspan=2, the column # in
+          // resources TR that referes to the same property will reside in # + 1
+          // column
           var curTotal = extractTotalFrom(curTrTds[i + 1].innerHTML);
 
           total -= curTotal;
@@ -4685,7 +4762,7 @@ function addAssignment(event, body, hotspot, content)  {
     var oldTbody = trCopyTo.parentNode;
 
     var n = tds.length;
-  //  var oldTd = tds[emplIdx];
+  // var oldTd = tds[emplIdx];
     var oldTd;
     for (var i=1; i<n  &&  !oldTd; i++) {
       var tId = tds[i].id;
@@ -4715,7 +4792,8 @@ function addAssignment(event, body, hotspot, content)  {
       }
     }
     tds = row.getElementsByTagName("td");
-    // Each row can have different number of tds since some of them due to rowspan > 1 removed
+    // Each row can have different number of tds since some of them due to
+    // rowspan > 1 removed
     for (var j=1; j<rowspan; j++, rowIdx++) {
       var nn = tds.length;
       for (var i=1; i<nn; i++) {
@@ -4765,20 +4843,15 @@ function addAssignment(event, body, hotspot, content)  {
       tds = row.getElementsByTagName("td");
     }
 
-  //  currentCell = oldTd;
+  // currentCell = oldTd;
 
     addEvent(oldTd, 'click', newTd.onclick, false);
   /*
-    var newDivs = body.getElementsByTagNam("div");
-    var divCopyFr;
-    for (var i=0; i<newDivs.length &&  !divCopyFr; i++) {
-      if (newDivs[i].id  &&  newDivs[i].id == 'resourceList_div')
-        divCopyFr = newDivs[i];
-    }
-    if (divCopyFr) {
-      addAndShowWait(event, divCopyFr)
-    }
-    */
+   * var newDivs = body.getElementsByTagNam("div"); var divCopyFr; for (var i=0;
+   * i<newDivs.length && !divCopyFr; i++) { if (newDivs[i].id && newDivs[i].id ==
+   * 'resourceList_div') divCopyFr = newDivs[i]; } if (divCopyFr) {
+   * addAndShowWait(event, divCopyFr) }
+   */
     var divs = body.getElementsByTagName('div');
     for (var i=0; i<divs.length; i++) {
       if (divs[i].id  &&  divs[i].id == 'resourceList_div') {
@@ -4843,7 +4916,7 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
   for (var j=0; j<elms.length; j++) {
     if (elms[j].id  &&  elms[j].id == 'currentItem') {
       currentItem = elms[j].href;
-      //alert(currentItem);
+      // alert(currentItem);
       break;
     }
   }
@@ -4881,11 +4954,11 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
           var tbody  = elms[j].parentNode;
           oldCurrentTR = elms[j];
           tbody.removeChild(elms[j]);
-          //copyTableRow(tbody, rowIndex, currentTR);
+          // copyTableRow(tbody, rowIndex, currentTR);
           if (j == elms.length)
             tbody.appendChild(currentTR);
           else {
-            //alert(currentTR.id + ', ' + elms[j].innerHTML);
+            // alert(currentTR.id + ', ' + elms[j].innerHTML);
             tbody.insertBefore(currentTR, elms[j]);
           }
         }
@@ -4896,7 +4969,7 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
     }
   }
 
-//  divCopyTo.innerHTML = body.innerHTML;
+// divCopyTo.innerHTML = body.innerHTML;
   var totals;
   var oldResultsTR;
   var totalsTR;
@@ -4915,7 +4988,7 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
           var r = tds[i].innerHTML;
           var idx = r.indexOf('-');
           if (idx == -1) {
-//            tds[i].innerHTML = curResultsTR.innerHTML;
+// tds[i].innerHTML = curResultsTR.innerHTML;
             continue;
           }
           var idx1 = r.indexOf('<', idx);
@@ -4948,7 +5021,9 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
             }
           }
           var total = extractTotalFrom(tot);
-          // since first cell of Total tr has colspan=2, the column # in resources TR that referes to the same property will reside in # + 1 column
+          // since first cell of Total tr has colspan=2, the column # in
+          // resources TR that referes to the same property will reside in # + 1
+          // column
           var curTotal = extractTotalFrom(curTrTds[i + 1].innerHTML);
           total += curTotal;
           if (oldCurrentTR) {
@@ -4984,8 +5059,8 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
         if (!headerIdx  &&  trElms[ii].id == 'header')
           headerIdx++;
       }
-      //var newTr = document.importNode(currentTR, true);
-//      copyTableRow(tbody, pos, currentTR);
+      // var newTr = document.importNode(currentTR, true);
+// copyTableRow(tbody, pos, currentTR);
       if (pos == trNmb || pos == 0) {
         tbody.appendChild(currentTR);
       }
@@ -4994,7 +5069,8 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
       }
     }
   }
-  // This is the first element in RL. That means that 'Total' line was not formed
+  // This is the first element in RL. That means that 'Total' line was not
+  // formed
   if (oldCurrentItem != currentItem && (!totalsTR || !resultsTR)) {
     var elms = body.getElementsByTagName('tr');
     for (var j=0; j<elms.length; j++) {
@@ -5012,7 +5088,7 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
       }
     }
   }
-  //resourceListEdit(divCopyTo);
+  // resourceListEdit(divCopyTo);
   var images = divCopyTo.getElementsByTagName('img');
   for (var i=0; i<images.length; i++) {
     addBooleanToggle(images[i]);
@@ -5059,7 +5135,8 @@ function processTransaction(e) {
     return;
   var form = target.form;
   var params = getFormFilters(form, true);
-  var url = "FormRedirect?JLANG=en" + params; // HACK: since form.action returns the value of '&action='
+  var url = "FormRedirect?JLANG=en" + params; // HACK: since form.action returns
+                                              // the value of '&action='
   url += "&-applet=y";
 
   var w     = 400;
@@ -5092,6 +5169,8 @@ function showTab(e, td, hideDivId, unhideDivId) {
     for(var i = 0; i < len; i++) {
       var tok = trim(tokens[i]);
       var div = document.getElementById(tok);
+      if (!div)
+        continue;
       div.style.visibility = Popup.HIDDEN;
       div.style.display = "none";
       var tdId;
@@ -5133,12 +5212,9 @@ function showTab(e, td, hideDivId, unhideDivId) {
   if (t.length != 0  &&  t[0].className == "cpTabs")
     t[0].className = "currentCpTabs";
 /*
-  if (isViewAll  &&  tokens) {
-    var tr = document.getElementById(tokens.length + 'cp');
-    if (tr != null)
-      tr.className = "currentTabTitle";
-  }
-*/
+ * if (isViewAll && tokens) { var tr = document.getElementById(tokens.length +
+ * 'cp'); if (tr != null) tr.className = "currentTabTitle"; }
+ */
   if (unhideDivId  &&  unhideDivId.length != 0) {
     var tokens = unhideDivId.split(',');
     var len = tokens.length;
@@ -5246,7 +5322,8 @@ function openPopup1(divId1, alertName, hotSpot, e) {
   var etarget = getEventTarget(e);
   var isCalendar = etarget.tagName.toLowerCase() == 'img'  &&  etarget.src.indexOf('calendar.gif') != -1;
 
-//  alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',  e=' + e + ', maxDuration=' + maxDuration);
+// alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',
+// e=' + e + ', maxDuration=' + maxDuration);
   if (isCalendar  ||  e.ctrlKey)  // ctrl-enter
     showAlert(alertName);
   else
@@ -5264,7 +5341,8 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
   var isCalendar = etarget.tagName.toLowerCase() == 'img'  &&  etarget.src.indexOf('calendar.gif') != -1;
 
 
-//  alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',  e=' + e + ', maxDuration=' + maxDuration);
+// alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',
+// e=' + e + ', maxDuration=' + maxDuration);
   if (isCalendar  ||  e.ctrlKey)  {// ctrl-enter
     if (!maxDuration) {
       Popup.open(e, divId2, hotSpot);
@@ -5282,8 +5360,8 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
     var trLen = trs.length;
     for (var i=1; i<trLen; i++) {
       var tr = trs[i];
-//      var anchor = tr.getElementsByTagName('a');
-//      var s = anchor[0].innerHTML;
+// var anchor = tr.getElementsByTagName('a');
+// var s = anchor[0].innerHTML;
       var s = tr.id;
 
       var idx = s.indexOf("=");
@@ -5310,7 +5388,7 @@ function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
   }
   calendarCell = hotSpot;
   return stopEventPropagation(e);
-//  return false;
+// return false;
 }
 
 function getDocumentEvent(e) {
@@ -5393,8 +5471,8 @@ function showKeyboard() {
     return;
   var divs = document.getElementsByTagName('div');
   for (var i=0; i<divs.length; i++) {
-//    if (divs[i].id == "div_Vodka")
-//      alert(divs[i].style.display + "; " + divs[i].style.visibility);
+// if (divs[i].id == "div_Vodka")
+// alert(divs[i].style.display + "; " + divs[i].style.visibility);
 
     if (divs[i].style.display == 'none')
       continue;
@@ -5410,13 +5488,13 @@ function showKeyboard() {
 // usage:
 // insertAtCursor(document.formName.fieldName, ?this value?);
 function insertAtCursor(myField, myValue) {
-  //IE support
+  // IE support
   if (document.selection) {
     myField.focus();
     sel = document.selection.createRange();
     sel.text = myValue;
   }
-  //MOZILLA/NETSCAPE support
+  // MOZILLA/NETSCAPE support
   else if (myField.selectionStart || myField.selectionStart == '0') {
     var startPos = myField.selectionStart;
     var endPos = myField.selectionEnd;
@@ -5439,7 +5517,8 @@ function setCaretToEnd (el) {
 }
 
 /**
- * In the form that has several submit buttons - this is the way we detect which one was clicked
+ * In the form that has several submit buttons - this is the way we detect which
+ * one was clicked
  */
 function saveButtonClicked(e) {
   e = getDocumentEvent(e); if (!e) return;
@@ -5455,7 +5534,9 @@ function saveButtonClicked(e) {
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
   var istyle   = iframe.style;
   istyle.visibility    = Popup.HIDDEN;
-  div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
+  div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up
+                                          // as soon as we set display =
+                                          // 'inline'
   var scrollXY = getScrollXY();
   var scrollX = scrollXY[0];
   var scrollY = scrollXY[1];
@@ -5481,28 +5562,36 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   var distanceToRightEdge  = screenX + scrollX - left;
   var distanceToBottomEdge = screenY + scrollY - top;
 
-  // first position the div box in the top left corner in order to measure its dimensions
-  // (otherwise, if position correctly and only then measure dimensions - the width/height will get cut off at the scroll boundary - at least in firefox 1.0)
-  div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
+  // first position the div box in the top left corner in order to measure its
+  // dimensions
+  // (otherwise, if position correctly and only then measure dimensions - the
+  // width/height will get cut off at the scroll boundary - at least in firefox
+  // 1.0)
+  div.style.display    = 'inline'; // must first make it 'inline' - otherwise
+                                    // div coords will be 0
   reposition(div,    0, 0);
   var divCoords = getElementDimensions(div);
   var margin = 40;
-  //alert(screenX + "," + screenY + ", " + scrollX + "," + scrollY + ", " + left + "," + top + ", " + divCoords.width + "," + divCoords.height);
+  // alert(screenX + "," + screenY + ", " + scrollX + "," + scrollY + ", " +
+  // left + "," + top + ", " + divCoords.width + "," + divCoords.height);
   // cut popup dimensions to fit the screen
   var mustCutDimension = (div.id == 'pane2' || Popup.joystickBased) ? false: true;
-  //var mustCutDimension = false;
+  // var mustCutDimension = false;
   if (mustCutDimension) {
     var xFixed = false;
     var yFixed = false;
     if (divCoords.width > screenX - margin * 2) {
       div.style.width = screenX - margin * 2 + 'px';
       xFixed = true;
-      //alert("divCoords.width = " + divCoords.width + ", " + "screenX = " + screenX);
+      // alert("divCoords.width = " + divCoords.width + ", " + "screenX = " +
+      // screenX);
     }
-    if (divCoords.height > screenY - margin * 2) { // * 2 <- top & bottom margins
+    if (divCoords.height > screenY - margin * 2) { // * 2 <- top & bottom
+                                                    // margins
       div.style.height = screenY - margin * 2 + 'px';
       yFixed = true;
-      //alert("divCoords.height = " + divCoords.height + ", " + "screenY = " + screenY);
+      // alert("divCoords.height = " + divCoords.height + ", " + "screenY = " +
+      // screenY);
     }
     // recalc coords and add scrolling if we fixed dimensions
     if (typeof div.style.overflowX == 'undefined') {
@@ -5530,11 +5619,17 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       div.scrollTop  = 0;
     }
   }
-  div.style.display    = 'none';   // must hide it again to avoid screen flicker
-  // move box to the left of the hotspot if the distance to window border isn't enough to accomodate the whole div box
+  div.style.display    = 'none';   // must hide it again to avoid screen
+                                    // flicker
+  // move box to the left of the hotspot if the distance to window border isn't
+  // enough to accomodate the whole div box
   if (distanceToRightEdge < divCoords.width + margin) {
-    left = (screenX + scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
-    //alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " + scrollX);
+    left = (screenX + scrollX) - divCoords.width; // move menu to the left by
+                                                  // its width and to the right
+                                                  // by scroll value
+    // alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width
+    // = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " +
+    // scrollX);
     if (left - margin > 0)
       left -= margin; // adjust for a scrollbar;
   }
@@ -5543,10 +5638,13 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       left = left + offsetX;
   }
 
-  // adjust position of the div box vertically - using the same approach as above
+  // adjust position of the div box vertically - using the same approach as
+  // above
   if (distanceToBottomEdge < divCoords.height + margin) {
     top = (screenY + scrollY) - divCoords.height;
-//  alert("distanceToBottomEdge = " + distanceToBottomEdge + ", divCoords.height = " + divCoords.height + ", screenY = " + screenY + ", scrollY = " + scrollY);
+// alert("distanceToBottomEdge = " + distanceToBottomEdge + ", divCoords.height
+// = " + divCoords.height + ", screenY = " + screenY + ", scrollY = " +
+// scrollY);
     if (top < scrollY) {
       top = scrollY;
     }
@@ -5558,17 +5656,19 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       top = top + offsetY;
   }
 
-  // by now the width of the box got cut off at scroll boundary - fix it (needed at least for firefox 1.0)
+  // by now the width of the box got cut off at scroll boundary - fix it (needed
+  // at least for firefox 1.0)
   div.style.width  = divCoords.width  + 'px';
   div.style.height = divCoords.height + 'px';
 
-  //  Make position/size of the underlying iframe same as div's position/size
+  // Make position/size of the underlying iframe same as div's position/size
   istyle.width     = divCoords.width  + 'px';
   istyle.height    = divCoords.height + 'px';
 
   var zIndex = 1;
   if (hotspot) {
-    var z = hotspot.style.zIndex; // this relative zIndex allows stacking popups on top of each other
+    var z = hotspot.style.zIndex; // this relative zIndex allows stacking popups
+                                  // on top of each other
     if (z != null && z != '')
       zIndex = z;
   }
@@ -5576,19 +5676,22 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   istyle.zIndex    = zIndex + 1;
 
   // hack for Opera (at least at ver. 7.54) and Konqueror
-  //  somehow iframe is always on top of div - no matter how hard we try to set zIndex
+  // somehow iframe is always on top of div - no matter how hard we try to set
+  // zIndex
   // so we have to live without iframe
-  //var opera     = navigator.userAgent.indexOf("Opera") != -1;
-  //var konqueror = navigator.userAgent.indexOf("Konqueror") != -1;
+  // var opera = navigator.userAgent.indexOf("Opera") != -1;
+  // var konqueror = navigator.userAgent.indexOf("Konqueror") != -1;
   div.style.display    = 'inline';
   // commented out temporarily since listbox in dialog is not visible
   // this unfortunately will cause a problem with popup over form fields
-  //if (document.all)   // only IE has a problem with form elements 'showing through' the popup
-  //  istyle.display       = 'inline';
+  // if (document.all) // only IE has a problem with form elements 'showing
+  // through' the popup
+  // istyle.display = 'inline';
   reposition(div,    left, top); // move the div box to the adjusted position
   reposition(iframe, left, top); // place iframe under div
-  //if (!opera && !konqueror) {
-  if (document.all)   // only IE has a problem with form elements 'showing through' the popup
+  // if (!opera && !konqueror) {
+  if (document.all)   // only IE has a problem with form elements 'showing
+                      // through' the popup
     istyle.visibility  = Popup.VISIBLE;
   div.style.visibility = Popup.VISIBLE; // finally make div visible
 }
@@ -5604,10 +5707,9 @@ function setDivInvisible(div, iframe) {
 
 function doConfirm(msg) {
   /*
-  if (document.deleteConfirmation == msg)
-    return;
-  document.deleteConfirmation = msg;
-  */
+   * if (document.deleteConfirmation == msg) return; document.deleteConfirmation =
+   * msg;
+   */
   var c = confirm(msg);
   if (!c)
     return;
@@ -5653,14 +5755,15 @@ function setKeyboardFocus(element) {
   }
 }
 
-//**************************************************** AJAX ******************************************
+// **************************************************** AJAX
+// ******************************************
 // AJAX request.
 // Request content from the server to be loaded into a specified div.
 // Uses XMLHttpRequest when possible and hidden iframe otherwise.
 //
 // Basic ajax technique is described here:
-//   http://keelypavan.blogspot.com/2006/01/using-ajax.html
-//   http://developer.apple.com/internet/webcontent/xmlhttpreq.html
+// http://keelypavan.blogspot.com/2006/01/using-ajax.html
+// http://developer.apple.com/internet/webcontent/xmlhttpreq.html
 var lastRequest;
 function postRequest(event, url, parameters, div, hotspot, callback) {
   if (url == null)
@@ -5670,7 +5773,8 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     throw new Error('postRequest url parameter is empty');
   this.XMLHTTP = ["Msxml2.XMLHTTP.6.0", "Msxml2.XMLHTTP.5.0", "Msxml2.XMLHTTP.4.0", "MSXML2.XMLHTTP.3.0", "MSXML2.XMLHTTP", "Microsoft.XMLHTTP"];
   this.newActiveXObject = function(axarray) {
-    //  IE5 for the mac claims to support window.ActiveXObject, but throws an error when it's used
+    // IE5 for the mac claims to support window.ActiveXObject, but throws an
+    // error when it's used
     if (navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf("MSIE") >= 0) {
       alert('we are sorry, you browser does not support AJAX, please upgrade or switch to another browser');
       return null;
@@ -5696,7 +5800,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       case 1: case 2: case 3:
         return true;
       break;
-  //     Case 4 and 0
+  // Case 4 and 0
       default:
         return false;
       break;
@@ -5712,7 +5816,8 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
   if (!Popup.penBased  &&  !addLineItem)
     loadingCueStart(event, hotspot);
 
-  if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla, Safari,...
+  if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla,
+                                                                        // Safari,...
     try {
       http_request = new XMLHttpRequest();
       if (!Popup.opera8 && !Popup.s60Browser) { // not Opera 8.0
@@ -5741,7 +5846,8 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     var ajaxForm = iframe.document.getElementById('ajaxForm');
     ajaxForm.action = url;
     ajaxForm.submit();
-    // line below is an alternative simpler method to submitting a form - but fails in IE if URL is too long
+    // line below is an alternative simpler method to submitting a form - but
+    // fails in IE if URL is too long
     // iframe.location.replace(url); // load data from server into iframe
     timeoutCount = 0;
     setTimeout(function () {Popup.load(event, div)}, 50);
@@ -5749,15 +5855,16 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
   }
 
   if (callInProgress(lastRequest)) {
-    //lastRequest.abort();
-    //alert("please wait till your last request is processed");
+    // lastRequest.abort();
+    // alert("please wait till your last request is processed");
     return;
   }
   this.lastRequest = http_request;
   var clonedEvent = cloneEvent(event);
   http_request.onreadystatechange = function() {
     var status;
-    if (http_request.readyState != 4) // ignore for now: 0-Unintialized, 1-Loading, 2-Loaded, 3-Interactive
+    if (http_request.readyState != 4) // ignore for now: 0-Unintialized,
+                                      // 1-Loading, 2-Loaded, 3-Interactive
       return;
     if (!Popup.penBased  &&  !addLineItem)
       loadingCueFinish();
@@ -5768,7 +5875,8 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       if (responseXML && responseXML.baseURI)
         url = responseXML.baseURI;
     }
-    catch (e) { // hack since mozilla sometimes throws NS_ERROR_NOT_AVAILABLE here
+    catch (e) { // hack since mozilla sometimes throws NS_ERROR_NOT_AVAILABLE
+                // here
       // deduce status
       alert(e);
       if (location)
@@ -5778,7 +5886,13 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       else
         status = 400;
     }
-    if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
+    if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did
+                                                              // not cause
+                                                              // redirect - it
+                                                              // means it had a
+                                                              // problem -
+                                                              // repaint dialog
+                                                              // with err msg
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
       callback(clonedEvent, div, hotspot, http_request.responseText);
@@ -5794,13 +5908,27 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       try {location = http_request.getResponseHeader('Location');} catch(exception) {}
       if (!location)
         return;
-      var repaintDialog = location.indexOf('-inner=')    != -1;   // painting a dialog
+      var repaintDialog = location.indexOf('-inner=')    != -1;   // painting a
+                                                                  // dialog
       if (repaintDialog) {
         hotspot = null; // second time do not show 'loading...' popup
-        postRequest(clonedEvent, location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
+        postRequest(clonedEvent, location, '', div, hotspot, callback); // stay
+                                                                        // on
+                                                                        // current
+                                                                        // page
+                                                                        // and
+                                                                        // resubmit
+                                                                        // request
+                                                                        // using
+                                                                        // URL
+                                                                        // from
+                                                                        // Location
+                                                                        // header
       }
       else {
-        document.location = location;  // reload current page - usually happens at login due to timeout
+        alert('reloading page, status = ' + status);
+        document.location = location;  // reload current page - usually happens
+                                       // at login due to timeout
       }
     }
     else if (status == 322) {
@@ -5814,35 +5942,63 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
           response = iframe.document;
         }
         location = response.getElementById('$redirect').getAttribute('href');
-        //alert('status: ' + status + ', location: ' + location + ', responseXML.baseURI: ' + response);
+        // alert('status: ' + status + ', location: ' + location + ',
+        // responseXML.baseURI: ' + response);
         if (!location)
           return;
       }
 
       var paintInPage;
       try { paintInPage = http_request.getResponseHeader('X-Paint-In-Page');} catch (exc) {}
-      if (paintInPage && paintInPage == 'false')
-        document.location = location;  // reload current page - usually happens at login due to timeout
+      if (paintInPage && paintInPage == 'false') {
+        alert('reloading page (1),  status = ' + status);
+        document.location = location;  // reload current page - usually happens
+                                       // at login due to timeout
+      }  
       else {
-        var repaintDialog = location.indexOf('-addItems=') != 1;    // adding a new item to the resource list (like in bar or retail)
+        var repaintDialog = location.indexOf('-addItems=') != 1;    // adding a
+                                                                    // new item
+                                                                    // to the
+                                                                    // resource
+                                                                    // list
+                                                                    // (like in
+                                                                    // bar or
+                                                                    // retail)
         if (repaintDialog) {
           hotspot = null; // second time do not show 'loading...' popup
-          postRequest(clonedEvent, location, '', div, hotspot, callback); // stay on current page and resubmit request using URL from Location header
+          postRequest(clonedEvent, location, '', div, hotspot, callback); // stay
+                                                                          // on
+                                                                          // current
+                                                                          // page
+                                                                          // and
+                                                                          // resubmit
+                                                                          // request
+                                                                          // using
+                                                                          // URL
+                                                                          // from
+                                                                          // Location
+                                                                          // header
         }
-        else
-          document.location = location;  // reload current page - usually happens at login due to timeout
+        else {
+          alert('reloading page (2),  status = ' + status);
+          document.location = location;  // reload current page - usually
+                                         // happens at login due to timeout
+        }  
       }
     }
     else {
       alert('status: ' + status + ', ' + url);
     }
   };
-
-  if (!Popup.opera8 && !Popup.s60Browser) { // s60 browser post comes with 0 bytes body on popup (although ok on dialog :-/ )
+  if (!Popup.opera8  && !Popup.s60Browser) { // s60 browser post comes with 0
+                                              // bytes body on popup (although
+                                              // ok on dialog :-/ )
     http_request.open('POST', url, true);
+// alert('url = ' + url + '?' + parameters);
 
-    // browser does not allow Referer to be sent - so we send X-Referer and on server make it transparent to apps
-    //http_request.setRequestHeader("Referer",      document.location.href);
+    // browser does not allow Referer to be sent - so we send X-Referer and on
+    // server make it transparent to apps
+    // http_request.setRequestHeader("Referer", document.location.href);
     http_request.setRequestHeader("X-Referer",     document.location.href);
     http_request.setRequestHeader("X-Ajax",       "y");
     http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -5850,7 +6006,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     if (parameters) {
       http_request.setRequestHeader("Content-length", parameters.length);
     }
-    //http_request.setRequestHeader("Connection", "close");
+    // http_request.setRequestHeader("Connection", "close");
     document.body.style.cursor = "wait";
     http_request.send(parameters);
   }
@@ -5869,6 +6025,8 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     http_request.open('GET', url1, true);
     document.body.style.cursor = "wait";
     http_request.send('');
+//alert('urlLength=' + url1.length + '; url1 = ' + url1);
+// document.location.replace(url1);
   }
 }
 
@@ -5930,7 +6088,10 @@ function loadingCueStart(e, hotspot) {
     return;
   var ttDiv = document.getElementById("system_tooltip");
   var ttIframe = document.getElementById("tooltipIframe");
-  //var loadingMsg = "<img src='icons/classes/Duration.gif' style='vertical-align: middle;' /><span style='vertical-align: middle; font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . . </b></span>";
+  // var loadingMsg = "<img src='icons/classes/Duration.gif'
+  // style='vertical-align: middle;' /><span style='vertical-align: middle;
+  // font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . .
+  // </b></span>";
   var loadingMsg = "<span style='vertical-align: middle; font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . . </b></span>";
   var shiftDiv = document.getElementById("shift_pref");
   shiftDiv.style.visibility = "hidden";
@@ -5943,9 +6104,11 @@ function loadingCueFinish() {
     Popup.tooltipPopup.close();
 }
 
-//******************************************** end AJAX ************************************************
+// ******************************************** end AJAX
+// ************************************************
 
-//****************************** form operations from forms.js *****************************************
+// ****************************** form operations from forms.js
+// *****************************************
 //
 //
 var textAreas = new Array();
@@ -5984,7 +6147,7 @@ function onFormFieldChange(fieldProp, fieldRef, oldValue) {
   }
 }
 
-function hideShowDivOnClick(divId, imgId){//, plusImg, minusImg) {
+function hideShowDivOnClick(divId, imgId){// , plusImg, minusImg) {
   div = document.getElementById(divId);
   img = document.getElementById(imgId);
   if (div.style.display == 'none') {
@@ -6015,9 +6178,37 @@ function setTextHeight(div, divider) {
     var spanRef = document.getElementById(div + '_span');
     var moreRef = document.getElementById(div + '_more');
   }
-  if(divRef.offsetHeight < 40 && document.all) {                       // If the height of the div content is less then 40px,
-    document.getElementById(div).style.height=divRef.offsetHeight;     // then the height of the div is set to the height
-    displayFullText(div, div+"_more");                                 // of the div content and "more>>" link is disabled.
+  if(divRef.offsetHeight < 40 && document.all) {                       // If
+                                                                        // the
+                                                                        // height
+                                                                        // of
+                                                                        // the
+                                                                        // div
+                                                                        // content
+                                                                        // is
+                                                                        // less
+                                                                        // then
+                                                                        // 40px,
+    document.getElementById(div).style.height=divRef.offsetHeight;     // then
+                                                                        // the
+                                                                        // height
+                                                                        // of
+                                                                        // the
+                                                                        // div
+                                                                        // is
+                                                                        // set
+                                                                        // to
+                                                                        // the
+                                                                        // height
+    displayFullText(div, div+"_more");                                 // of
+                                                                        // the
+                                                                        // div
+                                                                        // content
+                                                                        // and
+                                                                        // "more>>"
+                                                                        // link
+                                                                        // is
+                                                                        // disabled.
     return;
   }
   var h = Math.floor(screen.availHeight/divider);
@@ -6027,11 +6218,13 @@ function setTextHeight(div, divider) {
     if (spanRef.offsetHeight > divRef.offsetHeight) {
       moreRef.style.display = "block";
     }
-    else { // div must have "minimized view". Then the user clicks on "more>>" link and the style of the div is changed
-           // from (overflow:hidden) to (display:inline; overflow:visible). This is done in (function displayFullText(div, moreDiv))
-      //moreRef.style.display = "none";
+    else { // div must have "minimized view". Then the user clicks on "more>>"
+            // link and the style of the div is changed
+           // from (overflow:hidden) to (display:inline; overflow:visible).
+            // This is done in (function displayFullText(div, moreDiv))
+      // moreRef.style.display = "none";
       divRef.style.height = 4 * 1.33 + 'em'; // 4 rows //spanRef.offsetHeight;
-      //divRef.style.overflow = "visible";
+      // divRef.style.overflow = "visible";
     }
   }
 }
@@ -6049,7 +6242,7 @@ function textAreaExists(textAreaName) {
   return false;
 }
 
-/*************************  Form fields adding/removing *******************/
+/** *********************** Form fields adding/removing ****************** */
 function addField(form, fieldType, fieldName, fieldValue) {
   if (document.getElementById) {
     var input = document.createElement('INPUT');
@@ -6150,11 +6343,12 @@ function removeSpaces(str) {
   }
   return buf;
 }
-//******************************************************* from forms.js *************************************
+// ******************************************************* from forms.js
+// *************************************
 
-/**************************************
-*	drag & drop engine
-***************************************/
+/*******************************************************************************
+ * drag & drop engine
+ ******************************************************************************/
 var dragobject = {
 	z: 0, x: 0, y: 0, offsetx : null, offsety : null, targetobj : null, dragapproved : 0,
 	initialize: function(){
@@ -6200,9 +6394,9 @@ var dragobject = {
 // ***********************************************************************************
 
 /**
- * check the checkbox if property related to it has changed value
- * (used in Watch and Subscribe)
- *
+ * check the checkbox if property related to it has changed value (used in Watch
+ * and Subscribe)
+ * 
  * The checkbox must be first checkbox in the same TR
  */
 function setRelatedCheckbox(e) {
@@ -6367,13 +6561,14 @@ function changeBoolean(e) {
     document.location.replace(url);
   }
   else
-    listboxFrame.location.replace(url + "?" + params); // load data from server into iframe
+    listboxFrame.location.replace(url + "?" + params); // load data from server
+                                                        // into iframe
   if (Popup.tooltipPopup) {
     Popup.tooltipPopup.close();
     Popup.tooltipPopup = null;
   }
-  //tooltipMouseOut0(target);           // remove and ...
-  //tooltipMouseOver0(target);          // repaint the tooltip on this boolean icon
+  // tooltipMouseOut0(target); // remove and ...
+  // tooltipMouseOver0(target); // repaint the tooltip on this boolean icon
   return stopEventPropagation(e);
 }
 
@@ -6451,7 +6646,7 @@ function copyAttributes(oNode, oNew) {
     alert(a.name + ': ' + a.value)
   }
   oNew.setAttribute('style', oNode.style.cssText);
-  //oNew.style.cssText = oNode.style.cssText;
+  // oNew.style.cssText = oNode.style.cssText;
 }
 
 function copyTableRow(tbody, pos, oldTr) {
@@ -6466,7 +6661,7 @@ function copyTableRow(tbody, pos, oldTr) {
   else
     tbody.insertBefore(newTr, tbody.rows[pos]);
   for (var i=0; i<oldCells.length; i++) {
-    //alert(oldCells[i].innerHTML);
+    // alert(oldCells[i].innerHTML);
     newTr.cells[i].innerHTML = oldCells[i].innerHTML;
   }
   copyAttributes(oldTr, newTr);
@@ -6519,10 +6714,12 @@ function clone (o, deep) {
   return objectClone;
 }
 
-// Event object does not survive (all coordinates become 0) despite a js closure mechanism
+// Event object does not survive (all coordinates become 0) despite a js closure
+// mechanism
 // This happens on setTimeout or on postRequest.
 // So we are forced to clone the event object.
-// Unfortunately generic event clone() caused FF to throw exception in postRequest.
+// Unfortunately generic event clone() caused FF to throw exception in
+// postRequest.
 // Thus the needs for this specific clone.
 function cloneEvent(eventObj) {
   if(typeof eventObj.cloned != 'undefined' && eventObj.cloned == true)
@@ -6540,7 +6737,8 @@ function cloneEvent(eventObj) {
   e.cloned = true;
   try {
     if (typeof eventObj.type == 'string')
-      e.type    = eventObj.type; //strangly in FF it is xpobject sometimes (looks like only under Venckman debugger)
+      e.type    = eventObj.type; // strangly in FF it is xpobject sometimes
+                                  // (looks like only under Venckman debugger)
     else
       e.type = 'click';
   } catch(exc) {
