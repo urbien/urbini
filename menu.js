@@ -5220,6 +5220,8 @@ function showTab(e, td, hideDivId, unhideDivId) {
     var len = tokens.length;
     for(var i = 0; i < len; i++) {
       var div = document.getElementById(tokens[i]);
+      if (!div)
+        continue;
       div.style.visibility = Popup.VISIBLE;
       div.style.display = 'inline';
       var tdId;
