@@ -5251,6 +5251,22 @@ function showTab(e, td, hideDivId, unhideDivId) {
 
   return stopEventPropagation(e);
 }
+function hideShowControlPanel(hide) {
+  var td = document.getElementById('cp');
+  if (!td)
+    return;
+  if (hide) 
+    td.style.display = 'none';
+  else 
+    td.style.display = 'table-cell'; 
+  td = document.getElementById('cpTabs'); 
+  if (!td)
+    return;
+  if (hide) 
+    td.style.display = 'none';
+  else 
+    td.style.display = 'table-cell'; 
+}
 
 function showRows(e, td, hideRowsId, unhideRowsId) {
   e = getDocumentEvent(e);
