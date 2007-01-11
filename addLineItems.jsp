@@ -22,11 +22,11 @@
 		</form>
     <taskTreeControl/>
 
-    <table width="100%" cellspacing="10" cellpadding="0" border="0">
+    <table width="100%" cellspacing="3" cellpadding="0" border="0">
     <tr valign="top">
 	    <td width="70%">
 	      <mkResourceForLineItems/>
-	      <include name="keyboard.jsp"/>
+	      <!--include name="keyboard.jsp"/-->
 		    <form name="horizontalFilter" id="filter" method="POST" action="addLineItems.html" itype="http://www.hudsonfog.com/voc/hospitality/spa/RetailItem">
 		      <br/>
 		      <horizontalFilter />

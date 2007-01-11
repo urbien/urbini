@@ -5181,13 +5181,15 @@ function showTab(e, td, hideDivId, unhideDivId) {
       else
         tdId = tok.substring(4);
       var hideTD = document.getElementById(tdId);
-      var ht = hideTD.getElementsByTagName("table");
-      if (ht.length != 0  &&  ht[0].className == "currentCpTabs")
-        ht[0].className = "cpTabs";
-      if (!isViewAll  &&  tt != null) {
-        tt = document.getElementById('cp_' + tdId);
-        if (tt != null)
-          tt.className = "currentTabTitleHidden";
+      if (hideTD) {
+        var ht = hideTD.getElementsByTagName("table");
+        if (ht.length != 0  &&  ht[0].className == "currentCpTabs")
+          ht[0].className = "cpTabs";
+        if (!isViewAll  &&  tt != null) {
+          tt = document.getElementById('cp_' + tdId);
+          if (tt != null)
+            tt.className = "currentTabTitleHidden";
+        }
       }
     }
     var tt;
@@ -5204,9 +5206,9 @@ function showTab(e, td, hideDivId, unhideDivId) {
   else
     divId = 'div_' + td.id;
 
-  div = document.getElementById(divId);
-  div.style.visibility = Popup.VISIBLE;
-  div.style.display = 'inline';
+  var curDiv = document.getElementById(divId);
+  curDiv.style.visibility = Popup.VISIBLE;
+  curDiv.style.display = 'inline';
 
   var t = td.getElementsByTagName("table");
   if (t.length != 0  &&  t[0].className == "cpTabs")
@@ -5219,37 +5221,49 @@ function showTab(e, td, hideDivId, unhideDivId) {
     var tokens = unhideDivId.split(',');
     var len = tokens.length;
     for(var i = 0; i < len; i++) {
-      var div = document.getElementById(tokens[i]);
+      var tok = trim(tokens[i]);
+      var div = document.getElementById(tok);
       if (!div)
         continue;
       div.style.visibility = Popup.VISIBLE;
       div.style.display = 'inline';
       var tdId;
-      if (tokens[i].charAt(0) == 'i') {
-        tdId = tokens[i].substring(5);
+      if (tok.charAt(0) == 'i') {
+        tdId = tok.substring(5);
         hasPrefix = true;
       }
       else
-        tdId = tokens[i].substring(4);
+        tdId = tok.substring(4);
       var uTD = document.getElementById(tdId);
-      var uTable = uTD.getElementsByTagName("table");
-      if (uTable.length != 0  &&  uTable[0].className == "currentCpTabs")
-        uTable[0].className = "cpTabs";
-      if (isViewAll) {
-        var tt;
-        if (hasPrefix)
-          tt = document.getElementById('cp_i_' + tdId);
-        else
-          tt = document.getElementById('cp_' + tdId);
-        tt.className = "currentTabTitle";
+      if (uTD) {
+        var uTable = uTD.getElementsByTagName("table");
+        if (uTable.length != 0  &&  uTable[0].className == "currentCpTabs")
+          uTable[0].className = "cpTabs";
+        if (isViewAll) {
+          var tt;
+          if (hasPrefix)
+            tt = document.getElementById('cp_i_' + tdId);
+          else
+            tt = document.getElementById('cp_' + tdId);
+          tt.className = "currentTabTitle";
+        }
       }
     }
 
   }
 
-  execJS.runDivCode(div);
+  execJS.runDivCode(curDiv);
 
   return stopEventPropagation(e);
+}
+var curSpan;
+function showTabLabel(label) {
+  if (curSpan)
+    curSpan.style.display = 'none';
+  var span = document.getElementById(label);
+  if (span)
+    span.style.display = 'inline';
+  curSpan = span;
 }
 function hideShowControlPanel(hide) {
   var td = document.getElementById('cp');
