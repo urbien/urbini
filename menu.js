@@ -6458,6 +6458,8 @@ var execJS = {
   // evaluates script blocks of the div with className = "execJS"
   // contDiv is a div that contain JS code - [dialog].
   runDivCode : function(contDiv) {
+    if(!contDiv)
+      return;
     var scripts = contDiv.getElementsByTagName('script');
     for(var i = 0; i < scripts.length; i++) {
       if(scripts[i].className == "execJS" && scripts[i].text != "") {
