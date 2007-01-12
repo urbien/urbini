@@ -31,6 +31,7 @@
 		      <br/>
 		      <horizontalFilter />
 		    </form>
+		    <table width="100"><tr><td><!--HACK for mobile--></td></tr></table>
 	    </td>
 	    <td width="30%">
 		    <table width="100%">
