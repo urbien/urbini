@@ -268,6 +268,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 /* Shows 'Search by barcode #' on add retail items screen in SPA */
 .barcoded {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); padding: 15px; border:solid #5C9EBF 1px;}
+.barcodedM {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); border:solid #5C9EBF 1px;}
 
 #titleBar {height: 22px; background:url(../images/skin/blue/title.gif); cursor:move; padding-left:5px;}
 
