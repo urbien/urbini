@@ -91,10 +91,13 @@ if (navigator.userAgent.indexOf("Opera") !=-1 ) {
 }
 else
   Popup.opera8 = false;
+// e62: Opera 8.65: Mozilla/4.0 (compatible; MSIE 6.0; Symbian OS; Series 60/0618.06.17; 9730) Opera 8.65 [en-US] UP.Link/6.3.0.0.0
+
+// e62: s60 browser
 // Mozilla/5.0 (SymbianOS/9.2; U; [en]; Series60/3.1 Nokia3250/1.00 )
 // Profile/MIDP-2.0 Configuration/CLDC-1.1; AppleWebKit/413 (KHTML, like Gecko)
 // Safari/413
-if (navigator.userAgent.indexOf("AppleWebKit") !=-1 && navigator.userAgent.indexOf("Series60/3.1") != -1) {
+if (navigator.userAgent.indexOf("AppleWebKit") !=-1 && navigator.userAgent.indexOf("Series60/3.1") != -1 || navigator.userAgent.indexOf("Symbian") != -1) {
   Popup.s60Browser = true;
 }
 else
