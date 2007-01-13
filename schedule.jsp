@@ -1,5 +1,5 @@
 <div>
-<errorMessage/>
+<div id="div_err"><errorMessage/></div>
 <!--script src="tableScroll.js" language="JavaScript" type="text/javascript"></script-->
 
     <table width="100%" cellspacing="0" cellpadding="5" border="0">
