@@ -4867,6 +4867,7 @@ function addAssignment(event, body, hotspot, content)  {
   }
 }
 
+
 function addAndShowWait(event, body, hotspot, content, noInsert)	{
   var frameId = "resourceList";
   if (!noInsert) {
@@ -5055,12 +5056,11 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
       for (var ii=0; ii<trElms.length; ii++) {
         if (trElms[ii].tagName != 'tr')
           continue;
-        else if (headerIdx) {
+        else if (headerIdx) 
           pos = ii;
-          break;
-        }
-        if (!headerIdx  &&  trElms[ii].id == 'header')
+        else if (trElms[ii].id == 'header')
           headerIdx++;
+        trNmb++;
       }
       // var newTr = document.importNode(currentTR, true);
 // copyTableRow(tbody, pos, currentTR);
@@ -6022,7 +6022,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       }
     }
     else {
-      alert('status: ' + status + ', ' + url);
+      alert('status(1): ' + status + ', ' + url);
     }
   };
   if (!Popup.opera8  && !Popup.s60Browser) { // s60 browser post comes with 0
@@ -6555,21 +6555,33 @@ function changeBoolean(e) {
   rUri = rUri.substring(0, idx);
   var bUri = null;
   idx = rUri.indexOf(".$.");
+  var isCurrentItem;
   if (idx != -1) {
     bUri = rUri.substring(idx + 3);
     rUri = rUri.substring(0, idx);
+    if (rUri == '$currentItem') {
+      var a = document.getElementById("currentItem");
+      if (a) {
+        rUri = a.href;
+        isCurrentItem =  true;
+      }
+    }
   }
   var tooltip = target.getAttribute('tooltip');
   var pValue;
-  if (tooltip  &&  tooltip.length != 0  &&  tooltip == "Yes")
-    pValue = "No";
-  else
+  if (isCurrentItem) 
     pValue = "Yes";
-  target.setAttribute('tooltip', pValue);
-  if (pValue == "Yes")
-    target.src = target.getAttribute('yesIcon');
-  else
-    target.src = target.getAttribute('noIcon');
+  else {
+    if (tooltip  &&  tooltip.length != 0  &&  tooltip == "Yes")
+      pValue = "No";
+    else
+      pValue = "Yes";
+    target.setAttribute('tooltip', pValue);
+    if (pValue == "Yes")
+      target.src = target.getAttribute('yesIcon');
+    else
+      target.src = target.getAttribute('noIcon');
+  }
   params += encodeURIComponent(rUri) + "&" + propShort + "=" + pValue;
   if (bUri != null)
     params += "&bUri=" + encodeURIComponent(bUri);

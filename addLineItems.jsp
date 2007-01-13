@@ -26,23 +26,26 @@
     <tr valign="top">
 	    <td width="70%">
 	      <mkResourceForLineItems/>
-	      <!--include name="keyboard.jsp"/-->
+	      <include name="keyboard.jsp"/>
 		    <form name="horizontalFilter" id="filter" method="POST" action="addLineItems.html" itype="http://www.hudsonfog.com/voc/hospitality/spa/RetailItem">
 		      <br/>
 		      <horizontalFilter />
 		    </form>
-		    <table width="100"><tr><td><!--HACK for mobile--></td></tr></table>
 	    </td>
 	    <td width="30%">
 		    <table width="100%">
-		      <tr><td align="middle" itype="http://www.hudsonfog.com/voc/hospitality/spa/TicketItem">
+		      <tr>
+		      <td align="middle" itype="http://www.hudsonfog.com/voc/hospitality/spa/TicketItem">
 		   	    <a href="$this"><property name="customer.firstName"/>&#160;<property name="customer.lastName"/>&#160;<property name="ticketNumber"/></a>&#160;<property name="locker"/>
-		     	</td></tr>
+		     	</td>
+		     	</tr>
 		      <tr itype="http://www.hudsonfog.com/voc/hospitality/orders/BarItem">
 		      <td>
 		        <table width="100%" cellspacing="5" cellpadding="0" border="0">
 			        <tr>
 			          <td align="center" class="categoryButton" onclick="document.location.href='Recall_Orders.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Ticket&amp;sealed_select=false&amp;sealed_verified=y&amp;$order=http://www.hudsonfog.com/voc/hospitality/spa/Ticket/checkInTime&amp;-asc=-1&amp;-grid=1&amp;-inRow=2&amp;serviceStart_From=today&amp;serviceStart=today&amp;serviceStart_To=today&amp;hideHideBlock=y'">Recall orders</td>
+			          <td><img src="icons/status_not_cancelled-extra-large.gif" class="cursor" id="$currentItem.$._cancelled_boolean_refresh" width="48" height="48" border="0" /></td>
+                <td><img src="icons/notes-extra-large.gif" border="0" title="Add new 'Comments'" width="48" height="48"  class="cursor" onclick="var div=showKeyboard(this, event);" /></td>
 			        </tr>
 		        </table>
 		      </td>
