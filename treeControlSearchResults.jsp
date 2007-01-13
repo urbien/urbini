@@ -4,24 +4,6 @@
 <tr valign="top">
   <td valign="top" align="middle" width="100%">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
-      <!--menuBar>
-      <tr valign="top">
-        <td valign="top" width="110%" colspan="2">
-          <menu toolbar="file"/>
-          <menu toolbar="toolbar1"/>
-          <menu toolbar="transport"/>
-          <menu toolbar="search"/>
-          <menu toolbar="toolbar2"/>
-          <menu toolbar="support"          allow="admin"/>
-          <menu toolbar="personalization"/>
-          <menu toolbar="calendarAndChart" itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem" />
-          <print image="icons/printerIcon.gif"/>
-          <saveInExcel allow="owner" image="images/excel.gif"/>
-          <pdaToPc image="icons/pda.gif"/>
-          <showHideWindows/>
-        </td>
-      </tr>
-      <menuBar-->
       <tr valign="top">
       <td width="100%">
         <form action="list.html" name="siteResourceList">
@@ -38,14 +20,14 @@
         <br/><pieChart/>
         <script language="JavaScript">
           var horizontalFilter_FIELDS = new Array();
-	function disableSubmitButtonH(form) {
-	  if (document.all || document.getElementById) {
+					function disableSubmitButtonH(form) {
+					  if (document.all || document.getElementById) {
             form.submit.disabled = true;
             form.submit.value = 'Please wait';
             form.submit.style.cursor = 'wait';
             form.clear_.style.visibility = 'hidden';
           }
-	}
+				}
         </script>
         <form name="horizontalFilter" id="filter" method="POST">
           <br/>
@@ -127,8 +109,5 @@
 </form>
 </div>
 <br/>
-
-
-<!--div align="left"><span class="xs"><hudsonFog /></span></div-->      <!-- link to Portal page for current category -->
 </div>
 

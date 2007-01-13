@@ -11,16 +11,6 @@
       <col width="10%" />
     </colgroup>
 
-    <!--tr valign="top">
-      <td valign="top" width="110%"><span class="xs" colspan="2">
-        <menu toolbar="toolbar2"        />
-        <menu toolbar="personalization" />
-        <print image="icons/printerIcon.gif"/>
-        <saveInExcel allow="owner" image="images/excel.gif"/>
-        <pdaToPc image="icons/pda.gif"/></span>
-      </td>
-    </tr-->
-
     <tr valign="top"><td width="100%">
     <form action="editList.html" name="siteResourceList" method="POST">
       <div align="left"><backLink /></div>
@@ -31,10 +21,6 @@
       <input type="submit" name="submit"/>
     </form>
     </td>
-    <!--td width="10%" id="rightPanelPropertySheet" valign="top" align="left">
-      <br/>
-      <menu toolbar="filterParallelCreateList" type="onpage" title="false"/>
-    </td-->
 </tr>
 </table>
 
