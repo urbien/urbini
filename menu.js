@@ -5948,27 +5948,15 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       try {location = http_request.getResponseHeader('Location');} catch(exception) {}
       if (!location)
         return;
-      var repaintDialog = location.indexOf('-inner=')    != -1;   // painting a
-                                                                  // dialog
+      var repaintDialog = location.indexOf('-inner=')    != -1;   // painting a dialog
       if (repaintDialog) {
         hotspot = null; // second time do not show 'loading...' popup
-        postRequest(clonedEvent, location, '', div, hotspot, callback); // stay
-                                                                        // on
-                                                                        // current
-                                                                        // page
-                                                                        // and
-                                                                        // resubmit
-                                                                        // request
-                                                                        // using
-                                                                        // URL
-                                                                        // from
-                                                                        // Location
-                                                                        // header
+        // stay on current page and resubmit request using URL from Location header
+        postRequest(clonedEvent, location, '', div, hotspot, callback);
       }
       else {
-        alert('reloading page, status = ' + status);
-        document.location = location;  // reload current page - usually happens
-                                       // at login due to timeout
+        //alert('reloading page, status = ' + status);
+        document.location = location;  // paint full page
       }
     }
     else if (status == 322) {
@@ -5992,37 +5980,19 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       try { paintInPage = http_request.getResponseHeader('X-Paint-In-Page');} catch (exc) {}
       if (paintInPage && paintInPage == 'false') {
         alert('reloading page (1),  status = ' + status);
-        document.location = location;  // reload current page - usually happens
-                                       // at login due to timeout
+        document.location = location;  // reload full page
       }
       else {
-        var repaintDialog = location.indexOf('-addItems=') != 1;    // adding a
-                                                                    // new item
-                                                                    // to the
-                                                                    // resource
-                                                                    // list
-                                                                    // (like in
-                                                                    // bar or
-                                                                    // retail)
+        // adding a new item to the resource list (like in bar or retail)
+        var repaintDialog = location.indexOf('-addItems=') != 1;
         if (repaintDialog) {
           hotspot = null; // second time do not show 'loading...' popup
-          postRequest(clonedEvent, location, '', div, hotspot, callback); // stay
-                                                                          // on
-                                                                          // current
-                                                                          // page
-                                                                          // and
-                                                                          // resubmit
-                                                                          // request
-                                                                          // using
-                                                                          // URL
-                                                                          // from
-                                                                          // Location
-                                                                          // header
+          // stay on current page and resubmit request using URL from Location header
+          postRequest(clonedEvent, location, '', div, hotspot, callback);
         }
         else {
-          alert('reloading page (2),  status = ' + status);
-          document.location = location;  // reload current page - usually
-                                         // happens at login due to timeout
+          //alert('reloading page (2),  status = ' + status);
+          document.location = location;  // reload full page
         }
       }
     }
@@ -6030,12 +6000,8 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       alert('status(1): ' + status + ', ' + url);
     }
   };
-  if (!Popup.opera8  && !Popup.s60Browser) { // s60 browser post comes with 0
-                                              // bytes body on popup (although
-                                              // ok on dialog :-/ )
+  if (!Popup.opera8  && !Popup.s60Browser) { 
     http_request.open('POST', url, true);
-// alert('url = ' + url + '?' + parameters);
-
     // browser does not allow Referer to be sent - so we send X-Referer and on
     // server make it transparent to apps
     // http_request.setRequestHeader("Referer", document.location.href);
@@ -6050,7 +6016,10 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     document.body.style.cursor = "wait";
     http_request.send(parameters);
   }
-  else {   // opera 8.0 does not support setRequestHeaders() - we will use GET
+  // use GET due to Browser bugs
+  // - s60 browser post comes with 0 bytes body on popup (although ok on dialog :-/ )
+  // - opera 8.0 does not support setRequestHeaders()
+  else {   
     var url1;
     var extras = 'X-Referer=' + encodeURIComponent(document.location.href) + '&X-Ajax=y';
     var hasQ = url.indexOf('?') != -1;
@@ -6065,8 +6034,6 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     http_request.open('GET', url1, true);
     document.body.style.cursor = "wait";
     http_request.send('');
-//alert('urlLength=' + url1.length + '; url1 = ' + url1);
-// document.location.replace(url1);
   }
 }
 
@@ -6218,37 +6185,10 @@ function setTextHeight(div, divider) {
     var spanRef = document.getElementById(div + '_span');
     var moreRef = document.getElementById(div + '_more');
   }
-  if(divRef.offsetHeight < 40 && document.all) {                       // If
-                                                                        // the
-                                                                        // height
-                                                                        // of
-                                                                        // the
-                                                                        // div
-                                                                        // content
-                                                                        // is
-                                                                        // less
-                                                                        // then
-                                                                        // 40px,
-    document.getElementById(div).style.height=divRef.offsetHeight;     // then
-                                                                        // the
-                                                                        // height
-                                                                        // of
-                                                                        // the
-                                                                        // div
-                                                                        // is
-                                                                        // set
-                                                                        // to
-                                                                        // the
-                                                                        // height
-    displayFullText(div, div+"_more");                                 // of
-                                                                        // the
-                                                                        // div
-                                                                        // content
-                                                                        // and
-                                                                        // "more>>"
-                                                                        // link
-                                                                        // is
-                                                                        // disabled.
+  // If the height of the div content is less then 40px,
+  // then the height of the div is set to the height of the div content and "more>>" link is disabled.
+  if(divRef.offsetHeight < 40 && document.all) {
+    document.getElementById(div).style.height=divRef.offsetHeight;
     return;
   }
   var h = Math.floor(screen.availHeight/divider);
