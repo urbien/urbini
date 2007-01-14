@@ -5670,28 +5670,23 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     // alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width
     // = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " +
     // scrollX);
-    if (left < scrollX) // but not over the left edge
-      left = scrollX;
     if (left - margin > 0)
-      left -= margin; // adjust for a scrollbar;
+      left -= margin;   // adjust for a scrollbar
+    if (left < scrollX) // but not over the left edge
+      left = scrollX + 1;
   }
   else { // apply user requested offset only if no adjustment
     if (offsetX)
       left = left + offsetX;
   }
 
-  // adjust position of the div box vertically - using the same approach as
-  // above
+  // now adjust vertically - so we fit inside the viewport
   if (distanceToBottomEdge < divCoords.height + margin) {
     top = (screenY + scrollY) - divCoords.height;
-// alert("distanceToBottomEdge = " + distanceToBottomEdge + ", divCoords.height
-// = " + divCoords.height + ", screenY = " + screenY + ", scrollY = " +
-// scrollY);
-    if (top < scrollY) {
-      top = scrollY;
-    }
     if ((top - scrollY)- margin > 0)
-      top -= margin; // adjust for a scrollbar;
+      top -= margin;   // adjust for a scrollbar
+    if (top < scrollY) // but not higher then top of viewport
+      top = scrollY + 1;
   }
   else { // apply user requested offset only if no adjustment
     if (offsetY)
