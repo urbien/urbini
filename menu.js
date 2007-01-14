@@ -5598,7 +5598,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   var screenX = screenXY[0];
   var screenY = screenXY[1];
 
-  // Find out how close to the corner of the window
+  // Find out how close hotspot is to the edges of the window
   var distanceToRightEdge  = screenX + scrollX - left;
   var distanceToBottomEdge = screenY + scrollY - top;
 
@@ -5670,6 +5670,8 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     // alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width
     // = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " +
     // scrollX);
+    if (left < scrollX) // but not over the left edge
+      left = scrollX;
     if (left - margin > 0)
       left -= margin; // adjust for a scrollbar;
   }
@@ -6000,7 +6002,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       alert('status(1): ' + status + ', ' + url);
     }
   };
-  if (!Popup.opera8  && !Popup.s60Browser) { 
+  if (!Popup.opera8  && !Popup.s60Browser) {
     http_request.open('POST', url, true);
     // browser does not allow Referer to be sent - so we send X-Referer and on
     // server make it transparent to apps
@@ -6019,7 +6021,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
   // use GET due to Browser bugs
   // - s60 browser post comes with 0 bytes body on popup (although ok on dialog :-/ )
   // - opera 8.0 does not support setRequestHeaders()
-  else {   
+  else {
     var url1;
     var extras = 'X-Referer=' + encodeURIComponent(document.location.href) + '&X-Ajax=y';
     var hasQ = url.indexOf('?') != -1;
