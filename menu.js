@@ -1833,7 +1833,7 @@ function popupOnSubmit(e) {
  * // figure out the name and the value of the Submit button for (i=0; i<form.elements.length;
  * i++) { var elem = form.elements[i]; if (elem.type.toUpperCase() == 'SUBMIT') {
  * submitButtonName = elem.name; submitButtonValue = elem.value; } }
- * 
+ *
  * if (!submitButtonName) return true; var hasQ = url.indexOf('?') != -1; if
  * (!hasQ) url += '?' + submit; else url += '&' + submit;
  */
@@ -2760,7 +2760,7 @@ function interceptLinkClicks(div) {
     if (id && id.startsWith('menuLink_')) // menu clicks are processed by their
                                           // own event handler
       continue;
-    if (id && id.startsWith("-inner."))  
+    if (id && id.startsWith("-inner."))
       addEvent(anchor, 'click',  onClickDisplayInner,   false);
     else
       addEvent(anchor, 'click',  onClick,   false);
@@ -3023,7 +3023,7 @@ function uiFocus(div) {
 function onClickDisplayInner(e, anchor) {
   if (!anchor)
     anchor = getTargetAnchor(e);
-  
+
   if (!anchor || !anchor.id)
     return;
   e = getDocumentEvent(e); if (!e) return;
@@ -3052,7 +3052,7 @@ function onClickDisplayInner(e, anchor) {
   }
   else {
     var a = anchor.href;
-    
+
     if (a != 'about:blank')
       r = displayInner(e, a);
     else {
@@ -3064,6 +3064,11 @@ function onClickDisplayInner(e, anchor) {
         r = displayInner(e, decodeURL(li[0].innerHTML));
       }
     }
+  }
+  if (Popup.s60Browser) {
+    var anchor = getTargetAnchor(e);
+    if (anchor && anchor.href == "about:blank")
+       anchor.href = "javascript: return false;";
   }
   return r;
 }
@@ -3753,7 +3758,7 @@ function stopEventPropagation(e) {
     if (e.cloned)
       return false;
     e.cancelBubble = true;
-    e.returnValue  = true;
+    e.returnValue  = false;
     if (e.preventDefault)  e.preventDefault();
     if (e.stopPropagation) e.stopPropagation();
     if (e.setAttribute)    e.setAttribute('eventProcessed', 'true');
@@ -3819,7 +3824,7 @@ function showRecurrencePanel(formName, propertyName) {
 }
 
 /**
- * 
+ *
  */
 function initCalendarsFromTo(div, formName, fromDateField, toDateField) {
   var contents =  "<script>" +
@@ -5056,7 +5061,7 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
       for (var ii=0; ii<trElms.length; ii++) {
         if (trElms[ii].tagName != 'tr')
           continue;
-        else if (headerIdx) 
+        else if (headerIdx)
           pos = ii;
         else if (trElms[ii].id == 'header')
           headerIdx++;
@@ -5272,17 +5277,17 @@ function hideShowControlPanel(hide) {
   var td = document.getElementById('cp');
   if (!td)
     return;
-  if (hide) 
+  if (hide)
     td.style.display = 'none';
-  else 
-    td.style.display = 'table-cell'; 
-  td = document.getElementById('cpTabs'); 
+  else
+    td.style.display = 'table-cell';
+  td = document.getElementById('cpTabs');
   if (!td)
     return;
-  if (hide) 
+  if (hide)
     td.style.display = 'none';
-  else 
-    td.style.display = 'table-cell'; 
+  else
+    td.style.display = 'table-cell';
 }
 
 function showRows(e, td, hideRowsId, unhideRowsId) {
@@ -5989,7 +5994,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
         alert('reloading page (1),  status = ' + status);
         document.location = location;  // reload current page - usually happens
                                        // at login due to timeout
-      }  
+      }
       else {
         var repaintDialog = location.indexOf('-addItems=') != 1;    // adding a
                                                                     // new item
@@ -6018,7 +6023,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
           alert('reloading page (2),  status = ' + status);
           document.location = location;  // reload current page - usually
                                          // happens at login due to timeout
-        }  
+        }
       }
     }
     else {
@@ -6431,7 +6436,7 @@ var dragobject = {
 /**
  * check the checkbox if property related to it has changed value (used in Watch
  * and Subscribe)
- * 
+ *
  * The checkbox must be first checkbox in the same TR
  */
 function setRelatedCheckbox(e) {
@@ -6569,7 +6574,7 @@ function changeBoolean(e) {
   }
   var tooltip = target.getAttribute('tooltip');
   var pValue;
-  if (isCurrentItem) 
+  if (isCurrentItem)
     pValue = "Yes";
   else {
     if (tooltip  &&  tooltip.length != 0  &&  tooltip == "Yes")
