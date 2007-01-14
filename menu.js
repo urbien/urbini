@@ -3065,11 +3065,6 @@ function onClickDisplayInner(e, anchor) {
       }
     }
   }
-  if (Popup.s60Browser) {
-    var anchor = getTargetAnchor(e);
-    if (anchor && anchor.href == "about:blank")
-       anchor.href = "javascript: return false;";
-  }
   return r;
 }
 
@@ -3762,6 +3757,11 @@ function stopEventPropagation(e) {
     if (e.preventDefault)  e.preventDefault();
     if (e.stopPropagation) e.stopPropagation();
     if (e.setAttribute)    e.setAttribute('eventProcessed', 'true');
+    if (Popup.s60Browser) {
+      var anchor = getTargetAnchor(e);
+      if (anchor && anchor.href == "about:blank")
+         anchor.href = "javascript: return false;";
+    }
   }
   catch (e) {
   }
