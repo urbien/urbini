@@ -6421,12 +6421,14 @@ var execJS = {
       return;
     var scripts = contDiv.getElementsByTagName('script');
     for(var i = 0; i < scripts.length; i++) {
-      if(scripts[i].className == "execJS" && scripts[i].text != "") {
+      if(scripts[i].className == "execJS" && // evaluate only 1 time.
+        (typeof scripts[i].evaluated == 'undefined' || !scripts[i].evaluated)) {
         var parent = scripts[i].parentNode;
         // apply only to visible object
         if(this.isObjectTotallyVisible(parent)) {
-          window.eval(scripts[i].text);
-          scripts[i].text = ""; // prevents multiple execution for a tab.
+          var evalStr = scripts[i].text || scripts[i].innerHTML;
+          window.eval(evalStr);
+          scripts[i].evaluated = true;
         }
       }
     }
