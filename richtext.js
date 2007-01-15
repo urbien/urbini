@@ -68,6 +68,8 @@ var RteEngine = {
 	imagePopup : null,
 	tablePopup : null,
 
+  toUseTArea : false,
+  
 	//register the RTEs.
 	register : function(iframeId, rteDataFieldId, rtePref) {
     iframeObj = document.getElementById(iframeId);
@@ -77,13 +79,17 @@ var RteEngine = {
 		
 		if(iframeObj.id	== "")
 			iframeObj.id = new Date().getTime();
-		
+
+
 		var rteObj = null;
-		try {
-			rteObj = new Rte(iframeObj, rteDataFieldId, rtePref);
-		}catch(e) {
-		  rteObj = new TArea(iframeObj, rteDataFieldId, rtePref);
+		if(this.toUseTArea == false) {
+		  try {
+			  rteObj = new Rte(iframeObj, rteDataFieldId, rtePref);
+		  }catch(e) {	this.toUseTArea = true;  }
 		}
+		
+    if(this.toUseTArea)
+   		  rteObj = new TArea(iframeObj, rteDataFieldId, rtePref);
 		
 		if(rteObj != null)
 			this.rteArr.push(rteObj);
