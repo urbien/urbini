@@ -5280,14 +5280,14 @@ function hideShowControlPanel(hide) {
   if (hide)
     td.style.display = 'none';
   else
-    td.style.display = 'table-cell';
+    td.style.display = '';
   td = document.getElementById('cpTabs');
   if (!td)
     return;
   if (hide)
     td.style.display = 'none';
   else
-    td.style.display = 'table-cell';
+    td.style.display = '';
 }
 
 function showRows(e, td, hideRowsId, unhideRowsId) {
