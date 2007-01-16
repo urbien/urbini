@@ -5976,7 +5976,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
       var paintInPage;
       try { paintInPage = http_request.getResponseHeader('X-Paint-In-Page');} catch (exc) {}
       if (paintInPage && paintInPage == 'false') {
-        alert('reloading page (1),  status = ' + status);
+//        alert('reloading page (1),  status = ' + status);
         document.location = location;  // reload full page
       }
       else {
