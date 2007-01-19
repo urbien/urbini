@@ -720,22 +720,28 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       case 13:  // enter
         self.popupRowOnClick1(e, tr);
         return stopEventPropagation(e);
-      default:
-      case 8:   // backspace
-        if (currentDiv) {
-          // var form = getFormNode(self.currentRow);
-          var form = document.forms[currentFormName];
-          if (form) {
-            var inputField = form.elements[originalProp];
-            setKeyboardFocus(inputField);
-            autoComplete1(e, inputField);
-            if (characterCode == 8) {
-              // problem with IE - move line below to another place
-              inputField.value = inputField.value.substring(0, inputField.value.length - 1);
+      case 8:   // backspace or "C" in S60
+        if(Popup.s60Browser) {
+           if (currentDiv)
+              Popup.close0(currentDiv.id);
+            return stopEventPropagation(e);
+        }
+        else {
+          if (currentDiv) {
+            // var form = getFormNode(self.currentRow);
+            var form = document.forms[currentFormName];
+            if (form) {
+              var inputField = form.elements[originalProp];
+              setKeyboardFocus(inputField);
+              autoComplete1(e, inputField);
+              if (characterCode == 8) {
+                // problem with IE - move line below to another place
+                inputField.value = inputField.value.substring(0, inputField.value.length - 1);
+              }
             }
           }
+          return stopEventPropagation(e);
         }
-        return stopEventPropagation(e);
     }
 
     if (characterCode == 40) {       // down arrow
@@ -2020,7 +2026,13 @@ function autoComplete1(e, target) {
      if (currentDiv)
        currentPopup.close();
      return true;
-   case 8:   // backspace
+   case 8:   // backspace or "C" in S60
+    if(Popup.s60Browser) { 
+      if (currentPopup && currentPopup.isOpen()) {
+          currentPopup.close(); // the same like esc
+        }
+        return stopEventPropagation(e);
+    } 
    case 46:  // delete
      break;
   }
@@ -5731,6 +5743,9 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
                       // through' the popup
     istyle.visibility  = Popup.VISIBLE;
   div.style.visibility = Popup.VISIBLE; // finally make div visible
+  
+  // used to close divs on "C" and for dialogs   
+  closingOnEsc.ready(div);
 }
 
 function setDivInvisible(div, iframe) {
@@ -6747,3 +6762,55 @@ function setCssStyle(elem, newStyle) {
     elem.setAttribute('style', newStyle);
 }
 
+// auxiliary "class":
+// 1) for phone - need catch event of document if arrow kes were pressed
+// 2) closes dialogs for PC and phone
+var closingOnEsc = {
+  div : null,
+  initialized : false,
+  init : function() {
+    addEvent(document, 'keydown', this._onkeydown,  false);
+    this.initialized = true;
+  },
+  ready : function(div) {
+    this.div = div;
+    if(this.initialized == false)
+      this.init();
+    // append handlers to textarea and inputs - to close on "esc" inside there
+    if(div.id == 'pane2') {
+      inputs = div.getElementsByTagName('input');
+      for(var i = 0; i < inputs.length; i++) {
+        if(inputs[i].className == 'input') {// GUI inputs
+          addEvent(inputs[i], 'keydown', this._onkeydown,  false);
+        }
+      }
+      var tAreas = div.getElementsByTagName('textarea');
+      for(var i = 0; i < tAreas.length; i++)
+          addEvent(tAreas[i], 'keydown', this._onkeydown,  false);
+    }
+  },
+  _onkeydown : function(e) {
+    e = e || event;
+    var div = closingOnEsc.div;
+    if(div == null || div.style.visibility == 'hidden')
+      return;
+   	var charCode = (e.charCode) ? e.charCode : ((e.keyCode) ? e.keyCode : ((e.which) ? e.which : 0));
+		if(Popup.s60Browser) {
+		  if(charCode != 8)
+		    return;
+		}
+		else if(charCode != 27)
+		  return;
+    // 1. dialog
+    if(div.id == 'pane2')
+      hideInnerDiv(e);
+    // 2. popup
+    else if(div.className == 'popMenu') { 
+      Popup.close0(div.id)
+   }
+      
+    div = null;
+    stopEventPropagation(e);
+    return false;
+  }
+}
