@@ -59,12 +59,13 @@ img.fade {
 .tabs .left, .tabs .right {
   width:12px;
 }
-/*
+/* Menu TABS styles */
 .tabs TD.left {
   background-image:url(../images/skin/blue/tab-left.gif);
   background-repeat: no-repeat;
   background-position: center;
   vertical-align: middle;
+  width: 12px;
 }
 .tabs TD.middle {
   background-image:url(../images/skin/blue/tab-middle.gif);
@@ -74,18 +75,13 @@ img.fade {
   white-space: nowrap;
   vertical-align: middle;
 }
-
-.tabs TD.middle img {
-  width: 16px; height: 16px; padding-right: 5px;
-}
-
 .tabs TD.right {
   background-image:url(../images/skin/blue/tab-right.gif);
   background-repeat: no-repeat;
   background-position: center;
   vertical-align: middle;
+  width: 12px;
 }
-*/
 /* ----- Buttons ----- */
 .button_blue, .button_green, .button_grey, button.orange {
 	margin: 0px 0px 0px 0px;
@@ -494,32 +490,14 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .guestUser {  font-family: Verdana, Arial, Helvetica, sans-serif; color: lightblue; font-size: 8pt; font-weight: bold;}
 .user      {color:darkblue; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight:bold; text-decoration:none; font-size:8pt;}
 
-/* Menu TABS styles */
-.tabs TD.left {
-  background-image:url(../images/skin/blue/tab-left.gif);
-  background-repeat: no-repeat;
-  background-position: center;
-  vertical-align: middle;
-}
-.tabs TD.middle {
-  background-image:url(../images/skin/blue/tab-middle.gif);
-  background-repeat: repeat-x;
-  background-position: center;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-.tabs TD.right {
-  background-image:url(../images/skin/blue/tab-right.gif);
-  background-repeat: no-repeat;
-  background-position: center;
-  vertical-align: middle;
-}
 .group {background:#f8f4ef; FONT-WEIGHT: bold; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; COLOR: #000000; PADDING-TOP: 3px; FONT-WEIGHT:bold; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}
 
 /* Under menu line style (usually the same color as tabs */
 .line {background:#ACD2E2}
 
+.line .td {
+  height: 33px;
+}
 /* Scheduling page styles */
 .schedule     {
   border:solid #808080 1px;border-collapse: collapse;
@@ -632,5 +610,5 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .outerPopup {border-style:solid; border-width: 1px; border-color:#666666 #666666 #666666 #666666}
 .innerPopup {border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7}
 .menuOnClick {background-color: #0055e6; padding-right:3; padding-top:3; padding-bottom:3}
-.toppad {padding-top: 5px;}
+.toppad {padding-top: 5px; white-space:nowrap}
 .changeCols {display: inline; margin: 0px;}
