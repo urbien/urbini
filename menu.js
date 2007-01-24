@@ -67,7 +67,6 @@ Popup.tooltipPopup         = null;
 Popup.DarkMenuItem  = '#AABFCD'; // '#95B0C3'; //'#dee6e6';
 Popup.LightMenuItem = '';
 Popup.autoCompleteDefaultTimeout = 200;
-Popup.isShiftRequired		= null;
 
 Popup.HIDDEN  =  'hidden';
 Popup.VISIBLE =  'visible';
@@ -1499,6 +1498,8 @@ function listboxOnClick(e) {
     return;
   var imgId = target.id;
   listboxOnClick1(e, imgId);
+  
+  stopEventPropagation(e);
 }
 
 /**
@@ -2671,8 +2672,8 @@ function tooltipOnMouseOver0(e, target, toShow) {
 function tooltipOnMouseOver(e) {
   e = getDocumentEvent(e); if (!e) return;
 
-  initShiftPref();
-  var toShow = !(Popup.isShiftRequired && !e.shiftKey);
+  advancedTooltip.init();
+  var toShow = !(advancedTooltip.isShiftRequired() && !e.shiftKey);
 
   if (e.getAttribute) {
     var isProcessed = e.getAttribute('eventProcessed');
@@ -2709,45 +2710,6 @@ function tooltipOnMouseOut(e) {
     Popup.openTimeoutId = null;
   }
   return stopEventPropagation(e);
-}
-
-function shiftPrefSwitch() {
-	Popup.isShiftRequired = !Popup.isShiftRequired;
-	var tooltip = Popup.getPopup('system_tooltip');
-	tooltip.delayedClose();
-
-	var shiftDiv = document.getElementById("shift_pref");
-	shiftDiv.innerHTML = "done";
-	// set cookie
-	var sValue = Popup.isShiftRequired ? "yes" : "no";
-	var expiresData = new Date();
-  expiresData.setTime(expiresData.getTime() + (1000 * 86400 * 365));
-  document.cookie = "shift_pressed=" + escape(sValue)
-       + "; expires=" + expiresData.toGMTString();
-}
-
-function initShiftPref() {
-	if(Popup.isShiftRequired == null) {
-		var aCookie = document.cookie.split("; ");
-		var bValue = false;
-		for (var i=0; i < aCookie.length; i++) {
-			// a name/value pair (a crumb) is separated by an equal sign
-			var aCrumb = aCookie[i].split("=");
-			if (aCrumb[0] == "shift_pressed") {
-				if(unescape(aCrumb[1]) == "yes")
-					bValue = true;
-				break;
-			}
-		}
-		Popup.isShiftRequired = bValue;
-	}
-
-	var shiftDiv = document.getElementById("shift_pref");
-	if(Popup.isShiftRequired)
-		shiftDiv.innerHTML = "show tooltips always";
-	else
-		shiftDiv.innerHTML = "show tooltips only when shift pressed";
-	shiftDiv.style.visibility = "visible";
 }
 
 // ************************************* intercept all clicks
@@ -6107,20 +6069,16 @@ function loadingCueStart(e, hotspot) {
     return;
   var ttDiv = document.getElementById("system_tooltip");
   var ttIframe = document.getElementById("tooltipIframe");
-  // var loadingMsg = "<img src='icons/classes/Duration.gif'
-  // style='vertical-align: middle;' /><span style='vertical-align: middle;
-  // font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . .
-  // </b></span>";
-  var loadingMsg = "<span style='vertical-align: middle; font-size: 14px; color:#000000; margin:2; padding:7px;'><b> loading . . . </b></span>";
-  var shiftDiv = document.getElementById("shift_pref");
-  shiftDiv.style.visibility = "hidden";
-
+  var loadingMsg = "<div style='vertical-align: middle; font-size: 14px; color:#000000; margin:2; padding:5px;'><b> loading . . . </b></div>";
+  
+  advancedTooltip.hideTitle();
   Popup.open(e, ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
 }
 
 function loadingCueFinish() {
   if (Popup.tooltipPopup)
     Popup.tooltipPopup.close();
+    advancedTooltip.showTitle();
 }
 
 // ******************************************** end AJAX
@@ -6814,3 +6772,95 @@ var closingOnEsc = {
     return false;
   }
 }
+
+/*************************************************
+* advancedTooltip - allows to tune a tooltip
+* 1) shift preferences
+**************************************************/
+var advancedTooltip = {
+  tooltip : null,
+  titleRow : null,
+  options : {isShiftRequired : false},
+  optList : null,
+  optBtn : {obj:null, width:13, height:17}, // button image object and size
+  initialized : false,
+  
+  init : function() {
+    if(this.initialized)
+      return;
+    
+    this.tooltip = document.getElementById('system_tooltip');
+    this.titleRow = getChildById(this.tooltip, "title");
+    this.optList = new List();
+    var itemDiv = document.createElement('div');
+    this.optList.appendItem(itemDiv);
+    this.optBtn.obj = getChildById(this.titleRow, "opt_btn");
+
+    this.initShiftPref();
+   
+    this.tooltip.appendChild(this.optList.div);
+    this.initialized = true;
+  },
+  onOptionsBtn : function() {
+    var style = advancedTooltip.optList.div.style;
+    advancedTooltip.optList.show(advancedTooltip.optBtn,
+                    'left', advancedTooltip.onOptListItemSelect, this.tooltip);
+  },
+  onOptListItemSelect : function(idx) {
+    if(idx == 0)
+      advancedTooltip.shiftPrefSwitch();
+    advancedTooltip.optList.hide();
+  },
+  showTitle : function()  {
+    if(!this.titleRow)
+      this.titleRow = getChildById(this.tooltip, "title");
+    this.titleRow.style.display = "";
+  },
+  hideTitle : function()  {
+    if(!this.titleRow)
+      this.titleRow = getChildById(this.tooltip, "title");
+    this.titleRow.style.display = "none";
+  },
+  // shift pref --------------------------------
+  isShiftRequired : function() {
+    return this.options.isShiftRequired;
+  },
+  initShiftPref : function () {
+	  if(Popup.isShiftRequired == null) {
+		  var aCookie = document.cookie.split("; ");
+		  var bValue = false;
+		  for (var i=0; i < aCookie.length; i++) {
+			  // a name/value pair (a crumb) is separated by an equal sign
+			  var aCrumb = aCookie[i].split("=");
+			  if (aCrumb[0] == "shift_pressed") {
+				  if(unescape(aCrumb[1]) == "yes")
+					  bValue = true;
+				  break;
+			  }
+		  }
+		  this.options.isShiftRequired = bValue;
+	  }
+    this.updateOptListItem(0);
+  },
+  shiftPrefSwitch : function () {
+    this.options.isShiftRequired = !this.options.isShiftRequired;
+	  // set cookie
+	  var sValue = this.options.isShiftRequired ? "yes" : "no";
+	  var expiresData = new Date();
+    expiresData.setTime(expiresData.getTime() + (1000 * 86400 * 365));
+    document.cookie = "shift_pressed=" + escape(sValue)
+        + "; expires=" + expiresData.toGMTString();
+
+    this.updateOptListItem(0);    
+  },
+  // ------------
+  updateOptListItem : function(idx) {
+    if(idx == 0) {
+      if(this.options.isShiftRequired)
+        this.optList.changeItemContent(idx, "show always");
+      else
+        this.optList.changeItemContent(idx, "show when shift pressed");
+    }
+  }
+}
+
