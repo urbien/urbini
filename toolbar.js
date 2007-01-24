@@ -201,17 +201,6 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		this.changeOpacity(this.div, 0.3);
 		this.isDisabled = true;  
 	}
-	/*
-	this._changeOpacity = function(level) {
-		try {
-			if(typeof this.div.style.MozOpacity != 'undefined')
-				this.div.style.MozOpacity = level;
-			else
-				this.div.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
-		}
-		catch(e){}
-	}
-	*/
 	// mouse handlers ---------------	
 	this.onMouseOver = function() {
 		if(i_am.isDisabled) return;
@@ -472,6 +461,9 @@ function ListItem(index, innerDiv, parent, noHighlight)
 	this.getInnerDiv = function() {
 		return this.innerDiv;
 	}
+	this.changeContent = function(html) {
+	  this.innerDiv.innerHTML = html;
+	}
 	
 	// mouse handlers
 	this.onMouseOver = function() {
@@ -540,6 +532,9 @@ function List(colAmt) {
       return;
     }
 		PopupHandler.showRelatively(hotspot, alignment, this.div, true, parentDlg);
+	}
+	this.hide = function() {
+	  PopupHandler.hide();
 	}	
 	this.appendItem = function(innerDiv) {
 		if(this.itemsArr == null)
@@ -553,6 +548,10 @@ function List(colAmt) {
 		}
 		this.itemsArr[idx] = new ListItem(idx, innerDiv, this);
 	}
+	this.changeItemContent = function(idx, html) {
+	  this.itemsArr[idx].changeContent(html);
+	}
+	
 	// needs for dropdown menu
 	this.setWidth = function(width) {
 		this.table.width = width;
@@ -578,7 +577,7 @@ function List(colAmt) {
 	this.onItemSelection = function(itemIdx) {
 		if(this.callback != null) {
 			this.callback(itemIdx);
-			PopupHandler.hide();
+			this.hide(); // PopupHandler.hide();
 		}
 	}
 	this.getItemObject = function(idx) {
@@ -1041,10 +1040,10 @@ var PopupHandler = {
 	// alignment: left, center, right
 	// hotspot is a control object
 	showRelatively : function(hotspot, alignment, div, autohide, parentDlg) {
-		var OFFSET_Y = 5;
+		var OFFSET_Y = 2;
 		// only 1 popup can be opened concurrently, except the overflow popup
 		if(this.popupDiv != null)
-			this.hide(hotspot.isOverflowed);
+			this.hide(typeof hotspot.isOverflowed != 'undefined' && hotspot.isOverflowed);
 		// above the overflow popup
 		if(this.overflowPopup != null) { 
 			div.style.zIndex = this.overflowPopup.style.zIndex + 1; 
@@ -1054,8 +1053,9 @@ var PopupHandler = {
 			parentDlg.appendChild(div);
 		else // if(div.parentNode.id != 'body')
 			document.body.appendChild(div);
-			
-		var pos = this.findObjectPositio(hotspot.div, parentDlg);
+		
+		var obj = hotspot.div || hotspot.obj;
+		var pos = this.findObjectPositio(obj, parentDlg);
 		if(alignment == 'left')
 			this.x = pos.left;
 		else if(alignment == 'center') 
@@ -1135,8 +1135,8 @@ var PopupHandler = {
 			}
 		}
 		else {
-			if (hotspot.x) curLeft += hotspot.x;
-			if (hotspot.y) curTop += hotspot.y;
+			if (obj.x) curLeft = obj.x;
+			if (obj.y) curTop = obj.y;
 		}
 		return {left: curLeft, top: curTop};
 	},
