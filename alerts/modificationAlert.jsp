@@ -8,7 +8,7 @@ Dear <property name="to" href="y"/>
 <br/><br/>
 The <property name="forum" type="y"/> <property name="forum" href="y"/> was modified.
 <br/>
-Changes made by <property name="to" href="y"> are below:
+Changes made by <property name="modification.modifiedBy" href="y"> are below:
 <propertySheet name="modification"/>
 <newComment/>
 Customer Service
