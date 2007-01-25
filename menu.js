@@ -6803,13 +6803,14 @@ var advancedTooltip = {
   },
   onOptionsBtn : function() {
     var style = advancedTooltip.optList.div.style;
+    this.updateOptListItem(0);    
     advancedTooltip.optList.show(advancedTooltip.optBtn,
                     'left', advancedTooltip.onOptListItemSelect, this.tooltip);
   },
   onOptListItemSelect : function(idx) {
+    advancedTooltip.optList.hide();
     if(idx == 0)
       advancedTooltip.shiftPrefSwitch();
-    advancedTooltip.optList.hide();
   },
   showTitle : function()  {
     if(!this.tooltip)
@@ -6851,10 +6852,9 @@ var advancedTooltip = {
     document.cookie = "shift_pressed=" + escape(sValue)
         + "; expires=" + expiresData.toGMTString();
 
-    //var tooltipObj = Popup.getPopup('system_tooltip');
-	  //tooltipObj.delayedClose();
-
-    this.updateOptListItem(0);    
+    var tooltipObj = Popup.getPopup('system_tooltip');
+	  if(tooltipObj)
+	    tooltipObj.delayedClose();
   },
   // ------------
   updateOptListItem : function(idx) {
