@@ -6812,13 +6812,13 @@ var advancedTooltip = {
     advancedTooltip.optList.hide();
   },
   showTitle : function()  {
-    if(!this.titleRow)
-      this.titleRow = getChildById(this.tooltip, "title");
+    if(!this.tooltip)
+      this.init();
     this.titleRow.style.display = "";
   },
   hideTitle : function()  {
-    if(!this.titleRow)
-      this.titleRow = getChildById(this.tooltip, "title");
+    if(!this.tooltip)
+      this.init();
     this.titleRow.style.display = "none";
   },
   // shift pref --------------------------------
@@ -6850,6 +6850,9 @@ var advancedTooltip = {
     expiresData.setTime(expiresData.getTime() + (1000 * 86400 * 365));
     document.cookie = "shift_pressed=" + escape(sValue)
         + "; expires=" + expiresData.toGMTString();
+
+    //var tooltipObj = Popup.getPopup('system_tooltip');
+	  //tooltipObj.delayedClose();
 
     this.updateOptListItem(0);    
   },
