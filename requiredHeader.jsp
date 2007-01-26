@@ -5,7 +5,7 @@
 	  <table  class="box" cellpadding="0" cellspacing="0" width="100%" border="0">
 		  <tr id="title">
       		<td><img src="images/tooltipTitle/left.gif" /></td>
-  			  <td background="images/tooltipTitle/center.gif" width="200px">
+					<td style="background-image:url(images/tooltipTitle/center.gif);" width="200">
     				<a href="javascript:advancedTooltip.onOptionsBtn();"><img id="opt_btn" src="images/tooltipTitle/options.gif" /></a>
 		    </td>
     		<td><img src="images/tooltipTitle/right.gif" /></td>
