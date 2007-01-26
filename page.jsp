@@ -34,8 +34,8 @@
 		    <chat                               />
 		    <showHideWindows                    />
         <include name="searchText.jsp"/>
-        <a href="#"><logo src="images/logo.gif" /></a>
-        <img allow="admin" id="menuLink_codeBehindThePage" title="View Source&lt;br&gt; This page is based solely on the declarative code that you can inspect by clicking on the links in popup" class="cursor" src="icons/codeBehindThePage.jpg" height="33" onclick="menuOnClick(event)" align="middle" />
+        <a href="#"><logo src="icons/logo.gif" srcLarge="icons/logo-large.gif" /></a>
+        <img allow="admin" id="menuLink_codeBehindThePage" title="View Source&lt;br&gt; This page is based solely on the declarative code that you can inspect by clicking on the links in popup" class="cursor" src="icons/codeBehindThePage.gif" height="33" onclick="menuOnClick(event)" align="middle" />
     </td>
   </tr>
   <tr>
