@@ -7,58 +7,45 @@
   <div nonPda="T">
     <include name="requiredHeader.jsp"/>
     <include name="include/commonHeader.jsp"/>
-<menuBar id="menuBar1">
 <getResource/>
-<table width="100%" cellspacing="0" cellpadding="0" border="0" align="center" class="toppad">
-  <tr valign="top">
-  <td valign="top">
-   <table cellspacing="0" cellpadding="0" border="0" align="center">
+<menuBar id="menuBar1">
+<!--div style="padding-top:10;white-space:nowrap" /-->
+<table width="100%" cellspacing="0" cellpadding="0" border="0" id="mainMenu" class="toppad">
    <tr>
     <td>
-      <table cellpadding="0" cellspacing="0" class="tabs">
-      <tr>
-        <td nowrap="nowrap"><menu toolbar="file" activate="onMouseOver"/></td>
+        <menu toolbar="file" activate="onMouseOver"/>
 		    <!--include name="${package}_menu.jsp"/-->
-		    <td nowrap="nowrap"><menu toolbar="toolbar1"            /></td>
-		    <td nowrap="nowrap"><menu toolbar="trades"              /></td>
-		    <td nowrap="nowrap"><menu toolbar="scheduling"          /></td>
-		    <td nowrap="nowrap"><menu toolbar="products"            /></td>
-		    <td nowrap="nowrap"><menu toolbar="crm"                 /></td>
-		    <td nowrap="nowrap"><menu toolbar="projectManagement"   /></td>
-		    <td nowrap="nowrap"><menu toolbar="realEstate"          /></td>
-		    <td nowrap="nowrap"><menu toolbar="helpdesk"           allow="admin" /></td>
-		    <td nowrap="nowrap"><menu toolbar="transport"           /></td>
-		    <td nowrap="nowrap"><menu toolbar="search"              /></td>
-		    <td nowrap="nowrap"><menu toolbar="toolbar2"            /></td>
-		    <td nowrap="nowrap"><menu toolbar="personalization"     /></td>
-		    <td nowrap="nowrap"><menu toolbar="calendarAndChart"   itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem,http://www.hudsonfog.com/voc/model/company/Contact" /></td>
-		    <td nowrap="nowrap"><print image="icons/printerIcon.gif"/></td>
-		    <td nowrap="nowrap"><saveInExcel allow="owner" image="images/excel.gif"/></td>
-		    <!--td nowrap="nowrap"><pdaToPc image="icons/pda.gif"      /></td-->
-		    <td nowrap="nowrap"><chat                               /></td>
-		    <td nowrap="nowrap"><showHideWindows                    /></td>
-	    </tr>
-	    </table>
+		    <menu toolbar="toolbar1"            />
+		    <menu toolbar="trades"              />
+		    <menu toolbar="scheduling"          />
+		    <menu toolbar="products"            />
+		    <menu toolbar="crm"                 />
+		    <menu toolbar="projectManagement"   />
+		    <menu toolbar="realEstate"          />
+		    <menu toolbar="helpdesk"           allow="admin" />
+		    <menu toolbar="transport"           />
+		    <menu toolbar="search"              />
+		    <menu toolbar="toolbar2"            />
+		    <menu toolbar="personalization"     />
+		    <menu toolbar="calendarAndChart"   itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem,http://www.hudsonfog.com/voc/model/company/Contact" />
+		    <print image="icons/printerIcon.gif"/>
+		    <saveInExcel allow="owner" image="images/excel.gif"/>
+		    <!--pdaToPc image="icons/pda.gif"      /-->
+		    <chat                               />
+		    <showHideWindows                    />
+        <include name="searchText.jsp"/>
+        <a href="#"><logo src="images/logo.gif" /></a>
+        <img allow="admin" id="menuLink_codeBehindThePage" title="View Source&lt;br&gt; This page is based solely on the declarative code that you can inspect by clicking on the links in popup" class="cursor" src="icons/codeBehindThePage.jpg" height="33" onclick="menuOnClick(event)" align="middle" />
     </td>
-    <td valign="middle" align="right" width="100">
-      <include name="searchText.jsp"/>
-    </td>
-    <td valign="top" nowrap="nowrap">
-      <a href="#"><IMG src="images/logo.gif" border="0" height="32" align="right" /></a>
-    </td>
-   </tr></table></td>
-	  <td align="right">  
-<hideBlock>
-      <img allow="admin" id="menuLink_codeBehindThePage" title="View Source&lt;br&gt; This page is based solely on the declarative code that you can inspect by clicking on the links in popup" class="cursor" src="icons/codeBehindThePage.jpg" height="33" onclick="menuOnClick(event)"/>
-</hideBlock>
-	  </td>
   </tr>
-  <tr><td colspan="2" class="line" height="40" valign="middle"><resourceTypeLabel/></td></tr>
+  <tr>
+    <td class="line" valign="middle"><resourceTypeLabel/></td>
+  </tr>
   <tr bgcolor="#F1F1F1">
-    <td class="welcome" valign="top" colspan="2">
-	  <table width="100%" cellspacing="0" cellpadding="0" border="0" align="center">
+    <td>
+	  <table width="100%">
 	  <tr>
-	    <td>
+      <td class="welcome" valign="top">
 	      <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" align="absmiddle"/></a>
 	      <changePassword/><userLogOff html="user-login.html"/><registerNewUser/><myProfile property="unread" />
 	    </td>
@@ -69,7 +56,9 @@
 	  </table>
   </td>
   </tr>
-  <tr><td colspan="2" align="middle"><alphabeticIndex/></td></tr>
+  <tr>
+    <td align="middle"><alphabeticIndex/></td>
+  </tr>
 </table>
 </menuBar>
 <hideBlock>
