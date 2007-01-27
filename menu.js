@@ -5047,7 +5047,7 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
       for (var ii=0; ii<trElms.length; ii++) {
         if (trElms[ii].tagName.toLowerCase() != 'tr')
           continue;
-        else if (headerIdx)
+        else if (headerIdx  && pos == 1)
           pos = ii;
         else if (trElms[ii].id == 'header')
           headerIdx++;
