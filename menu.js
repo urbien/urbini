@@ -1498,7 +1498,7 @@ function listboxOnClick(e) {
   target = getTargetElement(e);
   if (!target)
     return;
-  if (target.tagName != "IMG")
+  if (target.tagName.toUpperCase() != "IMG")
     return;
   var imgId = target.id;
   listboxOnClick1(e, imgId);
@@ -5045,7 +5045,7 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
       var trNmb = 0;
       var headerIdx = 0;
       for (var ii=0; ii<trElms.length; ii++) {
-        if (trElms[ii].tagName != 'tr')
+        if (trElms[ii].tagName.toLowerCase() != 'tr')
           continue;
         else if (headerIdx)
           pos = ii;
@@ -6025,7 +6025,7 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
 
 function openAjaxStatistics(event, http_request) {
   var target = event.target;
-  if (!target || !target.tagName || target.tagName.toUpperCase != 'IMG' || target.id.indexOf('codeBehindThePage') == -1)
+  if (!target || !target.tagName || target.tagName.toUpperCase() != 'IMG' || target.id.indexOf('codeBehindThePage') == -1)
     return;
 
   var tdSql = document.getElementById("ajax_sql");
