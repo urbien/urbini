@@ -109,6 +109,10 @@ Popup.ns6  = (Popup.w3c && navigator.appName.indexOf("Netscape")>= 0) ? true : f
 Popup.maemo= (Popup.w3c && navigator.userAgent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
+
+// for forced position of popup 
+Popup.POS_LEFT_TOP = 'left_top';
+
 /**
  * returns iframe that serves as a canvas for this popup (overlaying the
  * underlying form fields)
@@ -3266,6 +3270,13 @@ function Dim() {
 }
 
 function getElementPosition(elem, e) {
+  // special position that is relative to the element
+  if(typeof elem.forcedPosition != 'undefined') {
+    var scrollXY = getScrollXY();
+    if(elem.forcedPosition == Popup.POS_LEFT_TOP)
+      return {left : scrollXY[0] + 10, top : scrollXY[1]};
+  }
+  
   var xy;
   if (e && !e.type.startsWith('key')) {
     xy = getMouseEventCoordinates(e);
@@ -4203,6 +4214,7 @@ function showLargeImage(e, current, largeImageUrl) {
     largeImageUrl = file1 + '_image' + ext;
 
 	  hotspot1 = target;
+	  hotspot1.forcedPosition = Popup.POS_LEFT_TOP;
 	  addEvent(img, 'load',  largeImageOnLoad,  false);
 	  img.src = "";
 	  img.src = largeImageUrl;
@@ -4230,8 +4242,8 @@ function showLargeImage(e, current, largeImageUrl) {
 	  titleObj.noWrap = true;
   }
 
-
   hotspot1 = current;
+  hotspot1.forcedPosition = Popup.POS_LEFT_TOP;
   addEvent(img, 'load',  largeImageOnLoad,  false);
   img.src = largeImageUrl;
   return true;
