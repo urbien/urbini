@@ -10,7 +10,7 @@
         window.alert("nothing to add. Please, select the panel you'd like to add.");
         return;
       }
-      
+
       // since new board is added then target must be ampty
       document.getElementById("dashBoard").target = '';
 
@@ -22,7 +22,7 @@
       //document.getElementById('location').value = window.location;//getLocation();//window.location;
 
       // corresponding panel(i)URIs value must be appended by the URI that must be added to this column.
-      document.getElementById(panel + 'URIs').value = document.getElementById('itemToAdd').value + ";" + document.getElementById(panel + 'URIs').value; 
+      document.getElementById(panel + 'URIs').value = document.getElementById('itemToAdd').value + ";" + document.getElementById(panel + 'URIs').value;
 
       //window.alert(document.dashBoard.panel1URIs.value);
       // submit dashboard form
@@ -35,25 +35,25 @@
       document.getElementById('dashBoardParseFile').value = params.parseFile; //document.getElementById('location').value;
 	  document.getElementById('dashBoardSaveFile').value = params.saveFile;
 	  document.getElementById('dashBoardHomeDashboard').value = params.homeDashboard;
-      
+
       document.getElementById('dashBoard').submit();
     }
- 
+
     // bookmark that must be added
     function setItemToAdd(value) {
       document.getElementById('itemToAdd').value = value;
     }
-    
+
     // constructs panel(i)URIs values so that they will contain the id's of the boards that are displayed
     // id is something like this lyr_randomInt|_bookmarkURI
     function setPanelsURIsLists() {
       //for(i=1;i<numberOfcolumns;i++)
       //  document.getElementById('panel'+i+'URIs').value = replaceAllRecursion(getURIsListForPanel('panel'+i), "amp;amp;", "&");
-      
+
       document.getElementById('panel1URIs').value = replaceAllRecursion(getURIsListForPanel('panel1'), "amp;amp;", "&");
       document.getElementById('panel2URIs').value = replaceAllRecursion(getURIsListForPanel('panel2'), "amp;amp;", "&");
       document.getElementById('panel3URIs').value = replaceAllRecursion(getURIsListForPanel('panel3'), "amp;amp;", "&");
-      
+
     }
 
     // constructs panel(i)URIs values so that they will contain just the bookmarks URIs that must be displayed
@@ -62,7 +62,7 @@
       document.getElementById('panel2URIs').value = replaceAllRecursion(getClearURIsListForPanel('panel2'), "amp;amp;", "&");
       document.getElementById('panel3URIs').value = replaceAllRecursion(getClearURIsListForPanel('panel3'), "amp;amp;", "&");
     }
-    
+
     // constructs panel(i)URIs values so that they will contain the id's of the boards that are displayed
     // id is something like this lyr_randomInt|_bookmarkURI
     function getURIsListForPanel(panelName) {
@@ -74,11 +74,11 @@
           return s;
         }
     }
-    
+
     // constructs panel(i)URIs values so that they will contain just the bookmarks URIs that must be displayed
     function getClearURIsListForPanel(panelName) {
 	  if(aElts == null)
-		return null;	
+		return null;
       var s = "";
       for(j=1;j<=numberOfcolumns;j++)
         if(panelName == "panel" + j) {
@@ -102,13 +102,13 @@
       document.getElementById('addRemovePanel').style.height = maxHeight - 20;// + 50;
       //fadeBoards(); // d&d bug: if draggable layer contains link directly under mouse cursor - link is clicked on drop
     }
-    
+
     // function that removes board from the page
     function removeBoard(boardId, panelName) {
 	  var boardTitleObj = document.getElementById(boardId);
       if(boardTitleObj == null)
 			return;
-      
+
       // 1. remove from the array of boards on the page
       remove(aElts, boardTitleObj, 10);
       var parentContainer = boardTitleObj.parentNode;
@@ -116,29 +116,29 @@
 	  // 2. remove board as DOM object
 	  // 2.1. remove the title.
 	  parentContainer.removeChild(boardTitleObj);
-	
-	  // 2.2 remove the board body	
+
+	  // 2.2 remove the board body
       var boarContainerObj = document.getElementById('main'+boardId);
 	  // ' innerHTML = "" ' prevents from IE's crash.
 	  boarContainerObj.innerHTML = "";
 	  parentContainer.removeChild(boarContainerObj);
-		
+
 	 //	3.
 	 // remove a board from a "list" of dragable DIVs
 	 removeDragableObj(boardId);
-	
-    
+
+
 	  document.getElementById(panelName+'URIs').value = document.getElementById(panelName+'URIs').value.replace(boardId + ';', ''); // remove board from the list of boards in the column (in the panel)
       makeBoardsAlligned();
 
       document.getElementById("dashBoard").target='dashboardIframe';
       setPanelsClearURIsLists();
-      
+
       // "saveFile" & "parseFile" must be without suffix Edit!
       var loc = window.location.href.replace("Edit", "");
-      document.getElementById('location').value = window.location; 
+      document.getElementById('location').value = window.location;
       document.getElementById('isClosePanel').value = 'true';
-      
+
       document.getElementById('dashBoardPanel1URIs').value = document.getElementById('panel1URIs').value;
       document.getElementById('dashBoardPanel2URIs').value = document.getElementById('panel2URIs').value;
       document.getElementById('dashBoardPanel3URIs').value = document.getElementById('panel3URIs').value;
@@ -148,11 +148,11 @@
 	  document.getElementById('dashBoardSaveFile').value = loc;
 
       document.getElementById('dashBoard').submit();
-      
+
       document.getElementById('isClosePanel').value = 'false';
       document.getElementById("dashBoard").target=window;
     }
-    
+
     function findPosY(obj) {
       var curtop = 0;
       if (obj.offsetParent) {
@@ -165,7 +165,7 @@
         curtop += obj.y;
       return curtop;
     }
-    
+
     function findPosX(obj) {
       var curleft = 0;
       if (obj.offsetParent) {
@@ -178,16 +178,16 @@
         curleft += obj.x;
       return curleft;
     }
-    
+
     function replaceAllRecursion(str, replStr, replWithStr) {
 	  if(str == null)
-		return;	
+		return;
       if(str.indexOf(replStr)>=0)
         return replaceAllRecursion(str.replace(replStr, replWithStr), replStr, replWithStr)
        else
 	       return str;
     }
-    
+
     function addEvent(obj, evType, fn){
  	    if (obj.addEventListener){
   	    obj.addEventListener(evType, fn, true);
@@ -199,14 +199,14 @@
 			      return false;
   			   }
     }
-       
-    // There are 2 possible variant    
-    // 1. URL on existent dashboard; no parameter.    
+
+    // There are 2 possible variant
+    // 1. URL on existent dashboard; no parameter.
     // 2. New dashboard.
     function getUrlParams() {
     	var NEW_CREATOR = "blankEdit";
 	    var urlData = parseURL();
-    
+
 		// without "Edit" suffix
 		var creatorPath = urlData.path.replace("Edit", "");
 		// new path for case of creation and the same for already exist file
@@ -214,18 +214,18 @@
 		newPath = newPath.replace("Edit", "");
 		return {saveFile:newPath, parseFile: creatorPath, homeDashboard: urlData.homeDashboard};
     }
-    
+
     function initDashboard() {
 		// it ensures immediate allignment
 		if(typeof makeBoardsAlligned != 'undefined') {
-				makeBoardsAlligned(); 
-				makeAddRemovePanelAlligned(); 
+				makeBoardsAlligned();
+				makeAddRemovePanelAlligned();
 				setPanelsURIsLists();
 		}
 		// litbox
 		initDbList();
     }
-    
+
     // fillls in the dashboard list
     // the data are in a global variable/string dbListData.
     function initDbList() {
@@ -233,19 +233,19 @@
    		// (meanwhile here) set tile in FF.
    		var curDashUrl = unescape(window.location.href);
 		document.title = curDashUrl;
-		
+
 		var dbList = document.getElementById("db_list");
 		if(dbList == null)
 			return;
-		
+
 		// check if there are 2 strings at list.
 		if(typeof dbListData == 'undefined')
 			return;
-		
+
 		var dbArr = dbListData.split(";"); // ";" - separator
 		if(dbArr.length < 3) // <select> + 2 dashboards
 			return;
-		
+
 		dbList.onchange = goToOtherDashboard;
 		// add options to the list
 		for(var i = 0; i < dbArr.length; i++) {
@@ -254,56 +254,56 @@
 					continue;
 				var optObj = document.createElement("option");
 				optObj.value = dbArr[i];
-				
+
 				g_dbNames[i] = getDashboardName(dbArr[i]);
-				
+
 				var textObj = document.createTextNode(g_dbNames[i]);
 				optObj.appendChild(textObj);
 				dbList.appendChild(optObj);
 			}
 		}
     }
-	
+
 	function isEditMode() {
 		var loc =  window.location.href;
 		if(loc.indexOf("Edit.html") != -1)
 			return true;
 		return false;
 	}
-	
+
 	// returns filename (without extension!)
     function getDashboardName(fullPath) {
 		if(typeof fullPath == 'undefined')
 			fullPath = window.location.href;
 		var start = fullPath.lastIndexOf("/") + 1;
 		var end   = fullPath.lastIndexOf(".");
-		
+
 		if(start == -1 || end == -1 || start > end)
 			return fullPath;
-		
+
 		return fullPath.substring(start, end);
     }
-        
+
     function goToOtherDashboard() {
 		var dbList = document.getElementById("db_list");
 		var newLoc = dbList.options[dbList.selectedIndex].value;
 		window.location = newLoc; // allow history record
     }
-    
+
     function editDashboard() {
 		if(checkIfUserLogged() == false)
 			return;
 		var editLoc = (window.location+'').replace('.html','Edit.html');
 		document.location = editLoc;
     }
-    
+
     function finishEdit() {
    		if(window.location.href.indexOf("blankEdit.html") != -1) {
 			isConfirmed = window.confirm("Finish editing without added boards\nleads to the loss of the dashboard!");
 			if(!isConfirmed)
 				return;
 		}
-		
+
 		var loc = "";
 		var params = getUrlParams();
 		if(params.saveFile.localeCompare(params.parseFile) != 0) {
@@ -313,14 +313,14 @@
 		}
 		else
 			loc = params.saveFile;
-		
+
 		document.location = loc;
 	}
-    
+
     function createDashboard(isHomeDashboard) {
 		if(checkIfUserLogged() == false)
 			return;
-			
+
 		var newFileName = document.getElementById("createDashboard").value;
 		// check correct file name
 		if(newFileName == null || newFileName.length == 0) {
@@ -345,7 +345,7 @@
 		var goLoc = curLocation.substring(0, idx) + "blankEdit.html?name=" + newFileName;
 		if(isHomeDashboard)
 			goLoc += "&homeDashboard=yes";
-		
+
 		document.location = goLoc;
 	}
 
@@ -354,17 +354,17 @@
 			return;
 		if(checkIfDashboardIsSaved() == false)
 			return;
-			
+
 		document.getElementById("homeDashboard_ctrl").style.visibility = "hidden";
 		document.getElementById("homeDashboard_text").innerHTML = "processing...";
-		
+
 		var url = getServletUrl();
 		var parameters = "saveFile=" + window.location.href;
 		parameters += "&homeDashboard=yes";
-		
+
 		postRequest_dashboard(url, parameters, onSetAsHomeDashboard);
 	}
-	
+
 	function onSetAsHomeDashboard(isOk) {
 	    var obj = document.getElementById("homeDashboard_text");
 	    if(obj == null)
@@ -383,7 +383,7 @@
 			return;
 		if(checkIfDashboardIsSaved() == false)
 			return;
-	
+
 		var renInp = document.getElementById("renameDashboard_input");
 		var newName = renInp.value;
 		// check correct file name
@@ -393,15 +393,15 @@
 		}
 		if(checkDashboardName(newName) == false)
 			return;
-		
+
 		renInp.style.visibility = "hidden";
 		document.getElementById("renameDashboard_ctrl").style.visibility = "hidden";
 		document.getElementById("renameDashboard_text").innerHTML = "processing...";
-		
+
 		url = getServletUrl();
 		var parameters = "saveFile=" + window.location.href;
 		parameters += "&newName=" + newName;
-		
+
 		postRequest_dashboard(url, parameters, onRenameDashboard);
 	}
 
@@ -416,7 +416,7 @@
 			// add Edit suffix, because this command in edit mode now.
 			if(newloc.indexOf("Edit.html") == -1)
 				newloc = newloc.replace(".html", "Edit.html");
-				
+
 			document.location.replace(newloc);
 		}
 		else {
@@ -424,7 +424,7 @@
 			obj.style.color = "#FF0000";
 		}
 	}
-	
+
 	function deleteDashboard() {
 		if(checkIfUserLogged() == false)
 			return;
@@ -434,17 +434,17 @@
 		isConfirmed = window.confirm("To delete this dashboard?");
 		if(!isConfirmed)
 			return;
-		
+
 		document.getElementById("deleteDashboard_ctrl").style.visibility = "hidden";
 		document.getElementById("deleteDashboard_text").innerHTML = "processing...";
-		
+
 		url = getServletUrl();
 		var parameters = "saveFile=" + window.location.href;
 		parameters += "&delete=yes";
-		
+
 		postRequest_dashboard(url, parameters, onDeleteDashboard);
 	}
-	
+
 	function onDeleteDashboard(isOk, respText) {
 		var obj = document.getElementById("deleteDashboard_text");
 	    if(obj == null)
@@ -453,7 +453,7 @@
 			//window.alert("The dashboard is deleted.\nHome dashboard will be loaded.");
 			obj.innerHTML = "Deleted. Home dashboard loading...";
 			document.location.replace(respText);
-			 
+
 		}
 		else {
 			obj.innerHTML = "faild to delete the  dashboard";
@@ -468,10 +468,10 @@
 			loc = url;
 		else
 			loc = window.location.href;
-		
+
 		var tmp1 = loc.split("?");
 		retArr['path'] = tmp1[0];
-		
+
 		// required parameters
 		if(typeof tmp1[1] != 'undefined') {
 			var tmp2 = tmp1[1].split("&");
@@ -491,7 +491,7 @@
 		for(var i = 0; i < tmp1.length - 2; i++)
 			url += tmp1[i] + "/";
 		url += DASHBOARD_MAP;
-		
+
 		return url;
 	}
 
@@ -499,8 +499,8 @@
 * check functions
 ******************************************************************/
     function checkIfUserLogged() {
-		if(document.getElementById('loggedContact').href == null) {
-		    window.alert('You have to log in before making this operation.');
+		if(document.getElementById('-inner.loggedContact').href == null) {
+		    window.alert('Sorry, you have to log in first.');
 			return false;
 		}
 		return true;
@@ -526,25 +526,25 @@
 		}
 		return true;
 	}
-	
+
 	function checkIfDashboardIsSaved() {
 		if(window.location.href.indexOf("blankEdit.html") != -1) {
 			window.alert("You have to add, at least, one board\nbefore performance of this command.");
-			return false;			
+			return false;
 		}
-		return true;		
+		return true;
 	}
-	
+
 /************************************************
 * ajax
 * returns true in 1st param of the -callback- function
-* format of callback(isOk, responseText, responseXML);	
+* format of callback(isOk, responseText, responseXML);
 *************************************************/
 function postRequest_dashboard(url, parameters, callback) {
 	var http_request;
 
 	// create XMLHttpRequest object
-	this.createXMLHttpObj = function() {	
+	this.createXMLHttpObj = function() {
 		if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla, Safari,...
 			try {
 			http_request = new XMLHttpRequest();
@@ -598,7 +598,7 @@ function postRequest_dashboard(url, parameters, callback) {
 		}
 		return returnValue;
 	};
-	
+
 	// send request
 	this.sendRequest = function() {
 		http_request.onreadystatechange = this._onreadystatechange;
@@ -616,11 +616,11 @@ function postRequest_dashboard(url, parameters, callback) {
 		http_request.send(parameters);
 	}
 
-	// onreadystatechange 
+	// onreadystatechange
 	this._onreadystatechange = function() {
 		if (http_request.readyState != 4)
 			return;
-		
+
 		var status;
 		var responseText = null;
 		var responseXML = null;
@@ -641,7 +641,7 @@ function postRequest_dashboard(url, parameters, callback) {
 			else
 				status = 400;
 		}
-		
+
 		// finish. call a callback function.
 		callback((status == 200), http_request.responseText, http_request.responseXML);
 	};
