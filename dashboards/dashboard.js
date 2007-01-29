@@ -324,7 +324,7 @@
 		var newFileName = document.getElementById("createDashboard").value;
 		// check correct file name
 		if(newFileName == null || newFileName.length == 0) {
-			window.alert("Type a new dashboard name.");
+			window.alert("Please enter dashboard name.");
 			return;
 		}
 		if(checkDashboardName(newFileName) == false)
