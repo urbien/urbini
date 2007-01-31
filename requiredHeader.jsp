@@ -2,7 +2,7 @@
   <div id="pane2" style="position:absolute; visibility:hidden;" />
   
   <div id="system_tooltip" style="visibility:hidden; padding:0; position:absolute; background-color:#fffedc; z-index:10000; top:0px; left:-400px; width:220px;">
-	  <table  class="box" cellpadding="0" cellspacing="0" width="100%" border="0">
+	  <table  class="box" cellpadding="0" cellspacing="0" width="100%" border="0" style="background-color:#fffedc;">
 		  <tr id="title">
       		<td><img src="images/tooltipTitle/left.gif" /></td>
 					<td style="background-image:url(images/tooltipTitle/center.gif);" width="200">
