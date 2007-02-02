@@ -11,7 +11,17 @@
     <br/>		
 		This alert is related to <property name="mainWorkEffort" type="y"/> <property name="mainWorkEffort" href="y"/>
 		<propertySheet name="partyResource"/>
-    <br/>		
+  </td>
+</tr>
+<tr>
+  <td width="2%"></td>
+  <td width="98%" class="propertySheet">
+		<propertySheet adTitle="Assignments" name="partyResource.assignments" displayInPlace="y"/>
+  </td>
+</tr>
+<tr>
+  <td width="2%"></td>
+  <td>
     <newComment/>
 		<br/>
 		Customer Service
