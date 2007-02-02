@@ -8,6 +8,7 @@
   <link href="styles/menu.css"       type="text/css" rel="stylesheet" />
   <link href="styles/tree.css"       type="text/css" rel="stylesheet" />
   <link href="calendar/calendar.css" type="text/css" rel="stylesheet" />
+  <link href="imageAnnotation/PhotoNotes.css" type="text/css" rel="stylesheet" />
 
   <script src="menu.js"                  language="JavaScript" type="text/javascript"></script>
   <!--script src="searchHighlighting.js"    language="JavaScript" type="text/javascript"></script-->
@@ -22,6 +23,8 @@
 
   <script src="toolbar.js" language="JavaScript" type="text/javascript"></script>
   <script src="styleSheet/style_sheet.js"   language="JavaScript" type="text/javascript"></script>
+
+  <script src="imageAnnotation/PhotoNotes.js" language="JavaScript" type="text/javascript"></script>
 
  <getResource/>
   <siteTitle />
