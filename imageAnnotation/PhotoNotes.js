@@ -374,6 +374,9 @@ PhotoNote.prototype.CreateElements = function()
             
             if(currentNote.onsave) 
             {
+                // hack / fix by A. L.
+                currentNote.text = newTextbox.value;
+                
                 var res = currentNote.onsave(currentNote);
                 if(res > 0)
                 {
