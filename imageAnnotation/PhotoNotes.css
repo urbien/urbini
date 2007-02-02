@@ -1,0 +1,194 @@
+
+
+/*
+The overall container: always has class="fn-container", and also one of:
+container-inactive container-active
+*/
+
+.fn-container {
+ position: relative;
+}
+
+.fn-container img {
+ border-width: 0;
+}
+
+.fn-area 
+{
+	position: absolute;
+	border:none;
+	border: 0px solid #D4D82D;
+	margin:1px;
+}
+
+.fn-area-blackborder
+{
+	border: 1px solid #000;
+}
+
+.fn-area-whiteborder
+{
+	border: 1px solid #FFF;	
+}
+
+
+
+.fn-area-inner
+{
+	border: 1px solid #000000;
+	background-color:#FFF;
+	filter:alpha(opacity=0);
+	-moz-opacity:0;
+	opacity: .0;
+	cursor: pointer;
+}
+
+.fn-note 
+{
+	position: absolute;
+	max-width: 200px;
+	padding: 5px;
+	display:none;
+	cursor:default;
+	z-index:5000;
+}
+
+.fn-note-text
+{
+	background-color: #FFEECC;
+	border: 1px solid #000000;
+	padding: 5px;
+	-moz-border-radius: 7px; /* Non-standard */
+}
+
+.fn-note-edit-text
+{
+	background-color: #FFEECC;
+	border: 1px solid #000000;
+	padding: 5px;
+	-moz-border-radius: 7px; /* Non-standard */
+}
+.fn-note-edit
+{
+	display:none;
+}
+
+.fn-note-edit TEXTAREA
+{
+	background-color:#FFEECC;
+	border:0;
+	overflow:visible;
+	margin-bottom:10px;
+	padding:0;
+	width:180px;
+	font-size: 10pt;
+	margin:0;
+}
+
+
+.Butt 
+{
+	font: bold 12px Arial, Helvetica, sans-serif; 
+	color: #FFFFFF; 
+	background: #0063DC; 
+	border-top-width: 1px; 
+	border-right-width: 1px; 
+	border-bottom-width: 1px; 
+	border-left-width: 1px; 
+	border-top-style: solid; 
+	border-right-style: solid; 
+	border-bottom-style: solid; 
+	border-left-style: solid; 
+	border-top-color: #7CBAFF; 
+	border-right-color: #2854A7; 
+	border-bottom-color: #2854A7; 
+	border-left-color: #7CBAFF; 
+
+	margin-right:4px;
+	margin-top:5px;
+
+}
+.CancelButt 
+{ 
+	color: #000000; 
+	background: #d9d9d5; 
+	border-top-width: 1px; 
+	border-right-width: 1px; 
+	border-bottom-width: 1px; 
+	border-left-width: 1px; 
+	border-top-style: solid; 
+	border-right-style: solid; 
+	border-bottom-style: solid; 
+	border-left-style: solid; 
+	border-top-color: #fff; 
+	border-right-color: #b6aeb3; 
+	border-bottom-color: #b6aeb3; 
+	border-left-color: #fff; 
+	font: 12px Arial, Helvetica, sans-serif; 
+
+	margin-right:4px;	
+}
+.DeleteButt { color: #000000; background: #DCE0E6; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-style: solid; border-right-style: solid; border-bottom-style: solid; border-left-style: solid; border-top-color: #F5F6F7; border-right-color: #BFB7BC; border-bottom-color: #BFB7BC; border-left-color: #F5F6F7; font: 12px Arial, Helvetica, sans-serif; }
+
+
+
+/* Note drag/resize UI */
+
+.dragresize {
+ position: absolute;
+ width: 5px;
+ height: 5px;
+ font-size: 1px;
+ background: white;
+ border: 1px solid black;
+}
+
+.dragresize-tl {
+ top: -8px;
+ left: -8px;
+ cursor: nw-resize;
+}
+.dragresize-tm {
+ top: -8px;
+ left: 50%;
+ margin-left: -4px;
+ cursor: n-resize;
+}
+.dragresize-tr {
+ top: -8px;
+ right: -8px;
+ cursor: ne-resize;
+}
+
+.dragresize-ml {
+ top: 50%;
+ margin-top: -4px;
+ left: -8px;
+ cursor: w-resize;
+}
+.dragresize-mr {
+ top: 50%;
+ margin-top: -4px;
+ right: -8px;
+ cursor: e-resize;
+}
+
+.dragresize-bl {
+ bottom: -8px;
+ left: -8px;
+ cursor: sw-resize;
+}
+.dragresize-bm {
+ bottom: -8px;
+ left: 50%;
+ margin-left: -4px;
+ cursor: s-resize;
+}
+.dragresize-br {
+ bottom: -8px;
+ right: -8px;
+ cursor: se-resize;
+}
+
+
+
