@@ -5248,7 +5248,8 @@ function showTab(e, td, hideDivId, unhideDivId) {
   }
 
   execJS.runDivCode(curDiv);
-
+  ImageAnnotations.onTabSelection(curDiv);
+ 
   return stopEventPropagation(e);
 }
 var curSpan;
@@ -6025,6 +6026,8 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
 }
 
 function openAjaxStatistics(event, http_request) {
+  if(!event)
+    return;
   var target = event.target;
   if (!target || !target.tagName || target.tagName.toUpperCase() != 'IMG' || target.id.indexOf('codeBehindThePage') == -1)
     return;
@@ -6701,6 +6704,8 @@ function clone (o, deep) {
 // postRequest.
 // Thus the needs for this specific clone.
 function cloneEvent(eventObj) {
+  if(!eventObj)
+    return;
   if(typeof eventObj.cloned != 'undefined' && eventObj.cloned == true)
     return eventObj;
 
