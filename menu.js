@@ -110,7 +110,7 @@ Popup.maemo= (Popup.w3c && navigator.userAgent.indexOf("Maemo") >= 0) ? true : f
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
 
-// for forced position of popup 
+// for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
 
 /**
@@ -1502,7 +1502,7 @@ function listboxOnClick(e) {
     return;
   var imgId = target.id;
   listboxOnClick1(e, imgId);
-  
+
   stopEventPropagation(e);
 }
 
@@ -2032,12 +2032,12 @@ function autoComplete1(e, target) {
        currentPopup.close();
      return true;
    case 8:   // backspace or "C" in S60
-    if(Popup.s60Browser) { 
+    if(Popup.s60Browser) {
       if (currentPopup && currentPopup.isOpen()) {
           currentPopup.close(); // the same like esc
         }
         return stopEventPropagation(e);
-    } 
+    }
    case 46:  // delete
      break;
   }
@@ -2287,7 +2287,8 @@ function getFormFilters(form, allFields, exclude) {
 
     if (!type || !name)
       continue;
-    if (type.toUpperCase() == "SUBMIT")
+    type = type.toLowerCase();
+    if (type == "submit")
       continue;
     if (!allFields) {
       if (!wasFormFieldModified(field))
@@ -2299,7 +2300,7 @@ function getFormFilters(form, allFields, exclude) {
 // if (currentFormName != "horizontalFilter") {
       if (value == ''  ||  value == "All")
         continue;
-      if (type.toLowerCase() == "checkbox" ) {
+      if (type == "checkbox" || type == "radio" ) {
         if (field.checked == false)
           continue;
         }
@@ -3276,7 +3277,7 @@ function getElementPosition(elem, e) {
     if(elem.forcedPosition == Popup.POS_LEFT_TOP)
       return {left : scrollXY[0] + 10, top : scrollXY[1]};
   }
-  
+
   var xy;
   if (e && !e.type.startsWith('key')) {
     xy = getMouseEventCoordinates(e);
@@ -5719,8 +5720,8 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
                       // through' the popup
     istyle.visibility  = Popup.VISIBLE;
   div.style.visibility = Popup.VISIBLE; // finally make div visible
-  
-  // used to close divs on "C" and for dialogs   
+
+  // used to close divs on "C" and for dialogs
   closingOnEsc.ready(div);
 }
 
@@ -6086,7 +6087,7 @@ function loadingCueStart(e, hotspot) {
   var ttDiv = document.getElementById("system_tooltip");
   var ttIframe = document.getElementById("tooltipIframe");
   var loadingMsg = "<div style='vertical-align: middle; font-size: 14px; color:#000000; margin:2; padding:5px;'><b> loading . . . </b></div>";
-  
+
   advancedTooltip.hideTitle();
   Popup.open(e, ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
 }
@@ -6781,10 +6782,10 @@ var closingOnEsc = {
     if(div.id == 'pane2')
       hideInnerDiv(e);
     // 2. popup
-    else if(div.className == 'popMenu') { 
+    else if(div.className == 'popMenu') {
       Popup.close0(div.id)
    }
-      
+
     div = null;
     stopEventPropagation(e);
     return false;
@@ -6802,11 +6803,11 @@ var advancedTooltip = {
   optList : null,
   optBtn : {obj:null, width:13, height:17}, // button image object and size
   initialized : false,
-  
+
   init : function() {
     if(this.initialized)
       return;
-    
+
     this.tooltip = document.getElementById('system_tooltip');
     this.titleRow = getChildById(this.tooltip, "title");
     this.optList = new List();
@@ -6815,13 +6816,13 @@ var advancedTooltip = {
     this.optBtn.obj = getChildById(this.titleRow, "opt_btn");
 
     this.initShiftPref();
-   
+
     this.tooltip.appendChild(this.optList.div);
     this.initialized = true;
   },
   onOptionsBtn : function() {
     var style = advancedTooltip.optList.div.style;
-    this.updateOptListItem(0);    
+    this.updateOptListItem(0);
     advancedTooltip.optList.show(advancedTooltip.optBtn,
                     'left', advancedTooltip.onOptListItemSelect, this.tooltip);
   },
