@@ -41,6 +41,14 @@ function PhotoNoteContainer(element, config)
         
 };
 
+// A. L.
+PhotoNoteContainer.prototype.switchToViewMode = function() {
+  for(var i = 0; i < this.notes.length; i++)
+    this.notes[i].Cancel();
+}
+
+
+
 PhotoNoteContainer.prototype.DeleteNote = function(note)
 {
     
@@ -145,6 +153,10 @@ function PhotoNote(text,id,rect)
 
 PhotoNote.prototype.Select = function()
 {
+    // A. L.
+    if(ImageAnnotations.isEditMode() == false)
+      return;
+      
     //window.status = 'container: ' + this.container;
     if(!this.container.editing)
     {
@@ -717,6 +729,10 @@ DragResize.prototype.apply = function(node)
 
 DragResize.prototype.handleSet = function(elm, show) { with (this)
 {
+    // A. L.
+    if(!elm)
+      return;
+    
     // Either creates, shows or hides the resize handles within an element.
 
     // If we're showing them, and no handles have been created, create 4 new ones.
@@ -741,6 +757,11 @@ DragResize.prototype.handleSet = function(elm, show) { with (this)
 
 DragResize.prototype.select = function(newElement) { with (this)
 {
+
+    // A. L.
+    if(ImageAnnotations.isEditMode() == false)
+      return;
+      
     // Selects an element for dragging.
 
     if (!document.getElementById || !enabled) return;
@@ -826,6 +847,10 @@ DragResize.prototype.mouseDown = function(e) { with (this)
 
 DragResize.prototype.mouseMove = function(e) { with (this)
 {
+    // A. L.
+    if(ImageAnnotations.isEditMode() == false)
+      return;
+
     // This continually offsets the dragged element by the difference between the
     // last recorded mouse position (mouseX/Y) and the current mouse position.
     if (!document.getElementById || !enabled) return true;
@@ -949,6 +974,7 @@ var ImageAnnotations = {
   container : null,
   addNoteBtn : null,
   imgUrl : "",
+  _isEditMode : false,
   // initial function
   init : function(imgUrl, notesDataArr) {
     this.container = document.getElementById('PhotoContainer');
@@ -992,13 +1018,13 @@ var ImageAnnotations = {
   },
   
   setEditMode : function(isEditMode) {
+    this._isEditMode = isEditMode;
     if(isEditMode) {
       this.addNoteBtn.style.visibility = "visible";
-      this.notesEngine.EnableAllNotes();
     }
     else {
       this.addNoteBtn.style.visibility = "hidden";
-      this.notesEngine.DisableAllNotes();
+      this.notesEngine.switchToViewMode();
     }
   },
   
@@ -1054,5 +1080,9 @@ var ImageAnnotations = {
     var url = baseUri + "imageAnnotation";
 		
 		return url;
+	},
+	
+	isEditMode : function() {
+	  return this._isEditMode;
 	}
 }
