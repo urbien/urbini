@@ -5250,7 +5250,7 @@ function showTab(e, td, hideDivId, unhideDivId) {
 
   execJS.runDivCode(curDiv);
   ImageAnnotations.onTabSelection(curDiv);
- 
+
   return stopEventPropagation(e);
 }
 var curSpan;
@@ -6281,8 +6281,8 @@ function processCreditCardTracks(inputField) {
   var yearMonth = splitArray[2];
   var year = yearMonth.substring(0, 2);
   var month = yearMonth.substring(2, 4);
-  form.elements['nameOnCard'].value = name;
-  form.elements['number'].value = accountNumber;
+  form.elements['.nameOnCard'].value = name;
+  form.elements['.number'].value = accountNumber;
   form.elements['expirationDate___Month'].selectedIndex = parseInt(month, 10);
   var years = form.elements['expirationDate___Year'];
   var len = years.length;
@@ -6294,7 +6294,7 @@ function processCreditCardTracks(inputField) {
   }
   form.elements['.track1'].value = track1;
   form.elements['.track2'].value = track2;
-  form.elements['cardholderVerificationCode'].value = "";
+  form.elements['.cardholderVerificationCode'].value = "";
   return true;
 }
 
