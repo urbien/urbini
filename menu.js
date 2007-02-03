@@ -5247,9 +5247,9 @@ function showTab(e, td, hideDivId, unhideDivId) {
     }
 
   }
-
   execJS.runDivCode(curDiv);
-  ImageAnnotations.onTabSelection(curDiv);
+  if(typeof ImageAnnotations != 'undefined')
+    ImageAnnotations.onTabSelection(curDiv);
 
   return stopEventPropagation(e);
 }
