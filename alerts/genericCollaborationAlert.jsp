@@ -11,13 +11,6 @@
 		This alert is related to <property name="forum" type="y"/> <property name="forum" href="y"/>
 		<propertySheet name="forum"/>
 		
-		<property name="subscription.comment"/>
-		<br/>
-		
-		To subscribe please click <subscribe property="accepted" value="true"/>
-		<br/>
-		You can modify your subscription alert level or unsubscribe at any time.
-		<br/>
 		<br/>
 		Customer Service
 		<br/>
