@@ -3,25 +3,32 @@
 <table width="100%" border="0">
 <tr>
   <td width="2%"></td>
-  <td width="98%">
+  <td>
     Dear <property name="to" href="y"/>
-		<br/><br/>
-		
+    <br/><br/>		
 		<property name="subject"/>
     <br/>		
 		This alert is related to <property name="mainWorkEffort" type="y"/> <property name="mainWorkEffort" href="y"/>
-		<propertySheet name="partyResource"/>
   </td>
+	<td align="right" valign="top">
+		<a href="#"><IMG src="icons/logo-large.gif" border="0" height="32" align="right" /></a>
+	</td>
 </tr>
 <tr>
-  <td width="2%"></td>
-  <td width="98%" class="propertySheet">
+  <td></td>
+  <td colspan="2">
+		<propertySheet name="partyResource"/>
+	</td>
+</tr>
+<tr>
+  <td></td>
+  <td colspan="2" class="propertySheet">
 		<propertySheet adTitle="Assignments" name="partyResource.assignments" displayInPlace="y"/>
   </td>
 </tr>
 <tr>
   <td width="2%"></td>
-  <td>
+  <td colspan="2">
     <newComment/>
 		<br/>
 		Customer Service
