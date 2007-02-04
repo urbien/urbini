@@ -975,6 +975,7 @@ var ImageAnnotations = {
   addNoteBtn : null,
   imgUrl : "",
   _isEditMode : false,
+  initialized : false,
   // initial function
   init : function(imgUrl, notesDataArr) {
     this.container = document.getElementById('PhotoContainer');
@@ -992,6 +993,7 @@ var ImageAnnotations = {
       for(var i = 0; i < notesDataArr.length; i++)
         this.addNote(notesDataArr[i]);
      }
+     this.initialized = true;
   },
 
   addNote : function(noteData) {
@@ -1011,6 +1013,9 @@ var ImageAnnotations = {
     note.DisableNote();
   },
   onTabSelection : function(selectedDiv) {
+    if(ImageAnnotations.initialized == false)
+      return;
+  
     if(selectedDiv.id == "div_Edit")
       ImageAnnotations.setEditMode(true);
     else 
