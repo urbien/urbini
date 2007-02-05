@@ -78,6 +78,7 @@ Popup.w3c  = (document.getElementById)                                ? true : f
 Popup.ns4  = (document.layers)                                        ? true : false;
 Popup.ie4  = (document.all && !this.w3c)                              ? true : false;
 Popup.ie5  = (document.all && this.w3c)                               ? true : false;
+Popup.ie   = (document.all && document.attachEvent)                   ? true : false;
 Popup.opera = typeof opera != 'undefined'                             ? true : false;
 if (navigator.userAgent.indexOf("Opera") !=-1 ) {
   var versionindex = navigator.userAgent.indexOf("Opera") + 6;
@@ -541,8 +542,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     // var isMenu = div.id.indexOf('menudiv_') == 0 ? true false;
 
     if (!Popup.penBased && !Popup.joystickBased) {
-      if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout
-                        // unreliable
+      if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
         addEvent(div,     'mouseenter',  self.popupOnMouseOver, false);
         addEvent(div,     'mouseleave',  self.popupOnMouseOut,  false);
         addEvent(hotspot, 'mouseleave',  self.popupOnMouseOut,  false);
@@ -568,9 +568,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (document.all) { // IE - some keys (like backspace) work only on keydown
       addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
     }
-    else {              // Mozilla - only keypress allows to call
-                        // e.preventDefault() to prevent default browser action,
-                        // like scrolling the page
+    else {              // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
       addEvent(div,  'keypress',  self.popupRowOnKeyPress,  false);
     }
     var elem = firstRow;
@@ -2577,10 +2575,7 @@ function replaceTooltip(div, elem) {
     return;
   if (div) {
     if (div.style != null)
-      elem.style.zIndex = div.style.zIndex; // inherit zIndex - otherwise
-                                            // hotspot has no zIndex which we
-                                            // need to inherit further in
-                                            // setDivVisible
+      elem.style.zIndex = div.style.zIndex; // inherit zIndex - otherwise hotspot has no zIndex which we need to inherit further in setDivVisible
   }
   if (!Popup.penBased) {
     if (elem.getAttribute('title')) {
@@ -3704,13 +3699,9 @@ function showDialog(event, div, hotspot, content) {
   }
 
   var re = eval('/' + div.id + '/g');
-  content = content.replace(re, div.id + '-removed');  // prevent pane2 from
-                                                        // appearing 2 times in
-                                                        // the document
+  content = content.replace(re, div.id + '-removed');  // prevent pane2 from appearing 2 times in the document
   var re = eval('/' + frameId + '/g');
-  content = content.replace(re, frameId + '-removed'); // prevent dialogIframe
-                                                        // from appearing 2
-                                                        // times in the document
+  content = content.replace(re, frameId + '-removed'); // prevent dialogIframe from appearing 2 times in the document
   setInnerHtml(div, content);
   showDialog1(event, div, hotspot);
 }
@@ -5562,10 +5553,9 @@ function saveButtonClicked(e) {
 
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
   var istyle   = iframe.style;
-  istyle.visibility    = Popup.HIDDEN;
-  div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up
-                                          // as soon as we set display =
-                                          // 'inline'
+  if (Popup.ie)
+    istyle.visibility    = Popup.HIDDEN;
+  div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
   var scrollXY = getScrollXY();
   var scrollX = scrollXY[0];
   var scrollY = scrollXY[1];
@@ -5591,18 +5581,13 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   var distanceToRightEdge  = screenX + scrollX - left;
   var distanceToBottomEdge = screenY + scrollY - top;
 
-  // first position the div box in the top left corner in order to measure its
-  // dimensions
+  // first position the div box in the top left corner in order to measure its dimensions
   // (otherwise, if position correctly and only then measure dimensions - the
-  // width/height will get cut off at the scroll boundary - at least in firefox
-  // 1.0)
-  div.style.display    = 'inline'; // must first make it 'inline' - otherwise
-                                    // div coords will be 0
+  // width/height will get cut off at the scroll boundary - at least in firefox 1.0)
+  div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
   reposition(div,    0, 0);
   var divCoords = getElementDimensions(div);
   var margin = 40;
-  // alert(screenX + "," + screenY + ", " + scrollX + "," + scrollY + ", " +
-  // left + "," + top + ", " + divCoords.width + "," + divCoords.height);
   // cut popup dimensions to fit the screen
   var mustCutDimension = (div.id == 'pane2' || Popup.joystickBased) ? false: true;
   // var mustCutDimension = false;
@@ -5612,15 +5597,10 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     if (divCoords.width > screenX - margin * 2) {
       div.style.width = screenX - margin * 2 + 'px';
       xFixed = true;
-      // alert("divCoords.width = " + divCoords.width + ", " + "screenX = " +
-      // screenX);
     }
-    if (divCoords.height > screenY - margin * 2) { // * 2 <- top & bottom
-                                                    // margins
+    if (divCoords.height > screenY - margin * 2) { // * 2 <- top & bottom margins
       div.style.height = screenY - margin * 2 + 'px';
       yFixed = true;
-      // alert("divCoords.height = " + divCoords.height + ", " + "screenY = " +
-      // screenY);
     }
     // recalc coords and add scrolling if we fixed dimensions
     if (typeof div.style.overflowX == 'undefined') {
@@ -5648,17 +5628,11 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       div.scrollTop  = 0;
     }
   }
-  div.style.display    = 'none';   // must hide it again to avoid screen
-                                    // flicker
+  div.style.display    = 'none';   // must hide it again to avoid screen flicker
   // move box to the left of the hotspot if the distance to window border isn't
   // enough to accomodate the whole div box
   if (distanceToRightEdge < divCoords.width + margin) {
-    left = (screenX + scrollX) - divCoords.width; // move menu to the left by
-                                                  // its width and to the right
-                                                  // by scroll value
-    // alert("distanceToRightEdge = " + distanceToRightEdge + ", divCoords.width
-    // = " + divCoords.width + ", screenX = " + screenX + ", scrollX = " +
-    // scrollX);
+    left = (screenX + scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
     if (left - margin > 0)
       left -= margin;   // adjust for a scrollbar
     if (left < scrollX) // but not over the left edge
@@ -5688,36 +5662,35 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   div.style.height = divCoords.height + 'px';
 
   // Make position/size of the underlying iframe same as div's position/size
-  istyle.width     = divCoords.width  + 'px';
-  istyle.height    = divCoords.height + 'px';
+  if (Popup.ie) {
+    istyle.width     = divCoords.width  + 'px';
+    istyle.height    = divCoords.height + 'px';
+  }
 
   var zIndex = 1;
   if (hotspot) {
-    var z = hotspot.style.zIndex; // this relative zIndex allows stacking popups
-                                  // on top of each other
+    var z = hotspot.style.zIndex; // this relative zIndex allows stacking popups on top of each other
     if (z != null && z != '')
       zIndex = z;
   }
   div.style.zIndex = zIndex + 2;
-  istyle.zIndex    = zIndex + 1;
+  if (Popup.ie)
+    istyle.zIndex  = zIndex + 1;
 
   // hack for Opera (at least at ver. 7.54) and Konqueror
-  // somehow iframe is always on top of div - no matter how hard we try to set
-  // zIndex
+  // somehow iframe is always on top of div - no matter how hard we try to set zIndex
   // so we have to live without iframe
   // var opera = navigator.userAgent.indexOf("Opera") != -1;
   // var konqueror = navigator.userAgent.indexOf("Konqueror") != -1;
   div.style.display    = 'inline';
   // commented out temporarily since listbox in dialog is not visible
   // this unfortunately will cause a problem with popup over form fields
-  // if (document.all) // only IE has a problem with form elements 'showing
-  // through' the popup
-  // istyle.display = 'inline';
+  if (Popup.ie) // only IE has a problem with form elements 'showing through' the popup
+    istyle.display = 'inline';
   reposition(div,    left, top); // move the div box to the adjusted position
   reposition(iframe, left, top); // place iframe under div
   // if (!opera && !konqueror) {
-  if (document.all)   // only IE has a problem with form elements 'showing
-                      // through' the popup
+  if (Popup.ie) // only IE has a problem with form elements 'showing through' the popup
     istyle.visibility  = Popup.VISIBLE;
   div.style.visibility = Popup.VISIBLE; // finally make div visible
 
