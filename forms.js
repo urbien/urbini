@@ -79,7 +79,7 @@ function setTextHeight(div, divider) {
     var divRef = document.getElementById(div);
     var spanRef = document.getElementById(div + '_span');
     var moreRef = document.getElementById(div + '_more');
-  }  
+  }
 	if(divRef.offsetHeight < 40 && document.all) {                       // If the height of the div content is less then 40px,
 	  document.getElementById(div).style.height=divRef.offsetHeight;     // then the height of the div is set to the height
 	  displayFullText(div, div+"_more");                                 // of the div content and "more>>" link is disabled.
@@ -153,53 +153,6 @@ function toggleField (form, fieldName, value) {
     removeField (form, fieldName);
   else
     addField (form, 'hidden', fieldName, value);
-}
-
-function processCreditCardTracks(inputField) {
-  var tracks = inputField.value;
-  var form = inputField.form;
-
-  var startIdx = tracks.indexOf('%B');
-  if (startIdx == -1) {
-    return;
-  }
-  var endIdx = tracks.indexOf('?>');
-  if (endIdx == -1) {
-    return;
-  }
-  tracks = tracks.substring(startIdx + 1, endIdx);
-
-  var middleIdx = tracks.indexOf('?;');
-  if (middleIdx == -1) {
-    var track1 = tracks;
-  } else {
-    var track1 = tracks.substring(0, middleIdx);
-    var track2 = tracks.substring(middleIdx + 2, tracks.length);
-  }
-  var splitArray = track1.split('^');
-  var accountNumber = splitArray[0].substring(1);
-  accountNumber = removeSpaces(accountNumber);
-  var name = splitArray[1];
-  var names = name.split('/');
-  name = names[1] + ' ' + names[0];
-  var yearMonth = splitArray[2];
-  var year = yearMonth.substring(0, 2);
-  var month = yearMonth.substring(2, 4);
-  form.elements['nameOnCard'].value = name;
-  form.elements['number'].value = accountNumber;
-  form.elements['expirationDate___Month'].selectedIndex = parseInt(month, 10);
-  var years = form.elements['expirationDate___Year'];
-  var len = years.length;
-  for (var i=0; i<len; i++) {
-    if (years.options[i].value.indexOf(year) == 2) {
-      years.selectedIndex = i;
-      break;
-    }
-  }
-  form.elements['.track1'].value = track1;
-  form.elements['.track2'].value = track2;
-  form.elements['cardholderVerificationCode'].value = "";
-  return true;
 }
 
 function removeSpaces(str) {
