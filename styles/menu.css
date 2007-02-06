@@ -51,7 +51,6 @@ TD.toolbar {
 }
 
 .menuItem {
-  BACKGROUND-COLOR: #FFFFFF;
 }
 
 .menuItemChart {
@@ -95,7 +94,6 @@ TD.closePopup {
 	COLOR: red;
 }
 .menuExpand {
-  BACKGROUND-COLOR: #FFFFFF;
 }
 
 .menuDivider {
