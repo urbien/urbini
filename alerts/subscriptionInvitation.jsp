@@ -2,7 +2,7 @@
 <br/>
 <table width="100%" border="0">
 <tr>
-	<td width="2%">
+	<td width="2%"></td>
 	<td>
 		Dear <property name="to" href="y"/>
 		<br/><br/>
