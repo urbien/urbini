@@ -1,7 +1,7 @@
 <menuBar id="menuBar1">
 <!--div style="padding-top:10;white-space:nowrap" /-->
 <table width="100%" cellspacing="0" cellpadding="0" border="0" id="mainMenu" class="toppad">
-   <tr>
+   <tr align="center">
     <td>
         <menu toolbar="file" activate="onMouseOver"/>
 		    <!--include name="${package}_menu.jsp"/-->
