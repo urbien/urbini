@@ -51,7 +51,6 @@ PhotoNoteContainer.prototype.switchToViewMode = function() {
 
 PhotoNoteContainer.prototype.DeleteNote = function(note)
 {
-    
     note.UnSelect();
 
     /* remove from the DOM */
@@ -59,7 +58,10 @@ PhotoNoteContainer.prototype.DeleteNote = function(note)
     this.element.removeChild(note.gui.ElementNote);
     
     /* remove from the array... */
-    this.notes.remove(note);
+    // A. L. a global function used instead a member function.
+    // it invoked problem with "for(  in  ) "
+    //this.notes.remove(note);
+    removeFromArray(this.notes, note);
 }
 
 PhotoNoteContainer.prototype.AddNote = function(note)
@@ -649,11 +651,13 @@ function addLoadEvent(func) {
 /* Extend the Array object with some useful features 
    http://www.ditchnet.org/wp/?p=8
 */
-
+// A. L. avoid appending new functions to Array
+/*
 Array.prototype.clear = function () {
     this.length = 0;
 };
-
+*/
+/*
 Array.prototype.remove = function (element) {
 	var result = false;
 	var array = [];
@@ -671,8 +675,26 @@ Array.prototype.remove = function (element) {
 	array = null;
 	return result;
 };
+*/
 
-
+function removeFromArray(procArray, element) {
+	var result = false;
+	var array = [];
+	for (var i = 0; i < procArray.length; i++) {
+		if (this[i] == element) {
+			result = true;
+		} else {
+			array.push(procArray[i]);
+		}
+	}
+	// A. L.
+	procArray.length = 0; // instead of //this.clear();
+	for (var i = 0; i < array.length; i++) {
+		procArray.push(array[i]);
+	}
+	array = null;
+	return result;
+};
 
 
 
@@ -1044,7 +1066,7 @@ var ImageAnnotations = {
     else
       parameters += "action=update";
 
-    parameters += "&imageUrl=" + encodeURIComponent(ImageAnnotations.imgUrl);
+    parameters += "&imageUrl=" + ImageAnnotations.imgUrl;
     parameters += "&left=" + rect.left + "&top=" + rect.top;
     parameters += "&width=" + rect.width + "&height=" + rect.height;
     parameters += "&text=" + note.text;
