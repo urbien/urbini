@@ -1066,7 +1066,7 @@ var ImageAnnotations = {
     else
       parameters += "action=update";
 
-    parameters += "&imageUrl=" + ImageAnnotations.imgUrl;
+    parameters += "&imageUrl=" + encodeURIComponent(ImageAnnotations.imgUrl);
     parameters += "&left=" + rect.left + "&top=" + rect.top;
     parameters += "&width=" + rect.width + "&height=" + rect.height;
     parameters += "&text=" + note.text;
