@@ -821,8 +821,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
       else {
         var href = tr.getAttribute('href', href);
-         if (href)
+         if (href) {
+           stopEventPropagation(e)
           document.location.href = href;
+         }
       }
 
       return false;
@@ -3074,8 +3076,9 @@ function onClick(e) {
     removeModifier(link, '_altKey=y');
     addUrlParam(link, p, null);
 
+    var rc = stopEventPropagation(e);
     document.location.href = link.href;
-    return stopEventPropagation(e);
+    return rc;
   }
   else {
     if (link.id.startsWith('-inner')) {      // display as on-page dialog
