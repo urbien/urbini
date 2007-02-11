@@ -220,7 +220,24 @@ PhotoNote.prototype.ShowNoteText = function()
 
         this.gui.ElementRect.style.border='1px solid #D4D82D';
         this.gui.ElementRect.style.margin='0';
-        this.gui.ElementNote.style.display='block';
+        
+        // A. L.
+        // hack for tooltip in IE. prevents words wrapping till MAX_TOOLTIP_WIDTH
+        var MAX_TOOLTIP_WIDTH = 125;
+        var brName = navigator.appName;
+		    if(brName == "Microsoft Internet Explorer") {
+          var tooltip = this.gui.ElementNote.firstChild
+          tooltip.noWrap = true;
+          this.gui.ElementNote.style.display='block';
+        
+          if(tooltip.offsetWidth > MAX_TOOLTIP_WIDTH) {
+            tooltip.style.width = MAX_TOOLTIP_WIDTH;
+            tooltip.noWrap = false;
+          }
+        }
+        else {
+          this.gui.ElementNote.style.display='block';
+        }
     }
 }
 
