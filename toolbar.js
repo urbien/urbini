@@ -15,11 +15,8 @@ function FormPopup(innerFormHtml, parentElt) {
 		this.div.style.visibility = "hidden";
 		var ua = navigator.userAgent.toLowerCase();
 		var isGecko = (ua.indexOf("gecko") != -1);
-		if(isGecko) {
-			this.div.style.position = "fixed"; // FF <-for visible cursor in <input>
-		}
-		else
-			this.div.style.position = "absolute"; // IE
+
+		this.div.style.position = "absolute";
 		this.div.style.backgroundColor = "#fff";
 		this.div.style.borderStyle = "solid";
 		this.div.style.borderWidth = 1;
@@ -1069,18 +1066,9 @@ var PopupHandler = {
 		if(screenHeight < this.y - getScrollXY()[1] + div.clientHeight)
 			this.y = pos.top - div.clientHeight - OFFSET_Y;
 		
-		// FF: position "fixed"
-		if(div.style.position == 'fixed') {
-			this.isFixedPosition = true;
-			var scrl = getScrollXY();
-			div.style.left = this.x - scrl[0];
-			div.style.top = this.y - scrl[1];
-		}
-		else {
-			this.isFixedPosition = false;
-			div.style.left = this.x;
-			div.style.top = this.y;
-		}
+		this.isFixedPosition = false;
+		div.style.left = this.x;
+		div.style.top = this.y;
 
 		// set new div  data
 		this.popupDiv = div;
