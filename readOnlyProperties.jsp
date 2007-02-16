@@ -9,9 +9,9 @@
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr><td colspan="3">
       <subscribeNote/>
-      <div align="center"><font color="red"><b><errorMessage /></b></font></div>
+      <div align="center"><errorMessage /></div>
     </td></tr>
-    <tr><td colspan="3"><br/>
+    <tr><td colspan="3">
 
     <div id="gallery" style="background-color:#fff; display:none;position:absolute" itype="http://www.hudsonfog.com/voc/model/portal/ImageResource">
 	  <table bgcolor="#1b62b6">
@@ -26,7 +26,7 @@
 			<getResource/>
 			<table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
 		  <tr>
-		    <td><include name="${type}_details_main.jsp" alt="propertySheet.jsp" /></td>
+		    <td><pagingResources /><include name="${type}_details_main.jsp" alt="propertySheet.jsp" /></td>
 		  </tr>
 		  <tr itype="http://www.hudsonfog.com/voc/aspects/commerce/SoftBuyable">
 		    <td align="middle"><download/></td>

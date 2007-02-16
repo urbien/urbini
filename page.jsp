@@ -12,7 +12,7 @@
 <hideBlock>
     <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr>
-      <td valign="top">
+      <td valign="top" align="center">
         <include name="${type}_top.jsp"/>          <!-- this jsp will be included in ResourceList page only-->
         <include name="${type}_details_top.jsp"/>  <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
       </td>

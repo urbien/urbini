@@ -17,6 +17,9 @@
 
 <table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
+  <td><pagingResources /></td>
+</tr>
+<tr valign="top">
   <td width="110%" colspan="2"><!--br/-->
 		<div>
 		  <resourcesSearch resourcesUri="/sql/text/search/resources" />
@@ -49,7 +52,6 @@
   </td>
   <td width="5%" id="rightPanelPropertySheet" valign="top" align="left">
 <hideBlock>
-    <br/>
     <menu toolbar="filterLocal" type="onpage" title="false"/>
 </hideBlock>
   </td>

@@ -3080,9 +3080,27 @@ function onClick(e) {
     document.location.href = link.href;
     return rc;
   }
-  else {
-    if (link.id.startsWith('-inner')) {      // display as on-page dialog
-      return onClickDisplayInner(e, link);
+  else if (link.id  &&  link.id.startsWith('-inner')) {      // display as on-page dialog
+    return onClickDisplayInner(e, link);
+  }
+
+  var idx = link.href.indexOf("&-ulId=");
+  
+  if (idx == -1) 
+    return true;
+  var idx1 = link.href.indexOf("&", idx + 1);
+  var ulId;
+  if (idx1 == -1)
+    ulId = link.href.substring(idx + 7);
+  else
+    ulId = link.href.substring(idx + 7, idx1);
+  var ul = document.getElementById(ulId);
+  if (ul) {
+    var li = ul.getElementsByTagName("li");
+    if (li) {
+      var qs = li[0].innerHTML;
+      if (qs.length > 0)
+        link.href += "&-paging=" + encodeURIComponent(decodeURL(qs));
     }
   }
   return true;
