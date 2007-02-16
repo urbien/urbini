@@ -36,7 +36,7 @@ var CAL_TPL1 = {
 	// >>> Navbar settings <<<
 
 	// in year selection box how many years to list relatively to current year
-	'yearsbefore': 4,
+	'yearsbefore': 7,
 	'yearsafter': 4,
 
 	// >>> Appearence settings (HTML tags attributes) <<<
