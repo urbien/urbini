@@ -95,6 +95,7 @@
 //        replaceAllTooltips();
 		// initialize the drag & drop engine.
 		  dragobject.initialize();
+		  addSpellcheck();
     }
 
     /*
