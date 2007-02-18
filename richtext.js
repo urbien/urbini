@@ -401,6 +401,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
 		// set handlers
 		this.setHandlers();
+		
+		if(this.isNetscape) // turn on Mozila's spellcheck
+      this.document.body.spellcheck = true;
 	}
 	this.browserDetection = function() {
 		var brName = navigator.appName;

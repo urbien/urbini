@@ -6880,6 +6880,13 @@ var advancedTooltip = {
   }
 }
 
+function addSpellcheck() {
+  var ua = navigator.userAgent.toLowerCase();
+	var isGecko = (ua.indexOf("gecko") != -1);
+  if(!isGecko)
+    return;
+  document.body.spellcheck = true;
+}
 /**********************************************************
 * ImageAnnotations utilizes PhotoNotes.
 ***********************************************************/
