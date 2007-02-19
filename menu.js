@@ -860,9 +860,16 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       else
         prop = propertyShortName;
     }
-    else
-      prop = propertyShortName.substring(0, idx);
-
+    else {
+      if (propertyShortName.indexOf(".type") == idx) {
+        if (idx + 5 != propertyShortName.length)
+          prop = propertyShortName.substring(0, idx);
+        else
+          prop = propertyShortName;
+      }
+      else
+        prop = propertyShortName.substring(0, idx);
+    }
     var chosenTextField = form.elements[originalProp];
     var len = chosenTextField.length;
     var verified = prop + "_verified";
