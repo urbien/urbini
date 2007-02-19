@@ -20,16 +20,16 @@ var RteEngine = {
 		autoClose:true,
 		isFewFonts:true,
 		buttons:{
-			style:true,	font:true, decoration:true,	align:true,	dent:true,	
+			style:true,	font:true, decoration:true,	align:true,	dent:true,
 			list:true, text_color: true, bg_color: true, link: true,
 			image: true, smile:false, line: true, table:false, supsub:true, reundo:true, html:true
 		}
-	}, 
+	},
 	chatRTE : {
 		autoClose:false,
 		isFewFonts:true,
 		buttons:{
-			style:false, font:true, decoration:true, align:true, dent:true,	
+			style:false, font:true, decoration:true, align:true, dent:true,
 			list:true, text_color: true, bg_color: true, link: true,
 			image: true, smile:true, line: true, table:false, supsub:false, reundo:true, html:false
 		}
@@ -38,23 +38,23 @@ var RteEngine = {
 		autoClose:false,
 		isFewFonts:false,
 		buttons:{
-			style:true,	font:true, decoration:true,	align:true,	dent:true,	
+			style:true,	font:true, decoration:true,	align:true,	dent:true,
 			list:true, text_color: true, bg_color: true, link: true,
 			image: true, smile:false, line: true, table:true, supsub:true, reundo:true, html:true
 		}
 	},
 	// ----------------------------
-	
+
 	IMAGES_FOLDER : "images/wysiwyg/",
 	STYLES : [{name:"Paragraph", value:"<p>"}, {name:"Heading 1", value:"<h1>"}, {name:"Heading 2", value:"<h2>"}, {name:"Heading 3", value:"<h3>"}, {name:"Heading 4", value:"<h4>"},
 		{name:"Heading 5", value:"<h5>"}, {name:"Heading 6", value:"<h6>"}, {name:"Address", value:"<address>"}, {name:"Formatted", value:"<pre>"}],
 	FONTS : ["arial", "arial black", "comic sans ms", "courier", "courier new", "georgia", "helvetica", "impact", "palatino", "times new roman", "trebuchet ms", "verdana"],
 	FONTS_FEW : ["arial", "arial black", "comic sans ms", "courier new", "helvetica", "times new roman", "verdana"],
 	FONT_SIZE : ["8pt", "10pt", "12pt", "14pt", "18pt", "24pt", "36pt"],
-	
+
 	rteArr : new Array(), // objects
 	uploadForm : null,
-	
+
 	// POPUPs; globals for all rte objects --
 	stylePopup : null,
 	fontPopup : null,
@@ -69,14 +69,14 @@ var RteEngine = {
 	tablePopup : null,
 
   toUseTArea : false,
-  
+
 	//register the RTEs.
 	register : function(iframeId, rteDataFieldId, rtePref) {
     iframeObj = document.getElementById(iframeId);
 
 		if(typeof rtePref == 'undefined')
 			rtePref = this.simpleRTE;
-		
+
 		if(iframeObj.id	== "")
 			iframeObj.id = new Date().getTime();
 
@@ -87,10 +87,10 @@ var RteEngine = {
 			  rteObj = new Rte(iframeObj, rteDataFieldId, rtePref);
 		  }catch(e) {	this.toUseTArea = true;  }
 		}
-		
+
     if(this.toUseTArea)
    		  rteObj = new TArea(iframeObj, rteDataFieldId, rtePref);
-		
+
 		if(rteObj != null)
 			this.rteArr.push(rteObj);
 	},
@@ -104,7 +104,7 @@ var RteEngine = {
 			var idx = RteEngine.getRteIndex(iframes[i])
 			if(idx != -1) {
 				RteEngine.rteArr[idx].putRteData();
-				
+
 				// delete rte from the RteEngine
 				if(typeof keepRte == 'undefined' || keepRte == false) {
 					RteEngine.rteArr.splice(idx, 1);
@@ -125,7 +125,7 @@ var RteEngine = {
 			if(this.rteArr[i].iframeObj.id != activeId)
 				this.rteArr[i].onlosefocus();
 	},
-	
+
 	getHostUrl : function() {
 		var url = window.location.protocol + "//" + window.location.host + "/";
 		return url;
@@ -135,7 +135,7 @@ var RteEngine = {
 	launchStylePopup : function(btnObj, callback) {
 		if(this.stylePopup == null)
 			this.createStylePopup();
-		var parentDlg = getAncestorById(btnObj.div, 'pane2'); // hack: detects if it's in a 'pane2' dialog 
+		var parentDlg = getAncestorById(btnObj.div, 'pane2'); // hack: detects if it's in a 'pane2' dialog
 		this.stylePopup.show(btnObj, 'left', callback, parentDlg);
 		return this.stylePopup.div;
 	},
@@ -260,7 +260,7 @@ var RteEngine = {
 			var imgPath = this.IMAGES_FOLDER + "smiles/" + (i + 1) + ".gif";
 			itemDiv.innerHTML =
 			  "<img src=" + imgPath + " width=" + SMILE_SIZE + " height=" + SMILE_SIZE + ">";
-			
+
 			itemDiv.style.padding = PADDING;
 			this.smilePopup.appendItem(itemDiv);
 		}
@@ -291,7 +291,7 @@ var RteEngine = {
 		var innerFormHtml = this.getInsertTableHtml();
 		this.tablePopup = new FormPopup(innerFormHtml/*, null*/);
 	},
-	
+
 	getInsertTableHtml : function() {
 		var tblInsertHtml = '<table style="font-family:verdana; font-size:12px" cellpadding="4" cellspacing="0" border="0">'
 			+ ' <tr>'
@@ -303,7 +303,7 @@ var RteEngine = {
 					+ ' <option value="%" selected>percent</option>' //value="percent"
 					+ ' </select>'
 				+ ' </td>'
-			+ ' <tr>'	
+			+ ' <tr>'
 			+	' <td align="left">Rows:</td>'
 			+	' <td><input name="rows" type="text" id="rows" value="2" size="4"></td>'
 			+ ' </tr>'
@@ -322,11 +322,11 @@ var RteEngine = {
 				+ ' <td><input name="padding" type="text" id="padding" value="0" size="4"></td>'
 				+ ' </tr>'
 				+ ' <tr>'
-				+ ' <td>Cell spacing:</td>' 
+				+ ' <td>Cell spacing:</td>'
 				+' <td><input name="spacing" type="text" id="0" value="0" size="4"></td>'
 			+ ' </tr>'
 		+ ' </table>';
-		
+
 		return tblInsertHtml;
 	}
 }
@@ -348,15 +348,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.curRange = null;
 	this.isSourceView = false;
 	this.initFrameHeight = null;
-	
+
 	this.isIE = false;
 	this.isOpera = false;
 	this.isNetscape = false;
-	
+
 	this.skipCloseAll = false;
 	this.skipClose_IE_Opera = false;
 	this.FFhacked = false;
-							 
+
 	this.currentPopup = null; // prevents closing on popup opening
 	this.openedAtTime = 0;    // hack: prevents simultaneous openning and toolbar button execution
 
@@ -371,10 +371,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.imageBtn = null;
 	this.tableBtn = null;
 	this.htmlBtn = null;
-	
+
 	this.isInitialized = false;
-	
-	// init	
+
+	// init
 	this.init = function() {
 		if(this.isInitialized)
 			return;
@@ -392,17 +392,17 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		this.document.designMode = "On";
 		this.initFrameHeight = this.iframeObj.clientHeight;
 		this.initContent();
-		
+
 		// create toolbar if it is not autoClose
 		// else create it on 1st click in - (onfocus handler)
 		if(!this.rtePref.autoClose) {
 				this.toolbar = this.createToolbar();
 				this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
 		}
-		
+
 		// set handlers
 		this.setHandlers();
-		
+
 		if(this.isNetscape) // turn on Mozila's spellcheck
       this.document.body.spellcheck = true;
 	}
@@ -428,7 +428,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			addEvent(document, 'mouseup', this.onlosefocus, false);
 		}
 	}
-	
+
 	this.createToolbar = function() {
 		// 1.
 		var toolBar = new Toolbar(this.parentDiv, this, 18);
@@ -484,7 +484,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			this.htmlBtn = toolBar.appendButton(this.onSource, true, RteEngine.IMAGES_FOLDER + "html.gif", "html view mode", "edit mode");
 		return toolBar;
 	}
-	
+
 	// interface function which be called by the toolbar
 	// "onOverflowBtn"
 	this.onOverflowBtn = function() {
@@ -496,7 +496,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(this.isNetscape && text.length == 0) {
 		  text = "<br>";
 		}
-		
+
 		this.putContent(text);
 	}
 	// putContent
@@ -508,7 +508,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		frameHtml += text + "\n";
 		frameHtml += "</body>\n";
 		frameHtml += "</html>";
-		
+
 		this.document.open();
 		this.document.write(frameHtml);
 		this.document.close();
@@ -534,15 +534,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var curTime = new Date().getTime();
 		if(curTime - this.openedAtTime < 500) // 500 ms
 			return false;
-			
-		return true; 
+
+		return true;
 	}
 	this.getHtmlContent = function() {
 	  var content = "";
 		if(this.isSourceView) {
 				if(typeof this.document.body.innerText == 'undefined')
 					content =  this.document.body.textContent;
-				else	
+				else
 					content =  this.document.body.innerText;
 			}
 		else
@@ -552,7 +552,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   		var brIdx = content.lastIndexOf("<br>")
 		  content = content.slice(0, brIdx);
 		}
-		
+
 		return content;
 	}
 	this.getDataField = function() {
@@ -565,7 +565,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	this.putRteData = function() {
 		var text = this.getHtmlContent();
-		
+
 		// some html cleanup
 		// 1. remove ending space.
 		text = trim(text);
@@ -576,13 +576,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var upTags = text.match(/<.[A-Z]*.>/g);
 		if(upTags != null) {
 		  for(var i = 0; i < upTags.length; i++)
-        text = text.replace(upTags[i], upTags[i].toLowerCase());	  
+        text = text.replace(upTags[i], upTags[i].toLowerCase());
 		}
-		
+
 		// set value in hidden data field.
 		this.getDataField().value = text;
 	}
-	
+
 	// handlers --------------
 	this.onfocus = function() {
 	  if(i_am.toolbar == null)
@@ -591,7 +591,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.iframeObj.style.marginTop = i_am.toolbar.getHeight() + 1;
 		i_am.fitHeightToVisible();
 		i_am.toolbar.show();
-		// prevents from more than 1 opened RTE. 
+		// prevents from more than 1 opened RTE.
 		RteEngine.closeAllDisactived(i_am.iframeObj.id);
 		i_am.openedAtTime = new Date().getTime();
 	}
@@ -601,7 +601,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			return;
 		if(i_am.currentPopup != null && i_am.currentPopup.style.visibility == "visible")
 			return;
-	
+
 		if(i_am.skipCloseAll) {
 			i_am.skipCloseAll = false;
 			return;
@@ -610,12 +610,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			i_am.skipClose_IE_Opera = false;
 			return;
 		}
-		
+
 		i_am.iframeObj.style.height = i_am.initFrameHeight;
 		i_am.iframeObj.style.marginTop = 0;
-		i_am.toolbar.hide();
+    if (i_am.toolbar)
+		  i_am.toolbar.hide();
 	}
-	
+
 	// IE's hack
 	// to store the current range to which to apply the command
 	this._ondeactivate = function() {
@@ -632,13 +633,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var docH = i_am.document.body.scrollHeight;
 		if(docH < i_am.initFrameHeight)
 			return;
-		
+
 		var frmH = i_am.iframeObj.clientHeight;
 		if(frmH != docH)
 			i_am.iframeObj.style.height = docH;
 	}
-	
-	// --------------------------------------	
+
+	// --------------------------------------
 	// 1
 	this.onStyle = function() {
 		if(!i_am.isAllowedToExecute())
@@ -789,7 +790,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			return;
 		i_am.performCommand("subscript", null, true);
 		return true;
-	} 
+	}
 	this.onRedo = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
@@ -823,7 +824,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		else {
 			if(pressed) { // IE --
 				var iHTML = i_am.document.body.innerHTML;
-				
+
 				i_am.document.designMode = "Off";
 				i_am.putContent(iHTML); // hack: restore the document after designMode = "Off"
 				i_am.document.body.innerText = iHTML;
@@ -841,7 +842,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		else
 			i_am.toolbar.enableAllControls();
 
-		// prevent a closing		
+		// prevent a closing
 		i_am.skipCloseAll = true;
 		return true;
 	}
@@ -851,7 +852,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.setStyle = function(idx) {
 		var value = RteEngine.STYLES[idx].value;
 		i_am.performCommand("formatblock", value);
-		return true; 
+		return true;
 	}
 	// 2
 	this.setFont = function(idx) {
@@ -859,7 +860,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			var value = RteEngine.FONTS[idx];
 		else
 			var value = RteEngine.FONTS_FEW[idx];
-		i_am.performCommand("fontname", value); 
+		i_am.performCommand("fontname", value);
 		return true;
 	}
 	// 3
@@ -904,7 +905,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		'<table width=' + params.width + params.widthType
 		+ ' cellpadding=' + params.padding + ' cellspacing=' + params.spacing
 		+ ' border=' + params.border + '> ';
-		
+
 		for(var r = 0; r < params.rows; r++) {
 			html += ' <tr>';
 			for(var c = 0; c < params.columns; c++)
@@ -912,8 +913,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			html += ' </tr>';
 		}
 		html += ' </table>';
-		
-		i_am.insertHTML(html); 
+
+		i_am.insertHTML(html);
 	}
 	// -------------------------------------
 	// execute a command
@@ -933,12 +934,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			return false;
 		}
 		this.window.focus();
-		
+
 		if(typeof skipClose != 'undefined' && skipClose == true)
 			this.skipClose_IE_Opera = true;
 		return true;
 	}
-	
+
 	// constructor body --
 	this.init();
 }
@@ -946,14 +947,14 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 /********   TArea used instead RTE if the last imposible to create   *********/
 function TArea(iframeObj, dataFieldId, rtePref) {
 	var i_am = this;
-	
+
   this.textArea = null;
 	this.iframeObj = iframeObj;
 	this.dataFieldId = dataFieldId;
 	this.parentDiv = this.iframeObj.parentNode;
 	this.dataField = null; // hidden field to transfer data
   this.initHeight = null;
-  
+
   // substitute iframe with a text area
   this.init = function() {
     this.textArea = document.createElement('textarea');
@@ -962,19 +963,19 @@ function TArea(iframeObj, dataFieldId, rtePref) {
     this.initHeight = this.iframeObj.clientHeight;
     this.textArea.style.fontSize = "14px";
     this.textArea.id = this.iframeObj.id;
-    
+
     // convert html into a plain text.
     var plainTooltipText = this.getDataField().value.replace(/<\/?[^>]+(>|$)/g, " ")
     this.textArea.value = plainTooltipText;
-    
+
     // set handlers
     addEvent(this.textArea, 'keyup', this._onkeyup, false);
 		addEvent(this.textArea, 'focus', this.onfocus, false);
     addEvent(document, 'mouseup', this.onlosefocus, false);
-    
+
     this.parentDiv.replaceChild(this.textArea, this.iframeObj);
   }
-   
+
   this.getDataField = function() {
 		if(this.dataField == null) {
 			this.dataField = getChildById(this.parentDiv, this.dataFieldId);
@@ -983,11 +984,11 @@ function TArea(iframeObj, dataFieldId, rtePref) {
 		}
 		return this.dataField;
   }
-  
+
   this.putRteData = function() {
-		this.getDataField().value = this.textArea.value; 
+		this.getDataField().value = this.textArea.value;
   }
-  
+
   // focus
   this. onfocus = function() {
     i_am.fitHeightToVisible();
@@ -1007,13 +1008,13 @@ function TArea(iframeObj, dataFieldId, rtePref) {
 		var scrlH = i_am.textArea.scrollHeight; // not work with Opera 8.54
 		if(scrlH < i_am.initHeight)
 			return;
-		
+
 		var taH = i_am.textArea.clientHeight;
 		if(taH != scrlH) {
 			i_am.textArea.height = scrlH;
 		}
 	}
-  
+
   // constructor body
   this.init();
 }
