@@ -2721,6 +2721,11 @@ function tooltipOnMouseOut(e) {
   return stopEventPropagation(e);
 }
 
+function closeTooltip() {
+  Popup.tooltipPopup.close();
+  clearTimeout(Popup.openTimeoutId);
+  Popup.openTimeoutId = null;
+}
 // ************************************* intercept all clicks
 // ***********************************
 function interceptLinkClicks(div) {
