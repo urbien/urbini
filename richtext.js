@@ -393,12 +393,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		this.initFrameHeight = this.iframeObj.clientHeight;
 		this.initContent();
 		
-		// create toolbar
-		this.toolbar = this.createToolbar();
-		if(this.rtePref.autoClose)
-			this.toolbar.hide();
-		else
-			this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
+		// create toolbar if it is not autoClose
+		// else create it on 1st click in - (onfocus handler)
+		if(!this.rtePref.autoClose) {
+				this.toolbar = this.createToolbar();
+				this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
+		}
+		
 		// set handlers
 		this.setHandlers();
 		
@@ -581,8 +582,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// set value in hidden data field.
 		this.getDataField().value = text;
 	}
+	
 	// handlers --------------
 	this.onfocus = function() {
+	  if(i_am.toolbar == null)
+	    i_am.toolbar = i_am.createToolbar();
+
 		i_am.iframeObj.style.marginTop = i_am.toolbar.getHeight() + 1;
 		i_am.fitHeightToVisible();
 		i_am.toolbar.show();
