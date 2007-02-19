@@ -2722,9 +2722,12 @@ function tooltipOnMouseOut(e) {
 }
 
 function closeTooltip() {
-  Popup.tooltipPopup.close();
-  clearTimeout(Popup.openTimeoutId);
-  Popup.openTimeoutId = null;
+  if(Popup.tooltipPopup != null)
+    Popup.tooltipPopup.close();
+  if(Popup.openTimeoutId != null) {
+    clearTimeout(Popup.openTimeoutId);
+    Popup.openTimeoutId = null;
+  }
 }
 // ************************************* intercept all clicks
 // ***********************************
