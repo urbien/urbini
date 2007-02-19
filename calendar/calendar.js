@@ -457,7 +457,6 @@ function TC0B() {
                                                                                            'todayimage') + '></a></td>'
                 : ''),
             '');
-            
   TC0c.TC0e('<td rowspan="2"',            this.TCO('monthselectorcell'),
             '><select name="cal_mon',     thistcc + '"',
             this.TCO('monthselector'),    ' id="cal_mon',
@@ -1040,7 +1039,6 @@ function TC0H(TC1c, TC1d, TC1J) {
       }
       else {
         if (TC1c == 'year') {
-
           var TC1h = this.TC0i.options[this.TC0i.selectedIndex].text;
 
           var TC1i = this.TC0i.options[this.TC0i.selectedIndex].value;
@@ -1921,7 +1919,6 @@ function reposition(div, x, y) {
 * 1. esc, 2. click outside, 3. mouse leaving
 *****************************************/
 var Calendar_popupHandler = {
-
 	CLOSE_TIMEOUT : 500,
 	popupDiv : null,
 	iframe   : null,
@@ -1947,6 +1944,8 @@ var Calendar_popupHandler = {
 		this.popupDiv.onmouseout  = this._onmouseout;
 		
 		this.inputObj.onkeyup = this._onkeyup_input;
+		// prevents tooltip over the calendar
+		closeTooltip(); 
 	},
 	
 	suspendedClose : function() {
@@ -1970,7 +1969,6 @@ var Calendar_popupHandler = {
 		this.popupDiv = null;
 		this.fixed = false;
 	},
-	
 	// Return true if node a contains node b.
 	// FF return "Permision denied" on parentNode. That' why skipClose was introduced.
 	contains : function (a, b) {
