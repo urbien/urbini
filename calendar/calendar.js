@@ -781,10 +781,6 @@ function TC0L() {
 function TCh(TC1I) {
   var TC1J = true;
 
-  // by A.L. prevents repetitive creation
-  if(this.TC0i.options.length != 0) 
-	return;
-
   if (!TC1I)
     TC1I = new Date(this.TC04);
 
