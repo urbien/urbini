@@ -78,7 +78,7 @@ Popup.w3c  = (document.getElementById)                                ? true : f
 Popup.ns4  = (document.layers)                                        ? true : false;
 Popup.ie4  = (document.all && !this.w3c)                              ? true : false;
 Popup.ie5  = (document.all && this.w3c)                               ? true : false;
-Popup.ie   = (document.all && document.attachEvent)                   ? true : false;
+Popup.ie   = false; // (document.all && document.attachEvent)                   ? true : false;
 Popup.opera = typeof opera != 'undefined'                             ? true : false;
 if (navigator.userAgent.indexOf("Opera") !=-1 ) {
   var versionindex = navigator.userAgent.indexOf("Opera") + 6;
@@ -3100,8 +3100,8 @@ function onClick(e) {
   }
 
   var idx = link.href.indexOf("&-ulId=");
-  
-  if (idx == -1) 
+
+  if (idx == -1)
     return true;
   var idx1 = link.href.indexOf("&", idx + 1);
   var ulId;
@@ -6924,7 +6924,7 @@ var ImageAnnotations = {
         return;
       this.notesEngine = new PhotoNoteContainer(this.container);
     }
-  
+
     this.addNoteBtn = getChildById(this.container, 'add_note');
 
     if(typeof notesDataArr != 'undefined' && notesDataArr != null) {
@@ -6954,13 +6954,13 @@ var ImageAnnotations = {
   onTabSelection : function(selectedDiv) {
     if(ImageAnnotations.initialized == false)
       return;
-  
+
     if(selectedDiv.id == "div_Edit")
       ImageAnnotations.setEditMode(true);
-    else 
+    else
       ImageAnnotations.setEditMode(false);
   },
-  
+
   setEditMode : function(isEditMode) {
     this._isEditMode = isEditMode;
     if(isEditMode) {
@@ -6971,7 +6971,7 @@ var ImageAnnotations = {
       this.notesEngine.switchToViewMode();
     }
   },
-  
+
   onsave : function(note) {
     var url = ImageAnnotations.getServletUrl();
     var rect = note.rect;
@@ -6997,7 +6997,7 @@ var ImageAnnotations = {
   onsaveCallback : function(a1, a2, a3, responseText) {
     //alert(responseText);
   },
-  
+
   ondelete : function(note) {
     if(typeof note.resId == 'undefined' || note.resId == null) // not stored note
       return true;
@@ -7008,11 +7008,11 @@ var ImageAnnotations = {
     postRequest(null, url, parameters, null, null, ImageAnnotations.ondeleteCallback);
     return true;
   },
-  
+
   ondeleteCallback : function(a1, a2, a3, responseText) {
-  
+
   },
-  
+
   getServletUrl : function () {
     var baseUriO = document.getElementsByTagName('base');
     var baseUri = "";
@@ -7022,10 +7022,10 @@ var ImageAnnotations = {
         baseUri += "/";
     }
     var url = baseUri + "imageAnnotation";
-		
+
 		return url;
 	},
-	
+
 	isEditMode : function() {
 	  return this._isEditMode;
 	}
