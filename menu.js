@@ -78,7 +78,7 @@ Popup.w3c  = (document.getElementById)                                ? true : f
 Popup.ns4  = (document.layers)                                        ? true : false;
 Popup.ie4  = (document.all && !this.w3c)                              ? true : false;
 Popup.ie5  = (document.all && this.w3c)                               ? true : false;
-Popup.ie   = false; // (document.all && document.attachEvent)                   ? true : false;
+Popup.ie   = (document.all && document.attachEvent)                   ? true : false;
 Popup.opera = typeof opera != 'undefined'                             ? true : false;
 if (navigator.userAgent.indexOf("Opera") !=-1 ) {
   var versionindex = navigator.userAgent.indexOf("Opera") + 6;
@@ -5710,8 +5710,15 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       zIndex = z;
   }
   div.style.zIndex = zIndex + 2;
-  if (Popup.ie)
+  if (Popup.ie) {
+    // for listboxes in Dialog - makes iframe under a listbox.
+    var par = getAncestorById(div, 'pane2');
+    if(par && iframe.id == 'popupIframe') {
+      par.appendChild(iframe);
+    }
     istyle.zIndex  = zIndex + 1;
+  }
+
 
   // hack for Opera (at least at ver. 7.54) and Konqueror
   // somehow iframe is always on top of div - no matter how hard we try to set zIndex
@@ -5741,6 +5748,12 @@ function setDivInvisible(div, iframe) {
     div.style.display    = "none";
   if (iframe && iframe.style)
     iframe.style.display = "none";
+    
+  // return popupIframe to body from a dialog (see setDivVisible)
+  var popupIframe = getChildById(div, 'popupIframe');
+  if(popupIframe)
+    document.body.appendChild(popupIframe);
+
 }
 
 function doConfirm(msg) {
