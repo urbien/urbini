@@ -6340,10 +6340,13 @@ function removeSpaces(str) {
  ******************************************************************************/
 var dragobject = {
 	z: 0, x: 0, y: 0, offsetx : null, offsety : null, targetobj : null, dragapproved : 0,
+	dialogIframe : null, // <- IE prevents dialog from <select>
+	
 	initialize: function(){
 		addEvent(document, 'mousedown', this.drag, false);
 		addEvent(document, 'mouseup', this.stopDrag, false);
 		addEvent(document, 'mousemove', this.moveit, false);
+		this.dialogIframe = document.getElementById('dialogIframe');
 	},
 	drag: function(e){
 		var evtobj = window.event? window.event : e;
@@ -6368,9 +6371,18 @@ var dragobject = {
 	},
 	moveit: function(e){
 		var evtobj=window.event? window.event : e
+		var left = this.offsetx + evtobj.clientX - this.x + "px";
+		var top = this.offsety + evtobj.clientY - this.y + "px"
 		if (this.dragapproved == 1){
-			this.targetobj.style.left = this.offsetx + evtobj.clientX - this.x + "px"
-			this.targetobj.style.top  = this.offsety + evtobj.clientY - this.y + "px"
+			this.targetobj.style.left = left;
+			this.targetobj.style.top  = top;
+
+			if(dragobject.dialogIframe != null &&
+			     dragobject.dialogIframe.style.visibility == 'visible') {
+			  dragobject.dialogIframe.style.left = left;
+ 			  dragobject.dialogIframe.style.top = top;
+			}
+			
 			return false;
 		}
 	},
