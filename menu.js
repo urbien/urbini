@@ -5701,6 +5701,12 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   if (Popup.ie) {
     istyle.width     = divCoords.width  + 'px';
     istyle.height    = divCoords.height + 'px';
+    // to make dialog shadow visible (without iframe background).
+    if(div.id == 'pane2') {
+      var SHADOW_WIDTH = 11;
+      istyle.width   = divCoords.width  - SHADOW_WIDTH + 'px';
+      istyle.height  = divCoords.height - SHADOW_WIDTH + 'px';
+    }
   }
 
   var zIndex = 1;
