@@ -612,3 +612,8 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .menuOnClick {background-color: #0055e6; padding-right:3; padding-top:3; padding-bottom:3}
 .toppad {padding-top: 5px; white-space:nowrap}
 .changeCols {display: inline; margin: 0px;}
+/* for displayInline text properties */
+.description {border:solid #808080 2px; border-color: #1b62b6;}
+/* title for edit mode property sheet in inner dialog */
+.innerTitle {font-family:sans-serif, arial;color:#00309C;font-size:12pt;font-weight:bold}
+.red {color:red;font-size:10pt;font-weight:bold}
