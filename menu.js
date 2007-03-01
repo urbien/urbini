@@ -5277,7 +5277,9 @@ function showTab(e, td, hideDivId, unhideDivId) {
   execJS.runDivCode(curDiv);
   if(typeof ImageAnnotations != 'undefined')
     ImageAnnotations.onTabSelection(curDiv);
-
+  
+  resizeIframeOnTabSelection(curDiv); // IE
+  
   return stopEventPropagation(e);
 }
 var curSpan;
@@ -5289,6 +5291,21 @@ function showTabLabel(label) {
     span.style.display = 'inline';
   curSpan = span;
 }
+// IE specific function. (Tab in a dialog)
+function resizeIframeOnTabSelection(tabDiv) {
+  var dialogIframe = document.getElementById('dialogIframe');
+  if(dialogIframe && dialogIframe.style.visibility == "visible") {
+    var dlg = getAncestorById(tabDiv, "pane2");
+    if(!dlg)
+      return;
+    var contentCell = getChildById(dlg, "dlg_cell");
+    if(contentCell) {
+      dialogIframe.style.width = contentCell.clientWidth;
+      dialogIframe.style.height = contentCell.clientHeight;
+    }
+  }
+}
+
 function hideShowControlPanel(hide) {
   var td = document.getElementById('cp');
   if (!td)
