@@ -2203,15 +2203,11 @@ function getKeyCode(e) {
 
 function clearOtherPopups(div) {
 // alert("div=" + div.id + ", loadedPopups.length=" + openedPopups.length)
-  var i;
-  for (var i=0; i < loadedPopups.length; i++) {
-    var p = loadedPopups[i];
+  for (var p in loadedPopups) {
     if (p == null)
       continue;
-// alert("openedPopup=" + p.id)
-    if (p != div) {
-      loadedPopups[i] = null;
-    }
+    if (p != div) 
+      loadedPopups[p] = null;
   }
 }
 
