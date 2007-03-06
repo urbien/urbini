@@ -610,6 +610,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			i_am.skipClose_IE_Opera = false;
 			return;
 		}
+		// FF: prevents toolbar close on scrolling
+    if(e.target && e.target.nodeName == "HTML")
+      return;
 
 		i_am.iframeObj.style.height = i_am.initFrameHeight;
 		i_am.iframeObj.style.marginTop = 0;
