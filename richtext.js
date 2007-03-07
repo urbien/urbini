@@ -356,7 +356,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.skipCloseAll = false;
 	this.skipClose_IE_Opera = false;
 	this.FFhacked = false;
-
+  this.br_appended = false; // FF: when RTE is empty it does not show caret.
+  
 	this.currentPopup = null; // prevents closing on popup opening
 	this.openedAtTime = 0;    // hack: prevents simultaneous openning and toolbar button execution
 
@@ -495,6 +496,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// hack. FF does not show caret in empty RTE
 		if(this.isNetscape && text.length == 0) {
 		  text = "<br>";
+		  this.br_appended = true;
 		}
 
 		this.putContent(text);
@@ -548,9 +550,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		else
 			content =  this.document.body.innerHTML;
 		// hack. remove <br> appended in initContent()
-		if(this.isNetscape) {
+		if(this.isNetscape && this.br_appended) {
   		var brIdx = content.lastIndexOf("<br>")
-		  content = content.slice(0, brIdx);
+	    content = content.slice(0, brIdx);
 		}
 
 		return content;
@@ -611,7 +613,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			return;
 		}
 		// FF: prevents toolbar close on scrolling
-    if(e.target && e.target.nodeName == "HTML")
+    if(e && e.target && e.target.nodeName == "HTML")
       return;
 
 		i_am.iframeObj.style.height = i_am.initFrameHeight;
