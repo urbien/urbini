@@ -7074,3 +7074,65 @@ var ImageAnnotations = {
 	  return this._isEditMode;
 	}
 }
+/*******************************************************
+* dictionary handler
+********************************************************/
+var dictionaryHandler = {
+  dialog : null,
+  init : function() {
+    addEvent(document, "mouseup", this._onmouseup, false);
+  },
+  // to handle the event if "Alt" key was pressed
+  _onmouseup : function(e) {
+    e = e || event;
+    if(e.altKey == false)
+      return;
+
+    var range;
+    var selText = "";
+    
+    if(dictionaryHandler.dialog == null)
+      dictionaryHandler.dialog = new FormPopup("");
+   
+    if(dictionaryHandler.dialog.isOpened())
+      return;
+    var hotspot = document.body;
+    if(document.getSelection && window.getSelection) { // FF, Opera
+      selText = document.getSelection();
+      range = window.getSelection().getRangeAt(0);
+      hotspot = range.startContainer.parentNode;
+    }
+    else if(document.selection.type == 'Text') { // IE
+      range = document.selection.createRange();
+      selText = range.text;
+      hotspot = range.parentElement();
+    }
+    
+    selText = trim(selText);
+    if(selText != "")
+      dictionaryHandler.translate(e, hotspot, selText);
+  },
+  translate : function(e, hotspot, text) {
+    var baseUriO = document.getElementsByTagName('base');
+    var baseUri = "";
+    if (baseUriO) {
+      baseUri = baseUriO[0].href;
+      if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
+        baseUri += "/";
+    }
+    var url = encodeURI(baseUri + "mkResource.html");
+    var params = "-$action=mkResource"
+      + "&$browser=y"
+      + "&displayProps=yes"
+      + "&type=http://www.hudsonfog.com/voc/model/portal/Translation"
+      + "&-inner=y"
+      + "&.source=" + encodeURIComponent(text);
+
+    var div = document.getElementById("pane2");
+    postRequest(e, url, params, div, hotspot, this.onTranslationCallback);
+  },
+  onTranslationCallback : function(clonedEvent, div, hotspot, responseText) {
+    showDialog(clonedEvent, div, hotspot, responseText); //test //"<div><h1>TEST</h1></div>"
+  }
+  
+}
