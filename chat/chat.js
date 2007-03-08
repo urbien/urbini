@@ -5,7 +5,7 @@ function openChat() {
   openChatWindow(escape(document.title), escape(window.location), false);
 }
 
-function openChatWindow(title, resUrl, isChatWithTheAgent) {
+function openChatWindow(e, title, resUrl, isChatWithTheAgent) {
   if (window.screen) {
     w = 700;//Math.floor(screen.availWidth/2) + 50;
     h = 600;//Math.floor(screen.availHeight/2)-125;
@@ -16,17 +16,18 @@ function openChatWindow(title, resUrl, isChatWithTheAgent) {
   }
   var url = 'chatRoom?title=' + title;
   if (resUrl.indexOf('uri') == -1) {
-    if(document.getElementById('loggedContact').href == null){
+    if(document.getElementById('-inner.loggedContact').href == null){
       alert('Sorry, you should sign in first');
       return;
     }
-    url += '&referer=' + escape(document.getElementById('loggedContact').href);
+    url += '&referer=' + escape(document.getElementById('-inner.loggedContact').href);
   }
   else
     url += '&referer=' + resUrl;
   if (isChatWithTheAgent)
     url += '&isChatWithTheAgent=true';
   window.open(url, 'chat','width='+w+',height='+h+',top='+ch+',left='+cw+', menubar=no, status=no, location=no, toolbar=no, scrollbars=no, resizable=yes');
+  return stopEventPropagation(e);
 }
 
 function createCookie(name, value, days) {
@@ -45,9 +46,9 @@ function readCookie(name) {
   var ca = document.cookie.split(';');
   for(var i = 0; i < ca.length; i++) {
     var c = ca[i];
-    while (c.charAt(0)==' ') 
+    while (c.charAt(0)==' ')
       c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) == 0) 
+    if (c.indexOf(nameEQ) == 0)
       return c.substring(nameEQ.length,c.length);
   }
   return null;
