@@ -22,6 +22,7 @@
 <tr valign="top">
   <td width="110%" colspan="2"><!--br/-->
 		<div>
+		  <searchHistory/>
 		  <resourcesSearch resourcesUri="/sql/text/search/resources" />
 		  <filesSearch     filesUri="text/search/files" />
       <excelsSearch    excelsUri    = "text/search/excels" />
