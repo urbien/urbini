@@ -7078,7 +7078,6 @@ var ImageAnnotations = {
 * dictionary handler
 ********************************************************/
 var dictionaryHandler = {
-  dialog : null,
   init : function() {
     addEvent(document, "mouseup", this._onmouseup, false);
   },
@@ -7090,12 +7089,6 @@ var dictionaryHandler = {
 
     var range;
     var selText = "";
-    
-    if(dictionaryHandler.dialog == null)
-      dictionaryHandler.dialog = new FormPopup("");
-   
-    if(dictionaryHandler.dialog.isOpened())
-      return;
     var hotspot = document.body;
     if(document.getSelection && window.getSelection) { // FF, Opera
       selText = document.getSelection();
