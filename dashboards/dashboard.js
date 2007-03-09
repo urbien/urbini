@@ -299,7 +299,7 @@
 
     function finishEdit() {
    		if(window.location.href.indexOf("blankEdit.html") != -1) {
-			isConfirmed = window.confirm("Finish editing without added boards\nleads to the loss of the dashboard!");
+			isConfirmed = window.confirm("Please confirm that you want to abandon the changes made");
 			if(!isConfirmed)
 				return;
 		}
@@ -431,7 +431,7 @@
 		if(checkIfDashboardIsSaved() == false)
 			return;
 
-		isConfirmed = window.confirm("To delete this dashboard?");
+		isConfirmed = window.confirm("Do you really want to delete this dashboard?");
 		if(!isConfirmed)
 			return;
 
@@ -520,7 +520,7 @@
 	function checkIfDashboardNameIsNew(name) {
 		for(i = 0; i < g_dbNames.length; i++) {
 			if(name == g_dbNames[i]) {
-				window.alert("The dashboard with this name is already exist.");
+				window.alert("The dashboard with this name already exists.");
 				return false;
 			}
 		}
@@ -529,7 +529,7 @@
 
 	function checkIfDashboardIsSaved() {
 		if(window.location.href.indexOf("blankEdit.html") != -1) {
-			window.alert("You have to add, at least, one board\nbefore performance of this command.");
+			window.alert("You have to add at least one dashboard.");
 			return false;
 		}
 		return true;
