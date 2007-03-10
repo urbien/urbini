@@ -5175,6 +5175,7 @@ function showDiv(e, td, hideDivId) {
   div = document.getElementById(divId);
   div.style.visibility = Popup.VISIBLE;
   div.style.display = 'inline';
+  return stopEventPropagation(e);
 }
 
 function showTab(e, td, hideDivId, unhideDivId) {
