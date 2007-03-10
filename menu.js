@@ -2157,17 +2157,17 @@ function textAreaOnFocus(e) {
   var target = getTargetElement(e);
   var rows = getFormFieldInitialValue(target, 'rows');
   if (rows)
-    target.attributes['rows'].value = rows;
+    target.setAttribute('rows', rows);
   else
-    target.attributes['rows'].value = 1;
+    target.setAttribute('rows', 1);
   var cols = getFormFieldInitialValue(target, 'cols');
   if (!cols) {
     target.setAttribute('cols', 10);
     cols = 10;
   }
-  var c = target.attributes['cols'];
+  var c = target.getAttribute('cols');
   if (c) {
-    c.value = cols;
+    target.setAttribute('cols', cols);
     target.style.width = "96%";
   }
 }
@@ -2175,8 +2175,8 @@ function textAreaOnFocus(e) {
 function textAreaOnBlur(e) {
   var target = getTargetElement(e);
   if (!target.value || target.value == '') {
-    target.attributes['rows'].value = 1;
-    target.attributes['cols'].value = 10;
+    target.setAttribute('rows', 1);
+    target.setAttribute('cols', 10);
     target.style.width = null;
   }
 }
