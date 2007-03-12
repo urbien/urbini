@@ -80,7 +80,6 @@ var RteEngine = {
 		if(iframeObj.id	== "")
 			iframeObj.id = new Date().getTime();
 
-
 		var rteObj = null;
 		if(this.toUseTArea == false) {
 		  try {
@@ -89,7 +88,7 @@ var RteEngine = {
 		}
 
     if(this.toUseTArea)
-   		  rteObj = new TArea(iframeObj, rteDataFieldId, rtePref);
+  	  rteObj = new TArea(iframeObj, rteDataFieldId, rtePref);
 
 		if(rteObj != null)
 			this.rteArr.push(rteObj);
@@ -99,7 +98,12 @@ var RteEngine = {
 	// keepRte means that RTE object is keeping for further use.
 	// by default the RTE object will be removed from  RteEngine.
 	putRteDataOfForm : function(formObj, keepRte) {
-		var iframes = formObj.getElementsByTagName('iframe');
+		var iframes;
+		if(this.toUseTArea == false)
+		  iframes = formObj.getElementsByTagName('iframe');
+		else
+		  iframes = formObj.getElementsByTagName('textarea');
+		  
 		for(var i = 0; i < iframes.length; i++) {
 			var idx = RteEngine.getRteIndex(iframes[i])
 			if(idx != -1) {
@@ -112,9 +116,9 @@ var RteEngine = {
 			}
 		}
 	},
-	getRteIndex : function(iframeObj) {
+	getRteIndex : function(obj) {
 		for(var i = 0; i < this.rteArr.length; i++) {
-			if(this.rteArr[i].iframeObj.id == iframeObj.id)
+			if(this.rteArr[i].getId() == obj.id)
 				return i;
 		}
 		return -1; // iframe is not a RTE
@@ -400,11 +404,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 				this.toolbar = this.createToolbar();
 				this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
 		}
-
 		// set handlers
 		this.setHandlers();
-
-		if(this.isNetscape) // turn on Mozila's spellcheck
+		
+	  if(this.isNetscape) // turn on Mozila's spellcheck
       this.document.body.spellcheck = true;
 	}
 	this.browserDetection = function() {
@@ -557,6 +560,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 		return content;
 	}
+	this.getId = function() {
+    return this.iframeObj.id;
+  }
 	this.getDataField = function() {
 		if(this.dataField == null) {
 			this.dataField = getChildById(this.parentDiv, this.dataFieldId);
@@ -970,9 +976,11 @@ function TArea(iframeObj, dataFieldId, rtePref) {
     this.textArea.id = this.iframeObj.id;
 
     // convert html into a plain text.
-    var plainTooltipText = this.getDataField().value.replace(/<\/?[^>]+(>|$)/g, " ")
-    this.textArea.value = plainTooltipText;
-
+    // remove tags (alternative is to replace with " ")
+    var text = this.getDataField().value;
+    var plainText = text.replace(/<\/?[^>]+(>|$)/g, "")
+    this.textArea.innerText = plainText;
+    
     // set handlers
     addEvent(this.textArea, 'keyup', this._onkeyup, false);
 		addEvent(this.textArea, 'focus', this.onfocus, false);
@@ -980,7 +988,9 @@ function TArea(iframeObj, dataFieldId, rtePref) {
 
     this.parentDiv.replaceChild(this.textArea, this.iframeObj);
   }
-
+  this.getId = function() {
+    return this.textArea.id;
+  }
   this.getDataField = function() {
 		if(this.dataField == null) {
 			this.dataField = getChildById(this.parentDiv, this.dataFieldId);
