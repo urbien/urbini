@@ -5178,6 +5178,24 @@ function showDiv(e, td, hideDivId) {
   return stopEventPropagation(e);
 }
 
+var hideMenu;
+function showMenu(e, divId) {
+  e = getDocumentEvent(e);
+  if (hideMenu) {
+    var div = document.getElementById(divId);
+    div.style.visibility = Popup.HIDDEN;
+    div.style.display = "none";
+    hideMenu = false;
+  }
+  else {
+    div = document.getElementById(divId);
+    div.style.visibility = Popup.VISIBLE;
+    div.style.display = 'inline';
+    hideMenu = true;
+  }
+  return stopEventPropagation(e);
+}
+
 function showTab(e, td, hideDivId, unhideDivId) {
   e = getDocumentEvent(e);
 
@@ -5259,6 +5277,9 @@ function showTab(e, td, hideDivId, unhideDivId) {
         var uTable = uTD.getElementsByTagName("table");
         if (uTable.length != 0  &&  uTable[0].className == "currentCpTabs")
           uTable[0].className = "cpTabs";
+        var controlPanelId = (hasPrefix) ? 'icp' : 'cp';
+        if (uTD.id == controlPanelId  &&  uTD.className == 'currentTabTitleHidden')
+          uTD.className = 'controlPanel';
         if (isViewAll) {
           var tt;
           if (hasPrefix)
