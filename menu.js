@@ -5732,18 +5732,6 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   div.style.width  = divCoords.width  + 'px';
   div.style.height = divCoords.height + 'px';
 
-  // Make position/size of the underlying iframe same as div's position/size
-  if (Popup.ie) {
-    istyle.width     = divCoords.width  + 'px';
-    istyle.height    = divCoords.height + 'px';
-    // to make dialog shadow visible (without iframe background).
-    if(div.id == 'pane2') {
-      var SHADOW_WIDTH = 11;
-      istyle.width   = divCoords.width  - SHADOW_WIDTH + 'px';
-      istyle.height  = divCoords.height - SHADOW_WIDTH + 'px';
-    }
-  }
-
   var zIndex = 1;
   if (hotspot) {
     var z = hotspot.style.zIndex; // this relative zIndex allows stacking popups on top of each other
@@ -5769,10 +5757,33 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   div.style.display    = 'inline';
   // commented out temporarily since listbox in dialog is not visible
   // this unfortunately will cause a problem with popup over form fields
+  
+  // Make position/size of the underlying iframe same as div's position/size
+  var iframeLeft = left;
+  var iframeTop = top;
+  if(Popup.ie) {
+    istyle.width     = divCoords.width  + 'px';
+    istyle.height    = divCoords.height + 'px';
+    // to make dialog shadow visible (without iframe background).
+    if(div.id == 'pane2') {
+      var SHADOW_WIDTH = 11;
+      istyle.width   = divCoords.width  - SHADOW_WIDTH + 'px';
+      istyle.height  = divCoords.height - SHADOW_WIDTH + 'px';
+    }
+    // to make tooltip shadow visible;
+    if(div.id == 'system_tooltip') {
+      var ttContent = getChildById(div, "tt_frame");
+      istyle.width   = ttContent.clientWidth;
+      istyle.height  = ttContent.clientHeight;
+      iframeLeft += 20;
+      iframeTop += 20;
+    }
+  }
+  
   if (Popup.ie) // only IE has a problem with form elements 'showing through' the popup
     istyle.display = 'inline';
   reposition(div,    left, top); // move the div box to the adjusted position
-  reposition(iframe, left, top); // place iframe under div
+  reposition(iframe, iframeLeft, iframeTop); // place iframe under div
   // if (!opera && !konqueror) {
   if (Popup.ie) // only IE has a problem with form elements 'showing through' the popup
     istyle.visibility  = Popup.VISIBLE;
@@ -6149,16 +6160,16 @@ function loadingCueStart(e, hotspot) {
     return;
   var ttDiv = document.getElementById("system_tooltip");
   var ttIframe = document.getElementById("tooltipIframe");
-  var loadingMsg = "<div style='vertical-align: middle; font-size: 14px; color:#000000; margin:2; padding:5px;'><b> loading . . . </b></div>";
+  var loadingMsg = "<div style='vertical-align: middle; font-size: 14px; color:#000000; background-color:rgb(255,252,184);'><b> loading . . . </b></div>";
 
-  advancedTooltip.hideTitle();
+  advancedTooltip.hideOptionsBtn();
   Popup.open(e, ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
 }
 
 function loadingCueFinish() {
   if (Popup.tooltipPopup)
     Popup.tooltipPopup.close();
-    advancedTooltip.showTitle();
+    advancedTooltip.showOptionsBtn();
 }
 
 // ******************************************** end AJAX
@@ -6873,7 +6884,6 @@ var closingOnEsc = {
 **************************************************/
 var advancedTooltip = {
   tooltip : null,
-  titleRow : null,
   options : {isShiftRequired : false},
   optList : null,
   optBtn : {obj:null, width:13, height:17}, // button image object and size
@@ -6884,11 +6894,10 @@ var advancedTooltip = {
       return;
 
     this.tooltip = document.getElementById('system_tooltip');
-    this.titleRow = getChildById(this.tooltip, "title");
     this.optList = new List();
     var itemDiv = document.createElement('div');
     this.optList.appendItem(itemDiv);
-    this.optBtn.obj = getChildById(this.titleRow, "opt_btn");
+    this.optBtn.obj = getChildById(this.tooltip, "opt_btn");
 
     this.initShiftPref();
 
@@ -6896,25 +6905,25 @@ var advancedTooltip = {
     this.initialized = true;
   },
   onOptionsBtn : function() {
-    var style = advancedTooltip.optList.div.style;
     this.updateOptListItem(0);
+    var ttContent = getChildById(this.tooltip, "tt_inner");
     advancedTooltip.optList.show(advancedTooltip.optBtn,
-                    'left', advancedTooltip.onOptListItemSelect, this.tooltip);
+                    'left', advancedTooltip.onOptListItemSelect, ttContent);
   },
   onOptListItemSelect : function(idx) {
     advancedTooltip.optList.hide();
     if(idx == 0)
       advancedTooltip.shiftPrefSwitch();
   },
-  showTitle : function()  {
+  showOptionsBtn : function()  {
     if(!this.tooltip)
       this.init();
-    this.titleRow.style.display = "";
+    this.optBtn.obj.style.display = "";
   },
-  hideTitle : function()  {
+  hideOptionsBtn : function()  {
     if(!this.tooltip)
       this.init();
-    this.titleRow.style.display = "none";
+    this.optBtn.obj.style.display = "none";
   },
   // shift pref --------------------------------
   isShiftRequired : function() {
@@ -6954,10 +6963,11 @@ var advancedTooltip = {
   updateOptListItem : function(idx) {
     if(idx == 0) {
       if(this.options.isShiftRequired)
-        this.optList.changeItemContent(idx, "show always");
+        this.optList.changeItemContent(idx, "<span style='font-size:12px;'>show always</span>");
       else
-        this.optList.changeItemContent(idx, "show when shift pressed");
+        this.optList.changeItemContent(idx, "<span style='font-size:12px;'>show when shift pressed</span>");
     }
+    this.optList.setWidth = 200;
   }
 }
 
