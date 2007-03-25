@@ -2821,6 +2821,7 @@ function schedule(e) {
       currentCell.style.width = '100px';
       var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'normal';
+      schReassign.addIcon(div);
     }
     return;
   }
@@ -2831,6 +2832,7 @@ function schedule(e) {
       var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'nowrap';
       currentCell.style.height = '1px';
+      schReassign.removeIcon(div);
     }
     currentCell.style.backgroundColor = currentCellBackground;
     currentCell = target;
@@ -2844,6 +2846,7 @@ function schedule(e) {
       currentCell.style.height = '100px';
       var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'normal';
+      schReassign.addIcon(div);
     }
     currentCellBackground = currentCell.style.backgroundColor;
     currentCell.style.backgroundColor = "#D7D8FB";
@@ -2892,6 +2895,138 @@ function addEventOnSchedule() {
   if (table == null)
     return;
   addEvent(table, 'click', function(event) {schedule(event);}, false);
+}
+
+var schReassign = {
+  TITLE_TEXT : "reassign procedure",
+  HIGHLIGHT_BG_COLOR : "#0d0",
+  contentDiv : null,
+  iconDiv : null,
+  tbody : null,
+  srcCell : null,
+  curTargetCell : null,
+  isActivated : false,
+  
+  init : function() {
+    this.iconDiv = document.createElement('div');
+    this.iconDiv.align = "right";
+    this.iconDiv.style.width = "100%";
+    
+    var html = "<a title=\"" + this.TITLE_TEXT + "\" onclick=\"schReassign.activate();\">";
+    html += "<img src=\"../icons/integrate.gif\" style=\"cursor:pointer;\"></a>";
+    this.iconDiv.innerHTML = html;
+    
+    this.tbody = document.getElementById("schedule");
+    if(!this.tbody) throw('Not found "schedule" tbody');
+    
+    // add handlers
+    addEvent(this.tbody, 'mouseover', this._onmouseover, false);
+    addEvent(this.tbody, 'mouseout', this._onmouseout, false);
+    addEvent(this.tbody, 'click', this._onclick, false);
+    addEvent(document, 'click', this._onwindowclick, false);
+    addEvent(document, 'keyup', this._onkeyup, false);
+  },
+  
+  addIcon : function(contentDiv) {
+    this.contentDiv = contentDiv;
+    if(this.iconDiv == null) {
+      this.init();
+    }
+    this.contentDiv.insertBefore(this.iconDiv, contentDiv.firstChild);
+    this.srcCell = this.contentDiv.parentNode;
+  },
+  removeIcon : function() {
+    if(this.iconDiv == null)
+      return;
+    this.contentDiv.removeChild(this.iconDiv);
+  },
+ 
+  activate : function(e) {
+    this.isActivated = true;
+    e = getDocumentEvent(e);
+    stopEventPropagation(e)
+  },
+  disactivate : function() {
+    this.tbody.style.cursor = "";
+    if(schReassign.curTargetCell)
+      schReassign.curTargetCell.style.backgroundColor = "";
+    schReassign.curTargetCell = null;
+    this.isActivated = false;
+  },
+  
+  // event handlers
+  _onmouseover : function(e) {
+    if(schReassign.isActivated == false)
+      return;
+    
+    var target = getEventTarget(e);
+    
+    if(target.tagName.toLowerCase() != "td") {
+      target = getAncestorByTagName(target, "td")
+    }
+    
+    // 1. source cell
+    if(schReassign.srcCell.id == target.id) {
+      schReassign.tbody.style.cursor = "";
+      return;
+    }
+    
+    // 2. the same target
+    if(schReassign.curTargetCell != null) {
+      if(schReassign.curTargetCell.id == target.id)
+        return;
+    }
+    // 3. new target
+    var className = target.className;
+    // alowed target
+    if(className == "a") {
+      schReassign.curTargetCell = target;
+      target.style.backgroundColor = "#0d0";
+      schReassign.tbody.style.cursor = "crosshair";
+    }
+    // forbidden target
+    else {
+      schReassign.tbody.style.cursor = "not-allowed";
+    }
+  },
+  _onclick : function(e) {
+    if(schReassign.isActivated == false)
+        return;
+    if(schReassign.curTargetCell != null) {
+      if(schReassign.curTargetCell.id != schReassign.srcCell.id) {  
+        schReassign.moveProcedure(schReassign.srcCell, schReassign.curTargetCell);
+        schReassign.disactivate();
+      }
+    }
+
+    // prevents _onwindowclick handler
+    e = getDocumentEvent(e);
+    stopEventPropagation(e)
+  },
+  
+  _onmouseout : function() {
+    if(schReassign.isActivated == false)
+      return;
+    if(schReassign.curTargetCell)
+      schReassign.curTargetCell.style.backgroundColor = "";
+    schReassign.curTargetCell = null;
+  },
+  _onwindowclick : function(e) {
+    if(schReassign.isActivated == false)
+      return;
+    schReassign.disactivate();
+  },
+  _onkeyup : function(e) {
+  	e = getDocumentEvent(e);
+		var charCode = (e.charCode) ? e.charCode : ((e.keyCode) ? e.keyCode : 
+			((e.which) ? e.which : 0));
+		if (charCode == 27) // escape
+		    schReassign.disactivate();  
+  },
+  //
+  moveProcedure : function(srcCell, targetCell) {
+    alert("moveProcedure");
+  }
 }
 
 function initListBoxes(div) {
@@ -4034,7 +4169,18 @@ function getAncestorById(child, id) {
 	}
 	return null;
 }
-
+function getAncestorByTagName(child, tagName) {
+  tagName = tagName.toLowerCase();
+	if(child.tagName == tagName)
+		return child;
+	var parent;
+	while((parent = child.parentNode) != null) {
+		if(parent.tagName.toLowerCase() == tagName)
+			return parent;
+		child = parent;
+	}
+	return null;
+}
 // *********************************** Icon/Image effects
 // **************************************
 var lowOpacity  = 60;
