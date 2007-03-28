@@ -5323,6 +5323,34 @@ function showDiv(e, td, hideDivId) {
   div.style.display = 'inline';
   return stopEventPropagation(e);
 }
+function hideDiv(e, hideDivId) {
+  e = getDocumentEvent(e);
+  var div = document.getElementById(hideDivId);
+  div.style.visibility = Popup.HIDDEN;
+  div.style.display = "none";
+  return stopEventPropagation(e);
+}
+
+function minMax(e, divId) {
+  e = getDocumentEvent(e);
+  if (!e)
+    return;
+  var elm = getTargetElement(e);
+  if (!elm)
+    return;
+  var div = document.getElementById(divId);
+  if (elm.src.indexOf('minimize.gif') != -1) {
+//    div.style.visibility = Popup.HIDDEN;
+    div.style.display = "none";
+    elm.src = 'icons/restore.gif';
+  }
+  else {
+//    div.style.visibility = Popup.VISIBLE;
+    div.style.display = '';
+    elm.src = 'icons/minimize.gif';
+  }
+  return stopEventPropagation(e);
+}
 
 var hideMenu;
 function showMenu(e, divId) {
@@ -7280,8 +7308,27 @@ var dictionaryHandler = {
     }
     
     selText = trim(selText);
-    if(selText != "")
+    if(selText != "") {
+      var len = selText.length;
+      if (selText.charAt(len - 1) == ')') {
+        var idx = selText.lastIndexOf('(');
+        if (idx != -1) {
+          var s = selText.substring(idx + 1, len - 1);
+          if (s == 's') 
+            selText = selText.substring(0, idx);
+          else {
+            try {
+              var num = parseInt(s);
+              if (!isNaN(num))
+                selText = trim(selText.substring(0, idx));
+            } catch (e) {
+            }
+          }
+        }
+      }
+      
       dictionaryHandler.translate(e, hotspot, selText);
+    }
   },
   translate : function(e, hotspot, text) {
     var baseUriO = document.getElementsByTagName('base');
