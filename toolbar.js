@@ -29,7 +29,6 @@ function FormPopup(innerFormHtml, parentElt) {
 		this.buttonsDiv = this.createButtons(); 
 		this.div.appendChild(this.formDiv);
 		this.div.appendChild(this.buttonsDiv);
-	//	parentElt.appendChild(this.div);
 	}
 	
 	// ok, cancel
@@ -278,9 +277,12 @@ var PalettePopup = {
 	noClrCell : null,
 	callback : null,
 	hotspotIdx : -1, // index of control calling the palette (-1 on hidden palette)
+	chosenDiv : null, // highlights last chosen color
+	CHOSEN_DIV_ID : "chosen_div_id",
+	
 	//show
 	// noColorTitle is a text to show in noClrCell
-	show : function(hotspot, alignment, callback, parentDlg, noColorTitle) {
+	show : function(hotspot, alignment, callback, parentDlg, noColorTitle, chosenClr) {
 		if(this.div == null)
 			this.create();
  
@@ -293,29 +295,78 @@ var PalettePopup = {
     
     this.hotspotIdx = hotspot.index;
     
-		if(typeof noColorTitle != 'undefined') {
+    // 1. show or hide no color cell
+		if(typeof noColorTitle != 'undefined' && noColorTitle != null) {
 		  this.noClrCell.innerHTML = noColorTitle;
 		  this.noClrCell.style.display = "";
 		}
 		else
  		  this.noClrCell.style.display = "none";
 
+    // 2. highlight last chosen color
+    this.setChosenColor(chosenClr);
+    
+    // 3. launch
 		this.callback = callback;
   	PopupHandler.showRelatively(hotspot, alignment, this.div, true, parentDlg);
 	},
 	create : function() {
 		this.div = document.createElement('div');
-		this.div.style.visibility = "hidden";
-		this.div.style.position = "absolute";
-		this.div.style.backgroundColor = "#fff";
-		this.div.style.borderStyle = "solid";
-		this.div.style.borderWidth = 1;
-		this.div.style.borderColor = "#999";
-		this.div.style.padding = 1;
+		var divStyle = this.div.style
+		divStyle.visibility = "hidden";
+		divStyle.position = "absolute";
+		divStyle.backgroundColor = "#fff";
+		divStyle.borderStyle = "solid";
+		divStyle.borderWidth = 1;
+		divStyle.borderColor = "#999";
+		divStyle.padding = 1;
 
 		this.div.innerHTML = this.getPaletteStr();
 		this.noClrCell = getChildById(this.div, "noClr");
-		//	document.body.appendChild(this.div);
+		
+		this.chosenDiv = document.createElement('div');
+		this.chosenDiv.id = this.CHOSEN_DIV_ID;
+		var chDivStyle = this.chosenDiv.style;
+		chDivStyle.width  = 17;
+		chDivStyle.height = 17;
+		chDivStyle.borderWidth = "1px";
+		chDivStyle.borderStyle = "dashed";
+		//chDivStyle.borderColor = "#fff";
+	},
+	
+	setChosenColor : function(chosenClr) {
+    if(typeof chosenClr == 'undefined' || chosenClr == null) {
+      this.chosenDiv.style.display = "none";
+      return;
+    }
+
+    var chosenClr_LC = chosenClr.toLowerCase();
+	  cells = this.div.getElementsByTagName("td");
+	  for(var i = 0; i < cells.length; i++) {
+	    var bgClr = cells[i].getAttribute("bgcolor");
+	    
+	    if(bgClr == chosenClr || bgClr == chosenClr_LC) {
+	      // 1. detect brightness of the cell
+	      if(bgClr.indexOf("#") == 0)
+	        bgClr = bgClr.substr(1);
+	      
+	      bgClrInt = parseInt(bgClr , 16);
+	      var r = (bgClrInt >> 16) & 0xff;
+        var g = (bgClrInt >> 8 ) & 0xff;
+        var b = (bgClrInt      ) & 0xff;
+	      
+	      var brightness = r + g + b; // max - 765
+	      // 2. set border color
+	      if(brightness > 475)
+	        this.chosenDiv.style.borderColor = "#000";
+	      else
+	        this.chosenDiv.style.borderColor = "#fff";
+	        
+	      // 3. append chosenDiv
+	      cells[i].appendChild(this.chosenDiv);
+ 	      this.chosenDiv.style.display = "block";
+	    }
+	  }
 	},
 	_onmouseover : function(obj) {
 		obj.style.cursor = 'pointer';
@@ -326,97 +377,94 @@ var PalettePopup = {
 	},
 	getPaletteStr : function() {
 		var palette =
-		//  width=130; height=80 align="left"
 			'<table cellpadding="0" cellspacing="1" border="0">' + '<tr>'
-			+ '	<td bgcolor="#FFFFFF" onclick="PalettePopup._onclick(\'#FFFFFF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FFCCCC" onclick="PalettePopup._onclick(\'#FFCCCC\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FFCC99" onclick="PalettePopup._onclick(\'#FFCC99\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FFFF99" onclick="PalettePopup._onclick(\'#FFFF99\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FFFFCC" onclick="PalettePopup._onclick(\'#FFFFCC\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#99FF99" onclick="PalettePopup._onclick(\'#99FF99\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#99FFFF" onclick="PalettePopup._onclick(\'#99FFFF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#CCFFFF" onclick="PalettePopup._onclick(\'#CCFFFF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#CCCCFF" onclick="PalettePopup._onclick(\'#CCCCFF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FFCCFF" onclick="PalettePopup._onclick(\'#FFCCFF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
+			+ '	<td bgcolor="#FFFFFF" onclick="PalettePopup._onclick(\'#FFFFFF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FFCCCC" onclick="PalettePopup._onclick(\'#FFCCCC\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FFCC99" onclick="PalettePopup._onclick(\'#FFCC99\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FFFF99" onclick="PalettePopup._onclick(\'#FFFF99\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FFFFCC" onclick="PalettePopup._onclick(\'#FFFFCC\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#99FF99" onclick="PalettePopup._onclick(\'#99FF99\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#99FFFF" onclick="PalettePopup._onclick(\'#99FFFF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#CCFFFF" onclick="PalettePopup._onclick(\'#CCFFFF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#CCCCFF" onclick="PalettePopup._onclick(\'#CCCCFF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FFCCFF" onclick="PalettePopup._onclick(\'#FFCCFF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></div></td>'
+			+ '</tr>'                                                                                                                     
+			+ '<tr>'                                                                                                                      
+			+ '	<td bgcolor="#CCCCCC" onclick="PalettePopup._onclick(\'#CCCCCC\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FF6666" onclick="PalettePopup._onclick(\'#FF6666\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FF9966" onclick="PalettePopup._onclick(\'#FF9966\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FFFF66" onclick="PalettePopup._onclick(\'#FFFF66\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FFFF33" onclick="PalettePopup._onclick(\'#FFFF33\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#66FF99" onclick="PalettePopup._onclick(\'#66FF99\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#33FFFF" onclick="PalettePopup._onclick(\'#33FFFF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#66FFFF" onclick="PalettePopup._onclick(\'#66FFFF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#9999FF" onclick="PalettePopup._onclick(\'#9999FF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FF99FF" onclick="PalettePopup._onclick(\'#FF99FF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
 			+ '</tr>'
 			+ '<tr>'
-			+ '	<td bgcolor="#CCCCCC" onclick="PalettePopup._onclick(\'#CCCCCC\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FF6666" onclick="PalettePopup._onclick(\'#FF6666\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FF9966" onclick="PalettePopup._onclick(\'#FF9966\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FFFF66" onclick="PalettePopup._onclick(\'#FFFF66\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FFFF33" onclick="PalettePopup._onclick(\'#FFFF33\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#66FF99" onclick="PalettePopup._onclick(\'#66FF99\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#33FFFF" onclick="PalettePopup._onclick(\'#33FFFF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#66FFFF" onclick="PalettePopup._onclick(\'#66FFFF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#9999FF" onclick="PalettePopup._onclick(\'#9999FF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FF99FF" onclick="PalettePopup._onclick(\'#FF99FF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
+			+ '	<td bgcolor="#C0C0C0" onclick="PalettePopup._onclick(\'#C0C0C0\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FF0000" onclick="PalettePopup._onclick(\'#FF0000\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FF9900" onclick="PalettePopup._onclick(\'#FF9900\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FFCC66" onclick="PalettePopup._onclick(\'#FFCC66\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FFFF00" onclick="PalettePopup._onclick(\'#FFFF00\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#33FF33" onclick="PalettePopup._onclick(\'#33FF33\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#66CCCC" onclick="PalettePopup._onclick(\'#66CCCC\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#33CCFF" onclick="PalettePopup._onclick(\'#33CCFF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#6666CC" onclick="PalettePopup._onclick(\'#6666CC\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#CC66CC" onclick="PalettePopup._onclick(\'#CC66CC\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
 			+ '</tr>'
 			+ '<tr>'
-			+ '	<td bgcolor="#C0C0C0" onclick="PalettePopup._onclick(\'#C0C0C0\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FF0000" onclick="PalettePopup._onclick(\'#FF0000\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FF9900" onclick="PalettePopup._onclick(\'#FF9900\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FFCC66" onclick="PalettePopup._onclick(\'#FFCC66\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FFFF00" onclick="PalettePopup._onclick(\'#FFFF00\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#33FF33" onclick="PalettePopup._onclick(\'#33FF33\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#66CCCC" onclick="PalettePopup._onclick(\'#66CCCC\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#33CCFF" onclick="PalettePopup._onclick(\'#33CCFF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#6666CC" onclick="PalettePopup._onclick(\'#6666CC\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#CC66CC" onclick="PalettePopup._onclick(\'#CC66CC\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
+			+ '	<td bgcolor="#999999" onclick="PalettePopup._onclick(\'#999999\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#CC0000" onclick="PalettePopup._onclick(\'#CC0000\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FF6600" onclick="PalettePopup._onclick(\'#FF6600\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FFCC33" onclick="PalettePopup._onclick(\'#FFCC33\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#FFCC00" onclick="PalettePopup._onclick(\'#FFCC00\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#33CC00" onclick="PalettePopup._onclick(\'#33CC00\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#00CCCC" onclick="PalettePopup._onclick(\'#00CCCC\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#3366FF" onclick="PalettePopup._onclick(\'#3366FF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#6633FF" onclick="PalettePopup._onclick(\'#6633FF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#CC33CC" onclick="PalettePopup._onclick(\'#CC33CC\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
 			+ '</tr>'
 			+ '<tr>'
-			+ '	<td bgcolor="#999999" onclick="PalettePopup._onclick(\'#999999\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#CC0000" onclick="PalettePopup._onclick(\'#CC0000\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FF6600" onclick="PalettePopup._onclick(\'#FF6600\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FFCC33" onclick="PalettePopup._onclick(\'#FFCC33\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#FFCC00" onclick="PalettePopup._onclick(\'#FFCC00\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#33CC00" onclick="PalettePopup._onclick(\'#33CC00\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#00CCCC" onclick="PalettePopup._onclick(\'#00CCCC\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#3366FF" onclick="PalettePopup._onclick(\'#3366FF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#6633FF" onclick="PalettePopup._onclick(\'#6633FF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#CC33CC" onclick="PalettePopup._onclick(\'#CC33CC\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
+			+ '	<td bgcolor="#666666" onclick="PalettePopup._onclick(\'#666666\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#990000" onclick="PalettePopup._onclick(\'#990000\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#CC6600" onclick="PalettePopup._onclick(\'#CC6600\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#CC9933" onclick="PalettePopup._onclick(\'#CC9933\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#999900" onclick="PalettePopup._onclick(\'#999900\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#009900" onclick="PalettePopup._onclick(\'#009900\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#339999" onclick="PalettePopup._onclick(\'#339999\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#3333FF" onclick="PalettePopup._onclick(\'#3333FF\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#6600CC" onclick="PalettePopup._onclick(\'#6600CC\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#993399" onclick="PalettePopup._onclick(\'#993399\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
 			+ '</tr>'
 			+ '<tr>'
-			+ '	<td bgcolor="#666666" onclick="PalettePopup._onclick(\'#666666\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#990000" onclick="PalettePopup._onclick(\'#990000\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#CC6600" onclick="PalettePopup._onclick(\'#CC6600\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#CC9933" onclick="PalettePopup._onclick(\'#CC9933\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#999900" onclick="PalettePopup._onclick(\'#999900\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#009900" onclick="PalettePopup._onclick(\'#009900\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#339999" onclick="PalettePopup._onclick(\'#339999\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#3333FF" onclick="PalettePopup._onclick(\'#3333FF\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#6600CC" onclick="PalettePopup._onclick(\'#6600CC\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#993399" onclick="PalettePopup._onclick(\'#993399\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
+			+ '	<td bgcolor="#333333" onclick="PalettePopup._onclick(\'#333333\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#660000" onclick="PalettePopup._onclick(\'#660000\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#993300" onclick="PalettePopup._onclick(\'#993300\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#996633" onclick="PalettePopup._onclick(\'#996633\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#666600" onclick="PalettePopup._onclick(\'#666600\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#006600" onclick="PalettePopup._onclick(\'#006600\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#336666" onclick="PalettePopup._onclick(\'#336666\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#000099" onclick="PalettePopup._onclick(\'#000099\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#333399" onclick="PalettePopup._onclick(\'#333399\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#663366" onclick="PalettePopup._onclick(\'#663366\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
 			+ '</tr>'
 			+ '<tr>'
-			+ '	<td bgcolor="#333333" onclick="PalettePopup._onclick(\'#333333\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#660000" onclick="PalettePopup._onclick(\'#660000\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#993300" onclick="PalettePopup._onclick(\'#993300\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#996633" onclick="PalettePopup._onclick(\'#996633\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#666600" onclick="PalettePopup._onclick(\'#666600\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#006600" onclick="PalettePopup._onclick(\'#006600\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#336666" onclick="PalettePopup._onclick(\'#336666\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#000099" onclick="PalettePopup._onclick(\'#000099\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#333399" onclick="PalettePopup._onclick(\'#333399\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#663366" onclick="PalettePopup._onclick(\'#663366\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '</tr>'
-			+ '<tr>'
-			+ '	<td bgcolor="#000000" onclick="PalettePopup._onclick(\'#000000\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#330000" onclick="PalettePopup._onclick(\'#330000\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#663300" onclick="PalettePopup._onclick(\'#663300\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#663333" onclick="PalettePopup._onclick(\'#663333\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#333300" onclick="PalettePopup._onclick(\'#333300\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#003300" onclick="PalettePopup._onclick(\'#003300\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#003333" onclick="PalettePopup._onclick(\'#003333\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#000066" onclick="PalettePopup._onclick(\'#000066\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#330099" onclick="PalettePopup._onclick(\'#330099\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
-			+ '	<td bgcolor="#330033" onclick="PalettePopup._onclick(\'#330033\');" onmouseover="PalettePopup._onmouseover(this);" width="10" height="10"></td>'
+			+ '	<td bgcolor="#000000" onclick="PalettePopup._onclick(\'#000000\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#330000" onclick="PalettePopup._onclick(\'#330000\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#663300" onclick="PalettePopup._onclick(\'#663300\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#663333" onclick="PalettePopup._onclick(\'#663333\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#333300" onclick="PalettePopup._onclick(\'#333300\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#003300" onclick="PalettePopup._onclick(\'#003300\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#003333" onclick="PalettePopup._onclick(\'#003333\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#000066" onclick="PalettePopup._onclick(\'#000066\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#330099" onclick="PalettePopup._onclick(\'#330099\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
+			+ '	<td bgcolor="#330033" onclick="PalettePopup._onclick(\'#330033\');" onmouseover="PalettePopup._onmouseover(this);" width="17" height="17"></td>'
 			+ '</tr>'
 			// no color row - empty string returns
 			+ '</tr>'
 			+ '<tr>'
-			+ '<td id="noClr" colspan="10" onclick="PalettePopup._onclick(\'\');" onmouseover="PalettePopup._onmouseover(this);" align="center"style="font-size:11px; font-name:arial;">My test</td>';
-			//+ '<td id="noClr" colspan="10">colspan test</td>';
-//			+ '<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>';
+			+ '<td id="noClr" colspan="10" onclick="PalettePopup._onclick(\'\');" onmouseover="PalettePopup._onmouseover(this);" align="center"style="font-size:11px; font-name:arial;"></td>';
 			+ '</tr>';
 			
 			+ '</table>';

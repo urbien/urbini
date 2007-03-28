@@ -174,14 +174,14 @@ var RteEngine = {
 		this.smilePopup.show(btnObj, 'right', callback, parentDlg);
 		return this.smilePopup.div;
 	},
-	launchTextColorPopup : function(btnObj, callback) {
+	launchTextColorPopup : function(btnObj, callback, chosenTextClr) {
 		var parentDlg = getAncestorById(btnObj.div, 'pane2');
-		PalettePopup.show(btnObj, 'right', callback, parentDlg);
+		PalettePopup.show(btnObj, 'right', callback, parentDlg, null, chosenTextClr);
 		return PalettePopup.div;
 	},
-	launchBgColorPopup : function(btnObj, callback) {
+	launchBgColorPopup : function(btnObj, callback, chosenBgClr) {
 		var parentDlg = getAncestorById(btnObj.div, 'pane2');
-		PalettePopup.show(btnObj, 'right', callback, parentDlg);
+		PalettePopup.show(btnObj, 'right', callback, parentDlg, null, chosenBgClr);
 		return PalettePopup.div;
 	},
 	launchLinkPopup : function(btnObj, callback) {
@@ -377,6 +377,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.tableBtn = null;
 	this.htmlBtn = null;
 
+  this.chosenTextClr = null; // last chosen colors
+  this.chosenBgClr   = null; 
+  
 	this.isInitialized = false;
 
 	// init
@@ -764,13 +767,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.onTextColor = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.currentPopup = RteEngine.launchTextColorPopup(i_am.textColorBtn, i_am.setTextColor);
+		i_am.currentPopup = RteEngine.launchTextColorPopup(i_am.textColorBtn, i_am.setTextColor,  i_am.chosenTextClr);
 	}
 	// 18
 	this.onBackgroundColor = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.currentPopup = RteEngine.launchBgColorPopup(i_am.bgColorBtn, i_am.setBackgroundColor);
+		i_am.currentPopup = RteEngine.launchBgColorPopup(i_am.bgColorBtn, i_am.setBackgroundColor, i_am.chosenBgClr);
 	}
 	// 19
 	this.onLink = function() {
@@ -889,12 +892,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// 5
 	this.setTextColor = function(color) {
 		i_am.performCommand("forecolor", color);
+		i_am.chosenTextClr = color;
 		return true;
 	}
 	// 6
 	this.setBackgroundColor = function(color) {
-		if(i_am.performCommand("hilitecolor", color) == false) // FF
+		if(i_am.performCommand("hilitecolor", color) == false) { // FF
 			i_am.performCommand("backcolor", color) // IE
+		}
+		i_am.chosenBgClr = color;
 		return true;
 	}
 	// 7
