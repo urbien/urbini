@@ -5323,8 +5323,71 @@ function showDiv(e, td, hideDivId) {
   div.style.display = 'inline';
   return stopEventPropagation(e);
 }
-function hideDiv(e, hideDivId) {
+// Close neiboghring bookmark and update main Bookmark
+function closeDiv(e, hideDivId) {
   e = getDocumentEvent(e);
+  
+  var elm = getTargetElement(e);
+  var div = document.getElementById(hideDivId);
+  if (!elm) {
+    hideDiv(e, hideDivId);
+    return;
+  }
+  var a = elm.parentNode;
+  var url = a.href;
+  if (url != 'about:blank') {
+    var idx = url.indexOf('?');
+    postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, onproppatchCallback);
+  }
+  hideDiv(e, hideDivId);
+}
+
+// Show/hide all neiboghring bookmarks and update main Bookmark
+function showHideAll(e, divId) {
+  e = getDocumentEvent(e);
+  
+  var elm = getTargetElement(e);
+  var a = elm.parentNode;
+  var url = a.href;
+  var idx = url.indexOf('?');
+  var div = document.getElementById(divId);
+  var href = document.location.href;
+  postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, onproppatchCallback);
+  
+  document.location.href = href;
+}
+// Minimize/restore neiboghring bookmark and update main Bookmark
+function minimizeRestoreDiv(e, hideDivId, property) {
+  e = getDocumentEvent(e);
+  
+  var elm = getTargetElement(e);
+  var div = document.getElementById(hideDivId);
+  if (!elm) {
+    minMax(e, hideDivId);
+    return;
+  }
+  var a = elm.parentNode;
+  var url = a.href;
+  if (url != 'about:blank') {
+    var idx = url.indexOf('?');
+    var propParam = '&.' + property + '=';
+    var idx1 = url.indexOf(propParam);
+    if (idx1 != -1) {
+      var pos = idx1 + propParam.length;
+      if (url.charAt(pos) == '-')
+        a.href = url.substring(0, pos) + '%2B' + url.substring(pos + 1);
+      else
+        a.href = url.substring(0, pos) + '-' + url.substring(pos + 3);
+    }
+    postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, onproppatchCallback);
+  }
+  minMax(e, hideDivId);
+}
+// Dummy callback that is called after updating main boolmark
+function onproppatchCallback() {
+}
+
+function hideDiv(e, hideDivId) {
   var div = document.getElementById(hideDivId);
   div.style.visibility = Popup.HIDDEN;
   div.style.display = "none";
