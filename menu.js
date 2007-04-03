@@ -5355,6 +5355,7 @@ function showHideAll(e, divId) {
   postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, onproppatchCallback);
   
   document.location.href = href;
+  return stopEventPropagation(e);
 }
 // Minimize/restore neiboghring bookmark and update main Bookmark
 function minimizeRestoreDiv(e, hideDivId, property) {
