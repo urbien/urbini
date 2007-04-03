@@ -29,6 +29,14 @@ a.icotxt img {
   font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;
   white-space: nowrap;
 }
+/* Used for prop labels in widgets */
+.propLabel1 {
+  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;
+}
+/* Chinese font for prop labels */
+.propLabel:lang(zh) {
+  font-family: "Li Sung", MingLiu; font-size:1em;
+}
 
 H1 {font-family: arial, Verdana, geneva; font-size: 17px; font-weight: bold;  color: #00309C}
 H2 {font-family: arial, Verdana, geneva; font-weight: normal; font-size: medium; color: #6699CC}
@@ -338,7 +346,6 @@ body {
 	background-color:#ffffff;
 	color: #000000;
 }
-
 textarea  {  font-family: Verdana, Arial, Helvetica; font-size: 10px }
 input   {  font-family: Verdana, Arial, Helvetica; font-size: 9px; font-style: normal; line-height: normal; font-weight: normal;}
 a:hover {  color: #000080; }
@@ -358,6 +365,8 @@ tr.rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-whit
 /* input.chk {background-color:#cbcbcb; font-size:7pt} */
 
 .title {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold;}
+/* paging */
+.paging {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold; vertical-align: top;}
 
 tr.dark  {background-color:#eeeeee}
 
@@ -414,7 +423,10 @@ input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 .input1 {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:16px;text-decoration:none;}
 .barcode {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:20px;text-decoration:none;}
 /* used in filter input text fields */
-.input {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:11pt; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
+.input {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
+.input:lang(zh) {
+  font-size: 0.9em; height:16px;
+}
 .textarea {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; }
 
 .errorTextStd {font-size:12px;font-weight:bold;font-family:Arial, Helvetica, Sans Serif;color:#A01E00}
@@ -442,7 +454,6 @@ Table.comments1 {background-color: #f8f4ef; color: #000000}
 
 td.containers {background-color: #f8f4ef; color: #000000}
 
-
 table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #000000}
 
 td.propertySheet {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000}
@@ -454,6 +465,7 @@ td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #00
 table.displayInline {border:solid #808080 1px; background-color: #ffffff; color: #000000}
 tr.displayInline {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 td.hi {background-color: #f8f4ef; color: darkblue}
+td.content {background-color: #f8f4ef; color: darkblue; font-weight:bold}
 font.warn {color:#A01E00}
 td.shading {border:solid #808080 1px; color:#000000}
 span.comment { font-family: Verdana, Arial, Helvetica, sans-serif; color: #5766a5; font-weight:bold; font-size: 8pt}
@@ -485,6 +497,10 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 
 .welcome {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;}
+.welcome:lang(zh) {
+  font-size: 0.9em;
+  font-family: "Li Sung", MingLiu;
+}
 
 /* Contact name that appears at the top of the page style */
 .guestUser {  font-family: Verdana, Arial, Helvetica, sans-serif; color: lightblue; font-size: 8pt; font-weight: bold;}
@@ -606,6 +622,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .curMon {background:yellow; font-size:12px; font-weight:bold; color:#ec008c;}
 .nextPrevMon {font-size:12px; font-weight:bold; color:#00309C;}
 .yellow   {color:yellow}
+.darkblue {color:darkblue}
 
 .outerPopup {border-style:solid; border-width: 1px; border-color:#666666 #666666 #666666 #666666}
 .innerPopup {border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7}
@@ -614,9 +631,14 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .changeCols {display: inline; margin: 0px;}
 /* for displayInline text properties */
 .description {border:solid #808080 2px; border-color: #1b62b6;}
+.blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
 .innerTitle {font-family:sans-serif, arial;color:#00309C;font-size:12pt;font-weight:bold}
+
+*:lang(ja-jp) { font: 900 14pt/16pt "Heisei Mincho W9", serif } 
+BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif }
 .red {color:red;font-size:10pt;font-weight:bold}
+.errMsg {font-family:san-serif,arial,verdana;font-size:14px;color:red;font-weight:bold;}
 
 /************ tooltip ***********/
 .framed,
@@ -644,3 +666,4 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 * html .framed .f_bb * { bottom: expression( this.parentNode.offsetHeight % 2 ? -1 : 0 ); top: auto; }
 .tt_button {position: relative; top: -10; left: -10; cursor: pointer;}
 /************ END tooltip ***********/
+
