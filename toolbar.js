@@ -1,16 +1,18 @@
 /****************************************************
 * FormPopup
+* flag param values: 1) "NO_CANCEL" 2) "USE_SUBMIT_BTN" (instead ok)
 *****************************************************/
 // return parameter name is its a name in the form 
-function FormPopup(innerFormHtml, parentElt) {
+function FormPopup(innerFormHtml, flag) {
 	var i_am = this;
 	this.div = null;
 	this.formDiv = null;
 	this.buttonsDiv = null;
 	this.callback = null;
 	this.initValues = null;
+	this.is_opened = false;
 	
-	this.create = function(innerFormHtml, parentElt) {
+	this.create = function(innerFormHtml, flag) {
 		this.div = document.createElement('div');
 		this.div.style.visibility = "hidden";
 		var ua = navigator.userAgent.toLowerCase();
@@ -25,59 +27,97 @@ function FormPopup(innerFormHtml, parentElt) {
 		
 		this.formDiv = document.createElement('div');
 		this.formDiv.innerHTML = innerFormHtml;
-		
-		this.buttonsDiv = this.createButtons(); 
 		this.div.appendChild(this.formDiv);
-		this.div.appendChild(this.buttonsDiv);
+
+		if(flag == "USE_SUBMIT_BTN")
+		  this.useSubmitButton();
+		else {
+		  this.buttonsDiv = this.createButtons(flag); 
+		  this.div.appendChild(this.buttonsDiv);
+		}
 	}
 	
 	// ok, cancel
-	this.createButtons = function() {
+	this.createButtons = function(flag) {
 		var btnDiv = document.createElement('div');
 		btnDiv.align = "center";
 		btnDiv.style.paddingTop = 10;
-		btnDiv.innerHTML = 
-		'<table>'
-			+ ' <tr>'
-				+ ' <td>'
-					+ ' <input type="button" value="Ok" style="width:70; font-family:verdana; font-size:12px" />'
-				+ ' </td>'
-				+ ' <td>'
-					+ ' <input type="button" value="Cancel" style="width:70; font-family:verdana; font-size:12px" />'
-				+ ' </td>'
-			+ ' </tr>'
+		
+		var html = 
+		  '<table>'
+			  + ' <tr>'
+				  + ' <td>'
+					  + ' <input type="button" value="Ok" style="width:70; font-family:verdana; font-size:12px" />'
+				  + ' </td>';
+				
+				if(flag != "NO_CANCEL") { // cancel btn
+				  html += ' <td>'
+					    + ' <input type="button" value="Cancel" style="width:70; font-family:verdana; font-size:12px" />'
+				    + ' </td>';
+				}
+				
+			html += ' </tr>'
 		'</table>';
 		
+		btnDiv.innerHTML = html;
 		var btns = btnDiv.getElementsByTagName('input');
 		btns[0].onclick = this._onok; // Ok
-		btns[1].onclick = this._hide; // Cancel
+		if(btns[1])
+		  btns[1].onclick = this.hide; // Cancel
 		return btnDiv;
 	}
-	
-	this.show = function(btnObj, alignment, callback, parentDlg) {
+	this.useSubmitButton = function() {
+    // The following is commented out. - Not to hide a dialog on invalid data
+    // var form = this.formDiv.getElementsByTagName("form")[0];
+    // addEvent(form, "submit", this.hide, false);
+	}
+	this.changeContent = function(innerFormHtml) {
+	  this.formDiv.innerHTML = innerFormHtml;
+	}
+	this.getFormDiv = function() {
+	  return this.formDiv;
+	}
+	this.show = function(obj, alignment, callback, parentDlg) {
 		this.callback = callback;
-		PopupHandler.showRelatively(btnObj, alignment ,this.div, false, parentDlg);
+		PopupHandler.showRelatively(obj, alignment ,this.div, false, parentDlg);
 		
 		// store init values to restore on closing
 		if(this.initValues == null)
 			this.initValues = this._handleControlsValue();
 		// set focus on 1st input
-		var inputs = this.formDiv.getElementsByTagName('input');
-		inputs[0].focus();
+		var input = this.formDiv.getElementsByTagName('input')[0];
+		if(input) {
+		  try {
+		    input.focus();
+		  } catch(e){};
+		}
+		
+		 this.is_opened = true;
 	}
 
 	this._onok = function() {
 		var retArr = i_am._handleControlsValue();
-		i_am.callback(retArr);
-		i_am._hide();
+		var retVal = i_am.callback(retArr);
+		
+		// not close if callback returns false
+		if(typeof retVal != 'undefined' && retVal == false)
+		  return;
+		
+		i_am.hide();
+		i_am.is_opened = false;
 	}
 	
-	this._hide = function() {
+	this.hide = function() {
 		PopupHandler.hide();
+		i_am.is_opened = false;
 		// restore values
 		i_am._handleControlsValue(i_am.initValues);
 	}
+	this.isOpened = function() {
+	  return this.is_opened;
+	}
 	// get or set values of the controls
+	// uses attribute - name.
 	this._handleControlsValue = function(setArr) {
 		var getArr;
 		var toGet = false;
@@ -92,7 +132,7 @@ function FormPopup(innerFormHtml, parentElt) {
 			var inp = inpCol[i];
 			var type = inp.getAttribute("type");
 			var name = inp.getAttribute("name");
-			if(type == "text") {
+			if(type == "text" || type == "hidden") {
 				if(toGet)
 					getArr[name] = inp.value;
 				else
@@ -118,9 +158,10 @@ function FormPopup(innerFormHtml, parentElt) {
 			return getArr;
 	}
 	// constructor ---
-	parentElt = parentElt || document.body;
-	this.create(innerFormHtml, parentElt);
+	flag = flag || "";
+	this.create(innerFormHtml, flag);
 }
+
 
 // "base class" of controls like ToolbarButton and DropdownList
 function CtrlBase() {
@@ -331,7 +372,6 @@ var PalettePopup = {
 		chDivStyle.height = 17;
 		chDivStyle.borderWidth = "1px";
 		chDivStyle.borderStyle = "dashed";
-		//chDivStyle.borderColor = "#fff";
 	},
 	
 	setChosenColor : function(chosenClr) {
@@ -1082,7 +1122,7 @@ var PopupHandler = {
 	overflowPopup : null,
 	
 	// div is a popup
-	// alignment: left, center, right
+	// alignment: left, center, right, inside
 	// hotspot is a control object
 	showRelatively : function(hotspot, alignment, div, autohide, parentDlg) {
 		var OFFSET_Y = 2;
@@ -1099,16 +1139,30 @@ var PopupHandler = {
 		else // if(div.parentNode.id != 'body')
 			document.body.appendChild(div);
 		
-		var obj = hotspot.div || hotspot.obj;
-		var pos = this.findObjectPositio(obj, parentDlg);
-		if(alignment == 'left')
+		var relObj = hotspot.div || hotspot.obj || hotspot;
+		var pos = this.findObjectPositio(relObj, parentDlg);
+    
+    // 1. inside ("hotspot" - here "container)
+    if(alignment == 'inside') {
+      var xDelta = Math.max((relObj.clientWidth - div.clientWidth) / 2, 0);
+      this.x = pos.left + xDelta;
+      
+      var yDelta = Math.max((relObj.clientHeight - div.clientHeight) / 2, 0);
+      this.y = pos.top + yDelta;
+    }
+    // 2. left
+		else if(alignment == 'left')
 			this.x = pos.left;
+		// 3. center 	 
 		else if(alignment == 'center') 
 			this.x = pos.left - (div.clientWidth - hotspot.width) / 2;
-		else  // right
+		// 4. right
+		else                           
 			this.x = pos.left - (div.clientWidth - hotspot.width);
-			
-		this.y = pos.top + hotspot.height + OFFSET_Y;
+		
+		if(alignment != 'inside')
+		  this.y = pos.top + hotspot.height + OFFSET_Y;
+		
 		// check if to open popup above a hotspot. (take in account a scrolling)
 		var screenHeight = getWindowSize()[1];
 		if(screenHeight < this.y - getScrollXY()[1] + div.clientHeight)
