@@ -487,7 +487,7 @@ var ImageUploader = {
       + " method=\"post\""
       + " enctype=\"multipart/form-data\""
       + " action=\"" + this.ACTION_URL + "\""
-      + " onsubmit=\"ImageUploader.checkForm()\""
+      + " onsubmit=\"return ImageUploader.checkForm();\""
       + ">"
       
       + " <table><tr><td>" 
