@@ -369,14 +369,13 @@ var ImageUploader = {
     var rteObj = RteEngine.getRteById(ifarmeId);
     if(rteObj == null)
       return;
-      
+
     var rteDoc = rteObj.getDocument();
     var imgUrlsArr = rteObj.getImgUrlsArray();
-    
     var images = rteDoc.getElementsByTagName("img");
     if(images.length == 0)
       return;
-    
+ 
     // loop all images
     for(var i = 0; i < images.length; i++) {
       var src = images[i].src;
@@ -389,8 +388,8 @@ var ImageUploader = {
       if(uplUrlOfCopy != null) {
         images[i].src = uplUrlOfCopy;
         continue;
-      }  
-      
+      } 
+
       // 3. required uploading
       // 3.1 new image "record" in the array
       var newImgPair = new this.UrlPair();
@@ -399,23 +398,24 @@ var ImageUploader = {
 
       imgUrlsArr.push(newImgPair);
       // 3.2 uploading
+      srcEnc      = encodeURI(src);
+      ifarmeIdEnc = encodeURIComponent(ifarmeId);
       // 3.2.1 hidden iframe
       if(this.hdnIframe == null)
-        this.prepareHiddenIframe();  
-      // 3.2.2   
-      this.prepareForm(src, ifarmeId);
+        this.prepareHiddenElements();  
+      // 3.2.2 copy image URL to the clipboard 
+      this.copyToClipboard(srcEnc);
+      // 3.2.3 show the dialog
+      this.prepareForm(srcEnc, ifarmeIdEnc);
       var rteIframe = rteObj.getIframe();
    		var parentDlg = getAncestorById(rteIframe, 'pane2'); // hack: detects if it's in a 'pane2' dialog
-
       this.formPopup.show(rteIframe, "inside", this._onUploadFormOkButton, parentDlg);
     }
   }, 
-  
-  prepareHiddenIframe : function() {
+  prepareHiddenElements : function() {
+    // 1. hidden iframe
     this.hdnIframe = document.getElementById("hiddenIframe");
     this.hdnDoc = this.hdnIframe.contentWindow.document;
-    
-  //  this.hdnIframe.detachEvent("onload", this.onHdnDocLoad);
   //  addEvent(this.hdnIframe, "load", this.onHdnDocLoad, false);
   },
   
@@ -426,8 +426,8 @@ var ImageUploader = {
       return;
     
     rteId       = decodeURIComponent( rteId );
-    originalUrl = decodeURIComponent( originalUrl );
-    uploadedUrl = decodeURIComponent( uploadedUrl );
+    originalUrl = decodeURI( originalUrl );
+    uploadedUrl = decodeURI( uploadedUrl );
     
     // 2. replace url with the uploaded one.  
     // 2.1 get rte object
@@ -441,7 +441,6 @@ var ImageUploader = {
     for(var i = 0; i < imgUrlsArr.length; i++) {
       if(imgUrlsArr[i].originalUrl == originalUrl) {
         imgUrlsArr[i].uploadedUrl = uploadedUrl;
-        break;
       }
     }
     // 2.3 replace URL of the image in the document
@@ -450,25 +449,36 @@ var ImageUploader = {
     for(var i = 0; i < images.length; i++) {
       if(images[i].src == originalUrl) {
         images[i].src = uploadedUrl;
-        break;
       }
     }
   },
   
+  copyToClipboard : function(text2copy) {
+    var FLASHCOPIER_ID = 'flashcopier';
+    if (window.clipboardData) {
+      window.clipboardData.setData("Text",text2copy);
+    } else {
+      if(!document.getElementById(FLASHCOPIER_ID)) {
+        var flashcopier = document.createElement('div');
+        flashcopier.id = FLASHCOPIER_ID;
+        document.body.appendChild(flashcopier);
+      }
+      if(typeof flashcopier == 'undefined')
+        var flashcopier = document.getElementById(FLASHCOPIER_ID);
+      flashcopier.innerHTML = '';
+      var divinfo = '<embed src="_clipboard.swf" FlashVars="clipboard='+escape(text2copy)+'" width="0" height="0" type="application/x-shockwave-flash"></embed>';
+      flashcopier.innerHTML = divinfo;
+    }
+  },
   getHdnFrameName : function() {
     return this.HDN_IFRAME_NAME;
   },
   
   prepareForm : function(src, rteId) {
-    src   = encodeURIComponent(src);
-    rteId = encodeURIComponent(rteId);
     html =
-    "<div class=\"propLabel\"> You pasted the image.<br />"
-    + "Please copy URL from the first field into the second one<br />and press submit<br />"
+    "<div class=\"propLabel\">You pasted an image."
+    + " Press \"Ctrl\" + \"V\" and then submit</div>"
     
-    + "<input type=\"text\" size=\"50\" value=" + src + ">"
-    + "<br /><br />"
-
     // the form contains:
     // 1) the file input
     // 2) hidden RTE id
@@ -480,15 +490,16 @@ var ImageUploader = {
       + " onsubmit=\"ImageUploader.checkForm()\""
       + ">"
       
+      + " <table><tr><td>" 
       + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
       + " id=\"" + this.FILE_INPUT_NAME + "\" size=\"40\"  style=\"margin-top:20px;\">"
       
       + " <input type=\"hidden\" name=\"" + this.RTE_ID_INPUT_NAME + "\""
       + " id=\"" + this.RTE_ID_INPUT_NAME + "\" value=" + rteId + ">"
-
-      + "<br /><br />"
-      + " <input type=\"submit\" value=\"submit\" style=\"margin-left:170px;\">"
-
+      + " </td></tr>"
+      + " <tr><td align=\"center\">"
+      + " <input type=\"submit\" value=\"submit\">"
+      + " </td></tr><table>"
     + " </form>";
    
     if(this.formPopup == null)
@@ -522,7 +533,7 @@ var ImageUploader = {
     
     var origFileName = fileInp.value;
     var rteId = rteIdInp.value;
-    var uploadedUrl = encodeURIComponent("http://hudsonfog.com/images/map_boy.jpg");
+    var uploadedUrl = encodeURI("http://hudsonfog.com/images/map_boy.jpg");
     
     var code = "<script>";
     code += "window.parent.ImageUploader.onHdnDocLoad(\"" + rteId + "\", \"" + origFileName + "\", \"" + uploadedUrl + "\")";
@@ -888,10 +899,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this._onkeyup = function(e) {
 		i_am.fitHeightToVisible();
 
-		 // FF special: onpaste
+		 // FF onpaste
 		 e = getDocumentEvent(e);
-     if((e.ctrlKey && e.keyCode == e.DOM_VK_V)
-          || (e.shiftKey && e.keyCode == e.DOM_VK_INSERT)) {
+     if((e.ctrlKey && e.keyCode == 86) // e.DOM_VK_V
+          || (e.shiftKey && e.keyCode == 45)) /* e.DOM_VK_INSERT */ {
       ImageUploader.onPaste(i_am.iframeObj.id); 
     }
 	}
@@ -1046,6 +1057,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.onImage = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
+		
 		i_am.currentPopup = RteEngine.launchImagePopup(i_am.imageBtn, i_am.setImage);
 	}
 	// 21
