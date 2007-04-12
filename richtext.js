@@ -356,8 +356,8 @@ var RteEngine = {
 var ImageUploader = {
   HDN_IFRAME_NAME   : "hiddenIframe",
   FORM_NAME         : "image_uploading",
-  ACTION_URL        : "http://test", // TODO:
-  FILE_INPUT_NAME   : "image_file",
+  ACTION_URL        : "mkresource", // TODO:
+  FILE_INPUT_NAME   : "file",
   RTE_ID_INPUT_NAME : "rte_id",
   WAIT_FLAG : "waiting",
   
@@ -414,16 +414,34 @@ var ImageUploader = {
   }, 
   prepareHiddenElements : function() {
     // 1. hidden iframe
-    this.hdnIframe = document.getElementById("hiddenIframe");
+    this.hdnIframe = document.getElementById(this.HDN_IFRAME_NAME);
     this.hdnDoc = this.hdnIframe.contentWindow.document;
   //  addEvent(this.hdnIframe, "load", this.onHdnDocLoad, false);
   },
   
   // data structure:    - separated by [,] 
   // 1) rte id  2) original (local) image URL  3) uploaded image URL
-  onHdnDocLoad : function(rteId, originalUrl, uploadedUrl) {
+  onHdnDocLoad : function(rteId, originalUrl) { //, uploadedUrl) {
     if(ImageUploader.hdnDoc == null)
       return;
+    
+    var frameId = ImageUploader.HDN_IFRAME_NAME;
+    if (!frameLoaded[frameId]) {
+      var timeOutFunction = function () { ImageUploader.onHdnDocLoad(rteId, originalUrl) };
+      setTimeout(timeOutFunction, 50);
+      return;
+    }
+    frameLoaded[frameId] = false;
+
+    // -------------------------------------------------
+    var frameBody = frames[frameId].document.body;
+    var frameDoc  = frames[frameId].document;
+    var frameBody = frameDoc.body;
+    var d = frameDoc.getElementById("location");
+    if (d)
+      frameBody = d;
+
+    uploadedUrl = frameBody.innerHTML;
     
     rteId       = decodeURIComponent( rteId );
     originalUrl = decodeURI( originalUrl );
@@ -475,6 +493,14 @@ var ImageUploader = {
   },
   
   prepareForm : function(src, rteId) {
+    var forms = document.forms;
+    var resourceUri;
+    for (var i=0; i<forms.length; i++) {
+      if (forms[i].name  &&  forms[i].name.indexOf('tablePropertyList$') == 0) {
+        resourceUri = forms[i].elements['uri'].value;
+        break;
+      }
+    }
     html =
     "<div class=\"propLabel\">You pasted an image."
     + " Press \"Ctrl\" + \"V\" and then submit</div>"
@@ -487,7 +513,7 @@ var ImageUploader = {
       + " method=\"post\""
       + " enctype=\"multipart/form-data\""
       + " action=\"" + this.ACTION_URL + "\""
-      + " onsubmit=\"return ImageUploader.checkForm();\""
+      + " onsubmit=\"return ImageUploader.checkForm(event);\""
       + ">"
       
       + " <table><tr><td>" 
@@ -499,14 +525,19 @@ var ImageUploader = {
       + " </td></tr>"
       + " <tr><td align=\"center\">"
       + " <input type=\"submit\" value=\"submit\">"
+      + " <input type=\"hidden\" name=\"-$action\" value=\"upload\">"
+      + " <input type=\"hidden\" name=\"uri\" value=\""
+      + resourceUri      
+      + "\">"
       + " </td></tr><table>"
     + " </form>";
    
     if(this.formPopup == null)
 	    this.formPopup = new FormPopup(html, "USE_SUBMIT_BTN");
 	  else
-	     this.formPopup.changeContent(html); 
+      this.formPopup.changeContent(html); 
   },
+  
   checkForm : function(e) {
     var parDiv = this.formPopup.getFormDiv();
     var flInp = getChildById(parDiv, this.FILE_INPUT_NAME);
@@ -520,29 +551,26 @@ var ImageUploader = {
     
     // TEST !!!!!!!!!!!!!!!!!!!!!!!!!
     // REMOVE in real version
-    this.emulateServerResp(parDiv);
+    this.emulateServerResp(e, parDiv);
     /////////////////////////////////    
     
     return true;
   },
 
   // REMOVE the following function !!!!!!!!!!!  
-  emulateServerResp : function(parDiv) {
+  emulateServerResp : function(event, parDiv) {
     var fileInp    = getChildById(parDiv, this.FILE_INPUT_NAME);
     var rteIdInp = getChildById(parDiv, this.RTE_ID_INPUT_NAME);
     
     var origFileName = fileInp.value;
     var rteId = rteIdInp.value;
-    var uploadedUrl = encodeURI("http://hudsonfog.com/images/map_boy.jpg");
+    var frameName = "hiddenIframe"; //this.getHdnFrameName();
+    frameLoaded[frameName] = false;
+    var iframe = frames[frameName];
     
-    var code = "<script>";
-    code += "window.parent.ImageUploader.onHdnDocLoad(\"" + rteId + "\", \"" + origFileName + "\", \"" + uploadedUrl + "\")";
-    code += "</script>";
-    
-		this.hdnDoc.open();
-		this.hdnDoc.write(code);
-		this.hdnDoc.close();
+    setTimeout(function () {ImageUploader.onHdnDocLoad(rteId, origFileName)}, 50);
   },
+  
   
   // UrlPair -------------
   UrlPair : function() {

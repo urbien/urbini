@@ -5347,6 +5347,9 @@ function showHideAll(e, divId) {
   e = getDocumentEvent(e);
   
   var elm = getTargetElement(e);
+  
+  var showAll = elm.src.indexOf('show.gif') != -1;
+  
   var a = elm.parentNode;
   var url = a.href;
   var idx = url.indexOf('?');
@@ -5354,7 +5357,23 @@ function showHideAll(e, divId) {
   var href = document.location.href;
   postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, onproppatchCallback);
   
+  var idx = href.indexOf("&-showAll=");
+  if (idx != -1) {
+    var idx1 = href.indexOf("&", idx + 1);
+    var isShowAll = href.charAt(idx) == 'y';
+    var href1 = href.substring(0, idx + 10);
+    if (isShowAll)
+      href1 += "n";
+    else
+      href1 += "y";
+    if (idx1 != -1)
+      href1 += href.substring(idx1);
+    href = href1;
+  }
+  else
+    href += "&-showAll=y";
   document.location.href = href;
+  
   return stopEventPropagation(e);
 }
 // Minimize/restore neiboghring bookmark and update main Bookmark
@@ -6070,7 +6089,7 @@ function doConfirm(msg) {
       loc = loc.substring(0, idx);
   }
   idx = loc.indexOf("?");
-  loc = "localSearchResults.html?-$action=deleteAndExplore&del-yes=y&" + loc.substring(idx + 1);
+  loc = "delete?-$action=deleteAndExplore&del-yes=y&" + loc.substring(idx + 1);
   idx = loc.indexOf("&errMsg=");
   if (idx == -1) {
     idx = loc.indexOf("?errMsg=");

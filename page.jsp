@@ -6,7 +6,7 @@
 
   <div nonPda="T">
     <include name="requiredHeader.jsp"/>
-    <include name="include/commonHeader.jsp"/>
+    <!--include name="include/commonHeader.jsp"/-->
     <getResource/>
     <include name="menu.jsp"/>
 <hideBlock>

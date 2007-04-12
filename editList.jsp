@@ -5,7 +5,7 @@
   <td valign="top" align="middle">
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr><td valign="top" colspan="2">
-    <form action="editList.html?update=1" name="siteResourceList">
+    <form action="proppatch" name="siteResourceList">
       <siteResourceList />
       <div align="right"><measurement/></div>
       <br/>

@@ -11,7 +11,7 @@
       <col width="10%" />
     </colgroup>
     <tr valign="top"><td width="100%">
-    <form action="editList.html" name="siteResourceList" method="POST">
+    <form action="proppatch" name="siteResourceList" method="POST">
       <siteResourceList />
       <div align="right"><measurement/></div>
       <input type="hidden" name="-$action" value="createResources" />
