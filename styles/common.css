@@ -223,7 +223,7 @@ table.greyBorder {
 	}
 	.cpTabs TD.middle {
 	  background-image:url(../images/skin/rustyrose/tab-middle-small.gif);
-	  background-repeat: no-repeat;
+	  background-repeat: repeat-x;
 	  text-align: center;
 	  overflow: hidden;
     white-space: nowrap;
@@ -252,7 +252,7 @@ table.greyBorder {
 	}
 	.currentCpTabs TD.middle {
 	  background-image:url(../images/skin/orange/tab-middle-medium.gif);
-	  background-repeat: no-repeat;
+	  background-repeat: repeat-x;
 	  text-align: center;
     white-space: nowrap;
 	  color: #754c24;
