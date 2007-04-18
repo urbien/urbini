@@ -10,6 +10,23 @@ function addEvent(obj, evType, fn, useCapture) {
      }
 }
 
+function copyToClipboard(text2copy) {
+  var FLASHCOPIER_ID = 'flashcopier';
+  if (window.clipboardData) {
+    window.clipboardData.setData("Text",text2copy);
+  } else {
+    if(!document.getElementById(FLASHCOPIER_ID)) {
+      var flashcopier = document.createElement('div');
+      flashcopier.id = FLASHCOPIER_ID;
+      document.body.appendChild(flashcopier);
+    }
+    if(typeof flashcopier == 'undefined')
+      var flashcopier = document.getElementById(FLASHCOPIER_ID);
+    flashcopier.innerHTML = '';
+    var divinfo = '<embed src="_clipboard.swf" FlashVars="clipboard='+escape(text2copy)+'" width="0" height="0" type="application/x-shockwave-flash"></embed>';
+    flashcopier.innerHTML = divinfo;
+  }
+}
 /*************************************************
 *	RteEngine
 **************************************************/
@@ -52,6 +69,9 @@ var RteEngine = {
 	FONTS_FEW : ["arial", "arial black", "comic sans ms", "courier new", "helvetica", "times new roman", "verdana"],
 	FONT_SIZE : ["8pt", "10pt", "12pt", "14pt", "18pt", "24pt", "36pt"],
 
+  IMG_ATTRIBS_TO_DELETE : ["className", "class", "handler_mouseout", "handler_mouseover",
+     "onclick", "allow", "tooltip", "id", "title", "align"],
+
 	rteArr : new Array(), // objects
 	uploadForm : null,
 
@@ -66,10 +86,13 @@ var RteEngine = {
 	bgColorPopup : null,
 	linkPopup : null,
 	imagePopup : null,
+	imagePastePopup : null,
 	tablePopup : null,
 
   toUseTArea : false,
 
+  curRteId : -1,
+  
 	//register the RTEs.
 	register : function(iframeId, rteDataFieldId, rtePref) {
     iframeObj = document.getElementById(iframeId);
@@ -201,21 +224,54 @@ var RteEngine = {
 		if(this.linkPopup == null)
 			this.createLinkPopup();
 		var parentDlg = getAncestorById(btnObj.div, 'pane2');
-		this.linkPopup.show(btnObj, 'center'/*'right'*/, callback, parentDlg);
+		this.linkPopup.show(btnObj, 'center', callback, parentDlg);
 		return this.linkPopup.div;
 	},
-	launchImagePopup : function(btnObj, callback) {
+	launchImagePopup : function(btnObj, callback, rteId) {
 		if(this.imagePopup == null)
 			this.createImagePopup();
+		else {
+		  var innerFormHtml = "<div style=\"font-family:verdana; font-size:12px\">"
+        + "Enter image URL or select your local image.</div>"
+		    + ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert");
+		  this.imagePopup.changeContent(innerFormHtml);
+		}	
+	  
+	  this.curRteId = rteId;
+	  
+	  var form = this.imagePopup.getForm();
+	  ImageUploader.putRteIdInForm(form, rteId);		
 		var parentDlg = getAncestorById(btnObj.div, 'pane2');
-		this.imagePopup.show(btnObj, 'center'/*'right'*/, callback, parentDlg);
+		this.imagePopup.show(btnObj, 'center', callback, parentDlg);
 		return this.imagePopup.div;
+	},
+	launchImagePastePopup : function(rteId) {
+		if(this.imagePastePopup == null)
+			this.createImagePastePopup();
+		else { // need to "reload" form content, because input file is read-only
+		  var innerFormHtml = "<div style=\"font-family:verdana; font-size:12px\">"
+        + "You pasted image that requires uploading.<br />Press \"Ctrl\" + \"V\" and then submit.</div>"
+		    + ImageUploader.getUploadImageFormContent("RteEngine.onImagePasteFormSubmit(event)", "submit");
+		  this.imagePastePopup.changeContent(innerFormHtml);
+	  }
+	  
+	  this.curRteId = rteId;
+	  
+ 	  var form = this.imagePastePopup.getForm();
+	  ImageUploader.putRteIdInForm(form, rteId);		
+
+    var rteObj = this.getRteById(rteId);
+    var rteIframe = rteObj.getIframe();
+ 		var parentDlg = getAncestorById(rteIframe, 'pane2'); // hack: detects if it's in a 'pane2' dialog
+    this.imagePastePopup.show(rteIframe, "inside", null, parentDlg, this.onCanceledUploadPastedImage);
+		
+		return this.imagePastePopup.div;
 	},
 	launchTablePopup : function(btnObj, callback) {
 		if(this.tablePopup == null)
 			this.createTablePopup();
 		var parentDlg = getAncestorById(btnObj.div, 'pane2');
-		this.tablePopup.show(btnObj, 'center'/*'right'*/, callback, parentDlg);
+		this.tablePopup.show(btnObj, 'center', callback, parentDlg);
 		return this.tablePopup.div;
 	},
 
@@ -284,31 +340,33 @@ var RteEngine = {
 	},
 
 	createLinkPopup : function() {
-		var innerFormHtml = '<form><table style="font-family:verdana; font-size:12px" cellpadding="4" cellspacing="0" border="0">'
-			+ ' <tr>'
-			+ ' <td align="left">Enter a URL:</td>'
-			+ ' </tr><tr>'
-			+ ' <td><input name="url" type="text" id="url" value="" size="35"></td>'
-			+ ' </tr>'
-			+ '</table></form>';
-		this.linkPopup = new FormPopup(innerFormHtml);
-	},
-	createImagePopup : function() {
-	// it is an temporary solution!
 		var innerFormHtml = '<table style="font-family:verdana; font-size:12px" cellpadding="4" cellspacing="0" border="0">'
 			+ ' <tr>'
-			+ ' <td align="left">Enter image URL:</td>'
+			+ ' <td align="left">Enter URL:</td>'
 			+ ' </tr><tr>'
 			+ ' <td><input name="url" type="text" id="url" value="" size="35"></td>'
 			+ ' </tr>'
 			+ '</table>';
-		this.imagePopup = new FormPopup(innerFormHtml);
+		this.linkPopup = new FormPopup(innerFormHtml);
 	},
+	createImagePopup : function() {
+		var innerFormHtml = "<div style=\"font-family:verdana; font-size:12px\">"
+    + "Enter image URL or select your local image.</div>"
+		+ ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert");
+		this.imagePopup = new FormPopup(innerFormHtml, "USE_SUBMIT_BTN");
+	},
+  createImagePastePopup : function() {
+  	var innerFormHtml = "<div style=\"font-family:verdana; font-size:12px\">"
+    + "You pasted image that requires uploading.<br />Press \"Ctrl\" + \"V\" and then submit.</div>"
+		+ ImageUploader.getUploadImageFormContent("RteEngine.onImagePasteFormSubmit(event)", "submit");
+		this.imagePastePopup = new FormPopup(innerFormHtml, "USE_SUBMIT_BTN");
+  },
 	createTablePopup : function() {
 		var innerFormHtml = this.getInsertTableHtml();
 		this.tablePopup = new FormPopup(innerFormHtml);
 	},
-
+  
+  // create END --------------------------------
 	getInsertTableHtml : function() {
 		var tblInsertHtml = '<table style="font-family:verdana; font-size:12px" cellpadding="4" cellspacing="0" border="0">'
 			+ ' <tr>'
@@ -345,33 +403,20 @@ var RteEngine = {
 		+ ' </table>';
 
 		return tblInsertHtml;
-	}
-}
-
-/**********************************
-*
-* ImageUploader
-*
-***********************************/
-var ImageUploader = {
-  HDN_IFRAME_NAME   : "hiddenIframe",
-  FORM_NAME         : "image_uploading",
-  ACTION_URL        : "mkresource", // TODO:
-  FILE_INPUT_NAME   : "file",
-  RTE_ID_INPUT_NAME : "rte_id",
-  WAIT_FLAG : "waiting",
-  
-  hdnIframe : null,
-  hdnDoc    : null,
-  formPopup : null,
-  
-  onPaste : function(ifarmeId) {
-    var rteObj = RteEngine.getRteById(ifarmeId);
+	},
+	
+	// ------------------------------------------
+	// onPasteHandler - (entersepts image paste only)
+	onPasteHandler : function(rteId) {
+    var rteObj = RteEngine.getRteById(rteId);
     if(rteObj == null)
       return;
 
     var rteDoc = rteObj.getDocument();
+    
     var imgUrlsArr = rteObj.getImgUrlsArray();
+    this.currentImgUrlsArr = imgUrlsArr;
+    
     var images = rteDoc.getElementsByTagName("img");
     if(images.length == 0)
       return;
@@ -379,52 +424,168 @@ var ImageUploader = {
     // loop all images
     for(var i = 0; i < images.length; i++) {
       var src = images[i].src;
-      // 1. skip already loaded and waiting responce images
-      if(this.isImageHandled(imgUrlsArr, src))
+      // 1. skip already loaded and waiting for responce images
+      if(ImageUploader.isImageHandled(imgUrlsArr, src))
         continue;
-     
+      
+      // remove inserted image attributes
+      for(var atrIdx = 0; atrIdx < this.IMG_ATTRIBS_TO_DELETE.length; atrIdx++) {
+        images[i].removeAttribute(this.IMG_ATTRIBS_TO_DELETE[atrIdx]);
+      }
+      
+      // skip web-images
+      if(ImageUploader.isImageLocal(images[i]) == false)
+        continue;
+
       // 2. check if it is copy of already loaded image
-      var uplUrlOfCopy = this.getUploadedUrlOfCopy(imgUrlsArr, src);
+      var uplUrlOfCopy = ImageUploader.getUploadedUrlOfCopy(imgUrlsArr, src);
       if(uplUrlOfCopy != null) {
         images[i].src = uplUrlOfCopy;
         continue;
       } 
 
       // 3. required uploading
-      // 3.1 new image "record" in the array
-      var newImgPair = new this.UrlPair();
-      newImgPair.originalUrl = src;
-      newImgPair.uploadedUrl = this.WAIT_FLAG;
-
-      imgUrlsArr.push(newImgPair);
       // 3.2 uploading
-      srcEnc      = encodeURI(src);
-      ifarmeIdEnc = encodeURIComponent(ifarmeId);
-      // 3.2.1 hidden iframe
-      if(this.hdnIframe == null)
-        this.prepareHiddenElements();  
-      // 3.2.2 copy image URL to the clipboard 
-      this.copyToClipboard(srcEnc);
+      //var srcEnc   = srcEnc; //encodeURI(src);
+      copyToClipboard(src);
       // 3.2.3 show the dialog
-      this.prepareForm(srcEnc, ifarmeIdEnc);
-      var rteIframe = rteObj.getIframe();
-   		var parentDlg = getAncestorById(rteIframe, 'pane2'); // hack: detects if it's in a 'pane2' dialog
-      this.formPopup.show(rteIframe, "inside", this._onUploadFormOkButton, parentDlg);
+      this.launchImagePastePopup(rteId);
     }
-  }, 
-  prepareHiddenElements : function() {
-    // 1. hidden iframe
-    this.hdnIframe = document.getElementById(this.HDN_IFRAME_NAME);
-    this.hdnDoc = this.hdnIframe.contentWindow.document;
-  //  addEvent(this.hdnIframe, "load", this.onHdnDocLoad, false);
   },
   
-  // data structure:    - separated by [,] 
-  // 1) rte id  2) original (local) image URL  3) uploaded image URL
-  onHdnDocLoad : function(rteId, originalUrl) { //, uploadedUrl) {
-    if(ImageUploader.hdnDoc == null)
-      return;
+  onImageFormSubmit : function() {
+  	var imgUrl = null;
+	  var form = RteEngine.imagePopup.getForm();
+	  imgUrl = ImageUploader.getImageUrlFromForm(form);
+	  if(imgUrl == null)
+	    return false;
+	    
+	  RteEngine.imagePopup.hide();
+	  var rteObj = RteEngine.getRteById(RteEngine.curRteId);
+
+	  // insert image
+	  var encImgUrl = encodeURI(imgUrl);
+	  rteObj.setImage(encImgUrl);
+
+	  // web-image, thus not upload.
+	  if(ImageUploader.isImageLocal(imgUrl) == false) {
+	    return false;
+	  }
+	  
+	  // mark image as waiting
+	  var urlPairsArr = rteObj.getImgUrlsArray();
+	  ImageUploader.markImageAsWaiting(urlPairsArr, encImgUrl);
+	  
+    ImageUploader.onHdnDocLoad(RteEngine.curRteId, encImgUrl);
+	  
+	  return true;
+	},
+	onImagePasteFormSubmit : function() {
+	  var imgUrl = null;
+	  var form = RteEngine.imagePastePopup.getForm();
+	  imgUrl = ImageUploader.getImageUrlFromForm(form);
+	  if(imgUrl == null)
+	    return false;
+	    
+	  RteEngine.imagePastePopup.hide();
+	  
+	  // not upload web-image
+	  if(ImageUploader.isImageLocal(imgUrl) == false)
+	    return false;
+	  
+	  // mark image as waiting
+	  var rteObj = RteEngine.getRteById(RteEngine.curRteId);
+	  var urlPairsArr = rteObj.getImgUrlsArray();
+	  ImageUploader.markImageAsWaiting(urlPairsArr, imgUrl);
+	  
+	  ImageUploader.onHdnDocLoad(RteEngine.curRteId, imgUrl);
+
+	  return true;
+	}, 
+  onCanceledUploadPastedImage : function() {
+    var rteObj = RteEngine.getRteById(RteEngine.curRteId);
+    rteObj.onUndo(); // does not work with IE!
+  }
+
+}
+
+/***********************************************
+* ImageUploader
+*
+* only local user's images need to be loaded
+************************************************/
+var ImageUploader = {
+  // image uploading (insertion) dialog
+  FORM_NAME         : "image_uploading",
+  ACTION_URL        : "mkresource", // TODO:
+  FILE_INPUT_NAME   : "file",
+  RTE_ID_INPUT_NAME : "rte_id",
+
+  HDN_IFRAME_NAME   : "hiddenIframe",
+  WAIT_FLAG : "waiting",
+  
+  newImgPair : null,
+  
+  getUploadImageFormContent : function(submitCallbackName, submitBtnText) {
+    var forms = document.forms;
+    var resourceUri;
+    for (var i=0; i<forms.length; i++) {
+      if (forms[i].name  &&  forms[i].name.indexOf('tablePropertyList$') == 0) {
+        resourceUri = forms[i].elements['uri'].value;
+        break;
+      }
+    }
     
+    var formStr = "<form name=\"" + this.FORM_NAME + "\""
+      + " target=\"" + this.HDN_IFRAME_NAME + "\""
+      + " method=\"post\""
+      + " enctype=\"multipart/form-data\""
+      + " action=\"" + this.ACTION_URL + "\""
+      + " onsubmit=\"return " + submitCallbackName + "\""
+      + ">"
+      
+      + " <table><tr><td>" 
+      + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
+      + " id=\"" + this.FILE_INPUT_NAME + "\" size=\"40\"  style=\"margin-top:20px;\">"
+      
+      + " <input type=\"hidden\" name=\"" + this.RTE_ID_INPUT_NAME + "\""
+      + " id=\"" + this.RTE_ID_INPUT_NAME + "\">"
+      + " </td></tr>"
+      + " <tr><td align=\"center\">"
+      + " <input type=\"submit\" value=\"" + submitBtnText + "\">"
+
+      + " <input type=\"hidden\" name=\"-$action\" value=\"upload\">"
+      + " <input type=\"hidden\" name=\"uri\" value=\""
+      + resourceUri      
+      + "\">"
+
+      + " </td></tr><table>"
+    + " </form>";
+    return formStr;
+  },
+  putRteIdInForm : function(form, rteId) {
+    var rteIdEnc = encodeURIComponent(rteId);
+    var inpObj = getChildById(form, this.RTE_ID_INPUT_NAME); 
+    inpObj.value = rteIdEnc;
+  },
+  getImageUrlFromForm : function(form) {
+    //var flInp = getChildById(form, this.FILE_INPUT_NAME);
+    var value = form[ImageUploader.FILE_INPUT_NAME].value;
+    if(value.length == 0) {
+      alert("The field is empty!");
+      return null;
+    }
+    return value;    
+  },
+  
+  // mark image as waiting on the server response
+  markImageAsWaiting : function(urlPairsArr, originalUrl) {
+    var pair = new ImageUploader.UrlPair(originalUrl, ImageUploader.WAIT_FLAG);
+    urlPairsArr.push(pair);
+  },
+  
+  // callback on the server response.
+  onHdnDocLoad : function(rteId, originalUrl) {
     var frameId = ImageUploader.HDN_IFRAME_NAME;
     if (!frameLoaded[frameId]) {
       var timeOutFunction = function () { ImageUploader.onHdnDocLoad(rteId, originalUrl) };
@@ -442,18 +603,19 @@ var ImageUploader = {
       frameBody = d;
 
     uploadedUrl = frameBody.innerHTML;
-    
+/*    
     rteId       = decodeURIComponent( rteId );
     originalUrl = decodeURI( originalUrl );
+*/  
     uploadedUrl = decodeURI( uploadedUrl );
-    
+
     // 2. replace url with the uploaded one.  
     // 2.1 get rte object
     var rteObj = RteEngine.getRteById(rteId);
     if(rteObj == null)
       return; // this RTE was canceled.
       // TODO: SUBMISION should be suspended while uploading.
-    
+
     // 2.2 uploade URL to the images array
     var imgUrlsArr = rteObj.getImgUrlsArray();
     for(var i = 0; i < imgUrlsArr.length; i++) {
@@ -464,118 +626,38 @@ var ImageUploader = {
     // 2.3 replace URL of the image in the document
     var rteDoc = rteObj.getDocument();
     var images = rteDoc.getElementsByTagName("img");
+    originalUrl = originalUrl.toLowerCase();
     for(var i = 0; i < images.length; i++) {
-      if(images[i].src == originalUrl) {
+      var src = images[i].src.toLowerCase();
+      if(src == originalUrl) {
         images[i].src = uploadedUrl;
       }
     }
   },
   
-  copyToClipboard : function(text2copy) {
-    var FLASHCOPIER_ID = 'flashcopier';
-    if (window.clipboardData) {
-      window.clipboardData.setData("Text",text2copy);
-    } else {
-      if(!document.getElementById(FLASHCOPIER_ID)) {
-        var flashcopier = document.createElement('div');
-        flashcopier.id = FLASHCOPIER_ID;
-        document.body.appendChild(flashcopier);
-      }
-      if(typeof flashcopier == 'undefined')
-        var flashcopier = document.getElementById(FLASHCOPIER_ID);
-      flashcopier.innerHTML = '';
-      var divinfo = '<embed src="_clipboard.swf" FlashVars="clipboard='+escape(text2copy)+'" width="0" height="0" type="application/x-shockwave-flash"></embed>';
-      flashcopier.innerHTML = divinfo;
-    }
-  },
-  getHdnFrameName : function() {
-    return this.HDN_IFRAME_NAME;
-  },
-  
-  prepareForm : function(src, rteId) {
-    var forms = document.forms;
-    var resourceUri;
-    for (var i=0; i<forms.length; i++) {
-      if (forms[i].name  &&  forms[i].name.indexOf('tablePropertyList$') == 0) {
-        resourceUri = forms[i].elements['uri'].value;
-        break;
-      }
-    }
-    html =
-    "<div class=\"propLabel\">You pasted an image."
-    + " Press \"Ctrl\" + \"V\" and then submit</div>"
+  // image object or its src
+  isImageLocal : function(imgObj) {
+    var src;
+    if(typeof imgObj == 'string')
+      src = imgObj;
+    else
+      src = imgObj.src;
     
-    // the form contains:
-    // 1) the file input
-    // 2) hidden RTE id
-    + "<form name=\"" + this.FORM_NAME + "\""
-      + " target=\"" + this.HDN_IFRAME_NAME + "\""
-      + " method=\"post\""
-      + " enctype=\"multipart/form-data\""
-      + " action=\"" + this.ACTION_URL + "\""
-      + " onsubmit=\"return ImageUploader.checkForm(event);\""
-      + ">"
-      
-      + " <table><tr><td>" 
-      + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
-      + " id=\"" + this.FILE_INPUT_NAME + "\" size=\"40\"  style=\"margin-top:20px;\">"
-      
-      + " <input type=\"hidden\" name=\"" + this.RTE_ID_INPUT_NAME + "\""
-      + " id=\"" + this.RTE_ID_INPUT_NAME + "\" value=" + rteId + ">"
-      + " </td></tr>"
-      + " <tr><td align=\"center\">"
-      + " <input type=\"submit\" value=\"submit\">"
-      + " <input type=\"hidden\" name=\"-$action\" value=\"upload\">"
-      + " <input type=\"hidden\" name=\"uri\" value=\""
-      + resourceUri      
-      + "\">"
-      + " </td></tr><table>"
-    + " </form>";
-   
-    if(this.formPopup == null)
-	    this.formPopup = new FormPopup(html, "USE_SUBMIT_BTN");
-	  else
-      this.formPopup.changeContent(html); 
-  },
-  
-  checkForm : function(e) {
-    var parDiv = this.formPopup.getFormDiv();
-    var flInp = getChildById(parDiv, this.FILE_INPUT_NAME);
-    if(flInp.value.length == 0) {
-      alert("Please copy image url in the bottom field.");
-      e = getDocumentEvent(e);
-      stopEventPropagation(e);
-      return false; // no submision. (IE only ?)
-    }
-    ImageUploader.formPopup.hide();
-    
-    // TEST !!!!!!!!!!!!!!!!!!!!!!!!!
-    // REMOVE in real version
-    this.emulateServerResp(e, parDiv);
-    /////////////////////////////////    
-    
-    return true;
+    src = src.toLowerCase();
+    if(src.indexOf("http") == 0)
+      return false;
+    else if(src.indexOf("file") == 0)
+      return true;
+    else if(src.indexOf(":") == 1) // c:
+      return true; 
+
+    return false;
   },
 
-  // REMOVE the following function !!!!!!!!!!!  
-  emulateServerResp : function(event, parDiv) {
-    var fileInp    = getChildById(parDiv, this.FILE_INPUT_NAME);
-    var rteIdInp = getChildById(parDiv, this.RTE_ID_INPUT_NAME);
-    
-    var origFileName = fileInp.value;
-    var rteId = rteIdInp.value;
-    var frameName = "hiddenIframe"; //this.getHdnFrameName();
-    frameLoaded[frameName] = false;
-    var iframe = frames[frameName];
-    
-    setTimeout(function () {ImageUploader.onHdnDocLoad(rteId, origFileName)}, 50);
-  },
-  
-  
   // UrlPair -------------
-  UrlPair : function() {
-    this.originalUrl = "";
-    this.uploadedUrl = "";
+  UrlPair : function(originalUrl, uploadedUrl) {
+    this.originalUrl = originalUrl;
+    this.uploadedUrl = uploadedUrl;
   },
   // uploaded or waiting on response
   isImageHandled : function(imgUrlsArr, imgUrl) {
@@ -931,7 +1013,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		 e = getDocumentEvent(e);
      if((e.ctrlKey && e.keyCode == 86) // e.DOM_VK_V
           || (e.shiftKey && e.keyCode == 45)) /* e.DOM_VK_INSERT */ {
-      ImageUploader.onPaste(i_am.iframeObj.id); 
+      RteEngine.onPasteHandler(i_am.iframeObj.id); 
     }
 	}
 
@@ -949,7 +1031,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
   
   this._onpaste = function(e) {
-     var execCode = "ImageUploader.onPaste('" + i_am.iframeObj.id + "')"
+     var execCode = "RteEngine.onPasteHandler('" + i_am.iframeObj.id + "')"
      setTimeout(execCode, 1);
   }
   
@@ -1086,7 +1168,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(!i_am.isAllowedToExecute())
 			return;
 		
-		i_am.currentPopup = RteEngine.launchImagePopup(i_am.imageBtn, i_am.setImage);
+		i_am.currentPopup = RteEngine.launchImagePopup(i_am.imageBtn, i_am.setImage, i_am.iframeObj.id);
 	}
 	// 21
 	this.onTable = function() {
@@ -1211,9 +1293,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		return true;
 	}
 	// 8
-	this.setImage = function(params) {
-		if(params.url.length != 0)
-			i_am.performCommand("insertimage", params.url);
+	this.setImage = function(url) { // params  // params.url
+		if(url.length != 0)
+			i_am.performCommand("insertimage", url);
 		return true;
 	}
 	// 9
@@ -1234,6 +1316,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 		i_am.insertHTML(html);
 	}
+	
+		
 	// -------------------------------------
 	// execute a command
 	this.performCommand = function(command, value, skipClose) {
