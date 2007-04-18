@@ -6823,8 +6823,8 @@ function changeBoolean(e) {
   var target;
   e = getDocumentEvent(e); if (!e) return;
   target = getTargetElement(e);
-  var url = 'editProperties.html';
-  var params = 'submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
+  var url = 'proppatch';
+  var params = '-$action=showPropertiesForEdit&submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
   var bIdx = target.id.indexOf("_boolean");
   var rUri = target.id.substring(0, bIdx);
   var idx = rUri.lastIndexOf("_");
