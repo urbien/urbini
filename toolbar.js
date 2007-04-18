@@ -4,11 +4,14 @@
 *****************************************************/
 // return parameter name is its a name in the form 
 function FormPopup(innerFormHtml, flag) {
+	var HIDE_ICON = "icons/hide.gif";
 	var i_am = this;
 	this.div = null;
 	this.formDiv = null;
+	this.headerDiv = null;
 	this.buttonsDiv = null;
 	this.callback = null;
+	this.cancelCallback = null;
 	this.initValues = null;
 	this.is_opened = false;
 	
@@ -24,11 +27,17 @@ function FormPopup(innerFormHtml, flag) {
 		this.div.style.borderWidth = 1;
 		this.div.style.borderColor = "#999";
 		this.div.style.padding = 5;
-		
+
+    // 1. header
+    this.headerDiv = this.createHeader();
+    this.div.appendChild(this.headerDiv);
+
+		// 2. content
 		this.formDiv = document.createElement('div');
 		this.formDiv.innerHTML = innerFormHtml;
 		this.div.appendChild(this.formDiv);
 
+    // 3. "controll" buttons
 		if(flag == "USE_SUBMIT_BTN")
 		  this.useSubmitButton();
 		else {
@@ -36,7 +45,15 @@ function FormPopup(innerFormHtml, flag) {
 		  this.div.appendChild(this.buttonsDiv);
 		}
 	}
-	
+	// appends the hide icon (for now)
+	this.createHeader = function() {
+	  var headerDiv = document.createElement('div');
+		headerDiv.align = "right";
+		headerDiv.innerHTML = "<a><img src=" + HIDE_ICON + " style=\"cursor:pointer;\"></a>";
+    var anchor = headerDiv.getElementsByTagName("a")[0];
+    anchor.onclick = this._oncancel;
+		return headerDiv;
+	}
 	// ok, cancel
 	this.createButtons = function(flag) {
 		var btnDiv = document.createElement('div');
@@ -63,7 +80,7 @@ function FormPopup(innerFormHtml, flag) {
 		var btns = btnDiv.getElementsByTagName('input');
 		btns[0].onclick = this._onok; // Ok
 		if(btns[1])
-		  btns[1].onclick = this.hide; // Cancel
+		  btns[1].onclick = this._oncancel; // Cancel
 		return btnDiv;
 	}
 	this.useSubmitButton = function() {
@@ -77,9 +94,20 @@ function FormPopup(innerFormHtml, flag) {
 	this.getFormDiv = function() {
 	  return this.formDiv;
 	}
-	this.show = function(obj, alignment, callback, parentDlg) {
-		this.callback = callback;
-		PopupHandler.showRelatively(obj, alignment ,this.div, false, parentDlg);
+	this.getForm = function(formIdx) {
+	  formIdx = formIdx || 0;
+	  var forms = this.formDiv.getElementsByTagName("form");
+	  if(formIdx < forms.length)
+	    return forms[formIdx];
+	  return null;
+	}
+	
+	// not required parameter cancelCallback
+	this.show = function(obj, alignment, callback, parentDlg, cancelCallback) {
+		this.callback       = callback;
+    this.cancelCallback = cancelCallback;
+    
+		PopupHandler.showRelatively(obj, alignment, this.div, false, parentDlg, cancelCallback);
 		
 		// store init values to restore on closing
 		if(this.initValues == null)
@@ -106,7 +134,13 @@ function FormPopup(innerFormHtml, flag) {
 		i_am.hide();
 		i_am.is_opened = false;
 	}
-	
+	this._oncancel = function() {
+	  if(i_am.cancelCallback) {
+	    i_am.cancelCallback();
+	  }
+	  i_am.hide();  
+	}
+
 	this.hide = function() {
 		PopupHandler.hide();
 		i_am.is_opened = false;
@@ -1112,6 +1146,7 @@ var PopupHandler = {
 	firstClick : true, // prevents a closing from button's onmouseup 
 	
 	isAutoHide : true,
+	onHideCallback : null,
 	
 	// FF: fixed position --
 	isFixedPosition : false,
@@ -1124,7 +1159,8 @@ var PopupHandler = {
 	// div is a popup
 	// alignment: left, center, right, inside
 	// hotspot is a control object
-	showRelatively : function(hotspot, alignment, div, autohide, parentDlg) {
+	// onHideCallback - not required
+	showRelatively : function(hotspot, alignment, div, autohide, parentDlg, onHideCallback) {
 		var OFFSET_Y = 2;
 		// only 1 popup can be opened concurrently, except the overflow popup
 		if(this.popupDiv != null)
@@ -1175,6 +1211,7 @@ var PopupHandler = {
 		// set new div  data
 		this.popupDiv = div;
 		this.parentDlg = parentDlg;
+		this.onHideCallback = onHideCallback;
 		// make visible
 		this._show(autohide);
 	},
@@ -1235,11 +1272,13 @@ var PopupHandler = {
 			this.oldOnKeyUp = document.onkeyup;
 			this.oldOnClick = document.onclick;
 			
-			document.onkeyup = this._onkeyup;
 			document.onclick = this._onclick;
 			this.popupDiv.onmouseover = this._onmouseover;
 			this.popupDiv.onmouseout  = this._onmouseout;
 		}
+    // to handle ESC in formPopups
+  	document.onkeyup = this._onkeyup;
+
 		// FF: fixed position
 		if(this.isFixedPosition) {
 			this.oldOnScroll = window.onscroll
@@ -1276,8 +1315,12 @@ var PopupHandler = {
 		evt = (evt) ? evt : event;
 		var charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : 
 			((evt.which) ? evt.which : 0));
-		if (charCode == 27)
+		if (charCode == 27) {
 			PopupHandler.hide();
+      // used by popupform if it requires to handle ESC
+		  if(PopupHandler.onHideCallback)
+		    PopupHandler.onHideCallback();
+		}
 	},
 	_onclick : function(evt) {
 		if(PopupHandler.firstClick)	{
