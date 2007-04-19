@@ -486,8 +486,9 @@ var RteEngine = {
 	  imgUrl = ImageUploader.getImageUrlFromForm(form);
 	  if(imgUrl == null)
 	    return false;
-	    
-	  RteEngine.imagePastePopup.hide();
+	
+	  copyToClipboard(" ");
+    RteEngine.imagePastePopup.hide();
 	  
 	  // not upload web-image
 	  if(ImageUploader.isImageLocal(imgUrl) == false)
