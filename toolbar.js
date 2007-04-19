@@ -1148,8 +1148,8 @@ var PopupHandler = {
 	isAutoHide : true,
 	onHideCallback : null,
 	
-	// FF: fixed position --
-	isFixedPosition : false,
+	// FF: use fixed position to overcome lack of caret in input fields.
+	isGecko : null,
 	x : 0,
 	y : 0,
 	oldOnScroll : null,
@@ -1162,6 +1162,10 @@ var PopupHandler = {
 	// onHideCallback - not required
 	showRelatively : function(hotspot, alignment, div, autohide, parentDlg, onHideCallback) {
 		var OFFSET_Y = 2;
+		if(this.isGecko == null) {
+		  var ua = navigator.userAgent.toLowerCase();
+      this.isGecko = (ua.indexOf("gecko") != -1);
+		}
 		// only 1 popup can be opened concurrently, except the overflow popup
 		if(this.popupDiv != null)
 			this.hide(typeof hotspot.isOverflowed != 'undefined' && hotspot.isOverflowed);
@@ -1176,8 +1180,13 @@ var PopupHandler = {
 			document.body.appendChild(div);
 		
 		var relObj = hotspot.div || hotspot.obj || hotspot;
-		var pos = this.findObjectPositio(relObj, parentDlg);
     
+    var pos;
+    if(this.isGecko)		
+		  pos = this.findObjectPositio(relObj, document.body);
+		else
+  	  pos = this.findObjectPositio(relObj, parentDlg);
+
     // 1. inside ("hotspot" - here "container)
     if(alignment == 'inside') {
       var xDelta = Math.max((relObj.clientWidth - div.clientWidth) / 2, 0);
@@ -1204,9 +1213,16 @@ var PopupHandler = {
 		if(screenHeight < this.y - getScrollXY()[1] + div.clientHeight)
 			this.y = pos.top - div.clientHeight - OFFSET_Y;
 		
-		this.isFixedPosition = false;
-		div.style.left = this.x;
-		div.style.top = this.y;
+		if(this.isGecko) {
+			div.style.position = 'fixed';
+			var scrl = getScrollXY();
+			div.style.left = this.x - scrl[0];
+			div.style.top = this.y - scrl[1];
+		}
+    else {
+		  div.style.left = this.x;
+		  div.style.top = this.y;
+		}
 
 		// set new div  data
 		this.popupDiv = div;
