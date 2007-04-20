@@ -18,8 +18,6 @@ function FormPopup(innerFormHtml, flag) {
 	this.create = function(innerFormHtml, flag) {
 		this.div = document.createElement('div');
 		this.div.style.visibility = "hidden";
-		var ua = navigator.userAgent.toLowerCase();
-		var isGecko = (ua.indexOf("gecko") != -1);
 
 		this.div.style.position = "absolute";
 		this.div.style.backgroundColor = "#fff";
@@ -112,17 +110,10 @@ function FormPopup(innerFormHtml, flag) {
 		// store init values to restore on closing
 		if(this.initValues == null)
 			this.initValues = this._handleControlsValue();
-		// set focus on 1st input
-		var input = this.formDiv.getElementsByTagName('input')[0];
-		if(input) {
-		  try {
-		    input.focus();
-		  } catch(e){};
-		}
-		
-		 this.is_opened = true;
-	}
 
+	  this.is_opened = true;
+	}
+  
 	this._onok = function() {
 		var retArr = i_am._handleControlsValue();
 		var retVal = i_am.callback(retArr);
@@ -1230,6 +1221,8 @@ var PopupHandler = {
 		this.onHideCallback = onHideCallback;
 		// make visible
 		this._show(autohide);
+
+    setTimeout("PopupHandler.setFocusInInput()", 10);
 	},
 	_show : function(autohide) {
 		if(typeof autohide == 'undefined' || autohide) 
@@ -1370,6 +1363,14 @@ var PopupHandler = {
 		var scrl = getScrollXY();
 		PopupHandler.popupDiv.style.left = PopupHandler.x - scrl[0];
 		PopupHandler.popupDiv.style.top = PopupHandler.y - scrl[1];
+	},
+	setFocusInInput : function() {
+		var input = PopupHandler.popupDiv.getElementsByTagName('input')[0];
+		if(input) {
+		  try {
+		    input.focus();
+		  } catch(e){};
+		}
 	},
 	// Return true if node a contains node b.
 	contains : function (a, b) {
