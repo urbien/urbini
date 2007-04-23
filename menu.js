@@ -852,19 +852,19 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     propertyShortName = propertyShortName.substring(0, idx);
     var idx = propertyShortName.indexOf(".", 1);
     var prop = null;
-
+    var pLen = propertyShortName.length;
     if (idx == -1) {
       idx = propertyShortName.indexOf("_class");
       if (idx != -1)
-        prop = propertyShortName.substring(0, propertyShortName.length - 6);
+        prop = propertyShortName.substring(0, pLen - 6);
       else
         prop = propertyShortName;
     }
     else {
       if (propertyShortName.indexOf(".type") == idx) {
-        if (idx + 5 != propertyShortName.length)
+        if (idx + 5 != pLen)
           prop = propertyShortName.substring(0, idx);
-        else
+        else 
           prop = propertyShortName;
       }
       else
@@ -912,7 +912,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
 
     var select;
-    var isViewCols = currentFormName.indexOf("viewColsList") == 0  ||  currentFormName.indexOf("filterColsList") == 0;
+    var isViewCols = currentFormName.indexOf("viewColsList") == 0  ||  
+                     currentFormName.indexOf("gridColsList") == 0  ||  
+                     currentFormName.indexOf("filterColsList") == 0;
     if (isViewCols)
       select = prop;
     else
@@ -935,6 +937,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           arr["-viewCols"] = "-viewCols";
           arr[".-viewCols"] = ".-viewCols";
           arr["-curViewCols"] = "-curViewCols";
+        }
+        else if (currentFormName.indexOf("gridColsList") == 0) {
+          arr["-gridCols"] = "-gridCols";
+          arr[".-gridCols"] = ".-gridCols";
+          arr["-curGridCols"] = "-curGridCols";
         }
         else {
           arr["-filterCols"] = "-filterCols";
@@ -1137,7 +1144,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
 
     // close popup
-    var divId = prop + "_" + currentFormName;
+    idx = prop.indexOf(".type");
+      
+    var divId = (idx != -1  &&  prop.length == idx + 5) ? prop.substring(0, idx) + "_" + currentFormName : prop + "_" + currentFormName;
     if (currentResourceUri != null) {
       if (divId.indexOf(".") == 0)
         divId = currentResourceUri + ".$" + divId;
@@ -1543,7 +1552,7 @@ function listboxOnClick1(e, imgId, enteredText, enterFlag) {
    * form.elements[originalProp] returns list of viewCols properties to choose
    * from to display in RL
    */
-  if (!isGroupBy  &&  form  &&  currentFormName != "viewColsList"  && originalProp.indexOf("_class") == -1) {
+  if (!isGroupBy  &&  form  &&  currentFormName != "viewColsList"  &&  currentFormName != "gridColsList"  && originalProp.indexOf("_class") == -1) {
     var chosenTextField = form.elements[originalProp];
     if (chosenTextField && chosenTextField.focus) {
       chosenTextField.focus();
@@ -2360,7 +2369,7 @@ function chooser(element) {
     originalForm.elements[uri + ".$." + shortPropName + "_select"].value   = id;
     originalForm.elements[uri + ".$." + shortPropName + "_verified"].value = "y";
   }
-  else if (currentFormName  &&  (currentFormName.indexOf("viewColsList") == 0  ||  currentFormName.indexOf("filterColsList") == 0)) {
+  else if (currentFormName  &&  (currentFormName.indexOf("viewColsList") == 0  ||  currentFormName.indexOf("gridColsList") == 0  ||  currentFormName.indexOf("filterColsList") == 0)) {
     originalForm.elements[shortPropName].value   = id;
   }
   else {
@@ -5331,15 +5340,22 @@ function closeDiv(e, hideDivId) {
   var div = document.getElementById(hideDivId);
   if (!elm) {
     hideDiv(e, hideDivId);
-    return;
+    return stopEventPropagation(e);
   }
   var a = elm.parentNode;
   var url = a.href;
-  if (url != 'about:blank') {
-    var idx = url.indexOf('?');
-    postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, onproppatchCallback);
+  if (url == 'about:blank') { 
+    hideDiv(e, hideDivId);
+    return stopEventPropagation(e);
   }
-  hideDiv(e, hideDivId);
+  var ret = stopEventPropagation(e);
+  var idx = url.indexOf('?');
+  postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, closeDivCallback);
+
+  function closeDivCallback(e) {
+    hideDiv(e, hideDivId);
+  }
+  return ret;
 }
 
 // Show/hide all neiboghring bookmarks and update main Bookmark
@@ -5355,25 +5371,26 @@ function showHideAll(e, divId) {
   var idx = url.indexOf('?');
   var div = document.getElementById(divId);
   var href = document.location.href;
-  postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, onproppatchCallback);
+  postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, showHideCallback);
   
-  var idx = href.indexOf("&-showAll=");
-  if (idx != -1) {
-    var idx1 = href.indexOf("&", idx + 1);
-    var isShowAll = href.charAt(idx) == 'y';
-    var href1 = href.substring(0, idx + 10);
-    if (isShowAll)
-      href1 += "n";
+  function showHideCallback() { 
+    var idx = href.indexOf("&-showAll=");
+    if (idx != -1) {
+      var idx1 = href.indexOf("&", idx + 1);
+      var isShowAll = href.charAt(idx + 10) == 'y';
+      var href1 = href.substring(0, idx + 10);
+      if (isShowAll)
+        href1 += "n";
+      else
+        href1 += "y";
+      if (idx1 != -1)
+        href1 += href.substring(idx1);
+      href = href1;
+    }
     else
-      href1 += "y";
-    if (idx1 != -1)
-      href1 += href.substring(idx1);
-    href = href1;
+      href += "&-showAll=y";
+    document.location.href = href;
   }
-  else
-    href += "&-showAll=y";
-  document.location.href = href;
-  
   return stopEventPropagation(e);
 }
 // Minimize/restore neiboghring bookmark and update main Bookmark
@@ -5384,28 +5401,32 @@ function minimizeRestoreDiv(e, hideDivId, property) {
   var div = document.getElementById(hideDivId);
   if (!elm) {
     minMax(e, hideDivId);
-    return;
+    return stopEventPropagation(e);
   }
   var a = elm.parentNode;
   var url = a.href;
-  if (url != 'about:blank') {
-    var idx = url.indexOf('?');
-    var propParam = '&.' + property + '=';
-    var idx1 = url.indexOf(propParam);
-    if (idx1 != -1) {
-      var pos = idx1 + propParam.length;
-      if (url.charAt(pos) == '-')
-        a.href = url.substring(0, pos) + '%2B' + url.substring(pos + 1);
-      else
-        a.href = url.substring(0, pos) + '-' + url.substring(pos + 3);
-    }
-    postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, onproppatchCallback);
+  if (url == 'about:blank') {
+    minMax(e, hideDivId);
+    return stopEventPropagation(e);
   }
-  minMax(e, hideDivId);
+  var idx = url.indexOf('?');
+  var propParam = '&.' + property + '=';
+  var idx1 = url.indexOf(propParam);
+  if (idx1 != -1) {
+    var pos = idx1 + propParam.length;
+    if (url.charAt(pos) == '-')
+      a.href = url.substring(0, pos) + '%2B' + url.substring(pos + 1);
+    else
+      a.href = url.substring(0, pos) + '-' + url.substring(pos + 3);
+  }
+  var ret = stopEventPropagation(e);
+  postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, minMaxCallback);
+  function minMaxCallback(e) {
+    minMax(e, hideDivId);
+  }
+  return ret;
 }
 // Dummy callback that is called after updating main boolmark
-function onproppatchCallback() {
-}
 
 function hideDiv(e, hideDivId) {
   var div = document.getElementById(hideDivId);
