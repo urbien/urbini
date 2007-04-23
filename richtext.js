@@ -445,8 +445,14 @@ var RteEngine = {
       } 
 
       // 3. required uploading
-      // 3.2 uploading
-      //var srcEnc   = srcEnc; //encodeURI(src);
+      // 3.2 copy to clipboard
+      src = decodeURI(src); // IE
+      
+      var ua = navigator.userAgent.toLowerCase();
+      var isGecko = (ua.indexOf("gecko") != -1);
+      if(src.indexOf("file:///") == 0 && !isGecko) // IE
+        src = src.substr(8);
+      
       copyToClipboard(src);
       // 3.2.3 show the dialog
       this.launchImagePastePopup(rteId);
@@ -594,7 +600,6 @@ var ImageUploader = {
       return;
     }
     frameLoaded[frameId] = false;
-
     // -------------------------------------------------
     var frameBody = frames[frameId].document.body;
     var frameDoc  = frames[frameId].document;
@@ -604,10 +609,6 @@ var ImageUploader = {
       frameBody = d;
 
     uploadedUrl = frameBody.innerHTML;
-/*    
-    rteId       = decodeURIComponent( rteId );
-    originalUrl = decodeURI( originalUrl );
-*/  
     uploadedUrl = decodeURI( uploadedUrl );
 
     // 2. replace url with the uploaded one.  
@@ -630,7 +631,9 @@ var ImageUploader = {
     originalUrl = originalUrl.toLowerCase();
     for(var i = 0; i < images.length; i++) {
       var src = images[i].src.toLowerCase();
-      if(src == originalUrl) {
+      var decSrc = decodeURI(src);
+      if(src.indexOf(originalUrl) != -1 ||
+          decSrc.indexOf(originalUrl) != -1) {
         images[i].src = uploadedUrl;
       }
     }
