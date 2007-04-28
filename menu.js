@@ -3443,9 +3443,9 @@ function Dim() {
 
 function getElementPosition(elem, e) {
   // special position that is relative to the element
-  if(typeof elem.forcedPosition != 'undefined') {
+  if (elem  &&  typeof elem.forcedPosition != 'undefined') {
     var scrollXY = getScrollXY();
-    if(elem.forcedPosition == Popup.POS_LEFT_TOP)
+    if (elem.forcedPosition == Popup.POS_LEFT_TOP)
       return {left : scrollXY[0] + 10, top : scrollXY[1]};
   }
 
@@ -5456,24 +5456,6 @@ function minMax(e, divId) {
   return stopEventPropagation(e);
 }
 
-var hideMenu;
-function showMenu(e, divId) {
-  e = getDocumentEvent(e);
-  if (hideMenu) {
-    var div = document.getElementById(divId);
-    div.style.visibility = Popup.HIDDEN;
-    div.style.display = "none";
-    hideMenu = false;
-  }
-  else {
-    div = document.getElementById(divId);
-    div.style.visibility = Popup.VISIBLE;
-    div.style.display = 'inline';
-    hideMenu = true;
-  }
-  return stopEventPropagation(e);
-}
-
 function showTab(e, td, hideDivId, unhideDivId) {
   e = getDocumentEvent(e);
 
@@ -7458,3 +7440,47 @@ var dictionaryHandler = {
   }
   
 }
+/*
+var hideMenu;
+function showMenu(e, divId) {
+  e = getDocumentEvent(e);
+  if (hideMenu) {
+    var div = document.getElementById(divId);
+    div.style.visibility = Popup.HIDDEN;
+    div.style.display = "none";
+    hideMenu = false;
+  }
+  else {
+    div = document.getElementById(divId);
+    div.style.visibility = Popup.VISIBLE;
+    div.style.display = 'inline';
+    hideMenu = true;
+  }
+  return stopEventPropagation(e);
+}
+
+function switchMenuMode(e, userUri) {
+  e = getDocumentEvent(e);
+  if (!e)
+    return;
+  var elm = getTargetElement(e);
+  if (!elm)
+    return;
+  var uri = 'proppatch';
+  var params = '-$action=showPropertiesForEdit&submitUpdate=y&uri=' + encodeURIComponent(userUri); 
+  if (elm.src.indexOf('showHideMenu.gif') != -1) 
+    params +='&.dashboardMode=false';
+  else
+    params +='&.dashboardMode=true';
+  
+  var div = document.getElementById('menuBar1');
+  
+  var ret = stopEventPropagation(e);
+  var href = document.location.href;
+  postRequest(e, uri, params, div, elm, menuCallback);
+  function menuCallback(e) {
+    document.location.href = href + '&-changeMenuMode=y';
+  }
+  return ret;
+}
+*/
