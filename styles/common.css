@@ -46,11 +46,14 @@ img.fade {
    opacity:       0.6;
 }
 
-.tabs {
+.tabs, .tabs_current {
   height: 33px;
   cursor: pointer;
   display: inline;
   vertical-align:bottom;
+}
+.tabs_current .left, .right {
+   width:12px;
 }
 
 .tabs img {
@@ -89,6 +92,18 @@ img.fade {
   background-position: center;
   vertical-align: middle;
   width: 12px;
+}
+.tabs_current TD.right {	
+  background-image:url(../images/skin/blue/tab-right-current.gif);
+  background-repeat: no-repeat;
+}
+.tabs_current TD.middle {	
+  background-image:url(../images/skin/blue/tab-middle-current.gif);
+  background-repeat: repeat-x;
+}
+.tabs_current TD.left {	
+  background-image:url(../images/skin/blue/tab-left-current.gif);
+	background-repeat: no-repeat;
 }
 /* ----- Buttons ----- */
 .button_blue, .button_green, .button_grey, button.orange {
