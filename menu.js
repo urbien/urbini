@@ -4190,6 +4190,26 @@ function getAncestorByTagName(child, tagName) {
 	}
 	return null;
 }
+function swapNodes(node1, node2) {
+  if(node1.swapNode) {
+    node1.swapNode(node2);
+    return;
+  }
+  var parent1 = node1.parentNode;
+  var parent2 = node2.parentNode;
+  var nextSibling1 = node1.nextSibling;
+  var nextSibling2 = node2.nextSibling;
+
+  if(nextSibling1)
+    parent1.insertBefore(node2, nextSibling1);
+  else
+    parent1.appendChild(node2);
+
+  if(nextSibling2)
+    parent2.insertBefore(node1, nextSibling2);
+  else
+    parent2.appendChild(node1);
+}
 // *********************************** Icon/Image effects
 // **************************************
 var lowOpacity  = 60;
@@ -6649,57 +6669,81 @@ function removeSpaces(str) {
 
 /*******************************************************************************
  * drag & drop engine
+ * dragHandler implements: 1)getDragBlock 2)onStartDrag, 3) onDrag, 4) onStopDrag
  ******************************************************************************/
-var dragobject = {
-	z: 0, x: 0, y: 0, offsetx : null, offsety : null, targetobj : null, dragapproved : 0,
+var DragEngine = {
+	z: 0, x: 0, y: 0, offsetx : null, offsety : null, dragBlock : null, dragapproved : 0,
 	dialogIframe : null, // <- IE prevents dialog from <select>
+	dragHandler : null,
 	
 	initialize: function(){
-		addEvent(document, 'mousedown', this.drag, false);
+		addEvent(document, 'mousedown', this.startDrag, false);
 		addEvent(document, 'mouseup', this.stopDrag, false);
-		addEvent(document, 'mousemove', this.moveit, false);
+		addEvent(document, 'mousemove', this.drag, false);
 		this.dialogIframe = document.getElementById('dialogIframe');
 	},
-	drag: function(e){
+	startDrag: function(e){
 		var evtobj = window.event? window.event : e;
 		var dragObj = window.event? event.srcElement : e.target;
 		var titleObj = null;
-		if( (titleObj =  getAncestorById(dragObj, "titleBar")) != null ) {
-			this.dragapproved = 1;
+		if((titleObj =  getAncestorById(dragObj, "titleBar")) != null ||
+		    (titleObj =  getAncestorById(dragObj, "dragable")) != null) {
+			DragEngine.dragapproved = 1;
 
-		var dragContainerStr = titleObj.getAttribute("dragcontainer");
-		if(dragContainerStr == null || dragContainerStr.length == 0)
-			dragContainerStr = 'pane2'; // apply a default
-		this.targetobj = document.getElementById(dragContainerStr);
-		if (isNaN(parseInt(this.targetobj.style.left))) {this.targetobj.style.left = 0;}
-		if (isNaN(parseInt(this.targetobj.style.top)))  {this.targetobj.style.top = 0;}
-		this.offsetx = parseInt(this.targetobj.style.left);
-		this.offsety = parseInt(this.targetobj.style.top);
-		this.x = evtobj.clientX
-		this.y = evtobj.clientY
+		var dragHandlerStr = titleObj.getAttribute("draghandler");
+
+		if(dragHandlerStr == null || dragHandlerStr.length == 0) {
+  	  // deal with the dialog 'pane2'
+  	  DragEngine.dragBlock = getAncestorById(titleObj, 'pane2');
+		}
+		else {
+  	  DragEngine.dragHandler = eval(dragHandlerStr);
+		  if(DragEngine.dragHandler)
+		    DragEngine.dragBlock = DragEngine.dragHandler.getDragBlock(titleObj);
+		}
+		if(!DragEngine.dragBlock)
+		  return;
+		
+		if(DragEngine.dragHandler && DragEngine.dragHandler.onStartDrag)
+		  DragEngine.dragHandler.onStartDrag(DragEngine.dragBlock);  
+		
+		if (isNaN(parseInt(DragEngine.dragBlock.style.left))) {DragEngine.dragBlock.style.left = 0;}
+		if (isNaN(parseInt(DragEngine.dragBlock.style.top)))  {DragEngine.dragBlock.style.top = 0;}
+		DragEngine.offsetx = parseInt(DragEngine.dragBlock.style.left);
+		DragEngine.offsety = parseInt(DragEngine.dragBlock.style.top);
+		DragEngine.x = evtobj.clientX
+		DragEngine.y = evtobj.clientY
 		if (evtobj.preventDefault)
 			evtobj.preventDefault();
 		}
 	},
-	moveit: function(e){
+	drag: function(e){
 		var evtobj=window.event? window.event : e
-		var left = this.offsetx + evtobj.clientX - this.x + "px";
-		var top = this.offsety + evtobj.clientY - this.y + "px"
-		if (this.dragapproved == 1){
-			this.targetobj.style.left = left;
-			this.targetobj.style.top  = top;
+		var left = DragEngine.offsetx + evtobj.clientX - DragEngine.x;// + "px";
+		var top = DragEngine.offsety + evtobj.clientY - DragEngine.y;// + "px"
+		if (DragEngine.dragapproved == 1){
+			DragEngine.dragBlock.style.left = left;
+			DragEngine.dragBlock.style.top  = top;
 
-			if(dragobject.dialogIframe != null &&
-			     dragobject.dialogIframe.style.visibility == 'visible') {
-			  dragobject.dialogIframe.style.left = left;
- 			  dragobject.dialogIframe.style.top = top;
+			if(DragEngine.dialogIframe != null &&
+			     DragEngine.dialogIframe.style.visibility == 'visible') {
+			  DragEngine.dialogIframe.style.left = left;
+ 			  DragEngine.dialogIframe.style.top = top;
 			}
 			
+			if(DragEngine.dragHandler && DragEngine.dragHandler.onDrag)
+  		  DragEngine.dragHandler.onDrag(DragEngine.dragBlock, left, top);  
+
 			return false;
 		}
 	},
 	stopDrag: function() {
-		this.dragapproved = 0;
+  	if(DragEngine.dragHandler && DragEngine.dragHandler.onStopDrag) {
+		  DragEngine.dragHandler.onStopDrag(DragEngine.dragBlock);  
+		  DragEngine.dragHandler = null;
+		}
+
+		DragEngine.dragapproved = 0;
 	}
 }
 // initialize the drag & drop engine in addHandlers function
@@ -7484,3 +7528,251 @@ function switchMenuMode(e, userUri) {
   return ret;
 }
 */
+
+/*******************************************************
+* Dashboard
+********************************************************/
+var Dashboard = {
+  WIDGET_BASE_ID : "widget",
+  PH_BACK_COLOR : "#eee",
+  PH_BORDER : "1px dashed #f00", // "2px inset #eee"
+  DASHBOARD_ID : "dashboard",
+  
+  placeholderDiv : null,
+  isDragMode : false,
+  
+  widgetsMap : null,
+  
+  prevY : 0,
+  isDirUp : true,
+  
+  // drag interface functions -----
+  getDragBlock : function(catchedObj) {
+    var widget = this.getWidget(catchedObj);
+    if(this.widgetsMap == null)
+      this.initWidgetsMap(widget);
+    
+    return widget;
+  },
+  getWidget : function(child) {
+	  if(child.id.indexOf(this.WIDGET_BASE_ID) == 0)
+		  return child;
+	  var parent;
+	  while((parent = child.parentNode) != null) {
+		  if(parent.id.indexOf(this.WIDGET_BASE_ID) == 0)
+			  return parent;
+		  child = parent;
+	  }
+	  return null;
+  },
+
+  initWidgetsMap : function(theWidget) {
+    var dashboard = getAncestorById(theWidget, this.DASHBOARD_ID);
+    var divs = dashboard.getElementsByTagName("div");
+    this.widgetsMap = new Array();
+    for(var i = 0; i < divs.length; i++) {
+      if(divs[i].id.indexOf(this.WIDGET_BASE_ID) == 0) {
+        var widgetRect = new Dashboard.WidgetRect(divs[i]);
+        this.widgetsMap.push(widgetRect); 
+      }
+    }
+  },
+  updateWidgetsMap : function() {
+    for(var i = 0; i < this.widgetsMap.length; i++)
+        this.widgetsMap[i].update();
+  },
+  onStartDrag : function(dragBlock) {
+    this.isDragMode = true;
+    
+    if(this.placeholderDiv == null)
+      this.createPlaceholder();
+    
+    var width = dragBlock.offsetWidth;
+    var height = dragBlock.offsetHeight;
+    
+    var phStyle = this.placeholderDiv.style;
+    var dbStyle = dragBlock.style;
+
+//    phStyle.width   = width;
+    phStyle.height  = height;
+    phStyle.display = "block";
+   
+    var x = findPosX(dragBlock);
+    var y = findPosY(dragBlock);
+    
+    dbStyle.width = width;
+    dbStyle.left  = x;
+    dbStyle.top   = y;
+    dbStyle.position = "absolute";
+    
+    this.prevY = y;
+    
+    swapNodes(dragBlock, this.placeholderDiv);
+  },
+  onDrag : function(dragBlock, x, y) {
+    if(Dashboard.isDragMode == false)
+      return;
+    
+    // 1. preparing
+    
+    // 1.1 middle of the drag block
+    var midX = x + Math.ceil(dragBlock.offsetWidth / 2);
+    var midY = y + Math.ceil(dragBlock.offsetHeight / 2);
+    
+    // 1.2 
+    this.isDirUp = this.detectDirection(y);
+    // 1.3 get target widget under middle point
+    var targetWidget = this.detectTargetWidget(midX, midY, dragBlock.id);
+    // 1.4 detect "free space" if targetWidget == null
+    var targetFreespace = null;
+    if(targetWidget == null)
+      targetFreespace = this.detectTargetFreespace(midX, midY);
+      
+    // 2. move placeholder if need
+    var moved = false;
+    if(targetWidget) {
+      var isSameColumn = Dashboard.areWidgetsInTheSameColumn(targetWidget, Dashboard.placeholderDiv); 
+      
+      // 2.1 swap horizontal
+      if(isSameColumn == false) {
+        this.swapHorizontal(targetWidget);
+        moved = true;
+      }
+      else if(this.needVerticalSwap(targetWidget)){
+      // 2.2 swap vertical
+        this.swapVertical(targetWidget);
+        moved = true;
+      }
+    }
+    
+    // 2.3 free space
+    //else this.setInFreeSpace()
+
+    if(moved)
+      this.updateWidgetsMap();  
+  },
+
+  onStopDrag : function(dragBlock) {
+    this.isDragMode = false;
+
+    var dbStyle = dragBlock.style;
+    
+    this.placeholderDiv.style.display = "none";
+    dbStyle.position = "";
+    dbStyle.width = "100%"; 
+    swapNodes(dragBlock, this.placeholderDiv);
+    this.updateWidgetsMap();
+  },
+  //--------------------------
+  createPlaceholder : function() {
+    this.placeholderDiv = document.createElement("div");
+    var phStyle = this.placeholderDiv.style;
+    phStyle.display = "none";
+    phStyle.width  = "100%";
+    phStyle.margin = 0;
+    phStyle.backgroundColor = this.PH_BACK_COLOR;
+    phStyle.border = this.PH_BORDER;
+    document.body.appendChild(this.placeholderDiv);
+  },
+  
+  swapVertical : function(targetWidget) {
+    swapNodes(targetWidget, Dashboard.placeholderDiv);
+  },
+  swapHorizontal : function(targetWidget) {
+    var parent = targetWidget.parentNode;
+    this.placeholderDiv.style.width = targetWidget.offsetWidth;
+    parent.insertBefore(this.placeholderDiv, targetWidget);
+  },
+  
+  needVerticalSwap : function(targetWidget) {
+    var needSwap = false;
+    var isWidgetUpper = this.isWidgetUpper(targetWidget);
+    
+    if(this.isDirUp == null)
+      return false;
+    if((isWidgetUpper && this.isDirUp) ||
+      (!isWidgetUpper && !this.isDirUp)) {
+        needSwap = true;
+    }
+    return needSwap;
+  },
+  
+  detectDirection : function(y)  {
+    var isDirUp = null;
+    if(this.prevY > y)
+      isDirUp = true;
+    else if(this.prevY < y)
+      isDirUp = false;
+    
+    this.prevY = y;
+    return isDirUp;
+  },
+  detectTargetWidget : function(midX, midY, dragWidgetId) {
+    var targetWidget = null;
+    for(var i = 0; i < this.widgetsMap.length; i++) {
+      var widgetId = this.widgetsMap[i].getWidgetId();
+      if(widgetId != dragWidgetId &&
+          this.isPointIn(midX, midY, this.widgetsMap[i])) {
+        targetWidget = this.widgetsMap[i].getWidgetDiv();
+      }
+    }
+    return targetWidget;
+  },
+  
+  detectTargetFreespace : function(midX, midY) {
+  
+  },
+  
+  areWidgetsInTheSameColumn : function(widget1, widget2) {
+    var parentTD_ID_1 = widget1.parentNode.id;
+    var parentTD_ID_2 = widget2.parentNode.id;
+    if(parentTD_ID_1 == parentTD_ID_2) {
+      return true;
+    }
+    return false;  
+  },
+  isPointIn : function(x, y, rect) {
+    if(rect.left < x &&
+      rect.right > x &&
+      rect.top < y &&
+      rect.bottom > y)
+        return true;
+      return false;     
+  },
+  // relative to the placeholder
+  isWidgetUpper : function(widget) {
+    var prev = this.placeholderDiv.previousSibling;
+    while(prev && prev.nodeType != 1) // skip whitespaces
+      prev = prev.previousSibling; 
+    
+    if(prev && prev.id == widget.id) {
+      return true;
+    }
+    return false;  
+  },
+  // WidgetRect subclass --
+  WidgetRect : function(widgetDiv) {
+    this.widgetDiv = widgetDiv;
+    this.left;
+    this.top;
+    this.right;
+    this.bottom;
+    
+    this.update = function() {
+      this.left   = findPosX(this.widgetDiv);
+      this.top    = findPosY(this.widgetDiv);
+      this.right  = this.widgetDiv.offsetWidth + this.left;
+      this.bottom = this.widgetDiv.offsetHeight + this.top;
+    }
+    this.getWidgetDiv = function() {
+      return this.widgetDiv;
+    }
+    this.getWidgetId = function() {
+      return this.widgetDiv.id;
+    }
+    // "constructor"
+    this.update();
+  }
+  
+  
+}
