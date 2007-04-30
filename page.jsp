@@ -19,8 +19,7 @@
     </tr>
     </table>
 </hideBlock>
-    <filter/>
-    <resourceTypeLabel dashboard="y"/>
+    <filter/> 
     <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr>
 <hideBlock>
