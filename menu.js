@@ -7533,7 +7533,9 @@ function switchMenuMode(e, userUri) {
 * Dashboard
 ********************************************************/
 var Dashboard = {
-  WIDGET_BASE_ID : "widget",
+  WIDGET_BASE_ID : "widget_",
+  MIN_COLUMN_WIDTH : 50,
+  
   PH_BACK_COLOR : "#eee",
   PH_BORDER : "1px dashed #f00", // "2px inset #eee"
   DASHBOARD_ID : "dashboard",
@@ -7542,19 +7544,20 @@ var Dashboard = {
   isDragMode : false,
   
   widgetsMap : null,
+  freeSpacesMap : null,
   
   prevY : 0,
   isDirUp : true,
   
   // drag interface functions -----
   getDragBlock : function(catchedObj) {
-    var widget = this.getWidget(catchedObj);
+    var widget = this.getWidgetOnChild(catchedObj);
     if(this.widgetsMap == null)
-      this.initWidgetsMap(widget);
+      this.initDashboardMap(widget);
     
     return widget;
   },
-  getWidget : function(child) {
+  getWidgetOnChild : function(child) {
 	  if(child.id.indexOf(this.WIDGET_BASE_ID) == 0)
 		  return child;
 	  var parent;
@@ -7566,8 +7569,9 @@ var Dashboard = {
 	  return null;
   },
 
-  initWidgetsMap : function(theWidget) {
+  initDashboardMap : function(theWidget) {
     var dashboard = getAncestorById(theWidget, this.DASHBOARD_ID);
+    // 1. widgets
     var divs = dashboard.getElementsByTagName("div");
     this.widgetsMap = new Array();
     for(var i = 0; i < divs.length; i++) {
@@ -7576,11 +7580,25 @@ var Dashboard = {
         this.widgetsMap.push(widgetRect); 
       }
     }
+    // 2. free spaces
+    var cols = dashboard.rows[0].cells;
+    this.freeSpacesMap = new Array();
+    for(var i = 0; i < cols.length; i++) {
+      var freeSpaceRect = new Dashboard.FreeSpaceRect(cols[i], this.widgetsMap);
+      this.freeSpacesMap.push(freeSpaceRect); 
+      // set min column width on case if the column has no widgets.
+      cols[i].width = this.MIN_COLUMN_WIDTH;
+    }
   },
-  updateWidgetsMap : function() {
+  updateDashboardMap : function() {
+    // 1. widgets
     for(var i = 0; i < this.widgetsMap.length; i++)
         this.widgetsMap[i].update();
+    // 2. free spaces
+    for(var i = 0; i < this.freeSpacesMap.length; i++)
+        this.freeSpacesMap[i].update();
   },
+  
   onStartDrag : function(dragBlock) {
     this.isDragMode = true;
     
@@ -7644,12 +7662,13 @@ var Dashboard = {
         moved = true;
       }
     }
-    
     // 2.3 free space
-    //else this.setInFreeSpace()
+    else if(targetFreespace)
+      this.setInFreeSpace(targetFreespace);
+      
 
     if(moved)
-      this.updateWidgetsMap();  
+      this.updateDashboardMap();  
   },
 
   onStopDrag : function(dragBlock) {
@@ -7661,7 +7680,7 @@ var Dashboard = {
     dbStyle.position = "";
     dbStyle.width = "100%"; 
     swapNodes(dragBlock, this.placeholderDiv);
-    this.updateWidgetsMap();
+    this.updateDashboardMap();
   },
   //--------------------------
   createPlaceholder : function() {
@@ -7682,6 +7701,10 @@ var Dashboard = {
     var parent = targetWidget.parentNode;
     this.placeholderDiv.style.width = targetWidget.offsetWidth;
     parent.insertBefore(this.placeholderDiv, targetWidget);
+  },
+  setInFreeSpace : function(targetFreespace) {
+    var colObj = targetFreespace.getColumn();
+    colObj.appendChild(this.placeholderDiv);
   },
   
   needVerticalSwap : function(targetWidget) {
@@ -7720,7 +7743,13 @@ var Dashboard = {
   },
   
   detectTargetFreespace : function(midX, midY) {
-  
+    var targetFreespace = null;
+    for(var i = 0; i < this.freeSpacesMap.length; i++) {
+      if(this.isPointIn(midX, midY, this.freeSpacesMap[i])) {
+        targetFreespace = this.freeSpacesMap[i];
+      }
+    }
+    return targetFreespace;
   },
   
   areWidgetsInTheSameColumn : function(widget1, widget2) {
@@ -7769,6 +7798,37 @@ var Dashboard = {
     }
     this.getWidgetId = function() {
       return this.widgetDiv.id;
+    }
+    this.getColumnId = function() {
+      return this.widgetDiv.parentNode.id;
+    }
+    // "constructor"
+    this.update();
+  },
+  
+  FreeSpaceRect : function(column, widgetsMap) {
+    this.column     = column;
+    this.widgetsMap = widgetsMap;
+    this.left = 0;
+    this.top = 0;
+    this.right = 0;
+    this.bottom = 0;
+    
+    this.update = function() {
+      // 1. whole column
+      this.left   = findPosX(this.column);
+      this.top    = findPosY(this.column);
+      this.right  = this.column.offsetWidth + this.left;
+      this.bottom = this.column.offsetHeight + this.top;
+      // 2. exclude children's widgets
+      for(var i = 0; i < this.widgetsMap.length; i++) {
+        if(this.column.id == this.widgetsMap[i].getColumnId()) {
+          this.top = Math.max(this.top, widgetsMap[i].bottom);
+        }
+      }
+    }
+    this.getColumn = function() {
+      return this.column;
     }
     // "constructor"
     this.update();
