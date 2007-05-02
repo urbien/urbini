@@ -2895,7 +2895,7 @@ function schedule(e) {
   }
   else if (className == "ci") {
     calendarCell = target;
-    addCalendarItem(this, event, parseInt(tdId.substring(idx1)));
+    addCalendarItem(this, e, parseInt(tdId.substring(idx1)));
   }
 }
 
@@ -4541,6 +4541,7 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
 
   var anchors = calendarCell.getElementsByTagName('a')
   var anchor;
+
   if (anchors != null  &&  anchors.length > 0)
     anchor = anchors[0].href;
   else {
@@ -4556,17 +4557,19 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
 
   var popupRowId = popupRow.id;
   var ampIdx = popupRowId.indexOf("&");
-  var procedureIdx = parseInt(popupRowId.substring(0, ampIdx));
-  var duration = parseInt(popupRowId.substring(ampIdx + 1));
-  anchor += procedurePropName + "=" + procedures[procedureIdx] + "&duration=" + duration;
-
+  if (ampIdx != -1) {
+    var procedureIdx = parseInt(popupRowId.substring(0, ampIdx));
+    anchor += procedurePropName + "=" + procedures[procedureIdx];
+    var duration = parseInt(popupRowId.substring(ampIdx + 1));
+    anchor += "&duration=" + duration;
+  }
   // --- extract parameters specific for calendar row (e.g. time slot) for a
   // cell on which user clicked
   // popupRow == calendarRow when click came from the schedule cell because
   // value corresponding to popup value already known.
   var contactId;
   if (popupRow == calendarRow) {
-    contactId = forEmployee + "=" + employees[contactPropAndIdx.substring(pos + 1)];
+    contactId = forEmployee + "=" + employees[contactPropAndIdx] + '&' + calendarRow.id;
   }
   else  {
     anchor += '&' + calendarRow.id;
@@ -4648,7 +4651,7 @@ function addSimpleCalendarItem(event) {
 
   if (popupRow.className == 'menuTitle')
     return stopEventPropagation(event);
-  var anchor = "mkResource.html?-$action=mkResource&type=http://www.hudsonfog.com/voc/model/work/CalendarItem&submit=Please+wait&";
+  var anchor = "mkresource?type=http://www.hudsonfog.com/voc/model/work/CalendarItem&submit=Please+wait&";
   var calendarRowId = calendarRow.id;
   var idx = calendarRowId.indexOf("=");
   calendarRowId = calendarRowId.substring(0, idx);
@@ -5810,7 +5813,7 @@ function addAndShowItems(tr, e) {
   e = getDocumentEvent(e);
   if (!e)
     return stopEventPropagation(e);
-  var anchor = "mkResource.html?-$action=mkResource&type=http://www.hudsonfog.com/voc/model/portal/Comment&submit=Please+wait&.forum_verified=y&";
+  var anchor = "mkresource?type=http://www.hudsonfog.com/voc/model/portal/Comment&submit=Please+wait&.forum_verified=y&";
   var form = document.getElementById('filter');
   var forum = form.elements[".forum_select"].value;
   var title = form.elements[".title"].value;
@@ -7479,13 +7482,12 @@ var dictionaryHandler = {
       if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
         baseUri += "/";
     }
-    var url = encodeURI(baseUri + "mkResource.html");
-    var params = "-$action=mkResource"
-      + "&$browser=y"
-      + "&displayProps=yes"
-      + "&type=http://www.hudsonfog.com/voc/model/portal/Translation"
-      + "&-inner=y"
-      + "&.source=" + encodeURIComponent(text);
+    var url = encodeURI(baseUri + "mkresource");
+    var params = "&$browser=y"
+               + "&displayProps=yes"
+               + "&type=http://www.hudsonfog.com/voc/model/portal/Translation"
+               + "&-inner=y"
+               + "&.source=" + encodeURIComponent(text);
 
     var div = document.getElementById("pane2");
     postRequest(e, url, params, div, hotspot, this.onTranslationCallback);
