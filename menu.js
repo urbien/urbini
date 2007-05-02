@@ -4149,7 +4149,12 @@ function checkAllInGroup(e, divId) {
 
 // returns a child of any nesting.
 function getChildById(parent, id) {
-	if(parent.id == id)
+	return getChildByAttribute(parent, "id", id);
+}
+function getChildByAttribute(parent, atribName, attribValue) {
+	if(!parent)
+	  return null;
+	if(parent[atribName] == attribValue)
 		return parent;
 	var children = parent.childNodes;
 	var len = children.length;
@@ -4158,21 +4163,25 @@ function getChildById(parent, id) {
 	for(var i = 0; i < len; i++) {
 		if(children[i].childNodes.length != 0) {
 			var reqChild = null;
-			if((reqChild = getChildById(children[i], id)) != null)
+			if((reqChild = getChildByAttribute(children[i], atribName, attribValue)) != null)
 				return reqChild;
 		}
-		if(children[i].id == id)
+		if(children[i][atribName] == attribValue)
 			return children[i];
 	}
 	return null;
 }
-
 function getAncestorById(child, id) {
-	if(child.id == id)
+  return getAncestorByAttribute(child, "id", id);
+}
+function getAncestorByAttribute(child, attribName, attribValue) {
+	if(!child)
+	  return null;
+	if(child[attribName] == attribValue)
 		return child;
 	var parent;
 	while((parent = child.parentNode) != null) {
-		if(parent.id == id)
+		if(parent[attribName] == attribValue)
 			return parent;
 		child = parent;
 	}
@@ -6686,12 +6695,11 @@ var DragEngine = {
 		var evtobj = window.event? window.event : e;
 		var dragObj = window.event? event.srcElement : e.target;
 		var titleObj = null;
-		if((titleObj =  getAncestorById(dragObj, "titleBar")) != null ||
-		    (titleObj =  getAncestorById(dragObj, "dragable")) != null) {
-			DragEngine.dragapproved = 1;
 
+		if((titleObj =  getAncestorById(dragObj, "titleBar")) == null &&
+		    (titleObj =  getAncestorByAttribute(dragObj, "className", "dragable")) == null)
+		  return;	
 		var dragHandlerStr = titleObj.getAttribute("draghandler");
-
 		if(dragHandlerStr == null || dragHandlerStr.length == 0) {
   	  // deal with the dialog 'pane2'
   	  DragEngine.dragBlock = getAncestorById(titleObj, 'pane2');
@@ -6715,7 +6723,8 @@ var DragEngine = {
 		DragEngine.y = evtobj.clientY
 		if (evtobj.preventDefault)
 			evtobj.preventDefault();
-		}
+	  
+	  DragEngine.dragapproved = 1;		
 	},
 	drag: function(e){
 		var evtobj=window.event? window.event : e
@@ -7198,6 +7207,8 @@ var advancedTooltip = {
       return;
 
     this.tooltip = document.getElementById('system_tooltip');
+    if(!this.tooltip)
+      return;
     this.optList = new List();
     var itemDiv = document.createElement('div');
     this.optList.appendItem(itemDiv);
@@ -7533,11 +7544,10 @@ function switchMenuMode(e, userUri) {
 * Dashboard
 ********************************************************/
 var Dashboard = {
-  WIDGET_BASE_ID : "widget_",
   MIN_COLUMN_WIDTH : 50,
   
   PH_BACK_COLOR : "#eee",
-  PH_BORDER : "1px dashed #f00", // "2px inset #eee"
+  PH_BORDER : "1px dashed #f00",
   DASHBOARD_ID : "dashboard",
   
   placeholderDiv : null,
@@ -7549,33 +7559,23 @@ var Dashboard = {
   prevY : 0,
   isDirUp : true,
   
+  prevWidgetOld : null,
+  
   // drag interface functions -----
   getDragBlock : function(catchedObj) {
-    var widget = this.getWidgetOnChild(catchedObj);
-    if(this.widgetsMap == null)
+    var widget = getAncestorByAttribute(catchedObj, "className", "widget"); // this.getWidgetOnChild(catchedObj);
+    if(widget && this.widgetsMap == null)
       this.initDashboardMap(widget);
     
     return widget;
   },
-  getWidgetOnChild : function(child) {
-	  if(child.id.indexOf(this.WIDGET_BASE_ID) == 0)
-		  return child;
-	  var parent;
-	  while((parent = child.parentNode) != null) {
-		  if(parent.id.indexOf(this.WIDGET_BASE_ID) == 0)
-			  return parent;
-		  child = parent;
-	  }
-	  return null;
-  },
-
   initDashboardMap : function(theWidget) {
     var dashboard = getAncestorById(theWidget, this.DASHBOARD_ID);
     // 1. widgets
     var divs = dashboard.getElementsByTagName("div");
     this.widgetsMap = new Array();
     for(var i = 0; i < divs.length; i++) {
-      if(divs[i].id.indexOf(this.WIDGET_BASE_ID) == 0) {
+      if(divs[i].className == "widget") {
         var widgetRect = new Dashboard.WidgetRect(divs[i]);
         this.widgetsMap.push(widgetRect); 
       }
@@ -7623,8 +7623,9 @@ var Dashboard = {
     dbStyle.top   = y;
     dbStyle.position = "absolute";
     
+    this.prevWidgetOld = this.getPrevSibling(dragBlock);
     this.prevY = y;
-    
+
     swapNodes(dragBlock, this.placeholderDiv);
   },
   onDrag : function(dragBlock, x, y) {
@@ -7673,7 +7674,8 @@ var Dashboard = {
 
   onStopDrag : function(dragBlock) {
     this.isDragMode = false;
-
+    if(!dragBlock)
+      return;
     var dbStyle = dragBlock.style;
     
     this.placeholderDiv.style.display = "none";
@@ -7681,6 +7683,10 @@ var Dashboard = {
     dbStyle.width = "100%"; 
     swapNodes(dragBlock, this.placeholderDiv);
     this.updateDashboardMap();
+    
+    // call server handler
+    var prevWidgetNew = this.getPrevSibling(dragBlock);
+    this.onWidgetMovement(dragBlock, this.prevWidgetOld, prevWidgetNew);
   },
   //--------------------------
   createPlaceholder : function() {
@@ -7770,14 +7776,21 @@ var Dashboard = {
   },
   // relative to the placeholder
   isWidgetUpper : function(widget) {
-    var prev = this.placeholderDiv.previousSibling;
-    while(prev && prev.nodeType != 1) // skip whitespaces
-      prev = prev.previousSibling; 
+    var prev = this.getPrevSibling(this.placeholderDiv); //.previousSibling;
+   // while(prev && prev.nodeType != 1) // skip whitespaces
+   //   prev = prev.previousSibling; 
     
     if(prev && prev.id == widget.id) {
       return true;
     }
     return false;  
+  },
+  getPrevSibling : function(widgetDiv) {
+    var prev = widgetDiv.previousSibling;
+    while(prev && prev.nodeType != 1) // skip whitespaces
+      prev = prev.previousSibling; 
+
+    return prev;
   },
   // WidgetRect subclass --
   WidgetRect : function(widgetDiv) {
@@ -7832,7 +7845,9 @@ var Dashboard = {
     }
     // "constructor"
     this.update();
+  },
+  
+  // call a server handler --
+  onWidgetMovement : function(widget, prevWidgetOld, prevWidgetNew) {
   }
-  
-  
 }
