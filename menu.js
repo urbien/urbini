@@ -4542,8 +4542,13 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   var anchors = calendarCell.getElementsByTagName('a')
   var anchor;
 
-  if (anchors != null  &&  anchors.length > 0)
-    anchor = anchors[0].href;
+  if (anchors != null  &&  anchors.length > 0) {
+    // first <a> could be with 'reassign procedure' that is for reassigning procedure to different time or employee
+    for (var i=0; !anchor  &&  i<anchors.length; i++) {
+      if (anchors[i].href)
+        anchor = anchors[i].href;
+    }
+  }
   else {
     anchor = "ticket?availableDuration="; // anchors[0].href; // url of the
                                           // servlet that adds calendar items
