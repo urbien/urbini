@@ -618,7 +618,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .barcodedM {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); border:solid #5C9EBF 1px;}
 
 #titleBar {height: 22px; background:url(../images/skin/blue/title.gif); cursor:move; padding-left:5px;}
-#dragable {cursor:move;}
+.dragable {cursor: move;}
 
 span.action {font-family:verdana,sans-serif,arial;font-weight:bold;font-size:8pt;color:#000066;}
 tr.submit     {background-image: url('../images/toolbar_bg.gif');cursor: pointer; color:darkblue;}
