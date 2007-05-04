@@ -282,8 +282,13 @@ var RteEngine = {
 		this.stylePopup = new List();
 		var len = this.STYLES.length;
 		for(var i = 0; i < len; i++) {
-			// on this moment use 'div' instead 'h1', etc.
-			var itemDiv = document.createElement('div');
+		
+  		var itemDiv;	
+	  	if(navigator.appName == "Opera") // Opera does not want to work with font directly
+		  	itemDiv = document.createElement('div');
+			else
+			  itemDiv = document.createElement(this.STYLES[i].value);
+			
 			itemDiv.style.margin = 0;
 			itemDiv.innerHTML = this.STYLES[i].name;
 			this.stylePopup.appendItem(itemDiv);
@@ -771,9 +776,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		}
 		// set handlers
 		this.setHandlers();
-		
+	  
 	  if(this.isNetscape) // turn on Mozila's spellcheck
       this.document.body.spellcheck = true;
+    
+    // load css of the parent page
+    this.loadCSS();  
 	}
 	this.browserDetection = function() {
 		var brName = navigator.appName;
@@ -799,7 +807,21 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			addEvent(document, 'mouseup', this.onlosefocus, false);
 		}
 	}
-
+  this.loadCSS = function() {
+		var cssFiles = ['../styles/common.css', '../styles/properties.css'];
+		for(var i = 0; i < cssFiles.length; i++) {
+		  if(this.document.createStyleSheet) {
+        this.document.createStyleSheet(cssFiles[i]);
+      }
+      else {
+        var newSS=document.createElement('link');
+        newSS.rel='stylesheet';
+        newSS.type='text/css';
+        newSS.href=escape(cssFiles[i]);
+        this.document.getElementsByTagName("head")[0].appendChild(newSS);
+      } 
+    }
+  }
 	this.createToolbar = function() {
 		// 1.
 		var toolBar = new Toolbar(this.parentDiv, this, 18);
@@ -874,11 +896,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// putContent
 	this.putContent = function(text) {
 		var frameHtml = "<html>\n";
-		frameHtml += "<head>\n";
-		frameHtml += "</head>\n";
-		frameHtml += "<body>\n";
-		frameHtml += text + "\n";
-		frameHtml += "</body>\n";
+		frameHtml += "<head>";
+		if(this.isIE)
+		  frameHtml += "<link href='styles/common.css' type='text/css' rel='stylesheet'>";
+		frameHtml += "</head>";
+		frameHtml += "<body>";
+		frameHtml += text + "";
+		frameHtml += "</body>";
 		frameHtml += "</html>";
 
 		this.document.open();
@@ -1232,8 +1256,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			}
 			else {
 				var iText = i_am.document.body.innerText;
-				i_am.document.body.innerHTML = iText;
+				//i_am.document.body.innerHTML = iText;
 				i_am.document.designMode = "On";
+				
+				i_am.putContent(iText);
 			}
 		}
 		i_am.isSourceView = pressed;
