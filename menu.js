@@ -6754,9 +6754,9 @@ var DragEngine = {
 			return false;
 		}
 	},
-	stopDrag: function() {
+	stopDrag: function(e) {
   	if(DragEngine.dragHandler && DragEngine.dragHandler.onStopDrag) {
-		  DragEngine.dragHandler.onStopDrag(DragEngine.dragBlock);  
+		  DragEngine.dragHandler.onStopDrag(e, DragEngine.dragBlock);  
 		  DragEngine.dragHandler = null;
 		}
 
@@ -7487,7 +7487,7 @@ var dictionaryHandler = {
       if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
         baseUri += "/";
     }
-    var url = encodeURI(baseUri + "mkresource");
+    var url = encodeURI(baseUri + "mkResource.html");
     var params = "&$browser=y"
                + "&displayProps=yes"
                + "&type=http://www.hudsonfog.com/voc/model/portal/Translation"
@@ -7679,7 +7679,7 @@ var Dashboard = {
       this.updateDashboardMap();  
   },
 
-  onStopDrag : function(dragBlock) {
+  onStopDrag : function(e, dragBlock) {
     this.isDragMode = false;
     if(!dragBlock)
       return;
@@ -7693,7 +7693,7 @@ var Dashboard = {
     
     // call server handler
     var prevWidgetNew = this.getPrevSibling(dragBlock);
-    this.onWidgetMovement(dragBlock, this.prevWidgetOld, prevWidgetNew);
+    this.onWidgetMovement(e, dragBlock, this.prevWidgetOld, prevWidgetNew);
   },
   //--------------------------
   createPlaceholder : function() {
@@ -7855,6 +7855,26 @@ var Dashboard = {
   },
   
   // call a server handler --
-  onWidgetMovement : function(widget, prevWidgetOld, prevWidgetNew) {
+  onWidgetMovement : function(e, widget, prevWidgetOld, prevWidgetNew) {
+    var wLen = 'widget_'.length;
+    
+    var widgetUri = widget.id.substring(wLen);
+    var td = getTdNode(widget);
+    var newCol = parseInt(td.id.substring('col_'.length));
+    var params = 'uri=' + encodeURIComponent(widgetUri) + '&-drag=y&submitUpdate=y&previousInColumn_verified=y&.dashboardColumn=' + newCol;
+    if (prevWidgetNew) {
+      var newPrevUri = prevWidgetNew.id.substring(wLen);
+      params += '&.previousInColumn_select=' + encodeURIComponent(newPrevUri);
+    }
+    // set self as prev widget to know that this is the top of the column (till remove prop implemented)
+    else
+      params += '&.previousInColumn_select=' + encodeURIComponent(widgetUri);
+    var target = getTargetElement(e);
+    var ret = stopEventPropagation(e);
+    postRequest(e, 'proppatch', params, widget, td, callback);
+    function callback() {
+      
+    }
+    return ret;
   }
 }
