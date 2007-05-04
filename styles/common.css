@@ -372,7 +372,7 @@ td {font-family:sans-serif, arial; font-size:9pt;}
 A {text-decoration : none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
 
 /*Body {font-family: Verdana, geneva, arial; font-size: 8px; font-weight: normal; color: #999999;}*/
-Body {font-family: Verdana, geneva, arial; font-size: 8px; font-weight: normal; }
+Body {font-family: Verdana, geneva, arial; font-weight: normal; }
 
 .monospace { font-family:Courier,monospace; }
 
