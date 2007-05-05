@@ -2921,7 +2921,8 @@ var schReassign = {
     this.iconDiv.align = "right";
     this.iconDiv.style.width = "100%";
     
-    var html = "<a title=\"" + this.TITLE_TEXT + "\" onclick=\"schReassign.activate();\">";
+    var html = "<a title=\"" + this.TITLE_TEXT + "\"";
+    html += "href=\"javascript: ;\" onclick=\"schReassign.activate(event);\">";
     html += "<img src=\"../icons/integrate.gif\" style=\"cursor:pointer;\"></a>";
     this.iconDiv.innerHTML = html;
     
@@ -3034,7 +3035,6 @@ var schReassign = {
   },
   //
   moveProcedure : function(srcCell, targetCell) {
-    alert("moveProcedure");
   }
 }
 
