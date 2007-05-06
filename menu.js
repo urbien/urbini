@@ -7856,11 +7856,20 @@ var Dashboard = {
   
   // call a server handler --
   onWidgetMovement : function(e, widget, prevWidgetOld, prevWidgetNew) {
+    var ret = stopEventPropagation(e);
     var wLen = 'widget_'.length;
     
     var widgetUri = widget.id.substring(wLen);
     var td = getTdNode(widget);
     var newCol = parseInt(td.id.substring('col_'.length));
+
+    // Check if widget should not be moved just was touched
+    if (prevWidgetOld  &&  prevWidgetNew && prevWidgetNew.id == prevWidgetOld.id) {
+      var oldTd = getTdNode(prevWidgetOld);
+      var oldCol = parseInt(oldId.id.substring('col_'.length));
+      if (oldCol == newCol)
+        return ret;
+    }
     var params = 'uri=' + encodeURIComponent(widgetUri) + '&-drag=y&submitUpdate=y&previousInColumn_verified=y&.dashboardColumn=' + newCol;
     if (prevWidgetNew) {
       var newPrevUri = prevWidgetNew.id.substring(wLen);
@@ -7870,10 +7879,8 @@ var Dashboard = {
     else
       params += '&.previousInColumn_select=' + encodeURIComponent(widgetUri);
     var target = getTargetElement(e);
-    var ret = stopEventPropagation(e);
     postRequest(e, 'proppatch', params, widget, td, callback);
     function callback() {
-      
     }
     return ret;
   }
