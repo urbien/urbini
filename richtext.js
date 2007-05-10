@@ -1027,6 +1027,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.iframeObj.style.marginTop = 0;
     if (i_am.toolbar)
 		  i_am.toolbar.hide();
+		
+		i_am.iframeObj.setAttribute("scrolling", "no");   
 	}
 
 	// IE's hack
@@ -1053,9 +1055,20 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(docH < i_am.initFrameHeight)
 			return;
 
+    // FF: limit max RTE height
+    // IE & Opera: failed to turn on a scrollbar in JS.
+    // So, on this moment, in IE & Opera no height limitation. 
 		var frmH = i_am.iframeObj.clientHeight;
-		if(frmH != docH)
-			i_am.iframeObj.style.height = docH;
+		var maxHeight = getWindowSize()[1] * 0.9;
+		if(docH > maxHeight && this.isNetscape) {
+		  i_am.iframeObj.setAttribute("scrolling", "auto"); 
+		  i_am.iframeObj.style.height = maxHeight;
+		}
+		else {
+		  if(frmH != docH)
+			  i_am.iframeObj.style.height = docH;
+   		  i_am.iframeObj.setAttribute("scrolling", "no"); 
+		}
 	}
   
   this._onpaste = function(e) {
