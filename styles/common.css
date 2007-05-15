@@ -708,9 +708,14 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 /************ END tooltip ***********/
 
 /*  widget flip */
+
+.front {
+	position: relative;
+}
+
 .flip {
 	position: absolute;
-	bottom: 17px;
+	bottom: 3px;
 	right: 3px;
 	width:13px;
 	height:13px;
