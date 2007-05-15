@@ -7928,8 +7928,8 @@ var WidgetFlip = {
     
     this.fading.duration = 500;                       // fading time, in ms
     this.fading.starttime = starttime;                    // specify the start time
-    
-    this.fading.firstElement = this.getFlipDiv(e, 'flip'); // specify the element to fade
+    var div = document.getElementById(divId);
+    this.fading.firstElement = this.getFlipDiv1(div, 'flip'); // specify the element to fade
     this.fading.timer = setInterval ("WidgetFlip.fade();", 13);   // set the fading function
     this.fading.start = this.fading.now;                     // beginning opacity (not ness. 0)
     this.fading.end = 1.0;                           // final opacity
@@ -7964,7 +7964,8 @@ var WidgetFlip = {
     
     this.fading.duration = 500;
     this.fading.starttime = starttime;
-    this.fading.firstElement = this.getFlipDiv(e, 'flip');
+    var div = document.getElementById(divId);
+    this.fading.firstElement = this.getFlipDiv1(div, 'flip');
     this.fading.timer = setInterval ("WidgetFlip.fade();", 13);
     this.fading.start = this.fading.now;
     this.fading.end   = 0.0;
