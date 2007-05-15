@@ -5471,6 +5471,12 @@ function hideDiv(e, hideDivId) {
   div.style.display = "none";
   return stopEventPropagation(e);
 }
+function showDiv1(e, hideDivId) {
+  var div = document.getElementById(hideDivId);
+  div.style.visibility = Popup.VISIBLE;
+  div.style.display = "block";
+  return stopEventPropagation(e);
+}
 
 function minMax(e, divId) {
   e = getDocumentEvent(e);
@@ -7884,4 +7890,186 @@ var Dashboard = {
     }
     return ret;
   }
+}
+
+var WidgetFlip = {
+//PREFERENCE BUTTON ANIMATION (- the pref flipper fade in/out)
+
+//mouseexit() is the opposite of mousemove() in that it preps the preferences flipper
+//to disappear.  It adds the appropriate values to the animation data structure and sets the animation in motion.
+
+  flipShown : false,    // a flag used to signify if the flipper is currently shown or not.
+
+
+  // A structure that holds information that is needed for the animation to run.
+  fading : {duration:0, starttime:0, end:1.0, now:0.0, start:0.0, firstElement:null, timer:null},
+
+  currentWidgetId : null,
+  mousemove : function mousemove (e, divId)  {
+    e = getDocumentEvent(e); if (!e) return;
+    if (e.getAttribute) {
+      var isProcessed = e.getAttribute('eventProcessed');
+      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+        return stopEventPropagation(e);
+      e.setAttribute('eventProcessed', 'true');
+    }
+    if (this.flipShown)
+      return;
+    // if the preferences flipper is not already showing...
+    if (this.fading.timer != null) {     // reset the fading timer value, in case a value was left behind
+      if (this.currentWidgetId  &&  this.currentWidgetId != divId)
+        this.hideflip(e, this.currentWidgetId);
+      clearInterval (this.fading.timer);
+      this.fading.timer  = null;
+    }
+    this.currentWidgetId = divId;
+    this.showflip(e, divId);      
+    var starttime = (new Date).getTime() - 13;    // set it back one frame
+    
+    this.fading.duration = 500;                       // fading time, in ms
+    this.fading.starttime = starttime;                    // specify the start time
+    
+    this.fading.firstElement = this.getFlipDiv(e, 'flip'); // specify the element to fade
+    this.fading.timer = setInterval ("WidgetFlip.fade();", 13);   // set the fading function
+    this.fading.start = this.fading.now;                     // beginning opacity (not ness. 0)
+    this.fading.end = 1.0;                           // final opacity
+    this.fade();                                // begin fading
+    this.flipShown = true;                           // mark the flipper as animated
+  },
+
+//   mouseexit() is the opposite of mousemove() in that it preps the preferences flipper
+//   to disappear.  It adds the appropriate values to the fading data structure and sets the fading in motion.
+
+  mouseexit : function mouseexit (e, divId)  {
+    e = getDocumentEvent(e); if (!e) return;
+    if (e.getAttribute) {
+      var isProcessed = e.getAttribute('eventProcessed');
+      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+        return stopEventPropagation(e);
+      e.setAttribute('eventProcessed', 'true');
+    }
+    
+    if (!this.flipShown) 
+      return;
+    // fade in the flip widget
+    if (this.fading.timer != null) {
+      clearInterval (this.fading.timer);
+      if (this.currentWidgetId  &&  this.currentWidgetId != divId)
+        this.hideflip(e, this.currentWidgetId);
+      this.fading.timer  = null;
+    }
+    
+    this.currentWidgetId = divId;
+    var starttime = (new Date).getTime() - 13;
+    
+    this.fading.duration = 500;
+    this.fading.starttime = starttime;
+    this.fading.firstElement = this.getFlipDiv(e, 'flip');
+    this.fading.timer = setInterval ("WidgetFlip.fade();", 13);
+    this.fading.start = this.fading.now;
+    this.fading.end   = 0.0;
+    this.fade();
+    this.flipShown = false;
+  },
+
+
+  /**
+   * fades widget flip image. 
+   */
+  fade : function fade()  {
+    var time = (new Date).getTime();
+    var elapsedTime = this.getElapsedTime(time - this.fading.starttime, this.fading.duration);
+    
+    if (elapsedTime >= this.fading.duration) {
+      clearInterval (this.fading.timer);
+      this.fading.timer = null;
+      this.fading.now = this.fading.end;
+    }
+    else {
+      var ease = 0.5 - (0.5 * Math.cos(Math.PI * elapsedTime / this.fading.duration));
+      this.fading.now = this.getNextFadingNumber(this.fading.start, this.fading.end, ease);
+    }
+    
+    if (this.fading.firstElement.filters != null && this.fading.firstElement.filters.alpha != null) 
+      this.fading.firstElement.filters.alpha.opacity = this.fading.now * 100;
+    else
+      this.fading.firstElement.style.opacity = this.fading.now;
+  },
+
+
+  getElapsedTime : function getElapsedTime (elapsed, duration)  {
+    return elapsed < 0 ? 0 : (elapsed > duration ? duration : elapsed);
+  },
+
+  getNextFadingNumber : function getNextFadingNumber (start, end, ease)  {
+    return start + (end - start) * ease;
+  },
+
+  enterflip : function enterflip(event)  {
+    var flipDiv = this.getFlipDiv(event, 'flip_bg');
+    if (flipDiv) 
+      flipDiv.style.display = 'block';
+  },
+
+  exitflip : function exitflip(event)  {
+    var flipDiv = this.getFlipDiv(event, 'flip_bg');
+    if (flipDiv) 
+      flipDiv.style.display = 'none';
+  },
+
+  getFlipDiv : function getFlipDiv(event, divId) {
+    var target = getTargetElement(event);
+    var frontDiv;
+    while (true) {
+      if (target.tagName.toLowerCase() == 'div' && target.id && target.id.indexOf('div_') == 0) {
+        frontDiv = target;
+        break;
+      }
+
+      target = target.parentNode;
+      if (!target)
+        break;
+    }
+    if (!frontDiv)
+      return null;
+    return this.getFlipDiv1(frontDiv, divId);
+    /*
+    var elms = frontDiv.getElementsByTagName('div');
+    for (var i=0; !flipDiv  &&  i<elms.length; i++) {
+      if (elms[i].id && elms[i].id == divId)
+        return elms[i];
+    }
+    return null;
+    */
+  },
+  
+  getFlipDiv1 : function getFlipDiv1(frontDiv, divId) {
+    var elms = frontDiv.getElementsByTagName('div');
+    for (var i=0; i<elms.length; i++) {
+      if (elms[i].id && elms[i].id == divId)
+        return elms[i];
+    }
+    return null;
+  },
+  
+  showflip : function showflip(event, divId) {
+    this.flipShown = true;
+    var div = document.getElementById(divId);
+    flipDiv = this.getFlipDiv1(div, 'flip');
+    if (flipDiv) 
+      flipDiv.style.background = 'url(../images/flip.png) no-repeat';
+  },
+  
+  hideflip : function hideflip(event, divId) {
+    this.flipShown = false;
+    var div = document.getElementById(divId);
+    
+    flipDiv = this.getFlipDiv1(div, 'flip_bg');
+    if (flipDiv)  
+      flipDiv.style.display = 'none';
+
+    flipDiv = this.getFlipDiv1(div, 'flip');
+    if (flipDiv) 
+      flipDiv.style.background = 'url(../icons/blank.gif) no-repeat';
+  },
 }

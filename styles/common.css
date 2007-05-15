@@ -379,6 +379,29 @@ Body {font-family: Verdana, geneva, arial; font-weight: normal; }
 tr.rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 /* input.chk {background-color:#cbcbcb; font-size:7pt} */
 
+/*.embed  {background-color: #cdcde4}*/
+.embed  {
+  background:url(../images/skin/blue/tab-middle.gif);
+  background-repeat:repeat-x; 
+  vertical-align: middle;
+  color:#000000; 
+  font-weight:bold; 
+  font-size:8pt;	
+}
+
+.embedInput {
+  background-color: #ebffff; 
+  border-bottom: 1px solid #C0C9D7; 
+  border-left:   1px solid #C0C9D7; 
+  border-right:  1px solid #AFC4D5; 
+  border-top:    1px solid #AFC4D5; 
+  vertical-align: middle;
+  color:#000066; 
+  height:16px; 
+  text-decoration:none; 
+  font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;
+}
+
 .title {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold;}
 /* paging */
 .paging {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold; vertical-align: top;}
@@ -439,6 +462,7 @@ input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 .barcode {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:20px;text-decoration:none;}
 /* used in filter input text fields */
 .input {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
+.select {border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
 .input:lang(zh) {
   font-size: 0.9em; height:16px;
 }
@@ -683,3 +707,25 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 .tt_button {position: relative; top: -10; left: -10; cursor: pointer;}
 /************ END tooltip ***********/
 
+/*  widget flip */
+.flip {
+	position: absolute;
+	bottom: 17px;
+	right: 3px;
+	width:13px;
+	height:13px;
+	cursor: pointer;
+}
+
+#flip {
+	opacity:1;
+	background: url(../icons/blank.gif) no-repeat;
+	z-index:8000;
+}
+
+#flip_bg {
+	display:none;
+	opacity:0.35;
+	background: url(../images/flip-bg.png) no-repeat;
+	z-index:7999;
+}
