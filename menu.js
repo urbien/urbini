@@ -8072,5 +8072,5 @@ var WidgetFlip = {
     flipDiv = this.getFlipDiv1(div, 'flip');
     if (flipDiv) 
       flipDiv.style.background = 'url(../icons/blank.gif) no-repeat';
-  },
+  }
 }
