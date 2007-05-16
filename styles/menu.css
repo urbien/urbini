@@ -9,7 +9,7 @@ TD.toolbar {
 }
 
 .popMenu {
-	DISPLAY: none; POSITION: absolute; min-width: 200px;
+	DISPLAY: none; POSITION: absolute; min-width: 50px;
 }
 
 .popMenu td {
