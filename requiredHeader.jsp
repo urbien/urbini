@@ -9,7 +9,7 @@
                 <div class="f_l"><div class="f_ll"><div></div></div>
                     <div class="f_c"  id="tt_inner">
                         <div class="tt_button" id="opt_btn">
-                        	<a onclick="javascript: advancedTooltip.onOptionsBtn();"><img src="../images/tooltip/button.gif" /></a>
+                        	<a onclick="javascript: advancedTooltip.onOptionsBtn();"><img src="tooltip_button.gif" /></a>
                         </div>
                          <div id="content" style="font-size:12px;"></div>
                     </div>
