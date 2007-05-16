@@ -5455,7 +5455,15 @@ function minimizeRestoreDiv(e, hideDivId, property) {
   }
   var ret = stopEventPropagation(e);
   postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, minMaxCallback);
-  function minMaxCallback(e) {
+  function minMaxCallback(e, div) {
+    var hideDivId = div.id;
+    if (hideDivId.indexOf('_min') != -1) {
+      var showDivId = hideDivId.substring(0, hideDivId.length - 4);
+      hideDiv(e, showDivId + "_back");
+      showDiv1(e, showDivId);
+    }
+    else 
+      hideDiv(e, hideDivId + "_back");
     minMax(e, hideDivId);
   }
   return ret;
@@ -5464,12 +5472,16 @@ function minimizeRestoreDiv(e, hideDivId, property) {
 
 function hideDiv(e, hideDivId) {
   var div = document.getElementById(hideDivId);
+  if (!div)
+    return;
   div.style.visibility = Popup.HIDDEN;
   div.style.display = "none";
   return stopEventPropagation(e);
 }
-function showDiv1(e, hideDivId) {
-  var div = document.getElementById(hideDivId);
+function showDiv1(e, showDivId) {
+  var div = document.getElementById(showDivId);
+  if (!div)
+    return;
   div.style.visibility = Popup.VISIBLE;
   div.style.display = "block";
   return stopEventPropagation(e);
@@ -8084,7 +8096,8 @@ function submitWidgetPreferences(event, formId) {
   var param = getFormFilters(form, true) + '&submitUpdate=y';
   
   var url = 'proppatch';
-  var divId = 'widget_' + formId.substring(5);
+  var divId =  (formId.indexOf("_http") != -1) ? 'widget_' + formId.substring(5) : 'div_' + formId.substring(5); 
+  
   var widgetDiv = document.getElementById(divId);
   
   var elm = getTargetElement(event);
