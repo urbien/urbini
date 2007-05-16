@@ -549,6 +549,12 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 /* Under menu line style (usually the same color as tabs */
 .line {background:#ACD2E2}
+.line_blue {background:#ACD2E2}
+.line_mustard {background:#e7e4ba}
+.line_turquoise {background:#b1e4d1}
+.line_purple {background:#cbb1e4}
+.line_green {background:#bae4e1}
+.line_hot_pink {background:#e4bcb1}
 
 .line .td {
   height: 33px;
