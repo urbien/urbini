@@ -4756,10 +4756,7 @@ function addAndShow1(anchor, event) {
     }
     else
       params = "";
-    params += "hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y";  // skip
-                                                                                // all
-                                                                                // navigation
-                                                                                // blocks
+    params += "hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y";  // skip all navigation blocks
 
     var aa = document.getElementById("currentItem");
     if (aa) {
@@ -8072,5 +8069,41 @@ var WidgetFlip = {
     flipDiv = this.getFlipDiv1(div, 'flip');
     if (flipDiv) 
       flipDiv.style.background = 'url(../icons/blank.gif) no-repeat';
+  }
+}
+/* submits preferences form on the back of the widget and repaints widget */ 
+function submitWidgetPreferences(event, formId) {
+  var ret = stopEventPropagation(event);
+  if (formId.indexOf("pref_") == -1)
+    return ret;
+  var form = document.getElementById(formId);
+  if (!form)
+    return ret;
+  var refersh = form.elements['.refresh'].value;
+  
+  var param = getFormFilters(form, true) + '&submitUpdate=y';
+  
+  var url = 'proppatch';
+  var divId = 'widget_' + formId.substring(5);
+  var widgetDiv = document.getElementById(divId);
+  
+  var elm = getTargetElement(event);
+//  var div = document.createElement('div');
+//  div.style.display = "none";
+//  postRequest(event, url, param, div, elm, refreshWidget);
+  postRequest(event, url, param, widgetDiv, elm, refreshWidget);
+  return ret;
+}
+function refreshWidget(event, div, hotSpot, content)  {
+  var body = document.createElement('div');
+  body.style.display = "none";
+  
+  setInnerHtml(body, content);
+  var d = body.getElementsByTagName('div');
+  for (var i=0; i<d.length; i++) {
+    if (d[i].id  &&  d[i].id == div.id) {
+      div.innerHTML = d[i].innerHTML;
+      break;
+    }
   }
 }
