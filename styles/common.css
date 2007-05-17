@@ -728,15 +728,4 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 	cursor: pointer;
 }
 
-#flip {
-	opacity:1;
-	background: url(../icons/blank.gif) no-repeat;
-	z-index:8000;
-}
 
-#flip_bg {
-	display:none;
-	opacity:0.35;
-	background: url(../images/flip-bg.png) no-repeat;
-	z-index:7999;
-}
