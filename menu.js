@@ -6903,7 +6903,7 @@ function changeBoolean(e) {
   e = getDocumentEvent(e); if (!e) return;
   target = getTargetElement(e);
   var url = 'proppatch';
-  var params = '-$action=showPropertiesForEdit&submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
+  var params = 'submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
   var bIdx = target.id.indexOf("_boolean");
   var rUri = target.id.substring(0, bIdx);
   var idx = rUri.lastIndexOf("_");
@@ -8095,7 +8095,7 @@ function submitWidgetPreferences(event, formId) {
   
   var param = getFormFilters(form, true) + '&submitUpdate=y';
   
-  var url = 'proppatch';
+  var url = form.action;
   var divId =  (formId.indexOf("_http") != -1) ? 'widget_' + formId.substring(5) : 'div_' + formId.substring(5); 
   
   var widgetDiv = document.getElementById(divId);
@@ -8114,7 +8114,8 @@ function refreshWidget(event, div, hotSpot, content)  {
   setInnerHtml(body, content);
   var d = body.getElementsByTagName('div');
   for (var i=0; i<d.length; i++) {
-    if (d[i].id  &&  d[i].id == div.id) {
+    var divId = d[i].id; 
+    if (divId  &&  divId == div.id) {
       div.innerHTML = d[i].innerHTML;
       break;
     }
