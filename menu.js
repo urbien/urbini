@@ -74,12 +74,14 @@ if (document.layers) {
   Popup.HIDDEN  = 'hide';
   Popup.VISIBLE = 'show';
 }
-Popup.w3c  = (document.getElementById)                                ? true : false;
-Popup.ns4  = (document.layers)                                        ? true : false;
-Popup.ie4  = (document.all && !this.w3c)                              ? true : false;
-Popup.ie5  = (document.all && this.w3c)                               ? true : false;
-Popup.ie   = (document.all && document.attachEvent)                   ? true : false;
-Popup.opera = typeof opera != 'undefined'                             ? true : false;
+Popup.w3c  = (document.getElementById)                            ? true : false;
+Popup.ns4  = (document.layers)                                    ? true : false;
+
+Popup.ie   = (typeof ActiveXObject != 'undefined')                ? true : false;
+Popup.ie4  = (Popup.ie && !this.w3c)                              ? true : false;
+Popup.ie5  = (Popup.ie && this.w3c)                               ? true : false;
+
+Popup.opera = typeof opera != 'undefined'                         ? true : false;
 if (navigator.userAgent.indexOf("Opera") !=-1 ) {
   var versionindex = navigator.userAgent.indexOf("Opera") + 6;
   var ver = navigator.userAgent.substring(versionindex);
@@ -4350,7 +4352,14 @@ function incrementallyChangeOpacity(targetId, fade) {
     }
   }
 }
-
+function changeOpacity(obj, level) {
+		if(typeof obj.style.MozOpacity != 'undefined')
+			obj.style.MozOpacity = level;
+		else if(typeof obj.style.opacity != 'undefined') 
+			obj.style.opacity = level;
+		else if(obj.style.filter != 'undefined')
+			obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
+}
 function createUrlForBacklink(formName, prop) {
   var form = document.forms[formName];
   var url = "smartPopup?";
@@ -5934,7 +5943,40 @@ function saveButtonClicked(e) {
   return true;
 }
 
+// helps set right div size after setDivVisible calling
+// it needs only if target called twice.
+// the dialog contains a table with ID = dataEntry
+var isResizedOneTime = false;
+function onDlgContentResize(e){
+  e = getDocumentEvent(e); if (!e) return;
+  if(isResizedOneTime == false) {
+    isResizedOneTime = true;
+    return;
+  }
+  var target = getEventTarget(e);
+  var dlgDiv = getAncestorById(target, "pane2");
+  if(!dlgDiv)
+    return;
+
+  dlgDiv.style.width  = target.offsetWidth;
+  dlgDiv.style.height = target.offsetHeight;
+  
+  var iframe = document.getElementById('dialogIframe');
+  if(!iframe || iframe.style.display == 'none')
+    return;
+  var SHADOW_WIDTH = 11;
+  iframe.style.width  = target.offsetWidth - SHADOW_WIDTH;
+  iframe.style.height = target.offsetHeight - SHADOW_WIDTH;
+  
+}
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
+  // "hack" resize dialog if its contents resized (twice calls of onresize)
+  var tbl = getChildById(div, "dataEntry");
+  if(tbl) {
+    tbl.onresize = onDlgContentResize;
+    isResizedOneTime = false;
+  }
+  
   var istyle   = iframe.style;
   if (Popup.ie)
     istyle.visibility    = Popup.HIDDEN;
@@ -7914,6 +7956,7 @@ var WidgetFlip = {
   fading : {duration:0, starttime:0, end:1.0, now:0.0, start:0.0, firstElement:null, timer:null},
 
   currentWidgetId : null,
+  flipImg : null,
   mousemove : function mousemove (e, divId)  {
     e = getDocumentEvent(e); if (!e) return;
     if (e.getAttribute) {
@@ -7999,13 +8042,8 @@ var WidgetFlip = {
       var ease = 0.5 - (0.5 * Math.cos(Math.PI * elapsedTime / this.fading.duration));
       this.fading.now = this.getNextFadingNumber(this.fading.start, this.fading.end, ease);
     }
-    
-    if (this.fading.firstElement.filters != null && this.fading.firstElement.filters.alpha != null) 
-      this.fading.firstElement.filters.alpha.opacity = this.fading.now * 100;
-    else
-      this.fading.firstElement.style.opacity = this.fading.now;
+    changeOpacity(this.flipImg, this.fading.now);
   },
-
 
   getElapsedTime : function getElapsedTime (elapsed, duration)  {
     return elapsed < 0 ? 0 : (elapsed > duration ? duration : elapsed);
@@ -8014,19 +8052,12 @@ var WidgetFlip = {
   getNextFadingNumber : function getNextFadingNumber (start, end, ease)  {
     return start + (end - start) * ease;
   },
-
   enterflip : function enterflip(event)  {
-    var flipDiv = this.getFlipDiv(event, 'flip_bg');
-    if (flipDiv) 
-      flipDiv.style.display = 'block';
+    this.flipImg.src = "../images/flip_hover.gif";
   },
-
   exitflip : function exitflip(event)  {
-    var flipDiv = this.getFlipDiv(event, 'flip_bg');
-    if (flipDiv) 
-      flipDiv.style.display = 'none';
+    this.flipImg.src = "../images/flip.gif";
   },
-
   getFlipDiv : function getFlipDiv(event, divId) {
     var target = getTargetElement(event);
     var frontDiv;
@@ -8066,8 +8097,13 @@ var WidgetFlip = {
     this.flipShown = true;
     var div = document.getElementById(divId);
     flipDiv = this.getFlipDiv1(div, 'flip');
+    // init image
+    if(this.flipImg == null) {
+      this.flipImg = document.createElement("img");
+      this.flipImg.src = "../images/flip.gif";
+    }
     if (flipDiv) 
-      flipDiv.style.background = 'url(../images/flip.png) no-repeat';
+      flipDiv.appendChild(this.flipImg);
   },
   
   hideflip : function hideflip(event, divId) {
@@ -8080,7 +8116,7 @@ var WidgetFlip = {
 
     flipDiv = this.getFlipDiv1(div, 'flip');
     if (flipDiv) 
-      flipDiv.style.background = 'url(../icons/blank.gif) no-repeat';
+      flipDiv.removeChild(this.flipImg);
   }
 }
 /* submits preferences form on the back of the widget and repaints widget */ 
