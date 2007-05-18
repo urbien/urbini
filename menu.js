@@ -8053,10 +8053,16 @@ var WidgetFlip = {
     return start + (end - start) * ease;
   },
   enterflip : function enterflip(event)  {
-    this.flipImg.src = "../images/flip_hover.gif";
+    if(Popup.ie)
+      this.flipImg.src = "../images/flip_hover.gif";
+    else
+      this.flipImg.src = "../images/flip_hover.png";
   },
   exitflip : function exitflip(event)  {
-    this.flipImg.src = "../images/flip.gif";
+    if(Popup.ie)
+      this.flipImg.src = "../images/flip.gif";
+    else
+      this.flipImg.src = "../images/flip.png";
   },
   getFlipDiv : function getFlipDiv(event, divId) {
     var target = getTargetElement(event);
@@ -8100,7 +8106,10 @@ var WidgetFlip = {
     // init image
     if(this.flipImg == null) {
       this.flipImg = document.createElement("img");
-      this.flipImg.src = "../images/flip.gif";
+      if(Popup.ie)
+        this.flipImg.src = "../images/flip.gif";
+      else
+        this.flipImg.src = "../images/flip.png";
     }
     if (flipDiv) 
       flipDiv.appendChild(this.flipImg);
@@ -8110,10 +8119,6 @@ var WidgetFlip = {
     this.flipShown = false;
     var div = document.getElementById(divId);
     
-    flipDiv = this.getFlipDiv1(div, 'flip_bg');
-    if (flipDiv)  
-      flipDiv.style.display = 'none';
-
     flipDiv = this.getFlipDiv1(div, 'flip');
     if (flipDiv) 
       flipDiv.removeChild(this.flipImg);
