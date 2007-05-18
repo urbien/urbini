@@ -3728,6 +3728,16 @@ function getTopPagePos() {
     }
     return nTop;
 }// eof getTopPagePos
+function getBaseUri() {
+  var baseUriO = document.getElementsByTagName('base');
+  var baseUri = "";
+  if (baseUriO) {
+    baseUri = baseUriO[0].href;
+    if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
+      baseUri += "/";
+  }
+  return baseUri;
+}
 /*-------------------------------------- end tootip coordinates -------------------*/
 /**
  * function that adds a title (taken from page HEAD) of current page to a url
@@ -8053,16 +8063,19 @@ var WidgetFlip = {
     return start + (end - start) * ease;
   },
   enterflip : function enterflip(event)  {
+    var baseUri = getBaseUri();
     if(Popup.ie)
-      this.flipImg.src = "../images/flip_hover.gif";
+      this.flipImg.src = baseUri + "images/flip_hover.gif";
     else
-      this.flipImg.src = "../images/flip_hover.png";
+      this.flipImg.src = baseUri + "images/flip_hover.png";
+
   },
   exitflip : function exitflip(event)  {
+    var baseUri = getBaseUri();
     if(Popup.ie)
-      this.flipImg.src = "../images/flip.gif";
+      this.flipImg.src = baseUri + "images/flip.gif";
     else
-      this.flipImg.src = "../images/flip.png";
+      this.flipImg.src = baseUri + "images/flip.png";
   },
   getFlipDiv : function getFlipDiv(event, divId) {
     var target = getTargetElement(event);
@@ -8106,10 +8119,11 @@ var WidgetFlip = {
     // init image
     if(this.flipImg == null) {
       this.flipImg = document.createElement("img");
+      var baseUri = getBaseUri();
       if(Popup.ie)
-        this.flipImg.src = "../images/flip.gif";
+        this.flipImg.src = baseUri + "images/flip.gif";
       else
-        this.flipImg.src = "../images/flip.png";
+        this.flipImg.src = baseUri + "images/flip.png";
     }
     if (flipDiv) 
       flipDiv.appendChild(this.flipImg);
