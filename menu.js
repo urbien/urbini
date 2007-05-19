@@ -7950,6 +7950,11 @@ var Dashboard = {
     function callback() {
     }
     return ret;
+  },
+  
+  onReleaseOverTab : function() {
+    if(!this.isDragMode)
+      return;
   }
 }
 
