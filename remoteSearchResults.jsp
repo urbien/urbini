@@ -2,12 +2,7 @@
 <div nonPda="T">
 <table id="resourceList" width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr  valign="top">
-  <td valign="top" align="middle" width="95%">
-    <table width="100%" cellspacing="0" cellpadding="0" border="0">
-    <colgroup>
-      <col width="90%" />
-      <col width="10%" />
-    </colgroup>
+  <td valign="top" align="middle" width="110%">
     <tr valign="top"><td>
 			<form name="categoryTextSearch">
 			  <searchHistory/>
@@ -15,6 +10,7 @@
 			  <resourcesSearch resourcesUri="/sql/text/search/resources" />
 			  <filesSearch filesUri="text/search/files" />
 			</form>
+      <taskTreeControl/>
       <parallelResourceList />
       <div align="right"><measurement/></div>
     </td>
@@ -24,7 +20,6 @@
     </td>
 </hideBlock>    
 </tr></table>
-</td></tr></table>
 </div>
 
 <div pda="T">
