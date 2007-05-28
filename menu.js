@@ -5405,8 +5405,9 @@ function closeDiv(e, hideDivId) {
   var idx = url.indexOf('?');
   postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, closeDivCallback);
 
-  function closeDivCallback(e) {
-    hideDiv(e, hideDivId);
+  function closeDivCallback(e, div) {
+    hideDiv(e, div.id);
+    hideDiv(e, div.id + '_back');
   }
   return ret;
 }
@@ -8181,3 +8182,31 @@ function refreshWidget(event, div, hotSpot, content)  {
     }
   }
 }
+
+function changeSkin(event) {
+  var e = getDocumentEvent(event); 
+  if (!e) 
+    return;
+  
+  var target = getTargetElement(e);
+  var value = target.value;
+  while (true) {
+    var parent = target.parentNode;
+    if (parent.tagName.toLowerCase() != 'div')
+      continue;
+    if (div.id   &&  div.id.equals('skin')) {
+      div.style.className = value;
+      break;
+    }
+  }
+}
+function addthis_click(event, addthis_title) {
+  var e = getDocumentEvent(event); 
+  if (!e) 
+    return;
+
+  var target = getTargetElement(e);
+  
+  window.open(target.href, addthis_title, 'scrollbars=yes,menubar=no,width=620,height=520,resizable=yes,toolbar=no,location=no,status=no,screenX=200,screenY=100,left=200,top=100');
+  return stopEventPropagation(event);
+} 
