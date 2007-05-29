@@ -8251,14 +8251,19 @@ function changeSkin(event) {
   
   var target = getTargetElement(e);
   var value = target.value;
+  var t = target;
   while (true) {
-    var parent = target.parentNode;
-    if (parent.tagName.toLowerCase() != 'div')
-      continue;
-    if (div.id   &&  div.id.equals('skin')) {
-      div.style.className = value;
+    var parent = t.parentNode;
+    if (!parent)
       break;
+    if (parent.tagName.toLowerCase() == 'div') {
+      var div = parent;
+      if (div.id   &&  div.id == 'skin') {
+        div.className = value;
+        break;
+      }
     }
+    t = parent;
   }
 }
 function addthis_click(event, addthis_title) {
