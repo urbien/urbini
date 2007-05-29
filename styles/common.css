@@ -379,15 +379,6 @@ Body {font-family: Verdana, geneva, arial; font-weight: normal; }
 tr.rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 /* input.chk {background-color:#cbcbcb; font-size:7pt} */
 
-/*.embed  {background-color: #cdcde4}*/
-.embed  {
-  background:url(../images/skin/blue/tab-middle.gif);
-  background-repeat:repeat-x; 
-  vertical-align: middle;
-  color:#000000; 
-  font-weight:bold; 
-  font-size:8pt;	
-}
 
 .embedInput {
   background-color: #ebffff; 
@@ -548,13 +539,289 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .group {background:#f8f4ef; FONT-WEIGHT: bold; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; COLOR: #000000; PADDING-TOP: 3px; FONT-WEIGHT:bold; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}
 
 /* Under menu line style (usually the same color as tabs */
-.line {background:#ACD2E2}
-.line_blue {background:#ACD2E2}
-.line_mustard {background:#e7e4ba}
-.line_turquoise {background:#b1e4d1}
-.line_purple {background:#cbb1e4}
-.line_green {background:#bae4e1}
-.line_hot_pink {background:#e4bcb1}
+.line { background:#ACD2E2 }
+/* SKINS */
+.blue  .line { background:#ACD2E2 }
+.blue  .rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
+.blue  .embed  {
+  background:url(../images/skin/blue/header.png);
+  background-repeat:repeat-x; 
+  vertical-align: middle;
+  color:#000000; 
+  font-weight:bold; 
+  font-size:8pt;	
+	padding-top: 0.5em;
+}
+/* Menu TABS styles */
+.blue .tabs TD.left {
+  background-image:url(../images/skin/blue/tab-left.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.blue .tabs TD.middle {
+  background-image:url(../images/skin/blue/tab-middle.gif);
+  background-repeat: repeat-x;
+  background-position: center;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.blue .tabs TD.right {
+  background-image:url(../images/skin/blue/tab-right.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.blue .tabs_current TD.right {	
+  background-image:url(../images/skin/blue/tab-right-current.gif);
+  background-repeat: no-repeat;
+}
+.blue .tabs_current TD.middle {	
+  background-image:url(../images/skin/blue/tab-middle-current.gif);
+  background-repeat: repeat-x;
+}
+.blue .tabs_current TD.left {	
+  background-image:url(../images/skin/blue/tab-left-current.gif);
+	background-repeat: no-repeat;
+}
+
+.mustard .line {background:#e7e4ba}
+.mustard .rlHeader { border:solid #808080 1px; background:#f6f5de; color:#000000; font-weight:bold; font-size:8pt;}
+.mustard .embed {
+  background:url(../images/skin/mustard/header.png);
+  background-repeat:repeat-x; 
+  vertical-align: middle;
+  color:#000000; 
+  font-weight:bold; 
+  font-size:8pt;	
+	padding-top: 0.5em;
+}
+/* Menu TABS styles */
+.mustard .tabs TD.left {
+  background-image:url(../images/skin/mustard/tab-left.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.mustard .tabs TD.middle {
+  background-image:url(../images/skin/mustard/tab-middle.gif);
+  background-repeat: repeat-x;
+  background-position: center;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.mustard .tabs TD.right {
+  background-image:url(../images/skin/mustard/tab-right.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.mustard .tabs_current TD.right {	
+  background-image:url(../images/skin/mustard/tab-right-current.gif);
+  background-repeat: no-repeat;
+}
+.mustard .tabs_current TD.middle {	
+  background-image:url(../images/skin/mustard/tab-middle-current.gif);
+  background-repeat: repeat-x;
+}
+.mustard .tabs_current TD.left {	
+  background-image:url(../images/skin/mustard/tab-left-current.gif);
+	background-repeat: no-repeat;
+}
+
+.turquoise .line {background:#ACE2CE}
+.turquoise .rlHeader { border:solid #808080 1px; background:#d5f2e8; color:#000000; font-weight:bold; font-size:8pt;}
+.turquoise .embed {
+  background:url(../images/skin/turquoise/header.png);
+  background-repeat:repeat-x; 
+  vertical-align: middle;
+  color:#000000; 
+  font-weight:bold; 
+  font-size:8pt;	
+	padding-top: 0.5em;
+}
+/* Menu TABS styles */
+.turquoise .tabs TD.left {
+  background-image:url(../images/skin/turquoise/tab-left.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.turquoise .tabs TD.middle {
+  background-image:url(../images/skin/turquoise/tab-middle.gif);
+  background-repeat: repeat-x;
+  background-position: center;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.turquoise .tabs TD.right {
+  background-image:url(../images/skin/turquoise/tab-right.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.turquoise .tabs_current TD.right {	
+  background-image:url(../images/skin/turquoise/tab-right-current.gif);
+  background-repeat: no-repeat;
+}
+.turquoise .tabs_current TD.middle {	
+  background-image:url(../images/skin/turquoise/tab-middle-current.gif);
+  background-repeat: repeat-x;
+}
+.turquoise .tabs_current TD.left {	
+  background-image:url(../images/skin/turquoise/tab-left-current.gif);
+	background-repeat: no-repeat;
+}
+.purple .line {background:#cbb1e4}
+.purple .rlHeader { border:solid #808080 1px; background:#f6effd; color:#000000; font-weight:bold; font-size:8pt;}
+.purple .embed {
+  background:url(../images/skin/purple/header.png);
+  background-repeat:repeat-x; 
+  vertical-align: middle;
+  color:#000000; 
+  font-weight:bold; 
+  font-size:8pt;	
+	padding-top: 0.5em;
+}
+
+/* Menu TABS styles */
+.purple .tabs TD.left {
+  background-image:url(../images/skin/purple/tab-left.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.purple .tabs TD.middle {
+  background-image:url(../images/skin/purple/tab-middle.gif);
+  background-repeat: repeat-x;
+  background-position: center;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.purple .tabs TD.right {
+  background-image:url(../images/skin/purple/tab-right.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.purple .tabs_current TD.right {	
+  background-image:url(../images/skin/purple/tab-right-current.gif);
+  background-repeat: no-repeat;
+}
+.purple .tabs_current TD.middle {	
+  background-image:url(../images/skin/purple/tab-middle-current.gif);
+  background-repeat: repeat-x;
+}
+.purple .tabs_current TD.left {	
+  background-image:url(../images/skin/purple/tab-left-current.gif);
+	background-repeat: no-repeat;
+}
+
+.green .line {background:#B6E2AC}
+.green .rlHeader { border:solid #808080 1px; background:#eefcec; color:#000000; font-weight:bold; font-size:8pt;}
+.green .embed {
+  background:url(../images/skin/green/header.png);
+  background-repeat:repeat-x; 
+  vertical-align: middle;
+  color:#000000; 
+  font-weight:bold; 
+  font-size:8pt;	
+	padding-top: 0.5em;
+}
+/* Menu TABS styles */
+.green .tabs TD.left {
+  background-image:url(../images/skin/green/tab-left.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.green .tabs TD.middle {
+  background-image:url(../images/skin/green/tab-middle.gif);
+  background-repeat: repeat-x;
+  background-position: center;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.green .tabs TD.right {
+  background-image:url(../images/skin/green/tab-right.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.green .tabs_current TD.right {	
+  background-image:url(../images/skin/green/tab-right-current.gif);
+  background-repeat: no-repeat;
+}
+.green .tabs_current TD.middle {	
+  background-image:url(../images/skin/green/tab-middle-current.gif);
+  background-repeat: repeat-x;
+}
+.green .tabs_current TD.left {	
+  background-image:url(../images/skin/green/tab-left-current.gif);
+	background-repeat: no-repeat;
+}
+.rustyrose .line {background:#e4bcb1}
+.rustyrose .rlHeader { border:solid #808080 1px; background:#f8e8e3; color:#000000; font-weight:bold; font-size:8pt;}
+.rustyrose .embed {
+  background:url(../images/skin/rustyrose/header.png);
+  background-repeat:repeat-x; 
+  vertical-align: middle;
+  color:#000000; 
+  font-weight:bold; 
+  font-size:8pt;	
+	padding-top: 0.5em;
+}
+
+/* Menu TABS styles */
+.rustyrose .tabs TD.left {
+  background-image:url(../images/skin/rustyrose/tab-left.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.rustyrose .tabs TD.middle {
+  background-image:url(../images/skin/rustyrose/tab-middle.gif);
+  background-repeat: repeat-x;
+  background-position: center;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.rustyrose .tabs TD.right {
+  background-image:url(../images/skin/rustyrose/tab-right.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.rustyrose .tabs_current TD.right {	
+  background-image:url(../images/skin/rustyrose/tab-right-current.gif);
+  background-repeat: no-repeat;
+}
+.rustyrose .tabs_current TD.middle {	
+  background-image:url(../images/skin/rustyrose/tab-middle-current.gif);
+  background-repeat: repeat-x;
+}
+.rustyrose .tabs_current TD.left {	
+  background-image:url(../images/skin/rustyrose/tab-left-current.gif);
+	background-repeat: no-repeat;
+}
 
 .line .td {
   height: 33px;
