@@ -670,6 +670,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       e.setAttribute('eventProcessed', 'true');
     }
 
+    var target1 = getEventTarget(e);
+    if (target1.tagName.toLowerCase() == 'input')
+      return true;
+    
     var target = getMouseOutTarget(e);
     if (!target)
       return true;
@@ -697,7 +701,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     var currentDiv = self.getCurrentDiv();
     var characterCode = getKeyCode(e); // code typed by the user
-    var target;
+    
+    var target = getEventTarget(e);
+    if (target.tagName.toLowerCase() == 'input')
+      return true;
+    
     var tr = self.currentRow;
     if (!tr)
       return stopEventPropagation(e);
