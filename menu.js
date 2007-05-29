@@ -6233,7 +6233,7 @@ function setKeyboardFocus(element) {
 // http://keelypavan.blogspot.com/2006/01/using-ajax.html
 // http://developer.apple.com/internet/webcontent/xmlhttpreq.html
 var lastRequest;
-function postRequest(event, url, parameters, div, hotspot, callback) {
+function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
   if (url == null)
     throw new Error('postRequest url parameter is null');
   url = trim(url);
@@ -6436,6 +6436,10 @@ function postRequest(event, url, parameters, div, hotspot, callback) {
     http_request.setRequestHeader("X-Referer",     document.location.href);
     http_request.setRequestHeader("X-Ajax",       "y");
     http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+    if(typeof noCache != 'undefined' && noCache == true) // for widgets
+      http_request.setRequestHeader("Cache-Control","no-cache"); 
+
     // below 2 line commented - made IE wait with ~1 minute timeout
     if (parameters) {
       http_request.setRequestHeader("Content-length", parameters.length);
@@ -8165,19 +8169,76 @@ function submitWidgetPreferences(event, formId) {
 //  var div = document.createElement('div');
 //  div.style.display = "none";
 //  postRequest(event, url, param, div, elm, refreshWidget);
-  postRequest(event, url, param, widgetDiv, elm, refreshWidget);
+ 
+    postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
   return ret;
 }
-function refreshWidget(event, div, hotSpot, content)  {
-  var body = document.createElement('div');
-  body.style.display = "none";
+
+
+var WidgetRefresher = {
+  widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
+  setInterval : function(divId, intervalSeconds) {
+    // 1. prepare new "widget member" or stop old one.
+    if(typeof this.widgetsArr[divId] == 'undefined')
+      this.widgetsArr[divId] = new Object();
+    else 
+      clearInterval(this.widgetsArr[divId].timerId); 
+
+    // 2. Find the boorkmark url that is a part of "outer" div widget div 
+    // divId is an widget content div
+    var obj = document.getElementById(divId);
+   	while(obj != null) {
+		  if(obj.id.indexOf("widget_") == 0) {
+		    widgetDiv = obj;
+		    break;
+		  }
+		  obj = obj.parentNode;
+	  }
+	  if(obj.id.length == 0)
+	    return;
+	  this.widgetsArr[divId].bookmarkUrl = obj.id.substr(7);
+	
+    // 3. launch widget refresh loop.
+    var interval = intervalSeconds * 1000;
+    var timerId = setInterval("WidgetRefresher._onInterval(\"" + divId + "\")", interval); 
+    this.widgetsArr[divId].timerId = timerId;
+  },
+  _onInterval : function(divId) {
+    var url = getBaseUri() + "widget/localSearchResults.html?-$action=explore&-grid=y&-featured=y&uri=";
+    url += WidgetRefresher.widgetsArr[divId].bookmarkUrl;
+    var params = null;
+    var div = document.getElementById(divId);
+    // noCache = true
+    postRequest(null, url, params, div, null, WidgetRefresher.refresh, true);
+  },
+  // called by postRequest
+  refresh : function(event, div, hotSpot, content)  {
+    var body = document.createElement('div');
+    body.style.display = "none";
+    setInnerHtml(body, content);
+    var d = body.getElementsByTagName('div');
+    for (var i=0; i<d.length; i++) {
+      var divId = d[i].id; 
+      if (divId  &&  divId == div.id) {
+        div.innerHTML = d[i].innerHTML;
+      }
+    }
+  }
+}
+
+function changeSkin(event) {
+  var e = getDocumentEvent(event); 
+  if (!e) 
+    return;
   
-  setInnerHtml(body, content);
-  var d = body.getElementsByTagName('div');
-  for (var i=0; i<d.length; i++) {
-    var divId = d[i].id; 
-    if (divId  &&  divId == div.id) {
-      div.innerHTML = d[i].innerHTML;
+  var target = getTargetElement(e);
+  var value = target.value;
+  while (true) {
+    var parent = target.parentNode;
+    if (parent.tagName.toLowerCase() != 'div')
+      continue;
+    if (div.id   &&  div.id.equals('skin')) {
+      div.style.className = value;
       break;
     }
   }
