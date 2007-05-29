@@ -8,6 +8,7 @@
     <include name="requiredHeader.jsp"/>
     <!--include name="include/commonHeader.jsp"/-->
     <getResource/>
+    <div id="mainskin">
     <include name="menu.jsp"/>
 <hideBlock>
     <table width="100%" border="0" cellspacing="0" cellpadding="3">
@@ -46,6 +47,7 @@
     <include name="include/commonFooter"/>
     <chatAutoStart/>
 </hideBlock>
+  </div>
   </div>
 
   <div pda="T">
