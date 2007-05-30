@@ -541,6 +541,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* Under menu line style (usually the same color as tabs */
 .line { background:#ACD2E2 }
 /* SKINS */
+/* BLUE */
 .blue  .line { background:#ACD2E2 }
 .blue  .rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 .blue  .embed  {
@@ -552,7 +553,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   font-size:8pt;	
 	padding-top: 0.5em;
 }
-/* Menu TABS styles */
 .blue .tabs TD.left {
   background-image:url(../images/skin/blue/tab-left.gif);
   background-repeat: no-repeat;
@@ -587,7 +587,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   background-image:url(../images/skin/blue/tab-left-current.gif);
 	background-repeat: no-repeat;
 }
-
+/* MUSTARD */
 .mustard .line {background:#e7e4ba}
 .mustard .rlHeader { border:solid #808080 1px; background:#f6f5de; color:#000000; font-weight:bold; font-size:8pt;}
 .mustard .embed {
@@ -634,7 +634,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   background-image:url(../images/skin/mustard/tab-left-current.gif);
 	background-repeat: no-repeat;
 }
-
+/* TURQOUISE */
 .turquoise .line {background:#ACE2CE}
 .turquoise .rlHeader { border:solid #808080 1px; background:#d5f2e8; color:#000000; font-weight:bold; font-size:8pt;}
 .turquoise .embed {
@@ -681,6 +681,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   background-image:url(../images/skin/turquoise/tab-left-current.gif);
 	background-repeat: no-repeat;
 }
+/* PURPLE */
 .purple .line {background:#cbb1e4}
 .purple .rlHeader { border:solid #808080 1px; background:#f6effd; color:#000000; font-weight:bold; font-size:8pt;}
 .purple .embed {
@@ -728,7 +729,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   background-image:url(../images/skin/purple/tab-left-current.gif);
 	background-repeat: no-repeat;
 }
-
+/* GREEN */
 .green .line {background:#B6E2AC}
 .green .rlHeader { border:solid #808080 1px; background:#eefcec; color:#000000; font-weight:bold; font-size:8pt;}
 .green .embed {
@@ -775,6 +776,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   background-image:url(../images/skin/green/tab-left-current.gif);
 	background-repeat: no-repeat;
 }
+/* RUSTY ROSE */
 .rustyrose .line {background:#e4bcb1}
 .rustyrose .rlHeader { border:solid #808080 1px; background:#f8e8e3; color:#000000; font-weight:bold; font-size:8pt;}
 .rustyrose .embed {
@@ -820,6 +822,53 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 .rustyrose .tabs_current TD.left {	
   background-image:url(../images/skin/rustyrose/tab-left-current.gif);
+	background-repeat: no-repeat;
+}
+
+/* GREY */
+.grey .line {background-color:#bfbfbf}
+.grey .rlHeader { border:solid #808080 1px; background:#e0e0e0; color:#000000; font-weight:bold; font-size:8pt;}
+.grey .embed {
+  background:url(../images/skin/grey/header.png);
+  background-repeat:repeat-x; 
+  vertical-align: middle;
+  color:#000000; 
+  font-weight:bold; 
+  font-size:8pt;	
+	padding-top: 0.5em;
+}
+.grey .tabs TD.left {
+  background-image:url(../images/skin/grey/tab-left.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.grey .tabs TD.middle {
+  background-image:url(../images/skin/grey/tab-middle.gif);
+  background-repeat: repeat-x;
+  background-position: center;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.grey .tabs TD.right {
+  background-image:url(../images/skin/grey/tab-right.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 12px;
+}
+.grey .tabs_current TD.right {	
+  background-image:url(../images/skin/grey/tab-right-current.gif);
+  background-repeat: no-repeat;
+}
+.grey .tabs_current TD.middle {	
+  background-image:url(../images/skin/grey/tab-middle-current.gif);
+  background-repeat: repeat-x;
+}
+.grey .tabs_current TD.left {	
+  background-image:url(../images/skin/grey/tab-left-current.gif);
 	background-repeat: no-repeat;
 }
 
