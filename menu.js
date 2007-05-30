@@ -8241,24 +8241,6 @@ function changeSkin(event) {
   
   var target = getTargetElement(e);
   var value = target.value;
-  while (true) {
-    var parent = target.parentNode;
-    if (parent.tagName.toLowerCase() != 'div')
-      continue;
-    if (div.id   &&  div.id.equals('skin')) {
-      div.style.className = value;
-      break;
-    }
-  }
-}
-
-function changeSkin(event) {
-  var e = getDocumentEvent(event); 
-  if (!e) 
-    return;
-  
-  var target = getTargetElement(e);
-  var value = target.value;
   var t = target;
   while (true) {
     var parent = t.parentNode;
