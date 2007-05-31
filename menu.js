@@ -8053,7 +8053,11 @@ var WidgetFlip = {
     this.fade();
     this.flipShown = false;
   },
-
+  showBackside : function(event, divId) {
+    OperaWidget.resizeOnBackside();
+    hideDiv(event, divId);
+    showDiv1(event, divId + "_back");
+  },
 
   /**
    * fades widget flip image. 
@@ -8180,6 +8184,8 @@ function submitWidgetPreferences(event, formId) {
 //  postRequest(event, url, param, div, elm, refreshWidget);
  
     postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
+    
+    OperaWidget.resizeOnFrontside();
   return ret;
 }
 
@@ -8281,7 +8287,12 @@ function addthis_click(event, addthis_title) {
 
 var OperaWidget = {
   CONTENT_PREF : "content",
+  BACKSIDE_WIDTH  : 375,
+  BACKSIDE_HEIGHT : 250,
   widgetDivId : "",
+  widgetWidth  : 200,
+  widgetHeight : 200,
+  
   restoreContent : function(widgetDivId) {
     if(typeof widget == 'undefined')
       return;
@@ -8305,8 +8316,18 @@ var OperaWidget = {
     widget.setPreferenceForKey(content, OperaWidget.CONTENT_PREF);
   },
   fixSize : function(widgetDiv) {
-    var newWidth  = widgetDiv.offsetWidth;
-    var newHeight = widgetDiv.offsetHeight + 15;
-    window.resizeTo(newWidth, newHeight);
+    this.widgetWidth  = widgetDiv.offsetWidth;
+    this.widgetHeight = widgetDiv.offsetHeight + 15;
+    window.resizeTo(this.widgetWidth, this.widgetHeight);
+  },
+  resizeOnFrontside : function() {
+    if(typeof widget == 'undefined')
+      return;
+    window.resizeTo(this.widgetWidth, this.widgetHeight);
+  },
+  resizeOnBackside : function() {
+    if(typeof widget == 'undefined')
+      return;
+    window.resizeTo(this.BACKSIDE_WIDTH, this.BACKSIDE_HEIGHT);
   }
 }
