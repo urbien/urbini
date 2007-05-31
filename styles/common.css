@@ -551,7 +551,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   color:#000000; 
   font-weight:bold; 
   font-size:8pt;	
-	padding-top: 0.5em;
 }
 .blue .tabs TD.left {
   background-image:url(../images/skin/blue/tab-left.gif);
@@ -597,7 +596,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   color:#000000; 
   font-weight:bold; 
   font-size:8pt;	
-	padding-top: 0.5em;
 }
 /* Menu TABS styles */
 .mustard .tabs TD.left {
@@ -644,7 +642,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   color:#000000; 
   font-weight:bold; 
   font-size:8pt;	
-	padding-top: 0.5em;
 }
 /* Menu TABS styles */
 .turquoise .tabs TD.left {
@@ -682,7 +679,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 	background-repeat: no-repeat;
 }
 /* PURPLE */
-.purple .line {background:#cbb1e4}
+.purple .line {background:#c7aee3}
 .purple .rlHeader { border:solid #808080 1px; background:#f6effd; color:#000000; font-weight:bold; font-size:8pt;}
 .purple .embed {
   background:url(../images/skin/purple/header.png);
@@ -691,7 +688,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   color:#000000; 
   font-weight:bold; 
   font-size:8pt;	
-	padding-top: 0.5em;
 }
 
 /* Menu TABS styles */
@@ -739,7 +735,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   color:#000000; 
   font-weight:bold; 
   font-size:8pt;	
-	padding-top: 0.5em;
 }
 /* Menu TABS styles */
 .green .tabs TD.left {
@@ -786,7 +781,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   color:#000000; 
   font-weight:bold; 
   font-size:8pt;	
-	padding-top: 0.5em;
 }
 
 /* Menu TABS styles */
@@ -826,7 +820,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 
 /* GREY */
-.grey .line {background-color:#bfbfbf}
+.grey .line {background-color:#cfcfcf}
 .grey .rlHeader { border:solid #808080 1px; background:#e0e0e0; color:#000000; font-weight:bold; font-size:8pt;}
 .grey .embed {
   background:url(../images/skin/grey/header.png);
@@ -835,7 +829,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   color:#000000; 
   font-weight:bold; 
   font-size:8pt;	
-	padding-top: 0.5em;
 }
 .grey .tabs TD.left {
   background-image:url(../images/skin/grey/tab-left.gif);
