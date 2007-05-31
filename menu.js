@@ -5482,18 +5482,7 @@ function minimizeRestoreDiv(e, hideDivId, property) {
       a.href = url.substring(0, pos) + '-' + url.substring(pos + 3);
   }
   var ret = stopEventPropagation(e);
-  postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, minMaxCallback);
-  function minMaxCallback(e, div) {
-    var hideDivId = div.id;
-    if (hideDivId.indexOf('_min') != -1) {
-      var showDivId = hideDivId.substring(0, hideDivId.length - 4);
-      hideDiv(e, showDivId + "_back");
-      showDiv1(e, showDivId);
-    }
-    else 
-      hideDiv(e, hideDivId + "_back");
-    minMax(e, hideDivId);
-  }
+  postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, minMaxAndFlip);
   return ret;
 }
 // Dummy callback that is called after updating main boolmark
@@ -5513,6 +5502,18 @@ function showDiv1(e, showDivId) {
   div.style.visibility = Popup.VISIBLE;
   div.style.display = "block";
   return stopEventPropagation(e);
+}
+
+function minMaxAndFlip(e, div) {
+  var hideDivId = div.id;
+  if (hideDivId.indexOf('_min') != -1) {
+    var showDivId = hideDivId.substring(0, hideDivId.length - 4);
+    hideDiv(e, showDivId + "_back");
+    showDiv1(e, showDivId);
+  }
+  else 
+    hideDiv(e, hideDivId + "_back");
+  minMax(e, hideDivId);
 }
 
 function minMax(e, divId) {
