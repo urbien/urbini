@@ -8288,7 +8288,7 @@ var OperaWidget = {
     var widgetDiv = document.getElementById(widgetDivId);
     if(!widgetDiv)
       return;
-
+    this.fixSize(widgetDiv);
     var content = widget.preferenceForKey(this.CONTENT_PREF);
     if(typeof content == 'undefined' || content.length == 0)
       return;
@@ -8303,5 +8303,10 @@ var OperaWidget = {
     var widgetDiv = document.getElementById(OperaWidget.widgetDivId);
     var content =  widgetDiv.innerHTML;
     widget.setPreferenceForKey(content, OperaWidget.CONTENT_PREF);
+  },
+  fixSize : function(widgetDiv) {
+    var newWidth  = widgetDiv.offsetWidth;
+    var newHeight = widgetDiv.offsetHeight + 15;
+    window.resizeTo(newWidth, newHeight);
   }
 }
