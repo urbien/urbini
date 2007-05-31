@@ -8186,8 +8186,11 @@ function submitWidgetPreferences(event, formId) {
     if(typeof window.widget == 'undefined') {
       postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
     }
-     
-    OperaWidget.resizeOnFrontside();
+    else { 
+      // 'formId.substring(5)' - widget type url
+      WidgetRefresher.updateWidgetByUrl(formId.substring(5));
+      OperaWidget.resizeOnFrontside();
+    }
   return ret;
 }
 
@@ -8225,6 +8228,14 @@ var WidgetRefresher = {
     // 4. If it is an Opera widget then restore its content from last refreshed state.
     OperaWidget.restoreContent(widgetDivId);
   },
+  updateWidgetByUrl : function(url) {
+    for(i in this.widgetsArr) {
+      if(this.widgetsArr[i].bookmarkUrl == url) {
+        this._onInterval(i);
+        break;
+      }
+    }
+  },
   _onInterval : function(divId) {
     var url = getBaseUri() + "widget/localSearchResults.html?-$action=explore&-grid=y&-featured=y&uri=";
     url += WidgetRefresher.widgetsArr[divId].bookmarkUrl;
@@ -8252,7 +8263,7 @@ var WidgetRefresher = {
       }
     }
     // If it is an Opera widget then save its content. 'beforeunload' does not work in Operas widget.
-    OperaWidget.saveContent();
+    OperaWidget.saveContent(divId);
   }
 }
 
@@ -8293,7 +8304,6 @@ var OperaWidget = {
   CONTENT_PREF : "content",
   BACKSIDE_WIDTH  : 375,
   BACKSIDE_HEIGHT : 250,
-  widgetDivId : "",
   widgetWidth  : 200,
   widgetHeight : 200,
   
@@ -8305,27 +8315,29 @@ var OperaWidget = {
       return;
     this.fixSize(widgetDiv);
     var content = widget.preferenceForKey(this.CONTENT_PREF);
+
     if(typeof content == 'undefined' || content.length == 0)
       return;
-    
+
     widgetDiv.innerHTML = content;
-    this.widgetDivId = widgetDivId;
   },
-  saveContent : function() {
+  saveContent : function(widgetDivId) {
     if(typeof widget == 'undefined')
       return;
 
-    var widgetDiv = document.getElementById(OperaWidget.widgetDivId);
+    var widgetDiv = document.getElementById(widgetDivId);
     var content =  widgetDiv.innerHTML;
+
     widget.setPreferenceForKey(content, OperaWidget.CONTENT_PREF);
   },
   fixSize : function(widgetDiv) {
     if(typeof widget == 'undefined')
       return;
 
-    this.widgetWidth  = widgetDiv.offsetWidth;
-    this.widgetHeight = widgetDiv.offsetHeight + 15;
+    this.widgetWidth  = widgetDiv.clientWidth;
+    this.widgetHeight = widgetDiv.clientHeight + 7;
     window.resizeTo(this.widgetWidth, this.widgetHeight);
+    
   },
   resizeOnFrontside : function() {
     if(typeof widget == 'undefined')
