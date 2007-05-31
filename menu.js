@@ -8183,12 +8183,11 @@ function submitWidgetPreferences(event, formId) {
 //  div.style.display = "none";
 //  postRequest(event, url, param, div, elm, refreshWidget);
     
-    if(typeof widget != 'undefined') {
-      OperaWidget.resizeOnFrontside();
-    }
-    else    
+    if(typeof window.widget == 'undefined') {
       postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
-    
+    }
+     
+    OperaWidget.resizeOnFrontside();
   return ret;
 }
 
@@ -8247,7 +8246,9 @@ var WidgetRefresher = {
     for (var i=0; i<d.length; i++) {
       var divId = d[i].id; 
       if (divId  &&  divId == div.id) {
-        div.innerHTML = d[i].innerHTML;
+        //div.innerHTML = d[i].innerHTML;
+        var parent = div.parentNode;
+        parent.replaceChild(d[i], div);
       }
     }
     // If it is an Opera widget then save its content. 'beforeunload' does not work in Operas widget.
@@ -8319,6 +8320,9 @@ var OperaWidget = {
     widget.setPreferenceForKey(content, OperaWidget.CONTENT_PREF);
   },
   fixSize : function(widgetDiv) {
+    if(typeof widget == 'undefined')
+      return;
+
     this.widgetWidth  = widgetDiv.offsetWidth;
     this.widgetHeight = widgetDiv.offsetHeight + 15;
     window.resizeTo(this.widgetWidth, this.widgetHeight);
