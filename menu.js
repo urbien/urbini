@@ -8204,12 +8204,17 @@ var WidgetRefresher = {
 	  }
 	  if(obj.id.length == 0)
 	    return;
-	  this.widgetsArr[divId].bookmarkUrl = obj.id.substr(7);
+	  
+	  var widgetDivId = obj.id;
+	  this.widgetsArr[divId].bookmarkUrl = widgetDivId.substr(7);
 	
     // 3. launch widget refresh loop.
     var interval = intervalSeconds * 1000;
     var timerId = setInterval("WidgetRefresher._onInterval(\"" + divId + "\")", interval); 
     this.widgetsArr[divId].timerId = timerId;
+    
+    // 4. If it is an Opera widget then restore its content from last refreshed state.
+    OperaWidget.restoreContent(widgetDivId);
   },
   _onInterval : function(divId) {
     var url = getBaseUri() + "widget/localSearchResults.html?-$action=explore&-grid=y&-featured=y&uri=";
@@ -8235,6 +8240,8 @@ var WidgetRefresher = {
         div.innerHTML = d[i].innerHTML;
       }
     }
+    // If it is an Opera widget then save its content. 'beforeunload' does not work in Operas widget.
+    OperaWidget.saveContent();
   }
 }
 
@@ -8270,3 +8277,30 @@ function addthis_click(event, addthis_title) {
   window.open(target.href, addthis_title, 'scrollbars=yes,menubar=no,width=620,height=520,resizable=yes,toolbar=no,location=no,status=no,screenX=200,screenY=100,left=200,top=100');
   return stopEventPropagation(event);
 } 
+
+var OperaWidget = {
+  CONTENT_PREF : "content",
+  widgetDivId : "",
+  restoreContent : function(widgetDivId) {
+    if(typeof widget == 'undefined')
+      return;
+    var widgetDiv = document.getElementById(widgetDivId);
+    if(!widgetDiv)
+      return;
+
+    var content = widget.preferenceForKey(this.CONTENT_PREF);
+    if(typeof content == 'undefined' || content.length = 0)
+      return;
+    
+    widgetDiv.innerHTML = content;
+    this.widgetDivId = widgetDivId;
+  },
+  saveContent : function() {
+    if(typeof widget == 'undefined')
+      return;
+
+    var widgetDiv = document.getElementById(OperaWidget.widgetDivId);
+    var content =  widgetDiv.innerHTML;
+    widget.setPreferenceForKey(content, OperaWidget.CONTENT_PREF);
+  }
+}
