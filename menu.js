@@ -8289,7 +8289,7 @@ var OperaWidget = {
       return;
 
     var content = widget.preferenceForKey(this.CONTENT_PREF);
-    if(typeof content == 'undefined' || content.length = 0)
+    if(typeof content == 'undefined' || content.length == 0)
       return;
     
     widgetDiv.innerHTML = content;
