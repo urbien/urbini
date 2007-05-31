@@ -8182,10 +8182,13 @@ function submitWidgetPreferences(event, formId) {
 //  var div = document.createElement('div');
 //  div.style.display = "none";
 //  postRequest(event, url, param, div, elm, refreshWidget);
- 
-    postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
     
-    OperaWidget.resizeOnFrontside();
+    if(typeof widget != 'undefined') {
+      OperaWidget.resizeOnFrontside();
+    }
+    else    
+      postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
+    
   return ret;
 }
 
