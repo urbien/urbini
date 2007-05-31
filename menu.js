@@ -8215,9 +8215,13 @@ var WidgetRefresher = {
     var url = getBaseUri() + "widget/localSearchResults.html?-$action=explore&-grid=y&-featured=y&uri=";
     url += WidgetRefresher.widgetsArr[divId].bookmarkUrl;
     var params = null;
-    var div = document.getElementById(divId);
+    
+    // refresh whole the widget including backside
+    var widgetDivId = "widget_" + WidgetRefresher.widgetsArr[divId].bookmarkUrl;
+    var widgetDiv = document.getElementById(widgetDivId);
+    
     // noCache = true
-    postRequest(null, url, params, div, null, WidgetRefresher.refresh, true);
+    postRequest(null, url, params, widgetDiv, null, WidgetRefresher.refresh, true);
   },
   // called by postRequest
   refresh : function(event, div, hotSpot, content)  {
