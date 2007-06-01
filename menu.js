@@ -8054,6 +8054,7 @@ var WidgetFlip = {
     this.flipShown = false;
   },
   showBackside : function(event, divId) {
+    downloadWidget.storeFrontsideSize(divId);
     OperaWidget.resizeOnBackside();
     hideDiv(event, divId);
     showDiv1(event, divId + "_back");
@@ -8302,10 +8303,10 @@ function addthis_click(event, addthis_title) {
 
 var OperaWidget = {
   CONTENT_PREF : "content",
-  BACKSIDE_WIDTH  : 375,
-  BACKSIDE_HEIGHT : 250,
-  widgetWidth  : 200,
-  widgetHeight : 200,
+  BACKSIDE_WIDTH  : 380,
+  BACKSIDE_HEIGHT : 255,
+  widgetWidth  : 0,
+  widgetHeight : 0,
   
   restoreContent : function(widgetDivId) {
     if(typeof widget == 'undefined')
@@ -8313,12 +8314,10 @@ var OperaWidget = {
     var widgetDiv = document.getElementById(widgetDivId);
     if(!widgetDiv)
       return;
-    this.fixSize(widgetDiv);
-    var content = widget.preferenceForKey(this.CONTENT_PREF);
 
+    var content = widget.preferenceForKey(this.CONTENT_PREF);
     if(typeof content == 'undefined' || content.length == 0)
       return;
-
     widgetDiv.innerHTML = content;
   },
   saveContent : function(widgetDivId) {
@@ -8326,27 +8325,59 @@ var OperaWidget = {
       return;
 
     var widgetDiv = document.getElementById(widgetDivId);
-    var content =  widgetDiv.innerHTML;
+    var content = widgetDiv.innerHTML;
 
     widget.setPreferenceForKey(content, OperaWidget.CONTENT_PREF);
-  },
-  fixSize : function(widgetDiv) {
-    if(typeof widget == 'undefined')
-      return;
-
-    this.widgetWidth  = widgetDiv.clientWidth;
-    this.widgetHeight = widgetDiv.clientHeight + 7;
-    window.resizeTo(this.widgetWidth, this.widgetHeight);
-    
   },
   resizeOnFrontside : function() {
     if(typeof widget == 'undefined')
       return;
+    if(this.widgetWidth == 0 || this.widgetHeight == 0)
+      return;  
     window.resizeTo(this.widgetWidth, this.widgetHeight);
   },
   resizeOnBackside : function() {
     if(typeof widget == 'undefined')
       return;
+    
+    var wndSize = getWindowSize();
+    this.widgetWidth  = wndSize[0];
+    this.widgetHeight = wndSize[1];
+
     window.resizeTo(this.BACKSIDE_WIDTH, this.BACKSIDE_HEIGHT);
   }
+}
+
+var downloadWidget = {
+  sizesArr : new Array(), // {width, height}
+  storeFrontsideSize : function(divId){
+    var div = document.getElementById(divId);
+    var size = new Object();
+    size.width = div.offsetWidth;
+    size.height = div.offsetHeight;
+    this.sizesArr[divId] = size;
+  },
+  doit : function(imgObj, url) {
+    var obj = imgObj;
+    // find parent backside div
+    var id;
+    while(obj != null) {
+      id = obj.id
+		  if(id.indexOf("div_") == 0 && id.indexOf("_back") != -1) {
+		    widgetDiv = obj;
+		    break;
+		  }
+		  obj = obj.parentNode;
+	  }
+    // key in sizesArr array is ID of frontsize, so without "_back" (5 letters)
+    var key = id.substr(0, id.length - 5);
+    
+    // temporary hack; margin = windowSize - sivSize
+    var MARGIN_X = 9;
+    var MARGIN_Y = 11;
+    url += "&-widthFront="  + (this.sizesArr[key].width + MARGIN_X);
+    url += "&-heightFront=" + (this.sizesArr[key].height + MARGIN_Y);
+    document.location = url;
+  }
+  
 }
