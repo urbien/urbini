@@ -7947,7 +7947,7 @@ var Dashboard = {
     // Check if widget should not be moved just was touched
     if (prevWidgetOld  &&  prevWidgetNew && prevWidgetNew.id == prevWidgetOld.id) {
       var oldTd = getTdNode(prevWidgetOld);
-      var oldCol = parseInt(oldId.id.substring('col_'.length));
+      var oldCol = parseInt(oldTd.id.substring('col_'.length));
       if (oldCol == newCol)
         return ret;
     }
