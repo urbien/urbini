@@ -994,6 +994,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif }
 .red {color:red;font-size:10pt;font-weight:bold}
 .errMsg {font-family:san-serif,arial,verdana;font-size:14px;color:red;font-weight:bold;}
+.info {font-family:san-serif,arial,verdana;font-size:14px;color:blue;font-weight:bold;}
 
 /************ tooltip ***********/
 .framed,
