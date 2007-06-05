@@ -7302,11 +7302,12 @@ var advancedTooltip = {
     this.tooltip = document.getElementById('system_tooltip');
     if(!this.tooltip)
       return;
+    if(typeof List == 'undefined')
+      return;
     this.optList = new List();
     var itemDiv = document.createElement('div');
     this.optList.appendItem(itemDiv);
     this.optBtn.obj = getChildById(this.tooltip, "opt_btn");
-
     this.initShiftPref();
 
     this.tooltip.appendChild(this.optList.div);
@@ -7326,7 +7327,8 @@ var advancedTooltip = {
   showOptionsBtn : function()  {
     if(!this.tooltip)
       this.init();
-    this.optBtn.obj.style.display = "";
+    if(this.optBtn.obj)  
+      this.optBtn.obj.style.display = "";
   },
   hideOptionsBtn : function()  {
     if(!this.tooltip)
@@ -8188,13 +8190,14 @@ function submitWidgetPreferences(event, formId) {
 //  div.style.display = "none";
 //  postRequest(event, url, param, div, elm, refreshWidget);
     
-    if(typeof window.widget == 'undefined') {
-      postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
-    }
-    else { 
+    if(OperaWidget.isWidget()) {
+      OperaWidget.resizeOnFrontside();
       // 'formId.substring(5)' - widget type url
       WidgetRefresher.updateWidgetByUrl(formId.substring(5));
-      OperaWidget.resizeOnFrontside();
+      OperaWidget.savePreferencesStr(param);
+    }
+    else {
+      postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
     }
   return ret;
 }
@@ -8202,6 +8205,7 @@ function submitWidgetPreferences(event, formId) {
 
 var WidgetRefresher = {
   widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
+  hdnDoc : null, // helps to load refreshed document
   setInterval : function(divId, intervalSeconds) {
     // 1. prepare new "widget member" or stop old one.
     if(typeof this.widgetsArr[divId] == 'undefined')
@@ -8226,12 +8230,16 @@ var WidgetRefresher = {
 	  this.widgetsArr[divId].bookmarkUrl = widgetDivId.substr(7);
 	
     // 3. launch widget refresh loop.
-    var interval = intervalSeconds * 1000;
+    var interval;
+    if(OperaWidget.isWidget())
+      interval = OperaWidget.getRefreshInterval();
+    else  
+      interval = intervalSeconds * 1000;
     var timerId = setInterval("WidgetRefresher._onInterval(\"" + divId + "\")", interval); 
     this.widgetsArr[divId].timerId = timerId;
     
     // 4. If it is an Opera widget then restore its content from last refreshed state.
-    OperaWidget.restoreContent(widgetDivId);
+    OperaWidget.init(widgetDivId);
   },
   updateWidgetByUrl : function(url) {
     for(i in this.widgetsArr) {
@@ -8245,30 +8253,38 @@ var WidgetRefresher = {
     var url = getBaseUri() + "widget/localSearchResults.html?-$action=explore&-grid=y&-featured=y&uri=";
     url += WidgetRefresher.widgetsArr[divId].bookmarkUrl;
     var params = null;
-    
-    // refresh whole the widget including backside
-    var widgetDivId = "widget_" + WidgetRefresher.widgetsArr[divId].bookmarkUrl;
-    var widgetDiv = document.getElementById(widgetDivId);
+    var divToRefresh;
+    if(OperaWidget.isWidget())
+      // refresh only frontside
+      divToRefresh = document.getElementById(divId);
+    else {
+      // refresh whole the widget including backside
+      var widgetDivId = "widget_" + WidgetRefresher.widgetsArr[divId].bookmarkUrl;
+      divToRefresh = document.getElementById(widgetDivId);
+    }  
     
     // noCache = true
-    postRequest(null, url, params, widgetDiv, null, WidgetRefresher.refresh, true);
+    postRequest(null, url, params, divToRefresh, null, WidgetRefresher.refresh, true);
   },
   // called by postRequest
   refresh : function(event, div, hotSpot, content)  {
-    var body = document.createElement('div');
-    body.style.display = "none";
-    setInnerHtml(body, content);
-    var d = body.getElementsByTagName('div');
-    for (var i=0; i<d.length; i++) {
+    if(this.hdnDoc == null) {
+      var hdnIframe = document.getElementById("hiddenIframe");
+		  this.hdnDoc = hdnIframe.contentWindow.document;
+		}
+    this.hdnDoc.open();
+    this.hdnDoc.write(content);
+    this.hdnDoc.close();
+    var d = this.hdnDoc.body.getElementsByTagName('div');
+
+    for (var i = 0; i < d.length; i++) {
       var divId = d[i].id; 
       if (divId  &&  divId == div.id) {
-        //div.innerHTML = d[i].innerHTML;
-        var parent = div.parentNode;
-        parent.replaceChild(d[i], div);
+        div.innerHTML = d[i].innerHTML;
       }
     }
-    // If it is an Opera widget then save its content. 'beforeunload' does not work in Operas widget.
-    OperaWidget.saveContent(divId);
+    OperaWidget.fitWindowSize();
+    OperaWidget.saveContent();
   }
 }
 
@@ -8306,33 +8322,57 @@ function addthis_click(event, addthis_title) {
 } 
 
 var OperaWidget = {
-  CONTENT_PREF : "content",
-  BACKSIDE_WIDTH  : 380,
-  BACKSIDE_HEIGHT : 255,
+  CONTENT_KEY_NAME   : "content",
+  PREFS_STR_KEY_NAME : "prefs_str",
+  MAX_WND_WIDTH : 600,
+  MAX_WND_HEIGHT : 600,
+  BACKSIDE_WIDTH  : 371,
+  BACKSIDE_HEIGHT : 245,
+  widgetDiv : null,
+  frontDiv : null,
+  backDiv : null,
+  prefForm : null,
   widgetWidth  : 0,
   widgetHeight : 0,
+  refreshInterval : 15 * 60000, // 15 minutes 
   
-  restoreContent : function(widgetDivId) {
+  init : function(widgetDivId) {
     if(typeof widget == 'undefined')
       return;
-    var widgetDiv = document.getElementById(widgetDivId);
-    if(!widgetDiv)
+    
+    // 1. widget div
+    this.widgetDiv = document.getElementById(widgetDivId);
+    if(!this.widgetDiv)
       return;
-
-    var content = widget.preferenceForKey(this.CONTENT_PREF);
-    if(typeof content == 'undefined' || content.length == 0)
-      return;
-    widgetDiv.innerHTML = content;
+    // 2. front & back children divs
+    this.frontDiv = getChildByAttribute(widgetDiv, "className", "front");
+    var backId =  this.frontDiv.id + "_back";
+    this.backDiv = getChildById(widgetDiv, backId); 
+    // 3. restore content from pref
+    var content = widget.preferenceForKey(this.CONTENT_KEY_NAME);
+  /*  
+    if(typeof content != 'undefined' && content.length != 0) {
+      content = content.replace(/\r|\n|\r\n|\s/g, " ");
+      this.widgetDiv.innerHTML = content;
+    }
+  */  
+    // 4. init prefs on the back
+    this.initPrefsForm();
+    // 5. fit
+    this.fitWindowSize();  
   },
-  saveContent : function(widgetDivId) {
+  fitWindowSize : function() {
     if(typeof widget == 'undefined')
       return;
-
-    var widgetDiv = document.getElementById(widgetDivId);
-    var content = widgetDiv.innerHTML;
-
-    widget.setPreferenceForKey(content, OperaWidget.CONTENT_PREF);
+    var div;
+    if(OperaWidget.frontDiv.style.display == 'none')
+      return;
+    window.resizeTo(this.MAX_WND_WIDTH, this.MAX_WND_HEIGHT);
+    var width = this.frontDiv.offsetWidth;
+    var height = this.frontDiv.offsetHeight + 2;
+    window.resizeTo(width, height);
   },
+
   resizeOnFrontside : function() {
     if(typeof widget == 'undefined')
       return;
@@ -8349,11 +8389,86 @@ var OperaWidget = {
     this.widgetHeight = wndSize[1];
 
     window.resizeTo(this.BACKSIDE_WIDTH, this.BACKSIDE_HEIGHT);
+  },
+  saveContent : function(/*widgetDivId*/) {
+    if(typeof widget == 'undefined')
+      return;
+    var content = this.widgetDiv.innerHTML;
+    widget.setPreferenceForKey(content, this.CONTENT_KEY_NAME);
+  },
+  savePreferencesStr : function(preferencesStr) {
+    widget.setPreferenceForKey(preferencesStr, this.PREFS_STR_KEY_NAME);
+  },
+  initPrefsForm : function() {
+    var prefsStr = widget.preferenceForKey(this.PREFS_STR_KEY_NAME);
+    if(typeof prefsStr == 'undefined' || prefsStr.length == 0)
+      return;
+    // parameters to calculate refresh in milliseconds.
+    var intervalNumber = 15;       // key: "refresh.seconds"
+    var intervalType = "minut(s)"; // key: "refresh.durationType"
+    
+    var prefPairs = prefsStr.split('&');
+    
+    // get pref form
+    if(this.prefForm == null) {
+      forms = widgetDiv.getElementsByTagName("form");
+      for(var i = 0; i < forms.length; i++)
+        if(forms[i].id.indexOf('pref_') == 0) {
+          this.prefForm = forms[i];
+          break;
+        }
+    }
+    
+    for(var i = 0; i < prefPairs.length; i++) {
+      var pair = prefPairs[i].split('=');
+      if(typeof pair[1] == 'undefined')
+        continue;
+      
+      // set <input> values
+      if(typeof this.prefForm[pair[0]] != 'undefined')
+        this.prefForm[pair[0]].value = pair[1];
+      
+      // interval values
+      if(pair[0] == "refresh.seconds")
+        intervalNumber = pair[1];
+      if(pair[0] == "refresh.durationType")
+        intervalType = pair[1];
+    }
+      // 2. calculate refreshInterval
+      this.calculateRefreshInterval(intervalNumber, intervalType);
+  },
+  calculateRefreshInterval : function(intervalNumber, intervalType) {
+      var refreshInterval = 1;
+      refreshInterval *= intervalNumber;
+      if(intervalType.indexOf("minute(s)") == 0) {
+        refreshInterval *= 1000 * 60; 
+      }
+      else if(intervalType == "hour(s)")
+        refreshInterval *= 1000 * 360; 
+      else if(intervalType == "day(s)")
+        refreshInterval *= 1000 * 360 * 24; 
+      else if(intervalType == "week(s)")
+        refreshInterval *= 1000 * 360 * 24 * 7;
+      else if(intervalType == "month(s)")
+        refreshInterval *= 1000 * 360 * 24 * 30;
+      else if(intervalType == "years(s)")
+        refreshInterval *= 1000 * 360 * 24 * 360;
+      
+      this.refreshInterval = refreshInterval;  
+  }, 
+  getRefreshInterval : function() {
+    return this.refreshInterval;
+  },
+  isWidget : function() {
+    if(typeof widget != 'undefined')
+      return true;
+    return false;  
   }
+  
 }
 
 var downloadWidget = {
-  sizesArr : new Array(), // {width, height}
+  sizesArr : new Array(), // member struct: {width, height}
   storeFrontsideSize : function(divId){
     var div = document.getElementById(divId);
     var size = new Object();
@@ -8366,8 +8481,8 @@ var downloadWidget = {
     // find parent backside div
     var id;
     while(obj != null) {
-      id = obj.id
-		  if(id.indexOf("div_") == 0 && id.indexOf("_back") != -1) {
+      id =  obj.id;
+		  if(obj.className == "hiddenDiv" && id.indexOf("_back") != -1) {
 		    widgetDiv = obj;
 		    break;
 		  }
@@ -8378,10 +8493,10 @@ var downloadWidget = {
     
     // temporary hack; margin = windowSize - sivSize
     var MARGIN_X = 9;
-    var MARGIN_Y = 11;
+    var MARGIN_Y = 9;
     url += "&-widthFront="  + (this.sizesArr[key].width + MARGIN_X);
     url += "&-heightFront=" + (this.sizesArr[key].height + MARGIN_Y);
     document.location = url;
   }
-  
 }
+
