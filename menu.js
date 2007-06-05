@@ -5406,7 +5406,11 @@ function closeDiv(e, hideDivId) {
   var a = elm.parentNode;
   var url = a.href;
   if (url == 'about:blank') { 
-    hideDiv(e, hideDivId);
+    var widget = hideDivId.substring("widget_".length);
+    if (widget.indexOf('http') == 0)
+      postRequest(e, 'delete', 'uri=' + encodeURIComponent(widget), div, elm, closeDivCallback);
+    else  
+      hideDiv(e, hideDivId);
     return stopEventPropagation(e);
   }
   var ret = stopEventPropagation(e);
