@@ -8250,7 +8250,7 @@ var WidgetRefresher = {
     }
   },
   _onInterval : function(divId) {
-    var url = getBaseUri() + "widget/localSearchResults.html?-$action=explore&-grid=y&-featured=y&uri=";
+    var url = getBaseUri() + "widget/div/oneWidget.html?-$action=explore&-export=y&-grid=y&-featured=y&uri=";
     url += WidgetRefresher.widgetsArr[divId].bookmarkUrl;
     var params = null;
     var divToRefresh;
@@ -8268,6 +8268,7 @@ var WidgetRefresher = {
   },
   // called by postRequest
   refresh : function(event, div, hotSpot, content)  {
+/*
     if(this.hdnDoc == null) {
       var hdnIframe = document.getElementById("hiddenIframe");
 		  this.hdnDoc = hdnIframe.contentWindow.document;
@@ -8283,6 +8284,8 @@ var WidgetRefresher = {
         div.innerHTML = d[i].innerHTML;
       }
     }
+*/
+    div.innerHTML = content;
     OperaWidget.fitWindowSize();
     OperaWidget.saveContent();
   }
