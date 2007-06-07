@@ -486,7 +486,7 @@ td.containers {background-color: #f8f4ef; color: #000000}
 
 table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #000000}
 
-.propertySheet {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000}
+.propertySheet {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
 td.controlPanel {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 /*span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}*/
@@ -540,6 +540,17 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 /* Under menu line style (usually the same color as tabs */
 .line { background:#ACD2E2 }
+
+.iphone {
+  background:url(../images/iphone.png);
+  width: 270;
+  height: 492;
+  padding-left: 27px; padding-right: 27px; padding-top: 100px; padding-bottom: 100px;
+  background-repeat: no-repeat;
+}
+
+.iphone1 { overflow:auto; width: 214; height:292 }
+
 /* SKINS */
 /* BLUE */
 .blue  .line { background:#ACD2E2 }
