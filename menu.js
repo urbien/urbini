@@ -8193,8 +8193,8 @@ function submitWidgetPreferences(event, formId) {
     if(OperaWidget.isWidget()) {
       OperaWidget.resizeOnFrontside();
       // 'formId.substring(5)' - widget type url
-      WidgetRefresher.updateWidgetByUrl(formId.substring(5));
       OperaWidget.savePreferencesStr(param);
+      WidgetRefresher.updateWidgetByUrl(formId.substring(5));
     }
     else {
       postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
@@ -8228,18 +8228,28 @@ var WidgetRefresher = {
 	  
 	  var widgetDivId = obj.id;
 	  this.widgetsArr[divId].bookmarkUrl = widgetDivId.substr(7);
-	
-    // 3. launch widget refresh loop.
+
+    // 4. launch widget refresh loop.
     var interval;
-    if(OperaWidget.isWidget())
+    // OperaWidget
+    if(OperaWidget.isWidget()) {
+      OperaWidget.init(widgetDivId);
       interval = OperaWidget.getRefreshInterval();
-    else  
+      if(interval < 0) {
+        if(intervalSeconds > 0)
+          interval = intervalSeconds * 1000;
+        else
+          interval = 15 * 60000; // set default
+      }
+    }
+    // our dashboard
+    else {
+      if(intervalSeconds < 0)
+        return; // no update
       interval = intervalSeconds * 1000;
+    }
     var timerId = setInterval("WidgetRefresher._onInterval(\"" + divId + "\")", interval); 
     this.widgetsArr[divId].timerId = timerId;
-    
-    // 4. If it is an Opera widget then restore its content from last refreshed state.
-    OperaWidget.init(widgetDivId);
   },
   updateWidgetByUrl : function(url) {
     for(i in this.widgetsArr) {
@@ -8254,40 +8264,17 @@ var WidgetRefresher = {
     url += WidgetRefresher.widgetsArr[divId].bookmarkUrl;
     var params = null;
     var divToRefresh;
-    if(OperaWidget.isWidget())
-      // refresh only frontside
-      divToRefresh = document.getElementById(divId);
-    else {
       // refresh whole the widget including backside
       var widgetDivId = "widget_" + WidgetRefresher.widgetsArr[divId].bookmarkUrl;
       divToRefresh = document.getElementById(widgetDivId);
-    }  
-    
-    // noCache = true
+      
     postRequest(null, url, params, divToRefresh, null, WidgetRefresher.refresh, true);
   },
   // called by postRequest
   refresh : function(event, div, hotSpot, content)  {
-/*
-    if(this.hdnDoc == null) {
-      var hdnIframe = document.getElementById("hiddenIframe");
-		  this.hdnDoc = hdnIframe.contentWindow.document;
-		}
-    this.hdnDoc.open();
-    this.hdnDoc.write(content);
-    this.hdnDoc.close();
-    var d = this.hdnDoc.body.getElementsByTagName('div');
-
-    for (var i = 0; i < d.length; i++) {
-      var divId = d[i].id; 
-      if (divId  &&  divId == div.id) {
-        div.innerHTML = d[i].innerHTML;
-      }
-    }
-*/
-    div.innerHTML = content;
-    OperaWidget.fitWindowSize();
-    OperaWidget.saveContent();
+    div.innerHTML = content;   
+    if(OperaWidget.isWidget())
+      OperaWidget.onWidgetRefresh();
   }
 }
 
@@ -8329,15 +8316,15 @@ var OperaWidget = {
   PREFS_STR_KEY_NAME : "prefs_str",
   MAX_WND_WIDTH : 600,
   MAX_WND_HEIGHT : 600,
-  BACKSIDE_WIDTH  : 371,
-  BACKSIDE_HEIGHT : 245,
+  BACKSIDE_WIDTH  : 305,
+  BACKSIDE_HEIGHT : 220,
   widgetDiv : null,
   frontDiv : null,
   backDiv : null,
   prefForm : null,
   widgetWidth  : 0,
   widgetHeight : 0,
-  refreshInterval : 15 * 60000, // 15 minutes 
+  refreshInterval : -1, // default
   
   init : function(widgetDivId) {
     if(typeof widget == 'undefined')
@@ -8352,30 +8339,36 @@ var OperaWidget = {
     var backId =  this.frontDiv.id + "_back";
     this.backDiv = getChildById(widgetDiv, backId); 
     // 3. restore content from pref
+/*
     var content = widget.preferenceForKey(this.CONTENT_KEY_NAME);
-  /*  
     if(typeof content != 'undefined' && content.length != 0) {
       content = content.replace(/\r|\n|\r\n|\s/g, " ");
       this.widgetDiv.innerHTML = content;
     }
-  */  
-    // 4. init prefs on the back
-    this.initPrefsForm();
-    // 5. fit
-    this.fitWindowSize();  
+*/    
+    // 3. fitWindowSize does not work on this moment!
+    //this.fitWindowSize();  
+    // 6. init prefs on the back
+    this.restoreBacksideValues();
   },
+  onWidgetRefresh : function() {
+    this.restoreBacksideValues();
+    this.saveContent();
+  },
+/*
   fitWindowSize : function() {
     if(typeof widget == 'undefined')
       return;
-    var div;
+      
     if(OperaWidget.frontDiv.style.display == 'none')
       return;
+    
     window.resizeTo(this.MAX_WND_WIDTH, this.MAX_WND_HEIGHT);
-    var width = this.frontDiv.offsetWidth;
-    var height = this.frontDiv.offsetHeight + 2;
+    var width = this.widgetDiv.offsetWidth;
+    var height = this.widgetDiv.offsetHeight;
     window.resizeTo(width, height);
   },
-
+*/
   resizeOnFrontside : function() {
     if(typeof widget == 'undefined')
       return;
@@ -8386,14 +8379,13 @@ var OperaWidget = {
   resizeOnBackside : function() {
     if(typeof widget == 'undefined')
       return;
-    
     var wndSize = getWindowSize();
     this.widgetWidth  = wndSize[0];
     this.widgetHeight = wndSize[1];
 
     window.resizeTo(this.BACKSIDE_WIDTH, this.BACKSIDE_HEIGHT);
   },
-  saveContent : function(/*widgetDivId*/) {
+  saveContent : function() {
     if(typeof widget == 'undefined')
       return;
     var content = this.widgetDiv.innerHTML;
@@ -8402,7 +8394,7 @@ var OperaWidget = {
   savePreferencesStr : function(preferencesStr) {
     widget.setPreferenceForKey(preferencesStr, this.PREFS_STR_KEY_NAME);
   },
-  initPrefsForm : function() {
+  restoreBacksideValues : function() {
     var prefsStr = widget.preferenceForKey(this.PREFS_STR_KEY_NAME);
     if(typeof prefsStr == 'undefined' || prefsStr.length == 0)
       return;
@@ -8412,15 +8404,13 @@ var OperaWidget = {
     
     var prefPairs = prefsStr.split('&');
     
-    // get pref form
-    if(this.prefForm == null) {
-      forms = widgetDiv.getElementsByTagName("form");
-      for(var i = 0; i < forms.length; i++)
-        if(forms[i].id.indexOf('pref_') == 0) {
-          this.prefForm = forms[i];
-          break;
-        }
-    }
+    // get pref form (on each refresh)
+    forms = widgetDiv.getElementsByTagName("form");
+    for(var i = 0; i < forms.length; i++)
+      if(forms[i].id.indexOf('pref_') == 0) {
+        this.prefForm = forms[i];
+        break;
+      }
     
     for(var i = 0; i < prefPairs.length; i++) {
       var pair = prefPairs[i].split('=');
@@ -8467,7 +8457,6 @@ var OperaWidget = {
       return true;
     return false;  
   }
-  
 }
 
 var downloadWidget = {
