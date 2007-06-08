@@ -8400,7 +8400,7 @@ var OperaWidget = {
       return;
     // parameters to calculate refresh in milliseconds.
     var intervalNumber = 15;       // key: "refresh.seconds"
-    var intervalType = "minut(s)"; // key: "refresh.durationType"
+    var intervalType = "minute(s)"; // key: "refresh.durationType"
     
     var prefPairs = prefsStr.split('&');
     
