@@ -8216,6 +8216,8 @@ var WidgetRefresher = {
     // 2. Find the boorkmark url that is a part of "outer" div widget div 
     // divId is an widget content div
     var obj = document.getElementById(divId);
+    if(!obj)
+      return;
    	while(obj != null) {
 		  if(obj.id.indexOf("widget_") == 0) {
 		    widgetDiv = obj;
@@ -8349,10 +8351,10 @@ var OperaWidget = {
     // 3. fitWindowSize does not work on this moment!
     //this.fitWindowSize();  
     // 6. init prefs on the back
-    this.restoreBacksideValues();
+    this.applyPrefs();
   },
   onWidgetRefresh : function() {
-    this.restoreBacksideValues();
+    this.applyPrefs();
     this.saveContent();
   },
 /*
@@ -8394,13 +8396,15 @@ var OperaWidget = {
   savePreferencesStr : function(preferencesStr) {
     widget.setPreferenceForKey(preferencesStr, this.PREFS_STR_KEY_NAME);
   },
-  restoreBacksideValues : function() {
+  // 1) restores backside values 2) applies chosen skin
+  applyPrefs : function() {
     var prefsStr = widget.preferenceForKey(this.PREFS_STR_KEY_NAME);
     if(typeof prefsStr == 'undefined' || prefsStr.length == 0)
       return;
     // parameters to calculate refresh in milliseconds.
     var intervalNumber = 15;       // key: "refresh.seconds"
     var intervalType = "minute(s)"; // key: "refresh.durationType"
+    var skinName = "";
     
     var prefPairs = prefsStr.split('&');
     
@@ -8426,9 +8430,16 @@ var OperaWidget = {
         intervalNumber = pair[1];
       if(pair[0] == "refresh.durationType")
         intervalType = pair[1];
+      
+      if(pair[0] == ".skin")
+        skinName = pair[1];
     }
       // 2. calculate refreshInterval
       this.calculateRefreshInterval(intervalNumber, intervalType);
+      // 3. restore skin
+      var skinDiv = getChildById(widgetDiv, 'skin');
+      if(skinDiv)
+        skinDiv.className = skinName;
   },
   calculateRefreshInterval : function(intervalNumber, intervalType) {
       var refreshInterval = 1;
