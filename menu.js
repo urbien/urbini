@@ -7649,6 +7649,7 @@ var Dashboard = {
   
   widgetsMap : null,
   freeSpacesMap : null,
+  tabHeaderMap : null,
   
   prevY : 0,
   isDirUp : true,
@@ -7683,6 +7684,16 @@ var Dashboard = {
       // set min column width on case if the column has no widgets.
       cols[i].width = this.MIN_COLUMN_WIDTH;
     }
+    // 3. tab "Header"
+    // suppose that position of tab header is constant
+    this.tabHeaderMap = new Array();
+    var tables = document.body.getElementsByTagName('table');
+    for(var i = 0; i < tables.length; i++) {
+      if(tables[i].className == 'tabs') {
+        var tabHeader = new Dashboard.TabHeaderRect(tables[i]);
+        this.tabHeaderMap.push(tabHeader);
+      }
+    } 
   },
   updateDashboardMap : function() {
     // 1. widgets
@@ -7778,7 +7789,16 @@ var Dashboard = {
     swapNodes(dragBlock, this.placeholderDiv);
     this.updateDashboardMap();
     
-    // call server handler
+    // 1. move on another tab
+    var x = e.clientX;
+    var y = e.clientY;
+    for(var i = 0; i < this.tabHeaderMap.length; i++) {
+      if(this.isPointIn(x, y, this.tabHeaderMap[i])) {
+        this.onReleaseOverTab(this.tabHeaderMap[i].table);
+        return;
+      }
+    }
+    // 2. move on other place in the current tab
     var prevWidgetNew = this.getPrevSibling(dragBlock);
     this.onWidgetMovement(e, dragBlock, this.prevWidgetOld, prevWidgetNew);
   },
@@ -7933,14 +7953,29 @@ var Dashboard = {
           this.top = Math.max(this.top, widgetsMap[i].bottom);
         }
       }
-    }
+    },
     this.getColumn = function() {
       return this.column;
     }
     // "constructor"
     this.update();
   },
-  
+  TabHeaderRect : function(table) {
+    this.table = table;
+    this.left = 0;
+    this.top = 0;
+    this.right = 0;
+    this.bottom = 0;
+    
+    this.init = function() {
+      this.left   = findPosX(this.table);
+      this.top    = findPosY(this.table);
+      this.right  = this.table.offsetWidth  + this.left;
+      this.bottom = this.table.offsetHeight + this.top;
+    }
+    this.init();
+  },
+
   // call a server handler --
   onWidgetMovement : function(e, widget, prevWidgetOld, prevWidgetNew) {
     var ret = stopEventPropagation(e);
@@ -7972,9 +8007,7 @@ var Dashboard = {
     return ret;
   },
   
-  onReleaseOverTab : function() {
-    if(!this.isDragMode)
-      return;
+  onReleaseOverTab : function(table) {
   }
 }
 
