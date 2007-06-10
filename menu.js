@@ -636,6 +636,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Popup's on mouseover handler
    */
   this.popupOnMouseOver = function (e) {
+    if (typeof getDocumentEvent == 'undefined') return; // js is not yet fully interpreted by the browser
     e = getDocumentEvent(e); if (!e) return;
     if (e.getAttribute) {
       var isProcessed = e.getAttribute('eventProcessed');
@@ -662,6 +663,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Popup's and hotspot's on mouseout handler
    */
   this.popupOnMouseOut = function (e) {
+    if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
     if (e.getAttribute) {
       var isProcessed = e.getAttribute('eventProcessed');
@@ -1201,6 +1203,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.popupRowOnMouseOver = function (e) {
+    if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
     // in IE for some reason same event comes two times
     if (e.getAttribute) {
@@ -1228,6 +1231,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.popupRowOnMouseOut = function (e) {
+    if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
     var target = getMouseOutTarget(e);
     if (!target)
@@ -2131,6 +2135,7 @@ function autoCompleteOnBlur(e) {
 }
 
 function autoCompleteOnMouseout(e) {
+  if (typeof getMouseOutTarget == 'undefined') return;
   var target = getMouseOutTarget(e);
   if (!target)
     return true;
@@ -2976,6 +2981,7 @@ var schReassign = {
   
   // event handlers
   _onmouseover : function(e) {
+    if (typeof getEventTarget == 'undefined') return;
     if(schReassign.isActivated == false)
       return;
     
@@ -3025,6 +3031,7 @@ var schReassign = {
   },
   
   _onmouseout : function() {
+    if (typeof schReassign == 'undefined') return;
     if(schReassign.isActivated == false)
       return;
     if(schReassign.curTargetCell)
@@ -8047,7 +8054,8 @@ var WidgetFlip = {
 
   currentWidgetId : null,
   flipImg : null,
-  mousemove : function mousemove (e, divId)  {
+  mousemove : function (e, divId)  {
+    if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
     if (e.getAttribute) {
       var isProcessed = e.getAttribute('eventProcessed');
@@ -8082,7 +8090,8 @@ var WidgetFlip = {
 //   mouseexit() is the opposite of mousemove() in that it preps the preferences flipper
 //   to disappear.  It adds the appropriate values to the fading data structure and sets the fading in motion.
 
-  mouseexit : function mouseexit (e, divId)  {
+  mouseexit : function (e, divId)  {
+    if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
     if (e.getAttribute) {
       var isProcessed = e.getAttribute('eventProcessed');
@@ -8124,7 +8133,7 @@ var WidgetFlip = {
   /**
    * fades widget flip image. 
    */
-  fade : function fade()  {
+  fade : function ()  {
     var time = (new Date).getTime();
     var elapsedTime = this.getElapsedTime(time - this.fading.starttime, this.fading.duration);
     
@@ -8140,14 +8149,14 @@ var WidgetFlip = {
     changeOpacity(this.flipImg, this.fading.now);
   },
 
-  getElapsedTime : function getElapsedTime (elapsed, duration)  {
+  getElapsedTime : function (elapsed, duration)  {
     return elapsed < 0 ? 0 : (elapsed > duration ? duration : elapsed);
   },
 
-  getNextFadingNumber : function getNextFadingNumber (start, end, ease)  {
+  getNextFadingNumber : function (start, end, ease)  {
     return start + (end - start) * ease;
   },
-  enterflip : function enterflip(event)  {
+  enterflip : function (event)  {
     var baseUri = getBaseUri();
     if(Popup.ie)
       this.flipImg.src = baseUri + "images/flip_hover.gif";
@@ -8155,14 +8164,14 @@ var WidgetFlip = {
       this.flipImg.src = baseUri + "images/flip_hover.png";
 
   },
-  exitflip : function exitflip(event)  {
+  exitflip : function (event)  {
     var baseUri = getBaseUri();
     if(Popup.ie)
       this.flipImg.src = baseUri + "images/flip.gif";
     else
       this.flipImg.src = baseUri + "images/flip.png";
   },
-  getFlipDiv : function getFlipDiv(event, divId) {
+  getFlipDiv : function (event, divId) {
     var target = getTargetElement(event);
     var frontDiv;
     while (true) {
@@ -8188,7 +8197,7 @@ var WidgetFlip = {
     */
   },
   
-  getFlipDiv1 : function getFlipDiv1(frontDiv, divId) {
+  getFlipDiv1 : function (frontDiv, divId) {
     var elms = frontDiv.getElementsByTagName('div');
     for (var i=0; i<elms.length; i++) {
       if (elms[i].id && elms[i].id == divId)
@@ -8197,7 +8206,7 @@ var WidgetFlip = {
     return null;
   },
   
-  showflip : function showflip(event, divId) {
+  showflip : function (event, divId) {
     this.flipShown = true;
     var div = document.getElementById(divId);
     flipDiv = this.getFlipDiv1(div, 'flip');
@@ -8214,7 +8223,7 @@ var WidgetFlip = {
       flipDiv.appendChild(this.flipImg);
   },
   
-  hideflip : function hideflip(event, divId) {
+  hideflip : function (event, divId) {
     this.flipShown = false;
     var div = document.getElementById(divId);
     
