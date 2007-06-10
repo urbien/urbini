@@ -7794,7 +7794,7 @@ var Dashboard = {
     var y = e.clientY;
     for(var i = 0; i < this.tabHeaderMap.length; i++) {
       if(this.isPointIn(x, y, this.tabHeaderMap[i])) {
-        this.onReleaseOverTab(this.tabHeaderMap[i].table);
+        this.onReleaseOverTab(e, dragBlock, this.tabHeaderMap[i].table);
         return;
       }
     }
@@ -8007,7 +8007,30 @@ var Dashboard = {
     return ret;
   },
   
-  onReleaseOverTab : function(table) {
+  onReleaseOverTab : function(e, widget, table) {
+    var elms = table.getElementsByTagName('a');
+    var a;
+    for (var i=0; i<elms.length; i++) {
+      if (!elms[i].id || elms[i].id.indexOf('tab_') != 0)
+        continue;
+      a = elms[i];
+      break;
+    }
+    var ret = stopEventPropagation(e);
+    if (!a)
+      return ret;
+    var tab = a.id.substring(4);
+    var wLen = 'widget_'.length;
+    var widgetUri = widget.id.substring(wLen);
+    var href = a.href;
+    var params = 'uri=' + encodeURIComponent(widgetUri) + '&submitUpdate=y&.parent_verified=y&.parent_select=' + encodeURIComponent(tab);
+    
+    postRequest(e, 'proppatch', params, widget, a, callback);
+    return ret;
+    function callback(event, widget) {
+      alert(widget.id);
+      hideDiv(event, widget.id);
+    }
   }
 }
 
@@ -8516,6 +8539,7 @@ var downloadWidget = {
     var obj = imgObj;
     // find parent backside div
     var id;
+    
     while(obj != null) {
       id =  obj.id;
 		  if(obj.className == "hiddenDiv" && id.indexOf("_back") != -1) {
@@ -8533,6 +8557,8 @@ var downloadWidget = {
     url += "&-widthFront="  + (this.sizesArr[key].width + MARGIN_X);
     url += "&-heightFront=" + (this.sizesArr[key].height + MARGIN_Y);
     document.location = url;
+//    var cookie = window.getElementById('-cookie');
+//    alert(cookie);
   }
 }
 
