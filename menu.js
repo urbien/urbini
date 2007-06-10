@@ -8028,7 +8028,6 @@ var Dashboard = {
     postRequest(e, 'proppatch', params, widget, a, callback);
     return ret;
     function callback(event, widget) {
-      alert(widget.id);
       hideDiv(event, widget.id);
     }
   }
