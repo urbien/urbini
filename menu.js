@@ -2699,6 +2699,7 @@ function tooltipOnMouseOver0(e, target, toShow) {
 }
 
 function tooltipOnMouseOver(e) {
+  if (typeof getDocumentEvent == 'undefined') return;
   e = getDocumentEvent(e); if (!e) return;
 
   advancedTooltip.init();
@@ -2718,6 +2719,7 @@ function tooltipOnMouseOver(e) {
 }
 
 function tooltipOnMouseOut(e) {
+  if (typeof getDocumentEvent == 'undefined') return;
   e = getDocumentEvent(e); if (!e) return;
   window.status = "";
   if (e.getAttribute) {
