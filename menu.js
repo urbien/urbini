@@ -7658,7 +7658,9 @@ var Dashboard = {
   
   widgetsMap : null,
   freeSpacesMap : null,
-  tabHeaderMap : null,
+  tabHeadersMap : null,
+  
+  targetTab : null,
   
   prevY : 0,
   isDirUp : true,
@@ -7695,12 +7697,12 @@ var Dashboard = {
     }
     // 3. tab "Header"
     // suppose that position of tab header is constant
-    this.tabHeaderMap = new Array();
+    this.tabHeadersMap = new Array();
     var tables = document.body.getElementsByTagName('table');
     for(var i = 0; i < tables.length; i++) {
       if(tables[i].className == 'tabs') {
         var tabHeader = new Dashboard.TabHeaderRect(tables[i]);
-        this.tabHeaderMap.push(tabHeader);
+        this.tabHeadersMap.push(tabHeader);
       }
     } 
   },
@@ -7781,9 +7783,27 @@ var Dashboard = {
     else if(targetFreespace)
       this.setInFreeSpace(targetFreespace);
       
-
     if(moved)
-      this.updateDashboardMap();  
+      this.updateDashboardMap(); 
+    
+    // 3. over Tab
+    this.targetTab = this.detectTargetTabHeader(midX, y);
+    var phStyle =  this.placeholderDiv.style;
+    if(this.targetTab) {
+      if(phStyle.display == 'none') {
+        for(var i = 0; i < this.tabHeadersMap.length; i++)
+          this.tabHeadersMap[i].setBackgroundAndBorder("", "");
+      }
+      else {
+        phStyle.display = 'none';
+      }
+      this.targetTab.setBackgroundAndBorder(this.PH_BACK_COLOR, this.PH_BORDER);
+    } // 3.2 out without drop.
+    else if(phStyle.display == 'none') {
+      phStyle.display = '';
+      for(var i = 0; i < this.tabHeadersMap.length; i++)
+        this.tabHeadersMap[i].setBackgroundAndBorder("", "");
+    }
   },
 
   onStopDrag : function(e, dragBlock) {
@@ -7799,14 +7819,11 @@ var Dashboard = {
     this.updateDashboardMap();
     
     // 1. move on another tab
-    var x = e.clientX;
-    var y = e.clientY;
-    for(var i = 0; i < this.tabHeaderMap.length; i++) {
-      if(this.isPointIn(x, y, this.tabHeaderMap[i])) {
-        this.onReleaseOverTab(e, dragBlock, this.tabHeaderMap[i].table);
-        return;
-      }
+    if(this.targetTab) {
+      this.targetTab.setBackgroundAndBorder("", "");
+      this.onReleaseOverTab(e, dragBlock, this.targetTab.table);
     }
+    
     // 2. move on other place in the current tab
     var prevWidgetNew = this.getPrevSibling(dragBlock);
     this.onWidgetMovement(e, dragBlock, this.prevWidgetOld, prevWidgetNew);
@@ -7880,7 +7897,15 @@ var Dashboard = {
     }
     return targetFreespace;
   },
-  
+  detectTargetTabHeader : function(midX, y) {
+    var targetTabHeader = null;
+    for(var i = 0; i < this.tabHeadersMap.length; i++) {
+      if(this.isPointIn(midX, y, this.tabHeadersMap[i])) {
+        targetTabHeader = this.tabHeadersMap[i];
+      }
+    }
+    return targetTabHeader;
+  },
   areWidgetsInTheSameColumn : function(widget1, widget2) {
     var parentTD_ID_1 = widget1.parentNode.id;
     var parentTD_ID_2 = widget2.parentNode.id;
@@ -7981,6 +8006,10 @@ var Dashboard = {
       this.top    = findPosY(this.table);
       this.right  = this.table.offsetWidth  + this.left;
       this.bottom = this.table.offsetHeight + this.top;
+    }
+    this.setBackgroundAndBorder = function(background, border) {
+      this.table.style.backgroundColor = background;
+      this.table.style.border = border;
     }
     this.init();
   },
