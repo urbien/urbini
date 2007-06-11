@@ -448,20 +448,6 @@ function hideOpsMenu() {
       return s;
     }
 
-    function addRTE() {
-      //Usage: writeRichText(fieldname, html, width, height, buttons)
-      var rteString = "";
-      if(!document.all) rteString = "<BR>";
-      writeRichText('messageRTE', rteString, '100%', 0, true, false, false, true);
-      // set iframe's margin to 0 on keydown or click
-      addEvent(frames['messageRTE'].document, 'click',   function() {frames['messageRTE'].document.body.style.margin = 0;}, false);
-      addEvent(frames['messageRTE'].document, 'keydown', function() {frames['messageRTE'].document.body.style.margin = 0;}, false);
-      // add keydown handler to RTE's iframe. This is done for handling shortcuts to send the message and
-      // for handling chat member's typing event (for checking member's writing status)
-      addEvent(frames['messageRTE'].document, 'keydown', handleKey, false);
-      addEvent(frames['messageRTE'].document, 'keyup',   handleKey, false); // clear RTE content if sending on Enter. Elseway additional ampty first line is left.
-    }
-
 // ASK for help in chat. THe people that are responsible for support will help.
     function askForHelp(askTo) {
       if (askTo != null)
