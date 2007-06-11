@@ -1,8 +1,8 @@
 //var w = 640/3, h = 480/3, cw = w/2, ch = h/2;
 
 
-function openChat() {
-  openChatWindow(escape(document.title), escape(window.location), false);
+function openChat(event) {
+  openChatWindow(event, escape(document.title), escape(window.location), false);
 }
 
 function openChatWindow(e, title, resUrl, isChatWithTheAgent) {
