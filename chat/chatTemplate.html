@@ -34,7 +34,7 @@
 		//window.onerror=myErrorHandler;
     </script>
   </head>
-  <body onload="RteEngine.start(); initFrames(); checkOnlineStatus(); isChatWithTheAgent('&[isChatWithTheAgent];');" onclick="isWindowInFocus='focused';" onfocus="isWindowInFocus='focused';" onblur="isWindowInFocus='blured';" leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5'>
+  <body onload="RteEngine.register('messageRTE', 'rte_data', RteEngine.chatRTE); initFrames(); checkOnlineStatus(); isChatWithTheAgent('&[isChatWithTheAgent];');" onclick="isWindowInFocus='focused';" onfocus="isWindowInFocus='focused';" onblur="isWindowInFocus='blured';" leftmargin='1' topmargin="0" rightmargin='10' bottommargin='5'>
 	  <input type='hidden' name='realUserName' id='realUserName' value="&[realUserName];">
 	  <input type='hidden' name='aliasUserUri' id='aliasUserUri' value="&[aliasUserUri];">
 
@@ -200,13 +200,13 @@
                     <tr>
                       <td width="100%">
                       <div width="100%" style="position:relative;">
-                        <iframe style='background-color:#ffffff; border:1px outset;' id='messageRTE' name='messageRTE' width="100%" height="200"
-                        class="RTE" fldId="rte_data" type="chatRTE">
+                        <iframe id='messageRTE' name='messageRTE' style='background-color:#ffffff; border:1px outset;'
+                          width="100%" height="200" class="RTE" fldId="rte_data" type="chatRTE">
                         </iframe>
                         <!--
                         id="hdnmessageRTE"
                         -->
-                        <input type="hidden" id="rte_data" name="messageRTE" value="">
+                        <input id="rte_data" type="hidden" name="messageRTE" value="">
 
                       </div>
                       </td>
