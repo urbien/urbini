@@ -541,16 +541,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* Under menu line style (usually the same color as tabs */
 .line { background:#ACD2E2 }
 
-.iphone {
-  background:url(../images/iphone.png);
-  width: 270;
-  height: 492;
-  padding-left: 27px; padding-right: 27px; padding-top: 100px; padding-bottom: 100px;
-  background-repeat: no-repeat;
-}
-
-.iphone1 { overflow:auto; width: 214; height:292 }
-
 /* SKINS */
 /* BLUE */
 .blue  .line { background:#ACD2E2 }
@@ -1048,5 +1038,28 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 	height:13px;
 	cursor: pointer;
 }
+.iphone {
+  background:url(../images/iphone.png);
+  width: 270;
+  height: 492;
+  padding-left: 27px; padding-right: 27px; padding-top: 100px; padding-bottom: 100px;
+  background-repeat: no-repeat;
+}
+.iphone_h {
+  background:url(../images/iphone_h.png);
+  width: 492px;
+  height: 270px;
+  padding-left: 100px; padding-right: 100px; padding-top: 27px; padding-bottom: 27px;
+  background-repeat: no-repeat;
+}
 
+.iphone1 { overflow:auto; width: 214px; height:292px }
+.iphone2 { width: 214px; height:12px;   background:url(../images/iPhoneCarbonFiber.png); }
+.iphone3 { overflow:auto; width: 214px; height:278px }
 
+.iphone1_h { overflow:auto; width: 292px; height:214px }
+.iphone2_h { width: 292px; height:12px;   background:url(../images/iPhoneCarbonFiber.png); }
+.iphone3_h { overflow:auto; width: 292px; height:194px }
+
+/* labels for iphone icons */
+.iphone_l {color:white; font-size:7pt; font-family:tahoma,helvetica,arial}
