@@ -413,6 +413,7 @@ var RteEngine = {
 	// ------------------------------------------
 	// onPasteHandler - (entersepts image paste only)
 	onPasteHandler : function(rteId) {
+	//debugger
     var rteObj = RteEngine.getRteById(rteId);
     if(rteObj == null)
       return;
@@ -542,7 +543,8 @@ var ImageUploader = {
     var forms = document.forms;
     var resourceUri;
     for (var i=0; i<forms.length; i++) {
-      if (forms[i].name  &&  forms[i].name.indexOf('tablePropertyList$') == 0) {
+      if(forms[i].name  &&  forms[i].name.indexOf('tablePropertyList$') == 0
+          && forms[i].elements['uri']) {
         resourceUri = forms[i].elements['uri'].value;
         break;
       }
