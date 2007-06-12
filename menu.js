@@ -1,5 +1,3 @@
-
-
 /**
  * Popup system. Supports menu, dynamicaly generated listboxes, tooltips.
  * Supports row selection (one or many) in menu, listbox. Support stacking up
@@ -675,7 +673,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var target1 = getEventTarget(e);
     if (target1.tagName.toLowerCase() == 'input')
       return true;
-    
+
     var target = getMouseOutTarget(e);
     if (!target)
       return true;
@@ -703,11 +701,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     var currentDiv = self.getCurrentDiv();
     var characterCode = getKeyCode(e); // code typed by the user
-    
+
     var target = getEventTarget(e);
     if (target.tagName.toLowerCase() == 'input')
       return true;
-    
+
     var tr = self.currentRow;
     if (!tr)
       return stopEventPropagation(e);
@@ -876,7 +874,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       if (propertyShortName.indexOf(".type") == idx) {
         if (idx + 5 != pLen)
           prop = propertyShortName.substring(0, idx);
-        else 
+        else
           prop = propertyShortName;
       }
       else
@@ -924,8 +922,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
 
     var select;
-    var isViewCols = currentFormName.indexOf("viewColsList") == 0  ||  
-                     currentFormName.indexOf("gridColsList") == 0  ||  
+    var isViewCols = currentFormName.indexOf("viewColsList") == 0  ||
+                     currentFormName.indexOf("gridColsList") == 0  ||
                      currentFormName.indexOf("filterColsList") == 0;
     if (isViewCols)
       select = prop;
@@ -1157,7 +1155,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     // close popup
     idx = prop.indexOf(".type");
-      
+
     var divId = (idx != -1  &&  prop.length == idx + 5) ? prop.substring(0, idx) + "_" + currentFormName : prop + "_" + currentFormName;
     if (currentResourceUri != null) {
       if (divId.indexOf(".") == 0)
@@ -2230,7 +2228,7 @@ function clearOtherPopups(div) {
   for (var p in loadedPopups) {
     if (p == null)
       continue;
-    if (p != div) 
+    if (p != div)
       loadedPopups[p] = null;
   }
 }
@@ -2240,23 +2238,39 @@ function clearOtherPopups(div) {
  * (!f.tagName) return null; if (f.tagName.toUpperCase() == "FORM") return f;
  * else return getFormNode(f); }
  */
-
 function getTrNode(elem) {
   var e;
 
   var elem_ = elem;
+
+  // IE workaround for menu item's extra mouseover events coming from FORM elements
   if (elem.length > 1) {
-    elem_ = elem[0];
-    if (elem_.length > 1)
-      alert('getTrNode(): element is array: ' + elem_ + ', its first element is: ' + elem_[0]);
+    var elem1;
+    while ( (elem1 = elem_.previousSibling) != null) { // OPTIONS elements in TD
+      elem_ = elem1;
+      if (elem_.tagName.toUpperCase() == 'TD') {
+        elem_ = elem_.parentNode;
+        break;
+      }
+    }
+    if (elem1 == null) { // SELECT element in TD
+      elem_ = elem_.parentNode;
+      if (elem_.tagName.toUpperCase() == 'TD')
+        elem_ = elem_.parentNode;
+      else {
+        alert(elem.tagName + ': ' + elem.id + ', elem_: ' + elem_.tagName + ', elem.parentNode: ' + elem.parentNode.tagName);
+        return null;
+      }
+    }
   }
+  // end IE workaround
+
   if (elem_.tagName.toUpperCase() == 'TR')
     return elem_;
   e = elem_.parentNode;
   if (e) {
-    if (e == elem_)
-      e = elem.parentNode; // if parent of the array element is self - get
-                            // parent of array
+    if (e == elem_) // if parent of the array element is self - get parent of array
+      e = elem.parentNode;
     return getTrNode(e);
   }
   else
@@ -2932,20 +2946,20 @@ var schReassign = {
   srcCell : null,
   curTargetCell : null,
   isActivated : false,
-  
+
   init : function() {
     this.iconDiv = document.createElement('div');
     this.iconDiv.align = "right";
     this.iconDiv.style.width = "100%";
-    
+
     var html = "<a title=\"" + this.TITLE_TEXT + "\"";
     html += "href=\"javascript: ;\" onclick=\"schReassign.activate(event);\">";
     html += "<img src=\"../icons/integrate.gif\" style=\"cursor:pointer;\"></a>";
     this.iconDiv.innerHTML = html;
-    
+
     this.tbody = document.getElementById("schedule");
     if(!this.tbody) throw('Not found "schedule" tbody');
-    
+
     // add handlers
     addEvent(this.tbody, 'mouseover', this._onmouseover, false);
     addEvent(this.tbody, 'mouseout', this._onmouseout, false);
@@ -2953,7 +2967,7 @@ var schReassign = {
     addEvent(document, 'click', this._onwindowclick, false);
     addEvent(document, 'keyup', this._onkeyup, false);
   },
-  
+
   addIcon : function(contentDiv) {
     this.contentDiv = contentDiv;
     if(this.iconDiv == null) {
@@ -2967,7 +2981,7 @@ var schReassign = {
       return;
     this.contentDiv.removeChild(this.iconDiv);
   },
- 
+
   activate : function(e) {
     this.isActivated = true;
     e = getDocumentEvent(e);
@@ -2980,25 +2994,25 @@ var schReassign = {
     schReassign.curTargetCell = null;
     this.isActivated = false;
   },
-  
+
   // event handlers
   _onmouseover : function(e) {
     if (typeof getEventTarget == 'undefined') return;
     if(schReassign.isActivated == false)
       return;
-    
+
     var target = getEventTarget(e);
-    
+
     if(target.tagName.toLowerCase() != "td") {
       target = getAncestorByTagName(target, "td")
     }
-    
+
     // 1. source cell
     if(schReassign.srcCell.id == target.id) {
       schReassign.tbody.style.cursor = "";
       return;
     }
-    
+
     // 2. the same target
     if(schReassign.curTargetCell != null) {
       if(schReassign.curTargetCell.id == target.id)
@@ -3021,7 +3035,7 @@ var schReassign = {
     if(schReassign.isActivated == false)
         return;
     if(schReassign.curTargetCell != null) {
-      if(schReassign.curTargetCell.id != schReassign.srcCell.id) {  
+      if(schReassign.curTargetCell.id != schReassign.srcCell.id) {
         schReassign.moveProcedure(schReassign.srcCell, schReassign.curTargetCell);
         schReassign.disactivate();
       }
@@ -3031,7 +3045,7 @@ var schReassign = {
     e = getDocumentEvent(e);
     stopEventPropagation(e)
   },
-  
+
   _onmouseout : function() {
     if (typeof schReassign == 'undefined') return;
     if(schReassign.isActivated == false)
@@ -3047,10 +3061,10 @@ var schReassign = {
   },
   _onkeyup : function(e) {
   	e = getDocumentEvent(e);
-		var charCode = (e.charCode) ? e.charCode : ((e.keyCode) ? e.keyCode : 
+		var charCode = (e.charCode) ? e.charCode : ((e.keyCode) ? e.keyCode :
 			((e.which) ? e.which : 0));
 		if (charCode == 27) // escape
-		    schReassign.disactivate();  
+		    schReassign.disactivate();
   },
   //
   moveProcedure : function(srcCell, targetCell) {
@@ -4382,7 +4396,7 @@ function incrementallyChangeOpacity(targetId, fade) {
 function changeOpacity(obj, level) {
 		if(typeof obj.style.MozOpacity != 'undefined')
 			obj.style.MozOpacity = level;
-		else if(typeof obj.style.opacity != 'undefined') 
+		else if(typeof obj.style.opacity != 'undefined')
 			obj.style.opacity = level;
 		else if(obj.style.filter != 'undefined')
 			obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
@@ -5405,7 +5419,7 @@ function showDiv(e, td, hideDivId) {
 // Close neiboghring bookmark and update main Bookmark
 function closeDiv(e, hideDivId) {
   e = getDocumentEvent(e);
-  
+
   var elm = getTargetElement(e);
   var div = document.getElementById(hideDivId);
   if (!elm) {
@@ -5414,11 +5428,11 @@ function closeDiv(e, hideDivId) {
   }
   var a = elm.parentNode;
   var url = a.href;
-  if (url == 'about:blank') { 
+  if (url == 'about:blank') {
     var widget = hideDivId.substring("widget_".length);
     if (widget.indexOf('http') == 0)
       postRequest(e, 'delete', 'uri=' + encodeURIComponent(widget), div, elm, closeDivCallback);
-    else  
+    else
       hideDiv(e, hideDivId);
     return stopEventPropagation(e);
   }
@@ -5436,19 +5450,19 @@ function closeDiv(e, hideDivId) {
 // Show/hide all neiboghring bookmarks and update main Bookmark
 function showHideAll(e, divId) {
   e = getDocumentEvent(e);
-  
+
   var elm = getTargetElement(e);
-  
+
   var showAll = elm.src.indexOf('show.gif') != -1;
-  
+
   var a = elm.parentNode;
   var url = a.href;
   var idx = url.indexOf('?');
   var div = document.getElementById(divId);
   var href = document.location.href;
   postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, showHideCallback);
-  
-  function showHideCallback() { 
+
+  function showHideCallback() {
     var idx = href.indexOf("&-showAll=");
     if (idx != -1) {
       var idx1 = href.indexOf("&", idx + 1);
@@ -5471,7 +5485,7 @@ function showHideAll(e, divId) {
 // Minimize/restore neiboghring bookmark and update main Bookmark
 function minimizeRestoreDiv(e, hideDivId, property) {
   e = getDocumentEvent(e);
-  
+
   var elm = getTargetElement(e);
   var div = document.getElementById(hideDivId);
   if (!elm) {
@@ -5524,7 +5538,7 @@ function minMaxAndFlip(e, div) {
     hideDiv(e, showDivId + "_back");
     showDiv1(e, showDivId);
   }
-  else 
+  else
     hideDiv(e, hideDivId + "_back");
   minMax(e, hideDivId);
 }
@@ -5649,9 +5663,9 @@ function showTab(e, td, hideDivId, unhideDivId) {
   execJS.runDivCode(curDiv);
   if(typeof ImageAnnotations != 'undefined')
     ImageAnnotations.onTabSelection(curDiv);
-  
+
   resizeIframeOnTabSelection(curDiv); // IE
-  
+
   return stopEventPropagation(e);
 }
 var curSpan;
@@ -5993,14 +6007,14 @@ function onDlgContentResize(e){
 
   dlgDiv.style.width  = target.offsetWidth;
   dlgDiv.style.height = target.offsetHeight;
-  
+
   var iframe = document.getElementById('dialogIframe');
   if(!iframe || iframe.style.display == 'none')
     return;
   var SHADOW_WIDTH = 11;
   iframe.style.width  = target.offsetWidth - SHADOW_WIDTH;
   iframe.style.height = target.offsetHeight - SHADOW_WIDTH;
-  
+
 }
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
   // "hack" resize dialog if its contents resized (twice calls of onresize)
@@ -6009,7 +6023,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     tbl.onresize = onDlgContentResize;
     isResizedOneTime = false;
   }
-  
+
   var istyle   = iframe.style;
   if (Popup.ie)
     istyle.visibility    = Popup.HIDDEN;
@@ -6144,7 +6158,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   div.style.display    = 'inline';
   // commented out temporarily since listbox in dialog is not visible
   // this unfortunately will cause a problem with popup over form fields
-  
+
   // Make position/size of the underlying iframe same as div's position/size
   var iframeLeft = left;
   var iframeTop = top;
@@ -6166,7 +6180,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       iframeTop += 20;
     }
   }
-  
+
   if (Popup.ie) // only IE has a problem with form elements 'showing through' the popup
     istyle.display = 'inline';
   reposition(div,    left, top); // move the div box to the adjusted position
@@ -6187,7 +6201,7 @@ function setDivInvisible(div, iframe) {
     div.style.display    = "none";
   if (iframe && iframe.style)
     iframe.style.display = "none";
-    
+
   // return popupIframe to body from a dialog (see setDivVisible)
   var popupIframe = getChildById(div, 'popupIframe');
   if(popupIframe)
@@ -6460,7 +6474,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
     if(typeof noCache != 'undefined' && noCache == true) // for widgets
-      http_request.setRequestHeader("Cache-Control","no-cache"); 
+      http_request.setRequestHeader("Cache-Control","no-cache");
 
     // below 2 line commented - made IE wait with ~1 minute timeout
     if (parameters) {
@@ -6786,7 +6800,7 @@ var DragEngine = {
 	z: 0, x: 0, y: 0, offsetx : null, offsety : null, dragBlock : null, dragapproved : 0,
 	dialogIframe : null, // <- IE prevents dialog from <select>
 	dragHandler : null,
-	
+
 	initialize: function(){
 		addEvent(document, 'mousedown', this.startDrag, false);
 		addEvent(document, 'mouseup', this.stopDrag, false);
@@ -6800,7 +6814,7 @@ var DragEngine = {
 
 		if((titleObj =  getAncestorById(dragObj, "titleBar")) == null &&
 		    (titleObj =  getAncestorByAttribute(dragObj, "className", "dragable")) == null)
-		  return;	
+		  return;
 		var dragHandlerStr = titleObj.getAttribute("draghandler");
 		if(dragHandlerStr == null || dragHandlerStr.length == 0) {
   	  // deal with the dialog 'pane2'
@@ -6813,10 +6827,10 @@ var DragEngine = {
 		}
 		if(!DragEngine.dragBlock)
 		  return;
-		
+
 		if(DragEngine.dragHandler && DragEngine.dragHandler.onStartDrag)
-		  DragEngine.dragHandler.onStartDrag(DragEngine.dragBlock);  
-		
+		  DragEngine.dragHandler.onStartDrag(DragEngine.dragBlock);
+
 		if (isNaN(parseInt(DragEngine.dragBlock.style.left))) {DragEngine.dragBlock.style.left = 0;}
 		if (isNaN(parseInt(DragEngine.dragBlock.style.top)))  {DragEngine.dragBlock.style.top = 0;}
 		DragEngine.offsetx = parseInt(DragEngine.dragBlock.style.left);
@@ -6825,8 +6839,8 @@ var DragEngine = {
 		DragEngine.y = evtobj.clientY
 		if (evtobj.preventDefault)
 			evtobj.preventDefault();
-	  
-	  DragEngine.dragapproved = 1;		
+
+	  DragEngine.dragapproved = 1;
 	},
 	drag: function(e){
 		var evtobj=window.event? window.event : e
@@ -6841,16 +6855,16 @@ var DragEngine = {
 			  DragEngine.dialogIframe.style.left = left;
  			  DragEngine.dialogIframe.style.top = top;
 			}
-			
+
 			if(DragEngine.dragHandler && DragEngine.dragHandler.onDrag)
-  		  DragEngine.dragHandler.onDrag(DragEngine.dragBlock, left, top);  
+  		  DragEngine.dragHandler.onDrag(DragEngine.dragBlock, left, top);
 
 			return false;
 		}
 	},
 	stopDrag: function(e) {
   	if(DragEngine.dragHandler && DragEngine.dragHandler.onStopDrag) {
-		  DragEngine.dragHandler.onStopDrag(e, DragEngine.dragBlock);  
+		  DragEngine.dragHandler.onStopDrag(e, DragEngine.dragBlock);
 		  DragEngine.dragHandler = null;
 		}
 
@@ -7336,7 +7350,7 @@ var advancedTooltip = {
   showOptionsBtn : function()  {
     if(!this.tooltip)
       this.init();
-    if(this.optBtn.obj)  
+    if(this.optBtn.obj)
       this.optBtn.obj.style.display = "";
   },
   hideOptionsBtn : function()  {
@@ -7551,7 +7565,7 @@ var dictionaryHandler = {
       selText = range.text;
       hotspot = range.parentElement();
     }
-    
+
     selText = trim(selText);
     if(selText != "") {
       var len = selText.length;
@@ -7559,7 +7573,7 @@ var dictionaryHandler = {
         var idx = selText.lastIndexOf('(');
         if (idx != -1) {
           var s = selText.substring(idx + 1, len - 1);
-          if (s == 's') 
+          if (s == 's')
             selText = selText.substring(0, idx);
           else {
             try {
@@ -7571,7 +7585,7 @@ var dictionaryHandler = {
           }
         }
       }
-      
+
       dictionaryHandler.translate(e, hotspot, selText);
     }
   },
@@ -7596,7 +7610,7 @@ var dictionaryHandler = {
   onTranslationCallback : function(clonedEvent, div, hotspot, responseText) {
     showDialog(clonedEvent, div, hotspot, responseText); //test //"<div><h1>TEST</h1></div>"
   }
-  
+
 }
 /*
 var hideMenu;
@@ -7625,14 +7639,14 @@ function switchMenuMode(e, userUri) {
   if (!elm)
     return;
   var uri = 'proppatch';
-  var params = '-$action=showPropertiesForEdit&submitUpdate=y&uri=' + encodeURIComponent(userUri); 
-  if (elm.src.indexOf('showHideMenu.gif') != -1) 
+  var params = '-$action=showPropertiesForEdit&submitUpdate=y&uri=' + encodeURIComponent(userUri);
+  if (elm.src.indexOf('showHideMenu.gif') != -1)
     params +='&.dashboardMode=false';
   else
     params +='&.dashboardMode=true';
-  
+
   var div = document.getElementById('menuBar1');
-  
+
   var ret = stopEventPropagation(e);
   var href = document.location.href;
   postRequest(e, uri, params, div, elm, menuCallback);
@@ -7648,31 +7662,31 @@ function switchMenuMode(e, userUri) {
 ********************************************************/
 var Dashboard = {
   MIN_COLUMN_WIDTH : 50,
-  
+
   PH_BACK_COLOR : "#eee",
   PH_BORDER : "1px dashed #f00",
   DASHBOARD_ID : "dashboard",
-  
+
   placeholderDiv : null,
   isDragMode : false,
-  
+
   widgetsMap : null,
   freeSpacesMap : null,
   tabHeadersMap : null,
-  
+
   targetTab : null,
-  
+
   prevY : 0,
   isDirUp : true,
-  
+
   prevWidgetOld : null,
-  
+
   // drag interface functions -----
   getDragBlock : function(catchedObj) {
     var widget = getAncestorByAttribute(catchedObj, "className", "widget"); // this.getWidgetOnChild(catchedObj);
     if(widget && this.widgetsMap == null)
       this.initDashboardMap(widget);
-    
+
     return widget;
   },
   initDashboardMap : function(theWidget) {
@@ -7683,7 +7697,7 @@ var Dashboard = {
     for(var i = 0; i < divs.length; i++) {
       if(divs[i].className == "widget") {
         var widgetRect = new Dashboard.WidgetRect(divs[i]);
-        this.widgetsMap.push(widgetRect); 
+        this.widgetsMap.push(widgetRect);
       }
     }
     // 2. free spaces
@@ -7691,7 +7705,7 @@ var Dashboard = {
     this.freeSpacesMap = new Array();
     for(var i = 0; i < cols.length; i++) {
       var freeSpaceRect = new Dashboard.FreeSpaceRect(cols[i], this.widgetsMap);
-      this.freeSpacesMap.push(freeSpaceRect); 
+      this.freeSpacesMap.push(freeSpaceRect);
       // set min column width on case if the column has no widgets.
       cols[i].width = this.MIN_COLUMN_WIDTH;
     }
@@ -7704,7 +7718,7 @@ var Dashboard = {
         var tabHeader = new Dashboard.TabHeaderRect(tables[i]);
         this.tabHeadersMap.push(tabHeader);
       }
-    } 
+    }
   },
   updateDashboardMap : function() {
     // 1. widgets
@@ -7714,31 +7728,31 @@ var Dashboard = {
     for(var i = 0; i < this.freeSpacesMap.length; i++)
         this.freeSpacesMap[i].update();
   },
-  
+
   onStartDrag : function(dragBlock) {
     this.isDragMode = true;
-    
+
     if(this.placeholderDiv == null)
       this.createPlaceholder();
-    
+
     var width = dragBlock.offsetWidth;
     var height = dragBlock.offsetHeight;
-    
+
     var phStyle = this.placeholderDiv.style;
     var dbStyle = dragBlock.style;
 
 //    phStyle.width   = width;
     phStyle.height  = height;
     phStyle.display = "block";
-   
+
     var x = findPosX(dragBlock);
     var y = findPosY(dragBlock);
-    
+
     dbStyle.width = width;
     dbStyle.left  = x;
     dbStyle.top   = y;
     dbStyle.position = "absolute";
-    
+
     this.prevWidgetOld = this.getPrevSibling(dragBlock);
     this.prevY = y;
 
@@ -7747,14 +7761,14 @@ var Dashboard = {
   onDrag : function(dragBlock, x, y) {
     if(Dashboard.isDragMode == false)
       return;
-    
+
     // 1. preparing
-    
+
     // 1.1 middle of the drag block
     var midX = x + Math.ceil(dragBlock.offsetWidth / 2);
     var midY = y + Math.ceil(dragBlock.offsetHeight / 2);
-    
-    // 1.2 
+
+    // 1.2
     this.isDirUp = this.detectDirection(y);
     // 1.3 get target widget under middle point
     var targetWidget = this.detectTargetWidget(midX, midY, dragBlock.id);
@@ -7762,12 +7776,12 @@ var Dashboard = {
     var targetFreespace = null;
     if(targetWidget == null)
       targetFreespace = this.detectTargetFreespace(midX, midY);
-      
+
     // 2. move placeholder if need
     var moved = false;
     if(targetWidget) {
-      var isSameColumn = Dashboard.areWidgetsInTheSameColumn(targetWidget, Dashboard.placeholderDiv); 
-      
+      var isSameColumn = Dashboard.areWidgetsInTheSameColumn(targetWidget, Dashboard.placeholderDiv);
+
       // 2.1 swap horizontal
       if(isSameColumn == false) {
         this.swapHorizontal(targetWidget);
@@ -7782,10 +7796,10 @@ var Dashboard = {
     // 2.3 free space
     else if(targetFreespace)
       this.setInFreeSpace(targetFreespace);
-      
+
     if(moved)
-      this.updateDashboardMap(); 
-    
+      this.updateDashboardMap();
+
     // 3. over Tab
     this.targetTab = this.detectTargetTabHeader(midX, y);
     var phStyle =  this.placeholderDiv.style;
@@ -7811,19 +7825,19 @@ var Dashboard = {
     if(!dragBlock)
       return;
     var dbStyle = dragBlock.style;
-    
+
     this.placeholderDiv.style.display = "none";
     dbStyle.position = "";
-    dbStyle.width = "100%"; 
+    dbStyle.width = "100%";
     swapNodes(dragBlock, this.placeholderDiv);
     this.updateDashboardMap();
-    
+
     // 1. move on another tab
     if(this.targetTab) {
       this.targetTab.setBackgroundAndBorder("", "");
       this.onReleaseOverTab(e, dragBlock, this.targetTab.table);
     }
-    
+
     // 2. move on other place in the current tab
     var prevWidgetNew = this.getPrevSibling(dragBlock);
     this.onWidgetMovement(e, dragBlock, this.prevWidgetOld, prevWidgetNew);
@@ -7839,7 +7853,7 @@ var Dashboard = {
     phStyle.border = this.PH_BORDER;
     document.body.appendChild(this.placeholderDiv);
   },
-  
+
   swapVertical : function(targetWidget) {
     swapNodes(targetWidget, Dashboard.placeholderDiv);
   },
@@ -7852,11 +7866,11 @@ var Dashboard = {
     var colObj = targetFreespace.getColumn();
     colObj.appendChild(this.placeholderDiv);
   },
-  
+
   needVerticalSwap : function(targetWidget) {
     var needSwap = false;
     var isWidgetUpper = this.isWidgetUpper(targetWidget);
-    
+
     if(this.isDirUp == null)
       return false;
     if((isWidgetUpper && this.isDirUp) ||
@@ -7865,14 +7879,14 @@ var Dashboard = {
     }
     return needSwap;
   },
-  
+
   detectDirection : function(y)  {
     var isDirUp = null;
     if(this.prevY > y)
       isDirUp = true;
     else if(this.prevY < y)
       isDirUp = false;
-    
+
     this.prevY = y;
     return isDirUp;
   },
@@ -7887,7 +7901,7 @@ var Dashboard = {
     }
     return targetWidget;
   },
-  
+
   detectTargetFreespace : function(midX, midY) {
     var targetFreespace = null;
     for(var i = 0; i < this.freeSpacesMap.length; i++) {
@@ -7912,7 +7926,7 @@ var Dashboard = {
     if(parentTD_ID_1 == parentTD_ID_2) {
       return true;
     }
-    return false;  
+    return false;
   },
   isPointIn : function(x, y, rect) {
     if(rect.left < x &&
@@ -7920,23 +7934,23 @@ var Dashboard = {
       rect.top < y &&
       rect.bottom > y)
         return true;
-      return false;     
+      return false;
   },
   // relative to the placeholder
   isWidgetUpper : function(widget) {
     var prev = this.getPrevSibling(this.placeholderDiv); //.previousSibling;
    // while(prev && prev.nodeType != 1) // skip whitespaces
-   //   prev = prev.previousSibling; 
-    
+   //   prev = prev.previousSibling;
+
     if(prev && prev.id == widget.id) {
       return true;
     }
-    return false;  
+    return false;
   },
   getPrevSibling : function(widgetDiv) {
     var prev = widgetDiv.previousSibling;
     while(prev && prev.nodeType != 1) // skip whitespaces
-      prev = prev.previousSibling; 
+      prev = prev.previousSibling;
 
     return prev;
   },
@@ -7947,7 +7961,7 @@ var Dashboard = {
     this.top;
     this.right;
     this.bottom;
-    
+
     this.update = function() {
       this.left   = findPosX(this.widgetDiv);
       this.top    = findPosY(this.widgetDiv);
@@ -7966,7 +7980,7 @@ var Dashboard = {
     // "constructor"
     this.update();
   },
-  
+
   FreeSpaceRect : function(column, widgetsMap) {
     this.column     = column;
     this.widgetsMap = widgetsMap;
@@ -7974,7 +7988,7 @@ var Dashboard = {
     this.top = 0;
     this.right = 0;
     this.bottom = 0;
-    
+
     this.update = function() {
       // 1. whole column
       this.left   = findPosX(this.column);
@@ -8000,7 +8014,7 @@ var Dashboard = {
     this.top = 0;
     this.right = 0;
     this.bottom = 0;
-    
+
     this.init = function() {
       this.left   = findPosX(this.table);
       this.top    = findPosY(this.table);
@@ -8018,7 +8032,7 @@ var Dashboard = {
   onWidgetMovement : function(e, widget, prevWidgetOld, prevWidgetNew) {
     var ret = stopEventPropagation(e);
     var wLen = 'widget_'.length;
-    
+
     var widgetUri = widget.id.substring(wLen);
     var td = getTdNode(widget);
     var newCol = parseInt(td.id.substring('col_'.length));
@@ -8044,7 +8058,7 @@ var Dashboard = {
     }
     return ret;
   },
-  
+
   onReleaseOverTab : function(e, widget, table) {
     var elms = table.getElementsByTagName('a');
     var a;
@@ -8062,7 +8076,7 @@ var Dashboard = {
     var widgetUri = widget.id.substring(wLen);
     var href = a.href;
     var params = 'uri=' + encodeURIComponent(widgetUri) + '&submitUpdate=y&.parent_verified=y&.parent_select=' + encodeURIComponent(tab);
-    
+
     postRequest(e, 'proppatch', params, widget, a, callback);
     return ret;
     function callback(event, widget) {
@@ -8078,7 +8092,6 @@ var WidgetFlip = {
 //to disappear.  It adds the appropriate values to the animation data structure and sets the animation in motion.
 
   flipShown : false,    // a flag used to signify if the flipper is currently shown or not.
-
 
   // A structure that holds information that is needed for the animation to run.
   fading : {duration:0, starttime:0, end:1.0, now:0.0, start:0.0, firstElement:null, timer:null},
@@ -8104,9 +8117,9 @@ var WidgetFlip = {
       this.fading.timer  = null;
     }
     this.currentWidgetId = divId;
-    this.showflip(e, divId);      
+    this.showflip(e, divId);
     var starttime = (new Date).getTime() - 13;    // set it back one frame
-    
+
     this.fading.duration = 500;                       // fading time, in ms
     this.fading.starttime = starttime;                    // specify the start time
     var div = document.getElementById(divId);
@@ -8130,8 +8143,8 @@ var WidgetFlip = {
         return stopEventPropagation(e);
       e.setAttribute('eventProcessed', 'true');
     }
-    
-    if (!this.flipShown) 
+
+    if (!this.flipShown)
       return;
     // fade in the flip widget
     if (this.fading.timer != null) {
@@ -8140,10 +8153,10 @@ var WidgetFlip = {
         this.hideflip(e, this.currentWidgetId);
       this.fading.timer  = null;
     }
-    
+
     this.currentWidgetId = divId;
     var starttime = (new Date).getTime() - 13;
-    
+
     this.fading.duration = 500;
     this.fading.starttime = starttime;
     var div = document.getElementById(divId);
@@ -8162,12 +8175,12 @@ var WidgetFlip = {
   },
 
   /**
-   * fades widget flip image. 
+   * fades widget flip image.
    */
   fade : function ()  {
     var time = (new Date).getTime();
     var elapsedTime = this.getElapsedTime(time - this.fading.starttime, this.fading.duration);
-    
+
     if (elapsedTime >= this.fading.duration) {
       clearInterval (this.fading.timer);
       this.fading.timer = null;
@@ -8227,7 +8240,7 @@ var WidgetFlip = {
     return null;
     */
   },
-  
+
   getFlipDiv1 : function (frontDiv, divId) {
     var elms = frontDiv.getElementsByTagName('div');
     for (var i=0; i<elms.length; i++) {
@@ -8236,7 +8249,7 @@ var WidgetFlip = {
     }
     return null;
   },
-  
+
   showflip : function (event, divId) {
     this.flipShown = true;
     var div = document.getElementById(divId);
@@ -8250,20 +8263,21 @@ var WidgetFlip = {
       else
         this.flipImg.src = baseUri + "images/flip.png";
     }
-    if (flipDiv) 
+    if (flipDiv)
       flipDiv.appendChild(this.flipImg);
   },
-  
+
   hideflip : function (event, divId) {
     this.flipShown = false;
     var div = document.getElementById(divId);
-    
+
     flipDiv = this.getFlipDiv1(div, 'flip');
-    if (flipDiv) 
+    if (flipDiv)
       flipDiv.removeChild(this.flipImg);
   }
 }
-/* submits preferences form on the back of the widget and repaints widget */ 
+
+/* submits preferences form on the back of the widget and repaints widget */
 function submitWidgetPreferences(event, formId) {
   var ret = stopEventPropagation(event);
   if (formId.indexOf("pref_") == -1)
@@ -8272,19 +8286,19 @@ function submitWidgetPreferences(event, formId) {
   if (!form)
     return ret;
   var refersh = form.elements['.refresh'].value;
-  
+
   var param = getFormFilters(form, true) + '&submitUpdate=y';
-  
+
   var url = form.action;
-  var divId =  (formId.indexOf("_http") != -1) ? 'widget_' + formId.substring(5) : 'div_' + formId.substring(5); 
-  
+  var divId =  (formId.indexOf("_http") != -1) ? 'widget_' + formId.substring(5) : 'div_' + formId.substring(5);
+
   var widgetDiv = document.getElementById(divId);
-  
+
   var elm = getTargetElement(event);
 //  var div = document.createElement('div');
 //  div.style.display = "none";
 //  postRequest(event, url, param, div, elm, refreshWidget);
-    
+
     if(OperaWidget.isWidget()) {
       OperaWidget.resizeOnFrontside();
       // 'formId.substring(5)' - widget type url
@@ -8305,10 +8319,10 @@ var WidgetRefresher = {
     // 1. prepare new "widget member" or stop old one.
     if(typeof this.widgetsArr[divId] == 'undefined')
       this.widgetsArr[divId] = new Object();
-    else 
-      clearInterval(this.widgetsArr[divId].timerId); 
+    else
+      clearInterval(this.widgetsArr[divId].timerId);
 
-    // 2. Find the boorkmark url that is a part of "outer" div widget div 
+    // 2. Find the boorkmark url that is a part of "outer" div widget div
     // divId is an widget content div
     var obj = document.getElementById(divId);
     if(!obj)
@@ -8322,7 +8336,7 @@ var WidgetRefresher = {
 	  }
 	  if(obj.id.length == 0)
 	    return;
-	  
+
 	  var widgetDivId = obj.id;
 	  this.widgetsArr[divId].bookmarkUrl = widgetDivId.substr(7);
 
@@ -8345,7 +8359,7 @@ var WidgetRefresher = {
         return; // no update
       interval = intervalSeconds * 1000;
     }
-    var timerId = setInterval("WidgetRefresher._onInterval(\"" + divId + "\")", interval); 
+    var timerId = setInterval("WidgetRefresher._onInterval(\"" + divId + "\")", interval);
     this.widgetsArr[divId].timerId = timerId;
   },
   updateWidgetByUrl : function(url) {
@@ -8364,22 +8378,21 @@ var WidgetRefresher = {
       // refresh whole the widget including backside
       var widgetDivId = "widget_" + WidgetRefresher.widgetsArr[divId].bookmarkUrl;
       divToRefresh = document.getElementById(widgetDivId);
-      
     postRequest(null, url, params, divToRefresh, null, WidgetRefresher.refresh, true);
   },
   // called by postRequest
   refresh : function(event, div, hotSpot, content)  {
-    div.innerHTML = content;   
+    div.innerHTML = content;
     if(OperaWidget.isWidget())
       OperaWidget.onWidgetRefresh();
   }
 }
 
 function changeSkin(event) {
-  var e = getDocumentEvent(event); 
-  if (!e) 
+  var e = getDocumentEvent(event);
+  if (!e)
     return;
-  
+
   var target = getTargetElement(e);
   var value = target.value;
   var t = target;
@@ -8397,16 +8410,18 @@ function changeSkin(event) {
     t = parent;
   }
 }
+
 function addthis_click(event, addthis_title) {
-  var e = getDocumentEvent(event); 
-  if (!e) 
+  var e = getDocumentEvent(event);
+  if (!e)
     return;
 
   var target = getTargetElement(e);
-  
+
   window.open(target.href, addthis_title, 'scrollbars=yes,menubar=no,width=620,height=520,resizable=yes,toolbar=no,location=no,status=no,screenX=200,screenY=100,left=200,top=100');
   return stopEventPropagation(event);
-} 
+}
+
 
 var OperaWidget = {
   CONTENT_KEY_NAME   : "content",
@@ -8422,11 +8437,11 @@ var OperaWidget = {
   widgetWidth  : 0,
   widgetHeight : 0,
   refreshInterval : -1, // default
-  
+
   init : function(widgetDivId) {
     if(typeof widget == 'undefined')
       return;
-    
+
     // 1. widget div
     this.widgetDiv = document.getElementById(widgetDivId);
     if(!this.widgetDiv)
@@ -8434,7 +8449,7 @@ var OperaWidget = {
     // 2. front & back children divs
     this.frontDiv = getChildByAttribute(widgetDiv, "className", "front");
     var backId =  this.frontDiv.id + "_back";
-    this.backDiv = getChildById(widgetDiv, backId); 
+    this.backDiv = getChildById(widgetDiv, backId);
     // 3. restore content from pref
 /*
     var content = widget.preferenceForKey(this.CONTENT_KEY_NAME);
@@ -8442,9 +8457,9 @@ var OperaWidget = {
       content = content.replace(/\r|\n|\r\n|\s/g, " ");
       this.widgetDiv.innerHTML = content;
     }
-*/    
+*/
     // 3. fitWindowSize does not work on this moment!
-    //this.fitWindowSize();  
+    //this.fitWindowSize();
     // 6. init prefs on the back
     this.applyPrefs();
   },
@@ -8456,10 +8471,10 @@ var OperaWidget = {
   fitWindowSize : function() {
     if(typeof widget == 'undefined')
       return;
-      
+
     if(OperaWidget.frontDiv.style.display == 'none')
       return;
-    
+
     window.resizeTo(this.MAX_WND_WIDTH, this.MAX_WND_HEIGHT);
     var width = this.widgetDiv.offsetWidth;
     var height = this.widgetDiv.offsetHeight;
@@ -8470,7 +8485,7 @@ var OperaWidget = {
     if(typeof widget == 'undefined')
       return;
     if(this.widgetWidth == 0 || this.widgetHeight == 0)
-      return;  
+      return;
     window.resizeTo(this.widgetWidth, this.widgetHeight);
   },
   resizeOnBackside : function() {
@@ -8500,9 +8515,9 @@ var OperaWidget = {
     var intervalNumber = 15;       // key: "refresh.seconds"
     var intervalType = "minute(s)"; // key: "refresh.durationType"
     var skinName = "";
-    
+
     var prefPairs = prefsStr.split('&');
-    
+
     // get pref form (on each refresh)
     forms = widgetDiv.getElementsByTagName("form");
     for(var i = 0; i < forms.length; i++)
@@ -8510,22 +8525,22 @@ var OperaWidget = {
         this.prefForm = forms[i];
         break;
       }
-    
+
     for(var i = 0; i < prefPairs.length; i++) {
       var pair = prefPairs[i].split('=');
       if(typeof pair[1] == 'undefined')
         continue;
-      
+
       // set <input> values
       if(typeof this.prefForm[pair[0]] != 'undefined')
         this.prefForm[pair[0]].value = pair[1];
-      
+
       // interval values
       if(pair[0] == "refresh.seconds")
         intervalNumber = pair[1];
       if(pair[0] == "refresh.durationType")
         intervalType = pair[1];
-      
+
       if(pair[0] == ".skin")
         skinName = pair[1];
     }
@@ -8540,28 +8555,28 @@ var OperaWidget = {
       var refreshInterval = 1;
       refreshInterval *= intervalNumber;
       if(intervalType.indexOf("minute(s)") == 0) {
-        refreshInterval *= 1000 * 60; 
+        refreshInterval *= 1000 * 60;
       }
       else if(intervalType == "hour(s)")
-        refreshInterval *= 1000 * 360; 
+        refreshInterval *= 1000 * 360;
       else if(intervalType == "day(s)")
-        refreshInterval *= 1000 * 360 * 24; 
+        refreshInterval *= 1000 * 360 * 24;
       else if(intervalType == "week(s)")
         refreshInterval *= 1000 * 360 * 24 * 7;
       else if(intervalType == "month(s)")
         refreshInterval *= 1000 * 360 * 24 * 30;
       else if(intervalType == "years(s)")
         refreshInterval *= 1000 * 360 * 24 * 360;
-      
-      this.refreshInterval = refreshInterval;  
-  }, 
+
+      this.refreshInterval = refreshInterval;
+  },
   getRefreshInterval : function() {
     return this.refreshInterval;
   },
   isWidget : function() {
     if(typeof widget != 'undefined')
       return true;
-    return false;  
+    return false;
   }
 }
 
@@ -8578,7 +8593,7 @@ var downloadWidget = {
     var obj = imgObj;
     // find parent backside div
     var id;
-    
+
     while(obj != null) {
       id =  obj.id;
 		  if(obj.className == "hiddenDiv" && id.indexOf("_back") != -1) {
@@ -8589,7 +8604,7 @@ var downloadWidget = {
 	  }
     // key in sizesArr array is ID of frontsize, so without "_back" (5 letters)
     var key = id.substr(0, id.length - 5);
-    
+
     // temporary hack; margin = windowSize - sivSize
     var MARGIN_X = 9;
     var MARGIN_Y = 9;
