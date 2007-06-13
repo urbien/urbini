@@ -107,9 +107,8 @@ var RteEngine = {
 		if(this.toUseTArea == false) {
 		  try {
 			  rteObj = new Rte(iframeObj, rteDataFieldId, rtePref);
-		  }catch(e) {	this.toUseTArea = true;  }
+		  }catch(e) {	this.toUseTArea = true;}
 		}
-
     if(this.toUseTArea)
   	  rteObj = new TArea(iframeObj, rteDataFieldId, rtePref);
 
@@ -284,7 +283,9 @@ var RteEngine = {
 		for(var i = 0; i < len; i++) {
 		
   		var itemDiv;	
-	  	if(navigator.appName == "Opera") // Opera does not want to work with font directly
+  		var userAgent = navigator.userAgent.toLowerCase();
+	  	 // Opera & Safari do not want to work with font directly
+	  	if(userAgent.indexOf('opera') != -1 || userAgent.indexOf('safari') != -1 )
 		  	itemDiv = document.createElement('div');
 			else
 			  itemDiv = document.createElement(this.STYLES[i].value);
@@ -724,8 +725,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.isOpera = false;
 	this.isNetscape = false;
 
-	this.skipCloseAll = false;
-	this.skipClose_IE_Opera = false;
+	this.skipClose = false;
 	this.FFhacked = false;
   this.br_appended = false; // FF: when RTE is empty it does not show caret.
   
@@ -764,8 +764,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// set text and edit mode
 		this.window = this.iframeObj.contentWindow;
 		this.document = this.window.document;
-		if(typeof this.document.designMode == 'undefined')
+		if(typeof this.document.designMode == 'undefined') {
+		  alert("designMode is not surpported");
 		  throw "designMode is not surpported";
+		}
 		this.document.designMode = "On";
 		this.initFrameHeight = this.iframeObj.clientHeight;
 		this.initContent();
@@ -801,12 +803,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		addEvent(this.document.body, 'paste', this._onpaste, false);
 
 		if(this.rtePref.autoClose) {
-			if(this.isIE)
-				addEvent(this.iframeObj, 'focus', this.onfocus, false);
-			else
-				addEvent(this.document, 'focus', this.onfocus, false);
-
-			addEvent(document, 'mouseup', this.onlosefocus, false);
+      addEvent(this.document, 'click', this.onfocus, false);
+			addEvent(document, 'click', this.onlosefocus, false);
 		}
 	}
   this.loadCSS = function() {
@@ -883,7 +881,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// interface function which be called by the toolbar
 	// "onOverflowBtn"
 	this.onOverflowBtn = function() {
-		this.skipCloseAll = true;
+		this.skipClose = true;
 	}
 	this.initContent = function() {
 		var text = this.getDataField().value;
@@ -923,7 +921,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			this.curRange.collapse(false);
 			this.curRange.select();
 		}
-		this.skipCloseAll = true;
+		this.skipClose = true;
 	}
 	// not source view & (hack:) not immediate execution that autoclose the RTE
 	this.isAllowedToExecute = function() {
@@ -999,6 +997,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	  if(i_am.toolbar == null)
 	    i_am.toolbar = i_am.createToolbar();
 
+    if(i_am.toolbar.isVisible())
+      return;
+    
 		i_am.iframeObj.style.marginTop = i_am.toolbar.getHeight() + 1;
 		i_am.fitHeightToVisible();
 		i_am.toolbar.show();
@@ -1013,14 +1014,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(i_am.currentPopup != null && i_am.currentPopup.style.visibility == "visible")
 			return;
 
-		if(i_am.skipCloseAll) {
-			i_am.skipCloseAll = false;
+		if(i_am.skipClose) {
+			i_am.skipClose = false;
 			return;
 		}
-		if(i_am.skipClose_IE_Opera && (i_am.isIE || i_am.isOpera)) {
-			i_am.skipClose_IE_Opera = false;
-			return;
-		}
+
 		// FF: prevents toolbar close on scrolling
     if(e && e.target && e.target.nodeName == "HTML")
       return;
@@ -1285,7 +1283,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			i_am.toolbar.enableAllControls();
 
 		// prevent a closing
-		i_am.skipCloseAll = true;
+		i_am.skipClose = true;
 		return true;
 	}
 
@@ -1382,8 +1380,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		}
 		this.window.focus();
 
-		if(typeof skipClose != 'undefined' && skipClose == true)
-			this.skipClose_IE_Opera = true;
+	  this.skipClose = true;
 		return true;
 	}
 
@@ -1468,4 +1465,8 @@ function TArea(iframeObj, dataFieldId, rtePref) {
 
   // constructor body
   this.init();
+}
+
+function debuggerS(str) {
+  alert(str);
 }
