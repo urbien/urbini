@@ -8257,13 +8257,20 @@ var WidgetFlip = {
     // init image
     if(this.flipImg == null) {
       this.flipImg = document.createElement("img");
+      this.flipImg.id = "flip_image";
       var baseUri = getBaseUri();
       if(Popup.ie)
         this.flipImg.src = baseUri + "images/flip.gif";
       else
         this.flipImg.src = baseUri + "images/flip.png";
     }
-    if (flipDiv)
+    
+    // hack IE did not correct work with CSS bottom.
+    if(Popup.ie && flipDiv.style.top.length == 0) {
+      var top = div.offsetHeight - 16; // 13 image height + 3 offset
+      flipDiv.style.top = top;
+    }
+    if(flipDiv)
       flipDiv.appendChild(this.flipImg);
   },
 
@@ -8272,8 +8279,10 @@ var WidgetFlip = {
     var div = document.getElementById(divId);
 
     flipDiv = this.getFlipDiv1(div, 'flip');
-    if (flipDiv)
-      flipDiv.removeChild(this.flipImg);
+    if (flipDiv) {
+      if(getChildById(flipDiv, "flip_image") != null)
+        flipDiv.removeChild(this.flipImg);
+    }
   }
 }
 
