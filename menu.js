@@ -1845,7 +1845,6 @@ function popupOnSubmit(e) {
   }
   else
     url = "FormRedirect"; // HACK: if form.action is empty
-
   var formAction = form.elements['-$action'].value;
   var allFields = true;
   if (formAction != "searchLocal" && formAction != "searchParallel" && formAction != "mkResource")
@@ -6423,7 +6422,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
         document.location = location;  // paint full page
       }
     }
-    else if (status == 322) {
+    else if (status == 202) {
       try {location = http_request.getResponseHeader('Location');} catch(exception) {}
       if (!location) {
         var response = responseXML.documentElement;
@@ -8264,7 +8263,7 @@ var WidgetFlip = {
       else
         this.flipImg.src = baseUri + "images/flip.png";
     }
-    
+
     // hack IE did not correct work with CSS bottom.
     if(Popup.ie && flipDiv.style.top.length == 0) {
       var top = div.offsetHeight - 16; // 13 image height + 3 offset
