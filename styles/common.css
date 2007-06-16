@@ -540,7 +540,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 /* Under menu line style (usually the same color as tabs */
 .line { background:#ACD2E2 }
-
+.bg   { background:#Bedbe9 }
 /* SKINS */
 /* BLUE */
 .blue  .line { background:#ACD2E2 }
@@ -1063,3 +1063,7 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 
 /* labels for iphone icons */
 .iphone_l {color:white; font-size:7pt; font-family:tahoma,helvetica,arial}
+/* icon followed by text */
+.itxt { vertical-align:top; width:16px; height:16px; padding-right:2px; border:0px }
+.fLeft  {float:left; padding-left:10px}
+.fRight {float:right; padding-right:10px}
