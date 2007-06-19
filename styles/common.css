@@ -3,6 +3,10 @@ img {
   vertical-align: middle;
 }
 */
+/* text in link. You can see it in 'Hi "contactName"' */
+A {text-decoration : none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
+A:hover {color: #6BBDBE; text-decoration : none;}
+
 a img {
 	border: 0;
 	vertical-align: middle;
@@ -37,6 +41,13 @@ a.icotxt img {
 .propLabel:lang(zh) {
   font-family: "Li Sung", MingLiu; font-size:1em;
 }
+.h1 { font-family: arial, Verdana, geneva; 
+      font-size: 17px; 
+      font-weight: bold;  
+      color: #00309C; 
+      text-decoration:none; 
+	    vertical-align: middle;
+	  }
 
 H1 {font-family: arial, Verdana, geneva; font-size: 17px; font-weight: bold;  color: #00309C}
 H2 {font-family: arial, Verdana, geneva; font-weight: normal; font-size: medium; color: #6699CC}
@@ -363,13 +374,9 @@ body {
 }
 textarea  {  font-family: Verdana, Arial, Helvetica; font-size: 10px }
 input   {  font-family: Verdana, Arial, Helvetica; font-size: 9px; font-style: normal; line-height: normal; font-weight: normal;}
-a:hover {  color: #000080; }
-A:hover {color: #6BBDBE; text-decoration : underline;}
 
 td {font-family:sans-serif, arial; font-size:9pt;}
 
-/* text in link. You can see it in 'Hi "contactName"' */
-A {text-decoration : none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
 
 /*Body {font-family: Verdana, geneva, arial; font-size: 8px; font-weight: normal; color: #999999;}*/
 Body {font-family: Verdana, geneva, arial; font-weight: normal; }
