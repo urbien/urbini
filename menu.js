@@ -6415,7 +6415,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       if (repaintDialog) {
         hotspot = null; // second time do not show 'loading...' popup
         // stay on current page and resubmit request using URL from Location header
-        postRequest(clonedEvent, location, '', div, hotspot, callback);
+        var urlParts = location.split('?');
+        postRequest(clonedEvent, urlParts[0], urlParts[1].substring(1), div, hotspot, callback);
       }
       else {
         //alert('reloading page, status = ' + status);
@@ -6451,7 +6452,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
         if (repaintDialog) {
           hotspot = null; // second time do not show 'loading...' popup
           // stay on current page and resubmit request using URL from Location header
-          postRequest(clonedEvent, location, '', div, hotspot, callback);
+          var urlParts = location.split('?');
+          postRequest(clonedEvent, urlParts[0], urlParts[1].substring(1), div, hotspot, callback);
         }
         else {
           //alert('reloading page (2),  status = ' + status);
@@ -8296,7 +8298,8 @@ function submitWidgetPreferences(event, formId) {
   var refersh = form.elements['.refresh'].value;
 
   var param = getFormFilters(form, true) + '&submitUpdate=y';
-
+  if (param.charAt(0) == '&')
+    param = param.substring(1);
   var url = form.action;
   var divId =  (formId.indexOf("_http") != -1) ? 'widget_' + formId.substring(5) : 'div_' + formId.substring(5);
 
@@ -8306,16 +8309,15 @@ function submitWidgetPreferences(event, formId) {
 //  var div = document.createElement('div');
 //  div.style.display = "none";
 //  postRequest(event, url, param, div, elm, refreshWidget);
-
-    if(OperaWidget.isWidget()) {
-      OperaWidget.resizeOnFrontside();
-      // 'formId.substring(5)' - widget type url
-      OperaWidget.savePreferencesStr(param);
-      WidgetRefresher.updateWidgetByUrl(formId.substring(5));
-    }
-    else {
-      postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
-    }
+  if (OperaWidget.isWidget()) {
+    OperaWidget.resizeOnFrontside();
+    // 'formId.substring(5)' - widget type url
+    OperaWidget.savePreferencesStr(param);
+    WidgetRefresher.updateWidgetByUrl(formId.substring(5));
+  }
+  else {
+    postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
+  }
   return ret;
 }
 
@@ -8379,13 +8381,13 @@ var WidgetRefresher = {
     }
   },
   _onInterval : function(divId) {
-    var url = getBaseUri() + "widget/div/oneWidget.html?-$action=explore&-export=y&-grid=y&-featured=y&uri=";
-    url += WidgetRefresher.widgetsArr[divId].bookmarkUrl;
-    var params = null;
+    var url = getBaseUri() + "widget/div/oneWidget.html";
+    var bookmarkUrl = WidgetRefresher.widgetsArr[divId].bookmarkUrl;
+    var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
     var divToRefresh;
-      // refresh whole the widget including backside
-      var widgetDivId = "widget_" + WidgetRefresher.widgetsArr[divId].bookmarkUrl;
-      divToRefresh = document.getElementById(widgetDivId);
+    // refresh whole the widget including backside
+    var widgetDivId = "widget_" + bookmarkUrl;
+    divToRefresh = document.getElementById(widgetDivId);
     postRequest(null, url, params, divToRefresh, null, WidgetRefresher.refresh, true);
   },
   // called by postRequest
@@ -8528,12 +8530,17 @@ var OperaWidget = {
 
     // get pref form (on each refresh)
     forms = widgetDiv.getElementsByTagName("form");
-    for(var i = 0; i < forms.length; i++)
-      if(forms[i].id.indexOf('pref_') == 0) {
-        this.prefForm = forms[i];
-        break;
-      }
-
+    for (var i = 0; i < forms.length; i++) {
+      if (forms[i].id) {
+        var idx = forms[i].id.indexOf('pref_');
+        if (idx == 0) {
+          this.prefForm = forms[i];
+          break;
+        }
+      }  
+    }
+    if (this.prefForm == null)
+      throw new Error("form pref_ not found");
     for(var i = 0; i < prefPairs.length; i++) {
       var pair = prefPairs[i].split('=');
       if(typeof pair[1] == 'undefined')
