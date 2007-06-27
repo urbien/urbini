@@ -4,8 +4,8 @@
    <tr align="center">
     <td>
       <!--div id="div_menu" class="hiddenDiv"-->
-        <dashboardMenus/>
         <menu toolbar="file" activate="onMouseOver"/>
+        <dashboardMenus/>
 		    <!--include name="${package}_menu.jsp"/-->
 		    <menu toolbar="toolbar1"            />
 		    <menu toolbar="trades"              />
