@@ -53,7 +53,8 @@
   </td>
   <td width="5%" id="rightPanelPropertySheet" valign="top" align="left">
 <hideBlock>
-    <menu toolbar="filterLocal" type="onpage" title="false"/>
+   <include name="commonFilterLocal.jsp" />
+    <!--menu toolbar="filterLocal" type="onpage" title="false"/-->
 </hideBlock>
   </td>
   </tr>

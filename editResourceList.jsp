@@ -19,7 +19,8 @@
     </form>
     </td>
     <td valign="top" align="left" bgcolor="eeeeee">
-      <menu toolbar="filterLocal" type="onpage" title="false"/>
+      <include name="commonFilterLocal.jsp" />
+      <!--menu toolbar="filterLocal" type="onpage" title="false"/-->
     </td>
 </tr>
 
