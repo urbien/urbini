@@ -455,7 +455,7 @@ a:hover { text-decoration: underline; color: #3399FF; }
 .select	{color:#000066;background-color:#D6E7EF;font-size:11px}
 .selected	{color:#000066;background-color:fffdc3;font-size:7pt}
 input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
-.text {font-size: 10px; font-family:arial,sans-serif;font-weight:bold;}
+.text {font-size:0.9em; font-family:arial,sans-serif;font-weight:bold;}
 .input1 {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:16px;text-decoration:none;}
 .barcode {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:20px;text-decoration:none;}
 /* used in filter input text fields */
@@ -1072,5 +1072,6 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 .iphone_l {color:white; font-size:7pt; font-family:tahoma,helvetica,arial}
 /* icon followed by text */
 .itxt { vertical-align:top; width:16px; height:16px; padding-right:2px; border:0px }
+.litxt { vertical-align:top; width:32px; height:32px; padding-right:2px; border:0px }
 .fLeft  {float:left; padding-left:10px}
 .fRight {float:right; padding-right:10px}
