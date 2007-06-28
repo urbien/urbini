@@ -8075,6 +8075,29 @@ var Dashboard = {
     var tab = a.id.substring(4);
     var wLen = 'widget_'.length;
     var widgetUri = widget.id.substring(wLen);
+    // Trying to drag backlink widget
+    if (widgetUri.indexOf("http") == -1) {
+      widgetUri = null;
+      elms = widget.getElementsByTagName('a');
+      for (var i=0; i<elms.length; i++) {
+        if (!elms[i].id || elms[i].id.indexOf('widget_') != 0)
+          continue;
+        widgetUri = elms[i].id.substring(wLen);
+        break;
+      }
+      // bookmark for this widget was not yet created
+      if (widgetUri == null) {
+        var f = document.getElementById("pref_" + widget.id.substring(wLen));
+        if (f) {
+          formId = f.id;
+          // create backlink bookmark and move it to Tab
+          submitWidgetPreferences(e, formId, true);
+          return ret;
+        }
+      }
+    }
+    if (widgetUri == null) 
+      return ret;
     var href = a.href;
     var params = 'uri=' + encodeURIComponent(widgetUri) + '&submitUpdate=y&.parent_verified=y&.parent_select=' + encodeURIComponent(tab);
 
@@ -8287,8 +8310,12 @@ var WidgetFlip = {
   }
 }
 
-/* submits preferences form on the back of the widget and repaints widget */
-function submitWidgetPreferences(event, formId) {
+/* 
+ * submits preferences form on the back of the widget and repaints widget 
+ * copyToTab - is passed only when there need to create bookmark for backlink property before
+ * moving it to different Tab
+ */
+function submitWidgetPreferences(event, formId, copyToTab) {
   var ret = stopEventPropagation(event);
   if (formId.indexOf("pref_") == -1)
     return ret;
@@ -8305,22 +8332,47 @@ function submitWidgetPreferences(event, formId) {
 
   var widgetDiv = document.getElementById(divId);
 
-  var elm = getTargetElement(event);
+  var elm = getEventTarget(event); //getTargetElement(event);
 //  var div = document.createElement('div');
 //  div.style.display = "none";
 //  postRequest(event, url, param, div, elm, refreshWidget);
-  if (OperaWidget.isWidget()) {
+
+  if(OperaWidget.isWidget()) {
     OperaWidget.resizeOnFrontside();
     // 'formId.substring(5)' - widget type url
     OperaWidget.savePreferencesStr(param);
     WidgetRefresher.updateWidgetByUrl(formId.substring(5));
+    return ret;
   }
   else {
-    postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
+    if (copyToTab) 
+      postRequest(event, url, param, widgetDiv, elm, doCopyToTab);
+    else {
+      postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
+      return ret;
+    }
   }
+}
+function doCopyToTab(event, widget) {
+  var elms = widget.getElementsByTagName('a');
+  for (var i=0; i<elms.length; i++) {
+    if (elms[i].id  &&  elms[i].id.indexOf('widget_') != 0)
+      continue;
+    widgetUri = elms[i].id.substring(wLen);
+    break;
+  }
+
+  if (widgetUri == null) 
+    return;
+  var href = a.href;
+  var params = 'uri=' + encodeURIComponent(widgetUri) + '&submitUpdate=y&.parent_verified=y&.parent_select=' + encodeURIComponent(tab);
+
+  postRequest(e, 'proppatch', params, widget, a, callback);
   return ret;
 }
-
+function callback(event, widget) {
+  hideDiv(event, widget.id);
+}
 
 var WidgetRefresher = {
   widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
@@ -8403,7 +8455,8 @@ function changeSkin(event) {
   if (!e)
     return;
 
-  var target = getTargetElement(e);
+//  var target = getTargetElement(e);
+  var target = getEventTarget(event); //getTargetElement(event);
   var value = target.value;
   var t = target;
   while (true) {
@@ -8494,6 +8547,7 @@ var OperaWidget = {
   resizeOnFrontside : function() {
     if(typeof widget == 'undefined')
       return;
+
     if(this.widgetWidth == 0 || this.widgetHeight == 0)
       return;
     window.resizeTo(this.widgetWidth, this.widgetHeight);
