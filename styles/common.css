@@ -46,7 +46,6 @@ a.icotxt img {
       font-weight: bold;  
       color: #00309C; 
       text-decoration:none; 
-	    vertical-align: middle;
 	  }
 
 H1 {font-family: arial, Verdana, geneva; font-size: 17px; font-weight: bold;  color: #00309C}
@@ -502,7 +501,7 @@ td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #00
 table.displayInline {border:solid #808080 1px; background-color: #ffffff; color: #000000}
 tr.displayInline {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 td.hi {background-color: #f8f4ef; color: darkblue}
-td.content {background-color: #f8f4ef; color: darkblue; font-weight:bold}
+td.contents {background-color: #f8f4ef; color: darkblue; font-weight:bold; font-size: small}
 font.warn {color:#A01E00}
 td.shading {border:solid #808080 1px; color:#000000}
 span.comment { font-family: Verdana, Arial, Helvetica, sans-serif; color: #5766a5; font-weight:bold; font-size: 8pt}
@@ -1075,3 +1074,19 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 .litxt { vertical-align:top; width:32px; height:32px; padding-right:2px; border:0px }
 .fLeft  {float:left; padding-left:10px}
 .fRight {float:right; padding-right:10px}
+
+ul.chapter {
+  margin:0px; padding-left: 2px; text-indent: 0em; list-style-type:none;
+}
+
+ul.chapter li {
+  font-size: 1.3em; font-weight: bold;
+}
+
+ul.subchapter {
+  margin: 0 0 0 0; padding-left: 1.7em; text-indent: 0em; list-style-type:none; list-style-image:url(../images/bullet_yellow.gif);
+}
+
+ul.subchapter li {
+  font-size: 1em; font-weight: normal;
+}
