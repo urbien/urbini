@@ -1038,8 +1038,8 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 
 .flip {
 	position: absolute;
-	bottom: 3px;
-	right: 3px;
+	bottom: 5px;
+	right: 5px;
 	width:13px;
 	height:13px;
 	cursor: pointer;
@@ -1090,3 +1090,6 @@ ul.subchapter {
 ul.subchapter li {
   font-size: 1em; font-weight: normal;
 }
+
+.resize_handle 
+{ position: absolute; width: 14; height: 14; right: 0; bottom: 0; background-image: url(../images/bottom_right.gif); cursor: se-resize; -apple-dashboard-region: dashboard-region(control rectangle); }
