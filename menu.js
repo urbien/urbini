@@ -8336,8 +8336,7 @@ function submitWidgetPreferences(event, formId, copyToTab) {
 //  var div = document.createElement('div');
 //  div.style.display = "none";
 //  postRequest(event, url, param, div, elm, refreshWidget);
-
-  if(OperaWidget.isWidget()) {
+  if (OperaWidget.isWidget()) {
     OperaWidget.resizeOnFrontside();
     // 'formId.substring(5)' - widget type url
     OperaWidget.savePreferencesStr(param);
@@ -8348,9 +8347,9 @@ function submitWidgetPreferences(event, formId, copyToTab) {
     if (copyToTab) 
       postRequest(event, url, param, widgetDiv, elm, doCopyToTab);
     else {
-      postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
+    postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
       return ret;
-    }
+  }
   }
 }
 function doCopyToTab(event, widget) {
@@ -8373,6 +8372,7 @@ function doCopyToTab(event, widget) {
 function callback(event, widget) {
   hideDiv(event, widget.id);
 }
+
 
 var WidgetRefresher = {
   widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
@@ -8504,7 +8504,6 @@ var OperaWidget = {
   init : function(widgetDivId) {
     if(typeof widget == 'undefined')
       return;
-
     // 1. widget div
     this.widgetDiv = document.getElementById(widgetDivId);
     if(!this.widgetDiv)
@@ -8521,10 +8520,12 @@ var OperaWidget = {
       this.widgetDiv.innerHTML = content;
     }
 */
-    // 3. fitWindowSize does not work on this moment!
+    // 4. fitWindowSize does not work on this moment!
     //this.fitWindowSize();
-    // 6. init prefs on the back
+    // 5. init prefs on the back
     this.applyPrefs();
+    // 6.
+    resizeHandle.init();
   },
   onWidgetRefresh : function() {
     this.applyPrefs();
@@ -8547,10 +8548,10 @@ var OperaWidget = {
   resizeOnFrontside : function() {
     if(typeof widget == 'undefined')
       return;
-
     if(this.widgetWidth == 0 || this.widgetHeight == 0)
       return;
     window.resizeTo(this.widgetWidth, this.widgetHeight);
+    resizeHandle.fixPosition();
   },
   resizeOnBackside : function() {
     if(typeof widget == 'undefined')
@@ -8560,6 +8561,7 @@ var OperaWidget = {
     this.widgetHeight = wndSize[1];
 
     window.resizeTo(this.BACKSIDE_WIDTH, this.BACKSIDE_HEIGHT);
+    resizeHandle.fixPosition();
   },
   saveContent : function() {
     if(typeof widget == 'undefined')
@@ -8682,6 +8684,77 @@ var downloadWidget = {
     document.location = url;
 //    var cookie = window.getElementById('-cookie');
 //    alert(cookie);
+  }
+}
+
+var resizeHandle = {
+  handleDiv : null,
+  growboxInset : null,
+  init : function() {
+    this.handleDiv = document.createElement('div');
+    this.handleDiv.className = 'resize_handle';
+    this.handleDiv.onmousedown = this.mouseDown;
+    document.body.appendChild(this.handleDiv);
+    // try to prevent content offset
+    addEvent(window, "scroll", this.onScroll, true);
+    addEvent(document.body, "scroll", this.onScroll, true);
+
+    this.restoreSize();
+  },
+  mouseDown : function(event) {
+      var thisObj = resizeHandle;
+      addEvent(document, "mousemove", thisObj.mouseMove, true);
+      addEvent(document, "mouseup", thisObj.mouseUp, true);
+      thisObj.growboxInset = {x:(window.innerWidth - event.x), y:(window.innerHeight - event.y)};
+      event.stopPropagation();
+      event.preventDefault();
+  },
+  mouseMove : function(event) {   
+      var thisObj = resizeHandle;
+      var x = event.x + thisObj.growboxInset.x;
+      var y = event.y + thisObj.growboxInset.y;
+      thisObj.handleDiv.style.top = (y-12);
+
+      window.resizeTo(x,y);
+      event.stopPropagation();
+      event.preventDefault();
+      
+      thisObj.handleDiv.scrollIntoView(false);
+  },
+  mouseUp : function(event) {
+    var thisObj = resizeHandle;
+    removeEvent(document, "mousemove", thisObj.mouseMove, true)
+    removeEvent(document, "mouseup", thisObj.mouseUp, true);
+    event.stopPropagation();
+    event.preventDefault();
+    thisObj.saveSize();
+  },
+  fixPosition : function() {
+    var thisObj = resizeHandle;
+    var wndSize = getWindowSize();
+    thisObj.handleDiv.style.left = wndSize[0] - 14;
+    thisObj.handleDiv.style.top = wndSize[1] - 14;
+  },
+  onScroll : function(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    return false;
+  },
+  saveSize : function() {
+    var wndSize = getWindowSize();
+    this.widgetWidth  = wndSize[0];
+    this.widgetHeight = wndSize[1];
+
+    widget.setPreferenceForKey(this.widgetWidth,  "width");
+    widget.setPreferenceForKey(this.widgetHeight, "height");
+  },
+  restoreSize : function() {
+    this.widgetWidth  = widget.preferenceForKey("width");
+    this.widgetHeight = widget.preferenceForKey("height");
+      
+    if(!this.widgetWidth)
+      return;
+    window.resizeTo(this.widgetWidth, this.widgetHeight);  
   }
 }
 
