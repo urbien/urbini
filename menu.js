@@ -540,6 +540,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var div     = self.div;
     var hotspot = self.hotspot;
     // var isMenu = div.id.indexOf('menudiv_') == 0 ? true false;
+    if (div.getAttribute) {
+      var isProcessed = div.getAttribute('eventHandlersAdded');
+      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+        return;
+      div.setAttribute('eventHandlersAdded', 'true');
+    }
 
     if (!Popup.penBased && !Popup.joystickBased) {
       if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
@@ -565,10 +571,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (!table)
       return;
     // popup contains rows that can be selected
-    if (document.all) { // IE - some keys (like backspace) work only on keydown
+    if (Popup.ie) { // IE - some keys (like backspace) work only on keydown
       addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
     }
-    else {              // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
+    else {          // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
       addEvent(div,  'keypress',  self.popupRowOnKeyPress,  false);
     }
     var elem = firstRow;
@@ -2005,7 +2011,6 @@ function autoComplete1(e, target) {
  * !!!!!!!!!!!!! this below did not work to clear the previous popup if
  * (currentDiv) { var p = Popup.getPopup(currentDiv); if (p) p.close(); }
  */
-
   switch (characterCode) {
    case 38:  // up arrow
      if (currentPopup && currentPopup.isOpen()) {
@@ -2208,7 +2213,7 @@ function textAreaOnBlur(e) {
  */
 function getKeyCode(e) {
   if( typeof( e.keyCode ) == 'number'  ) {
-      // IE, NS 6+, Mozilla 0.9+
+      // IE, NS 6+, Mozilla 0.9+, Safari 3
       return e.keyCode;
   } else if( typeof( e.charCode ) == 'number'  ) {
       // also NS 6+, Mozilla 0.9+
@@ -8096,7 +8101,7 @@ var Dashboard = {
         }
       }
     }
-    if (widgetUri == null) 
+    if (widgetUri == null)
       return ret;
     var href = a.href;
     var params = 'uri=' + encodeURIComponent(widgetUri) + '&submitUpdate=y&.parent_verified=y&.parent_select=' + encodeURIComponent(tab);
@@ -8310,8 +8315,8 @@ var WidgetFlip = {
   }
 }
 
-/* 
- * submits preferences form on the back of the widget and repaints widget 
+/*
+ * submits preferences form on the back of the widget and repaints widget
  * copyToTab - is passed only when there need to create bookmark for backlink property before
  * moving it to different Tab
  */
@@ -8329,7 +8334,6 @@ function submitWidgetPreferences(event, formId, copyToTab) {
     param = param.substring(1);
   var url = form.action;
   var divId =  (formId.indexOf("_http") != -1) ? 'widget_' + formId.substring(5) : 'div_' + formId.substring(5);
-
   var widgetDiv = document.getElementById(divId);
 
   var elm = getEventTarget(event); //getTargetElement(event);
@@ -8344,7 +8348,7 @@ function submitWidgetPreferences(event, formId, copyToTab) {
     return ret;
   }
   else {
-    if (copyToTab) 
+    if (copyToTab)
       postRequest(event, url, param, widgetDiv, elm, doCopyToTab);
     else {
     postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
@@ -8361,7 +8365,7 @@ function doCopyToTab(event, widget) {
     break;
   }
 
-  if (widgetUri == null) 
+  if (widgetUri == null)
     return;
   var href = a.href;
   var params = 'uri=' + encodeURIComponent(widgetUri) + '&submitUpdate=y&.parent_verified=y&.parent_select=' + encodeURIComponent(tab);
@@ -8593,7 +8597,7 @@ var OperaWidget = {
           this.prefForm = forms[i];
           break;
         }
-      }  
+      }
     }
     if (this.prefForm == null)
       throw new Error("form pref_ not found");
@@ -8709,7 +8713,7 @@ var resizeHandle = {
       event.stopPropagation();
       event.preventDefault();
   },
-  mouseMove : function(event) {   
+  mouseMove : function(event) {
       var thisObj = resizeHandle;
       var x = event.x + thisObj.growboxInset.x;
       var y = event.y + thisObj.growboxInset.y;
@@ -8718,7 +8722,7 @@ var resizeHandle = {
       window.resizeTo(x,y);
       event.stopPropagation();
       event.preventDefault();
-      
+
       thisObj.handleDiv.scrollIntoView(false);
   },
   mouseUp : function(event) {
@@ -8751,10 +8755,10 @@ var resizeHandle = {
   restoreSize : function() {
     this.widgetWidth  = widget.preferenceForKey("width");
     this.widgetHeight = widget.preferenceForKey("height");
-      
+
     if(!this.widgetWidth)
       return;
-    window.resizeTo(this.widgetWidth, this.widgetHeight);  
+    window.resizeTo(this.widgetWidth, this.widgetHeight);
   }
 }
 
