@@ -8337,7 +8337,8 @@ function submitWidgetPreferences(event, formId, copyToTab) {
   if (param.charAt(0) == '&')
     param = param.substring(1);
   var url = form.action;
-  var divId =  (formId.indexOf("_http") != -1) ? 'widget_' + formId.substring(5) : 'div_' + formId.substring(5);
+//  var divId =  (formId.indexOf("_http") != -1) ? 'widget_' + formId.substring(5) : 'div_' + formId.substring(5);
+  var divId = 'widget_' + formId.substring(5);
   var widgetDiv = document.getElementById(divId);
 
   var elm = getEventTarget(event); //getTargetElement(event);
