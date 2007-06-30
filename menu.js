@@ -6478,7 +6478,11 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     http_request.setRequestHeader("X-Referer",     document.location.href);
     http_request.setRequestHeader("X-Ajax",       "y");
     http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
+    // cookie is inherited by widget and now needs to be set on request to not to be forced to login
+    if (xcookie) {
+      opera.postError('postRequest' + xcookie);
+      http_request.setRequestHeader("X-Cookie",   xcookie);
+    }
     if(typeof noCache != 'undefined' && noCache == true) // for widgets
       http_request.setRequestHeader("Cache-Control","no-cache");
 
@@ -8377,7 +8381,7 @@ function callback(event, widget) {
   hideDiv(event, widget.id);
 }
 
-
+var xcookie; 
 var WidgetRefresher = {
   widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
   hdnDoc : null, // helps to load refreshed document
@@ -8440,6 +8444,16 @@ var WidgetRefresher = {
     var url = getBaseUri() + "widget/div/oneWidget.html";
     var bookmarkUrl = WidgetRefresher.widgetsArr[divId].bookmarkUrl;
     var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
+    
+    var cookieDiv = document.getElementById("ad_session_id");
+//    opera.postError(cookieDiv);
+    if (cookieDiv) {
+      xcookie = cookieDiv.innerHTML;
+//      opera.postError(cookie);
+//      if (xcookie)
+//        document.cookie = escape(cookie);
+    }
+    
     var divToRefresh;
     // refresh whole the widget including backside
     var widgetDivId = "widget_" + bookmarkUrl;
