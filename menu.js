@@ -78,6 +78,7 @@ Popup.ns4  = (document.layers)                                    ? true : false
 Popup.ie   = (typeof ActiveXObject != 'undefined')                ? true : false;
 Popup.ie4  = (Popup.ie && !this.w3c)                              ? true : false;
 Popup.ie5  = (Popup.ie && this.w3c)                               ? true : false;
+Popup.ie7  = (Popup.ie && typeof window.XMLHttpRequest != 'undefined') ? true : false;
 
 Popup.opera = typeof opera != 'undefined'                         ? true : false;
 if (navigator.userAgent.indexOf("Opera") !=-1 ) {
@@ -7693,6 +7694,9 @@ var Dashboard = {
 
   // drag interface functions -----
   getDragBlock : function(catchedObj) {
+    if(OperaWidget.isWidget()) // it means that we are not in our dashboard.
+      return null;
+    
     var widget = getAncestorByAttribute(catchedObj, "className", "widget"); // this.getWidgetOnChild(catchedObj);
     if(widget && this.widgetsMap == null)
       this.initDashboardMap(widget);
@@ -8235,7 +8239,7 @@ var WidgetFlip = {
   },
   enterflip : function (event)  {
     var baseUri = getBaseUri();
-    if(Popup.ie)
+    if(Popup.ie && !Popup.ie7)
       this.flipImg.src = baseUri + "images/flip_hover.gif";
     else
       this.flipImg.src = baseUri + "images/flip_hover.png";
@@ -8243,7 +8247,7 @@ var WidgetFlip = {
   },
   exitflip : function (event)  {
     var baseUri = getBaseUri();
-    if(Popup.ie)
+    if(Popup.ie && !Popup.ie7)
       this.flipImg.src = baseUri + "images/flip.gif";
     else
       this.flipImg.src = baseUri + "images/flip.png";
