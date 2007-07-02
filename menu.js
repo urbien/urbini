@@ -452,8 +452,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var stl = self.div.style;
       if(ie && stl.height != "1px") stl.height = "1px";
       else if(stl.height != "auto") stl.height = "auto";
-
-      self.delayedClose(20000);
+      // vary delay based on the amount of text user must read
+      var delay = self.contents.length / 35 * 1000;
+      if (delay < 500) delay = 1000;
+      else if (delay < 1000) delay = 2000;
+      self.delayedClose(delay);
     }
     else
       Popup.tooltipPopup = null;
@@ -7696,7 +7699,7 @@ var Dashboard = {
   getDragBlock : function(catchedObj) {
     if(OperaWidget.isWidget()) // it means that we are not in our dashboard.
       return null;
-    
+
     var widget = getAncestorByAttribute(catchedObj, "className", "widget"); // this.getWidgetOnChild(catchedObj);
     if(widget && this.widgetsMap == null)
       this.initDashboardMap(widget);
@@ -8386,7 +8389,7 @@ function callback(event, widget) {
   hideDiv(event, widget.id);
 }
 
-var xcookie; 
+var xcookie;
 var WidgetRefresher = {
   widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
   hdnDoc : null, // helps to load refreshed document
@@ -8449,7 +8452,7 @@ var WidgetRefresher = {
     var url = getBaseUri() + "widget/div/oneWidget.html";
     var bookmarkUrl = WidgetRefresher.widgetsArr[divId].bookmarkUrl;
     var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
-    
+
     var cookieDiv = document.getElementById("ad_session_id");
 //    opera.postError(cookieDiv);
     if (cookieDiv) {
@@ -8458,7 +8461,7 @@ var WidgetRefresher = {
 //      if (xcookie)
 //        document.cookie = escape(cookie);
     }
-    
+
     var divToRefresh;
     // refresh whole the widget including backside
     var widgetDivId = "widget_" + bookmarkUrl;
