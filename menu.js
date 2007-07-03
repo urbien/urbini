@@ -447,11 +447,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     // alert('end popup init');
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
-      // fit tooltip height (only on 1st launch)
-      var ie = (navigator.userAgent.indexOf('MSIE') != -1);
-      var stl = self.div.style;
-      if(ie && stl.height != "1px") stl.height = "1px";
-      else if(stl.height != "auto") stl.height = "auto";
+      // fit tooltip height
+      makeDivAutosize(self.div, true);
       // vary delay based on the amount of text user must read
       var delay = self.contents.length / 35 * 1000;
       if (delay < 500) delay = 1000;
@@ -4516,16 +4513,19 @@ function showLargeImage(e, current, largeImageUrl) {
 }
 
 // makes div / container to fit to content size.
-function makeDivAutosize(div) {
-  var ie = (navigator.userAgent.indexOf('MSIE') != -1);
+function makeDivAutosize(div, fitHeightOnly) {
   var stl = div.style;
-  if(ie) { // IE6
-   stl.width = "1px";
-   stl.height = "1px";
+  if(typeof fitHeightOnly == 'undefine')
+    fitHeightOnly = false;
+  if(Popup.ie) { // IE
+    stl.height = "1px";
+    if(!fitHeightOnly)
+      stl.width = "1px";
   }
   else if(stl.width != "auto") {
-    stl.width = "auto";
     stl.height = "auto";
+    if(!fitHeightOnly)
+      stl.width = "auto";
   }
 }
 
@@ -7680,7 +7680,8 @@ var Dashboard = {
   PH_BACK_COLOR : "#eee",
   PH_BORDER : "1px dashed #f00",
   DASHBOARD_ID : "dashboard",
-
+  
+  dragBlock : null,
   placeholderDiv : null,
   isDragMode : false,
 
@@ -7699,12 +7700,14 @@ var Dashboard = {
   getDragBlock : function(catchedObj) {
     if(OperaWidget.isWidget()) // it means that we are not in our dashboard.
       return null;
+    
+    var widgetDiv = getAncestorByAttribute(catchedObj, "className", "widget");
+    if(widgetDiv && this.widgetsMap == null) {
+      this.initDashboardMap(widgetDiv);
+      addEvent(document, "keyup", this.onEsc, false);
+    }
 
-    var widget = getAncestorByAttribute(catchedObj, "className", "widget"); // this.getWidgetOnChild(catchedObj);
-    if(widget && this.widgetsMap == null)
-      this.initDashboardMap(widget);
-
-    return widget;
+    return widgetDiv;
   },
   initDashboardMap : function(theWidget) {
     var dashboard = getAncestorById(theWidget, this.DASHBOARD_ID);
@@ -7747,6 +7750,7 @@ var Dashboard = {
   },
 
   onStartDrag : function(dragBlock) {
+    this.dragBlock = dragBlock;
     this.isDragMode = true;
 
     if(this.placeholderDiv == null)
@@ -7838,17 +7842,14 @@ var Dashboard = {
   },
 
   onStopDrag : function(e, dragBlock) {
+    if(this.isDragMode == false)
+      return;
     this.isDragMode = false;
     if(!dragBlock)
       return;
-    var dbStyle = dragBlock.style;
-
-    this.placeholderDiv.style.display = "none";
-    dbStyle.position = "";
-    dbStyle.width = "100%";
-    swapNodes(dragBlock, this.placeholderDiv);
-    this.updateDashboardMap();
-
+  
+    this.compliteGuiDrag(dragBlock);
+    
     // 1. move on another tab
     if(this.targetTab) {
       this.targetTab.setBackgroundAndBorder("", "");
@@ -7859,6 +7860,26 @@ var Dashboard = {
     var prevWidgetNew = this.getPrevSibling(dragBlock);
     this.onWidgetMovement(e, dragBlock, this.prevWidgetOld, prevWidgetNew);
   },
+  compliteGuiDrag : function(dragBlock) {
+    var dbStyle = dragBlock.style;
+
+    this.placeholderDiv.style.display = "none";
+    dbStyle.position = "";
+    dbStyle.width = "100%";
+    swapNodes(dragBlock, this.placeholderDiv);
+    this.updateDashboardMap();
+  },
+  // stops drag action
+  onEsc : function(evt) {
+		evt = (evt) ? evt : event;
+		var charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : 
+			((evt.which) ? evt.which : 0));
+		if (charCode == 27) {
+		  var thisObj = Dashboard;
+		  thisObj.isDragMode = false;
+			thisObj.compliteGuiDrag(thisObj.dragBlock);
+		}
+	},
   //--------------------------
   createPlaceholder : function() {
     this.placeholderDiv = document.createElement("div");
@@ -8389,7 +8410,7 @@ function callback(event, widget) {
   hideDiv(event, widget.id);
 }
 
-var xcookie;
+var xcookie; 
 var WidgetRefresher = {
   widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
   hdnDoc : null, // helps to load refreshed document
@@ -8452,7 +8473,7 @@ var WidgetRefresher = {
     var url = getBaseUri() + "widget/div/oneWidget.html";
     var bookmarkUrl = WidgetRefresher.widgetsArr[divId].bookmarkUrl;
     var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
-
+    
     var cookieDiv = document.getElementById("ad_session_id");
 //    opera.postError(cookieDiv);
     if (cookieDiv) {
@@ -8461,7 +8482,7 @@ var WidgetRefresher = {
 //      if (xcookie)
 //        document.cookie = escape(cookie);
     }
-
+    
     var divToRefresh;
     // refresh whole the widget including backside
     var widgetDivId = "widget_" + bookmarkUrl;
@@ -8518,7 +8539,7 @@ var OperaWidget = {
   MAX_WND_WIDTH : 600,
   MAX_WND_HEIGHT : 600,
   BACKSIDE_WIDTH  : 305,
-  BACKSIDE_HEIGHT : 220,
+  BACKSIDE_HEIGHT : 190,
   widgetDiv : null,
   frontDiv : null,
   backDiv : null,
@@ -8551,11 +8572,22 @@ var OperaWidget = {
     // 5. init prefs on the back
     this.applyPrefs();
     // 6.
+    this.processWidth();
+    // 7.
     resizeHandle.init();
   },
   onWidgetRefresh : function() {
+    this.processWidth();
+    resizeHandle.init();
     this.applyPrefs();
     this.saveContent();
+  },
+  // stores min size and makes width = 100%
+  processWidth : function() {
+    this.minWidth = this.widgetDiv.offsetWidth;
+    this.minHeight = this.widgetDiv.offsetHeight;
+    var parentTable = getAncestorByTagName(this.widgetDiv, "table");
+    parentTable.width = "100%";
   },
 /*
   fitWindowSize : function() {
@@ -8577,7 +8609,6 @@ var OperaWidget = {
     if(this.widgetWidth == 0 || this.widgetHeight == 0)
       return;
     window.resizeTo(this.widgetWidth, this.widgetHeight);
-    resizeHandle.fixPosition();
   },
   resizeOnBackside : function() {
     if(typeof widget == 'undefined')
@@ -8587,7 +8618,6 @@ var OperaWidget = {
     this.widgetHeight = wndSize[1];
 
     window.resizeTo(this.BACKSIDE_WIDTH, this.BACKSIDE_HEIGHT);
-    resizeHandle.fixPosition();
   },
   saveContent : function() {
     if(typeof widget == 'undefined')
@@ -8667,9 +8697,22 @@ var OperaWidget = {
 
       this.refreshInterval = refreshInterval;
   },
+  getWidgetDiv : function() {
+    return this.widgetDiv;
+  },
+  getWidgetFrontDiv : function() {
+    return this.frontDiv;
+  }, 
   getRefreshInterval : function() {
     return this.refreshInterval;
   },
+  getMinSize : function() {
+    return [this.minWidth, this.minHeight];
+  }, 
+  getMaxSize : function() {
+    return [this.MAX_WND_WIDTH, this.MAX_WND_HEIGHT];
+  },
+
   isWidget : function() {
     if(typeof widget != 'undefined')
       return true;
@@ -8714,13 +8757,20 @@ var downloadWidget = {
 }
 
 var resizeHandle = {
+  MIN_WIDTH_PLUS : 0,
+  MIN_HEIGHT_PLUS : 0,
+  widgetDiv : null,
   handleDiv : null,
   growboxInset : null,
+  maxSize : null,
+  minSize : null,
+  
   init : function() {
     this.handleDiv = document.createElement('div');
     this.handleDiv.className = 'resize_handle';
     this.handleDiv.onmousedown = this.mouseDown;
-    document.body.appendChild(this.handleDiv);
+    this.widgetDiv = OperaWidget.getWidgetFrontDiv();
+    this.widgetDiv.appendChild(this.handleDiv);
     // try to prevent content offset
     addEvent(window, "scroll", this.onScroll, true);
     addEvent(document.body, "scroll", this.onScroll, true);
@@ -8737,15 +8787,31 @@ var resizeHandle = {
   },
   mouseMove : function(event) {
       var thisObj = resizeHandle;
-      var x = event.x + thisObj.growboxInset.x;
-      var y = event.y + thisObj.growboxInset.y;
-      thisObj.handleDiv.style.top = (y-12);
+      var width = event.x + thisObj.growboxInset.x;
+      var height = event.y + thisObj.growboxInset.y;
+      thisObj.handleDiv.style.top = (height - 14);
 
-      window.resizeTo(x,y);
+      if(this.maxSize == null)
+        this.maxSize = OperaWidget.getMaxSize();
+      if(this.minSize == null)
+        this.minSize = OperaWidget.getMinSize();
+
+      if(width > this.maxSize[0])
+        width = this.maxSize[0];
+      if(width < this.minSize[0] + this.MIN_WIDTH_PLUS)
+        width = this.minSize[0] + this.MIN_WIDTH_PLUS;
+      
+      if(height > this.maxSize[1])
+        height = this.maxSize[1];
+      if(height < this.minSize[1] + this.MIN_HEIGHT_PLUS)
+        height = this.minSize[1] + this.MIN_HEIGHT_PLUS;         
+      
       event.stopPropagation();
       event.preventDefault();
-
-      thisObj.handleDiv.scrollIntoView(false);
+      
+      window.scrollTo(0, 0);
+      window.resizeTo(width, height);
+      //thisObj.widgetDiv.scrollIntoView();
   },
   mouseUp : function(event) {
     var thisObj = resizeHandle;
@@ -8753,13 +8819,9 @@ var resizeHandle = {
     removeEvent(document, "mouseup", thisObj.mouseUp, true);
     event.stopPropagation();
     event.preventDefault();
+    
+    window.scrollTo(0, 0);
     thisObj.saveSize();
-  },
-  fixPosition : function() {
-    var thisObj = resizeHandle;
-    var wndSize = getWindowSize();
-    thisObj.handleDiv.style.left = wndSize[0] - 14;
-    thisObj.handleDiv.style.top = wndSize[1] - 14;
   },
   onScroll : function(event) {
     event.stopPropagation();
