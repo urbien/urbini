@@ -9,7 +9,7 @@
     <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr><td colspan="3">
       <subscribeNote/>
-      <div align="center"><errorMessage /></div>
+      <errorMessage />
     </td></tr>
     <tr><td colspan="3">
 

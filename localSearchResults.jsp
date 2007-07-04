@@ -15,6 +15,8 @@
   </table>
 </div>
 
+<errorMessage />
+
 <table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr valign="top">
   <td><pagingResources /></td>
@@ -29,7 +31,7 @@
 		</div>
     <taskTreeControl/>
     <div id="siteResourceList">
-      <div id="errorMessage"><errorMessage /></div>
+      <errorMessage additems="y"/>
       <siteResourceList />
       <br/>
       <createResources/><br/>
