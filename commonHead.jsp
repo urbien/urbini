@@ -9,6 +9,7 @@
   <link href="styles/tree.css"       type="text/css" rel="stylesheet" />
   <link href="calendar/calendar.css" type="text/css" rel="stylesheet" />
   <link href="imageAnnotation/PhotoNotes.css" type="text/css" rel="stylesheet" />
+  <link href="styles/iphone.css"     type="text/css" rel="stylesheet" media="only screen and (max-device-width:480px)"  /> 
 
   <script src="menu.js"                  language="JavaScript" type="text/javascript"></script>
   <!--script src="searchHighlighting.js"    language="JavaScript" type="text/javascript"></script-->
