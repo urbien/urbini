@@ -1038,8 +1038,8 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 
 .flip {
 	position: absolute;
-	bottom: 5px;
-	right: 5px;
+	bottom: 6px;
+	right: 8px;
 	width:13px;
 	height:13px;
 	cursor: pointer;
