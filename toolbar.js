@@ -1134,6 +1134,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 *****************************************/
 var PopupHandler = {
 	CLOSE_TIMEOUT : 500,
+	TINY_SCREEN_HEIGHT : 600, // or less
 	popupDiv : null,
 	parentDlg : null,
 	oldOnKeyUp : null,
@@ -1204,9 +1205,15 @@ var PopupHandler = {
 		if(alignment != 'inside')
 		  this.y = pos.top + hotspot.height + OFFSET_Y;
 		
-		// check if to open popup above a hotspot. (take in account a scrolling)
 		var screenHeight = getWindowSize()[1];
-		if(screenHeight < this.y - getScrollXY()[1] + div.clientHeight)
+		var screenWidth  = getWindowSize()[0];
+    // on tiny screen height (< 600)
+		if(screenHeight < this.TINY_SCREEN_HEIGHT) {
+		  this.y = 0; // top
+		  this.x = (Math.abs(screenWidth - div.clientWidth)) / 2; // middle
+		}
+		// to open above a hotspot.
+		else if(screenHeight < this.y - getScrollXY()[1] + div.clientHeight)
 			this.y = pos.top - div.clientHeight - OFFSET_Y;
 		
 		if(this.isGecko) {
