@@ -2599,6 +2599,44 @@ function menuOnClick(e) {
   return stopEventPropagation(e);
 }
 
+function resizeWindow(event) {
+//  return true;
+  if (!event)
+    return;
+  var e = getDocumentEvent(event);
+  if (e.getAttribute) {
+    var isProcessed = e.getAttribute('eventProcessed');
+    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+      return stopEventPropagation(e);
+    e.setAttribute('eventProcessed', 'true');
+  }
+  var div = document.getElementsByTagName('body');
+//  var div = document.getElementById('mobile');
+//  alert('resize: div = ' + div);
+//  if (div) {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var sw = screen.width;
+    var sh = screen.height;
+    
+    /*    
+    alert("w = " + w + "; h = " + h + "; sw = " + sw + "; sh = " + sh);
+    if (w > h)  {// landscape
+//      body.style.height = sh + 'px';
+//      body.style.width  = sw + 'px';
+      window.resizeTo(sh, sw);
+    }
+    else {  
+//      body.style.height = sw + 'px';
+//      body.style.width  = sh + 'px';
+      window.resizeTo(sw, sh);
+    }
+//    window.moveTo(0, 0);
+*/    
+    
+//  }
+  return true;
+}
 
 /**
  * ********************************* Tooltips
@@ -3848,8 +3886,6 @@ function decodeURL(str) {
   }
   return buf;
 }
-
-
 
 function displayInner(e, urlStr) {
   e = getDocumentEvent(e); if (!e) return;
@@ -5451,6 +5487,13 @@ function closeDiv(e, hideDivId) {
   function closeDivCallback(e, div) {
     hideDiv(e, div.id);
     hideDiv(e, div.id + '_back');
+    var idx = hideDivId.lastIndexOf('=');
+    // find tr in dashboard menu that corresponds to deleted widget and hide it
+    var tr = document.getElementById('dm_' + hideDivId.substring(idx + 1));
+    if (tr) {
+      tr.style.visibility = Popup.HIDDEN;
+      tr.style.display = "none";
+    }
   }
   return ret;
 }
@@ -5521,7 +5564,6 @@ function minimizeRestoreDiv(e, hideDivId, property) {
   return ret;
 }
 // Dummy callback that is called after updating main boolmark
-
 function hideDiv(e, hideDivId) {
   var div = document.getElementById(hideDivId);
   if (!div)
@@ -7155,7 +7197,7 @@ function copyAttributes(oNode, oNew) {
     if (a.name == 'disabled' && value == false)
       continue;
     oNew.setAttribute(a.name, a.value);
-    alert(a.name + ': ' + a.value)
+//    alert(a.name + ': ' + a.value)
   }
   oNew.setAttribute('style', oNode.style.cssText);
   // oNew.style.cssText = oNode.style.cssText;
@@ -7177,6 +7219,7 @@ function copyTableRow(tbody, pos, oldTr) {
     newTr.cells[i].innerHTML = oldCells[i].innerHTML;
   }
   copyAttributes(oldTr, newTr);
+  return newTr;
 }
 
 function submitUpdate(formName) {
@@ -8128,7 +8171,7 @@ var Dashboard = {
         if (f) {
           formId = f.id;
           // create backlink bookmark and move it to Tab
-          submitWidgetPreferences(e, formId, true);
+          submitWidgetPreferences(e, formId, tab);
           return ret;
         }
       }
@@ -8140,8 +8183,81 @@ var Dashboard = {
 
     postRequest(e, 'proppatch', params, widget, a, callback);
     return ret;
+    
     function callback(event, widget) {
-      hideDiv(event, widget.id);
+      var hideDivId = widget.id;
+      
+      hideDiv(event, hideDivId);
+      var idx = widgetUri.lastIndexOf('=');
+      var bookmarkId;
+      
+      // sidebar widget that is not bookmark yet 
+      if (idx != -1)  
+        bookmarkId = widgetUri.substring(idx + 1);
+      
+      var tr = document.getElementById('dm_' + bookmarkId);
+
+      idx = tab.lastIndexOf('=');
+      var tbody = document.getElementById('menu_' + tab.substring(idx + 1));
+      var elms = tbody.getElementsByTagName('tr');
+      // Copying widget from one dashboard to another.
+      if (tr) {
+        var tbodyP = tr.parentNode;
+        tbodyP.removeChild(tr);
+
+        if (elms)
+          tbody.insertBefore(tr, elms[0]);
+        else
+          tbody.appendChild(tr);
+        return;
+      }
+      // Copying widget from sidebar to dashboard
+      var newTr = document.createElement('tr');
+      newTr.setAttribute('id', 'dm_' + bookmarkId);
+      
+      var cellI = document.createElement('td');
+      cellI.setAttribute('class', 'menuItemIcon');
+      newTr.appendChild(cellI);
+      
+      var icons = widget.getElementsByTagName('img');
+      for (var i=0; i<icons.length; i++) {
+        if (icons[i].className  &&  icons[i].className == 'widgetIcon') {
+          cellI.appendChild(icons[i]);
+          break;
+        }
+      }  
+      var cell = document.createElement('td');
+      cell.setAttribute('class', 'menuItem');
+      newTr.appendChild(cell);
+      var aMenu = document.createElement('a');
+      cell.appendChild(aMenu);
+      aMenu.setAttribute('href', 'localSearchResults.html?-max=y&-bookmark=' + encodeURIComponent(widgetUri));
+      var titles = widget.getElementsByTagName('span');
+      for (var i=0; i<titles.length; i++) {
+        if (titles[i].className  &&  titles[i].className == 'widgetTitle') {
+          aMenu.appendChild(titles[i]);
+          break;
+        }
+      }  
+
+      var cellE = document.createElement('td');
+      cellE.setAttribute('class', 'menuExpand');
+      newTr.appendChild(cellE);
+      if (elms)
+        tbody.insertBefore(newTr, tbody.rows[0]);
+      else
+        tbody.appendChild(newTr);
+      
+      var errDiv = document.getElementById('errorMessage');
+      if (!errDiv)
+        return;
+      var errIcon = errDiv.getElementsByTagName('img');
+      errIcon[0].src = 'icons/info-msg.gif';
+      var errMsg = errDiv.getElementsByTagName('span');
+      errMsg[0].innerHTML = 'Drag-and-drop was successful';
+      errDiv.style.visibility = Popup.VISIBLE;
+      errDiv.style.display = 'inline';
+//      errDiv.innerHTML = "<table border='0' width='100%' class='commentevent'><tr><td valign='bottom' align='center' width='70'><img src='icons/info-msg.gif' width='64' /></td><td><span class='info'>Drag-and-drop was successful</span></td><td valign='top'><img src='icons/hide.gif' width=16 height=16 onclick='hideDiv(event, \"errorMessage\");'/></td></tr></table>";
     }
   }
 }
@@ -8349,10 +8465,10 @@ var WidgetFlip = {
 
 /*
  * submits preferences form on the back of the widget and repaints widget
- * copyToTab - is passed only when there need to create bookmark for backlink property before
+ * tab - is passed only when there need to create bookmark for sidebar widget before
  * moving it to different Tab
  */
-function submitWidgetPreferences(event, formId, copyToTab) {
+function submitWidgetPreferences(event, formId, tab) {
   var ret = stopEventPropagation(event);
   if (formId.indexOf("pref_") == -1)
     return ret;
@@ -8381,30 +8497,35 @@ function submitWidgetPreferences(event, formId, copyToTab) {
     return ret;
   }
   else {
-    if (copyToTab)
+    if (tab)
       postRequest(event, url, param, widgetDiv, elm, doCopyToTab);
     else {
-    postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
+      postRequest(event, url, param, widgetDiv, elm, WidgetRefresher.refresh);
       return ret;
+    }
   }
+  // After sidebar bookmark was created move it to Tab
+  function doCopyToTab(event, widget, hotspot, contents) {
+    widget.innerHTML = contents;
+    
+    var a = document.getElementById('tab_' + tab);
+    if (!a)
+      return;
+    var table;    
+    var t = a.parentNode;
+    while (!table) {
+      if (!t) {
+        alert('Failed to copy widget in tab')
+        return;
+      }
+      if (t.tagName.toLowerCase() == 'table')
+        table = t;
+      else
+        t = t.parentNode;
+    }
+    
+    Dashboard.onReleaseOverTab(event, widget, table);
   }
-}
-function doCopyToTab(event, widget) {
-  var elms = widget.getElementsByTagName('a');
-  for (var i=0; i<elms.length; i++) {
-    if (elms[i].id  &&  elms[i].id.indexOf('widget_') != 0)
-      continue;
-    widgetUri = elms[i].id.substring(wLen);
-    break;
-  }
-
-  if (widgetUri == null)
-    return;
-  var href = a.href;
-  var params = 'uri=' + encodeURIComponent(widgetUri) + '&submitUpdate=y&.parent_verified=y&.parent_select=' + encodeURIComponent(tab);
-
-  postRequest(e, 'proppatch', params, widget, a, callback);
-  return ret;
 }
 function callback(event, widget) {
   hideDiv(event, widget.id);
@@ -8472,7 +8593,9 @@ var WidgetRefresher = {
   _onInterval : function(divId) {
     var url = getBaseUri() + "widget/div/oneWidget.html";
     var bookmarkUrl = WidgetRefresher.widgetsArr[divId].bookmarkUrl;
-    var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
+    var params = "-$action=explore&-refresh=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
+
+//    var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
     
     var cookieDiv = document.getElementById("ad_session_id");
 //    opera.postError(cookieDiv);
@@ -8482,7 +8605,16 @@ var WidgetRefresher = {
 //      if (xcookie)
 //        document.cookie = escape(cookie);
     }
-    
+
+/*    
+    var encryptedPassword = widget.preferenceForKey(this.PREFS_STR_KEY_NAME);
+    if (!encryptedPassword) {
+      var pDiv = document.getElementById('publicKey');
+      if (pDiv) 
+        var publicKey = widget.preferenceForKey(this.PREFS_STR_KEY_NAME);
+      
+    }
+*/    
     var divToRefresh;
     // refresh whole the widget including backside
     var widgetDivId = "widget_" + bookmarkUrl;
@@ -8658,12 +8790,20 @@ var OperaWidget = {
       if(pair[0] == ".skin")
         skinName = pair[1];
     }
-      // 2. calculate refreshInterval
-      this.calculateRefreshInterval(intervalNumber, intervalType);
-      // 3. restore skin
-      var skinDiv = getChildById(widgetDiv, 'skin');
-      if(skinDiv)
-        skinDiv.className = skinName;
+    // 2. calculate refreshInterval
+    this.calculateRefreshInterval(intervalNumber, intervalType);
+    // 3. restore skin
+    var skinDiv = getChildById(widgetDiv, 'skin');
+    if(skinDiv)
+      skinDiv.className = skinName;
+    
+    var pKey = this.prefForm['publicKey'];
+    if (!pKey) {
+      var pDiv = document.getElementById('publicKey');
+      if (pDiv) {
+        this.prefForm['publicKey'].value = pDiv.innderHTML;
+      }
+    }
   },
   calculateRefreshInterval : function(intervalNumber, intervalType) {
       var refreshInterval = 1;
