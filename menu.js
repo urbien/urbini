@@ -8567,13 +8567,11 @@ var OperaWidget = {
       this.widgetDiv.innerHTML = content;
     }
 */
-    // 4. fitWindowSize does not work on this moment!
-    //this.fitWindowSize();
-    // 5. init prefs on the back
+    // 4. init prefs on the back
     this.applyPrefs();
-    // 6.
+    // 5.
     this.processWidth();
-    // 7.
+    // 6.
     resizeHandle.init();
   },
   onWidgetRefresh : function() {
@@ -8588,21 +8586,10 @@ var OperaWidget = {
     this.minHeight = this.widgetDiv.offsetHeight;
     var parentTable = getAncestorByTagName(this.widgetDiv, "table");
     parentTable.width = "100%";
+    // set cellpadding = 0
+    parentTable.cellpadding = 0;
   },
-/*
-  fitWindowSize : function() {
-    if(typeof widget == 'undefined')
-      return;
 
-    if(OperaWidget.frontDiv.style.display == 'none')
-      return;
-
-    window.resizeTo(this.MAX_WND_WIDTH, this.MAX_WND_HEIGHT);
-    var width = this.widgetDiv.offsetWidth;
-    var height = this.widgetDiv.offsetHeight;
-    window.resizeTo(width, height);
-  },
-*/
   resizeOnFrontside : function() {
     if(typeof widget == 'undefined')
       return;
@@ -8771,6 +8758,7 @@ var resizeHandle = {
     this.handleDiv.onmousedown = this.mouseDown;
     this.widgetDiv = OperaWidget.getWidgetFrontDiv();
     this.widgetDiv.appendChild(this.handleDiv);
+    
     // try to prevent content offset
     addEvent(window, "scroll", this.onScroll, true);
     addEvent(document.body, "scroll", this.onScroll, true);
@@ -8789,7 +8777,6 @@ var resizeHandle = {
       var thisObj = resizeHandle;
       var width = event.x + thisObj.growboxInset.x;
       var height = event.y + thisObj.growboxInset.y;
-      thisObj.handleDiv.style.top = (height - 14);
 
       if(this.maxSize == null)
         this.maxSize = OperaWidget.getMaxSize();
@@ -8809,9 +8796,14 @@ var resizeHandle = {
       event.stopPropagation();
       event.preventDefault();
       
-      window.scrollTo(0, 0);
       window.resizeTo(width, height);
-      //thisObj.widgetDiv.scrollIntoView();
+
+      var scroll = getScrollXY();
+      widgetDiv.style.marginLeft = scroll[0];
+      widgetDiv.style.marginTop = scroll[1];
+      
+      thisObj.handleDiv.style.bottom = 0;
+      thisObj.handleDiv.style.right = 0;
   },
   mouseUp : function(event) {
     var thisObj = resizeHandle;
@@ -8820,7 +8812,10 @@ var resizeHandle = {
     event.stopPropagation();
     event.preventDefault();
     
-    window.scrollTo(0, 0);
+    var scroll = getScrollXY();
+    widgetDiv.style.marginLeft = scroll[0];
+    widgetDiv.style.marginTop = scroll[1];
+
     thisObj.saveSize();
   },
   onScroll : function(event) {
@@ -8845,4 +8840,3 @@ var resizeHandle = {
     window.resizeTo(this.widgetWidth, this.widgetHeight);
   }
 }
-
