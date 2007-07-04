@@ -1,10 +1,5 @@
-/*
-img {
-  vertical-align: middle;
-}
-*/
 /* text in link. You can see it in 'Hi "contactName"' */
-A {text-decoration : none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
+A {text-decoration : none; font-family: Arial, Verdana, Arial, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
 A:hover {color: #6BBDBE; text-decoration : none;}
 
 a img {
@@ -49,8 +44,8 @@ a.icotxt img {
 	  }
 
 H1 {font-family: arial, Verdana, geneva; font-size: 17px; font-weight: bold;  color: #00309C}
-H2 {font-family: arial, Verdana, geneva; font-weight: normal; font-size: medium; color: #6699CC}
-H3 {font-family: arial, Verdana, geneva; font-size: 15px; font-weight: normal; color: #3366aa}
+H2 {font-family: arial, Verdana, geneva; font-weight: normal; font-size: medium; color: #00309C} /*color: #6699CC}*/
+H3 {font-family: arial, Verdana, geneva; font-size: 15px; font-weight: bold;}/* color: #3366aa}*/
 
 img.fade {
    opacity:       0.6;
@@ -419,23 +414,16 @@ tr.sep {background-color:#cbcbcb; height:9pt;}
 th {font-family:sans-serif, arial; font-size:9pt;}
 input {font-family:sans-serif, arial; font-size:9pt;}
 select.xxs {font-family:sans-serif, arial; font-size:7pt;}
-form {font-family:sans-serif, arial; font-size:9pt;}
+form {font-family:sans-serif, arial; font-size:9pt; padding:0; margin:0}
 
 input.button {font-size:8pt;}
 
 span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:16pt;}
 span.xl1 {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;color:#000066;}
-/*
-td.xl {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
-
-span.xl  {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
-span.xxl {font-family:sans-serif, arial; font-weight:bold; font-size:16pt;}
-span.xl1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt;}
-*/
 span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:16pt;}
 
-
-.xs {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;}
+.xs { font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal; white-space: nowrap; }
+.xsb { font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: bold; white-space: nowrap; }
 
 span.imgTitle {color:#da26cb; font-family:sans-serif, arial; font-size:8pt; font-weight:bold}
 span.duration {color:#037f83; font-family:sans-serif, arial; font-size:8pt; font-weight:bold}
@@ -1044,6 +1032,16 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 	height:13px;
 	cursor: pointer;
 }
+
+.riphone {
+  width: 320;
+  height: 480;
+}
+
+.riphone_l {
+  width: 480;
+  height: 320;
+}
 .iphone {
   background:url(../images/iphone.png);
   width: 270;
@@ -1058,6 +1056,7 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
   padding-left: 100px; padding-right: 100px; padding-top: 27px; padding-bottom: 27px;
   background-repeat: no-repeat;
 }
+.iphoneBg { width: 214px; height:12px;   background:url(../images/iPhoneCarbonFiber.png); }
 
 .iphone1 { overflow:auto; width: 214px; height:292px }
 .iphone2 { width: 214px; height:12px;   background:url(../images/iPhoneCarbonFiber.png); }
@@ -1075,21 +1074,49 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 .fLeft  {float:left; padding-left:10px}
 .fRight {float:right; padding-right:10px}
 
+.ierr { vertical-align:top; width:64px; height:64px; padding-right:2px; border:0px }
+
+
 ul.chapter {
   margin:0px; padding-left: 2px; text-indent: 0em; list-style-type:none;
 }
 
-ul.chapter li {
-  font-size: 1.3em; font-weight: bold;
+ul.chapter a {
+  font-family: arial, Verdana, geneva; font-size: 1em; color: #00309C
 }
 
 ul.subchapter {
   margin: 0 0 0 0; padding-left: 1.7em; text-indent: 0em; list-style-type:none; list-style-image:url(../images/bullet_yellow.gif);
 }
 
-ul.subchapter li {
-  font-size: 1em; font-weight: normal;
+ul.subchapter a {
+  font-family: arial, Verdana, geneva; font-size: 0.9em;color: #3366aa;
+}
+
+div.contents {
+  float:right; border:solid #808080 1px; width:156px;
+}
+
+div.contentsRL {
+  float:right; border:solid #808080 1px; width:156px; overflow:auto; max-height:10em; padding-left: 2px;
 }
 
 .resize_handle 
 { position: absolute; width: 14; height: 14; right: 0; bottom: 0; background-image: url(../images/bottom_right.gif); cursor: se-resize; -apple-dashboard-region: dashboard-region(control rectangle); }
+
+.nobr { white-space: nowrap; }
+.widgetTitle {color:darkblue;font-weight:bold}
+.widgetIcon { vertical-align:top; width:16px; height:16px; padding-right:4px; border:0px }
+
+/*
+td.xl {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
+
+span.xl  {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
+span.xxl {font-family:sans-serif, arial; font-weight:bold; font-size:16pt;}
+span.xl1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt;}
+*/
+/*
+img {
+  vertical-align: middle;
+}
+*/
