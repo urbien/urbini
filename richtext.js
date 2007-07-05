@@ -414,7 +414,6 @@ var RteEngine = {
 	// ------------------------------------------
 	// onPasteHandler - (entersepts image paste only)
 	onPasteHandler : function(rteId) {
-	//debugger
     var rteObj = RteEngine.getRteById(rteId);
     if(rteObj == null)
       return;
@@ -963,7 +962,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   this.getImgUrlsArray = function() {
     return this.imgUrlsArr;
   }
-
+  this.getWidth = function() {
+    return this.iframeObj.clientWidth;  
+  }
+  
 	this.getDataField = function() {
 		if(this.dataField == null) {
 			this.dataField = getChildById(this.parentDiv, this.dataFieldId);

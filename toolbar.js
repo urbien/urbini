@@ -207,6 +207,7 @@ function CtrlBase() {
 ToolbarButton.prototype = new CtrlBase();
 function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, toolbar, title, titlePressed)
 {
+  var BACKGROUND_IMG = "images/skin/blue/tab-middle.gif";
   var i_am = this;
 	this.div = null;
 	
@@ -233,7 +234,8 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		this.div.style.position = "absolute";
 		this.div.style.left = this.left;
 		this.div.style.top = this.top;
-		this.div.style.backgroundColor = "buttonface";
+		this.div.style.backgroundImage = "url(" + BACKGROUND_IMG + ")";
+		this.div.style.backgroundPosition = "center center";
 		this.div.style.padding = this.toolbar.BTN_PADDING;
 		this.div.style.cursor = "pointer";
 		this.div.style.borderWidth = "1px";
@@ -931,7 +933,8 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 	var BOTTOM_PADDING = 5;
 	this.BTN_PADDING = 2;
 	var BTN_GAP = 4
-	
+  var BACKGROUND_IMG = "images/skin/blue/tab-middle.gif";
+
 	var i_am = this;
 	this.parentDiv = parentDiv;
 	this.masterObj = masterObj;
@@ -962,9 +965,10 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 		this.div.style.position = "absolute";
 		this.div.style.left = 0;
 		this.div.style.top = 0;
-		this.div.style.width = this.width;
+		this.div.style.width = this.masterObj.getWidth();
 		this.div.style.height = this.height;
-		this.div.style.backgroundColor = "buttonface";
+		this.div.style.backgroundImage = "url(" + BACKGROUND_IMG + ")";
+		this.div.style.backgroundPosition = "center center";
 		this.div.style.borderWidth = 0;
 
 		this.parentDiv.appendChild(this.div);
@@ -1018,7 +1022,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 
 		lastBtnEdge = this.width - RIGHT_PADDING;
 						
-		this.div.style.width = this.width;
+		// full rte iframe width // this.div.style.width = this.width;
 		this.div.style.height = this.height;
 		
 		this.titlestrip.resize(this.width); // resize titlestrip
@@ -1134,7 +1138,6 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 *****************************************/
 var PopupHandler = {
 	CLOSE_TIMEOUT : 500,
-	TINY_SCREEN_HEIGHT : 600, // or less
 	popupDiv : null,
 	parentDlg : null,
 	oldOnKeyUp : null,
@@ -1205,10 +1208,10 @@ var PopupHandler = {
 		if(alignment != 'inside')
 		  this.y = pos.top + hotspot.height + OFFSET_Y;
 		
-		var screenHeight = getWindowSize()[1];
-		var screenWidth  = getWindowSize()[0];
-    // on tiny screen height (< 600)
-		if(screenHeight < this.TINY_SCREEN_HEIGHT) {
+		var screenHeight = getScrollXY()[1];
+		var screenWidth  = getScrollXY()[0];
+		// small screen
+		if(Popup.s60Browser) {
 		  this.y = 0; // top
 		  this.x = (Math.abs(screenWidth - div.clientWidth)) / 2; // middle
 		}
