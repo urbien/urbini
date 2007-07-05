@@ -111,7 +111,8 @@ Popup.ns6  = (Popup.w3c && navigator.appName.indexOf("Netscape")>= 0) ? true : f
 Popup.maemo= (Popup.w3c && navigator.userAgent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
-
+Popup.iPhone = navigator.userAgent.indexOf("iPhone") != 1;
+Popup.mobile = screen.width < 600;
 // for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
 
@@ -6067,6 +6068,16 @@ function onDlgContentResize(e){
 
 }
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
+  if (!Popup.mobile) {
+    div.style.left = 0 + 'px';
+    div.style.top  = 0 + 'px';
+    div.style.width = screen.width;
+    div.position = 'fixed';
+    alert(screen.width + ', ' + screen.height);
+    div.style.visibility = Popup.visible;
+    div.style.visibility = Popup.VISIBLE;
+  }
+
   // "hack" resize dialog if its contents resized (twice calls of onresize)
   var tbl = getChildById(div, "dataEntry");
   if(tbl) {
