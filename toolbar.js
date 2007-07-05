@@ -207,7 +207,6 @@ function CtrlBase() {
 ToolbarButton.prototype = new CtrlBase();
 function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, toolbar, title, titlePressed)
 {
-  var BACKGROUND_IMG = "images/skin/blue/tab-middle.gif";
   var i_am = this;
 	this.div = null;
 	
@@ -234,8 +233,6 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		this.div.style.position = "absolute";
 		this.div.style.left = this.left;
 		this.div.style.top = this.top;
-		this.div.style.backgroundImage = "url(" + BACKGROUND_IMG + ")";
-		this.div.style.backgroundPosition = "center center";
 		this.div.style.padding = this.toolbar.BTN_PADDING;
 		this.div.style.cursor = "pointer";
 		this.div.style.borderWidth = "1px";
@@ -291,12 +288,10 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		if(i_am.isToggle) {
 			i_am.isPressed = !i_am.isPressed;
 			if(i_am.isPressed) {
-				i_am.div.style.backgroundColor = "buttonhighlight";
 				if(i_am.titlePressed != null)
 					i_am.div.title = i_am.titlePressed;
 			}
 			else {
-				i_am.div.style.backgroundColor = "buttonface";
 				i_am.onMouseOut();
 				if(i_am.titlePressed != null)
 					i_am.div.title = i_am.title;
@@ -1211,7 +1206,7 @@ var PopupHandler = {
 		var screenHeight = getScrollXY()[1];
 		var screenWidth  = getScrollXY()[0];
 		// small screen
-		if(Popup.s60Browser) {
+		if(Popup.mobile) {
 		  this.y = 0; // top
 		  this.x = (Math.abs(screenWidth - div.clientWidth)) / 2; // middle
 		}
