@@ -26,6 +26,7 @@
   <script src="styleSheet/style_sheet.js"   language="JavaScript" type="text/javascript"></script>
 
   <script src="imageAnnotation/PhotoNotes.js" language="JavaScript" type="text/javascript"></script>
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no"></meta>
 
  <getResource/>
   <siteTitle />

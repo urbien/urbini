@@ -1,15 +1,17 @@
+/*
 body {
   -webkit-text-size-adjust:230%;
   -webkit-column-width: 7em;
   -webkit-column-gap: 1em;
 }
-/*
+
 img {
   width: 75px;
   height: 75px;
 }
-*/
+
 a:hover img {
   width: 140px;
   height: 140px;
 }
+*/
