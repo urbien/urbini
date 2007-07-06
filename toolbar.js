@@ -235,7 +235,6 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		this.div.style.top = this.top;
 		this.div.style.padding = this.toolbar.BTN_PADDING;
 		this.div.style.cursor = "pointer";
-		this.div.style.borderWidth = "1px";
 		this.div.style.borderStyle = "solid";
 		this.div.title = this.title;
 		
@@ -269,14 +268,13 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		
 		i_am.div.style.borderLeftColor = i_am.div.style.borderTopColor = "ButtonHighlight";
 		i_am.div.style.borderRightColor = i_am.div.style.borderBottomColor = "ButtonShadow";
+		i_am._addBorder();
 	}
 	
 	this.onMouseOut = function() {
 		if(i_am.isDisabled) return;
 		if(i_am.isPressed)  return;
-		
-		i_am.div.style.borderLeftColor = i_am.div.style.borderTopColor = "buttonface";
-		i_am.div.style.borderRightColor = i_am.div.style.borderBottomColor = "buttonface";
+		i_am._removeBorder();
 	}	
 	
 	this.onMouseDown = function() {
@@ -285,6 +283,7 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 
 		i_am.div.style.borderLeftColor = i_am.div.style.borderTopColor = "ButtonShadow";
 		i_am.div.style.borderRightColor = i_am.div.style.borderBottomColor = "ButtonHighlight";
+		i_am._addBorder();
 		if(i_am.isToggle) {
 			i_am.isPressed = !i_am.isPressed;
 			if(i_am.isPressed) {
@@ -298,23 +297,18 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 			}
 			i_am.callback(i_am.isPressed);
 		}
-		else
-			i_am.div.style.backgroundColor = "buttonhighlight";
 	}	
 	
 	this.onMouseUp = function(e) {
 		if(i_am.isDisabled) return;
-		if(i_am.isToggle)	return;
+		if(i_am.isToggle && i_am.isPressed)	return;
 		
-		i_am.div.style.backgroundColor = "buttonface";
-		i_am.onMouseOut();
-		
+		i_am.onMouseOver();
 		// closePopup used only in the overflow pupup
 		// for a buttons that do not call a (sub)popup
 		var closePopup = i_am.callback(i_am.isPressed);
 		if(i_am.isOverflowed && closePopup)
 			PopupHandler.hide();
-		
 	}
 
 	// press toggle button without callback execution.
@@ -323,9 +317,23 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		this.isPressed = true; //!i_am.isPressed;
 		this.div.style.borderLeftColor = i_am.div.style.borderTopColor = "ButtonShadow";
 		this.div.style.borderRightColor = i_am.div.style.borderBottomColor = "ButtonHighlight";
-		this.div.style.backgroundColor = "buttonhighlight";
+		this._addBorder();
 	}
 
+  this._addBorder = function() {
+    if(i_am.div.style.borderWidth == "1px")
+      return;
+		i_am.div.style.borderWidth = "1px";
+		i_am.div.style.left = parseInt(i_am.div.style.left, 10) - 1;
+		i_am.div.style.top = parseInt(i_am.div.style.top, 10) - 1;
+  }
+  this._removeBorder = function() {
+ 		if(i_am.div.style.borderWidth == "0px")
+ 		  return;
+ 		i_am.div.style.borderWidth = "0px";
+		i_am.div.style.left = parseInt(i_am.div.style.left, 10) + 1;
+		i_am.div.style.top = parseInt(i_am.div.style.top, 10) + 1;
+  }
 	// constructor's body
 	this.create(iconWidth);
 	this.onMouseOut(); // draw "invisible" borders 
@@ -960,7 +968,10 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 		this.div.style.position = "absolute";
 		this.div.style.left = 0;
 		this.div.style.top = 0;
-		this.div.style.width = this.masterObj.getWidth();
+		if(typeof this.masterObj.getWidth != 'undefined')
+		  this.div.style.width = this.masterObj.getWidth();
+		else
+		  this.div.style.width = this.parentDiv.clientWidth; 
 		this.div.style.height = this.height;
 		this.div.style.backgroundImage = "url(" + BACKGROUND_IMG + ")";
 		this.div.style.backgroundPosition = "center center";
