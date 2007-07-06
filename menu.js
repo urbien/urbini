@@ -6068,6 +6068,7 @@ function onDlgContentResize(e){
 
 }
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
+  /*
   if (!Popup.mobile) {
     div.style.left = 0 + 'px';
     div.style.top  = 0 + 'px';
@@ -6075,7 +6076,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     div.position = 'fixed';
     div.style.visibility = Popup.VISIBLE;
   }
-
+  */
   // "hack" resize dialog if its contents resized (twice calls of onresize)
   var tbl = getChildById(div, "dataEntry");
   if(tbl) {
