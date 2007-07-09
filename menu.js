@@ -1712,6 +1712,7 @@ function listboxOnClick1(e, imgId, enteredText, enterFlag) {
   }
 
   // request listbox context from the server via ajax
+  div.removeAttribute('eventHandlersAdded');
   postRequest(e, url, params, div, hotspot, Popup.load);
 }
 
@@ -6068,15 +6069,13 @@ function onDlgContentResize(e){
 
 }
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
-  /*
-  if (!Popup.mobile) {
+  if (Popup.mobile) {
     div.style.left = 0 + 'px';
     div.style.top  = 0 + 'px';
     div.style.width = screen.width;
     div.position = 'fixed';
     div.style.visibility = Popup.VISIBLE;
   }
-  */
   // "hack" resize dialog if its contents resized (twice calls of onresize)
   var tbl = getChildById(div, "dataEntry");
   if(tbl) {
