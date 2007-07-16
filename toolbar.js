@@ -297,14 +297,12 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 				if(i_am.titlePressed != null)
 					i_am.div.title = i_am.title;
 			}
-			i_am.callback(i_am.isPressed);
 		}
 	}	
 	
 	this.onMouseUp = function(e) {
-		if(i_am.isDisabled) return;
-		if(i_am.isToggle && i_am.isPressed)	return;
-		
+		if(i_am.isDisabled)
+		  return;
 		i_am.onMouseOver();
 		// closePopup used only in the overflow pupup
 		// for a buttons that do not call a (sub)popup
@@ -595,7 +593,9 @@ function ListItem(index, innerDiv, parent, noHighlight)
 		i_am.liObj.style.backgroundColor = i_am.parent.LIST_BACKGROUND;
 		i_am.parent.onItemSelection(i_am.index);
 	}
-
+  this.removeHighlight = function() {
+    this.liObj.style.backgroundColor = this.parent.LIST_BACKGROUND;
+  }
 	// constructor's body
 	this.create();
 }
@@ -637,15 +637,16 @@ function List(colAmt) {
 		//	this.table.cellPadding = 10;	//	this.table.cellSpacing = 0; 
 		this.tablebody = document.createElement("tbody");
 		this.table.appendChild(this.tablebody);
-		
-		
 		this.div.onmouseup = function(e) {e = e || event; e.cancelBubble = true;}
-		
-		
 		this.div.appendChild(this.table);
 	}
 	this.show = function(hotspot, alignment, callback, parentDlg) {
 		this.callback = callback;
+    
+    for(var i = 0; i < this.itemsArr.length; i++) {
+      this.itemsArr[i].removeHighlight();
+    }
+    
     if(this.div.style.visibility == "visible") {
       PopupHandler.hide(false);
       return;
