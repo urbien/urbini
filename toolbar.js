@@ -236,6 +236,7 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		this.div.style.padding = this.toolbar.BTN_PADDING;
 		this.div.style.cursor = "pointer";
 		this.div.style.borderStyle = "solid";
+		this.div.style.borderWidth = "0px";
 		this.div.title = this.title;
 		
 		var innerHTML = '<img src = "' + icon + '" border="0"'
@@ -268,7 +269,8 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		
 		i_am.div.style.borderLeftColor = i_am.div.style.borderTopColor = "ButtonHighlight";
 		i_am.div.style.borderRightColor = i_am.div.style.borderBottomColor = "ButtonShadow";
-		i_am._addBorder();
+		if(i_am.isOverflowed == false)
+    	i_am._addBorder();
 	}
 	
 	this.onMouseOut = function() {
@@ -321,18 +323,20 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 	}
 
   this._addBorder = function() {
-    if(i_am.div.style.borderWidth == "1px")
+    var stl = i_am.div.style
+    if(stl.borderWidth.indexOf("1px") != -1)
       return;
-		i_am.div.style.borderWidth = "1px";
-		i_am.div.style.left = parseInt(i_am.div.style.left, 10) - 1;
-		i_am.div.style.top = parseInt(i_am.div.style.top, 10) - 1;
+		stl.borderWidth = "1px";
+		stl.left = parseInt(i_am.div.style.left, 10) - 1;
+		stl.top = parseInt(i_am.div.style.top, 10) - 1;
   }
   this._removeBorder = function() {
- 		if(i_am.div.style.borderWidth == "0px")
+    var stl = i_am.div.style
+ 		if(stl.borderWidth.indexOf("0px") != -1)
  		  return;
- 		i_am.div.style.borderWidth = "0px";
-		i_am.div.style.left = parseInt(i_am.div.style.left, 10) + 1;
-		i_am.div.style.top = parseInt(i_am.div.style.top, 10) + 1;
+ 		stl.borderWidth = "0px";
+		stl.left = parseInt(i_am.div.style.left, 10) + 1;
+		stl.top = parseInt(i_am.div.style.top, 10) + 1;
   }
 	// constructor's body
 	this.create(iconWidth);
