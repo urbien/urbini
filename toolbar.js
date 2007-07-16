@@ -1187,7 +1187,7 @@ var PopupHandler = {
 		// set popup's parentDlg
 		if(parentDlg != null)
 			parentDlg.appendChild(div);
-		else // if(div.parentNode.id != 'body')
+		else
 			document.body.appendChild(div);
 		
 		var relObj = hotspot.div || hotspot.obj || hotspot;
@@ -1219,8 +1219,8 @@ var PopupHandler = {
 		if(alignment != 'inside')
 		  this.y = pos.top + hotspot.height + OFFSET_Y;
 		
-		var screenHeight = getScrollXY()[1];
-		var screenWidth  = getScrollXY()[0];
+		var screenWidth  = screen.width;
+		var screenHeight = screen.height;
 		// small screen
 		if(Popup.mobile) {
 		  this.y = 0; // top
@@ -1233,8 +1233,15 @@ var PopupHandler = {
 		if(this.isGecko) {
 			div.style.position = 'fixed';
 			var scrl = getScrollXY();
-			div.style.left = this.x - scrl[0];
-			div.style.top = this.y - scrl[1];
+			if(hotspot.isOverflowed) { // (sub)popup: image dlg, etc.
+				div.style.left = this.x;
+			  div.style.top = this.y;
+			}
+			else {
+			  div.style.left = this.x - scrl[0];
+			  div.style.top = this.y - scrl[1];
+			}
+			
 		}
     else {
 		  div.style.left = this.x;
