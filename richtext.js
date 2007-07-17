@@ -720,6 +720,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.isSourceView = false;
 	this.initFrameHeight = null;
 
+  // only if isChanged == true, the content is copied into data field to submit
+  this.isChanged = false;
+
 	this.isIE = false;
 	this.isOpera = false;
 	this.isNetscape = false;
@@ -963,7 +966,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     return this.imgUrlsArr;
   }
   this.getWidth = function() {
-    return this.iframeObj.clientWidth;  
+    return this.iframeObj.offsetWidth;  
   }
   
 	this.getDataField = function() {
@@ -975,8 +978,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		return this.dataField;
 	}
 	this.putRteData = function() {
+	  if(this.isChanged == false)
+	    return;
+	    
 		var text = this.getHtmlContent();
-
 		// some html cleanup
 		// 1. remove ending space.
 		text = trim(text);
@@ -1047,6 +1052,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
           || (e.shiftKey && e.keyCode == 45)) /* e.DOM_VK_INSERT */ {
       RteEngine.onPasteHandler(i_am.iframeObj.id); 
     }
+    // except navigation keys
+    if(e.keyCode < 33 || e.keyCode > 40)
+      i_am.isChanged = true;
 	}
 
 	this.fitHeightToVisible = function() {
@@ -1076,6 +1084,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   this._onpaste = function(e) {
      var execCode = "RteEngine.onPasteHandler('" + i_am.iframeObj.id + "')"
      setTimeout(execCode, 1);
+     i_am.isChanged = true;
   }
   
 	// --------------------------------------
@@ -1383,6 +1392,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		this.window.focus();
 
 	  this.skipClose = true;
+	  this.isChanged = true;
 		return true;
 	}
 
@@ -1467,8 +1477,4 @@ function TArea(iframeObj, dataFieldId, rtePref) {
 
   // constructor body
   this.init();
-}
-
-function debuggerS(str) {
-  alert(str);
 }
