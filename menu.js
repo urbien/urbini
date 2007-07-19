@@ -3212,9 +3212,11 @@ function uiFocus(div) {
       }
       if (u.id && (u.id == 'uiFocus' || u.id.indexOf('_uiFocus') != -1)) {
         if(execJS.isObjectTotallyVisible(u)) {
+          try {
           u.focus(); // in IE (at least in IE6) first focus() is lost for some
                       // reason - we are forced to issue another focus()
           u.focus();
+          }catch(e){};
         }
         return true;
       }
@@ -7744,10 +7746,12 @@ var Dashboard = {
   targetTab : null,
 
   prevY : 0,
+  prevX : 0,
   isDirUp : true,
 
   prevWidgetOld : null,
-
+  isWidgetMoved : false,
+  
   // drag interface functions -----
   getDragBlock : function(catchedObj) {
     if(OperaWidget.isWidget()) // it means that we are not in our dashboard.
@@ -7804,7 +7808,8 @@ var Dashboard = {
   onStartDrag : function(dragBlock) {
     this.dragBlock = dragBlock;
     this.isDragMode = true;
-
+    this.isWidgetMoved = false;
+    
     if(this.placeholderDiv == null)
       this.createPlaceholder();
 
@@ -7828,6 +7833,7 @@ var Dashboard = {
 
     this.prevWidgetOld = this.getPrevSibling(dragBlock);
     this.prevY = y;
+    this.prevX = x;
 
     swapNodes(dragBlock, this.placeholderDiv);
   },
@@ -7891,6 +7897,10 @@ var Dashboard = {
       for(var i = 0; i < this.tabHeadersMap.length; i++)
         this.tabHeadersMap[i].setBackgroundAndBorder("", "");
     }
+    
+    // check if widget was moved from the place
+    if(Math.abs(this.prevX - x) > 2 || Math.abs(this.prevY - y) > 2)
+      this.isWidgetMoved = true;
   },
 
   onStopDrag : function(e, dragBlock) {
@@ -7901,7 +7911,18 @@ var Dashboard = {
       return;
 
     this.compliteGuiDrag(dragBlock);
-
+    
+    // if widget was not moved then maximize it
+    if(this.isWidgetMoved == false) {
+        var maxLink = getChildById(dragBlock, "w_maximize");
+        if(!maxLink)
+          return;
+        maxLink.href
+        var loc = getBaseUri() + maxLink.href;
+        window.location = loc;
+        return;
+    }
+    
     // 1. move on another tab
     if(this.targetTab) {
       this.targetTab.setBackgroundAndBorder("", "");
