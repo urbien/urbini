@@ -27,7 +27,7 @@
 	      <changePassword/><userLogOff html="user-login.html"/><registerNewUser/><myProfile property="unread" />
 	    </td>
 	    <td valign="middle" nowrap="nowrap"  align="right">
-	      <a href="http://lablz.com"><img src="icons/universalPlatform.gif" align="absmiddle" border="0"/><span  class="poweredBy" style="padding-left: 5px">on Universal</span><span class="poweredBy-b">Platform</span></a>
+	      <a href="http://lablz.com"><img src="icons/universalPlatform.gif" align="absmiddle" border="0"/><span  class="poweredBy" style="padding-left: 5px"><text text="on"/> UniversalPlatform</span></a>
 	    </td>
 	  </tr>
 	  </table>
