@@ -1,6 +1,9 @@
 <div>
 <div nonPda="T">
 <table id="resourceList" width="100%" border="0" cellspacing="0" cellpadding="0">
+<tr valign="top">
+  <td><pagingResources /></td>
+</tr>
 <tr  valign="top">
   <td valign="top" align="middle" width="110%">
     <tr valign="top"><td>
