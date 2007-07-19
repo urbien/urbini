@@ -351,7 +351,9 @@ var RteEngine = {
 			+ ' <td align="left">Enter URL:</td>'
 			+ ' </tr><tr>'
 			+ ' <td><input name="url" type="text" id="url" value="" size="35"></td>'
-			+ ' </tr>'
+			+ ' </tr><tr>'
+  		+ ' <td><input name="is_blank" type="checkbox" id="is_blank">load the linked into a new window</td>'
+      + ' </tr>'
 			+ '</table>';
 		this.linkPopup = new FormPopup(innerFormHtml);
 	},
@@ -1342,8 +1344,24 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	// 7
 	this.setLink = function(params) {
-		if(params.url.length != 0)
-			i_am.performCommand("createlink", params.url);
+		if(params.url.length == 0)
+		  return;
+		var url = params.url
+		if(params.is_blank)
+		  url += "__blank";
+		
+		i_am.performCommand("createlink", url);
+		
+		if(params.is_blank) {
+		  var links = i_am.document.body.getElementsByTagName("a");
+		  for(var i = 0; i < links.length; i++) {
+		    if(links[i].href == url) {
+		      links[i].setAttribute("target", "_blank");
+		      links[i].href = links[i].href.replace(/__blank$/, "");
+		    }
+		  }
+		}
+
 		return true;
 	}
 	// 8
