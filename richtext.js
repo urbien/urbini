@@ -352,7 +352,7 @@ var RteEngine = {
 			+ ' </tr><tr>'
 			+ ' <td><input name="url" type="text" id="url" value="" size="35"></td>'
 			+ ' </tr><tr>'
-  		+ ' <td><input name="is_blank" type="checkbox" id="is_blank">load the linked into a new window</td>'
+  		+ ' <td><input name="is_blank" type="checkbox" id="is_blank">load into a new window</td>'
       + ' </tr>'
 			+ '</table>';
 		this.linkPopup = new FormPopup(innerFormHtml);
