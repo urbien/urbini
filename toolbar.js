@@ -895,7 +895,6 @@ function Titlestrip(parentDiv, toolbar)
 		this.div.style.top = 0;
 		this.div.style.width = "100%";
 		this.div.style.height = HEIGHT;
-		this.div.style.backgroundColor = "buttonface";
 		this.div.style.borderWidth = 0;
 		// 2. append to parent
 		this.parentDiv.appendChild(this.div);
@@ -908,7 +907,6 @@ function Titlestrip(parentDiv, toolbar)
 		titleDivTmp.style.position = "absolute";
 		titleDivTmp.style.left = left;
 		titleDivTmp.style.top = TOP_PADDING;
-		titleDivTmp.style.backgroundColor = "buttonface";
 		titleDivTmp.style.fontFamily = FONT_FAMILY;
 		titleDivTmp.style.fontSize = FONT_SIZE;
 		titleDivTmp.innerHTML = text;
@@ -976,7 +974,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 		if(typeof this.masterObj.getWidth != 'undefined')
 		  this.div.style.width = this.masterObj.getWidth();
 		else
-		  this.div.style.width = this.parentDiv.clientWidth; 
+		  this.div.style.width = "100%";
 		this.div.style.height = this.height;
 		this.div.style.backgroundImage = "url(" + BACKGROUND_IMG + ")";
 		this.div.style.backgroundPosition = "center center";
