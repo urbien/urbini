@@ -3972,7 +3972,10 @@ function showDialog(event, div, hotspot, content) {
 
 function showDialog1(event, div, hotspot) {
   var iframe = document.getElementById('dialogIframe');
-  setDivVisible(event, div, iframe, hotspot, 16, 16);
+
+  if(FullScreenPopup.show(div, hotspot) == false)
+    setDivVisible(event, div, iframe, hotspot, 16, 16);
+  
   initListBoxes(div);
   uiFocus(div);
   interceptLinkClicks(div);
@@ -9008,5 +9011,103 @@ var resizeHandle = {
     if(!this.widgetWidth)
       return;
     window.resizeTo(this.widgetWidth, this.widgetHeight);
+  }
+}
+
+var FullScreenPopup = {
+  INTERVAL : 10, // ms
+  STEPS_NUM : 7,
+  
+  wndWidth : null, 
+  contentDiv : null,
+  div : null,
+  step : 0,
+  toShow : true,
+  oldMarginLeft : null,
+  oldOverflowValue : null,
+  
+  show : function(div, hotspot) {
+    if(!Popup.mobile)
+      return false;
+    
+    this.div = div;
+
+    // suppose that "mainskin" is always applicable
+    this.contentDiv = document.getElementById("mainskin");
+    this.oldMarginLeft = this.contentDiv.style.marginLeft;
+   
+    this.oldOverflowValue = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    var divStl = div.style;
+    div.style.visibility = "visible";
+    var wndSize = getWindowSize();
+    this.wndWidth = wndSize[0];
+    divStl.height = wndSize[1];
+    divStl.top = 0;
+
+    var zIndex = 1;
+    if (hotspot) {
+      var z = hotspot.style.zIndex;
+      if (z != null && z != '')
+        zIndex = z;
+    }
+    divStl.zIndex = zIndex + 2;
+    this.toShow = true;
+    this._animate();
+    return true;
+  },
+  hide : function(div) {
+    if(typeof div != 'undefined') {
+      if(typeof div == 'string')
+        div = document.getElementById(div);
+      this.div = div;
+      this.contentDiv.style.display = "";
+    }
+    this.toShow = false;
+    this._animate();
+  },
+  _animate : function() {
+    var thisObj = FullScreenPopup;
+    var divStl = thisObj.div.style;
+    var cntDivStl = thisObj.contentDiv.style;
+    var x;
+
+    var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM);
+    
+    if(thisObj.toShow) {
+      if(thisObj.step == thisObj.STEPS_NUM)
+        x = this.wndWidth;
+      else
+        x = thisObj.step * delta;
+    }
+    // to hide popup
+    else {
+      if(thisObj.step == thisObj.STEPS_NUM) {
+        divStl.display = "none";
+        x = thisObj.oldMarginLeft;
+      }
+      else
+        x = thisObj.wndWidth - (thisObj.step * delta);
+    }
+    
+    cntDivStl.marginLeft = x;
+    
+    divStl.left  = x - thisObj.div.clientWidth;
+    divStl.width =  this.wndWidth;
+
+    if(thisObj.step < thisObj.STEPS_NUM) {
+      thisObj.step++;
+      setTimeout("FullScreenPopup._animate();", thisObj.INTERVAL);
+    }
+    else { // stop animation
+      if(thisObj.toShow) {
+        cntDivStl.display = "none";
+      }
+      else {
+        document.body.style.overflow = this.oldOverflowValue;
+      }
+      thisObj.step = 0;
+    }
   }
 }
