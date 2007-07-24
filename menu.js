@@ -598,7 +598,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             anchor.onclick1 = anchor.onclick;
             anchor.onclick = '';
           }
+          addCurrentDashboardAndCurrentTab(anchor);
           var href = anchor.href;
+          
           // anchors[0].href = 'javascript:;';
           elem.setAttribute('href', href);
           // anchors[0].disabled = true;
@@ -2592,6 +2594,8 @@ function menuOnClick(e) {
     title = id.substring('menuLink_'.length);
   else
     title = id.substring('menuicon_'.length);
+  
+  addCurrentDashboardAndCurrentTab(target);
   var divId = 'menudiv_' + title;
   var divRef = document.getElementById(divId); // this is a menu item without
                                                 // popup, exit
@@ -2601,6 +2605,41 @@ function menuOnClick(e) {
   return stopEventPropagation(e);
 }
 
+function addCurrentDashboardAndCurrentTab(target) {
+  var a = target.href;
+   
+  if (!a || a == 'about:blank') 
+    return;
+  var hasQuestion    = a.indexOf('?') != -1; 
+  var addTabId       = a.indexOf('&-t=') == -1;
+  var addDashboardId = a.indexOf('-d=') == -1;
+  if (addTabId  ||  addDashboardId) {
+    var div = document.getElementById('dashboardCredentials');
+    var s = div.innerHTML.split(';');
+    if (s) {
+      if (hasQuestion) {
+        if (addDashboardId)
+          a += '&-d=' + s[0];
+        if (addTabId  &&  s.length > 1)
+          a += '&-t=' + s[1];
+      }
+      else {
+        if (addDashboardId) {
+          a += '?-d=' + s[0];
+          hasQuestion = true;
+        }
+        if (addTabId  &&  s.length > 1) {
+          if (hasQuestion)
+            a += '&';
+          else
+            a += '?';
+          a += '-t=' + s[1];
+        }
+      }
+      target.href = a;
+    }
+  }
+}
 function resizeWindow(event) {
 //  return true;
   if (!event)
@@ -3291,7 +3330,9 @@ function onClick(e) {
   var link = getTargetAnchor(e);
   if (!link || !link.href || link.href == null)
     return;
-
+  // add current dashboard ID and current tab ID to url if they are not there 
+  var a = link.href;
+  addCurrentDashboardAndCurrentTab(link);
   if     (e.ctrlKey) {
     p = '_ctrlKey=y';
   }
