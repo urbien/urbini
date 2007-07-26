@@ -4202,6 +4202,8 @@ function getTargetElement(e) {
   }
   else {
     elem = e.srcElement;
+    if(elem.parentNode && elem.parentNode.tagName.toLowerCase() == "a")
+      elem = elem.parentNode;   
   }
   return elem;
 }
@@ -7827,7 +7829,10 @@ var Dashboard = {
       var freeSpaceRect = new Dashboard.FreeSpaceRect(cols[i], this.widgetsMap);
       this.freeSpacesMap.push(freeSpaceRect);
       // set min column width on case if the column has no widgets.
-      cols[i].width = this.MIN_COLUMN_WIDTH;
+      if(typeof cols[i].style.minWidth != 'undefined')
+        cols[i].style.minWidth = this.MIN_COLUMN_WIDTH
+      else
+        cols[i].style.width = this.MIN_COLUMN_WIDTH;
     }
     // 3. tab "Header"
     // suppose that position of tab header is constant
@@ -7882,11 +7887,10 @@ var Dashboard = {
     swapNodes(dragBlock, this.placeholderDiv);
   },
   onDrag : function(dragBlock, x, y) {
-    if(Dashboard.isDragMode == false)
+    if(this.isDragMode == false)
       return;
 
     // 1. preparing
-
     // 1.1 middle of the drag block
     var midX = x + Math.ceil(dragBlock.offsetWidth / 2);
     var midY = y + Math.ceil(dragBlock.offsetHeight / 2);
@@ -7961,9 +7965,7 @@ var Dashboard = {
         var maxLink = getChildById(dragBlock, "w_maximize");
         if(!maxLink)
           return;
-        maxLink.href
-        var loc = getBaseUri() + maxLink.href;
-        window.location = loc;
+        window.location = maxLink.href;
         return;
     }
     
