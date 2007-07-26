@@ -2618,13 +2618,13 @@ function addCurrentDashboardAndCurrentTab(target) {
     var s = div.innerHTML.split(';');
     if (s) {
       if (hasQuestion) {
-        if (addDashboardId)
+        if (addDashboardId  &&  s[0])
           a += '&-d=' + s[0];
         if (addTabId  &&  s.length > 1)
           a += '&-t=' + s[1];
       }
       else {
-        if (addDashboardId) {
+        if (addDashboardId && s[0]) {
           a += '?-d=' + s[0];
           hasQuestion = true;
         }
