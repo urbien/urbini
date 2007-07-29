@@ -51,7 +51,7 @@ function searchHighlighting() {
   var start = url.indexOf('&-q=');
   if (start == -1)
     return;
-  var r = url.indexOf('readOnlyProperties.html');
+  var r = url.indexOf('v.html');
   if (r == -1)
     return; 
   start +=4;  

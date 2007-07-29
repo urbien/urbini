@@ -977,7 +977,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
             baseUri += "/";
         }
-        var url = baseUri + "localSearchResults.html?" + params;
+        var url = baseUri + "l.html?" + params;
         document.location.replace(url);
         return;
       }
@@ -5056,7 +5056,7 @@ function cancelItemAndWait(event) {
     else
       uri = decodeURIComponent(h.substring(idx + 5, idx1));
     if (uri.indexOf('/hosts/') != -1) {
-      idx = h.indexOf('/readOnlyProperties.html');
+      idx = h.indexOf('/v.html');
       idx1 = uri.indexOf('/', 7);
       uri = h.substring(0, idx) + uri.substring(idx1);
     }
@@ -6000,10 +6000,10 @@ function addAndShowItems(tr, e) {
   var idx1 = href.indexOf("-currentItem=");
 
   if (idx1 == -1)
-    anchor += encodeURIComponent("localSearchResults.html?-addItems=y&-noRedirect=y&-currentItem=" + encodeURIComponent(forum) + "&" + href.substring(idx + 1));
+    anchor += encodeURIComponent("l.html?-addItems=y&-noRedirect=y&-currentItem=" + encodeURIComponent(forum) + "&" + href.substring(idx + 1));
   else {
     var idx2 = href.indexOf("&", idx1);
-    anchor += encodeURIComponent("localSearchResults.html?-addItems=y&-noRedirect=y&-currentItem=" + encodeURIComponent(forum) + "&" + href.substring(idx + 1, idx1) + href.substring(idx2));
+    anchor += encodeURIComponent("l.html?-addItems=y&-noRedirect=y&-currentItem=" + encodeURIComponent(forum) + "&" + href.substring(idx + 1, idx1) + href.substring(idx2));
   }
 
   return addAndShow1(anchor, e);
@@ -8307,7 +8307,7 @@ var Dashboard = {
       newTr.appendChild(cell);
       var aMenu = document.createElement('a');
       cell.appendChild(aMenu);
-      aMenu.setAttribute('href', 'localSearchResults.html?-max=y&-bookmark=' + encodeURIComponent(widgetUri));
+      aMenu.setAttribute('href', 'l.html?-max=y&-bookmark=' + encodeURIComponent(widgetUri));
       var titles = widget.getElementsByTagName('span');
       for (var i=0; i<titles.length; i++) {
         if (titles[i].className  &&  titles[i].className == 'widgetTitle') {
