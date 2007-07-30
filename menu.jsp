@@ -2,7 +2,7 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0" id="mainMenu" class="toppad">
    <tr align="center">
     <td>
-        <menu toolbar="file" activate="onMouseOver"/>
+        <!--menu toolbar="file" activate="onMouseOver"/-->
         <dashboardMenus/>
 		    <menu toolbar="personalization"     />
 		    <menu toolbar="calendarAndChart"   itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem,http://www.hudsonfog.com/voc/model/company/Contact" />
