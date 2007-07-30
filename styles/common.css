@@ -25,6 +25,10 @@ a.icotxt img {
 }
 
 .propLabel {
+  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: bold;
+  white-space: nowrap;
+}
+.propLabelI {
   font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;
   white-space: nowrap;
 }
@@ -537,6 +541,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .bg   { background:#Bedbe9 }
 /* SKINS */
 /* BLUE */
+
 .blue  .line { background:#ACD2E2 }
 .blue  .rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 .blue  .embed  {
@@ -951,6 +956,8 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .barcoded {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); padding: 15px; border:solid #5C9EBF 1px;}
 .barcodedM {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); border:solid #5C9EBF 1px;}
 
+.tbar {font-size:14pt;font-weight:bold;}
+
 #titleBar {height: 22px; background:url(../images/skin/blue/title.gif); cursor:move; padding-left:5px;}
 .dragable {cursor: move;}
 
@@ -988,6 +995,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 *:lang(ja-jp) { font: 900 14pt/16pt "Heisei Mincho W9", serif } 
 BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif }
 .red {color:red;font-size:10pt;font-weight:bold}
+.dblue {color:darkblue; font-size:10pt}
 .errMsg {font-family:san-serif,arial,verdana;font-size:14px;color:red;font-weight:bold;}
 .info {font-family:san-serif,arial,verdana;font-size:14px;color:blue;font-weight:bold;}
 
@@ -1019,7 +1027,6 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 /************ END tooltip ***********/
 
 /*  widget flip */
-
 .front {
 	position: relative;
 }
@@ -1030,6 +1037,15 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 	right: 8px;
 	width:13px;
 	height:13px;
+	cursor: pointer;
+}
+
+.play {
+	position: relative;
+	bottom: 40px;
+	left: 40px;
+	width:32px;
+	height:32px;
 	cursor: pointer;
 }
 
@@ -1108,15 +1124,34 @@ div.contentsRL {
 .widgetTitle {color:darkblue;font-weight:bold}
 .widgetIcon { vertical-align:top; width:16px; height:16px; padding-right:4px; border:0px }
 
+.iinp { width:16px; height:16px; border:0px; vertical-align:middle }
+.liinp { width:32px; height:32px; border:0px; vertical-align:middle }
+.icursor {cursor: pointer;width:16px; height:16px; border:0px; vertical-align:middle}
+.ixlcursor {cursor: pointer;width:48px; height:48px; border:0px; vertical-align:middle}
+.xliinp { width:48px; height:48px; border:0px; vertical-align:middle }
+.hide { visibility:hidden; display:none; }
+.num {background-color:fffdc3}
+/* filter line: Search criteria if there was full text search criteria*/
+.ftxt {text-align:left; font-size:9px; font-family:Verdana, sans-serif}
+.ftxt1 {border: none; padding: 0px; margin-left: 0; margin-right: 0; vertical-align: middle}
+/* Style for message in data entry for property that was either not set or set incorrectly*/
+.msg {border: 1px solid rgb(160, 30, 0); background: rgb(251, 240, 248)}
+
+/* selected input field in edit mode and filter */
+.bsel {background: rgb(255, 255, 210)} 
+
+/* uploadFrame iframe style */
+.uframe {position:absolute; top:0px; left:0px; visibility:hidden; display:none;} 
 /*
 td.xl {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
 
-span.xl  {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
 span.xxl {font-family:sans-serif, arial; font-weight:bold; font-size:16pt;}
 span.xl1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt;}
 */
+span.xl  {font-family:verdana, sans-serif, arial; font-size:1em;}
 /*
 img {
   vertical-align: middle;
 }
 */
+.dash {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000;}
