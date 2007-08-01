@@ -1536,10 +1536,9 @@ function listboxOnClick(e) {
   target = getTargetElement(e);
   if (!target)
     return;
-  if (target.tagName.toUpperCase() != "IMG")
+  if (target.tagName.toUpperCase() != "A")
     return;
-  var imgId = target.id;
-  listboxOnClick1(e, imgId);
+  listboxOnClick1(e, target.id);
 
   stopEventPropagation(e);
 }
@@ -3156,24 +3155,24 @@ var schReassign = {
 }
 
 function initListBoxes(div) {
-  var images;
+  var anchors;
   var doc;
   if (div) {
-    images = div.getElementsByTagName('img');
+    anchors = div.getElementsByTagName('a');
     doc = div;
   }
   else {
-    images = document.images;
+    anchors = document.getElementsByTagName('a');
     doc = document;
   }
-  for (var i=0; i<images.length; i++) {
-    var image = images[i];
-    if (image.id.indexOf("_filter", image.id.length - "_filter".length) != -1)
-      addEvent(image, 'click', listboxOnClick, false); // add handler to
-                                                        // smartlistbox images
-    else
-      addBooleanToggle(image);
-    replaceTooltip(doc, image);
+  for (var i=0; i<anchors.length; i++) {
+    var anchor = anchors[i];
+    if (anchor.id  &&  anchor.id.indexOf("_filter", anchor.id.length - "_filter".length) != -1) 
+      addEvent(anchor, 'click', listboxOnClick, false); // add handler to smartlistbox anchors
+    else 
+      addBooleanToggle(anchor);
+    
+    replaceTooltip(doc, anchor);
   }
 
   // 1. add handler to autocomplete filter form text fields
@@ -5443,10 +5442,10 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
     }
   }
   // resourceListEdit(divCopyTo);
-  var images = divCopyTo.getElementsByTagName('img');
-  for (var i=0; i<images.length; i++) {
-    addBooleanToggle(images[i]);
-  }
+  var anchors = divCopyTo.getElementsByTagName('a');
+  for (var i=0; i<anchors.length; i++) 
+    addBooleanToggle(anchors[i]);
+  
   interceptLinkClicks(divCopyTo);
 }
 
@@ -7141,10 +7140,20 @@ function changeBoolean(e) {
     else
       pValue = "Yes";
     target.setAttribute('tooltip', pValue);
-    if (pValue == "Yes")
-      target.src = target.getAttribute('yesIcon');
-    else
-      target.src = target.getAttribute('noIcon');
+    
+    var nodes = target.childNodes;
+    
+    var node;
+    for (var i=0; i<nodes.length  &&  !node; i++) {
+      if (nodes[i].tagName  &&  nodes[i].tagName.toLowerCase() == 'img')
+        node = nodes[i];
+    }
+    if (node) {
+      if (pValue == "Yes")
+        node.src = target.getAttribute('yesIcon');
+      else
+        node.src = target.getAttribute('noIcon');
+    }
   }
   params += encodeURIComponent(rUri) + "&" + propShort + "=" + pValue;
   if (bUri != null)
