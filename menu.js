@@ -1801,7 +1801,6 @@ function fakeOnSubmit() {
  * Receives control on form submit events
  */
 function popupOnSubmit(e) {
-  debugger
   e = getDocumentEvent(e); if (!e) return;
   // prevent duplicate events (happens only in IE)
   if (e.getAttribute) {
@@ -3253,9 +3252,9 @@ function uiFocus(div) {
       if (u.id && (u.id == 'uiFocus' || u.id.indexOf('_uiFocus') != -1)) {
         if(execJS.isObjectTotallyVisible(u)) {
           try {
-          u.focus(); // in IE (at least in IE6) first focus() is lost for some
+            u.focus(); // in IE (at least in IE6) first focus() is lost for some
                       // reason - we are forced to issue another focus()
-          u.focus();
+            u.focus();
           }catch(e){};
         }
         return true;
@@ -3264,8 +3263,10 @@ function uiFocus(div) {
   }
   if (firstField && div != document) {
     if(execJS.isObjectTotallyVisible(firstField)) {
-      firstField.focus();
-      firstField.focus(); // second time for IE
+      try {
+        firstField.focus();
+        firstField.focus(); // second time for IE
+      }catch(e){};
     }
   }
   return false;
@@ -9099,7 +9100,6 @@ var FullScreenPopup = {
     this.toShow = true;
     this._prepareDialog();
     this._animate();
-    //debugger
     return true;
   },
   hide : function(div) {
@@ -9144,21 +9144,6 @@ var FullScreenPopup = {
     sbStl.height = 30;
     this.submitBtn.value = "";
     sbStl.display = "";
-  },
-  onSubmit : function() {
-    var thisObj = FullScreenPopup;
-    if(this.div.id != 'pane2')
-      return;
-
-    var forms = thisObj.div.getElementsByTagName("form");
-    if(forms.length != 1)
-       new Error("dialog does not have one form"); 
-    
-    var form = forms[0];
-    form.setAttribute("buttonClicked", "submit");
-    debugger
-    form.submit();
-    thisObj.hide();
   },
   _animate : function() {
     var thisObj = FullScreenPopup;
