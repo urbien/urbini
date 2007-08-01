@@ -949,8 +949,8 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .resourceListDialog {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); padding: 15px;}
 .dialogPanel {border:solid #5C9EBF 1px; padding: 15px}
 .drag {position: relative;}
-.dataEntryDialogMobile {background-color: #D6E7EF; background:url(../images/skin/blue/dataEntryDialog.gif); padding: 0px;}
-.resourceListDialogMobile {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); padding: 0px;}
+.dataEntryDialogMobile {background-color: #D6E7EF; padding: 0px;}
+.resourceListDialogMobile {background-color: #D6E7EF; padding: 0px;}
 
 /* Shows 'Search by barcode #' on add retail items screen in SPA */
 .barcoded {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); padding: 15px; border:solid #5C9EBF 1px;}
@@ -959,6 +959,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .tbar {font-size:14pt;font-weight:bold;}
 
 #titleBar {height: 22px; background:url(../images/skin/blue/title.gif); cursor:move; padding-left:5px;}
+#mobileTitleBar {height: 43px; background:url(../images/skin/iphone/popup_header.png); padding-left:5px;}
 .dragable {cursor: move;}
 
 span.action {font-family:verdana,sans-serif,arial;font-weight:bold;font-size:8pt;color:#000066;}
