@@ -1801,6 +1801,7 @@ function fakeOnSubmit() {
  * Receives control on form submit events
  */
 function popupOnSubmit(e) {
+  debugger
   e = getDocumentEvent(e); if (!e) return;
   // prevent duplicate events (happens only in IE)
   if (e.getAttribute) {
@@ -9067,19 +9068,18 @@ var FullScreenPopup = {
   step : 0,
   toShow : true,
   oldMarginLeft : null,
-  oldOverflowValue : null,
+  
+  submitBtn : null,
   
   show : function(div, hotspot) {
     if(!Popup.mobile)
       return false;
     
     this.div = div;
-
     // suppose that "mainskin" is always applicable
     this.contentDiv = document.getElementById("mainskin");
     this.oldMarginLeft = this.contentDiv.style.marginLeft;
    
-    this.oldOverflowValue = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     var divStl = div.style;
@@ -9097,7 +9097,9 @@ var FullScreenPopup = {
     }
     divStl.zIndex = zIndex + 2;
     this.toShow = true;
+    this._prepareDialog();
     this._animate();
+    //debugger
     return true;
   },
   hide : function(div) {
@@ -9105,10 +9107,58 @@ var FullScreenPopup = {
       if(typeof div == 'string')
         div = document.getElementById(div);
       this.div = div;
-      this.contentDiv.style.display = "";
     }
+    this.contentDiv.style.display = "";
     this.toShow = false;
     this._animate();
+  },
+  _prepareDialog : function() {
+    if(this.div.id != 'pane2')
+      return;
+    this.submitBtn = getChildByAttribute(this.div, "name", "submit");
+    if(this.submitBtn != null) {
+      this.submitBtn.style.display = "none";
+    }
+    var cancelBtn = getChildByAttribute(this.div, "name", "cancel");
+    if(cancelBtn != null)
+      cancelBtn.style.display = "none";  
+  },
+  // replace "dummy" submit image with submit button
+  _prepareSubmitButton : function() {
+    if(this.submitBtn == null)
+      return;
+    var submitImg = getChildById(this.div, "submit_img");
+    if(submitImg == null)
+      return;
+    var x = findPosX(submitImg);
+    var y = findPosY(submitImg);
+    submitImg.style.display = "none";
+    
+    var sbStl = this.submitBtn.style;
+    sbStl.position = "absolute";
+    sbStl.left = x;
+    sbStl.top  = y;
+    sbStl.borderWidth = 0;
+    sbStl.background = "url(images/skin/iphone/submit.png)";
+    sbStl.width = 68;
+    sbStl.height = 30;
+    this.submitBtn.value = "";
+    sbStl.display = "";
+  },
+  onSubmit : function() {
+    var thisObj = FullScreenPopup;
+    if(this.div.id != 'pane2')
+      return;
+
+    var forms = thisObj.div.getElementsByTagName("form");
+    if(forms.length != 1)
+       new Error("dialog does not have one form"); 
+    
+    var form = forms[0];
+    form.setAttribute("buttonClicked", "submit");
+    debugger
+    form.submit();
+    thisObj.hide();
   },
   _animate : function() {
     var thisObj = FullScreenPopup;
@@ -9127,7 +9177,7 @@ var FullScreenPopup = {
     // to hide popup
     else {
       if(thisObj.step == thisObj.STEPS_NUM) {
-        divStl.display = "none";
+        divStl.visibility = "hidden";
         x = thisObj.oldMarginLeft;
       }
       else
@@ -9146,9 +9196,14 @@ var FullScreenPopup = {
     else { // stop animation
       if(thisObj.toShow) {
         cntDivStl.display = "none";
+        thisObj._prepareSubmitButton();
       }
       else {
-        document.body.style.overflow = this.oldOverflowValue;
+        // overflow "auto" did not work in Safari
+        var wndSize = getWindowSize();
+        if(wndSize[0] < document.body.scrollWidth ||
+            wndSize[1] < document.body.scrollHeight)
+          document.body.style.overflow = "scroll";
       }
       thisObj.step = 0;
     }
