@@ -34,6 +34,7 @@
       <errorMessage additems="y"/>
       <siteResourceList />
       <br/>
+  	  <uploadAttachment/>
       <createResources/><br/>
     </div>
     <div align="right"><measurement/></div>
