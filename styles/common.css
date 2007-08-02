@@ -1040,10 +1040,13 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 	height:13px;
 	cursor: pointer;
 }
-
+/* fe - div for Screencast grid element in which 'play' div will be displaying play button to play flash demo */
+.fe {
+  position:relative;
+}
 .play {
-	position: relative;
-	bottom: 40px;
+	position: absolute;
+	bottom: 10px;
 	left: 40px;
 	width:32px;
 	height:32px;
