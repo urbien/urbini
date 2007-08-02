@@ -1046,8 +1046,8 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 }
 .play {
 	position: absolute;
-	bottom: 10px;
-	left: 40px;
+	bottom: 4px;
+	left: 8px;
 	width:32px;
 	height:32px;
 	cursor: pointer;
@@ -1088,6 +1088,20 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 
 /* labels for iphone icons */
 .iphone_l {color:white; font-size:7pt; font-family:tahoma,helvetica,arial}
+
+#debugDiv {
+  border-style: dotted;
+  border-color: black;
+  background: gray;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  height: 200px;
+  width: 90%;
+  overflow: scroll;
+  display:none;
+}
+
 /* icon followed by text */
 .itxt { vertical-align:top; width:16px; height:16px; padding-right:2px; border:0px }
 .litxt { vertical-align:top; width:32px; height:32px; padding-right:2px; border:0px }
@@ -1133,7 +1147,10 @@ div.contentsRL {
 .icursor {cursor: pointer;width:16px; height:16px; border:0px; vertical-align:middle}
 .ixlcursor {cursor: pointer;width:48px; height:48px; border:0px; vertical-align:middle}
 .xliinp { width:48px; height:48px; border:0px; vertical-align:middle }
-.hide { visibility:hidden; display:none; }
+.hide { 
+  visibility:hidden; 
+  display:none; 
+}
 .num {background-color:fffdc3}
 /* filter line: Search criteria if there was full text search criteria*/
 .ftxt {text-align:left; font-size:9px; font-family:Verdana, sans-serif}
