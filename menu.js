@@ -6903,6 +6903,20 @@ function removeSpaces(str) {
   }
   return buf;
 }
+
+function getElementStyle(elem) {
+	if(typeof elem == 'string')
+	  elem = document.getElementById(elem);
+  // <html> dose not have style property
+	if(elem.nodeType == 9)
+	  return null;
+	
+	if (elem.currentStyle)
+		return elem.currentStyle;
+	else if (window.getComputedStyle)
+		return document.defaultView.getComputedStyle(elem, null);
+}
+
 // ******************************************************* from forms.js
 // *************************************
 
@@ -7017,7 +7031,6 @@ function setRelatedCheckbox(e) {
 var execJS = {
   runCodeArr : new Array(),
   isWaitingOnReady : false,
-
   // executes js code if refObjId is visible - [hidden tab].
   runRelativeCode : function(jsCode, refObjId) {
     if(document.all && document.readyState != "complete") {
@@ -7058,14 +7071,15 @@ var execJS = {
   isObjectTotallyVisible : function(obj) {
     if(typeof obj == "string")
       obj = document.getElementById(obj);
-
     if(obj == null)
       return false;
-
 	  var parent = obj;
 	  while(parent != null) {
-		  if(typeof parent.style != 'undefined' && parent.style.visibility == 'hidden')
-			  return false;
+		  var stl = getElementStyle(parent);
+		  if (stl != null) {
+		    if (stl.visibility == 'hidden' || stl.display == 'none')
+		      return false;
+			}
 		  parent = obj.parentNode;
 		  obj = parent;
 	  }
@@ -8950,7 +8964,7 @@ var downloadWidget = {
 
     while(obj != null) {
       id =  obj.id;
-		  if(obj.className == "hiddenDiv" && id.indexOf("_back") != -1) {
+		  if(obj.className == "hdn"/*"hiddenDiv"*/ && id.indexOf("_back") != -1) {
 		    widgetDiv = obj;
 		    break;
 		  }
@@ -8964,6 +8978,7 @@ var downloadWidget = {
     var MARGIN_Y = 9;
     url += "&-widthFront="  + (this.sizesArr[key].width + MARGIN_X);
     url += "&-heightFront=" + (this.sizesArr[key].height + MARGIN_Y);
+
     document.location = url;
 //    var cookie = window.getElementById('-cookie');
 //    alert(cookie);
