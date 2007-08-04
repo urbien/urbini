@@ -773,9 +773,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		  alert("designMode is not surpported");
 		  throw "designMode is not surpported";
 		}
-		// FF started to throw exception if to set "On" here.
-		if(this.isNetscape == false)
-		  this.document.designMode = "On";
+	  this.document.designMode = "On";
 
 		this.initFrameHeight = this.iframeObj.clientHeight;
 		this.initContent();
@@ -1007,11 +1005,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 	// handlers --------------
 	this.onfocus = function() {
-	  if(i_am.toolbar == null) {
+	  if(i_am.toolbar == null)
 	    i_am.toolbar = i_am.createToolbar();
-	    if(i_am.isNetscape)
-	      i_am.document.designMode = "On";
-	  }
 
     if(i_am.toolbar.isVisible())
       return;
