@@ -5525,10 +5525,14 @@ function closeDiv(e, hideDivId) {
   var url = a.href;
   if (url == 'about:blank') {
     var widget = hideDivId.substring("widget_".length);
-    if (widget.indexOf('http') == 0)
-      postRequest(e, 'delete', 'uri=' + encodeURIComponent(widget), div, elm, closeDivCallback);
-    else
+    if (isNaN(widget)) 
       hideDiv(e, hideDivId);
+    else {
+      var bookmarkBase = document.getElementById('bookmarkBlock');
+      var uri = bookmarkBase.innerHTML + widget;
+      postRequest(e, 'delete', 'uri=' + encodeURIComponent(uri), div, elm, closeDivCallback);
+    }
+    
     return stopEventPropagation(e);
   }
   var ret = stopEventPropagation(e);
@@ -5662,7 +5666,6 @@ function minMax(e, divId) {
     div.style.display = '';
     elm.src = 'icons/minimize.gif';
   }
-  return stopEventPropagation(e);
 }
 
 function showTab(e, td, hideDivId, unhideDivId) {
@@ -8964,7 +8967,7 @@ var downloadWidget = {
 
     while(obj != null) {
       id =  obj.id;
-		  if(obj.className == "hdn"/*"hiddenDiv"*/ && id.indexOf("_back") != -1) {
+		  if (obj.className == "hdn" && id.indexOf("_back") != -1) {
 		    widgetDiv = obj;
 		    break;
 		  }
