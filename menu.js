@@ -5598,7 +5598,11 @@ function minimizeRestoreDiv(e, hideDivId, property) {
     minMax(e, hideDivId);
     return stopEventPropagation(e);
   }
-  var a = elm.parentNode;
+  var a;
+  if (elm.tagName.toLowerCase() == 'a')
+    a = elm;
+  else
+    a = elm.parentNode;
   var url = a.href;
   if (url == 'about:blank') {
     minMax(e, hideDivId);
@@ -5646,6 +5650,7 @@ function minMaxAndFlip(e, div) {
   else
     hideDiv(e, hideDivId + "_back");
   minMax(e, hideDivId);
+  return stopEventPropagation(e);  
 }
 
 function minMax(e, divId) {
@@ -5655,14 +5660,24 @@ function minMax(e, divId) {
   var elm = getTargetElement(e);
   if (!elm)
     return;
+  if (elm.tagName.toLowerCase() == 'a') {
+    var elms = elm.childNodes;
+    for (var i=0; i<elms.length; i++) {
+      if (elms[i].tagName.toLowerCase() == 'img') { 
+        elm = elms[i];
+        break;
+      }
+    }
+  }
   var div = document.getElementById(divId);
+  div.className = '';
   if (elm.src.indexOf('minimize.gif') != -1) {
-//    div.style.visibility = Popup.HIDDEN;
+    div.style.visibility = Popup.HIDDEN;
     div.style.display = "none";
     elm.src = 'icons/restore.gif';
   }
   else {
-//    div.style.visibility = Popup.VISIBLE;
+    div.style.visibility = Popup.VISIBLE;
     div.style.display = '';
     elm.src = 'icons/minimize.gif';
   }
