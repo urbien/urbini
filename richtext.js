@@ -790,6 +790,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	  if(this.isNetscape) // turn on Mozila's spellcheck
       this.document.body.spellcheck = true;
     
+    if(typeof Popup != 'undefined' && Popup.iPhone)
+      this.document.body.style.webkitUserModify = "read-write";
+    
     // load css of the parent page
     this.loadCSS();
 	}
