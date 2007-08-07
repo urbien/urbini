@@ -2615,7 +2615,7 @@ function addCurrentDashboardAndCurrentTab(target) {
   if (addTabId  ||  addDashboardId) {
     var div = document.getElementById('dashboardCredentials');
     var s = div.innerHTML.split(';');
-    if (s) {
+    if (s  &&  s.length > 0) {
       if (hasQuestion) {
         if (addDashboardId  &&  s[0])
           a += '&-d=' + s[0];
@@ -8276,22 +8276,28 @@ var Dashboard = {
     var widgetUri = widget.id.substring(wLen);
     // Trying to drag backlink widget
     if (widgetUri.indexOf("http") == -1) {
-      widgetUri = null;
-      elms = widget.getElementsByTagName('a');
-      for (var i=0; i<elms.length; i++) {
-        if (!elms[i].id || elms[i].id.indexOf('widget_') != 0)
-          continue;
-        widgetUri = elms[i].id.substring(wLen);
-        break;
+      if (!isNaN(widgetUri)) {
+        var bookmarkBase = document.getElementById('bookmarkBlock');
+        widgetUri = bookmarkBase.innerHTML + widget;
       }
-      // bookmark for this widget was not yet created
-      if (widgetUri == null) {
-        var f = document.getElementById("pref_" + widget.id.substring(wLen));
-        if (f) {
-          formId = f.id;
-          // create backlink bookmark and move it to Tab
-          submitWidgetPreferences(e, formId, tab);
-          return ret;
+      else {
+        widgetUri = null;
+        elms = widget.getElementsByTagName('a');
+        for (var i=0; i<elms.length; i++) {
+          if (!elms[i].id || elms[i].id.indexOf('widget_') != 0)
+            continue;
+          widgetUri = elms[i].id.substring(wLen);
+          break;
+        }
+        // bookmark for this widget was not yet created
+        if (widgetUri == null) {
+          var f = document.getElementById("pref_" + widget.id.substring(wLen));
+          if (f) {
+            formId = f.id;
+            // create backlink bookmark and move it to Tab
+            submitWidgetPreferences(e, formId, tab);
+            return ret;
+          }
         }
       }
     }
