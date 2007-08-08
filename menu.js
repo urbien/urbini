@@ -8234,6 +8234,10 @@ var Dashboard = {
     var wLen = 'widget_'.length;
 
     var widgetUri = widget.id.substring(wLen);
+    if (!isNaN(widgetUri)) {
+      var bookmarkBase = document.getElementById('bookmarkBlock');
+      widgetUri = bookmarkBase.innerHTML + widgetUri;
+    }
     var td = getTdNode(widget);
     var newCol = parseInt(td.id.substring('col_'.length));
 
@@ -8247,6 +8251,11 @@ var Dashboard = {
     var params = 'uri=' + encodeURIComponent(widgetUri) + '&-drag=y&submitUpdate=y&previousInColumn_verified=y&.dashboardColumn=' + newCol;
     if (prevWidgetNew) {
       var newPrevUri = prevWidgetNew.id.substring(wLen);
+      if (!isNaN(newPrevUri)) {
+        var bookmarkBase = document.getElementById('bookmarkBlock');
+        newPrevUri = bookmarkBase.innerHTML + newPrevUri;
+      }
+      
       params += '&.previousInColumn_select=' + encodeURIComponent(newPrevUri);
     }
     // set self as prev widget to know that this is the top of the column (till remove prop implemented)
@@ -8278,7 +8287,7 @@ var Dashboard = {
     if (widgetUri.indexOf("http") == -1) {
       if (!isNaN(widgetUri)) {
         var bookmarkBase = document.getElementById('bookmarkBlock');
-        widgetUri = bookmarkBase.innerHTML + widget;
+        widgetUri = bookmarkBase.innerHTML + widgetUri;
       }
       else {
         widgetUri = null;
@@ -8287,6 +8296,10 @@ var Dashboard = {
           if (!elms[i].id || elms[i].id.indexOf('widget_') != 0)
             continue;
           widgetUri = elms[i].id.substring(wLen);
+          if (!isNaN(widgetUri)) {
+            var bookmarkBase = document.getElementById('bookmarkBlock');
+            widgetUri = bookmarkBase.innerHTML + widgetUri;
+          }
           break;
         }
         // bookmark for this widget was not yet created
