@@ -9290,7 +9290,8 @@ var OrderRows = {
     if(targetRow) {
       var isTargetUpper = (targetRow.offsetTop < dragBlock.offsetTop);
       if((this.isDirUp && isTargetUpper) || (!this.isDirUp && !isTargetUpper))
-        swapNodes(targetRow, dragBlock);
+        if(targetRow.rowIndex != dragBlock.rowIndex)
+          swapNodes(targetRow, dragBlock);
     }
     return [false, true];
   },
