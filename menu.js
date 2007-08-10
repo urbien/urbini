@@ -111,7 +111,7 @@ Popup.ns6  = (Popup.w3c && navigator.appName.indexOf("Netscape")>= 0) ? true : f
 Popup.maemo= (Popup.w3c && navigator.userAgent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
-Popup.iPhone = navigator.userAgent.indexOf("iPhone") != 1;
+Popup.iPhone = navigator.userAgent.indexOf("iPhone") != -1;
 Popup.mobile = screen.width < 600;
 // for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
@@ -3635,7 +3635,6 @@ function findPosY(obj) {
     curtop += obj.y;
   return curtop;
 }
-
 /* Get X,Y when not tracking mouse */
 function getCoordinates(obj) {
 
@@ -6957,7 +6956,6 @@ var DragEngine = {
 		var evtobj = window.event? window.event : e;
 		var dragObj = window.event? event.srcElement : e.target;
 		var titleObj = null;
-
 		if((titleObj =  getAncestorById(dragObj, "titleBar")) == null &&
 		    (titleObj =  getAncestorByAttribute(dragObj, "className", "dragable")) == null)
 		  return;
@@ -6990,20 +6988,28 @@ var DragEngine = {
 	},
 	drag: function(e){
 		var evtobj=window.event? window.event : e
-		var left = DragEngine.offsetx + evtobj.clientX - DragEngine.x;// + "px";
-		var top = DragEngine.offsety + evtobj.clientY - DragEngine.y;// + "px"
-		if (DragEngine.dragapproved == 1){
-			DragEngine.dragBlock.style.left = left;
-			DragEngine.dragBlock.style.top  = top;
+		var left = DragEngine.offsetx + evtobj.clientX - DragEngine.x;
+		var top = DragEngine.offsety + evtobj.clientY - DragEngine.y;
+		var allowToMove; // 2D array
+		if(DragEngine.dragHandler && DragEngine.dragHandler.onDrag) {
+		    if(DragEngine.dragBlock.style.position == 'absolute')
+  		    allowToMove = DragEngine.dragHandler.onDrag(DragEngine.dragBlock, left, top);
+		    else
+  	      allowToMove = DragEngine.dragHandler.onDrag(DragEngine.dragBlock, evtobj.clientX, evtobj.clientY);
+  	}
 
-			if(DragEngine.dialogIframe != null &&
+		if(DragEngine.dragapproved == 1){
+			if(typeof allowToMove == 'undefined' || allowToMove[0] == true)
+			  DragEngine.dragBlock.style.left = left;
+			if(typeof allowToMove == 'undefined' || allowToMove[1] == true)  
+			  DragEngine.dragBlock.style.top  = top;
+
+			if(DragEngine.dialogIframe != null && DragEngine.dragBlock.id == 'pane2' &&
 			     DragEngine.dialogIframe.style.visibility == 'visible') {
 			  DragEngine.dialogIframe.style.left = left;
  			  DragEngine.dialogIframe.style.top = top;
 			}
 
-			if(DragEngine.dragHandler && DragEngine.dragHandler.onDrag)
-  		  DragEngine.dragHandler.onDrag(DragEngine.dragBlock, left, top);
 
 			return false;
 		}
@@ -9254,4 +9260,67 @@ var FullScreenPopup = {
       thisObj.step = 0;
     }
   }
+}
+
+// allows reorder table rows
+var OrderRows = {
+  BG_COLOR : "rgb(172, 210, 226)",
+  tbody : null,
+  tableTop : null,
+  prevY : null,
+  prevRowOld : null,
+  dragRowIdxOld : null,
+  
+  getDragBlock : function(catchedObj) {
+    var tr = getAncestorByTagName(catchedObj, "tr");
+    return tr;
+  },
+  onStartDrag : function(dragRow) {
+    this.tbody = getAncestorByTagName(dragRow, "tbody");
+    this.tableTop = findPosY(this.tbody);
+    this.prevRowOld = dragRow.previousSibling;
+    dragRow.style.backgroundColor = this.BG_COLOR;
+    
+    this.dragRowIdxOld = dragRow.rowIndex;
+  },
+  onDrag : function(dragBlock, x, y) {
+    this.isDirUp = this.detectDirection(y);
+    var offsetY = y - this.tableTop;
+    var targetRow = this.detectTargetRow(offsetY);
+    if(targetRow) {
+      var isTargetUpper = (targetRow.offsetTop < dragBlock.offsetTop);
+      if((this.isDirUp && isTargetUpper) || (!this.isDirUp && !isTargetUpper))
+        swapNodes(targetRow, dragBlock);
+    }
+    return [false, true];
+  },
+  onStopDrag : function(e, dragRow) {
+    dragRow.style.backgroundColor = "";
+    if(this.dragRowIdxOld != dragRow.rowIndex)
+      this.onRowMovement(dragRow, this.prevRowOld, dragRow.previousSibling);
+  },
+  detectDirection : function(y)  {
+    var isDirUp = null;
+    if(this.prevY > y)
+      isDirUp = true;
+    else if(this.prevY < y)
+      isDirUp = false;
+
+    this.prevY = y;
+    return isDirUp;
+  },
+  detectTargetRow : function(offsetY) {
+    var targetRow = null;
+    var rows = this.tbody.rows;
+    for (var i = 0; i < rows.length; i++) {
+      if((offsetY > rows[i].offsetTop) && 
+        (offsetY < rows[i].offsetTop + rows[i].offsetHeight))
+      return rows[i];     
+    }
+    return null;
+  },
+  onRowMovement : function(row, prevRowOld, prevRowNew) {
+  
+  }
+ 
 }
