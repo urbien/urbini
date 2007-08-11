@@ -2108,8 +2108,10 @@ function autoComplete1(e, target) {
   autoCompleteTimeoutId = setTimeout(f, Popup.autoCompleteDefaultTimeout);
   // make property label visible since overwritten inside the field
   var filterLabel = document.getElementById(propName1 + "_span");
-  if (filterLabel)
+  if (filterLabel) {
     filterLabel.style.display = '';
+    filterLabel.className = 'xs';
+  }
   if (currentPopup)
     clearOtherPopups(currentPopup.div);
   return true;
@@ -4034,6 +4036,8 @@ function showDialog1(event, div, hotspot) {
 }
 
 function stopEventPropagation(e) {
+  if (!e)
+    return true;
   try {
     if (e.cloned)
       return false;
@@ -5630,13 +5634,24 @@ function hideDiv(e, hideDivId) {
   div.style.display = "none";
   return stopEventPropagation(e);
 }
+
 function showDiv1(e, showDivId) {
+  activateDiv(e, showDivId);
+  displayDiv(e, showDivId);
+}
+
+function activateDiv(e, showDivId) {
+  var div = document.getElementById(showDivId);
+  if (!div)
+    return;
+  div.style.display = "block";
+}
+
+function displayDiv(e, showDivId) {
   var div = document.getElementById(showDivId);
   if (!div)
     return;
   div.style.visibility = Popup.VISIBLE;
-  div.style.display = "block";
-  return stopEventPropagation(e);
 }
 
 function minMaxAndFlip(e, div) {
@@ -5644,7 +5659,8 @@ function minMaxAndFlip(e, div) {
   if (hideDivId.indexOf('_min') != -1) {
     var showDivId = hideDivId.substring(0, hideDivId.length - 4);
     hideDiv(e, showDivId + "_back");
-    showDiv1(e, showDivId);
+    activateDiv(e, showDivId);
+    displayDiv(e, showDivId);
   }
   else
     hideDiv(e, hideDivId + "_back");
@@ -6507,7 +6523,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     catch (e) { // hack since mozilla sometimes throws NS_ERROR_NOT_AVAILABLE
                 // here
       // deduce status
-      alert(e);
+      alert("error occured when submitting request to the server: " + e);
       if (location)
         status = 302;
       else if (http_request.responseText.length > 10)
@@ -8488,11 +8504,13 @@ var WidgetFlip = {
     this.fade();
     this.flipShown = false;
   },
+  
   showBackside : function(event, divId) {
     downloadWidget.storeFrontsideSize(divId);
-    OperaWidget.resizeOnBackside();
     hideDiv(event, divId);
-    showDiv1(event, divId + "_back");
+    activateDiv(event, divId + "_back");
+    OperaWidget.resizeOnBackside();
+    displayDiv(event, divId + "_back");
   },
 
   /**
@@ -8521,14 +8539,15 @@ var WidgetFlip = {
   getNextFadingNumber : function (start, end, ease)  {
     return start + (end - start) * ease;
   },
+  
   enterflip : function (event)  {
     var baseUri = getBaseUri();
     if(Popup.ie && !Popup.ie7)
       this.flipImg.src = baseUri + "images/flip_hover.gif";
     else
       this.flipImg.src = baseUri + "images/flip_hover.png";
-
   },
+  
   exitflip : function (event)  {
     var baseUri = getBaseUri();
     if(Popup.ie && !Popup.ie7)
@@ -8536,6 +8555,7 @@ var WidgetFlip = {
     else
       this.flipImg.src = baseUri + "images/flip.png";
   },
+  
   getFlipDiv : function (event, divId) {
     var target = getTargetElement(event);
     var frontDiv;
@@ -8625,8 +8645,11 @@ function submitWidgetPreferences(event, formId, tab) {
   if (param.charAt(0) == '&')
     param = param.substring(1);
   var url = form.action;
-//  var divId =  (formId.indexOf("_http") != -1) ? 'widget_' + formId.substring(5) : 'div_' + formId.substring(5);
-  var divId = 'widget_' + formId.substring(5);
+  Debug.setMode(true);
+  Debug.log('submitWidgetPreferences: url = ' + url + "; param = " + param);
+  
+  var divId =  (formId.indexOf("_http") != -1) ? 'widget_' + formId.substring(5) : 'div_' + formId.substring(5);
+
   var widgetDiv = document.getElementById(divId);
 
   var elm = getEventTarget(event); //getTargetElement(event);
@@ -8680,6 +8703,10 @@ var WidgetRefresher = {
   widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
   hdnDoc : null, // helps to load refreshed document
   setInterval : function(divId, intervalSeconds) {
+  
+    Debug.setMode(true);
+    Debug.log('divId = ' + divId);
+    
     // 1. prepare new "widget member" or stop old one.
     if(typeof this.widgetsArr[divId] == 'undefined')
       this.widgetsArr[divId] = new Object();
@@ -8763,6 +8790,10 @@ var WidgetRefresher = {
     // refresh whole the widget including backside
     var widgetDivId = "widget_" + bookmarkUrl;
     divToRefresh = document.getElementById(widgetDivId);
+
+    Debug.setMode(true);
+    Debug.log('_onInterval: url = ' + url + "; params = " + params);
+
     postRequest(null, url, params, divToRefresh, null, WidgetRefresher.refresh, true);
   },
   // called by postRequest
@@ -8832,9 +8863,9 @@ var OperaWidget = {
     if(!this.widgetDiv)
       return;
     // 2. front & back children divs
-    this.frontDiv = getChildByAttribute(widgetDiv, "className", "front");
+    this.frontDiv = getChildByAttribute(this.widgetDiv, "className", "front");
     var backId =  this.frontDiv.id + "_back";
-    this.backDiv = getChildById(widgetDiv, backId);
+    this.backDiv = getChildById(this.widgetDiv, backId);
     // 3. restore content from pref
 /*
     var content = widget.preferenceForKey(this.CONTENT_KEY_NAME);
@@ -8843,18 +8874,31 @@ var OperaWidget = {
       this.widgetDiv.innerHTML = content;
     }
 */
-    // 4. init prefs on the back
+    // 3. fitWindowSize does not work on this moment!
+    //this.fitWindowSize();
+    Debug.setMode(true);
+    Debug.log('OperaWidget.init');
+    this.resizeOnFrontside();
+    
+    // 6. init prefs on the back
     this.applyPrefs();
     // 5.
     this.processWidth();
     // 6.
     resizeHandle.init();
   },
+  
   onWidgetRefresh : function() {
+    this.frontDiv = getChildByAttribute(this.widgetDiv, "className", "front");
+    var backId =  this.frontDiv.id + "_back";
+    this.backDiv = getChildById(this.widgetDiv, backId); 
+    Debug.setMode(true);
+    Debug.log('onWidgetRefresh');
     this.processWidth();
     resizeHandle.init();
     this.applyPrefs();
     this.saveContent();
+    this.resizeOnFrontside();
   },
   // stores min size and makes width = 100%
   processWidth : function() {
@@ -8869,18 +8913,41 @@ var OperaWidget = {
   resizeOnFrontside : function() {
     if(typeof widget == 'undefined')
       return;
-    if(this.widgetWidth == 0 || this.widgetHeight == 0)
-      return;
-    window.resizeTo(this.widgetWidth, this.widgetHeight);
+    //if(this.widgetWidth == 0 || this.widgetHeight == 0)
+    //  return;
+    //window.resizeTo(this.MAX_WND_WIDTH, this.MAX_WND_HEIGHT);
+    //sizeWidget(this.MAX_WND_WIDTH, this.MAX_WND_HEIGHT);
+    //displayDiv(null, this.frontDiv.id);
+    //var divCoords = getElementDimensions(this.frontDiv);
+    //activateDiv(null, this.frontDiv.id);
+    //Debug.setMode(true);
+    //Debug.log('frontSide: width = ' + divCoords.width + '; height = ' + divCoords.height);
+    //Debug.log('frontSide: width = ' + this.frontDiv.clientWidth + '; height = ' + this.frontDiv.clientHeight);
+    
+    //sizeWidget(divCoords.width, divCoords.height + 100);
+    //window.resizeTo(divCoords.width, divCoords.height);
   },
+  
   resizeOnBackside : function() {
     if(typeof widget == 'undefined')
       return;
+    /*
     var wndSize = getWindowSize();
     this.widgetWidth  = wndSize[0];
     this.widgetHeight = wndSize[1];
 
     window.resizeTo(this.BACKSIDE_WIDTH, this.BACKSIDE_HEIGHT);
+    */
+    /*
+    window.resizeTo(this.MAX_WND_WIDTH, this.MAX_WND_HEIGHT);
+    
+    var divCoords = getElementDimensions(this.backDiv);
+    Debug.setMode(true);
+    Debug.log('backside: width = ' + divCoords.width + '; height = ' + divCoords.height);
+    Debug.log('backside: width = ' + this.backDiv.clientWidth + '; height = ' + this.backDiv.clientHeight);
+    
+    window.resizeTo(divCoords.width, divCoords.height);
+    */
   },
   saveContent : function() {
     if(typeof widget == 'undefined')
@@ -8893,16 +8960,10 @@ var OperaWidget = {
   },
   // 1) restores backside values 2) applies chosen skin
   applyPrefs : function() {
+    Debug.restoreLog();
     var prefsStr = widget.preferenceForKey(this.PREFS_STR_KEY_NAME);
     if(typeof prefsStr == 'undefined' || prefsStr.length == 0)
       return;
-    // parameters to calculate refresh in milliseconds.
-    var intervalNumber = 15;       // key: "refresh.seconds"
-    var intervalType = "minute(s)"; // key: "refresh.durationType"
-    var skinName = "";
-
-    var prefPairs = prefsStr.split('&');
-
     // get pref form (on each refresh)
     forms = widgetDiv.getElementsByTagName("form");
     for (var i = 0; i < forms.length; i++) {
@@ -8916,6 +8977,16 @@ var OperaWidget = {
     }
     if (this.prefForm == null)
       throw new Error("form pref_ not found");
+    
+    //***********************************************
+    //* restore form fields from preferences
+    //* 
+    // parameters to calculate refresh in milliseconds.
+    var intervalNumber = 15;       // key: "refresh.seconds"
+    var intervalType = "minute(s)"; // key: "refresh.durationType"
+    var skinName = "";
+
+    var prefPairs = prefsStr.split('&');
     for(var i = 0; i < prefPairs.length; i++) {
       var pair = prefPairs[i].split('=');
       if(typeof pair[1] == 'undefined')
@@ -8923,7 +8994,7 @@ var OperaWidget = {
 
       // set <input> values
       if(typeof this.prefForm[pair[0]] != 'undefined')
-        this.prefForm[pair[0]].value = pair[1];
+        this.prefForm[pair[0]].value = decodeURIComponent(pair[1]);
 
       // interval values
       if(pair[0] == "refresh.seconds")
@@ -8949,6 +9020,7 @@ var OperaWidget = {
       }
     }
   },
+  
   calculateRefreshInterval : function(intervalNumber, intervalType) {
       var refreshInterval = 1;
       refreshInterval *= intervalNumber;
@@ -8991,6 +9063,34 @@ var OperaWidget = {
   }
 }
 
+// workaround for widget resize bug in Apple dashboard
+// http://blog.keilly.com/2007/05/widget-resize.html
+function sizeWidget(x,y) {
+  if (typeof opera != 'undefined') {
+    window.resizeTo(x,y);
+    return;
+  }
+  if (x == window.innerWidth && y == window.innerHeight)
+    return;
+  
+  // size limiting code
+  if (x <= 200)
+    x = 200;
+  if (x >= 440)
+    x = 440;   
+  if (y <= 130)
+    y = 130;
+  if (y >= 340)
+    y = 340;
+ 
+    // prevent vertical resize bug
+  if (y > 130 && y < 340 && y != window.innerHeight && x == window.innerWidth)
+    window.resizeTo(x + 1, y);
+
+  // finally the original resize
+  window.resizeTo(x,y);
+}
+
 var downloadWidget = {
   sizesArr : new Array(), // member struct: {width, height}
   storeFrontsideSize : function(divId){
@@ -9025,6 +9125,69 @@ var downloadWidget = {
     document.location = url;
 //    var cookie = window.getElementById('-cookie');
 //    alert(cookie);
+  }
+}
+
+// Write to the debug div or log console.
+var Debug = {
+  logPref: 'log',
+  debugMode: false,
+  
+  log: function(str) {
+    if (this.debugMode) {
+      if (window.widget) {
+        alert(str);
+        /*
+        var div = document.getElementById('debugDiv');
+        if (!div) {
+          var div = document.createElement('div');
+          div.setAttribute('id', 'debugDiv');
+        }
+        div.appendChild(document.createTextNode(str));
+        div.appendChild(document.createElement("br"));
+        div.scrollTop = div.scrollHeight;
+        var s = widget.preferenceForKey(this.logPref);
+        widget.setPreferenceForKey(s + '<br>' + str, this.logPref);
+        */
+      }
+      else {
+        if (typeof console != 'undefined')
+          console.log(str);
+        else if (typeof opera != 'undefined')
+          opera.postError(str);
+      }
+    }
+  },
+
+  restoreLog: function(str) {
+    return;
+    if (this.debugMode) {
+      if (window.widget) {
+        var div = document.getElementById('debugDiv');
+        if (!div) {
+          var div = document.createElement('div');
+          div.setAttribute('id', 'debugDiv');
+        }      
+        var s = widget.preferenceForKey(this.logPref);
+        if (s)
+          div.innerHTML = s;
+      }  
+    }
+  },
+  
+  setMode: function(active) {
+    var m = this.debugMode;
+    this.debugMode = active; 
+    if (window.widget) {
+      var d = document.getElementById('debugDiv');
+      if (!d)
+        return;
+      if (active)
+        d.style.display = 'block'; 
+      else
+        d.style.display = 'none';
+    }
+    return m;
   }
 }
 
