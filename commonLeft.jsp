@@ -67,18 +67,18 @@
 </tr>
 
 <tr allow="owner" rdftype="http://www.hudsonfog.com/voc/views/parse/ErrorInFile">
-   <td>&#160;&#160;<a href="localSearchResults.html?action=searchLocal&amp;type=http://www.hudsonfog.com/voc/views/parse/ErrorInFile"><text text="Errors"/></a></td>
+   <td>&#160;&#160;<a href="l.html?action=searchLocal&amp;type=http://www.hudsonfog.com/voc/views/parse/ErrorInFile"><text text="Errors"/></a></td>
 </tr>
 <tr allow="owner" rdftype="http://www.hudsonfog.com/voc/views/parse/WarningInFile">
-   <td>&#160;&#160;<a href="localSearchResults.html?action=searchLocal&amp;type=http://www.hudsonfog.com/voc/views/parse/WarningInFile"><text text="Warnings"/></a><br/></td>
+   <td>&#160;&#160;<a href="l.html?action=searchLocal&amp;type=http://www.hudsonfog.com/voc/views/parse/WarningInFile"><text text="Warnings"/></a><br/></td>
 </tr>
 
 <tr><br/>
-  <td allow="owner"><br/><a href="localSearchResults.html?action=explore&amp;type=http://www.hudsonfog.com/voc/views/company/Contact"><text text="Contacts"/></a></td>
+  <td allow="owner"><br/><a href="l.html?action=explore&amp;type=http://www.hudsonfog.com/voc/views/company/Contact"><text text="Contacts"/></a></td>
 </tr>
 
 <tr>
-  <td allow="admin"><a href="localSearchResults.html?action=explore&amp;type=http://www.hudsonfog.com/voc/system/security/User"><text text="Users"/></a></td>
+  <td allow="admin"><a href="l.html?action=explore&amp;type=http://www.hudsonfog.com/voc/system/security/User"><text text="Users"/></a></td>
 </tr>
 
 <tr>

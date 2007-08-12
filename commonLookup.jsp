@@ -4,7 +4,7 @@
       <tr>
         <td class="menuItemSubtitle">
           <text text="Reel #"/>
-          <form name="reel" action="localSearchResults.html" style="margin-top: 0; margin-bottom: 0">
+          <form name="reel" action="l.html" style="margin-top: 0; margin-bottom: 0">
           <table>
             <tr>
 	            <td>
