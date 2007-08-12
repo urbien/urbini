@@ -3121,7 +3121,7 @@ var schReassign = {
         return;
     if(schReassign.curTargetCell != null) {
       if(schReassign.curTargetCell.id != schReassign.srcCell.id) {
-        schReassign.moveProcedure(schReassign.srcCell, schReassign.curTargetCell);
+        schReassign.moveProcedure(e, schReassign.srcCell, schReassign.curTargetCell);
         schReassign.disactivate();
       }
     }
@@ -3152,7 +3152,61 @@ var schReassign = {
 		    schReassign.disactivate();
   },
   //
-  moveProcedure : function(srcCell, targetCell) {
+  moveProcedure : function(event, srcCell, targetCell) {
+    var srcId = srcCell.id;
+    var idx1 = srcId.indexOf(".") + 1;
+    var idx = srcId.indexOf(".", idx1);
+    var idx2 = srcId.indexOf(":", idx);
+    if (idx2 == -1)
+      idx2 = srcId.length;
+    var employeeIdx = srcId.substring(idx + 1, idx2);
+    var calendarSteps = srcId.substring(idx, idx1);
+    var employee = employees[parseInt(employeeIdx)];
+    var anchors = srcCell.getElementsByTagName('a');
+    if (!anchors)
+      throw new Error("moveProcedure: not found assignment info in: " + srcId);
+    
+    var targetId = targetCell.id;
+    var calendarRow = getTrNode(targetCell); // get tr on which user clicked in popup
+    if (!calendarRow)
+      throw new Error("moveProcedure: popup row not found for: " + targetId);
+    
+    var anchor = "ticket?availableDuration="; // anchors[0].href; // url of the
+    idx = targetId.indexOf(":");
+    anchor += targetId.substring(idx + 1);
+    // first <a> could be with 'reassign procedure' that is for reassigning procedure to different time or employee
+    var srcAnchor;
+    for (var i=0; !srcAnchor  &&  i<anchors.length; i++) {
+      if (anchors[i].href  &&  anchors[i].href.indexOf("ticket?") != -1)
+        srcAnchor = anchors[i].href;
+    }
+    idx = srcAnchor.indexOf("&uri=");
+    if (idx == -1)
+      throw new Error("moveProcedure: not found assignment info in: " + srcId);
+    anchor += srcAnchor.substring(idx); 
+
+    idx1 = targetId.indexOf(".") + 1;
+    var newEmployeeIdx = targetId.substring(idx1, idx);
+//    var newEmployee = employees[parseInt(newEmployeeIdx)];
+    anchor += "&" + forEmployee + "=" + employees[parseInt(newEmployeeIdx)] + '&' + calendarRow.id;
+//    anchor += "&.forEmployee_verified=y&.forEmployee_select=" + encodeURIComponent(newEmployee);
+    // --- collect parameters common to all calendar items on the page
+    var pageParametersDiv = document.getElementById('pageParameters');
+    if (!pageParametersDiv)
+      throw new Error("addCalendarItem: pageParameters div not found for: " + anchor);
+    var pageParams = pageParametersDiv.getElementsByTagName('a');
+    if (!pageParams || pageParams.length == 0)
+      throw new Error("addCalendarItem: pageParameters are empty for: " + anchor);
+    for (var i=0; i<pageParams.length; i++)
+      anchor += '&' + pageParams[i].id;
+    
+    
+    var idx = anchor.indexOf("?");
+    var div = document.createElement('div');
+    var ret = stopEventPropagation(event);
+    postRequest(event, anchor.substring(0, idx), anchor.substring(idx + 1), div, targetCell, addAssignment);
+
+    return ret;
   }
 }
 
@@ -4693,7 +4747,7 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   if (anchors != null  &&  anchors.length > 0) {
     // first <a> could be with 'reassign procedure' that is for reassigning procedure to different time or employee
     for (var i=0; !anchor  &&  i<anchors.length; i++) {
-      if (anchors[i].href)
+      if (anchors[i].href  &&  anchors[i].href.indexOf("ticket?") != -1)
         anchor = anchors[i].href;
     }
   }
