@@ -7023,6 +7023,7 @@ var DragEngine = {
 		this.dialogIframe = document.getElementById('dialogIframe');
 	},
 	startDrag: function(e){
+		var thisObj = DragEngine;
 		var evtobj = window.event? window.event : e;
 		var dragObj = window.event? event.srcElement : e.target;
 		var titleObj = null;
@@ -7032,52 +7033,53 @@ var DragEngine = {
 		var dragHandlerStr = titleObj.getAttribute("draghandler");
 		if(dragHandlerStr == null || dragHandlerStr.length == 0) {
   	  // deal with the dialog 'pane2'
-  	  DragEngine.dragBlock = getAncestorById(titleObj, 'pane2');
+  	  thisObj.dragBlock = getAncestorById(titleObj, 'pane2');
 		}
 		else {
-  	  DragEngine.dragHandler = eval(dragHandlerStr);
-		  if(DragEngine.dragHandler)
-		    DragEngine.dragBlock = DragEngine.dragHandler.getDragBlock(titleObj);
+  	  thisObj.dragHandler = eval(dragHandlerStr);
+		  if(thisObj.dragHandler)
+		    thisObj.dragBlock = thisObj.dragHandler.getDragBlock(titleObj);
 		}
-		if(!DragEngine.dragBlock)
+		if(!thisObj.dragBlock)
 		  return;
 
-		if(DragEngine.dragHandler && DragEngine.dragHandler.onStartDrag)
-		  DragEngine.dragHandler.onStartDrag(DragEngine.dragBlock);
+		if(thisObj.dragHandler && thisObj.dragHandler.onStartDrag)
+		  thisObj.dragHandler.onStartDrag(thisObj.dragBlock);
 
-		if (isNaN(parseInt(DragEngine.dragBlock.style.left))) {DragEngine.dragBlock.style.left = 0;}
-		if (isNaN(parseInt(DragEngine.dragBlock.style.top)))  {DragEngine.dragBlock.style.top = 0;}
-		DragEngine.offsetx = parseInt(DragEngine.dragBlock.style.left);
-		DragEngine.offsety = parseInt(DragEngine.dragBlock.style.top);
-		DragEngine.x = evtobj.clientX
-		DragEngine.y = evtobj.clientY
+		if (isNaN(parseInt(thisObj.dragBlock.style.left))) {thisObj.dragBlock.style.left = 0;}
+		if (isNaN(parseInt(thisObj.dragBlock.style.top)))  {thisObj.dragBlock.style.top = 0;}
+		thisObj.offsetx = parseInt(thisObj.dragBlock.style.left);
+		thisObj.offsety = parseInt(thisObj.dragBlock.style.top);
+		thisObj.x = evtobj.clientX
+		thisObj.y = evtobj.clientY
 		if (evtobj.preventDefault)
 			evtobj.preventDefault();
 
-	  DragEngine.dragapproved = 1;
+	  thisObj.dragapproved = 1;
 	},
 	drag: function(e){
+  	var thisObj = DragEngine;
 		var evtobj=window.event? window.event : e
-		var left = DragEngine.offsetx + evtobj.clientX - DragEngine.x;
-		var top = DragEngine.offsety + evtobj.clientY - DragEngine.y;
+		var left = thisObj.offsetx + evtobj.clientX - thisObj.x;
+		var top = thisObj.offsety + evtobj.clientY - thisObj.y;
 		var allowToMove; // 2D array
-		if(DragEngine.dragHandler && DragEngine.dragHandler.onDrag) {
-		    if(DragEngine.dragBlock.style.position == 'absolute')
-  		    allowToMove = DragEngine.dragHandler.onDrag(DragEngine.dragBlock, left, top);
+		if(thisObj.dragBlock && thisObj.dragHandler && thisObj.dragHandler.onDrag) {
+		    if(thisObj.dragBlock.style.position == 'absolute')
+  		    allowToMove = thisObj.dragHandler.onDrag(thisObj.dragBlock, left, top);
 		    else
-  	      allowToMove = DragEngine.dragHandler.onDrag(DragEngine.dragBlock, evtobj.clientX, evtobj.clientY);
+  	      allowToMove = thisObj.dragHandler.onDrag(thisObj.dragBlock, evtobj.clientX, evtobj.clientY);
   	}
 
-		if(DragEngine.dragapproved == 1){
+		if(thisObj.dragapproved == 1){
 			if(typeof allowToMove == 'undefined' || allowToMove[0] == true)
-			  DragEngine.dragBlock.style.left = left;
+			  thisObj.dragBlock.style.left = left;
 			if(typeof allowToMove == 'undefined' || allowToMove[1] == true)  
-			  DragEngine.dragBlock.style.top  = top;
+			  thisObj.dragBlock.style.top  = top;
 
-			if(DragEngine.dialogIframe != null && DragEngine.dragBlock.id == 'pane2' &&
-			     DragEngine.dialogIframe.style.visibility == 'visible') {
-			  DragEngine.dialogIframe.style.left = left;
- 			  DragEngine.dialogIframe.style.top = top;
+			if(thisObj.dialogIframe != null && thisObj.dragBlock.id == 'pane2' &&
+			     thisObj.dialogIframe.style.visibility == 'visible') {
+			  thisObj.dialogIframe.style.left = left;
+ 			  thisObj.dialogIframe.style.top = top;
 			}
 
 
@@ -7085,12 +7087,13 @@ var DragEngine = {
 		}
 	},
 	stopDrag: function(e) {
-  	if(DragEngine.dragHandler && DragEngine.dragHandler.onStopDrag) {
-		  DragEngine.dragHandler.onStopDrag(e, DragEngine.dragBlock);
-		  DragEngine.dragHandler = null;
+  	var thisObj = DragEngine;
+  	if(thisObj.dragHandler && thisObj.dragHandler.onStopDrag) {
+		  thisObj.dragHandler.onStopDrag(e, thisObj.dragBlock);
+		  thisObj.dragHandler = null;
 		}
 
-		DragEngine.dragapproved = 0;
+		thisObj.dragapproved = 0;
 	}
 }
 // initialize the drag & drop engine in addHandlers function
