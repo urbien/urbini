@@ -72,6 +72,9 @@ if (document.layers) {
   Popup.HIDDEN  = 'hide';
   Popup.VISIBLE = 'show';
 }
+
+var agent = navigator.userAgent
+
 Popup.w3c  = (document.getElementById)                            ? true : false;
 Popup.ns4  = (document.layers)                                    ? true : false;
 
@@ -98,7 +101,7 @@ else
 // Mozilla/5.0 (SymbianOS/9.2; U; [en]; Series60/3.1 Nokia3250/1.00 )
 // Profile/MIDP-2.0 Configuration/CLDC-1.1; AppleWebKit/413 (KHTML, like Gecko)
 // Safari/413
-if (navigator.userAgent.indexOf("AppleWebKit") !=-1 && navigator.userAgent.indexOf("Series60/3.1") != -1 || navigator.userAgent.indexOf("Symbian") != -1) {
+if (agent.indexOf("AppleWebKit") !=-1 && navigator.userAgent.indexOf("Series60/3.1") != -1 || navigator.userAgent.indexOf("Symbian") != -1) {
   Popup.s60Browser = true;
 }
 else
@@ -107,11 +110,12 @@ else
 if (document.attachEvent && !Popup.opera) {
   Popup.ie55 = true; // need better test since this one will include 5+ as well
 }
-Popup.ns6  = (Popup.w3c && navigator.appName.indexOf("Netscape")>= 0) ? true : false;
-Popup.maemo= (Popup.w3c && navigator.userAgent.indexOf("Maemo") >= 0) ? true : false;
+
+Popup.gecko  = (agent.indexOf("Gecko")>= 0 && agent.indexOf("Safari") == -1) ? true : false;
+Popup.maemo= (Popup.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
-Popup.iPhone = navigator.userAgent.indexOf("iPhone") != -1;
+Popup.iPhone = agent.indexOf("iPhone") != -1;
 Popup.mobile = screen.width < 600;
 // for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
