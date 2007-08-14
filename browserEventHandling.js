@@ -115,5 +115,11 @@
     */
 
     var formInitialValues;
-    addEvent(window, 'load', function() {setTimeout(addHandlers,  10);}, false);
+
+    if(Popup.ie)
+      document.attachEvent('onactivate', addHandlers);
+    else if(Popup.opera || Popup.gecko)
+      document.addEventListener("DOMContentLoaded", addHandlers, false);
+    else
+      addEvent(window, 'load', addHandlers, false);
 
