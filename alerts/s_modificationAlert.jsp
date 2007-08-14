@@ -23,7 +23,7 @@
 		<br/>
 		<siteOwner/>
 		<br/><br/>
-		<b>Powered by</b> <a href="http://universalplatform.com" target="_blank">HudsonFog UniversalPlatform</a>
+		<b>Powered by</b> <a href="http://lablz.com" target="_blank">LablZ UniversalPlatform</a>
 	</td>
 </tr>
 </table>
