@@ -5232,16 +5232,18 @@ function addAssignment(event, body, hotspot, content)  {
 
     oldTd.id = newTd.id;
     oldTd.innerHTML = newTd.innerHTML;
+    /*
     var node = oldTd.childNodes;
     if (node) {
-      var style = node.style;
+      var style = node[0].style;
       if (style)
         style.whiteSpace = 'normal';
-//      else
-//        alert ('style not found')
+      else
+        node[0].style = 'white-space:normal';
     }
     else
       alert ('node not found')
+    */
     if (newTd.className)
       oldTd.className = newTd.className;
     else {
@@ -5253,7 +5255,7 @@ function addAssignment(event, body, hotspot, content)  {
     currentCell = oldTd;
     currentCellBackground = newTd.style.backgroundColor;
     currentCell.style.backgroundColor = "#D7D8FB";
-    oldTd.childNodes[0].whiteSpace = 'normal';
+//    oldTd.childNodes[0].whiteSpace = 'normal';
 
     tds = trCopyTo.getElementsByTagName("td");
     for (var j=0; j<rowspan; j++) {
