@@ -8667,13 +8667,14 @@ var WidgetFlip = {
         this.flipImg.src = baseUri + "images/flip.png";
     }
 
-    // hack IE did not correct work with CSS bottom.
-    if(Popup.ie && flipDiv.style.top.length == 0) {
-      var top = div.offsetHeight - 16; // 13 image height + 3 offset
-      flipDiv.style.top = top;
-    }
-    if(flipDiv)
+    if(flipDiv) {
+      // hack IE did not correct work with CSS bottom.
+      if(Popup.ie && flipDiv.style.top.length == 0) {
+        var top = div.offsetHeight - 16; // 13 image height + 3 offset
+        flipDiv.style.top = top;
+      }
       flipDiv.appendChild(this.flipImg);
+    }
   },
 
   hideflip : function (event, divId) {
