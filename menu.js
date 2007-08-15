@@ -5232,7 +5232,16 @@ function addAssignment(event, body, hotspot, content)  {
 
     oldTd.id = newTd.id;
     oldTd.innerHTML = newTd.innerHTML;
-    oldTd.childNodes[0].style.whiteSpace = 'normal';
+    var node = oldTd.childNodes;
+    if (node) {
+      var style = node.style;
+      if (style)
+        style.whiteSpace = 'normal';
+//      else
+//        alert ('style not found')
+    }
+    else
+      alert ('node not found')
     if (newTd.className)
       oldTd.className = newTd.className;
     else {
