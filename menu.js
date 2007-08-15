@@ -2616,29 +2616,24 @@ function addCurrentDashboardAndCurrentTab(target) {
   if (!a || a == 'about:blank') 
     return;
   var hasQuestion    = a.indexOf('?') != -1; 
-  var addTabId       = a.indexOf('&-t=') == -1;
   var addDashboardId = a.indexOf('-d=') == -1;
-  if (addTabId  ||  addDashboardId) {
+  if (addDashboardId) {
     var div = document.getElementById('dashboardCredentials');
     var s = div.innerHTML.split(';');
     if (s  &&  s.length > 0) {
       if (hasQuestion) {
-        if (addDashboardId  &&  s[0])
+        if (addDashboardId  &&  s[0]) {
           a += '&-d=' + s[0];
-        if (addTabId  &&  s.length > 1)
-          a += '&-t=' + s[1];
+          if (s.length > 1)
+            a += '&-t=' + s[1];
+        }
       }
       else {
         if (addDashboardId && s[0]) {
           a += '?-d=' + s[0];
-          hasQuestion = true;
-        }
-        if (addTabId  &&  s.length > 1) {
-          if (hasQuestion)
-            a += '&';
-          else
-            a += '?';
-          a += '-t=' + s[1];
+          if (s.length > 1) {
+            a += '&-t=' + s[1];
+          }
         }
       }
       target.href = a;
@@ -3163,6 +3158,8 @@ var schReassign = {
     var idx2 = srcId.indexOf(":", idx);
     if (idx2 == -1)
       idx2 = srcId.length;
+    if (srcId.charAt(idx + 1) == "-")
+      idx++;
     var employeeIdx = srcId.substring(idx + 1, idx2);
     var calendarSteps = srcId.substring(idx, idx1);
     var employee = employees[parseInt(employeeIdx)];
@@ -3178,7 +3175,13 @@ var schReassign = {
     var anchor = "ticket?availableDuration="; // anchors[0].href; // url of the
     idx = targetId.indexOf(":");
     anchor += targetId.substring(idx + 1);
+    idx1 = targetId.indexOf(".") + 1;
+    if (targetId.charAt(idx1) == "-")
+      idx1++;
+    
+    var newEmployeeIdx = targetId.substring(idx1, idx);
     // first <a> could be with 'reassign procedure' that is for reassigning procedure to different time or employee
+    anchor += "&" + forEmployee + "=" + employees[parseInt(newEmployeeIdx)] + '&' + calendarRow.id;
     var srcAnchor;
     for (var i=0; !srcAnchor  &&  i<anchors.length; i++) {
       if (anchors[i].href  &&  anchors[i].href.indexOf("ticket?") != -1)
@@ -3189,10 +3192,7 @@ var schReassign = {
       throw new Error("moveProcedure: not found assignment info in: " + srcId);
     anchor += srcAnchor.substring(idx); 
 
-    idx1 = targetId.indexOf(".") + 1;
-    var newEmployeeIdx = targetId.substring(idx1, idx);
 //    var newEmployee = employees[parseInt(newEmployeeIdx)];
-    anchor += "&" + forEmployee + "=" + employees[parseInt(newEmployeeIdx)] + '&' + calendarRow.id;
 //    anchor += "&.forEmployee_verified=y&.forEmployee_select=" + encodeURIComponent(newEmployee);
     // --- collect parameters common to all calendar items on the page
     var pageParametersDiv = document.getElementById('pageParameters');
