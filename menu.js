@@ -5207,20 +5207,25 @@ function addAssignment(event, body, hotspot, content)  {
     tds = row.getElementsByTagName("td");
     // Each row can have different number of tds since some of them due to
     // rowspan > 1 removed
+    var first;
     for (var j=1; j<rowspan; j++, rowIdx++) {
       var nn = tds.length;
       for (var i=1; i<nn; i++) {
         var tId = tds[i].id;
         if (tId  &&  (tId.indexOf('.' + emplIdx + ':') != -1 || tId.indexOf('.-' + emplIdx + ':') != -1)) {
           row.removeChild(tds[i]);
+//          alert('remove td from row: ' + row.id);
           break;
         }
       }
-
-      for (++rowIdx; rowIdx<nodes.length; rowIdx++) {
+      if (row == nodes[rowIdx])
+        rowIdx++;
+      for (; rowIdx<nodes.length; rowIdx++) {
         var node = nodes[rowIdx];
-        if (!node.tagName || node.tagName.toLowerCase() != 'tr')
+        if (!node.tagName || node.tagName.toLowerCase() != 'tr') 
           continue;
+
+//        alert(row.id);
         row = node;
         rows[ridx++] = rowIdx;
         break;
@@ -5232,18 +5237,13 @@ function addAssignment(event, body, hotspot, content)  {
 
     oldTd.id = newTd.id;
     oldTd.innerHTML = newTd.innerHTML;
-    /*
-    var node = oldTd.childNodes;
-    if (node) {
-      var style = node[0].style;
-      if (style)
-        style.whiteSpace = 'normal';
-      else
-        node[0].style = 'white-space:normal';
-    }
+//    oldTd.childNodes[0].style.whiteSpace = 'normal';
+
+    var style = oldTd.childNodes[0].style;
+    if (style)
+      style.whiteSpace = 'normal';
     else
-      alert ('node not found')
-    */
+      oldTd.childNodes[0].style = 'white-space:normal';
     if (newTd.className)
       oldTd.className = newTd.className;
     else {
