@@ -5593,7 +5593,9 @@ function closeDiv(e, hideDivId) {
     hideDiv(e, hideDivId);
     return stopEventPropagation(e);
   }
-  var a = elm.parentNode;
+  a = elm;
+  if (elm.tagName.toLowerCase() != 'a')
+    a = elm.parentNode;
   var url = a.href;
   if (url == 'about:blank') {
     var widget = hideDivId.substring("widget_".length);
