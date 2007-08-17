@@ -1894,8 +1894,13 @@ function popupOnSubmit(e) {
 
   // url += '&$selectOnly=y';
 
-  if (allFields == false)
-    params += "&type=" + form.type.value + "&-$action=" + formAction;
+  if (allFields == false) {
+    var type = form.type;
+    if (type)
+      params += "&type=" + type.value;
+    
+    params += "&-$action=" + formAction;
+  }
   if (form.uri)
     params += "&uri=" + encodeURIComponent(form.uri.value);
 
