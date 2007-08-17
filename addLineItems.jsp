@@ -44,7 +44,7 @@
 		        <table width="100%" cellspacing="5" cellpadding="0" border="0">
 			        <tr>
 			          <td align="center" class="categoryButton" onclick="document.location.href='Recall_Orders.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Ticket&amp;sealed_select=false&amp;sealed_verified=y&amp;$order=http://www.hudsonfog.com/voc/hospitality/spa/Ticket/checkInTime&amp;-asc=-1&amp;-grid=1&amp;-inRow=2&amp;serviceStart_From=today&amp;serviceStart=today&amp;serviceStart_To=today&amp;hideHideBlock=y'">Recall orders</td>
-			          <td><img src="icons/status_not_cancelled-extra-large.gif" class="cursor" id="$currentItem.$._cancelled_boolean_refresh" width="48" height="48" border="0" /></td>
+			          <td><a id="$currentItem.$._cancelled_boolean_refresh"><img src="icons/status_not_cancelled-extra-large.gif" class="cursor" width="48" height="48" border="0" /></a></td>
                 <td><img src="icons/notes-extra-large.gif" border="0" title="Add new 'Comments'" width="48" height="48"  class="cursor" onclick="var div=showKeyboard(this, event);" /></td>
 			        </tr>
 		        </table>
