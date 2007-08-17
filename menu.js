@@ -6634,7 +6634,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
         hotspot = null; // second time do not show 'loading...' popup
         // stay on current page and resubmit request using URL from Location header
         var urlParts = location.split('?');
-        postRequest(clonedEvent, urlParts[0], urlParts[1].substring(1), div, hotspot, callback);
+        postRequest(clonedEvent, urlParts[0], urlParts[1], div, hotspot, callback);
       }
       else {
         //alert('reloading page, status = ' + status);
@@ -6671,7 +6671,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
           hotspot = null; // second time do not show 'loading...' popup
           // stay on current page and resubmit request using URL from Location header
           var urlParts = location.split('?');
-          postRequest(clonedEvent, urlParts[0], urlParts[1].substring(1), div, hotspot, callback);
+          postRequest(clonedEvent, urlParts[0], urlParts[1], div, hotspot, callback);
         }
         else {
           //alert('reloading page (2),  status = ' + status);
