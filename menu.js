@@ -5127,7 +5127,7 @@ function cancelItemAndWait(event) {
       idx1 = uri.indexOf('/', 7);
       uri = h.substring(0, idx) + uri.substring(idx1);
     }
-    currentItemA.href = uri;
+    currentItemA.href = newCurrentTr.id; //uri;
   }
   var tbody  = currentTr.parentNode;
   tbody.removeChild(currentTr);
