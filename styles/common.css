@@ -516,6 +516,9 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* To display property groups in edit mode */
 .propertyGroup { font-family: sans-serif, Arial, Verdana, Geneva, Helvetica; font-size: 12px; font-weight: bold; text-transform: uppercase;}
 
+/* To display MORE... in RL */
+.more { text-align: right; font-family: Verdana, sans-serif, Arial, Geneva, Helvetica; font-size: 2em; font-weight: bold; text-transform: uppercase;}
+
 /* Simple border */
 .box {
    border-top : 1px solid #c7c9cc;
