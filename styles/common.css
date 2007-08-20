@@ -451,6 +451,7 @@ input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 .barcode {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:20px;text-decoration:none;}
 /* used in filter input text fields */
 .input {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
+.isel {background-color:fffdc3; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
 .select {border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
 .input:lang(zh) {
   font-size: 0.9em; height:16px;
