@@ -2983,7 +2983,12 @@ function schedule(e) {
     }
     else {
       currentCell.style.height = '100px';
-      var div = currentCell.childNodes[0];
+      var div;
+      var childNodes = currentCell.childNodes;
+      for (var i=0; !div && i<childNodes.length; i++) {
+        if (childNodes[i].tagName && childNodes[i].tagName.toLowerCase() == 'div')
+          div = childNodes[i];
+      }
       div.style.whiteSpace = 'normal';
       schReassign.addIcon(div);
     }
