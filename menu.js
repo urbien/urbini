@@ -2948,7 +2948,12 @@ function schedule(e) {
     else {
       currentCell.style.height = '100px';
       currentCell.style.width = '100px';
-      var div = currentCell.childNodes[0];
+      var childNodes = currentCell.childNodes;
+      var div;
+      for (var i=0; !div && i<childNodes.length; i++) {
+        if (childNodes[i].tagName && childNodes[i].tagName.toLowerCase() == 'div')
+          div = childNodes[i];
+      }
       div.style.whiteSpace = 'normal';
       schReassign.addIcon(div);
     }
@@ -2958,7 +2963,12 @@ function schedule(e) {
     if (currentCell.id.indexOf("ap.") != 0)
       currentCell.innerHTML = '';
     else {
-      var div = currentCell.childNodes[0];
+      var div;
+      var childNodes = currentCell.childNodes;
+      for (var i=0; !div && i<childNodes.length; i++) {
+        if (childNodes[i].tagName && childNodes[i].tagName.toLowerCase() == 'div')
+          div = childNodes[i];
+      }
       div.style.whiteSpace = 'nowrap';
       currentCell.style.height = '1px';
       schReassign.removeIcon(div);
