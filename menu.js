@@ -6471,15 +6471,15 @@ function doConfirm(msg) {
  * Creates absolute URI from base + uri. Fixing IE ignoring of base tag uri
  */
 function rel(uri) {
-  if (Popup.IE) {
+  if (Popup.ie) {
     var b = document.getElementsByTagName('base');
     if (b  &&  b[0]  &&  b[0].href) {
-      if (b[0].href.substr(b[0].href.length-1) == '/' && loc.charAt(0) == '/')
-        loc = loc.substr(1);
+      if (b[0].href.substr(b[0].href.length-1) == '/' && uri.charAt(0) == '/')
+        uri = uri.substr(1);
       uri = b[0].href + uri;
     }
   }
-  return uri;
+  document.location.href = uri;
 }
 function setKeyboardFocus(element) {
   element.internalFocus = true;
