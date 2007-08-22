@@ -340,17 +340,14 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   // form name, interface name, etc.
   // this.formName = null; // name of the HTML form which element generated last
   // event in the popup
-  this.closeTimeoutId = null;       // timeout after which we need to close this
-                                    // popup
-  this.offsetX        = null;       // position at which we have opened last
-                                    // time
+  this.closeTimeoutId = null;       // timeout after which we need to close this popup
+  this.offsetX        = null;       // position at which we have opened last time
   this.offsetY        = null;       // ...
   this.popupClosed    = true;
   this.items          = new Array(); // items of this popup (i.e. menu rows)
   this.currentRow     = null;       // currently selected row in this popup
   this.delayedCloseIssued = false;
-  this.initialized    = false;      // it is not yet initialized - event
-                                    // handlers not added
+  this.initialized    = false;      // it is not yet initialized - event handlers not added
   var self = this;
 
   // add to the list of popups
@@ -358,10 +355,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
   this.reset = function (hotspotRef, frameRef, contents) {
     this.hotspot        = hotspotRef;
-    this.iframe         = Popup.getCanvas(frameRef); // iframe beneath this
-                                                      // popup (to cover input
-                                                      // elements on the page
-                                                      // below popup)
+    this.iframe         = Popup.getCanvas(frameRef); // iframe beneath this popup (to cover input elements on the page below popup)
     this.contents       = contents;
     this.isTooltipFlag  = contents ? true : false;
   }
@@ -426,8 +420,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.hotspotDim = hotspotDim;
     self.offsetX = offsetX; // save position at which we have opened last time
     self.offsetY = offsetY;
-    Popup.lastOpenTime = new Date().getTime();  // mark when we opened this
-                                                // popup
+    Popup.lastOpenTime = new Date().getTime();  // mark when we opened this popup
     if (Popup.openTimeoutId) {                  // clear any delayed popup open
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
@@ -487,8 +480,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       self.closeTimeoutId = null;
     }
 
-    if (Popup.openTimeoutId) {                  // clear any prior delayed popup
-                                                // open
+    if (Popup.openTimeoutId) {                  // clear any prior delayed popup open
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
@@ -628,15 +620,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if(!a)
       return;
 
-    if (a.href == 'about:blank') { // special dummy A tag just to be able to
-                                    // set focus (if does not exist - no need to
-                                    // focus)
+    if (a.href == 'about:blank') { // special dummy A tag just to be able to set focus (if does not exist - no need to focus)
       if (document.all) { // simple in IE
         if (self.div.focus)
           try { self.div.focus(); } catch(e) {};
       }
-      else {                // hack for Netscape (using an empty anchor element
-                            // to focus on)
+      else {                // hack for Netscape (using an empty anchor element to focus on)
         if (a.focus) {
           try { a.focus(); } catch(e) {};
         }
@@ -1805,6 +1794,11 @@ function fakeOnSubmit() {
  */
 function popupOnSubmit(e) {
   e = getDocumentEvent(e); if (!e) return;
+  if (e.eventProcessed)
+    return stopEventPropagation(e);
+  else   
+    e.eventProcessed = true;
+
   // prevent duplicate events (happens only in IE)
   if (e.getAttribute) {
     var isProcessed = e.getAttribute('eventProcessed');
@@ -1921,7 +1915,7 @@ function popupOnSubmit(e) {
 
     // this solution for duplicate-submit does not work in firefox 1.0 & mozilla
     // 1.8b - fakeOnSubmit get control even on first form submit
-    // it has another drawback - page must be reloaded fro the form to be
+    // it has another drawback - page must be reloaded for the form to be
     // submitted second time - while previous solution works with back/forward
     /*
      * if (form.onsubmit == fakeOnSubmit) { alert("Already submitted - please
@@ -1932,10 +1926,16 @@ function popupOnSubmit(e) {
     var elem = form.elements[j];
     var atts = elem.getAttribute('onSubmit');
     if (atts) {
-      var s = atts.replace(/\(this\)/, ''); // e.g. replace setTime(this) into
-                                            // setTime
-      elem.onSubmit = eval(s);
-      elem.onSubmit();
+      if (!elem.getAttribute('onSubmitFixed')) {
+        var s = atts.replace(/\(this\)/, ''); // e.g. replace setTime(this) into setTime
+        
+        if (trim(s).startsWith('function'))
+          elem.onsubmit = eval(s);
+        else
+          elem.onsubmit = eval('function (event) {' + s + '}');
+        elem.setAttribute('onSubmitFixed', 'true');
+      }
+      elem.onsubmit();
     }
   }
 
@@ -2950,7 +2950,12 @@ function schedule(e) {
     else {
       currentCell.style.height = '100px';
       currentCell.style.width = '100px';
-      var div = currentCell.childNodes[0];
+      var childNodes = currentCell.childNodes;
+      var div;
+      for (var i=0; !div && i<childNodes.length; i++) {
+        if (childNodes[i].tagName && childNodes[i].tagName.toLowerCase() == 'div')
+          div = childNodes[i];
+      }
       div.style.whiteSpace = 'normal';
       schReassign.addIcon(div);
     }
@@ -2960,7 +2965,12 @@ function schedule(e) {
     if (currentCell.id.indexOf("ap.") != 0)
       currentCell.innerHTML = '';
     else {
-      var div = currentCell.childNodes[0];
+      var div;
+      var childNodes = currentCell.childNodes;
+      for (var i=0; !div && i<childNodes.length; i++) {
+        if (childNodes[i].tagName && childNodes[i].tagName.toLowerCase() == 'div')
+          div = childNodes[i];
+      }
       div.style.whiteSpace = 'nowrap';
       currentCell.style.height = '1px';
       schReassign.removeIcon(div);
@@ -2975,7 +2985,12 @@ function schedule(e) {
     }
     else {
       currentCell.style.height = '100px';
-      var div = currentCell.childNodes[0];
+      var div;
+      var childNodes = currentCell.childNodes;
+      for (var i=0; !div && i<childNodes.length; i++) {
+        if (childNodes[i].tagName && childNodes[i].tagName.toLowerCase() == 'div')
+          div = childNodes[i];
+      }
       div.style.whiteSpace = 'normal';
       schReassign.addIcon(div);
     }
@@ -3020,7 +3035,52 @@ function schedule(e) {
     addCalendarItem(this, e, parseInt(tdId.substring(idx1)));
   }
 }
+/**
+ * Executes ticket update on schedule page
+ */
+function submitUpdateTicket(e) {
+  e = getDocumentEvent(e);
+  var target = getEventTarget(e);
+  if (target == null)
+    return;
+  while (target) {
+    target = target.parentNode;
+    if (target.tagName.toLowerCase() == 'td')
+      break;
+  }
+  if (!target)
+    return;
+  var f = document.forms;
+  var form;
+  for (var i=0; i<f.length; i++) {
+    if (!f[i].name  ||  f[i].name.indexOf('tablePropertyList') == -1)
+      continue;
+    form = f[i];
+  }
+  if (!form)
+    return;
+  var ret = stopEventPropagation(e);
+  var p1 = getFormFilters(form, true);
+  var div = document.createElement('div');
+  postRequest(e, 'proppatch', p1, div, target, updateTicket);
+  return ret;
+}
 
+function updateTicket(event, body, hotspot, content)  {
+  setInnerHtml(body, content);
+
+  var errDiv = document.getElementById('div_err');
+  if (errDiv)
+    errDiv.innerHTML = '';
+  var bdivs = body.getElementsByTagName("div");
+  for (var i=0; i<bdivs.length; i++) {
+    if (bdivs[i].id  &&  bdivs[i].id == 'div_err'  &&  bdivs[i].innerHTML) {
+      setInnerHtml(errDiv, bdivs[i].innerHTML);
+      return;
+    }
+  }
+  document.location.reload(true); 
+}
 function addEventOnSchedule() {
   var table = document.getElementById("mainTable");
   if (table == null)
@@ -4111,6 +4171,7 @@ function stopEventPropagation(e) {
     if (e.preventDefault)  e.preventDefault();
     if (e.stopPropagation) e.stopPropagation();
     if (e.setAttribute)    e.setAttribute('eventProcessed', 'true');
+    e.eventProcessed = true;
     if (Popup.s60Browser) {
       var anchor = getTargetAnchor(e);
       if (anchor && anchor.href == "about:blank")
@@ -6622,13 +6683,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       else
         status = 400;
     }
-    if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did
-                                                              // not cause
-                                                              // redirect - it
-                                                              // means it had a
-                                                              // problem -
-                                                              // repaint dialog
-                                                              // with err msg
+    if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
       callback(clonedEvent, div, hotspot, http_request.responseText);
