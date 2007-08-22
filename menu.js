@@ -6480,7 +6480,20 @@ function doConfirm(msg) {
   document.location.replace(loc);
   return;
 }
-
+/*
+ * Creates absolute URI from base + uri. Fixing IE ignoring of base tag uri
+ */
+function rel(uri) {
+  if (Popup.IE) {
+    var b = document.getElementsByTagName('base');
+    if (b  &&  b[0]  &&  b[0].href) {
+      if (b[0].href.substr(b[0].href.length-1) == '/' && loc.charAt(0) == '/')
+        loc = loc.substr(1);
+      uri = b[0].href + uri;
+    }
+  }
+  return uri;
+}
 function setKeyboardFocus(element) {
   element.internalFocus = true;
   try {
