@@ -2624,6 +2624,8 @@ function addCurrentDashboardAndCurrentTab(target) {
   var addDashboardId = a.indexOf('-d=') == -1;
   if (addDashboardId) {
     var div = document.getElementById('dashboardCredentials');
+    if (!div)
+      return;
     var s = div.innerHTML.split(';');
     if (s  &&  s.length > 0) {
       if (hasQuestion) {
@@ -2948,12 +2950,7 @@ function schedule(e) {
     else {
       currentCell.style.height = '100px';
       currentCell.style.width = '100px';
-      var childNodes = currentCell.childNodes;
-      var div;
-      for (var i=0; !div && i<childNodes.length; i++) {
-        if (childNodes[i].tagName && childNodes[i].tagName.toLowerCase() == 'div')
-          div = childNodes[i];
-      }
+      var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'normal';
       schReassign.addIcon(div);
     }
@@ -2963,12 +2960,7 @@ function schedule(e) {
     if (currentCell.id.indexOf("ap.") != 0)
       currentCell.innerHTML = '';
     else {
-      var div;
-      var childNodes = currentCell.childNodes;
-      for (var i=0; !div && i<childNodes.length; i++) {
-        if (childNodes[i].tagName && childNodes[i].tagName.toLowerCase() == 'div')
-          div = childNodes[i];
-      }
+      var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'nowrap';
       currentCell.style.height = '1px';
       schReassign.removeIcon(div);
@@ -2983,12 +2975,7 @@ function schedule(e) {
     }
     else {
       currentCell.style.height = '100px';
-      var div;
-      var childNodes = currentCell.childNodes;
-      for (var i=0; !div && i<childNodes.length; i++) {
-        if (childNodes[i].tagName && childNodes[i].tagName.toLowerCase() == 'div')
-          div = childNodes[i];
-      }
+      var div = currentCell.childNodes[0];
       div.style.whiteSpace = 'normal';
       schReassign.addIcon(div);
     }
