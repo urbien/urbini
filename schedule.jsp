@@ -16,6 +16,7 @@
 	       <br />
 	     </form>
       </div>
+      <br/>
  	    <div id="resourceList_div">
  	      <siteResourceList uri="l.html?-$action=searchLocal&amp;ticket=-$this&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Treatment&amp;-schedule=y&amp;-addItems=y&amp;cancelled=false&amp;-noRedirect=y"/>
  	    </div>
