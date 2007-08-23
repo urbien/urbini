@@ -4,7 +4,7 @@
 <tr>
 <td valign="top" width="90%">
 <br/><br/>
-<span class="xl"><center><errorMessage /></center></span>
+<center><errorMessage /></center>
 </td></tr>
 </table>
 
