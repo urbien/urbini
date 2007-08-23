@@ -8,17 +8,6 @@
     <tr valign="top">
 	    <td colspan="2">
 	  	  <tablePropertyList  name="tablePropertyList" method="post" id="filter" formAction="proppatch" autocomplete="off"/>
-				<!--form name="tablePropertyList" method="post" id="filter" action="FormRedirect" autocomplete="off">
-				  <tablePropertyList />
-				  <div align="right"><measurement/></div>
-				  <input type="hidden" name="-$action" value="showPropertiesForEdit"></input>
-				  <br></br>
-				  <center>
-	          <input type="submit" name="submit" value="Submit changes" onclick="return saveButtonClicked(event, this);"></input>
-	          &#160;&#160;
-	          <input type="submit" name="cancel" value="  Cancel  " onclick="return saveButtonClicked(event, this);"></input>
-				  </center>
-				</form-->
 	    </td>
     </tr>
     </table>
