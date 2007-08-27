@@ -1,5 +1,5 @@
 <div>
-<font color="red"><b><errorMessage /></b></font>
+<errorMessage />
 <hideBlock id="hideBlock">
 <style type="text/css">
   .simpleButton {border:solid #808080 1px; color: darkblue; font-size:16pt; height:40pt; cursor: pointer;}
