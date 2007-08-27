@@ -1793,12 +1793,16 @@ function fakeOnSubmit() {
  * Receives control on form submit events
  */
 function popupOnSubmit(e) {
-  e = getDocumentEvent(e); if (!e) return;
+
+  e = getDocumentEvent(e); 
+  if (!e) 
+    return;
+  /*
   if (e.eventProcessed)
     return stopEventPropagation(e);
   else   
     e.eventProcessed = true;
-
+  */
   // prevent duplicate events (happens only in IE)
   if (e.getAttribute) {
     var isProcessed = e.getAttribute('eventProcessed');
@@ -1806,10 +1810,14 @@ function popupOnSubmit(e) {
       return stopEventPropagation(e);
     e.setAttribute('eventProcessed', 'true');
   }
-
+  else if (e.eventProcessed) {
+    return stopEventPropagation(e);
+  }
+  
   var target = getTargetElement(e);
   var form = target;
   var buttonName = form.getAttribute("buttonClicked");
+  
   var button = form.elements[buttonName];
   var pane2        = document.getElementById('pane2');
   var dialogIframe = document.getElementById('dialogIframe');
@@ -3062,7 +3070,10 @@ function submitUpdateTicket(e) {
   var ret = stopEventPropagation(e);
   var p1 = getFormFilters(form, true);
   var div = document.createElement('div');
-  postRequest(e, 'proppatch', p1, div, target, updateTicket);
+  if (form.action  &&  formaction == 'mkresource')
+    postRequest(e, 'proppatch', p1, div, target, updateTicket);
+  else
+    postRequest(e, 'proppatch', p1, div, target, updateTicket);
   return ret;
 }
 
