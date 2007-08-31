@@ -1156,7 +1156,8 @@ div.contentsRL {
   visibility:hidden; 
   display:none; 
 }
-.num {background-color:fffdc3}
+.num {background-color:fffdc3; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
+
 /* filter line: Search criteria if there was full text search criteria*/
 .ftxt {text-align:left; font-size:9px; font-family:Verdana, sans-serif}
 .ftxt1 {border: none; padding: 0px; margin-left: 0; margin-right: 0; vertical-align: middle}
