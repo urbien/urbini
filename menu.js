@@ -84,7 +84,9 @@ Popup.ie5  = (Popup.ie && this.w3c)                               ? true : false
 Popup.ie7  = (Popup.ie && typeof window.XMLHttpRequest != 'undefined') ? true : false;
 
 Popup.opera = typeof opera != 'undefined'                         ? true : false;
-if (navigator.userAgent.indexOf("Opera") !=-1 ) {
+Popup.opera8 = false;
+Popup.opera9 = false;
+if (Popup.opera ) {
   var versionindex = navigator.userAgent.indexOf("Opera") + 6;
   var ver = navigator.userAgent.substring(versionindex);
   var v = parseFloat(ver);
@@ -92,9 +94,10 @@ if (navigator.userAgent.indexOf("Opera") !=-1 ) {
     Popup.opera8 = true; // opera 8 (before 8.5) has some issues with
                           // XmlHttpRequest
   }
+  if (v >= 9)
+    Popup.opera9 = true;  
 }
-else
-  Popup.opera8 = false;
+
 // e62: Opera 8.65: Mozilla/4.0 (compatible; MSIE 6.0; Symbian OS; Series 60/0618.06.17; 9730) Opera 8.65 [en-US] UP.Link/6.3.0.0.0
 
 // e62: s60 browser
@@ -2886,6 +2889,10 @@ function interceptLinkClicks(div) {
     if (id && id.startsWith('menuLink_')) // menu clicks are processed by their
                                           // own event handler
       continue;
+    
+    if(anchor.href.indexOf("A_CALENDARS") != -1) // links of the Calendar's days
+      continue;
+      
     if (id && id.startsWith("-inner."))
       addEvent(anchor, 'click',  onClickDisplayInner,   false);
     else
