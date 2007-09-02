@@ -7897,21 +7897,22 @@ var dictionaryHandler = {
     e = e || event;
     if(e.altKey == false)
       return;
-
     var range;
     var selText = "";
     var hotspot = document.body;
-    if(document.getSelection && window.getSelection) { // FF, Opera
-      selText = document.getSelection();
-      range = window.getSelection().getRangeAt(0);
+    if (window.getSelection) { // FF, Opera, Safari
+      var selection = window.getSelection();
+      selText = selection.toString();
+      range = selection.getRangeAt(0);
       hotspot = range.startContainer.parentNode;
     }
-    else if(document.selection.type == 'Text') { // IE
+    else if (document.selection) { // IE
+      if(document.selection.type != 'Text')
+        return;
       range = document.selection.createRange();
       selText = range.text;
       hotspot = range.parentElement();
     }
-
     selText = trim(selText);
     if(selText != "") {
       var len = selText.length;
