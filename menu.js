@@ -1137,23 +1137,28 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             else
               chosenTextField.value = "";
           }
-          else if (nmbChecked == 1) {
-            if (hiddenSelectedItem != null)
-              hiddenSelectedItem.value = selectedItem.value;
-            var trNode = getTrNode(selectedItem);
-            var items = trNode.getElementsByTagName('td');
-            var val = items[2].innerHTML;
-            var idx = val.lastIndexOf(">");
-
-            if (len > 1)
-              chosenTextField[0].value = val.substring(idx + 1);
-            else
-              chosenTextField.value = val.substring(idx + 1);
-          }
           else {
-            if (hiddenSelectedItem != null)
-              hiddenSelectedItem.value = selectedItem.value;
-            chosenTextField.value = '<...>';
+            var checkSubscribe = form.elements[prop + '_subscribe'];
+            if (checkSubscribe)
+              checkSubscribe.checked = true;
+            if (nmbChecked == 1) {
+              if (hiddenSelectedItem != null)
+                hiddenSelectedItem.value = selectedItem.value;
+              var trNode = getTrNode(selectedItem);
+              var items = trNode.getElementsByTagName('td');
+              var val = items[2].innerHTML;
+              var idx = val.lastIndexOf(">");
+  
+              if (len > 1)
+                chosenTextField[0].value = val.substring(idx + 1);
+              else
+                chosenTextField.value = val.substring(idx + 1);
+            }
+            else {
+              if (hiddenSelectedItem != null)
+                hiddenSelectedItem.value = selectedItem.value;
+              chosenTextField.value = '<...>';
+            }
           }
         }
       }
@@ -2124,6 +2129,10 @@ function autoComplete1(e, target) {
                                   // (i.e. not chose from the list)
   }
   e = cloneEvent(e);
+  
+  var checkSubscribe = form.elements[propName + "_subscribe"];
+  if (checkSubscribe)
+    checkSubscribe.checked = true;
   var f = function() { autoCompleteTimeout(e, keyPressedTime); };
   autoCompleteTimeoutId = setTimeout(f, Popup.autoCompleteDefaultTimeout);
   // make property label visible since overwritten inside the field
