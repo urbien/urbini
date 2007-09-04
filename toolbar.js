@@ -189,22 +189,18 @@ function FormPopup(innerFormHtml, flag) {
 
 
 // "base class" of controls like ToolbarButton and DropdownList
+/*
 function CtrlBase() {
   CtrlBase.prototype.changeOpacity = function(obj, level) {
-	  try {
-		  if(typeof obj.style.MozOpacity != 'undefined')
-			  obj.style.MozOpacity = level;
-		  else
-			  obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
-	  }
-	  catch(e){}
+    changeOpacity(obj, level);
   }
 }
+*/
 /****************************************************
 * ToolbarButton class
 * callback: for overflowed case a button without a submenu should return false. 
 *****************************************************/
-ToolbarButton.prototype = new CtrlBase();
+//ToolbarButton.prototype = new CtrlBase();
 function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, toolbar, title, titlePressed)
 {
   var i_am = this;
@@ -254,12 +250,14 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 	}
 	
 	this.enable = function() {
-		this.changeOpacity(this.div, 1.0);
+		changeOpacity(this.div, 1.0);
+		this.div.style.cursor = "pointer";
 		this.isDisabled = false; 
 	}
 	
 	this.disable = function() {
-		this.changeOpacity(this.div, 0.3);
+		changeOpacity(this.div, 0.3);
+		this.div.style.cursor = "";
 		this.isDisabled = true;  
 	}
 	// mouse handlers ---------------	
@@ -557,6 +555,7 @@ function ListItem(index, innerDiv, parent, noHighlight)
 	this.innerDiv = innerDiv;
 	this.parent = parent;
 	this.liObj = null;
+  this.isDisabled = false;
 
 	this.create = function() {
 		// 1. create
@@ -584,17 +583,32 @@ function ListItem(index, innerDiv, parent, noHighlight)
 	
 	// mouse handlers
 	this.onMouseOver = function() {
+		if(i_am.isDisabled)
+		  return;
 		i_am.liObj.style.backgroundColor = HIGHLIGHTED_BACKGROUND;
 	}
 	this.onMouseOut = function() {
+    if(i_am.isDisabled)
+		  return;
 		i_am.liObj.style.backgroundColor = i_am.parent.LIST_BACKGROUND;
 	}
 	this.onMouseUp = function(e) {
+  	if(i_am.isDisabled)
+		  return;
 		i_am.liObj.style.backgroundColor = i_am.parent.LIST_BACKGROUND;
 		i_am.parent.onItemSelection(i_am.index);
 	}
+	
   this.removeHighlight = function() {
     this.liObj.style.backgroundColor = this.parent.LIST_BACKGROUND;
+  }
+  this.enable = function() {
+ 		this.liObj.style.cursor = "pointer";
+    this.isDisabled = false;
+  }
+  this.disable = function() {
+ 		this.liObj.style.cursor = "";
+    this.isDisabled = true;
   }
 	// constructor's body
 	this.create();
@@ -692,16 +706,32 @@ function List(colAmt) {
 		}
 		return true;
 	}
+  
+  this.enableAllItems = function() {
+    for(var idx = 0; idx < this.itemsArr.length; idx++)
+      this.itemsArr[idx].enable();  
+  }
 
+  this.disableAllItems = function(excludeIdx) {
+    for (var idx = 0; idx < this.itemsArr.length; idx++) {
+      if (idx == excludeIdx)
+        continue;
+      this.itemsArr[idx].disable(); 
+    } 
+  }
+  
 	// onItemSelection
 	this.onItemSelection = function(itemIdx) {
-		if(this.callback != null) {
+		if (this.callback != null) {
 			this.callback(itemIdx);
 			this.hide(); // PopupHandler.hide();
 		}
 	}
 	this.getItemObject = function(idx) {
 		return this.itemsArr[idx];
+	}
+	this.getItemsAmount = function() {
+		return this.itemsArr.length;
 	}
 	this.getSelectedItem = function(idx) {
 		return this.selectedItemIdx;
@@ -717,7 +747,7 @@ function List(colAmt) {
 * the dropdown list contains a unique list objet
 * probably better to make tha list global, so to share it.
 *****************************************************/
-DropdownList.prototype = new CtrlBase();
+//DropdownList.prototype = new CtrlBase();
 function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) {
 	var FONT_FAMILY = "verdana";
 	var FONT_SIZE = "12px";
@@ -831,14 +861,14 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 	}
 	
 	this.enable = function() {
-		this.changeOpacity(this.div, 1.0);
-		this.changeOpacity(this.buttonDiv, 1.0);
+		changeOpacity(this.div, 1.0);
+		changeOpacity(this.buttonDiv, 1.0);
 		this.isDisabled = false; 
 	}
 	
 	this.disable = function() {
-		this.changeOpacity(this.div, 0.3);
-		this.changeOpacity(this.buttonDiv, 0.3);
+		changeOpacity(this.div, 0.3);
+		changeOpacity(this.buttonDiv, 0.3);
 		this.isDisabled = true;  
 	}
 
@@ -1082,6 +1112,9 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 	this.enableAllControls = function() {
 		for(var i = 0; i < this.controlsArr.length; i++)
 			this.controlsArr[i].enable();
+		
+		if (this.overflowPopup)
+		  this.overflowPopup.enableAllItems();
 	}
 	this.disableAllControls = function(excludeCtrl) {
 		var exclIdx = -1;
@@ -1091,6 +1124,11 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 		for(var i = 0; i < this.controlsArr.length; i++)
 			if(i != exclIdx)
 				this.controlsArr[i].disable();
+		
+		if (this.overflowPopup) {		
+		  var lastItemIdx = this.overflowPopup.getItemsAmount() - 1;
+		  this.overflowPopup.disableAllItems(lastItemIdx);
+		}		
 	}
 	
 		// "overflow" popup ----------------
@@ -1132,7 +1170,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 
 		if(i_am.overflowPopup.div.parentNode != document.body)
 			document.body.appendChild(i_am.overflowPopup.div);
-		
+
 		i_am.overflowPopup.show(i_am.overflowBtn, "right", null, parentDlg, false);
 	}
 	// END "overflow" --------
