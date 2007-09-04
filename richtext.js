@@ -797,12 +797,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     this.loadCSS();
 	}
 	this.browserDetection = function() {
-		var brName = navigator.appName;
-		if(brName == "Microsoft Internet Explorer")
+		if(Popup.ie)
 			this.isIE = true;
-		else if(brName == "Opera")
+		else if(Popup.opera)
 			this.isOpera = true;
-		else if(brName == "Netscape") // FF
+		else if(Popup.gecko)
 		  this.isNetscape = true;
 	}
 	this.setHandlers = function() {
@@ -1053,11 +1052,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this._onkeyup = function(e) {
 		i_am.fitHeightToVisible();
 
-		 // FF onpaste
-		 e = getDocumentEvent(e);
-     if((e.ctrlKey && e.keyCode == 86) // e.DOM_VK_V
-          || (e.shiftKey && e.keyCode == 45)) /* e.DOM_VK_INSERT */ {
-      RteEngine.onPasteHandler(i_am.iframeObj.id); 
+		// FF onpaste
+		e = getDocumentEvent(e);
+    if((e.ctrlKey && e.keyCode == 86) // e.DOM_VK_V
+         || (e.shiftKey && e.keyCode == 45)) /* e.DOM_VK_INSERT */ {
+     RteEngine.onPasteHandler(i_am.iframeObj.id); 
     }
     // except navigation keys
     if(e.keyCode < 33 || e.keyCode > 40)
