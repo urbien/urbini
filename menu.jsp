@@ -5,7 +5,7 @@
         <!--menu toolbar="file" activate="onMouseOver"/-->
         <dashboardMenus/>
 		    <menu toolbar="personalization"     />
-		    <menu toolbar="calendarAndChart"   itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem,http://www.hudsonfog.com/voc/model/company/Contact" />
+		    <menu toolbar="calendarAndChart"   itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem,http://www.hudsonfog.com/voc/system/parse/GenericMessageAccount" />
 		    <print image="icons/printerIcon.gif"/>
 		    <saveInExcel allow="owner" image="images/excel.gif"/>
 		    <chat                               />
