@@ -1995,13 +1995,17 @@ function setTime() {
 function autoComplete(e) {
   e = getDocumentEvent(e); if (!e) return;
   var target = getTargetElement(e);
+  
+  var noAuto = target.getAttribute("noautocomplete");
+  if(noAuto != null)
+    return;
+  
   return autoComplete1(e, target);
 }
 
 function autoComplete1(e, target) {
   if (!target)
     return;
-
   keyPressedTime = new Date().getTime();
   var form = target.form;
   var characterCode = getKeyCode(e); // code typed by the user
