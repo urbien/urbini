@@ -1996,8 +1996,8 @@ function autoComplete(e) {
   e = getDocumentEvent(e); if (!e) return;
   var target = getTargetElement(e);
   
-  var noAuto = target.getAttribute("noautocomplete");
-  if(noAuto != null)
+  var isAuto = target.getAttribute("autocomplete");
+  if(isAuto != null && isAuto == "off")
     return;
   
   return autoComplete1(e, target);
