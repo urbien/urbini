@@ -114,7 +114,8 @@ if (document.attachEvent && !Popup.opera) {
   Popup.ie55 = true; // need better test since this one will include 5+ as well
 }
 
-Popup.gecko  = (agent.indexOf("Gecko")>= 0 && agent.indexOf("Safari") == -1) ? true : false;
+Popup.gecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1) ? true : false;
+Popup.safari  = (agent.indexOf("Safari") != -1) ? true : false;
 Popup.maemo= (Popup.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
