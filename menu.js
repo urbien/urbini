@@ -95,7 +95,7 @@ if (Popup.opera ) {
                           // XmlHttpRequest
   }
   if (v >= 9)
-    Popup.opera9 = true;  
+    Popup.opera9 = true;
 }
 
 // e62: Opera 8.65: Mozilla/4.0 (compatible; MSIE 6.0; Symbian OS; Series 60/0618.06.17; 9730) Opera 8.65 [en-US] UP.Link/6.3.0.0.0
@@ -600,7 +600,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           }
           addCurrentDashboardAndCurrentTab(anchor);
           var href = anchor.href;
-          
+
           // anchors[0].href = 'javascript:;';
           elem.setAttribute('href', href);
           // anchors[0].disabled = true;
@@ -859,7 +859,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     // var form = getFormNode(tr);
     var form = document.forms[currentFormName];
     if (form == null) {
-      alert("not found html form for TR: " + tr.id);
+      throw new Error("not found html form for TR: " + tr.id);
     }
     var table  = tr.parentNode;
     var table1 = table.parentNode;
@@ -1149,7 +1149,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
               var items = trNode.getElementsByTagName('td');
               var val = items[2].innerHTML;
               var idx = val.lastIndexOf(">");
-  
+
               if (len > 1)
                 chosenTextField[0].value = val.substring(idx + 1);
               else
@@ -1327,7 +1327,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
       exitIfBusted++;
       if (exitIfBusted > 10) {
-        alert('could not locate next row for ' + self.currentRow.id);
+        throw new Error('could not locate next row for ' + self.currentRow.id);
         return null;
       }
     }
@@ -1803,13 +1803,13 @@ function fakeOnSubmit() {
  */
 function popupOnSubmit(e) {
 
-  e = getDocumentEvent(e); 
-  if (!e) 
+  e = getDocumentEvent(e);
+  if (!e)
     return;
   /*
   if (e.eventProcessed)
     return stopEventPropagation(e);
-  else   
+  else
     e.eventProcessed = true;
   */
   // prevent duplicate events (happens only in IE)
@@ -1822,11 +1822,11 @@ function popupOnSubmit(e) {
   else if (e.eventProcessed) {
     return stopEventPropagation(e);
   }
-  
+
   var target = getTargetElement(e);
   var form = target;
   var buttonName = form.getAttribute("buttonClicked");
-  
+
   var button = form.elements[buttonName];
   var pane2        = document.getElementById('pane2');
   var dialogIframe = document.getElementById('dialogIframe');
@@ -1909,7 +1909,7 @@ function popupOnSubmit(e) {
     var type = form.type;
     if (type)
       params += "&type=" + type.value;
-    
+
     params += "&-$action=" + formAction;
   }
   if (form.uri)
@@ -1945,7 +1945,7 @@ function popupOnSubmit(e) {
     if (atts) {
       if (!elem.getAttribute('onSubmitFixed')) {
         var s = atts.replace(/\(this\)/, ''); // e.g. replace setTime(this) into setTime
-        
+
         if (trim(s).startsWith('function'))
           elem.onsubmit = eval(s);
         else
@@ -1996,11 +1996,11 @@ function setTime() {
 function autoComplete(e) {
   e = getDocumentEvent(e); if (!e) return;
   var target = getTargetElement(e);
-  
+
   var isAuto = target.getAttribute("autocomplete");
   if(isAuto != null && isAuto == "off")
     return;
-  
+
   return autoComplete1(e, target);
 }
 
@@ -2134,7 +2134,7 @@ function autoComplete1(e, target) {
                                   // (i.e. not chose from the list)
   }
   e = cloneEvent(e);
-  
+
   var checkSubscribe = form.elements[propName + "_subscribe"];
   if (checkSubscribe)
     checkSubscribe.checked = true;
@@ -2302,7 +2302,7 @@ function getTrNode(elem) {
       if (elem_.tagName.toUpperCase() == 'TD')
         elem_ = elem_.parentNode;
       else {
-        alert(elem.tagName + ': ' + elem.id + ', elem_: ' + elem_.tagName + ', elem.parentNode: ' + elem.parentNode.tagName);
+        //alert(elem.tagName + ': ' + elem.id + ', elem_: ' + elem_.tagName + ', elem.parentNode: ' + elem.parentNode.tagName);
         return null;
       }
     }
@@ -2327,7 +2327,7 @@ function getDivNode(elem) {
   var elem_ = elem;
   if (elem.length > 1) {
     elem_ = elem[0];
-    alert('getDivNode(): element is array: ' + elem + ', its first element is: ' + elem_);
+    //alert('getDivNode(): element is array: ' + elem + ', its first element is: ' + elem_);
   }
   if (elem_.tagName.toUpperCase() == 'DIV')
     return elem;
@@ -2427,7 +2427,7 @@ function chooser(element) {
     }
   }
   if (!originalForm) {
-    alert("form not found: " + form);
+    throw new Error("form not found: " + form);
     return;
   }
 
@@ -2484,7 +2484,7 @@ function chooser1(element) {
     }
   }
   if (!originalForm) {
-    alert("form not found: " + form);
+    throw new Error("form not found: " + form);
     return;
   }
 
@@ -2629,7 +2629,7 @@ function menuOnClick(e) {
     title = id.substring('menuLink_'.length);
   else
     title = id.substring('menuicon_'.length);
-  
+
   addCurrentDashboardAndCurrentTab(target);
   var divId = 'menudiv_' + title;
   var divRef = document.getElementById(divId); // this is a menu item without
@@ -2642,10 +2642,10 @@ function menuOnClick(e) {
 
 function addCurrentDashboardAndCurrentTab(target) {
   var a = target.href;
-   
-  if (!a || a == 'about:blank') 
+
+  if (!a || a == 'about:blank')
     return;
-  var hasQuestion    = a.indexOf('?') != -1; 
+  var hasQuestion    = a.indexOf('?') != -1;
   var addDashboardId = a.indexOf('-d=') == -1;
   if (addDashboardId) {
     var div = document.getElementById('dashboardCredentials');
@@ -2903,10 +2903,10 @@ function interceptLinkClicks(div) {
     if (id && id.startsWith('menuLink_')) // menu clicks are processed by their
                                           // own event handler
       continue;
-    
+
     if(anchor.href.indexOf("A_CALENDARS") != -1) // links of the Calendar's days
       continue;
-      
+
     if (id && id.startsWith("-inner."))
       addEvent(anchor, 'click',  onClickDisplayInner,   false);
     else
@@ -3111,7 +3111,7 @@ function updateTicket(event, body, hotspot, content)  {
       return;
     }
   }
-  document.location.reload(true); 
+  document.location.reload(true);
 }
 function addEventOnSchedule() {
   var table = document.getElementById("mainTable");
@@ -3265,19 +3265,19 @@ var schReassign = {
     var anchors = srcCell.getElementsByTagName('a');
     if (!anchors)
       throw new Error("moveProcedure: not found assignment info in: " + srcId);
-    
+
     var targetId = targetCell.id;
     var calendarRow = getTrNode(targetCell); // get tr on which user clicked in popup
     if (!calendarRow)
       throw new Error("moveProcedure: popup row not found for: " + targetId);
-    
+
     var anchor = "ticket?availableDuration="; // anchors[0].href; // url of the
     idx = targetId.indexOf(":");
     anchor += targetId.substring(idx + 1);
     idx1 = targetId.indexOf(".") + 1;
     if (targetId.charAt(idx1) == "-")
       idx1++;
-    
+
     var newEmployeeIdx = targetId.substring(idx1, idx);
     // first <a> could be with 'reassign procedure' that is for reassigning procedure to different time or employee
     anchor += "&" + forEmployee + "=" + employees[parseInt(newEmployeeIdx)] + '&' + calendarRow.id;
@@ -3289,7 +3289,7 @@ var schReassign = {
     idx = srcAnchor.indexOf("&uri=");
     if (idx == -1)
       throw new Error("moveProcedure: not found assignment info in: " + srcId);
-    anchor += srcAnchor.substring(idx); 
+    anchor += srcAnchor.substring(idx);
 
 //    var newEmployee = employees[parseInt(newEmployeeIdx)];
 //    anchor += "&.forEmployee_verified=y&.forEmployee_select=" + encodeURIComponent(newEmployee);
@@ -3302,8 +3302,8 @@ var schReassign = {
       throw new Error("addCalendarItem: pageParameters are empty for: " + anchor);
     for (var i=0; i<pageParams.length; i++)
       anchor += '&' + pageParams[i].id;
-    
-    
+
+
     var idx = anchor.indexOf("?");
     var div = document.createElement('div');
     var ret = stopEventPropagation(event);
@@ -3326,11 +3326,11 @@ function initListBoxes(div) {
   }
   for (var i=0; i<anchors.length; i++) {
     var anchor = anchors[i];
-    if (anchor.id  &&  anchor.id.indexOf("_filter", anchor.id.length - "_filter".length) != -1) 
+    if (anchor.id  &&  anchor.id.indexOf("_filter", anchor.id.length - "_filter".length) != -1)
       addEvent(anchor, 'click', listboxOnClick, false); // add handler to smartlistbox anchors
-    else 
+    else
       addBooleanToggle(anchor);
-    
+
     replaceTooltip(doc, anchor);
   }
 
@@ -3490,7 +3490,7 @@ function onClick(e) {
   var link = getTargetAnchor(e);
   if (!link || !link.href || link.href == null)
     return;
-  // add current dashboard ID and current tab ID to url if they are not there 
+  // add current dashboard ID and current tab ID to url if they are not there
   var a = link.href;
   addCurrentDashboardAndCurrentTab(link);
   if     (e.ctrlKey) {
@@ -4175,7 +4175,7 @@ function showDialog1(event, div, hotspot) {
 
   if(FullScreenPopup.show(div, hotspot) == false)
     setDivVisible(event, div, iframe, hotspot, 16, 16);
-  
+
   initListBoxes(div);
   uiFocus(div);
   interceptLinkClicks(div);
@@ -4365,7 +4365,7 @@ function getTargetElement(e) {
   else {
     elem = e.srcElement;
     if(elem.parentNode && elem.parentNode.tagName.toLowerCase() == "a")
-      elem = elem.parentNode;   
+      elem = elem.parentNode;
   }
   return elem;
 }
@@ -4540,7 +4540,7 @@ function unfadeOnMouseOver(e) {
     target = getTargetElement(e);
     // alert("unfade canceled for: " + target + ", id: " + target.id + ",
     // target.tagName: " + target.tagName);
-    alert("unfade canceled: e.target: " + e.target + ", e.srcElement: " + e.srcElement + ", e.currentElement: " + e.currentElement);
+    //alert("unfade canceled: e.target: " + e.target + ", e.srcElement: " + e.srcElement + ", e.currentElement: " + e.currentElement);
     return false;
   }
 
@@ -5262,7 +5262,7 @@ function addAssignment(event, body, hotspot, content)  {
       return;
     var trCopyTo = document.getElementById(curTR.id);
     if (!trCopyTo) {
-      alert("Warning: target TR not found: " + curTR.id);
+      throw new Error("Warning: target TR not found: " + curTR.id);
       return;
     }
     var newTd = curTR.getElementsByTagName("td")[0];
@@ -5322,7 +5322,7 @@ function addAssignment(event, body, hotspot, content)  {
         rowIdx++;
       for (; rowIdx<nodes.length; rowIdx++) {
         var node = nodes[rowIdx];
-        if (!node.tagName || node.tagName.toLowerCase() != 'tr') 
+        if (!node.tagName || node.tagName.toLowerCase() != 'tr')
           continue;
 
 //        alert(row.id);
@@ -5414,7 +5414,7 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
   }
   var divCopyTo = document.getElementById(frameId + "_div");
   if (!divCopyTo) {
-    alert("Warning: target div not found: " + frameId + "_div");
+    throw new Error("Warning: target div not found: " + frameId + "_div");
     return;
   }
   var divs = divCopyTo.getElementsByTagName("div");
@@ -5615,9 +5615,9 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
   }
   // resourceListEdit(divCopyTo);
   var anchors = divCopyTo.getElementsByTagName('a');
-  for (var i=0; i<anchors.length; i++) 
+  for (var i=0; i<anchors.length; i++)
     addBooleanToggle(anchors[i]);
-  
+
   interceptLinkClicks(divCopyTo);
 }
 
@@ -5699,14 +5699,14 @@ function closeDiv(e, hideDivId) {
   var url = a.href;
   if (url == 'about:blank') {
     var widget = hideDivId.substring("widget_".length);
-    if (isNaN(widget)) 
+    if (isNaN(widget))
       hideDiv(e, hideDivId);
     else {
       var bookmarkBase = document.getElementById('bookmarkBlock');
       var uri = bookmarkBase.innerHTML + widget;
       postRequest(e, 'delete', 'uri=' + encodeURIComponent(uri), div, elm, closeDivCallback);
     }
-    
+
     return stopEventPropagation(e);
   }
   var ret = stopEventPropagation(e);
@@ -5836,7 +5836,7 @@ function minMaxAndFlip(e, div) {
   else
     hideDiv(e, hideDivId + "_back");
   minMax(e, hideDivId);
-  return stopEventPropagation(e);  
+  return stopEventPropagation(e);
 }
 
 function minMax(e, divId) {
@@ -5849,7 +5849,7 @@ function minMax(e, divId) {
   if (elm.tagName.toLowerCase() == 'a') {
     var elms = elm.childNodes;
     for (var i=0; i<elms.length; i++) {
-      if (elms[i].tagName.toLowerCase() == 'img') { 
+      if (elms[i].tagName.toLowerCase() == 'img') {
         elm = elms[i];
         break;
       }
@@ -6668,7 +6668,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
   }
 
   if (!http_request) {
-    alert('Cannot create XMLHTTP instance, using iframe instead');
+    throw new Error('Cannot create XMLHTTP instance, using iframe instead');
     frameLoaded[frameId] = false;
     var iframe = frames[frameId];
     iframe.document.body.innerHTML = '<form method=post action=dummy id=ajaxForm><input type=submit name=n value=v></input> </form>';
@@ -6754,8 +6754,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
           response = iframe.document;
         }
         location = response.getElementById('$redirect').getAttribute('href');
-        // alert('status: ' + status + ', location: ' + location + ',
-        // responseXML.baseURI: ' + response);
         if (!location)
           return;
       }
@@ -6763,7 +6761,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       var paintInPage;
       try { paintInPage = http_request.getResponseHeader('X-Paint-In-Page');} catch (exc) {}
       if (paintInPage && paintInPage == 'false') {
-//        alert('reloading page (1),  status = ' + status);
         document.location = location;  // reload full page
       }
       else {
@@ -6776,7 +6773,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
           postRequest(clonedEvent, urlParts[0], urlParts[1], div, hotspot, callback);
         }
         else {
-          //alert('reloading page (2),  status = ' + status);
           document.location = location;  // reload full page
         }
       }
@@ -7121,7 +7117,7 @@ function getElementStyle(elem) {
   // <html> dose not have style property
 	if(elem.nodeType == 9)
 	  return null;
-	
+
 	if (elem.currentStyle)
 		return elem.currentStyle;
 	else if (window.getComputedStyle)
@@ -7197,7 +7193,7 @@ var DragEngine = {
 		if(thisObj.dragapproved == 1){
 			if(typeof allowToMove == 'undefined' || allowToMove[0] == true)
 			  thisObj.dragBlock.style.left = left;
-			if(typeof allowToMove == 'undefined' || allowToMove[1] == true)  
+			if(typeof allowToMove == 'undefined' || allowToMove[1] == true)
 			  thisObj.dragBlock.style.top  = top;
 
 			if(thisObj.dialogIframe != null && thisObj.dragBlock.id == 'pane2' &&
@@ -7375,9 +7371,9 @@ function changeBoolean(e) {
     else
       pValue = "Yes";
     target.setAttribute('tooltip', pValue);
-    
+
     var nodes = target.childNodes;
-    
+
     var node;
     for (var i=0; i<nodes.length  &&  !node; i++) {
       if (nodes[i].tagName  &&  nodes[i].tagName.toLowerCase() == 'img')
@@ -7443,7 +7439,7 @@ if (!document.importNode) {
           oNew.setAttribute(oNode.attributes[i].name, oNode.attributes[i].value);
       }
       if (oNode.style.cssText) {
-        alert(oNode.style.cssText);
+        //alert(oNode.style.cssText);
         oNew.setAttribute('style', oNode.style.cssText);
       }
     }
@@ -7500,7 +7496,6 @@ function copyAttributes(oNode, oNew) {
     if (a.name == 'disabled' && value == false)
       continue;
     oNew.setAttribute(a.name, a.value);
-//    alert(a.name + ': ' + a.value)
   }
   oNew.setAttribute('style', oNode.style.cssText);
   // oNew.style.cssText = oNode.style.cssText;
@@ -7518,7 +7513,6 @@ function copyTableRow(tbody, pos, oldTr) {
   else
     tbody.insertBefore(newTr, tbody.rows[pos]);
   for (var i=0; i<oldCells.length; i++) {
-    // alert(oldCells[i].innerHTML);
     newTr.cells[i].innerHTML = oldCells[i].innerHTML;
   }
   copyAttributes(oldTr, newTr);
@@ -8044,7 +8038,7 @@ var Dashboard = {
 
   prevWidgetOld : null,
   isWidgetMoved : false,
-  
+
   // drag interface functions -----
   getDragBlock : function(catchedObj) {
     if(OperaWidget.isWidget()) // it means that we are not in our dashboard.
@@ -8105,7 +8099,7 @@ var Dashboard = {
     this.dragBlock = dragBlock;
     this.isDragMode = true;
     this.isWidgetMoved = false;
-    
+
     if(this.placeholderDiv == null)
       this.createPlaceholder();
 
@@ -8192,7 +8186,7 @@ var Dashboard = {
       for(var i = 0; i < this.tabHeadersMap.length; i++)
         this.tabHeadersMap[i].setBackgroundAndBorder("", "");
     }
-    
+
     // check if widget was moved from the place
     if(Math.abs(this.prevX - x) > 2 || Math.abs(this.prevY - y) > 2)
       this.isWidgetMoved = true;
@@ -8206,7 +8200,7 @@ var Dashboard = {
       return;
 
     this.compliteGuiDrag(dragBlock);
-    
+
     // if widget was not moved then maximize it
     if(this.isWidgetMoved == false) {
         var maxLink = getChildById(dragBlock, "w_maximize");
@@ -8215,7 +8209,7 @@ var Dashboard = {
         window.location = maxLink.href;
         return;
     }
-    
+
     // 1. move on another tab
     if(this.targetTab) {
       this.targetTab.setBackgroundAndBorder("", "");
@@ -8459,7 +8453,7 @@ var Dashboard = {
         var bookmarkBase = document.getElementById('bookmarkBlock');
         newPrevUri = bookmarkBase.innerHTML + newPrevUri;
       }
-      
+
       params += '&.previousInColumn_select=' + encodeURIComponent(newPrevUri);
     }
     // set self as prev widget to know that this is the top of the column (till remove prop implemented)
@@ -8686,7 +8680,7 @@ var WidgetFlip = {
     this.fade();
     this.flipShown = false;
   },
-  
+
   showBackside : function(event, divId) {
     downloadWidget.storeFrontsideSize(divId);
     hideDiv(event, divId);
@@ -8721,7 +8715,7 @@ var WidgetFlip = {
   getNextFadingNumber : function (start, end, ease)  {
     return start + (end - start) * ease;
   },
-  
+
   enterflip : function (event)  {
     var baseUri = getBaseUri();
     if(Popup.ie && !Popup.ie7)
@@ -8729,7 +8723,7 @@ var WidgetFlip = {
     else
       this.flipImg.src = baseUri + "images/flip_hover.png";
   },
-  
+
   exitflip : function (event)  {
     var baseUri = getBaseUri();
     if(Popup.ie && !Popup.ie7)
@@ -8737,7 +8731,7 @@ var WidgetFlip = {
     else
       this.flipImg.src = baseUri + "images/flip.png";
   },
-  
+
   getFlipDiv : function (event, divId) {
     var target = getTargetElement(event);
     var frontDiv;
@@ -8830,7 +8824,7 @@ function submitWidgetPreferences(event, formId, tab) {
   var url = form.action;
   Debug.setMode(true);
   Debug.log('submitWidgetPreferences: url = ' + url + "; param = " + param);
-  
+
   var divId =  (formId.indexOf("_http") != -1) ? 'widget_' + formId.substring(5) : 'div_' + formId.substring(5);
 
   var widgetDiv = document.getElementById(divId);
@@ -8886,10 +8880,10 @@ var WidgetRefresher = {
   widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
   hdnDoc : null, // helps to load refreshed document
   setInterval : function(divId, intervalSeconds) {
-  
+
     Debug.setMode(true);
     Debug.log('divId = ' + divId);
-    
+
     // 1. prepare new "widget member" or stop old one.
     if(typeof this.widgetsArr[divId] == 'undefined')
       this.widgetsArr[divId] = new Object();
@@ -9062,7 +9056,7 @@ var OperaWidget = {
     Debug.setMode(true);
     Debug.log('OperaWidget.init');
     this.resizeOnFrontside();
-    
+
     // 6. init prefs on the back
     this.applyPrefs();
     // 5.
@@ -9070,11 +9064,11 @@ var OperaWidget = {
     // 6.
     resizeHandle.init();
   },
-  
+
   onWidgetRefresh : function() {
     this.frontDiv = getChildByAttribute(this.widgetDiv, "className", "front");
     var backId =  this.frontDiv.id + "_back";
-    this.backDiv = getChildById(this.widgetDiv, backId); 
+    this.backDiv = getChildById(this.widgetDiv, backId);
     Debug.setMode(true);
     Debug.log('onWidgetRefresh');
     this.processWidth();
@@ -9106,11 +9100,11 @@ var OperaWidget = {
     //Debug.setMode(true);
     //Debug.log('frontSide: width = ' + divCoords.width + '; height = ' + divCoords.height);
     //Debug.log('frontSide: width = ' + this.frontDiv.clientWidth + '; height = ' + this.frontDiv.clientHeight);
-    
+
     //sizeWidget(divCoords.width, divCoords.height + 100);
     //window.resizeTo(divCoords.width, divCoords.height);
   },
-  
+
   resizeOnBackside : function() {
     if(typeof widget == 'undefined')
       return;
@@ -9123,12 +9117,12 @@ var OperaWidget = {
     */
     /*
     window.resizeTo(this.MAX_WND_WIDTH, this.MAX_WND_HEIGHT);
-    
+
     var divCoords = getElementDimensions(this.backDiv);
     Debug.setMode(true);
     Debug.log('backside: width = ' + divCoords.width + '; height = ' + divCoords.height);
     Debug.log('backside: width = ' + this.backDiv.clientWidth + '; height = ' + this.backDiv.clientHeight);
-    
+
     window.resizeTo(divCoords.width, divCoords.height);
     */
   },
@@ -9160,10 +9154,10 @@ var OperaWidget = {
     }
     if (this.prefForm == null)
       throw new Error("form pref_ not found");
-    
+
     //***********************************************
     //* restore form fields from preferences
-    //* 
+    //*
     // parameters to calculate refresh in milliseconds.
     var intervalNumber = 15;       // key: "refresh.seconds"
     var intervalType = "minute(s)"; // key: "refresh.durationType"
@@ -9203,7 +9197,7 @@ var OperaWidget = {
       }
     }
   },
-  
+
   calculateRefreshInterval : function(intervalNumber, intervalType) {
       var refreshInterval = 1;
       refreshInterval *= intervalNumber;
@@ -9255,17 +9249,17 @@ function sizeWidget(x,y) {
   }
   if (x == window.innerWidth && y == window.innerHeight)
     return;
-  
+
   // size limiting code
   if (x <= 200)
     x = 200;
   if (x >= 440)
-    x = 440;   
+    x = 440;
   if (y <= 130)
     y = 130;
   if (y >= 340)
     y = 340;
- 
+
     // prevent vertical resize bug
   if (y > 130 && y < 340 && y != window.innerHeight && x == window.innerWidth)
     window.resizeTo(x + 1, y);
@@ -9315,7 +9309,7 @@ var downloadWidget = {
 var Debug = {
   logPref: 'log',
   debugMode: false,
-  
+
   log: function(str) {
     if (this.debugMode) {
       if (window.widget) {
@@ -9350,23 +9344,23 @@ var Debug = {
         if (!div) {
           var div = document.createElement('div');
           div.setAttribute('id', 'debugDiv');
-        }      
+        }
         var s = widget.preferenceForKey(this.logPref);
         if (s)
           div.innerHTML = s;
-      }  
+      }
     }
   },
-  
+
   setMode: function(active) {
     var m = this.debugMode;
-    this.debugMode = active; 
+    this.debugMode = active;
     if (window.widget) {
       var d = document.getElementById('debugDiv');
       if (!d)
         return;
       if (active)
-        d.style.display = 'block'; 
+        d.style.display = 'block';
       else
         d.style.display = 'none';
     }
@@ -9475,25 +9469,25 @@ var resizeHandle = {
 var FullScreenPopup = {
   INTERVAL : 10, // ms
   STEPS_NUM : 7,
-  
-  wndWidth : null, 
+
+  wndWidth : null,
   contentDiv : null,
   div : null,
   step : 0,
   toShow : true,
   oldMarginLeft : null,
-  
+
   submitBtn : null,
-  
+
   show : function(div, hotspot) {
     if(!Popup.mobile)
       return false;
-    
+
     this.div = div;
     // suppose that "mainskin" is always applicable
     this.contentDiv = document.getElementById("mainskin");
     this.oldMarginLeft = this.contentDiv.style.marginLeft;
-   
+
     document.body.style.overflow = "hidden";
 
     var divStl = div.style;
@@ -9534,7 +9528,7 @@ var FullScreenPopup = {
     }
     var cancelBtn = getChildByAttribute(this.div, "name", "cancel");
     if(cancelBtn != null)
-      cancelBtn.style.display = "none";  
+      cancelBtn.style.display = "none";
   },
   // replace "dummy" submit image with submit button
   _prepareSubmitButton : function() {
@@ -9546,7 +9540,7 @@ var FullScreenPopup = {
     var x = findPosX(submitImg);
     var y = findPosY(submitImg);
     submitImg.style.display = "none";
-    
+
     var sbStl = this.submitBtn.style;
     sbStl.position = "absolute";
     sbStl.left = x;
@@ -9565,7 +9559,7 @@ var FullScreenPopup = {
     var x;
 
     var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM);
-    
+
     if(thisObj.toShow) {
       if(thisObj.step == thisObj.STEPS_NUM)
         x = this.wndWidth;
@@ -9581,9 +9575,9 @@ var FullScreenPopup = {
       else
         x = thisObj.wndWidth - (thisObj.step * delta);
     }
-    
+
     cntDivStl.marginLeft = x;
-    
+
     divStl.left  = x - thisObj.div.clientWidth;
     divStl.width =  this.wndWidth;
 
@@ -9616,7 +9610,7 @@ var OrderRows = {
   prevY : null,
   prevRowOld : null,
   dragRowIdxOld : null,
-  
+
   getDragBlock : function(catchedObj) {
     var tr = getAncestorByTagName(catchedObj, "tr");
     return tr;
@@ -9626,7 +9620,7 @@ var OrderRows = {
     this.tableTop = findPosY(this.tbody);
     this.prevRowOld = dragRow.previousSibling;
     dragRow.style.backgroundColor = this.BG_COLOR;
-    
+
     this.dragRowIdxOld = dragRow.rowIndex;
   },
   onDrag : function(dragBlock, x, y) {
@@ -9660,14 +9654,14 @@ var OrderRows = {
     var targetRow = null;
     var rows = this.tbody.rows;
     for (var i = 0; i < rows.length; i++) {
-      if((offsetY > rows[i].offsetTop) && 
+      if((offsetY > rows[i].offsetTop) &&
         (offsetY < rows[i].offsetTop + rows[i].offsetHeight))
-      return rows[i];     
+      return rows[i];
     }
     return null;
   },
   onRowMovement : function(row, prevRowOld, prevRowNew) {
-  
+
   }
- 
+
 }
