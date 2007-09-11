@@ -1,24 +1,24 @@
 <div>
 <form name="loginform" action="j_security_check" method="POST">
-  
+
 <table border="0" cellpadding="0" cellspacing="0" width="256" cols="2">
   <tr>
     <td class="xl" colspan="2"><text text="passwordsDoNotMatch"/><br/></td>
   </tr>
-  
+
   <tr>
     <td align="RIGHT"><text text="userId"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><userId/></td>
   </tr>
-  <tr><td align="RIGHT">  
+  <tr><td align="RIGHT">
     <text text="enterOldPassword"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><input type="Password" name="j_password"  class="xxs" size="10" maxlength="50"/></td>
   </tr>
-  <tr><td align="RIGHT">  
+  <tr><td align="RIGHT">
     <text text="enterNewPassword"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><input type="Password" name="j_password_new"  class="xxs" size="10" maxlength="50"/></td>
   </tr>
-  <tr><td align="RIGHT">  
+  <tr><td align="RIGHT">
     <text text="reenterNewPassword"/><img src="images/spacer.gif" border="0" width="5"/></td>
     <td><input type="Password" name="j_password_reenter"  class="xxs" size="10" maxlength="50"/></td>
   </tr>
@@ -28,7 +28,7 @@
       <input type="Submit" value="submitChanges"/>
       <input type="hidden" name="j_password_change" value="x"/>
     </td>
-  </tr
+  </tr>
 </table>
   <returnUri />   <challenge />
 </form>

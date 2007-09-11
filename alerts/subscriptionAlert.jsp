@@ -16,10 +16,10 @@
   <td></td>
   <td colspan="2">
 		<propertySheet name="forum"/>
-		
+
 		<newComment/>
 		<br/>
-		
+
 		You can modify your subscription alert level or unsubscribe at any time.
 		<br/>
 		<br/>
@@ -28,15 +28,9 @@
 		<siteOwner/>
 		<br/>
 		<br/>
-		
+
 		<b>Powered by</b> <a href="http://lablz.com" target="_blank">LablZ UniversalPlatform</a>
 	</td>
 </tr>
 </table>
 </div>
-
-
-
-
-
-<a href="&[url];" target="_blank"><img src="&[classIcon];" border=0 width=16 align=absmiddle>&[class]; <b>&[urlDisplayName];</b></a>. See all Alerts in your <a href="&[allAlerts];" target=_blank>. Cleck here to see complete <a href="&[allIssues];" target=_blank><img src="&[classIcon];" border=0 width=16 align=absmiddle><b>&[class];</b></a> list.
