@@ -2,7 +2,7 @@
 <form method="post" action="j_security_check">
 <table cellpadding="0" border="0" cellspacing="0" width="50%">
   <tr>
-    <td class="xl" colspan="2"><text text="createUserFailed"/><td>
+    <td class="xl" colspan="2"><text text="createUserFailed"/></td>
   </tr>
   <tr>
     <td align="right"><text text="userId"/></td>
