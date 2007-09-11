@@ -810,19 +810,16 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// IE: paste
 		addEvent(this.document.body, 'paste', this._onpaste, false);
 
+
 		if(this.rtePref.autoClose) {
-      if(Popup.ie) {
+      addEvent(document, 'click', this.onlosefocus, false);
+
+      if(Popup.ie)
 		    addEvent(this.iframeObj, 'focus', this.onfocus, false);
-			  addEvent(this.iframeObj, 'blur', this.onlosefocus, false);
-			}
-			else if(Popup.safari) {
+			else if(Popup.safari)
 			  addEvent(this.window, 'focus', this.onfocus, false);
-			  addEvent(this.window, 'blur', this.onlosefocus, false);
-			}
-			else { // FF, Opera
+			else // FF, Opera
 			  addEvent(this.document, 'focus', this.onfocus, false);
-			  addEvent(this.document, 'blur', this.onlosefocus, false);
-			}
 		}
 	}
   this.loadCSS = function() {
