@@ -9663,5 +9663,13 @@ var OrderRows = {
   onRowMovement : function(row, prevRowOld, prevRowNew) {
 
   }
+}
 
+// html (img) on disabled Flash 
+function flashHandler(flashCode, htmlCode) {
+  var isFlashAvailable = DetectFlashVer(8, 0, 0);
+  if (isFlashAvailable)
+    document.write(flashCode);
+  else
+    document.write(htmlCode);
 }
