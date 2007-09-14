@@ -2641,8 +2641,9 @@ function menuOnClick(e) {
 }
 
 function addCurrentDashboardAndCurrentTab(target) {
+  if(target.tagName.toLowerCase() == "img")
+    return;
   var a = target.href;
-
   if (!a || a == 'about:blank')
     return;
   var hasQuestion    = a.indexOf('?') != -1;
