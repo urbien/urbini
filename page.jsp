@@ -4,7 +4,7 @@
   </head>
   <body id="body">
 
-  <div nonPda="T">
+  <div>
     <include name="requiredHeader.jsp"/>
     <!--include name="include/commonHeader.jsp"/-->
     <getResource/>
@@ -20,7 +20,7 @@
     </tr>
     </table>
 </hideBlock>
-    <filter/> 
+    <filter/>
     <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr>
 <hideBlock>
@@ -36,7 +36,7 @@
 </hideBlock>
     </tr>
     </table>
-
+    </div>
 <hideBlock>
     <br/><br/>
     <center><codeBehindThePage allow="admin" showDialog="y"/> </center>
@@ -47,19 +47,6 @@
     <include name="include/commonFooter"/>
     <chatAutoStart/>
 </hideBlock>
-  </div>
-  </div>
-
-  <div pda="T">
-    <include name="requiredHeader.jsp"/>
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-    <tr>
-      <td valign="top" width="100%">
-       <file/>
-      </td>
-    </tr>
-    </table>
-    <include name="requiredFooter.jsp"/>
   </div>
 
   </body>

@@ -1,5 +1,4 @@
 <div>
-<div nonPda="T">
 <hideBlock id="hideBlock">
   <watchNote/>
 </hideBlock>
@@ -62,39 +61,5 @@
   </td>
   </tr>
 </table>
-</div>
-
-<div pda="T">
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-<tr valign="top">
-  <td valign="top" align="middle" width="100%">
-    <table width="100%" cellspacing="0" cellpadding="0" border="0">
-    <tr valign="top"><td colspan="2">
-    <form action="list.html" name="siteResourceList">
-      <div align="left"><backLink /></div>
-      <taskTreeControl/>
-      <siteResourceList />
-      <createResources/>
-      <div align="right"><measurement/></div>
-    </form>
-    </td></tr>
-
-    </table>
-</td></tr></table>
-
-<hideBlock>
-<br />
-<table border="0" cellspacing="0" cellpadding="0">
-  <tr><td><pieChart/></td></tr>
-</table>
-<script language="JavaScript">
-  var horizontalFilter_FIELDS = new Array();
-</script>
-<form name="horizontalFilter" id="filter" method="POST" autocomplete="off">
-  <br/>
-    <horizontalFilter />
-</form>
-</hideBlock>
-</div>
 
 </div>

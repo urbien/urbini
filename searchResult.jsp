@@ -1,6 +1,6 @@
 <div>
 <!--include name="readOnlyResourceTitle.jsp" /-->
-<!--hideBlock id="hideBlock">      
+<!--hideBlock id="hideBlock">
 <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr valign="top" class="keywordsearch">
   <td valign="top" width="100%" class="keywordsearch">
@@ -13,7 +13,6 @@
     <menu toolbar="support"         activate="onMouseOver" allow="admin"/>
     <menu toolbar="personalization" activate="onMouseOver"/>
 
-    <pdaToPc image="icons/pda.gif"/>
     </td>
     <td valign="top" align="right" width="10%">
       <include name="searchText.jsp"/>
@@ -22,7 +21,7 @@
   </tr>
 </table>
 </hideBlock-->
-<form name="categoryTextSearch"> 
+<form name="categoryTextSearch">
   <searchHistory/>
   <categoryTextSearch />
   <resourcesSearch resourcesUri="/sql/text/search/resources" />
