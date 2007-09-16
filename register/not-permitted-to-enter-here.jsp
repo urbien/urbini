@@ -9,7 +9,7 @@
               <table width="100%" border="0" align="center" cellpadding="3" cellspacing="3" bgcolor="#FFFFFF">
                 <tr>
                     <td class="poweredBy-td" valign="middle" align="left" height="50">
-                      <a href="http://universalplatform.com" target="_blank" style="text-decoration: none">
+                      <a href="http://lablz.com" target="_blank" style="text-decoration: none">
                         <span class="large-poweredBy" style="padding-left: 50px">Universal</span><span class="large-poweredBy-b">Platform</span>
                       </a>
                     </td>

@@ -1,5 +1,4 @@
-<div>
-<center>
+<div style='vertical-align: middle'>
   <form name="loginform" action="j_register" method="POST" autocomplete="off">
     <table width="430" align="center" bgcolor="#cbcbcb" cellpadding="2" cellspacing="0">
       <tr>
@@ -10,7 +9,7 @@
                 <table width="100%" border="0" align="center" cellpadding="3" cellspacing="3" bgcolor="#FFFFFF">
                   <tr>
                     <td class="poweredBy-td" valign="middle" align="left" height="50">
-                      <a href="http://universalplatform.com" target="_blank" style="text-decoration: none">
+                      <a href="http://lablz.com" target="_blank" style="text-decoration: none">
                         <span class="large-poweredBy" style="padding-left: 50px">Universal</span><span class="large-poweredBy-b">Platform</span>
                       </a>
                     </td>
@@ -66,5 +65,4 @@
     </table>
     <returnUri />
   </form>
-</center>
 </div>
