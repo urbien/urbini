@@ -220,14 +220,14 @@ var RteEngine = {
 		PalettePopup.show(btnObj, 'right', callback, parentDlg, null, chosenBgClr);
 		return PalettePopup.div;
 	},
-	launchLinkPopup : function(btnObj, callback) {
+	launchLinkPopup : function(btnObj, callback, cancelCallback) {
 		if(this.linkPopup == null)
 			this.createLinkPopup();
 		var parentDlg = getAncestorById(btnObj.div, 'pane2');
-		this.linkPopup.show(btnObj, 'center', callback, parentDlg);
+		this.linkPopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.linkPopup.div;
 	},
-	launchImagePopup : function(btnObj, callback, rteId) {
+	launchImagePopup : function(btnObj, callback, rteId, cancelCallback) {
 		if(this.imagePopup == null)
 			this.createImagePopup();
 		else {
@@ -242,7 +242,7 @@ var RteEngine = {
 	  var form = this.imagePopup.getForm();
 	  ImageUploader.putRteIdInForm(form, rteId);		
 		var parentDlg = getAncestorById(btnObj.div, 'pane2');
-		this.imagePopup.show(btnObj, 'center', callback, parentDlg);
+		this.imagePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.imagePopup.div;
 	},
 	launchImagePastePopup : function(rteId) {
@@ -267,11 +267,11 @@ var RteEngine = {
 		
 		return this.imagePastePopup.div;
 	},
-	launchTablePopup : function(btnObj, callback) {
+	launchTablePopup : function(btnObj, callback, cancelCallback) {
 		if(this.tablePopup == null)
 			this.createTablePopup();
 		var parentDlg = getAncestorById(btnObj.div, 'pane2');
-		this.tablePopup.show(btnObj, 'center', callback, parentDlg);
+		this.tablePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.tablePopup.div;
 	},
 
@@ -1226,20 +1226,20 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.onLink = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.currentPopup = RteEngine.launchLinkPopup(i_am.linkBtn, i_am.setLink);
+		i_am.currentPopup = RteEngine.launchLinkPopup(i_am.linkBtn, i_am.setLink, i_am.cancelLink);
 	}
 	// 20
 	this.onImage = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
 		
-		i_am.currentPopup = RteEngine.launchImagePopup(i_am.imageBtn, i_am.setImage, i_am.iframeObj.id);
+		i_am.currentPopup = RteEngine.launchImagePopup(i_am.imageBtn, i_am.setImage, i_am.iframeObj.id, i_am.cancelImage);
 	}
 	// 21
 	this.onTable = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.currentPopup = RteEngine.launchTablePopup(i_am.tableBtn, i_am.setTable);
+		i_am.currentPopup = RteEngine.launchTablePopup(i_am.tableBtn, i_am.setTable, i_am.cancelImage);
 	}
 	this.onSuperscript = function() {
 		if(!i_am.isAllowedToExecute())
@@ -1399,7 +1399,16 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 		i_am.insertHTML(html);
 	}
-	
+	// cancel ------------------------------
+	this.cancelLink = function() {
+	  i_am.skipClose = true;
+	}
+	this.cancelImage = function() {
+    i_am.skipClose = true;
+	}
+	this.cancelTable = function() {
+    i_am.skipClose = true;
+	}
 		
 	// -------------------------------------
 	// execute a command
