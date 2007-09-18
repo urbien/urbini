@@ -1287,7 +1287,7 @@ var PopupHandler = {
 		// make visible
 		this._show(autohide);
 
-    setTimeout("PopupHandler.setFocusInInput()", 10);
+    setTimeout("PopupHandler.setFocusInInput()", 50);
 	},
 	_show : function(autohide) {
 		if(typeof autohide == 'undefined' || autohide) 
@@ -1343,14 +1343,14 @@ var PopupHandler = {
 	},
 	setHandlers : function() {
 		if(this.isAutoHide) {
-			this.oldOnKeyUp = document.onkeyup;
 			this.oldOnClick = document.onclick;
-			
 			document.onclick = this._onclick;
+			
 			this.popupDiv.onmouseover = this._onmouseover;
 			this.popupDiv.onmouseout  = this._onmouseout;
 		}
     // to handle ESC in formPopups
+		this.oldOnKeyUp = document.onkeyup;
   	document.onkeyup = this._onkeyup;
 
 		// FF: fixed position
@@ -1365,11 +1365,12 @@ var PopupHandler = {
 	},
 	resetHandlers : function() {
 		if(this.isAutoHide) {
-			document.onkeyup = this.oldOnKeyUp;
 			document.onclick = this.oldOnClick;
 			this.popupDiv.onmouseover = null;
 			this.popupDiv.onmouseout = null;
 		}
+		document.onkeyup = this.oldOnKeyUp;
+
 		if(this.isFixedPosition) {
 			window.onscroll = this.oldOnScroll;
 		}
@@ -1430,7 +1431,14 @@ var PopupHandler = {
 		PopupHandler.popupDiv.style.top = PopupHandler.y - scrl[1];
 	},
 	setFocusInInput : function() {
-		var input = PopupHandler.popupDiv.getElementsByTagName('input')[0];
+		var inputs = PopupHandler.popupDiv.getElementsByTagName('input');
+		var input = null;
+		for(var i = 0; i < inputs.length; i++) {
+		  if(inputs[i].type == "text" || inputs[i].type == "file") {
+		    input = inputs[i];
+		    break;
+		  }
+		}
 		if(input) {
 		  try {
 		    input.focus();
