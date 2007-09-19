@@ -2647,6 +2647,19 @@ function addCurrentDashboardAndCurrentTab(target) {
   if (!a || a == 'about:blank')
     return;
   var hasQuestion    = a.indexOf('?') != -1;
+  // Fixed for DUDE
+  if (!hasQuestion || a.indexOf('/tail?') != -1)
+    return;
+  // Check if this is blog entry with contents
+  var idx =  a.indexOf('&-ulId=');
+  if (idx != -1) {
+    var idx0 = a.indexOf('#', idx);
+    if (idx0 != -1) {
+      var idx1 = a.indexOf('&', idx + 1);
+      if (idx1 == -1  ||  idx0 < idx1)
+        return;
+    }
+  }
   var addDashboardId = a.indexOf('-d=') == -1;
   if (addDashboardId) {
     var div = document.getElementById('dashboardCredentials');
