@@ -995,11 +995,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	    return;
 		var text = this.getHtmlContent();
 		// some html cleanup
-		// 1. remove ending space.
+	  // 1. replace \n with " " - (FF surrounds the text \n)
+		text = text.replace(/\n/g, " ");
+		// 2. trim.
 		text = trim(text);
-		// 2. remove new line that FF surrounds the text
-		text = text.replace(/^\n/, "");
-		text = text.replace(/\n$/, "");
 		// 3. convert all tags to lower case
 		// IE (Opera) returns in uppercase; FF in lower case. It can change RTE resource.
 		var upTags = text.match(/<.[A-Z]*.>/g);
