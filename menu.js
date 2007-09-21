@@ -273,7 +273,6 @@ Popup.load = function (event, div, hotspot, content) {
     }
     content = body.innerHTML;
   }
-
   var popup = Popup.getPopup(div.id);
   popup.setInnerHtml(content);
   var div = popup.div;
@@ -2011,6 +2010,10 @@ function autoComplete1(e, target) {
   var form = target.form;
   var characterCode = getKeyCode(e); // code typed by the user
 
+  // arrows keys in Safari (windows) have buggy code: 0
+  if(characterCode == 0)
+    return;
+
   var propName  = target.name;
   var formName  = target.id;
   var propName1 = propName;
@@ -2252,13 +2255,13 @@ function textAreaOnBlur(e) {
  * **************************************
  */
 function getKeyCode(e) {
-  if( typeof( e.keyCode ) == 'number'  ) {
+  if( typeof( e.keyCode ) == 'number') {
       // IE, NS 6+, Mozilla 0.9+, Safari 3
       return e.keyCode;
-  } else if( typeof( e.charCode ) == 'number'  ) {
+  } else if( typeof( e.charCode ) == 'number') {
       // also NS 6+, Mozilla 0.9+
       return e.charCode;
-  } else if( typeof( e.which ) == 'number' ) {
+  } else if( typeof( e.which ) == 'number') {
       // NS 4, NS 6+, Mozilla 0.9+, Opera
       return e.which;
   } else {
