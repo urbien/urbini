@@ -27,6 +27,7 @@ function copyToClipboard(text2copy) {
     flashcopier.innerHTML = divinfo;
   }
 }
+
 /*************************************************
 *	RteEngine
 **************************************************/
@@ -995,8 +996,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	    return;
 		var text = this.getHtmlContent();
 		// some html cleanup
-	  // 1. replace \n with " " - (FF surrounds the text \n)
+	  // 1. \n
+	  // 1.1 remove \n if sibling symbol is space
+		text = text.replace(/\s\n|\n\s/g, " ");
+		// 1.2 replace \n with space if sybling is not space (rest from previous command)
 		text = text.replace(/\n/g, " ");
+
 		// 2. trim.
 		text = trim(text);
 		// 3. convert all tags to lower case
