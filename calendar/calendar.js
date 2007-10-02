@@ -2043,7 +2043,6 @@ function getCalendar(event,
                      dateFormat,       // dateFormat = (isEuropean) ? "d-m-Y" : "m-d-Y";
                      titleStr,	       // title text
                      sceduleUrlPart) { // scedule; - Day.java
- 
    var DEFAULT_TITLE = "select a day";
    try {
     var cal = A_CALENDARS[formName + '_' + name];
@@ -2055,7 +2054,12 @@ function getCalendar(event,
     if(typeof titleStr == 'undefined')
 		titleStr = DEFAULT_TITLE;
 
-		var clonedEvent = cloneEvent(event);
+		var clonedEvent;
+		if(typeof event.cloned == 'undefined')
+		  clonedEvent = cloneEvent(event);
+		else
+		  clonedEvent = event;
+    
     var initParams = {
         'event' : clonedEvent,
         // a name of HTML form containing the calendar
@@ -2079,5 +2083,7 @@ function getCalendar(event,
   } catch (e) {
     alert(e);
   }
-  return stopEventPropagation(event);
+
+	if(typeof event.cloned == 'undefined')
+    return stopEventPropagation(event);
 }

@@ -9690,3 +9690,80 @@ function flashHandler(flashCode, htmlCode) {
   else
     document.write(htmlCode);
 }
+
+function getCalendar() {
+// calling function in the last file
+  var FILES_TO_LOAD = ["calendar/calendar.css","calendar/cal_strings.js",
+      "calendar/cal_tpl1.js", "calendar/calendar.js"];
+  getCalendar = null;
+  
+  var argsArr = new Array();
+  for(var i = 0; i < arguments.length; i++) {
+    if (i == 0) {
+      var clonedEvent = cloneEvent(arguments[0]);
+      argsArr.push(clonedEvent);  
+    }
+    else  
+      argsArr.push(arguments[i]);  
+  }
+  LoadOnDemand.doit(FILES_TO_LOAD, "getCalendar", argsArr);
+}
+
+// LoadOnDemand
+var LoadOnDemand = {
+  callback : null,
+  callbackArgs : null,
+  
+  doit : function(files, callbackName, callbackArgs) {
+    if(this.callbackName != null) // busy
+      return;
+    this.callbackName = callbackName;
+    this.callbackArgs = callbackArgs;
+    for(var i = 0; i < files.length; i++) {
+      if(/.css$/.test(files[i])) {
+        this.includeCSS(files[i]);
+      }
+      else
+        this.includeJS(files[i]);
+    }
+    setTimeout(this.listener, 100);
+  },
+  listener : function() {
+    var thisObj = LoadOnDemand;
+
+    var callback = eval(thisObj.callbackName);
+    if(callback == null) {
+      setTimeout(thisObj.listener, 50);
+      return;
+    }
+      thisObj.onload(callback);
+  },
+  onload : function(callback) {
+    callback.apply(null, this.callbackArgs);
+    this.clearup();
+  },
+  clearup : function() {
+    this.callback = null;
+    this.callbackArgs = null;
+  },
+
+  includeJS : function(fileName) {
+      var html_doc = document.getElementsByTagName('head')[0];
+      var js = document.createElement('script');
+      js.setAttribute('type', 'text/javascript');
+      js.setAttribute('src', fileName);
+      html_doc.appendChild(js);
+      return false;
+  },
+  
+  includeCSS : function(fileName) {
+      var html_doc = document.getElementsByTagName('head')[0];
+      var css = document.createElement('link');
+      css.setAttribute('rel', 'stylesheet');
+      css.setAttribute('type', 'text/css');
+      css.setAttribute('href', fileName);
+      html_doc.appendChild(css);
+      return false;
+  }
+
+}
