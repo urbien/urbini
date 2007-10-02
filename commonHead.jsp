@@ -11,16 +11,12 @@
 
   <script src="menu.js"                  language="JavaScript" type="text/javascript"></script>
   <!--script src="searchHighlighting.js"    language="JavaScript" type="text/javascript"></script-->
-  <script src="chat/chat.js"             language="JavaScript" type="text/javascript"></script>
 
   <script src="gantt/dependencies.js"    language="JavaScript" type="text/javascript"></script>
-  <!--script src="pngfix.js"                language="JavaScript" type="text/javascript"></script-->
+
   <script src="richtext.js"         language="JavaScript" type="text/javascript"></script>
-  <script src="fixedColor/fixedColor.js" language="JavaScript" type="text/javascript"></script>
-
   <script src="toolbar.js" language="JavaScript" type="text/javascript"></script>
-  <script src="styleSheet/style_sheet.js"   language="JavaScript" type="text/javascript"></script>
-
+ 
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=0.6667"></meta>
 
  <getResource/>
