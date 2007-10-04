@@ -4487,15 +4487,34 @@ function getChildByAttribute(parent, atribName, attribValue) {
 function getAncestorById(child, id) {
   return getAncestorByAttribute(child, "id", id);
 }
+// attribValue - string or array of strings
 function getAncestorByAttribute(child, attribName, attribValue) {
 	if(!child)
 	  return null;
-	if(child[attribName] == attribValue)
-		return child;
+	var isArray = (typeof attribValue != 'string')
+	
+	if(isArray) {
+	  for(var i = 0; i < attribValue.length; i++)
+	    if(child[attribName] == attribValue[i])
+		    return child;
+	} 
+	else {
+	  if(child[attribName] == attribValue)
+		  return child;
+  }
+  
 	var parent;
 	while((parent = child.parentNode) != null) {
-		if(parent[attribName] == attribValue)
-			return parent;
+		if(isArray) {
+  	  for(var i = 0; i < attribValue.length; i++)
+  	    if(parent[attribName] == attribValue[i])
+			    return parent;
+		}
+		else {
+		  if(parent[attribName] == attribValue)
+			  return parent;
+		}
+		
 		child = parent;
 	}
 	return null;
@@ -4532,6 +4551,7 @@ function swapNodes(node1, node2) {
   else
     parent2.appendChild(node1);
 }
+
 
 // Cookie utility functions
 function createCookie(name, value, days) {
@@ -7190,24 +7210,36 @@ var DragEngine = {
 	startDrag: function(e){
 		var thisObj = DragEngine;
 		var evtobj = window.event? window.event : e;
-		var dragObj = window.event? event.srcElement : e.target;
+		var caughtObj = window.event? event.srcElement : e.target;
 		var titleObj = null;
-		if((titleObj =  getAncestorById(dragObj, "titleBar")) == null &&
-		    (titleObj =  getAncestorByAttribute(dragObj, "className", "dragable")) == null)
+		var classNameArr = new Array();
+		classNameArr.push("dragable");
+		classNameArr.push("tabs");
+		classNameArr.push("tabs_current");
+		
+		if((titleObj =  getAncestorById(caughtObj, "titleBar")) == null &&
+		    (titleObj =  getAncestorByAttribute(caughtObj, "className", classNameArr)) == null )
 		  return;
+    // possible to define handler as Attribute in html
 		var dragHandlerStr = titleObj.getAttribute("draghandler");
+		// or by class name here
 		if(dragHandlerStr == null || dragHandlerStr.length == 0) {
-  	  // deal with the dialog 'pane2'
-  	  thisObj.dragBlock = getAncestorById(titleObj, 'pane2');
+  	  if(titleObj.className == "tabs" || titleObj.className == "tabs_current") {
+  	    thisObj.dragHandler = TabSwap; 
+  	    thisObj.dragBlock = thisObj.dragHandler.getDragBlock(titleObj, caughtObj);  
+  	  }
+  	  else // the dialog 'pane2'
+  	    thisObj.dragBlock = getAncestorById(titleObj, 'pane2');
 		}
 		else {
   	  thisObj.dragHandler = eval(dragHandlerStr);
 		  if(thisObj.dragHandler)
 		    thisObj.dragBlock = thisObj.dragHandler.getDragBlock(titleObj);
 		}
+		
 		if(!thisObj.dragBlock)
 		  return;
-
+    // warning: IE sends 2 events
 		if(thisObj.dragHandler && thisObj.dragHandler.onStartDrag)
 		  thisObj.dragHandler.onStartDrag(thisObj.dragBlock);
 
@@ -7217,6 +7249,7 @@ var DragEngine = {
 		thisObj.offsety = parseInt(thisObj.dragBlock.style.top);
 		thisObj.x = evtobj.clientX
 		thisObj.y = evtobj.clientY
+		
 		if (evtobj.preventDefault)
 			evtobj.preventDefault();
 
@@ -7246,7 +7279,6 @@ var DragEngine = {
 			  thisObj.dialogIframe.style.left = left;
  			  thisObj.dialogIframe.style.top = top;
 			}
-
 
 			return false;
 		}
@@ -8085,11 +8117,11 @@ var Dashboard = {
   isWidgetMoved : false,
 
   // drag interface functions -----
-  getDragBlock : function(catchedObj) {
+  getDragBlock : function(dragHandleObj) {
     if(OperaWidget.isWidget()) // it means that we are not in our dashboard.
       return null;
 
-    var widgetDiv = getAncestorByAttribute(catchedObj, "className", "widget");
+    var widgetDiv = getAncestorByAttribute(dragHandleObj, "className", "widget");
     if(widgetDiv && this.widgetsMap == null) {
       this.initDashboardMap(widgetDiv);
       addEvent(document, "keyup", this.onEsc, false);
@@ -9794,4 +9826,152 @@ var LoadOnDemand = {
       return false;
   }
 
+}
+
+// TabSwap
+var TabSwap = {
+  PH_BACK_COLOR : "#eee",
+  PH_BORDER : "1px dashed #f00",
+
+  placeHolder : null,
+  movedTab : null,
+  tabsArr : null,
+  isDragMode : false,
+  
+  prevX : -1,
+  
+  init : function() {
+    this.placeHolder = document.createElement("div");
+    var phStl = this.placeHolder.style;
+    phStl.dispaly = "none";
+    phStl.verticalAlign = "bottom";
+    phStl.border = this.PH_BORDER;
+    phStl.backgroundColor = this.PH_BACK_COLOR;
+    
+    document.body.appendChild(this.placeHolder);
+    this.prepareTabs();
+  },
+  getDragBlock : function(dragHandleObj, caughtObj) {
+	  // move a tab only caught by icon
+	  if(caughtObj.tagName.toLowerCase() != 'img')
+		  return null;
+		  
+    // find moved tab
+    var classNameArr = new Array();
+    classNameArr.push("tabs");
+    classNameArr.push("tabs_current");
+    this.movedTab = getAncestorByAttribute(dragHandleObj, "className", classNameArr);
+    
+    if(this.placeHolder == null)
+      this.init();
+
+    return this.movedTab;
+  },
+  
+  onStartDrag : function() {
+    if(this.isDragMode == false) {
+      this.isDragMode = true;
+    }
+    else
+      return;
+    var mtStl = this.movedTab.style;
+    mtStl.verticalAlign = "top"; // for correct position
+    mtStl.left = findPosX(this.movedTab);
+    mtStl.top = findPosY(this.movedTab);
+    mtStl.position = "absolute";
+    var phStl = this.placeHolder.style;
+    phStl.width = this.movedTab.offsetWidth;
+    phStl.height = this.movedTab.offsetHeight;
+
+    if(Popup.ie)   
+      phStl.display = "inline";
+    else if(Popup.gecko)  
+      phStl.display = "-moz-inline-box";
+    else  
+      phStl.display = "inline-block";
+
+    swapNodes(this.movedTab, this.placeHolder);
+  },
+  onDrag : function(dragBlock, x, y) {
+    if(!this.isDragMode)
+      return;
+
+    this.isDirLeft = this.detectDirection(x);
+    var midX = x + Math.ceil(dragBlock.offsetWidth / 2);
+    var targetTab = this.detectTargetTab(midX);
+    if(targetTab) {
+      var isTargetLefter = (targetTab.offsetLeft < dragBlock.offsetLeft);
+      if((this.isDirLeft && isTargetLefter) || (!this.isDirLeft && !isTargetLefter)) {
+        swapNodes(targetTab, this.placeHolder);
+        this.updateAllTabRects();
+      }
+    }
+    
+    return [true, false];
+  },
+  onStopDrag : function(e, dragBlock) {
+    if(!this.isDragMode)
+      return;
+
+    this.placeHolder.style.display = "none";
+    var mtStl = this.movedTab.style
+    mtStl.position = "static";
+    mtStl.verticalAlign = "bottom";
+
+    swapNodes(this.placeHolder, this.movedTab);
+    this.prevX = -1;
+    this.isDragMode = false;
+  },
+  detectDirection : function(x)  {
+    var isDirLeft = null;
+    if(this.prevX > x)
+      isDirLeft = true;
+    else if(this.prevX < x)
+      isDirLeft = false;
+
+    this.prevX = x;
+    return isDirLeft;
+  },
+
+  detectTargetTab : function(x) {
+    for (var i = 0; i < this.tabsArr.length; i++) {
+      if (this.tabsArr[i].isInside(x)) {
+        return this.tabsArr[i].tabObj;
+      }
+    }
+    return null;
+  },
+  updateAllTabRects : function() {
+    for (var i = 0; i < this.tabsArr.length; i++)
+      this.tabsArr[i].update();
+  },
+  prepareTabs : function() {
+    this.tabsArr = new Array();
+    var tables = this.movedTab.parentNode.getElementsByTagName('table');
+    var idx = 0;
+    for (var i = 0; i < tables.length; i++)
+      if (tables[i].className == "tabs" || tables[i].className == "tabs_current") {
+        this.tabsArr[idx] = new TabSwap.TabRect(tables[i], idx);
+        idx++;
+      }
+  },
+
+  TabRect : function(tabObj, idx) {
+    this.tabObj = tabObj;
+    this.idx = idx;
+    this.left;
+    this.right;
+    
+    this.update = function() {
+      this.left = findPosX(this.tabObj);
+      this.right = this.left + this.tabObj.offsetWidth;
+    }
+    this.isInside = function(x) {
+      if(this.tabObj.style.position == "absolute")
+        return false;
+      return (x > this.left && x < this.right);
+    }
+    this.update();
+  }
+  
 }
