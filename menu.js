@@ -9837,7 +9837,6 @@ var TabSwap = {
   movedTab : null,
   tabsArr : null,
   isDragMode : false,
-  
   prevX : -1,
   
   init : function() {
@@ -9853,7 +9852,7 @@ var TabSwap = {
   },
   getDragBlock : function(dragHandleObj, caughtObj) {
 	  // move a tab only caught by icon
-	  if(caughtObj.tagName.toLowerCase() != 'img')
+	  if(caughtObj.className != 'iinp')
 		  return null;
 		  
     // find moved tab
@@ -9889,7 +9888,6 @@ var TabSwap = {
       phStl.display = "-moz-inline-box";
     else  
       phStl.display = "inline-block";
-
     swapNodes(this.movedTab, this.placeHolder);
   },
   onDrag : function(dragBlock, x, y) {
@@ -9973,5 +9971,4 @@ var TabSwap = {
     }
     this.update();
   }
-  
 }
