@@ -578,13 +578,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     else {          // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
       addEvent(div,  'keypress',  self.popupRowOnKeyPress,  false);
     }
-    var elem = firstRow;
+    
     var n = self.rowCount();
-    var cur = null;
-
-    for (var i=0; i<n; i++, elem = self.nextRow()) {
-      if (cur == elem)
-        continue;
+    var elems = tables[1].getElementsByTagName("tr");
+    for (var i=0; i<n; i++) {
+      var elem = elems[i];
       var popupItem = new PopupItem(elem, i);
       self.items[popupItem.id];
       // avoid per-row onClick handler if table has its own
