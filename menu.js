@@ -571,6 +571,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var table = tables[1];
     if (!table)
       return;
+      
     // popup contains rows that can be selected
     if (Popup.ie) { // IE - some keys (like backspace) work only on keydown
       addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
@@ -605,8 +606,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
       addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
-      cur = elem;
     }
+    // reset
+    self.currentRow = null;
   }
 
   /*
@@ -758,7 +760,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           return stopEventPropagation(e);
         }
     }
-
     if (characterCode == 40) {       // down arrow
       self.deselectRow();
       self.nextRow();
@@ -2007,10 +2008,6 @@ function autoComplete1(e, target) {
   keyPressedTime = new Date().getTime();
   var form = target.form;
   var characterCode = getKeyCode(e); // code typed by the user
-
-  // arrows keys in Safari (windows) have buggy code: 0
-  if(characterCode == 0)
-    return;
 
   var propName  = target.name;
   var formName  = target.id;
@@ -3373,12 +3370,8 @@ function initListBoxes(div) {
       if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT
                                                               // fields
           elem.id) {                                         // and those that
-                                                              // have ID
-        if (document.all) // in IE - some keys (like backspace) work only on
-                          // keydown
-          addEvent(elem, 'keydown',  autoCompleteOnKeyDown,     false);
-        else
-          addEvent(elem, 'keypress', autoComplete,              false);
+                      
+        addEvent(elem, 'keydown',    autoCompleteOnKeyDown,     false);
         addEvent(elem, 'focus',      autoCompleteOnFocus,       false);
         addEvent(elem, 'blur',       autoCompleteOnBlur,        false);
         addEvent(elem, 'mouseout',   autoCompleteOnMouseout,    false);
