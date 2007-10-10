@@ -2010,7 +2010,7 @@ function autoComplete1(e, target) {
   var characterCode = getKeyCode(e); // code typed by the user
 
   var propName  = target.name;
-  var formName  = target.id;
+  var formName  = form.name; //target.id;
   var propName1 = propName;
   var idx = propName.indexOf(".", 1);
   if (idx != -1)
@@ -2934,10 +2934,12 @@ var count = 0;
 function schedule(e) {
   e = getDocumentEvent(e);
   var target = getEventTarget(e);
+//  alert("schedule1");
   if (target == null)
     return stopEventPropagation(e);
   var imgSrc;
-  if (!target.className || target.className.length == 0) {
+  var className = target.className;
+  if (!className || className.length == 0) {
     var lTarget = target.tagName.toLowerCase();
     if (lTarget == 'img')
       imgSrc = target.src;
@@ -2946,9 +2948,9 @@ function schedule(e) {
     if (lTarget != 'td')
       target = getTdNode(target);
   }
-  else if (target.className == 'g')
+  else if (className == 'g')
     return stopEventPropagation(e);
-  else if (target.className == "aea" || target.className == "bea") {
+  else if (className == "aea" || className == "bea") {
     showAlert('expiredAlert');
     return stopEventPropagation(e);
   }
@@ -2960,8 +2962,9 @@ function schedule(e) {
     target = getTdNode(reqT);
     tdId = target.id;
   }
+  className = target.className;
   var isAssignedCell = tdId.indexOf('ap.') == 0;
-  if (!isAssignedCell && target.className != 'a' && target.className != 'b' && target.className != 'ci') {
+  if (!isAssignedCell && className != 'a' && className != 'b' && className != 'ci') {
 // alert(target.className + " " + target.id);
     return stopEventPropagation(e);
   }
@@ -2970,10 +2973,14 @@ function schedule(e) {
   if (lastCellClickTime != null) {
 // Packages.java.lang.System.out.println('prev-lastCellClickTime = ' +
 // lastCellClickTime);
+//    Packages.java.lang.System.out.println('newCellClickTime - lastCellClickTime ' + (newCellClickTime - lastCellClickTime) + '; newCellClickTime = ' +  newCellClickTime + "; lastCellClickTime = " + lastCellClickTime);
     if ((newCellClickTime - lastCellClickTime) < 500)
       return stopEventPropagation(e);
+    if (!currentCell || tdId != currentCell.id)
+      lastCellClickTime = newCellClickTime;
   }
-  lastCellClickTime = newCellClickTime;
+  else 
+    lastCellClickTime = newCellClickTime;
 // Packages.java.lang.System.out.println('lastCellClickTime = ' +
 // lastCellClickTime);
   var calendarImg = "<img src='icons/blank.gif' width='16' height='16' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' />";
@@ -3000,7 +3007,8 @@ function schedule(e) {
       div.style.whiteSpace = 'normal';
       schReassign.addIcon(div);
     }
-    return;
+//    if (className != 'ci')
+      return;
   }
   else if (tdId != currentCell.id) {
     if (currentCell.id.indexOf("ap.") != 0)
@@ -3037,9 +3045,9 @@ function schedule(e) {
     }
     currentCellBackground = currentCell.style.backgroundColor;
     currentCell.style.backgroundColor = "#D7D8FB";
-    return;
+//    if (className != 'ci')
+      return;
   }
-  var className = target.className;
   var idx1 = tdId.indexOf(".") + 1;
   var idx = tdId.indexOf(":");
 
@@ -3072,6 +3080,8 @@ function schedule(e) {
     }
   }
   else if (className == "ci") {
+//    alert("schedule2");
+//    Packages.java.lang.System.out.println("schedule2");
     calendarCell = target;
     addCalendarItem(this, e, parseInt(tdId.substring(idx1)));
   }
@@ -3127,6 +3137,7 @@ function updateTicket(event, body, hotspot, content)  {
 }
 function addEventOnSchedule() {
   var table = document.getElementById("mainTable");
+//  alert("addEventOnSchedule: " + table);
   if (table == null)
     return;
   addEvent(table, 'click', function(event) {schedule(event);}, false);
@@ -4878,11 +4889,12 @@ var lastPopupRowTD = null;
 
 function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
   var curCellClickTime = new Date().getTime();
-// Packages.java.lang.System.out.println('curCellClickTime = ' +
-// curCellClickTime);
+//  Packages.java.lang.System.out.println('addCalendarItem: curCellClickTime - lastCellClickTime ' + (curCellClickTime - lastCellClickTime) + '; curCellClickTime = ' +  curCellClickTime + "; lastCellClickTime = " + lastCellClickTime);
 
   if ((curCellClickTime - lastCellClickTime) < 500)
     return stopEventPropagation(event);
+//  alert("addCalendarItem1");
+//  Packages.java.lang.System.out.println("addCalendarItem1");
   var td = getEventTarget(event);
   // --- extract parameters specific for popup row
   var popupRow = getTrNode(td); // get tr on which user clicked in popup
@@ -4921,9 +4933,12 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
 
 // if (anchor.indexOf("?") != anchor.length - 1)
     anchor += "&";
-
+  // popup row id format: employeeIdx.procedureIdx;procedureDuration
   var popupRowId = popupRow.id;
-  var ampIdx = popupRowId.indexOf("&");
+  var dotIdx = popupRowId.indexOf('.');
+  if (dotIdx != -1)
+    popupRowId = popupRowId.substring(dotIdx + 1);
+  var ampIdx = popupRowId.indexOf(";");
   if (ampIdx != -1) {
     var procedureIdx = parseInt(popupRowId.substring(0, ampIdx));
     anchor += procedurePropName + "=" + procedures[procedureIdx];
@@ -4981,6 +4996,8 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
 
   var idx = anchor.indexOf("?");
   var div = document.createElement('div');
+//  Packages.java.lang.System.out.println("addCalendarItem2");
+//  alert("addCalendarItem2");
   postRequest(event, anchor.substring(0, idx), anchor.substring(idx + 1), div, td, addAssignment);
   return se;
 // return addAndShow1(anchor, event);
@@ -5293,6 +5310,8 @@ function cancelItemAndWait(event) {
 // Add assignment to schedule page without repainting the page
 function addAssignment(event, body, hotspot, content)  {
   setInnerHtml(body, content);
+//  alert("addAssignment1");
+//  Packages.java.lang.System.out.println("addAssignment1");
 
   var errDiv = document.getElementById('div_err');
   if (errDiv)
@@ -5394,7 +5413,7 @@ function addAssignment(event, body, hotspot, content)  {
     oldTd.id = newTd.id;
     oldTd.innerHTML = newTd.innerHTML;
 //    oldTd.childNodes[0].style.whiteSpace = 'normal';
-
+    var oldClassName = oldTd.className;
     var style = oldTd.childNodes[0].style;
     if (style)
       style.whiteSpace = 'normal';
@@ -5426,6 +5445,8 @@ function addAssignment(event, body, hotspot, content)  {
   // currentCell = oldTd;
 
     addEvent(oldTd, 'click', newTd.onclick, false);
+//    if (oldClassName == 'ci')
+//      return;
   /*
    * var newDivs = body.getElementsByTagNam("div"); var divCopyFr; for (var i=0;
    * i<newDivs.length && !divCopyFr; i++) { if (newDivs[i].id && newDivs[i].id ==
@@ -5435,7 +5456,10 @@ function addAssignment(event, body, hotspot, content)  {
     var divs = body.getElementsByTagName('div');
     for (var i=0; i<divs.length; i++) {
       if (divs[i].id  &&  divs[i].id == 'resourceList_div') {
-        addAndShowWait(event, divs[i], hotspot, content, true);
+        if (oldClassName == 'ci')
+          addAndShowWait(event, divs[i], hotspot, content, true, true);
+        else
+          addAndShowWait(event, divs[i], hotspot, content, true);
         break;
       }
     }
@@ -5445,7 +5469,7 @@ function addAssignment(event, body, hotspot, content)  {
 }
 
 
-function addAndShowWait(event, body, hotspot, content, noInsert)	{
+function addAndShowWait(event, body, hotspot, content, noInsert, isReplace)	{
   var frameId = "resourceList";
   if (!noInsert) {
     if (!content) {
@@ -5505,15 +5529,20 @@ function addAndShowWait(event, body, hotspot, content, noInsert)	{
   var elms = body.getElementsByTagName('tr');
   var currentTR;
   var curResultsTR;
+  var found;
   for (var j=0; j<elms.length; j++) {
     if (elms[j].id) {
-      if (elms[j].id == currentItem)
+      if (elms[j].id == currentItem) {
         currentTR = elms[j];
+        found = true;
+      }
       else if (elms[j].id == "results")
         curResultsTR = elms[j];
     }
-    else if (noInsert)
-      currentTR = elms[j];
+    else if (noInsert) {
+      if (!found)
+        currentTR = elms[j];
+    }
   }
   // Find TR in previous list that was current and change style of the row
   elms = divCopyTo.getElementsByTagName('a');
@@ -9554,6 +9583,7 @@ var FullScreenPopup = {
     this.div = div;
     // suppose that "mainskin" is always applicable
     this.contentDiv = document.getElementById("mainskin");
+    alert(this.contentDiv);
     this.oldMarginLeft = this.contentDiv.style.marginLeft;
 
     document.body.style.overflow = "hidden";
