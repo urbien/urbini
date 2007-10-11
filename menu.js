@@ -2989,6 +2989,7 @@ function schedule(e) {
     currentCell = target;
     currentCellBackground = currentCell.style.backgroundColor;
     currentCell.style.backgroundColor = "#D7D8FB";
+    
     if (!isAssignedCell) {
       if (currentCell.className == 'b')
         currentCell.innerHTML = calendarImg;
@@ -3041,10 +3042,13 @@ function schedule(e) {
           div = childNodes[i];
       }
       div.style.whiteSpace = 'normal';
-      schReassign.addIcon(div);
     }
     currentCellBackground = currentCell.style.backgroundColor;
     currentCell.style.backgroundColor = "#D7D8FB";
+    var contentDiv = currentCell.getElementsByTagName("div")[0];
+    if(contentDiv)
+      schReassign.addIcon(contentDiv);
+    
 //    if (className != 'ci')
       return;
   }
@@ -3183,7 +3187,7 @@ var schReassign = {
     this.srcCell = this.contentDiv.parentNode;
   },
   removeIcon : function() {
-    if(this.iconDiv == null)
+    if(this.iconDiv == null || this.iconDiv.parentElement == null)
       return;
     this.contentDiv.removeChild(this.iconDiv);
   },
