@@ -1041,7 +1041,7 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 
 .flip {
 	position: absolute;
-	bottom: 6px;
+	top: 4px;
 	right: 8px;
 	width:13px;
 	height:13px;
@@ -1135,11 +1135,11 @@ ul.subchapter a {
 }
 
 div.contents {
-  float:right; border:solid #808080 1px; width:156px;
+  float:right; border:solid #808080 1px; width:20em;
 }
 
 div.contentsRL {
-  float:right; border:solid #808080 1px; width:156px; overflow:auto; max-height:10em; padding-left: 2px;
+  float:right; border:solid #808080 1px; width:20em; overflow-x:auto; padding-left: 2px;
 }
 
 .resize_handle 
@@ -1181,3 +1181,4 @@ img {
 }
 */
 .dash {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000;}
+.content-title {padding-left:4px; padding-top:6px; font-family:Albertus,Tahoma; font-size:11pt; color:#6699CC; text-decoration: none;}
