@@ -214,6 +214,11 @@ td.textCol {
 	font-weight: bold;
 	color: #337;
 }
+/* style for Description Tab in property sheet */
+td.desc {
+	vertical-align: top;
+	padding-left: 1em;
+}
 
 td.iconCol {
 	text-align: center;
