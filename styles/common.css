@@ -484,7 +484,7 @@ table.commenteven {border:solid #808080 1px; background-color: #f8f4ef; color: d
 Table.comments {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
 Table.comments1 {background-color: #f8f4ef; color: #000000}
 
-td.containers {background-color: #f8f4ef; color: #000000}
+/*td.containers {background-color: #f8f4ef; color: #000000}*/
 
 table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #000000}
 
@@ -1146,8 +1146,8 @@ div.contentsRL {
 { position: absolute; width: 14; height: 14; right: 0; bottom: 0; background-image: url(../images/bottom_right.gif); cursor: se-resize; -apple-dashboard-region: dashboard-region(control rectangle); }
 
 .nobr { white-space: nowrap; }
-.widgetTitle {color:darkblue;font-weight:bold}
-.widgetIcon { vertical-align:top; width:16px; height:16px; padding-right:4px; border:0px }
+.widgetTitle {vertical-align:top; color:darkblue;font-weight:bold}
+.widgetIcon {width:16px; height:16px; padding-right:4px; border:0px }
 
 .iinp { width:16px; height:16px; border:0px; vertical-align:middle }
 .liinp { width:32px; height:32px; border:0px; vertical-align:middle }
