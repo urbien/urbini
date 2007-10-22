@@ -1,5 +1,8 @@
+function initStyleSheet(parentDivId, sampleDivId, formObjId, fieldName) {
+  new StyleSheet(parentDivId, sampleDivId, formObjId, fieldName);  
+}
 
-function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
+function StyleSheet(parentDivId, sampleDivId, formObjId, fieldName)
 {
 	var IMAGES_FOLDER = "images/wysiwyg/";
 	
@@ -18,12 +21,12 @@ function StyleSheet(parentDivIn, sampleDivIn, formObjIn, fieldNameIn)
 	var BORDER_WIDTH = [{"name":"1px", "value":"1px"}, {"name":"2px", "value":"2px"}, {"name":"3px", "value":"3px"}, {"name":"10px", "value":"10px"}, {"name":"<i>default</i>", "value":""}];
 	
 	var i_am = this;
-	var parentDiv = parentDivIn;
+	var parentDiv = document.getElementById(parentDivId);
 	var toolBar = null;
-	var sampleDiv = sampleDivIn; // the div to show a stylea of a sample
+	var sampleDiv = document.getElementById(sampleDivId);
 	var styleViewDiv = null;
-	this.formObj  = formObjIn;
-	this.fieldName = fieldNameIn;
+	this.formObj  = document.getElementById(formObjId);
+	this.fieldName = fieldName;
 	this.fieldObj = null;
 	
 	this.fontFamilyList = null;

@@ -9737,7 +9737,7 @@ function flashHandler(flashCode, htmlCode) {
 
 function getCalendar() {
 // calling function in the last file
-  var FILES_TO_LOAD = ["calendar/calendar.css","calendar/cal_strings.js",
+  var FILES_TO_LOAD = ["calendar/calendar.css", "calendar/cal_strings.js",
       "calendar/cal_tpl1.js", "calendar/calendar.js"];
   getCalendar = null;
   
@@ -9753,6 +9753,11 @@ function getCalendar() {
   LoadOnDemand.doit(FILES_TO_LOAD, "getCalendar", argsArr);
 }
 
+function initStyleSheet() {
+  initStyleSheet = null;
+  LoadOnDemand.doit("style_sheet/style_sheet.js", "initStyleSheet", arguments);
+}
+
 // LoadOnDemand
 var LoadOnDemand = {
   callback : null,
@@ -9763,6 +9768,8 @@ var LoadOnDemand = {
       return;
     this.callbackName = callbackName;
     this.callbackArgs = callbackArgs;
+    if(typeof files == "string")
+      files = new Array(files);
     for(var i = 0; i < files.length; i++) {
       if(/.css$/.test(files[i])) {
         this.includeCSS(files[i]);
@@ -9774,7 +9781,6 @@ var LoadOnDemand = {
   },
   listener : function() {
     var thisObj = LoadOnDemand;
-
     var callback = eval(thisObj.callbackName);
     if(callback == null) {
       setTimeout(thisObj.listener, 50);
