@@ -8709,7 +8709,6 @@ var WidgetFlip = {
 
   // A structure that holds information that is needed for the animation to run.
   fading : {duration:0, starttime:0, end:1.0, now:0.0, start:0.0, firstElement:null, timer:null},
-
   currentWidgetId : null,
   flipImg : null,
   mousemove : function (e, divId)  {
@@ -8730,19 +8729,21 @@ var WidgetFlip = {
       clearInterval (this.fading.timer);
       this.fading.timer  = null;
     }
+ 
+   
     this.currentWidgetId = divId;
-    this.showflip(e, divId);
+    var div = document.getElementById(divId);
+    this.showflip(e, div);
+    
     var starttime = (new Date).getTime() - 13;    // set it back one frame
-
     this.fading.duration = 500;                       // fading time, in ms
     this.fading.starttime = starttime;                    // specify the start time
-    var div = document.getElementById(divId);
-    this.fading.firstElement = this.getFlipDiv1(div, 'flip'); // specify the element to fade
     this.fading.timer = setInterval ("WidgetFlip.fade();", 13);   // set the fading function
     this.fading.start = this.fading.now;                     // beginning opacity (not ness. 0)
     this.fading.end = 1.0;                           // final opacity
     this.fade();                                // begin fading
     this.flipShown = true;                           // mark the flipper as animated
+
   },
 
 //   mouseexit() is the opposite of mousemove() in that it preps the preferences flipper
@@ -8751,13 +8752,13 @@ var WidgetFlip = {
   mouseexit : function (e, divId)  {
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
+    
     if (e.getAttribute) {
       var isProcessed = e.getAttribute('eventProcessed');
       if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
         return stopEventPropagation(e);
       e.setAttribute('eventProcessed', 'true');
     }
-
     if (!this.flipShown)
       return;
     // fade in the flip widget
@@ -8774,12 +8775,12 @@ var WidgetFlip = {
     this.fading.duration = 500;
     this.fading.starttime = starttime;
     var div = document.getElementById(divId);
-    this.fading.firstElement = this.getFlipDiv1(div, 'flip');
     this.fading.timer = setInterval ("WidgetFlip.fade();", 13);
     this.fading.start = this.fading.now;
     this.fading.end   = 0.0;
     this.fade();
     this.flipShown = false;
+
   },
 
   showBackside : function(event, divId) {
@@ -8794,6 +8795,8 @@ var WidgetFlip = {
    * fades widget flip image.
    */
   fade : function ()  {
+    if(this.flipImg == null)
+      return;
     var time = (new Date).getTime();
     var elapsedTime = this.getElapsedTime(time - this.fading.starttime, this.fading.duration);
 
@@ -8807,6 +8810,9 @@ var WidgetFlip = {
       this.fading.now = this.getNextFadingNumber(this.fading.start, this.fading.end, ease);
     }
     changeOpacity(this.flipImg, this.fading.now);
+    if(this.flipShown == false && this.fading.now == this.fading.end)
+      this.hideflip();
+
   },
 
   getElapsedTime : function (elapsed, duration)  {
@@ -8818,90 +8824,42 @@ var WidgetFlip = {
   },
 
   enterflip : function (event)  {
+    if(this.flipImg == null)
+      return;
     var baseUri = getBaseUri();
-    if(Popup.ie && !Popup.ie7)
-      this.flipImg.src = baseUri + "images/flip_hover.gif";
-    else
-      this.flipImg.src = baseUri + "images/flip_hover.png";
+    this.flipImg.src = baseUri + "images/flip_hover.png";
   },
 
   exitflip : function (event)  {
+    if(this.flipImg == null)
+      return;
+
     var baseUri = getBaseUri();
-    if(Popup.ie && !Popup.ie7)
-      this.flipImg.src = baseUri + "images/flip.gif";
-    else
-      this.flipImg.src = baseUri + "images/flip.png";
+    this.flipImg.src = baseUri + "images/flip.png";
   },
 
-  getFlipDiv : function (event, divId) {
-    var target = getTargetElement(event);
-    var frontDiv;
-    while (true) {
-      if (target.tagName.toLowerCase() == 'div' && target.id && target.id.indexOf('div_') == 0) {
-        frontDiv = target;
-        break;
-      }
+  showflip : function (event, div) {
+    if(this.flipShown)
+      return;
+    var baseUri = getBaseUri();
+    this.flipImg = getChildByAttribute(div, "className", "widgetIcon");
+    if(this.flipImg == null)
+      return;
+    if(/_hover.png$/.test(this.flipImg.src))
+      return;
 
-      target = target.parentNode;
-      if (!target)
-        break;
-    }
-    if (!frontDiv)
-      return null;
-    return this.getFlipDiv1(frontDiv, divId);
-    /*
-    var elms = frontDiv.getElementsByTagName('div');
-    for (var i=0; !flipDiv  &&  i<elms.length; i++) {
-      if (elms[i].id && elms[i].id == divId)
-        return elms[i];
-    }
-    return null;
-    */
-  },
+    var trueSrc = this.flipImg.getAttribute("true_src");
+    if(trueSrc == null)
+      this.flipImg.setAttribute("true_src", this.flipImg.src);
 
-  getFlipDiv1 : function (frontDiv, divId) {
-    var elms = frontDiv.getElementsByTagName('div');
-    for (var i=0; i<elms.length; i++) {
-      if (elms[i].id && elms[i].id == divId)
-        return elms[i];
-    }
-    return null;
-  },
-
-  showflip : function (event, divId) {
+    this.flipImg.src = baseUri + "images/flip.png";
     this.flipShown = true;
-    var div = document.getElementById(divId);
-    flipDiv = this.getFlipDiv1(div, 'flip');
-    // init image
-    if(this.flipImg == null) {
-      this.flipImg = document.createElement("img");
-      this.flipImg.id = "flip_image";
-      var baseUri = getBaseUri();
-      if(Popup.ie)
-        this.flipImg.src = baseUri + "images/flip.gif";
-      else
-        this.flipImg.src = baseUri + "images/flip.png";
-    }
-
-    if(flipDiv) {
-      // hack IE did not correct work with CSS bottom.
-      if(Popup.ie && flipDiv.style.top.length == 0) {
-        var top = div.offsetHeight - 16; // 13 image height + 3 offset
-        flipDiv.style.top = top;
-      }
-      flipDiv.appendChild(this.flipImg);
-    }
   },
 
   hideflip : function (event, divId) {
     this.flipShown = false;
-    var div = document.getElementById(divId);
-
-    flipDiv = this.getFlipDiv1(div, 'flip');
-    if (flipDiv) {
-      if(getChildById(flipDiv, "flip_image") != null)
-        flipDiv.removeChild(this.flipImg);
-    }
+    this.flipImg.src = this.flipImg.getAttribute("true_src");
+    changeOpacity(this.flipImg, 1.0);
   }
 }
 
@@ -9371,12 +9329,13 @@ function sizeWidget(x,y) {
 
 var downloadWidget = {
   sizesArr : new Array(), // member struct: {width, height}
-  storeFrontsideSize : function(divId){
-    var div = document.getElementById(divId);
+  storeFrontsideSize : function(div){
+    if (typeof div == 'string')
+      div = document.getElementById(div);
     var size = new Object();
     size.width = div.offsetWidth;
     size.height = div.offsetHeight;
-    this.sizesArr[divId] = size;
+    this.sizesArr[div.id] = size;
   },
   doit : function(imgObj, url) {
     var obj = imgObj;
