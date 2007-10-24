@@ -903,7 +903,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var text = this.getDataField().value;
 		// hack. FF does not show caret in empty RTE
 		if(this.isNetscape && text.length == 0) {
-		  text = "<br>";
+		  text = "<br id=\"for_caret\" />";
 		  this.br_appended = true;
 		}
 
@@ -957,15 +957,29 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 				else
 					content =  this.document.body.innerText;
 			}
-		else
+		else {
+			// hack. remove <br /> appended in initContent()
+		  if(this.isNetscape && this.br_appended) {
+        this._removeCaretBreaks();
+		  }
 			content =  this.document.body.innerHTML;
-		// hack. remove <br> appended in initContent()
-		if(this.isNetscape && this.br_appended) {
-  		var brIdx = content.lastIndexOf("<br>")
-	    content = content.slice(0, brIdx);
-		}
+	  }
 
 		return content;
+	}
+	// hack for FF. <br /> appended to show caret.
+	this._removeCaretBreaks = function() {
+	  this.br_appended = false;
+	  var brs = this.document.body.getElementsByTagName("br");
+    for(var i = 0; i < brs.length; i++) {
+  	  if(brs[i].id == 'for_caret') {
+  	    var parent = brs[i].parentNode;
+  	    if(parent) {
+  	      parent.removeChild(brs[i]);
+  	      brs[i] = null;
+  	    }
+  	  }
+    }
 	}
 	this.getId = function() {
     return this.iframeObj.id;
@@ -1274,6 +1288,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var html;
 		if(i_am.document.importNode) { // FF --
 			if(pressed) {
+        if(i_am.br_appended)
+          i_am._removeCaretBreaks();
+			
 				html = document.createTextNode(i_am.document.body.innerHTML);
 				i_am.document.body.innerHTML = "";
 				html = i_am.document.importNode(html,false);
