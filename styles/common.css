@@ -1039,19 +1039,6 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 .tt_button {position: relative; top: -10; left: -10; cursor: pointer;}
 /************ END tooltip ***********/
 
-/*  widget flip */
-.front {
-	position: relative;
-}
-
-.flip {
-	position: absolute;
-	top: 4px;
-	right: 8px;
-	width:13px;
-	height:13px;
-	cursor: pointer;
-}
 /* fe - div for Screencast grid element in which 'play' div will be displaying play button to play flash demo */
 .fe {
   position:relative;
@@ -1187,3 +1174,162 @@ img {
 */
 .dash {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000;}
 .content-title {padding-left:4px; padding-top:6px; font-family:Albertus,Tahoma; font-size:11pt; color:#6699CC; text-decoration: none;}
+
+
+/*********** mooved from menu.css ***********/
+TD.toolbar {
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 12px;
+  background: #EEEEEE;
+  color: Black;
+  font-weight: bold;
+  font-variant: normal;
+  background-image: url('images/toolbar_bg.gif');
+}
+
+.popMenu {
+	DISPLAY: none; POSITION: absolute; min-width: 50px;
+}
+
+.popMenu td {
+  FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 1px; PADDING-TOP: 1px; FONT-STYLE: normal; FONT-FAMILY: Tahoma, Arial, Helvetica, sans-serif, "MS Sans Serif"; TEXT-DECORATION: none; white-space: nowrap;
+}
+
+.popMenu tr {
+  cursor: pointer; PADDING-LEFT: 2px;
+}
+
+.popupFrameBody {
+}
+
+.popMenuTitle {
+	POSITION: relative; BACKGROUND-COLOR: #3366cc; cursor: text;
+}
+
+.menuTitle {
+}
+
+.menuTitle td, .menuTitle th {
+	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
+}
+
+.menuItemIcon {
+	PADDING-RIGHT: 2px; PADDING-LEFT: 2px; BACKGROUND-COLOR: #EDECF8; white-space: nowrap; width: 20px
+}
+
+.menuItemIcon img {
+  width: 16px; height: 16px; border: 0px; text-align:center; margin-top:0px; margin-bottom:0px; padding:0px;
+}
+
+.menuItemChk {
+	width: 10px
+}
+
+.menuItemNoChk {
+	PADDING-LEFT: 8px; width: 10px
+}
+
+.menuItem {
+}
+
+.menuItemChart {
+  PADDING-RIGHT: 0px;	width: 10px;
+}
+
+.menuItemReset {
+}
+
+.menuItemNoChoices {
+}
+
+.popMenu a:hover, .popMenu a:link, .popMenu a:active, .popMenu a:visited {
+  color: black; TEXT-DECORATION: none;
+}
+
+/* wanted to use CSS2's COLOR: GrayText, but IE6 does not support it */
+.menuItemGreyedOut {
+}
+
+.menuItemSubtitle {
+	COLOR: #000000;
+}
+
+TD.closePopup {
+  background-color: #0055e6;
+  cursor: pointer;
+  background-image: url('../icons/hide.gif');
+  background-repeat: no-repeat;
+  background-position: center;
+  text-align: right;
+}
+
+.formMenuInput {
+	PADDING: 0px; COLOR: #000000;
+}
+.langLink {
+}
+
+.langCurrent {
+	COLOR: red;
+}
+.menuExpand {
+}
+
+.menuDivider {
+  cursor: text;
+}
+
+.menuTextDivider {
+  font-weight: bold;
+  background-color: #e7ebf0; 
+  cursor: text; color: #0055e6;
+}
+
+.menuDivider td.td2 {
+  background-color: #dbd8d1; cursor: text;
+}
+
+.outer {border-style:solid; border-width: 1px; border-color:#666666 #666666 #666666 #666666;}
+.inner {border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7;}
+
+.closePopup {background-color: #0055e6; padding-right: 3px; padding-top: 3px; padding-bottom: 3px; text-align: right}
+
+
+/*********** mooved from tree.css ***********/
+.dtree {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #666;
+	white-space: nowrap;
+}
+.dtree img {
+	border: 0px;
+	vertical-align: middle;
+}
+.dtree a {
+	color: #333;
+	text-decoration: none;
+}
+.dtree a.node, .dtree a.nodeSel {
+	white-space: nowrap;
+	padding: 1px 2px 1px 2px;
+}
+.dtree a.node:hover, .dtree a.nodeSel:hover {
+	color: #333;
+	text-decoration: underline;
+}
+.dtree a.nodeSel {
+	background-color: #c0d2ec;
+}
+.dtree td {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #666;
+}
+.dtree th {
+	background-color: #E2E8DF;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #666;
+}
+/***************************************************************/

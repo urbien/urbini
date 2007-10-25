@@ -5,8 +5,6 @@
 
   <link href="styles/common.css"     type="text/css" rel="stylesheet" />
   <link href="styles/properties.css" type="text/css" rel="stylesheet" />
-  <link href="styles/menu.css"       type="text/css" rel="stylesheet" />
-  <link href="styles/tree.css"       type="text/css" rel="stylesheet" />
   <link href="styles/iphone.css"     type="text/css" rel="stylesheet" media="only screen and (max-device-width:480px)"  /> 
 
   <script src="menu.js"                  language="JavaScript" type="text/javascript"></script>
