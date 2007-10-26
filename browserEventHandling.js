@@ -116,9 +116,18 @@
 
     var formInitialValues;
     
-    if (Popup.ie)
+    /****************** launch JS on "DOM ready" ****************/ 
+    var isIE   = (typeof ActiveXObject != 'undefined');
+    var isGecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1);  
+    
+    var versionindex = navigator.userAgent.indexOf("Opera") + 6;
+    var ver = navigator.userAgent.substring(versionindex);
+    var v = parseFloat(ver);
+    var isOpera9 = (typeof opera != 'undefined') && (v >= 9);
+
+    if (isIE)
       document.attachEvent('onactivate', addHandlers);
-    else if (Popup.opera9 || Popup.gecko)
+    else if (isOpera9 || isGecko)
       document.addEventListener("DOMContentLoaded", addHandlers, false);
     else
       addEvent(window, 'load', addHandlers, false);
