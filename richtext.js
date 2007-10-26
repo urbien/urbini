@@ -1,15 +1,3 @@
-function addEvent(obj, evType, fn, useCapture) {
-  if (obj.addEventListener) { // NS
-   obj.addEventListener(evType, fn, useCapture);
-   return true;
- } else if (obj.attachEvent) { // IE
-     var r = obj.attachEvent("on" + evType, fn);
-     return r;
-   } else {
-       alert("You need to upgrade to a newer browser. Error: 'handler could not be attached'");
-     }
-}
-
 function copyToClipboard(text2copy) {
   var FLASHCOPIER_ID = 'flashcopier';
   if (window.clipboardData) {
@@ -31,6 +19,10 @@ function copyToClipboard(text2copy) {
 /*************************************************
 *	RteEngine
 **************************************************/
+function initRTE(iframeId, rteDataFieldId, rtePref) {
+  RteEngine.register(iframeId, rteDataFieldId, rtePref);
+}
+
 var RteEngine = {
 
 	// RTE types description

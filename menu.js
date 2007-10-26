@@ -6597,7 +6597,9 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 
 function setDivInvisible(div, iframe) {
   // release a popup (menu) belongs to the hidding div
-  PopupHandler.checkHidingDiv(div);
+  if(typeof PopupHandler != 'undefined')
+    PopupHandler.checkHidingDiv(div);
+  
   if (div.style)
     div.style.display    = "none";
   if (iframe && iframe.style)
@@ -7770,7 +7772,8 @@ var advancedTooltip = {
   tooltip : null,
   options : {isShiftRequired : false},
   optList : null,
-  optBtn : {obj:null, width:13, height:17}, // button image object and size
+  // button image object and size
+  optBtn : {obj: null, width: 13, height: 17},
   initialized : false,
 
   init : function() {
@@ -7791,7 +7794,12 @@ var advancedTooltip = {
     this.tooltip.appendChild(this.optList.div);
     this.initialized = true;
   },
+  initMenu : function() {
+  
+  },
   onOptionsBtn : function() {
+    if(this.optList == null)
+      this.init();
     this.updateOptListItem(0);
     var ttContent = getChildById(this.tooltip, "tt_inner");
     advancedTooltip.optList.show(advancedTooltip.optBtn,
@@ -9738,7 +9746,7 @@ function flashHandler(flashCode, htmlCode) {
 function getCalendar() {
 // calling function in the last file
   var FILES_TO_LOAD = ["calendar/calendar.css", "calendar/cal_strings.js",
-      "calendar/cal_tpl1.js", "calendar/calendar.js"];
+      "calendar/cal_tpl1.js", "calendar/cals_init.js", "calendar/calendar.js"];
   getCalendar = null;
   
   var argsArr = new Array();
@@ -9754,20 +9762,23 @@ function getCalendar() {
 }
 
 function initStyleSheet() {
+  var FILES_TO_LOAD = ["style_sheet/style_sheet.js"]; //"toolbar.js", 
   initStyleSheet = null;
-  LoadOnDemand.doit("style_sheet/style_sheet.js", "initStyleSheet", arguments);
+  LoadOnDemand.doit(FILES_TO_LOAD, "initStyleSheet", arguments);
 }
 
+function initRTE() {
+  var FILES_TO_LOAD = ["richtext.js"];//"toolbar.js", 
+  initRTE = null;
+  LoadOnDemand.doit(FILES_TO_LOAD, "initRTE", arguments);
+}
 // LoadOnDemand
 var LoadOnDemand = {
-  callback : null,
-  callbackArgs : null,
-  
+  cbArr : new Array, // structure -> [name: , args: ]
   doit : function(files, callbackName, callbackArgs) {
-    if(this.callbackName != null) // busy
-      return;
-    this.callbackName = callbackName;
-    this.callbackArgs = callbackArgs;
+    var callback = {name: callbackName, args: callbackArgs};
+    this.cbArr.push(callback);
+    
     if(typeof files == "string")
       files = new Array(files);
     for(var i = 0; i < files.length; i++) {
@@ -9781,22 +9792,17 @@ var LoadOnDemand = {
   },
   listener : function() {
     var thisObj = LoadOnDemand;
-    var callback = eval(thisObj.callbackName);
-    if(callback == null) {
-      setTimeout(thisObj.listener, 50);
-      return;
+    for(var i = 0; i < thisObj.cbArr.length; i++) {
+      var callback = eval(thisObj.cbArr[i].name);
+      if(callback != null) {
+        callback.apply(null, thisObj.cbArr[i].args);
+        thisObj.cbArr.splice(i, 1);
+      }
     }
-      thisObj.onload(callback);
+    if(thisObj.cbArr.length != 0) {
+      setTimeout(thisObj.listener, 50);
+    }
   },
-  onload : function(callback) {
-    callback.apply(null, this.callbackArgs);
-    this.clearup();
-  },
-  clearup : function() {
-    this.callback = null;
-    this.callbackArgs = null;
-  },
-
   includeJS : function(fileName) {
       var html_doc = document.getElementsByTagName('head')[0];
       var js = document.createElement('script');
