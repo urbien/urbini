@@ -1,3 +1,26 @@
+/**************** addEvent *****************/
+function addEvent(obj, evType, fn, useCapture) {
+  if (obj.getAttribute) {
+	  var handler = obj.getAttribute('handler_' + evType);
+	  if (handler && handler == fn) {
+	    //alert("Error: duplicate " + evType + " event handler " + fn + " for " + obj.tagName + " with id " + obj.id);
+	    return;
+	  }
+	  obj.setAttribute('handler_' + evType, fn);
+	}
+  if (obj.addEventListener) { // NS
+    obj.addEventListener(evType, fn, useCapture);
+    return true;
+  }
+  else if (obj.attachEvent) { // IE
+    var r = obj.attachEvent("on" + evType, fn);
+    return r;
+  }
+  else {
+    alert("You need to upgrade to a newer browser. Error: 'event handler could not be be added'");
+  }
+}
+
 /**
  * Popup system. Supports menu, dynamicaly generated listboxes, tooltips.
  * Supports row selection (one or many) in menu, listbox. Support stacking up
@@ -9968,3 +9991,4 @@ var TabSwap = {
     this.update();
   }
 }
+
