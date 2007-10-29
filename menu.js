@@ -9792,11 +9792,6 @@ function initStyleSheet() {
   LoadOnDemand.doit(FILES_TO_LOAD, "initStyleSheet", arguments);
 }
 
-function initRTE() {
-  var FILES_TO_LOAD = ["richtext.js"];//"toolbar.js", 
-  initRTE = null;
-  LoadOnDemand.doit(FILES_TO_LOAD, "initRTE", arguments);
-}
 // LoadOnDemand
 var LoadOnDemand = {
   cbArr : new Array, // structure -> [name: , args: ]
