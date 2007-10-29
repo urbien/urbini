@@ -1861,7 +1861,8 @@ function popupOnSubmit(e) {
   }
 
   // put rte data in the hidden field(s)
-  RteEngine.putRteDataOfForm(form);
+  if(RteEngine)
+    RteEngine.putRteDataOfForm(form);
 
   /* Add full text search criteria to filter */
   var fullTextSearchForm = document.forms['searchForm'];
@@ -7647,7 +7648,8 @@ function copyTableRow(tbody, pos, oldTr) {
 
 function submitUpdate(formName) {
   var f = document.forms[formName];
-  RteEngine.putRteDataOfForm(f);
+  if(RteEngine)
+    RteEngine.putRteDataOfForm(f);
   f.elements['submitUpdate'].value = 'Submit changes';
   f.submit();
   return false;
