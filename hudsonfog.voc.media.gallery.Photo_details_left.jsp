@@ -13,7 +13,7 @@
 <tr height="10">
 </tr>
 <tr>
-  <td vlign="top" class="propertySheet"><siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Tag&amp;application_verified=y&amp;application_select=http://www.hudsonfog.com/voc/media/gallery/Photo&amp;-title=Categories&amp;-noLabel=y&amp;-noLeaves=y&amp;-showMore=y&amp;-suppressClassIcon=y&amp;-inRow=1&amp;limit=100"/></td>
+  <td valign="top" class="propertySheet"><siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/aspects/tags/Tag&amp;application_verified=y&amp;application_select=http://www.hudsonfog.com/voc/media/gallery/Photo&amp;-title=Categories&amp;-noLabel=y&amp;-noLeaves=y&amp;-showMore=y&amp;-suppressClassIcon=y&amp;-inRow=1&amp;limit=100"/></td>
 </tr>
 </table>
 </td>
