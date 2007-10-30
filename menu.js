@@ -2607,7 +2607,6 @@ function initMenus(menuBarId) {
     var id = m.id;
     if (id && id.startsWith('menuLink_')) {
       addEvent(m, 'click',     menuOnClick, false);
-      replaceTooltip(element, m);
     }
 /*
  * if (m.className && m.className.indexOf('fade', m.className.length - 4) != -1) {
@@ -2747,176 +2746,97 @@ function resizeWindow(event) {
   return true;
 }
 
-/**
- * ********************************* Tooltips
- * ***********************************
- */
-function replaceTooltips(div, elements) {
-  if (Popup.penBased) // pen-based devices have problem with tooltips
-    return;
-  if (!elements)
-    return;
-  var llen = elements.length;
-  for (var i=0; i<llen; i++) {
-    var elem = elements[i];
-    replaceTooltip(div, elem);
-  }
-}
-
-function replaceTooltip(div, elem) {
-  if (Popup.penBased) // pen-based devices have problem with tooltips
-    return;
-  if (elem == null)
-    return;
-  if (div) {
-    if (div.style != null)
-      elem.style.zIndex = div.style.zIndex; // inherit zIndex - otherwise hotspot has no zIndex which we need to inherit further in setDivVisible
-  }
-  if (!Popup.penBased) {
-    if (elem.getAttribute('title')) {
-      if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout
-                        // unreliable
-        addEvent(elem, 'mouseenter',  tooltipOnMouseOver,   false);
-        addEvent(elem, 'mouseleave',  tooltipOnMouseOut,    false);
-      }
-      else {
-        addEvent(elem, 'mouseover',   tooltipOnMouseOver,   false);
-        addEvent(elem, 'mouseout',    tooltipOnMouseOut,    false);
-      }
+/********************************************************
+* Tooltip
+*********************************************************/
+var Tooltip = {
+  TOOLTIP_ATTR : "tooltip",
+  PROCESSED_FLAG : "tooltip_processed",
+  init : function() {
+    if (Popup.penBased) // pen-based devices have problem with tooltips
+      return;
+	  addEvent(document.body, "mouseover", this.onMouseOver, false);
+		addEvent(document.body, "mouseout", this.onMouseOut, false);
+  },
+  onMouseOver : function(e) {
+    var thisObj = Tooltip;
+    
+    var target = getEventTarget(e);
+    if(!thisObj.isProcessed(target))
+      thisObj.processTooltip(target);
+    
+    var tooltipText = target.getAttribute(thisObj.TOOLTIP_ATTR);
+    var toShow = !(advancedTooltip.isShiftRequired() && !e.shiftKey);
+    
+    if(tooltipText != null) {
+      if(toShow) { //  && Popup.allowTooltip()
+        thisObj.showTooltip(e, target, tooltipText); 
+      }   
+      else
+        thisObj.showInStatus(tooltipText);    
     }
-  }
-}
-/*
- * function replaceAllTooltips() { var llen; var elements; elements =
- * document.getElementsByTagName('img'); replaceTooltips0(null, elements);
- * elements = document.getElementsByTagName('span'); replaceTooltips0(null,
- * elements); elements = document.getElementsByTagName('a');
- * replaceTooltips0(null, elements); elements =
- * document.getElementsByTagName('input'); replaceTooltips0(null, elements);
- * elements = document.getElementsByTagName('tt'); replaceTooltips0(null,
- * elements); }
- */
-function tooltipOnMouseOver0(e, target, toShow) {
-  // Packages.java.lang.System.out.println('tooltip mouseover: ' +
-  // target.tagName + ', ' + target.id);
-  if (!Popup.allowTooltip(target)) {
-    return true; // ignore this tooltip and return true to allow mouseover
-                  // processing to continue
-  }
-  var tooltip = target.getAttribute('tooltip'); // using getAttrbute() - as
-                                                // workaround for IE5.5 custom
-                                                // attibutes bug
-  var tooltipText;
-  if (!tooltip) {
-    tooltip = target.getAttribute('title');
-
-    if (!tooltip) // no title attribute - get out of here
-      return true;
-    tooltipText = tooltip;
-    if (tooltipText == '')
-      return true;
-    // merge tooltip on IMG with tooltip on its parent A tag
-    var parentA = target.parentNode;
-    if (parentA && parentA.tagName.toUpperCase() == 'A') {
-      var linkTooltip = parentA.getAttribute('title');
-      if (linkTooltip) {
-        var linkTooltipText = linkTooltip;
-        if (linkTooltipText && linkTooltipText != '' && tooltipText != linkTooltipText) {
-          tooltipText += '<br><i><small>' + linkTooltipText + '</small></i>';
-        }
-        parentA.title = '';
-      }
-
+  },
+  
+  onMouseOut : function(e) {
+    if (typeof getDocumentEvent == 'undefined') return;
+    e = getDocumentEvent(e); if (!e) return;
+    window.status = "";
+    if (e.getAttribute) {
+      var isProcessed = e.getAttribute('eventProcessed');
+      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+        return stopEventPropagation(e);
+      e.setAttribute('eventProcessed', 'true');
     }
-    // tooltipText = "<table border=0 style='display: block' cellpadding=0
-    // cellspacing=0><tr><td>" + tooltipText + "</td></tr></table>";
-    // tooltipText = "<span id='tooltipspan' style='display:table-cell'>" +
-    // tooltipText + "</span>";
-    target.setAttribute('tooltip', tooltipText);
-    target.title = '';
-  }
-  else
-    tooltipText = tooltip;
-
-  if (toShow == false) { // if required shift was not pressed
+    var target = getMouseOutTarget(e);
+    if (!target)
+      return true;
+    var popup = Popup.getPopup('system_tooltip');
+    if (popup && popup.isOpen())
+      return true;
+    if (Popup.delayedPopup && Popup.delayedPopup.isTooltip()) {
+      clearTimeout(Popup.openTimeoutId);
+      Popup.openTimeoutId = null;
+    }
+    return stopEventPropagation(e);
+  },
+  
+  processTooltip : function(obj) {
+    var titleText = obj.title;
+    obj.title = '';
+    var parentA = obj.parentNode;
+    if (parentA && parentA.tagName.toLowerCase() == 'a') {
+      if(titleText.length != 0)
+        titleText += '<br><i><small>' + parentA.title + '</small></i>';
+      else
+       titleText = parentA.title;   
+      parentA.title = '';
+    }
+    if(titleText != null && titleText.length != 0)
+      obj.setAttribute(this.TOOLTIP_ATTR, titleText);
+    obj.setAttribute(this.PROCESSED_FLAG, "y");
+  },
+  isProcessed : function(obj) {
+    return (obj.getAttribute(this.PROCESSED_FLAG) != null);
+  },
+  showTooltip : function(e, target, tooltipText) {
+    var divId    = 'system_tooltip';
+    var iframeId = 'tooltipIframe';
+    var tooltipDiv = document.getElementById(divId);
+    if (!tooltipDiv) {
+      return false; // in FF for some reason if page not fully loaded this div is
+                    // not yet defined
+    }
+    var ifrRef = document.getElementById(iframeId);
+    if (!ifrRef)
+      throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
+    Popup.open(e, divId, target, ifrRef, 20, 25, 1000, tooltipText); // open with
+  },
+  showInStatus : function(tooltipText) {
     var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
     window.status = plainTooltipText;
-    return false;
-  }
-
-  var divId    = 'system_tooltip';
-  var iframeId = 'tooltipIframe';
-  var tooltipDiv = document.getElementById(divId);
-  if (!tooltipDiv) {
-    // throw new Error("document must contain div '" + divId + "' to display
-    // enhanced tooltip: " + tooltipText);
-    return false; // in FF for some reason if page not fully loaded this div is
-                  // not yet defined
-  }
-  // if (tooltipDiv.style.width != '') {
-  // alert(tooltipDiv.style.width);
-  // }
-  var ifrRef = document.getElementById(iframeId);
-  if (!ifrRef)
-    throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
-  Popup.open(e, divId, target, ifrRef, 20, 25, 1000, tooltipText); // open with
-                                                                    // delay
-  return false;
+  } 
 }
 
-function tooltipOnMouseOver(e) {
-  if (typeof getDocumentEvent == 'undefined') return;
-  e = getDocumentEvent(e); if (!e) return;
-
-  advancedTooltip.init();
-  var toShow = !(advancedTooltip.isShiftRequired() && !e.shiftKey);
-
-  if (e.getAttribute) {
-    var isProcessed = e.getAttribute('eventProcessed');
-    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-      return stopEventPropagation(e);
-    e.setAttribute('eventProcessed', 'true');
-  }
-  var target = getTargetElement(e);
-  if (!tooltipOnMouseOver0(e, target, toShow))
-    return stopEventPropagation(e);
-  else
-    return true;
-}
-
-function tooltipOnMouseOut(e) {
-  if (typeof getDocumentEvent == 'undefined') return;
-  e = getDocumentEvent(e); if (!e) return;
-  window.status = "";
-  if (e.getAttribute) {
-    var isProcessed = e.getAttribute('eventProcessed');
-    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-      return stopEventPropagation(e);
-    e.setAttribute('eventProcessed', 'true');
-  }
-  var target = getMouseOutTarget(e);
-  if (!target)
-    return true;
-  var popup = Popup.getPopup('system_tooltip');
-  if (popup && popup.isOpen())
-    return true;
-  // Packages.java.lang.System.out.println('tooltip mouseout: ' + target.tagName
-  // + ', ' + target.id);
-  if (Popup.delayedPopup && Popup.delayedPopup.isTooltip()) {
-    clearTimeout(Popup.openTimeoutId);
-    Popup.openTimeoutId = null;
-  }
-  return stopEventPropagation(e);
-}
-
-function closeTooltip() {
-  if(Popup.tooltipPopup != null)
-    Popup.tooltipPopup.close();
-  if(Popup.openTimeoutId != null) {
-    clearTimeout(Popup.openTimeoutId);
-    Popup.openTimeoutId = null;
-  }
-}
 // ************************************* intercept all clicks
 // ***********************************
 function interceptLinkClicks(div) {
@@ -2947,7 +2867,6 @@ function interceptLinkClicks(div) {
       addEvent(anchor, 'click',  onClickDisplayInner,   false);
     else
       addEvent(anchor, 'click',  onClick,   false);
-    replaceTooltip(doc, anchor);
   }
 }
 
@@ -3381,8 +3300,6 @@ function initListBoxes(div) {
       addEvent(anchor, 'click', listboxOnClick, false); // add handler to smartlistbox anchors
     else
       addBooleanToggle(anchor);
-
-    replaceTooltip(doc, anchor);
   }
 
   // 1. add handler to autocomplete filter form text fields
@@ -3404,7 +3321,6 @@ function initListBoxes(div) {
     addEvent(form, 'submit', popupOnSubmit, false);
     for (j=0; j<form.elements.length; j++) {
       var elem = form.elements[j];
-      replaceTooltip(doc, elem);
       initialValues[elem.name] = elem.value;
       if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT
                                                               // fields
@@ -7799,11 +7715,11 @@ var advancedTooltip = {
   optList : null,
   // button image object and size
   optBtn : {obj: null, width: 13, height: 17},
-  initialized : false,
+ // initialized : false,
 
   init : function() {
-    if(this.initialized)
-      return;
+    //if(this.initialized)
+     // return;
 
     this.tooltip = document.getElementById('system_tooltip');
     if(!this.tooltip)
@@ -7848,6 +7764,8 @@ var advancedTooltip = {
   },
   // shift pref --------------------------------
   isShiftRequired : function() {
+    if(!this.tooltip)
+      this.init();
     return this.options.isShiftRequired;
   },
   initShiftPref : function () {

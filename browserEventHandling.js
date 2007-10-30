@@ -97,6 +97,10 @@
 		  DragEngine.initialize();
 		  addSpellcheck();
 		  dictionaryHandler.init();
+//		  Tooltip.init();
+	  addEvent(document.body, "mouseover", Tooltip.onMouseOver, false);
+	//	addEvent(document.body, "mouseover", Tooltip.onMouseOut, false);
+
     }
 
     /*
