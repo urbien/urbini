@@ -14,7 +14,7 @@
 	      <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
 	    </td>
 	    <td valign="middle" nowrap="nowrap"  align="right">
-	      <a href="http://lablz.com/home"><img src="icons/universalPlatform.gif" align="absmiddle" border="0"/><span  class="poweredBy" style="padding-left: 5px"><text text="on"/> Universal</span><span class="poweredBy-b">Platform</span></a>
+	      <a href="http://lablz.com"><img src="icons/universalPlatform.gif" align="absmiddle" border="0"/><span  class="poweredBy" style="padding-left: 5px"><text text="on"/> Universal</span><span class="poweredBy-b">Platform</span></a>
 	    </td>
 	  </tr>
     </table>
