@@ -9786,7 +9786,7 @@ var TabSwap = {
   },
   getDragBlock : function(dragHandleObj, caughtObj) {
 	  // move a tab only caught by icon
-	  if(caughtObj.className != 'iinp')
+	  if(caughtObj.className != 'iinp_move')
 		  return null;
 		  
     // find moved tab
