@@ -493,7 +493,7 @@ Table.comments1 {background-color: #f8f4ef; color: #000000}
 
 table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #000000}
 
-.propertySheet {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
+/*.propertySheet {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}*/
 td.controlPanel {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 /*span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}*/
@@ -555,6 +555,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* BLUE */
 
 .blue  .line { background:#ACD2E2 }
+.blue  .propertySheet {border:solid #ACD2E2 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
 .blue  .rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 .blue  .embed  {
   background:url(../images/skin/blue/header.png);
@@ -601,6 +602,10 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* MUSTARD */
 .mustard .line {background:#e7e4ba}
 .mustard .rlHeader { border:solid #808080 1px; background:#f6f5de; color:#000000; font-weight:bold; font-size:8pt;}
+.mustard .propertySheet {border:solid #e7e4ba 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
+.mustard .wBBg {border:solid #e7e4ba 1px; background-color:#f6f5de; border-collapse: collapse; color: #000000; overflow: auto}
+.mustard .wBg {background-color:#f6f5de; border-collapse: collapse; color: #000000; overflow: auto}
+
 .mustard .embed {
   background:url(../images/skin/mustard/header.png);
   background-repeat:repeat-x; 
@@ -646,7 +651,10 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 /* TURQOUISE */
 .turquoise .line {background:#ACE2CE}
-.turquoise .rlHeader { border:solid #808080 1px; background:#d5f2e8; color:#000000; font-weight:bold; font-size:8pt;}
+.turquoise .rlHeader { border:solid #ACE2CE 1px; background:#d5f2e8; color:#000000; font-weight:bold; font-size:8pt;}
+.turquoise .propertySheet {border:solid #ACE2CE 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
+.turquoise .wBg {background-color:#eafbf5; border-collapse: collapse; color: #000000; overflow: auto}
+.turquoise .wBBg {border:solid #ACE2CE 1px; background-color:#eafbf5; border-collapse: collapse; color: #000000; overflow: auto}
 .turquoise .embed {
   background:url(../images/skin/turquoise/header.png);
   background-repeat:repeat-x; 
@@ -692,7 +700,10 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 /* PURPLE */
 .purple .line {background:#c7aee3}
-.purple .rlHeader { border:solid #808080 1px; background:#f6effd; color:#000000; font-weight:bold; font-size:8pt;}
+.purple .rlHeader { border:solid #c7aee3 1px; background:#f6effd; color:#000000; font-weight:bold; font-size:8pt;}
+.purple .propertySheet {border:solid #c7aee3 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
+.purple .wBBg {border:solid #c7aee3 1px; background-color:#f6effd; border-collapse: collapse; color: #000000; overflow: auto}
+.purple .wBg {background-color:#f6effd; border-collapse: collapse; color: #000000; overflow: auto}
 .purple .embed {
   background:url(../images/skin/purple/header.png);
   background-repeat:repeat-x; 
@@ -740,6 +751,9 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* GREEN */
 .green .line {background:#B6E2AC}
 .green .rlHeader { border:solid #808080 1px; background:#eefcec; color:#000000; font-weight:bold; font-size:8pt;}
+.green .propertySheet {border:solid #B6E2AC 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
+.green .wBBg {border:solid #B6E2AC 1px; background-color:#eefcec; border-collapse: collapse; color: #000000; overflow: auto}
+.green .wBg {background-color:#eefcec; border-collapse: collapse; color: #000000; overflow: auto}
 .green .embed {
   background:url(../images/skin/green/header.png);
   background-repeat:repeat-x; 
@@ -785,7 +799,10 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 /* RUSTY ROSE */
 .rustyrose .line {background:#e4bcb1}
-.rustyrose .rlHeader { border:solid #808080 1px; background:#f8e8e3; color:#000000; font-weight:bold; font-size:8pt;}
+.rustyrose .rlHeader { border:solid #e4bcb1 1px; background:#f8e8e3; color:#000000; font-weight:bold; font-size:8pt;}
+.rustyrose .propertySheet {border:solid #e4bcb1 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
+.rustyrose .wBg {background-color:#f8e8e3; border-collapse: collapse; color: #000000; overflow: auto}
+.rustyrose .wBBg {border:solid #e4bcb1 1px; background-color:#f8e8e3; border-collapse: collapse; color: #000000; overflow: auto}
 .rustyrose .embed {
   background:url(../images/skin/rustyrose/header.png);
   background-repeat:repeat-x; 
@@ -833,7 +850,10 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 /* GREY */
 .grey .line {background-color:#cfcfcf}
-.grey .rlHeader { border:solid #808080 1px; background:#e0e0e0; color:#000000; font-weight:bold; font-size:8pt;}
+.grey .rlHeader { border:solid #cfcfcf 1px; background:#e0e0e0; color:#000000; font-weight:bold; font-size:8pt;}
+.grey .propertySheet {border:solid #cfcfcf 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
+.grey .wBBg {border:solid #cfcfcf 1px; background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
+.grey .wBg {background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
 .grey .embed {
   background:url(../images/skin/grey/header.png);
   background-repeat:repeat-x; 
