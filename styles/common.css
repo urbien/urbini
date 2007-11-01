@@ -493,7 +493,8 @@ Table.comments1 {background-color: #f8f4ef; color: #000000}
 
 table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #000000}
 
-/*.propertySheet {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}*/
+/* border for read/edit resource properties in non=widget */
+.rop {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
 td.controlPanel {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 /*span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}*/
@@ -1065,8 +1066,8 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 }
 .play {
 	position: absolute;
-	bottom: 4px;
-	left: 8px;
+	bottom: 14px;
+	left: 2px;
 	width:32px;
 	height:32px;
 	cursor: pointer;
