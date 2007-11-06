@@ -116,13 +116,14 @@
     */
 
     var formInitialValues;
-    
-    /****************** launch JS on "DOM ready" ****************/ 
+
+    /****************** launch JS on "DOM ready" ****************/
     var isIE   = (typeof ActiveXObject != 'undefined');
-    var isGecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1);  
-    
-    var versionindex = navigator.userAgent.indexOf("Opera") + 6;
-    var ver = navigator.userAgent.substring(versionindex);
+    var agent = navigator.userAgent;
+    var isGecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1);
+
+    var versionindex = agent.indexOf("Opera") + 6;
+    var ver = agent.substring(versionindex);
     var v = parseFloat(ver);
     var isOpera9 = (typeof opera != 'undefined') && (v >= 9);
 
