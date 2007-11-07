@@ -4699,6 +4699,8 @@ function getTdNode(elem) {
   var elem_ = elem;
   if (elem.length > 1)
     elem_ = elem[0];
+  if (typeof elem_.tagName == 'undefined')
+    return null;
   if (elem_.tagName.toUpperCase() == 'TD')
     return elem;
   e = elem_.parentNode;
@@ -7166,6 +7168,7 @@ var DragEngine = {
 	z: 0, x: 0, y: 0, offsetx : null, offsety : null, dragBlock : null, dragapproved : 0,
 	dialogIframe : null, // <- IE prevents dialog from <select>
 	dragHandler : null,
+  checkedIfNeedOffset : false,
 
 	initialize: function(){
 		addEvent(document, 'mousedown', this.startDrag, false);
@@ -7205,7 +7208,8 @@ var DragEngine = {
 		
 		if(!thisObj.dragBlock)
 		  return;
-    // warning: IE sends 2 events
+
+		// warning: IE sends 2 events
 		if(thisObj.dragHandler && thisObj.dragHandler.onStartDrag)
 		  thisObj.dragHandler.onStartDrag(thisObj.dragBlock);
 
@@ -7213,19 +7217,35 @@ var DragEngine = {
 		if (isNaN(parseInt(thisObj.dragBlock.style.top)))  {thisObj.dragBlock.style.top = 0;}
 		thisObj.offsetx = parseInt(thisObj.dragBlock.style.left);
 		thisObj.offsety = parseInt(thisObj.dragBlock.style.top);
-		thisObj.x = evtobj.clientX
-		thisObj.y = evtobj.clientY
-		
+		thisObj.x = evtobj.clientX;
+		thisObj.y = evtobj.clientY;
+	
 		if (evtobj.preventDefault)
 			evtobj.preventDefault();
 
+    thisObj.checkedIfNeedOffset = false;
 	  thisObj.dragapproved = 1;
 	},
 	drag: function(e){
   	var thisObj = DragEngine;
+
+	  if(thisObj.dragapproved != 1)
+	    return;
 		var evtobj=window.event? window.event : e
-		var left = thisObj.offsetx + evtobj.clientX - thisObj.x;
+
+    // hack: FF in dashboard, event.clientX, clientY contain
+    // mouse coordinate + coordinat of 
+  	if(thisObj.checkedIfNeedOffset == false) {
+  	  if(Math.abs(evtobj.clientX - (thisObj.offsetx + thisObj.x)) < 3) {
+  	    thisObj.offsetx = 0;
+  	    thisObj.offsety = 0;
+  	  }
+      thisObj.checkedIfNeedOffset = true;
+  	}
+  	
+  	var left = thisObj.offsetx + evtobj.clientX - thisObj.x;
 		var top = thisObj.offsety + evtobj.clientY - thisObj.y;
+
 		var allowToMove; // 2D array
 		if(thisObj.dragBlock && thisObj.dragHandler && thisObj.dragHandler.onDrag) {
 		    if(thisObj.dragBlock.style.position == 'absolute')
@@ -8489,6 +8509,8 @@ var Dashboard = {
       widgetUri = bookmarkBase.innerHTML + widgetUri;
     }
     var td = getTdNode(widget);
+    if(td == null)
+      return;
     var newCol = parseInt(td.id.substring('col_'.length));
 
     // Check if widget should not be moved just was touched
@@ -9281,6 +9303,8 @@ function sizeWidget(x,y) {
 var downloadWidget = {
   sizesArr : new Array(), // member struct: {width, height}
   storeFrontsideSize : function(div){
+    if(div == null)
+      return;
     if (typeof div == 'string')
       div = document.getElementById(div);
     var size = new Object();
