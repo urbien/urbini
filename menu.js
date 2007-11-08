@@ -9702,12 +9702,36 @@ var OrderRows = {
 }
 
 // html (img) on disabled Flash 
-function flashHandler(flashCode, htmlCode) {
-  var isFlashAvailable = DetectFlashVer(8, 0, 0);
-  if (isFlashAvailable)
-    document.write(flashCode);
-  else
-    document.write(htmlCode);
+var flashHandler = {
+  PREFIX : "_swf_embed_",
+  emdCodeArr : null,
+  
+  init : function() {
+    this.emdCodeArr = new Array();
+    addEvent(window, "load", this.onload, false);
+  },
+  embed : function(flashCode, htmlCode) {
+    if(this.emdCodeArr == null)
+      this.init();
+    var isFlashAvailable = DetectFlashVer(8, 0, 0);
+    if (isFlashAvailable) {
+      this.emdCodeArr.push(flashCode);
+      var ref = "<div id=" + this.PREFIX + (this.emdCodeArr.length - 1) + "></div>";
+      document.write(ref);
+    }
+    else
+      document.write(htmlCode);
+  },
+  onload : function() {
+    var thisObj = flashHandler;
+    for(var i = 0; i < thisObj.emdCodeArr.length; i++) {
+      var ref = document.getElementById(thisObj.PREFIX + i);
+      if(ref) {
+        ref.innerHTML = thisObj.emdCodeArr[i];
+      }
+    }
+  }
+  
 }
 
 function getCalendar() {
