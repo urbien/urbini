@@ -9710,13 +9710,17 @@ var flashHandler = {
     this.emdCodeArr = new Array();
     addEvent(window, "load", this.onload, false);
   },
-  embed : function(flashCode, htmlCode) {
+  embed : function(flashCode, htmlCode, flashWidth, flashHeight) {
     if(this.emdCodeArr == null)
       this.init();
     var isFlashAvailable = DetectFlashVer(8, 0, 0);
     if (isFlashAvailable) {
       this.emdCodeArr.push(flashCode);
-      var ref = "<div id=" + this.PREFIX + (this.emdCodeArr.length - 1) + "></div>";
+      var stl = "";
+      if((typeof flashWidth != 'undefined') && (typeof flashHeight != 'undefined'))
+        stl = " style=\"width: " + flashWidth + "; height: " + flashHeight + ";\"";
+      var id = this.PREFIX + (this.emdCodeArr.length - 1);
+      var ref = "<div id=" + id + stl + "></div>";
       document.write(ref);
     }
     else
