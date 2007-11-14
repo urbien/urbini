@@ -24,17 +24,8 @@
 <form name="categoryTextSearch">
   <searchHistory/>
   <categoryTextSearch />
-  <resourcesSearch resourcesUri="/sql/text/search/resources" />
-  <filesSearch filesUri="text/search/files" />
+  <resourcesSearch resourcesUri = "text/search/resources" />
+  <filesSearch filesUri         = "text/search/files" />
 </form>
 </div>
 
-<!--table width="100%" border="0" cellspacing="0" cellpadding="0">
-<tr>
-  <td width="80%" valign="top" align="middle">
-    <resourcesSearch resourcesUri = "/sql/text/search/resources"/>
-    <filesSearch     filesUri     = "text/search/files" />
-    <excelsSearch    excelsUri    = "text/search/excels" />
-  </td>
-</tr>
-</table-->

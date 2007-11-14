@@ -8,8 +8,8 @@
 		<form name="categoryTextSearch">
 			  <searchHistory/>
 			  <categoryTextSearch />
-			  <resourcesSearch resourcesUri="/sql/text/search/resources" />
-			  <filesSearch filesUri="text/search/files" />
+			  <resourcesSearch resourcesUri = "text/search/resources" />
+			  <filesSearch     filesUri     = "text/search/files" />
 		</form>
     <taskTreeControl/>
     <parallelResourceList />
