@@ -1941,7 +1941,7 @@ var Calendar_popupHandler = {
 		
 		this.inputObj.onkeyup = this._onkeyup_input;
 		// prevents tooltip over the calendar
-		closeTooltip(); 
+		Tooltip.closeTooltip(); 
 	},
 	
 	suspendedClose : function() {
