@@ -2834,7 +2834,15 @@ var Tooltip = {
   showInStatus : function(tooltipText) {
     var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
     window.status = plainTooltipText;
-  } 
+  },
+  closeTooltip : function() {
+    if(Popup.tooltipPopup != null)
+      Popup.tooltipPopup.close();
+    if(Popup.openTimeoutId != null) {
+      clearTimeout(Popup.openTimeoutId);
+      Popup.openTimeoutId = null;
+    }
+  }  
 }
 
 // ************************************* intercept all clicks
