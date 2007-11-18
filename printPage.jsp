@@ -13,7 +13,7 @@
     </table>
     <file/>
 
-    <br></br>
+    <br/>
     <include name="requiredFooter.jsp"/>
 
   </body>

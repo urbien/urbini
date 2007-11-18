@@ -4,16 +4,16 @@
 <td valign="top">
 <form name="searchPropertyList" id="filter" method="POST">
   <searchPropertyList />
-  <br></br>
+  <br/>
   <center>
-  <input type="submit" name="submit" value="search"></input>  
+  <input type="submit" name="submit" value="search"></input>
   </center>
   <input type="hidden" name="action" value="searchDB"></input>
-  <br></br>
+  <br/>
   <showSetProperties />
 </form>
 </td></tr></table>
 
-<br></br>
+<br/>
 <div align="left"><span class="xs"><hudsonFog /></span></div>
 </div>

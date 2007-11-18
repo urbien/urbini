@@ -7,7 +7,7 @@
   <note/>
   <tablePropertiesList />
   <input type="hidden" name="-$action" value="searchParallel"></input>
-  <br></br>
+  <br/>
   <center><input type="submit" name="submit" value="search"></input></center>
 </form>
 </td></tr></table>

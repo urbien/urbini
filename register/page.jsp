@@ -15,7 +15,7 @@
     <td valign="top" width="90%">
     <file/>
     </td></tr></table>
-    <br></br>
+    <br/>
     <include name="requiredFooter.jsp"/>
     <script src="register/focus.js" type="text/javascript" language="JavaScript"></script>
     <include name="include/commonFooter"/>

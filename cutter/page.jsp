@@ -11,7 +11,7 @@
 	<file/>
 	</td></tr></table>
 
-	<br></br>
+	<br/>
 	<include name="requiredFooter.jsp"/>
 	<include name="include/commonFooter"/>
 	</body>

@@ -14,6 +14,6 @@
   <showSetProperties/>
 </form>
 </td></tr></table>
-<br></br>
+<br/>
 <div align="left"><span class="xs"><hudsonFog /></span></div>
 </div>
