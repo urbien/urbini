@@ -7,12 +7,13 @@
 		<table width="100%">
 		<tr>
 	    <td valign="top" nowrap="nowrap" align="right">
-	      <a href="#"><IMG src="icons/logo-large.gif" border="0" height="32" align="right" /></a>
+	      <a href="#"><logo src="icons/logo-large.gif" /></a>
 	    </td>
     </tr>
     </table>
-    <file/>
-
+    <div id="mainskin" class="blue">
+      <file/>
+    </div>
     <br/>
     <include name="requiredFooter.jsp"/>
 
