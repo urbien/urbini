@@ -594,7 +594,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var table = tables[1];
     if (!table)
       return;
-      
+
     // popup contains rows that can be selected
     if (Popup.ie) { // IE - some keys (like backspace) work only on keydown
       addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
@@ -602,7 +602,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     else {          // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
       addEvent(div,  'keypress',  self.popupRowOnKeyPress,  false);
     }
-    
+
     var n = self.rowCount();
     var elems = tables[1].getElementsByTagName("tr");
     for (var i=0; i<n; i++) {
@@ -2760,23 +2760,23 @@ var Tooltip = {
   },
   onMouseOver : function(e) {
     var thisObj = Tooltip;
-    
+
     var target = getEventTarget(e);
     if(!thisObj.isProcessed(target))
       thisObj.processTooltip(target);
-    
+
     var tooltipText = target.getAttribute(thisObj.TOOLTIP_ATTR);
     var toShow = !(advancedTooltip.isShiftRequired() && !e.shiftKey);
-    
+
     if(tooltipText != null) {
       if(toShow) { //  && Popup.allowTooltip()
-        thisObj.showTooltip(e, target, tooltipText); 
-      }   
+        thisObj.showTooltip(e, target, tooltipText);
+      }
       else
-        thisObj.showInStatus(tooltipText);    
+        thisObj.showInStatus(tooltipText);
     }
   },
-  
+
   onMouseOut : function(e) {
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
@@ -2799,7 +2799,7 @@ var Tooltip = {
     }
     return stopEventPropagation(e);
   },
-  
+
   processTooltip : function(obj) {
     var titleText = obj.title;
     obj.title = '';
@@ -2808,7 +2808,7 @@ var Tooltip = {
       if(titleText.length != 0)
         titleText += '<br><i><small>' + parentA.title + '</small></i>';
       else
-       titleText = parentA.title;   
+       titleText = parentA.title;
       parentA.title = '';
     }
     if(titleText != null && titleText.length != 0)
@@ -2842,7 +2842,7 @@ var Tooltip = {
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
-  }  
+  }
 }
 
 // ************************************* intercept all clicks
@@ -2867,7 +2867,8 @@ function interceptLinkClicks(div) {
     if (id && id.startsWith('menuLink_')) // menu clicks are processed by their
                                           // own event handler
       continue;
-
+    if (anchor.className == 'webfolder')
+      continue;
     if(anchor.href.indexOf("A_CALENDARS") != -1) // links of the Calendar's days
       continue;
 
@@ -2930,7 +2931,7 @@ function schedule(e) {
     if (!currentCell || tdId != currentCell.id)
       lastCellClickTime = newCellClickTime;
   }
-  else 
+  else
     lastCellClickTime = newCellClickTime;
 // Packages.java.lang.System.out.println('lastCellClickTime = ' +
 // lastCellClickTime);
@@ -2940,7 +2941,7 @@ function schedule(e) {
     currentCell = target;
     currentCellBackground = currentCell.style.backgroundColor;
     currentCell.style.backgroundColor = "#D7D8FB";
-    
+
     if (!isAssignedCell) {
       if (currentCell.className == 'b')
         currentCell.innerHTML = calendarImg;
@@ -2999,7 +3000,7 @@ function schedule(e) {
     var contentDiv = currentCell.getElementsByTagName("div")[0];
     if(contentDiv)
       schReassign.addIcon(contentDiv);
-    
+
 //    if (className != 'ci')
       return;
   }
@@ -3333,7 +3334,7 @@ function initListBoxes(div) {
       if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT
                                                               // fields
           elem.id) {                                         // and those that
-                      
+
         addEvent(elem, 'keydown',    autoCompleteOnKeyDown,     false);
         addEvent(elem, 'focus',      autoCompleteOnFocus,       false);
         addEvent(elem, 'blur',       autoCompleteOnBlur,        false);
@@ -4446,17 +4447,17 @@ function getAncestorByAttribute(child, attribName, attribValue) {
 	if(!child)
 	  return null;
 	var isArray = (typeof attribValue != 'string')
-	
+
 	if(isArray) {
 	  for(var i = 0; i < attribValue.length; i++)
 	    if(child[attribName] == attribValue[i])
 		    return child;
-	} 
+	}
 	else {
 	  if(child[attribName] == attribValue)
 		  return child;
   }
-  
+
 	var parent;
 	while((parent = child.parentNode) != null) {
 		if(isArray) {
@@ -4468,7 +4469,7 @@ function getAncestorByAttribute(child, attribName, attribValue) {
 		  if(parent[attribName] == attribValue)
 			  return parent;
 		}
-		
+
 		child = parent;
 	}
 	return null;
@@ -6549,7 +6550,7 @@ function setDivInvisible(div, iframe) {
   // release a popup (menu) belongs to the hidding div
   if(typeof PopupHandler != 'undefined')
     PopupHandler.checkHidingDiv(div);
-  
+
   if (div.style)
     div.style.display    = "none";
   if (iframe && iframe.style)
@@ -7193,7 +7194,7 @@ var DragEngine = {
 		classNameArr.push("dragable");
 		classNameArr.push("tabs");
 		classNameArr.push("tabs_current");
-		
+
 		if((titleObj =  getAncestorById(caughtObj, "titleBar")) == null &&
 		    (titleObj =  getAncestorByAttribute(caughtObj, "className", classNameArr)) == null )
 		  return;
@@ -7202,8 +7203,8 @@ var DragEngine = {
 		// or by class name here
 		if(dragHandlerStr == null || dragHandlerStr.length == 0) {
   	  if(titleObj.className == "tabs" || titleObj.className == "tabs_current") {
-  	    thisObj.dragHandler = TabSwap; 
-  	    thisObj.dragBlock = thisObj.dragHandler.getDragBlock(titleObj, caughtObj);  
+  	    thisObj.dragHandler = TabSwap;
+  	    thisObj.dragBlock = thisObj.dragHandler.getDragBlock(titleObj, caughtObj);
   	  }
   	  else // the dialog 'pane2'
   	    thisObj.dragBlock = getAncestorById(titleObj, 'pane2');
@@ -7213,7 +7214,7 @@ var DragEngine = {
 		  if(thisObj.dragHandler)
 		    thisObj.dragBlock = thisObj.dragHandler.getDragBlock(titleObj);
 		}
-		
+
 		if(!thisObj.dragBlock)
 		  return;
 
@@ -7227,7 +7228,7 @@ var DragEngine = {
 		thisObj.offsety = parseInt(thisObj.dragBlock.style.top);
 		thisObj.x = evtobj.clientX;
 		thisObj.y = evtobj.clientY;
-	
+
 		if (evtobj.preventDefault)
 			evtobj.preventDefault();
 
@@ -7242,7 +7243,7 @@ var DragEngine = {
 		var evtobj=window.event? window.event : e
 
     // hack: FF in dashboard, event.clientX, clientY contain
-    // mouse coordinate + coordinat of 
+    // mouse coordinate + coordinat of
   	if(thisObj.checkedIfNeedOffset == false) {
   	  if(Math.abs(evtobj.clientX - (thisObj.offsetx + thisObj.x)) < 3) {
   	    thisObj.offsetx = 0;
@@ -7250,7 +7251,7 @@ var DragEngine = {
   	  }
       thisObj.checkedIfNeedOffset = true;
   	}
-  	
+
   	var left = thisObj.offsetx + evtobj.clientX - thisObj.x;
 		var top = thisObj.offsety + evtobj.clientY - thisObj.y;
 
@@ -7764,7 +7765,7 @@ var advancedTooltip = {
     this.initialized = true;
   },
   initMenu : function() {
-  
+
   },
   onOptionsBtn : function() {
     if(this.optList == null)
@@ -8710,12 +8711,12 @@ var WidgetFlip = {
       clearInterval (this.fading.timer);
       this.fading.timer  = null;
     }
- 
-   
+
+
     this.currentWidgetId = divId;
     var div = document.getElementById(divId);
     this.showflip(e, div);
-    
+
     var starttime = (new Date).getTime() - 13;    // set it back one frame
     this.fading.duration = 500;                       // fading time, in ms
     this.fading.starttime = starttime;                    // specify the start time
@@ -8733,7 +8734,7 @@ var WidgetFlip = {
   mouseexit : function (e, divId)  {
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
-    
+
     if (e.getAttribute) {
       var isProcessed = e.getAttribute('eventProcessed');
       if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
@@ -9709,11 +9710,11 @@ var OrderRows = {
   }
 }
 
-// html (img) on disabled Flash 
+// html (img) on disabled Flash
 var flashHandler = {
   PREFIX : "_swf_embed_",
   emdCodeArr : null,
-  
+
   init : function() {
     this.emdCodeArr = new Array();
     addEvent(window, "load", this.onload, false);
@@ -9743,7 +9744,7 @@ var flashHandler = {
       }
     }
   }
-  
+
 }
 
 function getCalendar() {
@@ -9751,21 +9752,21 @@ function getCalendar() {
   var FILES_TO_LOAD = ["calendar/calendar.css", "calendar/cal_strings.js",
       "calendar/cal_tpl1.js", "calendar/cals_init.js", "calendar/calendar.js"];
   getCalendar = null;
-  
+
   var argsArr = new Array();
   for(var i = 0; i < arguments.length; i++) {
     if (i == 0) {
       var clonedEvent = cloneEvent(arguments[0]);
-      argsArr.push(clonedEvent);  
+      argsArr.push(clonedEvent);
     }
-    else  
-      argsArr.push(arguments[i]);  
+    else
+      argsArr.push(arguments[i]);
   }
   LoadOnDemand.doit(FILES_TO_LOAD, "getCalendar", argsArr);
 }
 
 function initStyleSheet() {
-  var FILES_TO_LOAD = ["style_sheet/style_sheet.js"]; //"toolbar.js", 
+  var FILES_TO_LOAD = ["style_sheet/style_sheet.js"]; //"toolbar.js",
   initStyleSheet = null;
   LoadOnDemand.doit(FILES_TO_LOAD, "initStyleSheet", arguments);
 }
@@ -9776,7 +9777,7 @@ var LoadOnDemand = {
   doit : function(files, callbackName, callbackArgs) {
     var callback = {name: callbackName, args: callbackArgs};
     this.cbArr.push(callback);
-    
+
     if(typeof files == "string")
       files = new Array(files);
     for(var i = 0; i < files.length; i++) {
@@ -9809,7 +9810,7 @@ var LoadOnDemand = {
       html_doc.appendChild(js);
       return false;
   },
-  
+
   includeCSS : function(fileName) {
       var html_doc = document.getElementsByTagName('head')[0];
       var css = document.createElement('link');
@@ -9832,7 +9833,7 @@ var TabSwap = {
   tabsArr : null,
   isDragMode : false,
   prevX : -1,
-  
+
   init : function() {
     this.placeHolder = document.createElement("div");
     var phStl = this.placeHolder.style;
@@ -9840,7 +9841,7 @@ var TabSwap = {
     phStl.verticalAlign = "bottom";
     phStl.border = this.PH_BORDER;
     phStl.backgroundColor = this.PH_BACK_COLOR;
-    
+
     document.body.appendChild(this.placeHolder);
     this.prepareTabs();
   },
@@ -9848,19 +9849,19 @@ var TabSwap = {
 	  // move a tab only caught by icon
 	  if(caughtObj.className != 'iinp_move')
 		  return null;
-		  
+
     // find moved tab
     var classNameArr = new Array();
     classNameArr.push("tabs");
     classNameArr.push("tabs_current");
     this.movedTab = getAncestorByAttribute(dragHandleObj, "className", classNameArr);
-    
+
     if(this.placeHolder == null)
       this.init();
 
     return this.movedTab;
   },
-  
+
   onStartDrag : function() {
     if(this.isDragMode == false) {
       this.isDragMode = true;
@@ -9876,11 +9877,11 @@ var TabSwap = {
     phStl.width = this.movedTab.offsetWidth;
     phStl.height = this.movedTab.offsetHeight;
 
-    if(Popup.ie)   
+    if(Popup.ie)
       phStl.display = "inline";
-    else if(Popup.gecko)  
+    else if(Popup.gecko)
       phStl.display = "-moz-inline-box";
-    else  
+    else
       phStl.display = "inline-block";
     swapNodes(this.movedTab, this.placeHolder);
   },
@@ -9898,7 +9899,7 @@ var TabSwap = {
         this.updateAllTabRects();
       }
     }
-    
+
     return [true, false];
   },
   onStopDrag : function(e, dragBlock) {
@@ -9953,7 +9954,7 @@ var TabSwap = {
     this.idx = idx;
     this.left;
     this.right;
-    
+
     this.update = function() {
       this.left = findPosX(this.tabObj);
       this.right = this.left + this.tabObj.offsetWidth;
