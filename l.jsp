@@ -30,6 +30,7 @@
 		</div>
     <taskTreeControl/>
     <div id="siteResourceList">
+      <categories/>
       <errorMessage additems="y"/>
       <siteResourceList />
       <br/>
