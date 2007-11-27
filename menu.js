@@ -3361,17 +3361,18 @@ function initListBoxes(div) {
 function onLinkClick(e) {
   e = getDocumentEvent(e);
   var anchor = getEventTarget(e);
-  
+
   if (anchor.tagName.toLowerCase() == 'img')
     anchor = anchor.parentNode;
   if (anchor.tagName.toLowerCase() != 'a')
     return;
-  
+ 
+  var idLen = anchor.id.length;
   if (anchor.id  &&  anchor.id.indexOf("_filter", anchor.id.length - "_filter".length) != -1) {
     listboxOnClick(e);
   }
-  else if (elemId.indexOf("_boolean", elemLen - "_boolean".length) != -1  ||
-      elemId.indexOf("_boolean_refresh", elemLen - "_boolean_refresh".length) != -1) {
+  else if (anchor.id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
+      anchor.id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
     changeBoolean(e);
   }  
 }
