@@ -6532,8 +6532,9 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     // to make dialog shadow visible (without iframe background).
     if(div.id == 'pane2') {
       var SHADOW_WIDTH = 11;
-      istyle.width   = divCoords.width  - SHADOW_WIDTH + 'px';
-      istyle.height  = divCoords.height - SHADOW_WIDTH + 'px';
+      var contentObj = getChildById(div, "dataEntry");
+      istyle.width   = contentObj.clientWidth  - SHADOW_WIDTH + 'px';
+      istyle.height  = contentObj.clientHeight - SHADOW_WIDTH + 'px';
     }
     // to make tooltip shadow visible;
     if(div.id == 'system_tooltip') {
@@ -6551,7 +6552,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   reposition(iframe, iframeLeft, iframeTop); // place iframe under div
   // if (!opera && !konqueror) {
   if (Popup.ie) // only IE has a problem with form elements 'showing through' the popup
-    istyle.visibility  = Popup.VISIBLE;
+      istyle.visibility  = Popup.VISIBLE;
   div.style.visibility = Popup.VISIBLE; // finally make div visible
 
   // used to close divs on "C" and for dialogs
@@ -6572,7 +6573,6 @@ function setDivInvisible(div, iframe) {
   var popupIframe = getChildById(div, 'popupIframe');
   if(popupIframe)
     document.body.appendChild(popupIframe);
-
 }
 
 function doConfirm(msg) {
