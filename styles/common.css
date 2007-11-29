@@ -1384,7 +1384,10 @@ TD.closePopup {
 .tag {
   background: url(../images/tag.gif) left center no-repeat;
   border-right: 1px solid #c2c1c1;
-  padding: 2px, 5px, 2px, 15px;
+  padding-top: 2px;
+  padding-right: 5px;
+  padding-bottom: 2px;
+  padding-left: 15px;
 }
 
 
