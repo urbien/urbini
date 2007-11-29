@@ -511,6 +511,9 @@ tr.editMode  {background-color:#D6E7EF;}
 span.bigLetterTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;}
 span.bigLetterTitleGrayed  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#ffffff;}
 
+span.fileMenuTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;vertical-align:middle}
+.menuI  {font-family:sans-serif, arial; font-size:12px; color:#00309C;vertical-align:top}
+
 /* To display big letter title when full text search criteria was there */
 .bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#00309C;}
 /* To display window titles on a dashboard */
@@ -558,6 +561,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .blue  .line { background:#ACD2E2 }
 .blue  .propertySheet {border:solid #ACD2E2 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
 .blue  .rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
+.blue  .menuLine {border-top:solid #5d9fc0 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 .blue  .pBGr {border-bottom:solid #808080 1px; border-top:solid #808080 1px; border-collapse: collapse; background:url(../images/bg-green-to-white-gradient.gif); background-repeat:repeat-x; font-weight:bold; font-size:1em; text-align:center; color: darkblue;}
 .blue  .pGr {background:url(../images/bg-green-to-white-gradient.gif); background-repeat:repeat-x; font-weight:bold; font-size:1em; text-align:center; color: darkblue;}
 
@@ -606,6 +610,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* MUSTARD */
 .mustard .line {background:#e7e4ba}
 .mustard .rlHeader { border:solid #808080 1px; background:#f6f5de; color:#000000; font-weight:bold; font-size:8pt;}
+.mustard .menuLine { border-top:solid #e4e2b1 1px; background:#f6f5de; color:#000000; font-weight:bold; font-size:8pt;}
 .mustard .propertySheet {border:solid #e7e4ba 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
 .mustard .wBBg {border:solid #e7e4ba 1px; background-color:#f6f5de; border-collapse: collapse; color: #000000; overflow: auto}
 .mustard .wBg {background-color:#f6f5de; border-collapse: collapse; color: #000000; overflow: auto}
@@ -656,6 +661,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* TURQOUISE */
 .turquoise .line {background:#ACE2CE}
 .turquoise .rlHeader { border:solid #ACE2CE 1px; background:#d5f2e8; color:#000000; font-weight:bold; font-size:8pt;}
+.turquoise .menuLine { border-top:solid #ACE2CE 1px; background:#eafbf5; color:#000000; font-weight:bold; font-size:8pt;}
 .turquoise .propertySheet {border:solid #ACE2CE 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
 .turquoise .wBg {background-color:#eafbf5; border-collapse: collapse; color: #000000; overflow: auto}
 .turquoise .wBBg {border:solid #ACE2CE 1px; background-color:#eafbf5; border-collapse: collapse; color: #000000; overflow: auto}
@@ -705,6 +711,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* PURPLE */
 .purple .line {background:#c7aee3}
 .purple .rlHeader { border:solid #c7aee3 1px; background:#f6effd; color:#000000; font-weight:bold; font-size:8pt;}
+.purple .menuLine { border-top:solid #c7aee3 1px; background:#f6effd; color:#000000; font-weight:bold; font-size:8pt;}
 .purple .propertySheet {border:solid #c7aee3 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
 .purple .wBBg {border:solid #c7aee3 1px; background-color:#f6effd; border-collapse: collapse; color: #000000; overflow: auto}
 .purple .wBg {background-color:#f6effd; border-collapse: collapse; color: #000000; overflow: auto}
@@ -755,6 +762,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* GREEN */
 .green .line {background:#B6E2AC}
 .green .rlHeader { border:solid #808080 1px; background:#eefcec; color:#000000; font-weight:bold; font-size:8pt;}
+.green .menuLine { border-top:solid #B6E2AC 1px; background:#eefcec; color:#000000; font-weight:bold; font-size:8pt;}
 .green .propertySheet {border:solid #B6E2AC 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
 .green .wBBg {border:solid #B6E2AC 1px; background-color:#eefcec; border-collapse: collapse; color: #000000; overflow: auto}
 .green .wBg {background-color:#eefcec; border-collapse: collapse; color: #000000; overflow: auto}
@@ -804,6 +812,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* RUSTY ROSE */
 .rustyrose .line {background:#e4bcb1}
 .rustyrose .rlHeader { border:solid #e4bcb1 1px; background:#f8e8e3; color:#000000; font-weight:bold; font-size:8pt;}
+.rustyrose .menuLine { border-top:solid #e4bcb1 1px; background:#f8e8e3; color:#000000; font-weight:bold; font-size:8pt;}
 .rustyrose .propertySheet {border:solid #e4bcb1 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
 .rustyrose .wBg {background-color:#f8e8e3; border-collapse: collapse; color: #000000; overflow: auto}
 .rustyrose .wBBg {border:solid #e4bcb1 1px; background-color:#f8e8e3; border-collapse: collapse; color: #000000; overflow: auto}
@@ -855,6 +864,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* GREY */
 .grey .line {background-color:#cfcfcf}
 .grey .rlHeader { border:solid #cfcfcf 1px; background:#e0e0e0; color:#000000; font-weight:bold; font-size:8pt;}
+.grey .menuLine { border:solid #cfcfcf 1px; background:#e0e0e0; color:#000000; font-weight:bold; font-size:8pt;}
 .grey .propertySheet {border:solid #cfcfcf 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
 .grey .wBBg {border:solid #cfcfcf 1px; background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
 .grey .wBg {background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
@@ -1370,3 +1380,11 @@ TD.closePopup {
 /***************************************************************/
 .relative { position: relative }
 .h21 {height: 1em}
+
+.tag {
+  background:url(../images/tag.gif) left center no-repeat;
+  border-right: 1px solid #c2c1c1;
+  padding-left: 15px;
+}
+
+

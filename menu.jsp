@@ -2,21 +2,16 @@
 <table width="100%" cellspacing="0" cellpadding="0" border="0" id="mainMenu" class="toppad">
    <tr align="center">
     <td>
-        <!--menu toolbar="file" activate="onMouseOver"/-->
         <dashboardMenus/>
-		    <menu toolbar="personalization"     />
-		    <menu toolbar="calendarAndChart"   /> <!--itype="http://www.hudsonfog.com/voc/model/recurrence/ScheduledItem,http://www.hudsonfog.com/voc/system/parse/GenericMessageAccount,http://www.hudsonfog.com/voc/model/workplace/Workplace" /-->
-		    <print image="icons/printerIcon.gif"/>
-		    <saveInExcel allow="owner" image="images/excel.gif"/>
-		    <chat                               />
-		    <!--showHideWindows                    /-->
+        <menu toolbar="calendarAndChart"    />
+	    <!--chat                               /-->
         <include name="searchText.jsp"/>
         <a href="http://lablz.com"><logo src="icons/logo.gif" srcLarge="icons/logo-large.gif" /></a>
         <img allow="admin" id="menuLink_codeBehindThePage" title="View Source&lt;br&gt; This page is based solely on the declarative code that you can inspect by clicking on the links in popup" class="cursor" src="icons/codeBehindThePage.gif" onclick="menuOnClick(event)" align="middle" />
     </td>
   </tr>
   <tr>
-    <td class="line" valign="middle"><resourceTypeLabel/></td>
+    <td class="menuLine" valign="middle"><resourceTypeLabel/></td>
   </tr>
   <tr bgcolor="#F1F1F1">
     <td>
