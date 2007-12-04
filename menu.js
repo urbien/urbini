@@ -6038,13 +6038,18 @@ function showTabLabel(label) {
 function resizeIframeOnTabSelection(tabDiv) {
   var dialogIframe = document.getElementById('dialogIframe');
   if(dialogIframe && dialogIframe.style.visibility == "visible") {
-    var dlg = getAncestorById(tabDiv, "pane2");
-    if(!dlg)
+    var div = getAncestorById(tabDiv, "pane2");
+    if(!div)
       return;
-    var contentCell = getChildById(dlg, "dlg_cell");
-    if(contentCell) {
-      dialogIframe.style.width = contentCell.clientWidth;
-      dialogIframe.style.height = contentCell.clientHeight;
+      
+    var SHADOW_WIDTH = 11;
+    var istyle = dialogIframe.style;
+    var contentObj = getChildById(div, "dataEntry");
+    if (contentObj == null)
+      contentObj = getChildById(div, "resourceList");
+    if (contentObj != null) {
+      istyle.width   = contentObj.clientWidth  - SHADOW_WIDTH + 'px';
+      istyle.height  = contentObj.clientHeight - SHADOW_WIDTH + 'px';
     }
   }
 }
@@ -6533,8 +6538,12 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     if(div.id == 'pane2') {
       var SHADOW_WIDTH = 11;
       var contentObj = getChildById(div, "dataEntry");
-      istyle.width   = contentObj.clientWidth  - SHADOW_WIDTH + 'px';
-      istyle.height  = contentObj.clientHeight - SHADOW_WIDTH + 'px';
+      if (contentObj == null)
+        contentObj = getChildById(div, "resourceList");
+      if (contentObj != null) {
+        istyle.width   = contentObj.clientWidth  - SHADOW_WIDTH + 'px';
+        istyle.height  = contentObj.clientHeight - SHADOW_WIDTH + 'px';
+      }
     }
     // to make tooltip shadow visible;
     if(div.id == 'system_tooltip') {
