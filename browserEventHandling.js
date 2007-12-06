@@ -131,5 +131,13 @@
       document.attachEvent('onactivate', addHandlers);
     else if (isOpera9 || isGecko)
       document.addEventListener("DOMContentLoaded", addHandlers, false);
+    else if (/WebKit/i.test(agent)) { // sniff
+      var _timer = setInterval(function() {
+          if (/loaded|complete/.test(document.readyState)) {
+              clearInterval(_timer);
+              addHandlers(); // call the onload handler
+          }
+      }, 10);
+    }
     else
       addEvent(window, 'load', addHandlers, false);
