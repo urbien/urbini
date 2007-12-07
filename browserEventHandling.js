@@ -118,24 +118,20 @@
     var formInitialValues;
 
     /****************** launch JS on "DOM ready" ****************/
-    var isIE   = (typeof ActiveXObject != 'undefined');
     var agent = navigator.userAgent;
     var isGecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1);
-
     var versionindex = agent.indexOf("Opera") + 6;
     var ver = agent.substring(versionindex);
     var v = parseFloat(ver);
     var isOpera9 = (typeof opera != 'undefined') && (v >= 9);
 
-    if (isIE)
-      document.attachEvent('onactivate', addHandlers);
-    else if (isOpera9 || isGecko)
+    if (isOpera9 || isGecko)
       document.addEventListener("DOMContentLoaded", addHandlers, false);
-    else if (/WebKit/i.test(agent)) { // sniff
+    else if (typeof document.readyState != 'undefined') { // WebKit & IE
       var _timer = setInterval(function() {
           if (/loaded|complete/.test(document.readyState)) {
               clearInterval(_timer);
-              addHandlers(); // call the onload handler
+              addHandlers();
           }
       }, 10);
     }
