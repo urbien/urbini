@@ -874,6 +874,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (tr.id && tr.id == '$noValue')
       return;
     var isCalendar = tr.id.indexOf("_$calendar") != -1 ? true: false;
+
     if (isCalendar)
       return true;
 
@@ -959,7 +960,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       select = prop + "_select";
     if (currentResourceUri)
       select = currentResourceUri + ".$" + select;
-
     var formField = form.elements[select];
     var selectItems = form.elements[select];
     if (tr.id.indexOf('$clear') == 0) {
@@ -1003,7 +1003,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate
                                                                                   // rollup
           chosenTextField.value = '';
-          self.hotspot.src = "icons/checkbox.gif";
+          var targetImg = self.hotspot;
+          if(targetImg.tagName.toLowerCase() == 'a')
+            targetImg = targetImg.getElementsByTagName('img')[0];
+          if(typeof targetImg != 'undefined')
+            targetImg.src = "icons/checkbox.gif";
           return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
         }
 
@@ -1064,7 +1068,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
                                                                                     // rollup
             chosenTextField.value = tr.id;
             var dateImg = tr.getElementsByTagName('img');
-            this.hotspot.src = dateImg[0].src;
+            var targetImg = this.hotspot;
+            if(targetImg.tagName.toLowerCase() == 'a')
+              targetImg = targetImg.getElementsByTagName('img')[0];
+            if(typeof targetImg != 'undefined')
+              targetImg.src = dateImg[0].src;
             return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
           }
           else
