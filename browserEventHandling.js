@@ -118,8 +118,9 @@
     var formInitialValues;
 
     /****************** launch JS on "DOM ready" ****************/
+    
     var agent = navigator.userAgent;
-    var isGecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1);
+    var isGecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1 && agent.indexOf("Konqueror") == -1);
     var versionindex = agent.indexOf("Opera") + 6;
     var ver = agent.substring(versionindex);
     var v = parseFloat(ver);
