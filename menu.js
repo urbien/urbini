@@ -137,7 +137,7 @@ if (document.attachEvent && !Popup.opera) {
   Popup.ie55 = true; // need better test since this one will include 5+ as well
 }
 
-Popup.gecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1) ? true : false;
+Popup.gecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1 && agent.indexOf("Konqueror") == -1) ? true : false;
 Popup.safari  = (agent.indexOf("Safari") != -1) ? true : false;
 Popup.maemo= (Popup.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
@@ -4330,10 +4330,21 @@ function getTextContent(elm) {
  */
 function getEventTarget(e) {
   e = getDocumentEvent(e); if (!e) return null;
-  if (e.target)
-    return e.target;
-  else
-    return e.srcElement;
+  var target = null;
+  if (e.target) {
+      target = e.target;
+  }
+  else {
+    target = e.srcElement;
+  }
+  if(target == null)
+    return null;
+  // Konqueror: if event target contains text node,
+  //they return the text node instead of the element node 
+  while (target.nodeType != 1) {
+    target = target.parentNode;
+  }
+  return target;
 }
 
 /**
