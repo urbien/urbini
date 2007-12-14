@@ -11,7 +11,7 @@
   <script src="richtext.js"       language="JavaScript" type="text/javascript"></script>
   <script src="toolbar.js" 				language="JavaScript" type="text/javascript"></script>
 
-  <meta name="viewport" content="initial-scale=1.0, maximum-scale=0.6667"></meta>
+  <meta name="viewport" content="width=device-width"></meta>
 
  <getResource/>
   <siteTitle />
