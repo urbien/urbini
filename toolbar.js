@@ -71,9 +71,8 @@ function FormPopup(innerFormHtml, flag) {
 				    + ' </td>';
 				}
 				
-			html += ' </tr>'
-		'</table>';
-		
+			html += ' </tr></table>';
+	
 		btnDiv.innerHTML = html;
 		var btns = btnDiv.getElementsByTagName('input');
 		btns[0].onclick = this._onok; // Ok
