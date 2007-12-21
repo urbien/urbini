@@ -1391,3 +1391,19 @@ TD.closePopup {
 }
 
 
+.ftSearch {
+  margin: 0px;
+  padding: 0px;
+  vertical-align: bottom;
+  display:inline;
+}
+.fts {
+  font-size: 0.8em;
+  font-weight: normal;
+  white-space: nowrap;
+  vertical-align: middle;
+  color: darkblue;
+  margin: 0px;
+  padding: 0px;
+}
+.ftChk { padding: 0px; margin: 0px; vertical-align:middle;}
