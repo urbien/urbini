@@ -5,7 +5,7 @@
     		<dashboardMenus/>
         <menu toolbar="calendarAndChart"    />
 	      <!--chat                          /-->
-        <include name="searchText.jsp"/>
+        &#160;<include name="searchText.jsp"/>
     </td>
     <td align="right">
        <a href="http://lablz.com"><logo src="icons/logo.gif" srcLarge="icons/logo-large.gif" /></a>
