@@ -1,7 +1,7 @@
 <menuBar id="menuBar1">
 <table width="100%" cellspacing="0" cellpadding="0" border="0" id="mainMenu" class="toppad">
   <tr align="center">
-    <td>
+    <td valign="bottom">
     		<dashboardMenus/>
         <menu toolbar="calendarAndChart"    />
 	      <!--chat                          /-->
