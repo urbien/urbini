@@ -1406,4 +1406,4 @@ TD.closePopup {
   margin: 0px;
   padding: 0px;
 }
-.ftChk { padding: 0px; margin: 0px; vertical-align:middle;}
+.ftChk { width: 13px; height:13px; overflow:hidden; padding:0px; border:0px; margin:0px;margin-top:1px; vertical-align:middle;}
