@@ -9789,8 +9789,7 @@ var flashHandler = {
 
 function getCalendar() {
 // calling function in the last file
-  var FILES_TO_LOAD = ["calendar/calendar.css", "calendar/cal_strings.js",
-      "calendar/cal_tpl1.js", "calendar/cals_init.js", "calendar/calendar.js"];
+  var FILES_TO_LOAD = ["calendar/calendar.css", "calendar/calendar.js"];
   getCalendar = null;
 
   var argsArr = new Array();
@@ -9834,8 +9833,8 @@ var LoadOnDemand = {
     for(var i = 0; i < thisObj.cbArr.length; i++) {
       var callback = eval(thisObj.cbArr[i].name);
       if(callback != null) {
-        callback.apply(null, thisObj.cbArr[i].args);
-        thisObj.cbArr.splice(i, 1);
+        var idx = i;
+        setTimeout(function() {callback.apply(null, LoadOnDemand.cbArr[idx].args); thisObj.cbArr.splice(idx, 1); }, 10);
       }
     }
     if(thisObj.cbArr.length != 0) {
