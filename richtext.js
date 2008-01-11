@@ -467,13 +467,15 @@ var RteEngine = {
 	  imgUrl = ImageUploader.getImageUrlFromForm(form);
 	  if(imgUrl == null)
 	    return false;
-	    
+	  
+	  var align = ImageUploader.getImageAlignFromForm(form);
+	  
 	  RteEngine.imagePopup.hide();
 	  var rteObj = RteEngine.getRteById(RteEngine.curRteId);
 
 	  // insert image
 	  var encImgUrl = encodeURI(imgUrl);
-	  rteObj.setImage(encImgUrl);
+	  rteObj.setImage(encImgUrl, align);
 
 	  // web-image, thus not upload.
 	  if(ImageUploader.isImageLocal(imgUrl) == false) {
@@ -529,6 +531,7 @@ var ImageUploader = {
   ACTION_URL        : "mkresource", // TODO:
   FILE_INPUT_NAME   : "file",
   RTE_ID_INPUT_NAME : "rte_id",
+  IMG_ALIGN_ID      : "img_align",
 
   HDN_IFRAME_NAME   : "hiddenIframe",
   WAIT_FLAG : "waiting",
@@ -554,14 +557,24 @@ var ImageUploader = {
       + " onsubmit=\"return " + submitCallbackName + "\""
       + ">"
       
-      + " <table><tr><td>" 
+      + " <table style=\"font-family:verdana; font-size:12px;\"><tr><td>" 
       + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
       + " id=\"" + this.FILE_INPUT_NAME + "\" size=\"40\"  style=\"margin-top:20px;\">"
       
       + " <input type=\"hidden\" name=\"" + this.RTE_ID_INPUT_NAME + "\""
       + " id=\"" + this.RTE_ID_INPUT_NAME + "\">"
       + " </td></tr>"
-      + " <tr><td align=\"center\">"
+      
+      + " <tr><td><br/>align:&nbsp;<select id=\"" + this.IMG_ALIGN_ID + "\""
+      + " style=\"font-family:verdana; font-size:12px\">"
+      + " <option value=\"left\" selected>left</option>"
+      + " <option value=\"middle\">middle</option>"
+      + " <option value=\"right\">right</option>"
+      + " <option value=\"bottom\">bottom</option>"
+      + " <option value=\"top\">top</option>"
+      + " </select></td></tr>"
+      
+      + " <tr><td align=\"center\"><br/>"
       + " <input type=\"submit\" value=\"" + submitBtnText + "\">"
 
       + " <input type=\"hidden\" name=\"-$action\" value=\"upload\">"
@@ -586,6 +599,10 @@ var ImageUploader = {
       return null;
     }
     return value;    
+  },
+  
+  getImageAlignFromForm : function(form) {
+    return form[ImageUploader.IMG_ALIGN_ID].value;
   },
   
   // mark image as waiting on the server response
@@ -1389,9 +1406,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		return true;
 	}
 	// 8
-	this.setImage = function(url) { // params  // params.url
-		if(url.length != 0)
-			i_am.performCommand("insertimage", url);
+	this.setImage = function(url, align) {
+		if(url.length != 0) {
+		  var html = "<img src=\"" + url + "\" align=\"" + align + "\"/>";
+		  this.insertHTML(html);
+		}
 		return true;
 	}
 	// 9
