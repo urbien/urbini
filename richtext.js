@@ -63,7 +63,7 @@ var RteEngine = {
 	FONT_SIZE : ["8pt", "10pt", "12pt", "14pt", "18pt", "24pt", "36pt"],
 
   IMG_ATTRIBS_TO_DELETE : ["className", "class", "handler_mouseout", "handler_mouseover",
-     "onclick", "allow", "tooltip", "id", "title", "align"],
+     "onclick", "allow", "tooltip", "id", "title"],
 
 	rteArr : new Array(), // objects
 	uploadForm : null,
@@ -429,12 +429,10 @@ var RteEngine = {
       // 1. skip already loaded and waiting for responce images
       if(ImageUploader.isImageHandled(imgUrlsArr, src))
         continue;
-      
-      // remove inserted image attributes
+      // cleanup: remove inserted image attributes
       for(var atrIdx = 0; atrIdx < this.IMG_ATTRIBS_TO_DELETE.length; atrIdx++) {
         images[i].removeAttribute(this.IMG_ATTRIBS_TO_DELETE[atrIdx]);
       }
-      
       // skip web-images
       if(ImageUploader.isImageLocal(images[i]) == false)
         continue;
@@ -491,9 +489,10 @@ var RteEngine = {
 	  return true;
 	},
 	onImagePasteFormSubmit : function() {
+	  var thisObj = ImageUploader;
 	  var imgUrl = null;
 	  var form = RteEngine.imagePastePopup.getForm();
-	  imgUrl = ImageUploader.getImageUrlFromForm(form);
+	  imgUrl = thisObj.getImageUrlFromForm(form);
 	  if(imgUrl == null)
 	    return false;
 	
@@ -507,10 +506,15 @@ var RteEngine = {
 	  // mark image as waiting
 	  var rteObj = RteEngine.getRteById(RteEngine.curRteId);
 	  var urlPairsArr = rteObj.getImgUrlsArray();
-	  ImageUploader.markImageAsWaiting(urlPairsArr, imgUrl);
+	  thisObj.markImageAsWaiting(urlPairsArr, imgUrl);
 	  
-	  ImageUploader.onHdnDocLoad(RteEngine.curRteId, imgUrl);
-
+	  //set align
+	  var align = thisObj.getImageAlignFromForm(form);
+    var image = thisObj.getImageByOrigUrl(rteObj, imgUrl);
+    if(image)
+      image.setAttribute("align", align);
+	  
+	  thisObj.onHdnDocLoad(RteEngine.curRteId, imgUrl);
 	  return true;
 	}, 
   onCanceledUploadPastedImage : function() {
@@ -535,6 +539,9 @@ var ImageUploader = {
 
   HDN_IFRAME_NAME   : "hiddenIframe",
   WAIT_FLAG : "waiting",
+  
+  
+  imgAling : "left",
   
   newImgPair : null,
   
@@ -566,8 +573,8 @@ var ImageUploader = {
       + " </td></tr>"
       
       + " <tr><td><br/>align:&nbsp;<select id=\"" + this.IMG_ALIGN_ID + "\""
-      + " style=\"font-family:verdana; font-size:12px\">"
-      + " <option value=\"left\" selected>left</option>"
+      + " style=\"font-family:verdana; font-size:12px\" onchange=\"ImageUploader._storeAlign(this.value)\">"
+      + " <option value=\"left\">left</option>"
       + " <option value=\"middle\">middle</option>"
       + " <option value=\"right\">right</option>"
       + " <option value=\"bottom\">bottom</option>"
@@ -601,8 +608,11 @@ var ImageUploader = {
     return value;    
   },
   
-  getImageAlignFromForm : function(form) {
-    return form[ImageUploader.IMG_ALIGN_ID].value;
+  // failed to get correct current value from
+  // select in "image paste dialog", so onchange of the select was used.
+  getImageAlignFromForm : function(/*form*/) {
+    return this.imgAling;
+    //return form[ImageUploader.IMG_ALIGN_ID].value;
   },
   
   // mark image as waiting on the server response
@@ -610,10 +620,13 @@ var ImageUploader = {
     var pair = new ImageUploader.UrlPair(originalUrl, ImageUploader.WAIT_FLAG);
     urlPairsArr.push(pair);
   },
-  
+  _storeAlign : function(imgAlign) {
+    this.imgAling = imgAlign;
+  },
   // callback on the server response.
   onHdnDocLoad : function(rteId, originalUrl) {
-    var frameId = ImageUploader.HDN_IFRAME_NAME;
+    var thisObj = ImageUploader;
+    var frameId = thisObj.HDN_IFRAME_NAME;
     if (!frameLoaded[frameId]) {
       var timeOutFunction = function () { ImageUploader.onHdnDocLoad(rteId, originalUrl) };
       setTimeout(timeOutFunction, 50);
@@ -621,7 +634,6 @@ var ImageUploader = {
     }
     frameLoaded[frameId] = false;
     // -------------------------------------------------
-    var frameBody = frames[frameId].document.body;
     var frameDoc  = frames[frameId].document;
     var frameBody = frameDoc.body;
     var d = frameDoc.getElementById("location");
@@ -646,6 +658,7 @@ var ImageUploader = {
       }
     }
     // 2.3 replace URL of the image in the document
+    /*
     var rteDoc = rteObj.getDocument();
     var images = rteDoc.getElementsByTagName("img");
     originalUrl = originalUrl.toLowerCase();
@@ -657,6 +670,25 @@ var ImageUploader = {
         images[i].src = uploadedUrl;
       }
     }
+    */
+    var image = thisObj.getImageByOrigUrl(rteObj, originalUrl);
+    if(image)
+      image.src = uploadedUrl;
+  },
+  // "original" means inserted url before replace with uploaded url
+  getImageByOrigUrl : function(rteObj, originalUrl) {
+    var rteDoc = rteObj.getDocument();
+    var images = rteDoc.getElementsByTagName("img");
+    originalUrl = originalUrl.toLowerCase();
+    for(var i = 0; i < images.length; i++) {
+      var src = images[i].src.toLowerCase();
+      var decSrc = decodeURI(src);
+      if(src.indexOf(originalUrl) != -1 ||
+          decSrc.indexOf(originalUrl) != -1) {
+        return images[i];
+      }
+    }
+    return null;
   },
   
   // image object or its src
