@@ -593,6 +593,7 @@ var ImageUploader = {
     + " </form>";
     return formStr;
   },
+  
   putRteIdInForm : function(form, rteId) {
     var rteIdEnc = encodeURIComponent(rteId);
     var inpObj = getChildById(form, this.RTE_ID_INPUT_NAME); 
@@ -1440,6 +1441,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// 8
 	this.setImage = function(url, align) {
 		if(url.length != 0) {
+		  // hack: check on double encoding (for space only for now)
+		  if(url.indexOf("%2520") != -1)
+		    url = decodeURI(url);
 		  var html = "<img src=\"" + url + "\" align=\"" + align + "\"/>";
 		  this.insertHTML(html);
 		}
