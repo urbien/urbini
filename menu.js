@@ -7445,13 +7445,25 @@ function addBooleanToggle(elem) {
   }
 }
 
+function getAnchorForTarget(e) {
+  var target = getEventTarget(e);
+  if (target.tagName.toUpperCase() == 'A')
+    return target;
+  var anchors = target.getElementsByTagName('a');
+  if (anchors && anchors[0])
+    return anchors[0];
+
+  return getANode(target);
+}
 /**
  * Change boolean value (in non-edit mode)
  */
 function changeBoolean(e) {
   var target;
   e = getDocumentEvent(e); if (!e) return;
-  target = getTargetElement(e);
+//  target = getEventTarget(e);
+  target = getAnchorForTarget(e);
+
   var url = 'proppatch';
   var params = 'submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
   var bIdx = target.id.indexOf("_boolean");
@@ -7473,17 +7485,11 @@ function changeBoolean(e) {
       }
     }
   }
-  var tooltip = target.getAttribute('tooltip');
+
   var pValue;
   if (isCurrentItem)
     pValue = "Yes";
   else {
-    if (tooltip  &&  tooltip.length != 0  &&  tooltip == "Yes")
-      pValue = "No";
-    else
-      pValue = "Yes";
-    target.setAttribute('tooltip', pValue);
-
     var nodes = target.childNodes;
 
     var node;
@@ -7491,6 +7497,14 @@ function changeBoolean(e) {
       if (nodes[i].tagName  &&  nodes[i].tagName.toLowerCase() == 'img')
         node = nodes[i];
     }
+
+    var tooltip = node.getAttribute('tooltip');
+    if (tooltip  &&  tooltip.length != 0  &&  tooltip == "Yes")
+      pValue = "No";
+    else
+      pValue = "Yes";
+    node.setAttribute('tooltip', pValue);
+
     if (node) {
       if (pValue == "Yes")
         node.src = target.getAttribute('yesIcon');
