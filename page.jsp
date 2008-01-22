@@ -39,7 +39,7 @@
     </div>
 <hideBlock>
     <br/><br/>
-    <center><codeBehindThePage allow="admin" showDialog="y"/> </center>
+    <center><codeBehindThePage showDialog="y"/> </center>
     <br/><br/>
 </hideBlock>
     <include name="requiredFooter.jsp"/>
