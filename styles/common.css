@@ -1271,6 +1271,11 @@ TD.toolbar {
   font-weight:bold;
 }
 
+.menuItemGrey {
+  color:#808080;
+  font-weight:bold;
+}
+
 .menuItemChart {
   PADDING-RIGHT: 0px;	width: 10px;
 }
