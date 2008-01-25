@@ -1,1 +1,0 @@
-This folder contains files that are automatically generated from their original versions to compress file size, please do not remove.
