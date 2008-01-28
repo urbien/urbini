@@ -813,8 +813,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		this.window = this.iframeObj.contentWindow;
 		this.document = this.window.document;
 		if(typeof this.document.designMode == 'undefined') {
-		  alert("designMode is not surpported");
-		  throw "designMode is not surpported";
+		  throw new Error("designMode is not supported");
 		}
 	  this.document.designMode = "On";
 
