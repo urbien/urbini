@@ -17,6 +17,7 @@
                   </tr>
                   <tr>
                     <td align="CENTER"><img src="images/spacer.gif" border="0" height="10"/><br/>
+                      <errorMessage/>
                       <hr size="1" style="color:#cbcbcb"/>
                     </td>
                   </tr>
