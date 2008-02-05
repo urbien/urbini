@@ -550,7 +550,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .guestUser {  font-family: Verdana, Arial, Helvetica, sans-serif; color: lightblue; font-size: 8pt; font-weight: bold;}
 .user      {color:darkblue; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight:bold; text-decoration:none; font-size:8pt;}
 
-.group {background:#f8f4ef; FONT-WEIGHT: bold; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; COLOR: #000000; PADDING-TOP: 3px; FONT-WEIGHT:bold; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}
+.group {background:#f8f4ef; FONT-WEIGHT: bold; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}
 
 /* Under menu line style (usually the same color as tabs */
 .line { background:#ACD2E2 }
@@ -1415,4 +1415,12 @@ TD.closePopup {
   margin: 0px;
   padding: 0px;
 }
+.rl {
+  white-space: nowrap;
+  vertical-align: middle;
+  color: darkblue;
+  margin: 0px;
+  padding: 0px;
+}
+
 .ftChk { width: 13px; height:13px; overflow:hidden; padding:0px; border:0px; margin:0px;margin-top:1px; vertical-align:middle;}
