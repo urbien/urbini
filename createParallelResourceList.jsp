@@ -11,13 +11,14 @@
     </colgroup>
 
     <tr valign="top"><td width="100%">
-    <form action="editList.html" name="siteResourceList" method="POST">
+    <form action="proppatch" name="siteResourceList" method="POST">
       <div align="left"><backLink /></div>
-      <siteResourceList />
+      <parallelResourceList />
       <div align="right"><measurement/></div>
-      <input type="hidden" name="action" value="createResources" />
-      <input type="hidden" name="create"  value="1"/>
-      <input type="submit" name="submit"/>
+      <input type="hidden" name="-$action" value="createResources" />
+      <input type="hidden" name="-parallel" value="y" />
+      <input type="hidden" name="-create"  value="1"/>
+      <center><input type="submit" name="submit"/></center>
     </form>
     </td>
 </tr>
@@ -30,8 +31,4 @@
 </table>
 <br />
 <br />
-
-
-<div align="left"><span class="xs"><hudsonFog /></span></div>      <!-- link to Portal page for current category -->
-</div>
 

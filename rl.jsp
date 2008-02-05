@@ -14,6 +14,7 @@
     <taskTreeControl/>
     <parallelResourceList />
     <div align="right"><measurement/></div>
+    <createResources/><br/>
   </td>
 <hideBlock>
   <td valign="top" align="left" bgcolor="eeeeee">
