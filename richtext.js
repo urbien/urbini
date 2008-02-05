@@ -852,7 +852,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// IE: paste
 		addEvent(this.document.body, 'paste', this._onpaste, false);
 
-
 		if(this.rtePref.autoClose) {
       addEvent(document, 'click', this.onlosefocus, false);
 
@@ -863,6 +862,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			else // FF, Opera
 			  addEvent(this.document, 'focus', this.onfocus, false);
 		}
+    // to prevent Ctrl + b in FF
+  	addEvent(this.document, "keydown", this._onkeydown, false);
 	}
   this.loadCSS = function() {
 		var cssFiles = ['../styles/common.css', '../styles/properties.css'];
@@ -1117,18 +1118,32 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	this._onkeyup = function(e) {
 		i_am.fitHeightToVisible();
-
+    
 		// FF onpaste
 		e = getDocumentEvent(e);
     if((e.ctrlKey && e.keyCode == 86) // e.DOM_VK_V
          || (e.shiftKey && e.keyCode == 45)) /* e.DOM_VK_INSERT */ {
      RteEngine.onPasteHandler(i_am.iframeObj.id); 
     }
+
+    // FF: ctrl + b - bold (in other browsers it works by default)
+    if(i_am.isNetscape && e.ctrlKey && (e.keyCode == 66 || e.keyCode == 98)) {
+  	  i_am.performCommand("bold", null, true);
+  	}
+    
     // except navigation keys
     if(e.keyCode < 33 || e.keyCode > 40)
       i_am.isChanged = true;
 	}
-
+	// prevents default Ctrl+b behaviour in FF.
+  this._onkeydown = function(e) {
+    if(i_am.isNetscape == false)
+      return;
+    if(e.ctrlKey && (e.keyCode == 66 || e.keyCode == 98)) {
+      e.preventDefault();
+    }
+  }
+  
 	this.fitHeightToVisible = function() {
 		// apply it if no scrolling
 		if(this.iframeObj.scrolling != 'no')
