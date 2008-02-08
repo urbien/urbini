@@ -862,7 +862,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			else // FF, Opera
 			  addEvent(this.document, 'focus', this.onfocus, false);
 		}
-    // to prevent Ctrl + b in FF
+    // to prevent Ctrl + b,i,u,t in FF
   	addEvent(this.document, "keydown", this._onkeydown, false);
 	}
   this.loadCSS = function() {
@@ -1114,8 +1114,18 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// IE's hack
 	// to store the current range to which to apply the command
 	this._ondeactivate = function() {
-		i_am.curRange = i_am.document.selection.createRange();
+		i_am.curRange = null;
+		if(i_am.document.selection)
+		  i_am.curRange = i_am.document.selection.createRange();
+		else if(i_am.window.getSelection) {
+		  var selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        i_am.curRange = selection.getRangeAt(0);
+      //selectedRange.cloneRange();
+      }
+		} 
 	}
+	
 	this._onkeyup = function(e) {
 		i_am.fitHeightToVisible();
     
@@ -1127,8 +1137,20 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     }
 
     // FF: ctrl + b - bold (in other browsers it works by default)
-    if(i_am.isNetscape && e.ctrlKey && (e.keyCode == 66 || e.keyCode == 98)) {
+    if(i_am.isNetscape && e.ctrlKey && (e.keyCode == 66)) {
   	  i_am.performCommand("bold", null, true);
+  	}
+  	// FF: ctrl + i - italic
+    if(i_am.isNetscape && e.ctrlKey && (e.keyCode == 73)) {
+  	  i_am.performCommand("italic", null, true);
+  	}
+  	// FF: ctrl + u - underline
+    if(i_am.isNetscape && e.ctrlKey && (e.keyCode == 85)) {
+  	  i_am.performCommand("underline", null, true);
+  	}
+    // ctrl + t - monospace
+    if(e.ctrlKey && (e.keyCode == 84)) {
+  	  i_am.setMonospace();
   	}
     
     // except navigation keys
@@ -1139,7 +1161,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   this._onkeydown = function(e) {
     if(i_am.isNetscape == false)
       return;
-    if(e.ctrlKey && (e.keyCode == 66 || e.keyCode == 98)) {
+    // prevent for ctrl+b, ctrl+i, ctrl+u, ctrl+t  
+    if (e.ctrlKey && (e.keyCode == 66 || e.keyCode == 73 || 
+            e.keyCode == 85 || e.keyCode == 84)) {
       e.preventDefault();
     }
   }
@@ -1481,6 +1505,31 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 		i_am.insertHTML(html);
 	}
+	
+	this.setMonospace = function() {
+	  // IE
+	  if(typeof i_am.document.selection != 'undefined') {
+	    var ranges = i_am.document.selection.createRangeCollection();
+	    for(var i = 0; i < ranges.length; i++) {
+	      var html = "<span style=\"font-family: monospace;\">" +  ranges[i].htmlText + "</span>";
+	      ranges[i].pasteHTML(html);
+	    }
+	  }
+	  // FF - does not work!
+	  else if (typeof i_am.window.getSelection != 'undefined') {
+      var selection = window.getSelection();
+      if (typeof selection.rangeCount != 'undefined' &&
+            selection.rangeCount > 0) {
+        var range = selection.getRangeAt(0);
+        if (typeof range.surroundContents != 'undefined') {
+          var span = i_am.document.createElement('div');
+          span.style.fontFamily = "monospace";
+          range.surroundContents(span);
+        }
+      }
+    }
+	}
+	
 	// cancel ------------------------------
 	this.cancelLink = function() {
 	  i_am.skipClose = true;
