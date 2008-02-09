@@ -98,6 +98,10 @@
 		  addSpellcheck();
 		  dictionaryHandler.init();
 		  Tooltip.init();
+		  
+		  // The URL bar is hidden when running on the iPhone.
+		  if (navigator.userAgent.indexOf('iPhone') != -1)
+		    window.scrollTo(0, 1);
     }
 
     /*
