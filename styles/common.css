@@ -324,12 +324,15 @@ table.greyBorder {
 }
 
 /* Gallery */
-.galleryItem {
+.galleryItem, .galleryItem_css3 {
   border-width: 0px;
   padding: 0px;
   margin: 0px;
   border-spacing: 0px;
 }
+
+/* native shadow, meanwhile for WebKit only */
+.galleryItem_css3 { -webkit-box-shadow: 5px 5px 25px #555; background-color: #aaf; }
 
 .galleryItem td {
   vertical-align: top; background-position: top;
