@@ -6261,9 +6261,29 @@ function setCurrentItem (event, tr) {
   if (!div)
     return;
 
-  var form = div.getElementsByTagName('form');
-  var forum = form[0].elements['.forum_select'];
   forum.value = tr.id;
+}
+
+function inReplyTo(event, tr, shortPropName, value) {
+  tr.style.backgroundColor = '#F5ABE6';
+  document.forms['tablePropertyList'].elements["." + shortPropName].value = value;
+  var aa = document.getElementById('currentItem');
+  if (!aa)
+    return;
+  if (aa.href != tr.id) {
+    var elm = document.getElementById(aa.href);
+    if (elm == null)
+      return;
+    var cName = elm.className;
+    if (cName)
+      elm.style.backgroundColor = '';
+    else
+      elm.style.backgroundColor = 'white';
+
+    aa.href = tr.id;
+  }
+  //  document.forms['tablePropertyList'].elements["'." + shortPropName + "_select'"] = value;
+//  document.forms['tablePropertyList'].elements["'." + shortPropName + "_verified'"] = 'y';
 }
 
 function addAndShowItems(tr, e) {
@@ -10020,4 +10040,43 @@ var TabSwap = {
     this.update();
   }
 }
+
+function showMobileTab(e, td, hideDivId, unhideDivId) {
+  e = getDocumentEvent(e);
+
+  var isViewAll = td.id == 'viewAll';
+  var hasPrefix;
+  if (hideDivId  &&  hideDivId.length != 0) {
+    var tokens = hideDivId.split(',');
+    var len = tokens.length;
+    for(var i = 0; i < len; i++) {
+      var tok = trim(tokens[i]);
+      var div = document.getElementById(tok);
+      if (!div)
+        continue;
+      div.style.visibility = Popup.HIDDEN;
+      div.style.display = "none";
+    }
+  }
+  if (unhideDivId  &&  unhideDivId.length != 0) {
+    var tokens = unhideDivId.split(',');
+    var len = tokens.length;
+    for(var i = 0; i < len; i++) {
+      var tok = trim(tokens[i]);
+      var div = document.getElementById(tok);
+      if (!div)
+        continue;
+      div.style.visibility = Popup.VISIBLE;
+      div.style.display = 'inline';
+    }
+  }
+  execJS.runDivCode(curDiv);
+  if(typeof ImageAnnotations != 'undefined')
+    ImageAnnotations.onTabSelection(curDiv);
+
+  resizeIframeOnTabSelection(curDiv); // IE
+
+  return stopEventPropagation(e);
+}
+
 
