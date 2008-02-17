@@ -6261,6 +6261,8 @@ function setCurrentItem (event, tr) {
   if (!div)
     return;
 
+  var form = div.getElementsByTagName('form');
+  var forum = form[0].elements['.forum_select'];
   forum.value = tr.id;
 }
 
