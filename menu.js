@@ -5691,6 +5691,56 @@ function addAndShowWait(event, body, hotspot, content, noInsert, isReplace)	{
 
   interceptLinkClicks(divCopyTo);
 }
+// adds comment/resource before server confirms that resource was successfully created
+function addBeforeProcessing(tableId, subject, event) {
+  var table = document.getElementById(tableId);
+  if (!table)
+    return stopEventPropagation(event);
+  var tbody = table.getElementsByTagName('tbody');
+  if (!tbody || tbody.length == 0)
+    return stopEventPropagation(event);
+  var curItem = document.getElementById('currentItem');
+  var curTr;
+  var ctbody = tbody[0];
+  var pos = 1;
+  var afterTR;
+  if (curItem == null) {
+    var elms = ctbody.getElementsByTagName('tr');
+    for (var i=0; i<elms.length  &&  curTr == null; i++) {
+      if (elms[i].id.indexOf('http') == 0) {
+        curTr = elms[i];
+        afterTR = curTr;
+//        pos = i + 1;
+      }
+    }
+  }
+  else {
+    curTr = document.getElementById(curItem.href);
+    var elms = ctbody.getElementsByTagName('tr');
+    for (var i=0; i<elms.length; i++) {
+      var id = elms[i].id;
+      if (id && curTr.id == id) {
+        if (i != elms.length) {
+          afterTR = elms[i + 1];
+          pos = i + 1;
+        }
+        else
+          pos = -1;
+        break;
+      }
+    }
+  }
+  if (curTr == null)
+    return stopEventPropagation(event);
+  var newTr = copyTableRow(ctbody, pos, curTr);
+  elms = newTr.getElementsByTagName('td');
+  elms[0].innerHTML = subject.value;
+  if (pos == -1)
+    ctbody.appendChild(newTr);
+  else
+    ctbody.insertBefore(newTros, curTr);
+  return stopEventPropagation(event);
+}
 
 function extractTotalFrom(tot) {
   var ii = 0;
@@ -10043,10 +10093,9 @@ var TabSwap = {
   }
 }
 
-function showMobileTab(e, td, hideDivId, unhideDivId) {
+function showMobileTab(e, hideDivId, unhideDivId) {
   e = getDocumentEvent(e);
 
-  var isViewAll = td.id == 'viewAll';
   var hasPrefix;
   if (hideDivId  &&  hideDivId.length != 0) {
     var tokens = hideDivId.split(',');
@@ -10072,11 +10121,11 @@ function showMobileTab(e, td, hideDivId, unhideDivId) {
       div.style.display = 'inline';
     }
   }
-  execJS.runDivCode(curDiv);
-  if(typeof ImageAnnotations != 'undefined')
-    ImageAnnotations.onTabSelection(curDiv);
+//  execJS.runDivCode(curDiv);
+//  if(typeof ImageAnnotations != 'undefined')
+//    ImageAnnotations.onTabSelection(curDiv);
 
-  resizeIframeOnTabSelection(curDiv); // IE
+//  resizeIframeOnTabSelection(curDiv); // IE
 
   return stopEventPropagation(e);
 }
