@@ -4,7 +4,7 @@ body {
 	background: #FFFFFF;
 	color: #000000;
 	overflow: hidden;
-	font-size: 12pt;
+	font-size: 0.5em;
 	-webkit-text-size-adjust: none;
 }
 /*
@@ -27,8 +27,8 @@ a:hover img {
 }
 */
 
-td {font-family:Helvetica; font-size:19pt;}
-table {font-family:Helvetica; font-size:19pt;}
+td {font-family:Helvetica; font-size:12pt;}
+table {font-family:Helvetica; font-size:12pt;}
 tt {font-family:Helvetica; font-size:12pt;}
 span {font-family:Helvetica; font-size:12pt;}
 a {font-family:Helvetica; font-size:12pt;}
@@ -59,11 +59,25 @@ div {font-family:Helvetica; font-size:10pt;}
   border-top:1px solid #AFC4D5;
   color:#000066;
   height:28pt;
+  font-family: Helvetica;
+  font-size: 1.2em;
   text-decoration:none;
-  font-family:Helvetica;
-  font-size:15pt;
   vertical-align:middle;
 }
+.isel {
+  background-color:fffdc3;
+  border-bottom: 1px solid #C0C9D7;
+  border-left: 1px solid #C0C9D7;
+  border-right: 1px solid #AFC4D5;
+  border-top:1px solid #AFC4D5;
+  color:#000066;
+  height:28pt;
+  font-family: Helvetica;
+  font-size: 1.2em;
+  text-decoration:none;
+  vertical-align:middle;
+}
+
 .propLabel {
   font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: bold;
 }
@@ -101,7 +115,6 @@ div {font-family:Helvetica; font-size:10pt;}
 
 .button {
     position: absolute;
-    top: 8px;
     right: 6px;
     -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
     -webkit-border-radius: 0;
@@ -116,10 +129,11 @@ div {font-family:Helvetica; font-size:10pt;}
     text-decoration: none;
     background: none;
 }
+.chat {
+  padding: 0px 5px 0px 5px;
+}
 .button_left {
     position: absolute;
-    top: 8px;
-    left: 6px;
     -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
     -webkit-border-radius: 0;
     border-width: 0 5px 0 5px;

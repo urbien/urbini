@@ -5692,54 +5692,89 @@ function addAndShowWait(event, body, hotspot, content, noInsert, isReplace)	{
   interceptLinkClicks(divCopyTo);
 }
 // adds comment/resource before server confirms that resource was successfully created
-function addBeforeProcessing(tableId, subject, event) {
-  var table = document.getElementById(tableId);
-  if (!table)
+function addBeforeProcessing(tbodyId, subject, event) {
+  var ctbody = document.getElementById(tbodyId);
+  if (!ctbody)
     return stopEventPropagation(event);
-  var tbody = table.getElementsByTagName('tbody');
-  if (!tbody || tbody.length == 0)
-    return stopEventPropagation(event);
-  var curItem = document.getElementById('currentItem');
-  var curTr;
-  var ctbody = tbody[0];
-  var pos = 1;
   var afterTR;
-  if (curItem == null) {
-    var elms = ctbody.getElementsByTagName('tr');
-    for (var i=0; i<elms.length  &&  curTr == null; i++) {
-      if (elms[i].id.indexOf('http') == 0) {
-        curTr = elms[i];
-        afterTR = curTr;
-//        pos = i + 1;
-      }
-    }
-  }
-  else {
-    curTr = document.getElementById(curItem.href);
-    var elms = ctbody.getElementsByTagName('tr');
-    for (var i=0; i<elms.length; i++) {
-      var id = elms[i].id;
-      if (id && curTr.id == id) {
-        if (i != elms.length) {
-          afterTR = elms[i + 1];
-          pos = i + 1;
-        }
-        else
-          pos = -1;
-        break;
-      }
-    }
-  }
+
+  var curTr = document.getElementById('tr_empty');
   if (curTr == null)
     return stopEventPropagation(event);
-  var newTr = copyTableRow(ctbody, pos, curTr);
-  elms = newTr.getElementsByTagName('td');
+  var newTr = copyTableRow(ctbody, 1, curTr);
+  newTr.className = '';
+//  newTr.style.visibility = Popup.VISIBLE;
+//  newTr.style.display = "inline";
+  newTr.id = 'newTr';
+  var elms = newTr.getElementsByTagName('td');
   elms[0].innerHTML = subject.value;
-  if (pos == -1)
-    ctbody.appendChild(newTr);
-  else
-    ctbody.insertBefore(newTros, curTr);
-  return stopEventPropagation(event);
+  var date = new Date();
+  elms[1].innerHTML = '<tt>' + date.getHours() + ':' + date.getMinutes() + '</tt>';
+  ctbody.appendChild(newTr);
+
+  var div = document.createElement('div');
+  div.style.display = "none";
+  var form = document.forms['tablePropertyList'];
+  var params = getFormFilters(form, true);
+  subject.value = '';
+
+  var retCode = stopEventPropagation(event);
+  postRequest(event, 'mkresource', params, div, newTr, updateTR);
+  return retCode;
+
+  function updateTR(event, body, hotspot, content)  {
+    setInnerHtml(body, content);
+
+    var tables = body.getElementsByTagName("table");
+    if (!tables)
+      return;
+    var table;
+    for (var i=0; i<tables.length  &&  table == null; i++) {
+      if (tables[i].id  && tables[i].id == 't_chat')
+        table = tables[i];
+    }
+    if (!table)
+      return;
+    var trs = table.getElementsByTagName("tr");
+    var tr = document.getElementById('newTr');
+
+    var replacedTr;
+
+    for (var i=0; i<trs.length  &&  replacedTr == null; i++) {
+      if (trs[i].id  &&  trs[i].id.indexOf('http') == 0)
+        replacedTr = trs[i];
+    }
+
+    var aa = document.getElementById('currentItem');
+    var curItem = document.getElementById(aa.href);
+    if (curItem)
+      curItem.style.backgroundColor = '#FFFFFF';
+
+    aa.href = replacedTr.id;
+
+    var tbodies = table.getElementsByTagName("tbody");
+    var tbody = tbodies[0];
+
+////    var replacedTr = copyTableRow(tbody, 1, trs[trs.length - 1]);
+    ctbody.removeChild(tr);
+    ctbody.appendChild(replacedTr);
+//    var tables = replacedTr.getElementsByTagName('table');
+    
+//    elms[2].innerHTML = tables[0].parentNode.innerHTML;
+/*
+    var errDiv = document.getElementById('div_err');
+    if (!errDiv)
+      errDiv.innerHTML = '';
+    var bdivs = body.getElementsByTagName("div");
+    for (var i=0; i<bdivs.length; i++) {
+      if (bdivs[i].id  &&  bdivs[i].id == 'div_err'  &&  bdivs[i].innerHTML) {
+        setInnerHtml(errDiv, bdivs[i].innerHTML);
+        return;
+      }
+    }
+*/
+  }
+
 }
 
 function extractTotalFrom(tot) {
@@ -10131,3 +10166,90 @@ function showMobileTab(e, hideDivId, unhideDivId) {
 }
 
 
+/*
+function addBeforeProcessing(tableId, subject, event) {
+  var table = document.getElementById(tableId);
+  if (!table)
+    return stopEventPropagation(event);
+  var tbody = table.getElementsByTagName('tbody');
+  if (!tbody || tbody.length == 0)
+    return stopEventPropagation(event);
+  var curItem = document.getElementById('currentItem');
+  var curTr;
+  var ctbody = tbody[0];
+  var pos = 1;
+  var afterTR;
+  if (curItem == null) {
+    var elms = ctbody.getElementsByTagName('tr');
+    for (var i=0; i<elms.length  &&  curTr == null; i++) {
+      if (elms[i].id.indexOf('http') == 0) {
+        curTr = elms[i];
+        afterTR = curTr;
+//        pos = i + 1;
+      }
+    }
+  }
+  else {
+    curTr = document.getElementById(curItem.href);
+    var elms = ctbody.getElementsByTagName('tr');
+    for (var i=0; i<elms.length; i++) {
+      var id = elms[i].id;
+      if (id && curTr.id == id) {
+        if (i != elms.length) {
+          afterTR = elms[i + 1];
+          pos = i + 1;
+        }
+        else
+          pos = -1;
+        break;
+      }
+    }
+  }
+  if (curTr == null)
+    return stopEventPropagation(event);
+  var newTr = copyTableRow(ctbody, pos, curTr);
+  elms = newTr.getElementsByTagName('td');
+
+  elms[0].innerHTML = subject.value;
+  for (var i=1; i<elms.length; i++)
+    elms[i].innerHTML = "";
+  if (pos == -1)
+    ctbody.appendChild(newTr);
+  else
+    ctbody.insertBefore(newTros, curTr);
+  return stopEventPropagation(event);
+}
+function addBeforeProcessing(tbodyId, subject, event) {
+  var table = document.getElementById(tableId);
+  if (!table)
+    return stopEventPropagation(event);
+  var tbody = table.getElementsByTagName('tbody');
+  if (!tbody || tbody.length == 0)
+    return stopEventPropagation(event);
+  var ctbody = tbody[0];
+  var afterTR;
+
+  var curTr = document.getElementById('tr_empty');
+  if (curTr == null)
+    return stopEventPropagation(event);
+  var newTr = copyTableRow(ctbody, 1, curTr);
+  newTr.style.visibility = Popup.VISIBLE;
+  newTr.style.display = "inline";
+  newTr.id = 'newTr';
+  var elms = newTr.getElementsByTagName('td');
+  elms[0].innerHTML = subject.value;
+  var date = new Date();
+  elms[1].innerHTML = '<tt>' + date.getHours() + ':' + date.getMinutes() + '</tt>';
+  ctbody.appendChild(newTr);
+
+  var div = document.createElement('div');
+  div.style.display = "none";
+  var form = document.forms['tablePropertyList'];
+  var params = getFormFilters(form, true);
+  subject.value = '';
+
+  var retCode = stopEventPropagation(event);
+  postRequest(event, 'mkresource', params, div, newTr, updateTR);
+  return retCode;
+}
+*/
