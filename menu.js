@@ -1111,7 +1111,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         for (var i=0; i<selectItems.length; i++) {
           if (selectItems[i].type.toLowerCase() == "hidden") {
             hiddenSelectedItem = selectItems[i];
-            selectItems[i].value = null;
+            selectItems[i].value = '';
             continue;
           }
           if (!selectItems[i].checked) {
