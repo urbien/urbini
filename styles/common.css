@@ -1427,3 +1427,6 @@ TD.closePopup {
 }
 
 .ftChk { width: 13px; height:13px; overflow:hidden; padding:0px; border:0px; margin:0px;margin-top:1px; vertical-align:middle;}
+
+#system_tooltip  { visibility:hidden; padding:0; position:absolute; z-index:10000; top:0px; left:-400px; width:220px; }
+.system_tooltip_webkit { -webkit-box-shadow: 5px 5px 25px #555; -webkit-border-radius: 5px; background-color: #fffcb8; }
