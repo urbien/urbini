@@ -5692,7 +5692,10 @@ function addAndShowWait(event, body, hotspot, content, noInsert, isReplace)	{
   interceptLinkClicks(divCopyTo);
 }
 // adds comment/resource before server confirms that resource was successfully created
-function addBeforeProcessing(tbodyId, subject, event) {
+function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
+  if (!tbodyId)
+    tbodyId = 't_im";'
+
   var ctbody = document.getElementById(tbodyId);
   if (!ctbody)
     return stopEventPropagation(event);
@@ -5703,19 +5706,30 @@ function addBeforeProcessing(tbodyId, subject, event) {
     return stopEventPropagation(event);
   var newTr = copyTableRow(ctbody, 1, curTr);
   newTr.className = '';
-//  newTr.style.visibility = Popup.VISIBLE;
-//  newTr.style.display = "inline";
-  newTr.id = 'newTr';
   var elms = newTr.getElementsByTagName('td');
   elms[0].innerHTML = subject.value;
   var date = new Date();
   elms[1].innerHTML = '<tt>' + date.getHours() + ':' + date.getMinutes() + '</tt>';
+
+  var imgTable = newTr.getElementsByTagName('table');
+  var imgTds = imgTable[0].getElementsByTagName('td');
+  var img = imgTds[0].getElementsByTagName('img');
+  var anchor = imgTds[0].getElementsByTagName('a');
+
+  var href = "v.html?uri=" + encodeURIComponent(contactUri);
+  anchor[0].href = href;
+  img[0].src = 'contactInfo?uri=' +  encodeURIComponent(contactUri) + '&thumb=y';
+
+  var anchor1 = imgTds[1].getElementsByTagName('a');
+  anchor1[0].href = href;
+  anchor1[0].innerHTML = contactName;
+
   ctbody.appendChild(newTr);
 
   var div = document.createElement('div');
   div.style.display = "none";
   var form = document.forms['tablePropertyList'];
-  var params = getFormFilters(form, true);
+  var params = getFormFilters(form, true) + "&-noRedirect=y";
   subject.value = '';
 
   var retCode = stopEventPropagation(event);
@@ -5723,6 +5737,7 @@ function addBeforeProcessing(tbodyId, subject, event) {
   return retCode;
 
   function updateTR(event, body, hotspot, content)  {
+    /*
     setInnerHtml(body, content);
 
     var tables = body.getElementsByTagName("table");
@@ -5759,22 +5774,62 @@ function addBeforeProcessing(tbodyId, subject, event) {
     ctbody.removeChild(tr);
     ctbody.appendChild(replacedTr);
 //    var tables = replacedTr.getElementsByTagName('table');
-    
+
 //    elms[2].innerHTML = tables[0].parentNode.innerHTML;
-/*
-    var errDiv = document.getElementById('div_err');
-    if (!errDiv)
-      errDiv.innerHTML = '';
-    var bdivs = body.getElementsByTagName("div");
-    for (var i=0; i<bdivs.length; i++) {
-      if (bdivs[i].id  &&  bdivs[i].id == 'div_err'  &&  bdivs[i].innerHTML) {
-        setInnerHtml(errDiv, bdivs[i].innerHTML);
-        return;
-      }
-    }
-*/
+ *
+ */
   }
 
+}
+
+function messageArrived() {
+  var android = new Object();
+  android.getBody = function () {
+      return "sample text";
+    }
+  android.getSender = function () {
+      return "gene";
+    }
+
+  var text = android.getBody();
+  if (typeof text == "undefined")
+    return;
+
+  var ctbody = document.getElementById('t_im');
+
+  var curTr = document.getElementById('tr_empty');
+  if (curTr == null)
+    return stopEventPropagation(event);
+
+  var newTr = copyTableRow(ctbody, 1, curTr);
+  newTr.className = '';
+  var elms = newTr.getElementsByTagName('td');
+  elms[0].innerHTML = text;
+  var date = new Date();
+  var mins = date.getMinutes();
+  if (mins < 10)
+    mins = '0' + mins;
+  var hours = date.getHours();
+  if (hours < 10)
+    hours = '0' + hours;
+  elms[1].innerHTML = '<tt>' + hours + ':' + mins + '</tt>';
+  var sender = android.getSender();
+
+  var imgTable = newTr.getElementsByTagName('table');
+  var imgTds = imgTable[0].getElementsByTagName('td');
+  var img = imgTds[0].getElementsByTagName('img');
+  var anchor = imgTds[0].getElementsByTagName('a');
+
+  var href = 'contactInfo?name=' + sender;
+  anchor[0].href = href;
+  img[0].src = 'contactInfo?name=' +  sender + '&thumb=y';
+
+  var anchor1 = imgTds[1].getElementsByTagName('a');
+  anchor1[0].href = href;
+  anchor1[0].innerHTML = sender;
+
+  ctbody.appendChild(newTr);
+//  d.innerHTML = d.innerHTML + text + "</br>";
 }
 
 function extractTotalFrom(tot) {
@@ -7739,6 +7794,7 @@ function copyTableRow(tbody, pos, oldTr) {
   var oldCells = oldTr.cells;
   for (var i=0; i<oldCells.length; i++) {
     var cell = document.createElement('td');
+    copyAttributes(oldCells[i], cell);
     newTr.appendChild(cell);
   }
   if (pos == tbody.rows.length)
