@@ -5783,15 +5783,13 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
 }
 
 function messageArrived() {
-  var android = new Object();
-  android.getBody = function () {
-      return "sample text";
-    }
-  android.getSender = function () {
-      return "gene";
-    }
+  var hasMessages = android.next();
+  if (hasMessages != true)
+    return;
 
+  var room = android.getChatRoom();  // works, idk how u want to use it
   var text = android.getBody();
+
   if (typeof text == "undefined")
     return;
 
