@@ -5733,7 +5733,8 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
   subject.value = '';
 
   var retCode = stopEventPropagation(event);
-  postRequest(event, 'mkresource', params, div, newTr, updateTR);
+  android.sendMessage(subject.value);
+//  postRequest(event, 'mkresource', params, div, newTr, updateTR);
   return retCode;
 
   function updateTR(event, body, hotspot, content)  {
