@@ -109,6 +109,7 @@ Popup.ie7  = (Popup.ie && typeof window.XMLHttpRequest != 'undefined') ? true : 
 Popup.opera = typeof opera != 'undefined'                         ? true : false;
 Popup.opera8 = false;
 Popup.opera9 = false;
+
 if (Popup.opera ) {
   var versionindex = navigator.userAgent.indexOf("Opera") + 6;
   var ver = navigator.userAgent.substring(versionindex);
@@ -120,6 +121,8 @@ if (Popup.opera ) {
   if (v >= 9)
     Popup.opera9 = true;
 }
+Popup.android = (typeof android != 'undefined' && android != null) ? true: false;
+
 
 // e62: Opera 8.65: Mozilla/4.0 (compatible; MSIE 6.0; Symbian OS; Series 60/0618.06.17; 9730) Opera 8.65 [en-US] UP.Link/6.3.0.0.0
 
@@ -2859,7 +2862,8 @@ var Tooltip = {
 // ************************************* intercept all clicks
 // ***********************************
 function interceptLinkClicks(div) {
-  // addEvent(document, 'keydown', onKeyDown, false);
+  if (Popup.android)
+    addEvent(document, 'keypress',  onKeyPress, false);
   // addEvent(document, 'keyup', onKeyUp, false);
   var anchors;
   var doc;
@@ -4947,7 +4951,7 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
   var msg = subject.value;
   subject.value = '';
 
-  if (typeof android != 'undefined' && android != null) {
+  if (Popup.android) {
     android.scroll();
     android.sendMessage(msg);
   }
@@ -5004,7 +5008,7 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
 }
 
 function messageArrived() {
-  if (typeof android == 'undefined' || !android)
+  if (!Popup.android)
     return;
   var hasMessages = android.next();
   if (hasMessages != true)
@@ -9531,3 +9535,11 @@ function addBeforeProcessing(tbodyId, subject, event) {
   return retCode;
 }
 */
+
+function onKeyPress(e) {
+  var target = getTargetElement(e);
+  var link = getTargetAnchor(e);
+  if (!link || !link.href || link.href == null)
+    return;
+  var a = link.href;
+}
