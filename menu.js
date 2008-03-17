@@ -3099,6 +3099,18 @@ function onClick(e) {
   else if (link.id  &&  link.id.startsWith('-inner')) {      // display as on-page dialog
     return onClickDisplayInner(e, link);
   }
+  else if (typeof android != 'undefined' && android != null) {
+    url = link.href;
+    var div = document.createElement("DIV");
+    document.body.appendChild(div);
+    postRequest(e, url, params, div, null, loadPage);
+
+    function loadPage(event, div, hotspot, content) {
+      div.setInnerHtml(content);
+      var offset = getElementCoords(div);
+      window.scroll(offset.left, offset.top);      
+    }  
+  }
 
   var idx = link.href.indexOf("&-ulId=");
 
