@@ -3062,6 +3062,8 @@ function onClickDisplayInner(e, anchor) {
  * Registered to receive control on a click on any link. Adds control key
  * modifier as param to url, e.g. _ctrlKey=y
  */
+var androidDivs = [];
+
 function onClick(e) {
   detectClick = true;
   var p;
@@ -3098,18 +3100,6 @@ function onClick(e) {
   }
   else if (link.id  &&  link.id.startsWith('-inner')) {      // display as on-page dialog
     return onClickDisplayInner(e, link);
-  }
-  else if (typeof android != 'undefined' && android != null) {
-    var urlParts = link.href.split('?');
-    var div = document.createElement("DIV");
-    document.body.appendChild(div);
-    postRequest(e, urlParts[0], urlParts[1], div, null, loadPage);
-
-    function loadPage(event, div, hotspot, content) {
-      div.setInnerHtml(content);
-      var offset = getElementCoords(div);
-      window.scroll(offset.left, offset.top);
-    }
   }
 
   var idx = link.href.indexOf("&-ulId=");
