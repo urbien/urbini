@@ -87,7 +87,8 @@
       initListBoxes(null);
 //      Packages.java.lang.System.out.println('onLoad 3: ' + new Date());
       uiFocus();
-      addEventOnSchedule();
+      if (typeof addEventOnSchedule != 'undefined')
+        addEventOnSchedule();
 //      Packages.java.lang.System.out.println('onLoad 4: ' + new Date());
 //      if (typeof searchHighlighting != 'undefined')
 //        searchHighlighting();
