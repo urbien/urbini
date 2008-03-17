@@ -3100,16 +3100,16 @@ function onClick(e) {
     return onClickDisplayInner(e, link);
   }
   else if (typeof android != 'undefined' && android != null) {
-    url = link.href;
+    var urlParts = link.href.split('?');
     var div = document.createElement("DIV");
     document.body.appendChild(div);
-    postRequest(e, url, params, div, null, loadPage);
+    postRequest(e, urlParts[0], urlParts[1], div, null, loadPage);
 
     function loadPage(event, div, hotspot, content) {
       div.setInnerHtml(content);
       var offset = getElementCoords(div);
-      window.scroll(offset.left, offset.top);      
-    }  
+      window.scroll(offset.left, offset.top);
+    }
   }
 
   var idx = link.href.indexOf("&-ulId=");
@@ -4944,20 +4944,27 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
   img[0].src = 'contactInfo?uri=' +  encodeURIComponent(contactUri) + '&thumb=y';
 
   var anchor1 = imgTds[1].getElementsByTagName('a');
-  anchor1[0].href = href;
   anchor1[0].innerHTML = contactName;
+  anchor1[0].href = href;
 
   ctbody.appendChild(newTr);
 
   var div = document.createElement('div');
   div.style.display = "none";
   var form = document.forms['tablePropertyList'];
-  var params = getFormFilters(form, true) + "&-noRedirect=y";
-  subject.value = '';
 
   var retCode = stopEventPropagation(event);
-  android.sendMessage(subject.value);
-//  postRequest(event, 'mkresource', params, div, newTr, updateTR);
+  var msg = subject.value;
+  subject.value = '';
+
+  if (typeof android != 'undefined' && android != null) {
+    android.scroll();
+    android.sendMessage(msg);
+  }
+  else{
+    var params = getFormFilters(form, true) + "&-noRedirect=y";
+    postRequest(event, 'mkresource', params, div, newTr, updateTR);
+  }
   return retCode;
 
   function updateTR(event, body, hotspot, content)  {
@@ -5007,6 +5014,8 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
 }
 
 function messageArrived() {
+  if (typeof android == 'undefined' || !android)
+    return;
   var hasMessages = android.next();
   if (hasMessages != true)
     return;
@@ -5051,6 +5060,7 @@ function messageArrived() {
   anchor1[0].innerHTML = sender;
 
   ctbody.appendChild(newTr);
+  android.scroll();
 //  d.innerHTML = d.innerHTML + text + "</br>";
 }
 
