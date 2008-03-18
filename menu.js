@@ -4952,7 +4952,7 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
   subject.value = '';
 
   if (Popup.android) {
-    android.scroll();
+//    android.scroll();
     android.sendMessage(msg);
   }
   else{
@@ -5054,7 +5054,7 @@ function messageArrived() {
   anchor1[0].innerHTML = sender;
 
   ctbody.appendChild(newTr);
-  android.scroll();
+//  android.scroll();
 //  d.innerHTML = d.innerHTML + text + "</br>";
 }
 
