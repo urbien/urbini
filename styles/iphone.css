@@ -134,6 +134,7 @@ div {font-family:Helvetica; font-size:10pt;}
 }
 .button_left {
     position: absolute;
+//    left: 6px;
     -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
     -webkit-border-radius: 0;
     border-width: 0 5px 0 5px;
@@ -147,6 +148,9 @@ div {font-family:Helvetica; font-size:10pt;}
     text-decoration: none;
     background: none;
 }
+tr {height: 35px;}
+tr.dark  {background-color:#eeeeee; height: 35px;}
+
 /*
 .ul {
     position: absolute;
