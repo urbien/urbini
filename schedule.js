@@ -9,6 +9,12 @@ function schedule(e) {
   if (target == null)
     return stopEventPropagation(e);
   var imgSrc;
+  
+  // remove reassign icon
+  var tId = target.id;
+  if (currentCell && tId != currentCell.id)
+    schReassign.removeIcon(div);
+
   var className = target.className;
   if (!className || className.length == 0) {
     var lTarget = target.tagName.toLowerCase();
@@ -56,11 +62,11 @@ function schedule(e) {
 // lastCellClickTime);
   var calendarImg = "<img src='icons/blank.gif' width='16' height='16' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' />";
   var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' title='Schedule procedure' width='16' height='16' align='left' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' align='right' />";
+  
   if (!currentCell) {
     currentCell = target;
     currentCellBackground = currentCell.style.backgroundColor;
     currentCell.style.backgroundColor = "#D7D8FB";
-
     if (!isAssignedCell) {
       if (currentCell.className == 'b')
         currentCell.innerHTML = calendarImg;
@@ -94,7 +100,6 @@ function schedule(e) {
       }
       div.style.whiteSpace = 'nowrap';
       currentCell.style.height = '1px';
-      schReassign.removeIcon(div);
     }
     currentCell.style.backgroundColor = currentCellBackground;
     currentCell = target;
@@ -357,6 +362,8 @@ var schReassign = {
   },
 
   addIcon : function(contentDiv) {
+    if (this.isCellCurrent(contentDiv) == false)
+      return;
     this.contentDiv = contentDiv;
     if(this.iconDiv == null) {
       this.init();
@@ -453,6 +460,16 @@ var schReassign = {
 			((e.which) ? e.which : 0));
 		if (charCode == 27) // escape
 		    schReassign.disactivate();
+  },
+  isCellCurrent : function(cellObj) {
+    if (cellObj == null)
+      return false;
+    var anchors = cellObj.getElementsByTagName('a');
+    for (var i = 0; i < anchors.length; i++) {
+      if (anchors[i].href  &&  anchors[i].href.indexOf("ticket?") != -1)
+        return true;
+    }
+    return false;
   },
   //
   moveProcedure : function(event, srcCell, targetCell) {
