@@ -2862,8 +2862,13 @@ var Tooltip = {
 // ************************************* intercept all clicks
 // ***********************************
 function interceptLinkClicks(div) {
-  if (Popup.android)
+  if (Popup.android) {
     addEvent(document, 'keypress',  onKeyPress, false);
+    addEvent(document, 'keydown',   onKeyPress, false);
+    addEvent(document, 'mousedown', onKeyPress, false);
+    addEvent(document, 'mouseup',   onKeyPress, false);
+    addEvent(document, 'click',     onKeyPress, false);
+  }
   // addEvent(document, 'keyup', onKeyUp, false);
   var anchors;
   var doc;
@@ -4952,6 +4957,7 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
   subject.value = '';
 
   if (Popup.android) {
+    window.scrollTo(0, 3000);
 //    android.scroll();
     android.sendMessage(msg);
   }
@@ -5054,6 +5060,7 @@ function messageArrived() {
   anchor1[0].innerHTML = sender;
 
   ctbody.appendChild(newTr);
+  window.scrollTo(0, 3000);
 //  android.scroll();
 //  d.innerHTML = d.innerHTML + text + "</br>";
 }
