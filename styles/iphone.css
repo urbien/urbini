@@ -97,10 +97,13 @@ div {font-family:Helvetica; font-size:10pt;}
 	cursor: pointer;
 }
 /* iphonenav.css */
-.topBar {
+.topBar 
+{
+    display: table;
+    width: 100%;
     box-sizing: border-box;
     margin: 0;
-    padding: 10px;
+    padding: 3px;
     line-height: 20px;
     font-size: 20px;
     font-weight: bold;
@@ -114,13 +117,12 @@ div {font-family:Helvetica; font-size:10pt;}
 }
 
 .button {
-    position: absolute;
-    right: 6px;
+    float: right;
     -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
     -webkit-border-radius: 0;
     border-width: 0 5px 0 5px;
-    padding: 0;
-    height: 28px;
+    padding: 3px;
+    margin: 3px;
     line-height: 28px;
     font-size: 12px;
     font-weight: bold;
@@ -133,13 +135,12 @@ div {font-family:Helvetica; font-size:10pt;}
   padding: 0px 5px 0px 5px;
 }
 .button_left {
-    position: absolute;
-//    left: 6px;
+    float: left;
     -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
     -webkit-border-radius: 0;
     border-width: 0 5px 0 5px;
-    padding: 0;
-    height: 28px;
+    padding: 3px;
+    margin: 3px;
     line-height: 28px;
     font-size: 12px;
     font-weight: bold;
