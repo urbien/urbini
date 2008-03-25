@@ -146,8 +146,8 @@ Popup.maemo= (Popup.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
 Popup.iPhone = agent.indexOf("iPhone") != -1;
-var mobileCookie = trim(readCookie('mobile_mode'));
-Popup.mobile = mobileCookie == 'true'; //screen.width < 600;
+var mobileCookie = readCookie('mobile_mode');
+Popup.mobile = mobileCookie != null && trim(mobileCookie) == 'true'? true : false; //screen.width < 600;
 // for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
 
