@@ -5011,16 +5011,18 @@ function mobileOnclick(e) {
 
   /////////////////
   e = getDocumentEvent(e);
-  var link = getEventTarget(e);
-  if (!link || !link.href || link.href == null)
+  var l = getEventTarget(e);
+  var link = getAnchorForEventTarget(l);
+  if (!link || !link.href || link.href == null) {
     return;
+  }
+
   var newUrl = link.href;
 //  alert(newUrl + "; " + currentUrl);
   //////////////////
   //  var newUrl = android.getCurrentUrl();
   if (currentUrl == newUrl)
     return stopEventPropagation(e);
-
   var currentDiv = urlToDivs[currentUrl];
   if (!currentDiv) {
     currentDiv = document.getElementById('mainDiv');
@@ -5041,7 +5043,6 @@ function mobileOnclick(e) {
   div.style.visibility = Popup.VISIBLE;
   div.style.display = "inline";
   urlToDivs[newUrl] = div;
-
   insertAfter(currentDiv.parentNode, div, currentDiv);
   //document.body.appendChild(div);
 
@@ -5050,7 +5051,6 @@ function mobileOnclick(e) {
   var idx = url.lastIndexOf('/');
   url = url.substring(0, idx + 1) + 'm' + url.substring(idx);
   postRequest(e, url, urlParts[1], div, link, loadPage);
-
   function loadPage(event, div, hotspot, content) {
     setInnerHtml(div, content);
 //    var offset = getElementCoords(div);
