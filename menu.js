@@ -146,7 +146,8 @@ Popup.maemo= (Popup.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
 Popup.iPhone = agent.indexOf("iPhone") != -1;
-Popup.mobile = screen.width < 600;
+var mobileCookie = trim(readCookie('mobile_mode'));
+Popup.mobile = mobileCookie == 'true'; //screen.width < 600;
 // for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
 
@@ -2862,13 +2863,23 @@ var Tooltip = {
 // ************************************* intercept all clicks
 // ***********************************
 function interceptLinkClicks(div) {
-  if (Popup.android) {
-    addEvent(document, 'keypress',  onKeyPress, false);
-    addEvent(document, 'keydown',   onKeyPress, false);
-    addEvent(document, 'mousedown', onKeyPress, false);
-    addEvent(document, 'mouseup',   onKeyPress, false);
-    addEvent(document, 'click',     onKeyPress, false);
+  if (Popup.mobile) {
+    if (div)
+      addEvent(div, 'click',  mobileOnclick, false);
+    else
+      addEvent(document, 'click',  mobileOnclick, false);
+    return;
   }
+/*
+  if (Popup.android) {
+    android.log("android exists!");
+    addEvent(document, 'keydown',  onKeyPress, false);
+    addEvent(document, 'keyup',  onKeyPress, false);
+    addEvent(document, 'mousedown',  onKeyPress, false);
+    addEvent(document, 'mouseup',  onKeyPress, false);
+    addEvent(document, 'onclick',  onKeyPress, false);
+  }
+*/
   // addEvent(document, 'keyup', onKeyUp, false);
   var anchors;
   var doc;
@@ -3071,8 +3082,6 @@ function onClickDisplayInner(e, anchor) {
  * Registered to receive control on a click on any link. Adds control key
  * modifier as param to url, e.g. _ctrlKey=y
  */
-var androidDivs = [];
-
 function onClick(e) {
   detectClick = true;
   var p;
@@ -3176,6 +3185,10 @@ function addUrlParam(url, param, target) {
 // IMG)
 function getTargetAnchor(e) {
   var target = getTargetElement(e);
+  getAnchorForEventTarget(target);
+}
+
+function getAnchorForEventTarget(target) {
   if (target.tagName.toUpperCase() == 'A')
     return target;
   var anchors = target.getElementsByTagName('a');
@@ -4915,50 +4928,15 @@ function addAndShowWait(event, body, hotspot, content, noInsert, isReplace)	{
 }
 // adds comment/resource before server confirms that resource was successfully created
 function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
-  if (!tbodyId)
-    tbodyId = 't_im";'
-
-  var ctbody = document.getElementById(tbodyId);
-  if (!ctbody)
-    return stopEventPropagation(event);
-  var afterTR;
-
-  var curTr = document.getElementById('tr_empty');
-  if (curTr == null)
-    return stopEventPropagation(event);
-  var newTr = copyTableRow(ctbody, 1, curTr);
-  newTr.className = '';
-  var elms = newTr.getElementsByTagName('td');
-  elms[0].innerHTML = subject.value;
-  var date = new Date();
-  elms[1].innerHTML = '<tt>' + date.getHours() + ':' + date.getMinutes() + '</tt>';
-
-  var imgTable = newTr.getElementsByTagName('table');
-  var imgTds = imgTable[0].getElementsByTagName('td');
-  var img = imgTds[0].getElementsByTagName('img');
-  var anchor = imgTds[0].getElementsByTagName('a');
-
-  var href = "v.html?uri=" + encodeURIComponent(contactUri);
-  anchor[0].href = href;
-  img[0].src = 'contactInfo?uri=' +  encodeURIComponent(contactUri) + '&thumb=y';
-
-  var anchor1 = imgTds[1].getElementsByTagName('a');
-  anchor1[0].innerHTML = contactName;
-  anchor1[0].href = href;
-
-  ctbody.appendChild(newTr);
-
-  var div = document.createElement('div');
-  div.style.display = "none";
-  var form = document.forms['tablePropertyList'];
-
   var retCode = stopEventPropagation(event);
   var msg = subject.value;
   subject.value = '';
 
   if (Popup.android) {
     window.scrollTo(0, 3000);
+    subject.focus();
 //    android.scroll();
+    android.log('sending message: ' + msg);
     android.sendMessage(msg);
   }
   else{
@@ -4968,58 +4946,17 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
   return retCode;
 
   function updateTR(event, body, hotspot, content)  {
-    /*
-    setInnerHtml(body, content);
-
-    var tables = body.getElementsByTagName("table");
-    if (!tables)
-      return;
-    var table;
-    for (var i=0; i<tables.length  &&  table == null; i++) {
-      if (tables[i].id  && tables[i].id == 't_chat')
-        table = tables[i];
-    }
-    if (!table)
-      return;
-    var trs = table.getElementsByTagName("tr");
-    var tr = document.getElementById('newTr');
-
-    var replacedTr;
-
-    for (var i=0; i<trs.length  &&  replacedTr == null; i++) {
-      if (trs[i].id  &&  trs[i].id.indexOf('http') == 0)
-        replacedTr = trs[i];
-    }
-
-    var aa = document.getElementById('currentItem');
-    var curItem = document.getElementById(aa.href);
-    if (curItem)
-      curItem.style.backgroundColor = '#FFFFFF';
-
-    aa.href = replacedTr.id;
-
-    var tbodies = table.getElementsByTagName("tbody");
-    var tbody = tbodies[0];
-
-////    var replacedTr = copyTableRow(tbody, 1, trs[trs.length - 1]);
-    ctbody.removeChild(tr);
-    ctbody.appendChild(replacedTr);
-//    var tables = replacedTr.getElementsByTagName('table');
-
-//    elms[2].innerHTML = tables[0].parentNode.innerHTML;
- *
- */
   }
-
 }
-
+/*
 function messageArrived() {
   if (!Popup.android)
     return;
   var hasMessages = android.next();
-  if (hasMessages != true)
+  if (hasMessages != true) {
+    var div = onKeyPress();
     return;
-
+  }
   var room = android.getChatRoom();  // works, idk how u want to use it
   var text = android.getBody();
 
@@ -5030,13 +4967,13 @@ function messageArrived() {
 
   var curTr = document.getElementById('tr_empty');
   if (curTr == null)
-    return stopEventPropagation(event);
+    return;
 
   var newTr = copyTableRow(ctbody, 1, curTr);
   newTr.className = '';
   var elms = newTr.getElementsByTagName('td');
   elms[0].innerHTML = text;
-  var date = new Date();
+  var date = new Date(android.getTime());
   var mins = date.getMinutes();
   if (mins < 10)
     mins = '0' + mins;
@@ -5063,6 +5000,67 @@ function messageArrived() {
   window.scrollTo(0, 3000);
 //  android.scroll();
 //  d.innerHTML = d.innerHTML + text + "</br>";
+}
+*/
+var currentUrl;
+var urlToDivs = new Array();
+
+function mobileOnclick(e) {
+  if (!currentUrl)
+    currentUrl = document.location.href;
+
+  /////////////////
+  e = getDocumentEvent(e);
+  var link = getEventTarget(e);
+  if (!link || !link.href || link.href == null)
+    return;
+  var newUrl = link.href;
+//  alert(newUrl + "; " + currentUrl);
+  //////////////////
+  //  var newUrl = android.getCurrentUrl();
+  if (currentUrl == newUrl)
+    return stopEventPropagation(e);
+
+  var currentDiv = urlToDivs[currentUrl];
+  if (!currentDiv) {
+    currentDiv = document.getElementById('mainDiv');
+    urlToDivs[currentUrl] = currentDiv;
+  }
+  currentDiv.style.visibility = Popup.HIDDEN;
+  currentDiv.style.display = "none";
+
+  var div = urlToDivs[newUrl];
+
+  currentUrl = newUrl;
+  if (div) {
+    div.style.visibility = Popup.VISIBLE;
+    div.style.display = "inline";
+    return stopEventPropagation(e);
+  }
+  div = document.createElement("DIV");
+  div.style.visibility = Popup.VISIBLE;
+  div.style.display = "inline";
+  urlToDivs[newUrl] = div;
+
+  insertAfter(currentDiv.parentNode, div, currentDiv);
+  //document.body.appendChild(div);
+
+  var urlParts = newUrl.split('?');
+  var url = urlParts[0];
+  var idx = url.lastIndexOf('/');
+  url = url.substring(0, idx + 1) + 'm' + url.substring(idx);
+  postRequest(e, url, urlParts[1], div, link, loadPage);
+
+  function loadPage(event, div, hotspot, content) {
+    setInnerHtml(div, content);
+//    var offset = getElementCoords(div);
+//    window.scroll(offset.left, offset.top);
+  }
+  return stopEventPropagation(e);
+}
+
+function insertAfter(parent, newElement, referenceElement) {
+  parent.insertBefore(newElement, referenceElement.nextSibling);
 }
 
 function extractTotalFrom(tot) {
@@ -6119,7 +6117,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
 
   // visual cue that click was made, using the tooltip
   var addLineItem = document.location.href.indexOf('addLineItem.html?') != -1;
-  if (!Popup.penBased  &&  !addLineItem)
+  if (!Popup.mobile  &&  !Popup.penBased  &&  !addLineItem)
     loadingCueStart(event, hotspot);
 
   if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla,
@@ -6195,14 +6193,14 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
-      callback(clonedEvent, div, hotspot, http_request.responseText);
       document.body.style.cursor = "default";
+      callback(clonedEvent, div, hotspot, http_request.responseText);
     }
     else if (status == 200) {
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
-      callback(clonedEvent, div, hotspot, http_request.responseText);
       document.body.style.cursor = "default";
+      callback(clonedEvent, div, hotspot, http_request.responseText);
     }
     else if (status == 302) {
       try {location = http_request.getResponseHeader('Location');} catch(exception) {}
@@ -7239,7 +7237,8 @@ var advancedTooltip = {
   hideOptionsBtn : function()  {
     if(!this.tooltip)
       this.init();
-    this.optBtn.obj.style.display = "none";
+    if (this.optBtn.obj)
+      this.optBtn.obj.style.display = "none";
   },
   // shift pref --------------------------------
   isShiftRequired : function() {
@@ -9454,7 +9453,6 @@ function showMobileTab(e, hideDivId, unhideDivId) {
   return stopEventPropagation(e);
 }
 
-
 /*
 function addBeforeProcessing(tableId, subject, event) {
   var table = document.getElementById(tableId);
@@ -9542,11 +9540,3 @@ function addBeforeProcessing(tbodyId, subject, event) {
   return retCode;
 }
 */
-
-function onKeyPress(e) {
-  var target = getTargetElement(e);
-  var link = getTargetAnchor(e);
-  if (!link || !link.href || link.href == null)
-    return;
-  var a = link.href;
-}
