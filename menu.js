@@ -4948,13 +4948,13 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
   function updateTR(event, body, hotspot, content)  {
   }
 }
-/*
+
 function messageArrived() {
   if (!Popup.android)
     return;
   var hasMessages = android.next();
-  if (hasMessages != true) {
-    var div = onKeyPress();
+  if (!hasMessages) {
+    //var div = mobileOnclick();
     return;
   }
   var room = android.getChatRoom();  // works, idk how u want to use it
@@ -5001,7 +5001,7 @@ function messageArrived() {
 //  android.scroll();
 //  d.innerHTML = d.innerHTML + text + "</br>";
 }
-*/
+
 var currentUrl;
 var urlToDivs = new Array();
 
