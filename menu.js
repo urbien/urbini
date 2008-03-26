@@ -5053,8 +5053,7 @@ function mobileOnclick(e) {
 
   currentUrl = newUrl;
   if (div) {
-    div.style.visibility = Popup.HIDDEN;
-    div.style.display = "none";
+    MobilePageAnimation.showNewPage(div);
     return stopEventPropagation(e);
   }
   div = document.createElement("DIV");
