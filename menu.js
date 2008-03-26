@@ -3051,7 +3051,6 @@ function uiFocus(div) {
 function onClickDisplayInner(e, anchor) {
   if (!anchor)
     anchor = getTargetAnchor(e);
-
   if (!anchor || !anchor.id)
     return;
   e = getDocumentEvent(e); if (!e) return;
@@ -3203,7 +3202,7 @@ function addUrlParam(url, param, target) {
 // IMG)
 function getTargetAnchor(e) {
   var target = getTargetElement(e);
-  getAnchorForEventTarget(target);
+  return getAnchorForEventTarget(target);
 }
 
 function getAnchorForEventTarget(target) {
@@ -4972,6 +4971,10 @@ function messageArrived() {
     return;
   var hasMessages = android.next();
   if (!hasMessages) {
+    if (androidBH.forwardButtonPressed())
+      oneStep(null, 1);
+    else if (androidBH.backButtonPressed())
+      oneStep(null, -1);
     //var div = mobileOnclick();
     return;
   }
@@ -5022,11 +5025,14 @@ function messageArrived() {
 
 var currentUrl;
 var urlToDivs = new Array();
-
+var browsingHistory = new Array();
+var browsingHistoryPos = 0;
 function mobileOnclick(e) {
-  if (!currentUrl)
+  if (!currentUrl) {
     currentUrl = document.location.href;
-
+    browsingHistory[0] = currentUrl;
+  }
+  browsingHistoryPos++;
   /////////////////
   e = getDocumentEvent(e);
   var l = getEventTarget(e);
@@ -5047,8 +5053,15 @@ function mobileOnclick(e) {
     currentDiv = document.getElementById('mainDiv');
     urlToDivs[currentUrl] = currentDiv;
   }
-  
+  browsingHistory[browsingHistoryPos] = newUrl;
+
   MobilePageAnimation.setCurrentDiv(currentDiv);
+  // clear forward history
+  for (var i=browsingHistoryPos + 1; i<browsingHistory.length; i++) {
+    if (!browsingHistory[i])
+      break;
+    browsingHistory[i] = null;
+  }
   var div = urlToDivs[newUrl];
 
   currentUrl = newUrl;
@@ -5070,12 +5083,49 @@ function mobileOnclick(e) {
   function loadPage(event, div, hotspot, content) {
     setInnerHtml(div, content);
     MobilePageAnimation.showNewPage(div);
-
 //    var offset = getElementCoords(div);
 //    window.scroll(offset.left, offset.top);
   }
   return stopEventPropagation(e);
 }
+// browsing history forward and backward
+function oneStep(e, step) {
+  browsingHistoryPos += step;
+  if (browsingHistoryPos < 0  ||  browsingHistoryPos >= browsingHistory.length) {
+    browsingHistoryPos -= step;
+    if (e)
+      return stopEventPropagation(e);
+    else
+      return;
+  }
+  var url = browsingHistory[browsingHistoryPos];
+//  alert(url);
+  if (!url) {
+    browsingHistoryPos -= step;
+    if (e)
+      return stopEventPropagation(e);
+    else
+      return;
+  }
+  var div = urlToDivs[url];
+
+  if (!currentUrl)
+    currentUrl = document.location.href;
+  var currentDiv = urlToDivs[currentUrl];
+  currentUrl = url;
+
+  if (div) {
+    currentDiv.style.visibility = Popup.HIDDEN;
+    currentDiv.style.display = "none";
+    div.style.visibility = Popup.VISIBLE;
+    div.style.display = "inline";
+  }
+  if (e)
+    return stopEventPropagation(e);
+  else
+    return;
+}
+
 
 var MobilePageAnimation = {
   INTERVAL : 20, // ms
@@ -5162,7 +5212,6 @@ var MobilePageAnimation = {
     }
   }
 }
-
 
 function insertAfter(parent, newElement, referenceElement) {
   parent.insertBefore(newElement, referenceElement.nextSibling);
@@ -6275,7 +6324,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if (http_request.readyState != 4) // ignore for now: 0-Unintialized,
                                       // 1-Loading, 2-Loaded, 3-Interactive
       return;
-    if (!Popup.penBased  &&  !addLineItem)
+    if (!Popup.mobile  &&  !Popup.penBased  &&  !addLineItem)
       loadingCueFinish();
     var location;
     try {
