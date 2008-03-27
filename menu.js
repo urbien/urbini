@@ -5054,7 +5054,6 @@ function mobileOnclick(e) {
     urlToDivs[currentUrl] = currentDiv;
   }
   browsingHistory[browsingHistoryPos] = newUrl;
-
   MobilePageAnimation.setCurrentDiv(currentDiv);
   // clear forward history
   for (var i=browsingHistoryPos + 1; i<browsingHistory.length; i++) {
@@ -5070,8 +5069,8 @@ function mobileOnclick(e) {
     return stopEventPropagation(e);
   }
   div = document.createElement("DIV");
-  div.style.visibility = Popup.HIDDEN;
-  div.style.display = "none";
+  div.style.visibility = Popup.VISIBLE;
+  div.style.display = "inline";
   urlToDivs[newUrl] = div;
   insertAfter(currentDiv.parentNode, div, currentDiv);
 
@@ -5099,7 +5098,6 @@ function oneStep(e, step) {
       return;
   }
   var url = browsingHistory[browsingHistoryPos];
-//  alert(url);
   if (!url) {
     browsingHistoryPos -= step;
     if (e)
@@ -5126,23 +5124,30 @@ function oneStep(e, step) {
     return;
 }
 
+function mobileRefresh(event) {
+  if (currentUrl) {
+    document.location.href = currentUrl;
+    return stopEventPropagation(e);
+  }
+}
+
 
 var MobilePageAnimation = {
   INTERVAL : 20, // ms
   STEPS_NUM : 15,
-  
+
   curDiv : null,
   newDiv : null,
   rightToLeft : true,
-  
+
   wndWidth : null,
   wndHeight : null,
   step : 0,
-  
+
   setCurrentDiv : function(div) {
     this.curDiv = div;
   },
-  
+
   showNewPage : function(div) {
     if (!this.curDiv)
       throw new Error('MobilePageAnimation: current Div is null!');
@@ -5161,7 +5166,7 @@ var MobilePageAnimation = {
     var x;
 
     var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM);
-    
+
     // 1. calculation
     // 1.1. right to left
     if(thisObj.rightToLeft) {
@@ -5169,7 +5174,7 @@ var MobilePageAnimation = {
         x = 0;
       else
         x = thisObj.wndWidth - (thisObj.step * delta);
-      
+
       curDivStl.left  = x - thisObj.wndWidth;
       newDivStl.left =  x;
     }
@@ -5179,7 +5184,7 @@ var MobilePageAnimation = {
         x = thisObj.wndWidth;
       else
         x = thisObj.step * delta;
-        
+
       newDivStl.left  = x - thisObj.wndWidth;
       curDivStl.left =  x;
     }
@@ -5189,11 +5194,11 @@ var MobilePageAnimation = {
       newDivStl.top = y;
       newDivStl.width = thisObj.wndWidth;
       //newDivStl.height = thisObj.wndHeight
-      
+
       newDivStl.position = "absolute";
       if (curDivStl.position != "absolute")
         curDivStl.position = "relative"; // for 1st loaded "page"
-      else        
+      else
         curDivStl.position = "absolute";
 
       newDivStl.visibility = Popup.VISIBLE;
