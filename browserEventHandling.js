@@ -83,6 +83,12 @@
       }
 //      Packages.java.lang.System.out.println('onLoad 1: ' + new Date());
       interceptLinkClicks();
+      if (typeof BrowserRuntime != 'undefined') {
+        BrowserRuntime.init();
+      }
+      if (typeof Mobile != 'undefined')
+        Mobile.init();
+      
 //      Packages.java.lang.System.out.println('onLoad 2: ' + new Date());
       initListBoxes(null);
 //      Packages.java.lang.System.out.println('onLoad 3: ' + new Date());

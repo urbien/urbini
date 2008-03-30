@@ -130,11 +130,6 @@ Popup.android = (typeof android != 'undefined' && android != null) ? true: false
 // Mozilla/5.0 (SymbianOS/9.2; U; [en]; Series60/3.1 Nokia3250/1.00 )
 // Profile/MIDP-2.0 Configuration/CLDC-1.1; AppleWebKit/413 (KHTML, like Gecko)
 // Safari/413
-if (agent.indexOf("AppleWebKit") !=-1 && navigator.userAgent.indexOf("Series60/3.1") != -1 || navigator.userAgent.indexOf("Symbian") != -1) {
-  Popup.s60Browser = true;
-}
-else
-  Popup.s60Browser = false;
 
 if (document.attachEvent && !Popup.opera) {
   Popup.ie55 = true; // need better test since this one will include 5+ as well
@@ -142,6 +137,8 @@ if (document.attachEvent && !Popup.opera) {
 
 Popup.gecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1 && agent.indexOf("Konqueror") == -1) ? true : false;
 Popup.safari  = (agent.indexOf("Safari") != -1) ? true : false;
+Popup.webkit  = (agent.indexOf("WebKit") != -1) ? true : false;
+Popup.s60Browser = (Popup.webkit && navigator.userAgent.indexOf("Series60/3.1") != -1 || navigator.userAgent.indexOf("Symbian") != -1) ? true : false;
 Popup.maemo= (Popup.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
@@ -2860,45 +2857,324 @@ var Tooltip = {
   }
 }
 
-// ************************************* intercept all clicks
-// ***********************************
-if (Popup.android) {
-  function startAndroidTimer() {
-    setInterval(messageArrived, 1000);
+/**
+ * Adaptor to platform services
+ */
+var BrowserRuntime = {
+  majorVersion : 1,
+  minorVersion : 0,
+
+  /* platform services */
+  xmpp                : null,
+  geoLocation         : null,
+  camera              : null,
+  logger              : null,
+  keyboard            : null,
+  view                : null, // window or view of this browser                        
+
+  /* initialize platform-specific services */
+  init : function() {
+    //setInterval(eventArrived, 1000);
+    var needHandler;
+    this.eventObjects = new Array();
+    if (typeof jsiXmpp != 'undefined') {
+      this.xmpp                 = jsiXmpp;
+      this.eventObjects['xmpp'] = jsiXmppEvent;
+      needHandler = true;
+    }
+    if (typeof jsiBrowserHistoryEvent != 'undefined') {
+      this.eventObjects['browserHistory'] = jsiBrowserHistoryEvent;
+      needHandler = true;
+    }
+    if (typeof jsiGeoLocation != 'undefined') {
+      this.geoLocation                    = jsiGeoLocation;
+      this.eventObjects['geoLocation']    = jsiGeoLocationEvent;
+      needHandler = true;
+    }
+    if (typeof jsiCamera != 'undefined') {
+      this.camera                         = jsiCamera;
+      this.eventObjects['camera']         = jsiCameraEvent;
+      needHandler = true;
+    }
+    if (typeof jsiLog != 'undefined') {
+      this.logger                         = jsiLog;
+      needHandler = true;
+    }
+    if (typeof jsiKey != 'undefined') {
+      this.eventObjects['key']            = jsiKeyEvent;
+      needHandler = true;
+    }
+    if (needHandler) {
+      this.log('adding keydown');
+      //addEvent(document.body, 'keypress', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+      addEvent(document, 'keydown', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+      addEvent(document, 'keyup', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+    }
+    if (typeof jsiEventManager != 'undefined')
+      jsiEventManager.readyForEvents();
+    
+    if (typeof jsiView != 'undefined')
+      this.view = jsiView;
+    else {      
+      // default implementation
+      this.view = {
+        setProgress : function setProgress(progressPercent) {
+          if (progressPercent != 100)
+            document.body.style.cursor = "wait";
+          else
+            document.body.style.cursor = "default";
+        }  
+      };
+    }  
+  },
+
+  log: function(text) {
+    if (this.logger)
+      this.logger.log("BrowserRuntime: " + text);
+    else 
+      alert(text);
+  },
+  
+  /** 
+   * Register a handler for a specific platform event.
+   * Allows to add multiple handlers. Handlers are called in FIFO order.     
+   */
+  addEventHandler : function(eventType, handler) {
+    var handlers;
+    if (this.eventHandlers == null)
+      this.eventHandlers = new Array();
+    else
+      handlers = this.eventHandlers[eventType];
+    if (handlers == null) {
+      handlers = new Array();
+      this.eventHandlers[eventType] = handlers;
+    }  
+    handlers[handlers.length] = handler;
+  },
+ 
+  /******* private members ********/
+  
+  /**
+   * Dispatches events from the underlying platform to the proper event handler
+   */
+  eventArrived : function(e) {
+    var code = getKeyCode(e);
+    this.log('got key event: ' + code);
+    if (code != 39) // process only fake key event 
+      return;
+    var eventType = jsiEventManager.getEventType();
+    var handlers = this.eventHandlers[eventType];
+    var eventObject = this.eventObjects[eventType];
+    for (var handler in handlers) {
+      if (handler)
+        handler(eventObject);
+    }
+    var rc = stopEventPropagation(e);
+    this.log("calling jsiEventManager.popEvent()");
+    jsiEventManager.popEvent();
+    return rc;
+  }
+  
+}
+
+var Mobile = {
+  currentUrl : null,
+  urlToDivs  : null,
+  browsingHistory :  null,
+  browsingHistoryPos : 0,
+        
+  init: function() {
+    if (!Popup.mobile) 
+      return;
+    BrowserRuntime.addEventHandler('xmpp', this.onChatMessage);
+    BrowserRuntime.addEventHandler('key',  this.onKey);
+    addEvent(document.body, 'click',  this.onClick, false);
+  },
+
+  onKey: function(e) {
+    if (e.keyCode == 4) // BrowserRuntime.keyboard.getBackButtonCode())
+      this.oneStep(null, -1);
+//    if (e.keyCode == 1) // BrowserRuntime.keyboard.getMenuButtonCode())
+//      showMenu();
+  },
+
+  onChatMessage: function(e) {    
+    var room = e.getChatRoom();
+    var text = e.getBody();
+
+    if (!text)
+      return;
+
+    var ctbody = document.getElementById('t_im');
+
+    var curTr = document.getElementById('tr_empty');
+    if (curTr == null)
+      return;
+
+    var newTr = copyTableRow(ctbody, 1, curTr);
+    newTr.className = '';
+    var elms = newTr.getElementsByTagName('td');
+    elms[0].innerHTML = text;
+    var date = new Date(android.getTime());
+    var mins = date.getMinutes();
+    if (mins < 10)
+      mins = '0' + mins;
+    var hours = date.getHours();
+    if (hours < 10)
+      hours = '0' + hours;
+    elms[1].innerHTML = '<tt>' + hours + ':' + mins + '</tt>';
+    var sender = android.getSender();
+
+    var imgTable = newTr.getElementsByTagName('table');
+    var imgTds = imgTable[0].getElementsByTagName('td');
+    var img = imgTds[0].getElementsByTagName('img');
+    var anchor = imgTds[0].getElementsByTagName('a');
+
+    var href = 'contactInfo?name=' + sender;
+    anchor[0].href = href;
+    img[0].src = 'contactInfo?name=' +  sender + '&thumb=y';
+
+    var anchor1 = imgTds[1].getElementsByTagName('a');
+    anchor1[0].href = href;
+    anchor1[0].innerHTML = sender;
+
+    ctbody.appendChild(newTr);
+    window.scrollTo(0, 3000);
+//    android.scroll();
+//    d.innerHTML = d.innerHTML + text + "</br>";    
+  },
+    
+  onClick: function(e) {
+    //BrowserRuntime.log('mobileOnclick');
+    /////////////////
+    e = getDocumentEvent(e);
+    var l = getEventTarget(e);
+    var link = getAnchorForEventTarget(l);
+    if (!link || !link.href || link.href == null) {
+      return;
+    }
+
+    link.blur();
+    var newUrl = link.href;
+    if (!this.currentUrl) {
+      this.currentUrl = document.location.href;
+      var s = new Array();
+      s[0] = this.currentUrl;
+      this.browsingHistory = s;
+    }
+    this.browsingHistoryPos++;
+    
+//    alert(newUrl + "; " + this.currentUrl);
+    //////////////////
+    //  var newUrl = android.getthis.currentUrl();
+    if (this.currentUrl == newUrl)
+      return stopEventPropagation(e);
+    var currentDiv;
+    if (this.urlToDivs)
+       currentDiv = this.urlToDivs[this.currentUrl];
+    if (!currentDiv) {
+      currentDiv = document.getElementById('mainDiv');
+      var s = new Array();
+      s[this.currentUrl] = currentDiv;;
+      this.urlToDivs = s;
+      //this.urlToDivs[this.currentUrl] = currentDiv;
+    }
+    this.browsingHistory[this.browsingHistoryPos] = newUrl;
+    MobilePageAnimation.setCurrentDiv(currentDiv);
+    // clear forward history
+    for (var i=this.browsingHistoryPos + 1; i<this.browsingHistory.length; i++) {
+      if (!this.browsingHistory[i])
+        break;
+      this.browsingHistory[i] = null;
+    }
+    var div = this.urlToDivs[newUrl];
+
+    this.currentUrl = newUrl;
+    if (div) {
+      MobilePageAnimation.showNewPage(div);
+      return stopEventPropagation(e);
+    }
+    div = document.createElement("DIV");
+    div.style.visibility = Popup.VISIBLE;
+    div.style.display = "inline";
+    this.urlToDivs[newUrl] = div;
+    insertAfter(currentDiv.parentNode, div, currentDiv);
+
+    var urlParts = newUrl.split('?');
+    var url = urlParts[0];
+    var idx = url.lastIndexOf('/');
+    url = url.substring(0, idx + 1) + 'm' + url.substring(idx);
+    postRequest(e, url, urlParts[1], div, link, loadPage);
+    function loadPage(event, div, hotspot, content) {
+      setInnerHtml(div, content);
+      if (BrowserRuntime.xmpp) {
+        var d = document.getElementById('lastIMtime');
+        if (d) {
+          var time = d.innerHTML;
+          BrowserRuntime.log('lastIMtime: ' + time);
+          BrowserRuntime.xmpp.init(time);
+        }
+      }
+
+      MobilePageAnimation.showNewPage(div);
+//      var offset = getElementCoords(div);
+//      window.scroll(offset.left, offset.top);
+    }
+    return stopEventPropagation(e);
+  },
+
+  // browsing history forward and backward
+  oneStep : function(e, step) {
+    this.browsingHistoryPos += step;
+    var l = this.browsingHistory ? this.browsingHistory.length : 0;
+    if (this.browsingHistoryPos < 0  || this.browsingHistoryPos >= l) {
+      this.browsingHistoryPos -= step;
+      if (e)
+        return stopEventPropagation(e);
+      else
+        return;
+    }
+    var url = this.browsingHistory[this.browsingHistoryPos];
+    if (!url) {
+      this.browsingHistoryPos -= step;
+      if (e)
+        return stopEventPropagation(e);
+      else
+        return;
+    }
+    var div = this.urlToDivs[url];
+
+    if (!this.currentUrl)
+      this.currentUrl = document.location.href;
+    var currentDiv = this.urlToDivs[this.currentUrl];
+    this.currentUrl = url;
+
+    if (div) {
+      currentDiv.style.visibility = Popup.HIDDEN;
+      currentDiv.style.display = "none";
+      div.style.visibility = Popup.VISIBLE;
+      div.style.display = "inline";
+    }
+    if (e)
+      return stopEventPropagation(e);
+    else
+      return;
+  },
+
+  refresh : function(e) {
+    if (this.currentUrl) {
+      document.location.href = this.currentUrl;
+      return stopEventPropagation(e);
+    }
   }
 }
 
+
+// ************************************* intercept all clicks
+// ***********************************
 function interceptLinkClicks(div) {
-  if (Popup.mobile) {
-    if (div) {
-      if (Popup.android) {
-        var d = document.getElementById('lastIMtime');
-        android.log('lastIMtime' + d);
-        if (d)
-          android.init(d.innerHTML);
-      }
-      addEvent(div, 'click',  mobileOnclick, false);
-    }
-    else {
-      if (Popup.android) {
-        android.log('startAndroidTimer');
-        startAndroidTimer();
-      }
-      addEvent(document, 'click',  mobileOnclick, false);
-    }
+  if (Popup.mobile)
     return;
-  }
-/*
-  if (Popup.android) {
-    android.log("android exists!");
-    addEvent(document, 'keydown',  onKeyPress, false);
-    addEvent(document, 'keyup',  onKeyPress, false);
-    addEvent(document, 'mousedown',  onKeyPress, false);
-    addEvent(document, 'mouseup',  onKeyPress, false);
-    addEvent(document, 'onclick',  onKeyPress, false);
-  }
-*/
-  // addEvent(document, 'keyup', onKeyUp, false);
   var anchors;
   var doc;
   if (div) {
@@ -4966,172 +5242,6 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
   }
 }
 
-function messageArrived() {
-  if (!Popup.android)
-    return;
-  var hasMessages = android.next();
-  if (!hasMessages) {
-    if (androidBH.forwardButtonPressed())
-      oneStep(null, 1);
-    else if (androidBH.backButtonPressed())
-      oneStep(null, -1);
-    //var div = mobileOnclick();
-    return;
-  }
-  var room = android.getChatRoom();  // works, idk how u want to use it
-  var text = android.getBody();
-
-  if (typeof text == "undefined")
-    return;
-
-  var ctbody = document.getElementById('t_im');
-
-  var curTr = document.getElementById('tr_empty');
-  if (curTr == null)
-    return;
-
-  var newTr = copyTableRow(ctbody, 1, curTr);
-  newTr.className = '';
-  var elms = newTr.getElementsByTagName('td');
-  elms[0].innerHTML = text;
-  var date = new Date(android.getTime());
-  var mins = date.getMinutes();
-  if (mins < 10)
-    mins = '0' + mins;
-  var hours = date.getHours();
-  if (hours < 10)
-    hours = '0' + hours;
-  elms[1].innerHTML = '<tt>' + hours + ':' + mins + '</tt>';
-  var sender = android.getSender();
-
-  var imgTable = newTr.getElementsByTagName('table');
-  var imgTds = imgTable[0].getElementsByTagName('td');
-  var img = imgTds[0].getElementsByTagName('img');
-  var anchor = imgTds[0].getElementsByTagName('a');
-
-  var href = 'contactInfo?name=' + sender;
-  anchor[0].href = href;
-  img[0].src = 'contactInfo?name=' +  sender + '&thumb=y';
-
-  var anchor1 = imgTds[1].getElementsByTagName('a');
-  anchor1[0].href = href;
-  anchor1[0].innerHTML = sender;
-
-  ctbody.appendChild(newTr);
-  window.scrollTo(0, 3000);
-//  android.scroll();
-//  d.innerHTML = d.innerHTML + text + "</br>";
-}
-
-var currentUrl;
-var urlToDivs = new Array();
-var browsingHistory = new Array();
-var browsingHistoryPos = 0;
-function mobileOnclick(e) {
-  if (!currentUrl) {
-    currentUrl = document.location.href;
-    browsingHistory[0] = currentUrl;
-  }
-  browsingHistoryPos++;
-  /////////////////
-  e = getDocumentEvent(e);
-  var l = getEventTarget(e);
-  var link = getAnchorForEventTarget(l);
-  if (!link || !link.href || link.href == null) {
-    return;
-  }
-
-  link.blur();
-  var newUrl = link.href;
-//  alert(newUrl + "; " + currentUrl);
-  //////////////////
-  //  var newUrl = android.getCurrentUrl();
-  if (currentUrl == newUrl)
-    return stopEventPropagation(e);
-  var currentDiv = urlToDivs[currentUrl];
-  if (!currentDiv) {
-    currentDiv = document.getElementById('mainDiv');
-    urlToDivs[currentUrl] = currentDiv;
-  }
-  browsingHistory[browsingHistoryPos] = newUrl;
-  MobilePageAnimation.setCurrentDiv(currentDiv);
-  // clear forward history
-  for (var i=browsingHistoryPos + 1; i<browsingHistory.length; i++) {
-    if (!browsingHistory[i])
-      break;
-    browsingHistory[i] = null;
-  }
-  var div = urlToDivs[newUrl];
-
-  currentUrl = newUrl;
-  if (div) {
-    MobilePageAnimation.showNewPage(div);
-    return stopEventPropagation(e);
-  }
-  div = document.createElement("DIV");
-  div.style.visibility = Popup.VISIBLE;
-  div.style.display = "inline";
-  urlToDivs[newUrl] = div;
-  insertAfter(currentDiv.parentNode, div, currentDiv);
-
-  var urlParts = newUrl.split('?');
-  var url = urlParts[0];
-  var idx = url.lastIndexOf('/');
-  url = url.substring(0, idx + 1) + 'm' + url.substring(idx);
-  postRequest(e, url, urlParts[1], div, link, loadPage);
-  function loadPage(event, div, hotspot, content) {
-    setInnerHtml(div, content);
-    MobilePageAnimation.showNewPage(div);
-//    var offset = getElementCoords(div);
-//    window.scroll(offset.left, offset.top);
-  }
-  return stopEventPropagation(e);
-}
-// browsing history forward and backward
-function oneStep(e, step) {
-  browsingHistoryPos += step;
-  if (browsingHistoryPos < 0  ||  browsingHistoryPos >= browsingHistory.length) {
-    browsingHistoryPos -= step;
-    if (e)
-      return stopEventPropagation(e);
-    else
-      return;
-  }
-  var url = browsingHistory[browsingHistoryPos];
-  if (!url) {
-    browsingHistoryPos -= step;
-    if (e)
-      return stopEventPropagation(e);
-    else
-      return;
-  }
-  var div = urlToDivs[url];
-
-  if (!currentUrl)
-    currentUrl = document.location.href;
-  var currentDiv = urlToDivs[currentUrl];
-  currentUrl = url;
-
-  if (div) {
-    currentDiv.style.visibility = Popup.HIDDEN;
-    currentDiv.style.display = "none";
-    div.style.visibility = Popup.VISIBLE;
-    div.style.display = "inline";
-  }
-  if (e)
-    return stopEventPropagation(e);
-  else
-    return;
-}
-
-function mobileRefresh(event) {
-  if (currentUrl) {
-    document.location.href = currentUrl;
-    return stopEventPropagation(e);
-  }
-}
-
-
 var MobilePageAnimation = {
   INTERVAL : 20, // ms
   STEPS_NUM : 15,
@@ -6352,13 +6462,13 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
-      document.body.style.cursor = "default";
+      BrowserRuntime.view.setProgress(100);
       callback(clonedEvent, div, hotspot, http_request.responseText);
     }
     else if (status == 200) {
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
-      document.body.style.cursor = "default";
+      BrowserRuntime.view.setProgress(100);
       callback(clonedEvent, div, hotspot, http_request.responseText);
     }
     else if (status == 302) {
@@ -6431,12 +6541,12 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if(typeof noCache != 'undefined' && noCache == true) // for widgets
       http_request.setRequestHeader("Cache-Control","no-cache");
 
-    // below 2 line commented - made IE wait with ~1 minute timeout
-    if (parameters) {
+    if (parameters && !Popup.webkit) { // webkit considers setting this header a security risk
       http_request.setRequestHeader("Content-length", parameters.length);
     }
+    // below 2 line commented - made IE wait with ~1 minute timeout
     // http_request.setRequestHeader("Connection", "close");
-    document.body.style.cursor = "wait";
+    BrowserRuntime.view.setProgress(10);
     http_request.send(parameters);
   }
   // use GET due to Browser bugs
@@ -6455,7 +6565,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     else
       url1 += extras;
     http_request.open('GET', url1, true);
-    document.body.style.cursor = "wait";
+    BrowserRuntime.view.setProgress(10);
     http_request.send('');
   }
 }
