@@ -3037,7 +3037,7 @@ var Mobile = {
     newTr.className = '';
     var elms = newTr.getElementsByTagName('td');
     elms[0].innerHTML = text;
-    var date = new Date(android.getTime());
+    var date = new Date(e.getTime());
     var mins = date.getMinutes();
     if (mins < 10)
       mins = '0' + mins;
@@ -3045,7 +3045,7 @@ var Mobile = {
     if (hours < 10)
       hours = '0' + hours;
     elms[1].innerHTML = '<tt>' + hours + ':' + mins + '</tt>';
-    var sender = android.getSender();
+    var sender = e.getSender();
 
     var imgTable = newTr.getElementsByTagName('table');
     var imgTds = imgTable[0].getElementsByTagName('td');
@@ -5297,8 +5297,8 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
     window.scrollTo(0, 3000);
     subject.focus();
 //    android.scroll();
-    android.log('sending message: ' + msg);
-    android.sendMessage(msg);
+    BrowserRuntime.log('sending message: ' + msg);
+    BrowserRuntime.xmpp.sendMessage(msg);
   }
   else{
     var params = getFormFilters(form, true) + "&-noRedirect=y";
