@@ -3070,7 +3070,7 @@ var Mobile = {
     var id = link.id;
     if (!id)
       return false;
-    if (id == 'menu_options') {
+    if (id == 'optionsMenu') {
       if (!this.currentUrl) {
         this.currentUrl = document.location.href;
         var s = new Array();
@@ -3088,7 +3088,7 @@ var Mobile = {
       }
       currentDiv.style.visibility = Popup.HIDDEN;
       currentDiv.style.display = "none";
-      var optionsDiv = document.getElementById('mOptions');
+      var optionsDiv = document.getElementById('menu_Options');
       optionsDiv.style.visibility = Popup.VISIBLE;
       optionsDiv.style.display = "inline";
       return true;
@@ -3172,7 +3172,6 @@ var Mobile = {
     var url = urlParts[0];
     var idx = url.lastIndexOf('/');
     url = url.substring(0, idx + 1) + 'm' + url.substring(idx);
-    alert('url: ' + url + ', urlParts[1]=' + urlParts[1]);
     postRequest(e, url, urlParts[1], div, link, loadPage);
     function loadPage(event, div, hotspot, content) {
       setInnerHtml(div, content);
