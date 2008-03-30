@@ -2874,7 +2874,7 @@ var BrowserRuntime = {
 
   /* initialize platform-specific services */
   init : function() {
-    //setInterval(eventArrived, 1000);
+    setInterval(this.eventArrived, 1000);
     var needHandler;
     this.eventObjects = new Array();
     if (typeof jsiXmpp != 'undefined') {
@@ -2906,7 +2906,7 @@ var BrowserRuntime = {
     }
     if (needHandler) {
       this.log('adding keydown');
-      //addEvent(document.body, 'keypress', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+      addEvent(document, 'keypress', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
       addEvent(document, 'keydown', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
       addEvent(document, 'keyup', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
     }
@@ -2958,23 +2958,27 @@ var BrowserRuntime = {
    * Dispatches events from the underlying platform to the proper event handler
    */
   eventArrived : function(e) {
-    var code = getKeyCode(e);
-    this.log('got key event: ' + code);
-    if (code != 39) // process only fake key event 
-      return;
-    var eventType = jsiEventManager.getEventType();
-    var handlers = this.eventHandlers[eventType];
-    var eventObject = this.eventObjects[eventType];
-    for (var handler in handlers) {
-      if (handler)
-        handler(eventObject);
-    }
-    var rc = stopEventPropagation(e);
-    this.log("calling jsiEventManager.popEvent()");
-    jsiEventManager.popEvent();
-    return rc;
+    if (e) {
+      var code = getKeyCode(e);
+      this.log('got key event: ' + code);
+      if (code != 39) // process only fake key event 
+        return;
+    }  
+    var hasEvent = jsiEventManager.hasEvent();
+    if (hasEvent) {
+      var eventType = jsiEventManager.getEventType();
+      var handlers = this.eventHandlers[eventType];
+      var eventObject = this.eventObjects[eventType];
+      for (var handler in handlers) {
+        if (handler)
+          handler(eventObject);
+      }
+      var rc = stopEventPropagation(e);
+      this.log("calling jsiEventManager.popEvent()");
+      jsiEventManager.popEvent();
+      return rc;
+    }  
   }
-  
 }
 
 var Mobile = {
