@@ -3066,6 +3066,51 @@ var Mobile = {
 //    d.innerHTML = d.innerHTML + text + "</br>";
   },
 
+  menuOptions: function(link) {
+    var id = link.id;
+    if (!id)
+      return false;
+    if (id == 'menu_options') {
+      if (!this.currentUrl) {
+        this.currentUrl = document.location.href;
+        var s = new Array();
+        s[0] = this.currentUrl;
+        this.browsingHistory = s;
+      }
+      if (!this.urlToDivs) {
+        var u = new Array();
+        this.urlToDivs = u;
+      }
+      var currentDiv = this.urlToDivs[this.currentUrl];
+      if (!currentDiv) {
+        currentDiv = document.getElementById('mainDiv');
+        this.urlToDivs[0] = currentDiv;
+      }
+      currentDiv.style.visibility = Popup.HIDDEN;
+      currentDiv.style.display = "none";
+      var optionsDiv = document.getElementById('mOptions');
+      optionsDiv.style.visibility = Popup.VISIBLE;
+      optionsDiv.style.display = "inline";
+      return true;
+    }
+    if (id == 'menu_cancel') {
+      var optionsDiv = document.getElementById('menu_Options');
+      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.display = "none";
+      var currentDiv = urlToDivs[currentUrl];
+      if (!currentDiv) {
+        currentDiv = document.getElementById('mainDiv');
+        var u = new Array();
+        u[0] = this.currentDiv;
+        this.urlToDivs = u;
+      }
+      currentDiv.style.visibility = Popup.VISIBLE;
+      currentDiv.style.display = "inline";
+      return true;
+    }
+    return false;
+  },
+
   onClick: function(e) {
     //BrowserRuntime.log('mobileOnclick');
     /////////////////
@@ -3075,9 +3120,8 @@ var Mobile = {
     if (!link || !link.href || link.href == null) {
       return;
     }
-    if (this.menuOptions(link))
+    if (Mobile.menuOptions(link))
       return stopEventPropagation(e);
-
     link.blur();
     var newUrl = link.href;
     if (!this.currentUrl) {
@@ -3128,6 +3172,7 @@ var Mobile = {
     var url = urlParts[0];
     var idx = url.lastIndexOf('/');
     url = url.substring(0, idx + 1) + 'm' + url.substring(idx);
+    alert('url: ' + url + ', urlParts[1]=' + urlParts[1]);
     postRequest(e, url, urlParts[1], div, link, loadPage);
     function loadPage(event, div, hotspot, content) {
       setInnerHtml(div, content);
@@ -3147,50 +3192,6 @@ var Mobile = {
     return stopEventPropagation(e);
   },
 
-  menuOptions : function(link) {
-    var id = link.id;
-    if (!id)
-      return false;
-    if (id == 'menu_options') {
-      if (!this.currentUrl) {
-        this.currentUrl = document.location.href;
-        var s = new Array();
-        s[0] = this.currentUrl;
-        this.browsingHistory = s;
-      }
-      if (!this.urlToDivs) {
-        var u = new Array();
-        this.urlToDivs = u;
-      }
-      var currentDiv = this.urlToDivs[this.currentUrl];
-      if (!currentDiv) {
-        currentDiv = document.getElementById('mainDiv');
-        this.urlToDivs[0] = currentDiv;
-      }
-      currentDiv.style.visibility = Popup.HIDDEN;
-      currentDiv.style.display = "none";
-      var optionsDiv = document.getElementById('mOptions');
-      optionsDiv.style.visibility = Popup.VISIBLE;
-      optionsDiv.style.display = "inline";
-      return true;
-    }
-    if (id == 'menu_cancel') {
-      var optionsDiv = document.getElementById('menu_Options');
-      optionsDiv.style.visibility = Popup.HIDDEN;
-      optionsDiv.style.display = "none";
-      var currentDiv = urlToDivs[currentUrl];
-      if (!currentDiv) {
-        currentDiv = document.getElementById('mainDiv');
-        var u = new Array();
-        u[0] = this.currentDiv;
-        this.urlToDivs = u;
-      }
-      currentDiv.style.visibility = Popup.VISIBLE;
-      currentDiv.style.display = "inline";
-      return true;
-    }
-    return false;
-  },
   // browsing history forward and backward
   oneStep : function(e, step) {
     this.browsingHistoryPos += step;
