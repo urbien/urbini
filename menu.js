@@ -2865,18 +2865,29 @@ var BrowserRuntime = {
   minorVersion : 0,
 
   /* platform services */
+  eventManager        : null,
   xmpp                : null,
   geoLocation         : null,
   camera              : null,
   logger              : null,
   keyboard            : null,
-  view                : null, // window or view of this browser                        
+  view                : null, // window or view of this browser
 
   /* initialize platform-specific services */
   init : function() {
-    setInterval(this.eventArrived, 1000);
     var needHandler;
     this.eventObjects = new Array();
+    if (typeof jsiEventManager != 'undefined') {
+      this.eventManager         = jsiEventManager;
+    }
+    else {
+      // default implementation
+      this.eventManager = {
+         hasEvent :        function () { return false; }
+        ,readyForEvents:   function () {  }
+        ,isEventsViaTimer: function () { return false; }
+      };
+    }
     if (typeof jsiXmpp != 'undefined') {
       this.xmpp                 = jsiXmpp;
       this.eventObjects['xmpp'] = jsiXmppEvent;
@@ -2910,34 +2921,36 @@ var BrowserRuntime = {
       addEvent(document, 'keydown', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
       addEvent(document, 'keyup', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
     }
-    if (typeof jsiEventManager != 'undefined')
-      jsiEventManager.readyForEvents();
-    
+    this.eventManager.readyForEvents();
+    if (this.eventManager.isEventsViaTimer()) {
+      setInterval(this.eventArrived, 1000);
+    }
+
     if (typeof jsiView != 'undefined')
       this.view = jsiView;
-    else {      
+    else {
       // default implementation
       this.view = {
-        setProgress : function setProgress(progressPercent) {
+        setProgress : function (progressPercent) {
           if (progressPercent != 100)
             document.body.style.cursor = "wait";
           else
             document.body.style.cursor = "default";
-        }  
+        }
       };
-    }  
+    }
   },
 
   log: function(text) {
     if (this.logger)
       this.logger.log("BrowserRuntime: " + text);
-    else 
+    else
       alert(text);
   },
-  
-  /** 
+
+  /**
    * Register a handler for a specific platform event.
-   * Allows to add multiple handlers. Handlers are called in FIFO order.     
+   * Allows to add multiple handlers. Handlers are called in FIFO order.
    */
   addEventHandler : function(eventType, handler) {
     var handlers;
@@ -2948,25 +2961,26 @@ var BrowserRuntime = {
     if (handlers == null) {
       handlers = new Array();
       this.eventHandlers[eventType] = handlers;
-    }  
+    }
     handlers[handlers.length] = handler;
   },
- 
+
   /******* private members ********/
-  
+
   /**
    * Dispatches events from the underlying platform to the proper event handler
    */
   eventArrived : function(e) {
     if (e) {
-      var code = getKeyCode(e);
+      //var code = getKeyCode(e);
+      var code = e.keyCode;
       this.log('got key event: ' + code);
-      if (code != 39) // process only fake key event 
+      if (code != 39) // process only fake key event
         return;
-    }  
-    var hasEvent = jsiEventManager.hasEvent();
+    }
+    var hasEvent = this.eventManager.hasEvent();
     if (hasEvent) {
-      var eventType = jsiEventManager.getEventType();
+      var eventType = this.eventManager.getEventType();
       var handlers = this.eventHandlers[eventType];
       var eventObject = this.eventObjects[eventType];
       for (var handler in handlers) {
@@ -2975,9 +2989,9 @@ var BrowserRuntime = {
       }
       var rc = stopEventPropagation(e);
       this.log("calling jsiEventManager.popEvent()");
-      jsiEventManager.popEvent();
+      this.eventManager.popEvent();
       return rc;
-    }  
+    }
   }
 }
 
@@ -2986,9 +3000,9 @@ var Mobile = {
   urlToDivs  : null,
   browsingHistory :  null,
   browsingHistoryPos : 0,
-        
+
   init: function() {
-    if (!Popup.mobile) 
+    if (!Popup.mobile)
       return;
     BrowserRuntime.addEventHandler('xmpp', this.onChatMessage);
     BrowserRuntime.addEventHandler('key',  this.onKey);
@@ -2998,11 +3012,15 @@ var Mobile = {
   onKey: function(e) {
     if (e.keyCode == 4) // BrowserRuntime.keyboard.getBackButtonCode())
       this.oneStep(null, -1);
-//    if (e.keyCode == 1) // BrowserRuntime.keyboard.getMenuButtonCode())
+    if (e.keyCode == 1) {// BrowserRuntime.keyboard.getMenuButtonCode())
 //      showMenu();
+      var optionsDiv = document.getElementById('mOptions');
+      optionsDiv.style.visibility = Popup.VISIBLE;
+      optionsDiv.style.display = "inline";
+    }
   },
 
-  onChatMessage: function(e) {    
+  onChatMessage: function(e) {
     var room = e.getChatRoom();
     var text = e.getBody();
 
@@ -3045,9 +3063,9 @@ var Mobile = {
     ctbody.appendChild(newTr);
     window.scrollTo(0, 3000);
 //    android.scroll();
-//    d.innerHTML = d.innerHTML + text + "</br>";    
+//    d.innerHTML = d.innerHTML + text + "</br>";
   },
-    
+
   onClick: function(e) {
     //BrowserRuntime.log('mobileOnclick');
     /////////////////
@@ -3057,6 +3075,8 @@ var Mobile = {
     if (!link || !link.href || link.href == null) {
       return;
     }
+    if (this.menuOptions(link))
+      return stopEventPropagation(e);
 
     link.blur();
     var newUrl = link.href;
@@ -3067,7 +3087,7 @@ var Mobile = {
       this.browsingHistory = s;
     }
     this.browsingHistoryPos++;
-    
+
 //    alert(newUrl + "; " + this.currentUrl);
     //////////////////
     //  var newUrl = android.getthis.currentUrl();
@@ -3079,7 +3099,7 @@ var Mobile = {
     if (!currentDiv) {
       currentDiv = document.getElementById('mainDiv');
       var s = new Array();
-      s[this.currentUrl] = currentDiv;;
+      s[this.currentUrl] = currentDiv;
       this.urlToDivs = s;
       //this.urlToDivs[this.currentUrl] = currentDiv;
     }
@@ -3127,6 +3147,50 @@ var Mobile = {
     return stopEventPropagation(e);
   },
 
+  menuOptions : function(link) {
+    var id = link.id;
+    if (!id)
+      return false;
+    if (id == 'menu_options') {
+      if (!this.currentUrl) {
+        this.currentUrl = document.location.href;
+        var s = new Array();
+        s[0] = this.currentUrl;
+        this.browsingHistory = s;
+      }
+      if (!this.urlToDivs) {
+        var u = new Array();
+        this.urlToDivs = u;
+      }
+      var currentDiv = this.urlToDivs[this.currentUrl];
+      if (!currentDiv) {
+        currentDiv = document.getElementById('mainDiv');
+        this.urlToDivs[0] = currentDiv;
+      }
+      currentDiv.style.visibility = Popup.HIDDEN;
+      currentDiv.style.display = "none";
+      var optionsDiv = document.getElementById('mOptions');
+      optionsDiv.style.visibility = Popup.VISIBLE;
+      optionsDiv.style.display = "inline";
+      return true;
+    }
+    if (id == 'menu_cancel') {
+      var optionsDiv = document.getElementById('menu_Options');
+      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.display = "none";
+      var currentDiv = urlToDivs[currentUrl];
+      if (!currentDiv) {
+        currentDiv = document.getElementById('mainDiv');
+        var u = new Array();
+        u[0] = this.currentDiv;
+        this.urlToDivs = u;
+      }
+      currentDiv.style.visibility = Popup.VISIBLE;
+      currentDiv.style.display = "inline";
+      return true;
+    }
+    return false;
+  },
   // browsing history forward and backward
   oneStep : function(e, step) {
     this.browsingHistoryPos += step;
