@@ -3065,18 +3065,16 @@ var Mobile = {
 //    android.scroll();
 //    d.innerHTML = d.innerHTML + text + "</br>";
   },
-
+/*
   menuOptions: function(link) {
     var id = link.id;
-    if (!id)
+    var optionsDiv = document.getElementById('menu_Options');
+    if (!id) {
+      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.display = "none";
       return false;
+    }
     if (id == 'optionsMenu') {
-      if (!this.currentUrl) {
-        this.currentUrl = document.location.href;
-        var s = new Array();
-        s[0] = this.currentUrl;
-        this.browsingHistory = s;
-      }
       if (!this.urlToDivs) {
         var u = new Array();
         this.urlToDivs = u;
@@ -3088,13 +3086,11 @@ var Mobile = {
       }
       currentDiv.style.visibility = Popup.HIDDEN;
       currentDiv.style.display = "none";
-      var optionsDiv = document.getElementById('menu_Options');
       optionsDiv.style.visibility = Popup.VISIBLE;
       optionsDiv.style.display = "inline";
       return true;
     }
     if (id == 'menu_cancel') {
-      var optionsDiv = document.getElementById('menu_Options');
       optionsDiv.style.visibility = Popup.HIDDEN;
       optionsDiv.style.display = "none";
       var currentDiv = urlToDivs[currentUrl];
@@ -3108,28 +3104,67 @@ var Mobile = {
       currentDiv.style.display = "inline";
       return true;
     }
+
     return false;
   },
-
+*/
   onClick: function(e) {
     //BrowserRuntime.log('mobileOnclick');
     /////////////////
     e = getDocumentEvent(e);
     var l = getEventTarget(e);
     var link = getAnchorForEventTarget(l);
-    if (!link || !link.href || link.href == null) {
+    if (!link || !link.href || link.href == null)
       return;
-    }
-    if (Mobile.menuOptions(link))
-      return stopEventPropagation(e);
-    link.blur();
-    var newUrl = link.href;
+
     if (!this.currentUrl) {
       this.currentUrl = document.location.href;
       var s = new Array();
       s[0] = this.currentUrl;
       this.browsingHistory = s;
     }
+
+//    if (Mobile.menuOptions(link))
+//      return stopEventPropagation(e);
+///////////
+    var optionsDiv = document.getElementById('menu_Options');
+    optionsDiv.style.visibility = Popup.HIDDEN;
+    optionsDiv.style.display = "none";
+    var id = link.id;
+    if (id  &&  id == 'optionsMenu') {
+      if (!this.urlToDivs) {
+        var u = new Array();
+        this.urlToDivs = u;
+      }
+      var currentDiv = this.urlToDivs[this.currentUrl];
+      if (!currentDiv) {
+        currentDiv = document.getElementById('mainDiv');
+        this.urlToDivs[0] = currentDiv;
+      }
+      currentDiv.style.visibility = Popup.HIDDEN;
+      currentDiv.style.display = "none";
+      optionsDiv.style.visibility = Popup.VISIBLE;
+      optionsDiv.style.display = "inline";
+      return stopEventPropagation(e);
+    }
+    if (id  &&  id == 'menu_cancel') {
+      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.display = "none";
+      var currentDiv = urlToDivs[currentUrl];
+      if (!currentDiv) {
+        currentDiv = document.getElementById('mainDiv');
+        var u = new Array();
+        u[0] = this.currentDiv;
+        this.urlToDivs = u;
+      }
+      currentDiv.style.visibility = Popup.VISIBLE;
+      currentDiv.style.display = "inline";
+      return stopEventPropagation(e);
+    }
+
+////////
+    link.blur();
+    var newUrl = link.href;
     this.browsingHistoryPos++;
 
 //    alert(newUrl + "; " + this.currentUrl);
