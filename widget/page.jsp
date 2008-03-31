@@ -7,6 +7,7 @@
   <include name="requiredHeader.jsp"/>
 
   <div id="mainskin" class="blue">
+    <options />
 	  <div id="mainDiv">
 		  <tablePropertyList/>
 		  <siteResourceList/>
