@@ -2924,7 +2924,7 @@ var BrowserRuntime = {
         addEvent(document, 'keypress', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
         addEvent(document, 'keydown', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
         addEvent(document, 'keyup', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
-      }      
+      }
       this.eventManager.readyForEvents();
     }
 
@@ -2946,8 +2946,8 @@ var BrowserRuntime = {
   log: function(text) {
     if (this.logger)
       this.logger.log("BrowserRuntime: " + text);
-    else
-      alert(text);
+//    else
+//      alert(text);
   },
 
   /**
@@ -3006,7 +3006,7 @@ var Mobile = {
   urlToDivs  : null,
   browsingHistory :  null,
   browsingHistoryPos : 0,
-  
+
   init: function(event) {
     if (!Popup.mobile)
       return;
@@ -3019,36 +3019,36 @@ var Mobile = {
   onPageLoad: function(newUrl) {
     Mobile.autoLogin(newUrl);
   },
-  
+
   autoLogin : function(url) {
     if (!url)
       url = document.location.href;
     if (url.indexOf('user-login.html') == -1)
       return;
     BrowserRuntime.log('autoLogin: ' + url);
-    var loginform = document.forms['loginform'];    
+    var loginform = document.forms['loginform'];
     var jstest = loginform.elements['.jstest'];
     jstest.value = "ok"; // server will know that JavaScript worked
     var pw = loginform.elements['j_password'];
     var username = loginform.elements['j_username'];
     pw.value = 'mark';
     username.value = 'mark';
-    
+
     if (typeof hash == 'undefined') {
       var script = '<script src="register/hashScript.js" type="text/javascript" language="JavaScript"></script>';
       div = document.createElement("DIV");
       document.body.appendChild(div);
-      div.innerHTML = script; 
+      div.innerHTML = script;
     }
-    
+
     hash(loginform, 'j_security_check');
-    
+
     var params = getFormFilters(loginform, true, new Array());
     //var urlFields = document.location.split('?');
     var url = loginform.action;
-    postRequest(event, url, params, null, null, function() {}, true);    
+    postRequest(event, url, params, null, null, function() {}, true);
   },
-  
+
   onKey: function(e) {
     if (e.keyCode == 4) // BrowserRuntime.keyboard.getBackButtonCode())
       this.oneStep(null, -1);
@@ -3171,43 +3171,141 @@ var Mobile = {
     optionsDiv.style.visibility = Popup.HIDDEN;
     optionsDiv.style.display = "none";
     var id = link.id;
-    if (id  &&  id == 'optionsMenu') {
-      if (!this.urlToDivs) {
-        var u = new Array();
-        this.urlToDivs = u;
+    var newUrl;
+    if (id) {
+      if (id == 'optionsMenu') {
+        if (!this.urlToDivs) {
+          var u = new Array();
+          this.urlToDivs = u;
+        }
+        var currentDiv = this.urlToDivs[this.currentUrl];
+        if (!currentDiv) {
+          currentDiv = document.getElementById('mainDiv');
+          this.urlToDivs[0] = currentDiv;
+        }
+        currentDiv.style.visibility = Popup.HIDDEN;
+        currentDiv.style.display = "none";
+        optionsDiv.style.visibility = Popup.VISIBLE;
+        optionsDiv.style.display = "inline";
+        return stopEventPropagation(e);
       }
-      var currentDiv = this.urlToDivs[this.currentUrl];
-      if (!currentDiv) {
-        currentDiv = document.getElementById('mainDiv');
-        this.urlToDivs[0] = currentDiv;
+      if (id == 'menu_cancel') {
+        optionsDiv.style.visibility = Popup.HIDDEN;
+        optionsDiv.style.display = "none";
+        var currentDiv = urlToDivs[currentUrl];
+        if (!currentDiv) {
+          currentDiv = document.getElementById('mainDiv');
+          var u = new Array();
+          u[0] = this.currentDiv;
+          this.urlToDivs = u;
+        }
+        currentDiv.style.visibility = Popup.VISIBLE;
+        currentDiv.style.display = "inline";
+        return stopEventPropagation(e);
       }
-      currentDiv.style.visibility = Popup.HIDDEN;
-      currentDiv.style.display = "none";
-      optionsDiv.style.visibility = Popup.VISIBLE;
-      optionsDiv.style.display = "inline";
-      return stopEventPropagation(e);
-    }
-    if (id  &&  id == 'menu_cancel') {
-      optionsDiv.style.visibility = Popup.HIDDEN;
-      optionsDiv.style.display = "none";
-      var currentDiv = urlToDivs[currentUrl];
-      if (!currentDiv) {
-        currentDiv = document.getElementById('mainDiv');
-        var u = new Array();
-        u[0] = this.currentDiv;
-        this.urlToDivs = u;
-      }
-      currentDiv.style.visibility = Popup.VISIBLE;
-      currentDiv.style.display = "inline";
-      return stopEventPropagation(e);
-    }
+      if (id == 'menu_List') {
+        optionsDiv.style.visibility = Popup.HIDDEN;
+        optionsDiv.style.display = "none";
+        newUrl = this.currentUrl;
+        var idx = newUrl.indexOf('-featured=');
+        if (idx != -1) {
+          idx1 = newUrl.indexOf('&', idx);
+          if (idx1 == -1) {
+            if (newUrl.charAt(idx - 1) == '&')
+              idx--;
+            newUrl = newUrl.substring(0, idx);
+          }
+          else
+            newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
+        }
 
+        var idx = newUrl.indexOf('-grid=');
+        if (idx != -1) {
+          var idx1 = newUrl.indexOf('&', idx);
+          if (idx1 == -1) {
+            if (newUrl.charAt(idx - 1) == '&')
+              idx--;
+            newUrl = newUrl.substring(0, idx);
+          }
+          else
+            newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
+          newUrl += '&-list=y';
+        }
+        else if (newUrl.indexOf('-list=') == -1)
+          newUrl = newUrl + '&-list=y';
+      }
+      if (id == 'menu_Grid') {
+        optionsDiv.style.visibility = Popup.HIDDEN;
+        optionsDiv.style.display = "none";
+        newUrl = this.currentUrl;
+
+        var idx = newUrl.indexOf('-featured=');
+        if (idx != -1) {
+          idx1 = newUrl.indexOf('&', idx);
+          if (idx1 == -1) {
+            if (newUrl.charAt(idx - 1) == '&')
+              idx--;
+            newUrl = newUrl.substring(0, idx);
+          }
+          else
+            newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
+        }
+
+        idx = newUrl.indexOf('-list=');
+        if (idx != -1) {
+          var idx1 = newUrl.indexOf('&', idx);
+          if (idx1 == -1) {
+            if (newUrl.charAt(idx - 1) == '&')
+              idx--;
+            newUrl = newUrl.substring(0, idx);
+          }
+          else
+            newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
+          newUrl += '&-grid=y';
+        }
+        else {
+          idx = newUrl.indexOf('-grid=');
+          if (idx == -1)
+            newUrl += '&-grid=y';
+        }
+        alert("Small grid: " + newUrl);
+      }
+      if (id == 'menu_LargeGrid') {
+        optionsDiv.style.visibility = Popup.HIDDEN;
+        optionsDiv.style.display = "none";
+        newUrl = this.currentUrl;
+
+        var idx = newUrl.indexOf('-featured=');
+        if (idx == -1)
+          newUrl += '&-featured=y';
+
+        idx = newUrl.indexOf('-list=');
+        if (idx != -1) {
+          var idx1 = newUrl.indexOf('&', idx);
+          if (idx1 == -1) {
+            if (newUrl.charAt(idx - 1) == '&')
+              idx--;
+            newUrl = newUrl.substring(0, idx);
+          }
+          else
+            newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
+          newUrl += '&-grid=y';
+        }
+        else {
+          idx = newUrl.indexOf('-grid=');
+          if (idx == -1)
+            newUrl += '&-grid=y';
+        }
+        alert("Large grid: " + newUrl);
+      }
+    }
 ////////
     link.blur();
-    var newUrl = link.href;
+    if (!newUrl)
+      newUrl = link.href;
     this.browsingHistoryPos++;
 
-//    alert(newUrl + "; " + this.currentUrl);
+//    alert("currentUrl: " + this.currentUrl + "; newUrl: " + newUrl);
     //////////////////
     //  var newUrl = android.getthis.currentUrl();
     if (this.currentUrl == newUrl)
