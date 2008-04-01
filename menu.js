@@ -2872,7 +2872,7 @@ var Boost = {
   logger              : null,
   keyboard            : null,
   view                : null, // window or view of this browser
-  
+
   eventHandlers       : new Array(),
   eventObjects        : new Array(),
 
@@ -2943,14 +2943,14 @@ var Boost = {
         }
       };
     }
-    
+
     for (var h in Boost.eventHandlers) {
       Boost.log('handlers: ' + h);
     }
     for (var h in Boost.eventObjects) {
       Boost.log('eventObjects: ' + h);
     }
-    
+
   },
 
   log: function(text) {
@@ -3005,7 +3005,7 @@ var Boost = {
           Boost.log('calling handler for event \'' + eventType + '\' with event object: ' + eventObject);
           handler(eventObject);
         }
-      }  
+      }
       var rc = stopEventPropagation(e);
       $t.eventManager.popEvent();
       return rc;
@@ -3023,7 +3023,7 @@ var Mobile = {
   log: function(text) {
     Boost.log(text);
   },
-  
+
   init: function(event) {
     var $t = Mobile;
     if (!Popup.mobile)
@@ -3070,7 +3070,7 @@ var Mobile = {
     var params = getFormFilters(loginform, true, new Array());
     //var urlFields = document.location.split('?');
     var url = loginform.action;
-    //postRequest(event, url, params, null, null, function() {}, true);    
+    //postRequest(event, url, params, null, null, function() {}, true);
   },
 
   onKey: function(e) {
@@ -3363,6 +3363,15 @@ var Mobile = {
 
     $t.currentUrl = newUrl;
     if (div) {
+      var divs = div.getElementsByTagName('div');
+      var titleDiv;
+      for (var i=0; i<divs.length  &&  titleDiv == null; i++) {
+        var tDiv = divs[i].id;
+        if (tDiv.id  &&  tDiv.id == 'title')
+          titleDiv = tDiv;
+      }
+      if (titleDiv)
+        document.title = titleDiv;
       MobilePageAnimation.showNewPage(div);
       return stopEventPropagation(e);
     }
@@ -3379,6 +3388,15 @@ var Mobile = {
     postRequest(e, url, urlParts[1], div, link, loadPage);
     function loadPage(event, div, hotspot, content, contentUrl) {
       setInnerHtml(div, content);
+      var divs = div.getElementsByTagName('div');
+      var titleDiv;
+      for (var i=0; i<divs.length  &&  titleDiv == null; i++) {
+        var tDiv = divs[i].id;
+        if (tDiv.id  &&  tDiv.id == 'title')
+          titleDiv = tDiv;
+      }
+      if (titleDiv)
+        document.title = titleDiv;
       $t.onPageLoad(contentUrl);
       if (Boost.xmpp) {
         var d = document.getElementById('lastIMtime');
@@ -3399,9 +3417,9 @@ var Mobile = {
   oneStep: function(e, step) {
     var $t = Mobile;
     $t.browsingHistoryPos += step;
-//    alert($t.browsingHistoryPos);
 
     var l = $t.browsingHistory ? $t.browsingHistory.length : 0;
+
     if ($t.browsingHistoryPos < 0  || $t.browsingHistoryPos >= l) {
       $t.browsingHistoryPos -= step;
       if (e)
@@ -3425,10 +3443,14 @@ var Mobile = {
     $t.currentUrl = url;
 
     if (div) {
+      MobilePageAnimation.setCurrentDiv(currentDiv);
+      MobilePageAnimation.showNewPage(div);
+      /*
       currentDiv.style.visibility = Popup.HIDDEN;
       currentDiv.style.display = "none";
       div.style.visibility = Popup.VISIBLE;
       div.style.display = "inline";
+      */
     }
     if (e)
       return stopEventPropagation(e);
@@ -6786,7 +6808,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       if (!paintInPage) {
         try { paintInPage = http_request.getResponseHeader('X-Paint-In-Page');} catch (exc) {}
         Boost.log('got back on postrequest, paintinpage ' + paintInPage);
-      }  
+      }
       if (paintInPage && paintInPage == 'false') {
         document.location = location;  // reload full page
       }
@@ -6815,6 +6837,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     // http_request.setRequestHeader("Referer", document.location.href);
     http_request.setRequestHeader("X-Referer",     document.location.href);
     http_request.setRequestHeader("X-Ajax",       "y");
+    if (Popup.android)
+      http_request.setRequestHeader("X-Accept-BrowserBoost", "menu-button");
     http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     // cookie is inherited by widget and now needs to be set on request to not to be forced to login
     if (xcookie) {
@@ -6833,7 +6857,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if (parameters)
       parameters += '&X-Ajax=y'; // webkit does not send custom headers
     else
-      parameters = 'X-Ajax=y'; 
+      parameters = 'X-Ajax=y';
     http_request.send(parameters);
   }
   // use GET due to Browser bugs
