@@ -3192,7 +3192,7 @@ var Mobile = {
       if (id == 'menu_cancel') {
         optionsDiv.style.visibility = Popup.HIDDEN;
         optionsDiv.style.display = "none";
-        var currentDiv = urlToDivs[currentUrl];
+        var currentDiv = this.urlToDivs[this.currentUrl];
         if (!currentDiv) {
           currentDiv = document.getElementById('mainDiv');
           var u = new Array();
@@ -3268,7 +3268,6 @@ var Mobile = {
           if (idx == -1)
             newUrl += '&-grid=y';
         }
-        alert("Small grid: " + newUrl);
       }
       if (id == 'menu_LargeGrid') {
         optionsDiv.style.visibility = Popup.HIDDEN;
@@ -3296,7 +3295,6 @@ var Mobile = {
           if (idx == -1)
             newUrl += '&-grid=y';
         }
-        alert("Large grid: " + newUrl);
       }
     }
 ////////
@@ -3368,6 +3366,8 @@ var Mobile = {
   // browsing history forward and backward
   oneStep : function(e, step) {
     this.browsingHistoryPos += step;
+//    alert(this.browsingHistoryPos);
+
     var l = this.browsingHistory ? this.browsingHistory.length : 0;
     if (this.browsingHistoryPos < 0  || this.browsingHistoryPos >= l) {
       this.browsingHistoryPos -= step;
