@@ -2860,7 +2860,7 @@ var Tooltip = {
 /**
  * Adaptor to platform services
  */
-var BrowserRuntime = {
+var Boost = {
   majorVersion : 1,
   minorVersion : 0,
 
@@ -2872,67 +2872,71 @@ var BrowserRuntime = {
   logger              : null,
   keyboard            : null,
   view                : null, // window or view of this browser
+  
+  eventHandlers       : new Array(),
+  eventObjects        : new Array(),
 
   /* initialize platform-specific services */
-  init : function() {
+  init:  function() {
+    var $t = Boost;
     var needHandler;
-    this.eventObjects = new Array();
     if (typeof jsiEventManager != 'undefined') {
-      this.eventManager         = jsiEventManager;
+      $t.eventManager         = jsiEventManager;
     }
     else {
       // default implementation
-      this.eventManager = {
+      $t.eventManager = {
          hasEvent :        function () { return false; }
         ,readyForEvents:   function () {  }
         ,isEventsViaTimer: function () { return false; }
       };
     }
     if (typeof jsiXmpp != 'undefined') {
-      this.xmpp                 = jsiXmpp;
-      this.eventObjects['xmpp'] = jsiXmppEvent;
+      $t.xmpp                 = jsiXmpp;
+      $t.eventObjects['xmpp'] = jsiXmppEvent;
       needHandler = true;
     }
     if (typeof jsiBrowserHistoryEvent != 'undefined') {
-      this.eventObjects['browserHistory'] = jsiBrowserHistoryEvent;
+      $t.eventObjects['browserHistory'] = jsiBrowserHistoryEvent;
       needHandler = true;
     }
     if (typeof jsiGeoLocation != 'undefined') {
-      this.geoLocation                    = jsiGeoLocation;
-      this.eventObjects['geoLocation']    = jsiGeoLocationEvent;
+      $t.geoLocation                    = jsiGeoLocation;
+      $t.eventObjects['geoLocation']    = jsiGeoLocationEvent;
       needHandler = true;
     }
     if (typeof jsiCamera != 'undefined') {
-      this.camera                         = jsiCamera;
-      this.eventObjects['camera']         = jsiCameraEvent;
+      $t.camera                         = jsiCamera;
+      $t.eventObjects['camera']         = jsiCameraEvent;
       needHandler = true;
     }
     if (typeof jsiLog != 'undefined') {
-      this.logger                         = jsiLog;
+      $t.logger                         = jsiLog;
       needHandler = true;
     }
     if (typeof jsiKey != 'undefined') {
-      this.eventObjects['key']            = jsiKeyEvent;
+      if (typeof jsiKeyEvent == 'undefined') 
+        throw new Error("Boost: jsiKeyEvent must be defined if jsiKey is defined");
+      $t.eventObjects['key']            = jsiKeyEvent;
       needHandler = true;
     }
-    if (this.eventManager.isEventsViaTimer()) {
-      setInterval(this.eventArrived, 1000);
-    }
-    else {
-      if (needHandler) {
-        this.log('adding keydown');
-        addEvent(document, 'keypress', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
-        addEvent(document, 'keydown', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
-        addEvent(document, 'keyup', this.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+    if (needHandler) {
+      if ($t.eventManager.isEventsViaTimer()) {
+        setInterval($t.eventArrived, 1000);
       }
-      this.eventManager.readyForEvents();
+      else {
+        Boost.log('adding keydown');
+        addEvent(document, 'keypress', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+        addEvent(document, 'keydown', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+        addEvent(document, 'keyup', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+        $t.eventManager.readyForEvents();
+      }
     }
-
     if (typeof jsiView != 'undefined')
-      this.view = jsiView;
+      $t.view = jsiView;
     else {
       // default implementation
-      this.view = {
+      $t.view = {
         setProgress : function (progressPercent) {
           if (progressPercent != 100)
             document.body.style.cursor = "wait";
@@ -2944,8 +2948,9 @@ var BrowserRuntime = {
   },
 
   log: function(text) {
-    if (this.logger)
-      this.logger.log("BrowserRuntime: " + text);
+    var $t = Boost;
+    if ($t.logger)
+      $t.logger.log("Boost: " + text);
 //    else
 //      alert(text);
   },
@@ -2954,19 +2959,16 @@ var BrowserRuntime = {
    * Register a handler for a specific platform event.
    * Allows to add multiple handlers. Handlers are called in FIFO order.
    */
-  addEventHandler : function(eventType, handler) {
-    var handlers;
-    if (this.eventHandlers == null)
-      this.eventHandlers = new Array();
-    else
-      handlers = this.eventHandlers[eventType];
+  addEventHandler:  function(eventType, handler) {
+    var $t = Boost;
+    var handlers = $t.eventHandlers[eventType];
     if (handlers == null) {
       handlers = new Array();
-      this.eventHandlers[eventType] = handlers;
+      $t.eventHandlers[eventType] = handlers;
     }
-    BrowserRuntime.log('adding handler: ' + handler);
+    //Boost.log('adding handler: ' + handler);
     handlers[handlers.length] = handler;
-    BrowserRuntime.log('added handler: ' + handlers[handlers.length - 1]);
+    //Boost.log('added handler: ' + handlers[handlers.length - 1]);
   },
 
   /******* private members ********/
@@ -2974,58 +2976,70 @@ var BrowserRuntime = {
   /**
    * Dispatches events from the underlying platform to the proper event handler
    */
-  eventArrived : function(e) {
+  eventArrived:  function(e) {
+    var $t = Boost;
     if (e) {
       //var code = getKeyCode(e);
       var code = e.keyCode;
-      BrowserRuntime.log('got key event: ' + code);
+      Boost.log('got native key event: ' + code);
       if (code != 39) // process only fake key event
         return;
     }
-    var hasEvent = BrowserRuntime.eventManager.hasEvent();
+    var hasEvent = $t.eventManager.hasEvent();
     if (hasEvent) {
-      var eventType = BrowserRuntime.eventManager.getEventType();
-      var handlers = BrowserRuntime.eventHandlers[eventType];
-      var eventObject = BrowserRuntime.eventObjects[eventType];
-      for (var handler in handlers) {
-        if (handler == null || handler == 0)
-          continue;
-        BrowserRuntime.log(handler);
-        if (handler)
+      var eventType = $t.eventManager.getEventType();
+      var handlers = $t.eventHandlers[eventType];
+      var eventObject = $t.eventObjects[eventType];
+      Boost.log('got runtime event: ' + eventType);
+      if (handlers) {
+        for (var i=0; i<handlers.length; i++) {
+          var handler = handlers[i];
+          if (handler == null)
+            continue;
+          Boost.log('calling handler for event \'' + eventType + '\' with event object: ' + eventObject);
           handler(eventObject);
-      }
+        }
+      }  
       var rc = stopEventPropagation(e);
-      BrowserRuntime.eventManager.popEvent();
+      $t.eventManager.popEvent();
       return rc;
     }
-  }
+  },
 }
 
 var Mobile = {
-  currentUrl : null,
-  urlToDivs  : null,
-  browsingHistory :  null,
-  browsingHistoryPos : 0,
+  currentUrl: null,
+  urlToDivs:   null,
+  browsingHistory:   null,
+  browsingHistoryPos: 0,
+  $t: null,
 
+  log: function(text) {
+    Boost.log(text);
+  },
+  
   init: function(event) {
+    var $t = Mobile;
     if (!Popup.mobile)
       return;
-    BrowserRuntime.addEventHandler('xmpp', this.onChatMessage);
-    BrowserRuntime.addEventHandler('key',  this.onKey);
-    addEvent(document.body, 'click',  this.onClick, false);
-    this.onPageLoad();
+    Boost.addEventHandler('xmpp', $t.onChatMessage);
+    Boost.addEventHandler('key',  $t.onKey);
+    addEvent(document.body, 'click',  $t.onClick, false);
+    $t.onPageLoad(null);
   },
 
   onPageLoad: function(newUrl) {
-    Mobile.autoLogin(newUrl);
+    var $t = Mobile;
+    $t.autoLogin(newUrl);
   },
 
-  autoLogin : function(url) {
+  autoLogin: function(url) {
+    var $t = Mobile;
     if (!url)
       url = document.location.href;
     if (url.indexOf('user-login.html') == -1)
       return;
-    BrowserRuntime.log('autoLogin: ' + url);
+    Boost.log('autoLogin: ' + url);
     var loginform = document.forms['loginform'];
     var jstest = loginform.elements['.jstest'];
     jstest.value = "ok"; // server will know that JavaScript worked
@@ -3033,26 +3047,32 @@ var Mobile = {
     var username = loginform.elements['j_username'];
     pw.value = 'mark';
     username.value = 'mark';
-
+    if (Boost.xmpp) {
+      Boost.xmpp.setUsername(username.value);
+      Boost.xmpp.setPassword(pw.value);
+    }
+    /*
     if (typeof hash == 'undefined') {
       var script = '<script src="register/hashScript.js" type="text/javascript" language="JavaScript"></script>';
       div = document.createElement("DIV");
       document.body.appendChild(div);
       div.innerHTML = script;
     }
-
-    hash(loginform, 'j_security_check');
+    */
+    //hash(loginform, 'j_security_check');
 
     var params = getFormFilters(loginform, true, new Array());
     //var urlFields = document.location.split('?');
     var url = loginform.action;
-    postRequest(event, url, params, null, null, function() {}, true);
+    //postRequest(event, url, params, null, null, function() {}, true);    
   },
 
   onKey: function(e) {
-    if (e.keyCode == 4) // BrowserRuntime.keyboard.getBackButtonCode())
-      this.oneStep(null, -1);
-    if (e.keyCode == 1) {// BrowserRuntime.keyboard.getMenuButtonCode())
+    var $t = Mobile;
+    Boost.log('got key event: ' + e.keyCode);
+    if (e.keyCode == 4) // Boost.keyboard.getBackButtonCode())
+      $t.oneStep(null, -1);
+    if (e.keyCode == 1) {// Boost.keyboard.getMenuButtonCode())
 //      showMenu();
       var optionsDiv = document.getElementById('mOptions');
       optionsDiv.style.visibility = Popup.VISIBLE;
@@ -3061,6 +3081,7 @@ var Mobile = {
   },
 
   onChatMessage: function(e) {
+    var $t = Mobile;
     var room = e.getChatRoom();
     var text = e.getBody();
 
@@ -3115,14 +3136,14 @@ var Mobile = {
       return false;
     }
     if (id == 'optionsMenu') {
-      if (!this.urlToDivs) {
+      if (!$t.urlToDivs) {
         var u = new Array();
-        this.urlToDivs = u;
+        $t.urlToDivs = u;
       }
-      var currentDiv = this.urlToDivs[this.currentUrl];
+      var currentDiv = $t.urlToDivs[$t.currentUrl];
       if (!currentDiv) {
         currentDiv = document.getElementById('mainDiv');
-        this.urlToDivs[0] = currentDiv;
+        $t.urlToDivs[0] = currentDiv;
       }
       currentDiv.style.visibility = Popup.HIDDEN;
       currentDiv.style.display = "none";
@@ -3137,8 +3158,8 @@ var Mobile = {
       if (!currentDiv) {
         currentDiv = document.getElementById('mainDiv');
         var u = new Array();
-        u[0] = this.currentDiv;
-        this.urlToDivs = u;
+        u[0] = $t.currentDiv;
+        $t.urlToDivs = u;
       }
       currentDiv.style.visibility = Popup.VISIBLE;
       currentDiv.style.display = "inline";
@@ -3146,10 +3167,11 @@ var Mobile = {
     }
 
     return false;
-  },
+  };
 */
   onClick: function(e) {
-    //BrowserRuntime.log('mobileOnclick');
+    var $t = Mobile;
+    //Boost.log('mobileOnclick');
     /////////////////
     e = getDocumentEvent(e);
     var l = getEventTarget(e);
@@ -3157,14 +3179,14 @@ var Mobile = {
     if (!link || !link.href || link.href == null)
       return;
 
-    if (!this.currentUrl) {
-      this.currentUrl = document.location.href;
+    if (!$t.currentUrl) {
+      $t.currentUrl = document.location.href;
       var s = new Array();
-      s[0] = this.currentUrl;
-      this.browsingHistory = s;
+      s[0] = $t.currentUrl;
+      $t.browsingHistory = s;
     }
 
-//    if (Mobile.menuOptions(link))
+//    if ($t.menuOptions(link))
 //      return stopEventPropagation(e);
 ///////////
     var optionsDiv = document.getElementById('menu_Options');
@@ -3172,14 +3194,14 @@ var Mobile = {
     var newUrl;
     if (id) {
       if (id == 'optionsMenu') {
-        if (!this.urlToDivs) {
+        if (!$t.urlToDivs) {
           var u = new Array();
-          this.urlToDivs = u;
+          $t.urlToDivs = u;
         }
-        var currentDiv = this.urlToDivs[this.currentUrl];
+        var currentDiv = $t.urlToDivs[$t.currentUrl];
         if (!currentDiv) {
           currentDiv = document.getElementById('mainDiv');
-          this.urlToDivs[0] = currentDiv;
+          $t.urlToDivs[0] = currentDiv;
         }
         currentDiv.style.visibility = Popup.HIDDEN;
         currentDiv.style.display = "none";
@@ -3190,12 +3212,12 @@ var Mobile = {
       if (id == 'menu_cancel') {
         optionsDiv.style.visibility = Popup.HIDDEN;
         optionsDiv.style.display = "none";
-        var currentDiv = this.urlToDivs[this.currentUrl];
+        var currentDiv = $t.urlToDivs[$t.currentUrl];
         if (!currentDiv) {
           currentDiv = document.getElementById('mainDiv');
           var u = new Array();
-          u[0] = this.currentDiv;
-          this.urlToDivs = u;
+          u[0] = $t.currentDiv;
+          $t.urlToDivs = u;
         }
         currentDiv.style.visibility = Popup.VISIBLE;
         currentDiv.style.display = "inline";
@@ -3204,7 +3226,7 @@ var Mobile = {
       if (id == 'menu_List') {
         optionsDiv.style.visibility = Popup.HIDDEN;
         optionsDiv.style.display = "none";
-        newUrl = this.currentUrl;
+        newUrl = $t.currentUrl;
         var idx = newUrl.indexOf('-featured=');
         if (idx != -1) {
           idx1 = newUrl.indexOf('&', idx);
@@ -3235,7 +3257,7 @@ var Mobile = {
       if (id == 'menu_Grid') {
         optionsDiv.style.visibility = Popup.HIDDEN;
         optionsDiv.style.display = "none";
-        newUrl = this.currentUrl;
+        newUrl = $t.currentUrl;
 
         var idx = newUrl.indexOf('-featured=');
         if (idx != -1) {
@@ -3270,7 +3292,7 @@ var Mobile = {
       if (id == 'menu_LargeGrid') {
         optionsDiv.style.visibility = Popup.HIDDEN;
         optionsDiv.style.display = "none";
-        newUrl = this.currentUrl;
+        newUrl = $t.currentUrl;
 
         var idx = newUrl.indexOf('-featured=');
         if (idx == -1)
@@ -3303,37 +3325,37 @@ var Mobile = {
     link.blur();
     if (!newUrl)
       newUrl = link.href;
-    this.browsingHistoryPos++;
+    $t.browsingHistoryPos++;
 
-//    alert("currentUrl: " + this.currentUrl + "; newUrl: " + newUrl);
+//    alert("currentUrl: " + $t.currentUrl + "; newUrl: " + newUrl);
     //////////////////
-    //  var newUrl = android.getthis.currentUrl();
     var currentDiv;
-    if (this.urlToDivs)
-       currentDiv = this.urlToDivs[this.currentUrl];
+    if ($t.urlToDivs)
+       currentDiv = $t.urlToDivs[$t.currentUrl];
     if (!currentDiv) {
       currentDiv = document.getElementById('mainDiv');
       var s = new Array();
-      s[this.currentUrl] = currentDiv;
-      this.urlToDivs = s;
-      //this.urlToDivs[this.currentUrl] = currentDiv;
+      s[$t.currentUrl] = currentDiv;
+      $t.urlToDivs = s;
+      //$t.urlToDivs[$t.currentUrl] = currentDiv;
     }
-    if (this.currentUrl == newUrl) {
+    if ($t.currentUrl == newUrl) {
       currentDiv.style.visibility = Popup.VISIBLE;
       currentDiv.style.display = "inline";
       return stopEventPropagation(e);
     }
-    this.browsingHistory[this.browsingHistoryPos] = newUrl;
+    $t.browsingHistory[$t.browsingHistoryPos] = newUrl;
+
     MobilePageAnimation.setCurrentDiv(currentDiv);
     // clear forward history
-    for (var i=this.browsingHistoryPos + 1; i<this.browsingHistory.length; i++) {
-      if (!this.browsingHistory[i])
+    for (var i=$t.browsingHistoryPos + 1; i<$t.browsingHistory.length; i++) {
+      if (!$t.browsingHistory[i])
         break;
-      this.browsingHistory[i] = null;
+      $t.browsingHistory[i] = null;
     }
-    var div = this.urlToDivs[newUrl];
+    var div = $t.urlToDivs[newUrl];
 
-    this.currentUrl = newUrl;
+    $t.currentUrl = newUrl;
     if (div) {
       MobilePageAnimation.showNewPage(div);
       return stopEventPropagation(e);
@@ -3341,7 +3363,7 @@ var Mobile = {
     div = document.createElement("DIV");
     div.style.visibility = Popup.VISIBLE;
     div.style.display = "inline";
-    this.urlToDivs[newUrl] = div;
+    $t.urlToDivs[newUrl] = div;
     insertAfter(currentDiv.parentNode, div, currentDiv);
 
     var urlParts = newUrl.split('?');
@@ -3351,16 +3373,15 @@ var Mobile = {
     postRequest(e, url, urlParts[1], div, link, loadPage);
     function loadPage(event, div, hotspot, content, contentUrl) {
       setInnerHtml(div, content);
-      Mobile.onPageLoad(contentUrl);
-      if (BrowserRuntime.xmpp) {
+      $t.onPageLoad(contentUrl);
+      if (Boost.xmpp) {
         var d = document.getElementById('lastIMtime');
         if (d) {
           var time = d.innerHTML;
-          BrowserRuntime.log('lastIMtime: ' + time);
-          BrowserRuntime.xmpp.init(time);
+          Boost.log('lastIMtime: ' + time);
+          Boost.xmpp.init(time);
         }
       }
-
       MobilePageAnimation.showNewPage(div);
 //      var offset = getElementCoords(div);
 //      window.scroll(offset.left, offset.top);
@@ -3369,32 +3390,33 @@ var Mobile = {
   },
 
   // browsing history forward and backward
-  oneStep : function(e, step) {
-    this.browsingHistoryPos += step;
-//    alert(this.browsingHistoryPos);
+  oneStep: function(e, step) {
+    var $t = Mobile;
+    $t.browsingHistoryPos += step;
+//    alert($t.browsingHistoryPos);
 
-    var l = this.browsingHistory ? this.browsingHistory.length : 0;
-    if (this.browsingHistoryPos < 0  || this.browsingHistoryPos >= l) {
-      this.browsingHistoryPos -= step;
+    var l = $t.browsingHistory ? $t.browsingHistory.length : 0;
+    if ($t.browsingHistoryPos < 0  || $t.browsingHistoryPos >= l) {
+      $t.browsingHistoryPos -= step;
       if (e)
         return stopEventPropagation(e);
       else
         return;
     }
-    var url = this.browsingHistory[this.browsingHistoryPos];
+    var url = $t.browsingHistory[$t.browsingHistoryPos];
     if (!url) {
-      this.browsingHistoryPos -= step;
+      $t.browsingHistoryPos -= step;
       if (e)
         return stopEventPropagation(e);
       else
         return;
     }
-    var div = this.urlToDivs[url];
+    var div = $t.urlToDivs[url];
 
-    if (!this.currentUrl)
-      this.currentUrl = document.location.href;
-    var currentDiv = this.urlToDivs[this.currentUrl];
-    this.currentUrl = url;
+    if (!$t.currentUrl)
+      $t.currentUrl = document.location.href;
+    var currentDiv = $t.urlToDivs[$t.currentUrl];
+    $t.currentUrl = url;
 
     if (div) {
       currentDiv.style.visibility = Popup.HIDDEN;
@@ -3408,12 +3430,13 @@ var Mobile = {
       return;
   },
 
-  refresh : function(e) {
-    if (this.currentUrl) {
-      document.location.href = this.currentUrl;
+  refresh: function(e) {
+    $t = Mobile;
+    if ($t.currentUrl) {
+      document.location.href = $t.currentUrl;
       return stopEventPropagation(e);
     }
-  }
+  },
 }
 
 
@@ -5476,8 +5499,8 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
     window.scrollTo(0, 3000);
     subject.focus();
 //    android.scroll();
-    BrowserRuntime.log('sending message: ' + msg);
-    BrowserRuntime.xmpp.sendMessage(msg);
+    Boost.log('sending message: ' + msg);
+    Boost.xmpp.sendMessage(msg);
   }
   else{
     var params = getFormFilters(form, true) + "&-noRedirect=y";
@@ -6686,7 +6709,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if (http_request.readyState != 4) // ignore for now: 0-Unintialized,
                                       // 1-Loading, 2-Loaded, 3-Interactive
       return;
-    BrowserRuntime.log('got back on postrequest for ' + url);
+    Boost.log('got back on postrequest for ' + url);
     if (!Popup.mobile  &&  !Popup.penBased  &&  !addLineItem)
       loadingCueFinish();
     var location;
@@ -6707,17 +6730,17 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       else
         status = 400;
     }
-    BrowserRuntime.log('got back on postrequest, status ' + status);
+    Boost.log('got back on postrequest, status ' + status);
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
-      BrowserRuntime.view.setProgress(100);
+      Boost.view.setProgress(100);
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
     else if (status == 200) {
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
-      BrowserRuntime.view.setProgress(100);
+      Boost.view.setProgress(100);
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
     else if (status == 302) {
@@ -6752,8 +6775,12 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       }
 
       var paintInPage;
-      try { paintInPage = http_request.getResponseHeader('X-Paint-In-Page');} catch (exc) {}
-      BrowserRuntime.log('got back on postrequest, paintinpage ' + paintInPage);
+      if (Popup.mobile)
+        paintInPage = true;
+      if (!paintInPage) {
+        try { paintInPage = http_request.getResponseHeader('X-Paint-In-Page');} catch (exc) {}
+        Boost.log('got back on postrequest, paintinpage ' + paintInPage);
+      }  
       if (paintInPage && paintInPage == 'false') {
         document.location = location;  // reload full page
       }
@@ -6796,8 +6823,11 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     }
     // below 2 line commented - made IE wait with ~1 minute timeout
     // http_request.setRequestHeader("Connection", "close");
-    BrowserRuntime.view.setProgress(10);
-    parameters += '&X-Ajax=y'; // webkit does not send custom headers
+    Boost.view.setProgress(10);
+    if (parameters)
+      parameters += '&X-Ajax=y'; // webkit does not send custom headers
+    else
+      parameters = 'X-Ajax=y'; 
     http_request.send(parameters);
   }
   // use GET due to Browser bugs
@@ -6816,7 +6846,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     else
       url1 += extras;
     http_request.open('GET', url1, true);
-    BrowserRuntime.view.setProgress(10);
+    Boost.view.setProgress(10);
     http_request.send('');
   }
 }
@@ -10261,3 +10291,65 @@ function computeRequestDigest(form) {
     return url;
 }
 
+function hash(form, login_url) {
+  if (document.all || document.getElementById) {
+    form.logonButton.disabled = true;
+//    form.logonButton.value = "Please wait";
+//    form.logonButton.style.cursor = 'wait';
+  }
+
+  var url;
+  if (arguments.length > 1 && login_url != "") { // in case login_url is not passed in
+    url = login_url;
+  } else {
+    url = "j_security_check";
+  }
+
+  form.method = "POST";
+
+//    base = document.getElementById('baseId');
+//    url = base.href + url;
+  url += "?";
+
+  var js = 0;
+
+  var j=0;
+  for(; j<form.elements.length; j++) {
+    if(form.elements[j].name.length <=0) {
+      continue;
+    }
+    if(j > 0){
+      url += "&";
+    }
+    url += form.elements[j].name;
+    url += "=";
+    if(form.elements[j].name == "j_password") {
+      url += computeRequestDigest(form);
+    } else if (form.elements[j].type == "submit") {
+      continue;
+    } else if (form.elements[j].type == "checkbox" && !form.elements[j].checked) {
+      url += "";
+    } else if (form.elements[j].type == "radio" && !form.elements[j].checked) {
+      url += "";
+    } else if (form.elements[j].name == ".save"){
+      url += "1"; // "Sign in" causes problem with the space
+    } else if (form.elements[j].name == ".js"){
+      js = 1;
+      url += "1";
+    } else {
+      url += escape(form.elements[j].value);
+    }
+  }
+  // indicate the password is hashed.
+  url += "&.hash=1";
+  if(js == 0){
+    url += "&.js=1";
+  }
+  url += "&.md5=1";
+  // prevent from running this again. Allow the server response to submit the form directly
+  //form.onsubmit = null;
+  //location.href = url;
+  return false;
+}
+
+/********************* end hashCode.js ******************/
