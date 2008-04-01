@@ -75,7 +75,7 @@
     }
 
     //***** Add smartlistbox handlers
-    function addHandlers() {
+    function addHandlers(event) {
 //      Packages.java.lang.System.out.println('onLoad 0: ' + new Date());
       if (window.parent != window) {
         onLoadPopup();
@@ -83,11 +83,11 @@
       }
 //      Packages.java.lang.System.out.println('onLoad 1: ' + new Date());
       interceptLinkClicks();
-      if (typeof BrowserRuntime != 'undefined') {
-        BrowserRuntime.init();
+      if (typeof Boost != 'undefined') {
+        Boost.init();
       }
       if (typeof Mobile != 'undefined')
-        Mobile.init();
+        Mobile.init(event);
       
 //      Packages.java.lang.System.out.println('onLoad 2: ' + new Date());
       initListBoxes(null);
