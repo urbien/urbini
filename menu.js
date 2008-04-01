@@ -3306,8 +3306,6 @@ var Mobile = {
 //    alert("currentUrl: " + this.currentUrl + "; newUrl: " + newUrl);
     //////////////////
     //  var newUrl = android.getthis.currentUrl();
-    if (this.currentUrl == newUrl)
-      return stopEventPropagation(e);
     var currentDiv;
     if (this.urlToDivs)
        currentDiv = this.urlToDivs[this.currentUrl];
@@ -3317,6 +3315,11 @@ var Mobile = {
       s[this.currentUrl] = currentDiv;
       this.urlToDivs = s;
       //this.urlToDivs[this.currentUrl] = currentDiv;
+    }
+    if (this.currentUrl == newUrl) {
+      currentDiv.style.visibility = Popup.VISIBLE;
+      currentDiv.style.display = "inline";
+      return stopEventPropagation(e);
     }
     this.browsingHistory[this.browsingHistoryPos] = newUrl;
     MobilePageAnimation.setCurrentDiv(currentDiv);
