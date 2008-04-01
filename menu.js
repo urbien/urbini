@@ -2914,9 +2914,7 @@ var Boost = {
       $t.logger                         = jsiLog;
       needHandler = true;
     }
-    if (typeof jsiKey != 'undefined') {
-      if (typeof jsiKeyEvent == 'undefined') 
-        throw new Error("Boost: jsiKeyEvent must be defined if jsiKey is defined");
+    if (typeof jsiKeyEvent != 'undefined') {
       $t.eventObjects['key']            = jsiKeyEvent;
       needHandler = true;
     }
@@ -2945,6 +2943,14 @@ var Boost = {
         }
       };
     }
+    
+    for (var h in Boost.eventHandlers) {
+      Boost.log('handlers: ' + h);
+    }
+    for (var h in Boost.eventObjects) {
+      Boost.log('eventObjects: ' + h);
+    }
+    
   },
 
   log: function(text) {
@@ -2990,7 +2996,7 @@ var Boost = {
       var eventType = $t.eventManager.getEventType();
       var handlers = $t.eventHandlers[eventType];
       var eventObject = $t.eventObjects[eventType];
-      Boost.log('got runtime event: ' + eventType);
+      //Boost.log('got runtime event: ' + eventType);
       if (handlers) {
         for (var i=0; i<handlers.length; i++) {
           var handler = handlers[i];
