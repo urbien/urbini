@@ -3168,8 +3168,6 @@ var Mobile = {
 //      return stopEventPropagation(e);
 ///////////
     var optionsDiv = document.getElementById('menu_Options');
-    optionsDiv.style.visibility = Popup.HIDDEN;
-    optionsDiv.style.display = "none";
     var id = link.id;
     var newUrl;
     if (id) {
@@ -3296,6 +3294,10 @@ var Mobile = {
             newUrl += '&-grid=y';
         }
       }
+    }
+    else {
+      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.display = "none";
     }
 ////////
     link.blur();
