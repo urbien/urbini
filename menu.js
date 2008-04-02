@@ -3196,6 +3196,10 @@ var Mobile = {
       currentDiv.style.display = "inline";
       return null;
     }
+    if (id == 'menu_exit') {
+      Boost.view.exit();
+      return null;
+    }
     if (id == 'menu_Reload') {
       document.location.replace($t.currentUrl);
       return null;
