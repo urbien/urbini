@@ -2952,7 +2952,7 @@ var Boost = {
             document.body.style.cursor = "wait";
           else
             document.body.style.cursor = "default";
-        }
+        },
         setTitle: function (text) {
           document.title = text;
         }
@@ -3343,8 +3343,6 @@ var Mobile = {
       currentDiv.style.display = "inline";
       return stopEventPropagation(e);
     }
-    // refresh current div
-    MobilePageAnimation.setCurrentDiv(currentDiv);
     if (isRefresh)
       newUrl = $t.currentUrl;
 
@@ -3363,13 +3361,12 @@ var Mobile = {
     $t.currentUrl = newUrl;
     if (div  &&  !isRefresh) {
       $t.setTitle(div);
-      MobilePageAnimation.showNewPage(div);
+      MobilePageAnimation.showPage(currentDiv, div);
       return stopEventPropagation(e);
     }
     div = document.createElement("DIV");
-
-    div.style.visibility = Popup.VISIBLE;
-    div.style.display = "inline";
+    div.style.visibility = Popup.HIDDEN;
+    div.style.display = "none";
     $t.urlToDivs[newUrl] = div;
 
     insertAfter(currentDiv.parentNode, div, currentDiv);
@@ -3392,7 +3389,7 @@ var Mobile = {
           Boost.xmpp.init(time);
         }
       }
-      MobilePageAnimation.showNewPage(div);
+      MobilePageAnimation.showPage(currentDiv, div);
 //      var offset = getElementCoords(div);
 //      window.scroll(offset.left, offset.top);
     }
@@ -3429,15 +3426,8 @@ var Mobile = {
     $t.currentUrl = url;
 
     if (div) {
-      MobilePageAnimation.setCurrentDiv(currentDiv);
-      MobilePageAnimation.showNewPage(div);
       $t.setTitle(div);
-      /*
-      currentDiv.style.visibility = Popup.HIDDEN;
-      currentDiv.style.display = "none";
-      div.style.visibility = Popup.VISIBLE;
-      div.style.display = "inline";
-      */
+      MobilePageAnimation.showPage(currentDiv, div, step < 0);
     }
     if (e)
       return stopEventPropagation(e);
@@ -5540,8 +5530,8 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
 }
 
 var MobilePageAnimation = {
-  INTERVAL : 20, // ms
-  STEPS_NUM : 15,
+  INTERVAL : 0, // ms
+  STEPS_NUM : 5,
 
   curDiv : null,
   newDiv : null,
@@ -5549,16 +5539,15 @@ var MobilePageAnimation = {
 
   wndWidth : null,
   wndHeight : null,
-  step : 0,
+  step : 1,
 
-  setCurrentDiv : function(div) {
-    this.curDiv = div;
-  },
-
-  showNewPage : function(div) {
-    if (!this.curDiv)
-      throw new Error('MobilePageAnimation: current Div is null!');
-    this.newDiv = div;
+  showPage : function(curDiv, newDiv, isBack) {
+    this.curDiv = curDiv;
+    this.newDiv = newDiv;
+    if (typeof isBack == 'undefined' || isBack == false)
+      rightToLeft = true;
+    else
+      rightToLeft = false;
     window.focus();
     var sz = getWindowSize();
     this.wndWidth = sz[0];
@@ -5596,7 +5585,7 @@ var MobilePageAnimation = {
       curDivStl.left =  x;
     }
 
-    if (thisObj.step == 0) {
+    if (thisObj.step == 1) {
       var y = getTop(thisObj.curDiv);
       newDivStl.top = y;
       newDivStl.width = thisObj.wndWidth;
@@ -5620,7 +5609,7 @@ var MobilePageAnimation = {
       thisObj.curDiv.style.visibility = Popup.HIDDEN;
       thisObj.curDiv.style.display = "none";
       thisObj.curDiv = null;
-      thisObj.step = 0;
+      thisObj.step = 1;
       Boost.view.setProgressIndeterminate(false);
     }
   }
