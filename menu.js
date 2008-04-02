@@ -2872,6 +2872,7 @@ var Boost = {
   logger              : null,
   keyboard            : null,
   view                : null, // window or view of this browser
+  browserHistory      : null,
 
   eventHandlers       : new Array(),
   eventObjects        : new Array(),
@@ -2894,9 +2895,11 @@ var Boost = {
     if (typeof jsiXmpp != 'undefined') {
       $t.xmpp                 = jsiXmpp;
       $t.eventObjects['xmpp'] = jsiXmppEvent;
+      $t.xmpp.subscribe();
       needHandler = true;
     }
-    if (typeof jsiBrowserHistoryEvent != 'undefined') {
+    if (typeof jsiBrowserHistory != 'undefined') {
+      $t.browserHistory                 = jsiBrowserHistory;
       $t.eventObjects['browserHistory'] = jsiBrowserHistoryEvent;
       needHandler = true;
     }
@@ -2914,8 +2917,10 @@ var Boost = {
       $t.logger                         = jsiLog;
       needHandler = true;
     }
-    if (typeof jsiKeyEvent != 'undefined') {
+    if (typeof jsiKeyboard != 'undefined') {
+      $t.keyboard                       = jsiKeyboard;
       $t.eventObjects['key']            = jsiKeyEvent;
+      $t.keyboard.subscribe();
       needHandler = true;
     }
     if (needHandler) {
@@ -2935,7 +2940,13 @@ var Boost = {
     else {
       // default implementation
       $t.view = {
-        setProgress : function (progressPercent) {
+        setProgressIndeterminate: function(b) {
+          if (b)
+            document.body.style.cursor = "wait";
+          else
+            document.body.style.cursor = "default";
+        },
+        setProgress : function(progressPercent) {
           if (progressPercent != 100)
             document.body.style.cursor = "wait";
           else
@@ -2971,6 +2982,7 @@ var Boost = {
     if (handlers == null) {
       handlers = new Array();
       $t.eventHandlers[eventType] = handlers;
+      //$t.eventManager.subscribe(eventType)
     }
     //Boost.log('adding handler: ' + handler);
     handlers[handlers.length] = handler;
@@ -2993,21 +3005,26 @@ var Boost = {
     }
     var hasEvent = $t.eventManager.hasEvent();
     if (hasEvent) {
+      $t.eventManager.popEvent();
       var eventType = $t.eventManager.getEventType();
       var handlers = $t.eventHandlers[eventType];
       var eventObject = $t.eventObjects[eventType];
-      //Boost.log('got runtime event: ' + eventType);
+      Boost.log('got runtime event: ' + eventType);
       if (handlers) {
         for (var i=0; i<handlers.length; i++) {
           var handler = handlers[i];
           if (handler == null)
             continue;
           Boost.log('calling handler for event \'' + eventType + '\' with event object: ' + eventObject);
-          handler(eventObject);
+          try {
+            handler(eventObject);
+          } catch(e) {
+            Boost.log('failed on handler for event \'' + eventType + '\' with event object: ' + eventObject + ':  ' + e);
+          }
         }
       }
       var rc = stopEventPropagation(e);
-      $t.eventManager.popEvent();
+      //$t.eventManager.popEvent();
       return rc;
     }
   },
@@ -3054,8 +3071,7 @@ var Mobile = {
     pw.value = 'mark';
     username.value = 'mark';
     if (Boost.xmpp) {
-      Boost.xmpp.setUsername(username.value);
-      Boost.xmpp.setPassword(pw.value);
+      Boost.xmpp.login(username.value, pw.value);
     }
     /*
     if (typeof hash == 'undefined') {
@@ -3065,7 +3081,7 @@ var Mobile = {
       div.innerHTML = script;
     }
     */
-    //hash(loginform, 'j_security_check');
+    hash(loginform, 'j_security_check');
 
     var params = getFormFilters(loginform, true, new Array());
     //var urlFields = document.location.split('?');
@@ -3075,12 +3091,13 @@ var Mobile = {
 
   onKey: function(e) {
     var $t = Mobile;
-    Boost.log('got key event: ' + e.keyCode);
-    if (e.keyCode == 4) // Boost.keyboard.getBackButtonCode())
+    var k = e.getKeyCode();
+    Boost.log('got key event: ' + k);
+    if (k == 4) //back
       $t.oneStep(null, -1);
-    if (e.keyCode == 1) {// Boost.keyboard.getMenuButtonCode())
+    if (k == 1) {
 //      showMenu();
-      var optionsDiv = document.getElementById('mOptions');
+      var optionsDiv = document.getElementById('menu_Options');
       optionsDiv.style.visibility = Popup.VISIBLE;
       optionsDiv.style.display = "inline";
     }
@@ -6740,13 +6757,13 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
-      Boost.view.setProgress(100);
+      Boost.view.setProgressIndeterminate(false);
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
     else if (status == 200) {
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
-      Boost.view.setProgress(100);
+      Boost.view.setProgressIndeterminate(false);
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
     else if (status == 302) {
@@ -6831,11 +6848,13 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     }
     // below 2 line commented - made IE wait with ~1 minute timeout
     // http_request.setRequestHeader("Connection", "close");
-    Boost.view.setProgress(10);
+    Boost.view.setProgressIndeterminate(true);
     if (parameters)
       parameters += '&X-Ajax=y'; // webkit does not send custom headers
     else
       parameters = 'X-Ajax=y';
+    if (Popup.android)
+      parameters += '&X-Accept-Boost=menu-button';
     http_request.send(parameters);
   }
   // use GET due to Browser bugs
@@ -6854,7 +6873,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     else
       url1 += extras;
     http_request.open('GET', url1, true);
-    Boost.view.setProgress(10);
+    Boost.view.setProgressIndeterminate(true);
     http_request.send('');
   }
 }
