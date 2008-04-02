@@ -3178,6 +3178,7 @@ var Mobile = {
       }
       currentDiv.style.visibility = Popup.HIDDEN;
       currentDiv.style.display = "none";
+      $t.displayViewsFor(currentDiv, optionsDiv);
       optionsDiv.style.visibility = Popup.VISIBLE;
       optionsDiv.style.display = "inline";
       return null;
@@ -3197,7 +3198,8 @@ var Mobile = {
       return null;
     }
     if (id == 'menu_exit') {
-      Boost.view.exit();
+      if (confirm("Do you really want to exit this application?"))
+        Boost.view.exit();
       return null;
     }
     if (id == 'menu_Reload') {
@@ -3437,6 +3439,61 @@ var Mobile = {
       return stopEventPropagation(e);
     else
       return;
+  },
+  displayViewsFor: function(div, optionsDiv) {
+    var divs = div.getElementsByTagName('div');
+    var viewsDiv;
+    for (var i=0; i<divs.length  &&  viewsDiv == null; i++) {
+      var tDiv = divs[i];
+      if (tDiv.id  &&  tDiv.id == 'options_Views')
+        viewsDiv = tDiv;
+    }
+    var views;
+    if (viewsDiv) {
+      views = viewsDiv.innerHTML;
+      if (!views  ||  trim(views).length == 0)
+        views = null;
+      else
+        views = views.split(',');
+    }
+    var trs = optionsDiv.getElementsByTagName('table');
+    var viewsTr;
+    for (var i=0; i<trs.length  &&  !viewsTr; i++) {
+      var tr = trs[i];
+      if (!tr.id  ||  tr.id != 'menu_Views')
+        continue;
+      viewsTr = tr;
+    }
+    if (!viewsTr)
+      return;
+    if (views) {
+      viewsTr.style.visibility = Popup.VISIBLE;
+      viewsTr.style.display = "inline";
+    }
+    else {
+      viewsTr.style.visibility = Popup.HIDDEN;
+      viewsTr.style.display = "none";
+      return;
+    }
+
+    var tds = viewsTr.getElementsByTagName('td');
+    var found;
+    for (var i=0; i<tds.length; i++) {
+      var td = tds[i];
+      var id = td.id;
+      if (!id)
+        continue;
+      found = false;
+      for (var j=0; j<views.length  &&  !found; j++) {
+        if (views[j] == id) {
+          td.style.visibility = Popup.VISIBLE;
+          found = true;
+        }
+      }
+      if (!found)
+        td.style.visibility = Popup.HIDDEN;
+    }
+
   },
 
   setTitle: function(div) {
