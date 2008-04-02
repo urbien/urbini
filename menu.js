@@ -6818,7 +6818,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     http_request.setRequestHeader("X-Referer",     document.location.href);
     http_request.setRequestHeader("X-Ajax",       "y");
     if (Popup.android)
-      http_request.setRequestHeader("X-Accept-BrowserBoost", "menu-button");
+      http_request.setRequestHeader("X-Accept-Boost", "menu-button");
     http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     // cookie is inherited by widget and now needs to be set on request to not to be forced to login
     if (xcookie) {
