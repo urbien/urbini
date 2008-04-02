@@ -10,8 +10,7 @@
     <options />
 	  <div id="mainDiv">
       <siteTitle name="title" />
-  <include name="${type}_details_main.jsp" alt="propertySheet.jsp" />
-		  <!--tablePropertyList/-->
+		  <tablePropertyList/>
 		  <siteResourceList/>
 		  <pagingResources/>
 	  </div>
