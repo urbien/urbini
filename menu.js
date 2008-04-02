@@ -5549,9 +5549,9 @@ var MobilePageAnimation = {
     this.curDiv = curDiv;
     this.newDiv = newDiv;
     if (typeof isBack == 'undefined' || isBack == false)
-      rightToLeft = true;
+      this.rightToLeft = true;
     else
-      rightToLeft = false;
+      this.rightToLeft = false;
     window.focus();
     var sz = getWindowSize();
     this.wndWidth = sz[0];
