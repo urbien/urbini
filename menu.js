@@ -2941,6 +2941,7 @@ var Boost = {
       // default implementation
       $t.view = {
         setProgressIndeterminate: function(b) {
+          $t.log('setting progress indeterminate');
           if (b)
             document.body.style.cursor = "wait";
           else
@@ -2951,6 +2952,9 @@ var Boost = {
             document.body.style.cursor = "wait";
           else
             document.body.style.cursor = "default";
+        }
+        setTitle: function (text) {
+          document.title = text;
         }
       };
     }
@@ -3450,7 +3454,7 @@ var Mobile = {
         titleDiv = tDiv;
     }
     if (titleDiv)
-      document.title = titleDiv.innerHTML;
+      Boost.view.setTitle(titleDiv.innerHTML);
   },
 
   refresh: function(e) {
@@ -5617,6 +5621,7 @@ var MobilePageAnimation = {
       thisObj.curDiv.style.display = "none";
       thisObj.curDiv = null;
       thisObj.step = 0;
+      Boost.view.setProgressIndeterminate(false);
     }
   }
 }
@@ -6763,7 +6768,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     else if (status == 200) {
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
-      Boost.view.setProgressIndeterminate(false);
+      //Boost.view.setProgressIndeterminate(false);
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
     else if (status == 302) {
