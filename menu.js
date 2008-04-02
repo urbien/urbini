@@ -3132,14 +3132,18 @@ var Mobile = {
 //    android.scroll();
 //    d.innerHTML = d.innerHTML + text + "</br>";
   },
-/*
+
   menuOptions: function(link) {
+    var $t = Mobile;
+
     var id = link.id;
+    var newUrl = link.href;
+
     var optionsDiv = document.getElementById('menu_Options');
     if (!id) {
       optionsDiv.style.visibility = Popup.HIDDEN;
       optionsDiv.style.display = "none";
-      return false;
+      return newUrl;
     }
     if (id == 'optionsMenu') {
       if (!$t.urlToDivs) {
@@ -3155,12 +3159,12 @@ var Mobile = {
       currentDiv.style.display = "none";
       optionsDiv.style.visibility = Popup.VISIBLE;
       optionsDiv.style.display = "inline";
-      return true;
+      return null;
     }
     if (id == 'menu_cancel') {
       optionsDiv.style.visibility = Popup.HIDDEN;
       optionsDiv.style.display = "none";
-      var currentDiv = urlToDivs[currentUrl];
+      var currentDiv = $t.urlToDivs[$t.currentUrl];
       if (!currentDiv) {
         currentDiv = document.getElementById('mainDiv');
         var u = new Array();
@@ -3169,12 +3173,114 @@ var Mobile = {
       }
       currentDiv.style.visibility = Popup.VISIBLE;
       currentDiv.style.display = "inline";
-      return true;
+      return null;
+    }
+    if (id == 'menu_Reload') {
+      document.location.replace($t.currentUrl);
+      return null;
+    }
+    if (id == 'menu_Refresh') {
+      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.display = "none";
+      return 'refresh';
+    }
+    if (id == 'menu_List') {
+      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.display = "none";
+      newUrl = $t.currentUrl;
+      var idx = newUrl.indexOf('-featured=');
+      if (idx != -1) {
+        idx1 = newUrl.indexOf('&', idx);
+        if (idx1 == -1) {
+          if (newUrl.charAt(idx - 1) == '&')
+            idx--;
+          newUrl = newUrl.substring(0, idx);
+        }
+        else
+          newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
+      }
+
+      var idx = newUrl.indexOf('-grid=');
+      if (idx != -1) {
+        var idx1 = newUrl.indexOf('&', idx);
+        if (idx1 == -1) {
+          if (newUrl.charAt(idx - 1) == '&')
+            idx--;
+          newUrl = newUrl.substring(0, idx);
+        }
+        else
+          newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
+        newUrl += '&-list=y';
+      }
+      else if (newUrl.indexOf('-list=') == -1)
+        newUrl = newUrl + '&-list=y';
+    }
+    else if (id == 'menu_Grid') {
+      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.display = "none";
+      newUrl = $t.currentUrl;
+
+      var idx = newUrl.indexOf('-featured=');
+      if (idx != -1) {
+        idx1 = newUrl.indexOf('&', idx);
+        if (idx1 == -1) {
+          if (newUrl.charAt(idx - 1) == '&')
+            idx--;
+          newUrl = newUrl.substring(0, idx);
+        }
+        else
+          newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
+      }
+
+      idx = newUrl.indexOf('-list=');
+      if (idx != -1) {
+        var idx1 = newUrl.indexOf('&', idx);
+        if (idx1 == -1) {
+          if (newUrl.charAt(idx - 1) == '&')
+            idx--;
+          newUrl = newUrl.substring(0, idx);
+        }
+        else
+          newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
+        newUrl += '&-grid=y';
+      }
+      else {
+        idx = newUrl.indexOf('-grid=');
+        if (idx == -1)
+          newUrl += '&-grid=y';
+      }
+    }
+    else if (id == 'menu_LargeGrid') {
+      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.display = "none";
+      newUrl = $t.currentUrl;
+
+      var idx = newUrl.indexOf('-featured=');
+      if (idx == -1)
+        newUrl += '&-featured=y';
+
+      idx = newUrl.indexOf('-list=');
+      if (idx != -1) {
+        var idx1 = newUrl.indexOf('&', idx);
+        if (idx1 == -1) {
+          if (newUrl.charAt(idx - 1) == '&')
+            idx--;
+          newUrl = newUrl.substring(0, idx);
+        }
+        else
+          newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
+        newUrl += '&-grid=y';
+      }
+      else {
+        idx = newUrl.indexOf('-grid=');
+        if (idx == -1)
+          newUrl += '&-grid=y';
+      }
     }
 
-    return false;
-  };
-*/
+    return newUrl;
+  },
+
   onClick: function(e) {
     var $t = Mobile;
     //Boost.log('mobileOnclick');
@@ -3191,147 +3297,13 @@ var Mobile = {
       s[0] = $t.currentUrl;
       $t.browsingHistory = s;
     }
-
-//    if ($t.menuOptions(link))
-//      return stopEventPropagation(e);
-///////////
-    var optionsDiv = document.getElementById('menu_Options');
-    var id = link.id;
-    var newUrl;
-    if (id) {
-      if (id == 'optionsMenu') {
-        if (!$t.urlToDivs) {
-          var u = new Array();
-          $t.urlToDivs = u;
-        }
-        var currentDiv = $t.urlToDivs[$t.currentUrl];
-        if (!currentDiv) {
-          currentDiv = document.getElementById('mainDiv');
-          $t.urlToDivs[0] = currentDiv;
-        }
-        currentDiv.style.visibility = Popup.HIDDEN;
-        currentDiv.style.display = "none";
-        optionsDiv.style.visibility = Popup.VISIBLE;
-        optionsDiv.style.display = "inline";
-        return stopEventPropagation(e);
-      }
-      if (id == 'menu_cancel') {
-        optionsDiv.style.visibility = Popup.HIDDEN;
-        optionsDiv.style.display = "none";
-        var currentDiv = $t.urlToDivs[$t.currentUrl];
-        if (!currentDiv) {
-          currentDiv = document.getElementById('mainDiv');
-          var u = new Array();
-          u[0] = $t.currentDiv;
-          $t.urlToDivs = u;
-        }
-        currentDiv.style.visibility = Popup.VISIBLE;
-        currentDiv.style.display = "inline";
-        return stopEventPropagation(e);
-      }
-      if (id == 'menu_List') {
-        optionsDiv.style.visibility = Popup.HIDDEN;
-        optionsDiv.style.display = "none";
-        newUrl = $t.currentUrl;
-        var idx = newUrl.indexOf('-featured=');
-        if (idx != -1) {
-          idx1 = newUrl.indexOf('&', idx);
-          if (idx1 == -1) {
-            if (newUrl.charAt(idx - 1) == '&')
-              idx--;
-            newUrl = newUrl.substring(0, idx);
-          }
-          else
-            newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
-        }
-
-        var idx = newUrl.indexOf('-grid=');
-        if (idx != -1) {
-          var idx1 = newUrl.indexOf('&', idx);
-          if (idx1 == -1) {
-            if (newUrl.charAt(idx - 1) == '&')
-              idx--;
-            newUrl = newUrl.substring(0, idx);
-          }
-          else
-            newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
-          newUrl += '&-list=y';
-        }
-        else if (newUrl.indexOf('-list=') == -1)
-          newUrl = newUrl + '&-list=y';
-      }
-      if (id == 'menu_Grid') {
-        optionsDiv.style.visibility = Popup.HIDDEN;
-        optionsDiv.style.display = "none";
-        newUrl = $t.currentUrl;
-
-        var idx = newUrl.indexOf('-featured=');
-        if (idx != -1) {
-          idx1 = newUrl.indexOf('&', idx);
-          if (idx1 == -1) {
-            if (newUrl.charAt(idx - 1) == '&')
-              idx--;
-            newUrl = newUrl.substring(0, idx);
-          }
-          else
-            newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
-        }
-
-        idx = newUrl.indexOf('-list=');
-        if (idx != -1) {
-          var idx1 = newUrl.indexOf('&', idx);
-          if (idx1 == -1) {
-            if (newUrl.charAt(idx - 1) == '&')
-              idx--;
-            newUrl = newUrl.substring(0, idx);
-          }
-          else
-            newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
-          newUrl += '&-grid=y';
-        }
-        else {
-          idx = newUrl.indexOf('-grid=');
-          if (idx == -1)
-            newUrl += '&-grid=y';
-        }
-      }
-      if (id == 'menu_LargeGrid') {
-        optionsDiv.style.visibility = Popup.HIDDEN;
-        optionsDiv.style.display = "none";
-        newUrl = $t.currentUrl;
-
-        var idx = newUrl.indexOf('-featured=');
-        if (idx == -1)
-          newUrl += '&-featured=y';
-
-        idx = newUrl.indexOf('-list=');
-        if (idx != -1) {
-          var idx1 = newUrl.indexOf('&', idx);
-          if (idx1 == -1) {
-            if (newUrl.charAt(idx - 1) == '&')
-              idx--;
-            newUrl = newUrl.substring(0, idx);
-          }
-          else
-            newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
-          newUrl += '&-grid=y';
-        }
-        else {
-          idx = newUrl.indexOf('-grid=');
-          if (idx == -1)
-            newUrl += '&-grid=y';
-        }
-      }
-    }
-    else {
-      optionsDiv.style.visibility = Popup.HIDDEN;
-      optionsDiv.style.display = "none";
-    }
-////////
-    link.blur();
+    var newUrl = $t.menuOptions(link);
     if (!newUrl)
-      newUrl = link.href;
-    $t.browsingHistoryPos++;
+      return stopEventPropagation(e);
+    var isRefresh = newUrl == 'refresh';
+    link.blur();
+    if (!isRefresh)
+      $t.browsingHistoryPos++;
 
 //    alert("currentUrl: " + $t.currentUrl + "; newUrl: " + newUrl);
     //////////////////
@@ -3350,35 +3322,36 @@ var Mobile = {
       currentDiv.style.display = "inline";
       return stopEventPropagation(e);
     }
-    $t.browsingHistory[$t.browsingHistoryPos] = newUrl;
-
+    // refresh current div
     MobilePageAnimation.setCurrentDiv(currentDiv);
-    // clear forward history
-    for (var i=$t.browsingHistoryPos + 1; i<$t.browsingHistory.length; i++) {
-      if (!$t.browsingHistory[i])
-        break;
-      $t.browsingHistory[i] = null;
+    if (isRefresh) {
+      alert('refresh');
+      newUrl = $t.currentUrl;
+    }
+    else {
+      $t.browsingHistory[$t.browsingHistoryPos] = newUrl;
+
+      // clear forward history
+      for (var i=$t.browsingHistoryPos + 1; i<$t.browsingHistory.length; i++) {
+        if (!$t.browsingHistory[i])
+          break;
+        $t.browsingHistory[i] = null;
+      }
     }
     var div = $t.urlToDivs[newUrl];
 
     $t.currentUrl = newUrl;
-    if (div) {
-      var divs = div.getElementsByTagName('div');
-      var titleDiv;
-      for (var i=0; i<divs.length  &&  titleDiv == null; i++) {
-        var tDiv = divs[i].id;
-        if (tDiv.id  &&  tDiv.id == 'title')
-          titleDiv = tDiv;
-      }
-      if (titleDiv)
-        document.title = titleDiv;
+    if (div  &&  !isRefresh) {
+      $t.setTitle(div);
       MobilePageAnimation.showNewPage(div);
       return stopEventPropagation(e);
     }
     div = document.createElement("DIV");
+
     div.style.visibility = Popup.VISIBLE;
     div.style.display = "inline";
     $t.urlToDivs[newUrl] = div;
+
     insertAfter(currentDiv.parentNode, div, currentDiv);
 
     var urlParts = newUrl.split('?');
@@ -3386,17 +3359,10 @@ var Mobile = {
     var idx = url.lastIndexOf('/');
     url = url.substring(0, idx + 1) + 'm' + url.substring(idx);
     postRequest(e, url, urlParts[1], div, link, loadPage);
+
     function loadPage(event, div, hotspot, content, contentUrl) {
       setInnerHtml(div, content);
-      var divs = div.getElementsByTagName('div');
-      var titleDiv;
-      for (var i=0; i<divs.length  &&  titleDiv == null; i++) {
-        var tDiv = divs[i].id;
-        if (tDiv.id  &&  tDiv.id == 'title')
-          titleDiv = tDiv;
-      }
-      if (titleDiv)
-        document.title = titleDiv;
+      $t.setTitle(div);
       $t.onPageLoad(contentUrl);
       if (Boost.xmpp) {
         var d = document.getElementById('lastIMtime');
@@ -3406,6 +3372,7 @@ var Mobile = {
           Boost.xmpp.init(time);
         }
       }
+      alert(url + "; " + contentUrl + ";" + $t.currentUrl);
       MobilePageAnimation.showNewPage(div);
 //      var offset = getElementCoords(div);
 //      window.scroll(offset.left, offset.top);
@@ -3445,6 +3412,7 @@ var Mobile = {
     if (div) {
       MobilePageAnimation.setCurrentDiv(currentDiv);
       MobilePageAnimation.showNewPage(div);
+      $t.setTitle(div);
       /*
       currentDiv.style.visibility = Popup.HIDDEN;
       currentDiv.style.display = "none";
@@ -3456,6 +3424,18 @@ var Mobile = {
       return stopEventPropagation(e);
     else
       return;
+  },
+
+  setTitle: function(div) {
+    var divs = div.getElementsByTagName('div');
+    var titleDiv;
+    for (var i=0; i<divs.length  &&  titleDiv == null; i++) {
+      var tDiv = divs[i];
+      if (tDiv.id  &&  tDiv.id == 'title')
+        titleDiv = tDiv;
+    }
+    if (titleDiv)
+      document.title = titleDiv.innerHTML;
   },
 
   refresh: function(e) {
