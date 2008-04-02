@@ -3324,10 +3324,9 @@ var Mobile = {
     }
     // refresh current div
     MobilePageAnimation.setCurrentDiv(currentDiv);
-    if (isRefresh) {
-      alert('refresh');
+    if (isRefresh)
       newUrl = $t.currentUrl;
-    }
+
     else {
       $t.browsingHistory[$t.browsingHistoryPos] = newUrl;
 
@@ -3372,7 +3371,6 @@ var Mobile = {
           Boost.xmpp.init(time);
         }
       }
-      alert(url + "; " + contentUrl + ";" + $t.currentUrl);
       MobilePageAnimation.showNewPage(div);
 //      var offset = getElementCoords(div);
 //      window.scroll(offset.left, offset.top);
