@@ -3031,7 +3031,7 @@ var Boost = {
       //$t.eventManager.popEvent();
       return rc;
     }
-  },
+  }
 }
 
 var Mobile = {
@@ -3528,7 +3528,7 @@ var Mobile = {
       document.location.href = $t.currentUrl;
       return stopEventPropagation(e);
     }
-  },
+  }
 }
 
 
