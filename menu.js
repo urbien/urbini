@@ -3035,9 +3035,10 @@ var Boost = {
 }
 
 var Mobile = {
-  currentUrl: null,
+  currentUrl:  null,
   urlToDivs:   null,
-  browsingHistory:   null,
+  chatRoom:    null,
+  browsingHistory:    null,
   browsingHistoryPos: 0,
   $t: null,
 
@@ -3052,12 +3053,25 @@ var Mobile = {
     Boost.addEventHandler('xmpp', $t.onChatMessage);
     Boost.addEventHandler('key',  $t.onKey);
     addEvent(document.body, 'click',  $t.onClick, false);
-    $t.onPageLoad(null);
+    $t.onPageLoad();
   },
 
-  onPageLoad: function(newUrl) {
+  onPageLoad: function(newUrl, div) {
     var $t = Mobile;
     $t.autoLogin(newUrl);
+    if (div) {
+      var divs = div.getElementsByTagName('div');
+      var chatRoomDiv;
+      for (var i=0; i<divs.length  &&  chatRoomDiv == null; i++) {
+        var tDiv = divs[i];
+        if (tDiv.id  &&  tDiv.id == '-chatRoom')
+          chatRoomDiv = tDiv;
+      }
+      if (chatRoomDiv) {
+        chatRoom = chatRoomDiv.innerHTML;
+//        Boost.xmpp.join(chatRoom);
+      }
+    }
   },
 
   autoLogin: function(url) {
@@ -3386,7 +3400,7 @@ var Mobile = {
     function loadPage(event, div, hotspot, content, contentUrl) {
       setInnerHtml(div, content);
       $t.setTitle(div);
-      $t.onPageLoad(contentUrl);
+      $t.onPageLoad(contentUrl, div);
       if (Boost.xmpp) {
         var d = document.getElementById('lastIMtime');
         if (d) {
@@ -5624,7 +5638,7 @@ var MobilePageAnimation = {
     // non-linear
     var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM)
         * 2.0 * Math.abs(Math.cos(thisObj.step/thisObj.STEPS_NUM * Math.PI));
-    
+
     // 1. calculation
     // 1.1. right to left
     if(thisObj.rightToLeft) {
