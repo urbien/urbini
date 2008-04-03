@@ -3069,7 +3069,7 @@ var Mobile = {
       }
       if (chatRoomDiv) {
         chatRoom = chatRoomDiv.innerHTML;
-//        Boost.xmpp.join(chatRoom);
+        Boost.xmpp.setChatRoom(chatRoom);
       }
     }
   },
