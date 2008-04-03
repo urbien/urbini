@@ -5636,8 +5636,12 @@ var MobilePageAnimation = {
     var curDivStl = thisObj.curDiv.style;
     var x;
     // non-linear
+    
+    
     var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM)
-        * 2.0 * Math.abs(Math.cos(thisObj.step/thisObj.STEPS_NUM * Math.PI));
+       * 1.6 * Math.abs(Math.sin(thisObj.step/thisObj.STEPS_NUM * Math.PI));
+
+   // var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM);
 
     // 1. calculation
     // 1.1. right to left
