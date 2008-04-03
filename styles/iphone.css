@@ -126,7 +126,22 @@ div {font-family:Helvetica; font-size:10pt;}
     line-height: 28px;
     font-size: 12px;
     font-weight: bold;
-//    color: #FFFFFF;
+    color: #FFFFFF;
+    text-shadow: rgba(0, 0, 0, 0.6) 0px -1px 0;
+    text-decoration: none;
+    background: none;
+}
+.button_middle {
+    float: center;
+    -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
+    -webkit-border-radius: 0;
+    border-width: 0 5px 0 5px;
+    padding: 3px;
+    margin: 3px;
+    line-height: 28px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #FFFFFF;
     text-shadow: rgba(0, 0, 0, 0.6) 0px -1px 0;
     text-decoration: none;
     background: none;
@@ -165,11 +180,8 @@ tr.dark  {background-color:#eeeeee; height: 35px;}
 
 .li {
     margin: 0;
-    border-bottom: 1px solid #E0E0E0;
     padding: 3;
- //   background: url(../images/iPhoneArrow.png) no-repeat right center;
     font-size: 14px;
-//    font-weight: bold;
     font-family: Helvetica;
     list-style: none;
     color: #000000
