@@ -3199,7 +3199,7 @@ var Mobile = {
     }
     if (id == 'menu_exit') {
       if (confirm("Do you really want to exit this application?"))
-        Boost.view.exit();
+      Boost.view.exit();
       return null;
     }
     if (id == 'menu_Reload') {
@@ -5592,7 +5592,7 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
 
 var MobilePageAnimation = {
   INTERVAL : 0, // ms
-  STEPS_NUM : 5,
+  STEPS_NUM : 6,
 
   curDiv : null,
   newDiv : null,
@@ -5621,9 +5621,10 @@ var MobilePageAnimation = {
     var newDivStl = thisObj.newDiv.style;
     var curDivStl = thisObj.curDiv.style;
     var x;
-
-    var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM);
-
+    // non-linear
+    var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM)
+        * 2.0 * Math.abs(Math.cos(thisObj.step/thisObj.STEPS_NUM * Math.PI));
+    
     // 1. calculation
     // 1.1. right to left
     if(thisObj.rightToLeft) {
