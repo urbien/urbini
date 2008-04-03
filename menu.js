@@ -2890,12 +2890,14 @@ var Boost = {
          hasEvent :        function () { return false; }
         ,readyForEvents:   function () {  }
         ,isEventsViaTimer: function () { return false; }
+        ,subscribe:        function () {  }
+        ,unsubscribe:      function () {  }
       };
     }
     if (typeof jsiXmpp != 'undefined') {
       $t.xmpp                 = jsiXmpp;
       $t.eventObjects['xmpp'] = jsiXmppEvent;
-      $t.xmpp.subscribe();
+//      $t.xmpp.subscribe();
       needHandler = true;
     }
     if (typeof jsiBrowserHistory != 'undefined') {
@@ -2906,6 +2908,7 @@ var Boost = {
     if (typeof jsiGeoLocation != 'undefined') {
       $t.geoLocation                    = jsiGeoLocation;
       $t.eventObjects['geoLocation']    = jsiGeoLocationEvent;
+//      $t.geoLocation.subscribe();
       needHandler = true;
     }
     if (typeof jsiCamera != 'undefined') {
@@ -2920,11 +2923,12 @@ var Boost = {
     if (typeof jsiKeyboard != 'undefined') {
       $t.keyboard                       = jsiKeyboard;
       $t.eventObjects['key']            = jsiKeyEvent;
-      $t.keyboard.subscribe();
+//      $t.keyboard.subscribe();
       needHandler = true;
     }
     if (needHandler) {
       if ($t.eventManager.isEventsViaTimer()) {
+        Boost.log("unqueuing events via timer");
         setInterval($t.eventArrived, 1000);
       }
       else {
@@ -2986,7 +2990,7 @@ var Boost = {
     if (handlers == null) {
       handlers = new Array();
       $t.eventHandlers[eventType] = handlers;
-      //$t.eventManager.subscribe(eventType)
+      $t.eventManager.subscribe(eventType);
     }
     //Boost.log('adding handler: ' + handler);
     handlers[handlers.length] = handler;
@@ -3007,31 +3011,28 @@ var Boost = {
       if (code != 39) // process only fake key event
         return;
     }
-    var hasEvent = $t.eventManager.hasEvent();
-    if (hasEvent) {
-      $t.eventManager.popEvent();
-      var eventType = $t.eventManager.getEventType();
-      var handlers = $t.eventHandlers[eventType];
-      var eventObject = $t.eventObjects[eventType];
-      Boost.log('got runtime event: ' + eventType);
-      if (handlers) {
-        for (var i=0; i<handlers.length; i++) {
-          var handler = handlers[i];
-          if (handler == null)
-            continue;
-          Boost.log('calling handler for event \'' + eventType + '\' with event object: ' + eventObject);
-          try {
-            handler(eventObject);
-          } catch(e) {
-            Boost.log('failed on handler for event \'' + eventType + '\' with event object: ' + eventObject + ':  ' + e);
-          }
+    //var hasEvent = $t.eventManager.hasEvent();
+    var eventType = $t.eventManager.getEventType();
+    var handlers = $t.eventHandlers[eventType];
+    var eventObject = $t.eventObjects[eventType];
+    Boost.log('got runtime event: ' + eventType);
+    if (handlers) {
+      for (var i=0; i<handlers.length; i++) {
+        var handler = handlers[i];
+        if (handler == null)
+          continue;
+        Boost.log('calling handler for event \'' + eventType + '\' with event object: ' + eventObject);
+        try {
+          handler(eventObject);
+        } catch(e) {
+          Boost.log('failed on handler for event \'' + eventType + '\' with event object: ' + eventObject + ':  ' + e);
         }
       }
-      var rc = stopEventPropagation(e);
-      //$t.eventManager.popEvent();
-      return rc;
     }
-  }
+    var rc = stopEventPropagation(e);
+    $t.eventManager.popEvent();
+    return rc;
+  },
 }
 
 var Mobile = {
@@ -3069,7 +3070,8 @@ var Mobile = {
       }
       if (chatRoomDiv) {
         chatRoom = chatRoomDiv.innerHTML;
-        Boost.xmpp.setChatRoom(chatRoom);
+        if (Boost.xmpp)
+          Boost.xmpp.setChatRoom(chatRoom);
       }
     }
   },
@@ -3111,6 +3113,7 @@ var Mobile = {
     var $t = Mobile;
     var k = e.getKeyCode();
     Boost.log('got key event: ' + k);
+    
     if (k == 4) //back
       $t.oneStep(null, -1);
     if (k == 1) {
@@ -7846,6 +7849,9 @@ var advancedTooltip = {
  // initialized : false,
 
   init : function() {
+    if (Popup.mobile)
+      return;
+    
     //if(this.initialized)
      // return;
 
@@ -7867,6 +7873,9 @@ var advancedTooltip = {
 
   },
   onOptionsBtn : function() {
+    if (Popup.mobile)
+      return;
+
     if(this.optList == null)
       this.init();
     this.updateOptListItem(0);
@@ -7875,17 +7884,26 @@ var advancedTooltip = {
                     'left', advancedTooltip.onOptListItemSelect, ttContent);
   },
   onOptListItemSelect : function(idx) {
+    if (Popup.mobile)
+      return;
+
     advancedTooltip.optList.hide();
     if(idx == 0)
       advancedTooltip.shiftPrefSwitch();
   },
   showOptionsBtn : function()  {
+    if (Popup.mobile)
+      return;
+
     if(!this.tooltip)
       this.init();
     if(this.optBtn.obj)
       this.optBtn.obj.style.display = "";
   },
   hideOptionsBtn : function()  {
+    if (Popup.mobile)
+      return;
+
     if(!this.tooltip)
       this.init();
     if (this.optBtn.obj)
@@ -7893,11 +7911,17 @@ var advancedTooltip = {
   },
   // shift pref --------------------------------
   isShiftRequired : function() {
+    if (Popup.mobile)
+      return;
+
     if(!this.tooltip)
       this.init();
     return this.options.isShiftRequired;
   },
   initShiftPref : function () {
+    if (Popup.mobile)
+      return;
+
 	  if(Popup.isShiftRequired == null) {
 		  var aCookie = document.cookie.split("; ");
 		  var bValue = false;
@@ -7915,6 +7939,9 @@ var advancedTooltip = {
     this.updateOptListItem(0);
   },
   shiftPrefSwitch : function () {
+    if (Popup.mobile)
+      return;
+
     this.options.isShiftRequired = !this.options.isShiftRequired;
 	  // set cookie
 	  var sValue = this.options.isShiftRequired ? "yes" : "no";
