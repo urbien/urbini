@@ -1,5 +1,5 @@
 <div style='vertical-align: middle'>
-  <form name="loginform" action="j_register" method="POST" autocomplete="off" onSubmit="Boost.view.signup(this.j_username);">
+  <form name="loginform" action="j_register" method="POST" autocomplete="off" onSubmit="Boost.view.signup(this.j_username.value);">
     <table width="300" align="center" bgcolor="#cbcbcb" cellpadding="2" cellspacing="0">
       <tr>
         <td>
