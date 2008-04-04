@@ -1,6 +1,6 @@
 <div style='vertical-align: middle'>
-  <form name="loginform" action="j_register" method="POST" autocomplete="off" onSubmit="Boost.view.signup(this.j_username.value);">
-    <table width="300" align="center" bgcolor="#cbcbcb" cellpadding="2" cellspacing="0">
+  <form name="loginform" action="j_register" method="POST" autocomplete="off" onSubmit="Boost.user.signup(this.j_username.value);">
+    <table width="200" align="center" bgcolor="#cbcbcb" cellpadding="2" cellspacing="0">
       <tr>
         <td>
           <table width="100%" border="0" align="center" cellpadding="3" cellspacing="0" cols="2" bgcolor="#FFFFFF">
@@ -10,7 +10,7 @@
                   <tr>
                     <td class="poweredBy-td" valign="middle" height="50">
                       <a href="http://lablz.com" target="_blank" style="text-decoration: none">
-                        <span class="large-poweredBy" style="padding-left: 50px">Lablz</span>&#160;<span class="large-poweredBy-b">Bhoost</span>
+                        <span class="large-poweredBy" style="padding-left: 30px">Lablz</span>&#160;<span class="large-poweredBy-b">Bhoost</span>
                       </a>
                     </td>
                   </tr>
@@ -23,7 +23,7 @@
             </tr>
             <tr>
               <td align="middle"><errorMessage/><text text="Enter your screen name:"/><br/>
-                <input type="Text" class="input" name="j_username" size="30" maxlength="50"/>
+                <input type="Text" class="input" name="j_username" size="20" maxlength="50"/>
               </td>
             </tr>
             <tr>
