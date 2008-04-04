@@ -2883,6 +2883,7 @@ var Boost = {
     var needHandler;
     if (typeof jsiEventManager != 'undefined') {
       $t.eventManager         = jsiEventManager;
+      Popup.android = true;
     }
     else {
       // default implementation
@@ -2923,7 +2924,7 @@ var Boost = {
     if (typeof jsiKeyboard != 'undefined') {
       $t.keyboard                       = jsiKeyboard;
       $t.eventObjects['key']            = jsiKeyEvent;
-//      $t.keyboard.subscribe();
+      //$t.keyboard.subscribe();
       needHandler = true;
     }
     if (needHandler) {
@@ -3007,30 +3008,33 @@ var Boost = {
     if (e) {
       //var code = getKeyCode(e);
       var code = e.keyCode;
-      Boost.log('got native key event: ' + code);
+      Boost.log('got native key event: ' + e + ', code=' + code);
       if (code != 39) // process only fake key event
         return;
     }
-    //var hasEvent = $t.eventManager.hasEvent();
-    var eventType = $t.eventManager.getEventType();
-    var handlers = $t.eventHandlers[eventType];
-    var eventObject = $t.eventObjects[eventType];
-    Boost.log('got runtime event: ' + eventType);
-    if (handlers) {
-      for (var i=0; i<handlers.length; i++) {
-        var handler = handlers[i];
-        if (handler == null)
-          continue;
-        Boost.log('calling handler for event \'' + eventType + '\' with event object: ' + eventObject);
-        try {
-          handler(eventObject);
-        } catch(e) {
-          Boost.log('failed on handler for event \'' + eventType + '\' with event object: ' + eventObject + ':  ' + e);
+    var hasEvent = $t.eventManager.hasEvent();
+    if (hasEvent) {
+      $t.eventManager.popEvent();
+      var eventType = $t.eventManager.getEventType();
+      var handlers = $t.eventHandlers[eventType];
+      var eventObject = $t.eventObjects[eventType];
+      Boost.log('got runtime event: ' + eventType);
+      if (handlers) {
+        for (var i=0; i<handlers.length; i++) {
+          var handler = handlers[i];
+          if (handler == null)
+            continue;
+          Boost.log('calling handler for event \'' + eventType + '\' with event object: ' + eventObject);
+          try {
+            handler(eventObject);
+          } catch(e) {
+            Boost.log('failed on handler for event \'' + eventType + '\' with event object: ' + eventObject + ':  ' + e);
+          }
         }
       }
+      $t.eventManager.popEvent();
     }
     var rc = stopEventPropagation(e);
-    $t.eventManager.popEvent();
     return rc;
   },
 }
@@ -3059,6 +3063,11 @@ var Mobile = {
 
   onPageLoad: function(newUrl, div) {
     var $t = Mobile;
+
+    if (Boost.xmpp) {
+      Boost.xmpp.login('mark', 'mark');
+    }
+
     $t.autoLogin(newUrl);
     if (div) {
       var divs = div.getElementsByTagName('div');
@@ -3071,7 +3080,8 @@ var Mobile = {
       if (chatRoomDiv) {
         chatRoom = chatRoomDiv.innerHTML;
         if (Boost.xmpp)
-          Boost.xmpp.setChatRoom(chatRoom);
+          Boost.xmpp.setChatRoom("marco@conference.conference.lablz.com"); // hack
+//        Boost.xmpp.setChatRoom("marco@conference.conference.lablz.com"); // hack
       }
     }
   },
@@ -3086,9 +3096,9 @@ var Mobile = {
     var loginform = document.forms['loginform'];
     var jstest = loginform.elements['.jstest'];
     jstest.value = "ok"; // server will know that JavaScript worked
-    var pw = loginform.elements['j_password'];
     var username = loginform.elements['j_username'];
     pw.value = 'mark';
+    var pw = loginform.elements['j_password'];
     username.value = 'mark';
     if (Boost.xmpp) {
       Boost.xmpp.login(username.value, pw.value);
@@ -6930,8 +6940,11 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       parameters += '&X-Ajax=y'; // webkit does not send custom headers
     else
       parameters = 'X-Ajax=y';
-    if (Popup.android)
+    Boost.log('Setting X-Accept-Boost parameter');
+    if (Popup.android) {
       parameters += '&X-Accept-Boost=menu-button';
+      Boost.log('X-Accept-Boost=menu-button');
+    }
     http_request.send(parameters);
   }
   // use GET due to Browser bugs
