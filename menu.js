@@ -5646,9 +5646,19 @@ var MobilePageAnimation = {
 
   wndWidth : null,
   wndHeight : null,
+  
+  totalOffset : 0,
   step : 1,
 
   showPage : function(curDiv, newDiv, isBack) {
+    if (typeof document.readyState != 'undefined') {
+      if (!/loaded|complete/.test(document.readyState))
+        return;        
+    }
+    if (this.curDiv != null) {
+      this.curDiv.style.visibility = Popup.HIDDEN;
+      this.curDiv.style.display = "none";
+    }
     this.curDiv = curDiv;
     this.newDiv = newDiv;
     if (typeof isBack == 'undefined' || isBack == false)
@@ -5667,21 +5677,21 @@ var MobilePageAnimation = {
     var newDivStl = thisObj.newDiv.style;
     var curDivStl = thisObj.curDiv.style;
     var x;
-    // non-linear
     
+   // var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM)
+   //    * 1.6 * Math.abs(Math.sin(thisObj.step/thisObj.STEPS_NUM * Math.PI));
     
-    var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM)
-       * 1.6 * Math.abs(Math.sin(thisObj.step/thisObj.STEPS_NUM * Math.PI));
-
-   // var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM);
-
+    var arg = (thisObj.step - thisObj.STEPS_NUM / 2) / 1.5; 
+    var delta = thisObj.wndWidth / 2.6 * Math.exp(-arg*arg);  
+    thisObj.totalOffset += delta; 
+    
     // 1. calculation
     // 1.1. right to left
     if(thisObj.rightToLeft) {
       if(thisObj.step == thisObj.STEPS_NUM)
         x = 0;
       else
-        x = thisObj.wndWidth - (thisObj.step * delta);
+        x = thisObj.wndWidth - thisObj.totalOffset;
 
       curDivStl.left  = x - thisObj.wndWidth;
       newDivStl.left =  x;
@@ -5691,12 +5701,11 @@ var MobilePageAnimation = {
       if(thisObj.step == thisObj.STEPS_NUM)
         x = thisObj.wndWidth;
       else
-        x = thisObj.step * delta;
+        x = thisObj.totalOffset;
 
       newDivStl.left  = x - thisObj.wndWidth;
       curDivStl.left =  x;
     }
-
     if (thisObj.step == 1) {
       var y = getTop(thisObj.curDiv);
       newDivStl.top = y;
@@ -5721,6 +5730,7 @@ var MobilePageAnimation = {
       thisObj.curDiv.style.visibility = Popup.HIDDEN;
       thisObj.curDiv.style.display = "none";
       thisObj.curDiv = null;
+      thisObj.totalOffset = 0;
       thisObj.step = 1;
       Boost.view.setProgressIndeterminate(false);
     }
