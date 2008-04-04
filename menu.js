@@ -2866,6 +2866,7 @@ var Boost = {
 
   /* platform services */
   eventManager        : null,
+  user                : null,
   xmpp                : null,
   geoLocation         : null,
   camera              : null,
@@ -2894,6 +2895,10 @@ var Boost = {
         ,subscribe:        function () {  }
         ,unsubscribe:      function () {  }
       };
+    }
+    if (typeof jsiUser != 'undefined') {
+      $t.user                 = jsiUser;
+      needHandler = true;
     }
     if (typeof jsiXmpp != 'undefined') {
       $t.xmpp                 = jsiXmpp;
@@ -3081,7 +3086,7 @@ var Mobile = {
         chatRoom = chatRoomDiv.innerHTML;
         if (Boost.xmpp)
           Boost.xmpp.setChatRoom("marco@conference.conference.lablz.com"); // hack
-//        Boost.xmpp.setChatRoom("marco@conference.conference.lablz.com"); // hack
+//        Boost.xmpp.setChatRoom(chatRoom);
       }
     }
   },
@@ -3244,7 +3249,7 @@ var Mobile = {
       return null;
     }
     if (id == 'menu_exit') {
-      if (confirm("Do you really want to exit this application?"))
+//      if (confirm("Do you really want to exit this application?"))
       Boost.view.exit();
       return null;
     }
