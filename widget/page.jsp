@@ -9,6 +9,7 @@
   <div id="mainskin" class="blue">
     <options />
 	  <div id="mainDiv">
+	    <views />
       <siteTitle name="title" />
 		  <tablePropertyList/>
 		  <siteResourceList/>
