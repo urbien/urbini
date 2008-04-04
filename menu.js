@@ -3210,6 +3210,25 @@ var Mobile = {
       optionsDiv.style.display = "inline";
       return null;
     }
+    if (id == 'menu_Desktop') {
+      var uri = $t.currentUrl;
+      var idx = uri.indexOf('-mobile=');
+      if (idx != -1) {
+        var idx1 = uri.indexOf('&', idx);
+        if (idx1 == -1)
+          uri = uri.substring(0, idx);
+        else {
+          if (uri.charAt(idx - 1) == '&')
+            uri = uri.substring(0, idx - 1) + uri.substring(idx1);
+          else
+            uri = uri.substring(0, idx) + uri.substring(idx1 + 1);
+        }
+      }
+      uri += '&-desktop=y';
+
+      document.location.replace(uri);
+      return null;
+    }
     if (id == 'menu_cancel') {
       optionsDiv.style.visibility = Popup.HIDDEN;
       optionsDiv.style.display = "none";
