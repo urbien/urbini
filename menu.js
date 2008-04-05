@@ -3041,7 +3041,7 @@ var Boost = {
     }
     var rc = stopEventPropagation(e);
     return rc;
-  },
+  }
 }
 
 var Mobile = {
@@ -3068,7 +3068,6 @@ var Mobile = {
 
   onPageLoad: function(newUrl, div) {
     var $t = Mobile;
-
     if (Boost.xmpp) {
       Boost.xmpp.login('mark', 'mark');
     }
