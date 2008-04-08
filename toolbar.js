@@ -543,7 +543,7 @@ var PalettePopup = {
 
 /****************************************************
 *	ListItem class
-*	parent is the List
+*	parent is the MyDropdownList
 *****************************************************/
 function ListItem(index, innerDiv, parent, noHighlight) 
 {
@@ -619,7 +619,7 @@ function ListItem(index, innerDiv, parent, noHighlight)
 ******************************************************/
 // width - needs for dropdown list
 // default parameters: colAmt: 1;
-function List(colAmt) {
+function MyDropdownList(colAmt) {
 	var FONT_FAMILY = "verdana";
 	var FONT_SIZE = "12px";
 	this.LIST_BACKGROUND = "#ffffff";
@@ -785,7 +785,7 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 	this.create = function() {
 		// 1. create the list
 		var listTop = this.top + FIELD_HEIGHT + 1;
-		this.list = new List();
+		this.list = new MyDropdownList();
 
 		// 2. field - shows selected item
 		this.div = document.createElement('div');
@@ -1156,7 +1156,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 		this.div.appendChild(this.overflowBtn.div);
 		this.resize(this.overflowBtn);
 		// 2. create overflow list
-		this.overflowPopup = new List(OVF_POPUP_COL);
+		this.overflowPopup = new MyDropdownList(OVF_POPUP_COL);
 	}
 	
 	this.showOverflowPopup = function(){
@@ -1206,6 +1206,7 @@ var PopupHandler = {
 	// hotspot is a control object
 	// onHideCallback - not required
 	showRelatively : function(hotspot, alignment, div, autohide, parentDlg, onHideCallback) {
+//debugger
 		var OFFSET_Y = 2;
 		// only 1 popup can be opened concurrently, except the overflow popup
 		if(this.popupDiv != null)
@@ -1223,7 +1224,6 @@ var PopupHandler = {
 		var relObj = hotspot.div || hotspot.obj || hotspot;
     
     var pos;
-    
     if(Popup.gecko)		
 		  pos = this.findObjectPositio(relObj, document.body);
 		else
@@ -1272,7 +1272,6 @@ var PopupHandler = {
 			  div.style.left = this.x - scrl[0];
 			  div.style.top = this.y - scrl[1];
 			}
-			
 		}
     else {
 		  div.style.left = this.x;

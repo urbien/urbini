@@ -7904,9 +7904,9 @@ var advancedTooltip = {
     this.tooltip = document.getElementById('system_tooltip');
     if(!this.tooltip)
       return;
-    if(typeof List == 'undefined')
+    if(typeof MyDropdownList == 'undefined')
       return;
-    this.optList = new List();
+    this.optList = new MyDropdownList();
     var itemDiv = document.createElement('div');
     this.optList.appendItem(itemDiv);
     this.optBtn.obj = getChildById(this.tooltip, "opt_btn");

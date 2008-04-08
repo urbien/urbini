@@ -272,7 +272,7 @@ var RteEngine = {
 	// possible the style popup should be unique for each RTE (documend)
 	// on this moment it uses 1st RTE onject
 	createStylePopup : function() {
-		this.stylePopup = new List();
+		this.stylePopup = new MyDropdownList();
 		var len = this.STYLES.length;
 		for(var i = 0; i < len; i++) {
 		
@@ -291,7 +291,7 @@ var RteEngine = {
 	},
 	createFontPopup : function() {
 		var FONT_SIZE = 14;
-		this.fontPopup = new List();
+		this.fontPopup = new MyDropdownList();
 		var len = this.FONTS.length;
 		for(var i = 0; i < len; i++) {
 			var itemDiv = document.createElement('div');
@@ -303,7 +303,7 @@ var RteEngine = {
 	},
 	createFewFontPopup : function() {
 		var FONT_SIZE = 14;
-		this.fewFontPopup = new List();
+		this.fewFontPopup = new MyDropdownList();
 		var len = this.FONTS_FEW.length;
 		for(var i = 0; i < len; i++) {
 			var itemDiv = document.createElement('div');
@@ -314,7 +314,7 @@ var RteEngine = {
 		}
 	},
 	createSizePopup : function() {
-		this.sizePopup = new List();
+		this.sizePopup = new MyDropdownList();
 		for(var i = 0; i < this.FONT_SIZE.length; i++) {
 			var itemDiv = document.createElement('div');
 			itemDiv.innerHTML = "<NOBR><span style='font-size:" + this.FONT_SIZE[i] + ";'>" + (i + 1) + "</span>"
@@ -327,7 +327,7 @@ var RteEngine = {
 		var SMILES_AMT = 30;
 		var PADDING = 5;
 		var SMILE_SIZE = 19;
-		this.smilePopup = new List(5);
+		this.smilePopup = new MyDropdownList(5);
 		for(var i = 0; i < SMILES_AMT; i++) {
 			var itemDiv = document.createElement('div');
 			var imgPath = this.IMAGES_FOLDER + "smiles/" + (i + 1) + ".gif";
