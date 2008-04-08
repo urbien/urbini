@@ -2997,7 +2997,7 @@ var Boost = {
       handlers = new Array();
       $t.eventHandlers[eventType] = handlers;
     }
-    Boost.log('adding handler for type: ' + eventType + ': ' + handler);
+    Boost.log('adding handler for type: ' + eventType);
     $t.eventManager.subscribe(eventType);
     handlers[handlers.length] = handler;
     //Boost.log('added handler: ' + handlers[handlers.length - 1]);
@@ -3064,8 +3064,10 @@ var Mobile = {
     Boost.addEventHandler('key',  $t.onKey);
     addEvent(document.body, 'click',  $t.onClick, false);
     $t.onPageLoad();
-    Boost.log('init: loginCurrentUser');
-    Boost.xmpp.loginCurrentUser();
+    if (Boost.xmpp) {
+      Boost.log('init: loginCurrentUser');
+      Boost.xmpp.loginCurrentUser();
+    }
   },
 
   onPageLoad: function(newUrl, div) {
@@ -3078,11 +3080,11 @@ var Mobile = {
         //Boost.xmpp.init(time);
         $t.enterChatRoom(div);
       }
-    }    
+    }
   },
 
   enterChatRoom: function(div) {
-    if (!div) 
+    if (!div)
       return;
     var divs = div.getElementsByTagName('div');
     var chatRoomDiv;
@@ -3098,7 +3100,7 @@ var Mobile = {
 //      Boost.xmpp.setChatRoom(chatRoom);
     }
   },
-      
+
   autoLogin: function(url) {
     var $t = Mobile;
     if (!url)
@@ -3136,7 +3138,7 @@ var Mobile = {
     var $t = Mobile;
     var k = e.getKeyCode();
     Boost.log('got key event: ' + k);
-    
+
     if (k == 4) //back
       $t.oneStep(null, -1);
     if (k == 1) {
@@ -5652,14 +5654,14 @@ var MobilePageAnimation = {
 
   wndWidth : null,
   wndHeight : null,
-  
+
   totalOffset : 0,
   step : 1,
 
   showPage : function(curDiv, newDiv, isBack) {
     if (typeof document.readyState != 'undefined') {
       if (!/loaded|complete/.test(document.readyState))
-        return;        
+        return;
     }
     if (this.curDiv != null) {
       this.curDiv.style.visibility = Popup.HIDDEN;
@@ -5683,14 +5685,14 @@ var MobilePageAnimation = {
     var newDivStl = thisObj.newDiv.style;
     var curDivStl = thisObj.curDiv.style;
     var x;
-    
+
    // var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM)
    //    * 1.6 * Math.abs(Math.sin(thisObj.step/thisObj.STEPS_NUM * Math.PI));
-    
-    var arg = (thisObj.step - thisObj.STEPS_NUM / 2) / 1.5; 
-    var delta = thisObj.wndWidth / 2.6 * Math.exp(-arg*arg);  
-    thisObj.totalOffset += delta; 
-    
+
+    var arg = (thisObj.step - thisObj.STEPS_NUM / 2) / 1.5;
+    var delta = thisObj.wndWidth / 2.6 * Math.exp(-arg*arg);
+    thisObj.totalOffset += delta;
+
     // 1. calculation
     // 1.1. right to left
     if(thisObj.rightToLeft) {
@@ -7899,7 +7901,7 @@ var advancedTooltip = {
   init : function() {
     if (Popup.mobile)
       return;
-    
+
     //if(this.initialized)
      // return;
 
@@ -10542,8 +10544,8 @@ function setHiddenFields() {
   var userId = f.elements['j_username'];
   Boost.user.setUserId(userId.value);
   var avatarName = f.elements['name'];
-  avatarName.value = userId.value; 
-    
+  avatarName.value = userId.value;
+
   var pwd = f.elements['j_password'];
   pwd.value = Boost.user.getPassword();
 
