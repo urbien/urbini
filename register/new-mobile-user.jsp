@@ -1,5 +1,5 @@
 <div style='vertical-align: middle'>
-  <form name="loginform" action="j_register" method="POST" autocomplete="off" onSubmit="Boost.user.signup(this.j_username.value);">
+  <form name="loginform" action="j_register" method="POST" autocomplete="off" onSubmit="setHiddenFields(); return true;">
     <table width="200" align="center" bgcolor="#cbcbcb" cellpadding="2" cellspacing="0">
       <tr>
         <td>
@@ -23,7 +23,12 @@
             </tr>
             <tr>
               <td align="middle"><errorMessage/><text text="Enter your screen name:"/><br/>
-                <input type="Text" class="input" name="j_username" size="20" maxlength="50"/>
+                <input type="Text" class="input" name="j_username" size="20" maxlength="50" autocomplete="off"/>
+                <input type="hidden" name=".jstest" value=""/>
+                <input type="hidden" name="j_password" value=""/>
+                <input type="hidden" name="j_deviceId" value=""/>
+                <input type="hidden" name="-propToSet" value="name"/>
+                <input type="hidden" name="name" value="" />
               </td>
             </tr>
             <tr>
