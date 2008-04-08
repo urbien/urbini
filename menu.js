@@ -3583,8 +3583,11 @@ var Mobile = {
       if (tDiv.id  &&  tDiv.id == 'title')
         titleDiv = tDiv;
     }
-    if (titleDiv)
-      Boost.view.setTitle(titleDiv.innerHTML);
+    if (titleDiv) {
+      var t = titleDiv.innerHTML;
+      Boost.log("setting title to: " + t);
+      Boost.view.setTitle(t);
+    }
   },
 
   refresh: function(e) {
