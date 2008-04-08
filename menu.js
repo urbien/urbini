@@ -5634,6 +5634,7 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
     Boost.xmpp.sendMessage(msg, null);
   }
   else{
+    var form = document.forms['tablePropertyList'];
     var params = getFormFilters(form, true) + "&-noRedirect=y";
     postRequest(event, 'mkresource', params, div, newTr, updateTR);
   }
