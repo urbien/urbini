@@ -3196,7 +3196,7 @@ var Mobile = {
 //    d.innerHTML = d.innerHTML + text + "</br>";
   },
 
-  menuOptions: function(link) {
+  menuOptions: function(e, link) {
     var $t = Mobile;
 
     var id = link.id;
@@ -3264,7 +3264,10 @@ var Mobile = {
       return null;
     }
     if (id == 'menu_Reload') {
+      // Write browsing history to the server and load it when loading new page
+//      writeBrowsingHistoryOnServer(e, link);
       document.location.replace($t.currentUrl);
+//      loadBrowsingHistory(e, link);
       return null;
     }
     if (id == 'menu_Refresh') {
@@ -3368,6 +3371,30 @@ var Mobile = {
 
     return newUrl;
   },
+  
+  loadBrowsingHistory: function(e, link) {
+    $t.currentUrl = document.location.href;
+    div = document.createElement("DIV");
+    div.id = 'browsingHistory';
+    div.style.visibility = Popup.HIDDEN;
+    div.style.display = "none";
+    if (!currentDiv) {
+      currentDiv = document.getElementById('mainDiv');
+      var s = new Array();
+      s[$t.currentUrl] = currentDiv;
+      $t.urlToDivs = s;
+      //$t.urlToDivs[$t.currentUrl] = currentDiv;
+    }
+//    insertAfter(currentDiv.parentNode, div, currentDiv);
+    postRequest(e, 'm/l.html', 'type=http://www.hudsonfog.com/voc/model/portal/BrowsingHistory&$order=dateSubmitted&-asc=-1&-viewCols=pageUrl,dateSubmitted', div, link, loadHistory);
+    
+    function loadHistory(event, div, hotspot, content, contentUrl) {
+      setInnerHtml(div, content);
+      var s = new Array();
+      s[0] = $t.currentUrl;
+      $t.browsingHistory = s;
+    }
+  },
 
   onClick: function(e) {
     var $t = Mobile;
@@ -3385,7 +3412,7 @@ var Mobile = {
       s[0] = $t.currentUrl;
       $t.browsingHistory = s;
     }
-    var newUrl = $t.menuOptions(link);
+    var newUrl = $t.menuOptions(e, link);
     if (!newUrl)
       return stopEventPropagation(e);
     var isRefresh = newUrl == 'refresh';
@@ -3435,7 +3462,6 @@ var Mobile = {
     div.style.visibility = Popup.HIDDEN;
     div.style.display = "none";
     $t.urlToDivs[newUrl] = div;
-
     insertAfter(currentDiv.parentNode, div, currentDiv);
 
     var urlParts = newUrl.split('?');
