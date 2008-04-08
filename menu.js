@@ -121,7 +121,7 @@ if (Popup.opera ) {
   if (v >= 9)
     Popup.opera9 = true;
 }
-Popup.android = (typeof android != 'undefined' && android != null) ? true: false;
+Popup.android = agent.indexOf("Android") != -1 ? true: false;
 
 
 // e62: Opera 8.65: Mozilla/4.0 (compatible; MSIE 6.0; Symbian OS; Series 60/0618.06.17; 9730) Opera 8.65 [en-US] UP.Link/6.3.0.0.0
@@ -144,7 +144,7 @@ Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
 Popup.iPhone = agent.indexOf("iPhone") != -1;
 var mobileCookie = readCookie('mobile_mode');
-Popup.mobile = mobileCookie != null && trim(mobileCookie) == 'true'? true : false; //screen.width < 600;
+Popup.mobile = Popup.android || Popup.iPhone || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
 // for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
 
@@ -1839,6 +1839,7 @@ function popupOnSubmit(e) {
   e = getDocumentEvent(e);
   if (!e)
     return;
+  Boost.log('popupOnSubmit');
   /*
   if (e.eventProcessed)
     return stopEventPropagation(e);
@@ -2884,7 +2885,6 @@ var Boost = {
     var needHandler;
     if (typeof jsiEventManager != 'undefined') {
       $t.eventManager         = jsiEventManager;
-      Popup.android = true;
     }
     else {
       // default implementation
@@ -2996,9 +2996,9 @@ var Boost = {
     if (handlers == null) {
       handlers = new Array();
       $t.eventHandlers[eventType] = handlers;
-      $t.eventManager.subscribe(eventType);
     }
-    //Boost.log('adding handler: ' + handler);
+    Boost.log('adding handler for type: ' + eventType + ': ' + handler);
+    $t.eventManager.subscribe(eventType);
     handlers[handlers.length] = handler;
     //Boost.log('added handler: ' + handlers[handlers.length - 1]);
   },
@@ -3064,32 +3064,41 @@ var Mobile = {
     Boost.addEventHandler('key',  $t.onKey);
     addEvent(document.body, 'click',  $t.onClick, false);
     $t.onPageLoad();
+    Boost.log('init: loginCurrentUser');
+    Boost.xmpp.loginCurrentUser();
   },
 
   onPageLoad: function(newUrl, div) {
     var $t = Mobile;
     if (Boost.xmpp) {
-      Boost.xmpp.login('mark', 'mark');
-    }
-
-    $t.autoLogin(newUrl);
-    if (div) {
-      var divs = div.getElementsByTagName('div');
-      var chatRoomDiv;
-      for (var i=0; i<divs.length  &&  chatRoomDiv == null; i++) {
-        var tDiv = divs[i];
-        if (tDiv.id  &&  tDiv.id == '-chatRoom')
-          chatRoomDiv = tDiv;
+      var d = document.getElementById('lastIMtime');
+      if (d) {
+        var time = d.innerHTML;
+        Boost.log('lastIMtime: ' + time);
+        //Boost.xmpp.init(time);
+        $t.enterChatRoom(div);
       }
-      if (chatRoomDiv) {
-        chatRoom = chatRoomDiv.innerHTML;
-        if (Boost.xmpp)
-          Boost.xmpp.setChatRoom("marco@conference.conference.lablz.com"); // hack
-//        Boost.xmpp.setChatRoom(chatRoom);
-      }
-    }
+    }    
   },
 
+  enterChatRoom: function(div) {
+    if (!div) 
+      return;
+    var divs = div.getElementsByTagName('div');
+    var chatRoomDiv;
+    for (var i=0; i<divs.length  &&  chatRoomDiv == null; i++) {
+      var tDiv = divs[i];
+      if (tDiv.id  &&  tDiv.id == '-chatRoom')
+        chatRoomDiv = tDiv;
+    }
+    if (chatRoomDiv) {
+      chatRoom = chatRoomDiv.innerHTML;
+      if (Boost.xmpp)
+        Boost.xmpp.setChatRoom("marco@conference.conference.lablz.com"); // hack
+//      Boost.xmpp.setChatRoom(chatRoom);
+    }
+  },
+      
   autoLogin: function(url) {
     var $t = Mobile;
     if (!url)
@@ -3104,9 +3113,9 @@ var Mobile = {
     pw.value = 'mark';
     var pw = loginform.elements['j_password'];
     username.value = 'mark';
-    if (Boost.xmpp) {
-      Boost.xmpp.login(username.value, pw.value);
-    }
+    //if (Boost.xmpp) {
+      //Boost.xmpp.login(username.value, pw.value);
+    //}
     /*
     if (typeof hash == 'undefined') {
       var script = '<script src="register/hashScript.js" type="text/javascript" language="JavaScript"></script>';
@@ -3437,14 +3446,6 @@ var Mobile = {
       setInnerHtml(div, content);
       $t.setTitle(div);
       $t.onPageLoad(contentUrl, div);
-      if (Boost.xmpp) {
-        var d = document.getElementById('lastIMtime');
-        if (d) {
-          var time = d.innerHTML;
-          Boost.log('lastIMtime: ' + time);
-          Boost.xmpp.init(time);
-        }
-      }
       MobilePageAnimation.showPage(currentDiv, div);
 //      var offset = getElementCoords(div);
 //      window.scroll(offset.left, offset.top);
@@ -5628,12 +5629,13 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
     subject.focus();
 //    android.scroll();
     Boost.log('sending message: ' + msg);
-    Boost.xmpp.sendMessage(msg);
+    Boost.xmpp.sendMessage(msg, null);
   }
   else{
     var params = getFormFilters(form, true) + "&-noRedirect=y";
     postRequest(event, 'mkresource', params, div, newTr, updateTR);
   }
+  stopEventPropagation(event);
   return retCode;
 
   function updateTR(event, body, hotspot, content)  {
@@ -10527,3 +10529,24 @@ function hash(form, login_url) {
 }
 
 /********************* end hashCode.js ******************/
+/** Set password and deviceId for mobile registration */
+function setHiddenFields() {
+  Boost.log("setHiddenFields()");
+  var f = document.forms['loginform'];
+  var wasSubmitted = f.getAttribute("wasSubmitted");
+  if (wasSubmitted) {
+    Boost.log("Can not submit the same form twice");
+    return false;
+  }
+  f.setAttribute("wasSubmitted", "true");
+  var userId = f.elements['j_username'];
+  Boost.user.setUserId(userId.value);
+  var avatarName = f.elements['name'];
+  avatarName.value = userId.value; 
+    
+  var pwd = f.elements['j_password'];
+  pwd.value = Boost.user.getPassword();
+
+  var deviceId = f.elements['j_deviceId'];
+  deviceId.value = Boost.user.getDeviceId();
+}
