@@ -2938,7 +2938,7 @@ var Boost = {
         setInterval($t.eventArrived, 1000);
       }
       else {
-        Boost.log('adding keydown');
+        Boost.log('adding native keydown event handler');
         addEvent(document, 'keypress', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
         addEvent(document, 'keydown', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
         addEvent(document, 'keyup', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
@@ -3062,7 +3062,9 @@ var Mobile = {
       return;
     Boost.addEventHandler('xmpp', $t.onChatMessage);
     Boost.addEventHandler('key',  $t.onKey);
+    Boost.addEventHandler('geoLocation',  $t.onGeoLocation);
     addEvent(document.body, 'click',  $t.onClick, false);
+    Boost.view.setProgressIndeterminate(false);
     $t.onPageLoad();
     if (Boost.xmpp) {
       Boost.log('init: loginCurrentUser');
@@ -3196,6 +3198,10 @@ var Mobile = {
 //    d.innerHTML = d.innerHTML + text + "</br>";
   },
 
+  onGeoLocation: function(e) {
+    var $t = Mobile;
+  },
+
   menuOptions: function(e, link) {
     var $t = Mobile;
 
@@ -3240,7 +3246,7 @@ var Mobile = {
         }
       }
       uri += '&-desktop=y';
-
+      Boost.view.setProgressIndeterminate(true);
       document.location.replace(uri);
       return null;
     }
@@ -3266,11 +3272,13 @@ var Mobile = {
     if (id == 'menu_Reload') {
       // Write browsing history to the server and load it when loading new page
 //      writeBrowsingHistoryOnServer(e, link);
+      Boost.view.setProgressIndeterminate(true);
       document.location.replace($t.currentUrl);
 //      loadBrowsingHistory(e, link);
       return null;
     }
     if (id == 'menu_Refresh') {
+      Boost.view.setProgressIndeterminate(true);
       optionsDiv.style.visibility = Popup.HIDDEN;
       optionsDiv.style.display = "none";
       return 'refresh';
@@ -3371,7 +3379,7 @@ var Mobile = {
 
     return newUrl;
   },
-  
+
   loadBrowsingHistory: function(e, link) {
     $t.currentUrl = document.location.href;
     div = document.createElement("DIV");
@@ -3387,7 +3395,7 @@ var Mobile = {
     }
 //    insertAfter(currentDiv.parentNode, div, currentDiv);
     postRequest(e, 'm/l.html', 'type=http://www.hudsonfog.com/voc/model/portal/BrowsingHistory&$order=dateSubmitted&-asc=-1&-viewCols=pageUrl,dateSubmitted', div, link, loadHistory);
-    
+
     function loadHistory(event, div, hotspot, content, contentUrl) {
       setInnerHtml(div, content);
       var s = new Array();
