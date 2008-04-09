@@ -3200,8 +3200,11 @@ var Mobile = {
 
   onGeoLocation: function(e) {
     var $t = Mobile;
+    postRequest(e, 'location', 'latitude=' + e.latitude + '&longitude=' + e.longitude, document.body, document.body, voidFunction);
   },
 
+  voidFunction: function() {},
+  
   menuOptions: function(e, link) {
     var $t = Mobile;
 
