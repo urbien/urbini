@@ -3442,7 +3442,7 @@ var Mobile = {
       $t.browsingHistory = s;
     }
   },
-
+*/
   onClick: function(e) {
     var $t = Mobile;
     //Boost.log('mobileOnclick');
