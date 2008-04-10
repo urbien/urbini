@@ -2869,6 +2869,7 @@ var Boost = {
   eventManager        : null,
   user                : null,
   xmpp                : null,
+  cache               : null,
   geoLocation         : null,
   camera              : null,
   logger              : null,
@@ -2931,6 +2932,9 @@ var Boost = {
       $t.eventObjects['key']            = jsiKeyEvent;
       //$t.keyboard.subscribe();
       needHandler = true;
+    }
+    if (typeof jsiCache != 'undefined') {
+      $t.cache                          = jsiCache;
     }
     if (needHandler) {
       if ($t.eventManager.isEventsViaTimer()) {
@@ -3037,7 +3041,7 @@ var Boost = {
           }
         }
       }
-      $t.eventManager.popEvent();
+//      $t.eventManager.popEvent();
     }
     var rc = stopEventPropagation(e);
     return rc;
@@ -3197,6 +3201,16 @@ var Mobile = {
       hours = '0' + hours;
     elms[1].innerHTML = '<tt>' + hours + ':' + mins + '</tt>';
     var sender = e.getSender();
+    Boost.log("sender: " + sender);
+    Boost.log("slashindex: " + sender.indexOf('/'));
+    if (sender && sender.indexOf('/') != -1) {
+      var s = sender.split('/');
+      Boost.log("part1: " + s[0]);
+      if (s && s.length > 0) {
+        Boost.log("part2: " + s[1]);
+        sender = s[s.length - 1];
+      }
+    }
 
     var imgTable = newTr.getElementsByTagName('table');
     var imgTds = imgTable[0].getElementsByTagName('td');
@@ -3219,11 +3233,9 @@ var Mobile = {
 
   onGeoLocation: function(e) {
     var $t = Mobile;
-    postRequest(e, 'location', 'latitude=' + e.latitude + '&longitude=' + e.longitude, document.body, document.body, voidFunction);
+    postRequest(e, 'location', 'latitude=' + e.latitude + '&longitude=' + e.longitude, document.body, document.body, function() {});
   },
 
-  voidFunction: function() {},
-  
   menuOptions: function(e, link) {
     var $t = Mobile;
 
@@ -3517,12 +3529,28 @@ var Mobile = {
     var url = urlParts[0];
     var idx = url.lastIndexOf('/');
     url = url.substring(0, idx + 1) + 'm' + url.substring(idx);
-    postRequest(e, url, urlParts[1], div, link, loadPage);
+    var loadedFromCache = false;
+    if (Boost.cache) {
+      var content = Boost.cache.get(newUrl);
+      if (content) {
+        Boost.log("getting content from cache for url " + newUrl);
+        loadedFromCache = true;
+        loadPage(e, div, link, content, div);
+      }
+      else
+        loadedFromCache = false;
+    }
+    if (loadedFromCache == false)
+      postRequest(e, url, urlParts[1], div, link, loadPage);
 
     function loadPage(event, div, hotspot, content, contentUrl) {
       setInnerHtml(div, content);
       $t.setTitle(div);
       $t.onPageLoad(contentUrl, div);
+      if (Boost.cache && loadedFromCache == false) {
+        Boost.log("putting content into cache from " + newUrl);
+        Boost.cache.put(newUrl, content);
+      }
       MobilePageAnimation.showPage(currentDiv, div);
 //      var offset = getElementCoords(div);
 //      window.scroll(offset.left, offset.top);
