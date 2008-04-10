@@ -3211,8 +3211,8 @@ var Mobile = {
         ctbody = tbodies[i];
 
     var curTr;
-    var trs =  = ctbody.getElementsByTagName('tr');
-    for (int i=0; i<trs  &&  !curTr; i++)
+    var trs = ctbody.getElementsByTagName('tr');
+    for (var i=0; i<trs  &&  !curTr; i++)
       if (trs[i]  &&  trs[i].id  &&  trs[i].id == 'tr_empty')
         curTr = trs[i];
     if (curTr == null)
