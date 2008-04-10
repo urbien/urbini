@@ -3051,7 +3051,7 @@ var Boost = {
 var Mobile = {
   currentUrl:  null,
   urlToDivs:   null,
-  chatRoom:    null,
+  chatRooms:   null,
   browsingHistory:       null,
   browsingHistoryTitles: null,
   browsingHistoryPos: 0,
@@ -3072,6 +3072,8 @@ var Mobile = {
     Boost.view.setProgressIndeterminate(false);
     $t.onPageLoad();
     if (Boost.xmpp) {
+      var u = new Array();
+      $t.chatRooms = u;
       Boost.log('init: loginCurrentUser');
       Boost.xmpp.loginCurrentUser();
     }
@@ -3104,11 +3106,11 @@ var Mobile = {
       var time = d.innerHTML;
       Boost.log('lastIMtime: ' + time);
       //Boost.xmpp.init(time);
-      $t.enterChatRoom(div);
+      $t.enterChatRoom(newUrl, div);
     }
   },
 
-  enterChatRoom: function(div) {
+  enterChatRoom: function(chatRoomUrl, div) {
     if (!div)
       return;
     var divs = div.getElementsByTagName('div');
@@ -3119,10 +3121,12 @@ var Mobile = {
         chatRoomDiv = tDiv;
     }
     if (chatRoomDiv) {
-      chatRoom = chatRoomDiv.innerHTML;
-      if (Boost.xmpp)
-        Boost.xmpp.setChatRoom("marco@conference.conference.lablz.com"); // hack
-//      Boost.xmpp.setChatRoom(chatRoom);
+      chatRoomId = chatRoomDiv.innerHTML;
+      if (Boost.xmpp) {
+        var chatRoomId = "marco@conference.conference.lablz.com";  // hack
+        $t.chatRooms[chatRoomId] = chatRoomUrl;
+        Boost.xmpp.setChatRoom(chatRoomId);
+      }
     }
   },
 
@@ -3177,14 +3181,40 @@ var Mobile = {
   onChatMessage: function(e) {
     var $t = Mobile;
     var room = e.getChatRoom();
+    var roomUrl = $t.chatRooms[room];
+    if (roomUrl == null) {
+      Boost.log("no chat room found for " + room);
+      return;
+    }
     var text = e.getBody();
 
     if (!text)
       return;
 
-    var ctbody = document.getElementById('t_im');
+    var currentDiv = $t.urlToDivs[$t.currentUrl];
+    if (!currentDiv) {
+      currentDiv = document.getElementById('mainDiv');
+      $t.urlToDivs[0] = currentDiv;
+    }
+    var roomDiv = $t.urlToDivs[roomUrl];
+    if (roomUrl == $t.currentUrl) {
+      // notify(true);
+    }
+    else {
+      // notify(false);
+    }
 
-    var curTr = document.getElementById('tr_empty');
+    var tbodies = roomDiv.getElementsByTagName('tbody');
+    var ctbody;
+    for (int i=0; i<tbodies  &&  !ctbody; i++)
+      if (tbodies[i]  &&  tbodies[i].id  &&  tbodies[i].id == 't_chat')
+        ctbody = tbodies[i];
+
+    var curTr;
+    var trs =  = ctbody.getElementsByTagName('tr');
+    for (int i=0; i<trs  &&  !curTr; i++)
+      if (trs[i]  &&  trs[i].id  &&  trs[i].id == 'tr_empty')
+        curTr = trs[i];
     if (curTr == null)
       return;
 
@@ -3498,7 +3528,6 @@ var Mobile = {
     }
     if (isRefresh)
       newUrl = $t.currentUrl;
-
     else {
       $t.browsingHistory[$t.browsingHistoryPos] = newUrl;
 
@@ -5851,10 +5880,10 @@ var MobilePageAnimation = {
   }
 }
 
-// effectIdx = 0 - no effect; effectIdx = 1 - opaque effect; 
+// effectIdx = 0 - no effect; effectIdx = 1 - opaque effect;
 function mobileMenuAnimation(optDiv, curPageDiv, effectIdx) {
   effectIdx = effectIdx || 0;
-  
+
   if (effectIdx == 1) {
     opContDiv = document.getElementById("options_container");
     opaqueAnimation(opContDiv, 0.25, 1.0, 0.35);
