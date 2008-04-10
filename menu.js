@@ -3123,7 +3123,7 @@ var Mobile = {
     if (chatRoomDiv) {
       chatRoomId = chatRoomDiv.innerHTML;
       if (Boost.xmpp) {
-        var chatRoomId = "marco@conference.conference.lablz.com";  // hack
+//        var chatRoomId = "marco@conference.conference.lablz.com";  // hack
         $t.chatRooms[chatRoomId] = chatRoomUrl;
         Boost.xmpp.setChatRoom(chatRoomId);
       }
