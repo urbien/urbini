@@ -3048,7 +3048,8 @@ var Mobile = {
   currentUrl:  null,
   urlToDivs:   null,
   chatRoom:    null,
-  browsingHistory:    null,
+  browsingHistory:       null,
+  browsingHistoryTitles: null,
   browsingHistoryPos: 0,
   $t: null,
 
@@ -3070,18 +3071,36 @@ var Mobile = {
       Boost.log('init: loginCurrentUser');
       Boost.xmpp.loginCurrentUser();
     }
+    /* loading browsing history
+    var history = Boost.readHistory();
+    if (!history)
+      return;
+    var div = document.getElementById('browsingHistory');
+    if (!div) {
+      div = document.createElement("DIV");
+      div.id = 'browsingHistory';
+      var currentDiv = document.getElementById('mainDiv');
+      insertAfter(currentDiv.parentNode, div, currentDiv);
+    }
+    div.style.visibility = Popup.HIDDEN;
+    div.style.display = "none";
+    for (var i=0; i<history.length; i++) {
+
+    }
+    */
   },
 
   onPageLoad: function(newUrl, div) {
     var $t = Mobile;
-    if (Boost.xmpp) {
-      var d = document.getElementById('lastIMtime');
-      if (d) {
-        var time = d.innerHTML;
-        Boost.log('lastIMtime: ' + time);
-        //Boost.xmpp.init(time);
-        $t.enterChatRoom(div);
-      }
+    if (!Boost.xmpp)
+      return;
+
+    var d = document.getElementById('lastIMtime');
+    if (d) {
+      var time = d.innerHTML;
+      Boost.log('lastIMtime: ' + time);
+      //Boost.xmpp.init(time);
+      $t.enterChatRoom(div);
     }
   },
 
@@ -3274,10 +3293,8 @@ var Mobile = {
     }
     if (id == 'menu_Reload') {
       // Write browsing history to the server and load it when loading new page
-//      writeBrowsingHistoryOnServer(e, link);
       Boost.view.setProgressIndeterminate(true);
       document.location.replace($t.currentUrl);
-//      loadBrowsingHistory(e, link);
       return null;
     }
     if (id == 'menu_Refresh') {
@@ -3383,6 +3400,26 @@ var Mobile = {
     return newUrl;
   },
 
+  writeBrowsingHistoryOnServer: function(e, link) {
+    if ($t.browsingHistory <= 1)
+      return;
+    var params = '';
+    for (var i=0; i<$t.browsingHistory.length; i++) {
+      if (i != 0)
+        params += ';';
+      var pageUrl = $t.browsingHistory[i];
+      params += ';pageUrl=' + encodeURIComponent(pageUrl) + '&title=';
+      var div = $t.urlToDivs[pageUrl];
+      var divs = div.getElementsByTagName('div');
+      var titleDiv;
+      for (var i=0; i<divs.length  &&  titleDiv == null; i++) {
+        var tDiv = divs[i];
+        if (tDiv.id  &&  tDiv.id == 'title')
+          params += encodeURIComponent(tDiv.innerHTML);
+      }
+    }
+  },
+/*
   loadBrowsingHistory: function(e, link) {
     $t.currentUrl = document.location.href;
     div = document.createElement("DIV");
@@ -3396,7 +3433,6 @@ var Mobile = {
       $t.urlToDivs = s;
       //$t.urlToDivs[$t.currentUrl] = currentDiv;
     }
-//    insertAfter(currentDiv.parentNode, div, currentDiv);
     postRequest(e, 'm/l.html', 'type=http://www.hudsonfog.com/voc/model/portal/BrowsingHistory&$order=dateSubmitted&-asc=-1&-viewCols=pageUrl,dateSubmitted', div, link, loadHistory);
 
     function loadHistory(event, div, hotspot, content, contentUrl) {
@@ -3417,6 +3453,8 @@ var Mobile = {
     if (!link || !link.href || link.href == null)
       return;
 
+    if (link.href.startsWith('tel:') || link.href.startsWith('sms:'))
+      return true;
     if (!$t.currentUrl) {
       $t.currentUrl = document.location.href;
       var s = new Array();
@@ -3522,7 +3560,9 @@ var Mobile = {
     $t.currentUrl = url;
 
     if (div) {
-      $t.setTitle(div);
+      var title = $t.setTitle(div);
+//      if (Popup.android)
+//        Boost.browserHistory.writeHistory(url, title);
       MobilePageAnimation.showPage(currentDiv, div, step < 0);
     }
     if (e)
@@ -3594,11 +3634,13 @@ var Mobile = {
       if (tDiv.id  &&  tDiv.id == 'title')
         titleDiv = tDiv;
     }
+    var t;
     if (titleDiv) {
-      var t = titleDiv.innerHTML;
+      t = titleDiv.innerHTML;
       Boost.log("setting title to: " + t);
       Boost.view.setTitle(t);
     }
+    return t;
   },
 
   refresh: function(e) {
