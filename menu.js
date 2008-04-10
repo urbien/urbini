@@ -3206,7 +3206,7 @@ var Mobile = {
 
     var tbodies = roomDiv.getElementsByTagName('tbody');
     var ctbody;
-    for (int i=0; i<tbodies  &&  !ctbody; i++)
+    for (var i=0; i<tbodies  &&  !ctbody; i++)
       if (tbodies[i]  &&  tbodies[i].id  &&  tbodies[i].id == 't_chat')
         ctbody = tbodies[i];
 
