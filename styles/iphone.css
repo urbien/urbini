@@ -184,5 +184,18 @@ tr.dark  {background-color:#eeeeee; height: 35px;}
     font-size: 14px;
     font-family: Helvetica;
     list-style: none;
-    color: #000000
+    color: #000000;
+    text-align: center;
 }
+
+#menu_Options { position: absolute; }
+
+#options_container { position: relative; top: 35; width: 320;}
+#options_container  #top { margin: 0; background: url(../images/skin/iphone/options_back.png) top center; padding-top:35 }
+#options_container  #content { margin: 0; background: url(../images/skin/iphone/options_back_middle.png) }
+#options_container  #bottom { margin: 0; background: url(../images/skin/iphone/options_back.png) bottom center; padding-top:20 }
+
+#options_container .rlHeader { background: none; }
+#options_container #content .li { color: #fff; }
+
+

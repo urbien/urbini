@@ -3258,11 +3258,9 @@ var Mobile = {
         currentDiv = document.getElementById('mainDiv');
         $t.urlToDivs[0] = currentDiv;
       }
-      currentDiv.style.visibility = Popup.HIDDEN;
-      currentDiv.style.display = "none";
       $t.displayViewsFor(currentDiv, optionsDiv);
-      optionsDiv.style.visibility = Popup.VISIBLE;
-      optionsDiv.style.display = "inline";
+      // 0 - no effect; 1 - transparency effect
+      mobileMenuAnimation(optionsDiv, currentDiv, 0);
       return null;
     }
     if (id == 'menu_Desktop') {
@@ -5829,13 +5827,10 @@ var MobilePageAnimation = {
       var y = getTop(thisObj.curDiv);
       newDivStl.top = y;
       newDivStl.width = thisObj.wndWidth;
-      //newDivStl.height = thisObj.wndHeight
+      curDivStl.width = thisObj.wndWidth;
 
       newDivStl.position = "absolute";
-      if (curDivStl.position != "absolute")
-        curDivStl.position = "relative"; // for 1st loaded "page"
-      else
-        curDivStl.position = "absolute";
+      curDivStl.position = "absolute";
 
       newDivStl.visibility = Popup.VISIBLE;
       newDivStl.display = "";
@@ -5854,6 +5849,39 @@ var MobilePageAnimation = {
       Boost.view.setProgressIndeterminate(false);
     }
   }
+}
+
+// effectIdx = 0 - no effect; effectIdx = 1 - opaque effect; 
+function mobileMenuAnimation(optDiv, curPageDiv, effectIdx) {
+  effectIdx = effectIdx || 0;
+  
+  if (effectIdx == 1) {
+    opContDiv = document.getElementById("options_container");
+    opaqueAnimation(opContDiv, 0.25, 1.0, 0.35);
+  }
+  var optDivStl = optDiv.style;
+  optDivStl.zIndex = curPageDiv.style.zIndex + 1;
+  optDivStl.visibility = Popup.VISIBLE;
+  optDivStl.display = "block";
+}
+// used in mobileMenuAnimation
+function opaqueAnimation(div, from, to, step) {
+  this.TIME_OUT = 0;
+  this.div = div;
+  this.from = from;
+  this.to = to;
+  this.step = step;
+  this.counter = 0;
+  this._animate = function() {
+    var level = this.from + this.step * this.counter;
+    if (level > this.to)
+      level = this.to;
+    changeOpacity(this.div, level);
+    this.counter++;
+    if (level < this.to)
+      setTimeout(function(){ this._animate.apply(this)}, this.TIME_OUT);
+  }
+  this._animate();
 }
 
 function insertAfter(parent, newElement, referenceElement) {
