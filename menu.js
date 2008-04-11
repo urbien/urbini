@@ -3290,7 +3290,7 @@ var Mobile = {
       }
       $t.displayViewsFor(currentDiv, optionsDiv);
       // 0 - no effect; 1 - transparency effect
-      mobileMenuAnimation(optionsDiv, currentDiv, 0);
+      mobileMenuAnimation.show(optionsDiv, currentDiv, 0);
       return null;
     }
     if (id == 'menu_Desktop') {
@@ -3322,9 +3322,7 @@ var Mobile = {
         u[0] = $t.currentDiv;
         $t.urlToDivs = u;
       }
-      currentDiv.style.visibility = Popup.VISIBLE;
-      currentDiv.style.display = "inline";
-      return null;
+       return null;
     }
     if (id == 'menu_exit') {
 //      if (confirm("Do you really want to exit this application?"))
@@ -5880,37 +5878,74 @@ var MobilePageAnimation = {
   }
 }
 
-// effectIdx = 0 - no effect; effectIdx = 1 - opaque effect;
-function mobileMenuAnimation(optDiv, curPageDiv, effectIdx) {
-  effectIdx = effectIdx || 0;
+var mobileMenuAnimation = {
+  init : function() {
+    if (!Popup.android)
+      return;
 
-  if (effectIdx == 1) {
+    var BG_MIDDLE = "../images/skin/iphone/options_back_middle.png";
+    var BG_TOP_BOTTOM = "../images/skin/iphone/options_back.png";
+
+    // "preload background"
+    // CSS background in Android was not enough (?)   
+    var img1 = new Image();
+    img1.src = BG_MIDDLE;
+    var img2 = new Image();
+    img2.src = BG_TOP_BOTTOM;
+
     opContDiv = document.getElementById("options_container");
-    opaqueAnimation(opContDiv, 0.25, 1.0, 0.35);
+    var content = getChildById(opContDiv, "content");
+    content.style.background = "url(" + BG_MIDDLE + ")";
+
+    var top = getChildById(opContDiv, "top");
+    top.style.background = "url(" + BG_TOP_BOTTOM + ")";
+    
+    var bottom = getChildById(opContDiv, "bottom");
+    bottom.style.background = "url(../images/skin/iphone/options_back.png) bottom left";
+  },
+
+  // effectIdx = 0 - no effect; effectIdx = 1 - opaque effect;
+  show : function(optDiv, curPageDiv, effectIdx) {
+    effectIdx = effectIdx || 0;
+    var opContDiv = getChildById(optDiv, "options_container");
+    
+    // set menu at the Android screen center
+    opContDiv.style.top = getScrollXY()[1] + 35;
+    
+    if (effectIdx == 1) {
+      this.opaqueAnimation(opContDiv, 0.25, 1.0, 0.35);
+    }
+    var optDivStl = optDiv.style;
+    optDivStl.visibility = Popup.VISIBLE;
+    optDivStl.visibility = Popup.HIDDEN;
+
+    optDivStl.zIndex = curPageDiv.style.zIndex + 1;
+    optDivStl.display = "block";
+    optDivStl.visibility = Popup.VISIBLE;
+
+  },
+  // used in mobileMenuAnimation
+  opaqueAnimation : function(div, from, to, step) {
+    this.TIME_OUT = 0;
+    this.div = div;
+    this.from = from;
+    this.to = to;
+    this.step = step;
+    this.counter = 0;
+
+    this._animate = function() {
+      var thisObj = mobileMenuAnimation;
+      var level = thisObj.from + thisObj.step * thisObj.counter;
+      if (level > thisObj.to)
+        level = thisObj.to;
+      changeOpacity(thisObj.div, level);
+      thisObj.counter++;
+      if (level < thisObj.to)
+        setTimeout(function(){ thisObj._animate()},
+          thisObj.TIME_OUT);
+    }
+    this._animate();
   }
-  var optDivStl = optDiv.style;
-  optDivStl.zIndex = curPageDiv.style.zIndex + 1;
-  optDivStl.visibility = Popup.VISIBLE;
-  optDivStl.display = "block";
-}
-// used in mobileMenuAnimation
-function opaqueAnimation(div, from, to, step) {
-  this.TIME_OUT = 0;
-  this.div = div;
-  this.from = from;
-  this.to = to;
-  this.step = step;
-  this.counter = 0;
-  this._animate = function() {
-    var level = this.from + this.step * this.counter;
-    if (level > this.to)
-      level = this.to;
-    changeOpacity(this.div, level);
-    this.counter++;
-    if (level < this.to)
-      setTimeout(function(){ this._animate.apply(this)}, this.TIME_OUT);
-  }
-  this._animate();
 }
 
 function insertAfter(parent, newElement, referenceElement) {
