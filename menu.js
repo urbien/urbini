@@ -3271,7 +3271,6 @@ var Mobile = {
 
     var id = link.id;
     var newUrl = link.href;
-
     var optionsDiv = document.getElementById('menu_Options');
     if (!id) {
       optionsDiv.style.visibility = Popup.HIDDEN;
@@ -3585,6 +3584,11 @@ var Mobile = {
 
   // browsing history forward and backward
   oneStep: function(e, step) {
+    var optionsDiv = document.getElementById('menu_Options');
+    // options menu opened no passes in history
+    if (optionsDiv.style.visibility == "visible")
+        return;
+    
     var $t = Mobile;
     $t.browsingHistoryPos += step;
 
@@ -5879,6 +5883,7 @@ var MobilePageAnimation = {
 }
 
 var mobileMenuAnimation = {
+  TOP_OFFSET : 60,
   init : function() {
     if (!Popup.android)
       return;
@@ -5907,13 +5912,10 @@ var mobileMenuAnimation = {
   // effectIdx = 0 - no effect; effectIdx = 1 - opaque effect;
   show : function(optDiv, curPageDiv, effectIdx) {
     effectIdx = effectIdx || 0;
-    var opContDiv = getChildById(optDiv, "options_container");
-    
     // set menu at the Android screen center
-    opContDiv.style.top = getScrollXY()[1] + 35;
-    
+    optDiv.style.top = getScrollXY()[1] + this.TOP_OFFSET;
     if (effectIdx == 1) {
-      this.opaqueAnimation(opContDiv, 0.25, 1.0, 0.35);
+      this.opaqueAnimation(optDiv, 0.25, 1.0, 0.35);
     }
     var optDivStl = optDiv.style;
     optDivStl.visibility = Popup.VISIBLE;
