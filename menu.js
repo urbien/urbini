@@ -2920,7 +2920,7 @@ var Boost = {
     }
     if (typeof jsiCamera != 'undefined') {
       $t.camera                         = jsiCamera;
-      $t.eventObjects['camera']         = jsiCameraEvent;
+//      $t.eventObjects['camera']         = jsiCameraEvent;
       needHandler = true;
     }
     if (typeof jsiLog != 'undefined') {
@@ -3029,13 +3029,17 @@ var Boost = {
       var eventObject = $t.eventObjects[eventType];
       Boost.log('got runtime event: ' + eventType);
       if (handlers) {
+        var propagate = true;
         for (var i=0; i<handlers.length; i++) {
+         
           var handler = handlers[i];
           if (handler == null)
             continue;
           Boost.log('calling handler for event \'' + eventType + '\' with event object: ' + eventObject);
           try {
-            handler(eventObject);
+            propagate = handler(eventObject);
+            if (!propagate)
+              break;
           } catch(e) {
             Boost.log('failed on handler for event \'' + eventType + '\' with event object: ' + eventObject + ':  ' + e);
           }
@@ -3043,8 +3047,10 @@ var Boost = {
       }
 //      $t.eventManager.popEvent();
     }
-    var rc = stopEventPropagation(e);
-    return rc;
+    if (propagate)
+      return true;
+    else 
+      return stopEventPropagation(e);
   }
 }
 
@@ -3070,6 +3076,7 @@ var Mobile = {
     Boost.addEventHandler('geoLocation',  $t.onGeoLocation);
     addEvent(document.body, 'click',  $t.onClick, false);
     Boost.view.setProgressIndeterminate(false);
+    Boost.cache.cookieSync();
     $t.onPageLoad();
     if (Boost.xmpp) {
       var u = new Array();
@@ -3098,6 +3105,12 @@ var Mobile = {
 
   onPageLoad: function(newUrl, div) {
     var $t = Mobile;
+    
+    if (Boost.logger.logDB) {
+      Boost.log("webview.db");
+      Boost.logger.logDB();
+    }
+    
     if (!Boost.xmpp)
       return;
 
@@ -3106,13 +3119,14 @@ var Mobile = {
       var time = d.innerHTML;
       Boost.log('lastIMtime: ' + time);
       //Boost.xmpp.init(time);
-      $t.enterChatRoom(newUrl, div);
     }
+    $t.enterChatRoom(newUrl, div);
   },
 
   enterChatRoom: function(chatRoomUrl, div) {
     if (!div)
       return;
+    var $t = Mobile;
     var divs = div.getElementsByTagName('div');
     var chatRoomDiv;
     for (var i=0; i<divs.length  &&  chatRoomDiv == null; i++) {
@@ -3124,6 +3138,7 @@ var Mobile = {
       chatRoomId = chatRoomDiv.innerHTML;
       if (Boost.xmpp) {
 //        var chatRoomId = "marco@conference.conference.lablz.com";  // hack
+        Boost.log('chatRoom: ' + chatRoomId);
         $t.chatRooms[chatRoomId] = chatRoomUrl;
         Boost.xmpp.setChatRoom(chatRoomId);
       }
@@ -3168,14 +3183,18 @@ var Mobile = {
     var k = e.getKeyCode();
     Boost.log('got key event: ' + k);
 
-    if (k == 4) //back
+    if (k == 4) { //back 
       $t.oneStep(null, -1);
+      return false;
+    }
     if (k == 1) {
 //      showMenu();
       var optionsDiv = document.getElementById('menu_Options');
       optionsDiv.style.visibility = Popup.VISIBLE;
       optionsDiv.style.display = "inline";
+      return false;
     }
+    return true;
   },
 
   onChatMessage: function(e) {
@@ -3263,7 +3282,9 @@ var Mobile = {
 
   onGeoLocation: function(e) {
     var $t = Mobile;
-    postRequest(e, 'location', 'latitude=' + e.latitude + '&longitude=' + e.longitude, document.body, document.body, function() {});
+    var callback = function() { Boost.log("finished posting geolocation event") };
+    var a = document.getElementsByTagName('A');
+    postRequest(e, 'location', 'latitude=' + e.latitude + '&longitude=' + e.longitude, null, a[0], callback);
   },
 
   menuOptions: function(e, link) {
@@ -3289,7 +3310,7 @@ var Mobile = {
       }
       $t.displayViewsFor(currentDiv, optionsDiv);
       // 0 - no effect; 1 - transparency effect
-      mobileMenuAnimation.show(optionsDiv, currentDiv, 0);
+      mobileMenuAnimation.show(optionsDiv, currentDiv, 1);
       return null;
     }
     if (id == 'menu_Desktop') {
@@ -3433,6 +3454,10 @@ var Mobile = {
           newUrl += '&-grid=y';
       }
     }
+    else if (id == 'actions_Photo') {
+      Boost.camera.takePicture(newUrl);
+      return null;
+    }
 
     return newUrl;
   },
@@ -3555,14 +3580,19 @@ var Mobile = {
     url = url.substring(0, idx + 1) + 'm' + url.substring(idx);
     var loadedFromCache = false;
     if (Boost.cache) {
-      var content = Boost.cache.get(newUrl);
-      if (content) {
-        Boost.log("getting content from cache for url " + newUrl);
-        loadedFromCache = true;
-        loadPage(e, div, link, content, div);
-      }
-      else
+      var id = link.id;
+      if (id  &&  (id == 'menu_Reload' || id == 'menu_Refresh')) {
+        Boost.log(id);
         loadedFromCache = false;
+      }
+      else {
+        var content = Boost.cache.get(newUrl);
+        if (content) {
+          Boost.log("getting content from cache for url " + newUrl);
+          loadedFromCache = true;
+          loadPage(e, div, link, content, div);
+        }
+      }
     }
     if (loadedFromCache == false)
       postRequest(e, url, urlParts[1], div, link, loadPage);
@@ -3586,8 +3616,8 @@ var Mobile = {
   oneStep: function(e, step) {
     var optionsDiv = document.getElementById('menu_Options');
     // options menu opened no passes in history
-    if (optionsDiv.style.visibility == "visible")
-        return;
+    if (optionsDiv && optionsDiv.style.visibility == "visible")
+      return;
     
     var $t = Mobile;
     $t.browsingHistoryPos += step;
@@ -3620,6 +3650,7 @@ var Mobile = {
       var title = $t.setTitle(div);
 //      if (Popup.android)
 //        Boost.browserHistory.writeHistory(url, title);
+      Boost.log("starting sliding");
       MobilePageAnimation.showPage(currentDiv, div, step < 0);
     }
     if (e)
@@ -3627,6 +3658,7 @@ var Mobile = {
     else
       return;
   },
+  
   displayViewsFor: function(div, optionsDiv) {
     var divs = div.getElementsByTagName('div');
     var viewsDiv;
@@ -5760,7 +5792,7 @@ function addAndShowWait(event, body, hotspot, content, noInsert, isReplace)	{
   interceptLinkClicks(divCopyTo);
 }
 // adds comment/resource before server confirms that resource was successfully created
-function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
+function addBeforeProcessing(chatroom, contactUri, contactName, tbodyId, subject, event) {
   var retCode = stopEventPropagation(event);
   var msg = subject.value;
   subject.value = '';
@@ -5770,7 +5802,7 @@ function addBeforeProcessing(contactUri, contactName, tbodyId, subject, event) {
     subject.focus();
 //    android.scroll();
     Boost.log('sending message: ' + msg);
-    Boost.xmpp.sendMessage(msg, null);
+    Boost.xmpp.sendMessage(msg, chatroom);
   }
   else{
     var form = document.forms['tablePropertyList'];
@@ -7086,7 +7118,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
-      Boost.view.setProgressIndeterminate(false);
+      if (div)
+        Boost.view.setProgressIndeterminate(false);
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
     else if (status == 200) {
@@ -7151,7 +7184,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       }
     }
     else {
-      alert('status(1): ' + status + ', ' + url);
+      Boost.log('AJAX request status(1): ' + status + ', ' + url);
     }
   };
   if (!Popup.opera8  && !Popup.s60Browser) {
@@ -7177,15 +7210,14 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     }
     // below 2 line commented - made IE wait with ~1 minute timeout
     // http_request.setRequestHeader("Connection", "close");
-    Boost.view.setProgressIndeterminate(true);
+    if (div)
+      Boost.view.setProgressIndeterminate(true);
     if (parameters)
       parameters += '&X-Ajax=y'; // webkit does not send custom headers
     else
       parameters = 'X-Ajax=y';
-    Boost.log('Setting X-Accept-Boost parameter');
     if (Popup.android) {
       parameters += '&X-Accept-Boost=menu-button';
-      Boost.log('X-Accept-Boost=menu-button');
     }
     http_request.send(parameters);
   }
@@ -7205,7 +7237,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     else
       url1 += extras;
     http_request.open('GET', url1, true);
-    Boost.view.setProgressIndeterminate(true);
+    if (div)
+      Boost.view.setProgressIndeterminate(true);
     http_request.send('');
   }
 }
@@ -8010,6 +8043,13 @@ function cloneEvent(eventObj) {
     return eventObj;
 
   var e = new Object();
+  if (typeof eventObj.latitude != 'undefined') {
+    e.latitude  = eventObj.latitude;
+    e.longitude = eventObj.longitude;
+    e.cloned = true; 
+    return e;
+  }
+    
   e.screenX = eventObj.screenX;
   e.screenY = eventObj.screenY;
   e.pageX   = eventObj.pageX;
