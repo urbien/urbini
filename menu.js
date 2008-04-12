@@ -2986,8 +2986,12 @@ var Boost = {
     var $t = Boost;
     if ($t.logger)
       $t.logger.log("Boost: " + text);
-//    else
-//      alert(text);
+  },
+
+  logDB: function() {
+    var $t = Boost;
+    if ($t.logger)
+      $t.logger.logDB();
   },
 
   /**
@@ -3031,7 +3035,7 @@ var Boost = {
       if (handlers) {
         var propagate = true;
         for (var i=0; i<handlers.length; i++) {
-         
+
           var handler = handlers[i];
           if (handler == null)
             continue;
@@ -3049,7 +3053,7 @@ var Boost = {
     }
     if (propagate)
       return true;
-    else 
+    else
       return stopEventPropagation(e);
   }
 }
@@ -3105,12 +3109,10 @@ var Mobile = {
 
   onPageLoad: function(newUrl, div) {
     var $t = Mobile;
-    
-    if (Boost.logger.logDB) {
-      Boost.log("webview.db");
-      Boost.logger.logDB();
-    }
-    
+
+    Boost.log("webview.db");
+    Boost.logDB();
+
     if (!Boost.xmpp)
       return;
 
@@ -3183,7 +3185,7 @@ var Mobile = {
     var k = e.getKeyCode();
     Boost.log('got key event: ' + k);
 
-    if (k == 4) { //back 
+    if (k == 4) { //back
       $t.oneStep(null, -1);
       return false;
     }
@@ -3618,7 +3620,7 @@ var Mobile = {
     // options menu opened no passes in history
     if (optionsDiv && optionsDiv.style.visibility == "visible")
       return;
-    
+
     var $t = Mobile;
     $t.browsingHistoryPos += step;
 
@@ -3658,7 +3660,7 @@ var Mobile = {
     else
       return;
   },
-  
+
   displayViewsFor: function(div, optionsDiv) {
     var divs = div.getElementsByTagName('div');
     var viewsDiv;
@@ -5802,7 +5804,7 @@ function addBeforeProcessing(chatroom, contactUri, contactName, tbodyId, subject
     subject.focus();
 //    android.scroll();
     Boost.log('sending message: ' + msg);
-    Boost.xmpp.sendMessage(msg, chatroom);
+    Boost.xmpp.sendMessage(msg, null);
   }
   else{
     var form = document.forms['tablePropertyList'];
@@ -5924,7 +5926,7 @@ var mobileMenuAnimation = {
     var BG_TOP_BOTTOM = "../images/skin/iphone/options_back.png";
 
     // "preload background"
-    // CSS background in Android was not enough (?)   
+    // CSS background in Android was not enough (?)
     var img1 = new Image();
     img1.src = BG_MIDDLE;
     var img2 = new Image();
@@ -5936,7 +5938,7 @@ var mobileMenuAnimation = {
 
     var top = getChildById(opContDiv, "top");
     top.style.background = "url(" + BG_TOP_BOTTOM + ")";
-    
+
     var bottom = getChildById(opContDiv, "bottom");
     bottom.style.background = "url(../images/skin/iphone/options_back.png) bottom left";
   },
@@ -8046,10 +8048,10 @@ function cloneEvent(eventObj) {
   if (typeof eventObj.latitude != 'undefined') {
     e.latitude  = eventObj.latitude;
     e.longitude = eventObj.longitude;
-    e.cloned = true; 
+    e.cloned = true;
     return e;
   }
-    
+
   e.screenX = eventObj.screenX;
   e.screenY = eventObj.screenY;
   e.pageX   = eventObj.pageX;
