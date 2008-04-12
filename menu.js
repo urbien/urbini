@@ -143,8 +143,8 @@ Popup.maemo= (Popup.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
 Popup.iPhone = agent.indexOf("iPhone") != -1;
-var mobileCookie = readCookie('mobile_mode');
-Popup.mobile = Popup.android || Popup.iPhone || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
+//var mobileCookie = readCookie('mobile_mode');
+Popup.mobile = Popup.android || Popup.iPhone || Popup.s60Browser /*|| (mobileCookie != null && trim(mobileCookie) == 'true')*/ ? true : false; //screen.width < 600;
 // for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
 
@@ -2915,7 +2915,6 @@ var Boost = {
     if (typeof jsiGeoLocation != 'undefined') {
       $t.geoLocation                    = jsiGeoLocation;
       $t.eventObjects['geoLocation']    = jsiGeoLocationEvent;
-//      $t.geoLocation.subscribe();
       needHandler = true;
     }
     if (typeof jsiCamera != 'undefined') {
@@ -2930,7 +2929,6 @@ var Boost = {
     if (typeof jsiKeyboard != 'undefined') {
       $t.keyboard                       = jsiKeyboard;
       $t.eventObjects['key']            = jsiKeyEvent;
-      //$t.keyboard.subscribe();
       needHandler = true;
     }
     if (typeof jsiCache != 'undefined') {
@@ -3075,6 +3073,20 @@ var Mobile = {
     var $t = Mobile;
     if (!Popup.mobile)
       return;
+    Boost.view.setProgressIndeterminate(false);
+
+    // process redirect ourselves so that page is loaded into cache, added to history, etc.
+    var redirect = document.getElementById('$redirect');
+    var location;
+    if (redirect)
+      location = redirect.getAttribute('href');
+    if (location) {
+      Boost.log('redirecting to page: ' + location)
+      var link = {href: location, id: null}
+      $t._getPage(event, link);
+      return;
+    }
+
     Boost.addEventHandler('xmpp', $t.onChatMessage);
     Boost.addEventHandler('key',  $t.onKey);
     Boost.addEventHandler('geoLocation',  $t.onGeoLocation);
@@ -3116,19 +3128,24 @@ var Mobile = {
     if (!Boost.xmpp)
       return;
 
-    var d = document.getElementById('lastIMtime');
-    if (d) {
-      var time = d.innerHTML;
-      Boost.log('lastIMtime: ' + time);
-      //Boost.xmpp.init(time);
-    }
     $t.enterChatRoom(newUrl, div);
   },
 
   enterChatRoom: function(chatRoomUrl, div) {
+    var $t = Mobile;
     if (!div)
       return;
-    var $t = Mobile;
+    if (!Boost.xmpp)
+      return;
+/*
+    // time of the last message
+    var d = document.getElementById('lastIMtime');
+    if (!d)
+      return;
+    var time = d.innerHTML;
+    Boost.log('lastIMtime: ' + time);
+    //Boost.xmpp.init(time);
+*/
     var divs = div.getElementsByTagName('div');
     var chatRoomDiv;
     for (var i=0; i<divs.length  &&  chatRoomDiv == null; i++) {
@@ -3296,8 +3313,10 @@ var Mobile = {
     var newUrl = link.href;
     var optionsDiv = document.getElementById('menu_Options');
     if (!id) {
-      optionsDiv.style.visibility = Popup.HIDDEN;
-      optionsDiv.style.display = "none";
+      if (optionsDiv) {
+        optionsDiv.style.visibility = Popup.HIDDEN;
+        optionsDiv.style.display = "none";
+      }
       return newUrl;
     }
     if (id == 'optionsMenu') {
@@ -3519,6 +3538,11 @@ var Mobile = {
 
     if (link.href.startsWith('tel:') || link.href.startsWith('sms:'))
       return true;
+    $t._getPage(e, link);
+  },
+
+  _getPage: function(e, link) {
+    var $t = Mobile;
     if (!$t.currentUrl) {
       $t.currentUrl = document.location.href;
       var s = new Array();
@@ -3529,7 +3553,6 @@ var Mobile = {
     if (!newUrl)
       return stopEventPropagation(e);
     var isRefresh = newUrl == 'refresh';
-    link.blur();
     if (!isRefresh)
       $t.browsingHistoryPos++;
 
@@ -3574,7 +3597,10 @@ var Mobile = {
     div.style.visibility = Popup.HIDDEN;
     div.style.display = "none";
     $t.urlToDivs[newUrl] = div;
-    insertAfter(currentDiv.parentNode, div, currentDiv);
+    if (currentDiv)
+      insertAfter(currentDiv.parentNode, div, currentDiv);
+    else
+      document.body.appendChild(div);
 
     var urlParts = newUrl.split('?');
     var url = urlParts[0];
@@ -3607,7 +3633,13 @@ var Mobile = {
         Boost.log("putting content into cache from " + newUrl);
         Boost.cache.put(newUrl, content);
       }
-      MobilePageAnimation.showPage(currentDiv, div);
+      if (currentDiv)
+        MobilePageAnimation.showPage(currentDiv, div);
+      else {
+        div.style.visibility = Popup.VISIBLE;
+        div.style.display = "inline";
+        Boost.view.setProgressIndeterminate(false);
+      }
 //      var offset = getElementCoords(div);
 //      window.scroll(offset.left, offset.top);
     }
