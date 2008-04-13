@@ -84,11 +84,11 @@
 //      Packages.java.lang.System.out.println('onLoad 1: ' + new Date());
       interceptLinkClicks();
       if (typeof Boost != 'undefined') {
-        Boost.init();
+        Boost.init(event);
       }
       if (typeof Mobile != 'undefined')
         Mobile.init(event);
-      
+
 //      Packages.java.lang.System.out.println('onLoad 2: ' + new Date());
       initListBoxes(null);
 //      Packages.java.lang.System.out.println('onLoad 3: ' + new Date());
@@ -105,7 +105,7 @@
 		  addSpellcheck();
 		  dictionaryHandler.init();
 		  Tooltip.init();
-		  
+
 		  // The URL bar is hidden when running on the iPhone.
 		  if (navigator.userAgent.indexOf('iPhone') != -1) {
 		    window.scrollTo(0, 1);
@@ -131,7 +131,7 @@
     var formInitialValues;
 
     /****************** launch JS on "DOM ready" ****************/
-    
+
     var agent = navigator.userAgent;
     var isGecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1 && agent.indexOf("Konqueror") == -1);
     var versionindex = agent.indexOf("Opera") + 6;
