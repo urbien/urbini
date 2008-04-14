@@ -3220,17 +3220,26 @@ var Mobile = {
       return false;
     }
     if (k == 1) {
-//      showMenu();
-      var optionsDiv = document.getElementById('menu_Options');
-      if (optionsDiv) {
-        optionsDiv.style.visibility = Popup.VISIBLE;
-        optionsDiv.style.display = "inline";
-      }
+      $t.showOptionsMenu();
       return false;
     }
     return true;
   },
-
+  showOptionsMenu: function() {
+    var $t = Mobile;
+    var optionsDiv = document.getElementById('menu_Options');
+    if (!$t.urlToDivs) {
+      var u = new Array();
+      $t.urlToDivs = u;
+    }
+    var currentDiv = $t.urlToDivs[$t.currentUrl];
+    if (!currentDiv) {
+      currentDiv = document.getElementById('mainDiv');
+      $t.urlToDivs[0] = currentDiv;
+    }
+    $t.displayViewsFor(currentDiv, optionsDiv);
+    mobileMenuAnimation.show(optionsDiv, currentDiv);
+  },
   onChatMessage: function(e) {
     var $t = Mobile;
     var currentDiv = $t.urlToDivs[$t.currentUrl];
@@ -3470,18 +3479,7 @@ var Mobile = {
       return newUrl;
     }
     if (id == 'optionsMenu') {
-      if (!$t.urlToDivs) {
-        var u = new Array();
-        $t.urlToDivs = u;
-      }
-      var currentDiv = $t.urlToDivs[$t.currentUrl];
-      if (!currentDiv) {
-        currentDiv = document.getElementById('mainDiv');
-        $t.urlToDivs[0] = currentDiv;
-      }
-      $t.displayViewsFor(currentDiv, optionsDiv);
-      // 0 - no effect; 1 - transparency effect
-      mobileMenuAnimation.show(optionsDiv, currentDiv, 1);
+      $t.showOptionsMenu();
       return null;
     }
     if (id == 'menu_Desktop') {
@@ -6147,36 +6145,40 @@ var mobileMenuAnimation = {
 
     opContDiv = document.getElementById("options_container");
     var content = getChildById(opContDiv, "content");
-    if (content)
-      content.style.background = "url(" + BG_MIDDLE + ")";
+    content.style.background = "url(" + BG_MIDDLE + ")";
 
     var top = getChildById(opContDiv, "top");
-    if (top)
-      top.style.background = "url(" + BG_TOP_BOTTOM + ")";
+    top.style.background = "url(" + BG_TOP_BOTTOM + ")";
 
     var bottom = getChildById(opContDiv, "bottom");
-    if (bottom)
-      bottom.style.background = "url(../images/skin/iphone/options_back.png) bottom left";
+    bottom.style.background = "url(../images/skin/iphone/options_back.png) bottom left";
   },
-
-  // effectIdx = 0 - no effect; effectIdx = 1 - opaque effect;
+  // default: effectIdx = 1 - "fading effect"
   show : function(optDiv, curPageDiv, effectIdx) {
-    effectIdx = effectIdx || 0;
-    // set menu at the Android screen center
-    optDiv.style.top = getScrollXY()[1] + this.TOP_OFFSET;
+    effectIdx = effectIdx || 1;
+    if (!/loaded|complete/.test(document.readyState))
+      return;
+    
+    var optDivStl = optDiv.style;
+    // hide menu if it is already opened
+    if(optDivStl.visibility == Popup.VISIBLE) {
+      this.hide(optDivStl);
+      return;
+    }
+    // set menu at center of current div/page
+    optDiv.style.top = curPageDiv.scrollTop + this.TOP_OFFSET;
+    
     if (effectIdx == 1) {
       this.opaqueAnimation(optDiv, 0.25, 1.0, 0.35);
     }
-    var optDivStl = optDiv.style;
-    optDivStl.visibility = Popup.VISIBLE;
-    optDivStl.visibility = Popup.HIDDEN;
-
     optDivStl.zIndex = curPageDiv.style.zIndex + 1;
     optDivStl.display = "block";
     optDivStl.visibility = Popup.VISIBLE;
-
   },
-  // used in mobileMenuAnimation
+  hide : function(optDivStl) {
+    optDivStl.display = "none";
+    optDivStl.visibility = Popup.HIDDEN;
+  },
   opaqueAnimation : function(div, from, to, step) {
     this.TIME_OUT = 0;
     this.div = div;
