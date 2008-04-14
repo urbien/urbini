@@ -192,7 +192,7 @@ tr.dark  {background-color:#eeeeee; height: 35px;}
     color: #000000;
 }
 
-#menu_Options { position: absolute; }
+#menu_Options { position: fixed; top: 20; left: 1; }
 
 #options_container { position: relative; width: 320;}
 #options_container  #top { margin: 0; background: url(../images/skin/iphone/options_back.png) top center; padding-top:35 }

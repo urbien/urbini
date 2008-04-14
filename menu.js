@@ -6058,7 +6058,10 @@ var MobilePageAnimation = {
       this.rightToLeft = true;
     else
       this.rightToLeft = false;
+    
+    //window.scrollTo(0, 0);
     window.focus();
+
     var sz = getWindowSize();
     this.wndWidth = sz[0];
     this.wndHeight = sz[1];
@@ -6103,7 +6106,10 @@ var MobilePageAnimation = {
       var y = getTop(thisObj.curDiv);
       newDivStl.top = y;
       newDivStl.width = thisObj.wndWidth;
+      newDivStl.width = thisObj.wndHeight;
+      
       curDivStl.width = thisObj.wndWidth;
+      curDivStl.overflow = "scroll";
 
       newDivStl.position = "absolute";
       curDivStl.position = "absolute";
@@ -6166,7 +6172,7 @@ var mobileMenuAnimation = {
       return;
     }
     // set menu at center of current div/page
-    optDiv.style.top = curPageDiv.scrollTop + this.TOP_OFFSET;
+    //optDiv.style.top = curPageDiv.scrollTop + this.TOP_OFFSET;
     
     if (effectIdx == 1) {
       this.opaqueAnimation(optDiv, 0.25, 1.0, 0.35);
