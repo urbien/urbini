@@ -2919,7 +2919,7 @@ var Boost = {
     }
     if (typeof jsiCamera != 'undefined') {
       $t.camera                         = jsiCamera;
-//      $t.eventObjects['camera']         = jsiCameraEvent;
+      $t.eventObjects['camera']         = jsiCameraEvent;
       needHandler = true;
     }
     if (typeof jsiLog != 'undefined') {
@@ -3038,13 +3038,13 @@ var Boost = {
           if (handler == null)
             continue;
           Boost.log('calling handler for event \'' + eventType + '\' with event object: ' + eventObject);
-          try {
+//          try {
             propagate = handler(eventObject);
             if (!propagate)
               break;
-          } catch(e) {
-            Boost.log('failed on handler for event \'' + eventType + '\' with event object: ' + eventObject + ':  ' + e);
-          }
+//          } catch(e) {
+//            Boost.log('failed on handler for event \'' + eventType + '\' with event object: ' + eventObject + ':  ' + e);
+//          }
         }
       }
 //      $t.eventManager.popEvent();
@@ -3063,6 +3063,10 @@ var Mobile = {
   browsingHistory:       null,
   browsingHistoryTitles: null,
   browsingHistoryPos: 0,
+  currentPrivateChatRoom: null,
+  myName: null,
+  myBuddy: null,
+  
   $t: null,
 
   log: function(text) {
@@ -3089,6 +3093,7 @@ var Mobile = {
 
     Boost.addEventHandler('xmpp', $t.onChatMessage);
     Boost.addEventHandler('key',  $t.onKey);
+    Boost.addEventHandler('camera', $t.onCameraEvent);
     Boost.addEventHandler('geoLocation',  $t.onGeoLocation);
     addEvent(document.body, 'click',  $t.onClick, false);
     Boost.view.setProgressIndeterminate(false);
@@ -3146,6 +3151,20 @@ var Mobile = {
     Boost.log('lastIMtime: ' + time);
     //Boost.xmpp.init(time);
 */
+    var chatRoomId = $t._getChatRoomId(div)
+    if (chatRoomId) {
+      if (Boost.xmpp) {
+//        var chatRoomId = "marco@conference.conference.lablz.com";  // hack
+        Boost.log('chatRoom: ' + chatRoomId);
+        $t.chatRooms[chatRoomId] = chatRoomUrl;
+        Boost.log('chatRoomUrl: ' + $t.chatRooms[chatRoomId]);
+        Boost.xmpp.setChatRoom(chatRoomId);
+      }
+    }
+  },
+
+  _getChatRoomId: function (div) {
+    var chatRoomId = null;
     var divs = div.getElementsByTagName('div');
     var chatRoomDiv;
     for (var i=0; i<divs.length  &&  chatRoomDiv == null; i++) {
@@ -3153,17 +3172,11 @@ var Mobile = {
       if (tDiv.id  &&  tDiv.id == '-chatRoom')
         chatRoomDiv = tDiv;
     }
-    if (chatRoomDiv) {
+    if (chatRoomDiv)
       chatRoomId = chatRoomDiv.innerHTML;
-      if (Boost.xmpp) {
-//        var chatRoomId = "marco@conference.conference.lablz.com";  // hack
-        Boost.log('chatRoom: ' + chatRoomId);
-        $t.chatRooms[chatRoomId] = chatRoomUrl;
-        Boost.xmpp.setChatRoom(chatRoomId);
-      }
-    }
+    return chatRoomId;
   },
-
+  
   autoLogin: function(url) {
     var $t = Mobile;
     if (!url)
@@ -3209,8 +3222,10 @@ var Mobile = {
     if (k == 1) {
 //      showMenu();
       var optionsDiv = document.getElementById('menu_Options');
-      optionsDiv.style.visibility = Popup.VISIBLE;
-      optionsDiv.style.display = "inline";
+      if (optionsDiv) {
+        optionsDiv.style.visibility = Popup.VISIBLE;
+        optionsDiv.style.display = "inline";
+      }
       return false;
     }
     return true;
@@ -3218,23 +3233,82 @@ var Mobile = {
 
   onChatMessage: function(e) {
     var $t = Mobile;
-    var room = e.getChatRoom();
-    var roomUrl = $t.chatRooms[room];
-    if (roomUrl == null) {
-      Boost.log("no chat room found for " + room);
-      return;
-    }
-    var text = e.getBody();
-
-    if (!text)
-      return;
-
     var currentDiv = $t.urlToDivs[$t.currentUrl];
     if (!currentDiv) {
       currentDiv = document.getElementById('mainDiv');
       $t.urlToDivs[0] = currentDiv;
     }
+    
+    var room = e.getChatRoom();
+    if (room != null)
+      var roomUrl = $t.chatRooms[room];
+    /* 
+     *  if private message put it into two places - currentChatRoom div and private session div 
+     */
+    var chatRoomDivFound =  true;
+    if (roomUrl == null) {
+      Boost.log("no chat room found for " + room);
+      if (!currentDiv) {
+        Boost.log("no current div - can't detect chat room, ignoring message from " + e.getSender() + ': ' + e.getBody());
+        return;
+      }
+      chatRoomDivFound = false;
+      
+      room = $t._getChatRoomId(currentDiv);
+      Boost.log("taking current chat room instead : " + room);
+      if (!room) {
+        Boost.log("no chat room in current div, ignoring message from " + e.getSender() + ': ' + e.getBody());
+        return;        
+      }
+    }
+    
+    roomUrl = $t.chatRooms[room];
+    if (roomUrl == null) {
+      Boost.log("no chat room found for " + room);
+      return;
+    }
+    
+    Boost.log("room url: " + roomUrl);
+    var text = e.getBody();
+    if (!text)
+      return;
+
     var roomDiv = $t.urlToDivs[roomUrl];
+    Boost.log("room div: " + roomDiv + ', room div id: ' + roomDiv.id);
+    Mobile.insertChatMessage(e, roomDiv);
+    
+    if (chatRoomDivFound)
+      return;
+
+    roomUrl = e.getSender();
+    Boost.log('sender: ' + roomUrl);     
+    var div = $t.urlToDivs[roomUrl];
+    if (div == null) {    
+      var div_empty = document.getElementById('div_empty');
+      Boost.log('empty div:' + div_empty);
+      div = document.createElement('DIV');
+      cloneNode(div, div_empty);
+      
+      div.id = roomUrl;
+      $t.urlToDivs[roomUrl] = div;
+      var form = div.getElementsByTagName('form');
+      // substitute  addBeforeProcessing(chatRoom, contactUri, contactName, tbodyId, subject, event) with contactName
+      for (var i = 0; i < form.attributes.length; i++) {
+        var a = form.attributes[i];
+        if (a.name != 'onclick') 
+          continue;
+        var value = a.value;
+        var idx = value.indexOf(',,');
+        val = val.substring(0, idx + 1) + e.getSender() + val.sustring(idx + 2);
+        Boost.log(val);
+        a.value = val;
+      }
+    }
+    div.style.display = 'inline';
+    div.style.visibility = Popup.VISIBLE;
+    
+    Mobile.insertChatMessage(e, div);    
+/*
     if (roomUrl == $t.currentUrl) {
       // notify(true);
     }
@@ -3244,13 +3318,15 @@ var Mobile = {
 
     var tbodies = roomDiv.getElementsByTagName('tbody');
     var ctbody;
-    for (var i=0; i<tbodies  &&  !ctbody; i++)
+    for (var i=0; i<tbodies.length  &&  !ctbody; i++) {
       if (tbodies[i]  &&  tbodies[i].id  &&  tbodies[i].id == 't_chat')
         ctbody = tbodies[i];
+    }  
 
     var curTr;
     var trs = ctbody.getElementsByTagName('tr');
-    for (var i=0; i<trs  &&  !curTr; i++)
+    Boost.log("room trs: " + trs);
+    for (var i=0; i<trs.length  &&  !curTr; i++)
       if (trs[i]  &&  trs[i].id  &&  trs[i].id == 'tr_empty')
         curTr = trs[i];
     if (curTr == null)
@@ -3262,12 +3338,14 @@ var Mobile = {
     elms[0].innerHTML = text;
     var date = new Date(e.getTime());
     var mins = date.getMinutes();
+    Boost.log("room 1: ");
     if (mins < 10)
       mins = '0' + mins;
     var hours = date.getHours();
     if (hours < 10)
       hours = '0' + hours;
     elms[1].innerHTML = '<tt>' + hours + ':' + mins + '</tt>';
+    Boost.log("room elms: " + elms[1].innerHTML);
     var sender = e.getSender();
     Boost.log("sender: " + sender);
     Boost.log("slashindex: " + sender.indexOf('/'));
@@ -3297,15 +3375,87 @@ var Mobile = {
     window.scrollTo(0, 3000);
 //    android.scroll();
 //    d.innerHTML = d.innerHTML + text + "</br>";
+ * 
+ */
   },
+    
+  insertChatMessage: function(e, roomDiv) {
+    var tbodies = roomDiv.getElementsByTagName('tbody');
+    var ctbody;
+    for (var i=0; i<tbodies.length  &&  !ctbody; i++) {
+      if (tbodies[i]  &&  tbodies[i].id  &&  tbodies[i].id == 't_chat')
+        ctbody = tbodies[i];
+    }  
 
+    var curTr;
+    var trs = ctbody.getElementsByTagName('tr');
+    Boost.log("room trs: " + trs);
+    for (var i=0; i<trs.length  &&  !curTr; i++)
+      if (trs[i]  &&  trs[i].id  &&  trs[i].id == 'tr_empty')
+        curTr = trs[i];
+    if (curTr == null)
+      return;
+
+    var newTr = copyTableRow(ctbody, 1, curTr);
+    newTr.className = '';
+    var elms = newTr.getElementsByTagName('td');
+    elms[0].innerHTML = e.getBody();
+    var date = new Date(e.getTime());
+    var mins = date.getMinutes();
+    Boost.log("room 1: ");
+    if (mins < 10)
+      mins = '0' + mins;
+    var hours = date.getHours();
+    if (hours < 10)
+      hours = '0' + hours;
+    elms[1].innerHTML = '<tt>' + hours + ':' + mins + '</tt>';
+    Boost.log("room elms: " + elms[1].innerHTML);
+    var sender = e.getSender();
+    Boost.log("sender: " + sender);
+    Boost.log("slashindex: " + sender.indexOf('/'));
+    if (sender && sender.indexOf('/') != -1) {
+      var s = sender.split('/');
+      Boost.log("part1: " + s[0]);
+      if (s && s.length > 0) {
+        Boost.log("part2: " + s[1]);
+        sender = s[s.length - 1];
+      }
+    }
+
+    var imgTable = newTr.getElementsByTagName('table');
+    var imgTds = imgTable[0].getElementsByTagName('td');
+    var img = imgTds[0].getElementsByTagName('img');
+    var anchor = imgTds[0].getElementsByTagName('a');
+
+    var href = 'contactInfo?name=' + sender;
+    anchor[0].href = href;
+    img[0].src = 'contactInfo?name=' +  sender + '&thumb=y';
+
+    var anchor1 = imgTds[1].getElementsByTagName('a');
+    anchor1[0].href = href;
+    anchor1[0].innerHTML = sender;
+
+    ctbody.appendChild(newTr);
+    window.scrollTo(0, 3000);
+  },
+  
   onGeoLocation: function(e) {
     var $t = Mobile;
     var callback = function() { Boost.log("finished posting geolocation event") };
     var a = document.getElementsByTagName('A');
     postRequest(e, 'location', 'latitude=' + e.latitude + '&longitude=' + e.longitude, null, a[0], callback);
   },
-
+  
+  onCameraEvent: function(e) {
+    var $t = Mobile;
+    var url = e.getUrl();
+    var privateIm = $t.myBuddy + '@conference.lablz.com/conference';
+    Boost.log(privateIm);
+    var img = "";
+    Boost.xmpp.sendMessage("<a rel=\"photo\" href=\"" + url + "\">" + $t.myName + "'s photo</a>", privateIm);
+    Boost.log('Photo url for Avatar: ' + url);
+  },
+  
   menuOptions: function(e, link) {
     var $t = Mobile;
 
@@ -3475,8 +3625,29 @@ var Mobile = {
           newUrl += '&-grid=y';
       }
     }
-    else if (id == 'actions_Photo') {
+    else if (id.indexOf('actions_Photo_') != -1) {
+      if (!$t.myName) {
+        var myDiv = document.getElementById('myScreenName');
+        $t.myName = myDiv.innerHTML;
+      }
+      $t.myBuddy = id.substring(14); 
       Boost.camera.takePicture(newUrl);
+      Boost.log('picture was taken');
+      return null;
+    }
+    else if (id == 'actions_IM') {
+      var div_empty = document.getElementById('div_empty');
+      var div = document.createElement('DIV');
+      cloneNode(div, div_empty);
+      
+      div.id = newUrl;
+      Boost.log("'IM me' clicked on: " + newUrl);
+      div.style.display = 'none';
+      div.style.visibility = Popup.HIDDEN;
+      $t.urlToDivs[newUrl] = div;
+      insertAfter(currentDiv.parentNode, div, currentDiv);
+      currentPrivateChatRoom = newUrl;
+      Boost.xmpp.sendMessage("Please 'IM' me", newUrl);
       return null;
     }
 
@@ -3613,6 +3784,7 @@ var Mobile = {
         Boost.log(id);
         loadedFromCache = false;
       }
+      /*
       else {
         var content = Boost.cache.get(newUrl);
         if (content) {
@@ -3621,14 +3793,15 @@ var Mobile = {
           loadPage(e, div, link, content, div);
         }
       }
+      */
     }
     if (loadedFromCache == false)
       postRequest(e, url, urlParts[1], div, link, loadPage);
 
-    function loadPage(event, div, hotspot, content, contentUrl) {
+    function loadPage(event, div, hotspot, content) {
       setInnerHtml(div, content);
       $t.setTitle(div);
-      $t.onPageLoad(contentUrl, div);
+      $t.onPageLoad(newUrl, div);
       if (Boost.cache && loadedFromCache == false) {
         Boost.log("putting content into cache from " + newUrl);
         Boost.cache.put(newUrl, content);
@@ -5826,17 +5999,25 @@ function addAndShowWait(event, body, hotspot, content, noInsert, isReplace)	{
   interceptLinkClicks(divCopyTo);
 }
 // adds comment/resource before server confirms that resource was successfully created
-function addBeforeProcessing(chatroom, contactUri, contactName, tbodyId, subject, event) {
+function addBeforeProcessing(chatRoom, contactUri, contactName, tbodyId, subject, event) {
   var retCode = stopEventPropagation(event);
   var msg = subject.value;
   subject.value = '';
 
-  if (Popup.android) {
+  if (Popup.mobile) {
     window.scrollTo(0, 3000);
     subject.focus();
 //    android.scroll();
     Boost.log('sending message: ' + msg);
     Boost.xmpp.sendMessage(msg, null);
+    var roomUrl = Mobile.chatRooms[chatRoom];
+    var roomDiv = Mobile.urlToDivs[roomUrl];
+    var e = {
+      getBody:   function() {return msg}, 
+      getSender: function() {return contactName + '@conference.conference.lablz.com'},
+      getTime:   function() {return new Date().getTime()}
+    };
+    Mobile.insertChatMessage(e, roomDiv);
   }
   else{
     var form = document.forms['tablePropertyList'];
@@ -5966,13 +6147,16 @@ var mobileMenuAnimation = {
 
     opContDiv = document.getElementById("options_container");
     var content = getChildById(opContDiv, "content");
-    content.style.background = "url(" + BG_MIDDLE + ")";
+    if (content)
+      content.style.background = "url(" + BG_MIDDLE + ")";
 
     var top = getChildById(opContDiv, "top");
-    top.style.background = "url(" + BG_TOP_BOTTOM + ")";
+    if (top)
+      top.style.background = "url(" + BG_TOP_BOTTOM + ")";
 
     var bottom = getChildById(opContDiv, "bottom");
-    bottom.style.background = "url(../images/skin/iphone/options_back.png) bottom left";
+    if (bottom)
+      bottom.style.background = "url(../images/skin/iphone/options_back.png) bottom left";
   },
 
   // effectIdx = 0 - no effect; effectIdx = 1 - opaque effect;
