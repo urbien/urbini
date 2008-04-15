@@ -149,6 +149,12 @@ div {font-family:Helvetica; font-size:10pt;}
 .chat {
   padding: 0px 5px 0px 5px;
 }
+.red {
+    font-size: 16px;
+    font-weight: bold;
+    color: red;
+
+}
 .button_left {
     float: left;
     -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
