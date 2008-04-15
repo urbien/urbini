@@ -3452,7 +3452,9 @@ var Mobile = {
     var $t = Mobile;
     var callback = function() { Boost.log("finished posting geolocation event") };
     var a = document.getElementsByTagName('A');
-    postRequest(e, 'location', 'latitude=' + e.latitude + '&longitude=' + e.longitude, null, a[0], callback);
+    var params = 'latitude=' + e.getLatitude() + '&longitude=' + e.getLongitude()
+    Boost.log('onGeoLocation: ' + params);
+    postRequest(e, 'location', params, null, a[0], callback);
   },
   
   onCameraEvent: function(e) {
@@ -3779,7 +3781,6 @@ var Mobile = {
     if (Boost.cache) {
       var id = link.id;
       if (id  &&  (id == 'menu_Reload' || id == 'menu_Refresh')) {
-        Boost.log(id);
         loadedFromCache = false;
       }
       /*
