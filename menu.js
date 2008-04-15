@@ -2914,6 +2914,8 @@ var Boost = {
     }
     if (typeof jsiGeoLocation != 'undefined') {
       $t.geoLocation                    = jsiGeoLocation;
+      $t.geoLocation.setMinDistance(1000);
+      $t.geoLocation.setMinTime(300000);
       $t.eventObjects['geoLocation']    = jsiGeoLocationEvent;
       needHandler = true;
     }
@@ -3066,7 +3068,7 @@ var Mobile = {
   currentPrivateChatRoom: null,
   myName: null,
   myBuddy: null,
-  
+
   $t: null,
 
   log: function(text) {
@@ -3097,13 +3099,19 @@ var Mobile = {
     Boost.addEventHandler('geoLocation',  $t.onGeoLocation);
     addEvent(document.body, 'click',  $t.onClick, false);
     Boost.view.setProgressIndeterminate(false);
-    Boost.cache.cookieSync();
+    if (Boost.cache)
+      Boost.cache.cookieSync();
     $t.onPageLoad();
     if (Boost.xmpp) {
       var u = new Array();
       $t.chatRooms = u;
-      Boost.log('init: loginCurrentUser');
-      Boost.xmpp.loginCurrentUser();
+
+      var myDiv = document.getElementById('myScreenName');
+      if (myDiv)
+        $t.myName = myDiv.innerHTML;
+
+      Boost.log('xmpp.login: ' + $t.myName);
+      Boost.xmpp.login($t.myName, $t.myName);
     }
     /* loading browsing history
     var history = Boost.readHistory();
@@ -3128,7 +3136,7 @@ var Mobile = {
     var $t = Mobile;
 
     Boost.log("webview.db");
-    Boost.logDB();
+//    Boost.logDB();
 
     if (!Boost.xmpp)
       return;
@@ -3176,7 +3184,7 @@ var Mobile = {
       chatRoomId = chatRoomDiv.innerHTML;
     return chatRoomId;
   },
-  
+
   autoLogin: function(url) {
     var $t = Mobile;
     if (!url)
@@ -3247,12 +3255,12 @@ var Mobile = {
       currentDiv = document.getElementById('mainDiv');
       $t.urlToDivs[0] = currentDiv;
     }
-    
+
     var room = e.getChatRoom();
     if (room != null)
       var roomUrl = $t.chatRooms[room];
-    /* 
-     *  if private message put it into two places - currentChatRoom div and private session div 
+    /*
+     *  if private message put it into two places - currentChatRoom div and private session div
      */
     var chatRoomDivFound =  true;
     if (roomUrl == null) {
@@ -3262,21 +3270,21 @@ var Mobile = {
         return;
       }
       chatRoomDivFound = false;
-      
+
       room = $t._getChatRoomId(currentDiv);
       Boost.log("taking current chat room instead : " + room);
       if (!room) {
         Boost.log("no chat room in current div, ignoring message from " + e.getSender() + ': ' + e.getBody());
-        return;        
+        return;
       }
     }
-    
+
     roomUrl = $t.chatRooms[room];
     if (roomUrl == null) {
       Boost.log("no chat room found for " + room);
       return;
     }
-    
+
     Boost.log("room url: " + roomUrl);
     var text = e.getBody();
     if (!text)
@@ -3285,26 +3293,26 @@ var Mobile = {
     var roomDiv = $t.urlToDivs[roomUrl];
     Boost.log("room div: " + roomDiv + ', room div id: ' + roomDiv.id);
     Mobile.insertChatMessage(e, roomDiv);
-    
+
     if (chatRoomDivFound)
       return;
 
     roomUrl = e.getSender();
-    Boost.log('sender: ' + roomUrl);     
+    Boost.log('sender: ' + roomUrl);
     var div = $t.urlToDivs[roomUrl];
-    if (div == null) {    
+    if (div == null) {
       var div_empty = document.getElementById('div_empty');
       Boost.log('empty div:' + div_empty);
       div = document.createElement('DIV');
       cloneNode(div, div_empty);
-      
+
       div.id = roomUrl;
       $t.urlToDivs[roomUrl] = div;
       var form = div.getElementsByTagName('form');
       // substitute  addBeforeProcessing(chatRoom, contactUri, contactName, tbodyId, subject, event) with contactName
       for (var i = 0; i < form.attributes.length; i++) {
         var a = form.attributes[i];
-        if (a.name != 'onclick') 
+        if (a.name != 'onclick')
           continue;
         var value = a.value;
         var idx = value.indexOf(',,');
@@ -3315,8 +3323,8 @@ var Mobile = {
     }
     div.style.display = 'inline';
     div.style.visibility = Popup.VISIBLE;
-    
-    Mobile.insertChatMessage(e, div);    
+
+    Mobile.insertChatMessage(e, div);
 /*
     if (roomUrl == $t.currentUrl) {
       // notify(true);
@@ -3330,7 +3338,7 @@ var Mobile = {
     for (var i=0; i<tbodies.length  &&  !ctbody; i++) {
       if (tbodies[i]  &&  tbodies[i].id  &&  tbodies[i].id == 't_chat')
         ctbody = tbodies[i];
-    }  
+    }
 
     var curTr;
     var trs = ctbody.getElementsByTagName('tr');
@@ -3384,17 +3392,17 @@ var Mobile = {
     window.scrollTo(0, 3000);
 //    android.scroll();
 //    d.innerHTML = d.innerHTML + text + "</br>";
- * 
+ *
  */
   },
-    
+
   insertChatMessage: function(e, roomDiv) {
     var tbodies = roomDiv.getElementsByTagName('tbody');
     var ctbody;
     for (var i=0; i<tbodies.length  &&  !ctbody; i++) {
       if (tbodies[i]  &&  tbodies[i].id  &&  tbodies[i].id == 't_chat')
         ctbody = tbodies[i];
-    }  
+    }
 
     var curTr;
     var trs = ctbody.getElementsByTagName('tr');
@@ -3447,7 +3455,7 @@ var Mobile = {
     ctbody.appendChild(newTr);
     window.scrollTo(0, 3000);
   },
-  
+
   onGeoLocation: function(e) {
     var $t = Mobile;
     var callback = function() { Boost.log("finished posting geolocation event") };
@@ -3456,7 +3464,7 @@ var Mobile = {
     Boost.log('onGeoLocation: ' + params);
     postRequest(e, 'location', params, null, a[0], callback);
   },
-  
+
   onCameraEvent: function(e) {
     var $t = Mobile;
     var url = e.getUrl();
@@ -3466,7 +3474,7 @@ var Mobile = {
     Boost.xmpp.sendMessage("<a rel=\"photo\" href=\"" + url + "\">" + $t.myName + "'s photo</a>", privateIm);
     Boost.log('Photo url for Avatar: ' + url);
   },
-  
+
   menuOptions: function(e, link) {
     var $t = Mobile;
 
@@ -3630,7 +3638,7 @@ var Mobile = {
         var myDiv = document.getElementById('myScreenName');
         $t.myName = myDiv.innerHTML;
       }
-      $t.myBuddy = id.substring(14); 
+      $t.myBuddy = id.substring(14);
       Boost.camera.takePicture(newUrl);
       Boost.log('picture was taken');
       return null;
@@ -3639,7 +3647,7 @@ var Mobile = {
       var div_empty = document.getElementById('div_empty');
       var div = document.createElement('DIV');
       cloneNode(div, div_empty);
-      
+
       div.id = newUrl;
       Boost.log("'IM me' clicked on: " + newUrl);
       div.style.display = 'none';
@@ -6012,7 +6020,7 @@ function addBeforeProcessing(chatRoom, contactUri, contactName, tbodyId, subject
     var roomUrl = Mobile.chatRooms[chatRoom];
     var roomDiv = Mobile.urlToDivs[roomUrl];
     var e = {
-      getBody:   function() {return msg}, 
+      getBody:   function() {return msg},
       getSender: function() {return contactName + '@conference.conference.lablz.com'},
       getTime:   function() {return new Date().getTime()}
     };
@@ -6059,7 +6067,7 @@ var MobilePageAnimation = {
       this.rightToLeft = true;
     else
       this.rightToLeft = false;
-    
+
     //window.scrollTo(0, 0);
     window.focus();
 
@@ -6108,7 +6116,7 @@ var MobilePageAnimation = {
       newDivStl.top = y;
       newDivStl.width = thisObj.wndWidth;
       newDivStl.width = thisObj.wndHeight;
-      
+
       curDivStl.width = thisObj.wndWidth;
       curDivStl.overflow = "scroll";
 
@@ -6165,7 +6173,7 @@ var mobileMenuAnimation = {
     effectIdx = effectIdx || 1;
     if (!/loaded|complete/.test(document.readyState))
       return;
-    
+
     var optDivStl = optDiv.style;
     // hide menu if it is already opened
     if(optDivStl.visibility == Popup.VISIBLE) {
@@ -6174,7 +6182,7 @@ var mobileMenuAnimation = {
     }
     // set menu at center of current div/page
     //optDiv.style.top = curPageDiv.scrollTop + this.TOP_OFFSET;
-    
+
     if (effectIdx == 1) {
       this.opaqueAnimation(optDiv, 0.25, 1.0, 0.35);
     }
