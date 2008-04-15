@@ -6067,6 +6067,10 @@ var MobilePageAnimation = {
       this.curDiv.style.visibility = Popup.HIDDEN;
       this.curDiv.style.display = "none";
     }
+    
+    if(!curDiv || !newDiv)
+      return;
+
     this.curDiv = curDiv;
     this.newDiv = newDiv;
     if (typeof isBack == 'undefined' || isBack == false)
@@ -6074,17 +6078,19 @@ var MobilePageAnimation = {
     else
       this.rightToLeft = false;
 
-    //window.scrollTo(0, 0);
-    window.focus();
-
     var sz = getWindowSize();
     this.wndWidth = sz[0];
     this.wndHeight = sz[1];
+    
     setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
   },
 
   _animate : function() {
     var thisObj = MobilePageAnimation;
+    
+    if(!thisObj.curDiv || !thisObj.newDiv)
+      return;
+
     var newDivStl = thisObj.newDiv.style;
     var curDivStl = thisObj.curDiv.style;
     var x;
@@ -6120,8 +6126,8 @@ var MobilePageAnimation = {
     if (thisObj.step == 1) {
       var y = getTop(thisObj.curDiv);
       newDivStl.top = y;
-      newDivStl.width = thisObj.wndWidth;
-      newDivStl.width = thisObj.wndHeight;
+      newDivStl.width  = thisObj.wndWidth;
+      newDivStl.height = thisObj.wndHeight;
 
       curDivStl.width = thisObj.wndWidth;
       curDivStl.overflow = "scroll";
