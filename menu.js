@@ -3066,6 +3066,7 @@ var Mobile = {
   browsingHistoryTitles: null,
   browsingHistoryPos: 0,
   currentPrivateChatRoom: null,
+  $t._preventingDoubleClick: false;
   myName: null,
   myBuddy: null,
 
@@ -3714,7 +3715,8 @@ var Mobile = {
     var link = getAnchorForEventTarget(l);
     if (!link || !link.href || link.href == null)
       return;
-
+    if ($t._preventingDoubleClick)
+      return stopEventPropagation(e);
     if (link.href.startsWith('tel:') || link.href.startsWith('sms:'))
       return true;
     $t._getPage(e, link);
@@ -3802,8 +3804,11 @@ var Mobile = {
       }
       */
     }
-    if (loadedFromCache == false)
-      postRequest(e, url, urlParts[1], div, link, loadPage);
+    if (loadedFromCache == true)
+      return stopEventPropagation(e);
+
+    $t._preventingDoubleClick = true;
+    postRequest(e, url, urlParts[1], div, link, loadPage);
 
     function loadPage(event, div, hotspot, content) {
       setInnerHtml(div, content);
@@ -3813,6 +3818,7 @@ var Mobile = {
         Boost.log("putting content into cache from " + newUrl);
         Boost.cache.put(newUrl, content);
       }
+      $t._preventingDoubleClick = false;
       if (currentDiv)
         MobilePageAnimation.showPage(currentDiv, div);
       else {
