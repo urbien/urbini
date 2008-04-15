@@ -3066,7 +3066,7 @@ var Mobile = {
   browsingHistoryTitles: null,
   browsingHistoryPos: 0,
   currentPrivateChatRoom: null,
-  _preventingDoubleClick: false;
+  _preventingDoubleClick: false,
   myName: null,
   myBuddy: null,
 
