@@ -3112,7 +3112,8 @@ var Mobile = {
         $t.myName = myDiv.innerHTML;
 
       Boost.log('xmpp.login: ' + $t.myName);
-      Boost.xmpp.login($t.myName, $t.myName);
+      if ($t.myName != null && $t.myName.length != 0)
+        Boost.xmpp.login($t.myName, $t.myName);
     }
     /* loading browsing history
     var history = Boost.readHistory();
@@ -3183,6 +3184,8 @@ var Mobile = {
     }
     if (chatRoomDiv)
       chatRoomId = chatRoomDiv.innerHTML;
+    if (chatRoomId)
+      chatRoomId.toLowerCase();
     return chatRoomId;
   },
 
@@ -3258,8 +3261,11 @@ var Mobile = {
     }
 
     var room = e.getChatRoom();
-    if (room != null)
-      var roomUrl = $t.chatRooms[room];
+    var roomUrl = null;
+    if (room != null) {
+      room = room.toLowerCase();
+      roomUrl = $t.chatRooms[room];
+    }
     /*
      *  if private message put it into two places - currentChatRoom div and private session div
      */
@@ -3430,14 +3436,12 @@ var Mobile = {
     Boost.log("room elms: " + elms[1].innerHTML);
     var sender = e.getSender();
     Boost.log("sender: " + sender);
-    Boost.log("slashindex: " + sender.indexOf('/'));
-    if (sender && sender.indexOf('/') != -1) {
-      var s = sender.split('/');
-      Boost.log("part1: " + s[0]);
-      if (s && s.length > 0) {
-        Boost.log("part2: " + s[1]);
-        sender = s[s.length - 1];
-      }
+    var lablzStr = 'lablz.com/';
+    var cutoffIndex = sender.indexOf('lablz.com') + lablzStr.length;
+    Boost.log("cutoffindex: " + cutoffIndex);
+    Boost.log("new name: " + sender.substring(cutoffIndex));
+    if (sender && sender.indexOf('lablz.com') != -1) {
+      sender = sender.substring(cutoffIndex);
     }
 
     var imgTable = newTr.getElementsByTagName('table');
