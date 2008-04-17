@@ -143,8 +143,8 @@ Popup.maemo= (Popup.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
 Popup.iPhone = agent.indexOf("iPhone") != -1;
-//var mobileCookie = readCookie('mobile_mode');
-Popup.mobile = Popup.android || Popup.iPhone || Popup.s60Browser /*|| (mobileCookie != null && trim(mobileCookie) == 'true')*/ ? true : false; //screen.width < 600;
+var mobileCookie = readCookie('mobile_mode');
+Popup.mobile = Popup.android || Popup.iPhone || Popup.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
 // for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
 
@@ -2912,6 +2912,10 @@ var Boost = {
       $t.eventObjects['browserHistory'] = jsiBrowserHistoryEvent;
       needHandler = true;
     }
+    if (typeof jsiZoom != 'undefined') {
+      $t.zoom                           = jsiZoom;
+      needHandler = true;
+    }
     if (typeof jsiGeoLocation != 'undefined') {
       $t.geoLocation                    = jsiGeoLocation;
       $t.geoLocation.setMinDistance(1000);
@@ -3546,6 +3550,10 @@ var Mobile = {
       return 'refresh';
     }
     if (id == 'menu_History') {
+      if ($t.zoom) {
+         // zoom out to appropriate percentage
+         // unhide the divs in urlToDivs
+      }
       return null;
     }
     if (id == 'menu_List') {
@@ -7412,7 +7420,12 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
         if (!location)
           return;
       }
-
+      
+      if (location == url) {
+        Boost.log("recursive redirect to " + url);
+        return;
+      }
+        
       var paintInPage;
       if (Popup.mobile)
         paintInPage = true;
