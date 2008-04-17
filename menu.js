@@ -3545,6 +3545,9 @@ var Mobile = {
       optionsDiv.style.display = "none";
       return 'refresh';
     }
+    if (id == 'menu_History') {
+      return null;
+    }
     if (id == 'menu_List') {
       optionsDiv.style.visibility = Popup.HIDDEN;
       optionsDiv.style.display = "none";
