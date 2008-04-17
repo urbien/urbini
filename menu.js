@@ -6071,7 +6071,7 @@ var MobilePageAnimation = {
       this.curDiv.style.visibility = Popup.HIDDEN;
       this.curDiv.style.display = "none";
     }
-    
+
     if(!curDiv || !newDiv)
       return;
 
@@ -6085,13 +6085,13 @@ var MobilePageAnimation = {
     var sz = getWindowSize();
     this.wndWidth = sz[0];
     this.wndHeight = sz[1];
-    
+
     setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
   },
 
   _animate : function() {
     var thisObj = MobilePageAnimation;
-    
+
     if(!thisObj.curDiv || !thisObj.newDiv)
       return;
 
@@ -7435,7 +7435,10 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       }
     }
     else {
-      Boost.log('AJAX request status(1): ' + status + ', ' + url);
+      Boost.log('AJAX request status(' + status + ', ' + url + ')');
+      openAjaxStatistics(event, http_request);
+      //Boost.view.setProgressIndeterminate(false);
+      callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
   };
   if (!Popup.opera8  && !Popup.s60Browser) {
