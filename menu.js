@@ -3721,7 +3721,7 @@ var Mobile = {
       return;
     if ($t._preventingDoubleClick)
       return stopEventPropagation(e);
-    if (link.href.startsWith('tel:') || link.href.startsWith('sms:'))
+    if (link.href.startsWith('tel:') || link.href.startsWith('sms:') || link.href.startsWith('mailto:') || link.href.startsWith('wtai:'))
       return true;
     $t._getPage(e, link);
   },
