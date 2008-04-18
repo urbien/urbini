@@ -6073,11 +6073,15 @@ var MobilePageAnimation = {
   totalOffset : 0,
   step : 1,
 
+  isDomLoaded : false,
+  
+  init : function() {
+    this.isDomLoaded = true;
+  },
   showPage : function(curDiv, newDiv, isBack) {
-    if (typeof document.readyState != 'undefined') {
-      if (!/loaded|complete/.test(document.readyState))
+    if (!this.isDomLoaded)
         return;
-    }
+        
     if (this.curDiv != null) {
       this.curDiv.style.visibility = Popup.HIDDEN;
       this.curDiv.style.display = "none";

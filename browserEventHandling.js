@@ -110,6 +110,8 @@
 		  if (navigator.userAgent.indexOf('iPhone') != -1) {
 		    window.scrollTo(0, 1);
 		  }
+		  
+		  MobilePageAnimation.init();
     }
 
     /*
