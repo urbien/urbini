@@ -6146,10 +6146,7 @@ var MobilePageAnimation = {
       var y = getTop(thisObj.curDiv);
       newDivStl.top = y;
       newDivStl.width  = thisObj.wndWidth;
-      newDivStl.height = thisObj.wndHeight;
-
       curDivStl.width = thisObj.wndWidth;
-      curDivStl.overflow = "scroll";
 
       newDivStl.position = "absolute";
       curDivStl.position = "absolute";
