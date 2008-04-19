@@ -2887,7 +2887,7 @@ var Boost = {
     if (typeof jsiEventManager != 'undefined') {
       $t.eventManager         = jsiEventManager;
     }
-    else typeof Packages.bhoost.jsi.EventManager != 'undefined') {
+    else if (typeof Packages.bhoost.jsi.EventManager != 'undefined') {
       $t.eventManager         = Packages.bhoost.jsi.EventManager;
     }
     else {
