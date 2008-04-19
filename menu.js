@@ -2887,6 +2887,9 @@ var Boost = {
     if (typeof jsiEventManager != 'undefined') {
       $t.eventManager         = jsiEventManager;
     }
+    else typeof Packages.bhoost.jsi.EventManager != 'undefined') {
+      $t.eventManager         = Packages.bhoost.jsi.EventManager;
+    }
     else {
       // default implementation
       $t.eventManager = {
@@ -6074,14 +6077,14 @@ var MobilePageAnimation = {
   step : 1,
 
   isDomLoaded : false,
-  
+
   init : function() {
     this.isDomLoaded = true;
   },
   showPage : function(curDiv, newDiv, isBack) {
     if (!this.isDomLoaded)
         return;
-        
+
     if (this.curDiv != null) {
       this.curDiv.style.visibility = Popup.HIDDEN;
       this.curDiv.style.display = "none";
@@ -7421,12 +7424,12 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
         if (!location)
           return;
       }
-      
+
       if (location == url) {
         Boost.log("recursive redirect to " + url);
         return;
       }
-        
+
       var paintInPage;
       if (Popup.mobile)
         paintInPage = true;
