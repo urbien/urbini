@@ -2876,6 +2876,8 @@ var Boost = {
   keyboard            : null,
   view                : null, // window or view of this browser
   browserHistory      : null,
+  zoom                : null,
+
 
   eventHandlers       : new Array(),
   eventObjects        : new Array(),
@@ -2887,7 +2889,8 @@ var Boost = {
     if (typeof jsiEventManager != 'undefined') {
       $t.eventManager         = jsiEventManager;
     }
-    else if (typeof Packages.bhoost.jsi.EventManager != 'undefined') {
+    else if (typeof Packages != 'undefined' &&
+        typeof Packages.bhoost.jsi.EventManager != 'undefined') {
       $t.eventManager         = Packages.bhoost.jsi.EventManager;
     }
     else {
@@ -3013,7 +3016,10 @@ var Boost = {
       $t.eventHandlers[eventType] = handlers;
     }
     Boost.log('adding handler for type: ' + eventType);
-    $t.eventManager.subscribe(eventType);
+      
+    if (typeof $t.eventManager.subscribe == 'function') {
+      $t.eventManager.subscribe(eventType);
+    }
     handlers[handlers.length] = handler;
     //Boost.log('added handler: ' + handlers[handlers.length - 1]);
   },
@@ -3076,6 +3082,7 @@ var Mobile = {
   _preventingDoubleClick: false,
   myName: null,
   myBuddy: null,
+  isHistoryView : false,
 
   $t: null,
 
@@ -3257,7 +3264,7 @@ var Mobile = {
       $t.urlToDivs[0] = currentDiv;
     }
     $t.displayViewsFor(currentDiv, optionsDiv);
-    mobileMenuAnimation.show(optionsDiv, currentDiv);
+    MobileMenuAnimation.show(currentDiv);
   },
   onChatMessage: function(e) {
     var $t = Mobile;
@@ -3553,9 +3560,10 @@ var Mobile = {
       return 'refresh';
     }
     if (id == 'menu_History') {
-      if ($t.zoom) {
+      if (typeof Boost.zoom) {
          // zoom out to appropriate percentage
          // unhide the divs in urlToDivs
+         $t.showHistoryView();
       }
       return null;
     }
@@ -3700,6 +3708,106 @@ var Mobile = {
       }
     }
   },
+  
+  showHistoryView : function() {
+    var SPACE = 30;
+    this.isHistoryView = true;
+    
+    MobileMenuAnimation.hide();
+    var scrWidth = this.getScreenWidth();
+    if (Boost.zoom)
+      Boost.zoom.setZoomWidth(scrWidth * 2 + SPACE * 3);
+ 
+    var idx = 0;
+    var fstColBottom = 0;
+    var sndColBottom = 0;
+
+    for (var url in this.urlToDivs) {
+      var div = this.urlToDivs[url]
+      var divStl = div.style;
+      if (!divStl)
+        continue;
+
+      if(idx % 2 == 0) {
+        divStl.left = SPACE;
+        divStl.top = SPACE + fstColBottom;
+        fstColBottom += SPACE + div.clientHeight;
+      }
+      else {
+        divStl.left = scrWidth + SPACE * 2;
+        divStl.top = SPACE + sndColBottom;
+        sndColBottom += SPACE + div.clientHeight;
+      }
+
+      divStl.width = scrWidth;
+      divStl.position = "absolute";
+      divStl.border = "solid 1px #000";
+
+      divStl.visibility = "visible"; 
+      divStl.display = "";
+
+
+      if (!this.urlToDivs[url].onclick) {
+        this.urlToDivs[url].onclick = this.onPageSelectFromHistoryView;
+        this.urlToDivs[url].ondblclick = this.onPageSelectFromHistoryView;
+      }
+      //addEvent(this.urlToDivs[url], "click",
+      //   this.onPageSelectFromHistoryView, true);
+     
+      idx++;
+    }
+  },
+  onPageSelectFromHistoryView : function(e) {
+    var $t = Mobile;
+
+    if (!$t.isHistoryView)
+      return;
+
+    e = getDocumentEvent(e);
+    var target = getEventTarget(e);
+    var targetPage = getAncestorById(target, "mainDiv");
+    if (!targetPage)
+      targetPage = getAncestorByAttribute(target, "className", "mobile_page");
+    
+    if (!targetPage)
+      return;
+    
+    // hide all pages
+    for (var url in $t.urlToDivs) {
+      var divStl = $t.urlToDivs[url].style;
+      if (!divStl)
+        continue;
+      
+      divStl.visibility = "hidden"; 
+      divStl.display = "none";
+      divStl.border = "";
+      
+      $t.isHistoryView = false;
+
+      $t.urlToDivs[url].onclick = null;
+      $t.urlToDivs[url].ondblclick = null;
+
+     // removeEvent($t.urlToDivs[url], "click",
+     //    $t.onPageSelectFromHistoryView, true);
+    }
+    
+    // return to normal scale
+    window.scrollTo(0, 0);
+    if (Boost.zoom)
+      Boost.zoom.setZoomWidth($t.getScreenWidth());
+
+    // show target page
+    var targetPageStl = targetPage.style;
+    targetPageStl.border  = "";
+    targetPageStl.left = 0;
+    targetPageStl.top = MobilePageAnimation.getPageTopOffset();
+    targetPageStl.visibility = "visible"; 
+    targetPageStl.display = "";
+    
+    e.preventDefault();
+    return e.stopPropagation();
+  },
+  
 /*
   loadBrowsingHistory: function(e, link) {
     $t.currentUrl = document.location.href;
@@ -3793,6 +3901,8 @@ var Mobile = {
       return stopEventPropagation(e);
     }
     div = document.createElement("DIV");
+    // class "mobile_page" to distinguish it as a page.
+    div.className = "mobile_page";
     div.style.visibility = Popup.HIDDEN;
     div.style.display = "none";
     $t.urlToDivs[newUrl] = div;
@@ -3976,6 +4086,13 @@ var Mobile = {
       document.location.href = $t.currentUrl;
       return stopEventPropagation(e);
     }
+  },
+  
+  getScreenWidth : function() {
+    if (Boost.zoom)
+      return Boost.zoom.getScreenWidth();
+    else 
+      return getWindowSize()[0];  
   }
 }
 
@@ -6071,15 +6188,24 @@ var MobilePageAnimation = {
   rightToLeft : true,
 
   wndWidth : null,
-  wndHeight : null,
 
   totalOffset : 0,
   step : 1,
 
+  pageTopOffset : null,
+  
   isDomLoaded : false,
 
   init : function() {
     this.isDomLoaded = true;
+    this.wndWidth = Mobile.getScreenWidth();
+
+    var div = document.getElementById('mainDiv');
+    if (div) {
+      div.style.width = this.wndWidth;
+      div.position = "absolute";
+      this.pageTopOffset = getTop(div);
+    }
   },
   showPage : function(curDiv, newDiv, isBack) {
     if (!this.isDomLoaded)
@@ -6099,10 +6225,6 @@ var MobilePageAnimation = {
       this.rightToLeft = true;
     else
       this.rightToLeft = false;
-
-    var sz = getWindowSize();
-    this.wndWidth = sz[0];
-    this.wndHeight = sz[1];
 
     setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
   },
@@ -6146,12 +6268,11 @@ var MobilePageAnimation = {
       curDivStl.left =  x;
     }
     if (thisObj.step == 1) {
-      var y = getTop(thisObj.curDiv);
-      newDivStl.top = y;
+      newDivStl.top = thisObj.pageTopOffset;
       newDivStl.width  = thisObj.wndWidth;
-      curDivStl.width = thisObj.wndWidth;
-
       newDivStl.position = "absolute";
+      
+      curDivStl.width  = thisObj.wndWidth;
       curDivStl.position = "absolute";
 
       newDivStl.visibility = Popup.VISIBLE;
@@ -6170,15 +6291,18 @@ var MobilePageAnimation = {
       thisObj.step = 1;
       Boost.view.setProgressIndeterminate(false);
     }
+  },
+  getPageTopOffset : function() {
+    return this.pageTopOffset;
   }
 }
 
-var mobileMenuAnimation = {
+var MobileMenuAnimation = {
   TOP_OFFSET : 60,
+  optionsDiv : null,
+  isInitialized : false,
+  
   init : function() {
-    if (!Popup.android)
-      return;
-
     var BG_MIDDLE = "../images/skin/iphone/options_back_middle.png";
     var BG_TOP_BOTTOM = "../images/skin/iphone/options_back.png";
 
@@ -6198,30 +6322,34 @@ var mobileMenuAnimation = {
 
     var bottom = getChildById(opContDiv, "bottom");
     bottom.style.background = "url(../images/skin/iphone/options_back.png) bottom left";
+    
+    this.optionsDiv = document.getElementById('menu_Options');
+    this.isInitialized = true;
   },
   // default: effectIdx = 1 - "fading effect"
-  show : function(optDiv, curPageDiv, effectIdx) {
+  show : function(curPageDiv, effectIdx) {
     effectIdx = effectIdx || 1;
-    if (!/loaded|complete/.test(document.readyState))
+    if (!this.isInitialized)
       return;
 
-    var optDivStl = optDiv.style;
+    var optDivStl = this.optionsDiv.style;
     // hide menu if it is already opened
     if(optDivStl.visibility == Popup.VISIBLE) {
-      this.hide(optDivStl);
+      this.hide();
       return;
     }
     // set menu at center of current div/page
     //optDiv.style.top = curPageDiv.scrollTop + this.TOP_OFFSET;
 
     if (effectIdx == 1) {
-      this.opaqueAnimation(optDiv, 0.25, 1.0, 0.35);
+      this.opaqueAnimation(this.optionsDiv, 0.25, 1.0, 0.35);
     }
     optDivStl.zIndex = curPageDiv.style.zIndex + 1;
     optDivStl.display = "block";
     optDivStl.visibility = Popup.VISIBLE;
   },
-  hide : function(optDivStl) {
+  hide : function() {
+    var optDivStl = this.optionsDiv.style;
     optDivStl.display = "none";
     optDivStl.visibility = Popup.HIDDEN;
   },
@@ -6234,7 +6362,7 @@ var mobileMenuAnimation = {
     this.counter = 0;
 
     this._animate = function() {
-      var thisObj = mobileMenuAnimation;
+      var thisObj = MobileMenuAnimation;
       var level = thisObj.from + thisObj.step * thisObj.counter;
       if (level > thisObj.to)
         level = thisObj.to;
