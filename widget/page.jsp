@@ -9,6 +9,8 @@
   <div id="mainskin" class="blue">
     <options />
     <div id="myScreenName" class="hdn" />
+    <div id="im_empty" class="hdn" />
+    
 	  <div id="mainDiv">
 	    <views />
       <siteTitle name="title" />
