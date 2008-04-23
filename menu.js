@@ -3257,6 +3257,11 @@ var Mobile = {
     Boost.log('got key event: ' + k);
 
     if (k == 4) { //back
+      // if histroy view is opened then just close it.
+      if ($t.isHistoryView) {
+        $t.hideHistoryView($t.getCurrentPageDiv());
+        return;
+      }
       $t.oneStep(null, -1);
       return false;
     }
@@ -3266,15 +3271,28 @@ var Mobile = {
     }
     return true;
   },
-  
-  showOptionsMenu: function() {
+  getCurrentPageDiv: function() {
     var $t = Mobile;
-    var optionsDiv = document.getElementById('menu_Options');
     var currentDiv = $t.urlToDivs[$t.currentUrl];
     if (!currentDiv) {
       currentDiv = document.getElementById('mainDiv');
       $t.urlToDivs[0] = currentDiv;
     }
+    return currentDiv;
+  }, 
+  showOptionsMenu: function() {
+    var $t = Mobile;
+    if ($t.isHistoryView) {
+      $t.hideHistoryView($t.getCurrentPageDiv());
+      return;
+    }
+    
+    var optionsDiv = document.getElementById('menu_Options');
+    if (!$t.urlToDivs) {
+      var u = new Array();
+      $t.urlToDivs = u;
+    }
+    var currentDiv = $t.getCurrentPageDiv();
     $t.displayViewsFor(currentDiv, optionsDiv);
     MobileMenuAnimation.show(currentDiv);
   },
@@ -3822,16 +3840,16 @@ var Mobile = {
       var divStl = div.style;
       if (!divStl)
         continue;
+      
+      var isFirstCol = (idx % 2 == 0) ? true : false;
 
-      if(idx % 2 == 0) {
+      if(isFirstCol) {
         divStl.left = SPACE;
         divStl.top = SPACE + fstColBottom;
-        fstColBottom += SPACE + div.clientHeight;
       }
       else {
         divStl.left = scrWidth + SPACE * 2;
         divStl.top = SPACE + sndColBottom;
-        sndColBottom += SPACE + div.clientHeight;
       }
 
       divStl.width = scrWidth;
@@ -3841,32 +3859,22 @@ var Mobile = {
       divStl.visibility = "visible"; 
       divStl.display = "";
 
-
+      if (isFirstCol)
+        fstColBottom += SPACE + div.clientHeight;
+      else
+        sndColBottom += SPACE + div.clientHeight;
+    
       if (!this.urlToDivs[url].onclick) {
         this.urlToDivs[url].onclick = this.onPageSelectFromHistoryView;
         this.urlToDivs[url].ondblclick = this.onPageSelectFromHistoryView;
       }
-      //addEvent(this.urlToDivs[url], "click",
-      //   this.onPageSelectFromHistoryView, true);
+      //addEvent(this.urlToDivs[url], "click",  this.onPageSelectFromHistoryView, true);
      
       idx++;
     }
   },
-  onPageSelectFromHistoryView : function(e) {
+  hideHistoryView: function(targetPage) {
     var $t = Mobile;
-
-    if (!$t.isHistoryView)
-      return;
-
-    e = getDocumentEvent(e);
-    var target = getEventTarget(e);
-    var targetPage = getAncestorById(target, "mainDiv");
-    if (!targetPage)
-      targetPage = getAncestorByAttribute(target, "className", "mobile_page");
-    
-    if (!targetPage)
-      return;
-    
     // hide all pages
     for (var url in $t.urlToDivs) {
       var divStl = $t.urlToDivs[url].style;
@@ -3881,13 +3889,10 @@ var Mobile = {
 
       $t.urlToDivs[url].onclick = null;
       $t.urlToDivs[url].ondblclick = null;
-
-     // removeEvent($t.urlToDivs[url], "click",
-     //    $t.onPageSelectFromHistoryView, true);
+     // removeEvent($t.urlToDivs[url], "click",  $t.onPageSelectFromHistoryView, true);
     }
     
     // return to normal scale
-    window.scrollTo(0, 0);
     if (Boost.zoom)
       Boost.zoom.setZoomWidth($t.getScreenWidth());
 
@@ -3898,6 +3903,25 @@ var Mobile = {
     targetPageStl.top = MobilePageAnimation.getPageTopOffset();
     targetPageStl.visibility = "visible"; 
     targetPageStl.display = "";
+    
+    window.scrollTo(0, 0);
+  },
+  onPageSelectFromHistoryView: function(e) {
+    var $t = Mobile;
+
+    if (!$t.isHistoryView)
+      return;
+
+    e = getDocumentEvent(e);
+    var target = getEventTarget(e);
+    var targetPage = getAncestorById(target, "mainDiv");
+    if (!targetPage)
+      targetPage = getAncestorByAttribute(target, "className", "mobile_page");
+    
+    if (!targetPage)
+      return;
+    
+    $t.hideHistoryView(targetPage);
     
     e.preventDefault();
     return e.stopPropagation();
