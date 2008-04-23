@@ -110,7 +110,7 @@ Popup.opera = typeof opera != 'undefined'                         ? true : false
 Popup.opera8 = false;
 Popup.opera9 = false;
 
-if (Popup.opera ) {
+if (Popup.opera) {
   var versionindex = navigator.userAgent.indexOf("Opera") + 6;
   var ver = navigator.userAgent.substring(versionindex);
   var v = parseFloat(ver);
@@ -2891,9 +2891,9 @@ var Boost = {
     if (typeof jsiEventManager != 'undefined') {
       $t.eventManager         = jsiEventManager;
     }
-    else if (typeof Packages != 'undefined' &&
-        typeof Packages.bhoost.jsi.EventManager != 'undefined') {
-      $t.eventManager         = Packages.bhoost.jsi.EventManager;
+    else if (typeof document.BhoostApplet != 'undefined') {
+      $t.eventManager = document.BhoostApplet.getEventManager();
+      Boost.log('adding jsi from Applet: ' + $t.eventManager);
     }
     else {
       // default implementation
@@ -2904,6 +2904,7 @@ var Boost = {
         ,subscribe:        function () {  }
         ,unsubscribe:      function () {  }
       };
+      Boost.log('no eventManager');
     }
     if (typeof jsiUser != 'undefined') {
       $t.user                 = jsiUser;
@@ -2916,8 +2917,13 @@ var Boost = {
     if (typeof jsiXmpp != 'undefined') {
       $t.xmpp                 = jsiXmpp;
       $t.eventObjects['xmpp'] = jsiXmppEvent;
-//      $t.xmpp.subscribe();
       needHandler = true;
+    }
+    else if (typeof document.BhoostApplet != 'undefined') {
+      $t.xmpp = document.BhoostApplet.getXmppInstance();
+      $t.eventObjects['xmpp'] = $t.eventManager.getEventInstance('xmpp');
+      needHandler = true;
+      Boost.log('adding xmpp jsi from Applet: ' + $t.xmpp);
     }
     if (typeof jsiBrowserHistory != 'undefined') {
       $t.browserHistory                 = jsiBrowserHistory;
@@ -2962,10 +2968,12 @@ var Boost = {
         setInterval($t.eventArrived, 1000);
       }
       else {
-        Boost.log('adding native keydown event handler');
-        addEvent(document, 'keypress', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
-        addEvent(document, 'keydown', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
-        addEvent(document, 'keyup', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+        if (Popup.android) {
+          Boost.log('adding native keydown event handler');
+          addEvent(document, 'keypress', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+          addEvent(document, 'keydown', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+          addEvent(document, 'keyup', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+        }
         $t.eventManager.readyForEvents();
       }
     }
@@ -3004,10 +3012,15 @@ var Boost = {
 
   log: function(text) {
     var $t = Boost;
-    if ($t.logger)
+    if ($t.logger) {
       $t.logger.log("Boost: " + text);
-//    else
+    }
+    else if (!Popup.ie && console != 'undefined') {
+      console.log("Boost: " + text);
+    }
+//    else {
 //      alert("Boost: " + text);
+//    }
   },
 
   logDB: function() {
@@ -3047,9 +3060,10 @@ var Boost = {
       var code = e.keyCode;
       Boost.log('got native key event: ' + e + ', code=' + code);
       if (code != 39) // process only fake key event
-        return;
+        return true;
     }
     var hasEvent = $t.eventManager.hasEvent();
+    var propagate = true;
     if (hasEvent) {
       $t.eventManager.popEvent();
       var eventType = $t.eventManager.getEventType();
@@ -3057,7 +3071,6 @@ var Boost = {
       var eventObject = $t.eventObjects[eventType];
       Boost.log('got runtime event: ' + eventType);
       if (handlers) {
-        var propagate = true;
         for (var i=0; i<handlers.length; i++) {
 
           var handler = handlers[i];
@@ -3126,7 +3139,7 @@ var Mobile = {
     Boost.view.setProgressIndeterminate(false);
     if (Boost.cache)
       Boost.cache.cookieSync();
-    
+
     var u = new Array();
     $t.urlToDivs = u;
 
@@ -3271,6 +3284,7 @@ var Mobile = {
     }
     return true;
   },
+
   getCurrentPageDiv: function() {
     var $t = Mobile;
     var currentDiv = $t.urlToDivs[$t.currentUrl];
@@ -3279,14 +3293,14 @@ var Mobile = {
       $t.urlToDivs[0] = currentDiv;
     }
     return currentDiv;
-  }, 
+  },
   showOptionsMenu: function() {
     var $t = Mobile;
     if ($t.isHistoryView) {
       $t.hideHistoryView($t.getCurrentPageDiv());
       return;
     }
-    
+
     var optionsDiv = document.getElementById('menu_Options');
     if (!$t.urlToDivs) {
       var u = new Array();
@@ -3296,7 +3310,7 @@ var Mobile = {
     $t.displayViewsFor(currentDiv, optionsDiv);
     MobileMenuAnimation.show(currentDiv);
   },
-  
+
   onChatMessage: function(e) {
     var $t = Mobile;
     var text = e.getBody();
@@ -3330,8 +3344,8 @@ var Mobile = {
       var roomDiv = $t.urlToDivs[roomUrl];
       Boost.log("room div: " + roomDiv + ', room div id: ' + roomDiv.id);
       $t.insertChatMessage(e, roomDiv);
-    } 
-    
+    }
+
     var currentRoom;
     if (!currentDiv) {
       Boost.log("no current div - can't detect chat room");
@@ -3339,7 +3353,7 @@ var Mobile = {
     else {
       /*
        *  put message into current chatRoom div
-       */      
+       */
       currentRoom = $t._getChatRoomId(currentDiv);
       Boost.log("current chat room : " + currentRoom);
       if (!currentRoom) {
@@ -3347,7 +3361,7 @@ var Mobile = {
         // notify using sound/lights
         Boost.log("sending notification");
         var ringerMode = notifier.getRingerMode();
-        
+
         Boost.notifier.createNotification();
         Boost.notifier.setRing();
         Boost.notifier.setInsistent(false);
@@ -3438,7 +3452,7 @@ var Mobile = {
  *
  */
   },
-  
+
   insertPrivateMessage: function(e, sender) {
     var $t = Mobile;
     var roomUrl = $t.privateRooms[sender];
@@ -3456,9 +3470,9 @@ var Mobile = {
     div.style.display = 'inline';
     div.style.visibility = Popup.VISIBLE;
 
-    Mobile.insertChatMessage(e, div);    
+    Mobile.insertChatMessage(e, div);
   },
-  
+
   activatePrivateChat : function(div, roomUrl) {
     var forms = div.getElementsByTagName('form');
     var form = forms[0];
@@ -3469,7 +3483,7 @@ var Mobile = {
 //    interceptLinkClicks(div);
     addEvent(form, 'submit', addWithoutProcessing, false);
   },
-  
+
   insertChatMessage: function(e, roomDiv) {
     Boost.log('insertChatMessage: room: ' + roomDiv.id);
     var tbodies = roomDiv.getElementsByTagName('tbody');
@@ -3508,13 +3522,13 @@ var Mobile = {
     sender = sender + "";
     Boost.log("sender: " + sender);
     var idx = sender.lastIndexOf('@');
-    
+
     if (idx == -1) {
       var lablzStr = 'lablz.com/';
       var cutoffIndex = sender.lastIndexOf('lablz.com') + lablzStr.length;
       Boost.log("cutoffindex: " + cutoffIndex);
       Boost.log("new name:" +	" " + sender.substring(cutoffIndex));
-      if (sender && sender.lastIndexOf('lablz.com') != -1) 
+      if (sender && sender.lastIndexOf('lablz.com') != -1)
         sender = sender.substring(cutoffIndex);
     }
     else
@@ -3734,15 +3748,15 @@ var Mobile = {
     else if (id == 'actions_IM') {
       var privateRoomId;
       var idx = newUrl.lastIndexOf('/');
-      var partUrl = newUrl.substring(idx); 
+      var partUrl = newUrl.substring(idx);
       newUrl = newUrl.substring(0, idx);
       idx = newUrl.lastIndexOf('/');
       newUrl = newUrl.substring(idx + 1) + partUrl;
       Boost.log("privateIM: " + newUrl);
-      if ($t.privateRooms) 
+      if ($t.privateRooms)
         privateRoomId = $t.privateRooms[newUrl];
       var div;
-      if (privateRoomId) 
+      if (privateRoomId)
         div = $t.urlToDivs[newUrl];
       else
         privateRoomId = newUrl;
@@ -3767,18 +3781,18 @@ var Mobile = {
           var myDiv = document.getElementById('myScreenName');
           $t.myName = myDiv.innerHTML;
         }
-        
+
         var e = {
           getBody:   function() {return "Please 'IM' me"},
           getSender: function() {return $t.myName + '@conference.lablz.com/conference'},
           getTime:   function() {return new Date().getTime()}
         };
-        Mobile.insertChatMessage(e, div);    
+        Mobile.insertChatMessage(e, div);
       }
       else
         Boost.log("found div: " + newUrl);
       var currentDiv = $t.urlToDivs[$t.currentUrl];
-     
+
       if (!currentDiv) {
         currentDiv = document.getElementById('mainDiv');
         $t.urlToDivs[$t.currentUrl] = currentDiv;
@@ -3821,16 +3835,16 @@ var Mobile = {
       }
     }
   },
-  
+
   showHistoryView : function() {
     var SPACE = 30;
     this.isHistoryView = true;
-    
+
     MobileMenuAnimation.hide();
     var scrWidth = this.getScreenWidth();
     if (Boost.zoom)
       Boost.zoom.setZoomWidth(scrWidth * 2 + SPACE * 3);
- 
+
     var idx = 0;
     var fstColBottom = 0;
     var sndColBottom = 0;
@@ -3840,7 +3854,7 @@ var Mobile = {
       var divStl = div.style;
       if (!divStl)
         continue;
-      
+
       var isFirstCol = (idx % 2 == 0) ? true : false;
 
       if(isFirstCol) {
@@ -3856,20 +3870,20 @@ var Mobile = {
       divStl.position = "absolute";
       divStl.border = "solid 1px #000";
 
-      divStl.visibility = "visible"; 
+      divStl.visibility = "visible";
       divStl.display = "";
 
       if (isFirstCol)
         fstColBottom += SPACE + div.clientHeight;
       else
         sndColBottom += SPACE + div.clientHeight;
-    
+
       if (!this.urlToDivs[url].onclick) {
         this.urlToDivs[url].onclick = this.onPageSelectFromHistoryView;
         this.urlToDivs[url].ondblclick = this.onPageSelectFromHistoryView;
       }
       //addEvent(this.urlToDivs[url], "click",  this.onPageSelectFromHistoryView, true);
-     
+
       idx++;
     }
   },
@@ -3880,18 +3894,18 @@ var Mobile = {
       var divStl = $t.urlToDivs[url].style;
       if (!divStl)
         continue;
-      
-      divStl.visibility = "hidden"; 
+
+      divStl.visibility = "hidden";
       divStl.display = "none";
       divStl.border = "";
-      
+
       $t.isHistoryView = false;
 
       $t.urlToDivs[url].onclick = null;
       $t.urlToDivs[url].ondblclick = null;
      // removeEvent($t.urlToDivs[url], "click",  $t.onPageSelectFromHistoryView, true);
     }
-    
+
     // return to normal scale
     if (Boost.zoom)
       Boost.zoom.setZoomWidth($t.getScreenWidth());
@@ -3901,7 +3915,7 @@ var Mobile = {
     targetPageStl.border  = "";
     targetPageStl.left = 0;
     targetPageStl.top = MobilePageAnimation.getPageTopOffset();
-    targetPageStl.visibility = "visible"; 
+    targetPageStl.visibility = "visible";
     targetPageStl.display = "";
     
     window.scrollTo(0, 0);
@@ -3926,7 +3940,7 @@ var Mobile = {
     e.preventDefault();
     return e.stopPropagation();
   },
-  
+
 /*
   loadBrowsingHistory: function(e, link) {
     $t.currentUrl = document.location.href;
@@ -4211,12 +4225,12 @@ var Mobile = {
       return stopEventPropagation(e);
     }
   },
-  
+
   getScreenWidth : function() {
     if (Boost.zoom)
       return Boost.zoom.getScreenWidth();
-    else 
-      return getWindowSize()[0];  
+    else
+      return getWindowSize()[0];
   }
 }
 
@@ -4257,11 +4271,9 @@ function interceptLinkClicks(div) {
 
 
 function initListBoxes(div) {
-
   // handle anchors with help of BODY's event
   if (!div)
     addEvent(document.body, 'click', onLinkClick, false);
-
 
   // 1. add handler to autocomplete filter form text fields
   // 2. save initial values of all fields
@@ -6298,14 +6310,12 @@ function addBeforeProcessing(chatRoom, contactUri, contactName, tbodyId, subject
 //    android.scroll();
     Boost.log('sending message: ' + msg);
     Boost.xmpp.sendMessage(msg, null);
-    // is it Private IM?
-    if (chatRoom == null) 
-      chatRoom = $t.currentUrl;
-    
+//    chatRoom = "neoyou@conference.sage";  // hack
     var roomUrl = Mobile.chatRooms[chatRoom];
     var roomDiv = Mobile.urlToDivs[roomUrl];
     var e = {
       getBody:   function() {return msg},
+//    getSender: function() {return contactName + '@conference.sage'},
       getSender: function() {return contactName + '@conference.conference.lablz.com'},
       getTime:   function() {return new Date().getTime()}
     };
@@ -6336,7 +6346,7 @@ var MobilePageAnimation = {
   step : 1,
 
   pageTopOffset : null,
-  
+
   isDomLoaded : false,
 
   init : function() {
@@ -6414,7 +6424,7 @@ var MobilePageAnimation = {
       newDivStl.top = thisObj.pageTopOffset;
       newDivStl.width  = thisObj.wndWidth;
       newDivStl.position = "absolute";
-      
+
       curDivStl.width  = thisObj.wndWidth;
       curDivStl.position = "absolute";
 
@@ -6444,7 +6454,7 @@ var MobileMenuAnimation = {
   TOP_OFFSET : 60,
   optionsDiv : null,
   isInitialized : false,
-  
+
   init : function() {
     var BG_MIDDLE = "../images/skin/iphone/options_back_middle.png";
     var BG_TOP_BOTTOM = "../images/skin/iphone/options_back.png";
@@ -6465,7 +6475,7 @@ var MobileMenuAnimation = {
 
     var bottom = getChildById(opContDiv, "bottom");
     bottom.style.background = "url(../images/skin/iphone/options_back.png) bottom left";
-    
+
     this.optionsDiv = document.getElementById('menu_Options');
     this.isInitialized = true;
   },
@@ -7847,11 +7857,13 @@ function loadingCueStart(e, hotspot) {
   if (!hotspot)
     return;
   var ttDiv = document.getElementById("system_tooltip");
-  var ttIframe = document.getElementById("tooltipIframe");
-  var loadingMsg = "<div style='vertical-align: middle; font-size: 14px; color:#000000; background-color:rgb(255,252,184);'><b> loading . . . </b></div>";
+  if (ttDiv) {
+    var ttIframe = document.getElementById("tooltipIframe");
+    var loadingMsg = "<div style='vertical-align: middle; font-size: 14px; color:#000000; background-color:rgb(255,252,184);'><b> loading . . . </b></div>";
 
-  advancedTooltip.hideOptionsBtn();
-  Popup.open(e, ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
+    advancedTooltip.hideOptionsBtn();
+    Popup.open(e, ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
+  }
 }
 
 function loadingCueFinish() {
@@ -8480,7 +8492,7 @@ function cloneNode(oNode) {
 
   if (oNode.hasChildNodes()) {
     for (var oChild = oNode.firstChild; oChild; oChild = oChild.nextSibling) {
-//      Boost.log('cloneNode: found child node:  ' + oChild.tagName); 
+//      Boost.log('cloneNode: found child node:  ' + oChild.tagName);
       var next = cloneNode(oChild);
       oNew.appendChild(next);
     }
