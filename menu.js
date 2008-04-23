@@ -3906,10 +3906,6 @@ var Mobile = {
      // removeEvent($t.urlToDivs[url], "click",  $t.onPageSelectFromHistoryView, true);
     }
     
-    // return to normal scale
-    if (Boost.zoom)
-      Boost.zoom.setZoomWidth($t.getScreenWidth());
-
     // show target page
     var targetPageStl = targetPage.style;
     targetPageStl.border  = "";
@@ -3919,6 +3915,10 @@ var Mobile = {
     targetPageStl.display = "";
     
     window.scrollTo(0, 0);
+
+    // return to normal scale
+    if (Boost.zoom)
+      Boost.zoom.setZoomWidth($t.getScreenWidth());
   },
   onPageSelectFromHistoryView: function(e) {
     var $t = Mobile;
