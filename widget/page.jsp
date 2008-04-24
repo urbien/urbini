@@ -7,8 +7,8 @@
   <include name="requiredHeader.jsp"/>
   <include name="BhoostApplet.jsp" />
   <div id="mainskin" class="blue">
-    <errorMessage />
     <options />
+    <errorMessage />
     <div id="myScreenName" class="hdn" />
     <div id="im_empty" class="hdn" />
 
