@@ -19,7 +19,7 @@
 		  <siteResourceList/>
 		  <pagingResources/>
 	  </div>
-  </div>
+	</div>
   <include name="requiredFooter.jsp"/>
   </body>
 </html>
