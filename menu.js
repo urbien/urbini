@@ -3015,9 +3015,9 @@ var Boost = {
     if ($t.logger) {
       $t.logger.log("Boost: " + text);
     }
-    else if (!Popup.ie && console != 'undefined') {
-      console.log("Boost: " + text);
-    }
+//    else if (!Popup.ie && console != 'undefined') {
+//      console.log("Boost: " + text);
+//    }
 //    else {
 //      alert("Boost: " + text);
 //    }
@@ -3104,6 +3104,8 @@ var Mobile = {
   browsingHistoryPos: 0,
  _preventingDoubleClick: false,
   myName: null,
+  XMPPHost: null,
+  XMPPChatService: null,
   myBuddy: null,
   privateRooms: null,
   isHistoryView : false,
@@ -3151,6 +3153,14 @@ var Mobile = {
       var myDiv = document.getElementById('myScreenName');
       if (myDiv)
         $t.myName = myDiv.innerHTML;
+
+      myDiv = document.getElementById('XMPPHost');
+      if (myDiv)
+        $t.XMPPHost = myDiv.innerHTML;
+      myDiv = document.getElementById('XMPPChatService');
+      if (myDiv)
+        $t.XMPPChatService = myDiv.innerHTML;
+      Boost.log('myName: ' + $t.myName + "; XMPPChatService: " + $t.XMPPChatService);
 
       Boost.log('xmpp.login: ' + $t.myName);
       if ($t.myName != null && $t.myName.length != 0)
@@ -3561,7 +3571,7 @@ var Mobile = {
   onCameraEvent: function(e) {
     var $t = Mobile;
     var url = e.getUrl();
-    var privateIm = $t.myBuddy + '@conference.lablz.com/conference';
+    var privateIm = $t.myBuddy + '@' + $t.XMPPHost + '/conference';
     Boost.log(privateIm);
     var img = "";
     Boost.xmpp.sendMessage("<a rel=\"photo\" href=\"" + url + "\">" + $t.myName + "'s photo</a>", privateIm);
@@ -3784,7 +3794,7 @@ var Mobile = {
 
         var e = {
           getBody:   function() {return "Please 'IM' me"},
-          getSender: function() {return $t.myName + '@conference.lablz.com/conference'},
+          getSender: function() {return $t.myName + '@' + $t.XMPPHost + '/conference'},
           getTime:   function() {return new Date().getTime()}
         };
         Mobile.insertChatMessage(e, div);
@@ -3905,7 +3915,6 @@ var Mobile = {
       $t.urlToDivs[url].ondblclick = null;
      // removeEvent($t.urlToDivs[url], "click",  $t.onPageSelectFromHistoryView, true);
     }
-
     // show target page
     var targetPageStl = targetPage.style;
     targetPageStl.border  = "";
@@ -6296,12 +6305,13 @@ function addWithoutProcessing(event) {
   subject.value = "Please IM me";
   var contactName = $t.myScreenName;
   var tbodyId = 't_chat';
-  return addBeforeProcessing(chatRoom, contactUri, contactName, tbodyId, subject, event);
+  return addBeforeProcessing(chatRoom, tbodyId, subject, event);
 }
 // adds comment/resource before server confirms that resource was successfully created
-function addBeforeProcessing(chatRoom, contactUri, contactName, tbodyId, subject, event) {
+function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
   chatRoom = chatRoom.toLowerCase();
   var retCode = stopEventPropagation(event);
+  var $t = Mobile;
   var msg;
   msg = subject.value;
   subject.value = '';
@@ -6313,11 +6323,14 @@ function addBeforeProcessing(chatRoom, contactUri, contactName, tbodyId, subject
     Boost.xmpp.sendMessage(msg, null);
 //    chatRoom = "neoyou@conference.sage";  // hack
     var roomUrl = Mobile.chatRooms[chatRoom];
+    Boost.log('roomUrl: ' + roomUrl);
     var roomDiv = Mobile.urlToDivs[roomUrl];
+    var chatIdDiv = document.getElementById('-chat')
     var e = {
       getBody:   function() {return msg},
 //    getSender: function() {return contactName + '@conference.sage'},
-      getSender: function() {return contactName + '@conference.conference.lablz.com'},
+//    getSender: function() {return contactName + '@conference.lablz.com/conference'},
+      getSender: function() {return $t.myName + '@' + $t.XMPPHost + '/conference'},
       getTime:   function() {return new Date().getTime()}
     };
     Mobile.insertChatMessage(e, roomDiv);
