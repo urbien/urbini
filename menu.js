@@ -2898,11 +2898,12 @@ var Boost = {
     else {
       // default implementation
       $t.eventManager = {
-         hasEvent :        function () { return false; }
-        ,readyForEvents:   function () {  }
-        ,isEventsViaTimer: function () { return false; }
-        ,subscribe:        function () {  }
-        ,unsubscribe:      function () {  }
+         hasEvent :         function () { return false; }
+        ,readyForEvents:    function () {  }
+        ,readyForNextEvent: function () {  }
+        ,isEventsViaTimer:  function () { return false; }
+        ,subscribe:         function () {  }
+        ,unsubscribe:       function () {  }
       };
       Boost.log('no eventManager');
     }
@@ -2969,12 +2970,11 @@ var Boost = {
       }
       else {
         if (Popup.android) {
-        Boost.log('adding native keydown event handler');
-        addEvent(document, 'keypress', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
-        addEvent(document, 'keydown', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
-        addEvent(document, 'keyup', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+          Boost.log('adding native keydown event handler');
+          addEvent(document, 'keypress', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+          addEvent(document, 'keydown', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+          addEvent(document, 'keyup', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
         }
-        $t.eventManager.readyForEvents();
       }
     }
     if (typeof jsiView != 'undefined')
@@ -3007,7 +3007,6 @@ var Boost = {
     for (var h in Boost.eventObjects) {
       Boost.log('eventObjects: ' + h);
     }
-
   },
 
   log: function(text) {
@@ -3054,6 +3053,7 @@ var Boost = {
    * Dispatches events from the underlying platform to the proper event handler
    */
   eventArrived:  function(e) {
+    Boost.log('eventArrived: ' + e);
     var $t = Boost;
     if (e) {
       //var code = getKeyCode(e);
@@ -3063,13 +3063,16 @@ var Boost = {
         return true;
     }
     var hasEvent = $t.eventManager.hasEvent();
+    Boost.log('$t.eventManager.hasEvent(): ' + hasEvent);
     var propagate = true;
     if (hasEvent) {
       $t.eventManager.popEvent();
+      Boost.log('after $t.eventManager.popEvent()');
       var eventType = $t.eventManager.getEventType();
+      Boost.log('eventType: ' + eventType);
       var handlers = $t.eventHandlers[eventType];
       var eventObject = $t.eventObjects[eventType];
-      Boost.log('got runtime event: ' + eventType);
+      Boost.log('eventObject: ' + eventObject);
       if (handlers) {
         for (var i=0; i<handlers.length; i++) {
 
@@ -3088,6 +3091,7 @@ var Boost = {
       }
 //      $t.eventManager.popEvent();
     }
+    $t.eventManager.readyForNextEvent();
     if (propagate)
       return true;
     else
@@ -3183,6 +3187,9 @@ var Mobile = {
 
     }
     */
+
+    Boost.log("$t.eventManager.readyForEvents();");
+    Boost.eventManager.readyForEvents();
   },
 
   onPageLoad: function(newUrl, div) {
@@ -3321,11 +3328,13 @@ var Mobile = {
   },
 
   onChatMessage: function(e) {
+    Boost.log('onChatMessage');
     var $t = Mobile;
     var text = e.getBody();
+    Boost.log('onChatMessage: getBody(): ' + text);
     if (!text)
       return;
-
+    Boost.log('sender: ' + sender + '; message: ' + e.getBody() + "; messageType: " + eType);
     var currentDiv = $t.urlToDivs[$t.currentUrl];
     if (!currentDiv) {
       currentDiv = document.getElementById('mainDiv');
@@ -3333,6 +3342,7 @@ var Mobile = {
     }
 
     var room = e.getChatRoom();
+    Boost.log('onChatMessage: getChatRoom(): ' + room);
     var roomUrl = null;
     if (room == null) { // private msg
       var sender = e.getSender();
@@ -6328,8 +6338,6 @@ function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
     var chatIdDiv = document.getElementById('-chat')
     var e = {
       getBody:   function() {return msg},
-//    getSender: function() {return contactName + '@conference.sage'},
-//    getSender: function() {return contactName + '@conference.lablz.com/conference'},
       getSender: function() {return $t.myName + '@' + $t.XMPPHost + '/conference'},
       getTime:   function() {return new Date().getTime()}
     };
