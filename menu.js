@@ -3173,6 +3173,9 @@ var Mobile = {
       if ($t.myName != null && $t.myName.length != 0)
         Boost.xmpp.login($t.myName, $t.myName);
     }
+    var pr = new Array();
+    $t.privateRooms = pr;
+
     /* loading browsing history
     var history = Boost.readHistory();
     if (!history)
@@ -3793,13 +3796,8 @@ var Mobile = {
         $t.urlToDivs[$t.currentUrl] = currentDiv;
         $t.browsingHistory[$t.browsingHistoryPos] = $t.currentUrl;
       }
-      if (!$t.privateRooms) {
-        $t.privateRooms = new Array();
-        $t.privateRooms[privateRoomId] = newUrl;
-      }
-      else
-        $t.privateRooms[privateRoomId] = newUrl;
       if (!div) {
+        $t.privateRooms[privateRoomId] = newUrl;
         var div_empty = document.getElementById('im_empty');
         Boost.log("cloneDiv: im_empty");
         var div = document.createElement('DIV');
