@@ -2891,7 +2891,7 @@ var Boost = {
     if (typeof jsiEventManager != 'undefined') {
       $t.eventManager         = jsiEventManager;
     }
-    else if (typeof document.BhoostApplet != 'undefined' && 
+    else if (typeof document.BhoostApplet != 'undefined' &&
         typeof document.BhoostApplet.getEventManager != 'undefined') {
       $t.eventManager = document.BhoostApplet.getEventManager();
       Boost.log('adding jsi from Applet: ' + $t.eventManager);
@@ -3483,7 +3483,10 @@ var Mobile = {
     if (div == null) {
       var div_empty = document.getElementById('im_empty');
       Boost.log('empty div:' + div_empty);
-      var div = cloneNode(div_empty);
+      div = document.createElement('DIV');
+      div.innerHTML = div_empty.innerHTML;
+
+//      var div = cloneNode(div_empty);
 
       div.id = roomUrl;
       $t.urlToDivs[roomUrl] = div;
@@ -3783,23 +3786,33 @@ var Mobile = {
         div = $t.urlToDivs[newUrl];
       else
         privateRoomId = newUrl;
+      var currentDiv = $t.urlToDivs[$t.currentUrl];
+
+      if (!currentDiv) {
+        currentDiv = document.getElementById('mainDiv');
+        $t.urlToDivs[$t.currentUrl] = currentDiv;
+        $t.browsingHistory[$t.browsingHistoryPos] = $t.currentUrl;
+      }
+      if (!$t.privateRooms) {
+        $t.privateRooms = new Array();
+        $t.privateRooms[privateRoomId] = newUrl;
+      }
+      else
+        $t.privateRooms[privateRoomId] = newUrl;
       if (!div) {
         var div_empty = document.getElementById('im_empty');
         Boost.log("cloneDiv: im_empty");
-        var div = cloneNode(div_empty);
+        var div = document.createElement('DIV');
+//        var div = cloneNode(div_empty);
+        insertAfter(currentDiv.parentNode, div, currentDiv);
+        setInnerHtml(div, div_empty.innerHTML);
+        $t.activatePrivateChat(div, newUrl);
+
         // newUrl is sender in this case
         div.id = newUrl;
         div.className = '';
         Boost.log("'IM me' clicked on: " + newUrl);
         $t.urlToDivs[newUrl] = div;
-        if (!$t.privateRooms) {
-          var s = new Array();
-          s[privateRoomId] = newUrl;
-          $t.privateRooms = s;
-        }
-        else
-          $t.privateRooms[privateRoomId] = newUrl;
-        $t.activatePrivateChat(div, newUrl);
         if (!$t.myName) {
           var myDiv = document.getElementById('myScreenName');
           $t.myName = myDiv.innerHTML;
@@ -3814,6 +3827,7 @@ var Mobile = {
       }
       else
         Boost.log("found div: " + newUrl);
+/*
       var currentDiv = $t.urlToDivs[$t.currentUrl];
 
       if (!currentDiv) {
@@ -3821,13 +3835,15 @@ var Mobile = {
         $t.urlToDivs[$t.currentUrl] = currentDiv;
         $t.browsingHistory[$t.browsingHistoryPos] = $t.currentUrl;
       }
+*/
       currentDiv.style.display = 'none';
       currentDiv.style.visibility = Popup.HIDDEN;
       div.style.display = 'inline';
       div.classname = '';
       div.style.visibility = Popup.VISIBLE;
       Boost.log('currentDiv.parentNode:' + currentDiv.parentNode.id);
-      insertAfter(currentDiv.parentNode, div, currentDiv);
+//      insertAfter(currentDiv.parentNode, div, currentDiv);
+
       $t.browsingHistoryPos++;
       $t.browsingHistory[$t.browsingHistoryPos] = newUrl;
       $t.currentUrl = newUrl;
@@ -4250,14 +4266,14 @@ var Mobile = {
     var t = null;
     if (titleDiv)
       t = titleDiv.innerHTML;
-    
+
     return t;
   },
   setTitle: function(pageDiv) {
     var title = this.getPageTitle(pageDiv);
     if (!title)
       return null;
-    this.setTitleText(title);  
+    this.setTitleText(title);
     return title;
   },
   setTitleText: function(title) {
