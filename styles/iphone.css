@@ -116,6 +116,11 @@ div {font-family:Helvetica; font-size:10pt;}
     border-bottom: 1px solid #2d3642;
 }
 
+.topBar_history { background-color: rgb(90, 90, 90); }
+.topBar_history .button, .topBar_history .button_left { display: none; }
+.topBar .title { display: none; float: left; color: #ffffff; font-size: 20px; }
+.topBar_history .title { color: #ffffff; font-size: 20px; padding: 5px; }
+
 .button {
     float: right;
     -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
@@ -202,7 +207,7 @@ tr.dark  {background-color:#eeeeee; height: 35px;}
 
 #options_container { position: relative; width: 320;}
 #options_container  #top { margin: 0; background: url(../images/skin/iphone/options_back.png) top center; padding-top:35 }
-#options_container  #content { margin: 0; background: url(../images/skin/iphone/options_back_middle.png) }
+#options_container  #content { margin: 0; background: url(../images/skin/iphone/options_back_middle.png) top center }
 #options_container  #bottom { margin: 0; background: url(../images/skin/iphone/options_back.png) bottom center; padding-top:20 }
 
 #options_container .rlHeader { background: none; }

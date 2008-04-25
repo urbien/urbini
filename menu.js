@@ -2891,19 +2891,20 @@ var Boost = {
     if (typeof jsiEventManager != 'undefined') {
       $t.eventManager         = jsiEventManager;
     }
-    else if (typeof document.BhoostApplet != 'undefined') {
+    else if (typeof document.BhoostApplet != 'undefined' && 
+        typeof document.BhoostApplet.getEventManager != 'undefined') {
       $t.eventManager = document.BhoostApplet.getEventManager();
       Boost.log('adding jsi from Applet: ' + $t.eventManager);
     }
     else {
       // default implementation
       $t.eventManager = {
-         hasEvent :         function () { return false; }
-        ,readyForEvents:    function () {  }
+         hasEvent :        function () { return false; }
+        ,readyForEvents:   function () {  }
         ,readyForNextEvent: function () {  }
-        ,isEventsViaTimer:  function () { return false; }
-        ,subscribe:         function () {  }
-        ,unsubscribe:       function () {  }
+        ,isEventsViaTimer: function () { return false; }
+        ,subscribe:        function () {  }
+        ,unsubscribe:      function () {  }
       };
       Boost.log('no eventManager');
     }
@@ -2920,7 +2921,8 @@ var Boost = {
       $t.eventObjects['xmpp'] = jsiXmppEvent;
       needHandler = true;
     }
-    else if (typeof document.BhoostApplet != 'undefined') {
+    else if (typeof document.BhoostApplet != 'undefined' &&
+        typeof document.BhoostApplet.getXmppInstance != 'undefined') {
       $t.xmpp = document.BhoostApplet.getXmppInstance();
       $t.eventObjects['xmpp'] = $t.eventManager.getEventInstance('xmpp');
       needHandler = true;
@@ -2970,10 +2972,10 @@ var Boost = {
       }
       else {
         if (Popup.android) {
-          Boost.log('adding native keydown event handler');
-          addEvent(document, 'keypress', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
-          addEvent(document, 'keydown', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
-          addEvent(document, 'keyup', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+        Boost.log('adding native keydown event handler');
+        addEvent(document, 'keypress', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+        addEvent(document, 'keydown', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
+        addEvent(document, 'keyup', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
         }
       }
     }
@@ -3007,6 +3009,7 @@ var Boost = {
     for (var h in Boost.eventObjects) {
       Boost.log('eventObjects: ' + h);
     }
+
   },
 
   log: function(text) {
@@ -3898,12 +3901,23 @@ var Mobile = {
       else
         sndColBottom += SPACE + div.clientHeight;
 
+      // show title text instead the topBar minified pages.
+      var topBar = getChildByAttribute(div, "className", "topBar");
+      if (topBar) {
+        topBar.className = "topBar_history";
+        // page title can require text.
+        var title = getChildByAttribute(div, "className", "title");
+        if (title.innerHTML.length == 0) {
+          var titleText = this.getPageTitle(div);
+          title.innerHTML = titleText;
+        }
+      }
       if (!this.urlToDivs[url].onclick) {
         this.urlToDivs[url].onclick = this.onPageSelectFromHistoryView;
         this.urlToDivs[url].ondblclick = this.onPageSelectFromHistoryView;
       }
       //addEvent(this.urlToDivs[url], "click",  this.onPageSelectFromHistoryView, true);
-
+      this.setTitleText("History View - Mobile Social Net");
       idx++;
     }
   },
@@ -3911,13 +3925,18 @@ var Mobile = {
     var $t = Mobile;
     // hide all pages
     for (var url in $t.urlToDivs) {
-      var divStl = $t.urlToDivs[url].style;
+      var div = $t.urlToDivs[url]
+      var divStl = div.style;
       if (!divStl)
         continue;
 
       divStl.visibility = "hidden";
       divStl.display = "none";
       divStl.border = "";
+
+      var topBar = getChildByAttribute(div, "className", "topBar_history");
+      if (topBar)
+        topBar.className = "topBar";
 
       $t.isHistoryView = false;
 
@@ -3934,10 +3953,11 @@ var Mobile = {
     targetPageStl.display = "";
 
     window.scrollTo(0, 0);
-
     // return to normal scale
-    if (Boost.zoom)
+    if (Boost.zoom) {
       Boost.zoom.setZoomWidth($t.getScreenWidth());
+    }
+    $t.setTitle(targetPage);
   },
   onPageSelectFromHistoryView: function(e) {
     var $t = Mobile;
@@ -4217,24 +4237,37 @@ var Mobile = {
     }
 
   },
-
-  setTitle: function(div) {
-    var divs = div.getElementsByTagName('div');
+  getPageTitle: function(pageDiv) {
+    var divs = pageDiv.getElementsByTagName('div');
     var titleDiv;
     for (var i=0; i<divs.length  &&  titleDiv == null; i++) {
       var tDiv = divs[i];
-      if (tDiv.id  &&  tDiv.id == 'title')
+      if (tDiv.id  &&  tDiv.id == 'title') {
         titleDiv = tDiv;
+        break;
+      }
     }
-    var t;
-    if (titleDiv) {
+    var t = null;
+    if (titleDiv)
       t = titleDiv.innerHTML;
-      Boost.log("setting title to: " + t);
-      Boost.view.setTitle(t);
-    }
+    
     return t;
   },
-
+  setTitle: function(pageDiv) {
+    var title = this.getPageTitle(pageDiv);
+    if (!title)
+      return null;
+    this.setTitleText(title);  
+    return title;
+  },
+  setTitleText: function(title) {
+    if (typeof Boost.view.setTitle != 'undefined') {
+      Boost.log("setting title to: " + title);
+      Boost.view.setTitle(title);
+    }
+    else
+      document.title = title;
+  },
   refresh: function(e) {
     $t = Mobile;
     if ($t.currentUrl) {
