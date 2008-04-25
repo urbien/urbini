@@ -3359,9 +3359,14 @@ var Mobile = {
     if (room)
       room += '';
     Boost.log('sender: ' + sender + '; message: ' + text + "; messageType: " + messageType + '; chatRoom: ' + room);
-    if (messageType == null && text != 'available')
-      messageType = 'normal';
-
+/*
+    if (messageType == null) {
+      if (text == 'available' || text == 'unavailable')
+        messageType = 'presence';
+      else
+        messageType = 'normal';
+    }
+*/
     var currentDiv = $t.urlToDivs[$t.currentUrl];
     if (!currentDiv) {
       currentDiv = document.getElementById('mainDiv');
@@ -3370,10 +3375,11 @@ var Mobile = {
 
     Boost.log('onChatMessage: getChatRoom(): ' + room);
     var roomUrl = null;
+    var imDiv = null
     if (room == null) { // private msg
       if (messageType != 'normal'  &&  messageType != 'chat')
         return;
-      $t.insertPrivateMessage(e, sender);
+      imDiv = $t.insertPrivateMessage(e, sender);
     }
     else {
       room = room.toLowerCase();
@@ -3385,7 +3391,7 @@ var Mobile = {
       Boost.log("room url: " + roomUrl);
       var roomDiv = $t.urlToDivs[roomUrl];
       Boost.log("room div: " + roomDiv + ', room div id: ' + roomDiv.id);
-      $t.insertChatMessage(e, roomDiv);
+      imDiv = $t.insertChatMessage(e, roomDiv);
     }
 
     var currentRoom;
@@ -3401,13 +3407,14 @@ var Mobile = {
       if (!currentRoom) {
         Boost.log("no chat room in current div, sending a proper notification");
         // notify using sound/lights
-        Boost.log("sending notification");
-        var ringerMode = notifier.getRingerMode();
-
-        Boost.notifier.createNotification();
-        Boost.notifier.setRing();
-        Boost.notifier.setInsistent(false);
-        Boost.notifier.sendNotification();
+        if (Boost.notifier) {
+          Boost.log("sending notification");
+          var ringerMode = Boost.notifier.getRingerMode();
+          Boost.notifier.createNotification();
+          Boost.notifier.setRing();
+          Boost.notifier.setInsistent(false);
+          Boost.notifier.sendNotification();
+        }
         return;
       }
       currentRoom = currentRoom.toLowerCase();
@@ -3418,8 +3425,10 @@ var Mobile = {
       }
       Boost.log("current room url: " + roomUrl);
       var roomDiv = $t.urlToDivs[roomUrl];
-      Boost.log("current room div: " + roomDiv + ', room div id: ' + roomDiv.id);
-      $t.insertChatMessage(e, roomDiv);
+      if (currentDiv != imDiv) {
+        Boost.log("current room div: " + roomDiv + ', room div id: ' + roomDiv.id);
+        $t.insertChatMessage(e, roomDiv);
+      }
     }
 
 
@@ -3498,20 +3507,26 @@ var Mobile = {
   insertPrivateMessage: function(e, sender) {
     var $t = Mobile;
     var div = $t.urlToDivs[sender];
-    Boost.log('onclick: ' + roomUrl + '; div: '+ div);
+    Boost.log('insertPrivateMessage(): sender: ' + sender + '; div: '+ div);
     if (div == null) {
       var div_empty = document.getElementById('im_empty');
       Boost.log('empty div:' + div_empty);
       div = document.createElement('DIV');
+      var currentDiv = $t.urlToDivs[$t.currentUrl];
+      insertAfter(currentDiv.parentNode, div, currentDiv);
+      $t.privateRooms[sender] = sender;
       setInnerHtml(div, div_empty.innerHTML);
       div.id = sender;
+      div.style.display = 'none';
+      div.style.visibility = Popup.HIDDEN;
       $t.urlToDivs[sender] = div;
       $t.activatePrivateChat(div, sender);
     }
-    div.style.display = 'inline';
-    div.style.visibility = Popup.VISIBLE;
+//    div.style.display = 'inline';
+//    div.style.visibility = Popup.VISIBLE;
 
     Mobile.insertChatMessage(e, div);
+    return div;
   },
 
   activatePrivateChat : function(div, roomUrl) {
@@ -4355,7 +4370,8 @@ function initListBoxes(div) {
   if (!div)
     addEvent(document.body, 'click', onLinkClick, false);
 
-
+  if (Popup.mobile)
+    return;
   // 1. add handler to autocomplete filter form text fields
   // 2. save initial values of all fields
   if (typeof autoComplete == 'undefined')
