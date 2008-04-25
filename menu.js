@@ -2899,12 +2899,13 @@ var Boost = {
     else {
       // default implementation
       $t.eventManager = {
-         hasEvent :        function () { return false; }
-        ,readyForEvents:   function () {  }
+         hasEvent :         function () { return false; }
+        ,readyForEvents:    function () {  }
         ,readyForNextEvent: function () {  }
-        ,isEventsViaTimer: function () { return false; }
-        ,subscribe:        function () {  }
-        ,unsubscribe:      function () {  }
+        ,isEventsViaTimer:  function () { return false; }
+        ,getEventInstance:  function () { return null; }
+        ,subscribe:         function () {  }
+        ,unsubscribe:       function () {  }
       };
       Boost.log('no eventManager');
     }
@@ -3017,9 +3018,9 @@ var Boost = {
     if ($t.logger) {
       $t.logger.log("Boost: " + text);
     }
-//    else if (!Popup.ie && console != 'undefined') {
-//      console.log("Boost: " + text);
-//    }
+    else if (!Popup.ie && console != 'undefined') {
+      console.log("Boost: " + text);
+    }
 //    else {
 //      alert("Boost: " + text);
 //    }
@@ -3056,11 +3057,15 @@ var Boost = {
    * Dispatches events from the underlying platform to the proper event handler
    */
   eventArrived:  function(e) {
-    Boost.log('eventArrived: ' + e);
+    Boost.log('eventArrived()');
     var $t = Boost;
     if (e) {
-      //var code = getKeyCode(e);
-      var code = e.keyCode;
+      var code;
+      if (typeof (e.getKeyCode) != 'undefined')
+        code = e.getKeyCode(); // on android forced to use function, not keyCode property
+      else
+        codee = getKeyCode(e);
+      //var code = e.keyCode;
       Boost.log('got native key event: ' + e + ', code=' + code);
       if (code != 39) // process only fake key event
         return true;
@@ -3094,6 +3099,7 @@ var Boost = {
       }
 //      $t.eventManager.popEvent();
     }
+    Boost.log('readyForNextEvent()');
     $t.eventManager.readyForNextEvent();
     if (propagate)
       return true;
@@ -3168,7 +3174,8 @@ var Mobile = {
       if (myDiv)
         $t.XMPPChatService = myDiv.innerHTML;
       Boost.log('myName: ' + $t.myName + "; XMPPChatService: " + $t.XMPPChatService);
-
+      Boost.xmpp.setHost($t.XMPPHost);
+      Boost.xmpp.setChatService($t.XMPPChatService);
       Boost.log('xmpp.login: ' + $t.myName);
       if ($t.myName != null && $t.myName.length != 0)
         Boost.xmpp.login($t.myName, $t.myName);
@@ -3307,6 +3314,7 @@ var Mobile = {
     }
     return true;
   },
+
   getCurrentPageDiv: function() {
     var $t = Mobile;
     var currentDiv = $t.urlToDivs[$t.currentUrl];
@@ -3316,6 +3324,7 @@ var Mobile = {
     }
     return currentDiv;
   },
+
   showOptionsMenu: function() {
     var $t = Mobile;
     if ($t.isHistoryView) {
@@ -3334,27 +3343,35 @@ var Mobile = {
   },
 
   onChatMessage: function(e) {
-    Boost.log('onChatMessage');
+    Boost.log('onChatMessage(): ' + e);
     var $t = Mobile;
     var text = e.getBody();
-    Boost.log('onChatMessage: getBody(): ' + text);
     if (!text)
       return;
-    Boost.log('sender: ' + sender + '; message: ' + e.getBody() + "; messageType: " + eType);
+    text += '';
+    var sender = e.getSender();
+    if (sender)
+      sender += '';
+    var messageType  = e.getMessageType();
+    if (messageType)
+      messageType += '';
+    var room = e.getChatRoom();
+    if (room)
+      room += '';
+    Boost.log('sender: ' + sender + '; message: ' + text + "; messageType: " + messageType + '; chatRoom: ' + room);
+    if (messageType == null && text != 'available')
+      messageType = 'normal';
+
     var currentDiv = $t.urlToDivs[$t.currentUrl];
     if (!currentDiv) {
       currentDiv = document.getElementById('mainDiv');
       $t.urlToDivs[0] = currentDiv;
     }
 
-    var room = e.getChatRoom();
     Boost.log('onChatMessage: getChatRoom(): ' + room);
     var roomUrl = null;
     if (room == null) { // private msg
-      var sender = e.getSender();
-      var eType  = e.getMessageType();
-      Boost.log('sender: ' + sender + '; message: ' + e.getBody() + "; messageType: " + eType);
-      if (eType != 'normal'  &&  eType != 'chat')
+      if (messageType != 'normal'  &&  messageType != 'chat')
         return;
       $t.insertPrivateMessage(e, sender);
     }
@@ -3504,12 +3521,14 @@ var Mobile = {
   activatePrivateChat : function(div, roomUrl) {
     var forms = div.getElementsByTagName('form');
     var form = forms[0];
+    form = document.forms[form.name];
     var idx = roomUrl.indexOf('@');
     var roomName = roomUrl.substring(0, idx);
     form.name = 'tablePropertyList_' + roomName;
     form.id = roomName;
 //    interceptLinkClicks(div);
     addEvent(form, 'submit', addWithoutProcessing, false);
+    form.onsubmit = addWithoutProcessing;
   },
 
   insertChatMessage: function(e, roomDiv) {
@@ -6374,7 +6393,7 @@ function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
   subject.value = '';
   if (Popup.mobile) {
     window.scrollTo(0, 3000);
-    subject.focus();
+//    subject.focus();
 //    android.scroll();
     Boost.log('sending message: ' + msg);
     Boost.xmpp.sendMessage(msg, null);
@@ -7611,6 +7630,8 @@ var lastRequest;
 function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
   if (url == null)
     throw new Error('postRequest url parameter is null');
+  if (url == 'about:blank')
+    throw new Error('postRequest url parameter is: ' + url);
   url = trim(url);
   if (url.length == 0)
     throw new Error('postRequest url parameter is empty');
@@ -7812,11 +7833,23 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     }
   };
   if (!Popup.opera8  && !Popup.s60Browser) {
-    http_request.open('POST', url, true);
+    try {
+      http_request.open('POST', url, true);
+    }
+    catch (err) {
+      Boost.log("error in ajax request open(): " + url + '?' + parameters);
+      callback(clonedEvent, div, hotspot, "", url);
+    }
+
     // browser does not allow Referer to be sent - so we send X-Referer and on
     // server make it transparent to apps
     // http_request.setRequestHeader("Referer", document.location.href);
-    http_request.setRequestHeader("X-Referer",     document.location.href);
+    try {
+      http_request.setRequestHeader("X-Referer",     document.location.href);
+    }
+    catch (err1) {
+      Boost.log('ajax request - X-Referer header could not be set: ' + url + '?' + parameters);
+    }
     http_request.setRequestHeader("X-Ajax",       "y");
     if (Popup.android)
       http_request.setRequestHeader("X-Accept-Boost", "menu-button");
@@ -8549,8 +8582,24 @@ function cloneNode(oNode) {
   }
   else {
     oNew = document.createElement(oNode.nodeName);
+    if (oNode.nodeName == 'form') {
+      oNew.innerHTML = oNode.innerHTML;
+      return;
+    }
     for(var i = 0; i < oNode.attributes.length; i++) {
       var aName = oNode.attributes[i].name;
+
+      if (oNode.nodeName == 'form') {
+        if (aName == 'action') {
+          oNew.action = oNode.action;
+          continue;
+        }
+        if (aName == 'method') {
+          oNew.method = oNode.method;
+          continue;
+        }
+      }
+
       if (aName != 'style') {
 //        Boost.log('cloneNode: ' + aName + ' = ' + oNode.attributes[i].value + '; tag = ' + oNew.tagName);
         oNew.setAttribute(aName, oNode.attributes[i].value);
