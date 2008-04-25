@@ -3497,20 +3497,16 @@ var Mobile = {
 
   insertPrivateMessage: function(e, sender) {
     var $t = Mobile;
-    var roomUrl = $t.privateRooms[sender];
-    var div = $t.urlToDivs[roomUrl];
+    var div = $t.urlToDivs[sender];
     Boost.log('onclick: ' + roomUrl + '; div: '+ div);
     if (div == null) {
       var div_empty = document.getElementById('im_empty');
       Boost.log('empty div:' + div_empty);
       div = document.createElement('DIV');
-      div.innerHTML = div_empty.innerHTML;
-
-//      var div = cloneNode(div_empty);
-
-      div.id = roomUrl;
-      $t.urlToDivs[roomUrl] = div;
-      $t.activatePrivateChat(div, roomUrl);
+      setInnerHtml(div, div_empty.innerHTML);
+      div.id = sender;
+      $t.urlToDivs[sender] = div;
+      $t.activatePrivateChat(div, sender);
     }
     div.style.display = 'inline';
     div.style.visibility = Popup.VISIBLE;
