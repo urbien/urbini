@@ -3391,7 +3391,7 @@ var Mobile = {
       Boost.log("room url: " + roomUrl);
       var roomDiv = $t.urlToDivs[roomUrl];
       Boost.log("room div: " + roomDiv + ', room div id: ' + roomDiv.id);
-      imDiv = $t.insertChatMessage(e, roomDiv);
+      $t.insertChatMessage(e, roomDiv);
     }
 
     var currentRoom;
@@ -3425,7 +3425,7 @@ var Mobile = {
       }
       Boost.log("current room url: " + roomUrl);
       var roomDiv = $t.urlToDivs[roomUrl];
-      if (currentDiv != imDiv) {
+      if (imDiv  &&  currentDiv != imDiv) {
         Boost.log("current room div: " + roomDiv + ', room div id: ' + roomDiv.id);
         $t.insertChatMessage(e, roomDiv);
       }
@@ -3532,14 +3532,14 @@ var Mobile = {
   activatePrivateChat : function(div, roomUrl) {
     var forms = div.getElementsByTagName('form');
     var form = forms[0];
-    form = document.forms[form.name];
+//    form = document.forms[form.name];
     var idx = roomUrl.indexOf('@');
     var roomName = roomUrl.substring(0, idx);
-    form.name = 'tablePropertyList_' + roomName;
+    form.name = roomName;
     form.id = roomName;
 //    interceptLinkClicks(div);
     addEvent(form, 'submit', addWithoutProcessing, false);
-    form.onsubmit = addWithoutProcessing;
+//    form.onsubmit = addWithoutProcessing;
   },
 
   insertChatMessage: function(e, roomDiv) {
@@ -6382,15 +6382,13 @@ function addAndShowWait(event, body, hotspot, content, noInsert, isReplace)	{
 function addWithoutProcessing(event) {
   var $t = Mobile;
   var chatRoom = $t.currentUrl;
+  var idx = chatRoom.indexOf('@');
   var elms = this.getElementsByTagName('INPUT');
   for (var i=0; i<elms.length; i++) {
     var elm = elms[i];
     if (elm.name == '.title')
       subject = elm;
-    else if (elm.name == '.chatRoom')
-      contactUri = elm.value;
   }
-  subject.value = "Please IM me";
   var contactName = $t.myScreenName;
   var tbodyId = 't_chat';
   return addBeforeProcessing(chatRoom, tbodyId, subject, event);
@@ -6408,18 +6406,23 @@ function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
 //    subject.focus();
 //    android.scroll();
     Boost.log('sending message: ' + msg);
-    Boost.xmpp.sendMessage(msg, null);
 //    chatRoom = "neoyou@conference.sage";  // hack
-    var roomUrl = Mobile.chatRooms[chatRoom];
+    var roomUrl = $t.chatRooms[chatRoom];
+    if (!roomUrl  &&  chatRoom.indexOf('@') != -1) {
+      roomUrl = chatRoom;
+      Boost.xmpp.sendMessage(msg, roomUrl);
+    }
+    else
+      Boost.xmpp.sendMessage(msg, null);
     Boost.log('roomUrl: ' + roomUrl);
-    var roomDiv = Mobile.urlToDivs[roomUrl];
+    var roomDiv = $t.urlToDivs[roomUrl];
     var chatIdDiv = document.getElementById('-chat')
     var e = {
       getBody:   function() {return msg},
       getSender: function() {return $t.myName + '@' + $t.XMPPHost + '/conference'},
       getTime:   function() {return new Date().getTime()}
     };
-    Mobile.insertChatMessage(e, roomDiv);
+    $t.insertChatMessage(e, roomDiv);
   }
   else {
     var form = document.forms['tablePropertyList'];
