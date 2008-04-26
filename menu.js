@@ -3018,7 +3018,7 @@ var Boost = {
     if ($t.logger) {
       $t.logger.log("Boost: " + text);
     }
-    else if (!Popup.ie && console != 'undefined') {
+    else if (!Popup.ie && typeof console != 'undefined') {
       console.log("Boost: " + text);
     }
 //    else {
