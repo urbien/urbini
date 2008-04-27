@@ -3876,11 +3876,14 @@ var Mobile = {
         $t.browsingHistory[$t.browsingHistoryPos] = $t.currentUrl;
       }
 */
+/*
       currentDiv.style.display = 'none';
       currentDiv.style.visibility = Popup.HIDDEN;
       div.style.display = 'inline';
       div.classname = '';
       div.style.visibility = Popup.VISIBLE;
+*/
+      MobilePageAnimation.showPage(currentDiv, div);
       Boost.log('currentDiv.parentNode:' + currentDiv.parentNode.id);
 //      insertAfter(currentDiv.parentNode, div, currentDiv);
 
