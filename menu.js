@@ -3580,7 +3580,7 @@ var Mobile = {
     sender = sender + "";
     Boost.log("sender: " + sender);
     var idx = sender.lastIndexOf('@');
-
+    var addHref = true;
     if (idx == -1) {
       var lablzStr = 'lablz.com/';
       var cutoffIndex = sender.lastIndexOf('lablz.com') + lablzStr.length;
@@ -3589,20 +3589,32 @@ var Mobile = {
       if (sender && sender.lastIndexOf('lablz.com') != -1)
         sender = sender.substring(cutoffIndex);
     }
-    else
-      sender = sender.substring(0, idx);
+    else {
+      if (sender.indexOf('showtime') == 0) {
+        addHref = false;
+        var idx1 = sender.lastIndexOf('/');
+        if (idx1 == -1)
+          sender = sender.substring(0, idx);
+        else
+          sender = sender.substring(idx1 + 1);
+      }
+      else
+        sender = sender.substring(0, idx);
+    }
     var imgTable = newTr.getElementsByTagName('table');
     var imgTds = imgTable[0].getElementsByTagName('td');
     var img = imgTds[0].getElementsByTagName('img');
     var anchor = imgTds[0].getElementsByTagName('a');
-
-    var href = 'contactInfo?name=' + sender;
-    anchor[0].href = href;
-    img[0].src = 'contactInfo?name=' +  sender + '&thumb=y';
-
     var anchor1 = imgTds[1].getElementsByTagName('a');
-    anchor1[0].href = href;
-    anchor1[0].innerHTML = sender;
+    if (addHref) {
+      var href = 'contactInfo?name=' + sender;
+      anchor[0].href = href;
+      img[0].src = 'contactInfo?name=' +  sender + '&thumb=y';
+      anchor1[0].href = href;
+      anchor1[0].innerHTML = sender;
+    }
+    else
+      imgTds[1].innerHTML = sender;
 
     ctbody.appendChild(newTr);
     window.scrollTo(0, 3000);
