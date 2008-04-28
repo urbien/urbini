@@ -3057,7 +3057,7 @@ var Boost = {
    * Dispatches events from the underlying platform to the proper event handler
    */
   eventArrived:  function(e) {
-    Boost.log('eventArrived()');
+//    Boost.log('eventArrived()');
     var $t = Boost;
     if (e) {
       var code;
@@ -3071,7 +3071,7 @@ var Boost = {
         return true;
     }
     var hasEvent = $t.eventManager.hasEvent();
-    Boost.log('$t.eventManager.hasEvent(): ' + hasEvent);
+//    Boost.log('$t.eventManager.hasEvent(): ' + hasEvent);
     var propagate = true;
     if (hasEvent) {
       $t.eventManager.popEvent();
@@ -3099,8 +3099,10 @@ var Boost = {
       }
 //      $t.eventManager.popEvent();
     }
-    Boost.log('readyForNextEvent()');
-    $t.eventManager.readyForNextEvent();
+//    Boost.log('readyForNextEvent()');
+    var em = $t.eventManager;
+    if (typeof em.readyForNextEvent != 'undefined')
+      $t.eventManager.readyForNextEvent();
     if (propagate)
       return true;
     else
@@ -3173,9 +3175,11 @@ var Mobile = {
       myDiv = document.getElementById('XMPPChatService');
 //      if (myDiv)
 //        $t.XMPPChatService = myDiv.innerHTML;
-      Boost.log('myName: ' + $t.myName + "; XMPPChatService: " + $t.XMPPChatService);
-      Boost.xmpp.setHost($t.XMPPHost);
-//      Boost.xmpp.setChatService($t.XMPPChatService);
+      Boost.log('myName: ' + $t.myName + "; XMPPHost: " + $t.XMPPHost);
+      if (typeof Boost.xmpp.setHost != 'undefined')
+        Boost.xmpp.setHost($t.XMPPHost);
+//      if (typeof Boost.xmpp.setChatService != 'undefined')
+//        Boost.xmpp.setChatService($t.XMPPChatService);
       Boost.log('xmpp.login: ' + $t.myName);
       if ($t.myName != null && $t.myName.length != 0)
         Boost.xmpp.login($t.myName, $t.myName);
@@ -3506,7 +3510,12 @@ var Mobile = {
 
   insertPrivateMessage: function(e, sender) {
     var $t = Mobile;
-    var div = $t.urlToDivs[sender];
+    
+    var divId = sender;
+    var idx = sender.indexOf('/');
+    if (idx != -1)
+      divId = sender.substring(0, idx);
+    var div = $t.urlToDivs[divId];
     Boost.log('insertPrivateMessage(): sender: ' + sender + '; div: '+ div);
     if (div == null) {
       var div_empty = document.getElementById('im_empty');
@@ -3514,12 +3523,12 @@ var Mobile = {
       div = document.createElement('DIV');
       var currentDiv = $t.urlToDivs[$t.currentUrl];
       insertAfter(currentDiv.parentNode, div, currentDiv);
-      $t.privateRooms[sender] = sender;
+      $t.privateRooms[divId] = sender;
       setInnerHtml(div, div_empty.innerHTML);
-      div.id = sender;
+      div.id = divId;
       div.style.display = 'none';
       div.style.visibility = Popup.HIDDEN;
-      $t.urlToDivs[sender] = div;
+      $t.urlToDivs[divId] = div;
       $t.activatePrivateChat(div, sender);
     }
 //    div.style.display = 'inline';
@@ -3543,18 +3552,14 @@ var Mobile = {
   },
 
   insertChatMessage: function(e, roomDiv) {
-    Boost.log('insertChatMessage: room: ' + roomDiv.id);
     var tbodies = roomDiv.getElementsByTagName('tbody');
-    Boost.log('insertChatMessage: tbodies: ' + tbodies);
     var ctbody;
     for (var i=0; i<tbodies.length  &&  !ctbody; i++) {
       if (tbodies[i]  &&  tbodies[i].id  &&  tbodies[i].id == 't_chat')
         ctbody = tbodies[i];
     }
-    Boost.log('insertChatMessage: ctbody: ' + ctbody);
     var curTr;
     var trs = ctbody.getElementsByTagName('tr');
-    Boost.log("room trs: " + trs);
     for (var i=0; i<trs.length  &&  !curTr; i++)
       if (trs[i]  &&  trs[i].id  &&  trs[i].id == 'tr_empty')
         curTr = trs[i];
@@ -3568,17 +3573,14 @@ var Mobile = {
     elms[0].innerHTML = e.getBody();
     var date = new Date(e.getTime());
     var mins = date.getMinutes();
-    Boost.log("room 1: ");
     if (mins < 10)
       mins = '0' + mins;
     var hours = date.getHours();
     if (hours < 10)
       hours = '0' + hours;
     elms[1].innerHTML = '<tt>' + hours + ':' + mins + '</tt>';
-    Boost.log("room elms: " + elms[1].innerHTML);
     var sender = e.getSender();
     sender = sender + "";
-    Boost.log("sender: " + sender);
     var idx = sender.lastIndexOf('@');
     var addHref = true;
     if (idx == -1) {
@@ -3632,7 +3634,7 @@ var Mobile = {
   onCameraEvent: function(e) {
     var $t = Mobile;
     var url = e.getUrl();
-    var privateIm = $t.myBuddy + '@' + $t.XMPPHost + '/conference';
+    var privateIm = $t.myBuddy + '@' + $t.XMPPHost;
     Boost.log(privateIm);
     var img = "";
     Boost.xmpp.sendMessage("<a rel=\"photo\" href=\"" + url + "\">" + $t.myName + "'s photo</a>", privateIm);
@@ -3709,7 +3711,8 @@ var Mobile = {
       if (typeof Boost.zoom) {
          // zoom out to appropriate percentage
          // unhide the divs in urlToDivs
-         $t.showHistoryView();
+        if (typeof Boost.zoom != 'undefined')
+          $t.showHistoryView();
       }
       return null;
     }
@@ -3818,11 +3821,13 @@ var Mobile = {
     }
     else if (id == 'actions_IM') {
       var privateRoomId;
-      var idx = newUrl.lastIndexOf('/');
-      var partUrl = newUrl.substring(idx);
-      newUrl = newUrl.substring(0, idx);
-      idx = newUrl.lastIndexOf('/');
-      newUrl = newUrl.substring(idx + 1) + partUrl;
+      var idx0 = newUrl.indexOf('@');
+      var s = newUrl.substring(0, idx0);
+      var idx01 = s.lastIndexOf('/');
+      if (idx01 != -1)
+        newUrl = s.substring(idx01 + 1) + newUrl.substring(idx0);
+      
+//      newUrl = newUrl.substring(idx + 1) + partUrl;
       Boost.log("privateIM: " + newUrl);
       if ($t.privateRooms)
         privateRoomId = $t.privateRooms[newUrl];
@@ -3860,7 +3865,7 @@ var Mobile = {
 
         var e = {
           getBody:   function() {return "Please 'IM' me"},
-          getSender: function() {return $t.myName + '@' + $t.XMPPHost + '/conference'},
+          getSender: function() {return $t.myName + '@' + $t.XMPPHost},
           getTime:   function() {return new Date().getTime()}
         };
         Mobile.insertChatMessage(e, div);
@@ -6434,7 +6439,7 @@ function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
     var chatIdDiv = document.getElementById('-chat')
     var e = {
       getBody:   function() {return msg},
-      getSender: function() {return $t.myName + '@' + $t.XMPPHost + '/conference'},
+      getSender: function() {return $t.myName + '@' + $t.XMPPHost},
       getTime:   function() {return new Date().getTime()}
     };
     $t.insertChatMessage(e, roomDiv);
