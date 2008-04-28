@@ -3159,12 +3159,11 @@ var Mobile = {
 
     var u = new Array();
     $t.urlToDivs = u;
+    u = new Array();
+    $t.chatRooms = u;
 
     $t.onPageLoad();
     if (Boost.xmpp) {
-      var u = new Array();
-      $t.chatRooms = u;
-
       var myDiv = document.getElementById('myScreenName');
       if (myDiv)
         $t.myName = myDiv.innerHTML;
@@ -3510,7 +3509,7 @@ var Mobile = {
 
   insertPrivateMessage: function(e, sender) {
     var $t = Mobile;
-    
+
     var divId = sender;
     var idx = sender.indexOf('/');
     if (idx != -1)
@@ -3826,7 +3825,7 @@ var Mobile = {
       var idx01 = s.lastIndexOf('/');
       if (idx01 != -1)
         newUrl = s.substring(idx01 + 1) + newUrl.substring(idx0);
-      
+
 //      newUrl = newUrl.substring(idx + 1) + partUrl;
       Boost.log("privateIM: " + newUrl);
       if ($t.privateRooms)
