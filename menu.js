@@ -3171,11 +3171,11 @@ var Mobile = {
       if (myDiv)
         $t.XMPPHost = myDiv.innerHTML;
       myDiv = document.getElementById('XMPPChatService');
-      if (myDiv)
-        $t.XMPPChatService = myDiv.innerHTML;
+//      if (myDiv)
+//        $t.XMPPChatService = myDiv.innerHTML;
       Boost.log('myName: ' + $t.myName + "; XMPPChatService: " + $t.XMPPChatService);
       Boost.xmpp.setHost($t.XMPPHost);
-      Boost.xmpp.setChatService($t.XMPPChatService);
+//      Boost.xmpp.setChatService($t.XMPPChatService);
       Boost.log('xmpp.login: ' + $t.myName);
       if ($t.myName != null && $t.myName.length != 0)
         Boost.xmpp.login($t.myName, $t.myName);
