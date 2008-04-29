@@ -3176,9 +3176,9 @@ var Mobile = {
 //        $t.XMPPChatService = myDiv.innerHTML;
       Boost.log('myName: ' + $t.myName + "; XMPPHost: " + $t.XMPPHost);
       if (typeof Boost.xmpp.setHost != 'undefined')
-        Boost.xmpp.setHost($t.XMPPHost);
+      Boost.xmpp.setHost($t.XMPPHost);
 //      if (typeof Boost.xmpp.setChatService != 'undefined')
-//        Boost.xmpp.setChatService($t.XMPPChatService);
+//      Boost.xmpp.setChatService($t.XMPPChatService);
       Boost.log('xmpp.login: ' + $t.myName);
       if ($t.myName != null && $t.myName.length != 0)
         Boost.xmpp.login($t.myName, $t.myName);
@@ -3711,7 +3711,7 @@ var Mobile = {
          // zoom out to appropriate percentage
          // unhide the divs in urlToDivs
         if (typeof Boost.zoom != 'undefined')
-          $t.showHistoryView();
+         $t.showHistoryView();
       }
       return null;
     }
@@ -3923,6 +3923,7 @@ var Mobile = {
   },
 
   showHistoryView : function() {
+    var TOP_OFFSET = 100; // for "big" topBar
     var SPACE = 30;
     this.isHistoryView = true;
 
@@ -3932,15 +3933,29 @@ var Mobile = {
       Boost.zoom.setZoomWidth(scrWidth * 2 + SPACE * 3);
 
     var idx = 0;
-    var fstColBottom = 0;
-    var sndColBottom = 0;
+    var fstColBottom = TOP_OFFSET;
+    var sndColBottom = TOP_OFFSET;
 
     for (var url in this.urlToDivs) {
       var div = this.urlToDivs[url]
       var divStl = div.style;
       if (!divStl)
         continue;
-
+      
+      // show BIG topBar
+      if (idx == 0) {
+        var parent = div.parentNode;
+        var bigTopBar = getChildByAttribute(parent, "className", "topBar_big");
+        if (!bigTopBar) {
+          bigTopBar = document.createElement('div');
+          bigTopBar.className = "topBar_big";
+          var htmlTmp = "<a onclick=\"Mobile.onHistoryList();\" class='button'>List</a>";
+          htmlTmp += "<a onclick=\"Mobile.hideHistoryView(Mobile.getCurrentPageDiv());\" class='button_left'>Back</a>";
+          bigTopBar.innerHTML = htmlTmp;
+          parent.appendChild(bigTopBar);
+        }
+        bigTopBar.style.display = "";
+      }
       var isFirstCol = (idx % 2 == 0) ? true : false;
 
       if(isFirstCol) {
@@ -4015,6 +4030,12 @@ var Mobile = {
     targetPageStl.visibility = "visible";
     targetPageStl.display = "";
 
+    // hide the bigTopBar
+    var parent = targetPage.parentNode;
+    var bigTopBar = getChildByAttribute(parent, "className", "topBar_big");
+    if (bigTopBar)
+      bigTopBar.style.display = "none";
+
     window.scrollTo(0, 0);
     // return to normal scale
     if (Boost.zoom) {
@@ -4039,6 +4060,10 @@ var Mobile = {
 
     $t.hideHistoryView(targetPage);
     return stopEventPropagation(e);
+  },
+  
+  onHistoryList: function() {
+    // need to implement
   },
 
 /*

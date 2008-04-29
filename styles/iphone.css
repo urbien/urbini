@@ -116,6 +116,25 @@ div {font-family:Helvetica; font-size:10pt;}
     border-bottom: 1px solid #2d3642;
 }
 
+.topBar_big
+{
+    display: table;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 10px;
+    line-height: 50px;
+    font-size: 50px;
+    font-weight: bold;
+    font-family: Helvetica;
+    text-align: center;
+    text-shadow: rgba(0, 0, 0, 0.6) 0px -1px 0;
+    text-overflow: ellipsis;
+    color: #FFFFFF;
+    background: url(../images/iPhoneToolbar_big.png) #6d84a2 repeat-x;
+    border-bottom: 1px solid #2d3642;
+}
+
 .topBar_history { background-color: rgb(90, 90, 90); }
 .topBar_history .button, .topBar_history .button_left { display: none; }
 .topBar .title { display: none; float: left; color: #ffffff; font-size: 20px; }
@@ -136,6 +155,7 @@ div {font-family:Helvetica; font-size:10pt;}
     text-decoration: none;
     background: none;
 }
+
 .button_middle {
     float: center;
     -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
@@ -175,6 +195,17 @@ div {font-family:Helvetica; font-size:10pt;}
     text-decoration: none;
     background: none;
 }
+
+.topBar_big .button, .topBar_big .button_left {
+    font-size: 27px;
+    padding: 6px;
+    margin: 4px;
+    line-height: 60px;
+    -webkit-border-radius: 10;
+    border-width: 2px 7px 2px 7px;
+}
+
+
 tr {height: 35px;}
 tr.dark  {background-color:#eeeeee; height: 35px;}
 
@@ -213,4 +244,6 @@ tr.dark  {background-color:#eeeeee; height: 35px;}
 #options_container .rlHeader { background: none; }
 #options_container #content .li { color: #fff; }
 
-
+.touch_screen { position: absolute; left:0; top:0; }
+.touch_screen img { width:1000; height:1000; border:0; }
+    
