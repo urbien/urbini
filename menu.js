@@ -7291,9 +7291,10 @@ function setCurrentItem (event, tr) {
 
 function inReplyTo(event, tr, shortPropName, value) {
   tr.style.backgroundColor = '#F5ABE6';
+  $t = Mobile;
   if (!$t.currentUrl) 
     return;
-  var currentDiv = $t.getCurrentDivPage();
+  var currentDiv = $t.getCurrentPageDiv();
   var forms = currentDiv.getElementsByTagName('form');
   if (!forms)
     return;
