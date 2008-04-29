@@ -3163,18 +3163,18 @@ var Mobile = {
     $t.chatRooms = u;
 
     $t.onPageLoad();
-    if (Boost.xmpp) {
-      var myDiv = document.getElementById('myScreenName');
-      if (myDiv)
-        $t.myName = myDiv.innerHTML;
+    var myDiv = document.getElementById('myScreenName');
+    if (myDiv)
+      $t.myName = myDiv.innerHTML;
 
-      myDiv = document.getElementById('XMPPHost');
-      if (myDiv)
-        $t.XMPPHost = myDiv.innerHTML;
-      myDiv = document.getElementById('XMPPChatService');
-//      if (myDiv)
-//        $t.XMPPChatService = myDiv.innerHTML;
-      Boost.log('myName: ' + $t.myName + "; XMPPHost: " + $t.XMPPHost);
+    myDiv = document.getElementById('XMPPHost');
+    if (myDiv)
+      $t.XMPPHost = myDiv.innerHTML;
+    myDiv = document.getElementById('XMPPChatService');
+//    if (myDiv)
+//      $t.XMPPChatService = myDiv.innerHTML;
+    Boost.log('myName: ' + $t.myName + "; XMPPHost: " + $t.XMPPHost);
+    if (Boost.xmpp) {
       if (typeof Boost.xmpp.setHost != 'undefined')
       Boost.xmpp.setHost($t.XMPPHost);
 //      if (typeof Boost.xmpp.setChatService != 'undefined')
@@ -3636,7 +3636,49 @@ var Mobile = {
     var privateIm = $t.myBuddy + '@' + $t.XMPPHost;
     Boost.log(privateIm);
     var img = "";
-    Boost.xmpp.sendMessage("<a rel=\"photo\" href=\"" + url + "\">" + $t.myName + "'s photo</a>", privateIm);
+    
+///////////
+    if ($t.privateRooms)
+      privateRoomId = $t.privateRooms[privateIm];
+    var div;
+    if (privateRoomId)
+      div = $t.urlToDivs[privateIm];
+    else
+      privateRoomId = privateIm;
+    var currentDiv = $t.urlToDivs[$t.currentUrl];
+
+    if (!currentDiv) {
+      currentDiv = document.getElementById('mainDiv');
+      $t.urlToDivs[$t.currentUrl] = currentDiv;
+      $t.browsingHistory[$t.browsingHistoryPos] = $t.currentUrl;
+    }
+    var img = "<img src=\"" + url + "\" width='" + ($t.getScreenWidth() / 2) + "'/>";
+    if (!div) {
+      $t.privateRooms[privateRoomId] = privateIm;
+      var div_empty = document.getElementById('im_empty');
+      Boost.log("cloneDiv: im_empty");
+      var div = document.createElement('DIV');
+//      var div = cloneNode(div_empty);
+      insertAfter(currentDiv.parentNode, div, currentDiv);
+      setInnerHtml(div, div_empty.innerHTML);
+      $t.activatePrivateChat(div, privateIm);
+
+      // newUrl is sender in this case
+      div.id = privateIm;
+      div.className = '';
+      Boost.log("Sending Photo to: " + privateIm);
+      $t.urlToDivs[privateIm] = div;
+    }
+    var e = {
+        getBody:   function() {return img},
+        getSender: function() {return $t.myName + '@' + $t.XMPPHost},
+        getTime:   function() {return new Date().getTime()}
+      };
+    $t.currentUrl = privateIm;
+    Mobile.insertChatMessage(e, div);
+    MobilePageAnimation.showPage(currentDiv, div);
+///////////    
+    Boost.xmpp.sendMessage("<a href='" + url + "'>" + img + "</a>", privateIm);
     Boost.log('Photo url for Avatar: ' + url);
   },
 
@@ -3809,10 +3851,6 @@ var Mobile = {
       }
     }
     else if (id.indexOf('actions_Photo_') != -1) {
-      if (!$t.myName) {
-        var myDiv = document.getElementById('myScreenName');
-        $t.myName = myDiv.innerHTML;
-      }
       $t.myBuddy = id.substring(14);
       Boost.camera.takePicture(newUrl);
       Boost.log('picture was taken');
@@ -3857,11 +3895,6 @@ var Mobile = {
         div.className = '';
         Boost.log("'IM me' clicked on: " + newUrl);
         $t.urlToDivs[newUrl] = div;
-        if (!$t.myName) {
-          var myDiv = document.getElementById('myScreenName');
-          $t.myName = myDiv.innerHTML;
-        }
-
         var e = {
           getBody:   function() {return "Please 'IM' me"},
           getSender: function() {return $t.myName + '@' + $t.XMPPHost},
@@ -4096,6 +4129,8 @@ var Mobile = {
     /////////////////
     e = getDocumentEvent(e);
     var l = getEventTarget(e);
+//    if (!Popup.android  &&  l.tagName.toUpperCase() != 'A'  &&  l.tagName.toUpperCase() != 'IMG')
+//      return;
     var link = getAnchorForEventTarget(l);
     if (!link || !link.href || link.href == null)
       return;
@@ -7256,8 +7291,31 @@ function setCurrentItem (event, tr) {
 
 function inReplyTo(event, tr, shortPropName, value) {
   tr.style.backgroundColor = '#F5ABE6';
-  document.forms['tablePropertyList'].elements["." + shortPropName].value = value;
-  var aa = document.getElementById('currentItem');
+  if (!$t.currentUrl) 
+    return;
+  var currentDiv = $t.getCurrentDivPage();
+  var forms = currentDiv.getElementsByTagName('form');
+  if (!forms)
+    return;
+  var form;
+  for (var i=0; i<forms.length  &&  !form; i++) {
+    var f = forms[i];
+    if (f.id  &&  f.id.startsWith('tablePropertyList_'))
+      form = f;
+  }
+  if (!form)
+    return;
+    
+  form.elements["." + shortPropName].value = value;
+  var anchors = currentDiv.getElementsByTagName('a');
+  if (!anchors)
+    return;
+  var aa;
+  for (var i=0; i<anchors.length  &&  !aa; i++) {
+    var a = anchors[i];
+    if (a.id  &&  a.id == 'currentItem')
+      aa = a;
+  }
   if (!aa)
     return;
   if (aa.href != tr.id) {
