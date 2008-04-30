@@ -143,8 +143,8 @@ Popup.maemo= (Popup.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
 Popup.iPhone = agent.indexOf("iPhone") != -1;
-//var mobileCookie = readCookie('mobile_mode');
-Popup.mobile = Popup.android || Popup.iPhone || Popup.s60Browser /*|| (mobileCookie != null && trim(mobileCookie) == 'true')*/ ? true : false; //screen.width < 600;
+var mobileCookie = readCookie('mobile_mode');
+Popup.mobile = Popup.android || Popup.iPhone || Popup.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
 // for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
 
@@ -3621,6 +3621,23 @@ var Mobile = {
 
     ctbody.appendChild(newTr);
     window.scrollTo(0, 3000);
+    if ($t.view.refocus != 'undefined')
+      $t.view.refocus();
+    setTimeout("Mobile.doSelection()", 50);
+  },
+
+  doSelection: function() {
+    $t = Mobile;
+    if (!$t.currentUrl)
+      $t.currentUrl = document.location.href;
+    var currentDiv = $t.getCurrentPageDiv();
+    var forms = currentDiv.getElementsByTagName('FORM');
+    if (!forms)
+      return;
+    var form = forms[0];
+    var inputField = form.elements['.title'];
+    if (inputField) 
+      inputField.focus();
   },
 
   onGeoLocation: function(e) {
@@ -4176,6 +4193,17 @@ var Mobile = {
       $t.urlToDivs = s;
       //$t.urlToDivs[$t.currentUrl] = currentDiv;
     }
+    if ($t.view.refocus != 'undefined')
+      $t.view.refocus();
+    /*
+    var elms = currentDiv.childNodes;
+    for (var i=0; i<elms.length; i++) {
+      if (elms[i].nodeType == 3) {
+        elms[i].select();
+        break;
+      }
+    }
+    */
     if ($t.currentUrl == newUrl) {
       currentDiv.style.visibility = Popup.VISIBLE;
       currentDiv.style.display = "inline";
