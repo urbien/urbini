@@ -3678,7 +3678,7 @@ var Mobile = {
     Mobile.insertChatMessage(e, div);
     MobilePageAnimation.showPage(currentDiv, div);
 ///////////    
-    Boost.xmpp.sendMessage("<a href='" + url + "'>" + img + "</a>", privateIm);
+    Boost.xmpp.sendMessage("<a href='" + url + "'>" + img + "</a>", privateIm + "/marco-android");
     Boost.log('Photo url for Avatar: ' + url);
   },
 
@@ -3928,7 +3928,7 @@ var Mobile = {
       $t.browsingHistory[$t.browsingHistoryPos] = newUrl;
       $t.currentUrl = newUrl;
       if (Boost.xmpp)
-        Boost.xmpp.sendMessage("Please 'IM' me", newUrl);
+        Boost.xmpp.sendMessage("Please 'IM' me", newUrl + "/marco-android");
       return null;
     }
 
@@ -6489,7 +6489,7 @@ function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
     var roomUrl = $t.chatRooms[chatRoom];
     if (!roomUrl  &&  chatRoom.indexOf('@') != -1) {
       roomUrl = chatRoom;
-      Boost.xmpp.sendMessage(msg, roomUrl);
+      Boost.xmpp.sendMessage(msg, roomUrl + "/marco-android");
     }
     else
       Boost.xmpp.sendMessage(msg, null);
