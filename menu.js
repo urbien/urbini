@@ -3621,8 +3621,8 @@ var Mobile = {
 
     ctbody.appendChild(newTr);
     window.scrollTo(0, 3000);
-    if ($t.view.refocus != 'undefined')
-      $t.view.refocus();
+    if (Boost.view.refocus != 'undefined')
+      Boost.view.refocus();
     setTimeout("Mobile.doSelection()", 50);
   },
 
@@ -3636,7 +3636,7 @@ var Mobile = {
       return;
     var form = forms[0];
     var inputField = form.elements['.title'];
-    if (inputField) 
+    if (inputField)
       inputField.focus();
   },
 
@@ -4193,8 +4193,8 @@ var Mobile = {
       $t.urlToDivs = s;
       //$t.urlToDivs[$t.currentUrl] = currentDiv;
     }
-    if ($t.view.refocus != 'undefined')
-      $t.view.refocus();
+    if (Boost.view.refocus != 'undefined')
+      Boost.view.refocus();
     /*
     var elms = currentDiv.childNodes;
     for (var i=0; i<elms.length; i++) {
