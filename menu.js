@@ -143,8 +143,8 @@ Popup.maemo= (Popup.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
 Popup.iPhone = agent.indexOf("iPhone") != -1;
-var mobileCookie = readCookie('mobile_mode');
-Popup.mobile = Popup.android || Popup.iPhone || Popup.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
+//var mobileCookie = readCookie('mobile_mode');
+Popup.mobile = Popup.android || Popup.iPhone || Popup.s60Browser /*|| (mobileCookie != null && trim(mobileCookie) == 'true')*/ ? true : false; //screen.width < 600;
 // for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
 
@@ -3352,6 +3352,8 @@ var Mobile = {
     if (!text)
       return;
     text += '';
+    if (text == "This room is not anonymous.")
+      return;
     var sender = e.getSender();
     if (sender)
       sender += '';
@@ -3524,7 +3526,7 @@ var Mobile = {
       insertAfter(currentDiv.parentNode, div, currentDiv);
       $t.privateRooms[divId] = sender;
       setInnerHtml(div, div_empty.innerHTML);
-      div.id = divId;
+      div.id = divId.toLowerCase();
       div.style.display = 'none';
       div.style.visibility = Popup.HIDDEN;
       $t.urlToDivs[divId] = div;
@@ -3636,7 +3638,7 @@ var Mobile = {
     var privateIm = $t.myBuddy + '@' + $t.XMPPHost;
     Boost.log(privateIm);
     var img = "";
-    
+
 ///////////
     if ($t.privateRooms)
       privateRoomId = $t.privateRooms[privateIm];
@@ -3653,6 +3655,7 @@ var Mobile = {
       $t.browsingHistory[$t.browsingHistoryPos] = $t.currentUrl;
     }
     var img = "<img src=\"" + url + "\" width='" + ($t.getScreenWidth() / 2) + "'/>";
+    privateIm = privateIm.toLowerCase();
     if (!div) {
       $t.privateRooms[privateRoomId] = privateIm;
       var div_empty = document.getElementById('im_empty');
@@ -3677,7 +3680,7 @@ var Mobile = {
     $t.currentUrl = privateIm;
     Mobile.insertChatMessage(e, div);
     MobilePageAnimation.showPage(currentDiv, div);
-///////////    
+///////////
     Boost.xmpp.sendMessage("<a href='" + url + "'>" + img + "</a>", privateIm + "/marco-android");
     Boost.log('Photo url for Avatar: ' + url);
   },
@@ -3891,9 +3894,10 @@ var Mobile = {
         $t.activatePrivateChat(div, newUrl);
 
         // newUrl is sender in this case
+        newUrl = newUrl.toLowerCase();
         div.id = newUrl;
         div.className = '';
-        Boost.log("'IM me' clicked on: " + newUrl);
+        Boost.log("'IM me' clicked on: " + div.id);
         $t.urlToDivs[newUrl] = div;
         var e = {
           getBody:   function() {return "Please 'IM' me"},
@@ -3974,7 +3978,7 @@ var Mobile = {
       var divStl = div.style;
       if (!divStl)
         continue;
-      
+
       // show BIG topBar
       if (idx == 0) {
         var parent = div.parentNode;
@@ -4094,7 +4098,7 @@ var Mobile = {
     $t.hideHistoryView(targetPage);
     return stopEventPropagation(e);
   },
-  
+
   onHistoryList: function() {
     // need to implement
   },
@@ -6493,8 +6497,8 @@ function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
     }
     else
       Boost.xmpp.sendMessage(msg, null);
-    Boost.log('roomUrl: ' + roomUrl);
     var roomDiv = $t.urlToDivs[roomUrl];
+    Boost.log('roomUrl: ' + roomUrl + '; roomDiv: ' + roomDiv);
     var chatIdDiv = document.getElementById('-chat')
     var e = {
       getBody:   function() {return msg},
@@ -7292,7 +7296,7 @@ function setCurrentItem (event, tr) {
 function inReplyTo(event, tr, shortPropName, value) {
   tr.style.backgroundColor = '#F5ABE6';
   $t = Mobile;
-  if (!$t.currentUrl) 
+  if (!$t.currentUrl)
     return;
   var currentDiv = $t.getCurrentPageDiv();
   var forms = currentDiv.getElementsByTagName('form');
@@ -7306,7 +7310,7 @@ function inReplyTo(event, tr, shortPropName, value) {
   }
   if (!form)
     return;
-    
+
   form.elements["." + shortPropName].value = value;
   var anchors = currentDiv.getElementsByTagName('a');
   if (!anchors)
