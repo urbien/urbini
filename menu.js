@@ -3621,7 +3621,7 @@ var Mobile = {
 
     ctbody.appendChild(newTr);
     window.scrollTo(0, 3000);
-    if (Boost.view.refocus != 'undefined')
+    if (typeof Boost.view.refocus != 'undefined')
       Boost.view.refocus();
     setTimeout("Mobile.doSelection()", 50);
   },
@@ -4193,7 +4193,7 @@ var Mobile = {
       $t.urlToDivs = s;
       //$t.urlToDivs[$t.currentUrl] = currentDiv;
     }
-    if (Boost.view.refocus != 'undefined')
+    if (typeof Boost.view.refocus != 'undefined')
       Boost.view.refocus();
     /*
     var elms = currentDiv.childNodes;
