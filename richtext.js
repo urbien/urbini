@@ -953,19 +953,23 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	// putContent
 	this.putContent = function(text) {
-		var frameHtml = "<html>\n";
-		frameHtml += "<head>";
-		if(this.isIE)
-		  frameHtml += "<link href='styles/common.css' type='text/css' rel='stylesheet'>";
-		frameHtml += "</head>";
-		frameHtml += "<body>";
-		frameHtml += text + "";
-		frameHtml += "</body>";
-		frameHtml += "</html>";
+	  if(this.isNetscape || this.isOpera) {
+	    this.document.body.innerHTML = text;
+	  }
+	  else {
+		  var frameHtml = "<html>\n";
+		  frameHtml += "<head>";
+		    frameHtml += "<link href='styles/common.css' type='text/css' rel='stylesheet'>";
+		  frameHtml += "</head>";
+		  frameHtml += "<body>";
+		  frameHtml += text + "";
+		  frameHtml += "</body>";
+		  frameHtml += "</html>";
 
-		this.document.open();
-		this.document.write(frameHtml);
-		this.document.close();
+		  this.document.open();
+		  this.document.write(frameHtml);
+		  this.document.close();
+		}
 	}
 	// it used for a non standart command like a table insert.
 	this.insertHTML = function(html) {
