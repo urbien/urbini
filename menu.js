@@ -4153,7 +4153,7 @@ var Mobile = {
 //    if (!Popup.android  &&  l.tagName.toUpperCase() != 'A'  &&  l.tagName.toUpperCase() != 'IMG')
 //      return;
     var link = getAnchorForEventTarget(l);
-    if (!link || !link.href || link.href == null)
+    if (!link || !link.href || link.href == null  ||  link.href == 'about:blank')
       return;
     if ($t._preventingDoubleClick)
       return stopEventPropagation(e);
