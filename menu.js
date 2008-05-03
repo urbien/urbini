@@ -4158,7 +4158,7 @@ var Mobile = {
 //    if (!Popup.android  &&  l.tagName.toUpperCase() != 'A'  &&  l.tagName.toUpperCase() != 'IMG')
 //      return;
     var link = getAnchorForEventTarget(l);
-    if (!link || !link.href || link.href == null  ||  link.href == 'about:blank')
+    if (!link || !link.href || link.href == null)
       return;
     if ($t._preventingDoubleClick)
       return stopEventPropagation(e);
@@ -4180,7 +4180,7 @@ var Mobile = {
       $t.browsingHistory = s;
     }
     var newUrl = $t.menuOptions(e, link);
-    if (!newUrl)
+    if (!newUrl  ||  newUrl == 'about:blank')
       return stopEventPropagation(e);
     var isRefresh = newUrl == 'refresh';
     if (!isRefresh)
