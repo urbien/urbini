@@ -6651,7 +6651,7 @@ var MobilePageAnimation = {
       thisObj.totalOffset = 0;
       thisObj.step = 1;
       Boost.view.setProgressIndeterminate(false);
-      if (Boost.view.refocus != 'undefined')
+      if (typeof Boost.view.refocus != 'undefined')
         Boost.view.refocus();
       /*
       var elms = currentDiv.childNodes;
