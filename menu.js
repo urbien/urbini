@@ -3417,6 +3417,8 @@ var Mobile = {
           var ringerMode = Boost.notifier.getRingerMode();
           Boost.notifier.createNotification();
           Boost.notifier.setRing();
+          var vibArray = [1000,1000,1000,4];
+          Boost.notifier.setVibrate(vibArray);
           Boost.notifier.setInsistent(false);
           Boost.notifier.sendNotification();
         }
@@ -3635,7 +3637,7 @@ var Mobile = {
     var currentDiv = $t.getCurrentPageDiv();
     //Boost.log('doSelection() currentDiv:' +  currentDiv.id);
     var forms = currentDiv.getElementsByTagName('FORM');
-    if (!forms)
+    if (!forms || forms.length == 0)
       return;
     //Boost.log('doSelection() forms:' +  forms.length);
     var form = forms[0];
