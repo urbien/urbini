@@ -3623,19 +3623,24 @@ var Mobile = {
     window.scrollTo(0, 3000);
     if (typeof Boost.view.refocus != 'undefined')
       Boost.view.refocus();
-    setTimeout("Mobile.doSelection()", 50);
+//    setTimeout("Mobile.doSelection()", 50);
   },
 
   doSelection: function() {
     $t = Mobile;
-    if (!$t.currentUrl)
+    //Boost.log('doSelection() currentUrl:' +  $t.currentUrl);
+    if (!$t.currentUrl) {
       $t.currentUrl = document.location.href;
+    }
     var currentDiv = $t.getCurrentPageDiv();
+    //Boost.log('doSelection() currentDiv:' +  currentDiv.id);
     var forms = currentDiv.getElementsByTagName('FORM');
     if (!forms)
       return;
+    //Boost.log('doSelection() forms:' +  forms.length);
     var form = forms[0];
     var inputField = form.elements['.title'];
+    //Boost.log('doSelection() inputField:' +  inputField.name);
     if (inputField)
       inputField.focus();
   },
@@ -4193,17 +4198,6 @@ var Mobile = {
       $t.urlToDivs = s;
       //$t.urlToDivs[$t.currentUrl] = currentDiv;
     }
-    if (typeof Boost.view.refocus != 'undefined')
-      Boost.view.refocus();
-    /*
-    var elms = currentDiv.childNodes;
-    for (var i=0; i<elms.length; i++) {
-      if (elms[i].nodeType == 3) {
-        elms[i].select();
-        break;
-      }
-    }
-    */
     if ($t.currentUrl == newUrl) {
       currentDiv.style.visibility = Popup.VISIBLE;
       currentDiv.style.display = "inline";
@@ -6657,6 +6651,17 @@ var MobilePageAnimation = {
       thisObj.totalOffset = 0;
       thisObj.step = 1;
       Boost.view.setProgressIndeterminate(false);
+      if (Boost.view.refocus != 'undefined')
+        Boost.view.refocus();
+      /*
+      var elms = currentDiv.childNodes;
+      for (var i=0; i<elms.length; i++) {
+        if (elms[i].nodeType == 3) {
+          elms[i].select();
+          break;
+        }
+      }
+      */
     }
   },
   getPageTopOffset : function() {
@@ -7989,6 +7994,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     catch (err) {
       Boost.log("error in ajax request open(): " + url + '?' + parameters);
       callback(clonedEvent, div, hotspot, "", url);
+      return;
     }
 
     // browser does not allow Referer to be sent - so we send X-Referer and on
