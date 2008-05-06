@@ -156,11 +156,17 @@ function FormPopup(innerFormHtml, flag) {
 			var inp = inpCol[i];
 			var type = inp.getAttribute("type");
 			var name = inp.getAttribute("name");
-			if(type == "text" || type == "hidden" || type == "checkbox") {
+			if(type == "text" || type == "hidden") {
 				if(toGet)
 					getArr[name] = inp.value;
 				else
 					inp.value = setArr[name];
+			}
+			if(type == "checkbox") {
+				if(toGet)
+					getArr[name] = inp.checked;
+				else
+					inp.checked = setArr[name];
 			}
 		}
 		// selects; returns text value
