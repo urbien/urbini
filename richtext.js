@@ -1462,18 +1462,19 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.setLink = function(params) {
 		if(params.url.length == 0)
 		  return;
-		var url = params.url
-		if(params.is_blank)
-		  url += "__blank";
+		var href = params.url
 		
-		i_am.performCommand("createlink", url);
+		if(params.is_blank)
+		  href += "__$blank__";
+		
+		i_am.performCommand("createlink", href);
 		
 		if(params.is_blank) {
 		  var links = i_am.document.body.getElementsByTagName("a");
 		  for(var i = 0; i < links.length; i++) {
-		    if(links[i].href == url) {
+		    if(links[i].href.indexOf("__$blank__") != -1) {
 		      links[i].setAttribute("target", "_blank");
-		      links[i].href = links[i].href.replace(/__blank$/, "");
+		      links[i].href = links[i].href.replace(/__\$blank__/, "");
 		    }
 		  }
 		}
