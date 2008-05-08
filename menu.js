@@ -3124,6 +3124,7 @@ var Mobile = {
   myBuddy: null,
   privateRooms: null,
   isHistoryView : false,
+  curHash : "", // helps to chatch back (forward) button
   $t: null,
 
   log: function(text) {
@@ -3203,6 +3204,8 @@ var Mobile = {
 
     }
     */
+
+    $t.checkLocation();
 
     Boost.log("$t.eventManager.readyForEvents();");
     Boost.eventManager.readyForEvents();
@@ -3704,6 +3707,7 @@ var Mobile = {
     $t.currentUrl = privateIm;
     Mobile.insertChatMessage(e, div);
     MobilePageAnimation.showPage(currentDiv, div);
+    $t.setLacationHash(url);
 ///////////
     Boost.xmpp.sendMessage("<a href='" + url + "'>" + img + "</a>", privateIm + "/marco-android");
     Boost.log('Photo url for Avatar: ' + url);
@@ -3949,6 +3953,8 @@ var Mobile = {
       div.style.visibility = Popup.VISIBLE;
 */
       MobilePageAnimation.showPage(currentDiv, div);
+      $t.setLocationHash(newUrl);
+      
       Boost.log('currentDiv.parentNode:' + currentDiv.parentNode.id);
 //      insertAfter(currentDiv.parentNode, div, currentDiv);
 
@@ -3982,7 +3988,48 @@ var Mobile = {
       }
     }
   },
+  
+  /***** solves problem of Back button and history for Ajax *****/
+  setLocationHash: function(newUrl) {
+    
+    this.curHash = newUrl;
+    location.hash = encodeURIComponent(newUrl);
+   
+    /*
+    if (location.hash != "")
+      return;
+    */
+  },
+  checkLocation: function() {
+    var $t = Mobile;
+    var hashVal = location.hash.substr(1);
 
+    if (hashVal.length == 0) {
+      hashVal = location.href;
+      if (!$t.curHash)
+        $t.curHash = hashVal;
+    }
+
+    if (hashVal != $t.curHash) {
+      // check back or forward
+      if ($t.browsingHistory && 
+            $t.browsingHistory[$t.browsingHistoryPos - 1] == hashVal) {
+        $t.oneStep(null, -1);
+      }
+      else if ($t.browsingHistory && 
+            $t.browsingHistory[$t.browsingHistoryPos + 1] == hashVal) {
+        $t.oneStep(null, 1);
+      }
+      else {
+        $t._getPage(null, hashVal);
+      }
+
+      $t.curHash = hashVal;
+    }
+    setTimeout($t.checkLocation, 300);
+  }, 
+  
+   
   showHistoryView : function() {
     var TOP_OFFSET = 100; // for "big" topBar
     var SPACE = 30;
@@ -4181,7 +4228,10 @@ var Mobile = {
       s[0] = $t.currentUrl;
       $t.browsingHistory = s;
     }
-    var newUrl = $t.menuOptions(e, link);
+    $t.menuOptions(e, link);
+    
+    var newUrl = (typeof link == 'string') ? link : link.href;
+    
     if (!newUrl  ||  newUrl == 'about:blank')
       return stopEventPropagation(e);
     var isRefresh = newUrl == 'refresh';
@@ -4223,6 +4273,7 @@ var Mobile = {
     if (div  &&  !isRefresh) {
       $t.setTitle(div);
       MobilePageAnimation.showPage(currentDiv, div);
+      $t.setLocationHash(newUrl);
       return stopEventPropagation(e);
     }
     div = document.createElement("DIV");
@@ -4282,6 +4333,7 @@ var Mobile = {
       }
 //      var offset = getElementCoords(div);
 //      window.scroll(offset.left, offset.top);
+      $t.setLocationHash(newUrl);
     }
     return stopEventPropagation(e);
   },
