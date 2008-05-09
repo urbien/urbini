@@ -4002,7 +4002,12 @@ var Mobile = {
   },
   checkLocation: function() {
     var $t = Mobile;
-    var hashVal = location.hash.substr(1);
+    var hashVal;
+    if (Popup.gecko)
+      hashVal = location.hash.substr(1);
+    else
+      hashVal = decodeURIComponent(location.hash).substr(1);
+      
 
     if (hashVal.length == 0) {
       hashVal = location.href;
