@@ -149,6 +149,23 @@ div {font-family:Helvetica; font-size:10pt;}
     margin: 3px;
     line-height: 28px;
     font-size: 12px;
+    font-family: Helvetica;
+    font-weight: bold;
+    color: #FFFFFF;
+    text-shadow: rgba(0, 0, 0, 0.6) 0px -1px 0;
+    text-decoration: none;
+    background: none;
+}
+.button_left {
+    float: left;
+    -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
+    -webkit-border-radius: 0;
+    border-width: 0 5px 0 5px;
+    padding: 3px;
+    margin: 3px;
+    line-height: 28px;
+    font-size: 16px;
+    font-family: Helvetica;
     font-weight: bold;
     color: #FFFFFF;
     text-shadow: rgba(0, 0, 0, 0.6) 0px -1px 0;
@@ -179,21 +196,6 @@ div {font-family:Helvetica; font-size:10pt;}
     font-weight: bold;
     color: red;
 
-}
-.button_left {
-    float: left;
-    -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
-    -webkit-border-radius: 0;
-    border-width: 0 5px 0 5px;
-    padding: 3px;
-    margin: 3px;
-    line-height: 28px;
-    font-size: 12px;
-    font-weight: bold;
-    color: #FFFFFF;
-    text-shadow: rgba(0, 0, 0, 0.6) 0px -1px 0;
-    text-decoration: none;
-    background: none;
 }
 
 .topBar_big .button, .topBar_big .button_left {
@@ -246,4 +248,4 @@ tr.dark  {background-color:#eeeeee; height: 35px;}
 
 .touch_screen { position: absolute; left:0; top:0; }
 .touch_screen img { width:1000; height:1000; border:0; }
-    
+
