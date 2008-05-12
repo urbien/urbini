@@ -32,17 +32,14 @@ var keyPressedElement;
 var autoCompleteTimeoutId;
 var keyPressedTime;
 
-String.prototype.startsWith = function startsWith(s) {
-  var n = s.length;
-  var m = this.length;
-  if (m < n)
-    return false;
-  for (var i=0; i<n; i++) {
-    if (this.charAt(i) != s.charAt(i))
-      return false;
-  }
-  return true;
-};
+String.prototype.startsWith = function (s){
+  var reg = new RegExp("^" + s);
+  return reg.test(this);
+}
+String.prototype.endsWith = function(s){
+  var reg = new RegExp(s + "$");
+  return reg.test(this);
+}
 
 
 /**
@@ -142,9 +139,11 @@ Popup.s60Browser = (Popup.webkit && navigator.userAgent.indexOf("Series60/3.1") 
 Popup.maemo= (Popup.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
 Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
 Popup.joystickBased = Popup.s60Browser ? true : false;
-Popup.iPhone = agent.indexOf("iPhone") != -1;
+Popup.mobileSafari = agent.indexOf("Mobile") != -1 && agent.indexOf("Safari") != -1;
+Popup.iPhone = Popup.mobileSafari && agent.indexOf("iPhone") != -1;
+Popup.iPod = Popup.mobileSafari && agent.indexOf("iPod") != -1;
 var mobileCookie = readCookie('mobile_mode');
-Popup.mobile = Popup.android || Popup.iPhone || Popup.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
+Popup.mobile = Popup.android || Popup.mobileSafari || Popup.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
 // for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
 
@@ -3707,7 +3706,7 @@ var Mobile = {
     $t.currentUrl = privateIm;
     Mobile.insertChatMessage(e, div);
     MobilePageAnimation.showPage(currentDiv, div);
-    $t.setLacationHash(url);
+    $t.setLocationHash(url);
 ///////////
     Boost.xmpp.sendMessage("<a href='" + url + "'>" + img + "</a>", privateIm + "/marco-android");
     Boost.log('Photo url for Avatar: ' + url);
@@ -3882,6 +3881,8 @@ var Mobile = {
       }
     }
     else if (id.indexOf('actions_Photo_') != -1) {
+      if (!Boost.camera)
+        return null;
       $t.myBuddy = id.substring(14);
       Boost.camera.takePicture(newUrl);
       Boost.log('picture was taken');
@@ -3905,7 +3906,6 @@ var Mobile = {
       else
         privateRoomId = newUrl;
       var currentDiv = $t.urlToDivs[$t.currentUrl];
-
       if (!currentDiv) {
         currentDiv = document.getElementById('mainDiv');
         $t.urlToDivs[$t.currentUrl] = currentDiv;
@@ -3954,7 +3954,7 @@ var Mobile = {
 */
       MobilePageAnimation.showPage(currentDiv, div);
       $t.setLocationHash(newUrl);
-      
+
       Boost.log('currentDiv.parentNode:' + currentDiv.parentNode.id);
 //      insertAfter(currentDiv.parentNode, div, currentDiv);
 
@@ -3988,13 +3988,13 @@ var Mobile = {
       }
     }
   },
-  
+
   /***** solves problem of Back button and history for Ajax *****/
   setLocationHash: function(newUrl) {
-    
+
     this.curHash = newUrl;
     location.hash = encodeURIComponent(newUrl);
-   
+
     /*
     if (location.hash != "")
       return;
@@ -4007,7 +4007,7 @@ var Mobile = {
       hashVal = location.hash.substr(1);
     else
       hashVal = decodeURIComponent(location.hash).substr(1);
-      
+
 
     if (hashVal.length == 0) {
       hashVal = location.href;
@@ -4017,11 +4017,11 @@ var Mobile = {
 
     if (hashVal != $t.curHash) {
       // check back or forward
-      if ($t.browsingHistory && 
+      if ($t.browsingHistory &&
             $t.browsingHistory[$t.browsingHistoryPos - 1] == hashVal) {
         $t.oneStep(null, -1);
       }
-      else if ($t.browsingHistory && 
+      else if ($t.browsingHistory &&
             $t.browsingHistory[$t.browsingHistoryPos + 1] == hashVal) {
         $t.oneStep(null, 1);
       }
@@ -4032,9 +4032,9 @@ var Mobile = {
       $t.curHash = hashVal;
     }
     setTimeout($t.checkLocation, 300);
-  }, 
-  
-   
+  },
+
+
   showHistoryView : function() {
     var TOP_OFFSET = 100; // for "big" topBar
     var SPACE = 30;
@@ -4213,16 +4213,37 @@ var Mobile = {
 //      return;
     var link = getAnchorForEventTarget(l);
     if (!link || !link.href || link.href == null)
-      return;
+      return true;
+    var ln = link.href;
     if ($t._preventingDoubleClick)
       return stopEventPropagation(e);
-    if (link.href.startsWith('tel:') && Boost.phone) {
-      Boost.phone.dial(link.href.substring(4));
-      return stopEventPropagation(e);
+
+    if (ln.startsWith('tel:')) {
+      if (Boost.phone) {
+        Boost.phone.dial(ln.substring(4));
+        return stopEventPropagation(e);
+      }
+      else
+        return true;
     }
-    if (link.href.startsWith('sms:') || link.href.startsWith('mailto:') || link.href.startsWith('wtai:'))
+    var idx = ln.indexOf(':');
+    // take precautions to load only normal urls via ajax
+    if (idx != -1) {
+      var ln1 = ln.substring(0, idx);
+      if (idx + 1 == ln.length)
+        return true;
+      var c = ln.charAt(idx + 1);
+      if (ln1.match(/^[a-zA-Z]+$/) && // schema is letters only
+         !(c >= '0' && c <= '9')) { // if no number after colon (e.g. :8080) - then it must be a schema
+        // we plan to handle these URL schemas soon
+        //if (ln.startsWith('sms:') || ln.startsWith('mailto:') || ln.startsWith('wtai:'))
+        if (ln1 != 'http' && ln1 != 'https' && ln1 != 'about' && ln1 != 'javascript')
+          return true;
+      }
+    }
+    if (ln.endsWith('.gif') || ln.endsWith('.png') || ln.endsWith('.jpg') || ln.endsWith('.jpeg') || ln.endsWith('.svg'))
       return true;
-    $t._getPage(e, link);
+    return $t._getPage(e, link);
   },
 
   _getPage: function(e, link) {
@@ -4233,13 +4254,15 @@ var Mobile = {
       s[0] = $t.currentUrl;
       $t.browsingHistory = s;
     }
-    $t.menuOptions(e, link);
-    
+    var u = $t.menuOptions(e, link);
+    if (!u) {
+      return stopEventPropagation(e);
+    }
+
     var newUrl = (typeof link == 'string') ? link : link.href;
-    
     if (!newUrl  ||  newUrl == 'about:blank')
       return stopEventPropagation(e);
-    var isRefresh = newUrl == 'refresh';
+    var isRefresh = u == 'refresh';
     if (!isRefresh)
       $t.browsingHistoryPos++;
 
