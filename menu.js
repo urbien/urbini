@@ -3723,6 +3723,7 @@ var Mobile = {
         optionsDiv.style.visibility = Popup.HIDDEN;
         optionsDiv.style.display = "none";
       }
+
       return newUrl;
     }
     if (id == 'optionsMenu') {
@@ -4205,13 +4206,12 @@ var Mobile = {
 */
   onClick: function(e) {
     var $t = Mobile;
-    //Boost.log('mobileOnclick');
     /////////////////
     e = getDocumentEvent(e);
     var l = getEventTarget(e);
 //    if (!Popup.android  &&  l.tagName.toUpperCase() != 'A'  &&  l.tagName.toUpperCase() != 'IMG')
 //      return;
-    var link = getAnchorForEventTarget(l);
+    var link = getAnchorForEventTarget1(l);
     if (!link || !link.href || link.href == null)
       return true;
     var ln = link.href;
@@ -4266,6 +4266,37 @@ var Mobile = {
     if (!isRefresh)
       $t.browsingHistoryPos++;
 
+
+    var isMore;
+    var isRemoteLink;
+    if (link.target) {
+      // Remote link like 'Locate <avatar>'
+      if (link.target == '_self') {
+        Boost.view.setProgressIndeterminate(true);
+        document.location.replace(newUrl);
+        return;
+      }
+      isMore = link.target == '_replace';
+      if (isMore) {
+        var id = link.id;
+        if (id  &&  id.startsWith('recNmb_')) {
+          var recNmb = parseInt(id.substring(7));
+          var newRecNmb = parseInt(id.substring(7)) + 10;
+          link.id = 'recNmb_' + newRecNmb;
+          var idx = $t.currentUrl.indexOf('recNmb=');
+          if (idx == -1)
+            newUrl = $t.currentUrl + '&recNmb=' + newRecNmb;
+          else {
+            var idx1 = $t.currentUrl.indexOf('&', idx);
+            if (idx1 == -1)
+              newUrl = $t.currentUrl.substring(0, idx) + '&recNmb=' + newRecNmb;
+            else
+              newUrl = $t.currentUrl.substring(0, idx) + $t.currentUrl.substring(idx1) + '&recNmb=' + newRecNmb;
+          }
+        }
+      }
+    }
+
 //    alert("currentUrl: " + $t.currentUrl + "; newUrl: " + newUrl);
     //////////////////
     var currentDiv;
@@ -4285,7 +4316,7 @@ var Mobile = {
     }
     if (isRefresh)
       newUrl = $t.currentUrl;
-    else {
+    else if (!isMore) {
       $t.browsingHistory[$t.browsingHistoryPos] = newUrl;
 
       // clear forward history
@@ -4295,26 +4326,36 @@ var Mobile = {
         $t.browsingHistory[i] = null;
       }
     }
-    var div = $t.urlToDivs[newUrl];
-
-    $t.currentUrl = newUrl;
-    if (div  &&  !isRefresh) {
-      $t.setTitle(div);
-      MobilePageAnimation.showPage(currentDiv, div);
-      $t.setLocationHash(newUrl);
-      return stopEventPropagation(e);
+    var div;
+    if (isMore) {
+      div = document.createElement("DIV");
+      // class "mobile_page" to distinguish it as a page.
+      div.className = "mobile_page";
+      div.style.visibility = Popup.HIDDEN;
+      div.style.display = "none";
     }
-    div = document.createElement("DIV");
-    // class "mobile_page" to distinguish it as a page.
-    div.className = "mobile_page";
-    div.style.visibility = Popup.HIDDEN;
-    div.style.display = "none";
-    $t.urlToDivs[newUrl] = div;
-    if (currentDiv)
-      insertAfter(currentDiv.parentNode, div, currentDiv);
-    else
-      document.body.appendChild(div);
+    else {
+      div = $t.urlToDivs[newUrl];
 
+      $t.currentUrl = newUrl;
+      if (div  &&  !isRefresh) {
+        $t.setTitle(div);
+        MobilePageAnimation.showPage(currentDiv, div);
+        $t.setLocationHash(newUrl);
+        return stopEventPropagation(e);
+      }
+
+      div = document.createElement("DIV");
+      // class "mobile_page" to distinguish it as a page.
+      div.className = "mobile_page";
+      div.style.visibility = Popup.HIDDEN;
+      div.style.display = "none";
+      $t.urlToDivs[newUrl] = div;
+      if (currentDiv)
+        insertAfter(currentDiv.parentNode, div, currentDiv);
+      else
+        document.body.appendChild(div);
+    }
     var urlParts = newUrl.split('?');
     var url = urlParts[0];
     var idx = url.lastIndexOf('/');
@@ -4323,9 +4364,9 @@ var Mobile = {
     var loadedFromCache = false;
     if (Boost.cache) {
       var id = link.id;
-      if (id  &&  (id == 'menu_Reload' || id == 'menu_Refresh')) {
+      if (id  &&  (id == 'menu_Reload' || id == 'menu_Refresh'))
         loadedFromCache = false;
-      }
+
       /*
       else {
         var content = Boost.cache.get(newUrl);
@@ -4337,11 +4378,16 @@ var Mobile = {
       }
       */
     }
+    if (isMore)
+      loadFromCache = false;
     if (loadedFromCache == true)
       return stopEventPropagation(e);
 
     $t._preventingDoubleClick = true;
-    postRequest(e, url, urlParts[1], div, link, loadPage);
+    if (isMore)
+      postRequest(e, url, urlParts[1], div, link, $t._loadMoreItems);
+    else
+      postRequest(e, url, urlParts[1], div, link, loadPage);
 
     function loadPage(event, div, hotspot, content) {
       setInnerHtml(div, content);
@@ -4363,7 +4409,47 @@ var Mobile = {
 //      window.scroll(offset.left, offset.top);
       $t.setLocationHash(newUrl);
     }
+
     return stopEventPropagation(e);
+  },
+
+  _loadMoreItems: function(event, div, hotspot, content) {
+    var $t = Mobile;
+    setInnerHtml(div, content);
+    var elms = div.getElementsByTagName('table');
+    var table;
+    for (var i=0; i<elms.length  &&  !tt; i++) {
+      var tt = elms[i];
+      if (tt.id && tt.id.startsWith('siteRL_'))
+        table = tt;
+    }
+    $t._preventingDoubleClick = false;
+    if (!table)
+      return;
+    var tbody = table.getElementsByTagName('tbody')[0];
+
+    var currentDiv = $t.urlToDivs[$t.currentUrl];
+    elms = currentDiv.getElementsByTagName('tr');
+    var tr;
+    for (var i=0; i<elms.length  &&  !tr; i++) {
+      var tt = elms[i];
+      if (tt.id && tt.id == '_replace')
+        tr = tt;
+    }
+    if (!tr)
+      return;
+
+    var curTbody = tr.parentNode;
+
+    elms = tbody.childNodes;
+    for (var i=0; i<elms.length; i++)
+      curTbody.appendChild(elms[i]);
+    var coords = getElementCoords(tr);
+    tr.style.visibility = Popup.HIDDEN;
+    tr.id = '';
+    Boost.view.setProgressIndeterminate(false);
+    Boost.log('left = ' + coords.left + '; top = ' + coords.top);
+    window.scrollTo(coords.left, coords.top);
   },
 
   // browsing history forward and backward
@@ -4829,6 +4915,7 @@ function getTargetAnchor(e) {
 }
 
 function getAnchorForEventTarget(target) {
+  Boost.log('getAnchorForEventTarget: target.tagName: ' + target.tagName);
   if (target.tagName.toUpperCase() == 'A')
     return target;
   var anchors = target.getElementsByTagName('a');
@@ -4836,6 +4923,30 @@ function getAnchorForEventTarget(target) {
     return anchors[0];
 
   return getANode(target);
+}
+
+function getAnchorForEventTarget1(target) {
+  Boost.log('getAnchorForEventTarget: target.tagName: ' + target.tagName);
+  if (target.tagName.toUpperCase() == 'A')
+    return target;
+  var anchors = target.getElementsByTagName('a');
+  if (anchors && anchors[0])
+    return anchors[0];
+
+  var name = target.tagName.toUpperCase();
+  if (name == 'TD'  ||  name == 'DIV')
+    return null;
+  while (true) {
+    var e = target.parentNode;
+    if (!e)
+      return null;
+    name = e.tagName.toUpperCase()
+    if (name == 'A')
+      return e;
+    if (e  &&  (name == 'TD' || name == 'DIV'))
+      return getAnchorForEventTarget1(e);
+  }
+  return null;
 }
 
 function getANode(elem) {
