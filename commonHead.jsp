@@ -6,6 +6,7 @@
   <link href="styles/iphone.css"     type="text/css" rel="stylesheet" /><!-- media="only screen and (max-device-width:480px)"  /-->
 
   <script src="menu.js"                  language="JavaScript" type="text/javascript"></script>
+  <script src="bhoost.js"                language="JavaScript" type="text/javascript"></script>
   <!--script src="searchHighlighting.js"    language="JavaScript" type="text/javascript"></script-->
 
   <script src="richtext.js"       language="JavaScript" type="text/javascript"></script>
