@@ -20,7 +20,7 @@ function copyToClipboard(text2copy) {
 *	RteEngine
 **************************************************/
 function initRTE(iframeId, rteDataFieldId, rtePref) {
-  RteEngine.register(iframeId, rteDataFieldId, rtePref);
+  setTimeout(function() { RteEngine.register(iframeId, rteDataFieldId, rtePref); }, 20);
 }
 
 var RteEngine = {
@@ -948,7 +948,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		  text = "<br id=\"for_caret\" />";
 		  this.br_appended = true;
 		}
-
 		this.putContent(text);
 	}
 	// putContent
@@ -1058,6 +1057,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// some html cleanup
 	  // 1. \n
 	  // 1.1 remove \n if sibling symbol is space
+
+
 		text = text.replace(/\s\n|\n\s/g, " ");
 		// 1.2 replace \n with space if sybling is not space (rest from previous command)
 		text = text.replace(/\n/g, " ");
