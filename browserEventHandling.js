@@ -83,35 +83,36 @@
       }
 //      Packages.java.lang.System.out.println('onLoad 1: ' + new Date());
       interceptLinkClicks();
-      if (typeof Boost != 'undefined') {
+      
+      if (typeof Mobile != 'undefined') {
         Boost.init(event);
-      }
-      if (typeof Mobile != 'undefined')
         Mobile.init(event);
+      } else {
+        initListBoxes(null);
+        uiFocus();
+        DragEngine.initialize();
+		    addSpellcheck();
+		    dictionaryHandler.init();
+		    Tooltip.init();
 
-//      Packages.java.lang.System.out.println('onLoad 2: ' + new Date());
-      initListBoxes(null);
-//      Packages.java.lang.System.out.println('onLoad 3: ' + new Date());
-      uiFocus();
-      if (typeof addEventOnSchedule != 'undefined')
-        addEventOnSchedule();
+        if (typeof addEventOnSchedule != 'undefined')
+          addEventOnSchedule();
+      }
+
+        
 //      Packages.java.lang.System.out.println('onLoad 4: ' + new Date());
 //      if (typeof searchHighlighting != 'undefined')
 //        searchHighlighting();
 //      if (typeof replaceAllTooltips != 'undefined')
 //        replaceAllTooltips();
 		// initialize the drag & drop engine.
-		  DragEngine.initialize();
-		  addSpellcheck();
-		  dictionaryHandler.init();
-		  Tooltip.init();
 
 		  // The URL bar is hidden when running on the iPhone.
 		  if (navigator.userAgent.indexOf('iPhone') != -1) {
 		    window.scrollTo(0, 1);
 		  }
-		  
-		  MobilePageAnimation.init();
+		  if (typeof MobilePageAnimation != 'undefined')
+		    MobilePageAnimation.init();
     }
 
     /*

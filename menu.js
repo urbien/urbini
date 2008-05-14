@@ -93,57 +93,7 @@ if (document.layers) {
   Popup.VISIBLE = 'show';
 }
 
-var agent = navigator.userAgent
 
-Popup.w3c  = (document.getElementById)                            ? true : false;
-Popup.ns4  = (document.layers)                                    ? true : false;
-
-Popup.ie   = (typeof ActiveXObject != 'undefined')                ? true : false;
-Popup.ie4  = (Popup.ie && !this.w3c)                              ? true : false;
-Popup.ie5  = (Popup.ie && this.w3c)                               ? true : false;
-Popup.ie7  = (Popup.ie && typeof window.XMLHttpRequest != 'undefined') ? true : false;
-
-Popup.opera = typeof opera != 'undefined'                         ? true : false;
-Popup.opera8 = false;
-Popup.opera9 = false;
-
-if (Popup.opera ) {
-  var versionindex = navigator.userAgent.indexOf("Opera") + 6;
-  var ver = navigator.userAgent.substring(versionindex);
-  var v = parseFloat(ver);
-  if (v > 8 && v < 8.5) {
-    Popup.opera8 = true; // opera 8 (before 8.5) has some issues with
-                          // XmlHttpRequest
-  }
-  if (v >= 9)
-    Popup.opera9 = true;
-}
-Popup.android = agent.indexOf("Android") != -1 ? true: false;
-
-
-// e62: Opera 8.65: Mozilla/4.0 (compatible; MSIE 6.0; Symbian OS; Series 60/0618.06.17; 9730) Opera 8.65 [en-US] UP.Link/6.3.0.0.0
-
-// e62: s60 browser
-// Mozilla/5.0 (SymbianOS/9.2; U; [en]; Series60/3.1 Nokia3250/1.00 )
-// Profile/MIDP-2.0 Configuration/CLDC-1.1; AppleWebKit/413 (KHTML, like Gecko)
-// Safari/413
-
-if (document.attachEvent && !Popup.opera) {
-  Popup.ie55 = true; // need better test since this one will include 5+ as well
-}
-
-Popup.gecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1 && agent.indexOf("Konqueror") == -1) ? true : false;
-Popup.safari  = (agent.indexOf("Safari") != -1) ? true : false;
-Popup.webkit  = (agent.indexOf("WebKit") != -1) ? true : false;
-Popup.s60Browser = (Popup.webkit && navigator.userAgent.indexOf("Series60/3.1") != -1 || navigator.userAgent.indexOf("Symbian") != -1) ? true : false;
-Popup.maemo= (Popup.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
-Popup.penBased = Popup.maemo || Popup.s60Browser ? true : false;
-Popup.joystickBased = Popup.s60Browser ? true : false;
-Popup.mobileSafari = agent.indexOf("Mobile") != -1 && agent.indexOf("Safari") != -1;
-Popup.iPhone = Popup.mobileSafari && agent.indexOf("iPhone") != -1;
-Popup.iPod = Popup.mobileSafari && agent.indexOf("iPod") != -1;
-var mobileCookie = readCookie('mobile_mode');
-Popup.mobile = Popup.android || Popup.mobileSafari || Popup.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
 // for forced position of popup
 Popup.POS_LEFT_TOP = 'left_top';
 
@@ -571,8 +521,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       div.setAttribute('eventHandlersAdded', 'true');
     }
 
-    if (!Popup.penBased && !Popup.joystickBased) {
-      if (Popup.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
+    if (!Browser.penBased && !Browser.joystickBased) {
+      if (Browser.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
         addEvent(div,     'mouseenter',  self.popupOnMouseOver, false);
         addEvent(div,     'mouseleave',  self.popupOnMouseOut,  false);
         addEvent(hotspot, 'mouseleave',  self.popupOnMouseOut,  false);
@@ -596,7 +546,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return;
 
     // popup contains rows that can be selected
-    if (Popup.ie) { // IE - some keys (like backspace) work only on keydown
+    if (Browser.ie) { // IE - some keys (like backspace) work only on keydown
       addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
     }
     else {          // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
@@ -761,7 +711,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         self.popupRowOnClick1(e, tr);
         return stopEventPropagation(e);
       case 8:   // backspace or "C" in S60
-        if(Popup.s60Browser) {
+        if(Browser.s60Browser) {
            if (currentDiv)
               Popup.close0(currentDiv.id);
             return stopEventPropagation(e);
@@ -1838,7 +1788,7 @@ function popupOnSubmit(e) {
   e = getDocumentEvent(e);
   if (!e)
     return;
-  Boost.log('popupOnSubmit');
+//  Boost.log('popupOnSubmit');
   /*
   if (e.eventProcessed)
     return stopEventPropagation(e);
@@ -2132,7 +2082,7 @@ function autoComplete1(e, target) {
        currentPopup.close();
      return true;
    case 8:   // backspace or "C" in S60
-    if(Popup.s60Browser) {
+    if(Browser.s60Browser) {
       if (currentPopup && currentPopup.isOpen()) {
           currentPopup.close(); // the same like esc
         }
@@ -2859,48 +2809,13 @@ var Tooltip = {
 
 
 
-// ************************************* intercept all clicks
-// ***********************************
-function interceptLinkClicks(div) {
-  if (Popup.mobile)
-    return;
-  var anchors;
-  var doc;
-  if (div) {
-    anchors = div.getElementsByTagName('A');
-    doc = div;
-  }
-  else {
-    anchors = document.links;
-    doc = document;
-  }
-  var llen = anchors.length;
-  for (var i=0;i<llen; i++) {
-    var anchor = anchors[i];
-    var id = anchor.id;
-    if (id && id.startsWith('menuLink_')) // menu clicks are processed by their
-                                          // own event handler
-      continue;
-    if (anchor.className == 'webfolder')
-      continue;
-    if(anchor.href.indexOf("A_CALENDARS") != -1) // links of the Calendar's days
-      continue;
-
-    if (id && id.startsWith("-inner."))
-      addEvent(anchor, 'click',  onClickDisplayInner,   false);
-    else
-      addEvent(anchor, 'click',  onClick,   false);
-  }
-}
-
-
 function initListBoxes(div) {
 
   // handle anchors with help of BODY's event
   if (!div)
     addEvent(document.body, 'click', onLinkClick, false);
 
-  if (Popup.mobile)
+  if (Browser.mobile)
     return;
   // 1. add handler to autocomplete filter form text fields
   // 2. save initial values of all fields
@@ -3172,7 +3087,7 @@ function getTargetAnchor(e) {
 }
 
 function getAnchorForEventTarget(target) {
-  Boost.log('getAnchorForEventTarget: target.tagName: ' + target.tagName);
+//  Boost.log('getAnchorForEventTarget: target.tagName: ' + target.tagName);
   if (target.tagName.toUpperCase() == 'A')
     return target;
   var anchors = target.getElementsByTagName('a');
@@ -3183,7 +3098,7 @@ function getAnchorForEventTarget(target) {
 }
 
 function getAnchorForEventTarget1(target) {
-  Boost.log('getAnchorForEventTarget: target.tagName: ' + target.tagName);
+//  Boost.log('getAnchorForEventTarget: target.tagName: ' + target.tagName);
   if (target.tagName.toUpperCase() == 'A')
     return target;
   var anchors = target.getElementsByTagName('a');
@@ -3231,8 +3146,8 @@ function getANode(elem) {
  */
 function getWindowSize1() {
   var myWidth = 0, myHeight = 0;
-  myHeight = (Popup.ie5 || Popup.ie4) ? document.body.clientHeight : window.innerHeight;
-  myWidth  = (Popup.ie5 || Popup.ie4) ? document.body.clientWidth  : window.innerWidth;
+  myHeight = (Browser.ie5 || Browser.ie4) ? document.body.clientHeight : window.innerHeight;
+  myWidth  = (Browser.ie5 || Browser.ie4) ? document.body.clientWidth  : window.innerWidth;
   return [ myWidth, myHeight ];
 }
 
@@ -3366,11 +3281,11 @@ function getElementCoords(elem, e) {
 
 function getElementDimensions(elem) {
   var dim = new Dim();
-  if (Popup.ns4) {
+  if (Browser.ns4) {
     dim.width  = (elem.document.width)  ? elem.document.width  : elem.clip.width;
     dim.height = (elem.document.height) ? elem.document.height : elem.clip.height;
   }
-  else if (Popup.ie4) {
+  else if (Browser.ie4) {
     dim.width  = (elem.style.pixelWidth)  ? elem.style.pixelWidth  : elem.offsetWidth;
     dim.height = (elem.style.pixelHeight) ? elem.style.pixelHeight : elem.offsetHeight;
   }
@@ -3816,7 +3731,7 @@ function stopEventPropagation(e) {
     if (e.stopPropagation) e.stopPropagation();
     if (e.setAttribute)    e.setAttribute('eventProcessed', 'true');
     e.eventProcessed = true;
-    if (Popup.s60Browser) {
+    if (Browser.s60Browser) {
       var anchor = getTargetAnchor(e);
       if (anchor && anchor.href == "about:blank")
          anchor.href = "javascript: return false;";
@@ -3833,12 +3748,12 @@ function setInnerHtml(div, text) {
   if(contentDiv != null)
 	div = contentDiv;
 
-  if (Popup.ns4) {
+  if (Browser.ns4) {
     div.document.open();
     div.document.write(text);
     div.document.close();
   }
-// else if (Popup.ns6) {
+// else if (Browser.ns6) {
 // var r = div.ownerDocument.createRange();
 // r.selectNodeContents(div);
 // r.deleteContents();
@@ -4066,77 +3981,6 @@ function checkAllInGroup(e, divId) {
   }
 }
 
-// returns a child of any nesting.
-function getChildById(parent, id) {
-	return getChildByAttribute(parent, "id", id);
-}
-function getChildByAttribute(parent, atribName, attribValue) {
-	if(!parent)
-	  return null;
-	if(parent[atribName] == attribValue)
-		return parent;
-	var children = parent.childNodes;
-	var len = children.length;
-	if(len == 0)
-		return null;
-	for(var i = 0; i < len; i++) {
-		if(children[i].childNodes.length != 0) {
-			var reqChild = null;
-			if((reqChild = getChildByAttribute(children[i], atribName, attribValue)) != null)
-				return reqChild;
-		}
-		if(children[i][atribName] == attribValue)
-			return children[i];
-	}
-	return null;
-}
-function getAncestorById(child, id) {
-  return getAncestorByAttribute(child, "id", id);
-}
-// attribValue - string or array of strings
-function getAncestorByAttribute(child, attribName, attribValue) {
-	if(!child)
-	  return null;
-	var isArray = (typeof attribValue != 'string')
-
-	if(isArray) {
-	  for(var i = 0; i < attribValue.length; i++)
-	    if(child[attribName] == attribValue[i])
-		    return child;
-	}
-	else {
-	  if(child[attribName] == attribValue)
-		  return child;
-  }
-
-	var parent;
-	while((parent = child.parentNode) != null) {
-		if(isArray) {
-  	  for(var i = 0; i < attribValue.length; i++)
-  	    if(parent[attribName] == attribValue[i])
-			    return parent;
-		}
-		else {
-		  if(parent[attribName] == attribValue)
-			  return parent;
-		}
-
-		child = parent;
-	}
-	return null;
-}
-function getAncestorByTagName(child, tagName) {
-  tagName = tagName.toLowerCase();
-	if(child.tagName == tagName)
-		return child;
-	var parent;
-	while((parent = child.parentNode) != null) {
-		if(parent.tagName.toLowerCase() == tagName)
-			return parent;
-		child = parent;
-	}
-	return null;
-}
 function swapNodes(node1, node2) {
   if(node1.swapNode) {
     node1.swapNode(node2);
@@ -4159,32 +4003,6 @@ function swapNodes(node1, node2) {
 }
 
 
-// Cookie utility functions
-function createCookie(name, value, days) {
-  if (days) {
-    var date = new Date();
-    date.setTime(date.getTime()+(days*24*60*60*1000));
-    var expires = "; expires="+date.toGMTString();
-  } else {
-    var expires = "";
-  }
-  document.cookie = name+"="+value+expires+"; path=/";
-}
-function readCookie(name) {
-  var nameEQ = name + "=";
-  var ca = document.cookie.split(';');
-  for(var i = 0; i < ca.length; i++) {
-    var c = ca[i];
-    while (c.charAt(0)==' ')
-      c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) == 0)
-      return c.substring(nameEQ.length,c.length);
-  }
-  return null;
-}
-function eraseCookie(name) {
-  createCookie(name,"",-1);
-}
 
 // *********************************** Icon/Image effects
 // **************************************
@@ -4438,7 +4256,7 @@ function makeDivAutosize(div, fitHeightOnly) {
   var stl = div.style;
   if(typeof fitHeightOnly == 'undefine')
     fitHeightOnly = false;
-  if(Popup.ie) { // IE
+  if(Browser.ie) { // IE
     stl.height = "1px";
     if(!fitHeightOnly)
       stl.width = "1px";
@@ -4956,21 +4774,21 @@ function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
   var msg;
   msg = subject.value;
   subject.value = '';
-  if (Popup.mobile) {
+  if (Browser.mobile) {
     window.scrollTo(0, 3000);
 //    subject.focus();
 //    android.scroll();
-    Boost.log('sending message: ' + msg);
+//    Boost.log('sending message: ' + msg);
 //    chatRoom = "neoyou@conference.sage";  // hack
     var roomUrl = $t.chatRooms[chatRoom];
     if (!roomUrl  &&  chatRoom.indexOf('@') != -1) {
       roomUrl = chatRoom;
-      Boost.xmpp.sendMessage(msg, roomUrl + "/marco-android");
+//      Boost.xmpp.sendMessage(msg, roomUrl + "/marco-android");
     }
-    else
-      Boost.xmpp.sendMessage(msg, null);
+//    else
+//      Boost.xmpp.sendMessage(msg, null);
     var roomDiv = $t.urlToDivs[roomUrl];
-    Boost.log('roomUrl: ' + roomUrl + '; roomDiv: ' + roomDiv);
+//    Boost.log('roomUrl: ' + roomUrl + '; roomDiv: ' + roomDiv);
     var chatIdDiv = document.getElementById('-chat')
     var e = {
       getBody:   function() {return msg},
@@ -5746,7 +5564,7 @@ function onDlgContentResize(e){
 
 }
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
-  if (Popup.mobile) {
+  if (Browser.mobile) {
     div.style.left = 0 + 'px';
     div.style.top  = 0 + 'px';
     div.style.width = screen.width;
@@ -5761,7 +5579,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   }
 
   var istyle   = iframe.style;
-  if (Popup.ie)
+  if (Browser.ie)
     istyle.visibility    = Popup.HIDDEN;
   div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
   var scrollXY = getScrollXY();
@@ -5797,7 +5615,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   var divCoords = getElementDimensions(div);
   var margin = 40;
   // cut popup dimensions to fit the screen
-  var mustCutDimension = (div.id == 'pane2' || Popup.joystickBased) ? false: true;
+  var mustCutDimension = (div.id == 'pane2' || Browser.joystickBased) ? false: true;
   // var mustCutDimension = false;
   if (mustCutDimension) {
     var xFixed = false;
@@ -5876,7 +5694,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       zIndex = z;
   }
   div.style.zIndex = zIndex + 2;
-  if (Popup.ie) {
+  if (Browser.ie) {
     // for listboxes in Dialog - makes iframe under a listbox.
     var par = getAncestorById(div, 'pane2');
     if(par && iframe.id == 'popupIframe') {
@@ -5898,7 +5716,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   // Make position/size of the underlying iframe same as div's position/size
   var iframeLeft = left;
   var iframeTop = top;
-  if(Popup.ie) {
+  if(Browser.ie) {
     istyle.width     = divCoords.width  + 'px';
     istyle.height    = divCoords.height + 'px';
     // to make dialog shadow visible (without iframe background).
@@ -5922,12 +5740,12 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     }
   }
 
-  if (Popup.ie) // only IE has a problem with form elements 'showing through' the popup
+  if (Browser.ie) // only IE has a problem with form elements 'showing through' the popup
     istyle.display = 'inline';
   reposition(div,    left, top); // move the div box to the adjusted position
   reposition(iframe, iframeLeft, iframeTop); // place iframe under div
   // if (!opera && !konqueror) {
-  if (Popup.ie) // only IE has a problem with form elements 'showing through' the popup
+  if (Browser.ie) // only IE has a problem with form elements 'showing through' the popup
       istyle.visibility  = Popup.VISIBLE;
   div.style.visibility = Popup.VISIBLE; // finally make div visible
 
@@ -5994,7 +5812,7 @@ function doConfirm(msg) {
  * Creates absolute URI from base + uri. Fixing IE ignoring of base tag uri
  */
 function rel(uri) {
-  if (Popup.ie) {
+  if (Browser.ie) {
     var b = document.getElementsByTagName('base');
     if (b  &&  b[0]  &&  b[0].href) {
       if (b[0].href.substr(b[0].href.length-1) == '/' && uri.charAt(0) == '/')
@@ -6074,14 +5892,14 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
 
   // visual cue that click was made, using the tooltip
   var addLineItem = document.location.href.indexOf('addLineItem.html?') != -1;
-  if (!Popup.mobile  &&  !Popup.penBased  &&  !addLineItem)
+  if (!Browser.mobile  &&  !Browser.penBased  &&  !addLineItem)
     loadingCueStart(event, hotspot);
 
   if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla,
                                                                         // Safari,...
     try {
       http_request = new XMLHttpRequest();
-      if (!Popup.opera8 && !Popup.s60Browser) { // not Opera 8.0
+      if (!Browser.opera8 && !Browser.s60Browser) { // not Opera 8.0
         if (typeof(http_request.overrideMimeType) != 'undefined' && http_request.overrideMimeType) {
           http_request.overrideMimeType('text/xml');
         }
@@ -6127,8 +5945,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if (http_request.readyState != 4) // ignore for now: 0-Unintialized,
                                       // 1-Loading, 2-Loaded, 3-Interactive
       return;
-    Boost.log('got back on postrequest for ' + url);
-    if (!Popup.mobile  &&  !Popup.penBased  &&  !addLineItem)
+//    Boost.log('got back on postrequest for ' + url);
+    if (!Browser.mobile  &&  !Popup.penBased  &&  !addLineItem)
       loadingCueFinish();
     var location;
     try {
@@ -6148,12 +5966,12 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       else
         status = 400;
     }
-    Boost.log('got back on postrequest, status ' + status);
+//    Boost.log('got back on postrequest, status ' + status);
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
-      if (div)
-        Boost.view.setProgressIndeterminate(false);
+//      if (div)
+//        Boost.view.setProgressIndeterminate(false);
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
     else if (status == 200) {
@@ -6194,16 +6012,16 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       }
 
       if (location == url) {
-        Boost.log("recursive redirect to " + url);
+//        Boost.log("recursive redirect to " + url);
         return;
       }
 
       var paintInPage;
-      if (Popup.mobile)
+      if (Browser.mobile)
         paintInPage = true;
       if (!paintInPage) {
         try { paintInPage = http_request.getResponseHeader('X-Paint-In-Page');} catch (exc) {}
-        Boost.log('got back on postrequest, paintinpage ' + paintInPage);
+//        Boost.log('got back on postrequest, paintinpage ' + paintInPage);
       }
       if (paintInPage && paintInPage == 'false') {
         document.location = location;  // reload full page
@@ -6223,18 +6041,18 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       }
     }
     else {
-      Boost.log('AJAX request status(' + status + ', ' + url + ')');
+//      Boost.log('AJAX request status(' + status + ', ' + url + ')');
       openAjaxStatistics(event, http_request);
       //Boost.view.setProgressIndeterminate(false);
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
   };
-  if (!Popup.opera8  && !Popup.s60Browser) {
+  if (!Browser.opera8  && !Browser.s60Browser) {
     try {
       http_request.open('POST', url, true);
     }
     catch (err) {
-      Boost.log("error in ajax request open(): " + url + '?' + parameters);
+//      Boost.log("error in ajax request open(): " + url + '?' + parameters);
       callback(clonedEvent, div, hotspot, "", url);
       return;
     }
@@ -6246,10 +6064,10 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       http_request.setRequestHeader("X-Referer",     document.location.href);
     }
     catch (err1) {
-      Boost.log('ajax request - X-Referer header could not be set: ' + url + '?' + parameters);
+//      Boost.log('ajax request - X-Referer header could not be set: ' + url + '?' + parameters);
     }
     http_request.setRequestHeader("X-Ajax",       "y");
-    if (Popup.android)
+    if (Browser.android)
       http_request.setRequestHeader("X-Accept-Boost", "menu-button");
     http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     // cookie is inherited by widget and now needs to be set on request to not to be forced to login
@@ -6260,18 +6078,18 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if(typeof noCache != 'undefined' && noCache == true) // for widgets
       http_request.setRequestHeader("Cache-Control","no-cache");
 
-    if (parameters && !Popup.webkit) { // webkit considers setting this header a security risk
+    if (parameters && !Browser.webkit) { // webkit considers setting this header a security risk
       http_request.setRequestHeader("Content-length", parameters.length);
     }
     // below 2 line commented - made IE wait with ~1 minute timeout
     // http_request.setRequestHeader("Connection", "close");
     if (div)
-      Boost.view.setProgressIndeterminate(true);
+//      Boost.view.setProgressIndeterminate(true);
     if (parameters)
       parameters += '&X-Ajax=y'; // webkit does not send custom headers
     else
       parameters = 'X-Ajax=y';
-    if (Popup.android) {
+    if (Browser.android) {
       parameters += '&X-Accept-Boost=menu-button';
     }
     http_request.send(parameters);
@@ -6422,16 +6240,6 @@ function hideShowDivOnClick(divId, imgId){// , plusImg, minusImg) {
     div.style.display = 'block';
     img.style.display = 'none';
   }
-}
-
-function trim(s) {
-  while (s.substring(0,1) == ' ') {
-    s = s.substring(1,s.length);
-  }
-  while (s.substring(s.length-1,s.length) == ' ') {
-    s = s.substring(0,s.length-1);
-  }
-  return s;
 }
 
 /* used to show full text in a long text property, like Demand.description */
@@ -7188,7 +6996,7 @@ var closingOnEsc = {
     if(div == null || div.style.visibility == 'hidden')
       return;
    	var charCode = (e.charCode) ? e.charCode : ((e.keyCode) ? e.keyCode : ((e.which) ? e.which : 0));
-		if(Popup.s60Browser) {
+		if(Browser.s60Browser) {
 		  if(charCode != 8)
 		    return;
 		}
@@ -7221,7 +7029,7 @@ var advancedTooltip = {
  // initialized : false,
 
   init : function() {
-    if (Popup.mobile)
+    if (Browser.mobile)
       return;
 
     //if(this.initialized)
@@ -7245,7 +7053,7 @@ var advancedTooltip = {
 
   },
   onOptionsBtn : function() {
-    if (Popup.mobile)
+    if (Browser.mobile)
       return;
 
     if(this.optList == null)
@@ -7256,7 +7064,7 @@ var advancedTooltip = {
                     'left', advancedTooltip.onOptListItemSelect, ttContent);
   },
   onOptListItemSelect : function(idx) {
-    if (Popup.mobile)
+    if (Browser.mobile)
       return;
 
     advancedTooltip.optList.hide();
@@ -7264,7 +7072,7 @@ var advancedTooltip = {
       advancedTooltip.shiftPrefSwitch();
   },
   showOptionsBtn : function()  {
-    if (Popup.mobile)
+    if (Browser.mobile)
       return;
 
     if(!this.tooltip)
@@ -7273,7 +7081,7 @@ var advancedTooltip = {
       this.optBtn.obj.style.display = "";
   },
   hideOptionsBtn : function()  {
-    if (Popup.mobile)
+    if (Browser.mobile)
       return;
 
     if(!this.tooltip)
@@ -7283,7 +7091,7 @@ var advancedTooltip = {
   },
   // shift pref --------------------------------
   isShiftRequired : function() {
-    if (Popup.mobile)
+    if (Browser.mobile)
       return;
 
     if(!this.tooltip)
@@ -7291,7 +7099,7 @@ var advancedTooltip = {
     return this.options.isShiftRequired;
   },
   initShiftPref : function () {
-    if (Popup.mobile)
+    if (Browser.mobile)
       return;
 
 	  if(Popup.isShiftRequired == null) {
@@ -7311,7 +7119,7 @@ var advancedTooltip = {
     this.updateOptListItem(0);
   },
   shiftPrefSwitch : function () {
-    if (Popup.mobile)
+    if (Browser.mobile)
       return;
 
     this.options.isShiftRequired = !this.options.isShiftRequired;
@@ -9023,7 +8831,7 @@ var FullScreenPopup = {
   submitBtn : null,
 
   show : function(div, hotspot) {
-    if(!Popup.mobile)
+    if(!Browser.mobile)
       return false;
 
     this.div = div;
@@ -9374,9 +9182,9 @@ var TabSwap = {
     phStl.width = this.movedTab.offsetWidth;
     phStl.height = this.movedTab.offsetHeight;
 
-    if(Popup.ie)
+    if(Browser.ie)
       phStl.display = "inline";
-    else if(Popup.gecko)
+    else if(Browser.gecko)
       phStl.display = "-moz-inline-box";
     else
       phStl.display = "inline-block";
@@ -9855,11 +9663,11 @@ function hash(form, login_url) {
 /********************* end hashCode.js ******************/
 /** Set password and deviceId for mobile registration */
 function setHiddenFields() {
-  Boost.log("setHiddenFields()");
+//  Boost.log("setHiddenFields()");
   var f = document.forms['loginform'];
   var wasSubmitted = f.getAttribute("wasSubmitted");
   if (wasSubmitted) {
-    Boost.log("Can not submit the same form twice");
+//    Boost.log("Can not submit the same form twice");
     return false;
   }
   f.setAttribute("wasSubmitted", "true");

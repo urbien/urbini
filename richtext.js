@@ -832,18 +832,18 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	  if(this.isNetscape) // turn on Mozila's spellcheck
       this.document.body.spellcheck = true;
     
-    if(typeof Popup != 'undefined' && Popup.iPhone)
+    if(typeof Browser != 'undefined' && Browser.iPhone)
       this.document.body.style.webkitUserModify = "read-write";
     
     // load css of the parent page
     this.loadCSS();
 	}
 	this.browserDetection = function() {
-		if(Popup.ie)
+		if(Browser.ie)
 			this.isIE = true;
-		else if(Popup.opera)
+		else if(Browser.opera)
 			this.isOpera = true;
-		else if(Popup.gecko)
+		else if(Browser.gecko)
 		  this.isNetscape = true;
 	}
 	this.setHandlers = function() {
@@ -855,9 +855,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(this.rtePref.autoClose) {
       addEvent(document, 'click', this.onlosefocus, false);
 
-      if(Popup.ie)
+      if(Browser.ie)
 		    addEvent(this.iframeObj, 'focus', this.onfocus, false);
-			else if(Popup.safari)
+			else if(Browser.safari)
 			  addEvent(this.window, 'focus', this.onfocus, false);
 			else // FF, Opera
 			  addEvent(this.document, 'focus', this.onfocus, false);

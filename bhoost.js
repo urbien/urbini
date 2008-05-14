@@ -112,7 +112,7 @@ var Boost = {
         setInterval($t.eventArrived, 1000);
       }
       else {
-        if (Popup.android) {
+        if (Browser.android) {
         Boost.log('adding native keydown event handler');
         addEvent(document, 'keypress', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
         addEvent(document, 'keydown', $t.eventArrived, false); // this fake key event is programatically injected by android LablZ adapter
@@ -120,6 +120,7 @@ var Boost = {
         }
       }
     }
+    
     if (typeof jsiView != 'undefined')
       $t.view = jsiView;
     else {
@@ -158,7 +159,7 @@ var Boost = {
     if ($t.logger) {
       $t.logger.log("Boost: " + text);
     }
-    else if (!Popup.ie && typeof console != 'undefined') {
+    else if (!Browser.ie && typeof console != 'undefined') {
       console.log("Boost: " + text);
     }
 //    else {
@@ -277,7 +278,7 @@ var Boost = {
 
   init: function(event) {
     var $t = Mobile;
-    if (!Popup.mobile)
+    if (!Browser.mobile)
       return;
     Boost.view.setProgressIndeterminate(false);
 
@@ -1149,7 +1150,7 @@ var Boost = {
   checkLocation: function() {
     var $t = Mobile;
     var hashVal;
-    if (Popup.gecko)
+    if (Browser.gecko)
       hashVal = location.hash.substr(1);
     else
       hashVal = decodeURIComponent(location.hash).substr(1);
