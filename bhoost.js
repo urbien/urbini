@@ -343,7 +343,7 @@ var Boost = {
       var currentDiv = document.getElementById('mainDiv');
       insertAfter(currentDiv.parentNode, div, currentDiv);
     }
-    div.style.visibility = Popup.HIDDEN;
+    div.style.visibility = "hidden";
     div.style.display = "none";
     for (var i=0; i<history.length; i++) {
 
@@ -678,12 +678,12 @@ var Boost = {
       setInnerHtml(div, div_empty.innerHTML);
       div.id = divId.toLowerCase();
       div.style.display = 'none';
-      div.style.visibility = Popup.HIDDEN;
+      div.style.visibility = "hidden";
       $t.urlToDivs[divId] = div;
       $t.activatePrivateChat(div, sender);
     }
 //    div.style.display = 'inline';
-//    div.style.visibility = Popup.VISIBLE;
+//    div.style.visibility = "visible";
 
     Mobile.insertChatMessage(e, div);
     return div;
@@ -866,7 +866,7 @@ var Boost = {
     var optionsDiv = document.getElementById('menu_Options');
     if (!id) {
       if (optionsDiv) {
-        optionsDiv.style.visibility = Popup.HIDDEN;
+        optionsDiv.style.visibility = "hidden";
         optionsDiv.style.display = "none";
       }
 
@@ -897,7 +897,7 @@ var Boost = {
       return null;
     }
     if (id == 'menu_cancel') {
-      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.visibility = "hidden";
       optionsDiv.style.display = "none";
       var currentDiv = $t.urlToDivs[$t.currentUrl];
       if (!currentDiv) {
@@ -921,7 +921,7 @@ var Boost = {
     }
     if (id == 'menu_Refresh') {
       Boost.view.setProgressIndeterminate(true);
-      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.visibility = "hidden";
       optionsDiv.style.display = "none";
       return 'refresh';
     }
@@ -935,7 +935,7 @@ var Boost = {
       return null;
     }
     if (id == 'menu_List') {
-      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.visibility = "hidden";
       optionsDiv.style.display = "none";
       newUrl = $t.currentUrl;
       var idx = newUrl.indexOf('-featured=');
@@ -966,7 +966,7 @@ var Boost = {
         newUrl = newUrl + '&-list=y';
     }
     else if (id == 'menu_Grid') {
-      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.visibility = "hidden";
       optionsDiv.style.display = "none";
       newUrl = $t.currentUrl;
 
@@ -1001,7 +1001,7 @@ var Boost = {
       }
     }
     else if (id == 'menu_LargeGrid') {
-      optionsDiv.style.visibility = Popup.HIDDEN;
+      optionsDiv.style.visibility = "hidden";
       optionsDiv.style.display = "none";
       newUrl = $t.currentUrl;
 
@@ -1094,10 +1094,10 @@ var Boost = {
 */
 /*
       currentDiv.style.display = 'none';
-      currentDiv.style.visibility = Popup.HIDDEN;
+      currentDiv.style.visibility = "hidden";
       div.style.display = 'inline';
       div.classname = '';
-      div.style.visibility = Popup.VISIBLE;
+      div.style.visibility = "visible";
 */
       MobilePageAnimation.showPage(currentDiv, div);
       $t.setLocationHash(newUrl);
@@ -1331,7 +1331,7 @@ var Boost = {
     $t.currentUrl = document.location.href;
     div = document.createElement("DIV");
     div.id = 'browsingHistory';
-    div.style.visibility = Popup.HIDDEN;
+    div.style.visibility = "hidden";
     div.style.display = "none";
     if (!currentDiv) {
       currentDiv = document.getElementById('mainDiv');
@@ -1456,7 +1456,7 @@ var Boost = {
       //$t.urlToDivs[$t.currentUrl] = currentDiv;
     }
     if ($t.currentUrl == newUrl) {
-      currentDiv.style.visibility = Popup.VISIBLE;
+      currentDiv.style.visibility = "visible";
       currentDiv.style.display = "inline";
       return stopEventPropagation(e);
     }
@@ -1477,7 +1477,7 @@ var Boost = {
       div = document.createElement("DIV");
       // class "mobile_page" to distinguish it as a page.
       div.className = "mobile_page";
-      div.style.visibility = Popup.HIDDEN;
+      div.style.visibility = "hidden";
       div.style.display = "none";
     }
     else {
@@ -1494,7 +1494,7 @@ var Boost = {
       div = document.createElement("DIV");
       // class "mobile_page" to distinguish it as a page.
       div.className = "mobile_page";
-      div.style.visibility = Popup.HIDDEN;
+      div.style.visibility = "hidden";
       div.style.display = "none";
       $t.urlToDivs[newUrl] = div;
       if (currentDiv)
@@ -1547,7 +1547,7 @@ var Boost = {
       if (currentDiv)
         MobilePageAnimation.showPage(currentDiv, div);
       else {
-        div.style.visibility = Popup.VISIBLE;
+        div.style.visibility = "visible";
         div.style.display = "inline";
         Boost.view.setProgressIndeterminate(false);
       }
@@ -1591,7 +1591,7 @@ var Boost = {
     for (var i=0; i<elms.length; i++)
       curTbody.appendChild(elms[i]);
     var coords = getElementCoords(tr);
-    tr.style.visibility = Popup.HIDDEN;
+    tr.style.visibility = "hidden";
     tr.id = '';
     Boost.view.setProgressIndeterminate(false);
     Boost.log('left = ' + coords.left + '; top = ' + coords.top);
@@ -1672,11 +1672,11 @@ var Boost = {
     if (!viewsTr)
       return;
     if (views) {
-      viewsTr.style.visibility = Popup.VISIBLE;
+      viewsTr.style.visibility = "visible";
       viewsTr.style.display = "inline";
     }
     else {
-      viewsTr.style.visibility = Popup.HIDDEN;
+      viewsTr.style.visibility = "hidden";
       viewsTr.style.display = "none";
       return;
     }
@@ -1691,12 +1691,12 @@ var Boost = {
       found = false;
       for (var j=0; j<views.length  &&  !found; j++) {
         if (views[j] == id) {
-          td.style.visibility = Popup.VISIBLE;
+          td.style.visibility = "visible";
           found = true;
         }
       }
       if (!found)
-        td.style.visibility = Popup.HIDDEN;
+        td.style.visibility = "hidden";
     }
 
   },
@@ -1784,7 +1784,7 @@ var MobilePageAnimation = {
         return;
 
     if (this.curDiv != null) {
-      this.curDiv.style.visibility = Popup.HIDDEN;
+      this.curDiv.style.visibility = "hidden";
       this.curDiv.style.display = "none";
     }
 
@@ -1847,7 +1847,7 @@ var MobilePageAnimation = {
       curDivStl.width  = thisObj.wndWidth;
       curDivStl.position = "absolute";
 
-      newDivStl.visibility = Popup.VISIBLE;
+      newDivStl.visibility = "visible";
       newDivStl.display = "";
     }
 
@@ -1856,7 +1856,7 @@ var MobilePageAnimation = {
       setTimeout("MobilePageAnimation._animate();", thisObj.INTERVAL);
     }
     else { // stop animation
-      thisObj.curDiv.style.visibility = Popup.HIDDEN;
+      thisObj.curDiv.style.visibility = "hidden";
       thisObj.curDiv.style.display = "none";
       thisObj.curDiv = null;
       thisObj.totalOffset = 0;
@@ -1921,7 +1921,7 @@ var MobileMenuAnimation = {
 
     var optDivStl = this.optionsDiv.style;
     // hide menu if it is already opened
-    if(optDivStl.visibility == Popup.VISIBLE) {
+    if(optDivStl.visibility == "visible") {
       this.hide();
       return;
     }
@@ -1933,12 +1933,12 @@ var MobileMenuAnimation = {
     }
     optDivStl.zIndex = curPageDiv.style.zIndex + 1;
     optDivStl.display = "block";
-    optDivStl.visibility = Popup.VISIBLE;
+    optDivStl.visibility = "visible";
   },
   hide : function() {
     var optDivStl = this.optionsDiv.style;
     optDivStl.display = "none";
-    optDivStl.visibility = Popup.HIDDEN;
+    optDivStl.visibility = "hidden";
   },
   opaqueAnimation : function(div, from, to, step) {
     this.TIME_OUT = 0;
@@ -1963,4 +1963,24 @@ var MobileMenuAnimation = {
   }
 }
 
+/** Set password and deviceId for mobile registration */
+function setHiddenFields() {
+//  Boost.log("setHiddenFields()");
+  var f = document.forms['loginform'];
+  var wasSubmitted = f.getAttribute("wasSubmitted");
+  if (wasSubmitted) {
+//    Boost.log("Can not submit the same form twice");
+    return false;
+  }
+  f.setAttribute("wasSubmitted", "true");
+  var userId = f.elements['j_username'];
+  Boost.user.setUserId(userId.value);
+  var avatarName = f.elements['name'];
+  avatarName.value = userId.value;
 
+  var pwd = f.elements['j_password'];
+  pwd.value = Boost.user.getPassword();
+
+  var deviceId = f.elements['j_deviceId'];
+  deviceId.value = Boost.user.getDeviceId();
+}

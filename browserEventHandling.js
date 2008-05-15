@@ -76,14 +76,13 @@
 
     //***** Add smartlistbox handlers
     function addHandlers(event) {
-//      Packages.java.lang.System.out.println('onLoad 0: ' + new Date());
       if (window.parent != window) {
         onLoadPopup();
         return;
       }
-//      Packages.java.lang.System.out.println('onLoad 1: ' + new Date());
+
       interceptLinkClicks();
-      
+            
       if (typeof Mobile != 'undefined') {
         Boost.init(event);
         Mobile.init(event);
