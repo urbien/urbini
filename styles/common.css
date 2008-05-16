@@ -1268,8 +1268,9 @@ TD.toolbar {
 	PADDING-LEFT: 8px; width: 10px
 }
 
-.menuItem {
-}
+.menuItem { }
+.menuItem a { width: 95%; }
+
 .menuItemRed {
   color:red;
   font-weight:bold;
@@ -1284,8 +1285,8 @@ TD.toolbar {
   PADDING-RIGHT: 0px;	width: 10px;
 }
 
-.menuItemReset {
-}
+.menuItemReset { }
+.menuItemReset a { width: 95%; }
 
 .menuItemNoChoices {
 }

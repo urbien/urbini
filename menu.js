@@ -741,6 +741,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Reacts to clicks inside the popup
    */
   this.popupRowOnClick = function (e) {
+  
+//  debugger
+  
     e = getDocumentEvent(e); if (!e) return;
     var target = getTargetElement(e);
     var tr = getTrNode(target);
@@ -781,6 +784,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     //
     // if there is a link on this row - follow it
     //
+ //   debugger
+    if (target.tagName.toLowerCase() == 'a')
+      return;
     var anchors = tr.getElementsByTagName('A');
     if (anchors  &&  anchors.length != 0) {
       if (currentDiv) {
@@ -789,8 +795,14 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
       var anchor = anchors[0];
       var trg = anchor.getAttribute('target');
-      if (trg)
+   //   debugger
+      if (trg) {
+        var url = anchor.getAttribute('href');
+        window.open(url, trg, "width=600, height=600, top=20, left=20, menubar=no,"
+           + "status=0, location=no, toolbar=no, scrollbars=1 status=no, resizable=yes");
+        stopEventPropagation(e);
         return true;
+      }
 
       if (anchor.id.startsWith('-inner'))       // display as on-page dialog
         return onClickDisplayInner(e, anchor);
