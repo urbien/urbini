@@ -1406,12 +1406,6 @@ var Boost = {
     }
 
     var newUrl = (typeof link == 'string') ? link : link.href;
-    if (!newUrl  ||  newUrl == 'about:blank')
-      return stopEventPropagation(e);
-    var isRefresh = u == 'refresh';
-    if (!isRefresh)
-      $t.browsingHistoryPos++;
-
 
     var isMore;
     var isRemoteLink;
@@ -1426,8 +1420,8 @@ var Boost = {
       if (isMore) {
         var id = link.id;
         if (id  &&  id.startsWith('recNmb_')) {
-          var recNmb = parseInt(id.substring(7));
-          var newRecNmb = parseInt(id.substring(7)) + 10;
+//          var recNmb = parseInt(id.substring(7));
+          var newRecNmb = parseInt(id.substring(7));// + 10;
           link.id = 'recNmb_' + newRecNmb;
           var idx = $t.currentUrl.indexOf('recNmb=');
           if (idx == -1)
@@ -1442,6 +1436,11 @@ var Boost = {
         }
       }
     }
+    if (!newUrl  ||  newUrl == 'about:blank' && !isMore)
+      return stopEventPropagation(e);
+    var isRefresh = u == 'refresh';
+    if (!isRefresh && !isMore)
+      $t.browsingHistoryPos++;
 
 //    alert("currentUrl: " + $t.currentUrl + "; newUrl: " + newUrl);
     //////////////////

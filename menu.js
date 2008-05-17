@@ -3095,72 +3095,6 @@ function getANode(elem) {
 
 // ********************* helper functions ********************************
 
-
-function Dim() {
-  this.left   = 0;
-  this.top    = 0;
-  this.width  = 0;
-  this.height = 0;
-
-  var self = this;
-
-  this.equals = function (dim) {
-    if (self.top   == dim.top   && self.left   == dim.left &&
-        self.width == dim.width && self.height == dim.height)
-      return true;
-    else
-      return false;
-
-  }
-}
-
-function getElementPosition(elem, e) {
-  // special position that is relative to the element
-  if (elem  &&  typeof elem.forcedPosition != 'undefined') {
-    var scrollXY = getScrollXY();
-    if (elem.forcedPosition == Popup.POS_LEFT_TOP)
-      return {left : scrollXY[0] + 10, top : scrollXY[1]};
-  }
-
-  var xy;
-  if (e && !e.type.startsWith('key')) {
-    xy = getMouseEventCoordinates(e);
-  }
-  else {
-    xy = getObjectUpperLeft(elem);
-  }
-  return {left : xy.x, top : xy.y};
-}
-
-function getElementCoords(elem, e) {
-  var dim = new Dim();
-  var elemPos = getElementPosition(elem, e);
-  dim.left = elemPos.left;
-  dim.top  = elemPos.top;
-
-  var d = getElementDimensions(elem);
-  dim.width  = d.width;
-  dim.height = d.height;
-  return dim;
-}
-
-function getElementDimensions(elem) {
-  var dim = new Dim();
-  if (Browser.ns4) {
-    dim.width  = (elem.document.width)  ? elem.document.width  : elem.clip.width;
-    dim.height = (elem.document.height) ? elem.document.height : elem.clip.height;
-  }
-  else if (Browser.ie4) {
-    dim.width  = (elem.style.pixelWidth)  ? elem.style.pixelWidth  : elem.offsetWidth;
-    dim.height = (elem.style.pixelHeight) ? elem.style.pixelHeight : elem.offsetHeight;
-  }
-  else {
-    dim.width  = (elem.style.width)  ? parseInt(elem.style.width)  : parseInt(elem.offsetWidth);
-    dim.height = (elem.style.height) ? parseInt(elem.style.height) : parseInt(elem.offsetHeight);
-  }
-  return dim;
-}
-
 function findPosX(obj) {
   var curleft = 0;
   if (obj.offsetParent) {
@@ -3197,38 +3131,6 @@ function getCoordinates(obj) {
 
     return {Xoffset: x, Yoffset: y};
 }
-
-function getObjectUpperLeft(obj){
-    /* For postioning in reference to link */
-
-    var x = obj.offsetLeft;
-    var y = obj.offsetTop;
-
-    /*
-     * Calculate page X,Y of upper left corner of element where toolTip is to be
-     * shown
-     */
-    obj = obj.offsetParent;
-    while (obj) {
-        x += obj.offsetLeft;
-        y += obj.offsetTop;
-
-        if (typeof obj.clientLeft != "undefined" && obj.tagName != "BODY") {
-                /*
-                 * MS IE doesn't include borders in offset values; these are
-                 * obtained with clientLeft and Top and added in
-                 */
-                x += obj.clientLeft;
-                y += obj.clientTop;
-        }
-
-        if (obj.tagName == "HTML") break; // KHTML KDE has an unidentified
-                                          // object above html
-        obj = obj.offsetParent;
-    }// endwhile
-
-    return {x:x, y:y};
-}// eof getObjectUpperLeft
 
 function getMouseEventCoordinates(e) {
   var posx = 0;
