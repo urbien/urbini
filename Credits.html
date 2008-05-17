@@ -15,13 +15,15 @@ Quite often LablZ products are running in a hosted environment
 in their own data centers. Thus note that Apache, BSD, MIT, NPL, LGPL,
 Creative Commons Attribution License and Sun Binary licenses allow
 redistribution of the archives listed below. The only potentially
-questionable for redistribution with commercial product (but not for use in hosting solutions)
+questionable for redistribution with commercial product (but not for
+use in hosting solutions)
 is GPL licensed MySQL JDBC Driver. Yet, the OpenSource.org explains: "<i>Software
 linked with GPLed libraries only inherits the GPL if it forms a single
 work, not any software with which they are merely distributed.</i>"&nbsp;
 Source:
 http://web.archive.org/web/20011019055512/opensource.org/docs/definition.html
-. LablZ UniversalPlatform supports a number of SQL databases via JDBC interface, and not just MySQL -
+. LablZ UniversalPlatform supports a number of SQL databases via JDBC
+interface, and not just MySQL -
 so we believe we are in full compliance with GPL.<br>
 <br>
 We must state that although each individual component could be replaced
@@ -125,14 +127,17 @@ Apache build tool <br>
       <td class="c3">Apache Software License Version 1.1</td>
     </tr>
     <tr>
-    <td class="c3"> <a href="http://poi.apache.org/">Apache POI</a> - Apache POI - Java API To Access Microsoft Format Files <br>
+      <td class="c3"> <a href="http://poi.apache.org/">Apache POI</a>
+- Apache POI - Java API To Access Microsoft Format Files <br>
       </td>
       <td class="c3">poi.jar<br>
       </td>
       <td class="c3">3.0.1</td>
       <td class="c3">Apache Software License Version 2.0</td>
     </tr>
-    <td class="c3"> <a href="http://xmlbeans.apache.org/">Apache XMLBeans</a> - XMLBeans Development Kit Version 2.3.0 <br>
+    <tr>
+      <td class="c3"> <a href="http://xmlbeans.apache.org/">Apache
+XMLBeans</a> - XMLBeans Development Kit Version 2.3.0 <br>
       </td>
       <td class="c3">xbean.jar<br>
       </td>
@@ -291,22 +296,48 @@ security provider - Bouncy Castle <br>
       </td>
     </tr>
     <tr>
-      <td class="c3"> <a href="http://www.apache.org">commons-fileupload</a>
-FileUpload - Apache Jakarta project <br>
+      <td class="c3"> <a href="http://commons.apache.org/">commons-fileupload</a>
+- Apache Commons project <br>
+Used in our servlet engine to parse POST form-multipart.<br>
       </td>
       <td class="c3">commons-fileupload.jar <br>
       </td>
-      <td class="c3">1.0</td>
+      <td class="c3">1.2</td>
       <td class="c3">Apache Software License Version 1.1</td>
     </tr>
     <tr>
-      <td class="c3"> <a href="http://www.apache.org">commons-lang</a>
-Lang classes - Apache Jakarta project <br>
+      <td style="vertical-align: top;"><a
+ href="http://commons.apache.org/">commons-io</a>
+- Apache Commons project (added this jar only because
+commons-fileupload depended on it)<br>
+      </td>
+      <td style="vertical-align: top;">commons-io.jar<br>
+      </td>
+      <td style="vertical-align: top;">1.4<br>
+      </td>
+      <td style="vertical-align: top;">Apache Software License Version
+1.1</td>
+    </tr>
+    <tr>
+      <td class="c3"> <a href="http://commons.apache.org/">commons-lang</a>
+Lang classes - Apache Commons project <br>
       </td>
       <td class="c3">commons-lang.jar <br>
       </td>
       <td class="c3">2.0</td>
       <td class="c3">Apache Software License Version 1.1</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><a
+ href="http://commons.apache.org/">commons-net</a>
+- Apache FTP and other network clients, like TFTP, SMTP, NNTP, Telnet,
+Finger, POP3, Whois</td>
+      <td style="vertical-align: top;">commons-net.jar</td>
+      <td style="vertical-align: top;">1.0.0 Originally developed by
+ORO (known for a
+popular Regexp package), now available through Apache </td>
+      <td style="vertical-align: top;">Apache Software License Version
+1.1</td>
     </tr>
     <tr>
       <td class="c3"> <a href="http://www.bouncycastle.org">S/MIME</a>
@@ -333,19 +364,6 @@ Aug 1 2006</a> <br>
  href="http://cvs.sourceforge.net/viewcvs.py/*checkout*/jtidy/jtidy/LICENSE?rev=1.1">BSD-like</a>
       <br>
       </td>
-    </tr>
-    <tr>
-      <td class="c3"> <a
- href="http://jakarta.apache.org/commons/net/index.html">Commons-net</a>
-- Apache FTP and other network clients, like TFTP, SMTP, NNTP, Telnet,
-Finger, POP3, Whois <br>
-      </td>
-      <td class="c3">commons-net.jar <br>
-      </td>
-      <td class="c3">1.0.0 Originally developed by ORO (known for a
-popular Regexp package), now available through Apache <br>
-      </td>
-      <td class="c3">Apache Software License Version 1.1</td>
     </tr>
     <tr>
       <td class="c3"> <a href="http://jtds.sourceforge.net/">jtds</a>
@@ -445,27 +463,6 @@ become part</a> of J2SE 1.5 <br>
       </td>
     </tr>
     <tr>
-      <td class="c3"> <a href="http://www.w3.org/Status#Sirpac">SiRPAC</a>
-- RDF compiler <br>
-      </td>
-      <td class="c3">misc.jar <br>
-      </td>
-      <td class="c3"> <br>
-      </td>
-      <td class="c3"> <a
- href="http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231">Close
-to BSD</a>, except changes or modifications must be described and <a
- href="http://www.w3.org/Consortium/Legal/2002/copyright-software-short-notice-20021231.html">
-this notice must be made available</a>. <br>
-      <br>
-We made bug fixes to SiRPAC that are logged in our CVS repository and
-can be made available to any party interested in them, which is
-unlikely since SiRPAC is not evolving. We are in the process of
-removing the
-dependency on it. <br>
-      </td>
-    </tr>
-    <tr>
       <td class="c1"> <a href="http://sourceforge.net/projects/mpxj">MS
 Project API</a> <br>
       </td>
@@ -497,7 +494,8 @@ API To access Microsoft Format Files</a> <br>
       </td>
     </tr>
     <tr>
-      <td class="c3"> <a href="http://asm.objectweb.org/">ASM libraries</a> - ASM, Java bytecode manipulation framework <br>
+      <td class="c3"> <a href="http://asm.objectweb.org/">ASM libraries</a>
+- ASM, Java bytecode manipulation framework <br>
       </td>
       <td class="c3">asm.jar (in distribution called as asm-all-3.0.jar)<br>
       </td>
@@ -507,15 +505,21 @@ API To access Microsoft Format Files</a> <br>
       </td>
     </tr>
     <tr>
-      <td class="c3"> <a href="http://java.sun.com/products/java-media/jai/">Java Advanced Imaging (JAI)</a> <br>
+      <td class="c3"> <a
+ href="http://java.sun.com/products/java-media/jai/">Java Advanced
+Imaging (JAI)</a> <br>
       </td>
       <td class="c3">jai_core.jar, jai_codec.jar <br>
       </td>
       <td class="c3">1.1.3 released September 2006</td>
-      <td class="c3">for commercial use under a no-fee <a href="https://jai.dev.java.net/jdl-jai.pdf">Java Distribution License (JDL).</a></td>
+      <td class="c3">for commercial use under a no-fee <a
+ href="https://jai.dev.java.net/jdl-jai.pdf">Java Distribution License
+(JDL).</a></td>
     </tr>
     <tr>
-      <td class="c3"> <a href="http://www.drewnoakes.com/code/exif/index.html">metadata extraction in java</a> <br>
+      <td class="c3"> <a
+ href="http://www.drewnoakes.com/code/exif/index.html">metadata
+extraction in java</a> <br>
       </td>
       <td class="c3">metadata-extractor.jar <br>
       </td>
@@ -556,56 +560,57 @@ photo "annotations" </td>
     </tr>
     <tr>
       <td style="vertical-align: top;"><a
- href="http://www.brooksandrus.com/blog/2006/08/11/lightweight-swf-header-reader-java-ii/">Lightweight SWF Header Reader</a><br>
+ href="http://www.brooksandrus.com/blog/2006/08/11/lightweight-swf-header-reader-java-ii/">Lightweight
+SWF Header Reader</a><br>
       </td>
-      <td style="vertical-align: top;">Java solution for parsing the header
- of any swf-file </td>
+      <td style="vertical-align: top;">Java solution for parsing the
+header of any swf-file </td>
       <td style="vertical-align: top;">Version 1.0 </td>
       <td style="vertical-align: top;"><a
  href="http://www.opensource.org/licenses/mit-license.php">MIT License </a><br>
       </td>
     </tr>
-
     <tr>
-      <td style="vertical-align: top;"><a
- href="http://poi.apache.org/">Apache POI</a><br>
+      <td style="vertical-align: top;"><a href="http://poi.apache.org/">Apache
+POI</a><br>
       </td>
-      <td style="vertical-align: top;">Java API To Access Microsoft Format Files</td>
+      <td style="vertical-align: top;">Java API To Access Microsoft
+Format Files</td>
       <td style="vertical-align: top;">3.0.1</td>
       <td style="vertical-align: top;"><a
- href="http://www.apache.org/foundation/licence-FAQ.html">Apache Software License</a><br>
+ href="http://www.apache.org/foundation/licence-FAQ.html">Apache
+Software License</a><br>
       </td>
     </tr>
-
     <tr>
-      <td style="vertical-align: top;"><a href="http://jexcelapi.sourceforge.net/">Java Excel API </a><br>
+      <td style="vertical-align: top;"><a
+ href="http://jexcelapi.sourceforge.net/">Java Excel API </a><br>
       </td>
-      <td style="vertical-align: top;">A Java API to read, write, and modify Excel spreadsheets</td>
+      <td style="vertical-align: top;">A Java API to read, write, and
+modify Excel spreadsheets</td>
       <td style="vertical-align: top;">2.6.6</td>
       <td style="vertical-align: top;">LGPL<br>
       </td>
     </tr>
-
     <tr>
-      <td style="vertical-align: top;"><a href="http://developer.yahoo.com/yui/compressor">YUI Compressor</a><br>
+      <td style="vertical-align: top;"><a
+ href="http://developer.yahoo.com/yui/compressor">YUI Compressor</a><br>
       </td>
       <td style="vertical-align: top;">The YUI Compressor is JavaScript and CSS minifier.</td>
       <td style="vertical-align: top;">2.3.5</td>
       <td style="vertical-align: top;">BSD<br>
       </td>
     </tr>
-
     <tr>
-      <td style="vertical-align: top;"><a href="http://jnotify.sourceforge.net/">JNotify</a><br>
+      <td style="vertical-align: top;"><a
+ href="http://jnotify.sourceforge.net/">JNotify</a><br>
       </td>
-      <td style="vertical-align: top;">JNotify is a java library that allow java application to listen to file system events.</td>
+      <td style="vertical-align: top;">JNotify is a java library that
+allow java application to listen to file system events.</td>
       <td style="vertical-align: top;">0.91</td>
       <td style="vertical-align: top;">LGPL<br>
       </td>
     </tr>
-
-
-
     <tr>
       <td colspan="4" class="c5"> <span class="c2">Libraries with GPL
 license</span><br>
