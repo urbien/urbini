@@ -82,7 +82,7 @@ var mobileCookie = readCookie('mobile_mode');
 Browser.mobile = Browser.android || Browser.mobileSafari || Browser.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
 
 
-// **************************************************** 
+// ****************************************************
 // AJAX
 // ****************************************************
 // AJAX request.
@@ -919,4 +919,45 @@ function changeOpacity(obj, level) {
 			obj.style.opacity = level;
 		else if(obj.style.filter != 'undefined')
 			obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
+}
+
+function copyAttributes(oNode, oNew) {
+  for(var i = 0; i < oNode.attributes.length; i++) {
+    var a = oNode.attributes[i];
+    if (a.value == null || a.value == 'null' || a.value == '')
+      continue;
+    if (a.name == 'style')
+      continue;
+    var value;
+    if (a.value == 'false')
+      value = false;
+    else if (a.value == 'true')
+      value = true;
+    else
+      value = a.value;
+    if (a.name == 'disabled' && value == false)
+      continue;
+    oNew.setAttribute(a.name, a.value);
+  }
+  oNew.setAttribute('style', oNode.style.cssText);
+  // oNew.style.cssText = oNode.style.cssText;
+}
+
+function copyTableRow(tbody, pos, oldTr) {
+  var newTr = document.createElement('tr');
+  var oldCells = oldTr.cells;
+  for (var i=0; i<oldCells.length; i++) {
+    var cell = document.createElement('td');
+    copyAttributes(oldCells[i], cell);
+    newTr.appendChild(cell);
+  }
+  if (pos == tbody.rows.length)
+    tbody.appendChild(newTr);
+  else
+    tbody.insertBefore(newTr, tbody.rows[pos]);
+  for (var i=0; i<oldCells.length; i++) {
+    newTr.cells[i].innerHTML = oldCells[i].innerHTML;
+  }
+  copyAttributes(oldTr, newTr);
+  return newTr;
 }

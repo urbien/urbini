@@ -741,9 +741,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Reacts to clicks inside the popup
    */
   this.popupRowOnClick = function (e) {
-  
+
 //  debugger
-  
+
     e = getDocumentEvent(e); if (!e) return;
     var target = getTargetElement(e);
     var tr = getTrNode(target);
@@ -4450,61 +4450,6 @@ function addAndShowWait(event, body, hotspot, content, noInsert, isReplace)	{
 
   interceptLinkClicks(divCopyTo);
 }
-function addWithoutProcessing(event) {
-  var $t = Mobile;
-  var chatRoom = $t.currentUrl;
-  var idx = chatRoom.indexOf('@');
-  var elms = this.getElementsByTagName('INPUT');
-  for (var i=0; i<elms.length; i++) {
-    var elm = elms[i];
-    if (elm.name == '.title')
-      subject = elm;
-  }
-  var contactName = $t.myScreenName;
-  var tbodyId = 't_chat';
-  return addBeforeProcessing(chatRoom, tbodyId, subject, event);
-}
-// adds comment/resource before server confirms that resource was successfully created
-function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
-  chatRoom = chatRoom.toLowerCase();
-  var retCode = stopEventPropagation(event);
-  var $t = Mobile;
-  var msg;
-  msg = subject.value;
-  subject.value = '';
-  if (Browser.mobile) {
-    window.scrollTo(0, 3000);
-//    subject.focus();
-//    android.scroll();
-//    Boost.log('sending message: ' + msg);
-//    chatRoom = "neoyou@conference.sage";  // hack
-    var roomUrl = $t.chatRooms[chatRoom];
-    if (!roomUrl  &&  chatRoom.indexOf('@') != -1) {
-      roomUrl = chatRoom;
-//      Boost.xmpp.sendMessage(msg, roomUrl + "/marco-android");
-    }
-//    else
-//      Boost.xmpp.sendMessage(msg, null);
-    var roomDiv = $t.urlToDivs[roomUrl];
-//    Boost.log('roomUrl: ' + roomUrl + '; roomDiv: ' + roomDiv);
-    var chatIdDiv = document.getElementById('-chat')
-    var e = {
-      getBody:   function() {return msg},
-      getSender: function() {return $t.myName + '@' + $t.XMPPHost},
-      getTime:   function() {return new Date().getTime()}
-    };
-    $t.insertChatMessage(e, roomDiv);
-  }
-  else {
-    var form = document.forms['tablePropertyList'];
-    var params = getFormFilters(form, true) + "&-noRedirect=y";
-    postRequest(event, 'mkresource', params, div, newTr, updateTR);
-  }
-  return retCode;
-
-  function updateTR(event, body, hotspot, content)  {
-  }
-}
 
 function extractTotalFrom(tot) {
   var ii = 0;
@@ -6169,47 +6114,6 @@ function cloneNode(oNode) {
   }
 
   return oNew;
-}
-
-function copyAttributes(oNode, oNew) {
-  for(var i = 0; i < oNode.attributes.length; i++) {
-    var a = oNode.attributes[i];
-    if (a.value == null || a.value == 'null' || a.value == '')
-      continue;
-    if (a.name == 'style')
-      continue;
-    var value;
-    if (a.value == 'false')
-      value = false;
-    else if (a.value == 'true')
-      value = true;
-    else
-      value = a.value;
-    if (a.name == 'disabled' && value == false)
-      continue;
-    oNew.setAttribute(a.name, a.value);
-  }
-  oNew.setAttribute('style', oNode.style.cssText);
-  // oNew.style.cssText = oNode.style.cssText;
-}
-
-function copyTableRow(tbody, pos, oldTr) {
-  var newTr = document.createElement('tr');
-  var oldCells = oldTr.cells;
-  for (var i=0; i<oldCells.length; i++) {
-    var cell = document.createElement('td');
-    copyAttributes(oldCells[i], cell);
-    newTr.appendChild(cell);
-  }
-  if (pos == tbody.rows.length)
-    tbody.appendChild(newTr);
-  else
-    tbody.insertBefore(newTr, tbody.rows[pos]);
-  for (var i=0; i<oldCells.length; i++) {
-    newTr.cells[i].innerHTML = oldCells[i].innerHTML;
-  }
-  copyAttributes(oldTr, newTr);
-  return newTr;
 }
 
 function submitUpdate(formName) {

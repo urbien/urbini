@@ -120,7 +120,7 @@ var Boost = {
         }
       }
     }
-    
+
     if (typeof jsiView != 'undefined')
       $t.view = jsiView;
     else {
@@ -1983,4 +1983,60 @@ function setHiddenFields() {
 
   var deviceId = f.elements['j_deviceId'];
   deviceId.value = Boost.user.getDeviceId();
+}
+
+function addWithoutProcessing(event) {
+  var $t = Mobile;
+  var chatRoom = $t.currentUrl;
+  var idx = chatRoom.indexOf('@');
+  var elms = this.getElementsByTagName('INPUT');
+  for (var i=0; i<elms.length; i++) {
+    var elm = elms[i];
+    if (elm.name == '.title')
+      subject = elm;
+  }
+  var contactName = $t.myScreenName;
+  var tbodyId = 't_chat';
+  return addBeforeProcessing(chatRoom, tbodyId, subject, event);
+}
+// adds comment/resource before server confirms that resource was successfully created
+function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
+  chatRoom = chatRoom.toLowerCase();
+  var retCode = stopEventPropagation(event);
+  var $t = Mobile;
+  var msg;
+  msg = subject.value;
+  subject.value = '';
+  if (Browser.mobile) {
+    window.scrollTo(0, 3000);
+//    subject.focus();
+//    android.scroll();
+//    Boost.log('sending message: ' + msg);
+//    chatRoom = "neoyou@conference.sage";  // hack
+    var roomUrl = $t.chatRooms[chatRoom];
+    if (!roomUrl  &&  chatRoom.indexOf('@') != -1) {
+      roomUrl = chatRoom;
+//      Boost.xmpp.sendMessage(msg, roomUrl + "/marco-android");
+    }
+//    else
+//      Boost.xmpp.sendMessage(msg, null);
+    var roomDiv = $t.urlToDivs[roomUrl];
+//    Boost.log('roomUrl: ' + roomUrl + '; roomDiv: ' + roomDiv);
+    var chatIdDiv = document.getElementById('-chat')
+    var e = {
+      getBody:   function() {return msg},
+      getSender: function() {return $t.myName + '@' + $t.XMPPHost},
+      getTime:   function() {return new Date().getTime()}
+    };
+    $t.insertChatMessage(e, roomDiv);
+  }
+  else {
+    var form = document.forms['tablePropertyList'];
+    var params = getFormFilters(form, true) + "&-noRedirect=y";
+    postRequest(event, 'mkresource', params, div, newTr, updateTR);
+  }
+  return retCode;
+
+  function updateTR(event, body, hotspot, content)  {
+  }
 }
