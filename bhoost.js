@@ -1166,11 +1166,11 @@ var Boost = {
       // check back or forward
       if ($t.browsingHistory &&
             $t.browsingHistory[$t.browsingHistoryPos - 1] == hashVal) {
-        $t.oneStep(null, -1);
+        $t.oneStep(null, -1, false);
       }
       else if ($t.browsingHistory &&
             $t.browsingHistory[$t.browsingHistoryPos + 1] == hashVal) {
-        $t.oneStep(null, 1);
+        $t.oneStep(null, 1, false);
       }
       else {
         $t._getPage(null, hashVal);
@@ -1598,7 +1598,10 @@ var Boost = {
   },
 
   // browsing history forward and backward
-  oneStep: function(e, step) {
+  // nativeHistoryMove: default = true
+  oneStep: function(e, step, nativeHistoryMove) {
+    if (typeof nativeHistoryMove == 'undefined')
+      nativeHistoryMove = true;
     var optionsDiv = document.getElementById('menu_Options');
     // options menu opened no passes in history
     if (optionsDiv && optionsDiv.style.visibility == "visible")
@@ -1636,6 +1639,8 @@ var Boost = {
 //      if (Popup.android)
 //        Boost.browserHistory.writeHistory(url, title);
       Boost.log("starting sliding");
+      if (nativeHistoryMove)
+        history.go(step);
       MobilePageAnimation.showPage(currentDiv, div, step < 0);
     }
     if (e)
