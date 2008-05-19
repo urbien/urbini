@@ -654,10 +654,13 @@ function getAnchorForEventTarget(target) {
   return getANode(target);
 }
 
+// use instead getAncestorByTagName(child, "a")
+/*
 function getAnchorForEventTarget1(target) {
 //  Boost.log('getAnchorForEventTarget: target.tagName: ' + target.tagName);
   if (target.tagName.toUpperCase() == 'A')
     return target;
+
   var anchors = target.getElementsByTagName('a');
   if (anchors && anchors[0])
     return anchors[0];
@@ -677,6 +680,7 @@ function getAnchorForEventTarget1(target) {
   }
   return null;
 }
+*/
 
 // Event object does not survive (all coordinates become 0) despite a js closure
 // mechanism
@@ -810,11 +814,11 @@ function getAncestorByAttribute(child, attribName, attribValue) {
 }
 function getAncestorByTagName(child, tagName) {
   tagName = tagName.toLowerCase();
-	if(child.tagName == tagName)
+	if(child.tagName.toLowerCase() == tagName)
 		return child;
 	var parent;
 	while((parent = child.parentNode) != null) {
-		if(parent.tagName.toLowerCase() == tagName)
+		if(parent.tagName && parent.tagName.toLowerCase() == tagName)
 			return parent;
 		child = parent;
 	}

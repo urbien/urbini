@@ -1351,13 +1351,16 @@ var Boost = {
   },
 */
   onClick: function(e) {
+  
+//  debugger
+  
     var $t = Mobile;
     /////////////////
     e = getDocumentEvent(e);
     var l = getEventTarget(e);
 //    if (!Popup.android  &&  l.tagName.toUpperCase() != 'A'  &&  l.tagName.toUpperCase() != 'IMG')
 //      return;
-    var link = getAnchorForEventTarget1(l);
+    var link = getAncestorByTagName(l, "a"); //getAnchorForEventTarget1(l);
     if (!link || !link.href || link.href == null)
       return true;
     var ln = link.href;
@@ -1784,6 +1787,8 @@ var MobilePageAnimation = {
     }
   },
   showPage : function(curDiv, newDiv, isBack) {
+  
+//  debugger
     if (!this.isDomLoaded)
         return;
 
