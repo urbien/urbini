@@ -537,7 +537,7 @@ var ImageUploader = {
   RTE_ID_INPUT_NAME : "rte_id",
   IMG_ALIGN_ID      : "img_align",
 
-  HDN_IFRAME_NAME   : "hiddenIframe",
+  HDN_IFRAME_NAME   : "imageUploadingIframe ",
   WAIT_FLAG : "waiting",
   
   
