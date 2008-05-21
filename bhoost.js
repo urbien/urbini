@@ -1351,15 +1351,13 @@ var Boost = {
   },
 */
   onClick: function(e) {
-  
-//  debugger
-  
     var $t = Mobile;
     /////////////////
     e = getDocumentEvent(e);
     var l = getEventTarget(e);
 //    if (!Popup.android  &&  l.tagName.toUpperCase() != 'A'  &&  l.tagName.toUpperCase() != 'IMG')
 //      return;
+
     var link = getAncestorByTagName(l, "a"); //getAnchorForEventTarget1(l);
     if (!link || !link.href || link.href == null)
       return true;
@@ -1403,12 +1401,18 @@ var Boost = {
       s[0] = $t.currentUrl;
       $t.browsingHistory = s;
     }
-    var u = $t.menuOptions(e, link);
-    if (!u) {
+    
+    var newUrl;
+    if (typeof link == 'string')
+      newUrl = link;
+    else {
+      // menuOptions returns link.href or url based on 
+      // menu item ID.
+      newUrl = $t.menuOptions(e, link);
+    }  
+    if (!newUrl) {
       return stopEventPropagation(e);
     }
-
-    var newUrl = (typeof link == 'string') ? link : link.href;
 
     var isMore;
     var isRemoteLink;
@@ -1441,7 +1445,7 @@ var Boost = {
     }
     if (!newUrl  ||  newUrl == 'about:blank' && !isMore)
       return stopEventPropagation(e);
-    var isRefresh = u == 'refresh';
+    var isRefresh = newUrl == 'refresh';
     if (!isRefresh && !isMore)
       $t.browsingHistoryPos++;
 
@@ -1787,8 +1791,6 @@ var MobilePageAnimation = {
     }
   },
   showPage : function(curDiv, newDiv, isBack) {
-  
-//  debugger
     if (!this.isDomLoaded)
         return;
 
