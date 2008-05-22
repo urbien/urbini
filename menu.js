@@ -698,7 +698,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           Popup.close0(currentDiv.id);
         return stopEventPropagation(e);
       case 13:  // enter
-        self.popupRowOnClick1(e, tr);
+        self.popupRowOnClick1(e, tr, target);
         return stopEventPropagation(e);
       case 8:   // backspace or "C" in S60
         if(Browser.s60Browser) {
@@ -2073,7 +2073,7 @@ function autoComplete1(e, target) {
    case 13:  // enter
      if (currentPopup && currentPopup.isOpen()) {
        // listboxOnClick1(keyPressedImgId, keyPressedElement.value);
-       currentPopup.popupRowOnClick1(e);
+       currentPopup.popupRowOnClick1(e, null, target);
        return stopEventPropagation(e); // tell browser not to do submit on
                                         // 'enter'
      }
