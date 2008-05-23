@@ -1066,12 +1066,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// 2. trim.
 		text = trim(text);
 		// 3. convert all tags to lower case
+		// - no need because we check if document was changed.
 		// IE (Opera) returns in uppercase; FF in lower case. It can change RTE resource.
+		/*
 		var upTags = text.match(/<.[A-Z]*.>/g);
 		if(upTags != null) {
 		  for(var i = 0; i < upTags.length; i++)
         text = text.replace(upTags[i], upTags[i].toLowerCase());
 		}
+		*/
 
 		// set value in hidden data field.
 		this.getDataField().value = text;
