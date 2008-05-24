@@ -1051,8 +1051,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		return this.dataField;
 	}
 	this.putRteData = function() {
-	  if(this.isChanged == false)
-	    return;
+	  // not use detection of a document changing.
+	  // probably it invokes error when document is not stored.
+	  //if(this.isChanged == false)
+	  //  return;
+		
 		var text = this.getHtmlContent();
 		// some html cleanup
 	  // 1. \n
@@ -1075,7 +1078,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
         text = text.replace(upTags[i], upTags[i].toLowerCase());
 		}
 		*/
-
 		// set value in hidden data field.
 		this.getDataField().value = text;
 	}
