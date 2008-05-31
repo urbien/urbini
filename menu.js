@@ -5854,8 +5854,13 @@ function getAnchorForTarget(e) {
 function changeBoolean(e) {
   var target;
   e = getDocumentEvent(e); if (!e) return;
-//  target = getEventTarget(e);
-  target = getAnchorForTarget(e);
+  target = getEventTarget(e);
+  var t = target.tagName.toUpperCase();
+  if (t == 'IMG')
+    target = target.parentNode;
+  else if (t != 'A')
+    throw new Error('changeBoolean: anchor was not found in: ' + t);
+//  target = getAnchorForTarget(e);
 
   var url = 'proppatch';
   var params = 'submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
