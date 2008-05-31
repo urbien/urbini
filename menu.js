@@ -4116,7 +4116,7 @@ function cancelItemAndWait(event) {
   }
 }
 
-function addAndShowWait(event, body, hotspot, content, noInsert, isReplace)	{
+function addAndShowWait(event, body, hotspot, content, url, noInsert, isReplace)	{
   var frameId = "resourceList";
   if (!noInsert) {
     if (!content) {
