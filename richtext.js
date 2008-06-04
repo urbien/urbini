@@ -213,12 +213,17 @@ var RteEngine = {
 		PalettePopup.show(btnObj, 'right', callback, parentDlg, null, chosenBgClr);
 		return PalettePopup.div;
 	},
-	launchLinkPopup : function(btnObj, callback, cancelCallback) {
+	launchLinkPopup : function(btnObj, callback, cancelCallback, href) {
 		if(this.linkPopup == null)
 			this.createLinkPopup();
 		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		
 		this.linkPopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
-		return this.linkPopup.div;
+		var div = this.linkPopup.div;
+		// set url field value
+		if (href)
+		  getChildById(div, "url").value = href;
+		return div;
 	},
 	launchImagePopup : function(btnObj, callback, rteId, cancelCallback) {
 		if(this.imagePopup == null)
@@ -1127,13 +1132,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.curRange = null;
 		if(i_am.document.selection)
 		  i_am.curRange = i_am.document.selection.createRange();
+		/*
 		else if(i_am.window.getSelection) {
-		  var selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        i_am.curRange = selection.getRangeAt(0);
-      //selectedRange.cloneRange();
-      }
+		  var selection = i_am.window.getSelection();
+      i_am.curRange = selection.getRangeAt(0);
 		} 
+		*/
 	}
 	
 	this._onkeyup = function(e) {
@@ -1334,7 +1338,33 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.onLink = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
-		i_am.currentPopup = RteEngine.launchLinkPopup(i_am.linkBtn, i_am.setLink, i_am.cancelLink);
+
+    var href = "";
+    if (typeof i_am.document.selection != 'undefined') {
+      // curRange - did not work in Opera
+      var range = i_am.document.selection.createRange();
+      var a = range.parentElement();
+      if (a && a.tagName && a.tagName.toLowerCase() == "a")
+        href = a.href;
+    }
+    else if (typeof i_am.window.getSelection != 'undefined') {
+      var selection = i_am.window.getSelection();
+      var childNodesAmt = selection.focusNode.childNodes.length;
+      var a;
+      if (childNodesAmt == 0) {
+        a = selection.focusNode.parentNode;
+      }
+      else if(childNodesAmt >= selection.focusOffset) {
+        a = selection.focusNode.childNodes[selection.focusOffset - 1]
+      }
+      if (a && a.tagName && a.tagName.toLowerCase() == "a") {
+        href = a.href;
+      }
+    }
+    
+    if (href.endsWith("/")) 
+      href = href.substr(0, href.length - 1);
+		i_am.currentPopup = RteEngine.launchLinkPopup(i_am.linkBtn, i_am.setLink, i_am.cancelLink, href);
 	}
 	// 20
 	this.onImage = function() {
@@ -1466,6 +1496,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	// 7
 	this.setLink = function(params) {
+	
 		if(params.url.length == 0)
 		  return;
 		var href = params.url
