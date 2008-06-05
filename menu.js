@@ -6635,18 +6635,18 @@ var Dashboard = {
       return;
 
     // 1. preparing
-    // 1.1 middle of the drag block
-    var midX = x + Math.ceil(dragBlock.offsetWidth / 2);
-    var midY = y + Math.ceil(dragBlock.offsetHeight / 2);
+    // 1.1 "cross-hair" point
+    var chX = x + Math.ceil(dragBlock.offsetWidth / 2);
+    var chY = y + 15;
 
     // 1.2
     this.isDirUp = this.detectDirection(y);
-    // 1.3 get target widget under middle point
-    var targetWidget = this.detectTargetWidget(midX, midY, dragBlock.id);
+    // 1.3 get target widget under "cross-hair" point
+    var targetWidget = this.detectTargetWidget(chX, chY, dragBlock.id);
     // 1.4 detect "free space" if targetWidget == null
     var targetFreespace = null;
     if(targetWidget == null)
-      targetFreespace = this.detectTargetFreespace(midX, midY);
+      targetFreespace = this.detectTargetFreespace(chX, chY);
 
     // 2. move placeholder if need
     var moved = false;
@@ -6672,7 +6672,7 @@ var Dashboard = {
       this.updateDashboardMap();
 
     // 3. over Tab
-    this.targetTab = this.detectTargetTabHeader(midX, y);
+    this.targetTab = this.detectTargetTabHeader(chX, y);
     var phStyle =  this.placeholderDiv.style;
     if(this.targetTab) {
       if(phStyle.display == 'none') {
