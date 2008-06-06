@@ -854,6 +854,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.setHandlers = function() {
 		addEvent(this.iframeObj, "deactivate", this._ondeactivate, false);
 		addEvent(this.document, 'keyup', this._onkeyup, false);
+		// shows "Link" dialog on double click on a link
+		// possible in the futer more actions on double click
+		addEvent(this.document, 'dblclick', this._ondblclick, false);
+		
 		// IE: paste
 		addEvent(this.document.body, 'paste', this._onpaste, false);
 
@@ -1086,8 +1090,30 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// set value in hidden data field.
 		this.getDataField().value = text;
 	}
+	
+  // get highlighted element
+  // it is used for link handling in the dialog
+  this.getSelectedElement = function() {
+    var elm = null;
+    if (typeof this.document.selection != 'undefined') {
+      // curRange - did not work in Opera
+      var range = this.document.selection.createRange();
+      var elm = range.parentElement();
+    }
+    else if (typeof this.window.getSelection != 'undefined') {
+      var selection = this.window.getSelection();
+      var childNodesAmt = selection.focusNode.childNodes.length;
+      if (childNodesAmt == 0) {
+        elm = selection.focusNode.parentNode;
+      }
+      else if(childNodesAmt >= selection.focusOffset) {
+        elm = selection.focusNode.childNodes[selection.focusOffset - 1]
+      }
+    }
+    return elm;
+  }
 
-	// handlers --------------
+	// event handlers --------------
 	this.onfocus = function() {
 	  if(i_am.toolbar == null)
 	    i_am.toolbar = i_am.createToolbar();
@@ -1129,7 +1155,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// IE's hack
 	// to store the current range to which to apply the command
 	this._ondeactivate = function() {
-		i_am.curRange = null;
+		if (!i_am.isIE)
+		  return;
 		if(i_am.document.selection)
 		  i_am.curRange = i_am.document.selection.createRange();
 		/*
@@ -1210,6 +1237,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
      var execCode = "RteEngine.onPasteHandler('" + i_am.iframeObj.id + "')"
      setTimeout(execCode, 1);
      i_am.isChanged = true;
+  }
+  
+  this._ondblclick = function(e) {
+    i_am.onLink(true);
   }
   
 	// --------------------------------------
@@ -1335,35 +1366,26 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.currentPopup = RteEngine.launchBgColorPopup(i_am.bgColorBtn, i_am.setBackgroundColor, i_am.chosenBgClr);
 	}
 	// 19
-	this.onLink = function() {
+	this.onLink = function(onDblClick) {
+    if (typeof onDblClick == 'undefined')
+      onDblClick = false;
+
 		if(!i_am.isAllowedToExecute())
 			return;
-
     var href = "";
-    if (typeof i_am.document.selection != 'undefined') {
-      // curRange - did not work in Opera
-      var range = i_am.document.selection.createRange();
-      var a = range.parentElement();
-      if (a && a.tagName && a.tagName.toLowerCase() == "a")
-        href = a.href;
+
+    var a = i_am.getSelectedElement();
+    if (a && a.tagName && a.tagName.toLowerCase() == "a") {
+      href = a.href;
     }
-    else if (typeof i_am.window.getSelection != 'undefined') {
-      var selection = i_am.window.getSelection();
-      var childNodesAmt = selection.focusNode.childNodes.length;
-      var a;
-      if (childNodesAmt == 0) {
-        a = selection.focusNode.parentNode;
-      }
-      else if(childNodesAmt >= selection.focusOffset) {
-        a = selection.focusNode.childNodes[selection.focusOffset - 1]
-      }
-      if (a && a.tagName && a.tagName.toLowerCase() == "a") {
-        href = a.href;
-      }
-    }
+    // not show the dialog on double click on not link 
+    if (onDblClick && href.length == 0)
+      return;
     
     if (href.endsWith("/")) 
       href = href.substr(0, href.length - 1);
+    
+    // show dialog  
 		i_am.currentPopup = RteEngine.launchLinkPopup(i_am.linkBtn, i_am.setLink, i_am.cancelLink, href);
 	}
 	// 20
@@ -1496,15 +1518,37 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	// 7
 	this.setLink = function(params) {
-	
-		if(params.url.length == 0)
-		  return;
-		var href = params.url
+    var newHref = params.url;
+    if(newHref.length == 0) {
+      // if new href is blank - replace link with its inner HTML
+      // does not work in IE
+      var a = i_am.getSelectedElement();
+      var oldHref = null;
+      if (a && a.tagName && a.tagName.toLowerCase() == "a") {
+        oldHref = a.href;
+      }
+      if (!oldHref)
+        return;
+      
+      var parent = a.parentNode;
+      
+      if (i_am.isNetscape) { // FF
+        parent.removeChild(a);
+        i_am.insertHTML(a.innerHTML);
+      }
+      else { // Safari, Opera
+        i_am.insertHTML(a.innerHTML);
+        parent.removeChild(a);
+      }
+
+      return;  
+    }
+		
 		
 		if(params.is_blank)
-		  href += "__$blank__";
+		  newHref += "__$blank__";
 		
-		i_am.performCommand("createlink", href);
+		i_am.performCommand("createlink", newHref);
 		
 		if(params.is_blank) {
 		  var links = i_am.document.body.getElementsByTagName("a");
