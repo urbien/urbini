@@ -820,10 +820,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(typeof this.document.designMode == 'undefined') {
 		  throw new Error("designMode is not supported");
 		}
-	  this.document.designMode = "On";
 
+    if (this.isIE)
+      this.document.designMode = "On";
+		
 		this.initFrameHeight = this.iframeObj.clientHeight;
 		this.initContent();
+	  
+    if (!this.isIE)
+	    this.document.designMode = "On";
 
 		// create toolbar if it is not autoClose
 		// else create it on 1st click in - (onfocus handler)
@@ -1449,7 +1454,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		else {
 			if(pressed) { // IE --
 				var iHTML = i_am.document.body.innerHTML;
-
 				i_am.document.designMode = "Off";
 				i_am.putContent(iHTML); // hack: restore the document after designMode = "Off"
 				i_am.document.body.innerText = iHTML;
@@ -1458,7 +1462,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 				var iText = i_am.document.body.innerText;
 				//i_am.document.body.innerHTML = iText;
 				i_am.document.designMode = "On";
-				
 				i_am.putContent(iText);
 			}
 		}
