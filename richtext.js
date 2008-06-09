@@ -771,16 +771,14 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.isSourceView = false;
 	this.initFrameHeight = null;
 
-  // only if isChanged == true, the content is copied into data field to submit
-  this.isChanged = false;
-
+  this.initHtml = ""; // initial content to prevent hisstory change
+  
 	this.isIE = false;
 	this.isOpera = false;
 	this.isNetscape = false;
 
 	this.skipClose = false;
 	this.FFhacked = false;
-  this.br_appended = false; // FF: when RTE is empty it does not show caret.
   
 	this.currentPopup = null; // prevents closing on popup opening
 	this.openedAtTime = 0;    // hack: prevents simultaneous openning and toolbar button execution
@@ -957,12 +955,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	this.initContent = function() {
 		var text = this.getDataField().value;
-		// hack. FF does not show caret in empty RTE
-		if(this.isNetscape && text.length == 0) {
-		  text = "<br id=\"for_caret\" />";
-		  this.br_appended = true;
-		}
+
 		this.putContent(text);
+		this.initHtml = this.getHtmlContent();
 	}
 	// putContent
 	this.putContent = function(text) {
@@ -1017,29 +1012,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 					content =  this.document.body.innerText;
 			}
 		else {
-			// hack. remove <br /> appended in initContent()
-		  if(this.isNetscape && this.br_appended) {
-        this._removeCaretBreaks();
-		  }
-			content =  this.document.body.innerHTML;
+ 			content =  this.document.body.innerHTML;
 	  }
 
 		return content;
 	}
-	// hack for FF. <br /> appended to show caret.
-	this._removeCaretBreaks = function() {
-	  this.br_appended = false;
-	  var brs = this.document.body.getElementsByTagName("br");
-    for(var i = 0; i < brs.length; i++) {
-  	  if(brs[i].id == 'for_caret') {
-  	    var parent = brs[i].parentNode;
-  	    if(parent) {
-  	      parent.removeChild(brs[i]);
-  	      brs[i] = null;
-  	    }
-  	  }
-    }
-	}
+
 	this.getId = function() {
     return this.iframeObj.id;
   }
@@ -1069,13 +1047,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	  // probably it invokes error when document is not stored.
 	  //if(this.isChanged == false)
 	  //  return;
-		
 		var text = this.getHtmlContent();
-		// some html cleanup
+		// compare with initial RTE content
+		// then no need to change.
+		if (text == this.initHtml)
+		  return;
+		
+		// some html cleanup --
 	  // 1. \n
 	  // 1.1 remove \n if sibling symbol is space
-
-
 		text = text.replace(/\s\n|\n\s/g, " ");
 		// 1.2 replace \n with space if sybling is not space (rest from previous command)
 		text = text.replace(/\n/g, " ");
@@ -1198,10 +1178,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     if(e.ctrlKey && (e.keyCode == 84)) {
   	  i_am.setMonospace();
   	}
-    
-    // except navigation keys
-    if(e.keyCode < 33 || e.keyCode > 40)
-      i_am.isChanged = true;
 	}
 	// prevents default Ctrl+b behaviour in FF.
   this._onkeydown = function(e) {
@@ -1241,7 +1217,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   this._onpaste = function(e) {
      var execCode = "RteEngine.onPasteHandler('" + i_am.iframeObj.id + "')"
      setTimeout(execCode, 1);
-     i_am.isChanged = true;
   }
   
   this._ondblclick = function(e) {
@@ -1435,9 +1410,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var html;
 		if(i_am.document.importNode) { // FF --
 			if(pressed) {
-        if(i_am.br_appended)
-          i_am._removeCaretBreaks();
-			
 				html = document.createTextNode(i_am.document.body.innerHTML);
 				i_am.document.body.innerHTML = "";
 				html = i_am.document.importNode(html,false);
@@ -1650,7 +1622,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		this.window.focus();
 
 	  this.skipClose = true;
-	  this.isChanged = true;
 		return true;
 	}
 
