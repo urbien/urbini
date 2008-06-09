@@ -1178,8 +1178,9 @@ div.contentsRL {
 .widgetTitle {vertical-align:top; color:darkblue;font-weight:bold}
 .widgetIcon {width:16px; height:16px; padding-right:4px; border:0px }
 
-.iinp, .iinp_move { width:16px; height:16px; border:0px; vertical-align:middle }
+.iinp, .iinp_move, .iinp_btn { width:16px; height:16px; border:0px; vertical-align:middle }
 .iinp_move { cursor: move; }
+.iinp_btn { cursor: pointer; }
 .liinp { width:32px; height:32px; border:0px; vertical-align:middle }
 .iiphone { width:48px; height:48px; border:0px; vertical-align:middle }
 .icursor {cursor: pointer;width:16px; height:16px; border:0px; vertical-align:middle}
