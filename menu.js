@@ -741,9 +741,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Reacts to clicks inside the popup
    */
   this.popupRowOnClick = function (e) {
-
-//  debugger
-
     e = getDocumentEvent(e); if (!e) return;
     var target = getTargetElement(e);
     var tr = getTrNode(target);
@@ -784,7 +781,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     //
     // if there is a link on this row - follow it
     //
- //   debugger
     if (target.tagName.toLowerCase() == 'a')
       return;
     var anchors = tr.getElementsByTagName('A');
@@ -795,7 +791,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
       var anchor = anchors[0];
       var trg = anchor.getAttribute('target');
-   //   debugger
       if (trg) {
         var url = anchor.getAttribute('href');
         window.open(url, trg, "width=600, height=600, top=20, left=20, menubar=no,"
@@ -5627,6 +5622,7 @@ var DragEngine = {
 		classNameArr.push("dragable");
 		classNameArr.push("tabs");
 		classNameArr.push("tabs_current");
+		//debugger
 
 		if((titleObj =  getAncestorById(caughtObj, "titleBar")) == null &&
 		    (titleObj =  getAncestorByAttribute(caughtObj, "className", classNameArr)) == null )
@@ -5634,6 +5630,8 @@ var DragEngine = {
     // possible to define handler as Attribute in html
 		var dragHandlerStr = titleObj.getAttribute("draghandler");
 		// or by class name here
+		
+		
 		if(dragHandlerStr == null || dragHandlerStr.length == 0) {
   	  if(titleObj.className == "tabs" || titleObj.className == "tabs_current") {
   	    thisObj.dragHandler = TabSwap;
@@ -5645,7 +5643,7 @@ var DragEngine = {
 		else {
   	  thisObj.dragHandler = eval(dragHandlerStr);
 		  if(thisObj.dragHandler)
-		    thisObj.dragBlock = thisObj.dragHandler.getDragBlock(titleObj);
+		    thisObj.dragBlock = thisObj.dragHandler.getDragBlock(titleObj, caughtObj);
 		}
 
 		if(!thisObj.dragBlock)
@@ -6552,7 +6550,7 @@ var Dashboard = {
       this.initDashboardMap(widgetDiv);
       addEvent(document, "keyup", this.onEsc, false);
     }
-
+    
     return widgetDiv;
   },
   initDashboardMap : function(theWidget) {
@@ -6705,13 +6703,13 @@ var Dashboard = {
     this.compliteGuiDrag(dragBlock);
 
     // if widget was not moved then maximize it
+    // not used now
+    /*
     if(this.isWidgetMoved == false) {
-        var maxLink = getChildById(dragBlock, "w_maximize");
-        if(!maxLink)
-          return;
-        window.location = maxLink.href;
+      this.maximizeWidget(dragBlock);
         return;
     }
+    */
 
     // 1. move on another tab
     if(this.targetTab) {
@@ -6722,6 +6720,20 @@ var Dashboard = {
     // 2. move on other place in the current tab
     var prevWidgetNew = this.getPrevSibling(dragBlock);
     this.onWidgetMovement(e, dragBlock, this.prevWidgetOld, prevWidgetNew);
+  },
+  onMaximizeWidget : function(maxIconObj) {
+    widgetDiv = getAncestorByAttribute(maxIconObj, "className", "widget");
+    if (!widgetDiv) // on failed html
+      widgetDiv = getAncestorByAttribute(maxIconObj, "className", "propertySheet");
+    this.maximizeWidget(widgetDiv);
+  },
+  maximizeWidget : function(widgetDiv) {
+    if (!widgetDiv)
+      return;
+    var maxLink = getChildById(widgetDiv, "w_maximize");
+    if(!maxLink)
+      return;
+    window.location = maxLink.href;
   },
   compliteGuiDrag : function(dragBlock) {
     var dbStyle = dragBlock.style;
@@ -6791,12 +6803,12 @@ var Dashboard = {
     this.prevY = y;
     return isDirUp;
   },
-  detectTargetWidget : function(midX, midY, dragWidgetId) {
+  detectTargetWidget : function(chX, chY, dragWidgetId) {
     var targetWidget = null;
     for(var i = 0; i < this.widgetsMap.length; i++) {
       var widgetId = this.widgetsMap[i].getWidgetId();
       if(widgetId != dragWidgetId &&
-          this.isPointIn(midX, midY, this.widgetsMap[i])) {
+          this.isPointIn(chX, chY, this.widgetsMap[i])) {
         targetWidget = this.widgetsMap[i].getWidgetDiv();
       }
     }
@@ -8076,8 +8088,8 @@ var OrderRows = {
   prevRowOld : null,
   dragRowIdxOld : null,
 
-  getDragBlock : function(catchedObj) {
-    var tr = getAncestorByTagName(catchedObj, "tr");
+  getDragBlock : function(dragHandler) {
+    var tr = getAncestorByTagName(dragHandler, "tr");
     return tr;
   },
   onStartDrag : function(dragRow) {
