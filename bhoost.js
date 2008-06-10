@@ -873,6 +873,7 @@ var Boost = {
       return newUrl;
     }
     if (id == 'optionsMenu') {
+      $t.changePresentationItemsState();
       if($t.showOptionsMenu() == false)
         stopEventPropagation(e);
       return null;
@@ -1115,7 +1116,30 @@ var Boost = {
 
     return newUrl;
   },
+  changePresentationItemsState: function() {
+      var item, level;
+      var optionsDiv = document.getElementById('menu_Options');
+      
+      var selectedItemId = 'menu_Grid';
+      var url = Mobile.currentUrl || window.location.href;
+      if (url.indexOf('-list=') != -1)
+        selectedItemId = 'menu_List';
+      else if (url.indexOf('-featured=') != -1)
+        selectedItemId = 'menu_LargeGrid';  
 
+      item = getChildById(optionsDiv, 'menu_List');
+      level = (selectedItemId == 'menu_List') ? 0.5 : 1;
+      changeOpacity(item, level);
+      
+      item = getChildById(optionsDiv, 'menu_Grid');
+      level = (selectedItemId == 'menu_Grid') ? 0.5 : 1;
+      changeOpacity(item, level);
+
+      item = getChildById(optionsDiv, 'menu_LargeGrid');
+      level = (selectedItemId == 'menu_LargeGrid') ? 0.5 : 1;
+      changeOpacity(item, level);
+  },
+  
   writeBrowsingHistoryOnServer: function(e, link) {
     if ($t.browsingHistory <= 1)
       return;
@@ -1155,7 +1179,6 @@ var Boost = {
     else
       hashVal = decodeURIComponent(location.hash).substr(1);
 
-
     if (hashVal.length == 0) {
       hashVal = location.href;
       if (!$t.curHash)
@@ -1175,8 +1198,8 @@ var Boost = {
       else {
         $t._getPage(null, hashVal);
       }
-
       $t.curHash = hashVal;
+      Mobile.changePresentationItemsState();
     }
     setTimeout($t.checkLocation, 300);
   },
@@ -1936,12 +1959,12 @@ var MobileMenuAnimation = {
       this.hide();
       return;
     }
-    // set menu at center of current div/page
-    //optDiv.style.top = curPageDiv.scrollTop + this.TOP_OFFSET;
-
-    if (effectIdx == 1) {
+    if (effectIdx == 1 && !Browser.ie) { 
       this.opaqueAnimation(this.optionsDiv, 0.25, 1.0, 0.35);
     }
+    
+    if (optDivStl.position == '')
+      optDivStl.position = 'absolute';
     optDivStl.zIndex = curPageDiv.style.zIndex + 1;
     optDivStl.display = "block";
     optDivStl.visibility = "visible";
