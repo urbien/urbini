@@ -35,7 +35,7 @@
       </td>
       <td width="10%" id="rightPanelPropertySheet" valign="top" align="left">
         <br/>
-       <include name="commonFilterLocal.jsp" />
+       <include name="commonFilter.jsp" />
        <!--menu toolbar="filterLocal" type="onpage" title="false"/-->
       </td>
       </tr>

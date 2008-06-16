@@ -21,8 +21,7 @@
     <td width="10%" id="rightPanelPropertySheet" valign="top" align="left">
       <br/>
       <menuBar id="menuBar1">
-      <!--menu toolbar="filterLocalCreateList" type="onpage" title="false"/-->
-      <include name="commonFilterParallelCreateList.jsp" />
+      <rightPanelPropertySheet />
       </menuBar>
     </td>
 </tr>

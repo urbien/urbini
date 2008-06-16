@@ -17,7 +17,7 @@
   </td>
 <hideBlock>
   <td valign="top" align="left" bgcolor="eeeeee">
-    <include name="commonFilterParallel.jsp" />
+    <include name="commonFilter.jsp" />
     <!--menu toolbar="filterParallel" type="onpage" title="false"/-->
   </td>
 </hideBlock>
