@@ -2812,6 +2812,35 @@ function resizeWindow(event) {
 //  }
   return true;
 }
+/*
+ * Shows form to choose properties to watch on.
+ */
+function limitNumberOfAlerts(e) {
+  if (!e)
+    return;
+  var div = document.getElementById('subscribe');
+  var divN = document.getElementById('subscribeNote');
+  if (div) {
+    if (div.className) {
+      if (div.className == 'hdn') {
+        div.className = '';
+        if (divN)
+          divN.className = ''
+      }
+      else {
+        div.className = 'hdn';
+        if (divN)
+          divN.className = 'hdn'
+      }
+    }
+    else {
+      div.className = 'hdn';
+      if (divN)
+        divN.className = 'hdn'
+    }
+  }
+  return stopEventPropagation(e);
+}
 
 /********************************************************
 * Tooltip
@@ -5685,8 +5714,8 @@ var DragEngine = {
     // possible to define handler as Attribute in html
 		var dragHandlerStr = titleObj.getAttribute("draghandler");
 		// or by class name here
-		
-		
+
+
 		if(dragHandlerStr == null || dragHandlerStr.length == 0) {
   	  if(titleObj.className == "tabs" || titleObj.className == "tabs_current") {
   	    thisObj.dragHandler = TabSwap;
@@ -6605,7 +6634,7 @@ var Dashboard = {
       this.initDashboardMap(widgetDiv);
       addEvent(document, "keyup", this.onEsc, false);
     }
-    
+
     return widgetDiv;
   },
   initDashboardMap : function(theWidget) {

@@ -4,12 +4,12 @@
 <tr>
 <td valign="top" width="95%">
 <form name="tablePropertyList" id="filter" method="post" action="mkresource" autocomplete="off">
-   <!--div align="right"><span class="xs"><language display="horizontal"/></span></div-->
+<div id="subscribe" class="hdn">
    <tablePropertyList action="mkResource"/>
-   <input type="hidden" name="-$action" value="mkResource"></input>
    <br />
+</div>
   <center>
-    <input type="submit" name="saveAndCancel" value="  Submit  "></input>
+    <input type="submit" name="saveAndCancel" value="  Receive all alerts  "></input>&#160;&#160;<a href="about:blank" onclick="limitNumberOfAlerts(event)"><text text="Limit number of alerts"/></a>
   </center>
 </form>
 </td></tr></table>
