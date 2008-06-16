@@ -40,34 +40,6 @@
       }
     }
 
-    // returns true if the field was modified since the page load
-    function wasFormFieldModified(elem) {
-      var initialValue = getFormFieldInitialValue(elem);
-      if (initialValue == null)
-        return true; // assume it was modified if no info exists
-      if (elem.value == initialValue) {
-        //alert("not modified: elem.name: " + elem.name + ", initialValue: " + initialValue);
-        return false;
-      }
-      else {
-        //alert("modified: elem.name: " + elem.name + ", initialValue: " + initialValue);
-        return true;
-      }
-    }
-    // returns value of the field saved right after the page load (does not support multiple selections)
-    function getFormFieldInitialValue(elem, attribute) {
-      if (formInitialValues) {
-        var formValues = formInitialValues[elem.form.name];
-        if (formValues) {
-          if (attribute)
-            return formValues[elem.name + '.attributes.' + attribute];
-          else
-            return formValues[elem.name];
-        }
-      }
-      return null;
-    }
-
     //***** upon iframe loading inform the parent
     function onLoadPopup() {
       if (parent && parent.frameLoaded)
@@ -82,14 +54,13 @@
       }
 
       interceptLinkClicks();
-            
       if (typeof Mobile != 'undefined') {
         Boost.init(event);
         Mobile.init(event);
       } else {
-        initListBoxes(null);
-        uiFocus();
+        FormProcessor.initForms();
         DragEngine.initialize();
+        
 		    addSpellcheck();
 		    dictionaryHandler.init();
 		    Tooltip.init();
@@ -129,10 +100,7 @@
     }
     */
 
-    var formInitialValues;
-
     /****************** launch JS on "DOM ready" ****************/
-
     var agent = navigator.userAgent;
     var isGecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1 && agent.indexOf("Konqueror") == -1);
     var versionindex = agent.indexOf("Opera") + 6;
@@ -152,4 +120,3 @@
     }
     else
       addEvent(window, 'load', addHandlers, false);
-

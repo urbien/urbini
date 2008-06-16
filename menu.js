@@ -404,7 +404,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.setFocus();
     if (!self.initialized) {
       self.interceptEvents();
-      initListBoxes(self.div);
+      FormProcessor.initForms(self.div);
       interceptLinkClicks(self.div);
       self.initilized = true;
     }
@@ -933,7 +933,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           arr[".-filterCols"] = ".-filterCols";
           arr["-curFilterCols"] = "-curFilterCols";
         }
-        params = getFormFilters(form, allFields, arr);
+        params = FormProcessor.getFormFilters(form, allFields, arr);
         var formAction = form.elements['-$action'].value;
         var baseUriO = document.getElementsByTagName('base');
         var baseUri = "";
@@ -1669,7 +1669,7 @@ function listboxOnClick1(e, imgId, enteredText, enterFlag) {
       }
 // else if (currentFormName.indexOf("horizontalFilter") == 0)
 // allFields = true;
-      params += getFormFilters(form, allFields);
+      params += FormProcessor.getFormFilters(form, allFields);
     /*
      * } else { url = url + "&type=" + form.elements['type'].value +
      * "&-$action=" + formAction; var s = getFormFiltersForInterface(form,
@@ -1695,7 +1695,7 @@ function listboxOnClick1(e, imgId, enteredText, enterFlag) {
   div.removeAttribute('eventHandlersAdded');
   postRequest(e, url, params, div, hotspot, Popup.load);
 }
-
+/*
 function getFormFiltersForInterface(form, propName) {
   var field = form.elements[propName];
   if (field == null) {
@@ -1753,7 +1753,7 @@ function getFormFiltersForInterface(form, propName) {
   }
   return p;
 }
-
+*/
 function removePopupRowEventHandlers(div) {
   var tables = div.getElementsByTagName('table');
   if (!tables || !tables[1])
@@ -1775,189 +1775,348 @@ function removePopupRowEventHandlers(div) {
 function fakeOnSubmit() {
   return false;
 }
-/*
- * Receives control on form submit events
- */
-function popupOnSubmit(e) {
 
-  e = getDocumentEvent(e);
-  if (!e)
-    return;
-//  Boost.log('popupOnSubmit');
-  /*
-  if (e.eventProcessed)
-    return stopEventPropagation(e);
-  else
-    e.eventProcessed = true;
-  */
-  // prevent duplicate events (happens only in IE)
-  if (e.getAttribute) {
-    var isProcessed = e.getAttribute('eventProcessed');
-    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+
+/***********************************************
+* FormProcessor - helps to handle data of a form
+************************************************/
+var FormProcessor = {
+  // variables ----
+  formInitialValues : new Array(),
+  
+  // methods ----
+  initForms : function(div) {
+    if (Browser.mobile)
+      return;
+
+    var forms;
+    if (div)
+      forms = div.getElementsByTagName('form');
+    else
+      forms = document.forms;
+    
+    for (var i = 0; i < forms.length; i++) {
+      var form = forms[i];
+      var initialValues = new Array(form.elements.length);
+      //formInitialValues[form.name] = initialValues;
+      if (form.id != 'filter')
+        continue;
+      this._storeInitialValues(form);
+      initListBoxes(form);
+      addEvent(form, 'submit', this.onSubmit, false);
+    }
+
+    this.uiFocus();
+
+    // better to move it. 
+    if (!div) // handle anchors with help of BODY's event
+      addEvent(document.body, 'click', onLinkClick, false);
+  },
+  
+  uiFocus : function(div) {
+    if (!div)
+      div = document;
+
+    var fields = div.getElementsByTagName('input');
+    var firstField;
+
+    for (var i=0; i<fields.length; i++) {
+      var u = fields[i];
+      if (u && u.type && u.type != 'hidden') {
+        if (!firstField) {
+          firstField = u;
+        }
+        if (u.id && (u.id == 'uiFocus' || u.id.indexOf('_uiFocus') != -1)) {
+          if(execJS.isObjectTotallyVisible(u)) {
+            try {
+              u.focus(); // in IE (at least in IE6) first focus() is lost for some
+                        // reason - we are forced to issue another focus()
+              u.focus();
+            }catch(e){};
+          }
+          return true;
+        }
+      }
+    }
+    if (firstField && div != document) {
+      if(execJS.isObjectTotallyVisible(firstField)) {
+        try {
+          firstField.focus();
+          firstField.focus(); // second time for IE
+        }catch(e){};
+      }
+    }
+    return false;
+  },
+
+  // prevents submision of not changed data
+  onSubmit : function(e) {
+    e = getDocumentEvent(e);
+    if (!e)
+      return;
+  //  Boost.log('popupOnSubmit');
+    /*
+    if (e.eventProcessed)
       return stopEventPropagation(e);
-    e.setAttribute('eventProcessed', 'true');
-  }
-  else if (e.eventProcessed) {
-    return stopEventPropagation(e);
-  }
-
-  var target = getTargetElement(e);
-  var form = target;
-  var buttonName = form.getAttribute("buttonClicked");
-
-  var button = form.elements[buttonName];
-  var pane2        = document.getElementById('pane2');
-  var dialogIframe = document.getElementById('dialogIframe');
-
-  var isCancel = button && button.name.toUpperCase() == 'CANCEL';
-  if (isCancel) {    // cancel button clicked?
-    if (pane2  &&  pane2.contains(form))  {   // inner dialog?
-      setDivInvisible(pane2, dialogIframe);
+    else
+      e.eventProcessed = true;
+    */
+    // prevent duplicate events (happens only in IE)
+    if (e.getAttribute) {
+      var isProcessed = e.getAttribute('eventProcessed');
+      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
+        return stopEventPropagation(e);
+      e.setAttribute('eventProcessed', 'true');
+    }
+    else if (e.eventProcessed) {
       return stopEventPropagation(e);
     }
-  }
 
-  // put rte data in the hidden field(s)
-  if(RteEngine)
-    RteEngine.putRteDataOfForm(form);
+    var target = getTargetElement(e);
+    var form = target;
+    var buttonName = form.getAttribute("buttonClicked");
 
-  /* Add full text search criteria to filter */
-  var fullTextSearchForm = document.forms['searchForm'];
-  if (fullTextSearchForm) {
-    if (form.id && form.id == 'filter') {
-      var criteria = fullTextSearchForm.elements['-q'];
-      if (criteria  &&  criteria.value.indexOf('-- ') == -1) {
-        var textSearchForType = fullTextSearchForm.elements['-cat'];
-        if (textSearchForType  &&  textSearchForType.value == 'on') {
-          var textSearchInFilter = form.elements['-q'];
-          if (textSearchInFilter) {
-            textSearchInFilter.value = criteria.value;
-            var textSearchInFilterForType = form.elements['-cat'];
-            if (textSearchInFilterForType)
-               textSearchInFilterForType.value = 'on';
+    var button = form.elements[buttonName];
+    var pane2        = document.getElementById('pane2');
+    var dialogIframe = document.getElementById('dialogIframe');
+
+    var isCancel = button && button.name.toUpperCase() == 'CANCEL';
+    if (isCancel) {    // cancel button clicked?
+      if (pane2  &&  pane2.contains(form))  {   // inner dialog?
+        setDivInvisible(pane2, dialogIframe);
+        return stopEventPropagation(e);
+      }
+    }
+
+    // put rte data in the hidden field(s)
+    if(RteEngine)
+      RteEngine.putRteDataOfForm(form);
+
+    /* Add full text search criteria to filter */
+    var fullTextSearchForm = document.forms['searchForm'];
+    if (fullTextSearchForm) {
+      if (form.id && form.id == 'filter') {
+        var criteria = fullTextSearchForm.elements['-q'];
+        if (criteria  &&  criteria.value.indexOf('-- ') == -1) {
+          var textSearchForType = fullTextSearchForm.elements['-cat'];
+          if (textSearchForType  &&  textSearchForType.value == 'on') {
+            var textSearchInFilter = form.elements['-q'];
+            if (textSearchInFilter) {
+              textSearchInFilter.value = criteria.value;
+              var textSearchInFilterForType = form.elements['-cat'];
+              if (textSearchInFilterForType)
+                textSearchInFilterForType.value = 'on';
+            }
           }
         }
       }
     }
-  }
-// var action = form.attributes['action'];
-  var action = form.action;
-  // form url based on parameters that were set
-  var url;
-  if (action) {
-    url = action;
-  }
-  else
-    url = "FormRedirect"; // HACK: if form.action is empty
-  var formAction = form.elements['-$action'].value;
-  var allFields = true;
-  if (formAction != "searchLocal" && formAction != "searchParallel" && formAction != "mkResource")
-    allFields = false;
-  else if (currentFormName && currentFormName.indexOf("horizontalFilter") == 0)
-    allFields = true;
+  // var action = form.attributes['action'];
+    var action = form.action;
+    // form url based on parameters that were set
+    var url;
+    if (action) {
+      url = action;
+    }
+    else
+      url = "FormRedirect"; // HACK: if form.action is empty
+    var formAction = form.elements['-$action'].value;
+    var allFields = true;
+    if (formAction != "searchLocal" && formAction != "searchParallel" && formAction != "mkResource")
+      allFields = false;
+    else if (currentFormName && currentFormName.indexOf("horizontalFilter") == 0)
+      allFields = true;
 
-  var params = "submit=y"; // HACK: since target.type return the value of &type
-                            // instead of an input field's type property
-  var p1 = getFormFilters(form, allFields);
-  if (p1)
-    params += p1;
-  var submitButtonName  = null;
-  var submitButtonValue;
-/*
- * var t = target.attributes['type']; if (t.toUpperCase() == 'SUBMIT') { if
- * (target.attributes['name'] == "Clear") url += "&clear=Clear"; else if
- * (currentFormName == "horizontalFilter") url += "&submit=y"; else if
- * (currentFormName == "rightPanelPropertySheet") url += "&submitFilter=y"; }
- * else url += "&submit=y";
- */
+    var params = "submit=y"; // HACK: since target.type return the value of &type
+                              // instead of an input field's type property
+    var p1 = FormProcessor.getFormFilters(form, allFields);
+    if (p1)
+      params += p1;
+    var submitButtonName  = null;
+    var submitButtonValue;
+  /*
+  * var t = target.attributes['type']; if (t.toUpperCase() == 'SUBMIT') { if
+  * (target.attributes['name'] == "Clear") url += "&clear=Clear"; else if
+  * (currentFormName == "horizontalFilter") url += "&submit=y"; else if
+  * (currentFormName == "rightPanelPropertySheet") url += "&submitFilter=y"; }
+  * else url += "&submit=y";
+  */
 
-/*
- * // figure out the name and the value of the Submit button for (i=0; i<form.elements.length;
- * i++) { var elem = form.elements[i]; if (elem.type.toUpperCase() == 'SUBMIT') {
- * submitButtonName = elem.name; submitButtonValue = elem.value; } }
- *
- * if (!submitButtonName) return true; var hasQ = url.indexOf('?') != -1; if
- * (!hasQ) url += '?' + submit; else url += '&' + submit;
- */
+  /*
+  * // figure out the name and the value of the Submit button for (i=0; i<form.elements.length;
+  * i++) { var elem = form.elements[i]; if (elem.type.toUpperCase() == 'SUBMIT') {
+  * submitButtonName = elem.name; submitButtonValue = elem.value; } }
+  *
+  * if (!submitButtonName) return true; var hasQ = url.indexOf('?') != -1; if
+  * (!hasQ) url += '?' + submit; else url += '&' + submit;
+  */
 
-  params += '&$form=' + form.name;
+    params += '&$form=' + form.name;
 
-  // url += '&$selectOnly=y';
+    // url += '&$selectOnly=y';
 
-  if (allFields == false) {
-    var type = form.type;
-    if (type)
-      params += "&type=" + type.value;
+    if (allFields == false) {
+      var type = form.type;
+      if (type)
+        params += "&type=" + type.value;
 
-    params += "&-$action=" + formAction;
-  }
-  if (form.uri)
-    params += "&uri=" + encodeURIComponent(form.uri.value);
+      params += "&-$action=" + formAction;
+    }
+    if (form.uri)
+      params += "&uri=" + encodeURIComponent(form.uri.value);
 
-  if (isCancel)
-    params += "&cancel=y";
+    if (isCancel)
+      params += "&cancel=y";
 
-  /* do not allow to submit form while current submit is still being processed */
-  if (form.name.indexOf("tablePropertyList") != -1) { // is it a data entry
-                                                      // form?
-    var wasSubmitted = form.getAttribute("wasSubmitted");
-    if (wasSubmitted) {
-      alert("Can not submit the same form twice");
+    /* do not allow to submit form while current submit is still being processed */
+    if (form.name.indexOf("tablePropertyList") != -1) { // is it a data entry
+                                                        // form?
+      var wasSubmitted = form.getAttribute("wasSubmitted");
+      if (wasSubmitted) {
+        alert("Can not submit the same form twice");
+        return stopEventPropagation(e);
+      }
+      form.setAttribute("wasSubmitted", "true");
+      // form.submit.disabled = true; // weird, but the form would not get
+      // submitted if disabled
+
+      // this solution for duplicate-submit does not work in firefox 1.0 & mozilla
+      // 1.8b - fakeOnSubmit get control even on first form submit
+      // it has another drawback - page must be reloaded for the form to be
+      // submitted second time - while previous solution works with back/forward
+      /*
+      * if (form.onsubmit == fakeOnSubmit) { alert("Already submitted - please
+      * wait"); return false; } form.onsubmit = fakeOnSubmit;
+      */
+    }
+    for (var j = 0; j < form.elements.length; j++) {
+      var elem = form.elements[j];
+      var atts = elem.getAttribute('onSubmit');
+      if (atts) {
+        if (!elem.getAttribute('onSubmitFixed')) {
+          var s = atts.replace(/\(this\)/, ''); // e.g. replace setTime(this) into setTime
+
+          if (trim(s).startsWith('function'))
+            elem.onsubmit = eval(s);
+          else
+            elem.onsubmit = eval('function (event) {' + s + '}');
+          elem.setAttribute('onSubmitFixed', 'true');
+        }
+        elem.onsubmit();
+      }
+    }
+
+  // submit as GET with all parameters collected manually
+  // form.method = 'GET';
+  // document.location.href = url;
+  // return stopEventPropagation(event);
+    form.method = 'POST';
+    if (!action)
+      form.action = "FormRedirect";
+
+    if (pane2  &&  pane2.contains(form))  {   // dialog?
+      setDivInvisible(pane2, dialogIframe);
+    }
+
+    // if current form is inner dialog - submit as AJAX request
+    // upon AJAX response we will be able to choose between repainting the dialog
+    // or the whole page
+    if (pane2  &&  pane2.contains(form))  {   // inner dialog?
+      postRequest(e, url, params, pane2, getTargetElement(e), null/*showDialog*/);
       return stopEventPropagation(e);
     }
-    form.setAttribute("wasSubmitted", "true");
-    // form.submit.disabled = true; // weird, but the form would not get
-    // submitted if disabled
+    else {
+      return true; // tell browser to go ahead and continue processing this
+                    // submit request
+    }
+  },
+  
+  /**
+  * Helper function - gathers the parameters (from form elements) to build a URL
+  * If allFields is true - we are in a Filter panel - need to take into account
+  * all input fields Otherwise - it is a Data Entry mode, i.e. - take only fields
+  * that were modified by the user
+  */
+  getFormFilters : function(form, allFields, exclude) {
+    var p = "";
+    var fields = form.elements;
 
-    // this solution for duplicate-submit does not work in firefox 1.0 & mozilla
-    // 1.8b - fakeOnSubmit get control even on first form submit
-    // it has another drawback - page must be reloaded for the form to be
-    // submitted second time - while previous solution works with back/forward
-    /*
-     * if (form.onsubmit == fakeOnSubmit) { alert("Already submitted - please
-     * wait"); return false; } form.onsubmit = fakeOnSubmit;
-     */
-  }
-  for (j=0; j<form.elements.length; j++) {
-    var elem = form.elements[j];
-    var atts = elem.getAttribute('onSubmit');
-    if (atts) {
-      if (!elem.getAttribute('onSubmitFixed')) {
-        var s = atts.replace(/\(this\)/, ''); // e.g. replace setTime(this) into setTime
+    for (var i=0; i<fields.length; i++) {
+      var field = fields[i];
+      var value = field.value;
+      var name  = field.name;
+      if (exclude &&  exclude[name])
+        continue;
+      var type  = field.type;
 
-        if (trim(s).startsWith('function'))
-          elem.onsubmit = eval(s);
-        else
-          elem.onsubmit = eval('function (event) {' + s + '}');
-        elem.setAttribute('onSubmitFixed', 'true');
+      if (!type || !name)
+        continue;
+      type = type.toLowerCase();
+      if (type == "submit")
+        continue;
+      if (!allFields) {
+        if (!this.wasFormFieldModified(field))
+          continue;
       }
-      elem.onsubmit();
+      else {
+        if (!value)
+          continue;
+  // if (currentFormName != "horizontalFilter") {
+        if (value == ''  ||  value == "All")
+          continue;
+        if (type == "checkbox" || type == "radio" ) {
+          if (field.checked == false)
+            continue;
+          }
+          if (value.indexOf(" --", value.length - 3) != -1)
+            continue;
+        }
+  // }
+      if (name == "type")
+        p += "&" + name + "=" + value;
+      else
+        p += "&" + name + "=" + encodeURIComponent(value);
+    }
+    return p;
+  },
+  
+  _storeInitialValues : function(form) {
+    var initialValues = new Array();
+    for (var j = 0; j < form.elements.length; j++) {
+      var elem = form.elements[j];
+      initialValues[elem.name] = elem.value;
+    }
+    this.formInitialValues[form.name] = initialValues;
+  },
+  
+  // returns true if the field was modified since the page load
+  wasFormFieldModified : function(elem) {
+    var initialValue = this.getFormFieldInitialValue(elem);
+    if (initialValue == null)
+      return true; // assume it was modified if no info exists
+    if (elem.value == initialValue) {
+      //alert("not modified: elem.name: " + elem.name + ", initialValue: " + initialValue);
+      return false;
+    }
+    else {
+      //alert("modified: elem.name: " + elem.name + ", initialValue: " + initialValue);
+      return true;
+    }
+  }, 
+  // returns value of the field saved right after the page load (does not support multiple selections)
+  getFormFieldInitialValue : function(elem, attribute) {
+    var formValues = this.formInitialValues[elem.form.name];
+    if (formValues) {
+      if (attribute)
+        return formValues[elem.name + '.attributes.' + attribute];
+      else
+        return formValues[elem.name];
     }
   }
 
-// submit as GET with all parameters collected manually
-// form.method = 'GET';
-// document.location.href = url;
-// return stopEventPropagation(event);
-  form.method = 'POST';
-  if (!action)
-    form.action = "FormRedirect";
-
-  if (pane2  &&  pane2.contains(form))  {   // dialog?
-    setDivInvisible(pane2, dialogIframe);
-  }
-
-  // if current form is inner dialog - submit as AJAX request
-  // upon AJAX response we will be able to choose between repainting the dialog
-  // or the whole page
-  if (pane2  &&  pane2.contains(form))  {   // inner dialog?
-    postRequest(e, url, params, pane2, getTargetElement(e), showDialog);
-    return stopEventPropagation(e);
-  }
-  else
-    return true; // tell browser to go ahead and continue processing this
-                  // submit request
 }
+
+
 
 function setTime() {
   this.value = new Date().getTime();
@@ -2330,56 +2489,6 @@ function getDocumentNode(obj) {
   return null;
 }
 
-
-/**
- * Helper function - gathers the parameters (from form elements) to build a URL
- * If allFields is true - we are in a Filter panel - need to take into account
- * all input fields Otherwise - it is a Data Entry mode, i.e. - take only fields
- * that were modified by the user
- */
-function getFormFilters(form, allFields, exclude) {
-  var p = "";
-  var fields = form.elements;
-
-  for (var i=0; i<fields.length; i++) {
-    var field = fields[i];
-    var value = field.value;
-    var name  = field.name;
-    if (exclude &&  exclude[name])
-      continue;
-    var type  = field.type;
-
-    if (!type || !name)
-      continue;
-    type = type.toLowerCase();
-    if (type == "submit")
-      continue;
-    if (!allFields) {
-      if (!wasFormFieldModified(field))
-        continue;
-    }
-    else {
-      if (!value)
-        continue;
-// if (currentFormName != "horizontalFilter") {
-      if (value == ''  ||  value == "All")
-        continue;
-      if (type == "checkbox" || type == "radio" ) {
-        if (field.checked == false)
-          continue;
-        }
-        if (value.indexOf(" --", value.length - 3) != -1)
-           continue;
-      }
-// }
-    if (name == "type")
-      p += "&" + name + "=" + value;
-    else
-      p += "&" + name + "=" + encodeURIComponent(value);
-  }
-  return p;
-}
-
 function chooser(element) {
   var propName = element.name;
   var idx = propName.indexOf(".", 1);
@@ -2553,6 +2662,7 @@ function hideResetRow(div, currentFormName, originalProp) {
 }
 
 /** ********************************* Menu ********************************** */
+
 function initMenus(menuBarId) {
   var element = document.getElementById(menuBarId);
   if (!element)
@@ -2803,64 +2913,46 @@ var Tooltip = {
 }
 
 
-function initListBoxes(div) {
-  // handle anchors with help of BODY's event
-  if (!div)
-    addEvent(document.body, 'click', onLinkClick, false);
-
-  if (Browser.mobile)
-    return;
-  // 1. add handler to autocomplete filter form text fields
-  // 2. save initial values of all fields
+function initListBoxes(form) {
   if (typeof autoComplete == 'undefined')
     return;
-  var forms;
-  if (div)
-    forms = div.getElementsByTagName('form');
-  else
-    forms = document.forms;
-  formInitialValues = new Array(forms.length);
-  for (var i=0; i<forms.length; i++) {
-    var form = forms[i];
-    var initialValues = new Array(form.elements.length);
-    formInitialValues[form.name] = initialValues;
-    if (form.id != 'filter')
-      continue;
-    addEvent(form, 'submit', popupOnSubmit, false);
-    for (j=0; j<form.elements.length; j++) {
-      var elem = form.elements[j];
-      initialValues[elem.name] = elem.value;
-      if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT
-                                                              // fields
-          elem.id) {                                         // and those that
+  
+  for (var j = 0; j < form.elements.length; j++) {
+    var elem = form.elements[j];
+    if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT
+                                                            // fields
+        elem.id) {                                         // and those that
 
-        addEvent(elem, 'keydown',    autoCompleteOnKeyDown,     false);
-        addEvent(elem, 'focus',      autoCompleteOnFocus,       false);
-        addEvent(elem, 'blur',       autoCompleteOnBlur,        false);
-        addEvent(elem, 'mouseout',   autoCompleteOnMouseout,    false);
-        // addEvent(elem, 'change', onFormFieldChange, false);
-        // addEvent(elem, 'blur', onFormFieldChange, false);
-        // addEvent(elem, 'click', onFormFieldClick, false);
+      addEvent(elem, 'keydown',    autoCompleteOnKeyDown,     false);
+      addEvent(elem, 'focus',      autoCompleteOnFocus,       false);
+      addEvent(elem, 'blur',       autoCompleteOnBlur,        false);
+      addEvent(elem, 'mouseout',   autoCompleteOnMouseout,    false);
+      // addEvent(elem, 'change', onFormFieldChange, false);
+      // addEvent(elem, 'blur', onFormFieldChange, false);
+      // addEvent(elem, 'click', onFormFieldClick, false);
+    }
+    else if (elem.type && elem.type.toUpperCase() == 'TEXTAREA') {
+      var rows = elem.attributes['rows'];
+      var cols = elem.attributes['cols'];
+      
+      /* // IS IT USED?!
+      if (rows)
+        initialValues[elem.name + '.attributes.rows'] = rows.value;
+      if (cols)
+        initialValues[elem.name + '.attributes.cols'] = cols.value;
+      */
+      
+      if (!elem.value || elem.value == '') {
+        elem.setAttribute('rows', 1);
+        elem.setAttribute('cols', 10);
+        // elem.attributes['cols'].value = 10;
+        addEvent(elem, 'focus', textAreaOnFocus,  false);
+        addEvent(elem, 'blur',  textAreaOnBlur,   false);
       }
-      else if (elem.type && elem.type.toUpperCase() == 'TEXTAREA') {
-        var rows = elem.attributes['rows'];
-        var cols = elem.attributes['cols'];
-        if (rows)
-          initialValues[elem.name + '.attributes.rows'] = rows.value;
-        if (cols)
-          initialValues[elem.name + '.attributes.cols'] = cols.value;
-        if (!elem.value || elem.value == '') {
-          elem.setAttribute('rows', 1);
-          elem.setAttribute('cols', 10);
-          // elem.attributes['cols'].value = 10;
-          addEvent(elem, 'focus', textAreaOnFocus,  false);
-          addEvent(elem, 'blur',  textAreaOnBlur,   false);
-        }
-      }
-      else  {
-         // alert(elem.name + ", " + elem.type + ", " + elem.id + ", " +
-          // elem.valueType);
-      }
+    }
+    else  {
+        // alert(elem.name + ", " + elem.type + ", " + elem.id + ", " +
+        // elem.valueType);
     }
   }
 }
@@ -2883,42 +2975,6 @@ function onLinkClick(e) {
       anchor.id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
     changeBoolean(e);
   }
-}
-
-function uiFocus(div) {
-  if (!div)
-    div = document;
-
-  var fields = div.getElementsByTagName('input');
-  var firstField;
-
-  for (var i=0; i<fields.length; i++) {
-    var u = fields[i];
-    if (u && u.type && u.type != 'hidden') {
-      if (!firstField) {
-        firstField = u;
-      }
-      if (u.id && (u.id == 'uiFocus' || u.id.indexOf('_uiFocus') != -1)) {
-        if(execJS.isObjectTotallyVisible(u)) {
-          try {
-            u.focus(); // in IE (at least in IE6) first focus() is lost for some
-                      // reason - we are forced to issue another focus()
-            u.focus();
-          }catch(e){};
-        }
-        return true;
-      }
-    }
-  }
-  if (firstField && div != document) {
-    if(execJS.isObjectTotallyVisible(firstField)) {
-      try {
-        firstField.focus();
-        firstField.focus(); // second time for IE
-      }catch(e){};
-    }
-  }
-  return false;
 }
 
 function onClickDisplayInner(e, anchor) {
@@ -3465,8 +3521,7 @@ function showDialog1(event, div, hotspot) {
   if(FullScreenPopup.show(div, hotspot) == false)
     setDivVisible(event, div, iframe, hotspot, 16, 16);
 
-  initListBoxes(div);
-  uiFocus(div);
+  FormProcessor.initForms(div);
   interceptLinkClicks(div);
   var childNodes = div.childNodes;
   for (var i=0; i<childNodes.length; i++) {
@@ -3766,7 +3821,7 @@ function createUrlForBacklink(formName, prop) {
   if (!formAction)
     url += "-$action=" + formAction;
   var url = "smartPopup?urlForBacklink=y&prop=" + prop;
-  var param = getFormFilters(form, true);
+  var param = FormProcessor.getFormFilters(form, true);
   url += param + "&type=" + form.elements['type'].value;
   document.location.href = url; // load data from server into iframe
 }
@@ -4386,7 +4441,7 @@ function processTransaction(e) {
   if (!target)
     return;
   var form = target.form;
-  var params = getFormFilters(form, true);
+  var params = FormProcessor.getFormFilters(form, true);
   var url = "FormRedirect?JLANG=en" + params; // HACK: since form.action returns
                                               // the value of '&action='
   url += "&-applet=y";
@@ -7293,7 +7348,7 @@ function submitWidgetPreferences(event, formId, tab) {
     return ret;
   var refersh = form.elements['.refresh'].value;
 
-  var param = getFormFilters(form, true) + '&submitUpdate=y';
+  var param = FormProcessor.getFormFilters(form, true) + '&submitUpdate=y';
   if (param.charAt(0) == '&')
     param = param.substring(1);
   var url = form.action;

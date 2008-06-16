@@ -229,7 +229,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
       //Boost.view.setProgressIndeterminate(false);
-      callback(clonedEvent, div, hotspot, http_request.responseText, url);
+      if (callback)
+        callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
     else if (status == 302) {
       try {location = http_request.getResponseHeader('Location');} catch(exception) {}
@@ -295,6 +296,10 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
 //      Boost.log('AJAX request status(' + status + ', ' + url + ')');
       openAjaxStatistics(event, http_request);
       //Boost.view.setProgressIndeterminate(false);
+      
+      
+      debugger
+      
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
   };
@@ -874,9 +879,6 @@ function interceptLinkClicks(div) {
   for (var i=0;i<llen; i++) {
     var anchor = anchors[i];
     var id = anchor.id;
-    if (id && id.startsWith('menuLink_')) // menu clicks are processed by their
-                                          // own event handler
-      continue;
     if (anchor.className == 'webfolder')
       continue;
     if(anchor.href.indexOf("A_CALENDARS") != -1) // links of the Calendar's days
@@ -884,6 +886,8 @@ function interceptLinkClicks(div) {
 
     if (id && id.startsWith("-inner."))
       addEvent(anchor, 'click',  onClickDisplayInner,   false);
+    else if (id && id.startsWith('menuLink_'))
+      addEvent(anchor, 'click',     menuOnClick, false);  
     else
       addEvent(anchor, 'click',  onClick,   false);
   }
