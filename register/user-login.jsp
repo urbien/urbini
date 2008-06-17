@@ -68,8 +68,10 @@
 <!-- erasing the cookie set by the first page on login in case if auto chat start
      is enabled. Cookie is set to prevent chat window to popup when user clicks the back
      button. -->
+<!--     
 <script language="JavaScript">
   eraseCookie("chatWindowOpened");
 </script>
+-->
 
 </div>
