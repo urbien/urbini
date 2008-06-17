@@ -783,7 +783,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     //
     if (target.tagName.toLowerCase() == 'a')
       return;
-    var anchors = tr.getElementsByTagName('A');
+    if (tr)  
+      var anchors = tr.getElementsByTagName('A');
     if (anchors  &&  anchors.length != 0) {
       if (currentDiv) {
         loadedPopups[currentDiv.id] = null;
@@ -893,7 +894,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         loadedPopups[currentDiv.id] = null;
         Popup.close0(currentDiv.id)
       }
-      listboxOnClick1(e, currentImgId);
+      this.listboxOnClick1(e, currentImgId);
       return true;
     }
 
@@ -1505,196 +1506,6 @@ function docjslib_getRealTop(img) {
   return yPos;
 }
 
-/**
- * Opens the popup when icon is clicked
- */
-function listboxOnClick(e) {
-  var target = getEventTarget(e);
-  if (!target)
-    return;
-
-  if (target.tagName.toUpperCase() == 'IMG')
-    target = target.parentNode;
-  if (target.tagName.toUpperCase() != "A")
-    return;
-
-  listboxOnClick1(e, target.id);
-  stopEventPropagation(e);
-}
-
-/**
- * Opens the popup when needed, e.g. on click, on enter, on autocomplete
- */
-function listboxOnClick1(e, imgId, enteredText, enterFlag) {
-  if (Popup.openTimeoutId) {                  // clear any prior delayed popup
-                                              // open
-    clearTimeout(Popup.openTimeoutId);
-    Popup.openTimeoutId = null;
-  }
-
-  var propName1 = imgId.substring(0, imgId.length - "_filter".length);   // cut
-                                                                          // off
-                                                                          // "_filter"
-  var idx = propName1.lastIndexOf('_');
-  if (idx == -1)
-    return;
-  currentFormName = propName1.substring(idx + 1);
-  var form = document.forms[currentFormName];
-  propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
-  currentImgId  = imgId;
-
-  originalProp = propName1;
-  var isGroupBy;
-  if (originalProp.length > 8  &&  originalProp.indexOf("_groupBy") == originalProp.length - 8)
-    isGroupBy = true;
-  /*
-   * 'viewColsList' for does not have input fields where to set focus.
-   * form.elements[originalProp] returns list of viewCols properties to choose
-   * from to display in RL
-   */
-  if (!isGroupBy  &&  form  &&  currentFormName != "viewColsList"  &&  currentFormName != "gridColsList"  && originalProp.indexOf("_class") == -1) {
-    var chosenTextField = form.elements[originalProp];
-    if (chosenTextField && chosenTextField.focus) {
-      chosenTextField.focus();
-      // insertAtCursor(chosenTextField, '');
-      // setCaretToEnd(chosenTextField);
-    }
-  }
-  var idx = -1;
-
-  var divId;
-  var isInterface;
-  if (currentFormName.indexOf("siteResourceList") == 0) {
-    idx = propName1.indexOf(".$.");
-    var idx1 = propName1.indexOf(".", idx + 3);
-    if (idx1 == -1)
-      propName = propName1;
-    else
-      propName = propName1.substring(0, idx1);
-    divId = propName + "_" + currentFormName;
-    if (idx1 == -1)
-      propName = propName.substring(idx + 3);
-    else
-      propName = propName.substring(idx + 3, idx1);
-    currentResourceUri = propName1.substring(0, idx);
-  }
-  else {
-    currentResourceUri = null;
-    idx = propName1.indexOf(".", 1);
-    if (idx != -1) {
-      propName = propName1.substring(0, idx);
-      divId = propName + "_" + currentFormName;
-    }
-    else {
-      idx = propName1.indexOf("_class");
-      if (idx == -1)  {
-        propName = propName1;
-        divId = propName + "_" + currentFormName;
-      }
-      else {
-        isInterface = true;
-        propName = propName1.substring(0, idx);
-        var el = document.forms[currentFormName].elements[propName + "_class"];
-        if (!el.value || el.value == "")
-          divId = propName + "_class_" + currentFormName;
-        else {
-          divId = propName + "_" + currentFormName;
-          originalProp = propName + propName1.substring(propName.length + "_class".length);
-        }
-      }
-    }
-  }
-  // currentDiv = document.getElementById(divId);
-
-  var div = loadedPopups[divId];
-  var hotspot = document.getElementById(imgId);
-
-  // Use existing DIV from cache (unless text was Enter-ed - in which case
-  // always redraw DIV)
-  if (!enteredText && div != null) {
-    hideResetRow(div, currentFormName, originalProp);
-    Popup.open(e, divId, hotspot, null, 0, 16);
-    return;
-  }
-  else {
-    var popup = Popup.getPopup(divId);
-    div = document.getElementById(divId);
-    if (popup == null)
-      popup = new Popup(div, hotspot);
-    else
-      popup.reset(hotspot);
-  }
-
-  // form url based on parameters that were set
-  var formActionElm = form.elements['-$action'];
-  var formAction = formActionElm.value;
-  var baseUriO = document.getElementsByTagName('base');
-  var baseUri = "";
-  if (baseUriO) {
-    baseUri = baseUriO[0].href;
-    if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
-      baseUri += "/";
-  }
-  var url = baseUri + "smartPopup";
-
-  var params = "prop=" + encodeURIComponent(propName);
-  if (currentFormName.indexOf("siteResourceList") == 0) {
-    params += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.elements['type'].value;
-  }
-  else {
-// if (formAction != "showPropertiesForEdit" && formAction != "mkResource") {
-      /* Add full text search criteria to filter */
-      if (form.id && form.id == 'filter') {
-        var fullTextSearchForm = document.forms['searchForm'];
-        if (fullTextSearchForm) {
-          var criteria = fullTextSearchForm.elements['-q'];
-          if (criteria  &&  criteria.value.indexOf('-- ') == -1) {
-            var textSearchForType = fullTextSearchForm.elements['-cat'];
-            if (textSearchForType  &&  textSearchForType.value == 'on') {
-              var textSearchInFilter = form.elements['-q'];
-              if (textSearchInFilter) {
-                textSearchInFilter.value = criteria.value;
-                var textSearchInFilterForType = form.elements['-cat'];
-                if (textSearchInFilterForType)
-                   textSearchInFilterForType.value = 'on';
-              }
-            }
-          }
-        }
-      }
-      var allFields = true;
-      if (formAction != "searchLocal" && formAction != "searchParallel") {
-        if (enterFlag)
-          allFields = false;
-      }
-// else if (currentFormName.indexOf("horizontalFilter") == 0)
-// allFields = true;
-      params += FormProcessor.getFormFilters(form, allFields);
-    /*
-     * } else { url = url + "&type=" + form.elements['type'].value +
-     * "&-$action=" + formAction; var s = getFormFiltersForInterface(form,
-     * propName); if (s) url = url + s; var uri = form.elements['uri']; if (uri) {
-     * if (formAction == "showPropertiesForEdit") url = url + "&uri=" +
-     * encodeURIComponent(uri.value); else url = url + "&$rootFolder=" +
-     * encodeURIComponent(uri.value); } }
-     */
-  }
-  params += "&$form=" + currentFormName;
-  params += "&" + propName + "_filter=y";
-  if (!enterFlag)
-    params += "&$selectOnly=y";
-  if (enteredText  &&  params.indexOf("&" + propName + "=" + encodeURIComponent(enteredText)) == -1)
-    params += "&" + propName + "=" + encodeURIComponent(enteredText);
-  if (isInterface) {
-    var classValue = form.elements[propName + "_class"].value;
-    if (classValue != null && classValue.length != 0)
-      params += "&" + propName + "_class=" + classValue;
-  }
-
-  // request listbox context from the server via ajax
-  div.removeAttribute('eventHandlersAdded');
-  postRequest(e, url, params, div, hotspot, Popup.load);
-}
 /*
 function getFormFiltersForInterface(form, propName) {
   var field = form.elements[propName];
@@ -1802,7 +1613,7 @@ var FormProcessor = {
       if (form.id != 'filter')
         continue;
       this._storeInitialValues(form);
-      initListBoxes(form);
+      ListBoxesHandler.init(form);
       addEvent(form, 'submit', this.onSubmit, false);
     }
 
@@ -2022,7 +1833,7 @@ var FormProcessor = {
     // upon AJAX response we will be able to choose between repainting the dialog
     // or the whole page
     if (pane2  &&  pane2.contains(form))  {   // inner dialog?
-      postRequest(e, url, params, pane2, getTargetElement(e), null/*showDialog*/);
+      postRequest(e, url, params, pane2, getTargetElement(e), showDialog);
       return stopEventPropagation(e);
     }
     else {
@@ -2120,269 +1931,6 @@ var FormProcessor = {
 
 function setTime() {
   this.value = new Date().getTime();
-}
-
-// *************************************** AUTOCOMPLETE
-// *********************************************
-/**
- * Show popup for the text entered in input field (by capturing keyPress
- * events). Show popup only when the person stopped typing (timeout). Special
- * processing for Enter: - in Filter mode - let it submit the form. - in Data
- * Entry mode - on Enter show popup immediately, and close popup if hit Enter
- * twice.
- */
-function autoComplete(e) {
-  e = getDocumentEvent(e); if (!e) return;
-  var target = getTargetElement(e);
-
-  var isAuto = target.getAttribute("autocomplete");
-  if(isAuto != null && isAuto == "off")
-    return;
-
-  return autoComplete1(e, target);
-}
-
-function autoComplete1(e, target) {
-  if (!target)
-    return;
-  keyPressedTime = new Date().getTime();
-  var form = target.form;
-  var characterCode = getKeyCode(e); // code typed by the user
-
-  var propName  = target.name;
-  var formName  = form.name; //target.id;
-  var propName1 = propName;
-  var idx = propName.indexOf(".", 1);
-  if (idx != -1)
-    propName1 = propName1.substring(0, idx);
-
-  var fieldVerified = form.elements[propName1 + '_verified'];
-  var selectItems   = form.elements[propName1 + '_select'];
-  var fieldClass    = form.elements[propName1 + '_class'];
-  if (characterCode == 13) { // enter
-    if (!fieldVerified) { // show popup on Enter only in data entry mode
-                          // (indicated by the presence of _verified field)
-      // if (autoCompleteTimeoutId) clearTimeout(autoCompleteTimeoutId);
-      return true;
-    }
-  }
-  var divId;
-  if (fieldClass)
-    divId = propName + "_class_" + formName;
-  else
-    divId = propName + "_" + formName;
-
-  keyPressedImgId     = divId + "_filter";
-  var hotspot = document.getElementById(keyPressedImgId);
-  if (!hotspot) // no image - this is not a listbox and thus needs no
-                // autocomplete
-    return true;
-  keyPressedElement   = target;
-  var currentPopup = Popup.getPopup(divId);
-/*
- * !!!!!!!!!!!!! this below did not work to clear the previous popup if
- * (currentDiv) { var p = Popup.getPopup(currentDiv); if (p) p.close(); }
- */
-  switch (characterCode) {
-   case 38:  // up arrow
-     if (currentPopup && currentPopup.isOpen()) {
-       currentPopup.deselectRow();
-       currentPopup.prevRow();
-       currentPopup.selectRow();
-     }
-     else {
-       listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
-       // Popup.open(e, divId, hotspot, null, 0, 16);
-     }
-     return stopEventPropagation(e);
-   case 40:  // down arrow
-     if (currentPopup && currentPopup.isOpen()) {
-       currentPopup.deselectRow();
-       currentPopup.nextRow();
-       currentPopup.selectRow();
-     }
-     else {
-       listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
-       // Popup.open(e, divId, hotspot, null, 0, 16);
-     }
-     return stopEventPropagation(e);
-   case 37:  // left arrow
-   case 39:  // right arrow
-   case 33:  // page up
-   case 34:  // page down
-   case 36:  // home
-   case 35:  // end
-     return true;
-   case 27:  // esc
-     if (currentPopup && currentPopup.isOpen()) {
-       currentPopup.close();
-     }
-     return stopEventPropagation(e);
-   case 16:  // shift
-   case 17:  // ctrl
-   case 18:  // alt s
-   case 20:  // caps lock
-     return true;
-   case 127: // ctrl-enter
-   case 13:  // enter
-     if (currentPopup && currentPopup.isOpen()) {
-       // listboxOnClick1(keyPressedImgId, keyPressedElement.value);
-       currentPopup.popupRowOnClick1(e, null, target);
-       return stopEventPropagation(e); // tell browser not to do submit on
-                                        // 'enter'
-     }
-   case 9:   // tab
-     if (currentDiv)
-       currentPopup.close();
-     return true;
-   case 8:   // backspace or "C" in S60
-    if(Browser.s60Browser) {
-      if (currentPopup && currentPopup.isOpen()) {
-          currentPopup.close(); // the same like esc
-        }
-        return stopEventPropagation(e);
-    }
-   case 46:  // delete
-     break;
-  }
-  if (currentPopup)
-    currentPopup.close();
-
-  // for numeric value - do not perform autocomplete (except arrow down, ESC,
-  // etc.)
-  var ac = target.getAttribute('autocomplete');
-  if (ac && ac == 'off')
-    return true;
-  keyPressedElement.style.backgroundColor='#ffffff';
-  if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not
-                                                // verified yet (i.e. not chose
-                                                // from the list)
-  if (selectItems) {
-    var len = selectItems.length;
-    if (len) {
-      for (var i=0; i<selectItems.length; i++) {
-        if (selectItems[i].type.toLowerCase() == "checkbox")
-          selectItems[i].checked = false;
-        else
-          selectItems[i].value = '';
-      }
-    }
-    else
-      selectItems.value   = '';  // value was modified and is not verified yet
-                                  // (i.e. not chose from the list)
-  }
-  e = cloneEvent(e);
-
-  var checkSubscribe = form.elements[propName + "_subscribe"];
-  if (checkSubscribe)
-    checkSubscribe.checked = true;
-  var f = function() { autoCompleteTimeout(e, keyPressedTime); };
-  autoCompleteTimeoutId = setTimeout(f, Popup.autoCompleteDefaultTimeout);
-  // make property label visible since overwritten inside the field
-  var filterLabel = document.getElementById(propName1 + "_span");
-  if (filterLabel) {
-    filterLabel.style.display = '';
-    filterLabel.className = 'xs';
-  }
-  if (currentPopup)
-    clearOtherPopups(currentPopup.div);
-  return true;
-}
-
-function autoCompleteOnFocus(e) {
-  var target = getTargetElement(e);
-  if (!target)
-    return;
-
-  if (target.internalFocus) {
-    target.internalFocus = false;
-    return true;
-  }
-
-  // prevent issuing select() if we got onfocus because browser window was
-  // minimized and then restored
-  if (target.value != target.lastText)
-    target.select();
-  return true;
-}
-
-function autoCompleteOnBlur(e) {
-  var target = getTargetElement(e);
-  if (!target)
-    return;
-
-  target.lastText = target.value;
-}
-
-function autoCompleteOnMouseout(e) {
-  if (typeof getMouseOutTarget == 'undefined') return;
-  var target = getMouseOutTarget(e);
-  if (!target)
-    return true;
-
-  var img = document.getElementById(keyPressedImgId);
-  if (!img)
-    return true;
-
-  if (currentDiv) {
-    Popup.delayedClose0(currentDiv.id);
-  }
-}
-
-/**
- * This onKeyDown handler is needed since some browsers do not capture certain
- * special keys on keyPress.
- */
-function autoCompleteOnKeyDown(e) {
-  e = getDocumentEvent(e); if(!e) return;
-  return autoComplete(e);
-}
-
-function autoCompleteTimeout(e, invocationTime) {
-  if (keyPressedTime > invocationTime) {
-    return;
-  }
-  if (!keyPressedImgId)
-    return;
-
-  var hotspot = document.getElementById(keyPressedImgId);
-  if (!hotspot) {
-    return true;
-  }
-
-  if (keyPressedElement.value.length == 0) // avoid showing popup for empty
-                                            // fields
-    return;
-  listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
-}
-
-
-function textAreaOnFocus(e) {
-  var target = getTargetElement(e);
-  var rows = getFormFieldInitialValue(target, 'rows');
-  if (rows)
-    target.setAttribute('rows', rows);
-  else
-    target.setAttribute('rows', 1);
-  var cols = getFormFieldInitialValue(target, 'cols');
-  if (!cols) {
-    target.setAttribute('cols', 10);
-    cols = 10;
-  }
-  var c = target.getAttribute('cols');
-  if (c) {
-    target.setAttribute('cols', cols);
-    target.style.width = "96%";
-  }
-}
-
-function textAreaOnBlur(e) {
-  var target = getTargetElement(e);
-  if (!target.value || target.value == '') {
-    target.setAttribute('rows', 1);
-    target.setAttribute('cols', 10);
-    target.style.width = null;
-  }
 }
 
 /**
@@ -2942,49 +2490,495 @@ var Tooltip = {
 }
 
 
-function initListBoxes(form) {
-  if (typeof autoComplete == 'undefined')
-    return;
-  
-  for (var j = 0; j < form.elements.length; j++) {
-    var elem = form.elements[j];
-    if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT
-                                                            // fields
-        elem.id) {                                         // and those that
+/**************************************
+* ListBoxesHandler
+***************************************/
+var ListBoxesHandler = {
+  init : function(form) {
+    for (var j = 0; j < form.elements.length; j++) {
+      var elem = form.elements[j];
+      if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT
+                                                              // fields
+          elem.id) {                                         // and those that
 
-      addEvent(elem, 'keydown',    autoCompleteOnKeyDown,     false);
-      addEvent(elem, 'focus',      autoCompleteOnFocus,       false);
-      addEvent(elem, 'blur',       autoCompleteOnBlur,        false);
-      addEvent(elem, 'mouseout',   autoCompleteOnMouseout,    false);
-      // addEvent(elem, 'change', onFormFieldChange, false);
-      // addEvent(elem, 'blur', onFormFieldChange, false);
-      // addEvent(elem, 'click', onFormFieldClick, false);
-    }
-    else if (elem.type && elem.type.toUpperCase() == 'TEXTAREA') {
-      var rows = elem.attributes['rows'];
-      var cols = elem.attributes['cols'];
-      
-      /* // IS IT USED?!
-      if (rows)
-        initialValues[elem.name + '.attributes.rows'] = rows.value;
-      if (cols)
-        initialValues[elem.name + '.attributes.cols'] = cols.value;
-      */
-      
-      if (!elem.value || elem.value == '') {
-        elem.setAttribute('rows', 1);
-        elem.setAttribute('cols', 10);
-        // elem.attributes['cols'].value = 10;
-        addEvent(elem, 'focus', textAreaOnFocus,  false);
-        addEvent(elem, 'blur',  textAreaOnBlur,   false);
+        addEvent(elem, 'keydown',    this.autoCompleteOnKeyDown,     false);
+        addEvent(elem, 'focus',      this.autoCompleteOnFocus,       false);
+        addEvent(elem, 'blur',       this.autoCompleteOnBlur,        false);
+        addEvent(elem, 'mouseout',   this.autoCompleteOnMouseout,    false);
+        // addEvent(elem, 'change', onFormFieldChange, false);
+        // addEvent(elem, 'blur', onFormFieldChange, false);
+        // addEvent(elem, 'click', onFormFieldClick, false);
+      }
+      else if (elem.type && elem.type.toUpperCase() == 'TEXTAREA') {
+        var rows = elem.attributes['rows'];
+        var cols = elem.attributes['cols'];
+        
+        /* // IS IT USED?!
+        if (rows)
+          initialValues[elem.name + '.attributes.rows'] = rows.value;
+        if (cols)
+          initialValues[elem.name + '.attributes.cols'] = cols.value;
+        */
+        
+        if (!elem.value || elem.value == '') {
+          elem.setAttribute('rows', 1);
+          elem.setAttribute('cols', 10);
+          // elem.attributes['cols'].value = 10;
+          addEvent(elem, 'focus', this.textAreaOnFocus,  false);
+          addEvent(elem, 'blur',  this.textAreaOnBlur,   false);
+        }
+      }
+      else  {
+          // alert(elem.name + ", " + elem.type + ", " + elem.id + ", " +
+          // elem.valueType);
       }
     }
-    else  {
-        // alert(elem.name + ", " + elem.type + ", " + elem.id + ", " +
-        // elem.valueType);
+  },
+  // key events handlers ----
+  autoCompleteOnKeyDown : function(e) {
+    e = getDocumentEvent(e); if(!e) return;
+    return ListBoxesHandler.autoComplete(e);
+  },
+  
+  autoCompleteOnFocus : function(e) {
+    var target = getTargetElement(e);
+    if (!target)
+      return;
+
+    if (target.internalFocus) {
+      target.internalFocus = false;
+      return true;
     }
+
+    // prevent issuing select() if we got onfocus because browser window was
+    // minimized and then restored
+    if (target.value != target.lastText)
+      target.select();
+    return true;
+  },
+  
+  autoCompleteOnBlur : function(e) {
+    var target = getTargetElement(e);
+    if (!target)
+      return;
+    target.lastText = target.value;
+  },
+  autoCompleteOnMouseout : function(e) {
+    if (typeof getMouseOutTarget == 'undefined') return;
+    var target = getMouseOutTarget(e);
+    if (!target)
+      return true;
+
+    var img = document.getElementById(keyPressedImgId);
+    if (!img)
+      return true;
+
+    if (currentDiv) {
+      Popup.delayedClose0(currentDiv.id);
+    }
+  },
+  
+  textAreaOnFocus : function(e) {
+    var target = getTargetElement(e);
+    var rows = FormProcessor.getFormFieldInitialValue(target, 'rows');
+    if (rows)
+      target.setAttribute('rows', rows);
+    else
+      target.setAttribute('rows', 1);
+    var cols = FormProcessor.getFormFieldInitialValue(target, 'cols');
+    if (!cols) {
+      target.setAttribute('cols', 10);
+      cols = 10;
+    }
+    var c = target.getAttribute('cols');
+    if (c) {
+      target.setAttribute('cols', cols);
+      target.style.width = "96%";
+    }
+  },
+
+  textAreaOnBlur : function(e) {
+    var target = getTargetElement(e);
+    if (!target.value || target.value == '') {
+      target.setAttribute('rows', 1);
+      target.setAttribute('cols', 10);
+      target.style.width = null;
+    }
+  },
+  
+  // AUTOCOMPLETE ----
+  /**
+  * Show popup for the text entered in input field (by capturing keyPress
+  * events). Show popup only when the person stopped typing (timeout). Special
+  * processing for Enter: - in Filter mode - let it submit the form. - in Data
+  * Entry mode - on Enter show popup immediately, and close popup if hit Enter
+  * twice.
+  */
+  autoComplete : function(e) {
+    e = getDocumentEvent(e); if (!e) return;
+    var target = getTargetElement(e);
+
+    var isAuto = target.getAttribute("autocomplete");
+    if(isAuto != null && isAuto == "off")
+      return;
+
+    return this.autoComplete1(e, target);
+  },
+
+  autoComplete1 : function(e, target) {
+    if (!target)
+      return;
+    keyPressedTime = new Date().getTime();
+    var form = target.form;
+    var characterCode = getKeyCode(e); // code typed by the user
+
+    var propName  = target.name;
+    var formName  = form.name; //target.id;
+    var propName1 = propName;
+    var idx = propName.indexOf(".", 1);
+    if (idx != -1)
+      propName1 = propName1.substring(0, idx);
+
+    var fieldVerified = form.elements[propName1 + '_verified'];
+    var selectItems   = form.elements[propName1 + '_select'];
+    var fieldClass    = form.elements[propName1 + '_class'];
+    if (characterCode == 13) { // enter
+      if (!fieldVerified) { // show popup on Enter only in data entry mode
+                            // (indicated by the presence of _verified field)
+        // if (autoCompleteTimeoutId) clearTimeout(autoCompleteTimeoutId);
+        return true;
+      }
+    }
+    var divId;
+    if (fieldClass)
+      divId = propName + "_class_" + formName;
+    else
+      divId = propName + "_" + formName;
+
+    keyPressedImgId     = divId + "_filter";
+    var hotspot = document.getElementById(keyPressedImgId);
+    if (!hotspot) // no image - this is not a listbox and thus needs no
+                  // autocomplete
+      return true;
+    keyPressedElement   = target;
+    var currentPopup = Popup.getPopup(divId);
+  /*
+  * !!!!!!!!!!!!! this below did not work to clear the previous popup if
+  * (currentDiv) { var p = Popup.getPopup(currentDiv); if (p) p.close(); }
+  */
+    switch (characterCode) {
+    case 38:  // up arrow
+      if (currentPopup && currentPopup.isOpen()) {
+        currentPopup.deselectRow();
+        currentPopup.prevRow();
+        currentPopup.selectRow();
+      }
+      else {
+        this.listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
+        // Popup.open(e, divId, hotspot, null, 0, 16);
+      }
+      return stopEventPropagation(e);
+    case 40:  // down arrow
+      if (currentPopup && currentPopup.isOpen()) {
+        currentPopup.deselectRow();
+        currentPopup.nextRow();
+        currentPopup.selectRow();
+      }
+      else {
+        this.listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
+        // Popup.open(e, divId, hotspot, null, 0, 16);
+      }
+      return stopEventPropagation(e);
+    case 37:  // left arrow
+    case 39:  // right arrow
+    case 33:  // page up
+    case 34:  // page down
+    case 36:  // home
+    case 35:  // end
+      return true;
+    case 27:  // esc
+      if (currentPopup && currentPopup.isOpen()) {
+        currentPopup.close();
+      }
+      return stopEventPropagation(e);
+    case 16:  // shift
+    case 17:  // ctrl
+    case 18:  // alt s
+    case 20:  // caps lock
+      return true;
+    case 127: // ctrl-enter
+    case 13:  // enter
+      if (currentPopup && currentPopup.isOpen()) {
+        // listboxOnClick1(keyPressedImgId, keyPressedElement.value);
+        currentPopup.popupRowOnClick1(e, null, target);
+        return stopEventPropagation(e); // tell browser not to do submit on
+                                          // 'enter'
+      }
+    case 9:   // tab
+      if (currentDiv)
+        currentPopup.close();
+      return true;
+    case 8:   // backspace or "C" in S60
+      if(Browser.s60Browser) {
+        if (currentPopup && currentPopup.isOpen()) {
+            currentPopup.close(); // the same like esc
+          }
+          return stopEventPropagation(e);
+      }
+    case 46:  // delete
+      break;
+    }
+    if (currentPopup)
+      currentPopup.close();
+
+    // for numeric value - do not perform autocomplete (except arrow down, ESC,
+    // etc.)
+    var ac = target.getAttribute('autocomplete');
+    if (ac && ac == 'off')
+      return true;
+    keyPressedElement.style.backgroundColor='#ffffff';
+    if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not
+                                                  // verified yet (i.e. not chose
+                                                  // from the list)
+    if (selectItems) {
+      var len = selectItems.length;
+      if (len) {
+        for (var i=0; i<selectItems.length; i++) {
+          if (selectItems[i].type.toLowerCase() == "checkbox")
+            selectItems[i].checked = false;
+          else
+            selectItems[i].value = '';
+        }
+      }
+      else
+        selectItems.value   = '';  // value was modified and is not verified yet
+                                    // (i.e. not chose from the list)
+    }
+    e = cloneEvent(e);
+
+    var checkSubscribe = form.elements[propName + "_subscribe"];
+    if (checkSubscribe)
+      checkSubscribe.checked = true;
+    var f = function() { ListBoxesHandler.autoCompleteTimeout(e, keyPressedTime); };
+    autoCompleteTimeoutId = setTimeout(f, Popup.autoCompleteDefaultTimeout);
+    // make property label visible since overwritten inside the field
+    var filterLabel = document.getElementById(propName1 + "_span");
+    if (filterLabel) {
+      filterLabel.style.display = '';
+      filterLabel.className = 'xs';
+    }
+    if (currentPopup)
+      clearOtherPopups(currentPopup.div);
+    return true;
+  }, 
+
+  autoCompleteTimeout : function(e, invocationTime) {
+    if (keyPressedTime > invocationTime) {
+      return;
+    }
+    if (!keyPressedImgId)
+      return;
+
+    var hotspot = document.getElementById(keyPressedImgId);
+    if (!hotspot) {
+      return true;
+    }
+
+    if (keyPressedElement.value.length == 0) // avoid showing popup for empty
+      return;
+    this.listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
+  },
+  
+  // Opens the popup when icon is clicked
+  listboxOnClick : function(e) {
+    var target = getEventTarget(e);
+    if (!target)
+      return;
+
+    if (target.tagName.toUpperCase() == 'IMG')
+      target = target.parentNode;
+    if (target.tagName.toUpperCase() != "A")
+      return;
+
+    this.listboxOnClick1(e, target.id);
+    stopEventPropagation(e);
+  },
+
+  // Opens the popup when needed, e.g. on click, on enter, on autocomplete
+  listboxOnClick1 : function(e, imgId, enteredText, enterFlag) {
+    if (Popup.openTimeoutId) {                  // clear any prior delayed popup
+                                                // open
+      clearTimeout(Popup.openTimeoutId);
+      Popup.openTimeoutId = null;
+    }
+
+    var propName1 = imgId.substring(0, imgId.length - "_filter".length);   // cut
+                                                                            // off
+                                                                            // "_filter"
+    var idx = propName1.lastIndexOf('_');
+    if (idx == -1)
+      return;
+    currentFormName = propName1.substring(idx + 1);
+    var form = document.forms[currentFormName];
+    propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
+    currentImgId  = imgId;
+
+    originalProp = propName1;
+    var isGroupBy;
+    if (originalProp.length > 8  &&  originalProp.indexOf("_groupBy") == originalProp.length - 8)
+      isGroupBy = true;
+    /*
+    * 'viewColsList' for does not have input fields where to set focus.
+    * form.elements[originalProp] returns list of viewCols properties to choose
+    * from to display in RL
+    */
+    if (!isGroupBy  &&  form  &&  currentFormName != "viewColsList"  &&  currentFormName != "gridColsList"  && originalProp.indexOf("_class") == -1) {
+      var chosenTextField = form.elements[originalProp];
+      if (chosenTextField && chosenTextField.focus) {
+        chosenTextField.focus();
+        // insertAtCursor(chosenTextField, '');
+        // setCaretToEnd(chosenTextField);
+      }
+    }
+    var idx = -1;
+
+    var divId;
+    var isInterface;
+    if (currentFormName.indexOf("siteResourceList") == 0) {
+      idx = propName1.indexOf(".$.");
+      var idx1 = propName1.indexOf(".", idx + 3);
+      if (idx1 == -1)
+        propName = propName1;
+      else
+        propName = propName1.substring(0, idx1);
+      divId = propName + "_" + currentFormName;
+      if (idx1 == -1)
+        propName = propName.substring(idx + 3);
+      else
+        propName = propName.substring(idx + 3, idx1);
+      currentResourceUri = propName1.substring(0, idx);
+    }
+    else {
+      currentResourceUri = null;
+      idx = propName1.indexOf(".", 1);
+      if (idx != -1) {
+        propName = propName1.substring(0, idx);
+        divId = propName + "_" + currentFormName;
+      }
+      else {
+        idx = propName1.indexOf("_class");
+        if (idx == -1)  {
+          propName = propName1;
+          divId = propName + "_" + currentFormName;
+        }
+        else {
+          isInterface = true;
+          propName = propName1.substring(0, idx);
+          var el = document.forms[currentFormName].elements[propName + "_class"];
+          if (!el.value || el.value == "")
+            divId = propName + "_class_" + currentFormName;
+          else {
+            divId = propName + "_" + currentFormName;
+            originalProp = propName + propName1.substring(propName.length + "_class".length);
+          }
+        }
+      }
+    }
+    // currentDiv = document.getElementById(divId);
+
+    var div = loadedPopups[divId];
+    var hotspot = document.getElementById(imgId);
+
+    // Use existing DIV from cache (unless text was Enter-ed - in which case
+    // always redraw DIV)
+    if (!enteredText && div != null) {
+      hideResetRow(div, currentFormName, originalProp);
+      Popup.open(e, divId, hotspot, null, 0, 16);
+      return;
+    }
+    else {
+      var popup = Popup.getPopup(divId);
+      div = document.getElementById(divId);
+      if (popup == null)
+        popup = new Popup(div, hotspot);
+      else
+        popup.reset(hotspot);
+    }
+
+    // form url based on parameters that were set
+    var formActionElm = form.elements['-$action'];
+    var formAction = formActionElm.value;
+    var baseUriO = document.getElementsByTagName('base');
+    var baseUri = "";
+    if (baseUriO) {
+      baseUri = baseUriO[0].href;
+      if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
+        baseUri += "/";
+    }
+    var url = baseUri + "smartPopup";
+
+    var params = "prop=" + encodeURIComponent(propName);
+    if (currentFormName.indexOf("siteResourceList") == 0) {
+      params += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.elements['type'].value;
+    }
+    else {
+  // if (formAction != "showPropertiesForEdit" && formAction != "mkResource") {
+        /* Add full text search criteria to filter */
+        if (form.id && form.id == 'filter') {
+          var fullTextSearchForm = document.forms['searchForm'];
+          if (fullTextSearchForm) {
+            var criteria = fullTextSearchForm.elements['-q'];
+            if (criteria  &&  criteria.value.indexOf('-- ') == -1) {
+              var textSearchForType = fullTextSearchForm.elements['-cat'];
+              if (textSearchForType  &&  textSearchForType.value == 'on') {
+                var textSearchInFilter = form.elements['-q'];
+                if (textSearchInFilter) {
+                  textSearchInFilter.value = criteria.value;
+                  var textSearchInFilterForType = form.elements['-cat'];
+                  if (textSearchInFilterForType)
+                    textSearchInFilterForType.value = 'on';
+                }
+              }
+            }
+          }
+        }
+        var allFields = true;
+        if (formAction != "searchLocal" && formAction != "searchParallel") {
+          if (enterFlag)
+            allFields = false;
+        }
+  // else if (currentFormName.indexOf("horizontalFilter") == 0)
+  // allFields = true;
+        params += FormProcessor.getFormFilters(form, allFields);
+      /*
+      * } else { url = url + "&type=" + form.elements['type'].value +
+      * "&-$action=" + formAction; var s = getFormFiltersForInterface(form,
+      * propName); if (s) url = url + s; var uri = form.elements['uri']; if (uri) {
+      * if (formAction == "showPropertiesForEdit") url = url + "&uri=" +
+      * encodeURIComponent(uri.value); else url = url + "&$rootFolder=" +
+      * encodeURIComponent(uri.value); } }
+      */
+    }
+    params += "&$form=" + currentFormName;
+    params += "&" + propName + "_filter=y";
+    if (!enterFlag)
+      params += "&$selectOnly=y";
+    if (enteredText  &&  params.indexOf("&" + propName + "=" + encodeURIComponent(enteredText)) == -1)
+      params += "&" + propName + "=" + encodeURIComponent(enteredText);
+    if (isInterface) {
+      var classValue = form.elements[propName + "_class"].value;
+      if (classValue != null && classValue.length != 0)
+        params += "&" + propName + "_class=" + classValue;
+    }
+
+    // request listbox context from the server via ajax
+    div.removeAttribute('eventHandlersAdded');
+    postRequest(e, url, params, div, hotspot, Popup.load);
   }
+
 }
+
+
 
 // handle anchors with help of BODY's event
 function onLinkClick(e) {
@@ -2998,7 +2992,7 @@ function onLinkClick(e) {
 
   var idLen = anchor.id.length;
   if (anchor.id  &&  anchor.id.indexOf("_filter", anchor.id.length - "_filter".length) != -1) {
-    listboxOnClick(e);
+    ListBoxesHandler.listboxOnClick(e);
   }
   else if (anchor.id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
       anchor.id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
@@ -5706,7 +5700,6 @@ var DragEngine = {
 		classNameArr.push("dragable");
 		classNameArr.push("tabs");
 		classNameArr.push("tabs_current");
-		//debugger
 
 		if((titleObj =  getAncestorById(caughtObj, "titleBar")) == null &&
 		    (titleObj =  getAncestorByAttribute(caughtObj, "className", classNameArr)) == null )
