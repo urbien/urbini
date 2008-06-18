@@ -9,7 +9,7 @@
    <br />
 </div>
   <center>
-    <input type="submit" name="saveAndCancel" value="  Receive all alerts  "></input>&#160;&#160;<a href="about:blank" onclick="limitNumberOfAlerts(event)"><text text="Limit number of alerts"/></a>
+    <input type="submit" name="saveAndCancel" value="  Receive all alerts  "/>&#160;&#160;<a href="about:blank" onclick="limitNumberOfAlerts(event)"><text text="Limit number of alerts"/></a>
   </center>
 </form>
 </td></tr></table>
