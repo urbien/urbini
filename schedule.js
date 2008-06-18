@@ -9,7 +9,7 @@ function schedule(e) {
   if (target == null)
     return stopEventPropagation(e);
   var imgSrc;
-  
+
   // remove reassign icon
   var tId = target.id;
   if (currentCell && tId != currentCell.id)
@@ -62,7 +62,7 @@ function schedule(e) {
 // lastCellClickTime);
   var calendarImg = "<img src='icons/blank.gif' width='16' height='16' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' />";
   var schedImg = "<img src='icons/classes/TreatmentProcedure.gif' title='Schedule procedure' width='16' height='16' align='left' /><img src='icons/calendar.gif' title='Change employee availability' width='16' height='16' align='right' />";
-  
+
   if (!currentCell) {
     currentCell = target;
     currentCellBackground = currentCell.style.backgroundColor;
@@ -317,9 +317,9 @@ function addAssignment(event, body, hotspot, content)  {
     for (var i=0; i<divs.length; i++) {
       if (divs[i].id  &&  divs[i].id == 'resourceList_div') {
         if (oldClassName == 'ci')
-          addAndShowWait(event, divs[i], hotspot, content, true, true);
+          addAndShowWait(event, divs[i], hotspot, content, null, true, true);
         else
-          addAndShowWait(event, divs[i], hotspot, content, true);
+          addAndShowWait(event, divs[i], hotspot, content, null, true);
         break;
       }
     }
