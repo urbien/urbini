@@ -223,6 +223,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       openAjaxStatistics(event, http_request);
 //      if (div)
 //        Boost.view.setProgressIndeterminate(false);
+
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
     else if (status == 200) {
@@ -296,10 +297,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
 //      Boost.log('AJAX request status(' + status + ', ' + url + ')');
       openAjaxStatistics(event, http_request);
       //Boost.view.setProgressIndeterminate(false);
-      
-      
-      debugger
-      
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
   };
@@ -860,6 +857,87 @@ function setInnerHtml(div, text) {
 }
 
 
+/*********************************************************
+* ExecJS 
+* helps to handle dialog and tab cases;
+* checks ready state (IE) as well.
+**********************************************************/
+var ExecJS = {
+  runCodeArr : new Array(),
+  isWaitingOnReady : false,
+  
+  runCode : function(jsCode, /*optional*/refObjId) {
+    $t = ExecJS;
+    if (typeof refObjId != 'undefined')
+      $t._runRelativeCode(jsCode, refObjId);
+    else
+      window.eval(jsCode);
+  },
+  
+  // executes js code if refObjId is visible - [hidden tab].
+  _runRelativeCode : function(jsCode, refObjId) {
+    if(document.all && document.readyState != "complete") {
+			if(this.isWaitingOnReady == false) {
+			  addEvent(document, 'readystatechange', this._runOnDocumentReady, false);
+			  this.isWaitingOnReady = true;
+			}
+			this.runCodeArr.push({"jsCode": jsCode, "refObjId": refObjId});
+		}
+		else {
+      if(this.isObjectTotallyVisible(refObjId))
+        window.eval(jsCode);
+    }
+  },
+
+  // evaluates script blocks of the div with className = "ExecJS"
+  // contDiv is a div that contain JS code - [dialog].
+  runDivCode : function(contDiv) {
+    if(!contDiv)
+      return;
+    var scripts = contDiv.getElementsByTagName('script');
+    for(var i = 0; i < scripts.length; i++) {
+      if(//scripts[i].className == "ExecJS" && // evaluate only 1 time.
+        (typeof scripts[i].evaluated == 'undefined' || !scripts[i].evaluated)) {
+        var parent = scripts[i].parentNode;
+        // apply only to visible object
+        if(this.isObjectTotallyVisible(parent)) {
+          var evalStr = scripts[i].text || scripts[i].innerHTML;
+          window.eval(evalStr);
+          scripts[i].evaluated = true;
+        }
+      }
+    }
+  },
+
+  // checks on visibility all ancestors of the object
+  // gets object or its id
+  isObjectTotallyVisible : function(obj) {
+    if(typeof obj == "string")
+      obj = document.getElementById(obj);
+    if(obj == null)
+      return false;
+	  var parent = obj;
+	  while(parent != null) {
+		  var stl = getElementStyle(parent);
+		  if (stl != null) {
+		    if (stl.visibility == 'hidden' || stl.display == 'none')
+		      return false;
+			}
+		  parent = obj.parentNode;
+		  obj = parent;
+	  }
+	  return true;
+  },
+
+  _runOnDocumentReady : function() {
+    for(var i = 0; i < ExecJS.runCodeArr.length; i++) {
+      if(ExecJS.isObjectTotallyVisible(ExecJS.runCodeArr[i].refObjId))
+        window.eval(ExecJS.runCodeArr[i].jsCode);
+      }
+   }
+}
+
+
 // ************************************* intercept all clicks
 // ***********************************
 function interceptLinkClicks(div) {
@@ -921,12 +999,14 @@ function eraseCookie(name) {
 }
 
 function changeOpacity(obj, level) {
-		if(typeof obj.style.MozOpacity != 'undefined')
-			obj.style.MozOpacity = level;
-		else if(typeof obj.style.opacity != 'undefined')
-			obj.style.opacity = level;
-		else if(obj.style.filter != 'undefined')
-			obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
+  if (!obj)
+    return;  
+	if(typeof obj.style.MozOpacity != 'undefined')
+		obj.style.MozOpacity = level;
+	else if(typeof obj.style.opacity != 'undefined')
+		obj.style.opacity = level;
+	else if(obj.style.filter != 'undefined')
+		obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
 }
 
 function copyAttributes(oNode, oNew) {

@@ -57,6 +57,8 @@
       if (typeof Mobile != 'undefined') {
         Boost.init(event);
         Mobile.init(event);
+		    MobilePageAnimation.init();
+        MobileMenuAnimation.init();
       } else {
         FormProcessor.initForms();
         DragEngine.initialize();
@@ -81,8 +83,6 @@
 		  if (navigator.userAgent.indexOf('iPhone') != -1) {
 		    window.scrollTo(0, 1);
 		  }
-		  if (typeof MobilePageAnimation != 'undefined')
-		    MobilePageAnimation.init();
     }
 
     /*

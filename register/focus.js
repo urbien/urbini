@@ -9,4 +9,5 @@
     }
     return true;
   }
-  addEvent(window, 'load', function() {setTimeout(focusOnUserName, 0);}, false);
+  //addEvent(window, 'load', function() {setTimeout(focusOnUserName, 0);}, false);
+  window.onload = focusOnUserName;
