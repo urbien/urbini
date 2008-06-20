@@ -405,7 +405,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (!self.initialized) {
       self.interceptEvents();
       FormProcessor.initForms(self.div);
-      interceptLinkClicks(self.div);
       self.initilized = true;
     }
     // alert('end popup init');
@@ -2210,45 +2209,10 @@ function hideResetRow(div, currentFormName, originalProp) {
 }
 
 /** ********************************* Menu ********************************** */
-
-function initMenus(menuBarId) {
-  var element = document.getElementById(menuBarId);
-  if (!element)
-    throw new Error('menuBar not found: ' + menuBarId);
-  var menuLinks = element.getElementsByTagName('A');
-  var l = menuLinks.length;
-  for (var i=0; i<l; i++) {
-    var m = menuLinks[i];
-    var id = m.id;
-    if (id && id.startsWith('menuLink_')) {
-      addEvent(m, 'click',     menuOnClick, false);
-    }
-/*
- * if (m.className && m.className.indexOf('fade', m.className.length - 4) != -1) {
- * if (m.attachEvent) { // hack for IE use 'traditional' event handling model -
- * to avoid event bubbling and make IE set 'this' to the element that fired the
- * event //m.onmouseover = unfadeOnMouseOver; //m.onmouseout = fadeOnMouseOut; }
- * else { //addEvent(m, 'mouseover', unfadeOnMouseOver, false); //addEvent(m,
- * 'mouseout', fadeOnMouseOut, false); } }
- */
-  }
-/*
- * // fading of td elements with id ending with 'fade' menuLinks =
- * document.getElementsByTagName('td'); l = menuLinks.length; for (var i=0; i<l;
- * i++) { var m = menuLinks[i]; if (m.id && m.id.indexOf('fade', m.id.length -
- * 4) != -1) { if (m.attachEvent) { // hack for IE use 'traditional' event
- * handling model - to avoid event bubbling and make IE set 'this' to the
- * element that fired the event //m.onmouseover = fadeOnMouseOver;
- * //m.onmouseout = unfadeOnMouseOut; } else { //addEvent(m, 'mouseover',
- * fadeOnMouseOver, false); //addEvent(m, 'mouseout', unfadeOnMouseOut, false); } } }
- */
-}
-
-/**
- * Opens the menu when needed, e.g. on click, on enter
+/* Opens the menu when needed, e.g. on click, on enter
  */
 function menuOnClick(e) {
-  var target = getTargetElement(e);
+  var target = getTargetAnchor(e);//getTargetElement(e);
   if (!target)
     return;
   e = getDocumentEvent(e); if (!e) return;
@@ -2982,6 +2946,8 @@ var ListBoxesHandler = {
 
 // handle anchors with help of BODY's event
 function onLinkClick(e) {
+//debugger
+
   e = getDocumentEvent(e);
   var anchor = getEventTarget(e);
 
@@ -2989,15 +2955,33 @@ function onLinkClick(e) {
     anchor = anchor.parentNode;
   if (anchor.tagName.toLowerCase() != 'a')
     return;
+  if (!anchor.id)
+    return;
 
-  var idLen = anchor.id.length;
-  if (anchor.id  &&  anchor.id.indexOf("_filter", anchor.id.length - "_filter".length) != -1) {
+  var id = anchor.id;
+  var idLen = id.length;
+  
+  
+
+  if (id.startsWith("-inner.")) {
+    onClickDisplayInner(e);
+  }
+  else if (id.startsWith('menuLink_')) {
+    menuOnClick(e);  
+  }
+  else if (id.indexOf("_filter", idLen - "_filter".length) != -1) {
     ListBoxesHandler.listboxOnClick(e);
   }
-  else if (anchor.id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
-      anchor.id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
+  else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
+        id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
     changeBoolean(e);
   }
+  else
+    onClick(e);
+
+  
+  
+  
 }
 
 function onClickDisplayInner(e, anchor) {
@@ -3545,16 +3529,6 @@ function showDialog1(event, div, hotspot) {
     setDivVisible(event, div, iframe, hotspot, 16, 16);
 
   FormProcessor.initForms(div);
-  interceptLinkClicks(div);
-  var childNodes = div.childNodes;
-  for (var i=0; i<childNodes.length; i++) {
-    if (childNodes[i].tagName && childNodes[i].tagName.toLowerCase() == 'div') {
-      if (childNodes[i].id == 'menuBar1') {
-        initMenus('menuBar1');
-        break;
-      }
-    }
-  }
   // execute JS code of innerHTML
   ExecJS.runDivCode(div);
 }
@@ -4422,8 +4396,6 @@ function addAndShowWait(event, body, hotspot, content, url, noInsert, isReplace)
   var anchors = divCopyTo.getElementsByTagName('a');
   for (var i=0; i<anchors.length; i++)
     addBooleanToggle(anchors[i]);
-
-  interceptLinkClicks(divCopyTo);
 }
 
 function extractTotalFrom(tot) {

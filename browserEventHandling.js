@@ -53,7 +53,6 @@
         return;
       }
 
-      interceptLinkClicks();
       if (typeof Mobile != 'undefined') {
         Boost.init(event);
         Mobile.init(event);

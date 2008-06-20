@@ -697,9 +697,7 @@ var Boost = {
     var roomName = roomUrl.substring(0, idx);
     form.name = roomName;
     form.id = roomName;
-//    interceptLinkClicks(div);
     addEvent(form, 'submit', addWithoutProcessing, false);
-//    form.onsubmit = addWithoutProcessing;
   },
 
   insertChatMessage: function(e, roomDiv) {

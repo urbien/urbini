@@ -641,7 +641,7 @@ function getMouseOverTarget(e) {
 // get link on which user clicked (it could be a A in TD or it could be A around
 // IMG)
 function getTargetAnchor(e) {
-  var target = getTargetElement(e);
+  var target = getEventTarget(e);//getTargetElement(e);
   return getAnchorForEventTarget(target);
 }
 
@@ -935,40 +935,6 @@ var ExecJS = {
         window.eval(ExecJS.runCodeArr[i].jsCode);
       }
    }
-}
-
-
-// ************************************* intercept all clicks
-// ***********************************
-function interceptLinkClicks(div) {
-  if (Browser.mobile)
-    return;
-  var anchors;
-  var doc;
-  if (div) {
-    anchors = div.getElementsByTagName('A');
-    doc = div;
-  }
-  else {
-    anchors = document.links;
-    doc = document;
-  }
-  var llen = anchors.length;
-  for (var i=0;i<llen; i++) {
-    var anchor = anchors[i];
-    var id = anchor.id;
-    if (anchor.className == 'webfolder')
-      continue;
-    if(anchor.href.indexOf("A_CALENDARS") != -1) // links of the Calendar's days
-      continue;
-
-    if (id && id.startsWith("-inner."))
-      addEvent(anchor, 'click',  onClickDisplayInner,   false);
-    else if (id && id.startsWith('menuLink_'))
-      addEvent(anchor, 'click',     menuOnClick, false);  
-    else
-      addEvent(anchor, 'click',  onClick,   false);
-  }
 }
 
 // Cookie utility functions
