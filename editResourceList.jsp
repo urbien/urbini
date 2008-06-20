@@ -14,7 +14,7 @@
       <div align="left"><backLink /></div>
       <siteResourceList />
       <div align="right"><measurement/></div>
-      <input type="submit" name="submit"/>
+      <input type="submit" name="submit" />
     </form>
     </td>
     <td valign="top" align="left" bgcolor="eeeeee">

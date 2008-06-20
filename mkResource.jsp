@@ -9,12 +9,12 @@
      <form id="filter" name="tablePropertyList" method="post" action="mkresource" autocomplete="off" style="display: inline; margin: 0;">
        <tablePropertyList/>
        <div align="right"><span class="xs"><measurement/></span></div>
-       <input type="hidden" name="-$action" value="mkResource"></input>
+       <input type="hidden" name="-$action" value="mkResource" />
        <br />
        <div style="text-align: center">
-         <input type="submit" name="submit" value="  Submit  " onclick="return saveButtonClicked(event, this);"></input>
-         <span style="width: 10px" /> 
-         <input type="submit" name="cancel" value="  Cancel  " onclick="return saveButtonClicked(event, this);"></input>
+         <input type="submit" name="submit" value="  Submit  " onclick="return saveButtonClicked(event, this);" />
+         <span style="width: 10px" />
+         <input type="submit" name="cancel" value="  Cancel  " onclick="return saveButtonClicked(event, this);" />
        </div>
      </form>
      </div>

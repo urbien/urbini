@@ -23,7 +23,7 @@
             </tr>
             <tr>
               <td align="middle"><errorMessage/><span style="color:darkblue;font-weight:bold"><text text="Enter your re-activation code:"/></span><br/>
-                <input type="Text" class="input" name="j_username" size="20" maxlength="50"/>
+                <input type="Text" class="input" name="j_username" size="20" maxlength="50" />
               </td>
             </tr>
             <tr>

@@ -23,11 +23,11 @@
             </tr>
             <tr>
               <td align="middle"><errorMessage/><text text="Enter your screen name:"/><br/>
-                <input type="Text" class="input" name="j_username" size="20" maxlength="50" autocomplete="off"/>
-                <input type="hidden" name=".jstest" value=""/>
-                <input type="hidden" name="j_password" value=""/>
-                <input type="hidden" name="j_deviceId" value=""/>
-                <input type="hidden" name="-propToSet" value="name"/>
+                <input type="Text" class="input" name="j_username" size="20" maxlength="50" autocomplete="off" />
+                <input type="hidden" name=".jstest" value="" />
+                <input type="hidden" name="j_password" value="" />
+                <input type="hidden" name="j_deviceId" value="" />
+                <input type="hidden" name="-propToSet" value="name" />
                 <input type="hidden" name="name" value="" />
               </td>
             </tr>

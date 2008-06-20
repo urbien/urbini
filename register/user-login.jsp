@@ -1,5 +1,4 @@
-<div>
-<center>
+<div style='vertical-align: middle'>
   <form name="loginform" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
     <table width="430" align="center" bgcolor="#cbcbcb" cellpadding="2" cellspacing="0">
       <tr>
@@ -63,8 +62,6 @@
     </table>
     <returnUri /> <challenge />
   </form>
-</center>
-
 <!-- erasing the cookie set by the first page on login in case if auto chat start
      is enabled. Cookie is set to prevent chat window to popup when user clicks the back
      button. -->

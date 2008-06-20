@@ -6,9 +6,9 @@
   <searchPropertyList />
   <br/>
   <center>
-  <input type="submit" name="submit" value="search"></input>
+  <input type="submit" name="submit" value="search" />
   </center>
-  <input type="hidden" name="action" value="searchParallelForEdit"></input>
+  <input type="hidden" name="action" value="searchParallelForEdit" />
   <br/>
   <showSetProperties />
 </form>

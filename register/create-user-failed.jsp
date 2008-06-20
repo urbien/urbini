@@ -6,7 +6,7 @@
   </tr>
   <tr>
     <td align="right"><text text="userId"/></td>
-    <td><input type="text"  class="xxs" name="j_username" size="15"/></td>
+    <td><input type="text"  class="xxs" name="j_username" size="15" /></td>
   </tr>
   <tr>
     <td align="right"><text text="password"/></td>

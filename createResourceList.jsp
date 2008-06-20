@@ -14,8 +14,8 @@
       <siteResourceList />
       <div align="right"><measurement/></div>
       <input type="hidden" name="-$action" value="createResources" />
-      <input type="hidden" name="-create"  value="1"/>
-      <center><input type="submit" name="submit"/></center>
+      <input type="hidden" name="-create"  value="1" />
+      <center><input type="submit" name="submit" /></center>
     </form>
     </td>
     <td width="10%" id="rightPanelPropertySheet" valign="top" align="left">

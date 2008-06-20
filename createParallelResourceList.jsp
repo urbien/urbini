@@ -17,8 +17,8 @@
       <div align="right"><measurement/></div>
       <input type="hidden" name="-$action" value="createResources" />
       <input type="hidden" name="-parallel" value="y" />
-      <input type="hidden" name="-create"  value="1"/>
-      <center><input type="submit" name="submit"/></center>
+      <input type="hidden" name="-create"  value="1" />
+      <center><input type="submit" name="submit" /></center>
     </form>
     </td>
 </tr>

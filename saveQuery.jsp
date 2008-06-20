@@ -6,10 +6,10 @@
    <div align="right"><span class="xs"><language/></span></div>
    <rightPanelPropertySheet />
    <div align="right"><span class="xs"><measurement/></span></div>
-   <input type="hidden" name="action" value="submitChanges"></input>
+   <input type="hidden" name="action" value="submitChanges" />
    <br />
   <center>
-    <input type="submit" name="save" value="saveAndCancel"></input>
+    <input type="submit" name="save" value="saveAndCancel" />
   </center>
   <showSetProperties/>
 </form>

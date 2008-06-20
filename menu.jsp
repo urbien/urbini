@@ -9,7 +9,7 @@
     </td>
     <td align="right">
        <a href="http://lablz.com"><logo src="icons/logo.gif" srcLarge="icons/logo-large.gif" /></a>
-       <img id="menuLink_codeBehindThePage" title="View Source&lt;br&gt; This page is based solely on the declarative code that you can inspect by clicking on the links in popup" class="cursor" src="icons/codeBehindThePage.gif" onclick="menuOnClick(event)" align="top"/>
+       <img id="menuLink_codeBehindThePage" title="View Source - this page is based solely on the declarative code that you can inspect by clicking on the links in popup" class="cursor" src="icons/codeBehindThePage.gif" onclick="menuOnClick(event)" align="top"/>
     </td>
   </tr>
   <tr>

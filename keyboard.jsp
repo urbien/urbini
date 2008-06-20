@@ -59,8 +59,8 @@
 				  </table>
 				</td>
 		    <td>
-		      <input type="text" class="input1" size="27" maxsize="200" name=".title" value="" onKeyPress="return checkOnKeyPress(this, event);"/>
-		      <input type="hidden" name=".forum_select" value=""/>
+		      <input type="text" class="input1" size="27" maxsize="200" name=".title" value="" onKeyPress="return checkOnKeyPress(this, event);" />
+		      <input type="hidden" name=".forum_select" value="" />
 		    </td>
 		    <td>
 			    <table class="button_grey" style="display: inline;" border="0" cellpadding="0" cellspacing="0">

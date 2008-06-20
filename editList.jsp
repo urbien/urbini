@@ -10,7 +10,7 @@
       <br/>
       <readOtherSiteInfo />
       <continueUpdateCheckout />
-      <input type="hidden" name="-$action" value="updateResources"/>
+      <input type="hidden" name="-$action" value="updateResources" />
     </form>
   </td>
 </tr></table>

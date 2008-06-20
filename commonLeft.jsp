@@ -83,81 +83,81 @@
 
 <tr>
   <td><br/><font color="darkblue"><text text="Reel number"/></font></td>
-</tr>  
+</tr>
 <tr>
   <td valign="middle">
     <form name="reel" action="remoteSearchResults.html">
-      
+
 <table><tr><td>
-<input type="text" size="10" name="http://www.hudsonfog.com/voc/views/delivery/SingleReelShipment/number" value="" class="text"></input><!--input type="submit" name="submit" class="button1" value="go"></input-->
+<input type="text" size="10" name="http://www.hudsonfog.com/voc/views/delivery/SingleReelShipment/number" value="" class="text" /><!--input type="submit" name="submit" class="button1" value="go"></input-->
 </td><td valign="middle">
-<input type="image" border="0" width="28" src="images/gogif.gif" name="submit"/>
+<input type="image" border="0" width="28" src="images/gogif.gif" name="submit" />
 </td></tr></table>
-      <input type="hidden" name="action" value="searchParallel"></input>
-      <input type="hidden" name="type"   value="http://www.hudsonfog.com/voc/views/delivery/SingleReelShipmentDetails"></input>
+      <input type="hidden" name="action" value="searchParallel" />
+      <input type="hidden" name="type"   value="http://www.hudsonfog.com/voc/views/delivery/SingleReelShipmentDetails" />
     </form>
 </td></tr>
 <tr>
   <td><font color="darkblue"><text text="Container number"/></font></td>
-</tr>  
+</tr>
 <tr><td>
     <form name="container" action="remoteSearchResults.html">
-      <!--nobr><input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value=""></input><input type="submit" name="submit" class="button1" value="go"></input></nobr-->
+      <!--nobr><input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value="" /><input type="submit" name="submit" class="button1" value="go" /></nobr-->
 <table><tr><td>
-<input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value="" class="text"></input><!--input type="submit" name="submit" class="button1" value="go"></input-->
+<input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value="" class="text" /><!--input type="submit" name="submit" class="button1" value="go" /-->
 </td><td valign="middle">
-<input type="image" border="0" width="28" src="images/gogif.gif" name="submit"/>
+<input type="image" border="0" width="28" src="images/gogif.gif" name="submit" />
 </td></tr></table>
-      <input type="hidden" name="action" value="searchParallel"></input>
-      <input type="hidden" name="type"   value="http://www.hudsonfog.com/voc/views/delivery/RailcarContainer"></input>
+      <input type="hidden" name="action" value="searchParallel" />
+      <input type="hidden" name="type"   value="http://www.hudsonfog.com/voc/views/delivery/RailcarContainer" />
     </form>
   </td>
 </tr>
 <tr>
   <td><font color="darkblue"><text text="Vessel number"/></font></td>
-</tr>  
+</tr>
 <tr><td>
     <form name="vessel" action="remoteSearchResults.html">
-      <!--nobr><input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value="" class="text"></input><input type="submit" name="submit" class="button1" value="go"></input></nobr-->
+      <!--nobr><input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value="" class="text" /><input type="submit" name="submit" class="button1" value="go" ></nobr-->
 <table><tr><td>
-<input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value=""  class="text"></input><!--input type="submit" name="submit" class="button1" value="go"></input-->
+<input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value=""  class="text" /><!--input type="submit" name="submit" class="button1" value="go" /-->
 </td><td valign="middle">
-<input type="image" border="0" width="28" src="images/gogif.gif" name="submit"/>
+<input type="image" border="0" width="28" src="images/gogif.gif" name="submit" />
 </td></tr></table>
-      <input type="hidden" name="action" value="searchParallel"></input>
-      <input type="hidden" name="type"   value="http://www.hudsonfog.com/voc/views/delivery/VesselTransport"></input>
+      <input type="hidden" name="action" value="searchParallel" />
+      <input type="hidden" name="type"   value="http://www.hudsonfog.com/voc/views/delivery/VesselTransport" />
     </form>
   </td>
 </tr>
 <tr>
   <td><font color="darkblue"><text text="Truck number"/></font></td>
-</tr>  
+</tr>
 <tr><td>
     <form name="truck" action="remoteSearchResults.html">
-      <!--nobr><input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value=""></input><input type="submit" name="submit" class="button1" value="go"></input></nobr-->
+      <!--nobr><input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value="" /><input type="submit" name="submit" class="button1" value="go" /></nobr-->
 <table><tr><td>
-<input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value=""  class="text"></input><!--input type="submit" name="submit" class="button1" value="go"></input-->
+<input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value=""  class="text" /><!--input type="submit" name="submit" class="button1" value="go" /-->
 </td><td valign="middle">
 <input type="image" border="0" width="28" src="images/gogif.gif" name="submit"/>
 </td></tr></table>
-      <input type="hidden" name="action" value="searchParallel"></input>
-      <input type="hidden" name="type"   value="http://www.hudsonfog.com/voc/views/delivery/Trucks"></input>
+      <input type="hidden" name="action" value="searchParallel" />
+      <input type="hidden" name="type"   value="http://www.hudsonfog.com/voc/views/delivery/Trucks" />
     </form>
   </td>
 </tr>
 <tr>
   <td><font color="darkblue"><text text="Block train no."/></font></td>
-</tr>  
+</tr>
 <tr><td>
     <form name="vessel" action="remoteSearchResults.html">
-      <!--nobr><input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value=""></input><input type="submit" name="submit" class="button1" value="go"></input></nobr-->
+      <!--nobr><input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value="" /><input type="submit" name="submit" class="button1" value="go" /></nobr-->
 <table><tr><td>
-<input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value=""  class="text"></input><!--input type="submit" name="submit" class="button1" value="go"></input-->
+<input type="text" size="10" name="http://www.hudsonfog.com/voc/model/delivery/Transport/vehicle" value=""  class="text" /><!--input type="submit" name="submit" class="button1" value="go" /-->
 </td><td valign="middle">
 <input type="image" border="0" width="28" src="images/gogif.gif" name="submit"/>
 </td></tr></table>
-      <input type="hidden" name="action" value="searchParallel"></input>
-      <input type="hidden" name="type"   value="http://www.hudsonfog.com/voc/views/delivery/TrainTransport"></input>
+      <input type="hidden" name="action" value="searchParallel" />
+      <input type="hidden" name="type"   value="http://www.hudsonfog.com/voc/views/delivery/TrainTransport" />
     </form>
   </td>
 </tr>

@@ -4,7 +4,7 @@
 <table class="ftSearch" cellspacing="0" cellpadding="0" border="0">
   <tr><td>
     <input type="hidden" name="-$action" value="searchText" />
-    <input type="text" class="input" size="25" name="-q" value="-- Search --" onclick="onFormFieldClick(searchForm, this)" onChange="onFormFieldChange(searchForm, this, '-- Search --')" onBlur="onFormFieldChange(searchForm, this, '-- Search --')"/><input type="image" name="search" tooltip1="help/textSearch.html" src="icons/search.gif" value="Go" style="border: none; padding: 0px; margin-left: 0; margin-right: 0; vertical-align: middle"/>
+    <input type="text" class="input" size="25" name="-q" value="-- Search --" onclick="onFormFieldClick(searchForm, this)" onChange="onFormFieldChange(searchForm, this, '-- Search --')" onBlur="onFormFieldChange(searchForm, this, '-- Search --')" /><input type="image" name="search" tooltip1="help/textSearch.html" src="icons/search.gif" value="Go" style="border: none; padding: 0px; margin-left: 0; margin-right: 0; vertical-align: middle" />
   </td></tr>
   <tr><td>
     <fullTextSearchChoice/>

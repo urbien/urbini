@@ -6,9 +6,9 @@
   <center><measurement/></center>
   <note/>
   <tablePropertiesList />
-  <input type="hidden" name="-$action" value="searchParallel"></input>
+  <input type="hidden" name="-$action" value="searchParallel" />
   <br/>
-  <center><input type="submit" name="submit" value="search"></input></center>
+  <center><input type="submit" name="submit" value="search" /></center>
 </form>
 </td></tr></table>
 <div align="left"><span class="xs"><hudsonFog /></span></div>

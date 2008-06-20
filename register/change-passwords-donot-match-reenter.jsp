@@ -12,21 +12,21 @@
   </tr>
   <tr><td align="RIGHT">
     <text text="enterOldPassword"/><img src="images/spacer.gif" border="0" width="5"/></td>
-    <td><input type="Password" name="j_password"  class="xxs" size="10" maxlength="50"/></td>
+    <td><input type="Password" name="j_password"  class="xxs" size="10" maxlength="50" /></td>
   </tr>
   <tr><td align="RIGHT">
     <text text="enterNewPassword"/><img src="images/spacer.gif" border="0" width="5"/></td>
-    <td><input type="Password" name="j_password_new"  class="xxs" size="10" maxlength="50"/></td>
+    <td><input type="Password" name="j_password_new"  class="xxs" size="10" maxlength="50" /></td>
   </tr>
   <tr><td align="RIGHT">
     <text text="reenterNewPassword"/><img src="images/spacer.gif" border="0" width="5"/></td>
-    <td><input type="Password" name="j_password_reenter"  class="xxs" size="10" maxlength="50"/></td>
+    <td><input type="Password" name="j_password_reenter"  class="xxs" size="10" maxlength="50" /></td>
   </tr>
   <tr>
     <td align="CENTER" colspan="2">
       <br />
-      <input type="Submit" value="submitChanges"/>
-      <input type="hidden" name="j_password_change" value="x"/>
+      <input type="Submit" value="submitChanges" />
+      <input type="hidden" name="j_password_change" value="x" />
     </td>
   </tr>
 </table>

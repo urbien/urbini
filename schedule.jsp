@@ -11,8 +11,8 @@
       <div>
 	     <form id="filter" name="tablePropertyList" method="post" action="proppatch" autocomplete="off">
          <tablePropertyList type="http://www.hudsonfog.com/voc/hospitality/spa/Ticket"/>
-	       <input type="hidden" name="-schedule" value="y"></input>
-	       <input type="hidden" name="type" value="http://www.hudsonfog.com/voc/hospitality/spa/Ticket"></input>
+	       <input type="hidden" name="-schedule" value="y" />
+	       <input type="hidden" name="type" value="http://www.hudsonfog.com/voc/hospitality/spa/Ticket" />
 	       <br />
 	     </form>
       </div>

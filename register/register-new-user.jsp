@@ -25,22 +25,22 @@
             <tr>
               <td align="center" rowspan="3" width="40%"><img src="images/keys.gif" border="0" /></td>
               <td><errorMessage/><text text="Email address:"/><br/>
-                <input type="Text" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px" name="j_username" size="30" maxlength="50"/>
+                <input type="Text" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px" name="j_username" size="30" maxlength="50" />
               </td>
             </tr>
             <tr>
               <td> <text text="Password:"/><br/>
-                <input type="Password" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px" name="j_password"  size="30" maxlength="50"/>
+                <input type="Password" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px" name="j_password"  size="30" maxlength="50" />
               </td>
             </tr>
             <tr>
               <td> <text text="Re-enter Password:"/><br/>
-                <input type="Password" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px" name="j_password_reenter"  size="30" maxlength="50"/>
+                <input type="Password" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px" name="j_password_reenter"  size="30" maxlength="50" />
               </td>
             </tr>
             <tr>
               <td align="CENTER" colspan="2"> <br />
-                <input type="submit" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px" value="    Logon    " name="logonButton"/>
+                <input type="submit" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px" value="    Logon    " name="logonButton" />
               </td>
             </tr>
             <tr>
