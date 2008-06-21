@@ -2946,22 +2946,15 @@ var ListBoxesHandler = {
 
 // handle anchors with help of BODY's event
 function onLinkClick(e) {
-//debugger
-
   e = getDocumentEvent(e);
-  var anchor = getEventTarget(e);
-
-  if (anchor.tagName.toLowerCase() == 'img')
-    anchor = anchor.parentNode;
-  if (anchor.tagName.toLowerCase() != 'a')
-    return;
-  if (!anchor.id)
+  var target = getEventTarget(e);
+  var anchor = getAncestorByTagName(target, "a");
+  
+  if (!anchor || !anchor.id)
     return;
 
   var id = anchor.id;
   var idLen = id.length;
-  
-  
 
   if (id.startsWith("-inner.")) {
     onClickDisplayInner(e);
