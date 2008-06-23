@@ -2211,11 +2211,7 @@ function hideResetRow(div, currentFormName, originalProp) {
 /** ********************************* Menu ********************************** */
 /* Opens the menu when needed, e.g. on click, on enter
  */
-function menuOnClick(e) {
-  var target = getTargetAnchor(e);//getTargetElement(e);
-  if (!target)
-    return;
-  e = getDocumentEvent(e); if (!e) return;
+function menuOnClick(e, target) {
   // in IE for some reason same event comes two times
   if (e.getAttribute) {
     var isProcessed = e.getAttribute('eventProcessed');
@@ -2754,16 +2750,7 @@ var ListBoxesHandler = {
   },
   
   // Opens the popup when icon is clicked
-  listboxOnClick : function(e) {
-    var target = getEventTarget(e);
-    if (!target)
-      return;
-
-    if (target.tagName.toUpperCase() == 'IMG')
-      target = target.parentNode;
-    if (target.tagName.toUpperCase() != "A")
-      return;
-
+  listboxOnClick : function(e, target) {
     this.listboxOnClick1(e, target.id);
     stopEventPropagation(e);
   },
@@ -2947,9 +2934,10 @@ var ListBoxesHandler = {
 // handle anchors with help of BODY's event
 function onLinkClick(e) {
   e = getDocumentEvent(e);
-  var target = getEventTarget(e);
-  var anchor = getAncestorByTagName(target, "a");
-  
+  if (!e)
+    return;
+
+  var anchor = getTargetAnchor(e);
   if (!anchor || !anchor.id)
     return;
 
@@ -2957,24 +2945,20 @@ function onLinkClick(e) {
   var idLen = id.length;
 
   if (id.startsWith("-inner.")) {
-    onClickDisplayInner(e);
+    onClickDisplayInner(e, anchor);
   }
   else if (id.startsWith('menuLink_')) {
-    menuOnClick(e);  
+    menuOnClick(e, anchor);  
   }
   else if (id.indexOf("_filter", idLen - "_filter".length) != -1) {
-    ListBoxesHandler.listboxOnClick(e);
+    ListBoxesHandler.listboxOnClick(e, anchor);
   }
   else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
         id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
-    changeBoolean(e);
+    changeBoolean(e, anchor);
   }
   else
-    onClick(e);
-
-  
-  
-  
+    onClick(e, anchor);
 }
 
 function onClickDisplayInner(e, anchor) {
@@ -3028,14 +3012,10 @@ function onClickDisplayInner(e, anchor) {
  * Registered to receive control on a click on any link. Adds control key
  * modifier as param to url, e.g. _ctrlKey=y
  */
-function onClick(e) {
+function onClick(e, link) {
   detectClick = true;
   var p;
 
-  var target = getTargetElement(e);
-  var link = getTargetAnchor(e);
-  if (!link || !link.href || link.href == null)
-    return;
   // add current dashboard ID and current tab ID to url if they are not there
   var a = link.href;
   addCurrentDashboardAndCurrentTab(link);
@@ -5821,17 +5801,7 @@ function getAnchorForTarget(e) {
 /**
  * Change boolean value (in non-edit mode)
  */
-function changeBoolean(e) {
-  var target;
-  e = getDocumentEvent(e); if (!e) return;
-  target = getEventTarget(e);
-  var t = target.tagName.toUpperCase();
-  if (t == 'IMG')
-    target = target.parentNode;
-  else if (t != 'A')
-    throw new Error('changeBoolean: anchor was not found in: ' + t);
-//  target = getAnchorForTarget(e);
-
+function changeBoolean(e, target) {
   var url = 'proppatch';
   var params = 'submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
   var bIdx = target.id.indexOf("_boolean");
