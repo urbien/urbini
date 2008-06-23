@@ -647,6 +647,7 @@ function getTargetAnchor(e) {
 
 function getAnchorForEventTarget(target) {
 //  Boost.log('getAnchorForEventTarget: target.tagName: ' + target.tagName);
+  /*
   if (target.tagName.toUpperCase() == 'A')
     return target;
   var anchors = target.getElementsByTagName('a');
@@ -654,6 +655,8 @@ function getAnchorForEventTarget(target) {
     return anchors[0];
 
   return getANode(target);
+  */
+  return getAncestorByTagName(target, "a");
 }
 
 // use instead getAncestorByTagName(child, "a")
@@ -814,6 +817,7 @@ function getAncestorByAttribute(child, attribName, attribValue) {
 	}
 	return null;
 }
+// return "child" if it is of required tagName
 function getAncestorByTagName(child, tagName) {
   tagName = tagName.toLowerCase();
 	if(child.tagName.toLowerCase() == tagName)
