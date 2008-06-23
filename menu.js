@@ -8118,39 +8118,28 @@ var OrderRows = {
 
 // html (img) on disabled Flash
 var FlashHandler = {
-  PREFIX : "_swf_embed_",
   emdCodeArr : null,
-
-  init : function() {
-    this.emdCodeArr = new Array();
-    addEvent(window, "load", this.onload, false);
-  },
-  embed : function(flashCode, htmlCode, flashWidth, flashHeight) {
-    if(this.emdCodeArr == null)
-      this.init();
-    var isFlashAvailable = DetectFlashVer(8, 0, 0);
-    if (isFlashAvailable) {
-      this.emdCodeArr.push(flashCode);
-      var stl = "";
-      if((typeof flashWidth != 'undefined') && (typeof flashHeight != 'undefined'))
-        stl = " style=\"width: " + flashWidth + "; height: " + flashHeight + ";\"";
-      var id = this.PREFIX + (this.emdCodeArr.length - 1);
-      var ref = "<div id=" + id + stl + "></div>";
-      document.write(ref);
+  embed : function(id, flashCode, htmlCode) {
+    if (this.emdCodeArr == null) {
+      this.emdCodeArr = new Array();
+      addEvent(window, "load", this.onload, false);
     }
-    else
-      document.write(htmlCode);
+    this.emdCodeArr.push([id, flashCode, htmlCode]);
   },
   onload : function() {
-    var thisObj = flashHandler;
+    var thisObj = FlashHandler;
+    var isFlashAvailable = DetectFlashVer(8, 0, 0);
+    
     for(var i = 0; i < thisObj.emdCodeArr.length; i++) {
-      var ref = document.getElementById(thisObj.PREFIX + i);
-      if(ref) {
-        ref.innerHTML = thisObj.emdCodeArr[i];
-      }
+      var div = document.getElementById(thisObj.emdCodeArr[i][0]);
+      if(!div)
+        continue;
+      if (isFlashAvailable)
+        div.innerHTML = thisObj.emdCodeArr[i][1];
+      else
+        div.innerHTML = thisObj.emdCodeArr[i][2];
     }
   }
-
 }
 
 function getCalendar() {
