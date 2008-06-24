@@ -8092,12 +8092,21 @@ var FlashHandler = {
   embed : function(id, flashCode, htmlCode) {
     if (this.emdCodeArr == null) {
       this.emdCodeArr = new Array();
-      addEvent(window, "load", this.onload, false);
+      if (!Browser.ie)
+        addEvent(window, "load", this.onload, false);
     }
     this.emdCodeArr.push([id, flashCode, htmlCode]);
   },
+  init : function() {
+    if (Browser.ie)
+      this.onload();
+  },
   onload : function() {
     var thisObj = FlashHandler;
+    
+    if (thisObj.emdCodeArr == null)
+      return;
+
     var isFlashAvailable = DetectFlashVer(8, 0, 0);
     
     for(var i = 0; i < thisObj.emdCodeArr.length; i++) {

@@ -61,6 +61,7 @@
       } else {
         FormProcessor.initForms();
         DragEngine.initialize();
+        FlashHandler.init();
         
 		    addSpellcheck();
 		    dictionaryHandler.init();
