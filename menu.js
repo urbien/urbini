@@ -4481,11 +4481,10 @@ function closeDiv(e, hideDivId) {
 function showHideAll(e, divId) {
   e = getDocumentEvent(e);
 
-  var elm = getTargetElement(e);
-
+  var a = getTargetElement(e);
+  var elm = a.firstChild;
   var showAll = elm.src.indexOf('show.gif') != -1;
 
-  var a = elm.parentNode;
   var url = a.href;
   var idx = url.indexOf('?');
   var div = document.getElementById(divId);
@@ -7215,6 +7214,8 @@ var WidgetFlip = {
   },
 
   hideflip : function (event, divId) {
+    if(this.flipImg == null)
+      return;
     this.flipShown = false;
     this.flipImg.src = this.flipImg.getAttribute("true_src");
     changeOpacity(this.flipImg, 1.0);
