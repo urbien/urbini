@@ -5619,19 +5619,21 @@ function getElementStyle(elem) {
 		return document.defaultView.getComputedStyle(elem, null);
 }
 
-// ******************************************************* from forms.js
-// *************************************
-
 /*******************************************************************************
  * drag & drop engine
  * dragHandler implements: 1)getDragBlock 2)onStartDrag, 3) onDrag, 4) onStopDrag
  ******************************************************************************/
 var DragEngine = {
-	z: 0, x: 0, y: 0, offsetx : null, offsety : null, dragBlock : null, dragapproved : 0,
-	dialogIframe : null, // <- IE prevents dialog from <select>
+	
+	dragBlock : null,
+	dialogIframe : null, //IE: prevents dialog from underlaid <select>
 	dragHandler : null,
-  checkedIfNeedOffset : false,
-
+  // offset of left and top edges relative to "caught point"
+	offsetX: 0, offsetY: 0,
+  dragapproved : 0,
+  // dragable objects with the following className  
+ 	classNameArr : ["dragable", "tabs", "tabs_current"],
+	
 	initialize: function(){
 		addEvent(document, 'mousedown', this.startDrag, false);
 		addEvent(document, 'mouseup', this.stopDrag, false);
@@ -5639,23 +5641,18 @@ var DragEngine = {
 		this.dialogIframe = document.getElementById('dialogIframe');
 	},
 	startDrag: function(e){
+
 		var thisObj = DragEngine;
-		var evtobj = window.event? window.event : e;
-		var caughtObj = window.event? event.srcElement : e.target;
+		var evtobj = window.event ? window.event : e;
+		var caughtObj = window.event ? event.srcElement : e.target;
 		var titleObj = null;
-		var classNameArr = new Array();
-		classNameArr.push("dragable");
-		classNameArr.push("tabs");
-		classNameArr.push("tabs_current");
 
 		if((titleObj =  getAncestorById(caughtObj, "titleBar")) == null &&
-		    (titleObj =  getAncestorByAttribute(caughtObj, "className", classNameArr)) == null )
+		    (titleObj =  getAncestorByAttribute(caughtObj, "className", thisObj.classNameArr)) == null )
 		  return;
     // possible to define handler as Attribute in html
 		var dragHandlerStr = titleObj.getAttribute("draghandler");
 		// or by class name here
-
-
 		if(dragHandlerStr == null || dragHandlerStr.length == 0) {
   	  if(titleObj.className == "tabs" || titleObj.className == "tabs_current") {
   	    thisObj.dragHandler = TabSwap;
@@ -5677,57 +5674,53 @@ var DragEngine = {
 		if(thisObj.dragHandler && thisObj.dragHandler.onStartDrag)
 		  thisObj.dragHandler.onStartDrag(thisObj.dragBlock);
 
-		if (isNaN(parseInt(thisObj.dragBlock.style.left))) {thisObj.dragBlock.style.left = 0;}
-		if (isNaN(parseInt(thisObj.dragBlock.style.top)))  {thisObj.dragBlock.style.top = 0;}
-		thisObj.offsetx = parseInt(thisObj.dragBlock.style.left);
-		thisObj.offsety = parseInt(thisObj.dragBlock.style.top);
-		thisObj.x = evtobj.clientX;
-		thisObj.y = evtobj.clientY;
+    // FF(!): needs to use clientX,Y or layerX,Y
+    // so, the following 2 ways to calculate offset
+    // maybe to find better solution(?) 
+		thisObj.offsetX = evtobj.clientX - findPosX(thisObj.dragBlock);
+		thisObj.offsetY = evtobj.clientY - findPosY(thisObj.dragBlock);
 
+    if (thisObj.offsetX < 0 || thisObj.offsetY < 0) {
+		  thisObj.offsetX = evtobj.layerX || evtobj.offsetX;
+		  thisObj.offsetY = evtobj.layerY || evtobj.offsetY;
+		}
+      
 		if (evtobj.preventDefault)
 			evtobj.preventDefault();
 
     thisObj.checkedIfNeedOffset = false;
 	  thisObj.dragapproved = 1;
 	},
+	
 	drag: function(e){
   	var thisObj = DragEngine;
 
 	  if(thisObj.dragapproved != 1)
 	    return;
-		var evtobj=window.event? window.event : e
 
-    // hack: FF in dashboard, event.clientX, clientY contain
-    // mouse coordinate + coordinat of
-  	if(thisObj.checkedIfNeedOffset == false) {
-  	  if(Math.abs(evtobj.clientX - (thisObj.offsetx + thisObj.x)) < 3) {
-  	    thisObj.offsetx = 0;
-  	    thisObj.offsety = 0;
-  	  }
-      thisObj.checkedIfNeedOffset = true;
-  	}
-
-  	var left = thisObj.offsetx + evtobj.clientX - thisObj.x;
-		var top = thisObj.offsety + evtobj.clientY - thisObj.y;
+		var evtobj = window.event ? window.event : e;
+		var scrollXY = getScrollXY();
+		var x = evtobj.clientX - thisObj.offsetX + scrollXY[0];
+		var y = evtobj.clientY - thisObj.offsetY + scrollXY[1];
 
 		var allowToMove; // 2D array
 		if(thisObj.dragBlock && thisObj.dragHandler && thisObj.dragHandler.onDrag) {
 		    if(thisObj.dragBlock.style.position == 'absolute')
-  		    allowToMove = thisObj.dragHandler.onDrag(thisObj.dragBlock, left, top);
+  		    allowToMove = thisObj.dragHandler.onDrag(thisObj.dragBlock, x, y);
 		    else
   	      allowToMove = thisObj.dragHandler.onDrag(thisObj.dragBlock, evtobj.clientX, evtobj.clientY);
   	}
 
 		if(thisObj.dragapproved == 1){
 			if(typeof allowToMove == 'undefined' || allowToMove[0] == true)
-			  thisObj.dragBlock.style.left = left;
+			  thisObj.dragBlock.style.left = x;
 			if(typeof allowToMove == 'undefined' || allowToMove[1] == true)
-			  thisObj.dragBlock.style.top  = top;
+			  thisObj.dragBlock.style.top  = y;
 
 			if(thisObj.dialogIframe != null && thisObj.dragBlock.id == 'pane2' &&
 			     thisObj.dialogIframe.style.visibility == 'visible') {
-			  thisObj.dialogIframe.style.left = left;
- 			  thisObj.dialogIframe.style.top = top;
+			  thisObj.dialogIframe.style.left = x;
+ 			  thisObj.dialogIframe.style.top = y;
 			}
 
 			return false;
@@ -6560,7 +6553,6 @@ var Dashboard = {
 
     var x = findPosX(dragBlock);
     var y = findPosY(dragBlock);
-
     dbStyle.width = width;
     dbStyle.left  = x;
     dbStyle.top   = y;
