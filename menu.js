@@ -2579,7 +2579,10 @@ var ListBoxesHandler = {
     var target = getTargetElement(e);
 
     var isAuto = target.getAttribute("autocomplete");
-    if(isAuto != null && isAuto == "off")
+    var characterCode = getKeyCode(e);
+    
+    // handle arrow down in anyway as click on listbox icon.
+    if(isAuto != null && isAuto == "off" && characterCode != 40)
       return;
 
     return this.autoComplete1(e, target);
