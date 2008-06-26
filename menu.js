@@ -6479,6 +6479,8 @@ var Dashboard = {
 
   prevWidgetOld : null,
   isWidgetMoved : false,
+  
+  oldWidgetIdx : -1,
 
   // drag interface functions -----
   getDragBlock : function(dragHandleObj) {
@@ -6540,6 +6542,7 @@ var Dashboard = {
     this.dragBlock = dragBlock;
     this.isDragMode = true;
     this.isWidgetMoved = false;
+    this.oldWidgetIdx = this.getWidgetIndex(dragBlock);
 
     if(this.placeholderDiv == null)
       this.createPlaceholder();
@@ -6657,6 +6660,10 @@ var Dashboard = {
     }
 
     // 2. move on other place in the current tab
+    // 2.1 check if a widget was moved   
+    if (this.oldWidgetIdx == this.getWidgetIndex(dragBlock))
+      return;
+    // 2.2 store changed on server
     var prevWidgetNew = this.getPrevSibling(dragBlock);
     this.onWidgetMovement(e, dragBlock, this.prevWidgetOld, prevWidgetNew);
   },
@@ -6799,6 +6806,20 @@ var Dashboard = {
     }
     return false;
   },
+  getWidgetIndex : function(widget) {
+    var dashboard = getAncestorById(widget, this.DASHBOARD_ID);
+    var divs = dashboard.getElementsByTagName("div");
+    var idx = 0;
+    for (var i = 0; i < divs.length; i++) {
+      if (divs[i].className == "widget") {
+        if (widget.id == divs[i].id) {
+          return idx;
+        }
+        idx++;
+      }
+    }
+    return -1;
+  },
   getPrevSibling : function(widgetDiv) {
     var prev = widgetDiv.previousSibling;
     while(prev && prev.nodeType != 1) // skip whitespaces
@@ -6895,13 +6916,6 @@ var Dashboard = {
       return;
     var newCol = parseInt(td.id.substring('col_'.length));
 
-    // Check if widget should not be moved just was touched
-    if (prevWidgetOld  &&  prevWidgetNew && prevWidgetNew.id == prevWidgetOld.id) {
-      var oldTd = getTdNode(prevWidgetOld);
-      var oldCol = parseInt(oldTd.id.substring('col_'.length));
-      if (oldCol == newCol)
-        return ret;
-    }
     var params = 'uri=' + encodeURIComponent(widgetUri) + '&-drag=y&submitUpdate=y&previousInColumn_verified=y&.dashboardColumn=' + newCol;
     if (prevWidgetNew) {
       var newPrevUri = prevWidgetNew.id.substring(wLen);
