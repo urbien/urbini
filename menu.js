@@ -5674,17 +5674,20 @@ var DragEngine = {
 		if(thisObj.dragHandler && thisObj.dragHandler.onStartDrag)
 		  thisObj.dragHandler.onStartDrag(thisObj.dragBlock);
 
-    // FF(!): needs to use clientX,Y or layerX,Y
-    // so, the following 2 ways to calculate offset
-    // maybe to find better solution(?) 
-		thisObj.offsetX = evtobj.clientX - findPosX(thisObj.dragBlock);
-		thisObj.offsetY = evtobj.clientY - findPosY(thisObj.dragBlock);
+		var scrollXY = getScrollXY();
+		var posX = findPosX(thisObj.dragBlock) - scrollXY[0];
+		var posY = findPosY(thisObj.dragBlock) - scrollXY[1];
+		
+		if (evtobj.clientX > posX)
+		  thisObj.offsetX = evtobj.clientX - posX;
+		else
+		  thisObj.offsetX = evtobj.clientX; // happens in FF
 
-    if (thisObj.offsetX < 0 || thisObj.offsetY < 0) {
-		  thisObj.offsetX = evtobj.layerX || evtobj.offsetX;
-		  thisObj.offsetY = evtobj.layerY || evtobj.offsetY;
-		}
-      
+		if (evtobj.clientY > posY)
+		  thisObj.offsetY = evtobj.clientY - posY;
+		else
+		  thisObj.offsetY = evtobj.clientY;
+
 		if (evtobj.preventDefault)
 			evtobj.preventDefault();
 
