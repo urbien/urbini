@@ -5629,7 +5629,7 @@ var DragEngine = {
 	dialogIframe : null, //IE: prevents dialog from underlaid <select>
 	dragHandler : null,
   // offset of left and top edges relative to "caught point"
-	offsetX: 0, offsetY: 0,
+	offsetX: null, offsetY: null,
   dragapproved : 0,
   // dragable objects with the following className  
  	classNameArr : ["dragable", "tabs", "tabs_current"],
@@ -5640,8 +5640,8 @@ var DragEngine = {
 		addEvent(document, 'mousemove', this.drag, false);
 		this.dialogIframe = document.getElementById('dialogIframe');
 	},
-	startDrag: function(e){
 
+	startDrag: function(e){
 		var thisObj = DragEngine;
 		var evtobj = window.event ? window.event : e;
 		var caughtObj = window.event ? event.srcElement : e.target;
@@ -5674,24 +5674,9 @@ var DragEngine = {
 		if(thisObj.dragHandler && thisObj.dragHandler.onStartDrag)
 		  thisObj.dragHandler.onStartDrag(thisObj.dragBlock);
 
-		var scrollXY = getScrollXY();
-		var posX = findPosX(thisObj.dragBlock) - scrollXY[0];
-		var posY = findPosY(thisObj.dragBlock) - scrollXY[1];
-		
-		if (evtobj.clientX > posX)
-		  thisObj.offsetX = evtobj.clientX - posX;
-		else
-		  thisObj.offsetX = evtobj.clientX; // happens in FF
-
-		if (evtobj.clientY > posY)
-		  thisObj.offsetY = evtobj.clientY - posY;
-		else
-		  thisObj.offsetY = evtobj.clientY;
-
 		if (evtobj.preventDefault)
 			evtobj.preventDefault();
 
-    thisObj.checkedIfNeedOffset = false;
 	  thisObj.dragapproved = 1;
 	},
 	
@@ -5703,6 +5688,13 @@ var DragEngine = {
 
 		var evtobj = window.event ? window.event : e;
 		var scrollXY = getScrollXY();
+		
+		// FF3(!)/FF2 onmousedown returns wrong coordinates
+		if (thisObj.offsetX == null) {
+      thisObj.offsetX = evtobj.clientX - findPosX(thisObj.dragBlock) + scrollXY[0];
+      thisObj.offsetY = evtobj.clientY - findPosY(thisObj.dragBlock) + scrollXY[1];
+    }
+		
 		var x = evtobj.clientX - thisObj.offsetX + scrollXY[0];
 		var y = evtobj.clientY - thisObj.offsetY + scrollXY[1];
 
@@ -5737,6 +5729,8 @@ var DragEngine = {
 		}
 
 		thisObj.dragapproved = 0;
+		thisObj.offsetX = null;
+		thisObj.offsetY = null;
 	}
 }
 // initialize the drag & drop engine in addHandlers function
@@ -6808,6 +6802,8 @@ var Dashboard = {
   },
   getWidgetIndex : function(widget) {
     var dashboard = getAncestorById(widget, this.DASHBOARD_ID);
+    if (!dashboard)
+      return;
     var divs = dashboard.getElementsByTagName("div");
     var idx = 0;
     for (var i = 0; i < divs.length; i++) {
