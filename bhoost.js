@@ -1117,18 +1117,18 @@ var Boost = {
   changePresentationItemsState: function() {
       var item, level;
       var optionsDiv = document.getElementById('menu_Options');
-      
+
       var selectedItemId = 'menu_Grid';
       var url = Mobile.currentUrl || window.location.href;
       if (url.indexOf('-list=') != -1)
         selectedItemId = 'menu_List';
       else if (url.indexOf('-featured=') != -1)
-        selectedItemId = 'menu_LargeGrid';  
+        selectedItemId = 'menu_LargeGrid';
 
       item = getChildById(optionsDiv, 'menu_List');
       level = (selectedItemId == 'menu_List') ? 0.5 : 1;
       changeOpacity(item, level);
-      
+
       item = getChildById(optionsDiv, 'menu_Grid');
       level = (selectedItemId == 'menu_Grid') ? 0.5 : 1;
       changeOpacity(item, level);
@@ -1137,7 +1137,7 @@ var Boost = {
       level = (selectedItemId == 'menu_LargeGrid') ? 0.5 : 1;
       changeOpacity(item, level);
   },
-  
+
   writeBrowsingHistoryOnServer: function(e, link) {
     if ($t.browsingHistory <= 1)
       return;
@@ -1422,15 +1422,15 @@ var Boost = {
       s[0] = $t.currentUrl;
       $t.browsingHistory = s;
     }
-    
+
     var newUrl;
     if (typeof link == 'string')
       newUrl = link;
     else {
-      // menuOptions returns link.href or url based on 
+      // menuOptions returns link.href or url based on
       // menu item ID.
       newUrl = $t.menuOptions(e, link);
-    }  
+    }
     if (!newUrl) {
       return stopEventPropagation(e);
     }
@@ -1957,10 +1957,10 @@ var MobileMenuAnimation = {
       this.hide();
       return;
     }
-    if (effectIdx == 1 && !Browser.ie) { 
+    if (effectIdx == 1 && !Browser.ie) {
       this.opaqueAnimation(this.optionsDiv, 0.25, 1.0, 0.35);
     }
-    
+
     if (optDivStl.position == '')
       optDivStl.position = 'absolute';
     optDivStl.zIndex = curPageDiv.style.zIndex + 1;
@@ -2062,11 +2062,13 @@ function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
     };
     $t.insertChatMessage(e, roomDiv);
   }
+  /*
   else {
     var form = document.forms['tablePropertyList'];
     var params = getFormFilters(form, true) + "&-noRedirect=y";
     postRequest(event, 'mkresource', params, div, newTr, updateTR);
   }
+  */
   return retCode;
 
   function updateTR(event, body, hotspot, content)  {
