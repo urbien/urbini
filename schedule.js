@@ -783,7 +783,7 @@ function submitUpdateTicket(e) {
   if (!form)
     return;
   var ret = stopEventPropagation(e);
-  var p1 = getFormFilters(form, true);
+  var p1 = FormProcessor.getFormFilters(form, true);
   var div = document.createElement('div');
   if (form.action  &&  form.action == 'mkresource')
     postRequest(e, 'mkresource', p1, div, target, updateTicket);
