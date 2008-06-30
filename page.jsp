@@ -6,7 +6,6 @@
 
   <div>
     <include name="requiredHeader.jsp"/>
-    <!--include name="include/commonHeader.jsp"/-->
     <getResource/>
     <div id="mainskin" class="blue">
     <include name="menu.jsp"/>
