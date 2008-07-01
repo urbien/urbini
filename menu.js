@@ -1280,7 +1280,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
 
     var next = self.currentRow.nextSibling;
-
     if (next == null) {
       self.currentRow = self.firstRow();
       // if (cur == self.currentRow)
@@ -1332,7 +1331,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
 
     var prev = self.currentRow.previousSibling;
-
     if (prev == null || self.isHeaderRow(prev)) {
       // self.deselectRow();
       self.currentRow = self.lastRow();
@@ -1371,7 +1369,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return null;
 
     for (var i=0; i<trs.length; i++) {
-      if (!self.isHeaderRow(trs[i]))
+      if (!self.isHeaderRow(trs[i]) && trs[i].style.display != 'none')
         break;
     }
     return trs[i];
@@ -1389,7 +1387,11 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (trs == null)
       return null;
 
-    return trs[trs.length - 1];
+    for (var i = trs.length - 1; i >= 0; i--) {
+      if (!self.isHeaderRow(trs[i]) && trs[i].style.display != 'none')
+        break;
+    }
+    return trs[i];
   }
 
   /**
@@ -2577,14 +2579,6 @@ var ListBoxesHandler = {
   autoComplete : function(e) {
     e = getDocumentEvent(e); if (!e) return;
     var target = getTargetElement(e);
-
-    var isAuto = target.getAttribute("autocomplete");
-    var characterCode = getKeyCode(e);
-    
-    // handle arrow down in anyway as click on listbox icon.
-    if(isAuto != null && isAuto == "off" && characterCode != 40)
-      return;
-
     return this.autoComplete1(e, target);
   },
 
@@ -2625,6 +2619,14 @@ var ListBoxesHandler = {
       return true;
     keyPressedElement   = target;
     var currentPopup = Popup.getPopup(divId);
+  
+    var isAuto = target.getAttribute("autocomplete");
+    
+    // for a stage of openning of a listbox (currentPopup == null)
+    // handle arrow down as click on listbox icon.
+    if(isAuto != null && isAuto == "off" && currentPopup == null && characterCode != 40)
+      return;
+
   /*
   * !!!!!!!!!!!!! this below did not work to clear the previous popup if
   * (currentDiv) { var p = Popup.getPopup(currentDiv); if (p) p.close(); }
