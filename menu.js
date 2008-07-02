@@ -1451,7 +1451,8 @@ var closeTimeoutId;
 var currentImgId = null;
 var currentFormName = null;
 var currentResourceUri = null;
-var innerUrls = new Array();
+// defined in JAVA because menu.js is loaded at the page bottom
+/* var innerUrls = new Array(); */
 var innerListUrls = new Array();
 
 function reposition(div, x, y) {
