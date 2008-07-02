@@ -782,6 +782,31 @@ function getChildByAttribute(parent, atribName, attribValue) {
 	}
 	return null;
 }
+
+// return "parent" if it is of required tagName
+function getChildByTagName(parent, tagName) {
+	if(!parent)
+	  return null;
+  tagName = tagName.toLowerCase();
+	if(parent.tagName.toLowerCase() == tagName)
+		return parent;
+
+	var children = parent.childNodes;
+	var len = children.length;
+	if(len == 0)
+		return null;
+	for(var i = 0; i < len; i++) {
+		if(children[i].childNodes.length != 0) {
+			var reqChild = null;
+			if((reqChild = getChildByTagName(children[i], tagName)) != null)
+				return reqChild;
+		}
+		if(children[i].tagName && children[i].tagName.toLowerCase() == tagName)
+			return children[i];
+	}
+	return null;
+}
+
 function getAncestorById(child, id) {
   return getAncestorByAttribute(child, "id", id);
 }
@@ -875,7 +900,18 @@ var ExecJS = {
     if (typeof refObjId != 'undefined')
       $t._runRelativeCode(jsCode, refObjId);
     else
+      $t.eval(jsCode);
+  },
+  
+  // 1. prevents error if some JS code was not loaded yet
+  // 2. to use own eval for better JS compression
+  eval : function(jsCode) {
+    try {
       window.eval(jsCode);
+    }
+    catch(e) {
+      setTimeout( function() { ExecJS.eval(jsCode) }, 100);
+    } 
   },
   
   // executes js code if refObjId is visible - [hidden tab].
@@ -889,7 +925,7 @@ var ExecJS = {
 		}
 		else {
       if(this.isObjectTotallyVisible(refObjId))
-        window.eval(jsCode);
+        this.eval(jsCode);
     }
   },
 
