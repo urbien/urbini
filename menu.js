@@ -1620,10 +1620,6 @@ var FormProcessor = {
     }
 
     this.uiFocus();
-
-    // better to move it. 
-    if (!div) // handle anchors with help of BODY's event
-      addEvent(document.body, 'click', onLinkClick, false);
   },
   
   uiFocus : function(div) {
