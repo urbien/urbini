@@ -360,7 +360,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.open1 = function (event, offsetX, offsetY) {
-    var hotspotDim = getElementCoords(self.hotspot, event);
+    var hotspot = getEventTarget(event);
+    var hotspotDim = getElementCoords(hotspot, event);
     if (Popup.tooltipPopup) {
       Popup.tooltipPopup.close();
       Popup.tooltipPopup = null;
@@ -2931,8 +2932,6 @@ var ListBoxesHandler = {
 
 }
 
-
-
 // handle anchors with help of BODY's event
 function onLinkClick(e) {
   e = getDocumentEvent(e);
@@ -3448,7 +3447,7 @@ function displayInner(e, urlStr) {
     finalUrl += '&';
   finalUrl += "-inner=y"; // "hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
 
-  var hotspot = target ? target : anchor;
+  var hotspot = getEventTarget(e);
   var url    = finalUrl;
   var params = null;
 // if (finalUrl.length > 2000) {
