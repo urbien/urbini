@@ -1,8 +1,8 @@
-function initStyleSheet(parentDivId, sampleDivId, formObjId, fieldName) {
-  new StyleSheet(parentDivId, sampleDivId, formObjId, fieldName);  
+function initStyleSheet(parentDivId, sampleDivId, formName, fieldName) {
+  new StyleSheet(parentDivId, sampleDivId, formName, fieldName);
 }
 
-function StyleSheet(parentDivId, sampleDivId, formObjId, fieldName)
+function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 {
 	var IMAGES_FOLDER = "images/wysiwyg/";
 	
@@ -25,7 +25,7 @@ function StyleSheet(parentDivId, sampleDivId, formObjId, fieldName)
 	var toolBar = null;
 	var sampleDiv = document.getElementById(sampleDivId);
 	var styleViewDiv = null;
-	this.formObj  = document.getElementById(formObjId);
+	this.formObj = document.forms[formName];
 	this.fieldName = fieldName;
 	this.fieldObj = null;
 	
@@ -481,15 +481,12 @@ function StyleSheet(parentDivId, sampleDivId, formObjId, fieldName)
 		// 1. set into styleViewDiv
 		var styleStr = this.getStyleString();
 		styleViewDiv.innerHTML = styleStr;
-
 		// 2. set into a form's field
 		var fieldObj = this.formObj[this.fieldName];
-		if(fieldObj != null) // IE
-			fieldObj.value = styleStr;
-		else { // FF !
-			formName = this.formObj.id;
-			document.forms[formName].elements[this.fieldName].value = this.getStyleString() ;
-		}
+		if(fieldObj == null) // IE
+		  throw new Error("style sheet editor: missed field " + this.fieldName);
+		  
+		fieldObj.value = styleStr;
 	}
 	
 	// --------------------------------------------
