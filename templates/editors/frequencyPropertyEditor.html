@@ -347,9 +347,9 @@ select {
   </table>
   </fieldset>
   <!-- for tab & dialog initialization -->
-  <script language='JavaScript' type='text/javascript' class='execJS'>
+  <script language='JavaScript' type='text/javascript'>
 		var jsCode = "showRecurrencePanel('&[formName];', '&[propertyName];')";
 	  var relObj = document.forms['&[formName];'];
-	  execJS.runRelativeCode(jsCode, relObj);
+	  runJSCode(jsCode, relObj);
   </script>
 </div>
