@@ -1279,15 +1279,21 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       // a = 1;
       return self.currentRow;
     }
-
-    var next = self.currentRow.nextSibling;
-    if (next == null) {
-      self.currentRow = self.firstRow();
-      // if (cur == self.currentRow)
-      // a = 1;
-      return self.currentRow;
+    
+    var table = self.currentRow.parentNode;
+    var trs = table.rows;
+    var curIdx = self.currentRow.rowIndex;
+    var nextIdx = curIdx;
+    
+    for (var i = 1; i < trs.length; i++) {
+      var idx = (curIdx + i < trs.length) ? curIdx + i : curIdx + i - trs.length;
+      if (!self.isHeaderRow(trs[idx]) && trs[idx].style.display != 'none') {
+        nextIdx = idx;
+        break;
+      }
     }
-
+    var next = table.rows[nextIdx];
+    
     // The following is needed to work around FireFox and other Netscape-based
     // browsers. They will return a #text node for nextSibling instead of a TR.
     // However, the next TR sibling is the one we're after.
@@ -1331,7 +1337,21 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return self.prevRow();
     }
 
-    var prev = self.currentRow.previousSibling;
+    //var prev = self.currentRow.previousSibling;
+    var table = self.currentRow.parentNode;
+    var trs = table.rows;
+    var curIdx = self.currentRow.rowIndex;
+    var prevIdx = curIdx;
+    
+    for (var i = 1; i < trs.length; i++) {
+      var idx = (curIdx - i >= 0) ? curIdx - i : curIdx + trs.length - i;
+      if (!self.isHeaderRow(trs[idx]) && trs[idx].style.display != 'none') {
+        prevIdx = idx;
+        break;
+      }
+    }
+    var prev = table.rows[prevIdx];
+    
     if (prev == null || self.isHeaderRow(prev)) {
       // self.deselectRow();
       self.currentRow = self.lastRow();
