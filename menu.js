@@ -2949,35 +2949,45 @@ var ListBoxesHandler = {
     div.removeAttribute('eventHandlersAdded');
     postRequest(e, url, params, div, hotspot, Popup.load);
   }
-
 }
 
-// handle anchors with help of BODY's event
+// handle anchors with help of onmousedown of BODY.
 function onLinkClick(e) {
   e = getDocumentEvent(e);
   if (!e)
     return;
 
   var anchor = getTargetAnchor(e);
+  
   if (!anchor || !anchor.id)
     return;
+  
+  // with purpose to speed up GUI we handle onmousedown
+  // so, skip click event on anchors with href == "about:blank"  
+  if (e.type == "click" && anchor.href == "about:blank")
+    return stopEventPropagation(e);  
 
   var id = anchor.id;
   var idLen = id.length;
-
+  
+  // 1.
   if (id.startsWith("-inner.")) {
     onClickDisplayInner(e, anchor);
   }
+  // 2.
   else if (id.startsWith('menuLink_')) {
     menuOnClick(e, anchor);  
   }
+  // 3.
   else if (id.indexOf("_filter", idLen - "_filter".length) != -1) {
     ListBoxesHandler.listboxOnClick(e, anchor);
   }
+  // 4.
   else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
         id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
     changeBoolean(e, anchor);
   }
+  // 5.
   else
     onClick(e, anchor);
 }
