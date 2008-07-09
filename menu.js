@@ -237,6 +237,7 @@ Popup.load = function (event, div, hotspot, content) {
     content = body.innerHTML;
   }
   var popup = Popup.getPopup(div.id);
+  
   popup.setInnerHtml(content);
   var div = popup.div;
 
@@ -5143,6 +5144,7 @@ function onDlgContentResize(e){
   iframe.style.height = target.offsetHeight - SHADOW_WIDTH;
 
 }
+
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
   if (Browser.mobile) {
     div.style.left = 0 + 'px';
@@ -5151,16 +5153,21 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     div.position = 'fixed';
     div.style.visibility = Popup.VISIBLE;
   }
+  
   // "hack" resize dialog if its contents resized (twice calls of onresize)
-  var tbl = getChildById(div, "dataEntry");
-  if(tbl) {
+  if (div.id == "pane2") {
+    var tbl = getChildById(div, "dataEntry");
     tbl.onresize = onDlgContentResize;
     isResizedOneTime = false;
   }
 
-  var istyle   = iframe.style;
-  if (Browser.ie)
-    istyle.visibility    = Popup.HIDDEN;
+  // only IE < 7 has a problem with form elements 'showing through' the popup
+  var istyle;
+  if (Browser.lt_ie7) {
+    var istyle = iframe.style;
+    istyle.visibility = Popup.HIDDEN;
+  }
+  
   div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
   var scrollXY = getScrollXY();
   var scrollX = scrollXY[0];
@@ -5234,6 +5241,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       div.scrollTop  = 0;
     }
   }
+ 
   div.style.display    = 'none';   // must hide it again to avoid screen flicker
   // move box to the left of the hotspot if the distance to window border isn't
   // enough to accomodate the whole div box
@@ -5274,7 +5282,8 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       zIndex = z;
   }
   div.style.zIndex = zIndex + 2;
-  if (Browser.ie) {
+  
+  if (Browser.lt_ie7) {
     // for listboxes in Dialog - makes iframe under a listbox.
     var par = getAncestorById(div, 'pane2');
     if(par && iframe.id == 'popupIframe') {
@@ -5282,7 +5291,6 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     }
     istyle.zIndex  = zIndex + 1;
   }
-
 
   // hack for Opera (at least at ver. 7.54) and Konqueror
   // somehow iframe is always on top of div - no matter how hard we try to set zIndex
@@ -5296,7 +5304,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   // Make position/size of the underlying iframe same as div's position/size
   var iframeLeft = left;
   var iframeTop = top;
-  if(Browser.ie) {
+  if(Browser.lt_ie7) {
     istyle.width     = divCoords.width  + 'px';
     istyle.height    = divCoords.height + 'px';
     // to make dialog shadow visible (without iframe background).
@@ -5320,17 +5328,20 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     }
   }
 
-  if (Browser.ie) // only IE has a problem with form elements 'showing through' the popup
-    istyle.display = 'inline';
   reposition(div,    left, top); // move the div box to the adjusted position
-  reposition(iframe, iframeLeft, iframeTop); // place iframe under div
-  // if (!opera && !konqueror) {
-  if (Browser.ie) // only IE has a problem with form elements 'showing through' the popup
-      istyle.visibility  = Popup.VISIBLE;
   div.style.visibility = Popup.VISIBLE; // finally make div visible
-
+  
+  if (Browser.lt_ie7) {
+    istyle.display = 'inline';
+    istyle.visibility  = Popup.VISIBLE;
+    reposition(iframe, iframeLeft, iframeTop); // place iframe under div
+  }
+  
   // used to close divs on "C" and for dialogs
   closingOnEsc.ready(div);
+ 
+ // console.log(new Date().getTime() - timerTmp);
+  div.setAttribute("way_displayed", "true");
 }
 
 function setDivInvisible(div, iframe) {
