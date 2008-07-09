@@ -37,7 +37,10 @@ Browser.ns4  = (document.layers)                                    ? true : fal
 Browser.ie   = (typeof ActiveXObject != 'undefined')                ? true : false;
 Browser.ie4  = (Browser.ie && !this.w3c)                              ? true : false;
 Browser.ie5  = (Browser.ie && this.w3c)                               ? true : false;
-Browser.ie7  = (Browser.ie && typeof window.XMLHttpRequest != 'undefined') ? true : false;
+Browser.ie7  = (Browser.ie && !window.opera && window.XMLHttpRequest) ? true : false;
+// less than ie7
+Browser.lt_ie7  = Browser.ie && !Browser.ie7;
+
 
 Browser.opera = typeof opera != 'undefined'                         ? true : false;
 Browser.opera8 = false;
