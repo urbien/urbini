@@ -1885,9 +1885,13 @@ var FormProcessor = {
       type = type.toLowerCase();
       if (type == "submit")
         continue;
+      
       if (!allFields) {
-        if (!this.wasFormFieldModified(field))
+        if (!this.wasFormFieldModified(field)) {
+         if (field.type != 'hidden')
+            field.parentNode.removeChild(field);
           continue;
+        }
       }
       else {
         if (!value)
@@ -2924,7 +2928,8 @@ var ListBoxesHandler = {
         }
   // else if (currentFormName.indexOf("horizontalFilter") == 0)
   // allFields = true;
-        params += FormProcessor.getFormFilters(form, allFields);
+  
+      params += FormProcessor.getFormFilters(form, allFields);
       /*
       * } else { url = url + "&type=" + form.elements['type'].value +
       * "&-$action=" + formAction; var s = getFormFiltersForInterface(form,
