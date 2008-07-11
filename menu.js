@@ -5162,8 +5162,10 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   // "hack" resize dialog if its contents resized (twice calls of onresize)
   if (div.id == "pane2") {
     var tbl = getChildById(div, "dataEntry");
-    tbl.onresize = onDlgContentResize;
-    isResizedOneTime = false;
+    if (tbl) {
+      tbl.onresize = onDlgContentResize;
+      isResizedOneTime = false;
+    }
   }
 
   // only IE < 7 has a problem with form elements 'showing through' the popup
