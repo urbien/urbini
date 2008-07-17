@@ -46,19 +46,22 @@
         parent.frameLoaded[window.name] = true;
     }
 
-    //***** Add smartlistbox handlers
-    function addHandlers(event) {
+    /*************************************
+    * Initialization
+    **************************************/
+    // 1. initialization on DOM loaded.
+    function onDomLoaded(event) {
       if (window.parent != window) {
         onLoadPopup();
         return;
       }
-
+      
+      // 1.1 mobile
       if (typeof Mobile != 'undefined') {
-        Boost.init(event);
-        Mobile.init(event);
-		    MobilePageAnimation.init();
-        MobileMenuAnimation.init();
-      } else {
+        /* moved to onPageLoaded because of the applet initialization */
+      }
+      // 1.2. desktop
+      else {
         FormProcessor.initForms();
         DragEngine.initialize();
         FlashHandler.init();
@@ -71,18 +74,25 @@
           addEventOnSchedule();
       }
 
-        
-//      Packages.java.lang.System.out.println('onLoad 4: ' + new Date());
-//      if (typeof searchHighlighting != 'undefined')
-//        searchHighlighting();
-//      if (typeof replaceAllTooltips != 'undefined')
-//        replaceAllTooltips();
-		// initialize the drag & drop engine.
-
 		  // The URL bar is hidden when running on the iPhone.
 		  if (navigator.userAgent.indexOf('iPhone') != -1) {
 		    window.scrollTo(0, 1);
 		  }
+    }
+
+    // 2. initialization on page loaded.
+    function onPageLoaded(event) {
+      // 2.1. mobile
+      if (typeof Mobile != 'undefined') {
+        Boost.init(event);
+        Mobile.init(event);
+		    MobilePageAnimation.init();
+        MobileMenuAnimation.init();
+      }
+      // 2.2. desktop
+      else {
+        /* in onDomLoaded */
+      }
     }
 
     /*
@@ -100,7 +110,8 @@
     }
     */
 
-    /****************** launch JS on "DOM ready" ****************/
+    
+    /****************** assign onDomLoaded ****************/
     var agent = navigator.userAgent;
     var isGecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1 && agent.indexOf("Konqueror") == -1);
     var versionindex = agent.indexOf("Opera") + 6;
@@ -109,14 +120,19 @@
     var isOpera9 = (typeof opera != 'undefined') && (v >= 9);
 
     if (isOpera9 || isGecko)
-      document.addEventListener("DOMContentLoaded", addHandlers, false);
+      document.addEventListener("DOMContentLoaded", onDomLoaded, false);
     else if (typeof document.readyState != 'undefined') { // WebKit & IE
       var _timer = setInterval(function() {
           if (/loaded|complete/.test(document.readyState)) {
               clearInterval(_timer);
-              addHandlers();
+              onDomLoaded();
           }
       }, 10);
     }
     else
-      addEvent(window, 'load', addHandlers, false);
+      addEvent(window, 'load', onDomLoaded, false);
+      
+      
+    /****************** assign onPageLoaded ****************/
+    addEvent(window, 'load', onPageLoaded, false);
+
