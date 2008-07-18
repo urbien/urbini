@@ -332,7 +332,7 @@ table.greyBorder {
 }
 
 /* native shadow, meanwhile for WebKit only */
-.galleryItem_css3 { -webkit-box-shadow: 5px 5px 25px #555; }
+.galleryItem_css3 { -webkit-box-shadow: 5px 5px 25px #555; -moz-box-shadow: #555 5px 5px 25px;}
 
 .galleryItem td {
   vertical-align: top; background-position: top;
