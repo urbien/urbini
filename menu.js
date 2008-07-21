@@ -8214,7 +8214,8 @@ var LoadOnDemand = {
     for (var k = 0; k < files.length; k++) {
       var timestamp = g_onDemandFiles[files[k]];
       if (!timestamp)
-        throw new Error("On demand file was not supplied with timestamp");
+        //throw new Error("On demand file was not supplied with timestamp");
+        continue;
       
       files[k] = files[k].replace(/\.css$/, "_" + timestamp + ".css");
       files[k] = files[k].replace(/\.js$/, "_" + timestamp + ".js")
