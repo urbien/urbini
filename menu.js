@@ -237,7 +237,7 @@ Popup.load = function (event, div, hotspot, content) {
     content = body.innerHTML;
   }
   var popup = Popup.getPopup(div.id);
-  
+
   popup.setInnerHtml(content);
   var div = popup.div;
 
@@ -784,7 +784,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     //
     if (target.tagName.toLowerCase() == 'a')
       return;
-    if (tr)  
+    if (tr)
       var anchors = tr.getElementsByTagName('A');
     if (anchors  &&  anchors.length != 0) {
       if (currentDiv) {
@@ -1007,14 +1007,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var val = items[2].innerHTML;
       var idx = val.lastIndexOf(">");
       if (!isViewCols) {
-	      if (len > 1) {
-	        chosenTextField[0].value = val.substring(idx + 1);
-	        if (chosenTextField[0].style)
-	          chosenTextField[0].style.backgroundColor = '#ffffff';
-	      }
-	      else {
+        if (len > 1) {
+  	      chosenTextField[0].value = val.substring(idx + 1);
+  	      if (chosenTextField[0].style)
+  	        chosenTextField[0].style.backgroundColor = '#ffffff';
+  	    }
+  	    else {
           if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate
-                                                                                    // rollup
             chosenTextField.value = tr.id;
             var dateImg = tr.getElementsByTagName('img');
             var targetImg = this.hotspot;
@@ -1024,10 +1023,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
               targetImg.src = dateImg[0].src;
             return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
           }
-          else
+          else {
             chosenTextField.value = val.substring(idx + 1);
-          if (chosenTextField.style)
-            chosenTextField.style.backgroundColor = '#ffffff';
+            if (tr.style)
+              chosenTextField.style.backgroundColor = tr.style.backgroundColor;
+            else
+              chosenTextField.style.backgroundColor = '#ffffff';
+          }
         }
         var fr = form.elements[originalProp + "_From"];
         var to = form.elements[originalProp + "_To"];
@@ -1048,8 +1050,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       if (!selectItems.length) {
         var t = selectItems.type.toLowerCase();
         if (t == "hidden")
-          selectItems.value = tr.id; // property value corresponding to a
-                                      // listitem
+          selectItems.value = tr.id; // property value corresponding to a listitem
 // else if (t == "checkbox")
 // selectItems.value = tr.id; // property value corresponding to a listitem
       }
@@ -1132,11 +1133,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
                 chosenTextField[0].value = val.substring(idx + 1);
               else
                 chosenTextField.value = val.substring(idx + 1);
+              trNode.style = tr.style;
             }
             else {
               if (hiddenSelectedItem != null)
                 hiddenSelectedItem.value = selectedItem.value;
               chosenTextField.value = '<...>';
+              chosenTextField.style.backgroundColor = '#ffffff';
             }
           }
         }
@@ -1280,12 +1283,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       // a = 1;
       return self.currentRow;
     }
-    
+
     var table = self.currentRow.parentNode;
     var trs = table.rows;
     var curIdx = self.currentRow.rowIndex;
     var nextIdx = curIdx;
-    
+
     for (var i = 1; i < trs.length; i++) {
       var idx = (curIdx + i < trs.length) ? curIdx + i : curIdx + i - trs.length;
       if (!self.isHeaderRow(trs[idx]) && trs[idx].style.display != 'none') {
@@ -1294,7 +1297,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
     }
     var next = table.rows[nextIdx];
-    
+
     // The following is needed to work around FireFox and other Netscape-based
     // browsers. They will return a #text node for nextSibling instead of a TR.
     // However, the next TR sibling is the one we're after.
@@ -1343,7 +1346,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var trs = table.rows;
     var curIdx = self.currentRow.rowIndex;
     var prevIdx = curIdx;
-    
+
     for (var i = 1; i < trs.length; i++) {
       var idx = (curIdx - i >= 0) ? curIdx - i : curIdx + trs.length - i;
       if (!self.isHeaderRow(trs[idx]) && trs[idx].style.display != 'none') {
@@ -1352,7 +1355,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
     }
     var prev = table.rows[prevIdx];
-    
+
     if (prev == null || self.isHeaderRow(prev)) {
       // self.deselectRow();
       self.currentRow = self.lastRow();
@@ -1618,7 +1621,7 @@ function fakeOnSubmit() {
 var FormProcessor = {
   // variables ----
   formInitialValues : new Array(),
-  
+
   // methods ----
   initForms : function(div) {
     if (Browser.mobile)
@@ -1629,7 +1632,7 @@ var FormProcessor = {
       forms = div.getElementsByTagName('form');
     else
       forms = document.forms;
-    
+
     for (var i = 0; i < forms.length; i++) {
       var form = forms[i];
       var initialValues = new Array(form.elements.length);
@@ -1643,7 +1646,7 @@ var FormProcessor = {
 
     this.uiFocus();
   },
-  
+
   uiFocus : function(div) {
     if (!div)
       div = document;
@@ -1861,7 +1864,7 @@ var FormProcessor = {
                     // submit request
     }
   },
-  
+
   /**
   * Helper function - gathers the parameters (from form elements) to build a URL
   * If allFields is true - we are in a Filter panel - need to take into account
@@ -1885,7 +1888,7 @@ var FormProcessor = {
       type = type.toLowerCase();
       if (type == "submit")
         continue;
-      
+
       if (!allFields) {
         if (!this.wasFormFieldModified(field)) {
          if (field.type != 'hidden')
@@ -1914,7 +1917,7 @@ var FormProcessor = {
     }
     return p;
   },
-  
+
   _storeInitialValues : function(form) {
     var initialValues = new Array();
     for (var j = 0; j < form.elements.length; j++) {
@@ -1923,7 +1926,7 @@ var FormProcessor = {
     }
     this.formInitialValues[form.name] = initialValues;
   },
-  
+
   // returns true if the field was modified since the page load
   wasFormFieldModified : function(elem) {
     var initialValue = this.getFormFieldInitialValue(elem);
@@ -1937,7 +1940,7 @@ var FormProcessor = {
       //alert("modified: elem.name: " + elem.name + ", initialValue: " + initialValue);
       return true;
     }
-  }, 
+  },
   // returns value of the field saved right after the page load (does not support multiple selections)
   getFormFieldInitialValue : function(elem, attribute) {
     var formValues = this.formInitialValues[elem.form.name];
@@ -2497,14 +2500,14 @@ var ListBoxesHandler = {
       else if (elem.type && elem.type.toUpperCase() == 'TEXTAREA') {
         var rows = elem.attributes['rows'];
         var cols = elem.attributes['cols'];
-        
+
         /* // IS IT USED?!
         if (rows)
           initialValues[elem.name + '.attributes.rows'] = rows.value;
         if (cols)
           initialValues[elem.name + '.attributes.cols'] = cols.value;
         */
-        
+
         if (!elem.value || elem.value == '') {
           elem.setAttribute('rows', 1);
           elem.setAttribute('cols', 10);
@@ -2524,7 +2527,7 @@ var ListBoxesHandler = {
     e = getDocumentEvent(e); if(!e) return;
     return ListBoxesHandler.autoComplete(e);
   },
-  
+
   autoCompleteOnFocus : function(e) {
     var target = getTargetElement(e);
     if (!target)
@@ -2541,7 +2544,7 @@ var ListBoxesHandler = {
       target.select();
     return true;
   },
-  
+
   autoCompleteOnBlur : function(e) {
     var target = getTargetElement(e);
     if (!target)
@@ -2562,7 +2565,7 @@ var ListBoxesHandler = {
       Popup.delayedClose0(currentDiv.id);
     }
   },
-  
+
   textAreaOnFocus : function(e) {
     var target = getTargetElement(e);
     var rows = FormProcessor.getFormFieldInitialValue(target, 'rows');
@@ -2590,7 +2593,7 @@ var ListBoxesHandler = {
       target.style.width = null;
     }
   },
-  
+
   // AUTOCOMPLETE ----
   /**
   * Show popup for the text entered in input field (by capturing keyPress
@@ -2642,9 +2645,9 @@ var ListBoxesHandler = {
       return true;
     keyPressedElement   = target;
     var currentPopup = Popup.getPopup(divId);
-  
+
     var isAuto = target.getAttribute("autocomplete");
-    
+
     // for a stage of openning of a listbox (currentPopup == null)
     // handle arrow down as click on listbox icon.
     if(isAuto != null && isAuto == "off" && currentPopup == null && characterCode != 40)
@@ -2758,7 +2761,7 @@ var ListBoxesHandler = {
     if (currentPopup)
       clearOtherPopups(currentPopup.div);
     return true;
-  }, 
+  },
 
   autoCompleteTimeout : function(e, invocationTime) {
     if (keyPressedTime > invocationTime) {
@@ -2776,7 +2779,7 @@ var ListBoxesHandler = {
       return;
     this.listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
   },
-  
+
   // Opens the popup when icon is clicked
   listboxOnClick : function(e, target) {
     this.listboxOnClick1(e, target.id);
@@ -2928,7 +2931,7 @@ var ListBoxesHandler = {
         }
   // else if (currentFormName.indexOf("horizontalFilter") == 0)
   // allFields = true;
-  
+
       params += FormProcessor.getFormFilters(form, allFields);
       /*
       * } else { url = url + "&type=" + form.elements['type'].value +
@@ -2964,25 +2967,25 @@ function onLinkClick(e) {
     return;
 
   var anchor = getTargetAnchor(e);
-  
+
   if (!anchor || !anchor.id)
     return;
-  
+
   // with purpose to speed up GUI we handle onmousedown
-  // so, skip click event on anchors with href == "about:blank"  
+  // so, skip click event on anchors with href == "about:blank"
   if (e.type == "click" && anchor.href == "about:blank")
-    return stopEventPropagation(e);  
+    return stopEventPropagation(e);
 
   var id = anchor.id;
   var idLen = id.length;
-  
+
   // 1.
   if (id.startsWith("-inner.")) {
     onClickDisplayInner(e, anchor);
   }
   // 2.
   else if (id.startsWith('menuLink_')) {
-    menuOnClick(e, anchor);  
+    menuOnClick(e, anchor);
   }
   // 3.
   else if (id.indexOf("_filter", idLen - "_filter".length) != -1) {
@@ -5158,7 +5161,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     div.position = 'fixed';
     div.style.visibility = Popup.VISIBLE;
   }
-  
+
   // "hack" resize dialog if its contents resized (twice calls of onresize)
   if (div.id == "pane2") {
     var tbl = getChildById(div, "dataEntry");
@@ -5174,7 +5177,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     var istyle = iframe.style;
     istyle.visibility = Popup.HIDDEN;
   }
-  
+
   div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
   var scrollXY = getScrollXY();
   var scrollX = scrollXY[0];
@@ -5248,7 +5251,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       div.scrollTop  = 0;
     }
   }
- 
+
   div.style.display    = 'none';   // must hide it again to avoid screen flicker
   // move box to the left of the hotspot if the distance to window border isn't
   // enough to accomodate the whole div box
@@ -5289,7 +5292,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       zIndex = z;
   }
   div.style.zIndex = zIndex + 2;
-  
+
   if (Browser.lt_ie7) {
     // for listboxes in Dialog - makes iframe under a listbox.
     var par = getAncestorById(div, 'pane2');
@@ -5337,16 +5340,16 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 
   reposition(div,    left, top); // move the div box to the adjusted position
   div.style.visibility = Popup.VISIBLE; // finally make div visible
-  
+
   if (Browser.lt_ie7) {
     istyle.display = 'inline';
     istyle.visibility  = Popup.VISIBLE;
     reposition(iframe, iframeLeft, iframeTop); // place iframe under div
   }
-  
+
   // used to close divs on "C" and for dialogs
   closingOnEsc.ready(div);
- 
+
  // console.log(new Date().getTime() - timerTmp);
   div.setAttribute("way_displayed", "true");
 }
@@ -5670,16 +5673,16 @@ function getElementStyle(elem) {
  * dragHandler implements: 1)getDragBlock 2)onStartDrag, 3) onDrag, 4) onStopDrag
  ******************************************************************************/
 var DragEngine = {
-	
+
 	dragBlock : null,
 	dialogIframe : null, //IE: prevents dialog from underlaid <select>
 	dragHandler : null,
   // offset of left and top edges relative to "caught point"
 	offsetX: null, offsetY: null,
   dragapproved : 0,
-  // dragable objects with the following className  
+  // dragable objects with the following className
  	classNameArr : ["dragable", "tabs", "tabs_current"],
-	
+
 	initialize: function(){
 		addEvent(document, 'mousedown', this.startDrag, false);
 		addEvent(document, 'mouseup', this.stopDrag, false);
@@ -5725,7 +5728,7 @@ var DragEngine = {
 
 	  thisObj.dragapproved = 1;
 	},
-	
+
 	drag: function(e){
   	var thisObj = DragEngine;
 
@@ -5734,13 +5737,13 @@ var DragEngine = {
 
 		var evtobj = window.event ? window.event : e;
 		var scrollXY = getScrollXY();
-		
+
 		// FF3(!)/FF2 onmousedown returns wrong coordinates
 		if (thisObj.offsetX == null) {
       thisObj.offsetX = evtobj.clientX - findPosX(thisObj.dragBlock) + scrollXY[0];
       thisObj.offsetY = evtobj.clientY - findPosY(thisObj.dragBlock) + scrollXY[1];
     }
-		
+
 		var x = evtobj.clientX - thisObj.offsetX + scrollXY[0];
 		var y = evtobj.clientY - thisObj.offsetY + scrollXY[1];
 
@@ -6519,7 +6522,7 @@ var Dashboard = {
 
   prevWidgetOld : null,
   isWidgetMoved : false,
-  
+
   oldWidgetIdx : -1,
 
   // drag interface functions -----
@@ -6700,7 +6703,7 @@ var Dashboard = {
     }
 
     // 2. move on other place in the current tab
-    // 2.1 check if a widget was moved   
+    // 2.1 check if a widget was moved
     if (this.oldWidgetIdx == this.getWidgetIndex(dragBlock))
       return;
     // 2.2 store changed on server
@@ -8158,12 +8161,12 @@ var FlashHandler = {
   },
   onload : function() {
     var thisObj = FlashHandler;
-    
+
     if (thisObj.emdCodeArr == null)
       return;
 
     var isFlashAvailable = DetectFlashVer(8, 0, 0);
-    
+
     for(var i = 0; i < thisObj.emdCodeArr.length; i++) {
       var div = document.getElementById(thisObj.emdCodeArr[i][0]);
       if(!div)
@@ -8208,15 +8211,15 @@ var LoadOnDemand = {
 
     if(typeof files == "string")
       files = new Array(files);
-    
+
     // add timestamp to on demand file
-    // on demand file has its timestamp supplied on server side.  
+    // on demand file has its timestamp supplied on server side.
     for (var k = 0; k < files.length; k++) {
       var timestamp = g_onDemandFiles[files[k]];
       if (!timestamp)
         //throw new Error("On demand file was not supplied with timestamp");
         continue;
-      
+
       files[k] = files[k].replace(/\.css$/, "_" + timestamp + ".css");
       files[k] = files[k].replace(/\.js$/, "_" + timestamp + ".js")
     }
