@@ -8194,7 +8194,7 @@ function getCalendar() {
 }
 
 function initStyleSheet() {
-  var FILES_TO_LOAD = ["style_sheet/style_sheet.js"]; //"toolbar.js",
+  var FILES_TO_LOAD = ["style_sheet/style_sheet.js"];
   initStyleSheet = null;
   LoadOnDemand.doit(FILES_TO_LOAD, "initStyleSheet", arguments);
 }
@@ -8208,6 +8208,18 @@ var LoadOnDemand = {
 
     if(typeof files == "string")
       files = new Array(files);
+    
+    // add timestamp to on demand file
+    // on demand file has its timestamp supplied on server side.  
+    for (var k = 0; k < files.length; k++) {
+      var timestamp = g_onDemandFiles[files[k]];
+      if (!timestamp)
+        throw new Error("On demand file was not supplied with timestamp");
+      
+      files[k] = files[k].replace(/\.css$/, "_" + timestamp + ".css");
+      files[k] = files[k].replace(/\.js$/, "_" + timestamp + ".js")
+    }
+
     for(var i = 0; i < files.length; i++) {
       if(/.css$/.test(files[i])) {
         this.includeCSS(files[i]);
