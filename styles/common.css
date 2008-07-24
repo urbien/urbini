@@ -1434,7 +1434,7 @@ TD.closePopup {
 #system_tooltip  { visibility:hidden; padding:0; position:absolute; z-index:10000; top:0px; left:-400px; width:220px; }
 .system_tooltip_webkit { -webkit-box-shadow: 5px 5px 25px #555; -webkit-border-radius: 5px; background-color: #fffcb8; }
 .print {font-family:arial, helvetica, sans-serif; font-size:11pt; color:#000000;}
-.printB {font-weight:bold; font-family:helvetica, sans-serif, arial; font-size:11pt;}
+.printB {font-weight:bold; font-family:helvetica, sans-serif, arial; font-size:11pt; white-space: nowrap;}
 .printBottom {font-family:arial,helvetica,sans-serif; font-size:11pt; color:#000000; padding-left:5px;}
 .bigPrintTitle {font-family:arial black, helvetica, sans-serif; font-size:28px; color:lightgrey;}
 .printTitle {font-weight:bold; font-family:helvetica, sans-serif, arial; font-size:14pt; background-color: #ACE2CE; padding:3 3 3 3}
