@@ -8250,6 +8250,11 @@ var LoadOnDemand = {
       var html_doc = document.getElementsByTagName('head')[0];
       var js = document.createElement('script');
       js.setAttribute('type', 'text/javascript');
+      
+      // suppress minify
+      if(location.href.indexOf("-minify-js=n") != -1)
+        fileName = fileName.replace("m.js", ".js")
+        
       js.setAttribute('src', fileName);
       html_doc.appendChild(js);
       return false;
