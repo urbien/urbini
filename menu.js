@@ -1644,7 +1644,7 @@ var FormProcessor = {
       addEvent(form, 'submit', this.onSubmit, false);
     }
 
-    this.uiFocus();
+    this.uiFocus(div);
   },
 
   uiFocus : function(div) {
