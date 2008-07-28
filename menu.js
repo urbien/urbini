@@ -2866,7 +2866,13 @@ var ListBoxesHandler = {
         }
       }
     }
-    // currentDiv = document.getElementById(divId);
+
+    // close popup if it was already opened
+    var popup = Popup.getPopup(divId);
+    if (popup && popup.isOpen()) {
+      popup.close();
+      return;
+    }
 
     var div = loadedPopups[divId];
     var hotspot = document.getElementById(imgId);
