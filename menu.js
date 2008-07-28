@@ -1133,7 +1133,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
                 chosenTextField[0].value = val.substring(idx + 1);
               else
                 chosenTextField.value = val.substring(idx + 1);
-              trNode.style = tr.style;
+              trNode.style.cssText = tr.style.cssText;
             }
             else {
               if (hiddenSelectedItem != null)
