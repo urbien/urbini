@@ -2973,6 +2973,9 @@ function onLinkClick(e) {
     return;
 
   var anchor = getTargetAnchor(e);
+  
+  if (anchor)
+    linkHrefModifier(e, anchor);
 
   if (!anchor || !anchor.id)
     return;
@@ -3003,8 +3006,8 @@ function onLinkClick(e) {
     changeBoolean(e, anchor);
   }
   // 5.
-  else
-    onClick(e, anchor);
+//  else
+ //   onClick(e, anchor);
 }
 
 function onClickDisplayInner(e, anchor) {
@@ -3058,7 +3061,7 @@ function onClickDisplayInner(e, anchor) {
  * Registered to receive control on a click on any link. Adds control key
  * modifier as param to url, e.g. _ctrlKey=y
  */
-function onClick(e, link) {
+function linkHrefModifier(e, link) {
   detectClick = true;
   var p;
 
