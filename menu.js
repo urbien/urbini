@@ -5664,19 +5664,6 @@ function removeSpaces(str) {
   return buf;
 }
 
-function getElementStyle(elem) {
-	if(typeof elem == 'string')
-	  elem = document.getElementById(elem);
-  // <html> dose not have style property
-	if(elem.nodeType == 9)
-	  return null;
-
-	if (elem.currentStyle)
-		return elem.currentStyle;
-	else if (window.getComputedStyle)
-		return document.defaultView.getComputedStyle(elem, null);
-}
-
 /*******************************************************************************
  * drag & drop engine
  * dragHandler implements: 1)getDragBlock 2)onStartDrag, 3) onDrag, 4) onStopDrag

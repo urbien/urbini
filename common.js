@@ -71,18 +71,19 @@ if (document.attachEvent && !Browser.opera) {
   Browser.ie55 = true; // need better test since this one will include 5+ as well
 }
 
-Browser.gecko  = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1 && agent.indexOf("Konqueror") == -1) ? true : false;
-Browser.safari  = (agent.indexOf("Safari") != -1) ? true : false;
-Browser.webkit  = (agent.indexOf("WebKit") != -1) ? true : false;
+Browser.gecko     = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1 && agent.indexOf("Konqueror") == -1) ? true : false;
+Browser.firefox3  = (agent.indexOf("Firefox/3.")) != -1 ? true : false;
+Browser.safari    = (agent.indexOf("Safari") != -1) ? true : false;
+Browser.webkit    = (agent.indexOf("WebKit") != -1) ? true : false;
 Browser.s60Browser = (Browser.webkit && navigator.userAgent.indexOf("Series60/3.1") != -1 || navigator.userAgent.indexOf("Symbian") != -1) ? true : false;
-Browser.maemo= (Browser.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
-Browser.penBased = Browser.maemo || Browser.s60Browser ? true : false;
+Browser.maemo     = (Browser.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
+Browser.penBased  = Browser.maemo || Browser.s60Browser ? true : false;
 Browser.joystickBased = Browser.s60Browser ? true : false;
 Browser.mobileSafari = agent.indexOf("Mobile") != -1 && agent.indexOf("Safari") != -1;
-Browser.iPhone = Browser.mobileSafari && agent.indexOf("iPhone") != -1;
-Browser.iPod = Browser.mobileSafari && agent.indexOf("iPod") != -1;
-var mobileCookie = readCookie('mobile_mode');
-Browser.mobile = Browser.android || Browser.mobileSafari || Browser.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
+Browser.iPhone    = Browser.mobileSafari && agent.indexOf("iPhone") != -1;
+Browser.iPod      = Browser.mobileSafari && agent.indexOf("iPod") != -1;
+var mobileCookie  = readCookie('mobile_mode');
+Browser.mobile    = Browser.android || Browser.mobileSafari || Browser.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
 
 
 // ****************************************************
@@ -888,6 +889,19 @@ function setInnerHtml(div, text) {
   }
 }
 
+
+function getElementStyle(elem) {
+	if(typeof elem == 'string')
+	  elem = document.getElementById(elem);
+  // <html> dose not have style property
+	if(elem.nodeType == 9)
+	  return null;
+
+	if (elem.currentStyle)
+		return elem.currentStyle;
+	else if (window.getComputedStyle)
+		return document.defaultView.getComputedStyle(elem, null);
+}
 
 /*********************************************************
 * ExecJS 
