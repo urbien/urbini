@@ -2973,7 +2973,7 @@ function onLinkClick(e) {
     return;
 
   var anchor = getTargetAnchor(e);
-  
+
   if (anchor)
     linkHrefModifier(e, anchor);
 
@@ -3110,7 +3110,7 @@ function linkHrefModifier(e, link) {
     var li = ul.getElementsByTagName("li");
     if (li) {
       var qs = li[0].innerHTML;
-      if (qs.length > 0)
+      if (qs.length > 0  &&  link.href.indexOf('&-paging=') == -1)
         link.href += "&-paging=" + encodeURIComponent(decodeURL(qs));
     }
   }
@@ -8246,11 +8246,11 @@ var LoadOnDemand = {
       var html_doc = document.getElementsByTagName('head')[0];
       var js = document.createElement('script');
       js.setAttribute('type', 'text/javascript');
-      
+
       // suppress minify
       if(location.href.indexOf("-minify-js=n") != -1)
         fileName = fileName.replace("m.js", ".js")
-        
+
       js.setAttribute('src', fileName);
       html_doc.appendChild(js);
       return false;
