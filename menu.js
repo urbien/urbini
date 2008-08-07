@@ -2973,17 +2973,24 @@ function onLinkClick(e) {
     return;
 
   var anchor = getTargetAnchor(e);
-
-  if (anchor)
-    linkHrefModifier(e, anchor);
-
-  if (!anchor || !anchor.id)
+  if (!anchor)
     return;
 
   // with purpose to speed up GUI we handle onmousedown
-  // so, skip click event on anchors with href == "about:blank"
-  if (e.type == "click" && anchor.href == "about:blank")
-    return stopEventPropagation(e);
+  if (e.type == "click") {
+    // 1. stop click event on anchors with href == "about:blank"
+    // because we handled it with onmousedown
+    if (anchor.href == "about:blank")
+      return stopEventPropagation(e);
+    // 2. default browser behaviour 
+    else
+      return;  
+  }
+
+  linkHrefModifier(e, anchor);
+
+  if (!anchor.id)
+    return;
 
   var id = anchor.id;
   var idLen = id.length;
@@ -8246,11 +8253,11 @@ var LoadOnDemand = {
       var html_doc = document.getElementsByTagName('head')[0];
       var js = document.createElement('script');
       js.setAttribute('type', 'text/javascript');
-
+      
       // suppress minify
       if(location.href.indexOf("-minify-js=n") != -1)
         fileName = fileName.replace("m.js", ".js")
-
+        
       js.setAttribute('src', fileName);
       html_doc.appendChild(js);
       return false;
