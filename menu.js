@@ -1875,6 +1875,9 @@ var FormProcessor = {
     var p = "";
     var fields = form.elements;
 
+    // send all fields of FrequencyPE
+    var isFrequencyPE = (getAncestorById(fields[0], "frequencyPE") == null);
+
     for (var i=0; i<fields.length; i++) {
       var field = fields[i];
       var value = field.value;
@@ -1889,11 +1892,12 @@ var FormProcessor = {
       if (type == "submit")
         continue;
 
-      if (!allFields) {
+      if (!allFields && !isFrequencyPE) {
         if (!this.wasFormFieldModified(field)) {
-         if (field.type != 'hidden')
-            field.parentNode.removeChild(field);
-          continue;
+         if (field.type != 'hidden') {
+           field.parentNode.removeChild(field);
+         }
+         continue;
         }
       }
       else {
