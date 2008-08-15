@@ -6,6 +6,7 @@
 <form name="tablePropertyList" id="filter" method="post" action="mkresource" autocomplete="off">
 <div id="subscribe" class="hdn">
    <tablePropertyList action="mkResource"/>
+   <input type="hidden" name="-$action" value="mkResource"></input>
    <br />
 </div>
   <center>
