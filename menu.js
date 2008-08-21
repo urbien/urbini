@@ -1876,7 +1876,7 @@ var FormProcessor = {
     var fields = form.elements;
 
     // send all fields of FrequencyPE
-    var isFrequencyPE = (getAncestorById(fields[0], "frequencyPE") == null);
+    var isFrequencyPE = (getAncestorById(fields[0], "frequencyPE") != null);
 
     for (var i=0; i<fields.length; i++) {
       var field = fields[i];
