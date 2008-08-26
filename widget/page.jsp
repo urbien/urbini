@@ -5,7 +5,7 @@
 
   <body id="body">
   <include name="requiredHeader.jsp"/>
-  <include name="BhoostApplet.jsp" />
+  <!-- include name="BhoostApplet.jsp" /-->
   <div id="mainskin" class="blue">
     <options />
     <errorMessage />
