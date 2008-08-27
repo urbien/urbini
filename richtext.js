@@ -861,7 +861,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// possible in the futer more actions on double click
 		addEvent(this.document, 'dblclick', this._ondblclick, false);
 		
-		// IE: paste
+		// IE, FF3, Safari: onpaste
 		addEvent(this.document.body, 'paste', this._onpaste, false);
 
 		if(this.rtePref.autoClose) {
@@ -878,20 +878,24 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   	addEvent(this.document, "keydown", this._onkeydown, false);
 	}
   this.loadCSS = function() {
-		var cssFiles = ['../styles/common.css', '../styles/properties.css'];
+		var cssFiles = ['http://127.0.0.1/common/styles/common.css',
+		  'http://127.0.0.1/common/styles/properties.css'];
+
 		for(var i = 0; i < cssFiles.length; i++) {
 		  if(this.document.createStyleSheet) {
         this.document.createStyleSheet(cssFiles[i]);
       }
       else {
-        var newSS=document.createElement('link');
-        newSS.rel='stylesheet';
-        newSS.type='text/css';
-        newSS.href=escape(cssFiles[i]);
-        this.document.getElementsByTagName("head")[0].appendChild(newSS);
+        var html_doc = this.document.getElementsByTagName('head')[0];
+        var css = document.createElement('link');
+        css.setAttribute('rel', 'stylesheet');
+        css.setAttribute('type', 'text/css');
+        css.setAttribute('href', cssFiles[i]);
+        html_doc.appendChild(css);
       } 
     }
   }
+  
 	this.createToolbar = function() {
 		// 1.
 		var toolBar = new Toolbar(this.parentDiv, this, 18);
@@ -1155,7 +1159,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this._onkeyup = function(e) {
 		i_am.fitHeightToVisible();
     
-		// FF onpaste
+		// FF2 and Opera onpaste
 		e = getDocumentEvent(e);
     if((e.ctrlKey && e.keyCode == 86) // e.DOM_VK_V
          || (e.shiftKey && e.keyCode == 45)) /* e.DOM_VK_INSERT */ {
