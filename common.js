@@ -759,6 +759,19 @@ function stopEventPropagation(e) {
 /*********************************************
 * DOM util functions
 **********************************************/
+function getNextSibling(obj) {
+  do obj = obj.nextSibling;
+  while (obj && obj.nodeType != 1);
+  return obj;
+}
+
+function getPreviousSibling(obj) {
+  do obj = obj.previousSibling;
+  while (obj && obj.nodeType != 1);
+  return obj;
+}
+
+
 function insertAfter(parent, newElement, referenceElement) {
   parent.insertBefore(newElement, referenceElement.nextSibling);
 }
