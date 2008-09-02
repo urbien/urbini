@@ -482,11 +482,13 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		var styleStr = this.getStyleString();
 		styleViewDiv.innerHTML = styleStr;
 		// 2. set into a form's field
-		var fieldObj = this.formObj[this.fieldName];
-		if(fieldObj == null) // IE
-		  throw new Error("style sheet editor: missed field " + this.fieldName);
-		  
-		fieldObj.value = styleStr;
+		if (this.formObj) {
+		  var fieldObj = this.formObj[this.fieldName];
+		  if(fieldObj == null) // IE
+		    throw new Error("style sheet editor: missed field " + this.fieldName);
+  		  
+		  fieldObj.value = styleStr;
+		}
 	}
 	
 	// --------------------------------------------
