@@ -6379,13 +6379,17 @@ var ImageAnnotations = {
 /*******************************************************
 * dictionary handler
 ********************************************************/
-var dictionaryHandler = {
+var DictionaryHandler = {
+  isDialogJustDisplayed : false,
+  
   init : function() {
     addEvent(document, "mouseup", this._onmouseup, false);
+    addEvent(document.body, "keyup", this._onkeyup, false);
   },
   // to handle the event if "Alt" key was pressed
   _onmouseup : function(e) {
     e = e || event;
+    var $t = DictionaryHandler;
     if(e.altKey == false)
       return;
     var range;
@@ -6423,10 +6427,19 @@ var dictionaryHandler = {
           }
         }
       }
-
-      dictionaryHandler.translate(e, hotspot, selText);
+      $t.translate(e, hotspot, selText);
+      $t.isDialogJustDisplayed = true;
     }
   },
+  
+  _onkeyup : function(e) {
+    e = e || event;
+    var $t = DictionaryHandler;
+    if (e.keyCode == 18 && $t.isDialogJustDisplayed) // 18 - "Alt"
+      stopEventPropagation(e);
+    $t.isDialogJustDisplayed = false;
+  },
+  
   translate : function(e, hotspot, text) {
     var baseUriO = document.getElementsByTagName('base');
     var baseUri = "";
@@ -6443,12 +6456,18 @@ var dictionaryHandler = {
                + "&.source=" + encodeURIComponent(text);
 
     var div = document.getElementById("pane2");
+    if (!div) {
+      div = document.createElement('div');
+      div.id = "pane2";
+      div.style.position = "absolute";
+      div.style.visibility = "hidden";
+      document.body.appendChild(div);
+    }
     postRequest(e, url, params, div, hotspot, this.onTranslationCallback);
   },
   onTranslationCallback : function(clonedEvent, div, hotspot, responseText) {
     showDialog(clonedEvent, div, hotspot, responseText); //test //"<div><h1>TEST</h1></div>"
   }
-
 }
 /*
 var hideMenu;

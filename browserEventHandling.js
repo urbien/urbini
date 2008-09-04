@@ -67,7 +67,7 @@
         FlashHandler.init();
         
 		    addSpellcheck();
-		    dictionaryHandler.init();
+		    DictionaryHandler.init();
 		    Tooltip.init();
 
         if (typeof addEventOnSchedule != 'undefined')
