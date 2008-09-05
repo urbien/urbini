@@ -505,13 +505,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var div     = self.div;
     var hotspot = self.hotspot;
     // var isMenu = div.id.indexOf('menudiv_') == 0 ? true false;
-    if (div.getAttribute) {
-      var isProcessed = div.getAttribute('eventHandlersAdded');
-      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-        return;
-      div.setAttribute('eventHandlersAdded', 'true');
-    }
-
     if (!Browser.penBased && !Browser.joystickBased) {
       if (Browser.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
         addEvent(div,     'mouseenter',  self.popupOnMouseOver, false);
@@ -606,12 +599,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.popupOnMouseOver = function (e) {
     if (typeof getDocumentEvent == 'undefined') return; // js is not yet fully interpreted by the browser
     e = getDocumentEvent(e); if (!e) return;
-    if (e.getAttribute) {
-      var isProcessed = e.getAttribute('eventProcessed');
-      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-        return stopEventPropagation(e);
-      e.setAttribute('eventProcessed', 'true');
-    }
     var target = getTargetElement(e);
     if (!target)
       return;
@@ -633,12 +620,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.popupOnMouseOut = function (e) {
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
-    if (e.getAttribute) {
-      var isProcessed = e.getAttribute('eventProcessed');
-      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-        return stopEventPropagation(e);
-      e.setAttribute('eventProcessed', 'true');
-    }
 
     var target1 = getEventTarget(e);
     if (target1.tagName.toLowerCase() == 'input')
@@ -661,13 +642,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    */
   this.popupRowOnKeyPress = function(e) {
     e = getDocumentEvent(e); if (!e) return;
-    // in IE for some reason same event comes two times
-    if (e.getAttribute) {
-      var isProcessed = e.getAttribute('eventProcessed');
-      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-        return stopEventPropagation(e);
-      e.setAttribute('eventProcessed', 'true');
-    }
 
     var currentDiv = self.getCurrentDiv();
     var characterCode = getKeyCode(e); // code typed by the user
@@ -747,17 +721,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var tr = getTrNode(target);
     if (!tr)
       return stopEventPropagation(e);
-/*
- * // in both IE and Mozilla on menu click (if menu has onClick handler) onclick
- * event comes one more time var isProcessed =
- * tr.getAttribute('eventProcessed'); if (isProcessed != null && (isProcessed ==
- * 'true' || isProcessed == true)) { tr.setAttribute('eventProcessed', 'false');
- * return stopEventPropagation(e); }
- *  // in IE on menu click (if menu has onClick handler) this same event comes
- * yet another time if (e.getAttribute) { var isProcessed =
- * e.getAttribute('eventProcessed'); if (isProcessed != null && (isProcessed ==
- * 'true' || isProcessed == true)) return stopEventPropagation(e); }
- */
 
     var ret = self.popupRowOnClick1(e, tr, target);
     return ret;
@@ -1188,14 +1151,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.popupRowOnMouseOver = function (e) {
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
-    // in IE for some reason same event comes two times
-    if (e.getAttribute) {
-      var isProcessed = e.getAttribute('eventProcessed');
-      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-        return false;
-      e.setAttribute('eventProcessed', 'true');
-    }
-    // self.setFocus();
+
     var target = getTargetElement(e);
     var tr = getTrNode(target);
 
@@ -1219,14 +1175,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var target = getMouseOutTarget(e);
     if (!target)
       return true;
-
-    // in IE for some reason same event comes two times
-    if (e.getAttribute) {
-      var isProcessed = e.getAttribute('eventProcessed');
-      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-        return false;
-      e.setAttribute('eventProcessed', 'true');
-    }
 
     var tr = getTrNode(target);
     if (!tr)
@@ -1680,23 +1628,6 @@ var FormProcessor = {
     e = getDocumentEvent(e);
     if (!e)
       return;
-  //  Boost.log('popupOnSubmit');
-    /*
-    if (e.eventProcessed)
-      return stopEventPropagation(e);
-    else
-      e.eventProcessed = true;
-    */
-    // prevent duplicate events (happens only in IE)
-    if (e.getAttribute) {
-      var isProcessed = e.getAttribute('eventProcessed');
-      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-        return stopEventPropagation(e);
-      e.setAttribute('eventProcessed', 'true');
-    }
-    else if (e.eventProcessed) {
-      return stopEventPropagation(e);
-    }
 
     var target = getTargetElement(e);
     var form = target;
@@ -2236,13 +2167,6 @@ function hideResetRow(div, currentFormName, originalProp) {
 /* Opens the menu when needed, e.g. on click, on enter
  */
 function menuOnClick(e, target) {
-  // in IE for some reason same event comes two times
-  if (e.getAttribute) {
-    var isProcessed = e.getAttribute('eventProcessed');
-    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-      return stopEventPropagation(e);
-  }
-
   var id = target.id;
   var title;
   if (id.indexOf('menuLink_') == 0)
@@ -2311,12 +2235,6 @@ function resizeWindow(event) {
   if (!event)
     return;
   var e = getDocumentEvent(event);
-  if (e.getAttribute) {
-    var isProcessed = e.getAttribute('eventProcessed');
-    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-      return stopEventPropagation(e);
-    e.setAttribute('eventProcessed', 'true');
-  }
   var div = document.getElementsByTagName('body');
 //  var div = document.getElementById('mobile');
 //  alert('resize: div = ' + div);
@@ -2409,12 +2327,6 @@ var Tooltip = {
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
     window.status = "";
-    if (e.getAttribute) {
-      var isProcessed = e.getAttribute('eventProcessed');
-      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-        return stopEventPropagation(e);
-      e.setAttribute('eventProcessed', 'true');
-    }
     var target = getMouseOutTarget(e);
     if (!target)
       return true;
@@ -2972,11 +2884,18 @@ function onLinkClick(e) {
   if (!anchor)
     return;
 
+  var id = anchor.id;
+
   // with purpose to speed up GUI we handle onmousedown
   if (e.type == "click") {
+    // close popupmenu on its item click
+    var popupDiv = getAncestorByAttribute(anchor, "className", "popMenu");
+    if (popupDiv) 
+      Popup.close0(popupDiv.id)
+
     // 1. stop click event on anchors with href == "about:blank"
     // because we handled it with onmousedown
-    if (anchor.href == "about:blank")
+    if (anchor.href == "about:blank" || id == "-inner")
       return stopEventPropagation(e);
     // 2. default browser behaviour 
     else
@@ -2985,10 +2904,9 @@ function onLinkClick(e) {
 
   linkHrefModifier(e, anchor);
 
-  if (!anchor.id)
+  if (!id)
     return;
 
-  var id = anchor.id;
   var idLen = id.length;
 
   // 1.
@@ -3008,9 +2926,6 @@ function onLinkClick(e) {
         id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
     changeBoolean(e, anchor);
   }
-  // 5.
-//  else
- //   onClick(e, anchor);
 }
 
 function onClickDisplayInner(e, anchor) {
@@ -3019,13 +2934,6 @@ function onClickDisplayInner(e, anchor) {
   if (!anchor || !anchor.id)
     return;
   e = getDocumentEvent(e); if (!e) return;
-  // in IE for some reason same event comes two times
-  if (e.getAttribute) {
-    var isProcessed = e.getAttribute('eventProcessed');
-    if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-      return stopEventPropagation(e);
-  }
-
   var propName = anchor.id.substring(7);
   var r;
   if (propName.indexOf("list.") == 0) {
@@ -7146,12 +7054,6 @@ var WidgetFlip = {
   mousemove : function (e, divId)  {
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
-    if (e.getAttribute) {
-      var isProcessed = e.getAttribute('eventProcessed');
-      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-        return stopEventPropagation(e);
-      e.setAttribute('eventProcessed', 'true');
-    }
     if (this.flipShown)
       return;
     // if the preferences flipper is not already showing...
@@ -7184,13 +7086,6 @@ var WidgetFlip = {
   mouseexit : function (e, divId)  {
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
-
-    if (e.getAttribute) {
-      var isProcessed = e.getAttribute('eventProcessed');
-      if (isProcessed != null && (isProcessed == 'true' || isProcessed == true))
-        return stopEventPropagation(e);
-      e.setAttribute('eventProcessed', 'true');
-    }
     if (!this.flipShown)
       return;
     // fade in the flip widget
