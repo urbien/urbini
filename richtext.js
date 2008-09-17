@@ -1711,3 +1711,6 @@ function TArea(iframeObj, dataFieldId, rtePref) {
   // constructor body
   this.init();
 }
+
+// flag that richtext.js was parsed
+g_loadedJsFiles["richtext.js"] = true;

@@ -84,7 +84,7 @@ Browser.iPhone    = Browser.mobileSafari && agent.indexOf("iPhone") != -1;
 Browser.iPod      = Browser.mobileSafari && agent.indexOf("iPod") != -1;
 var mobileCookie  = readCookie('mobile_mode');
 Browser.mobile    = Browser.android || Browser.mobileSafari || Browser.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
-
+Browser.chrome    = (agent.indexOf("Chrome")) != -1 ? true : false;
 
 // ****************************************************
 // AJAX
@@ -779,6 +779,9 @@ function insertAfter(parent, newElement, referenceElement) {
 function getChildById(parent, id) {
 	return getChildByAttribute(parent, "id", id);
 }
+function getChildByClassName(parent, className) {
+	return getChildByAttribute(parent, "className", className);
+}
 function getChildByAttribute(parent, atribName, attribValue) {
 	if(!parent)
 	  return null;
@@ -826,6 +829,9 @@ function getChildByTagName(parent, tagName) {
 
 function getAncestorById(child, id) {
   return getAncestorByAttribute(child, "id", id);
+}
+function getAncestorByClassName(child, className) {
+  return getAncestorByAttribute(child, "className", className);
 }
 // attribValue - string or array of strings
 function getAncestorByAttribute(child, attribName, attribValue) {
@@ -925,16 +931,21 @@ var ExecJS = {
   runCodeArr : new Array(),
   isWaitingOnReady : false,
   
-  runCode : function(jsCode, /*optional*/refObjId) {
+  runCode : function(jsCode, refObjId, requiredJsFileName) {
     $t = ExecJS;
-    if (typeof refObjId != 'undefined')
+    // check if required JS file was loaded and parsed
+    if (typeof g_loadedJsFiles[requiredJsFileName] == 'undefined' ||
+          typeof g_loadedJsFiles["common.js"] == 'undefined') {
+      setTimeout( function() { ExecJS.runCode(jsCode, refObjId, requiredJsFileName) }, 100); 
+      return;
+    }
+    
+    if (refObjId)
       $t._runRelativeCode(jsCode, refObjId);
     else
       $t.eval(jsCode);
   },
   
-  // 1. prevents error if some JS code was not loaded yet
-  // 2. to use own eval for better JS compression
   eval : function(jsCode) {
     try {
       window.eval(jsCode);
@@ -1001,10 +1012,10 @@ var ExecJS = {
 
   _runOnDocumentReady : function() {
     for(var i = 0; i < ExecJS.runCodeArr.length; i++) {
-      if(ExecJS.isObjectTotallyVisible(ExecJS.runCodeArr[i].refObjId))
-        window.eval(ExecJS.runCodeArr[i].jsCode);
-      }
-   }
+     if(ExecJS.isObjectTotallyVisible(ExecJS.runCodeArr[i].refObjId))
+       window.eval(ExecJS.runCodeArr[i].jsCode);
+    }
+  }
 }
 
 // Cookie utility functions
@@ -1183,3 +1194,5 @@ function getObjectUpperLeft(obj){
   return {x:x, y:y};
 }// eof getObjectUpperLeft
 
+// flag that common.js was parsed
+g_loadedJsFiles["common.js"] = true;

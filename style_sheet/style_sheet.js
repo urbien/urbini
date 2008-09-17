@@ -504,3 +504,6 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 	this.switchBorderCtrls();
 	this.putStyleStr();
 }
+
+// flag that menu.js was parsed
+g_loadedJsFiles["style_sheet.js"] = true;

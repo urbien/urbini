@@ -1001,3 +1001,6 @@ DragResize.prototype.mouseUp = function(e) { with (this)
     if (ondragend) this.ondragend();
     deselect(true);
 }};
+
+//flag that common.js was parsed
+g_loadedJsFiles["PhotoNotes.js"] = true;

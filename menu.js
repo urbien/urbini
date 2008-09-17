@@ -506,16 +506,21 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var hotspot = self.hotspot;
     // var isMenu = div.id.indexOf('menudiv_') == 0 ? true false;
     if (!Browser.penBased && !Browser.joystickBased) {
+     /*
       if (Browser.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
         addEvent(div,     'mouseenter',  self.popupOnMouseOver, false);
         addEvent(div,     'mouseleave',  self.popupOnMouseOut,  false);
         addEvent(hotspot, 'mouseleave',  self.popupOnMouseOut,  false);
       }
       else {
+      */
+      
+   //   debugger
+      
         addEvent(div,     'mouseover', self.popupOnMouseOver, false);
         addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
         addEvent(hotspot, 'mouseout',  self.popupOnMouseOut,  false);
-      }
+     // }
     }
     var firstRow = self.firstRow();
     if (firstRow == null)
@@ -1149,6 +1154,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.popupRowOnMouseOver = function (e) {
+  //debugger
+  
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
 
@@ -1188,22 +1195,30 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.deselectRow = function () {
     if (self.currentRow == null)
       return;
-
+      
+    //self.currentRow.style.backgroundColor = Popup.LightMenuItem;  
     if (self.currentRow.tagName && self.currentRow.tagName.toLowerCase() == 'tr') {
       var tds = self.currentRow.getElementsByTagName('td');
       for (var i=0; i<tds.length; i++) {
         var elem = tds[i];
         elem.style.backgroundColor = Popup.LightMenuItem;
       }
+      
     }
   }
 
   this.selectRow = function () {
+  
+    //debugger
+  
     if (self.currentRow == null)
       return;
 
     if (self.currentRow.id == '$noValue')
       return;
+
+    //self.currentRow.style.backgroundColor = Popup.DarkMenuItem;
+      
 
     if (self.currentRow.tagName && self.currentRow.tagName.toLowerCase() == 'tr') {
       var tds = self.currentRow.getElementsByTagName("td");
@@ -1923,7 +1938,34 @@ function clearOtherPopups(div) {
  * else return getFormNode(f); }
  */
 function getTrNode(elem) {
+ 
+ //return getAncestorByClassName(elem, "menuItemRow"); 
+  
+ // debugger
+ /*
+  var tr = getAncestorByClassName(elem, "menuItemRow");
+  if (tr)
+    return tr;
+  */
+  /*
+  while (elem) {
+    var tr = getAncestorByTagName(elem, "tr");
+    if (tr && tr.className == "menuItemRow")
+      return tr;
+    if (tr == null)
+      return null;
+    elem = tr.parentNode;  
+  }
+  */
+  
+  //var tr2 = getAncestorByTagName(tr, "tr");
+  //return tr2;
+  
+  //alert("getTrNode old code!!!!!!!!!!!!!");
+  //debugger
   var e;
+
+//debugger
 
   var elem_ = elem;
 
@@ -2888,7 +2930,7 @@ function onLinkClick(e) {
 
   // with purpose to speed up GUI we handle onmousedown
   if (e.type == "click") {
-    // close popupmenu on its item click
+    // close popup menu on its item click
     var popupDiv = getAncestorByAttribute(anchor, "className", "popMenu");
     if (popupDiv) 
       Popup.close0(popupDiv.id)
@@ -4424,6 +4466,9 @@ function closeDiv(e, hideDivId) {
   postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, closeDivCallback);
 
   function closeDivCallback(e, div) {
+  
+  debugger
+  
     hideDiv(e, div.id);
     hideDiv(e, div.id + '_back');
     var idx = hideDivId.lastIndexOf('=');
@@ -4507,6 +4552,9 @@ function minimizeRestoreDiv(e, hideDivId, property) {
 }
 // Dummy callback that is called after updating main boolmark
 function hideDiv(e, hideDivId) {
+  
+  debugger
+  
   var div = document.getElementById(hideDivId);
   if (!div)
     return;
@@ -4536,6 +4584,9 @@ function displayDiv(e, showDivId) {
 
 function minMaxAndFlip(e, div) {
   var hideDivId = div.id;
+  
+  debugger
+  
   if (hideDivId.indexOf('_min') != -1) {
     var showDivId = hideDivId.substring(0, hideDivId.length - 4);
     hideDiv(e, showDivId + "_back");
@@ -7115,7 +7166,11 @@ var WidgetFlip = {
     hideDiv(event, divId);
     activateDiv(event, divId + "_back");
     OperaWidget.resizeOnBackside();
-    displayDiv(event, divId + "_back");
+    
+//    debugger
+//    displayDiv(event, divId + "_back");
+showDiv1(event, divId + "_back");
+ //   activateDiv(event, divId + "_back");
   },
 
   /**
@@ -8454,3 +8509,6 @@ function addBeforeProcessing(tbodyId, subject, event) {
   return retCode;
 }
 */
+
+// flag that menu.js was parsed
+g_loadedJsFiles["menu.js"] = true;
