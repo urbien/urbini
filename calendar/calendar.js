@@ -2286,7 +2286,7 @@ var Calendar_popupHandler = {
 		document.onkeyup = this._onkeyup;
 		document.onclick = this._onmouseup;
 
-		this.popupDiv.onmouseover = this._onmouseover;
+//		this.popupDiv.onmouseover = this._onmouseover;
 		this.popupDiv.onmouseout  = this._onmouseout;
 		
 		this.inputObj.onkeyup = this._onkeyup_input;
@@ -2322,7 +2322,8 @@ var Calendar_popupHandler = {
 			return false;
 		while(b != null) {
 			try {
-			  if ((b = b.parentNode) == a) return true;
+			  if ((b = b.parentNode) == a)
+			    return true;
 			}
 			catch(e){ b = null; }
 		}
@@ -2358,12 +2359,19 @@ var Calendar_popupHandler = {
 		var related;
 		if (window.event) related = window.event.toElement;
 		else related = event.relatedTarget;
-		if (Calendar_popupHandler.popupDiv == related || Calendar_popupHandler.contains(Calendar_popupHandler.popupDiv, related))
+
+		if (Calendar_popupHandler.popupDiv == related  ||
+		    Calendar_popupHandler.contains(Calendar_popupHandler.popupDiv, related))
 			clearInterval(Calendar_popupHandler.timerid);
 	},
 	
 	_onmouseout : function(event) {
 		var related;
+		
+		// assign onmouseover handler if mouse return back on the calendar
+		if (Calendar_popupHandler.popupDiv.onmouseover == null)
+		  Calendar_popupHandler.popupDiv.onmouseover = Calendar_popupHandler._onmouseover;
+		
 		if(Calendar_popupHandler.fixed)
 		  return;
 		
