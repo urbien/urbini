@@ -933,9 +933,14 @@ var ExecJS = {
   
   runCode : function(jsCode, refObjId, requiredJsFileName) {
     $t = ExecJS;
+    
     // check if required JS file was loaded and parsed
-    if (typeof g_loadedJsFiles[requiredJsFileName] == 'undefined' ||
-          typeof g_loadedJsFiles["common.js"] == 'undefined') {
+    // ondemandloaded JS-file has requiredJsFileName = null
+    var toWait = false;
+    if (requiredJsFileName && typeof g_loadedJsFiles[requiredJsFileName] == 'undefined')
+      toWait = true;
+    
+    if (toWait || typeof g_loadedJsFiles["common.js"] == 'undefined') {
       setTimeout( function() { ExecJS.runCode(jsCode, refObjId, requiredJsFileName) }, 100); 
       return;
     }
