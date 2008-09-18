@@ -401,9 +401,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.popupClosed = false;
 
     self.deselectRow();
-
     self.setCurrentDiv();
     self.setFocus();
+    
     if (!self.initialized) {
       self.interceptEvents();
       FormProcessor.initForms(self.div);
@@ -514,9 +514,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
       else {
       */
-      
-   //   debugger
-      
+     
         addEvent(div,     'mouseover', self.popupOnMouseOver, false);
         addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
         addEvent(hotspot, 'mouseout',  self.popupOnMouseOut,  false);
@@ -1154,8 +1152,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.popupRowOnMouseOver = function (e) {
-  //debugger
-  
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
 
@@ -1208,9 +1204,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.selectRow = function () {
-  
-    //debugger
-  
     if (self.currentRow == null)
       return;
 
@@ -1599,7 +1592,9 @@ var FormProcessor = {
       addEvent(form, 'submit', this.onSubmit, false);
     }
 
-    this.uiFocus(div);
+    // Set focus only in form. It prevents setting of focus on <input> in menu.
+    if (forms.length != 0)
+      this.uiFocus(div);
   },
 
   uiFocus : function(div) {
@@ -1938,37 +1933,14 @@ function clearOtherPopups(div) {
  * else return getFormNode(f); }
  */
 function getTrNode(elem) {
- 
- //return getAncestorByClassName(elem, "menuItemRow"); 
-  
- // debugger
- /*
-  var tr = getAncestorByClassName(elem, "menuItemRow");
-  if (tr)
-    return tr;
-  */
-  /*
-  while (elem) {
-    var tr = getAncestorByTagName(elem, "tr");
-    if (tr && tr.className == "menuItemRow")
-      return tr;
-    if (tr == null)
-      return null;
-    elem = tr.parentNode;  
-  }
-  */
-  
-  //var tr2 = getAncestorByTagName(tr, "tr");
-  //return tr2;
-  
-  //alert("getTrNode old code!!!!!!!!!!!!!");
-  //debugger
-  var e;
+ // try to get menuItemRow. It helps tp prevent partial item selection in IE.
+ // drawback - it works slow especially in IE.
+ var tr = getAncestorByClassName(elem, "menuItemRow"); 
+ if (tr)
+  return tr; 
 
-//debugger
-
+  // the following old code was left because if "menuItemRow" was not appended in HTML. 
   var elem_ = elem;
-
   // IE workaround for menu item's extra mouseover events coming from FORM elements
   if (elem.length > 1) {
     var elem1;
@@ -4466,9 +4438,6 @@ function closeDiv(e, hideDivId) {
   postRequest(e, url.substring(0, idx), url.substring(idx + 1), div, elm, closeDivCallback);
 
   function closeDivCallback(e, div) {
-  
-  debugger
-  
     hideDiv(e, div.id);
     hideDiv(e, div.id + '_back');
     var idx = hideDivId.lastIndexOf('=');
@@ -4552,9 +4521,6 @@ function minimizeRestoreDiv(e, hideDivId, property) {
 }
 // Dummy callback that is called after updating main boolmark
 function hideDiv(e, hideDivId) {
-  
-  debugger
-  
   var div = document.getElementById(hideDivId);
   if (!div)
     return;
@@ -4584,9 +4550,6 @@ function displayDiv(e, showDivId) {
 
 function minMaxAndFlip(e, div) {
   var hideDivId = div.id;
-  
-  debugger
-  
   if (hideDivId.indexOf('_min') != -1) {
     var showDivId = hideDivId.substring(0, hideDivId.length - 4);
     hideDiv(e, showDivId + "_back");
@@ -7166,11 +7129,8 @@ var WidgetFlip = {
     hideDiv(event, divId);
     activateDiv(event, divId + "_back");
     OperaWidget.resizeOnBackside();
-    
-//    debugger
-//    displayDiv(event, divId + "_back");
-showDiv1(event, divId + "_back");
- //   activateDiv(event, divId + "_back");
+    //displayDiv(event, divId + "_back");
+    showDiv1(event, divId + "_back");
   },
 
   /**
