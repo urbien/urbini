@@ -6,11 +6,11 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 {
 	var IMAGES_FOLDER = "images/wysiwyg/";
 	
-	var FONT_ARR = [{"name":"arial", "value":"arial"}, {"name":"arial black", "value":"arial black"}, {"name":"comic sans ms", "value":"comic sans ms"},
+	var FONT = [{"name":"arial", "value":"arial"}, {"name":"arial black", "value":"arial black"}, {"name":"comic sans ms", "value":"comic sans ms"},
 	 {"name":"courier", "value":"courier"}, {"name":"courier new", "value":"courier new"}, {"name":"georgia", "value":"georgia"}, {"name":"helvetica", "value":"helvetica"}, {"name":"impact", "value":"impact"},
 	 {"name":"palatino", "value":"palatino"}, {"name":"times new roman", "value":"times new roman"}, {"name":"trebuchet ms", "value":"trebuchet ms"}, {"name":"verdana", "value":"verdana"}, {"name":"<i>default</i>", "value":""}];
 	
-	var FONT_SIZE_ARR = [{"name":"9px", "value":"9px"}, {"name":"10px", "value":"10px"}, {"name":"12px", "value":"12px"}, {"name":"14px", "value":"14px"},
+	var FONT_SIZE = [{"name":"9px", "value":"9px"}, {"name":"10px", "value":"10px"}, {"name":"12px", "value":"12px"}, {"name":"14px", "value":"14px"},
 	  {"name":"16px", "value":"16px"}, {"name":"20px", "value":"20px"}, {"name":"24px", "value":"24px"}, {"name":"30px", "value":"30px"}, {"name":"35px", "value":"35px"}, {"name":"<i>default</i>", "value":""}];
 	
 	var BORDER_APPLY_TO = [{name:"none", valueHtml:"", valueScr:""}, {name:"all", valueHtml:"border", valueScr:"border"},{name:"left", valueHtml:"border-left", valueScr:"borderLeft"},
@@ -29,9 +29,11 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 	this.fieldName = fieldName;
 	this.fieldObj = null;
 	
-	this.fontFamilyList = null;
-	this.fontSizeList = null;
-	
+  this.fontBtn = null;
+  this.fontPopup = null;
+  this.sizeBtn = null;
+  this.sizePopup = null;
+
 	this.borderApplyToList = null;
 	this.borderWidthList = null;
 	this.borderStyleList = null;
@@ -56,10 +58,11 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		// 2. create the toolbar.
 		toolBar = new Toolbar(parentDiv, this, 18, true);
 		// 3. create the toolbar's control objects.
+
 		// font family
-		this.fontFamilyList = this.createFontList(toolBar);
-		// font size
-		this.fontSizeList = this.createFontSizeList(toolBar);
+		this.fontBtn = toolBar.appendButton(this.onFontFamily, false, IMAGES_FOLDER + "font.gif", "font");
+		this.sizeBtn = toolBar.appendButton(this.onFontSize, false, IMAGES_FOLDER + "size.gif", "size");
+
 		// bold
 		var boldBtn = toolBar.appendButton(this.onBoldBtn, true, IMAGES_FOLDER + "bold.gif", "bold");
 		if(sampleDiv.style.fontWeight.toLowerCase() == "bold")
@@ -107,42 +110,42 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		return div;
 	}
 	
-	this.createFontList = function(toolBar) {
-		var FONT_SIZE = 14;
-		var FONT_FIELD_WIDTH = 120;
-		var ddList = toolBar.appendDropdownList(FONT_FIELD_WIDTH, "font:", this.onFontFamily);
-		for(var i = 0; i < FONT_ARR.length; i++) {
-			var divTmp = document.createElement('div');
-			divTmp.innerHTML = FONT_ARR[i].name;
-			divTmp.style.fontFamily = FONT_ARR[i].value;
-			divTmp.style.fontSize = FONT_SIZE;
-			ddList.appendItem(divTmp);
+	this.launchFontFamilyPopup = function(btnObj, callback) {
+		if(this.fontPopup == null)
+			this.createFontPopup();
+		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		this.fontPopup.show(btnObj, 'left', callback, parentDlg);
+		return this.fontPopup.div;
+	}
+	this.launchFontSizePopup = function(btnObj, callback) {
+		if(this.sizePopup == null)
+			this.createSizePopup();
+		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		this.sizePopup.show(btnObj, 'left', callback, parentDlg);
+		return this.sizePopup.div;
+	}
+	this.createFontPopup = function() {
+		this.fontPopup = new MyDropdownList();
+		var len = FONT.length;
+		for(var i = 0; i < len; i++) {
+			var itemDiv = document.createElement('div');
+			itemDiv.innerHTML = FONT[i].value;
+			itemDiv.style.fontFamily = FONT[i].name;
+			itemDiv.style.fontSize = "14px";
+			this.fontPopup.appendItem(itemDiv);
 		}
-		// set current item in the list
-		var curFont = sampleDiv.style.fontFamily.toLowerCase();
-		var curIdx = this.getMemberArrayIdx(FONT_ARR, curFont);
-		if(curIdx != null)
-			ddList.setSelectedItem(curIdx);
-
-		return ddList;
+	}
+	this.createSizePopup = function() {
+		this.sizePopup = new MyDropdownList();
+		for(var i = 0; i < FONT_SIZE.length; i++) {
+			var itemDiv = document.createElement('div');
+			itemDiv.innerHTML = "<NOBR><span style='font-size:" + FONT_SIZE[i].value + ";'>" + (i + 1) + "</span>"
+				+ " (" + FONT_SIZE[i].name + ")</NOBR>";
+			this.sizePopup.appendItem(itemDiv);
+		}
+		this.sizePopup.setWidth(50);
 	}
 	
-	this.createFontSizeList = function(toolBar) {
-		var FONT_FIELD_WIDTH = 60;
-		var ddList = toolBar.appendDropdownList(FONT_FIELD_WIDTH, "size:", this.onFontSize);
-		for(var i = 0; i < FONT_SIZE_ARR.length; i++) {
-			var divTmp = document.createElement('div');
-			divTmp.innerHTML = FONT_SIZE_ARR[i].name;
-			ddList.appendItem(divTmp);
-		}
-		// set current item in the list
-		var curFontSize = sampleDiv.style.fontSize.toLowerCase();
-		var curIdx = this.getMemberArrayIdx(FONT_SIZE_ARR, curFontSize);
-		if(curIdx != null)
-			ddList.setSelectedItem(curIdx);
-
-		return ddList;
-	}
 	// border
 	this.createBorderApplyTo = function(toolBar) {
    	var BORDER_FIELD_WIDTH = 60;
@@ -230,12 +233,12 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 /*
 		// 1. font family
 		if(sampleDiv.style.fontFamily == "")
-			sampleDiv.style.fontFamily = FONT_ARR[0];
+			sampleDiv.style.fontFamily = FONT[0];
 		// 2. font size
 		if(sampleDiv.style.fontSize == "")
-			sampleDiv.style.fontSize = FONT_SIZE_ARR[5];
+			sampleDiv.style.fontSize = FONT_SIZE[5];
 		if(sampleDiv.style.fontSize == "12pt")
-			sampleDiv.style.fontSize = FONT_SIZE_ARR[5];
+			sampleDiv.style.fontSize = FONT_SIZE[5];
 		// 3. bold
 		if(sampleDiv.style.fontWeight == "")
 			sampleDiv.style.fontWeight = "normal";
@@ -340,16 +343,12 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
   }
   
 	// HANDLERS ---------------------------
-	this.onFontFamily = function(fontIdx) {
-		sampleDiv.style.fontFamily = FONT_ARR[fontIdx].value;
-		i_am.centeringSampleDiv();
-		i_am.putStyleStr();
+	this.onFontFamily = function() {
+		i_am.launchFontFamilyPopup(i_am.fontBtn, i_am.setFontFamily);
 	}
 
-	this.onFontSize = function(fontSizeIdx) {
-		sampleDiv.style.fontSize = FONT_SIZE_ARR[fontSizeIdx].value;
-		i_am.centeringSampleDiv();
-		i_am.putStyleStr();
+	this.onFontSize = function() {
+		i_am.launchFontSizePopup(i_am.fontBtn, i_am.setFontSize);
 	}
 	
 	this.onBoldBtn = function(isPressed) {
@@ -448,6 +447,17 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 	}
 
 	// "setters" -------------------------
+	this.setFontFamily = function(idx) {
+		sampleDiv.style.fontFamily = FONT[idx].value;
+		i_am.centeringSampleDiv();
+		i_am.putStyleStr();
+	}
+	this.setFontSize = function(idx) {
+		sampleDiv.style.fontSize = FONT_SIZE[idx].value;
+		i_am.centeringSampleDiv();
+		i_am.putStyleStr();
+	}
+
 	this.setFontColor = function(colorStr) {
 		sampleDiv.style.color = colorStr;
 		i_am.putStyleStr();
