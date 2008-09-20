@@ -757,7 +757,7 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 	var FONT_FAMILY = "verdana";
 	var FONT_SIZE = "12px";
 	var IMAGES_FOLDER = "images/wysiwyg/";
-	var FIELD_HEIGHT = 27;
+	var FIELD_HEIGHT = 22;
 	var ARROW_BUTTON_WIDTH = 20;
 	var ARROW_BUTTON_HEIGHT = 20;
 
@@ -803,7 +803,7 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 		this.div.style.fontFamily = FONT_FAMILY;
 		this.div.style.fontSize = FONT_SIZE;
 		this.div.style.paddingLeft = this.div.style.paddingRight = 4;
-		this.div.style.paddingTop = this.div.style.paddingBottom = 3;
+		this.div.style.paddingTop = 1;
 		this.div.style.backgroundColor = this.list.LIST_BACKGROUND;
 		this.div.style.borderWidth = "1px";
 		this.div.style.borderStyle = "solid";
