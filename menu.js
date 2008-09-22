@@ -649,9 +649,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var currentDiv = self.getCurrentDiv();
     var characterCode = getKeyCode(e); // code typed by the user
 
+    // the following is for menu of a tab that allows tab name changing.
     var target = getEventTarget(e);
     if (target.tagName.toLowerCase() == 'input')
-      target = getNextSibling(target.parentNode);
+      return;
 
     var tr = self.currentRow;
     if (!tr)
@@ -1234,7 +1235,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     var table = self.currentRow.parentNode;
     var trs = table.rows;
-    var curIdx = self.currentRow.rowIndex;
+    var curIdx = self.currentRow.sectionRowIndex;
     var nextIdx = curIdx;
 
     for (var i = 1; i < trs.length; i++) {
@@ -1292,7 +1293,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     //var prev = self.currentRow.previousSibling;
     var table = self.currentRow.parentNode;
     var trs = table.rows;
-    var curIdx = self.currentRow.rowIndex;
+    var curIdx = self.currentRow.sectionRowIndex;
     var prevIdx = curIdx;
 
     for (var i = 1; i < trs.length; i++) {
@@ -1592,8 +1593,8 @@ var FormProcessor = {
       addEvent(form, 'submit', this.onSubmit, false);
     }
 
-    // Set focus only in form. It prevents setting of focus on <input> in menu.
-    if (forms.length != 0)
+    // Not set focus in fields of menu. Otherwise arrow keys navigation is broken.
+    if (div && div.className != 'popMenu')
       this.uiFocus(div);
   },
 
