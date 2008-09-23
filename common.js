@@ -906,6 +906,9 @@ function setInnerHtml(div, text) {
     // insert html fragment
     div.innerHTML = text;
   }
+  
+  // execute / download JS code containing in the div content.
+  ExecJS.runDivCode(div);
 }
 
 
@@ -975,22 +978,40 @@ var ExecJS = {
     }
   },
 
-  // evaluates script blocks of the div with className = "ExecJS"
+  // evaluates script blocks
   // contDiv is a div that contain JS code - [dialog].
   runDivCode : function(contDiv) {
     if(!contDiv)
       return;
     var scripts = contDiv.getElementsByTagName('script');
     for(var i = 0; i < scripts.length; i++) {
-      if(//scripts[i].className == "ExecJS" && // evaluate only 1 time.
-        (typeof scripts[i].evaluated == 'undefined' || !scripts[i].evaluated)) {
-        var parent = scripts[i].parentNode;
-        // apply only to visible object
-        if(this.isObjectTotallyVisible(parent)) {
-          var evalStr = scripts[i].text || scripts[i].innerHTML;
-          window.eval(evalStr);
-          scripts[i].evaluated = true;
+      if(typeof scripts[i].evaluated == 'undefined' || !scripts[i].evaluated) {
+        // 1. external JS code
+        var src = scripts[i].src;
+        if (src && src.length != 0) {
+          // the same code as in menu.onDemand.includeJS()
+          var html_doc = document.getElementsByTagName('head')[0];
+          var js = document.createElement('script');
+          js.setAttribute('type', 'text/javascript');
+          
+          // suppress minify
+          if(location.href.indexOf("-minify-js=n") != -1)
+            fileName = fileName.replace("m.js", ".js")
+            
+          js.setAttribute('src', src);
+          html_doc.appendChild(js);
         }
+        // 2. inner JS block
+        else {
+          var parent = scripts[i].parentNode;
+          // apply only to visible object
+          if(this.isObjectTotallyVisible(parent)) {
+            var evalStr = scripts[i].text || scripts[i].innerHTML;
+            window.eval(evalStr);
+            scripts[i].evaluated = true;
+          }
+        }
+        
       }
     }
   },
