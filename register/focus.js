@@ -5,9 +5,14 @@
       jstest.value = "ok"; // server will know that JavaScript worked
       var u = f.elements['j_username'];
       if (u && u.type && u.type != 'hidden')
-         try {u.focus();} catch (e) {}
+         try {
+         u.focus();} catch (e) { }
     }
+    else {
+      // wait for the form ready
+      setTimeout(focusOnUserName, 50);
+    }
+    
     return true;
   }
-  //addEvent(window, 'load', function() {setTimeout(focusOnUserName, 0);}, false);
-  window.onload = focusOnUserName;
+  setTimeout(focusOnUserName, 50);
