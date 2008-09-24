@@ -403,7 +403,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.deselectRow();
     self.setCurrentDiv();
     self.setFocus();
-    
+
     if (!self.initialized) {
       self.interceptEvents();
       FormProcessor.initForms(self.div);
@@ -514,7 +514,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
       else {
       */
-     
+
         addEvent(div,     'mouseover', self.popupOnMouseOver, false);
         addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
         addEvent(hotspot, 'mouseout',  self.popupOnMouseOut,  false);
@@ -1192,15 +1192,15 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.deselectRow = function () {
     if (self.currentRow == null)
       return;
-      
-    //self.currentRow.style.backgroundColor = Popup.LightMenuItem;  
+
+    //self.currentRow.style.backgroundColor = Popup.LightMenuItem;
     if (self.currentRow.tagName && self.currentRow.tagName.toLowerCase() == 'tr') {
       var tds = self.currentRow.getElementsByTagName('td');
       for (var i=0; i<tds.length; i++) {
         var elem = tds[i];
         elem.style.backgroundColor = Popup.LightMenuItem;
       }
-      
+
     }
   }
 
@@ -1212,7 +1212,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return;
 
     //self.currentRow.style.backgroundColor = Popup.DarkMenuItem;
-      
+
 
     if (self.currentRow.tagName && self.currentRow.tagName.toLowerCase() == 'tr') {
       var tds = self.currentRow.getElementsByTagName("td");
@@ -1838,7 +1838,7 @@ var FormProcessor = {
         if (!value)
           continue;
   // if (currentFormName != "horizontalFilter") {
-        if (value == ''  ||  value == "All")
+        if (value == '')
           continue;
         if (type == "checkbox" || type == "radio" ) {
           if (field.checked == false)
@@ -1936,11 +1936,11 @@ function clearOtherPopups(div) {
 function getTrNode(elem) {
  // try to get menuItemRow. It helps tp prevent partial item selection in IE.
  // drawback - it works slow especially in IE.
- var tr = getAncestorByClassName(elem, "menuItemRow"); 
+ var tr = getAncestorByClassName(elem, "menuItemRow");
  if (tr)
-  return tr; 
+  return tr;
 
-  // the following old code was left because if "menuItemRow" was not appended in HTML. 
+  // the following old code was left because if "menuItemRow" was not appended in HTML.
   var elem_ = elem;
   // IE workaround for menu item's extra mouseover events coming from FORM elements
   if (elem.length > 1) {
@@ -2905,16 +2905,16 @@ function onLinkClick(e) {
   if (e.type == "click") {
     // close popup menu on its item click
     var popupDiv = getAncestorByAttribute(anchor, "className", "popMenu");
-    if (popupDiv) 
+    if (popupDiv)
       Popup.close0(popupDiv.id)
 
     // 1. stop click event on anchors with href == "about:blank"
     // because we handled it with onmousedown
     if (anchor.href == "about:blank" || id == "-inner")
       return stopEventPropagation(e);
-    // 2. default browser behaviour 
+    // 2. default browser behaviour
     else
-      return;  
+      return;
   }
 
   linkHrefModifier(e, anchor);
@@ -6304,7 +6304,7 @@ var ImageAnnotations = {
 ********************************************************/
 var DictionaryHandler = {
   isDialogJustDisplayed : false,
-  
+
   init : function() {
     addEvent(document, "mouseup", this._onmouseup, false);
     addEvent(document.body, "keyup", this._onkeyup, false);
@@ -6354,7 +6354,7 @@ var DictionaryHandler = {
       $t.isDialogJustDisplayed = true;
     }
   },
-  
+
   _onkeyup : function(e) {
     e = e || event;
     var $t = DictionaryHandler;
@@ -6362,7 +6362,7 @@ var DictionaryHandler = {
       stopEventPropagation(e);
     $t.isDialogJustDisplayed = false;
   },
-  
+
   translate : function(e, hotspot, text) {
     var baseUriO = document.getElementsByTagName('base');
     var baseUri = "";
@@ -8179,11 +8179,11 @@ var LoadOnDemand = {
       var html_doc = document.getElementsByTagName('head')[0];
       var js = document.createElement('script');
       js.setAttribute('type', 'text/javascript');
-      
+
       // suppress minify
       if(location.href.indexOf("-minify-js=n") != -1)
         fileName = fileName.replace("m.js", ".js")
-        
+
       js.setAttribute('src', fileName);
       html_doc.appendChild(js);
       return false;
