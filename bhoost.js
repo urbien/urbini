@@ -28,6 +28,7 @@ var Boost = {
   init:  function() {
     var $t = Boost;
     var needHandler;
+    
     if (typeof jsiEventManager != 'undefined') {
       $t.eventManager         = jsiEventManager;
     }
@@ -1183,7 +1184,7 @@ var Boost = {
         $t.curHash = hashVal;
     }
 
-    if (hashVal != $t.curHash) {
+    if ($t.curHash && hashVal != $t.curHash) {
       // check back or forward
       if ($t.browsingHistory &&
             $t.browsingHistory[$t.browsingHistoryPos - 1] == hashVal) {
@@ -1199,9 +1200,8 @@ var Boost = {
       $t.curHash = hashVal;
       Mobile.changePresentationItemsState();
     }
-    setTimeout($t.checkLocation, 300);
+    setTimeout($t.checkLocation, 100);
   },
-
 
   showHistoryView : function() {
     var TOP_OFFSET = 100; // for "big" topBar
@@ -1626,10 +1626,10 @@ var Boost = {
   },
 
   // browsing history forward and backward
-  // nativeHistoryMove: default = true
-  oneStep: function(e, step, nativeHistoryMove) {
-    if (typeof nativeHistoryMove == 'undefined')
-      nativeHistoryMove = true;
+  // softKeyPressed: default = true
+  oneStep: function(e, step, softKeyPressed) {
+    if (typeof softKeyPressed == 'undefined')
+      softKeyPressed = true;
     var optionsDiv = document.getElementById('menu_Options');
     // options menu opened no passes in history
     if (optionsDiv && optionsDiv.style.visibility == "visible")
@@ -1647,6 +1647,7 @@ var Boost = {
       else
         return;
     }
+
     var url = $t.browsingHistory[$t.browsingHistoryPos];
     if (!url) {
       $t.browsingHistoryPos -= step;
@@ -1667,8 +1668,22 @@ var Boost = {
 //      if (Popup.android)
 //        Boost.browserHistory.writeHistory(url, title);
       Boost.log("starting sliding");
-      if (nativeHistoryMove)
-        history.go(step);
+      
+      if (softKeyPressed) {
+				$t.curHash = null;
+				history.go(step);
+        
+        var hashVal;
+        if (Browser.gecko)
+					hashVal = location.hash.substr(1);
+				else
+					hashVal = decodeURIComponent(location.hash).substr(1);
+				if (hashVal.length == 0) {
+					hashVal = location.href;
+				}
+					$t.curHash = hashVal;
+			}
+      
       MobilePageAnimation.showPage(currentDiv, div, step < 0);
     }
     if (e)
@@ -1814,11 +1829,6 @@ var MobilePageAnimation = {
   showPage : function(curDiv, newDiv, isBack) {
     if (!this.isDomLoaded)
         return;
-
-    if (this.curDiv != null) {
-      this.curDiv.style.visibility = "hidden";
-      this.curDiv.style.display = "none";
-    }
 
     if(!curDiv || !newDiv)
       return;
