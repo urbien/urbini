@@ -403,7 +403,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.deselectRow();
     self.setCurrentDiv();
     self.setFocus();
-
+    
     if (!self.initialized) {
       self.interceptEvents();
       FormProcessor.initForms(self.div);
@@ -595,7 +595,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
     }
   }
-
   /**
    * Popup's on mouseover handler
    */
@@ -2405,6 +2404,8 @@ var Tooltip = {
 * ListBoxesHandler
 ***************************************/
 var ListBoxesHandler = {
+  gotFocus : false,
+  
   init : function(form) {
     for (var j = 0; j < form.elements.length; j++) {
       var elem = form.elements[j];
@@ -2413,8 +2414,8 @@ var ListBoxesHandler = {
           elem.id) {                                         // and those that
 
         addEvent(elem, 'keydown',    this.autoCompleteOnKeyDown,     false);
+        addEvent(elem, 'click',      this.autoCompleteOnFocus,       false);
         addEvent(elem, 'focus',      this.autoCompleteOnFocus,       false);
-        addEvent(elem, 'blur',       this.autoCompleteOnBlur,        false);
         addEvent(elem, 'mouseout',   this.autoCompleteOnMouseout,    false);
         // addEvent(elem, 'change', onFormFieldChange, false);
         // addEvent(elem, 'blur', onFormFieldChange, false);
@@ -2451,28 +2452,31 @@ var ListBoxesHandler = {
     return ListBoxesHandler.autoComplete(e);
   },
 
+  // select text in a field if it contains initial value
+  // does it on click event only if previously came focus event
   autoCompleteOnFocus : function(e) {
     var target = getTargetElement(e);
     if (!target)
       return;
-
-    if (target.internalFocus) {
-      target.internalFocus = false;
-      return true;
-    }
-
-    // prevent issuing select() if we got onfocus because browser window was
-    // minimized and then restored
-    if (target.value != target.lastText)
-      target.select();
-    return true;
-  },
-
-  autoCompleteOnBlur : function(e) {
-    var target = getTargetElement(e);
-    if (!target)
+    
+    if (e.type.toLowerCase() == "focus") {
+      ListBoxesHandler.gotFocus = true;
       return;
-    target.lastText = target.value;
+    }
+    else if (ListBoxesHandler.gotFocus == false)
+      return;
+
+    var initValue = target.getAttribute("INIT_VALUE");
+    if (!initValue) {
+      initValue = target.value;
+      target.setAttribute("INIT_VALUE", initValue);
+    }
+    
+    if (initValue == target.value)  
+      target.select();
+      
+    ListBoxesHandler.gotFocus = false;
+    return true;
   },
   autoCompleteOnMouseout : function(e) {
     if (typeof getMouseOutTarget == 'undefined') return;
