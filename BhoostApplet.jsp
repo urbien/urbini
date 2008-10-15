@@ -1,5 +1,5 @@
 <div>
-    <!--APPLET code="com.fog.BhoostApplet" codebase="applets" archive="jsi.jar,smack.jar,smackx.jar" width="1" height="1" name="BhoostApplet" MAYSCRIPT>
+    <!--APPLET code="bhoost.BhoostApplet" codebase="applets" archive="jsi.jar,smack.jar,smackx.jar" width="1" height="1" name="BhoostApplet" MAYSCRIPT>
        To use this page you need to enable Java in your browser. Java version should be 1.4 or higher.
     </APPLET-->
     <OBJECT classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" width="1" height="1">
