@@ -21,14 +21,18 @@
       <center><input type="submit" name="submit" /></center>
     </form>
     </td>
-</tr>
-</table>
-
-
+    <td width="10%" id="rightPanelPropertySheet" valign="top" align="left">
+      <br/>
+      <menuBar id="menuBar1">
+      <rightPanelPropertySheet />
+      </menuBar>
+    </td>
+  </tr>
+  </table>
 </td></tr>
 </table>
 </td></tr>
 </table>
 <br />
-<br />
 
+</div>
