@@ -9,7 +9,7 @@
 <center>
 <h1>
 <webFolder
-      href=""
+      href="server"
       text="Browse server directories via Web Folders"
       />
 </h1>
