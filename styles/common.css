@@ -1444,3 +1444,11 @@ tr.printHeader {border:solid #808080 1px; background:url(../images/bg-green-to-w
 
 
 .invoice {border: 1px solid #808080;}
+
+table.printFB {
+  border-bottom: 1px solid #C0C9D7;
+  border-left:   1px solid #C0C9D7;
+  border-right:  1px solid #AFC4D5;
+  border-top:    1px solid #AFC4D5;
+  padding-left:4px;padding-right:3px;padding-top:2px;padding-bottom:2px;
+}
