@@ -6,7 +6,7 @@
 
   <body id="body" login="true">
     
-     <a href="robotDetector" style="visibility:hidden;display:none">Hi robot</a>
+     <robotDetector/>
     
     <include name="include/commonHeader.jsp"/>
 
