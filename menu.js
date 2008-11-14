@@ -1781,16 +1781,15 @@ var FormProcessor = {
     if (!action)
       form.action = "FormRedirect";
 
-    if (pane2  &&  pane2.contains(form))  {   // dialog?
-      setDivInvisible(pane2, dialogIframe);
-    }
-
     // if current form is inner dialog - submit as AJAX request
     // upon AJAX response we will be able to choose between repainting the dialog
     // or the whole page
-    if (pane2  &&  pane2.contains(form))  {   // inner dialog?
-      postRequest(e, url, params, pane2, getTargetElement(e), showDialog);
-      return stopEventPropagation(e);
+    if (pane2  &&  pane2.contains(form))  {
+      stopEventPropagation(e);
+      setDivInvisible(pane2, dialogIframe);
+      var target = getTargetElement(e);
+      postRequest(e, url, params, pane2, target, showDialog);
+      return false;
     }
     else {
       return true; // tell browser to go ahead and continue processing this
@@ -2929,7 +2928,7 @@ function onLinkClick(e) {
   var idLen = id.length;
 
   // 1.
-  if (id.startsWith("-inner.")) {
+  if (id.startsWith("-inner")) {
     onClickDisplayInner(e, anchor);
   }
   // 2.
@@ -2955,6 +2954,7 @@ function onClickDisplayInner(e, anchor) {
   e = getDocumentEvent(e); if (!e) return;
   var propName = anchor.id.substring(7);
   var r;
+  
   if (propName.indexOf("list.") == 0) {
 // var strippedProp = propName.substring(5);
 // var ul = document.getElementById(strippedProp);
@@ -3021,8 +3021,8 @@ function linkHrefModifier(e, link) {
     document.location.href = link.href;
     return rc;
   }
-  else if (link.id  &&  link.id.startsWith('-inner')) {      // display as on-page dialog
-    return onClickDisplayInner(e, link);
+  else if (link.id  &&  link.id.startsWith('-inner')) {
+    return; 
   }
 
   var idx = link.href.indexOf("&-ulId=");
