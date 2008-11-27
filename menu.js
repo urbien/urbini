@@ -1792,8 +1792,8 @@ var FormProcessor = {
       return false;
     }
     else {
-      return true; // tell browser to go ahead and continue processing this
-                    // submit request
+      // tell browser to continue processing this submit.
+      return true; 
     }
   },
 
@@ -1810,10 +1810,19 @@ var FormProcessor = {
     // send all fields of FrequencyPE
     var isFrequencyPE = (getAncestorById(fields[0], "frequencyPE") != null);
 
-    for (var i=0; i<fields.length; i++) {
-      var field = fields[i];
+    // use idx and len because removeChild reduces fields collection
+    var idx = -1;
+    var len = fields.length;
+    var removedFieldName = "";
+    
+    for (var i = 0; i < len; i++) {
+      idx++;
+
+      var field = fields[idx];
+      
       var value = field.value;
       var name  = field.name;
+      
       if (exclude &&  exclude[name])
         continue;
       var type  = field.type;
@@ -1824,11 +1833,26 @@ var FormProcessor = {
       if (type == "submit")
         continue;
 
+      // remove not changed fields
       if (!allFields && !isFrequencyPE) {
         if (!this.wasFormFieldModified(field)) {
+         // 1. not 'hidden'
          if (field.type != 'hidden') {
+           removedFieldName = name;
            field.parentNode.removeChild(field);
+           idx--;
          }
+         // 2. 'hidden' (with suffixes _select, _verified, _class)
+         else if (name.indexOf(removedFieldName) != -1) {
+           field.parentNode.removeChild(field);
+           idx--;
+         }
+         // 3. hidden field containing RTE content
+         else if (field.id == "rte_data") {
+           field.parentNode.removeChild(field);
+           idx--;
+         }
+
          continue;
         }
       }
