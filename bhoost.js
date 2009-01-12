@@ -1795,9 +1795,10 @@ var Boost = {
 }
 
 
-/**********************************
+/**********************************************
  * MobilePageAnimation
- **********************************/
+ * + checks orientation and fit page width
+ **********************************************/
 var MobilePageAnimation = {
   INTERVAL : 0, // ms
   STEPS_NUM : 6,
@@ -1823,8 +1824,10 @@ var MobilePageAnimation = {
     if (div) {
       div.style.width = this.wndWidth;
       div.position = "absolute";
+      this.curDiv = div;
       this.pageTopOffset = getTop(div);
     }
+    setTimeout(this.checkOrientation, 200);
   },
   showPage : function(curDiv, newDiv, isBack) {
     if (!this.isDomLoaded)
@@ -1839,7 +1842,9 @@ var MobilePageAnimation = {
       this.rightToLeft = true;
     else
       this.rightToLeft = false;
-
+    
+    // hides the location bar
+    scrollTo(0, 1)
     setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
   },
 
@@ -1852,9 +1857,6 @@ var MobilePageAnimation = {
     var newDivStl = thisObj.newDiv.style;
     var curDivStl = thisObj.curDiv.style;
     var x;
-
-   // var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM)
-   //    * 1.6 * Math.abs(Math.sin(thisObj.step/thisObj.STEPS_NUM * Math.PI));
 
     var arg = (thisObj.step - thisObj.STEPS_NUM / 2) / 1.5;
     var delta = thisObj.wndWidth / 2.6 * Math.exp(-arg*arg);
@@ -1900,25 +1902,26 @@ var MobilePageAnimation = {
     else { // stop animation
       thisObj.curDiv.style.visibility = "hidden";
       thisObj.curDiv.style.display = "none";
-      thisObj.curDiv = null;
       thisObj.totalOffset = 0;
       thisObj.step = 1;
       Boost.view.setProgressIndeterminate(false);
       if (typeof Boost.view.refocus != 'undefined')
         Boost.view.refocus();
-      /*
-      var elms = currentDiv.childNodes;
-      for (var i=0; i<elms.length; i++) {
-        if (elms[i].nodeType == 3) {
-          elms[i].select();
-          break;
-        }
-      }
-      */
     }
   },
   getPageTopOffset : function() {
     return this.pageTopOffset;
+  },
+  
+  checkOrientation : function() {
+    var $t = MobilePageAnimation;
+    var wndWidth = Mobile.getScreenWidth();
+    
+    if (wndWidth != $t.wndWidth) {
+      $t.wndWidth = wndWidth;
+      $t.curDiv.style.width = wndWidth;
+    }
+    setTimeout($t.checkOrientation, 200);
   }
 }
 
