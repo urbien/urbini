@@ -8,6 +8,10 @@
 		<br/><br/>
 		
 		You are invited to receive alerts for the <property name="forum" type="y"/> <property name="forum" href="y"/>
+		<br/>
+		To subscribe please click <subscribe property="accepted" value="true"/>
+		<br/>
+		You can modify your subscription alert level or unsubscribe at any time.
   </td>
 	<td align="right" valign="top">
 		<a href="#"><IMG src="icons/logo-large.gif" border="0" height="32" align="right" /></a>
@@ -19,11 +23,6 @@
 		<propertySheet name="forum"/>
 		
 		<newComment/>
-		<br/>
-		
-		To subscribe please click <subscribe property="accepted" value="true"/>
-		<br/>
-		You can modify your subscription alert level or unsubscribe at any time.
 		<br/>
 		<br/>
 		Customer Service
