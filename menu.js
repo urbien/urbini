@@ -2939,7 +2939,10 @@ function onLinkClick(e) {
     // because we handled it with onmousedown
     if (anchor.href == "about:blank" || id == "-inner")
       return stopEventPropagation(e);
-    // 2. default browser behaviour
+    // 2.  stop click event if it made with shift or ctrl key
+    else if(e.shiftKey || e.ctrlKey) 
+      return stopEventPropagation(e);
+    // 3. default browser behaviour
     else
       return;
   }
