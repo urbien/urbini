@@ -36,7 +36,7 @@
 		    <table width="100%">
 		      <tr>
 		      <td align="middle" itype="http://www.hudsonfog.com/voc/hospitality/spa/TicketItem">
-		   	    <a href="$this"><property name="customer.firstName"/>&#160;<property name="customer.lastName"/>&#160;<property name="ticketNumber"/>&#160;<property name="name"/></a>&#160;<property name="locker"/>
+		   	    <a href="$this"><property name="customer.firstName"/>&#160;<property name="customer.lastName"/>&#160;<property name="ticketNumber"/>&#160;<property name="name"/></a>&#160;<property name="locker"/></a>
 		     	</td>
 		     	</tr>
 		      <tr itype="http://www.hudsonfog.com/voc/hospitality/orders/BarItem">
