@@ -1836,14 +1836,23 @@ var FormProcessor = {
       // remove not changed fields
       if (!allFields && !isFrequencyPE) {
         if (!this.wasFormFieldModified(field)) {
+          var doRemove = true;
          // 1. not 'hidden'
          if (field.type != 'hidden') {
-           removedFieldName = name;
-           field.parentNode.removeChild(field);
-           idx--;
+           // HACK for data entry shipments/invoices
+           if (field.type == 'checkbox') {
+             var durl = document.location.href;
+             if (durl  &&  (durl.indexOf("createDEResourceList.html") || durl.indexOf("createParallelDEResourceList.html")))
+               doRemove = false;
+           }
+           if (doRemove) {
+             removedFieldName = name;
+             field.parentNode.removeChild(field);
+             idx--;
+           }
          }
          // 2. 'hidden' (with suffixes _select, _verified, _class)
-         else if (name.indexOf(removedFieldName) != -1) {
+         else if (removedFieldName != ""  &&  name.indexOf(removedFieldName) != -1) {
            field.parentNode.removeChild(field);
            idx--;
          }
@@ -1852,8 +1861,8 @@ var FormProcessor = {
            field.parentNode.removeChild(field);
            idx--;
          }
-
-         continue;
+         if (doRemove)
+           continue;
         }
       }
       else {
@@ -1872,8 +1881,11 @@ var FormProcessor = {
   // }
       if (name == "type")
         p += "&" + name + "=" + value;
-      else
+      else {
+        if (name.indexOf("http") == 0)
+          name = encodeURIComponent(name);
         p += "&" + name + "=" + encodeURIComponent(value);
+      }
     }
     return p;
   },
