@@ -961,7 +961,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var text = this.getDataField().value;
 
 		this.putContent(text);
-		this.initHtml = this.getHtmlContent();
+		this.initHtml = this.getHtmlContent(false);
 	}
 	// putContent
 	this.putContent = function(text) {
@@ -1007,7 +1007,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 		return true;
 	}
-	this.getHtmlContent = function() {
+	this.getHtmlContent = function(toCheckOnEmty) {
 	  var content = "";
 		if(this.isSourceView) {
 				if(typeof this.document.body.innerText == 'undefined')
@@ -1019,6 +1019,14 @@ function Rte(iframeObj, dataFieldId, rtePref) {
  			content =  this.document.body.innerHTML;
 	  }
 
+    // if there is no text (only tags and invisible symbols) then return empty string.
+  	if (typeof toCheckOnEmty == 'undefined' || toCheckOnEmty) {
+  	  var tmp = content.plainText();
+	    tmp = tmp.replace(/&nbsp;| |\t|\n|\f|\r|\x0B]/g, "");
+	    if(tmp.length == 0)
+	      return "";
+    }
+    
 		return content;
 	}
 
