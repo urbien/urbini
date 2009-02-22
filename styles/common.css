@@ -194,8 +194,8 @@ img.fade {
 /* ----- End of Buttons ----- */
 
 /* -- powered by on blue, larger letters */
-.large-poweredBy   {padding-left:4px; padding-top:6px; font-family:Times; font-size:18pt; color:#FFFFFF; text-decoration: none;}
-.large-poweredBy-b {padding-left:0px; padding-top:6px; font-family:Times; font-size:18pt; color:#94C7F1; text-decoration: none;}
+.large-poweredBy   {padding-left:4px; padding-top:6px; font-family:Arial; font-size:14pt; color:#FFFFFF; text-decoration: none;}
+.large-poweredBy-b {padding-left:0px; padding-top:6px; font-family:Arial; font-size:14pt; color:#94C7F1; text-decoration: none;}
 
 /* -- powered by on white */
 .poweredBy     {font-family:Times; font-size:8pt; color:#4088CF; text-decoration: none;}
@@ -455,6 +455,9 @@ a:hover { text-decoration: underline; color: #3399FF; }
 
 input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 .text {font-size:0.9em; font-family:arial,sans-serif;font-weight:bold;}
+
+.ftsq {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:1.2em; font-weight:bold;vertical-align:middle;}
+/*.ftsq {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:1.2em; font-weight:bold;vertical-align:middle;}*/
 
 .select	{border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;background-color:#D6E7EF;font-size:1em}
 .selected	{border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;background-color:fffdc3;font-size:1em}
@@ -1152,7 +1155,7 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 ul.chapter {
   margin:0px; padding-left: 2px; text-indent: 0em; list-style-type:none;
 }
-
+aclv
 ul.chapter a {
   font-family: arial, Verdana, geneva; font-size: 1em; color: #00309C
 }
