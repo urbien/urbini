@@ -3,6 +3,16 @@
 <errorMessage />
 <getResource/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
+	<tr noInner="y" class="ftsLine">
+	  <td>
+	  <table class="ftsq" width="100%">
+	  <tr>
+	    <td><include name="searchText.jsp"/></td><td align="right"><pagingResources /></td>
+	  </tr>
+	  </table>
+	  </td>
+	</tr>
+	<tr><td>&#160;</td></tr>
   <tr>
   <td valign="top">
      <div style="display: inline;">

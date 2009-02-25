@@ -17,7 +17,7 @@
 	  <table bgcolor="#1b62b6">
 	  	<tr><td id="titleBar" dragcontainer="gallery"></td></tr>
 	    <tr valign="top"><td class="largeImage" valign="top"><img id="galleryImage" src="javascript: ;"></img></td></tr>
-	    <!--tr valign="top"><td class="largeImageWithHide" valign="top"><img id="galleryImage" src="javascript: ;"></img><img src="icons/hide.gif" border="0" width="16" height="16" align="top" onclick="return hide('gallery')" style="cursor: pointer;" title="click to close"></img></td></tr-->
+	    <!--tr valign="top"><td class="largeImageWithHide" valign="top"><img id="galleryImage" src="javascript: ;"ap></img><img src="icons/hide.gif" border="0" width="16" height="16" align="top" onclick="return hide('gallery')" style="cursor: pointer;" title="click to close"></img></td></tr-->
 	  </table>
     </div>
 
@@ -25,6 +25,13 @@
       <readOtherSiteInfo />
 			<getResource/>
 			<table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
+		  <tr noInner="y" class="ftsLine"><td>
+			  <table class="ftsq" width="100%">
+			  <tr>
+			    <td><include name="searchText.jsp"/></td>
+			  </tr>
+			  </table>
+		  </td></tr>
 		  <tr>
 		    <td><pagingResources /><include name="${type}_details_main.jsp" alt="propertySheet.jsp" /></td>
 		  </tr>
