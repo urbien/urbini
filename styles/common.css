@@ -411,7 +411,7 @@ tr.rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-whit
 .title {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold;}
 /* paging */
 .paging {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold; vertical-align: top;}
-
+.prevNext {padding-bottom:2px; padding-right:2px; padding-left:2px;}
 tr.dark  {background-color:#eeeeee}
 
 tr.total  {background-color:#ffffe0; font-weight:bold}
@@ -455,9 +455,17 @@ a:hover { text-decoration: underline; color: #3399FF; }
 
 input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 .text {font-size:0.9em; font-family:arial,sans-serif;font-weight:bold;}
+/* FTS category image style */
+.cat  {padding-left: 5px; padding-right: 3px; border: 0}
+.cat1 {FONT-WEIGHT: bold;}
 
-.ftsq {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:1.2em; font-weight:bold;vertical-align:middle;}
-/*.ftsq {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:1.2em; font-weight:bold;vertical-align:middle;}*/
+.ftsq {padding-left:2px; padding-top:2px; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:arial,sans-serif; font-size:1.2em; font-weight:bold;}
+.ftsLine {background: #D6E7EF;}
+
+/* VIEWS */
+table.views {border-bottom: 2px solid #C0C9D7; border-left: 2px solid #C0C9D7; border-right: 2px solid #AFC4D5; border-top:2px solid #AFC4D5;}
+tr.views   {background-color:#ffffe0; cursor: pointer; color:darkblue; text-decoration:none;}
+td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 
 .select	{border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;background-color:#D6E7EF;font-size:1em}
 .selected	{border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;background-color:fffdc3;font-size:1em}
@@ -1040,6 +1048,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .innerPopup {border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7}
 .menuOnClick {background-color: #0055e6; padding-right:3; padding-top:3; padding-bottom:3}
 .toppad {padding-top: 5px; white-space:nowrap}
+.toprightpad {padding-top: 5px; padding-right: 5px; white-space:nowrap}
 .changeCols {display: inline; margin: 0px;}
 /* for displayInline text properties */
 .description {border:solid #808080 2px; border-color: #1b62b6;}
