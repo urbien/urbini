@@ -2,7 +2,7 @@
 <form name="searchForm" method="GET" action="l.html" class="ftSearch">
  <div style="white-space: nowrap;display:inline">
 <table class="ftSearch" cellspacing="0" cellpadding="0" border="0">
-  <tr><td valign="bottom">
+  <tr class="menuLine"><td valign="bottom">
     <input type="hidden" name="-$action" value="searchText" />
     <!--input type="hidden" name="-cat" value="on" /-->
     <input type="text" class="ftsq" size="35" name="-q" value="-- Search --" onclick="onFormFieldClick(searchForm, this)" onChange="onFormFieldChange(searchForm, this, '-- Search --')" onBlur="onFormFieldChange(searchForm, this, '-- Search --')" />

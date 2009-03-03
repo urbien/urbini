@@ -25,13 +25,14 @@
       <readOtherSiteInfo />
 			<getResource/>
 			<table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
-		  <tr noInner="y" class="ftsLine"><td>
+		  <tr noInner="y" class="fts"><td>
 			  <table class="ftsq" width="100%">
 			  <tr>
 			    <td><include name="searchText.jsp"/></td>
 			  </tr>
 			  </table>
-		  </td></tr>
+		  </td>
+		  </tr>
 		  <tr>
 		    <td><pagingResources /><include name="${type}_details_main.jsp" alt="propertySheet.jsp" /></td>
 		  </tr>
