@@ -18,10 +18,10 @@
 
 
 	<table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
-	<tr noInner="y" class="ftsLine"><td colspan="3">
+	<tr noInner="y" class="fts"><td colspan="3">
 	  <table class="ftsq" width="100%">
 	  <tr>
-	    <td><include name="searchText.jsp"/></td><td align="right"><pagingResources /></td>
+	    <td width="99%"><include name="searchText.jsp"/></td><td align="right"><pagingResources /></td>
 	  </tr>
 	  </table>
 	  </td>
