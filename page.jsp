@@ -4,14 +4,14 @@
   </head>
   <body id="body">
 
-  <div>
+  <div class="abc">
     <include name="requiredHeader.jsp"/>
     <getResource/>
     <div id="mainskin" class="blue">
     <include name="menu.jsp"/>
 <hideBlock>
     <table width="100%" border="0" cellspacing="0" cellpadding="3">
-    <tr>
+    <tr class="abc">
       <td valign="top" align="center">
         <include name="${type}_top.jsp"/>          <!-- this jsp will be included in ResourceList page only-->
         <include name="${type}_details_top.jsp"/>  <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
@@ -20,8 +20,8 @@
     </table>
 </hideBlock>
     <filter/>
-    <table width="100%" border="0" cellspacing="0" cellpadding="3">
-    <tr>
+    <table width="100%" height="100%" border="0" cellspacing="0" cellpadding="3">
+    <tr class="abc">
 <hideBlock>
       <include name="${type}_left.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
       <include name="${type}_details_left.jsp"/> <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
