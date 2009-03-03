@@ -40,11 +40,13 @@ a.icotxt img {
 .propLabel:lang(zh) {
   font-family: "Li Sung", MingLiu; font-size:1em;
 }
+	  
 .h1 { font-family: arial, Verdana, geneva;
       font-size: 17px;
       font-weight: bold;
-      color: #00309C;
+      color: #669499;
       text-decoration:none;
+      padding-bottom: 5px;
 	  }
 
 H1 {font-family: arial, Verdana, geneva; font-size: 17px; font-weight: bold;  color: #00309C}
@@ -248,19 +250,19 @@ table.greyBorder {
   }
 
 	.cpTabs TD.left {
-	  background-image:url(../images/skin/rustyrose/tab-left-small.gif);
+	  background-image:url(../images/skin/grey/tab-left.png);
 	  background-repeat: no-repeat;
 	}
 	.cpTabs TD.middle {
-	  background-image:url(../images/skin/rustyrose/tab-middle-small.gif);
+	  background-image:url(../images/skin/grey/tab-middle.png);
 	  background-repeat: repeat-x;
 	  text-align: center;
 	  overflow: hidden;
-    white-space: nowrap;
+      white-space: nowrap;
 	  color: #662d91;
 	}
 	.cpTabs TD.right {
-	  background-image:url(../images/skin/rustyrose/tab-right-small.gif);
+	  background-image:url(../images/skin/grey/tab-right.png);
 	  background-repeat: no-repeat;
 	}
   .cpTabs .left, .right {
@@ -277,11 +279,11 @@ table.greyBorder {
   }
 
 	.currentCpTabs TD.left {
-	  background-image:url(../images/skin/orange/tab-left-medium.gif);
+	  background-image:url(../images/skin/grey/tab-left.png);
 	  background-repeat: no-repeat;
 	}
 	.currentCpTabs TD.middle {
-	  background-image:url(../images/skin/orange/tab-middle-medium.gif);
+	  background-image:url(../images/skin/grey/tab-middle.png);
 	  background-repeat: repeat-x;
 	  text-align: center;
     white-space: nowrap;
@@ -289,12 +291,12 @@ table.greyBorder {
 	  font-weight: bold;
 	}
 	.currentCpTabs TD.right {
-	  background-image:url(../images/skin/orange/tab-right-medium.gif);
+	  background-image:url(../images/skin/grey/tab-right.png);
 	  background-repeat: no-repeat;
 	}
 
   .currentTabTitle {
-	  background-image:url(../images/skin/orange/tab-middle.gif);
+	  background-image:url(../images/skin/grey/tab-middle.png);
 	  background-repeat: repeat-x;
 	  color: #754c24;
 	  font-weight: bold;
@@ -459,6 +461,7 @@ input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 .cat  {padding-left: 5px; padding-right: 3px; border: 0}
 .cat1 {FONT-WEIGHT: bold;}
 
+.fts {background: #EEEEEE}
 .ftsq {padding-left:2px; padding-top:2px; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:arial,sans-serif; font-size:1.2em; font-weight:bold;}
 .ftsLine {background: #D6E7EF;}
 
@@ -507,8 +510,8 @@ Table.comments1 {background-color: #f8f4ef; color: #000000}
 
 /*td.containers {background-color: #f8f4ef; color: #000000}*/
 
-table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #000000}
-
+table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #000000; background: #D6E7E7}
+.fHeader {background: #D6E7E7}
 /* border for read/edit resource properties in non=widget */
 .rop {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
 td.controlPanel {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
@@ -580,6 +583,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .blue  .menuLine {border-top:solid #5d9fc0 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 .blue  .pBGr {border-bottom:solid #808080 1px; border-top:solid #808080 1px; border-collapse: collapse; background:url(../images/bg-green-to-white-gradient.gif); background-repeat:repeat-x; font-weight:bold; font-size:1em; text-align:center; color: darkblue;}
 .blue  .pGr {background:url(../images/bg-green-to-white-gradient.gif); background-repeat:repeat-x; font-weight:bold; font-size:1em; text-align:center; color: darkblue;}
+.blue  .search {background-image:url(../images/skin/blue/tab-middle-current.gif);}
 
 .blue  .embed  {
   background:url(../images/skin/blue/header.png);
@@ -926,10 +930,165 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   background-image:url(../images/skin/grey/tab-left-current.gif);
 	background-repeat: no-repeat;
 }
+.filterLine {background: #E7EBF0}
+/* BLACK */
+.black .line {background-color:#090909}
+.black .rlHeader { border:solid #cfcfcf 1px; background:#5f5f5f; color:#ffffff; font-weight:bold; font-size:8pt;}
+.black .menuLine { background:#5f5f5f; color:#ffffff; font-weight:bold; font-size:8pt;}
+.black .propertySheet {border:solid #cfcfcf 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
+.black .wBBg {border:solid #cfcfcf 1px; background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
+.black .wBg {background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
+.black a {color: #ffffff; font-weight:bold;}
+.black .welcome {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #ffffff; font-size: 8pt; font-weight: bold;}
+.black .rightPanel {border:solid #090909 1px; color: #000000; background: #afafaf}
+.black .filterLine {background: #cfcfcf}
+.black .fts {background: #9f9f9f}
+.black .ftsq {padding-left:2px; padding-top:2px; border-bottom: 1px solid #afafaf; border-left: 1px solid #afafaf; border-right: 1px solid #cfcfcf; border-top:1px solid #cfcfcf; color:#000066; text-decoration:none; font-family:arial,sans-serif; font-size:1.2em; font-weight:bold;}
+.black .ftsLine {background: #909090;}
+.black .widgetTitle {vertical-align:top; color:#ffffff;font-weight:bold}
+.black .button1 {background: #afafaf;border-bottom: 1px solid #afafaf;border-right: 1px solid #afafaf;border-left: 1px solid #cfcfcf;border-top:1px solid #cfcfcf;color:#ffffff;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
+.black .input {background: #dfdfdf; border-bottom: 1px solid #afafaf; border-left: 1px solid #afafaf; border-right: 1px solid #cfcfcf; border-top:1px solid #cfcfcf; color:#000000; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
+.black .dark {background: #9f9f9f; }
+.black .light {background: #afafaf; }
+.black .user  {color:#ffffff; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight:bold; text-decoration:none; font-size:8pt;}
+.black .controlPanel {border:solid #999999 2px; background-color: #cfcfcf; color: #ffffff}
+.black .controlPanel a {color: #003377;}
+.black .bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#5f5f5f;}
+.black .pGr {background:#dfdfdf; font-weight:bold; font-size:1em; text-align:center; color: darkblue;}
+.black .rop {border:solid #cccccc 2px; border-collapse: collapse; background: #afafaf; color: #ffffff; overflow: auto}
 
-.line .td {
+.black .fHeader {background: #cfcfcf}
+
+.black .propLabel {
+  font-family: Verdana, Arial, Helvetica, sans-serif; color: #CEffff; font-size: 8pt; font-weight: bold;
+  white-space: nowrap;
+}
+
+.black .abc {
+	padding: 0;
+	margin: 0;
+	background-color:#7f7f7f;
+	color: #ffffff;
+}
+.black .title {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold;background-color:#cfcfcf;}
+
+.black .dashboardLine {
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+  border-top:solid #5d9fc0 1px; 
+  background: #3f3f3f;
+/*  background:url(../images/bg-green-to-white-gradient.gif);*/
+  background-repeat:repeat-x; 
+  color:#ffffff; 
+  font-weight:bold;
+}
+
+.black .xs { font-family: Verdana, Arial, Helvetica, sans-serif; color: #ffffff; font-size: 8pt; font-weight: normal; white-space: nowrap; }
+.black .xsb { font-family: Verdana, Arial, Helvetica, sans-serif; color: #ffffff; font-size: 8pt; font-weight: bold; white-space: nowrap; }
+
+.black .embed {
+  background:#909090;
+  background-repeat:repeat-x;
+  vertical-align: middle;
+  color:#000000;
+  font-weight:bold;
+  font-size:8pt;
+}
+.black .tabs TD.left {
+  background-image:url(../images/skin/grey/tab-left.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 1px;
+}
+.black .tabs TD.middle {
+  background-image:url(../images/skin/grey/tab-middle.gif);
+  background-repeat: repeat-x;
+  background-position: center;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.black .tabs TD.right {
+  background-image:url(../images/skin/grey/tab-right.gif);
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  width: 1px;
+}
+.black .tabs_current TD.right {
+  background-image:url(../images/skin/grey/tab-right-current.gif);
+  background-repeat: no-repeat;
+}
+.black .tabs_current TD.middle {
+  background-image:url(../images/skin/grey/tab-middle-current.gif);
+  background-repeat: repeat-x;
+}
+.black .tabs_current TD.left {
+  background-image:url(../images/skin/grey/tab-left-current.gif);
+	background-repeat: no-repeat;
+}
+.black .td {
   height: 33px;
 }
+
+
+/* Tabs for control panel and property sheet */
+
+.black  .cpTabs {
+    cursor: pointer;
+    height: 23px;
+  }
+
+.black	.cpTabs TD.left {
+	  background:#7f7f7f;
+	}
+.black	.cpTabs TD.middle {
+	  background-image:url(../images/skin/grey/tab-middle.png);
+	  background-repeat: repeat-x;
+	  text-align: center;
+	  overflow: hidden;
+	  padding-right: 5px;
+	  padding-left: 5px;
+    white-space: nowrap;
+	}
+.black	.cpTabs TD.right {
+	  background:#7f7f7f;
+	}
+
+.black  .cpTabs .left, cpTabs .right {
+    width:1px;
+  }
+
+.black  .currentCpTabs {
+    height: 27px;
+  }
+
+
+.black  .currentCpTabs .left, .currentCpTabs .right {
+    width:1px;
+  }
+
+.black	.currentCpTabs TD.left {
+	  background:#7f7f7f;
+	}
+.black	.currentCpTabs TD.middle {
+	  background-image:url(../images/skin/grey/tab-middle.png);
+	  background-repeat: repeat-x;
+	  text-align: center;
+    white-space: nowrap;
+	  color: #754c24;
+	  font-weight: bold;
+	  padding-right: 5px;
+	  padding-left: 5px;
+	}
+.black	.currentCpTabs TD.right {
+	  background:#7f7f7f;
+	}
+
+
+
+
 /* Scheduling page styles */
 .schedule     {
   border:solid #808080 1px;border-collapse: collapse;
@@ -1052,6 +1211,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .changeCols {display: inline; margin: 0px;}
 /* for displayInline text properties */
 .description {border:solid #808080 2px; border-color: #1b62b6;}
+.blogDivider {border-top: 1px dotted #aaaaaa;}
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
 .innerTitle {font-family:sans-serif, arial;color:#00309C;font-size:12pt;font-weight:bold}
@@ -1263,6 +1423,20 @@ TD.toolbar {
 .menuTitle {
 }
 
+.dashboard {
+  padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:top;
+}
+.dashboardLine {
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+  border-top:solid #5d9fc0 1px; 
+  background: #eeeeee;
+/*  background:url(../images/bg-green-to-white-gradient.gif);*/
+  background-repeat:repeat-x; 
+  color:darkblue;
+  font-weight:bold;
+}
+ 
 .menuTitle td, .menuTitle th {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
 }
