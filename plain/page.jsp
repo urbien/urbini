@@ -10,7 +10,7 @@
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr bgcolor="#F1F1F1">
 	    <td class="welcomeBig" valign="top">
-	      <a href="help.html"> <img src="icons/help.gif" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" align="absmiddle"/></a>
+	      <a href="help.html"> <img src="icons/help.png" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" align="absmiddle"/></a>
 	      <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
 	    </td>
 	    <td valign="middle" nowrap="nowrap"  align="right">
