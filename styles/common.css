@@ -957,7 +957,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .black .pGr {background:#dfdfdf; font-weight:bold; font-size:1em; text-align:center; color: darkblue;}
 .black .rop {border:solid #cccccc 2px; border-collapse: collapse; background: #afafaf; color: #ffffff; overflow: auto}
 
-black .displayInline {
+.black .displayInline {
 	padding: 0;
 	margin: 0;
 	background-color:#7f7f7f;
