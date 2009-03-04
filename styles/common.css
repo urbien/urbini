@@ -440,6 +440,7 @@ span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:
 
 .xs { font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal; white-space: nowrap; }
 .xsb { font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: bold; white-space: nowrap; }
+.xfts { font-family: Arial, Verdana, Helvetica, sans-serif; color: #10106D; font-size: 0.75em; font-weight: normal; white-space: nowrap; }
 
 span.imgTitle {color:#da26cb; font-family:sans-serif, arial; font-size:8pt; font-weight:bold}
 span.duration {color:#037f83; font-family:sans-serif, arial; font-size:8pt; font-weight:bold}
@@ -461,7 +462,6 @@ input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 .cat  {padding-left: 5px; padding-right: 3px; border: 0}
 .cat1 {FONT-WEIGHT: bold;}
 
-.fts {background: #EEEEEE}
 .ftsq {padding-left:2px; padding-top:2px; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:arial,sans-serif; font-size:1.2em; font-weight:bold;}
 .ftsLine {background: #D6E7EF;}
 
@@ -957,6 +957,12 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .black .pGr {background:#dfdfdf; font-weight:bold; font-size:1em; text-align:center; color: darkblue;}
 .black .rop {border:solid #cccccc 2px; border-collapse: collapse; background: #afafaf; color: #ffffff; overflow: auto}
 
+black .displayInline {
+	padding: 0;
+	margin: 0;
+	background-color:#7f7f7f;
+	color: #ffffff;
+}
 .black .fHeader {background: #cfcfcf}
 
 .black .propLabel {
@@ -1603,6 +1609,7 @@ TD.closePopup {
   padding: 0px;
   vertical-align: bottom;
   display:inline;
+  height: 2em;
 }
 .fts {
   font-size: 0.8em;
@@ -1612,6 +1619,8 @@ TD.closePopup {
   color: darkblue;
   margin: 0px;
   padding: 0px;
+  background: #EEEEEE;
+  height: 2em;
 }
 .rl {
   white-space: nowrap;
