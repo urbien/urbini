@@ -28,7 +28,7 @@
 		  <tr noInner="y" class="fts"><td>
 			  <table class="ftsq" width="100%">
 			  <tr>
-			    <td><include name="searchText.jsp"/></td>
+			    <td><fullTextSearchChoice/></td>
 			  </tr>
 			  </table>
 		  </td>
