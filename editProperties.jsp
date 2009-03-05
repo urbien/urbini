@@ -2,9 +2,14 @@
 <errorMessage />
 <getResource/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
-<tr noInner="y" class="ftsLine">
-  <td valign="bottom" style="padding-left:2px;"><include name="searchText.jsp"/></td>
-</tr>
+	<tr noInner="y" class="fts"><td colspan="3">
+	  <table class="ftsq" width="100%">
+	  <tr>
+	    <td width="99%"><fullTextSearchChoice/></td><td align="right"><pagingResources /></td>
+	  </tr>
+	  </table>
+	  </td>
+	</tr>
 <tr><td>&#160;</td></tr>
 <tr>
   <td valign="top" width="90%">
