@@ -938,7 +938,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .black .propertySheet {border:solid #cfcfcf 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
 .black .wBBg {border:solid #cfcfcf 1px; background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
 .black .wBg {background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
-.black a {color: #ffffff; font-weight:bold;}
+.black a {color: #ffffff; font-weight:bold; text-decoration:none}
 .black .welcome {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #ffffff; font-size: 8pt; font-weight: bold;}
 .black .rightPanel {border:solid #090909 1px; color: #000000; background: #afafaf}
 .black .filterLine {background: #cfcfcf}
@@ -956,6 +956,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .black .bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#5f5f5f;}
 .black .pGr {background:#dfdfdf; font-weight:bold; font-size:1em; text-align:center; color: darkblue;}
 .black .rop {border:solid #cccccc 2px; border-collapse: collapse; background: #afafaf; color: #ffffff; overflow: auto}
+.black span.dashboardBlockTitle {font-family:Verdana,sans-serif,arial; font-weight:bold; font-size:1.3em; color:#CEffff;}
 
 .black .displayInline {
 	padding: 0;
