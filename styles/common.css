@@ -1653,3 +1653,18 @@ table.printFB {
   border-top:    1px solid #AFC4D5;
   padding-left:4px;padding-right:3px;padding-top:2px;padding-bottom:2px;
 }
+
+/* captcha */
+.captcha td { padding-left: 25px; }
+.captcha table td { width: 51; height: 72; } /* puzzle td */
+.captcha .a { background-position: 0% 0%; padding: 0; margin: 0;}
+.captcha .b { background-position: 25% 0%; padding: 0; margin: 0;}
+.captcha .c { background-position: 50% 0%; padding: 0; margin: 0;}
+.captcha .d { background-position: 75% 0%; padding: 0; margin: 0;}
+.captcha .e { background-position: 100% 0%; padding: 0; margin: 0;}
+
+.captcha .f { background-position: 0% 100%; padding: 0; margin: 0;}
+.captcha .g { background-position: 25% 100%; padding: 0; margin: 0;}
+.captcha .h { background-position: 50% 100%; padding: 0; margin: 0;}
+.captcha .i { background-position: 75% 100%; padding: 0; margin: 0;}
+.captcha .j { background-position: 100% 100%; padding: 0; margin: 0;}
