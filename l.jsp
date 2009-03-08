@@ -18,13 +18,8 @@
 
 
 	<table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
-	<tr noInner="y" class="fts"><td colspan="3">
-	  <table class="ftsq" width="100%">
-	  <tr>
-	    <td width="99%"><fullTextSearchChoice/></td><td align="right"><pagingResources /></td>
-	  </tr>
-	  </table>
-	  </td>
+	<tr noInner="y" class="fts">
+  	<td colspan="2"><fullTextSearchChoice/></td><td align="right"><pagingResources /></td>
 	</tr>
   <tr height="5"><td></td></tr>
   <tr valign="top">
