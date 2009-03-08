@@ -20,7 +20,7 @@
     </table>
 </hideBlock>
     <filter/>
-    <table width="100%" height="100%" border="0" cellspacing="0" cellpadding="3">
+    <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr class="abc">
 <hideBlock>
       <include name="${type}_left.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
