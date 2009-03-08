@@ -395,6 +395,7 @@ Body {font-family: Verdana, geneva, arial; font-weight: normal; }
 
 tr.rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 /* input.chk {background-color:#cbcbcb; font-size:7pt} */
+.dheader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 
 
 .embedInput {
@@ -935,14 +936,14 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .black .line {background-color:#090909}
 .black .rlHeader { border:solid #cfcfcf 1px; background:#5f5f5f; color:#ffffff; font-weight:bold; font-size:8pt;}
 .black .menuLine { background:#5f5f5f; color:#ffffff; font-weight:bold; font-size:8pt;}
-.black .propertySheet {border:solid #cfcfcf 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow: auto}
+.black .propertySheet {border:solid #cfcfcf 1px; border-collapse: collapse; background-color: #cfcfcf; color: #000000; overflow: auto}
 .black .wBBg {border:solid #cfcfcf 1px; background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
 .black .wBg {background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
 .black a {color: #ffffff; font-weight:bold; text-decoration:none}
 .black .welcome {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #ffffff; font-size: 8pt; font-weight: bold;}
 .black .rightPanel {border:solid #090909 1px; color: #000000; background: #afafaf}
 .black .filterLine {background: #cfcfcf}
-.black .fts {background: #9f9f9f}
+.black .fts {background: #9f9f9f;}
 .black .ftsq {padding-left:2px; padding-top:2px; border-bottom: 1px solid #afafaf; border-left: 1px solid #afafaf; border-right: 1px solid #cfcfcf; border-top:1px solid #cfcfcf; color:#000066; text-decoration:none; font-family:arial,sans-serif; font-size:1.2em; font-weight:bold;}
 .black .ftsLine {background: #909090;}
 .black .widgetTitle {vertical-align:top; color:#ffffff;font-weight:bold}
@@ -1468,8 +1469,8 @@ TD.toolbar {
 	PADDING-LEFT: 8px; width: 10px
 }
 
-.menuItem { }
-.menuItem a { width: 95%; }
+.menuItem { font-weight:normal;}
+.menuItem a { width: 95%; font-weight:normal; }
 
 .menuItemRed {
   color:red;
@@ -1611,6 +1612,7 @@ TD.closePopup {
   vertical-align: bottom;
   display:inline;
   height: 2em;
+  padding: 0px;
 }
 .fts {
   font-size: 0.8em;
@@ -1621,7 +1623,8 @@ TD.closePopup {
   margin: 0px;
   padding: 0px;
   background: #EEEEEE;
-  height: 2em;
+  height: 3em;
+  border: solid #808080 1px
 }
 .rl {
   white-space: nowrap;
