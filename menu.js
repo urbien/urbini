@@ -6833,16 +6833,16 @@ var Dashboard = {
     }
     return false;
   },
+  // returns index in form <index of parent column><index of widget in the column> 
   getWidgetIndex : function(widget) {
-    var dashboard = getAncestorById(widget, this.DASHBOARD_ID);
-    if (!dashboard)
-      return;
-    var divs = dashboard.getElementsByTagName("div");
+    var parentTd = widget.parentNode;
+    var colIdx = parentTd.id.substring('col_'.length);
+    var divs = parentTd.getElementsByTagName("div");
     var idx = 0;
     for (var i = 0; i < divs.length; i++) {
       if (divs[i].className == "widget") {
         if (widget.id == divs[i].id) {
-          return idx;
+          return (colIdx * 10 + (idx + 1));
         }
         idx++;
       }
