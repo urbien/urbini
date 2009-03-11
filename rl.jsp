@@ -1,14 +1,9 @@
 <div>
 <table id="resourceList" width="100%" border="0" cellspacing="0" cellpadding="0">
-	<tr noInner="y" class="ftsLine"><td colspan="3">
-	  <table class="ftsq" width="100%">
-	  <tr>
-	    <td><include name="searchText.jsp"/></td><td align="right"><pagingResources /></td>
-	  </tr>
-	  </table>
-	  </td>
+	<tr noInner="y" class="fts">
+  	<td colspan="2"><fullTextSearchChoice/></td><td align="right"><pagingResources /></td>
 	</tr>
-<tr  valign="top">
+  <tr  valign="top">
   <td valign="top" align="middle" width="110%">
 		<form name="categoryTextSearch">
 			  <searchHistory/>
