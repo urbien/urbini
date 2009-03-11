@@ -1659,7 +1659,7 @@ table.printFB {
 
 /* captcha */
 .captcha td { padding-left: 25px; }
-.captcha table td { width: 51; height: 72; } /* puzzle td */
+.captcha table td { width: 51; height: 50; } /* puzzle td */
 .captcha .a { background-position: 0% 0%; padding: 0; margin: 0;}
 .captcha .b { background-position: 25% 0%; padding: 0; margin: 0;}
 .captcha .c { background-position: 50% 0%; padding: 0; margin: 0;}
