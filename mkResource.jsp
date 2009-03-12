@@ -3,14 +3,8 @@
 <errorMessage />
 <getResource/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
-	<tr noInner="y" class="ftsLine">
-	  <td>
-	  <table class="ftsq" width="100%">
-	  <tr>
-	    <td><include name="searchText.jsp"/></td><td align="right"><pagingResources /></td>
-	  </tr>
-	  </table>
-	  </td>
+	<tr noInner="y" class="fts">
+  	<td colspan="2"><fullTextSearchChoice/></td>
 	</tr>
 	<tr><td>&#160;</td></tr>
   <tr>
@@ -20,6 +14,7 @@
        <tablePropertyList/>
        <div align="right"><span class="xs"><measurement/></span></div>
        <input type="hidden" name="-$action" value="mkResource" />
+         <captcha/>
        <br />
        <div style="text-align: center">
          <input type="submit" name="submit" value="  Submit  " onclick="return saveButtonClicked(event, this);" />
