@@ -439,6 +439,8 @@ span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:16
 span.xl1 {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;color:#000066;}
 span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:16pt;}
 
+.empty {font-weight:bold; font-size:16pt;}
+
 .xs { font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal; white-space: nowrap; }
 .xsb { font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: bold; white-space: nowrap; }
 .xfts { font-family: Arial, Verdana, Helvetica, sans-serif; color: #10106D; font-size: 0.75em; font-weight: normal; white-space: nowrap; }
@@ -463,7 +465,7 @@ input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 .cat  {padding-left: 5px; padding-right: 3px; border: 0}
 .cat1 {FONT-WEIGHT: bold;}
 
-.ftsq {padding-left:2px; padding-top:2px; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:arial,sans-serif; font-size:1.2em; font-weight:bold;}
+.ftsq {padding-left:2px; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:arial,sans-serif; font-size:1.5em; font-weight:bold;}
 .ftsLine {background: #D6E7EF;}
 
 /* VIEWS */
@@ -944,7 +946,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .black .rightPanel {border:solid #090909 1px; color: #000000; background: #afafaf}
 .black .filterLine {background: #cfcfcf}
 .black .fts {background: #9f9f9f;}
-.black .ftsq {padding-left:2px; padding-top:2px; border-bottom: 1px solid #afafaf; border-left: 1px solid #afafaf; border-right: 1px solid #cfcfcf; border-top:1px solid #cfcfcf; color:#000066; text-decoration:none; font-family:arial,sans-serif; font-size:1.2em; font-weight:bold;}
+.black .ftsq {padding-left:2px; border-bottom: 1px solid #afafaf; border-left: 1px solid #afafaf; border-right: 1px solid #cfcfcf; border-top:1px solid #cfcfcf; color:#000066; text-decoration:none; font-family:arial,sans-serif; font-size:1.2em; font-weight:bold;}
 .black .ftsLine {background: #909090;}
 .black .widgetTitle {vertical-align:top; color:#ffffff;font-weight:bold}
 .black .button1 {background: #afafaf;border-bottom: 1px solid #afafaf;border-right: 1px solid #afafaf;border-left: 1px solid #cfcfcf;border-top:1px solid #cfcfcf;color:#ffffff;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
@@ -1323,6 +1325,7 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 /* icon followed by text */
 .itxt { vertical-align:top; width:16px; height:16px; padding-right:2px; border:0px }
 .litxt { vertical-align:top; width:32px; height:32px; padding-right:2px; border:0px }
+.fmenu { vertical-align:middle; height:32px; border:0px }
 .fLeft  {float:left; padding-left:10px}
 .fRight {float:right; padding-right:10px}
 
@@ -1608,9 +1611,7 @@ TD.closePopup {
 
 .ftSearch {
   margin: 0px;
-  padding: 0px;
-  vertical-align: bottom;
-  display:inline;
+  vertical-align: middle;
   height: 2em;
   padding: 0px;
 }
@@ -1620,7 +1621,6 @@ TD.closePopup {
   white-space: nowrap;
   vertical-align: middle;
   color: darkblue;
-  margin: 0px;
   padding: 0px;
   background: #EEEEEE;
   height: 3em;
