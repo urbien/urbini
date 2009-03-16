@@ -1447,6 +1447,20 @@ TD.toolbar {
   color:darkblue;
   font-weight:bold;
 }
+
+.dashboard_btn { width: 70px; padding-top: 5px;  overflow: visible; border: 1px solid #eeeeee; }
+.dashboardLine td.dashboard_btn:hover {  
+	border-left-color: ButtonHighlight;
+	border-top-color: ButtonHighlight;
+	border-right-color: ButtonShadow;
+	border-bottom-color: ButtonShadow;
+}
+.dashboardLine td.current {
+	border-left-color: ButtonShadow ;
+	border-top-color: ButtonShadow;
+	border-right-color: ButtonHighlight;
+	border-bottom-color: ButtonHighlight;
+} 
  
 .menuTitle td, .menuTitle th {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
