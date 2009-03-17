@@ -1448,7 +1448,9 @@ TD.toolbar {
   font-weight:bold;
 }
 
-.dashboard_btn { width: 70px; padding-top: 5px;  overflow: visible; border: 1px solid #eeeeee; }
+.dashboard_btn { width: 60px; padding: 5px; text-align: center;  overflow: visible; border: 1px solid #eee; }
+.black .dashboard_btn { border-color: #3f3f3f; }
+
 .dashboardLine td.dashboard_btn:hover {  
 	border-left-color: ButtonHighlight;
 	border-top-color: ButtonHighlight;
@@ -1460,7 +1462,10 @@ TD.toolbar {
 	border-top-color: ButtonShadow;
 	border-right-color: ButtonHighlight;
 	border-bottom-color: ButtonHighlight;
-} 
+}
+.black .dashboardLine td.dashboard_btn:hover { border: 1px solid #CFCFCF; }
+.black .dashboardLine td.current { border: 1px dashed #9F9F9F; }
+
  
 .menuTitle td, .menuTitle th {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
