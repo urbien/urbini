@@ -19,11 +19,11 @@
 
 	<table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
 	<tr noInner="y" class="fts" valign="bottom">
-  	<td colspan="2"><fullTextSearchChoice/></td><td align="right"><pagingResources /></td>
+  	<td colspan="3"><table width="100%"><tr><td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td></tr></table></td>
 	</tr>
-  <tr height="5"><td></td></tr>
+  <tr height="5"><td colspan="2"></td></tr>
   <tr valign="top">
-  <td width="110%" colspan="2"><!--br/-->
+  <td width="110%" colspan="2">
 		<div>
 		  <searchHistory/>
 		  <resourcesSearch resourcesUri = "text/search/resources" />

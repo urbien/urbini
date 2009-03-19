@@ -1,7 +1,7 @@
 <div>
 <table id="resourceList" width="100%" border="0" cellspacing="0" cellpadding="0">
-	<tr noInner="y" class="fts">
-  	<td colspan="2"><fullTextSearchChoice/></td><td align="right"><pagingResources /></td>
+	<tr noInner="y" class="fts" valign="bottom">
+  	<td colspan="2"><table width="100%"><tr><td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td></tr></table></td>
 	</tr>
   <tr  valign="top">
   <td valign="top" align="middle" width="110%">
