@@ -21,9 +21,9 @@
 	<tr noInner="y" class="fts" valign="bottom">
   	<td colspan="3"><table width="100%"><tr><td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td></tr></table></td>
 	</tr>
-  <tr height="5"><td colspan="2"></td></tr>
+  <tr height="5"><td colspan="3"></td></tr>
   <tr valign="top">
-  <td width="110%" colspan="2">
+  <td width="110%" id="isBlog">
 		<div>
 		  <searchHistory/>
 		  <resourcesSearch resourcesUri = "text/search/resources" />
@@ -56,7 +56,7 @@
     </form>
 </hideBlock>
   </td>
-  <td width="5%" id="rightPanelPropertySheet" valign="top" align="left">
+  <td id="rightPanelPropertySheet" valign="top" align="left">
 <hideBlock>
    <include name="commonFilter.jsp" />
     <!--menu toolbar="filterLocal" type="onpage" title="false"/-->
