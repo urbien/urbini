@@ -19,7 +19,7 @@
 
 	<table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
 	<tr noInner="y" class="fts" valign="bottom">
-  	<td colspan="3"><table width="100%"><tr><td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td></tr></table></td>
+  	<td colspan="3"><table width="100%"><tr><td width="10%"><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td></tr></table></td>
 	</tr>
   <tr height="5"><td colspan="3"></td></tr>
   <tr valign="top">
