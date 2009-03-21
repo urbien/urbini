@@ -27,7 +27,7 @@
 			<table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
 			<tr><td colspan="3"><resourceTitle/></td></tr>
 		  <tr noInner="y" class="fts">
-		    <td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td>
+		    <td width="10%"><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td>
 		  </tr>
 		  <tr>
 		    <td colspan="3"><include name="${type}_details_main.jsp" alt="propertySheet.jsp" /></td>
