@@ -1,5 +1,5 @@
 /* text in link. You can see it in 'Hi "contactName"' */
-A {text-decoration : none; font-family: Arial, Verdana, Arial, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
+A {text-decoration : none; font-family: Arial, Verdana, Helvetica, sans-serif; color: #003399}
 A:hover {color: #6BBDBE; text-decoration : none; cursor: pointer}
 
 a img {
