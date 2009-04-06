@@ -5486,10 +5486,10 @@ var SearchField = {
   },
   onBlur : function(field) {
     if (field.value == "") {
-      field.style.color = "#ccc;"; 
+      field.style.color = "#ccc"; 
       field.value = this.emptyValue;
     } 
-  },
+  }
 }
 
 function hideShowDivOnClick(divId, imgId){// , plusImg, minusImg) {
