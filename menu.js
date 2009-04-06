@@ -5473,6 +5473,25 @@ function onFormFieldChange(fieldProp, fieldRef, oldValue) {
   }
 }
 
+var SearchField = {
+  emptyValue : null,
+  onFocus : function(field) {
+    if (this.emptyValue == null)
+      this.emptyValue = field.getAttribute("empty_value");
+    
+    if (field.value == this.emptyValue) {
+      field.value = "";
+      field.style.color = "";  
+    }
+  },
+  onBlur : function(field) {
+    if (field.value == "") {
+      field.style.color = "#ccc;"; 
+      field.value = this.emptyValue;
+    } 
+  },
+}
+
 function hideShowDivOnClick(divId, imgId){// , plusImg, minusImg) {
   div = document.getElementById(divId);
   img = document.getElementById(imgId);
