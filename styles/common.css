@@ -552,7 +552,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .propertyGroup { font-family: sans-serif, Arial, Verdana, Geneva, Helvetica; font-size: 12px; font-weight: bold; text-transform: uppercase;}
 
 /* To display MORE... in RL */
-.more { text-align: right; font-family: Verdana, sans-serif, Arial, Geneva, Helvetica; font-size: 2em;}
+.more { text-align: right; font-family: Verdana, sans-serif, Arial, Geneva, Helvetica; font-size: 0.8em;}
 
 /* Simple border */
 .box {
@@ -1361,7 +1361,7 @@ div.contentsRL {
 { position: absolute; width: 14; height: 14; right: 0; bottom: 0; background-image: url(../images/bottom_right.gif); cursor: se-resize; -apple-dashboard-region: dashboard-region(control rectangle); }
 
 .nobr { white-space: nowrap; }
-.widgetTitle {vertical-align:top; color:darkblue;font-weight:bold}
+.widgetTitle {vertical-align:top; color:darkblue;font-weight:bold;white-space: nowrap;}
 .widgetIcon {width:16px; height:16px; padding-right:4px; border:0px }
 
 .iinp, .iinp_move, .iinp_btn { width:16px; height:16px; border:0px; vertical-align:middle }
