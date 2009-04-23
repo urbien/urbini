@@ -911,6 +911,16 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			toolBar.appendButton(this.onItalic, false, RteEngine.IMAGES_FOLDER + "italic.gif", "italic");
 			toolBar.appendButton(this.onUnderline, false, RteEngine.IMAGES_FOLDER + "underline.gif", "underline");
 		}
+		
+		if(this.rtePref.buttons.text_color)  // text color
+			this.textColorBtn = toolBar.appendButton(this.onTextColor, false, RteEngine.IMAGES_FOLDER + "font_color.gif", "text color");
+		if(this.rtePref.buttons.bg_color)  // background color
+			this.bgColorBtn = toolBar.appendButton(this.onBackgroundColor, false, RteEngine.IMAGES_FOLDER + "background_color.gif", "background color");
+		if(this.rtePref.buttons.link) // hyperlink
+			this.linkBtn = toolBar.appendButton(this.onLink, false, RteEngine.IMAGES_FOLDER + "hyperlink.gif", "hyperlink");
+		if(this.rtePref.buttons.image) // image
+			this.imageBtn = toolBar.appendButton(this.onImage, false, RteEngine.IMAGES_FOLDER + "image.gif", "image");
+
 		if(this.rtePref.buttons.supsub) { // superscript + subscript
 			toolBar.appendButton(this.onSuperscript, false, RteEngine.IMAGES_FOLDER + "superscript.gif", "superscript");
 			toolBar.appendButton(this.onSubscript, false, RteEngine.IMAGES_FOLDER + "subscript.gif", "subscript");
@@ -929,14 +939,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			toolBar.appendButton(this.onOrderedList, false, RteEngine.IMAGES_FOLDER + "list_num.gif", "ordered list");
 			toolBar.appendButton(this.onUnorderedList, false, RteEngine.IMAGES_FOLDER + "list_bullet.gif", "unordered list");
 		}
-		if(this.rtePref.buttons.text_color)  // text color
-			this.textColorBtn = toolBar.appendButton(this.onTextColor, false, RteEngine.IMAGES_FOLDER + "font_color.gif", "text color");
-		if(this.rtePref.buttons.bg_color)  // background color
-			this.bgColorBtn = toolBar.appendButton(this.onBackgroundColor, false, RteEngine.IMAGES_FOLDER + "background_color.gif", "background color");
-		if(this.rtePref.buttons.link) // hyperlink
-			this.linkBtn = toolBar.appendButton(this.onLink, false, RteEngine.IMAGES_FOLDER + "hyperlink.gif", "hyperlink");
-		if(this.rtePref.buttons.image) // image
-			this.imageBtn = toolBar.appendButton(this.onImage, false, RteEngine.IMAGES_FOLDER + "image.gif", "image");
 		if(this.rtePref.buttons.smile) // smile
 			this.smileBtn = toolBar.appendButton(this.onSmile, false, RteEngine.IMAGES_FOLDER + "smile.gif", "smile");
 		if(this.rtePref.buttons.line) // line
