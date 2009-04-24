@@ -1807,9 +1807,6 @@ var FormProcessor = {
     var p = "";
     var fields = form.elements;
 
-    // send all fields of FrequencyPE
-    var isFrequencyPE = (getAncestorById(fields[0], "frequencyPE") != null);
-
     // use idx and len because removeChild reduces fields collection
     var idx = -1;
     var len = fields.length;
@@ -1833,8 +1830,10 @@ var FormProcessor = {
       if (type == "submit")
         continue;
 
-      // remove not changed fields
-      if (!allFields && !isFrequencyPE) {
+      // remove not changed fields ---
+      // send all fields of FrequencyPE
+      var isFrequencyField = (name.indexOf("frequency_") == 0);
+      if (!allFields && !isFrequencyField) {
         if (!this.wasFormFieldModified(field)) {
           var doRemove = true;
          // 1. not 'hidden'
