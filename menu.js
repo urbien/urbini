@@ -1844,6 +1844,17 @@ var FormProcessor = {
              if (durl  &&  (durl.indexOf("createDEResourceList.html") || durl.indexOf("createParallelDEResourceList.html")))
                doRemove = false;
            }
+
+           // check if corresponding <select> (unit) was changed
+           if (field.tagName.toLowerCase() == 'input') {
+            var parentTr = getAncestorByTagName(field, 'tr');
+            var select = getChildByTagName(parentTr, 'select');
+            if (select != null) {
+              if (this.wasFormFieldModified(select))
+                toRemove = false;
+             }
+           }
+           
            if (doRemove) {
              removedFieldName = name;
              field.parentNode.removeChild(field);
