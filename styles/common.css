@@ -389,7 +389,7 @@ td {font-family:sans-serif, arial; font-size:9pt;}
 
 
 /*Body {font-family: Verdana, geneva, arial; font-size: 8px; font-weight: normal; color: #999999;}*/
-Body {font-family: Verdana, geneva, arial; font-weight: normal; }
+cdfBody {font-family: Verdana, geneva, arial; font-weight: normal; }
 
 .monospace { font-family:Courier,monospace; }
 
@@ -530,7 +530,7 @@ font.warn {color:#A01E00}
 td.shading {border:solid #808080 1px; color:#000000}
 span.comment { font-family: Verdana, Arial, Helvetica, sans-serif; color: #5766a5; font-weight:bold; font-size: 8pt}
 tr.editMode  {background-color:#D6E7EF;}
-span.bigLetterTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;}
+span.bigLetterTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C; text-decoration: underline}
 span.bigLetterTitle2 {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#6a7ffc;}
 
 span.fileMenuTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;vertical-align:middle}
@@ -1336,7 +1336,7 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 ul.chapter {
   margin:0px; padding-left: 2px; text-indent: 0em; list-style-type:none;
 }
-aclv
+
 ul.chapter a {
   font-family: arial, Verdana, geneva; font-size: 1em; color: #00309C
 }
