@@ -441,7 +441,7 @@ span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:
 
 .empty {font-weight:bold; font-size:16pt;}
 
-.xs { font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal; white-space: nowrap; }
+xs { font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal; white-space: nowrap; }
 .xsb { font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: bold; white-space: nowrap; }
 .xfts { font-family: Arial, Verdana, Helvetica, sans-serif; color: #10106D; font-size: 0.75em; font-weight: normal; white-space: nowrap; }
 
@@ -575,9 +575,12 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .group {background:#f8f4ef; FONT-WEIGHT: bold; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}
 
 /* Under menu line style (usually the same color as tabs */
-.line { background:#ACD2E2 }
+.line { background:#ACD2E2;font-size:16px; font-weight:bold;}
 .blueLine { background:#ACD2E2 }
 .bg   { background:#Bedbe9 }
+.itemsT {border-top:solid #5d9fc0 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#00309C; font-weight:bold; font-size:12pt;text-align:center}
+
+
 /* SKINS */
 /* BLUE */
 
@@ -1332,8 +1335,11 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 
 .ierr { vertical-align:top; width:64px; height:64px; padding-right:2px; border:0px }
 
-
 ul.chapter {
+  margin:0px; padding-left: 0px; text-indent: 0em; list-style-type:none;
+}
+
+li {
   margin:0px; padding-left: 2px; text-indent: 0em; list-style-type:none;
 }
 
@@ -1344,7 +1350,9 @@ ul.chapter a {
 ul.subchapter {
   margin: 0 0 0 0; padding-left: 1.7em; text-indent: 0em; list-style-type:none; list-style-image:url(../images/bullet_yellow.gif);
 }
-
+ul.subchapter a {
+  font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;
+}
 ul.subchapter a {
   font-family: arial, Verdana, geneva; font-size: 0.9em;color: #3366aa;
 }
