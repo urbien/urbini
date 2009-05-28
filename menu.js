@@ -5013,7 +5013,7 @@ function addAndShowItems(tr, e) {
   e = getDocumentEvent(e);
   if (!e)
     return stopEventPropagation(e);
-  var anchor = "mkresource?type=http://www.hudsonfog.com/voc/model/portal/Comment&submit=Please+wait&.forum_verified=y&";
+  var anchor = "mkresource?type=http://www.hudsonfog.com/voc/model/portal/Annotation&submit=Please+wait&.forum_verified=y&";
   var form = document.getElementById('filter');
   var forum = form.elements[".forum_select"].value;
   var title = form.elements[".title"].value;
