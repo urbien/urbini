@@ -1,5 +1,5 @@
 <div id="keyboard" itype="http://www.hudsonfog.com/voc/hospitality/orders/BarItem" style="display:none">
-	<form id="filter" method="post" action="FormRedirect" autocomplete="off">
+	<form id="filter" method="post" action="mkresource" autocomplete="off">
 	<script language="JavaScript1.2" type="text/javascript">
 		function clearAll() {
 		  document.getElementById('filter').elements['.title'].value = '';
