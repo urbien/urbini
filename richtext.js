@@ -229,9 +229,7 @@ var RteEngine = {
 		if(this.imagePopup == null)
 			this.createImagePopup();
 		else {
-		  var innerFormHtml = "<div style=\"font-family:verdana; font-size:12px\">"
-        + "Enter image URL or select your local image.</div>"
-		    + ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert");
+		  var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert");
 		  this.imagePopup.changeContent(innerFormHtml);
 		}	
 	  
@@ -357,9 +355,7 @@ var RteEngine = {
 		this.linkPopup = new FormPopup(innerFormHtml);
 	},
 	createImagePopup : function() {
-		var innerFormHtml = "<div style=\"font-family:verdana; font-size:12px\">"
-    + "Enter image URL or select your local image.</div>"
-		+ ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert");
+		var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert");
 		this.imagePopup = new FormPopup(innerFormHtml, "USE_SUBMIT_BTN");
 	},
   createImagePastePopup : function() {
@@ -465,9 +461,11 @@ var RteEngine = {
   },
   
   onImageFormSubmit : function() {
+  	var $t = ImageUploader;
+  	
   	var imgUrl = null;
 	  var form = RteEngine.imagePopup.getForm();
-	  imgUrl = ImageUploader.getImageUrlFromForm(form);
+	  imgUrl = ImageUploader.getImagePathFromForm(form);
 	  if(imgUrl == null)
 	    return false;
 	  
@@ -476,20 +474,21 @@ var RteEngine = {
 	  RteEngine.imagePopup.hide();
 	  var rteObj = RteEngine.getRteById(RteEngine.curRteId);
 
+    var selRadioIdx = $t.getSelectedRadioBtnIdx(form);
 	  // insert image
 	  var encImgUrl = encodeURI(imgUrl);
-	  rteObj.setImage(encImgUrl, align);
+	  rteObj.setImage(encImgUrl, align, selRadioIdx);
 
-	  // web-image, thus not upload.
-	  if(ImageUploader.isImageLocal(imgUrl) == false) {
+	  // URL - no uploading
+	  if($t.isImageLocal(imgUrl) == false || selRadioIdx == 1) {
 	    return false;
 	  }
 	  
 	  // mark image as waiting
 	  var urlPairsArr = rteObj.getImgUrlsArray();
-	  ImageUploader.markImageAsWaiting(urlPairsArr, encImgUrl);
+	  $t.markImageAsWaiting(urlPairsArr, encImgUrl);
 	  
-    ImageUploader.onHdnDocLoad(RteEngine.curRteId, encImgUrl);
+    $t.onHdnDocLoad(RteEngine.curRteId, encImgUrl);
 	  
 	  return true;
 	},
@@ -497,7 +496,7 @@ var RteEngine = {
 	  var thisObj = ImageUploader;
 	  var imgUrl = null;
 	  var form = RteEngine.imagePastePopup.getForm();
-	  imgUrl = thisObj.getImageUrlFromForm(form);
+	  imgUrl = thisObj.getImagePathFromForm(form);
 	  if(imgUrl == null)
 	    return false;
 	
@@ -542,7 +541,7 @@ var ImageUploader = {
   RTE_ID_INPUT_NAME : "rte_id",
   IMG_ALIGN_ID      : "img_align",
 
-  HDN_IFRAME_NAME   : "imageUploadingIframe ",
+  HDN_IFRAME_NAME   : "imageUploadingIframe",
   WAIT_FLAG : "waiting",
   
   
@@ -570,9 +569,23 @@ var ImageUploader = {
       + ">"
       
       + " <table style=\"font-family:verdana; font-size:12px;\"><tr><td>" 
-      + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
-      + " id=\"" + this.FILE_INPUT_NAME + "\" size=\"40\"  style=\"margin-top:20px;\">"
       
+      + "<input type=\"radio\" name=\"radio\" onclick=\"ImageUploader.imageLocationSwitch(0)\" checked>upload image"
+      + "&nbsp;&nbsp;"
+      + "<input type=\"radio\" name=\"radio\" onclick=\"ImageUploader.imageLocationSwitch(1)\">URL of image"
+      + "<br/><br/>"
+      
+      // two fields with the same name:
+      // 1) image uploading
+      // 2) URL of image
+      + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
+      + " style=\"font-family:verdana; font-size:12px\""
+      + " size=\"40\"  style=\"margin-top:20px;\">"
+      
+      + " <input type=\"text\" name=\"" + this.FILE_INPUT_NAME + "\""
+      + " style=\"display: none; font-family:verdana; font-size:12px\""
+      + " size=\"45\"  style=\"margin-top:20px;\">"
+
       + " <input type=\"hidden\" name=\"" + this.RTE_ID_INPUT_NAME + "\""
       + " id=\"" + this.RTE_ID_INPUT_NAME + "\">"
       + " </td></tr>"
@@ -596,7 +609,21 @@ var ImageUploader = {
 
       + " </td></tr><table>"
     + " </form>";
+    
     return formStr;
+  },
+  
+  imageLocationSwitch : function(idx) {
+    var form = RteEngine.imagePopup.getForm();
+    var inputs = form[this.FILE_INPUT_NAME];
+    var radios = form["radio"];
+    
+    inputs[idx].style.display = "";
+    radios[idx].checked = true;
+    
+    var idx2 = (idx + 1) % 2; 
+    inputs[idx2].style.display = "none";
+    radios[idx2].checked = false;
   },
   
   putRteIdInForm : function(form, rteId) {
@@ -604,14 +631,32 @@ var ImageUploader = {
     var inpObj = getChildById(form, this.RTE_ID_INPUT_NAME); 
     inpObj.value = rteIdEnc;
   },
-  getImageUrlFromForm : function(form) {
-    //var flInp = getChildById(form, this.FILE_INPUT_NAME);
-    var value = form[ImageUploader.FILE_INPUT_NAME].value;
-    if(value.length == 0) {
-      alert("The field is empty!");
+  
+  // radio buttons : // 0) upload 1)URL
+  getSelectedRadioBtnIdx : function(form) {
+    var radios = form["radio"];
+    var selIdx = radios[0].checked ? 0 : 1;
+    return selIdx;
+  },
+  
+  getImagePathFromForm : function(form) {
+    var selIdx = this.getSelectedRadioBtnIdx(form);
+    var inputs = form[ImageUploader.FILE_INPUT_NAME]
+    var value = inputs[selIdx].value;
+    if (value.length == 0) {
+      if (selIdx == 0) 
+        alert("No image selected to upload!");
+      else
+        alert("No URL of image!");
       return null;
     }
-    return value;    
+    
+    // not needed <input>
+    var notSelIdx = (selIdx == 0) ? 1 : 0;
+    var parent = inputs[notSelIdx].parentNode;
+    parent.removeChild(inputs[notSelIdx]);
+    
+    return value; 
   },
   
   // failed to get correct current value from
@@ -631,6 +676,7 @@ var ImageUploader = {
   },
   // callback on the server response.
   onHdnDocLoad : function(rteId, originalUrl) {
+    // loop to wait on server response
     var thisObj = ImageUploader;
     var frameId = thisObj.HDN_IFRAME_NAME;
     if (!frameLoaded[frameId]) {
@@ -638,8 +684,12 @@ var ImageUploader = {
       setTimeout(timeOutFunction, 50);
       return;
     }
+
+    // process the server response.
     frameLoaded[frameId] = false;
-    // -------------------------------------------------
+    
+    // TODO: there is a problem to upload image in Safari and Chrome
+    // it looks like those browsers return content not of the hidden iframe but of the main window (?!)
     var frameDoc  = frames[frameId].document;
     var frameBody = frameDoc.body;
     var d = frameDoc.getElementById("location");
@@ -647,6 +697,7 @@ var ImageUploader = {
       frameBody = d;
 
     uploadedUrl = frameBody.innerHTML;
+    
     uploadedUrl = decodeURI( uploadedUrl );
 
     // 2. replace url with the uploaded one.  
@@ -663,24 +714,13 @@ var ImageUploader = {
         imgUrlsArr[i].uploadedUrl = uploadedUrl;
       }
     }
+
     // 2.3 replace URL of the image in the document
-    /*
-    var rteDoc = rteObj.getDocument();
-    var images = rteDoc.getElementsByTagName("img");
-    originalUrl = originalUrl.toLowerCase();
-    for(var i = 0; i < images.length; i++) {
-      var src = images[i].src.toLowerCase();
-      var decSrc = decodeURI(src);
-      if(src.indexOf(originalUrl) != -1 ||
-          decSrc.indexOf(originalUrl) != -1) {
-        images[i].src = uploadedUrl;
-      }
-    }
-    */
-    var image = thisObj.getImageByOrigUrl(rteObj, originalUrl);
+    var image = thisObj.getImageByFilePath(rteObj, originalUrl);
     if(image)
-      image.src = uploadedUrl;
+      image.src = getBaseUrl() + uploadedUrl; // getBaseUrl() of common.js
   },
+  
   // "original" means inserted url before replace with uploaded url
   getImageByOrigUrl : function(rteObj, originalUrl) {
     var rteDoc = rteObj.getDocument();
@@ -697,6 +737,20 @@ var ImageUploader = {
     return null;
   },
   
+  getImageByFilePath : function(rteObj, filePath) {
+    var rteDoc = rteObj.getDocument();
+    var images = rteDoc.getElementsByTagName("img");
+    for(var i = 0; i < images.length; i++) {
+      var filePathAttr = images[i].getAttribute("file_path"); //src 
+      if(filePathAttr != null &&
+          filePathAttr == filePath) {
+        images[i].removeAttribute("file_path");
+        return images[i];
+      }
+    }
+    return null;
+  },
+  
   // image object or its src
   isImageLocal : function(imgObj) {
     var src;
@@ -706,14 +760,10 @@ var ImageUploader = {
       src = imgObj.src;
     
     src = src.toLowerCase();
-    if(src.indexOf("http") == 0)
+    if(src.indexOf("http") == 0 || src.indexOf("https") == 0)
       return false;
-    else if(src.indexOf("file") == 0)
-      return true;
-    else if(src.indexOf(":") == 1) // c:
-      return true; 
 
-    return false;
+    return true;
   },
 
   // UrlPair -------------
@@ -951,6 +1001,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		}
 		if(this.rtePref.buttons.html) // html
 			this.htmlBtn = toolBar.appendButton(this.onSource, true, RteEngine.IMAGES_FOLDER + "html.gif", "html view mode", "edit mode");
+		
 		return toolBar;
 	}
 
@@ -1552,12 +1603,17 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		return true;
 	}
 	// 8
-	this.setImage = function(url, align) {
+	this.setImage = function(url, align, selRadioIdx) {
 		if(url.length != 0) {
-		  // hack: check on double encoding (for space only for now)
+		  // check on double encoding (for space only for now)
 		  if(url.indexOf("%2520") != -1)
 		    url = decodeURI(url);
-		  var html = "<img src=\"" + url + "\" align=\"" + align + "\"/>";
+		  
+		  // uploading (idx == 0)
+		  var html = "<img file_path=\"" + url + "\" align=\"" + align + "\"/>";
+		  if (selRadioIdx == 1) // src for URL (idx == 1)   
+		    html = "<img src=\"" + url + "\" align=\"" + align + "\"/>";
+
 		  this.insertHTML(html);
 		}
 		return true;
