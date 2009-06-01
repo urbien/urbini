@@ -718,7 +718,7 @@ var ImageUploader = {
     // 2.3 replace URL of the image in the document
     var image = thisObj.getImageByFilePath(rteObj, originalUrl);
     if(image)
-      image.src = getBaseUrl() + uploadedUrl; // getBaseUrl() of common.js
+      image.src = uploadedUrl;
   },
   
   // "original" means inserted url before replace with uploaded url
