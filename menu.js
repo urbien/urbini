@@ -1792,8 +1792,18 @@ var FormProcessor = {
       return false;
     }
     else {
+      /*
+      stopEventPropagation(e);
       // tell browser to continue processing this submit.
-      return true; 
+      var div = document.createElement('div');
+      div.style.display = "none";
+      var target = getTargetElement(e);
+      
+      postRequest(e, url, params, div, target, checkError);
+      
+      return false;
+      */
+      return true;
     }
   },
 
@@ -3491,6 +3501,30 @@ function displayInner(e, urlStr) {
   return stopEventPropagation(e);
 }
 
+function checkError(event, body, hotspot, content) {
+  setInnerHtml(body, content);
+  var forms = document.getElementsByTagName("form");
+  var found = false;
+  for (var i=0; i<forms.length && !found; i++) {
+    var id = forms[i].id;
+    if (id  &&  id.indexOf("tablePropertyList") != -1)
+      found = true;
+  }
+  if (!found) {
+    setInnerHtml(body, content);
+  }
+    
+  var div = document.getElementById("errorMessage");
+  var bdivs = body.getElementsByTagName("div");
+  for (var i=0; i<bdivs.length; i++) {
+    if (bdivs[i].id && bdivs[i].id == 'errorMessage') {
+      if (bdivs[i].innerHTML) {
+        div.innerHTML = bdivs[i].innerHTML;
+        return;
+      }
+    }
+  }
+}
 /**
  * copies html loaded via ajax into a div
  */
@@ -8416,6 +8450,10 @@ var TabSwap = {
     }
     this.update();
   }
+}
+function fixAnchor(anchor) {
+  document.location.hash = anchor.href.split('#')[1];
+  return false;
 }
 
 function showMobileTab(e, hideDivId, unhideDivId) {
