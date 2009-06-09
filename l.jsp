@@ -1,4 +1,4 @@
-<div>
+<div id="l">
 <hideBlock id="hideBlock">
   <watchNote/>
 </hideBlock>
@@ -17,14 +17,14 @@
 <errorMessage />
 	<table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
 	<tr noInner="y" class="fts" valign="bottom">
-  	<td colspan="3"><table width="100%"><tr><td width="10%"><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td></tr></table></td>
+  	<td colspan="3"><table width="100%" id="fts"><tr><td width="10%"><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td></tr></table></td>
   </tr>
   <tr itype="http://www.hudsonfog.com/voc/system/designer/Widget">  	
   	<td colspan="3" align="center"><filter addToTab="y"/></td>
 	</tr>
-  <tr height="5"><td colspan="3"></td></tr>
+  <!--tr height="5"><td colspan="3"></td></tr-->
   <tr valign="top">
-  <td width="110%" id="isBlog">
+  <td width="110%" id="isBlog">                                                                                                                                                                                                   
 		<div>
 		  <searchHistory/>
 		  <resourcesSearch resourcesUri = "text/search/resources" />
