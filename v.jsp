@@ -22,7 +22,7 @@
       <readOtherSiteInfo />
 			<getResource/>
 			<table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
-			<tr><td colspan="3"><resourceTitle/></td></tr>
+			<!--tr><td colspan="3"><resourceTitle/></td></tr-->
 		  <tr noInner="y" class="fts" itype="!http://www.hudsonfog.com/voc/classifieds/siteTemplates/Slide">
 		    <td width="10%"><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td>
 		  </tr>
