@@ -36,6 +36,7 @@ a.icotxt img {
 .propLabel1 {
   font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;
 }
+
 /* Chinese font for prop labels */
 .propLabel:lang(zh) {
   font-family: "Li Sung", MingLiu; font-size:1em;
@@ -550,6 +551,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 /* To display property groups in edit mode */
 .propertyGroup { font-family: sans-serif, Arial, Verdana, Geneva, Helvetica; font-size: 12px; font-weight: bold; text-transform: uppercase;vertical-align: top;}
+.propertyGroupComment { font-family: sans-serif, Arial, Verdana, Geneva, Helvetica; font-size: 12px; font-weight: bold; text-transform: none;vertical-align: top;}
 
 /* To display MORE... in RL */
 .more { text-align: right; font-family: Verdana, sans-serif, Arial, Geneva, Helvetica; font-size: 0.8em;}
@@ -939,10 +941,9 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 .filterLine {background: #E7EBF0}
 /* BLACK */
-.black .line {background-color:#090909}
+.black .line {background-color:#322b27}
 
-.black .rlHeader { border:solid #cfcfcf 1px; background:#5f5f5f; color:#ffffff; font-weight:bold; font-size:8pt;}
-/*.black .menuLine { background:#5f5f5f; color:#ffffff; font-weight:bold; font-size:8pt;}*/
+.black .rlHeader { border:solid #cfcfcf 1px; background:#8f837d; color:#ffffff; font-weight:bold; font-size:8pt;}
 .black .menuLine { background:#bfb7b3; color:#ffffff; font-weight:bold; font-size:8pt;}
 .black .propertySheet {border:solid #cfcfcf 1px; border-collapse: collapse; background-color: #322b27; color: #000000; overflow: auto}
 .black .wBBg {border:solid #cfcfcf 1px; background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
@@ -959,7 +960,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .black .widgetTitle {vertical-align:top; color:#ffffff;font-weight:bold}
 .black .button1 {background: #afafaf;border-bottom: 1px solid #8f837d;border-right: 1px solid #8f837d;border-left: 1px solid #bfb7b3;border-top:1px solid #bfb7b3;color:#ffffff;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 .black .input {background: #dfd6d1; border-bottom: 1px solid #bfb7b3; border-left: 1px solid #bfb7b3; border-right: 1px solid #afa8a4; border-top:1px solid #afa8a4; color:#000000; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
-/*.black .dark {background: #443A34; }*/
 .black .dark {background: #5f5753; }
 .black .light {background: #afafaf; }
 .black .user  {color:#ffffff; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight:bold; text-decoration:none; font-size:8pt;}
@@ -972,7 +972,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .black .pGr {background:#bfb7b3; color: #322b27; font-weight:bold; font-size:1em; text-align:center; }
 .black .rop {border:solid #bfb7b3 2px; border-collapse: collapse; background: #322b27; color: #322b27; overflow: auto}
 .black span.dashboardBlockTitle {font-family:Verdana,sans-serif,arial; font-weight:bold; font-size:1.3em; color:#CEffff;}
-
 .black .displayInline {
 	padding: 0;
 	margin: 0;
@@ -984,6 +983,26 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .black .propLabel {
   font-family: Verdana, Arial, Helvetica, sans-serif; color: #CEffff; font-size: 8pt; font-weight: bold;
   white-space: nowrap;
+}
+
+.black .login {background: #6f615a;color:#ffffff;height:19px;text-decoration:none; font-size:11px;border:0px}
+.black .lButton {
+    background: #37312d;
+    border: 0;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    color: #8b7d76;
+    font: bold 12px "Lucida Grande", Verdana, sans-serif;
+    margin: 7px 3px;
+    padding: 1px 10px 4px 10px;
+    cursor: pointer;
+}
+.black .loginBorder {background: #8b7d76}
+.black .userLogin {background: #322b27}
+.black .xxs {color: #8b7d76}
+
+.propLabel1 {
+  font-family: Verdana, Arial, Helvetica, sans-serif; color: #8f837d; font-size: 8pt; font-weight: normal;
 }
 
 .black .abc {
@@ -1011,7 +1030,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .black .xsb { font-family: Verdana, Arial, Helvetica, sans-serif; color: #ffffff; font-size: 8pt; font-weight: bold; white-space: nowrap; }
 
 .black .embed {
-  background:#909090;
+  background:#bfb7b3;
   background-repeat:repeat-x;
   vertical-align: middle;
   color:#000000;
@@ -1873,3 +1892,7 @@ table.printFB {
 .captcha .h { background-position: 50% 100%; padding: 0; margin: 0;}
 .captcha .i { background-position: 75% 100%; padding: 0; margin: 0;}
 .captcha .j { background-position: 100% 100%; padding: 0; margin: 0;}
+.login {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px}
+.lButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
+.userLogin {background:#ffffff}
+.loginBorder {background: #cbcbcb}
