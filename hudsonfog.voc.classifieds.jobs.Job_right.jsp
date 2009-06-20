@@ -1,5 +1,4 @@
 <td valign="top" width="100">
-<br/>
 <table width="100%">
 <tr>
   <td valign="top" class="propertySheet"><siteResourceList uri="l.html?type=http://www.hudsonfog.com/voc/classifieds/jobs/Job&amp;featuredJob_select=Yes&amp;featuredJob_verified=y&amp;-title=Featured+jobs&amp;-viewCols=skillCategory,salary&amp;limit=10"/></td>
