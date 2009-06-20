@@ -19,7 +19,7 @@
 	<tr noInner="y" class="fts" valign="bottom">
   	<td colspan="3"><table width="100%" id="fts"><tr><td width="10%"><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td></tr></table></td>
   </tr>
-  <tr itype="http://www.hudsonfog.com/voc/system/designer/Widget">  	
+  <tr itype="http://www.hudsonfog.com/voc/system/designer/WebClass">  	
   	<td colspan="3" align="center"><filter addToTab="y"/></td>
 	</tr>
   <!--tr height="5"><td colspan="3"></td></tr-->
