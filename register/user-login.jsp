@@ -1,12 +1,13 @@
-<div style='vertical-align: middle'>
+<div id="mainskin" class="blue">
+<div style='vertical-align: middle; padding-top:5px'>
   <form name="loginform" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
-    <table width="430" align="center" bgcolor="#cbcbcb" cellpadding="2" cellspacing="0">
+    <table width="430" align="center" class="loginBorder" cellpadding="2" cellspacing="0">
       <tr>
         <td>
-          <table width="100%" border="0" align="center" cellpadding="3" cellspacing="0" cols="2" bgcolor="#FFFFFF">
+          <table width="100%" border="0" align="center" cellpadding="3" cellspacing="0" cols="2" class="userLogin">
             <tr class="register">
               <td colspan="2">
-                <table width="100%" border="0" align="center" cellpadding="3" cellspacing="3" bgcolor="#FFFFFF">
+                <table width="100%" border="0" align="center" cellpadding="3" cellspacing="3" class="userLogin">
                   <tr>
                     <td class="poweredBy-td" valign="middle" align="left" height="50">
                       <a href="http://universalplatform.com" target="_blank" style="text-decoration: none">
@@ -26,23 +27,23 @@
             <tr>
               <td align="center" rowspan="2" width="40%"><img src="images/keys.gif" border="0" /></td>
               <td><text text="User name:"/><br/>
-                <input type="Text" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px" name="j_username" size="30" maxlength="50"/>
+                <input type="Text" class="login" name="j_username" size="30" maxlength="50"/>
               </td>
             </tr>
             <tr>
               <td> <text text="Password:"/><br/>
-                <input type="Password" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px" name="j_password"  size="30" maxlength="50"/>
+                <input type="Password" class="login" name="j_password"  size="30" maxlength="50"/>
               </td>
             </tr>
             <tr>
               <td width="40%"> <!--registerNewUser/--> <br /><br /></td>
-              <td valign="CENTER"><br/>
-                <input type="submit" style="background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px" value="    Logon    " name="logonButton"/><registerNewUser/>
+              <td valign="CENTER">
+                <input type="submit" class="lButton" value="    Logon    " name="logonButton"/><registerNewUser/>
               </td>
             </tr>
             <tr>
               <td colspan="2">
-                <table width="100%" border="0" align="center" cellpadding="3" cellspacing="3" bgcolor="#FFFFFF">
+                <table width="100%" border="0" align="center" cellpadding="3" cellspacing="3" class="userLogin">
                   <tr>
                     <td colspan="2" valign="bottom">
                       <hr size="1" style="color:#cbcbcb"/>
@@ -50,8 +51,7 @@
                   </tr>
                   <tr>
                     <td width="1%" valign="bottom"><a href="logonfaq.html"><img src="images/loginhelp.jpg" border="0" /></a></td>
-                    <td valign="bottom"><span class="xxs"><a href="logonfaq.html">Logon
-                      help page</a></span></td>
+                    <td valign="bottom"><a href="logonfaq.html"><span class="xxs">Logon help page</span></a></td>
                   </tr>
                 </table>
               </td>
@@ -71,4 +71,5 @@
 </script>
 -->
 
+</div>
 </div>
