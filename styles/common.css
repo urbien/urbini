@@ -1863,6 +1863,7 @@ TD.closePopup {
 .print {color:#000000;}
 .printB {font-weight:bold; white-space: nowrap;}
 .printBottom {	font: 90% arial, helvetica, sans-serif; color:#000000;}
+.titleGrey {font-family:arial, helvetica, sans-serif; font-size:1.2em; font-weight:bold;color:grey}
 .bigPrintTitle {font-family:arial black, helvetica, sans-serif; font-size:28px; color:lightgrey;}
 .printTitle {font-weight:bold; font-family:arial, helvetica, sans-serif; font-size:0.9em; background-color: #ACE2CE; padding:3 3 3 3}
 tr.printHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:0.9em;}
