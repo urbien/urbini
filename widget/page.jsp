@@ -18,6 +18,7 @@
 		  <tablePropertyList/>
 		  <siteResourceList/>
 		  <pagingResources/>
+		  <rightPanelPropertySheet/>
 	  </div>
 	</div>
   <include name="requiredFooter.jsp"/>
