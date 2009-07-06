@@ -908,6 +908,11 @@ var Boost = {
       }
        return null;
     }
+    if (id == 'menu_logoff') {
+      Boost.view.setProgressIndeterminate(true);
+      document.location.replace("j_security_check?j_signout=true");
+      return null;
+    }
     if (id == 'menu_exit') {
 //      if (confirm("Do you really want to exit this application?"))
       Boost.view.exit();
@@ -917,6 +922,12 @@ var Boost = {
       // Write browsing history to the server and load it when loading new page
       Boost.view.setProgressIndeterminate(true);
       document.location.replace($t.currentUrl);
+      return null;
+    }
+    if (id == 'menu_Filter') {
+      // Write browsing history to the server and load it when loading new page
+      Boost.view.setProgressIndeterminate(true);
+      $t.showFilter();
       return null;
     }
     if (id == 'menu_Refresh') {
@@ -1202,7 +1213,32 @@ var Boost = {
     }
     setTimeout($t.checkLocation, 100);
   },
-
+  showFilter: function() {
+    var $t = Mobile;
+    var uri = $t.currentUrl; 
+    var idx = uri.indexOf('?');
+    var partOne = uri.substring(0, idx);
+    var idx1 = partOne.lastIndexOf('/');
+    
+    if (idx1 == -1)
+      uri = partOne.substring(0, idx1 + 1) + 'plain/commonFilter.html?' + uri.substring(idx + 1);
+    else
+      uri = partOne.substring(0, idx1 + 1) + 'plain/commonFilter.html?' + uri.substring(idx + 1);
+  
+    idx = uri.indexOf('-file=');
+    if (idx != -1) {
+      idx1 = uri.indexOf('&', idx);
+      if (idx1 == -1)
+        uri = uri.substring(0, idx);
+      else
+        uri = uri.substring(0, idx) + uri.substring(idx1);
+    }
+    Boost.view.setProgressIndeterminate(true);
+    
+//    alert(uri);
+    
+    document.location.replace(uri);
+  },
   showHistoryView : function() {
     var TOP_OFFSET = 100; // for "big" topBar
     var SPACE = 30;
@@ -1842,7 +1878,7 @@ var MobilePageAnimation = {
       this.rightToLeft = true;
     else
       this.rightToLeft = false;
-    
+
     // hides the location bar
     scrollTo(0, 1)
     setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
@@ -1907,7 +1943,7 @@ var MobilePageAnimation = {
       Boost.view.setProgressIndeterminate(false);
       if (typeof Boost.view.refocus != 'undefined')
         Boost.view.refocus();
-    }
+        }
   },
   getPageTopOffset : function() {
     return this.pageTopOffset;
