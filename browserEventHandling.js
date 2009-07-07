@@ -88,10 +88,13 @@
         Mobile.init(event);
 		    MobilePageAnimation.init();
         MobileMenuAnimation.init();
+
+        // preload sprite
+        CueLoading.init();
       }
       // 2.2. desktop
       else {
-        /* in onDomLoaded */
+        // in onDomLoaded
       }
     }
 
