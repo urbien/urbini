@@ -209,11 +209,20 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
   }
   this.lastRequest = http_request;
   var clonedEvent = cloneEvent(event);
+  if (Browser.mobile) {
+    CueLoading.show();
+  }
+
   http_request.onreadystatechange = function() {
     var status;
     if (http_request.readyState != 4) // ignore for now: 0-Unintialized,
                                       // 1-Loading, 2-Loaded, 3-Interactive
       return;
+    
+    // stop cueLoading
+    if (Browser.mobile)
+      CueLoading.hide();
+      
 //    Boost.log('got back on postrequest for ' + url);
     if (typeof loadingCueFinish != 'undefined')
       loadingCueFinish();
@@ -235,6 +244,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       else
         status = 400;
     }
+    
 //    Boost.log('got back on postrequest, status ' + status);
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
@@ -385,14 +395,18 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       Boost.view.setProgressIndeterminate(true);
     http_request.send('');
   }
+  
 }
 
 function openAjaxStatistics(event, http_request) {
   if(!event)
     return;
   var target = event.target;
+  
+  try {
   if (!target || !target.tagName || target.tagName.toUpperCase() != 'IMG' || target.id.indexOf('codeBehindThePage') == -1)
     return;
+  } catch(e){ return; };
 
   var tdSql = document.getElementById("ajax_sql");
   var logMarker = http_request.getResponseHeader("X-Request-Tracker");
@@ -897,7 +911,7 @@ function setInnerHtml(div, text) {
 // write in child with id = "content" if it exists.
   var contentDiv = getChildById(div, "content");
   if(contentDiv != null)
-	div = contentDiv;
+	  div = contentDiv;
 
   if (Browser.ns4) {
     div.document.open();
@@ -968,13 +982,26 @@ var ExecJS = {
       $t.eval(jsCode);
   },
   
+  // Note: firebug for FF3 ignoring try catch (?!)
   eval : function(jsCode) {
+    // if JS code contains "class name" then check if it was loaded.
+    var pointIdx = jsCode.indexOf(".");
+    if (pointIdx != -1) {
+      className = jsCode.substring(0, pointIdx);
+      if (typeof className == 'undefined') {
+        setTimeout( function() { ExecJS.eval(jsCode) }, 100);
+        return;
+      }
+    }
+ 
+    // try to eval JS code
     try {
       window.eval(jsCode);
     }
     catch(e) {
       setTimeout( function() { ExecJS.eval(jsCode) }, 100);
     } 
+   
   },
   
   // executes js code if refObjId is visible - [hidden tab].
@@ -1038,6 +1065,7 @@ var ExecJS = {
     if(obj == null)
       return false;
 	  var parent = obj;
+	  
 	  while(parent != null) {
 		  var stl = getElementStyle(parent);
 		  if (stl != null) {
@@ -1233,6 +1261,19 @@ function getObjectUpperLeft(obj){
 
   return {x:x, y:y};
 }// eof getObjectUpperLeft
+
+// returns base url with trailed "/"
+function getBaseUrl() {
+  var baseUriO = document.getElementsByTagName('base');
+  if (!baseUriO)
+    return "";
+  
+  var baseUri = baseUriO[0].href;
+  if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
+    baseUri += "/";
+
+  return baseUri;
+}
 
 // flag that common.js was parsed
 g_loadedJsFiles["common.js"] = true;
