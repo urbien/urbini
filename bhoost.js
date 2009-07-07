@@ -1234,9 +1234,7 @@ var Boost = {
         uri = uri.substring(0, idx) + uri.substring(idx1);
     }
     Boost.view.setProgressIndeterminate(true);
-    
-//    alert(uri);
-    
+
     document.location.replace(uri);
   },
   showHistoryView : function() {
@@ -1878,7 +1876,7 @@ var MobilePageAnimation = {
       this.rightToLeft = true;
     else
       this.rightToLeft = false;
-
+    
     // hides the location bar
     scrollTo(0, 1)
     setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
@@ -1943,7 +1941,7 @@ var MobilePageAnimation = {
       Boost.view.setProgressIndeterminate(false);
       if (typeof Boost.view.refocus != 'undefined')
         Boost.view.refocus();
-        }
+    }
   },
   getPageTopOffset : function() {
     return this.pageTopOffset;
@@ -2123,3 +2121,91 @@ function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
   function updateTR(event, body, hotspot, content)  {
   }
 }
+
+/*******************************************************************
+* SpriteAnimation - use it instead animated GIF on iPhone
+* if parent is "undefined"  then place it in right top corner of screen
+*******************************************************************/
+function spriteAnimation(src, parent) {
+  var $t = this;
+  
+  this.RIGHT_OFFSET = "7px";
+  this.TOP_OFFSET = "50px";
+  this.zIndex = "100";
+
+  this.stl = null;
+
+  this.parent = parent;
+  
+  this.frameWidth; 
+  this.frameHeight;
+  this.framesAmt;
+  this.frameTimeout;
+  
+  this.step = 0;
+  
+  this._init = function(src) {
+    var div = document.createElement("div");
+    this.stl = div.style;
+    this.stl.display = "none";
+    this.stl.zIndex = this.zIndex;
+    
+    this.stl.background = "url(" + src + ") 0px 0px";
+    
+    if (this.parent)
+      this.parent.appendChild(div);
+    else {
+      this.stl.position = "absolute";
+      this.stl.right = this.RIGHT_OFFSET;
+      this.stl.top = this.TOP_OFFSET;
+      document.body.appendChild(div);
+    }
+  }
+  
+  this.show = function(frameWidth, frameHeight, framesAmt, frameTimeout) {
+    this.frameWidth = frameWidth; 
+    this.frameHeight = frameHeight;
+
+    this.framesAmt = framesAmt;
+    this.frameTimeout = frameTimeout;
+    
+    this.stl.width = this.frameWidth + "px";
+    this.stl.height = this.frameHeight + "px";
+    
+    this.stl.display = "";
+    setTimeout(this._showFrame, this.frameTimeout);
+  }
+  
+  this.hide = function() {
+    this.stl.display = "none";
+  }
+  
+  this._showFrame = function() {
+    if ($t.stl.display.toLowerCase() == 'none')
+      return;
+      
+    $t.stl.backgroundPosition = -$t.step * $t.frameWidth + "px " +
+        $t.frameHeight + "px";
+    
+    $t.step++;
+    $t.step = $t.step % $t.framesAmt;
+    setTimeout($t._showFrame, $t.frameTimeout);
+  }
+  
+  // call initialization function
+  this._init(src);
+}
+
+var CueLoading = {
+  animation : null,
+  init : function() {
+    this.animation = new spriteAnimation("/images/skin/iphone/loading_sprite.png");
+  },
+  show : function() {
+    this.animation.show(36, 36, 9, 100);
+  },
+  hide : function() {
+    this.animation.hide();
+  }
+}
+
