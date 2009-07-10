@@ -1,0 +1,84 @@
+﻿#iphone_calendar 
+{
+  width: 320px;
+  margin: 0px;
+  font-family: Helvetica;
+  color: rgb(80, 93, 110);
+  -moz-user-select: none;
+  
+  float: left;
+}
+#iphone_calendar .header 
+{
+  width: 100%;
+  height: 50px;
+  padding: 0px;
+  margin: 0px;
+  background: url(img/header.jpg);
+  float: left;
+}
+
+#iphone_calendar .box
+{
+  background: url(img/background.jpg);
+  padding: 0px;
+  border: none;
+  overflow: hidden;
+  
+  float: left;
+}
+
+#iphone_calendar .header .back, #iphone_calendar .header .back_year { float: left; margin-left: 22px; margin-top: 12px; cursor: pointer; }
+#iphone_calendar .header .back_year { margin-left: 15px; }
+
+#iphone_calendar .header .forward, #iphone_calendar .header .forward_year { float: right; margin-right: 22px;  margin-top: 12px; cursor: pointer; }
+#iphone_calendar .header .forward_year { margin-right: 15px; }
+
+#iphone_calendar .header .month_year { font-size: 20px; padding-top: 7px; padding-bottom: 4px; font-weight: 900; text-align: center; }
+
+#iphone_calendar .header .day_name 
+{
+  float: left;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  color: rgb(109, 109, 111);
+  width: 46px;
+}
+
+#iphone_calendar .cell, #iphone_calendar .cell_current, #iphone_calendar .cell_grayed 
+{
+  float: left;
+  border: 0px;
+  width:  44px; /*44px;*/
+  height: 42px;
+  
+  text-align: center;
+  line-height: 42px;
+
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  
+  cursor: pointer;
+}
+
+#iphone_calendar .cell_current { background: rgb(23, 124, 228) url(img/chosen_background.jpg) center center; color: #fff; }
+#iphone_calendar .cell_grayed { cursor: auto; color: rgb(155, 160, 166);  }
+
+#iphone_calendar .ver_border 
+{
+  float: left;
+  width: 2px;
+  height: 42px;
+  background: url(img/ver_border.jpg);
+}
+
+#iphone_calendar .hor_border 
+{
+  float: left;
+  width: 319px; /*100%;*/
+  height: 2px;
+  font-size: 0; /* IE6 bug */
+  background: url(img/hor_border.jpg);
+}
