@@ -1,4 +1,4 @@
-<div id="l">
+<div>
 <hideBlock id="hideBlock">
   <watchNote/>
 </hideBlock>
@@ -15,16 +15,15 @@
 </div>
 
 <errorMessage />
+
+
 	<table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
 	<tr noInner="y" class="fts" valign="bottom">
-  	<td colspan="3"><table width="100%" id="fts"><tr><td width="10%"><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td></tr></table></td>
-  </tr>
-  <tr itype="http://www.hudsonfog.com/voc/system/designer/WebClass">  	
-  	<td colspan="3" align="center"><filter addToTab="y"/></td>
+  	<td colspan="2"><fullTextSearchChoice/></td><td align="right"><pagingResources /></td>
 	</tr>
-  <!--tr height="5"><td colspan="3"></td></tr-->
+  <tr height="5"><td></td></tr>
   <tr valign="top">
-  <td width="110%" id="isBlog">                                                                                                                                                                                                   
+  <td width="110%" colspan="2"><!--br/-->
 		<div>
 		  <searchHistory/>
 		  <resourcesSearch resourcesUri = "text/search/resources" />
@@ -58,12 +57,12 @@
 </hideBlock>
   </td>
   <td id="rightPanelPropertySheet" valign="top" align="left">
-<hideBlock>
+<hideBlock>   
    <include name="commonFilter.jsp" />
     <!--menu toolbar="filterLocal" type="onpage" title="false"/-->
 </hideBlock>
   </td>
   </tr>
 </table>
-
+ 
 </div>
