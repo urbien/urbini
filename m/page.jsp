@@ -6,5 +6,9 @@
   <tablePropertyList/>
   <siteResourceList/>
   <pagingResources/>
+  
+  <!-- filterUrl on each virtual page (TODO: except dashboard)-->
+  <filterUrl/>
+  
 </div>
 
