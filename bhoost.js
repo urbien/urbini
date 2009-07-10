@@ -924,12 +924,14 @@ var Boost = {
       document.location.replace($t.currentUrl);
       return null;
     }
+    /*
     if (id == 'menu_Filter') {
       // Write browsing history to the server and load it when loading new page
       Boost.view.setProgressIndeterminate(true);
       $t.showFilter();
       return null;
     }
+    */
     if (id == 'menu_Refresh') {
       Boost.view.setProgressIndeterminate(true);
       optionsDiv.style.visibility = "hidden";
@@ -1213,6 +1215,7 @@ var Boost = {
     }
     setTimeout($t.checkLocation, 100);
   },
+  /*
   showFilter: function() {
     var $t = Mobile;
     var uri = $t.currentUrl; 
@@ -1234,9 +1237,10 @@ var Boost = {
         uri = uri.substring(0, idx) + uri.substring(idx1);
     }
     Boost.view.setProgressIndeterminate(true);
-
+//debugger
     document.location.replace(uri);
   },
+  */
   showHistoryView : function() {
     var TOP_OFFSET = 100; // for "big" topBar
     var SPACE = 30;
@@ -2209,3 +2213,61 @@ var CueLoading = {
   }
 }
 
+var MobileSearch = {
+    show : function (searchBtn) {
+      
+      debugger
+   //
+   //Mobile.showFilter();
+   //return;
+   
+      var filterUrl = getBaseUrl() + this.getFilterUrl(searchBtn);
+      
+      if (!filterUrl)
+        return;
+      
+      var urlParts = filterUrl.split('?');
+
+      // if () // check if the corresponding filter already loaded. 
+        postRequest(/*getDocumentEvent()*/null, urlParts[0], urlParts[1], null, null, this._onFilterLoaded);
+                 //(event, url, parameters, div, hotspot, callback, noCache)
+
+  /*
+      var stl = comFilter.style;
+      if (stl.left.length == 0) {
+        stl.width = "100%";
+        stl.left = 0;
+        stl.top = 0;
+      }
+      stl.display = "";
+      stl.visibility = "visible";
+  */    
+    },
+    
+    _onFilterLoaded : function(event, div, hotspot, content) {
+      debugger
+    },
+    
+    hide : function(searchBtn) {
+      var comFilter = this.getCommonFilterDiv(searchBtn);
+      if (!comFilter)
+        return;
+
+      var stl = comFilter.style;
+      if (stl.left.length == 0) {
+        //stl.width = "100%";
+        stl.left = 0;
+        stl.top = 0;
+      }
+      stl.display = "none";
+      stl.visibility = "hidden";
+    },
+    
+    getFilterUrl : function(searchBtn) {
+//      debugger
+   //   return document.getElementById("common_filter");
+      var pageDiv = getAncestorByAttribute(searchBtn, "className", "mobile_page");
+      var filterUrlDiv = getChildById(pageDiv, "filter_url_div");
+      return getTextContent(filterUrlDiv);
+    }
+  }

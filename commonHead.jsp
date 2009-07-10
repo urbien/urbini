@@ -5,7 +5,7 @@
   <link href="styles/properties.css" type="text/css" rel="stylesheet" />
   <link href="styles/iphone.css"     type="text/css" rel="stylesheet" /><!-- media="only screen and (max-device-width:480px)"  /-->
   <feed/>
-  <meta name="viewport" content="width=device-width"></meta>
+	<meta name="viewport" content="width=320; initial-scale=1.0; user-scalable=no"/>
 
  <getResource/>
   <siteTitle />

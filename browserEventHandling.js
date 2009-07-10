@@ -5,14 +5,16 @@
      * Although IE6- does not support capture - so we always pass false.
      */
     function addEvent(obj, evType, fn, useCapture) {
+      /*
       if (obj.getAttribute) {
-	      var handler = obj.getAttribute('handler_' + evType);
-	      if (handler && handler == fn) {
-	        //alert("Error: duplicate " + evType + " event handler " + fn + " for " + obj.tagName + " with id " + obj.id);
-	        return;
-	      }
-	      obj.setAttribute('handler_' + evType, fn);
-	    }
+        var handler = obj.getAttribute('handler_' + evType);
+        if (handler && handler == fn) {
+          //alert("Error: duplicate " + evType + " event handler " + fn + " for " + obj.tagName + " with id " + obj.id);
+          return;
+        }
+        obj.setAttribute('handler_' + evType, fn);
+      }
+      */
       if (obj.addEventListener) { // NS
        obj.addEventListener(evType, fn, useCapture);
        return true;
@@ -66,18 +68,18 @@
         DragEngine.initialize();
         FlashHandler.init();
         
-		    addSpellcheck();
-		    DictionaryHandler.init();
-		    Tooltip.init();
+        addSpellcheck();
+        DictionaryHandler.init();
+        Tooltip.init();
 
         if (typeof addEventOnSchedule != 'undefined')
           addEventOnSchedule();
       }
 
-		  // The URL bar is hidden when running on the iPhone.
-		  if (navigator.userAgent.indexOf('iPhone') != -1) {
-		    window.scrollTo(0, 1);
-		  }
+      // The URL bar is hidden when running on the iPhone.
+      if (navigator.userAgent.indexOf('iPhone') != -1) {
+        window.scrollTo(0, 1);
+      }
     }
 
     // 2. initialization on page loaded.
@@ -86,9 +88,10 @@
       if (typeof Mobile != 'undefined') {
         Boost.init(event);
         Mobile.init(event);
-		    MobilePageAnimation.init();
+        MobilePageAnimation.init();
         MobileMenuAnimation.init();
-
+        
+        FormProcessor.initForms();
         // preload sprite
         CueLoading.init();
       }
