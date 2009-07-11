@@ -908,11 +908,6 @@ var Boost = {
       }
        return null;
     }
-    if (id == 'menu_logoff') {
-      Boost.view.setProgressIndeterminate(true);
-      document.location.replace("j_security_check?j_signout=true");
-      return null;
-    }
     if (id == 'menu_exit') {
 //      if (confirm("Do you really want to exit this application?"))
       Boost.view.exit();
@@ -924,14 +919,6 @@ var Boost = {
       document.location.replace($t.currentUrl);
       return null;
     }
-    /*
-    if (id == 'menu_Filter') {
-      // Write browsing history to the server and load it when loading new page
-      Boost.view.setProgressIndeterminate(true);
-      $t.showFilter();
-      return null;
-    }
-    */
     if (id == 'menu_Refresh') {
       Boost.view.setProgressIndeterminate(true);
       optionsDiv.style.visibility = "hidden";
@@ -1215,32 +1202,7 @@ var Boost = {
     }
     setTimeout($t.checkLocation, 100);
   },
-  /*
-  showFilter: function() {
-    var $t = Mobile;
-    var uri = $t.currentUrl; 
-    var idx = uri.indexOf('?');
-    var partOne = uri.substring(0, idx);
-    var idx1 = partOne.lastIndexOf('/');
-    
-    if (idx1 == -1)
-      uri = partOne.substring(0, idx1 + 1) + 'plain/commonFilter.html?' + uri.substring(idx + 1);
-    else
-      uri = partOne.substring(0, idx1 + 1) + 'plain/commonFilter.html?' + uri.substring(idx + 1);
-  
-    idx = uri.indexOf('-file=');
-    if (idx != -1) {
-      idx1 = uri.indexOf('&', idx);
-      if (idx1 == -1)
-        uri = uri.substring(0, idx);
-      else
-        uri = uri.substring(0, idx) + uri.substring(idx1);
-    }
-    Boost.view.setProgressIndeterminate(true);
-//debugger
-    document.location.replace(uri);
-  },
-  */
+
   showHistoryView : function() {
     var TOP_OFFSET = 100; // for "big" topBar
     var SPACE = 30;
@@ -2125,149 +2087,3 @@ function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
   function updateTR(event, body, hotspot, content)  {
   }
 }
-
-/*******************************************************************
-* SpriteAnimation - use it instead animated GIF on iPhone
-* if parent is "undefined"  then place it in right top corner of screen
-*******************************************************************/
-function spriteAnimation(src, parent) {
-  var $t = this;
-  
-  this.RIGHT_OFFSET = "7px";
-  this.TOP_OFFSET = "50px";
-  this.zIndex = "100";
-
-  this.stl = null;
-
-  this.parent = parent;
-  
-  this.frameWidth; 
-  this.frameHeight;
-  this.framesAmt;
-  this.frameTimeout;
-  
-  this.step = 0;
-  
-  this._init = function(src) {
-    var div = document.createElement("div");
-    this.stl = div.style;
-    this.stl.display = "none";
-    this.stl.zIndex = this.zIndex;
-    
-    this.stl.background = "url(" + src + ") 0px 0px";
-    
-    if (this.parent)
-      this.parent.appendChild(div);
-    else {
-      this.stl.position = "absolute";
-      this.stl.right = this.RIGHT_OFFSET;
-      this.stl.top = this.TOP_OFFSET;
-      document.body.appendChild(div);
-    }
-  }
-  
-  this.show = function(frameWidth, frameHeight, framesAmt, frameTimeout) {
-    this.frameWidth = frameWidth; 
-    this.frameHeight = frameHeight;
-
-    this.framesAmt = framesAmt;
-    this.frameTimeout = frameTimeout;
-    
-    this.stl.width = this.frameWidth + "px";
-    this.stl.height = this.frameHeight + "px";
-    
-    this.stl.display = "";
-    setTimeout(this._showFrame, this.frameTimeout);
-  }
-  
-  this.hide = function() {
-    this.stl.display = "none";
-  }
-  
-  this._showFrame = function() {
-    if ($t.stl.display.toLowerCase() == 'none')
-      return;
-      
-    $t.stl.backgroundPosition = -$t.step * $t.frameWidth + "px " +
-        $t.frameHeight + "px";
-    
-    $t.step++;
-    $t.step = $t.step % $t.framesAmt;
-    setTimeout($t._showFrame, $t.frameTimeout);
-  }
-  
-  // call initialization function
-  this._init(src);
-}
-
-var CueLoading = {
-  animation : null,
-  init : function() {
-    this.animation = new spriteAnimation("/images/skin/iphone/loading_sprite.png");
-  },
-  show : function() {
-    this.animation.show(36, 36, 9, 100);
-  },
-  hide : function() {
-    this.animation.hide();
-  }
-}
-
-var MobileSearch = {
-    show : function (searchBtn) {
-      
-      debugger
-   //
-   //Mobile.showFilter();
-   //return;
-   
-      var filterUrl = getBaseUrl() + this.getFilterUrl(searchBtn);
-      
-      if (!filterUrl)
-        return;
-      
-      var urlParts = filterUrl.split('?');
-
-      // if () // check if the corresponding filter already loaded. 
-        postRequest(/*getDocumentEvent()*/null, urlParts[0], urlParts[1], null, null, this._onFilterLoaded);
-                 //(event, url, parameters, div, hotspot, callback, noCache)
-
-  /*
-      var stl = comFilter.style;
-      if (stl.left.length == 0) {
-        stl.width = "100%";
-        stl.left = 0;
-        stl.top = 0;
-      }
-      stl.display = "";
-      stl.visibility = "visible";
-  */    
-    },
-    
-    _onFilterLoaded : function(event, div, hotspot, content) {
-      debugger
-    },
-    
-    hide : function(searchBtn) {
-      var comFilter = this.getCommonFilterDiv(searchBtn);
-      if (!comFilter)
-        return;
-
-      var stl = comFilter.style;
-      if (stl.left.length == 0) {
-        //stl.width = "100%";
-        stl.left = 0;
-        stl.top = 0;
-      }
-      stl.display = "none";
-      stl.visibility = "hidden";
-    },
-    
-    getFilterUrl : function(searchBtn) {
-//      debugger
-   //   return document.getElementById("common_filter");
-      var pageDiv = getAncestorByAttribute(searchBtn, "className", "mobile_page");
-      var filterUrlDiv = getChildById(pageDiv, "filter_url_div");
-      return getTextContent(filterUrlDiv);
-    }
-  }
