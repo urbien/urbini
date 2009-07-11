@@ -1,4 +1,4 @@
-<div style="position: absolute; top: 0; left: 0;">
+<div>
 <table border="0" cellspacing="0" cellpadding="0">
   <tr>
     <td>

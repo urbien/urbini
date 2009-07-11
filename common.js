@@ -40,32 +40,6 @@ String.prototype.plainText = function() {
 }
 
 /***********************************************
-* Math extension
-************************************************/
-Math.bezierPoint = 
-// Get the current position of the animated element based on t.
-// Each point is an array of "x" and "y" values (0 = x, 1 = y)
-// At least 2 points are required (start and end).
-// First point is start. Last point is end.
-// Additional control points are optional.    
-// @param {Array} points An array containing Bezier points
-// @param {Number} t A number between 0 and 1 which is the basis for determining current position
-// @return {Array} An array containing int x and y member data
- function(points, t) {  
-    var n = points.length;
-    var tmp = [];
-    for (var i = 0; i < n; ++i) {
-       tmp[i] = [points[i][0], points[i][1]]; // save input
-    }
-    for (var j = 1; j < n; ++j) {
-       for (i = 0; i < n - j; ++i) {
-          tmp[i][0] = (1 - t) * tmp[i][0] + t * tmp[parseInt(i + 1, 10)][0];
-          tmp[i][1] = (1 - t) * tmp[i][1] + t * tmp[parseInt(i + 1, 10)][1]; 
-       }
-    }
-    return [ tmp[0][0], tmp[0][1] ]; 
- }
-/***********************************************
 * Browser detection
 ************************************************/
 var Browser = {};
@@ -235,22 +209,11 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
   }
   this.lastRequest = http_request;
   var clonedEvent = cloneEvent(event);
-  if (Browser.mobile) {
-    CueLoading.show();
-  }
-
   http_request.onreadystatechange = function() {
     var status;
     if (http_request.readyState != 4) // ignore for now: 0-Unintialized,
                                       // 1-Loading, 2-Loaded, 3-Interactive
       return;
-    
-    // stop cueLoading
-    if (Browser.mobile)
-      CueLoading.hide();
-      
-//      debugger
-      
 //    Boost.log('got back on postrequest for ' + url);
     if (typeof loadingCueFinish != 'undefined')
       loadingCueFinish();
@@ -272,7 +235,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       else
         status = 400;
     }
-    
 //    Boost.log('got back on postrequest, status ' + status);
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
@@ -423,18 +385,14 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       Boost.view.setProgressIndeterminate(true);
     http_request.send('');
   }
-  
 }
 
 function openAjaxStatistics(event, http_request) {
   if(!event)
     return;
   var target = event.target;
-  
-  try {
   if (!target || !target.tagName || target.tagName.toUpperCase() != 'IMG' || target.id.indexOf('codeBehindThePage') == -1)
     return;
-  } catch(e){ return; };
 
   var tdSql = document.getElementById("ajax_sql");
   var logMarker = http_request.getResponseHeader("X-Request-Tracker");
@@ -833,54 +791,54 @@ function insertAfter(parent, newElement, referenceElement) {
 }
 // returns a child of any nesting.
 function getChildById(parent, id) {
-  return getChildByAttribute(parent, "id", id);
+	return getChildByAttribute(parent, "id", id);
 }
 function getChildByClassName(parent, className) {
-  return getChildByAttribute(parent, "className", className);
+	return getChildByAttribute(parent, "className", className);
 }
 function getChildByAttribute(parent, atribName, attribValue) {
-  if(!parent)
-    return null;
-  if(parent[atribName] == attribValue)
-    return parent;
-  var children = parent.childNodes;
-  var len = children.length;
-  if(len == 0)
-    return null;
-  for(var i = 0; i < len; i++) {
-    if(children[i].childNodes.length != 0) {
-      var reqChild = null;
-      if((reqChild = getChildByAttribute(children[i], atribName, attribValue)) != null)
-        return reqChild;
-    }
-    if(children[i][atribName] == attribValue)
-      return children[i];
-  }
-  return null;
+	if(!parent)
+	  return null;
+	if(parent[atribName] == attribValue)
+		return parent;
+	var children = parent.childNodes;
+	var len = children.length;
+	if(len == 0)
+		return null;
+	for(var i = 0; i < len; i++) {
+		if(children[i].childNodes.length != 0) {
+			var reqChild = null;
+			if((reqChild = getChildByAttribute(children[i], atribName, attribValue)) != null)
+				return reqChild;
+		}
+		if(children[i][atribName] == attribValue)
+			return children[i];
+	}
+	return null;
 }
 
 // return "parent" if it is of required tagName
 function getChildByTagName(parent, tagName) {
-  if(!parent)
-    return null;
+	if(!parent)
+	  return null;
   tagName = tagName.toLowerCase();
-  if(parent.tagName.toLowerCase() == tagName)
-    return parent;
+	if(parent.tagName.toLowerCase() == tagName)
+		return parent;
 
-  var children = parent.childNodes;
-  var len = children.length;
-  if(len == 0)
-    return null;
-  for(var i = 0; i < len; i++) {
-    if(children[i].childNodes.length != 0) {
-      var reqChild = null;
-      if((reqChild = getChildByTagName(children[i], tagName)) != null)
-        return reqChild;
-    }
-    if(children[i].tagName && children[i].tagName.toLowerCase() == tagName)
-      return children[i];
-  }
-  return null;
+	var children = parent.childNodes;
+	var len = children.length;
+	if(len == 0)
+		return null;
+	for(var i = 0; i < len; i++) {
+		if(children[i].childNodes.length != 0) {
+			var reqChild = null;
+			if((reqChild = getChildByTagName(children[i], tagName)) != null)
+				return reqChild;
+		}
+		if(children[i].tagName && children[i].tagName.toLowerCase() == tagName)
+			return children[i];
+	}
+	return null;
 }
 
 function getAncestorById(child, id) {
@@ -891,55 +849,55 @@ function getAncestorByClassName(child, className) {
 }
 // attribValue - string or array of strings
 function getAncestorByAttribute(child, attribName, attribValue) {
-  if(!child)
-    return null;
-  var isArray = (typeof attribValue != 'string')
+	if(!child)
+	  return null;
+	var isArray = (typeof attribValue != 'string')
 
-  if(isArray) {
-    for(var i = 0; i < attribValue.length; i++)
-      if(child[attribName] == attribValue[i])
-        return child;
-  }
-  else {
-    if(child[attribName] == attribValue)
-      return child;
+	if(isArray) {
+	  for(var i = 0; i < attribValue.length; i++)
+	    if(child[attribName] == attribValue[i])
+		    return child;
+	}
+	else {
+	  if(child[attribName] == attribValue)
+		  return child;
   }
 
-  var parent;
-  while((parent = child.parentNode) != null) {
-    if(isArray) {
-      for(var i = 0; i < attribValue.length; i++)
-        if(parent[attribName] == attribValue[i])
-          return parent;
-    }
-    else {
-      if(parent[attribName] == attribValue)
-        return parent;
-    }
+	var parent;
+	while((parent = child.parentNode) != null) {
+		if(isArray) {
+  	  for(var i = 0; i < attribValue.length; i++)
+  	    if(parent[attribName] == attribValue[i])
+			    return parent;
+		}
+		else {
+		  if(parent[attribName] == attribValue)
+			  return parent;
+		}
 
-    child = parent;
-  }
-  return null;
+		child = parent;
+	}
+	return null;
 }
 // return "child" if it is of required tagName
 function getAncestorByTagName(child, tagName) {
   tagName = tagName.toLowerCase();
-  if(child.tagName.toLowerCase() == tagName)
-    return child;
-  var parent;
-  while((parent = child.parentNode) != null) {
-    if(parent.tagName && parent.tagName.toLowerCase() == tagName)
-      return parent;
-    child = parent;
-  }
-  return null;
+	if(child.tagName.toLowerCase() == tagName)
+		return child;
+	var parent;
+	while((parent = child.parentNode) != null) {
+		if(parent.tagName && parent.tagName.toLowerCase() == tagName)
+			return parent;
+		child = parent;
+	}
+	return null;
 }
 
 function setInnerHtml(div, text) {
 // write in child with id = "content" if it exists.
   var contentDiv = getChildById(div, "content");
   if(contentDiv != null)
-    div = contentDiv;
+	div = contentDiv;
 
   if (Browser.ns4) {
     div.document.open();
@@ -957,12 +915,10 @@ function setInnerHtml(div, text) {
     div.innerHTML = '';
     // hack to remove current div dimensions, otherwise div will not auto-adjust
     // to the text inserted into it (hack needed at least in firefox 1.0)
-  //  div.style.width  = null;
-  //  div.style.height = null;
+    div.style.width  = null;
+    div.style.height = null;
     // insert html fragment
-   // try {
     div.innerHTML = text;
-   // }catch(e){}
   }
   
   // execute / download JS code containing in the div content.
@@ -971,16 +927,16 @@ function setInnerHtml(div, text) {
 
 
 function getElementStyle(elem) {
-  if(typeof elem == 'string')
-    elem = document.getElementById(elem);
+	if(typeof elem == 'string')
+	  elem = document.getElementById(elem);
   // <html> dose not have style property
-  if(elem.nodeType == 9)
-    return null;
+	if(elem.nodeType == 9)
+	  return null;
 
-  if (elem.currentStyle)
-    return elem.currentStyle;
-  else if (window.getComputedStyle)
-    return document.defaultView.getComputedStyle(elem, null);
+	if (elem.currentStyle)
+		return elem.currentStyle;
+	else if (window.getComputedStyle)
+		return document.defaultView.getComputedStyle(elem, null);
 }
 
 /*********************************************************
@@ -1012,38 +968,25 @@ var ExecJS = {
       $t.eval(jsCode);
   },
   
-  // Note: firebug for FF3 ignoring try catch (?!)
   eval : function(jsCode) {
-    // if JS code contains "class name" then check if it was loaded.
-    var pointIdx = jsCode.indexOf(".");
-    if (pointIdx != -1) {
-      className = jsCode.substring(0, pointIdx);
-      if (typeof className == 'undefined') {
-        setTimeout( function() { ExecJS.eval(jsCode) }, 100);
-        return;
-      }
-    }
- 
-    // try to eval JS code
     try {
       window.eval(jsCode);
     }
     catch(e) {
       setTimeout( function() { ExecJS.eval(jsCode) }, 100);
     } 
-   
   },
   
   // executes js code if refObjId is visible - [hidden tab].
   _runRelativeCode : function(jsCode, refObjId) {
     if(document.all && document.readyState != "complete") {
-      if(this.isWaitingOnReady == false) {
-        addEvent(document, 'readystatechange', this._runOnDocumentReady, false);
-        this.isWaitingOnReady = true;
-      }
-      this.runCodeArr.push({"jsCode": jsCode, "refObjId": refObjId});
-    }
-    else {
+			if(this.isWaitingOnReady == false) {
+			  addEvent(document, 'readystatechange', this._runOnDocumentReady, false);
+			  this.isWaitingOnReady = true;
+			}
+			this.runCodeArr.push({"jsCode": jsCode, "refObjId": refObjId});
+		}
+		else {
       if(this.isObjectTotallyVisible(refObjId))
         this.eval(jsCode);
     }
@@ -1094,18 +1037,17 @@ var ExecJS = {
       obj = document.getElementById(obj);
     if(obj == null)
       return false;
-    var parent = obj;
-    
-    while(parent != null) {
-      var stl = getElementStyle(parent);
-      if (stl != null) {
-        if (stl.visibility == 'hidden' || stl.display == 'none')
-          return false;
-      }
-      parent = obj.parentNode;
-      obj = parent;
-    }
-    return true;
+	  var parent = obj;
+	  while(parent != null) {
+		  var stl = getElementStyle(parent);
+		  if (stl != null) {
+		    if (stl.visibility == 'hidden' || stl.display == 'none')
+		      return false;
+			}
+		  parent = obj.parentNode;
+		  obj = parent;
+	  }
+	  return true;
   },
 
   _runOnDocumentReady : function() {
@@ -1146,12 +1088,12 @@ function eraseCookie(name) {
 function changeOpacity(obj, level) {
   if (!obj)
     return;  
-  if(typeof obj.style.MozOpacity != 'undefined')
-    obj.style.MozOpacity = level;
-  else if(typeof obj.style.opacity != 'undefined')
-    obj.style.opacity = level;
-  else if(obj.style.filter != 'undefined')
-    obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
+	if(typeof obj.style.MozOpacity != 'undefined')
+		obj.style.MozOpacity = level;
+	else if(typeof obj.style.opacity != 'undefined')
+		obj.style.opacity = level;
+	else if(obj.style.filter != 'undefined')
+		obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
 }
 
 function copyAttributes(oNode, oNew) {
@@ -1291,19 +1233,6 @@ function getObjectUpperLeft(obj){
 
   return {x:x, y:y};
 }// eof getObjectUpperLeft
-
-// returns base url with trailed "/"
-function getBaseUrl() {
-  var baseUriO = document.getElementsByTagName('base');
-  if (!baseUriO)
-    return "";
-  
-  var baseUri = baseUriO[0].href;
-  if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
-    baseUri += "/";
-
-  return baseUri;
-}
 
 // flag that common.js was parsed
 g_loadedJsFiles["common.js"] = true;
