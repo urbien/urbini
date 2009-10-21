@@ -16,9 +16,13 @@ function myErrorHandler() {
   return true;
 }
 
-function closeChatWindow() {
-  var moveToPriv = confirm('Would you like to leave a room but stay in rts? You will be moved to your private room.');
-  var url = '/chatRoom?title=' +
+function closeChatWindow(){
+//	var moveToPriv = confirm('Would you like to leave a room but stay in rts? You will be moved to your private room.');
+	BrowserDialog.confirm('Would you like to leave a room but stay in rts? You will be moved to your private room.', closeChatWindowCallback);
+}
+	
+function closeChatWindowCallback(moveToPriv){	
+	var url = '/chatRoom?title=' +
             escape('Contact '+document.getElementById('realUserName').value) +
             '&privateR=true&referer=' +
             escape(document.getElementById('infoCP'+document.getElementById('aliasUserUri').value).value);
