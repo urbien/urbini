@@ -3,7 +3,7 @@
 function startCalendar(parentDiv, callback, fromInp, toInp) {
   if (typeof parentDiv == 'string')
     parentDiv = document.getElementById(parentDiv);
-  
+
   // scedule; no toolbar with buttons
   var isCalendarNavigation = (parentDiv.id == "calendar_navigation");
 
@@ -18,7 +18,7 @@ function startCalendar(parentDiv, callback, fromInp, toInp) {
           
           "<div class=\"iphone_btn\">" +
           "<div></div>" +
-          "<input type=\"button\" value=\"Back\" onclick=\"ListBoxesHandler.em_onBackBtn(1);\"/>" +
+          "<input type=\"button\" value=\"Back\" onclick=\"ListBoxesHandler.onBackBtn(1);\"/>" +
           "</div>" +
 
           "<div class=\"iphone_btn\">" +
@@ -128,11 +128,11 @@ var DatePicker = {
   },
   
   _setValue : function(value) {
-    this.input.value = "";
+    this.input.value = value;
     if (this.callback)
-      this.callback(value)
+	  this.callback(this.input);
     else  
-      ListBoxesHandler.em_onBackBtn(1);
+      ListBoxesHandler.onBackBtn(1);
   }
 }
 

@@ -51,6 +51,7 @@ tr.rlHeader {
 div {font-family:Helvetica; font-size:10pt;}
 .text {font-size:0.7em; font-family:Helvetica;font-weight:bold;}
 
+/* commented out because Touch UI
 .input {
   background: rgb(231, 235, 240);
   border-bottom: 1px solid #C0C9D7;
@@ -64,6 +65,7 @@ div {font-family:Helvetica; font-size:10pt;}
   text-decoration:none;
   vertical-align:middle;
 }
+*/
 .isel {
   background-color:fffdc3;
   border-bottom: 1px solid #C0C9D7;
@@ -103,7 +105,7 @@ div {font-family:Helvetica; font-size:10pt;}
     width: 100%;
     box-sizing: border-box;
     margin: 0;
-    padding: 3px;
+    padding: 1 3 1 3;
     line-height: 20px;
     font-size: 20px;
     font-weight: bold;
@@ -140,8 +142,7 @@ div {font-family:Helvetica; font-size:10pt;}
 .topBar .title { display: none; float: left; color: #ffffff; font-size: 20px; }
 .topBar_history .title { color: #ffffff; font-size: 20px; padding: 5px; }
 
-.button {
-    float: right;
+.topBar .button, .topBar .button_left, .topBar .button_right {
     -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
     -webkit-border-radius: 0;
     border-width: 0 5px 0 5px;
@@ -149,22 +150,6 @@ div {font-family:Helvetica; font-size:10pt;}
     margin: 3px;
     line-height: 28px;
     font-size: 12px;
-    font-family: Helvetica;
-    font-weight: bold;
-    color: #FFFFFF;
-    text-shadow: rgba(0, 0, 0, 0.6) 0px -1px 0;
-    text-decoration: none;
-    background: none;
-}
-.button_left {
-    float: left;
-    -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
-    -webkit-border-radius: 0;
-    border-width: 0 5px 0 5px;
-    padding: 3px;
-    margin: 3px;
-    line-height: 28px;
-    font-size: 16px;
     font-family: Helvetica;
     font-weight: bold;
     color: #FFFFFF;
@@ -173,21 +158,10 @@ div {font-family:Helvetica; font-size:10pt;}
     background: none;
 }
 
-.button_middle {
-    float: center;
-    -webkit-border-image: url(../images/iPhoneButton.png) 0 5 0 5;
-    -webkit-border-radius: 0;
-    border-width: 0 5px 0 5px;
-    padding: 3px;
-    margin: 3px;
-    line-height: 28px;
-    font-size: 12px;
-    font-weight: bold;
-    color: #FFFFFF;
-    text-shadow: rgba(0, 0, 0, 0.6) 0px -1px 0;
-    text-decoration: none;
-    background: none;
-}
+.topBar .button, .topBar .button_left { float: left; }
+.topBar .button_right { float: right; }
+
+
 .chat {
   padding: 0px 5px 0px 5px;
 }
@@ -236,16 +210,19 @@ tr.dark  {background-color:#eeeeee; height: 35px;}
     color: #000000;
 }
 
-#menu_Options { position: fixed; top: 20; left: 1; }
+#menu_Options { position: fixed; top: 20px; left: 1px; }
 
-#options_container { position: relative; width: 320;}
-#options_container  #top { margin: 0; background: url(../images/skin/iphone/options_back.png) top center; padding-top:35 }
-#options_container  #content { margin: 0; background: url(../images/skin/iphone/options_back_middle.png) top center }
-#options_container  #bottom { margin: 0; background: url(../images/skin/iphone/options_back.png) bottom center; padding-top:20 }
+#options_container { position: relative; width: 320px;}
+#options_container  #top { margin: 0px; background: url(../images/skin/iphone/options_back.png) top center; padding-top: 35px; }
+#options_container  #content { margin: 0px; background: url(../images/skin/iphone/options_back_middle.png) top center }
+#options_container  #bottom { margin: 0px; background: url(../images/skin/iphone/options_back.png) bottom center; padding-top: 20px; }
 
 #options_container .rlHeader { background: none; }
 #options_container #content .li { color: #fff; }
 
-.touch_screen { position: absolute; left:0; top:0; }
-.touch_screen img { width:1000; height:1000; border:0; }
+.touch_screen { position: absolute; left: 0px; top: 0px; }
+.touch_screen img { width: 1000px; height: 1000px; border: 0px; }
+
+
+#bottom_toolbar { position: absolute; z-index: 10; padding-right: 3 0 3 0; text-align: center;  bottom: 0px; width: 100%; background: url(../images/skin/iphone/bottom_toolbar_bg.png) repeat; /*opacity: 0.2;*/ }
 

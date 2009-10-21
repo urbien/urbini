@@ -254,12 +254,13 @@ function hash(form, login_url) {
   url += "&.md5=1";
   // prevent from running this again. Allow the server response to submit the form directly
   form.onsubmit = null;
-  
+
   // mobile mode: load page in div with help of Ajax request.
   if (typeof Mobile != 'undefined')
-    Mobile._getPage(null, url);
-  else
+    Mobile.getPage(null, url);
+  else 
     location.href = url;
     
   return false;
 }
+

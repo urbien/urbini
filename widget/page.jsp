@@ -12,14 +12,21 @@
     <div id="myScreenName" class="hdn" />
     <div id="im_empty" class="hdn" />
 
-	  <div id="mainDiv">
+	  <div id="mainDiv" class="mobile_page">
 	    <views />
       <siteTitle name="title" />
 		  <tablePropertyList/>
 		  <siteResourceList/>
 		  <pagingResources/>
+		  
+		  <filterUrl />
+		  <addNewResource />
+    	  <edit />
+		  <delete />
+	
 	  </div>
 	</div>
+	
   <include name="requiredFooter.jsp"/>
   </body>
 </html>

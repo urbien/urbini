@@ -1,5 +1,5 @@
 /* text in link. You can see it in 'Hi "contactName"' */
-A {text-decoration : none; font-family: Arial, Verdana, Helvetica, sans-serif; color: #003399}
+A {text-decoration : none; font-family: Arial, Verdana, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
 A:hover {color: #6BBDBE; text-decoration : none; cursor: pointer}
 
 a img {
@@ -36,7 +36,6 @@ a.icotxt img {
 .propLabel1 {
   font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;
 }
-
 /* Chinese font for prop labels */
 .propLabel:lang(zh) {
   font-family: "Li Sung", MingLiu; font-size:1em;
@@ -259,7 +258,7 @@ table.greyBorder {
 	  background-repeat: repeat-x;
 	  text-align: center;
 	  overflow: hidden;
-      white-space: nowrap;
+    white-space: nowrap;
 	  color: #662d91;
 	}
 	.cpTabs TD.right {
@@ -480,14 +479,22 @@ td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .input1 {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:16px;text-decoration:none;}
 .barcode {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:20px;text-decoration:none;}
 /* used in filter input text fields */
-.input {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
+.input {
+  background-color:transparent;
+  border:medium none;
+  font-family:Helvetica,Arial;
+  font-size:16px;
+  font-weight:normal;
+  height:auto;
+}
+
 /* selected input field in edit mode and filter */
 .isel {background-color:fffdc3; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
 .select {border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
 .input:lang(zh) {
   font-size: 0.9em; height:16px;
 }
-.textarea {background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; }
+.textarea { border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; }
 
 .errorTextStd {font-size:12px;font-weight:bold;font-family:Arial, Helvetica, Sans Serif;color:#A01E00}
 
@@ -529,10 +536,9 @@ td.hi {background-color: #f8f4ef; color: darkblue}
 td.contents {background-color: #f8f4ef; color: darkblue; font-weight:bold; font-size: small}
 font.warn {color:#A01E00}
 td.shading {border:solid #808080 1px; color:#000000}
-span.comment { font-family: Verdana, Arial, Helvetica, sans-serif; color: #5766a5; font-weight:bold; font-size: 8pt}
-tr.editMode  {background-color:#D6E7EF;}
-span.bigLetterTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C; text-decoration: underline}
-span.bigLetterTitle2 {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#6a7ffc;}
+tr.editMode  {}
+span.bigLetterTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;}
+span.bigLetterTitle2  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#ffffff;}
 
 span.fileMenuTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;vertical-align:middle}
 .menuI  {font-family:sans-serif, arial; font-size:12px; color:#00309C;vertical-align:top}
@@ -1528,6 +1534,7 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 
 .ierr { vertical-align:top; width:64px; height:64px; padding-right:2px; border:0px }
 
+
 ul.chapter {
   margin:0px; padding-left: 0px; text-indent: 0em; list-style-type:none;
 }
@@ -1543,6 +1550,7 @@ ul.chapter a {
 ul.subchapter {
   margin: 0 0 0 0; padding-left: 1.7em; text-indent: 0em; list-style-type:none; list-style-image:url(../images/bullet_yellow.gif);
 }
+
 ul.subchapter a {
   font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;
 }
@@ -1570,7 +1578,7 @@ div.contentsRL {
 .iinp_btn { cursor: pointer; }
 .liinp { width:32px; height:32px; border:0px; vertical-align:middle }
 .iiphone { width:48px; height:48px; border:0px; vertical-align:middle }
-.icursor {cursor: pointer;width:16px; height:16px; border:0px; vertical-align:middle}
+.icursor {cursor: pointer; /*width:16px; height:16px;*/ border:0px; vertical-align:middle}
 .ixlcursor {cursor: pointer;width:48px; height:48px; border:0px; vertical-align:middle}
 .xliinp { width:48px; height:48px; border:0px; vertical-align:middle }
 .hdn {
@@ -1667,14 +1675,14 @@ TD.toolbar {
 }
 .gray .dashboardLine td.dashboard_btn:hover { border: 1px solid #CFCFCF; }
 .gray .dashboardLine td.current { border: 1px dashed #9F9F9F; }
-
+ 
  
 .menuTitle td, .menuTitle th {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
 }
 
 .menuItemIcon {
-	PADDING-RIGHT: 2px; PADDING-LEFT: 2px; BACKGROUND-COLOR: #EDECF8; white-space: nowrap; width: 20px
+	PADDING-RIGHT: 2px; PADDING-LEFT: 2px; white-space: nowrap; width: 20px
 }
 
 .poweredMenuItemIcon {
@@ -1682,18 +1690,19 @@ TD.toolbar {
 }
 
 .menuItemIcon img {
-  width: 16px; height: 16px; border: 0px; text-align:center; margin-top:0px; margin-bottom:0px; padding:0px;
+  width: 16px; height: 16px; border: 0px; text-align:center; margin: 0 5 0 5; padding:0px;
 }
 
 .menuItemChk {
-	width: 10px
+	width: 16px; padding-left: 5px;
 }
+.menuItemChk img { visibility: hidden; }
 
 .menuItemNoChk {
 	PADDING-LEFT: 8px; width: 10px
 }
 
-.menuItem { font-weight:normal;}
+.menuItem { font-weight:normal; padding-left: 7px; }
 .menuItem a { width: 95%; font-weight:normal; }
 
 .menuItemRed {
@@ -1836,6 +1845,10 @@ TD.closePopup {
   height: 2em;
   padding: 0px;
 }
+
+/* Note: iPhone.css contains topBar class */
+.header .ftSearch, .topBar .ftSearch { float: left; } /* mobile toolbar */
+
 .fts {
   font-size: 0.8em;
   font-weight: normal;
@@ -1893,7 +1906,193 @@ table.printFB {
 .captcha .h { background-position: 50% 100%; padding: 0; margin: 0;}
 .captcha .i { background-position: 75% 100%; padding: 0; margin: 0;}
 .captcha .j { background-position: 100% 100%; padding: 0; margin: 0;}
+
 .login {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px}
 .lButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 .userLogin {background:#ffffff}
 .loginBorder {background: #cbcbcb}
+
+.rte { margin: 0 0 5 7; background-color: #ffffff; border: 1px solid rgb(192, 201, 215); padding:0; width: 276px; height: 100px;  }
+
+
+/* like menu_Options in iphone.css */
+#browser_dlg { top: 0px; position: absolute; width: 320px; padding: 0px; visibility: hidden; }
+#browser_dlg table { width: 100%; }
+#browser_dlg .top { width: 320px;  height: 35px; background: url(../images/skin/iphone/options_back.png) top center !important; }
+#browser_dlg .content { color: #fff; background: url(../images/skin/iphone/options_back_middle.png) top center !important; }
+#browser_dlg .content .statement { padding: 0px 25px 15px 25px; font-size: 18px; }
+#browser_dlg .content .btns_panel { width: auto; margin-top: 20px; }
+#browser_dlg .bottom { height: 20px; background: url(../images/skin/iphone/options_back.png) bottom center; }
+#browser_dlg .content .prompt_text { display: none; border: 1px solid #fff; background: transparent; width: 280; color: #fff; }
+.iphone_dlg_btn { cursor: pointer; text-align: center; color: #fff; padding: 0px; font-size: 18px; font-weight: normal; width: 129px; height: 44px; line-height: 44px; background: url(../images/skin/iphone/dlg_button.jpg); }
+
+/* ****************** Touch UI ***************************/
+/* prevents blue rect in WebKit browsers */
+input[type=text]:focus, input[type=password]:focus { outline: 0 none; }
+
+.menuItemRow { cursor: pointer; }
+
+.panel_block .header { float: left; width: 320px; text-align: center;  vertical-align: bottom; background: url(../images/iPhoneToolbar.png); border-bottom: 1px solid #2d3642; /* height: 70px;*/ }
+.panel_block div.header { padding: 1 0 1 0; }
+#siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
+
+.panel_block .header #item_selector { width: 210px; }
+
+.rounded_rect_cont { width: 298px; text-align: center; overflow: hidden; margin: 12 0 0 10; }
+.rounded_rect_tbl { width: 100%; margin-bottom: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #fff; padding: 0; border: solid rgb(166, 170, 173) 1px; color: #000000 }
+
+.rounded_rect_tbl .param_tr { cursor: pointer; }
+.rounded_rect_tbl .param_tr td { padding: 6 0 6 0; vertical-align: middle; }
+
+/* see html: rollup_td.width + data_td.width + arrow_td.width = 299 */
+.rounded_rect_tbl .param_tr .rollup_td { /*width: 29px;*/ cursor: text; }
+.rounded_rect_tbl .param_tr .rollup_td img { margin: 2px; }
+
+/* ??? label + chosen_value_div */
+.rounded_rect_tbl .data_td { padding: 0;  }
+
+/*.rounded_rect_tbl*/ .arrow_td { width: 25px; }
+/*.rounded_rect_tbl*/ .arrow_td div { width: 25px; height: 20px; cursor: pointer; background: url(../images/skin/iphone/listArrow_sprite.png) 0px 0px;}
+
+.rounded_rect_tbl .label { max-width: 230px; width: auto; -moz-user-select: none; overflow: hidden; float: left; margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; }
+.rounded_rect_tbl .label img { margin-right: 3px; }
+
+.rounded_rect_tbl .input { text-align: right; margin-left: 7px; width: 0px/*initial value*/; height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
+.rounded_rect_tbl .textarea { margin-left: 8px; margin-bottom: 5px; width: 277px; }
+.rounded_rect_tbl .property_group_td { text-decoration: underline; /*background-color: #eee;*/ text-transform: uppercase; font-size: 16px; font-weight: bold; padding-left: 5px; border: none; }
+.rounded_rect_tbl .comment { text-align: justify; color: #555; font-size: 11px; padding: 5 8 5 8; }
+.rounded_rect_tbl .select { font-family: Helvetica, Arial;  font-size: 14px; }
+
+.rounded_rect_tbl input#rightPanelPropertySheet { display: none; }
+
+.chosen_values {
+  float: left;
+  padding: 0px; /*2 5 2 0;*/
+  overflow: hidden;
+}
+
+.chosen_values div {
+  overflow: hidden;
+  white-space: nowrap;
+  color: rgb(114, 127, 161); 
+  font-family: Helvetica, Arial;  
+  font-size: 15px; 
+  font-weight: 600;
+}
+
+.rounded_rect_tbl td { border-bottom: 1px solid #999999; height: 40px; /*padding-bottom: 5px; padding-top: 3px;*/ vertical-align: middle; }
+.rounded_rect_tbl table td { border: none; height: auto; }
+
+.listArrow { width: 25px; height: 20px; }
+
+.panel_block {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0px; 
+  
+  width: 320px;
+}
+.panel_block #hide_icon, #menu_Options #hide_icon { position: relative; z-index: 2; top: 25px; left: -5px; cursor: pointer; }
+#menu_Options #hide_icon { top: 15px; left: -4px; }
+.panel_block .content 
+{
+  max-height: 500px;
+  height: auto; 
+
+  padding: 0px; 
+  background: #C8C8C8 url(../images/skin/iphone/pinstripes.png) repeat scroll 0%;
+ }
+
+.frame {  width: 320; overflow: hidden; padding: 0; border: none; }
+.tray {
+  -webkit-transition-property: -webkit-transform;
+  -webkit-transition-duration: 0.4s;
+  -webkit-transition-timing-function: easy-in-out;
+  -webkit-transform: translate(0px, 0px); 
+
+  padding: 0;
+  margin: 0;
+  width: 9000;
+
+  position: relative;
+  left: 0;
+}
+
+/*
+input[type=checkbox] { display: none; }
+*/
+
+.panel_block #item_name { font-size: 13px; font-weight: bold; margin: 15 0 0 10; }
+/** iPhone toggle button. **/
+/* 3 types 1)left align 2) right align 3) blue with left align */
+.toggle_btn { float: right; margin: 5 9 5 0; width: 100px; height: 30px; background:#FFFFFF url(../images/skin/iphone/toggle_btn.png); cursor: pointer; }
+.iphone_checkbox { width: 29px; height: 29px; background: url(../images/skin/iphone/checkbox.png); cursor: pointer; }
+
+/** iPhone button **/
+.iphone_btn, .iphone_btn_blue { float: left; margin: 7 3 3 3; }
+.iphone_btn div, .iphone_btn input, .iphone_btn_blue div, .iphone_btn_blue input { height: 30px;  float: left; background: url(../images/iPhoneButton_wide.png); margin: 0px; border: 0px; }
+.iphone_btn div, .iphone_btn_blue div { width: 5px; background-position: top left; }
+.iphone_btn input, .iphone_btn_blue input { padding-right: 13px !important; padding-right: 8px; background-position: top right; font: bold 13px Helvetica; color: #FFFFFF; text-decoration: none; line-height: 30px; }
+
+.iphone_btn_blue div, .iphone_btn_blue input  { background-image: url(../images/iPhoneButton_blue_wide.png); }
+
+/** iPhone field **/
+.iphone_field { float: left; margin: 5px; }
+.iphone_field .left, .iphone_field .right, .iphone_field input { height: 29px;  float: left; background: url(../images/skin/iphone/rounded_field.png); margin: 0px; border: 0px; }
+.iphone_field .left { width: 8px; background-position: top left; }
+.iphone_field .right { width: 8px; background-position: top right; }
+.iphone_field .right_cross { width: 25px; height: 29px; float: left; background: url(../images/skin/iphone/right_cross.png); margin: 0px; border: 0px; cursor: pointer; }
+
+.iphone_field input { padding: 6 0 0 0; background-position: top center; font: bold 17px Helvetica; border: none; }
+
+/** iPhone search field **/
+.iphone_search { float: left; margin: 5px; }
+.iphone_search .left, .iphone_search .right, .iphone_search input { height: 29px;  float: left; background: url(../images/skin/iphone/search_field.png); margin: 0px; border: 0px; }
+.iphone_search .left { width: 35px; background-position: top left; cursor: pointer; }
+.iphone_search .right { width: 32px; background-position: top right; cursor: pointer; }
+.iphone_search input { padding: 6 0 0 0; background-position: top center; font: bold 17px Helvetica; border: none; }
+
+.toolbar_icons_set { width: 25; height: 40; background-image: url(../images/skin/iphone/toolbar_icons_set.png) }
+.icon_btn { margin: 0 4 0 4; cursor: pointer; float: left; background-color: transparent; border-width: 0; }
+.right { float: right; margin-right: 4px; }
+
+/** shadow **/
+.shaddow_right_top {
+  width: 11px;
+  background: url(../images/frame/png/right_top.png) no-repeat !important;
+  background: none;
+  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/frame/png/right_top.png, sizingMethod='crop'); 
+}
+.shaddow_right {
+  width: 11px;
+  background: url(../images/frame/png/right.png) repeat-y !important;
+  background: none;
+  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/frame/png/right.png, sizingMethod='scale'); 
+}
+.shaddow_bottom {
+  height: 11px;
+  background: url(../images/frame/png/bottom.png) no-repeat !important;
+  background: none;
+  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/frame/png/bottom.png, sizingMethod='crop'); 
+}
+.shaddow_right_bottom {
+  background: url(../images/frame/png/right_bottom.png) no-repeat !important;
+  background: none;
+  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/frame/png/right_bottom.png, sizingMethod='crop'); 
+}
+
+.form_panel { background: transparent; float: left; width: 320; min-height: 1px; margin: 0px; }
+.options_panel { float: left; width: 320; }
+
+.calendar_panel { float: left; width: 320; }
+#calendar_container { padding: 0; }
+
+#div_info table { overflow: visible; }
+#div_info table .label { float: left; /*width: 200px;*/ overflow: visible; }
+#div_info td { white-space: nowrap; padding-right: 5px; overflow: visible; text-align: right; }
+#div_info td.pGr { text-align: center; }
+
+#siteResourceList #filter input[type=text] { height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
+
+  

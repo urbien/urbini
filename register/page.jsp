@@ -18,8 +18,34 @@
     <file/>
     </td></tr></table>
     <br/>
-      
-    <script src="register/focus.js" type="text/javascript" language="JavaScript"></script>
-    <include name="include/commonFooter"/>
+
+		<script type="text/javascript" language="JavaScript">
+			function jsTester() {
+				var f = document.forms['loginform'];
+	
+				if (typeof Mobile != 'undefined') {
+					var page = Mobile.getCurrentPageDiv();
+					f = getChildByAttribute(page, "name", 'loginform');
+				}
+				
+				if (f) {
+		      var jstest = f.elements['.jstest'];
+		      jstest.value = "ok"; // server will know that JavaScript worked
+					var u = f.elements['j_username'];
+		      if (u)
+						if (u.type)
+							if (u.type != 'hidden')
+			         try {
+			         	u.focus();
+							 } catch (e) { }
+		   	}
+			}
+	
+			//setTimeout(jsTester, 1000);
+			jsTester();
+		
+		</script>
+		
+		<include name="include/commonFooter"/>
   </body>
 </html>
