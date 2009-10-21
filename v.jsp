@@ -50,4 +50,5 @@
 
 </center>
 <PointOfSale/>
+<filterUrl />
 </div>

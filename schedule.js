@@ -817,3 +817,81 @@ function addEventOnSchedule() {
     return;
   addEvent(table, 'click', function(event) {schedule(event);}, false);
 }
+
+
+/**********************************************
+* CalendarNavigation
+***********************************************/
+var CalendarNavigation = {
+  URL_BASE : 'schedule.html?showDay=y&-schedule=y&type=http://www.hudsonfog.com/voc/hospitality/spa/TherapistAssignment',
+  parentDiv : null,
+  contentDiv : null,
+  input : null, // used to comunicate with calendar
+  
+  _init : function() {
+    this.parentDiv = document.createElement("div");
+    this.parentDiv.style.position = "absolute";
+
+    var html = 
+      "<img src=\"icons/hide_big.png\" style=\"position: absolute; left: -16; top: -16; \" onclick=\"this.parentNode.style.display='none'\">" +
+      "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" +
+        "<tr>" +
+          "<td id = \"calendar_navigation\" class=\"content\"></td>" +
+          "<td class=\"shaddow_right_top\"></td>" +
+        "</tr>" +
+        "<tr>" +
+          "<td class=\"shaddow_bottom\"></td>" +
+          "<td class=\"shaddow_right_bottom\"></td>" +
+        "</tr>" +
+      "</table>";
+    
+    this.parentDiv.innerHTML = html;
+    document.body.appendChild(this.parentDiv);
+    
+    this.contentDiv = getChildById(this.parentDiv, "calendar_navigation");
+    this.contentDiv.style.padding = 10;
+    this.contentDiv.style.background = "#C8C8C8 url(../images/skin/iphone/pinstripes.png) repeat scroll 0%";
+
+    this.input = document.createElement("input");
+    this.input.style.display = "none";
+    this.input.setAttribute("date_format", "MM-dd-yyyy");
+    document.body.appendChild(this.input);
+    
+  },
+  
+  show : function(initDate, hotPoint) {
+    if (this.contentDiv == null)
+      this._init();
+    
+    if (this.contentDiv.style.left.length == 0) {
+      var x = findPosX(hotPoint) - 300;
+      var y = findPosY(hotPoint) + 40;
+
+      this.parentDiv.style.left = x;
+      this.parentDiv.style.top = y;
+    }
+    else {
+      this.parentDiv.style.display = "";
+    }
+
+    this.input.value = initDate;
+    startCalendar(this.contentDiv, this.callback, this.input, null);
+      
+  },
+  
+  callback : function(dateStr) {
+    var $t = CalendarNavigation;
+    // schedule uses format "MM-dd-yyyy"
+    var dateArr = dateStr.split('-');
+    var month = dateArr[0];
+    var day = dateArr[1];
+    var year = dateArr[2];
+   
+    var location = $t.URL_BASE +
+      "&$day=" + day +
+      "&$month=" + (month - 1) + // 0-based month counting
+      "&$year=" + year;
+
+    window.location = location;
+  }
+}

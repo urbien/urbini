@@ -32,34 +32,6 @@ var keyPressedElement;
 var autoCompleteTimeoutId;
 var keyPressedTime;
 
-/**
- * Since Internet Explorer does not define the Node interface constants, which
- * let you easily identify the type of node, one of the first things to do in a
- * DOM script for the Web is to make sure you define one yourself, if it's
- * missing.
- */
-if (!window['Node']) {
-  window.Node = new Object();
-  Node.ELEMENT_NODE = 1;
-  Node.ATTRIBUTE_NODE = 2;
-  Node.TEXT_NODE = 3;
-  Node.CDATA_SECTION_NODE = 4;
-  Node.ENTITY_REFERENCE_NODE = 5;
-  Node.ENTITY_NODE = 6;
-  Node.PROCESSING_INSTRUCTION_NODE = 7;
-  Node.COMMENT_NODE = 8;
-  Node.DOCUMENT_NODE = 9;
-  Node.DOCUMENT_TYPE_NODE = 10;
-  Node.DOCUMENT_FRAGMENT_NODE = 11;
-  Node.NOTATION_NODE = 12;
-}
-
-// add contains function if it is missing
-if (window.Node && Node.prototype && !Node.prototype.contains) {
-  Node.prototype.contains = function (arg) {
-    return !!(this.compareDocumentPosition(arg) & 16);
-  };
-}
 Popup.currentDivs          = new Array(); // distinct divs that can be open at
                                           // the same time (since they have
                                           // different canvases)
@@ -98,13 +70,16 @@ Popup.getCanvas = function (frameRef) {
     iframe         = frameRef;
   else {
     iframe         = document.getElementById(defaultCanvas);
-    if (!iframe)
-      throw new Error("document structure invalid: iframe '" + defaultCanvas + "' is missing");
+    //if (!iframe) // No popupIframe on Mobile
+    //  throw new Error("document structure invalid: iframe '" + defaultCanvas + "' is missing");
   }
   return iframe;
 };
 
 Popup.allowTooltip = function (target) {
+  if (Browser.mobile)
+    return false;
+    
   var noOpenPopups = true;
   for (var i=0; i<Popup.popups.length; i++) {
     var popup = Popup.popups[i];
@@ -129,13 +104,33 @@ Popup.allowTooltip = function (target) {
 
 /**
  * Static function. returns a Popup by divId if exists, otherwise - null
+ * mobile: 
+ * 1. returns popups currently embeded into a document.
+ * 2. popups cancontain single popups or set of popups with the same id;
+ *    only one popup with particular id should be in document at a moment.
  */
 Popup.getPopup = function (divId) {
   var popup = Popup.popups[divId];
-  if (popup)
-    return popup;
-  else
+  if (!popup)
     return null;
+    
+  // popup object
+  if (typeof popup.length == 'undefined') {
+    if (getAncestorByTagName(popup.div, "body")) 
+      return popup;
+    else 
+      return null;
+  }
+  // array of popup objects
+   else {
+    var popupArr = popup;
+    for (var i = 0; i < popupArr.length; i++) {
+      popup = popupArr[i];
+      if (getAncestorByTagName(popup.div, "body") != null)
+        return popup;
+    }
+    return null;
+  }
 };
 
 /**
@@ -236,23 +231,25 @@ Popup.load = function (event, div, hotspot, content) {
     }
     content = body.innerHTML;
   }
-  var popup = Popup.getPopup(div.id);
 
+  var popup = Popup.getPopup(div.id);
   popup.setInnerHtml(content);
   var div = popup.div;
-
+  
   var tables = div.getElementsByTagName('table');
+  /*
   if (popup.firstRow() == null) {
+    debugger
     alert("Warning: server did not return listbox data - check connection to server");
     return;
   }
+  */
 
   // /
   var idx = propName.indexOf(".", 1);
   var shortPropName = propName;
   if (idx != -1)
     shortPropName = propName.substring(0, idx);
-  // /
 
   var addToTableName = "";
   if (originalProp.indexOf("_class") != -1) {
@@ -261,9 +258,11 @@ Popup.load = function (event, div, hotspot, content) {
       addToTableName = "_class";
   }
 
-  hideResetRow(div, currentFormName, originalProp);
+//  hideResetRow(div, currentFormName, originalProp);
+
   popup.open1(event, 0, 16);
   loadedPopups[div.id] = div;
+  
 };
 
 /**
@@ -318,7 +317,23 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   var self = this;
 
   // add to the list of popups
-  Popup.popups[divRef.id] = this;
+  if (typeof Popup.popups[divRef.id] == 'undefined') 
+    Popup.popups[divRef.id] = this;
+  else {
+    if (typeof Popup.popups[divRef.id].length == 'undefined') {
+      var tmp = Popup.popups[divRef.id];
+      Popup.popups[divRef.id] = new Array();
+      Popup.popups[divRef.id].push(tmp);
+    }
+    Popup.popups[divRef.id].push(this); 
+  }
+      
+  
+  //Popup.register(divRef.id, this);
+
+//  this.register = function(id, obj) {
+//    Popup.popups[id] = obj;
+//  }
 
   this.reset = function (hotspotRef, frameRef, contents) {
     this.hotspot        = hotspotRef;
@@ -334,18 +349,22 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var iframeId;
     if (iframe)
       iframeId = iframe.id;
-    else
+    else if (self.iframe)
       iframeId = self.iframe.id;
+    else
+      return null;
 
     return Popup.currentDivs[iframeId];
   }
 
   this.setCurrentDiv = function () {
-    Popup.currentDivs[self.iframe.id] = self.div;
+    if (self.iframe)
+      Popup.currentDivs[self.iframe.id] = self.div;
   }
 
   this.unsetCurrentDiv = function () {
-    Popup.currentDivs[self.iframe.id] = null;
+		if (self.iframe)
+    	Popup.currentDivs[self.iframe.id] = null;
   }
 
   this.contains = function (target) {
@@ -426,6 +445,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   }
 
   this.isOpen = function() {
+    if (typeof self.popupClosed == 'undefined')
+      return false;
     return !(self.popupClosed);
   }
 
@@ -474,11 +495,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * close popup uncoditionally and immediately with no regard to mouse position
    */
   this.close = function () {
-    // if (self.popupClosed)
-    // return;
     self.popupClosed = true;
     var div      = self.div;
     var divStyle = div.style;
+    
     if (divStyle.display == "inline") {
       self.setInvisible();
       self.closeTimeoutId = null;
@@ -491,6 +511,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    */
   this.delayedClose = function (timeout) {
     var div   = self.div;
+    if (div.style.position.toLowerCase() == "static")
+      return;
+
     var divId = div.id;
     if (timeout == null)
       timeout = 600;
@@ -506,32 +529,17 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var hotspot = self.hotspot;
     // var isMenu = div.id.indexOf('menudiv_') == 0 ? true false;
     if (!Browser.penBased && !Browser.joystickBased) {
-     /*
-      if (Browser.ie55) { // IE 5.5+ - IE's event bubbling is making mouseout unreliable
-        addEvent(div,     'mouseenter',  self.popupOnMouseOver, false);
-        addEvent(div,     'mouseleave',  self.popupOnMouseOut,  false);
-        addEvent(hotspot, 'mouseleave',  self.popupOnMouseOut,  false);
-      }
-      else {
-      */
-
-        addEvent(div,     'mouseover', self.popupOnMouseOver, false);
-        addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
-        addEvent(hotspot, 'mouseout',  self.popupOnMouseOut,  false);
-     // }
+      addEvent(div,     'mouseover', self.popupOnMouseOver, false);
+      addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
+      addEvent(hotspot, 'mouseout',  self.popupOnMouseOut,  false);
     }
+    
     var firstRow = self.firstRow();
     if (firstRow == null)
       return; // popup structure without rows
 
     var tables = div.getElementsByTagName('table');
-    if (!tables || !tables[1]) {
-      return;
-    }
-    var table = tables[1];
-    if (!table)
-      return;
-
+   
     // popup contains rows that can be selected
     if (Browser.ie) { // IE - some keys (like backspace) work only on keydown
       addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
@@ -540,14 +548,15 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       addEvent(div,  'keypress',  self.popupRowOnKeyPress,  false);
     }
 
-    var n = self.rowCount();
-    var elems = tables[1].getElementsByTagName("tr");
-    for (var i=0; i<n; i++) {
+    var elems = tables[0].getElementsByTagName("tr");
+    var n = elems.length;//self.rowCount();
+    
+    for (var i = 0; i < n; i++) {
       var elem = elems[i];
       var popupItem = new PopupItem(elem, i);
       self.items[popupItem.id];
       // avoid per-row onClick handler if table has its own
-      if (!table.onclick) {
+      if (!tables[1] || !tables[1].onclick /*!table.onclick*/) {
         addEvent(elem, 'click',     self.popupRowOnClick,     false);
         var anchors = elem.getElementsByTagName('a');
         if (anchors  &&  anchors.length != 0) {
@@ -565,6 +574,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         }
       }
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
+      addEvent(elem, 'mousedown', self.popupRowOnMouseOver, false); // for touch screen
       addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
     }
     // reset
@@ -605,8 +615,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (!target)
       return;
 
-// Packages.java.lang.System.out.println('mouseOver: target.tagName: ' +
-// target.tagName + ', target.id: ' + target.id + ', div: ' + self.div.id);
     // detected re-entering into the popup - thus clear a timeout
     self.delayedCloseIssued = false;
     if (self.closeTimeoutId != null) {
@@ -630,8 +638,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var target = getMouseOutTarget(e);
     if (!target)
       return true;
-// Packages.java.lang.System.out.println('mouseout: target.tagName: ' +
-// target.tagName + ', target.id: ' + target.id + ', div: ' + self.div.id);
     self.delayedClose(600);
     return true;
   }
@@ -666,7 +672,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           var form = document.forms[currentFormName];
           if (form) {
             var inputField = form.elements[originalProp];
-            try { inputField.focus(); } catch(e) {};
+            try {
+            inputField.focus(); } catch(e) {};
           }
           Popup.close0(currentDiv.id);
         }
@@ -724,22 +731,34 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var tr = getTrNode(target);
     if (!tr)
       return stopEventPropagation(e);
+    
+    // Touch UI - slide back
+    var listsContainer = getAncestorById(tr, "lists_container");
+    if (listsContainer != null) {
+      var isMultipleSel = ListBoxesHandler.onOptionsItemClick(tr);
+      if (!isMultipleSel)
+        //ListBoxesHandler.onBackBtn();
+        ListBoxesHandler.onOptionsSelectionFinish(tr);
+    }
 
     var ret = self.popupRowOnClick1(e, tr, target);
+    stopEventPropagation(e);
     return ret;
   }
 
+  /*************************************************
+  * popupRowOnClick1
+  **************************************************/
   this.popupRowOnClick1 = function (e, tr, target) {
     Popup.lastClickTime = new Date().getTime();
     var currentDiv = self.getCurrentDiv();
+    
     if (!tr)
       tr = self.currentRow;
     if (self.isHeaderRow(tr)) // skip clicks on menu header
       return;
 
-    //
-    // if there is a link on this row - follow it
-    //
+    // 1. if there is a link on this row - follow it
     if (target.tagName.toLowerCase() == 'a')
       return;
     if (tr)
@@ -771,21 +790,23 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           document.location.href = href;
          }
       }
-
       return false;
     }
 
+    // 2. tr has no id.
     if (!tr.id)
       return;
-
+    
+    // 3. id = '$noValue'  
     if (tr.id && tr.id == '$noValue')
       return;
+    
+    // 4. calendar
     var isCalendar = tr.id.indexOf("_$calendar") != -1 ? true: false;
-
     if (isCalendar)
       return true;
 
-    // var form = getFormNode(tr);
+    // 5. form
     var form = document.forms[currentFormName];
     if (form == null) {
       throw new Error("not found html form for TR: " + tr.id);
@@ -816,6 +837,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       else
         prop = propertyShortName.substring(0, idx);
     }
+    
     var chosenTextField = form.elements[originalProp];
     var len = chosenTextField.length;
     var verified = prop + "_verified";
@@ -827,7 +849,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var formFieldClass    = form.elements[iclass];
     var formFieldVerified = form.elements[verified];
 
-    var checkboxClicked = (target && target.tagName.toLowerCase() == 'input' && target.type.toLowerCase() == 'checkbox');
+    // Note: delayed selection finish is like checkboxClicked = true
+    var checkboxClicked = true;
     var deleteCurrentDiv = false;
     if (formFieldVerified) {
       if (formFieldVerified.value == 'n')
@@ -838,8 +861,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
 
     // row clicked corresponds to a property with range 'interface', meaning
-    // that
-    // we need to open a list of classes that implement this interface
+    // that we need to open a list of classes that implement this interface
     if (originalProp.indexOf('_class') != -1) {
       var img = tr.getElementsByTagName('img')[0];
       var imgId  = prop + "_class_img";
@@ -861,6 +883,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var isViewCols = currentFormName.indexOf("viewColsList") == 0  ||
                      currentFormName.indexOf("gridColsList") == 0  ||
                      currentFormName.indexOf("filterColsList") == 0;
+    
     if (isViewCols)
       select = prop;
     else
@@ -868,6 +891,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (currentResourceUri)
       select = currentResourceUri + ".$" + select;
     var formField = form.elements[select];
+    
     var selectItems = form.elements[select];
     if (tr.id.indexOf('$clear') == 0) {
       if (isViewCols) {
@@ -926,9 +950,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             chosenTextField[0].value   = '';
         }
         else {
-          if (!isTablePropertyList)
-            chosenTextField.value   = tr.id.substring(6);
-          else
+          //if (!isTablePropertyList) chosenTextField.value   = tr.id.substring(6); else
             chosenTextField.value   = '';
         }
         if (chosenTextField.style)
@@ -939,8 +961,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         formFieldClass.value  = '';
 
       // hide property label that is displayed on top of the text field
-      if (fieldLabel)
-        fieldLabel.style.display    = "none";
+      //if (fieldLabel) fieldLabel.style.display    = "none";
       if (formFieldVerified)
         formFieldVerified.value = 'n';
       if (selectItems) {
@@ -961,8 +982,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
     }
     else  {
-      var items = tr.getElementsByTagName('td');
-      var val = items[2].innerHTML;
+      var val = getChildByClassName(tr, 'menuItem').innerHTML;
       var idx = val.lastIndexOf(">");
       if (!isViewCols) {
         if (len > 1) {
@@ -970,15 +990,18 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   	      if (chosenTextField[0].style)
   	        chosenTextField[0].style.backgroundColor = '#ffffff';
   	    }
+        
+        /* // commented out after Touch UI - need to test it more
   	    else {
           if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate
             chosenTextField.value = tr.id;
-            var dateImg = tr.getElementsByTagName('img');
+            //var dateImg = tr.getElementsByTagName('img');
             var targetImg = this.hotspot;
             if(targetImg.tagName.toLowerCase() == 'a')
               targetImg = targetImg.getElementsByTagName('img')[0];
             if(typeof targetImg != 'undefined')
-              targetImg.src = dateImg[0].src;
+              //targetImg.src = dateImg[0].src;
+              targetImg.src = "icons/cakes.png";
             return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
           }
           else {
@@ -989,6 +1012,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
               chosenTextField.style.backgroundColor = '#ffffff';
           }
         }
+        */
         var fr = form.elements[originalProp + "_From"];
         var to = form.elements[originalProp + "_To"];
         if (fr)
@@ -996,21 +1020,28 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         else if (to)
           to.value = '';
       }
+      
       // show property label since label inside input field is now overwritten
+      /*
       if (currentFormName.indexOf('rightPanelPropertySheet') == 0) {
         if (fieldLabel)
           fieldLabel.style.display = '';
       }
+      */
+      
       var nmbChecked = 0;
       var selectedItem;
       var selectedIdx = 0;
 
+      if (!selectItems) // happens in Touch UI
+        return;
+
       if (!selectItems.length) {
         var t = selectItems.type.toLowerCase();
-        if (t == "hidden")
+       
+        if (t == "hidden") { // used for data entry
           selectItems.value = tr.id; // property value corresponding to a listitem
-// else if (t == "checkbox")
-// selectItems.value = tr.id; // property value corresponding to a listitem
+        }
       }
       else {
         selectItems.value = '';
@@ -1063,13 +1094,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         if (!isViewCols) {
           if (nmbChecked == 0) {
             if (fieldLabel) {
-              fieldLabel.style.display    = "none";
+              //fieldLabel.style.display    = "none";
               var textContent = getTextContent(fieldLabel);
               if (textContent) {
                 var idx = textContent.indexOf("\r");
                 if (idx != -1)
                   textContent = textContent.substring(0, idx);
-                chosenTextField.value = textContent + " --";
+                chosenTextField.value = textContent;// + " --";
               }
             }
             else
@@ -1117,16 +1148,26 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var div = document.getElementById(divId);
     if (deleteCurrentDiv && currentDiv)
       loadedPopups[currentDiv.id] = null;
-    // if checkbox was clicked, then do not close popup so that user can check
-    // checboxes, if needed
-    if (!checkboxClicked)
-      Popup.close0(div.id);
-    clearOtherPopups(div);
+  
+  /*    
+    if (isEmbededList) {
+      ListBoxesHandler.onOptionsItemClick(tr);    
+    }
+    else { 
+      // if checkbox was clicked, then do not close popup so that user can check
+      // checboxes, if needed
+      if (!checkboxClicked)
+        Popup.close0(div.id);
+      clearOtherPopups(div);
+   }
+    
     if (checkboxClicked)
       return true;
     else
       return false;
-  }
+  */
+ }
+  
 
   function closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked) {
     // close popup
@@ -1165,10 +1206,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return true;
 
     self.deselectRow();
-
     // darken new current row
     self.currentRow = tr;
     self.selectRow();
+    
     return true;
   }
 
@@ -1192,33 +1233,42 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (self.currentRow == null)
       return;
 
+    var trId = self.currentRow.id;
+    if (self.currentRow == null)
+      return;
+
     //self.currentRow.style.backgroundColor = Popup.LightMenuItem;
     if (self.currentRow.tagName && self.currentRow.tagName.toLowerCase() == 'tr') {
       var tds = self.currentRow.getElementsByTagName('td');
       for (var i=0; i<tds.length; i++) {
         var elem = tds[i];
-        elem.style.backgroundColor = Popup.LightMenuItem;
+        //elem.style.backgroundColor = Popup.LightMenuItem;
+        elem.style.color = "";
+        if (trId == elem.parentNode.id)
+          elem.style.background = "";
       }
-
     }
   }
 
   this.selectRow = function () {
     if (self.currentRow == null)
       return;
-
-    if (self.currentRow.id == '$noValue')
+    
+    var trId = self.currentRow.id;
+    if (trId.length == 0)
       return;
-
-    //self.currentRow.style.backgroundColor = Popup.DarkMenuItem;
-
+    
+    if (trId == '$noValue')
+      return;
 
     if (self.currentRow.tagName && self.currentRow.tagName.toLowerCase() == 'tr') {
       var tds = self.currentRow.getElementsByTagName("td");
-      for (var i=0; i<tds.length; i++) {
+      for (var i = 0; i < tds.length; i++) {
         var elem = tds[i];
-        // alert(elem.id);
-        elem.style.backgroundColor = Popup.DarkMenuItem;
+        //elem.style.backgroundColor = Popup.DarkMenuItem;
+        elem.style.color = "#ffffff";
+        if (trId == elem.parentNode.id)
+          elem.style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
       }
     }
   }
@@ -1335,16 +1385,35 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    */
   this.firstRow = function() {
     var tables = self.div.getElementsByTagName('table');
+    
+    /*
     if (!tables || !tables[1] || tables[1].id.startsWith('-not-menu') || (tables[2] && tables[2].id.startsWith('-not-menu')) )
       return null;
+    
     var trs = tables[1].getElementsByTagName('tr');
     if (trs == null)
       return null;
+*/
 
+    if (tables.length == 0)
+      return null;
+    
+    var trs;
+    if (tables.lenght == 1)
+      trs = tables[0].getElementsByTagName('tr');
+    else if(tables.lenght > 1) {
+      if (tables[1].id.startsWith('-not-menu') || (tables[2] && tables[2].id.startsWith('-not-menu')) )
+        return null;
+      trs = tables[1].getElementsByTagName('tr');
+    }
+
+    var trs = tables[0].getElementsByTagName('tr');
+    
     for (var i=0; i<trs.length; i++) {
       if (!self.isHeaderRow(trs[i]) && trs[i].style.display != 'none')
         break;
     }
+    
     return trs[i];
   }
 
@@ -1551,6 +1620,7 @@ function removePopupRowEventHandlers(div) {
     var elem = trs[i];
     removeEvent(elem, 'click',     popupRowOnClick,     false);
     removeEvent(elem, 'mouseover', popupRowOnMouseOver, false);
+    removeEvent(elem, 'mousedown', popupRowOnMouseOver, false); // for touch screen
     removeEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
   }
 }
@@ -1565,16 +1635,17 @@ function fakeOnSubmit() {
 
 /***********************************************
 * FormProcessor - helps to handle data of a form
+* called from:
+* showDialog1 - desktop
+* onLoadPageAndDialog - mobile
 ************************************************/
 var FormProcessor = {
   // variables ----
   formInitialValues : new Array(),
 
   // methods ----
+  // inits DataEntry and ListBoxesHandler!
   initForms : function(div) {
-    if (Browser.mobile)
-      return;
-
     var forms;
     if (div)
       forms = div.getElementsByTagName('form');
@@ -1585,10 +1656,16 @@ var FormProcessor = {
       var form = forms[i];
       var initialValues = new Array(form.elements.length);
       //formInitialValues[form.name] = initialValues;
+
       if (form.id != 'filter')
         continue;
+
       this._storeInitialValues(form);
+      
+      //DataEntry.init(form);
+			this.initForTouchUI(form);
       ListBoxesHandler.init(form);
+      
       addEvent(form, 'submit', this.onSubmit, false);
     }
 
@@ -1633,14 +1710,19 @@ var FormProcessor = {
     return false;
   },
 
-  // prevents submision of not changed data
+  // submit event handler
   onSubmit : function(e) {
+    var $t = FormProcessor;
     e = getDocumentEvent(e);
     if (!e)
       return;
-
-    var target = getTargetElement(e);
-    var form = target;
+      
+    var form = getTargetElement(e);
+    $t.onSubmitProcess(e, form);
+  },
+  
+  // prevents submision of not changed data
+  onSubmitProcess : function(e, form) {
     var buttonName = form.getAttribute("buttonClicked");
 
     var button = form.elements[buttonName];
@@ -1656,15 +1738,19 @@ var FormProcessor = {
     }
 
     // put rte data in the hidden field(s)
-    if(RteEngine)
+    if(typeof RteEngine != 'undefined')
       RteEngine.putRteDataOfForm(form);
 
-    /* Add full text search criteria to filter */
+    // desktop - "text search" form is a separated form
+    // Add full text search criteria to filter
     var fullTextSearchForm = document.forms['searchForm'];
     if (fullTextSearchForm) {
       if (form.id && form.id == 'filter') {
+        // NOTE: in Touch UI options checkboxes are outside to filter form
+        // so need to move them into form before submision
+        //ListBoxesHandler.insertCheckedOptionsIntoFilterForm(form);
         var criteria = fullTextSearchForm.elements['-q'];
-        if (criteria  &&  criteria.value.indexOf('-- ') == -1) {
+        if (criteria  && !FieldsWithEmptyValue.isEmptyValue(criteria) ) {
           var textSearchForType = fullTextSearchForm.elements['-cat'];
           if (textSearchForType  &&  textSearchForType.value == 'on') {
             var textSearchInFilter = form.elements['-q'];
@@ -1678,6 +1764,9 @@ var FormProcessor = {
         }
       }
     }
+    
+		var isFormInDialog = (pane2  &&  pane2.contains(form));
+    
   // var action = form.attributes['action'];
     var action = form.action;
     // form url based on parameters that were set
@@ -1696,7 +1785,11 @@ var FormProcessor = {
 
     var params = "submit=y"; // HACK: since target.type return the value of &type
                               // instead of an input field's type property
-    var p1 = FormProcessor.getFormFilters(form, allFields);
+    params += "&-inner=y"; // params for XHR means inner/dialog.
+   
+
+		var isAjaxReq = (isFormInDialog || Browser.mobile);
+    var p1 = FormProcessor.getFormFilters(form, allFields, null, isAjaxReq);
     if (p1)
       params += p1;
     var submitButtonName  = null;
@@ -1721,7 +1814,6 @@ var FormProcessor = {
     params += '&$form=' + form.name;
 
     // url += '&$selectOnly=y';
-
     if (allFields == false) {
       var type = form.type;
       if (type)
@@ -1739,7 +1831,7 @@ var FormProcessor = {
     if (form.name.indexOf("tablePropertyList") != -1) { // is it a data entry
                                                         // form?
       var wasSubmitted = form.getAttribute("wasSubmitted");
-      if (wasSubmitted) {
+      if (wasSubmitted) { //  && !Browser.mobile
         alert("Can not submit the same form twice");
         return stopEventPropagation(e);
       }
@@ -1781,28 +1873,21 @@ var FormProcessor = {
     if (!action)
       form.action = "FormRedirect";
 
-    // if current form is inner dialog - submit as AJAX request
-    // upon AJAX response we will be able to choose between repainting the dialog
-    // or the whole page
-    if (pane2  &&  pane2.contains(form))  {
-      stopEventPropagation(e);
+    if (pane2  &&  pane2.contains(form))  {   // dialog?
       setDivInvisible(pane2, dialogIframe);
-      var target = getTargetElement(e);
-      postRequest(e, url, params, pane2, target, showDialog);
-      return false;
     }
+ 		// 1. form in dialog: send via XHR
+    if (isFormInDialog)  {
+			//params += "&type=http://www.hudsonfog.com/voc/software/crm/Bug"
+      postRequest(e, url, params, pane2, getTargetElement(e), showDialog);
+      return stopEventPropagation(e);
+    }
+		// 2. mobile: return url for further XHR
+    else if (Browser.mobile) {
+      return url + "?" + params;
+    }
+		// 3. send form
     else {
-      /*
-      stopEventPropagation(e);
-      // tell browser to continue processing this submit.
-      var div = document.createElement('div');
-      div.style.display = "none";
-      var target = getTargetElement(e);
-      
-      postRequest(e, url, params, div, target, checkError);
-      
-      return false;
-      */
       return true;
     }
   },
@@ -1813,15 +1898,22 @@ var FormProcessor = {
   * all input fields Otherwise - it is a Data Entry mode, i.e. - take only fields
   * that were modified by the user
   */
-  getFormFilters : function(form, allFields, exclude) {
+  
+  // handles 2 mechanisms:
+  // 1) XHR: as string of params
+  // 2) html form: removes not needed fields
+	// isXHR default value - false
+  getFormFilters : function(form, allFields, exclude, isXHR) {
     var p = "";
     var fields = form.elements;
-
     // use idx and len because removeChild reduces fields collection
     var idx = -1;
     var len = fields.length;
     var removedFieldName = "";
     
+		if (typeof isXHR == 'undefined')
+			isXHR = false;
+		
     for (var i = 0; i < len; i++) {
       idx++;
 
@@ -1830,8 +1922,17 @@ var FormProcessor = {
       var value = field.value;
       var name  = field.name;
       
-      if (exclude &&  exclude[name])
-        continue;
+      // "full text search", for example
+      var isEmptyValue = field.getAttribute("is_empty_value")
+      if (isEmptyValue && isEmptyValue == "y")
+        value = "";
+      
+      if (exclude) {
+        if (typeof exclude == 'string' && name == exclude) 
+          continue;
+        else if (exclude[name])
+          continue;
+      }
       var type  = field.type;
 
       if (!type || !name)
@@ -1865,32 +1966,45 @@ var FormProcessor = {
              }
            }
            
-           if (doRemove) {
+           if (doRemove && !isXHR) {
              removedFieldName = name;
              field.parentNode.removeChild(field);
              idx--;
            }
          }
+         
          // 2. 'hidden' (with suffixes _select, _verified, _class)
-         else if (removedFieldName != ""  &&  name.indexOf(removedFieldName) != -1) {
+         // 2.1. hidden field containing RTE content
+         else if (field.id == "rte_data"  && !isXHR) {
            field.parentNode.removeChild(field);
            idx--;
          }
-         // 3. hidden field containing RTE content
-         else if (field.id == "rte_data") {
-           field.parentNode.removeChild(field);
-           idx--;
+
+         // 2.1 remove 'hidden' if corresponding <input> was removed
+         else {
+           if (removedFieldName != ""  &&  name.indexOf(removedFieldName) != -1
+					 				 && !isXHR) {
+             field.parentNode.removeChild(field);
+             idx--;
+           }
+           else
+            doRemove = false;
          }
-         if (doRemove)
+          
+         if (doRemove) // skip parameter in URL
            continue;
         }
       }
       else {
         if (!value)
           continue;
+      
+      
   // if (currentFormName != "horizontalFilter") {
         if (value == '')
           continue;
+        
+        
         if (type == "checkbox" || type == "radio" ) {
           if (field.checked == false)
             continue;
@@ -1914,11 +2028,31 @@ var FormProcessor = {
     var initialValues = new Array();
     for (var j = 0; j < form.elements.length; j++) {
       var elem = form.elements[j];
+      
+      // "full text search", for example
+      var isEmptyValue = elem.getAttribute("is_empty_value")
+      if (isEmptyValue && isEmptyValue == "y") {
+        initialValues[elem.name] = "";
+        continue;
+      }
+      
       initialValues[elem.name] = elem.value;
     }
     this.formInitialValues[form.name] = initialValues;
   },
-
+  /*
+  hasFieldInitialValue : function(field) {
+    var form = getAncestorByTagName(field, "form");
+    if (form == null)
+      return;
+    var formValues = this.formInitialValues[form.name];
+    if (formValue) {
+      if (field.value == formValues[field.name])
+        return true;
+    }
+    return false;
+  },
+*/
   // returns true if the field was modified since the page load
   wasFormFieldModified : function(elem) {
     var initialValue = this.getFormFieldInitialValue(elem);
@@ -1942,7 +2076,85 @@ var FormProcessor = {
       else
         return formValues[elem.name];
     }
+  },
+	
+	// Touch UI ---------------
+	MIN_INPUT_WIDTH : 30,
+  initForTouchUI : function(parent) {
+    var inputs = parent.getElementsByTagName("input");
+    var width;
+    
+    // substitute checkboxes with own drawn ones.
+    CheckButtonMgr.substitute(parent, 1);
+    
+    for (var i = 0; i < inputs.length; i++) {
+      if (inputs[i].className != "input" && inputs[i].className != "boolean")
+        continue;
+      
+      // note: like fitSelectedOptionsWidth function.
+      // one row
+      var td = getAncestorByTagName(inputs[i], "td");
+      var labelSpan = getChildByClassName(td, "label");
+      
+      // requred field
+      var isFieldRequired = getChildByClassName(labelSpan, "requiredProp") != null;
+      if (isFieldRequired) {
+        FieldsWithEmptyValue.initField(inputs[i], "Required");
+      }
+      
+      // there is possible symbol like $, %
+      var symbolSpan = getChildByClassName(td, "xs");
+      var symbolWidth = 0;
+      if(symbolSpan)
+        symbolWidth = symbolSpan.offsetWidth;
+      
+      var symbol = getTextContent(td);
+      
+			if (Browser.mobile) { // need to get elements width
+				Mobile.getCurrentPageDiv().style.display="";
+			}
+			
+      // boolean type
+      if (inputs[i].className == "boolean") {
+        labelSpan.style.whiteSpace = "normal";
+        if (labelSpan.offsetWidth > 150)
+          labelSpan.style.width = 150;
+        else  
+          labelSpan.style.lineHeight = "38px";
+        continue;
+      }
+        
+      // if there is "msg" (error message) than input takes whole TD width
+      var msgElm = getChildByClassName(td, "msg");
+
+      if (!labelSpan)
+        continue;
+      
+      // Money and Duration types contain <select> of units.
+      var select = getChildByTagName(td, "select");
+      var selectWidth = 0;
+      if (select)
+        selectWidth = select.offsetWidth;
+      
+      // calculate <input> width  
+      width = 255 - labelSpan.offsetWidth - symbolWidth - selectWidth - 7;
+      if (td.getAttribute("colspan") != null)
+        width += 22; // no arrow_td
+      
+      if (width < this.MIN_INPUT_WIDTH || msgElm != null) {
+        width = 270;
+        inputs[i].style.clear = "left"; // because webkit
+      }
+      else
+        inputs[i].style.clear = "none";
+      
+      inputs[i].style.width = width;
+//      addEvent(paramsTable, 'click',     this.onClickParam,     false);
+
+      //onParamTrClick : function(e, tr)
+    }   
   }
+
 
 }
 
@@ -2146,7 +2358,6 @@ function chooser1(element) {
     throw new Error("form not found: " + form);
     return;
   }
-
   if (editList) {
     var uri = element.form.elements['$rUri'].value;
     originalForm.elements[uri + ".$." + propName].value                    = value;
@@ -2175,7 +2386,8 @@ function chooser1(element) {
       originalForm.elements[propName].value                        = "<...>";
     else
       originalForm.elements[propName].value                        = value;
-// originalForm.elements[shortPropName + "_select"][len].value = id;
+      
+ // originalForm.elements[shortPropName + "_select"][len].value = id;
     originalForm.elements[shortPropName + "_verified"].value     = "y";
     if (originalForm.elements[propName].style)
       originalForm.elements[propName].style.backgroundColor = '#ffffff';
@@ -2218,10 +2430,9 @@ function hideResetRow(div, currentFormName, originalProp) {
   else
     value = elem.value;
   var valueIsSet = true;
-
   if (!value || value == '')
     valueIsSet = false;
-  else if (value.indexOf(" --", value.length - 3) != -1)
+  else if (FormProcessor.wasFormFieldModified(elem)/*value.indexOf(" --", value.length - 3) != -1*/)
     valueIsSet = false;
 
   if (valueIsSet) {
@@ -2459,122 +2670,14 @@ var Tooltip = {
 * ListBoxesHandler
 ***************************************/
 var ListBoxesHandler = {
-  gotFocus : false,
-  
   init : function(form) {
-    for (var j = 0; j < form.elements.length; j++) {
-      var elem = form.elements[j];
-      if (elem.type && elem.type.toUpperCase() == 'TEXT' &&  // only on TEXT
-                                                              // fields
-          elem.id) {                                         // and those that
+    var paramsTable = getChildByClassName(form, "rounded_rect_tbl");
+    if (paramsTable)
+      addEvent(paramsTable, 'click',  this.onClickParam, false);
 
-        addEvent(elem, 'keydown',    this.autoCompleteOnKeyDown,     false);
-        addEvent(elem, 'click',      this.autoCompleteOnFocus,       false);
-        addEvent(elem, 'focus',      this.autoCompleteOnFocus,       false);
-        addEvent(elem, 'mouseout',   this.autoCompleteOnMouseout,    false);
-        // addEvent(elem, 'change', onFormFieldChange, false);
-        // addEvent(elem, 'blur', onFormFieldChange, false);
-        // addEvent(elem, 'click', onFormFieldClick, false);
-      }
-      else if (elem.type && elem.type.toUpperCase() == 'TEXTAREA') {
-        var rows = elem.attributes['rows'];
-        var cols = elem.attributes['cols'];
-
-        /* // IS IT USED?!
-        if (rows)
-          initialValues[elem.name + '.attributes.rows'] = rows.value;
-        if (cols)
-          initialValues[elem.name + '.attributes.cols'] = cols.value;
-        */
-
-        if (!elem.value || elem.value == '') {
-          elem.setAttribute('rows', 1);
-          elem.setAttribute('cols', 10);
-          // elem.attributes['cols'].value = 10;
-          addEvent(elem, 'focus', this.textAreaOnFocus,  false);
-          addEvent(elem, 'blur',  this.textAreaOnBlur,   false);
-        }
-      }
-      else  {
-          // alert(elem.name + ", " + elem.type + ", " + elem.id + ", " +
-          // elem.valueType);
-      }
-    }
-  },
-  // key events handlers ----
-  autoCompleteOnKeyDown : function(e) {
-    e = getDocumentEvent(e); if(!e) return;
-    return ListBoxesHandler.autoComplete(e);
-  },
-
-  // select text in a field if it contains initial value
-  // does it on click event only if previously came focus event
-  autoCompleteOnFocus : function(e) {
-    var target = getTargetElement(e);
-    if (!target)
-      return;
     
-    if (e.type.toLowerCase() == "focus") {
-      ListBoxesHandler.gotFocus = true;
-      return;
-    }
-    else if (ListBoxesHandler.gotFocus == false)
-      return;
-
-    var initValue = target.getAttribute("INIT_VALUE");
-    if (!initValue) {
-      initValue = target.value;
-      target.setAttribute("INIT_VALUE", initValue);
-    }
-    
-    if (initValue == target.value)  
-      target.select();
-      
-    ListBoxesHandler.gotFocus = false;
-    return true;
-  },
-  autoCompleteOnMouseout : function(e) {
-    if (typeof getMouseOutTarget == 'undefined') return;
-    var target = getMouseOutTarget(e);
-    if (!target)
-      return true;
-
-    var img = document.getElementById(keyPressedImgId);
-    if (!img)
-      return true;
-
-    if (currentDiv) {
-      Popup.delayedClose0(currentDiv.id);
-    }
   },
 
-  textAreaOnFocus : function(e) {
-    var target = getTargetElement(e);
-    var rows = FormProcessor.getFormFieldInitialValue(target, 'rows');
-    if (rows)
-      target.setAttribute('rows', rows);
-    else
-      target.setAttribute('rows', 1);
-    var cols = FormProcessor.getFormFieldInitialValue(target, 'cols');
-    if (!cols) {
-      target.setAttribute('cols', 10);
-      cols = 10;
-    }
-    var c = target.getAttribute('cols');
-    if (c) {
-      target.setAttribute('cols', cols);
-      target.style.width = "96%";
-    }
-  },
-
-  textAreaOnBlur : function(e) {
-    var target = getTargetElement(e);
-    if (!target.value || target.value == '') {
-      target.setAttribute('rows', 1);
-      target.setAttribute('cols', 10);
-      target.style.width = null;
-    }
-  },
 
   // AUTOCOMPLETE ----
   /**
@@ -2584,21 +2687,34 @@ var ListBoxesHandler = {
   * Entry mode - on Enter show popup immediately, and close popup if hit Enter
   * twice.
   */
+  
+  prevInputValue : "",
+  
   autoComplete : function(e) {
-    e = getDocumentEvent(e); if (!e) return;
+    var $t = ListBoxesHandler;
+    var e = getDocumentEvent(e);  // if (!e) return;
     var target = getTargetElement(e);
-    return this.autoComplete1(e, target);
+    
+    $t.localOptionsFilter(target.value)
+  
+    return $t.autoComplete1(e, target);
   },
 
   autoComplete1 : function(e, target) {
     if (!target)
       return;
+    
     keyPressedTime = new Date().getTime();
-    var form = target.form;
+    
+    this.prevInputValue = target.value;
+    
+    //var form = target.form;
+    var form = document.forms[currentFormName];
     var characterCode = getKeyCode(e); // code typed by the user
 
     var propName  = target.name;
-    var formName  = form.name; //target.id;
+    var formName  = form.name;
+    
     var propName1 = propName;
     var idx = propName.indexOf(".", 1);
     if (idx != -1)
@@ -2621,10 +2737,10 @@ var ListBoxesHandler = {
       divId = propName + "_" + formName;
 
     keyPressedImgId     = divId + "_filter";
+    
     var hotspot = document.getElementById(keyPressedImgId);
-    if (!hotspot) // no image - this is not a listbox and thus needs no
-                  // autocomplete
-      return true;
+    hotspot = hotspot || document.body;
+
     keyPressedElement   = target;
     var currentPopup = Popup.getPopup(divId);
 
@@ -2738,7 +2854,7 @@ var ListBoxesHandler = {
     var filterLabel = document.getElementById(propName1 + "_span");
     if (filterLabel) {
       filterLabel.style.display = '';
-      filterLabel.className = 'xs';
+    //  filterLabel.className = 'xs';
     }
     if (currentPopup)
       clearOtherPopups(currentPopup.div);
@@ -2753,32 +2869,25 @@ var ListBoxesHandler = {
       return;
 
     var hotspot = document.getElementById(keyPressedImgId);
-    if (!hotspot) {
-      return true;
+    hotspot = hotspot || document.body;
+
+    var newValue = keyPressedElement.value;
+    // check if to do local filter only
+    var hasMore = getChildById(this.optionsPanel, "$more");
+		var isRollup = this.curPopupDiv.id.indexOf("_groupBy_") != -1;
+		if (isRollup || !hasMore && this.prevInputValue.length != 0 && newValue.indexOf(this.prevInputValue) == 0)
+      this.localOptionsFilter(newValue);
+    else {
+        this.listboxOnClick1(e, keyPressedImgId, newValue);
     }
-
-    if (keyPressedElement.value.length == 0) // avoid showing popup for empty
-      return;
-    this.listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
   },
 
-  // Opens the popup when icon is clicked
-  listboxOnClick : function(e, target) {
-    this.listboxOnClick1(e, target.id);
-    stopEventPropagation(e);
-  },
 
   // Opens the popup when needed, e.g. on click, on enter, on autocomplete
   listboxOnClick1 : function(e, imgId, enteredText, enterFlag) {
-    if (Popup.openTimeoutId) {                  // clear any prior delayed popup
-                                                // open
-      clearTimeout(Popup.openTimeoutId);
-      Popup.openTimeoutId = null;
-    }
+    // cut off "_filter"
+    var propName1 = imgId.substring(0, imgId.length - "_filter".length);   
 
-    var propName1 = imgId.substring(0, imgId.length - "_filter".length);   // cut
-                                                                            // off
-                                                                            // "_filter"
     var idx = propName1.lastIndexOf('_');
     if (idx == -1)
       return;
@@ -2798,8 +2907,8 @@ var ListBoxesHandler = {
     */
     if (!isGroupBy  &&  form  &&  currentFormName != "viewColsList"  &&  currentFormName != "gridColsList"  && originalProp.indexOf("_class") == -1) {
       var chosenTextField = form.elements[originalProp];
-      if (chosenTextField && chosenTextField.focus) {
-        chosenTextField.focus();
+      if (chosenTextField && chosenTextField.parentNode) {
+        //try { chosenTextField.focus(); } catch(e){}
         // insertAtCursor(chosenTextField, '');
         // setCaretToEnd(chosenTextField);
       }
@@ -2851,28 +2960,28 @@ var ListBoxesHandler = {
 
     // close popup if it was already opened
     var popup = Popup.getPopup(divId);
-    if (popup && popup.isOpen()) {
-      popup.close();
-      return;
-    }
-
-    var div = loadedPopups[divId];
+    var div = getChildById(this.optionsPanel, divId);
+    
     var hotspot = document.getElementById(imgId);
-
+    hotspot = hotspot || document.body;
     // Use existing DIV from cache (unless text was Enter-ed - in which case
     // always redraw DIV)
-    if (!enteredText && div != null) {
+    
+    if (typeof enteredText == 'undefined' && div != null) {
       hideResetRow(div, currentFormName, originalProp);
-      Popup.open(e, divId, hotspot, null, 0, 16);
+      this.showOptions(div)
       return;
     }
     else {
       var popup = Popup.getPopup(divId);
-      div = document.getElementById(divId);
-      if (popup == null)
-        popup = new Popup(div, hotspot);
-      else
-        popup.reset(hotspot);
+      if (popup == null) {
+		  	div = document.getElementById(divId);
+		  	popup = new Popup(div, hotspot);
+		  }
+		  else {
+				div = popup.div;
+		  	popup.reset(hotspot);
+		  }
     }
 
     // form url based on parameters that were set
@@ -2896,9 +3005,12 @@ var ListBoxesHandler = {
         /* Add full text search criteria to filter */
         if (form.id && form.id == 'filter') {
           var fullTextSearchForm = document.forms['searchForm'];
+          // there are 2 forms 'searchForm' on desktop
+          //if (fullTextSearchForm.length)
+          //  fullTextSearchForm = fullTextSearchForm[1];
           if (fullTextSearchForm) {
             var criteria = fullTextSearchForm.elements['-q'];
-            if (criteria  &&  criteria.value.indexOf('-- ') == -1) {
+            if (criteria && !FieldsWithEmptyValue.isEmptyValue(criteria)) {
               var textSearchForType = fullTextSearchForm.elements['-cat'];
               if (textSearchForType  &&  textSearchForType.value == 'on') {
                 var textSearchInFilter = form.elements['-q'];
@@ -2912,24 +3024,16 @@ var ListBoxesHandler = {
             }
           }
         }
+        
         var allFields = true;
         if (formAction != "searchLocal" && formAction != "searchParallel") {
           if (enterFlag)
             allFields = false;
         }
-  // else if (currentFormName.indexOf("horizontalFilter") == 0)
-  // allFields = true;
-
-      params += FormProcessor.getFormFilters(form, allFields);
-      /*
-      * } else { url = url + "&type=" + form.elements['type'].value +
-      * "&-$action=" + formAction; var s = getFormFiltersForInterface(form,
-      * propName); if (s) url = url + s; var uri = form.elements['uri']; if (uri) {
-      * if (formAction == "showPropertiesForEdit") url = url + "&uri=" +
-      * encodeURIComponent(uri.value); else url = url + "&$rootFolder=" +
-      * encodeURIComponent(uri.value); } }
-      */
+ 			var exclude = this.textEntry ? this.textEntry.name : null;
+      params += FormProcessor.getFormFilters(form, allFields, exclude);
     }
+    
     params += "&$form=" + currentFormName;
     params += "&" + propName + "_filter=y";
     if (!enterFlag)
@@ -2943,12 +3047,1231 @@ var ListBoxesHandler = {
     }
 
     // request listbox context from the server via ajax
-    div.removeAttribute('eventHandlersAdded');
-    postRequest(e, url, params, div, hotspot, Popup.load);
+    postRequest(e, url, params, div, hotspot, this.onListLoaded);
+ },
+  
+  // Touch UI CODE -----------------------------------
+  IPH_WIDTH : 320, // iPhone screen width
+  RDR_HEIGHT : 350, // rounded rect height has limitation on desktop
+  formPanel : null,
+  
+	tray : null,
+  
+	optionsPanel : null,
+	calendarPanel : null,
+  
+  curPopupDiv : null,
+  textEntry : null,
+  
+  isEditList : false, // find out it from "tray" position
+  
+  // allows maltiple selection with help of delay.
+  timerId : null,
+  OPTIONS_DELAY : 1200,
+  
+	isSliding : false, // prevents click processing while sliding
+	
+  onClickParam : function(event, isCalendar) {
+ 
+		var target = getEventTarget(event);
+    //tr = getAncestorByClassName(target, "param_tr");
+    tr = getAncestorByTagName(target, "tr");
+    if (tr)
+      ListBoxesHandler.onParamTrClick(event, tr, isCalendar);
+      
+    stopEventPropagation(event);  
+  },
+  // isCalendar is not required parameter
+  onParamTrClick : function(e, tr, isCalendar) {
+    
+		if (this.isSliding)
+			return;
+    
+    var target = getEventTarget(e);
+
+    // skip click on rollup (checkbox) td
+    if(getAncestorByClassName(target, "rollup_td") != null)
+      return;
+
+    var arrowTd = getChildByClassName(tr, "arrow_td");
+    if (!arrowTd)
+      return; // no options for this item 
+
+    this.tray = this.getTray(tr);
+    this.optionsPanel = getChildByClassName(this.tray, "options_panel");
+    this.textEntry = getChildById(this.optionsPanel, "text_entry");
+
+    var input = getChildByClassName(tr, "input");
+
+    // prepare options div
+   // this.prepareOptionsPanel(tray);
+
+    if (typeof isCalendar == 'undefined') {
+      isCalendar = arrowTd.getAttribute("calendar") != null;
+    }
+
+    if (isCalendar) {
+      // create calendar div.
+      if (this.calendarPanel == null) {
+        this.createCalendarPanel(this.tray);
+      }
+      this.showCalendar(tr);
+    }
+      // set name of text enry of current input field
+      if (this.textEntry)
+				this.textEntry.name = input.name;
+      var str = input.name + "_" + input.id + "_filter";
+      // show options list with initial set - ""  
+      this.listboxOnClick1(e, str, "");
+    
+ //   stopEventPropagation(e);
+  },
+
+  // Note: formPanel.height and popupDiv.height for desktop - fixed
+  // for mobile unlimited height.
+  onListLoaded : function(event, popupDiv, hotspot, content) {
+    var $t = ListBoxesHandler;
+    if ($t.formPanel == null)
+      $t.formPanel = $t.getFormPanel(popupDiv);
+
+    if ($t.optionsPanel == null) {
+			if ($t.tray == null)
+				$t.tray = $t.getTray(popupDiv);
+      $t.optionsPanel = getChildByClassName($t.tray, "options_panel");
+      $t.textEntry = getChildById($t.optionsPanel, "text_entry");
+    }
+
+    // put options popup in options div, so make it static
+    var listsCont = getChildById($t.optionsPanel, "lists_container");
+    if (listsCont)
+			listsCont.appendChild(popupDiv);
+		else
+			$t.optionsPanel.appendChild(popupDiv);
+    
+    Popup.load(event, popupDiv, hotspot, content);
+
+    popupDiv.style.position = "static";
+
+    // 20 = 10 + 10 margin of "rounded"
+    var width =  $t.IPH_WIDTH - 20 - 5; 
+    // edit list is more narrow to be able to show shadow
+    // if ($t.isEditList) width -= 20;
+      
+    popupDiv.style.width =  width; 
+      
+    //if (Browser.)
+    popupDiv.style.height = $t.RDR_HEIGHT;
+    popupDiv.style.overflow = "auto";
+
+    $t.showOptions(popupDiv);
+  },
+
+  showOptions : function(popupDiv) {
+    var $t = ListBoxesHandler;
+
+    // hide previously opened "popup" list if need
+    if ($t.curPopupDiv && $t.curPopupDiv.style.display != "none")
+      $t.curPopupDiv.style.display = "none";
+
+    $t.curPopupDiv = popupDiv;
+		// set top offset (margin) to sutisfy current scroll position
+		var topOffset = getScrollXY()[1] - findPosY(this.tray);
+		this.optionsPanel.style.marginTop = (topOffset > 0) ? topOffset : 0 ;
+		
+		//var tray = $t.getTray(popupDiv); //$t.formPanel.parentNode;
+   // toolbarTd = getChildByClassName(tray, "header");
+
+		
+
+    popupDiv.style.display = "block";
+    popupDiv.style.visibility = "visible";
+
+    $t.optionsPanel.style.display = "inline";
+    $t.curPopupDiv.style.overflow = "auto";
+    
+    // show item/parameter name (if it is too long)
+    $t.displayItemName();
+    
+    // slide forward
+    var tray = getAncestorByClassName($t.curPopupDiv, "tray");
+    if (SlideSwaper.getTrayState(tray) == 0) { // !isOptionsPanelOpened
+      SlideSwaper.moveForward(tray, true, $t.onOptionsDisplayed);
+    }
+  },
+
+  onOptionsDisplayed : function() {
+    var $t = ListBoxesHandler;
+		// problem with MozTransform
+    if ($t.textEntry && !Browser.firefox3)
+      $t.textEntry.focus();
+  },
+
+  showCalendar : function(paramTr) {
+    var $t = ListBoxesHandler;
+		// set top offset (margin) to sutisfy current scroll position
+		var topOffset = getScrollXY()[1] - findPosY(this.tray);
+		this.calendarPanel.style.marginTop = (topOffset > 0) ? topOffset : 0 ;
+
+    $t.calendarPanel.style.display = "inline";
+    
+    var inputs = $t.getDateInputs(paramTr); //Filter.getPeriodInputs(paramTr);
+    
+    //var calCont = getChildById(this.calendarPanel, "calendar_container");
+    startCalendar(this.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
+    
+    // slide forward
+    SlideSwaper.moveForward(this.tray, true);
+  },
+
+  // returns 2 inputs for the filter (period)
+  // and 1 input for data entry (date)
+  getDateInputs : function(parent) {
+    var inputs = parent.getElementsByTagName("input");
+    var fromInp = null;
+    var toInp = null;
+    
+    for (var i = 0; i < inputs.length; i++) {
+      if (inputs[i].type == "text") {
+        if (inputs[i].name.indexOf("_To") != -1) 
+          toInp = inputs[i];
+        else
+          fromInp = inputs[i];
+      }
+    }
+
+    return [fromInp, toInp];
+  },
+
+  displayItemName : function() {
+    var itemNameDiv = getChildById(this.optionsPanel, "item_name");
+    if (itemNameDiv == null) {
+      itemNameDiv = document.createElement("div");
+      itemNameDiv.id = "item_name";
+      
+      var listsContainer = getChildById(this.optionsPanel, "lists_container");
+      listsContainer.insertBefore(itemNameDiv, listsContainer.firstChild);
+    }
+    
+    var form = document.forms[currentFormName];
+    var textField = form.elements[originalProp];
+    
+    var label = getPreviousSibling(textField);
+    if (label) {
+      itemNameDiv.innerHTML = getTextContent(label);
+      itemNameDiv.style.display = "";
+    }
+  },
+  
+  // allows multiple selection timeout delay
+	// returns false on single slection
+  onOptionsItemClick : function(tr) {
+    var $t = ListBoxesHandler;
+    clearTimeout($t.timerId);
+
+    if (tr.id.indexOf('$') == 0) // prevent from "More" and "Add"
+      return true;
+
+    chkCell = tr.cells[0];
+    var checkBox = chkCell.getElementsByTagName("input")[0];
+    var vIcon = chkCell.getElementsByTagName("img")[0];
+		
+		// no checkbox - no single selection (data entry, rollup)
+		if (!checkBox) {
+			if (!vIcon)
+				return false;
+			var isVisable = (vIcon.style.visibility.toLowerCase() == "visible"); // hidden in css
+			if (isVisable) 
+	  		vIcon.style.visibility = "hidden";
+		  else {
+		  	this.removeV();
+		  	vIcon.style.visibility = "visible";
+		  }
+			return false;
+		}
+		
+		// multiple selection (filter)
+    if (checkBox.checked) {
+      checkBox.checked = false;
+    //  checkBox.removeAttribute("checked");
+      vIcon.style.visibility = "hidden";
+    }
+    else {
+      checkBox.checked = true;
+    //  checkBox.setAttribute("checked", "true");
+      vIcon.style.visibility = "visible";
+    }
+      
+    
+    // set value of text entry.
+    /* commented out because of multiple selection (?)
+    var selectedOptionsArr = $t.getSelectedOptions();
+    var text = $t.getSelectedOptionsHtml(selectedOptionsArr);
+    $t.textEntry.value = text;
+    */
+
+    // close options on timeout
+    $t.timerId = setTimeout(this.onOptionsSelectionFinish, $t.OPTIONS_DELAY);
+    return true;
+  },
+  
+  onOptionsSelectionFinish : function(lastClickedTr) {
+    var $t = ListBoxesHandler;
+    var form = document.forms[currentFormName];
+    var textField = form.elements[originalProp];
+
+    var selectedOptionsArr = $t.getSelectedOptions(lastClickedTr);
+    var td = getAncestorByTagName(textField, "td");
+    var chosenValuesDiv = getChildByClassName(td, "chosen_values");
+    
+		if (td.className == "rollup_td") { // rollup
+			var img = td.getElementsByTagName("img")[0];
+			// if the same value comes again then reset it.
+			if (textField.value == lastClickedTr.id) {
+		  	textField.value = "";
+				img.src = "icons/cakes_gray.png";
+		  }
+		  else {
+		  	textField.value = lastClickedTr.id;
+				img.src = "icons/cakes.png";
+		  }
+
+		}
+		else if (chosenValuesDiv) { // Filter
+			var html = $t.getSelectedOptionsHtml(selectedOptionsArr, textField.name);
+			chosenValuesDiv.innerHTML = html;
+			$t.fitSelectedOptionsWidth(td);
+		}
+		else { // data entry
+			textField.value = selectedOptionsArr[0];
+		}
+    
+    // slide back
+    $t.onBackBtn();
+  },
+  
+  onPeriodSelectionFinish : function(fromInp, toInp) {
+    var $t = ListBoxesHandler;
+    var td = getAncestorByTagName(fromInp, "td");
+    var chosenValuesDiv = getChildByClassName(td, "chosen_values");
+		if (chosenValuesDiv) {
+			var html = "";
+			if (fromInp.value.length != 0) 
+				html += "<div>" + fromInp.value + "</div>";
+			if (toInp && toInp.value.length != 0) 
+				html += "<div>" + toInp.value + "</div>";
+			
+			chosenValuesDiv.innerHTML = html;
+			
+			$t.fitSelectedOptionsWidth(td);
+		}
+    // slide back
+    $t.onBackBtn(1); 
+  },
+  
+  // 1) multipele selection: checked [v]-icon.
+  // 2) single selection allowed: lastClickedTr.
+  getSelectedOptions : function(lastClickedTr) {
+    var selectedOptions = new Array();
+    // loop on options table rows.
+    var optTable = getChildByClassName(this.curPopupDiv, "rounded_rect_tbl");
+    var amt = optTable.rows.length;
+    for (var i = 0; i < amt; i++) {
+      var chkCell = optTable.rows[i].cells[0];
+      var checkBox = chkCell.getElementsByTagName("input")[0];
+      if (checkBox) {
+        if (checkBox.checked) {
+          //var menuItemCell = getNextSibling(chkCell);
+          //selectedOptions.push(menuItemCell.firstChild.nodeValue);
+          var text = getTextContent(getNextSibling(checkBox.parentNode));
+					selectedOptions.push({"text" : text, "value" : checkBox.value});
+        }
+      }
+      else {
+        // no checkbox(es) (data entry) 
+        selectedOptions.push(getTextContent(lastClickedTr));
+        break;
+      }
+    } // the loop end
+    return selectedOptions;
+  },
+  
+  // clears selections in options panel
+  removeV : function() {
+    var optTable = getChildByClassName(this.curPopupDiv, "rounded_rect_tbl");
+    var amt = optTable.rows.length;
+    for (var i = 0; i < amt; i++) {
+      var chkCell = optTable.rows[i].cells[0];
+      var checkBox = chkCell.getElementsByTagName("input")[0];
+      var img = chkCell.getElementsByTagName("img")[0];
+
+      if (checkBox)
+        checkBox.checked = false;
+      if (img)
+				img.style.visibility = "hidden";
+
+    } // the loop end
+  
+  },
+  
+  getSelectedOptionsHtml : function(selectedOptionsArr, propName) {
+    var html = "";
+    for (var i = 0; i < selectedOptionsArr.length; i++) {
+      html += "<div>" + selectedOptionsArr[i]["text"] + "</div>";
+      if (propName)
+      html +=
+        "<input type=\"checkbox\" checked=\"true\" value=\""
+        + selectedOptionsArr[i]["value"]
+        + "\" name=\""
+        + propName
+        + "_select\" class=\"hdn\"/>";
+    
+    }
+    return html;  
+  },
+  
+  fitSelectedOptionsWidth : function(td) {
+    var chosenValuesDiv = getChildByClassName(td, "chosen_values");
+    var selectedOptionsAmount = chosenValuesDiv.getElementsByTagName("div").length;
+ 
+    // no selections
+    if (selectedOptionsAmount == 0)
+      return;
+      
+    var width;
+    if (selectedOptionsAmount == 1) { // single selection
+      var labelSpan = getChildByClassName(td, "label");
+      width = 220 - labelSpan.offsetWidth; 
+
+      chosenValuesDiv.style.textAlign = "right";
+      chosenValuesDiv.style.paddingLeft = 2;
+      chosenValuesDiv.style.clear = "none";
+    }  
+    
+    // multiple selection or width < 30 px
+    if (selectedOptionsAmount > 1 || width < 30) {
+      chosenValuesDiv.style.textAlign = "left";
+      chosenValuesDiv.style.paddingLeft = 7;
+      chosenValuesDiv.style.clear = "left";
+      width = 230;
+    }
+
+    chosenValuesDiv.style.width = width;
+  },
+
+  onParamReset : function() {
+
+    // remove value in coresponding <input>
+    var form = document.forms[currentFormName];
+    var textField = form.elements[originalProp];
+    textField.value = "";
+    
+    // clear chosen values in the filter
+    var chosenValuesDiv = getChildByClassName(textField.parentNode, "chosen_values");
+    if (chosenValuesDiv)
+      chosenValuesDiv.innerHTML = "";
+
+    // remove selections in options panel
+    this.removeV();
+
+    // reset icon of complex date rollup
+    var prop = textField.name;
+    if (prop.indexOf("_groupBy") == prop.length - 8) {
+      var targetImg = textField.parentNode.getElementsByTagName("img")[0];
+      if (targetImg)
+        targetImg.src = "icons/cakes_gray.png";
+    }
+    
+    this.onBackBtn();
+  },
+
+  onOptionsBackBtn : function() {
+    var value = FieldsWithEmptyValue.getValue(this.textEntry);
+		if (value.length != 0) {
+	    var form = document.forms[currentFormName];
+	    var textField = form.elements[originalProp]; // field of the form
+      var td = getAncestorByTagName(textField, "td");
+      var chosenValuesDiv = getChildByClassName(td, "chosen_values");
+      if (chosenValuesDiv) {
+        chosenValuesDiv.innerHTML = "<div>" + value + "</div>";
+        this.fitSelectedOptionsWidth(td);
+      }
+      textField.value = value;
+    }
+    this.onBackBtn();
+  },
+
+  onBackBtn : function(factor) {
+    if (typeof factor == 'undefined') {
+      var factor = 1;
+      if (this.calendarPanel != null && this.calendarPanel.style.display != 'none')
+        factor = 2;
+      factor = factor || 1;  
+    }
+
+    var tray = getAncestorByClassName(this.optionsPanel, "tray");
+    if (tray == null)
+      var tray = getAncestorByClassName(this.calendarPanel, "tray");
+
+		this.isSliding = true;
+    SlideSwaper.moveBack(tray, factor);
+
+    // instead of webkitTransitionEnd
+    setTimeout("ListBoxesHandler.onBackFinish();", 800);
+  },
+  
+  onBackFinish : function() {
+		this.isSliding = false;
+		
+    var $t = ListBoxesHandler;
+    if ($t.optionsPanel != null) {
+      $t.optionsPanel.style.display = "none";
+      $t.curPopupDiv.style.display = "none";
+    }
+    if ($t.calendarPanel != null)
+      $t.calendarPanel.style.display = "none";
+
+		FieldsWithEmptyValue.setEmpty(this.textEntry);
+  },
+
+  // note: in filter "form_panel" contains <form>
+  // but in data entry, currently the <form> embraces all / panel_block
+  getFormPanel : function(child) {
+    //var form = getAncestorByTagName(child, "form");
+    //return getAncestorByTagName(form, "div");
+    return getAncestorByClassName(child, "form_panel");
+  },
+
+  getTray : function(child) {
+    var formPanel = getAncestorByClassName(child, "form_panel");
+    
+    // 1. filter or data entry ---
+    if (formPanel) {
+      this.isEditList = false;
+      return formPanel.parentNode;
+    }
+    
+    // 2. edit list ---
+    var parent = getAncestorById(child, "siteResourceList");
+    var panel = getChildByClassName(parent, "panel_block");
+    var tray = getChildByClassName(panel, "tray");
+
+    // align farme (tray) of edit list
+    var tr = getAncestorByTagName(child, "tr");
+    var left = findPosX(tr) + tr.clientWidth - 320; // 320 frame width
+    var top = findPosY(tr) + tr.clientHeight + 10;
+    
+    panel.style.left = left;
+    panel.style.top = top;
+    
+    this.isEditList = true;
+    
+    return tray;  
+  },
+
+  localOptionsFilter : function(typedText) {
+    typedText = typedText.toLowerCase();
+    var tbl = this.curPopupDiv.getElementsByTagName("table")[0];
+    
+		var rows = tbl.rows;
+    for (var i = 0; i < rows.length; i++) {
+      var label = getChildByClassName(rows[i], "menuItem");
+      if (!label)
+        continue;
+			var chkCell = getChildByClassName(rows[i], "menuItemChk");
+			if (!chkCell)
+				return;	
+			var img = chkCell.getElementsByTagName("img")[0];	
+      var labelName = getTextContent(label).toLowerCase();
+      if (labelName.indexOf(typedText) == 0)
+		  	rows[i].style.display = "";
+		  else 
+				rows[i].style.display = "none";
+    }
+  },
+  
+  // create Calendar
+  createCalendarPanel : function(parent) {
+    this.calendarPanel = document.createElement("div");
+    this.calendarPanel.className = "calendar_panel";
+    // this.calendarPanel.style.width = this.IPH_WIDTH;
+
+    parent = this.optionsPanel.parentNode || parent; 
+    parent.insertBefore(this.calendarPanel, this.optionsPanel);
+    //parent.appendChild(this.calendarPanel);
+  },
+  
+  // for calendar panel
+  onDatesList : function() {
+    SlideSwaper.moveForward(this.tray);
   }
 }
 
-// handle anchors with help of onmousedown of BODY.
+/*******************************************
+* SlideSwaper
+* tray contains 2 slides that are swaped
+********************************************/
+var SlideSwaper = {
+  //DURATION : 40000, // 0.4s
+  STEPS_AMT : 15,//15,//10,
+  TIMEOUT : 1,//this.DURATION / this.STEPS_AMT,
+  DISTANCE : 320,
+  BEZIER_POINTS : [[0.0, 0.0], [0.42, 0], [0.58, 1], [1.0, 1.0]],
+  offset : 0,
+  
+  curState : 0, // -1 means moveForward; -2 means moveForward twice.
+  tray : null,
+  callback: null,
+  
+  factor : 1,
+
+  // callback is not required
+  moveForward : function(tray, reset, callback) {
+    if (this.offset != 0)
+      return;
+      
+    this.tray = tray;
+    this.callback = callback;
+    
+    if (typeof reset != 'undefined' && reset == true)
+      this.curState = 0;
+    
+    if (/*false*/Browser.webkit) { // 
+      this.curState--;
+      this.tray.style.webkitTransform = "translate(" + this.DISTANCE * this.curState + "px, 0px)";
+    }
+    else {
+      this.isForward = true;
+      this._moveStep();
+    }
+  },
+  
+  moveBack : function(tray, factor, callback) {
+   if (this.offset != 0)
+      return;
+
+    this.factor = factor || 1;  
+      
+    this.tray = tray;
+    this.callback = callback;
+
+    if (Browser.webkit) {
+      this.curState += factor;
+      // to the beginning "translate(0px, 0px)";
+      this.tray.style.webkitTransform = "translate(" + this.DISTANCE * this.curState + "px, 0px)";
+    }
+    else {
+      this.isForward = false;
+      this._moveStep();
+    }
+  },
+  
+  _moveStep : function() {
+    var $t = SlideSwaper;
+    var dir = -1;
+    var bPoint;
+    if ($t.isForward)
+      dir = -1;
+    else
+      dir = 1;
+      
+      
+   bPoint = Math.bezierPoint($t.BEZIER_POINTS, $t.offset);
+    var distance = $t.factor * $t.DISTANCE;
+    var left = Math.floor(dir * distance * bPoint[0]) + ($t.DISTANCE * $t.curState);  
+
+    // for FF 3.1b2 that does not support -moz-transition-duration (?)
+    if (typeof $t.tray.style.MozTransform != 'undefined')
+      $t.tray.style.MozTransform = "translate(" + left + "px, 0px)";
+    else
+      $t.tray.style.left = left;
+
+    $t.offset += 1.0 / $t.STEPS_AMT;
+    
+    if ($t.offset <= 1.0)
+      setTimeout($t._moveStep, $t.TIMEOUT);
+    
+    else { // finish
+      $t.offset = 0;
+      $t.factor = 1;
+      $t.curState += dir;
+      
+      if ($t.callback)
+        $t.callback();
+    }
+  },
+  
+  // returns state of current tray or some pointed tray
+  getTrayState : function(tray) {
+    tray = tray || this.tray;
+    if (!tray)
+      return 0;
+    
+    var str = "";
+    if (typeof tray.style.webkitTransform != 'undefined')
+      str = tray.style.webkitTransform;
+    else if (typeof tray.style.MozTransform != 'undefined')
+      str = tray.style.MozTransform;
+    if (str.length != 0) {
+      return parseInt(str.substr(10)); // 10 - "translate("
+    }
+    
+    str = tray.style.left; 
+    if (str.length == 0)
+      return 0;
+     
+    return parseInt(str); 
+      
+  }
+}
+
+/*******************************************
+* Filter
+* filter is common for several mobile pages
+* only corresponding content is changed
+********************************************/
+
+var Filter = {
+  //filterParent : null,
+  FILTER_URL_DIV : "filter_url_div",
+ // filterDiv : null, // <- container
+
+  // contains DOM object of filters by urls
+	// fiters collected by whole url not by type only as for mkResource data entry
+  filtersArr : new Array(),
+  
+  loadingUrl : null,
+  loadingPosition : null, // used for desktop
+  currentFilterUrl : null,
+	
+ // _hdnDiv : null, // used to convert html to DOM object
+  //_initFilterHtml : null,
+	filterBackup : new Array(),
+
+  // filter can have several
+  _initFilter : function(filterDiv) {
+		// 1. set event handlers for toobar buttons
+		var filterHeader = getChildByClassName(filterDiv, "header");
+		var submitBtn = getChildByAttribute(filterHeader, "name", "submitFilter");
+		submitBtn.onclick = this.submit;
+
+		var clearFilterBtn = getChildByAttribute(filterHeader, "name", "clear");
+		clearFilterBtn.onclick = this.submitClearFilter;
+
+    // 2. init filter content
+    var paramsTable = getChildByClassName(filterDiv, "rounded_rect_tbl");
+
+    if (!paramsTable)
+      return false;
+    
+    CheckButtonMgr.substitute(filterDiv, 0);
+    var paramSel = getChildById(filterDiv, 'parameter_selector');
+    FieldsWithEmptyValue.initField(paramSel, 'select');
+    var textSearch = getChildById(filterDiv, '-q');
+    FieldsWithEmptyValue.initField(textSearch, 'search');
+
+    for (var i = 0; i < paramsTable.rows.length; i++) {
+      var td = paramsTable.rows[i].cells[1];
+      var isCalendar = (td.getAttribute("calendar") != null);
+      if (isCalendar)
+        this._initPeriodTd(td);
+      else // set width
+        ListBoxesHandler.fitSelectedOptionsWidth(td);
+    }    
+    
+    // to fix panel/content height while parameter selection
+    var contDiv = getChildByClassName(filterDiv, "rounded_rect_cont");
+    contDiv.style.height = contDiv.clientHeight;
+
+    // assign mouse handlers
+    // addEvent(paramsTable, 'click',     this.onClickParam,     false);
+    addEvent(paramsTable, 'click',     ListBoxesHandler.onClickParam, false);
+    addEvent(paramsTable, 'mouseover', this.onMouseOverParam, false);
+    addEvent(paramsTable, 'mousedown', this.onMouseOverParam, false); // for touch screen
+    addEvent(paramsTable, 'mouseout',  this.onMouseOutParam,  false);
+    
+    return true;
+  },
+  
+  _initPeriodTd : function(td) {
+    var inputs = ListBoxesHandler.getDateInputs(td); //this.getPeriodInputs(td);
+    var chosenValuesDiv = getChildByClassName(td, "chosen_values");
+    chosenValuesDiv.innerHTML = "<div>" +
+        inputs[0].value + "</div>" + "<div>" + inputs[1].value + "</div>";
+    ListBoxesHandler.fitSelectedOptionsWidth(td);
+  },
+  
+  // hotspot used to search FILTER_URL_DIV in current mobile page
+  // otherwise - in document for desktop version
+  show : function(x, y) { // hotspot, x, y)
+		if (this.loadingUrl != null)
+      return; // downloading
+
+    var filterUrl = this.retrieveFilterUrl();
+ 		// no type in url - no filter
+		if (getUrlParam(filterUrl, "type") == null)
+			return;
+ 
+  	// hide possible opened previous filter
+	  this.hide(); 
+
+    // mobile
+    // 1. filter for that type already loaded
+    if (this.filtersArr[filterUrl]) {
+      if (x && y) {
+        stl.left = x;
+        stl.top = y;
+      }
+			if (Browser.mobile) {
+		  	this.handleFilterState(true);
+		  	this.filtersArr[filterUrl] = document.body.appendChild(this.filtersArr[filterUrl]);
+		  }
+			else 
+				this.filtersArr[filterUrl].style.visibility = "visible";
+    }
+    // 2. download new filter for this type
+    else {
+      this.loadingUrl = filterUrl;
+      var urlParts = filterUrl.split('?');
+      
+      if (x && y)
+        this.loadingPosition = [x, y];
+      else
+        this.loadingPosition = null;  
+    
+//			if (Browser.mobile)
+//				urlParts[1] = "&-mobile=y";
+				
+      postRequest(null, urlParts[0], urlParts[1], null, null, this.onFilterLoaded);
+    }
+  },
+
+	// saves / restores filter state before user interaction
+	handleFilterState : function(toSave) {
+		if (this.filterBackup == null) {
+			if (toSave)
+				this.filterBackup = new Array();
+			else
+				return; // nothing to resore	
+		}
+		
+		// 1. filter parameters
+		var paramsTable = getChildByClassName(this.filtersArr[this.currentFilterUrl], "rounded_rect_tbl");
+		var idx = 0;
+		
+		for (var i = 0; i < paramsTable.rows.length; i++) {
+			var cells = paramsTable.rows[i].cells;
+			for (var j = 0; j < cells.length; j++) {
+				if (cells[j].className != "data_td") 
+					continue;
+				
+			if (toSave) 
+				this.filterBackup[idx] = cells[j].innerHTML;
+			else if (cells[j].innerHTML != this.filterBackup[idx]) {
+				cells[j].innerHTML = this.filterBackup[idx];
+			}
+				
+				idx++;
+			}
+		}
+		// 2. search field
+		var searchField =  getChildById(this.filtersArr[this.currentFilterUrl], "-q");
+		if (searchField) {
+			if (toSave && searchField.getAttribute("is_empty_value") == 'n') 
+				this.filterBackup["-q"] = searchField.value;
+			else {
+				if (this.filterBackup["-q"]) 
+					searchField.value = this.filterBackup["-q"];
+				else
+					FieldsWithEmptyValue.setEmpty(searchField);
+			}
+		}
+		
+		if (!toSave) // reset after restoring
+			this.filterBackup = null;
+	},
+	
+// callback
+  onFilterLoaded : function(event, div, hotspot, content) {
+    var $t = Filter;
+		$t.currentFilterUrl = $t.loadingUrl;
+		
+    var loadedFilter = $t.createFilterDomObject(content);
+    
+    if (loadedFilter == null)
+      return;
+    
+		// insert in document
+		$t.filtersArr[$t.loadingUrl] = document.body.appendChild(loadedFilter);
+    ExecJS.runDivCode(loadedFilter);
+    
+    var initialized = $t._initFilter($t.filtersArr[$t.loadingUrl]);
+		if (!initialized && Browser.mobile) {
+			 alert("problem to initialize filter"
+				+ "<br/>possible came login page instead the filter"
+				+ "<br/>handling of this case should be implemented!");
+		}
+			
+
+    // desktop has filter position
+    if ($t.loadingPosition) {
+      loadedFilter.style.left = $t.loadingPosition[0];
+      loadedFilter.style.top = $t.loadingPosition[1];
+    }
+    
+    if (initialized || Browser.mobile) // not initialized if filter is empty
+      loadedFilter.style.visibility = "";
+    
+		$t.handleFilterState(true);
+    $t.loadingUrl = null;
+  },
+  
+  createFilterDomObject : function(html) {
+		var filterDiv = getDomObjectFromHtml(html, "id", "common_filter");
+    
+		// no filter in response - possible login page
+    if (filterDiv == null) {
+      /* // not implemented !!!!!!!!!!!
+      var url = getBaseUrl() + "register/user-login.html";
+      Mobile.getPage(null, url);
+      */
+			alert("Filter not found!");
+      return null;
+    }
+    
+ 		// for gecko
+    filterDiv.style.visibility = "hidden";
+    return filterDiv;
+  },
+  
+  hide : function() {
+	 	if (!Browser.mobile) { // desktop
+			var url = this.currentFilterUrl;
+			if (this.filtersArr[url])
+				this.filtersArr[url].style.visibility = "hidden";
+			return;
+		}
+	 	
+		// mobile
+		var url = this.retrieveFilterUrl();
+    if (this.filtersArr[url] &&
+       getAncestorByTagName(this.filtersArr[url], "body")) {
+      var parent = this.filtersArr[url].parentNode;
+      
+			this.filtersArr[url].style.visibility = "hidden";
+			this.handleFilterState(false);
+      // remove filter instance on mobile
+			this.filtersArr[url] = parent.removeChild(this.filtersArr[url]);
+			this.filtersArr[url].style.visibility = "";
+    }
+  },
+  
+  submit : function(e) {
+		e = getDocumentEvent(e);
+		var btn = getEventTarget(e);
+		Filter._submit(e, btn, false);
+  },
+
+  // just closes filter panel if there were no filtering
+  submitClearFilter : function(e) {
+		var $t = Filter;
+		e = getDocumentEvent(e);
+		var btn = getEventTarget(e);
+		
+    var url = window.location.href;
+    if (Browser.mobile)
+      url = Mobile.getCurrentUrl();
+    
+    // url contains '-cat=on' '-q=' or parameter starts from "." then filtering exists
+    // and no 'clear=Filter'
+    if ((url.indexOf('-cat=on') != -1 || url.indexOf('-q=') != -1 ||
+				url.indexOf('&.') != -1) &&	url.indexOf('clear=Filter') == -1) {
+			BrowserDialog.setCallbackArguments(e, btn);
+			BrowserDialog.confirm("To clear filter?", $t.submitClearFilterCallback);
+    }
+		else
+			$t.hide();	
+  },
+  
+	submitClearFilterCallback : function (toClear, e, btn) {
+		var $t = Filter;
+		if (toClear)
+	  	$t._submit(e, btn, true);
+		else
+			$t.hide();	
+	},
+	
+  _submit : function(e, btn, toClearFilter) {
+    var parent = getAncestorByClassName(btn, "form_panel");
+    var forms = parent.getElementsByTagName("form");
+    var input;
+    
+    var filterForm = forms[0];
+    // mobile panel contains 2 forms: text searchForm and filter
+    if (forms.length == 2)
+      filterForm = forms[1];
+			
+    // append corresponding hidden field (like "submit button") for server processing
+    if (toClearFilter)
+      input = this._createHiddenInput("clear", "Filter");
+    else
+      input = this._createHiddenInput("submitFilter", "Filter");
+    
+    filterForm.appendChild(input);
+
+    // note: submit() does not invoke the onsubmit event handler
+    // Call the onsubmit event handler directly
+    var url = FormProcessor.onSubmitProcess(e, filterForm);
+    
+		// hide filter on desktop and remove it from document on mobile
+		this.hide();
+		
+		if (Browser.mobile) {
+      // hack: with -inner=y parameter, the server does not process request
+      url = url.replace("&-inner=y", "");
+      Mobile.getPage(e, url);
+    }
+    else 
+      filterForm.submit();
+  },
+  
+  // simulates 
+  _createHiddenInput : function(name, value) {
+    var input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    return input;
+  },
+    
+  onPeriodReset : function() {
+    var inputs = PeriodPicker.getInputs();
+    inputs[0].value = "";
+    inputs[1].value = "";
+    var chosenValuesDiv = getChildByClassName(inputs[0].parentNode, "chosen_values");
+    chosenValuesDiv.innerHTML = "";
+    
+    ListBoxesHandler.onBackBtn(1);
+  },
+
+  onMouseOverParam : function(event) {
+    var target = getEventTarget(event);
+    var tr = getAncestorByClassName(target, "param_tr");
+    if (!tr)
+      return;
+
+    // background
+    for (var i = 0; i < tr.cells.length; i++)
+      tr.cells[i].style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
+    
+    tr.style.color = "#fff";
+    // chosen values
+    var chosenValues = getChildByClassName(tr, "chosen_values");
+    chosenValues.style.color = "#fff";
+    divs = chosenValues.getElementsByTagName("div");
+    for (var i = 0; i < divs.length; i++)
+      divs[i].style.color = "#fff";
+    
+    // arrow
+    var arrowDiv = getChildByClassName(tr, "arrow_td").firstChild;
+    arrowDiv.style.backgroundPosition = "0% 100%";
+  },   
+  
+  onMouseOutParam : function(event) {
+    var target = getEventTarget(event);
+    var tr = getAncestorByClassName(target, "param_tr"); // "param_tr"
+    if (!tr)
+      return;
+
+    // set background
+    for (var i = 0; i < tr.cells.length; i++)
+      tr.cells[i].style.background = "";
+
+    tr.style.color = "";
+    
+    // chosen values
+    var chosenValues = getChildByClassName(tr, "chosen_values");
+    chosenValues.style.color = "#fff";
+    divs = chosenValues.getElementsByTagName("div");
+    for (var i = 0; i < divs.length; i++)
+      divs[i].style.color = "rgb(114, 127, 161)";
+    
+    // arrow
+    var arrowDiv = getChildByClassName(tr, "arrow_td").firstChild;
+    arrowDiv.style.backgroundPosition = "0% 0%";
+  },    
+  
+  // hides params with not suited beginning.
+  onParamNameTyping : function(paramNameField) {
+    var $t = Filter;
+    var typedText = paramNameField.value.toLowerCase();
+    var paramsTable = getChildByClassName($t.filtersArr[$t.currentFilterUrl], "rounded_rect_tbl");
+    if (!paramsTable)
+      return;
+    var rows = paramsTable.rows;
+    for (var i = 0; i < rows.length; i++) {
+      var label = getChildByClassName(rows[i], "label");
+      var labelName = getTextContent(label).toLowerCase();
+      if (labelName.indexOf(typedText) == 0)
+        rows[i].style.display = "";
+      else
+        rows[i].style.display = "none";
+    }
+  },
+	
+	retrieveFilterUrl: function(){
+  	if (Browser.mobile) {
+  		var page = Mobile.getCurrentPageDiv(); //getAncestorByClassName(hotspot, "mobile_page");
+				return getTextContent(getChildById(page, this.FILTER_URL_DIV));
+			}
+			else 
+				return getTextContent(document.getElementById(this.FILTER_URL_DIV));
+	}
+}
+
+
+/*******************************************
+* DataEntry
+* 1. multi-dialog support for mobile version
+* 2. handles dialogs for data entry in Touch UI
+********************************************/
+var DataEntry = {
+	dataEntryArr : new Array(),
+	loadingUrl : null,
+	currentUrl : null,
+	_hdnDiv : null, // used to convert html to DOM object
+	inpValues : null, // used for mkResource forms
+	
+	show : function(url) {
+		if (this.loadingUrl != null)
+			return;
+		
+		var key = this._getKey(url);
+		if (this.dataEntryArr[key]) {
+			if (this.isMkResource(url))
+				this.doStateOnMkResource(this.dataEntryArr[key], true);
+			document.body.appendChild(this.dataEntryArr[key]);
+			this.currentUrl = url;
+		}
+		else {
+			this.loadingUrl = url;
+			urlParts = url.split('?');
+			postRequest(null, urlParts[0], urlParts[1], null, null, this.onDataEntryLoaded);
+		}
+	},
+
+	onDataEntryLoaded : function(event, div, hotspot, html) {
+		var $t = DataEntry;
+		$t.currentUrl = $t.loadingUrl;
+		$t.loadingUrl = null;
+		
+		div = getDomObjectFromHtml(html, "className", "panel_block");
+		if ($t.isMkResource($t.currentUrl))
+			$t.doStateOnMkResource(div, true);
+		
+		div = document.body.appendChild(div);
+		
+		FormProcessor.initForms(div);
+		ExecJS.runDivCode(div);
+		
+		var key = $t._getKey($t.currentUrl);
+		$t.dataEntryArr[key] = div;
+	},
+	
+	hide : function (e, hideIcon) {
+		if (!Browser.mobile) {
+			onHideDialogIcon(e, hideIcon);
+			return;
+		}
+		
+		if (this.currentUrl == null)
+			return;
+		
+		var key = this._getKey(this.currentUrl)	;
+		document.body.removeChild(this.dataEntryArr[key]);
+		if (this.isMkResource(this.currentUrl))
+			this.doStateOnMkResource(this.dataEntryArr[key], false);
+		
+		this.currentUrl = null;
+	},
+	
+	// hides params with not suited beginning.		
+  onParamNameTyping : function(paramNameField) {
+    var typedText = paramNameField.value.toLowerCase();
+    var paramsTable = getAncestorById(paramNameField, "dataEntry");
+    var spans = paramsTable.getElementsByTagName("span");
+    for (var i = 0; i < spans.length; i++) {
+      if (spans[i].className != "label")
+        continue;
+      var labelName = getTextContent(spans[i]).toLowerCase();
+      var row = getAncestorByTagName(spans[i], "tr");
+      if (labelName.indexOf(typedText) == 0)
+        row.style.display = "";
+      else
+        row.style.display = "none";
+    }
+  },
+	
+  submit : function(e, btn) {
+		var form = btn.form;
+		
+		// wasSubmitted flag prevents form submission twice but
+		// 1. mobile stores forms 2. data entry dialog closed on submissoin
+		if (Browser.mobile)
+			form.removeAttribute("wasSubmitted");
+		
+		var url = FormProcessor.onSubmitProcess(e, form);
+		this.hide();
+		
+		if (Browser.mobile) {
+      // hack: with -inner=y parameter, the server does not process request
+      url = url.replace("&-inner=y", "");
+
+			if (this.isMkResource(url))
+				Mobile.getPage(e, url, false);
+			else
+      	Mobile.getPage(e, url, true);
+    }
+    else 
+      return true;
+  },
+	
+	_getKey : function(url) {
+		if (this.isMkResource(url))
+			return getUrlParam(url, "type");
+		return url;	
+	},
+	
+	isMkResource : function(url) {
+		return (url.indexOf("-$action=mkResource") != -1);
+	},
+	
+	// mkResource form used for all URLs with the same resource type
+	// doStateOnMkResource saves / restores initial values of mkResource inputs
+	doStateOnMkResource: function(div, toSave){
+		if (toSave)
+			this.inpValues = new Array();
+		else if (this.inpValues == null)	
+			return;
+			
+		var inputs = div.getElementsByTagName("input");
+		for (var i = 0; i < inputs.length; i++) {
+			if (toSave) 
+		  	this.inpValues[i] = inputs[i].value;
+		  else {
+				if (inputs[i].getAttribute("is_empty_value") != null)
+					FieldsWithEmptyValue.setEmpty(inputs[i]);
+		  	else
+					inputs[i].value = this.inpValues[i];
+		  }
+		}
+		if (!toSave)
+			this.inpValues = null;
+	}
+}
+
+//**************************************************
+// handle anchors with help of onmousedown on BODY.
+//**************************************************
 function onLinkClick(e) {
   e = getDocumentEvent(e);
   if (!e)
@@ -2959,7 +4282,6 @@ function onLinkClick(e) {
     return;
 
   var id = anchor.id;
-
   // with purpose to speed up GUI we handle onmousedown
   if (e.type == "click") {
     // close popup menu on its item click
@@ -2971,7 +4293,7 @@ function onLinkClick(e) {
     // because we handled it with onmousedown
     if (anchor.href == "about:blank" || id == "-inner")
       return stopEventPropagation(e);
-    // 2.  stop click event if it made with shift or ctrl key
+    // 2. pressed with shift or ctrl key
     else if(e.shiftKey || e.ctrlKey) 
       return stopEventPropagation(e);
     // 3. default browser behaviour
@@ -2994,10 +4316,12 @@ function onLinkClick(e) {
   else if (id.startsWith('menuLink_')) {
     menuOnClick(e, anchor);
   }
-  // 3.
+  // 3. 
+  /// commenten out because whole TD is event target
   else if (id.indexOf("_filter", idLen - "_filter".length) != -1) {
-    ListBoxesHandler.listboxOnClick(e, anchor);
+    ListBoxesHandler.listboxOnClick1(e, id);
   }
+  //(
   // 4.
   else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
         id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
@@ -3013,10 +4337,7 @@ function onClickDisplayInner(e, anchor) {
   e = getDocumentEvent(e); if (!e) return;
   var propName = anchor.id.substring(7);
   var r;
-  
   if (propName.indexOf("list.") == 0) {
-// var strippedProp = propName.substring(5);
-// var ul = document.getElementById(strippedProp);
     var ul = document.getElementById(propName);
 
     if (!ul) {
@@ -3081,7 +4402,7 @@ function linkHrefModifier(e, link) {
     return rc;
   }
   else if (link.id  &&  link.id.startsWith('-inner')) {
-    return; 
+    return;
   }
 
   var idx = link.href.indexOf("&-ulId=");
@@ -3501,30 +4822,6 @@ function displayInner(e, urlStr) {
   return stopEventPropagation(e);
 }
 
-function checkError(event, body, hotspot, content) {
-  setInnerHtml(body, content);
-  var forms = document.getElementsByTagName("form");
-  var found = false;
-  for (var i=0; i<forms.length && !found; i++) {
-    var id = forms[i].id;
-    if (id  &&  id.indexOf("tablePropertyList") != -1)
-      found = true;
-  }
-  if (!found) {
-    setInnerHtml(body, content);
-  }
-    
-  var div = document.getElementById("errorMessage");
-  var bdivs = body.getElementsByTagName("div");
-  for (var i=0; i<bdivs.length; i++) {
-    if (bdivs[i].id && bdivs[i].id == 'errorMessage') {
-      if (bdivs[i].innerHTML) {
-        div.innerHTML = bdivs[i].innerHTML;
-        return;
-      }
-    }
-  }
-}
 /**
  * copies html loaded via ajax into a div
  */
@@ -3555,6 +4852,11 @@ function showDialog(event, div, hotspot, content) {
   content = content.replace(re, frameId + '-removed'); // prevent dialogIframe from appearing 2 times in the document
   setInnerHtml(div, content);
   showDialog1(event, div, hotspot);
+  
+  // update page if content is empty (all is ok)
+  if (content.length == 0)
+    window.location.reload();
+  
 }
 
 function showDialog1(event, div, hotspot) {
@@ -3564,8 +4866,10 @@ function showDialog1(event, div, hotspot) {
     setDivVisible(event, div, iframe, hotspot, 16, 16);
 
   FormProcessor.initForms(div);
+	
   // execute JS code of innerHTML
-  ExecJS.runDivCode(div);
+	// executed in showDialog thru setInnerHtml
+  //ExecJS.runDivCode(div);
 }
 
 /**
@@ -3624,39 +4928,6 @@ function initCalendarsFromTo(div, formName, fromDateField, toDateField) {
 }
 
 
-/**
- * cross-browser way to get text inside tag (like inside span)
- */
-function getTextContent(elm) {
-  var text = null;
-
-  if (!elm)
-    throw new Error("parameter is null");
-
-  if (typeof elm.textContent != "undefined") {                // W3C DOM Level 3
-    text = elm.textContent;
-  }
-  else if (elm.childNodes && elm.childNodes.length) {         // W3C DOM Level 2
-    var t = '';
-    for (var i = elm.childNodes.length; i--;) {
-      var o = elm.childNodes[i];
-      if (o.nodeType == 1 || o.nodeType == 3) { // ELEMENT_NODE or TEXT_NODE
-        if (o.nodeValue)
-          t = o.nodeValue + t;
-      }
-      else
-        t = getTextContent(o) + t;
-    }
-    text = t == '' ? null : t;
-  }
-  else if (typeof elm.innerText != "undefined") {             // proprietary:
-                                                              // IE4+
-    text = elm.innerText;
-  }
-  return text;
-}
-
-
 function checkAll(formName) {
   var form = document.forms[formName];
   var fields = form.elements;
@@ -3689,29 +4960,6 @@ function checkAllInGroup(e, divId) {
     }
   }
 }
-
-function swapNodes(node1, node2) {
-  if(node1.swapNode) {
-    node1.swapNode(node2);
-    return;
-  }
-  var parent1 = node1.parentNode;
-  var parent2 = node2.parentNode;
-  var nextSibling1 = node1.nextSibling;
-  var nextSibling2 = node2.nextSibling;
-
-  if(nextSibling1)
-    parent1.insertBefore(node2, nextSibling1);
-  else
-    parent1.appendChild(node2);
-
-  if(nextSibling2)
-    parent2.insertBefore(node1, nextSibling2);
-  else
-    parent2.appendChild(node1);
-}
-
-
 
 // *********************************** Icon/Image effects
 // **************************************
@@ -4041,6 +5289,7 @@ function addAndShow1(anchor, event) {
           else
             shortProp = "." + anchor.substring(idx + 11, idx1);
           var encCurrentItem = encodeURIComponent(currentItem);
+         
           params += "&" + shortProp + "_select=" + encCurrentItem + "&" + shortProp + "_verified=y";
           params += "&-currentItem=" + encCurrentItem;
         }
@@ -4681,6 +5930,10 @@ function minMax(e, divId) {
 }
 
 function showTab(e, td, hideDivId, unhideDivId) {
+	// note: in TouchUI edit form displayed in dialog instead of tab.
+	if (td.id == "Edit")
+		return;
+
   e = getDocumentEvent(e);
 
   var isViewAll = td.id == 'viewAll';
@@ -4891,6 +6144,17 @@ function showRows(e, td, hideRowsId, unhideRowsId) {
   return stopEventPropagation(e);
 }
 
+
+function onHideDialogIcon(e, hideIcon) {
+  var pane2 = getAncestorById(hideIcon, 'pane2');
+  if (pane2) {
+    hideInnerDiv(e);
+    //pane2.innerHTML = "";
+  }
+  //else
+  //  hideIcon.parentNode.style.display = 'none'; // filter is not in 'pane2'
+}
+
 function hideInnerDiv(e) {
   var pane2        = document.getElementById('pane2');
   var dialogIframe = document.getElementById('dialogIframe');
@@ -5047,7 +6311,7 @@ function addAndShowItems(tr, e) {
   e = getDocumentEvent(e);
   if (!e)
     return stopEventPropagation(e);
-  var anchor = "mkresource?type=http://www.hudsonfog.com/voc/model/portal/Annotation&submit=Please+wait&.forum_verified=y&";
+  var anchor = "mkresource?type=http://www.hudsonfog.com/voc/model/portal/Comment&submit=Please+wait&.forum_verified=y&";
   var form = document.getElementById('filter');
   var forum = form.elements[".forum_select"].value;
   var title = form.elements[".title"].value;
@@ -5176,6 +6440,7 @@ function onDlgContentResize(e){
 }
 
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
+  var isDivStatic = (div.style.position.toLowerCase() == 'static');
   if (Browser.mobile) {
     div.style.left = 0 + 'px';
     div.style.top  = 0 + 'px';
@@ -5195,7 +6460,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 
   // only IE < 7 has a problem with form elements 'showing through' the popup
   var istyle;
-  if (Browser.lt_ie7) {
+  if (Browser.lt_ie7 && !Browser.mobile) {
     var istyle = iframe.style;
     istyle.visibility = Popup.HIDDEN;
   }
@@ -5321,7 +6586,8 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     if(par && iframe.id == 'popupIframe') {
       par.appendChild(iframe);
     }
-    istyle.zIndex  = zIndex + 1;
+    if (!isDivStatic && !Browser.mobile)
+      istyle.zIndex  = zIndex + 1;
   }
 
   // hack for Opera (at least at ver. 7.54) and Konqueror
@@ -5337,15 +6603,17 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   var iframeLeft = left;
   var iframeTop = top;
   if(Browser.lt_ie7) {
-    istyle.width     = divCoords.width  + 'px';
-    istyle.height    = divCoords.height + 'px';
+    if (!isDivStatic  && !Browser.mobile) {
+      istyle.width     = divCoords.width  + 'px';
+      istyle.height    = divCoords.height + 'px';
+    }
     // to make dialog shadow visible (without iframe background).
     if(div.id == 'pane2') {
       var SHADOW_WIDTH = 11;
       var contentObj = getChildById(div, "dataEntry");
       if (contentObj == null)
         contentObj = getChildById(div, "resourceList");
-      if (contentObj != null) {
+      if (contentObj != null && !isDivStatic && contentObj.clientWidth > SHADOW_WIDTH) {
         istyle.width   = contentObj.clientWidth  - SHADOW_WIDTH + 'px';
         istyle.height  = contentObj.clientHeight - SHADOW_WIDTH + 'px';
       }
@@ -5363,8 +6631,8 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   reposition(div,    left, top); // move the div box to the adjusted position
   div.style.visibility = Popup.VISIBLE; // finally make div visible
 
-  if (Browser.lt_ie7) {
-    istyle.display = 'inline';
+  if (Browser.lt_ie7 && !isDivStatic  && !Browser.mobile) {
+    istyle.display = 'none';
     istyle.visibility  = Popup.VISIBLE;
     reposition(iframe, iframeLeft, iframeTop); // place iframe under div
   }
@@ -5393,15 +6661,25 @@ function setDivInvisible(div, iframe) {
 }
 
 function doConfirm(msg) {
-  /*
-   * if (document.deleteConfirmation == msg) return; document.deleteConfirmation =
-   * msg;
-   */
-  var c = confirm(msg);
-  if (!c)
+  BrowserDialog.confirm(msg, doConfirmCallback);
+}
+
+function doConfirmCallback(c){
+	if (!c)
     return;
 
   var loc = document.location.href;
+	if (Browser.mobile) {
+  	loc = Mobile.getCurrentUrl();
+		var type = getUrlParam(loc, "type");
+		if (!type) {
+			var page = Mobile.getCurrentPageDiv();
+			var filterUrl = getTextContent(getChildById(page, "filter_url_div"));
+			type = getUrlParam(filterUrl, "type");
+			loc += "&type=" + type;
+		}
+		
+  }
 
   var idx = loc.lastIndexOf("-$action=");
   if (idx != -1) {
@@ -5417,7 +6695,16 @@ function doConfirm(msg) {
   }
   idx = loc.indexOf("?");
   loc = "delete?-$action=deleteAndExplore&del-yes=y&" + loc.substring(idx + 1);
-  idx = loc.indexOf("&errMsg=");
+  
+	if (Browser.mobile) {
+		// in mobile, on delete of last in RL resource, the server returned "Empty List"
+		// while resources of that type existed. It was fixed by removing of "recNmb" parameter.
+		loc = loc.replace(/&recNmb=[0-9]*/, ""); 
+  	Mobile.getPage(null, loc, false);
+		return;
+  }
+	
+	idx = loc.indexOf("&errMsg=");
   if (idx == -1) {
     idx = loc.indexOf("?errMsg=");
     idx++;
@@ -5428,9 +6715,11 @@ function doConfirm(msg) {
     loc = loc.substring(0, idx)
   else
     loc = loc.substring(0, idx) + loc.substring(idx1);
-  document.location.replace(loc);
+  
+	document.location.replace(loc);
   return;
 }
+
 /*
  * Creates absolute URI from base + uri. Fixing IE ignoring of base tag uri
  */
@@ -5474,9 +6763,6 @@ function loadingCueFinish() {
     advancedTooltip.showOptionsBtn();
 }
 
-// ******************************************** end AJAX
-// ************************************************
-
 // ****************************** form operations from forms.js
 // *****************************************
 //
@@ -5517,24 +6803,148 @@ function onFormFieldChange(fieldProp, fieldRef, oldValue) {
   }
 }
 
+
 var SearchField = {
-  emptyValue : null,
-  onFocus : function(field) {
-    if (this.emptyValue == null)
-      this.emptyValue = field.getAttribute("empty_value");
-    
-    if (field.value == this.emptyValue) {
-      field.value = "";
-      field.style.color = "";  
-    }
+  field : null,
+  //comFilter : null,
+  
+  _init : function(field) {
+    this.field = field;
+    addEvent(document.body, "click", this.onBlur, true);
+
   },
-  onBlur : function(field) {
-    if (field.value == "") {
-      field.style.color = "#ccc"; 
-      field.value = this.emptyValue;
-    } 
+  
+  onFocus : function(field) {
+    if (this.field == null) {
+      this._init(field);
+      
+      var x = findPosX(field) + field.offsetWidth - 320; //this.comFilter.offsetWidth;
+      var y = findPosY(field) + field.offsetHeight + 5;
+      Filter.show(x, y);
+      return;
+    }
+    
+    Filter.show();
+  },
+  
+  onBlur : function(event) {
+    var $t = SearchField;
+
+    if ($t.field == null)
+      return;
+      
+    if (event) {
+      var target = getEventTarget(event);
+      // click inside the search field
+      if (target.className == "ftsq")
+        return;
+      // click inside the filter  
+      if (getAncestorById(target, "common_filter") != null)
+        return;
+    }
+    Filter.hide();
+  }
+
+}
+
+// like "search" fields
+// sets parameter "is_empty_value = y"
+var FieldsWithEmptyValue = {
+  EMPTY_COLOR : "#bbb",
+  emptyValuesArr : new Array(),
+  
+  // field is id or DOM object
+  initField : function(field, emptyValue) {
+    if(!field)
+      return;
+    var fieldId;
+    // field parameter is id
+    if (typeof field == 'string') {
+      fieldId = field;
+      field = document.getElementById(fieldId);
+      if (!field)
+        return;
+    }
+    // field is DOM object (used in multipage, mobile mode)
+    else {
+      if (field.id.length == 0)
+        field.id = "field_" + this.emptyValuesArr.length;
+      fieldId = field.id;
+    }
+    
+    // already initialized
+    if (field.getAttribute("is_empty_value") != null)
+      return;
+    
+    this.emptyValuesArr[fieldId] = emptyValue; 
+    // If the onfocus method changes the value of the input field,
+    // then onclick event doesn't fire the first time.
+    // So click event was used instead focus.
+    addEvent(field, "click", this.onclick, false);
+    addEvent(field, "keydown", this.onclick, false);
+    addEvent(field, "blur", this.onblur, false);
+
+  	this.setEmpty(field);
+  },
+  
+	isEmptyValue : function(field) {
+		var isEmptyValue = field.getAttribute("is_empty_value");
+   	if (isEmptyValue == null) // not field of "FieldsWithEmptyValue" kind
+			return false;
+			
+    return (isEmptyValue == "y") ? true : false;
+	},
+	
+	getValue : function(field) {
+		var isEmptyValue = field.getAttribute("is_empty_value");
+   	if (isEmptyValue == null) // not field of "FieldsWithEmptyValue" kind
+			return field.value;
+			
+    if (isEmptyValue == "y")
+			return ""
+		return field.value;
+	},
+	
+	setEmpty : function(field) {
+		if (!field)
+			return;
+		var attrib = field.getAttribute("is_empty_value");
+		var isEmpty = (attrib != null && attrib == "y");
+		
+		if (isEmpty)
+			return;
+		
+		field.style.color = this.EMPTY_COLOR;
+		field.style.fontWeight = "bold";
+		field.value = this.emptyValuesArr[field.id];
+		field.setAttribute("is_empty_value", "y");
+	},
+	
+	setReady : function(field) {
+		var attrib = field.getAttribute("is_empty_value");
+		var isEmpty = (attrib != null && attrib == "y");;
+		
+		if (!isEmpty)
+			return;
+		
+		field.value = "";
+    field.style.color = "";
+    field.style.fontWeight = "";
+		field.setAttribute("is_empty_value", "n");
+	},
+	
+	onclick : function(event) {
+    var field = getEventTarget(event);
+		FieldsWithEmptyValue.setReady(field);   
+  },
+  
+  onblur : function(event) {
+    var field = getEventTarget(event);
+		if (field.value.length == 0)
+    	FieldsWithEmptyValue.setEmpty(field);
   }
 }
+
 
 function hideShowDivOnClick(divId, imgId){// , plusImg, minusImg) {
   div = document.getElementById(divId);
@@ -6014,7 +7424,6 @@ function cloneNode(oNode) {
       }
 
       if (aName != 'style') {
-//        Boost.log('cloneNode: ' + aName + ' = ' + oNode.attributes[i].value + '; tag = ' + oNew.tagName);
         oNew.setAttribute(aName, oNode.attributes[i].value);
       }
     }
@@ -8183,6 +9592,7 @@ var OrderRows = {
 var FlashHandler = {
   emdCodeArr : null,
   embed : function(id, flashCode, htmlCode) {
+  
     if (this.emdCodeArr == null) {
       this.emdCodeArr = new Array();
       if (!Browser.ie)
@@ -8214,21 +9624,11 @@ var FlashHandler = {
   }
 }
 
-function getCalendar() {
+function startCalendar() {
 // calling function in the last file
-  var FILES_TO_LOAD = ["calendar/calendar.css", "calendar/calendar.js"];
+  var FILES_TO_LOAD = ["iphone_calendar/calendar.css", "iphone_calendar/calendar.js"];
   getCalendar = null;
-
-  var argsArr = new Array();
-  for(var i = 0; i < arguments.length; i++) {
-    if (i == 0) {
-      var clonedEvent = cloneEvent(arguments[0]);
-      argsArr.push(clonedEvent);
-    }
-    else
-      argsArr.push(arguments[i]);
-  }
-  LoadOnDemand.doit(FILES_TO_LOAD, "getCalendar", argsArr);
+  LoadOnDemand.doit(FILES_TO_LOAD, "startCalendar", arguments);
 }
 
 function initStyleSheet() {
@@ -8292,7 +9692,11 @@ var LoadOnDemand = {
 
       js.setAttribute('src', fileName);
       html_doc.appendChild(js);
-      return false;
+			
+			var keyName = fileName.replace(/_[0-9]*\.js/, ".js");			
+      g_loadedJsFiles[keyName] = true;
+			
+			return false;
   },
 
   includeCSS : function(fileName) {
@@ -8451,10 +9855,6 @@ var TabSwap = {
     this.update();
   }
 }
-function fixAnchor(anchor) {
-  document.location.hash = anchor.href.split('#')[1];
-  return false;
-}
 
 function showMobileTab(e, hideDivId, unhideDivId) {
   e = getDocumentEvent(e);
@@ -8493,93 +9893,274 @@ function showMobileTab(e, hideDivId, unhideDivId) {
   return stopEventPropagation(e);
 }
 
-/*
-function addBeforeProcessing(tableId, subject, event) {
-  var table = document.getElementById(tableId);
-  if (!table)
-    return stopEventPropagation(event);
-  var tbody = table.getElementsByTagName('tbody');
-  if (!tbody || tbody.length == 0)
-    return stopEventPropagation(event);
-  var curItem = document.getElementById('currentItem');
-  var curTr;
-  var ctbody = tbody[0];
-  var pos = 1;
-  var afterTR;
-  if (curItem == null) {
-    var elms = ctbody.getElementsByTagName('tr');
-    for (var i=0; i<elms.length  &&  curTr == null; i++) {
-      if (elms[i].id.indexOf('http') == 0) {
-        curTr = elms[i];
-        afterTR = curTr;
-//        pos = i + 1;
+/*******************************************
+* CheckButtonMgr
+* stlIdx: 
+* 0 - iphone_checkbox
+* 1 - toggle_btn
+********************************************/
+var CheckButtonMgr = {
+  stlIdx : 0,
+  //offset : new Array("100px", "29px"),
+  classes : new Array("iphone_checkbox", "toggle_btn"),
+  
+  substitute : function(div, stlIdx) {
+    if (div == null)
+      return;
+  
+    if (typeof div == 'undefined')
+      div = document.body;
+    
+    if (typeof stlIdx != 'undefined')
+      this.stlIdx = stlIdx;
+    
+    inputs = div.getElementsByTagName('input');
+    for(var i=0; i < inputs.length; i++) {
+      if (inputs[i].className == 'hdn')
+      	continue;
+      if (stlIdx == 0) { // checkbox
+        if (inputs[i].getAttribute('type') != 'checkbox')
+          continue;
       }
-    }
-  }
-  else {
-    curTr = document.getElementById(curItem.href);
-    var elms = ctbody.getElementsByTagName('tr');
-    for (var i=0; i<elms.length; i++) {
-      var id = elms[i].id;
-      if (id && curTr.id == id) {
-        if (i != elms.length) {
-          afterTR = elms[i + 1];
-          pos = i + 1;
-        }
-        else
-          pos = -1;
-        break;
+      if (stlIdx == 1) { // toggle button
+        if (inputs[i].className != 'boolean')
+          continue;
       }
+      
+      var div = document.createElement('div');
+      div.className = this.classes[this.stlIdx];//"toggle_btn";
+      div.onclick = this.onClick;
+  
+      // change initial state if need
+      if(inputs[i].checked || inputs[i].value.toLowerCase() == "yes")
+        this._setState(div, inputs[i], true);
+
+      //div.setAttribute("checkbox_id", inputs[i].id || inputs[i].name);
+      // replace a checkbox with toggle button
+      inputs[i].parentNode.insertBefore(div, inputs[i].nextSibling);
+      inputs[i].style.display = 'none';
     }
+  },
+  
+  onClick : function() {
+    var $t = CheckButtonMgr;
+    var toggleBtn = this; // event handler takes target as this
+    var checkbox = toggleBtn.previousSibling;//$t.getCorrespondingCheckbox(toggleBtn);
+    $t._switchState(toggleBtn, checkbox)
+  },
+/*  
+  getCorrespondingCheckbox : function(toggleBtn) {
+    var inputs = toggleBtn.parentNode.getElementsByTagName("input");
+    var checkboxId = toggleBtn.getAttribute("checkbox_id");
+    for(var i = 0; i < inputs.length; i++) {
+      if(inputs[i].getAttribute('type') != 'checkbox')
+        continue;
+      var inputId = inputs[i].id || inputs[i].name
+      if (checkboxId == inputId)
+        return inputs[i];
+    }
+    return null;
+  },
+*/  
+  _switchState : function(toggleBtn, input) {
+    var xPos = toggleBtn.style.backgroundPosition;
+    var isChecked = (xPos.length != 0 && xPos.indexOf("0") != 0);
+    this._setState(toggleBtn, input, !isChecked);
+  },
+
+  _setState : function(toggleBtn, input, checkState) {
+    if (input.type == "checkbox")
+      input.checked = checkState;
+    else if(checkState)
+      input.value = "Yes";
+    else
+      input.value = "No";
+    
+    if (checkState) {
+      //var pos = this.offset[this.stlIdx] + " 0px";
+      toggleBtn.style.backgroundPosition = "100% 0%";
+    }
+    else
+      toggleBtn.style.backgroundPosition = "0% 0%"
   }
-  if (curTr == null)
-    return stopEventPropagation(event);
-  var newTr = copyTableRow(ctbody, pos, curTr);
-  elms = newTr.getElementsByTagName('td');
-
-  elms[0].innerHTML = subject.value;
-  for (var i=1; i<elms.length; i++)
-    elms[i].innerHTML = "";
-  if (pos == -1)
-    ctbody.appendChild(newTr);
-  else
-    ctbody.insertBefore(newTros, curTr);
-  return stopEventPropagation(event);
 }
-function addBeforeProcessing(tbodyId, subject, event) {
-  var table = document.getElementById(tableId);
-  if (!table)
-    return stopEventPropagation(event);
-  var tbody = table.getElementsByTagName('tbody');
-  if (!tbody || tbody.length == 0)
-    return stopEventPropagation(event);
-  var ctbody = tbody[0];
-  var afterTR;
 
-  var curTr = document.getElementById('tr_empty');
-  if (curTr == null)
-    return stopEventPropagation(event);
-  var newTr = copyTableRow(ctbody, 1, curTr);
-  newTr.style.visibility = Popup.VISIBLE;
-  newTr.style.display = "inline";
-  newTr.id = 'newTr';
-  var elms = newTr.getElementsByTagName('td');
-  elms[0].innerHTML = subject.value;
-  var date = new Date();
-  elms[1].innerHTML = '<tt>' + date.getHours() + ':' + date.getMinutes() + '</tt>';
-  ctbody.appendChild(newTr);
-
-  var div = document.createElement('div');
-  div.style.display = "none";
-  var form = document.forms['tablePropertyList'];
-  var params = getFormFilters(form, true);
-  subject.value = '';
-
-  var retCode = stopEventPropagation(event);
-  postRequest(event, 'mkresource', params, div, newTr, updateTR);
-  return retCode;
+// clears text field content
+function onCrossOfTextField(cross, callback) {
+  var textField = getPreviousSibling(cross);
+  textField.value='';
+  textField.focus();
+  
+  if (callback)
+    callback(textField);
 }
-*/
+
+//******************************************
+// BrowserDialog
+//******************************************
+var BrowserDialog = {
+	div : null,
+	textDiv : null,
+	okBtnDiv : null,
+	cancelBtnDiv : null,
+	promptInp : null,
+	
+	callback : null,
+	callbackThis : null,
+	callbackParamsArr : new Array(),
+	
+	isPrompt : false,
+	
+	init : function() {
+		this.div = document.createElement("div");
+		this.div.id = "browser_dlg";
+		
+		this.div.innerHTML = 
+			"<table cellspacing=\"0\" cellpadding=\"0\">"
+			+ "<tr class=\"top\"><td>"
+			+ "</td></tr>"
+			+ "<tr align=\"center\" class=\"content\"><td>"
+			+ "<div class=\"statement\"></div>"
+			+ "<input class=\"prompt_text\" type=\"text\">"
+			+ "<div align=\"center\">"
+			+ "<table class=\"btns_panel\"><tr><td>"
+			+ "<div class=\"iphone_dlg_btn\">Ok</div>"
+			+ "</td><td>"
+			+ "<div class=\"iphone_dlg_btn\">Cancel</div>"
+			+ "</td></tr></table>"
+			+ "</div>"
+			+ "</td></tr>"
+			+ "<tr class=\"bottom\"><td>"
+			+ "</td></tr>";
+
+		document.body.appendChild(this.div);
+		this.textDiv = getChildByClassName(this.div, "statement");
+		var btnsPanel = getChildByClassName(this.div, "btns_panel");
+		var btns = btnsPanel.getElementsByTagName("div");
+		this.okBtnDiv = btns[0];
+		this.okBtnDiv.onclick = this.onok;
+		this.cancelBtnDiv = btns[1];
+		this.cancelBtnDiv.onclick = this.oncancel;
+		this.promptInp = getChildByClassName(this.div, "prompt_text");
+  },
+	
+	// okBtnLabel, cancelBtnLabel are not required parameters
+	// in all 3 following functions	
+	alert : function(msg, okBtnLabel) {
+		this.show("alert", msg, null, okBtnLabel, null);
+	},
+	
+	confirm : function(msg, callback, okBtnLabel, cancelBtnLabel) {
+		this.show("confirm", msg, callback, okBtnLabel, cancelBtnLabel);
+	},
+	
+	prompt : function(msg, callback, okBtnLabel, cancelBtnLabel) {
+		this.show("prompt", msg, callback, okBtnLabel, cancelBtnLabel);
+	},
+	
+	// setCallbackThis allows to provide callback with this object
+	setCallbackThis : function(thisObj) {
+		this.callbackThis = thisObj;
+	},
+	
+	// setCallbackArguments allows to provide callback with needed arguments
+	setCallbackArguments : function(/* arguments */) {
+		// reserve 1st index for return value of the dialog
+		this.callbackParamsArr[0] = null;
+		for (i = 0; i < arguments.length; i++)
+			this.callbackParamsArr[i + 1] = arguments[i]; 
+	},
+	
+	show : function(type, msg, callback, okBtnLabel, cancelBtnLabel) {
+		if (this.div == null)
+			this.init();
+		
+		// set at window center
+	  var wndSize = getWindowSize();
+		var dlgWidth = this.div.clientWidth;
+		var dlgHeight = this.div.clientHeight;
+
+	  var scroll = getScrollXY();
+		var style = this.div.style;
+		if (wndSize[0] > dlgWidth)
+		  style.left = Math.ceil((wndSize[0] - dlgWidth) / 2)  + scroll[0];
+		else
+		  style.left = scroll[0] + 2;
+		
+		if (wndSize[1] > dlgHeight)  
+		  style.top = Math.ceil((wndSize[1] - dlgHeight) / 2)  + scroll[1];
+    else
+      style.top = scroll[1] + 2;
+
+		this.textDiv.innerHTML = msg;
+		if (!okBtnLabel)
+			okBtnLabel = "OK";
+		if (!cancelBtnLabel)
+			cancelBtnLabel = "Cancel";
+		
+		this.okBtnDiv.innerHTML = okBtnLabel;
+		if (type != 'alert') {
+			this.cancelBtnDiv.innerHTML = cancelBtnLabel;
+			this.cancelBtnDiv.style.display = "";
+		}
+		else 
+			this.cancelBtnDiv.style.display = "none";
+
+		this.promptInp.style.display = (type == "prompt") ? "block" : "none";
+		this.div.style.visibility = "visible";	
+		
+		if (type == "prompt") {
+			this.promptInp.focus();
+			this.isPrompt = true;
+		}
+		else
+			this.isPrompt = false;
+
+		this.callback = callback;
+	},
+	
+	onok : function() {
+		var $t = BrowserDialog;
+		
+		if ($t.callback) {
+			if ($t.isPrompt) {
+				$t.callbackParamsArr[0] = $t.promptInp.value;
+				$t.callback.apply($t.callbackThis, $t.callbackParamsArr);
+			}
+			else {
+				$t.callbackParamsArr[0] = true;
+				$t.callback.apply($t.callbackThis, $t.callbackParamsArr);
+			}
+		}
+		$t.hide();
+	},
+	
+	oncancel : function() {
+		var $t = BrowserDialog;
+		if ($t.callback) {
+			if (!$t.isPrompt) {
+				// confirm
+				$t.callbackParamsArr[0] = false;
+				$t.callback.apply($t.callbackThis, $t.callbackParamsArr);
+			}
+		}
+		$t.hide();
+	},
+	
+	hide : function() {
+		var $t = BrowserDialog;
+		$t.div.style.visibility = "hidden";
+		$t.promptInp.style.display = "none";
+		$t.callbackThis = null;
+		$t.callbackParamsArr = new Array();
+	}
+}
+
+// redefines standart alert() function
+function alert(text) {
+	BrowserDialog.alert(text, null ,"yes");
+}
+
 
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;

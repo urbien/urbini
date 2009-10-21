@@ -2,6 +2,8 @@
 <div id="div_err"><errorMessage/></div>
 <!--script src="tableScroll.js" language="JavaScript" type="text/javascript"></script-->
 
+
+
     <table width="100%" cellspacing="0" cellpadding="5" border="0">
       <tr valign="top">
       <td width="80%">
@@ -9,12 +11,16 @@
       </td>
       <td>
       <div>
+      
+      <panelBlock on_page="y">
 	     <form id="filter" name="tablePropertyList" method="post" action="proppatch" autocomplete="off">
          <tablePropertyList type="http://www.hudsonfog.com/voc/hospitality/spa/Ticket"/>
 	       <input type="hidden" name="-schedule" value="y" />
 	       <input type="hidden" name="type" value="http://www.hudsonfog.com/voc/hospitality/spa/Ticket" />
-	       <br />
+	       
 	     </form>
+	     	</panelBlock>
+	     
       </div>
       <br/>
  	    <div id="resourceList_div">
@@ -24,5 +30,6 @@
       </td>
       </tr>
     </table>
+	
 </div>
 

@@ -55,9 +55,9 @@
         onLoadPopup();
         return;
       }
-      
       // 1.1 mobile
       if (typeof Mobile != 'undefined') {
+        Browser.mobile = true;
         /* moved to onPageLoaded because of the applet initialization */
       }
       // 1.2. desktop
@@ -84,10 +84,15 @@
     function onPageLoaded(event) {
       // 2.1. mobile
       if (typeof Mobile != 'undefined') {
+        Browser.mobile = true;
+        
+        BottomToolbar.init();
         Boost.init(event);
         Mobile.init(event);
 		    MobilePageAnimation.init();
-        MobileMenuAnimation.init();
+        
+        // preload sprite
+        CueLoading.init()
       }
       // 2.2. desktop
       else {

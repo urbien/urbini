@@ -5,6 +5,63 @@ var frameLoaded = new Array();
 var xcookie;
 
 /***********************************************
+* DOM Nodes
+************************************************/
+/**
+ * Since Internet Explorer does not define the Node interface constants, which
+ * let you easily identify the type of node, one of the first things to do in a
+ * DOM script for the Web is to make sure you define one yourself, if it's
+ * missing.
+ */
+if (!window['Node']) {
+  window.Node = new Object();
+  Node.ELEMENT_NODE = 1;
+  Node.ATTRIBUTE_NODE = 2;
+  Node.TEXT_NODE = 3;
+  Node.CDATA_SECTION_NODE = 4;
+  Node.ENTITY_REFERENCE_NODE = 5;
+  Node.ENTITY_NODE = 6;
+  Node.PROCESSING_INSTRUCTION_NODE = 7;
+  Node.COMMENT_NODE = 8;
+  Node.DOCUMENT_NODE = 9;
+  Node.DOCUMENT_TYPE_NODE = 10;
+  Node.DOCUMENT_FRAGMENT_NODE = 11;
+  Node.NOTATION_NODE = 12;
+}
+
+// add a check if a node contains other one
+if (window.Node && Node.prototype && !Node.prototype.contains) {
+  Node.prototype.contains = function (arg) {
+    return !!(this.compareDocumentPosition(arg) & 16);
+  };
+}
+
+/*
+000000  0  	Elements are identical.
+000001 	1 	The nodes are in different documents (or one is outside of a document).
+000010 	2 	Node B precedes Node A.
+000100 	4 	Node A precedes Node B.
+001000 	8 	Node B contains Node A.
+010000 	16 	Node A contains Node B.
+100000 	32 	For private use by the browser.
+
+example: a contains b returns 20 (4 + 16)
+ */
+function comparePosition(a, b){
+  return a.compareDocumentPosition ?
+    a.compareDocumentPosition(b) :
+    a.contains ?
+      (a != b && a.contains(b) && 16) +
+        (a != b && b.contains(a) && 8) +
+        (a.sourceIndex >= 0 && b.sourceIndex >= 0 ?
+          (a.sourceIndex < b.sourceIndex && 4) +
+            (a.sourceIndex > b.sourceIndex && 2) :
+          1) +
+      0 :
+      0;
+}
+
+/***********************************************
 * String extension
 ************************************************/
 String.prototype.startsWith = function (s){
@@ -39,6 +96,32 @@ String.prototype.plainText = function() {
   return this.replace(/<\/?[^>]+(>|$)/g, " ");
 }
 
+/***********************************************
+* Math extension
+************************************************/
+Math.bezierPoint = 
+// Get the current position of the animated element based on t.
+// Each point is an array of "x" and "y" values (0 = x, 1 = y)
+// At least 2 points are required (start and end).
+// First point is start. Last point is end.
+// Additional control points are optional.    
+// @param {Array} points An array containing Bezier points
+// @param {Number} t A number between 0 and 1 which is the basis for determining current position
+// @return {Array} An array containing int x and y member data
+ function(points, t) {  
+    var n = points.length;
+    var tmp = [];
+    for (var i = 0; i < n; ++i) {
+       tmp[i] = [points[i][0], points[i][1]]; // save input
+    }
+    for (var j = 1; j < n; ++j) {
+       for (i = 0; i < n - j; ++i) {
+          tmp[i][0] = (1 - t) * tmp[i][0] + t * tmp[parseInt(i + 1, 10)][0];
+          tmp[i][1] = (1 - t) * tmp[i][1] + t * tmp[parseInt(i + 1, 10)][1]; 
+       }
+    }
+    return [ tmp[0][0], tmp[0][1] ]; 
+ }
 /***********************************************
 * Browser detection
 ************************************************/
@@ -96,8 +179,12 @@ Browser.joystickBased = Browser.s60Browser ? true : false;
 Browser.mobileSafari = agent.indexOf("Mobile") != -1 && agent.indexOf("Safari") != -1;
 Browser.iPhone    = Browser.mobileSafari && agent.indexOf("iPhone") != -1;
 Browser.iPod      = Browser.mobileSafari && agent.indexOf("iPod") != -1;
+
+Browser.palm      = agent.indexOf("webOS") != -1;
+Browser.palmApp   = Browser.palm && (document.location.href.indexOf("file:") == 0);
+
 var mobileCookie  = readCookie('mobile_mode');
-Browser.mobile    = Browser.android || Browser.mobileSafari || Browser.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
+Browser.mobile    = Browser.palm || Browser.android || Browser.mobileSafari || Browser.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
 Browser.chrome    = (agent.indexOf("Chrome")) != -1 ? true : false;
 
 // ****************************************************
@@ -209,15 +296,25 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
   }
   this.lastRequest = http_request;
   var clonedEvent = cloneEvent(event);
+  
+  if (Browser.mobile) {
+    CueLoading.show();
+  }
+
   http_request.onreadystatechange = function() {
     var status;
     if (http_request.readyState != 4) // ignore for now: 0-Unintialized,
                                       // 1-Loading, 2-Loaded, 3-Interactive
       return;
-//    Boost.log('got back on postrequest for ' + url);
+
+    // stop cueLoading
+    if (Browser.mobile)
+      CueLoading.hide();
+
     if (typeof loadingCueFinish != 'undefined')
       loadingCueFinish();
     var location;
+    
     try {
       status = http_request.status;
       var responseXML = http_request.responseXML;
@@ -235,6 +332,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       else
         status = 400;
     }
+    
 //    Boost.log('got back on postrequest, status ' + status);
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
@@ -313,6 +411,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     }
     else {
 //      Boost.log('AJAX request status(' + status + ', ' + url + ')');
+      if (typeof openAjaxStatistics != 'undefined')
       openAjaxStatistics(event, http_request);
       //Boost.view.setProgressIndeterminate(false);
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
@@ -391,8 +490,11 @@ function openAjaxStatistics(event, http_request) {
   if(!event)
     return;
   var target = event.target;
+  
+  try {
   if (!target || !target.tagName || target.tagName.toUpperCase() != 'IMG' || target.id.indexOf('codeBehindThePage') == -1)
     return;
+  } catch(e){ return; };
 
   var tdSql = document.getElementById("ajax_sql");
   var logMarker = http_request.getResponseHeader("X-Request-Tracker");
@@ -773,6 +875,27 @@ function stopEventPropagation(e) {
 /*********************************************
 * DOM util functions
 **********************************************/
+function swapNodes(node1, node2) {
+  if(node1.swapNode) {
+    node1.swapNode(node2);
+    return;
+  }
+  var parent1 = node1.parentNode;
+  var parent2 = node2.parentNode;
+  var nextSibling1 = node1.nextSibling;
+  var nextSibling2 = node2.nextSibling;
+
+  if(nextSibling1)
+    parent1.insertBefore(node2, nextSibling1);
+  else
+    parent1.appendChild(node2);
+
+  if(nextSibling2)
+    parent2.insertBefore(node1, nextSibling2);
+  else
+    parent2.appendChild(node1);
+}
+
 function getNextSibling(obj) {
   do obj = obj.nextSibling;
   while (obj && obj.nodeType != 1);
@@ -794,7 +917,7 @@ function getChildById(parent, id) {
 	return getChildByAttribute(parent, "id", id);
 }
 function getChildByClassName(parent, className) {
-	return getChildByAttribute(parent, "className", className);
+	return this.getChildByAttribute(parent, "className", className);
 }
 function getChildByAttribute(parent, atribName, attribValue) {
 	if(!parent)
@@ -893,31 +1016,47 @@ function getAncestorByTagName(child, tagName) {
 	return null;
 }
 
+// for mobile version when server returns full html page but only part is used
+// returns object not inserted to document
+var _hdnDivForDom = null;
+function getDomObjectFromHtml(html, attribName, attribValue){
+	//  debugger;
+	if (_hdnDivForDom == null) {
+		_hdnDivForDom = document.createElement("div");
+		_hdnDivForDom.style.display = "none";
+		document.body.appendChild(_hdnDivForDom);
+	}
+	// use innerHTML instead setInnerHtml
+	_hdnDivForDom.innerHTML = html;
+	
+	var obj = getChildByAttribute(_hdnDivForDom, attribName, attribValue);
+	if (!obj) 
+		return null;
+	
+	// remove not needed html from DOM		
+	obj = obj.parentNode.removeChild(obj);
+	_hdnDivForDom.innerHTML = "";
+	
+	return obj;
+}
+
+//********************************************
+// setInnerHtml
+// Note: automatically runs inner JS code
+//********************************************
 function setInnerHtml(div, text) {
-// write in child with id = "content" if it exists.
+  // write in child with id = "content" if it exists.
   var contentDiv = getChildById(div, "content");
   if(contentDiv != null)
-	div = contentDiv;
+	  div = contentDiv;
 
   if (Browser.ns4) {
     div.document.open();
     div.document.write(text);
     div.document.close();
   }
-// else if (Browser.ns6) {
-// var r = div.ownerDocument.createRange();
-// r.selectNodeContents(div);
-// r.deleteContents();
-// var df = r.createContextualFragment(text);
-// div.appendChild(df);
-// }
   else {
     div.innerHTML = '';
-    // hack to remove current div dimensions, otherwise div will not auto-adjust
-    // to the text inserted into it (hack needed at least in firefox 1.0)
-    div.style.width  = null;
-    div.style.height = null;
-    // insert html fragment
     div.innerHTML = text;
   }
   
@@ -925,6 +1064,38 @@ function setInnerHtml(div, text) {
   ExecJS.runDivCode(div);
 }
 
+/**
+ * cross-browser way to get text inside tag (like inside span)
+ */
+function getTextContent(elm) {
+  var text = null;
+  if (!elm) {
+ //   debugger
+    throw new Error("parameter is null");
+  }
+
+  if (typeof elm.textContent != "undefined") {                // W3C DOM Level 3
+    text = elm.textContent;
+  }
+  else if (elm.childNodes && elm.childNodes.length) {         // W3C DOM Level 2
+    var t = '';
+    for (var i = elm.childNodes.length; i--;) {
+      var o = elm.childNodes[i];
+      if (o.nodeType == 1 || o.nodeType == 3) { // ELEMENT_NODE or TEXT_NODE
+        if (o.nodeValue)
+          t = o.nodeValue + t;
+      }
+      else
+        t = getTextContent(o) + t;
+    }
+    text = t == '' ? null : t;
+  }
+  else if (typeof elm.innerText != "undefined") {             // proprietary:
+                                                              // IE4+
+    text = elm.innerText;
+  }
+  return text;
+}
 
 function getElementStyle(elem) {
 	if(typeof elem == 'string')
@@ -939,10 +1110,13 @@ function getElementStyle(elem) {
 		return document.defaultView.getComputedStyle(elem, null);
 }
 
+
+
 /*********************************************************
 * ExecJS 
 * helps to handle dialog and tab cases;
 * checks ready state (IE) as well.
+* Note: need to clean up ExecJS
 **********************************************************/
 var ExecJS = {
   runCodeArr : new Array(),
@@ -950,7 +1124,7 @@ var ExecJS = {
   
   runCode : function(jsCode, refObjId, requiredJsFileName) {
     $t = ExecJS;
-    
+   
     // check if required JS file was loaded and parsed
     // ondemandloaded JS-file has requiredJsFileName = null
     var toWait = false;
@@ -961,20 +1135,31 @@ var ExecJS = {
       setTimeout( function() { ExecJS.runCode(jsCode, refObjId, requiredJsFileName) }, 100); 
       return;
     }
-    
     if (refObjId)
       $t._runRelativeCode(jsCode, refObjId);
     else
       $t.eval(jsCode);
   },
   
+  // Note: firebug for FF3 ignoring try catch (?!)
   eval : function(jsCode) {
+    // if JS code contains "class name" then check if it was loaded.
+    var pointIdx = jsCode.indexOf(".");
+    if (pointIdx != -1) {
+      className = jsCode.substring(0, pointIdx);
+      if (typeof className == 'undefined') {
+        setTimeout( function() { ExecJS.eval(jsCode) }, 100);
+        return;
+      }
+    }
+    // try to eval JS code
     try {
       window.eval(jsCode);
     }
     catch(e) {
       setTimeout( function() { ExecJS.eval(jsCode) }, 100);
     } 
+   
   },
   
   // executes js code if refObjId is visible - [hidden tab].
@@ -989,43 +1174,55 @@ var ExecJS = {
 		else {
       if(this.isObjectTotallyVisible(refObjId))
         this.eval(jsCode);
+			else
+				// expect that div should be shown shortly
+				setTimeout(jsCode, 1000);	
     }
   },
 
-  // evaluates script blocks
-  // contDiv is a div that contain JS code - [dialog].
+  // evaluates script blocks including in some DIV
+  // contDiv is a div that contains JS code - [dialog].
+  // it automatically called from setInnerHtml() function
   runDivCode : function(contDiv) {
     if(!contDiv)
       return;
     var scripts = contDiv.getElementsByTagName('script');
-    for(var i = 0; i < scripts.length; i++) {
+   
+	  for(var i = 0; i < scripts.length; i++) {
       if(typeof scripts[i].evaluated == 'undefined' || !scripts[i].evaluated) {
         // 1. external JS code
         var src = scripts[i].src;
         if (src && src.length != 0) {
-          // the same code as in menu.onDemand.includeJS()
-          var html_doc = document.getElementsByTagName('head')[0];
-          var js = document.createElement('script');
-          js.setAttribute('type', 'text/javascript');
-          
-          // suppress minify
-          if(location.href.indexOf("-minify-js=n") != -1)
-            fileName = fileName.replace("m.js", ".js")
-            
-          js.setAttribute('src', src);
-          html_doc.appendChild(js);
+					var keyName = src.replace(/_[0-9]*\.js/, ".js");
+					if (typeof g_loadedJsFiles[keyName]) { /*!this.isScriptFileLoaded(src)*/
+				  	var html_doc = document.getElementsByTagName('head')[0];
+				  	var js = document.createElement('script');
+				  	js.setAttribute('type', 'text/javascript');
+			  	// suppress minify
+						if (location.href.indexOf("-minify-js=n") != -1) 
+							fileName = fileName.replace("m.js", ".js")
+						
+						js.setAttribute('src', src);
+						html_doc.appendChild(js);
+						
+						g_loadedJsFiles[keyName] = true;
+					}
         }
         // 2. inner JS block
         else {
           var parent = scripts[i].parentNode;
-          // apply only to visible object
-          if(this.isObjectTotallyVisible(parent)) {
-            var evalStr = scripts[i].text || scripts[i].innerHTML;
+          // if JS code tries to set focus on invisible field it invokes exception
+          var evalStr = scripts[i].text || scripts[i].innerHTML;
+          var containsFocusCommand = (evalStr.indexOf("focus(") != -1);
+          if(containsFocusCommand == false || this.isObjectTotallyVisible(parent)) {
             window.eval(evalStr);
-            scripts[i].evaluated = true;
           }
+          else { // or exec it with delay 1 sec.
+            // expect that div should be shown shortly
+            setTimeout(evalStr, 1000);
+          }
+          scripts[i].evaluated = true;
         }
-        
       }
     }
   },
@@ -1038,6 +1235,7 @@ var ExecJS = {
     if(obj == null)
       return false;
 	  var parent = obj;
+	  
 	  while(parent != null) {
 		  var stl = getElementStyle(parent);
 		  if (stl != null) {
@@ -1058,7 +1256,9 @@ var ExecJS = {
   }
 }
 
+//************************************************
 // Cookie utility functions
+//************************************************
 function createCookie(name, value, days) {
   if (days) {
     var date = new Date();
@@ -1233,6 +1433,35 @@ function getObjectUpperLeft(obj){
 
   return {x:x, y:y};
 }// eof getObjectUpperLeft
+
+// url can be omitted
+function getUrlParam(url, paramName) {
+  paramName = paramName.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regexS = "[\\?&]" + paramName + "=([^&#]*)";
+  var regex = new RegExp( regexS );
+	
+	if (!url)
+		url = window.location.href
+	
+  var results = regex.exec(url);
+  if( results == null )
+    return null;
+  else
+    return results[1];
+}
+
+// returns base url with trailed "/"
+function getBaseUrl() {
+  var baseUriO = document.getElementsByTagName('base');
+  if (!baseUriO)
+    return "";
+  
+  var baseUri = baseUriO[0].href;
+  if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
+    baseUri += "/";
+
+  return baseUri;
+}
 
 // flag that common.js was parsed
 g_loadedJsFiles["common.js"] = true;

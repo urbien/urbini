@@ -4,12 +4,14 @@
   </head>
   <body id="body">
 
+
+  <div class="abc">
     <include name="requiredHeader.jsp"/>
     <getResource/>
     <div id="mainskin" class="blue">
     <include name="menu.jsp"/>
 <hideBlock>
-    <table id="top" width="100%" border="0" cellspacing="0" cellpadding="0">
+    <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr class="abc">
       <td valign="top" align="center">
         <include name="${type}_top.jsp"/>          <!-- this jsp will be included in ResourceList page only-->
@@ -18,15 +20,15 @@
     </tr>
     </table>
 </hideBlock>
-    <!--filter/-->
-    <table width="100%" id="leftRight" border="0" cellspacing="0" cellpadding="0">
+    <filter/>
+    <table width="100%" height="100%" border="0" cellspacing="0" cellpadding="3">
     <tr class="abc">
 <hideBlock>
       <include name="${type}_left.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
       <include name="${type}_details_left.jsp"/> <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
 </hideBlock>
       <td valign="top">
-        <div id="corePageContent"> <file/> </div>
+        <div id="corePageContent"> <file/></div>
       </td>
 <hideBlock>
       <include name="${type}_right.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
@@ -45,6 +47,7 @@
     <include name="include/commonFooter"/>
     <chatAutoStart/>
 </hideBlock>
+  </div>
 
   </body>
 </html>

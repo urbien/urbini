@@ -1057,7 +1057,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 		//obj = this.controlsArr[idx];
 		var newHeight = obj.height + (TOP_PADDING + BOTTOM_PADDING);
 		if(this.height < newHeight)
-			this.height = newHeight
+			this.height = newHeight;
 					
 		if(this.controlsArr.length == 1)
 			this.width = LEFT_PADDING + obj.width + RIGHT_PADDING;
