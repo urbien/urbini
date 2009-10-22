@@ -726,7 +726,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Reacts to clicks inside the popup
    */
   this.popupRowOnClick = function (e) {
-    e = getDocumentEvent(e); if (!e) return;
+		e = getDocumentEvent(e); if (!e) return;
     var target = getTargetElement(e);
     var tr = getTrNode(target);
     if (!tr)
@@ -3207,20 +3207,20 @@ var ListBoxesHandler = {
   },
 
   showCalendar : function(paramTr) {
-    var $t = ListBoxesHandler;
+		var $t = ListBoxesHandler;
 		// set top offset (margin) to sutisfy current scroll position
 		var topOffset = getScrollXY()[1] - findPosY(this.tray);
-		this.calendarPanel.style.marginTop = (topOffset > 0) ? topOffset : 0 ;
+		$t.calendarPanel.style.marginTop = (topOffset > 0) ? topOffset : 0 ;
 
     $t.calendarPanel.style.display = "inline";
     
     var inputs = $t.getDateInputs(paramTr); //Filter.getPeriodInputs(paramTr);
     
     //var calCont = getChildById(this.calendarPanel, "calendar_container");
-    startCalendar(this.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
+    startCalendar($t.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
     
     // slide forward
-    SlideSwaper.moveForward(this.tray, true);
+    SlideSwaper.moveForward($t.tray, true);
   },
 
   // returns 2 inputs for the filter (period)
@@ -3301,21 +3301,13 @@ var ListBoxesHandler = {
       vIcon.style.visibility = "visible";
     }
       
-    
-    // set value of text entry.
-    /* commented out because of multiple selection (?)
-    var selectedOptionsArr = $t.getSelectedOptions();
-    var text = $t.getSelectedOptionsHtml(selectedOptionsArr);
-    $t.textEntry.value = text;
-    */
-
     // close options on timeout
     $t.timerId = setTimeout(this.onOptionsSelectionFinish, $t.OPTIONS_DELAY);
     return true;
   },
   
   onOptionsSelectionFinish : function(lastClickedTr) {
-    var $t = ListBoxesHandler;
+ 		var $t = ListBoxesHandler;
     var form = document.forms[currentFormName];
     var textField = form.elements[originalProp];
 
@@ -3342,7 +3334,7 @@ var ListBoxesHandler = {
 			$t.fitSelectedOptionsWidth(td);
 		}
 		else { // data entry
-			textField.value = selectedOptionsArr[0];
+			textField.value = selectedOptionsArr[0]["value"];
 		}
     
     // slide back
@@ -3350,7 +3342,7 @@ var ListBoxesHandler = {
   },
   
   onPeriodSelectionFinish : function(fromInp, toInp) {
-    var $t = ListBoxesHandler;
+	var $t = ListBoxesHandler;
     var td = getAncestorByTagName(fromInp, "td");
     var chosenValuesDiv = getChildByClassName(td, "chosen_values");
 		if (chosenValuesDiv) {
@@ -3371,7 +3363,7 @@ var ListBoxesHandler = {
   // 1) multipele selection: checked [v]-icon.
   // 2) single selection allowed: lastClickedTr.
   getSelectedOptions : function(lastClickedTr) {
-    var selectedOptions = new Array();
+ 	  var selectedOptions = new Array();
     // loop on options table rows.
     var optTable = getChildByClassName(this.curPopupDiv, "rounded_rect_tbl");
     var amt = optTable.rows.length;
@@ -3380,15 +3372,14 @@ var ListBoxesHandler = {
       var checkBox = chkCell.getElementsByTagName("input")[0];
       if (checkBox) {
         if (checkBox.checked) {
-          //var menuItemCell = getNextSibling(chkCell);
-          //selectedOptions.push(menuItemCell.firstChild.nodeValue);
           var text = getTextContent(getNextSibling(checkBox.parentNode));
 					selectedOptions.push({"text" : text, "value" : checkBox.value});
         }
       }
       else {
-        // no checkbox(es) (data entry) 
-        selectedOptions.push(getTextContent(lastClickedTr));
+        // no checkbox(es)
+				var text = getTextContent(lastClickedTr);
+				selectedOptions.push({"text" : text, "value" : text});
         break;
       }
     } // the loop end
@@ -3626,7 +3617,7 @@ var SlideSwaper = {
 
   // callback is not required
   moveForward : function(tray, reset, callback) {
-    if (this.offset != 0)
+		if (this.offset != 0)
       return;
       
     this.tray = tray;
@@ -3646,7 +3637,7 @@ var SlideSwaper = {
   },
   
   moveBack : function(tray, factor, callback) {
-   if (this.offset != 0)
+	 if (this.offset != 0)
       return;
 
     this.factor = factor || 1;  
@@ -9627,7 +9618,7 @@ var FlashHandler = {
 function startCalendar() {
 // calling function in the last file
   var FILES_TO_LOAD = ["iphone_calendar/calendar.css", "iphone_calendar/calendar.js"];
-  getCalendar = null;
+  startCalendar = null;
   LoadOnDemand.doit(FILES_TO_LOAD, "startCalendar", arguments);
 }
 
