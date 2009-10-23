@@ -2885,7 +2885,7 @@ var ListBoxesHandler = {
 
   // Opens the popup when needed, e.g. on click, on enter, on autocomplete
   listboxOnClick1 : function(e, imgId, enteredText, enterFlag) {
-    // cut off "_filter"
+		// cut off "_filter"
     var propName1 = imgId.substring(0, imgId.length - "_filter".length);   
 
     var idx = propName1.lastIndexOf('_');
@@ -3055,7 +3055,7 @@ var ListBoxesHandler = {
   RDR_HEIGHT : 350, // rounded rect height has limitation on desktop
   formPanel : null,
   
-	tray : null,
+	tray : null, // each tray contains own form, options and (optionaly) calendar panels.
   
 	optionsPanel : null,
 	calendarPanel : null,
@@ -3111,8 +3111,9 @@ var ListBoxesHandler = {
     }
 
     if (isCalendar) {
-      // create calendar div.
-      if (this.calendarPanel == null) {
+      // create calendar div if need.
+      this.calendarPanel = getChildByClassName(this.tray, "calendar_panel");
+			if (this.calendarPanel == null) {
         this.createCalendarPanel(this.tray);
       }
       this.showCalendar(tr);
@@ -3353,7 +3354,6 @@ var ListBoxesHandler = {
 				html += "<div>" + toInp.value + "</div>";
 			
 			chosenValuesDiv.innerHTML = html;
-			
 			$t.fitSelectedOptionsWidth(td);
 		}
     // slide back
@@ -3769,12 +3769,7 @@ var Filter = {
         ListBoxesHandler.fitSelectedOptionsWidth(td);
     }    
     
-    // to fix panel/content height while parameter selection
-    var contDiv = getChildByClassName(filterDiv, "rounded_rect_cont");
-    contDiv.style.height = contDiv.clientHeight;
-
     // assign mouse handlers
-    // addEvent(paramsTable, 'click',     this.onClickParam,     false);
     addEvent(paramsTable, 'click',     ListBoxesHandler.onClickParam, false);
     addEvent(paramsTable, 'mouseover', this.onMouseOverParam, false);
     addEvent(paramsTable, 'mousedown', this.onMouseOverParam, false); // for touch screen
@@ -3860,7 +3855,6 @@ var Filter = {
 			else if (cells[j].innerHTML != this.filterBackup[idx]) {
 				cells[j].innerHTML = this.filterBackup[idx];
 			}
-				
 				idx++;
 			}
 		}
