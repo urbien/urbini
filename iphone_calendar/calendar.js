@@ -257,7 +257,7 @@ var PeriodPicker = {
 var iPhoneCalendar = {
   
   MONTH_NAME : ["January", "February", "March", "April", "May", "June", "July", "August",
-    "September", "Octber", "November", "December"],
+    "September", "October", "November", "December"],
   DAY_NAME : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
   FOUR_ROWS_HEIGHT : "176px",
   FIVE_ROWS_HEIGHT : "220px",
