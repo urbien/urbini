@@ -3052,7 +3052,7 @@ var ListBoxesHandler = {
   
   // Touch UI CODE -----------------------------------
   IPH_WIDTH : 320, // iPhone screen width
-  RDR_HEIGHT : 350, // rounded rect height has limitation on desktop
+  // RDR_HEIGHT : 350, // rounded rect height has limitation on desktop
   formPanel : null,
   
 	tray : null, // each tray contains own form, options and (optionaly) calendar panels.
@@ -3155,14 +3155,8 @@ var ListBoxesHandler = {
 
     // 20 = 10 + 10 margin of "rounded"
     var width =  $t.IPH_WIDTH - 20 - 5; 
-    // edit list is more narrow to be able to show shadow
-    // if ($t.isEditList) width -= 20;
-      
     popupDiv.style.width =  width; 
-      
-    //if (Browser.)
-    popupDiv.style.height = $t.RDR_HEIGHT;
-    popupDiv.style.overflow = "auto";
+    popupDiv.style.height = "100%"; // $t.RDR_HEIGHT;
 
     $t.showOptions(popupDiv);
   },
@@ -3203,7 +3197,7 @@ var ListBoxesHandler = {
   onOptionsDisplayed : function() {
     var $t = ListBoxesHandler;
 		// problem with MozTransform
-    if ($t.textEntry && !Browser.firefox3)
+    if ($t.textEntry && $t.tray.style.MozTransform == 'undefined')
       $t.textEntry.focus();
   },
 
