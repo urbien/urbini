@@ -6863,8 +6863,9 @@ var FieldsWithEmptyValue = {
     addEvent(field, "click", this.onclick, false);
     addEvent(field, "keydown", this.onclick, false);
     addEvent(field, "blur", this.onblur, false);
-
-  	this.setEmpty(field);
+		
+		if (field.value.length == 0)
+  		this.setEmpty(field);
   },
   
 	isEmptyValue : function(field) {
