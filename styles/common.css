@@ -264,6 +264,7 @@ table.greyBorder {
 	.cpTabs TD.right {
 	  background-image:url(../images/skin/grey/tab-right.png);
 	  background-repeat: no-repeat;
+	  float: none;
 	}
   .cpTabs .left, .right {
     width:8px;
@@ -293,6 +294,7 @@ table.greyBorder {
 	.currentCpTabs TD.right {
 	  background-image:url(../images/skin/grey/tab-right.png);
 	  background-repeat: no-repeat;
+	  float: none;
 	}
 
   .currentTabTitle {
