@@ -2088,7 +2088,8 @@ var FormProcessor = {
     CheckButtonMgr.substitute(parent, 1);
     
     for (var i = 0; i < inputs.length; i++) {
-      if (inputs[i].className != "input" && inputs[i].className != "boolean")
+      if (inputs[i].className != "input" && inputs[i].className != "isel"
+						&& inputs[i].className != "boolean")
         continue;
       
       // note: like fitSelectedOptionsWidth function.
