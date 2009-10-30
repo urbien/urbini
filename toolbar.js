@@ -950,7 +950,7 @@ function Titlestrip(parentDiv, toolbar)
 		this.toolbar.onTitleVisible();
 	}
 	this.resize = function(width) {
-		this.div.style.width = width;
+		//this.div.style.width = width;
 	}
 	this.isVisible = function() {
 		if(this.div.style.visibility == "visible")
@@ -1006,9 +1006,9 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 		this.div.style.position = "absolute";
 		this.div.style.left = 0;
 		this.div.style.top = 0;
-		if(typeof this.masterObj.getWidth != 'undefined')
-		  this.div.style.width = this.masterObj.getWidth();
-		else
+		//if(typeof this.masterObj.getWidth != 'undefined')
+		//  this.div.style.width = this.masterObj.getWidth();
+		//else
 		  this.div.style.width = "100%";
 		this.div.style.height = this.height;
 		this.div.style.backgroundImage = "url(" + BACKGROUND_IMG + ")";
