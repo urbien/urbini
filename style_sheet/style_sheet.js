@@ -78,6 +78,12 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		this.bgClrBtn = toolBar.appendButton(this.onBackgroundColor, false, IMAGES_FOLDER + "background_color.gif", "background color");
 		// border apply to
 		this.borderApplyToList = this.createBorderApplyTo(toolBar);
+
+
+// NOTE: 	the following is commented out temporary.
+// 				It Required fitting of the toolbar for Touch UI.
+
+/*
 		// border width
 		this.borderWidthList = this.createBorderWidthList(toolBar);
 		// border style
@@ -86,9 +92,11 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		this.borderClrBtn = toolBar.appendButton(this.onBorderColor, false, IMAGES_FOLDER + "border_color.gif", "border color");
 		// CSS view
 		var styleViewBtn = toolBar.appendButton(this.onStyleView, true, IMAGES_FOLDER + "properties.gif", "CSS view");
+*/
+
 
 		// 4. set parent div width
-		parentDiv.style.width = toolBar.getWidth();
+		parentDiv.style.width = "99%"; //toolBar.getWidth();
 		// alighnment of the sample.
 		this.centeringSampleDiv();
 	}
