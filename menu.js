@@ -726,19 +726,24 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * Reacts to clicks inside the popup
    */
   this.popupRowOnClick = function (e) {
+		var $t = ListBoxesHandler;
 		e = getDocumentEvent(e); if (!e) return;
     var target = getTargetElement(e);
     var tr = getTrNode(target);
     if (!tr)
       return stopEventPropagation(e);
     
-    // Touch UI - slide back
+ 		if (getAncestorByClassName(tr, "classifier_panel") != null) {
+			$t.onClassifierItemClick(e, tr);
+			return;
+		}
+ 
     var listsContainer = getAncestorById(tr, "lists_container");
     if (listsContainer != null) {
-      var isMultipleSel = ListBoxesHandler.onOptionsItemClick(tr);
+      var isMultipleSel = $t.onOptionsItemClick(tr);
       if (!isMultipleSel)
         //ListBoxesHandler.onBackBtn();
-        ListBoxesHandler.onOptionsSelectionFinish(tr);
+        $t.onOptionsSelectionFinish(tr);
     }
 
     var ret = self.popupRowOnClick1(e, tr, target);
@@ -748,9 +753,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
   /*************************************************
   * popupRowOnClick1
+  * sets values in hidden inputs
   **************************************************/
   this.popupRowOnClick1 = function (e, tr, target) {
-    Popup.lastClickTime = new Date().getTime();
+    var $t = ListBoxesHandler;
+		
+		Popup.lastClickTime = new Date().getTime();
     var currentDiv = self.getCurrentDiv();
     
     if (!tr)
@@ -863,20 +871,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     // row clicked corresponds to a property with range 'interface', meaning
     // that we need to open a list of classes that implement this interface
     if (originalProp.indexOf('_class') != -1) {
-      var img = tr.getElementsByTagName('img')[0];
-      var imgId  = prop + "_class_img";
-      if (img) {
-        document.getElementById(imgId).src   = img.src;
-        document.getElementById(imgId).title = img.title;
-      }
-      formFieldClass.value = tr.id; // property value corresponding to a
-                                    // listitem
-      if (currentDiv) {
-        loadedPopups[currentDiv.id] = null;
-        Popup.close0(currentDiv.id)
-      }
-      this.listboxOnClick1(e, currentImgId);
-      return true;
+      formFieldClass.value = ($t.curClass != null) ? $t.curClass : "";
     }
 
     var select;
@@ -1146,26 +1141,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         divId = currentResourceUri + ".$." + divId;
     }
     var div = document.getElementById(divId);
-    if (deleteCurrentDiv && currentDiv)
+		if (deleteCurrentDiv && currentDiv)
       loadedPopups[currentDiv.id] = null;
-  
-  /*    
-    if (isEmbededList) {
-      ListBoxesHandler.onOptionsItemClick(tr);    
-    }
-    else { 
-      // if checkbox was clicked, then do not close popup so that user can check
-      // checboxes, if needed
-      if (!checkboxClicked)
-        Popup.close0(div.id);
-      clearOtherPopups(div);
-   }
-    
-    if (checkboxClicked)
-      return true;
-    else
-      return false;
-  */
  }
   
 
@@ -1878,8 +1855,7 @@ var FormProcessor = {
     }
  		// 1. form in dialog: send via XHR
     if (isFormInDialog)  {
-			//params += "&type=http://www.hudsonfog.com/voc/software/crm/Bug"
-      postRequest(e, url, params, pane2, getTargetElement(e), showDialog);
+			postRequest(e, url, params, pane2, getTargetElement(e), showDialog);
       return stopEventPropagation(e);
     }
 		// 2. mobile: return url for further XHR
@@ -2089,7 +2065,7 @@ var FormProcessor = {
     
     for (var i = 0; i < inputs.length; i++) {
       if (inputs[i].className != "input" && inputs[i].className != "isel"
-						&& inputs[i].className != "boolean")
+					&& inputs[i].className != "boolean")
         continue;
       
       // note: like fitSelectedOptionsWidth function.
@@ -2150,9 +2126,6 @@ var FormProcessor = {
         inputs[i].style.clear = "none";
       
       inputs[i].style.width = width;
-//      addEvent(paramsTable, 'click',     this.onClickParam,     false);
-
-      //onParamTrClick : function(e, tr)
     }   
   }
 
@@ -2675,8 +2648,6 @@ var ListBoxesHandler = {
     var paramsTable = getChildByClassName(form, "rounded_rect_tbl");
     if (paramsTable)
       addEvent(paramsTable, 'click',  this.onClickParam, false);
-
-    
   },
 
 
@@ -2696,8 +2667,7 @@ var ListBoxesHandler = {
     var e = getDocumentEvent(e);  // if (!e) return;
     var target = getTargetElement(e);
     
-    $t.localOptionsFilter(target.value)
-  
+		// //$t.localOptionsFilter(target.value)
     return $t.autoComplete1(e, target);
   },
 
@@ -2863,11 +2833,11 @@ var ListBoxesHandler = {
   },
 
   autoCompleteTimeout : function(e, invocationTime) {
-    if (keyPressedTime > invocationTime) {
+		if (keyPressedTime > invocationTime) {
       return;
     }
-    if (!keyPressedImgId)
-      return;
+    //if (!keyPressedImgId)
+    //  return;
 
     var hotspot = document.getElementById(keyPressedImgId);
     hotspot = hotspot || document.body;
@@ -2879,13 +2849,13 @@ var ListBoxesHandler = {
 		if (isRollup || !hasMore && this.prevInputValue.length != 0 && newValue.indexOf(this.prevInputValue) == 0)
       this.localOptionsFilter(newValue);
     else {
-        this.listboxOnClick1(e, keyPressedImgId, newValue);
+        this.listboxOnClick1(e, keyPressedImgId, newValue, null, this.curClass);
     }
   },
 
 
   // Opens the popup when needed, e.g. on click, on enter, on autocomplete
-  listboxOnClick1 : function(e, imgId, enteredText, enterFlag) {
+  listboxOnClick1 : function(e, imgId, enteredText, enterFlag, classValue) {
 		// cut off "_filter"
     var propName1 = imgId.substring(0, imgId.length - "_filter".length);   
 
@@ -2968,7 +2938,7 @@ var ListBoxesHandler = {
     // Use existing DIV from cache (unless text was Enter-ed - in which case
     // always redraw DIV)
     
-    if (typeof enteredText == 'undefined' && div != null) {
+    if (false/*enteredText && div != null*/) { // it seems (!) the following made thru localOptionsFilter()
       hideResetRow(div, currentFormName, originalProp);
       this.showOptions(div)
       return;
@@ -2977,6 +2947,10 @@ var ListBoxesHandler = {
       var popup = Popup.getPopup(divId);
       if (popup == null) {
 		  	div = document.getElementById(divId);
+				if (!div) {
+					div = document.createElement("div");
+					div.id = divId;  
+				}
 		  	popup = new Popup(div, hotspot);
 		  }
 		  else {
@@ -3042,11 +3016,9 @@ var ListBoxesHandler = {
     if (enteredText  &&  params.indexOf("&" + propName + "=" + encodeURIComponent(enteredText)) == -1)
       params += "&" + propName + "=" + encodeURIComponent(enteredText);
     if (isInterface) {
-      var classValue = form.elements[propName + "_class"].value;
-      if (classValue != null && classValue.length != 0)
+      if (classValue)
         params += "&" + propName + "_class=" + classValue;
     }
-
     // request listbox context from the server via ajax
     postRequest(e, url, params, div, hotspot, this.onListLoaded);
  },
@@ -3059,11 +3031,16 @@ var ListBoxesHandler = {
 	tray : null, // each tray contains own form, options and (optionaly) calendar panels.
   
 	optionsPanel : null,
+	classifierPanel : null,
 	calendarPanel : null,
   
   curPopupDiv : null,
   textEntry : null,
   
+	curClassesPopupDiv : null,
+	toPutInClassifier : false,
+	curClass : null, // used for "2-steps" resource selection
+	
   isEditList : false, // find out it from "tray" position
   
   // allows maltiple selection with help of delay.
@@ -3072,19 +3049,30 @@ var ListBoxesHandler = {
   
 	isSliding : false, // prevents click processing while sliding
 	
-  onClickParam : function(event, isCalendar) {
- 
+  onClickParam : function(event, optionsSelectorStr) {
+ 		var $t = ListBoxesHandler;
 		var target = getEventTarget(event);
-    //tr = getAncestorByClassName(target, "param_tr");
-    tr = getAncestorByTagName(target, "tr");
-    if (tr)
-      ListBoxesHandler.onParamTrClick(event, tr, isCalendar);
+ 
+    var tr = getAncestorByTagName(target, "tr");
+    
+		// set members corresponding to happend event target
+		$t.tray = getAncestorByClassName(tr, "tray");
+		$t.formPanel = getChildByClassName($t.tray, "form_panel");
+		$t.optionsPanel = getChildByClassName($t.tray, "options_panel");
+		$t.classifierPanel = getChildByClassName($t.tray, "classifier_panel");
+    $t.calendarPanel = getChildByClassName($t.tray, "calendar_panel");
+		
+		$t.textEntry = getChildById($t.optionsPanel, "text_entry");
+		$t.curClass = null;
+		
+		if (tr)
+      $t.processClickParam(event, tr, optionsSelectorStr);
       
     stopEventPropagation(event);  
   },
-  // isCalendar is not required parameter
-  onParamTrClick : function(e, tr, isCalendar) {
-    
+	
+  // optionsSelectorStr is not required parameter
+  processClickParam : function(e, tr, optionsSelectorStr) {
 		if (this.isSliding)
 			return;
     
@@ -3094,68 +3082,74 @@ var ListBoxesHandler = {
     if(getAncestorByClassName(target, "rollup_td") != null)
       return;
 
+		var isClassifier = this.isClassifier(tr);
     var arrowTd = getChildByClassName(tr, "arrow_td");
-    if (!arrowTd)
+    if (!arrowTd && !isClassifier)
       return; // no options for this item 
-
-    this.tray = this.getTray(tr);
-    this.optionsPanel = getChildByClassName(this.tray, "options_panel");
-    this.textEntry = getChildById(this.optionsPanel, "text_entry");
 
     var input = getChildByClassName(tr, "input");
 
     // prepare options div
-   // this.prepareOptionsPanel(tray);
-
-    if (typeof isCalendar == 'undefined') {
-      isCalendar = arrowTd.getAttribute("calendar") != null;
+    if (typeof optionsSelectorStr == 'undefined') {
+      optionsSelectorStr = arrowTd.getAttribute("options_selector");
     }
 
-    if (isCalendar) {
+		this.toPutInClassifier = false;
+    if (optionsSelectorStr == "calendar") {
       // create calendar div if need.
-      this.calendarPanel = getChildByClassName(this.tray, "calendar_panel");
 			if (this.calendarPanel == null) {
         this.createCalendarPanel(this.tray);
       }
       this.showCalendar(tr);
     }
-      // set name of text enry of current input field
-      if (this.textEntry)
-				this.textEntry.name = input.name;
-      var str = input.name + "_" + input.id + "_filter";
-      // show options list with initial set - ""  
-      this.listboxOnClick1(e, str, "");
+		else if (optionsSelectorStr == "classifier") {
+			var input = tr.getElementsByTagName("input")[0];
+			// use class selection step only if no previously assigned resource value
+			if (input.value.length == 0) {
+		  	if (this.classifierPanel == null) {
+		  		this.createClassifierPanel(this.tray);
+		  	}
+		  	this.classifierPanel.style.display = "inline";
+		  	this.toPutInClassifier = true;
+	  	}
+		}
+		
+    // set name of text enry of current input field
+    if (this.textEntry && !isClassifier)
+			this.textEntry.name = input.name;
     
- //   stopEventPropagation(e);
+		var str =	"";
+		var classValue = null;
+		if (isClassifier) {
+			var paramsTable = getAncestorByClassName(tr, "rounded_rect_tbl");
+			str = paramsTable.id.substr("table_".length) + "_filter";
+			classValue = tr.id;
+		}
+		else
+			str = input.name + "_" + input.id + "_filter";
+
+    // show options list
+    this.listboxOnClick1(e, str, null, null, classValue);
   },
 
-  // Note: formPanel.height and popupDiv.height for desktop - fixed
-  // for mobile unlimited height.
   onListLoaded : function(event, popupDiv, hotspot, content) {
     var $t = ListBoxesHandler;
-    if ($t.formPanel == null)
-      $t.formPanel = $t.getFormPanel(popupDiv);
 
-    if ($t.optionsPanel == null) {
-			if ($t.tray == null)
-				$t.tray = $t.getTray(popupDiv);
-      $t.optionsPanel = getChildByClassName($t.tray, "options_panel");
-      $t.textEntry = getChildById($t.optionsPanel, "text_entry");
-    }
-
+		var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
+			
     // put options popup in options div, so make it static
-    var listsCont = getChildById($t.optionsPanel, "lists_container");
+    var listsCont = getChildById(panel, "lists_container");
     if (listsCont)
 			listsCont.appendChild(popupDiv);
 		else
-			$t.optionsPanel.appendChild(popupDiv);
+			panel.appendChild(popupDiv);
     
     Popup.load(event, popupDiv, hotspot, content);
 
-    popupDiv.style.position = "static";
+		popupDiv.className = "rounded_rect_cont";
 
     // 20 = 10 + 10 margin of "rounded"
-    var width =  $t.IPH_WIDTH - 20 - 5; 
+    var width =  $t.IPH_WIDTH - 20; 
     popupDiv.style.width =  width; 
     popupDiv.style.height = "100%"; // $t.RDR_HEIGHT;
 
@@ -3165,34 +3159,32 @@ var ListBoxesHandler = {
   showOptions : function(popupDiv) {
     var $t = ListBoxesHandler;
 
-    // hide previously opened "popup" list if need
-    if ($t.curPopupDiv && $t.curPopupDiv.style.display != "none")
-      $t.curPopupDiv.style.display = "none";
-
-    $t.curPopupDiv = popupDiv;
+		var panel;
+		if ($t.toPutInClassifier) {
+			panel = $t.classifierPanel;
+			$t.curClassesPopupDiv = popupDiv;
+		}
+		else {
+			panel = $t.optionsPanel;
+	    $t.curPopupDiv = popupDiv;
+		}
 		// set top offset (margin) to sutisfy current scroll position
 		var topOffset = getScrollXY()[1] - findPosY(this.tray);
-		this.optionsPanel.style.marginTop = (topOffset > 0) ? topOffset : 0 ;
+		panel.style.marginTop = (topOffset > 0) ? topOffset : 0 ;
 		
-		//var tray = $t.getTray(popupDiv); //$t.formPanel.parentNode;
-   // toolbarTd = getChildByClassName(tray, "header");
-
-		
-
     popupDiv.style.display = "block";
     popupDiv.style.visibility = "visible";
 
-    $t.optionsPanel.style.display = "inline";
-    $t.curPopupDiv.style.overflow = "auto";
+    panel.style.display = "inline";
     
     // show item/parameter name (if it is too long)
     $t.displayItemName();
-    
     // slide forward
-    var tray = getAncestorByClassName($t.curPopupDiv, "tray");
-    if (SlideSwaper.getTrayState(tray) == 0) { // !isOptionsPanelOpened
-      SlideSwaper.moveForward(tray, true, $t.onOptionsDisplayed);
-    }
+		var curPanel = $t.getCurrentPanelDiv();
+		if (curPanel.className != panel.className) {
+			var toResetTray = (SlideSwaper.getTrayPosition($t.tray) == 0) ? true : false;
+			SlideSwaper.moveForward($t.tray, toResetTray, $t.onOptionsDisplayed);
+		}
   },
 
   onOptionsDisplayed : function() {
@@ -3212,13 +3204,27 @@ var ListBoxesHandler = {
     
     var inputs = $t.getDateInputs(paramTr); //Filter.getPeriodInputs(paramTr);
     
-    //var calCont = getChildById(this.calendarPanel, "calendar_container");
     startCalendar($t.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
     
     // slide forward
     SlideSwaper.moveForward($t.tray, true);
   },
+/*
+  showClassifier : function(paramTr) {
+		var $t = ListBoxesHandler;
+		// set top offset (margin) to sutisfy current scroll position
+		var topOffset = getScrollXY()[1] - findPosY(this.tray);
+		$t.classifierPanel.style.marginTop = (topOffset > 0) ? topOffset : 0 ;
 
+    $t.classifierPanel.style.display = "inline";
+    
+    //var inputs = $t.getDateInputs(paramTr); //Filter.getPeriodInputs(paramTr);
+    //startCalendar($t.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
+    
+    // slide forward
+    SlideSwaper.moveForward($t.tray, true);
+  },
+*/	
   // returns 2 inputs for the filter (period)
   // and 1 input for data entry (date)
   getDateInputs : function(parent) {
@@ -3261,9 +3267,9 @@ var ListBoxesHandler = {
   // allows multiple selection timeout delay
 	// returns false on single slection
   onOptionsItemClick : function(tr) {
-    var $t = ListBoxesHandler;
+	  var $t = ListBoxesHandler;
     clearTimeout($t.timerId);
-
+			
     if (tr.id.indexOf('$') == 0) // prevent from "More" and "Add"
       return true;
 
@@ -3302,15 +3308,22 @@ var ListBoxesHandler = {
     return true;
   },
   
+  onClassifierItemClick : function(e, tr) {
+		this.curClass = tr.id;
+		this.processClickParam(e, tr, "options");
+	},	
+	
   onOptionsSelectionFinish : function(lastClickedTr) {
  		var $t = ListBoxesHandler;
     var form = document.forms[currentFormName];
-    var textField = form.elements[originalProp];
+		// possible that pointed to "_class" field instead of text field
+		var field = originalProp.replace("_class", "");
+    var textField = form.elements[field];
 
     var selectedOptionsArr = $t.getSelectedOptions(lastClickedTr);
     var td = getAncestorByTagName(textField, "td");
     var chosenValuesDiv = getChildByClassName(td, "chosen_values");
-    
+  
 		if (td.className == "rollup_td") { // rollup
 			var img = td.getElementsByTagName("img")[0];
 			// if the same value comes again then reset it.
@@ -3338,7 +3351,7 @@ var ListBoxesHandler = {
   },
   
   onPeriodSelectionFinish : function(fromInp, toInp) {
-	var $t = ListBoxesHandler;
+		var $t = ListBoxesHandler;
     var td = getAncestorByTagName(fromInp, "td");
     var chosenValuesDiv = getChildByClassName(td, "chosen_values");
 		if (chosenValuesDiv) {
@@ -3358,7 +3371,7 @@ var ListBoxesHandler = {
   // 1) multipele selection: checked [v]-icon.
   // 2) single selection allowed: lastClickedTr.
   getSelectedOptions : function(lastClickedTr) {
- 	  var selectedOptions = new Array();
+		var selectedOptions = new Array();
     // loop on options table rows.
     var optTable = getChildByClassName(this.curPopupDiv, "rounded_rect_tbl");
     var amt = optTable.rows.length;
@@ -3445,12 +3458,23 @@ var ListBoxesHandler = {
   },
 
   onParamReset : function() {
-
-    // remove value in coresponding <input>
+    // remove value in coresponding <input>s
     var form = document.forms[currentFormName];
     var textField = form.elements[originalProp];
     textField.value = "";
     
+		var selectField = form.elements[originalProp + "_select"] 
+		if (selectField)
+			selectField.value = "";
+		
+		var verifiedField = form.elements[originalProp + "_verified"] 
+		if (verifiedField)
+			verifiedField.value = "n";
+			
+		var classField = form.elements[originalProp + "_class"] 
+		if (classField)
+			classField.value = "";
+			
     // clear chosen values in the filter
     var chosenValuesDiv = getChildByClassName(textField.parentNode, "chosen_values");
     if (chosenValuesDiv)
@@ -3487,10 +3511,16 @@ var ListBoxesHandler = {
   },
 
   onBackBtn : function(factor) {
-    if (typeof factor == 'undefined') {
+		if (typeof factor == 'undefined') {
       var factor = 1;
       if (this.calendarPanel != null && this.calendarPanel.style.display != 'none')
         factor = 2;
+			if (this.classifierPanel != null && this.classifierPanel.style.display != 'none') {
+				var panel = this.getCurrentPanelDiv();
+				if (panel.className == "options_panel")
+					factor = 2;	
+			}
+        
       factor = factor || 1;  
     }
 
@@ -3515,12 +3545,16 @@ var ListBoxesHandler = {
     }
     if ($t.calendarPanel != null)
       $t.calendarPanel.style.display = "none";
-
+    if ($t.classifierPanel != null) {
+			$t.classifierPanel.style.display = "none";
+			$t.curClassesPopupDiv.style.display = "none";
+		}
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
   },
 
   // note: in filter "form_panel" contains <form>
   // but in data entry, currently the <form> embraces all / panel_block
+/*
   getFormPanel : function(child) {
     //var form = getAncestorByTagName(child, "form");
     //return getAncestorByTagName(form, "div");
@@ -3528,45 +3562,22 @@ var ListBoxesHandler = {
   },
 
   getTray : function(child) {
-    var formPanel = getAncestorByClassName(child, "form_panel");
-    
-    // 1. filter or data entry ---
-    if (formPanel) {
-      this.isEditList = false;
-      return formPanel.parentNode;
-    }
-    
-    // 2. edit list ---
-    var parent = getAncestorById(child, "siteResourceList");
-    var panel = getChildByClassName(parent, "panel_block");
-    var tray = getChildByClassName(panel, "tray");
-
-    // align farme (tray) of edit list
-    var tr = getAncestorByTagName(child, "tr");
-    var left = findPosX(tr) + tr.clientWidth - 320; // 320 frame width
-    var top = findPosY(tr) + tr.clientHeight + 10;
-    
-    panel.style.left = left;
-    panel.style.top = top;
-    
-    this.isEditList = true;
-    
+		child = child || this.formPanel;
+		var tray = getAncestorByClassName(child, "tray");
     return tray;  
   },
-
-  localOptionsFilter : function(typedText) {
-    typedText = typedText.toLowerCase();
-    var tbl = this.curPopupDiv.getElementsByTagName("table")[0];
-    
+*/
+  localOptionsFilter : function(typedText, parentDiv) {
+	  typedText = typedText.toLowerCase();
+    parentDiv = parentDiv || this.curPopupDiv
+		var tbl = parentDiv.getElementsByTagName("table")[0];
+ 
 		var rows = tbl.rows;
     for (var i = 0; i < rows.length; i++) {
       var label = getChildByClassName(rows[i], "menuItem");
       if (!label)
         continue;
 			var chkCell = getChildByClassName(rows[i], "menuItemChk");
-			if (!chkCell)
-				return;	
-			var img = chkCell.getElementsByTagName("img")[0];	
       var labelName = getTextContent(label).toLowerCase();
       if (labelName.indexOf(typedText) == 0)
 		  	rows[i].style.display = "";
@@ -3585,11 +3596,52 @@ var ListBoxesHandler = {
     parent.insertBefore(this.calendarPanel, this.optionsPanel);
     //parent.appendChild(this.calendarPanel);
   },
-  
+	
+	// createClassesPanel
+  createClassifierPanel : function(parent) {
+    this.classifierPanel = this.optionsPanel.cloneNode(true);
+    this.classifierPanel.className = "classifier_panel";
+
+ 		var classSelector = getChildById(this.classifierPanel, "text_entry");
+		classSelector.onkeydown = null; // remove autoComplete handler
+		classSelector.onkeyup = this.onClassNameTyping;
+
+		classSelector.value = "";
+		FieldsWithEmptyValue.initField(classSelector, "select", true)
+    
+		parent = this.optionsPanel.parentNode || parent; 
+    parent.insertBefore(this.classifierPanel, this.optionsPanel);
+  },
+
+	onClassNameTyping : function(e) {
+		var $t = ListBoxesHandler;
+		e = getDocumentEvent(e);
+		// only local filtering of classes
+		var typedText = getEventTarget(e).value;
+		$t.localOptionsFilter(typedText, $t.curClassesPopupDiv);
+	},
+	
+	isClassifier : function(child) {
+		return getAncestorByClassName(child, "classifier_panel") != null;
+  },
+	
   // for calendar panel
   onDatesList : function() {
     SlideSwaper.moveForward(this.tray);
-  }
+  },
+	
+	getCurrentPanelDiv : function() {
+		var offset = SlideSwaper.getTrayPosition();
+		var panels = this.tray.childNodes;
+		var n = 0;
+		for (var i = 0; i < panels.length; i++) {
+			if (!panels[i].style || panels[i].style.display == "none")
+				continue;
+			if (offset == n)
+				return panels[i];
+			n++;	
+		}
+	}
 }
 
 /*******************************************
@@ -3614,7 +3666,7 @@ var SlideSwaper = {
   moveForward : function(tray, reset, callback) {
 		if (this.offset != 0)
       return;
-      
+ 
     this.tray = tray;
     this.callback = callback;
     
@@ -3686,8 +3738,8 @@ var SlideSwaper = {
     }
   },
   
-  // returns state of current tray or some pointed tray
-  getTrayState : function(tray) {
+  // returns state of current tray or some pointed tray in pixels
+  getTrayPositionInPixels : function(tray) {
     tray = tray || this.tray;
     if (!tray)
       return 0;
@@ -3706,8 +3758,12 @@ var SlideSwaper = {
       return 0;
      
     return parseInt(str); 
-      
-  }
+  },
+	// returns integer 0, 1, 2
+	getTrayPosition : function(tray) {
+		//return -this.curState;
+		return -this.getTrayPositionInPixels(tray) / this.DISTANCE;
+	}
 }
 
 /*******************************************
@@ -3757,7 +3813,7 @@ var Filter = {
 
     for (var i = 0; i < paramsTable.rows.length; i++) {
       var td = paramsTable.rows[i].cells[1];
-      var isCalendar = (td.getAttribute("calendar") != null);
+      var isCalendar = (td.getAttribute("options_selector") == "calendar");
       if (isCalendar)
         this._initPeriodTd(td);
       else // set width
@@ -3821,7 +3877,6 @@ var Filter = {
     
 //			if (Browser.mobile)
 //				urlParts[1] = "&-mobile=y";
-				
       postRequest(null, urlParts[0], urlParts[1], null, null, this.onFilterLoaded);
     }
   },
@@ -4082,7 +4137,7 @@ var Filter = {
   
   // hides params with not suited beginning.
   onParamNameTyping : function(paramNameField) {
-    var $t = Filter;
+		var $t = Filter;
     var typedText = paramNameField.value.toLowerCase();
     var paramsTable = getChildByClassName($t.filtersArr[$t.currentFilterUrl], "rounded_rect_tbl");
     if (!paramsTable)
@@ -4135,6 +4190,7 @@ var DataEntry = {
 		else {
 			this.loadingUrl = url;
 			urlParts = url.split('?');
+
 			postRequest(null, urlParts[0], urlParts[1], null, null, this.onDataEntryLoaded);
 		}
 	},
@@ -4794,7 +4850,8 @@ function displayInner(e, urlStr) {
 // }
 
   var div = document.getElementById('pane2');
-  postRequest(e, url, params, div, hotspot, showDialog);
+
+	postRequest(e, url, params, div, hotspot, showDialog);
   // bottomFrame.location.replace(finalUrl);
   // var timeOutFunction = function () { showDialog(div, hotspot); };
   // setTimeout(timeOutFunction, 50);
@@ -4881,6 +4938,7 @@ function showRecurrencePanel(formName, propertyName) {
 /**
  *
  */
+/*
 function initCalendarsFromTo(div, formName, fromDateField, toDateField) {
   var contents =  "<script>" +
                   "var _init_from = { " +
@@ -4906,7 +4964,7 @@ function initCalendarsFromTo(div, formName, fromDateField, toDateField) {
                   "</script>";
   div.setInnerHtml(contents);
 }
-
+*/
 
 function checkAll(formName) {
   var form = document.forms[formName];
@@ -5289,7 +5347,8 @@ function addAndShow1(anchor, event) {
  */
     var div = document.createElement('div');
     div.style.display = "none";
-    postRequest(event, newUri, params, div, hotspot, addAndShowWait);
+
+		postRequest(event, newUri, params, div, hotspot, addAndShowWait);
     return stopEventPropagation(event);
   } catch (er) {
     alert(er);
@@ -6834,7 +6893,7 @@ var FieldsWithEmptyValue = {
   emptyValuesArr : new Array(),
   
   // field is id or DOM object
-  initField : function(field, emptyValue) {
+  initField : function(field, emptyValue, forceInit) {
     if(!field)
       return;
     var fieldId;
@@ -6851,7 +6910,11 @@ var FieldsWithEmptyValue = {
         field.id = "field_" + this.emptyValuesArr.length;
       fieldId = field.id;
     }
-    
+
+		if (forceInit) {
+			field.removeAttribute("is_empty_value");
+		}
+		
     // already initialized
     if (field.getAttribute("is_empty_value") != null)
       return;
@@ -6863,7 +6926,7 @@ var FieldsWithEmptyValue = {
     addEvent(field, "click", this.onclick, false);
     addEvent(field, "keydown", this.onclick, false);
     addEvent(field, "blur", this.onblur, false);
-		
+
 		if (field.value.length == 0)
   		this.setEmpty(field);
   },

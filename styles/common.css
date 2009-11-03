@@ -1918,7 +1918,7 @@ table.printFB {
 
 
 /* like menu_Options in iphone.css */
-#browser_dlg { top: 0px; position: absolute; width: 320px; padding: 0px; visibility: hidden; }
+#browser_dlg { z-index: 1000; top: 0px; position: absolute; width: 320px; padding: 0px; visibility: hidden; }
 #browser_dlg table { width: 100%; }
 #browser_dlg .top { width: 320px;  height: 35px; background: url(../images/skin/iphone/options_back.png) top center !important; }
 #browser_dlg .content { color: #fff; background: url(../images/skin/iphone/options_back_middle.png) top center !important; }
@@ -1940,7 +1940,7 @@ input[type=text]:focus, input[type=password]:focus { outline: 0 none; }
 
 .panel_block .header #item_selector { width: 210px; }
 
-.rounded_rect_cont { width: 298px; text-align: center; overflow: hidden; margin: 12 0 0 10; }
+.rounded_rect_cont { width: 300px; position: static; text-align: center; overflow: hidden; margin: 12 0 0 10; }
 .rounded_rect_tbl { width: 100%; margin-bottom: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #fff; padding: 0; border: solid rgb(166, 170, 173) 1px; color: #000000 }
 
 .rounded_rect_tbl .param_tr { cursor: pointer; }
@@ -2085,13 +2085,13 @@ input[type=checkbox] { display: none; }
 }
 
 .form_panel { background: transparent; float: left; width: 320; min-height: 1px; margin: 0px; }
-.options_panel { float: left; width: 320; }
+.options_panel, .classifier_panel { float: left; width: 320; }
 
 .calendar_panel { float: left; width: 320; }
 #calendar_container { padding: 0; }
 
 #div_info table { overflow: visible; }
-#div_info table .label { float: left; /*width: 200px;*/ overflow: visible; }
+#div_info table .label, #div_info table .propLabelI { float: left; /*width: 200px;*/ overflow: visible; }
 #div_info td { white-space: nowrap; padding-right: 5px; overflow: visible; text-align: right; }
 #div_info td.pGr { text-align: center; }
 
