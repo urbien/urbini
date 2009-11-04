@@ -15,21 +15,10 @@ function startCalendar(parentDiv, callback, fromInp, toInp) {
       if (isCalendarNavigation == false) {
         html +=
         "<tr><td class=\"header\">" +
-          
-          "<div class=\"iphone_btn\">" +
-          "<div></div>" +
-          "<input type=\"button\" value=\"Back\" onclick=\"ListBoxesHandler.onBackBtn(1);\"/>" +
-          "</div>" +
 
-          "<div class=\"iphone_btn\">" +
-          "<div></div>" +
-          "<input type=\"button\" value=\"List\" onclick=\"ListBoxesHandler.onDatesList();\"/>" +
-          "</div>" +
-
-          "<div class=\"iphone_btn\">" +
-          "<div></div>" +
-          "<input type=\"button\" value=\"Clear\" onclick=\"DatePicker.onDateClear();\"/>" +
-          "</div>" +
+				"<input type=\"button\" style=\"width: 25px; height: 40px;\" onclick=\"ListBoxesHandler.onBackBtn(1);\" class=\"icon_btn toolbar_icons_set\"/>" +
+				"<input type=\"button\" style=\"width: 25px; height: 40px; background-position: -75px 0px;\" onclick=\"DatePicker.onDateClear();\" class=\"icon_btn toolbar_icons_set right\"/>" +
+				"<input type=\"button\" style=\"width: 25px; height: 40px; background-position: -125px 0px;\" onclick=\"ListBoxesHandler.onDatesList();\" class=\"icon_btn toolbar_icons_set right\"/>" +
 
         "</td></tr>" +
 
@@ -104,14 +93,14 @@ var DatePicker = {
   show : function(calCont, input, callback) {
     this.input = input;
     this.callback = callback;
-    
+ 
     var dateFormat = input.getAttribute("date_format");
     if (dateFormat.toLowerCase().indexOf('m') == 0) 
       this.isEuropeanFormat = false; // m-d-Y
     else
       this.isEuropeanFormat = true; // d-m-Y
 
-    var dateTmp = getDateFromText(input.value);
+    var dateTmp = getDateFromText(input.value, this.isEuropeanFormat);
     if (dateTmp != null)
       iPhoneCalendar.show(calCont, this.onSelection, dateTmp);
     else
@@ -169,7 +158,7 @@ var PeriodPicker = {
     else
       this.isEuropeanFormat = true; // d-m-Y
 
-    var fromDateTmp = getDateFromText(this.fromInp.value);
+    var fromDateTmp = getDateFromText(this.fromInp.value, this.isEuropeanFormat);
     if (fromDateTmp != null)
       iPhoneCalendar.show(this.calCont, this.fromCallback, fromDateTmp);
     else
@@ -181,7 +170,7 @@ var PeriodPicker = {
     clearTimeout(this.timerId);
     var fromDateTmp = this.fromDate;
     if (fromDateTmp == null) 
-      fromDateTmp = getDateFromText(this.fromInp.value);
+      fromDateTmp = getDateFromText(this.fromInp.value, this.isEuropeanFormat);
     iPhoneCalendar.show(this.calCont, this.fromCallback, fromDateTmp);
     
     var fromBtn = fromInp.parentNode;
@@ -193,7 +182,7 @@ var PeriodPicker = {
     clearTimeout(this.timerId);
     var toDateTmp = this.toDate;
     if (toDateTmp == null) 
-      toDateTmp = getDateFromText(this.toInp.value);
+      toDateTmp = getDateFromText(this.toInp.value, this.isEuropeanFormat);
     iPhoneCalendar.show(this.calCont, this.toCallback, toDateTmp);
     
     this.toBtn = toInp.parentNode;
@@ -489,7 +478,7 @@ var iPhoneCalendar = {
 
   // utils -----------------------------
   // delimeter "-"
-function getDateFromText(dateStr) {
+function getDateFromText(dateStr, isEuropeanFormat) {
   if (dateStr.length == 0) {
     return new Date();
   }
@@ -499,7 +488,7 @@ function getDateFromText(dateStr) {
   if (dateArr.length != 3)
     return null;
   
-  if (this.isEuropeanFormat)  
+  if (isEuropeanFormat)  
     return new Date(dateArr[2], dateArr[1] - 1, dateArr[0]);
   else     
     return new Date(dateArr[2], dateArr[0] - 1, dateArr[1]);
