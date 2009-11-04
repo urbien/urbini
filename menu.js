@@ -3019,6 +3019,7 @@ var ListBoxesHandler = {
       if (classValue)
         params += "&" + propName + "_class=" + classValue;
     }
+
     // request listbox context from the server via ajax
     postRequest(e, url, params, div, hotspot, this.onListLoaded);
  },
@@ -3043,6 +3044,8 @@ var ListBoxesHandler = {
 	
   isEditList : false, // find out it from "tray" position
   
+	clonedEvent : null,
+	
   // allows maltiple selection with help of delay.
   timerId : null,
   OPTIONS_DELAY : 1200,
@@ -3050,7 +3053,7 @@ var ListBoxesHandler = {
 	isSliding : false, // prevents click processing while sliding
 	
   onClickParam : function(event, optionsSelectorStr) {
- 		var $t = ListBoxesHandler;
+		var $t = ListBoxesHandler;
 		var target = getEventTarget(event);
  
     var tr = getAncestorByTagName(target, "tr");
@@ -3067,7 +3070,8 @@ var ListBoxesHandler = {
 		
 		if (tr)
       $t.processClickParam(event, tr, optionsSelectorStr);
-      
+    
+		$t.clonedEvent = cloneEvent(event);  
     stopEventPropagation(event);  
   },
 	
@@ -3095,41 +3099,47 @@ var ListBoxesHandler = {
     }
 
 		this.toPutInClassifier = false;
-    if (optionsSelectorStr == "calendar") {
-      // create calendar div if need.
-			if (this.calendarPanel == null) {
-        this.createCalendarPanel(this.tray);
-      }
-      this.showCalendar(tr);
-    }
-		else if (optionsSelectorStr == "classifier") {
-			var input = tr.getElementsByTagName("input")[0];
-			// use class selection step only if no previously assigned resource value
-			if (input.value.length == 0) {
-		  	if (this.classifierPanel == null) {
-		  		this.createClassifierPanel(this.tray);
-		  	}
-		  	this.classifierPanel.style.display = "inline";
-		  	this.toPutInClassifier = true;
-	  	}
-		}
-		
-    // set name of text enry of current input field
-    if (this.textEntry && !isClassifier)
-			this.textEntry.name = input.name;
+		var curPanel = this.getCurrentPanelDiv();
     
-		var str =	"";
-		var classValue = null;
-		if (isClassifier) {
-			var paramsTable = getAncestorByClassName(tr, "rounded_rect_tbl");
-			str = paramsTable.id.substr("table_".length) + "_filter";
-			classValue = tr.id;
+		// 1. calendar
+		if (optionsSelectorStr == "calendar" && curPanel.className != "calendar_panel") {
+			// create calendar div if need.
+			if (this.calendarPanel == null) {
+				this.createCalendarPanel(this.tray);
+			}
+			this.showCalendar(tr);
 		}
-		else
-			str = input.name + "_" + input.id + "_filter";
-
-    // show options list
-    this.listboxOnClick1(e, str, null, null, classValue);
+		// 2. options list
+		else {
+			// 2.1 specific for "classifier" options list
+			if (optionsSelectorStr == "classifier") {
+				var input = tr.getElementsByTagName("input")[0];
+				// use class selection step only if no previously assigned resource value
+				if (input.value.length == 0) {
+					if (this.classifierPanel == null) {
+						this.createClassifierPanel(this.tray);
+					}
+					this.classifierPanel.style.display = "inline";
+					this.toPutInClassifier = true;
+				}
+			}
+			// set name of text enry of current input field
+			if (this.textEntry && !isClassifier) 
+				this.textEntry.name = input.name;
+			
+			var str = "";
+			var classValue = null;
+			if (isClassifier) {
+				var paramsTable = getAncestorByClassName(tr, "rounded_rect_tbl");
+				str = paramsTable.id.substr("table_".length) + "_filter";
+				classValue = tr.id;
+			}
+			else 
+				str = input.name + "_" + input.id + "_filter";
+			
+			// show options list
+			this.listboxOnClick1(e, str, null, null, classValue);
+		}
   },
 
   onListLoaded : function(event, popupDiv, hotspot, content) {
@@ -3541,7 +3551,8 @@ var ListBoxesHandler = {
     var $t = ListBoxesHandler;
     if ($t.optionsPanel != null) {
       $t.optionsPanel.style.display = "none";
-      $t.curPopupDiv.style.display = "none";
+      if ($t.curPopupDiv)
+				$t.curPopupDiv.style.display = "none";
     }
     if ($t.calendarPanel != null)
       $t.calendarPanel.style.display = "none";
@@ -3552,21 +3563,6 @@ var ListBoxesHandler = {
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
   },
 
-  // note: in filter "form_panel" contains <form>
-  // but in data entry, currently the <form> embraces all / panel_block
-/*
-  getFormPanel : function(child) {
-    //var form = getAncestorByTagName(child, "form");
-    //return getAncestorByTagName(form, "div");
-    return getAncestorByClassName(child, "form_panel");
-  },
-
-  getTray : function(child) {
-		child = child || this.formPanel;
-		var tray = getAncestorByClassName(child, "tray");
-    return tray;  
-  },
-*/
   localOptionsFilter : function(typedText, parentDiv) {
 	  typedText = typedText.toLowerCase();
     parentDiv = parentDiv || this.curPopupDiv
@@ -3627,7 +3623,8 @@ var ListBoxesHandler = {
 	
   // for calendar panel
   onDatesList : function() {
-    SlideSwaper.moveForward(this.tray);
+		var $t = ListBoxesHandler;
+		$t.onClickParam($t.clonedEvent);
   },
 	
 	getCurrentPanelDiv : function() {
@@ -3666,7 +3663,7 @@ var SlideSwaper = {
   moveForward : function(tray, reset, callback) {
 		if (this.offset != 0)
       return;
- 
+
     this.tray = tray;
     this.callback = callback;
     
@@ -3762,7 +3759,7 @@ var SlideSwaper = {
 	// returns integer 0, 1, 2
 	getTrayPosition : function(tray) {
 		//return -this.curState;
-		return -this.getTrayPositionInPixels(tray) / this.DISTANCE;
+		return -Math.floor(this.getTrayPositionInPixels(tray) / this.DISTANCE);
 	}
 }
 
