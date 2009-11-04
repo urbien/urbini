@@ -3859,8 +3859,10 @@ var Filter = {
 		  	this.handleFilterState(true);
 		  	this.filtersArr[filterUrl] = document.body.appendChild(this.filtersArr[filterUrl]);
 		  }
-			else 
-				this.filtersArr[filterUrl].style.visibility = "visible";
+		  else {
+		  	this.filtersArr[filterUrl].style.visibility = "visible";
+				this.filtersArr[filterUrl].style.display = "";
+		  }
     }
     // 2. download new filter for this type
     else {
@@ -3978,8 +3980,9 @@ var Filter = {
   hide : function() {
 	 	if (!Browser.mobile) { // desktop
 			var url = this.currentFilterUrl;
-			if (this.filtersArr[url])
-				this.filtersArr[url].style.visibility = "hidden";
+			if (this.filtersArr[url]) {
+				this.filtersArr[url].style.display = "none";
+		  }
 			return;
 		}
 	 	
@@ -3989,7 +3992,6 @@ var Filter = {
        getAncestorByTagName(this.filtersArr[url], "body")) {
       var parent = this.filtersArr[url].parentNode;
       
-			this.filtersArr[url].style.visibility = "hidden";
 			this.handleFilterState(false);
       // remove filter instance on mobile
 			this.filtersArr[url] = parent.removeChild(this.filtersArr[url]);
