@@ -43,13 +43,13 @@
     <uploadToDelegatedFileSystem/>
 <br/><br/>
     <pieChart/>
-    <script language="JavaScript">
+    <!--script language="JavaScript">
       var horizontalFilter_FIELDS = new Array();
     </script>
     <form name="horizontalFilter" id="filter" method="POST">
       <br/>
       <horizontalFilter />
-    </form>
+    </form-->
 </hideBlock>
   </td>
   <td width="5%" id="rightPanelPropertySheet" valign="top" align="left">
