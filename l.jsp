@@ -23,7 +23,7 @@
 	</tr>
   <tr height="5"><td></td></tr>
   <tr valign="top">
-  <td width="110%" colspan="2"><!--br/-->
+  <td width="110%" colspan="3"><!--br/-->
 		<div>
 		  <searchHistory/>
 		  <resourcesSearch resourcesUri = "text/search/resources" />
@@ -47,6 +47,7 @@
     <uploadToDelegatedFileSystem/>
 <br/><br/>
     <pieChart/>
+	<filterUrl />
     <!--script language="JavaScript">
       var horizontalFilter_FIELDS = new Array();
     </script>
@@ -56,12 +57,12 @@
     </form-->
 </hideBlock>
   </td>
-  <td id="rightPanelPropertySheet" valign="top" align="left">
+  <!--td id="rightPanelPropertySheet" valign="top" align="left">
 <hideBlock> 
 	<filterUrl />
-    <!--menu toolbar="filterLocal" type="onpage" title="false"/-->
+    <menu toolbar="filterLocal" type="onpage" title="false"/>
 </hideBlock>
-  </td>
+  </td-->
   </tr>
 </table>
  
