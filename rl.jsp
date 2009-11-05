@@ -3,7 +3,7 @@
 	<tr noInner="y" class="fts" valign="bottom">
   	<td colspan="2"><table width="100%"><tr><td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td></tr></table></td>
 	</tr>
-  <tr  valign="top">
+  <tr  valign="top" colspan="2">
   <td valign="top" align="middle" width="110%">
 		<form name="categoryTextSearch">
 			  <searchHistory/>
@@ -15,13 +15,14 @@
     <parallelResourceList />
     <div align="right"><measurement/></div>
     <createResources/><br/>
+    <filterUrl />
   </td>
-<hideBlock>
+<!--hideBlock>
   <td valign="top" align="left" bgcolor="eeeeee">
     <filterUrl />
-    <!--menu toolbar="filterParallel" type="onpage" title="false"/-->
+    <menu toolbar="filterParallel" type="onpage" title="false"/>
   </td>
-</hideBlock>
+</hideBlock-->
 </tr>
 </table>
 <br />
