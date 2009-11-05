@@ -2057,7 +2057,7 @@ var FormProcessor = {
 	// Touch UI ---------------
 	MIN_INPUT_WIDTH : 30,
   initForTouchUI : function(parent) {
-    var inputs = parent.getElementsByTagName("input");
+	var inputs = parent.getElementsByTagName("input");
     var width;
     
     // substitute checkboxes with own drawn ones.
@@ -2078,6 +2078,9 @@ var FormProcessor = {
       if (isFieldRequired) {
         FieldsWithEmptyValue.initField(inputs[i], "Required");
       }
+			// if no next td then no options list, so insert "type" text.
+			else if (getNextSibling(td) == null)
+				FieldsWithEmptyValue.initField(inputs[i], "type");
       
       // there is possible symbol like $, %
       var symbolSpan = getChildByClassName(td, "xs");
