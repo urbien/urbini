@@ -6847,7 +6847,6 @@ function onFormFieldChange(fieldProp, fieldRef, oldValue) {
 
 var SearchField = {
   field : null,
-  //comFilter : null,
   
   _init : function(field) {
     this.field = field;
@@ -6859,7 +6858,7 @@ var SearchField = {
     if (this.field == null) {
       this._init(field);
       
-      var x = findPosX(field) + field.offsetWidth - 320; //this.comFilter.offsetWidth;
+      var x = findPosX(field) + field.offsetWidth - 320;
       var y = findPosY(field) + field.offsetHeight + 5;
       Filter.show(x, y);
       return;
@@ -6916,7 +6915,7 @@ var FieldsWithEmptyValue = {
 		if (forceInit) {
 			field.removeAttribute("is_empty_value");
 		}
-		
+	
     // already initialized
     if (field.getAttribute("is_empty_value") != null)
       return;
@@ -6929,7 +6928,7 @@ var FieldsWithEmptyValue = {
     addEvent(field, "keydown", this.onclick, false);
     addEvent(field, "blur", this.onblur, false);
 
-		if (field.value.length == 0)
+		if (field.value.length == 0 || field.value == emptyValue)
   		this.setEmpty(field);
   },
   
@@ -6954,6 +6953,7 @@ var FieldsWithEmptyValue = {
 	setEmpty : function(field) {
 		if (!field)
 			return;
+
 		var attrib = field.getAttribute("is_empty_value");
 		var isEmpty = (attrib != null && attrib == "y");
 		
@@ -6980,7 +6980,7 @@ var FieldsWithEmptyValue = {
 	},
 	
 	onclick : function(event) {
-    var field = getEventTarget(event);
+		var field = getEventTarget(event);
 		FieldsWithEmptyValue.setReady(field);   
   },
   
