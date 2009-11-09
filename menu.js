@@ -6939,7 +6939,7 @@ var FieldsWithEmptyValue = {
     if (field.getAttribute("is_empty_value") != null)
       return;
     
-    this.emptyValuesArr[fieldId] = emptyValue; 
+    this.emptyValuesArr[this.getKeyOfField(field)] = emptyValue; 
     // If the onfocus method changes the value of the input field,
     // then onclick event doesn't fire the first time.
     // So click event was used instead focus.
@@ -6981,7 +6981,7 @@ var FieldsWithEmptyValue = {
 		
 		field.style.color = this.EMPTY_COLOR;
 		field.style.fontWeight = "bold";
-		field.value = this.emptyValuesArr[field.id];
+		field.value = this.emptyValuesArr[this.getKeyOfField(field)];
 		field.setAttribute("is_empty_value", "y");
 	},
 	
@@ -6996,6 +6996,10 @@ var FieldsWithEmptyValue = {
     field.style.color = "";
     field.style.fontWeight = "";
 		field.setAttribute("is_empty_value", "n");
+	},
+	
+	getKeyOfField : function(field) {
+		return field.id + field.name;
 	},
 	
 	onclick : function(event) {
