@@ -4183,12 +4183,16 @@ var DataEntry = {
 	show : function(url) {
 		if (this.loadingUrl != null)
 			return;
-		
+
 		var key = this._getKey(url);
 		if (this.dataEntryArr[key]) {
 			if (this.isMkResource(url))
 				this.doStateOnMkResource(this.dataEntryArr[key], true);
+			
 			document.body.appendChild(this.dataEntryArr[key]);
+			// RTE requires new initialization after insertion into document.
+			ExecJS.runDivCode(this.dataEntryArr[key]);
+
 			this.currentUrl = url;
 		}
 		else {
@@ -4201,7 +4205,7 @@ var DataEntry = {
 
 	onDataEntryLoaded : function(event, div, hotspot, html, onDataError) {
 		var $t = DataEntry;
-	
+
 		// server returned previously submitted data dialog with errors of data entry
 		if (typeof onDataError != 'boolean' || onDataError == false) {
 			$t.currentUrl = $t.loadingUrl;
