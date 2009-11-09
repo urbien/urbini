@@ -4178,6 +4178,8 @@ var DataEntry = {
 	_hdnDiv : null, // used to convert html to DOM object
 	inpValues : null, // used for mkResource forms
 	
+	onDataError : false, // data entry was returned by server with errors on data entry
+	
 	show : function(url) {
 		if (this.loadingUrl != null)
 			return;
@@ -4197,10 +4199,16 @@ var DataEntry = {
 		}
 	},
 
-	onDataEntryLoaded : function(event, div, hotspot, html) {
+	onDataEntryLoaded : function(event, div, hotspot, html, onDataError) {
 		var $t = DataEntry;
-		$t.currentUrl = $t.loadingUrl;
-		$t.loadingUrl = null;
+	
+		// server returned previously submitted data dialog with errors of data entry
+		if (typeof onDataError != 'boolean' || onDataError == false) {
+			$t.currentUrl = $t.loadingUrl;
+			$t.loadingUrl = null;
+		}
+		else
+			$t.onDataError = true;
 		
 		div = getDomObjectFromHtml(html, "className", "panel_block");
 		if ($t.isMkResource($t.currentUrl))
@@ -4225,11 +4233,18 @@ var DataEntry = {
 			return;
 		
 		var key = this._getKey(this.currentUrl)	;
+		
+		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
+			return;
+		
 		document.body.removeChild(this.dataEntryArr[key]);
 		if (this.isMkResource(this.currentUrl))
 			this.doStateOnMkResource(this.dataEntryArr[key], false);
 		
-		this.currentUrl = null;
+		if (this.onDataError) {
+			delete this.dataEntryArr[key]; // enforce to reload data enry without error message.
+			this.onDataError  = false;
+		}
 	},
 	
 	// hides params with not suited beginning.		
