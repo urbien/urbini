@@ -462,6 +462,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if (Browser.android) {
       parameters += '&X-Accept-Boost=menu-button';
     }
+
     http_request.send(parameters);
   }
   // use GET due to Browser bugs
@@ -1124,7 +1125,7 @@ var ExecJS = {
   
   runCode : function(jsCode, refObjId, requiredJsFileName) {
     $t = ExecJS;
-   
+ 
     // check if required JS file was loaded and parsed
     // ondemandloaded JS-file has requiredJsFileName = null
     var toWait = false;
@@ -1187,43 +1188,45 @@ var ExecJS = {
     if(!contDiv)
       return;
     var scripts = contDiv.getElementsByTagName('script');
-   
 	  for(var i = 0; i < scripts.length; i++) {
-      if(typeof scripts[i].evaluated == 'undefined' || !scripts[i].evaluated) {
-        // 1. external JS code
-        var src = scripts[i].src;
-        if (src && src.length != 0) {
-					var keyName = src.replace(/_[0-9]*\.js/, ".js");
-					if (typeof g_loadedJsFiles[keyName]) { /*!this.isScriptFileLoaded(src)*/
-				  	var html_doc = document.getElementsByTagName('head')[0];
-				  	var js = document.createElement('script');
-				  	js.setAttribute('type', 'text/javascript');
-			  	// suppress minify
-						if (location.href.indexOf("-minify-js=n") != -1) 
-							fileName = fileName.replace("m.js", ".js")
-						
-						js.setAttribute('src', src);
-						html_doc.appendChild(js);
-						
-						g_loadedJsFiles[keyName] = true;
-					}
-        }
-        // 2. inner JS block
-        else {
-          var parent = scripts[i].parentNode;
-          // if JS code tries to set focus on invisible field it invokes exception
-          var evalStr = scripts[i].text || scripts[i].innerHTML;
-          var containsFocusCommand = (evalStr.indexOf("focus(") != -1);
-          if(containsFocusCommand == false || this.isObjectTotallyVisible(parent)) {
-            window.eval(evalStr);
-          }
-          else { // or exec it with delay 1 sec.
-            // expect that div should be shown shortly
-            setTimeout(evalStr, 1000);
-          }
-          scripts[i].evaluated = true;
-        }
+      // note: currently removed the check if script block was evaluated
+			//if(typeof scripts[i].evaluated == 'undefined' || !scripts[i].evaluated) {
+      
+			// 1. external JS code
+      var src = scripts[i].src;
+      if (src && src.length != 0) {
+				var keyName = src.replace(/_[0-9]*\.js/, ".js");
+				if (typeof g_loadedJsFiles[keyName]) { /*!this.isScriptFileLoaded(src)*/
+			  	var html_doc = document.getElementsByTagName('head')[0];
+			  	var js = document.createElement('script');
+			  	js.setAttribute('type', 'text/javascript');
+		  	// suppress minify
+					if (location.href.indexOf("-minify-js=n") != -1) 
+						fileName = fileName.replace("m.js", ".js")
+					
+					js.setAttribute('src', src);
+					html_doc.appendChild(js);
+					
+					g_loadedJsFiles[keyName] = true;
+				}
       }
+      // 2. inner JS block
+      else {
+        var parent = scripts[i].parentNode;
+        // if JS code tries to set focus on invisible field it invokes exception
+        var evalStr = scripts[i].text || scripts[i].innerHTML;
+        var containsFocusCommand = (evalStr.indexOf("focus(") != -1);
+        if(containsFocusCommand == false || this.isObjectTotallyVisible(parent)) {
+          window.eval(evalStr);
+        }
+        else { // or exec it with delay 1 sec.
+          // expect that div should be shown shortly
+          setTimeout(evalStr, 1000);
+        }
+        
+				//scripts[i].evaluated = true;
+      }
+      //}
     }
   },
 
