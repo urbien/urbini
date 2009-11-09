@@ -20,7 +20,7 @@ function copyToClipboard(text2copy) {
 *	RteEngine
 **************************************************/
 function initRTE(iframeId, rteDataFieldId, rtePref) {
-  setTimeout(function() { RteEngine.register(iframeId, rteDataFieldId, rtePref); }, 20);
+  setTimeout(function() { RteEngine.register(iframeId, rteDataFieldId, rtePref); }, 200);
 }
 
 var RteEngine = {
@@ -1157,7 +1157,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
         elm = selection.focusNode.parentNode;
       }
       else if(childNodesAmt >= selection.focusOffset) {
-        elm = selection.focusNode.childNodes[selection.focusOffset - 1]
+        var idx = (selection.focusOffset > 0) ? selection.focusOffset - 1 : 0;
+				elm = selection.focusNode.childNodes[idx];
       }
     }
     return elm;
