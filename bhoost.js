@@ -1368,7 +1368,7 @@ var Boost = {
   },
 
   onClick: function(e) {
-	var $t = Mobile;
+		var $t = Mobile;
     e = getDocumentEvent(e);
 		
     var l = getEventTarget(e);
@@ -1380,7 +1380,7 @@ var Boost = {
       return true;
     var ln = link.href;
     if ($t._preventingDoubleClick)
-      return stopEventPropagation(e);
+			return stopEventPropagation(e);
 
     if (ln.startsWith('tel:')) {
       if (Boost.phone) {
@@ -1414,6 +1414,8 @@ var Boost = {
 
 	// intoCurrentPage in case of data entry
   getPage: function(e, link, intoCurrentPage) {
+		
+		
     var $t = Mobile;
     if (!$t.currentUrl) {
       $t.currentUrl = document.location.href;
@@ -1570,6 +1572,21 @@ var Boost = {
 
 		// loadPage
     function loadPage(event, div, hotspot, content) {
+			$t._preventingDoubleClick = false;
+			
+			// if server returned HTML containing "panel_block"
+			// the it is data entry dialog with error message.
+			if (content.indexOf("panel_block") != -1) {
+				// "roll back" appending of new div
+				div.parentNode.removeChild(div);
+				delete $t.urlToDivs[$t.currentUrl];
+				$t.browsingHistoryPos--;
+				$t.currentUrl = $t.browsingHistory[$t.browsingHistoryPos];
+
+				DataEntry.onDataEntryLoaded(event, div, hotspot, content, true);
+				return;
+		  }
+			
 			// hack: in case if serever returns full html page instead 
 			// mobile_page div content then retrieve mobile_page content only
 			var page = getDomObjectFromHtml(content, "className", "mobile_page");
@@ -1580,8 +1597,7 @@ var Boost = {
 			
 			setInnerHtml(div, content);
 			$t.setTitle(div);
-			$t._preventingDoubleClick = false;
-				
+							
 			// in case of data entry put content in current div, so no sliding effect
 			if (intoCurrentPage)
 				return;
@@ -1602,7 +1618,6 @@ var Boost = {
 //      window.scroll(offset.left, offset.top);
       $t.setLocationHash(newUrl);
     }
-
     return stopEventPropagation(e);
   },
 	
@@ -1650,9 +1665,11 @@ var Boost = {
   oneStep: function(e, step, softKeyPressed) {
     if (typeof softKeyPressed == 'undefined')
       softKeyPressed = true;
-		
+
 		Filter.hide();
+		DataEntry.hide();
 		
+		// optionsDiv is common for all mobile pages
     var optionsDiv = document.getElementById('menu_Options');
     // options menu opened no passes in history
     if (optionsDiv && optionsDiv.style.visibility == "visible")
@@ -2000,7 +2017,7 @@ var MobileMenuAnimation = {
     if (effectIdx == 1 && !Browser.ie) {
       this.opaqueAnimation(this.optionsDiv, 0.25, 1.0, 0.35);
     }
-		
+
 		this.setEditItemState();
 		
     if (optDivStl.position == '')
@@ -2282,6 +2299,7 @@ var BottomToolbar = {
     if ($t.toolbar == null) // problem with IE: $t.toolbar becames null (?)
       $t.toolbar = document.getElementById("bottom_toolbar");
     $t.dir = 1;
+		
     $t.updown();
     this.timerId = setTimeout($t.autohide, $t.DELAY);
   },
