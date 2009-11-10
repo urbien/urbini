@@ -1228,7 +1228,7 @@ var PopupHandler = {
 			document.body.appendChild(div);
 		
 		var relObj = hotspot.div || hotspot.obj || hotspot;
-    
+
     var pos;
     if(Browser.gecko)		
 		  pos = this.findObjectPositio(relObj, document.body);
@@ -1259,12 +1259,13 @@ var PopupHandler = {
 		var screenWidth  = screen.width;
 		var screenHeight = screen.height;
 		// small screen
-		if(Browser.mobile || Browser.iphone) {
-		  this.y = 0; // top
-		  this.x = (Math.abs(screenWidth - div.clientWidth)) / 2; // middle
-		}
+//		if(Browser.mobile || Browser.iphone) {
+//		  this.y = 0; // top
+//		  this.x = (Math.abs(screenWidth - div.clientWidth)) / 2; // middle
+//		}
 		// to open above a hotspot.
-		else if(screenHeight < this.y - getScrollXY()[1] + div.clientHeight)
+		//else 
+		if(screenHeight < this.y - getScrollXY()[1] + div.clientHeight)
 			this.y = pos.top - div.clientHeight - OFFSET_Y;
 		
 		if(Browser.gecko) {
