@@ -88,7 +88,7 @@ var RteEngine = {
   
 	//register the RTEs.
 	register : function(iframeId, rteDataFieldId, rtePref) {
-    iframeObj = document.getElementById(iframeId);
+    var iframeObj = document.getElementById(iframeId);
 
 		if(typeof rtePref == 'undefined')
 			rtePref = this.simpleRTE;
@@ -869,11 +869,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		  throw new Error("designMode is not supported");
 		}
 
-    if (this.isIE)
-      this.document.designMode = "On";
+    if (this.isIE) {
+			this.document.designMode = "On";
+		}
 		
 		this.initFrameHeight = this.iframeObj.clientHeight;
 		this.initContent();
+
 	  
     if (!this.isIE)
 	    this.document.designMode = "On";
@@ -928,8 +930,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   	addEvent(this.document, "keydown", this._onkeydown, false);
 	}
   this.loadCSS = function() {
-		var cssFiles = ['http://127.0.0.1/common/styles/common.css',
-		  'http://127.0.0.1/common/styles/properties.css'];
+		var baseUrl = getBaseUrl();
+		var cssFiles = [baseUrl + 'styles/common.css',
+		  baseUrl + 'styles/properties.css'];
 
 		for(var i = 0; i < cssFiles.length; i++) {
 		  if(this.document.createStyleSheet) {
@@ -948,7 +951,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   
 	this.createToolbar = function() {
 		// 1.
-		var toolBar = new Toolbar(this.parentDiv, this, 18);
+		var toolBar = new Toolbar(this.parentDiv, this, 18, false, this.iframeObj);
 		// 2. add buttons
 		if(this.rtePref.buttons.style) // style
 			this.styleBtn = toolBar.appendButton(this.onStyle, false, RteEngine.IMAGES_FOLDER + "style.gif", "style");
@@ -1172,9 +1175,22 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     if(i_am.toolbar.isVisible())
       return;
     
-		i_am.iframeObj.style.marginTop = i_am.toolbar.getHeight() + 1;
+
 		i_am.fitHeightToVisible();
+		
+		
+		// makes toolbar 100% in IE
+		if (i_am.isIE) {
+			var label = getPreviousSibling(i_am.toolbar.div.parentNode);
+			label.style.styleFloat = "none";
+		}
+
+		// make offset for toolbar over the iframe
+		i_am.iframeObj.style.marginTop = i_am.toolbar.getHeight() + 1;
+		i_am.toolbar.div.style.top = i_am.toolbar.getHeight() - 2;
+			
 		i_am.toolbar.show();
+		
 		// prevents from more than 1 opened RTE.
 		RteEngine.closeAllDisactived(i_am.iframeObj.id);
 		i_am.openedAtTime = new Date().getTime();
