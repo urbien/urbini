@@ -966,7 +966,7 @@ function Titlestrip(parentDiv, toolbar)
 /****************************************************
 *	Toolbar class
 *****************************************************/
-function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
+function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 {
 	var LEFT_PADDING = 10; // pix
 	var RIGHT_PADDING = 10;
@@ -978,6 +978,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 
 	var i_am = this;
 	this.parentDiv = parentDiv;
+	this.insertBeforeObj = insertBeforeObj;
 	this.masterObj = masterObj;
 	this.iconHeight = iconHeight;
 	this.noOverflow = noOverflow;
@@ -1003,19 +1004,20 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow)
 		this.titlestrip = new Titlestrip(this.parentDiv, this);
 		// 2. create, namely, toolbar
 		this.div = document.createElement('div');
-		this.div.style.position = "absolute";
+		this.div.style.position = "relative"; //"absolute";
+		this.div.style.display = "block";
 		this.div.style.left = 0;
 		this.div.style.top = 0;
-		//if(typeof this.masterObj.getWidth != 'undefined')
-		//  this.div.style.width = this.masterObj.getWidth();
-		//else
-		  this.div.style.width = "100%";
+		this.div.style.width = "100%";
 		this.div.style.height = this.height;
 		this.div.style.backgroundImage = "url(" + BACKGROUND_IMG + ")";
 		this.div.style.backgroundPosition = "center center";
 		this.div.style.borderWidth = 0;
 
-		this.parentDiv.appendChild(this.div);
+		if (this.insertBeforeObj)
+			this.parentDiv.insertBefore(this.div, this.insertBeforeObj);
+		else
+			this.parentDiv.appendChild(this.div);
 	}
 	// DropdownList is not support the overflow for now!
 	this.appendDropdownList = function(fieldWidth, title, callback) {
