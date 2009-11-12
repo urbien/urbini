@@ -2680,7 +2680,7 @@ var ListBoxesHandler = {
     
     keyPressedTime = new Date().getTime();
     
-    this.prevInputValue = target.value;
+    this.prevInputValue = FieldsWithEmptyValue.getValue(target);
     
     //var form = target.form;
     var form = document.forms[currentFormName];
@@ -4183,7 +4183,10 @@ var DataEntry = {
 	show : function(url) {
 		if (this.loadingUrl != null)
 			return;
-
+		
+		// hide possible previously opened data entry dialog 
+		this.hide();
+		
 		var key = this._getKey(url);
 		if (this.dataEntryArr[key]) {
 			if (this.isMkResource(url))
@@ -6924,12 +6927,6 @@ var FieldsWithEmptyValue = {
       if (!field)
         return;
     }
-    // field is DOM object (used in multipage, mobile mode)
-    else {
-      if (field.id.length == 0)
-        field.id = "field_" + this.emptyValuesArr.length;
-      fieldId = field.id;
-    }
 
 		if (forceInit) {
 			field.removeAttribute("is_empty_value");
@@ -6940,6 +6937,7 @@ var FieldsWithEmptyValue = {
       return;
     
     this.emptyValuesArr[this.getKeyOfField(field)] = emptyValue; 
+		
     // If the onfocus method changes the value of the input field,
     // then onclick event doesn't fire the first time.
     // So click event was used instead focus.
@@ -6981,6 +6979,7 @@ var FieldsWithEmptyValue = {
 		
 		field.style.color = this.EMPTY_COLOR;
 		field.style.fontWeight = "bold";
+		
 		field.value = this.emptyValuesArr[this.getKeyOfField(field)];
 		field.setAttribute("is_empty_value", "y");
 	},
@@ -6999,7 +6998,13 @@ var FieldsWithEmptyValue = {
 	},
 	
 	getKeyOfField : function(field) {
-		return field.id + field.name;
+		var key = field.id;
+		
+		// "text_entry" field has variable name in accordance to current parameter
+		if (field.className != "iphone_field" && field.name.length > 0) {
+			key += field.name; // use name because form field are different by name
+	}
+		return key;
 	},
 	
 	onclick : function(event) {
@@ -7008,7 +7013,7 @@ var FieldsWithEmptyValue = {
   },
   
   onblur : function(event) {
-    var field = getEventTarget(event);
+		var field = getEventTarget(event);
 		if (field.value.length == 0)
     	FieldsWithEmptyValue.setEmpty(field);
   }
@@ -10058,10 +10063,12 @@ var CheckButtonMgr = {
 function onCrossOfTextField(cross, callback) {
   var textField = getPreviousSibling(cross);
   textField.value='';
-  textField.focus();
+  // FF3 and higher has a problem while transform (CSS) sliding
+	if (!Browser.firefox3)
+		textField.focus();
   
   if (callback)
-    callback(textField);
+	  callback(textField);
 }
 
 //******************************************
