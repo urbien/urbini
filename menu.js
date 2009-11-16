@@ -2936,7 +2936,7 @@ var ListBoxesHandler = {
     var popup = Popup.getPopup(divId);
     var div = getChildById(this.optionsPanel, divId);
     
-    var hotspot = document.getElementById(imgId);
+    var hotspot = getTargetElement(e); //document.getElementById(imgId);
     hotspot = hotspot || document.body;
     // Use existing DIV from cache (unless text was Enter-ed - in which case
     // always redraw DIV)
@@ -3030,10 +3030,11 @@ var ListBoxesHandler = {
   // Touch UI CODE -----------------------------------
   IPH_WIDTH : 320, // iPhone screen width
   // RDR_HEIGHT : 350, // rounded rect height has limitation on desktop
-  formPanel : null,
-  
+
+  panelBlock : null,
 	tray : null, // each tray contains own form, options and (optionaly) calendar panels.
   
+	formPanel : null,
 	optionsPanel : null,
 	classifierPanel : null,
 	calendarPanel : null,
@@ -3061,8 +3062,18 @@ var ListBoxesHandler = {
  
     var tr = getAncestorByTagName(target, "tr");
     
+
 		// set members corresponding to happend event target
-		$t.tray = getAncestorByClassName(tr, "tray");
+		var resourceListDiv = document.getElementById("siteResourceList");
+			if (resourceListDiv) {
+	  	$t.tray = getChildByClassName(resourceListDiv, "tray");
+	  	$t.isEditList = true;
+	  }
+	  else {
+	  	$t.tray = getAncestorByClassName(tr, "tray");
+			$t.isEditList = false;
+	  }
+		$t.panelBlock = getAncestorByClassName($t.tray, "panel_block");
 		$t.formPanel = getChildByClassName($t.tray, "form_panel");
 		$t.optionsPanel = getChildByClassName($t.tray, "options_panel");
 		$t.classifierPanel = getChildByClassName($t.tray, "classifier_panel");
@@ -3146,9 +3157,14 @@ var ListBoxesHandler = {
   },
 
   onListLoaded : function(event, popupDiv, hotspot, content) {
-    var $t = ListBoxesHandler;
+		var $t = ListBoxesHandler;
 
 		var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
+		
+		if ($t.isEditList) {
+			$t.panelBlock.style.left = findPosX(hotspot) - $t.IPH_WIDTH;
+			$t.panelBlock.style.top = findPosY(hotspot) - 20;
+		}
 			
     // put options popup in options div, so make it static
     var listsCont = getChildById(panel, "lists_container");
