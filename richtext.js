@@ -462,7 +462,7 @@ var RteEngine = {
   
   onImageFormSubmit : function() {
   	var $t = ImageUploader;
-  	
+
   	var imgUrl = null;
 	  var form = RteEngine.imagePopup.getForm();
 	  imgUrl = ImageUploader.getImagePathFromForm(form);
@@ -550,7 +550,7 @@ var ImageUploader = {
   newImgPair : null,
   
   getUploadImageFormContent : function(submitCallbackName, submitBtnText) {
-    var forms = document.forms;
+		var forms = document.forms;
     var resourceUri;
     for (var i=0; i<forms.length; i++) {
       if(forms[i].name  &&  forms[i].name.indexOf('tablePropertyList$') == 0
@@ -676,7 +676,7 @@ var ImageUploader = {
   },
   // callback on the server response.
   onHdnDocLoad : function(rteId, originalUrl) {
-    // loop to wait on server response
+		// loop to wait on server response
     var thisObj = ImageUploader;
     var frameId = thisObj.HDN_IFRAME_NAME;
     if (!frameLoaded[frameId]) {
@@ -690,7 +690,8 @@ var ImageUploader = {
     
     // TODO: there is a problem to upload image in Safari and Chrome
     // it looks like those browsers return content not of the hidden iframe but of the main window (?!)
-    var frameDoc  = frames[frameId].document;
+    var frame = window.frames[frameId];
+		var frameDoc  = frame.document;
     var frameBody = frameDoc.body;
     var d = frameDoc.getElementById("location");
     if (d)
@@ -700,6 +701,8 @@ var ImageUploader = {
     
     uploadedUrl = decodeURI( uploadedUrl );
 
+		// reset hidden frame
+		frame.location.replace("about:blank");
     // 2. replace url with the uploaded one.  
     // 2.1 get rte object
     var rteObj = RteEngine.getRteById(rteId);
@@ -939,12 +942,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
         this.document.createStyleSheet(cssFiles[i]);
       }
       else {
-        var html_doc = this.document.getElementsByTagName('head')[0];
+        var head = this.document.getElementsByTagName('head')[0];
         var css = document.createElement('link');
         css.setAttribute('rel', 'stylesheet');
         css.setAttribute('type', 'text/css');
         css.setAttribute('href', cssFiles[i]);
-        html_doc.appendChild(css);
+        head.appendChild(css);
       } 
     }
   }
@@ -1022,12 +1025,18 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// putContent
 	this.putContent = function(text) {
 	  if(this.isNetscape || this.isOpera) {
-	    this.document.body.innerHTML = text;
+			var head = this.document.getElementsByTagName('head')[0];
+      var base = document.createElement('base');
+      base.setAttribute('href', getBaseUri());
+      head.appendChild(base);
+	    
+			this.document.body.innerHTML = text;
 	  }
 	  else {
 		  var frameHtml = "<html>\n";
 		  frameHtml += "<head>";
-		    frameHtml += "<link href='styles/common.css' type='text/css' rel='stylesheet'>";
+			frameHtml += "<base href=\"" + getBaseUri() + "\" />";
+		  frameHtml += "<link href='styles/common.css' type='text/css' rel='stylesheet'>";
 		  frameHtml += "</head>";
 		  frameHtml += "<body>";
 		  frameHtml += text + "";
