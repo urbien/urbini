@@ -1700,7 +1700,7 @@ var FormProcessor = {
   
   // prevents submision of not changed data
   onSubmitProcess : function(e, form) {
-    var buttonName = form.getAttribute("buttonClicked");
+	  var buttonName = form.getAttribute("buttonClicked");
 
     var button = form.elements[buttonName];
     var pane2        = document.getElementById('pane2');
@@ -2648,9 +2648,10 @@ var Tooltip = {
 ***************************************/
 var ListBoxesHandler = {
   init : function(form) {
-    var paramsTable = getChildByClassName(form, "rounded_rect_tbl");
-    if (paramsTable)
-      addEvent(paramsTable, 'click',  this.onClickParam, false);
+		var tables = form.getElementsByTagName("table");
+    for (var i = 0; i < tables.length; i++)
+			if (tables[i].className == "rounded_rect_tbl")
+      	addEvent(tables[i], 'click',  this.onClickParam, false);
   },
 
 
@@ -3059,20 +3060,20 @@ var ListBoxesHandler = {
   onClickParam : function(event, optionsSelectorStr) {
 		var $t = ListBoxesHandler;
 		var target = getEventTarget(event);
- 
+
     var tr = getAncestorByTagName(target, "tr");
-    
 
 		// set members corresponding to happend event target
-		var resourceListDiv = document.getElementById("siteResourceList");
-			if (resourceListDiv) {
-	  	$t.tray = getChildByClassName(resourceListDiv, "tray");
+		$t.tray = getAncestorByClassName(tr, "tray");
+		if ($t.tray == null) { // resource list
+			var resourceListDiv = document.getElementById("siteResourceList");
+  		$t.tray = getChildByClassName(resourceListDiv, "tray");
 	  	$t.isEditList = true;
 	  }
 	  else {
-	  	$t.tray = getAncestorByClassName(tr, "tray");
 			$t.isEditList = false;
 	  }
+		
 		$t.panelBlock = getAncestorByClassName($t.tray, "panel_block");
 		$t.formPanel = getChildByClassName($t.tray, "form_panel");
 		$t.optionsPanel = getChildByClassName($t.tray, "options_panel");
@@ -3297,7 +3298,10 @@ var ListBoxesHandler = {
 	// returns false on single slection
   onOptionsItemClick : function(tr) {
 	  var $t = ListBoxesHandler;
-    clearTimeout($t.timerId);
+    
+		clearTimeout($t.timerId);
+		if (!SlideSwaper.doesTrayStay())
+			return true;
 			
     if (tr.id.indexOf('$') == 0) // prevent from "More" and "Add"
       return true;
@@ -3665,9 +3669,8 @@ var ListBoxesHandler = {
 * tray contains 2 slides that are swaped
 ********************************************/
 var SlideSwaper = {
-  //DURATION : 40000, // 0.4s
-  STEPS_AMT : 15,//15,//10,
-  TIMEOUT : 1,//this.DURATION / this.STEPS_AMT,
+  STEPS_AMT : 10,
+  TIMEOUT : 1,
   DISTANCE : 320,
   BEZIER_POINTS : [[0.0, 0.0], [0.42, 0], [0.58, 1], [1.0, 1.0]],
   offset : 0,
@@ -3689,7 +3692,7 @@ var SlideSwaper = {
     if (typeof reset != 'undefined' && reset == true)
       this.curState = 0;
     
-    if (/*false*/Browser.webkit) { // 
+    if (Browser.webkit) {
       this.curState--;
       this.tray.style.webkitTransform = "translate(" + this.DISTANCE * this.curState + "px, 0px)";
     }
@@ -3728,10 +3731,15 @@ var SlideSwaper = {
     else
       dir = 1;
       
-      
-   bPoint = Math.bezierPoint($t.BEZIER_POINTS, $t.offset);
-    var distance = $t.factor * $t.DISTANCE;
-    var left = Math.floor(dir * distance * bPoint[0]) + ($t.DISTANCE * $t.curState);  
+    bPoint = Math.bezierPoint($t.BEZIER_POINTS, $t.offset);
+    $t.offset += 1.0 / $t.STEPS_AMT;
+		
+		if ($t.offset > 1.0) { // last step
+			bPoint[0] = 1.0;
+		}
+		
+		var distance = $t.factor * $t.DISTANCE;
+		var left = Math.floor(dir * distance * bPoint[0]) + ($t.DISTANCE * $t.curState);  
 
     // for FF 3.1b2 that does not support -moz-transition-duration (?)
     if (typeof $t.tray.style.MozTransform != 'undefined')
@@ -3739,11 +3747,10 @@ var SlideSwaper = {
     else
       $t.tray.style.left = left;
 
-    $t.offset += 1.0 / $t.STEPS_AMT;
+    
     
     if ($t.offset <= 1.0)
       setTimeout($t._moveStep, $t.TIMEOUT);
-    
     else { // finish
       $t.offset = 0;
       $t.factor = 1;
@@ -3779,6 +3786,9 @@ var SlideSwaper = {
 	getTrayPosition : function(tray) {
 		//return -this.curState;
 		return -Math.floor(this.getTrayPositionInPixels(tray) / this.DISTANCE);
+	},
+	doesTrayStay : function() {
+		return (this.offset == 0);
 	}
 }
 
@@ -6930,7 +6940,8 @@ var SearchField = {
 var FieldsWithEmptyValue = {
   EMPTY_COLOR : "#bbb",
   emptyValuesArr : new Array(),
-  
+  bluredField : null, 
+	
   // field is id or DOM object
   initField : function(field, emptyValue, forceInit) {
     if(!field)
@@ -7028,10 +7039,26 @@ var FieldsWithEmptyValue = {
 		FieldsWithEmptyValue.setReady(field);   
   },
   
-  onblur : function(event) {
-		var field = getEventTarget(event);
+	onblur : function(event) {
+		FieldsWithEmptyValue.bluredField = getEventTarget(event);
+		// do blur handling with delay to process fill out thru options list
+		setTimeout("FieldsWithEmptyValue.onBlurDelayed()", 100);
+	},
+	
+  onBlurDelayed : function() {
+		var $t = FieldsWithEmptyValue;
+		var field = $t.bluredField;
 		if (field.value.length == 0)
-    	FieldsWithEmptyValue.setEmpty(field);
+    	$t.setEmpty(field);
+		else { // it happened when a field with empty value filled out from options list.
+			var key = $t.getKeyOfField(field);
+			if (field.value != $t.emptyValuesArr[key]) {
+				field.style.color = "";
+    		field.style.fontWeight = "";
+				field.setAttribute("is_empty_value", "n");
+			}
+		}	
+		$t.bluredField = null;
   }
 }
 
