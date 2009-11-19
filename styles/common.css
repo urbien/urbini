@@ -1992,6 +1992,7 @@ input[type=text]:focus, input[type=password]:focus { outline: 0 none; }
 }
 
 .rounded_rect_tbl td { border-bottom: 1px solid #999999; height: 40px; /*padding-bottom: 5px; padding-top: 3px;*/ vertical-align: middle; }
+.rounded_rect_tbl tr:last-child td { border-bottom: none; }
 .rounded_rect_tbl table td { border: none; height: auto; }
 
 .listArrow { width: 25px; height: 20px; }
