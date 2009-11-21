@@ -439,9 +439,10 @@ input.button {font-size:8pt;}
 
 span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:16pt;}
 span.xl1 {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;color:#000066;}
+span.ftsi {font-family:sans-serif, arial; font-size:10pt; font-weight:bold; font-style:italic }
 span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:16pt;}
 
-.empty {font-weight:bold; font-size:16pt;}
+.empty {font-size:10pt}
 
 xs { font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal; white-space: nowrap; }
 .xsb { font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: bold; white-space: nowrap; }
@@ -548,7 +549,7 @@ font.warn {color:#A01E00}
 td.shading {border:solid #808080 1px; color:#000000}
 tr.editMode  {}
 span.bigLetterTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;}
-span.bigLetterTitle2  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#ffffff;}
+span.bigLetterTitle2  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#ee8571;}
 
 span.fileMenuTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;vertical-align:middle}
 .menuI  {font-family:sans-serif, arial; font-size:12px; color:#00309C;vertical-align:top}
@@ -1441,8 +1442,12 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 *:lang(ja-jp) { font: 900 14pt/16pt "Heisei Mincho W9", serif }
 BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif }
 .red {color:red;font-size:10pt;font-weight:bold;}
+.redn {color:red;font-size:10pt;}
 
 .dblue {color:darkblue; font-size:10pt}
+
+/*.lblue {background-color:#ACD2E2; font-size:10pt; width:99%; height:1px; border:0; vertical-align:left}*/
+
 .errMsg {font-family:san-serif,arial,verdana;font-size:14px;color:red;font-weight:bold;}
 .info {font-family:san-serif,arial,verdana;font-size:14px;color:blue;font-weight:bold;}
 
