@@ -2067,7 +2067,7 @@ var FormProcessor = {
       if (inputs[i].className != "input" && inputs[i].className != "isel"
 					&& inputs[i].className != "boolean")
         continue;
-   
+  
       // note: like fitSelectedOptionsWidth function.
       // one row
       var td = getAncestorByTagName(inputs[i], "td");
@@ -2075,9 +2075,9 @@ var FormProcessor = {
       
 			if (!labelSpan || labelSpan.className != "label")
 				labelSpan = getChildByClassName(td, "label");
-	
+			
       // requred field
-      var isFieldRequired = labelSpan.getAttribute("required") != null;
+      var isFieldRequired = labelSpan && (labelSpan.getAttribute("required") != null);
       if (isFieldRequired && inputs[i].type != "password") {
         FieldsWithEmptyValue.initField(inputs[i], "Required");
       }
