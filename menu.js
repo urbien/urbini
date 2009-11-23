@@ -4212,7 +4212,6 @@ var DataEntry = {
 	show : function(url) {
 		if (this.loadingUrl != null)
 			return;
-		
 		// hide possible previously opened data entry dialog 
 		this.hide();
 		
@@ -6588,7 +6587,15 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   // width/height will get cut off at the scroll boundary - at least in firefox 1.0)
   div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
   reposition(div,    0, 0);
-  var divCoords = getElementDimensions(div);
+  
+	// commonly panel_block has absolute position, so width of parent pane2 detected wrong.
+	if (div.id == "pane2") {
+  	var panelBlock = getChildByClassName(div, "panel_block");
+		if (panelBlock)
+			panelBlock.style.position = "static";
+  }
+	
+	var divCoords = getElementDimensions(div);
   var margin = 40;
   // cut popup dimensions to fit the screen
   var mustCutDimension = (div.id == 'pane2' || Browser.joystickBased) ? false: true;
