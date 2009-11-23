@@ -2077,7 +2077,7 @@ var FormProcessor = {
 				labelSpan = getChildByClassName(td, "label");
 	
       // requred field
-      var isFieldRequired = getChildByClassName(labelSpan, "requiredProp") != null;
+      var isFieldRequired = labelSpan.getAttribute("required") != null;
       if (isFieldRequired && inputs[i].type != "password") {
         FieldsWithEmptyValue.initField(inputs[i], "Required");
       }
