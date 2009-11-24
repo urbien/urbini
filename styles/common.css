@@ -473,7 +473,7 @@ input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 */
 
 tr.fts td { vertical-align: middle; padding: 2px; }
-.desktop_search { float: left; width: 460; margin: 0px 20px 0px 20px; }
+.desktop_search { float: left; width: 470; }
 .desktop_search .left, .desktop_search .right, .desktop_search input { height: 37px;  float: left; background: url(../images/skin/iphone/desktop_search.png); margin: 0px; border: 0px; }
 .desktop_search .left { width: 15px; background-position: top left; cursor: pointer; }
 .desktop_search .right { width: 45px; background-position: top right; cursor: pointer; }
@@ -2107,7 +2107,7 @@ input[type=checkbox] { display: none; }
 
 #div_info table { overflow: visible; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; /*width: 200px;*/ overflow: visible; }
-#div_info td { white-space: nowrap; padding-right: 5px; overflow: visible; text-align: right; }
+#div_info td { padding-right: 5px; overflow: visible; text-align: right; }
 #div_info td.pGr { text-align: center; }
 
 #siteResourceList #filter input[type=text] { height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
