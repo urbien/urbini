@@ -3355,7 +3355,8 @@ var ListBoxesHandler = {
 		// possible that pointed to "_class" field instead of text field
 		var field = originalProp.replace("_class", "");
     var textField = form.elements[field];
-
+		if (textField.length > 1)
+			textField = textField[0];
     var selectedOptionsArr = $t.getSelectedOptions(lastClickedTr);
     var td = getAncestorByTagName(textField, "td");
     var chosenValuesDiv = getChildByClassName(td, "chosen_values");
@@ -7052,7 +7053,7 @@ var FieldsWithEmptyValue = {
 	onblur : function(event) {
 		FieldsWithEmptyValue.bluredField = getEventTarget(event);
 		// do blur handling with delay to process fill out thru options list
-		setTimeout("FieldsWithEmptyValue.onBlurDelayed()", 100);
+		setTimeout("FieldsWithEmptyValue.onBlurDelayed()", 200);
 	},
 	
   onBlurDelayed : function() {
