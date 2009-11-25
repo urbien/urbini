@@ -3302,12 +3302,12 @@ var ListBoxesHandler = {
 	// returns false on single slection
   onOptionsItemClick : function(tr) {
 	  var $t = ListBoxesHandler;
-    
+ 
 		clearTimeout($t.timerId);
 		if (!SlideSwaper.doesTrayStay())
 			return true;
 			
-    if (tr.id.indexOf('$') == 0) // prevent from "More" and "Add"
+    if (tr.id == "$more" || tr.id.indexOf("$add") == 0) // prevent from "More" and "Add"
       return true;
 
     chkCell = tr.cells[0];
