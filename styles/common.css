@@ -1979,7 +1979,7 @@ input[type=text]:focus, input[type=password]:focus { outline: 0 none; }
 .rounded_rect_tbl .textarea { margin-left: 8px; margin-bottom: 5px; width: 277px; }
 .rounded_rect_tbl .property_group_td { text-decoration: underline; /*background-color: #eee;*/ text-transform: uppercase; font-size: 16px; font-weight: bold; padding-left: 5px; border: none; }
 .rounded_rect_tbl .comment { text-align: justify; color: #555; font-size: 11px; padding: 5 8 5 8; }
-.rounded_rect_tbl .select { font-family: Helvetica, Arial;  font-size: 14px; }
+.rounded_rect_tbl .select { font-family: Helvetica, Arial;  font-size: 14px; color: #000; background-color: #fff; }
 
 .rounded_rect_tbl input#rightPanelPropertySheet { display: none; }
 
@@ -2001,6 +2001,7 @@ input[type=text]:focus, input[type=password]:focus { outline: 0 none; }
 .rounded_rect_tbl td { border-bottom: 1px solid #999999; height: 40px; /*padding-bottom: 5px; padding-top: 3px;*/ vertical-align: middle; }
 .rounded_rect_tbl tr:last-child td { border-bottom: none; }
 .rounded_rect_tbl table td { border: none; height: auto; }
+.rounded_rect_tbl a { margin-left: 10px; font-size: 14px; }
 
 .listArrow { width: 25px; height: 20px; }
 
@@ -2111,5 +2112,6 @@ input[type=checkbox] { display: none; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; /*width: 200px;*/ overflow: visible; }
 #div_info td { padding-right: 5px; overflow: visible; text-align: right; }
 #div_info td.pGr { text-align: center; }
+#div_info a { margin-left: 5px; }
 
 #siteResourceList #filter input[type=text] { height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
