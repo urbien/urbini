@@ -2682,7 +2682,7 @@ var ListBoxesHandler = {
   autoComplete1 : function(e, target) {
     if (!target)
       return;
-    
+ 
     keyPressedTime = new Date().getTime();
     
     this.prevInputValue = FieldsWithEmptyValue.getValue(target);
@@ -2850,7 +2850,7 @@ var ListBoxesHandler = {
     var hotspot = document.getElementById(keyPressedImgId);
     hotspot = hotspot || document.body;
 
-    var newValue = keyPressedElement.value;
+    var newValue = FieldsWithEmptyValue.getValue(keyPressedElement); 
     // check if to do local filter only
     var hasMore = getChildById(this.optionsPanel, "$more");
 		var isRollup = this.curPopupDiv.id.indexOf("_groupBy_") != -1;
@@ -6983,6 +6983,9 @@ var FieldsWithEmptyValue = {
     addEvent(field, "click", this.onclick, false);
     addEvent(field, "keydown", this.onclick, false);
     addEvent(field, "blur", this.onblur, false);
+		
+		if (this.hasClearTextCtrl(field))
+			addEvent(field, "keyup", this.onkeyup, false);
 
 		if (field.value.length == 0 || field.value == emptyValue)
   		this.setEmpty(field);
@@ -7057,6 +7060,14 @@ var FieldsWithEmptyValue = {
 		setTimeout("FieldsWithEmptyValue.onBlurDelayed()", 200);
 	},
 	
+	// only for fields with clear text contol
+	onkeyup : function(event) {
+		var field = getEventTarget(event);
+		var clearCtrl = getPreviousSibling(field);
+		var img = clearCtrl.getElementsByTagName("img")[0];
+		img.style.visibility = (field.value.length > 0) ? "visible" : "hidden";
+	},
+	
   onBlurDelayed : function() {
 		var $t = FieldsWithEmptyValue;
 		var field = $t.bluredField;
@@ -7071,7 +7082,25 @@ var FieldsWithEmptyValue = {
 			}
 		}	
 		$t.bluredField = null;
-  }
+  },
+	
+	// "cross" icon inside a field - clears text field content
+	onClickClearTextCtrl : function (crossDiv, callback) {
+	  var textField = getNextSibling(crossDiv);
+	  textField.value='';
+		crossDiv.firstChild.style.visibility = "hidden";
+	  // FF3 and higher has a problem while transform (CSS) sliding
+		if (!Browser.firefox3)
+			textField.focus();
+	  
+	  if (callback)
+		  callback(textField);
+	},
+	
+	hasClearTextCtrl : function(field) {
+		var className = field.parentNode.className;
+		return (className == "iphone_field" || className == "iphone_search")
+	}
 }
 
 
@@ -10112,18 +10141,6 @@ var CheckButtonMgr = {
     else
       toggleBtn.style.backgroundPosition = "0% 0%"
   }
-}
-
-// clears text field content
-function onCrossOfTextField(cross, callback) {
-  var textField = getPreviousSibling(cross);
-  textField.value='';
-  // FF3 and higher has a problem while transform (CSS) sliding
-	if (!Browser.firefox3)
-		textField.focus();
-  
-  if (callback)
-	  callback(textField);
 }
 
 //******************************************
