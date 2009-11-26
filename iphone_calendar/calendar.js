@@ -16,39 +16,20 @@ function startCalendar(parentDiv, callback, fromInp, toInp) {
         html +=
         "<tr><td class=\"header\">" +
 
-				"<input type=\"button\" style=\"width: 25px; height: 40px;\" onclick=\"ListBoxesHandler.onBackBtn(1);\" class=\"icon_btn toolbar_icons_set\"/>" +
-				"<input type=\"button\" style=\"width: 25px; height: 40px; background-position: -75px 0px;\" onclick=\"DatePicker.onDateClear();\" class=\"icon_btn toolbar_icons_set right\"/>" +
-				"<input type=\"button\" style=\"width: 25px; height: 40px; background-position: -125px 0px;\" onclick=\"ListBoxesHandler.onDatesList();\" class=\"icon_btn toolbar_icons_set right\"/>" +
+				"<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/back_arrow.png);\" onclick=\"ListBoxesHandler.onBackBtn(1);\" class=\"icon_btn\"/>" +
+				"<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/circle_arrow_left.png);\" onclick=\"DatePicker.onDateClear();\" class=\"icon_btn right\"/>" +
+				"<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/list_bullets.png);\" onclick=\"ListBoxesHandler.onDatesList();\" class=\"icon_btn right\"/>" +
 
         "</td></tr>" +
 
         // TR 2nd period header ---
         "<tr><td class=\"header\">" +
    
-          "<div class=\"iphone_btn_blue\">" +
-          "<div></div>" +
-          "<input type=\"button\" value=\"From\" onclick=\"PeriodPicker.onFromBtn(this);\"/>" +
-          "</div>" +
-
-          "<div class=\"iphone_btn\">" +
-          "<div></div>" +
-          "<input type=\"button\" value=\"To\" onclick=\"PeriodPicker.onToBtn(this);\"/>" +
-          "</div>" +
-
-          "<div class=\"iphone_btn\">" +
-          "<div></div>" +
-          "<input type=\"button\" value=\"List\" onclick=\"ListBoxesHandler.onDatesList();\"/>" +
-          "</div>" +
-
-          "<div class=\"iphone_btn\">" +
-          "<div></div>" +
-          "<input type=\"button\" value=\"Clear\" onclick=\"Filter.onPeriodReset();\"/>" +
-          "</div>" +
-
-          "<div class=\"iphone_btn\">" +
-          "<div></div>" +
-          "<input type=\"button\" value=\"Done\" onclick=\"PeriodPicker.onDoneBtn();\"/>" +
-          "</div>" +
+          "<input type=\"button\" style=\"background: " + PeriodPicker.BLUE_BG + " url(../images/skin/iphone/from.png);\" class=\"icon_btn\" value=\"\" onclick=\"PeriodPicker.onFromBtn(this);\"/>" +
+          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/to.png);\" class=\"icon_btn\" value=\"\" onclick=\"PeriodPicker.onToBtn(this);\"/>" +
+          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/list_bullets.png);\" class=\"icon_btn\" value=\"\" onclick=\"ListBoxesHandler.onDatesList();\"/>" +
+          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/checkmark.png);\" class=\"icon_btn right\" value=\"\" onclick=\"PeriodPicker.onDoneBtn();\"/>" +
+          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/circle_arrow_left.png);\" class=\"icon_btn right\" value=\"\" onclick=\"Filter.onPeriodReset();\"/>" +
           
         "</td></tr>";
       }
@@ -86,7 +67,7 @@ function startCalendar(parentDiv, callback, fromInp, toInp) {
 * structure of html is inserted in menu.js
 ***********************************************************/
 var DatePicker = {
-  input : null,
+	input : null,
   isEuropeanFormat : null,
   callback : null,
   
@@ -131,7 +112,8 @@ var DatePicker = {
 ***********************************************************/
 var PeriodPicker = {
   CALENDAR_DELAY : 1200,
-
+  BLUE_BG : "#1c7fe5",
+	
   calCont : null, // calendar parent div
   fromInp : null,
   toInp : null,
@@ -173,10 +155,10 @@ var PeriodPicker = {
       fromDateTmp = getDateFromText(this.fromInp.value, this.isEuropeanFormat);
     iPhoneCalendar.show(this.calCont, this.fromCallback, fromDateTmp);
     
-    var fromBtn = fromInp.parentNode;
-    fromBtn.className = "iphone_btn_blue";
+    var fromBtn = fromInp;
+		fromBtn.style.backgroundColor = this.BLUE_BG;
     var toBtn = getNextSibling(fromBtn);
-    toBtn.className = "iphone_btn";
+		toBtn.style.backgroundColor = "transparent";
   },
   onToBtn : function(toInp) {
     clearTimeout(this.timerId);
@@ -184,11 +166,11 @@ var PeriodPicker = {
     if (toDateTmp == null) 
       toDateTmp = getDateFromText(this.toInp.value, this.isEuropeanFormat);
     iPhoneCalendar.show(this.calCont, this.toCallback, toDateTmp);
-    
-    this.toBtn = toInp.parentNode;
-    this.toBtn.className = "iphone_btn_blue";
+  
+    this.toBtn = toInp;
+		this.toBtn.style.backgroundColor = this.BLUE_BG;
     var fromBtn = getPreviousSibling(this.toBtn);
-    fromBtn.className = "iphone_btn";
+		fromBtn.style.backgroundColor = "transparent";
   },
   
   onDoneBtn : function() {
@@ -203,9 +185,9 @@ var PeriodPicker = {
     
     // reset buttons state
     if ($t.toBtn != null) {
-      $t.toBtn.className = "iphone_btn";
+			$t.toBtn.style.backgroundColor = "transparent";
       var fromBtn = getPreviousSibling($t.toBtn);
-      fromBtn.className = "iphone_btn_blue";
+			fromBtn.style.backgroundColor = this.BLUE_BG;
     }
     
     // callback
