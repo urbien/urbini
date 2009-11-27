@@ -2057,8 +2057,10 @@ var FormProcessor = {
 	// Touch UI ---------------
 	MIN_INPUT_WIDTH : 30,
   initForTouchUI : function(parent) {
+
+		// 1. align <input>s
 		var inputs = parent.getElementsByTagName("input");
-    var width;
+		var width;
     
     // substitute checkboxes with own drawn ones.
     CheckButtonMgr.substitute(parent, 1);
@@ -2133,9 +2135,16 @@ var FormProcessor = {
         inputs[i].style.clear = "none";
       
       inputs[i].style.width = width;
-    }   
+    }
+		
+		// 2. align <select>s. (Note: the following can be usefull for <input>s alignment) 
+		var selects = parent.getElementsByTagName("select");
+		for (var i = 0; i < selects.length; i++) {
+			var parent = selects[i].parentNode;
+			var rightFreeSpace = parent.clientWidth - (selects[i].offsetLeft + selects[i].clientWidth);
+			selects[i].style.marginLeft = rightFreeSpace - 15;
+		}  
   }
-
 
 }
 
@@ -3065,6 +3074,10 @@ var ListBoxesHandler = {
 		var $t = ListBoxesHandler;
 		var target = getEventTarget(event);
 
+		// default processing of anchors inside parameter TR (for example add image)
+		if (target.tagName.toLowerCase() == "a" || target.parentNode.tagName.toLowerCase() == "a")
+			return;
+			
     var tr = getAncestorByTagName(target, "tr");
 
 		// set members corresponding to happend event target
@@ -3091,7 +3104,7 @@ var ListBoxesHandler = {
       $t.processClickParam(event, tr, optionsSelectorStr);
     
 		$t.clonedEvent = cloneEvent(event);  
-    stopEventPropagation(event);  
+		stopEventPropagation(event);  
   },
 	
   // optionsSelectorStr is not required parameter
@@ -3351,7 +3364,7 @@ var ListBoxesHandler = {
 	},	
 	
   onOptionsSelectionFinish : function(lastClickedTr) {
- 		var $t = ListBoxesHandler;
+		var $t = ListBoxesHandler;
     var form = document.forms[currentFormName];
 		// possible that pointed to "_class" field instead of text field
 		var field = originalProp.replace("_class", "");
@@ -3381,7 +3394,8 @@ var ListBoxesHandler = {
 			$t.fitSelectedOptionsWidth(td);
 		}
 		else { // data entry
-			textField.value = selectedOptionsArr[0]["value"];
+			 textField.value = selectedOptionsArr[0]["value"];
+			// "_select" and "_verified" hidden fields processed in popupRowOnClick1
 		}
     
     // slide back
@@ -3477,7 +3491,7 @@ var ListBoxesHandler = {
     var width;
     if (selectedOptionsAmount == 1) { // single selection
       var labelSpan = getChildByClassName(td, "label");
-      width = 220 - labelSpan.offsetWidth; 
+      width = 210 - labelSpan.offsetWidth; 
 
       chosenValuesDiv.style.textAlign = "right";
       chosenValuesDiv.style.paddingLeft = 2;
@@ -4573,224 +4587,7 @@ function getANode(elem) {
     return null;
 }
 
-// ********************* helper functions ********************************
 
-function findPosX(obj) {
-  var curleft = 0;
-  if (obj.offsetParent) {
-    while (obj.offsetParent) {
-      curleft += obj.offsetLeft;
-      obj = obj.offsetParent;
-    }
-  }
-  else if (obj.x)
-    curleft += obj.x;
-  return curleft;
-}
-
-function findPosY(obj) {
-  var curtop = 0;
-  if (obj.offsetParent) {
-    while (obj.offsetParent) {
-      curtop += obj.offsetTop;
-      obj = obj.offsetParent;
-    }
-  }
-  else if (obj.y)
-    curtop += obj.y;
-  return curtop;
-}
-/* Get X,Y when not tracking mouse */
-function getCoordinates(obj) {
-
-    var xy = getObjectUpperLeft(obj);
-
-    /* Adjust position for screen right and bottom screen edge */
-    var x = fitWindowWidth(xy.x);
-    var y = fitWindowHeight(xy.y);
-
-    return {Xoffset: x, Yoffset: y};
-}
-
-function getMouseEventCoordinates(e) {
-  var posx = 0;
-  var posy = 0;
-
-  var sc = getScrollXY();
-  if (e.pageX || e.pageY) {
-    // alert('e.pageY: ' + e.pageY);
-    posx = e.pageX;
-    posy = e.pageY;
-  }
-  else if (e.clientX || e.clientY) {
-    // alert('e.clientY: ' + e.clientY);
-    posx = e.clientX + sc[0];
-    posy = e.clientY + sc[1];
-  }
-  // in case if event object is "empty".
-  if(e.screenX == 0 && e.screenY == 0) {
-    var target = getEventTarget(e);
-    posx = findPosX(target);
-    posy = findPosY(target);
-  }
-
-  // posx and posy contain the mouse position relative to the document
-  return {x:posx, y:posy};
-}
-
-function fitWindowWidth(tipX) {
-    /*
-     * Determine best page X that keeps object in window. If object doesn't fit
-     * adjust to left edge ot window. Compare object X coordinate to max X not
-     * going out of window and use left most. Then check object X is not past
-     * left most visible page coordinate.
-     */
-
-    /* Don't go past right edge of window */
-
-    var rightMaxX = getRightPagePos() - (box.offsetWidth + 16); // 16 for
-                                                                // scrollbar
-
-    tipX = (rightMaxX < tipX) ? rightMaxX : tipX;
-
-    /* But, don't go past left edge of window either */
-    var leftMinX = getLeftPagePos();
-    tipX = (tipX < leftMinX) ? leftMinX : tipX;
-
-    return tipX;
-}// eof fitWindowWidth
-
-function getRightPagePos() {
-    /*
-     * Determine page offset at right of screen (it's different than window
-     * width) Here the pixles the page has been scrolled left is added to window
-     * width
-     */
-    var nRight;
-
-    if (typeof window.srcollX != "undefined") {
-        // "NN6+ FireFox, Mozilla etc."
-        nRight = window.innerWidth + window.scrollX;
-    }
-    else if (typeof window.pageXOffset != "undefined") {
-        // NN4 code still in NN6 + but scrollX was added
-        nRight = window.innerWidth + window.pageXOffset;
-    }
-    else if (document.documentElement && document.documentElement.clientWidth){
-        // document.compatMode == "CSS1Compat" that is IE6 standards mode"
-        nRight = document.documentElement.clientWidth + document.documentElement.scrollLeft;
-    }
-    else if (document.body && document.body.clientWidth) {
-        // document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE <
-        // 6 and Mac IE
-        nRight = document.body.clientWidth + document.body.scrollLeft;
-    }
-
-    return nRight;
-}// eof getRightPagePos
-
-function getLeftPagePos() {
-    var nLeft;
-
-    if (typeof window.srcollX != "undefined") {
-        // "NN6+ FireFox, Mozilla etc."
-        nLeft = window.scrollX;
-    }
-    else if (typeof window.pageXOffset != "undefined") {
-        // NN4 code still in NN6 + but scrollX was added
-        nLeft = window.pageXOffset;
-    }
-    else if (document.documentElement && document.documentElement.scrolLeft){
-        // document.compatMode == "CSS1Compat" that is IE6 standards mode"
-        nLeft = document.documentElement.scrollLeft;
-    }
-    else if (document.body && document.body.scrollLeft) {
-        // document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE <
-        // 6 and Mac IE
-        nLeft = document.body.scrollLeft;
-    }
-
-    return nLeft;
-}// eof getLeftPagePos
-
-function fitWindowHeight(tipY) {
-    /*
-     * Compare calculated max acceptable page offset to toolTip X and return
-     * smallest
-     */
-
-    /* Don't go below bottom of window. Put above target if moved. */
-    var bottomMaxY = getBottomPagePos() - (box.offsetHeight);
-    tipY = (bottomMaxY < tipY ) ? tipY - (Yoffset + box.offsetHeight) : tipY;
-
-    /* But, don't go past the top of window either */
-    var topMinY = getTopPagePos();
-    tipY = (tipY < topMinY) ? topMinY : tipY;
-
-    return tipY
-}// eof fitWindowHeight
-
-function getBottomPagePos() {
-    /*
-     * Determine page offset at bottom of screen (it's different than window
-     * height) Here the pixles the page has been scrolled up is added to window
-     * height
-     */
-    var nBottom;
-
-    if (typeof window.scrollY != "undefined" ) {
-        // NN6+ FireFox, Mozilla etc.
-        nBottom = window.innerHeight + window.scrollY;
-    }
-    else if (typeof window.pageYOffset != "undefined") {
-        // NN4 still in NN6 + but NN6 and Mozilla added scrollY
-        nBottom = window.innerHeight + window.pageYOffset;
-    }
-    else if (document.documentElement && document.documentElement.clientHeight){
-        // document.compatMode == "CSS1Compat" that is IE6 standards mode
-        nBottom = document.documentElement.clientHeight + document.documentElement.scrollTop;
-    }
-    else if (document.body && document.body.clientHeight) {
-        // document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE <
-        // 6 and Mac IE
-        nBottom = document.body.clientHeight + document.body.scrollTop;
-    }
-    return nBottom;
-}// eof getBottomPagePos
-
-function getTopPagePos() {
-    var nTop;
-
-    if (typeof window.scrollY != "undefined" ) {
-        // NN6+ FireFox, Mozilla etc.
-        nTop= window.scrollY;
-    }
-    else if (typeof window.pageYOffset != "undefined") {
-        // NN4 still in NN6 + but NN6 and Mozilla added scrollY
-        nTop = window.pageYOffset;
-    }
-    else if (document.documentElement && document.documentElement.scrollTop){
-        // document.compatMode == "CSS1Compat" that is IE6 standards mode
-        nTop = document.documentElement.scrollTop;
-    }
-    else if (document.body && document.body.scrollTop) {
-        // document.compatMode != "CSS1Compat" that is quirks mode IE 6 or IE <
-        // 6 and Mac IE
-        nTop = document.body.scrollTop;
-    }
-    return nTop;
-}// eof getTopPagePos
-function getBaseUri() {
-  var baseUriO = document.getElementsByTagName('base');
-  var baseUri = "";
-  if (baseUriO) {
-    baseUri = baseUriO[0].href;
-    if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
-      baseUri += "/";
-  }
-  return baseUri;
-}
-/*-------------------------------------- end tootip coordinates -------------------*/
 /**
  * function that adds a title (taken from page HEAD) of current page to a url
  * that is passed as a parameter
