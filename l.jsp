@@ -23,7 +23,7 @@
 	</tr>
   <tr height="5"><td></td></tr>
   <tr valign="top">
-  <td width="110%" colspan="3"><!--br/-->
+  <td width="100%" colspan="3">
 		<div>
 		  <searchHistory/>
 		  <resourcesSearch resourcesUri = "text/search/resources" />
