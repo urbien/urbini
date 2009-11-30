@@ -20,7 +20,7 @@
     </tr>
     </table>
 </hideBlock>
-    <filter/>
+    <!--filter/-->
     <table width="100%" height="100%" border="0" cellspacing="0" cellpadding="3">
     <tr class="abc">
 <hideBlock>
