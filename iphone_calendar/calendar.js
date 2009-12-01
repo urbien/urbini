@@ -17,20 +17,18 @@ function startCalendar(parentDiv, callback, fromInp, toInp) {
         "<tr><td class=\"header\">" +
 
 				"<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/back_arrow.png);\" onclick=\"ListBoxesHandler.onBackBtn(1);\" class=\"icon_btn\"/>" +
-				"<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/circle_arrow_left.png);\" onclick=\"DatePicker.onDateClear();\" class=\"icon_btn right\"/>" +
+				"<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/clear.png);\" onclick=\"DatePicker.onDateClear();\" class=\"icon_btn right\"/>" +
 				"<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/list_bullets.png);\" onclick=\"ListBoxesHandler.onDatesList();\" class=\"icon_btn right\"/>" +
 
         "</td></tr>" +
 
         // TR 2nd period header ---
         "<tr><td class=\"header\">" +
-   
-          "<input type=\"button\" style=\"background: " + PeriodPicker.BLUE_BG + " url(../images/skin/iphone/from.png);\" class=\"icon_btn\" value=\"\" onclick=\"PeriodPicker.onFromBtn(this);\"/>" +
-          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/to.png);\" class=\"icon_btn\" value=\"\" onclick=\"PeriodPicker.onToBtn(this);\"/>" +
-          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/list_bullets.png);\" class=\"icon_btn\" value=\"\" onclick=\"ListBoxesHandler.onDatesList();\"/>" +
-          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/checkmark.png);\" class=\"icon_btn right\" value=\"\" onclick=\"PeriodPicker.onDoneBtn();\"/>" +
-          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/circle_arrow_left.png);\" class=\"icon_btn right\" value=\"\" onclick=\"Filter.onPeriodReset();\"/>" +
-          
+          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/back_arrow.png);\" class=\"icon_btn\" value=\"\" onclick=\"PeriodPicker.onDoneBtn();\"/>" +   
+			    "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/clear.png);\" class=\"icon_btn right\" value=\"\" onclick=\"Filter.onPeriodReset();\"/>" +		
+          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/list_bullets.png);\" class=\"icon_btn right\" value=\"\" onclick=\"ListBoxesHandler.onDatesList();\"/>" +					
+          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/to.png);\" class=\"icon_btn right\" value=\"\" onclick=\"PeriodPicker.onToBtn(this);\"/>" +
+					"<input type=\"button\" style=\"background: " + PeriodPicker.BLUE_BG + " url(../images/skin/iphone/from.png);\" class=\"icon_btn right\" value=\"\" onclick=\"PeriodPicker.onFromBtn(this);\"/>" +
         "</td></tr>";
       }
       
