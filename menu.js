@@ -3958,15 +3958,13 @@ var Filter = {
 		// 2. search field
 		var searchField =  getChildById(this.filtersArr[this.currentFilterUrl], "-q");
 		if (searchField) {
-			if (toSave && searchField.getAttribute("is_empty_value") == 'n') 
-				this.filterBackup["-q"] = searchField.value;
-			else {
-				if (this.filterBackup["-q"]) 
-					searchField.value = this.filterBackup["-q"];
-				else
-					FieldsWithEmptyValue.setEmpty(searchField);
+			if (toSave) {
+		  	this.filterBackup["-q"] = FieldsWithEmptyValue.getValue(searchField);
+				FieldsWithEmptyValue.updateClearControl(searchField);
+		  }
+		  else 
+		  	FieldsWithEmptyValue.setValue(searchField, this.filterBackup["-q"]);
 			}
-		}
 		
 		if (!toSave) // reset after restoring
 			this.filterBackup = null;
@@ -6753,7 +6751,7 @@ var FieldsWithEmptyValue = {
 	
   // field is id or DOM object
   initField : function(field, emptyValue, forceInit) {
-    if(!field)
+		if(!field)
       return;
     var fieldId;
     // field parameter is id
@@ -6806,6 +6804,15 @@ var FieldsWithEmptyValue = {
 		return field.value;
 	},
 	
+	setValue : function(field, value) {
+		if (value.length != 0) {
+			this.setReady(field);
+			field.value = value;
+		}
+		else
+			this.setEmpty(field);
+		this.updateClearControl(field);
+	},
 	setEmpty : function(field) {
 		if (!field)
 			return;
@@ -6857,16 +6864,10 @@ var FieldsWithEmptyValue = {
 		setTimeout("FieldsWithEmptyValue.onBlurDelayed()", 200);
 	},
 	
-	// only for fields with clear text contol
-	onkeyup : function(event) {
-		var field = getEventTarget(event);
-		var clearCtrl = getPreviousSibling(field);
-		var img = clearCtrl.getElementsByTagName("img")[0];
-		img.style.visibility = (field.value.length > 0) ? "visible" : "hidden";
-	},
-	
   onBlurDelayed : function() {
 		var $t = FieldsWithEmptyValue;
+		if (!$t.bluredField)
+			return;
 		var field = $t.bluredField;
 		if (field.value.length == 0)
     	$t.setEmpty(field);
@@ -6881,6 +6882,19 @@ var FieldsWithEmptyValue = {
 		$t.bluredField = null;
   },
 	
+	// only for fields with clear text contol
+	onkeyup : function(event) {
+		var $t = FieldsWithEmptyValue;
+		var field = getEventTarget(event);
+		$t.updateClearControl(field);
+	},
+	updateClearControl : function(field) {
+		var $t = FieldsWithEmptyValue;
+		var clearCtrl = getPreviousSibling(field);
+		var img = clearCtrl.getElementsByTagName("img")[0];
+		var value = $t.getValue(field);
+		img.style.visibility = (value.length == 0) ? "hidden" : "visible";
+	},
 	// "cross" icon inside a field - clears text field content
 	onClickClearTextCtrl : function (crossDiv, callback) {
 	  var textField = getNextSibling(crossDiv);
