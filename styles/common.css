@@ -1946,14 +1946,14 @@ table.printFB {
 
 /* ****************** Touch UI ***************************/
 /* prevents blue rect in WebKit browsers */
-input[type=text]:focus, input[type=password]:focus { outline: 0 none; }
+input:focus { outline: 0 none; }
 
 .menuItemRow { cursor: pointer; }
 
 .panel_block .header { float: left; padding: 5px 0px 5px 0px; width: 320px; text-align: center;  vertical-align: bottom; background: #6e84a2 url(../images/iPhoneToolbar.png) repeat-x; border-bottom: 1px solid #2d3642; }
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
 
-.panel_block .header #item_selector { width: 222px; }
+.panel_block .header #item_selector { width: 221px; }
 
 .rounded_rect_cont { width: 300px; position: static; text-align: center; overflow: hidden; margin: 12 0 0 10; }
 .rounded_rect_tbl { width: 100%; margin-bottom: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #fff; padding: 0; border: solid rgb(166, 170, 173) 1px; color: #000000 }
@@ -2000,7 +2000,8 @@ input[type=text]:focus, input[type=password]:focus { outline: 0 none; }
 .rounded_rect_tbl td { border-bottom: 1px solid #999999; height: 40px; /*padding-bottom: 5px; padding-top: 3px;*/ vertical-align: middle; }
 .rounded_rect_tbl tr:last-child td { border-bottom: none; }
 .rounded_rect_tbl table td { border: none; height: auto; }
-.rounded_rect_tbl a { margin-left: 10px; font-size: 14px; }
+.rounded_rect_tbl .ext_file { float: right; margin-right: 15px; }
+.rounded_rect_tbl a { font-size: 14px; }
 
 .listArrow { width: 25px; height: 20px; }
 
@@ -2042,7 +2043,7 @@ input[type=text]:focus, input[type=password]:focus { outline: 0 none; }
 input[type=checkbox] { display: none; }
 */
 
-.panel_block #item_name { font-size: 13px; font-weight: bold; margin: 15 0 0 10; }
+.panel_block #item_name { font-size: 13px; font-weight: bold; margin: 30px 0px 0px 10px;   }
 /** iPhone toggle button. **/
 /* 3 types 1)left align 2) right align 3) blue with left align */
 .toggle_btn { float: right; margin: 5 9 5 0; width: 100px; height: 30px; background:#FFFFFF url(../images/skin/iphone/toggle_btn.png); cursor: pointer; }
@@ -2058,9 +2059,9 @@ input[type=checkbox] { display: none; }
 
 
 /** iPhone field **/
-.iphone_field { float: left; margin: 0px; }
+.iphone_field { float: left; margin: 0px;  }
 .iphone_field .left, .iphone_field .right, .iphone_field input { height: 30px;  float: left; background: url(../images/skin/iphone/rounded_field.png); margin: 0px; border: 0px; }
-.iphone_field .left { width: 25px;  background-position: top left; cursor: pointer; }
+.iphone_field .left { width: 23px;  background-position: top left; cursor: pointer; }
 .iphone_field .left img { margin: 6px 0px 0px 2px; visibility : hidden; }
 .iphone_field .right { width: 8px; background-position: top right; }
 
@@ -2068,15 +2069,15 @@ input[type=checkbox] { display: none; }
 
 
 /** iPhone search field **/
-.iphone_search { float: left; margin: 0px 0px 0px 8px; } /* used for mobile only */
+.iphone_search { float: left; margin: 0px 0px 0px 5px; } /* used for mobile only */
 .iphone_search .left, .iphone_search .right, .iphone_search input { height: 29px;  float: left; background: url(../images/skin/iphone/search_field.png); margin: 0px; border: 0px; }
-.iphone_search .left { width: 35px; background-position: top left; cursor: pointer; }
+.iphone_search .left { width: 23px; background-position: top left; cursor: pointer; }
 .iphone_search .left img { margin: 6px 0px 0px 2px; visibility : hidden; }
 .iphone_search .right { width: 32px; background-position: top right; cursor: pointer; }
 .iphone_search input { padding: 5px 0px 0px 0px; background-position: top center; font: bold 17px Helvetica; border: none; }
 
 /*.toolbar_icons_set { width: 25; height: 40; background-image: url(../images/skin/iphone/toolbar_icons_set.png) }*/
-.icon_btn { margin: 0; padding: 0; cursor: pointer; float: left; width: 30px; height: 30px; border: none;}
+.icon_btn { margin: 0px 2px 0px 2px; padding: 0; cursor: pointer; float: left; width: 30px; height: 30px; border: none;}
 .right { float: right; /*margin-right: 4px;*/ }
 
 /** shadow **/
