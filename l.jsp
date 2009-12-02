@@ -21,6 +21,9 @@
 	<tr noInner="y" class="fts" valign="bottom">
   	<td><fullTextSearchChoice/></td><td><filter/></td><td align="right"><pagingResources /></td>
 	</tr>
+  <tr itype="http://www.hudsonfog.com/voc/system/designer/WebClass">    
+    <td colspan="3" align="center"><filter addToTab="y"/></td>
+  </tr>
   <tr height="5" colspan="3"><td></td></tr>
   <tr valign="top">
   <td width="100%" colspan="3">
