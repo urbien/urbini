@@ -19,9 +19,9 @@
 
 	<table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
 	<tr noInner="y" class="fts" valign="bottom">
-  	<td colspan="2"><fullTextSearchChoice/></td><td align="right"><pagingResources /></td>
+  	<td><fullTextSearchChoice/></td><td><filter/></td><td align="right"><pagingResources /></td>
 	</tr>
-  <tr height="5"><td></td></tr>
+  <tr height="5" colspan="3"><td></td></tr>
   <tr valign="top">
   <td width="100%" colspan="3">
 		<div>
