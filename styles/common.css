@@ -1930,7 +1930,8 @@ table.printFB {
 .userLogin {background:#ffffff}
 .loginBorder {background: #cbcbcb}
 
-.rte { margin: 0 0 5 7; background-color: #ffffff; border: 1px solid rgb(192, 201, 215); padding:0; width: 276px; height: 100px;  }
+.text_editor_container { padding-right: 17px; }
+.rte { margin: 0 0 5 7; background-color: #ffffff; border: 1px solid rgb(192, 201, 215); padding:0; width: 100%; height: 100px;  }
 
 
 /* like menu_Options in iphone.css */
@@ -1948,15 +1949,24 @@ table.printFB {
 /* prevents blue rect in WebKit browsers */
 input:focus { outline: 0 none; }
 
-.menuItemRow { cursor: pointer; }
+.panel_block {
+  position: absolute;
+  
+  width: 80%;
+  min-width: 320px;
+  max-width: 800px;
+  
+  padding: 0px;
+}
 
-.panel_block .header { float: left; padding: 5px 0px 5px 0px; width: 320px; text-align: center;  vertical-align: bottom; background: #6e84a2 url(../images/iPhoneToolbar.png) repeat-x; border-bottom: 1px solid #2d3642; }
+.panel_block .header { float: left; padding: 5px 0px 5px 0px; width: 100%; text-align: center; background: #6e84a2 url(../images/iPhoneToolbar.png) repeat-x; border-bottom: 1px solid #2d3642; }
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
-
 .panel_block .header #item_selector { width: 221px; }
+.panel_block .header .wide_cell { width: 100%; text-align: center; }
 
-.rounded_rect_cont { width: 300px; position: static; text-align: center; overflow: hidden; margin: 12 0 0 10; }
-.rounded_rect_tbl { width: 100%; margin-bottom: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #fff; padding: 0; border: solid rgb(166, 170, 173) 1px; color: #000000 }
+.panel_block .content, .panel_block #lists_container { padding: 10px; width: 100%; }
+
+.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #fff; padding: 0; border: solid rgb(166, 170, 173) 1px; color: #000000 }
 
 .rounded_rect_tbl .param_tr { cursor: pointer; }
 .rounded_rect_tbl .param_tr td { padding: 6 0 6 0; vertical-align: middle; }
@@ -1966,7 +1976,7 @@ input:focus { outline: 0 none; }
 .rounded_rect_tbl .param_tr .rollup_td img { margin: 2px; }
 
 /* ??? label + chosen_value_div */
-.rounded_rect_tbl .data_td { padding: 0;  }
+.rounded_rect_tbl .data_td { padding: 0; width: 100%; }
 
 /*.rounded_rect_tbl*/ .arrow_td { width: 25px; }
 /*.rounded_rect_tbl*/ .arrow_td div { width: 25px; height: 20px; cursor: pointer; background: url(../images/skin/iphone/listArrow_sprite.png) 0px 0px;}
@@ -1975,12 +1985,14 @@ input:focus { outline: 0 none; }
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel { text-align: right; margin-left: 7px; width: 0px/*initial value*/; height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
-.rounded_rect_tbl .textarea { margin-left: 8px; margin-bottom: 5px; width: 277px; }
+.rounded_rect_tbl .textarea { margin-left: 8px; margin-bottom: 5px; width: 100%; }
 .rounded_rect_tbl .property_group_td { text-decoration: underline; /*background-color: #eee;*/ text-transform: uppercase; font-size: 16px; font-weight: bold; padding-left: 5px; border: none; }
 .rounded_rect_tbl .comment { text-align: justify; color: #555; font-size: 11px; padding: 5 8 5 8; }
 .rounded_rect_tbl .select { font-family: Helvetica, Arial;  font-size: 14px; color: #000; background-color: #fff; }
 
 .rounded_rect_tbl input#rightPanelPropertySheet { display: none; }
+
+.menuItemRow { cursor: pointer; }
 
 .chosen_values {
   float: left;
@@ -2005,26 +2017,23 @@ input:focus { outline: 0 none; }
 
 .listArrow { width: 25px; height: 20px; }
 
-.panel_block {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 0px; 
-  
-  width: 320px;
-}
 .panel_block #hide_icon, #menu_Options #hide_icon { position: relative; z-index: 2; top: 25px; left: -5px; cursor: pointer; }
 #menu_Options #hide_icon { top: 15px; left: -4px; }
+/*
 .panel_block .content 
 {
-  max-height: 500px;
-  height: auto; 
-
   padding: 0px; 
   background: #C8C8C8 url(../images/skin/iphone/pinstripes.png) repeat scroll 0%;
  }
+ */
 
-.frame {  width: 320; overflow: hidden; padding: 0; border: none; }
+.frame {
+	width: 100%; /* takes 100% of panel block width */
+  overflow: hidden;
+  padding: 0;
+  border: none;
+  background: #C8C8C8 url(../images/skin/iphone/pinstripes.png) repeat scroll 0%; 
+}
 .tray {
   -webkit-transition-property: -webkit-transform;
   -webkit-transition-duration: 0.4s;
@@ -2033,9 +2042,10 @@ input:focus { outline: 0 none; }
 
   padding: 0;
   margin: 0;
-  width: 9000;
+  width: 500%; /* 5 x frame width -> allowas 5 frames; then each frame has width 20% */
 
   position: relative;
+  float: left;
   left: 0;
 }
 
@@ -2043,7 +2053,7 @@ input:focus { outline: 0 none; }
 input[type=checkbox] { display: none; }
 */
 
-.panel_block #item_name { font-size: 13px; font-weight: bold; margin: 30px 0px 0px 10px;   }
+.panel_block #item_name { font-size: 13px; font-weight: bold; margin: 15px 0px 0px 10px;   }
 /** iPhone toggle button. **/
 /* 3 types 1)left align 2) right align 3) blue with left align */
 .toggle_btn { float: right; margin: 5 9 5 0; width: 100px; height: 30px; background:#FFFFFF url(../images/skin/iphone/toggle_btn.png); cursor: pointer; }
@@ -2059,7 +2069,7 @@ input[type=checkbox] { display: none; }
 
 
 /** iPhone field **/
-.iphone_field { float: left; margin: 0px;  }
+.iphone_field { /*float: left;*/ margin: 0px;  }
 .iphone_field .left, .iphone_field .right, .iphone_field input { height: 30px;  float: left; background: url(../images/skin/iphone/rounded_field.png); margin: 0px; border: 0px; }
 .iphone_field .left { width: 23px;  background-position: top left; cursor: pointer; }
 .iphone_field .left img { margin: 6px 0px 0px 2px; visibility : hidden; }
@@ -2105,10 +2115,10 @@ input[type=checkbox] { display: none; }
   filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/frame/png/right_bottom.png, sizingMethod='crop'); 
 }
 
-.form_panel { background: transparent; float: left; width: 320; min-height: 1px; margin: 0px; }
-.options_panel, .classifier_panel { float: left; width: 320; }
+.form_panel { background: transparent; float: left; width: 20%; min-height: 1px; margin: 0px; }
+.options_panel, .classifier_panel { float: left; width: 20%; }
 
-.calendar_panel { float: left; width: 320; }
+.calendar_panel { float: left; width: 20%; }
 #calendar_container { padding: 0; }
 
 #div_info table { overflow: visible; }
