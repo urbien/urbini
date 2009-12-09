@@ -1198,6 +1198,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.iframeObj.style.marginTop = i_am.toolbar.getHeight() + 1;
 		i_am.toolbar.div.style.top = i_am.toolbar.getHeight() - 2;
 			
+		i_am.toolbar.div.style.left = 7; // RTE offset in Touch UI dialogs ~"hack" 
+			
 		i_am.toolbar.show();
 		
 		// prevents from more than 1 opened RTE.
