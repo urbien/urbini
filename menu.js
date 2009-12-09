@@ -1612,9 +1612,6 @@ function fakeOnSubmit() {
 
 /***********************************************
 * FormProcessor - helps to handle data of a form
-* called from:
-* showDialog1 - desktop
-* onLoadPageAndDialog - mobile
 ************************************************/
 var FormProcessor = {
   // variables ----
@@ -2058,12 +2055,12 @@ var FormProcessor = {
 	MIN_INPUT_WIDTH : 30,
   initForTouchUI : function(parent) {
 
-		// 1. align <input>s
-		var inputs = parent.getElementsByTagName("input");
-		var width;
-    
     // substitute checkboxes with own drawn ones.
     CheckButtonMgr.substitute(parent, 1);
+
+	// 1. align <input>s
+		var inputs = parent.getElementsByTagName("input");
+		var width;
     
     for (var i = 0; i < inputs.length; i++) {
       if (inputs[i].className != "input" && inputs[i].className != "isel"
@@ -2122,13 +2119,10 @@ var FormProcessor = {
       if (select)
         selectWidth = select.offsetWidth;
       
-      // calculate <input> width  
-      width = 255 - labelSpan.offsetWidth - symbolWidth - selectWidth - 7;
-      if (td.getAttribute("colspan") != null)
-        width += 22; // no arrow_td
+      // calculate <input> width
+	  width = td.clientWidth - inputs[i].offsetLeft - symbolWidth - selectWidth - 7;
       
       if (width < this.MIN_INPUT_WIDTH || msgElm != null) {
-        width = 270;
         inputs[i].style.clear = "left"; // because webkit
       }
       else
@@ -2137,11 +2131,12 @@ var FormProcessor = {
       inputs[i].style.width = width;
     }
 		
+		
 		// 2. align <select>s. (Note: the following can be usefull for <input>s alignment) 
 		var selects = parent.getElementsByTagName("select");
 		for (var i = 0; i < selects.length; i++) {
-			var parent = selects[i].parentNode;
-			var rightFreeSpace = parent.clientWidth - (selects[i].offsetLeft + selects[i].clientWidth);
+			var parentTd = selects[i].parentNode;
+			var rightFreeSpace = parentTd.clientWidth - (selects[i].offsetLeft + selects[i].clientWidth);
 			selects[i].style.marginLeft = rightFreeSpace - 15;
 		}  
   }
@@ -3042,9 +3037,6 @@ var ListBoxesHandler = {
  },
   
   // Touch UI CODE -----------------------------------
-  IPH_WIDTH : 320, // iPhone screen width
-  // RDR_HEIGHT : 350, // rounded rect height has limitation on desktop
-
   panelBlock : null,
 	tray : null, // each tray contains own form, options and (optionaly) calendar panels.
   
@@ -3180,7 +3172,7 @@ var ListBoxesHandler = {
 		var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
 		
 		if ($t.isEditList) {
-			$t.panelBlock.style.left = findPosX(hotspot) - $t.IPH_WIDTH;
+			$t.panelBlock.style.left = findPosX(hotspot) - $t.panelBlock.clientWidth; //$t.IPH_WIDTH;
 			$t.panelBlock.style.top = findPosY(hotspot) - 20;
 		}
 			
@@ -3193,11 +3185,7 @@ var ListBoxesHandler = {
     
     Popup.load(event, popupDiv, hotspot, content);
 
-		popupDiv.className = "rounded_rect_cont";
-
-    // 20 = 10 + 10 margin of "rounded"
-    var width =  $t.IPH_WIDTH - 20; 
-    popupDiv.style.width =  width; 
+    popupDiv.style.width =  "100%"; //width; 
     popupDiv.style.height = "100%"; // $t.RDR_HEIGHT;
 
     $t.showOptions(popupDiv);
@@ -3487,11 +3475,11 @@ var ListBoxesHandler = {
     // no selections
     if (selectedOptionsAmount == 0)
       return;
-      
+    
     var width;
     if (selectedOptionsAmount == 1) { // single selection
       var labelSpan = getChildByClassName(td, "label");
-      width = 210 - labelSpan.offsetWidth; 
+      width = td.clientWidth - chosenValuesDiv.offsetLeft - 7; 
 
       chosenValuesDiv.style.textAlign = "right";
       chosenValuesDiv.style.paddingLeft = 2;
@@ -3503,7 +3491,7 @@ var ListBoxesHandler = {
       chosenValuesDiv.style.textAlign = "left";
       chosenValuesDiv.style.paddingLeft = 7;
       chosenValuesDiv.style.clear = "left";
-      width = 230;
+      width = td.clientWidth - 7;
     }
 
     chosenValuesDiv.style.width = width;
@@ -3689,8 +3677,8 @@ var ListBoxesHandler = {
 ********************************************/
 var SlideSwaper = {
   STEPS_AMT : 10,
-  TIMEOUT : 1,
-  DISTANCE : 320,
+  TIMEOUT : 20, // timeout between steps. On FF3 can not be applied too short timeout.
+  DISTANCE : 20, // pecents of tray width //320,
   BEZIER_POINTS : [[0.0, 0.0], [0.42, 0], [0.58, 1], [1.0, 1.0]],
   offset : 0,
   
@@ -3713,7 +3701,7 @@ var SlideSwaper = {
     
     if (Browser.webkit) {
       this.curState--;
-      this.tray.style.webkitTransform = "translate(" + this.DISTANCE * this.curState + "px, 0px)";
+      this.tray.style.webkitTransform = "translate(" + this.DISTANCE * this.curState + "%, 0%)";
     }
     else {
       this.isForward = true;
@@ -3732,8 +3720,8 @@ var SlideSwaper = {
 
     if (Browser.webkit) {
       this.curState += factor;
-      // to the beginning "translate(0px, 0px)";
-      this.tray.style.webkitTransform = "translate(" + this.DISTANCE * this.curState + "px, 0px)";
+      // to the beginning "translate(0%, 0%)";
+      this.tray.style.webkitTransform = "translate(" + this.DISTANCE * this.curState + "%, 0%)";
     }
     else {
       this.isForward = false;
@@ -3762,9 +3750,9 @@ var SlideSwaper = {
 
     // for FF 3.1b2 that does not support -moz-transition-duration (?)
     if (typeof $t.tray.style.MozTransform != 'undefined')
-      $t.tray.style.MozTransform = "translate(" + left + "px, 0px)";
+      $t.tray.style.MozTransform = "translate(" + left + "%, 0%)";
     else
-      $t.tray.style.left = left;
+      $t.tray.style.left = left * 5 + "%"; // tray is 5 width of a panel
 
     
     
@@ -3836,15 +3824,16 @@ var Filter = {
 
   // filter can have several
   _initFilter : function(filterDiv) {
-		// 1. set event handlers for toobar buttons
 		var filterHeader = getChildByClassName(filterDiv, "header");
+		
+		// set event handlers for toobar buttons
 		var submitBtn = getChildByAttribute(filterHeader, "name", "submitFilter");
 		submitBtn.onclick = this.submit;
 
 		var clearFilterBtn = getChildByAttribute(filterHeader, "name", "clear");
 		clearFilterBtn.onclick = this.submitClearFilter;
 
-    // 2. init filter content
+    // init filter content
     var paramsTable = getChildByClassName(filterDiv, "rounded_rect_tbl");
 
     if (!paramsTable)
@@ -3896,34 +3885,35 @@ var Filter = {
   	// hide possible opened previous filter
 	  this.hide(); 
 
-    // mobile
     // 1. filter for that type already loaded
     if (this.filtersArr[filterUrl]) {
       if (x && y) {
         stl.left = x;
         stl.top = y;
       }
+			// mobile has several filters simultaneously
 			if (Browser.mobile) {
 		  	this.handleFilterState(true);
 		  	this.filtersArr[filterUrl] = document.body.appendChild(this.filtersArr[filterUrl]);
 		  }
-		  else {
-		  	this.filtersArr[filterUrl].style.visibility = "visible";
-				this.filtersArr[filterUrl].style.display = "";
-		  }
+			this.filtersArr[filterUrl].style.display = "";
+//		  else {
+//		  	//this.filtersArr[filterUrl].style.visibility = "visible";
+//				//this.filtersArr[filterUrl].style.display = "";
+//				var pane2 = document.getElementById("pane2");
+//				this.filtersArr[filterUrl] = pane2.appendChild(this.filtersArr[filterUrl]);
+//		  }
     }
     // 2. download new filter for this type
     else {
       this.loadingUrl = filterUrl;
       var urlParts = filterUrl.split('?');
-      
+
       if (x && y)
         this.loadingPosition = [x, y];
       else
         this.loadingPosition = null;  
     
-//			if (Browser.mobile)
-//				urlParts[1] = "&-mobile=y";
       postRequest(null, urlParts[0], urlParts[1], null, null, this.onFilterLoaded);
     }
   },
@@ -3964,7 +3954,7 @@ var Filter = {
 		  }
 		  else 
 		  	FieldsWithEmptyValue.setValue(searchField, this.filterBackup["-q"]);
-			}
+		}
 		
 		if (!toSave) // reset after restoring
 			this.filterBackup = null;
@@ -3974,15 +3964,23 @@ var Filter = {
   onFilterLoaded : function(event, div, hotspot, content) {
     var $t = Filter;
 		$t.currentFilterUrl = $t.loadingUrl;
-		
+
     var loadedFilter = $t.createFilterDomObject(content);
     
     if (loadedFilter == null)
       return;
     
-		// insert in document
-		$t.filtersArr[$t.loadingUrl] = document.body.appendChild(loadedFilter);
-    ExecJS.runDivCode(loadedFilter);
+		// insert in DOM: 1) for mobile into body 2) for mobile into pane2
+	//	var pane2;
+	//	if (Browser.mobile) 
+			$t.filtersArr[$t.loadingUrl] = document.body.appendChild(loadedFilter);
+//		else {
+//			pane2 = document.getElementById("pane2");
+//			pane2.innerHTML = "";
+//			$t.filtersArr[$t.loadingUrl] = pane2.appendChild(loadedFilter);
+//		}
+
+		ExecJS.runDivCode(loadedFilter);
     
     var initialized = $t._initFilter($t.filtersArr[$t.loadingUrl]);
 		if (!initialized && Browser.mobile) {
@@ -3997,10 +3995,12 @@ var Filter = {
       loadedFilter.style.left = $t.loadingPosition[0];
       loadedFilter.style.top = $t.loadingPosition[1];
     }
-    
-    if (initialized || Browser.mobile) // not initialized if filter is empty
-      loadedFilter.style.visibility = "";
-    
+
+    if (initialized || Browser.mobile) { // not initialized if filter is empty
+			loadedFilter.style.visibility = "visible";
+			loadedFilter.style.display = "block";
+		}
+		
 		$t.handleFilterState(true);
     $t.loadingUrl = null;
   },
@@ -4039,9 +4039,9 @@ var Filter = {
       var parent = this.filtersArr[url].parentNode;
       
 			this.handleFilterState(false);
-      // remove filter instance on mobile
+      // remove filter from DOM
 			this.filtersArr[url] = parent.removeChild(this.filtersArr[url]);
-			this.filtersArr[url].style.visibility = "";
+			this.filtersArr[url].style.display = "none";
     }
   },
   
@@ -4223,18 +4223,26 @@ var DataEntry = {
 	
 	onDataError : false, // data entry was returned by server with errors on data entry
 	
-	show : function(url) {
+	show : function(url, hotspot) {
 		if (this.loadingUrl != null)
 			return;
 		// hide possible previously opened data entry dialog 
 		this.hide();
 		
 		var key = this._getKey(url);
-		if (this.dataEntryArr[key]) {
+		if (this.dataEntryArr[key]) { // data entry stored (in mobile mode)
 			if (this.isMkResource(url))
 				this.doStateOnMkResource(this.dataEntryArr[key], true);
 			
-			document.body.appendChild(this.dataEntryArr[key]);
+			if (Browser.mobile) 
+	  		document.body.appendChild(this.dataEntryArr[key]);
+
+			setDivVisible(null, this.dataEntryArr[key], null, hotspot, 0, 0, null);
+				
+//		  else {
+//		  	var pane2 = document.getElementById('pane2');
+//				pane2.appendChild(this.dataEntryArr[key]);
+//		  }
 			// RTE requires new initialization after insertion into document.
 			ExecJS.runDivCode(this.dataEntryArr[key]);
 
@@ -4258,12 +4266,23 @@ var DataEntry = {
 		}
 		else
 			$t.onDataError = true;
-		
-		div = getDomObjectFromHtml(html, "className", "panel_block");
+
+		var div = getDomObjectFromHtml(html, "className", "panel_block");
 		if ($t.isMkResource($t.currentUrl))
 			$t.doStateOnMkResource(div, true);
-		
-		div = document.body.appendChild(div);
+		//debugger;
+		// insert in DOM
+//		if (Browser.mobile) 
+  		div = document.body.appendChild(div);
+
+//	  else {
+//			// desktop uses pane2 as a parent div
+//	  	var pane2 = document.getElementById('pane2');
+//			pane2.innerHTML = "";
+//			div = pane2.appendChild(div);
+			
+			setDivVisible(event, div, null, hotspot, 0, 0, null);
+//	  }
 		
 		FormProcessor.initForms(div);
 		ExecJS.runDivCode(div);
@@ -4273,11 +4292,7 @@ var DataEntry = {
 	},
 	
 	hide : function (e, hideIcon) {
-		if (!Browser.mobile) {
-			onHideDialogIcon(e, hideIcon);
-			return;
-		}
-		
+	//	debugger;
 		if (this.currentUrl == null)
 			return;
 		
@@ -4285,6 +4300,12 @@ var DataEntry = {
 		
 		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
 			return;
+		
+		if (!Browser.mobile) {
+			//onHideDialogIcon(e, hideIcon);
+			this.dataEntryArr[key].style.display = "none";
+			return;
+		}
 		
 		document.body.removeChild(this.dataEntryArr[key]);
 		if (this.isMkResource(this.currentUrl))
@@ -4690,17 +4711,24 @@ function displayInner(e, urlStr) {
     finalUrl += '&';
   finalUrl += "-inner=y"; // "hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
 
-  var hotspot = getEventTarget(e);
-  var url    = finalUrl;
-  var params = null;
-// if (finalUrl.length > 2000) {
-    url    = finalUrl.substring(0, idx);
-    params = finalUrl.substring(idx + 1);
-// }
-
-  var div = document.getElementById('pane2');
-
-	postRequest(e, url, params, div, hotspot, showDialog);
+	// mkResource and editProperties dialogs belong to Touch UI
+	if (finalUrl.indexOf("mkResource.html") != -1 ||
+  			finalUrl.indexOf("editProperties.html") != -1) {
+  	DataEntry.show(finalUrl, anchor);
+  }
+	// others are "blue" dialogs
+  else {
+   	var url = finalUrl;
+  	var params = null;
+  	// if (finalUrl.length > 2000) {
+			url = finalUrl.substring(0, idx);
+			params = finalUrl.substring(idx + 1);
+			// }
+			
+		var div = document.getElementById('pane2');
+		postRequest(e, url, params, div, anchor, showDialog);
+	}
+ 
   // bottomFrame.location.replace(finalUrl);
   // var timeOutFunction = function () { showDialog(div, hotspot); };
   // setTimeout(timeOutFunction, 50);
@@ -6039,8 +6067,8 @@ function onHideDialogIcon(e, hideIcon) {
     hideInnerDiv(e);
     //pane2.innerHTML = "";
   }
-  //else
-  //  hideIcon.parentNode.style.display = 'none'; // filter is not in 'pane2'
+ // else // Touch UI dialogs
+ //   hideIcon.parentNode.style.display = 'none';
 }
 
 function hideInnerDiv(e) {
@@ -6327,15 +6355,25 @@ function onDlgContentResize(e){
 
 }
 
+//****************************************************************
+// used to manage dialogs
+// Touch UI dialogs are in 'panel_block' div
+// others("blue") in 'pane2' div
+//****************************************************************
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
-  var isDivStatic = (div.style.position.toLowerCase() == 'static');
-  if (Browser.mobile) {
+	if (Browser.mobile) {
     div.style.left = 0 + 'px';
     div.style.top  = 0 + 'px';
     div.style.width = screen.width;
-    div.position = 'fixed';
     div.style.visibility = Popup.VISIBLE;
+		return;
   }
+	
+  var isDivStatic = (div.style.position.toLowerCase() == 'static');
+	
+	// reset. it helps after dialog fitted for Touch UI on desktop 
+	//div.style.width = "";
+	//div.style.height = "";
 
   // "hack" resize dialog if its contents resized (twice calls of onresize)
   if (div.id == "pane2") {
@@ -6346,6 +6384,9 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     }
   }
 
+	if (!iframe)
+		iframe = document.getElementById('dialogIframe');
+		
   // only IE < 7 has a problem with form elements 'showing through' the popup
   var istyle;
   if (Browser.lt_ie7 && !Browser.mobile) {
@@ -6383,15 +6424,8 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   // (otherwise, if position correctly and only then measure dimensions - the
   // width/height will get cut off at the scroll boundary - at least in firefox 1.0)
   div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
-  reposition(div,    0, 0);
+  reposition(div, 0, 0);
   
-	// commonly panel_block has absolute position, so width of parent pane2 detected wrong.
-	if (div.id == "pane2") {
-  	var panelBlock = getChildByClassName(div, "panel_block");
-		if (panelBlock)
-			panelBlock.style.position = "static";
-  }
-	
 	var divCoords = getElementDimensions(div);
   var margin = 40;
   // cut popup dimensions to fit the screen
@@ -6463,10 +6497,14 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       top = top + offsetY;
   }
 
-  // by now the width of the box got cut off at scroll boundary - fix it (needed
-  // at least for firefox 1.0)
-  div.style.width  = divCoords.width  + 'px';
-  div.style.height = divCoords.height + 'px';
+	
+	// no vertical scrollbar for Touch UI dialogs
+	if (div.className == 'panel_block')
+		divCoords.height = "";
+	
+	// set div size!
+  div.style.width  = divCoords.width;
+  div.style.height = divCoords.height;
 
   var zIndex = 1;
   if (hotspot) {
@@ -6500,8 +6538,8 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   var iframeTop = top;
   if(Browser.lt_ie7) {
     if (!isDivStatic  && !Browser.mobile) {
-      istyle.width     = divCoords.width  + 'px';
-      istyle.height    = divCoords.height + 'px';
+      istyle.width     = divCoords.width;
+      istyle.height    = divCoords.height;
     }
     // to make dialog shadow visible (without iframe background).
     if(div.id == 'pane2') {
@@ -6524,7 +6562,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     }
   }
 
-  reposition(div,    left, top); // move the div box to the adjusted position
+  reposition(div, left, top); // move the div box to the adjusted position
   div.style.visibility = Popup.VISIBLE; // finally make div visible
 
   if (Browser.lt_ie7 && !isDivStatic  && !Browser.mobile) {
@@ -6713,7 +6751,7 @@ var SearchField = {
     if (this.field == null) {
       this._init(field);
       
-      var x = findPosX(field) + field.offsetWidth - 320;
+      var x = findPosX(field);
       var y = findPosY(field) + field.offsetHeight + 5;
       Filter.show(x, y);
       return;
