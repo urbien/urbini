@@ -1958,6 +1958,7 @@ table.printFB {
 /* prevents blue rect in WebKit browsers */
 input:focus { outline: 0 none; }
 
+/* common panel_block incliding 'on page' */
 .panel_block {
   position: relative;
   
@@ -1965,6 +1966,11 @@ input:focus { outline: 0 none; }
   max-width: 800px;
   
   padding: 0px;
+}
+
+/* dialog */
+body .panel_block {
+  position: absolute;
 }
 
 .panel_block .header { float: left; padding: 5px 0px 5px 0px; width: 100%; text-align: center; background: #6e84a2 url(../images/iPhoneToolbar.png) repeat-x; border-bottom: 1px solid #2d3642; }
