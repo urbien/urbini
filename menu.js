@@ -3896,13 +3896,7 @@ var Filter = {
 		  	this.handleFilterState(true);
 		  	this.filtersArr[filterUrl] = document.body.appendChild(this.filtersArr[filterUrl]);
 		  }
-			this.filtersArr[filterUrl].style.display = "";
-//		  else {
-//		  	//this.filtersArr[filterUrl].style.visibility = "visible";
-//				//this.filtersArr[filterUrl].style.display = "";
-//				var pane2 = document.getElementById("pane2");
-//				this.filtersArr[filterUrl] = pane2.appendChild(this.filtersArr[filterUrl]);
-//		  }
+			setDivVisible(null, this.filtersArr[filterUrl], null, hotspot, 0, 0, null);
     }
     // 2. download new filter for this type
     else {
@@ -3971,14 +3965,7 @@ var Filter = {
       return;
     
 		// insert in DOM: 1) for mobile into body 2) for mobile into pane2
-	//	var pane2;
-	//	if (Browser.mobile) 
-			$t.filtersArr[$t.loadingUrl] = document.body.appendChild(loadedFilter);
-//		else {
-//			pane2 = document.getElementById("pane2");
-//			pane2.innerHTML = "";
-//			$t.filtersArr[$t.loadingUrl] = pane2.appendChild(loadedFilter);
-//		}
+		$t.filtersArr[$t.loadingUrl] = document.body.appendChild(loadedFilter);
 
 		ExecJS.runDivCode(loadedFilter);
     
@@ -3997,8 +3984,7 @@ var Filter = {
     }
 
     if (initialized || Browser.mobile) { // not initialized if filter is empty
-			loadedFilter.style.visibility = "visible";
-			loadedFilter.style.display = "block";
+			setDivVisible(null, loadedFilter, null, hotspot, 0, 0, null);
 		}
 		
 		$t.handleFilterState(true);
@@ -6364,7 +6350,9 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 	if (Browser.mobile) {
     div.style.left = 0 + 'px';
     div.style.top  = 0 + 'px';
-    div.style.width = screen.width;
+    div.style.width = "100%";
+    div.style.minWidth = "none";
+		div.style.maxWidth = "none";
     div.style.visibility = Popup.VISIBLE;
 		return;
   }
