@@ -1394,6 +1394,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .dataEntryDialog {background-color: #D6E7EF; background:url(../images/skin/blue/dataEntryDialog.gif); padding: 15px;}
 .resourceListDialog {background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); padding: 15px;}
 .dialogPanel {border:solid #5C9EBF 1px; padding: 15px}
+.menuDialogPanel {border:solid #5C9EBF 1px; padding: 5px}
 .drag {position: relative;}
 .dataEntryDialogMobile {background-color: #D6E7EF; padding: 0px;}
 .resourceListDialogMobile {background-color: #D6E7EF; padding: 0px;}
@@ -1707,7 +1708,7 @@ TD.toolbar {
 }
 
 .menuItemIcon img {
-  width: 16px; height: 16px; border: 0px; text-align:center; margin: 0 5 0 5; padding:0px;
+  width: 32px; height: 32px; border: 0px; text-align:center; margin: 0 5 0 5; padding:0px;
 }
 
 .menuItemChk {
@@ -1719,8 +1720,13 @@ TD.toolbar {
 	PADDING-LEFT: 8px; width: 10px
 }
 
-.menuItem { font-weight:normal; padding-left: 7px; }
-.menuItem a { width: 95%; font-weight:normal; }
+.menuItem {
+  margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; vertical-align: middle; 
+}
+
+.menuItem a { 
+  margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold;
+}
 
 .menuItemRed {
   color:red;
@@ -1786,6 +1792,9 @@ TD.closePopup {
 }
 
 .menuDivider td.td2 {
+  background-color: #dbd8d1; cursor: text;
+}
+.menuDivider tr {
   background-color: #dbd8d1; cursor: text;
 }
 
@@ -1950,9 +1959,8 @@ table.printFB {
 input:focus { outline: 0 none; }
 
 .panel_block {
-  position: absolute;
+  position: relative;
   
-  width: 80%;
   min-width: 320px;
   max-width: 800px;
   
