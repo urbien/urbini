@@ -9,9 +9,6 @@
   <pagingResources/>
   
   <filterUrl />
-  <addNewResource />
-  <edit />
-  <delete />
   
 </div>
 
