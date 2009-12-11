@@ -168,7 +168,7 @@ var RteEngine = {
 	launchStylePopup : function(btnObj, callback) {
 		if(this.stylePopup == null)
 			this.createStylePopup();
-		var parentDlg = getAncestorById(btnObj.div, 'pane2'); // hack: detects if it's in a 'pane2' dialog
+		var parentDlg = getParenDialog(btnObj.div);
 		this.stylePopup.show(btnObj, 'left', callback, parentDlg);
 		return this.stylePopup.div;
 	},
@@ -178,45 +178,45 @@ var RteEngine = {
 		}
 		if(this.fontPopup == null)
 			this.createFontPopup();
-		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		var parentDlg = getParenDialog(btnObj.div);
 		this.fontPopup.show(btnObj, 'left', callback, parentDlg);
 		return this.fontPopup.div;
 	},
 	_launchFewFontPopup : function(btnObj, callback) {
 		if(this.fewFontPopup == null)
 			this.createFewFontPopup();
-		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		var parentDlg = getParenDialog(btnObj.div);
 		this.fewFontPopup.show(btnObj, 'left', callback, parentDlg);
 		return this.fewFontPopup.div;
 	},
 	launchSizePopup : function(btnObj, callback) {
 		if(this.sizePopup == null)
 			this.createSizePopup();
-		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		var parentDlg = getParenDialog(btnObj.div);
 		this.sizePopup.show(btnObj, 'left', callback, parentDlg);
 		return this.sizePopup.div;
 	},
 	launchSmilePopup : function(btnObj, callback) {
 		if(this.smilePopup == null)
 			this.createSmilePopup();
-		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		var parentDlg = getParenDialog(btnObj.div);
 		this.smilePopup.show(btnObj, 'right', callback, parentDlg);
 		return this.smilePopup.div;
 	},
 	launchTextColorPopup : function(btnObj, callback, chosenTextClr) {
-		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		var parentDlg = getParenDialog(btnObj.div);
 		PalettePopup.show(btnObj, 'right', callback, parentDlg, null, chosenTextClr);
 		return PalettePopup.div;
 	},
 	launchBgColorPopup : function(btnObj, callback, chosenBgClr) {
-		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		var parentDlg = getParenDialog(btnObj.div);
 		PalettePopup.show(btnObj, 'right', callback, parentDlg, null, chosenBgClr);
 		return PalettePopup.div;
 	},
 	launchLinkPopup : function(btnObj, callback, cancelCallback, href) {
 		if(this.linkPopup == null)
 			this.createLinkPopup();
-		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		var parentDlg = getParenDialog(btnObj.div);
 		
 		this.linkPopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		var div = this.linkPopup.div;
@@ -237,7 +237,7 @@ var RteEngine = {
 	  
 	  var form = this.imagePopup.getForm();
 	  ImageUploader.putRteIdInForm(form, rteId);		
-		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		var parentDlg = getParenDialog(btnObj.div);
 		this.imagePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.imagePopup.div;
 	},
@@ -258,7 +258,7 @@ var RteEngine = {
 
     var rteObj = this.getRteById(rteId);
     var rteIframe = rteObj.getIframe();
- 		var parentDlg = getAncestorById(rteIframe, 'pane2'); // hack: detects if it's in a 'pane2' dialog
+ 		var parentDlg = getParenDialog(btnObj.div);
     this.imagePastePopup.show(rteIframe, "inside", null, parentDlg, this.onCanceledUploadPastedImage);
 		
 		return this.imagePastePopup.div;
@@ -266,7 +266,7 @@ var RteEngine = {
 	launchTablePopup : function(btnObj, callback, cancelCallback) {
 		if(this.tablePopup == null)
 			this.createTablePopup();
-		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		var parentDlg = getParenDialog(btnObj.div);
 		this.tablePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.tablePopup.div;
 	},
@@ -953,6 +953,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   }
   
 	this.createToolbar = function() {
+		// Note: after second insertion od a dialog on mobile, RTE requires new initialization (?!)
+		//       need to remove old, not effective toolbar (!) 
+		// (Need to investigate it more)
+		var oldToolbar = getChildByClassName(this.iframeObj.parentNode, 'ctrl_toolbar');
+		if (oldToolbar != null)
+			oldToolbar.parentNode.removeChild(oldToolbar);
+		
 		// 1.
 		var toolBar = new Toolbar(this.parentDiv, this, 18, false, this.iframeObj);
 		// 2. add buttons
@@ -1195,9 +1202,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		}
 
 		// make offset for toolbar over the iframe
-		i_am.iframeObj.style.marginTop = i_am.toolbar.getHeight() + 1;
-		i_am.toolbar.div.style.top = i_am.toolbar.getHeight() - 2;
-			
+		i_am.iframeObj.style.marginTop = 7; //i_am.toolbar.getHeight() + 1;
+		
+		i_am.toolbar.div.style.top =  5; // i_am.toolbar.getHeight() +
 		i_am.toolbar.div.style.left = 7; // RTE offset in Touch UI dialogs ~"hack" 
 			
 		i_am.toolbar.show();
@@ -1223,7 +1230,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
       return;
 
 		i_am.iframeObj.style.height = i_am.initFrameHeight;
-		i_am.iframeObj.style.marginTop = 0;
+		if (i_am.toolbar)
+			i_am.iframeObj.style.marginTop = -i_am.toolbar.getHeight() + 5; 
     if (i_am.toolbar)
 		  i_am.toolbar.hide();
 		
