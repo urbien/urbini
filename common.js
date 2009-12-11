@@ -1685,5 +1685,10 @@ function getBaseUrl() {
   return baseUri;
 }
 
+// returns 'pane2' or 'panel_block'
+function getParenDialog(obj) {
+	return getAncestorByClassName(obj, 'panel_block') || getAncestorById(obj, 'pane2');
+}
+
 // flag that common.js was parsed
 g_loadedJsFiles["common.js"] = true;
