@@ -1738,8 +1738,8 @@ var FormProcessor = {
         }
       }
     }
-    
-		var isFormInDialog = (pane2  &&  pane2.contains(form));
+
+		var isFormInDialog = getParenDialog(form) != null;
     
   // var action = form.attributes['action'];
     var action = form.action;
@@ -1850,14 +1850,15 @@ var FormProcessor = {
     if (pane2  &&  pane2.contains(form))  {   // dialog?
       setDivInvisible(pane2, dialogIframe);
     }
- 		// 1. form in dialog: send via XHR
-    if (isFormInDialog)  {
+		
+		// 1. mobile: return url for further XHR
+		if (Browser.mobile) {
+      return url + "?" + params;
+    }
+ 		// 2. form in dialog: send via XHR
+   else if (isFormInDialog)  {
 			postRequest(e, url, params, pane2, getTargetElement(e), showDialog);
       return stopEventPropagation(e);
-    }
-		// 2. mobile: return url for further XHR
-    else if (Browser.mobile) {
-      return url + "?" + params;
     }
 		// 3. send form
     else {
@@ -4220,17 +4221,13 @@ var DataEntry = {
 			if (this.isMkResource(url))
 				this.doStateOnMkResource(this.dataEntryArr[key], true);
 			
-			if (Browser.mobile) 
-	  		document.body.appendChild(this.dataEntryArr[key]);
-
+			if (Browser.mobile &&
+							 getAncestorByTagName(this.dataEntryArr[key], 'body') == null) {
+				document.body.appendChild(this.dataEntryArr[key]);
+		  	// RTE requires new initialization after insertion into document (?!)
+				ExecJS.runDivCode(this.dataEntryArr[key]);
+			}
 			setDivVisible(null, this.dataEntryArr[key], null, hotspot, 0, 0, null);
-				
-//		  else {
-//		  	var pane2 = document.getElementById('pane2');
-//				pane2.appendChild(this.dataEntryArr[key]);
-//		  }
-			// RTE requires new initialization after insertion into document.
-			ExecJS.runDivCode(this.dataEntryArr[key]);
 
 			this.currentUrl = url;
 		}
@@ -4256,20 +4253,11 @@ var DataEntry = {
 		var div = getDomObjectFromHtml(html, "className", "panel_block");
 		if ($t.isMkResource($t.currentUrl))
 			$t.doStateOnMkResource(div, true);
-		//debugger;
-		// insert in DOM
-//		if (Browser.mobile) 
-  		div = document.body.appendChild(div);
 
-//	  else {
-//			// desktop uses pane2 as a parent div
-//	  	var pane2 = document.getElementById('pane2');
-//			pane2.innerHTML = "";
-//			div = pane2.appendChild(div);
-			
-			setDivVisible(event, div, null, hotspot, 0, 0, null);
-//	  }
-		
+		// insert in DOM
+ 		div = document.body.appendChild(div);
+		setDivVisible(event, div, null, hotspot, 0, 0, null);
+
 		FormProcessor.initForms(div);
 		ExecJS.runDivCode(div);
 		
@@ -4327,7 +4315,7 @@ var DataEntry = {
 		// 1. mobile stores forms 2. data entry dialog closed on submissoin
 		if (Browser.mobile)
 			form.removeAttribute("wasSubmitted");
-		
+
 		var url = FormProcessor.onSubmitProcess(e, form);
 		this.hide();
 		
@@ -4726,7 +4714,7 @@ function displayInner(e, urlStr) {
  * copies html loaded via ajax into a div
  */
 function showDialog(event, div, hotspot, content) {
-  var frameId = 'popupFrame';
+	var frameId = 'popupFrame';
   if (!content) {
     if (!frameLoaded[frameId]) {
       var timeOutFunction = function () { showDialog(event, div, hotspot) };
@@ -4734,7 +4722,6 @@ function showDialog(event, div, hotspot, content) {
       return;
     }
     frameLoaded[frameId] = false;
-
     // -------------------------------------------------
     var frameBody = frames[frameId].document.body;
     var frameDoc  = frames[frameId].document;
