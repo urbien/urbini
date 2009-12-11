@@ -1004,6 +1004,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 		this.titlestrip = new Titlestrip(this.parentDiv, this);
 		// 2. create, namely, toolbar
 		this.div = document.createElement('div');
+		this.div.className = "ctrl_toolbar";
 		this.div.style.position = "relative"; //"absolute";
 		this.div.style.display = "block";
 		this.div.style.left = 0;
