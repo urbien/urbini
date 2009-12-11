@@ -1,4 +1,5 @@
 <div>
+<errorMessage />
 <table id="resourceList" width="100%" border="0" cellspacing="0" cellpadding="0">
 	<tr noInner="y" class="fts" valign="bottom">
   	<td colspan="2"><table width="100%"><tr><td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td></tr></table></td>
