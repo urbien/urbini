@@ -2118,10 +2118,10 @@ var FormProcessor = {
       var select = getChildByTagName(td, "select");
       var selectWidth = 0;
       if (select)
-        selectWidth = select.offsetWidth;
+        selectWidth = select.offsetWidth + 10;
       
       // calculate <input> width
-	  width = td.clientWidth - inputs[i].offsetLeft - symbolWidth - selectWidth - 7;
+	    width = td.clientWidth - inputs[i].offsetLeft - symbolWidth - selectWidth - 7;
       
       if (width < this.MIN_INPUT_WIDTH || msgElm != null) {
         inputs[i].style.clear = "left"; // because webkit
@@ -2133,12 +2133,17 @@ var FormProcessor = {
     }
 		
 		
-		// 2. align <select>s. (Note: the following can be usefull for <input>s alignment) 
+		// 2. align <select>s only if no input(s) before
 		var selects = parent.getElementsByTagName("select");
 		for (var i = 0; i < selects.length; i++) {
-			var parentTd = selects[i].parentNode;
-			var rightFreeSpace = parentTd.clientWidth - (selects[i].offsetLeft + selects[i].clientWidth);
-			selects[i].style.marginLeft = rightFreeSpace - 15;
+			var parentTd = getAncestorByClassName(selects[i], "td");//selects[i].parentNode;
+			if (!parentTd)
+				continue;
+			var input = getChildByClassName(parentTd, "input");
+			if (input == null) {
+		  	var rightFreeSpace = parentTd.clientWidth - (selects[i].offsetLeft + selects[i].clientWidth);
+		  	selects[i].style.marginLeft = rightFreeSpace - 15;
+		  }
 		}  
   }
 
@@ -3897,7 +3902,7 @@ var Filter = {
 		  	this.handleFilterState(true);
 		  	this.filtersArr[filterUrl] = document.body.appendChild(this.filtersArr[filterUrl]);
 		  }
-			setDivVisible(null, this.filtersArr[filterUrl], null, hotspot, 0, 0, null);
+			setDivVisible(null, this.filtersArr[filterUrl], null, null, 0, 0, null);
     }
     // 2. download new filter for this type
     else {
