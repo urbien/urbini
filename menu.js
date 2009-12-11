@@ -5825,8 +5825,8 @@ function minMax(e, divId) {
 
 function showTab(e, td, hideDivId, unhideDivId) {
 	// note: in TouchUI edit form displayed in dialog instead of tab.
-	if (td.id == "Edit")
-		return;
+//	if (td.id == "Edit")
+//		return;
 
   e = getDocumentEvent(e);
 
