@@ -1,11 +1,18 @@
-﻿#iphone_calendar 
+﻿#calendar_container
 {
-  width: 320px;
+	padding: 0;
+	text-align: center;
+	background: url(img/background.jpg);
+}
+
+#iphone_calendar 
+{
+  width: 100%;
   margin: 0px;
   font-family: Helvetica;
   color: rgb(80, 93, 110);
   -moz-user-select: none;
-  
+  text-align: center;
   float: left;
 }
 #iphone_calendar .header 
@@ -20,12 +27,13 @@
 
 #iphone_calendar .box
 {
-  background: url(img/background.jpg);
+	background: url(img/background.jpg);
   padding: 0px;
   border: none;
   overflow: hidden;
   
   float: left;
+  width: 320px;
 }
 
 #iphone_calendar .header .back, #iphone_calendar .header .back_year { float: left; margin-left: 22px; margin-top: 12px; cursor: pointer; }
