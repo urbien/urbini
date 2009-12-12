@@ -1739,7 +1739,11 @@ var FormProcessor = {
       }
     }
 
-		var isFormInDialog = getParenDialog(form) != null;
+		var dialog = getParenDialog(form);
+		var isFormInDialog = dialog != null;
+		// filter is sent NOT as XHR to get responce into page
+		if (dialog && dialog.id == 'common_filter')
+			isFormInDialog = false;
     
   // var action = form.attributes['action'];
     var action = form.action;
