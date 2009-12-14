@@ -2059,9 +2059,8 @@ var FormProcessor = {
 	// Touch UI ---------------
 	MIN_INPUT_WIDTH : 30,
   initForTouchUI : function(parent) {
-
     // substitute checkboxes with own drawn ones.
-    CheckButtonMgr.substitute(parent, 1);
+    CheckButtonMgr.substitute(parent);
 
 	// 1. align <input>s
 		var inputs = parent.getElementsByTagName("input");
@@ -3849,7 +3848,7 @@ var Filter = {
     if (!paramsTable)
       return false;
     
-    CheckButtonMgr.substitute(filterDiv, 0);
+    CheckButtonMgr.substitute(filterDiv);
     var paramSel = getChildById(filterDiv, 'parameter_selector');
     FieldsWithEmptyValue.initField(paramSel, 'select');
     var textSearch = getChildById(filterDiv, '-q');
@@ -9886,48 +9885,42 @@ function showMobileTab(e, hideDivId, unhideDivId) {
 
 /*******************************************
 * CheckButtonMgr
-* stlIdx: 
-* 0 - iphone_checkbox
-* 1 - toggle_btn
 ********************************************/
 var CheckButtonMgr = {
-  stlIdx : 0,
-  //offset : new Array("100px", "29px"),
   classes : new Array("iphone_checkbox", "toggle_btn"),
   
-  substitute : function(div, stlIdx) {
+  substitute : function(div) {
     if (div == null)
       return;
-  
+
     if (typeof div == 'undefined')
       div = document.body;
     
-    if (typeof stlIdx != 'undefined')
-      this.stlIdx = stlIdx;
-    
-    inputs = div.getElementsByTagName('input');
+     var inputs = div.getElementsByTagName('input');
     for(var i=0; i < inputs.length; i++) {
-      if (inputs[i].className == 'hdn')
+      var stlIdx = -1;
+			if (inputs[i].className == 'hdn')
       	continue;
-      if (stlIdx == 0) { // checkbox
-        if (inputs[i].getAttribute('type') != 'checkbox')
-          continue;
-      }
-      if (stlIdx == 1) { // toggle button
-        if (inputs[i].className != 'boolean')
-          continue;
-      }
       
+			if (inputs[i].getAttribute('type') == 'checkbox')
+      	stlIdx = 0;
+			
+      // toggle button
+      if (inputs[i].className == 'boolean')
+      	stlIdx = 1;
+      
+			if (stlIdx == -1)
+				continue;
+			
       var div = document.createElement('div');
-      div.className = this.classes[this.stlIdx];//"toggle_btn";
+      div.className = this.classes[stlIdx];
       div.onclick = this.onClick;
   
       // change initial state if need
       if(inputs[i].checked || inputs[i].value.toLowerCase() == "yes")
         this._setState(div, inputs[i], true);
 
-      //div.setAttribute("checkbox_id", inputs[i].id || inputs[i].name);
-      // replace a checkbox with toggle button
+       // replace a checkbox with toggle button
       inputs[i].parentNode.insertBefore(div, inputs[i].nextSibling);
       inputs[i].style.display = 'none';
     }
@@ -9968,7 +9961,6 @@ var CheckButtonMgr = {
       input.value = "No";
     
     if (checkState) {
-      //var pos = this.offset[this.stlIdx] + " 0px";
       toggleBtn.style.backgroundPosition = "100% 0%";
     }
     else
