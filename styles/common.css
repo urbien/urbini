@@ -337,7 +337,7 @@ table.greyBorder {
 }
 
 /* native shadow, meanwhile for WebKit only */
-.galleryItem_css3 { -webkit-box-shadow: 5px 5px 25px #555; -moz-box-shadow: #555 5px 5px 25px;}
+.galleryItem_css3 { -webkit-box-shadow: 5px 5px 25px #555; -moz-box-shadow: 5px 5px 25px #555;}
 .galleryItem_chrome { -webkit-box-shadow: 2px 2px 5px #111111; }
 
 .galleryItem td {
@@ -1958,19 +1958,29 @@ table.printFB {
 /* prevents blue rect in WebKit browsers */
 input:focus { outline: 0 none; }
 
-/* common panel_block incliding 'on page' */
-.panel_block {
+/* 'on page' */
+div .panel_block, td .panel_block {
   position: relative;
   
   min-width: 320px;
   max-width: 800px;
   
   padding: 0px;
+  
+  -moz-box-shadow : none;
+  -webkit-box-shadow: none;
+  
 }
 
-/* dialog */
-body .panel_block {
+/* dialog: body is a parent */
+.panel_block {
   position: absolute;
+  
+  min-width: 320px;
+  max-width: 800px;
+  
+  -moz-box-shadow: 6px 6px 25px #555;
+  -webkit-box-shadow: 6px 6px 25px #555;
 }
 
 .panel_block .header { float: left; padding: 5px 0px 5px 0px; width: 100%; text-align: center; background: #6e84a2 url(../images/iPhoneToolbar.png) repeat-x; border-bottom: 1px solid #2d3642; }
@@ -2133,7 +2143,6 @@ input[type=checkbox] { display: none; }
 .options_panel, .classifier_panel { float: left; width: 20%; }
 
 .calendar_panel { float: left; width: 20%; }
-#calendar_container { padding: 0; }
 
 #div_info table { overflow: visible; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; /*width: 200px;*/ overflow: visible; }
@@ -2142,3 +2151,4 @@ input[type=checkbox] { display: none; }
 #div_info a { margin-left: 5px; }
 
 #siteResourceList #filter input[type=text] { height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
+
