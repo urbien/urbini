@@ -3891,21 +3891,23 @@ var Filter = {
 		if (getUrlParam(filterUrl, "type") == null)
 			return;
  
-  	// hide possible opened previous filter
+   	// hide possible opened previous filter
 	  this.hide(); 
 
     // 1. filter for that type already loaded
     if (this.filtersArr[filterUrl]) {
-      if (x && y) {
-        stl.left = x;
-        stl.top = y;
-      }
 			// mobile has several filters simultaneously
 			if (Browser.mobile) {
 		  	this.handleFilterState(true);
 		  	this.filtersArr[filterUrl] = document.body.appendChild(this.filtersArr[filterUrl]);
 		  }
+			
 			setDivVisible(null, this.filtersArr[filterUrl], null, null, 0, 0, null);
+			
+			if (x && y) {
+        this.filtersArr[filterUrl].style.left = x;
+        this.filtersArr[filterUrl].style.top = y;
+      }
     }
     // 2. download new filter for this type
     else {
@@ -3985,16 +3987,15 @@ var Filter = {
 				+ "<br/>handling of this case should be implemented!");
 		}
 			
-
     // desktop has filter position
-    if ($t.loadingPosition) {
+    if (initialized || Browser.mobile) { // not initialized if filter is empty
+			setDivVisible(null, loadedFilter, null, null, 0, 0, null);
+		}
+		
+		if ($t.loadingPosition) {
       loadedFilter.style.left = $t.loadingPosition[0];
       loadedFilter.style.top = $t.loadingPosition[1];
     }
-
-    if (initialized || Browser.mobile) { // not initialized if filter is empty
-			setDivVisible(null, loadedFilter, null, hotspot, 0, 0, null);
-		}
 		
 		$t.handleFilterState(true);
     $t.loadingUrl = null;
@@ -6731,16 +6732,12 @@ var SearchField = {
   },
   
   onFocus : function(field) {
-    if (this.field == null) {
+    if (this.field == null)
       this._init(field);
       
-      var x = findPosX(field);
-      var y = findPosY(field) + field.offsetHeight + 5;
-      Filter.show(x, y);
-      return;
-    }
-    
-    Filter.show();
+    var x = findPosX(field);
+    var y = findPosY(field) + field.offsetHeight + 5;
+    Filter.show(x, y);
   },
   
   onBlur : function(event) {
