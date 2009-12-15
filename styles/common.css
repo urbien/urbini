@@ -442,6 +442,9 @@ span.xl1 {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;color:
 span.ftsi {font-family:sans-serif, arial; font-size:10pt; font-weight:bold; font-style:italic }
 span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:16pt;}
 
+/* Full text search links */
+span.ftsl {font-family:sans-serif, arial; font-size:1.4em;} 
+
 .empty {font-size:10pt}
 
 xs { font-family: Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal; white-space: nowrap; }
@@ -1387,7 +1390,8 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 	color: #666;
 }
 
-.nowrap {white-space: nowrap;}
+.nowrap {white-space: nowrap;margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; vertical-align: middle;}
+
 .nowrapB {white-space: nowrap;color:black}
 .scheduleSubmit {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19pt;text-decoration:none;cursor: pointer; font-size:12px; font-weight:bold}
 .cursor {cursor: pointer;}
@@ -1721,11 +1725,11 @@ TD.toolbar {
 }
 
 .menuItem {
-  margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; vertical-align: middle; 
+  margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; vertical-align: middle; 
 }
 
 .menuItem a { 
-  margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold;
+  margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; 
 }
 
 .menuItemRed {
@@ -1742,7 +1746,7 @@ TD.toolbar {
   PADDING-RIGHT: 0px;	width: 10px;
 }
 
-.menuItemReset { }
+.menuItemReset { margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px;  vertical-align: middle; }
 .menuItemReset a { width: 95%; }
 
 .menuItemNoChoices {
