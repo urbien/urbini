@@ -2188,11 +2188,19 @@ function clearOtherPopups(div) {
   }
 }
 
-/*
- * function getFormNode(elem) { var f = elem.parentNode; if (!f) return null; if
- * (!f.tagName) return null; if (f.tagName.toUpperCase() == "FORM") return f;
- * else return getFormNode(f); }
- */
+
+function getFormNode(elem) { 
+  var f = elem.parentNode; 
+  if (!f) 
+    return null; 
+  if (!f.tagName) 
+     return null;
+  if (f.tagName.toUpperCase() == "FORM") 
+    return f;
+  else 
+    return getFormNode(f); 
+}
+
 function getTrNode(elem) {
  // try to get menuItemRow. It helps tp prevent partial item selection in IE.
  // drawback - it works slow especially in IE.
@@ -4824,6 +4832,52 @@ function initCalendarsFromTo(div, formName, fromDateField, toDateField) {
   div.setInnerHtml(contents);
 }
 */
+function resetViewCols(e, tr) {
+  e = getDocumentEvent(e); 
+  if (!e) 
+    return;
+//  var target = getTargetElement(e);
+//  var tr = getTrNode(target);
+
+  var arr;
+  var form = getFormNode(tr);
+  var currentFormName = form.name;
+
+  // form url based on parameters that were set
+  var formAction = form.elements['-$action'].value;
+  var allFields = true;
+  if (formAction == "showproperties")
+    allFields = false;
+  var params;
+  var arr = new Array(3);
+  if (currentFormName.indexOf("viewColsList") == 0) {
+    arr["-viewCols"] = "-viewCols";
+    arr[".-viewCols"] = ".-viewCols";
+    arr["-curViewCols"] = "-curViewCols";
+  }
+  else if (currentFormName.indexOf("gridColsList") == 0) {
+    arr["-gridCols"] = "-gridCols";
+    arr[".-gridCols"] = ".-gridCols";
+    arr["-curGridCols"] = "-curGridCols";
+  }
+  else {
+    arr["-filterCols"] = "-filterCols";
+    arr[".-filterCols"] = ".-filterCols";
+    arr["-curFilterCols"] = "-curFilterCols";
+  }
+  params = FormProcessor.getFormFilters(form, allFields, arr);
+  var formAction = form.elements['-$action'].value;
+  var baseUriO = document.getElementsByTagName('base');
+  var baseUri = "";
+  if (baseUriO) {
+    baseUri = baseUriO[0].href;
+    if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
+      baseUri += "/";
+  }
+  var url = baseUri + "l.html?" + params;
+  document.location.replace(url);
+  return stopEventPropagation(e);
+}
 
 function checkAll(formName) {
   var form = document.forms[formName];
