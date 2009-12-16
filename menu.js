@@ -4844,7 +4844,9 @@ function resetViewCols(e, tr) {
   var currentFormName = form.name;
 
   // form url based on parameters that were set
-  var formAction = form.elements['-$action'].value;
+  var elm = form.elements['-$action'];
+  
+  var formAction = (elm) ? elm.value : null;
   var allFields = true;
   if (formAction == "showproperties")
     allFields = false;
@@ -4866,7 +4868,6 @@ function resetViewCols(e, tr) {
     arr["-curFilterCols"] = "-curFilterCols";
   }
   params = FormProcessor.getFormFilters(form, allFields, arr);
-  var formAction = form.elements['-$action'].value;
   var baseUriO = document.getElementsByTagName('base');
   var baseUri = "";
   if (baseUriO) {
