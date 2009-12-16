@@ -596,7 +596,8 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .guestUser {  font-family: Verdana, Arial, Helvetica, sans-serif; color: lightblue; font-size: 8pt; font-weight: bold;}
 .user      {color:darkblue; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight:bold; text-decoration:none; font-size:8pt;}
 
-.group {background:#f8f4ef; FONT-WEIGHT: bold; FONT-SIZE: 11px; PADDING-BOTTOM: 3px; cursor: pointer; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}
+/*.group {background:#f8f4ef; FONT-WEIGHT: bold; FONT-SIZE: 16px; PADDING-BOTTOM: 3px; cursor: pointer; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}*/
+.group {background:#f8f4ef; FONT-WEIGHT: bold; white-space: nowrap;margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; vertical-align: middle;}
 
 /* Under menu line style (usually the same color as tabs */
 .line { background:#ACD2E2;font-size:16px; font-weight:bold;}
@@ -1746,7 +1747,7 @@ TD.toolbar {
   PADDING-RIGHT: 0px;	width: 10px;
 }
 
-.menuItemReset { margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px;  vertical-align: middle; }
+.menuItemReset { margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; FONT-WEIGHT: bold; vertical-align: middle; }
 .menuItemReset a { width: 95%; }
 
 .menuItemNoChoices {
