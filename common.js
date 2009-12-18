@@ -332,7 +332,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       else
         status = 400;
     }
-    
 //    Boost.log('got back on postrequest, status ' + status);
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
       frameLoaded[frameId] = true;
@@ -1164,7 +1163,7 @@ var ExecJS = {
   },
   
   // executes js code if refObjId is visible - [hidden tab].
-  _runRelativeCode : function(jsCode, refObjId) {
+  _runRelativeCode : function(jsCode, refObjId, isSecondAttempt) {
     if(document.all && document.readyState != "complete") {
 			if(this.isWaitingOnReady == false) {
 			  addEvent(document, 'readystatechange', this._runOnDocumentReady, false);
@@ -1175,9 +1174,9 @@ var ExecJS = {
 		else {
       if(this.isObjectTotallyVisible(refObjId))
         this.eval(jsCode);
-			else
+			else if (!isSecondAttempt) 
 				// expect that div should be shown shortly
-				setTimeout(jsCode, 1000);	
+				setTimeout(function() { ExecJS._runRelativeCode(jsCode, refObjId, true)}, 100);	
     }
   },
 
