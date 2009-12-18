@@ -2059,7 +2059,7 @@ var FormProcessor = {
 	// Touch UI ---------------
 	MIN_INPUT_WIDTH : 30,
   initForTouchUI : function(parent) {
-    // substitute checkboxes with own drawn ones.
+		// substitute checkboxes with own drawn ones.
     CheckButtonMgr.substitute(parent);
 
 	// 1. align <input>s
@@ -2074,20 +2074,27 @@ var FormProcessor = {
       // note: like fitSelectedOptionsWidth function.
       // one row
       var td = getAncestorByTagName(inputs[i], "td");
+			var nextTd = getNextSibling(td);
       var labelSpan = getPreviousSibling(inputs[i]);
-      
+		  
 			if (!labelSpan || labelSpan.className != "label")
 				labelSpan = getChildByClassName(td, "label");
 			
+
       // requred field
       var isFieldRequired = labelSpan && (labelSpan.getAttribute("required") != null);
       if (isFieldRequired && inputs[i].type != "password") {
-        FieldsWithEmptyValue.initField(inputs[i], "Required");
-      }
-			// if no next td then no options list, so insert "type" text.
-			else if (getNextSibling(td) == null && inputs[i].type != "password")
+		  	FieldsWithEmptyValue.initField(inputs[i], "Required");
+		  }
+	  // if no next td then no options list, so insert "type" text.
+			else if (nextTd == null && inputs[i].type != "password")
 				FieldsWithEmptyValue.initField(inputs[i], "type");
- 
+
+			// noArrowCorrection - hack?
+			var noArrowCorrection = 0;
+			if (nextTd == null)
+				noArrowCorrection = 140;
+			
       // there is possible symbol like $, %
       var symbolSpan = getChildByClassName(td, "xs");
       var symbolWidth = 0;
@@ -2122,9 +2129,9 @@ var FormProcessor = {
       var selectWidth = 0;
       if (select)
         selectWidth = select.offsetWidth + 10;
-      
+ 
       // calculate <input> width
-	    width = td.clientWidth - inputs[i].offsetLeft - symbolWidth - selectWidth - 7;
+	    width = td.clientWidth - inputs[i].offsetLeft - symbolWidth - selectWidth - noArrowCorrection - 7;
       
       if (width < this.MIN_INPUT_WIDTH || msgElm != null) {
         inputs[i].style.clear = "left"; // because webkit
@@ -3843,12 +3850,18 @@ var Filter = {
   _initFilter : function(filterDiv) {
 		var filterHeader = getChildByClassName(filterDiv, "header");
 		
+		var textEntry = getChildById(filterDiv, 'text_entry');
+		FieldsWithEmptyValue.initField(textEntry, 'select')
+		
 		// set event handlers for toobar buttons
-		var submitBtn = getChildByAttribute(filterHeader, "name", "submitFilter");
+		var submitBtn = getChildById(filterHeader, "submitFilter");
 		submitBtn.onclick = this.submit;
 
-		var clearFilterBtn = getChildByAttribute(filterHeader, "name", "clear");
+		var clearFilterBtn = getChildById(filterHeader, "clear");
 		clearFilterBtn.onclick = this.submitClearFilter;
+		
+		var closeFilterBtn = getChildById(filterHeader, "close");
+		closeFilterBtn.onclick = this.hide;
 
     // init filter content
     var paramsTable = getChildByClassName(filterDiv, "rounded_rect_tbl");
@@ -4028,24 +4041,25 @@ var Filter = {
   },
   
   hide : function() {
+		var $t = Filter;
 	 	if (!Browser.mobile) { // desktop
-			var url = this.currentFilterUrl;
-			if (this.filtersArr[url]) {
-				this.filtersArr[url].style.display = "none";
+			var url = $t.currentFilterUrl;
+			if ($t.filtersArr[url]) {
+				$t.filtersArr[url].style.display = "none";
 		  }
 			return;
 		}
 	 	
 		// mobile
-		var url = this.retrieveFilterUrl();
-    if (this.filtersArr[url] &&
-       getAncestorByTagName(this.filtersArr[url], "body")) {
-      var parent = this.filtersArr[url].parentNode;
+		var url = $t.retrieveFilterUrl();
+    if ($t.filtersArr[url] &&
+       getAncestorByTagName($t.filtersArr[url], "body")) {
+      var parent = $t.filtersArr[url].parentNode;
       
-			this.handleFilterState(false);
+			$t.handleFilterState(false);
       // remove filter from DOM
-			this.filtersArr[url] = parent.removeChild(this.filtersArr[url]);
-			this.filtersArr[url].style.display = "none";
+			$t.filtersArr[url] = parent.removeChild($t.filtersArr[url]);
+			$t.filtersArr[url].style.display = "none";
     }
   },
   
@@ -4274,6 +4288,9 @@ var DataEntry = {
 		// insert in DOM
  		div = document.body.appendChild(div);
 		setDivVisible(event, div, null, hotspot, 0, 0, null);
+
+		var textEntry = getChildById(filterDiv, 'text_entry');
+		FieldsWithEmptyValue.initField(textEntry, 'select')
 
 		FormProcessor.initForms(div);
 		ExecJS.runDivCode(div);
@@ -4845,7 +4862,7 @@ function resetViewCols(e, tr) {
 
   // form url based on parameters that were set
   var elm = form.elements['-$action'];
-  
+
   var formAction = (elm) ? elm.value : null;
   var allFields = true;
   if (formAction == "showproperties")
@@ -6826,7 +6843,7 @@ var FieldsWithEmptyValue = {
   initField : function(field, emptyValue, forceInit) {
 		if(!field)
       return;
-    var fieldId;
+	  var fieldId;
     // field parameter is id
     if (typeof field == 'string') {
       fieldId = field;
@@ -6987,8 +7004,7 @@ var FieldsWithEmptyValue = {
 	}
 }
 
-
-function hideShowDivOnClick(divId, imgId){// , plusImg, minusImg) {
+function hideShowDivOnClick(divId, imgId){
   div = document.getElementById(divId);
   img = document.getElementById(imgId);
   if (div.style.display == 'none') {
