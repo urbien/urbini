@@ -3842,8 +3842,6 @@ var Filter = {
   loadingPosition : null, // used for desktop
   currentFilterUrl : null,
 	
- // _hdnDiv : null, // used to convert html to DOM object
-  //_initFilterHtml : null,
 	filterBackup : new Array(),
 
   // filter can have several
@@ -3917,9 +3915,9 @@ var Filter = {
 
     // 1. filter for that type already loaded
     if (this.filtersArr[filterUrl]) {
+			this.handleFilterState(true);
 			// mobile has several filters simultaneously
 			if (Browser.mobile) {
-		  	this.handleFilterState(true);
 		  	this.filtersArr[filterUrl] = document.body.appendChild(this.filtersArr[filterUrl]);
 		  }
 			
@@ -3952,7 +3950,7 @@ var Filter = {
 			else
 				return; // nothing to resore	
 		}
-		
+
 		// 1. filter parameters
 		var paramsTable = getChildByClassName(this.filtersArr[this.currentFilterUrl], "rounded_rect_tbl");
 		var idx = 0;
@@ -4042,10 +4040,12 @@ var Filter = {
   
   hide : function() {
 		var $t = Filter;
+
 	 	if (!Browser.mobile) { // desktop
 			var url = $t.currentFilterUrl;
 			if ($t.filtersArr[url]) {
 				$t.filtersArr[url].style.display = "none";
+				$t.handleFilterState(false);
 		  }
 			return;
 		}
@@ -4056,10 +4056,10 @@ var Filter = {
        getAncestorByTagName($t.filtersArr[url], "body")) {
       var parent = $t.filtersArr[url].parentNode;
       
-			$t.handleFilterState(false);
       // remove filter from DOM
 			$t.filtersArr[url] = parent.removeChild($t.filtersArr[url]);
 			$t.filtersArr[url].style.display = "none";
+			$t.handleFilterState(false);
     }
   },
   
@@ -4078,16 +4078,18 @@ var Filter = {
     var url = window.location.href;
     if (Browser.mobile)
       url = Mobile.getCurrentUrl();
-    
+   
     // url contains '-cat=on' '-q=' or parameter starts from "." then filtering exists
     // and no 'clear=Filter'
     if ((url.indexOf('-cat=on') != -1 || url.indexOf('-q=') != -1 ||
 				url.indexOf('&.') != -1) &&	url.indexOf('clear=Filter') == -1) {
 			BrowserDialog.setCallbackArguments(e, btn);
 			BrowserDialog.confirm("To clear filter?", $t.submitClearFilterCallback);
-    }
-		else
-			$t.hide();	
+		}
+		else {
+			$t.hide();
+		}
+		
   },
   
 	submitClearFilterCallback : function (toClear, e, btn) {
@@ -6874,6 +6876,9 @@ var FieldsWithEmptyValue = {
 
 		if (field.value.length == 0 || field.value == emptyValue)
   		this.setEmpty(field);
+	
+	////////////////////////////////////////
+	//	fitToolbarFieldWidth(field);	
   },
   
 	isEmptyValue : function(field) {
@@ -7001,6 +7006,25 @@ var FieldsWithEmptyValue = {
 	hasClearTextCtrl : function(field) {
 		var className = field.parentNode.className;
 		return (className == "iphone_field" || className == "iphone_search")
+	}
+}
+
+// there are several utility fields in "panel_block" toolbar
+function fitToolbarFieldWidth(field) {
+	var toolbar = getAncestorByClassName(field, "header");
+	if (!toolbar)
+		return;
+
+	var toolbarWidth = toolbar.clientWidth;
+
+	// desktop
+	if (!Browser.mobile) {
+		if (field.id == "parameter_selector")
+			field.style.width = Math.min(200, toolbarWidth - 150);
+	}
+	// mobile
+	else {
+		
 	}
 }
 
