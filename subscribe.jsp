@@ -1,4 +1,5 @@
-<div>
+<div width="70%">
+<panelBlock>
 <subscribeNote/>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 <tr>
@@ -14,4 +15,5 @@
   </center>
 </form>
 </td></tr></table>
+</panelBlock>
 </div>
