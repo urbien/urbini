@@ -1991,7 +1991,7 @@ div .panel_block, td .panel_block {
 }
 
 .panel_block .header { float: left; padding: 5px 0px 5px 0px; width: 100%; text-align: center; background: #6e84a2 url(../images/iPhoneToolbar.png) repeat-x; border-bottom: 1px solid #2d3642; }
-.panel_block .header td { width: 100%; }
+/*.panel_block .header td { width: 100%; }*/
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
 .panel_block .header #item_selector { width: 221px; }
 .panel_block .header .wide_cell { width: 100%; text-align: center; }
@@ -2102,9 +2102,9 @@ input[type=checkbox] { display: none; }
 
 /** iPhone field **/
 .iphone_field { /*float: left;*/ margin: 0px;  }
-.iphone_field .left, .iphone_field .right, .iphone_field input { height: 30px;  float: left; background: url(../images/skin/iphone/rounded_field.png); margin: 0px; border: 0px; }
-.iphone_field .left { width: 23px;  background-position: top left; cursor: pointer; }
-.iphone_field .left img { margin: 6px 0px 0px 2px; visibility : hidden; }
+.iphone_field .left, .iphone_field .right, .iphone_field input { height: 30px;  /*float: left;*/ background: url(../images/skin/iphone/rounded_field.png); margin: 0px; border: 0px; }
+.iphone_field .left { width: 23px;  background-position: top left; }
+.iphone_field .left img { margin-left: 3px; visibility : hidden; cursor: pointer; }
 .iphone_field .right { width: 8px; background-position: top right; }
 
 .iphone_field input { padding: 5px 0px 0px 0px; background-position: top center; font: bold 17px Helvetica; border: none; }
@@ -2119,7 +2119,7 @@ input[type=checkbox] { display: none; }
 .iphone_search input { padding: 5px 0px 0px 0px; background-position: top center; font: bold 17px Helvetica; border: none; }
 
 /*.toolbar_icons_set { width: 25; height: 40; background-image: url(../images/skin/iphone/toolbar_icons_set.png) }*/
-.icon_btn { margin: 0px 2px 0px 2px; padding: 0; cursor: pointer; float: left; width: 30px; height: 30px; border: none;}
+.icon_btn { width: 30px; height: 30px; cursor: pointer; /*margin: 0px 2px 0px 2px; padding: 0; float: left; border: none;*/ }
 .right { float: right; /*margin-right: 4px;*/ }
 
 /** shadow **/

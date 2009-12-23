@@ -180,8 +180,8 @@ div {font-family:Helvetica; font-size:10pt;}
 }
 
 
-tr {height: 35px;}
-tr.dark  {background-color:#eeeeee; height: 35px;}
+tr { /*height: 35px;*/ }
+tr.dark  {background-color:#eeeeee; /*height: 35px;*/ }
 
 
 .ul {
