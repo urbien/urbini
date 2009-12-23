@@ -2092,8 +2092,8 @@ var FormProcessor = {
 
 			// noArrowCorrection - hack?
 			var noArrowCorrection = 0;
-			if (nextTd == null)
-				noArrowCorrection = 140;
+		//	if (nextTd == null)
+		//		noArrowCorrection = 140;
 			
       // there is possible symbol like $, %
       var symbolSpan = getChildByClassName(td, "xs");
@@ -3915,10 +3915,10 @@ var Filter = {
 
     // 1. filter for that type already loaded
     if (this.filtersArr[filterUrl]) {
-			this.handleFilterState(true);
 			// mobile has several filters simultaneously
 			if (Browser.mobile) {
 		  	this.filtersArr[filterUrl] = document.body.appendChild(this.filtersArr[filterUrl]);
+				this.handleFilterState(true);
 		  }
 			
 			setDivVisible(null, this.filtersArr[filterUrl], null, null, 0, 0, null);
@@ -3943,6 +3943,7 @@ var Filter = {
   },
 
 	// saves / restores filter state before user interaction
+	// Note: for mobile filter resets on cross icon as well
 	handleFilterState : function(toSave) {
 		if (this.filterBackup == null) {
 			if (toSave)
@@ -3980,7 +3981,7 @@ var Filter = {
 		  	FieldsWithEmptyValue.setValue(searchField, this.filterBackup["-q"]);
 		}
 		
-		if (!toSave) // reset after restoring
+		if (!toSave && Browser.mobile) // reset after restoring
 			this.filterBackup = null;
 	},
 	
@@ -4038,6 +4039,7 @@ var Filter = {
     return filterDiv;
   },
   
+	// reset filter for mobile
   hide : function() {
 		var $t = Filter;
 
@@ -4045,7 +4047,6 @@ var Filter = {
 			var url = $t.currentFilterUrl;
 			if ($t.filtersArr[url]) {
 				$t.filtersArr[url].style.display = "none";
-				$t.handleFilterState(false);
 		  }
 			return;
 		}
@@ -4088,6 +4089,8 @@ var Filter = {
 		}
 		else {
 			$t.hide();
+			if (!Browser.mobile)
+				$t.handleFilterState(false);
 		}
 		
   },
@@ -4122,9 +4125,6 @@ var Filter = {
     // Call the onsubmit event handler directly
     var url = FormProcessor.onSubmitProcess(e, filterForm);
     
-		// hide filter on desktop and remove it from document on mobile
-		this.hide();
-		
 		if (Browser.mobile) {
       // hack: with -inner=y parameter, the server does not process request
       url = url.replace("&-inner=y", "");
@@ -4132,6 +4132,10 @@ var Filter = {
     }
     else 
       filterForm.submit();
+		
+		// hide (and reset for mobile) filter
+		this.hide();
+	
   },
   
   // simulates 
@@ -4291,7 +4295,11 @@ var DataEntry = {
  		div = document.body.appendChild(div);
 		setDivVisible(event, div, null, hotspot, 0, 0, null);
 
-		var textEntry = getChildById(filterDiv, 'text_entry');
+
+		var itemSelector = getChildById(div, 'item_selector');
+		FieldsWithEmptyValue.initField(itemSelector, 'select')
+
+		var textEntry = getChildById(div, 'text_entry');
 		FieldsWithEmptyValue.initField(textEntry, 'select')
 
 		FormProcessor.initForms(div);
@@ -4344,9 +4352,8 @@ var DataEntry = {
     }
   },
 	
-  submit : function(e, btn) {
-		var form = btn.form;
-		
+  submit : function(e, submitIcon) {
+		var form = getAncestorByTagName(submitIcon, "form"); //btn.form;
 		// wasSubmitted flag prevents form submission twice but
 		// 1. mobile stores forms 2. data entry dialog closed on submissoin
 		if (Browser.mobile)
@@ -6846,6 +6853,7 @@ var FieldsWithEmptyValue = {
 		if(!field)
       return;
 	  var fieldId;
+
     // field parameter is id
     if (typeof field == 'string') {
       fieldId = field;
@@ -6877,8 +6885,6 @@ var FieldsWithEmptyValue = {
 		if (field.value.length == 0 || field.value == emptyValue)
   		this.setEmpty(field);
 	
-	////////////////////////////////////////
-	//	fitToolbarFieldWidth(field);	
   },
   
 	isEmptyValue : function(field) {
@@ -6985,14 +6991,14 @@ var FieldsWithEmptyValue = {
 	},
 	updateClearControl : function(field) {
 		var $t = FieldsWithEmptyValue;
-		var clearCtrl = getPreviousSibling(field);
+		var clearCtrl = getPreviousSibling(field.parentNode);
 		var img = clearCtrl.getElementsByTagName("img")[0];
 		var value = $t.getValue(field);
 		img.style.visibility = (value.length == 0) ? "hidden" : "visible";
 	},
 	// "cross" icon inside a field - clears text field content
 	onClickClearTextCtrl : function (crossDiv, callback) {
-	  var textField = getNextSibling(crossDiv);
+	  var textField = crossDiv.parentNode.parentNode.getElementsByTagName("input")[0];
 	  textField.value='';
 		crossDiv.firstChild.style.visibility = "hidden";
 	  // FF3 and higher has a problem while transform (CSS) sliding
@@ -7004,27 +7010,8 @@ var FieldsWithEmptyValue = {
 	},
 	
 	hasClearTextCtrl : function(field) {
-		var className = field.parentNode.className;
+		var className = field.className;
 		return (className == "iphone_field" || className == "iphone_search")
-	}
-}
-
-// there are several utility fields in "panel_block" toolbar
-function fitToolbarFieldWidth(field) {
-	var toolbar = getAncestorByClassName(field, "header");
-	if (!toolbar)
-		return;
-
-	var toolbarWidth = toolbar.clientWidth;
-
-	// desktop
-	if (!Browser.mobile) {
-		if (field.id == "parameter_selector")
-			field.style.width = Math.min(200, toolbarWidth - 150);
-	}
-	// mobile
-	else {
-		
 	}
 }
 
