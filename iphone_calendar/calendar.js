@@ -15,21 +15,26 @@ function startCalendar(parentDiv, callback, fromInp, toInp) {
       if (isCalendarNavigation == false) {
         html +=
         "<tr><td class=\"header\">" +
-
-				"<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/back_arrow.png);\" onclick=\"ListBoxesHandler.onBackBtn(1);\" class=\"icon_btn\"/>" +
-				"<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/clear.png);\" onclick=\"DatePicker.onDateClear();\" class=\"icon_btn right\"/>" +
-				"<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/list_bullets.png);\" onclick=\"ListBoxesHandler.onDatesList();\" class=\"icon_btn right\"/>" +
-
-        "</td></tr>" +
+				"<table><tr>" +
+				"<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onBackBtn(1);\"><img src=\"../images/skin/iphone/back_arrow.png\" /></td>" +
+				"<td class=\"icon_btn\" onclick=\"DatePicker.onDateClear();\"> <img src=\"../images/skin/iphone/clear.png\" /></td>" +
+				"<td width=\"100%\"></td>" +
+				"<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onDatesList();\"> <img src=\"../images/skin/iphone/list_bullets.png\" /></td>" +
+				"</tr></table>" +
+        
+				"</td></tr>" +
 
         // TR 2nd period header ---
         "<tr><td class=\"header\">" +
-          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/back_arrow.png);\" class=\"icon_btn\" value=\"\" onclick=\"PeriodPicker.onDoneBtn();\"/>" +   
-			    "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/clear.png);\" class=\"icon_btn right\" value=\"\" onclick=\"Filter.onPeriodReset();\"/>" +		
-          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/list_bullets.png);\" class=\"icon_btn right\" value=\"\" onclick=\"ListBoxesHandler.onDatesList();\"/>" +					
-          "<input type=\"button\" style=\"background: transparent url(../images/skin/iphone/to.png);\" class=\"icon_btn right\" value=\"\" onclick=\"PeriodPicker.onToBtn(this);\"/>" +
-					"<input type=\"button\" style=\"background: " + PeriodPicker.BLUE_BG + " url(../images/skin/iphone/from.png);\" class=\"icon_btn right\" value=\"\" onclick=\"PeriodPicker.onFromBtn(this);\"/>" +
-        "</td></tr>";
+					"<table><tr>" +
+					"<td class=\"icon_btn\" onclick=\"PeriodPicker.onDoneBtn();\"><img src=\"../images/skin/iphone/back_arrow.png\" /></td>" +
+					"<td class=\"icon_btn\" onclick=\"Filter.onPeriodReset();\"><img src=\"../images/skin/iphone/clear.png\" /></td>" +					
+					"<td width=\"100%\"></td>" +
+					"<td class=\"icon_btn\" onclick=\"PeriodPicker.onFromBtn(this);\" style=\"background-color: " + PeriodPicker.BLUE_BG + "\"><img src=\"../images/skin/iphone/from.png\" /></td>" +
+					"<td class=\"icon_btn\" onclick=\"PeriodPicker.onToBtn(this);\"><img src=\"../images/skin/iphone/to.png\" /></td>" +					
+					"<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onDatesList();\"><img src=\"../images/skin/iphone/list_bullets.png\" /></td>" +
+					"</tr></table>" +
+				"</td></tr>";
       }
       
     html +=
@@ -40,8 +45,9 @@ function startCalendar(parentDiv, callback, fromInp, toInp) {
   }
   
   var calCont = getChildById(parentDiv, "calendar_container");
-  
-  var trs = parentDiv.getElementsByTagName("tr")
+
+	var table = parentDiv.getElementsByTagName("table")[0];  
+  var trs = table.rows;
   if (!toInp) {
     if (!isCalendarNavigation) {
       trs[0].style.display = "";
