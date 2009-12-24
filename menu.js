@@ -3703,8 +3703,23 @@ var SlideSwaper = {
   STEPS_AMT : 10,
   TIMEOUT : 20, // timeout between steps. On FF3 can not be applied too short timeout.
   DISTANCE : 20, // pecents of tray width //320,
-  BEZIER_POINTS : [[0.0, 0.0], [0.42, 0], [0.58, 1], [1.0, 1.0]],
-  offset : 0,
+  
+	// ease-in-out // currently used for WebKit in common.css
+	BEZIER_POINTS : [[0.0, 0.0], [0.42, 0.0], [0.58, 1.0], [1.0, 1.0]],
+	
+	// default
+  // BEZIER_POINTS : [[0.0, 0.0], [0.25, 0.1], [0.25, 1], [1.0, 1.0]],
+  
+	// ease-in
+	// BEZIER_POINTS : [[0.0, 0.0], [0.42, 0], [1, 1], [1.0, 1.0]],
+	
+	// ease-out
+	// BEZIER_POINTS : [[0.0, 0.0], [0.0, 0.0], [0.58, 1.0], [1.0, 1.0]],
+	
+	// cubic-bezier
+	// BEZIER_POINTS : [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]],
+
+	offset : 0,
   
   curState : 0, // -1 means moveForward; -2 means moveForward twice.
   tray : null,
@@ -3778,8 +3793,7 @@ var SlideSwaper = {
     else
       $t.tray.style.left = left * 5 + "%"; // tray is 5 width of a panel
 
-    
-    
+
     if ($t.offset <= 1.0)
       setTimeout($t._moveStep, $t.TIMEOUT);
     else { // finish
