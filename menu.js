@@ -1763,7 +1763,7 @@ var FormProcessor = {
 
     var params = "submit=y"; // HACK: since target.type return the value of &type
                               // instead of an input field's type property
-    params += "&-inner=y"; // params for XHR means inner/dialog.
+	params += "&-inner=y"; // params for XHR means inner/dialog.
    
 
 		var isAjaxReq = (isFormInDialog || Browser.mobile);
@@ -1861,7 +1861,11 @@ var FormProcessor = {
     }
  		// 2. form in dialog: send via XHR
    else if (isFormInDialog)  {
-			postRequest(e, url, params, pane2, getTargetElement(e), showDialog);
+	 		var dlg = getParenDialog(form);
+			// if "dialog" inside not body then it is "on page"
+			if (dlg.parentNode.tagName.toLowerCase() != 'body')
+				params += "&on_page=y"
+			postRequest(e, url, params, dlg, getTargetElement(e), showDialog);
       return stopEventPropagation(e);
     }
 		// 3. send form
