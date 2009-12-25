@@ -10019,11 +10019,13 @@ var CheckButtonMgr = {
     }
   },
   
-  onClick : function() {
+  onClick : function(event) {
     var $t = CheckButtonMgr;
     var toggleBtn = this; // event handler takes target as this
     var checkbox = toggleBtn.previousSibling;//$t.getCorrespondingCheckbox(toggleBtn);
-    $t._switchState(toggleBtn, checkbox)
+    $t._switchState(toggleBtn, checkbox);
+		
+		stopEventPropagation(event);
   },
 /*  
   getCorrespondingCheckbox : function(toggleBtn) {
