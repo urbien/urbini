@@ -21,6 +21,7 @@ function addEvent(obj, evType, fn, useCapture) {
   }
 }
 
+
 /**
  * Popup system. Supports menu, dynamicaly generated listboxes, tooltips.
  * Supports row selection (one or many) in menu, listbox. Support stacking up
@@ -9942,6 +9943,12 @@ var TabSwap = {
     this.update();
   }
 }
+
+/* table of contents does not work otherwise */
+function fixAnchor(anchor) {
+  document.location.hash = anchor.href.split('#')[1];
+  return false;
+ }
 
 function showMobileTab(e, hideDivId, unhideDivId) {
   e = getDocumentEvent(e);
