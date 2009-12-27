@@ -26,7 +26,7 @@
  	    <div id="resourceList_div">
  	      <siteResourceList uri="l.html?-$action=searchLocal&amp;ticket=-$this&amp;type=http://www.hudsonfog.com/voc/hospitality/spa/Treatment&amp;-schedule=y&amp;-addItems=y&amp;cancelled=false&amp;-noRedirect=y"/>
  	    </div>
-      <iframe id="resourceList" name="resourceList" style="display:none;" scrolling="no" frameborder="0" src="about:blank"> </iframe>
+      <iframe id="resourceList" name="resourceList" title="resourceList" style="display:none;" scrolling="no" frameborder="0" src="about:blank"> </iframe>
       </td>
       </tr>
     </table>
