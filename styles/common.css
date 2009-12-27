@@ -442,6 +442,8 @@ span.xl1 {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;color:
 span.ftsi {font-family:sans-serif, arial; font-size:10pt; font-weight:bold; font-style:italic }
 span.rxl {color:red; font-family:sans-serif, arial; font-weight:bold; font-size:16pt;}
 
+.ftsF { text-align: right; padding-right:10px;}
+
 /* Full text search links */
 span.ftsl {font-family:sans-serif, arial; font-size:1.4em;} 
 
@@ -1600,6 +1602,7 @@ div.contentsRL {
 .iinp_move { cursor: move; }
 .iinp_btn { cursor: pointer; }
 .liinp { width:32px; height:32px; border:0px; vertical-align:middle }
+.finp { width:32px; height:32px; padding-right:2px;border:0px; vertical-align:middle }
 .iiphone { width:48px; height:48px; border:0px; vertical-align:middle }
 .icursor {cursor: pointer; /*width:16px; height:16px;*/ border:0px; vertical-align:middle}
 .ixlcursor {cursor: pointer;width:48px; height:48px; border:0px; vertical-align:middle}
