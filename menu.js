@@ -21,7 +21,6 @@ function addEvent(obj, evType, fn, useCapture) {
   }
 }
 
-
 /**
  * Popup system. Supports menu, dynamicaly generated listboxes, tooltips.
  * Supports row selection (one or many) in menu, listbox. Support stacking up
@@ -6596,7 +6595,13 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     if (z != null && z != '')
       zIndex = z;
   }
-  div.style.zIndex = zIndex + 2;
+	
+	zIndex += 2;
+  
+	if (div.id == "system_tooltip") // tooltip should be higher
+		zIndex++;
+	
+	div.style.zIndex = zIndex;
 
   if (Browser.lt_ie7) {
     // for listboxes in Dialog - makes iframe under a listbox.
@@ -6767,12 +6772,12 @@ function loadingCueStart(e, hotspot) {
     return;
   var ttDiv = document.getElementById("system_tooltip");
   if (ttDiv) {
-  var ttIframe = document.getElementById("tooltipIframe");
-  var loadingMsg = "<div style='vertical-align: middle; font-size: 14px; color:#000000; background-color:rgb(255,252,184);'><b> loading . . . </b></div>";
-
-  advancedTooltip.hideOptionsBtn();
-  Popup.open(e, ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
-}
+	  var ttIframe = document.getElementById("tooltipIframe");
+	  var loadingMsg = "<div style='vertical-align: middle; font-size: 14px; color:#000000; background-color:rgb(255,252,184);'><b> loading . . . </b></div>";
+	
+	  advancedTooltip.hideOptionsBtn();
+	  Popup.open(e, ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
+	}
 }
 
 function loadingCueFinish() {
