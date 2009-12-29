@@ -18,7 +18,7 @@
 		  <tablePropertyList/>
 		  <siteResourceList/>
 		  <pagingResources/>
-		  
+		  <menu toolbar="file" flat="y"/>
 		  <filterUrl />
 	
 	  </div>
