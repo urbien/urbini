@@ -10,7 +10,7 @@
 	       </a>
        </td>
        <td width="85%">
-	        <table><tr><td><dashboardMenus/></td><td class="dashboard_btn current"><menu toolbar="calendarAndChart" /></td></tr></table>
+	        <table><tr><td><dashboardMenus/></td><td class="dashboard_btn"><menu toolbar="calendarAndChart" /></td></tr></table>
        </td>
        <td align="right" class="toprightpad">
 	        <shoppingCart/>
