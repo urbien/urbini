@@ -199,7 +199,7 @@ Browser.chrome    = (agent.indexOf("Chrome")) != -1 ? true : false;
 // http://developer.apple.com/internet/webcontent/xmlhttpreq.html
 var lastRequest;
 function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
-  if (url == null)
+	if (url == null)
     throw new Error('postRequest url parameter is null');
   if (url == 'about:blank')
     throw new Error('postRequest url parameter is: ' + url);
@@ -1685,7 +1685,7 @@ function getBaseUrl() {
 }
 
 // returns 'pane2' or 'panel_block'
-function getParenDialog(obj) {
+function getParentDialog(obj) {
 	return getAncestorByClassName(obj, 'panel_block') || getAncestorById(obj, 'pane2');
 }
 

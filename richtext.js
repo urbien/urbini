@@ -168,7 +168,7 @@ var RteEngine = {
 	launchStylePopup : function(btnObj, callback) {
 		if(this.stylePopup == null)
 			this.createStylePopup();
-		var parentDlg = getParenDialog(btnObj.div);
+		var parentDlg = getParentDialog(btnObj.div);
 		this.stylePopup.show(btnObj, 'left', callback, parentDlg);
 		return this.stylePopup.div;
 	},
@@ -178,45 +178,45 @@ var RteEngine = {
 		}
 		if(this.fontPopup == null)
 			this.createFontPopup();
-		var parentDlg = getParenDialog(btnObj.div);
+		var parentDlg = getParentDialog(btnObj.div);
 		this.fontPopup.show(btnObj, 'left', callback, parentDlg);
 		return this.fontPopup.div;
 	},
 	_launchFewFontPopup : function(btnObj, callback) {
 		if(this.fewFontPopup == null)
 			this.createFewFontPopup();
-		var parentDlg = getParenDialog(btnObj.div);
+		var parentDlg = getParentDialog(btnObj.div);
 		this.fewFontPopup.show(btnObj, 'left', callback, parentDlg);
 		return this.fewFontPopup.div;
 	},
 	launchSizePopup : function(btnObj, callback) {
 		if(this.sizePopup == null)
 			this.createSizePopup();
-		var parentDlg = getParenDialog(btnObj.div);
+		var parentDlg = getParentDialog(btnObj.div);
 		this.sizePopup.show(btnObj, 'left', callback, parentDlg);
 		return this.sizePopup.div;
 	},
 	launchSmilePopup : function(btnObj, callback) {
 		if(this.smilePopup == null)
 			this.createSmilePopup();
-		var parentDlg = getParenDialog(btnObj.div);
+		var parentDlg = getParentDialog(btnObj.div);
 		this.smilePopup.show(btnObj, 'right', callback, parentDlg);
 		return this.smilePopup.div;
 	},
 	launchTextColorPopup : function(btnObj, callback, chosenTextClr) {
-		var parentDlg = getParenDialog(btnObj.div);
+		var parentDlg = getParentDialog(btnObj.div);
 		PalettePopup.show(btnObj, 'right', callback, parentDlg, null, chosenTextClr);
 		return PalettePopup.div;
 	},
 	launchBgColorPopup : function(btnObj, callback, chosenBgClr) {
-		var parentDlg = getParenDialog(btnObj.div);
+		var parentDlg = getParentDialog(btnObj.div);
 		PalettePopup.show(btnObj, 'right', callback, parentDlg, null, chosenBgClr);
 		return PalettePopup.div;
 	},
 	launchLinkPopup : function(btnObj, callback, cancelCallback, href) {
 		if(this.linkPopup == null)
 			this.createLinkPopup();
-		var parentDlg = getParenDialog(btnObj.div);
+		var parentDlg = getParentDialog(btnObj.div);
 		
 		this.linkPopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		var div = this.linkPopup.div;
@@ -237,7 +237,7 @@ var RteEngine = {
 	  
 	  var form = this.imagePopup.getForm();
 	  ImageUploader.putRteIdInForm(form, rteId);		
-		var parentDlg = getParenDialog(btnObj.div);
+		var parentDlg = getParentDialog(btnObj.div);
 		this.imagePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.imagePopup.div;
 	},
@@ -258,7 +258,7 @@ var RteEngine = {
 
     var rteObj = this.getRteById(rteId);
     var rteIframe = rteObj.getIframe();
- 		var parentDlg = getParenDialog(btnObj.div);
+ 		var parentDlg = getParentDialog(btnObj.div);
     this.imagePastePopup.show(rteIframe, "inside", null, parentDlg, this.onCanceledUploadPastedImage);
 		
 		return this.imagePastePopup.div;
@@ -266,7 +266,7 @@ var RteEngine = {
 	launchTablePopup : function(btnObj, callback, cancelCallback) {
 		if(this.tablePopup == null)
 			this.createTablePopup();
-		var parentDlg = getParenDialog(btnObj.div);
+		var parentDlg = getParentDialog(btnObj.div);
 		this.tablePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.tablePopup.div;
 	},
