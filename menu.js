@@ -1739,7 +1739,7 @@ var FormProcessor = {
       }
     }
 
-		var dialog = getParenDialog(form);
+		var dialog = getParentDialog(form);
 		var isFormInDialog = dialog != null;
 		// filter is sent NOT as XHR to get responce into page
 		if (dialog && dialog.id == 'common_filter')
@@ -1861,12 +1861,17 @@ var FormProcessor = {
     }
  		// 2. form in dialog: send via XHR
    else if (isFormInDialog)  {
-	 		var dlg = getParenDialog(form);
+	 		var dlg = getParentDialog(form);
 			// if "dialog" inside not body then it is "on page"
 			if (dlg.parentNode.tagName.toLowerCase() != 'body')
 				params += "&on_page=y"
-			postRequest(e, url, params, dlg, getTargetElement(e), showDialog);
-      return stopEventPropagation(e);
+			
+			if (dlg.id == 'pane2')	
+				postRequest(e, url, params, dlg, getTargetElement(e), showDialog);
+			else
+				postRequest(e, url, params, dlg, getTargetElement(e), DataEntry.onDataEntryLoaded);	
+      
+			return stopEventPropagation(e);
     }
 		// 3. send form
     else {
@@ -3863,7 +3868,7 @@ var Filter = {
 	filterBackup : new Array(),
 
   // filter can have several
-  _initFilter : function(filterDiv) {
+  initFilter : function(filterDiv) {
 		var filterHeader = getChildByClassName(filterDiv, "header");
 		
 		var textEntry = getChildById(filterDiv, 'text_entry');
@@ -4018,7 +4023,7 @@ var Filter = {
 
 		ExecJS.runDivCode(loadedFilter);
     
-    var initialized = $t._initFilter($t.filtersArr[$t.loadingUrl]);
+    var initialized = $t.initFilter($t.filtersArr[$t.loadingUrl]);
 		if (!initialized && Browser.mobile) {
 			 alert("problem to initialize filter"
 				+ "<br/>possible came login page instead the filter"
@@ -4294,9 +4299,12 @@ var DataEntry = {
 		}
 	},
 
-	onDataEntryLoaded : function(event, div, hotspot, html, onDataError) {
+	onDataEntryLoaded : function(event, div, hotspot, html, url, onDataError) {
 		var $t = DataEntry;
 
+		if (!$t.loadingUrl) // possible on data entry rejected by the server
+			$t.loadingUrl = url; 
+			
 		// server returned previously submitted data dialog with errors of data entry
 		if (typeof onDataError != 'boolean' || onDataError == false) {
 			$t.currentUrl = $t.loadingUrl;
@@ -4305,14 +4313,17 @@ var DataEntry = {
 		else
 			$t.onDataError = true;
 
-		var div = getDomObjectFromHtml(html, "className", "panel_block");
+		if (div) // div provided if it was called on error in entered data
+			div.innerHTML = html;
+		else { // new loaded panel_block
+			div = getDomObjectFromHtml(html, "className", "panel_block");
+			// insert in DOM
+			div = document.body.appendChild(div);
+			setDivVisible(event, div, null, hotspot, 0, 0, null);
+		}
+
 		if ($t.isMkResource($t.currentUrl))
 			$t.doStateOnMkResource(div, true);
-
-		// insert in DOM
- 		div = document.body.appendChild(div);
-		setDivVisible(event, div, null, hotspot, 0, 0, null);
-
 
 		var itemSelector = getChildById(div, 'item_selector');
 		FieldsWithEmptyValue.initField(itemSelector, 'select')
@@ -4348,7 +4359,7 @@ var DataEntry = {
 			this.doStateOnMkResource(this.dataEntryArr[key], false);
 		
 		if (this.onDataError) {
-			delete this.dataEntryArr[key]; // enforce to reload data enry without error message.
+			delete this.dataEntryArr[key]; // enforce to reload data entry without error message.
 			this.onDataError  = false;
 		}
 	},
@@ -6828,41 +6839,72 @@ function onFormFieldChange(fieldProp, fieldRef, oldValue) {
 
 
 var SearchField = {
-  field : null,
-  
-  _init : function(field) {
+	 field : null,
+	 arrowDiv : null,
+   isFilterOpened : false,
+   
+	 _init : function(field, arrowDiv) {
     this.field = field;
+		this.arrowDiv = arrowDiv;
     addEvent(document.body, "click", this.onBlur, true);
-
   },
-  
-  onFocus : function(field) {
-    if (this.field == null)
-      this._init(field);
-      
-    var x = findPosX(field);
-    var y = findPosY(field) + field.offsetHeight + 5;
-    Filter.show(x, y);
+	
+//  onFocus : function(field) {
+  onFilterArrowClick : function(event, arrowDiv) {
+		var field = getPreviousSibling(arrowDiv.parentNode);
+//debugger;
+		if (this.field == null)
+			this._init(field, arrowDiv);
+			
+		if (this.isFilterOpened) {
+			Filter.hide();
+		}
+		else {
+			var x = findPosX(field);
+			var y = findPosY(field) + field.offsetHeight + 5;
+			Filter.show(x, y);
+		}
+		
+		this.invertArrowState();
+		stopEventPropagation(event);
   },
-  
-  onBlur : function(event) {
+	
+	// closes filter on click outside the filter
+	onBlur : function(event) {
     var $t = SearchField;
 
     if ($t.field == null)
       return;
-      
+    
+		if (!$t.isFilterOpened)
+			return;
+		  
     if (event) {
       var target = getEventTarget(event);
-      // click inside the search field
-      if (target.className == "ftsq")
-        return;
+			// click inside the search field
+			if (comparePosition($t.field.parentNode, target) == 20)
+				return;
+ 
       // click inside the filter  
-      if (getAncestorById(target, "common_filter") != null)
-        return;
+      if (getAncestorById(target, "common_filter") != null) {
+				if (target.id !== "close")
+					$t.invertArrowState(); // close icon
+				return;
+			}
     }
+		
     Filter.hide();
-  }
-
+		$t.invertArrowState();
+	},
+	
+	invertArrowState : function() {
+		if (this.isFilterOpened)
+			this.arrowDiv.style.backgroundPosition = "top center";
+		else
+			this.arrowDiv.style.backgroundPosition = "bottom center";
+		
+		this.isFilterOpened = !this.isFilterOpened;
+	}
 }
 
 // like "search" fields
