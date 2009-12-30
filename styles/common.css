@@ -478,11 +478,13 @@ input.xxs {font-size: 10px; font-family:verdana,helvetica,arial,sans-serif;}
 */
 
 tr.fts td { vertical-align: middle; padding: 2px; }
-.desktop_search { float: left; width: 470; }
+
+.desktop_search { float: left; width: 500px; }
 .desktop_search .left, .desktop_search .right, .desktop_search input { height: 37px;  float: left; background: url(../images/skin/iphone/desktop_search.png); margin: 0px; border: 0px; }
 .desktop_search .left { width: 15px; background-position: top left; cursor: pointer; }
-.desktop_search .right { width: 45px; background-position: top right; cursor: pointer; }
+.desktop_search .right { width: 77px; background-position: top right; cursor: pointer; }
 .desktop_search input { /*background-color: #f00;*/  width: 400px; padding: 8 0 0 0; background-position: top center; font: bold 17px Helvetica; border: none; }
+.desktop_search .right div { float: left; width: 33px; height: 37px;  background: url(../images/skin/iphone/filter_arrow_sprite.png) top center; }
 
 /* VIEWS */
 table.views {border-bottom: 2px solid #C0C9D7; border-left: 2px solid #C0C9D7; border-right: 2px solid #AFC4D5; border-top:2px solid #AFC4D5;}
