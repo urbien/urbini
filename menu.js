@@ -3944,13 +3944,8 @@ var Filter = {
 				this.handleFilterState(true);
 		  }
 			
-			setDivVisible(null, this.filtersArr[filterUrl], null, null, 0, 0, null);
-			
-			if (x && y) {
-        this.filtersArr[filterUrl].style.left = x;
-        this.filtersArr[filterUrl].style.top = y;
+			setDivVisible(null, this.filtersArr[filterUrl], null, null, x, y, null);
       }
-    }
     // 2. download new filter for this type
     else {
       this.loadingUrl = filterUrl;
@@ -4032,13 +4027,8 @@ var Filter = {
 			
     // desktop has filter position
     if (initialized || Browser.mobile) { // not initialized if filter is empty
-			setDivVisible(null, loadedFilter, null, null, 0, 0, null);
+			setDivVisible(null, loadedFilter, null, null, $t.loadingPosition[0], $t.loadingPosition[1], null);
 		}
-		
-		if ($t.loadingPosition) {
-      loadedFilter.style.left = $t.loadingPosition[0];
-      loadedFilter.style.top = $t.loadingPosition[1];
-    }
 		
 		$t.handleFilterState(true);
     $t.loadingUrl = null;
@@ -4270,6 +4260,8 @@ var DataEntry = {
 	
 	onDataError : false, // data entry was returned by server with errors on data entry
 	
+	hotspot : null,
+	
 	show : function(url, hotspot) {
 		if (this.loadingUrl != null)
 			return;
@@ -4294,7 +4286,8 @@ var DataEntry = {
 		else {
 			this.loadingUrl = url;
 			urlParts = url.split('?');
-
+			this.hotspot = hotspot;
+			// note: there was some problem when I tried to supply hotspot thru postRequest 
 			postRequest(null, urlParts[0], urlParts[1], null, null, this.onDataEntryLoaded);
 		}
 	},
@@ -4319,7 +4312,8 @@ var DataEntry = {
 			div = getDomObjectFromHtml(html, "className", "panel_block");
 			// insert in DOM
 			div = document.body.appendChild(div);
-			setDivVisible(event, div, null, hotspot, 0, 0, null);
+			setDivVisible(event, div, null, $t.hotspot, 0, 0, null);
+			$t.hotspot = null;
 		}
 
 		if ($t.isMkResource($t.currentUrl))
@@ -4339,7 +4333,6 @@ var DataEntry = {
 	},
 	
 	hide : function (e, hideIcon) {
-	//	debugger;
 		if (this.currentUrl == null)
 			return;
 		
@@ -6493,8 +6486,8 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   var scrollX = scrollXY[0];
   var scrollY = scrollXY[1];
 
-  var left = 100;
-  var top  = 100;
+  var left = 0;
+  var top  = 0;
 
   if (hotspotDim) {
     left = hotspotDim.left;
@@ -6852,7 +6845,7 @@ var SearchField = {
 //  onFocus : function(field) {
   onFilterArrowClick : function(event, arrowDiv) {
 		var field = getPreviousSibling(arrowDiv.parentNode);
-//debugger;
+
 		if (this.field == null)
 			this._init(field, arrowDiv);
 			
