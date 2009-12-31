@@ -1689,5 +1689,10 @@ function getParentDialog(obj) {
 	return getAncestorByClassName(obj, 'panel_block') || getAncestorById(obj, 'pane2');
 }
 
+// note: 'panel_block' can be on page, so its parentNode is not BODY
+function isParentDialogOnPage(dialog) {
+	return dialog.parentNode.tagName.toLowerCase() != "body";
+}
+
 // flag that common.js was parsed
 g_loadedJsFiles["common.js"] = true;
