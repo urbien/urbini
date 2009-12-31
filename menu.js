@@ -4013,6 +4013,8 @@ var Filter = {
     if (loadedFilter == null)
       return;
     
+		// display = "none" before insertion into DOM
+		loadedFilter.style.display = "none";
 		// insert in DOM: 1) for mobile into body 2) for mobile into pane2
 		$t.filtersArr[$t.loadingUrl] = document.body.appendChild(loadedFilter);
 
@@ -4024,10 +4026,12 @@ var Filter = {
 				+ "<br/>possible came login page instead the filter"
 				+ "<br/>handling of this case should be implemented!");
 		}
-			
+
     // desktop has filter position
     if (initialized || Browser.mobile) { // not initialized if filter is empty
-			setDivVisible(null, loadedFilter, null, null, $t.loadingPosition[0], $t.loadingPosition[1], null);
+    	var x = $t.loadingPosition[0] || 0;
+			var y = $t.loadingPosition[1] || 0
+			setDivVisible(null, loadedFilter, null, null, x, y, null);
 		}
 		
 		$t.handleFilterState(true);
