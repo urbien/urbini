@@ -1740,7 +1740,8 @@ var FormProcessor = {
     }
 
 		var dialog = getParentDialog(form);
-		var isFormInDialog = dialog != null;
+		var isFormInDialog = dialog != null && !isParentDialogOnPage(dialog);
+		
 		// filter is sent NOT as XHR to get responce into page
 		if (dialog && dialog.id == 'common_filter')
 			isFormInDialog = false;
@@ -1763,7 +1764,7 @@ var FormProcessor = {
 
     var params = "submit=y"; // HACK: since target.type return the value of &type
                               // instead of an input field's type property
-	params += "&-inner=y"; // params for XHR means inner/dialog.
+	  params += "&-inner=y"; // params for XHR means inner/dialog.
    
 
 		var isAjaxReq = (isFormInDialog || Browser.mobile);
@@ -2068,6 +2069,15 @@ var FormProcessor = {
 	// Touch UI ---------------
 	MIN_INPUT_WIDTH : 30,
   initForTouchUI : function(parent) {
+
+		// "rightPanelPropertySheet" is a filter init it as a filter.
+		// It happens with on_page filter
+		if (parent.name ==	"rightPanelPropertySheet") {
+			var panelBlock = getAncestorByClassName(parent, "panel_block");
+			Filter.initFilter(panelBlock);
+			return;
+		}
+
 		// substitute checkboxes with own drawn ones.
     CheckButtonMgr.substitute(parent);
 
@@ -3503,7 +3513,9 @@ var ListBoxesHandler = {
   
   fitSelectedOptionsWidth : function(td) {
     var chosenValuesDiv = getChildByClassName(td, "chosen_values");
-    var selectedOptionsAmount = chosenValuesDiv.getElementsByTagName("div").length;
+    if (!chosenValuesDiv)
+			return;
+		var selectedOptionsAmount = chosenValuesDiv.getElementsByTagName("div").length;
  
     // no selections
     if (selectedOptionsAmount == 0)
@@ -3870,7 +3882,7 @@ var Filter = {
   // filter can have several
   initFilter : function(filterDiv) {
 		var filterHeader = getChildByClassName(filterDiv, "header");
-		
+
 		var textEntry = getChildById(filterDiv, 'text_entry');
 		FieldsWithEmptyValue.initField(textEntry, 'select')
 		
@@ -3882,7 +3894,8 @@ var Filter = {
 		clearFilterBtn.onclick = this.submitClearFilter;
 		
 		var closeFilterBtn = getChildById(filterHeader, "close");
-		closeFilterBtn.onclick = this.hide;
+		if (closeFilterBtn)
+			closeFilterBtn.onclick = this.hide;
 
     // init filter content
     var paramsTable = getChildByClassName(filterDiv, "rounded_rect_tbl");
@@ -4062,7 +4075,8 @@ var Filter = {
 
 	 	if (!Browser.mobile) { // desktop
 			var url = $t.currentFilterUrl;
-			if ($t.filtersArr[url]) {
+			if ($t.filtersArr[url] && 
+					$t.filtersArr[url].parentNode.tagName.toLowerCase() == "body") {
 				$t.filtersArr[url].style.display = "none";
 		  }
 			return;
@@ -4109,7 +4123,6 @@ var Filter = {
 			if (!Browser.mobile)
 				$t.handleFilterState(false);
 		}
-		
   },
   
 	submitClearFilterCallback : function (toClear, e, btn) {
