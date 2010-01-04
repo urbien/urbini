@@ -51,21 +51,8 @@
 <br/><br/>
     <pieChart/>
 	<filterUrl />
-    <!--script language="JavaScript">
-      var horizontalFilter_FIELDS = new Array();
-    </script>
-    <form name="horizontalFilter" id="filter" method="POST">
-      <br/>
-      <horizontalFilter />
-    </form-->
 </hideBlock>
   </td>
-  <!--td id="rightPanelPropertySheet" valign="top" align="left">
-<hideBlock> 
-	<filterUrl />
-    <menu toolbar="filterLocal" type="onpage" title="false"/>
-</hideBlock>
-  </td-->
   </tr>
 </table>
  
