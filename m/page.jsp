@@ -6,9 +6,10 @@
   <siteTitle name="title" />
   <tablePropertyList/>
   <siteResourceList/>
-  <pagingResources/>
+  <menu toolbar="file" flat="y"/>
   
   <filterUrl />
+  <pagingResources/>
   
 </div>
 
