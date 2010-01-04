@@ -899,7 +899,7 @@ function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) 
 		i_am.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
 		var top = i_am.top + i_am.div.clientHeight + 1;
 		
-		var parentDlg = getAncestorById(i_am.div, 'pane2'); // hack: detects if it's in a 'pane2' dialog 
+		var parentDlg = getParentDialog(i_am.div); 
 		i_am.list.show(i_am, 'left', i_am.setSelectedItem, parentDlg);
 	}
 	// constructor's body
@@ -1169,8 +1169,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 	}
 	
 	this.showOverflowPopup = function(){
-		// hack: detects if it's in a 'pane2' dialog 
-		var parentDlg = getAncestorById(this.div, 'pane2');
+		var parentDlg = getParentDialog(this.div);
 		
 		// "onOverflowBtn" - is an interface function
 		if(typeof i_am.masterObj.onOverflowBtn != 'undefined')
