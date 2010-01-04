@@ -1414,8 +1414,6 @@ var Boost = {
 
 	// intoCurrentPage in case of data entry
   getPage: function(e, link, intoCurrentPage) {
-		
-		
     var $t = Mobile;
     if (!$t.currentUrl) {
       $t.currentUrl = document.location.href;
@@ -1582,7 +1580,7 @@ var Boost = {
 				delete $t.urlToDivs[$t.currentUrl];
 				$t.browsingHistoryPos--;
 				$t.currentUrl = $t.browsingHistory[$t.browsingHistoryPos];
-
+			
 				DataEntry.onDataEntryLoaded(event, div, hotspot, content, true);
 				return;
 		  }
@@ -2255,9 +2253,11 @@ var BottomToolbar = {
       this.BOTTOM = 27; // palm's browser requires offset
       this.toolbar.style.bottom = this.BOTTOM;
     }
-    
-    addEvent(document, "click", this.show, false);
-    //addEvent(document, "scroll", this.show, false);
+   	
+		if (Browser.iPhone) 
+			addEvent(document, "touchend", this.show, false);
+		else	
+    	addEvent(document, "click", this.show, false);
 
     this.dir = -1;
     this.timerId = setTimeout(this.updown, this.DELAY);
