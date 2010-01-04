@@ -2069,7 +2069,6 @@ var FormProcessor = {
 	// Touch UI ---------------
 	MIN_INPUT_WIDTH : 30,
   initForTouchUI : function(parent) {
-
 		// "rightPanelPropertySheet" is a filter init it as a filter.
 		// It happens with on_page filter
 		if (parent.name ==	"rightPanelPropertySheet") {
@@ -2919,7 +2918,7 @@ var ListBoxesHandler = {
       return;
     currentFormName = propName1.substring(idx + 1);
     var form = document.forms[currentFormName];
-    propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
+	propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
     currentImgId  = imgId;
 
     originalProp = propName1;
@@ -3946,9 +3945,9 @@ var Filter = {
 		if (getUrlParam(filterUrl, "type") == null)
 			return;
  
-   	// hide possible opened previous filter
-	  this.hide(); 
-
+   	// hide possible opened dialogs
+		closeAllDialogs();
+		
     // 1. filter for that type already loaded
     if (this.filtersArr[filterUrl]) {
 			// mobile has several filters simultaneously
@@ -4018,8 +4017,8 @@ var Filter = {
 	
 // callback
   onFilterLoaded : function(event, div, hotspot, content) {
-    var $t = Filter;
-		$t.currentFilterUrl = $t.loadingUrl;
+	  var $t = Filter;
+	  $t.currentFilterUrl = $t.loadingUrl;
 
     var loadedFilter = $t.createFilterDomObject(content);
     
@@ -4282,9 +4281,10 @@ var DataEntry = {
 	show : function(url, hotspot) {
 		if (this.loadingUrl != null)
 			return;
-		// hide possible previously opened data entry dialog 
-		this.hide();
 		
+   	// hide possible opened dialogs
+		closeAllDialogs();
+	
 		var key = this._getKey(url);
 		if (this.dataEntryArr[key]) { // data entry stored (in mobile mode)
 			if (this.isMkResource(url))
@@ -4815,6 +4815,9 @@ function showDialog(event, div, hotspot, content) {
     content = frameBody.innerHTML;
   }
 
+ 	// hide possible opened dialogs
+	closeAllDialogs();
+	
   var re = eval('/' + div.id + '/g');
   content = content.replace(re, div.id + '-removed');  // prevent pane2 from appearing 2 times in the document
   var re = eval('/' + frameId + '/g');
@@ -10290,6 +10293,18 @@ var BrowserDialog = {
 		$t.callbackThis = null;
 		$t.callbackParamsArr = new Array();
 	}
+}
+
+// on this moment, there are 3 kinds of dilaogs:
+// 1) data entry 2) filter 3) "blue/pane2" dialog
+function closeAllDialogs() {
+	DataEntry.hide();
+	Filter.hide();
+	
+	var pane2        = document.getElementById('pane2');
+  var dialogIframe = document.getElementById('dialogIframe');
+  if (pane2 && dialogIframe)
+	  setDivInvisible(pane2, dialogIframe);
 }
 
 // redefines standart alert() function
