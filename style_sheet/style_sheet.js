@@ -121,14 +121,14 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 	this.launchFontFamilyPopup = function(btnObj, callback) {
 		if(this.fontPopup == null)
 			this.createFontPopup();
-		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		var parentDlg = getParentDialog(btnObj.div);
 		this.fontPopup.show(btnObj, 'left', callback, parentDlg);
 		return this.fontPopup.div;
 	}
 	this.launchFontSizePopup = function(btnObj, callback) {
 		if(this.sizePopup == null)
 			this.createSizePopup();
-		var parentDlg = getAncestorById(btnObj.div, 'pane2');
+		var parentDlg = getParentDialog(btnObj.div);
 		this.sizePopup.show(btnObj, 'left', callback, parentDlg);
 		return this.sizePopup.div;
 	}
@@ -380,12 +380,12 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 	}
 	
 	this.onFontColor = function() {
-		var parentDlg = getAncestorById(i_am.fontClrBtn.div, 'pane2'); //'pane2' dialog 
+		var parentDlg = getParentDialog(i_am.fontClrBtn.div);
 		PalettePopup.show(i_am.fontClrBtn, 'right', i_am.setFontColor, parentDlg, "default");
 	}
 	
 	this.onBackgroundColor = function() {
-		var parentDlg = getAncestorById(i_am.bgClrBtn.div, 'pane2'); //'pane2' dialog 
+		var parentDlg = getParentDialog(i_am.bgClrBtn.div); 
 		PalettePopup.show(i_am.bgClrBtn, 'right', i_am.setBackgroundColor, parentDlg, "default");
 	}
 	
@@ -434,7 +434,7 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 	}
 	// border color
 	this.onBorderColor = function() {
-		var parentDlg = getAncestorById(i_am.borderClrBtn.div, 'pane2'); //'pane2' dialog 
+		var parentDlg = getParentDialog(i_am.borderClrBtn.div); 
 		PalettePopup.show(i_am.borderClrBtn, 'right', i_am.setBorderColor, parentDlg, "default");
 	}
 
