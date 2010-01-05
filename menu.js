@@ -2098,14 +2098,13 @@ var FormProcessor = {
 			if (!labelSpan || labelSpan.className != "label")
 				labelSpan = getChildByClassName(td, "label");
 			
-
       // requred field
       var isFieldRequired = labelSpan && (labelSpan.getAttribute("required") != null);
       if (isFieldRequired && inputs[i].type != "password") {
 		  	FieldsWithEmptyValue.initField(inputs[i], "Required");
 		  }
 	  // if no next td then no options list, so insert "type" text.
-			else if (nextTd == null && inputs[i].type != "password")
+			else if ((nextTd == null || nextTd.className != "arrow_td") && inputs[i].type != "password")
 				FieldsWithEmptyValue.initField(inputs[i], "type");
 
 			// noArrowCorrection - hack?
