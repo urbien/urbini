@@ -1773,22 +1773,6 @@ var FormProcessor = {
       params += p1;
     var submitButtonName  = null;
     var submitButtonValue;
-  /*
-  * var t = target.attributes['type']; if (t.toUpperCase() == 'SUBMIT') { if
-  * (target.attributes['name'] == "Clear") url += "&clear=Clear"; else if
-  * (currentFormName == "horizontalFilter") url += "&submit=y"; else if
-  * (currentFormName == "rightPanelPropertySheet") url += "&submitFilter=y"; }
-  * else url += "&submit=y";
-  */
-
-  /*
-  * // figure out the name and the value of the Submit button for (i=0; i<form.elements.length;
-  * i++) { var elem = form.elements[i]; if (elem.type.toUpperCase() == 'SUBMIT') {
-  * submitButtonName = elem.name; submitButtonValue = elem.value; } }
-  *
-  * if (!submitButtonName) return true; var hasQ = url.indexOf('?') != -1; if
-  * (!hasQ) url += '?' + submit; else url += '&' + submit;
-  */
 
     params += '&$form=' + form.name;
 
@@ -3421,6 +3405,14 @@ var ListBoxesHandler = {
 			var html = $t.getSelectedOptionsHtml(selectedOptionsArr, textField.name);
 			chosenValuesDiv.innerHTML = html;
 			$t.fitSelectedOptionsWidth(td);
+			
+			// unselected all options / checkboxes
+			if (selectedOptionsArr.length == 0) {
+				textField.value = "";
+				var verifiedField = form.elements[originalProp + "_verified"] 
+				if (verifiedField)
+					verifiedField.value = "n";
+			}
 		}
 		else { // data entry
 			 textField.value = selectedOptionsArr[0]["value"];
@@ -3886,10 +3878,12 @@ var Filter = {
 		
 		// set event handlers for toobar buttons
 		var submitBtn = getChildById(filterHeader, "submitFilter");
-		submitBtn.onclick = this.submit;
+		if (submitBtn)
+			submitBtn.onclick = this.submit;
 
 		var clearFilterBtn = getChildById(filterHeader, "clear");
-		clearFilterBtn.onclick = this.submitClearFilter;
+		if (clearFilterBtn)
+			clearFilterBtn.onclick = this.submitClearFilter;
 		
 		var closeFilterBtn = getChildById(filterHeader, "close");
 		if (closeFilterBtn)
@@ -4015,8 +4009,12 @@ var Filter = {
 	},
 	
 // callback
-  onFilterLoaded : function(event, div, hotspot, content) {
+  onFilterLoaded : function(event, div, hotspot, content, url) {
 	  var $t = Filter;
+		
+		if (!$t.loadingUrl)
+			$t.loadingUrl = url;
+			
 	  $t.currentFilterUrl = $t.loadingUrl;
 
     var loadedFilter = $t.createFilterDomObject(content);
@@ -4027,11 +4025,11 @@ var Filter = {
 		// display = "none" before insertion into DOM
 		loadedFilter.style.display = "none";
 		// insert in DOM: 1) for mobile into body 2) for mobile into pane2
-		$t.filtersArr[$t.loadingUrl] = document.body.appendChild(loadedFilter);
+		$t.filtersArr[$t.currentFilterUrl] = document.body.appendChild(loadedFilter);
 
 		ExecJS.runDivCode(loadedFilter);
     
-    var initialized = $t.initFilter($t.filtersArr[$t.loadingUrl]);
+    var initialized = $t.initFilter($t.filtersArr[$t.currentFilterUrl]);
 		if (!initialized && Browser.mobile) {
 			 alert("problem to initialize filter"
 				+ "<br/>possible came login page instead the filter"
@@ -4040,8 +4038,11 @@ var Filter = {
 
     // desktop has filter position
     if (initialized || Browser.mobile) { // not initialized if filter is empty
-    	var x = $t.loadingPosition[0] || 0;
-			var y = $t.loadingPosition[1] || 0
+    	var x = 0, y = 0; 
+			if ($t.loadingPosition) {
+		  	x = $t.loadingPosition[0];
+		  	y = $t.loadingPosition[1];
+		  }
 			setDivVisible(null, loadedFilter, null, null, x, y, null);
 		}
 		
@@ -4050,8 +4051,8 @@ var Filter = {
   },
   
   createFilterDomObject : function(html) {
-		var filterDiv = getDomObjectFromHtml(html, "id", "common_filter");
-    
+    var filterDiv = getDomObjectFromHtml(html, "className", "panel_block");
+		
 		// no filter in response - possible login page
     if (filterDiv == null) {
       /* // not implemented !!!!!!!!!!!
@@ -4397,20 +4398,21 @@ var DataEntry = {
 		if (Browser.mobile)
 			form.removeAttribute("wasSubmitted");
 
-		var url = FormProcessor.onSubmitProcess(e, form);
-		this.hide();
+		var res = FormProcessor.onSubmitProcess(e, form);
+		//this.hide();
 		
 		if (Browser.mobile) {
       // hack: with -inner=y parameter, the server does not process request
-      url = url.replace("&-inner=y", "");
+      var url = res.replace("&-inner=y", "");
 
 			if (this.isMkResource(url))
 				Mobile.getPage(e, url, false);
 			else
       	Mobile.getPage(e, url, true);
     }
-    else 
-      return true;
+		// regular (not XHR) submission
+    else if (res == true)
+			form.submit();  // submit is not a button, so send the form with help of JS.
   },
 	
 	_getKey : function(url) {
@@ -4794,7 +4796,7 @@ function displayInner(e, urlStr) {
 /**
  * copies html loaded via ajax into a div
  */
-function showDialog(event, div, hotspot, content) {
+function showDialog(event, div, hotspot, content, url) {
 	var frameId = 'popupFrame';
   if (!content) {
     if (!frameLoaded[frameId]) {
