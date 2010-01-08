@@ -1882,7 +1882,7 @@ var FormProcessor = {
     var idx = -1;
     var len = fields.length;
     var removedFieldName = "";
-    
+
 		if (typeof isXHR == 'undefined')
 			isXHR = false;
 		
@@ -1890,14 +1890,14 @@ var FormProcessor = {
       idx++;
 
       var field = fields[idx];
-      
-      var value = field.value;
-      var name  = field.name;
-      
-			// field with empty value; "full text search", for example
+    
+			// reset field with empty value ("full text search", for example)
       var isEmptyValue = field.getAttribute("is_empty_value")
       if (isEmptyValue && isEmptyValue == "y")
-        value = ""; 
+        field.value = ""; 
+			
+      var value = field.value;
+      var name  = field.name;
 			
       if (exclude) {
         if (typeof exclude == 'string' && name == exclude) 
@@ -4014,7 +4014,7 @@ var Filter = {
 // callback
   onFilterLoaded : function(event, div, hotspot, content, url) {
 	  var $t = Filter;
-		
+
 		if (!$t.loadingUrl)
 			$t.loadingUrl = url;
 			
@@ -4025,9 +4025,7 @@ var Filter = {
     if (loadedFilter == null)
       return;
     
-		// display = "none" before insertion into DOM
-		loadedFilter.style.display = "none";
-		// insert in DOM: 1) for mobile into body 2) for mobile into pane2
+		// insert in DOM
 		$t.filtersArr[$t.currentFilterUrl] = document.body.appendChild(loadedFilter);
 
 		ExecJS.runDivCode(loadedFilter);
