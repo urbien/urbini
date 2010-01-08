@@ -1894,11 +1894,11 @@ var FormProcessor = {
       var value = field.value;
       var name  = field.name;
       
-      // "full text search", for example
+			// field with empty value; "full text search", for example
       var isEmptyValue = field.getAttribute("is_empty_value")
       if (isEmptyValue && isEmptyValue == "y")
-        value = "";
-      
+        value = ""; 
+			
       if (exclude) {
         if (typeof exclude == 'string' && name == exclude) 
           continue;
@@ -1917,7 +1917,7 @@ var FormProcessor = {
       // send all fields of FrequencyPE
       var isFrequencyField = (name.indexOf("frequency_") == 0);
       if (!allFields && !isFrequencyField) {
-        if (!this.wasFormFieldModified(field)) {
+        if (!this.wasFormFieldModified(field, value)) {
           var doRemove = true;
          // 1. not 'hidden'
          if (field.type != 'hidden') {
@@ -2001,7 +2001,7 @@ var FormProcessor = {
     for (var j = 0; j < form.elements.length; j++) {
       var elem = form.elements[j];
       
-      // "full text search", for example
+      // field with empty value; "full text search", for example
       var isEmptyValue = elem.getAttribute("is_empty_value")
       if (isEmptyValue && isEmptyValue == "y") {
         initialValues[elem.name] = "";
@@ -2025,18 +2025,21 @@ var FormProcessor = {
     return false;
   },
 */
+
   // returns true if the field was modified since the page load
-  wasFormFieldModified : function(elem) {
+	// currentValue is not required; used for fields with empty value
+  wasFormFieldModified : function(elem, currentValue) {
     var initialValue = this.getFormFieldInitialValue(elem);
-    if (initialValue == null)
+    if (typeof currentValue == 'undefined')
+			currentValue = elem.value;
+			
+		if (initialValue == null)
       return true; // assume it was modified if no info exists
-    if (elem.value == initialValue) {
-      //alert("not modified: elem.name: " + elem.name + ", initialValue: " + initialValue);
-      return false;
+    if (currentValue == initialValue) {
+       return false;
     }
     else {
-      //alert("modified: elem.name: " + elem.name + ", initialValue: " + initialValue);
-      return true;
+       return true;
     }
   },
   // returns value of the field saved right after the page load (does not support multiple selections)
