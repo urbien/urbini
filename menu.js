@@ -1854,7 +1854,7 @@ var FormProcessor = {
 			if (dlg.id == 'pane2')	
 				postRequest(e, url, params, dlg, getTargetElement(e), showDialog);
 			else
-				postRequest(e, url, params, dlg, getTargetElement(e), DataEntry.onDataEntryLoaded);	
+				postRequest(e, url, params, null, getTargetElement(e), DataEntry.onDataEntryRejection);	
       
 			return stopEventPropagation(e);
     }
@@ -4324,6 +4324,9 @@ var DataEntry = {
 		else
 			$t.onDataError = true;
 
+		// hide previously opened data entry; also prepare for dialog with error. 
+		$t.hide();
+		
 		if (div) // div provided if it was called on error in entered data
 			div.innerHTML = html;
 		else { // new loaded panel_block
@@ -4350,10 +4353,15 @@ var DataEntry = {
 		$t.dataEntryArr[key] = div;
 	},
 	
+	onDataEntryRejection : function(event, div, hotspot, html, url) {
+		var $t = DataEntry;
+		$t.onDataEntryLoaded(event, div, hotspot, html, url, true);
+	},
+	
 	hide : function (e, hideIcon) {
 		if (this.currentUrl == null)
 			return;
-		
+
 		var key = this._getKey(this.currentUrl)	;
 		
 		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
@@ -4411,7 +4419,7 @@ var DataEntry = {
 			else
       	Mobile.getPage(e, url, true);
     }
-		// regular (not XHR) submission
+		// desktop; html form
     else if (res == true)
 			form.submit();  // submit is not a button, so send the form with help of JS.
   },
