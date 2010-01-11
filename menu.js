@@ -7277,7 +7277,7 @@ var DragEngine = {
 	offsetX: null, offsetY: null,
   dragapproved : 0,
   // dragable objects with the following className
- 	classNameArr : ["dragable", "tabs", "tabs_current"],
+ 	classNameArr : ["dragable", "tabs", "tabs_current", "header"],
 
 	initialize: function(){
 		addEvent(document, 'mousedown', this.startDrag, false);
@@ -7303,8 +7303,8 @@ var DragEngine = {
   	    thisObj.dragHandler = TabSwap;
   	    thisObj.dragBlock = thisObj.dragHandler.getDragBlock(titleObj, caughtObj);
   	  }
-  	  else // the dialog 'pane2'
-  	    thisObj.dragBlock = getAncestorById(titleObj, 'pane2');
+  	  else // dialog 'pane2' or panel_block
+  	    thisObj.dragBlock = getParentDialog(titleObj);
 		}
 		else {
   	  thisObj.dragHandler = eval(dragHandlerStr);
