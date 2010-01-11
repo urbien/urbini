@@ -4293,10 +4293,13 @@ var DataEntry = {
 			
 			if (Browser.mobile &&
 							 getAncestorByTagName(this.dataEntryArr[key], 'body') == null) {
+				
 				document.body.appendChild(this.dataEntryArr[key]);
 		  	// RTE requires new initialization after insertion into document (?!)
 				ExecJS.runDivCode(this.dataEntryArr[key]);
 			}
+			
+			// on desktop only hide/show, without append/remove
 			setDivVisible(null, this.dataEntryArr[key], null, hotspot, 0, 0, null);
 
 			this.currentUrl = url;
@@ -4310,32 +4313,22 @@ var DataEntry = {
 		}
 	},
 
+	// parameters provided by XHR and not all used
 	onDataEntryLoaded : function(event, div, hotspot, html, url, onDataError) {
 		var $t = DataEntry;
 
-		if (!$t.loadingUrl) // possible on data entry rejected by the server
-			$t.loadingUrl = url; 
-			
-		// server returned previously submitted data dialog with errors of data entry
-		if (typeof onDataError != 'boolean' || onDataError == false) {
-			$t.currentUrl = $t.loadingUrl;
-			$t.loadingUrl = null;
-		}
-		else
+		if (onDataError) // server returned previously submitted data dialog with errors of data entry
 			$t.onDataError = true;
-
-		// hide previously opened data entry; also prepare for dialog with error. 
-		$t.hide();
+		else
+			$t.currentUrl = $t.loadingUrl;
+			
+		$t.loadingUrl = null;
 		
-		if (div) // div provided if it was called on error in entered data
-			div.innerHTML = html;
-		else { // new loaded panel_block
-			div = getDomObjectFromHtml(html, "className", "panel_block");
-			// insert in DOM
-			div = document.body.appendChild(div);
-			setDivVisible(event, div, null, $t.hotspot, 0, 0, null);
-			$t.hotspot = null;
-		}
+		div = getDomObjectFromHtml(html, "className", "panel_block");
+		// insert in DOM
+		div = document.body.appendChild(div);
+		setDivVisible(event, div, null, $t.hotspot, 0, 0, null);
+		$t.hotspot = null;
 
 		if ($t.isMkResource($t.currentUrl))
 			$t.doStateOnMkResource(div, true);
@@ -4367,20 +4360,23 @@ var DataEntry = {
 		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
 			return;
 		
+		// on desktop only hide/show, without append/remove
 		if (!Browser.mobile) {
-			//onHideDialogIcon(e, hideIcon);
 			this.dataEntryArr[key].style.display = "none";
-			return;
 		}
-		
-		document.body.removeChild(this.dataEntryArr[key]);
-		if (this.isMkResource(this.currentUrl))
-			this.doStateOnMkResource(this.dataEntryArr[key], false);
-		
+		// mobile: append/remove dialogs
+		else {
+			document.body.removeChild(this.dataEntryArr[key]);
+			if (this.isMkResource(this.currentUrl)) 
+				this.doStateOnMkResource(this.dataEntryArr[key], false);
+		}
+
+		// enforce to reload data entry without error message.
 		if (this.onDataError) {
-			delete this.dataEntryArr[key]; // enforce to reload data entry without error message.
+			delete this.dataEntryArr[key];
 			this.onDataError  = false;
 		}
+		
 	},
 	
 	// hides params with not suited beginning.		
@@ -4422,6 +4418,8 @@ var DataEntry = {
 		// desktop; html form
     else if (res == true)
 			form.submit();  // submit is not a button, so send the form with help of JS.
+		
+		this.hide();	
   },
 	
 	_getKey : function(url) {
@@ -6483,6 +6481,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     div.style.minWidth = "none";
 		div.style.maxWidth = "none";
     div.style.visibility = Popup.VISIBLE;
+		div.style.display = "block";
 		return;
   }
 	
@@ -7267,6 +7266,7 @@ function removeSpaces(str) {
 /*******************************************************************************
  * drag & drop engine
  * dragHandler implements: 1)getDragBlock 2)onStartDrag, 3) onDrag, 4) onStopDrag
+ * DragEngine is not called in mobile mode
  ******************************************************************************/
 var DragEngine = {
 
