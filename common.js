@@ -400,7 +400,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
         if (repaintDialog) {
           hotspot = null; // second time do not show 'loading...' popup
           // stay on current page and resubmit request using URL from Location header
-          var urlParts = location.split('?');
+				  var urlParts = location.split('?');
+
           postRequest(clonedEvent, urlParts[0], urlParts[1], div, hotspot, callback);
         }
         else {
@@ -910,7 +911,7 @@ function getPreviousSibling(obj) {
 
 
 function insertAfter(parent, newElement, referenceElement) {
-  parent.insertBefore(newElement, referenceElement.nextSibling);
+  parent.insertBefore(newElement, getNextSibling(referenceElement));
 }
 // returns a child of any nesting.
 function getChildById(parent, id) {
@@ -970,6 +971,8 @@ function getAncestorById(child, id) {
 function getAncestorByClassName(child, className) {
   return getAncestorByAttribute(child, "className", className);
 }
+
+// note: returns object started from requested className!
 // attribValue - string or array of strings
 function getAncestorByAttribute(child, attribName, attribValue) {
 	if(!child)
@@ -980,10 +983,17 @@ function getAncestorByAttribute(child, attribName, attribValue) {
 	  for(var i = 0; i < attribValue.length; i++)
 	    if(child[attribName] == attribValue[i])
 		    return child;
+		  
+			if (attribName == "className" && child[attribName] &&
+         child[attribName].indexOf(attribValue[i] + " ") != -1)
+      return child;   
 	}
 	else {
 	  if(child[attribName] == attribValue)
 		  return child;
+		if (attribName == "className" && child[attribName] &&
+    	child[attribName].indexOf(attribValue + " ") != -1)
+      return child;   
   }
 
 	var parent;
@@ -992,10 +1002,19 @@ function getAncestorByAttribute(child, attribName, attribValue) {
   	  for(var i = 0; i < attribValue.length; i++)
   	    if(parent[attribName] == attribValue[i])
 			    return parent;
+				
+				if (attribName == "className" && parent[attribName] &&
+         parent[attribName].indexOf(attribValue[i] + " ") != -1)
+      return parent;   
+		
 		}
 		else {
 		  if(parent[attribName] == attribValue)
 			  return parent;
+			
+			if (attribName == "className" && parent[attribName] &&
+         parent[attribName].indexOf(attribValue + " ") != -1)
+      return parent;   
 		}
 
 		child = parent;
@@ -1020,7 +1039,10 @@ function getAncestorByTagName(child, tagName) {
 // returns object not inserted to document
 var _hdnDivForDom = null;
 function getDomObjectFromHtml(html, attribName, attribValue){
-	//  debugger;
+	
+	if (html.indexOf(attribValue) == -1)
+		return null;
+	
 	if (_hdnDivForDom == null) {
 		_hdnDivForDom = document.createElement("div");
 		_hdnDivForDom.style.display = "none";
