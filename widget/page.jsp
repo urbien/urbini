@@ -1,3 +1,8 @@
+<!-- 
+This JSP is full html page and contains 1st "mobile" page
+for further "mobile" pages m/page.jsp is used.
+However this JSP is used for pages containig errors message too (?)
+-->
 <html>
   <head>
     <include name="commonHead.jsp"/>
@@ -8,11 +13,10 @@
   <!-- include name="BhoostApplet.jsp" /-->
   <div id="mainskin" class="blue">
     <options />
-    <errorMessage />
     <div id="myScreenName" class="hdn" />
     <div id="im_empty" class="hdn" />
-
 	  <div id="mainDiv" class="mobile_page">
+	  	<errorMessage />
 	    <views />
       <siteTitle name="title" />
 		  <tablePropertyList/>
