@@ -1631,13 +1631,15 @@ var FormProcessor = {
       var initialValues = new Array(form.elements.length);
       //formInitialValues[form.name] = initialValues;
 
-      if (form.id != 'filter')
-        continue;
+			// process only forms with id = 'filter'
+//      if (form.id != 'filter')
+//        continue;
 
-      this._storeInitialValues(form);
-      
-      //DataEntry.init(form);
+
+			// init Touch UI for all forms
 			this.initForTouchUI(form);
+      this._storeInitialValues(form);
+
       ListBoxesHandler.init(form);
       
       addEvent(form, 'submit', this.onSubmit, false);
@@ -1876,7 +1878,7 @@ var FormProcessor = {
   // 2) html form: removes not needed fields
 	// isXHR default value - false
   getFormFilters : function(form, allFields, exclude, isXHR) {
-    var p = "";
+	  var p = "";
     var fields = form.elements;
     // use idx and len because removeChild reduces fields collection
     var idx = -1;
@@ -1890,7 +1892,7 @@ var FormProcessor = {
       idx++;
 
       var field = fields[idx];
-    
+ 
 			// reset field with empty value ("full text search", for example)
       var isEmptyValue = field.getAttribute("is_empty_value")
       if (isEmptyValue && isEmptyValue == "y")
@@ -1905,18 +1907,33 @@ var FormProcessor = {
         else if (exclude[name])
           continue;
       }
-      var type  = field.type;
-
-      if (!type || !name)
+      
+			var type  = field.type;
+      
+			// several cases when to skip field even for allFields == true
+			if (!type || !name)
         continue;
-      type = type.toLowerCase();
-      if (type == "submit")
+      
+			if (type == "submit")
         continue;
 
-      // remove not changed fields ---
-      // send all fields of FrequencyPE
+      if (!value)
+        continue;
+    
+      if (value == '')
+        continue;
+      
+      if (type == "checkbox" || type == "radio" ) {
+        if (field.checked == false)
+          continue;
+        }
+      if (value.indexOf(" --", value.length - 3) != -1)
+        continue;
+
+      // allowed to send not all field ---
+      // remove not changed fields (except FrequencyPE case)
       var isFrequencyField = (name.indexOf("frequency_") == 0);
-      if (!allFields && !isFrequencyField) {
+			if (!allFields && !isFrequencyField) {
         if (!this.wasFormFieldModified(field, value)) {
           var doRemove = true;
          // 1. not 'hidden'
@@ -1967,15 +1984,14 @@ var FormProcessor = {
            continue;
         }
       }
+			
+/*		// moved upper to work for allFields == false as well
       else {
         if (!value)
           continue;
       
-      
-  // if (currentFormName != "horizontalFilter") {
         if (value == '')
           continue;
-        
         
         if (type == "checkbox" || type == "radio" ) {
           if (field.checked == false)
@@ -1983,8 +1999,10 @@ var FormProcessor = {
           }
           if (value.indexOf(" --", value.length - 3) != -1)
             continue;
-        }
-  // }
+      }
+*/
+
+			// compose resulting URL's parameters ---	
       if (name == "type")
         p += "&" + name + "=" + value;
       else {
@@ -1993,6 +2011,7 @@ var FormProcessor = {
         p += "&" + name + "=" + encodeURIComponent(value);
       }
     }
+		
     return p;
   },
 
@@ -4325,12 +4344,14 @@ var DataEntry = {
 		$t.loadingUrl = null;
 		
 		div = getDomObjectFromHtml(html, "className", "panel_block");
+		div.style.visibility = "hidden";
 		// insert in DOM
 		div = document.body.appendChild(div);
 		setDivVisible(event, div, null, $t.hotspot, 0, 0, null);
 		$t.hotspot = null;
 
-		if ($t.isMkResource($t.currentUrl))
+		// onDataError happens on mkResource
+		if (onDataError || $t.isMkResource($t.currentUrl))
 			$t.doStateOnMkResource(div, true);
 
 		var itemSelector = getChildById(div, 'item_selector');
@@ -4964,10 +4985,12 @@ function checkAll(formName) {
   for (var i=0; i<fields.length; i++) {
     var type  = fields[i].type;
     if (type  &&  type.toUpperCase() == "CHECKBOX") {
-      if (isChecked)
-        fields[i].checked = true;
-      else
-        fields[i].checked = false;
+      var uiCheckbox = getChildByClassName(fields[i].parentNode, "iphone_checkbox");
+ 			// note: in the future all checkboxes should be substituted with UI's ones
+			if (uiCheckbox)
+				CheckButtonMgr.setState(uiCheckbox, fields[i], isChecked);
+			else 
+        fields[i].checked = isChecked;
     }
   }
 }
@@ -10073,7 +10096,8 @@ var CheckButtonMgr = {
      var inputs = div.getElementsByTagName('input');
     for(var i=0; i < inputs.length; i++) {
       var stlIdx = -1;
-			if (inputs[i].className == 'hdn')
+			// no need to substitude hidden checkboxes or already processed
+			if (inputs[i].className == 'hdn' || inputs[i].style.display == 'none')
       	continue;
       
 			if (inputs[i].getAttribute('type') == 'checkbox')
@@ -10092,7 +10116,7 @@ var CheckButtonMgr = {
   
       // change initial state if need
       if(inputs[i].checked || inputs[i].value.toLowerCase() == "yes")
-        this._setState(div, inputs[i], true);
+        this.setState(div, inputs[i], true);
 
        // replace a checkbox with toggle button
       inputs[i].parentNode.insertBefore(div, inputs[i].nextSibling);
@@ -10102,33 +10126,23 @@ var CheckButtonMgr = {
   
   onClick : function(event) {
     var $t = CheckButtonMgr;
-    var toggleBtn = this; // event handler takes target as this
-    var checkbox = toggleBtn.previousSibling;//$t.getCorrespondingCheckbox(toggleBtn);
+    var toggleBtn = this;
+    var checkbox = getPreviousSibling(toggleBtn);
     $t._switchState(toggleBtn, checkbox);
 		
+		if (checkbox.onclick)
+			checkbox.onclick(event);
+			
 		stopEventPropagation(event);
   },
-/*  
-  getCorrespondingCheckbox : function(toggleBtn) {
-    var inputs = toggleBtn.parentNode.getElementsByTagName("input");
-    var checkboxId = toggleBtn.getAttribute("checkbox_id");
-    for(var i = 0; i < inputs.length; i++) {
-      if(inputs[i].getAttribute('type') != 'checkbox')
-        continue;
-      var inputId = inputs[i].id || inputs[i].name
-      if (checkboxId == inputId)
-        return inputs[i];
-    }
-    return null;
-  },
-*/  
+
   _switchState : function(toggleBtn, input) {
     var xPos = toggleBtn.style.backgroundPosition;
     var isChecked = (xPos.length != 0 && xPos.indexOf("0") != 0);
-    this._setState(toggleBtn, input, !isChecked);
+    this.setState(toggleBtn, input, !isChecked);
   },
 
-  _setState : function(toggleBtn, input, checkState) {
+  setState : function(toggleBtn, input, checkState) {
     if (input.type == "checkbox")
       input.checked = checkState;
     else if(checkState)
@@ -10146,6 +10160,8 @@ var CheckButtonMgr = {
 
 //******************************************
 // BrowserDialog
+// obtains callback or form to send
+// optional parameters: this and arguments to invoke a callback
 //******************************************
 var BrowserDialog = {
 	div : null,
@@ -10154,7 +10170,7 @@ var BrowserDialog = {
 	cancelBtnDiv : null,
 	promptInp : null,
 	
-	callback : null,
+	callbackOrForm : null,
 	callbackThis : null,
 	callbackParamsArr : new Array(),
 	
@@ -10199,12 +10215,12 @@ var BrowserDialog = {
 		this.show("alert", msg, null, okBtnLabel, null);
 	},
 	
-	confirm : function(msg, callback, okBtnLabel, cancelBtnLabel) {
-		this.show("confirm", msg, callback, okBtnLabel, cancelBtnLabel);
+	confirm : function(msg, callbackOrForm, okBtnLabel, cancelBtnLabel) {
+		this.show("confirm", msg, callbackOrForm, okBtnLabel, cancelBtnLabel);
 	},
 	
-	prompt : function(msg, callback, okBtnLabel, cancelBtnLabel) {
-		this.show("prompt", msg, callback, okBtnLabel, cancelBtnLabel);
+	prompt : function(msg, callbackOrForm, okBtnLabel, cancelBtnLabel) {
+		this.show("prompt", msg, callbackOrForm, okBtnLabel, cancelBtnLabel);
 	},
 	
 	// setCallbackThis allows to provide callback with this object
@@ -10220,7 +10236,7 @@ var BrowserDialog = {
 			this.callbackParamsArr[i + 1] = arguments[i]; 
 	},
 	
-	show : function(type, msg, callback, okBtnLabel, cancelBtnLabel) {
+	show : function(type, msg, callbackOrForm, okBtnLabel, cancelBtnLabel) {
 		if (this.div == null)
 			this.init();
 		
@@ -10265,22 +10281,33 @@ var BrowserDialog = {
 		else
 			this.isPrompt = false;
 
-		this.callback = callback;
+		this.callbackOrForm = callbackOrForm;
 	},
 	
 	onok : function() {
 		var $t = BrowserDialog;
-		
-		if ($t.callback) {
-			if ($t.isPrompt) {
-				$t.callbackParamsArr[0] = $t.promptInp.value;
-				$t.callback.apply($t.callbackThis, $t.callbackParamsArr);
-			}
-			else {
-				$t.callbackParamsArr[0] = true;
-				$t.callback.apply($t.callbackThis, $t.callbackParamsArr);
-			}
+		if ($t.callbackOrForm) {
+			if (typeof $t.callbackOrForm == 'function') {
+		  	if ($t.isPrompt) {
+		  		$t.callbackParamsArr[0] = $t.promptInp.value;
+		  		$t.callbackOrForm.apply($t.callbackThis, $t.callbackParamsArr);
+		  	}
+		  	else {
+		  		$t.callbackParamsArr[0] = true;
+		  		$t.callbackOrForm.apply($t.callbackThis, $t.callbackParamsArr);
+		  	}
+		  }
+			// submit form
+		  else {
+				if (Browser.mobile) {
+					var url = FormProcessor.onSubmitProcess(null, $t.callbackOrForm);
+					Mobile.getPage(null, url, false); // 'false' - response to show in a new "mobile" page
+				}
+				else
+		  		$t.callbackOrForm.submit();
+		  }
 		}
+
 		$t.hide();
 	},
 	
@@ -10290,7 +10317,7 @@ var BrowserDialog = {
 			if (!$t.isPrompt) {
 				// confirm
 				$t.callbackParamsArr[0] = false;
-				$t.callback.apply($t.callbackThis, $t.callbackParamsArr);
+				$t.callbackOrForm.apply($t.callbackThis, $t.callbackParamsArr);
 			}
 		}
 		$t.hide();
