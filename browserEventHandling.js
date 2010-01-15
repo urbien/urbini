@@ -54,7 +54,6 @@
       }
       // 1.2. desktop
       else {
-        FormProcessor.initForms();
         DragEngine.initialize();
         FlashHandler.init();
         
@@ -65,6 +64,10 @@
         if (typeof addEventOnSchedule != 'undefined')
           addEventOnSchedule();
       }
+
+			// for both: mobile and desktop pages
+			// note: mobile calls it for each "mobile page"
+			FormProcessor.initForms();
 
 		  // The URL bar is hidden when running on the iPhone.
 		  if (navigator.userAgent.indexOf('iPhone') != -1) {
