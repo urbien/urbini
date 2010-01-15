@@ -458,11 +458,10 @@ var Boost = {
 
   getCurrentPageDiv: function() {
     var $t = Mobile;
-    var currentDiv = $t.urlToDivs[$t.currentUrl];
-    if (!currentDiv) {
-      currentDiv = document.getElementById('mainDiv');
+    if (!$t.urlToDivs || !$t.currentUrl || !$t.urlToDivs[$t.currentUrl]) {
+      return document.getElementById('mainDiv');
     }
-    return currentDiv;
+    return $t.urlToDivs[$t.currentUrl];
   },
 
   showOptionsMenu: function() {
@@ -880,8 +879,12 @@ var Boost = {
 		}
 		if (id == 'menu_Delete') {
 			var a = $t.getElementById('delete_url_hdn');
-			doConfirm("Do you realy want to delete this resource?");
-			newUrl = null;
+			if (a.href.indexOf("l.html") != -1) 
+		  	newUrl = a.href;
+		  else {
+		  	doConfirm("Do you realy want to delete this resource?");
+		  	newUrl = null;
+		  }
 		}
 		
     if (id == 'menu_Desktop') {
@@ -1569,11 +1572,11 @@ var Boost = {
       postRequest(e, url, urlParts[1], div, link, loadPage);
 
 		// loadPage
-    function loadPage(event, div, hotspot, content) {
+    function loadPage(event, div, hotspot, content, url) {
 			$t._preventingDoubleClick = false;
-			
+
 			// if server returned HTML containing "panel_block"
-			// the it is data entry dialog with error message.
+			// then it is data entry dialog with error message.
 			if (content.indexOf("panel_block") != -1) {
 				// "roll back" appending of new div
 				div.parentNode.removeChild(div);
@@ -1581,11 +1584,12 @@ var Boost = {
 				$t.browsingHistoryPos--;
 				$t.currentUrl = $t.browsingHistory[$t.browsingHistoryPos];
 			
-				DataEntry.onDataEntryLoaded(event, div, hotspot, content, true);
+				DataEntry.onDataEntryLoaded(event, div, hotspot, content, null, true);
 				return;
 		  }
-			
-			// hack: in case if serever returns full html page instead 
+
+			// hack: in case if serever returns full html page instead
+			//(page with error message, for example; generated from widget/page.jsp)
 			// mobile_page div content then retrieve mobile_page content only
 			var page = getDomObjectFromHtml(content, "className", "mobile_page");
 			if (page != null) {
@@ -1595,6 +1599,9 @@ var Boost = {
 			
 			setInnerHtml(div, content);
 			$t.setTitle(div);
+
+			// init for each new 'mobile' page
+			FormProcessor.initForms();
 							
 			// in case of data entry put content in current div, so no sliding effect
 			if (intoCurrentPage)
