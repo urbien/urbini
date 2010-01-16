@@ -1716,5 +1716,24 @@ function isParentDialogOnPage(dialog) {
 	return dialog.parentNode.tagName.toLowerCase() != "body";
 }
 
+function setCaretPosition(elem, caretPos) {
+    var elem;
+    if(elem != null) {
+        if(elem.createTextRange) {
+            var range = elem.createTextRange();
+            range.move('character', caretPos);
+            range.select();
+        }
+        else {
+            if(elem.selectionStart) {
+                elem.focus();
+                elem.setSelectionRange(caretPos, caretPos);
+            }
+            else
+                elem.focus();
+        }
+    }
+}
+
 // flag that common.js was parsed
 g_loadedJsFiles["common.js"] = true;
