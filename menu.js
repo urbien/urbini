@@ -1669,6 +1669,7 @@ var FormProcessor = {
               u.focus(); // in IE (at least in IE6) first focus() is lost for some
                         // reason - we are forced to issue another focus()
               u.focus();
+							setCaretPosition(u, 0);
             }catch(e){};
           }
           return true;
@@ -1680,6 +1681,7 @@ var FormProcessor = {
         try {
           firstField.focus();
           firstField.focus(); // second time for IE
+          setCaretPosition(firstField, 0);
         }catch(e){};
       }
     }
@@ -3263,7 +3265,7 @@ var ListBoxesHandler = {
     $t.displayItemName();
     // slide forward
 		var curPanel = $t.getCurrentPanelDiv();
-		if (curPanel.className != panel.className) {
+		if (curPanel && curPanel.className != panel.className) {
 			var toResetTray = (SlideSwaper.getTrayPosition($t.tray) == 0) ? true : false;
 			SlideSwaper.moveForward($t.tray, toResetTray, $t.onOptionsDisplayed);
 		}
@@ -4256,7 +4258,8 @@ var Filter = {
   // hides params with not suited beginning.
   onParamNameTyping : function(paramNameField) {
 		var $t = Filter;
-    var typedText = paramNameField.value.toLowerCase();
+		
+    var typedText = FieldsWithEmptyValue.getValue(paramNameField);
     var paramsTable = getChildByClassName($t.filtersArr[$t.currentFilterUrl], "rounded_rect_tbl");
     if (!paramsTable)
       return;
@@ -4402,7 +4405,7 @@ var DataEntry = {
 	
 	// hides params with not suited beginning.		
   onParamNameTyping : function(paramNameField) {
-    var typedText = paramNameField.value.toLowerCase();
+    var typedText = FieldsWithEmptyValue.getValue(paramNameField);
     var paramsTable = getAncestorById(paramNameField, "dataEntry");
     var spans = paramsTable.getElementsByTagName("span");
     for (var i = 0; i < spans.length; i++) {
@@ -6983,11 +6986,8 @@ var FieldsWithEmptyValue = {
     
     this.emptyValuesArr[this.getKeyOfField(field)] = emptyValue; 
 		
-    // If the onfocus method changes the value of the input field,
-    // then onclick event doesn't fire the first time.
-    // So click event was used instead focus.
     addEvent(field, "click", this.onclick, false);
-    addEvent(field, "keydown", this.onclick, false);
+    addEvent(field, "keydown", this.onkeydown, false);
     addEvent(field, "blur", this.onblur, false);
 		
 		if (this.hasClearTextCtrl(field))
@@ -7037,9 +7037,8 @@ var FieldsWithEmptyValue = {
 		
 		field.style.color = this.EMPTY_COLOR;
 		field.style.fontWeight = "bold";
-		
-		field.value = this.emptyValuesArr[this.getKeyOfField(field)];
 		field.setAttribute("is_empty_value", "y");
+		field.value = this.emptyValuesArr[this.getKeyOfField(field)];
 	},
 	
 	setReady : function(field) {
@@ -7061,13 +7060,21 @@ var FieldsWithEmptyValue = {
 		// "text_entry" field has variable name in accordance to current parameter
 		if (field.className != "iphone_field" && field.name.length > 0) {
 			key += field.name; // use name because form field are different by name
-	}
+		}
 		return key;
 	},
 	
 	onclick : function(event) {
+		var $t = FieldsWithEmptyValue;
 		var field = getEventTarget(event);
-		FieldsWithEmptyValue.setReady(field);   
+		if ($t.isEmptyValue(field))
+			setCaretPosition(field, 0);
+	},
+	
+	onkeydown : function(event) {
+		var $t = FieldsWithEmptyValue;
+		var field = getEventTarget(event);
+		$t.setReady(field); 
   },
   
 	onblur : function(event) {
@@ -7102,6 +7109,8 @@ var FieldsWithEmptyValue = {
 	},
 	updateClearControl : function(field) {
 		var $t = FieldsWithEmptyValue;
+		if (!$t.hasClearTextCtrl(field))
+			return;
 		var clearCtrl = getPreviousSibling(field.parentNode);
 		var img = clearCtrl.getElementsByTagName("img")[0];
 		var value = $t.getValue(field);
@@ -7109,20 +7118,40 @@ var FieldsWithEmptyValue = {
 	},
 	// "cross" icon inside a field - clears text field content
 	onClickClearTextCtrl : function (crossDiv, callback) {
-	  var textField = crossDiv.parentNode.parentNode.getElementsByTagName("input")[0];
-	  textField.value='';
+		var $t = FieldsWithEmptyValue;
+		var field = crossDiv.parentNode.parentNode.getElementsByTagName("input")[0];
+
+		$t.setEmpty(field);
+		setCaretPosition(field, 0);
+		
 		crossDiv.firstChild.style.visibility = "hidden";
 	  // FF3 and higher has a problem while transform (CSS) sliding
 		if (!Browser.firefox3)
-			textField.focus();
+			field.focus();
 	  
 	  if (callback)
-		  callback(textField);
+		  callback(field);
+	},
+	
+	// used to get input field on cross icon click
+	getField : function(elem) {
+		var parentTable = getAncestorByTagName(elem, "table");
+		return parentTable.getElementsByTagName("input")[0];
 	},
 	
 	hasClearTextCtrl : function(field) {
-		var className = field.className;
-		return (className == "iphone_field" || className == "iphone_search")
+		var prevTd = getPreviousSibling(field.parentNode);
+		if (!prevTd)
+			return false;
+		
+		var img = getChildByTagName(prevTd, "img");
+		if (!img)
+			return false;
+		
+		if (img.src.indexOf("clear_text.png") == -1)
+			return false;	
+		
+		return true;
 	}
 }
 
@@ -7312,12 +7341,17 @@ var DragEngine = {
 	startDrag: function(e){
 		var thisObj = DragEngine;
 		var evtobj = window.event ? window.event : e;
-		var caughtObj = window.event ? event.srcElement : e.target;
+		var caughtObj = getEventTarget(e);
 		var titleObj = null;
+
+		// no D&D if mousedown in <input>
+		if (caughtObj.tagName && caughtObj.tagName.toLowerCase() == "input")
+			return;
 
 		if((titleObj =  getAncestorById(caughtObj, "titleBar")) == null &&
 		    (titleObj =  getAncestorByAttribute(caughtObj, "className", thisObj.classNameArr)) == null )
 		  return;
+		
     // possible to define handler as Attribute in html
 		var dragHandlerStr = titleObj.getAttribute("draghandler");
 		// or by class name here
@@ -7355,6 +7389,7 @@ var DragEngine = {
 	    return;
 
 		var evtobj = window.event ? window.event : e;
+		
 		var scrollXY = getScrollXY();
 
 		// FF3(!)/FF2 onmousedown returns wrong coordinates
