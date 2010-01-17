@@ -461,6 +461,7 @@ span.itemsCount {color:red; font-family:sans-serif, arial; font-size:10pt; font-
 span.rollup {color:red; font-family:sans-serif, arial; font-size:9pt; font-weight:bold}
 
 span.dark{color:#eeeeee}
+span.nodes  {background-color:#cbcbcb}
 span.light {color:#ffffff}
 
 a:link { color: #0033CC; }
