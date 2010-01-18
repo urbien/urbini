@@ -912,7 +912,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           arr[".-filterCols"] = ".-filterCols";
           arr["-curFilterCols"] = "-curFilterCols";
         }
-        params = FormProcessor.getFormFilters(form, allFields, arr);
+        params = FormProcessor.getFormFilters(form, allFields, arr, true);
         var formAction = form.elements['-$action'].value;
         var baseUriO = document.getElementsByTagName('base');
         var baseUri = "";
@@ -1894,14 +1894,16 @@ var FormProcessor = {
       idx++;
 
       var field = fields[idx];
- 
+			var name  = field.name;
+      var value = field.value;
+			
 			// reset field with empty value ("full text search", for example)
       var isEmptyValue = field.getAttribute("is_empty_value")
-      if (isEmptyValue && isEmptyValue == "y")
-        field.value = ""; 
-			
-      var value = field.value;
-      var name  = field.name;
+      if (isEmptyValue && isEmptyValue == "y") {
+		  	if (!isXHR)
+					field.value = "";
+				value = "";
+		  }	
 			
       if (exclude) {
         if (typeof exclude == 'string' && name == exclude) 
@@ -3067,7 +3069,7 @@ var ListBoxesHandler = {
             allFields = false;
         }
  			var exclude = this.textEntry ? this.textEntry.name : null;
-      params += FormProcessor.getFormFilters(form, allFields, exclude);
+      params += FormProcessor.getFormFilters(form, allFields, exclude, true);
     }
     
     params += "&$form=" + currentFormName;
@@ -3293,22 +3295,7 @@ var ListBoxesHandler = {
     // slide forward
     SlideSwaper.moveForward($t.tray, true);
   },
-/*
-  showClassifier : function(paramTr) {
-		var $t = ListBoxesHandler;
-		// set top offset (margin) to sutisfy current scroll position
-		var topOffset = getScrollXY()[1] - findPosY(this.tray);
-		$t.classifierPanel.style.marginTop = (topOffset > 0) ? topOffset : 0 ;
 
-    $t.classifierPanel.style.display = "inline";
-    
-    //var inputs = $t.getDateInputs(paramTr); //Filter.getPeriodInputs(paramTr);
-    //startCalendar($t.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
-    
-    // slide forward
-    SlideSwaper.moveForward($t.tray, true);
-  },
-*/	
   // returns 2 inputs for the filter (period)
   // and 1 input for data entry (date)
   getDateInputs : function(parent) {
@@ -4967,7 +4954,7 @@ function resetViewCols(e, tr) {
     arr[".-filterCols"] = ".-filterCols";
     arr["-curFilterCols"] = "-curFilterCols";
   }
-  params = FormProcessor.getFormFilters(form, allFields, arr);
+  params = FormProcessor.getFormFilters(form, allFields, arr, false);
   var baseUriO = document.getElementsByTagName('base');
   var baseUri = "";
   if (baseUriO) {
