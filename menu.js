@@ -6560,6 +6560,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   // cut popup dimensions to fit the screen
   var mustCutDimension = (div.id == 'pane2' || Browser.joystickBased) ? false: true;
   // var mustCutDimension = false;
+
   if (mustCutDimension) {
     var xFixed = false;
     var yFixed = false;
@@ -6567,9 +6568,10 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       div.style.width = screenX - margin * 2 + 'px';
       xFixed = true;
     }
-    if (divCoords.height > screenY - margin * 2) { // * 2 <- top & bottom margins
-      div.style.height = screenY - margin * 2 + 'px';
-      yFixed = true;
+   
+		if (divCoords.height > screenY - margin * 2) { // * 2 <- top & bottom margins
+      //div.style.height = screenY - margin * 2 + 'px';
+      //yFixed = true;
     }
     // recalc coords and add scrolling if we fixed dimensions
     if (typeof div.style.overflowX == 'undefined') {
@@ -6613,18 +6615,19 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       left = left + offsetX;
   }
 
+// commented out after Touch UI (filter is bound to the search field)
   // now adjust vertically - so we fit inside the viewport
-  if (distanceToBottomEdge < divCoords.height + margin) {
-    top = (screenY + scrollY) - divCoords.height;
-    if ((top - scrollY)- margin > 0)
-      top -= margin;   // adjust for a scrollbar
-    if (top < scrollY) // but not higher then top of viewport
-      top = scrollY + 1;
-  }
-  else { // apply user requested offset only if no adjustment
+//  if (distanceToBottomEdge < divCoords.height + margin) {
+//    top = (screenY + scrollY) - divCoords.height;
+//    if ((top - scrollY)- margin > 0)
+//      top -= margin;   // adjust for a scrollbar
+//    if (top < scrollY) // but not higher then top of viewport
+//      top = scrollY + 1;
+//  }
+//  else { // apply user requested offset only if no adjustment
     if (offsetY)
       top = top + offsetY;
-  }
+//  }
 
 	
 	// no vertical scrollbar for Touch UI dialogs
@@ -6632,8 +6635,8 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 		divCoords.height = "";
 	
 	// set div size!
-  div.style.width  = divCoords.width;
-  div.style.height = divCoords.height;
+ // div.style.width  = divCoords.width;
+ // div.style.height = divCoords.height;
 
   var zIndex = 1;
   if (hotspot) {
