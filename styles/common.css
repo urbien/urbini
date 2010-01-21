@@ -1965,7 +1965,13 @@ table.printFB {
 #browser_dlg .content .prompt_text { display: none; border: 1px solid #fff; background: transparent; width: 280; color: #fff; }
 .iphone_dlg_btn { cursor: pointer; text-align: center; color: #fff; padding: 0px; font-size: 18px; font-weight: normal; width: 129px; height: 44px; line-height: 44px; background: url(../images/skin/iphone/dlg_button.jpg); }
 
-/* ****************** Touch UI ***************************/
+/******************* Touch UI ***************************/
+
+/* for fixing "selector" on iPhone
+input { outline: 0 none; }
+form { margin-top: 0; margin-bottom: 0; }
+
+
 /* prevents blue rect in WebKit browsers */
 input:focus { outline: 0 none; }
 
@@ -2003,9 +2009,9 @@ div .panel_block, td .panel_block {
 .panel_block .header .wide_cell { width: 100%; text-align: center; }
 
 .panel_block .content, .panel_block #lists_container { padding: 10px; width: 100%; }
-.panel_block  .property_group { color: #4B5578; text-shadow: #edf1fa 1px 1px 0px; font-size: 17px; font-weight: bold; margin: 15px 0px 5px 10px; /*text-transform: uppercase;*/ }
+.panel_block .property_group, .panel_block #item_name { color: #4B5578; text-shadow: #edf1fa 1px 1px 0px; font-size: 17px; font-weight: bold; margin: 15px 0px 5px 10px; /*text-transform: uppercase;*/ }
 
-.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #fff; padding: 0; border: solid rgb(166, 170, 173) 1px; color: #000000 }
+.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #fff; padding: 0; border: solid rgb(166, 170, 173) 1px; color: #000000; empty-cells:show; }
 
 .rounded_rect_tbl .param_tr { cursor: pointer; }
 .rounded_rect_tbl .param_tr td { padding: 6 0 6 0; vertical-align: middle; }
@@ -2091,7 +2097,6 @@ div .panel_block, td .panel_block {
 input[type=checkbox] { display: none; }
 */
 
-.panel_block #item_name { font-size: 13px; font-weight: bold; margin: 15px 0px 0px 10px;   }
 /** iPhone toggle button. **/
 /* 3 types 1)left align 2) right align 3) blue with left align */
 .toggle_btn { float: right; margin: 5 9 5 0; width: 100px; height: 30px; background:#FFFFFF url(../images/skin/iphone/toggle_btn.png); cursor: pointer; }
