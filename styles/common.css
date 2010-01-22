@@ -2118,7 +2118,7 @@ input[type=checkbox] { display: none; }
 .iphone_field .left img { margin-left: 3px; visibility : hidden; cursor: pointer; }
 .iphone_field .right { width: 8px; background-position: top right; }
 
-.iphone_field input { -webkit-appearance: none; padding: 5px 0px 0px 0px; background-position: top center; font: bold 17px Helvetica; border: none; }
+.iphone_field input { -webkit-appearance: none; width: 100%; padding: 5px 0px 0px 0px; background-position: top center; font: bold 17px Helvetica; border: none; }
 
 
 /** iPhone search field **/
@@ -2127,7 +2127,7 @@ input[type=checkbox] { display: none; }
 .iphone_search .left { width: 23px; background-position: top left; cursor: pointer; }
 .iphone_search .left img { margin: 6px 0px 0px 2px; visibility : hidden; }
 .iphone_search .right { width: 32px; background-position: top right; cursor: pointer; }
-.iphone_search input { -webkit-appearance: none; padding: 5px 0px 0px 0px; background-position: top center; font: bold 17px Helvetica; border: none; }
+.iphone_search input { -webkit-appearance: none; width: 100%; padding: 5px 0px 0px 0px; background-position: top center; font: bold 17px Helvetica; border: none; }
 
 /*.toolbar_icons_set { width: 25; height: 40; background-image: url(../images/skin/iphone/toolbar_icons_set.png) }*/
 .icon_btn { width: 30px; height: 30px; cursor: pointer; /*margin: 0px 2px 0px 2px; padding: 0; float: left; border: none;*/ }
