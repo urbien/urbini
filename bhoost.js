@@ -901,7 +901,11 @@ var Boost = {
             uri = uri.substring(0, idx) + uri.substring(idx1 + 1);
         }
       }
-      uri += '&-desktop=y';
+      var idx2 = uri.indexOf('#');
+      if (idx2 == -1)
+        uri += '&-desktop=y';
+      else
+        uri = uri.substring(0, idx2) + '&-desktop=y';   
       Boost.view.setProgressIndeterminate(true);
       document.location.replace(uri);
       return null;
