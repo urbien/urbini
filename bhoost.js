@@ -476,7 +476,7 @@ var Boost = {
       $t.urlToDivs = u;
     }
     var currentDiv = $t.getCurrentPageDiv();
-    $t.displayViewsFor(currentDiv, optionsDiv);
+    $t.displayActionsAndViewsFor(currentDiv, optionsDiv);
     MobileMenuAnimation.show(currentDiv);
     return true;
   },
@@ -932,6 +932,14 @@ var Boost = {
       document.location.replace($t.currentUrl);
       return null;
     }
+    /*
+    if (id == 'menu_logoff') {
+      // Write browsing history to the server and load it when loading new page
+      var a = $t.getElementById('logoff_url_hdn');
+      DataEntry.show(a.href);
+      newUrl = null;
+    }
+    */
     if (id == 'menu_Refresh') {
       Boost.view.setProgressIndeterminate(true);
       optionsDiv.style.visibility = "hidden";
@@ -1754,9 +1762,34 @@ var Boost = {
 		return this.browsingHistoryPos < this.browsingHistory.length - 1;
 	},
 
-  displayViewsFor: function(div, optionsDiv) {
+  displayActionsAndViewsFor: function(div, optionsDiv) {
+    var $t = Mobile;
+    var isAdd = $t.getElementById('add_url_hdn') != null;
+    var isEdit = $t.getElementById('edit_url_hdn') != null;
+    var isDelete = $t.getElementById('delete_url_hdn') != null;
+    
+    var addA = document.getElementById('menu_Add');
+    var addTd = addA.parentNode;
+    if (isAdd)
+      addTd.className = '';
+    else
+      addTd.className = 'hdn';
+    var editA = document.getElementById('menu_Edit');
+    var editTd = editA.parentNode;
+    if (isEdit)
+      editTd.className = '';
+    else
+      editTd.className = 'hdn';
+    var delA = document.getElementById('menu_Delete');
+    var delTd = delA.parentNode;
+    if (isDelete)
+      delTd.className = '';
+    else
+      delTd.className = 'hdn';
+
     var divs = div.getElementsByTagName('div');
     var viewsDiv;
+
     for (var i=0; i<divs.length  &&  viewsDiv == null; i++) {
       var tDiv = divs[i];
       if (tDiv.id  &&  tDiv.id == 'options_Views')
@@ -1807,7 +1840,6 @@ var Boost = {
       if (!found)
         td.style.visibility = "hidden";
     }
-
   },
   getPageTitle: function(pageDiv) {
     var divs = pageDiv.getElementsByTagName('div');
