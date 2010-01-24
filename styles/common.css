@@ -1606,6 +1606,7 @@ div.contentsRL {
 .iinp_btn { cursor: pointer; }
 .liinp { width:32px; height:32px; border:0px; vertical-align:middle }
 .finp { width:32px; height:32px; padding-right:2px;border:0px; vertical-align:middle }
+.swinp { width:32px; height:32px; padding-right:2px; padding-left:2px; border:0px; vertical-align:middle }
 .iiphone { width:48px; height:48px; border:0px; vertical-align:middle }
 .icursor {cursor: pointer; /*width:16px; height:16px;*/ border:0px; vertical-align:middle}
 .ixlcursor {cursor: pointer;width:48px; height:48px; border:0px; vertical-align:middle}
@@ -1620,7 +1621,8 @@ div.contentsRL {
 .ftxt {text-align:left; font-size:9px; font-family:Verdana, sans-serif}
 .ftxt1 {border: none; padding: 0px; margin-left: 0; margin-right: 0; vertical-align: middle}
 /* Style for message in data entry for property that was either not set or set incorrectly*/
-.msg {border: 1px solid rgb(160, 30, 0); background: rgb(251, 240, 248)}
+/*.msg {border: 1px solid rgb(160, 30, 0); background: rgb(251, 240, 248)}*/
+.msg {background: rgb(251, 240, 248)}
 
 /* uploadFrame iframe style */
 .uframe {position:absolute; top:0px; left:0px; visibility:hidden; display:none;}
@@ -2175,3 +2177,16 @@ input[type=checkbox] { display: none; }
 .backlink_counter .left, .backlink_counter .right { height: 20px; background: transparent url(../images/skin/iphone/backlink_counter.png) no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
 .backlink_counter .right { float: left; width: auto; line-height: 19px; text-align: center; padding-right: 9px; color: #fff; font-size: 12px; font-weight: bold;  background-position: center right; }
+
+.sidebar {
+   empty-cells: hide;
+   border:none;
+   border-bottom-style:none;
+   border-collapse:collapse;
+   border-top-style:none;
+   margin: 0px;
+   border-spacing: 0px;
+   padding: 0px;
+   line-height:12px;
+   height:0px;
+}
