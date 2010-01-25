@@ -1525,8 +1525,8 @@ var Boost = {
 			}
     }
     else {
-	  // page is in history
-	  div = $t.urlToDivs[newUrl];
+  	  // page is in history
+  	  div = $t.urlToDivs[newUrl];
       $t.currentUrl = newUrl;
       if (div  &&  !isRefresh) {
         $t.setTitle(div);
@@ -1578,6 +1578,7 @@ var Boost = {
       return stopEventPropagation(e);
 
     $t._preventingDoubleClick = true;
+
     if (isMore)
       postRequest(e, url, urlParts[1], div, link, $t._loadMoreItems);
     else
@@ -1652,14 +1653,22 @@ var Boost = {
     if (!table)
       return;
     var tbody = table.getElementsByTagName('tbody')[0];
-
     var currentDiv = $t.urlToDivs[$t.currentUrl];
     elms = currentDiv.getElementsByTagName('tr');
     var tr;
-    for (var i=0; i<elms.length  &&  !tr; i++) {
+    var totalsTR;
+    var headerTR;
+
+    for (var i=0; i<elms.length; i++) {
       var tt = elms[i];
-      if (tt.id && tt.id == '_replace')
-        tr = tt;
+      if (tt.id) {
+        if (!tr  &&  tt.id == '_replace')
+          tr = tt;
+        else if (totalsTR  &&  tt.id == 'totals')
+          totalsTR = tt;
+        else if (tt.id == 'header')
+          headerTR = tt;
+      }
     }
     if (!tr)
       return;
@@ -1667,11 +1676,16 @@ var Boost = {
     var curTbody = tr.parentNode;
 
     elms = tbody.childNodes;
-    for (var i=0; i<elms.length; i++)
+    for (var i=0; i<elms.length; i++)  
       curTbody.appendChild(elms[i]);
+    
     var coords = getElementCoords(tr);
-    tr.style.visibility = "hidden";
+    tr.className = "hdn";
     tr.id = '';
+    if (totalsTR) {
+      totalsTR.className = 'hdn';
+      totalsTR.id = '';
+    }
     Boost.view.setProgressIndeterminate(false);
     Boost.log('left = ' + coords.left + '; top = ' + coords.top);
     window.scrollTo(coords.left, coords.top);
