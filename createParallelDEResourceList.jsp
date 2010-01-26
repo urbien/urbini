@@ -11,9 +11,11 @@
 
     <tr valign="top"><td width="100%">
       <form id="filter" name="tablePropertyList" method="post" action="mkresource" autocomplete="off" style="display: inline; margin: 0;">
-       <tablePropertyList/>
-       <div align="right"><span class="xs"><measurement/></span></div>
-       <input type="hidden" name="-$action" value="mkResource" />
+       <panelBlock on_page="y">
+         <tablePropertyList/>
+         <div align="right"><span class="xs"><measurement/></span></div>
+         <input type="hidden" name="-$action" value="mkResource" />
+       </panelBlock>
        <br />
        
       <parallelResourceList />
