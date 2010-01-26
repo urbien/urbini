@@ -3227,13 +3227,16 @@ var ListBoxesHandler = {
 			$t.panelBlock.style.top = findPosY(hotspot) - 20;
 		}
 			
-    // put options popup in options div, so make it static
+
     var listsCont = getChildById(panel, "lists_container");
     if (listsCont)
 			listsCont.appendChild(popupDiv);
 		else
 			panel.appendChild(popupDiv);
-    
+  
+		var noMatchesDiv = getChildByClassName(panel, "no_matches");
+		noMatchesDiv.style.display = "none";
+		
     Popup.load(event, popupDiv, hotspot, content);
 
     popupDiv.style.width =  "100%"; //width; 
@@ -3317,13 +3320,6 @@ var ListBoxesHandler = {
 
   displayItemName : function() {
     var itemNameDiv = getChildById(this.optionsPanel, "item_name");
-    if (itemNameDiv == null) {
-      itemNameDiv = document.createElement("div");
-      itemNameDiv.id = "item_name";
-      
-      var listsContainer = getChildById(this.optionsPanel, "lists_container");
-      listsContainer.insertBefore(itemNameDiv, listsContainer.firstChild);
-    }
     
     var form = document.forms[currentFormName];
     var textField = form.elements[originalProp];
@@ -3464,7 +3460,8 @@ var ListBoxesHandler = {
       var checkBox = chkCell.getElementsByTagName("input")[0];
       if (checkBox) {
         if (checkBox.checked) {
-          var text = getTextContent(getNextSibling(checkBox.parentNode));
+					var paramNameTd = getChildByClassName(optTable.rows[i], "menuItem"); //getNextSibling(getNextSibling(checkBox.parentNode));
+          var text = getTextContent(paramNameTd);
 					selectedOptions.push({"text" : text, "value" : checkBox.value});
         }
       }
@@ -3645,17 +3642,30 @@ var ListBoxesHandler = {
 		var tbl = parentDiv.getElementsByTagName("table")[0];
  
 		var rows = tbl.rows;
+		var noMatches = true;
     for (var i = 0; i < rows.length; i++) {
       var label = getChildByClassName(rows[i], "menuItem");
       if (!label)
         continue;
 			var chkCell = getChildByClassName(rows[i], "menuItemChk");
       var labelName = getTextContent(label).toLowerCase();
-      if (labelName.indexOf(typedText) == 0)
+			
+      if (labelName.indexOf(typedText) == 0) {
 		  	rows[i].style.display = "";
+				noMatches = false;
+		  }
 		  else 
-				rows[i].style.display = "none";
+		  	rows[i].style.display = "none";
     }
+
+		var noMatchesDiv = getChildByClassName(this.optionsPanel, "no_matches");
+		if (noMatches) {
+			noMatchesDiv.innerHTML = "no matches for \"" + typedText + "\"";
+			noMatchesDiv.style.display = "block";
+		}
+		else
+			noMatchesDiv.style.display = "none";
+		
   },
   
   // create Calendar
@@ -4037,12 +4047,12 @@ var Filter = {
 		$t.filtersArr[$t.currentFilterUrl] = document.body.appendChild(loadedFilter);
 
 		ExecJS.runDivCode(loadedFilter);
-    
+ 
     var initialized = $t.initFilter($t.filtersArr[$t.currentFilterUrl]);
 		if (!initialized && Browser.mobile) {
-			 alert("problem to initialize filter"
-				+ "<br/>possible came login page instead the filter"
-				+ "<br/>handling of this case should be implemented!");
+//			 alert("problem to initialize filter"
+//				+ "<br/>possible came login page instead the filter"
+//				+ "<br/>handling of this case should be implemented!");
 		}
 
     // desktop has filter position
@@ -4128,6 +4138,8 @@ var Filter = {
 		}
 		else {
 			$t.hide();
+			$t.clearRollups();
+			
 			if (!Browser.mobile)
 				$t.handleFilterState(false);
 		}
@@ -4184,7 +4196,25 @@ var Filter = {
     input.value = value;
     return input;
   },
-    
+  
+	clearRollups : function() {
+		var $t = Filter;
+		var url = $t.retrieveFilterUrl();
+    if (!$t.filtersArr[url]) 
+			return;
+	
+		var cells = $t.filtersArr[url].getElementsByTagName("td");
+		for (var i = 0; i < cells.length; i++) {
+			if (cells[i].className == "rollup_td") {
+				var toggleBtn = cells[i].getElementsByTagName("div")[0];
+				var input = cells[i].getElementsByTagName("input")[0];
+				if (!toggleBtn || !input)
+					continue;
+				CheckButtonMgr.setState(toggleBtn, input, false)
+			}
+		}
+	},
+	  
   onPeriodReset : function() {
     var inputs = PeriodPicker.getInputs();
     inputs[0].value = "";
@@ -4251,14 +4281,26 @@ var Filter = {
     if (!paramsTable)
       return;
     var rows = paramsTable.rows;
-    for (var i = 0; i < rows.length; i++) {
+    var noMatches = true;
+		for (var i = 0; i < rows.length; i++) {
       var label = getChildByClassName(rows[i], "label");
       var labelName = getTextContent(label).toLowerCase();
-      if (labelName.indexOf(typedText) == 0)
-        rows[i].style.display = "";
-      else
-        rows[i].style.display = "none";
-    }
+      if (labelName.indexOf(typedText) == 0) {
+	  	rows[i].style.display = "";
+				noMatches = false;
+		  }
+		  else 
+		  	rows[i].style.display = "none";
+	  }
+		
+		var formPanel = getAncestorByClassName(paramsTable, "form_panel");
+		var noMatchesDiv = getChildByClassName(formPanel, "no_matches");
+		if (noMatches) {
+			noMatchesDiv.innerHTML = "no matches for \"" + typedText + "\"";
+			noMatchesDiv.style.display = "block";
+		}
+		else
+  		noMatchesDiv.style.display = "none";
   },
 	
 	retrieveFilterUrl: function(){
@@ -4337,9 +4379,7 @@ var DataEntry = {
 		div.style.visibility = "hidden";
 		// insert in DOM
 		div = document.body.appendChild(div);
-		setDivVisible(event, div, null, $t.hotspot, 0, 0, null);
-		$t.hotspot = null;
-
+	
 		// onDataError happens on mkResource
 		if (onDataError || $t.isMkResource($t.currentUrl))
 			$t.doStateOnMkResource(div, true);
@@ -4353,8 +4393,12 @@ var DataEntry = {
 		FormProcessor.initForms(div);
 		ExecJS.runDivCode(div);
 		
+		// show dialog after GUI initialization
+		setDivVisible(event, div, null, $t.hotspot, 0, 0, null);
+		
 		var key = $t._getKey($t.currentUrl);
 		$t.dataEntryArr[key] = div;
+		$t.hotspot = null;
 	},
 	
 	onDataEntryRejection : function(event, div, hotspot, html, url) {
@@ -4395,16 +4439,29 @@ var DataEntry = {
     var typedText = FieldsWithEmptyValue.getValue(paramNameField);
     var paramsTable = getAncestorById(paramNameField, "dataEntry");
     var spans = paramsTable.getElementsByTagName("span");
-    for (var i = 0; i < spans.length; i++) {
+    var noMatches = true;
+		for (var i = 0; i < spans.length; i++) {
       if (spans[i].className != "label")
         continue;
       var labelName = getTextContent(spans[i]).toLowerCase();
       var row = getAncestorByTagName(spans[i], "tr");
-      if (labelName.indexOf(typedText) == 0)
-        row.style.display = "";
-      else
-        row.style.display = "none";
-    }
+      if (labelName.indexOf(typedText) == 0) {
+		  	row.style.display = "";
+				noMatches = false;
+		  }
+		  else 
+		  	row.style.display = "none";
+	  }
+		
+		var formPanel = getAncestorByClassName(paramsTable, "form_panel");
+		var noMatchesDiv = getChildByClassName(formPanel, "no_matches");
+		if (noMatches) {
+			noMatchesDiv.innerHTML = "no matches for \"" + typedText + "\"";
+			noMatchesDiv.style.display = "block";
+		}
+		else
+			noMatchesDiv.style.display = "none";
+			
   },
 	
   submit : function(e, submitIcon) {
@@ -6949,6 +7006,7 @@ var SearchField = {
 // sets parameter "is_empty_value = y"
 var FieldsWithEmptyValue = {
   EMPTY_COLOR : "#bbb",
+	DIMMER_COLOR : "#ddd", // on click
   emptyValuesArr : new Array(),
   bluredField : null, 
 	
@@ -7022,10 +7080,11 @@ var FieldsWithEmptyValue = {
 		var attrib = field.getAttribute("is_empty_value");
 		var isEmpty = (attrib != null && attrib == "y");
 		
+		field.style.color = this.EMPTY_COLOR; // instead DIMMER_COLOR
+		
 		if (isEmpty)
 			return;
 		
-		field.style.color = this.EMPTY_COLOR;
 		field.style.fontWeight = "bold";
 		field.setAttribute("is_empty_value", "y");
 		field.value = this.emptyValuesArr[this.getKeyOfField(field)];
@@ -7057,8 +7116,10 @@ var FieldsWithEmptyValue = {
 	onclick : function(event) {
 		var $t = FieldsWithEmptyValue;
 		var field = getEventTarget(event);
-		if ($t.isEmptyValue(field))
+		if ($t.isEmptyValue(field)) {
+			field.style.color = $t.DIMMER_COLOR;
 			setCaretPosition(field, 0);
+		}
 	},
 	
 	onkeydown : function(event) {
@@ -7077,8 +7138,11 @@ var FieldsWithEmptyValue = {
 		var $t = FieldsWithEmptyValue;
 		if (!$t.bluredField)
 			return;
+		
 		var field = $t.bluredField;
-		if (field.value.length == 0)
+		var value = $t.getValue(field);
+		
+		if (value.length == 0)
     	$t.setEmpty(field);
 		else { // it happened when a field with empty value filled out from options list.
 			var key = $t.getKeyOfField(field);
