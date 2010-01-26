@@ -2508,7 +2508,7 @@ function addCurrentDashboardAndCurrentTab(target) {
     return;
   var hasQuestion    = a.indexOf('?') != -1;
   // Fixed for DUDE
-  if (!hasQuestion || a.indexOf('/tail?') != -1 || a.indexOf("/createResourceList?")  || a.indexOf("/createParallelResourceList?"))
+  if (!hasQuestion || a.indexOf('/tail?') != -1 || a.indexOf("/createResourceList?") != -1 || a.indexOf("/createParallelResourceList?") != -1)
     return;
   // Check if this is blog entry with contents
   var idx =  a.indexOf('&-ulId=');
