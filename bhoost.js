@@ -903,7 +903,7 @@ var Boost = {
       }
       var idx2 = uri.indexOf('#');
       if (idx2 == -1)
-        uri += '&-desktop=y';
+      uri += '&-desktop=y';
       else
         uri = uri.substring(0, idx2) + '&-desktop=y';   
       Boost.view.setProgressIndeterminate(true);
@@ -1437,6 +1437,8 @@ var Boost = {
       $t.browsingHistory = s;
     }
 
+		BottomToolbar.hide();
+
     var newUrl;
     if (typeof link == 'string')
       newUrl = link;
@@ -1525,8 +1527,8 @@ var Boost = {
 			}
     }
     else {
-  	  // page is in history
-  	  div = $t.urlToDivs[newUrl];
+	  // page is in history
+	  div = $t.urlToDivs[newUrl];
       $t.currentUrl = newUrl;
       if (div  &&  !isRefresh) {
         $t.setTitle(div);
@@ -1578,7 +1580,6 @@ var Boost = {
       return stopEventPropagation(e);
 
     $t._preventingDoubleClick = true;
-
     if (isMore)
       postRequest(e, url, urlParts[1], div, link, $t._loadMoreItems);
     else
@@ -1598,6 +1599,8 @@ var Boost = {
 				$t.currentUrl = $t.browsingHistory[$t.browsingHistoryPos];
 			
 				DataEntry.onDataEntryLoaded(event, div, hotspot, content, null, true);
+		    // hides the location bar
+		    scrollTo(0, 1);
 				return;
 		  }
 
@@ -1653,6 +1656,7 @@ var Boost = {
     if (!table)
       return;
     var tbody = table.getElementsByTagName('tbody')[0];
+
     var currentDiv = $t.urlToDivs[$t.currentUrl];
     elms = currentDiv.getElementsByTagName('tr');
     var tr;
@@ -1663,7 +1667,7 @@ var Boost = {
       var tt = elms[i];
       if (tt.id) {
         if (!tr  &&  tt.id == '_replace')
-          tr = tt;
+        tr = tt;
         else if (totalsTR  &&  tt.id == 'totals')
           totalsTR = tt;
         else if (tt.id == 'header')
@@ -1676,9 +1680,8 @@ var Boost = {
     var curTbody = tr.parentNode;
 
     elms = tbody.childNodes;
-    for (var i=0; i<elms.length; i++)  
+    for (var i=0; i<elms.length; i++)
       curTbody.appendChild(elms[i]);
-    
     var coords = getElementCoords(tr);
     tr.className = "hdn";
     tr.id = '';
@@ -1803,7 +1806,6 @@ var Boost = {
 
     var divs = div.getElementsByTagName('div');
     var viewsDiv;
-
     for (var i=0; i<divs.length  &&  viewsDiv == null; i++) {
       var tDiv = divs[i];
       if (tDiv.id  &&  tDiv.id == 'options_Views')
@@ -1854,6 +1856,7 @@ var Boost = {
       if (!found)
         td.style.visibility = "hidden";
     }
+
   },
   getPageTitle: function(pageDiv) {
     var divs = pageDiv.getElementsByTagName('div');
@@ -1959,7 +1962,7 @@ var MobilePageAnimation = {
       this.rightToLeft = true;
     else
       this.rightToLeft = false;
-    
+   
     // hides the location bar
     scrollTo(0, 1)
     setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
@@ -2292,38 +2295,41 @@ var CueLoading = {
 
 /********************************************
 * BottomToolbar
+* note: current code was fitted for Android's emulator
 *********************************************/
 var BottomToolbar = {
-  BOTTOM : 0,
   HEIGHT : 50,
-  DELAY : 3000,
+  DELAY : 3000, // delay before hide
 
   toolbar : null,
-  dir : -1,
+	
+	bottomLevel : null,
+	offset : null,
   
 	timerId : null,
   
   init : function() {
-    this.createDomObject();
+    this.createToolbarObject();
    
-    if (Browser.palm && !Browser.palmApp) {
-      this.BOTTOM = 27; // palm's browser requires offset
-      this.toolbar.style.bottom = this.BOTTOM;
-    }
-   	
+	 	this.offset = this.HEIGHT;
+		this.setBottomLevelOffset(this.offset);
+	 
 		if (Browser.iPhone) 
-			addEvent(document, "touchend", this.show, false);
+			addEvent(document, "touchend", this.ontouch, false);
 		else	
-    	addEvent(document, "click", this.show, false);
+    	addEvent(document, "click", this.ontouch, false);
 
-    this.dir = -1;
-    this.timerId = setTimeout(this.updown, this.DELAY);
+		// hide the toolbar on "scrolling" (?)
+		addEvent(document, "touchmove", this.hide, false);
+
+		this.timerId = setTimeout(BottomToolbar.down, this.DELAY);
 	},
   
-  createDomObject : function() {
+  createToolbarObject : function() {
     this.toolbar = document.createElement("div");
     this.toolbar.id = "bottom_toolbar";
-    
+    this.toolbar.style.height = this.HEIGHT;
+		
     if (Browser.palmApp)
       this.toolbar.innerHTML =
         "<a href=\"javascript: ;\" style=\"visibility: hidden;\" onclick=\"Mobile.oneStep(event, -1);\"><img src=\"../images/skin/iphone/back_button.png\" /></a>"
@@ -2336,29 +2342,36 @@ var BottomToolbar = {
         "<a href=\"javascript: ;\" onclick=\"Filter.show();\"><img src=\"../images/skin/iphone/search_filter_button.png\" /></a>"
         + "<a  id='optionsMenu' href=\"javascript: ;\"><img src=\"../images/skin/iphone/menu_button.png\" /></a>"; 
  
-  
     document.body.appendChild(this.toolbar);
   },
   
-  show : function(e) {
+  ontouch : function(e) {
 		var $t = BottomToolbar;
-		clearTimeout(this.timerId); 
+		
+		$t.updateBottomLevel(e);
+		
+		$t.hide();
+		
+		clearTimeout($t.timerId); 
     var e = getDocumentEvent(e);
     var target = getEventTarget(e);
     var tagName = target.tagName.toLowerCase();
     
+		// touch in the toolbar
+		if (getAncestorById(target, "bottom_toolbar") != null)
+			return true;
+		
 		// show the toolbar only if clicked on free / not handled space
     if (tagName == "input" || tagName == "a")
       return;
 
+		// click inside a dialog; skip it
+		if (getParentDialog(target) != null)
+			return;
+		
 		//$t.updateNavigationButtons();
-		
-    if ($t.toolbar == null) // problem with IE: $t.toolbar becames null (?)
-      $t.toolbar = document.getElementById("bottom_toolbar");
-    $t.dir = 1;
-		
-    $t.updown();
-    this.timerId = setTimeout($t.autohide, $t.DELAY);
+   	
+		$t.up();
   },
   
   updateNavigationButtons : function() {
@@ -2371,31 +2384,63 @@ var BottomToolbar = {
 			anchors[1].style.visibility = Mobile.isForwardAvailable() ? "visible" : "hidden";
 	},
 	
-  autohide : function() {
-    var $t = BottomToolbar;
-    $t.dir = -1;
-    $t.updown();
+	// immediate hide the toolbar
+  hide : function() {
+		var $t = BottomToolbar;
+		$t.toolbar.style.display = "none";
+		$t.offset = 0;
   },
   
-  // dir: 1 up; -1 down
-  updown : function() {
-    var $t = BottomToolbar;
-    var stl = $t.toolbar.style;
-    var bottom = parseInt(stl.bottom, 10);
-    if (isNaN(bottom))
-      bottom = $t.BOTTOM;
-    
-    var scrolledY = 0;//getScrollXY()[1]; // always 0 for Palm (mobile)
-      
-    if (($t.dir == 1 && bottom >= ($t.BOTTOM + scrolledY)))
-      return;
-    if (($t.dir == -1 && bottom <= ($t.BOTTOM - $t.HEIGHT + scrolledY))) {
-      stl.display = "none";
-      return;
-    }
- 
-    stl.display = "";
-    stl.bottom = bottom + 5 * $t.dir - scrolledY;
-    setTimeout($t.updown, 25);
-  }
+	up : function() {
+		var $t = BottomToolbar;
+		if ($t.offset == 0) 
+			$t.toolbar.style.display = "block";
+		
+		// end of sliding
+		if ($t.offset >= $t.HEIGHT) {
+			$t.offset = $t.HEIGHT;
+			$t.setBottomLevelOffset($t.offset);
+			$t.timerId = setTimeout(BottomToolbar.down, $t.DELAY);
+			return;
+		}	 
+		
+		$t.setBottomLevelOffset($t.offset);
+		
+		$t.offset += 5;
+		$t.timerId = setTimeout($t.up, 25);
+	},
+	
+	down : function() {
+		var $t = BottomToolbar;
+
+		// end of sliding
+		if ($t.offset <= 0) {
+			$t.offset = 0;
+			$t.setBottomLevelOffset($t.offset);
+			$t.toolbar.style.display = "none";
+			return;
+		}	 
+		
+		$t.setBottomLevelOffset($t.offset);
+		
+		$t.offset -= 5;
+		$t.timerId = setTimeout($t.down, 25);
+	},
+	
+	setBottomLevelOffset : function(offset) {
+		if (this.bottomLevel == null)
+			this.updateBottomLevel();
+		
+		console.log("level :" + this.bottomLevel + "; offset: " + offset);
+			
+		this.toolbar.style.top =	(this.bottomLevel - offset);
+	},
+	
+	updateBottomLevel : function(e) {
+		var h = getWindowSize()[1];
+		this.bottomLevel = h;
+		if (typeof e != 'undefined')
+			this.bottomLevel = (e.pageY - e.screenY) + h;
+	}
+
 }
