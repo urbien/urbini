@@ -2303,7 +2303,7 @@ var BottomToolbar = {
 
   toolbar : null,
 	
-	bottomLevel : null,
+	//bottomLevel : null,
 	offset : null,
   
 	timerId : null,
@@ -2348,7 +2348,7 @@ var BottomToolbar = {
   ontouch : function(e) {
 		var $t = BottomToolbar;
 		
-		$t.updateBottomLevel(e);
+		//$t.updateBottomLevel(e);
 		
 		$t.hide();
 		
@@ -2428,19 +2428,21 @@ var BottomToolbar = {
 	},
 	
 	setBottomLevelOffset : function(offset) {
-		if (this.bottomLevel == null)
-			this.updateBottomLevel();
+		//if (this.bottomLevel == null)
+		//	this.updateBottomLevel();
 		
-		console.log("level :" + this.bottomLevel + "; offset: " + offset);
-			
-		this.toolbar.style.top =	(this.bottomLevel - offset);
-	},
-	
+		var h = getWindowSize()[1];
+		var bottomLevel = window.pageYOffset + h;
+
+		this.toolbar.style.top = bottomLevel - offset;
+	}
+/*	
 	updateBottomLevel : function(e) {
 		var h = getWindowSize()[1];
 		this.bottomLevel = h;
-		if (typeof e != 'undefined')
-			this.bottomLevel = (e.pageY - e.screenY) + h;
+		//if (typeof e != 'undefined')
+		//	this.bottomLevel = (e.pageY - e.screenY) + h;
+		this.bottomLevel = window.pageYOffset - window.screenY + h;
 	}
-
+*/
 }
