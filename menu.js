@@ -4101,7 +4101,7 @@ var Filter = {
 		}
 	 	
 		// mobile
-		var url = $t.retrieveFilterUrl();
+		var url = $t.currentFilterUrl; //$t.retrieveFilterUrl();
     if ($t.filtersArr[url] &&
        getAncestorByTagName($t.filtersArr[url], "body")) {
       var parent = $t.filtersArr[url].parentNode;
@@ -4304,12 +4304,15 @@ var Filter = {
   },
 	
 	retrieveFilterUrl: function(){
-  	if (Browser.mobile) {
-  		var page = Mobile.getCurrentPageDiv(); //getAncestorByClassName(hotspot, "mobile_page");
-				return getTextContent(getChildById(page, this.FILTER_URL_DIV));
+		var urlPointer = "";
+		if (Browser.mobile) {
+  		var page = Mobile.getCurrentPageDiv();
+				urlPointer = getChildById(page, this.FILTER_URL_DIV);
 			}
 			else 
-				return getTextContent(document.getElementById(this.FILTER_URL_DIV));
+				urlPointer = document.getElementById(this.FILTER_URL_DIV);
+			
+			return getTextContent(urlPointer);
 	}
 }
 
