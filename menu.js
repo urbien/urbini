@@ -2520,6 +2520,9 @@ function addCurrentDashboardAndCurrentTab(target) {
         return;
     }
   }
+  var parentDiv = getDivNode(target);
+  if (parentDiv  &&  parentDiv.id == 'otherSite')
+    return;
   var addDashboardId = a.indexOf('-d=') == -1;
   if (addDashboardId) {
     var div = document.getElementById('dashboardCredentials');
