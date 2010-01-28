@@ -21,6 +21,7 @@ However this JSP is used for pages containig errors message too (?)
       <siteTitle name="title" />
 		  <tablePropertyList/>
 		  <siteResourceList/>
+      <parallelResourceList/>
 		  <pagingResources/>
 		  <menu toolbar="file" flat="y"/>
 		  <filterUrl />
