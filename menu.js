@@ -3425,7 +3425,7 @@ var ListBoxesHandler = {
 			}
 		}
 		else { // data entry
-			 textField.value = selectedOptionsArr[0]["value"];
+			FieldsWithEmptyValue.setValue(textField, selectedOptionsArr[0]["value"]);
 			// "_select" and "_verified" hidden fields processed in popupRowOnClick1
 		}
     
@@ -4213,7 +4213,7 @@ var Filter = {
 				var input = cells[i].getElementsByTagName("input")[0];
 				if (!toggleBtn || !input)
 					continue;
-				CheckButtonMgr.setState(toggleBtn, input, false)
+				CheckButtonMgr.setState(toggleBtn, input, false, true);
 			}
 		}
 	},
@@ -4279,7 +4279,7 @@ var Filter = {
   onParamNameTyping : function(paramNameField) {
 		var $t = Filter;
 		
-    var typedText = FieldsWithEmptyValue.getValue(paramNameField);
+    var typedText = FieldsWithEmptyValue.getValue(paramNameField).toLowerCase();
     var paramsTable = getChildByClassName($t.filtersArr[$t.currentFilterUrl], "rounded_rect_tbl");
     if (!paramsTable)
       return;
@@ -4442,7 +4442,7 @@ var DataEntry = {
 	
 	// hides params with not suited beginning.		
   onParamNameTyping : function(paramNameField) {
-    var typedText = FieldsWithEmptyValue.getValue(paramNameField);
+    var typedText = FieldsWithEmptyValue.getValue(paramNameField).toLowerCase();
     var paramsTable = getAncestorById(paramNameField, "dataEntry");
     var spans = paramsTable.getElementsByTagName("span");
     var noMatches = true;
@@ -7066,7 +7066,7 @@ var FieldsWithEmptyValue = {
 			return field.value;
 			
     if (isEmptyValue == "y")
-			return ""
+			return "";
 		return field.value;
 	},
 	
@@ -7079,6 +7079,7 @@ var FieldsWithEmptyValue = {
 			this.setEmpty(field);
 		this.updateClearControl(field);
 	},
+	
 	setEmpty : function(field) {
 		if (!field)
 			return;
@@ -10237,13 +10238,20 @@ var CheckButtonMgr = {
     this.setState(toggleBtn, input, !isChecked);
   },
 
-  setState : function(toggleBtn, input, checkState) {
-    if (input.type == "checkbox")
-      input.checked = checkState;
-    else if(checkState)
-      input.value = "Yes";
-    else
-      input.value = "No";
+	// toSetCheckboxValue is for hidden or text field
+	// to set pair "on"/"" instead "Yes"/"No"; default: false
+  setState : function(toggleBtn, input, checkState, toSetCheckboxValue) {
+    if (input.type == "checkbox") 
+			input.checked = checkState;
+		else { // hidden or text field
+			var checkStateStr;
+			if (typeof toSetCheckboxValue != 'undefine' && toSetCheckboxValue) 
+				checkStateStr = checkState ? "on" : "";
+			else 
+				checkStateStr = checkState ? "Yes" : "No";
+			
+			input.value = checkStateStr;	
+		}
     
     if (checkState) {
       toggleBtn.style.backgroundPosition = "100% 0%";
