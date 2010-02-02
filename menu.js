@@ -1768,8 +1768,6 @@ var FormProcessor = {
 
     var params = "submit=y"; // HACK: since target.type return the value of &type
                               // instead of an input field's type property
-	  params += "&-inner=y"; // params for XHR means inner/dialog.
-   
 
 		var isAjaxReq = (isFormInDialog || Browser.mobile);
     var p1 = FormProcessor.getFormFilters(form, allFields, null, isAjaxReq);
@@ -1850,6 +1848,8 @@ var FormProcessor = {
     }
  		// 2. form in dialog: send via XHR
    else if (isFormInDialog)  {
+	 		// -inner=y for dialog on desktop															
+			params += "&-inner=y"; // params for XHR means inner/dialog.
 	 		var dlg = getParentDialog(form);
 			// if "dialog" inside not body then it is "on page"
 			if (dlg.parentNode.tagName.toLowerCase() != 'body')
@@ -2089,7 +2089,7 @@ var FormProcessor = {
 
 		// substitute checkboxes with own drawn ones.
     CheckButtonMgr.substitute(parent);
-
+		
 	// 1. align <input>s
 		var inputs = parent.getElementsByTagName("input");
 		var width;
@@ -4178,11 +4178,8 @@ var Filter = {
     // Call the onsubmit event handler directly
     var url = FormProcessor.onSubmitProcess(e, filterForm);
     
-		if (Browser.mobile) {
-      // hack: with -inner=y parameter, the server does not process request
-      url = url.replace("&-inner=y", "");
+		if (Browser.mobile)
       Mobile.getPage(e, url);
-    }
     else 
       filterForm.submit();
 		
@@ -4481,9 +4478,7 @@ var DataEntry = {
 		//this.hide();
 		
 		if (Browser.mobile) {
-      // hack: with -inner=y parameter, the server does not process request
-      var url = res.replace("&-inner=y", "");
-
+      var url = res;
 			if (this.isMkResource(url))
 				Mobile.getPage(e, url, false);
 			else
@@ -6938,7 +6933,7 @@ function onFormFieldChange(fieldProp, fieldRef, oldValue) {
   }
 }
 
-
+// for desktop and mobile
 var SearchField = {
 	 field : null,
 	 arrowDiv : null,
@@ -6950,7 +6945,6 @@ var SearchField = {
     addEvent(document.body, "click", this.onBlur, true);
   },
 	
-//  onFocus : function(field) {
   onFilterArrowClick : function(event, arrowDiv) {
 		var field = getPreviousSibling(arrowDiv.parentNode);
 
@@ -7005,6 +6999,22 @@ var SearchField = {
 			this.arrowDiv.style.backgroundPosition = "bottom center";
 		
 		this.isFilterOpened = !this.isFilterOpened;
+	},
+	
+	// mobile search
+	onMobileSearch : function(e, field) {
+		var form = getAncestorByTagName(field, 'form')
+		var url = FormProcessor.onSubmitProcess(e, form);
+		Filter.hide();
+		Mobile.getPage(e, url);
+	},
+	
+	// autocomplete - currently, it is not bound to the text search field!
+	onAutocomplete: function(e, field){
+  	var form = getAncestorByTagName(field, 'form')
+		var url = FormProcessor.onSubmitProcess(e, form);
+		url += "&-ac=y";
+		// TODO: autocomplete
 	}
 }
 
