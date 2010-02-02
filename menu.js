@@ -1834,7 +1834,7 @@ var FormProcessor = {
   // form.method = 'GET';
   // document.location.href = url;
   // return stopEventPropagation(event);
-    form.method = 'POST';
+  // form.method = 'POST';
     if (!action)
       form.action = "FormRedirect";
 
