@@ -6933,8 +6933,8 @@ function onFormFieldChange(fieldProp, fieldRef, oldValue) {
   }
 }
 
-// for desktop and mobile
-var SearchField = {
+// DesktopSearchField
+var DesktopSearchField = {
 	 field : null,
 	 arrowDiv : null,
    isFilterOpened : false,
@@ -6966,7 +6966,7 @@ var SearchField = {
 	
 	// closes filter on click outside the filter
 	onBlur : function(event) {
-    var $t = SearchField;
+    var $t = DesktopSearchField;
 
     if ($t.field == null)
       return;
@@ -6999,23 +6999,54 @@ var SearchField = {
 			this.arrowDiv.style.backgroundPosition = "bottom center";
 		
 		this.isFilterOpened = !this.isFilterOpened;
+	}
+	
+}
+
+// MobileSearchField
+var MobileSearchField = {
+	TIMEOUT : Popup.autoCompleteDefaultTimeout,
+	field : null,
+	timerId : null,
+	
+	// init called onfocus event
+	init : function(field) {
+		if (this.field)
+			return;
+		
+		addEvent(field, "keyup", this.onkeyup, false);	
+		this.field = field; 
 	},
 	
-	// mobile search
-	onMobileSearch : function(e, field) {
+	search : function(e, field) {
 		var form = getAncestorByTagName(field, 'form')
 		var url = FormProcessor.onSubmitProcess(e, form);
 		Filter.hide();
 		Mobile.getPage(e, url);
 	},
 	
-	// autocomplete - currently, it is not bound to the text search field!
-	onAutocomplete: function(e, field){
-  	var form = getAncestorByTagName(field, 'form')
-		var url = FormProcessor.onSubmitProcess(e, form);
+	onkeyup : function() {
+		var $t = MobileSearchField;
+		if ($t.timerId)
+			clearTimeout($t.timerId);
+			
+		$t.timerId = setTimeout(MobileSearchField.onAutocomplete, $t.TIMEOUT);
+	},
+	
+	onAutocomplete: function() {
+		var $t = MobileSearchField;
+  	var form = getAncestorByTagName($t.field, 'form')
+		var url = FormProcessor.onSubmitProcess(null, form);
 		url += "&-ac=y";
-		// TODO: autocomplete
+		var urlParts = url.split('?');
+		
+		postRequest(null, urlParts[0], urlParts[1], null, null, $t.autocompleteCallback);
+	},
+	
+	autocompleteCallback : function(e, div, hotspot, content, url) {
+		// TODO:
 	}
+	
 }
 
 // like "search" fields
