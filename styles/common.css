@@ -1993,7 +1993,7 @@ div .panel_block, td .panel_block {
 /* dialog: body is a parent */
 .panel_block {
   position: absolute;
- 
+
   width: 80%;
   min-width: 320px;
   max-width: 800px;
@@ -2075,6 +2075,7 @@ div .panel_block, td .panel_block {
 
 .frame {
 	width: 100%; /* takes 100% of panel block width */
+	height: 100%;
   overflow: hidden;
   padding: 0;
   border: none;
