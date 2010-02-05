@@ -7005,6 +7005,7 @@ var DesktopSearchField = {
 
 // MobileSearchField
 var MobileSearchField = {
+	AUTOCOMPLETE_DIV : "auto_complete",
 	TIMEOUT : Popup.autoCompleteDefaultTimeout,
 	field : null,
 	timerId : null,
@@ -7029,25 +7030,42 @@ var MobileSearchField = {
 		var $t = MobileSearchField;
 		if ($t.timerId)
 			clearTimeout($t.timerId);
-			
+		
 		$t.timerId = setTimeout(MobileSearchField.onAutocomplete, $t.TIMEOUT);
 	},
 	
 	onAutocomplete: function() {
 		var $t = MobileSearchField;
   	var form = getAncestorByTagName($t.field, 'form')
-		var url = FormProcessor.onSubmitProcess(null, form);
-		url += "&-ac=y";
-		var urlParts = url.split('?');
-		
-		postRequest(null, urlParts[0], urlParts[1], null, null, $t.autocompleteCallback);
+
+		var params = "type=" + form["type"].value;
+		params += "&-q=" + form["-q"].value;
+		params += "&-ac=y";
+
+		var formPanel = getAncestorByClassName(form, "form_panel");
+		var contentDiv = getChildByClassName(formPanel, "content");
+
+		postRequest(null, "smartPopup", params, contentDiv, null, $t.autocompleteCallback);
 	},
 	
-	autocompleteCallback : function(e, div, hotspot, content, url) {
-		// TODO:
+	autocompleteCallback : function(e, contentDiv, hotspot, content, url) {
+		var $t = MobileSearchField;
+		var div = getChildById(contentDiv, $t.AUTOCOMPLETE_DIV);
+		if (div == null) {
+			div = document.createElement("div");
+			div.id = $t.AUTOCOMPLETE_DIV;
+			contentDiv.insertBefore(div, contentDiv.firstChild);
+		}
+		div.innerHTML = content;
+		
+		// popMenu is hidden thru CSS
+		var popupDiv = getChildByClassName(div, 'popMenu');
+		if (popupDiv)
+			popupDiv.style.display = "block";	
+		
 	}
-	
 }
+
 
 // like "search" fields
 // sets parameter "is_empty_value = y"
