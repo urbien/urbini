@@ -22,13 +22,12 @@ However this JSP is used for pages containig errors message too (?)
 		  <tablePropertyList/>
 		  <siteResourceList/>
       <parallelResourceList/>
-		  <pagingResources/>
-		  <menu toolbar="file" flat="y"/>
-		  <filterUrl />
       <resourcesSearch resourcesUri = "text/search/resources" />
       <filesSearch     filesUri     = "text/search/files" />
       <excelsSearch    excelsUri    = "text/search/excels" />
-	
+      <pagingResources/>
+		  <menu toolbar="file" flat="y"/>
+		  <filterUrl />
 	  </div>
 	</div>
 	

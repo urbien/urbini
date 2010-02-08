@@ -7,13 +7,13 @@
   <tablePropertyList/>
   <siteResourceList/>
   <parallelResourceList/>
+  <resourcesSearch resourcesUri = "text/search/resources" />
+  <filesSearch     filesUri     = "text/search/files" />
+  <excelsSearch    excelsUri    = "text/search/excels" />
   <menu toolbar="file" flat="y"/>
   
   <filterUrl />
   <pagingResources/>
-  <resourcesSearch resourcesUri = "text/search/resources" />
-  <filesSearch     filesUri     = "text/search/files" />
-  <excelsSearch    excelsUri    = "text/search/excels" />
   
 </div>
 
