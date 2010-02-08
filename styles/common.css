@@ -1993,7 +1993,6 @@ div .panel_block, td .panel_block {
 /* dialog: body is a parent */
 .panel_block {
   position: absolute;
-
   width: 80%;
   min-width: 320px;
   max-width: 800px;
@@ -2016,22 +2015,22 @@ div .panel_block, td .panel_block {
 .rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #fff; padding: 0; border: solid rgb(166, 170, 173) 1px; color: #000000; empty-cells:show; }
 
 .rounded_rect_tbl .param_tr { cursor: pointer; }
-.rounded_rect_tbl .param_tr td { padding: 6 0 6 0; vertical-align: middle; }
 
-/* see html: rollup_td.width + data_td.width + arrow_td.width = 299 */
-.rounded_rect_tbl .param_tr .rollup_td { /*width: 29px;*/ cursor: text; }
+.rounded_rect_tbl .param_tr .rollup_td { cursor: text; }
 .rounded_rect_tbl .param_tr .rollup_td img { margin: 2px; }
 
 /* ??? label + chosen_value_div */
-.rounded_rect_tbl .data_td { padding: 0; width: 100%; }
+.rounded_rect_tbl .data_td { width: 100%; }
+.rounded_rect_tbl .data_td .input_td { width: 100%; padding: 0px 3px; }
 
-/*.rounded_rect_tbl*/ .arrow_td { width: 25px; }
-/*.rounded_rect_tbl*/ .arrow_td div { width: 25px; height: 20px; cursor: pointer; background: url(../images/skin/iphone/listArrow_sprite.png) 0px 0px;}
+/*.rounded_rect_tbl*/ .arrow_td {  }
+/*.rounded_rect_tbl*/ .arrow_td div { width: 18px; height: 20px; cursor: pointer; background: url(../images/skin/iphone/listArrow_sprite.png) 0px 0px;}
 
-.rounded_rect_tbl .label { max-width: 230px; width: auto; -moz-user-select: none; overflow: hidden; float: left; margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; }
+.rounded_rect_tbl .label_td { white-space: nowrap; } 
+.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; }
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
-.rounded_rect_tbl .input, .rounded_rect_tbl .isel { -webkit-appearance: none; text-align: right; margin-left: 7px; width: 0px/*initial value*/; height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
+.rounded_rect_tbl .input, .rounded_rect_tbl .isel { -webkit-appearance: none; text-align: right; /*margin-left: 7px;*/ width: 100%/*initial value*/; height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
 .rounded_rect_tbl .textarea { color: #000; font-family: Helvetica, Arial;  font-size: 16px; margin-left: 8px; margin-bottom: 5px; width: 100%; }
 .rounded_rect_tbl .comment { text-align: left; color: #555; font-size: 11px; padding: 5 8 5 8; }
 .rounded_rect_tbl .select { font-family: Helvetica, Arial;  font-size: 14px; color: #000; background-color: #fff; }
@@ -2041,8 +2040,8 @@ div .panel_block, td .panel_block {
 .menuItemRow { cursor: pointer; }
 
 .chosen_values {
-  float: left;
-  padding: 0px; /*2 5 2 0;*/
+	text-align: right;
+  padding: 0px; 
   overflow: hidden;
 }
 
@@ -2102,7 +2101,7 @@ input[type=checkbox] { display: none; }
 
 /** iPhone toggle button. **/
 /* 3 types 1)left align 2) right align 3) blue with left align */
-.toggle_btn { float: right; margin: 5 9 5 0; width: 100px; height: 30px; background:#FFFFFF url(../images/skin/iphone/toggle_btn.png); cursor: pointer; }
+.toggle_btn { float: right; margin: 0px; width: 100px; height: 30px; background:#FFFFFF url(../images/skin/iphone/toggle_btn.png); cursor: pointer; }
 .iphone_checkbox { width: 29px; height: 29px; background: url(../images/skin/iphone/checkbox.png); cursor: pointer; }
 
 /** iPhone button **/
