@@ -1086,6 +1086,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             nmbChecked++;
           }
         }
+				
+/*			// not needed with TouchUI (?)	
         if (!isViewCols) {
           if (nmbChecked == 0) {
             if (fieldLabel) {
@@ -1108,6 +1110,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             if (nmbChecked == 1) {
               if (hiddenSelectedItem != null)
                 hiddenSelectedItem.value = selectedItem.value;
+								
               var trNode = getTrNode(selectedItem);
               var items = trNode.getElementsByTagName('td');
               var val = items[2].innerHTML;
@@ -1127,6 +1130,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             }
           }
         }
+*/				
+				
       }
     }
 
@@ -1835,7 +1840,8 @@ var FormProcessor = {
   // document.location.href = url;
   // return stopEventPropagation(event);
   // form.method = 'POST';
-    if (!action)
+    
+		if (!action)
       form.action = "FormRedirect";
 
     if (pane2  &&  pane2.contains(form))  {   // dialog?
@@ -2089,100 +2095,32 @@ var FormProcessor = {
 
 		// substitute checkboxes with own drawn ones.
     CheckButtonMgr.substitute(parent);
+		this.initFieldsWithEmpltyValues(parent);
 		
-	// 1. align <input>s
+  },
+	
+	initFieldsWithEmpltyValues : function(parent) {
 		var inputs = parent.getElementsByTagName("input");
-		var width;
-    
-    for (var i = 0; i < inputs.length; i++) {
-      if (inputs[i].className != "input" && inputs[i].className != "isel"
-					&& inputs[i].className != "boolean")
-        continue;
-  
-      // note: like fitSelectedOptionsWidth function.
-      // one row
-      var td = getAncestorByTagName(inputs[i], "td");
-			var nextTd = getNextSibling(td);
-      var labelSpan = getPreviousSibling(inputs[i]);
-		  
-			if (!labelSpan || labelSpan.className != "label")
-				labelSpan = getChildByClassName(td, "label");
+		
+		for (var i = 0; i < inputs.length; i++) {
+		 	if (inputs[i].className != "input" && inputs[i].className != "isel")// &&
+		 	//inputs[i].className != "boolean") 
+		 		continue;
+		 	
+			var paramTr = getAncestorByClassName(inputs[i], "param_tr");
+			var labelSpan = getChildByClassName(paramTr, "label");
 			
-      // requred field
-      var isFieldRequired = labelSpan && (labelSpan.getAttribute("required") != null);
-      if (isFieldRequired && inputs[i].type != "password") {
-		  	FieldsWithEmptyValue.initField(inputs[i], "Required");
-		  }
-	  // if no next td then no options list, so insert "type" text.
-			else if ((nextTd == null || nextTd.className != "arrow_td") && inputs[i].type != "password")
-				FieldsWithEmptyValue.initField(inputs[i], "type");
-
-			// noArrowCorrection - hack?
-			var noArrowCorrection = 0;
-		//	if (nextTd == null)
-		//		noArrowCorrection = 140;
-			
-      // there is possible symbol like $, %
-      var symbolSpan = getChildByClassName(td, "xs");
-      var symbolWidth = 0;
-			// prevents taking into account "xs" span conaining current input
- 			if(symbolSpan && comparePosition(symbolSpan, inputs[i]) != 20)
-        symbolWidth = symbolSpan.offsetWidth;
-      
-      var symbol = getTextContent(td);
-      
-			if (Browser.mobile) { // need to get elements width
-				Mobile.getCurrentPageDiv().style.display="";
+			// requred field
+			var isFieldRequired = labelSpan && (labelSpan.getAttribute("required") != null);
+			if (isFieldRequired && inputs[i].type != "password") {
+				FieldsWithEmptyValue.initField(inputs[i], "Required");
 			}
-			
-      // boolean type
-      if (inputs[i].className == "boolean") {
-        labelSpan.style.whiteSpace = "normal";
-        if (labelSpan.offsetWidth > 150)
-          labelSpan.style.width = 150;
-        else  
-          labelSpan.style.lineHeight = "38px";
-        continue;
-      }
-        
-      // if there is "msg" (error message) than input takes whole TD width
-      var msgElm = getChildByClassName(td, "msg");
-
-      if (!labelSpan)
-        continue;
-      
-      // Money and Duration types contain <select> of units.
-      var select = getChildByTagName(td, "select");
-      var selectWidth = 0;
-      if (select)
-        selectWidth = select.offsetWidth + 10;
- 
-      // calculate <input> width
-	    width = td.clientWidth - inputs[i].offsetLeft - symbolWidth - selectWidth - noArrowCorrection - 7;
-      
-      if (width < this.MIN_INPUT_WIDTH || msgElm != null) {
-        inputs[i].style.clear = "left"; // because webkit
-      }
-      else
-        inputs[i].style.clear = "none";
-      
-      inputs[i].style.width = width;
-    }
-		
-		
-		// 2. align <select>s only if no input(s) before
-		var selects = parent.getElementsByTagName("select");
-		for (var i = 0; i < selects.length; i++) {
-			var parentTd = getAncestorByClassName(selects[i], "td");//selects[i].parentNode;
-			if (!parentTd)
-				continue;
-			var input = getChildByClassName(parentTd, "input");
-			if (input == null) {
-		  	var rightFreeSpace = parentTd.clientWidth - (selects[i].offsetLeft + selects[i].clientWidth);
-		  	selects[i].style.marginLeft = rightFreeSpace - 15;
-		  }
-		}  
-  }
+			// insert "type" text if paramTr does not contain arrow_td
+			else 
+				if (getChildByClassName(paramTr, "arrow_td") == null && inputs[i].type != "password")  
+					FieldsWithEmptyValue.initField(inputs[i], "type");
+		}
+	}
 
 }
 
@@ -3123,8 +3061,8 @@ var ListBoxesHandler = {
 		// default processing of anchors inside parameter TR (for example add image)
 		if (target.tagName.toLowerCase() == "a" || target.parentNode.tagName.toLowerCase() == "a")
 			return;
-			
-    var tr = getAncestorByTagName(target, "tr");
+		
+		var tr = getAncestorByClassName(target, "param_tr");	
 
 		// set members corresponding to happend event target
 		$t.tray = getAncestorByClassName(tr, "tray");
@@ -3414,7 +3352,6 @@ var ListBoxesHandler = {
 		else if (chosenValuesDiv) { // Filter
 			var html = $t.getSelectedOptionsHtml(selectedOptionsArr, textField.name);
 			chosenValuesDiv.innerHTML = html;
-			$t.fitSelectedOptionsWidth(td);
 			
 			// unselected all options / checkboxes
 			if (selectedOptionsArr.length == 0) {
@@ -3445,7 +3382,6 @@ var ListBoxesHandler = {
 				html += "<div>" + toInp.value + "</div>";
 			
 			chosenValuesDiv.innerHTML = html;
-			$t.fitSelectedOptionsWidth(td);
 		}
     // slide back
     $t.onBackBtn(1); 
@@ -3512,37 +3448,6 @@ var ListBoxesHandler = {
     return html;  
   },
   
-  fitSelectedOptionsWidth : function(td) {
-    var chosenValuesDiv = getChildByClassName(td, "chosen_values");
-    if (!chosenValuesDiv)
-			return;
-		var selectedOptionsAmount = chosenValuesDiv.getElementsByTagName("div").length;
- 
-    // no selections
-    if (selectedOptionsAmount == 0)
-      return;
-    
-    var width;
-    if (selectedOptionsAmount == 1) { // single selection
-      var labelSpan = getChildByClassName(td, "label");
-      width = td.clientWidth - chosenValuesDiv.offsetLeft - 7; 
-
-      chosenValuesDiv.style.textAlign = "right";
-      chosenValuesDiv.style.paddingLeft = 2;
-      chosenValuesDiv.style.clear = "none";
-    }  
-    
-    // multiple selection or width < 30 px
-    if (selectedOptionsAmount > 1 || width < 30) {
-      chosenValuesDiv.style.textAlign = "left";
-      chosenValuesDiv.style.paddingLeft = 7;
-      chosenValuesDiv.style.clear = "left";
-      width = td.clientWidth - 7;
-    }
-
-    chosenValuesDiv.style.width = width;
-  },
-
   onParamReset : function() {
     // remove value in coresponding <input>s
     var form = document.forms[currentFormName];
@@ -3589,7 +3494,6 @@ var ListBoxesHandler = {
       var chosenValuesDiv = getChildByClassName(td, "chosen_values");
       if (chosenValuesDiv) {
         chosenValuesDiv.innerHTML = "<div>" + value + "</div>";
-        this.fitSelectedOptionsWidth(td);
       }
       textField.value = value;
     }
@@ -3930,8 +3834,6 @@ var Filter = {
       var isCalendar = (td.getAttribute("options_selector") == "calendar");
       if (isCalendar)
         this._initPeriodTd(td);
-      else // set width
-        ListBoxesHandler.fitSelectedOptionsWidth(td);
     }    
     
     // assign mouse handlers
@@ -3948,7 +3850,6 @@ var Filter = {
     var chosenValuesDiv = getChildByClassName(td, "chosen_values");
     chosenValuesDiv.innerHTML = "<div>" +
         inputs[0].value + "</div>" + "<div>" + inputs[1].value + "</div>";
-    ListBoxesHandler.fitSelectedOptionsWidth(td);
   },
   
   // hotspot used to search FILTER_URL_DIV in current mobile page
@@ -4233,9 +4134,12 @@ var Filter = {
 
     // background
     for (var i = 0; i < tr.cells.length; i++)
-      tr.cells[i].style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
-    
-    tr.style.color = "#fff";
+			tr.cells[i].style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
+		
+		// label	
+	  var labelTd = getChildByClassName(tr, "label_td");
+    labelTd.style.color = "#fff";
+	
     // chosen values
     var chosenValues = getChildByClassName(tr, "chosen_values");
     chosenValues.style.color = "#fff";
@@ -4258,7 +4162,9 @@ var Filter = {
     for (var i = 0; i < tr.cells.length; i++)
       tr.cells[i].style.background = "";
 
-    tr.style.color = "";
+    // label	
+	  var labelTd = getChildByClassName(tr, "label_td");
+    labelTd.style.color = "";
     
     // chosen values
     var chosenValues = getChildByClassName(tr, "chosen_values");
@@ -4447,7 +4353,7 @@ var DataEntry = {
       if (spans[i].className != "label")
         continue;
       var labelName = getTextContent(spans[i]).toLowerCase();
-      var row = getAncestorByTagName(spans[i], "tr");
+      var row = getAncestorByClassName(spans[i], "param_tr");
       if (labelName.indexOf(typedText) == 0) {
 		  	row.style.display = "";
 				noMatches = false;
@@ -6548,9 +6454,9 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 	if (Browser.mobile) {
     div.style.left = 0 + 'px';
     div.style.top  = 0 + 'px';
-    div.style.width = "100%";
     div.style.minWidth = "none";
 		div.style.maxWidth = "none";
+		
     div.style.visibility = Popup.VISIBLE;
 		div.style.display = "block";
 		return;
@@ -7058,14 +6964,13 @@ var MobileSearchField = {
 		}
 		div.innerHTML = content;
 		
-		// popMenu is hidden thru CSS
 		var popupDiv = getChildByClassName(div, 'popMenu');
 		if (popupDiv)
 			popupDiv.style.display = "block";	
 		
 	}
+	
 }
-
 
 // like "search" fields
 // sets parameter "is_empty_value = y"
