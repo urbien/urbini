@@ -25,6 +25,9 @@ However this JSP is used for pages containig errors message too (?)
 		  <pagingResources/>
 		  <menu toolbar="file" flat="y"/>
 		  <filterUrl />
+      <resourcesSearch resourcesUri = "text/search/resources" />
+      <filesSearch     filesUri     = "text/search/files" />
+      <excelsSearch    excelsUri    = "text/search/excels" />
 	
 	  </div>
 	</div>
