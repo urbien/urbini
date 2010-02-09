@@ -9,7 +9,7 @@
       <col width="10%" />
     </colgroup>
 
-    <tr valign="top"><td width="100%">
+    <tr valign="top"><td width="80%">
       <form id="filter" name="tablePropertyList" method="post" action="mkresource" autocomplete="off" style="display: inline; margin: 0;">
        <panelBlock on_page="y">
          <tablePropertyList/>
@@ -25,10 +25,11 @@
       <center><input type="submit" name="submit" /></center>
     </form>
     </td>
-    <td width="10%" id="rightPanelPropertySheet" valign="top" align="left">
-      <br/>
+    <td width="20%" id="rightPanelPropertySheet" valign="top" align="left">
       <menuBar id="menuBar1">
-      <rightPanelPropertySheet />
+      <panelBlock on_page="y">
+        <rightPanelPropertySheet />
+      </panelBlock>
       </menuBar>
     </td>
   </tr>
