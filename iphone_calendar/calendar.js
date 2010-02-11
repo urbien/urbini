@@ -187,15 +187,15 @@ var PeriodPicker = {
     if ($t.toDate != null)
       $t.toInp.value = getTextFromDate($t.toDate, $t.isEuropeanFormat);
     
+    // callback
+    $t.callback($t.fromInp, $t.toInp);
+
     // reset buttons state
     if ($t.toBtn != null) {
 			$t.toBtn.style.backgroundColor = "transparent";
       var fromBtn = getPreviousSibling($t.toBtn);
-			fromBtn.style.backgroundColor = this.BLUE_BG;
+			fromBtn.style.backgroundColor = $t.BLUE_BG;
     }
-    
-    // callback
-    $t.callback($t.fromInp, $t.toInp);
 
     // reset inner content
     $t.fromDate = null;
@@ -204,7 +204,6 @@ var PeriodPicker = {
     $t.toBtn = null;
     $t.fromInp = null;
     $t.toInp = null;
-
   },
   
   // callbacks -----------------------------
@@ -304,47 +303,61 @@ var iPhoneCalendar = {
       "</div>" +
 
       "<div class=\"month_year\"></div>";
-
-    for (var dayIdx = 0; dayIdx < 7; dayIdx++) {
-      var day = document.createElement("div");
+		
+		// days table(=row)
+		var daysTable = document.createElement("table");
+		daysTable.cellPadding = 0;
+		daysTable.cellSpacing = 0;
+		daysTable.style.width = "100%";
+		var daysTBody = document.createElement("tbody");
+		var daysTr = document.createElement("tr");
+		
+		daysTBody.appendChild(daysTr);
+		daysTable.appendChild(daysTBody);
+    
+		for (var dayIdx = 0; dayIdx < 7; dayIdx++) {
+      var day = document.createElement("td");
       day.className = "day_name";
       day.innerHTML = this.DAY_NAME[dayIdx];
-      if (dayIdx == 0 || dayIdx == 6) {
-        day.style.width = "45px";
-      }
-      this.header.appendChild(day);
-    }
 
-    this.calendarDiv.appendChild(this.header);
+      daysTr.appendChild(day);
+    }
+		this.header.appendChild(daysTable);
     
-    // -------------
+		this.calendarDiv.appendChild(this.header);
+    
+    // cells of days -------------
     this.box = document.createElement("div");
     this.box.className = "box";
     
+		var table = document.createElement("table");
+		table.cellPadding = 0;
+		table.cellSpacing = 0;
+		var tbody = document.createElement("tbody");
+		
     this.cells = new Array();
     
     for (var verIdx = 0; verIdx < 6; verIdx++) {
-      var horBorder = document.createElement("div");
-      horBorder.className = "hor_border";
-      this.box.appendChild(horBorder);
-      
+			var tr = document.createElement("tr");
+			
       for (var horIdx = 0; horIdx < 7; horIdx++) {
-        var cell = document.createElement("div");
+        var cell = document.createElement("td");
         this.cells.push(cell);
         
         cell.className = "cell";
         cell.onmousedown = this.onDayMouseDown;
         cell.onmouseup = this.onDayMouseUp;
+				
+				if (horIdx == 6)
+					cell.style.borderRight = "none";
 
-        this.box.appendChild(cell);
-        
-        if (horIdx < 6) {
-          var verBorder = document.createElement("div");
-          verBorder.className = "ver_border";
-          this.box.appendChild(verBorder);
-        }
+				tr.appendChild(cell);
       }
+			tbody.appendChild(tr);
     } // for end
+    
+		table.appendChild(tbody);
+		this.box.appendChild(table);
     this.calendarDiv.appendChild(this.box);
   },
   
