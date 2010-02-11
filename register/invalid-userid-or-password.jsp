@@ -23,7 +23,7 @@
               </td>
             </tr>
             <tr>
-              <td class="xl" colspan="2" align="middle"><text text="Invalid user name or password"/><br/>
+              <td class="xl" colspan="2" align="middle"><span class="rxl"><text text="Invalid user name or password"/></span><br/>
                 <br/>
               </td>
             </tr>
