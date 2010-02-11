@@ -6911,16 +6911,14 @@ var DesktopSearchField = {
 
 // MobileSearchField
 var MobileSearchField = {
-	AUTOCOMPLETE_DIV : "auto_complete",
+	AUTOCOMPLETE_ID : "auto_complete",
 	TIMEOUT : Popup.autoCompleteDefaultTimeout,
 	field : null,
 	timerId : null,
+	autoTd : null,
 	
-	// init called onfocus event
+	// init called from FieldsWithEmptyVAlues
 	init : function(field) {
-		if (this.field)
-			return;
-		
 		addEvent(field, "keyup", this.onkeyup, false);	
 		this.field = field; 
 	},
@@ -6932,8 +6930,10 @@ var MobileSearchField = {
 		Mobile.getPage(e, url);
 	},
 	
-	onkeyup : function() {
+	onkeyup : function(e) {
 		var $t = MobileSearchField;
+		
+		$t.field = getEventTarget(e);
 		if ($t.timerId)
 			clearTimeout($t.timerId);
 		
@@ -6942,33 +6942,89 @@ var MobileSearchField = {
 	
 	onAutocomplete: function() {
 		var $t = MobileSearchField;
-  	var form = getAncestorByTagName($t.field, 'form')
+ 	
+		var form = getAncestorByTagName($t.field, 'form')
+		var formPanel = getAncestorByClassName(form, "form_panel");
+		var contentTr = getChildByClassName(formPanel, "content").parentNode;
 
+		var text = FieldsWithEmptyValue.getValue(form["-q"]);
+		if (text.length == 0) {
+			$t.hideAutocomplete();
+			return;
+		}
+		
 		var params = "type=" + form["type"].value;
-		params += "&-q=" + form["-q"].value;
+		params += "&-q=" + text;
 		params += "&-ac=y";
 
-		var formPanel = getAncestorByClassName(form, "form_panel");
-		var contentDiv = getChildByClassName(formPanel, "content");
-
-		postRequest(null, "smartPopup", params, contentDiv, null, $t.autocompleteCallback);
+		postRequest(null, "smartPopup", params, contentTr, null, $t.autocompleteCallback);
 	},
 	
-	autocompleteCallback : function(e, contentDiv, hotspot, content, url) {
+	autocompleteCallback : function(e, contentTr, hotspot, content, url) {
 		var $t = MobileSearchField;
-		var div = getChildById(contentDiv, $t.AUTOCOMPLETE_DIV);
-		if (div == null) {
-			div = document.createElement("div");
-			div.id = $t.AUTOCOMPLETE_DIV;
-			contentDiv.insertBefore(div, contentDiv.firstChild);
+		var autoTr = getPreviousSibling(contentTr);
+		var autoTd = null;
+		if (autoTr)
+			autoTd = getChildById(autoTr, $t.AUTOCOMPLETE_ID);
+		
+		// note: mobile mode can contain several filters simultaneously			
+		if (autoTd == null) {
+			autoTr = document.createElement("tr");
+			autoTd = document.createElement("td");
+			autoTd.id = $t.AUTOCOMPLETE_ID;
+			//autoTd.onclick = $t.onShingleSelection;
+			addEvent(autoTd, "mousedown", $t.onmousedown, false);
+			addEvent(autoTd, "mouseup", $t.onmouseup, false);	
+		
+		//	autoTd.onmousedown = $t.onmousedown;
+		//	autoTd.onmouseup = $t.onmouseup;
+			
+			autoTr.appendChild(autoTd);
+			contentTr.parentNode.insertBefore(autoTr, contentTr);
 		}
-		div.innerHTML = content;
 		
-		var popupDiv = getChildByClassName(div, 'popMenu');
-		if (popupDiv)
-			popupDiv.style.display = "block";	
+		// instead to make all parent elements with height 100%
+		autoTd.style.height = getWindowSize()[1];
 		
+		autoTd.innerHTML = content;
+		contentTr.style.display = "none";
+		autoTr.style.display = "";
+		
+		$t.autoTd = autoTd;
+	},
+	
+	onmousedown : function(e) {
+		var $t = MobileSearchField;
+		var target = getEventTarget(e);
+		var shingle = getAncestorByClassName(target, "menuItem");
+		if (!shingle)
+			return;
+		shingle.style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
+		shingle.style.color = "#fff";
+	},
+	
+	onmouseup : function(e) {
+		var $t = MobileSearchField;
+		var target = getEventTarget(e);
+		var shingle = getAncestorByClassName(target, "menuItem");
+		if (!shingle)
+			return;
+
+		shingle.style.background = "";
+		shingle.style.color = "";
+		var text = getTextContent(shingle);
+		FieldsWithEmptyValue.setValue($t.field, text);
+		$t.search(e, $t.field);
+	},
+	
+	hideAutocomplete : function() {
+		if (!this.autoTd)
+			return;
+		var tr = this.autoTd.parentNode;
+		tr.style.display = "none";
+		getNextSibling(tr).style.display = "";
 	}
+	
 	
 }
 
@@ -7010,6 +7066,10 @@ var FieldsWithEmptyValue = {
 		
 		if (this.hasClearTextCtrl(field))
 			addEvent(field, "keyup", this.onkeyup, false);
+
+		// init mobile search field (autocomplete)
+		if (Browser.mobile && field.id == "-q")
+			MobileSearchField.init(field);
 
 		if (field.value.length == 0 || field.value == emptyValue)
   		this.setEmpty(field);
@@ -10189,7 +10249,7 @@ var CheckButtonMgr = {
     var toggleBtn = this;
     var checkbox = getPreviousSibling(toggleBtn);
     $t._switchState(toggleBtn, checkbox);
-		
+//debugger;		
 		if (checkbox.onclick)
 			checkbox.onclick(event);
 			
