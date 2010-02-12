@@ -233,9 +233,6 @@ var iPhoneCalendar = {
   MONTH_NAME : ["January", "February", "March", "April", "May", "June", "July", "August",
     "September", "October", "November", "December"],
   DAY_NAME : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-  FOUR_ROWS_HEIGHT : "176px",
-  FIVE_ROWS_HEIGHT : "220px",
-  SIX_ROWS_HEIGHT  : "264px",
 
   curDate : null,
   dayOfMonth : null,
@@ -243,6 +240,7 @@ var iPhoneCalendar = {
   calendarDiv : null,
   header : null,
   box : null,
+	cellsTable : null,
   cells : null,
   curCell : null,
   
@@ -330,9 +328,9 @@ var iPhoneCalendar = {
     this.box = document.createElement("div");
     this.box.className = "box";
     
-		var table = document.createElement("table");
-		table.cellPadding = 0;
-		table.cellSpacing = 0;
+		this.cellsTable = document.createElement("table");
+		this.cellsTable.cellPadding = 0;
+		this.cellsTable.cellSpacing = 0;
 		var tbody = document.createElement("tbody");
 		
     this.cells = new Array();
@@ -356,8 +354,8 @@ var iPhoneCalendar = {
 			tbody.appendChild(tr);
     } // for end
     
-		table.appendChild(tbody);
-		this.box.appendChild(table);
+		this.cellsTable.appendChild(tbody);
+		this.box.appendChild(this.cellsTable);
     this.calendarDiv.appendChild(this.box);
   },
   
@@ -390,15 +388,19 @@ var iPhoneCalendar = {
        this.cells[i].className = "cell_grayed";
      }
    }
-   
-   // 3. show / hide last row
-   if (lastDayIdx <= 27)
-     this.box.style.height = this.FOUR_ROWS_HEIGHT;
-   else if (lastDayIdx > 34)
-     this.box.style.height = this.SIX_ROWS_HEIGHT; 
-   else
-     this.box.style.height = this.FIVE_ROWS_HEIGHT
-   
+  
+	// 3. show / hide last row(s)
+	 var fiveth = "none";
+	 var sixth = "none";
+ 
+	 if (lastDayIdx > 27)
+			fiveth = "";
+	 if (lastDayIdx > 34)
+	 	sixth = "";
+
+	 this.cellsTable.rows[4].style.display = fiveth;
+	 this.cellsTable.rows[5].style.display = sixth;
+	 
    // 4. set current day
    this.curCell = this.cells[curDayIdx];
    this.curCell.className = "cell_current";
