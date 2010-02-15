@@ -3621,7 +3621,7 @@ var ListBoxesHandler = {
   },
 	
 	getCurrentPanelDiv : function() {
-		var offset = SlideSwaper.getTrayPosition();
+		var offset = SlideSwaper.getTrayPosition(this.tray);
 		var panels = this.tray.childNodes;
 		var n = 0;
 		for (var i = 0; i < panels.length; i++) {
@@ -3648,13 +3648,10 @@ var SlideSwaper = {
 	
 	// default
   // BEZIER_POINTS : [[0.0, 0.0], [0.25, 0.1], [0.25, 1], [1.0, 1.0]],
-  
 	// ease-in
 	// BEZIER_POINTS : [[0.0, 0.0], [0.42, 0], [1, 1], [1.0, 1.0]],
-	
 	// ease-out
 	// BEZIER_POINTS : [[0.0, 0.0], [0.0, 0.0], [0.58, 1.0], [1.0, 1.0]],
-	
 	// cubic-bezier
 	// BEZIER_POINTS : [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]],
 
@@ -3707,6 +3704,10 @@ var SlideSwaper = {
     }
   },
   
+	// There is a (temporary) HACK(!)
+	// focus/click in options selector containing in moved tray by MozTransfor invokes
+	// additional offset (FF's bug). It was overcame with hack when on last step
+	// MozTransfor is "substituted" with style.left. It should be removed after the bug fixxing.
   _moveStep : function() {
     var $t = SlideSwaper;
     var dir = -1;
@@ -3727,11 +3728,14 @@ var SlideSwaper = {
 		var left = Math.floor(dir * distance * bPoint[0]) + ($t.DISTANCE * $t.curState);  
 
     // for FF 3.1b2 that does not support -moz-transition-duration (?)
-    if (typeof $t.tray.style.MozTransform != 'undefined')
-      $t.tray.style.MozTransform = "translate(" + left + "%, 0%)";
-    else
-      $t.tray.style.left = left * 5 + "%"; // tray is 5 width of a panel
+    if (typeof $t.tray.style.MozTransform != 'undefined') {
+			// HACK!
+			$t.tray.style.left = 0; 
 
+			$t.tray.style.MozTransform = "translate(" + left + "%, 0%)";
+		}
+		else 
+			$t.tray.style.left = left * 5 + "%"; // tray is 5 width of a panel
 
     if ($t.offset <= 1.0)
       setTimeout($t._moveStep, $t.TIMEOUT);
@@ -3740,35 +3744,44 @@ var SlideSwaper = {
       $t.factor = 1;
       $t.curState += dir;
       
+			// HACK!
+	    $t.tray.style.MozTransform = "translate(0%, 0%)";
+	    $t.tray.style.left = left * 5 + "%"; 
+
       if ($t.callback)
         $t.callback();
     }
   },
   
   // returns state of current tray or some pointed tray in pixels
+	// currently, possible 3 offset-mechanisms:
+	// 1) webkitTransform 2) MozTransform 3) style.left
   getTrayPositionInPixels : function(tray) {
     tray = tray || this.tray;
     if (!tray)
       return 0;
-    
+
     var str = "";
+		
+		// check style.left first - it allows FF3.x hack
+		str = tray.style.left; 
+		if (str.length != 0)
+      return parseInt(str) / 5;
+     
     if (typeof tray.style.webkitTransform != 'undefined')
       str = tray.style.webkitTransform;
     else if (typeof tray.style.MozTransform != 'undefined')
       str = tray.style.MozTransform;
-    if (str.length != 0) {
-      return parseInt(str.substr(10)); // 10 - "translate("
-    }
-    
-    str = tray.style.left; 
-    if (str.length == 0)
+		
+		if (str.length == 0)
       return 0;
      
     return parseInt(str); 
   },
+	
 	// returns integer 0, 1, 2
 	getTrayPosition : function(tray) {
-		//return -this.curState;
+		
 		return -Math.floor(this.getTrayPositionInPixels(tray) / this.DISTANCE);
 	},
 	doesTrayStay : function() {
@@ -7210,8 +7223,8 @@ var FieldsWithEmptyValue = {
 		setCaretPosition(field, 0);
 		
 		crossDiv.firstChild.style.visibility = "hidden";
-	  // FF3 and higher has a problem while transform (CSS) sliding
-		if (!Browser.firefox3)
+	  // FF3 and higher has a problem while transform (CSS) sliding - hacked
+		//if (!Browser.firefox3)
 			field.focus();
 	  
 	  if (callback)
