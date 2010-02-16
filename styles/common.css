@@ -2003,6 +2003,14 @@ div .panel_block, td .panel_block {
   -webkit-box-shadow: 6px 6px 25px #555;
 }
 
+#siteResourceList .panel_block {
+	position: absolute;
+	visibility: hidden;
+	width: 80%;
+  min-width: 320px;
+  max-width: 800px;
+}
+
 .panel_block .header { float: left; padding: 5px 0px 5px 0px; width: 100%; text-align: center; background: #6e84a2 url(../images/iPhoneToolbar.png) repeat-x; border-bottom: 1px solid #2d3642; }
 /*.panel_block .header td { width: 100%; }*/
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
@@ -2079,8 +2087,11 @@ div .panel_block, td .panel_block {
   overflow: hidden;
   padding: 0;
   border: none;
-  background: #C8C8C8 url(../images/skin/iphone/pinstripes.png) repeat scroll 0%; 
+  background: #C8C8C8 url(../images/skin/iphone/pinstripes.png) repeat scroll 0%;
 }
+
+#siteResourceList .frame { background: none; }
+
 .tray {
   -webkit-transition-property: -webkit-transform;
   -webkit-transition-duration: 0.6s;
@@ -2095,6 +2106,11 @@ div .panel_block, td .panel_block {
   float: left;
   left: 0;
 }
+
+.form_panel, .options_panel, .classifier_panel, .calendar_panel { float: left; width: 20%; }
+
+#siteResourceList .form_panel {  min-height: 1px;  }
+#siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel { background: #C8C8C8 url(../images/skin/iphone/pinstripes.png) repeat scroll 0%;  }
 
 /*
 input[type=checkbox] { display: none; }
@@ -2160,11 +2176,6 @@ input[type=checkbox] { display: none; }
   background: none;
   filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/frame/png/right_bottom.png, sizingMethod='crop'); 
 }
-
-.form_panel { background: transparent; float: left; width: 20%; min-height: 1px; margin: 0px; }
-.options_panel, .classifier_panel { float: left; width: 20%; }
-
-.calendar_panel { float: left; width: 20%; }
 
 #div_info table { overflow: visible; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; /*width: 200px;*/ overflow: visible; }

@@ -2096,7 +2096,6 @@ var FormProcessor = {
 		// substitute checkboxes with own drawn ones.
     CheckButtonMgr.substitute(parent);
 		this.initFieldsWithEmpltyValues(parent);
-		
   },
 	
 	initFieldsWithEmpltyValues : function(parent) {
@@ -2108,8 +2107,10 @@ var FormProcessor = {
 		 		continue;
 		 	
 			var paramTr = getAncestorByClassName(inputs[i], "param_tr");
+			if (!paramTr)
+				continue;
+				
 			var labelSpan = getChildByClassName(paramTr, "label");
-			
 			// requred field
 			var isFieldRequired = labelSpan && (labelSpan.getAttribute("required") != null);
 			if (isFieldRequired && inputs[i].type != "password") {
@@ -2650,7 +2651,8 @@ var ListBoxesHandler = {
   init : function(form) {
 		var tables = form.getElementsByTagName("table");
     for (var i = 0; i < tables.length; i++)
-			if (tables[i].className == "rounded_rect_tbl")
+			if (tables[i].className == "rounded_rect_tbl" ||
+					tables[i].id.indexOf("siteRL_") == 0) // 2nd is RL edit
       	addEvent(tables[i], 'click',  this.onClickParam, false);
   },
 
@@ -2859,7 +2861,7 @@ var ListBoxesHandler = {
 
 
   // Opens the popup when needed, e.g. on click, on enter, on autocomplete
-  listboxOnClick1 : function(e, imgId, enteredText, enterFlag, classValue) {
+  listboxOnClick1 : function(e, imgId, enteredText, enterFlag, classValue, arrowTd) {
 		// cut off "_filter"
     var propName1 = imgId.substring(0, imgId.length - "_filter".length);   
 
@@ -2868,7 +2870,7 @@ var ListBoxesHandler = {
       return;
     currentFormName = propName1.substring(idx + 1);
     var form = document.forms[currentFormName];
-	propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
+		propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
     currentImgId  = imgId;
 
     originalProp = propName1;
@@ -2938,7 +2940,7 @@ var ListBoxesHandler = {
     var div = getChildById(this.optionsPanel, divId);
     
     var hotspot = getTargetElement(e); //document.getElementById(imgId);
-    hotspot = hotspot || document.body;
+    hotspot = arrowTd || hotspot || document.body;
     // Use existing DIV from cache (unless text was Enter-ed - in which case
     // always redraw DIV)
     
@@ -3024,6 +3026,7 @@ var ListBoxesHandler = {
         params += "&" + propName + "_class=" + classValue;
     }
 
+
     // request listbox context from the server via ajax
     postRequest(e, url, params, div, hotspot, this.onListLoaded);
  },
@@ -3061,14 +3064,19 @@ var ListBoxesHandler = {
 		// default processing of anchors inside parameter TR (for example add image)
 		if (target.tagName.toLowerCase() == "a" || target.parentNode.tagName.toLowerCase() == "a")
 			return;
-		
+	
 		var tr = getAncestorByClassName(target, "param_tr");	
 
 		// set members corresponding to happend event target
 		$t.tray = getAncestorByClassName(tr, "tray");
-		if ($t.tray == null) { // resource list
+		if (!tr || $t.tray == null) { // resource list
 			var resourceListDiv = document.getElementById("siteResourceList");
   		$t.tray = getChildByClassName(resourceListDiv, "tray");
+			
+			// init options selector in RL editor
+			var textEntry = getChildById($t.tray, "text_entry");
+			FieldsWithEmptyValue.initField(textEntry, "select")
+
 	  	$t.isEditList = true;
 	  }
 	  else {
@@ -3095,7 +3103,7 @@ var ListBoxesHandler = {
   processClickParam : function(e, tr, optionsSelectorStr) {
 		if (this.isSliding)
 			return;
-    
+
     var target = getEventTarget(e);
 
     // skip click on rollup (checkbox) td
@@ -3154,7 +3162,7 @@ var ListBoxesHandler = {
 				str = input.name + "_" + input.id + "_filter";
 			
 			// show options list
-			this.listboxOnClick1(e, str, null, null, classValue);
+			this.listboxOnClick1(e, str, null, null, classValue, arrowTd);
 		}
   },
 
@@ -3163,11 +3171,9 @@ var ListBoxesHandler = {
 
 		var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
 		
-		if ($t.isEditList) {
-			$t.panelBlock.style.left = findPosX(hotspot) - $t.panelBlock.clientWidth; //$t.IPH_WIDTH;
-			$t.panelBlock.style.top = findPosY(hotspot) - 20;
+		if ($t.isEditList && $t.panelBlock.style.visibility != "visible") {
+			setDivVisible(null, $t.panelBlock, null, hotspot, $t.panelBlock.clientWidth, 0);	
 		}
-			
 
     var listsCont = getChildById(panel, "lists_container");
     if (listsCont)
@@ -3176,7 +3182,8 @@ var ListBoxesHandler = {
 			panel.appendChild(popupDiv);
   
 		var noMatchesDiv = getChildByClassName(panel, "no_matches");
-		noMatchesDiv.style.display = "none";
+		if (noMatchesDiv) // temporary check gor RL edit
+			noMatchesDiv.style.display = "none";
 		
     Popup.load(event, popupDiv, hotspot, content);
 
@@ -3406,7 +3413,7 @@ var ListBoxesHandler = {
       }
       else {
         // no checkbox(es)
-				var text = getTextContent(lastClickedTr);
+				var text = getTextContent(lastClickedTr).trim();
 				selectedOptions.push({"text" : text, "value" : text});
         break;
       }
@@ -3707,7 +3714,7 @@ var SlideSwaper = {
 	// There is a (temporary) HACK(!)
 	// focus/click in options selector containing in moved tray by MozTransfor invokes
 	// additional offset (FF's bug). It was overcame with hack when on last step
-	// MozTransfor is "substituted" with style.left. It should be removed after the bug fixxing.
+	// MozTransfor is "substituted" with style.left. It should be removed after FF's bug fixing.
   _moveStep : function() {
     var $t = SlideSwaper;
     var dir = -1;
