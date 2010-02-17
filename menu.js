@@ -3371,6 +3371,15 @@ var ListBoxesHandler = {
 		else { // data entry
 			FieldsWithEmptyValue.setValue(textField, selectedOptionsArr[0]["value"]);
 			// "_select" and "_verified" hidden fields processed in popupRowOnClick1
+			
+			// change color of touched input/value
+			if ($t.isEditList) {
+				// setting font as bold changes width & height of a field. So, fix it previously
+				textField.style.width = textField.clientWidth;
+				textField.style.height = textField.clientHeight;
+		  	textField.style.color = "#727FA1";
+				textField.style.fontWeight = "bold";
+		  }
 		}
     
     // slide back
