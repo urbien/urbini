@@ -1450,7 +1450,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .blogDivider {border-top: 1px dotted #aaaaaa;}
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
-.innerTitle {font-family:sans-serif, arial; color: #4B5578; text-shadow: #edf1fa 1px 1px 0px; font-size:12pt;font-weight:bold; margin-left: 15px; }
+.innerTitle {font-family:helvetica, arial, sans-serif; color: #4B5578; text-shadow: #edf1fa 1px 1px 0px; font-size: 18px; font-weight:bold; margin-left: 15px; }
 
 *:lang(ja-jp) { font: 900 14pt/16pt "Heisei Mincho W9", serif }
 BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif }
@@ -1952,7 +1952,7 @@ table.printFB {
 .userLogin {background:#ffffff}
 .loginBorder {background: #cbcbcb}
 
-.text_editor_container { padding-right: 17px; }
+.text_editor_container { padding-right: 5px; }
 .rte { margin: 0 0 5 7; background-color: #ffffff; border: 1px solid rgb(192, 201, 215); padding:0; width: 100%; height: 100px;  }
 
 
@@ -2018,7 +2018,7 @@ div .panel_block, td .panel_block {
 .panel_block .header .wide_cell { width: 100%; text-align: center; }
 
 .panel_block .content, .panel_block #lists_container { padding: 10px; width: 100%; }
-.panel_block .property_group, .panel_block #item_name { color: #4B5578; text-shadow: #edf1fa 1px 1px 0px; font-size: 17px; font-weight: bold; margin: 15px 0px 5px 15px; /*text-transform: uppercase;*/ }
+.panel_block .property_group, .panel_block #item_name { color: #4B5578; text-shadow: #edf1fa 1px 1px 0px; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; /*text-transform: uppercase;*/ }
 
 .rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #fff; padding: 0; border: solid rgb(166, 170, 173) 1px; color: #000000; empty-cells:show; }
 
@@ -2032,8 +2032,9 @@ div .panel_block, td .panel_block {
 .rounded_rect_tbl .data_td table { width: 100%; }
 .rounded_rect_tbl .data_td .input_td { width: 100%; padding: 0px 3px; }
 
-/*.rounded_rect_tbl*/ .arrow_td {  }
+/*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty {  }
 /*.rounded_rect_tbl*/ .arrow_td div { width: 18px; height: 20px; cursor: pointer; background: url(../images/skin/iphone/listArrow_sprite.png) 0px 0px;}
+.arrow_td_empty div { width: 18px; height: 20px; }
 
 .rounded_rect_tbl .label_td { white-space: nowrap; } 
 .rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; }
