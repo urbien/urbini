@@ -2683,8 +2683,6 @@ var ListBoxesHandler = {
  
     keyPressedTime = new Date().getTime();
     
-    this.prevInputValue = FieldsWithEmptyValue.getValue(target);
-    
     //var form = target.form;
     var form = document.forms[currentFormName];
     var characterCode = getKeyCode(e); // code typed by the user
@@ -2842,8 +2840,6 @@ var ListBoxesHandler = {
 		if (keyPressedTime > invocationTime) {
       return;
     }
-    //if (!keyPressedImgId)
-    //  return;
 
     var hotspot = document.getElementById(keyPressedImgId);
     hotspot = hotspot || document.body;
@@ -2857,6 +2853,8 @@ var ListBoxesHandler = {
     else {
         this.listboxOnClick1(e, keyPressedImgId, newValue, null, this.curClass);
     }
+		
+		this.prevInputValue = newValue;
   },
 
 
