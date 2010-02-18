@@ -3215,6 +3215,7 @@ var ListBoxesHandler = {
     // show item/parameter name (if it is too long)
     $t.displayItemName();
     // slide forward
+
 		var curPanel = $t.getCurrentPanelDiv();
 		if (curPanel && curPanel.className != panel.className) {
 			var toResetTray = (SlideSwaper.getTrayPosition($t.tray) == 0) ? true : false;
@@ -3770,7 +3771,7 @@ var SlideSwaper = {
   // returns state of current tray or some pointed tray in pixels
 	// currently, possible 3 offset-mechanisms:
 	// 1) webkitTransform 2) MozTransform 3) style.left
-  getTrayPositionInPixels : function(tray) {
+  getTrayPositionInPercents : function(tray) {
     tray = tray || this.tray;
     if (!tray)
       return 0;
@@ -3781,7 +3782,8 @@ var SlideSwaper = {
 		str = tray.style.left; 
 		if (str.length != 0)
       return parseInt(str) / 5;
-     
+    
+		// translate --- 
     if (typeof tray.style.webkitTransform != 'undefined')
       str = tray.style.webkitTransform;
     else if (typeof tray.style.MozTransform != 'undefined')
@@ -3789,14 +3791,16 @@ var SlideSwaper = {
 		
 		if (str.length == 0)
       return 0;
-     
-    return parseInt(str); 
+    
+		// takes first digit from "translate(x, y)"
+		var numberStr = str.replace("translate(", "");
+    return parseInt(numberStr); 
   },
 	
 	// returns integer 0, 1, 2
 	getTrayPosition : function(tray) {
 		
-		return -Math.floor(this.getTrayPositionInPixels(tray) / this.DISTANCE);
+		return -Math.floor(this.getTrayPositionInPercents(tray) / this.DISTANCE);
 	},
 	doesTrayStay : function() {
 		return (this.offset == 0);
