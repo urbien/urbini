@@ -3468,10 +3468,17 @@ var ListBoxesHandler = {
     var form = document.forms[currentFormName];
     var textField = form.elements[originalProp];
     textField.value = "";
-    
+
 		var selectField = form.elements[originalProp + "_select"] 
-		if (selectField)
-			selectField.value = "";
+		if (selectField) {
+			if (typeof selectField.length != 'undefined') {
+				// possible several checkboxes and 1 hidden
+				for (var i = 0; i < selectField.length; i++)
+					selectField[i].value = "";
+			}
+			else
+				selectField.value = "";
+		}
 		
 		var verifiedField = form.elements[originalProp + "_verified"] 
 		if (verifiedField)
