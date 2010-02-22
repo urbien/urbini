@@ -920,25 +920,37 @@ function getChildById(parent, id) {
 function getChildByClassName(parent, className) {
 	return this.getChildByAttribute(parent, "className", className);
 }
-function getChildByAttribute(parent, atribName, attribValue) {
-	if(!parent)
+function getChildByAttribute(parent, attribName, attribValue) {
+	  if(!parent)
+	    return null;
+	  if(parent[attribName] == attribValue)
+		  return parent;
+		
+		if (attribName == "className" && parent[attribName] &&
+         parent[attribName].indexOf(attribValue + " ") != -1)
+      return parent;   
+  
+	  var children = parent.childNodes;
+	  var len = children.length;
+	  if(len == 0)
+		  return null;
+	  
+	  for(var i = 0; i < len; i++) {
+		  if(children[i].childNodes.length != 0) {
+			  var reqChild = null;
+			  if((reqChild = getChildByAttribute(children[i], attribName, attribValue)) != null)
+				  return reqChild;
+		  }
+
+		   if(children[i][attribName] == attribValue)
+			   return children[i];
+			 
+			 if (attribName == "className" && children[i][attribName] &&
+         children[i][attribName].indexOf(attribValue + " ") != -1)
+       return children[i];   
+	  }
+	  
 	  return null;
-	if(parent[atribName] == attribValue)
-		return parent;
-	var children = parent.childNodes;
-	var len = children.length;
-	if(len == 0)
-		return null;
-	for(var i = 0; i < len; i++) {
-		if(children[i].childNodes.length != 0) {
-			var reqChild = null;
-			if((reqChild = getChildByAttribute(children[i], atribName, attribValue)) != null)
-				return reqChild;
-		}
-		if(children[i][atribName] == attribValue)
-			return children[i];
-	}
-	return null;
 }
 
 // return "parent" if it is of required tagName
@@ -1092,7 +1104,6 @@ function setInnerHtml(div, text) {
 function getTextContent(elm) {
   var text = null;
   if (!elm) {
- //   debugger
     throw new Error("parameter is null");
   }
 
