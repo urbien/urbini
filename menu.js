@@ -728,6 +728,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.popupRowOnClick = function (e) {
 		var $t = ListBoxesHandler;
 		e = getDocumentEvent(e); if (!e) return;
+		
     var target = getTargetElement(e);
     var tr = getTrNode(target);
     if (!tr)
@@ -760,7 +761,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 		
 		Popup.lastClickTime = new Date().getTime();
     var currentDiv = self.getCurrentDiv();
-    
+   
     if (!tr)
       tr = self.currentRow;
     if (self.isHeaderRow(tr)) // skip clicks on menu header
@@ -2520,35 +2521,6 @@ function resizeWindow(event) {
 //  }
   return true;
 }
-/*
- * Shows form to choose properties to watch on.
- */
-function limitNumberOfAlerts(e) {
-  if (!e)
-    return;
-  var div = document.getElementById('subscribe');
-  var divN = document.getElementById('subscribeNote');
-  if (div) {
-    if (div.className) {
-      if (div.className == 'hdn') {
-        div.className = '';
-        if (divN)
-          divN.className = ''
-      }
-      else {
-        div.className = 'hdn';
-        if (divN)
-          divN.className = 'hdn'
-      }
-    }
-    else {
-      div.className = 'hdn';
-      if (divN)
-        divN.className = 'hdn'
-    }
-  }
-  return stopEventPropagation(e);
-}
 
 /********************************************************
 * Tooltip
@@ -3319,7 +3291,6 @@ var ListBoxesHandler = {
     //  checkBox.setAttribute("checked", "true");
       vIcon.style.visibility = "visible";
     }
-      
     // close options on timeout
     $t.timerId = setTimeout(this.onOptionsSelectionFinish, $t.OPTIONS_DELAY);
     return true;
@@ -3355,7 +3326,7 @@ var ListBoxesHandler = {
 		  }
 
 		}
-		else if (chosenValuesDiv) { // Filter
+		else if (chosenValuesDiv) { // Filter or Subscribe
 			var html = $t.getSelectedOptionsHtml(selectedOptionsArr, textField.name);
 			chosenValuesDiv.innerHTML = html;
 			
@@ -3366,6 +3337,9 @@ var ListBoxesHandler = {
 				if (verifiedField)
 					verifiedField.value = "n";
 			}
+
+			// posssible it is "Subscribe"
+			SubscribeAndWatch.onOptionSelection(getAncestorByClassName(td, "param_tr"), selectedOptionsArr.length != 0);
 		}
 		else { // data entry
 			FieldsWithEmptyValue.setValue(textField, selectedOptionsArr[0]["value"]);
@@ -3410,19 +3384,22 @@ var ListBoxesHandler = {
     var optTable = getChildByClassName(this.curPopupDiv, "rounded_rect_tbl");
     var amt = optTable.rows.length;
     for (var i = 0; i < amt; i++) {
-      var chkCell = optTable.rows[i].cells[0];
+			var tr = optTable.rows[i];
+      var chkCell = tr.cells[0];
       var checkBox = chkCell.getElementsByTagName("input")[0];
       if (checkBox) {
         if (checkBox.checked) {
-					var paramNameTd = getChildByClassName(optTable.rows[i], "menuItem"); //getNextSibling(getNextSibling(checkBox.parentNode));
+					var paramNameTd = getChildByClassName(tr, "menuItem"); //getNextSibling(getNextSibling(checkBox.parentNode));
           var text = getTextContent(paramNameTd);
 					selectedOptions.push({"text" : text, "value" : checkBox.value});
         }
       }
       else {
-        // no checkbox(es)
-				var text = getTextContent(lastClickedTr).trim();
-				selectedOptions.push({"text" : text, "value" : text});
+        // no checkbox(es) - data entry
+				if (typeof lastClickedTr == "object") {
+					var text = getTextContent(lastClickedTr).trim();
+					selectedOptions.push({"text": text,	"value": text});
+				}
         break;
       }
     } // the loop end
@@ -3504,14 +3481,19 @@ var ListBoxesHandler = {
         targetImg.src = "icons/cakes_gray.png";
     }
     
+		// posssible it is "Subscribe"
+		SubscribeAndWatch.onOptionSelection(getAncestorByClassName(textField, "param_tr"), false);
+
     this.onBackBtn();
   },
 
   onOptionsBackBtn : function() {
     var value = FieldsWithEmptyValue.getValue(this.textEntry);
+
+    var form = document.forms[currentFormName];
+    var textField = form.elements[originalProp]; // field of the form
+
 		if (value.length != 0) {
-	    var form = document.forms[currentFormName];
-	    var textField = form.elements[originalProp]; // field of the form
       var td = getAncestorByTagName(textField, "td");
       var chosenValuesDiv = getChildByClassName(td, "chosen_values");
       if (chosenValuesDiv) {
@@ -3519,6 +3501,11 @@ var ListBoxesHandler = {
       }
       textField.value = value;
     }
+		
+		// posssible it is "Subscribe"
+		SubscribeAndWatch.onOptionSelection(getAncestorByClassName(textField, "param_tr"), value.length != 0);
+
+		
     this.onBackBtn();
   },
 
@@ -4262,6 +4249,65 @@ var Filter = {
 
 
 /*******************************************
+* SubscribeAndWatch
+********************************************/
+var SubscribeAndWatch = {
+	panelBlock : null,
+	
+	show : function(event, div, hotspot, content, url) {
+		this.panelBlock = getDomObjectFromHtml(content, "className", "panel_block");
+		//panelBlock.style.position = "absolute";
+		
+		var paramsTable = getChildByClassName(this.panelBlock, "rounded_rect_tbl");
+		
+		CheckButtonMgr.substitute(paramsTable);
+    var paramSel = getChildById(this.panelBlock, 'item_selector');
+    FieldsWithEmptyValue.initField(paramSel, 'select');
+    var optionSel = getChildById(this.panelBlock, 'text_entry');
+    FieldsWithEmptyValue.initField(optionSel, 'search');
+    
+    // assign mouse handlers
+    addEvent(paramsTable, 'click',     ListBoxesHandler.onClickParam, false);
+//    addEvent(paramsTable, 'mouseover', this.onMouseOverParam, false);
+//    addEvent(paramsTable, 'mousedown', this.onMouseOverParam, false); // for touch screen
+//    addEvent(paramsTable, 'mouseout',  this.onMouseOutParam,  false);
+		
+		document.body.appendChild(this.panelBlock);
+		setDivVisible(event, this.panelBlock, null, null, 0, 0);
+	},
+	
+	submit : function(e, submitIcon) {
+		//debugger;
+		var form = getAncestorByTagName(submitIcon, "form");
+		//FormProcessor.onSubmitProcess(e, form);
+		form.submit();
+	},
+	
+	// to remove from DOM(?)
+	hide : function(event, hideIcon) {
+		var $t = SubscribeAndWatch;
+		//var panelBlock = getAncestorByClassName(hideIcon, "panel_block");
+		$t.panelBlock.style.display = "none";
+
+	},
+	
+	onOptionSelection : function(paramTr, wasSelection) {
+		var $t = SubscribeAndWatch;
+		if ($t.panelBlock != null && $t.panelBlock.style.display != "none") {
+			var input = paramTr.getElementsByTagName("input")[0];
+			var toggleBtn = getChildByClassName(input.parentNode, "iphone_checkbox");
+			CheckButtonMgr.setState(toggleBtn, input, wasSelection);
+		}
+	},
+	
+	limitNumberOfAlerts : function() {
+		var contentTd = getChildByClassName(this.panelBlock, "content");
+		contentTd.style.display = "table-cell";
+	}
+}
+
+
+/*******************************************
 * DataEntry
 * 1. multi-dialog support for mobile version
 * 2. handles dialogs for data entry in Touch UI
@@ -4788,12 +4834,14 @@ function displayInner(e, urlStr) {
     finalUrl += '&';
   finalUrl += "-inner=y"; // "hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
 
+
+	var action = getUrlParam(finalUrl, "-$action");
 	// mkResource and editProperties dialogs belong to Touch UI
 	if (finalUrl.indexOf("mkResource.html") != -1 ||
   			finalUrl.indexOf("editProperties.html") != -1) {
   	DataEntry.show(finalUrl, anchor);
   }
-	// others are "blue" dialogs
+  // others are "blue" dialogs
   else {
    	var url = finalUrl;
   	var params = null;
@@ -4838,6 +4886,12 @@ function showDialog(event, div, hotspot, content, url) {
 
  	// hide possible opened dialogs
 	closeAllDialogs();
+	
+  // SubscribeAndWatch 
+	if (url.endsWith("subscribe.html")) {
+		SubscribeAndWatch.show(event, div, hotspot, content, url);
+		return;
+	}
 	
   var re = eval('/' + div.id + '/g');
   content = content.replace(re, div.id + '-removed');  // prevent pane2 from appearing 2 times in the document
@@ -10300,7 +10354,7 @@ var CheckButtonMgr = {
     this.setState(toggleBtn, input, !isChecked);
   },
 
-	// toSetCheckboxValue is for hidden or text field
+	// toSetCheckboxValue is not required; used for hidden or text field
 	// to set pair "on"/"" instead "Yes"/"No"; default: false
   setState : function(toggleBtn, input, checkState, toSetCheckboxValue) {
     if (input.type == "checkbox") 
