@@ -1,20 +1,15 @@
-<div width="70%">
-<panelBlock>
-<subscribeNote/>
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-<tr>
-<td valign="top" width="95%">
-<form name="tablePropertyList" id="filter" method="post" action="mkresource" autocomplete="off">
-<div id="subscribe" class="hdn">
-   <tablePropertyList action="mkResource"/>
-   <input type="hidden" name="-$action" value="mkResource"></input>
-   <br />
-</div>
-  <center>
-    <input type="submit" name="saveAndCancel" value="  Confirm to receive alerts  "/>&#160;&#160;<a href="about:blank" onclick="limitNumberOfAlerts(event)"><text text="Limit number of alerts"/></a>
-  </center>
-	<br />
-</form>
-</td></tr></table>
+<panelBlock subscribe="y">
+	<form name="tablePropertyList" id="filter" method="post" action="mkresource" autocomplete="off">
+		<div id="subscribe" class="">
+		   <tablePropertyList action="mkResource"/>
+		   <input type="hidden" name="-$action" value="mkResource"></input>
+		   <br />
+		</div>
+	  <div class="iphone_btn" style="margin-left: 35%;">
+			<div></div>
+		  <input type="submit" name="saveAndCancel" value="  Confirm to receive alerts  "/>&#160;&#160;<a href="about:blank" onclick="SubscribeAndWatch.limitNumberOfAlerts(event);"><text text="Limit number of alerts"/></a>
+		</div>
+		<br /><br />
+	</form>
 </panelBlock>
-</div>
+
