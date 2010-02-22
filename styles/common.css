@@ -53,6 +53,8 @@ H1 {font-family: arial, Verdana, geneva; font-size: 17px; font-weight: bold;  co
 H2 {font-family: arial, Verdana, geneva; font-weight: normal; font-size: medium; color: #00309C} /*color: #6699CC}*/
 H3 {font-family: arial, Verdana, geneva; font-size: 15px; font-weight: bold;}/* color: #3366aa}*/
 
+.pointer { cursor: pointer; }
+
 img.fade {
    opacity:       0.6;
 }
@@ -2018,6 +2020,7 @@ div .panel_block, td .panel_block {
 .panel_block .header .wide_cell { width: 100%; text-align: center; }
 
 .panel_block .content, .panel_block #lists_container { padding: 10px; width: 100%; }
+#subscribe .content { display: none; }
 .panel_block .property_group, .panel_block #item_name { color: #4B5578; text-shadow: #edf1fa 1px 1px 0px; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; /*text-transform: uppercase;*/ }
 
 .rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #fff; padding: 0; border: solid rgb(166, 170, 173) 1px; color: #000000; empty-cells:show; }
@@ -2045,9 +2048,9 @@ div .panel_block, td .panel_block {
 .rounded_rect_tbl .comment { text-align: left; color: #555; font-size: 11px; padding: 5 8 5 8; }
 .rounded_rect_tbl .select { font-family: Helvetica, Arial;  font-size: 14px; height: 20px; color: #000; background-color: #fff; }
 
-.rounded_rect_tbl input#rightPanelPropertySheet { display: none; }
+.rounded_rect_tbl input#rightPanelPropertySheet, #subscribe .input  { display: none; }
 
-.menuItemRow { cursor: pointer; }
+.menuItemRow, .option_tr { cursor: pointer; }
 
 .chosen_values {
 	text-align: right;
