@@ -1723,7 +1723,7 @@ TD.toolbar {
 }
 
 .menuItemIcon img {
-  width: 32px; height: 32px; border: 0px; text-align:center; margin: 0 5 0 5; padding:0px;
+  width: 32px; height: 32px; border: 0px; text-align:center; margin: 0px 3px; padding: 0px;
 }
 
 .menuItemChk {
@@ -2048,7 +2048,7 @@ div .panel_block, td .panel_block {
 .rounded_rect_tbl .comment { text-align: left; color: #555; font-size: 11px; padding: 5 8 5 8; }
 .rounded_rect_tbl .select { font-family: Helvetica, Arial;  font-size: 14px; height: 20px; color: #000; background-color: #fff; }
 
-.rounded_rect_tbl input#rightPanelPropertySheet, #subscribe .input  { display: none; }
+.rounded_rect_tbl input#rightPanelPropertySheet  { display: none; }
 
 .menuItemRow, .option_tr { cursor: pointer; }
 
@@ -2123,7 +2123,7 @@ input[type=checkbox] { display: none; }
 /** iPhone toggle button. **/
 /* 3 types 1)left align 2) right align 3) blue with left align */
 .toggle_btn { float: right; margin: 0px; width: 100px; height: 30px; background:#FFFFFF url(../images/skin/iphone/toggle_btn.png); cursor: pointer; }
-.iphone_checkbox { width: 29px; height: 29px; background: url(../images/skin/iphone/checkbox.png); cursor: pointer; }
+.iphone_checkbox { margin: 0px 3px; width: 29px; height: 29px; background: url(../images/skin/iphone/checkbox.png); cursor: pointer; }
 
 /** iPhone button **/
 .iphone_btn, .iphone_btn_blue { float: left; margin: 7 3 3 3; }
