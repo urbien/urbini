@@ -4256,8 +4256,6 @@ var SubscribeAndWatch = {
 	
 	show : function(event, div, hotspot, content, url) {
 		this.panelBlock = getDomObjectFromHtml(content, "className", "panel_block");
-		//panelBlock.style.position = "absolute";
-		
 		var paramsTable = getChildByClassName(this.panelBlock, "rounded_rect_tbl");
 		
 		CheckButtonMgr.substitute(paramsTable);
@@ -4266,29 +4264,22 @@ var SubscribeAndWatch = {
     var optionSel = getChildById(this.panelBlock, 'text_entry');
     FieldsWithEmptyValue.initField(optionSel, 'search');
     
-    // assign mouse handlers
-    addEvent(paramsTable, 'click',     ListBoxesHandler.onClickParam, false);
-//    addEvent(paramsTable, 'mouseover', this.onMouseOverParam, false);
-//    addEvent(paramsTable, 'mousedown', this.onMouseOverParam, false); // for touch screen
-//    addEvent(paramsTable, 'mouseout',  this.onMouseOutParam,  false);
+		// init
+		FormProcessor.initForms(this.panelBlock);
 		
 		document.body.appendChild(this.panelBlock);
 		setDivVisible(event, this.panelBlock, null, null, 0, 0);
 	},
 	
 	submit : function(e, submitIcon) {
-		//debugger;
 		var form = getAncestorByTagName(submitIcon, "form");
-		//FormProcessor.onSubmitProcess(e, form);
 		form.submit();
 	},
 	
-	// to remove from DOM(?)
 	hide : function(event, hideIcon) {
 		var $t = SubscribeAndWatch;
-		//var panelBlock = getAncestorByClassName(hideIcon, "panel_block");
 		$t.panelBlock.style.display = "none";
-
+		$t.panelBlock.parentNode.removeChild($t.panelBlock);
 	},
 	
 	onOptionSelection : function(paramTr, wasSelection) {
