@@ -4294,6 +4294,8 @@ var SubscribeAndWatch = {
 	limitNumberOfAlerts : function() {
 		var contentTd = getChildByClassName(this.panelBlock, "content");
 		contentTd.style.display = "table-cell";
+		var subscribeNoteDiv = getChildById(this.panelBlock, "subscribeNote");
+		subscribeNoteDiv.className = "";
 	}
 }
 
