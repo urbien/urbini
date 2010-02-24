@@ -56,6 +56,14 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		// 1. create style view div
 		styleViewDiv = this.creteStyleViewDiv();
 		// 2. create the toolbar.
+
+		// Note: after second insertion of a dialog on mobile, RTE requires new initialization (?!)
+		// need to remove old, not effective toolbar (!) 
+
+		var oldToolbar = getChildByClassName(parentDiv, 'ctrl_toolbar');
+		if (oldToolbar != null)
+			oldToolbar.parentNode.removeChild(oldToolbar);
+		
 		toolBar = new Toolbar(parentDiv, this, 18, true);
 		// 3. create the toolbar's control objects.
 
@@ -79,25 +87,6 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		// border apply to
 		this.borderApplyToList = this.createBorderApplyTo(toolBar);
 
-
-// NOTE: 	the following is commented out temporary.
-// 				It Required fitting of the toolbar for Touch UI.
-
-/*
-		// border width
-		this.borderWidthList = this.createBorderWidthList(toolBar);
-		// border style
-		this.borderStyleList = this.createBorderStyleList(toolBar);
-		// border color
-		this.borderClrBtn = toolBar.appendButton(this.onBorderColor, false, IMAGES_FOLDER + "border_color.gif", "border color");
-		// CSS view
-		var styleViewBtn = toolBar.appendButton(this.onStyleView, true, IMAGES_FOLDER + "properties.gif", "CSS view");
-*/
-
-
-		// 4. set parent div width
-		parentDiv.style.width = "99%"; //toolBar.getWidth();
-		// alighnment of the sample.
 		this.centeringSampleDiv();
 	}
 
