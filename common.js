@@ -1726,6 +1726,10 @@ function getParentDialog(obj) {
 function isParentDialogOnPage(dialog) {
 	return dialog.parentNode.tagName.toLowerCase() != "body";
 }
+// helps with class names composed from 2 or more parts
+function isElemOfClass(elem, className) {
+	return elem.className == className || elem.className.indexOf(className + " ") == 0;
+}
 
 function setCaretPosition(elem, caretPos) {
     var elem;
