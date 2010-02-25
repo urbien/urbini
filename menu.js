@@ -574,7 +574,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         }
       }
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
-      addEvent(elem, 'mousedown', self.popupRowOnMouseOver, false); // for touch screen
+      addEvent(elem, 'mousedown', self.popupRowOnMouseDown, false);
       addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
     }
     // reset
@@ -748,6 +748,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
 
     var ret = self.popupRowOnClick1(e, tr, target);
+		self.selectRow();
     stopEventPropagation(e);
     return ret;
   }
@@ -1212,6 +1213,28 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     return true;
   }
 
+  this.popupRowOnMouseDown = function (e) {
+    if (typeof getDocumentEvent == 'undefined') return;
+    e = getDocumentEvent(e); if (!e) return;
+    var target = getMouseOutTarget(e);
+    if (!target)
+      return true;
+
+    var tr = getTrNode(target);
+    if (!tr)
+      return true;
+    
+		var tds = tr.getElementsByTagName("td");
+      for (var i = 0; i < tds.length; i++) {
+        var elem = tds[i];
+        elem.style.color = "#ffffff";
+        if (tr.id == elem.parentNode.id)
+          elem.style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
+      }
+
+    return true;
+  }
+
   this.deselectRow = function () {
     if (self.currentRow == null)
       return;
@@ -1233,6 +1256,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
   }
 
+	// currently makes row grey
   this.selectRow = function () {
     if (self.currentRow == null)
       return;
@@ -1249,9 +1273,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       for (var i = 0; i < tds.length; i++) {
         var elem = tds[i];
         //elem.style.backgroundColor = Popup.DarkMenuItem;
-        elem.style.color = "#ffffff";
+        elem.style.color = "";
         if (trId == elem.parentNode.id)
-          elem.style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
+          //elem.style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
+					elem.style.background = "#eee";
       }
     }
   }
@@ -1603,7 +1628,7 @@ function removePopupRowEventHandlers(div) {
     var elem = trs[i];
     removeEvent(elem, 'click',     popupRowOnClick,     false);
     removeEvent(elem, 'mouseover', popupRowOnMouseOver, false);
-    removeEvent(elem, 'mousedown', popupRowOnMouseOver, false); // for touch screen
+    removeEvent(elem, 'mousedown', popupRowOnMouseDown, false);
     removeEvent(elem, 'mouseout',  popupRowOnMouseOut,  false);
   }
 }
@@ -2101,16 +2126,17 @@ var FormProcessor = {
 	
 	initFieldsWithEmpltyValues : function(parent) {
 		var inputs = parent.getElementsByTagName("input");
-		
+
 		for (var i = 0; i < inputs.length; i++) {
-		 	if (inputs[i].className != "input" && inputs[i].className != "isel")// &&
-		 	//inputs[i].className != "boolean") 
+		 	// process only fields with "input" and "isel" classes
+			if (isElemOfClass(inputs[i], "input") == false &&
+					isElemOfClass(inputs[i], "isel") == false) 	//inputs[i].className != "boolean") 
 		 		continue;
 		 	
 			var paramTr = getAncestorByClassName(inputs[i], "param_tr");
 			if (!paramTr)
 				continue;
-				
+	
 			var labelSpan = getChildByClassName(paramTr, "label");
 			// requred field
 			var isFieldRequired = labelSpan && (labelSpan.getAttribute("required") != null);
@@ -2622,10 +2648,12 @@ var Tooltip = {
 var ListBoxesHandler = {
   init : function(form) {
 		var tables = form.getElementsByTagName("table");
-    for (var i = 0; i < tables.length; i++)
+    for (var i = 0; i < tables.length; i++) 
 			if (tables[i].className == "rounded_rect_tbl" ||
-					tables[i].id.indexOf("siteRL_") == 0) // 2nd is RL edit
-      	addEvent(tables[i], 'click',  this.onClickParam, false);
+					tables[i].id.indexOf("siteRL_") == 0) { // 2nd is RL edit
+				addEvent(tables[i], 'click', this.onClickParam, false);
+				TouchDlgUtil.init(tables[i]);
+			}
   },
 
 
@@ -3430,7 +3458,15 @@ var ListBoxesHandler = {
       html += "<div>" + selectedOptionsArr[i]["text"] + "</div>";
       if (propName)
       html +=
-        "<input type=\"checkbox\" checked=\"true\" value=\""
+				// display name
+			  "<input type=\"hidden\" checked=\"true\" value=\""
+        + selectedOptionsArr[i]["text"]
+        + "\" name=\""
+        + propName
+        + "\" />"
+				
+				// checkbox containig "reference" to the resource
+        + "<input type=\"checkbox\" checked=\"true\" value=\""
         + selectedOptionsArr[i]["value"]
         + "\" name=\""
         + propName
@@ -3550,6 +3586,7 @@ var ListBoxesHandler = {
 			$t.curClassesPopupDiv.style.display = "none";
 		}
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
+		TouchDlgUtil.bleachBlueRow();
   },
 
   localOptionsFilter : function(typedText, parentDiv) {
@@ -3841,7 +3878,8 @@ var Filter = {
 		var closeFilterBtn = getChildById(filterHeader, "close");
 		if (closeFilterBtn)
 			closeFilterBtn.onclick = this.hide;
-
+		
+		// note: filter contains only one paramsTable
     // init filter content
     var paramsTable = getChildByClassName(filterDiv, "rounded_rect_tbl");
 
@@ -3863,9 +3901,7 @@ var Filter = {
     
     // assign mouse handlers
     addEvent(paramsTable, 'click',     ListBoxesHandler.onClickParam, false);
-    addEvent(paramsTable, 'mouseover', this.onMouseOverParam, false);
-    addEvent(paramsTable, 'mousedown', this.onMouseOverParam, false); // for touch screen
-    addEvent(paramsTable, 'mouseout',  this.onMouseOutParam,  false);
+		TouchDlgUtil.init(paramsTable);
     
     return true;
   },
@@ -4151,58 +4187,6 @@ var Filter = {
     ListBoxesHandler.onBackBtn(1);
   },
 
-  onMouseOverParam : function(event) {
-    var target = getEventTarget(event);
-    var tr = getAncestorByClassName(target, "param_tr");
-    if (!tr)
-      return;
-
-    // background
-    for (var i = 0; i < tr.cells.length; i++)
-			tr.cells[i].style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
-		
-		// label	
-	  var labelTd = getChildByClassName(tr, "label_td");
-    labelTd.style.color = "#fff";
-	
-    // chosen values
-    var chosenValues = getChildByClassName(tr, "chosen_values");
-    chosenValues.style.color = "#fff";
-    divs = chosenValues.getElementsByTagName("div");
-    for (var i = 0; i < divs.length; i++)
-      divs[i].style.color = "#fff";
-    
-    // arrow
-    var arrowDiv = getChildByClassName(tr, "arrow_td").firstChild;
-    arrowDiv.style.backgroundPosition = "0% 100%";
-  },   
-  
-  onMouseOutParam : function(event) {
-    var target = getEventTarget(event);
-    var tr = getAncestorByClassName(target, "param_tr"); // "param_tr"
-    if (!tr)
-      return;
-
-    // set background
-    for (var i = 0; i < tr.cells.length; i++)
-      tr.cells[i].style.background = "";
-
-    // label	
-	  var labelTd = getChildByClassName(tr, "label_td");
-    labelTd.style.color = "";
-    
-    // chosen values
-    var chosenValues = getChildByClassName(tr, "chosen_values");
-    chosenValues.style.color = "#fff";
-    divs = chosenValues.getElementsByTagName("div");
-    for (var i = 0; i < divs.length; i++)
-      divs[i].style.color = "rgb(114, 127, 161)";
-    
-    // arrow
-    var arrowDiv = getChildByClassName(tr, "arrow_td").firstChild;
-    arrowDiv.style.backgroundPosition = "0% 0%";
-  },    
-  
   // hides params with not suited beginning.
   onParamNameTyping : function(paramNameField) {
 		var $t = Filter;
@@ -4333,7 +4317,8 @@ var DataEntry = {
 				
 				document.body.appendChild(this.dataEntryArr[key]);
 		  	// RTE requires new initialization after insertion into document (?!)
-				ExecJS.runDivCode(this.dataEntryArr[key]);
+				if (!Browser.mobile)
+					ExecJS.runDivCode(this.dataEntryArr[key]);
 			}
 			
 			// on desktop only hide/show, without append/remove
@@ -4506,6 +4491,138 @@ var DataEntry = {
 		if (!toSave)
 			this.inpValues = null;
 	}
+}
+
+/*******************************************
+* TouchDlgUtil
+********************************************/
+var TouchDlgUtil = {
+	blueTr : null, //used for blue highlighting
+	
+	init : function(paramsTable) {
+    addEvent(paramsTable, 'mouseover', this.highlightRowGrey, false);
+    addEvent(paramsTable, 'mousedown', this.highlightRowBlue, false);
+    addEvent(paramsTable, 'mouseout',  this.bleachGreyRow,  false);
+	}, 
+	highlightRowGrey : function(event) {
+    var target = getEventTarget(event);
+    var tr = getAncestorByClassName(target, "param_tr");
+    if (!tr)
+      return;
+		
+		if (tr.getAttribute("blue") != null)
+			return;
+			
+		for (var i = 0; i < tr.cells.length; i++)
+			tr.cells[i].style.background = "#eee";
+	},
+	highlightRowBlue : function(event) {
+    var target = getEventTarget(event);
+    var tr = getAncestorByClassName(target, "param_tr");
+    if (!tr)
+      return;
+		
+		// in-place editors
+		if (getChildByClassName(tr, "arrow_td") == null) {
+			return;
+		}
+		
+		// background
+    for (var i = 0; i < tr.cells.length; i++)
+			tr.cells[i].style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
+
+		// label	
+	  var labelTd = getChildByClassName(tr, "label_td");
+    labelTd.style.color = "#fff";
+		
+		// comment
+		var commentDiv = getChildByClassName(tr, "comment");
+		if (commentDiv)
+    	commentDiv.style.color = "#fff";
+
+    // chosen values
+    var chosenValues = getChildByClassName(tr, "chosen_values");
+		if (chosenValues) {
+			chosenValues.style.color = "#fff";
+			divs = chosenValues.getElementsByTagName("div");
+			for (var i = 0; i < divs.length; i++) 
+				divs[i].style.color = "#fff";
+		}
+   
+	 	// input field for data entry
+	  var field = getChildByClassName(tr, "input");
+		if (field) {
+			field.style.color = "#fff";
+		}
+	 
+    // arrow
+		var arrowTd = getChildByClassName(tr, "arrow_td");
+		if (arrowTd) {
+	    var arrowDiv = arrowTd.getElementsByTagName("div")[0];
+	    arrowDiv.style.backgroundPosition = "0% 100%";
+		}
+		
+		TouchDlgUtil.blueTr = tr;
+		tr.setAttribute("blue", "y");
+  },   
+  
+	bleachGreyRow : function(event) {
+	  var target = getEventTarget(event);
+    var tr = getAncestorByClassName(target, "param_tr"); // "param_tr"
+    if (!tr)
+      return;
+
+		if (tr.getAttribute("blue") != null)
+			return;
+		
+		for (var i = 0; i < tr.cells.length; i++)
+			tr.cells[i].style.background = "";	
+	},
+	
+	// "callback"
+  bleachBlueRow : function() {
+    if (this.blueTr == null)
+      return;
+		
+		// set background
+    for (var i = 0; i < this.blueTr.cells.length; i++)
+      this.blueTr.cells[i].style.background = "";
+
+    // label	
+	  var labelTd = getChildByClassName(this.blueTr, "label_td");
+    labelTd.style.color = "";
+    
+		// comment
+		var commentDiv = getChildByClassName(this.blueTr, "comment");
+    if (commentDiv)
+			commentDiv.style.color = "";
+		
+    // chosen values
+    var chosenValues = getChildByClassName(this.blueTr, "chosen_values");
+    if (chosenValues) {
+			chosenValues.style.color = "#fff";
+			divs = chosenValues.getElementsByTagName("div");
+			for (var i = 0; i < divs.length; i++) 
+				divs[i].style.color = "rgb(114, 127, 161)";
+		}
+		// input field for data entry
+	  var field = getChildByClassName(this.blueTr, "input");
+		if (field) {
+			field.style.color = "";
+		}
+    // arrow
+    var arrowTd = getChildByClassName(this.blueTr, "arrow_td");
+		if (arrowTd) {
+			var arrowDiv = arrowTd.getElementsByTagName("div")[0];
+			arrowDiv.style.backgroundPosition = "0% 0%";
+		}
+		
+		this.blueTr.removeAttribute("blue");
+		this.blueTr = null;
+  },
+	hasBlueRow : function() {
+		return this.blueTr != null;
+	}    
 }
 
 //**************************************************
@@ -7263,7 +7380,8 @@ var FieldsWithEmptyValue = {
 		else { // it happened when a field with empty value filled out from options list.
 			var key = $t.getKeyOfField(field);
 			if (field.value != $t.emptyValuesArr[key]) {
-				field.style.color = "";
+				if (TouchDlgUtil.hasBlueRow() == false)
+					field.style.color = "";
     		field.style.fontWeight = "";
 				field.setAttribute("is_empty_value", "n");
 			}
