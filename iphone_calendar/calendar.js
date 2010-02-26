@@ -483,16 +483,21 @@ function getDateFromText(dateStr, isEuropeanFormat) {
   if (dateStr.length == 0) {
     return new Date();
   }
-    
+  
   var dateArr = dateStr.split("-");
   // not a date in format with "-" delimeter
   if (dateArr.length != 3)
     return null;
-  
+
+  var year = dateArr[2];
+	var idx = year.indexOf(" ");  // " " delimeter of possible time
+	if (idx != -1)
+		year = year.substr(0, idx);
+		
   if (isEuropeanFormat)  
-    return new Date(dateArr[2], dateArr[1] - 1, dateArr[0]);
+    return new Date(year, dateArr[1] - 1, dateArr[0]);
   else     
-    return new Date(dateArr[2], dateArr[0] - 1, dateArr[1]);
+    return new Date(year, dateArr[0] - 1, dateArr[1]);
 }
 
 function getTextFromDate(dateObj, isEuropeanFormat) {
