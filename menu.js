@@ -671,7 +671,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         if (currentDiv) {
           var form = document.forms[currentFormName];
           if (form) {
-            var inputField = form.elements[originalProp];
+            var inputField = getOriginalPropField(form, originalProp); //form.elements[originalProp];
             try {
             inputField.focus(); } catch(e) {};
           }
@@ -696,7 +696,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
             // var form = getFormNode(self.currentRow);
             var form = document.forms[currentFormName];
             if (form) {
-              var inputField = form.elements[originalProp];
+              var inputField = getOriginalPropField(form, originalProp); //form.elements[originalProp];
               setKeyboardFocus(inputField);
               autoComplete1(e, inputField);
               if (characterCode == 8) {
@@ -848,7 +848,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         prop = propertyShortName.substring(0, idx);
     }
     
-    var chosenTextField = form.elements[originalProp];
+    var chosenTextField = getOriginalPropField(form, originalProp); //form.elements[originalProp];
     var len = chosenTextField.length;
     var verified = prop + "_verified";
     if (currentResourceUri)
@@ -1504,6 +1504,19 @@ var currentResourceUri = null;
 // defined in JAVA because menu.js is loaded at the page bottom
 /* var innerUrls = new Array(); */
 var innerListUrls = new Array();
+
+
+// Note: Touch UI uses display names for all selected options in filter and Watch
+// As a result it appends additional fields with the same name to [originalProp]
+// (it would be better to apply new aprouch to get the field) 
+function getOriginalPropField(form, originalPropStr) {
+	var field = form.elements[originalPropStr];
+	if (field == null)
+		return null;
+	if (typeof field.length != "undefined")
+		return field[0];
+	return field;		
+}
 
 function reposition(div, x, y) {
   var intLessTop  = 0;
@@ -2424,7 +2437,7 @@ function hideResetRow(div, currentFormName, originalProp) {
 
   var tr = trs[i];
 
-  var elem = form.elements[originalProp];
+  var elem = getOriginalPropField(form, originalProp); // form.elements[originalProp];
 
   var value;
   if (elem.length > 1)
@@ -2670,9 +2683,13 @@ var ListBoxesHandler = {
   
   autoComplete : function(e) {
     var $t = ListBoxesHandler;
+		// no autocomplete for numeric field
+		if ($t.curParamRow.getAttribute("is_numeric") != null)
+			return;
+			
     var e = getDocumentEvent(e);  // if (!e) return;
     var target = getTargetElement(e);
-    
+   
 		// //$t.localOptionsFilter(target.value)
     return $t.autoComplete1(e, target);
   },
@@ -2881,7 +2898,7 @@ var ListBoxesHandler = {
     * from to display in RL
     */
     if (!isGroupBy  &&  form  &&  currentFormName != "viewColsList"  &&  currentFormName != "gridColsList"  && originalProp.indexOf("_class") == -1) {
-      var chosenTextField = form.elements[originalProp];
+      var chosenTextField = getOriginalPropField(form, originalProp); // form.elements[originalProp];
       if (chosenTextField && chosenTextField.parentNode) {
         //try { chosenTextField.focus(); } catch(e){}
         // insertAtCursor(chosenTextField, '');
@@ -3038,6 +3055,7 @@ var ListBoxesHandler = {
 	classifierPanel : null,
 	calendarPanel : null,
   
+	curParamRow : null,
   curPopupDiv : null,
   textEntry : null,
   
@@ -3086,6 +3104,7 @@ var ListBoxesHandler = {
 		$t.optionsPanel = getChildByClassName($t.tray, "options_panel");
 		$t.classifierPanel = getChildByClassName($t.tray, "classifier_panel");
     $t.calendarPanel = getChildByClassName($t.tray, "calendar_panel");
+		$t.curParamRow = tr;
 		
 		$t.textEntry = getChildById($t.optionsPanel, "text_entry");
 		$t.curClass = null;
@@ -3145,9 +3164,17 @@ var ListBoxesHandler = {
 					this.toPutInClassifier = true;
 				}
 			}
+			
 			// set name of text enry of current input field
-			if (this.textEntry && !isClassifier) 
-				this.textEntry.name = input.name;
+			// numeric selector should be initialized with previously manually entered value
+			if (this.textEntry && !isClassifier) {
+		  	this.textEntry.name = input.name;
+				if (tr.getAttribute("is_numeric") != null) {
+					//debugger;
+					FieldsWithEmptyValue.setValue(this.textEntry, input.value);
+					//if
+				}
+		  }
 			
 			var str = "";
 			var classValue = null;
@@ -3269,7 +3296,7 @@ var ListBoxesHandler = {
     var itemNameDiv = getChildById(this.optionsPanel, "item_name");
     
     var form = document.forms[currentFormName];
-    var textField = form.elements[originalProp];
+    var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp];
     
     var label = getPreviousSibling(textField);
     if (label) {
@@ -3333,10 +3360,9 @@ var ListBoxesHandler = {
 		var $t = ListBoxesHandler;
     var form = document.forms[currentFormName];
 		// possible that pointed to "_class" field instead of text field
-		var field = originalProp.replace("_class", "");
-    var textField = form.elements[field];
-		if (textField.length > 1)
-			textField = textField[0];
+		var fieldName = originalProp.replace("_class", "");
+    var textField = getOriginalPropField(form, fieldName); //form.elements[field];
+
     var selectedOptionsArr = $t.getSelectedOptions(lastClickedTr);
     var td = getAncestorByTagName(textField, "td");
     var chosenValuesDiv = getChildByClassName(td, "chosen_values");
@@ -3365,9 +3391,10 @@ var ListBoxesHandler = {
 				if (verifiedField)
 					verifiedField.value = "n";
 			}
-
-			// posssible it is "Subscribe"
-			SubscribeAndWatch.onOptionSelection(getAncestorByClassName(td, "param_tr"), selectedOptionsArr.length != 0);
+			else { // on selection from options list remove value from textField
+						 // textField used on manual data entry (!)
+				textField.value = "";
+			}
 		}
 		else { // data entry
 			FieldsWithEmptyValue.setValue(textField, selectedOptionsArr[0]["value"]);
@@ -3397,7 +3424,7 @@ var ListBoxesHandler = {
 				html += "<div>" + fromInp.value + "</div>";
 			if (toInp && toInp.value.length != 0) 
 				html += "<div>" + toInp.value + "</div>";
-			
+		
 			chosenValuesDiv.innerHTML = html;
 		}
     // slide back
@@ -3459,7 +3486,7 @@ var ListBoxesHandler = {
       if (propName)
       html +=
 				// display name
-			  "<input type=\"hidden\" checked=\"true\" value=\""
+			  "<input type=\"hidden\" value=\""
         + selectedOptionsArr[i]["text"]
         + "\" name=\""
         + propName
@@ -3475,11 +3502,15 @@ var ListBoxesHandler = {
     }
     return html;  
   },
-  
+	
   onParamReset : function() {
+		this.makeParamReset();
+		this.onBackBtn();
+	},
+  makeParamReset : function() {
     // remove value in coresponding <input>s
     var form = document.forms[currentFormName];
-    var textField = form.elements[originalProp];
+    var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp];
     textField.value = "";
 
 		var selectField = form.elements[originalProp + "_select"] 
@@ -3516,31 +3547,24 @@ var ListBoxesHandler = {
       if (targetImg)
         targetImg.src = "icons/cakes_gray.png";
     }
-    
-		// posssible it is "Subscribe"
-		SubscribeAndWatch.onOptionSelection(getAncestorByClassName(textField, "param_tr"), false);
-
-    this.onBackBtn();
   },
 
   onOptionsBackBtn : function() {
     var value = FieldsWithEmptyValue.getValue(this.textEntry);
 
     var form = document.forms[currentFormName];
-    var textField = form.elements[originalProp]; // field of the form
+    var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp]; // field of the form
 
 		if (value.length != 0) {
-      var td = getAncestorByTagName(textField, "td");
-      var chosenValuesDiv = getChildByClassName(td, "chosen_values");
-      if (chosenValuesDiv) {
+			// remove possible selected values
+			this.makeParamReset();
+
+      var chosenValuesDiv = getChildByClassName(this.curParamRow, "chosen_values");
+      if (chosenValuesDiv) { // filter
         chosenValuesDiv.innerHTML = "<div>" + value + "</div>";
       }
       textField.value = value;
     }
-		
-		// posssible it is "Subscribe"
-		SubscribeAndWatch.onOptionSelection(getAncestorByClassName(textField, "param_tr"), value.length != 0);
-
 		
     this.onBackBtn();
   },
@@ -3566,7 +3590,13 @@ var ListBoxesHandler = {
 		this.isSliding = true;
     SlideSwaper.moveBack(tray, factor);
 
-    // instead of webkitTransitionEnd
+		// posssible it is "Subscribe"
+		var chosenValuesDiv = getChildByClassName(this.curParamRow, "chosen_values");
+		var wasSelection = chosenValuesDiv != null && chosenValuesDiv.innerHTML.length != 0;
+		SubscribeAndWatch.onOptionSelection(this.curParamRow, wasSelection);
+		TouchDlgUtil.hightlightChosenValuesText();
+    
+		// instead of webkitTransitionEnd
     setTimeout("ListBoxesHandler.onBackFinish();", 800);
   },
   
@@ -4517,6 +4547,7 @@ var TouchDlgUtil = {
 			tr.cells[i].style.background = "#eee";
 	},
 	highlightRowBlue : function(event) {
+		var $t = TouchDlgUtil;
     var target = getEventTarget(event);
     var tr = getAncestorByClassName(target, "param_tr");
     if (!tr)
@@ -4527,6 +4558,9 @@ var TouchDlgUtil = {
 			return;
 		}
 		
+		TouchDlgUtil.blueTr = tr;
+		tr.setAttribute("blue", "y");
+
 		// background
     for (var i = 0; i < tr.cells.length; i++)
 			tr.cells[i].style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
@@ -4541,13 +4575,7 @@ var TouchDlgUtil = {
     	commentDiv.style.color = "#fff";
 
     // chosen values
-    var chosenValues = getChildByClassName(tr, "chosen_values");
-		if (chosenValues) {
-			chosenValues.style.color = "#fff";
-			divs = chosenValues.getElementsByTagName("div");
-			for (var i = 0; i < divs.length; i++) 
-				divs[i].style.color = "#fff";
-		}
+		$t.hightlightChosenValuesText(tr);
    
 	 	// input field for data entry
 	  var field = getChildByClassName(tr, "input");
@@ -4562,10 +4590,16 @@ var TouchDlgUtil = {
 	    arrowDiv.style.backgroundPosition = "0% 100%";
 		}
 		
-		TouchDlgUtil.blueTr = tr;
-		tr.setAttribute("blue", "y");
   },   
-  
+  hightlightChosenValuesText : function() {
+    var chosenValues = getChildByClassName(this.blueTr, "chosen_values");
+		if (chosenValues) {
+			chosenValues.style.color = "#fff";
+			divs = chosenValues.getElementsByTagName("div");
+			for (var i = 0; i < divs.length; i++) 
+				divs[i].style.color = "#fff";
+		}
+	},
 	bleachGreyRow : function(event) {
 	  var target = getEventTarget(event);
     var tr = getAncestorByClassName(target, "param_tr"); // "param_tr"
