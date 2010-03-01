@@ -2192,9 +2192,9 @@ input[type=checkbox] { display: none; }
 #siteResourceList #filter input[type=text] { height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
 
 .backlink_counter { position: absolute; top: -10px; left: 15px; }
-.backlink_counter .left, .backlink_counter .right { height: 20px; background: transparent url(../images/skin/iphone/backlink_counter.png) no-repeat; }
+.backlink_counter .left, .backlink_counter .right { height: 25px; background: transparent url(../images/skin/iphone/backlink_counter.png) no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
-.backlink_counter .right { float: left; width: auto; line-height: 19px; text-align: center; padding-right: 9px; color: #fff; font-size: 12px; font-weight: bold;  background-position: center right; }
+.backlink_counter .right { float: left; width: auto; line-height: 19px; text-align: center; padding-right: 14px; color: #fff; font-size: 12px; font-weight: bold;  background-position: center right; }
 
 .sidebar {
    empty-cells: hide;
