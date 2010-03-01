@@ -3510,9 +3510,13 @@ var ListBoxesHandler = {
   makeParamReset : function() {
     // remove value in coresponding <input>s
     var form = document.forms[currentFormName];
-    var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp];
-    textField.value = "";
+    
+		// 1. text/hidden field
+		var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp];
+//    textField.value = "";
+		FieldsWithEmptyValue.setEmpty(textField);
 
+		// 2. select field
 		var selectField = form.elements[originalProp + "_select"] 
 		if (selectField) {
 			if (typeof selectField.length != 'undefined') {
@@ -3523,16 +3527,19 @@ var ListBoxesHandler = {
 			else
 				selectField.value = "";
 		}
-		
+		// 3. verified field
 		var verifiedField = form.elements[originalProp + "_verified"] 
 		if (verifiedField)
 			verifiedField.value = "n";
-			
+		
+		// 4. class filed	
 		var classField = form.elements[originalProp + "_class"] 
 		if (classField)
 			classField.value = "";
 			
-    // clear chosen values in the filter
+    // 5. clear chosen_values in the filter
+		// chosen_values contains corresponding "display names" (like text field)
+		// and _select fields
     var chosenValuesDiv = getChildByClassName(textField.parentNode, "chosen_values");
     if (chosenValuesDiv)
       chosenValuesDiv.innerHTML = "";
@@ -3715,8 +3722,8 @@ var ListBoxesHandler = {
 * tray contains 2 slides that are swaped
 ********************************************/
 var SlideSwaper = {
-  STEPS_AMT : 10,
-  TIMEOUT : 20, // timeout between steps. On FF3 can not be applied too short timeout.
+  STEPS_AMT : 5,
+  TIMEOUT : 25, // timeout between steps. On FF3 can not be applied too short timeout.
   DISTANCE : 20, // pecents of tray width //320,
   
 	// ease-in-out // currently used for WebKit in common.css
@@ -4423,9 +4430,11 @@ var DataEntry = {
 		// mobile: append/remove dialogs
 		else {
 			document.body.removeChild(this.dataEntryArr[key]);
-			if (this.isMkResource(this.currentUrl)) 
-				this.doStateOnMkResource(this.dataEntryArr[key], false);
 		}
+
+		// resore initial state of MkResource dialog
+		if (this.isMkResource(this.currentUrl)) 
+			this.doStateOnMkResource(this.dataEntryArr[key], false);
 
 		// enforce to reload data entry without error message.
 		if (this.onDataError) {
@@ -4525,6 +4534,7 @@ var DataEntry = {
 
 /*******************************************
 * TouchDlgUtil
+* common features for all dialogs
 ********************************************/
 var TouchDlgUtil = {
 	blueTr : null, //used for blue highlighting
@@ -4579,9 +4589,8 @@ var TouchDlgUtil = {
    
 	 	// input field for data entry
 	  var field = getChildByClassName(tr, "input");
-		if (field) {
+		if (field)
 			field.style.color = "#fff";
-		}
 	 
     // arrow
 		var arrowTd = getChildByClassName(tr, "arrow_td");
@@ -4642,7 +4651,7 @@ var TouchDlgUtil = {
 		// input field for data entry
 	  var field = getChildByClassName(this.blueTr, "input");
 		if (field) {
-			field.style.color = "";
+			FieldsWithEmptyValue.fitColor(field);
 		}
     // arrow
     var arrowTd = getChildByClassName(this.blueTr, "arrow_td");
@@ -4656,6 +4665,11 @@ var TouchDlgUtil = {
   },
 	hasBlueRow : function() {
 		return this.blueTr != null;
+	},
+	isFieldBlueHighlight : function(field) {
+		if (this.blueTr == null)
+			return false;
+		return this.blueTr.contains(field);
 	}    
 }
 
@@ -7315,7 +7329,7 @@ var FieldsWithEmptyValue = {
 	isEmptyValue : function(field) {
 		var isEmptyValue = field.getAttribute("is_empty_value");
    	if (isEmptyValue == null) // not field of "FieldsWithEmptyValue" kind
-			return false;
+			return null; // false;
 			
     return (isEmptyValue == "y") ? true : false;
 	},
@@ -7344,10 +7358,16 @@ var FieldsWithEmptyValue = {
 		if (!field)
 			return;
 
+		if (typeof this.emptyValuesArr[this.getKeyOfField(field)] == 'undefined') {
+			field.value = "";
+			return false;
+		}
+
 		var attrib = field.getAttribute("is_empty_value");
 		var isEmpty = (attrib != null && attrib == "y");
 		
-		field.style.color = this.EMPTY_COLOR; // instead DIMMER_COLOR
+		if (TouchDlgUtil.isFieldBlueHighlight(field) == false)
+			field.style.color = this.EMPTY_COLOR; // instead DIMMER_COLOR
 		
 		if (isEmpty)
 			return;
@@ -7359,15 +7379,31 @@ var FieldsWithEmptyValue = {
 	
 	setReady : function(field) {
 		var attrib = field.getAttribute("is_empty_value");
-		var isEmpty = (attrib != null && attrib == "y");;
+		var isEmpty = (attrib != null && attrib == "y");
 		
 		if (!isEmpty)
 			return;
-		
+
 		field.value = "";
-    field.style.color = "";
+
+		if (TouchDlgUtil.isFieldBlueHighlight(field) == false)
+    	field.style.color = "";
     field.style.fontWeight = "";
 		field.setAttribute("is_empty_value", "n");
+	},
+	
+	fitColor : function(field) {
+		var attrib = field.getAttribute("is_empty_value");
+		if (attrib == null) {
+			field.style.color = "";
+			return false;
+		}
+			
+		var isEmpty = (attrib == "y");
+		if (isEmpty)
+			field.style.color = this.EMPTY_COLOR;
+		else
+			field.style.color = "";
 	},
 	
 	getKeyOfField : function(field) {
@@ -7383,6 +7419,8 @@ var FieldsWithEmptyValue = {
 	onclick : function(event) {
 		var $t = FieldsWithEmptyValue;
 		var field = getEventTarget(event);
+		if (field.getAttribute("readonly") != null)
+			return;
 		if ($t.isEmptyValue(field)) {
 			field.style.color = $t.DIMMER_COLOR;
 			setCaretPosition(field, 0);
@@ -7408,13 +7446,13 @@ var FieldsWithEmptyValue = {
 		
 		var field = $t.bluredField;
 		var value = $t.getValue(field);
-		
+	
 		if (value.length == 0)
     	$t.setEmpty(field);
 		else { // it happened when a field with empty value filled out from options list.
 			var key = $t.getKeyOfField(field);
 			if (field.value != $t.emptyValuesArr[key]) {
-				if (TouchDlgUtil.hasBlueRow() == false)
+				if (TouchDlgUtil.isFieldBlueHighlight(field) == false)
 					field.style.color = "";
     		field.style.fontWeight = "";
 				field.setAttribute("is_empty_value", "n");
