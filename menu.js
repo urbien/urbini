@@ -4585,7 +4585,8 @@ var TouchDlgUtil = {
 
 		// label	
 	  var labelTd = getChildByClassName(tr, "label_td");
-    labelTd.style.color = "#fff";
+		if (labelTd) // no in RL editor
+    	labelTd.style.color = "#fff";
 		
 		// comment
 		var commentDiv = getChildByClassName(tr, "comment");
@@ -4641,7 +4642,8 @@ var TouchDlgUtil = {
 
     // label	
 	  var labelTd = getChildByClassName(this.blueTr, "label_td");
-    labelTd.style.color = "";
+		if (labelTd) // no in RL editor
+    	labelTd.style.color = "";
     
 		// comment
 		var commentDiv = getChildByClassName(this.blueTr, "comment");
