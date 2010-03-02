@@ -398,6 +398,8 @@ cdfBody {font-family: Verdana, geneva, arial; font-weight: normal; }
 .monospace { font-family:Courier,monospace; }
 
 tr.rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
+tr.rlHeader td { vertical-align: middle; }
+
 /* input.chk {background-color:#cbcbcb; font-size:7pt} */
 .dheader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 
