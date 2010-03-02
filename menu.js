@@ -3071,8 +3071,6 @@ var ListBoxesHandler = {
   timerId : null,
   OPTIONS_DELAY : 1200,
   
-	isSliding : false, // prevents click processing while sliding
-	
   onClickParam : function(event, optionsSelectorStr) {
 		var $t = ListBoxesHandler;
 		var target = getEventTarget(event);
@@ -3118,7 +3116,7 @@ var ListBoxesHandler = {
 	
   // optionsSelectorStr is not required parameter
   processClickParam : function(e, tr, optionsSelectorStr) {
-		if (this.isSliding)
+		if (SlideSwaper.doesSlidingRun())
 			return;
 
     var target = getEventTarget(e);
@@ -3311,7 +3309,7 @@ var ListBoxesHandler = {
 	  var $t = ListBoxesHandler;
  
 		clearTimeout($t.timerId);
-		if (!SlideSwaper.doesTrayStay())
+		if (SlideSwaper.doesSlidingRun())
 			return true;
 			
     if (tr.id == "$more" || tr.id.indexOf("$add") == 0) // prevent from "More" and "Add"
@@ -3594,7 +3592,6 @@ var ListBoxesHandler = {
     if (tray == null)
       var tray = getAncestorByClassName(this.calendarPanel, "tray");
 
-		this.isSliding = true;
     SlideSwaper.moveBack(tray, factor);
 
 		// posssible it is "Subscribe"
@@ -3608,8 +3605,6 @@ var ListBoxesHandler = {
   },
   
   onBackFinish : function() {
-		this.isSliding = false;
-		
     var $t = ListBoxesHandler;
     if ($t.optionsPanel != null) {
       $t.optionsPanel.style.display = "none";
@@ -3867,11 +3862,15 @@ var SlideSwaper = {
 	
 	// returns integer 0, 1, 2
 	getTrayPosition : function(tray) {
-		
 		return -Math.floor(this.getTrayPositionInPercents(tray) / this.DISTANCE);
 	},
-	doesTrayStay : function() {
-		return (this.offset == 0);
+	doesSlidingRun : function() {
+		if (!this.tray)
+			return false;
+		var pos = this.getTrayPositionInPercents(this.tray);
+		if (pos % this.DISTANCE == 0)
+			return false;
+		return true;		
 	}
 }
 
@@ -4567,6 +4566,8 @@ var TouchDlgUtil = {
 		if (getChildByClassName(tr, "arrow_td") == null) {
 			return;
 		}
+		
+		$t.bleachBlueRow(); // possible if next selection was made too fast
 		
 		TouchDlgUtil.blueTr = tr;
 		tr.setAttribute("blue", "y");
