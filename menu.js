@@ -219,8 +219,9 @@ Popup.load = function (event, div, hotspot, content) {
     var popupFrame = frames[frameId];
     var body = popupFrame.document.getElementById(frameBodyId);
     if (!body) {
-      alert("Warning: server did not return listbox data - check connection to server");
-      return;
+      alert("Warning: server did not return options data - check connection to server");
+			setTimeout("ListBoxesHandler.onBackBtn()", 1000);
+			return;
     }
     var redirect = popupFrame.document.getElementById('$redirect'); // redirect
                                                                     // to login
@@ -3356,6 +3357,12 @@ var ListBoxesHandler = {
 	
   onOptionsSelectionFinish : function(lastClickedTr) {
 		var $t = ListBoxesHandler;
+		
+		if (lastClickedTr && lastClickedTr.id == "$noValue") {
+			$t.onBackBtn();
+			return;
+		}
+		
     var form = document.forms[currentFormName];
 		// possible that pointed to "_class" field instead of text field
 		var fieldName = originalProp.replace("_class", "");
@@ -5719,7 +5726,8 @@ function addAndShowWait(event, body, hotspot, content, url, noInsert, isReplace)
       var iframeWindow = frames[frameId];
       body = iframeWindow.document.getElementById(frameBodyId);
       if (!body) {
-        alert("Warning: server did not return resource list data - check connection to server");
+	      alert("Warning: server did not return options data - check connection to server");
+				setTimeout("ListBoxesHandler.onBackBtn()", 1000);
         return;
       }
     }
