@@ -2666,8 +2666,8 @@ var ListBoxesHandler = {
 			if (tables[i].className == "rounded_rect_tbl" ||
 					tables[i].id.indexOf("siteRL_") == 0) { // 2nd is RL edit
 				addEvent(tables[i], 'click', this.onClickParam, false);
-				TouchDlgUtil.init(tables[i]);
 			}
+			TouchDlgUtil.init(form);
   },
 
 
@@ -3099,6 +3099,14 @@ var ListBoxesHandler = {
 	  }
 		
 		$t.panelBlock = getAncestorByClassName($t.tray, "panel_block");
+
+		// close options on 2nd click in RL editor
+		if ($t.isEditList && $t.panelBlock.style.visibility == "visible") {
+			$t.panelBlock.style.visibility = "";
+			$t.onOptionsBackBtn();
+			return;
+		}
+		
 		$t.formPanel = getChildByClassName($t.tray, "form_panel");
 		$t.optionsPanel = getChildByClassName($t.tray, "options_panel");
 		$t.classifierPanel = getChildByClassName($t.tray, "classifier_panel");
@@ -3194,9 +3202,19 @@ var ListBoxesHandler = {
 		var $t = ListBoxesHandler;
 
 		var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
-		
-		if ($t.isEditList && $t.panelBlock.style.visibility != "visible") {
-			setDivVisible(null, $t.panelBlock, null, hotspot, $t.panelBlock.clientWidth, 0);	
+		if ($t.isEditList) {
+			var form = getAncestorByAttribute(hotspot, "name", "siteResourceList");
+			var leftEdge = findPosX(form);
+			var x = findPosX(hotspot) - $t.panelBlock.clientWidth;
+			if (x < leftEdge)
+				x = leftEdge;
+			
+			var y = findPosY(hotspot) + 30;
+			
+			$t.panelBlock.style.left = x;
+			$t.panelBlock.style.top = y;
+			$t.panelBlock.style.visibility = "visible";
+			//setDivVisible(null, $t.panelBlock, null, hotspot, $t.panelBlock.clientWidth, 0);	
 		}
 
     var listsCont = getChildById(panel, "lists_container");
@@ -3410,7 +3428,7 @@ var ListBoxesHandler = {
 				// setting font as bold changes width & height of a field. So, fix it previously
 				textField.style.width = textField.clientWidth;
 				textField.style.height = textField.clientHeight;
-		  	textField.style.color = "#727FA1";
+  		  // textField.style.color = "#727FA1";
 				textField.style.fontWeight = "bold";
 		  }
 		}
@@ -3581,25 +3599,18 @@ var ListBoxesHandler = {
     this.onBackBtn();
   },
 
-  onBackBtn : function(factor) {
-		if (typeof factor == 'undefined') {
-      var factor = 1;
-      if (this.calendarPanel != null && this.calendarPanel.style.display != 'none')
-        factor = 2;
-			if (this.classifierPanel != null && this.classifierPanel.style.display != 'none') {
-				var panel = this.getCurrentPanelDiv();
-				if (panel.className == "options_panel")
-					factor = 2;	
-			}
-        
-      factor = factor || 1;  
-    }
-
+  onBackBtn : function(/*factor*/) {
     var tray = getAncestorByClassName(this.optionsPanel, "tray");
     if (tray == null)
       var tray = getAncestorByClassName(this.calendarPanel, "tray");
 
-    SlideSwaper.moveBack(tray, factor);
+		if (tray == null)
+			return false;
+			
+		if (SlideSwaper.getTrayPosition(tray) == 0)
+			return false;
+
+    SlideSwaper.moveBack(tray);
 
 		// posssible it is "Subscribe"
 		var chosenValuesDiv = getChildByClassName(this.curParamRow, "chosen_values");
@@ -3609,6 +3620,7 @@ var ListBoxesHandler = {
     
 		// instead of webkitTransitionEnd
     setTimeout("ListBoxesHandler.onBackFinish();", 800);
+		return true;
   },
   
   onBackFinish : function() {
@@ -3624,6 +3636,10 @@ var ListBoxesHandler = {
 			$t.classifierPanel.style.display = "none";
 			$t.curClassesPopupDiv.style.display = "none";
 		}
+		
+		if ($t.isEditList) // hide panel block using on RL editor
+			$t.panelBlock.style.visibility = "";
+		
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
 		TouchDlgUtil.bleachBlueRow();
   },
@@ -3769,11 +3785,15 @@ var SlideSwaper = {
     }
   },
   
-  moveBack : function(tray, factor, callback) {
-	 if (this.offset != 0)
+  moveBack : function(tray, callback) {
+	 	if (this.offset != 0)
       return;
+      
+		var trayPosition = this.getTrayPosition(tray);
+		if (trayPosition == 0)
+			return;
 
-    this.factor = factor || 1;  
+    this.factor = trayPosition;  
       
     this.tray = tray;
     this.callback = callback;
@@ -3944,7 +3964,7 @@ var Filter = {
     
     // assign mouse handlers
     addEvent(paramsTable, 'click',     ListBoxesHandler.onClickParam, false);
-		TouchDlgUtil.init(paramsTable);
+		TouchDlgUtil.init(filterDiv);
     
     return true;
   },
@@ -4105,6 +4125,7 @@ var Filter = {
 					$t.filtersArr[url].parentNode.tagName.toLowerCase() == "body") {
 				$t.filtersArr[url].style.display = "none";
 		  }
+			DesktopSearchField.onFilterHide();
 			return;
 		}
 	 	
@@ -4545,11 +4566,55 @@ var DataEntry = {
 var TouchDlgUtil = {
 	blueTr : null, //used for blue highlighting
 	
-	init : function(paramsTable) {
-    addEvent(paramsTable, 'mouseover', this.highlightRowGrey, false);
-    addEvent(paramsTable, 'mousedown', this.highlightRowBlue, false);
-    addEvent(paramsTable, 'mouseout',  this.bleachGreyRow,  false);
+	init : function(parent) {
+		var tables = parent.getElementsByTagName("table");
+    for (var i = 0; i < tables.length; i++) {
+			if (tables[i].className == "rounded_rect_tbl") {
+				addEvent(tables[i], 'mouseover', this.highlightRowGrey, false);
+				addEvent(tables[i], 'mouseout', this.bleachGreyRow, false);
+				addEvent(tables[i], 'mousedown', this.highlightRowBlue, false);
+			}
+			// no grey highlighting in RL editor
+			if (tables[i].id.indexOf("siteRL_") == 0)
+				addEvent(tables[i], 'mousedown', this.highlightRowBlue, false);
+		}
+		
+		addEvent(document, 'keyup', this.keyHandler, true);
+	},
+	
+	keyHandler : function(event) {
+		var code = getKeyCode(event);
+		var target = getEventTarget(event);
+		var tagName = (typeof target.tagName != 'undefined') ? target.tagName.toLowerCase() : "";
+		var wasProcessed = false;
+		// debugger;
+		//console.log(code);
+		// 1. backspace
+//		debugger;
+		if (code == 8) { 
+			if (target.className != "iphone_field") {
+		  	wasProcessed = ListBoxesHandler.onBackBtn();
+  	  	// prevent default browser behavior (backspace) and  other handlers
+				if (wasProcessed) 
+					stopEventPropagation(event);
+				else 
+					closeAllDialogs(); // closeAllDialogs on back in browser
+			}
+		}
+		// 2. enter
+		else if (code == 13) {
+			// 2.1 set manually entered value
+			if (target.id == "text_entry")
+				ListBoxesHandler.onOptionsBackBtn();
+			else {}	
+		}
+		// 3. esc
+		else if(code == 27) {
+				closeAllDialogs();	
+		}
+
 	}, 
+	
 	highlightRowGrey : function(event) {
     var target = getEventTarget(event);
     var tr = getAncestorByClassName(target, "param_tr");
@@ -6722,7 +6787,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 		div.style.display = "block";
 		return;
   }
-	
+
   var isDivStatic = (div.style.position.toLowerCase() == 'static');
 	
 	// reset. it helps after dialog fitted for Touch UI on desktop 
@@ -7157,6 +7222,14 @@ var DesktopSearchField = {
 		
     Filter.hide();
 		$t.invertArrowState();
+	},
+	
+	onFilterHide : function() { // used on ESC
+		if (!this.isFilterOpened)
+			return;
+			
+		this.invertArrowState();
+		this.isFilterOpened = false;
 	},
 	
 	invertArrowState : function() {
@@ -10748,6 +10821,8 @@ var BrowserDialog = {
 // on this moment, there are 3 kinds of dilaogs:
 // 1) data entry 2) filter 3) "blue/pane2" dialog
 function closeAllDialogs() {
+	ListBoxesHandler.onBackBtn();
+
 	DataEntry.hide();
 	Filter.hide();
 	
