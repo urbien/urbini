@@ -2126,6 +2126,7 @@ input[type=checkbox] { display: none; }
 /* 3 types 1)left align 2) right align 3) blue with left align */
 .toggle_btn { float: right; margin: 0px; width: 100px; height: 30px; background:#FFFFFF url(../images/skin/iphone/toggle_btn.png); cursor: pointer; }
 .iphone_checkbox { margin: 0px 3px; width: 29px; height: 29px; background: url(../images/skin/iphone/checkbox.png); cursor: pointer; }
+.checked { background-position: 100% 0%; cursor: auto; } 
 
 /** iPhone button **/
 .iphone_btn, .iphone_btn_blue { float: left; margin: 7 3 3 3; }
