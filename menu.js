@@ -3064,7 +3064,7 @@ var ListBoxesHandler = {
 	toPutInClassifier : false,
 	curClass : null, // used for "2-steps" resource selection
 	
-  isEditList : false, // find out it from "tray" position
+  _isEditList : false, // find out it from "tray" position
   
 	clonedEvent : null,
 	
@@ -3092,16 +3092,18 @@ var ListBoxesHandler = {
 			var textEntry = getChildById($t.tray, "text_entry");
 			FieldsWithEmptyValue.initField(textEntry, "select")
 
-	  	$t.isEditList = true;
+	  	$t._isEditList = true;
 	  }
 	  else {
-			$t.isEditList = false;
+			$t._isEditList = false;
 	  }
 		
 		$t.panelBlock = getAncestorByClassName($t.tray, "panel_block");
 
 		// close options on 2nd click in RL editor
-		if ($t.isEditList && $t.panelBlock.style.visibility == "visible") {
+		if ($t._isEditList && $t.panelBlock.style.visibility == "visible") {
+			if (TouchDlgUtil.hasBlueRow())
+				return; // prevent opening options before closing previous one
 			$t.panelBlock.style.visibility = "";
 			$t.onOptionsBackBtn();
 			return;
@@ -3202,7 +3204,7 @@ var ListBoxesHandler = {
 		var $t = ListBoxesHandler;
 
 		var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
-		if ($t.isEditList) {
+		if ($t._isEditList) {
 			var form = getAncestorByAttribute(hotspot, "name", "siteResourceList");
 			var leftEdge = findPosX(form);
 			var x = findPosX(hotspot) - $t.panelBlock.clientWidth;
@@ -3424,7 +3426,7 @@ var ListBoxesHandler = {
 			// "_select" and "_verified" hidden fields processed in popupRowOnClick1
 			
 			// change color of touched input/value
-			if ($t.isEditList) {
+			if ($t._isEditList) {
 				// setting font as bold changes width & height of a field. So, fix it previously
 				textField.style.width = textField.clientWidth;
 				textField.style.height = textField.clientHeight;
@@ -3637,7 +3639,7 @@ var ListBoxesHandler = {
 			$t.curClassesPopupDiv.style.display = "none";
 		}
 		
-		if ($t.isEditList) // hide panel block using on RL editor
+		if ($t._isEditList) // hide panel block using on RL editor
 			$t.panelBlock.style.visibility = "";
 		
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
@@ -3732,6 +3734,9 @@ var ListBoxesHandler = {
 				return panels[i];
 			n++;	
 		}
+	},
+	isEditList : function() {
+		return this._isEditList;
 	}
 }
 
@@ -4639,6 +4644,11 @@ var TouchDlgUtil = {
 			return;
 		}
 		
+		// prevent new highlighting in RL editor
+		if ($t.hasBlueRow() && ListBoxesHandler.isEditList()) {
+			return;
+		}
+
 		$t.bleachBlueRow(); // possible if next selection was made too fast
 		
 		TouchDlgUtil.blueTr = tr;
