@@ -8,7 +8,9 @@
 		<br/><br/>
 		The <property name="forum" type="y"/> <property name="forum" href="y"/> was modified.
 		<br/>
-		Changes made by <property name="modification.modifiedBy" href="y" /> are below:
+		<where value="modification != null">
+		  Changes made by <property name="modification.modifiedBy" href="y" /> are below:
+		</where>
   </td>
 	<td align="right" valign="top">
 		<a href="#"><IMG src="icons/logo-large.gif" border="0" height="32" align="right" /></a>
@@ -18,6 +20,11 @@
   <td></td>
   <td colspan="2">
 		<propertySheet name="modification"/>
+    <where value="modification == null">
+    <br/>
+		  <property name="description"/>
+    <br/>
+		</where>
 		<newComment/>
 		Customer Service
 		<br/>
