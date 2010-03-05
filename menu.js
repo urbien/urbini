@@ -3064,7 +3064,8 @@ var ListBoxesHandler = {
 	toPutInClassifier : false,
 	curClass : null, // used for "2-steps" resource selection
 	
-  _isEditList : false, // find out it from "tray" position
+  _isEditList : false,
+  skipUserClick : false, // helps to skip "3rd" click in RL editor
   
 	clonedEvent : null,
 	
@@ -3074,16 +3075,31 @@ var ListBoxesHandler = {
   
   onClickParam : function(event, optionsSelectorStr) {
 		var $t = ListBoxesHandler;
+		
+		if ($t.skipUserClick) {
+			$t.skipUserClick = false;
+			if (event != null)
+				return;
+		}
+		
+		if (!event)
+			event = $t.clonedEvent;
+		
 		var target = getEventTarget(event);
 
 		// default processing of anchors inside parameter TR (for example add image)
 		if (target.tagName.toLowerCase() == "a" || target.parentNode.tagName.toLowerCase() == "a")
 			return;
 	
-		var tr = getAncestorByClassName(target, "param_tr");	
+		var tr = getAncestorByClassName(target, "param_tr");
+		if (!tr)
+			return;	
 
 		// set members corresponding to happend event target
 		$t.tray = getAncestorByClassName(tr, "tray");
+		if (SlideSwaper.doesSlidingRun($t.tray))
+			return;
+		
 		if (!tr || $t.tray == null) { // resource list
 			var resourceListDiv = document.getElementById("siteResourceList");
   		$t.tray = getChildByClassName(resourceListDiv, "tray");
@@ -3091,21 +3107,25 @@ var ListBoxesHandler = {
 			// init options selector in RL editor
 			var textEntry = getChildById($t.tray, "text_entry");
 			FieldsWithEmptyValue.initField(textEntry, "select")
-
 	  	$t._isEditList = true;
 	  }
 	  else {
 			$t._isEditList = false;
 	  }
 		
+		$t.clonedEvent = cloneEvent(event);  
 		$t.panelBlock = getAncestorByClassName($t.tray, "panel_block");
 
-		// close options on 2nd click in RL editor
+		// 2nd click in RL editor; options list is opened
 		if ($t._isEditList && $t.panelBlock.style.visibility == "visible") {
-			if (TouchDlgUtil.hasBlueRow())
-				return; // prevent opening options before closing previous one
-			$t.panelBlock.style.visibility = "";
+			$t.panelBlock.style.visibility = ""; // hide options
 			$t.onOptionsBackBtn();
+
+			// click on different parameter then invoke this function with delay 800 ms
+			if (comparePosition($t.curParamRow, tr) != 0) {
+		  	setTimeout("ListBoxesHandler.onClickParam(null, " + optionsSelectorStr + ")", 800);
+		  	$t.skipUserClick = true; // to skip additional clicks
+		  }
 			return;
 		}
 		
@@ -3118,10 +3138,7 @@ var ListBoxesHandler = {
 		$t.textEntry = getChildById($t.optionsPanel, "text_entry");
 		$t.curClass = null;
 		
-		if (tr)
-      $t.processClickParam(event, tr, optionsSelectorStr);
-    
-		$t.clonedEvent = cloneEvent(event);  
+    $t.processClickParam(event, tr, optionsSelectorStr);
 		stopEventPropagation(event);  
   },
 	
@@ -3178,11 +3195,8 @@ var ListBoxesHandler = {
 			// numeric selector should be initialized with previously manually entered value
 			if (this.textEntry && !isClassifier) {
 		  	this.textEntry.name = input.name;
-				if (tr.getAttribute("is_numeric") != null) {
-					//debugger;
+				if (tr.getAttribute("is_numeric") != null)
 					FieldsWithEmptyValue.setValue(this.textEntry, input.value);
-					//if
-				}
 		  }
 			
 			var str = "";
@@ -3204,20 +3218,6 @@ var ListBoxesHandler = {
 		var $t = ListBoxesHandler;
 
 		var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
-		if ($t._isEditList) {
-			var form = getAncestorByAttribute(hotspot, "name", "siteResourceList");
-			var leftEdge = findPosX(form);
-			var x = findPosX(hotspot) - $t.panelBlock.clientWidth;
-			if (x < leftEdge)
-				x = leftEdge;
-			
-			var y = findPosY(hotspot) + 30;
-			
-			$t.panelBlock.style.left = x;
-			$t.panelBlock.style.top = y;
-			$t.panelBlock.style.visibility = "visible";
-			//setDivVisible(null, $t.panelBlock, null, hotspot, $t.panelBlock.clientWidth, 0);	
-		}
 
     var listsCont = getChildById(panel, "lists_container");
     if (listsCont)
@@ -3234,7 +3234,22 @@ var ListBoxesHandler = {
     popupDiv.style.width =  "100%"; //width; 
     popupDiv.style.height = "100%"; // $t.RDR_HEIGHT;
 
-    $t.showOptions(popupDiv);
+		$t.showOptions(popupDiv);
+
+		if ($t._isEditList) {
+			var form = getAncestorByAttribute(hotspot, "name", "siteResourceList");
+			var leftEdge = findPosX(form);
+			var x = findPosX(hotspot) - $t.panelBlock.clientWidth;
+			if (x < leftEdge)
+				x = leftEdge;
+
+			var y = findPosY(hotspot) + 30;
+			var pageHeight = getWindowSize()[1] + getScrollXY()[1];
+			
+			$t.panelBlock.style.left = x;
+			$t.panelBlock.style.top = y;
+			$t.panelBlock.style.visibility = "visible";
+		}
   },
 
   showOptions : function(popupDiv) {
@@ -3250,8 +3265,10 @@ var ListBoxesHandler = {
 	    $t.curPopupDiv = popupDiv;
 		}
 		// set top offset (margin) to sutisfy current scroll position
-		var topOffset = getScrollXY()[1] - findPosY(this.tray);
-		panel.style.marginTop = (topOffset > 0) ? topOffset : 0 ;
+		if (!$t._isEditList) {
+			var topOffset = getScrollXY()[1] - findPosY(this.tray);
+			panel.style.marginTop = (topOffset > 0) ? topOffset : 0;
+		}
 		
     popupDiv.style.display = "block";
     popupDiv.style.visibility = "visible";
@@ -4570,6 +4587,7 @@ var DataEntry = {
 ********************************************/
 var TouchDlgUtil = {
 	blueTr : null, //used for blue highlighting
+	skipBleachBlue : false, // used with RL editor
 	
 	init : function(parent) {
 		var tables = parent.getElementsByTagName("table");
@@ -4596,7 +4614,7 @@ var TouchDlgUtil = {
 		//console.log(code);
 		// 1. backspace
 //		debugger;
-		if (code == 8) { 
+		if (code == 8) {
 			if (target.className != "iphone_field") {
 		  	wasProcessed = ListBoxesHandler.onBackBtn();
   	  	// prevent default browser behavior (backspace) and  other handlers
@@ -4644,12 +4662,14 @@ var TouchDlgUtil = {
 			return;
 		}
 		
-		// prevent new highlighting in RL editor
-		if ($t.hasBlueRow() && ListBoxesHandler.isEditList()) {
-			return;
-		}
+		var skipBleachBlue = false;
+		if ($t.hasBlueRow() && ListBoxesHandler.isEditList() &&
+				 comparePosition($t.blueTr, tr) != 0)
+			skipBleachBlue = true;
 
-		$t.bleachBlueRow(); // possible if next selection was made too fast
+ 		// possible if next selection was made too fast (in RL editor as well)
+		$t.bleachBlueRow();
+		$t.skipBleachBlue = skipBleachBlue;
 		
 		TouchDlgUtil.blueTr = tr;
 		tr.setAttribute("blue", "y");
@@ -4710,6 +4730,11 @@ var TouchDlgUtil = {
   bleachBlueRow : function() {
     if (this.blueTr == null)
       return;
+		
+		if (this.skipBleachBlue) {
+			this.skipBleachBlue = false;
+			return;
+		}
 		
 		// set background
     for (var i = 0; i < this.blueTr.cells.length; i++)
