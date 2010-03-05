@@ -2192,7 +2192,9 @@ input[type=checkbox] { display: none; }
 
 .panel_block .no_matches { display: none; color: #f00; font-size: 16px; font-weight:bold; margin-left: 15px; }
 
-#siteResourceList #filter input[type=text] { height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
+#siteResourceList #filter input[type=text] { height: auto; background-color: transparent;  font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
+#siteResourceList .input { border: 1px solid #bbb; }
+#siteResourceList .pointer { border: none; }
 
 .backlink_counter { position: absolute; top: -10px; left: 15px; }
 .backlink_counter .left, .backlink_counter .right { height: 25px; background: transparent url(../images/skin/iphone/backlink_counter.png) no-repeat; }
