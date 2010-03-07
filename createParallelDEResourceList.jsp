@@ -17,7 +17,7 @@
       <div align="right"><measurement/></div>
       <input type="hidden" name="-parallel" value="y" />
       <input type="hidden" name="-create"  value="1" />
-      <center><input type="submit" name="submit" /></center>
+      <center><input type="submit" name="submit" value="  Submit  "/></center>
     </form>
     </td>
     <td width="1%" id="rightPanelPropertySheet" valign="top" align="left">
