@@ -4,12 +4,7 @@
 <getResource/>
 
     <table width="100%" cellspacing="0" cellpadding="5" border="0">
-    <colgroup>
-      <col width="90%" />
-      <col width="10%" />
-    </colgroup>
-
-    <tr valign="top"><td width="80%">
+    <tr valign="top"><td width="100%">
       <form id="filter" name="tablePropertyList" method="post" action="mkresource" autocomplete="off" style="display: inline; margin: 0;">
        <panelBlock on_page="y">
          <tablePropertyList/>
@@ -25,11 +20,11 @@
       <center><input type="submit" name="submit" /></center>
     </form>
     </td>
-    <td width="20%" id="rightPanelPropertySheet" valign="top" align="left">
+    <td width="1%" id="rightPanelPropertySheet" valign="top" align="left">
       <menuBar id="menuBar1">
-      <panelBlock on_page="y">
+      <!--panelBlock on_page="y"-->
         <rightPanelPropertySheet />
-      </panelBlock>
+      <!--/panelBlock-->
       </menuBar>
     </td>
   </tr>
