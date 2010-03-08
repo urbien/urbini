@@ -240,7 +240,6 @@ Popup.load = function (event, div, hotspot, content) {
   var tables = div.getElementsByTagName('table');
   /*
   if (popup.firstRow() == null) {
-    debugger
     alert("Warning: server did not return listbox data - check connection to server");
     return;
   }
@@ -4350,6 +4349,7 @@ var SubscribeAndWatch = {
 	
 	submit : function(e, submitIcon) {
 		var form = getAncestorByTagName(submitIcon, "form");
+		FormProcessor.getFormFilters(form, false, null, false);
 		form.submit();
 	},
 	
@@ -4617,10 +4617,7 @@ var TouchDlgUtil = {
 		var target = getEventTarget(event);
 		var tagName = (typeof target.tagName != 'undefined') ? target.tagName.toLowerCase() : "";
 		var wasProcessed = false;
-		// debugger;
-		//console.log(code);
 		// 1. backspace
-//		debugger;
 		if (code == 8) {
 			if (target.className != "iphone_field") {
 		  	wasProcessed = ListBoxesHandler.onBackBtn();
@@ -10650,7 +10647,7 @@ var CheckButtonMgr = {
     var toggleBtn = this;
     var checkbox = getPreviousSibling(toggleBtn);
     $t._switchState(toggleBtn, checkbox);
-//debugger;		
+
 		if (checkbox.onclick)
 			checkbox.onclick(event);
 			
