@@ -4344,11 +4344,15 @@ var SubscribeAndWatch = {
 		FormProcessor.initForms(this.panelBlock);
 		
 		document.body.appendChild(this.panelBlock);
+		
+		addEvent(this.panelBlock, "change", this.onchange, false);
 		setDivVisible(event, this.panelBlock, null, null, 0, 0);
 	},
 	
 	submit : function(e, submitIcon) {
+		var $t = SubscribeAndWatch;
 		var form = getAncestorByTagName(submitIcon, "form");
+		$t.panelBlock.style.display = "none";
 		FormProcessor.getFormFilters(form, false, null, false);
 		form.submit();
 	},
@@ -4366,6 +4370,21 @@ var SubscribeAndWatch = {
 			var toggleBtn = getChildByClassName(input.parentNode, "iphone_checkbox");
 			CheckButtonMgr.setState(toggleBtn, input, wasSelection);
 		}
+	},
+	
+	onchange : function(event) {
+		var $t = SubscribeAndWatch;
+		var target = getEventTarget(event);
+		if (target.className != "input")
+			return;
+			
+		var value = FieldsWithEmptyValue.getValue(target);
+		if (value == null)
+			return;
+		
+		var paramTr = getAncestorByClassName(target, "param_tr");
+		
+		$t.onOptionSelection(paramTr, value.length != 0); 	
 	},
 	
 	limitNumberOfAlerts : function() {
@@ -7829,6 +7848,10 @@ var DragEngine = {
 
 		// no D&D if mousedown in <input>
 		if (caughtObj.tagName && caughtObj.tagName.toLowerCase() == "input")
+			return;
+		// no D&D if mousedown on "icon_btn" class
+		var parent = caughtObj.parentNode;	
+		if (parent && parent.className && parent.className.toLowerCase() == "icon_btn")
 			return;
 
 		if((titleObj =  getAncestorById(caughtObj, "titleBar")) == null &&
