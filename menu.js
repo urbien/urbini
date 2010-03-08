@@ -3243,8 +3243,15 @@ var ListBoxesHandler = {
 			if (x < leftEdge)
 				x = leftEdge;
 
-			var y = findPosY(hotspot) + 30;
+			var y = findPosY(hotspot);
 			var pageHeight = getWindowSize()[1] + getScrollXY()[1];
+			
+			if (pageHeight > y + $t.panelBlock.clientHeight + 30)
+				y += 30;
+			else if (y - $t.panelBlock.clientHeight - 5 > 0)
+				y -=  $t.panelBlock.clientHeight + 5; 	
+			else
+				y = 0;
 			
 			$t.panelBlock.style.left = x;
 			$t.panelBlock.style.top = y;
