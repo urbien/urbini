@@ -3816,7 +3816,7 @@ var SlideSwaper = {
   moveBack : function(tray, callback) {
 	 	if (this.offset != 0)
       return;
-      
+     
 		var trayPosition = this.getTrayPosition(tray);
 		if (trayPosition == 0)
 			return;
@@ -3827,7 +3827,7 @@ var SlideSwaper = {
     this.callback = callback;
 
     if (Browser.webkit) {
-      this.curState += factor;
+      this.curState += this.factor;
       // to the beginning "translate(0%, 0%)";
       this.tray.style.webkitTransform = "translate(" + this.DISTANCE * this.curState + "%, 0%)";
     }
