@@ -3816,7 +3816,7 @@ var SlideSwaper = {
   moveBack : function(tray, callback) {
 	 	if (this.offset != 0)
       return;
-     
+      
 		var trayPosition = this.getTrayPosition(tray);
 		if (trayPosition == 0)
 			return;
@@ -4173,7 +4173,7 @@ var Filter = {
   submit : function(e) {
 		e = getDocumentEvent(e);
 		var btn = getEventTarget(e);
-		Filter._submit(e, btn, false);
+		Filter.submitProcess(e, getAncestorByClassName(btn, "form_panel"), false);
   },
 
   // just closes filter panel if there were no filtering
@@ -4205,13 +4205,22 @@ var Filter = {
 	submitClearFilterCallback : function (toClear, e, btn) {
 		var $t = Filter;
 		if (toClear)
-	  	$t._submit(e, btn, true);
+	  	$t.submitProcess(e, getAncestorByClassName(btn, "form_panel"), true);
 		else
 			$t.hide();	
 	},
 	
-  _submit : function(e, btn, toClearFilter) {
-    var parent = getAncestorByClassName(btn, "form_panel");
+  submitProcess : function(e, parent, toClearFilter) {
+		if (!parent) { // on <enter> key
+			if (typeof this.filtersArr[this.currentFilterUrl] != 'undefined') {
+		  	parent = this.filtersArr[this.currentFilterUrl];
+				if (parent.style.display == 'none')
+					return false;	
+		  }
+		  else 
+		  	return false;
+		} 
+		
     var forms = parent.getElementsByTagName("form");
     var input;
     
@@ -4239,7 +4248,7 @@ var Filter = {
 		
 		// hide (and reset for mobile) filter
 		this.hide();
-	
+		return true;
   },
   
   // simulates 
@@ -4349,18 +4358,23 @@ var SubscribeAndWatch = {
 		setDivVisible(event, this.panelBlock, null, null, 0, 0);
 	},
 	
-	submit : function(e, submitIcon) {
+	submit : function(e) {
 		var $t = SubscribeAndWatch;
-		var form = getAncestorByTagName(submitIcon, "form");
+		if ($t.panelBlock == null)
+			return false;
+			
+		var form = getChildByTagName($t.panelBlock, "form");
 		$t.panelBlock.style.display = "none";
 		FormProcessor.getFormFilters(form, false, null, false);
 		form.submit();
+		return true;
 	},
 	
 	hide : function(event, hideIcon) {
 		var $t = SubscribeAndWatch;
 		$t.panelBlock.style.display = "none";
 		$t.panelBlock.parentNode.removeChild($t.panelBlock);
+		$t.panelBlock = null;
 	},
 	
 	onOptionSelection : function(paramTr, wasSelection) {
@@ -4457,7 +4471,7 @@ var DataEntry = {
 			$t.currentUrl = $t.loadingUrl;
 			
 		$t.loadingUrl = null;
-		
+
 		div = getDomObjectFromHtml(html, "className", "panel_block");
 		div.style.visibility = "hidden";
 		// insert in DOM
@@ -4550,7 +4564,17 @@ var DataEntry = {
   },
 	
   submit : function(e, submitIcon) {
-		var form = getAncestorByTagName(submitIcon, "form"); //btn.form;
+		var $t = DataEntry;
+		var form = null;
+		if (submitIcon) 
+			form = getAncestorByTagName(submitIcon, "form");
+		else {
+			var dataEntry = $t.getCurrentDataEntry();
+			if (!dataEntry) 
+				return false;
+			form = getChildByTagName(dataEntry, "form");
+		}
+		
 		// wasSubmitted flag prevents form submission twice but
 		// 1. mobile stores forms 2. data entry dialog closed on submissoin
 		if (Browser.mobile)
@@ -4570,7 +4594,9 @@ var DataEntry = {
     else if (res == true)
 			form.submit();  // submit is not a button, so send the form with help of JS.
 		
-		this.hide();	
+		this.hide();
+		
+		return true;	
   },
 	
 	_getKey : function(url) {
@@ -4604,6 +4630,28 @@ var DataEntry = {
 		}
 		if (!toSave)
 			this.inpValues = null;
+	},
+	
+	getCurrentDataEntry : function() {
+		if (this.currentUrl != null) {
+			// 1. dialog
+			var key = this._getKey(this.currentUrl);
+			if (this.dataEntryArr[key] && this.dataEntryArr[key].parentNode) 
+				return this.dataEntryArr[key];
+		}	
+		
+		// 2. on page data entry. Note: it is not "recorded" in dataEntryArr!
+		var divEdit = document.getElementById("div_Edit");
+		if (divEdit && divEdit.style.display != 'none') {
+			var onPageDataEntry = getChildByClassName(divEdit, "panel_block");
+			if (onPageDataEntry) 
+				return onPageDataEntry;
+		}
+		
+		// 3. on page data entry
+		// ---
+		
+		return null;
 	}
 }
 
@@ -4632,6 +4680,7 @@ var TouchDlgUtil = {
 	},
 	
 	keyHandler : function(event) {
+		var $t = TouchDlgUtil;
 		var code = getKeyCode(event);
 		var target = getEventTarget(event);
 		var tagName = (typeof target.tagName != 'undefined') ? target.tagName.toLowerCase() : "";
@@ -4643,7 +4692,7 @@ var TouchDlgUtil = {
   	  	// prevent default browser behavior (backspace) and  other handlers
 				if (wasProcessed) 
 					stopEventPropagation(event);
-				else 
+				else if (tagName != 'textarea')
 					closeAllDialogs(); // closeAllDialogs on back in browser
 			}
 		}
@@ -4652,14 +4701,27 @@ var TouchDlgUtil = {
 			// 2.1 set manually entered value
 			if (target.id == "text_entry")
 				ListBoxesHandler.onOptionsBackBtn();
-			else {}	
+			else if (tagName != 'textarea'){
+				$t.submitOnEnter(event);
+			}	
 		}
 		// 3. esc
 		else if(code == 27) {
 				closeAllDialogs();	
 		}
-
-	}, 
+	},
+	
+	// it used on desktop only
+	// handled 3 "classes" of dialogs
+	submitOnEnter : function(event) {
+		if(DataEntry.submit(event))
+			return;
+		
+		if (Filter.submitProcess(event))
+			return;
+		
+		SubscribeAndWatch.submit(event);
+	},
 	
 	highlightRowGrey : function(event) {
     var target = getEventTarget(event);
@@ -6320,10 +6382,6 @@ function minMax(e, divId) {
 }
 
 function showTab(e, td, hideDivId, unhideDivId) {
-	// note: in TouchUI edit form displayed in dialog instead of tab.
-//	if (td.id == "Edit")
-//		return;
-
   e = getDocumentEvent(e);
 
   var isViewAll = td.id == 'viewAll';
@@ -6987,7 +7045,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
  // div.style.height = divCoords.height;
 
   var zIndex = 1;
-  if (hotspot) {
+  if (hotspot && hotspot.style) {
     var z = hotspot.style.zIndex; // this relative zIndex allows stacking popups on top of each other
     if (z != null && z != '')
       zIndex = z;
