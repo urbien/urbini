@@ -3245,12 +3245,16 @@ var ListBoxesHandler = {
 			var y = findPosY(hotspot);
 			var pageHeight = getWindowSize()[1] + getScrollXY()[1];
 			
-			if (pageHeight > y + $t.panelBlock.clientHeight + 30)
-				y += 30;
-			else if (y - $t.panelBlock.clientHeight - 5 > 0)
-				y -=  $t.panelBlock.clientHeight + 5; 	
-			else
-				y = 0;
+			if (pageHeight > y + $t.panelBlock.clientHeight + 30)  // show under item
+	  		y += 30;
+	  	else if (y - $t.panelBlock.clientHeight - 5 > 0)  // flip
+	  		y -= $t.panelBlock.clientHeight + 5;
+	  	else { // prevet showing over page top edge
+	  		y = 0;
+				x -= $t.curParamRow.clientWidth;
+				if (x < leftEdge)
+					x = leftEdge;
+	  	}	
 			
 			$t.panelBlock.style.left = x;
 			$t.panelBlock.style.top = y;
@@ -4642,7 +4646,7 @@ var DataEntry = {
 		
 		// 2. on page data entry. Note: it is not "recorded" in dataEntryArr!
 		var divEdit = document.getElementById("div_Edit");
-		if (divEdit && divEdit.style.display != 'none') {
+		if (divEdit && getElementStyle(divEdit).display != 'none') {
 			var onPageDataEntry = getChildByClassName(divEdit, "panel_block");
 			if (onPageDataEntry) 
 				return onPageDataEntry;
