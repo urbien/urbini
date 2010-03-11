@@ -2141,11 +2141,9 @@ var FormProcessor = {
 		var inputs = parent.getElementsByTagName("input");
 
 		for (var i = 0; i < inputs.length; i++) {
-		 	// process only fields with "input" and "isel" classes
-			if (isElemOfClass(inputs[i], "input") == false &&
-					isElemOfClass(inputs[i], "isel") == false) 	//inputs[i].className != "boolean") 
-		 		continue;
-		 	
+			if (isElemOfClass(inputs[i], ["input", "isel", "num"] ) == false)
+				continue;
+			
 			var paramTr = getAncestorByClassName(inputs[i], "param_tr");
 			if (!paramTr)
 				continue;
