@@ -1726,9 +1726,18 @@ function getParentDialog(obj) {
 function isParentDialogOnPage(dialog) {
 	return dialog.parentNode.tagName.toLowerCase() != "body";
 }
+
 // helps with class names composed from 2 or more parts
+// obtains array as well
 function isElemOfClass(elem, className) {
-	return elem.className == className || elem.className.indexOf(className + " ") == 0;
+	if (typeof className == "string")
+		return elem.className == className || elem.className.indexOf(className + " ") == 0;
+
+	for	(var i = 0; i < className.length; i++) {
+		if (elem.className == className[i] || elem.className.indexOf(className[i] + " ") == 0)
+			return true;
+	}
+	return false;
 }
 
 function setCaretPosition(elem, caretPos) {
