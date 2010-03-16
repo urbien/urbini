@@ -992,13 +992,14 @@ function getAncestorByAttribute(child, attribName, attribValue) {
 	var isArray = (typeof attribValue != 'string')
 
 	if(isArray) {
-	  for(var i = 0; i < attribValue.length; i++)
-	    if(child[attribName] == attribValue[i])
-		    return child;
-		  
+	  for (var i = 0; i < attribValue.length; i++) {
+			if (child[attribName] == attribValue[i]) 
+				return child;
+			
 			if (attribName == "className" && child[attribName] &&
-         child[attribName].indexOf(attribValue[i] + " ") != -1)
-      return child;   
+			child[attribName].indexOf(attribValue[i] + " ") != -1) 
+				return child;
+		}  
 	}
 	else {
 	  if(child[attribName] == attribValue)
@@ -1011,14 +1012,14 @@ function getAncestorByAttribute(child, attribName, attribValue) {
 	var parent;
 	while((parent = child.parentNode) != null) {
 		if(isArray) {
-  	  for(var i = 0; i < attribValue.length; i++)
-  	    if(parent[attribName] == attribValue[i])
-			    return parent;
-				
-				if (attribName == "className" && parent[attribName] &&
-         parent[attribName].indexOf(attribValue[i] + " ") != -1)
-      return parent;   
-		
+  	  for (var i = 0; i < attribValue.length; i++) {
+		  	if (parent[attribName] == attribValue[i]) 
+		  		return parent;
+		  	
+		  	if (attribName == "className" && parent[attribName] &&
+		  	parent[attribName].indexOf(attribValue[i] + " ") != -1) 
+		  		return parent;
+		  }  
 		}
 		else {
 		  if(parent[attribName] == attribValue)
