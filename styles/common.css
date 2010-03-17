@@ -54,6 +54,7 @@ H2 {font-family: arial, Verdana, geneva; font-weight: normal; font-size: medium;
 H3 {font-family: arial, Verdana, geneva; font-size: 15px; font-weight: bold;}/* color: #3366aa}*/
 
 .pointer { cursor: pointer; }
+.dragable, .move { cursor: move; }
 
 img.fade {
    opacity:       0.6;
@@ -488,7 +489,7 @@ tr.fts td { vertical-align: middle; padding: 2px; }
 .desktop_search .left, .desktop_search .right, .desktop_search input { height: 37px;  float: left; background: url(../images/skin/iphone/desktop_search.png); margin: 0px; border: 0px; }
 .desktop_search .left { width: 15px; background-position: top left; cursor: pointer; }
 .desktop_search .right { width: 77px; background-position: top right; cursor: pointer; }
-.desktop_search input { /*background-color: #f00;*/  width: 400px; padding: 8 0 0 0; background-position: top center; font: bold 17px Helvetica; border: none; }
+.desktop_search input { width: 400px; /*padding: 8 0 0 0;*/ background-position: top center; font: bold 17px Helvetica; border: none; }
 .desktop_search .right div { float: left; width: 33px; height: 37px;  background: url(../images/skin/iphone/filter_arrow_sprite.png) top center; }
 
 /* VIEWS */
@@ -572,7 +573,10 @@ span.fileMenuTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:
 .bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#00309C;}
 /* To display window titles on a dashboard */
 span.dashboardBlockTitle {font-family:Verdana,sans-serif,arial; font-weight:bold; font-size:12px; color:#00309C;}
+.panel_block .dashboardBlockTitle { font-size: 16px;  color: #edf1fa; font-size: 16px; }
 span.dashboardGrayedTitle {font-family:Verdana,sans-serif,arial; font-size:12px; color:#10106D;}
+.panel_block span.dashboardGrayedTitle { color:#fff; margin-left: 7px; }
+
 /* to display large image in resource list */
 /*td.largeImage {padding-top:20px; padding-bottom:20px; padding-left:20px; padding-right:20px; border:solid #808080 1px; background-color: #ffffff; color: #000000}*/
 /*td.largeImageWithHide {padding-top:20px; padding-bottom:20px; padding-left:20px; padding-right:4px; border:solid #808080 1px; background-color: #ffffff; color: #000000}*/
@@ -1421,7 +1425,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 #titleBar {height: 22px; background:url(../images/skin/blue/title.gif); cursor:move; padding-left:5px;}
 #mobileTitleBar {height: 43px; background:url(../images/skin/iphone/popup_header.png); padding-left:5px;}
-.dragable {cursor: move;}
 
 span.action {font-family:verdana,sans-serif,arial;font-weight:bold;font-size:8pt;color:#000066;}
 tr.submit     {background-image: url('../images/toolbar_bg.gif');cursor: pointer; color:darkblue;}
@@ -1740,6 +1743,7 @@ TD.toolbar {
 .menuItem {
   margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; vertical-align: middle; 
 }
+#\$more .menuItem { color: #999; font-size: 14px; padding-left: 15px; height: 20px; }
 
 .menuItem a { 
   margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; 
@@ -1957,7 +1961,7 @@ table.printFB {
 .loginBorder {background: #cbcbcb}
 
 .text_editor_container { padding-right: 5px; }
-.rte { margin: 0 0 5 7; background-color: #ffffff; border: 1px solid rgb(192, 201, 215); padding:0; width: 100%; height: 100px;  }
+.rte { margin-bottom: 5px; background-color: #ffffff; border: 1px solid rgb(192, 201, 215); padding:0; width: 100%; height: 100px;  }
 
 
 /* like menu_Options in iphone.css */
@@ -1994,6 +1998,8 @@ div .panel_block, td .panel_block {
   
 }
 
+#pane2 { position: absolute; left: 0px; top: 0px; width: auto; }
+
 /* dialog: body is a parent */
 .panel_block {
   position: absolute;
@@ -2015,7 +2021,7 @@ div .panel_block, td .panel_block {
   max-width: 500px;
 }
 
-.panel_block .header { float: left; padding: 5px 0px 5px 0px; width: 100%; text-align: center; background: #6e84a2 url(../images/iPhoneToolbar.png) repeat-x; border-bottom: 1px solid #2d3642; }
+.panel_block .header { float: left; padding: 5px 0px 5px 0px; width: 100%; text-align: left; background: #6e84a2 url(../images/iPhoneToolbar.png) repeat-x; border-bottom: 1px solid #2d3642; }
 /*.panel_block .header td { width: 100%; }*/
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
 .panel_block .header #item_selector { width: 100%; }
@@ -2070,6 +2076,7 @@ div .panel_block, td .panel_block {
 }
 
 .rounded_rect_tbl td { border-bottom: 1px solid #999999; height: 40px; /*padding-bottom: 5px; padding-top: 3px;*/ vertical-align: middle; }
+#pane2 .rounded_rect_tbl td { border-bottom: none; vertical-align: top; }
 .rounded_rect_tbl tr:last-child td { border-bottom: none; }
 .rounded_rect_tbl table td { border: none; height: auto; }
 .rounded_rect_tbl .ext_file { float: right; margin-right: 15px; }
@@ -2079,13 +2086,9 @@ div .panel_block, td .panel_block {
 
 .panel_block #hide_icon, #menu_Options #hide_icon { position: relative; z-index: 2; top: 25px; left: -5px; cursor: pointer; }
 #menu_Options #hide_icon { top: 15px; left: -4px; }
-/*
-.panel_block .content 
-{
-  padding: 0px; 
-  background: #C8C8C8 url(../images/skin/iphone/pinstripes.png) repeat scroll 0%;
- }
- */
+
+#pane2 .content { padding: 15px 10px;  background: #C8C8C8 url(../images/skin/iphone/pinstripes.png) repeat scroll 0%; }
+
 
 .frame {
 	width: 100%; /* takes 100% of panel block width */
