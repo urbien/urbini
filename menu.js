@@ -789,7 +789,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       }
 
       if (anchor.id.startsWith('-inner'))       // display as on-page dialog
-        return onClickDisplayInner(e, anchor);
+        return LinkProcessor.onClickDisplayInner(e, anchor);
       if (anchor.onclick1) {
         anchor.onclick1(e);
       }
@@ -1182,7 +1182,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     var target = getTargetElement(e);
     var tr = getTrNode(target);
-
+		
+		if (target.id == "$more")
+			return;
     if (!tr)
       return true;
 
@@ -1219,7 +1221,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var target = getMouseOutTarget(e);
     if (!target)
       return true;
-
+		if (target.id == "$more")
+			return;
+			
     var tr = getTrNode(target);
     if (!tr)
       return true;
@@ -1748,7 +1752,7 @@ var FormProcessor = {
 	  var buttonName = form.getAttribute("buttonClicked");
 
     var button = form.elements[buttonName];
-    var pane2        = document.getElementById('pane2');
+    var pane2        = PlainDlg.getPane2Dialog();
     var dialogIframe = document.getElementById('dialogIframe');
 
     var isCancel = button && button.name.toUpperCase() == 'CANCEL';
@@ -1901,7 +1905,7 @@ var FormProcessor = {
 				params += "&on_page=y"
 			
 			if (dlg.id == 'pane2')	
-				postRequest(e, url, params, dlg, getTargetElement(e), showDialog);
+				postRequest(e, url, params, dlg, getTargetElement(e), PlainDlg.onDialogLoaded); // showDialog
 			else
 				postRequest(e, url, params, null, getTargetElement(e), DataEntry.onDataEntryRejection);	
       
@@ -3115,7 +3119,6 @@ var ListBoxesHandler = {
 
 		// 2nd click in RL editor; options list is opened
 		if ($t._isEditList && $t.panelBlock.style.visibility == "visible") {
-			$t.panelBlock.style.visibility = ""; // hide options
 			$t.onOptionsBackBtn();
 
 			// click on different parameter then invoke this function with delay 800 ms
@@ -3233,7 +3236,7 @@ var ListBoxesHandler = {
 
 		$t.showOptions(popupDiv);
 
-		if ($t._isEditList) {
+		if ($t._isEditList && $t.panelBlock.style.visibility != "visible") {
 			var form = getAncestorByAttribute(hotspot, "name", "siteResourceList");
 			var leftEdge = findPosX(form);
 			var x = findPosX(hotspot) - $t.panelBlock.clientWidth;
@@ -3839,7 +3842,7 @@ var SlideSwaper = {
     }
   },
   
-	// There is a (temporary) HACK(!)
+	// There is a (temporary) HACK(!) - FF 3.6 FIXED!!!
 	// focus/click in options selector containing in moved tray by MozTransfor invokes
 	// additional offset (FF's bug). It was overcame with hack when on last step
 	// MozTransfor is "substituted" with style.left. It should be removed after FF's bug fixing.
@@ -3864,7 +3867,7 @@ var SlideSwaper = {
 
     // for FF 3.1b2 that does not support -moz-transition-duration (?)
     if (typeof $t.tray.style.MozTransform != 'undefined') {
-			// HACK!
+			// HACK! FF 3.5
 			$t.tray.style.left = 0; 
 
 			$t.tray.style.MozTransform = "translate(" + left + "%, 0%)";
@@ -3879,7 +3882,7 @@ var SlideSwaper = {
       $t.factor = 1;
       $t.curState += dir;
       
-			// HACK!
+			// HACK! FF 3.5
 	    $t.tray.style.MozTransform = "translate(0%, 0%)";
 	    $t.tray.style.left = left * 5 + "%"; 
 
@@ -4018,7 +4021,7 @@ var Filter = {
 			return;
  
    	// hide possible opened dialogs
-		closeAllDialogs();
+		TouchDlgUtil.closeAllDialogs();
 		
     // 1. filter for that type already loaded
     if (this.filtersArr[filterUrl]) {
@@ -4341,7 +4344,7 @@ var Filter = {
 var SubscribeAndWatch = {
 	panelBlock : null,
 	
-	show : function(event, div, hotspot, content, url) {
+	onLoaded : function(event, div, hotspot, content, url) {
 		this.panelBlock = getDomObjectFromHtml(content, "className", "panel_block");
 		var paramsTable = getChildByClassName(this.panelBlock, "rounded_rect_tbl");
 		
@@ -4431,9 +4434,9 @@ var DataEntry = {
 	show : function(url, hotspot) {
 		if (this.loadingUrl != null)
 			return;
-		
+	
    	// hide possible opened dialogs
-		closeAllDialogs();
+		TouchDlgUtil.closeAllDialogs();
 	
 		var key = this._getKey(url);
 		if (this.dataEntryArr[key]) { // data entry stored (in mobile mode)
@@ -4657,6 +4660,166 @@ var DataEntry = {
 	}
 }
 
+/*****************************************************************
+* PlainDlg
+* menu popups and "blue" dalogs
+* NOTE: menu popus content is stored but NOT "blue" dalogs' one
+******************************************************************/
+var PlainDlg = {
+	ID : "pane2", // "pane2" name was inherited from previous UI version
+	div : null, 
+	dlgArr : null, // stores content of previously downloaded dialogs. Used for MENU only!
+	curUrl : null,
+
+	show : function(e, urlStr) {
+		var $t = PlainDlg;
+	  e = getDocumentEvent(e); if (!e) return;
+	  var target = getTargetElement(e); if (!target) return;
+	  var anchor = getTargetAnchor(e);
+	
+	  var finalUrl;
+	  if (urlStr)
+	    finalUrl = urlStr;
+	  else {
+	    if (!anchor)
+	      return;
+	    urlStr = anchor.href;
+	  }
+		
+		var prevUrl = this.curUrl;
+		// hide possible opened dialogs
+		TouchDlgUtil.closeAllDialogs();
+		
+		if (prevUrl == urlStr)
+			return;
+		
+		this.curUrl = urlStr;
+		if (!$t.div)
+			$t.createDiv();
+		
+		// show stored content
+		if (this.dlgArr != null && typeof this.dlgArr[urlStr] != 'undefined') {
+			this.div.appendChild(this.dlgArr[urlStr]);
+			
+			var iframe = document.getElementById('dialogIframe'); // like in onDialogLoaded
+	  	if(FullScreenPopup.show($t.div, anchor) == false) // FullScreenPopup - ???
+	    	setDivVisible(e, $t.div, iframe, anchor, 16, 16);
+			
+			return;
+		}
+		
+		
+	  var idx = urlStr.indexOf('.html');
+	  if (idx != -1) {
+	    var idx1 = urlStr.lastIndexOf('/', idx);
+	    finalUrl = urlStr.substring(0, idx1 + 1) + urlStr.substring(idx1 + 1);
+	  }
+	
+	  var idx = finalUrl.indexOf('?');
+	  if (idx == -1) {
+	    idx = finalUrl.length;
+	    finalUrl += '?';
+	  }
+	  else
+	    finalUrl += '&';
+	  finalUrl += "-inner=y";
+	
+		var action = getUrlParam(finalUrl, "-$action");
+	 	var url = finalUrl;
+		var params = null;
+		// if (finalUrl.length > 2000) {
+			url = finalUrl.substring(0, idx);
+			params = finalUrl.substring(idx + 1);
+			// }
+			
+		postRequest(e, url, params, $t.div, anchor, PlainDlg.onDialogLoaded);
+		
+	  return stopEventPropagation(e);
+	},
+	
+	// XHR callback
+	onDialogLoaded : function (event, div, hotspot, content, url) {
+		var $t = PlainDlg;
+
+  // DO we need still loadin thru frame?
+		var frameId = 'popupFrame';
+	  if (!content) {
+	    if (!frameLoaded[frameId]) {
+	      var timeOutFunction = function () { PlainDlg.onDialogLoaded(event, div, hotspot) };
+	      setTimeout(timeOutFunction, 50);
+	      return;
+	    }
+	    frameLoaded[frameId] = false;
+	    var frameBody = frames[frameId].document.body;
+	    var frameDoc  = frames[frameId].document;
+	    var frameBody = frameDoc.body;
+	    var d = frameDoc.getElementById("corePageContent");
+	    if (d)
+	      frameBody = d;
+	
+	    content = frameBody.innerHTML;
+	  }
+
+	
+	  // SubscribeAndWatch.
+		// TODO: call it in better way, for example, thru LinkProcessor.onClickDisplayInner 
+		if (url.endsWith("subscribe.html")) {
+			SubscribeAndWatch.onLoaded(event, div, hotspot, content, url);
+			return;
+		}
+		
+	  var re = eval('/' + div.id + '/g');
+	  content = content.replace(re, div.id + '-removed');  // prevent pane2 from appearing 2 times in the document
+	  var re = eval('/' + frameId + '/g');
+	  content = content.replace(re, frameId + '-removed'); // prevent dialogIframe from appearing 2 times in the document
+	  setInnerHtml(div, content);
+		
+		FormProcessor.initForms(div);
+		
+		var iframe = document.getElementById('dialogIframe');
+	  if(FullScreenPopup.show(div, hotspot) == false)
+	    setDivVisible(event, div, iframe, hotspot, 16, 16);
+	
+	  // update page if content is empty (all is ok)
+	  if (content.length == 0)
+	    window.location.reload();
+	  
+	},
+	
+	hide : function (e) {
+		var $t = PlainDlg;
+		if ($t.div == null || $t.curUrl == null)
+			return;
+		
+	  // var dialogIframe = document.getElementById('dialogIframe');
+	  setDivInvisible($t.div, dialogIframe);
+	 
+	 	if ($t.dlgArr == null)
+			$t.dlgArr = new Array();
+		
+		// store content
+		if ($t.curUrl.indexOf("-menu=y") != -1)
+			$t.dlgArr[$t.curUrl] = $t.div.removeChild($t.div.firstChild);	
+		
+		$t.curUrl = null;
+		
+		return stopEventPropagation(e);
+	},
+	
+	createDiv : function() {
+		this.div = document.createElement("div");
+		this.div.id = this.ID;
+		this.div.className = "panel_block";
+		document.body.appendChild(this.div);
+	},
+	getPane2Dialog : function() {
+		if (!this.div)
+			this.createDiv();
+
+		return this.div;
+	}
+}
+
 /*******************************************
 * TouchDlgUtil
 * common features for all dialogs
@@ -4695,7 +4858,7 @@ var TouchDlgUtil = {
 				if (wasProcessed) 
 					stopEventPropagation(event);
 				else if (tagName != 'textarea')
-					closeAllDialogs(); // closeAllDialogs on back in browser
+					TouchDlgUtil.closeAllDialogs(); // closeAllDialogs on back in browser
 			}
 		}
 		// 2. enter
@@ -4709,7 +4872,7 @@ var TouchDlgUtil = {
 		}
 		// 3. esc
 		else if(code == 27) {
-				closeAllDialogs();	
+				TouchDlgUtil.closeAllDialogs();	
 		}
 	},
 	
@@ -4725,6 +4888,22 @@ var TouchDlgUtil = {
 		SubscribeAndWatch.submit(event);
 	},
 	
+
+	// closes 1) data entry 2) filter 3) plain dialog
+	closeAllDialogs : function() {
+		ListBoxesHandler.onBackBtn();
+	
+		DataEntry.hide();
+		Filter.hide();
+	/*	
+		var pane2        = PlainDlg.getPane2Dialog(); // document.getElementById('pane2');
+	  var dialogIframe = document.getElementById('dialogIframe');
+	  if (pane2 && dialogIframe)
+		  setDivInvisible(pane2, dialogIframe);
+	*/
+		PlainDlg.hide();	  
+	},
+	
 	highlightRowGrey : function(event) {
     var target = getEventTarget(event);
     var tr = getAncestorByClassName(target, "param_tr");
@@ -4737,13 +4916,14 @@ var TouchDlgUtil = {
 		for (var i = 0; i < tr.cells.length; i++)
 			tr.cells[i].style.background = "#eee";
 	},
+	
 	highlightRowBlue : function(event) {
 		var $t = TouchDlgUtil;
     var target = getEventTarget(event);
     var tr = getAncestorByClassName(target, "param_tr");
     if (!tr)
       return;
-		
+			
 		// in-place editors
 		if (getChildByClassName(tr, "arrow_td") == null) {
 			return;
@@ -4870,163 +5050,185 @@ var TouchDlgUtil = {
 	}    
 }
 
-//**************************************************
-// handle anchors with help of onmousedown on BODY.
-//**************************************************
-function onLinkClick(e) {
-  e = getDocumentEvent(e);
-  if (!e)
-    return;
-
-  var anchor = getTargetAnchor(e);
-  if (!anchor)
-    return;
-
-  var id = anchor.id;
-  // with purpose to speed up GUI we handle onmousedown
-  if (e.type == "click") {
-    // close popup menu on its item click
-    var popupDiv = getAncestorByAttribute(anchor, "className", "popMenu");
-    if (popupDiv)
-      Popup.close0(popupDiv.id)
-
-    // 1. stop click event on anchors with href == "about:blank"
-    // because we handled it with onmousedown
-    if (anchor.href == "about:blank" || id == "-inner")
-      return stopEventPropagation(e);
-    // 2. pressed with shift or ctrl key
-    else if(e.shiftKey || e.ctrlKey) 
-      return stopEventPropagation(e);
-    // 3. default browser behaviour
-    else
-      return;
-  }
-
-  linkHrefModifier(e, anchor);
-
-  if (!id)
-    return;
-
-  var idLen = id.length;
-
-  // 1.
-  if (id.startsWith("-inner")) {
-    onClickDisplayInner(e, anchor);
-  }
-  // 2.
-  else if (id.startsWith('menuLink_')) {
-    menuOnClick(e, anchor);
-  }
-  // 3. 
-  /// commenten out because whole TD is event target
-  else if (id.indexOf("_filter", idLen - "_filter".length) != -1) {
-    ListBoxesHandler.listboxOnClick1(e, id);
-  }
-  //(
-  // 4.
-  else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
-        id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
-    changeBoolean(e, anchor);
-  }
+/**************************************************
+* LinkProcessor
+* handles anchors with help of onmousedown on BODY.
+//**************************************************/
+var LinkProcessor = {
+	onLinkClick : function(e) {
+		var $t = LinkProcessor;
+	  e = getDocumentEvent(e);
+	  if (!e)
+	    return;
+	
+	  var anchor = getTargetAnchor(e);
+	  if (!anchor)
+	    return;
+	
+	  var id = anchor.id;
+	  // with purpose to speed up GUI we handle onmousedown
+	  if (e.type == "click") {
+	    // close popup menu on its item click
+	    var popupDiv = getAncestorByAttribute(anchor, "className", "popMenu");
+	    if (popupDiv)
+	      Popup.close0(popupDiv.id)
+	
+	    // 1. stop click event on anchors with href == "about:blank"
+	    // because we handled it with onmousedown
+	    if (anchor.href == "about:blank" || id == "-inner")
+	      return stopEventPropagation(e);
+	    // 2. pressed with shift or ctrl key
+	    else if(e.shiftKey || e.ctrlKey) 
+	      return stopEventPropagation(e);
+	    // 3. default browser behaviour
+	    else
+	      return;
+	  }
+	
+	  $t.linkHrefModifier(e, anchor);
+	
+	  if (!id)
+	    return;
+	
+	  var idLen = id.length;
+	
+	  // 1.
+	  if (id.startsWith("-inner")) {
+	    $t.onClickDisplayInner(e, anchor);
+	  }
+	  // 2.
+	  else if (id.startsWith('menuLink_')) {
+	    menuOnClick(e, anchor);
+	  }
+	  // 3. 
+	  /// commenten out because whole TD is event target
+	  else if (id.indexOf("_filter", idLen - "_filter".length) != -1) {
+	    ListBoxesHandler.listboxOnClick1(e, id);
+	  }
+	  //(
+	  // 4.
+	  else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
+	        id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
+	    changeBoolean(e, anchor);
+	  }
+	},
+	
+	// calls 1) DataEntry 2) PlainDlg
+	onClickDisplayInner : function(e, anchor) {
+	  if (!anchor)
+	    anchor = getTargetAnchor(e);
+	  if (!anchor || !anchor.id)
+	    return;
+	  e = getDocumentEvent(e); if (!e) return;
+	  var propName = anchor.id.substring(7);
+	//  var r;
+	
+		var urlStr;
+	  if (propName.indexOf("list.") == 0) {
+	    var ul = document.getElementById(propName);
+	
+	    if (!ul) {
+	      var strippedProp = propName.substring(5);
+	      //r = PlainDlg.show(e, innerListUrls[strippedProp]);
+				urlStr = innerListUrls[strippedProp];
+	    }
+	    else {
+	      var li = ul.getElementsByTagName("li");
+	      //r = PlainDlg.show(e, decodeURL(li[0].innerHTML));
+				urlStr = decodeURL(li[0].innerHTML);
+	    }
+	  }
+	  else {
+	    var a = anchor.href;
+	
+	    if (a != 'about:blank')
+	      //r = PlainDlg.show(e, a);
+				urlStr = a;
+	    else {
+	      var ul = document.getElementById(propName);
+	      if (!ul)
+	        //r = PlainDlg.show(e, innerUrls[propName]);
+					urlStr = innerUrls[propName];
+	      else {
+	        var li = ul.getElementsByTagName("li");
+	        //r = PlainDlg.show(e, decodeURL(li[0].innerHTML));
+					urlStr = decodeURL(li[0].innerHTML);
+	      }
+	    }
+	  }
+		
+		if (urlStr.indexOf("mkResource.html") != -1 ||
+	  			urlStr.indexOf("editProperties.html") != -1)
+	  	DataEntry.show(urlStr, anchor);
+//		else if (urlStr.endsWith("subscribe.html"))
+//			SubscribeAndWatch.show(event, div, hotspot, content, url);
+		else
+			PlainDlg.show(e, urlStr); // r = 
+	  
+		return; //r;
+	},
+	
+	/**
+	 * Registered to receive control on a click on any link. Adds control key
+	 * modifier as param to url, e.g. _ctrlKey=y
+	 */
+	linkHrefModifier : function(e, link) {
+	  detectClick = true;
+	  var p;
+	
+	  // add current dashboard ID and current tab ID to url if they are not there
+	  var a = link.href;
+	  addCurrentDashboardAndCurrentTab(link);
+	  if     (e.ctrlKey) {
+	    p = '_ctrlKey=y';
+	  }
+	  else if(e.shiftKey) {
+	    p = '_shiftKey=y';
+	  }
+	/*
+	 * else if(e.altKey) { p = '_altKey=y'; var frameId = 'bottomFrame'; var
+	 * bottomFrame = frames[frameId]; // show content in a second pane // if
+	 * (bottomFrame) { removeModifier(link, '_shiftKey=y'); removeModifier(link,
+	 * '_ctrlKey=y'); removeModifier(link, '_altKey=y'); return displayInner(e,
+	 * link.href); } }
+	 */
+	  if (p) {
+	    removeModifier(link, '_shiftKey=y');
+	    removeModifier(link, '_ctrlKey=y');
+	    removeModifier(link, '_altKey=y');
+	    addUrlParam(link, p, null);
+	
+	    var rc = stopEventPropagation(e);
+	    document.location.href = link.href;
+	    return rc;
+	  }
+	  else if (link.id  &&  link.id.startsWith('-inner')) {
+	    return;
+	  }
+	
+	  var idx = link.href.indexOf("&-ulId=");
+	
+	  if (idx == -1)
+	    return true;
+	  var idx1 = link.href.indexOf("&", idx + 1);
+	  var ulId;
+	  if (idx1 == -1)
+	    ulId = link.href.substring(idx + 7);
+	  else
+	    ulId = link.href.substring(idx + 7, idx1);
+	  var ul = document.getElementById(ulId);
+	  if (ul) {
+	    var li = ul.getElementsByTagName("li");
+	    if (li) {
+	      var qs = li[0].innerHTML;
+	      if (qs.length > 0  &&  link.href.indexOf('&-paging=') == -1)
+	        link.href += "&-paging=" + encodeURIComponent(decodeURL(qs));
+	    }
+	  }
+	  return true;
+	}
 }
-
-function onClickDisplayInner(e, anchor) {
-  if (!anchor)
-    anchor = getTargetAnchor(e);
-  if (!anchor || !anchor.id)
-    return;
-  e = getDocumentEvent(e); if (!e) return;
-  var propName = anchor.id.substring(7);
-  var r;
-  if (propName.indexOf("list.") == 0) {
-    var ul = document.getElementById(propName);
-
-    if (!ul) {
-      var strippedProp = propName.substring(5);
-      r = displayInner(e, innerListUrls[strippedProp]);
-    }
-    else {
-      var li = ul.getElementsByTagName("li");
-      r = displayInner(e, decodeURL(li[0].innerHTML));
-    }
-  }
-  else {
-    var a = anchor.href;
-
-    if (a != 'about:blank')
-      r = displayInner(e, a);
-    else {
-      var ul = document.getElementById(propName);
-      if (!ul)
-        r = displayInner(e, innerUrls[propName]);
-      else {
-        var li = ul.getElementsByTagName("li");
-        r = displayInner(e, decodeURL(li[0].innerHTML));
-      }
-    }
-  }
-  return r;
-}
-
-/**
- * Registered to receive control on a click on any link. Adds control key
- * modifier as param to url, e.g. _ctrlKey=y
- */
-function linkHrefModifier(e, link) {
-  detectClick = true;
-  var p;
-
-  // add current dashboard ID and current tab ID to url if they are not there
-  var a = link.href;
-  addCurrentDashboardAndCurrentTab(link);
-  if     (e.ctrlKey) {
-    p = '_ctrlKey=y';
-  }
-  else if(e.shiftKey) {
-    p = '_shiftKey=y';
-  }
-/*
- * else if(e.altKey) { p = '_altKey=y'; var frameId = 'bottomFrame'; var
- * bottomFrame = frames[frameId]; // show content in a second pane // if
- * (bottomFrame) { removeModifier(link, '_shiftKey=y'); removeModifier(link,
- * '_ctrlKey=y'); removeModifier(link, '_altKey=y'); return displayInner(e,
- * link.href); } }
- */
-  if (p) {
-    removeModifier(link, '_shiftKey=y');
-    removeModifier(link, '_ctrlKey=y');
-    removeModifier(link, '_altKey=y');
-    addUrlParam(link, p, null);
-
-    var rc = stopEventPropagation(e);
-    document.location.href = link.href;
-    return rc;
-  }
-  else if (link.id  &&  link.id.startsWith('-inner')) {
-    return;
-  }
-
-  var idx = link.href.indexOf("&-ulId=");
-
-  if (idx == -1)
-    return true;
-  var idx1 = link.href.indexOf("&", idx + 1);
-  var ulId;
-  if (idx1 == -1)
-    ulId = link.href.substring(idx + 7);
-  else
-    ulId = link.href.substring(idx + 7, idx1);
-  var ul = document.getElementById(ulId);
-  if (ul) {
-    var li = ul.getElementsByTagName("li");
-    if (li) {
-      var qs = li[0].innerHTML;
-      if (qs.length > 0  &&  link.href.indexOf('&-paging=') == -1)
-        link.href += "&-paging=" + encodeURIComponent(decodeURL(qs));
-    }
-  }
-  return true;
-}
+	
 
 /**
  * remove modifier, like ctrl_y
@@ -5109,7 +5311,7 @@ function addPageTitleToUrl(e) {
   var title = document.title;
   if (title)
     title = encodeURIComponent(title);
-  var ret = displayInner(e, a.href + delim + 'title=' + title);
+  var ret = PlainDlg.show(e, a.href + delim + 'title=' + title);
   return ret;
 }
 
@@ -5159,120 +5361,7 @@ function decodeURL(str) {
   return buf;
 }
 
-function displayInner(e, urlStr) {
-  e = getDocumentEvent(e); if (!e) return;
-  var target = getTargetElement(e); if (!target) return;
-  var anchor = getTargetAnchor(e);
 
-  var finalUrl;
-  if (urlStr)
-    finalUrl = urlStr;
-  else {
-    if (!anchor)
-      return;
-    urlStr = anchor.href;
-  }
-  var idx = urlStr.indexOf('.html');
-  if (idx != -1) {
-    var idx1 = urlStr.lastIndexOf('/', idx);
-    finalUrl = urlStr.substring(0, idx1 + 1) + urlStr.substring(idx1 + 1);
-// finalUrl = urlStr.substring(0, idx1 + 1) + 'plain/' + urlStr.substring(idx1 +
-// 1);
-  }
-
-  var idx = finalUrl.indexOf('?');
-  if (idx == -1) {
-    idx = finalUrl.length;
-    finalUrl += '?';
-  }
-  else
-    finalUrl += '&';
-  finalUrl += "-inner=y"; // "hideComments=y&hideMenuBar=y&hideNewComment=y&hideHideBlock=y&-inner=y";
-
-
-	var action = getUrlParam(finalUrl, "-$action");
-	// mkResource and editProperties dialogs belong to Touch UI
-	if (finalUrl.indexOf("mkResource.html") != -1 ||
-  			finalUrl.indexOf("editProperties.html") != -1) {
-  	DataEntry.show(finalUrl, anchor);
-  }
-  // others are "blue" dialogs
-  else {
-   	var url = finalUrl;
-  	var params = null;
-  	// if (finalUrl.length > 2000) {
-			url = finalUrl.substring(0, idx);
-			params = finalUrl.substring(idx + 1);
-			// }
-			
-		var div = document.getElementById('pane2');
-		postRequest(e, url, params, div, anchor, showDialog);
-	}
- 
-  // bottomFrame.location.replace(finalUrl);
-  // var timeOutFunction = function () { showDialog(div, hotspot); };
-  // setTimeout(timeOutFunction, 50);
-
-  return stopEventPropagation(e);
-}
-
-/**
- * copies html loaded via ajax into a div
- */
-function showDialog(event, div, hotspot, content, url) {
-	var frameId = 'popupFrame';
-  if (!content) {
-    if (!frameLoaded[frameId]) {
-      var timeOutFunction = function () { showDialog(event, div, hotspot) };
-      setTimeout(timeOutFunction, 50);
-      return;
-    }
-    frameLoaded[frameId] = false;
-    // -------------------------------------------------
-    var frameBody = frames[frameId].document.body;
-    var frameDoc  = frames[frameId].document;
-    var frameBody = frameDoc.body;
-    var d = frameDoc.getElementById("corePageContent");
-    if (d)
-      frameBody = d;
-
-    content = frameBody.innerHTML;
-  }
-
- 	// hide possible opened dialogs
-	closeAllDialogs();
-	
-  // SubscribeAndWatch 
-	if (url.endsWith("subscribe.html")) {
-		SubscribeAndWatch.show(event, div, hotspot, content, url);
-		return;
-	}
-	
-  var re = eval('/' + div.id + '/g');
-  content = content.replace(re, div.id + '-removed');  // prevent pane2 from appearing 2 times in the document
-  var re = eval('/' + frameId + '/g');
-  content = content.replace(re, frameId + '-removed'); // prevent dialogIframe from appearing 2 times in the document
-  setInnerHtml(div, content);
-  showDialog1(event, div, hotspot);
-  
-  // update page if content is empty (all is ok)
-  if (content.length == 0)
-    window.location.reload();
-  
-}
-
-function showDialog1(event, div, hotspot) {
-  var iframe = document.getElementById('dialogIframe');
-
-  if(FullScreenPopup.show(div, hotspot) == false)
-    setDivVisible(event, div, iframe, hotspot, 16, 16);
-
-  FormProcessor.initForms(div);
-	
-  // execute JS code of innerHTML
-	// executed in showDialog thru setInnerHtml
-  //ExecJS.runDivCode(div);
-}
 
 /**
  * Used in FrequencyPropertyEditor (e.g. for Scheduled Report)
@@ -6594,23 +6683,14 @@ function showRows(e, td, hideRowsId, unhideRowsId) {
   return stopEventPropagation(e);
 }
 
-
+/*
 function onHideDialogIcon(e, hideIcon) {
   var pane2 = getAncestorById(hideIcon, 'pane2');
   if (pane2) {
-    hideInnerDiv(e);
-    //pane2.innerHTML = "";
+    PlainDlg.hide(e);
   }
- // else // Touch UI dialogs
- //   hideIcon.parentNode.style.display = 'none';
 }
-
-function hideInnerDiv(e) {
-  var pane2        = document.getElementById('pane2');
-  var dialogIframe = document.getElementById('dialogIframe');
-  setDivInvisible(pane2, dialogIframe);
-  return stopEventPropagation(e);
-}
+*/
 
 function openPopup1(divId1, alertName, hotSpot, e) {
   var etarget = getEventTarget(e);
@@ -7879,7 +7959,7 @@ function removeSpaces(str) {
 
 /*******************************************************************************
  * drag & drop engine
- * dragHandler implements: 1)getDragBlock 2)onStartDrag, 3) onDrag, 4) onStopDrag
+ * dragHandler implements: 1) getDragBlock 2) onStartDrag, 3) onDrag, 4) onStopDrag
  * DragEngine is not called in mobile mode
  ******************************************************************************/
 var DragEngine = {
@@ -8319,7 +8399,7 @@ var closingOnEsc = {
 		  return;
     // 1. dialog
     if(div.id == 'pane2')
-      hideInnerDiv(e);
+      PlainDlg.hide(e);
     // 2. popup
     else if(div.className == 'popMenu') {
       Popup.close0(div.id)
@@ -8686,7 +8766,7 @@ var DictionaryHandler = {
     postRequest(e, url, params, div, hotspot, this.onTranslationCallback);
   },
   onTranslationCallback : function(clonedEvent, div, hotspot, responseText) {
-    showDialog(clonedEvent, div, hotspot, responseText); //test //"<div><h1>TEST</h1></div>"
+    PlainDlg.onDialogLoaded(clonedEvent, div, hotspot, responseText); //test //"<div><h1>TEST</h1></div>"
   }
 }
 /*
@@ -10940,19 +11020,7 @@ var BrowserDialog = {
 	}
 }
 
-// on this moment, there are 3 kinds of dilaogs:
-// 1) data entry 2) filter 3) "blue/pane2" dialog
-function closeAllDialogs() {
-	ListBoxesHandler.onBackBtn();
 
-	DataEntry.hide();
-	Filter.hide();
-	
-	var pane2        = document.getElementById('pane2');
-  var dialogIframe = document.getElementById('dialogIframe');
-  if (pane2 && dialogIframe)
-	  setDivInvisible(pane2, dialogIframe);
-}
 
 // redefines standart alert() function
 function alert(text) {
