@@ -7380,17 +7380,18 @@ var DesktopSearchField = {
 
 		if (this.field == null)
 			this._init(field, arrowDiv);
-			
+	
 		if (this.isFilterOpened) {
 			Filter.hide();
+			// note: Filter.hide() calls this.invertArrowState
 		}
 		else {
 			var x = findPosX(field);
 			var y = findPosY(field) + field.offsetHeight + 5;
 			Filter.show(x, y);
+			this.invertArrowState();
 		}
 		
-		this.invertArrowState();
 		stopEventPropagation(event);
   },
 	
