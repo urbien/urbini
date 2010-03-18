@@ -16,5 +16,5 @@
    </tr>
 </table>
 <br/><br/>
-<b>Powered by</b> <a href="http://lablz.com" target="_blank">LablZ UniversalPlatform</a>
+<b>Powered by</b> <a href="http://lablz.com" target="_blank">Lablz</a>
 </div>
