@@ -4687,7 +4687,7 @@ var PlainDlg = {
 	  }
 		
 		var prevUrl = this.curUrl;
-		// hide possible opened dialogs
+		// hide possible opened dialogs including previously opened PlainDlg
 		TouchDlgUtil.closeAllDialogs();
 		
 		if (prevUrl == urlStr)
@@ -4707,7 +4707,6 @@ var PlainDlg = {
 			
 			return;
 		}
-		
 		
 	  var idx = urlStr.indexOf('.html');
 	  if (idx != -1) {
@@ -4788,18 +4787,22 @@ var PlainDlg = {
 	
 	hide : function (e) {
 		var $t = PlainDlg;
-		if ($t.div == null || $t.curUrl == null)
+		if ($t.div == null) // || $t.curUrl == null
 			return;
 		
 	  // var dialogIframe = document.getElementById('dialogIframe');
-	  setDivInvisible($t.div, dialogIframe);
+	  setDivInvisible($t.div/*, dialogIframe*/);
 	 
 	 	if ($t.dlgArr == null)
 			$t.dlgArr = new Array();
 		
+		var curContentElem = $t.div.firstChild;
+		if (curContentElem)
+			$t.div.removeChild(curContentElem);
+		
 		// store content
-		if ($t.curUrl.indexOf("-menu=y") != -1)
-			$t.dlgArr[$t.curUrl] = $t.div.removeChild($t.div.firstChild);	
+		if ($t.curUrl && $t.curUrl.indexOf("-menu=y") != -1)
+			$t.dlgArr[$t.curUrl] = curContentElem;	
 		
 		$t.curUrl = null;
 		
@@ -7374,6 +7377,12 @@ var DesktopSearchField = {
 		this.arrowDiv = arrowDiv;
     addEvent(document.body, "click", this.onBlur, true);
   },
+	
+	submit : function(event, sendBtn) {
+		var form = getAncestorByTagName(sendBtn, 'form');
+		FormProcessor.onSubmitProcess(event, form);
+		form.submit();
+	},
 	
   onFilterArrowClick : function(event, arrowDiv) {
 		var field = getPreviousSibling(arrowDiv.parentNode);
