@@ -2003,7 +2003,7 @@ div .panel_block, td .panel_block {
 /* dialog: body is a parent */
 .panel_block {
   position: absolute;
-  width: 80%;
+  width: 60%;
   min-width: 320px;
   max-width: 800px;
   
@@ -2021,6 +2021,11 @@ div .panel_block, td .panel_block {
   max-width: 500px;
 }
 
+#common_filter { width: 60%; }
+#fts_filter {  }
+#fts_filter .no_border td { border-bottom: none; }
+#fts_filter .filter_stat a { margin-left: 30px; width: 100%; }
+
 .panel_block .header { float: left; padding: 5px 0px 5px 0px; width: 100%; text-align: left; background: #6e84a2 url(../images/iPhoneToolbar.png) repeat-x; border-bottom: 1px solid #2d3642; }
 /*.panel_block .header td { width: 100%; }*/
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
@@ -2031,7 +2036,7 @@ div .panel_block, td .panel_block {
 #subscribe .content { display: none; }
 .panel_block .property_group, .panel_block #item_name { color: #4B5578; text-shadow: #edf1fa 1px 1px 0px; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; /*text-transform: uppercase;*/ }
 
-.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #fff; padding: 0; border: solid rgb(166, 170, 173) 1px; color: #000000; empty-cells:show; }
+.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #fff; padding: 0px; border: solid rgb(166, 170, 173) 1px; color: #000000; empty-cells:show; }
 
 .rounded_rect_tbl .param_tr { cursor: pointer; }
 
@@ -2076,7 +2081,9 @@ div .panel_block, td .panel_block {
 }
 
 .rounded_rect_tbl td { border-bottom: 1px solid #999999; height: 40px; /*padding-bottom: 5px; padding-top: 3px;*/ vertical-align: middle; }
-#pane2 .rounded_rect_tbl td { border-bottom: none; vertical-align: top; }
+#pane2 .rounded_rect_tbl td { border-bottom: none; }
+#pane2 #dashboard td { vertical-align: top; }
+
 .rounded_rect_tbl tr:last-child td { border-bottom: none; }
 .rounded_rect_tbl table td { border: none; height: auto; }
 .rounded_rect_tbl .ext_file { float: right; margin-right: 15px; }
