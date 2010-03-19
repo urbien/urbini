@@ -192,7 +192,7 @@ Browser.chrome    = (agent.indexOf("Chrome")) != -1 ? true : false;
 // ****************************************************
 // AJAX request.
 // Request content from the server to be loaded into a specified div.
-// Uses XMLHttpRequest when possible and hidden iframe otherwise.
+// Uses XMLHttpRequest when possible
 //
 // Basic ajax technique is described here:
 // http://keelypavan.blogspot.com/2006/01/using-ajax.html
@@ -242,8 +242,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     }
   }
 
-  var frameId = 'popupFrame';
-  var iframe  = document.getElementById('popupIframe');
   var http_request;
 
   // visual cue that click was made, using the tooltip
@@ -271,22 +269,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     try {
       http_request = window.createRequest();
     } catch (e) {}
-  }
-
-  if (!http_request) {
-    throw new Error('Cannot create XMLHTTP instance, using iframe instead');
-    frameLoaded[frameId] = false;
-    var iframe = frames[frameId];
-    iframe.document.body.innerHTML = '<form method=post action=dummy id=ajaxForm><input type=submit name=n value=v></input> </form>';
-    var ajaxForm = iframe.document.getElementById('ajaxForm');
-    ajaxForm.action = url;
-    ajaxForm.submit();
-    // line below is an alternative simpler method to submitting a form - but
-    // fails in IE if URL is too long
-    // iframe.location.replace(url); // load data from server into iframe
-    timeoutCount = 0;
-    setTimeout(function () {Popup.load(event, div)}, 50);
-    return;
   }
 
   if (callInProgress(lastRequest)) {
@@ -334,7 +316,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     }
 //    Boost.log('got back on postrequest, status ' + status);
     if (status == 200 && url.indexOf('FormRedirect') != -1) { // POST that did not cause redirect - it means it had a problem - repaint dialog with err msg
-      frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
 //      if (div)
 //        Boost.view.setProgressIndeterminate(false);
@@ -342,7 +323,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
     else if (status == 200) {
-      frameLoaded[frameId] = true;
       openAjaxStatistics(event, http_request);
       //Boost.view.setProgressIndeterminate(false);
       if (callback)
@@ -368,12 +348,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
       try {location = http_request.getResponseHeader('Location');} catch(exception) {}
       if (!location) {
         var response = responseXML.documentElement;
-        if (!response) {
-          var responseText = http_request.responseText;
-          var iframe = frames[frameId];
-          iframe.document.body.innerHTML = http_request.responseText;
-          response = iframe.document;
-        }
         location = response.getElementById('$redirect').getAttribute('href');
         if (!location)
           return;
