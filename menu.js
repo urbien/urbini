@@ -203,36 +203,6 @@ Popup.close0 = function (divId) {
  * Loads the ajax popup into the div
  */
 Popup.load = function (event, div, hotspot, content) {
-  var frameId     = 'popupFrame';
-  var frameBodyId = 'popupFrameBody';
-
-  // content exists if we used ajax via httpRequest, otherwise we need not
-  // extract content from iframe
-  if (!content) {
-    if (!frameLoaded[frameId]) {
-      setTimeout(function () {Popup.load(event, div, hotspot)}, 50);
-      return;
-    }
-    frameLoaded[frameId] = false;
-
-    // now it is loaded
-    var popupFrame = frames[frameId];
-    var body = popupFrame.document.getElementById(frameBodyId);
-    if (!body) {
-      alert("Warning: server did not return options data - check connection to server");
-			setTimeout("ListBoxesHandler.onBackBtn()", 1000);
-			return;
-    }
-    var redirect = popupFrame.document.getElementById('$redirect'); // redirect
-                                                                    // to login
-                                                                    // page
-    if (redirect) {
-      document.location.href = redirect.href;
-      return;
-    }
-    content = body.innerHTML;
-  }
-
   var popup = Popup.getPopup(div.id);
   popup.setInnerHtml(content);
   var div = popup.div;
@@ -3775,20 +3745,11 @@ var ListBoxesHandler = {
 var SlideSwaper = {
   STEPS_AMT : 5,
   TIMEOUT : 25, // timeout between steps. On FF3 can not be applied too short timeout.
-  DISTANCE : 20, // pecents of tray width //320,
+  DISTANCE : 20, // pecents of tray width 
   
 	// ease-in-out // currently used for WebKit in common.css
 	BEZIER_POINTS : [[0.0, 0.0], [0.42, 0.0], [0.58, 1.0], [1.0, 1.0]],
 	
-	// default
-  // BEZIER_POINTS : [[0.0, 0.0], [0.25, 0.1], [0.25, 1], [1.0, 1.0]],
-	// ease-in
-	// BEZIER_POINTS : [[0.0, 0.0], [0.42, 0], [1, 1], [1.0, 1.0]],
-	// ease-out
-	// BEZIER_POINTS : [[0.0, 0.0], [0.0, 0.0], [0.58, 1.0], [1.0, 1.0]],
-	// cubic-bezier
-	// BEZIER_POINTS : [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]],
-
 	offset : 0,
   
   curState : 0, // -1 means moveForward; -2 means moveForward twice.
@@ -3990,9 +3951,11 @@ var Filter = {
 
     for (var i = 0; i < paramsTable.rows.length; i++) {
       var td = paramsTable.rows[i].cells[1];
-      var isCalendar = (td.getAttribute("options_selector") == "calendar");
-      if (isCalendar)
-        this._initPeriodTd(td);
+			if (td) {
+		  	var isCalendar = (td.getAttribute("options_selector") == "calendar");
+		  	if (isCalendar) 
+		  		this._initPeriodTd(td);
+		  }
     }    
     
     // assign mouse handlers
@@ -4740,25 +4703,6 @@ var PlainDlg = {
 	onDialogLoaded : function (event, div, hotspot, content, url) {
 		var $t = PlainDlg;
 
-  // DO we need still loadin thru frame?
-		var frameId = 'popupFrame';
-	  if (!content) {
-	    if (!frameLoaded[frameId]) {
-	      var timeOutFunction = function () { PlainDlg.onDialogLoaded(event, div, hotspot) };
-	      setTimeout(timeOutFunction, 50);
-	      return;
-	    }
-	    frameLoaded[frameId] = false;
-	    var frameBody = frames[frameId].document.body;
-	    var frameDoc  = frames[frameId].document;
-	    var frameBody = frameDoc.body;
-	    var d = frameDoc.getElementById("corePageContent");
-	    if (d)
-	      frameBody = d;
-	
-	    content = frameBody.innerHTML;
-	  }
-
 	
 	  // SubscribeAndWatch.
 		// TODO: call it in better way, for example, thru LinkProcessor.onClickDisplayInner 
@@ -4767,12 +4711,7 @@ var PlainDlg = {
 			return;
 		}
 		
-	  var re = eval('/' + div.id + '/g');
-	  content = content.replace(re, div.id + '-removed');  // prevent pane2 from appearing 2 times in the document
-	  var re = eval('/' + frameId + '/g');
-	  content = content.replace(re, frameId + '-removed'); // prevent dialogIframe from appearing 2 times in the document
 	  setInnerHtml(div, content);
-		
 		FormProcessor.initForms(div);
 		
 		var iframe = document.getElementById('dialogIframe');
@@ -4926,6 +4865,9 @@ var TouchDlgUtil = {
     var tr = getAncestorByClassName(target, "param_tr");
     if (!tr)
       return;
+		
+		if (target.className == "iphone_checkbox")
+			return; // skip click on iPhone-like checkbox
 			
 		// in-place editors
 		if (getChildByClassName(tr, "arrow_td") == null) {
@@ -5110,10 +5052,10 @@ var LinkProcessor = {
 	  }
 	  //(
 	  // 4.
-	  else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
-	        id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
-	    changeBoolean(e, anchor);
-	  }
+//	  else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
+//	        id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
+//	    changeBoolean(e, anchor);
+//	  }
 	},
 	
 	// calls 1) DataEntry 2) PlainDlg
@@ -7380,7 +7322,9 @@ var DesktopSearchField = {
 	
 	submit : function(event, sendBtn) {
 		var form = getAncestorByTagName(sendBtn, 'form');
-		FormProcessor.onSubmitProcess(event, form);
+		var input = getChildByClassName(form, "ftsq");
+		if (FieldsWithEmptyValue.isEmptyValue(input))
+			input.value = "";
 		form.submit();
 	},
 	
@@ -8123,6 +8067,7 @@ function setRelatedCheckbox(e) {
 /**
  * toogle booleans
  */
+/*
 function addBooleanToggle(elem) {
   if (!elem)
     return;
@@ -8138,6 +8083,7 @@ function addBooleanToggle(elem) {
     elem.style.cursor = 'pointer';
   }
 }
+*/
 
 function getAnchorForTarget(e) {
   var target = getEventTarget(e);
@@ -8149,9 +8095,10 @@ function getAnchorForTarget(e) {
 
   return getANode(target);
 }
-/**
+/** DO we need it after Touch UI?
  * Change boolean value (in non-edit mode)
  */
+/*
 function changeBoolean(e, target) {
   var url = 'proppatch';
   var params = 'submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
@@ -8268,7 +8215,7 @@ if (!document.importNode) {
     return oNew;
   }
 }
-
+*/
 function cloneNode(oNode) {
   var oNew;
 
