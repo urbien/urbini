@@ -1776,8 +1776,14 @@ var FormProcessor = {
       url = action;
     }
     else
-      url = "FormRedirect"; // HACK: if form.action is empty
-    var formAction = form.elements['-$action'].value;
+      url = "FormRedirect";
+		
+		// HACK: if form.action is empty
+		var formAction = "";
+    var formActionElem = form.elements['-$action'];
+		if (formActionElem)
+			formAction = form.elements['-$action'].value;
+		
     var allFields = true;
     if (formAction != "searchLocal" && formAction != "searchParallel" && formAction != "mkResource")
       allFields = false;
@@ -1787,7 +1793,7 @@ var FormProcessor = {
     var params = "submit=y"; // HACK: since target.type return the value of &type
                               // instead of an input field's type property
 
-		var isAjaxReq = (isFormInDialog || Browser.mobile);
+		var isAjaxReq = isFormInDialog || Browser.mobile;
     var p1 = FormProcessor.getFormFilters(form, allFields, null, isAjaxReq);
     if (p1)
       params += p1;
@@ -1865,8 +1871,8 @@ var FormProcessor = {
 		if (Browser.mobile) {
       return url + "?" + params;
     }
- 		// 2. form in dialog: send via XHR
-   else if (isFormInDialog)  {
+ 		// 2. form in dialog: send via XHR but if not RL requested ("l.html")
+   else if (isFormInDialog && action.indexOf("l.html") == -1)  {
 	 		// -inner=y for dialog on desktop															
 			params += "&-inner=y"; // params for XHR means inner/dialog.
 	 		var dlg = getParentDialog(form);
