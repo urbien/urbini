@@ -1871,8 +1871,9 @@ var FormProcessor = {
 		if (Browser.mobile) {
       return url + "?" + params;
     }
- 		// 2. form in dialog: send via XHR but if not RL requested ("l.html")
-   else if (isFormInDialog && action.indexOf("l.html") == -1)  {
+ 		// 2. form in dialog: send via XHR  ///// action.indexOf("l.html") == -1
+		// change view cols dialog sendig as form to get new page
+   else if (isFormInDialog && form.elements["-changeCols"])  {
 	 		// -inner=y for dialog on desktop															
 			params += "&-inner=y"; // params for XHR means inner/dialog.
 	 		var dlg = getParentDialog(form);
@@ -4165,7 +4166,8 @@ var Filter = {
     if ((url.indexOf('-cat=on') != -1 || url.indexOf('-q=') != -1 ||
 				url.indexOf('&.') != -1) &&	url.indexOf('clear=Filter') == -1) {
 			BrowserDialog.setCallbackArguments(e, btn);
-			BrowserDialog.confirm("To clear filter?", $t.submitClearFilterCallback);
+			// clear filter
+			$t.submitProcess(e, getAncestorByClassName(btn, "form_panel"), true);
 		}
 		else {
 			$t.hide();
@@ -7329,8 +7331,11 @@ var DesktopSearchField = {
 	submit : function(event, sendBtn) {
 		var form = getAncestorByTagName(sendBtn, 'form');
 		var input = getChildByClassName(form, "ftsq");
-		if (FieldsWithEmptyValue.isEmptyValue(input))
-			input.value = "";
+		if (FieldsWithEmptyValue.isEmptyValue(input)) {
+			alert("Enter search criteria"); // works for icon, not <enter>
+			return;
+		}
+			
 		form.submit();
 	},
 	
