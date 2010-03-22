@@ -1866,14 +1866,14 @@ var FormProcessor = {
     if (pane2  &&  pane2.contains(form))  {   // dialog?
       setDivInvisible(pane2, dialogIframe);
     }
-		
+
 		// 1. mobile: return url for further XHR
 		if (Browser.mobile) {
       return url + "?" + params;
     }
  		// 2. form in dialog: send via XHR  ///// action.indexOf("l.html") == -1
 		// change view cols dialog sendig as form to get new page
-   else if (isFormInDialog && form.elements["-changeCols"])  {
+   else if (isFormInDialog && form.id != "viewColsList")  {
 	 		// -inner=y for dialog on desktop															
 			params += "&-inner=y"; // params for XHR means inner/dialog.
 	 		var dlg = getParentDialog(form);
@@ -3843,6 +3843,7 @@ var SlideSwaper = {
 		else 
 			$t.tray.style.left = left * 5 + "%"; // tray is 5 width of a panel
 
+
     if ($t.offset <= 1.0)
       setTimeout($t._moveStep, $t.TIMEOUT);
     else { // finish
@@ -3951,6 +3952,7 @@ var Filter = {
       return false;
     
     CheckButtonMgr.substitute(filterDiv);
+ 
     var paramSel = getChildById(filterDiv, 'parameter_selector');
     FieldsWithEmptyValue.initField(paramSel, 'select');
     var textSearch = getChildById(filterDiv, '-q');
@@ -4802,7 +4804,7 @@ var TouchDlgUtil = {
 		var wasProcessed = false;
 		// 1. backspace
 		if (code == 8) {
-			if (target.className != "iphone_field") {
+			if (target.className != "iphone_field" && target.className.indexOf("pointer") != -1) {
 		  	wasProcessed = ListBoxesHandler.onBackBtn();
   	  	// prevent default browser behavior (backspace) and  other handlers
 				if (wasProcessed) 
@@ -10742,7 +10744,7 @@ var CheckButtonMgr = {
     if (typeof div == 'undefined')
       div = document.body;
     
-     var inputs = div.getElementsByTagName('input');
+    var inputs = div.getElementsByTagName('input');
     for(var i=0; i < inputs.length; i++) {
       var stlIdx = -1;
 			// no need to substitude hidden checkboxes or already processed
