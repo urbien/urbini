@@ -3270,9 +3270,38 @@ var ListBoxesHandler = {
 		var curPanel = $t.getCurrentPanelDiv();
 		if (curPanel && curPanel.className != panel.className) {
 			var toResetTray = (SlideSwaper.getTrayPosition($t.tray) == 0) ? true : false;
+			
+			// hide invisible param-rows under page bottom trying to speed up sliding in FF.
+			$t._hideInvisibleParams();
 			SlideSwaper.moveForward($t.tray, toResetTray, $t.onOptionsDisplayed);
 		}
   },
+	
+	// the following 2 functions try to speed up sliding in FF
+	// they hide invisible parameter-rows under bottom page edge.
+	// require more testing.
+	_showInvisibleParams : function() {
+		var table = this.curParamRow.parentNode;
+		for (var i = 0; i < table.rows.length; i++) {
+			var row = table.rows[i];
+			row.style.display = "";
+		}
+	},
+	_hideInvisibleParams : function() {
+		var table = this.curParamRow.parentNode;
+		var idx = table.rows[0].cells.length - 2;
+		var bottomEdge = getWindowSize()[1] + getScrollXY()[1];
+		var tableTop = findPosY(table);
+		
+		for (var i = 0; i < table.rows.length; i++) {
+			var row = table.rows[i];
+			var rowBottom = tableTop + row.offsetTop;
+			if (bottomEdge > rowBottom)
+				continue;
+				
+			row.style.display = "none";
+		}
+	},
 
   onOptionsDisplayed : function() {
     var $t = ListBoxesHandler;
@@ -3649,6 +3678,7 @@ var ListBoxesHandler = {
 		
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
 		TouchDlgUtil.bleachBlueRow();
+		$t._showInvisibleParams();
   },
 
   localOptionsFilter : function(typedText, parentDiv) {
@@ -4804,12 +4834,12 @@ var TouchDlgUtil = {
 		var wasProcessed = false;
 		// 1. backspace
 		if (code == 8) {
-			if (target.className != "iphone_field" && target.className.indexOf("pointer") != -1) {
+			if (target.className != "iphone_field") {
 		  	wasProcessed = ListBoxesHandler.onBackBtn();
   	  	// prevent default browser behavior (backspace) and  other handlers
 				if (wasProcessed) 
 					stopEventPropagation(event);
-				else if (tagName != 'textarea')
+				else if (tagName != 'input' && tagName != 'textarea')
 					TouchDlgUtil.closeAllDialogs(); // closeAllDialogs on back in browser
 			}
 		}
