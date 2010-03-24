@@ -22,7 +22,7 @@
 		<propertySheet name="modification"/>
     <where value="modification == null">
     <br/>
-		  <property name="description"/>
+		  <property name="description" noIcon="y"/>
     <br/>
 		</where>
 		<newComment/>
