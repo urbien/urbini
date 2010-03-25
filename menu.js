@@ -3286,6 +3286,7 @@ var ListBoxesHandler = {
 			var row = table.rows[i];
 			row.style.display = "";
 		}
+		this.panelBlock.style.height = "";
 	},
 	_hideInvisibleParams : function() {
 		var table = this.curParamRow.parentNode;
@@ -3293,7 +3294,10 @@ var ListBoxesHandler = {
 		var bottomEdge = getWindowSize()[1] + getScrollXY()[1];
 		var tableTop = findPosY(table);
 		
-		for (var i = 0; i < table.rows.length; i++) {
+		// prevent from change of vertical scrollbar height
+		this.panelBlock.style.height = this.panelBlock.offsetHeight;
+		
+		for (var i = table.rows.length - 1; i >= 0; i--) {
 			var row = table.rows[i];
 			var rowBottom = tableTop + row.offsetTop;
 			if (bottomEdge > rowBottom)
