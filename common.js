@@ -1085,6 +1085,9 @@ function getTextContent(elm) {
   if (typeof elm.textContent != "undefined") {                // W3C DOM Level 3
     text = elm.textContent;
   }
+	 else if (typeof elm.innerText != "undefined") {             // IE
+    text = elm.innerText;
+  }
   else if (elm.childNodes && elm.childNodes.length) {         // W3C DOM Level 2
     var t = '';
     for (var i = elm.childNodes.length; i--;) {
@@ -1098,10 +1101,7 @@ function getTextContent(elm) {
     }
     text = t == '' ? null : t;
   }
-  else if (typeof elm.innerText != "undefined") {             // proprietary:
-                                                              // IE4+
-    text = elm.innerText;
-  }
+
   return text;
 }
 
