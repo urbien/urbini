@@ -1873,7 +1873,7 @@ var FormProcessor = {
     }
  		// 2. form in dialog: send via XHR  ///// action.indexOf("l.html") == -1
 		// change view cols dialog sendig as form to get new page
-   else if (isFormInDialog && form.id != "viewColsList")  {
+   else if (isFormInDialog && form.id != "viewColsList" && form.id != "uploadProject")  {
 	 		// -inner=y for dialog on desktop															
 			params += "&-inner=y"; // params for XHR means inner/dialog.
 	 		var dlg = getParentDialog(form);
