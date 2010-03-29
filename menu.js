@@ -3306,11 +3306,6 @@ var ListBoxesHandler = {
 				
 			row.style.display = "none";
 		}
-//		debugger;
-//		// test
-		var frame = getChildByClassName(this.panelBlock, "frame");
-		frame.style.background = "none";
-		
 	},
 
   onOptionsDisplayed : function() {
@@ -3894,13 +3889,6 @@ var SlideSwaper = {
 			// HACK! FF 3.5
 	    $t.tray.style.MozTransform = "translate(0%, 0%)";
 	    $t.tray.style.left = left * 5 + "%"; 
-
-
-
-//		//		debugger;
-//		// test
-		var frame = getAncestorByClassName($t.tray, "frame");
-		frame.style.background = "url(\"../images/skin/iphone/pinstripes.png\") repeat scroll 0 50% #C8C8C8";
 
       if ($t.callback)
         $t.callback();
