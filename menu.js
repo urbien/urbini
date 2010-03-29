@@ -7094,17 +7094,17 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 
 // commented out after Touch UI (filter is bound to the search field)
   // now adjust vertically - so we fit inside the viewport
-//  if (distanceToBottomEdge < divCoords.height + margin) {
-//    top = (screenY + scrollY) - divCoords.height;
-//    if ((top - scrollY)- margin > 0)
-//      top -= margin;   // adjust for a scrollbar
-//    if (top < scrollY) // but not higher then top of viewport
-//      top = scrollY + 1;
-//  }
-//  else { // apply user requested offset only if no adjustment
+  if (distanceToBottomEdge < divCoords.height + margin) {
+    top = (screenY + scrollY) - divCoords.height;
+    if ((top - scrollY)- margin > 0)
+      top -= margin;   // adjust for a scrollbar
+    if (top < scrollY) // but not higher then top of viewport
+      top = scrollY + 1;
+  }
+  else { // apply user requested offset only if no adjustment
     if (offsetY)
       top = top + offsetY;
-//  }
+  }
 
 	
 	// no vertical scrollbar for Touch UI dialogs
