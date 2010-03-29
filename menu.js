@@ -3288,6 +3288,7 @@ var ListBoxesHandler = {
 		}
 		this.panelBlock.style.height = "";
 	},
+	
 	_hideInvisibleParams : function() {
 		var table = this.curParamRow.parentNode;
 		var idx = table.rows[0].cells.length - 2;
@@ -3301,10 +3302,15 @@ var ListBoxesHandler = {
 			var row = table.rows[i];
 			var rowBottom = tableTop + row.offsetTop;
 			if (bottomEdge > rowBottom)
-				continue;
+				break;
 				
 			row.style.display = "none";
 		}
+//		debugger;
+//		// test
+		var frame = getChildByClassName(this.panelBlock, "frame");
+		frame.style.background = "none";
+		
 	},
 
   onOptionsDisplayed : function() {
@@ -3889,6 +3895,13 @@ var SlideSwaper = {
 	    $t.tray.style.MozTransform = "translate(0%, 0%)";
 	    $t.tray.style.left = left * 5 + "%"; 
 
+
+
+//		//		debugger;
+//		// test
+		var frame = getAncestorByClassName($t.tray, "frame");
+		frame.style.background = "url(\"../images/skin/iphone/pinstripes.png\") repeat scroll 0 50% #C8C8C8";
+
       if ($t.callback)
         $t.callback();
     }
@@ -4036,8 +4049,7 @@ var Filter = {
 		  	this.filtersArr[filterUrl] = document.body.appendChild(this.filtersArr[filterUrl]);
 				this.handleFilterState(true);
 		  }
-			
-			setDivVisible(null, this.filtersArr[filterUrl], null, null, x, y, null);
+			setDivVisible(null, this.filtersArr[filterUrl], null, null, x, y, null, true);
       }
     // 2. download new filter for this type
     else {
@@ -4129,7 +4141,7 @@ var Filter = {
 		  	x = $t.loadingPosition[0];
 		  	y = $t.loadingPosition[1];
 		  }
-			setDivVisible(null, loadedFilter, null, null, x, y, null);
+			setDivVisible(null, loadedFilter, null, null, x, y, null, true);
 		}
 		
 		$t.handleFilterState(true);
@@ -5049,7 +5061,7 @@ var LinkProcessor = {
 	  e = getDocumentEvent(e);
 	  if (!e)
 	    return;
-	
+
 	  var anchor = getTargetAnchor(e);
 	  if (!anchor)
 	    return;
@@ -5080,7 +5092,7 @@ var LinkProcessor = {
 	    return;
 	
 	  var idLen = id.length;
-	
+
 	  // 1.
 	  if (id.startsWith("-inner")) {
 	    $t.onClickDisplayInner(e, anchor);
@@ -6962,8 +6974,11 @@ function onDlgContentResize(e){
 // used to manage dialogs
 // Touch UI dialogs are in 'panel_block' div
 // others("blue") in 'pane2' div
+//
+// positionEnforced enforced to set dialog in accordance to hotspot position
+// without regarding if bottom of a dialog is bellow a page bottom (used for filter)
 //****************************************************************
-function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim) {
+function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim, positionEnforced) {
 	if (Browser.mobile) {
     div.style.left = 0 + 'px';
     div.style.top  = 0 + 'px';
@@ -7093,18 +7108,20 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   }
 
 // commented out after Touch UI (filter is bound to the search field)
-  // now adjust vertically - so we fit inside the viewport
-  if (distanceToBottomEdge < divCoords.height + margin) {
-    top = (screenY + scrollY) - divCoords.height;
-    if ((top - scrollY)- margin > 0)
-      top -= margin;   // adjust for a scrollbar
-    if (top < scrollY) // but not higher then top of viewport
-      top = scrollY + 1;
-  }
-  else { // apply user requested offset only if no adjustment
-    if (offsetY)
-      top = top + offsetY;
-  }
+  		// now adjust vertically - so we fit inside the viewport
+			if ((typeof positionEnforced == 'undefined' || positionEnforced == false) &&
+						distanceToBottomEdge < divCoords.height + margin) {
+				top = (screenY + scrollY) - divCoords.height;
+				if ((top - scrollY) - margin > 0) 
+					top -= margin; // adjust for a scrollbar
+				if (top < scrollY) // but not higher then top of viewport
+					top = scrollY + 1;
+			}
+			else { // apply user requested offset only if no adjustment
+				if (offsetY) 
+					top = top + offsetY;
+			}
+
 
 	
 	// no vertical scrollbar for Touch UI dialogs
