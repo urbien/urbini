@@ -2067,6 +2067,7 @@ div .panel_block, td .panel_block {
 .rounded_rect_tbl .select { font-family: Helvetica, Arial;  font-size: 14px; height: 20px; color: #000; background-color: #fff; }
 
 .rounded_rect_tbl input#rightPanelPropertySheet  { display: none; }
+.rounded_rect_tbl td#dIcon { height: 40px; PADDING-RIGHT: 2px; PADDING-LEFT: 5px; PADDING-TOP: 2px; white-space: nowrap;  vertical-align: top; }
 
 .menuItemRow, .option_tr { cursor: pointer; }
 
