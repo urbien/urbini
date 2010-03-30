@@ -29,7 +29,7 @@
       <include name="${type}_details_left.jsp"/> <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
 </hideBlock>
       <td valign="top">
-        <div id="corePageContent"> <file/></div>
+        <div id="corePageContent"> <file/></div><!-- core page content -->
       </td>
 <hideBlock>
       <include name="${type}_right.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
@@ -37,18 +37,16 @@
 </hideBlock>
     </tr>
     </table>
-    </div>
+    </div><!-- main skin -->
 <hideBlock>
-    <!--br/><br/-->
-    <center><codeBehindThePage showDialog="y"/> </center>
-    <!--br/><br/-->
+    <codeBehindThePage showDialog="y"/>
 </hideBlock>
     <include name="requiredFooter.jsp"/>
 <hideBlock>
     <include name="include/commonFooter"/>
     <chatAutoStart/>
 </hideBlock>
-  </div>
+  </div><!-- abc -->
 
   </body>
 </html>
