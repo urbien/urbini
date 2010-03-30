@@ -37,7 +37,7 @@
       <div align="right"><measurement/></div>
 <include name="${type}_details_bottom_1.jsp"/>
       <newComment/>
-      <p/><br/>
+      <!--p/><br/-->
       <chatHistory/>
 </hideBlock>
     </div>
