@@ -46,10 +46,10 @@
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
 <hideBlock>
-    <br/>
+    <!--br/-->
     <uploadMsProject/>
     <uploadToDelegatedFileSystem/>
-<br/><br/>
+<!--br/><br/-->
     <pieChart/>
 	<filterUrl />
 </hideBlock>
