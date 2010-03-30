@@ -3213,15 +3213,15 @@ var ListBoxesHandler = {
 
 		$t.showOptions(popupDiv);
 
+		// align options list in RL editor
 		if ($t._isEditList && $t.panelBlock.style.visibility != "visible") {
 			var form = getAncestorByAttribute(hotspot, "name", "siteResourceList");
-			var leftEdge = findPosX(form);
+			var scXY = getScrollXY();
+			var leftEdge = findPosX(form) + scXY[0];
 			var x = findPosX(hotspot) - $t.panelBlock.clientWidth;
-			if (x < leftEdge)
-				x = leftEdge;
 
 			var y = findPosY(hotspot);
-			var pageHeight = getWindowSize()[1] + getScrollXY()[1];
+			var pageHeight = getWindowSize()[1] + scXY[1];
 			
 			if (pageHeight > y + $t.panelBlock.clientHeight + 30)  // show under item
 	  		y += 30;
@@ -3230,9 +3230,11 @@ var ListBoxesHandler = {
 	  	else { // prevet showing over page top edge
 	  		y = 0;
 				x -= $t.curParamRow.clientWidth;
-				if (x < leftEdge)
-					x = leftEdge;
 	  	}	
+			
+			// prevet showing more left than page left edge
+			if (x < leftEdge)
+				x = leftEdge;
 			
 			$t.panelBlock.style.left = x;
 			$t.panelBlock.style.top = y;
