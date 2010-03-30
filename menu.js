@@ -4676,8 +4676,8 @@ var DataEntry = {
 ******************************************************************/
 var PlainDlg = {
 	ID : "pane2", // "pane2" name was inherited from previous UI version
-	div : null, 
-	dlgArr : null, // stores content of previously downloaded dialogs. Used for MENU only!
+	dlgDiv : null, 
+	dlgArr : new Array(), // stores content of previously downloaded dialogs. Used for MENU only!
 	curUrl : null,
 
 	show : function(e, urlStr) {
@@ -4703,17 +4703,14 @@ var PlainDlg = {
 			return;
 		
 		this.curUrl = urlStr;
-		if (!$t.div)
+		if (!$t.dlgDiv)
 			$t.createDiv();
 		
 		// show stored content
-		if (this.dlgArr != null && typeof this.dlgArr[urlStr] != 'undefined') {
-			this.div.appendChild(this.dlgArr[urlStr]);
+		if (typeof this.dlgArr[urlStr] != 'undefined') { // this.dlgArr != null && 
+			this.dlgDiv.appendChild(this.dlgArr[urlStr]);
 			
-			var iframe = document.getElementById('dialogIframe'); // like in onDialogLoaded
-	  	if(FullScreenPopup.show($t.div, anchor) == false) // FullScreenPopup - ???
-	    	setDivVisible(e, $t.div, iframe, anchor, 16, 16);
-			
+			this._show(e, anchor);
 			return;
 		}
 		
@@ -4740,9 +4737,31 @@ var PlainDlg = {
 			params = finalUrl.substring(idx + 1);
 			// }
 			
-		postRequest(e, url, params, $t.div, anchor, PlainDlg.onDialogLoaded);
-		
+		postRequest(e, url, params, $t.dlgDiv, anchor, PlainDlg.onDialogLoaded);
 	  return stopEventPropagation(e);
+	},
+	
+	showPreloaded : function(event, id) {
+		if (typeof this.dlgArr[id] == 'undefined') {
+			this.dlgArr[id] = document.getElementById(id);
+			this.dlgArr[id].className = ""; // remove "hdn" class to show content
+		}
+		if (!this.dlgDiv)
+			this.createDiv();
+		
+		// hide possible opened dialogs including previously opened PlainDlg
+		TouchDlgUtil.closeAllDialogs();
+		
+		this.dlgDiv.appendChild(this.dlgArr[id]);
+		FormProcessor.initForms(this.dlgDiv);
+		var hotspot = getEventTarget(event);
+		this._show(event, hotspot);	
+	},
+	
+	_show : function(event, hotspot) {
+		var iframe = document.getElementById('dialogIframe');
+	  if(FullScreenPopup.show(this.dlgDiv, hotspot) == false)
+	    setDivVisible(event, this.dlgDiv, iframe, hotspot, 16, 16);
 	},
 	
 	// XHR callback
@@ -4760,9 +4779,7 @@ var PlainDlg = {
 	  setInnerHtml(div, content);
 		FormProcessor.initForms(div);
 		
-		var iframe = document.getElementById('dialogIframe');
-	  if(FullScreenPopup.show(div, hotspot) == false)
-	    setDivVisible(event, div, iframe, hotspot, 16, 16);
+		$t._show(event, hotspot);
 	
 	  // update page if content is empty (all is ok)
 	  if (content.length == 0)
@@ -4772,18 +4789,18 @@ var PlainDlg = {
 	
 	hide : function (e) {
 		var $t = PlainDlg;
-		if ($t.div == null) // || $t.curUrl == null
+		if ($t.dlgDiv == null) // || $t.curUrl == null
 			return;
 		
 	  // var dialogIframe = document.getElementById('dialogIframe');
-	  setDivInvisible($t.div/*, dialogIframe*/);
+	  setDivInvisible($t.dlgDiv/*, dialogIframe*/);
 	 
 	 	if ($t.dlgArr == null)
 			$t.dlgArr = new Array();
 		
-		var curContentElem = $t.div.firstChild;
+		var curContentElem = $t.dlgDiv.firstChild;
 		if (curContentElem)
-			$t.div.removeChild(curContentElem);
+			$t.dlgDiv.removeChild(curContentElem);
 		
 		// store content
 		if ($t.curUrl && $t.curUrl.indexOf("-menu=y") != -1)
@@ -4795,16 +4812,16 @@ var PlainDlg = {
 	},
 	
 	createDiv : function() {
-		this.div = document.createElement("div");
-		this.div.id = this.ID;
-		this.div.className = "panel_block";
-		document.body.appendChild(this.div);
+		this.dlgDiv = document.createElement("div");
+		this.dlgDiv.id = this.ID;
+		this.dlgDiv.className = "panel_block";
+		document.body.appendChild(this.dlgDiv);
 	},
 	getPane2Dialog : function() {
-		if (!this.div)
+		if (!this.dlgDiv)
 			this.createDiv();
 
-		return this.div;
+		return this.dlgDiv;
 	}
 }
 
