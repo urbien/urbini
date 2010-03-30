@@ -21,7 +21,7 @@
     </table>
 </hideBlock>
     <!--filter/-->
-    <table width="100%" height="100%" border="0" cellspacing="0" cellpadding="3">
+    <table width="100%" border="0" cellspacing="0" cellpadding="3">
     <tr class="abc">
 <hideBlock>
       <rightPanelPropertySheet id="fts_filter" ifParameter="-q,-cat"/>
@@ -39,9 +39,9 @@
     </table>
     </div>
 <hideBlock>
-    <br/><br/>
+    <!--br/><br/-->
     <center><codeBehindThePage showDialog="y"/> </center>
-    <br/><br/>
+    <!--br/><br/-->
 </hideBlock>
     <include name="requiredFooter.jsp"/>
 <hideBlock>
