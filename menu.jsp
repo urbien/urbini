@@ -5,7 +5,8 @@
        <table width="100%" cellspacing="0" cellpadding="0" border="0">
        <tr valign="top">
        <td width="1%" class="dashboard">
-	       <a href="javascript: ;" id="menuLink_codeBehindThePage" title="View Source - this page is based solely on the declarative code that you can inspect by clicking on the links in popup">
+	       <!--a href="javascript: ;" id="menuLink_codeBehindThePage" title="View Source - this page is based solely on the declarative code that you can inspect by clicking on the links in popup"-->
+	       <a href="about:blank" onclick="PlainDlg.showPreloaded('stats');">
 		       <img src="icons/gear-large.png" style="margin-top: 3px" /> Source
 	       </a>
        </td>
