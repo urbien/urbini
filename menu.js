@@ -4743,9 +4743,11 @@ var PlainDlg = {
 	},
 	
 	showPreloaded : function(event, id) {
+		var toInitialize = false;
 		if (typeof this.dlgArr[id] == 'undefined') {
 			this.dlgArr[id] = document.getElementById(id);
 			this.dlgArr[id].className = ""; // remove "hdn" class to show content
+			toInitialize = true;
 		}
 		if (!this.dlgDiv)
 			this.createDiv();
@@ -4754,7 +4756,8 @@ var PlainDlg = {
 		TouchDlgUtil.closeAllDialogs();
 		
 		this.dlgDiv.appendChild(this.dlgArr[id]);
-		FormProcessor.initForms(this.dlgDiv);
+		if (toInitialize)
+			FormProcessor.initForms(this.dlgDiv);
 		var hotspot = getEventTarget(event);
 		this._show(event, hotspot);	
 	},
@@ -10805,11 +10808,21 @@ var CheckButtonMgr = {
     
     var inputs = div.getElementsByTagName('input');
     for(var i=0; i < inputs.length; i++) {
-      var stlIdx = -1;
-			// no need to substitude hidden checkboxes or already processed
-			if (inputs[i].className == 'hdn' || inputs[i].style.display == 'none')
+			var isSubstituted = isElemOfClass(inputs[i], "substituted")
+			// no need to substitude hidden checkboxes or already substituted
+			if (!isSubstituted && getElementStyle(inputs[i]).display == 'none')
       	continue;
-      
+
+			// 1. Touch checkbox was created on server side
+			// currently for checkboxes only
+			if (isSubstituted) {
+				var div = getNextSibling(inputs[i]);
+				div.onclick = this.onClick;
+				continue; 
+			}
+			
+			// 2. create new Touch checkbox and substitute native one
+			var stlIdx = -1;
 			if (inputs[i].getAttribute('type') == 'checkbox')
       	stlIdx = 0;
 			
@@ -10820,7 +10833,7 @@ var CheckButtonMgr = {
 			if (stlIdx == -1)
 				continue;
 			
-      var div = document.createElement('div');
+			var div = document.createElement('div');
       div.className = this.classes[stlIdx];
       div.onclick = this.onClick;
   
