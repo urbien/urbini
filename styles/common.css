@@ -1960,9 +1960,7 @@ table.printFB {
 .userLogin {background:#ffffff}
 .loginBorder {background: #cbcbcb}
 
-.text_editor_container { padding-right: 5px; }
 .rte { margin-bottom: 5px; background-color: #ffffff; border: 1px solid rgb(192, 201, 215); padding:0; width: 100%; height: 100px;  }
-
 
 /* like menu_Options in iphone.css */
 #browser_dlg { z-index: 1000; top: 0px; position: absolute; width: 320px; padding: 0px; visibility: hidden; }
@@ -2062,8 +2060,8 @@ div .panel_block, td .panel_block {
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: #000000; -webkit-appearance: none; text-align: right; /*margin-left: 7px;*/ width: 100%/*initial value*/; height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
-.rounded_rect_tbl .textarea { color: #000; font-family: Helvetica, Arial;  font-size: 16px; margin-left: 8px; margin-bottom: 5px; width: 100%; }
-.rounded_rect_tbl .comment { text-align: left; color: #555; font-size: 11px; padding: 5 8 5 8; }
+.rounded_rect_tbl .textarea { color: #000; font-family: Helvetica, Arial;  font-size: 16px; margin-bottom: 5px; width: 100%; }
+.rounded_rect_tbl .comment { text-align: left; color: #555; font-size: 11px; }
 .rounded_rect_tbl .select { font-family: Helvetica, Arial;  font-size: 14px; height: 20px; color: #000; background-color: #fff; }
 
 .rounded_rect_tbl input#rightPanelPropertySheet  { display: none; }
