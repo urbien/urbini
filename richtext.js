@@ -953,9 +953,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   }
   
 	this.createToolbar = function() {
-		// Note: after second insertion od a dialog on mobile, RTE requires new initialization (?!)
-		//       need to remove old, not effective toolbar (!) 
-		// (Need to investigate it more)
+		// Note: after second insertion of a dialog on mobile, RTE requires new initialization (?!)
+		// need to remove old, not effective toolbar (!) 
+		// (TODO: to investigate it more)
 		var oldToolbar = getChildByClassName(this.iframeObj.parentNode, 'ctrl_toolbar');
 		if (oldToolbar != null)
 			oldToolbar.parentNode.removeChild(oldToolbar);
@@ -1205,7 +1205,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.iframeObj.style.marginTop = 7; //i_am.toolbar.getHeight() + 1;
 		
 		i_am.toolbar.div.style.top =  5; // i_am.toolbar.getHeight() +
-		i_am.toolbar.div.style.left = 7; // RTE offset in Touch UI dialogs ~"hack" 
+		//////i_am.toolbar.div.style.left = 7; // RTE offset in Touch UI dialogs ~"hack" 
 			
 		i_am.toolbar.show();
 		
