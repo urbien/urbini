@@ -1696,7 +1696,7 @@ TD.toolbar {
   font-weight:bold;
 }
 
-.dashboard_btn { width: 60px; padding: 5px; text-align: center;  overflow: visible; border: 1px solid #eee; }
+.dashboard_btn { width: 60px; text-align: center;  overflow: visible; border: 1px solid #eee; }
 .gray .dashboard_btn { border-color: #3f3f3f; }
 
 .dashboardLine td.dashboard_btn:hover {  
@@ -1713,6 +1713,8 @@ TD.toolbar {
 }
 .gray .dashboardLine td.dashboard_btn:hover { border: 1px solid #CFCFCF; }
 .gray .dashboardLine td.current { border: 1px dashed #9F9F9F; }
+
+.dashboard_btn a { padding: 5px; display: block; }
  
  
 .menuTitle td, .menuTitle th {
@@ -1996,7 +1998,7 @@ div .panel_block, td .panel_block {
   
 }
 
-#pane2 { position: absolute; display: inline; left: 0px; top: 0px; width: auto !important; width: 200px; }
+#pane2 { position: absolute; display: inline; left: 0px; top: 0px; width: auto !important; width: 20px; }
 
 /* dialog: body is a parent */
 .panel_block {
@@ -2210,7 +2212,7 @@ input[type=checkbox] { display: none; }
 #siteResourceList .input { border: 1px solid #bbb; }
 #siteResourceList .pointer { border: none; }
 
-.backlink_counter { position: absolute; top: -10px; left: 15px; }
+.backlink_counter { position: absolute; top: -10px; left: 15px; pointer-events: none; }
 .backlink_counter .left, .backlink_counter .right { height: 25px; background: transparent url(../images/skin/iphone/backlink_counter.png) no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
 .backlink_counter .right { float: left; width: auto; line-height: 19px; text-align: center; padding-right: 14px; color: #fff; font-size: 12px; font-weight: bold;  background-position: center right; }
