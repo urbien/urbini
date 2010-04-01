@@ -573,7 +573,7 @@ span.fileMenuTitle  {font-family:sans-serif, arial; font-weight:bold; font-size:
 .bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#00309C;}
 /* To display window titles on a dashboard */
 span.dashboardBlockTitle {font-family:Verdana,sans-serif,arial; font-weight:bold; font-size:12px; color:#00309C;}
-.panel_block .dashboardBlockTitle { font-size: 16px;  color: #edf1fa; font-size: 16px; }
+.panel_block .dashboardBlockTitle { font-size: 16px;  color: #edf1fa; font-size: 16px; margin-right:12px; }
 span.dashboardGrayedTitle {font-family:Verdana,sans-serif,arial; font-size:12px; color:#10106D;}
 .panel_block span.dashboardGrayedTitle { color:#fff; margin-left: 7px; }
 
@@ -1996,14 +1996,13 @@ div .panel_block, td .panel_block {
   
 }
 
-#pane2 { position: absolute; display: inline; left: 0px; top: 0px; /*width: auto !important; width: 300px;*/ }
+#pane2 { position: absolute; display: inline; left: 0px; top: 0px; width: auto !important; width: 200px; }
 
 /* dialog: body is a parent */
 .panel_block {
   position: absolute;
-  width: 60%;
-  min-width: 320px;
-  max-width: 800px;
+  min-width: none;
+  max-width: none;
   
   padding: 0px;
   
@@ -2092,6 +2091,8 @@ div .panel_block, td .panel_block {
 .rounded_rect_tbl table td { border: none; height: auto; }
 .rounded_rect_tbl .ext_file { float: right; margin-right: 15px; }
 .rounded_rect_tbl a { font-size: 14px; }
+.rounded_rect_tbl #dashboard a { white-space: nowrap; }
+
 
 .listArrow { width: 25px; height: 20px; }
 
@@ -2177,28 +2178,24 @@ input[type=checkbox] { display: none; }
 .right { float: right; /*margin-right: 4px;*/ }
 
 /** shadow **/
-.shaddow_right_top {
+.shadow_right_top {
   width: 11px;
-  background: url(../images/frame/png/right_top.png) no-repeat !important;
-  background: none;
-  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/frame/png/right_top.png, sizingMethod='crop'); 
+  height: 100%;
+  background: url(../images/frame/png/right_top.png) no-repeat;
 }
-.shaddow_right {
+.shadow_right {
   width: 11px;
-  background: url(../images/frame/png/right.png) repeat-y !important;
-  background: none;
-  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/frame/png/right.png, sizingMethod='scale'); 
+  height: 100%;
+  background: url(../images/frame/png/right.png) repeat-y;
 }
-.shaddow_bottom {
+.shadow_bottom {
+	width: 100%;
   height: 11px;
-  background: url(../images/frame/png/bottom.png) no-repeat !important;
-  background: none;
-  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/frame/png/bottom.png, sizingMethod='crop'); 
+  float: left;
+  background: url(../images/frame/png/bottom.png) no-repeat;
 }
-.shaddow_right_bottom {
-  background: url(../images/frame/png/right_bottom.png) no-repeat !important;
-  background: none;
-  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/frame/png/right_bottom.png, sizingMethod='crop'); 
+.shadow_right_bottom {
+  background: url(../images/frame/png/right_bottom.png) no-repeat;
 }
 
 #div_info table { overflow: visible; }
