@@ -1714,7 +1714,7 @@ TD.toolbar {
 .gray .dashboardLine td.dashboard_btn:hover { border: 1px solid #CFCFCF; }
 .gray .dashboardLine td.current { border: 1px dashed #9F9F9F; }
 
-.dashboard_btn a { padding: 5px; display: block; }
+.dashboard_btn a { padding: 5px; display: block; outline: none;}
  
  
 .menuTitle td, .menuTitle th {
@@ -1985,6 +1985,22 @@ form { margin-top: 0; margin-bottom: 0; }
 /* prevents blue rect in WebKit browsers */
 input:focus { outline: 0 none; }
 
+#pane2 { position: absolute; display: inline; left: 0px; top: 0px; width: auto !important; width: 20px; }
+
+/* dialog: body is a parent */
+.panel_block {
+  position: absolute;
+  width: 60%;
+/*  
+	min-width: 320px;
+  max-width: 800px;
+*/
+  padding: 0px;
+  
+  -moz-box-shadow: 6px 6px 25px #555;
+  -webkit-box-shadow: 6px 6px 25px #555;
+}
+
 /* 'on page' */
 div .panel_block, td .panel_block {
   position: static;
@@ -1995,21 +2011,6 @@ div .panel_block, td .panel_block {
   
   -moz-box-shadow : none;
   -webkit-box-shadow: none;
-  
-}
-
-#pane2 { position: absolute; display: inline; left: 0px; top: 0px; width: auto !important; width: 20px; }
-
-/* dialog: body is a parent */
-.panel_block {
-  position: absolute;
-  min-width: none;
-  max-width: none;
-  
-  padding: 0px;
-  
-  -moz-box-shadow: 6px 6px 25px #555;
-  -webkit-box-shadow: 6px 6px 25px #555;
 }
 
 #siteResourceList .panel_block {
@@ -2020,7 +2021,7 @@ div .panel_block, td .panel_block {
   max-width: 500px;
 }
 
-#common_filter { width: 60%; }
+#common_filter { width: 50%; }
 #fts_filter {  }
 #fts_filter .no_border td { border-bottom: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
@@ -2050,7 +2051,7 @@ div .panel_block, td .panel_block {
 /* ??? label + chosen_value_div */
 .rounded_rect_tbl .data_td { width: 100%; }
 .rounded_rect_tbl .data_td table { width: 100%; }
-.rounded_rect_tbl .data_td .input_td { width: 100%; padding: 0px 3px; }
+.rounded_rect_tbl .data_td .input_td { width: 100%; text-align:right; padding: 0px 3px; }
 
 /*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty {  }
 /*.rounded_rect_tbl*/ .arrow_td div { width: 18px; height: 20px; cursor: pointer; background: url(../images/skin/iphone/listArrow_sprite.png) 0px 0px;}
