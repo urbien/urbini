@@ -19,6 +19,12 @@ a.icotxt img {
 	vertical-align: middle;
 	padding-right: 0.5em;
 }
+.menu a:link, .menu a:visited { 
+  text-decoration: none;
+  color: grey;
+  font-size: 1em;
+  font-style: arial;
+}
 
 .requiredProp {
   color: #ff0000; font-weight: bold;
