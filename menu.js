@@ -4051,8 +4051,7 @@ var Filter = {
         this.loadingPosition = [x, y];
       else
         this.loadingPosition = null;  
-    
-      postRequest(null, urlParts[0], urlParts[1], null, null, this.onFilterLoaded);
+      postRequest(null, urlParts[0], urlParts[1] + '&-inner=y', null, null, this.onFilterLoaded);
     }
   },
 
