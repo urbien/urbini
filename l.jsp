@@ -1,4 +1,4 @@
-<div>
+<div id="RL">
 <hideBlock id="hideBlock">
   <watchNote/>
 </hideBlock>
@@ -24,10 +24,7 @@
   <tr itype="http://www.hudsonfog.com/voc/system/designer/WebClass">    
     <td colspan="3" align="center"><filter addToTab="y"/></td>
   </tr>
-	<!--
-  <tr height="5" colspan="3"><td></td></tr>
-	-->
-  <tr valign="top">
+	<tr valign="top">
   <td width="100%" colspan="3">
 		<div>
 		  <searchHistory/>
@@ -46,10 +43,8 @@
     <div align="right"><measurement/></div>
     <readOtherSiteInfo />
 <hideBlock>
-    <!--br/-->
     <uploadMsProject/>
     <uploadToDelegatedFileSystem/>
-<!--br/><br/-->
     <pieChart/>
 	<filterUrl />
 </hideBlock>
