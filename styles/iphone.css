@@ -12,7 +12,10 @@ body {
   -webkit-column-gap: 1em;
 }
 
-
+.menu {
+  background: #000000;
+  color: lightGrey;
+}
 
 img {
   width: 75px;
