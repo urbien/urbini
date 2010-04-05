@@ -4773,10 +4773,10 @@ var PlainDlg = {
 	},
 	
 	// XHR callback
-	onDialogLoaded : function (event, div, hotspot, content, url) {
+	onDialogLoaded : function (event, div, hotspot, content, url) { 
 		var $t = PlainDlg;
 
-	
+			
 	  // SubscribeAndWatch.
 		// TODO: call it in better way, for example, thru LinkProcessor.onClickDisplayInner 
 		if (url.endsWith("subscribe.html")) {
@@ -8790,25 +8790,15 @@ var DictionaryHandler = {
       if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
         baseUri += "/";
     }
-    var url = encodeURI(baseUri + "mkResource.html");
-    var params = "&$browser=y"
-               + "&displayProps=yes"
-               + "&type=http://www.hudsonfog.com/voc/model/portal/Translation"
-               + "&-inner=y"
-               + "&.source=" + encodeURIComponent(text);
+		
+    var url = encodeURI(baseUri + "mkResource.html")
+					 + "?$browser=y"
+           + "&displayProps=yes"
+           + "&type=http://www.hudsonfog.com/voc/model/portal/Translation"
+           + "&-inner=y"
+           + "&.source=" + encodeURIComponent(text);
 
-    var div = document.getElementById("pane2");
-    if (!div) {
-      div = document.createElement('div');
-      div.id = "pane2";
-      div.style.position = "absolute";
-      div.style.visibility = "hidden";
-      document.body.appendChild(div);
-    }
-    postRequest(e, url, params, div, hotspot, this.onTranslationCallback);
-  },
-  onTranslationCallback : function(clonedEvent, div, hotspot, responseText) {
-    PlainDlg.onDialogLoaded(clonedEvent, div, hotspot, responseText); //test //"<div><h1>TEST</h1></div>"
+		DataEntry.show(e, url, hotspot);
   }
 }
 /*
