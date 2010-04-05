@@ -26,6 +26,5 @@
 </hideBlock-->
 </tr>
 </table>
-<br />
 </div>
 
