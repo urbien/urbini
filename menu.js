@@ -1859,7 +1859,7 @@ var FormProcessor = {
   // document.location.href = url;
   // return stopEventPropagation(event);
   // form.method = 'POST';
-    
+ 
 		if (!action)
       form.action = "FormRedirect";
 
@@ -1881,7 +1881,7 @@ var FormProcessor = {
 			// if "dialog" inside not body then it is "on page"
 			if (dlg.parentNode.tagName.toLowerCase() != 'body')
 				params += "&on_page=y"
-			
+		
 			if (dlg.id == 'pane2')	
 				postRequest(e, url, params, dlg, getTargetElement(e), PlainDlg.onDialogLoaded); // showDialog
 			else
@@ -3684,6 +3684,8 @@ var ListBoxesHandler = {
 		if ($t._isEditList) // hide panel block using on RL editor
 			$t.panelBlock.style.visibility = "";
 		
+		$t.textEntry.name = "";
+		
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
 		TouchDlgUtil.bleachBlueRow();
 		$t._showInvisibleParams();
@@ -4050,7 +4052,7 @@ var Filter = {
       if (x && y)
         this.loadingPosition = [x, y];
       else
-        this.loadingPosition = null;
+        this.loadingPosition = null;  
     
       postRequest(null, urlParts[0], urlParts[1], null, null, this.onFilterLoaded);
     }
@@ -4370,7 +4372,7 @@ var SubscribeAndWatch = {
 		document.body.appendChild(this.panelBlock);
 		
 		addEvent(this.panelBlock, "change", this.onchange, false);
-		setDivVisible(event, this.panelBlock, null, null, 0, 0);
+		setDivVisible(event, this.panelBlock, null, null, 5, 5);
 	},
 	
 	submit : function(e) {
@@ -4385,8 +4387,10 @@ var SubscribeAndWatch = {
 		return true;
 	},
 	
-	hide : function(event, hideIcon) {
+	hide : function() {
 		var $t = SubscribeAndWatch;
+		if ($t.panelBlock == null)
+			return;
 		$t.panelBlock.style.display = "none";
 		$t.panelBlock.parentNode.removeChild($t.panelBlock);
 		$t.panelBlock = null;
@@ -4441,7 +4445,7 @@ var DataEntry = {
 	
 	hotspot : null,
 	
-	show : function(url, hotspot) {
+	show : function(e, url, hotspot) {
 		if (this.loadingUrl != null)
 			return;
 	
@@ -4463,7 +4467,7 @@ var DataEntry = {
 			}
 			
 			// on desktop only hide/show, without append/remove
-			setDivVisible(null, this.dataEntryArr[key], null, hotspot, 0, 0, null);
+			setDivVisible(null, this.dataEntryArr[key], null, hotspot, 5, 5, null);
 
 			this.currentUrl = url;
 		}
@@ -4472,7 +4476,7 @@ var DataEntry = {
 			urlParts = url.split('?');
 			this.hotspot = hotspot;
 			// note: there was some problem when I tried to supply hotspot thru postRequest 
-			postRequest(null, urlParts[0], urlParts[1], null, null, this.onDataEntryLoaded);
+			postRequest(e, urlParts[0], urlParts[1], null, hotspot, this.onDataEntryLoaded);
 		}
 	},
 
@@ -4506,7 +4510,7 @@ var DataEntry = {
 		ExecJS.runDivCode(div);
 		
 		// show dialog after GUI initialization
-		setDivVisible(event, div, null, $t.hotspot, 0, 0, null);
+		setDivVisible(event, div, null, $t.hotspot, 5, 5, null);
 		
 		var key = $t._getKey($t.currentUrl);
 		$t.dataEntryArr[key] = div;
@@ -4703,15 +4707,15 @@ var PlainDlg = {
 		if (prevUrl == urlStr)
 			return;
 		
-		this.curUrl = urlStr;
+		$t.curUrl = urlStr;
 		if (!$t.dlgDiv)
 			$t.createDiv();
 		
 		// show stored content
-		if (typeof this.dlgArr[urlStr] != 'undefined') { // this.dlgArr != null && 
-			this.dlgDiv.appendChild(this.dlgArr[urlStr]);
+		if (typeof $t.dlgArr[urlStr] != 'undefined') { // this.dlgArr != null && 
+			$t.dlgDiv.appendChild($t.dlgArr[urlStr]);
 			
-			this._show(e, anchor);
+			$t._show(e, anchor);
 			return;
 		}
 		
@@ -4765,7 +4769,7 @@ var PlainDlg = {
 	_show : function(event, hotspot) {
 		var iframe = document.getElementById('dialogIframe');
 	  if(FullScreenPopup.show(this.dlgDiv, hotspot) == false)
-	    setDivVisible(event, this.dlgDiv, iframe, hotspot, 16, 16);
+	    setDivVisible(event, this.dlgDiv, iframe, hotspot, 5, 5);
 	},
 	
 	// XHR callback
@@ -4904,13 +4908,8 @@ var TouchDlgUtil = {
 	
 		DataEntry.hide();
 		Filter.hide();
-	/*	
-		var pane2        = PlainDlg.getPane2Dialog(); // document.getElementById('pane2');
-	  var dialogIframe = document.getElementById('dialogIframe');
-	  if (pane2 && dialogIframe)
-		  setDivInvisible(pane2, dialogIframe);
-	*/
-		PlainDlg.hide();	  
+		PlainDlg.hide();
+		SubscribeAndWatch.hide();	  
 	},
 	
 	highlightRowGrey : function(event) {
@@ -5117,12 +5116,12 @@ var LinkProcessor = {
 	  else if (id.indexOf("_filter", idLen - "_filter".length) != -1) {
 	    ListBoxesHandler.listboxOnClick1(e, id);
 	  }
-	  //(
-	  // 4.
-//	  else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
-//	        id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
-//	    changeBoolean(e, anchor);
-//	  }
+	 
+	  // 4. Boolean toggle (in UI it looks like a dot)
+	  else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
+	        id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
+	    changeBoolean(e, anchor);
+	  }
 	},
 	
 	// calls 1) DataEntry 2) PlainDlg
@@ -5171,7 +5170,7 @@ var LinkProcessor = {
 		
 		if (urlStr.indexOf("mkResource.html") != -1 ||
 	  			urlStr.indexOf("editProperties.html") != -1)
-	  	DataEntry.show(urlStr, anchor);
+	  	DataEntry.show(e, urlStr, anchor);
 //		else if (urlStr.endsWith("subscribe.html"))
 //			SubscribeAndWatch.show(event, div, hotspot, content, url);
 		else
@@ -7039,10 +7038,19 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     top  = hotspotDim.top;
   }
   else if (event || hotspot) {
-    var coords = getElementPosition(hotspot, event);
-    left = coords.left;
-    top  = coords.top;
+//    var coords = getElementPosition(hotspot, event);
+//    left = coords.left;
+//    top  = coords.top;
+		
+		if (!hotspot)
+			hotspot = getEventTarget(event);
+		
+		left = findPosX(hotspot);
+    top  = findPosY(hotspot);
   }
+
+	if (hotspot) // show div under bottom of hotspot
+		top += hotspot.offsetHeight;
 
   var screenXY = getWindowSize();
   var screenX = screenXY[0];
@@ -7118,20 +7126,20 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       left = left + offsetX;
   }
 
-// commented out after Touch UI (filter is bound to the search field)
-  		// now adjust vertically - so we fit inside the viewport
-			if ((typeof positionEnforced == 'undefined' || positionEnforced == false) &&
-						distanceToBottomEdge < divCoords.height + margin) {
-				top = (screenY + scrollY) - divCoords.height;
-				if ((top - scrollY) - margin > 0) 
-					top -= margin; // adjust for a scrollbar
-				if (top < scrollY) // but not higher then top of viewport
-					top = scrollY + 1;
-			}
-			else { // apply user requested offset only if no adjustment
-				if (offsetY) 
-					top = top + offsetY;
-			}
+
+		// now adjust vertically - so we fit inside the viewport
+		if ((typeof positionEnforced == 'undefined' || positionEnforced == false) &&
+					distanceToBottomEdge < divCoords.height + margin) {
+			top = (screenY + scrollY) - divCoords.height;
+			if ((top - scrollY) - margin > 0) 
+				top -= margin; // adjust for a scrollbar
+			if (top < scrollY) // but not higher then top of viewport
+				top = scrollY + 1;
+		}
+		else { // apply user requested offset only if no adjustment
+			if (offsetY) 
+				top = top + offsetY;
+		}
 
 
 	
@@ -8170,10 +8178,10 @@ function getAnchorForTarget(e) {
 
   return getANode(target);
 }
-/** DO we need it after Touch UI?
- * Change boolean value (in non-edit mode)
- */
-/*
+
+/*******************************************************************
+* Change boolean value (in non-edit mode)
+********************************************************************/
 function changeBoolean(e, target) {
   var url = 'proppatch';
   var params = 'submitUpdate=Submit+changes&User_Agent_UI=n&uri=';
@@ -8227,8 +8235,8 @@ function changeBoolean(e, target) {
   if (bUri != null)
     params += "&bUri=" + encodeURIComponent(bUri);
 
-  var listboxFrame = frames["popupFrame"];
-  popupFrameLoaded = false;
+//   var listboxFrame = frames["popupFrame"];
+//   popupFrameLoaded = false;
 
   if (document.location.href.indexOf('addLineItems.html') != -1) {
     var div = document.createElement('div');
@@ -8250,9 +8258,11 @@ function changeBoolean(e, target) {
     }
     document.location.replace(url);
   }
-  else
-    listboxFrame.location.replace(url + "?" + params); // load data from server
+//  else
+//    listboxFrame.location.replace(url + "?" + params); // load data from server
                                                         // into iframe
+    postRequest(e, url, params, null, null);
+		
   if (Popup.tooltipPopup) {
     Popup.tooltipPopup.close();
     Popup.tooltipPopup = null;
@@ -8290,7 +8300,7 @@ if (!document.importNode) {
     return oNew;
   }
 }
-*/
+
 function cloneNode(oNode) {
   var oNew;
 
