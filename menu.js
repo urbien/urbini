@@ -3054,7 +3054,7 @@ var ListBoxesHandler = {
   
   onClickParam : function(event, optionsSelectorStr) {
 		var $t = ListBoxesHandler;
-		
+
 		if ($t.skipUserClick) {
 			$t.skipUserClick = false;
 			if (event != null)
@@ -3067,7 +3067,9 @@ var ListBoxesHandler = {
 		var target = getEventTarget(event);
 
 		// default processing of anchors inside parameter TR (for example add image)
-		if (target.tagName.toLowerCase() == "a" || target.parentNode.tagName.toLowerCase() == "a")
+		// except date rollup
+		if (getAncestorByClassName(target, "rollup_td") == null &&
+				(target.tagName.toLowerCase() == "a" || target.parentNode.tagName.toLowerCase() == "a"))
 			return;
 	
 		var tr = getAncestorByClassName(target, "param_tr");
@@ -3128,8 +3130,8 @@ var ListBoxesHandler = {
     var target = getEventTarget(e);
 
     // skip click on rollup (checkbox) td
-    if(getAncestorByClassName(target, "rollup_td") != null)
-      return;
+ //   if(getAncestorByClassName(target, "rollup_td") != null)
+ //     return;
 
 		var isClassifier = this.isClassifier(tr);
     var arrowTd = getChildByClassName(tr, "arrow_td");
@@ -3146,8 +3148,11 @@ var ListBoxesHandler = {
 		this.toPutInClassifier = false;
 		var curPanel = this.getCurrentPanelDiv();
     
+		var isCalendar = optionsSelectorStr == "calendar" && curPanel.className != "calendar_panel"
+		var isDateRollup = isCalendar && getAncestorByClassName(target, "rollup_td") != null;
+		
 		// 1. calendar
-		if (optionsSelectorStr == "calendar" && curPanel.className != "calendar_panel") {
+		if (isCalendar && !isDateRollup) {
 			// create calendar div if need.
 			if (this.calendarPanel == null) {
 				this.createCalendarPanel(this.tray);
@@ -3176,20 +3181,23 @@ var ListBoxesHandler = {
 				if (tr.getAttribute("is_numeric") != null)
 					FieldsWithEmptyValue.setValue(this.textEntry, input.value);
 		  }
-			
+	
 			var str = "";
 			var classValue = null;
-			if (isClassifier) {
+			if (isClassifier) { // 2.1 Classifier
 				var paramsTable = getAncestorByClassName(tr, "rounded_rect_tbl");
 				str = paramsTable.id.substr("table_".length) + "_filter";
 				classValue = tr.id;
 			}
-			else 
+			else if(isDateRollup) { // 2.2 date rollup
+				str = target.parentNode.id;
+			}
+			else // 2.3 options list
 				str = input.name + "_" + input.id + "_filter";
 			
 			// show options list
 			this.listboxOnClick1(e, str, null, null, classValue, arrowTd);
-		}
+		} 
   },
 
   onListLoaded : function(event, popupDiv, hotspot, content) {
@@ -4776,7 +4784,6 @@ var PlainDlg = {
 	onDialogLoaded : function (event, div, hotspot, content, url) { 
 		var $t = PlainDlg;
 
-			
 	  // SubscribeAndWatch.
 		// TODO: call it in better way, for example, thru LinkProcessor.onClickDisplayInner 
 		if (url.endsWith("subscribe.html")) {
@@ -4934,6 +4941,10 @@ var TouchDlgUtil = {
 		
 		if (target.className == "iphone_checkbox")
 			return; // skip click on iPhone-like checkbox
+	
+
+		if (target.src && target.src.indexOf("icons/cakes") != -1)
+			return; // skip click on date rollup
 			
 		// in-place editors
 		if (getChildByClassName(tr, "arrow_td") == null) {
@@ -5113,9 +5124,9 @@ var LinkProcessor = {
 	  }
 	  // 3. 
 	  /// commenten out because whole TD is event target
-	  else if (id.indexOf("_filter", idLen - "_filter".length) != -1) {
-	    ListBoxesHandler.listboxOnClick1(e, id);
-	  }
+//	  else if (id.indexOf("_filter", idLen - "_filter".length) != -1) {
+//	    ListBoxesHandler.listboxOnClick1(e, id);
+//	  }
 	 
 	  // 4. Boolean toggle (in UI it looks like a dot)
 	  else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
