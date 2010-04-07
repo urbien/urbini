@@ -3444,16 +3444,8 @@ var ListBoxesHandler = {
   
 		if (td.className == "rollup_td") { // rollup
 			var img = td.getElementsByTagName("img")[0];
-			// if the same value comes again then reset it.
-			if (textField.value == lastClickedTr.id) {
-		  	textField.value = "";
-				img.src = "icons/cakes_gray.png";
-		  }
-		  else {
-		  	textField.value = lastClickedTr.id;
-				img.src = "icons/cakes.png";
-		  }
-
+	  	textField.value = lastClickedTr.id;
+			img.src = "icons/cakes.png";
 		}
 		else if (chosenValuesDiv) { // Filter or Subscribe
 			var html = $t.getSelectedOptionsHtml(selectedOptionsArr, textField.name);
@@ -3637,6 +3629,13 @@ var ListBoxesHandler = {
     var form = document.forms[currentFormName];
     var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp]; // field of the form
 
+    var td = getAncestorByTagName(textField, "td");
+    if (td.className == "rollup_td") { // rollup, not parameter
+			this.onBackBtn();
+			return;
+		}
+
+		// set value directly from "text_entry" field of options panel
 		if (value.length != 0) {
 			// remove possible selected values
 			this.makeParamReset();
