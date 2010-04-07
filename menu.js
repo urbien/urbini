@@ -1785,7 +1785,7 @@ var FormProcessor = {
 			formAction = form.elements['-$action'].value;
 		
     var allFields = true;
-    if (formAction != "searchLocal" && formAction != "searchParallel" && formAction != "mkResource")
+    if (formAction != "searchText" && formAction != "searchLocal" && formAction != "searchParallel" && formAction != "mkResource")
       allFields = false;
     else if (currentFormName && currentFormName.indexOf("horizontalFilter") == 0)
       allFields = true;
@@ -1854,12 +1854,6 @@ var FormProcessor = {
       }
     }
 
-  // submit as GET with all parameters collected manually
-  // form.method = 'GET';
-  // document.location.href = url;
-  // return stopEventPropagation(event);
-  // form.method = 'POST';
- 
 		if (!action)
       form.action = "FormRedirect";
 
@@ -7417,7 +7411,6 @@ var DesktopSearchField = {
 			alert("Enter search criteria"); // works for icon, not <enter>
 			return;
 		}
-			
 		form.submit();
 	},
 	
