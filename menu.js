@@ -4450,8 +4450,11 @@ var DataEntry = {
 		if (this.loadingUrl != null)
 			return;
 	
+		var isSecondClick = (this.currentUrl == url);
    	// hide possible opened dialogs
 		TouchDlgUtil.closeAllDialogs();
+		if (isSecondClick)
+			return;
 	
 		var key = this._getKey(url);
 		if (this.dataEntryArr[key]) { // data entry stored (in mobile mode)
@@ -4527,8 +4530,7 @@ var DataEntry = {
 		if (this.currentUrl == null)
 			return;
 
-		var key = this._getKey(this.currentUrl)	;
-		
+		var key = this._getKey(this.currentUrl);
 		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
 			return;
 		
@@ -4551,6 +4553,7 @@ var DataEntry = {
 			this.onDataError  = false;
 		}
 		
+		this.currentUrl = null;
 	},
 	
 	// hides params with not suited beginning.		
@@ -4701,17 +4704,17 @@ var PlainDlg = {
 	    urlStr = anchor.href;
 	  }
 		
-		var prevUrl = this.curUrl;
+		var isSecondClick = ($t.curUrl == urlStr);
 		// hide possible opened dialogs including previously opened PlainDlg
 		TouchDlgUtil.closeAllDialogs();
-		
-		if (prevUrl == urlStr)
+		if (isSecondClick)
 			return;
 		
 		$t.curUrl = urlStr;
 		if (!$t.dlgDiv)
 			$t.createDiv();
 		
+		$t.dlgDiv.innerHTML = "";
 		// show stored content
 		if (typeof $t.dlgArr[urlStr] != 'undefined') { // this.dlgArr != null && 
 			$t.dlgDiv.appendChild($t.dlgArr[urlStr]);
@@ -4757,14 +4760,18 @@ var PlainDlg = {
 		if (!this.dlgDiv)
 			this.createDiv();
 		
+		isSecondClick = (this.curUrl == id);
 		// hide possible opened dialogs including previously opened PlainDlg
 		TouchDlgUtil.closeAllDialogs();
+		if (isSecondClick)
+			return;
 		
+		this.curUrl = id;	
 		this.dlgDiv.appendChild(this.dlgArr[id]);
 		if (toInitialize)
 			FormProcessor.initForms(this.dlgDiv);
 		var hotspot = getEventTarget(event);
-		this._show(event, hotspot);	
+		this._show(event, hotspot);
 	},
 	
 	_show : function(event, hotspot) {
@@ -11062,8 +11069,11 @@ var BrowserDialog = {
 	}
 }
 
+// ?
 function addOnClickToProfiling() {
   var div = document.getElementById('viewSource');
+	if (!div)
+		return;
   var elms = div.getElementsByTagName('a');
   for (var i=0; i<elms.length; i++) {
     var a = elms[i];
