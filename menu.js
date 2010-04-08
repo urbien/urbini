@@ -4530,7 +4530,8 @@ var DataEntry = {
 		if (this.currentUrl == null)
 			return;
 
-		var key = this._getKey(this.currentUrl);
+		var key = this._getKey(this.currentUrl)	;
+		
 		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
 			return;
 		
@@ -4771,7 +4772,7 @@ var PlainDlg = {
 		if (toInitialize)
 			FormProcessor.initForms(this.dlgDiv);
 		var hotspot = getEventTarget(event);
-		this._show(event, hotspot);
+		this._show(event, hotspot);	
 	},
 	
 	_show : function(event, hotspot) {
@@ -6863,7 +6864,7 @@ function addAndShowItems(tr, e) {
   e = getDocumentEvent(e);
   if (!e)
     return stopEventPropagation(e);
-  var anchor = "mkresource?type=http://www.hudsonfog.com/voc/model/portal/Comment&submit=Please+wait&.forum_verified=y&";
+  var anchor = "mkresource?type=http://www.hudsonfog.com/voc/model/portal/Annotation&submit=Please+wait&.forum_verified=y&";
   var form = document.getElementById('filter');
   var forum = form.elements[".forum_select"].value;
   var title = form.elements[".title"].value;
@@ -10830,7 +10831,7 @@ var CheckButtonMgr = {
 			var isSubstituted = isElemOfClass(inputs[i], "substituted")
 	  	// no need to substitude hidden checkboxe or already substituted
 			if (stlIdx == 0 && !isSubstituted && getElementStyle(inputs[i]).display == 'none')
-    		continue;
+      	continue;
 
 			// touch checkbox was created on server side - just assign click-handler
 			if (stlIdx == 0 && isSubstituted) {
@@ -10838,7 +10839,7 @@ var CheckButtonMgr = {
 				div.onclick = this.onClick;
 				continue; 
 			}
-				
+			
 			// create checkbox or toggle button
 			var div = document.createElement('div');
       div.className = this.classes[stlIdx];
