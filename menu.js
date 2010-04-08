@@ -10811,31 +10811,28 @@ var CheckButtonMgr = {
     
     var inputs = div.getElementsByTagName('input');
     for(var i=0; i < inputs.length; i++) {
+			
+			var stlIdx;
+			if (inputs[i].getAttribute('type') == 'checkbox') // checkbox
+				stlIdx = 0;
+			else if (inputs[i].className == 'boolean') // toggle button
+				stlIdx = 1;
+			else continue;		
+			
+			
 			var isSubstituted = isElemOfClass(inputs[i], "substituted")
-			// no need to substitude hidden checkboxes or already substituted
-			if (!isSubstituted && getElementStyle(inputs[i]).display == 'none')
-      	continue;
+	  	// no need to substitude hidden checkboxe or already substituted
+			if (stlIdx == 0 && !isSubstituted && getElementStyle(inputs[i]).display == 'none')
+    		continue;
 
-			// 1. Touch checkbox was created on server side
-			// currently for checkboxes only
-			if (isSubstituted) {
+			// touch checkbox was created on server side - just assign click-handler
+			if (stlIdx == 0 && isSubstituted) {
 				var div = getNextSibling(inputs[i]);
 				div.onclick = this.onClick;
 				continue; 
 			}
-			
-			// 2. create new Touch checkbox and substitute native one
-			var stlIdx = -1;
-			if (inputs[i].getAttribute('type') == 'checkbox')
-      	stlIdx = 0;
-			
-      // toggle button
-      if (inputs[i].className == 'boolean')
-      	stlIdx = 1;
-      
-			if (stlIdx == -1)
-				continue;
-			
+				
+			// create checkbox or toggle button
 			var div = document.createElement('div');
       div.className = this.classes[stlIdx];
       div.onclick = this.onClick;
