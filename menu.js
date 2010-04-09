@@ -3361,7 +3361,7 @@ var ListBoxesHandler = {
     var form = document.forms[currentFormName];
     var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp];
     
-    var label = getPreviousSibling(textField);
+    var label = getPreviousSibling(textField.parentNode);
     if (label) {
       itemNameDiv.innerHTML = getTextContent(label);
       itemNameDiv.style.display = "";
@@ -4530,8 +4530,7 @@ var DataEntry = {
 		if (this.currentUrl == null)
 			return;
 
-		var key = this._getKey(this.currentUrl)	;
-		
+		var key = this._getKey(this.currentUrl);
 		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
 			return;
 		
@@ -4772,7 +4771,7 @@ var PlainDlg = {
 		if (toInitialize)
 			FormProcessor.initForms(this.dlgDiv);
 		var hotspot = getEventTarget(event);
-		this._show(event, hotspot);	
+		this._show(event, hotspot);
 	},
 	
 	_show : function(event, hotspot) {
@@ -6508,8 +6507,21 @@ function showTab(e, td, hideDivId, unhideDivId) {
       var div = document.getElementById(tok);
       if (!div)
         continue;
+			
+			// div_Description occupies 100% that's why make its parent TD 100%
+			// TODO: probably to redo Tabs and to put all divs in one container.
+			if (i == 0) {
+		  	var parentTd = getAncestorByTagName(div, "td");
+		  	var hasDescription = (getChildById(parentTd, "div_Description") != null);
+		  	if (hasDescription && hideDivId.indexOf("div_Description") == -1) 
+		  		parentTd.style.width = "100%";
+		  	else 
+		  		parentTd.style.width = "50%";
+		  }
+
       div.style.visibility = Popup.HIDDEN;
       div.style.display = "none";
+			
       var tdId;
       if (tok.charAt(0) == 'i') {
         tdId = tok.substring(5);
@@ -10831,7 +10843,7 @@ var CheckButtonMgr = {
 			var isSubstituted = isElemOfClass(inputs[i], "substituted")
 	  	// no need to substitude hidden checkboxe or already substituted
 			if (stlIdx == 0 && !isSubstituted && getElementStyle(inputs[i]).display == 'none')
-      	continue;
+    		continue;
 
 			// touch checkbox was created on server side - just assign click-handler
 			if (stlIdx == 0 && isSubstituted) {
@@ -10839,7 +10851,7 @@ var CheckButtonMgr = {
 				div.onclick = this.onClick;
 				continue; 
 			}
-			
+				
 			// create checkbox or toggle button
 			var div = document.createElement('div');
       div.className = this.classes[stlIdx];
