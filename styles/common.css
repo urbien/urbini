@@ -1,5 +1,5 @@
 /* text in link. You can see it in 'Hi "contactName"' */
-A {text-decoration : none; font-family: Arial, Verdana, Helvetica, sans-serif; font-size: 11px; line-height: 15px; color: #003399}
+A {text-decoration : none; font-family: Arial, Verdana, Helvetica, sans-serif; padding: 5px 0px; font-size: 15px;/*11px;*/ line-height: 15px; color: #003399}
 A:hover {color: #6BBDBE; text-decoration : none; cursor: pointer}
 
 a img {
@@ -68,6 +68,8 @@ H3 {font-family: arial, Verdana, geneva; font-size: 15px; font-weight: bold;}/* 
 img.fade {
    opacity:       0.6;
 }
+
+#siteResourceList td, #div_Info td { height: 40px; }
 
 .tabs, .tabs_current {
   height: 33px;
@@ -399,7 +401,7 @@ body {
 textarea  {  font-family: Verdana, Arial, Helvetica; font-size: 10px }
 input   { -webkit-appearance: none; font-family: Verdana, Arial, Helvetica; font-size: 9px; font-style: normal; line-height: normal; font-weight: normal;}
 
-td {font-family:sans-serif, arial; font-size:9pt;}
+td {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 15px;/*9pt;*/}
 
 
 /*Body {font-family: Verdana, geneva, arial; font-size: 8px; font-weight: normal; color: #999999;}*/
@@ -498,7 +500,7 @@ tr.fts td { vertical-align: middle; padding: 2px; }
 .desktop_search .left, .desktop_search .right, .desktop_search input { height: 37px;  float: left; background: url(../images/skin/iphone/desktop_search.png); margin: 0px; border: 0px; }
 .desktop_search .left { width: 15px; background-position: top left; cursor: pointer; }
 .desktop_search .right { width: 77px; background-position: top right; cursor: pointer; }
-.desktop_search input { width: 400px; /*padding: 8 0 0 0;*/ background-position: top center; font: bold 17px Helvetica; border: none; }
+.desktop_search input { padding-top: 0px !important; padding-top: 9px; width: 400px; /*padding: 8 0 0 0;*/ background-position: top center; font: bold 17px Helvetica; border: none; }
 .desktop_search .right div { float: left; width: 33px; height: 37px;  background: url(../images/skin/iphone/filter_arrow_sprite.png) top center; }
 
 /* VIEWS */
@@ -560,7 +562,7 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 .fHeader {background: #D6E7E7}
 /* border for read/edit resource properties in non=widget */
 .rop {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow-y: visible;  height: 100%; }
-td.controlPanel {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
+td.controlPanel { border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 /*span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}*/
 
@@ -1570,7 +1572,7 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 }
 
 /* icon followed by text */
-.itxt { vertical-align:top; width:16px; height:16px; padding-right:2px; border:0px }
+.itxt { vertical-align:top; width:16px; height:16px; margin-right: 2px; border:0px }
 .litxt { vertical-align:top; width:32px; height:32px; padding-right:2px; border:0px }
 .fmenu { vertical-align:middle; height:32px; border:0px }
 .fLeft  {float:left; padding-left:10px}
@@ -2170,11 +2172,11 @@ input[type=checkbox] { display: none; }
 /** iPhone field **/
 .iphone_field { margin: 0px 3px 0px 0px;  }
 .iphone_field .left, .iphone_field .right, .iphone_field input { height: 30px;  /*float: left;*/ background: url(../images/skin/iphone/rounded_field.png); margin: 0px; border: 0px; }
-.iphone_field .left { width: 23px;  background-position: top left; }
+.iphone_field .left { width: 23px;  background-position: top left;  }
 .iphone_field .left img { margin-left: 3px; visibility : hidden; cursor: pointer; }
 .iphone_field .right { width: 8px; background-position: top right; }
 
-.iphone_field input { -webkit-appearance: none; /*width: 100%;*/ padding: 5px 0px 0px 0px; background-position: top center; font: bold 17px Helvetica; border: none; }
+.iphone_field input { -webkit-appearance: none; /*width: 100%;*/ padding: 0px !important; padding-top: 5px; margin-top: 0px; background-position: top center; font: bold 17px Helvetica; border: none; }
 
 
 /** iPhone search field **/
@@ -2212,7 +2214,7 @@ input[type=checkbox] { display: none; }
 
 #div_info table { overflow: visible; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; /*width: 200px;*/ overflow: visible; }
-#div_info td { padding-right: 5px; overflow: visible; text-align: right; }
+#div_info td { padding-right: 5px; overflow: visible; text-align: right; vertical-align: middle; }
 #div_info td.pGr { text-align: center; }
 #div_info a { margin-left: 5px; }
 
