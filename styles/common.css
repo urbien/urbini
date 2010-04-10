@@ -627,7 +627,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .line { background:#ACD2E2;font-size:16px; font-weight:bold;}
 .blueLine { background:#ACD2E2 }
 .bg   { background:#Bedbe9 }
-.itemsT {border-top:solid #5d9fc0 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#00309C; font-weight:bold; font-size:12pt;text-align:center}
+.itemsT {/*border-top:solid #5d9fc0 1px; */background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#00309C; font-weight:bold; font-size:12pt;text-align:center}
 
 
 /* SKINS */
@@ -1605,11 +1605,11 @@ ul.subchapter a {
 }
 
 div.contents {
-  float:right; border:solid #808080 1px; width:20em;
+  float:right; width:20em; background-color: #f8f4ef;
 }
 
 div.contentsRL {
-  float:right; border:solid #808080 1px; width:20em; overflow-x:auto; padding-left: 2px;
+  float:right; width:20em; overflow-x:auto; padding-left: 2px;background-color: #f8f4ef;
 }
 
 .resize_handle
@@ -2250,4 +2250,7 @@ input[type=checkbox] { display: none; }
   color: #ffffff;
   font-size: 15px;
   padding-bottom: 15px;
+}
+.contentRelated {
+  background: #fdfdfd;
 }
