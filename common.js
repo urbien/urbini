@@ -179,12 +179,12 @@ Browser.joystickBased = Browser.s60Browser ? true : false;
 Browser.mobileSafari = agent.indexOf("Mobile") != -1 && agent.indexOf("Safari") != -1;
 Browser.iPhone    = Browser.mobileSafari && agent.indexOf("iPhone") != -1;
 Browser.iPod      = Browser.mobileSafari && agent.indexOf("iPod") != -1;
-
+Browser.iPad      = Browser.mobileSafari && agent.indexOf("iPad") != -1;
 Browser.palm      = agent.indexOf("webOS") != -1;
 Browser.palmApp   = Browser.palm && (document.location.href.indexOf("file:") == 0);
 
 var mobileCookie  = readCookie('mobile_mode');
-Browser.mobile    = Browser.palm || Browser.android || Browser.mobileSafari || Browser.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
+Browser.mobile    = Browser.palm || Browser.android || (Browser.mobileSafari && !Browser.iPad) || Browser.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
 Browser.chrome    = (agent.indexOf("Chrome")) != -1 ? true : false;
 
 // ****************************************************
