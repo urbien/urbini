@@ -2542,9 +2542,14 @@ var Tooltip = {
   TOOLTIP_ATTR : "tooltip",
   PROCESSED_FLAG : "tooltip_processed",
   init : function() {
-    if (Popup.penBased) // pen-based devices have problem with tooltips
+
+		// no need tooltips on touch devices.
+		if (Browser.mobile || Browser.touchDesktop || Browser.penBased)
       return;
-	  addEvent(document.body, "mouseover", this.onMouseOver, false);
+		//if (Popup.penBased) // pen-based devices have problem with tooltips
+    //  return;
+	  
+		addEvent(document.body, "mouseover", this.onMouseOver, false);
 		addEvent(document.body, "mouseout", this.onMouseOut, false);
   },
   onMouseOver : function(e) {
@@ -4423,7 +4428,13 @@ var SubscribeAndWatch = {
 	
 	limitNumberOfAlerts : function() {
 		var contentTd = getChildByClassName(this.panelBlock, "content");
-		contentTd.style.display = "table-cell";
+		// IE <=7 does not support display = "table-cell"
+		// (a fix thru CSS "subclass" was not implemented
+		if (Browser.ie)
+			contentTd.style.display = "inline";
+		else	
+			contentTd.style.display = "table-cell";
+		
 		var subscribeNoteDiv = getChildById(this.panelBlock, "subscribeNote");
 		subscribeNoteDiv.className = "";
 	}
