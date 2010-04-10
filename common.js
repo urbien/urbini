@@ -170,8 +170,11 @@ if (document.attachEvent && !Browser.opera) {
 
 Browser.gecko     = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1 && agent.indexOf("Konqueror") == -1) ? true : false;
 Browser.firefox3  = (agent.indexOf("Firefox/3.")) != -1 ? true : false;
-Browser.safari    = (agent.indexOf("Safari") != -1) ? true : false;
+
 Browser.webkit    = (agent.indexOf("WebKit") != -1) ? true : false;
+Browser.safari    = (agent.indexOf("Safari") != -1) ? true : false;
+Browser.chrome    = (agent.indexOf("Chrome")) != -1 ? true : false;
+
 Browser.s60Browser = (Browser.webkit && navigator.userAgent.indexOf("Series60/3.1") != -1 || navigator.userAgent.indexOf("Symbian") != -1) ? true : false;
 Browser.maemo     = (Browser.w3c && agent.indexOf("Maemo") >= 0) ? true : false;
 Browser.penBased  = Browser.maemo || Browser.s60Browser ? true : false;
@@ -183,9 +186,11 @@ Browser.iPad      = Browser.mobileSafari && agent.indexOf("iPad") != -1;
 Browser.palm      = agent.indexOf("webOS") != -1;
 Browser.palmApp   = Browser.palm && (document.location.href.indexOf("file:") == 0);
 
+Browser.touchDesktop = Browser.iPad; // in the future to add Android Tablets
+
 var mobileCookie  = readCookie('mobile_mode');
 Browser.mobile    = Browser.palm || Browser.android || (Browser.mobileSafari && !Browser.iPad) || Browser.s60Browser || (mobileCookie != null && trim(mobileCookie) == 'true') ? true : false; //screen.width < 600;
-Browser.chrome    = (agent.indexOf("Chrome")) != -1 ? true : false;
+
 
 // ****************************************************
 // AJAX
