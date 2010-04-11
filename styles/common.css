@@ -29,6 +29,8 @@ a.icotxt img {
   width:32px; height:32px; border:0px; vertical-align:middle 
 }
 
+#mainMenu a { font-size: 13px; }
+
 .requiredProp {
   color: #ff0000; font-weight: bold;
 }
@@ -640,6 +642,8 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .blue  .pBGr {border-bottom:solid #808080 1px; border-top:solid #808080 1px; border-collapse: collapse; background:url(../images/bg-green-to-white-gradient.gif); background-repeat:repeat-x; font-weight:bold; font-size:1em; text-align:center; color: darkblue;}
 .blue  .pGr {background:url(../images/bg-green-to-white-gradient.gif); background-repeat:repeat-x; font-weight:bold; font-size:1em; text-align:center; color: darkblue;}
 .blue  .search {background-image:url(../images/skin/blue/tab-middle-current.gif);}
+
+#siteResourceList #header td { height: auto; }
 
 .blue  .embed  {
   background:url(../images/skin/blue/header.png);
@@ -2172,11 +2176,11 @@ input[type=checkbox] { display: none; }
 /** iPhone field **/
 .iphone_field { margin: 0px 3px 0px 0px;  }
 .iphone_field .left, .iphone_field .right, .iphone_field input { height: 30px;  /*float: left;*/ background: url(../images/skin/iphone/rounded_field.png); margin: 0px; border: 0px; }
-.iphone_field .left { width: 23px;  background-position: top left;  }
+.iphone_field .left { width: 23px;  background-position: center left;  }
 .iphone_field .left img { margin-left: 3px; visibility : hidden; cursor: pointer; }
-.iphone_field .right { width: 8px; background-position: top right; }
+.iphone_field .right { width: 8px; background-position: center right; }
 
-.iphone_field input { -webkit-appearance: none; /*width: 100%;*/ padding: 0px !important; padding-top: 5px; margin-top: 0px; background-position: top center; font: bold 17px Helvetica; border: none; }
+.iphone_field input { -webkit-appearance: none; /*width: 100%;*/ padding: 0px !important; padding-top: 5px; margin-top: 0px; background-position: center center; font: bold 17px Helvetica; border: none; }
 
 
 /** iPhone search field **/
