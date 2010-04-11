@@ -8184,7 +8184,7 @@ function setRelatedCheckbox(e) {
 /**
  * toogle booleans
  */
-/*
+
 function addBooleanToggle(elem) {
   if (!elem)
     return;
@@ -8200,7 +8200,7 @@ function addBooleanToggle(elem) {
     elem.style.cursor = 'pointer';
   }
 }
-*/
+
 
 function getAnchorForTarget(e) {
   var target = getEventTarget(e);
