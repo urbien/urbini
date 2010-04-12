@@ -72,6 +72,7 @@ img.fade {
 }
 
 #siteResourceList td, #div_Info td { height: 40px; }
+#siteResourceList #blog td { height: auto; }
 
 .tabs, .tabs_current {
   height: 33px;
