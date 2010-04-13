@@ -2658,7 +2658,7 @@ var ListBoxesHandler = {
   * twice.
   */
   
-  prevInputValue : "",
+  prevSelectorInputValue : "", // helps to detect local autodetect
   
   autoComplete : function(e) {
     var $t = ListBoxesHandler;
@@ -2844,13 +2844,13 @@ var ListBoxesHandler = {
     // check if to do local filter only
     var hasMore = getChildById(this.optionsPanel, "$more");
 		var isRollup = this.curPopupDiv.id.indexOf("_groupBy_") != -1;
-		if (isRollup || !hasMore && this.prevInputValue.length != 0 && newValue.indexOf(this.prevInputValue) == 0)
+		if (isRollup || !hasMore && this.prevSelectorInputValue.length != 0 && newValue.indexOf(this.prevSelectorInputValue) == 0)
       this.localOptionsFilter(newValue);
     else {
         this.listboxOnClick1(e, keyPressedImgId, newValue, null, this.curClass);
     }
 		
-		this.prevInputValue = newValue;
+		this.prevSelectorInputValue = newValue;
   },
 
 
@@ -3180,7 +3180,7 @@ var ListBoxesHandler = {
 				if (tr.getAttribute("is_numeric") != null)
 					FieldsWithEmptyValue.setValue(this.textEntry, input.value);
 		  }
-	
+			
 			var str = "";
 			var classValue = null;
 			if (isClassifier) { // 2.1 Classifier
@@ -3476,6 +3476,7 @@ var ListBoxesHandler = {
 		  }
 		}
     
+		$t.prevSelectorInputValue = ""; // reset
     // slide back
     $t.onBackBtn();
   },
@@ -4825,6 +4826,7 @@ var PlainDlg = {
 			$t.dlgArr = new Array();
 		
 		var curContentElem = $t.dlgDiv.firstChild;
+
 		if (curContentElem)
 			$t.dlgDiv.removeChild(curContentElem);
 		
