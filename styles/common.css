@@ -71,7 +71,7 @@ img.fade {
    opacity:       0.6;
 }
 
-#siteResourceList td, #div_Info td { height: 40px; }
+#siteResourceList td, #resourceList td, #div_Info td { height: 40px; }
 #siteResourceList #blog td { height: auto; }
 
 .tabs, .tabs_current {
@@ -644,7 +644,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .blue  .pGr {background:url(../images/bg-green-to-white-gradient.gif); background-repeat:repeat-x; font-weight:bold; font-size:1em; text-align:center; color: darkblue;}
 .blue  .search {background-image:url(../images/skin/blue/tab-middle-current.gif);}
 
-#siteResourceList #header td { height: auto; }
+#siteResourceList #header td, #div_Info #header td { height: auto; }
 
 .blue  .embed  {
   background:url(../images/skin/blue/header.png);
@@ -2074,7 +2074,7 @@ div .panel_block, td .panel_block {
 .arrow_td_empty div { width: 18px; height: 20px; }
 
 .rounded_rect_tbl .label_td { white-space: nowrap; } 
-.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; float: left; overflow: visible;}
+.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; overflow: visible;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: #000000; -webkit-appearance: none; text-align: right; /*margin-left: 7px;*/ width: 100%/*initial value*/; height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
@@ -2218,7 +2218,7 @@ input[type=checkbox] { display: none; }
 }
 
 #div_info table { overflow: visible; }
-#div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; /*width: 200px;*/ overflow: visible; font-weight: bold; float: left; }
+#div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; /*width: 200px;*/ overflow: visible; font-weight: bold;}
 #div_info td { padding-right: 5px; overflow: visible; text-align: right; vertical-align: middle; }
 #div_info td.pGr { text-align: center; }
 #div_info a { margin-left: 5px; }
