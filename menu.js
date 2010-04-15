@@ -4035,6 +4035,7 @@ var Filter = {
       return; // downloading
 
     var filterUrl = this.retrieveFilterUrl();
+
  		// no type in url - no filter
 		if (getUrlParam(filterUrl, "type") == null)
 			return;
@@ -4050,7 +4051,7 @@ var Filter = {
 				this.handleFilterState(true);
 		  }
 			setDivVisible(null, this.filtersArr[filterUrl], null, null, x, y, null, true);
-      }
+    }
     // 2. download new filter for this type
     else {
       this.loadingUrl = filterUrl;
@@ -4150,7 +4151,7 @@ var Filter = {
   
   createFilterDomObject : function(html) {
     var filterDiv = getDomObjectFromHtml(html, "className", "panel_block");
-		
+	
 		// no filter in response - possible login page
     if (filterDiv == null) {
       /* // not implemented !!!!!!!!!!!
@@ -7156,8 +7157,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     }
   }
 
-  div.style.display    = 'none';   // must hide it again to avoid screen flicker
-  // move box to the left of the hotspot if the distance to window border isn't
+	// move box to the left of the hotspot if the distance to window border isn't
   // enough to accomodate the whole div box
   if (distanceToRightEdge < divCoords.width + margin) {
     left = (screenX + scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
@@ -7187,14 +7187,13 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 		}
 
 
-	
 	// no vertical scrollbar for Touch UI dialogs
 	if (div.className == 'panel_block')
 		divCoords.height = "";
 	
-	// set div size!
- // div.style.width  = divCoords.width;
- // div.style.height = divCoords.height;
+// set div size!
+////  div.style.width  = divCoords.width;
+////  div.style.height = divCoords.height;
 
   var zIndex = 1;
   if (hotspot && hotspot.style) {
@@ -7220,14 +7219,6 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       istyle.zIndex  = zIndex + 1;
   }
 
-  // hack for Opera (at least at ver. 7.54) and Konqueror
-  // somehow iframe is always on top of div - no matter how hard we try to set zIndex
-  // so we have to live without iframe
-  // var opera = navigator.userAgent.indexOf("Opera") != -1;
-  // var konqueror = navigator.userAgent.indexOf("Konqueror") != -1;
-  div.style.display    = 'inline';
-  // commented out temporarily since listbox in dialog is not visible
-  // this unfortunately will cause a problem with popup over form fields
 
   // Make position/size of the underlying iframe same as div's position/size
   var iframeLeft = left;
@@ -7258,8 +7249,12 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     }
   }
 
-  reposition(div, left, top); // move the div box to the adjusted position
-  div.style.visibility = Popup.VISIBLE; // finally make div visible
+
+  div.style.display    = 'none';   // hide it before movement to calculated position
+  reposition(div, left, top); // move the div to calculated position
+  div.style.visibility = Popup.VISIBLE; // show div
+	div.style.display    = 'inline';
+
 
   if (Browser.lt_ie7 && !isDivStatic  && !Browser.mobile) {
     istyle.display = 'none';
@@ -7268,10 +7263,10 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   }
 
   // used to close divs on "C" and for dialogs
-  closingOnEsc.ready(div);
+  /////closingOnEsc.ready(div);
 
- // console.log(new Date().getTime() - timerTmp);
-  div.setAttribute("way_displayed", "true");
+ ////// console.log(new Date().getTime() - timerTmp);
+ ///// div.setAttribute("way_displayed", "true");
 }
 
 function setDivInvisible(div, iframe) {
