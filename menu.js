@@ -4634,9 +4634,14 @@ var DataEntry = {
 		return true;	
   },
 	
+	// MkResource uses the same data entry for one resource type
 	_getKey : function(url) {
-		if (this.isMkResource(url))
-			return getUrlParam(url, "type");
+		if (this.isMkResource(url)) {
+			var key = getUrlParam(url, "type");
+			if (url.indexOf("$rootFolder=") != -1) // $rootFolder also defines type
+				key += "_rf";
+			return key;	
+		}
 		return url;	
 	},
 	
@@ -4730,7 +4735,6 @@ var PlainDlg = {
 		// show stored content
 		if (typeof $t.dlgArr[urlStr] != 'undefined') { // this.dlgArr != null && 
 			$t.dlgDiv.appendChild($t.dlgArr[urlStr]);
-			
 			$t._show(e, anchor);
 			return;
 		}
@@ -4788,7 +4792,8 @@ var PlainDlg = {
 	
 	_show : function(event, hotspot) {
 		var iframe = document.getElementById('dialogIframe');
-	  if(FullScreenPopup.show(this.dlgDiv, hotspot) == false)
+
+		if(FullScreenPopup.show(this.dlgDiv, hotspot) == false)
 	    setDivVisible(event, this.dlgDiv, iframe, hotspot, 5, 5);
 	},
 	
@@ -6993,6 +6998,7 @@ function saveButtonClicked(e) {
 // helps set right div size after setDivVisible calling
 // it needs only if target called twice.
 // the dialog contains a table with ID = dataEntry
+/*
 var isResizedOneTime = false;
 function onDlgContentResize(e){
   e = getDocumentEvent(e); if (!e) return;
@@ -7016,7 +7022,7 @@ function onDlgContentResize(e){
   iframe.style.height = target.offsetHeight - SHADOW_WIDTH;
 
 }
-
+*/
 //****************************************************************
 // used to manage dialogs
 // Touch UI dialogs are in 'panel_block' div
@@ -7044,14 +7050,16 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 	//div.style.height = "";
 
   // "hack" resize dialog if its contents resized (twice calls of onresize)
+/*
   if (div.id == "pane2") {
+		//debugger;
     var tbl = getChildById(div, "dataEntry");
     if (tbl) {
       tbl.onresize = onDlgContentResize;
       isResizedOneTime = false;
     }
   }
-
+*/
 	if (!iframe)
 		iframe = document.getElementById('dialogIframe');
 		
@@ -7102,7 +7110,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   // width/height will get cut off at the scroll boundary - at least in firefox 1.0)
   div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
   reposition(div, 0, 0);
-  
+
 	var divCoords = getElementDimensions(div);
   var margin = 40;
   // cut popup dimensions to fit the screen
