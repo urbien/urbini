@@ -3275,8 +3275,13 @@ var ListBoxesHandler = {
     
     // show item/parameter name (if it is too long)
     $t.displayItemName();
-    // slide forward
 
+		if ($t.panelBlock.id == "fts_filter" && Browser.ie) { // IE does not support min-width
+			if ($t.optionsPanel.clientWidth > $t.panelBlock.clientWidth)
+				$t.panelBlock.style.width = $t.optionsPanel.clientWidth;
+		}
+		
+    // slide forward
 		var curPanel = $t.getCurrentPanelDiv();
 		if (curPanel && curPanel.className != panel.className) {
 			var toResetTray = (SlideSwaper.getTrayPosition($t.tray) == 0) ? true : false;
@@ -3692,6 +3697,11 @@ var ListBoxesHandler = {
 			$t.panelBlock.style.visibility = "";
 		
 		$t.textEntry.name = "";
+		
+		if ($t.panelBlock.id == "fts_filter" && Browser.ie) { // IE does not support min-width
+			if ($t.panelBlock.clientWidth > 300) 
+				$t.panelBlock.style.width = 300;
+		}
 		
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
 		TouchDlgUtil.bleachBlueRow();
