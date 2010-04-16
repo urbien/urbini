@@ -565,7 +565,7 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 .fHeader {background: #D6E7E7}
 /* border for read/edit resource properties in non=widget */
 .rop {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000; overflow-y: visible;  height: 100%; }
-td.controlPanel { border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
+td.controlPanel { border:solid #808080 1px; background-color: #f8f4ef; color: #000000; padding-top: 5px; }
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 /*span.xxl {font-family:verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}*/
 
@@ -2001,7 +2001,7 @@ form { margin-top: 0; margin-bottom: 0; }
 /* prevents blue rect in WebKit browsers */
 input:focus { outline: 0 none; }
 
-#pane2 { position: absolute; display: inline; left: 0px; top: 0px; width: auto !important; width: 20px; }
+#pane2 { position: absolute; display: inline; left: 0px; top: 0px; width: auto !important; width: 200px; }
 
 /* dialog: body is a parent */
 .panel_block {
@@ -2038,7 +2038,7 @@ div .panel_block, td .panel_block {
 }
 
 #common_filter { width: 50%; }
-#fts_filter {  }
+#fts_filter { min-width: 300px; width: auto !important; width: 300px; overflow: visible; }
 #fts_filter .no_border td { border-bottom: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
 
@@ -2220,6 +2220,7 @@ input[type=checkbox] { display: none; }
 #div_info table { overflow: visible; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; /*width: 200px;*/ overflow: visible; font-weight: bold;}
 #div_info td { padding-right: 5px; overflow: visible; text-align: right; vertical-align: middle; }
+#div_info .text_editor_container { text-align: left; }
 #div_info td.pGr { text-align: center; }
 #div_info a { margin-left: 5px; }
 
@@ -2229,7 +2230,7 @@ input[type=checkbox] { display: none; }
 #siteResourceList .input { border: 1px solid #bbb; }
 #siteResourceList .pointer { border: none; }
 
-.backlink_counter { position: absolute; top: -10px; left: 15px; pointer-events: none; }
+.backlink_counter { position: absolute; top: -7px; left: 15px; pointer-events: none; }
 .backlink_counter .left, .backlink_counter .right { height: 25px; background: transparent url(../images/skin/iphone/backlink_counter.png) no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
 .backlink_counter .right { float: left; width: auto; line-height: 19px; text-align: center; padding-right: 14px; color: #fff; font-size: 12px; font-weight: bold;  background-position: center right; }
