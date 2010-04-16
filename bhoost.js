@@ -926,7 +926,7 @@ var Boost = {
 	  BrowserDialog.confirm("Do you really want to exit this application?", $t.onExisCallback);
       return null;
     }
-    if (id == 'menu_Reload') {
+    if (id == 'menu_Refresh') {
       // Write browsing history to the server and load it when loading new page
       Boost.view.setProgressIndeterminate(true);
       document.location.replace($t.currentUrl);
@@ -940,15 +940,13 @@ var Boost = {
       newUrl = null;
     }
     */
-    if (id == 'menu_Refresh') {
+    if (id == 'menu_Reload') {
       Boost.view.setProgressIndeterminate(true);
       optionsDiv.style.visibility = "hidden";
       optionsDiv.style.display = "none";
       
       document.location.reload();
       return null;
-      
-      return 'refresh';
     }
     if (id == 'menu_History') {
       if (typeof Boost.zoom) {
