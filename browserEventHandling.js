@@ -1,4 +1,3 @@
-    // cross-browser - getCurrentTarget
     /*
      * Cross-browser method of adding event handlers.
      * If useCapture is true - handler is registered for 'capture phase', otherwise for 'bubbling phase'.
@@ -14,7 +13,7 @@
         return r;
       }
       else {
-        alert("You need to upgrade to a newer browser. Error: 'event handler could not be be added'");
+        alert("You need to upgrade to a newer browser. Error: event handler could not be be added");
       }
     }
 
@@ -28,14 +27,15 @@
         return r;
       }
       else {
-        alert("You need to upgrade to a newer browser. Error: 'event handler could not be removed'");
+        alert("You need to upgrade to a newer browser. Error: event handler could not be removed");
       }
     }
 
     //***** upon iframe loading inform the parent
     function onLoadPopup() {
-      if (parent && parent.frameLoaded)
+      if (parent && parent.frameLoaded) {
         parent.frameLoaded[window.name] = true;
+      }
     }
 
     /*************************************
@@ -61,8 +61,9 @@
 		    DictionaryHandler.init();
 		    Tooltip.init();
 
-        if (typeof addEventOnSchedule != 'undefined')
+        if (typeof addEventOnSchedule != 'undefined') {
           addEventOnSchedule();
+        }
       }
 
 			// for both: mobile and desktop pages
@@ -87,7 +88,7 @@
 		    MobilePageAnimation.init();
         
         // preload sprite
-        CueLoading.init()
+        CueLoading.init();
       }
       // 2.2. desktop
       else {
@@ -119,8 +120,9 @@
     var v = parseFloat(ver);
     var isOpera9 = (typeof opera != 'undefined') && (v >= 9);
 
-    if (isOpera9 || isGecko)
+    if (isOpera9 || isGecko) {
       document.addEventListener("DOMContentLoaded", onDomLoaded, false);
+    }
     else if (typeof document.readyState != 'undefined') { // WebKit & IE
       var _timer = setInterval(function() {
           if (/loaded|complete/.test(document.readyState)) {
@@ -129,9 +131,10 @@
           }
       }, 10);
     }
-    else
+    else {
       addEvent(window, 'load', onDomLoaded, false);
-      
+    }
+       
       
     /****************** assign onPageLoaded ****************/
     addEvent(window, 'load', onPageLoaded, false);
