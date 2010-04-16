@@ -2092,6 +2092,7 @@ div .panel_block, td .panel_block {
   padding: 0px; 
   overflow: hidden;
 }
+.count { color: grey; white-space: nowrap; font-family: Helvetica, Arial; font-size: 14px;}
 
 .chosen_values div {
   overflow: hidden;
