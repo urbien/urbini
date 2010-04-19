@@ -11114,14 +11114,19 @@ function addOnClickToProfiling() {
 	if (!div)
 		return;
   var elms = div.getElementsByTagName('a');
-  for (var i=0; i<elms.length; i++) {
+  var cnt = 0;
+  for (var i=0; i<elms.length  &&  cnt < 2; i++) {
     var a = elms[i];
     if (a.href == 'about:blank') {
       var imgs = a.getElementsByTagName('img');
-      if (imgs[0].src.indexOf('profiling') == -1) 
-        continue;
-      addEvent(a, 'click',  function (event) {PlainDlg.showPreloaded(event, 'profiling'); return stopEventPropagation(event);},  false);
-      break;
+      if (imgs[0].src.indexOf('profiling') != -1) { 
+        addEvent(a, 'click',  function (event) {PlainDlg.showPreloaded(event, 'profiling'); return stopEventPropagation(event);},  false);
+        cnt++;
+      }
+      else if (imgs[0].src.indexOf('PropertyDeveloper') != -1) { 
+        addEvent(a, 'click',  function (event) {PlainDlg.showPreloaded(event, 'devZone'); return stopEventPropagation(event);},  false);
+        cnt++;
+      }
     }
   }
 }
