@@ -72,6 +72,7 @@ img.fade {
 }
 
 #siteResourceList td, #resourceList td, #div_Info td { height: 40px; }
+#siteResourceList #blog td { height: auto; }
 
 .tabs, .tabs_current {
   height: 33px;
@@ -1937,7 +1938,7 @@ TD.closePopup {
 
 .ftChk { width: 13px; height:13px; overflow:hidden; padding:0px; border:0px; margin:0px;margin-top:1px; vertical-align:middle;}
 
-#system_tooltip  { visibility:hidden; padding:0; position:absolute; z-index:10000; top:0px; left:-400px; width:220px; }
+#system_tooltip  { font-family:helvetica, arial, sans-serif; visibility:hidden; padding:0; position:absolute; z-index:10000; top:0px; left:-400px; width:220px; }
 .system_tooltip_css3 { -webkit-box-shadow: 5px 5px 25px #555; -moz-box-shadow: 5px 5px 25px #555; -webkit-border-radius: 5px; -moz-border-radius: 5px; background-color: #fffcb8; }
 .system_tooltip_chrome { -webkit-box-shadow: 2px 2px 5px #111111; background-color: #fffcb8; }
 .print {color:#000000;}
@@ -2039,7 +2040,7 @@ div .panel_block, td .panel_block {
 }
 
 #common_filter { width: 50%; }
-#fts_filter { min-width: 300px; width: auto !important; width: 300px; overflow: visible; }
+#fts_filter { display:inline; min-width: 300px; width: auto !important; width: 300px; overflow: visible; }
 #fts_filter .no_border td { border-bottom: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
 
@@ -2075,7 +2076,7 @@ div .panel_block, td .panel_block {
 .arrow_td_empty div { width: 18px; height: 20px; }
 
 .rounded_rect_tbl .label_td { white-space: nowrap; } 
-.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; float: left; overflow: visible;}
+.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; overflow: visible;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: #000000; -webkit-appearance: none; text-align: right; /*margin-left: 7px;*/ width: 100%/*initial value*/; height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
