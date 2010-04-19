@@ -4028,6 +4028,12 @@ var Filter = {
     addEvent(paramsTable, 'click',     ListBoxesHandler.onClickParam, false);
 		TouchDlgUtil.init(filterDiv);
     
+		// embeded into page filter
+		if (filterDiv.id == "fts_filter") {
+			this.currentFilterUrl = window.location.href;
+			this.filtersArr[this.currentFilterUrl] = filterDiv;
+		}
+		
     return true;
   },
   
@@ -4335,6 +4341,18 @@ var Filter = {
     var noMatches = true;
 		for (var i = 0; i < rows.length; i++) {
       var label = getChildByClassName(rows[i], "label");
+			
+			if (!label) {
+				// FTS filter contains statistic data / row
+				if (rows[i].className == "filter_stat" && i > 0) {
+					if (rows[i - 1].style.display == "none")
+						rows[i].style.display = "none";
+					else
+						rows[i].style.display = "";	
+				}
+				continue;
+			}
+			
       var labelName = getTextContent(label).toLowerCase();
       if (labelName.indexOf(typedText) == 0) {
 	  	rows[i].style.display = "";
@@ -11120,7 +11138,7 @@ function addOnClickToProfiling() {
     if (a.href == 'about:blank') {
       var imgs = a.getElementsByTagName('img');
       if (imgs[0].src.indexOf('profiling') != -1) { 
-        addEvent(a, 'click',  function (event) {PlainDlg.showPreloaded(event, 'profiling'); return stopEventPropagation(event);},  false);
+      addEvent(a, 'click',  function (event) {PlainDlg.showPreloaded(event, 'profiling'); return stopEventPropagation(event);},  false);
         cnt++;
       }
       else if (imgs[0].src.indexOf('PropertyDeveloper') != -1) { 
