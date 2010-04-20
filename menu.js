@@ -3698,9 +3698,8 @@ var ListBoxesHandler = {
 		
 		$t.textEntry.name = "";
 		
-		if ($t.panelBlock.id == "fts_filter" && Browser.ie) { // IE does not support min-width
-			if ($t.panelBlock.clientWidth > 300) 
-				$t.panelBlock.style.width = 300;
+		if ($t.panelBlock.id == "fts_filter" && Browser.ie) { // IE width fitting
+			$t.panelBlock.style.width = $t.formPanel.clientWidth; 
 		}
 		
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
@@ -7674,8 +7673,9 @@ var FieldsWithEmptyValue = {
 	
   // field is id or DOM object
   initField : function(field, emptyValue, forceInit) {
-		if(!field)
+		if (!field)
       return;
+		
 	  var fieldId;
 
     // field parameter is id
@@ -7685,6 +7685,9 @@ var FieldsWithEmptyValue = {
       if (!field)
         return;
     }
+
+		if (getElementStyle(field).display == "none")
+			return; // hidden field does not require to be handled
 
 		if (forceInit) {
 			field.removeAttribute("is_empty_value");
