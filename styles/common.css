@@ -348,8 +348,8 @@ table.greyBorder {
 /* Gallery */
 .galleryItem, .galleryItem_css3, .galleryItem_chrome {
   border-width: 0px;
-  padding: 0px;
-  margin: 0px;
+  padding: 10px;
+  margin: 10px;
   border-spacing: 0px;
 }
 
@@ -2171,6 +2171,7 @@ input[type=checkbox] { display: none; }
 .checked { background-position: 100% 0%; cursor: auto; } 
 
 /** iPhone button **/
+
 .iphone_btn, .iphone_btn_blue { float: left; margin: 7 3 3 3; }
 .iphone_btn div, .iphone_btn input, .iphone_btn_blue div, .iphone_btn_blue input { height: 30px;  float: left; background: url(../images/iPhoneButton_wide.png); margin: 0px; border: 0px; }
 .iphone_btn div, .iphone_btn_blue div { width: 5px; background-position: top left; }
@@ -2224,8 +2225,10 @@ input[type=checkbox] { display: none; }
 
 #div_info table { overflow: visible; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; overflow: visible; font-weight: bold; }
-#div_info td { padding-right: 5px; overflow: visible; text-align: right; vertical-align: middle; }
+#div_info td { overflow: visible; text-align: left; vertical-align: middle; }
 #div_info .text_editor_container { text-align: left; }
+#div_info .text_editor_container .label { float: none; }
+
 #div_info td.pGr { text-align: center; }
 #div_info a { margin-left: 5px; }
 
