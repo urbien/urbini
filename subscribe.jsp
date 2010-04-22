@@ -5,7 +5,7 @@
 		   <input type="hidden" name="-$action" value="mkResource"></input>
 		   <br />
 		</div>
-	  <!-- class="iphone_btn" -->
+
 	  <div style="margin-left: 35%;">
 			<!-- <div></div> -->	
 		  <input type="button" onclick="SubscribeAndWatch.submit(event);" name="saveAndCancel" value="Confirm to receive alerts"/>&#160;&#160;<a href="about:blank" onclick="SubscribeAndWatch.limitNumberOfAlerts(event);"><text text="Limit number of alerts"/></a>
