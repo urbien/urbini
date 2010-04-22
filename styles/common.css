@@ -2274,15 +2274,6 @@ div .panel_block, td .panel_block {
 .iphone_checkbox { margin: 0px 3px; width: 29px; height: 29px; background: url(../images/skin/iphone/checkbox.png); cursor: pointer; }
 .checked { background-position: 100% 0%; cursor: auto; } 
 
-/** iPhone button **/
-
-.iphone_btn, .iphone_btn_blue { float: left; margin: 7 3 3 3; }
-.iphone_btn div, .iphone_btn input, .iphone_btn_blue div, .iphone_btn_blue input { height: 30px;  float: left; background: url(../images/iPhoneButton_wide.png); margin: 0px; border: 0px; }
-.iphone_btn div, .iphone_btn_blue div { width: 5px; background-position: top left; }
-.iphone_btn input, .iphone_btn_blue input { padding-right: 13px !important; padding-right: 8px; background-position: top right; font: bold 13px Helvetica; color: #FFFFFF; text-decoration: none; line-height: 30px; }
-
-.iphone_btn_blue div, .iphone_btn_blue input  { background-image: url(../images/iPhoneButton_blue_wide.png); }
-
 
 /** iPhone field **/
 .iphone_field { margin: 0px 3px 0px 0px;  }
