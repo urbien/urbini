@@ -9699,7 +9699,7 @@ function submitWidgetPreferences(event, formId, tab) {
   var form = document.getElementById(formId);
   if (!form)
     return ret;
-  var refersh = form.elements['.refresh'].value;
+//  var refersh = form.elements['.refresh'].value;
 
   var param = FormProcessor.getFormFilters(form, true) + '&submitUpdate=y';
   if (param.charAt(0) == '&')
