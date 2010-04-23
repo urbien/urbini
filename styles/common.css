@@ -373,6 +373,9 @@ table.greyBorder {
     height: 23px;
   }
 
+	#resourceList .cpTabs td { height: auto; }
+	#resourceList .currentCpTabs td { height: auto; }
+
 	.cpTabs TD.left {
 	  background-image:url(../images/skin/grey/tab-left.png);
 	  background-repeat: no-repeat;
@@ -2137,6 +2140,8 @@ div .panel_block, td .panel_block {
   -moz-box-shadow : none;
   -webkit-box-shadow: none;
 }
+
+div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 #siteResourceList .panel_block {
 	position: absolute;
