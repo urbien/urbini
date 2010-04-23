@@ -1816,27 +1816,6 @@ var FormProcessor = {
     if (isCancel)
       params += "&cancel=y";
 
-    /* do not allow to submit form while current submit is still being processed */
-    if (form.name.indexOf("tablePropertyList") != -1) { // is it a data entry
-                                                        // form?
-      var wasSubmitted = form.getAttribute("wasSubmitted");
-      if (wasSubmitted) { //  && !Browser.mobile
-        alert("Can not submit the same form twice");
-        return stopEventPropagation(e);
-      }
-      form.setAttribute("wasSubmitted", "true");
-      // form.submit.disabled = true; // weird, but the form would not get
-      // submitted if disabled
-
-      // this solution for duplicate-submit does not work in firefox 1.0 & mozilla
-      // 1.8b - fakeOnSubmit get control even on first form submit
-      // it has another drawback - page must be reloaded for the form to be
-      // submitted second time - while previous solution works with back/forward
-      /*
-      * if (form.onsubmit == fakeOnSubmit) { alert("Already submitted - please
-      * wait"); return false; } form.onsubmit = fakeOnSubmit;
-      */
-    }
     for (var j = 0; j < form.elements.length; j++) {
       var elem = form.elements[j];
       var atts = elem.getAttribute('onSubmit');
@@ -1883,8 +1862,18 @@ var FormProcessor = {
       
 			return stopEventPropagation(e);
     }
-		// 3. send form
+		// 3. send html form
     else {
+			/* do not allow to submit form while current submit is still being processed */
+	    if (form.name.indexOf("tablePropertyList") != -1) { // is it a data entry
+	      var wasSubmitted = form.getAttribute("wasSubmitted");
+	      if (wasSubmitted) { //  && !Browser.mobile
+	        alert("Can not submit the same form twice");
+	        return stopEventPropagation(e);
+	      }
+	      form.setAttribute("wasSubmitted", "true");
+	    }
+			
       return true;
     }
   },
@@ -4045,7 +4034,7 @@ var Filter = {
   
   // hotspot used to search FILTER_URL_DIV in current mobile page
   // otherwise - in document for desktop version
-  show : function(x, y) { // hotspot, x, y)
+  show : function(x, y, e, hotspot) { // hotspot, x, y)
 		if (this.loadingUrl != null)
       return; // downloading
 
@@ -4077,7 +4066,7 @@ var Filter = {
       else
         this.loadingPosition = null;  
     
-      postRequest(null, urlParts[0], urlParts[1], null, null, this.onFilterLoaded);
+      postRequest(e, urlParts[0], urlParts[1], null, hotspot, this.onFilterLoaded);
     }
   },
 
@@ -4528,9 +4517,11 @@ var DataEntry = {
 	onDataEntryLoaded : function(event, div, hotspot, html, url, onDataError) {
 		var $t = DataEntry;
 
-		if (onDataError) // server returned previously submitted data dialog with errors of data entry
+		if (onDataError) { // server returned previously submitted data dialog with errors of data entry
 			$t.onDataError = true;
-		else
+			$t.currentUrl = url;
+		}
+		else 
 			$t.currentUrl = $t.loadingUrl;
 			
 		$t.loadingUrl = null;
@@ -4552,13 +4543,12 @@ var DataEntry = {
 
 		FormProcessor.initForms(div);
 		ExecJS.runDivCode(div);
-		
+
 		// show dialog after GUI initialization
 		setDivVisible(event, div, null, $t.hotspot, 5, 5, null);
 		
 		var key = $t._getKey($t.currentUrl);
 		$t.dataEntryArr[key] = div;
-		$t.hotspot = null;
 	},
 	
 	onDataEntryRejection : function(event, div, hotspot, html, url) {
@@ -4567,10 +4557,10 @@ var DataEntry = {
 	},
 	
 	hide : function (e, hideIcon) {
-		if (this.currentUrl == null)
-			return;
-
 		var key = this._getKey(this.currentUrl);
+		if (key == null)
+			return;
+		
 		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
 			return;
 		
@@ -4644,7 +4634,8 @@ var DataEntry = {
 			form.removeAttribute("wasSubmitted");
 
 		var res = FormProcessor.onSubmitProcess(e, form);
-		//this.hide();
+		
+	//	this.hide();
 		
 		if (Browser.mobile) {
       var url = res;
@@ -4664,6 +4655,12 @@ var DataEntry = {
 	
 	// MkResource uses the same data entry for one resource type
 	_getKey : function(url) {
+		if (this.onDataError) {
+			return "onDataError";
+		}
+		else if(url == null)
+			return null;
+		
 		if (this.isMkResource(url)) {
 			var key = getUrlParam(url, "type");
 			if (url.indexOf("$rootFolder=") != -1) // $rootFolder also defines type
@@ -4942,7 +4939,7 @@ var TouchDlgUtil = {
 		}
 	},
 	
-	// it used on desktop only
+	// Note: only one opened dialog can be on a page in current version
 	// handled 3 "classes" of dialogs
 	submitOnEnter : function(event) {
 		if(DataEntry.submit(event))
@@ -7490,7 +7487,7 @@ var DesktopSearchField = {
 		else {
 			var x = findPosX(field);
 			var y = findPosY(field) + field.offsetHeight + 5;
-			Filter.show(x, y);
+			Filter.show(x, y, event, arrowDiv);
 			this.invertArrowState();
 		}
 		
@@ -7578,7 +7575,7 @@ var MobileSearchField = {
 	onAutocomplete: function() {
 		var $t = MobileSearchField;
  	
-		var form = getAncestorByTagName($t.field, 'form')
+		var form = getAncestorByTagName($t.field, 'form');
 		var formPanel = getAncestorByClassName(form, "form_panel");
 		var contentTr = getChildByClassName(formPanel, "content").parentNode;
 
@@ -7607,13 +7604,8 @@ var MobileSearchField = {
 			autoTr = document.createElement("tr");
 			autoTd = document.createElement("td");
 			autoTd.id = $t.AUTOCOMPLETE_ID;
-			//autoTd.onclick = $t.onShingleSelection;
 			addEvent(autoTd, "mousedown", $t.onmousedown, false);
 			addEvent(autoTd, "mouseup", $t.onmouseup, false);	
-		
-		//	autoTd.onmousedown = $t.onmousedown;
-		//	autoTd.onmouseup = $t.onmouseup;
-			
 			autoTr.appendChild(autoTd);
 			contentTr.parentNode.insertBefore(autoTr, contentTr);
 		}
@@ -7659,7 +7651,7 @@ var MobileSearchField = {
 		tr.style.display = "none";
 		getNextSibling(tr).style.display = "";
 	}
-	
+
 	
 }
 
@@ -8089,7 +8081,7 @@ var DragEngine = {
 
 	startDrag: function(e){
 		var thisObj = DragEngine;
-		var evtobj = window.event ? window.event : e;
+		var evtobj = e || window.event;
 		var caughtObj = getEventTarget(e);
 		var titleObj = null;
 
