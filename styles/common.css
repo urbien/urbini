@@ -72,7 +72,7 @@ img.fade {
 }
 
 #siteResourceList td, #resourceList td, #div_Info td { height: 40px; }
-#siteResourceList #blog td { height: auto; }
+#siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
 
 .tabs, .tabs_current {
   height: 33px;
@@ -2219,11 +2219,11 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   font-weight: 600;
 }
 
-.rounded_rect_tbl td { border-bottom: 1px solid #999999; height: 40px; /*padding-bottom: 5px; padding-top: 3px;*/ vertical-align: middle; }
+.rounded_rect_tbl td, #siteResourceList .rounded_rect_tbl td { border-bottom: 1px solid #999999; height: 40px; /*padding-bottom: 5px; padding-top: 3px;*/ vertical-align: middle; }
 #pane2 .rounded_rect_tbl td { border-bottom: none; }
 #pane2 #dashboard td { vertical-align: top; }
 
-.rounded_rect_tbl tr:last-child td { border-bottom: none; }
+.rounded_rect_tbl tr:last-child td, #siteResourceList .rounded_rect_tbl tr:last-child td{ border-bottom: none; }
 .rounded_rect_tbl table td { border: none; height: auto; }
 .rounded_rect_tbl .ext_file { float: right; margin-right: 15px; }
 .rounded_rect_tbl a { font-size: 14px; }
