@@ -831,10 +831,13 @@ var CalendarNavigation = {
   _init : function() {
     this.parentDiv = document.createElement("div");
     this.parentDiv.style.position = "absolute";
+		this.parentDiv.style.width = 350;
+		this.parentDiv.style.MozBoxShadow = "6px 6px 25px #555555";
+		this.parentDiv.style.WebkitBoxShadow = "6px 6px 25px #555";
 
     var html = 
-      "<img src=\"icons/hide_big.png\" style=\"position: absolute; left: -16; top: -16; \" onclick=\"this.parentNode.style.display='none'\">" +
-      "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" +
+      "<img src=\"icons/hide_big.png\" style=\"cursor: pointer; position: absolute; left: -16; top: -16; \" onclick=\"this.parentNode.style.display='none'\">" +
+      "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" +
         "<tr>" +
           "<td id = \"calendar_navigation\" class=\"content\"></td>" +
           "<td class=\"shaddow_right_top\"></td>" +
@@ -863,7 +866,7 @@ var CalendarNavigation = {
     if (this.contentDiv == null)
       this._init();
     
-    if (this.contentDiv.style.left.length == 0) {
+    if (this.parentDiv.style.left.length == 0) {
       var x = findPosX(hotPoint) - 300;
       var y = findPosY(hotPoint) + 40;
 
@@ -879,10 +882,10 @@ var CalendarNavigation = {
       
   },
   
-  callback : function(dateStr) {
+  callback : function(dateInp) {
     var $t = CalendarNavigation;
     // schedule uses format "MM-dd-yyyy"
-    var dateArr = dateStr.split('-');
+    var dateArr = dateInp.value.split('-');
     var month = dateArr[0];
     var day = dateArr[1];
     var year = dateArr[2];
