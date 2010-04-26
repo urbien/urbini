@@ -4942,7 +4942,8 @@ var TouchDlgUtil = {
 	// Note: only one opened dialog can be on a page in current version
 	// handled 3 "classes" of dialogs
 	submitOnEnter : function(event) {
-		if(DataEntry.submit(event))
+		var target = getEventTarget(event);
+		if(DataEntry.submit(event, target))
 			return;
 		
 		if (Filter.submitProcess(event))
