@@ -4384,8 +4384,7 @@ var SubscribeAndWatch = {
 		this.panelBlock = getDomObjectFromHtml(content, "className", "panel_block");
 		var paramsTable = getChildByClassName(this.panelBlock, "rounded_rect_tbl");
 		
-		CheckButtonMgr.substitute(paramsTable);
-    var paramSel = getChildById(this.panelBlock, 'item_selector');
+		var paramSel = getChildById(this.panelBlock, 'item_selector');
     FieldsWithEmptyValue.initField(paramSel, 'select');
     var optionSel = getChildById(this.panelBlock, 'text_entry');
     FieldsWithEmptyValue.initField(optionSel, 'search');
@@ -4942,7 +4941,10 @@ var TouchDlgUtil = {
 	// Note: only one opened dialog can be on a page in current version
 	// handled 3 "classes" of dialogs
 	submitOnEnter : function(event) {
-		var target = getEventTarget(event);
+		var target = null;
+		if (event.type == 'click')
+			target = getEventTarget(event);
+		
 		if(DataEntry.submit(event, target))
 			return;
 		
@@ -10879,11 +10881,15 @@ var CheckButtonMgr = {
 				stlIdx = 1;
 			else continue;		
 			
-			
+		
 			var isSubstituted = isElemOfClass(inputs[i], "substituted")
-	  	// no need to substitude hidden checkboxe or already substituted
+	  	// no need to process hidden checkboxes that were not substituted on server-side
 			if (stlIdx == 0 && !isSubstituted && getElementStyle(inputs[i]).display == 'none')
     		continue;
+
+			var nextSibling = getNextSibling(inputs[i])
+			if (nextSibling && (nextSibling.className == "iphone_checkbox" || nextSibling.className == "toggle_btn"))
+				continue; // this element was already subsituted
 
 			// touch checkbox was created on server side - just assign click-handler
 			if (stlIdx == 0 && isSubstituted) {
