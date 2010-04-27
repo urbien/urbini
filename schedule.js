@@ -866,16 +866,18 @@ var CalendarNavigation = {
     if (this.contentDiv == null)
       this._init();
     
-    if (this.parentDiv.style.left.length == 0) {
+    if (this.parentDiv.style.left.length == 0) { // 1st time opening
       var x = findPosX(hotPoint) - 300;
       var y = findPosY(hotPoint) + 40;
 
       this.parentDiv.style.left = x;
       this.parentDiv.style.top = y;
     }
-    else {
-      this.parentDiv.style.display = "";
-    }
+		else if (this.parentDiv.style.display.length == 0)
+			this.parentDiv.style.display = "none"; // hide opened calendar
+    else
+      this.parentDiv.style.display = ""; // show calendar
+
 
     this.input.value = initDate;
     startCalendar(this.contentDiv, this.callback, this.input, null);
