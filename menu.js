@@ -3265,11 +3265,6 @@ var ListBoxesHandler = {
     // show item/parameter name (if it is too long)
     $t.displayItemName();
 
-		if ($t.panelBlock.id == "fts_filter" && Browser.ie) { // IE does not support min-width
-			if ($t.optionsPanel.clientWidth > $t.panelBlock.clientWidth)
-				$t.panelBlock.style.width = $t.optionsPanel.clientWidth;
-		}
-		
     // slide forward
 		var curPanel = $t.getCurrentPanelDiv();
 		if (curPanel && curPanel.className != panel.className) {
@@ -3686,10 +3681,6 @@ var ListBoxesHandler = {
 			$t.panelBlock.style.visibility = "";
 		
 		$t.textEntry.name = "";
-		
-		if ($t.panelBlock.id == "fts_filter" && Browser.ie) { // IE width fitting
-			$t.panelBlock.style.width = $t.formPanel.clientWidth; 
-		}
 		
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
 		TouchDlgUtil.bleachBlueRow();
@@ -7544,13 +7535,13 @@ var DesktopSearchField = {
 	
 }
 
-// MobileSearchField
-var MobileSearchField = {
+// FtsAutocomplete - full text search autocomplete 
+var FtsAutocomplete = {
 	AUTOCOMPLETE_ID : "auto_complete",
 	TIMEOUT : Popup.autoCompleteDefaultTimeout,
 	field : null,
 	timerId : null,
-	autoTd : null,
+	autocompleteDiv : null,
 	
 	// init called from FieldsWithEmptyVAlues
 	init : function(field) {
@@ -7560,31 +7551,32 @@ var MobileSearchField = {
 	
 	search : function(e, field) {
 		var form = getAncestorByTagName(field, 'form')
-		var url = FormProcessor.onSubmitProcess(e, form);
-		Filter.hide();
-		Mobile.getPage(e, url);
+		if (Browser.mobile) {
+			var url = FormProcessor.onSubmitProcess(e, form);
+			Filter.hide();
+			Mobile.getPage(e, url);
+		}
+		else
+			form.submit();
 	},
 	
 	onkeyup : function(e) {
-		var $t = MobileSearchField;
+		var $t = FtsAutocomplete;
 		
 		$t.field = getEventTarget(e);
 		if ($t.timerId)
 			clearTimeout($t.timerId);
 		
-		$t.timerId = setTimeout(MobileSearchField.onAutocomplete, $t.TIMEOUT);
+		$t.timerId = setTimeout(FtsAutocomplete.onAutocomplete, $t.TIMEOUT);
 	},
 	
 	onAutocomplete: function() {
-		var $t = MobileSearchField;
- 	
-		var form = getAncestorByTagName($t.field, 'form');
-		var formPanel = getAncestorByClassName(form, "form_panel");
-		var contentTr = getChildByClassName(formPanel, "content").parentNode;
+		var $t = FtsAutocomplete;
 
-		var text = FieldsWithEmptyValue.getValue(form["-q"]);
+		var form = getAncestorByTagName($t.field, 'form');
+		var text = FieldsWithEmptyValue.getValue($t.field); //form["-q"]
 		if (text.length == 0) {
-			$t.hideAutocomplete();
+			$t.hide();
 			return;
 		}
 		
@@ -7592,39 +7584,54 @@ var MobileSearchField = {
 		params += "&-q=" + text;
 		params += "&-ac=y";
 
-		postRequest(null, "smartPopup", params, contentTr, null, $t.autocompleteCallback);
+		postRequest(null, "smartPopup", params, null, null, $t.autocompleteCallback);
 	},
 	
 	autocompleteCallback : function(e, contentTr, hotspot, content, url) {
-		var $t = MobileSearchField;
-		var autoTr = getPreviousSibling(contentTr);
-		var autoTd = null;
-		if (autoTr)
-			autoTd = getChildById(autoTr, $t.AUTOCOMPLETE_ID);
+		var $t = FtsAutocomplete;
+
+		if (!content || content.length == 0)
+			return;
+
+		if ($t.autocompleteDiv == null)
+			$t._createDiv();
 		
-		// note: mobile mode can contain several filters simultaneously			
-		if (autoTd == null) {
-			autoTr = document.createElement("tr");
-			autoTd = document.createElement("td");
-			autoTd.id = $t.AUTOCOMPLETE_ID;
-			addEvent(autoTd, "mousedown", $t.onmousedown, false);
-			addEvent(autoTd, "mouseup", $t.onmouseup, false);	
-			autoTr.appendChild(autoTd);
-			contentTr.parentNode.insertBefore(autoTr, contentTr);
+		$t.autocompleteDiv.innerHTML = content;
+		$t.autocompleteDiv.style.display = "";
+	},
+	
+	_createDiv : function() {
+		var $t = FtsAutocomplete;
+		if ($t.autocompleteDiv != null)
+			return; 
+		
+		$t.autocompleteDiv = document.createElement("div");
+		$t.autocompleteDiv.id = $t.AUTOCOMPLETE_ID;
+		$t.autocompleteDiv.style.display = "none";
+		addEvent($t.autocompleteDiv, "mousedown", $t.onmousedown, false);
+		addEvent($t.autocompleteDiv, "mouseup", $t.onmouseup, false);	
+
+		if (Browser.mobile) {
+			//$t.autocompleteDiv.style.zIndex = Mobile.getCurrentPageDiv().style.zIndex + 1;
+			var header = getAncestorByClassName($t.field, "header");
+			$t.autocompleteDiv.style.top = header.clientHeight;
+			$t.autocompleteDiv.style.left = 0;
+			$t.autocompleteDiv.style.width = "100%";
+			// instead to make all parent elements with height 100%
+			//$t.autocompleteDiv.style.height = getWindowSize()[1];
+
+		}
+		else {
+			$t.autocompleteDiv.className = "dsk_auto_complete";
+			$t.autocompleteDiv.style.top = findPosY($t.field) + $t.field.offsetHeight + 5;
+			$t.autocompleteDiv.style.left = findPosX($t.field);
 		}
 		
-		// instead to make all parent elements with height 100%
-		autoTd.style.height = getWindowSize()[1];
-		
-		autoTd.innerHTML = content;
-		contentTr.style.display = "none";
-		autoTr.style.display = "";
-		
-		$t.autoTd = autoTd;
+		document.body.appendChild($t.autocompleteDiv);
 	},
 	
 	onmousedown : function(e) {
-		var $t = MobileSearchField;
+		var $t = FtsAutocomplete;
 		var target = getEventTarget(e);
 		var shingle = getAncestorByClassName(target, "menuItem");
 		if (!shingle)
@@ -7634,7 +7641,7 @@ var MobileSearchField = {
 	},
 	
 	onmouseup : function(e) {
-		var $t = MobileSearchField;
+		var $t = FtsAutocomplete;
 		var target = getEventTarget(e);
 		var shingle = getAncestorByClassName(target, "menuItem");
 		if (!shingle)
@@ -7645,14 +7652,14 @@ var MobileSearchField = {
 		var text = getTextContent(shingle);
 		FieldsWithEmptyValue.setValue($t.field, text);
 		$t.search(e, $t.field);
+		$t.hide();
 	},
 	
-	hideAutocomplete : function() {
-		if (!this.autoTd)
+	hide : function() {
+		if (!this.autocompleteDiv)
 			return;
-		var tr = this.autoTd.parentNode;
-		tr.style.display = "none";
-		getNextSibling(tr).style.display = "";
+
+		this.autocompleteDiv.style.display = "none";
 	}
 
 	
@@ -7701,9 +7708,9 @@ var FieldsWithEmptyValue = {
 		if (this.hasClearTextCtrl(field))
 			addEvent(field, "keyup", this.onkeyup, false);
 
-		// init mobile search field (autocomplete)
-		if (Browser.mobile && field.id == "-q")
-			MobileSearchField.init(field);
+		// init FTS autocomplete
+		if (field.id == "-q")
+			FtsAutocomplete.init(field);
 
 		if (field.value.length == 0 || field.value == emptyValue)
   		this.setEmpty(field);
