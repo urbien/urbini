@@ -4953,7 +4953,8 @@ var TouchDlgUtil = {
 		DataEntry.hide();
 		Filter.hide();
 		PlainDlg.hide();
-		SubscribeAndWatch.hide();	  
+		SubscribeAndWatch.hide();
+		FtsAutocomplete.hide();	  
 	},
 	
 	highlightRowGrey : function(event) {
@@ -7590,14 +7591,15 @@ var FtsAutocomplete = {
 	autocompleteCallback : function(e, contentTr, hotspot, content, url) {
 		var $t = FtsAutocomplete;
 
-		if (!content || content.length == 0)
-			return;
-
 		if ($t.autocompleteDiv == null)
 			$t._createDiv();
-		
-		$t.autocompleteDiv.innerHTML = content;
-		$t.autocompleteDiv.style.display = "";
+
+		if (!content || content.length == 0) 
+			$t.autocompleteDiv.style.display = "none";
+		else {
+			$t.autocompleteDiv.innerHTML = content;
+			$t.autocompleteDiv.style.display = "";
+		}
 	},
 	
 	_createDiv : function() {
@@ -7649,7 +7651,8 @@ var FtsAutocomplete = {
 
 		shingle.style.background = "";
 		shingle.style.color = "";
-		var text = getTextContent(shingle);
+		var textDiv = shingle.getElementsByTagName("div")[0];
+		var text = textDiv.innerHTML;
 		FieldsWithEmptyValue.setValue($t.field, text);
 		$t.search(e, $t.field);
 		$t.hide();
