@@ -7611,7 +7611,7 @@ var FtsAutocomplete = {
 		$t.autocompleteDiv.id = $t.AUTOCOMPLETE_ID;
 		$t.autocompleteDiv.style.display = "none";
 		addEvent($t.autocompleteDiv, "mousedown", $t.onmousedown, false);
-		addEvent($t.autocompleteDiv, "mouseup", $t.onmouseup, false);	
+		addEvent($t.autocompleteDiv, "click", $t.onclick, false);	
 
 		if (Browser.mobile) {
 			//$t.autocompleteDiv.style.zIndex = Mobile.getCurrentPageDiv().style.zIndex + 1;
@@ -7642,12 +7642,17 @@ var FtsAutocomplete = {
 		shingle.style.color = "#fff";
 	},
 	
-	onmouseup : function(e) {
+	onclick : function(e) {
 		var $t = FtsAutocomplete;
 		var target = getEventTarget(e);
 		var shingle = getAncestorByClassName(target, "menuItem");
 		if (!shingle)
 			return;
+
+		$t.hide();
+		//debugger;
+		if (target.parentNode.tagName.toLowerCase() == "a")
+			return true;
 
 		shingle.style.background = "";
 		shingle.style.color = "";
@@ -7655,7 +7660,7 @@ var FtsAutocomplete = {
 		var text = textDiv.innerHTML;
 		FieldsWithEmptyValue.setValue($t.field, text);
 		$t.search(e, $t.field);
-		$t.hide();
+		
 	},
 	
 	hide : function() {
