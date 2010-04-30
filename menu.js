@@ -3053,11 +3053,15 @@ var ListBoxesHandler = {
 			event = $t.clonedEvent;
 		
 		var target = getEventTarget(event);
+		var isLink = getAncestorByTagName(target, "a") != null;
+		var isRollUp = getAncestorByClassName(target, "rollup_td") != null;
 
-		// default processing of anchors inside parameter TR (for example add image)
-		// except date rollup
-		if (getAncestorByClassName(target, "rollup_td") == null &&
-				(target.tagName.toLowerCase() == "a" || target.parentNode.tagName.toLowerCase() == "a"))
+		// There are links in date rollup that should be processed
+		// rollup td without link inside
+		if (isRollUp && !isLink)
+			return;
+		// link not in rollup td
+		if (isLink && !isRollUp)
 			return;
 	
 		var tr = getAncestorByClassName(target, "param_tr");
@@ -3429,7 +3433,7 @@ var ListBoxesHandler = {
     var selectedOptionsArr = $t.getSelectedOptions(lastClickedTr);
     var td = getAncestorByTagName(textField, "td");
     var chosenValuesDiv = getChildByClassName(td, "chosen_values");
-  
+
 		if (td.className == "rollup_td") { // rollup
 			var img = td.getElementsByTagName("img")[0];
 	  	textField.value = lastClickedTr.id;
@@ -10896,20 +10900,19 @@ var CheckButtonMgr = {
 				stlIdx = 1;
 			else continue;		
 			
-		
-			var isSubstituted = isElemOfClass(inputs[i], "substituted")
-	  	// no need to process hidden checkboxes that were not substituted on server-side
+			var isSubstituted = false;
+	  	var nextElem = getNextSibling(inputs[i])
+			if (nextElem && (nextElem.className == "iphone_checkbox" || nextElem.className == "toggle_btn"))
+				isSubstituted = true; // this element was already subsituted in JAVA or JS
+
+			// no need to process hidden checkboxes that were not substituted on server-side
 			if (stlIdx == 0 && !isSubstituted && getElementStyle(inputs[i]).display == 'none')
     		continue;
 
-			var nextSibling = getNextSibling(inputs[i])
-			if (nextSibling && (nextSibling.className == "iphone_checkbox" || nextSibling.className == "toggle_btn"))
-				continue; // this element was already subsituted
-
-			// touch checkbox was created on server side - just assign click-handler
-			if (stlIdx == 0 && isSubstituted) {
-				var div = getNextSibling(inputs[i]);
-				div.onclick = this.onClick;
+			// native element was substituted in JAVA or JS
+			if (isSubstituted) {
+				if (!nextElem.onclick) // assign handler if need
+					nextElem.onclick = this.onClick;
 				continue; 
 			}
 				
