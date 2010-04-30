@@ -2379,6 +2379,6 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #auto_complete tr:last-child td { border-bottom: none; }
 
 #auto_complete .menuItem div { float: left; line-height: 37px; margin-right: 5px; }
-#auto_complete .menuItem img { float: right; margin: 0px 2px; } 
+#auto_complete .menuItem a { float: right; margin: 0px 2px; } 
 .dsk_auto_complete { padding: 2px; min-width: 450px;  -moz-box-shadow: 6px 6px 25px #555; -webkit-box-shadow: 6px 6px 25px #555; }
 
