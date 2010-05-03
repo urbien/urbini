@@ -618,21 +618,17 @@ span.fileMenuTitle  {font-family:Helvetica, sans-serif, arial; font-weight:bold;
 .menuI  {font-family:Helvetica, sans-serif, arial; font-size:12px; color:#00309C;vertical-align:top}
 
 /* To display big letter title when full text search criteria was there */
+
 .bigLetterTitle1 { 
   font-family:Helvetica, sans-serif, arial; 
   font-weight:bold; 
-  font-size:12pt; 
-  background-image: -moz-linear-gradient(top, &[SecondaryColorB_5];, &[SecondaryColorB_5];, #ffffff) !important;
-}
-.bigLetterTitle1 { 
-  font-family:Helvetica, sans-serif, arial; 
-  font-weight:bold; 
-  font-size:12pt; 
+  font-size:12pt;
+  color: &[SecondaryColorA_3];;
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%,  
-                    color-stop(0%,  &[SecondaryColorB_5];),                      
-                    color-stop(100%, #ffffff));   
+                    color-stop(0%,  &[SecondaryColorA_5];),                      
+                    color-stop(100%, &[SecondaryColorA_3];));   
                     -webkit-background-clip: text;   
-                    -webkit-text-fill-color: transparent; 
+                    -webkit-text-fill-color: transparent;                   
 }
 
 /* To display window titles on a dashboard */
