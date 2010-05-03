@@ -38,7 +38,7 @@
             <tr>
               <td width="40%"> <!--registerNewUser/--> <br /><br /></td>
               <td valign="CENTER">
-                <input type="submit" class="lButton" value="    Logon    " name="logonButton"/><registerNewUser/>
+                <input type="submit" value="    Logon    " name="logonButton"/><registerNewUser/>
               </td>
             </tr>
             <tr>
