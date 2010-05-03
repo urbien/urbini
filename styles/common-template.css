@@ -5,37 +5,14 @@ A {
   padding: 5px 0px; 
   font-size: 15px;/*11px;*/ 
   line-height: 15px; 
-  font-color: &[SecondaryColorA_5];;
+  color: &[PrimaryColor_1];;
 }
-A:hover {color: #6BBDBE; text-decoration : none; cursor: pointer}
+A:hover {color: &[SecondaryColorA_3];; text-decoration : none; cursor: pointer}
 
 a img {
 	border: 0;
 	vertical-align: middle;
 }
-
-a.icotxt {
-  white-space: nowrap;
-  text-decoration: none;
-}
-
-a.icotxt img {
-	border: 0;
-	width: 16px;
-	height: 16px;
-	vertical-align: middle;
-	padding-right: 0.5em;
-}
-.menu a:link, .menu a:visited { 
-  text-decoration: none;
-  color: grey;
-  font-size: 1em;
-  font-style: Helvetica, arial;
-}
-.menu img {
-  width:32px; height:32px; border:0px; vertical-align:middle 
-}
-
 #mainMenu a { font-size: 13px; }
 
 .requiredProp {
@@ -242,11 +219,6 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
 
 /*********************** end of new buttons  *****************************/
 
-.button_blue, .button_green, .button_grey, button.orange {
-	margin: 0px 0px 0px 0px;
-	padding: 0px 0px 0px 0px;
-}
-
 .but_left, .but_right {
 	width:14px;
 	height:23px;
@@ -262,61 +234,6 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
 	text-decoration: none
 }
 
-.button_blue TD.but_left {
-	background-image:url(../images/skin/blue/button-left.gif);  background-repeat: no-repeat;
-}
-.button_blue TD.but_right {
-	background-image:url(../images/skin/blue/button-right.gif); background-repeat: no-repeat;
-}
-.button_blue TD.but_center {
-	background-image:url(../images/skin/blue/button-middle.gif); background-repeat: repeat-x;
-	color:#FFF;
-}
-.button_blue A, .button_blue A:hover {
-	color:#FFF;
-}
-
-.button_grey TD.but_left {
-	background-image:url(../images/skin/grey/button-left.gif);  background-repeat: no-repeat;
-}
-.button_grey TD.but_right {
-	background-image:url(../images/skin/grey/button-right.gif); background-repeat: no-repeat;
-}
-.button_grey TD.but_center {
-	background-image:url(../images/skin/grey/button-middle.gif); background-repeat: repeat-x;
-	color:#000;
-}
-.button_grey A, .button_grey A:hover {
-	color:#000;
-}
-
-.button_orange TD.but_left {
-	background-image:url(../images/skin/orange/button-left.gif);  background-repeat: no-repeat;
-}
-.button_orange TD.but_right {
-	background-image:url(../images/skin/orange/button-right.gif); background-repeat: no-repeat;
-}
-.button_orange TD.but_center {
-	background-image:url(../images/skin/orange/button-middle.gif); background-repeat: repeat-x;
-	color:#FFF;
-}
-.button_orange A, .button_orange A:hover {
-	color:#FFF;
-}
-
-.button_green TD.but_left {
-	background-image:url(../images/skin/green/button-left.gif);  background-repeat: no-repeat;
-}
-.button_green TD.but_right {
-	background-image:url(../images/skin/green/button-right.gif); background-repeat: no-repeat;
-}
-.button_green TD.but_center {
-	background-image:url(../images/skin/green/button-middle.gif); background-repeat: repeat-x;
-	color:#FFF;
-}
-.button_green A, .button_green A:hover {
-	color:#FFF;
-}
 .pieTitle {font-family:Helvetica, sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;}
 /* ----- End of Buttons ----- */
 
@@ -327,7 +244,6 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
 /* -- powered by on white */
 .poweredBy     {font-family:Times; font-size:8pt; color:#4088CF; text-decoration: none;}
 .poweredBy-b   {font-family:Times; font-size:8pt; color:#68B6EF; text-decoration: none;}
-.poweredBy-blue   {font-family:Helvetica, arial, Times; font-size:1em; color:darkblue; text-decoration: none;font-weight: bold;}
 
 .poweredBy-td {background:URL(../images/poweredBy-bg.gif); background-repeat:no-repeat; background-position:bottom; border:solid #808080 1px; color:#000000; }
 
@@ -361,10 +277,6 @@ td.textCell {
 	padding-top: 10px;
 	padding-bottom: 12px;
 	color: #555;
-}
-
-table.greyBorder {
-	border-right: #d7d7d7 1px solid; border-top: #d7d7d7 1px solid; border-left: #d7d7d7 1px solid; border-bottom: #d7d7d7 1px solid
 }
 
 /* Tabs for control panel and property sheet */
@@ -449,13 +361,6 @@ table.greyBorder {
   left: 0.3em; top: 8.5em; width: 73.33333%; z-index: 2; position: absolute; margin: 0px; padding: 0px;
 }
 
-.addedItems {
-  max-width: 30em;
-	left: 73.33333%; top: 7em; z-index: 2; position: absolute; margin: 0px;
-	padding-top:  2.5em;
-	padding-left: 1em;
-}
-
 /* Gallery */
 .galleryItem, .galleryItem_css3, .galleryItem_chrome {
   border-width: 0px;
@@ -504,7 +409,7 @@ table.greyBorder {
   height: 11px; width: 11px; border: 0px; vertical-align: top;
 }
 
-/* styles from properties.css */
+/* styles from properties.css */ 
 body {
 	font: Helvetica, arial, sans-serif;
 	padding: 0;
@@ -515,13 +420,13 @@ body {
   height: 100%;
 }
 
-/* styles from properties.css */
+/* styles from properties.css 
 #container {
   position: relative;
   min-height: 100%;
   height: 100%;
 }
-/*
+
 #commonFooter {
    position:absolute;
    bottom:0;
@@ -544,7 +449,7 @@ tr.rlHeader {
   border:solid #808080 1px; 
   background-repeat:repeat-x; 
   background-color: &[SecondaryColorB_5];; 
-  color: &[SecondaryColorB_3];;  
+  font-color: &[SecondaryColorB_3];;  
   font-weight:bold; 
   font-size:8pt;
 }
@@ -615,9 +520,6 @@ span.rollup {color:red; font-family:Helvetica, sans-serif, arial; font-size:9pt;
 span.dark{color:#eeeeee}
 span.nodes  {background-color:#cbcbcb}
 span.light {color:#ffffff}
-
-a:link { color: #0033CC; }
-a:hover { text-decoration: underline; color: #3399FF; }
 .button1 {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 
 input.xxs {font-size: 10px; font-family:Helvetica, verdana,arial,sans-serif;}
@@ -2327,3 +2229,105 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .dsk_auto_complete { padding: 2px; min-width: 450px;  -moz-box-shadow: 6px 6px 25px #555; -webkit-box-shadow: 6px 6px 25px #555; }
 
 
+/*
+.menu a:link, .menu a:visited { 
+  text-decoration: none;
+  color: grey;
+  font-size: 1em;
+  font-style: Helvetica, arial;
+}
+.menu img {
+  width:32px; height:32px; border:0px; vertical-align:middle 
+}
+*/
+/*
+a.icotxt {
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+a.icotxt img {
+  border: 0;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  padding-right: 0.5em;
+}
+.button_blue TD.but_left {
+  background-image:url(../images/skin/blue/button-left.gif);  background-repeat: no-repeat;
+}
+.button_blue TD.but_right {
+  background-image:url(../images/skin/blue/button-right.gif); background-repeat: no-repeat;
+}
+.button_blue TD.but_center {
+  background-image:url(../images/skin/blue/button-middle.gif); background-repeat: repeat-x;
+  color:#FFF;
+}
+.button_blue A, .button_blue A:hover {
+  color:#FFF;
+}
+
+.button_grey TD.but_left {
+  background-image:url(../images/skin/grey/button-left.gif);  background-repeat: no-repeat;
+}
+.button_grey TD.but_right {
+  background-image:url(../images/skin/grey/button-right.gif); background-repeat: no-repeat;
+}
+.button_grey TD.but_center {
+  background-image:url(../images/skin/grey/button-middle.gif); background-repeat: repeat-x;
+  color:#000;
+}
+.button_grey A, .button_grey A:hover {
+  color:#000;
+}
+
+.button_orange TD.but_left {
+  background-image:url(../images/skin/orange/button-left.gif);  background-repeat: no-repeat;
+}
+.button_orange TD.but_right {
+  background-image:url(../images/skin/orange/button-right.gif); background-repeat: no-repeat;
+}
+.button_orange TD.but_center {
+  background-image:url(../images/skin/orange/button-middle.gif); background-repeat: repeat-x;
+  color:#FFF;
+}
+.button_orange A, .button_orange A:hover {
+  color:#FFF;
+}
+
+.button_green TD.but_left {
+  background-image:url(../images/skin/green/button-left.gif);  background-repeat: no-repeat;
+}
+.button_green TD.but_right {
+  background-image:url(../images/skin/green/button-right.gif); background-repeat: no-repeat;
+}
+.button_green TD.but_center {
+  background-image:url(../images/skin/green/button-middle.gif); background-repeat: repeat-x;
+  color:#FFF;
+}
+.button_green A, .button_green A:hover {
+  color:#FFF;
+}
+.button_blue, .button_green, .button_grey, button.orange {
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+.poweredBy-blue   {font-family:Helvetica, arial, Times; font-size:1em; color:darkblue; text-decoration: none;font-weight: bold;}
+
+table.greyBorder {
+  border-right: #d7d7d7 1px solid; border-top: #d7d7d7 1px solid; border-left: #d7d7d7 1px solid; border-bottom: #d7d7d7 1px solid
+}
+
+.addedItems {
+  max-width: 30em;
+  left: 73.33333%; top: 7em; z-index: 2; position: absolute; margin: 0px;
+  padding-top:  2.5em;
+  padding-left: 1em;
+}
+
+
+a:link { color: #0033CC; }
+a:hover { text-decoration: underline; color: #3399FF; }
+
+*/
