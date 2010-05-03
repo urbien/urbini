@@ -3,11 +3,11 @@ A {
   text-decoration : none; 
   font-family: Helvetica, Arial, Verdana, sans-serif; 
   padding: 5px 0px; 
-  font-size: 15px;/*11px;*/ 
+  font-size: 15px;
   line-height: 15px; 
   color: &[SecondaryColorA_3];;
 }
-A:hover {color: &[PrimaryColor_1];; text-decoration : none; cursor: pointer}
+A:hover {color: &[SecondaryColorA_1];; text-decoration : none; cursor: pointer}
 
 a img {
 	border: 0;
@@ -448,7 +448,7 @@ cdfBody {font-family: Helvetica, Verdana, geneva, arial; font-weight: normal; }
 tr.rlHeader { 
   border:solid #808080 1px; 
   background-repeat:repeat-x; 
-  background-color: &[SecondaryColorB_5];; 
+  background-color: &[PrimaryColor_4];; 
   font-color: &[SecondaryColorB_3];;  
   font-weight:bold; 
   font-size:8pt;
