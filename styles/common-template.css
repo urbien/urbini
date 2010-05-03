@@ -5,9 +5,9 @@ A {
   padding: 5px 0px; 
   font-size: 15px;/*11px;*/ 
   line-height: 15px; 
-  color: &[PrimaryColor_1];;
+  color: &[SecondaryColorA_3];;
 }
-A:hover {color: &[SecondaryColorA_3];; text-decoration : none; cursor: pointer}
+A:hover {color: &[PrimaryColor_1];; text-decoration : none; cursor: pointer}
 
 a img {
 	border: 0;
