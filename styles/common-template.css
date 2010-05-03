@@ -511,7 +511,7 @@ body {
 	margin: 0;
   font-color: &[PrimaryColor_3];; 
 	background-color: #ffffff;
-	color: &[PrimaryColor_3];;
+	color: #000000;
   height: 100%;
 }
 
