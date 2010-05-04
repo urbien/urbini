@@ -11,7 +11,7 @@
     <div id="mainskin" class="blue">
     <include name="menu.jsp"/>
 <hideBlock>
-    <table width="100%" border="0" cellspacing="0" cellpadding="3">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr class="abc">
       <td valign="top" align="center">
         <include name="${type}_top.jsp"/>          <!-- this jsp will be included in ResourceList page only-->
@@ -21,7 +21,7 @@
     </table>
 </hideBlock>
     <!--filter/-->
-    <table width="100%" border="0" cellspacing="0" cellpadding="3">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr class="abc">
 <hideBlock>
       <rightPanelPropertySheet id="fts_filter" ifParameter="-q,-cat"/>
