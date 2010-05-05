@@ -4,7 +4,7 @@ A {
   font-family: Helvetica, Arial, Verdana, sans-serif; 
   padding: 5px 0px; 
   font-size: 15px;
-  line-height: 15px; 
+  line-height: 15px;
   color: &[SecondaryColorA_3];;
 }
 
@@ -408,7 +408,6 @@ body {
 	font: Helvetica, arial, sans-serif;
 	padding: 0;
 	margin: 0;
-  font-color: &[PrimaryColor_3];; 
 	background-color: &[BackgroundColor];;
 	color: &[Color];;
   height: 100%;
@@ -466,7 +465,7 @@ tr.rlHeader td { vertical-align: middle; color: &[SecondaryColorB_3]; }
 .prevNext {padding-bottom:2px; padding-right:2px; padding-left:2px;}
 tr.dark   {background-color: &[OddRowBackgroundColor];}
 
-tr.total  {background-color:#ffffe0; font-weight:bold}
+tr.total  {background-color:&[SecondaryColorA_1];; color:&[SecondaryColorA_4];; font-weight:bold}
 
 tr.subtotal {background-color:#cdcde4; font-weight:bold}
 td.error    {background-color:#ffcc00; font-weight:bold}
@@ -672,7 +671,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 /* SKINS */
 .menuLine {background-color: &[SecondaryColorA_5];; border-top: solid 1px &[SecondaryColorA_3];; font-weight:bold; font-size:8pt;}
 
-.menuLine A { color: &[SecondaryColorA_3];; background-color: &[SecondaryColorA_5];; font-weight: bold;}
+.menuLine A { color: &[MenuLineColorA];; background-color: &[SecondaryColorA_5];; font-weight: bold;}
 .menuLine A:active {color: &[SecondaryColorA_1];; background-color: &[SecondaryColorA_3]; }
 
 .propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; overflow: auto}
@@ -688,151 +687,12 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   font-size:8pt;
 }
 
-/* MUSTARD */
-.mustard .wBBg {border:solid #e7e4ba 1px; background-color:#f6f5de; border-collapse: collapse; color: #000000; overflow: auto}
-.mustard .wBg {background-color:#f6f5de; border-collapse: collapse; color: #000000; overflow: auto}
-
-
-/* TURQOUISE */
-.turquoise .wBg {background-color:#eafbf5; border-collapse: collapse; color: #000000; overflow: auto}
-.turquoise .wBBg {border:solid #ACE2CE 1px; background-color:#eafbf5; border-collapse: collapse; color: #000000; overflow: auto}
-/* PURPLE */
-.purple .wBBg {border:solid #c7aee3 1px; background-color:#f6effd; border-collapse: collapse; color: #000000; overflow: auto}
-.purple .wBg {background-color:#f6effd; border-collapse: collapse; color: #000000; overflow: auto}
-
-/* GREEN */
-.green .wBBg {border:solid #B6E2AC 1px; background-color:#eefcec; border-collapse: collapse; color: #000000; overflow: auto}
-.green .wBg {background-color:#eefcec; border-collapse: collapse; color: #000000; overflow: auto}
-/* RUSTY ROSE */
-.rustyrose .wBg {background-color:#f8e8e3; border-collapse: collapse; color: #000000; overflow: auto}
-.rustyrose .wBBg {border:solid #e4bcb1 1px; background-color:#f8e8e3; border-collapse: collapse; color: #000000; overflow: auto}
-
-/* GREY */
-.grey .wBBg {border:solid #cfcfcf 1px; background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
-.grey .wBg {background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
-
 .filterLine {background: #E7EBF0}
 /* BLACK */
-
-.black .wBBg {border:solid #cfcfcf 1px; background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
-.black .wBg {background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
-.black a {color: #ffffff; font-weight:bold; text-decoration:none}
-.black .welcome {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #ffffff; font-size: 8pt; font-weight: bold;}
-.black .rightPanel {border:solid #090909 1px; color: #000000; background: #afa8a4}
-.black .filterLine {background: #cfcfcf}
-/*.black .fts {background: #9f9f9f;}*/
-.black .fts {background: #8f837d;}
-
-.black .ftsq {padding-left:2px; border-bottom: 1px solid #afafaf; border-left: 1px solid #afafaf; border-right: 1px solid #cfcfcf; border-top:1px solid #cfcfcf; color:#000066; text-decoration:none; font-family:arial,sans-serif; font-size:1.2em; font-weight:bold;}
-.black .ftsLine {background: #909090;}
-.black .widgetTitle {vertical-align:top; color:#ffffff;font-weight:bold}
-.black .button1 {background: #afafaf;border-bottom: 1px solid #8f837d;border-right: 1px solid #8f837d;border-left: 1px solid #bfb7b3;border-top:1px solid #bfb7b3;color:#ffffff;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
-.black .input {background: #dfd6d1; border-bottom: 1px solid #bfb7b3; border-left: 1px solid #bfb7b3; border-right: 1px solid #afa8a4; border-top:1px solid #afa8a4; color:#000000; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
-.black .dark {background: #5f5753; }
-.black .light {background: #afafaf; }
-.black .user  {color:#ffffff; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight:bold; text-decoration:none; font-size:8pt;}
-.black .controlPanel {border:solid #bfb7b3 2px; background-color: #5f5753; color: #ffffff}
-.black .controlPanel a {color: #003377;}
-.black .bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#322b27;}
-.black .bigLetterTitle2 {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#ffffff;}
-.black .bigLetterTitle {font-family:sans-serif, arial; font-weight:bold; font-size:16px; color:#CEffff;}
-
-.black .pGr {background:#bfb7b3; color: #322b27; font-weight:bold; font-size:1em; text-align:center; }
-.black span.dashboardBlockTitle {font-family:Verdana,sans-serif,arial; font-weight:bold; font-size:1.3em; color:#CEffff;}
-.black .displayInline {
-	padding: 0;
-	margin: 0;
-	background-color:#7f7f7f;
-	color: #ffffff;
-}
-.black .fHeader {background: #bfb7b3}
-
-.black .propLabel {
-  font-family: Verdana, Arial, Helvetica, sans-serif; color: #CEffff; font-size: 8pt; font-weight: bold;
-  white-space: nowrap;
-}
-
-.black .login {background: #6f615a;color:#ffffff;height:19px;text-decoration:none; font-size:11px;border:0px}
-.black .lButton {
-    background: #37312d;
-    border: 0;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    color: #8b7d76;
-    font: bold 12px "Lucida Grande", Verdana, sans-serif;
-    margin: 7px 3px;
-    padding: 1px 10px 4px 10px;
-    cursor: pointer;
-}
-.black .loginBorder {background: #8b7d76}
-.black .userLogin {background: #322b27}
-.black .xxs {color: #8b7d76}
 
 .propLabel1 {
   font-family: Verdana, Arial, Helvetica, sans-serif; color: #8f837d; font-size: 8pt; font-weight: normal;
 }
-
-/*.black .title {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold;background-color:#cfcfcf;}*/
-.black .title {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold;background-color:#8f837d;}
-
-
-.black .xs { font-family: Verdana, Arial, Helvetica, sans-serif; color: #ffffff; font-size: 8pt; font-weight: normal; white-space: nowrap; }
-.black .xsb { font-family: Verdana, Arial, Helvetica, sans-serif; color: #ffffff; font-size: 8pt; font-weight: bold; white-space: nowrap; }
-
-.black .td {
-  height: 33px;
-}
-
-
-/* Tabs for control panel and property sheet */
-
-.black .dashboard_btn { border-color: #3f3f3f; }
-
-/* DARK GRAY */
-.gray .wBBg {border:solid #cfcfcf 1px; background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
-.gray .wBg {background-color:#f8f8f8; border-collapse: collapse; color: #000000; overflow: auto}
-.gray a {color: #ffffff; font-weight:bold; text-decoration:none}
-.gray .welcome {  font-family: Verdana, Arial, Helvetica, sans-serif; color: #ffffff; font-size: 8pt; font-weight: bold;}
-.gray .rightPanel {border:solid #090909 1px; color: #000000; background: #afafaf}
-.gray .filterLine {background: #cfcfcf}
-.gray .fts {background: #9f9f9f;}
-.gray .ftsq {padding-left:2px; border-bottom: 1px solid #afafaf; border-left: 1px solid #afafaf; border-right: 1px solid #cfcfcf; border-top:1px solid #cfcfcf; color:#000066; text-decoration:none; font-family:arial,sans-serif; font-size:1.2em; font-weight:bold;}
-.gray .ftsLine {background: #909090;}
-.gray .widgetTitle {vertical-align:top; color:#ffffff;font-weight:bold}
-.gray .button1 {background: #afafaf;border-bottom: 1px solid #afafaf;border-right: 1px solid #afafaf;border-left: 1px solid #cfcfcf;border-top:1px solid #cfcfcf;color:#ffffff;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
-.gray .input {background: #dfdfdf; border-bottom: 1px solid #afafaf; border-left: 1px solid #afafaf; border-right: 1px solid #cfcfcf; border-top:1px solid #cfcfcf; color:#000000; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
-.gray .dark {background: #9f9f9f; }
-.gray .light {background: #afafaf; }
-.gray .user  {color:#ffffff; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight:bold; text-decoration:none; font-size:8pt;}
-.gray .controlPanel {border:solid #999999 2px; background-color: #cfcfcf; color: #ffffff}
-.gray .controlPanel a {color: #003377;}
-.gray .bigLetterTitle1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt; color:#5f5f5f;}
-.gray .pGr {background:#dfdfdf; font-weight:bold; font-size:1em; text-align:center; color: darkblue;}
-.gray span.dashboardBlockTitle {font-family:Verdana,sans-serif,arial; font-weight:bold; font-size:1.3em; color:#CEffff;}
-
-.gray .displayInline {
-	padding: 0;
-	margin: 0;
-	background-color:#7f7f7f;
-	color: #ffffff;
-}
-.gray .fHeader {background: #cfcfcf}
-
-.gray .propLabel {
-  font-family: Verdana, Arial, Helvetica, sans-serif; color: #CEffff; font-size: 8pt; font-weight: bold;
-  white-space: nowrap;
-}
-
-.gray .title {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 18px; font-style: normal; font-weight: bold;background-color:#cfcfcf;}
-
-.gray .xs { font-family: Verdana, Arial, Helvetica, sans-serif; color: #ffffff; font-size: 8pt; font-weight: normal; white-space: nowrap; }
-.gray .xsb { font-family: Verdana, Arial, Helvetica, sans-serif; color: #ffffff; font-size: 8pt; font-weight: bold; white-space: nowrap; }
-
-.gray .td {
-  height: 33px;
-}
-
-
 
 /* Scheduling page styles */
 .schedule     {
