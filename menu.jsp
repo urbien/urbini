@@ -4,10 +4,9 @@
     <td colspan="3">
        <table width="100%" cellspacing="0" cellpadding="0" border="0">
        <tr valign="top">
-       <td width="1%" class="dashboard">
-	       <!--a href="javascript: ;" id="menuLink_codeBehindThePage" title="View Source - this page is based solely on the declarative code that you can inspect by clicking on the links in popup"-->
+       <td width="1%" class="dashboard_btn">
 	       <a href="javascript: ;" onclick="addOnClickToProfiling(event); PlainDlg.showPreloaded(event, 'viewSource');">
-		       <img src="icons/homePage-large.png" style="margin-top: 3px" /> Source
+		       <img src="icons/homePage-large.png" class="litxt"  style="margin-top: 3px" /><br/>Home
 	       </a>
        </td>
        <td width="85%">
