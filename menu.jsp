@@ -4,17 +4,17 @@
     <td colspan="3">
        <table width="100%" cellspacing="0" cellpadding="0" border="0">
        <tr valign="top">
-       <td width="1%" class="dashboard_btn">
-	       <a href="javascript: ;" onclick="addOnClickToProfiling(event); PlainDlg.showPreloaded(event, 'viewSource');">
-		       <img src="icons/homePage-large.png" class="litxt"  style="margin-top: 3px" /><br/>Home
-	       </a>
-       </td>
-       <td width="85%">
-	        <table><tr><td><dashboardMenus/></td><td class="dashboard_btn"><menu toolbar="calendarAndChart" /></td></tr></table>
+       <td width="85%" colspan="2">
+	       <table>
+	         <tr valign="top">
+	           <td width="1%" class="dashboard_btn"><a href="javascript: ;" onclick="addOnClickToProfiling(event); PlainDlg.showPreloaded(event, 'viewSource');"><img src="icons/homePage-large.png" class="litxt" /><br/>Home</a></td><td><dashboardMenus/></td><td class="dashboard_btn"><menu toolbar="calendarAndChart" /></td>
+	         </tr>
+	       </table>
        </td>
        <td align="right" class="toprightpad">
 	        <shoppingCart/>
-	      </td></tr>
+	      </td><
+	      /tr>
 	      </table>
     </td>
      <td align="right" valign="top">
