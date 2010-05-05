@@ -370,59 +370,22 @@ table.greyBorder {
 
   .cpTabs {
     cursor: pointer;
-    height: 23px;
+    padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;
+    white-space:nowrap;
   }
 
 	#resourceList .cpTabs td { height: auto; }
 	#resourceList .currentCpTabs td { height: auto; }
 
-	.cpTabs TD.left {
-	  background-image:url(../images/skin/grey/tab-left.png);
-	  background-repeat: no-repeat;
-	}
-	.cpTabs TD.middle {
-	  background-image:url(../images/skin/grey/tab-middle.png);
-	  background-repeat: repeat-x;
-	  text-align: center;
-	  overflow: hidden;
-    white-space: nowrap;
-	  color: #662d91;
-	}
-	.cpTabs TD.right {
-	  background-image:url(../images/skin/grey/tab-right.png);
-	  background-repeat: no-repeat;
-	  float: none;
-	}
-  .cpTabs .left, .right {
-    width:8px;
+#tabs  td.dashboard_btn {
+     padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;  
+     font-size:11px; white-space:nowrap;
   }
 
   .currentCpTabs {
-    height: 27px;
+     padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;  
+     white-space:nowrap;
   }
-
-
-  .currentCpTabs .left, .right {
-    width:12px;
-  }
-
-	.currentCpTabs TD.left {
-	  background-image:url(../images/skin/grey/tab-left.png);
-	  background-repeat: no-repeat;
-	}
-	.currentCpTabs TD.middle {
-	  background-image:url(../images/skin/grey/tab-middle.png);
-	  background-repeat: repeat-x;
-	  text-align: center;
-    white-space: nowrap;
-	  color: #754c24;
-	  font-weight: bold;
-	}
-	.currentCpTabs TD.right {
-	  background-image:url(../images/skin/grey/tab-right.png);
-	  background-repeat: no-repeat;
-	  float: none;
-	}
 
   .currentTabTitle {
 	  background-image:url(../images/skin/grey/tab-middle.png);
