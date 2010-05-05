@@ -6556,9 +6556,8 @@ function showTab(e, td, hideDivId, unhideDivId) {
         tdId = tok.substring(4);
       var hideTD = document.getElementById(tdId);
       if (hideTD) {
-        var ht = hideTD.getElementsByTagName("table");
-        if (ht.length != 0  &&  ht[0].className == "currentCpTabs")
-          ht[0].className = "cpTabs";
+        if (hideTD.className == "dashboard_btn current")
+          hideTD.className = "dashboard_btn";
         if (!isViewAll  &&  tt != null) {
           tt = document.getElementById('cp_' + tdId);
           if (tt != null)
@@ -6584,9 +6583,8 @@ function showTab(e, td, hideDivId, unhideDivId) {
   curDiv.style.visibility = Popup.VISIBLE;
   curDiv.style.display = 'inline';
 
-  var t = td.getElementsByTagName("table");
-  if (t.length != 0  &&  t[0].className == "cpTabs")
-    t[0].className = "currentCpTabs";
+  if (td.className == "dashboard_btn")
+    td.className = "dashboard_btn current";
 /*
  * if (isViewAll && tokens) { var tr = document.getElementById(tokens.length +
  * 'cp'); if (tr != null) tr.className = "currentTabTitle"; }
@@ -6610,9 +6608,8 @@ function showTab(e, td, hideDivId, unhideDivId) {
         tdId = tok.substring(4);
       var uTD = document.getElementById(tdId);
       if (uTD) {
-        var uTable = uTD.getElementsByTagName("table");
-        if (uTable.length != 0  &&  uTable[0].className == "currentCpTabs")
-          uTable[0].className = "cpTabs";
+        if (uTD.className == "dashboard_btn current")
+          uTD.className = "dashboard_btn";
         var controlPanelId = (hasPrefix) ? 'icp' : 'cp';
         if (uTD.id == controlPanelId  &&  uTD.className == 'currentTabTitleHidden')
           uTD.className = 'controlPanel';
@@ -6695,8 +6692,8 @@ function showRows(e, td, hideRowsId, unhideRowsId) {
       var tdId = tokens[i].substring(4);
       var hideTD = document.getElementById(tdId);
       var ht = hideTD.getElementsByTagName("table");
-      if (ht.length != 0  &&  ht[0].className == "currentCpTabs")
-        ht[0].className = "cpTabs";
+      if (ht.length != 0  &&  ht[0].className == "dashboard_btn current")
+        ht[0].className = "dashboard_btn";
       if (!isViewAll  &&  tt != null) {
         tt = document.getElementById('cp_' + tdId);
         if (tt != null)
@@ -6717,8 +6714,8 @@ function showRows(e, td, hideRowsId, unhideRowsId) {
       var tdId = tokens[i].substring(4);
       var uTD = document.getElementById(tdId);
       var uTable = uTD.getElementsByTagName("table");
-      if (uTable.length != 0  &&  uTable[0].className == "currentCpTabs")
-        uTable[0].className = "cpTabs";
+      if (uTable.length != 0  &&  uTable[0].className == "dashboard_btn current")
+        uTable[0].className = "dashboard_btn";
       if (isViewAll) {
         var tt = document.getElementById('cp_' + tdId);
         tt.className = "currentTabTitle";
@@ -6732,8 +6729,8 @@ function showRows(e, td, hideRowsId, unhideRowsId) {
   rowgroup.style.display = 'inline';
 
   var t = td.getElementsByTagName("table");
-  if (t.length != 0  &&  t[0].className == "cpTabs")
-    t[0].className = "currentCpTabs";
+  if (t.length != 0  &&  t[0].className == "dashboard_btn")
+    t[0].className = "dashboard_btn current";
 
   if (isViewAll) {
     var tr = document.getElementById(tokens.length + 'cp');
