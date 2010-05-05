@@ -2221,24 +2221,7 @@ function getTrNode(elem) {
 }
 
 function getDivNode(elem) {
-  var e;
-
-  var elem_ = elem;
-  if (elem.length > 1) {
-    elem_ = elem[0];
-    //alert('getDivNode(): element is array: ' + elem + ', its first element is: ' + elem_);
-  }
-  if (elem_.tagName.toUpperCase() == 'DIV')
-    return elem;
-  e = elem_.parentNode;
-  if (e) {
-    if (e == elem)
-      e = elem.parentNode; // if parent of the array element is self - get
-                            // parent of array itself
-    return getDivNode(e);
-  }
-  else
-    return null;
+	return getAncestorByTagName(elem, "div");
 }
 
 function getDocumentNode(obj) {
