@@ -276,61 +276,23 @@ td.textCell {
 
 /* Tabs for control panel and property sheet */
 
+#tabs  td.dashboard_btn {
+     padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;  
+     font-size:11px; white-space:nowrap;
+  }
+
   .cpTabs {
     cursor: pointer;
-    height: 23px;
+    padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;
   }
 
 	#resourceList .cpTabs td { height: auto; }
 	#resourceList .currentCpTabs td { height: auto; }
 
-	.cpTabs TD.left {
-	  background-image:url(../images/skin/grey/tab-left.png);
-	  background-repeat: no-repeat;
-	}
-	.cpTabs TD.middle {
-	  background-image:url(../images/skin/grey/tab-middle.png);
-	  background-repeat: repeat-x;
-	  text-align: center;
-	  overflow: hidden;
-    white-space: nowrap;
-	  color: #662d91;
-	}
-	.cpTabs TD.right {
-	  background-image:url(../images/skin/grey/tab-right.png);
-	  background-repeat: no-repeat;
-	  float: none;
-	}
-  .cpTabs .left, .right {
-    width:8px;
-  }
-
   .currentCpTabs {
-    height: 27px;
+     padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;  
   }
 
-
-  .currentCpTabs .left, .right {
-    width:12px;
-  }
-
-	.currentCpTabs TD.left {
-	  background-image:url(../images/skin/grey/tab-left.png);
-	  background-repeat: no-repeat;
-	}
-	.currentCpTabs TD.middle {
-	  background-image:url(../images/skin/grey/tab-middle.png);
-	  background-repeat: repeat-x;
-	  text-align: center;
-    white-space: nowrap;
-	  color: #754c24;
-	  font-weight: bold;
-	}
-	.currentCpTabs TD.right {
-	  background-image:url(../images/skin/grey/tab-right.png);
-	  background-repeat: no-repeat;
-	  float: none;
-	}
 
   .currentTabTitle {
 	  background-image:url(../images/skin/grey/tab-middle.png);
@@ -338,11 +300,9 @@ td.textCell {
 	  color: #754c24;
 	  font-weight: bold;
 	  font-size:14px;
-    height: 27px;
   }
   .currentTabTitleHidden {
     visibility:hidden; display:none;
-    height: 27px;
   }
   .hiddenDiv {
     visibility:hidden; display:none;
@@ -589,7 +549,7 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 .fHeader {background: #D6E7E7}
 /* border for read/edit resource properties in non=widget */
 .rop {border:solid &[SecondaryColorA_5]; 1px;; border-collapse: collapse; color: &[SecondaryColorA_5];; overflow-y: visible;  height: 100%; }
-td.controlPanel { border:solid &[SecondaryColorA_3]; 1px; background-color: #f8f4ef; color: #000000; padding-top: 5px; }
+td.controlPanel { border:solid &[SecondaryColorA_3]; 1px; background-color: &[PrimaryColor_5];; color: #000000; padding-top: 5px; }
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 /*span.xxl {font-family:Helvetica, verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}*/
 
