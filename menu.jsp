@@ -7,7 +7,10 @@
         <td width="85%" colspan="2">
 	        <table>
 	          <tr valign="top">
-	            <td width="1%" class="dashboard_btn"><a href="javascript: ;" onclick="addOnClickToProfiling(event); PlainDlg.showPreloaded(event, 'viewSource');"><img src="icons/homePage-large.png" class="litxt" /><br/>Home</a></td><td><dashboardMenus/></td><td class="dashboard_btn"><menu toolbar="calendarAndChart" /></td>
+	            <td width="1%" class="dashboard_btn"><a href="javascript: ;" onclick="addOnClickToProfiling(event); PlainDlg.showPreloaded(event, 'viewSource');"><img src="icons/homePage-large.png" class="litxt" /><br/>Home</a></td><td><dashboardMenus/></td>
+<!--
+							<td class="dashboard_btn"><menu toolbar="calendarAndChart" /></td>
+-->
 	          </tr>
 	        </table>
         </td>
