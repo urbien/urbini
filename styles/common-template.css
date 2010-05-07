@@ -1017,30 +1017,36 @@ TD.toolbar {
   margin: 0px 0px 0px 0px;
   padding: 0px 0px 0px 0px;
   background-repeat:repeat-x;
-  background-color: &[PrimaryColor_4];; 
+  /*background-color: &[PrimaryColor_4];;*/
+  background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_5];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_5];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_5];)
+   
 }
-.dashboardLine A { color: &[PrimaryColor_3];; font-weight:bold;}
+.dashboardLine A { color: &[PrimaryColor_3];; font-weight: bold; }
 
 .dashboard_btn { 
   width: 60px; 
   text-align: center;  
   overflow: visible; 
-  border-style: solid; 
-  border-width: 1px; 
-  border-color: &[PrimaryColor_4];
+  border: 1px solid transparent;
+  cursor: pointer; 
+  /*border-color: &[PrimaryColor_4];*/
 }
 
+.dashboard_btn a { display: block; white-space: nowrap; }
+
 .dashboardLine td.dashboard_btn:hover {  
-	border-left-color: ButtonHighlight;
-	border-top-color: ButtonHighlight;
-	border-right-color: ButtonShadow;
-	border-bottom-color: ButtonShadow;
+	border-left-color: &[PrimaryColor_5];;
+	border-top-color: &[PrimaryColor_5];;
+	border-right-color: &[PrimaryColor_1];;
+	border-bottom-color: &[PrimaryColor_1];;
 }
 .dashboardLine td.current {
-	border-left-color: ButtonShadow ;
-	border-top-color: ButtonShadow;
-	border-right-color: ButtonHighlight;
-	border-bottom-color: ButtonHighlight;
+	border-left-color: &[PrimaryColor_1];;
+	border-top-color: &[PrimaryColor_1];;
+	border-right-color: &[PrimaryColor_5];;
+	border-bottom-color: &[PrimaryColor_5];;
 }
 
 .menuTitle td, .menuTitle th {
@@ -1345,7 +1351,11 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #fts_filter .no_border td { border-bottom: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
 
-.panel_block .header { padding: 5px 0px 5px 0px; width: 100%; text-align: left; background: url(../images/iPhoneToolbar.png) repeat-x; }
+.panel_block .header { padding: 5px 0px 5px 0px; width: 100%; text-align: left; /*background: url(../images/iPhoneToolbar.png) repeat-x;)*/
+    background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
+    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+ }
 /*.panel_block .header td { width: 100%; }*/
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
 .panel_block .header #item_selector { /*width: 100%;*/ }
