@@ -1534,7 +1534,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #div_info .text_editor_container { text-align: left; }
 #div_info .text_editor_container .label { float: none; }
 
-#div_info td.pGr { text-align: center; }
+#div_info td.pGr { background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_5];);
+                   font-weight:bold; font-size:1em; text-align:center; text-align: center; }
 #div_info a { margin-left: 5px; }
 
 /* set left alignment in description TD containing table */
