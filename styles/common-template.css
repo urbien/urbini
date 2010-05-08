@@ -554,8 +554,8 @@ td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #00
 /*span.xxl {font-family:Helvetica, verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}*/
 
 /* Properties for backlink resource list that is displayed inline on property sheet page */
-table.displayInline {border:solid #808080 1px; background-color: #ffffff; color: #000000}
-tr.displayInline {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
+table.displayInline {border:solid #808080 1px;}
+tr.displayInline {border:solid #808080 1px; background-color: #e7ebf0;}
 td.hi {background-color: #f8f4ef; color: darkblue}
 td.contents {background-color: #f8f4ef; color: darkblue; font-weight:bold; font-size: small}
 font.warn {color:#A01E00}
