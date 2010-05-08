@@ -1386,17 +1386,17 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 /* ??? label + chosen_value_div */
 .rounded_rect_tbl .data_td { width: 100%; }
 .rounded_rect_tbl .data_td table { width: 100%; }
-.rounded_rect_tbl .data_td .input_td { width: 100%; text-align:right; padding: 0px 3px; }
+.rounded_rect_tbl .data_td .input_td { width: 100%; text-align:right; padding: 0px 3px; color: &[SecondaryColorA_5];;}
 
 /*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty {  }
 /*.rounded_rect_tbl*/ .arrow_td div { width: 18px; height: 20px; cursor: pointer; background: url(../images/skin/iphone/listArrow_sprite.png) 0px 0px;}
 .arrow_td_empty div { width: 18px; height: 20px; }
 
 .rounded_rect_tbl .label_td { white-space: nowrap; } 
-.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; overflow: visible; color: #000000}
+.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; overflow: visible; color: &[SecondaryColorA_3];;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
-.rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: #000000; -webkit-appearance: none; text-align: right; /*margin-left: 7px;*/ width: 100%/*initial value*/; height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
+.rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: &[SecondaryColorA_3];; -webkit-appearance: none; text-align: right; /*margin-left: 7px;*/ width: 100%/*initial value*/; height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
 .rounded_rect_tbl .textarea { color: #000; font-family: Helvetica, Arial;  font-size: 16px; margin-bottom: 5px; width: 100%; }
 .rounded_rect_tbl .comment { text-align: left; color: #555; font-size: 11px; }
 .rounded_rect_tbl .select { font-family: Helvetica, Arial;  font-size: 14px; height: 20px; color: #000; background-color: #fff; }
