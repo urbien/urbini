@@ -26,10 +26,10 @@
     </td>
   </tr>
   <tr class="menuLine">
-    <td valign="middle" class="menuLine" colspan="3">
-      <resourceTypeLabel/>
+    <td valign="middle" class="menuLine" colspan="4">
+      <resourceTypeLabel/><!--resourceTitle/-->
     </td>
-    <td valign="top" class="menuLine" align="right"><resourceTitle/></td>
+    <!--td valign="top" class="menuLine" align="right"><resourceTitle/></td-->
   </tr>
   <tr>
     <td colspan="3" align="center" class="abc">
