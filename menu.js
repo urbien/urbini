@@ -7528,6 +7528,8 @@ var FtsAutocomplete = {
 	timerId : null,
 	autocompleteDiv : null,
 	
+	prevText : "",
+	
 	// init called from FieldsWithEmptyVAlues
 	init : function(field) {
 		addEvent(field, "keyup", this.onkeyup, false);	
@@ -7560,6 +7562,12 @@ var FtsAutocomplete = {
 
 		var form = getAncestorByTagName($t.field, 'form');
 		var text = FieldsWithEmptyValue.getValue($t.field); //form["-q"]
+		if ($t.prevText == text) {
+			return;
+		}
+	
+		$t.prevText = text;
+	
 		if (text.length == 0) {
 			$t.hide();
 			return;
@@ -7583,6 +7591,7 @@ var FtsAutocomplete = {
 		else {
 			$t.autocompleteDiv.innerHTML = content;
 			$t.autocompleteDiv.style.display = "";
+			Filter.hide();
 		}
 	},
 	
