@@ -284,13 +284,16 @@ td.textCell {
   .cpTabs {
     cursor: pointer;
     padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;
+    backgroundColor: &[PrimaryColor_4];;
   }
 
 	#resourceList .cpTabs td { height: auto; }
 	#resourceList .currentCpTabs td { height: auto; }
 
   .currentCpTabs {
-     padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;  
+    padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;  
+    color: &[PrimaryColor_4];;
+    background-color: &[SecondaryColorA_5];;
   }
 
   .currentTabTitle {
@@ -632,7 +635,16 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .user      {color:darkblue; font-family: Helvetica, Verdana, Arial, sans-serif; font-weight:bold; text-decoration:none; font-size:8pt;}
 
 /*.group {background:#f8f4ef; FONT-WEIGHT: bold; FONT-SIZE: 16px; PADDING-BOTTOM: 3px; cursor: pointer; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}*/
-.group {background:#f8f4ef; FONT-WEIGHT: bold; white-space: nowrap;margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; vertical-align: middle;}
+.group {
+  background-color: &[PrimaryColor_4];;
+  color: &[SecondaryColorA_5];;  
+  FONT-WEIGHT: bold; 
+  margin-left: 6px; 
+  white-space: nowrap; 
+  font-family: Helvetica, Arial; 
+  font-size: 16px; 
+  vertical-align: middle;
+}
 
 /* Under menu line style (usually the same color as tabs */
 .line { background:&[FTS];; font-size:16px; font-weight:bold;}
@@ -1325,7 +1337,7 @@ input:focus { outline: 0 none; }
 .panel_block {
   position: absolute;
   width: 50%; 
-	min-width: 20em;
+	min-width: 10em;
   max-width: 30em;
   padding: 0px;
   
@@ -1388,6 +1400,9 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl .param_tr .rollup_td { cursor: text; }
 .rounded_rect_tbl .param_tr .rollup_td img { margin: 2px; }
+
+.viewColsTabs { color: &[SecondaryColorA_5];; cursor: pointer; font-weight: bold}
+.viewCols {background-color: &[PrimaryColor_4];}
 
 /* ??? label + chosen_value_div */
 .rounded_rect_tbl .data_td { width: 100%; }
