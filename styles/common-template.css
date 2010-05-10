@@ -1578,13 +1578,13 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .contentRelated {
   background: #fdfdfd;
 }
-#auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color:#ECECEC; }
-#auto_complete .menuItem, #auto_complete .not_found { padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove #FFFFFF; }
-#auto_complete td.menuItem:hover { background-color: #fff; }
+#auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color: &[PrimaryColor_4];; }
+#auto_complete .menuItem, #auto_complete .not_found { padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_4];; }
+#auto_complete td.menuItem:hover { color: &[SecondaryColorB_4];; background-color: &[PrimaryColor_1];; }
 #auto_complete tr:last-child td { border-bottom: none; }
 #auto_complete .menuItem div { float: left; line-height: 45px; margin-right: 5px; }
 #auto_complete .menuItem table { float: right; }
 #auto_complete .menuItem table td { text-align: center; padding: 0px 2px; }
 #auto_complete a { font-size: 12px; margin-left: 0px; }
-.dsk_auto_complete { padding: 2px; width: 30%; min-width: 20em; max-width:30em -moz-box-shadow: 6px 6px 25px #555; -webkit-box-shadow: 6px 6px 25px #555; }
+.dsk_auto_complete { padding: 2px; /*width: 30%; min-width: 20em; max-width:30em;*/ -moz-box-shadow: 6px 6px 25px #555; -webkit-box-shadow: 6px 6px 25px #555; }
 
