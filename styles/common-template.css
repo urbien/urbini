@@ -1613,3 +1613,9 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #auto_complete a { font-size: 12px; margin-left: 0px; }
 .dsk_auto_complete { padding: 2px; min-width: 450px;  -moz-box-shadow: 6px 6px 25px #555; -webkit-box-shadow: 6px 6px 25px #555; }
 
+/* RTE and styles editor */
+.ctrl_toolbar { position : relative; display: block; left: 0px; top: 0px; width: 100%; borderWidth: 0px;
+    background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_1_rgb];, 0.5), rgba(&[PrimaryColor_4_rgb];, 0.5));
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb];, 0.5)), to(rgba(&[PrimaryColor_4_rgb];, 0.5)));
+    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+}
