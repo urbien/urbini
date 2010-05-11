@@ -974,7 +974,6 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 	var BOTTOM_PADDING = 5;
 	this.BTN_PADDING = 2;
 	var BTN_GAP = 4
-  var BACKGROUND_IMG = "images/skin/blue/tab-middle.gif";
 
 	var i_am = this;
 	this.parentDiv = parentDiv;
@@ -1005,15 +1004,6 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 		// 2. create, namely, toolbar
 		this.div = document.createElement('div');
 		this.div.className = "ctrl_toolbar";
-		this.div.style.position = "relative"; //"absolute";
-		this.div.style.display = "block";
-		this.div.style.left = 0;
-		this.div.style.top = 0;
-		this.div.style.width = "100%";
-		this.div.style.height = this.height;
-		this.div.style.backgroundImage = "url(" + BACKGROUND_IMG + ")";
-		this.div.style.backgroundPosition = "center center";
-		this.div.style.borderWidth = 0;
 
 		if (this.insertBeforeObj)
 			this.parentDiv.insertBefore(this.div, this.insertBeforeObj);
