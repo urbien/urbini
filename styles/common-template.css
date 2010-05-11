@@ -1384,7 +1384,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .panel_block #lists_container { padding: 10px; width: 100%; }
 /* make color blend into the pinstripes */
-.panel_block .content { background: rgba(&[PrimaryColor_4_rgb];,0.8);  padding: 10px; width: 100%; } 
+.panel_block .content { padding: 10px; width: 100%; } 
 
 #subscribe .content { display: none; }
 .panel_block .property_group, .panel_block #item_name { color: #4B5578; text-shadow: #edf1fa 1px 1px 0px; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; /*text-transform: uppercase;*/ }
@@ -1460,8 +1460,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .panel_block #hide_icon, #menu_Options #hide_icon { position: relative; z-index: 2; top: 25px; left: -5px; cursor: pointer; }
 #menu_Options #hide_icon { top: 15px; left: -4px; }
-
-#pane2 .content { padding: 15px 10px;  background: url(../images/skin/iphone/pinstripes.png) repeat scroll 0%; }
+/* #pane2 - "plain" dialogs */
+#pane2 .content { padding: 15px 10px; background: rgb(&[PrimaryColor_4_rgb];) url(../images/skin/iphone/pinstripes.png); }
 
 
 .frame {
@@ -1473,7 +1473,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   overflow-y: visible;
   padding: 0;
   border: none;
-  background: url(../images/skin/iphone/pinstripes.png) repeat scroll 0%;
+  background: rgb(&[PrimaryColor_4_rgb];) url(../images/skin/iphone/pinstripes.png);
 }
 
 #siteResourceList .frame { background: none; }
