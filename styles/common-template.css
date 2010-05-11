@@ -1043,7 +1043,7 @@ TD.toolbar {
   */
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_5];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_5];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_5];)
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#&[PrimaryColor_4_ie];,endColorstr=#&[PrimaryColor_5_ie];)
    
 }
 .dashboardLine A { color: &[PrimaryColor_3];; font-weight: bold; }
