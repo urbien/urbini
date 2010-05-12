@@ -1053,7 +1053,7 @@ TD.toolbar {
   text-align: center;  
   overflow: visible; 
   border: 1px solid transparent;
-  cursor: pointer; 
+  cursor: pointer;
   /*border-color: &[PrimaryColor_4];*/
 }
 
@@ -1401,7 +1401,30 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .param_tr .rollup_td { cursor: text; }
 .rounded_rect_tbl .param_tr .rollup_td img { margin: 2px; }
 
-.viewColsTabs { color: &[SecondaryColorA_5];; cursor: pointer; font-weight: bold}
+
+.changeViewCols {
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+  background-repeat:repeat-x;
+  background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[FTS];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_5];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#&[PrimaryColor_4_ie];,endColorstr=#&[PrimaryColor_5_ie];)
+}
+.changeViewCols td.dashboard_btn:hover {  
+	border-left-color: &[PrimaryColor_5];;
+	border-top-color: &[PrimaryColor_5];;
+	border-right-color: &[PrimaryColor_1];;
+	border-bottom-color: &[PrimaryColor_1];;
+}
+.changeViewCols td.current {
+	border-left-color: &[PrimaryColor_1];;
+	border-top-color: &[PrimaryColor_1];;
+	border-right-color: &[PrimaryColor_5];;
+	border-bottom-color: &[PrimaryColor_5];;
+}
+
+
+.viewColsTabs { color: &[PrimaryColor_3];; cursor: pointer; font-weight: bold; white-space: nowrap;}
 .viewCols {background-color: &[PrimaryColor_4];}
 
 /* ??? label + chosen_value_div */
