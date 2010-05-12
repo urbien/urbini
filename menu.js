@@ -3252,6 +3252,11 @@ var ListBoxesHandler = {
     // show item/parameter name (if it is too long)
     $t.displayItemName();
 
+		if ($t.panelBlock.id == "fts_filter" && Browser.ie) { // IE does not support min-width
+			if ($t.optionsPanel.clientWidth > $t.panelBlock.clientWidth)
+				$t.panelBlock.style.width = $t.optionsPanel.clientWidth;
+		}
+		
     // slide forward
 		var curPanel = $t.getCurrentPanelDiv();
 		if (curPanel && curPanel.className != panel.className) {
@@ -3668,6 +3673,10 @@ var ListBoxesHandler = {
 			$t.panelBlock.style.visibility = "";
 		
 		$t.textEntry.name = "";
+		
+		if ($t.panelBlock.id == "fts_filter" && Browser.ie) { // IE width fitting
+			$t.panelBlock.style.width = $t.formPanel.clientWidth; 
+		}
 		
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
 		TouchDlgUtil.bleachBlueRow();
@@ -4596,8 +4605,13 @@ var DataEntry = {
   submit : function(e, submitIcon) {
 		var $t = DataEntry;
 		var form = null;
-		if (submitIcon) 
+		if (submitIcon) {
 			form = getAncestorByTagName(submitIcon, "form");
+			if (form == null) {
+				var panel = getAncestorByClassName(submitIcon, "panel_block");
+				form = getChildByTagName(panel, "form");
+			}
+		}
 		else {
 			var dataEntry = $t.getCurrentDataEntry();
 			if (!dataEntry) 
@@ -4880,7 +4894,6 @@ var TouchDlgUtil = {
 			if (tables[i].id.indexOf("siteRL_") == 0)
 				addEvent(tables[i], 'mousedown', this.highlightRowBlue, false);
 		}
-		
 		addEvent(document, 'keyup', this.keyHandler, true);
 	},
 	
@@ -4890,6 +4903,7 @@ var TouchDlgUtil = {
 		var target = getEventTarget(event);
 		var tagName = (typeof target.tagName != 'undefined') ? target.tagName.toLowerCase() : "";
 		var wasProcessed = false;
+		
 		// 1. backspace
 		if (code == 8) {
 			if (target.className != "iphone_field") {
@@ -7532,7 +7546,7 @@ var FtsAutocomplete = {
 	
 	// init called from FieldsWithEmptyVAlues
 	init : function(field) {
-		addEvent(field, "keyup", this.onkeyup, false);	
+		addEvent(field, "keyup", this.onkeyup, false);
 		this.field = field; 
 	},
 	
@@ -7589,9 +7603,9 @@ var FtsAutocomplete = {
 		if (!content || content.length == 0) 
 			$t.autocompleteDiv.style.display = "none";
 		else {
+			TouchDlgUtil.closeAllDialogs();
 			$t.autocompleteDiv.innerHTML = content;
 			$t.autocompleteDiv.style.display = "";
-			Filter.hide();
 		}
 	},
 	
