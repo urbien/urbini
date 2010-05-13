@@ -376,6 +376,11 @@ body {
   height: 100%;
 }
 
+.printBody {
+  background-color: #ffffff;
+  color: #000000;
+}
+
 /* styles from properties.css 
 #container {
   position: relative;
@@ -511,6 +516,7 @@ td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
   font-size:16px;
   font-weight:normal;
   height:auto;
+  color: &[Color];;
 }
 
 .xs .input { border: 1px solid #ababab; }
