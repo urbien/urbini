@@ -3,7 +3,7 @@
     <include name="commonHead.jsp" />
   </head>
 
-  <body id="body" text="#000000" bgColor="#ffffff" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
+  <body id="body" class="printBody" leftMargin="0" topMargin="0" marginwidth="0" marginheight="0">
 		<table width="100%">
 		<tr>
 	    <td valign="top" nowrap="nowrap" align="right">
