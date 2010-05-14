@@ -1347,8 +1347,8 @@ input:focus { outline: 0 none; }
   max-width: 30em;
   padding: 0px;
   
-  -moz-box-shadow: 6px 6px 25px #555;
-  -webkit-box-shadow: 6px 6px 25px #555;
+  -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
 }
 
 /* 'on page' */
@@ -1642,7 +1642,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #auto_complete .menuItem table { float: right; }
 #auto_complete .menuItem table td { text-align: center; padding: 0px 2px; }
 #auto_complete a { font-size: 12px; margin-left: 0px; }
-.dsk_auto_complete { padding: 2px; min-width: 450px;  -moz-box-shadow: 6px 6px 25px #555; -webkit-box-shadow: 6px 6px 25px #555; }
+.dsk_auto_complete { padding: 2px; min-width: 450px;  -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); }
 
 /* RTE and styles editor */
 .ctrl_toolbar { position : relative; display: block; left: 0px; top: 0px; width: 100%; borderWidth: 0px;
