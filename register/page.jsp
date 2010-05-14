@@ -14,8 +14,8 @@
 
     <table width="100%"  height="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
-    <td valign="top" width="90%">
-    <file/>
+    <td>
+      <file/>
     </td></tr></table>
     <br/>
 
@@ -46,6 +46,5 @@
 		
 		</script>
 		
-		<include name="include/commonFooter"/>
   </body>
 </html>

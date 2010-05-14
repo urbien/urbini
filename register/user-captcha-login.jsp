@@ -1,6 +1,6 @@
 <div id="mainskin" class="blue">
 <div style='vertical-align: middle; padding-top:5px'>
-  <form name="captcha" method="POST" autocomplete="off" action="jj_security_check">
+  <form name="captcha" method="POST" autocomplete="off" action="jj_security_check?-captchaLogin=y">
     <table width="100%" align="center" cellpadding="2" cellspacing="0">
     <tr>
       <td>
