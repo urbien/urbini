@@ -1554,7 +1554,9 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .iphone_search input { -webkit-appearance: none; width: 100%; padding: 5px 0px 0px 0px; background-position: top center; font: bold 17px Helvetica; border: none; }
 
 /*.toolbar_icons_set { width: 25; height: 40; background-image: url(../images/skin/iphone/toolbar_icons_set.png) }*/
-.icon_btn { width: 30px; height: 30px; cursor: pointer; /*margin: 0px 2px 0px 2px; padding: 0; float: left; border: none;*/ }
+.icon_btn, .icon_btn_symb { color: #eee;  cursor: pointer; font-family: arial; font-size: 23px; height: 30px; width: 30px; }
+.icon_btn_symb { -webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0.8))); }
+
 .right { float: right; /*margin-right: 4px;*/ }
 
 /** shadow **/
