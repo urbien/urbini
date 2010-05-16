@@ -488,6 +488,8 @@ cdfBody {font-family: Helvetica, Verdana, geneva, arial; font-weight: normal; }
 tr.rlHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 tr.rlHeader td { vertical-align: middle; }
 
+tr.prTitle {background-image: -moz-linear-gradient(top center, #ACE2CE, #ffffff); color:#000000; font-weight:bold; font-size:8pt;}
+
 /* input.chk {background-color:#cbcbcb; font-size:7pt} */
 .dheader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 
