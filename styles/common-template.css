@@ -1494,8 +1494,13 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .panel_block #hide_icon, #menu_Options #hide_icon { position: relative; z-index: 2; top: 25px; left: -5px; cursor: pointer; }
 #menu_Options #hide_icon { top: 15px; left: -4px; }
 /* #pane2 - "plain" dialogs */
-#pane2 .content { padding: 15px 10px; background: rgb(&[PrimaryColor_4_rgb];) url(../images/skin/iphone/pinstripes.png); }
+#pane2 .content { padding: 15px 10px; 
 
+	background: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 0px, #eee 4px);
+	background: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
+	-webkit-background-size: 4px 1px;
+	_background: rgb(&[PrimaryColor_4_rgb];) url(../images/skin/iphone/pinstripes.gif); /* IE */
+}
 
 .frame {
 	width: 100%; /* takes 100% of panel block width */
@@ -1506,7 +1511,10 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   overflow-y: visible;
   padding: 0;
   border: none;
-  background: rgb(&[PrimaryColor_4_rgb];) url(../images/skin/iphone/pinstripes.png);
+  background: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 0px, #eee 4px);
+	background: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
+	-webkit-background-size: 4px 1px;
+  _background: rgb(&[PrimaryColor_4_rgb];) url(../images/skin/iphone/pinstripes.gif); /* IE */
 }
 
 #siteResourceList .frame { background: none; }
