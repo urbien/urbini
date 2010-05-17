@@ -26,13 +26,10 @@ a img {
   white-space: nowrap;
 }
 .propLabelI {
-  font-family: Helvetica, Verdana, Arial, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;
+  font-family: Helvetica, Verdana, Arial, sans-serif; color: &[SecondaryColorB_5];; font-size: 10pt; font-weight: normal;
   white-space: nowrap;
 }
-/* Used for prop labels in widgets */
-.propLabel1 {
-  font-family: Helvetica, Verdana, Arial, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;
-}
+
 /* Chinese font for prop labels */
 .propLabel:lang(zh) {
   font-family: "Li Sung", MingLiu; font-size:1em;
@@ -599,7 +596,7 @@ span.fileMenuTitle  {font-family:Helvetica, sans-serif, arial; font-weight:bold;
                     color-stop(100%, #ffffff));   
                     -webkit-background-clip: text;   
                     -webkit-text-fill-color: transparent; 
-  background-image: -moz-linear-gradient(top, &[SecondaryColorB_5];, &[SecondaryColorB_5];, #ffffff) !important;
+  background-image: -moz-linear-gradient(top, &[SecondaryColorA_5];, &[SecondaryColorA_5];, #ffffff) !important;
 }
 
 .bigLetterTitleSchedule { 
@@ -607,11 +604,11 @@ span.fileMenuTitle  {font-family:Helvetica, sans-serif, arial; font-weight:bold;
   font-weight:bold; 
   font-size:12pt; 
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%,  
-                    color-stop(0%,  &[SecondaryColorB_5];),                      
+                    color-stop(0%,  &[SecondaryColorA_5];),                      
                     color-stop(100%, #ffffff));   
                     -webkit-background-clip: text;   
                     -webkit-text-fill-color: transparent; 
-  background-image: -moz-linear-gradient(top, &[SecondaryColorB_5];, &[SecondaryColorB_5];, #ffffff) !important;
+  background-image: -moz-linear-gradient(top, &[SecondaryColorA_5];, &[SecondaryColorA_5];, #ffffff) !important;
 }
 
 /* To display window titles on a dashboard */
@@ -690,11 +687,6 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 
 .filterLine {background: #E7EBF0}
-/* BLACK */
-
-.propLabel1 {
-  font-family: Verdana, Arial, Helvetica, sans-serif; color: #8f837d; font-size: 8pt; font-weight: normal;
-}
 
 /* Scheduling page styles */
 .schedule     {
