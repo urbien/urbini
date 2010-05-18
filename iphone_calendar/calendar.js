@@ -16,7 +16,7 @@ function startCalendar(parentDiv, callback, fromInp, toInp) {
         html +=
         "<tr><td class=\"header\">" +
 				"<table><tr>" +
-				"<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onBackBtn(1);\"><img src=\"../images/skin/iphone/back_arrow.png\" /></td>" +
+				"<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onBackBtn(1);\">&#9668;&#9642;&#9642;</td>" + //<img src=\"../images/skin/iphone/back_arrow.png\" />
 				"<td class=\"icon_btn\" onclick=\"DatePicker.onDateClear();\"> <img src=\"../images/skin/iphone/clear.png\" /></td>" +
 				"<td width=\"100%\"></td>" +
 				"<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onDatesList();\"> <img src=\"../images/skin/iphone/list_bullets.png\" /></td>" +
@@ -27,11 +27,11 @@ function startCalendar(parentDiv, callback, fromInp, toInp) {
         // TR 2nd period header ---
         "<tr><td class=\"header\">" +
 					"<table><tr>" +
-					"<td class=\"icon_btn\" onclick=\"PeriodPicker.onDoneBtn();\"><img src=\"../images/skin/iphone/back_arrow.png\" /></td>" +
+					"<td class=\"icon_btn\" onclick=\"PeriodPicker.onDoneBtn();\">&#9668;&#9642;&#9642;</td>" + // <img src=\"../images/skin/iphone/back_arrow.png\" />
 					"<td class=\"icon_btn\" onclick=\"Filter.onPeriodReset();\"><img src=\"../images/skin/iphone/clear.png\" /></td>" +					
 					"<td width=\"100%\"></td>" +
-					"<td class=\"icon_btn\" onclick=\"PeriodPicker.onFromBtn(this);\" style=\"background-color: " + PeriodPicker.BLUE_BG + "\"><img src=\"../images/skin/iphone/from.png\" /></td>" +
-					"<td class=\"icon_btn\" onclick=\"PeriodPicker.onToBtn(this);\"><img src=\"../images/skin/iphone/to.png\" /></td>" +					
+					"<td class=\"icon_btn\" onclick=\"PeriodPicker.onFromBtn(this);\" style=\"background-color: " + PeriodPicker.BLUE_BG + "\"><span class=\"icon_btn_symb\">l&#9668</span></td>" + // <img src=\"../images/skin/iphone/from.png\" />
+					"<td class=\"icon_btn\" onclick=\"PeriodPicker.onToBtn(this);\"><span class=\"icon_btn_symb\">&#9658;l</span></td>" + //	<img src=\"../images/skin/iphone/to.png\" />			
 					"<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onDatesList();\"><img src=\"../images/skin/iphone/list_bullets.png\" /></td>" +
 					"</tr></table>" +
 				"</td></tr>";
@@ -285,19 +285,23 @@ var iPhoneCalendar = {
     
     this.header.innerHTML = 
       "<div class=\"back_year\" onclick=\"iPhoneCalendar.onYearMove(-1);\">" +
-      "<img src=\"iphone_calendar/img/back_year.jpg\" />" +
+      //"<img src=\"iphone_calendar/img/back_year.jpg\" />" +
+			"&#9668;l" +
       "</div>" +
       
       "<div class=\"back\" onclick=\"iPhoneCalendar.onMonthMove(-1);\">" +
-      "<img src=\"iphone_calendar/img/back.jpg\" />" +
+      //"<img src=\"iphone_calendar/img/back.jpg\" />" +
+			"&#9668;" +
       "</div>" +
 
       "<div class=\"forward_year\" onclick=\"iPhoneCalendar.onYearMove(1);\">" +
-      "<img src=\"iphone_calendar/img/forward_year.jpg\" />" +
+      //"<img src=\"iphone_calendar/img/forward_year.jpg\" />" +
+			"l&#9658;" +
       "</div>" +
 
       "<div class=\"forward\" onclick=\"iPhoneCalendar.onMonthMove(1);\">" +
-      "<img src=\"iphone_calendar/img/forward.jpg\" />" +
+      //"<img src=\"iphone_calendar/img/forward.jpg\" />" +
+			"&#9658;" +
       "</div>" +
 
       "<div class=\"month_year\"></div>";
