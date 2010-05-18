@@ -1054,7 +1054,6 @@ TD.toolbar {
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_5];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_5];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#&[PrimaryColor_4_ie];,endColorstr=#&[PrimaryColor_5_ie];)
-   
 }
 .dashboardLine A { color: &[PrimaryColor_3];; font-weight: bold; }
 
@@ -1341,16 +1340,15 @@ form { margin-top: 0; margin-bottom: 0; }
 /* prevents blue rect in WebKit browsers */
 input:focus { outline: 0 none; }
 
-#pane2 { position: absolute; display: inline; left: 0px; top: 0px; width: auto !important; width: 200px; }
+#pane2 { position: absolute; display: inline; left: 0px; top: 0px; min-width: 1px; width: auto !important; width: 200px; }
 
 /* dialog: body is a parent */
 .panel_block {
   position: absolute;
   width: 50%; 
-	min-width: 300px;
+  min-width: 300px;
   max-width: 800px;
   padding: 0px;
-  
   -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
 }
@@ -1382,7 +1380,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #fts_filter .no_border td { border-bottom: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
 
-.panel_block .header { padding: 5px 0px 5px 0px; width: 100%; text-align: left; /*background: url(../images/iPhoneToolbar.png) repeat-x;)*/
+.panel_block .header { line-height:30px; width: 100%; text-align: left; /*background: url(../images/iPhoneToolbar.png) repeat-x;)*/
     background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
@@ -1548,14 +1546,20 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 
 /** iPhone field **/
-.iphone_field { margin: 0px 3px 0px 0px;  }
-.iphone_field .left, .iphone_field .right, .iphone_field input { height: 30px;  /*float: left;*/ background: url(../images/skin/iphone/rounded_field.png); margin: 0px; border: 0px; }
-.iphone_field .left { width: 23px;  background-position: center left;  }
-.iphone_field .left img { margin-left: 3px; visibility : hidden; cursor: pointer; }
-.iphone_field .right { width: 8px; background-position: center right; }
+.iphone_field {
+	display: inline;
+	margin: 0px 3px 0px 0px;
+	padding: 4px;
+	-moz-border-radius:5px 5px 5px 5px;
+	-webkit-border-radius:5px 5px 5px 5px;
+	-moz-box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
+	-webkit-box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
+	background: #FFFFFF;
+	cursor: auto;
+}
 
-.iphone_field input { -webkit-appearance: none; /*width: 100%;*/ padding: 0px !important; padding-top: 5px; margin-top: 0px; background-position: center center; font: bold 17px Helvetica; border: none; }
-
+.iphone_field input { -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
+.iphone_field .clear_cross { position: relative; top: 4px; left: -2px; cursor: pointer; }
 
 /** iPhone search field **/
 .iphone_search { float: left; margin: 0px 0px 0px 5px; } /* used for mobile only */
