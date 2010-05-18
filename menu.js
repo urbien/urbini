@@ -619,6 +619,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * choose the menu element.
    */
   this.popupRowOnKeyPress = function(e) {
+		
+		
+		
     e = getDocumentEvent(e); if (!e) return;
 
     var currentDiv = self.getCurrentDiv();
@@ -3959,7 +3962,6 @@ var Filter = {
   // filter can have several
   initFilter : function(filterDiv) {
 		var filterHeader = getChildByClassName(filterDiv, "header");
-
 		var textEntry = getChildById(filterDiv, 'text_entry');
 		FieldsWithEmptyValue.initField(textEntry, 'select')
 		
@@ -4879,15 +4881,20 @@ var PlainDlg = {
 * common features for all dialogs
 ********************************************/
 var TouchDlgUtil = {
+	TR_CLASS : ["param_tr", "option_tr"],
+	
 	blueTr : null, //used for blue highlighting
+	greyTr : null,
 	skipBleachBlue : false, // used with RL editor
+	
+	curDlgDiv : null,
 	
 	init : function(parent) {
 		var tables = parent.getElementsByTagName("table");
     for (var i = 0; i < tables.length; i++) {
 			if (tables[i].className == "rounded_rect_tbl") {
-				addEvent(tables[i], 'mouseover', this.highlightRowGrey, false);
-				addEvent(tables[i], 'mouseout', this.bleachGreyRow, false);
+				addEvent(tables[i], 'mouseover', this.highlightRowGreyOnOver, false);
+				addEvent(tables[i], 'mouseout', this.bleachGreyRowOnOut, false);
 				addEvent(tables[i], 'mousedown', this.highlightRowBlue, false);
 			}
 			// no grey highlighting in RL editor
@@ -4895,6 +4902,11 @@ var TouchDlgUtil = {
 				addEvent(tables[i], 'mousedown', this.highlightRowBlue, false);
 		}
 		addEvent(document, 'keyup', this.keyHandler, true);
+		addEvent(document, 'keydown', this.arrowsHandler, true);
+	},
+	
+	setCurrentDialog : function(dlgDiv) {
+		this.curDlgDiv = dlgDiv;
 	},
 	
 	keyHandler : function(event) {
@@ -4906,7 +4918,7 @@ var TouchDlgUtil = {
 		
 		// 1. backspace
 		if (code == 8) {
-			if (target.className != "iphone_field") {
+			if (target.parentNode.className != "iphone_field") {
 		  	wasProcessed = ListBoxesHandler.onBackBtn();
   	  	// prevent default browser behavior (backspace) and  other handlers
 				if (wasProcessed) 
@@ -4930,6 +4942,47 @@ var TouchDlgUtil = {
 		}
 	},
 	
+	arrowsHandler : function(event) {
+		var $t = TouchDlgUtil;
+		var code = getKeyCode(event);
+	
+		if (!$t.greyTr)
+			return;
+		
+		var passToTr = null;
+		if (code == 40) { // down
+			passToTr = getNextSibling($t.greyTr);
+			if (!passToTr)
+				passToTr = getFirstChild($t.greyTr.parentNode);
+		//	passToTr.scrollIntoView(false);	
+		}
+		else if (code == 38) { //	up
+			passToTr = getPreviousSibling($t.greyTr);
+			if (!passToTr)
+				passToTr = getLastChild($t.greyTr.parentNode);
+		//	passToTr.scrollIntoView(true);		
+		}
+		else if(code == 39) {
+			
+			var clickEvent = new Object();
+			clickEvent["target"] = $t.greyTr;
+			clickEvent["type"] = "";
+			ListBoxesHandler.onClickParam(clickEvent);
+		}
+		else
+			return;
+		
+		
+		if (passToTr) {
+			$t.bleachGreyRow($t.greyTr);
+			$t.highlightRowGrey(passToTr);
+		}
+		stopEventPropagation(event);
+		
+// note: left (code == 37) and right (code == 39) are not handled for now.		
+
+	},
+	
 	// Note: only one opened dialog can be on a page in current version
 	// handled 3 "classes" of dialogs
 	submitOnEnter : function(event) {
@@ -4946,7 +4999,6 @@ var TouchDlgUtil = {
 		SubscribeAndWatch.submit(event);
 	},
 	
-
 	// closes 1) data entry 2) filter 3) plain dialog
 	closeAllDialogs : function() {
 		ListBoxesHandler.onBackBtn();
@@ -4955,15 +5007,29 @@ var TouchDlgUtil = {
 		Filter.hide();
 		PlainDlg.hide();
 		SubscribeAndWatch.hide();
-		FtsAutocomplete.hide();	  
+		FtsAutocomplete.hide();	 
+		
+		if (this.greyTr) {
+			this.bleachGreyRow(this.greyTr);
+			this.greyTr = null;
+		}
+
+		this.bleachBlueRow()
+		this.blueTr = null;
 	},
 	
-	highlightRowGrey : function(event) {
-    var target = getEventTarget(event);
-    var tr = getAncestorByClassName(target, "param_tr");
-    if (!tr)
-      return;
-		
+	highlightRowGreyOnOver : function(event) {
+    var $t = TouchDlgUtil;
+		var target = getEventTarget(event);
+    var tr = getAncestorByClassName(target, $t.TR_CLASS);
+		if($t.greyTr)
+			$t.bleachGreyRow($t.greyTr);	
+    if (tr)
+			$t.highlightRowGrey(tr);
+	},
+	
+	highlightRowGrey : function(tr) {
+		this.greyTr = tr;
 		if (tr.getAttribute("blue") != null)
 			return;
 			
@@ -4974,7 +5040,7 @@ var TouchDlgUtil = {
 	highlightRowBlue : function(event) {
 		var $t = TouchDlgUtil;
     var target = getEventTarget(event);
-    var tr = getAncestorByClassName(target, "param_tr");
+    var tr = getAncestorByClassName(target, $t.TR_CLASS);
     if (!tr)
       return;
 		
@@ -5041,19 +5107,21 @@ var TouchDlgUtil = {
 				divs[i].style.color = "#fff";
 		}
 	},
-	bleachGreyRow : function(event) {
+	bleachGreyRowOnOut : function(event) {
+		var $t = TouchDlgUtil;
 	  var target = getEventTarget(event);
-    var tr = getAncestorByClassName(target, "param_tr"); // "param_tr"
-    if (!tr)
-      return;
+    var tr = getAncestorByClassName(target, $t.TR_CLASS); // "param_tr"
+    if (tr)
+			$t.bleachGreyRow(tr);
 
+	},
+	bleachGreyRow : function(tr) {
 		if (tr.getAttribute("blue") != null)
 			return;
 		
 		for (var i = 0; i < tr.cells.length; i++)
 			tr.cells[i].style.background = "";	
 	},
-	
 	// "callback"
   bleachBlueRow : function() {
     if (this.blueTr == null)
@@ -5108,7 +5176,8 @@ var TouchDlgUtil = {
 		if (this.blueTr == null)
 			return false;
 		return this.blueTr.contains(field);
-	}    
+	}
+	
 }
 
 /**************************************************
@@ -7279,11 +7348,9 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     reposition(iframe, iframeLeft, iframeTop); // place iframe under div
   }
 
-  // used to close divs on "C" and for dialogs
-  /////closingOnEsc.ready(div);
+	// used to handle key-arrows events
+	TouchDlgUtil.setCurrentDialog(div);
 
- ////// console.log(new Date().getTime() - timerTmp);
- ///// div.setAttribute("way_displayed", "true");
 }
 
 function setDivInvisible(div, iframe) {
@@ -7547,6 +7614,7 @@ var FtsAutocomplete = {
 	// init called from FieldsWithEmptyVAlues
 	init : function(field) {
 		addEvent(field, "keyup", this.onkeyup, false);
+		addEvent(field, "keydown", this.onkeydown, false); // process arrow keys		
 		this.field = field; 
 	},
 	
@@ -7564,18 +7632,45 @@ var FtsAutocomplete = {
 	onkeyup : function(e) {
 		var $t = FtsAutocomplete;
 		
-		$t.field = getEventTarget(e);
+		// $t.field = getEventTarget(e);
 		if ($t.timerId)
 			clearTimeout($t.timerId);
 		
 		$t.timerId = setTimeout(FtsAutocomplete.onAutocomplete, $t.TIMEOUT);
 	},
 	
+	onkeydown : function(e) {
+		var $t = FtsAutocomplete;
+		
+		if ($t.autocompleteDiv == null)
+			$t._createDiv();
+		
+		var code = getKeyCode(e);
+		var isVisible = getElementStyle($t.autocompleteDiv).display != "none";
+		var hasText = FieldsWithEmptyValue.getValue($t.field).length != 0;
+		if (code == 40) {
+			//debugger;
+			TouchDlgUtil.arrowsHandler(e);
+		}
+/*		
+		if (code == 40) { // DOWN
+			if (!isVisible && hasText)
+				$t.autocompleteDiv.style.display = ""; // open
+				
+		}
+		else if	(code == 38 && isVisible) { // UP
+		
+		}
+*/
+		
+
+	},
+	
 	onAutocomplete: function() {
 		var $t = FtsAutocomplete;
 
 		var form = getAncestorByTagName($t.field, 'form');
-		var text = FieldsWithEmptyValue.getValue($t.field); //form["-q"]
+		var text = FieldsWithEmptyValue.getValue($t.field);
 		if ($t.prevText == text) {
 			return;
 		}
@@ -7877,20 +7972,19 @@ var FieldsWithEmptyValue = {
 		var $t = FieldsWithEmptyValue;
 		if (!$t.hasClearTextCtrl(field))
 			return;
-		var clearCtrl = getPreviousSibling(field.parentNode);
-		var img = clearCtrl.getElementsByTagName("img")[0];
+		var clearImg = getPreviousSibling(field);
 		var value = $t.getValue(field);
-		img.style.visibility = (value.length == 0) ? "hidden" : "visible";
+		clearImg.style.visibility = (value.length == 0) ? "hidden" : "visible";
 	},
 	// "cross" icon inside a field - clears text field content
-	onClickClearTextCtrl : function (crossDiv, callback) {
+	onClickClearTextCtrl : function (crossImg, callback) {
 		var $t = FieldsWithEmptyValue;
-		var field = crossDiv.parentNode.parentNode.getElementsByTagName("input")[0];
+		var field = crossImg.parentNode.parentNode.getElementsByTagName("input")[0];
 
 		$t.setEmpty(field);
 		setCaretPosition(field, 0);
 		
-		crossDiv.firstChild.style.visibility = "hidden";
+		crossImg.style.visibility = "hidden";
 	  // FF3 and higher has a problem while transform (CSS) sliding - hacked
 		//if (!Browser.firefox3)
 			field.focus();
@@ -7906,15 +8000,15 @@ var FieldsWithEmptyValue = {
 	},
 	
 	hasClearTextCtrl : function(field) {
-		var prevTd = getPreviousSibling(field.parentNode);
-		if (!prevTd)
-			return false;
+//		var prevTd = getPreviousSibling(field.parentNode);
+//		if (!prevTd)
+//			return false;
 		
-		var img = getChildByTagName(prevTd, "img");
+		var img = getPreviousSibling(field);//getChildByTagName(prevTd, "img");
 		if (!img)
 			return false;
 		
-		if (img.src.indexOf("clear_text.png") == -1)
+		if (img.src && img.src.indexOf("clear_text.png") == -1)
 			return false;	
 		
 		return true;
