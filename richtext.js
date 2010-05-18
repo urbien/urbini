@@ -75,7 +75,6 @@ var RteEngine = {
 	sizePopup : null,
 	smilePopup : null,
 	textColorPopup : null,
-	textColorPopup : null,
 	bgColorPopup : null,
 	linkPopup : null,
 	imagePopup : null,
@@ -897,9 +896,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     
     if(typeof Browser != 'undefined' && Browser.iPhone)
       this.document.body.style.webkitUserModify = "read-write";
-    
-    // load css of the parent page
-    this.loadCSS();
 	}
 	this.browserDetection = function() {
 		if(Browser.ie)
@@ -932,25 +928,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     // to prevent Ctrl + b,i,u,t in FF
   	addEvent(this.document, "keydown", this._onkeydown, false);
 	}
-  this.loadCSS = function() {
-		var baseUrl = getBaseUrl();
-		var cssFiles = [baseUrl + 'styles/common.css',
-		  baseUrl + 'styles/properties.css'];
-
-		for(var i = 0; i < cssFiles.length; i++) {
-		  if(this.document.createStyleSheet) {
-        this.document.createStyleSheet(cssFiles[i]);
-      }
-      else {
-        var head = this.document.getElementsByTagName('head')[0];
-        var css = document.createElement('link');
-        css.setAttribute('rel', 'stylesheet');
-        css.setAttribute('type', 'text/css');
-        css.setAttribute('href', cssFiles[i]);
-        head.appendChild(css);
-      } 
-    }
-  }
   
 	this.createToolbar = function() {
 		// Note: after second insertion of a dialog on mobile, RTE requires new initialization (?!)
@@ -1196,10 +1173,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		
 		
 		// makes toolbar 100% in IE
-		if (i_am.isIE) {
-			var label = getPreviousSibling(i_am.toolbar.div.parentNode);
-			label.style.styleFloat = "none";
-		}
+//		if (i_am.isIE) {
+//			var label = getPreviousSibling(i_am.toolbar.div.parentNode);
+//			label.style.styleFloat = "none";
+//		}
 
 		// make offset for toolbar over the iframe
 		i_am.iframeObj.style.marginTop = 7; //i_am.toolbar.getHeight() + 1;
