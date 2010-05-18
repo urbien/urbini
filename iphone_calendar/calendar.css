@@ -36,13 +36,13 @@
 
 #iphone_calendar .box table { width: 100%; }
 
-#iphone_calendar .header .back, #iphone_calendar .header .back_year { float: left; margin-left: 22px; margin-top: 12px; cursor: pointer; }
-#iphone_calendar .header .back_year { margin-left: 15px; }
+#iphone_calendar .header .back, #iphone_calendar .header .back_year { font-size:18px; float: left; margin-left: 22px; margin-top: 3px; cursor: pointer; }
+#iphone_calendar .header .back_year { margin-left: 25px; }
 
-#iphone_calendar .header .forward, #iphone_calendar .header .forward_year { float: right; margin-right: 22px;  margin-top: 12px; cursor: pointer; }
-#iphone_calendar .header .forward_year { margin-right: 15px; }
+#iphone_calendar .header .forward, #iphone_calendar .header .forward_year { font-size:18px; float: right; margin-right: 22px;  margin-top: 3px; cursor: pointer; }
+#iphone_calendar .header .forward_year { margin-right: 25px; }
 
-#iphone_calendar .header .month_year { font-size: 20px; padding-top: 7px; padding-bottom: 4px; font-weight: 900; text-align: center; }
+#iphone_calendar .header .month_year { font-size: 20px; padding-top: 3px; padding-bottom: 0px; font-weight: 900; text-align: center; }
 
 #iphone_calendar .header .day_name 
 {
