@@ -501,17 +501,36 @@ input.xxs {font-size: 10px; font-family:Helvetica, verdana,arial,sans-serif;}
 
 tr.fts td { vertical-align: middle; padding: 2px; }
 
-.desktop_search { float: left; width: 500px; }
-.desktop_search .left, .desktop_search .right, .desktop_search input { height: 37px;  float: left; background: url(../images/skin/iphone/desktop_search.png); margin: 0px; border: 0px; }
-.desktop_search .left { width: 15px; background-position: top left; cursor: pointer; }
-.desktop_search .right { width: 77px; background-position: top right; cursor: pointer; }
-.desktop_search input { padding-top: 0px !important; padding-top: 9px; width: 400px; /*padding: 8 0 0 0;*/ background-position: top center; font: bold 17px Helvetica; border: none; }
-.desktop_search .right div { float: left; width: 33px; height: 37px;  background: url(../images/skin/iphone/filter_arrow_sprite.png) top center; }
+.desktop_search { width: 500px; }
+.desktop_search .left {
+ 	float: left;
+  -moz-border-radius: 50% 0 0 50%;
+  -webkit-border-radius: 15 0 0 15;
+	-moz-box-shadow:1px 1px 1px rgba(0, 0, 0, 0.5) inset;
+	background: #FFFFFF;
+	width: 410;
+	height: 21px;
+	padding: 5px 3px 5px 10px;
+}
+.desktop_search input { width: 100%; font: bold 17px Helvetica; border: none; }
+.desktop_search .right {
+	-moz-border-radius: 0 50% 50% 0;
+	-webkit-border-radius: 0 15 15 0;
+	-moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+	-webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+	width: 77px; height: 31px; cursor: pointer;
+	background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+}
+.desktop_search .right div { float: left; color: &[SecondaryColorA_3];; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-family: arial; font-size: 18px; line-height:31px; text-align:center;}
+.desktop_search .right div:hover { color: &[SecondaryColorA_1];; }
+.desktop_search .right img { margin: 5px 0 0 8px; }
 
 /* VIEWS */
 table.views {border-bottom: 2px solid #C0C9D7; border-left: 2px solid #C0C9D7; border-right: 2px solid #AFC4D5; border-top:2px solid #AFC4D5;}
 tr.views   {background-color:#ffffe0; color:darkblue; text-decoration:none;}
-td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
+td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
 
 .select	{border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;background-color:#D6E7EF;font-size:1em}
 .selected	{border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;background-color:fffdc3;font-size:1em}
@@ -1050,10 +1069,14 @@ TD.toolbar {
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_4_rgb];,0.8), rgba(&[PrimaryColor_4_rgb];,0.1));
   */
-  background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_5];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_5];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#&[PrimaryColor_4_ie];,endColorstr=#&[PrimaryColor_5_ie];)
 }
+
+.dashboardLine, tr.rlHeader {
+  background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+}
+
 .dashboardLine A { color: &[PrimaryColor_3];; font-weight: bold; }
 
 .dashboard_btn { 
@@ -1381,7 +1404,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #fts_filter .no_border td { border-bottom: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
 
-.panel_block .header { line-height:30px; width: 100%; text-align: left; /*background: url(../images/iPhoneToolbar.png) repeat-x;)*/
+.panel_block .header { line-height:30px; width: 100%; text-align: left; border-bottom: 1px solid &[SecondaryColorB_4];;
     background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
@@ -1554,13 +1577,12 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	-moz-border-radius:5px 5px 5px 5px;
 	-webkit-border-radius:5px 5px 5px 5px;
 	-moz-box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
-	-webkit-box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
 	background: #FFFFFF;
 	cursor: auto;
 }
 
 .iphone_field input { -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
-.iphone_field .clear_cross { position: relative; top: 4px; left: -2px; cursor: pointer; }
+.iphone_field .clear_cross { position: relative; top: 4px; left: -2px; cursor: pointer; visibility: hidden; }
 .iphone_field .magnify_glass_small { position: relative; top: 3px; cursor: pointer; }
 .iphone_search { -moz-border-radius: 50%;	-webkit-border-radius: 50%; } /* used for mobile only */
 
@@ -1654,7 +1676,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #auto_complete .menuItem table { float: right; }
 #auto_complete .menuItem table td { text-align: center; padding: 0px 2px; }
 #auto_complete a { font-size: 12px; margin-left: 0px; }
-.dsk_auto_complete { padding: 2px; min-width: 450px;  -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); }
+.dsk_auto_complete { padding: 2px; -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); }
+.dsk_auto_complete .menuItem, .dsk_auto_complete .not_found { min-width: 460px; }
 
 /* RTE and styles editor */
 .ctrl_toolbar { position : relative; display: block; left: 0px; top: 0px; width: 100%; borderWidth: 0px;
