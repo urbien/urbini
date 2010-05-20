@@ -7572,14 +7572,11 @@ var DesktopSearchField = {
  
       // click inside the filter  
       if (getAncestorById(target, "common_filter") != null) {
-				if (target.id !== "close")
-					$t.invertArrowState(); // close icon
 				return;
 			}
     }
 		
     Filter.hide();
-		$t.invertArrowState();
 	},
 	
 	onFilterHide : function() { // used on ESC
@@ -7592,9 +7589,9 @@ var DesktopSearchField = {
 	
 	invertArrowState : function() {
 		if (this.isFilterOpened)
-			this.arrowDiv.style.backgroundPosition = "top center";
+			this.arrowDiv.innerHTML = "&#9660;";
 		else
-			this.arrowDiv.style.backgroundPosition = "bottom center";
+			this.arrowDiv.innerHTML = "&#9650;";
 		
 		this.isFilterOpened = !this.isFilterOpened;
 	}
@@ -7622,6 +7619,7 @@ var FtsAutocomplete = {
 		var form = getAncestorByTagName(field, 'form')
 		if (Browser.mobile) {
 			var url = FormProcessor.onSubmitProcess(e, form);
+			this.hide();
 			Filter.hide();
 			Mobile.getPage(e, url);
 		}
@@ -7649,21 +7647,8 @@ var FtsAutocomplete = {
 		var isVisible = getElementStyle($t.autocompleteDiv).display != "none";
 		var hasText = FieldsWithEmptyValue.getValue($t.field).length != 0;
 		if (code == 40) {
-			//debugger;
 			TouchDlgUtil.arrowsHandler(e);
 		}
-/*		
-		if (code == 40) { // DOWN
-			if (!isVisible && hasText)
-				$t.autocompleteDiv.style.display = ""; // open
-				
-		}
-		else if	(code == 38 && isVisible) { // UP
-		
-		}
-*/
-		
-
 	},
 	
 	onAutocomplete: function() {
@@ -7723,11 +7708,10 @@ var FtsAutocomplete = {
 			$t.autocompleteDiv.style.width = "100%";
 			// instead to make all parent elements with height 100%
 			//$t.autocompleteDiv.style.height = getWindowSize()[1];
-
 		}
 		else {
 			$t.autocompleteDiv.className = "dsk_auto_complete";
-			$t.autocompleteDiv.style.top = findPosY($t.field) + $t.field.offsetHeight + 5;
+			$t.autocompleteDiv.style.top = findPosY($t.field) + $t.field.offsetHeight + 7;
 			$t.autocompleteDiv.style.left = findPosX($t.field);
 		}
 		
