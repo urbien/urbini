@@ -5,11 +5,11 @@ A {
   padding: 5px 0px; 
   font-size: 15px;
   line-height: 15px;
-  color: &[SecondaryColorA_3];;
+  color: &[SecondaryColorA_2];;
 }
 
 
-A:hover {color: &[SecondaryColorA_1];; text-decoration : none; cursor: pointer}
+A:hover {color: &[SecondaryColorA_3];; text-decoration : none; cursor: pointer}
 
 a img {
 	border: 0;
@@ -207,7 +207,7 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
     -webkit-box-shadow: none;
   }
 }
-
+.button div { float: left; }
 .btn_with_icon { padding: 3px 3px 3px 10px !important; }
 .btn_with_symbol { font-size: 18px !important; padding: 2px 6px 4px 7px !important; }
 
@@ -504,9 +504,11 @@ tr.fts td { vertical-align: middle; padding: 2px; }
 .desktop_search { width: 500px; }
 .desktop_search .left {
  	float: left;
-  -moz-border-radius: 50% 0 0 50%;
-  -webkit-border-radius: 15 0 0 15;
-	-moz-box-shadow:1px 1px 1px rgba(0, 0, 0, 0.5) inset;
+ 	border-radius: 15px 0px 0px 15px;
+  -moz-border-radius: 15px 0px 0px 15px;
+  -webkit-border-radius: 15px 0px 0px 15px;
+  box-shadow: 1px 0px 2px rgba(0, 0, 0, 0.5) inset;
+	-moz-box-shadow: 1px 0 2px rgba(0, 0, 0, 0.5) inset;
 	background: #FFFFFF;
 	width: 410;
 	height: 21px;
@@ -514,11 +516,13 @@ tr.fts td { vertical-align: middle; padding: 2px; }
 }
 .desktop_search input { width: 100%; font: bold 17px Helvetica; border: none; }
 .desktop_search .right {
-	-moz-border-radius: 0 50% 50% 0;
-	-webkit-border-radius: 0 15 15 0;
+	border-radius: 0px 15px 15px 0px;
+	-moz-border-radius: 0px 15px 15px 0px;
+	-webkit-border-radius: 0px 15px 15px 0px;
 	-moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 	-webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 	width: 77px; height: 31px; cursor: pointer;
+	background-color: &[PrimaryColor_4];;
 	background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
@@ -1072,6 +1076,7 @@ TD.toolbar {
 }
 
 .dashboardLine, tr.rlHeader {
+  background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
@@ -1364,7 +1369,7 @@ form { margin-top: 0; margin-bottom: 0; }
 /* prevents blue rect in WebKit browsers */
 input:focus { outline: 0 none; }
 
-#pane2 { position: absolute; display: inline; left: 0px; top: 0px; min-width: 1px; width: auto !important; width: 200px; }
+#pane2 { position: absolute; display: inline; left: 0px; top: 0px; min-width: 1px; width: auto; /* IE & Opera width in JS */ }
 
 /* dialog: body is a parent */
 .panel_block {
@@ -1405,6 +1410,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
 
 .panel_block .header { line-height:30px; width: 100%; text-align: left; border-bottom: 1px solid &[SecondaryColorB_4];;
+    background-color: &[PrimaryColor_1];;
     background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
@@ -1421,12 +1427,12 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #subscribe .content { display: none; }
 .panel_block .property_group, .panel_block #item_name { text-shadow: #edf1fa 1px 1px 0px; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; /*text-transform: uppercase;*/ }
 
-.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px; border: solid rgb(166, 170, 173) 1px; empty-cells:show; }
+.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px; border: solid rgb(166, 170, 173) 1px; empty-cells:show; }
 /* the following rules required while item-rows highlighting */
-.rounded_rect_tbl tr:first-child td:first-child { -moz-border-radius: 10px 0px 0px 0px; -webkit-border-radius: 10px 0px 0px 0px; }
-.rounded_rect_tbl tr:first-child td:last-child { -moz-border-radius: 0px 10px 0px 0px; -webkit-border-radius: 0px 10px 0px 0px; }
-.rounded_rect_tbl tr:last-child td:first-child { -moz-border-radius: 0px 0px 0px 10px; -webkit-border-radius: 0px 0px 0px 10px; }
-.rounded_rect_tbl tr:last-child td:last-child { -moz-border-radius: 0px 0px 10px  0px; -webkit-border-radius:  0px 0px 10px 0px; }
+.rounded_rect_tbl tr:first-child td:first-child { border-radius: 10px 0px 0px 0px; -moz-border-radius: 10px 0px 0px 0px; -webkit-border-radius: 10px 0px 0px 0px; }
+.rounded_rect_tbl tr:first-child td:last-child { border-radius: 0px 10px 0px 0px; -moz-border-radius: 0px 10px 0px 0px; -webkit-border-radius: 0px 10px 0px 0px; }
+.rounded_rect_tbl tr:last-child td:first-child { border-radius: 0px 0px 0px 10px; -moz-border-radius: 0px 0px 0px 10px; -webkit-border-radius: 0px 0px 0px 10px; }
+.rounded_rect_tbl tr:last-child td:last-child { border-radius: 0px 0px 10px  0px; -moz-border-radius: 0px 0px 10px  0px; -webkit-border-radius:  0px 0px 10px 0px; }
 
 .rounded_rect_tbl .param_tr { cursor: pointer; }
 
@@ -1517,11 +1523,12 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #menu_Options #hide_icon { top: 15px; left: -4px; }
 /* #pane2 - "plain" dialogs */
 #pane2 .content { padding: 15px 10px; 
-
-	background: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 0px, #eee 4px);
-	background: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
+	background-color: &[PrimaryColor_4];;
+	background-image: url(../images/skin/iphone/pinstripes.gif);
+	background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 0px, #eee 4px);
+	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
 	-webkit-background-size: 4px 1px;
-	_background: rgb(&[PrimaryColor_4_rgb];) url(../images/skin/iphone/pinstripes.gif); /* IE */
+	
 }
 
 .frame {
@@ -1533,10 +1540,13 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   overflow-y: visible;
   padding: 0;
   border: none;
-  background: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 0px, #eee 4px);
-	background: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
+  
+  background-color: &[PrimaryColor_4];;
+  background-image: url(../images/skin/iphone/pinstripes.gif);
+  background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 0px, #eee 4px);
+	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
 	-webkit-background-size: 4px 1px;
-  _background: rgb(&[PrimaryColor_4_rgb];) url(../images/skin/iphone/pinstripes.gif); /* IE */
+  
 }
 
 #siteResourceList .frame { background: none; }
@@ -1574,8 +1584,10 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	display: inline;
 	margin: 0px 3px 0px 0px;
 	padding: 4px;
+	border-radius:5px 5px 5px 5px;
 	-moz-border-radius:5px 5px 5px 5px;
 	-webkit-border-radius:5px 5px 5px 5px;
+	box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
 	-moz-box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
 	background: #FFFFFF;
 	cursor: auto;
@@ -1589,7 +1601,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 /*.toolbar_icons_set { width: 25; height: 40; background-image: url(../images/skin/iphone/toolbar_icons_set.png) }*/
 .icon_btn, .icon_btn_symb { width: 30px; color: #eee;  cursor: pointer; font-family: arial; font-size: 23px; /*height: 30px; width: 30px;*/ }
-.icon_btn_symb { float: right; -webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0.8))); }
+.icon_btn_symb { -webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0.8))); }
 
 .right { float: right; /*margin-right: 4px;*/ }
 
