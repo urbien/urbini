@@ -7667,8 +7667,7 @@ var FtsAutocomplete = {
 			return;
 		}
 		
-		var params = "type=" + form["type"].value;
-		params += "&-q=" + text;
+		var params = FormProcessor.getFormFilters(form, true, null, true);
 		params += "&-ac=y";
 
 		postRequest(null, "smartPopup", params, null, null, $t.autocompleteCallback);
