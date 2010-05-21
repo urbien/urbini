@@ -4866,6 +4866,10 @@ var PlainDlg = {
 		this.dlgDiv = document.createElement("div");
 		this.dlgDiv.id = this.ID;
 		this.dlgDiv.className = "panel_block";
+		
+		if (Browser.ie || Browser.opera)
+			this.dlgDiv.style.width = 200;
+			
 		document.body.appendChild(this.dlgDiv);
 	},
 	getPane2Dialog : function() {
