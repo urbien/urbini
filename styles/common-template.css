@@ -5,11 +5,11 @@ A {
   padding: 5px 0px; 
   font-size: 15px;
   line-height: 15px;
-  color: &[SecondaryColorA_2];;
+  color: &[SecondaryColorA_3];;
 }
 
 
-A:hover {color: &[SecondaryColorA_3];; text-decoration : none; cursor: pointer}
+A:hover {color: &[SecondaryColorB_3];; text-decoration : none; cursor: pointer}
 
 a img {
 	border: 0;
@@ -46,6 +46,9 @@ H3 {font-family: Helvetica, arial, Verdana, geneva; font-size: 15px; font-weight
 img.fade {
    opacity:       0.6;
 }
+#user {font-family: Helvetica, Arial, Verdana, sans-serif; }
+#user a { color: &[SecondaryColorA_3_contrast];}
+#user span { &[SecondaryColorA_3_contrast];; font-weight: bold}
 
 #siteResourceList td, #resourceList td, #div_Info td { height: 30px; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
