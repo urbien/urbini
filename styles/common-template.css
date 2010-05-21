@@ -47,8 +47,8 @@ img.fade {
    opacity:       0.6;
 }
 #user {font-family: Helvetica, Arial, Verdana, sans-serif; }
-#user a { color: &[SecondaryColorA_3_contrast];}
-#user span { &[SecondaryColorA_3_contrast];; font-weight: bold}
+#user a { color: &[SecondaryColorA_3_brighter];}
+#user span { &[SecondaryColorA_3_brighter];; font-weight: bold}
 
 #siteResourceList td, #resourceList td, #div_Info td { height: 30px; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
@@ -409,6 +409,8 @@ body {
 textarea  {  font-family: Helvetica, Verdana, Arial; font-size: 10px }
 input   { -webkit-appearance: none; font-family: Helvetica, Verdana, Arial; font-size: 9px; font-style: normal; line-height: normal; font-weight: normal;}
 
+td {font-family: Helvetica, Verdana, Arial, sans-serif; font-size: 15px;/*9pt;*/}
+
 .monospace { font-family:Courier,monospace; }
 
 tr.rlHeader { 
@@ -535,7 +537,7 @@ tr.fts td { vertical-align: middle; padding: 2px; }
 /* VIEWS */
 table.views {border-bottom: 2px solid #C0C9D7; border-left: 2px solid #C0C9D7; border-right: 2px solid #AFC4D5; border-top:2px solid #AFC4D5;}
 tr.views   {background-color:#ffffe0; color:darkblue; text-decoration:none;}
-td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
+td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
 
 .select	{border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;background-color:#D6E7EF;font-size:1em}
 .selected	{border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;background-color:fffdc3;font-size:1em}
@@ -1070,7 +1072,6 @@ TD.toolbar {
   margin: 0px 0px 0px 0px;
   padding: 0px 0px 0px 0px;
   background-repeat:repeat-x;
-
   /*
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_4_rgb];,0.8), rgba(&[PrimaryColor_4_rgb];,0.1));
@@ -1530,7 +1531,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 0px, #eee 4px);
 	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
 	-webkit-background-size: 4px 1px;
-
+	
 }
 
 .frame {
