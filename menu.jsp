@@ -20,7 +20,7 @@
 	      </tr>
       </table>
     </td>
-     <td align="right" valign="top">
+     <td align="right" valign="top" id="user">
        <!--a href="help.html"> <img src="icons/help.png" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" align="absmiddle"/></a-->
        <changePassword/><userLogOff html="user-login.html"/><registerNewUser/><myProfile property="unread" />
     </td>
