@@ -1412,7 +1412,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #fts_filter .no_border td { border-bottom: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
 
-.panel_block .header { line-height:30px; width: 100%; text-align: left; border-bottom: 1px solid &[SecondaryColorB_4];;
+.panel_block .header { 
+    line-height:30px; width: 100%; text-align: left; border-bottom: 1px solid &[FTS];;
     background-color: &[PrimaryColor_1];;
     background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
