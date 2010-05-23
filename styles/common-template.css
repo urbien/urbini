@@ -36,9 +36,9 @@ a img {
   font-family: "Li Sung", MingLiu; font-size:1em;
 }
 	  
-H1 {font-family: Helvetica, arial, Verdana, geneva; font-size: 17px; font-weight: bold; font-color: &[SecondaryColorA_1]; }
-H2 {font-family: Helvetica, arial, Verdana, geneva; font-weight: normal; font-size: medium; font-color: &[SecondaryColorB_1]; }
-H3 {font-family: Helvetica, arial, Verdana, geneva; font-size: 15px; font-weight: bold; font-color: &[SecondaryColorB_1]; }
+H1 {font-family: Palatino, Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorA_1]; }
+H2 {font-family: Palatino, Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1]; }
+H3 {font-family: Palatino, Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1]; }
 
 .pointer { cursor: pointer; }
 .dragable, .move { cursor: move; }
@@ -465,7 +465,7 @@ form {font-family:Helvetica, sans-serif, arial; font-size:9pt; padding:0; margin
 /* input.button {font-size:8pt;} */
 
 span.xxl {font-family:Helvetica, verdana, sans-serif, arial; font-weight:bold; font-size:16pt;}
-span.xl1 {font-family:Helvetica, sans-serif, arial; font-weight:bold; font-size:10pt;color:#000066;}
+span.xl1 {font-weight:bold;}
 span.ftsi {font-family:Helvetica, sans-serif, arial; font-size:10pt; font-weight:bold; font-style:italic }
 span.rxl {color:red; font-family:Helvetica, sans-serif, arial; font-weight:bold; font-size:16pt;}
 
@@ -840,7 +840,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .blogDivider {border-top: 1px dotted #aaaaaa;}
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
-.innerTitle {font-family:helvetica, arial, sans-serif; text-shadow: #edf1fa 1px 1px 0px; font-size: 18px; font-weight:bold; margin-left: 15px; }
+.innerTitle {text-shadow: &[SecondaryColorA_3];; 1px 1px 0px; font-size: 18px; font-weight:bold; margin-left: 15px; }
 
 *:lang(ja-jp) { font: 900 14pt/16pt "Heisei Mincho W9", serif }
 BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif }
@@ -1429,7 +1429,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .panel_block .content { padding: 10px; width: 100%; } 
 
 #subscribe .content { display: none; }
-.panel_block .property_group, .panel_block #item_name { text-shadow: #edf1fa 1px 1px 0px; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; /*text-transform: uppercase;*/ }
+.panel_block .property_group, .panel_block #item_name { text-shadow: &[SecondaryColorA_3];; 1px 1px 0px; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; /*text-transform: uppercase;*/ }
 
 .rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px; border: solid rgb(166, 170, 173) 1px; empty-cells:show; }
 /* the following rules required while item-rows highlighting */
@@ -1479,7 +1479,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .arrow_td_empty div { width: 18px; height: 20px; }
 
 .rounded_rect_tbl .label_td { white-space: nowrap; } 
-.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; font-weight: bold; overflow: visible; color: &[SecondaryColorA_3];;}
+.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[SecondaryColorA_3];;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: &[SecondaryColorA_3];; -webkit-appearance: none; text-align: right; /*margin-left: 7px;*/ width: 100%/*initial value*/; height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
@@ -1604,7 +1604,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 
 /*.toolbar_icons_set { width: 25; height: 40; background-image: url(../images/skin/iphone/toolbar_icons_set.png) }*/
-.icon_btn, .icon_btn_symb { width: 30px; color: #eee;  cursor: pointer; font-family: arial; font-size: 23px; /*height: 30px; width: 30px;*/ }
+.icon_btn, .icon_btn_symb { width: 30px; color: #eee;  cursor: pointer; font-family: Lucida Grande, Caslon; font-size: 23px; /*height: 30px; width: 30px;*/ }
 .icon_btn_symb { -webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0.8))); }
 
 .right { float: right; /*margin-right: 4px;*/ }
