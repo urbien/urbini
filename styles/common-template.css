@@ -1597,7 +1597,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 /*.toolbar_icons_set { width: 25; height: 40; background-image: url(../images/skin/iphone/toolbar_icons_set.png) }*/
 .icon_btn, .icon_btn_symb { 
    width: 30px; color: #eee;  cursor: pointer; 
-   font-family: Arial, Caslon;
+   font-family: Caslon;
    font-size: 26px;
    font-weight: normal;
    text-shadow: 0 1px 1px rgba(0,0,0,0.25), 2px 0 1px rgba(0,0,0,0.25) !important;
