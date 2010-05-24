@@ -11242,8 +11242,10 @@ function addOnClickToProfiling() {
     var a = elms[i];
     if (a.href == 'about:blank') {
       var imgs = a.getElementsByTagName('img');
+      if (imgs != null)
+        continue;
       if (imgs[0].src.indexOf('profiling') != -1) { 
-      addEvent(a, 'click',  function (event) {PlainDlg.showPreloaded(event, 'profiling'); return stopEventPropagation(event);},  false);
+        addEvent(a, 'click',  function (event) {PlainDlg.showPreloaded(event, 'profiling'); return stopEventPropagation(event);},  false);
         cnt++;
       }
       else if (imgs[0].src.indexOf('PropertyDeveloper') != -1) { 
