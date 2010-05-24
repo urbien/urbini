@@ -1699,3 +1699,16 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb];, 0.5)), to(rgba(&[PrimaryColor_4_rgb];, 0.5)));
     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
 }
+
+.grey_highlighting {
+	background-color: &[PrimaryColor_4];;
+  background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+}
+.blue_highlighting {
+	background-color: &[SecondaryColorA_1];;
+  background-image: -moz-linear-gradient(top center, &[SecondaryColorA_1];, &[SecondaryColorA_4];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[SecondaryColorA_1];), to(&[SecondaryColorA_4];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[SecondaryColorA_1];,endColorstr=&[SecondaryColorA_4];)
+}
