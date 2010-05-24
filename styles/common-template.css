@@ -1586,6 +1586,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	-moz-box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
 	background: #FFFFFF;
 	cursor: auto;
+	white-space: nowrap;
 }
 
 .iphone_field input { -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
