@@ -1206,7 +1206,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         var elem = tds[i];
         elem.style.color = "#ffffff";
         if (tr.id == elem.parentNode.id)
-          elem.style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
+			elem.className = elem.className + " blue_highlighting";
       }
 
     return true;
@@ -1228,7 +1228,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         //elem.style.backgroundColor = Popup.LightMenuItem;
         elem.style.color = "";
         if (trId == elem.parentNode.id)
-          elem.style.background = "";
+					elem.className = elem.className.replace(/grey_highlighting|blue_highlighting/g, "");
       }
     }
   }
@@ -1252,8 +1252,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
         //elem.style.backgroundColor = Popup.DarkMenuItem;
         elem.style.color = "";
         if (trId == elem.parentNode.id)
-          //elem.style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
-					elem.style.background = "#eee";
+			elem.className = elem.className + " grey_highlighting";
       }
     }
   }
@@ -5037,8 +5036,10 @@ var TouchDlgUtil = {
 		if (tr.getAttribute("blue") != null)
 			return;
 			
-		for (var i = 0; i < tr.cells.length; i++)
-			tr.cells[i].style.background = "#eee";
+		for (var i = 0; i < tr.cells.length; i++) {
+			tr.cells[i].className = (tr.cells[i].className + " grey_highlighting");
+	}
+
 	},
 	
 	highlightRowBlue : function(event) {
@@ -5074,7 +5075,7 @@ var TouchDlgUtil = {
 
 		// background
     for (var i = 0; i < tr.cells.length; i++)
-			tr.cells[i].style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
+			tr.cells[i].className = tr.cells[i].className + " blue_highlighting";
 
 		// label	
 	  var labelTd = getChildByClassName(tr, "label_td");
@@ -5124,7 +5125,7 @@ var TouchDlgUtil = {
 			return;
 		
 		for (var i = 0; i < tr.cells.length; i++)
-			tr.cells[i].style.background = "";	
+			tr.cells[i].className = tr.cells[i].className.replace("grey_highlighting", "");
 	},
 	// "callback"
   bleachBlueRow : function() {
@@ -5138,7 +5139,7 @@ var TouchDlgUtil = {
 		
 		// set background
     for (var i = 0; i < this.blueTr.cells.length; i++)
-      this.blueTr.cells[i].style.background = "";
+			this.blueTr.cells[i].className = this.blueTr.cells[i].className.replace(/blue_highlighting|grey_highlighting/g, "");
 
     // label	
 	  var labelTd = getChildByClassName(this.blueTr, "label_td");
@@ -7463,7 +7464,7 @@ function loadingCueStart(e, hotspot) {
   var ttDiv = document.getElementById("system_tooltip");
   if (ttDiv) {
 	  var ttIframe = document.getElementById("tooltipIframe");
-	  var loadingMsg = "<div style='vertical-align: middle; font-size: 14px; color:#000000; background-color:rgb(255,252,184);'><b> loading . . . </b></div>";
+	  var loadingMsg = "<div style='vertical-align: middle; font-size: 14px; color:#000000;'><b> loading . . . </b></div>";
 	
 	  advancedTooltip.hideOptionsBtn();
 	  Popup.open(e, ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
@@ -7727,7 +7728,7 @@ var FtsAutocomplete = {
 		var shingle = getAncestorByClassName(target, "menuItem");
 		if (!shingle)
 			return;
-		shingle.style.background = "rgb(25, 79, 219) url(images/skin/iphone/selection.png) repeat-x";
+		tr.cells[i].className = tr.cells[i].className + " blue_highlighting";
 		shingle.style.color = "#fff";
 	},
 	
@@ -7739,11 +7740,11 @@ var FtsAutocomplete = {
 			return;
 
 		$t.hide();
-		//debugger;
 		if (target.parentNode.tagName.toLowerCase() == "a")
 			return true;
 
-		shingle.style.background = "";
+		//shingle.style.background = "";
+		tr.cells[i].className = tr.cells[i].className.replace("blue_highlighting", "");
 		shingle.style.color = "";
 		var textDiv = shingle.getElementsByTagName("div")[0];
 		var text = textDiv.innerHTML;
