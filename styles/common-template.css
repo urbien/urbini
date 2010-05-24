@@ -1,7 +1,6 @@
 /* text in link. You can see it in 'Hi "contactName"' */
 A {
   text-decoration : none; 
-  font-family: Helvetica, Arial, Verdana, sans-serif; 
   padding: 5px 0px; 
   font-size: 15px;
   line-height: 15px;
@@ -23,11 +22,11 @@ a img {
 }
 
 .propLabel {
-  font-family: Helvetica, Verdana, Arial, sans-serif; color: #10106D; font-size: 8pt; font-weight: bold;
+  color: #10106D; font-size: 8pt; font-weight: bold;
   white-space: nowrap;
 }
 .propLabelI {
-  font-family: Helvetica, Verdana, Arial, sans-serif; color: &[SecondaryColorB_5];; font-size: 10pt; font-weight: normal;
+  color: &[SecondaryColorB_5];; font-size: 10pt; font-weight: normal;
   white-space: nowrap;
 }
 
@@ -46,7 +45,7 @@ H3 {font-family: Palatino, Helvetica, arial, Verdana, geneva; font-weight: bold;
 img.fade {
    opacity:       0.6;
 }
-#user {font-family: Helvetica, Arial, Verdana, sans-serif; }
+
 #user a { color: &[SecondaryColorA_3_brighter];}
 #user span { &[SecondaryColorA_3_brighter];; font-weight: bold}
 
@@ -71,7 +70,6 @@ img.fade {
   font-size: 8pt;
   font-weight: normal;
   text-decoration: none;
-  font-family: Helvetica, Verdana, Arial, sans-serif;
 }
 
 .tabs .left, .tabs .right {
@@ -129,7 +127,7 @@ input[type=button], input[type=submit] { padding: 6px 10px; }
 a.button { padding: 3px 10px; } /* anchor requres smaller padding than type=button */
 input[type=button]:active, input[type=submit]: active, .button:active	{ padding: 6px 10px 5px !important; }
 
-/* Touch the rest at your onw risk. */
+/* Touch the rest at your own risk. */
 input[type=button], input[type=submit], .button { 
   border: 0 !important; 
   cursor: pointer !important; 
@@ -140,12 +138,12 @@ input[type=button], input[type=submit], .button {
   text-align: center !important;
   text-decoration: none !important; 
   
-  /* vertical margin is the oposite of button's awesomeness */
+  /* vertical margin is the opposite of button's awesomeness */
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   
   /* not all browser support these, but who cares? */
-  text-shadow: 0 -1px 1px rgba(0,0,0,0.25), -2px 0 1px rgba(0,0,0,0.25) !important; 
+  text-shadow: 0 1px 1px rgba(0,0,0,0.25), 2px 0 1px rgba(0,0,0,0.25) !important; 
   
           border-radius: 5px !important; 
      -moz-border-radius: 5px !important; 
@@ -222,7 +220,6 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
 }
 
 .but_center {
-	font-family:Helvetica, Verdana, Arial, sans-serif;
 	font-size:11px;
 	font-weight:bold;
 	padding:0px 2px 0px 2px;
@@ -231,7 +228,7 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
 	text-decoration: none
 }
 
-.pieTitle {font-family:Helvetica, sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;}
+.pieTitle {font-weight:bold; font-size:16px; color:#00309C;}
 /* ----- End of Buttons ----- */
 
 /* -- powered by on blue, larger letters */
@@ -240,12 +237,11 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
   padding-left:4px; 
   padding-right:4px; 
   padding-top:6px; 
-  font-family:Helvetica, Arial; 
   font-size:1.7em; 
   color:&[SecondaryColorB_3];; 
   text-decoration: none;
 }
-.large-poweredBy-b {padding-left:0px; padding-top:6px; font-family:Helvetica, Arial; font-size:14pt; color:#94C7F1; text-decoration: none;}
+.large-poweredBy-b {padding-left:0px; padding-top:6px; font-size:14pt; color:#94C7F1; text-decoration: none;}
 
 /* -- powered by on white */
 .poweredBy     {font-family:Times; font-size:8pt; color:#4088CF; text-decoration: none;}
@@ -406,10 +402,8 @@ body {
    height:20px;  
 } 
 */
-textarea  {  font-family: Helvetica, Verdana, Arial; font-size: 10px }
-input   { -webkit-appearance: none; font-family: Helvetica, Verdana, Arial; font-size: 9px; font-style: normal; line-height: normal; font-weight: normal;}
 
-td {font-family: Helvetica, Verdana, Arial, sans-serif; font-size: 15px;/*9pt;*/}
+input   { -webkit-appearance: none; font-size: 9px; font-style: normal; line-height: normal; font-weight: normal;}
 
 .monospace { font-family:Courier,monospace; }
 
@@ -437,12 +431,12 @@ tr.prTitle {background-image: -moz-linear-gradient(top center, #ACE2CE, #ffffff)
   color:#000066;
   height:16px;
   text-decoration:none;
-  font-family:Helvetica, verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;
+  font-size:7pt; vertical-align:middle;
 }
 
-.title {  font-family: Helvetica, Verdana, Arial, sans-serif; font-size: 18px; font-style: normal; font-weight: bold;}
+.title {  font-size: 18px; font-style: normal; font-weight: bold;}
 /* paging */
-.paging {  font-family: Helvetica, Verdana, Arial, sans-serif; font-size: 18px; font-style: normal; font-weight: bold; vertical-align: top;}
+.paging { font-size: 18px; font-style: normal; font-weight: bold; vertical-align: top;}
 .prevNext {padding-bottom:2px; padding-right:2px; padding-left:2px;}
 tr.dark   {background-color: &[OddRowBackgroundColor];}
 
@@ -457,48 +451,48 @@ tr.sep {background-color:#cbcbcb; height:9pt;}
 /* Below are more advanced things that allow you to fine tune font sizes and typeface. */
 /* Leave them as is for now                                                            */
 
-th {font-family:Helvetica, sans-serif, arial; font-size:9pt;}
-input {font-family:Helvetica, sans-serif, arial; font-size:9pt;}
-select.xxs {font-family:Helvetica, sans-serif, arial; font-size:7pt;}
-form {font-family:Helvetica, sans-serif, arial; font-size:9pt; padding:0; margin:0}
+th {font-size:9pt;}
+input {font-size:9pt;}
+select.xxs {font-size:7pt;}
+form {font-size:9pt; padding:0; margin:0}
 
 /* input.button {font-size:8pt;} */
 
-span.xxl {font-family:Helvetica, verdana, sans-serif, arial; font-weight:bold; font-size:16pt;}
+span.xxl {font-weight:bold; font-size:16pt;}
 span.xl1 {font-weight:bold;}
-span.ftsi {font-family:Helvetica, sans-serif, arial; font-size:10pt; font-weight:bold; font-style:italic }
-span.rxl {color:red; font-family:Helvetica, sans-serif, arial; font-weight:bold; font-size:16pt;}
+span.ftsi {font-size:10pt; font-weight:bold; font-style:italic }
+span.rxl {color:red; font-weight:bold; font-size:16pt;}
 
 .ftsF { text-align: right; padding-right:10px;}
 
 /* Full text search links */
-span.ftsl {font-family:Helvetica, sans-serif, arial; font-size:1.4em;} 
+span.ftsl {font-size:1.4em;} 
 
 .empty {font-size:10pt}
 
-xs { font-family: Helvetica, Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal; white-space: nowrap; }
-.xsb { font-family: Helvetica, Verdana, Arial, Helvetica, sans-serif; color: #10106D; font-size: 8pt; font-weight: bold; white-space: nowrap; }
-.xfts { font-family: Helvetica, Arial, Verdana, Helvetica, sans-serif; color: #10106D; font-size: 0.75em; font-weight: normal; white-space: nowrap; }
+xs {color: #10106D; font-size: 8pt; font-weight: normal; white-space: nowrap; }
+.xsb {color: #10106D; font-size: 8pt; font-weight: bold; white-space: nowrap; }
+.xfts {color: #10106D; font-size: 0.75em; font-weight: normal; white-space: nowrap; }
 
-span.imgTitle {color:#da26cb; font-family:Helvetica, sans-serif, arial; font-size:8pt; font-weight:bold}
-span.duration {color:#037f83; font-family:Helvetica, sans-serif, arial; font-size:8pt; font-weight:bold}
+span.imgTitle {color:#da26cb; font-size:8pt; font-weight:bold}
+span.duration {color:#037f83; font-size:8pt; font-weight:bold}
 
-.optionPropsTitle {border-bottom:solid #5C9EBF 1px; padding: 5px; background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); font-weight:bold; font-size:15px; font-family:Helvetica, sans-serif, arial; color:#00309C;}
-span.itemsCount {color:red; font-family:Helvetica, sans-serif, arial; font-size:10pt; font-weight:bold}
-span.rollup {color:red; font-family:Helvetica, sans-serif, arial; font-size:9pt; font-weight:bold}
+.optionPropsTitle {border-bottom:solid #5C9EBF 1px; padding: 5px; background-color: #D6E7EF; background:url(../images/skin/blue/dialog.gif); font-weight:bold; font-size:15px; color:#00309C;}
+span.itemsCount {color:red; font-size:10pt; font-weight:bold}
+span.rollup {color:red; font-size:9pt; font-weight:bold}
 
 span.dark{color:#eeeeee}
 span.nodes  {background-color:#cbcbcb}
 span.light {color:#ffffff}
 .button1 {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 
-input.xxs {font-size: 10px; font-family:Helvetica, verdana,arial,sans-serif;}
-.text {font-size:0.9em; font-family:Helvetica, arial,sans-serif;font-weight:bold;}
+input.xxs {font-size: 10px; }
+.text {font-size:0.9em; font-weight:bold;}
 /* FTS category image style */
 .cat  {padding-left: 5px; padding-right: 3px; border: 0}
 .cat1 {FONT-WEIGHT: bold;}
 /*
-.ftsq {padding-left:2px; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-family:Helvetica, arial,sans-serif; font-size:1.5em; font-weight:bold;}
+.ftsq {padding-left:2px; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-size:1.5em; font-weight:bold;}
 .ftsLine {background: #D6E7EF;}
 */
 
@@ -548,7 +542,6 @@ td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
 .input {
   background-color:transparent;
   border:medium none;
-  font-family:Helvetica,Arial;
   font-size:16px;
   font-weight:normal;
   height:auto;
@@ -558,13 +551,13 @@ td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
 .xs .input { border: 1px solid #ababab; }
 
 /* selected input field in edit mode and filter */
-.isel {background-color:fffdc3; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:Helvetica, verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
-.select {border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:Helvetica, verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
+.isel {background-color:fffdc3; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-size:7pt; vertical-align:middle;}
+.select {border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-size:7pt; vertical-align:middle;}
 .input:lang(zh) {
   font-size: 0.9em; height:16px;
 }
 
-.errorTextStd {font-size:12px;font-weight:bold;font-family:Helvetica, Arial, Sans Serif;color:#A01E00}
+.errorTextStd {font-size:12px;font-weight:bold;color:#A01E00}
 
 .dashedBlock {border-style:dashed; border-width: 2px; border-color:#ADADD5 #ADADD5 #ADADD5 #ADADD5}
 
@@ -594,7 +587,7 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 .rop {border:solid &[PrimaryColor_1]; 1px;; border-collapse: collapse; color: &[PrimaryColor_1];; overflow-y: visible;  height: 100%; }
 td.controlPanel { border:solid &[PrimaryColor_1]; 1px; }
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
-/*span.xxl {font-family:Helvetica, verdana, sans-serif, arial; font-weight:bold; font-size:20pt;}*/
+/*span.xxl {font-weight:bold; font-size:20pt;}*/
 
 /* Properties for backlink resource list that is displayed inline on property sheet page */
 table.displayInline {border: solid &[SecondaryColorA_5]; 1px;; border-collapse: collapse;}
@@ -604,15 +597,14 @@ td.contents {font-weight:bold; font-size: small}
 font.warn {color:#A01E00}
 td.shading {border:solid #808080 1px; color:#000000}
 tr.editMode  {}
-span.bigLetterTitle  {font-family:Helvetica, sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;}
-span.bigLetterTitle2  {font-family:Helvetica, sans-serif, arial; font-weight:bold; font-size:16px; color:#ee8571;}
+span.bigLetterTitle  {font-weight:bold; font-size:16px; color:#00309C;}
+span.bigLetterTitle2  {font-weight:bold; font-size:16px; color:#ee8571;}
 
-span.fileMenuTitle  {font-family:Helvetica, sans-serif, arial; font-weight:bold; font-size:16px; color:#00309C;vertical-align:middle}
-.menuI  {font-family:Helvetica, sans-serif, arial; font-size:12px; color:#00309C;vertical-align:top}
+span.fileMenuTitle  {font-weight:bold; font-size:16px; color:#00309C;vertical-align:middle}
+.menuI  {font-size:12px; color:#00309C;vertical-align:top}
 
 /* To display big letter title when full text search criteria was there */
-.bigLetterTitle1 { 
-  font-family:Helvetica, sans-serif, arial; 
+.bigLetterTitle1 {  
   font-weight:bold; 
   font-size:12pt; 
   color: &[SecondaryColorA_3];;
@@ -625,7 +617,6 @@ span.fileMenuTitle  {font-family:Helvetica, sans-serif, arial; font-weight:bold;
 }
 
 .bigLetterTitleSchedule { 
-  font-family:Helvetica, sans-serif, arial; 
   font-weight:bold; 
   font-size:12pt; 
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%,  
@@ -637,9 +628,9 @@ span.fileMenuTitle  {font-family:Helvetica, sans-serif, arial; font-weight:bold;
 }
 
 /* To display window titles on a dashboard */
-span.dashboardBlockTitle {font-family:Helvetica, Verdana,sans-serif,arial; font-weight:bold; font-size:12px; color:#00309C;}
+span.dashboardBlockTitle {font-weight:bold; font-size:12px; color:#00309C;}
 .panel_block .dashboardBlockTitle { font-size: 16px;  color: #edf1fa; font-size: 16px; margin-right:12px; }
-span.dashboardGrayedTitle {font-family:Helvetica, Verdana,sans-serif,arial; font-size:12px; color:#10106D;}
+span.dashboardGrayedTitle {font-size:12px; color:#10106D;}
 .panel_block span.dashboardGrayedTitle { color:#fff; margin-left: 7px; }
 
 /* to display large image in resource list */
@@ -650,11 +641,11 @@ td.horizontalFilter {background-color:#E7EBF0}
 td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit buttons for horizontal filter */
 
 /* To display property groups in edit mode */
-.propertyGroup { font-family: Helvetica, sans-serif, Arial, Verdana, Geneva; font-size: 12px; font-weight: bold; text-transform: uppercase;vertical-align: top;}
-.propertyGroupComment { font-family: Helvetica, sans-serif, Arial, Verdana, Geneva; font-size: 12px; font-weight: bold; text-transform: none;vertical-align: top;}
+.propertyGroup { font-size: 12px; font-weight: bold; text-transform: uppercase;vertical-align: top;}
+.propertyGroupComment {font-size: 12px; font-weight: bold; text-transform: none;vertical-align: top;}
 
 /* To display MORE... in RL */
-.more { text-align: right; font-family: Helvetica, Verdana, sans-serif, Arial, Geneva; font-size: 0.8em;}
+.more { text-align: right; font-size: 0.8em;}
 
 /* Simple border */
 .box {
@@ -664,24 +655,22 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
    border-left : 1px solid #c7c9cc;
 }
 
-.welcome {  font-family: Helvetica, Verdana, Arial, sans-serif; color: #10106D; font-size: 8pt; font-weight: normal;}
+.welcome {  color: #10106D; font-size: 8pt; font-weight: normal;}
 .welcome:lang(zh) {
   font-size: 0.9em;
   font-family: "Li Sung", MingLiu;
 }
 
 /* Contact name that appears at the top of the page style */
-.guestUser {  font-family: Helvetica, Verdana, Arial, sans-serif; color: lightblue; font-size: 8pt; font-weight: bold;}
-.user      {color:darkblue; font-family: Helvetica, Verdana, Arial, sans-serif; font-weight:bold; text-decoration:none; font-size:8pt;}
+.guestUser {  color: lightblue; font-size: 8pt; font-weight: bold;}
+.user      {color:darkblue; font-weight:bold; text-decoration:none; font-size:8pt;}
 
-/*.group {background:#f8f4ef; FONT-WEIGHT: bold; FONT-SIZE: 16px; PADDING-BOTTOM: 3px; cursor: pointer; COLOR: #000000; PADDING-TOP: 3px; FONT-STYLE: normal; FONT-FAMILY: "MS Sans Serif", Arial, Helvetica, Tahoma, sans-serif; TEXT-DECORATION: none; white-space: nowrap;}*/
 .group {
   background-color: &[PrimaryColor_4];;
   color: &[SecondaryColorA_5];;  
   FONT-WEIGHT: bold; 
   margin-left: 6px; 
   white-space: nowrap; 
-  font-family: Helvetica, Arial; 
   font-size: 16px; 
   vertical-align: middle;
 }
@@ -787,7 +776,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 	color: #666;
 }
 
-.nowrap {white-space: nowrap;margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; vertical-align: middle;}
+.nowrap {white-space: nowrap;margin-left: 6px; white-space: nowrap; font-size: 16px; vertical-align: middle;}
 
 .nowrapB {white-space: nowrap;color:black}
 .scheduleSubmit {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19pt;text-decoration:none;cursor: pointer; font-size:12px; font-weight:bold}
@@ -816,7 +805,7 @@ tr.checkout   {background-image: url('../images/toolbar_bg.gif');cursor: pointer
 td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .requiredField {
 	border-left: 5px solid #00aeef;
-  background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt;
+  background: rgb(231, 235, 240); border-bottom: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-size:7pt;
 }
 
 .required {
@@ -972,7 +961,7 @@ ul.subchapter {
 }
 
 ul.subchapter a {
-  font-family: Helvetica, Verdana, Arial, sans-serif; font-size: 0.8em; font-weight: normal;
+  font-size: 0.8em; font-weight: normal;
 }
 
 div.contents {
@@ -1137,12 +1126,12 @@ TD.toolbar {
 }
 
 .menuItem {
-  margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; vertical-align: middle; 
+  margin-left: 6px; white-space: nowrap; font-size: 16px; vertical-align: middle; 
 }
 #\$more .menuItem { color: #999; font-size: 14px; padding-left: 15px; height: 20px; }
 
 .menuItem a { 
-  margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; 
+  margin-left: 6px; white-space: nowrap; font-size: 16px; 
 }
 
 .menuItemRed {
@@ -1159,7 +1148,7 @@ TD.toolbar {
   PADDING-RIGHT: 0px;	width: 10px;
 }
 
-.menuItemReset { margin-left: 6px; white-space: nowrap; font-family: Helvetica, Arial; font-size: 16px; FONT-WEIGHT: bold; vertical-align: middle; }
+.menuItemReset { margin-left: 6px; white-space: nowrap; font-size: 16px; FONT-WEIGHT: bold; vertical-align: middle; }
 .menuItemReset a { width: 95%; }
 
 .menuItemNoChoices {
@@ -1223,7 +1212,6 @@ TD.closePopup {
 
 /*********** moved from tree.css ***********/
 .dtree {
-	font-family: Helvetica, Verdana, Geneva, Arial, sans-serif;
 	font-size: 11px;
 	color: #666;
 	white-space: nowrap;
@@ -1250,13 +1238,11 @@ TD.closePopup {
 	background-color: #c0d2ec;
 }
 .dtree td {
-	font-family: Helvetica, Verdana, Geneva, Arial, sans-serif;
 	font-size: 11px;
 	color: #666;
 }
 .dtree th {
 	background-color: #E2E8DF;
-	font-family: Helvetica, Verdana, Geneva, Arial, sans-serif;
 	font-size: 11px;
 	color: #666;
 }
@@ -1419,7 +1405,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
 
 .panel_block .header { 
-    line-height:30px; width: 100%; text-align: left; border-bottom: 1px solid &[FTS];;
+    line-height:30px; width: 100%; text-align: left; border-top: 1px solid &[FTS];; border-bottom: 1px solid &[FTS];;
     background-color: &[PrimaryColor_1];;
     background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
@@ -1488,10 +1474,10 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[SecondaryColorA_3];;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
-.rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: &[SecondaryColorA_3];; -webkit-appearance: none; text-align: right; /*margin-left: 7px;*/ width: 100%/*initial value*/; height: auto; background-color: transparent;  border: none; font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
-.rounded_rect_tbl .textarea { font-family: Helvetica, Arial;  font-size: 16px; margin-bottom: 5px; width: 100%; } /*background-color: &[BackgroundColor];; color: &[Color];}*/
+.rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: &[SecondaryColorA_3];; -webkit-appearance: none; text-align: right; /*margin-left: 7px;*/ width: 100%/*initial value*/; height: auto; background-color: transparent;  border: none; font-size: 16px; font-weight: normal; }
+.rounded_rect_tbl .textarea { font-size: 16px; margin-bottom: 5px; width: 100%; } /*background-color: &[BackgroundColor];; color: &[Color];}*/
 .rounded_rect_tbl .comment { text-align: left; color: #555; font-size: 11px; }
-.rounded_rect_tbl .select { font-family: Helvetica, Arial;  font-size: 14px; height: 20px; color: #000; background-color: #fff; }
+.rounded_rect_tbl .select { font-size: 14px; height: 20px; color: #000; background-color: #fff; }
 
 .rounded_rect_tbl input#rightPanelPropertySheet  { display: none; }
 .rounded_rect_tbl td#dIcon { height: 40px; PADDING-RIGHT: 2px; PADDING-LEFT: 5px; PADDING-TOP: 2px; white-space: nowrap;  vertical-align: top; }
@@ -1503,15 +1489,14 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   padding: 0px; 
   overflow: hidden;
 }
-.count { color: grey; white-space: nowrap; font-family: Helvetica, Arial; font-size: 14px;}
+.count { color: grey; white-space: nowrap; font-size: 14px;}
 
-.count { color: grey; white-space: nowrap; font-family: Helvetica, Arial; font-size: 14px;}
+.count { color: grey; white-space: nowrap; font-size: 14px;}
 
 .chosen_values div {
   overflow: hidden;
   white-space: nowrap;
-  color: rgb(114, 127, 161); 
-  font-family: Helvetica, Arial;  
+  color: rgb(114, 127, 161);   
   font-size: 15px; 
   font-weight: 600;
 }
@@ -1610,7 +1595,13 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 
 /*.toolbar_icons_set { width: 25; height: 40; background-image: url(../images/skin/iphone/toolbar_icons_set.png) }*/
-.icon_btn, .icon_btn_symb { width: 30px; color: #eee;  cursor: pointer; font-family: Lucida Grande, Caslon; font-size: 23px; /*height: 30px; width: 30px;*/ }
+.icon_btn, .icon_btn_symb { 
+   width: 30px; color: #eee;  cursor: pointer; 
+   font-family: Arial, Caslon;
+   font-size: 26px;
+   font-weight: normal;
+   text-shadow: 0 1px 1px rgba(0,0,0,0.25), 2px 0 1px rgba(0,0,0,0.25) !important;
+ }
 .icon_btn_symb { -webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0.8))); }
 
 .right { float: right; /*margin-right: 4px;*/ }
@@ -1651,7 +1642,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .panel_block .no_matches { display: none; color: #f00; font-size: 16px; font-weight:bold; margin-left: 15px; }
 
-#siteResourceList #filter input[type=text] { height: auto; background-color: transparent;  font-family: Helvetica, Arial;  font-size: 16px; font-weight: normal; }
+#siteResourceList #filter input[type=text] { height: auto; background-color: transparent; font-size: 16px; font-weight: normal; }
 #siteResourceList .input { border: 1px solid #bbb; }
 #siteResourceList .pointer { border: none; }
 
