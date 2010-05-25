@@ -1204,7 +1204,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 		var tds = tr.getElementsByTagName("td");
       for (var i = 0; i < tds.length; i++) {
         var elem = tds[i];
-        elem.style.color = "#ffffff";
         if (tr.id == elem.parentNode.id)
 			elem.className = elem.className + " blue_highlighting";
       }
@@ -1225,8 +1224,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var tds = self.currentRow.getElementsByTagName('td');
       for (var i=0; i<tds.length; i++) {
         var elem = tds[i];
-        //elem.style.backgroundColor = Popup.LightMenuItem;
-        elem.style.color = "";
         if (trId == elem.parentNode.id)
 					elem.className = elem.className.replace(/grey_highlighting|blue_highlighting/g, "");
       }
@@ -3454,8 +3451,7 @@ var ListBoxesHandler = {
 				// setting font as bold changes width & height of a field. So, fix it previously
 				textField.style.width = textField.clientWidth;
 				textField.style.height = textField.clientHeight;
-  		  // textField.style.color = "#727FA1";
-				textField.style.fontWeight = "bold";
+ 				textField.style.fontWeight = "bold";
 		  }
 		}
     
@@ -3650,7 +3646,6 @@ var ListBoxesHandler = {
 		var chosenValuesDiv = getChildByClassName(this.curParamRow, "chosen_values");
 		var wasSelection = chosenValuesDiv != null && chosenValuesDiv.innerHTML.length != 0;
 		SubscribeAndWatch.onOptionSelection(this.curParamRow, wasSelection);
-		TouchDlgUtil.hightlightChosenValuesText();
     
 		// instead of webkitTransitionEnd
     setTimeout("ListBoxesHandler.onBackFinish();", 800);
@@ -5036,10 +5031,7 @@ var TouchDlgUtil = {
 		if (tr.getAttribute("blue") != null)
 			return;
 			
-		for (var i = 0; i < tr.cells.length; i++) {
-			tr.cells[i].className = (tr.cells[i].className + " grey_highlighting");
-	}
-
+		tr.className = (tr.className + " grey_highlighting");
 	},
 	
 	highlightRowBlue : function(event) {
@@ -5073,29 +5065,8 @@ var TouchDlgUtil = {
 		TouchDlgUtil.blueTr = tr;
 		tr.setAttribute("blue", "y");
 
-		// background
-    for (var i = 0; i < tr.cells.length; i++)
-			tr.cells[i].className = tr.cells[i].className + " blue_highlighting";
+		tr.className = tr.className + " blue_highlighting";
 
-		// label	
-	  var labelTd = getChildByClassName(tr, "label_td");
-		if (labelTd) // no in RL editor
-    	labelTd.style.color = "#fff";
-		
-		// comment
-		var commentDiv = getChildByClassName(tr, "comment");
-		if (commentDiv)
-    	commentDiv.style.color = "#fff";
-
-    // chosen values
-		$t.hightlightChosenValuesText(tr);
-   
-	 	// input field for data entry
-	  var field = getChildByClassName(tr, "input");
-		if (field)
-			field.style.color = "#fff";
-	 
-    // arrow
 		var arrowTd = getChildByClassName(tr, "arrow_td");
 		if (arrowTd) {
 	    var arrowDiv = arrowTd.getElementsByTagName("div")[0];
@@ -5103,15 +5074,7 @@ var TouchDlgUtil = {
 		}
 		
   },   
-  hightlightChosenValuesText : function() {
-    var chosenValues = getChildByClassName(this.blueTr, "chosen_values");
-		if (chosenValues) {
-			chosenValues.style.color = "#fff";
-			divs = chosenValues.getElementsByTagName("div");
-			for (var i = 0; i < divs.length; i++) 
-				divs[i].style.color = "#fff";
-		}
-	},
+
 	bleachGreyRowOnOut : function(event) {
 		var $t = TouchDlgUtil;
 	  var target = getEventTarget(event);
@@ -5124,8 +5087,7 @@ var TouchDlgUtil = {
 		if (tr.getAttribute("blue") != null)
 			return;
 		
-		for (var i = 0; i < tr.cells.length; i++)
-			tr.cells[i].className = tr.cells[i].className.replace("grey_highlighting", "");
+		tr.className = tr.className.replace("grey_highlighting", "");
 	},
 	// "callback"
   bleachBlueRow : function() {
@@ -5137,34 +5099,8 @@ var TouchDlgUtil = {
 			return;
 		}
 		
-		// set background
-    for (var i = 0; i < this.blueTr.cells.length; i++)
-			this.blueTr.cells[i].className = this.blueTr.cells[i].className.replace(/blue_highlighting|grey_highlighting/g, "");
+		this.blueTr.className = this.blueTr.className.replace(/blue_highlighting|grey_highlighting/g, "");
 
-    // label	
-	  var labelTd = getChildByClassName(this.blueTr, "label_td");
-		if (labelTd) // no in RL editor
-    	labelTd.style.color = "";
-    
-		// comment
-		var commentDiv = getChildByClassName(this.blueTr, "comment");
-    if (commentDiv)
-			commentDiv.style.color = "";
-		
-    // chosen values
-    var chosenValues = getChildByClassName(this.blueTr, "chosen_values");
-    if (chosenValues) {
-			chosenValues.style.color = "#fff";
-			divs = chosenValues.getElementsByTagName("div");
-			for (var i = 0; i < divs.length; i++) 
-				divs[i].style.color = "rgb(114, 127, 161)";
-		}
-		// input field for data entry
-	  var field = getChildByClassName(this.blueTr, "input");
-		if (field) {
-			FieldsWithEmptyValue.fitColor(field);
-		}
-    // arrow
     var arrowTd = getChildByClassName(this.blueTr, "arrow_td");
 		if (arrowTd) {
 			var arrowDiv = arrowTd.getElementsByTagName("div")[0];
@@ -7728,8 +7664,7 @@ var FtsAutocomplete = {
 		var shingle = getAncestorByClassName(target, "menuItem");
 		if (!shingle)
 			return;
-		tr.cells[i].className = tr.cells[i].className + " blue_highlighting";
-		shingle.style.color = "#fff";
+		shingle.className = shingle.className + " blue_highlighting";
 	},
 	
 	onclick : function(e) {
@@ -7743,9 +7678,7 @@ var FtsAutocomplete = {
 		if (target.parentNode.tagName.toLowerCase() == "a")
 			return true;
 
-		//shingle.style.background = "";
-		tr.cells[i].className = tr.cells[i].className.replace("blue_highlighting", "");
-		shingle.style.color = "";
+		shingle.className = shingle.className.replace("blue_highlighting", "");
 		var textDiv = shingle.getElementsByTagName("div")[0];
 		var text = textDiv.innerHTML;
 		FieldsWithEmptyValue.setValue($t.field, text);
@@ -11245,7 +11178,7 @@ function addOnClickToProfiling() {
       if (imgs != null)
         continue;
       if (imgs[0].src.indexOf('profiling') != -1) { 
-        addEvent(a, 'click',  function (event) {PlainDlg.showPreloaded(event, 'profiling'); return stopEventPropagation(event);},  false);
+      addEvent(a, 'click',  function (event) {PlainDlg.showPreloaded(event, 'profiling'); return stopEventPropagation(event);},  false);
         cnt++;
       }
       else if (imgs[0].src.indexOf('PropertyDeveloper') != -1) { 
