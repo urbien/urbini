@@ -11175,7 +11175,7 @@ function addOnClickToProfiling() {
     var a = elms[i];
     if (a.href == 'about:blank') {
       var imgs = a.getElementsByTagName('img');
-      if (imgs != null)
+      if (imgs == null  ||  imgs.length == 0)
         continue;
       if (imgs[0].src.indexOf('profiling') != -1) { 
       addEvent(a, 'click',  function (event) {PlainDlg.showPreloaded(event, 'profiling'); return stopEventPropagation(event);},  false);
