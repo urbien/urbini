@@ -328,8 +328,9 @@ td.textCell {
 /* Gallery */
 .galleryItem, .galleryItem_css3, .galleryItem_chrome {
   border-width: 0px;
+  padding: 10px !important;
   padding: 0px;
-  margin: 0px;
+  margin: 10px;
   border-spacing: 0px;
 }
 
@@ -1496,7 +1497,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .chosen_values div {
   overflow: hidden;
   white-space: nowrap;
-  color: rgb(114, 127, 161);   
+  color: &[SecondaryColorB_1];;   
   font-size: 15px; 
   font-weight: 600;
 }
@@ -1703,14 +1704,19 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 }
 
 .grey_highlighting {
+	color: &[SecondaryColorA_3];;
 	background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
 }
+.rounded_rect_tbl .grey_highlighting .label { color: &[SecondaryColorA_3];; }
 .blue_highlighting {
-	background-color: &[SecondaryColorA_1];;
+	color: &[SecondaryColorB_1];;
+	background-color: &[SecondaryColorB_1];;
   background-image: -moz-linear-gradient(top center, &[SecondaryColorA_1];, &[SecondaryColorA_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[SecondaryColorA_1];), to(&[SecondaryColorA_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[SecondaryColorA_1];,endColorstr=&[SecondaryColorA_4];)
 }
+
+.rounded_rect_tbl .blue_highlighting .label, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[SecondaryColorB_1];; }
