@@ -328,8 +328,8 @@ td.textCell {
 /* Gallery */
 .galleryItem, .galleryItem_css3, .galleryItem_chrome {
   border-width: 0px;
-  padding: 10px;
-  margin: 10px;
+  padding: 0px;
+  margin: 0px;
   border-spacing: 0px;
 }
 
@@ -1604,6 +1604,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
    text-shadow: 0 1px 1px rgba(0,0,0,0.25), 2px 0 1px rgba(0,0,0,0.25) !important;
  }
 .icon_btn_symb { -webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0.8))); }
+.dlg_cross { font-family: Geneva, Tahoma, Arial, Helvetica; font-weight: bold; }
 
 .right { float: right; /*margin-right: 4px;*/ }
 
