@@ -1075,8 +1075,6 @@ TD.toolbar {
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
 }
 
-.dashboardLine A { color: &[PrimaryColor_3];; font-weight: bold; }
-
 .dashboard_btn { 
   width: 60px; 
   text-align: center;  
@@ -1086,25 +1084,20 @@ TD.toolbar {
   /*border-color: &[PrimaryColor_4];*/
 }
 
-.dashboard_btn a { display: block; white-space: nowrap; }
+.dashboard_btn a { color: &[PrimaryColor_3];; font-weight: bold; display: block; white-space: nowrap; }
+.current a { color: &[SecondaryColorB_2];; }
 
-.dashboardLine td.dashboard_btn:hover {  
+.dashboardLine td.dashboard_btn:hover, .dashboardLine td.current {  
 	border-left-color: &[PrimaryColor_5];;
 	border-top-color: &[PrimaryColor_5];;
 	border-right-color: &[PrimaryColor_1];;
 	border-bottom-color: &[PrimaryColor_1];;
 	
-  box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
+	/* background: rgba(0,0,0,0.25); */ /* makes glass effect darker */
+	box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
   -o-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
   -webkit-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
   -moz-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
-}
-
-.dashboardLine td.current {
-	border-left-color: &[PrimaryColor_1];;
-	border-top-color: &[PrimaryColor_1];;
-	border-right-color: &[PrimaryColor_5];;
-	border-bottom-color: &[PrimaryColor_5];;
 }
 
 .menuTitle td, .menuTitle th {
