@@ -1406,10 +1406,10 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .panel_block .header { 
     line-height:30px; width: 100%; text-align: left; border-top: 1px solid &[FTS];; border-bottom: 1px solid &[FTS];;
-    background-color: &[PrimaryColor_1];;
-    background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
-    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
-    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+    background-color: &[FTS];;
+    background-image: -moz-linear-gradient(top center, &[FTS];, &[PrimaryColor_1];);
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[FTS];), to(&[PrimaryColor_1];));
+    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[FTS];,endColorstr=&[PrimaryColor_1];)
  }
 /*.panel_block .header td { width: 100%; }*/
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
