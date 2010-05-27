@@ -26,6 +26,12 @@
         </td>
       </tr>
       <tr>
+        <td></td>
+        <td>
+           <a href="register/password-reminder.html"><span class="red"><text text="Forgot your password?" /></span></a>
+        </td>
+      </tr>
+      <tr>
         <td align="middle" colspan="2" valign="CENTER"><br/>
           <input type="submit" value="Sign In" name="logonButton"/><registerNewUser/>
         </td>
@@ -33,16 +39,6 @@
       <tr>
         <td colspan="2"><br/></td>
       </tr>
-      <!--tr>
-        <td colspan="2">
-          <table width="100%" border="0" align="center" cellpadding="3" cellspacing="3">
-            <tr>
-              <td width="1%" valign="bottom"><a href="logonfaq.html"><img src="images/loginhelp.jpg" border="0" /></a></td>
-              <td valign="bottom"><a href="logonfaq.html"><span class="xxs">Logon help page</span></a></td>
-            </tr>
-          </table>
-        </td>
-      </tr-->
     </table>
     <returnUri /> <challenge />
   </form>
