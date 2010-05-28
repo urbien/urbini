@@ -404,7 +404,7 @@ body {
 } 
 */
 
-input   { -webkit-appearance: none; font-size: 9px; font-style: normal; line-height: normal; font-weight: normal;}
+input   { color: &[SecondaryColorA_3];; -webkit-appearance: none; font-size: 9px; font-style: normal; line-height: normal; font-weight: normal;}
 
 .monospace { font-family:Courier,monospace; }
 
@@ -453,7 +453,7 @@ tr.sep {background-color:#cbcbcb; height:9pt;}
 /* Leave them as is for now                                                            */
 
 th {font-size:9pt;}
-input {font-size:9pt;}
+/*input {font-size:9pt;}*/
 select.xxs {font-size:7pt;}
 form {font-size:9pt; padding:0; margin:0}
 
@@ -492,10 +492,6 @@ input.xxs {font-size: 10px; }
 /* FTS category image style */
 .cat  {padding-left: 5px; padding-right: 3px; border: 0}
 .cat1 {FONT-WEIGHT: bold;}
-/*
-.ftsq {padding-left:2px; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; text-decoration:none; font-size:1.5em; font-weight:bold;}
-.ftsLine {background: #D6E7EF;}
-*/
 
 tr.fts td { vertical-align: middle; padding: 2px; }
 
@@ -512,7 +508,8 @@ tr.fts td { vertical-align: middle; padding: 2px; }
 	height: 21px;
 	padding: 5px 3px 5px 10px;
 }
-.desktop_search input { width: 100%; font: bold 17px Helvetica; border: none; }
+.ftsq {  color: &[SecondaryColorA_3];; }
+.desktop_search input {  width: 100%; font: bold 17px Helvetica; border: none; }
 .desktop_search .right {
 	border-radius: 0px 15px 15px 0px;
 	-moz-border-radius: 0px 15px 15px 0px;
@@ -1341,7 +1338,7 @@ table.printFB {
 .userLogin {background-color: &[BackgroundColor];; color: &[SecondaryColorA_3];; border: 1px solid &[SecondaryColorA_3];; padding: 5 5 5 5; }
 #register .input { border: 1px solid &[SecondaryColorA_3];; color: &[SecondaryColorB_3];; margin-right: 1em;}
 
-.rte { margin-bottom: 7px; background-color: #ffffff; border: 1px solid rgb(192, 201, 215); padding:0; width: 100%; height: 100px;  }
+.rte { margin-bottom: 7px; background-color: rgba(255, 255, 255, 0.9); border: 1px solid &[PrimaryColor_1];; padding:0; width: 100%; height: 100px;  }
 
 /* like menu_Options in iphone.css */
 #browser_dlg { z-index: 1000; top: 0px; position: absolute; width: 320px; padding: 0px; visibility: hidden; }
@@ -1474,10 +1471,10 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[SecondaryColorA_3];;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
-.rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: &[SecondaryColorA_3];; -webkit-appearance: none; text-align: right; /*margin-left: 7px;*/ width: 100%/*initial value*/; height: auto; background-color: transparent;  border: none; font-size: 16px; font-weight: normal; }
-.rounded_rect_tbl .textarea { font-size: 16px; margin-bottom: 5px; width: 100%; } /*background-color: &[BackgroundColor];; color: &[Color];}*/
+.rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: &[SecondaryColorA_3];; background: rgba(255, 255, 255, 0.8); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-size: 16px; font-weight: normal; }
+.rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.9) !important; background: #ffffff; color: &[SecondaryColorA_3];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; } /*background-color: &[BackgroundColor];; color: &[Color];*/}
 .rounded_rect_tbl .comment { text-align: left; color: #555; font-size: 11px; }
-.rounded_rect_tbl .select { font-size: 14px; height: 20px; color: #000; background-color: #fff; }
+.rounded_rect_tbl .select { font-size: 14px; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
 
 .rounded_rect_tbl input#rightPanelPropertySheet  { display: none; }
 .rounded_rect_tbl td#dIcon { height: 40px; PADDING-RIGHT: 2px; PADDING-LEFT: 5px; PADDING-TOP: 2px; white-space: nowrap;  vertical-align: top; }
@@ -1584,12 +1581,13 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	-webkit-border-radius:5px 5px 5px 5px;
 	box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
 	-moz-box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
-	background: #FFFFFF;
+	background: rgba(255, 255, 255, 0.9) !important;
+	background: #ffffff;
 	cursor: auto;
 	white-space: nowrap;
 }
 
-.iphone_field input { -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
+.iphone_field input { background: transparent; -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
 .iphone_field .clear_cross { position: relative; top: 4px; left: -2px; cursor: pointer; visibility: hidden; }
 .iphone_field .magnify_glass_small { position: relative; top: 3px; cursor: pointer; }
 .iphone_search { -moz-border-radius: 50%;	-webkit-border-radius: 50%; } /* used for mobile only */
@@ -1646,7 +1644,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 #siteResourceList #filter input[type=text] { height: auto; background-color: transparent; font-size: 16px; font-weight: normal; }
 #siteResourceList .input { border: 1px solid #bbb; }
-#siteResourceList .pointer { border: none; }
+#siteResourceList .pointer, .panel_block .pointer { border: none; background: transparent; }
 
 .backlink_counter { position: absolute; top: -7px; left: 15px; pointer-events: none; }
 .backlink_counter .left, .backlink_counter .right { height: 25px; background: transparent url(../images/skin/iphone/backlink_counter.png) no-repeat; }
@@ -1719,3 +1717,6 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 }
 
 .rounded_rect_tbl .blue_highlighting .label, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[SecondaryColorB_1];; }
+
+.rounded_rect_tbl .empty_field, .empty_field { color: rgba(&[SecondaryColorB_1_rgb];, 0.6);}
+.rounded_rect_tbl .focused_field, .focused_field { color: rgba(&[SecondaryColorB_1_rgb];, 0.3); }
