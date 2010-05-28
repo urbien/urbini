@@ -7,7 +7,6 @@ A {
   color: &[SecondaryColorA_3];;
 }
 
-
 A:hover {color: &[SecondaryColorB_3];; text-decoration : none; cursor: pointer}
 
 a img {
@@ -124,7 +123,7 @@ input[type=button], input[type=submit], .button {
 /* the awesome size gets set here. Feel Free to add new sizes, like input[type=button].small or .small.large   */
 input[type=button], input[type=submit], .button { font-size: 15px; }
 input[type=button], input[type=submit] { padding: 6px 10px; }
-a.button { padding: 3px 10px; } /* anchor requres smaller padding than type=button */
+a.button { padding: 3px 10px; } /* anchor requires smaller padding than type=button */
 input[type=button]:active, input[type=submit]: active, .button:active	{ padding: 6px 10px 5px !important; }
 
 /* Touch the rest at your own risk. */
@@ -518,7 +517,7 @@ tr.fts td { vertical-align: middle; padding: 2px; }
 	-webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 	width: 77px; height: 31px; cursor: pointer;
 	background-color: &[PrimaryColor_4];;
-	background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
+	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
 }
@@ -539,7 +538,7 @@ td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
 /* used in filter input text fields */
 .input {
   background-color:transparent;
-  border:medium none;
+  border: 1px solid #C0C9D7;
   font-size:16px;
   font-weight:normal;
   height:auto;
@@ -681,7 +680,10 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 /* SKINS */
 .menuLine {background-color: &[SecondaryColorA_5];; border-top: solid 1px &[SecondaryColorA_3];; font-weight:bold; font-size:8pt;}
- 
+
+.alphabeticIndex {background-color: &[SecondaryColorA_5];; font-weight:bold; font-size:8pt; height: 2em; vertical-align: top;}
+.alphabeticIndex A { color: &[MenuLineColorA];; background-color: &[SecondaryColorA_5];; font-weight: bold;}
+
 .menuLine A { color: &[MenuLineColorA];; background-color: &[SecondaryColorA_5];; font-weight: bold;}
 .menuLine A:active {color: &[SecondaryColorA_1];; background-color: &[SecondaryColorA_3]; }
 
@@ -1407,17 +1409,18 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
     border-top: 1px solid &[FTS];; 
     border-bottom: 1px solid &[FTS];;
     background-color: &[FTS];;
-    background-image: -moz-linear-gradient(top center, &[FTS];, &[PrimaryColor_1];);
-    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[FTS];), to(&[PrimaryColor_1];));
+/*    background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_1];);*/
+
+    background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[FTS];), to(&[PrimaryColor_1];)); 
     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[FTS];,endColorstr=&[PrimaryColor_1];)
  }
-/*.panel_block .header td { width: 100%; }*/
+/*.panel_block .header td { width: 100%; }*/ 
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
 .panel_block .header #item_selector { /*width: 100%;*/ }
 .panel_block .header .wide_cell { width: 100%; text-align: center; }
-
 .panel_block #lists_container { padding: 10px; width: 100%; }
-/* make color blend into the pinstripes */
+/* make color blend into the pinstripes */ 
 .panel_block .content { padding: 10px; width: 100%; } 
 
 #subscribe .content { display: none; }
@@ -1721,5 +1724,5 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl .blue_highlighting .label, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[SecondaryColorB_1];; }
 
-.rounded_rect_tbl .empty_field, .empty_field { color: rgba(&[SecondaryColorB_1_rgb];, 0.6);}
-.rounded_rect_tbl .focused_field, .focused_field { color: rgba(&[SecondaryColorB_1_rgb];, 0.3); }
+.rounded_rect_tbl .empty_field, .empty_field { color: rgba(&[SecondaryColorB_3_rgb];, 0.6);}
+.rounded_rect_tbl .focused_field, .focused_field { color: rgba(&[SecondaryColorB_3_rgb];, 0.3); }
