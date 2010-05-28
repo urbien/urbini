@@ -4579,11 +4579,11 @@ var DataEntry = {
         continue;
       var labelName = getTextContent(spans[i]).toLowerCase();
       var row = getAncestorByClassName(spans[i], "param_tr");
-      if (labelName.indexOf(typedText) == 0) {
+      if (labelName.indexOf(typedText) == 0 && row) {
 		  	row.style.display = "";
 				noMatches = false;
 		  }
-		  else 
+		  else if (row)
 		  	row.style.display = "none";
 	  }
 		
@@ -7699,8 +7699,6 @@ var FtsAutocomplete = {
 // like "search" fields
 // sets parameter "is_empty_value = y"
 var FieldsWithEmptyValue = {
-  EMPTY_COLOR : "#bbb",
-	DIMMER_COLOR : "#ddd", // on click
   emptyValuesArr : new Array(),
   bluredField : null, 
 	
@@ -7788,8 +7786,12 @@ var FieldsWithEmptyValue = {
 		var attrib = field.getAttribute("is_empty_value");
 		var isEmpty = (attrib != null && attrib == "y");
 		
+		var curClassName = field.className;
 		if (TouchDlgUtil.isFieldBlueHighlight(field) == false)
-			field.style.color = this.EMPTY_COLOR; // instead DIMMER_COLOR
+			if (curClassName.indexOf("focused_field") == -1)
+				field.className += " empty_field";
+			else
+				field.className = curClassName.replace("focused_field", "empty_field");
 		
 		if (isEmpty)
 			return;
@@ -7809,7 +7811,7 @@ var FieldsWithEmptyValue = {
 		field.value = "";
 
 		if (TouchDlgUtil.isFieldBlueHighlight(field) == false)
-    	field.style.color = "";
+			field.className = field.className.replace("focused_field", "");
     field.style.fontWeight = "";
 		field.setAttribute("is_empty_value", "n");
 	},
@@ -7823,9 +7825,9 @@ var FieldsWithEmptyValue = {
 			
 		var isEmpty = (attrib == "y");
 		if (isEmpty)
-			field.style.color = this.EMPTY_COLOR;
+			field.className = field.className.replace("focused_field", "empty_field");
 		else
-			field.style.color = "";
+			field.className = field.className.replace(/empty_field|focused_field/g);
 	},
 	
 	getKeyOfField : function(field) {
@@ -7844,7 +7846,7 @@ var FieldsWithEmptyValue = {
 		if (field.getAttribute("readonly") != null)
 			return;
 		if ($t.isEmptyValue(field)) {
-			field.style.color = $t.DIMMER_COLOR;
+			field.className = field.className.replace("empty_field", "focused_field");
 			setCaretPosition(field, 0);
 		}
 	},
@@ -7875,7 +7877,7 @@ var FieldsWithEmptyValue = {
 			var key = $t.getKeyOfField(field);
 			if (field.value != $t.emptyValuesArr[key]) {
 				if (TouchDlgUtil.isFieldBlueHighlight(field) == false)
-					field.style.color = "";
+					field.className = field.className.replace("focused_field", "");
     		field.style.fontWeight = "";
 				field.setAttribute("is_empty_value", "n");
 			}
@@ -7921,11 +7923,7 @@ var FieldsWithEmptyValue = {
 	},
 	
 	hasClearTextCtrl : function(field) {
-//		var prevTd = getPreviousSibling(field.parentNode);
-//		if (!prevTd)
-//			return false;
-		
-		var img = getPreviousSibling(field);//getChildByTagName(prevTd, "img");
+		var img = getPreviousSibling(field);
 		if (!img)
 			return false;
 		
