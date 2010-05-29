@@ -417,7 +417,7 @@ input   { color: &[SecondaryColorA_3];; -webkit-appearance: none; font-size: 9px
 }
 .rlHeader td { vertical-align: middle; color: &[SecondaryColorB_3]; }
 .rlHeader a {color: &[Alternative_A];}
-.rlHeader .label {color: &[Alternative_A];}
+.rlHeader .label, .xs {color: &[Alternative_A];}
 
 tr.prTitle {background-image: -moz-linear-gradient(top center, #ACE2CE, #ffffff); color:#000000; font-weight:bold; font-size:8pt;}
 
@@ -479,7 +479,6 @@ span.ftsl {font-size:1.4em;}
 
 .empty {font-size:10pt}
 
-xs {color: #10106D; font-size: 8pt; font-weight: normal; white-space: nowrap; }
 .xsb {color: #10106D; font-size: 8pt; font-weight: bold; white-space: nowrap; }
 .xfts {color: #10106D; font-size: 0.75em; font-weight: normal; white-space: nowrap; }
 
