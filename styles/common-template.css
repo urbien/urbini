@@ -407,7 +407,7 @@ input   { color: &[SecondaryColorA_3];; -webkit-appearance: none; font-size: 9px
 
 .monospace { font-family:Courier,monospace; }
 
-tr.rlHeader { 
+.rlHeader tr { 
   border:solid &[SecondaryColorA_5]; 1px; 
   background-repeat:repeat-x; 
   background-color: &[PrimaryColor_4];;
@@ -415,7 +415,8 @@ tr.rlHeader {
   font-weight:bold; 
   font-size:8pt;
 }
-tr.rlHeader td { vertical-align: middle; color: &[SecondaryColorB_3]; }
+.rlHeader td { vertical-align: middle; color: &[SecondaryColorB_3]; }
+.rlHeader a {color: &[Alternative_A];}
 
 tr.prTitle {background-image: -moz-linear-gradient(top center, #ACE2CE, #ffffff); color:#000000; font-weight:bold; font-size:8pt;}
 
@@ -440,7 +441,14 @@ tr.prTitle {background-image: -moz-linear-gradient(top center, #ACE2CE, #ffffff)
 .prevNext {padding-bottom:2px; padding-right:2px; padding-left:2px;}
 tr.dark   {background-color: &[OddRowBackgroundColor];}
 
-tr.total  {background-color:&[SecondaryColorA_1];; font-weight:bold}
+tr.total  {
+  background-color: &[PrimaryColor_4];;
+  background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
+  color: &[Alternative_A];; 
+  font-weight:bold;
+}
 
 tr.subtotal {background-color:#cdcde4; font-weight:bold}
 td.error    {background-color:#ffcc00; font-weight:bold}
@@ -572,7 +580,7 @@ tr.commenteven {background-color: #f8f4ef; color: darkblue}
 tr.commentodd  {background-color: #e7ebf0; color: #000000}
 
 table.commentodd {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
-table.commenteven {border:solid #808080 1px; background-color: #f8f4ef; color: darkblue}
+tabe.commenteven {border:solid #808080 1px; background-color: &[SecondaryColorB_4];; color: darkblue}
 
 Table.comments {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
 Table.comments1 {background-color: #f8f4ef; color: #000000}
@@ -581,8 +589,15 @@ Table.comments1 {background-color: #f8f4ef; color: #000000}
 table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #000000; background: #D6E7E7}
 .fHeader {background: #D6E7E7}
 /* border for read/edit resource properties in non=widget */
-.rop {border:solid &[PrimaryColor_1]; 1px;; border-collapse: collapse; color: &[PrimaryColor_1];; overflow-y: visible;  height: 100%; }
-td.controlPanel { border:solid &[PrimaryColor_1]; 1px; }
+.rop {
+  border:solid &[PrimaryColor_1]; 1px; 
+  border-collapse: collapse; 
+  color: &[PrimaryColor_1];;
+  background-color: &[BackgroundColor];; 
+  overflow-y: visible;  
+  height: 100%; 
+}
+td.controlPanel { border:solid &[PrimaryColor_1]; 1px; background-color: &[BackgroundColor];;}
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 /*span.xxl {font-weight:bold; font-size:20pt;}*/
 
@@ -1099,6 +1114,9 @@ TD.toolbar {
   -webkit-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
   -moz-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
 }
+.dashboardLine td {
+  color: &[Alternative_A];
+}
 
 .menuTitle td, .menuTitle th {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
@@ -1470,12 +1488,14 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .data_td table { width: 100%; }
 .rounded_rect_tbl .data_td .input_td { width: 100%; text-align:right; padding: 0px 3px; color: &[SecondaryColorA_5];;}
 
+.rounded_rect_tbl a {color: &[Alternative_A];}
+
 /*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty {  }
 /*.rounded_rect_tbl*/ .arrow_td div { width: 18px; height: 20px; cursor: pointer; background: url(../images/skin/iphone/listArrow_sprite.png) 0px 0px;}
 .arrow_td_empty div { width: 18px; height: 20px; }
 
 .rounded_rect_tbl .label_td { white-space: nowrap; } 
-.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[SecondaryColorA_3];;}
+.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[Label];;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: &[SecondaryColorA_3];; background: rgba(255, 255, 255, 0.8); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-size: 16px; font-weight: normal; }
@@ -1674,7 +1694,15 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #footerwrap { bottom: 0;    width: 100%;  background-image:url(../images/footerBg.png);}   
 #footer { width: 85%; min-width: 760px; max-width: 984px;    margin: 0 auto;  color:white} 
 
-.footer { background-color: &[SecondaryColorA_5];; color: &[SecondaryColorA_3];}
+.footer { 
+  background-color: &[PrimaryColor_4];;
+  background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
+
+  color: &[Alternative_A];; height: 2em;
+}
+
 
 .footertitle {
   font-weight: normal;
