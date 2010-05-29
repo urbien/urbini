@@ -518,8 +518,8 @@ tr.fts td { vertical-align: middle; padding: 2px; }
 	width: 77px; height: 31px; cursor: pointer;
 	background-color: &[PrimaryColor_4];;
 	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)
 }
 .desktop_search .right div { float: left; color: &[SecondaryColorA_3];; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-family: arial; font-size: 18px; line-height:31px; text-align:center;}
 .desktop_search .right div:hover { color: &[SecondaryColorA_1];; }
@@ -1413,8 +1413,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 /*    background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_1];);*/
 
     background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
-    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[FTS];), to(&[PrimaryColor_1];)); 
-    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[FTS];,endColorstr=&[PrimaryColor_1];)
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];)); 
+    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)
  }
 /*.panel_block .header td { width: 100%; }*/ 
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
