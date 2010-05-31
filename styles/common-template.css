@@ -208,7 +208,7 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
   }
 }
 .button div { float: left; }
-.btn_with_icon { padding: 3px 3px 3px 10px !important; }
+.btn_with_icon { padding: 0px 3px 0px 10px !important; }
 .btn_with_symbol { font-size: 18px !important; padding: 2px 6px 4px 7px !important; }
 
 /*********************** end of new buttons  *****************************/
@@ -403,7 +403,7 @@ body {
 } 
 */
 
-input   { color: &[SecondaryColorA_3];; -webkit-appearance: none; font-size: 9px; font-style: normal; line-height: normal; font-weight: normal;}
+input   { -webkit-appearance: none; font-family: helvetica, arial; font-style: normal; line-height: normal; font-weight: normal;}
 
 .monospace { font-family:Courier,monospace; }
 
@@ -524,7 +524,7 @@ tr.fts td { vertical-align: middle; padding: 2px; }
 	-moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 	-webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 	width: 77px; height: 31px; cursor: pointer;
-	background-color: &[PrimaryColor_4];;
+	background-color: &[PrimaryColor_1];;
 	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)
@@ -1390,7 +1390,7 @@ input:focus { outline: 0 none; }
   position: absolute;
   width: 50%; 
   min-width: 300px;
-  max-width: 800px;
+  max-width: 1100px;
   padding: 0px;
   -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
@@ -1462,10 +1462,11 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .changeViewCols {
   margin: 0px 0px 0px 0px;
   padding: 0px 0px 0px 0px;
-  background-repeat:repeat-x;
-  background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[FTS];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_5];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#&[PrimaryColor_4_ie];,endColorstr=#&[PrimaryColor_5_ie];)
+
+  background-color: &[PrimaryColor_4];;
+  background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
 }
 .changeViewCols td.dashboard_btn:hover {  
 	border-left-color: &[PrimaryColor_5];;
@@ -1615,7 +1616,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	white-space: nowrap;
 }
 
-.iphone_field input { background: transparent; -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
+.iphone_field input { color: &[Alternative_A];; background: transparent; -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
 .iphone_field .clear_cross { position: relative; top: 4px; left: -2px; cursor: pointer; visibility: hidden; }
 .iphone_field .magnify_glass_small { position: relative; top: 3px; cursor: pointer; }
 .iphone_search { -moz-border-radius: 50%;	-webkit-border-radius: 50%; } /* used for mobile only */
@@ -1755,5 +1756,5 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl .blue_highlighting .label, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[SecondaryColorB_1];; }
 
-.rounded_rect_tbl .empty_field, .empty_field { color: rgba(&[SecondaryColorB_3_rgb];, 0.6);}
-.rounded_rect_tbl .focused_field, .focused_field { color: rgba(&[SecondaryColorB_3_rgb];, 0.3); }
+.rounded_rect_tbl .empty_field, .iphone_field .empty_field, .empty_field { color: rgba(&[Alternative_A_rgb];, 0.6);}
+.rounded_rect_tbl .focused_field, .iphone_field .focused_field, .focused_field { color: rgba(&[Alternative_A_rgb];, 0.3); }
