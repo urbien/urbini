@@ -421,7 +421,7 @@ input   { -webkit-appearance: none; font-family: helvetica, arial; font-style: n
 .rlHeader a {color: &[Alternative_A];}
 .rlHeader .label, .xs {color: &[Alternative_A];}
 
-tr.prTitle {background-image: -moz-linear-gradient(top center, #ACE2CE, #ffffff); color:#000000; font-weight:bold; font-size:8pt;}
+tr.prTitle {background-image: -moz-linear-gradient(top center, &[SecondaryColorB_3];, #ffffff); color:#000000; font-weight:bold; font-size:8pt;}
 
 .dheader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 
