@@ -852,7 +852,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .blogDivider {border-top: 1px dotted #aaaaaa;}
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
-.innerTitle {text-shadow: &[SecondaryColorA_3];; 1px 1px 0px; font-size: 18px; font-weight:bold; margin-left: 15px; color: &[Alternative_A];;}
+.innerTitle {text-shadow: 1px 1px 0px &[SecondaryColorA_3];; font-size: 18px; font-weight:bold; margin-left: 15px; color: &[Alternative_A];;}
 
 *:lang(ja-jp) { font: 900 14pt/16pt "Heisei Mincho W9", serif }
 BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif }
@@ -1450,7 +1450,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .panel_block .content { padding: 10px; width: 100%; } 
 
 #subscribe .content { display: none; }
-.panel_block .property_group, .panel_block #item_name { text-shadow: &[SecondaryColorA_3];; 1px 1px 0px; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; /*text-transform: uppercase;*/ }
+.panel_block .property_group, .panel_block #item_name { color: &[Alternative_A];; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; /*text-transform: uppercase;*/ }
 
 .rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px; border: solid rgb(166, 170, 173) 1px; empty-cells:show; }
 /* the following rules required while item-rows highlighting */
