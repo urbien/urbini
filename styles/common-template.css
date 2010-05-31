@@ -1106,7 +1106,7 @@ TD.toolbar {
   /*border-color: &[PrimaryColor_4];*/
 }
 
-.dashboard_btn a { color: &[PrimaryColor_3];; font-weight: bold; display: block; white-space: nowrap; }
+.dashboard_btn a { color: &[Label];; font-weight: bold; display: block; white-space: nowrap; }
 .current a { color: &[SecondaryColorB_2];; }
 
 .dashboardLine td.dashboard_btn:hover, .dashboardLine td.current {  
