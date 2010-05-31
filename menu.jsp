@@ -32,7 +32,7 @@
     <!--td valign="top" class="menuLine" align="right"><resourceTitle/></td-->
   </tr>
   <tr>
-    <td colspan="3" align="center" class="abc">
+    <td colspan="4" align="center" class="alphabeticIndex">
       <alphabeticIndex/>
     </td>
   </tr>
