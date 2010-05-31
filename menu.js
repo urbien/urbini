@@ -2349,8 +2349,8 @@ function chooser1(element) {
       
  // originalForm.elements[shortPropName + "_select"][len].value = id;
     originalForm.elements[shortPropName + "_verified"].value     = "y";
-    if (originalForm.elements[propName].style)
-      originalForm.elements[propName].style.backgroundColor = '#ffffff';
+ //   if (originalForm.elements[propName].style)
+ //     originalForm.elements[propName].style.backgroundColor = '#ffffff';
     if (currentFormName.indexOf('rightPanelPropertySheet') == 0) {
       var filterLabel = window.opener.document.getElementById(shortPropName + "_span");
       if (filterLabel)
@@ -7774,7 +7774,7 @@ var FieldsWithEmptyValue = {
 		this.updateClearControl(field);
 	},
 	
-	setEmpty : function(field) {
+	setEmpty : function(field, onClearIcon) {
 		if (!field)
 			return;
 
@@ -7788,10 +7788,14 @@ var FieldsWithEmptyValue = {
 		
 		var curClassName = field.className;
 		if (TouchDlgUtil.isFieldBlueHighlight(field) == false)
-			if (curClassName.indexOf("focused_field") == -1)
-				field.className += " empty_field";
-			else
-				field.className = curClassName.replace("focused_field", "empty_field");
+			if (curClassName.indexOf("focused_field") == -1) {
+				if (onClearIcon)
+					field.className += " focused_field"
+				else	
+	  			field.className += " empty_field";
+			  }
+			  else 
+			  	field.className = curClassName.replace("focused_field", "empty_field");
 		
 		if (isEmpty)
 			return;
@@ -7904,7 +7908,7 @@ var FieldsWithEmptyValue = {
 		var $t = FieldsWithEmptyValue;
 		var field = crossImg.parentNode.parentNode.getElementsByTagName("input")[0];
 
-		$t.setEmpty(field);
+		$t.setEmpty(field, true);
 		setCaretPosition(field, 0);
 		
 		crossImg.style.visibility = "hidden";
