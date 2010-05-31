@@ -50,6 +50,8 @@ img.fade {
 
 #siteResourceList td, #resourceList td, #div_Info td { height: 30px; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
+#siteResourceList #front {background-color: &[BackgroundColor];}
+
 
 .tabs, .tabs_current {
   height: 33px;
@@ -442,6 +444,10 @@ tr.prTitle {background-image: -moz-linear-gradient(top center, #ACE2CE, #ffffff)
 .prevNext {padding-bottom:2px; padding-right:2px; padding-left:2px;}
 tr.dark   {background-color: &[OddRowBackgroundColor];}
 
+tr.darkPrint   {background-color: #eeeeee;}
+
+#reportPrint {color: #000000;}
+
 tr.total  {
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
@@ -489,7 +495,7 @@ span.duration {color:#037f83; font-size:8pt; font-weight:bold}
 span.itemsCount {color:red; font-size:10pt; font-weight:bold}
 span.rollup {color:red; font-size:9pt; font-weight:bold}
 
-span.dark{color:#eeeeee}
+/*span.dark{color:#eeeeee}*/
 span.nodes  {background-color:#cbcbcb}
 span.light {color:#ffffff}
 .button1 {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
@@ -1663,6 +1669,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #div_info .text_editor_container .label { float: none; }
 
 #div_info td.pGr { background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_5];);
+                   font-weight:bold; font-size:1em; text-align:center; text-align: center; }
+td.pBGr { background-color: #eeeeee;
                    font-weight:bold; font-size:1em; text-align:center; text-align: center; }
 #div_info a { margin-left: 5px; }
 
