@@ -389,7 +389,11 @@ input   { -webkit-appearance: none; font-family: helvetica, arial; font-style: n
 .rlHeader a {color: &[Alternative_A];}
 .rlHeader .label, .xs {color: &[Alternative_A];}
 
-tr.prTitle {background-image: -moz-linear-gradient(top center, &[SecondaryColorB_3];, #ffffff); color:#000000; font-weight:bold; font-size:8pt;}
+tr.prTitle { 
+    background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];)); 
+    color:#000000; font-weight:bold; font-size:8pt;
+}
 
 .dheader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:8pt;}
 
@@ -1292,9 +1296,12 @@ TD.closePopup {
 .printBottom {	font: 90% arial, helvetica, sans-serif; color:#000000;}
 .titleGrey {font-family:arial, helvetica, sans-serif; font-size:1.2em; font-weight:bold;color:grey}
 .bigPrintTitle {font-family:arial black, helvetica, sans-serif; font-size:28px; color:lightgrey;}
-.printTitle {font-weight:bold; font-family:arial, helvetica, sans-serif; font-size:0.9em; background-color: #ACE2CE; padding:3 3 3 3}
-tr.printHeader {border:solid #808080 1px; background:url(../images/bg-green-to-white-gradient.gif);background-repeat:repeat-x; color:#000000; font-weight:bold; font-size:0.9em;}
-
+.printTitle {font-weight:bold; font-family:arial, helvetica, sans-serif; font-size:0.9em; background-color: &[PrimaryColor_1];; padding:3 3 3 3}
+tr.printHeader {border:solid #808080 1px;  
+    background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];)); 
+}
+color:#000000; font-weight:bold; font-size:0.9em;}
 
 .invoice {border: 1px solid #808080;}
 
