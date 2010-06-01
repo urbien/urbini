@@ -81,52 +81,52 @@ img.fade {
 /******************** awesome buttons ****************************/
 /* set an awesome color for the buttons, feel free to add new colors like an input[type=button].green or input[type=button].secondary */
 input[type=button], input[type=submit], .button {
-  background-color: &[PrimaryColor_4]; !important;
-  color: &[PrimaryColor_3]; !important;
+  background-color: &[PrimaryColor_4];;
+  color: &[PrimaryColor_3];;
 }
 
 /* the awesome size gets set here. Feel Free to add new sizes, like input[type=button].small or .small.large   */
-input[type=button], input[type=submit], .button { font-size: 15px; }
+input[type=button], input[type=submit], .button { font-size: 15px; color: &[Label];; }
 input[type=button], input[type=submit] { padding: 6px 10px; }
 a.button { padding: 3px 10px; } /* anchor requires smaller padding than type=button */
-input[type=button]:active, input[type=submit]: active, .button:active	{ padding: 6px 10px 5px !important; }
+input[type=button]:active, input[type=submit]: active, .button:active	{ padding: 6px 10px 5px; }
 
 /* Touch the rest at your own risk. */
 input[type=button], input[type=submit], .button { 
-  border: 0 !important; 
-  cursor: pointer !important; 
-  font-style: normal !important; 
-  font-weight: bold !important; 
-  line-height: 25px; /*1 !important;*/ 
-  position: relative !important; 
-  text-align: center !important;
-  text-decoration: none !important; 
+  border: 0; 
+  cursor: pointer; 
+  font-style: normal; 
+  font-weight: bold; 
+  line-height: 25px; /*1;*/ 
+  position: relative; 
+  text-align: center;
+  text-decoration: none; 
   
   /* vertical margin is the opposite of button's awesomeness */
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
+  margin-top: 0;
+  margin-bottom: 0;
   
   /* not all browser support these, but who cares? */
-  text-shadow: 0 1px 1px rgba(0,0,0,0.25), 2px 0 1px rgba(0,0,0,0.25) !important; 
+
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2); 
+
+          border-radius: 5px; 
+     -moz-border-radius: 5px; 
+  -webkit-border-radius: 5px; 
+          box-shadow: 0 1px 2px rgba(0,0,0,0.5); 
+     -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.5); 
+  -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.5);
   
-          border-radius: 5px !important; 
-     -moz-border-radius: 5px !important; 
-  -webkit-border-radius: 5px !important; 
-          box-shadow: 0 1px 2px rgba(0,0,0,0.5) !important; 
-     -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.5) !important; 
-  -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
-  
-  /* who needs images these days? */
-  background-image: -moz-linear-gradient(top, rgba(255,255,255,.2), rgba(150,150,150,.2), rgba(0,0,0,.0)) !important;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(255,255,255,.2)), color-stop(0.5, rgba(150,150,150,.2)), to(rgba(0,0,0,.0))) !important;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#30ffffff,endColorstr=#10000000) progid:DXImageTransform.Microsoft.Shadow(color=#000000,direction=135,strength=2);
-  
-  /* cross browser inline block hack 
-     see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ */
+  background-color: &[PrimaryColor_4];;
+  background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_1];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_1];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];)
+
+  /* cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ */
   display: -moz-inline-stack;
   display: inline-block;
-  vertical-align: middle !important;
-  *display: inline !important;
+  vertical-align: middle;
+  *display: inline;
   position: relative;
   
   /* IE luv */
@@ -152,18 +152,23 @@ input[type=submit]:focus,
 input[type=submit]:hover,
 .button:focus,
 .button:hover {
-  background-image: -moz-linear-gradient(top, rgba(255,255,255,.4), rgba(150,150,150,.3), rgba(0,0,0,.0)) !important;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(255,255,255,.4)), color-stop(0.5, rgba(150,150,150,.3)), to(rgba(0,0,0,.0))) !important;
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#50ffffff,endColorstr=#20000000) progid:DXImageTransform.Microsoft.Shadow(color=#000000,direction=135,strength=2);
+	background-color: &[PrimaryColor_1];;
+	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_4];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_4];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_4];)
 }
+
 input[type=button]:active, input[type=submit]:active, .button:active	{ 
-  background-image: -moz-linear-gradient(top, rgba(0,0,0,.2), rgba(150,150,150,.2), rgba(255,255,255,.2)) !important;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(0,0,0,.2)), color-stop(0.5, rgba(150,150,150,.2)), to(rgba(255,255,255,.2))) !important;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#20000000,endColorstr=#50ffffff) progid:DXImageTransform.Microsoft.Shadow(color=#000000,direction=315,strength=1);
-        
-          box-shadow: inset 0 1px 2px rgba(0,0,0,0.7) !important;
-     -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7) !important; 
-  -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7) !important;
+
+
+	background-color: &[PrimaryColor_1];;
+	background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+
+          box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
+     -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7); 
+  -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
 }
 
 /* Safari doesn't support inset box shadow, so we better remove it */
@@ -173,8 +178,8 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
   }
 }
 .button div { float: left; }
-.btn_with_icon { padding: 0px 3px 0px 10px !important; }
-.btn_with_symbol { font-size: 18px !important; padding: 2px 6px 4px 7px !important; }
+.btn_with_icon, a.btn_with_icon { padding: 0px 3px 0px 10px; }
+.btn_with_symbol { font-size: 18px; padding: 2px 6px 4px 7px; }
 
 /*********************** end of new buttons  *****************************/
 
