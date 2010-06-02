@@ -4502,6 +4502,8 @@ var DataEntry = {
 		if (onDataError) { // server returned previously submitted data dialog with errors of data entry
 			$t.onDataError = true;
 			$t.currentUrl = url;
+			// to show dialog at page top
+			window.scrollTo(0, 0);
 		}
 		else 
 			$t.currentUrl = $t.loadingUrl;
@@ -4993,7 +4995,7 @@ var TouchDlgUtil = {
 		
 		if (Filter.submitProcess(event))
 			return;
-		
+
 		SubscribeAndWatch.submit(event);
 	},
 	
