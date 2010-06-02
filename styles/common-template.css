@@ -1509,7 +1509,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .ext_file { float: right; margin-right: 15px; }
 .rounded_rect_tbl a { font-size: 14px; }
 .rounded_rect_tbl #dashboard a { white-space: nowrap; }
-
+.rounded_rect_tbl #siteResourceList a {color: &[SecondaryColorB_3];;}
 
 .listArrow { width: 25px; height: 20px; }
 
