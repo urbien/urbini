@@ -587,7 +587,7 @@ td.contents {font-weight:bold; font-size: small}
 font.warn {color:#A01E00}
 td.shading {border:solid #808080 1px; color:#000000}
 tr.editMode  {}
-span.bigLetterTitle  {font-weight:bold; font-size:16px; color:#00309C;}
+span.bigLetterTitle  {font-weight:bold; font-size:16px;}
 span.bigLetterTitle2  {font-weight:bold; font-size:16px; color:#ee8571;}
 
 span.fileMenuTitle  {font-weight:bold; font-size:16px; color:#00309C;vertical-align:middle}
@@ -1201,9 +1201,8 @@ TD.closePopup {
 
 /*********** moved from tree.css ***********/
 .dtree {
-	font-size: 11px;
-	color: #666;
 	white-space: nowrap;
+	color: &[ToolbarColor];;
 }
 .dtree img {
 	border: 0px;
@@ -1470,7 +1469,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .arrow_td_empty div { width: 18px; height: 20px; }
 
 .rounded_rect_tbl .label_td { white-space: nowrap; } 
-.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[Label];;}
+.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[Color];;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: &[Alternative_A];; background: rgba(255, 255, 255, 0.1); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-size: 16px; font-weight: normal; }
@@ -1510,6 +1509,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl a { font-size: 14px; }
 .rounded_rect_tbl #dashboard a { white-space: nowrap; }
 .rounded_rect_tbl #siteResourceList a {color: &[SecondaryColorB_3];;}
+.rounded_rect_tbl #siteResourceList #dashboard, #siteResourceList #menu a {color: &[Alternative_A];;}
 
 .listArrow { width: 25px; height: 20px; }
 
