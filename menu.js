@@ -1201,13 +1201,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (!tr)
       return true;
     
-		var tds = tr.getElementsByTagName("td");
-      for (var i = 0; i < tds.length; i++) {
-        var elem = tds[i];
-        if (tr.id == elem.parentNode.id)
-			elem.className = elem.className + " blue_highlighting";
-      }
-
+	tr.className = tr.className + " blue_highlighting";
     return true;
   }
 
@@ -1220,14 +1214,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return;
 
     //self.currentRow.style.backgroundColor = Popup.LightMenuItem;
-    if (self.currentRow.tagName && self.currentRow.tagName.toLowerCase() == 'tr') {
-      var tds = self.currentRow.getElementsByTagName('td');
-      for (var i=0; i<tds.length; i++) {
-        var elem = tds[i];
-        if (trId == elem.parentNode.id)
-					elem.className = elem.className.replace(/grey_highlighting|blue_highlighting/g, "");
-      }
-    }
+	self.currentRow.className = self.currentRow.className.replace(/grey_highlighting|blue_highlighting/g, "");
   }
 
 	// currently makes row grey
@@ -1242,16 +1229,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (trId == '$noValue')
       return;
 
-    if (self.currentRow.tagName && self.currentRow.tagName.toLowerCase() == 'tr') {
-      var tds = self.currentRow.getElementsByTagName("td");
-      for (var i = 0; i < tds.length; i++) {
-        var elem = tds[i];
-        //elem.style.backgroundColor = Popup.DarkMenuItem;
-        elem.style.color = "";
-        if (trId == elem.parentNode.id)
-			elem.className = elem.className + " grey_highlighting";
-      }
-    }
+	self.currentRow.className = self.currentRow.className + " grey_highlighting";
   }
 
   this.nextRow = function () {
@@ -5029,6 +5007,9 @@ var TouchDlgUtil = {
 	},
 	
 	highlightRowGrey : function(tr) {
+		
+		
+		
 		this.greyTr = tr;
 		if (tr.getAttribute("blue") != null)
 			return;
