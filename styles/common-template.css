@@ -86,7 +86,7 @@ input[type=button], input[type=submit], .button {
 }
 
 /* the awesome size gets set here. Feel Free to add new sizes, like input[type=button].small or .small.large   */
-input[type=button], input[type=submit], .button { font-size: 15px; color: &[Label];; }
+input[type=button], input[type=submit], .button, a.button { font-size: 15px; color: &[Label];; }
 input[type=button], input[type=submit] { padding: 6px 10px; }
 a.button { padding: 3px 10px; } /* anchor requires smaller padding than type=button */
 input[type=button]:active, input[type=submit]: active, .button:active	{ padding: 6px 10px 5px; }
@@ -97,7 +97,7 @@ input[type=button], input[type=submit], .button {
   cursor: pointer; 
   font-style: normal; 
   font-weight: bold; 
-  line-height: 25px; /*1;*/ 
+  line-height: 30px;
   position: relative; 
   text-align: center;
   text-decoration: none; 
@@ -507,8 +507,7 @@ tr.fts td { vertical-align: middle; padding: 2px; }
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)
 }
-.desktop_search .right div { float: left; color: &[SecondaryColorA_3];; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-family: arial; font-size: 18px; line-height:31px; text-align:center;}
-.desktop_search .right div:hover { color: &[SecondaryColorA_1];; }
+.desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-family: arial; font-size: 18px; line-height:31px; text-align:center;}
 .desktop_search .right img { margin: 5px 0 0 8px; }
 
 /* VIEWS */
@@ -816,7 +815,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .blogDivider {border-top: 1px dotted #aaaaaa;}
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
-.innerTitle {text-shadow: 1px 1px 0px &[SecondaryColorA_3];; font-size: 18px; font-weight:bold; margin-left: 15px; color: &[Alternative_A];;}
+.innerTitle {text-shadow: 2px 1px 2px rgba(0, 0, 0, 0.3); font-size: 18px; font-weight:bold; margin-left: 15px; color: &[Alternative_A];;}
 
 *:lang(ja-jp) { font: 900 14pt/16pt "Heisei Mincho W9", serif }
 BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif }
@@ -1282,9 +1281,11 @@ TD.closePopup {
 .ftChk { width: 13px; height:13px; overflow:hidden; padding:0px; border:0px; margin:0px;margin-top:1px; vertical-align:middle;}
 
 #system_tooltip  { font-family:helvetica, arial, sans-serif; visibility:hidden; padding:0; position:absolute; z-index:10000; top:0px; left:-400px; width:220px; }
-.system_tooltip_css3 { 
+.system_tooltip_css3 {
+	box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.5); 
   -webkit-box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.5); 
-  -moz-box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.5); 
+  -moz-box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.5);
+  border-radius: 5px; 
   -webkit-border-radius: 5px; 
   -moz-border-radius: 5px; 
    background-color: &[PrimaryColor_4];;
@@ -1364,6 +1365,7 @@ input:focus { outline: 0 none; }
   min-width: 300px;
   max-width: 1100px;
   padding: 0px;
+  box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
 }
@@ -1534,14 +1536,15 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   overflow-y: visible;
   padding: 0;
   border: none;
-  
+}
+
+.frame, #siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel { 
   background-color: &[PrimaryColor_4];;
   background-image: url(../images/skin/iphone/pinstripes.gif);
   background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 0px, #eee 4px);
 	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
 	-webkit-background-size: 4px 1px;
-  
-}
+} 
 
 #siteResourceList .frame { background: none; }
 
@@ -1563,7 +1566,6 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .form_panel, .options_panel, .classifier_panel, .calendar_panel { float: left; width: 20%; }
 
 #siteResourceList .form_panel {  min-height: 1px;  }
-#siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel { background: #C8C8C8 url(../images/skin/iphone/pinstripes.png) repeat scroll 0%;  }
 
 
 /** iPhone toggle button. **/
@@ -1713,20 +1715,27 @@ td.pBGr { background-color: #eeeeee;
     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
 }
 
-.grey_highlighting {
+tr.grey_highlighting > td, * html tr.grey_highlighting td  {
 	color: &[SecondaryColorA_3];;
-	background-color: &[PrimaryColor_4];;
+	background-color: &[PrimaryColor_1];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
 }
 .rounded_rect_tbl .grey_highlighting .label { color: &[SecondaryColorA_3];; }
-.blue_highlighting {
+
+tr.blue_highlighting > td, * html tr.blue_highlighting td {
 	color: &[SecondaryColorB_1];;
-	background-color: &[SecondaryColorB_1];;
+	background-color: &[SecondaryColorA_4];;
   background-image: -moz-linear-gradient(top center, &[SecondaryColorA_1];, &[SecondaryColorA_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[SecondaryColorA_1];), to(&[SecondaryColorA_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[SecondaryColorA_1];,endColorstr=&[SecondaryColorA_4];)
+}
+
+* html tr.grey_highlighting table td, * html tr.blue_highlighting table td  {
+	background-color: transparent;
+	background-image: transparent;
+	#filter: none;
 }
 
 .rounded_rect_tbl .blue_highlighting .label, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[SecondaryColorB_1];; }
