@@ -22,9 +22,11 @@
 			<getResource/>
 			<table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
 			<!--tr><td colspan="3"><resourceTitle/></td></tr-->
+          <div hide="y">			
 		  <tr noInner="y" class="fts" itype="!http://www.hudsonfog.com/voc/classifieds/siteTemplates/Slide">
 				<td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td>
 		  </tr>
+          </div>		  
 		  <tr>
 		    <td colspan="3"><include name="${type}_details_main.jsp" alt="propertySheet.jsp" /></td>
 		  </tr>
