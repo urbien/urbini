@@ -509,7 +509,7 @@ tr.fts td { vertical-align: middle; padding: 2px; }
 	-moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 	-webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 	width: 77px; height: 31px; cursor: pointer;
-	background-color: &[PrimaryColor_1];;
+	background-color: &[ToolbarColor];;
 	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)
