@@ -536,6 +536,14 @@ td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
   height:auto;
   color: &[Color];;  
 }
+.radioI {
+  border: 1px solid &[SecondaryColorA_3];;
+  cursor: pointer;
+  font-size:16px;
+  font-weight:normal;
+  height:15px;
+  width: 15px;
+}
 
 .xs .input { border: 1px solid #ababab; }
 
