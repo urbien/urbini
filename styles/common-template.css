@@ -480,7 +480,7 @@ input.xxs {font-size: 10px; color: &[Alternative_A];;}
 
 tr.fts td { vertical-align: middle; padding: 2px; }
 
-.desktop_search { width: 500px; }
+.desktop_search { width: 500px !important; width: 487px!; }
 .desktop_search .left {
  	float: left;
  	border-radius: 15px 0px 0px 15px;
@@ -1064,8 +1064,8 @@ TD.toolbar {
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
 }
+*html .dashboardLine td { #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];); }
 
 .dashboard_btn { 
   width: 60px; 
