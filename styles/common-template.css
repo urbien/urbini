@@ -589,6 +589,15 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
   overflow-y: visible;  
   height: 100%; 
 }
+#siteResourceList .rop {
+  border:solid &[PrimaryColor_1]; 1px; 
+  border-collapse: collapse; 
+  color: &[PrimaryColor_1];;
+  background-color: &[PrimaryColor_4];; 
+  overflow-y: visible;  
+  height: 100%; 
+}
+
 td.controlPanel { border:solid &[PrimaryColor_1]; 1px; background-color: &[BackgroundColor];;}
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 /*span.xxl {font-weight:bold; font-size:20pt;}*/
