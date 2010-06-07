@@ -297,7 +297,6 @@ td.textCell {
 /* Gallery */
 .galleryItem, .galleryItem_css3, .galleryItem_chrome {
   border-width: 0px;
-  padding: 10px !important;
   padding: 0px;
   margin: 10px;
   border-spacing: 0px;
@@ -480,7 +479,8 @@ input.xxs {font-size: 10px; color: &[Alternative_A];;}
 
 tr.fts td { vertical-align: middle; padding: 2px; }
 
-.desktop_search { width: 500px !important; width: 487px!; }
+.desktop_search { width: 500px !important; width: 487px; }
+.ftSearch .no_filter_arrow { width: 465px !important; width: 452px; }
 .desktop_search .left {
  	float: left;
  	border-radius: 15px 0px 0px 15px;
@@ -491,7 +491,8 @@ tr.fts td { vertical-align: middle; padding: 2px; }
 	background: #FFFFFF;
 	width: 410;
 	height: 21px;
-	padding: 5px 3px 5px 10px;
+	padding: 5px 3px 5px 10px !important;
+	padding: 3px 3px 2px 10px;
 }
 .ftsq {  color: &[SecondaryColorA_3];; }
 .desktop_search input { 
@@ -508,7 +509,9 @@ tr.fts td { vertical-align: middle; padding: 2px; }
 	-webkit-border-radius: 0px 15px 15px 0px;
 	-moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 	-webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-	width: 77px; height: 31px; cursor: pointer;
+	width: 77px;
+	height: 31px;
+	cursor: pointer;
 	background-color: &[ToolbarColor];;
 	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];));
@@ -1402,6 +1405,7 @@ div .panel_block, td .panel_block {
   min-width: none;
   max-width: none;
   
+  box-shadow : none;
   -moz-box-shadow : none;
   -webkit-box-shadow: none;
 }
