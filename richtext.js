@@ -896,6 +896,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     
     if(typeof Browser != 'undefined' && Browser.iPhone)
       this.document.body.style.webkitUserModify = "read-write";
+		
+		// attempt to overcome black background in Crome.
+		this.document.body.style.backgroundColor = "transparent";	
 	}
 	this.browserDetection = function() {
 		if(Browser.ie)
@@ -918,11 +921,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(this.rtePref.autoClose) {
       addEvent(document, 'click', this.onlosefocus, false);
 
-      if(Browser.ie)
+      if(Browser.ie )
 		    addEvent(this.iframeObj, 'focus', this.onfocus, false);
-			else if(Browser.safari)
+			else if(Browser.safari|| Browser.opera)
 			  addEvent(this.window, 'focus', this.onfocus, false);
-			else // FF, Opera
+			else // FF
 			  addEvent(this.document, 'focus', this.onfocus, false);
 		}
     // to prevent Ctrl + b,i,u,t in FF
@@ -1015,14 +1018,16 @@ function Rte(iframeObj, dataFieldId, rtePref) {
       head.appendChild(base);
 	    
 			this.document.body.innerHTML = text;
+			this.document.body.style.fontFamily = "Helvetica, arial";
+			this.document.body.style.fontSize = "16px";
+			this.document.body.style.margin = 5;
 	  }
 	  else {
 		  var frameHtml = "<html>\n";
 		  frameHtml += "<head>";
 			frameHtml += "<base href=\"" + getBaseUri() + "\" />";
-		  frameHtml += "<link href='styles/common.css' type='text/css' rel='stylesheet'>";
 		  frameHtml += "</head>";
-		  frameHtml += "<body>";
+		  frameHtml += "<body style=\"font-family:Helvetica,arial; font-size:16px; margin: 5px;\">";
 		  frameHtml += text + "";
 		  frameHtml += "</body>";
 		  frameHtml += "</html>";
