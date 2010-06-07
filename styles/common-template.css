@@ -708,7 +708,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .menuLine A { color: &[MenuLineColorA];; background-color: &[SecondaryColorA_5];; font-weight: bold;}
 .menuLine A:active {color: &[SecondaryColorA_1];; background-color: &[SecondaryColorA_3]; }
 
-.propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; overflow: auto}
+.propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
 
 #siteResourceList #header td, #div_Info #header td { height: auto; }
 
@@ -1454,6 +1454,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl tr:first-child td:last-child { border-radius: 0px 10px 0px 0px; -moz-border-radius: 0px 10px 0px 0px; -webkit-border-radius: 0px 10px 0px 0px; }
 .rounded_rect_tbl tr:last-child td:first-child { border-radius: 0px 0px 0px 10px; -moz-border-radius: 0px 0px 0px 10px; -webkit-border-radius: 0px 0px 0px 10px; }
 .rounded_rect_tbl tr:last-child td:last-child { border-radius: 0px 0px 10px  0px; -moz-border-radius: 0px 0px 10px  0px; -webkit-border-radius:  0px 0px 10px 0px; }
+
+.rounded_rect_tbl #front {background-color: &[BackgroundColor];}
 
 .rounded_rect_tbl .param_tr { cursor: pointer; }
 
