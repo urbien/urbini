@@ -856,33 +856,6 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 .errMsg {font-family:san-serif,arial,verdana;font-size:14px;color:red;font-weight:bold;}
 .info {font-family:san-serif,arial,verdana;font-size:14px;color:blue;font-weight:bold;}
 
-/************ tooltip ***********/
-.framed,
-.framed .f_r, .framed .f_b, .framed .f_l, .framed .f_c
- { float: left; position: relative; z-index: 1; width: auto; height: auto; margin: 0; padding: 0; }
-.framed .f_tt, .framed .f_rr, .framed .f_bb, .framed .f_ll { display: none; }
-.framed { margin: 0 30px 15px 0; background: url('../images/tooltip/top_edge.png') no-repeat left top; //background: none; }
-.framed .f_r { left: 30px; background: url('../images/tooltip/right_edge.png') no-repeat right top; //background: none; }
-.framed .f_b { top: 30px; background: url('../images/tooltip/bottom_edge.png') no-repeat right bottom; //background: none; }
-.framed .f_c { float: none; position: relative; left: 30px; top: -15px; padding: 1px 0; margin: 0 30px 0 0; background: #fffcb8; }
-.framed .f_l { left: -30px; padding: 15px 0; background: url('../images/tooltip/left_edge.png') no-repeat left bottom; //background: none; }
-* html .framed .f_r, * html .framed .f_b, * html .framed .f_l { height: 0; }
-* html .framed .f_tt, * html .framed .f_rr, * html .framed .f_bb, * html .framed .f_bb *,
-* html .framed .f_ll, * html .framed .f_ll *
-  { display: block; position: absolute; left: 0; top: 0; }
-* html .framed .f_tt { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/tooltip/top_edge.png,sizingMethod=crop); }
-* html .framed .f_rr { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/tooltip/right_edge.png,sizingMethod=crop); }
-* html .framed .f_tt, * html .framed .f_bb { width: expression( parentNode.offsetWidth ); height: 30px; }
-* html .framed .f_rr, * html .framed .f_ll { width: 30px; height: expression( parentNode.offsetHeight ); }
-* html .framed .f_bb, * html .framed .f_ll { overflow: hidden; }
-* html .framed .f_bb * { width: 3000px; height: 30px; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/tooltip/bottom_edge.png,sizingMethod=crop); }
-* html .framed .f_ll * { width: 30px; height: 3000px; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src=../images/tooltip/left_edge.png,sizingMethod=crop); }
-* html .framed .f_rr, * html .framed .f_bb * { right: expression( this.parentNode.offsetWidth % 2 ? -1 : 0 ); left: auto; }
-* html .framed .f_ll, * html .framed .f_ll *, * html .framed .f_bb,
-* html .framed .f_bb * { bottom: expression( this.parentNode.offsetHeight % 2 ? -1 : 0 ); top: auto; }
-.tt_button {position: relative; top: -10; left: -10; cursor: pointer;}
-/************ END tooltip ***********/
-
 /* fe - div for Screencast grid element in which 'play' div will be displaying play button to play flash demo */
 .fe {
   position:relative;
@@ -1141,8 +1114,7 @@ TD.toolbar {
 }
 
 .menuItem {
-  margin-left: 6px; white-space: nowrap; font-size: 16px; vertical-align: middle; color: &[Alternative_A];;
-}
+  margin-left: 6px; white-space: nowrap; font-size: 16px; vertical-align: middle; color: &[PrimaryColor_3];; }
 #\$more .menuItem { color: #999; font-size: 14px; padding-left: 15px; height: 20px; }
 
 .menuItem a { 
@@ -1307,17 +1279,20 @@ TD.closePopup {
 
 .ftChk { width: 13px; height:13px; overflow:hidden; padding:0px; border:0px; margin:0px;margin-top:1px; vertical-align:middle;}
 
-#system_tooltip  { font-family:helvetica, arial, sans-serif; visibility:hidden; padding:0; position:absolute; z-index:10000; top:0px; left:-400px; width:220px; }
+#system_tooltip { visibility:hidden; padding:0; position:absolute; z-index:10000; width: 220px; }
+#tt_inner { background: &[PrimaryColor_4];; position: relative; }
+#system_tooltip #content { padding: 15px; color: &[PrimaryColor_3];; font-family: helvetica, arial, sans-serif; font-size: 14px; }
 .system_tooltip_css3 {
-	box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.5); 
-  -webkit-box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.5); 
-  -moz-box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.5);
+	box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3); 
+  -webkit-box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3); 
+  -moz-box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
   border-radius: 5px; 
   -webkit-border-radius: 5px; 
-  -moz-border-radius: 5px; 
-   background-color: &[PrimaryColor_4];;
-   font-color: &[SecondaryColorB_3];;  
+  -moz-border-radius: 5px;
+  background: &[PrimaryColor_4];;
 }
+.system_tooltip_css3 #tt_inner { background: transparent; }
+
 .print {color:#000000;}
 .printB {font-weight:bold; white-space: nowrap;}
 .printBottom {	font: 90% arial, helvetica, sans-serif; color:#000000;}
@@ -1729,7 +1704,7 @@ td.pBGr { background-color: #eeeeee;
 #auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
 #auto_complete .menuItem, #auto_complete .not_found { padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_4];; }
 
-#auto_complete td.menuItem:hover { color: &[PrimaryColor_3];; background-color: &[PrimaryColor_4];; }
+#auto_complete td.menuItem:hover { color: &[SecondaryColorB_3];; background-color: &[PrimaryColor_4];; }
 #auto_complete tr:last-child td { border-bottom: none; }
 #auto_complete .menuItem div { float: left; line-height: 45px; margin-right: 5px; }
 #auto_complete .menuItem table { float: right; }
