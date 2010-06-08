@@ -12,7 +12,7 @@
       <td>
       <div>
       
-      <panelBlock on_page="y">
+      <panelBlock on_page="y" no_toolbar="y">
 	     <form id="filter" name="tablePropertyList" method="post" action="proppatch" autocomplete="off">
          <tablePropertyList type="http://www.hudsonfog.com/voc/hospitality/spa/Ticket"/>
 	       <input type="hidden" name="-schedule" value="y" />
