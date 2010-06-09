@@ -3292,12 +3292,15 @@ var ListBoxesHandler = {
     $t.calendarPanel.style.display = "inline";
     
     var inputs = $t.getDateInputs(paramTr); //Filter.getPeriodInputs(paramTr);
-    
-    startCalendar($t.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
+	  startCalendar($t.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
     
     // slide forward
     SlideSwaper.moveForward($t.tray, true);
   },
+	
+	isCalendar : function() {
+		return this.calendarPanel != null && this.calendarPanel.style.display == "inline";
+	},
 
   // returns 2 inputs for the filter (period)
   // and 1 input for data entry (date)
@@ -3384,16 +3387,21 @@ var ListBoxesHandler = {
 	
   onOptionsSelectionFinish : function(lastClickedTr) {
 		var $t = ListBoxesHandler;
-		
+
 		if (lastClickedTr && lastClickedTr.id == "$noValue") {
 			$t.onBackBtn();
 			return;
 		}
 		
-    var form = document.forms[currentFormName];
-		// possible that pointed to "_class" field instead of text field
-		var fieldName = originalProp.replace("_class", "");
-    var textField = getOriginalPropField(form, fieldName); //form.elements[field];
+		var textField;
+		if ($t.isCalendar()) 
+			textField = PeriodPicker.onSetThruList();
+		else {
+			var form = document.forms[currentFormName];
+			// possible that pointed to "_class" field instead of text field
+			var fieldName = originalProp.replace("_class", "");
+			textField = getOriginalPropField(form, fieldName);
+		}
 
     var selectedOptionsArr = $t.getSelectedOptions(lastClickedTr);
     var td = getAncestorByTagName(textField, "td");
@@ -4894,8 +4902,8 @@ var TouchDlgUtil = {
 		var tagName = (typeof target.tagName != 'undefined') ? target.tagName.toLowerCase() : "";
 		var wasProcessed = false;
 		
-		// 1. backspace
-		if (code == 8) {
+		// 1. backspace or left arrow
+		if (code == 8 || code == 37) {
 			if (target.parentNode.className != "iphone_field") {
 		  	wasProcessed = ListBoxesHandler.onBackBtn();
   	  	// prevent default browser behavior (backspace) and  other handlers
@@ -4926,6 +4934,11 @@ var TouchDlgUtil = {
 	
 		if (!$t.greyTr)
 			return;
+
+		// no arrows processing in edit in-place fields
+		var target = getEventTarget(event);
+		if (target.className && target.className.indexOf("pointer") == -1)
+			return;
 		
 		var passToTr = null;
 		if (code == 40) { // down
@@ -4940,8 +4953,7 @@ var TouchDlgUtil = {
 				passToTr = getLastChild($t.greyTr.parentNode);
 		//	passToTr.scrollIntoView(true);		
 		}
-		else if(code == 39) {
-			
+		else if(code == 39) { // right
 			var clickEvent = new Object();
 			clickEvent["target"] = $t.greyTr;
 			clickEvent["type"] = "";
@@ -4957,7 +4969,7 @@ var TouchDlgUtil = {
 		}
 		stopEventPropagation(event);
 		
-// note: left (code == 37) and right (code == 39) are not handled for now.		
+// left (code == 37)		
 
 	},
 	
@@ -7249,22 +7261,12 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
         istyle.height  = contentObj.clientHeight - SHADOW_WIDTH + 'px';
       }
     }
-    // to make tooltip shadow visible;
-    if(div.id == 'system_tooltip') {
-      var ttContent = getChildById(div, "tt_frame");
-      istyle.width   = ttContent.clientWidth;
-      istyle.height  = ttContent.clientHeight;
-      iframeLeft += 20;
-      iframeTop += 20;
-    }
   }
-
 
   div.style.display    = 'none';   // hide it before movement to calculated position
   reposition(div, left, top); // move the div to calculated position
   div.style.visibility = Popup.VISIBLE; // show div
 	div.style.display    = 'inline';
-
 
   if (Browser.lt_ie7 && !isDivStatic  && !Browser.mobile) {
     istyle.display = 'none';
@@ -7383,7 +7385,7 @@ function loadingCueStart(e, hotspot) {
   var ttDiv = document.getElementById("system_tooltip");
   if (ttDiv) {
 	  var ttIframe = document.getElementById("tooltipIframe");
-	  var loadingMsg = "<div style='vertical-align: middle; font-size: 14px; color:#000000;'><b> loading . . . </b></div>";
+	  var loadingMsg = "<b> loading . . . </b>";
 	
 	  advancedTooltip.hideOptionsBtn();
 	  Popup.open(e, ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
@@ -7797,8 +7799,8 @@ var FieldsWithEmptyValue = {
 
 		field.value = "";
 
-		if (TouchDlgUtil.isFieldBlueHighlight(field) == false)
-			field.className = field.className.replace("focused_field", "");
+		//if (TouchDlgUtil.isFieldBlueHighlight(field) == false)
+			field.className = field.className.replace(/focused_field|empty_field/, "");
     field.style.fontWeight = "";
 		field.setAttribute("is_empty_value", "n");
 	},
@@ -7814,7 +7816,7 @@ var FieldsWithEmptyValue = {
 		if (isEmpty)
 			field.className = field.className.replace("focused_field", "empty_field");
 		else
-			field.className = field.className.replace(/empty_field|focused_field/g);
+			field.className = field.className.replace(/empty_field|focused_field/, "");
 	},
 	
 	getKeyOfField : function(field) {
@@ -7864,7 +7866,7 @@ var FieldsWithEmptyValue = {
 			var key = $t.getKeyOfField(field);
 			if (field.value != $t.emptyValuesArr[key]) {
 				if (TouchDlgUtil.isFieldBlueHighlight(field) == false)
-					field.className = field.className.replace("focused_field", "");
+					field.className = field.className.replace(/focused_field|empty_field/, "");
     		field.style.fontWeight = "";
 				field.setAttribute("is_empty_value", "n");
 			}
