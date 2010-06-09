@@ -703,7 +703,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .itemsT {background-color: &[PrimaryColor_4];; font-weight:bold; font-size:12pt;text-align:center}
 
 /* SKINS */
-.menuLine {background-color: &[SecondaryColorA_5];; border-top: solid 1px &[SecondaryColorA_3];; font-weight:bold; font-size:8pt;}
+.menuLine {background-color: &[SecondaryColorA_5];; border-top: solid 1px &[SecondaryColorA_3];; font-weight:bold; font-size:8pt; padding-top: 1px;}
 
 .alphabeticIndex {background-color: &[SecondaryColorA_5];; font-size:0.8em; vertical-align: top;}
 .alphabeticIndex div { height: 1.7em;}
