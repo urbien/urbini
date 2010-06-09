@@ -34,9 +34,9 @@ a img {
   font-family: "Li Sung", MingLiu; font-size:1em;
 }
 	  
-H1 {font-family: Palatino, Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorA_1]; }
-H2 {font-family: Palatino, Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1]; }
-H3 {font-family: Palatino, Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1]; }
+H1 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorA_1];; font-size: 34px; }
+H2 a {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1];; font-size: 21px;}
+H3 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1];; font-size: medium; height:3px;}
 
 .pointer { cursor: pointer; }
 .dragable, .move { cursor: move; }
@@ -44,6 +44,8 @@ H3 {font-family: Palatino, Helvetica, arial, Verdana, geneva; font-weight: bold;
 img.fade {
    opacity:       0.6;
 }
+
+#fts td {padding-bottom: 1em;}
 
 #user a { color: &[SecondaryColorA_3_brighter];}
 #user span { &[SecondaryColorA_3_brighter];; font-weight: bold}
@@ -344,7 +346,8 @@ td.textCell {
 
 /* styles from properties.css */ 
 body {
-	font-family: Helvetica, arial, sans-serif;
+	font-family: sans-serif, arial, Helvetica;
+	font-size: medium;
 	padding: 0;
 	margin: 0;
 	background-color: &[BackgroundColor];;
@@ -452,7 +455,7 @@ span.rxl {color:red; font-weight:bold; font-size:16pt;}
 .ftsF { text-align: right; padding-right:10px;}
 
 /* Full text search links */
-span.ftsl {font-size:1.4em;} 
+span.ftsl {font-size:1.3em;} 
 
 .empty {font-size:10pt}
 
