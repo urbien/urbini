@@ -17,16 +17,9 @@ function FormPopup(innerFormHtml, flag) {
 	
 	this.create = function(innerFormHtml, flag) {
 		this.div = document.createElement('div');
-		this.div.style.visibility = "hidden";
-
-		this.div.style.position = "absolute";
-		this.div.style.backgroundColor = "#fff";
-		this.div.style.borderStyle = "solid";
-		this.div.style.borderWidth = 1;
-		this.div.style.borderColor = "#999";
-		this.div.style.padding = 5;
-
-    // 1. header
+		this.div.className = "ctrl_toolbar_dlg";
+    
+		// 1. header
     this.headerDiv = this.createHeader();
     this.div.appendChild(this.headerDiv);
 
