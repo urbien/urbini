@@ -137,6 +137,7 @@ var PeriodPicker = {
     this.fromInp = fromInp;
     this.toInp = toInp;
     this.callback = doneCallback;
+		this.curInp = fromInp; // helps to set value form list of dates
 
     var dateFormat = fromInp.getAttribute("date_format");
     if (dateFormat.toLowerCase().indexOf('m') == 0) 
@@ -152,29 +153,33 @@ var PeriodPicker = {
   },
   
   // buttons click handlers ---
-  onFromBtn : function(fromInp) {
+  onFromBtn : function(fromBtn) {
     clearTimeout(this.timerId);
     var fromDateTmp = this.fromDate;
     if (fromDateTmp == null) 
       fromDateTmp = getDateFromText(this.fromInp.value, this.isEuropeanFormat);
     iPhoneCalendar.show(this.calCont, this.fromCallback, fromDateTmp);
     
-    var fromBtn = fromInp;
 		fromBtn.style.backgroundColor = this.BLUE_BG;
     var toBtn = getNextSibling(fromBtn);
 		toBtn.style.backgroundColor = "transparent";
+		
+		this.curInp = this.fromInp;
   },
-  onToBtn : function(toInp) {
+	
+  onToBtn : function(toBtn) {
     clearTimeout(this.timerId);
     var toDateTmp = this.toDate;
     if (toDateTmp == null) 
       toDateTmp = getDateFromText(this.toInp.value, this.isEuropeanFormat);
     iPhoneCalendar.show(this.calCont, this.toCallback, toDateTmp);
   
-    this.toBtn = toInp;
+    this.toBtn = toBtn;
 		this.toBtn.style.backgroundColor = this.BLUE_BG;
     var fromBtn = getPreviousSibling(this.toBtn);
 		fromBtn.style.backgroundColor = "transparent";
+		
+		this.curInp = this.toInp;
   },
   
   onDoneBtn : function() {
@@ -197,15 +202,16 @@ var PeriodPicker = {
 			fromBtn.style.backgroundColor = $t.BLUE_BG;
     }
 
-    // reset inner content
-    $t.fromDate = null;
-    $t.toDate = null;
-    $t.isEuropeanFormat = false;
-    $t.toBtn = null;
-    $t.fromInp = null;
-    $t.toInp = null;
+		$t._reset();
   },
   
+	// value set thru list of dates
+	onSetThruList : function() {
+		var curInp = this.curInp;
+		this._reset();
+		return curInp;
+	},
+	
   // callbacks -----------------------------
   fromCallback : function(dateObj) {
     var $t = PeriodPicker;
@@ -221,7 +227,16 @@ var PeriodPicker = {
   // interface function
   getInputs : function() {
     return [ this.fromInp, this.toInp ];
-  }
+  },
+	_reset : function() {
+		this.fromDate = null;
+    this.toDate = null;
+    this.isEuropeanFormat = false;
+    this.toBtn = null;
+    this.fromInp = null;
+    this.toInp = null;
+		this.curInp = null;
+	}
 }
 
 /**********************************************************
