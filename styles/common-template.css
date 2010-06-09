@@ -36,7 +36,7 @@ a img {
 	  
 H1 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorA_1];; font-size: 34px; }
 H2 a {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1];; font-size: 21px;}
-H3 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1];; font-size: medium; }
+H3 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1];; font-size: medium; margin: 0}
 
 .pointer { cursor: pointer; }
 .dragable, .move { cursor: move; }
@@ -45,7 +45,8 @@ img.fade {
    opacity:       0.6;
 }
 
-#fts td {padding-bottom: 1em;}
+#fts td {padding-bottom: 1.2em;}
+#fts {font-size: small;}
 
 #user a { color: &[SecondaryColorA_3_brighter];}
 #user span { &[SecondaryColorA_3_brighter];; font-weight: bold}
