@@ -1,13 +1,14 @@
 <container>
   <base href="serverName"/> <!-- needed to show images located under host/images-->
   <link href="icons/icon.ico"        type="image/x-icon" rel="shortcut icon" />
-  <link href="styles/common.css"     type="text/css" rel="stylesheet" />
+  <link href="styles/common.css"     type="text/css" rel="stylesheet" title="common"/>
   <link href="styles/properties.css" type="text/css" rel="stylesheet" />
   <link href="styles/iphone.css"     type="text/css" rel="stylesheet" /><!-- media="only screen and (max-device-width:480px)"  /-->
   <feed/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.7, maximum-scale=1.1"></meta>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.7, maximum-scale=1.0"></meta>
   <meta name="apple-mobile-web-app-capable" content="yes"></meta>
   <meta name="apple-mobile-web-app-status-bar-style" content="black"></meta>
- <getResource/>
+  <include name="analytics-tracker.jsp" />
+  <getResource/>
   <siteTitle />
 </container>
