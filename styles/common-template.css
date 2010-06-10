@@ -55,6 +55,10 @@ img.fade {
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
 #siteResourceList #front {background-color: &[BackgroundColor];}
 
+.mItems {
+  text-align:center;
+  vertical-align: top;
+}
 
 .tabs, .tabs_current {
   height: 33px;
@@ -1236,6 +1240,8 @@ TD.closePopup {
 	font-size: 11px;
 	color: #666;
 }
+
+
 .br {
   height: 5px;
 }
