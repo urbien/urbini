@@ -11176,7 +11176,45 @@ function addOnClickToProfiling() {
   }
 }
 
-
+// replace css with 'cssTitle' with the css from 'file' 
+function changeCss(cssTitle, file) {
+  var i;
+  var done = false;
+  var linkTag = document.getElementsByTagName("link");
+  for (i = 0,  ; i < linkTag.length ; i++ ) {
+    var link = linkTag[i];
+    if ( title && link.rel.indexOf( "stylesheet" ) != -1 && link.title == cssTitle) {
+      var href = link.getAttribute("href");
+      if (href == file) { 
+        if (link.disabled) {
+          link.disabled = false; // enable and continue looping so that we can disable another css which is active now
+          done = true;
+        }  
+        else
+          return; // same css is already set and enabled
+      }  
+      
+      if (link.disabled == true) // skip disabled css
+        continue;
+      
+      link.disabled = false; // do nto remove, just disable so that we can switch back to this quickly
+      if (done)
+        return;
+      
+      var ref = document.createElement('style');
+      ref.setAttribute("rel", "stylesheet");
+      ref.setAttribute("type", "text/css");
+      ref.setAttribute("title", cssTitle);
+      ref.setAttribute("href", filename);
+      document.getElementsByTagName("head")[0].appendChild(ref);
+      /*      
+      if(!!(window.attachEvent && !window.opera)) ref.styleSheet.cssText = asd;//this one's for ie
+      else ref.appendChild(document.createTextNode(asd));
+      */
+      return;
+    }
+  }
+}  
 
 // redefines standart alert() function
 function alert(text) {
