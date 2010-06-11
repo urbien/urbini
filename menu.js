@@ -11181,7 +11181,7 @@ function changeCss(cssTitle, file) {
   var i;
   var done = false;
   var linkTag = document.getElementsByTagName("link");
-  for (i = 0,  ; i < linkTag.length ; i++ ) {
+  for (i = 0; i < linkTag.length ; i++ ) {
     var link = linkTag[i];
     if ( title && link.rel.indexOf( "stylesheet" ) != -1 && link.title == cssTitle) {
       var href = link.getAttribute("href");
