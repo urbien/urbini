@@ -1409,6 +1409,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #fts_filter { width: auto;  overflow: visible; }
 #fts_filter .no_border td { border-bottom: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
+#fts_filter .filter_stat span.ds { margin-left: 30px; font-weight: bold;  font-size: 15px;}
 
 .panel_block .header { 
     line-height:30px; 
