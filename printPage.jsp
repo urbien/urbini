@@ -7,7 +7,7 @@
 		<table width="100%">
 		<tr>
 	    <td valign="top" nowrap="nowrap" align="right">
-	      <a href="#"><logo src="icons/logo-large.gif" /></a>
+	      <a href="#"><logo src="icons/logo-large.png" /></a>
 	    </td>
     </tr>
     </table>
