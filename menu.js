@@ -5150,6 +5150,11 @@ var LinkProcessor = {
 	    else
 	      return;
 	  }
+		
+		// process only left mouse button (1)
+		var btn = e.which || e.button;
+		if (typeof btn != 'undefined' && btn != 1)
+			return;
 	
 	  $t.linkHrefModifier(e, anchor);
 	
@@ -5175,7 +5180,7 @@ var LinkProcessor = {
 	  // 4. Boolean toggle (in UI it looks like a dot)
 	  else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
 	        id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
-	    changeBoolean(e, anchor);
+			changeBoolean(e, anchor);
 	  }
 	},
 	
