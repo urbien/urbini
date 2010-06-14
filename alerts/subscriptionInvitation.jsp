@@ -14,7 +14,7 @@
 		You can modify your subscription alert level or unsubscribe at any time.
   </td>
 	<td align="right" valign="top">
-		<a href="#"><IMG src="icons/logo-large.gif" border="0" height="32" align="right" /></a>
+		<a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a>
 	</td>
 </tr>
 <tr>
