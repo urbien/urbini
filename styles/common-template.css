@@ -186,7 +186,7 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
 }
 .button div { float: left; }
 .btn_with_icon, a.btn_with_icon { padding: 0px 3px 0px 10px; }
-.btn_with_symbol { font-size: 18px; padding: 2px 6px 4px 7px; }
+.btn_with_symbol, a.btn_with_symbol { font-size: 18px; padding: 0px 7px 2px 7px; }
 
 /*********************** end of new buttons  *****************************/
 
@@ -1073,8 +1073,7 @@ TD.toolbar {
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
 }
-
-.widget .dashboardLine, tr.rlHeader { background-color: &[SecondaryColorA_5];; background-image: none; }
+.widget .dashboardLine { background-color: &[SecondaryColorA_5];; background-image: none; }
 
 *html .dashboardLine td { #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];); }
 
