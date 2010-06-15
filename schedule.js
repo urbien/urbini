@@ -868,7 +868,7 @@ var CalendarNavigation = {
     
     if (this.parentDiv.style.left.length == 0) { // 1st time opening
       var x = findPosX(hotPoint) - 300;
-      var y = findPosY(hotPoint) + 40;
+      var y = findPosY(hotPoint) + 50;
 
       this.parentDiv.style.left = x;
       this.parentDiv.style.top = y;
