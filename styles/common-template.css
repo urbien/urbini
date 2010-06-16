@@ -1537,7 +1537,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl a { font-size: 14px; }
 .rounded_rect_tbl #dashboard a { white-space: nowrap; }
 .rounded_rect_tbl #siteResourceList a {color: &[SecondaryColorB_3];;}
-.rounded_rect_tbl #siteResourceList #dashboard, #siteResourceList #menu a {color: &[Alternative_A];;}
+.rounded_rect_tbl #siteResourceList #dashboard a, #siteResourceList #menu a {color: &[Alternative_A];;}
 
 .listArrow { width: 25px; height: 20px; }
 
