@@ -11223,8 +11223,26 @@ function changeCss(cssTitle, file) {
       return;
     }
   }
-}  
+}
+// FTS improvements
+function showHide(id, event) {
+  var tt = document.getElementById(id);
+  if (tt.className  &&  tt.className == 'hdn')
+    tt.className = '';
+  else
+    tt.className = 'hdn';
+  
+  return stopEventPropagation(event);
+}
 
+function showHideDidYouMean(event) {
+  showHide('didYouMean', event);
+  var img = document.getElementById('fts_arrow'); 
+  if (img.src.indexOf('icons/sortedDescending.png') != -1) 
+    img.src = 'icons/sortedAscending.png'; 
+  else 
+    img.src = 'icons/sortedDescending.png'; 
+}
 // redefines standart alert() function
 function alert(text) {
 	BrowserDialog.alert(text, null ,"yes");
