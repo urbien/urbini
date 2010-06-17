@@ -482,7 +482,7 @@ span.light {color:#ffffff}
 input.xxs {font-size: 10px; color: &[Alternative_A];;}
 .text {font-size:0.9em; font-weight:bold;}
 /* FTS category image style */
-.cat  {padding-left: 5px; padding-right: 3px; border: 0}
+.cat  {padding-left: 5px; padding-right: 3px; border: 0; width: 16px; height: 16px;}
 .cat1 {FONT-WEIGHT: bold;}
 
 tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
