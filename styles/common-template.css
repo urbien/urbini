@@ -310,12 +310,8 @@ td.textCell {
 }
 
 /* native shadow, meanwhile for WebKit only */
-.galleryItem_css3 { -webkit-box-shadow: 5px 5px 25px #555; -moz-box-shadow: 5px 5px 25px #555;}
-.galleryItem_chrome { -webkit-box-shadow: 2px 2px 5px #111111; }
-
-.galleryItem td {
-  vertical-align: top; background-position: top;
-}
+.galleryItem_css3 { box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.4); -webkit-box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.4); -moz-box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.4); }
+.galleryItem_chrome { -webkit-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4); }
 
 .galleryItem td#grayRight {
   background-image:url(../images/frame/gray_bg/right.jpg);
@@ -487,8 +483,8 @@ input.xxs {font-size: 10px; color: &[Alternative_A];;}
 
 tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
 
-.desktop_search { width: 500px !important; width: 487px; }
-.ftSearch .no_filter_arrow { width: 465px !important; width: 452px; }
+.desktop_search { width: 500px; }
+
 .desktop_search .left {
  	float: left;
  	border-radius: 15px 0px 0px 15px;
@@ -498,15 +494,15 @@ tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
 	-moz-box-shadow: 1px 0 2px rgba(0, 0, 0, 0.5) inset;
 	background: #FFFFFF;
 	width: 410;
-	height: 21px;
-	padding: 5px 3px 5px 10px !important;
-	padding: 4px 3px 4px 10px;
+	height: 31px;
+	padding: 0px 3px 0px 10px;
 }
 .ftsq {  color: &[SecondaryColorA_3];; }
 .desktop_search input { 
     width: 100%; font: bold 16px Helvetica; border: none;
     padding: 0px 0px 0px 0px;
-    margin: 0px;
+    margin-top: 5px !important;
+    margin-top: 3px;
 
     line-height: 21px; 
     vertical-align: middle;   
@@ -523,8 +519,12 @@ tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
 	background-color: &[ToolbarColor];;
 	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)";
+  
+  float: left;
 }
+
 .desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-family: arial; font-size: 18px; line-height:31px; text-align:center;}
 .desktop_search .right img { margin: 5px 0 0 8px; }
 
@@ -1652,7 +1652,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   background: url(../images/frame/png/right.png) repeat-y;
 }
 .shadow_bottom {
-	width: 100%;
+	width: 100% !important;
+	width: 1px;
   height: 11px;
   float: left;
   background: url(../images/frame/png/bottom.png) no-repeat;
@@ -1728,7 +1729,7 @@ td.pBGr { background-color: #eeeeee;
 */
 #auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
 #auto_complete .menuItem, #auto_complete .not_found { padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_4];; }
-
+#auto_complete .not_found { border-bottom: none; }
 #auto_complete td.menuItem:hover { color: &[SecondaryColorB_3];; background-color: &[PrimaryColor_4];; }
 #auto_complete tr:last-child td { border-bottom: none; }
 #auto_complete .menuItem div { float: left; line-height: 45px; margin-right: 5px; }
