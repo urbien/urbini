@@ -27,7 +27,7 @@
         <include name="${type}_left.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
         <include name="${type}_details_left.jsp"/> <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
       </div>
-      <td valign="top" width="100%">
+      <td valign="top">
         <div id="corePageContent"> <file/></div><!-- core page content -->
       </td>
       <div hide="y">
