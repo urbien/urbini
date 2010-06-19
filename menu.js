@@ -10902,7 +10902,6 @@ var CheckButtonMgr = {
     
     var inputs = div.getElementsByTagName('input');
     for(var i=0; i < inputs.length; i++) {
-			
 			var stlIdx;
 			if (inputs[i].getAttribute('type') == 'checkbox') // checkbox
 				stlIdx = 0;
@@ -10912,7 +10911,7 @@ var CheckButtonMgr = {
 			
 			var isSubstituted = false;
 	  	var nextElem = getNextSibling(inputs[i])
-			if (nextElem && (nextElem.className == "iphone_checkbox" || nextElem.className == "toggle_btn"))
+			if (nextElem && isElemOfClass(nextElem, ["iphone_checkbox", "toggle_btn"]))
 				isSubstituted = true; // this element was already subsituted in JAVA or JS
 
 			// no need to process hidden checkboxes that were not substituted on server-side
@@ -10954,7 +10953,7 @@ var CheckButtonMgr = {
   },
 
   _switchState : function(toggleBtn, input) {
-    var xPos = toggleBtn.style.backgroundPosition;
+    var xPos = getElementStyle(toggleBtn).backgroundPosition;
     var isChecked = (xPos.length != 0 && xPos.indexOf("0") != 0);
     this.setState(toggleBtn, input, !isChecked);
   },
