@@ -1601,7 +1601,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 /* 3 types 1)left align 2) right align 3) blue with left align */
 .toggle_btn { float: right; margin: 0px; width: 100px; height: 30px; background:#FFFFFF url(../images/skin/iphone/toggle_btn.png); cursor: pointer; }
 .iphone_checkbox { margin: 0px 3px; width: 29px; height: 29px; background: url(../images/skin/iphone/checkbox.png); cursor: pointer; }
-.checked { background-position: 100% 0%; cursor: auto; } 
+.checked { background-position: 100% 0%; } 
 
 
 /** iPhone field **/
