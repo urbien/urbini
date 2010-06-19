@@ -228,7 +228,8 @@ tr.dark  {background-color:#eeeeee; /*height: 35px;*/ }
     text-align: center;
 }
 
-#options_container  #content img { width:32px; height:32px; border:0px; vertical-align:middle }
+#options_container #content img { width:32px; height:32px; border:0px; vertical-align:middle }
+#options_container #content #menu_Views img { width:48px; height:48px; border:0px; vertical-align:middle }
 
 #options_container .rlHeader { background: none; }
 #options_container #content .li { color: #fff; }

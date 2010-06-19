@@ -1668,7 +1668,7 @@ var Boost = {
         tr = tt;
         else if (totalsTR  &&  tt.id == 'totals')
           totalsTR = tt;
-        else if (tt.id == 'header')
+        else if (tt.className == 'header')
           headerTR = tt;
       }
     }

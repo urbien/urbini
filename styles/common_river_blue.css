@@ -4,10 +4,10 @@ A {
   padding: 5px 0px; 
   font-size: 15px;
   line-height: 15px;
-  color: &[SecondaryColorA_3];;
+  color: #364C7F;
 }
 
-A:hover {color: &[SecondaryColorB_3];; text-decoration : none; cursor: pointer}
+A:hover {color: #3B8E3B; text-decoration : none; cursor: pointer}
 
 a img {
 	border: 0;
@@ -25,7 +25,7 @@ a img {
   white-space: nowrap;
 }
 .propLabelI {
-  color: &[SecondaryColorB_5];; font-size: 10pt; font-weight: normal;
+  color: #D7EDD7; font-size: 10pt; font-weight: normal;
   white-space: nowrap;
 }
 
@@ -34,9 +34,9 @@ a img {
   font-family: "Li Sung", MingLiu; font-size:1em;
 }
 	  
-H1 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorA_1];; font-size: 34px; }
-H2 a {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1];; font-size: 21px;}
-H3 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1];; font-size: medium; margin: 0}
+H1 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: #A6AFC3; font-size: 34px; }
+H2 a {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: #B6DBB6; font-size: 21px;}
+H3 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: #B6DBB6; font-size: medium; margin: 0}
 
 .pointer { cursor: pointer; }
 .dragable, .move { cursor: move; }
@@ -48,12 +48,12 @@ img.fade {
 #fts td {padding-bottom: 1.2em;}
 #fts {font-size: small;}
 
-#user a { color: &[SecondaryColorA_3_brighter];}
-#user span { &[SecondaryColorA_3_brighter];; font-weight: bold}
+#user a { color: #317676}
+#user span { #317676; font-weight: bold}
 
 #siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
-#siteResourceList #front {background-color: &[BackgroundColor];}
+#siteResourceList #front {background-color: #ffffff}
 
 .mItems {
   text-align:center;
@@ -88,12 +88,12 @@ img.fade {
 /******************** awesome buttons ****************************/
 /* set an awesome color for the buttons, feel free to add new colors like an input[type=button].green or input[type=button].secondary */
 input[type=button], input[type=submit], .button {
-  background-color: &[PrimaryColor_4];;
-  color: &[PrimaryColor_3];;
+  background-color: #BFDBDB;
+  color: #317676;
 }
 
 /* the awesome size gets set here. Feel Free to add new sizes, like input[type=button].small or .small.large   */
-input[type=button], input[type=submit], .button, a.button { font-size: 15px; color: &[Label];; }
+input[type=button], input[type=submit], .button, a.button { font-size: 15px; color: #317676; }
 input[type=button], input[type=submit] { padding: 6px 10px; }
 a.button { padding: 3px 10px; } /* anchor requires smaller padding than type=button */
 input[type=button]:active, input[type=submit]: active, .button:active	{ padding: 6px 10px 5px; }
@@ -124,10 +124,10 @@ input[type=button], input[type=submit], .button {
      -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.5); 
   -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.5);
   
-	background-color: &[PrimaryColor_1];;
-	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_4];)
+	background-color: #98B6B6;
+	background-image: -moz-linear-gradient(top center, #6f9999, #BFDBDB);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#6f9999), to(#BFDBDB));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#6f9999,endColorstr=#BFDBDB)
 
   /* cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ */
   display: -moz-inline-stack;
@@ -159,19 +159,19 @@ input[type=submit]:focus,
 input[type=submit]:hover,
 .button:focus,
 .button:hover {
-  background-color: &[PrimaryColor_4];;
-  background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_1];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_1];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];)
+  background-color: #BFDBDB;
+  background-image: -moz-linear-gradient(top center, #BFDBDB, #98B6B6);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#BFDBDB), to(#98B6B6));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#BFDBDB,endColorstr=#98B6B6)
 }
 
 input[type=button]:active, input[type=submit]:active, .button:active	{ 
 
 
-	background-color: &[PrimaryColor_1];;
-	background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+	background-color: #98B6B6;
+	background-image: -moz-linear-gradient(top center, #98B6B6, #BFDBDB);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#98B6B6), to(#BFDBDB));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#98B6B6,endColorstr=#BFDBDB)
 
           box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
      -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7); 
@@ -214,7 +214,7 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
   padding-right:4px; 
   padding-top:6px; 
   font-size:1.7em; 
-  color:&[SecondaryColorB_3];; 
+  color:#3B8E3B; 
   text-decoration: none;
 }
 .large-poweredBy-b {padding-left:0px; padding-top:6px; font-size:14pt; color:#94C7F1; text-decoration: none;}
@@ -267,7 +267,7 @@ td.textCell {
   .cpTabs {
     cursor: pointer;
     padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;
-    background-color: &[PrimaryColor_4];;
+    background-color: #BFDBDB;
   }
 
 	#resourceList .cpTabs td { height: auto; }
@@ -275,13 +275,13 @@ td.textCell {
 
   .currentCpTabs {
     padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;  
-    color: &[PrimaryColor_4];;
-    background-color: &[SecondaryColorA_5];;
+    color: #BFDBDB;
+    background-color: #CED4E1;
   }
 
   .currentTabTitle {
-    background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_5];);
-    font-color: &[SecondaryColorB_3];;  
+    background-image: -moz-linear-gradient(top center, #BFDBDB, #C7DBDB);
+    font-color: #3B8E3B;  
 	  font-weight: bold;
 	  font-size:14px;
 	  height: 30px; 
@@ -351,8 +351,8 @@ body {
 	font-size: medium;
 	padding: 0;
 	margin: 0;
-	background-color: &[BackgroundColor];;
-	color: &[Color];;
+	background-color: #ffffff;
+	color: 344979;
   height: 100%;
 }
 
@@ -381,20 +381,20 @@ input   { -webkit-appearance: none; font-family: helvetica, arial; font-style: n
 .monospace { font-family:Courier,monospace; }
 
 .rlHeader tr { 
-  border:solid &[SecondaryColorA_5]; 1px; 
+  border:solid #CED4E1 1px; 
   background-repeat:repeat-x; 
-  background-color: &[PrimaryColor_4];;
-  font-color: &[SecondaryColorB_3];;  
+  background-color: #BFDBDB;
+  font-color: #3B8E3B;  
   font-weight:bold; 
   font-size:8pt;
 }
-.rlHeader td { vertical-align: middle; color: &[SecondaryColorB_3]; }
-.rlHeader a {color: &[Alternative_A];}
-.rlHeader .label, .xs {color: &[Alternative_A];}
+.rlHeader td { vertical-align: middle; color: #3B8E3B }
+.rlHeader a {color: #317676}
+.rlHeader .label, .xs {color: #317676}
 
 tr.prTitle { 
-    background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
-    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];)); 
+    background-image: -moz-linear-gradient(top center, #6f9999, #98B6B6); 
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#6f9999), to(#98B6B6)); 
     color:#000000; font-weight:bold; font-size:8pt;
 }
 
@@ -417,18 +417,18 @@ tr.prTitle {
 /* paging */
 .paging { font-size: 18px; font-style: normal; font-weight: bold; vertical-align: top;}
 .prevNext {padding-bottom:2px; padding-right:2px; padding-left:2px;}
-tr.dark   {background-color: &[OddRowBackgroundColor];}
+tr.dark   {background-color: #f2f2f2}
 
 tr.darkPrint   {background-color: #eeeeee;}
 
 #reportPrint {color: #000000;}
 
 tr.total  {
-  background-color: &[PrimaryColor_4];;
-  background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
-  color: &[Alternative_A];; 
+  background-color: #BFDBDB;
+  background-image: -moz-linear-gradient(top center, #98B6B6, #BFDBDB);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#98B6B6), to(#BFDBDB));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#98B6B6,endColorstr=#BFDBDB);
+  color: #317676; 
   font-weight:bold;
 }
 
@@ -475,13 +475,13 @@ span.nodes  {background-color:#cbcbcb}
 span.light {color:#ffffff}
 .button1 {background: #D6E7EF;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 
-input.xxs {font-size: 10px; color: &[Alternative_A];;}
+input.xxs {font-size: 10px; color: #317676;}
 .text {font-size:0.9em; font-weight:bold;}
 /* FTS category image style */
 .cat  {padding-left: 5px; padding-right: 3px; border: 0; width: 16px; height: 16px;}
 .cat1 {FONT-WEIGHT: bold;}
 
-tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
+tr.fts td { vertical-align: middle; padding: 2px; color: #317676; }
 
 .desktop_search { width: 500px; }
 
@@ -497,7 +497,7 @@ tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
 	height: 31px;
 	padding: 0px 3px 0px 10px;
 }
-.ftsq {  color: &[SecondaryColorA_3];; }
+.ftsq {  color: #364C7F; }
 .desktop_search input { 
     width: 100%; font: bold 16px Helvetica; border: none;
     padding: 0px 0px 0px 0px;
@@ -516,16 +516,16 @@ tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
 	width: 77px;
 	height: 31px;
 	cursor: pointer;
-	background-color: &[ToolbarColor];;
-	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];));
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)";
+	background-color: #6f9999;
+	background-image: -moz-linear-gradient(top center, #6f9999, #98B6B6);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#6f9999), to(#98B6B6));
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#6f9999,endColorstr=#98B6B6);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#6f9999,endColorstr=#98B6B6)";
   
   float: left;
 }
 
-.desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-family: arial; font-size: 18px; line-height:31px; text-align:center;}
+.desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove #BFDBDB; font-family: arial; font-size: 18px; line-height:31px; text-align:center;}
 .desktop_search .right img { margin: 5px 0 0 8px; }
 
 /* VIEWS */
@@ -543,10 +543,10 @@ td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
   font-size:16px;
   font-weight:normal;
   height:auto;
-  color: &[Color];;  
+  color: 344979;  
 }
 .radioI {
-  border: 1px solid &[SecondaryColorA_3];;
+  border: 1px solid #364C7F;
   cursor: pointer;
   font-size:16px;
   font-weight:normal;
@@ -568,7 +568,7 @@ td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
 .dashedBlock {border-style:dashed; border-width: 2px; border-color:#ADADD5 #ADADD5 #ADADD5 #ADADD5}
 
 td.tab  {border:solid #808080 1px; color:#000000}
-td.containers  {background-color: &[SecondaryColorB_5];; color: &[SecondaryColorB_3];}
+td.containers  {background-color: #D7EDD7; color: #3B8E3B}
 
 tr.keywordsearch  {background-color: #e7ebf0; color: #000000}
 td.keywordsearch  {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none}
@@ -581,7 +581,7 @@ tr.commenteven {background-color: #f8f4ef; color: darkblue}
 tr.commentodd  {background-color: #e7ebf0; color: #000000}
 
 table.commentodd {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
-tabe.commenteven {border:solid #808080 1px; background-color: &[SecondaryColorB_4];; color: darkblue}
+tabe.commenteven {border:solid #808080 1px; background-color: #CFEDCF; color: darkblue}
 
 Table.comments {border:solid #808080 1px; background-color: #f8f4ef; color: #000000}
 Table.comments1 {background-color: #f8f4ef; color: #000000}
@@ -591,29 +591,29 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 .fHeader {background: #D6E7E7}
 /* border for read/edit resource properties in non=widget */
 .rop {
-  border:solid &[PrimaryColor_1]; 1px; 
+  border:solid #98B6B6 1px; 
   border-collapse: collapse; 
-  color: &[PrimaryColor_1];;
-  background-color: &[BackgroundColor];; 
+  color: #98B6B6;
+  background-color: #ffffff; 
   overflow-y: visible;  
   height: 100%; 
 }
 #siteResourceList .rop {
-  border:solid &[PrimaryColor_1]; 1px; 
+  border:solid #98B6B6 1px; 
   border-collapse: collapse; 
-  color: &[PrimaryColor_1];;
-  background-color: &[PrimaryColor_4];; 
+  color: #98B6B6;
+  background-color: #BFDBDB; 
   overflow-y: visible;  
   height: 100%; 
 }
 
-td.controlPanel { border:solid &[PrimaryColor_1]; 1px; background-color: &[BackgroundColor];;}
+td.controlPanel { border:solid #98B6B6 1px; background-color: #ffffff;}
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 /*span.xxl {font-weight:bold; font-size:20pt;}*/
 
 /* Properties for backlink resource list that is displayed inline on property sheet page */
-table.displayInline {border: solid &[SecondaryColorA_5]; 1px;; border-collapse: collapse;}
-tr.displayInline {border: solid &[SecondaryColorA_5]; 1px;}
+table.displayInline {border: solid #CED4E1 1px;; border-collapse: collapse;}
+tr.displayInline {border: solid #CED4E1 1px;}
 td.hi {background-color: #f8f4ef; color: darkblue}
 td.contents {font-weight:bold; font-size: small}
 font.warn {color:#A01E00}
@@ -629,25 +629,25 @@ span.fileMenuTitle  {font-weight:bold; font-size:16px; color:#00309C;vertical-al
 .bigLetterTitle1 {  
   font-weight:bold; 
   font-size:12pt; 
-  color: &[SecondaryColorA_3];;
+  color: #364C7F;
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%,  
-                    color-stop(0%,  &[SecondaryColorB_5];),                      
+                    color-stop(0%,  #D7EDD7),                      
                     color-stop(100%, #ffffff));   
                     -webkit-background-clip: text;   
                     -webkit-text-fill-color: transparent; 
-  background-image: -moz-linear-gradient(top, &[SecondaryColorA_5];, &[SecondaryColorA_5];, #ffffff) !important;
+  background-image: -moz-linear-gradient(top, #CED4E1, #CED4E1, #ffffff) !important;
 }
 
 .bigLetterTitleSchedule { 
   font-weight:bold; 
   font-size:12pt;
-  color: &[Alternative_A];; 
+  color: #317676; 
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%,  
-                    color-stop(0%,  &[SecondaryColorA_5];),                      
+                    color-stop(0%,  #CED4E1),                      
                     color-stop(100%, #ffffff));   
                     -webkit-background-clip: text;   
                     -webkit-text-fill-color: transparent; 
-  background-image: -moz-linear-gradient(top, &[SecondaryColorA_5];, &[SecondaryColorA_5];, #ffffff) !important;
+  background-image: -moz-linear-gradient(top, #CED4E1, #CED4E1, #ffffff) !important;
 }
 
 /* To display window titles on a dashboard */
@@ -689,8 +689,8 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .user      {color:darkblue; font-weight:bold; text-decoration:none; font-size:8pt;}
 
 .group {
-  background-color: &[PrimaryColor_4];;
-  color: &[SecondaryColorA_5];;  
+  background-color: #BFDBDB;
+  color: #CED4E1;  
   FONT-WEIGHT: bold; 
   margin-left: 6px; 
   white-space: nowrap; 
@@ -698,37 +698,37 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   vertical-align: middle;
 }
 
-.viewCols .group { background-color: transparent; color: &[Label];; }
+.viewCols .group { background-color: transparent; color: #317676; }
 
 /* Under menu line style (usually the same color as tabs */
-.line { background:&[FTS];; font-size:16px; font-weight:bold;}
+.line { background:#859393; font-size:16px; font-weight:bold;}
 .blueLine { background:#ACD2E2 }
 .bg   { background:#Bedbe9 }
-.itemsT {background-color: &[PrimaryColor_4];; font-weight:bold; font-size:12pt;text-align:center}
+.itemsT {background-color: #BFDBDB; font-weight:bold; font-size:12pt;text-align:center}
 
 /* SKINS */
-.menuLine {background-color: &[SecondaryColorA_5];; border-top: solid 1px &[SecondaryColorA_3];; font-weight:bold; font-size:8pt; padding-top: 1px;}
+.menuLine {background-color: #CED4E1; border-top: solid 1px #364C7F; font-weight:bold; font-size:8pt; padding-top: 1px;}
 
-.alphabeticIndex {background-color: &[SecondaryColorA_5];; font-size:0.8em; vertical-align: top;}
+.alphabeticIndex {background-color: #CED4E1; font-size:0.8em; vertical-align: top;}
 .alphabeticIndex div { height: 1.7em;}
-.alphabeticIndex A { color: &[MenuLineColorA];; background-color: &[SecondaryColorA_5];; font-weight: bold;}
+.alphabeticIndex A { color: #364C7F; background-color: #CED4E1; font-weight: bold;}
 
-.menuLine A { color: &[MenuLineColorA];; background-color: &[SecondaryColorA_5];; font-weight: bold;}
-.menuLine A:active {color: &[SecondaryColorA_1];; background-color: &[SecondaryColorA_3]; }
+.menuLine A { color: #364C7F; background-color: #CED4E1; font-weight: bold;}
+.menuLine A:active {color: #A6AFC3; background-color: #364C7F }
 
-.propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
+.propertySheet {border:solid #CED4E1 1px; border-collapse: collapse; background-color: #ffffff; }
 
 #siteResourceList #header td, #div_Info #header td { height: auto; }
 
 .embed  {
   vertical-align: middle;
-  color: &[SecondaryColorB_3];;
+  color: #3B8E3B;
   font-weight:bold;
   font-size:8pt;
   
-  background-color: &[PrimaryColor_4];;
-  background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
+  background-color: #BFDBDB;
+  background-image: -moz-linear-gradient(top center, #98B6B6, #BFDBDB);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#98B6B6), to(#BFDBDB));
 }
 
 .filterLine {background: #E7EBF0}
@@ -842,7 +842,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .darkblue {color:darkblue}
 
 .calendar_caller { cursor: pointer; box-shadow:2px 2px 2px rgba(0, 0, 0, 0.2); -moz-box-shadow:2px 2px 2px rgba(0, 0, 0, 0.2); -webkit-box-shadow:2px 2px 2px rgba(0, 0, 0, 0.2); border: 2px solid; font-family: helvetica,arial; font-size: 24px; font-weight:bold; height:40px; line-height:25px; text-align:center; width:40px; }
-.calendar_caller .header { background-color: &[PrimaryColor_4];; color: &[Label];; font-size:13px; height:15px; line-height:12px; padding-left:2px; }
+.calendar_caller .header { background-color: #BFDBDB; color: #317676; font-size:13px; height:15px; line-height:12px; padding-left:2px; }
 
 /* OLD? .outerPopup {border-style:solid; border-width: 1px; border-color:#666666 #666666 #666666 #666666} */
 /* OLD? .innerPopup {border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7} */
@@ -855,7 +855,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .blogDivider {border-top: 1px dotted #aaaaaa;}
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
-.innerTitle { text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2); font-size: 18px; font-weight:bold; margin-left: 15px; color: &[MenuLineColorA];;}
+.innerTitle { text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2); font-size: 18px; font-weight:bold; margin-left: 15px; color: #364C7F;}
 
 *:lang(ja-jp) { font: 900 14pt/16pt "Heisei Mincho W9", serif }
 BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif }
@@ -976,7 +976,7 @@ div.contentsRL {
 { position: absolute; width: 14; height: 14; right: 0; bottom: 0; background-image: url(../images/bottom_right.gif); cursor: se-resize; -apple-dashboard-region: dashboard-region(control rectangle); }
 
 .nobr { white-space: nowrap; }
-.widgetTitle {vertical-align:top; color: &[SecondaryColorA_3];; font-weight:bold;white-space: nowrap;}
+.widgetTitle {vertical-align:top; color: #364C7F; font-weight:bold;white-space: nowrap;}
 .widgetIcon {width:16px; height:16px; padding-right:4px; border:0px }
 
 .iinp, .iinp_move, .iinp_btn { width:16px; height:16px; border:0px; vertical-align:middle }
@@ -1061,21 +1061,21 @@ TD.toolbar {
   padding: 0px 0px 0px 0px;
   background-repeat:repeat-x;
   /*
-  background-color: &[PrimaryColor_4];;
-  background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_4_rgb];,0.8), rgba(&[PrimaryColor_4_rgb];,0.1));
+  background-color: #BFDBDB;
+  background-image: -moz-linear-gradient(top center, rgba(191,219,219,0.8), rgba(191,219,219,0.1));
   */
 }
 
 .dashboardLine, tr.rlHeader {
-  background-color: &[PrimaryColor_4];;
-  background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
+  background-color: #BFDBDB;
+  background-image: -moz-linear-gradient(top center, #98B6B6, #BFDBDB);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#98B6B6), to(#BFDBDB));
 }
-.widget .dashboardLine { background-color: &[SecondaryColorA_5];; background-image: none; }
+.widget .dashboardLine { background-color: #CED4E1; background-image: none; }
 
 *html .dashboardLine td {
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
- 	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#98B6B6,endColorstr=#BFDBDB);
+ 	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#98B6B6,endColorstr=#BFDBDB)";
 }
 
 .dashboard_btn { 
@@ -1084,26 +1084,26 @@ TD.toolbar {
   overflow: visible; 
   border: 1px solid transparent;
   cursor: pointer;
-  /*border-color: &[PrimaryColor_4];*/
+  /*border-color: #BFDBDB*/
 }
 
-.dashboard_btn a { color: &[Label];; font-weight: bold; display: block; white-space: nowrap; }
-.current a { color: &[SecondaryColorB_2];; }
+.dashboard_btn a { color: #317676; font-weight: bold; display: block; white-space: nowrap; }
+.current a { color: #8FA48F; }
 
 .dashboardLine td.dashboard_btn:hover, .dashboardLine td.current {  
-	border-left-color: &[PrimaryColor_5];;
-	border-top-color: &[PrimaryColor_5];;
-	border-right-color: &[PrimaryColor_1];;
-	border-bottom-color: &[PrimaryColor_1];;
+	border-left-color: #C7DBDB;
+	border-top-color: #C7DBDB;
+	border-right-color: #98B6B6;
+	border-bottom-color: #98B6B6;
 	
 	/* background: rgba(0,0,0,0.25); */ /* makes glass effect darker */
-	box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
-  -o-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
-  -webkit-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
-  -moz-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
+	box-shadow: 0 2px 6px rgba(152,182,182,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(191,219,219,0.3);
+  -o-box-shadow: 0 2px 6px rgba(152,182,182,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(191,219,219,0.3);
+  -webkit-box-shadow: 0 2px 6px rgba(152,182,182,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(191,219,219,0.3);
+  -moz-box-shadow: 0 2px 6px rgba(152,182,182,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(191,219,219,0.3);
 }
 .dashboardLine td {
-  color: &[Alternative_A];
+  color: #317676
 }
 
 .menuTitle td, .menuTitle th {
@@ -1132,7 +1132,7 @@ TD.toolbar {
 }
 
 .menuItem {
-  margin-left: 6px; white-space: nowrap; font-size: 16px; vertical-align: middle; color: &[PrimaryColor_3];; }
+  margin-left: 6px; white-space: nowrap; font-size: 16px; vertical-align: middle; color: #317676; }
 #\$more .menuItem { color: #999; font-size: 14px; padding-left: 15px; height: 20px; }
 
 .menuItem a { 
@@ -1150,7 +1150,7 @@ TD.toolbar {
 }
 
 .menuItemChart {
-  PADDING-RIGHT: 0px;	width: 10px; color: &[Alternative_A];;
+  PADDING-RIGHT: 0px;	width: 10px; color: #317676;
 }
 
 .menuItemReset { margin-left: 6px; white-space: nowrap; font-size: 16px; FONT-WEIGHT: bold; vertical-align: middle; }
@@ -1218,7 +1218,7 @@ TD.closePopup {
 /*********** moved from tree.css ***********/
 .dtree {
 	white-space: nowrap;
-	color: &[ToolbarColor];;
+	color: #6f9999;
 }
 .dtree img {
 	border: 0px;
@@ -1285,11 +1285,11 @@ TD.closePopup {
   vertical-align: middle;
   color: darkblue;
   padding: 0px;
-  background: &[FTS];;
+  background: #859393;
   height: 3em;
   border: solid #808080 1px
 }
-.fts a { color: &[SecondaryColorA_5];; }
+.fts a { color: #CED4E1; }
 .rl {
   white-space: nowrap;
   vertical-align: middle;
@@ -1301,8 +1301,8 @@ TD.closePopup {
 .ftChk { width: 13px; height:13px; overflow:hidden; padding:0px; border:0px; margin:0px;margin-top:1px; vertical-align:middle;}
 
 #system_tooltip { visibility:hidden; padding:0; position:absolute; z-index:10000; width: 220px; }
-#tt_inner { background: &[PrimaryColor_4];; position: relative; }
-#system_tooltip #content { padding: 15px; color: &[PrimaryColor_3];; font-family: helvetica, arial, sans-serif; font-size: 14px; }
+#tt_inner { background: #BFDBDB; position: relative; }
+#system_tooltip #content { padding: 15px; color: #317676; font-family: helvetica, arial, sans-serif; font-size: 14px; }
 .system_tooltip_css3 {
 	box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3); 
   -webkit-box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3); 
@@ -1310,7 +1310,7 @@ TD.closePopup {
   border-radius: 5px; 
   -webkit-border-radius: 5px; 
   -moz-border-radius: 5px;
-  background: &[PrimaryColor_4];;
+  background: #BFDBDB;
 }
 .system_tooltip_css3 #tt_inner { background: transparent; }
 
@@ -1319,10 +1319,10 @@ TD.closePopup {
 .printBottom {	font: 90% arial, helvetica, sans-serif; color:#000000;}
 .titleGrey {font-family:arial, helvetica, sans-serif; font-size:1.2em; font-weight:bold;color:grey}
 .bigPrintTitle {font-family:arial black, helvetica, sans-serif; font-size:28px; color:lightgrey;}
-.printTitle {font-weight:bold; font-family:arial, helvetica, sans-serif; font-size:0.9em; background-color: &[PrimaryColor_1];; padding:3 3 3 3}
+.printTitle {font-weight:bold; font-family:arial, helvetica, sans-serif; font-size:0.9em; background-color: #98B6B6; padding:3 3 3 3}
 tr.printHeader {border:solid #808080 1px;  
-    background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
-    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];)); 
+    background-image: -moz-linear-gradient(top center, #6f9999, #98B6B6); 
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#6f9999), to(#98B6B6)); 
 }
 color:#000000; font-weight:bold; font-size:0.9em;}
 
@@ -1353,11 +1353,11 @@ table.printFB {
 
 .login {background: transparant; border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px}
 .lButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
-.userLogin { width: auto !important; width: 100px; background-color: &[BackgroundColor];; color: &[SecondaryColorA_3];; border: 1px solid &[SecondaryColorA_3];; padding: 5 5 5 5; }
+.userLogin { width: auto !important; width: 100px; background-color: #ffffff; color: #364C7F; border: 1px solid #364C7F; padding: 5 5 5 5; }
 
-#register .input { border: 1px solid &[SecondaryColorA_3];; color: &[SecondaryColorB_3];; margin-right: 1em;}
+#register .input { border: 1px solid #364C7F; color: #3B8E3B; margin-right: 1em;}
 
-.rte { margin-bottom: 7px; background-color: rgba(255, 255, 255, 0.9); border: 1px solid &[PrimaryColor_1];; padding:0; width: 100%; height: 100px;  }
+.rte { margin-bottom: 7px; background-color: rgba(255, 255, 255, 0.9); border: 1px solid #98B6B6; padding:0; width: 100%; height: 100px;  }
 
 /* like menu_Options in iphone.css */
 #browser_dlg { z-index: 1000; top: 0px; position: absolute; width: 320px; padding: 0px; visibility: hidden; }
@@ -1426,33 +1426,33 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .panel_block .header { 
     line-height:30px; 
     width: 100%; text-align: left; 
-    border-top: 1px solid &[FTS];; 
-    border-bottom: 1px solid &[FTS];;
-    background-color: &[FTS];;
+    border-top: 1px solid #859393; 
+    border-bottom: 1px solid #859393;
+    background-color: #859393;
 
-    background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
-    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];)); 
-    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)
+    background-image: -moz-linear-gradient(top center, #6f9999, #98B6B6); 
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#6f9999), to(#98B6B6)); 
+    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#6f9999,endColorstr=#98B6B6)
  }
 /*.panel_block .header td { width: 100%; }*/ 
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
 .panel_block .header #item_selector { /*width: 100%;*/ }
 .panel_block .header .wide_cell { width: 100%; text-align: center; }
-.panel_block #lists_container { padding: 10px; width: 100%; color: &[Alternative_A];;}
+.panel_block #lists_container { padding: 10px; width: 100%; color: #317676;}
 /* make color blend into the pinstripes */ 
 .panel_block .content { padding: 10px; width: 100%; } 
 
 #subscribe .content { display: none; }
-.panel_block .property_group, .panel_block #item_name { color: &[MenuLineColorA];; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2) }
+.panel_block .property_group, .panel_block #item_name { color: #364C7F; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2) }
 
-.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px; border: solid rgb(166, 170, 173) 1px; empty-cells:show; }
+.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: #BFDBDB; padding: 0px; border: solid rgb(166, 170, 173) 1px; empty-cells:show; }
 /* the following rules required while item-rows highlighting */
 .rounded_rect_tbl tr:first-child td:first-child { border-radius: 10px 0px 0px 0px; -moz-border-radius: 10px 0px 0px 0px; -webkit-border-radius: 10px 0px 0px 0px; }
 .rounded_rect_tbl tr:first-child td:last-child { border-radius: 0px 10px 0px 0px; -moz-border-radius: 0px 10px 0px 0px; -webkit-border-radius: 0px 10px 0px 0px; }
 .rounded_rect_tbl tr:last-child td:first-child { border-radius: 0px 0px 0px 10px; -moz-border-radius: 0px 0px 0px 10px; -webkit-border-radius: 0px 0px 0px 10px; }
 .rounded_rect_tbl tr:last-child td:last-child { border-radius: 0px 0px 10px  0px; -moz-border-radius: 0px 0px 10px  0px; -webkit-border-radius:  0px 0px 10px 0px; }
 
-.rounded_rect_tbl #front {background-color: &[BackgroundColor];}
+.rounded_rect_tbl #front {background-color: #ffffff}
 
 .rounded_rect_tbl .param_tr { cursor: pointer; }
 
@@ -1464,47 +1464,47 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   margin: 0px 0px 0px 0px;
   padding: 0px 0px 0px 0px;
 
-  background-color: &[PrimaryColor_4];;
-  background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+  background-color: #BFDBDB;
+  background-image: -moz-linear-gradient(top center, #98B6B6, #BFDBDB);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#98B6B6), to(#BFDBDB));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#98B6B6,endColorstr=#BFDBDB)
 }
 .changeViewCols td.dashboard_btn:hover {  
-	border-left-color: &[PrimaryColor_5];;
-	border-top-color: &[PrimaryColor_5];;
-	border-right-color: &[PrimaryColor_1];;
-	border-bottom-color: &[PrimaryColor_1];;
+	border-left-color: #C7DBDB;
+	border-top-color: #C7DBDB;
+	border-right-color: #98B6B6;
+	border-bottom-color: #98B6B6;
 }
 .changeViewCols td.current {
-	border-left-color: &[PrimaryColor_1];;
-	border-top-color: &[PrimaryColor_1];;
-	border-right-color: &[PrimaryColor_5];;
-	border-bottom-color: &[PrimaryColor_5];;
+	border-left-color: #98B6B6;
+	border-top-color: #98B6B6;
+	border-right-color: #C7DBDB;
+	border-bottom-color: #C7DBDB;
 }
 
 
-.viewColsTabs { color: &[PrimaryColor_3];; cursor: pointer; font-weight: bold; white-space: nowrap;}
-.viewCols {background-color: &[PrimaryColor_4];}
+.viewColsTabs { color: #317676; cursor: pointer; font-weight: bold; white-space: nowrap;}
+.viewCols {background-color: #BFDBDB}
 
 /* ??? label + chosen_value_div */
 .rounded_rect_tbl .data_td { width: 100%; }
 .rounded_rect_tbl .data_td table { width: 100%; }
-.rounded_rect_tbl .data_td .input_td { width: 100%; text-align:right; padding: 0px 3px; color: &[SecondaryColorA_5];;}
+.rounded_rect_tbl .data_td .input_td { width: 100%; text-align:right; padding: 0px 3px; color: #CED4E1;}
 
-.rounded_rect_tbl a {color: &[Alternative_A];}
+.rounded_rect_tbl a {color: #317676}
 
 /*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty {  }
 /*.rounded_rect_tbl*/ .arrow_td div { width: 18px; height: 20px; cursor: pointer; background: url(../images/skin/iphone/listArrow_sprite.png) 0px 0px;}
 .arrow_td_empty div { width: 18px; height: 20px; }
 
 .rounded_rect_tbl .label_td { white-space: nowrap; } 
-.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[SecondaryColorA_3];;}
+.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: #364C7F;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
-.rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: &[Alternative_A];; background: rgba(255, 255, 255, 0.1); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-size: 16px; font-weight: normal; }
-.rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.9) !important; background: #ffffff; color: &[SecondaryColorA_3];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; } /*background-color: &[BackgroundColor];; color: &[Color];*/}
-.rounded_rect_tbl .comment { text-align: left; color: &[Alternative_A];; font-size: 11px; }
-.rounded_rect_tbl .select { font-size: 14px; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
+.rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: #317676; background: rgba(255, 255, 255, 0.1); border: 1px solid #98B6B6; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-size: 16px; font-weight: normal; }
+.rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.9) !important; background: #ffffff; color: #364C7F; margin-bottom: 5px; width: 100%; border: 1px solid #98B6B6; font:inherit; } /*background-color: #ffffff; color: 344979*/}
+.rounded_rect_tbl .comment { text-align: left; color: #317676; font-size: 11px; }
+.rounded_rect_tbl .select { font-size: 14px; height: 20px; color: #364C7F; background-color: #C7DBDB; }
 
 .rounded_rect_tbl input#rightPanelPropertySheet  { display: none; }
 .rounded_rect_tbl td#dIcon { height: 40px; PADDING-RIGHT: 2px; PADDING-LEFT: 5px; PADDING-TOP: 2px; white-space: nowrap;  vertical-align: top; }
@@ -1523,7 +1523,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .chosen_values div {
   overflow: hidden;
   white-space: nowrap;
-  color: &[SecondaryColorB_1];;   
+  color: #B6DBB6;   
   font-size: 15px; 
   font-weight: 600;
 }
@@ -1537,8 +1537,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .ext_file { float: right; margin-right: 15px; }
 .rounded_rect_tbl a { font-size: 14px; }
 .rounded_rect_tbl #dashboard a { white-space: nowrap; }
-.rounded_rect_tbl #siteResourceList a {color: &[SecondaryColorB_3];;}
-.rounded_rect_tbl #siteResourceList #dashboard a, #siteResourceList #menu a {color: &[Alternative_A];;}
+.rounded_rect_tbl #siteResourceList a {color: #3B8E3B;}
+.rounded_rect_tbl #siteResourceList #dashboard a, #siteResourceList #menu a {color: #317676;}
 
 .listArrow { width: 25px; height: 20px; }
 
@@ -1546,10 +1546,10 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #menu_Options #hide_icon { top: 15px; left: -4px; }
 /* #pane2 - "plain" dialogs */
 #pane2 .content { padding: 15px 10px; 
-	background-color: &[PrimaryColor_4];;
+	background-color: #BFDBDB;
 	background-image: url(../images/skin/iphone/pinstripes.gif);
-	background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 0px, #eee 4px);
-	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
+	background-image: -moz-repeating-linear-gradient(0deg, #BFDBDB 0px, #eee 4px);
+	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(#BFDBDB), to(#eeeeee));
 	-webkit-background-size: 4px 1px;
 	
 }
@@ -1566,10 +1566,10 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 }
 
 .frame, #siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel { 
-  background-color: &[PrimaryColor_4];;
+  background-color: #BFDBDB;
   background-image: url(../images/skin/iphone/pinstripes.gif);
-  background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 0px, #eee 4px);
-	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
+  background-image: -moz-repeating-linear-gradient(0deg, #BFDBDB 0px, #eee 4px);
+	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(#BFDBDB), to(#eeeeee));
 	-webkit-background-size: 4px 1px;
 } 
 
@@ -1618,7 +1618,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	white-space: nowrap;
 }
 
-.iphone_field input { color: &[SecondaryColorA_3];; background: transparent; -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
+.iphone_field input { color: #364C7F; background: transparent; -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
 #fts_filter .iphone_field input { width: 120px; }
 .iphone_field .clear_cross { position: relative; top: 4px; left: -2px; cursor: pointer; visibility: hidden; }
 .iphone_field .magnify_glass_small { position: relative; top: 3px; cursor: pointer; }
@@ -1661,12 +1661,12 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 }
 
 #div_info table { overflow: visible; }
-#div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; overflow: visible; font-weight: bold; color: &[SecondaryColorB_3];;}
+#div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; overflow: visible; font-weight: bold; color: #3B8E3B;}
 #div_info td { overflow: visible; text-align: right; vertical-align: middle; }
 #div_info .text_editor_container { text-align: left; }
 #div_info .text_editor_container .label { float: none; }
 
-#div_info td.pGr { background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_5];);
+#div_info td.pGr { background-image: -moz-linear-gradient(top center, #BFDBDB, #C7DBDB);
                    font-weight:bold; font-size:1em; text-align:center; text-align: center; }
 td.pBGr { background-color: #eeeeee;
                    font-weight:bold; font-size:1em; text-align:center; text-align: center; }
@@ -1703,12 +1703,12 @@ td.pBGr { background-color: #eeeeee;
 #footer { width: 85%; min-width: 760px; max-width: 984px;    margin: 0 auto;  color:white} 
 
 .footer { 
-  background-color: &[PrimaryColor_4];;
-  background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
+  background-color: #BFDBDB;
+  background-image: -moz-linear-gradient(top center, #98B6B6, #BFDBDB);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#98B6B6), to(#BFDBDB));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#98B6B6,endColorstr=#BFDBDB);
 
-  color: &[Alternative_A];;
+  color: #317676;
   height: 2em;
 }
 
@@ -1722,13 +1722,13 @@ td.pBGr { background-color: #eeeeee;
 }
 /*
 .contentRelated {
-  border: solid 1px &[SecondaryColorA_3];;
+  border: solid 1px #364C7F;
 }
 */
-#auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
-#auto_complete .menuItem, #auto_complete .not_found { padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_4];; }
+#auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color:#CED4E1; }
+#auto_complete .menuItem, #auto_complete .not_found { padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove #BFDBDB; }
 #auto_complete .not_found { border-bottom: none; }
-#auto_complete td.menuItem:hover { color: &[SecondaryColorB_3];; background-color: &[PrimaryColor_4];; }
+#auto_complete td.menuItem:hover { color: #3B8E3B; background-color: #BFDBDB; }
 #auto_complete tr:last-child td { border-bottom: none; }
 #auto_complete .menuItem div { float: left; line-height: 45px; margin-right: 5px; }
 #auto_complete .menuItem table { float: right; }
@@ -1739,27 +1739,27 @@ td.pBGr { background-color: #eeeeee;
 
 /* RTE and styles editor */
 .ctrl_toolbar { position : relative; display: block; left: 0px; top: 0px; width: 100%; borderWidth: 0px;
-    background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_1_rgb];, 0.5), rgba(&[PrimaryColor_4_rgb];, 0.5));
-    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb];, 0.5)), to(rgba(&[PrimaryColor_4_rgb];, 0.5)));
-    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+    background-image: -moz-linear-gradient(top center, rgba(152,182,182, 0.5), rgba(191,219,219, 0.5));
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(152,182,182, 0.5)), to(rgba(191,219,219, 0.5)));
+    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#98B6B6,endColorstr=#BFDBDB)
 }
-.ctrl_toolbar_dlg { visibility: hidden; position: absolute;	background-color: &[BackgroundColor];; color: &[Color];; border: 1px solid &[PrimaryColor_1];; padding: 5px; }
+.ctrl_toolbar_dlg { visibility: hidden; position: absolute;	background-color: #ffffff; color: 344979; border: 1px solid #98B6B6; padding: 5px; }
 
 tr.grey_highlighting > td, * html tr.grey_highlighting td  {
-	color: &[SecondaryColorA_3];;
-	background-color: rgba(&[PrimaryColor_1_rgb];, 0.1);
-  background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_1_rgb];, 0.5), &[PrimaryColor_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb];, 0.5)), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=&[PrimaryColor_4];)
+	color: #364C7F;
+	background-color: rgba(152,182,182, 0.1);
+  background-image: -moz-linear-gradient(top center, rgba(152,182,182, 0.5), #BFDBDB);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(152,182,182, 0.5)), to(#BFDBDB));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#7798B6B6,endColorstr=#BFDBDB)
 }
-.rounded_rect_tbl .grey_highlighting .label { color: &[SecondaryColorA_3];; }
+.rounded_rect_tbl .grey_highlighting .label { color: #364C7F; }
 
 tr.blue_highlighting > td, * html tr.blue_highlighting td {
-	color: &[Label];;
-	background-color: &[SecondaryColorA_4];;
-  background-image: -moz-linear-gradient(top center, &[SecondaryColorA_1];, &[SecondaryColorA_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[SecondaryColorA_1];), to(&[SecondaryColorA_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[SecondaryColorA_1];,endColorstr=&[SecondaryColorA_4];)
+	color: #317676;
+	background-color: #C8CFE1;
+  background-image: -moz-linear-gradient(top center, #A6AFC3, #C8CFE1);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#A6AFC3), to(#C8CFE1));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#A6AFC3,endColorstr=#C8CFE1)
 }
 
 * html tr.grey_highlighting table td, * html tr.blue_highlighting table td  {
@@ -1768,7 +1768,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 	#filter: none;
 }
 
-.rounded_rect_tbl .blue_highlighting .label, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[Label];; }
+.rounded_rect_tbl .blue_highlighting .label, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: #317676; }
 
-.rounded_rect_tbl .empty_field, .iphone_field .empty_field, .empty_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.4);}
-.rounded_rect_tbl .focused_field, .iphone_field .focused_field, .focused_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.2); }
+.rounded_rect_tbl .empty_field, .iphone_field .empty_field, .empty_field { color: rgba(54,76,127, 0.4);}
+.rounded_rect_tbl .focused_field, .iphone_field .focused_field, .focused_field { color: rgba(54,76,127, 0.2); }
