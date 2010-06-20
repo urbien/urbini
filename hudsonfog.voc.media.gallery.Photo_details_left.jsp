@@ -1,14 +1,13 @@
 <div id="left">
 <td valign="top" width="100">
-<br/>
 <table width="100%">
 <tr valign="top">
-  <td class="propertySheet"><propertySheet name="previous" featured="y" title="Previous" viewCols="dateTaken,readHistoryCount" displayInPlace="y"/></td>
+  <td class="propertySheet"><propertySheet name="previous" featured="y" sidebar="y" title="Previous" viewCols="dateTaken,readHistoryCount" displayInPlace="y"/></td>
 </tr>
 <tr height="10">
 </tr>
 <tr>
-  <td class="propertySheet"><propertySheet name="next" featured="y" title="Next" viewCols="dateTaken,readHistoryCount" displayInPlace="y"/></td>
+  <td class="propertySheet"><propertySheet name="next" featured="y" sidebar="y" title="Next" viewCols="dateTaken,readHistoryCount" displayInPlace="y"/></td>
 </tr>
 <tr height="10">
 </tr>
