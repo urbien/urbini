@@ -4267,11 +4267,11 @@ var Filter = {
 		var cells = $t.filtersArr[url].getElementsByTagName("td");
 		for (var i = 0; i < cells.length; i++) {
 			if (cells[i].className == "rollup_td") {
-				var toggleBtn = cells[i].getElementsByTagName("div")[0];
+				var btn = cells[i].getElementsByTagName("div")[0];
 				var input = cells[i].getElementsByTagName("input")[0];
-				if (!toggleBtn || !input)
+				if (!btn || !input)
 					continue;
-				CheckButtonMgr.setState(toggleBtn, input, false, true);
+				CheckButtonMgr.setState(btn, input, false, true);
 			}
 		}
 	},
@@ -10888,10 +10888,67 @@ function showMobileTab(e, hideDivId, unhideDivId) {
 }
 
 /*******************************************
+* ToggleBtnMgr
+********************************************/
+var ToggleBtnMgr = {
+  STEP : 17,
+  tray : null,
+  cur: 0,
+  dir: -1,
+  
+  onclick : function(tray){
+    this.tray = tray;
+		var marginLeft = getElementStyle(tray).marginLeft;
+    if (marginLeft.length == 0 || parseInt(marginLeft) == 0) {
+      this.dir = -1;
+      this.cur = 0;
+    }
+    else {
+      this.dir = 1;
+      this.cur = -68;
+    }
+
+		// change state in form, hidden field
+		var input = getPreviousSibling(tray.parentNode);
+		input.value = (input.value == "No") ? "Yes" : "No";
+    
+		// animation
+		this._step();  
+  },
+  
+  _step : function() {
+    var $t = ToggleBtnMgr;
+
+    $t.tray.style.marginLeft = ($t.cur + $t.STEP * $t.dir + "px");
+    $t.cur += $t.STEP * $t.dir;
+
+    var left = getChildByClassName($t.tray, "left");
+    var right = getChildByClassName($t.tray, "right");
+
+    if ($t.dir == -1) {
+      if ($t.cur == -$t.STEP)
+        right.style.visibility = "visible";
+      else if ($t.cur == -$t.STEP * 4)  
+        left.style.visibility = "hidden";
+    }
+    else {
+      if ($t.cur == -$t.STEP * 3)
+        left.style.visibility = "visible";
+      else if($t.cur == 0)
+        right.style.visibility = "hidden";
+    }
+   
+    if (($t.cur > -68 && $t.dir == -1) || ($t.cur < 0 && $t.dir == 1))
+      setTimeout("ToggleBtnMgr._step()", 20);
+  }
+}
+
+/*******************************************
 * CheckButtonMgr
+* curently, it has one style
 ********************************************/
 var CheckButtonMgr = {
-  classes : new Array("iphone_checkbox", "toggle_btn"),
+  classes : new Array("iphone_checkbox"),
   
   substitute : function(div) {
     if (div == null)
@@ -10903,15 +10960,13 @@ var CheckButtonMgr = {
     var inputs = div.getElementsByTagName('input');
     for(var i=0; i < inputs.length; i++) {
 			var stlIdx;
-			if (inputs[i].getAttribute('type') == 'checkbox') // checkbox
+			if (inputs[i].getAttribute('type') == 'checkbox')
 				stlIdx = 0;
-			else if (inputs[i].className == 'boolean') // toggle button
-				stlIdx = 1;
 			else continue;		
 			
 			var isSubstituted = false;
 	  	var nextElem = getNextSibling(inputs[i])
-			if (nextElem && isElemOfClass(nextElem, ["iphone_checkbox", "toggle_btn"]))
+			if (nextElem && isElemOfClass(nextElem, ["iphone_checkbox"]))
 				isSubstituted = true; // this element was already subsituted in JAVA or JS
 
 			// no need to process hidden checkboxes that were not substituted on server-side
@@ -10925,7 +10980,7 @@ var CheckButtonMgr = {
 				continue; 
 			}
 				
-			// create checkbox or toggle button
+			// create checkbox
 			var div = document.createElement('div');
       div.className = this.classes[stlIdx];
       div.onclick = this.onClick;
@@ -10934,7 +10989,7 @@ var CheckButtonMgr = {
       if(inputs[i].checked || inputs[i].value.toLowerCase() == "yes")
         this.setState(div, inputs[i], true);
 
-       // replace a checkbox with toggle button
+       // replace a checkbox with div
       inputs[i].parentNode.insertBefore(div, inputs[i].nextSibling);
       inputs[i].style.display = 'none';
     }
@@ -10942,9 +10997,9 @@ var CheckButtonMgr = {
   
   onClick : function(event) {
     var $t = CheckButtonMgr;
-    var toggleBtn = this;
-    var checkbox = getPreviousSibling(toggleBtn);
-    $t._switchState(toggleBtn, checkbox);
+    var btn = this;
+    var checkbox = getPreviousSibling(btn);
+    $t._switchState(btn, checkbox);
 
 		if (checkbox.onclick)
 			checkbox.onclick(event);
@@ -10952,16 +11007,16 @@ var CheckButtonMgr = {
 		stopEventPropagation(event);
   },
 
-  _switchState : function(toggleBtn, input) {
-    var xPos = getElementStyle(toggleBtn).backgroundPosition;
+  _switchState : function(btn, input) {
+    var xPos = getElementStyle(btn).backgroundPosition;
     var isChecked = (xPos.length != 0 && xPos.indexOf("0") != 0);
-    this.setState(toggleBtn, input, !isChecked);
+    this.setState(btn, input, !isChecked);
   },
 
 	// toSetCheckboxValue is not required; used for hidden or text field
 	// to set pair "on"/"" instead "Yes"/"No"; default: false
-  setState : function(toggleBtn, input, checkState, toSetCheckboxValue) {
-    if (input.type == "checkbox") 
+  setState : function(btn, input, checkState, toSetCheckboxValue) {
+ 		if (input.type == "checkbox") 
 			input.checked = checkState;
 		else { // hidden or text field
 			var checkStateStr;
@@ -10974,10 +11029,10 @@ var CheckButtonMgr = {
 		}
     
     if (checkState) {
-      toggleBtn.style.backgroundPosition = "100% 0%";
+      btn.style.backgroundPosition = "100% 0%";
     }
     else
-      toggleBtn.style.backgroundPosition = "0% 0%"
+      btn.style.backgroundPosition = "0% 0%"
   }
 }
 
