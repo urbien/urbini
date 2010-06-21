@@ -36,7 +36,7 @@ a img {
 	  
 H1 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorA_1];; font-size: 34px; }
 H2 a {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1];; font-size: 21px;}
-H3 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1];; font-size: medium; margin: 0}
+H3 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1];; font-size: 13px; margin: 0}
 
 .pointer { cursor: pointer; }
 .dragable, .move { cursor: move; }
@@ -641,13 +641,7 @@ span.fileMenuTitle  {font-weight:bold; font-size:16px; color:#00309C;vertical-al
 .bigLetterTitleSchedule { 
   font-weight:bold; 
   font-size:12pt;
-  color: &[Alternative_A];; 
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%,  
-                    color-stop(0%,  &[SecondaryColorA_5];),                      
-                    color-stop(100%, #ffffff));   
-                    -webkit-background-clip: text;   
-                    -webkit-text-fill-color: transparent; 
-  background-image: -moz-linear-gradient(top, &[SecondaryColorA_5];, &[SecondaryColorA_5];, #ffffff) !important;
+  color: &[MenuLineColorA];;
 }
 
 /* To display window titles on a dashboard */
@@ -1568,7 +1562,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .frame, #siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel { 
   background-color: &[PrimaryColor_4];;
   background-image: url(../images/skin/iphone/pinstripes.gif);
-  background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 0px, #eee 4px);
+  background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 5px, &[PrimaryColor_1]; 2px, &[SecondaryColorA_4]; 11px);
 	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
 	-webkit-background-size: 4px 1px;
 } 
@@ -1726,14 +1720,15 @@ td.pBGr { background-color: #eeeeee;
 }
 */
 #auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
-#auto_complete .menuItem, #auto_complete .not_found { padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_4];; }
+#auto_complete .menuItem, #auto_complete .not_found { color: &[MenuLineColorA];; padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_4];; }
 #auto_complete .not_found { border-bottom: none; }
 #auto_complete td.menuItem:hover { color: &[SecondaryColorB_3];; background-color: &[PrimaryColor_4];; }
 #auto_complete tr:last-child td { border-bottom: none; }
 #auto_complete .menuItem div { float: left; line-height: 45px; margin-right: 5px; }
 #auto_complete .menuItem table { float: right; }
 #auto_complete .menuItem table td { text-align: center; padding: 0px 2px; }
-#auto_complete a { font-size: 12px; margin-left: 0px; }
+#auto_complete a { font-size: 12px; margin-left: 0px; color: &[MenuLineColorA];; }
+#auto_complete td.menuItem:hover a { color: &[SecondaryColorB_3];; }
 .dsk_auto_complete { padding: 2px; -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); }
 .dsk_auto_complete .menuItem, .dsk_auto_complete .not_found { min-width: 460px; }
 
