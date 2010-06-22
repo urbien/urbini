@@ -1621,13 +1621,15 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   border-radius:35px 35px 35px 35px;
   -moz-border-radius:35px 35px 35px 35px;
   -webkit-border-radius:35px 35px 35px 35px;
- 
-  box-shadow:0 0 15px rgba(255, 255, 255, 0.8) inset;
-  -moz-box-shadow:0 0 15px rgba(255, 255, 255, 0.8) inset;
-  background-color: #DDDDDD;
-  background-image: -webkit-gradient(radial, center center, 0, center center, 30.0, from(#DDDDDD), to(#FFFFFF));
+ 	border: 1px solid &[ToolbarColor];;
+	background-color: &[PrimaryColor_4]; !important;
+	background-color: &[ToolbarColor];;
+
+  box-shadow: 0 0 15px rgba(&[ToolbarColor_rgb];, 0.8) inset;
+  -moz-box-shadow: 0 0 15px rgba(&[ToolbarColor_rgb];, 0.8) inset;
   
-  border:1px solid #CCCCCC;
+  background-image: -webkit-gradient(radial, center center, 0, center center, 30.0, from(&[PrimaryColor_4];), to(&[ToolbarColor];));
+  
   height:35px;
   margin-left:-6px;
   position:relative;
@@ -1791,7 +1793,7 @@ tr.grey_highlighting > td, * html tr.grey_highlighting td  {
 	background-color: rgba(&[PrimaryColor_1_rgb];, 0.1);
   background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_1_rgb];, 0.5), &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb];, 0.5)), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=&[PrimaryColor_4];)
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=&[PrimaryColor_4];);
 }
 .rounded_rect_tbl .grey_highlighting .label { color: &[SecondaryColorA_3];; }
 
