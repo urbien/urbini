@@ -1126,7 +1126,7 @@ TD.toolbar {
 }
 
 .menuItem {
-  margin-left: 6px; white-space: nowrap; font-size: 16px; vertical-align: middle; color: &[PrimaryColor_3];; }
+  margin-left: 6px; white-space: nowrap; font-size: 16px; vertical-align: middle; color: &[PrimaryColor_4_text];; }
 #\$more .menuItem { color: #999; font-size: 14px; padding-left: 15px; height: 20px; }
 
 .menuItem a { 
@@ -1439,7 +1439,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #subscribe .content { display: none; }
 .panel_block .property_group, .panel_block #item_name { color: &[MenuLineColorA];; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2) }
 
-.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px; border: solid rgb(166, 170, 173) 1px; empty-cells:show; }
+.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px; border: solid rgb(166, 170, 173) 1px; empty-cells:show; color: &[PrimaryColor_4_text];; }
 /* the following rules required while item-rows highlighting */
 .rounded_rect_tbl tr:first-child td:first-child { border-radius: 10px 0px 0px 0px; -moz-border-radius: 10px 0px 0px 0px; -webkit-border-radius: 10px 0px 0px 0px; }
 .rounded_rect_tbl tr:first-child td:last-child { border-radius: 0px 10px 0px 0px; -moz-border-radius: 0px 10px 0px 0px; -webkit-border-radius: 0px 10px 0px 0px; }
@@ -1483,7 +1483,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 /* ??? label + chosen_value_div */
 .rounded_rect_tbl .data_td { width: 100%; }
 .rounded_rect_tbl .data_td table { width: 100%; }
-.rounded_rect_tbl .data_td .input_td { width: 100%; text-align:right; padding: 0px 3px; color: &[SecondaryColorA_5];;}
+.rounded_rect_tbl .data_td .input_td { width: 100%; text-align:right; padding: 0px 3px; color: &[PrimaryColor_4_text];;}
 
 .rounded_rect_tbl a {color: &[Alternative_A];}
 
@@ -1492,7 +1492,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .arrow_td_empty div { width: 18px; height: 20px; }
 
 .rounded_rect_tbl .label_td { white-space: nowrap; } 
-.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[SecondaryColorA_3];;}
+.rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: &[Alternative_A];; background: rgba(255, 255, 255, 0.1); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-size: 16px; font-weight: normal; }
