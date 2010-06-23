@@ -1590,18 +1590,17 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 
 /** Touch UI buttons **/
-/*.toggle_btn { float: right; margin: 0px; width: 100px; height: 30px; background:#FFFFFF url(../images/skin/iphone/toggle_btn.png); cursor: pointer; }*/
 .panel_block .toggle_btn { float: right; }
-.toggle_btn  { height:37px; overflow:hidden; width:106px; }
+.toggle_btn  { height:32px; overflow:hidden; width:84px; }
 .toggle_btn div::selection { background: transparent; }
 .toggle_btn div::-moz-selection { background: transparent; }
 .toggle_btn .toggle_btn_tray { width:300px; cursor: pointer; }
 .toggle_btn .toggle_btn_tray div { float: left; }
-.toggle_btn .left, .toggle_btn .right { height:27px; margin-top:5px; width:75px; }
+.toggle_btn .left, .toggle_btn .right { height:22px; margin-top:5px; width:59px; }
 .toggle_btn .left {
-  border-radius:27px 0 0 27px;
-  -moz-border-radius:27px 0 0 27px;
-  -webkit-border-radius:27px 0 0 27px;
+  border-radius:22px 0 0 22px;
+  -moz-border-radius:22px 0 0 22px;
+  -webkit-border-radius:22px 0 0 22px;
   
   box-shadow: 0 0 7px rgba(0, 0, 0, 0.5) inset;
   -moz-box-shadow: 0 0 7px rgba(0, 0, 0, 0.5) inset;
@@ -1609,36 +1608,38 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 }
 .toggle_btn .right {
   visibility: hidden;
-  border-radius:0 27px 27px 0;
-  -moz-border-radius:0 27px 27px 0;
-  -webkit-border-radius:0 27px 27px 0;
+  border-radius:0 22px 22px 0;
+  -moz-border-radius:0 22px 22px 0;
+  -webkit-border-radius:0 22px 22px 0;
   box-shadow:0 0 7px rgba(0, 0, 0, 0.5) inset;
   -moz-box-shadow:0 0 7px rgba(0, 0, 0, 0.5) inset;
   background: &[FTS];;
-  margin-left:-6px;
+  margin-left:-5px;
 }
 .toggle_btn .circle {
-  border-radius:35px 35px 35px 35px;
-  -moz-border-radius:35px 35px 35px 35px;
-  -webkit-border-radius:35px 35px 35px 35px;
- 	border: 1px solid &[ToolbarColor];;
-	background-color: &[PrimaryColor_4]; !important;
+  border-radius: 28px 28px 28px 28px;
+  -moz-border-radius: 28px 28px 28px 28px;
+  -webkit-border-radius: 28px 28px 28px 28px;
+	
+	background-color: &[Label]; !important;
 	background-color: &[ToolbarColor];;
 
   box-shadow: 0 0 15px rgba(&[ToolbarColor_rgb];, 0.8) inset;
   -moz-box-shadow: 0 0 15px rgba(&[ToolbarColor_rgb];, 0.8) inset;
   
-  background-image: -webkit-gradient(radial, center center, 0, center center, 30.0, from(&[PrimaryColor_4];), to(&[ToolbarColor];));
+  background-image: -webkit-gradient(radial, center center, 0, center center, 30.0, from(&[Label];), to( rgba(&[ToolbarColor_rgb];, 0.8)));
   
-  height:35px;
-  margin-left:-6px;
+  width: 28px;
+  height: 28px;
+  margin-top:2px;
+  margin-left: -5px;
   position:relative;
-  width:35px;
 }
-.toggle_btn .label {  display:inline; font-family:helvetica,arial; font-weight:bold; line-height:27px; margin-left:27px; }
+
+.toggle_btn .label {  display:inline; font-family:helvetica,arial; font-size: 13px; font-weight:bold; line-height:20px; margin-left:20px; }
 .toggle_btn .left .label { color: &[SecondaryColorA_3]; !important; }
 .toggle_btn .right .label { color: &[Label]; !important; }
-.toggle_btn .no { margin-left:-68px; }
+.toggle_btn .no { margin-left:-54px; }
 
 .iphone_checkbox { margin: 0px 3px; width: 29px; height: 29px; background: url(../images/skin/iphone/checkbox.png); cursor: pointer; }
 .checked { background-position: 100% 0%; } 
