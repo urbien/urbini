@@ -543,6 +543,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           // anchors[0].disabled = true;
         }
       }
+			
       addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
       addEvent(elem, 'mousedown', self.popupRowOnMouseDown, false);
       addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
@@ -1153,8 +1154,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
 
-    var target = getTargetElement(e);
-    var tr = getTrNode(target);
+    var target = getEventTarget(e);
+		var tr = getTrNode(target);
 		
 		if (target.id == "$more")
 			return;
@@ -1178,6 +1179,9 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var target = getMouseOutTarget(e);
     if (!target)
       return true;
+
+	  if (target.tagName.toLowerCase() != 'tr')
+			return;
 
     var tr = getTrNode(target);
     if (!tr)
@@ -1219,7 +1223,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
 	// currently makes row grey
   this.selectRow = function () {
-    if (self.currentRow == null)
+		if (self.currentRow == null)
       return;
     
     var trId = self.currentRow.id;
@@ -1229,7 +1233,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (trId == '$noValue')
       return;
 
-	self.currentRow.className = self.currentRow.className + " grey_highlighting";
+		self.currentRow.className = self.currentRow.className + " grey_highlighting";
   }
 
   this.nextRow = function () {
@@ -1586,7 +1590,7 @@ function removePopupRowEventHandlers(div) {
   if (!tables || !tables[1])
     return;
   var table = tables[1];
-  var trs = table.getElementsByTagName("tr");
+  var trs = table.rows;
   var k=0;
   for (var i=0;i<trs.length; i++) {
     var elem = trs[i];
@@ -3008,6 +3012,8 @@ var ListBoxesHandler = {
 			if (event != null)
 				return;
 		}
+		else
+			$t.skipUserClick = true; // prevent secondary click on (other) parameter
 		
 		if (!event)
 			event = $t.clonedEvent;
@@ -3664,6 +3670,8 @@ var ListBoxesHandler = {
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
 		TouchDlgUtil.bleachBlueRow();
 		$t._showInvisibleParams();
+		
+		$t.skipUserClick = false; // accept click on parameter
   },
 
   localOptionsFilter : function(typedText, parentDiv) {
@@ -3757,7 +3765,11 @@ var ListBoxesHandler = {
 	},
 	isEditList : function() {
 		return this._isEditList;
-	}
+	},
+	
+	isBusy: function(){
+  	return this.skipUserClick;
+  }
 }
 
 /*******************************************
@@ -4879,10 +4891,14 @@ var TouchDlgUtil = {
 		var tables = parent.getElementsByTagName("table");
     for (var i = 0; i < tables.length; i++) {
 			if (tables[i].className == "rounded_rect_tbl") {
-				addEvent(tables[i], 'mouseover', this.highlightRowGreyOnOver, false);
-				addEvent(tables[i], 'mouseout', this.bleachGreyRowOnOut, false);
-				addEvent(tables[i], 'mousedown', this.highlightRowBlue, false);
-			}
+				var rows = tables[i].rows;
+				for (var n = 0; n < rows.length; n++) {
+					addEvent(rows[n], 'mouseover', this.highlightRowGreyOnOver, false);
+					addEvent(rows[n], 'mouseout', this.bleachGreyRowOnOut, false);
+					addEvent(rows[n], 'mousedown', this.highlightRowBlue, false);
+				}
+			}				
+			
 			// no grey highlighting in RL editor
 			if (tables[i].id.indexOf("siteRL_") == 0)
 				addEvent(tables[i], 'mousedown', this.highlightRowBlue, false);
@@ -4962,7 +4978,6 @@ var TouchDlgUtil = {
 		else
 			return;
 		
-		
 		if (passToTr) {
 			$t.bleachGreyRow($t.greyTr);
 			$t.highlightRowGrey(passToTr);
@@ -5019,13 +5034,13 @@ var TouchDlgUtil = {
 	},
 	
 	highlightRowGrey : function(tr) {
-		
-		
-		
 		this.greyTr = tr;
 		if (tr.getAttribute("blue") != null)
 			return;
-			
+		
+		if (tr.className.indexOf("grey_highlighting") != -1)
+			return;
+
 		tr.className = (tr.className + " grey_highlighting");
 	},
 	
@@ -5047,6 +5062,10 @@ var TouchDlgUtil = {
 		if (getChildByClassName(tr, "arrow_td") == null) {
 			return;
 		}
+		
+		// previous click on parameter is processed
+		if (ListBoxesHandler.isBusy())
+			return;
 		
 		var skipBleachBlue = false;
 		if ($t.hasBlueRow() && ListBoxesHandler.isEditList() &&
@@ -5073,16 +5092,24 @@ var TouchDlgUtil = {
 	bleachGreyRowOnOut : function(event) {
 		var $t = TouchDlgUtil;
 	  var target = getEventTarget(event);
-    var tr = getAncestorByClassName(target, $t.TR_CLASS); // "param_tr"
-    if (tr)
+    
+		if (target.className != $t.TR_CLASS[0] && target.className != $t.TR_CLASS[1])
+			return;
+		
+		var tr = target;
+ 		
+		if (tr)
 			$t.bleachGreyRow(tr);
-
 	},
+	
 	bleachGreyRow : function(tr) {
 		if (tr.getAttribute("blue") != null)
 			return;
 		
-		tr.className = tr.className.replace("grey_highlighting", "");
+		if (tr.className.indexOf("grey_highlighting") == -1)
+			return;
+
+		tr.className = tr.className.replace("grey_highlighting", "").trim();
 	},
 	// "callback"
   bleachBlueRow : function() {
@@ -5094,7 +5121,7 @@ var TouchDlgUtil = {
 			return;
 		}
 		
-		this.blueTr.className = this.blueTr.className.replace(/blue_highlighting|grey_highlighting/g, "");
+		this.blueTr.className = this.blueTr.className.replace(/blue_highlighting|grey_highlighting/g, "").trim();
 
     var arrowTd = getChildByClassName(this.blueTr, "arrow_td");
 		if (arrowTd) {
@@ -10891,7 +10918,8 @@ function showMobileTab(e, hideDivId, unhideDivId) {
 * ToggleBtnMgr
 ********************************************/
 var ToggleBtnMgr = {
-  STEP : 17,
+  STEP : 18,
+	LIMIT : -54,
   tray : null,
   cur: 0,
   dir: -1,
@@ -10905,7 +10933,7 @@ var ToggleBtnMgr = {
     }
     else {
       this.dir = 1;
-      this.cur = -68;
+      this.cur = this.LIMIT;
     }
 
 		// change state in form, hidden field
@@ -10928,17 +10956,17 @@ var ToggleBtnMgr = {
     if ($t.dir == -1) {
       if ($t.cur == -$t.STEP)
         right.style.visibility = "visible";
-      else if ($t.cur == -$t.STEP * 4)  
+      else if ($t.cur == -$t.STEP * 3)  
         left.style.visibility = "hidden";
     }
     else {
-      if ($t.cur == -$t.STEP * 3)
+      if ($t.cur == -$t.STEP * 2)
         left.style.visibility = "visible";
       else if($t.cur == 0)
         right.style.visibility = "hidden";
     }
    
-    if (($t.cur > -68 && $t.dir == -1) || ($t.cur < 0 && $t.dir == 1))
+    if (($t.cur > $t.LIMIT && $t.dir == -1) || ($t.cur < 0 && $t.dir == 1))
       setTimeout("ToggleBtnMgr._step()", 20);
   }
 }
