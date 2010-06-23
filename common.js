@@ -888,6 +888,15 @@ function getPreviousSibling(obj) {
   return obj;
 }
 
+function getFirstChild(parent) {
+	var child = parent.firstChild;
+	return child.nodeType == 1 ? child : getNextSibling(child);
+}
+
+function getLastChild(parent) {
+	var child = parent.lastChild;
+	return child.nodeType == 1 ? child : getPreviousSibling(child);
+}
 
 function insertAfter(parent, newElement, referenceElement) {
   parent.insertBefore(newElement, getNextSibling(referenceElement));
@@ -921,10 +930,10 @@ function getChildByAttribute(parent, attribName, attribValue) {
 				  return reqChild;
 		  }
 
-		   if(children[i][attribName] == attribValue)
+		   if(children[i].nodeType != 3 && children[i][attribName] == attribValue)
 			   return children[i];
 			 
-			 if (attribName == "className" && children[i][attribName] &&
+			 if (children[i].nodeType != 3 && attribName == "className" && children[i][attribName] &&
          children[i][attribName].indexOf(attribValue + " ") != -1)
        return children[i];   
 	  }
