@@ -1590,45 +1590,46 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 
 /** Touch UI buttons **/
-.panel_block .toggle_btn { float: right; }
-.toggle_btn  { height:32px; overflow:hidden; width:84px; }
+.panel_block .toggle_btn { float: right; text-align: right; }
+.toggle_btn  { height:32px; overflow:hidden; width: 72px !important; width: 82px; padding: 0px 3px; }
 .toggle_btn div::selection { background: transparent; }
 .toggle_btn div::-moz-selection { background: transparent; }
 .toggle_btn .toggle_btn_tray { width:300px; cursor: pointer; }
 .toggle_btn .toggle_btn_tray div { float: left; }
-.toggle_btn .left, .toggle_btn .right { height:22px; margin-top:5px; width:59px; }
+.toggle_btn .left, .toggle_btn .right { height:22px; margin-top:5px; width: 50px; box-shadow: 0 0 7px rgba(0, 0, 0, 0.5) inset; -moz-box-shadow:0 0 7px rgba(0, 0, 0, 0.5) inset; -webkit-box-shadow:0 0 4px rgba(0, 0, 0, 0.5); }
 .toggle_btn .left {
   border-radius:22px 0 0 22px;
   -moz-border-radius:22px 0 0 22px;
   -webkit-border-radius:22px 0 0 22px;
-  
-  box-shadow: 0 0 7px rgba(0, 0, 0, 0.5) inset;
-  -moz-box-shadow: 0 0 7px rgba(0, 0, 0, 0.5) inset;
-  background-color: &[SecondaryColorA_5];;
+   background-color: &[SecondaryColorA_5];;
+   margin-left: 0px;
 }
 .toggle_btn .right {
   visibility: hidden;
   border-radius:0 22px 22px 0;
   -moz-border-radius:0 22px 22px 0;
   -webkit-border-radius:0 22px 22px 0;
+  background: &[PrimaryColor_4];;
   box-shadow:0 0 7px rgba(0, 0, 0, 0.5) inset;
-  -moz-box-shadow:0 0 7px rgba(0, 0, 0, 0.5) inset;
-  background: &[FTS];;
   margin-left:-5px;
 }
+
+*html .toggle_btn .left, *html .toggle_btn .right, *html .toggle_btn .circle { border: solid 1px &[PrimaryColor_1];; }
+*html .toggle_btn .left { border-right: none; }
+
 .toggle_btn .circle {
   border-radius: 28px 28px 28px 28px;
   -moz-border-radius: 28px 28px 28px 28px;
   -webkit-border-radius: 28px 28px 28px 28px;
 	
-	background-color: &[Label]; !important;
-	background-color: &[ToolbarColor];;
+	background-color: &[SecondaryColorA_5]; !important;
+	background-color: &[SecondaryColorA_5];;
+	
+	box-shadow: 0 0 15px &[ToolbarColor]; inset;
+	-moz-box-shadow: 0 0 15px &[ToolbarColor]; inset;
+  -webkit-box-shadow:0 0 2px rgba(0, 0, 0, 0.5);
+  background-image: -webkit-gradient(radial, center center, 0, center center, 28.0, from(&[SecondaryColorA_5];), to(&[ToolbarColor];));
 
-  box-shadow: 0 0 15px rgba(&[ToolbarColor_rgb];, 0.8) inset;
-  -moz-box-shadow: 0 0 15px rgba(&[ToolbarColor_rgb];, 0.8) inset;
-  
-  background-image: -webkit-gradient(radial, center center, 0, center center, 30.0, from(&[Label];), to( rgba(&[ToolbarColor_rgb];, 0.8)));
-  
   width: 28px;
   height: 28px;
   margin-top:2px;
@@ -1636,10 +1637,10 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   position:relative;
 }
 
-.toggle_btn .label {  display:inline; font-family:helvetica,arial; font-size: 13px; font-weight:bold; line-height:20px; margin-left:20px; }
-.toggle_btn .left .label { color: &[SecondaryColorA_3]; !important; }
+.toggle_btn .label {  display:inline; font-family:helvetica,arial; font-size: 13px; font-weight:bold; line-height:21px; margin-left:16px; }
+.toggle_btn .left .label { color: &[MenuLineColorA]; !important;  }
 .toggle_btn .right .label { color: &[Label]; !important; }
-.toggle_btn .no { margin-left:-54px; }
+.toggle_btn .no { margin-left:-45px; }
 
 .iphone_checkbox { margin: 0px 3px; width: 29px; height: 29px; background: url(../images/skin/iphone/checkbox.png); cursor: pointer; }
 .checked { background-position: 100% 0%; } 
@@ -1787,9 +1788,9 @@ td.pBGr { background-color: #eeeeee;
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb];, 0.5)), to(rgba(&[PrimaryColor_4_rgb];, 0.5)));
     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
 }
-.ctrl_toolbar_dlg { visibility: hidden; position: absolute;	background-color: &[BackgroundColor];; color: &[Color];; border: 1px solid &[PrimaryColor_1];; padding: 5px; }
+.ctrl_toolbar_dlg { visibility: hidden; position: absolute;	background-color: &[BackgroundColor];; color: &[Label];; border: 1px solid &[PrimaryColor_1];; padding: 5px; }
 
-tr.grey_highlighting > td, * html tr.grey_highlighting td  {
+tr.grey_highlighting > td, * html tr.grey_highlighting td, .ctrl_toolbar_dlg .grey_highlighting {
 	color: &[Label];;
 	background-color: rgba(&[PrimaryColor_1_rgb];, 0.1);
   background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_1_rgb];, 0.5), &[PrimaryColor_4];);
