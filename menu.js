@@ -10918,8 +10918,8 @@ function showMobileTab(e, hideDivId, unhideDivId) {
 * ToggleBtnMgr
 ********************************************/
 var ToggleBtnMgr = {
-  STEP : 18,
-	LIMIT : -54,
+  STEP : 15,
+	LIMIT : -45,
   tray : null,
   cur: 0,
   dir: -1,
