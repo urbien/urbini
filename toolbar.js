@@ -546,7 +546,6 @@ var PalettePopup = {
 *****************************************************/
 function ListItem(index, innerDiv, parent, noHighlight) 
 {
-	var HIGHLIGHTED_BACKGROUND = "#e0e0e0";
 	var MARGIN = 2;
 	var i_am = this;
 	this.index = index;
@@ -560,8 +559,6 @@ function ListItem(index, innerDiv, parent, noHighlight)
 		this.liObj = document.createElement('td');
 		this.liObj.style.cursor = "pointer";
 
-		this.liObj.style.backgroundColor = this.parent.LIST_BACKGROUND;
-		
 		// 2. set handlers
 		this.liObj.onmouseover = this.onMouseOver;
 		this.liObj.onmouseout = this.onMouseOut;
@@ -583,22 +580,22 @@ function ListItem(index, innerDiv, parent, noHighlight)
 	this.onMouseOver = function() {
 		if(i_am.isDisabled)
 		  return;
-		i_am.liObj.style.backgroundColor = HIGHLIGHTED_BACKGROUND;
+		i_am.liObj.className = "grey_highlighting";
 	}
 	this.onMouseOut = function() {
     if(i_am.isDisabled)
 		  return;
-		i_am.liObj.style.backgroundColor = i_am.parent.LIST_BACKGROUND;
+		i_am.liObj.className = "";
 	}
 	this.onMouseUp = function(e) {
   	if(i_am.isDisabled)
 		  return;
-		i_am.liObj.style.backgroundColor = i_am.parent.LIST_BACKGROUND;
+		i_am.liObj.className = "";
 		i_am.parent.onItemSelection(i_am.index);
 	}
 	
   this.removeHighlight = function() {
-    this.liObj.style.backgroundColor = this.parent.LIST_BACKGROUND;
+		i_am.liObj.className = "";
   }
   this.enable = function() {
  		this.liObj.style.cursor = "pointer";
@@ -619,11 +616,6 @@ function ListItem(index, innerDiv, parent, noHighlight)
 // width - needs for dropdown list
 // default parameters: colAmt: 1;
 function MyDropdownList(colAmt) {
-	var FONT_FAMILY = "verdana";
-	var FONT_SIZE = "12px";
-	this.LIST_BACKGROUND = "#ffffff";
-	var LIST_BORDER_COLOR = "#999";
-
 	this.div = null;
 	this.table = null;
 	this.tablebody = null;
@@ -634,18 +626,9 @@ function MyDropdownList(colAmt) {
 
 	this.create = function(parentElt) {
 		this.div = document.createElement('div');
-		this.div.style.position = "absolute";
-		this.div.style.visibility = "hidden";
-
-		this.div.style.backgroundColor = this.LIST_BACKGROUND;
-		this.div.style.borderStyle = "solid";
-		this.div.style.borderWidth = 1;
-		this.div.style.borderColor = LIST_BORDER_COLOR;
-		this.div.style.overflow = "visible";
+		this.div.className = "ctrl_toolbar_dlg";
 		
 		this.table = document.createElement('table');
-		this.table.style.fontFamily = FONT_FAMILY;
-		this.table.style.fontSize = FONT_SIZE;
 		//	this.table.cellPadding = 10;	//	this.table.cellSpacing = 0; 
 		this.tablebody = document.createElement("tbody");
 		this.table.appendChild(this.tablebody);
