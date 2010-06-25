@@ -558,7 +558,7 @@ var ImageUploader = {
         break;
       }
     }
-    
+
     var formStr = "<form name=\"" + this.FORM_NAME + "\""
       + " target=\"" + this.HDN_IFRAME_NAME + "\""
       + " method=\"post\""
@@ -579,7 +579,7 @@ var ImageUploader = {
       // 2) URL of image
       + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
       + " style=\"font-family:verdana; font-size:12px\""
-      + " size=\"40\"  style=\"margin-top:20px;\">"
+      + " size=\"40\" onkeyup=\"ImageUploader.enterCatcher(event);\"  style=\"margin-top:20px;\">"
       
       + " <input type=\"text\" name=\"" + this.FILE_INPUT_NAME + "\""
       + " style=\"display: none; font-family:verdana; font-size:12px\""
@@ -801,7 +801,13 @@ var ImageUploader = {
         return imgUrlsArr[i].uploadedUrl;
     }
     return null;
-  }
+  },
+	
+	enterCatcher : function(event) {
+		var code = getKeyCode(event);
+		if (code == 13)
+			stopEventPropagation(event);
+	}
 }
 
 
