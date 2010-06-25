@@ -4903,8 +4903,8 @@ var TouchDlgUtil = {
 			if (tables[i].id.indexOf("siteRL_") == 0)
 				addEvent(tables[i], 'mousedown', this.highlightRowBlue, false);
 		}
-		addEvent(document, 'keyup', this.keyHandler, true);
-		addEvent(document, 'keydown', this.arrowsHandler, true);
+		addEvent(document, 'keyup', this.keyHandler, false);
+		addEvent(document, 'keydown', this.arrowsHandler, false);
 	},
 	
 	setCurrentDialog : function(dlgDiv) {
