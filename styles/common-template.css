@@ -1594,9 +1594,9 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .toggle_btn  { height:32px; overflow:hidden; width: 72px !important; width: 82px; padding: 0px 3px; }
 .toggle_btn div::selection { background: transparent; }
 .toggle_btn div::-moz-selection { background: transparent; }
-.toggle_btn .toggle_btn_tray { width:300px; cursor: pointer; }
+.toggle_btn .toggle_btn_tray { width:300px; cursor: pointer; margin-left: 0px; }
 .toggle_btn .toggle_btn_tray div { float: left; }
-.toggle_btn .left, .toggle_btn .right { height:22px; margin-top:5px; width: 50px; box-shadow: 0 0 7px rgba(0, 0, 0, 0.5) inset; -moz-box-shadow:0 0 7px rgba(0, 0, 0, 0.5) inset; -webkit-box-shadow:0 0 4px rgba(0, 0, 0, 0.5); }
+.toggle_btn .left, .toggle_btn .right { height:22px; margin-top:5px; width: 50px; box-shadow: 0 0 4px rgba(0, 0, 0, 0.5); -moz-box-shadow:0 0 4px rgba(0, 0, 0, 0.5); -webkit-box-shadow:0 0 4px rgba(0, 0, 0, 0.5); }
 .toggle_btn .left {
   border-radius:22px 0 0 22px;
   -moz-border-radius:22px 0 0 22px;
@@ -1610,7 +1610,6 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   -moz-border-radius:0 22px 22px 0;
   -webkit-border-radius:0 22px 22px 0;
   background: &[PrimaryColor_4];;
-  box-shadow:0 0 7px rgba(0, 0, 0, 0.5) inset;
   margin-left:-5px;
 }
 
@@ -1625,10 +1624,15 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	background-color: &[SecondaryColorA_5]; !important;
 	background-color: &[SecondaryColorA_5];;
 	
-	box-shadow: 0 0 15px &[ToolbarColor]; inset;
-	-moz-box-shadow: 0 0 15px &[ToolbarColor]; inset;
-  -webkit-box-shadow:0 0 2px rgba(0, 0, 0, 0.5);
+	box-shadow: 0px 0px 15px &[ToolbarColor]; inset; /* for Opera - no gradient there */
+
+	background-image: -moz-radial-gradient(&[SecondaryColorA_5];, &[ToolbarColor];);
+	-moz-box-shadow: 0 0 2px rgba(0, 0, 0, 0.7);
+	  
   background-image: -webkit-gradient(radial, center center, 0, center center, 28.0, from(&[SecondaryColorA_5];), to(&[ToolbarColor];));
+  -webkit-box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];);
 
   width: 28px;
   height: 28px;
