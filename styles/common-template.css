@@ -13,7 +13,7 @@ a img {
 	border: 0;
 	vertical-align: middle; 
 }
-
+ 
 #mainMenu a { font-size: 13px; }
 
 .requiredProp {
@@ -390,7 +390,7 @@ input   { -webkit-appearance: none; font-family: helvetica, arial; font-style: n
 }
 .rlHeader td { vertical-align: middle; color: &[SecondaryColorB_3]; }
 .rlHeader a {color: &[Alternative_A];}
-.rlHeader .label, .xs {color: &[Alternative_A];}
+.rlHeader .label {color: &[Alternative_A];}
 
 tr.prTitle { 
     background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
