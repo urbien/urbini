@@ -1426,7 +1426,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #fts_filter .filter .selected { margin-left: 30px; font-weight: bold; border:none; background-color: &[BackgroundColor];; color: &[Color];;}
 
 #fts_filter .filter .param_tr { background-color: &[OddRowBackgroundColor];; padding-top: 3px; padding-bottom: 3px; }
-#fts_filter .filter .param_tr .label { font-weight: bold; font-size: 15px; color: &[PrimaryColor_4];;}
+#fts_filter .filter .param_tr .label { font-weight: bold; font-size: 15px; color: &[SecondaryColorA_3];;}
 
 .panel_block .header { 
     line-height:30px; 
