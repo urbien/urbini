@@ -531,7 +531,7 @@ tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
 /* VIEWS */
 td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
 
-.select	{border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;background-color:#D6E7EF;font-size:1em}
+.select {border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-size:7pt; vertical-align:middle;}
 .selected	{border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;background-color:fffdc3;font-size:1em}
 
 .input1 {background: #e7ebf0;border-bottom: 1px solid #C0C9D7;border-left: 1px solid #C0C9D7;border-right: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:16px;text-decoration:none;}
@@ -558,7 +558,6 @@ td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
 
 /* selected input field in edit mode and filter */
 .isel {background-color:fffdc3; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-size:7pt; vertical-align:middle;}
-.select {border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-size:7pt; vertical-align:middle;}
 .input:lang(zh) {
   font-size: 0.9em; height:16px;
 }
@@ -734,6 +733,9 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 }
 .fixed {
   table-layout: fixed;
+  background-color: &[OddRowBackgroundColor];;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 .fixed th, .fixed td{
@@ -1415,7 +1417,16 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #fts_filter { width: auto; min-width: 150px;  overflow: visible; }
 #fts_filter .no_border td { border-bottom: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
-#fts_filter .filter_stat span.ds { margin-left: 30px; font-weight: bold;  font-size: 15px;}
+#fts_filter .filter {
+  color: &[PrimaryColor_1];;
+  border: none;
+  background-color: &[BackgroundColor];; 
+  overflow-y: visible;  
+}
+#fts_filter .filter .selected { margin-left: 30px; font-weight: bold; border:none; background-color: &[BackgroundColor];; color: &[Color];;}
+
+#fts_filter .filter .param_tr { background-color: &[OddRowBackgroundColor];; padding-top: 3px; padding-bottom: 3px; }
+#fts_filter .filter .param_tr .label { font-weight: bold; font-size: 15px; color: &[PrimaryColor_4];;}
 
 .panel_block .header { 
     line-height:30px; 
@@ -1510,9 +1521,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   padding: 0px; 
   overflow: hidden;
 }
-.count { color: grey; white-space: nowrap; font-size: 14px;}
-
-.count { color: grey; white-space: nowrap; font-size: 14px;}
+.count { white-space: nowrap; font-size: 14px;}
 
 .chosen_values div {
   overflow: hidden;
