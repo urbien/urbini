@@ -2570,7 +2570,7 @@ var Tooltip = {
     var ifrRef = document.getElementById(iframeId);
     if (!ifrRef)
       throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
-    Popup.open(e, divId, target, ifrRef, 20, 25, 1000, tooltipText); // open with
+    Popup.open(e, divId, target, ifrRef, 5, 15, 1000, tooltipText); // open with
   },
   showInStatus : function(tooltipText) {
     var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
@@ -8581,54 +8581,38 @@ var closingOnEsc = {
 var advancedTooltip = {
   tooltip : null,
   options : {isShiftRequired : false},
-  optList : null,
-  // button image object and size
-  optBtn : {obj: null, width: 13, height: 17},
- // initialized : false,
+  optBtn : {obj: null, width: 16, height: 16}, // button image object and size
+  initialized : false,
 
   init : function() {
     if (Browser.mobile)
       return;
 
-    //if(this.initialized)
-     // return;
+    if(this.initialized)
+      return;
 
     this.tooltip = document.getElementById('system_tooltip');
     if(!this.tooltip)
       return;
-    if(typeof MyDropdownList == 'undefined')
-      return;
-    this.optList = new MyDropdownList();
-    var itemDiv = document.createElement('div');
-    this.optList.appendItem(itemDiv);
+
     this.optBtn.obj = getChildById(this.tooltip, "opt_btn");
     this.initShiftPref();
 
-    this.tooltip.appendChild(this.optList.div);
     this.initialized = true;
-  },
-  initMenu : function() {
-
   },
   onOptionsBtn : function() {
     if (Browser.mobile)
       return;
 
-    if(this.optList == null)
-      this.init();
-    this.updateOptListItem(0);
-    var ttContent = getChildById(this.tooltip, "tt_inner");
-    advancedTooltip.optList.show(advancedTooltip.optBtn,
-                    'left', advancedTooltip.onOptListItemSelect, ttContent);
-  },
-  onOptListItemSelect : function(idx) {
-    if (Browser.mobile)
-      return;
+		var msg = this.isShiftRequired() ? "show tooltips always" : "show tooltips when shift pressed";
+		BrowserDialog.confirm(msg, this.onShiftPrefChange);
+	},
 
-    advancedTooltip.optList.hide();
-    if(idx == 0)
+  onShiftPrefChange : function() {
       advancedTooltip.shiftPrefSwitch();
   },
+	
+	// show /hide used with Loading cue
   showOptionsBtn : function()  {
     if (Browser.mobile)
       return;
@@ -8674,7 +8658,6 @@ var advancedTooltip = {
 		  }
 		  this.options.isShiftRequired = bValue;
 	  }
-    this.updateOptListItem(0);
   },
   shiftPrefSwitch : function () {
     if (Browser.mobile)
@@ -8691,16 +8674,6 @@ var advancedTooltip = {
     var tooltipObj = Popup.getPopup('system_tooltip');
 	  if(tooltipObj)
 	    tooltipObj.delayedClose();
-  },
-  // ------------
-  updateOptListItem : function(idx) {
-    if(idx == 0) {
-      if(this.options.isShiftRequired)
-        this.optList.changeItemContent(idx, "<span style='font-size:12px;'>show always</span>");
-      else
-        this.optList.changeItemContent(idx, "<span style='font-size:12px;'>show when shift pressed</span>");
-    }
-    this.optList.setWidth = 200;
   }
 }
 
@@ -10925,7 +10898,7 @@ var ToggleBtnMgr = {
   dir: -1,
   
   onclick : function(tray){
-    this.tray = tray;
+	  this.tray = tray;
 		var marginLeft = getElementStyle(tray).marginLeft;
     if (marginLeft.length == 0 || parseInt(marginLeft) == 0) {
       this.dir = -1;
