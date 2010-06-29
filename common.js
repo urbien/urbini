@@ -1630,18 +1630,8 @@ function getElementCoords(elem, e) {
 
 function getElementDimensions(elem) {
   var dim = new Dim();
-  if (Browser.ns4) {
-    dim.width  = (elem.document.width)  ? elem.document.width  : elem.clip.width;
-    dim.height = (elem.document.height) ? elem.document.height : elem.clip.height;
-  }
-  else if (Browser.ie4) {
-    dim.width  = (elem.style.pixelWidth)  ? elem.style.pixelWidth  : elem.offsetWidth;
-    dim.height = (elem.style.pixelHeight) ? elem.style.pixelHeight : elem.offsetHeight;
-  }
-  else {
-    dim.width  = (elem.style.width)  ? parseInt(elem.style.width)  : parseInt(elem.offsetWidth);
-    dim.height = (elem.style.height) ? parseInt(elem.style.height) : parseInt(elem.offsetHeight);
-  }
+	dim.width  = parseInt(elem.offsetWidth);
+  dim.height = parseInt(elem.offsetHeight);
   return dim;
 }
 
