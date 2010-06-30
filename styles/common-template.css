@@ -51,7 +51,7 @@ img.fade {
 #user a { color: &[SecondaryColorA_3_brighter];}
 #user span { &[SecondaryColorA_3_brighter];; font-weight: bold}
 
-#siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; }
+#siteResourceList td, #resourceList td, #div_Info td, .widget td { font-size: 15px;  height: 30px; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
 #siteResourceList #front {background-color: &[BackgroundColor];}
 
@@ -508,6 +508,7 @@ tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
     vertical-align: middle;   
  }
 .desktop_search .right {
+	float: left;
 	border-radius: 0px 15px 15px 0px;
 	-moz-border-radius: 0px 15px 15px 0px;
 	-webkit-border-radius: 0px 15px 15px 0px;
@@ -519,10 +520,8 @@ tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
 	background-color: &[ToolbarColor];;
 	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];));
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];);
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)";
-  
-  float: left;
 }
 
 .desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-family: arial; font-size: 18px; line-height:31px; text-align:center;}
@@ -607,6 +606,7 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 }
 
 td.controlPanel { border:solid &[PrimaryColor_1]; 1px; background-color: &[BackgroundColor];;}
+td.controlPanel span { font-size: 16px; }
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 /*span.xxl {font-weight:bold; font-size:20pt;}*/
 
@@ -851,7 +851,9 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .blogDivider {border-top: 1px dotted #aaaaaa;}
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
-.innerTitle { text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2); font-size: 18px; font-weight:bold; margin-left: 15px; color: &[MenuLineColorA];;}
+.innerTitle, .panel_block .property_group, .panel_block #item_name { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; margin-left: 15px; color: &[Label];;}
+.innerTitle { font-size: 18px;}
+.panel_block .property_group, .panel_block #item_name { font-size: 16px; margin-top: 15px;}
 
 *:lang(ja-jp) { font: 900 14pt/16pt "Heisei Mincho W9", serif }
 BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif }
@@ -1448,9 +1450,9 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .panel_block .content { padding: 10px; width: 100%; } 
 
 #subscribe .content { display: none; }
-.panel_block .property_group, .panel_block #item_name { color: &[MenuLineColorA];; font-size: 16px; font-weight: bold; margin: 15px 0px 5px 15px; text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2) }
 
-.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px; border: solid rgb(166, 170, 173) 1px; empty-cells:show; color: &[PrimaryColor_4_text];; }
+.rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px;
+										box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); -moz-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); border: solid &[PrimaryColor_1]; 1px; empty-cells:show; color: &[PrimaryColor_4_text];; }
 /* the following rules required while item-rows highlighting */
 .rounded_rect_tbl tr:first-child td:first-child { border-radius: 10px 0px 0px 0px; -moz-border-radius: 10px 0px 0px 0px; -webkit-border-radius: 10px 0px 0px 0px; }
 .rounded_rect_tbl tr:first-child td:last-child { border-radius: 0px 10px 0px 0px; -moz-border-radius: 0px 10px 0px 0px; -webkit-border-radius: 0px 10px 0px 0px; }
@@ -1548,14 +1550,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .panel_block #hide_icon, #menu_Options #hide_icon { position: relative; z-index: 2; top: 25px; left: -5px; cursor: pointer; }
 #menu_Options #hide_icon { top: 15px; left: -4px; }
 /* #pane2 - "plain" dialogs */
-#pane2 .content { padding: 15px 10px; 
-	background-color: &[PrimaryColor_4];;
-	background-image: url(../images/skin/iphone/pinstripes.gif);
-	background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 0px, #eee 4px);
-	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
-	-webkit-background-size: 4px 1px;
-	
-}
+#pane2 .content { padding: 15px 10px; }
 
 .frame {
 	width: 100%; /* takes 100% of panel block width */
@@ -1568,11 +1563,11 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   border: none;
 }
 
-.frame, #siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel { 
-  background-color: &[PrimaryColor_4];;
-  background-image: url(../images/skin/iphone/pinstripes.gif);
-  background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_4]; 5px, &[PrimaryColor_1]; 2px, &[SecondaryColorA_4]; 11px);
-	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_4];), to(#eeeeee));
+.frame, #siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel, #pane2 .content { 
+	background-color: &[PrimaryColor_4];;
+	background-image: url(../images/skin/iphone/pinstripes.gif);
+	background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_1]; 0px, &[PrimaryColor_4]; 4px);
+	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
 	-webkit-background-size: 4px 1px;
 } 
 
