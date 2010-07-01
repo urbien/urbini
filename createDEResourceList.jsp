@@ -18,7 +18,6 @@
       <div align="right"><measurement/></div>
       <input type="hidden" name="-create"  value="1" />
 			<br />
-      <center><input type="submit" name="submit" value="  Submit  "/></center>
     </form>
     </div>
   </td>
