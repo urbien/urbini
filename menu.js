@@ -146,6 +146,9 @@ Popup.openAfterDelay = function (event, divId, offsetX, offsetY) {
     return; // do not open delayed popup if other popup was already opened
             // during the timeout
   }
+	
+	
+	
   Popup.delayedPopup = null;
   var popup = Popup.getPopup(divId);
   if (popup) {
@@ -160,7 +163,7 @@ Popup.openAfterDelay = function (event, divId, offsetX, offsetY) {
  * otherwise would show through).
  */
 Popup.open = function (event, divId, hotspotRef, frameRef, offsetX, offsetY, delay, contents) {
-  var divRef = document.getElementById(divId);
+	var divRef = document.getElementById(divId);
   var popup = Popup.getPopup(divId);
   if (popup == null)
     popup = new Popup(divRef, hotspotRef, frameRef, contents);
@@ -2527,17 +2530,21 @@ var Tooltip = {
   onMouseOut : function(e) {
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
-    window.status = "";
+
     var target = getMouseOutTarget(e);
     if (!target)
       return true;
+			
     var popup = Popup.getPopup('system_tooltip');
     if (popup && popup.isOpen())
       return true;
+			
     if (Popup.delayedPopup && Popup.delayedPopup.isTooltip()) {
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
+		
+		window.status = "";
     return stopEventPropagation(e);
   },
 
@@ -2570,7 +2577,7 @@ var Tooltip = {
     var ifrRef = document.getElementById(iframeId);
     if (!ifrRef)
       throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
-    Popup.open(e, divId, target, ifrRef, 5, 15, 1000, tooltipText); // open with
+		Popup.open(e, divId, target, ifrRef, 5, 15, 1000, tooltipText); // open with
   },
   showInStatus : function(tooltipText) {
     var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
@@ -9785,12 +9792,36 @@ function callback(event, widget) {
 var WidgetRefresher = {
   widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
   hdnDoc : null, // helps to load refreshed document
-  setInterval : function(divId, intervalSeconds) {
 
-    Debug.setMode(true);
-    //Debug.log('divId = ' + divId);
+	init : function() {
+		var dashboardTable = document.getElementById("dashboard");
+		if (!dashboardTable)
+			return;
+		// NOTE: current dashboard structure: one TR!
+		var cells = dashboardTable.rows[0].cells;
+		for (var i = 0; i < cells.length; i++) {
+			var children = cells[i].children;
+			for (var n = 0; n < children.length; n++)
+				if (children[n].className && children[n].className == "widget") {
+					var refreshDiv = getChildByClassName(children[n], "refresh");
+					
+					// debugger;
+					if (i==0 && n==0)
+						this.setInterval(children[n], "10");
+					
+					if (refreshDiv == null)
+						 continue;
+					
+					var intervalSeconds = refreshDiv.getAttribute("rel");
+					this.setInterval(children[n], intervalSeconds);
+				}
+		}
+	},
 
-    // 1. prepare new "widget member" or stop old one.
+  setInterval : function(widget, intervalSeconds) {
+    var divId = widget.id;
+
+		// 1. prepare new "widget member" or stop old one.
     if(typeof this.widgetsArr[divId] == 'undefined')
       this.widgetsArr[divId] = new Object();
     else
@@ -9798,21 +9829,7 @@ var WidgetRefresher = {
 
     // 2. Find the boorkmark url that is a part of "outer" div widget div
     // divId is an widget content div
-    var obj = document.getElementById(divId);
-    if(!obj)
-      return;
-   	while(obj != null) {
-		  if(obj.id.indexOf("widget_") == 0) {
-		    widgetDiv = obj;
-		    break;
-		  }
-		  obj = obj.parentNode;
-	  }
-	  if(obj.id.length == 0)
-	    return;
-
-	  var widgetDivId = obj.id;
-	  this.widgetsArr[divId].bookmarkUrl = widgetDivId.substr(7);
+	  this.widgetsArr[divId].bookmarkUrl = divId.substr(7);//widgetDivId.substr(7);
 
     // 4. launch widget refresh loop.
     var interval;
@@ -9881,11 +9898,14 @@ var WidgetRefresher = {
   },
   // called by postRequest
   refresh : function(event, div, hotSpot, content)  {
+		if (content.length == 0)
+			return;
     div.innerHTML = content;
     if(OperaWidget.isWidget())
       OperaWidget.onWidgetRefresh();
   }
 }
+
 
 function changeSkin(event) {
   var e = getDocumentEvent(event);
