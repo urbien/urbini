@@ -54,6 +54,7 @@
       }
       // 1.2. desktop
       else {
+				WidgetRefresher.init();
         DragEngine.initialize();
         FlashHandler.init();
         
