@@ -34,9 +34,9 @@ a img {
   font-family: "Li Sung", MingLiu; font-size:1em;
 }
 	  
-H1 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorA_1];; font-size: 34px; }
-H2 a {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1];; font-size: 21px;}
-H3 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; font-color: &[SecondaryColorB_1];; font-size: 13px; margin: 0}
+H1 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; color: &[SecondaryColorA_1];; font-size: 34px; }
+H2 a {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; color: &[SecondaryColorB_1];; font-size: 21px;}
+H3 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; color: &[SecondaryColorB_1];; font-size: 13px; margin: 0}
 
 .pointer { cursor: pointer; }
 .dragable, .move { cursor: move; }
@@ -49,7 +49,7 @@ img.fade {
 #fts {font-size: small;}
 
 #user a { color: &[SecondaryColorA_3_brighter];}
-#user span { &[SecondaryColorA_3_brighter];; font-weight: bold}
+#user span { color: &[SecondaryColorA_3_brighter];; font-weight: bold;}
 
 #siteResourceList td, #resourceList td, #div_Info td, .widget td { font-size: 15px;  height: 30px; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
@@ -96,7 +96,7 @@ input[type=button], input[type=submit], .button {
 input[type=button], input[type=submit], .button, a.button { font-size: 15px; color: &[Label];; }
 input[type=button], input[type=submit] { padding: 6px 10px; }
 a.button { padding: 3px 10px; } /* anchor requires smaller padding than type=button */
-input[type=button]:active, input[type=submit]: active, .button:active	{ padding: 6px 10px 5px; }
+input[type=button]:active, input[type=submit]:active, .button:active	{ padding: 6px 10px 5px; }
 
 /* Touch the rest at your own risk. */
 input[type=button], input[type=submit], .button { 
@@ -281,7 +281,7 @@ td.textCell {
 
   .currentTabTitle {
     background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_5];);
-    font-color: &[SecondaryColorB_3];;  
+    color: &[SecondaryColorB_3];;  
 	  font-weight: bold;
 	  font-size:14px;
 	  height: 30px; 
@@ -384,7 +384,7 @@ input   { -webkit-appearance: none; font-family: helvetica, arial; font-style: n
   border:solid &[SecondaryColorA_5]; 1px; 
   background-repeat:repeat-x; 
   background-color: &[PrimaryColor_4];;
-  font-color: &[SecondaryColorB_3];;  
+  color: &[SecondaryColorB_3];;  
   font-weight:bold; 
   font-size:8pt;
 }
@@ -856,7 +856,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .panel_block .property_group, .panel_block #item_name { font-size: 16px; margin-top: 15px;}
 
 *:lang(ja-jp) { font: 900 14pt/16pt "Heisei Mincho W9", serif }
-BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif }
+BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif; }
 .red {color:red;font-size:10pt;font-weight:bold;}
 .redn {color:red;font-size:10pt;}
 
@@ -1071,8 +1071,8 @@ TD.toolbar {
 }
 .widget .dashboardLine { background-color: &[SecondaryColorA_5];; background-image: none; }
 
-*html .dashboardLine td {
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
+* html .dashboardLine td {
+	#filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
  	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
 }
 
@@ -1253,7 +1253,7 @@ TD.closePopup {
 .br {
   height: 5px;
 }
-.li {  // for Bar Retail page
+.li {  /* for Bar Retail page */
   height: 50px;
 }
 
@@ -1322,7 +1322,6 @@ tr.printHeader {border:solid #808080 1px;
     background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];)); 
 }
-color:#000000; font-weight:bold; font-size:0.9em;}
 
 .invoice {border: 1px solid #808080;}
 
@@ -1349,7 +1348,8 @@ table.printFB {
 .captcha .i { background-position: 75% 100%; padding: 0; margin: 0;}
 .captcha .j { background-position: 100% 100%; padding: 0; margin: 0;}
 
-.login {background: transparant; border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px}
+
+.login {background-color: transparent; border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px}
 .lButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 .userLogin { width: auto !important; width: 100px; background-color: &[BackgroundColor];; color: &[SecondaryColorA_3];; border: 1px solid &[SecondaryColorA_3];; padding: 5 5 5 5; }
 
@@ -1397,7 +1397,7 @@ div .panel_block, td .panel_block {
   position: static;
   
   width: 100%;
-  min-width: none;
+  min-width: 0;
   max-width: none;
   
   box-shadow : none;
@@ -1508,7 +1508,10 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
-.rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { color: &[Alternative_A];; background: rgba(255, 255, 255, 0.1); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-size: 16px; font-weight: normal; }
+.rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { 
+	margin: 0px; padding: 0px;
+	color: &[Alternative_A];; background: rgba(255, 255, 255, 0.1); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-size: 16px; font-weight: normal; }
+
 .rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.9) !important; background: #ffffff; color: &[MenuLineColorA];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; }
 .rounded_rect_tbl .comment { text-align: left; color: &[Alternative_A];; font-size: 11px; }
 .rounded_rect_tbl .select { font-size: 14px; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
@@ -1565,7 +1568,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .frame, #siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel, #pane2 .content { 
 	background-color: &[PrimaryColor_4];;
-	background-image: url(../images/skin/iphone/pinstripes.gif);
+	background-image: url(../images/skin/iphone/pinstripes.png);
 	background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_1]; 0px, &[PrimaryColor_4]; 4px);
 	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
 	-webkit-background-size: 4px 1px;
@@ -1617,8 +1620,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   margin-left:-5px;
 }
 
-*html .toggle_btn .left, *html .toggle_btn .right, *html .toggle_btn .circle { border: solid 1px &[PrimaryColor_1];; }
-*html .toggle_btn .left { border-right: none; }
+* html .toggle_btn .left, * html .toggle_btn .right, * html .toggle_btn .circle { border: solid 1px &[PrimaryColor_1];; }
+* html .toggle_btn .left { border-right: none; }
 
 .toggle_btn .circle {
   border-radius: 28px 28px 28px 28px;
@@ -1791,7 +1794,7 @@ td.pBGr { background-color: #eeeeee;
 .dsk_auto_complete .menuItem, .dsk_auto_complete .not_found { min-width: 460px; }
 
 /* RTE and styles editor */
-.ctrl_toolbar { position : relative; display: block; left: 0px; top: 0px; width: 100%; borderWidth: 0px;
+.ctrl_toolbar { position : relative; display: block; left: 0px; top: 0px; width: 100%; border-width: 0px;
     background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_1_rgb];, 0.5), rgba(&[PrimaryColor_4_rgb];, 0.5));
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb];, 0.5)), to(rgba(&[PrimaryColor_4_rgb];, 0.5)));
     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
@@ -1825,3 +1828,5 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 .rounded_rect_tbl .empty_field, .iphone_field .empty_field, .empty_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.4);}
 .rounded_rect_tbl .focused_field, .iphone_field .focused_field, .focused_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.2); }
+
+.widget .dragable h2 { margin-bottom: 0px; font-size: 17px; } 
