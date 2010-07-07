@@ -947,59 +947,59 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			oldToolbar.parentNode.removeChild(oldToolbar);
 		
 		// 1.
-		var toolBar = new Toolbar(this.parentDiv, this, 18, false, this.iframeObj);
+		var toolBar = new Toolbar(this.parentDiv, this, 32, false, this.iframeObj);
 		// 2. add buttons
 		if(this.rtePref.buttons.style) // style
-			this.styleBtn = toolBar.appendButton(this.onStyle, false, RteEngine.IMAGES_FOLDER + "style.gif", "style");
+			this.styleBtn = toolBar.appendButton(this.onStyle, false, RteEngine.IMAGES_FOLDER + "style.png", "style");
 		if(this.rtePref.buttons.font) { // font + size
-			this.fontBtn = toolBar.appendButton(this.onFont, false, RteEngine.IMAGES_FOLDER + "font.gif", "font");
-			this.sizeBtn = toolBar.appendButton(this.onSize, false, RteEngine.IMAGES_FOLDER + "size.gif", "size");
+			this.fontBtn = toolBar.appendButton(this.onFont, false, RteEngine.IMAGES_FOLDER + "font.png", "font");
+			this.sizeBtn = toolBar.appendButton(this.onSize, false, RteEngine.IMAGES_FOLDER + "size.png", "size");
 		}
 		if(this.rtePref.buttons.decoration) { // bold + italic + underline
-			toolBar.appendButton(this.onBold, false, RteEngine.IMAGES_FOLDER + "bold.gif", "bold");
-			toolBar.appendButton(this.onItalic, false, RteEngine.IMAGES_FOLDER + "italic.gif", "italic");
-			toolBar.appendButton(this.onUnderline, false, RteEngine.IMAGES_FOLDER + "underline.gif", "underline");
+			toolBar.appendButton(this.onBold, false, RteEngine.IMAGES_FOLDER + "bold.png", "bold"); // bold.gif
+			toolBar.appendButton(this.onItalic, false, RteEngine.IMAGES_FOLDER + "italic.png", "italic");
+			toolBar.appendButton(this.onUnderline, false, RteEngine.IMAGES_FOLDER + "underline.png", "underline");
 		}
 		
 		if(this.rtePref.buttons.text_color)  // text color
-			this.textColorBtn = toolBar.appendButton(this.onTextColor, false, RteEngine.IMAGES_FOLDER + "font_color.gif", "text color");
+			this.textColorBtn = toolBar.appendButton(this.onTextColor, false, RteEngine.IMAGES_FOLDER + "font_color.png", "text color");
 		if(this.rtePref.buttons.bg_color)  // background color
-			this.bgColorBtn = toolBar.appendButton(this.onBackgroundColor, false, RteEngine.IMAGES_FOLDER + "background_color.gif", "background color");
+			this.bgColorBtn = toolBar.appendButton(this.onBackgroundColor, false, RteEngine.IMAGES_FOLDER + "background_color.png", "background color");
 		if(this.rtePref.buttons.link) // hyperlink
-			this.linkBtn = toolBar.appendButton(this.onLink, false, RteEngine.IMAGES_FOLDER + "hyperlink.gif", "hyperlink");
+			this.linkBtn = toolBar.appendButton(this.onLink, false, RteEngine.IMAGES_FOLDER + "hyperlink.png", "hyperlink");
 		if(this.rtePref.buttons.image) // image
-			this.imageBtn = toolBar.appendButton(this.onImage, false, RteEngine.IMAGES_FOLDER + "image.gif", "image");
+			this.imageBtn = toolBar.appendButton(this.onImage, false, RteEngine.IMAGES_FOLDER + "image.png", "image");
 
 		if(this.rtePref.buttons.supsub) { // superscript + subscript
-			toolBar.appendButton(this.onSuperscript, false, RteEngine.IMAGES_FOLDER + "superscript.gif", "superscript");
-			toolBar.appendButton(this.onSubscript, false, RteEngine.IMAGES_FOLDER + "subscript.gif", "subscript");
+			toolBar.appendButton(this.onSuperscript, false, RteEngine.IMAGES_FOLDER + "superscript.png", "superscript");
+			toolBar.appendButton(this.onSubscript, false, RteEngine.IMAGES_FOLDER + "subscript.png", "subscript");
 		}
 		if(this.rtePref.buttons.align) { // align: left + centre + right + justifyfull
-			toolBar.appendButton(this.onAlignLeft, false, RteEngine.IMAGES_FOLDER + "align_left.gif", "align left");
-			toolBar.appendButton(this.onAlignCenter, false, RteEngine.IMAGES_FOLDER + "align_center.gif", "align center");
-			toolBar.appendButton(this.onAlignRight, false, RteEngine.IMAGES_FOLDER + "align_right.gif", "align right");
-			toolBar.appendButton(this.onAlignJustify, false, RteEngine.IMAGES_FOLDER + "justifyfull.gif", "justify");
+			toolBar.appendButton(this.onAlignLeft, false, RteEngine.IMAGES_FOLDER + "align_left.png", "align left");
+			toolBar.appendButton(this.onAlignCenter, false, RteEngine.IMAGES_FOLDER + "align_center.png", "align center");
+			toolBar.appendButton(this.onAlignRight, false, RteEngine.IMAGES_FOLDER + "align_right.png", "align right");
+			toolBar.appendButton(this.onAlignJustify, false, RteEngine.IMAGES_FOLDER + "justifyfull.png", "justify");
 		}
 		if(this.rtePref.buttons.dent) { // outdent + indent
-			toolBar.appendButton(this.onOutdent, false, RteEngine.IMAGES_FOLDER + "outdent.gif", "outdent");
-			toolBar.appendButton(this.onIndent, false, RteEngine.IMAGES_FOLDER + "indent.gif", "indent");
+			toolBar.appendButton(this.onOutdent, false, RteEngine.IMAGES_FOLDER + "outdent.png", "outdent");
+			toolBar.appendButton(this.onIndent, false, RteEngine.IMAGES_FOLDER + "indent.png", "indent");
 		}
 		if(this.rtePref.buttons.list) { // list: ordered + unordered
-			toolBar.appendButton(this.onOrderedList, false, RteEngine.IMAGES_FOLDER + "list_num.gif", "ordered list");
-			toolBar.appendButton(this.onUnorderedList, false, RteEngine.IMAGES_FOLDER + "list_bullet.gif", "unordered list");
+			toolBar.appendButton(this.onOrderedList, false, RteEngine.IMAGES_FOLDER + "list_num.png", "ordered list");
+			toolBar.appendButton(this.onUnorderedList, false, RteEngine.IMAGES_FOLDER + "list_bullet.png", "unordered list");
 		}
 		if(this.rtePref.buttons.smile) // smile
 			this.smileBtn = toolBar.appendButton(this.onSmile, false, RteEngine.IMAGES_FOLDER + "smile.gif", "smile");
 		if(this.rtePref.buttons.line) // line
-			toolBar.appendButton(this.onHorizontalRule, false, RteEngine.IMAGES_FOLDER + "hr.gif", "horizontal line");
+			toolBar.appendButton(this.onHorizontalRule, false, RteEngine.IMAGES_FOLDER + "hr.png", "horizontal line");
 		if(this.rtePref.buttons.table) // table
-			this.tableBtn = toolBar.appendButton(this.onTable, false, RteEngine.IMAGES_FOLDER + "table.gif", "table");
+			this.tableBtn = toolBar.appendButton(this.onTable, false, RteEngine.IMAGES_FOLDER + "table.png", "table");
 		if(this.rtePref.buttons.reundo) { // redo + undo
-			toolBar.appendButton(this.onUndo, false, RteEngine.IMAGES_FOLDER + "undo.gif", "undo");
-			toolBar.appendButton(this.onRedo, false, RteEngine.IMAGES_FOLDER + "redo.gif", "redo");
+			toolBar.appendButton(this.onUndo, false, RteEngine.IMAGES_FOLDER + "undo.png", "undo");
+			toolBar.appendButton(this.onRedo, false, RteEngine.IMAGES_FOLDER + "redo.png", "redo");
 		}
 		if(this.rtePref.buttons.html) // html
-			this.htmlBtn = toolBar.appendButton(this.onSource, true, RteEngine.IMAGES_FOLDER + "html.gif", "html view mode", "edit mode");
+			this.htmlBtn = toolBar.appendButton(this.onSource, true, RteEngine.IMAGES_FOLDER + "html.png", "html view mode", "edit mode");
 		
 		return toolBar;
 	}
