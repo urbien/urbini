@@ -139,6 +139,7 @@ Popup.getPopup = function (divId) {
 Popup.openAfterDelay = function (event, divId, offsetX, offsetY) {
   // alert('event.clientX: ' + event.clientX + ', offsetX: ' + offsetX + ',
   // divId: ' + divId);
+
   if ( (Popup.lastOpenTime   && (Popup.lastOpenTime  > Popup.delayedPopupOpenTime)) ||
        (Popup.lastClickTime  && (Popup.lastClickTime > Popup.delayedPopupOpenTime)) ||
        (keyPressedTime       && (keyPressedTime      > Popup.delayedPopupOpenTime))
@@ -407,10 +408,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       // fit tooltip height
       makeDivAutosize(self.div, true);
       // vary delay based on the amount of text user must read
-      var delay = self.contents.length / 35 * 1000;
+      var delay = Math.floor(self.contents.plainText().length / 35 * 1000);
       if (delay < 500) delay = 1000;
       else if (delay < 1000) delay = 2000;
-      self.delayedClose(delay);
+			self.delayedClose(delay);
     }
     else
       Popup.tooltipPopup = null;
@@ -2496,7 +2497,7 @@ function resizeWindow(event) {
 *********************************************************/
 var Tooltip = {
   TOOLTIP_ATTR : "tooltip",
-  PROCESSED_FLAG : "tooltip_processed",
+	tooltipDiv : null,
   init : function() {
 
 		// no need tooltips on touch devices.
@@ -2505,9 +2506,16 @@ var Tooltip = {
 		//if (Popup.penBased) // pen-based devices have problem with tooltips
     //  return;
 	  
+		if (Browser.ie) {
+			this.ifrRef = document.getElementById(iframeId);
+			if (!this.ifrRef) 
+				throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
+		}
+		
 		addEvent(document.body, "mouseover", this.onMouseOver, false);
 		addEvent(document.body, "mouseout", this.onMouseOut, false);
   },
+	
   onMouseOver : function(e) {
     var thisObj = Tooltip;
 
@@ -2516,15 +2524,20 @@ var Tooltip = {
       thisObj.processTooltip(target);
 
     var tooltipText = target.getAttribute(thisObj.TOOLTIP_ATTR);
-    var toShow = !(advancedTooltip.isShiftRequired() && !e.shiftKey);
-
-    if(tooltipText != null) {
-      if(toShow) { //  && Popup.allowTooltip()
-        thisObj.showTooltip(e, target, tooltipText);
-      }
-      else
-        thisObj.showInStatus(tooltipText);
+    if(!tooltipText) {
+			var parentA = target.parentNode;
+    	if (parentA && parentA.tagName.toLowerCase() == 'a')
+				tooltipText =  parentA.getAttribute(thisObj.TOOLTIP_ATTR);
+		}
+		if(!tooltipText)
+			return;
+		
+		var toShow = !(advancedTooltip.isShiftRequired() && !e.shiftKey);
+    if(toShow) { //  && Popup.allowTooltip()
+      thisObj.showTooltip(e, target, tooltipText);
     }
+    else
+      thisObj.showInStatus(tooltipText);
   },
 
   onMouseOut : function(e) {
@@ -2550,35 +2563,42 @@ var Tooltip = {
 
   processTooltip : function(obj) {
     var titleText = obj.title;
-    obj.title = '';
-    var parentA = obj.parentNode;
+		obj.removeAttribute("title");
+		var parentA = obj.parentNode;
     if (parentA && parentA.tagName.toLowerCase() == 'a') {
       if(titleText.length != 0)
         titleText += '<br><i><small>' + parentA.title + '</small></i>';
       else
        titleText = parentA.title;
-      parentA.title = '';
+			parentA.removeAttribute("title");
     }
-    if(titleText != null && titleText.length != 0)
+		
+		if(titleText != null && titleText.length != 0)
       obj.setAttribute(this.TOOLTIP_ATTR, titleText);
-    obj.setAttribute(this.PROCESSED_FLAG, "y");
   },
+	
   isProcessed : function(obj) {
-    return (obj.getAttribute(this.PROCESSED_FLAG) != null);
+		var titleText = obj.title;
+		return (titleText == null || titleText.length == 0);
   },
   showTooltip : function(e, target, tooltipText) {
     var divId    = 'system_tooltip';
     var iframeId = 'tooltipIframe';
-    var tooltipDiv = document.getElementById(divId);
-    if (!tooltipDiv) {
+		if ($t.tooltipDiv == null) {
+			$t.tooltipDiv = document.getElementById(divId);
+		}
+    if (!$t.tooltipDiv) {
       return false; // in FF for some reason if page not fully loaded this div is
                     // not yet defined
     }
-    var ifrRef = document.getElementById(iframeId);
-    if (!ifrRef)
-      throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
-		Popup.open(e, divId, target, ifrRef, 5, 15, 1000, tooltipText); // open with
+		// stop close timeout if tooltip was already opened
+		if ($t.tooltipDiv.style.display != 'none' && Popup.closeTimeoutId != null) {
+			clearTimeout(Popup.closeTimeoutId);
+		}
+		
+		Popup.open(e, divId, target, $t.ifrRef, 5, 15, 1000, tooltipText); // open with delay
   },
+	
   showInStatus : function(tooltipText) {
     var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
     window.status = plainTooltipText;
@@ -8949,6 +8969,7 @@ function switchMenuMode(e, userUri) {
 
 /*******************************************************
 * Dashboard
+* (see WidgetRefresher too)
 ********************************************************/
 var Dashboard = {
   MIN_COLUMN_WIDTH : 50,
