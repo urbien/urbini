@@ -1794,7 +1794,7 @@ td.pBGr { background-color: #eeeeee;
 .dsk_auto_complete .menuItem, .dsk_auto_complete .not_found { min-width: 460px; }
 
 /* RTE and styles editor */
-.ctrl_toolbar { position : relative; display: block; left: 0px; top: 0px; width: 100%; border-width: 0px;
+.ctrl_toolbar { position : relative; display: block; left: 0px; top: 0px; width: 100%; border-width: 0px; cursor: default;
     background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_1_rgb];, 0.5), rgba(&[PrimaryColor_4_rgb];, 0.5));
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb];, 0.5)), to(rgba(&[PrimaryColor_4_rgb];, 0.5)));
     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
