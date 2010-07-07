@@ -255,7 +255,7 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 	
 	this.disable = function() {
 		changeOpacity(this.div, 0.3);
-		this.div.style.cursor = "";
+		this.div.style.cursor = "default";
 		this.isDisabled = true;  
 	}
 	// mouse handlers ---------------	
@@ -967,7 +967,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 	this.height = 0;
 	
 	// "overflow" --
-	var OVF_ICON_WIDTH = 10;
+	var OVF_ICON_WIDTH = 24;
 	var OVF_POPUP_COL = 4;
 	var OVF_BTN_TITLE = "more options";
 	this.overflowBtn = null;
@@ -1125,7 +1125,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 	this.prepareToOverflow = function() {
 		var idx = this.controlsArr.length;
 		var left = lastBtnEdge + BTN_GAP;
-		var icon = "images/wysiwyg/overflow.gif";
+		var icon = "images/wysiwyg/overflow.png";
 		// 1. create overflow button
 		this.overflowBtn = new ToolbarButton(idx, this.showOverflowPopup, false, icon, OVF_ICON_WIDTH, left, TOP_PADDING, this, OVF_BTN_TITLE);
 		this.div.appendChild(this.overflowBtn.div);
@@ -1180,7 +1180,6 @@ var PopupHandler = {
 	// hotspot is a control object
 	// onHideCallback - not required
 	showRelatively : function(hotspot, alignment, div, autohide, parentDlg, onHideCallback) {
-//debugger
 		var OFFSET_Y = 2;
 		// only 1 popup can be opened concurrently, except the overflow popup
 		if(this.popupDiv != null)
