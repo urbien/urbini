@@ -34,9 +34,14 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
   this.sizeBtn = null;
   this.sizePopup = null;
 
-	this.borderApplyToList = null;
-	this.borderWidthList = null;
-	this.borderStyleList = null;
+  this.borderApplyToBtn = null;
+  this.borderApplyToPopup = null;
+
+  this.borderWidthBtn = null;
+  this.borderWidthPopup = null;
+
+  this.borderStyleBtn = null;
+  this.borderStylePopup = null;
 
 	this.fontPaletteDiv = null;
 	this.backgroundPaletteDiv = null;
@@ -46,6 +51,7 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 	
 	this.fontClrBtn = null;
 	this.bgClrBtn = null;
+	this.clearBtn = null;
 	this.borderClrBtn = null;
 
 	// create
@@ -64,28 +70,44 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		if (oldToolbar != null)
 			oldToolbar.parentNode.removeChild(oldToolbar);
 		
-		toolBar = new Toolbar(parentDiv, this, 18, true);
+		toolBar = new Toolbar(parentDiv, this, 32, true);
 		// 3. create the toolbar's control objects.
 
 		// font family
-		this.fontBtn = toolBar.appendButton(this.onFontFamily, false, IMAGES_FOLDER + "font.gif", "font");
-		this.sizeBtn = toolBar.appendButton(this.onFontSize, false, IMAGES_FOLDER + "size.gif", "size");
+		this.fontBtn = toolBar.appendButton(this.onFontFamily, false, IMAGES_FOLDER + "font.png", "font");
+		this.sizeBtn = toolBar.appendButton(this.onFontSize, false, IMAGES_FOLDER + "size.png", "size");
 
 		// bold
-		var boldBtn = toolBar.appendButton(this.onBoldBtn, true, IMAGES_FOLDER + "bold.gif", "bold");
+		var boldBtn = toolBar.appendButton(this.onBoldBtn, true, IMAGES_FOLDER + "bold.png", "bold");
 		if(sampleDiv.style.fontWeight.toLowerCase() == "bold")
 			boldBtn.pressToggleButton()
 		// italic
-		var italicBtn = toolBar.appendButton(this.onItalicBtn, true, IMAGES_FOLDER + "italic.gif", "italic");
+		var italicBtn = toolBar.appendButton(this.onItalicBtn, true, IMAGES_FOLDER + "italic.png", "italic");
 		if(sampleDiv.style.fontStyle.toLowerCase() == "italic")
 			italicBtn.pressToggleButton()
 
 		// font color //
-		this.fontClrBtn = toolBar.appendButton(this.onFontColor, false, IMAGES_FOLDER + "font_color.gif", "font color");
+		this.fontClrBtn = toolBar.appendButton(this.onFontColor, false, IMAGES_FOLDER + "font_color.png", "font color");
 		// background color
-		this.bgClrBtn = toolBar.appendButton(this.onBackgroundColor, false, IMAGES_FOLDER + "background_color.gif", "background color");
+		this.bgClrBtn = toolBar.appendButton(this.onBackgroundColor, false, IMAGES_FOLDER + "background_color.png", "background color");
+	
 		// border apply to
-		this.borderApplyToList = this.createBorderApplyTo(toolBar);
+		this.borderApplyToBtn = toolBar.appendButton(this.onBorderApplyTo, false, IMAGES_FOLDER + "border_apply_to.png", "border: apply to");
+		
+		// border width
+		this.borderWidthBtn = toolBar.appendButton(this.onBorderWidth, false, IMAGES_FOLDER + "border_width.png", "border width");
+		// border style
+		this.borderStyleBtn = toolBar.appendButton(this.onBorderStyle, false, IMAGES_FOLDER + "border_style.png", "border style");
+		
+		// border color
+		this.borderClrBtn = toolBar.appendButton(this.onBorderColor, false, IMAGES_FOLDER + "border_color.png", "border color");
+		
+		// CSS view
+		//var styleViewBtn = toolBar.appendButton(this.onStyleView, true, IMAGES_FOLDER + "properties.gif", "CSS view");
+
+		// clear style
+		this.clearBtn = toolBar.appendButton(this.onClear, false, IMAGES_FOLDER + "clear.png", "clear style");
+
 
 		this.centeringSampleDiv();
 	}
@@ -107,6 +129,7 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		return div;
 	}
 	
+	// launch popups ---
 	this.launchFontFamilyPopup = function(btnObj, callback) {
 		if(this.fontPopup == null)
 			this.createFontPopup();
@@ -121,6 +144,30 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		this.sizePopup.show(btnObj, 'left', callback, parentDlg);
 		return this.sizePopup.div;
 	}
+	
+	this.launchBorderApplyToPopup = function(btnObj, callback) {
+		if(this.borderApplyToPopup == null)
+			this.createBorderApplyToPopup();
+		var parentDlg = getParentDialog(btnObj.div);
+		this.borderApplyToPopup.show(btnObj, 'left', callback, parentDlg);
+		return this.borderApplyToPopup.div;
+	}
+	this.launchBorderWidthPopup = function(btnObj, callback) {
+		if(this.borderWidthPopup == null)
+			this.createBorderWidthPopup();
+		var parentDlg = getParentDialog(btnObj.div);
+		this.borderWidthPopup.show(btnObj, 'left', callback, parentDlg);
+		return this.borderWidthPopup.div;
+	}
+	this.launchBorderStylePopup = function(btnObj, callback) {
+		if(this.borderStylePopup == null)
+			this.createBorderStylePopup();
+		var parentDlg = getParentDialog(btnObj.div);
+		this.borderStylePopup.show(btnObj, 'left', callback, parentDlg);
+		return this.borderStylePopup.div;
+	}
+	
+	// create popups ---
 	this.createFontPopup = function() {
 		this.fontPopup = new MyDropdownList();
 		var len = FONT.length;
@@ -143,74 +190,60 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		this.sizePopup.setWidth(50);
 	}
 	
-	// border
-	this.createBorderApplyTo = function(toolBar) {
-   	var BORDER_FIELD_WIDTH = 60;
-  	var ddList = toolBar.appendDropdownList(BORDER_FIELD_WIDTH, "border:", this.onBorderApplyTo);
-		
+	// border apply to
+	
+	this.createBorderApplyToPopup = function(toolBar) {
+		this.borderApplyToPopup = new MyDropdownList();
 		for(var i = 0; i < BORDER_APPLY_TO.length; i++) {
-			var divTmp = document.createElement('div');
-			divTmp.innerHTML = BORDER_APPLY_TO[i].name;
-			ddList.appendItem(divTmp);
+			var itemDiv = document.createElement('div');
+			itemDiv.innerHTML = BORDER_APPLY_TO[i].name;;
+			this.borderApplyToPopup.appendItem(itemDiv);
 		}
+		this.borderApplyToPopup.setWidth(50);
 		
-		// set current item in the list
-		ddList.setSelectedItem(this.borderDesc.applyToIdx);
-		return ddList;
   }
-  // border width (1)
-	this.createBorderWidthList = function(toolBar) {
-		var BORDER_FIELD_WIDTH = 60;
-		var ddList = toolBar.appendDropdownList(BORDER_FIELD_WIDTH, "width:", this.onBorderWidth);
+	
+  // border width
+	this.createBorderWidthPopup = function(toolBar) {
+		this.borderWidthPopup = new MyDropdownList();
 		var innerStr;
 		for(var i = 0; i < BORDER_WIDTH.length; i++) {
-			var divTmp = document.createElement('div');
-			  if(BORDER_WIDTH[i].value != "") {
+			var itemDiv = document.createElement('div');
+			if(BORDER_WIDTH[i].value != "") {
 			  innerStr = "<div style='width:99% height:0; border-style:solid; border-width:0; border-bottom-width:"
 				  + BORDER_WIDTH[i].name + ";'></div>";
-			  divTmp.style.paddingTop = divTmp.style.paddingBottom = 8;
+			  itemDiv.style.paddingTop = itemDiv.style.paddingBottom = 8;
       }
       else
         innerStr = BORDER_WIDTH[i].name;
-			divTmp.innerHTML = innerStr;
-			ddList.appendItem(divTmp);
-		}
-		// set current item in the list
-		var curIdx = this.getMemberArrayIdx(BORDER_WIDTH, this.borderDesc.width);
-		if(curIdx != null)
-			ddList.setSelectedItem(curIdx);
-		else
-			ddList.setSelectedItem(0);
 
-		return ddList;
-	}
-  // border style (2)
-	this.createBorderStyleList = function(toolBar) {
-		var BORDER_FIELD_WIDTH = 60;
-		var ddList = toolBar.appendDropdownList(BORDER_FIELD_WIDTH, "style:", this.onBorderStyle);
+			itemDiv.innerHTML = innerStr;
+			this.borderWidthPopup.appendItem(itemDiv);
+		}
+		this.borderWidthPopup.setWidth(50);
+		
+  }
+	
+	
+  // border style
+	this.createBorderStylePopup = function(toolBar) {
+		this.borderStylePopup = new MyDropdownList();
 		for(var i = 0; i < BORDER_STYLE.length; i++) {
-			var divTmp = document.createElement('div');
-			var divInnerTmp = document.createElement('div');
-			var style = divTmp.style;
-			
+			var itemDiv = document.createElement('div');
+			var style = itemDiv.style;
+		
 			style.borderStyle = BORDER_STYLE[i].value;
 			style.width = 50;
 			style.height = 12;
 			style.borderWidth = 2;
 			style.marginTop = 2;
-			  
-			ddList.appendItem(divTmp);
+			this.borderStylePopup.appendItem(itemDiv);
 		}
-		// set current item in the list
-		var curIdx = this.getMemberArrayIdx(BORDER_STYLE, this.borderDesc.style);
-		if(curIdx != null)
-			ddList.setSelectedItem(curIdx);
-		else
-		  ddList.setSelectedItem(2);
-
-		return ddList;
-	}
-
+		this.borderStylePopup.setWidth(50);
+		
+  }
+	
+	
 	this.centeringSampleDiv = function() {
 		// different sample centering on styleViewDiv option.
 		if(styleViewDiv.style.visibility == "hidden") {
@@ -378,8 +411,48 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		PalettePopup.show(i_am.bgClrBtn, 'right', i_am.setBackgroundColor, parentDlg, "default");
 	}
 	
+	
+	this.onBorderApplyTo = function() {
+		i_am.launchBorderApplyToPopup(i_am.borderApplyToBtn, i_am.setBorderApplyTo);
+	}
+	this.onBorderWidth = function() {
+		i_am.launchBorderWidthPopup(i_am.borderWidthBtn, i_am.setBorderWidth);
+	}
+	this.onBorderStyle = function() {
+		i_am.launchBorderStylePopup(i_am.borderStyleBtn, i_am.setBorderStyle);
+	}
+	
+	
+	
+	this.onClear = function() {
+			// 1. font family
+		if(sampleDiv.style.fontFamily != "")
+		  sampleDiv.style.fontFamily = "";
+		// 2. font size
+		if(sampleDiv.style.fontSize != "")
+		  sampleDiv.style.fontSize = "";
+		// 3. bold
+		if(sampleDiv.style.fontWeight != "")
+		  sampleDiv.style.fontWeight = "";
+		// 4. italic
+		if(sampleDiv.style.fontStyle != "")
+		  sampleDiv.style.fontStyle = "";
+		// 5. font color
+		if(sampleDiv.style.color != "")
+		  sampleDiv.style.color = "";
+		// 6. background color
+		if(sampleDiv.style.backgroundColor != "")
+		  sampleDiv.style.backgroundColor = "";
+		// border
+		if(sampleDiv.style.border.length != "") 
+			sampleDiv.style.border = "";
+		
+		i_am.centeringSampleDiv();
+		i_am.putStyleStr();
+  }
+	
   // borders --
-  this.onBorderApplyTo = function(applyToIdx) {
+  this.setBorderApplyTo = function(applyToIdx) {
     // switch borders controls only if none ("0") involved.
     var toswitchBorderCtrls = false;
     if(i_am.borderDesc.applyToIdx == 0 || applyToIdx == 0)
@@ -391,17 +464,19 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
     if(toswitchBorderCtrls)
       i_am.switchBorderCtrls();
   }
-  
+	
   this.switchBorderCtrls = function() {
+	// not used in current version	
+//debugger;
     applyToIdx = this.borderDesc.applyToIdx;
-    if(this.borderApplyToList != null) {
-	    var ctrl = this.borderApplyToList;
+    if(this.borderApplyToBtn != null) {
+	    var ctrl = this.borderApplyToBtn;
  	    // 1) width 2) style 3) brd clr
  	    for(var i = 0; i < 3; i++) {
 	      ctrl = toolBar.getNextControlObj(ctrl);
  	      if(ctrl == null)
  	        break;
-      
+     
         if(BORDER_APPLY_TO[applyToIdx].valueScr == "")
 	        ctrl.disable();
 	      else
@@ -412,12 +487,12 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
   }   
 
   // border width:
-	this.onBorderWidth = function(widthIdx) {
+	this.setBorderWidth = function(widthIdx) {
 		i_am.borderDesc.width = BORDER_WIDTH[widthIdx].value;
 		i_am._setBorders();
 	}
 	// border style
-	this.onBorderStyle = function(styleIdx) {
+	this.setBorderStyle = function(styleIdx) {
 		i_am.borderDesc.style = BORDER_STYLE[styleIdx].value;
 		i_am._setBorders();
 	}
