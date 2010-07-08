@@ -382,10 +382,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.offsetX = offsetX; // save position at which we have opened last time
     self.offsetY = offsetY;
     Popup.lastOpenTime = new Date().getTime();  // mark when we opened this popup
-    if (Popup.openTimeoutId) {                  // clear any delayed popup open
+    
+	if (Popup.openTimeoutId) {                  // clear any delayed popup open
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
+		
     if (self.isTooltip()) {
       self.setInnerHtml(self.contents);
     }
@@ -411,6 +413,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       var delay = Math.floor(self.contents.plainText().length / 35 * 1000);
       if (delay < 500) delay = 1000;
       else if (delay < 1000) delay = 2000;
+		
 			self.delayedClose(delay);
     }
     else
@@ -437,16 +440,13 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     // detected re-entering into the popup - thus clear a delayed close
     self.delayedCloseIssued = false;
-    if (self.closeTimeoutId != null) {
-      clearTimeout(self.closeTimeoutId);
-      self.closeTimeoutId = null;
-    }
+	var clonedEvent = cloneEvent(event);
 
     if (Popup.openTimeoutId) {                  // clear any prior delayed popup open
       clearTimeout(Popup.openTimeoutId);
       Popup.openTimeoutId = null;
     }
-    var clonedEvent = cloneEvent(event);
+    
     Popup.openTimeoutId = setTimeout(function () {Popup.openAfterDelay(clonedEvent, self.div.id, offsetX, offsetY)}, delay);
     Popup.delayedPopup = self;
   }
@@ -475,7 +475,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     
     if (divStyle.display == "inline") {
       self.setInvisible();
-      self.closeTimeoutId = null;
     }
     self.unsetCurrentDiv();
   }
@@ -492,8 +491,12 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (timeout == null)
       timeout = 600;
     self.delayedCloseIssued = true;
-    self.closeTimeoutId = setTimeout(function() {Popup.delayedClose1(divId)}, timeout);
-  }
+
+		if (Popup.closeTimeoutId != null)
+			clearTimeout(Popup.closeTimeoutId);
+
+    Popup.closeTimeoutId = setTimeout(function() {Popup.delayedClose1(divId)}, timeout);
+	}
 
   /**
    * Intercept events generated within the popup
@@ -2507,13 +2510,13 @@ var Tooltip = {
     //  return;
 	  
 		if (Browser.ie) {
-			this.ifrRef = document.getElementById(iframeId);
+			this.ifrRef = document.getElementById('tooltipIframe');
 			if (!this.ifrRef) 
 				throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
 		}
 		
 		addEvent(document.body, "mouseover", this.onMouseOver, false);
-		addEvent(document.body, "mouseout", this.onMouseOut, false);
+		// addEvent(document.body, "mouseout", this.onMouseOut, false);
   },
 	
   onMouseOver : function(e) {
@@ -2529,6 +2532,7 @@ var Tooltip = {
     	if (parentA && parentA.tagName.toLowerCase() == 'a')
 				tooltipText =  parentA.getAttribute(thisObj.TOOLTIP_ATTR);
 		}
+		
 		if(!tooltipText)
 			return;
 		
@@ -2539,7 +2543,7 @@ var Tooltip = {
     else
       thisObj.showInStatus(tooltipText);
   },
-
+/*
   onMouseOut : function(e) {
     if (typeof getDocumentEvent == 'undefined') return;
     e = getDocumentEvent(e); if (!e) return;
@@ -2560,17 +2564,17 @@ var Tooltip = {
 		window.status = "";
     return stopEventPropagation(e);
   },
-
+*/
   processTooltip : function(obj) {
     var titleText = obj.title;
-		obj.removeAttribute("title");
+		obj.title = "";
 		var parentA = obj.parentNode;
     if (parentA && parentA.tagName.toLowerCase() == 'a') {
       if(titleText.length != 0)
         titleText += '<br><i><small>' + parentA.title + '</small></i>';
       else
        titleText = parentA.title;
-			parentA.removeAttribute("title");
+			parentA.title = ""; 
     }
 		
 		if(titleText != null && titleText.length != 0)
@@ -2583,34 +2587,27 @@ var Tooltip = {
   },
   showTooltip : function(e, target, tooltipText) {
     var divId    = 'system_tooltip';
-    var iframeId = 'tooltipIframe';
-		if ($t.tooltipDiv == null) {
-			$t.tooltipDiv = document.getElementById(divId);
+    if (this.tooltipDiv == null) {
+			this.tooltipDiv = document.getElementById(divId);
 		}
-    if (!$t.tooltipDiv) {
+    if (!this.tooltipDiv) {
       return false; // in FF for some reason if page not fully loaded this div is
                     // not yet defined
     }
-		// stop close timeout if tooltip was already opened
-		if ($t.tooltipDiv.style.display != 'none' && Popup.closeTimeoutId != null) {
-			clearTimeout(Popup.closeTimeoutId);
-		}
+	Popup.open(e, divId, target, this.ifrRef, 5, 15, 1000, tooltipText); // open with delay
 		
-		Popup.open(e, divId, target, $t.ifrRef, 5, 15, 1000, tooltipText); // open with delay
   },
 	
   showInStatus : function(tooltipText) {
     var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
     window.status = plainTooltipText;
-  },
-  closeTooltip : function() {
-    if(Popup.tooltipPopup != null)
-      Popup.tooltipPopup.close();
-    if(Popup.openTimeoutId != null) {
-      clearTimeout(Popup.openTimeoutId);
-      Popup.openTimeoutId = null;
-    }
   }
+//  closeTooltip : function() {
+//    if(Popup.tooltipPopup != null)
+//      Popup.tooltipPopup.close();
+//
+//		window.status = "";
+//  }
 }
 
 
@@ -7283,11 +7280,9 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       zIndex = z;
   }
 	
-	zIndex += 2;
+	if (div.id != "system_tooltip")
+		zIndex += 2;
   
-	if (div.id == "system_tooltip") // tooltip should be higher
-		zIndex++;
-	
 	div.style.zIndex = zIndex;
 
   if (Browser.lt_ie7) {
@@ -11051,7 +11046,7 @@ var CheckButtonMgr = {
 
   _switchState : function(btn, input) {
     var xPos = getElementStyle(btn).backgroundPosition;
-    var isChecked = (xPos.length != 0 && xPos.indexOf("0") != 0);
+    var isChecked = (xPos && xPos.length != 0 && xPos.indexOf("0") != 0);
     this.setState(btn, input, !isChecked);
   },
 
