@@ -1300,7 +1300,8 @@ TD.closePopup {
 
 #system_tooltip { visibility:hidden; padding:0; position:absolute; z-index:10000; width: 220px; }
 #tt_inner { background: &[PrimaryColor_4];; position: relative; }
-#system_tooltip #content { padding: 15px; color: &[PrimaryColor_3];; font-family: helvetica, arial, sans-serif; font-size: 14px; }
+#system_tooltip .content_td { border: solid &[PrimaryColor_1]; 1px; }
+#system_tooltip #content { overflow: hidden; padding: 15px; color: &[PrimaryColor_3];; font-family: helvetica, arial, sans-serif; font-size: 14px; }
 .system_tooltip_css3 {
 	box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3); 
   -webkit-box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3); 
@@ -1309,7 +1310,9 @@ TD.closePopup {
   -webkit-border-radius: 5px; 
   -moz-border-radius: 5px;
   background: &[PrimaryColor_4];;
+  border: solid &[PrimaryColor_1]; 1px;
 }
+.system_tooltip_css3 #content { padding: 5px 20px 20px 5px !important; }
 .system_tooltip_css3 #tt_inner { background: transparent; }
 
 .print {color:#000000;}
