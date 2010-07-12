@@ -127,8 +127,9 @@ input[type=button], input[type=submit], .button {
 	background-color: &[PrimaryColor_1];;
 	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_4];)
-
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_4];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_4];)";
+  
   /* cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ */
   display: -moz-inline-stack;
   display: inline-block;
@@ -162,7 +163,8 @@ input[type=submit]:hover,
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_1];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_1];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];)
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];)";
 }
 
 input[type=button]:active, input[type=submit]:active, .button:active	{ 
@@ -171,8 +173,9 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
 	background-color: &[PrimaryColor_1];;
 	background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
-
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
+  
           box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
      -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7); 
   -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
@@ -428,6 +431,7 @@ tr.total  {
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
   color: &[Alternative_A];; 
   font-weight:bold;
 }
@@ -1417,6 +1421,11 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   min-width: 300px;
   max-width: 500px;
 }
+#siteResourceList .widget .panel_block {
+	position: static;
+	visibility: visible;
+	width: 100%;
+}
 
 #common_filter { width: 50%; min-width: 20em; max-width: 30em }
 #fts_filter { width: auto; min-width: 150px;  overflow: visible; }
@@ -1443,6 +1452,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
     background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];)); 
     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)";
  }
 /*.panel_block .header td { width: 100%; }*/ 
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
@@ -1455,7 +1465,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #subscribe .content { display: none; }
 
 .rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px;
-										box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); -moz-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); border: solid &[PrimaryColor_1]; 1px; empty-cells:show; color: &[PrimaryColor_4_text];; }
+										/*box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); -moz-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);*/ border: solid &[PrimaryColor_1]; 1px; empty-cells:show; color: &[PrimaryColor_4_text];; }
 /* the following rules required while item-rows highlighting */
 .rounded_rect_tbl tr:first-child td:first-child { border-radius: 10px 0px 0px 0px; -moz-border-radius: 10px 0px 0px 0px; -webkit-border-radius: 10px 0px 0px 0px; }
 .rounded_rect_tbl tr:first-child td:last-child { border-radius: 0px 10px 0px 0px; -moz-border-radius: 0px 10px 0px 0px; -webkit-border-radius: 0px 10px 0px 0px; }
@@ -1477,7 +1487,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
 }
 .changeViewCols td.dashboard_btn:hover {  
 	border-left-color: &[PrimaryColor_5];;
@@ -1569,7 +1580,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   border: none;
 }
 
-.frame, #siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel, #pane2 .content { 
+.frame, #siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel, #pane2 .content, #siteResourceList .widget .frame { 
 	background-color: &[PrimaryColor_4];;
 	background-image: url(../images/skin/iphone/pinstripes.png);
 	background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_1]; 0px, &[PrimaryColor_4]; 4px);
@@ -1643,7 +1654,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   -webkit-box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
   
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];);
-
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];)";
+  
   width: 28px;
   height: 28px;
   margin-top:2px;
@@ -1765,7 +1777,8 @@ td.pBGr { background-color: #eeeeee;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
-
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
+  
   color: &[Alternative_A];;
   height: 2em;
 }
@@ -1800,7 +1813,8 @@ td.pBGr { background-color: #eeeeee;
 .ctrl_toolbar { position : relative; display: block; left: 0px; top: 0px; width: 100%; border-width: 0px; cursor: default;
     background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_1_rgb];, 0.5), rgba(&[PrimaryColor_4_rgb];, 0.5));
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb];, 0.5)), to(rgba(&[PrimaryColor_4_rgb];, 0.5)));
-    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)
+    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
 }
 .ctrl_toolbar_dlg { visibility: hidden; position: absolute;	background-color: &[BackgroundColor];; color: &[Label];; border: 1px solid &[PrimaryColor_1];; padding: 5px; }
 
@@ -1810,6 +1824,7 @@ tr.grey_highlighting > td, * html tr.grey_highlighting td, .ctrl_toolbar_dlg .gr
   background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_1_rgb];, 0.5), &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb];, 0.5)), to(&[PrimaryColor_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=&[PrimaryColor_4];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=&[PrimaryColor_4];)";
 }
 .rounded_rect_tbl .grey_highlighting .label { color: &[Label];; }
 
@@ -1818,13 +1833,15 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 	background-color: &[SecondaryColorA_4];;
   background-image: -moz-linear-gradient(top center, &[SecondaryColorA_1];, &[SecondaryColorA_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[SecondaryColorA_1];), to(&[SecondaryColorA_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[SecondaryColorA_1];,endColorstr=&[SecondaryColorA_4];)
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[SecondaryColorA_1];,endColorstr=&[SecondaryColorA_4];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[SecondaryColorA_1];,endColorstr=&[SecondaryColorA_4];)";
 }
 
 * html tr.grey_highlighting table td, * html tr.blue_highlighting table td  {
 	background-color: transparent;
 	background-image: transparent;
 	#filter: none;
+	-ms-filter: none;
 }
 
 .rounded_rect_tbl .blue_highlighting .label, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[Label];; }
