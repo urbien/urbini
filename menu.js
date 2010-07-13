@@ -492,10 +492,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       timeout = 600;
     self.delayedCloseIssued = true;
 
-		if (Popup.closeTimeoutId != null)
-			clearTimeout(Popup.closeTimeoutId);
+		if (self.closeTimeoutId != null)
+			clearTimeout(self.closeTimeoutId);
 
-    Popup.closeTimeoutId = setTimeout(function() {Popup.delayedClose1(divId)}, timeout);
+    self.closeTimeoutId = setTimeout(function() {Popup.delayedClose1(divId)}, timeout);
 	}
 
   /**
@@ -8622,9 +8622,11 @@ var advancedTooltip = {
 
     this.initialized = true;
   },
-  onOptionsBtn : function() {
+  onOptionsBtn : function(e) {
     if (Browser.mobile)
       return;
+		
+		stopEventPropagation(e);
 
 		var msg = this.isShiftRequired() ? "show tooltips always" : "show tooltips when shift pressed";
 		BrowserDialog.confirm(msg, this.onShiftPrefChange);
@@ -8650,6 +8652,7 @@ var advancedTooltip = {
 
     if(!this.tooltip)
       this.init();
+
     if (this.optBtn.obj)
       this.optBtn.obj.style.display = "none";
   },
@@ -9821,7 +9824,6 @@ var WidgetRefresher = {
 				if (children[n].className && children[n].className == "widget") {
 					var refreshDiv = getChildByClassName(children[n], "refresh");
 					
-					// debugger;
 					if (i==0 && n==0)
 						this.setInterval(children[n], "10");
 					
