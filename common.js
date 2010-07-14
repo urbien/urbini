@@ -1737,6 +1737,10 @@ function setCaretPosition(elem, caretPos) {
         }
     }
 }
-
+function deselectField(field) {
+	var tmp = field.value;
+	field.value = "";
+	field.value = tmp;
+}
 // flag that common.js was parsed
 g_loadedJsFiles["common.js"] = true;
