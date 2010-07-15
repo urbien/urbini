@@ -2077,12 +2077,23 @@ var FormProcessor = {
 	// Touch UI ---------------
 	MIN_INPUT_WIDTH : 30,
   initForTouchUI : function(parent) {
+		
 		// "rightPanelPropertySheet" is a filter init it as a filter.
 		// It happens with on_page filter
 		if (parent.name ==	"rightPanelPropertySheet") {
 			var panelBlock = getAncestorByClassName(parent, "panel_block");
 			Filter.initFilter(panelBlock);
 			return;
+		}
+		// "tablePropertyList" is Data Entry. Init Selector and Text entry fields.
+		else if (parent.name.indexOf("tablePropertyList") != -1) {
+			var panelBlock = getAncestorByClassName(parent, "panel_block");
+			if (panelBlock) {
+				var itemSelector = getChildById(panelBlock, "item_selector");
+				FieldsWithEmptyValue.initField(itemSelector, 'select');
+				var textEntry = getChildById(panelBlock, "text_entry");
+				FieldsWithEmptyValue.initField(textEntry, 'select')
+			}
 		}
 
 		// substitute checkboxes with own drawn ones.
@@ -7731,8 +7742,6 @@ var FtsAutocomplete = {
 
 		this.autocompleteDiv.style.display = "none";
 	}
-
-	
 }
 
 // like "search" fields
@@ -7745,7 +7754,7 @@ var FieldsWithEmptyValue = {
   initField : function(field, emptyValue, forceInit) {
 		if (!field)
       return;
-		
+
 	  var fieldId;
 
     // field parameter is id
