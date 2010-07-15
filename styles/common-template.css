@@ -1474,7 +1474,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl #front {background-color: &[BackgroundColor];}
 
-.rounded_rect_tbl .param_tr { cursor: pointer; }
+#common_filter .param_tr { cursor: pointer; }
 
 .rounded_rect_tbl .param_tr .rollup_td { cursor: text; }
 .rounded_rect_tbl .param_tr .rollup_td img { margin: 2px; }
@@ -1550,7 +1550,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   font-weight: 600;
 }
 
-.rounded_rect_tbl td, #siteResourceList .rounded_rect_tbl td { border-bottom: 1px solid #999999; height: 40px; /*padding-bottom: 5px; padding-top: 3px;*/ vertical-align: middle; }
+.rounded_rect_tbl td, #siteResourceList .rounded_rect_tbl td { height: 40px; vertical-align: middle; }
+.rounded_rect_tbl td { border-bottom: solid &[PrimaryColor_1]; 1px; }
 #pane2 .rounded_rect_tbl td { border-bottom: none; }
 #pane2 #dashboard td { vertical-align: top; }
 
