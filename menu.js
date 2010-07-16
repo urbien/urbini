@@ -409,12 +409,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       Popup.tooltipPopup = self;
       // fit tooltip height
       makeDivAutosize(self.div, true);
-      // vary delay based on the amount of text user must read
-      var delay = Math.floor(self.contents.plainText().length / 35 * 1000);
-      if (delay < 500) delay = 1000;
-      else if (delay < 1000) delay = 2000;
-		
-			self.delayedClose(delay);
+      // call "delayedClose" onmouseout
     }
     else
       Popup.tooltipPopup = null;
@@ -2527,7 +2522,7 @@ var Tooltip = {
 		}
 		
 		addEvent(document.body, "mouseover", this.onMouseOver, false);
-		// addEvent(document.body, "mouseout", this.onMouseOut, false);
+		addEvent(document.body, "mouseout", this.onMouseOut, false);
   },
 	
   onMouseOver : function(e) {
@@ -2554,28 +2549,20 @@ var Tooltip = {
     else
       thisObj.showInStatus(tooltipText);
   },
-/*
-  onMouseOut : function(e) {
-    if (typeof getDocumentEvent == 'undefined') return;
-    e = getDocumentEvent(e); if (!e) return;
 
-    var target = getMouseOutTarget(e);
-    if (!target)
-      return true;
-			
-    var popup = Popup.getPopup('system_tooltip');
-    if (popup && popup.isOpen())
-      return true;
-			
-    if (Popup.delayedPopup && Popup.delayedPopup.isTooltip()) {
-      clearTimeout(Popup.openTimeoutId);
-      Popup.openTimeoutId = null;
-    }
+  onMouseOut : function(e) {
+		var popup = Popup.getPopup('system_tooltip');
+		if (!popup || !popup.isOpen())
+			return;
+	  var delay = Math.floor(popup.contents.plainText().length / 45 * 1000);
+    if (delay < 500) delay = 1000;
+    else if (delay < 1000) delay = 2000;
 		
+		popup.delayedClose(delay);
 		window.status = "";
-    return stopEventPropagation(e);
+//    return stopEventPropagation(e);
   },
-*/
+
   processTooltip : function(obj) {
     var titleText = obj.title;
 		obj.title = "";
@@ -2597,6 +2584,9 @@ var Tooltip = {
 		return (titleText == null || titleText.length == 0);
   },
   showTooltip : function(e, target, tooltipText) {
+		if (!tooltipText || tooltipText.plainText().trim().length == 0)
+			return;
+		
     var divId    = 'system_tooltip';
     if (this.tooltipDiv == null) {
 			this.tooltipDiv = document.getElementById(divId);
@@ -2605,8 +2595,8 @@ var Tooltip = {
       return false; // in FF for some reason if page not fully loaded this div is
                     // not yet defined
     }
-	Popup.open(e, divId, target, this.ifrRef, 5, 15, 1000, tooltipText); // open with delay
-		
+		Popup.open(e, divId, target, this.ifrRef, 5, 15, 1000, tooltipText); // open with delay
+
   },
 	
   showInStatus : function(tooltipText) {
@@ -4991,14 +4981,20 @@ var TouchDlgUtil = {
 		if (target.className && target.className.indexOf("pointer") == -1)
 			return;
 		
+		var panelBlock = getAncestorByClassName($t.greyTr, "panel_block");
+		if (!panelBlock)
+			return;
+		// embeded dialogs (in dashboard) do not handle Up and Down buttons to allow page scrolling.
+		var isEmbeded = getElementStyle(panelBlock).position == "static";
+		
 		var passToTr = null;
-		if (code == 40) { // down
+		if (code == 40 && !isEmbeded) { // down
 			passToTr = getNextSibling($t.greyTr);
 			if (!passToTr)
 				passToTr = getFirstChild($t.greyTr.parentNode);
 		//	passToTr.scrollIntoView(false);	
 		}
-		else if (code == 38) { //	up
+		else if (code == 38 && !isEmbeded) { //	up
 			passToTr = getPreviousSibling($t.greyTr);
 			if (!passToTr)
 				passToTr = getLastChild($t.greyTr.parentNode);
@@ -7283,18 +7279,6 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 // set div size!
 ////  div.style.width  = divCoords.width;
 ////  div.style.height = divCoords.height;
-
-  var zIndex = 1;
-  if (hotspot && hotspot.style) {
-    var z = hotspot.style.zIndex; // this relative zIndex allows stacking popups on top of each other
-    if (z != null && z != '')
-      zIndex = z;
-  }
-	
-	if (div.id != "system_tooltip")
-		zIndex += 2;
-  
-	div.style.zIndex = zIndex;
 
   if (Browser.lt_ie7) {
     // for listboxes in Dialog - makes iframe under a listbox.
