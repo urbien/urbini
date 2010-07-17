@@ -1151,9 +1151,8 @@ TD.toolbar {
   font-weight:bold;
 }
 
-.menuItemChart {
-  PADDING-RIGHT: 0px;	width: 10px; color: &[Alternative_A];;
-}
+.menuItemChart { PADDING-RIGHT: 0px;	width: 10px; color: &[Alternative_A];; }
+#common_filter .menuItemChart table td { height: auto; border-radius: 0px; -moz-border-radius: 0px; -webkit-border-radius: 0px; }
 
 .menuItemReset { margin-left: 6px; white-space: nowrap; font-size: 16px; FONT-WEIGHT: bold; vertical-align: middle; }
 .menuItemReset a { width: 95%; }
@@ -1851,3 +1850,5 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .rounded_rect_tbl .focused_field, .iphone_field .focused_field, .focused_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.2); }
 
 .widget .dragable h2 { margin-bottom: 0px; font-size: 17px; } 
+.widget .containers h2 { margin: 5px 0px 0px 5px; }
+.widget .containers h2 a { font-size: 19px; padding: 0px; }
