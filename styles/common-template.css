@@ -188,7 +188,7 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
   }
 }
 .button div { float: left; }
-.btn_with_icon, a.btn_with_icon { padding: 0px 3px 0px 10px; }
+.btn_with_icon, a.btn_with_icon, .btn_with_icon:active, a.btn_with_icon:active { padding: 0px 3px 0px 10px; }
 .btn_with_symbol, a.btn_with_symbol { font-size: 18px; padding: 0px 7px 2px 7px; }
 
 /*********************** end of new buttons  *****************************/
@@ -1826,7 +1826,7 @@ tr.grey_highlighting > td, * html tr.grey_highlighting td, .ctrl_toolbar_dlg .gr
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=&[PrimaryColor_4];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=&[PrimaryColor_4];)";
 }
-.rounded_rect_tbl .grey_highlighting .label { color: &[Label];; }
+.rounded_rect_tbl .grey_highlighting .label, .rounded_rect_tbl .grey_highlighting .propLabel1 { color: &[Label];; }
 
 tr.blue_highlighting > td, * html tr.blue_highlighting td {
 	color: &[Label];;
@@ -1844,7 +1844,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 	-ms-filter: none;
 }
 
-.rounded_rect_tbl .blue_highlighting .label, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[Label];; }
+.rounded_rect_tbl .blue_highlighting .label.rounded_rect_tbl .blue_highlighting .propLabel1, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[Label];; }
 
 .rounded_rect_tbl .empty_field, .iphone_field .empty_field, .empty_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.4);}
 .rounded_rect_tbl .focused_field, .iphone_field .focused_field, .focused_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.2); }
