@@ -4600,7 +4600,8 @@ var DataEntry = {
     var spans = paramsTable.getElementsByTagName("span");
     var noMatches = true;
 		for (var i = 0; i < spans.length; i++) {
-      if (spans[i].className != "label")
+			var classes = ["label", "propLabel1"];
+			if (!isElemOfClass(spans[i], classes))
         continue;
       var labelName = getTextContent(spans[i]).toLowerCase();
       var row = getAncestorByClassName(spans[i], "param_tr");
