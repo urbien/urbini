@@ -1317,6 +1317,7 @@ TD.closePopup {
 }
 
 .system_tooltip_css3 #tt_inner { background: transparent; }
+#system_tooltip #opt_btn { position: relative; top: 10; left: 10; cursor: pointer; width: 16px; height: 16px; }
 
 .print {color:#000000;}
 .printB {font-weight:bold; white-space: nowrap;}
