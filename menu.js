@@ -2505,65 +2505,131 @@ function resizeWindow(event) {
 * Tooltip
 *********************************************************/
 var Tooltip = {
+	SHOW_DELAY : 1000,
+	HIDE_DELAY : 500,
+	TOOLTIP_ID : "system_tooltip",
   TOOLTIP_ATTR : "tooltip",
+	
 	tooltipDiv : null,
-  init : function() {
-
+  tooltipFrame : null,
+	contentDiv : null,
+	
+  options : {isShiftRequired : false},
+  optBtn : {obj: null, width: 16, height: 16}, // button image object and size
+	
+	isShown : false,
+	isOverTooltip : false,
+	timerId : null,
+	showArgs : new Object(),
+	
+	init : function() {
 		// no need tooltips on touch devices.
 		if (Browser.mobile || Browser.touchDesktop || Browser.penBased)
       return;
 		//if (Popup.penBased) // pen-based devices have problem with tooltips
     //  return;
-	  
+		
+		this.tooltipDiv = document.getElementById(this.TOOLTIP_ID);
+		this.contentDiv = getChildById(this.tooltipDiv, "content");
 		if (Browser.ie) {
-			this.ifrRef = document.getElementById('tooltipIframe');
-			if (!this.ifrRef) 
+			this.tooltipFrame = document.getElementById('tooltipIframe');
+			if (!this.tooltipFrame) 
 				throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
 		}
+				
+		this.optBtn.obj = getChildById(this.tooltipDiv, "opt_btn");
+    this.initShiftPref();
 		
 		addEvent(document.body, "mouseover", this.onMouseOver, false);
 		addEvent(document.body, "mouseout", this.onMouseOut, false);
+		addEvent(this.tooltipDiv, "mouseover", this.onMouseOverTooltip, true);
+		addEvent(this.tooltipDiv, "mouseout", this.onMouseOutTooltip, true);
   },
 	
   onMouseOver : function(e) {
-    var thisObj = Tooltip;
+    var $t = Tooltip;
+		
+		if ($t.isOverTooltip)
+			return;
+		if ($t.isShown)
+			return;
 
     var target = getEventTarget(e);
-    if(!thisObj.isProcessed(target))
-      thisObj.processTooltip(target);
+    if(!$t.isProcessed(target))
+      $t.processTooltip(target);
 
-    var tooltipText = target.getAttribute(thisObj.TOOLTIP_ATTR);
+    var tooltipText = target.getAttribute($t.TOOLTIP_ATTR);
     if(!tooltipText) {
 			var parentA = target.parentNode;
     	if (parentA && parentA.tagName.toLowerCase() == 'a')
-				tooltipText =  parentA.getAttribute(thisObj.TOOLTIP_ATTR);
+				tooltipText =  parentA.getAttribute($t.TOOLTIP_ATTR);
 		}
 		
-		if(!tooltipText)
+		if (!tooltipText || tooltipText.plainText().trim().length == 0)
 			return;
 		
-		var toShow = !(advancedTooltip.isShiftRequired() && !e.shiftKey);
-    if(toShow) { //  && Popup.allowTooltip()
-      thisObj.showTooltip(e, target, tooltipText);
-    }
-    else
-      thisObj.showInStatus(tooltipText);
+		$t.showArgs.e = e;
+		$t.showArgs.target = target;
+		$t.showArgs.tooltipText = tooltipText;
+		
+		$t.timerId = setTimeout(Tooltip.showTooltip, $t.SHOW_DELAY);
   },
 
   onMouseOut : function(e) {
-		var popup = Popup.getPopup('system_tooltip');
-		if (!popup || !popup.isOpen())
+		var $t = Tooltip;
+
+		if ($t.isOverTooltip)
 			return;
-	  var delay = Math.floor(popup.contents.plainText().length / 45 * 1000);
-    if (delay < 500) delay = 1000;
-    else if (delay < 1000) delay = 2000;
-		
-		popup.delayedClose(delay);
-		window.status = "";
-//    return stopEventPropagation(e);
+			
+		if ($t.isShown)
+			$t.timerId = setTimeout(Tooltip.hideTooltip, $t.HIDE_DELAY);
+		else 
+			clearTimeout($t.timerId); // prevent showing
   },
 
-  processTooltip : function(obj) {
+	onMouseOverTooltip : function(e) {
+		var $t = Tooltip;
+		$t.isOverTooltip = true;
+		clearTimeout($t.timerId); // prevent closing if mouse over tooltip
+	},
+
+	onMouseOutTooltip : function(e) {
+		var $t = Tooltip;
+		var target = getEventTarget(e);
+		$t.isOverTooltip = false;
+		$t.onMouseOut(e);
+	},
+
+  showTooltip : function() {
+		var $t = Tooltip;
+		var e = $t.showArgs.e;
+		var target = $t.showArgs.target;
+		var tooltipText = $t.showArgs.tooltipText;
+
+		var toShow = !($t.isShiftRequired() && !e.shiftKey);
+    if(!toShow) {
+			var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
+    	window.status = plainTooltipText;
+			return;
+		}
+    if (!$t.tooltipDiv)
+      return false; 
+    
+		$t.contentDiv.innerHTML = tooltipText;
+		setDivVisible(e, $t.tooltipDiv, $t.tooltipFrame, target, 0, 10);
+		$t.isShown = true;
+  },
+	
+	hideTooltip : function(hideOnOption) {
+		var $t = Tooltip;
+		if ($t.isOverTooltip && !hideOnOption)
+			return;
+   	$t.tooltipDiv.style.display = "none";
+		window.status = "";
+		$t.isShown = false;
+	},
+	
+	processTooltip : function(obj) {
     var titleText = obj.title;
 		obj.title = "";
 		var parentA = obj.parentNode;
@@ -2583,32 +2649,86 @@ var Tooltip = {
 		var titleText = obj.title;
 		return (titleText == null || titleText.length == 0);
   },
-  showTooltip : function(e, target, tooltipText) {
-		if (!tooltipText || tooltipText.plainText().trim().length == 0)
-			return;
+	
+	// Options: shift pref ---------------------------
+  onOptionsBtn : function(e) {
+    if (Browser.mobile)
+      return;
 		
-    var divId    = 'system_tooltip';
-    if (this.tooltipDiv == null) {
-			this.tooltipDiv = document.getElementById(divId);
-		}
-    if (!this.tooltipDiv) {
-      return false; // in FF for some reason if page not fully loaded this div is
-                    // not yet defined
-    }
-		Popup.open(e, divId, target, this.ifrRef, 5, 15, 1000, tooltipText); // open with delay
+		stopEventPropagation(e);
 
+		var msg = this.isShiftRequired() ? "show tooltips always" : "show tooltips when shift pressed";
+		Tooltip.hideTooltip(true);
+		BrowserDialog.confirm(msg, this.onShiftPrefChange);
+	},
+
+  onShiftPrefChange : function() {
+      Tooltip.shiftPrefSwitch();
   },
 	
-  showInStatus : function(tooltipText) {
-    var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
-    window.status = plainTooltipText;
+	// show /hide used with Loading cue
+  showOptionsBtn : function()  {
+    if (Browser.mobile)
+      return;
+
+    if(!this.tooltip)
+      this.init();
+    if(this.optBtn.obj)
+      this.optBtn.obj.style.display = "";
+  },
+  hideOptionsBtn : function()  {
+    if (Browser.mobile)
+      return;
+
+    if(!this.tooltip)
+      this.init();
+
+    if (this.optBtn.obj)
+      this.optBtn.obj.style.display = "none";
+  },
+  isShiftRequired : function() {
+    if (Browser.mobile)
+      return;
+
+    if(!this.tooltip)
+      this.init();
+    return this.options.isShiftRequired;
+  },
+  initShiftPref : function () {
+    if (Browser.mobile)
+      return;
+
+	  if(Popup.isShiftRequired == null) {
+		  var aCookie = document.cookie.split("; ");
+		  var bValue = false;
+		  for (var i=0; i < aCookie.length; i++) {
+			  // a name/value pair (a crumb) is separated by an equal sign
+			  var aCrumb = aCookie[i].split("=");
+			  if (aCrumb[0] == "shift_pressed") {
+				  if(unescape(aCrumb[1]) == "yes")
+					  bValue = true;
+				  break;
+			  }
+		  }
+		  this.options.isShiftRequired = bValue;
+	  }
+  },
+  shiftPrefSwitch : function () {
+    if (Browser.mobile)
+      return;
+
+    this.options.isShiftRequired = !this.options.isShiftRequired;
+	  // set cookie
+	  var sValue = this.options.isShiftRequired ? "yes" : "no";
+	  var expiresData = new Date();
+    expiresData.setTime(expiresData.getTime() + (1000 * 86400 * 365));
+    document.cookie = "shift_pressed=" + escape(sValue)
+        + "; expires=" + expiresData.toGMTString();
+
+    var tooltipObj = Popup.getPopup('system_tooltip');
+	  if(tooltipObj)
+	    tooltipObj.delayedClose();
   }
-//  closeTooltip : function() {
-//    if(Popup.tooltipPopup != null)
-//      Popup.tooltipPopup.close();
-//
-//		window.status = "";
-//  }
 }
 
 
@@ -7437,7 +7557,7 @@ function loadingCueStart(e, hotspot) {
 	  var ttIframe = document.getElementById("tooltipIframe");
 	  var loadingMsg = "<b> loading . . . </b>";
 	
-	  advancedTooltip.hideOptionsBtn();
+	  Tooltip.hideOptionsBtn();
 	  Popup.open(e, ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
 	}
 }
@@ -7445,7 +7565,7 @@ function loadingCueStart(e, hotspot) {
 function loadingCueFinish() {
   if (Popup.tooltipPopup)
     Popup.tooltipPopup.close();
-    advancedTooltip.showOptionsBtn();
+    Tooltip.showOptionsBtn();
 }
 
 // ****************************** form operations from forms.js
@@ -8587,112 +8707,6 @@ var closingOnEsc = {
     div = null;
     stopEventPropagation(e);
     return false;
-  }
-}
-
-/*************************************************
-* advancedTooltip - allows to tune a tooltip
-* 1) shift preferences
-**************************************************/
-var advancedTooltip = {
-  tooltip : null,
-  options : {isShiftRequired : false},
-  optBtn : {obj: null, width: 16, height: 16}, // button image object and size
-  initialized : false,
-
-  init : function() {
-    if (Browser.mobile)
-      return;
-
-    if(this.initialized)
-      return;
-
-    this.tooltip = document.getElementById('system_tooltip');
-    if(!this.tooltip)
-      return;
-
-    this.optBtn.obj = getChildById(this.tooltip, "opt_btn");
-    this.initShiftPref();
-
-    this.initialized = true;
-  },
-  onOptionsBtn : function(e) {
-    if (Browser.mobile)
-      return;
-		
-		stopEventPropagation(e);
-
-		var msg = this.isShiftRequired() ? "show tooltips always" : "show tooltips when shift pressed";
-		BrowserDialog.confirm(msg, this.onShiftPrefChange);
-	},
-
-  onShiftPrefChange : function() {
-      advancedTooltip.shiftPrefSwitch();
-  },
-	
-	// show /hide used with Loading cue
-  showOptionsBtn : function()  {
-    if (Browser.mobile)
-      return;
-
-    if(!this.tooltip)
-      this.init();
-    if(this.optBtn.obj)
-      this.optBtn.obj.style.display = "";
-  },
-  hideOptionsBtn : function()  {
-    if (Browser.mobile)
-      return;
-
-    if(!this.tooltip)
-      this.init();
-
-    if (this.optBtn.obj)
-      this.optBtn.obj.style.display = "none";
-  },
-  // shift pref --------------------------------
-  isShiftRequired : function() {
-    if (Browser.mobile)
-      return;
-
-    if(!this.tooltip)
-      this.init();
-    return this.options.isShiftRequired;
-  },
-  initShiftPref : function () {
-    if (Browser.mobile)
-      return;
-
-	  if(Popup.isShiftRequired == null) {
-		  var aCookie = document.cookie.split("; ");
-		  var bValue = false;
-		  for (var i=0; i < aCookie.length; i++) {
-			  // a name/value pair (a crumb) is separated by an equal sign
-			  var aCrumb = aCookie[i].split("=");
-			  if (aCrumb[0] == "shift_pressed") {
-				  if(unescape(aCrumb[1]) == "yes")
-					  bValue = true;
-				  break;
-			  }
-		  }
-		  this.options.isShiftRequired = bValue;
-	  }
-  },
-  shiftPrefSwitch : function () {
-    if (Browser.mobile)
-      return;
-
-    this.options.isShiftRequired = !this.options.isShiftRequired;
-	  // set cookie
-	  var sValue = this.options.isShiftRequired ? "yes" : "no";
-	  var expiresData = new Date();
-    expiresData.setTime(expiresData.getTime() + (1000 * 86400 * 365));
-    document.cookie = "shift_pressed=" + escape(sValue)
-        + "; expires=" + expiresData.toGMTString();
-
-    var tooltipObj = Popup.getPopup('system_tooltip');
-	  if(tooltipObj)
-	    tooltipObj.delayedClose();
   }
 }
 
