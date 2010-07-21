@@ -231,10 +231,9 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		this.div.style.cursor = "pointer";
 		this.div.style.borderStyle = "solid";
 		this.div.style.borderWidth = "0px";
-		this.div.title = this.title;
 		
-		var innerHTML = '<img src = "' + icon + '" border="0"'
-			+' width=' + iconWidth + ' height=' + this.toolbar.iconHeight + '>';
+		var innerHTML = '<img src = "' + icon + '" border="0" tooltip="<b>' +
+			 this.title + '</b>" width=' + iconWidth + ' height=' + this.toolbar.iconHeight + '>';
 		
 		this.div.innerHTML = innerHTML;
 		// register of handlers
