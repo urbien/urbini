@@ -1514,9 +1514,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl a {color: &[Alternative_A];}
 
-/*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty {  }
-/*.rounded_rect_tbl*/ .arrow_td div { width: 18px; height: 20px; cursor: pointer; background: url(../images/skin/iphone/listArrow_sprite.png) 0px 0px;}
-.arrow_td_empty div { width: 18px; height: 20px; }
+/*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty { padding-right: 4px; font-family: helvetica, arial; font-size: 19px; font-weight: bold; text-align:center;}
 
 .rounded_rect_tbl .label_td { white-space: nowrap; } 
 .rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
