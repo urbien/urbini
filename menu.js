@@ -2548,10 +2548,8 @@ var Tooltip = {
 	
   onMouseOver : function(e) {
     var $t = Tooltip;
-		
+	
 		if ($t.isOverTooltip)
-			return;
-		if ($t.isShown)
 			return;
 
     var target = getEventTarget(e);
@@ -2564,10 +2562,10 @@ var Tooltip = {
     	if (parentA && parentA.tagName.toLowerCase() == 'a')
 				tooltipText =  parentA.getAttribute($t.TOOLTIP_ATTR);
 		}
-		
+
 		if (!tooltipText || tooltipText.plainText().trim().length == 0)
 			return;
-		
+
 		$t.showArgs.e = e;
 		$t.showArgs.target = target;
 		$t.showArgs.tooltipText = tooltipText;
@@ -2602,6 +2600,10 @@ var Tooltip = {
 
   showTooltip : function() {
 		var $t = Tooltip;
+		
+		if ($t.isOverTooltip)
+			return;
+		
 		var e = $t.showArgs.e;
 		var target = $t.showArgs.target;
 		var tooltipText = $t.showArgs.tooltipText;
@@ -2616,7 +2618,7 @@ var Tooltip = {
       return false; 
     
 		$t.contentDiv.innerHTML = tooltipText;
-		setDivVisible(e, $t.tooltipDiv, $t.tooltipFrame, target, 0, 10);
+		setDivVisible(e, $t.tooltipDiv, $t.tooltipFrame, target, 0, 12);
 		$t.isShown = true;
   },
 	
