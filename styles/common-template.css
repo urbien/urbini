@@ -95,7 +95,7 @@ input[type=button], input[type=submit], .button {
 /* the awesome size gets set here. Feel Free to add new sizes, like input[type=button].small or .small.large   */
 input[type=button], input[type=submit], .button, a.button { font-size: 15px; color: &[Label];; }
 input[type=button], input[type=submit] { padding: 6px 10px; }
-a.button { padding: 3px 10px; } /* anchor requires smaller padding than type=button */
+a.button, a.button:active { padding: 3px 10px; } /* anchor requires smaller padding than type=button */
 input[type=button]:active, input[type=submit]:active, .button:active	{ padding: 6px 10px 5px; }
 
 /* Touch the rest at your own risk. */
@@ -189,7 +189,7 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
 }
 .button div { float: left; }
 .btn_with_icon, a.btn_with_icon, .btn_with_icon:active, a.btn_with_icon:active { padding: 0px 3px 0px 10px; }
-.btn_with_symbol, a.btn_with_symbol { font-size: 18px; padding: 0px 7px 2px 7px; }
+.btn_with_symbol, a.btn_with_symbol, .btn_with_symbol:active, a.btn_with_symbol:active { font-size: 18px; padding: 0px 7px 2px 7px; }
 
 /*********************** end of new buttons  *****************************/
 
