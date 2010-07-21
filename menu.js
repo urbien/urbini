@@ -5234,13 +5234,6 @@ var TouchDlgUtil = {
 		tr.setAttribute("blue", "y");
 
 		tr.className = tr.className + " blue_highlighting";
-
-		var arrowTd = getChildByClassName(tr, "arrow_td");
-		if (arrowTd) {
-	    var arrowDiv = arrowTd.getElementsByTagName("div")[0];
-	    arrowDiv.style.backgroundPosition = "0% 100%";
-		}
-		
   },   
 
 	bleachGreyRowOnOut : function(event) {
@@ -5276,13 +5269,6 @@ var TouchDlgUtil = {
 		}
 		
 		this.blueTr.className = this.blueTr.className.replace(/blue_highlighting|grey_highlighting/g, "").trim();
-
-    var arrowTd = getChildByClassName(this.blueTr, "arrow_td");
-		if (arrowTd) {
-			var arrowDiv = arrowTd.getElementsByTagName("div")[0];
-			arrowDiv.style.backgroundPosition = "0% 0%";
-		}
-		
 		this.blueTr.removeAttribute("blue");
 		this.blueTr = null;
   },
