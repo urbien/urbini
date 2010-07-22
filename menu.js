@@ -2554,7 +2554,7 @@ var Tooltip = {
 
     var target = getEventTarget(e);
     if(!$t.isProcessed(target))
-      $t.processTooltip(target);
+      $t.process(target);
 
     var tooltipText = target.getAttribute($t.TOOLTIP_ATTR);
     if(!tooltipText) {
@@ -2570,7 +2570,7 @@ var Tooltip = {
 		$t.showArgs.target = target;
 		$t.showArgs.tooltipText = tooltipText;
 		
-		$t.timerId = setTimeout(Tooltip.showTooltip, $t.SHOW_DELAY);
+		$t.timerId = setTimeout(Tooltip.show, $t.SHOW_DELAY);
   },
 
   onMouseOut : function(e) {
@@ -2580,7 +2580,7 @@ var Tooltip = {
 			return;
 			
 		if ($t.isShown)
-			$t.timerId = setTimeout(Tooltip.hideTooltip, $t.HIDE_DELAY);
+			$t.timerId = setTimeout(Tooltip.hide, $t.HIDE_DELAY);
 		else 
 			clearTimeout($t.timerId); // prevent showing
   },
@@ -2598,7 +2598,7 @@ var Tooltip = {
 		$t.onMouseOut(e);
 	},
 
-  showTooltip : function() {
+  show : function() {
 		var $t = Tooltip;
 		
 		if ($t.isOverTooltip)
@@ -2622,16 +2622,16 @@ var Tooltip = {
 		$t.isShown = true;
   },
 	
-	hideTooltip : function(hideOnOption) {
+	hide : function(forcedHide) {
 		var $t = Tooltip;
-		if ($t.isOverTooltip && !hideOnOption)
+		if ($t.isOverTooltip && !forcedHide)
 			return;
    	$t.tooltipDiv.style.display = "none";
 		window.status = "";
 		$t.isShown = false;
 	},
 	
-	processTooltip : function(obj) {
+	process : function(obj) {
     var titleText = obj.title;
 		obj.title = "";
 		var parentA = obj.parentNode;
@@ -2660,7 +2660,7 @@ var Tooltip = {
 		stopEventPropagation(e);
 
 		var msg = this.isShiftRequired() ? "show tooltips always" : "show tooltips when shift pressed";
-		Tooltip.hideTooltip(true);
+		Tooltip.hide(true);
 		BrowserDialog.confirm(msg, this.onShiftPrefChange);
 	},
 
@@ -4545,6 +4545,7 @@ var SubscribeAndWatch = {
 		$t.panelBlock.style.display = "none";
 		$t.panelBlock.parentNode.removeChild($t.panelBlock);
 		$t.panelBlock = null;
+		PlainDlg.onSubscribeAndWatchHide();
 	},
 	
 	onOptionSelection : function(paramTr, wasSelection) {
@@ -4600,18 +4601,20 @@ var DataEntry = {
 	
 	onDataError : false, // data entry was returned by server with errors on data entry
 	
-	hotspot : null,
+	hotspotDim : null,
 	
 	show : function(e, url, hotspot) {
 		if (this.loadingUrl != null)
 			return;
 	
-		var isSecondClick = (this.currentUrl == url);
-   	// hide possible opened dialogs
+		this.hotspotDim = getElementCoords(hotspot);
+		// hide possible opened dialogs
 		TouchDlgUtil.closeAllDialogs();
+
+		var isSecondClick = (this.currentUrl == url);		
 		if (isSecondClick)
 			return;
-	
+		
 		var key = this._getKey(url);
 		if (this.dataEntryArr[key]) { // data entry stored (in mobile mode)
 			if (this.isMkResource(url))
@@ -4625,18 +4628,14 @@ var DataEntry = {
 				if (!Browser.mobile)
 					ExecJS.runDivCode(this.dataEntryArr[key]);
 			}
-			
 			// on desktop only hide/show, without append/remove
 			setDivVisible(null, this.dataEntryArr[key], null, hotspot, 5, 5, null);
-
 			this.currentUrl = url;
 		}
 		else {
 			this.loadingUrl = url;
 			urlParts = url.split('?');
-			this.hotspot = hotspot;
-			// note: there was some problem when I tried to supply hotspot thru postRequest 
-			postRequest(e, urlParts[0], urlParts[1], null, hotspot, this.onDataEntryLoaded);
+			postRequest(e, urlParts[0], urlParts[1], null, null, this.onDataEntryLoaded);
 		}
 	},
 
@@ -4674,7 +4673,7 @@ var DataEntry = {
 		ExecJS.runDivCode(div);
 
 		// show dialog after GUI initialization
-		setDivVisible(event, div, null, $t.hotspot, 5, 5, null);
+		setDivVisible(event, div, null, null, 5, 5, $t.hotspotDim);
 		
 		var key = $t._getKey($t.currentUrl);
 		$t.dataEntryArr[key] = div;
@@ -4986,8 +4985,9 @@ var PlainDlg = {
 		
 	  // var dialogIframe = document.getElementById('dialogIframe');
 	  setDivInvisible($t.dlgDiv/*, dialogIframe*/);
-	 
-	 	if ($t.dlgArr == null)
+	 	Tooltip.hide(true);
+	 	
+		if ($t.dlgArr == null)
 			$t.dlgArr = new Array();
 		
 		var curContentElem = $t.dlgDiv.firstChild;
@@ -5000,8 +5000,11 @@ var PlainDlg = {
 			$t.dlgArr[$t.curUrl] = curContentElem;	
 		
 		$t.curUrl = null;
-		
 		return stopEventPropagation(e);
+	},
+	// note: subscribe/watch dialog uses PlainDlg basis.
+	onSubscribeAndWatchHide : function() {
+		this.curUrl = null;
 	},
 	
 	createDiv : function() {
@@ -5161,12 +5164,12 @@ var TouchDlgUtil = {
 	// closes 1) data entry 2) filter 3) plain dialog
 	closeAllDialogs : function() {
 		ListBoxesHandler.onBackBtn();
-	
 		DataEntry.hide();
 		Filter.hide();
 		PlainDlg.hide();
 		SubscribeAndWatch.hide();
 		FtsAutocomplete.hide();	 
+		Tooltip.hide(true);
 		
 		if (this.greyTr) {
 			this.bleachGreyRow(this.greyTr);
@@ -5401,7 +5404,7 @@ var LinkProcessor = {
 //		else if (urlStr.endsWith("subscribe.html"))
 //			SubscribeAndWatch.show(event, div, hotspot, content, url);
 		else
-			PlainDlg.show(e, urlStr); // r = 
+			PlainDlg.show(e, urlStr);
 	  
 		return; //r;
 	},
@@ -7190,34 +7193,7 @@ function saveButtonClicked(e) {
   return true;
 }
 
-// helps set right div size after setDivVisible calling
-// it needs only if target called twice.
-// the dialog contains a table with ID = dataEntry
-/*
-var isResizedOneTime = false;
-function onDlgContentResize(e){
-  e = getDocumentEvent(e); if (!e) return;
-  if(isResizedOneTime == false) {
-    isResizedOneTime = true;
-    return;
-  }
-  var target = getEventTarget(e);
-  var dlgDiv = getAncestorById(target, "pane2");
-  if(!dlgDiv)
-    return;
 
-  dlgDiv.style.width  = target.offsetWidth;
-  dlgDiv.style.height = target.offsetHeight;
-
-  var iframe = document.getElementById('dialogIframe');
-  if(!iframe || iframe.style.display == 'none')
-    return;
-  var SHADOW_WIDTH = 11;
-  iframe.style.width  = target.offsetWidth - SHADOW_WIDTH;
-  iframe.style.height = target.offsetHeight - SHADOW_WIDTH;
-
-}
-*/
 //****************************************************************
 // used to manage dialogs
 // Touch UI dialogs are in 'panel_block' div
@@ -7240,21 +7216,6 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 
   var isDivStatic = (div.style.position.toLowerCase() == 'static');
 	
-	// reset. it helps after dialog fitted for Touch UI on desktop 
-	//div.style.width = "";
-	//div.style.height = "";
-
-  // "hack" resize dialog if its contents resized (twice calls of onresize)
-/*
-  if (div.id == "pane2") {
-		//debugger;
-    var tbl = getChildById(div, "dataEntry");
-    if (tbl) {
-      tbl.onresize = onDlgContentResize;
-      isResizedOneTime = false;
-    }
-  }
-*/
 	if (!iframe)
 		iframe = document.getElementById('dialogIframe');
 		
@@ -7296,10 +7257,6 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   var screenX = screenXY[0];
   var screenY = screenXY[1];
 
-  // Find out how close hotspot is to the edges of the window
-  var distanceToRightEdge  = screenX + scrollX - left;
-  var distanceToBottomEdge = screenY + scrollY - top;
-
   // first position the div box in the top left corner in order to measure its dimensions
   // (otherwise, if position correctly and only then measure dimensions - the
   // width/height will get cut off at the scroll boundary - at least in firefox 1.0)
@@ -7307,6 +7264,19 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   reposition(div, 0, 0);
 
 	var divCoords = getElementDimensions(div);
+	// set the div in screen center if neither hotspotDim nor hotspot where provided.
+	if (hotspotDim == null && left == 0 && top == 0) {
+		left = (screenX + scrollX - divCoords.width) / 2;
+		top = (screenY + scrollY - divCoords.height) / 2;
+		if (left < 0) left = 0;
+		if (top < 0) top = 0;
+	}
+	
+	// Find out how close hotspot is to the edges of the window
+  var distanceToRightEdge  = screenX + scrollX - left;
+  var distanceToBottomEdge = screenY + scrollY - top;
+	
+	
   var margin = 40;
   // cut popup dimensions to fit the screen
   var mustCutDimension = (div.id == 'pane2' || Browser.joystickBased) ? false: true;
