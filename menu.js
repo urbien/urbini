@@ -3209,7 +3209,7 @@ var ListBoxesHandler = {
 			// click on different parameter then invoke this function with delay 800 ms
 			if (comparePosition($t.curParamRow, tr) != 0) {
 		  	setTimeout("ListBoxesHandler.onClickParam(null, " + optionsSelectorStr + ")", 800);
-		  	$t.skipUserClick = true; // to skip additional clicks
+		  	 $t.skipUserClick = true; // to skip additional clicks
 		  }
 			return;
 		}
@@ -3434,6 +3434,11 @@ var ListBoxesHandler = {
 		// problem with MozTransform
     if ($t.textEntry && $t.tray.style.MozTransform == 'undefined')
       $t.textEntry.focus();
+		
+		$t.skipUserClick = false; // accept click on parameter	
+		
+		if ($t._isEditList)
+			setShadow($t.panelBlock, "6px 6px 25px rgba(0, 0, 0, 0.5)");
   },
 
   showCalendar : function(paramTr) {
@@ -3778,6 +3783,9 @@ var ListBoxesHandler = {
 			
 		if (SlideSwaper.getTrayPosition(tray) == 0)
 			return false;
+		
+		if (this._isEditList)
+			setShadow(this.panelBlock, "");
 
     SlideSwaper.moveBack(tray);
 
@@ -3952,7 +3960,9 @@ var SlideSwaper = {
     
     if (Browser.webkit) {
       this.curState--;
-      this.tray.style.webkitTransform = "translate(" + this.DISTANCE * this.curState + "%, 0%)";
+		  this.tray.style.webkitTransform = "translate(" + this.DISTANCE * this.curState + "%, 0%)";
+			if (callback) // note: failed to use 'webkitAnimationEnd' event
+        setTimeout(callback, 500); // 500 - arbitary quite big timeout
     }
     else {
       this.isForward = true;
