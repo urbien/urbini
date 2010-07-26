@@ -1742,5 +1742,10 @@ function deselectField(field) {
 	field.value = "";
 	field.value = tmp;
 }
+function setShadow(div, shadowStyle) {
+	div.style.boxShadow = shadowStyle;
+	div.style.MozBoxShadow = shadowStyle;
+	div.style.webkitBoxShadow = shadowStyle;
+}
 // flag that common.js was parsed
 g_loadedJsFiles["common.js"] = true;
