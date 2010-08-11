@@ -54,10 +54,10 @@
       }
       // 1.2. desktop
       else {
+				TabMenu.init();
+				DragEngine.initialize();
 				WidgetRefresher.init();
-        DragEngine.initialize();
         FlashHandler.init();
-        
 		    addSpellcheck();
 		    DictionaryHandler.init();
 		    Tooltip.init();
