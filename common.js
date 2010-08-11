@@ -251,8 +251,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
 
   // visual cue that click was made, using the tooltip
   var addLineItem = document.location.href.indexOf('addLineItem.html?') != -1;
-  if (typeof loadingCueStart != 'undefined')
-    loadingCueStart(event, hotspot);
+  if (typeof Tooltip != 'undefined')
+    Tooltip.showCueLoading(event, hotspot);
 
   if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla,
                                                                         // Safari,...
@@ -298,8 +298,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if (Browser.mobile)
       CueLoading.hide();
 
-    if (typeof loadingCueFinish != 'undefined')
-      loadingCueFinish();
+    if (typeof Tooltip != 'undefined')
+      Tooltip.hideCueLoading();
     var location;
     
     try {
@@ -877,12 +877,16 @@ function swapNodes(node1, node2) {
 }
 
 function getNextSibling(obj) {
+	if (!obj)
+		return null;
   do obj = obj.nextSibling;
   while (obj && obj.nodeType != 1);
   return obj;
 }
 
 function getPreviousSibling(obj) {
+	if (!obj)
+		return null;
   do obj = obj.previousSibling;
   while (obj && obj.nodeType != 1);
   return obj;
@@ -908,35 +912,48 @@ function getChildById(parent, id) {
 function getChildByClassName(parent, className) {
 	return this.getChildByAttribute(parent, "className", className);
 }
+
+// note: returns object started from requested className!
+// attribValue - string or array of strings
 function getChildByAttribute(parent, attribName, attribValue) {
 	  if(!parent)
 	    return null;
-	  if(parent[attribName] == attribValue)
-		  return parent;
 		
-		if (attribName == "className" && parent[attribName] &&
-         parent[attribName].indexOf(attribValue + " ") != -1)
-      return parent;   
+		if (typeof attribValue == 'string') {
+			attribValue = [attribValue];
+		}
+					
+
+		for (var n = 0; n < attribValue.length; n++) {
+	  	if (parent[attribName] == attribValue[n]) 
+	  		return parent;
+	  	
+	  	if (attribName == "className" && parent[attribName] &&
+	  	parent[attribName].indexOf(attribValue[n] + " ") != -1) 
+	  		return parent;
+  	}
   
 	  var children = parent.childNodes;
 	  var len = children.length;
 	  if(len == 0)
 		  return null;
 	  
-	  for(var i = 0; i < len; i++) {
-		  if(children[i].childNodes.length != 0) {
-			  var reqChild = null;
-			  if((reqChild = getChildByAttribute(children[i], attribName, attribValue)) != null)
-				  return reqChild;
-		  }
-
-		   if(children[i].nodeType != 3 && children[i][attribName] == attribValue)
-			   return children[i];
-			 
-			 if (children[i].nodeType != 3 && attribName == "className" && children[i][attribName] &&
-         children[i][attribName].indexOf(attribValue + " ") != -1)
-       return children[i];   
-	  }
+		for (var n = 0; n < attribValue.length; n++) {
+			for (var i = 0; i < len; i++) {
+				if (children[i].childNodes.length != 0) {
+					var reqChild = null;
+					if ((reqChild = getChildByAttribute(children[i], attribName, attribValue[n])) != null) 
+						return reqChild;
+				}
+				
+				if (children[i].nodeType != 3 && children[i][attribName] == attribValue[n]) 
+					return children[i];
+				
+				if (children[i].nodeType != 3 && attribName == "className" && children[i][attribName] &&
+				children[i][attribName].indexOf(attribValue[n] + " ") != -1) 
+					return children[i];
+			}
+		}
 	  
 	  return null;
 }
@@ -1719,6 +1736,14 @@ function isElemOfClass(elem, className) {
 	return false;
 }
 
+// note: meanwhile it is for vertical scrolling only!
+function isElemInView(elem) {
+	var topEdge = getScrollXY()[1];
+	var bottomEdge = topEdge + getWindowSize()[1];
+	var y = findPosY(elem);
+	return (y >= topEdge && y <= bottomEdge - elem.offsetHeight);
+}
+
 function setCaretPosition(elem, caretPos) {
     var elem;
     if(elem != null) {
@@ -1746,6 +1771,15 @@ function setShadow(div, shadowStyle) {
 	div.style.boxShadow = shadowStyle;
 	div.style.MozBoxShadow = shadowStyle;
 	div.style.webkitBoxShadow = shadowStyle;
+}
+function appendClassName(elem, className) {
+	if (elem.className.indexOf(" " + className) != -1)
+		return;
+	elem.className += (elem.className.length == 0) ? className : (" " + className);
+}
+function removeClassName(elem, className) {
+	var regexp = new RegExp(className, "g");
+	elem.className = elem.className.replace(regexp, "").trim();
 }
 // flag that common.js was parsed
 g_loadedJsFiles["common.js"] = true;
