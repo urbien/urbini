@@ -400,11 +400,10 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     self.setFocus();
     
     if (!self.initialized) {
-      self.interceptEvents();
+			TouchDlgUtil.init(self.div);
       FormProcessor.initForms(self.div);
       self.initilized = true;
     }
-    // alert('end popup init');
     if (self.isTooltip()) {
       Popup.tooltipPopup = self;
       // fit tooltip height
@@ -499,7 +498,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.interceptEvents = function () {
     var div     = self.div;
     var hotspot = self.hotspot;
-    // var isMenu = div.id.indexOf('menudiv_') == 0 ? true false;
     if (!Browser.penBased && !Browser.joystickBased) {
       addEvent(div,     'mouseover', self.popupOnMouseOver, false);
       addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
@@ -521,7 +519,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     }
 
     var elems = tables[0].getElementsByTagName("tr");
-    var n = elems.length;//self.rowCount();
+    var n = elems.length;
     
     for (var i = 0; i < n; i++) {
       var elem = elems[i];
@@ -622,9 +620,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
    * choose the menu element.
    */
   this.popupRowOnKeyPress = function(e) {
-		
-		
-		
     e = getDocumentEvent(e); if (!e) return;
 
     var currentDiv = self.getCurrentDiv();
@@ -704,7 +699,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.popupRowOnClick = function (e) {
 		var $t = ListBoxesHandler;
 		e = getDocumentEvent(e); if (!e) return;
-		
     var target = getTargetElement(e);
     var tr = getTrNode(target);
     if (!tr)
@@ -2597,7 +2591,7 @@ var Tooltip = {
 		$t.isOverTooltip = false;
 		$t.onMouseOut(e);
 	},
-
+	
   show : function() {
 		var $t = Tooltip;
 		
@@ -2629,6 +2623,18 @@ var Tooltip = {
    	$t.tooltipDiv.style.display = "none";
 		window.status = "";
 		$t.isShown = false;
+	},
+	
+	showCueLoading : function(e, hotspot) {
+		this.showArgs.e = e;
+		this.showArgs.target = hotspot;
+		this.showArgs.tooltipText = "<b> loading . . . </b>";
+		this.hideOptionsBtn();
+		this.show();
+	},
+	hideCueLoading : function() {
+		this.hide();
+		this.showOptionsBtn();
 	},
 	
 	process : function(obj) {
@@ -2745,7 +2751,7 @@ var ListBoxesHandler = {
 					tables[i].id.indexOf("siteRL_") == 0) { // 2nd is RL edit
 				addEvent(tables[i], 'click', this.onClickParam, false);
 			}
-			TouchDlgUtil.init(form);
+			// TouchDlgUtil.init(form); // move it into DataEntry, Filter, etc.
   },
 
 
@@ -2760,6 +2766,7 @@ var ListBoxesHandler = {
   
   prevSelectorInputValue : "", // helps to detect local autodetect
   
+	// onkeyup event in "text_entry"
   autoComplete : function(e) {
     var $t = ListBoxesHandler;
 		// no autocomplete for numeric field
@@ -2776,6 +2783,11 @@ var ListBoxesHandler = {
   autoComplete1 : function(e, target) {
     if (!target)
       return;
+
+		// Touch UI: skip non-character keys like 40-down;  38-up; 13-enter;
+		if (!e.isChar)
+			return;
+
  
     keyPressedTime = new Date().getTime();
     
@@ -2826,6 +2838,9 @@ var ListBoxesHandler = {
   * !!!!!!!!!!!!! this below did not work to clear the previous popup if
   * (currentDiv) { var p = Popup.getPopup(currentDiv); if (p) p.close(); }
   */
+
+	
+/*	// not use with Touch UI (!)
     switch (characterCode) {
     case 38:  // up arrow
       if (currentPopup && currentPopup.isOpen()) {
@@ -2888,6 +2903,7 @@ var ListBoxesHandler = {
     case 46:  // delete
       break;
     }
+*/    
     if (currentPopup)
       currentPopup.close();
 
@@ -2943,7 +2959,7 @@ var ListBoxesHandler = {
     var newValue = FieldsWithEmptyValue.getValue(keyPressedElement); 
     // check if to do local filter only
     var hasMore = getChildById(this.optionsPanel, "$more");
-		var isRollup = this.curPopupDiv.id.indexOf("_groupBy_") != -1;
+		var isRollup = this.curOptionsListDiv.id.indexOf("_groupBy_") != -1;
 		if (isRollup || !hasMore && this.prevSelectorInputValue.length != 0 && newValue.indexOf(this.prevSelectorInputValue) == 0)
       this.localOptionsFilter(newValue);
     else {
@@ -3120,7 +3136,6 @@ var ListBoxesHandler = {
         params += "&" + propName + "_class=" + classValue;
     }
 
-
     // request listbox context from the server via ajax
     postRequest(e, url, params, div, hotspot, this.onListLoaded);
  },
@@ -3135,7 +3150,7 @@ var ListBoxesHandler = {
 	calendarPanel : null,
   
 	curParamRow : null,
-  curPopupDiv : null,
+  curOptionsListDiv : null, // in Touch UI it is embeded options list
   textEntry : null,
   
 	curClassesPopupDiv : null,
@@ -3151,6 +3166,10 @@ var ListBoxesHandler = {
   timerId : null,
   OPTIONS_DELAY : 1200,
   
+	setTray : function(parent) {
+		this.tray = getChildByClassName(parent, "tray");
+	},
+	
   onClickParam : function(event, optionsSelectorStr) {
 		var $t = ListBoxesHandler;
 
@@ -3182,7 +3201,6 @@ var ListBoxesHandler = {
 			return;	
 
 		// set members corresponding to happend event target
-		$t.tray = getAncestorByClassName(tr, "tray");
 		if (SlideSwaper.doesSlidingRun($t.tray))
 			return;
 		
@@ -3223,8 +3241,8 @@ var ListBoxesHandler = {
 		$t.textEntry = getChildById($t.optionsPanel, "text_entry");
 		$t.curClass = null;
 		
-    $t.processClickParam(event, tr, optionsSelectorStr);
-		stopEventPropagation(event);  
+    return $t.processClickParam(event, tr, optionsSelectorStr);
+		//stopEventPropagation(event);  
   },
 	
   // optionsSelectorStr is not required parameter
@@ -3241,7 +3259,7 @@ var ListBoxesHandler = {
 		var isClassifier = this.isClassifier(tr);
     var arrowTd = getChildByClassName(tr, "arrow_td");
     if (!arrowTd && !isClassifier)
-      return; // no options for this item 
+      return false; // no options for this item 
 
     var input = getChildByClassName(tr, "input");
 
@@ -3269,14 +3287,14 @@ var ListBoxesHandler = {
 			// 2.1 specific for "classifier" options list
 			if (optionsSelectorStr == "classifier") {
 				var input = tr.getElementsByTagName("input")[0];
-				// use class selection step only if no previously assigned resource value
-				if (input.value.length == 0) {
+				//////// use class selection step only if no previously assigned resource value
+				//if (input.value.length == 0) {
 					if (this.classifierPanel == null) {
 						this.createClassifierPanel(this.tray);
 					}
 					this.classifierPanel.style.display = "inline";
 					this.toPutInClassifier = true;
-				}
+				//}
 			}
 			
 			// set name of text enry of current input field
@@ -3302,7 +3320,8 @@ var ListBoxesHandler = {
 			
 			// show options list
 			this.listboxOnClick1(e, str, null, null, classValue, arrowTd);
-		} 
+		}
+		return true; 
   },
 
   onListLoaded : function(event, popupDiv, hotspot, content) {
@@ -3319,15 +3338,19 @@ var ListBoxesHandler = {
 		var noMatchesDiv = getChildByClassName(panel, "no_matches");
 		if (noMatchesDiv) // temporary check gor RL edit
 			noMatchesDiv.style.display = "none";
-		
-    Popup.load(event, popupDiv, hotspot, content);
+	
+		popupDiv.innerHTML = content;
 
-    popupDiv.style.width =  "100%"; //width; 
-    popupDiv.style.height = "100%"; // $t.RDR_HEIGHT;
+		// add highlighting
+		TouchDlgUtil.init(popupDiv);
+		// bind click on option row 
+		var trs = popupDiv.getElementsByTagName("tr");
+		for (var i = 0; i < trs.length; i++)
+			trs[i].onclick = $t.onOptionsItemClick;
 
 		$t.showOptions(popupDiv);
 
-		// align options list in RL editor
+		// RL editor: align options list
 		if ($t._isEditList && $t.panelBlock.style.visibility != "visible") {
 			var form = getAncestorByAttribute(hotspot, "name", "siteResourceList");
 			var scXY = getScrollXY();
@@ -3366,11 +3389,11 @@ var ListBoxesHandler = {
 		}
 		else {
 			panel = $t.optionsPanel;
-	    $t.curPopupDiv = popupDiv;
+	    $t.curOptionsListDiv = popupDiv;
 		}
 		// set top offset (margin) to sutisfy current scroll position
 		if (!$t._isEditList) {
-			var topOffset = getScrollXY()[1] - findPosY(this.tray);
+			var topOffset = getScrollXY()[1] - findPosY($t.tray);
 			panel.style.marginTop = (topOffset > 0) ? topOffset : 0;
 		}
 		
@@ -3431,10 +3454,8 @@ var ListBoxesHandler = {
 
   onOptionsDisplayed : function() {
     var $t = ListBoxesHandler;
-		// problem with MozTransform
-    if ($t.textEntry && $t.tray.style.MozTransform == 'undefined')
-      $t.textEntry.focus();
-		
+
+		TouchDlgUtil.focusSelector($t.textEntry, false);
 		$t.skipUserClick = false; // accept click on parameter	
 		
 		if ($t._isEditList)
@@ -3493,10 +3514,22 @@ var ListBoxesHandler = {
   },
   
   // allows multiple selection timeout delay
-	// returns false on single slection
-  onOptionsItemClick : function(tr) {
+	onOptionsItemClick : function(e) {
+		var $t = ListBoxesHandler;
+		e = getDocumentEvent(e);
+		var target = getEventTarget(e);
+		var tr = getAncestorByTagName(target, "tr");
+		$t.onOptionsItemClickProcess(tr);
+	},
+		
+  onOptionsItemClickProcess : function(tr) {
 	  var $t = ListBoxesHandler;
- 
+		
+		if ($t.isClassifier(tr)) {
+			$t.onClassifierItemClick(null, tr);
+			return;
+		}
+
 		clearTimeout($t.timerId);
 		if (SlideSwaper.doesSlidingRun())
 			return true;
@@ -3510,16 +3543,19 @@ var ListBoxesHandler = {
 		
 		// no checkbox - no single selection (data entry, rollup)
 		if (!checkBox) {
-			if (!vIcon)
-				return false;
+			if (!vIcon) {
+		  	$t.onOptionsSelectionFinish(tr);
+		  	return; // false;
+			}
 			var isVisable = (vIcon.style.visibility.toLowerCase() == "visible"); // hidden in css
 			if (isVisable) 
 	  		vIcon.style.visibility = "hidden";
 		  else {
-		  	this.removeV();
+		  	$t.removeV();
 		  	vIcon.style.visibility = "visible";
 		  }
-			return false;
+			$t.onOptionsSelectionFinish(tr);
+			return; // false;
 		}
 		
 		// multiple selection (filter)
@@ -3534,7 +3570,7 @@ var ListBoxesHandler = {
       vIcon.style.visibility = "visible";
     }
     // close options on timeout
-    $t.timerId = setTimeout(this.onOptionsSelectionFinish, $t.OPTIONS_DELAY);
+    $t.timerId = setTimeout(ListBoxesHandler.onOptionsSelectionFinish, $t.OPTIONS_DELAY);
     return true;
   },
   
@@ -3626,7 +3662,7 @@ var ListBoxesHandler = {
   getSelectedOptions : function(lastClickedTr) {
 		var selectedOptions = new Array();
     // loop on options table rows.
-    var optTable = getChildByClassName(this.curPopupDiv, "rounded_rect_tbl");
+    var optTable = getChildByClassName(this.curOptionsListDiv, "rounded_rect_tbl");
     var amt = optTable.rows.length;
     for (var i = 0; i < amt; i++) {
 			var tr = optTable.rows[i];
@@ -3653,7 +3689,7 @@ var ListBoxesHandler = {
   
   // clears selections in options panel
   removeV : function() {
-    var optTable = getChildByClassName(this.curPopupDiv, "rounded_rect_tbl");
+    var optTable = getChildByClassName(this.curOptionsListDiv, "rounded_rect_tbl");
     var amt = optTable.rows.length;
     for (var i = 0; i < amt; i++) {
       var chkCell = optTable.rows[i].cells[0];
@@ -3803,8 +3839,8 @@ var ListBoxesHandler = {
     var $t = ListBoxesHandler;
     if ($t.optionsPanel != null) {
       $t.optionsPanel.style.display = "none";
-      if ($t.curPopupDiv)
-				$t.curPopupDiv.style.display = "none";
+      if ($t.curOptionsListDiv)
+				$t.curOptionsListDiv.style.display = "none";
     }
     if ($t.calendarPanel != null)
       $t.calendarPanel.style.display = "none";
@@ -3831,7 +3867,7 @@ var ListBoxesHandler = {
 
   localOptionsFilter : function(typedText, parentDiv) {
 	  typedText = typedText.toLowerCase();
-    parentDiv = parentDiv || this.curPopupDiv
+    parentDiv = parentDiv || this.curOptionsListDiv
 		var tbl = parentDiv.getElementsByTagName("table")[0];
  
 		var rows = tbl.rows;
@@ -3858,7 +3894,6 @@ var ListBoxesHandler = {
 		}
 		else
 			noMatchesDiv.style.display = "none";
-		
   },
   
   // create Calendar
@@ -3907,6 +3942,8 @@ var ListBoxesHandler = {
   },
 	
 	getCurrentPanelDiv : function() {
+		if (this.tray == null)
+			return null;
 		var offset = SlideSwaper.getTrayPosition(this.tray);
 		var panels = this.tray.childNodes;
 		var n = 0;
@@ -3918,12 +3955,26 @@ var ListBoxesHandler = {
 			n++;	
 		}
 	},
+	getCurrentOptionsList : function() {
+		return this.curOptionsListDiv;
+	},
+	// returns form panel div or current options list from options panel
+	getCurrentListOfItems : function() {
+		var div = this.getCurrentPanelDiv();
+		if (div && isElemOfClass(div, "options_panel"))
+			return this.curOptionsListDiv;
+		return div;	
+	},
+	
 	isEditList : function() {
 		return this._isEditList;
 	},
 	
 	isBusy: function(){
   	return this.skipUserClick;
+  },
+	isFormPanelCurrent: function(){
+  	return SlideSwaper.getTrayPosition(this.tray) == 0;
   }
 }
 
@@ -4080,6 +4131,7 @@ var SlideSwaper = {
 	doesSlidingRun : function() {
 		if (!this.tray)
 			return false;
+			
 		var pos = this.getTrayPositionInPercents(this.tray);
 		if (pos % this.DISTANCE == 0)
 			return false;
@@ -4207,7 +4259,6 @@ var Filter = {
       postRequest(e, urlParts[0], urlParts[1], null, hotspot, this.onFilterLoaded);
     }
   },
-
 	// saves / restores filter state before user interaction
 	// Note: for mobile filter resets on cross icon as well
 	handleFilterState : function(toSave) {
@@ -4680,6 +4731,7 @@ var DataEntry = {
 		FieldsWithEmptyValue.initField(textEntry, 'select')
 
 		FormProcessor.initForms(div);
+		TouchDlgUtil.init(div); // moved from ListBoxes
 		ExecJS.runDivCode(div);
 
 		// show dialog after GUI initialization
@@ -4831,10 +4883,16 @@ var DataEntry = {
 			if (toSave) 
 		  	this.inpValues[i] = inputs[i].value;
 		  else {
-				if (inputs[i].getAttribute("is_empty_value") != null)
-					FieldsWithEmptyValue.setEmpty(inputs[i]);
-		  	else
-					inputs[i].value = this.inpValues[i];
+//				if (FieldsWithEmptyValue.isEmptyValue(inputs[i])) { /*inputs[i].getAttribute("is_empty_value") != null*/
+//					FieldsWithEmptyValue.setEmpty(inputs[i]);
+//					if (inputs[i].id == "item_selector")
+//						this.onParamNameTyping(inputs[i]); 
+//				}
+//		  	else
+//					inputs[i].value = this.inpValues[i];
+				FieldsWithEmptyValue.setEmpty(inputs[i]);
+				if (inputs[i].id == "item_selector")
+					this.onParamNameTyping(inputs[i]); 
 		  }
 		}
 		if (!toSave)
@@ -4875,11 +4933,15 @@ var PlainDlg = {
 	dlgArr : new Array(), // stores content of previously downloaded dialogs. Used for MENU only!
 	curUrl : null,
 
-	show : function(e, urlStr) {
+	// anchor can be omitted and retrieved from click-event
+	show : function(e, urlStr, anchor) {
 		var $t = PlainDlg;
 	  e = getDocumentEvent(e); if (!e) return;
-	  var target = getTargetElement(e); if (!target) return;
-	  var anchor = getTargetAnchor(e);
+	  
+	  if (!anchor) {
+			var target = getTargetElement(e); if (!target) return;
+			anchor = getTargetAnchor(e);
+		}
 	
 	  var finalUrl;
 	  if (urlStr)
@@ -4956,6 +5018,8 @@ var PlainDlg = {
 		if (toInitialize)
 			FormProcessor.initForms(this.dlgDiv);
 		var hotspot = getEventTarget(event);
+		// items navigation
+		TouchDlgUtil.init(this.dlgDiv);
 		this._show(event, hotspot);
 	},
 	
@@ -4979,9 +5043,9 @@ var PlainDlg = {
 		
 	  setInnerHtml(div, content);
 		FormProcessor.initForms(div);
-		
+		// items navigation
+		TouchDlgUtil.init(div);
 		$t._show(event, hotspot);
-	
 	  // update page if content is empty (all is ok)
 	  if (content.length == 0)
 	    window.location.reload();
@@ -5040,14 +5104,16 @@ var PlainDlg = {
 * common features for all dialogs
 ********************************************/
 var TouchDlgUtil = {
-	TR_CLASS : ["param_tr", "option_tr"],
+	TR_CLASS : ["param_tr"/*, "option_tr", "menuItemRow"*/],
 	
 	blueTr : null, //used for blue highlighting
 	greyTr : null,
 	skipBleachBlue : false, // used with RL editor
 	
 	curDlgDiv : null,
-	
+	focusHolder : null,
+
+	// it is called for 1) whole dialog + form panel 2) for each options list
 	init : function(parent) {
 		var tables = parent.getElementsByTagName("table");
     for (var i = 0; i < tables.length; i++) {
@@ -5064,12 +5130,25 @@ var TouchDlgUtil = {
 			if (tables[i].id.indexOf("siteRL_") == 0)
 				addEvent(tables[i], 'mousedown', this.highlightRowBlue, false);
 		}
-		addEvent(document, 'keyup', this.keyHandler, false);
-		addEvent(document, 'keydown', this.arrowsHandler, false);
+
+		addEvent(parent, 'keyup', this.keyHandler, false);
+		addEvent(parent, 'keydown', this.arrowsHandler, false);
 	},
 	
 	setCurrentDialog : function(dlgDiv) {
+		if (!isElemOfClass(dlgDiv, "panel_block"))
+			return;
 		this.curDlgDiv = dlgDiv;
+		if (this.focusHolder == null) {
+			this.focusHolder = document.createElement("input");
+			this.focusHolder.className = "shrunk_field";
+			this.focusHolder.setAttribute("readonly", "true");
+		}
+		dlgDiv.appendChild(this.focusHolder);
+		this.focusSelector(dlgDiv, true);
+		
+		if (this.isMenuPopu(dlgDiv))
+			this._selectMenuItemWithArrow(dlgDiv);
 	},
 	
 	keyHandler : function(event) {
@@ -5081,84 +5160,236 @@ var TouchDlgUtil = {
 		
 		// 1. backspace or left arrow
 		if (code == 8 || code == 37) {
-			if (target.parentNode.className != "iphone_field") {
+			if (target.id != "text_entry") {
 		  	wasProcessed = ListBoxesHandler.onBackBtn();
   	  	// prevent default browser behavior (backspace) and  other handlers
 				if (wasProcessed) 
 					stopEventPropagation(event);
-				else if (tagName != 'input' && tagName != 'textarea')
-					TouchDlgUtil.closeAllDialogs(); // closeAllDialogs on back in browser
 			}
 		}
 		// 2. enter
 		else if (code == 13) {
 			// 2.1 set manually entered value
-			if (target.id == "text_entry")
+			//if (target.id == "text_entry")
+			if ($t.isMenuPopupOpened()) {
+				if ($t.greyTr) {
+					var a = getChildByTagName($t.greyTr, "a");
+					window.location.assign(a.href);
+				}
+			}
+			else if (!$t.greyTr)
 				ListBoxesHandler.onOptionsBackBtn();
+			else if (!ListBoxesHandler.isFormPanelCurrent())	
+				ListBoxesHandler.onOptionsItemClickProcess($t.greyTr);
 			else if (tagName != 'textarea'){
 				$t.submitOnEnter(event);
-			}	
+			}
 		}
 		// 3. esc
 		else if(code == 27) {
-				TouchDlgUtil.closeAllDialogs();	
+			if ($t.isMenuPopupOpened())
+				stopEventPropagation(event); // prevent TabMenu	processing of Esc
+			TouchDlgUtil.closeAllDialogs();
 		}
 	},
+
+	isMenuPopupOpened : function() {
+		return (this.curDlgDiv != null && this.isMenuPopu(this.curDlgDiv));
+	},	
+	isMenuPopu : function(div) {
+		return (div.id == "pane2");
+	},
 	
+	// arrow navigation
 	arrowsHandler : function(event) {
 		var $t = TouchDlgUtil;
-		var code = getKeyCode(event);
-	
-		if (!$t.greyTr)
-			return;
-
-		// no arrows processing in edit in-place fields
 		var target = getEventTarget(event);
-		if (target.className && target.className.indexOf("pointer") == -1)
+		var code = getKeyCode(event);
+		var dlg = target.parentNode;
+		if (dlg.id == "pane2") {
+			$t._selectMenuItemWithArrow(dlg, code);
+			stopEventPropagation(event);
 			return;
+		}
 		
-		var panelBlock = getAncestorByClassName($t.greyTr, "panel_block");
+		var listOfItems = ListBoxesHandler.getCurrentListOfItems();
+		
+		// no arrows processing in edit in-place fields
+		//if (target.className && target.className.indexOf("pointer") == -1)
+		//	return;
+		var panelBlock = getAncestorByClassName(listOfItems, "panel_block");
 		if (!panelBlock)
 			return;
+
+		// process boolean / toggle button
+		var toggleBtnTray = getChildByClassName($t.greyTr, "toggle_btn_tray");
+		if (toggleBtnTray && (code == 39 || code == 37)) {
+			ToggleBtnMgr.onclick(toggleBtnTray);
+			stopEventPropagation(event);
+			return;
+		}
+		
 		// embeded dialogs (in dashboard) do not handle Up and Down buttons to allow page scrolling.
 		var isEmbeded = getElementStyle(panelBlock).position == "static";
+		// arrows inside textarea - no "navigation" 
+		var isTextarea = target.tagName.toLowerCase() == "textarea";
 		
-		var passToTr = null;
-		if (code == 40 && !isEmbeded) { // down
-			passToTr = getNextSibling($t.greyTr);
-			if (!passToTr)
-				passToTr = getFirstChild($t.greyTr.parentNode);
-		//	passToTr.scrollIntoView(false);	
+		// main arrows processing -------------
+		if ((code == 40 && !isTextarea) || (code == 9 && !event.shiftKey) && !isEmbeded) { // Down or tab
+			$t._selectRowWithArrow(listOfItems, true);
 		}
-		else if (code == 38 && !isEmbeded) { //	up
-			passToTr = getPreviousSibling($t.greyTr);
-			if (!passToTr)
-				passToTr = getLastChild($t.greyTr.parentNode);
-		//	passToTr.scrollIntoView(true);		
+		else if ((code == 38 && !isTextarea) || (code == 9 && event.shiftKey) && !isEmbeded) { //	Up or Shift + Tab
+			$t._selectRowWithArrow(listOfItems, false);
 		}
-		else if(code == 39) { // right
+		else if(code == 39 && ListBoxesHandler.isFormPanelCurrent()) { // right
 			var clickEvent = new Object();
 			clickEvent["target"] = $t.greyTr;
 			clickEvent["type"] = "";
-			ListBoxesHandler.onClickParam(clickEvent);
+			$t.highlightRowBlueProcess($t.greyTr);
+			ListBoxesHandler.onClickParam(clickEvent)
+		}
+		else 
+			return;
+		stopEventPropagation(event);
+	},
+	
+	// up / down	
+	_selectRowWithArrow : function(listOfItems, down) {
+		var passToTr = null;	
+		// no highlighting before; it goes from Selector
+		if (listOfItems.className == "calendar_panel")
+			return; // calendar panel does not support key navigation for now
+
+		if (!this.greyTr) {
+			//if (target.id != "item_selector" && target.id != "text_entry")
+			//	return;
+
+			var table = getChildByClassName(listOfItems, "rounded_rect_tbl");
+			if (down) {
+		  	if (table.className == "rounded_rect_tbl") 
+					passToTr = table.rows[0];
+		  }
+		  else {
+		  	table = getLastChild(table.parentNode);
+		  	if (table.className == "rounded_rect_tbl") 
+		  		passToTr = table.rows[table.rows.length - 1];
+		  }
+			
+		}
+		else if (down) { // down arrow
+			passToTr = getNextSibling(this.greyTr);
+			if (passToTr == null) {
+				var table = getAncestorByTagName(this.greyTr, "table");
+				var nextTable = getNextSibling(getNextSibling(table));
+				if (nextTable != null) 
+					passToTr = nextTable.rows[0];
+			}
+		}
+		else { // up arrow
+			passToTr = getPreviousSibling(this.greyTr);
+			if (passToTr == null) {
+				var table = getAncestorByTagName(this.greyTr, "table");
+				var prevTable = getPreviousSibling(getPreviousSibling(table));
+				if (prevTable && prevTable.className == "rounded_rect_tbl") 
+					passToTr = prevTable.rows[prevTable.rows.length - 1];
+			}
+		}
+		
+		// highlighting & focus
+		this.bleachGreyRow();
+		if (passToTr) { // go to the next row
+			this.highlightRowGrey(passToTr);
+			// set focus inside writable input
+			var input = getChildByClassName(passToTr, ["input", "textarea", "rte"]);
+			if (input && !input.getAttribute("readonly")) 
+				FieldsWithEmptyValue.setFocus(input);
+			else
+				this.focusHolder.focus();	
+			if (!isElemInView(passToTr))
+				passToTr.scrollIntoView(down == false);
+		}
+		else { // go into Selector
+			var activePanel = ListBoxesHandler.getCurrentPanelDiv();
+			var selector = this.focusSelector(activePanel);
+			if (selector && !isElemInView(selector)) {
+				var header = getAncestorByClassName(selector, "header");
+				header.scrollIntoView(true);	
+			}
+		}
+	},
+	
+	_selectMenuItemWithArrow : function(dlg, code) {
+		var passToTr = null;
+		if (!this.greyTr) {
+			passToTr = getChildByClassName(dlg, "param_tr");
+		}
+		else if (code == 40 || (code == 9 && !event.shiftKey)) { // down
+			passToTr = getNextSibling(this.greyTr);
+			if (passToTr == null || !getTextContent(passToTr)) {
+				var column = getAncestorByTagName(this.greyTr, "td");
+				passToTr = getChildByClassName(getNextSibling(column), "param_tr");
+			}
+		}
+		else if (code == 38 || (code == 9 && event.shiftKey)) { // up
+			passToTr = getPreviousSibling(this.greyTr);
+			if (passToTr == null || !getTextContent(passToTr)) {
+				
+				var column = getAncestorByTagName(this.greyTr, "td");
+				//if (column.cellIndex > 0) {
+					var prevColumn = (column.cellIndex > 0) ?
+							 getPreviousSibling(column) : getLastChild(column.parentNode);
+					// getPreviousSibling(column)
+					var prevTable = getChildByTagName(prevColumn, "table");
+					passToTr = prevTable.rows[prevTable.rows.length - 1];
+				//}
+			}
 		}
 		else
 			return;
 		
-		if (passToTr) {
-			$t.bleachGreyRow($t.greyTr);
-			$t.highlightRowGrey(passToTr);
-		}
-		stopEventPropagation(event);
+		this.bleachGreyRow();
 		
-// left (code == 37)		
-
+		if (passToTr) {
+			if (!getTextContent(passToTr)) { // empty item
+				this.greyTr = passToTr;
+				return this._selectMenuItemWithArrow(dlg, code);
+			}
+			this.highlightRowGrey(passToTr);
+		}
+		else
+			this._selectMenuItemWithArrow(dlg, code);			
+	},
+	
+	// selector focused on opening dialog or panel
+	focusSelector : function(parent, delayed) {
+		var selector = getChildByClassName(parent, "empty_field");
+		if (!selector) {
+			selector = this.focusHolder;
+		}
+		else if (!selector.onfocus)
+			selector.onfocus = this._onFocusSelector;	
+			
+		FieldsWithEmptyValue.setFocus(selector, delayed, true);
+		
+		this.greyTr = null;
+		return selector;
+	},
+	
+	_onFocusSelector : function() {
+		var $t = TouchDlgUtil;
+		$t.bleachGreyRow();
 	},
 	
 	// Note: only one opened dialog can be on a page in current version
 	// handled 3 "classes" of dialogs
 	submitOnEnter : function(event) {
+		var $t = TouchDlgUtil;
 		var target = null;
+
+		// prevent submit before sliding back (option selection) finished
+		if ($t.hasBlueRow()) 
+			return;
+		
 		if (event.type == 'click')
 			target = getEventTarget(event);
 		
@@ -5174,6 +5405,7 @@ var TouchDlgUtil = {
 	// closes 1) data entry 2) filter 3) plain dialog
 	closeAllDialogs : function() {
 		ListBoxesHandler.onBackBtn();
+		
 		DataEntry.hide();
 		Filter.hide();
 		PlainDlg.hide();
@@ -5182,20 +5414,29 @@ var TouchDlgUtil = {
 		Tooltip.hide(true);
 		
 		if (this.greyTr) {
-			this.bleachGreyRow(this.greyTr);
+			this.bleachGreyRow();
 			this.greyTr = null;
 		}
 
 		this.bleachBlueRow()
+		this.curDlgDiv = null;
 		this.blueTr = null;
 	},
 	
 	highlightRowGreyOnOver : function(event) {
     var $t = TouchDlgUtil;
 		var target = getEventTarget(event);
-    var tr = getAncestorByClassName(target, $t.TR_CLASS);
+		var tr = null;
+		if (ListBoxesHandler.isFormPanelCurrent())
+    	tr = getAncestorByClassName(target, $t.TR_CLASS);
+		else
+			tr = getAncestorByTagName(target, "tr");	
+		
+		if (!getTextContent(tr))
+			return;
+			
 		if($t.greyTr)
-			$t.bleachGreyRow($t.greyTr);	
+			$t.bleachGreyRow();	
     if (tr)
 			$t.highlightRowGrey(tr);
 	},
@@ -5215,16 +5456,19 @@ var TouchDlgUtil = {
 		var $t = TouchDlgUtil;
     var target = getEventTarget(event);
     var tr = getAncestorByClassName(target, $t.TR_CLASS);
-    if (!tr)
-      return;
-		
+		if (!tr)
+			return;
 		if (target.className == "iphone_checkbox")
 			return; // skip click on iPhone-like checkbox
-	
-
 		if (target.src && target.src.indexOf("icons/cakes") != -1)
 			return; // skip click on date rollup
-			
+
+    $t.highlightRowBlueProcess(tr);
+	},
+		
+	highlightRowBlueProcess : function(tr) {
+		var $t = TouchDlgUtil;
+
 		// in-place editors
 		if (getChildByClassName(tr, "arrow_td") == null) {
 			return;
@@ -5244,11 +5488,12 @@ var TouchDlgUtil = {
 		$t.skipBleachBlue = skipBleachBlue;
 		
 		TouchDlgUtil.blueTr = tr;
+		
+		$t.bleachGreyRow();
+		appendClassName(tr, "blue_highlighting");
 		tr.setAttribute("blue", "y");
-
-		tr.className = tr.className + " blue_highlighting";
-  },   
-
+  }, 
+	  
 	bleachGreyRowOnOut : function(event) {
 		var $t = TouchDlgUtil;
 	  var target = getEventTarget(event);
@@ -5258,11 +5503,13 @@ var TouchDlgUtil = {
 		
 		var tr = target;
  		
-		if (tr)
-			$t.bleachGreyRow(tr);
+		$t.bleachGreyRow();
 	},
 	
-	bleachGreyRow : function(tr) {
+	bleachGreyRow : function() {
+		var tr = this.greyTr;
+		if (!tr)
+			return;
 		if (tr.getAttribute("blue") != null)
 			return;
 		
@@ -5270,7 +5517,10 @@ var TouchDlgUtil = {
 			return;
 
 		tr.className = tr.className.replace("grey_highlighting", "").trim();
+		this.greyTr = null;
+
 	},
+	
 	// "callback"
   bleachBlueRow : function() {
     if (this.blueTr == null)
@@ -5280,20 +5530,116 @@ var TouchDlgUtil = {
 			this.skipBleachBlue = false;
 			return;
 		}
-		
+
 		this.blueTr.className = this.blueTr.className.replace(/blue_highlighting|grey_highlighting/g, "").trim();
+
+
+		this.bleachGreyRow(); // possible other row was highlighted with mouse
 		this.blueTr.removeAttribute("blue");
+		this.highlightRowGrey(this.blueTr); // make blue row "grey"
 		this.blueTr = null;
   },
+	
 	hasBlueRow : function() {
 		return this.blueTr != null;
 	},
+	
 	isFieldBlueHighlight : function(field) {
 		if (this.blueTr == null)
 			return false;
 		return this.blueTr.contains(field);
 	}
+}
+
+// TabMenu
+var TabMenu = {
+	homeTab : null,
+	firstTab : null,
+	lastTab : null,
+	activeTab : null,
 	
+	init : function() {
+		// use keydown instead of keyup to prevent horizontal scrolling
+		addEvent(window, 'keydown', this.keyHandler, false);
+		window.focus();
+	},
+	
+	_findTabs : function() {
+		var mainMenu = document.getElementById("mainMenu");
+		this.homeTab = getChildByClassName(mainMenu, "dashboard_btn");
+		this.firstTab = getChildByClassName(getNextSibling(this.homeTab), "dashboard_btn");
+		this.lastTab = getLastChild(this.firstTab.parentNode);
+	},
+	
+	keyHandler: function(event){
+  	var $t = TabMenu;
+		
+		if (TouchDlgUtil.isMenuPopupOpened())
+			return; // no Tab navigation while popup on screen
+		
+		var code = getKeyCode(event);
+		
+		if (code == 18) { // Alt
+			if ($t.firstTab == null) 
+				$t._findTabs();
+			if ($t.activeTab == null) {
+				$t.activeTab = $t.firstTab;
+				appendClassName($t.activeTab, "active");
+			}
+			else {
+				removeClassName($t.activeTab, "active");
+				$t.activeTab = null;
+			}
+			stopEventPropagation(event);
+			return;
+		}
+		else if (code == 27 && $t.activeTab != null) { // esc
+			removeClassName($t.activeTab, "active");
+			$t.activeTab = null;
+		}
+		else 
+			if ($t.activeTab == null) 
+				return;
+		
+		if (code == 13 || code == 40) { // enter, down
+			var anchor = getChildByTagName($t.activeTab, "a");
+			if ($t.isHomeTabActive())
+				anchor.onclick(event);
+			else
+				LinkProcessor.onClickDisplayInner(event, anchor);
+		}
+		else if (code == 39) { // right
+			var nextTab; 
+			if ($t.isHomeTabActive())
+				nextTab = $t.firstTab;
+			else
+				nextTab = getNextSibling($t.activeTab) || $t.homeTab;
+			$t.setActiveTab(nextTab);
+		}
+		else if (code == 37) { // left
+			var prevTab;
+			if ($t.isHomeTabActive())
+				prevTab = $t.lastTab;
+			else
+				prevTab = getPreviousSibling($t.activeTab) || $t.homeTab;
+			$t.setActiveTab(prevTab);
+		}
+		else 
+			return;
+
+		stopEventPropagation(event);
+	},
+	
+	setActiveTab : function(newActiveTab) {
+		if (this.activeTab)
+			removeClassName(this.activeTab, "active");
+		this.activeTab = newActiveTab;
+		appendClassName(this.activeTab, "active");
+	},
+	
+	isHomeTabActive : function() {
+		return (comparePosition(this.homeTab, this.activeTab) == 0);
+	}
 }
 
 /**************************************************
@@ -5414,7 +5760,7 @@ var LinkProcessor = {
 //		else if (urlStr.endsWith("subscribe.html"))
 //			SubscribeAndWatch.show(event, div, hotspot, content, url);
 		else
-			PlainDlg.show(e, urlStr);
+			PlainDlg.show(e, urlStr, anchor);
 	  
 		return; //r;
 	},
@@ -7275,7 +7621,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 
 	var divCoords = getElementDimensions(div);
 	// set the div in screen center if neither hotspotDim nor hotspot where provided.
-	if (hotspotDim == null && left == 0 && top == 0) {
+	if (hotspotDim == null && left == 0 && top == 0 && !positionEnforced) {
 		left = (screenX + scrollX - divCoords.width) / 2;
 		top = (screenY + scrollY - divCoords.height) / 2;
 		if (left < 0) left = 0;
@@ -7413,7 +7759,10 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   }
 
 	// used to handle key-arrows events
-	TouchDlgUtil.setCurrentDialog(div);
+	if (div.id != "system_tooltip") {
+		TouchDlgUtil.setCurrentDialog(div);
+		ListBoxesHandler.setTray(div);
+	}
 
 }
 
@@ -7517,24 +7866,6 @@ function setKeyboardFocus(element) {
   }
 }
 
-function loadingCueStart(e, hotspot) {
-  if (!hotspot)
-    return;
-  var ttDiv = document.getElementById("system_tooltip");
-  if (ttDiv) {
-	  var ttIframe = document.getElementById("tooltipIframe");
-	  var loadingMsg = "<b> loading . . . </b>";
-	
-	  Tooltip.hideOptionsBtn();
-	  Popup.open(e, ttDiv.id, hotspot, ttIframe, 0, 0, 0, loadingMsg);
-	}
-}
-
-function loadingCueFinish() {
-  if (Popup.tooltipPopup)
-    Popup.tooltipPopup.close();
-    Tooltip.showOptionsBtn();
-}
 
 // ****************************** form operations from forms.js
 // *****************************************
@@ -7821,7 +8152,7 @@ var FtsAutocomplete = {
 // sets parameter "is_empty_value = y"
 var FieldsWithEmptyValue = {
   emptyValuesArr : new Array(),
-  bluredField : null, 
+  fieldForDelayedAction : null, 
 	
   // field is id or DOM object
   initField : function(field, emptyValue, forceInit) {
@@ -7864,13 +8195,34 @@ var FieldsWithEmptyValue = {
 
 		if (field.value.length == 0 || field.value == emptyValue)
   		this.setEmpty(field);
-	
   },
   
+	setFocus : function(field, delayed, enforceFocus) { // just re-opened dialog requires timeout
+		if (!enforceFocus && field.getAttribute("readonly"))
+			return;
+		this.fieldForDelayedAction = field;
+		if (this.isEmptyValue(field)) {
+			field.className = field.className.replace("empty_field", "focused_field");
+			setCaretPosition(field, 0);
+		}
+		if (delayed)
+			setTimeout(FieldsWithEmptyValue._setFocusDelayed, 200);
+		else
+			field.focus();	
+	},
+	// dialog shown from "cache" dose not allow immediate focus() set.
+	_setFocusDelayed : function() { 
+		var $t = FieldsWithEmptyValue;
+		if (!$t.fieldForDelayedAction)
+			return;
+		$t.fieldForDelayedAction.focus();
+		$t.fieldForDelayedAction = null;
+	},
+	
 	isEmptyValue : function(field) {
 		var isEmptyValue = field.getAttribute("is_empty_value");
    	if (isEmptyValue == null) // not field of "FieldsWithEmptyValue" kind
-			return null; // false;
+			return null;
 			
     return (isEmptyValue == "y") ? true : false;
 	},
@@ -7911,9 +8263,11 @@ var FieldsWithEmptyValue = {
 		if (TouchDlgUtil.isFieldBlueHighlight(field) == false)
 			if (curClassName.indexOf("focused_field") == -1) {
 				if (onClearIcon)
-					field.className += " focused_field"
-				else	
-	  			field.className += " empty_field";
+					//field.className += (field.className.length == 0) ? "focused_field" : " focused_field";
+					appendClassName(field, "focused_field")
+				else if (field.className.indexOf("empty_field") == -1)	
+	  			//field.className += " empty_field";
+					appendClassName(field, "empty_field")
 			  }
 			  else 
 			  	field.className = curClassName.replace("focused_field", "empty_field");
@@ -7924,6 +8278,8 @@ var FieldsWithEmptyValue = {
 		field.style.fontWeight = "bold";
 		field.setAttribute("is_empty_value", "y");
 		field.value = this.emptyValuesArr[this.getKeyOfField(field)];
+		
+		this.updateClearControl(field);
 	},
 	
 	setReady : function(field) {
@@ -7979,21 +8335,22 @@ var FieldsWithEmptyValue = {
 	onkeydown : function(event) {
 		var $t = FieldsWithEmptyValue;
 		var field = getEventTarget(event);
+		var code = getKeyCode(event);
 		$t.setReady(field); 
   },
   
 	onblur : function(event) {
-		FieldsWithEmptyValue.bluredField = getEventTarget(event);
+		FieldsWithEmptyValue.fieldForDelayedAction = getEventTarget(event);
 		// do blur handling with delay to process fill out thru options list
-		setTimeout("FieldsWithEmptyValue.onBlurDelayed()", 200);
+		setTimeout("FieldsWithEmptyValue._onBlurDelayed()", 200);
 	},
 	
-  onBlurDelayed : function() {
+  _onBlurDelayed : function() {
 		var $t = FieldsWithEmptyValue;
-		if (!$t.bluredField)
+		if (!$t.fieldForDelayedAction)
 			return;
 		
-		var field = $t.bluredField;
+		var field = $t.fieldForDelayedAction;
 		var value = $t.getValue(field);
 	
 		if (value.length == 0)
@@ -8007,7 +8364,7 @@ var FieldsWithEmptyValue = {
 				field.setAttribute("is_empty_value", "n");
 			}
 		}	
-		$t.bluredField = null;
+		$t.fieldForDelayedAction = null;
   },
 	
 	// only for fields with clear text contol
@@ -8035,8 +8392,8 @@ var FieldsWithEmptyValue = {
 		crossImg.style.visibility = "hidden";
 	  // FF3 and higher has a problem while transform (CSS) sliding - hacked
 		//if (!Browser.firefox3)
-			field.focus();
-	  
+		this.setFocus(field);
+
 	  if (callback)
 		  callback(field);
 	},
