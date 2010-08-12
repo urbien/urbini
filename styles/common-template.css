@@ -1093,7 +1093,7 @@ TD.toolbar {
 .dashboard_btn a { color: &[Label];; font-weight: bold; display: block; white-space: nowrap; }
 .current a { color: &[SecondaryColorB_2];; }
 
-.dashboardLine td.dashboard_btn:hover, .dashboardLine td.current {  
+.dashboardLine td.dashboard_btn:hover, .dashboardLine td.active, .dashboardLine td.current {  
 	border-left-color: &[PrimaryColor_5];;
 	border-top-color: &[PrimaryColor_5];;
 	border-right-color: &[PrimaryColor_1];;
@@ -1592,7 +1592,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .tray {
   -webkit-transition-property: -webkit-transform;
-  -webkit-transition-duration: 0.6s;
+  -webkit-transition-duration: 0.4s;
   -webkit-transition-timing-function: easy-in-out;
   -webkit-transform: translate(0px, 0px); 
 
@@ -1613,8 +1613,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 /** Touch UI buttons **/
 .panel_block .toggle_btn { float: right; text-align: right; }
 .toggle_btn  { height:32px; overflow:hidden; width: 72px !important; width: 82px; padding: 0px 3px; }
-.toggle_btn div::selection { background: transparent; }
-.toggle_btn div::-moz-selection { background: transparent; }
+.toggle_btn div::selection, .toggle_btn div::-moz-selection { background: transparent; }
 .toggle_btn .toggle_btn_tray { width:300px; cursor: pointer; margin-left: 0px; }
 .toggle_btn .toggle_btn_tray div { float: left; }
 .toggle_btn .left, .toggle_btn .right { height:22px; margin-top:5px; width: 50px; box-shadow: 0 0 4px rgba(0, 0, 0, 0.5); -moz-box-shadow:0 0 4px rgba(0, 0, 0, 0.5); -webkit-box-shadow:0 0 4px rgba(0, 0, 0, 0.5); }
@@ -1852,3 +1851,5 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .widget .dragable h2 { margin-bottom: 0px; font-size: 17px; } 
 .widget .containers h2 { margin: 5px 0px 0px 5px; }
 .widget .containers h2 a { font-size: 19px; padding: 0px; }
+
+.shrunk_field { position: fixed; font-size: 1px; width: 0; height: 0; border-width: 0; background: transparent; }
