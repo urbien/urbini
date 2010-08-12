@@ -3199,6 +3199,9 @@ var ListBoxesHandler = {
 		var tr = getAncestorByClassName(target, "param_tr");
 		if (!tr)
 			return;	
+		
+		if ($t.tray == null)
+			$t.tray = getAncestorByClassName(tr, "tray");
 
 		// set members corresponding to happend event target
 		if (SlideSwaper.doesSlidingRun($t.tray))
