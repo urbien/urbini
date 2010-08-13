@@ -194,6 +194,7 @@ Browser.mobile    = Browser.palm || Browser.android || (Browser.mobileSafari && 
 
 // ****************************************************
 // AJAX
+// params noCache, noLoadingCue not required
 // ****************************************************
 // AJAX request.
 // Request content from the server to be loaded into a specified div.
@@ -203,7 +204,7 @@ Browser.mobile    = Browser.palm || Browser.android || (Browser.mobileSafari && 
 // http://keelypavan.blogspot.com/2006/01/using-ajax.html
 // http://developer.apple.com/internet/webcontent/xmlhttpreq.html
 var lastRequest;
-function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
+function postRequest(event, url, parameters, div, hotspot, callback, noCache, noLoadingCue) {
 	if (url == null)
     throw new Error('postRequest url parameter is null');
   if (url == 'about:blank')
@@ -251,7 +252,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
 
   // visual cue that click was made, using the tooltip
   var addLineItem = document.location.href.indexOf('addLineItem.html?') != -1;
-  if (typeof Tooltip != 'undefined')
+  if (!noLoadingCue && typeof Tooltip != 'undefined')
     Tooltip.showCueLoading(event, hotspot);
 
   if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla,
@@ -298,7 +299,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache) {
     if (Browser.mobile)
       CueLoading.hide();
 
-    if (typeof Tooltip != 'undefined')
+    if (!noLoadingCue && typeof Tooltip != 'undefined')
       Tooltip.hideCueLoading();
     var location;
     
