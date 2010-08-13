@@ -498,7 +498,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   this.interceptEvents = function () {
     var div     = self.div;
     var hotspot = self.hotspot;
-    if (!Browser.penBased && !Browser.joystickBased) {
+   
+	  if (!Browser.penBased && !Browser.joystickBased) {
       addEvent(div,     'mouseover', self.popupOnMouseOver, false);
       addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
       addEvent(hotspot, 'mouseout',  self.popupOnMouseOut,  false);
@@ -729,7 +730,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
   **************************************************/
   this.popupRowOnClick1 = function (e, tr, target) {
     var $t = ListBoxesHandler;
-		
+
 		Popup.lastClickTime = new Date().getTime();
     var currentDiv = self.getCurrentDiv();
    
@@ -3343,6 +3344,7 @@ var ListBoxesHandler = {
 
 		// add highlighting
 		TouchDlgUtil.init(popupDiv);
+		
 		// bind click on option row 
 		var trs = popupDiv.getElementsByTagName("tr");
 		for (var i = 0; i < trs.length; i++)
@@ -3520,6 +3522,11 @@ var ListBoxesHandler = {
 		var target = getEventTarget(e);
 		var tr = getAncestorByTagName(target, "tr");
 		$t.onOptionsItemClickProcess(tr);
+		
+		// call "old" processor of option item click
+		// so, it sets _select and _verified
+		var popup = Popup.getPopup($t.curOptionsListDiv.id) 
+		popup.popupRowOnClick1(e, tr, target);
 	},
 		
   onOptionsItemClickProcess : function(tr) {
@@ -5201,8 +5208,9 @@ var TouchDlgUtil = {
 	isMenuPopu : function(div) {
 		if (div.id != "pane2")
 			return false;
-		if (getChildByClassName(div, "menu") == null)
+		if(getFirstChild(getFirstChild(div)).className != "menu")
 			return false;
+		
 		return true;
 	},
 	
@@ -5377,7 +5385,7 @@ var TouchDlgUtil = {
 	
 	// selector focused on opening dialog or panel
 	focusSelector : function(parent, delayed) {
-		var selector = getChildById(parent, ["item_selector", "text_entry"]);//getChildByClassName(parent, "empty_field");
+		var selector = getChildById(parent, ["item_selector", "parameter_selector", "text_entry"]);
 		if (!selector) {
 			selector = this.focusHolder;
 		}
