@@ -2775,7 +2775,7 @@ var ListBoxesHandler = {
 			
     var e = getDocumentEvent(e);  // if (!e) return;
     var target = getTargetElement(e);
-   
+ 
 		// //$t.localOptionsFilter(target.value)
     return $t.autoComplete1(e, target);
   },
@@ -2784,11 +2784,6 @@ var ListBoxesHandler = {
     if (!target)
       return;
 
-		// Touch UI: skip non-character keys like 40-down;  38-up; 13-enter;
-		if (!e.isChar)
-			return;
-
- 
     keyPressedTime = new Date().getTime();
     
     //var form = target.form;
@@ -2912,7 +2907,7 @@ var ListBoxesHandler = {
     var ac = target.getAttribute('autocomplete');
     if (ac && ac == 'off')
       return true;
-    keyPressedElement.style.backgroundColor='#ffffff';
+ 		
     if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not
                                                   // verified yet (i.e. not chose
                                                   // from the list)
@@ -3152,7 +3147,8 @@ var ListBoxesHandler = {
 	curParamRow : null,
   curOptionsListDiv : null, // in Touch UI it is embeded options list
   textEntry : null,
-  
+  classifierTextEntry : null,
+	
 	curClassesPopupDiv : null,
 	toPutInClassifier : false,
 	curClass : null, // used for "2-steps" resource selection
@@ -3242,6 +3238,8 @@ var ListBoxesHandler = {
 		$t.curParamRow = tr;
 		
 		$t.textEntry = getChildById($t.optionsPanel, "text_entry");
+		$t.classifierTextEntry = getChildById($t.classifierPanel, "text_entry");
+		
 		$t.curClass = null;
 		
     return $t.processClickParam(event, tr, optionsSelectorStr);
@@ -3329,7 +3327,6 @@ var ListBoxesHandler = {
 
   onListLoaded : function(event, popupDiv, hotspot, content) {
 		var $t = ListBoxesHandler;
-
 		var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
 
     var listsCont = getChildById(panel, "lists_container");
@@ -3341,7 +3338,7 @@ var ListBoxesHandler = {
 		var noMatchesDiv = getChildByClassName(panel, "no_matches");
 		if (noMatchesDiv) // temporary check gor RL edit
 			noMatchesDiv.style.display = "none";
-	
+
 		popupDiv.innerHTML = content;
 
 		// add highlighting
@@ -3457,8 +3454,8 @@ var ListBoxesHandler = {
 
   onOptionsDisplayed : function() {
     var $t = ListBoxesHandler;
-
-		TouchDlgUtil.focusSelector($t.textEntry, false);
+		var textEntry = $t.toPutInClassifier ? $t.classifierTextEntry : $t.textEntry;
+		TouchDlgUtil.focusSelector(textEntry, false);
 		$t.skipUserClick = false; // accept click on parameter	
 		
 		if ($t._isEditList)
@@ -3862,6 +3859,8 @@ var ListBoxesHandler = {
 		}
 		
 		FieldsWithEmptyValue.setEmpty(this.textEntry);
+		FieldsWithEmptyValue.setEmpty(this.classifierTextEntry);
+		
 		TouchDlgUtil.bleachBlueRow();
 		$t._showInvisibleParams();
 		
@@ -5200,7 +5199,11 @@ var TouchDlgUtil = {
 		return (this.curDlgDiv != null && this.isMenuPopu(this.curDlgDiv));
 	},	
 	isMenuPopu : function(div) {
-		return (div.id == "pane2");
+		if (div.id != "pane2")
+			return false;
+		if (getChildByClassName(div, "menu") == null)
+			return false;
+		return true;
 	},
 	
 	// arrow navigation
@@ -5301,6 +5304,14 @@ var TouchDlgUtil = {
 		// highlighting & focus
 		this.bleachGreyRow();
 		if (passToTr) { // go to the next row
+		
+			// no highlighting of currently disabled items "More..." and "Add..."
+			if (passToTr.id == "$more" || passToTr.id == "$addNew") {
+				this.greyTr = passToTr;
+				this._selectRowWithArrow(listOfItems, down);
+				return;
+			}
+		
 			this.highlightRowGrey(passToTr);
 			// set focus inside writable input
 			var input = getChildByClassName(passToTr, ["input", "textarea", "rte"]);
@@ -5316,7 +5327,8 @@ var TouchDlgUtil = {
 			var selector = this.focusSelector(activePanel);
 			if (selector && !isElemInView(selector)) {
 				var header = getAncestorByClassName(selector, "header");
-				header.scrollIntoView(true);	
+				if (header)
+					header.scrollIntoView(true);	
 			}
 		}
 	},
@@ -5365,7 +5377,7 @@ var TouchDlgUtil = {
 	
 	// selector focused on opening dialog or panel
 	focusSelector : function(parent, delayed) {
-		var selector = getChildByClassName(parent, "empty_field");
+		var selector = getChildById(parent, ["item_selector", "text_entry"]);//getChildByClassName(parent, "empty_field");
 		if (!selector) {
 			selector = this.focusHolder;
 		}
