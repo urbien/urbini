@@ -7183,7 +7183,12 @@ function showTab(e, td, hideDivId, unhideDivId) {
     ImageAnnotations.onTabSelection(curDiv);
 
   resizeIframeOnTabSelection(curDiv); // IE
-
+  
+	var panelBlock = getChildByClassName(curDiv, "panel_block");
+	if (panelBlock) {
+  	TouchDlgUtil.init(panelBlock);
+  	TouchDlgUtil.setCurrentDialog(panelBlock);
+  }
   return stopEventPropagation(e);
 }
 var curSpan;
@@ -10248,7 +10253,7 @@ var WidgetRefresher = {
     Debug.setMode(true);
     Debug.log('_onInterval: url = ' + url + "; params = " + params);
 
-    postRequest(null, url, params, divToRefresh, null, WidgetRefresher.refresh, true);
+    postRequest(null, url, params, divToRefresh, null, WidgetRefresher.refresh, true, true);
   },
   // called by postRequest
   refresh : function(event, div, hotSpot, content)  {
