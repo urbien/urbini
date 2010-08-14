@@ -31,10 +31,10 @@
     </td>
     <!--td valign="top" class="menuLine" align="right"><resourceTitle/></td-->
   </tr>
-  <tr>
+  <!--tr>
     <td colspan="4" align="center" class="alphabeticIndex">
       <alphabeticIndex/>
     </td>
-  </tr>
+  </tr-->
 </table>
 </menuBar>
