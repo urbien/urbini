@@ -969,10 +969,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			this.linkBtn = toolBar.appendButton(this.onLink, false, RteEngine.IMAGES_FOLDER + "hyperlink.png", "hyperlink");
 		if(this.rtePref.buttons.image) // image
 			this.imageBtn = toolBar.appendButton(this.onImage, false, RteEngine.IMAGES_FOLDER + "image.png", "image");
-
-		if(this.rtePref.buttons.supsub) { // superscript + subscript
-			toolBar.appendButton(this.onSuperscript, false, RteEngine.IMAGES_FOLDER + "superscript.png", "superscript");
-			toolBar.appendButton(this.onSubscript, false, RteEngine.IMAGES_FOLDER + "subscript.png", "subscript");
+		if(this.rtePref.buttons.list) { // list: ordered + unordered
+			toolBar.appendButton(this.onOrderedList, false, RteEngine.IMAGES_FOLDER + "list_num.png", "ordered list");
+			toolBar.appendButton(this.onUnorderedList, false, RteEngine.IMAGES_FOLDER + "list_bullet.png", "unordered list");
+		}
+		if(this.rtePref.buttons.reundo) { // undo (redo bellow)
+			toolBar.appendButton(this.onUndo, false, RteEngine.IMAGES_FOLDER + "undo.png", "undo");
 		}
 		if(this.rtePref.buttons.align) { // align: left + centre + right + justifyfull
 			toolBar.appendButton(this.onAlignLeft, false, RteEngine.IMAGES_FOLDER + "align_left.png", "align left");
@@ -984,9 +986,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			toolBar.appendButton(this.onOutdent, false, RteEngine.IMAGES_FOLDER + "outdent.png", "outdent");
 			toolBar.appendButton(this.onIndent, false, RteEngine.IMAGES_FOLDER + "indent.png", "indent");
 		}
-		if(this.rtePref.buttons.list) { // list: ordered + unordered
-			toolBar.appendButton(this.onOrderedList, false, RteEngine.IMAGES_FOLDER + "list_num.png", "ordered list");
-			toolBar.appendButton(this.onUnorderedList, false, RteEngine.IMAGES_FOLDER + "list_bullet.png", "unordered list");
+		if(this.rtePref.buttons.supsub) { // superscript + subscript
+			toolBar.appendButton(this.onSuperscript, false, RteEngine.IMAGES_FOLDER + "superscript.png", "superscript");
+			toolBar.appendButton(this.onSubscript, false, RteEngine.IMAGES_FOLDER + "subscript.png", "subscript");
 		}
 		if(this.rtePref.buttons.smile) // smile
 			this.smileBtn = toolBar.appendButton(this.onSmile, false, RteEngine.IMAGES_FOLDER + "smile.gif", "smile");
@@ -994,8 +996,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			toolBar.appendButton(this.onHorizontalRule, false, RteEngine.IMAGES_FOLDER + "hr.png", "horizontal line");
 		if(this.rtePref.buttons.table) // table
 			this.tableBtn = toolBar.appendButton(this.onTable, false, RteEngine.IMAGES_FOLDER + "table.png", "table");
-		if(this.rtePref.buttons.reundo) { // redo + undo
-			toolBar.appendButton(this.onUndo, false, RteEngine.IMAGES_FOLDER + "undo.png", "undo");
+		if(this.rtePref.buttons.reundo) { // redo
 			toolBar.appendButton(this.onRedo, false, RteEngine.IMAGES_FOLDER + "redo.png", "redo");
 		}
 		if(this.rtePref.buttons.html) // html
