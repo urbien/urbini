@@ -2790,6 +2790,9 @@ var ListBoxesHandler = {
     //var form = target.form;
     var form = document.forms[currentFormName];
     var characterCode = getKeyCode(e); // code typed by the user
+	
+		if (characterCode <= 40 && characterCode != 8)
+			return; // skip not symbol keys except backspace and delete
 
     var propName  = target.name;
     var formName  = form.name;
@@ -3660,6 +3663,7 @@ var ListBoxesHandler = {
 		
 			chosenValuesDiv.innerHTML = html;
 		}
+		
     // slide back
     $t.onBackBtn(1); 
   },
@@ -5295,7 +5299,7 @@ var TouchDlgUtil = {
 			if (passToTr == null) {
 				var table = getAncestorByTagName(this.greyTr, "table");
 				var nextTable = getNextSibling(getNextSibling(table));
-				if (nextTable != null) 
+				if (nextTable && nextTable.className == "rounded_rect_tbl") 
 					passToTr = nextTable.rows[0];
 			}
 		}
@@ -5313,8 +5317,8 @@ var TouchDlgUtil = {
 		this.bleachGreyRow();
 		if (passToTr) { // go to the next row
 		
-			// no highlighting of currently disabled items "More..." and "Add..."
-			if (passToTr.id == "$more" || passToTr.id == "$addNew") {
+			// no highlighting of hidden rows and currently disabled items "More..." and "Add..."
+			if (getElementStyle(passToTr).display == "none" || passToTr.id == "$more" || passToTr.id == "$addNew") {
 				this.greyTr = passToTr;
 				this._selectRowWithArrow(listOfItems, down);
 				return;
@@ -8265,6 +8269,7 @@ var FieldsWithEmptyValue = {
 		return field.value;
 	},
 	
+	// note it is safe to set value for "regular" field thru setValue
 	setValue : function(field, value) {
 		if (value.length != 0) {
 			this.setReady(field);
