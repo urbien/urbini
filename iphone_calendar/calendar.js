@@ -102,7 +102,7 @@ var DatePicker = {
   },
   
   _setValue : function(value) {
-    this.input.value = value;
+		FieldsWithEmptyValue.setValue(this.input, value);
     if (this.callback)
 	  this.callback(this.input);
     else  
