@@ -11044,7 +11044,7 @@ var FlashHandler = {
 
 function startCalendar() {
 // calling function in the last file
-  var FILES_TO_LOAD = ["iphone_calendar/calendar.css", "iphone_calendar/calendar.js"];
+  var FILES_TO_LOAD = ["calendar/calendar.css", "calendar/calendar.js"];
   startCalendar = null;
   LoadOnDemand.doit(FILES_TO_LOAD, "startCalendar", arguments);
 }
