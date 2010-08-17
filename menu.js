@@ -3170,6 +3170,21 @@ var ListBoxesHandler = {
 		this.tray = getChildByClassName(parent, "tray");
 	},
 	
+	// closed from TouchDlgUtils.closeAllDialogs()
+	reset : function() {
+		this.tray = null;
+		this.formPanel = null;
+		this.optionsPanel = null;
+		this.classifierPanel = null;
+    this.calendarPanel = null;
+		this.curParamRow = null;
+		this.textEntry = null;
+		this.classifierTextEntry = null;
+		this._isEditList = false;
+		
+		this.onBackBtn();
+	},
+	
   onClickParam : function(event, optionsSelectorStr) {
 		var $t = ListBoxesHandler;
 
@@ -3200,26 +3215,27 @@ var ListBoxesHandler = {
 		if (!tr)
 			return;	
 		
+		// find tray in the dialog
 		if ($t.tray == null)
 			$t.tray = getAncestorByClassName(tr, "tray");
 
 		// set members corresponding to happend event target
 		if (SlideSwaper.doesSlidingRun($t.tray))
 			return;
-		
-		if (!tr || $t.tray == null) { // resource list
+
+		// resource list: 
+		// 1)clicked tr is out of tray (options dialog)
+		// 2) formPanel is empty (except \n)
+		$t._isEditList = $t.tray == null || ($t.formPanel && $t.formPanel.innerHTML.length < 10);
+		if ($t._isEditList) { 
 			var resourceListDiv = document.getElementById("siteResourceList");
   		$t.tray = getChildByClassName(resourceListDiv, "tray");
 			
 			// init options selector in RL editor
 			var textEntry = getChildById($t.tray, "text_entry");
 			FieldsWithEmptyValue.initField(textEntry, "select")
-	  	$t._isEditList = true;
 	  }
-	  else {
-			$t._isEditList = false;
-	  }
-		
+
 		$t.clonedEvent = cloneEvent(event);  
 		$t.panelBlock = getAncestorByClassName($t.tray, "panel_block");
 
@@ -3228,7 +3244,7 @@ var ListBoxesHandler = {
 			$t.onOptionsBackBtn();
 
 			// click on different parameter then invoke this function with delay 800 ms
-			if (comparePosition($t.curParamRow, tr) != 0) {
+			if ($t.curParamRow && comparePosition($t.curParamRow, tr) != 0) {
 		  	setTimeout("ListBoxesHandler.onClickParam(null, " + optionsSelectorStr + ")", 800);
 		  	 $t.skipUserClick = true; // to skip additional clicks
 		  }
@@ -3356,7 +3372,7 @@ var ListBoxesHandler = {
 		$t.showOptions(popupDiv);
 
 		// RL editor: align options list
-		if ($t._isEditList && $t.panelBlock.style.visibility != "visible") {
+		if ($t._isEditList && getElementStyle($t.panelBlock).visibility != "visible") {
 			var form = getAncestorByAttribute(hotspot, "name", "siteResourceList");
 			var scXY = getScrollXY();
 			var leftEdge = findPosX(form) + scXY[0];
@@ -3534,7 +3550,7 @@ var ListBoxesHandler = {
 		
   onOptionsItemClickProcess : function(tr) {
 	  var $t = ListBoxesHandler;
-		
+	
 		if ($t.isClassifier(tr)) {
 			$t.onClassifierItemClick(null, tr);
 			return;
@@ -5170,9 +5186,9 @@ var TouchDlgUtil = {
 		var target = getEventTarget(event);
 		var tagName = (typeof target.tagName != 'undefined') ? target.tagName.toLowerCase() : "";
 		var wasProcessed = false;
-		
-		// 1. backspace or left arrow
-		if (code == 8 || code == 37) {
+
+		// 1. backspace or left arrow in "tray"
+		if (code == 8 || (code == 37 && !$t.isMenuPopupOpened())) {
 			if (target.id != "text_entry") {
 		  	wasProcessed = ListBoxesHandler.onBackBtn();
   	  	// prevent default browser behavior (backspace) and  other handlers
@@ -5203,6 +5219,16 @@ var TouchDlgUtil = {
 			if ($t.isMenuPopupOpened())
 				stopEventPropagation(event); // prevent TabMenu	processing of Esc
 			TouchDlgUtil.closeAllDialogs();
+		}
+		// left, right with opened menu "popup"
+		else if ((code == 37 || code == 39) && $t.isMenuPopupOpened()) {
+			PlainDlg.hide();
+			$t.curDlgDiv = null;
+			TabMenu.keyHandler(event);
+			var myEvent = cloneEvent(event); 
+			myEvent.charCode = 13;
+			myEvent.which = 13;
+			TabMenu.keyHandler(myEvent);
 		}
 	},
 
@@ -5431,8 +5457,8 @@ var TouchDlgUtil = {
 	
 	// closes 1) data entry 2) filter 3) plain dialog
 	closeAllDialogs : function() {
-		ListBoxesHandler.onBackBtn();
-		
+		ListBoxesHandler.reset();
+	
 		DataEntry.hide();
 		Filter.hide();
 		PlainDlg.hide();
