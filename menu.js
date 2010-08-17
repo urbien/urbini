@@ -2537,6 +2537,7 @@ var Tooltip = {
 		
 		addEvent(document.body, "mouseover", this.onMouseOver, false);
 		addEvent(document.body, "mouseout", this.onMouseOut, false);
+		addEvent(document.body, "click", this.onClick, false);
 		addEvent(this.tooltipDiv, "mouseover", this.onMouseOverTooltip, true);
 		addEvent(this.tooltipDiv, "mouseout", this.onMouseOutTooltip, true);
   },
@@ -2591,6 +2592,14 @@ var Tooltip = {
 		var target = getEventTarget(e);
 		$t.isOverTooltip = false;
 		$t.onMouseOut(e);
+	},
+	
+	onClick : function() {
+		var $t = Tooltip;
+		if ($t.isShown)
+			$t.hide();
+		else 
+			clearTimeout($t.timerId); // prevent showing
 	},
 	
   show : function() {
