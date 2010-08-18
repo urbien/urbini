@@ -852,7 +852,9 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .changeCols {display: inline; margin: 0px;}
 /* for displayInline text properties */
 .description {border:solid #808080 2px; border-color: #1b62b6;}
-.blogDivider {border-top: 1px dotted #aaaaaa;}
+.blogDivider {border-bottom: 1px dotted #aaaaaa;}
+.blogTitle {padding-top:10px;}
+
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
 .innerTitle, .panel_block .property_group, .panel_block #item_name, #subscribeNote { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; margin-left: 15px; color: &[Label];;}
