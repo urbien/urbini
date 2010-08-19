@@ -391,8 +391,9 @@ input   { -webkit-appearance: none; font-family: helvetica, arial; font-style: n
   font-weight:bold; 
   font-size:8pt;
 }
-.rlHeader td { vertical-align: middle; color: &[SecondaryColorB_3]; }
+.rlHeader td { vertical-align: middle; color: &[Alternative_A]; }
 .rlHeader a {color: &[Alternative_A];}
+.rlHeader a:hover { color: &[SecondaryColorB_3]; }
 .rlHeader .label {color: &[Alternative_A];}
 
 tr.prTitle { 
@@ -1588,6 +1589,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_1]; 0px, &[PrimaryColor_4]; 4px);
 	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
 	-webkit-background-size: 4px 1px;
+	height: 100%;
 } 
 
 #siteResourceList .frame { background: none; }
@@ -1818,6 +1820,7 @@ td.pBGr { background-color: #eeeeee;
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
 }
 .ctrl_toolbar_dlg { visibility: hidden; position: absolute;	background-color: &[BackgroundColor];; color: &[Label];; border: 1px solid &[PrimaryColor_1];; padding: 5px; }
+.ctrl_toolbar_dlg td { height: 32px; }
 
 tr.grey_highlighting > td, * html tr.grey_highlighting td, .ctrl_toolbar_dlg .grey_highlighting {
 	color: &[Label];;
