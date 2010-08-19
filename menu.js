@@ -2991,7 +2991,9 @@ var ListBoxesHandler = {
 		propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
     currentImgId  = imgId;
 
-    originalProp = propName1;
+		if (!classValue)
+    	originalProp = propName1;
+			
     var isGroupBy;
     if (originalProp.length > 8  &&  originalProp.indexOf("_groupBy") == originalProp.length - 8)
       isGroupBy = true;
@@ -3009,10 +3011,10 @@ var ListBoxesHandler = {
       }
     }
     var idx = -1;
-
     var divId;
     var isInterface;
-    if (currentFormName.indexOf("siteResourceList") == 0) {
+		var onClassInRL = this.isEditList() && classValue != null;
+    if (currentFormName.indexOf("siteResourceList") == 0 && !onClassInRL) {
       idx = propName1.indexOf(".$.");
       var idx1 = propName1.indexOf(".", idx + 3);
       if (idx1 == -1)
@@ -3047,7 +3049,7 @@ var ListBoxesHandler = {
             divId = propName + "_class_" + currentFormName;
           else {
             divId = propName + "_" + currentFormName;
-            originalProp = propName + propName1.substring(propName.length + "_class".length);
+			originalProp = propName + propName1.substring(propName.length + "_class".length);
           }
         }
       }
@@ -3094,10 +3096,11 @@ var ListBoxesHandler = {
         baseUri += "/";
     }
     var url = baseUri + "smartPopup";
-
     var params = "prop=" + encodeURIComponent(propName);
     if (currentFormName.indexOf("siteResourceList") == 0) {
-      params += "&editList=1&uri=" + encodeURIComponent(currentResourceUri) + "&type=" + form.elements['type'].value;
+      params += "&editList=1&type=" + form.elements['type'].value;
+			if (currentResourceUri)
+				params += "&uri=" + encodeURIComponent(currentResourceUri);
     }
     else {
   // if (formAction != "showPropertiesForEdit" && formAction != "mkResource") {
@@ -3147,7 +3150,7 @@ var ListBoxesHandler = {
     // request listbox context from the server via ajax
     postRequest(e, url, params, div, hotspot, this.onListLoaded);
  },
-  
+ 
   // Touch UI CODE -----------------------------------
   panelBlock : null,
 	tray : null, // each tray contains own form, options and (optionaly) calendar panels.
@@ -3259,7 +3262,7 @@ var ListBoxesHandler = {
 		  }
 			return;
 		}
-		
+
 		$t.formPanel = getChildByClassName($t.tray, "form_panel");
 		$t.optionsPanel = getChildByClassName($t.tray, "options_panel");
 		$t.classifierPanel = getChildByClassName($t.tray, "classifier_panel");
@@ -3427,10 +3430,17 @@ var ListBoxesHandler = {
 			panel.style.marginTop = (topOffset > 0) ? topOffset : 0;
 		}
 		
-    popupDiv.style.display = "block";
+		panel.style.display = "inline";
+		popupDiv.style.display = "block";
+		
+		// RL editor: fit height of optionsPanel if classifierPanel was previous
+		if ($t.isEditList() && $t.toPutInClassifier == false) {
+			$t.optionsPanel.style.height = "";
+			if ($t.classifierPanel != null && $t.optionsPanel.offsetHeight < $t.classifierPanel.offsetHeight)
+				$t.optionsPanel.style.height = $t.classifierPanel.offsetHeight;
+		}
+		
     popupDiv.style.visibility = "visible";
-
-    panel.style.display = "inline";
     
     // show item/parameter name (if it is too long)
     $t.displayItemName();
@@ -3549,17 +3559,20 @@ var ListBoxesHandler = {
 		e = getDocumentEvent(e);
 		var target = getEventTarget(e);
 		var tr = getAncestorByTagName(target, "tr");
-		$t.onOptionsItemClickProcess(tr);
-		
+				
 		// call "old" processor of option item click
 		// so, it sets _select and _verified
-		var popup = Popup.getPopup($t.curOptionsListDiv.id) 
-		popup.popupRowOnClick1(e, tr, target);
+		if (!$t.toPutInClassifier) {
+			var popup = Popup.getPopup($t.curOptionsListDiv.id)
+			popup.popupRowOnClick1(e, tr, target);
+		}
+		
+		$t.onOptionsItemClickProcess(tr);
 	},
 		
   onOptionsItemClickProcess : function(tr) {
 	  var $t = ListBoxesHandler;
-	
+
 		if ($t.isClassifier(tr)) {
 			$t.onClassifierItemClick(null, tr);
 			return;
@@ -3616,20 +3629,18 @@ var ListBoxesHandler = {
 	
   onOptionsSelectionFinish : function(lastClickedTr) {
 		var $t = ListBoxesHandler;
-
 		if (lastClickedTr && lastClickedTr.id == "$noValue") {
 			$t.onBackBtn();
 			return;
 		}
 		
-		var textField;
+		var textField = null;
 		if ($t.isCalendar()) 
 			textField = PeriodPicker.onSetThruList();
-		else {
+		
+		if (textField == null) {
 			var form = document.forms[currentFormName];
-			// possible that pointed to "_class" field instead of text field
-			var fieldName = originalProp.replace("_class", "");
-			textField = getOriginalPropField(form, fieldName);
+			textField = getOriginalPropField(form, originalProp);
 		}
 
     var selectedOptionsArr = $t.getSelectedOptions(lastClickedTr);
@@ -3950,12 +3961,12 @@ var ListBoxesHandler = {
     this.classifierPanel = this.optionsPanel.cloneNode(true);
     this.classifierPanel.className = "classifier_panel";
 
- 		var classSelector = getChildById(this.classifierPanel, "text_entry");
-		classSelector.onkeydown = null; // remove autoComplete handler
-		classSelector.onkeyup = this.onClassNameTyping;
+ 		this.classifierTextEntry = getChildById(this.classifierPanel, "text_entry");
+		this.classifierTextEntry.onkeydown = null; // remove autoComplete handler
+		this.classifierTextEntry.onkeyup = this.onClassNameTyping;
 
-		classSelector.value = "";
-		FieldsWithEmptyValue.initField(classSelector, "select", true)
+		this.classifierTextEntry.value = "";
+		FieldsWithEmptyValue.initField(this.classifierTextEntry, "select", true)
     
 		parent = this.optionsPanel.parentNode || parent; 
     parent.insertBefore(this.classifierPanel, this.optionsPanel);
@@ -3976,6 +3987,7 @@ var ListBoxesHandler = {
   // for calendar panel
   onDatesList : function() {
 		var $t = ListBoxesHandler;
+		$t.skipUserClick = false;
 		$t.onClickParam($t.clonedEvent);
   },
 	
