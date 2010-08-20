@@ -3179,23 +3179,34 @@ var ListBoxesHandler = {
   OPTIONS_DELAY : 1200,
   
 	setTray : function(parent) {
-		this.tray = getChildByClassName(parent, "tray");
+		tray = getChildByClassName(parent, "tray");
+		this.findElements(tray);
 	},
 	
-	// closed from TouchDlgUtils.closeAllDialogs()
-	reset : function() {
-		this.tray = null;
-		this.formPanel = null;
-		this.optionsPanel = null;
-		this.classifierPanel = null;
-    this.calendarPanel = null;
-		this.curParamRow = null;
-		this.textEntry = null;
-		this.classifierTextEntry = null;
-		this._isEditList = false;
+	// trayChild here is clicked TR or tray of opened dialog
+	findElements : function(trayChild) {
+		// 1. tray in dialog
+		var tray = getAncestorByClassName(trayChild, "tray");
+		// 2. tray in RL editor
+		if (!tray) {
+			var resourceListDiv = document.getElementById("siteResourceList");
+	  	tray = getChildByClassName(resourceListDiv, "tray");
+		}
+
+		// 3. test if we continue to work with the same tray
+		if (this.tray != null && comparePosition(tray, this.tray) == 0)
+			return;
+		// 4. find other elements
+		this.tray = tray;
+		this.panelBlock = getAncestorByClassName(this.tray, "panel_block");
+		this.formPanel = getChildByClassName(this.tray, "form_panel");
+		this.optionsPanel = getChildByClassName(this.tray, "options_panel");
+		this.classifierPanel = getChildByClassName(this.tray, "classifier_panel");
+    this.calendarPanel = getChildByClassName(this.tray, "calendar_panel");
 		
-		this.onBackBtn();
-	},
+		this.textEntry = getChildById(this.optionsPanel, "text_entry");
+		this.classifierTextEntry = getChildById(this.classifierPanel, "text_entry");
+	},	
 	
   onClickParam : function(event, optionsSelectorStr) {
 		var $t = ListBoxesHandler;
@@ -3226,33 +3237,28 @@ var ListBoxesHandler = {
 		var tr = getAncestorByClassName(target, "param_tr");
 		if (!tr)
 			return;	
-		
-		// find tray in the dialog
-		if ($t.tray == null)
-			$t.tray = getAncestorByClassName(tr, "tray");
+
+		// reset tray if parent dialog was closed
+		// note: not optimized for RL editor when "dialog" opened many times
+		if (!$t.panelBlock || !isVisible($t.panelBlock))
+			$t.findElements(tr);
 
 		// set members corresponding to happend event target
 		if (SlideSwaper.doesSlidingRun($t.tray))
 			return;
 
-		// resource list: 
-		// 1)clicked tr is out of tray (options dialog)
-		// 2) formPanel is empty (except \n)
-		$t._isEditList = $t.tray == null || ($t.formPanel && $t.formPanel.innerHTML.length < 10);
+		// resource list: formPanel is empty (except \n)
+		$t._isEditList = $t.formPanel.innerHTML.length < 10; ///*$t.tray == null || */($t.formPanel && $t.formPanel.innerHTML.length < 10);
 		if ($t._isEditList) { 
-			var resourceListDiv = document.getElementById("siteResourceList");
-  		$t.tray = getChildByClassName(resourceListDiv, "tray");
-			
 			// init options selector in RL editor
-			var textEntry = getChildById($t.tray, "text_entry");
-			FieldsWithEmptyValue.initField(textEntry, "select")
+			FieldsWithEmptyValue.initField($t.textEntry, "select")
 	  }
 
-		$t.clonedEvent = cloneEvent(event);  
-		$t.panelBlock = getAncestorByClassName($t.tray, "panel_block");
-
+		$t.clonedEvent = cloneEvent(event);
+		$t.curClass = null; 
+		 
 		// 2nd click in RL editor; options list is opened
-		if ($t._isEditList && $t.panelBlock.style.visibility == "visible") {
+		if ($t._isEditList && isVisible($t.panelBlock)) {
 			$t.onOptionsBackBtn();
 
 			// click on different parameter then invoke this function with delay 800 ms
@@ -3262,20 +3268,10 @@ var ListBoxesHandler = {
 		  }
 			return;
 		}
-
-		$t.formPanel = getChildByClassName($t.tray, "form_panel");
-		$t.optionsPanel = getChildByClassName($t.tray, "options_panel");
-		$t.classifierPanel = getChildByClassName($t.tray, "classifier_panel");
-    $t.calendarPanel = getChildByClassName($t.tray, "calendar_panel");
-		$t.curParamRow = tr;
-		
-		$t.textEntry = getChildById($t.optionsPanel, "text_entry");
-		$t.classifierTextEntry = getChildById($t.classifierPanel, "text_entry");
-		
-		$t.curClass = null;
-		
+		else
+			$t.curParamRow = tr;
+			
     return $t.processClickParam(event, tr, optionsSelectorStr);
-		//stopEventPropagation(event);  
   },
 	
   // optionsSelectorStr is not required parameter
@@ -3384,7 +3380,7 @@ var ListBoxesHandler = {
 		$t.showOptions(popupDiv);
 
 		// RL editor: align options list
-		if ($t._isEditList && getElementStyle($t.panelBlock).visibility != "visible") {
+		if ($t._isEditList && !isVisible($t.panelBlock)) {
 			var form = getAncestorByAttribute(hotspot, "name", "siteResourceList");
 			var scXY = getScrollXY();
 			var leftEdge = findPosX(form) + scXY[0];
@@ -3856,7 +3852,7 @@ var ListBoxesHandler = {
     this.onBackBtn();
   },
 
-  onBackBtn : function(/*factor*/) {
+  onBackBtn : function() {
     var tray = getAncestorByClassName(this.optionsPanel, "tray");
     if (tray == null)
       var tray = getAncestorByClassName(this.calendarPanel, "tray");
@@ -5478,7 +5474,7 @@ var TouchDlgUtil = {
 	
 	// closes 1) data entry 2) filter 3) plain dialog
 	closeAllDialogs : function() {
-		ListBoxesHandler.reset();
+		ListBoxesHandler.onBackBtn();
 	
 		DataEntry.hide();
 		Filter.hide();
