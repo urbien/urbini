@@ -4929,14 +4929,14 @@ var DataEntry = {
 			if (toSave) 
 		  	this.inpValues[i] = inputs[i].value;
 		  else {
-//				if (FieldsWithEmptyValue.isEmptyValue(inputs[i])) { /*inputs[i].getAttribute("is_empty_value") != null*/
-//					FieldsWithEmptyValue.setEmpty(inputs[i]);
-//					if (inputs[i].id == "item_selector")
-//						this.onParamNameTyping(inputs[i]); 
-//				}
-//		  	else
-//					inputs[i].value = this.inpValues[i];
-				FieldsWithEmptyValue.setEmpty(inputs[i]);
+				if (FieldsWithEmptyValue.hasEmptyValue(inputs[i])) {
+					FieldsWithEmptyValue.setEmpty(inputs[i]);
+					if (inputs[i].id == "item_selector")
+						this.onParamNameTyping(inputs[i]); 
+				}
+		  	else
+					inputs[i].value = this.inpValues[i];
+
 				if (inputs[i].id == "item_selector")
 					this.onParamNameTyping(inputs[i]); 
 		  }
@@ -8294,6 +8294,16 @@ var FieldsWithEmptyValue = {
 		$t.fieldForDelayedAction = null;
 	},
 	
+	// returns false if field is "plain"
+	hasEmptyValue : function(field) {
+		var isEmptyValue = field.getAttribute("is_empty_value");
+   	if (isEmptyValue == null) // not field of "FieldsWithEmptyValue" kind
+			return false;
+			
+    return true;
+	},
+	// returns
+	// true if currently set empty value; null if field does not have empty value
 	isEmptyValue : function(field) {
 		var isEmptyValue = field.getAttribute("is_empty_value");
    	if (isEmptyValue == null) // not field of "FieldsWithEmptyValue" kind
