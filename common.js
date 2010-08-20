@@ -1782,5 +1782,9 @@ function removeClassName(elem, className) {
 	var regexp = new RegExp(className, "g");
 	elem.className = elem.className.replace(regexp, "").trim();
 }
+function isVisible(elem) {
+	var stl = getElementStyle(elem);
+	return stl.display != 'none' && stl.visibility != 'hidden';
+}
 // flag that common.js was parsed
 g_loadedJsFiles["common.js"] = true;
