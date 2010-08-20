@@ -1,5 +1,5 @@
 ﻿// helps to select from 2 modes: date / period 
-// if there is no "toInp" then DatePicker
+// if there is no "toInp" then DatePicker 
 function startCalendar(parentDiv, callback, fromInp, toInp) {
   if (typeof parentDiv == 'string')
     parentDiv = document.getElementById(parentDiv);
