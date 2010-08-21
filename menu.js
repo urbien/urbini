@@ -3210,6 +3210,10 @@ var ListBoxesHandler = {
 	
   onClickParam : function(event, optionsSelectorStr) {
 		var $t = ListBoxesHandler;
+		var target = getEventTarget(event);
+		
+		if (isElemOfClass(target, "input") && target.getAttribute("readonly") == null)
+			return;
 
 		if ($t.skipUserClick) {
 			$t.skipUserClick = false;
@@ -3222,7 +3226,7 @@ var ListBoxesHandler = {
 		if (!event)
 			event = $t.clonedEvent;
 		
-		var target = getEventTarget(event);
+		
 		var isLink = getAncestorByTagName(target, "a") != null;
 		var isRollUp = getAncestorByClassName(target, "rollup_td") != null;
 
@@ -5267,7 +5271,7 @@ var TouchDlgUtil = {
 		var target = getEventTarget(event);
 		var code = getKeyCode(event);
 		var dlg = target.parentNode;
-		if (dlg.id == "pane2") {
+		if ($t.isMenuPopupOpened()) {
 			$t._selectMenuItemWithArrow(dlg, code);
 			stopEventPropagation(event);
 			return;
@@ -5390,6 +5394,7 @@ var TouchDlgUtil = {
 	
 	_selectMenuItemWithArrow : function(dlg, code) {
 		var passToTr = null;
+		
 		if (!this.greyTr) {
 			passToTr = getChildByClassName(dlg, "param_tr");
 		}
