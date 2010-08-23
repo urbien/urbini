@@ -1799,6 +1799,10 @@ td.pBGr { background-color: #eeeeee;
   border: solid 1px &[SecondaryColorA_3];;
 }
 */
+.contentRelated {
+  padding-left: 7px;
+}
+
 #auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
 #auto_complete .menuItem, #auto_complete .not_found { color: &[MenuLineColorA];; padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_4];; }
 #auto_complete .not_found { border-bottom: none; }
