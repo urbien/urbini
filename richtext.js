@@ -204,12 +204,12 @@ var RteEngine = {
 	},
 	launchTextColorPopup : function(btnObj, callback, chosenTextClr) {
 		var parentDlg = getParentDialog(btnObj.div);
-		PalettePopup.show(btnObj, 'right', callback, parentDlg, null, chosenTextClr);
+		PalettePopup.show(btnObj, 'center', callback, parentDlg, null, chosenTextClr);
 		return PalettePopup.div;
 	},
 	launchBgColorPopup : function(btnObj, callback, chosenBgClr) {
 		var parentDlg = getParentDialog(btnObj.div);
-		PalettePopup.show(btnObj, 'right', callback, parentDlg, null, chosenBgClr);
+		PalettePopup.show(btnObj, 'center', callback, parentDlg, null, chosenBgClr);
 		return PalettePopup.div;
 	},
 	launchLinkPopup : function(btnObj, callback, cancelCallback, href) {
