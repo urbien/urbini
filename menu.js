@@ -3244,7 +3244,7 @@ var ListBoxesHandler = {
 
 		// reset tray if parent dialog was closed
 		// note: not optimized for RL editor when "dialog" opened many times
-		if (!$t.panelBlock || !isVisible($t.panelBlock))
+		if (!$t.panelBlock || !isVisible($t.panelBlock) || $t.panelBlock.parentNode == null)
 			$t.findElements(tr);
 
 		// set members corresponding to happend event target
@@ -3910,7 +3910,7 @@ var ListBoxesHandler = {
 		
 		TouchDlgUtil.bleachBlueRow();
 		$t._showInvisibleParams();
-		
+
 		$t.skipUserClick = false; // accept click on parameter
   },
 
@@ -4717,8 +4717,11 @@ var DataEntry = {
 	show : function(e, url, hotspot) {
 		if (this.loadingUrl != null)
 			return;
-	
-		this.hotspotDim = getElementCoords(hotspot);
+
+		this.hotspotDim = {x:0, y:0};
+		if (hotspot)
+			this.hotspotDim = getElementCoords(hotspot);
+		
 		// hide possible opened dialogs
 		TouchDlgUtil.closeAllDialogs();
 
@@ -5109,7 +5112,8 @@ var PlainDlg = {
 		
 	  // var dialogIframe = document.getElementById('dialogIframe');
 	  setDivInvisible($t.dlgDiv/*, dialogIframe*/);
-	 	Tooltip.hide(true);
+	 	if (!Browser.mobile)
+			Tooltip.hide(true);
 	 	
 		if ($t.dlgArr == null)
 			$t.dlgArr = new Array();
@@ -5468,25 +5472,27 @@ var TouchDlgUtil = {
 		if (event.type == 'click')
 			target = getEventTarget(event);
 		
-		if(DataEntry.submit(event, target))
-			return;
-		
-		if (Filter.submitProcess(event))
-			return;
-
-		SubscribeAndWatch.submit(event);
+		var isDone = DataEntry.submit(event, target);
+		if(!isDone)
+			isDone = Filter.submitProcess(event);
+		if(!isDone)
+			SubscribeAndWatch.submit(event);
+	
+		$t.closeAllDialogs();
 	},
 	
 	// closes 1) data entry 2) filter 3) plain dialog
-	closeAllDialogs : function() {
+	closeAllDialogs : function(isFtsAutocomplete) {
 		ListBoxesHandler.onBackBtn();
-	
+
 		DataEntry.hide();
-		Filter.hide();
+		if (!(isFtsAutocomplete && Browser.mobile))
+			Filter.hide();
 		PlainDlg.hide();
 		SubscribeAndWatch.hide();
-		FtsAutocomplete.hide();	 
-		Tooltip.hide(true);
+		FtsAutocomplete.hide();
+		if (!Browser.mobile)	 
+			Tooltip.hide(true);
 		
 		if (this.greyTr) {
 			this.bleachGreyRow();
@@ -8157,7 +8163,7 @@ var FtsAutocomplete = {
 		if (!content || content.length == 0) 
 			$t.autocompleteDiv.style.display = "none";
 		else {
-			TouchDlgUtil.closeAllDialogs();
+			TouchDlgUtil.closeAllDialogs(true);
 			$t.autocompleteDiv.innerHTML = content;
 			$t.autocompleteDiv.style.display = "";
 		}
