@@ -403,12 +403,12 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 	
 	this.onFontColor = function() {
 		var parentDlg = getParentDialog(i_am.fontClrBtn.div);
-		PalettePopup.show(i_am.fontClrBtn, 'right', i_am.setFontColor, parentDlg, "default");
+		PalettePopup.show(i_am.fontClrBtn, 'center', i_am.setFontColor, parentDlg, "default");
 	}
 	
 	this.onBackgroundColor = function() {
 		var parentDlg = getParentDialog(i_am.bgClrBtn.div); 
-		PalettePopup.show(i_am.bgClrBtn, 'right', i_am.setBackgroundColor, parentDlg, "default");
+		PalettePopup.show(i_am.bgClrBtn, 'center', i_am.setBackgroundColor, parentDlg, "default");
 	}
 	
 	
