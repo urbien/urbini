@@ -867,14 +867,14 @@ var Boost = {
 		
 		if (id == 'menu_Add') {
 			var a = $t.getElementById('add_url_hdn');
-			DataEntry.show(a.href);
+			DataEntry.show(e, a.href);
 			newUrl = null;
 		}
 		if (id == 'menu_Edit') {
 			var a = $t.getElementById('edit_url_hdn');
 			if (a == null)
 				return stopEventPropagation(e);
-			DataEntry.show(a.href);
+			DataEntry.show(e, a.href);
 			newUrl = null;
 		}
 		if (id == 'menu_Delete') {
