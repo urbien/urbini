@@ -298,9 +298,9 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
     // stop cueLoading
     if (Browser.mobile)
       CueLoading.hide();
-
-    if (!noLoadingCue && typeof Tooltip != 'undefined')
+    else if (!noLoadingCue)
       Tooltip.hideCueLoading();
+
     var location;
     
     try {
