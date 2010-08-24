@@ -1179,7 +1179,7 @@ var PopupHandler = {
 	// hotspot is a control object
 	// onHideCallback - not required
 	showRelatively : function(hotspot, alignment, div, autohide, parentDlg, onHideCallback) {
-		var OFFSET_Y = 2;
+		var OFFSET_Y = 7;
 		// only 1 popup can be opened concurrently, except the overflow popup
 		if(this.popupDiv != null)
 			this.hide(typeof hotspot.isOverflowed != 'undefined' && hotspot.isOverflowed);
