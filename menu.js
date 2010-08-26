@@ -5274,13 +5274,17 @@ var TouchDlgUtil = {
 		var $t = TouchDlgUtil;
 		var target = getEventTarget(event);
 		var code = getKeyCode(event);
+		
+		if ((code == 39 || code == 37) && target.className != "shrunk_field") // target.getAttribute("readonly") == null
+			return;
+		
 		var dlg = target.parentNode;
 		if ($t.isMenuPopupOpened()) {
 			$t._selectMenuItemWithArrow(dlg, code);
 			stopEventPropagation(event);
 			return;
 		}
-		
+
 		var listOfItems = ListBoxesHandler.getCurrentListOfItems();
 		
 		// no arrows processing in edit in-place fields
@@ -5602,7 +5606,7 @@ var TouchDlgUtil = {
 
 	},
 	
-	// "callback"
+	// "callback" - called after option selection / scroll back
   bleachBlueRow : function() {
     if (this.blueTr == null)
       return;
@@ -5614,11 +5618,12 @@ var TouchDlgUtil = {
 
 		this.blueTr.className = this.blueTr.className.replace(/blue_highlighting|grey_highlighting/g, "").trim();
 
-
 		this.bleachGreyRow(); // possible other row was highlighted with mouse
 		this.blueTr.removeAttribute("blue");
 		this.highlightRowGrey(this.blueTr); // make blue row "grey"
 		this.blueTr = null;
+		
+		this.focusHolder.focus();	
   },
 	
 	hasBlueRow : function() {
