@@ -301,7 +301,7 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		i_am.onMouseOver();
 		// closePopup used only in the overflow pupup
 		// for a buttons that do not call a (sub)popup
-		var closePopup = i_am.callback(i_am.isPressed);
+		var closePopup = i_am.callback(i_am.isPressed, e.ctrlKey);
 		if(i_am.isOverflowed && closePopup)
 			PopupHandler.hide();
 	}
