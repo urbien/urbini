@@ -1495,8 +1495,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.performCommand("undo", null, true);
 		return true;
 	}
-	// 0
-	this.onSource = function(pressed) {
+	
+	// 0 allowToEdit if Ctrl key was pressed while mouseUp
+	this.onSource = function(pressed, allowToEdit) {
 		var html;
 		if(i_am.document.importNode) { // FF --
 			if(pressed) {
@@ -1504,7 +1505,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 				i_am.document.body.innerHTML = "";
 				html = i_am.document.importNode(html,false);
 				i_am.document.body.appendChild(html);
-				i_am.document.designMode = "Off";
+				if (!allowToEdit)
+					i_am.document.designMode = "Off";
 			}
 			else {
 				html = i_am.document.body.ownerDocument.createRange();
