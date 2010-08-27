@@ -468,15 +468,17 @@ var RteEngine = {
 	  if(imgUrl == null)
 	    return false;
 	  
-	  var align = ImageUploader.getImageAlignFromForm(form);
-	  
+		var sel = getChildById(form, $t.IMG_ALIGN_ID);
+		var align = sel.options[sel.selectedIndex].value;
+	  var margin = getChildById(form, $t.MARGIN_ID).value; 
+		
 	  RteEngine.imagePopup.hide();
 	  var rteObj = RteEngine.getRteById(RteEngine.curRteId);
 
     var selRadioIdx = $t.getSelectedRadioBtnIdx(form);
 	  // insert image
 	  var encImgUrl = encodeURI(imgUrl);
-	  rteObj.setImage(encImgUrl, align, selRadioIdx);
+	  rteObj.setImage(encImgUrl, align, margin, selRadioIdx);
 
 	  // URL - no uploading
 	  if($t.isImageLocal(imgUrl) == false || selRadioIdx == 1) {
@@ -539,13 +541,11 @@ var ImageUploader = {
   FILE_INPUT_NAME   : "file",
   RTE_ID_INPUT_NAME : "rte_id",
   IMG_ALIGN_ID      : "img_align",
+	MARGIN_ID         : "img_margin",
 
   HDN_IFRAME_NAME   : "imageUploadingIframe",
   WAIT_FLAG : "waiting",
-  
-  
-  imgAling : "left",
-  
+ 
   newImgPair : null,
   
   getUploadImageFormContent : function(submitCallbackName, submitBtnText) {
@@ -590,14 +590,16 @@ var ImageUploader = {
       + " </td></tr>"
       
       + " <tr><td><br/>align:&nbsp;<select id=\"" + this.IMG_ALIGN_ID + "\""
-      + " style=\"font-family:verdana; font-size:12px\" onchange=\"ImageUploader._storeAlign(this.value)\">"
+      + " style=\"font-family:verdana; font-size:12px\">"
       + " <option value=\"left\">left</option>"
       + " <option value=\"middle\">middle</option>"
       + " <option value=\"right\">right</option>"
       + " <option value=\"bottom\">bottom</option>"
       + " <option value=\"top\">top</option>"
-      + " </select></td></tr>"
-      
+      + " </select>"
+			+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;margin:&nbsp;<input value=\"30px\" size=\"12\" type=\"text\" id=\"" + this.MARGIN_ID + "\">"
+			+ "</td></tr>"
+			
       + " <tr><td align=\"center\"><br/>"
       + " <input type=\"submit\" value=\"" + submitBtnText + "\">"
 
@@ -660,19 +662,12 @@ var ImageUploader = {
   
   // failed to get correct current value from
   // select in "image paste dialog", so onchange of the select was used.
-  getImageAlignFromForm : function(/*form*/) {
-    return this.imgAling;
-    //return form[ImageUploader.IMG_ALIGN_ID].value;
-  },
-  
   // mark image as waiting on the server response
   markImageAsWaiting : function(urlPairsArr, originalUrl) {
     var pair = new ImageUploader.UrlPair(originalUrl, ImageUploader.WAIT_FLAG);
     urlPairsArr.push(pair);
   },
-  _storeAlign : function(imgAlign) {
-    this.imgAling = imgAlign;
-  },
+
   // callback on the server response.
   onHdnDocLoad : function(rteId, originalUrl) {
 		// loop to wait on server response
@@ -1518,7 +1513,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		else {
 			if(pressed) { // IE --
 				var iHTML = i_am.document.body.innerHTML;
-				i_am.document.designMode = "Off";
+				if (!allowToEdit)
+					i_am.document.designMode = "Off";
 				i_am.putContent(iHTML); // hack: restore the document after designMode = "Off"
 				i_am.document.body.innerText = iHTML;
 			}
@@ -1630,17 +1626,20 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		return true;
 	}
 	// 8
-	this.setImage = function(url, align, selRadioIdx) {
+	this.setImage = function(url, align, margin, selRadioIdx) {
 		if(url.length != 0) {
 		  // check on double encoding (for space only for now)
 		  if(url.indexOf("%2520") != -1)
 		    url = decodeURI(url);
-		  
-		  // uploading (idx == 0)
-		  var html = "<img file_path=\"" + url + "\" align=\"" + align + "\"/>";
-		  if (selRadioIdx == 1) // src for URL (idx == 1)   
-		    html = "<img src=\"" + url + "\" align=\"" + align + "\"/>";
+ 
+		  html = "<img src=\"" + url + "\" align=\"" + align + "\"";
+			if (margin)
+				html += " style=\"margin:" + margin + ";\"";
 
+			if (selRadioIdx == 0) // uploading
+				html += " file_path=\"" + url + "\"";
+
+			html += " />";
 		  this.insertHTML(html);
 		}
 		return true;
