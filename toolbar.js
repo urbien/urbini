@@ -296,6 +296,7 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 	}	
 	
 	this.onMouseUp = function(e) {
+		e = getDocumentEvent(e);
 		if(i_am.isDisabled)
 		  return;
 		i_am.onMouseOver();
