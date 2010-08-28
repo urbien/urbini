@@ -894,11 +894,15 @@ function getPreviousSibling(obj) {
 }
 
 function getFirstChild(parent) {
+	if (!parent)
+		return null;
 	var child = parent.firstChild;
 	return child.nodeType == 1 ? child : getNextSibling(child);
 }
 
 function getLastChild(parent) {
+	if (!parent)
+		return null;
 	var child = parent.lastChild;
 	return child.nodeType == 1 ? child : getPreviousSibling(child);
 }
@@ -924,7 +928,6 @@ function getChildByAttribute(parent, attribName, attribValue) {
 			attribValue = [attribValue];
 		}
 					
-
 		for (var n = 0; n < attribValue.length; n++) {
 	  	if (parent[attribName] == attribValue[n]) 
 	  		return parent;
