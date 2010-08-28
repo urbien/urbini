@@ -2562,7 +2562,7 @@ var Tooltip = {
 		if (!tooltipText || tooltipText.plainText().trim().length == 0)
 			return;
 
-		$t.showArgs.e = e;
+		$t.showArgs.shiftKey = e.shiftKey;
 		$t.showArgs.target = target;
 		$t.showArgs.tooltipText = tooltipText;
 		
@@ -2608,11 +2608,10 @@ var Tooltip = {
 		if ($t.isOverTooltip)
 			return;
 		
-		var e = $t.showArgs.e;
 		var target = $t.showArgs.target;
 		var tooltipText = $t.showArgs.tooltipText;
 
-		var toShow = !($t.isShiftRequired() && !e.shiftKey);
+		var toShow = !($t.isShiftRequired() && !$t.showArgs.shiftKey);
     if(!toShow) {
 			var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
     	window.status = plainTooltipText;
@@ -2622,7 +2621,7 @@ var Tooltip = {
       return false; 
     
 		$t.contentDiv.innerHTML = tooltipText;
-		setDivVisible(e, $t.tooltipDiv, $t.tooltipFrame, target, 0, 12);
+		setDivVisible(/*e*/null, $t.tooltipDiv, $t.tooltipFrame, target, 0, 30);
 		$t.isShown = true;
   },
 	
@@ -3179,8 +3178,9 @@ var ListBoxesHandler = {
   OPTIONS_DELAY : 1200,
   
 	setTray : function(parent) {
-		tray = getChildByClassName(parent, "tray");
-		this.findElements(tray);
+		var tray = getChildByClassName(parent, "tray");
+		if (tray)
+			this.findElements(tray);
 	},
 	
 	// trayChild here is clicked TR or tray of opened dialog
@@ -5169,6 +5169,18 @@ var TouchDlgUtil = {
 
 	// it is called for 1) whole dialog + form panel 2) for each options list
 	init : function(parent) {
+		
+		// autocomplete popup
+		if (this.isAutocompletePopup(parent)) {
+			var table = parent.getElementsByTagName("table")[0];
+			var rows = table.rows;
+			for (var n = 0; n < rows.length; n++) {
+		  	addEvent(rows[n], 'mouseover', this.highlightRowGreyOnOver, false);
+		  	addEvent(rows[n], 'mouseout', this.bleachGreyRowOnOut, false);
+		  }
+			return;
+		}
+		
 		var tables = parent.getElementsByTagName("table");
     for (var i = 0; i < tables.length; i++) {
 			if (tables[i].className == "rounded_rect_tbl") {
@@ -5190,7 +5202,7 @@ var TouchDlgUtil = {
 	},
 	
 	setCurrentDialog : function(dlgDiv) {
-		if (!isElemOfClass(dlgDiv, "panel_block"))
+		if (!isElemOfClass(dlgDiv, ["panel_block", "dsk_auto_complete"]))
 			return;
 		this.curDlgDiv = dlgDiv;
 		if (this.focusHolder == null) {
@@ -5198,10 +5210,13 @@ var TouchDlgUtil = {
 			this.focusHolder.className = "shrunk_field";
 			this.focusHolder.setAttribute("readonly", "true");
 		}
-		dlgDiv.appendChild(this.focusHolder);
-		this.focusSelector(dlgDiv, true);
+		// autocomplete gets events from FTS field; others required "focusHolder"
+		if (dlgDiv.className != "dsk_auto_complete") {
+			dlgDiv.appendChild(this.focusHolder);
+			this.focusSelector(dlgDiv, true);
+		}
 		
-		if (this.isMenuPopu(dlgDiv))
+		if (this.isMenuPopup(dlgDiv))
 			this._selectMenuItemWithArrow(dlgDiv);
 	},
 	
@@ -5258,17 +5273,24 @@ var TouchDlgUtil = {
 	},
 
 	isMenuPopupOpened : function() {
-		return (this.curDlgDiv != null && this.isMenuPopu(this.curDlgDiv));
+		return (this.curDlgDiv != null && isVisible(this.curDlgDiv) && this.isMenuPopup(this.curDlgDiv));
 	},	
-	isMenuPopu : function(div) {
+	isMenuPopup : function(div) {
 		if (div.id != "pane2")
 			return false;
-		if(getFirstChild(getFirstChild(div)).className != "menu")
+		var firstChild = getFirstChild(div);
+		if(firstChild && getFirstChild(firstChild).className != "menu")
 			return false;
 		
 		return true;
 	},
-	
+	isAutocompletePopup : function(div) {
+		if (div.id != "auto_complete")
+			return false;
+		
+		return true;
+	},
+
 	// arrow navigation
 	arrowsHandler : function(event) {
 		var $t = TouchDlgUtil;
@@ -5278,9 +5300,12 @@ var TouchDlgUtil = {
 		if ((code == 39 || code == 37) && target.className != "shrunk_field") // target.getAttribute("readonly") == null
 			return;
 		
-		var dlg = target.parentNode;
-		if ($t.isMenuPopupOpened()) {
-			$t._selectMenuItemWithArrow(dlg, code);
+		var isMenu = $t.isMenuPopupOpened();
+		var isAutocomplete = $t.isAutocompletePopup($t.curDlgDiv);
+
+		
+		if (isMenu || isAutocomplete) {
+			$t._selectMenuItemWithArrow($t.curDlgDiv, code);
 			stopEventPropagation(event);
 			return;
 		}
@@ -5416,15 +5441,16 @@ var TouchDlgUtil = {
 		else if (code == 38 || (code == 9 && event.shiftKey)) { // up
 			passToTr = getPreviousSibling(this.greyTr);
 			if (passToTr == null || !getTextContent(passToTr)) {
-				
 				var column = getAncestorByTagName(this.greyTr, "td");
-				//if (column.cellIndex > 0) {
-					var prevColumn = (column.cellIndex > 0) ?
-							 getPreviousSibling(column) : getLastChild(column.parentNode);
-					// getPreviousSibling(column)
+				if (column != null) {
+					var prevColumn = (column && column.cellIndex > 0) ? getPreviousSibling(column) : getLastChild(column.parentNode);
 					var prevTable = getChildByTagName(prevColumn, "table");
 					passToTr = prevTable.rows[prevTable.rows.length - 1];
-				//}
+				}
+				else { // autocomplete
+					var table = this.greyTr.parentNode;
+					passToTr = table.rows[table.rows.length - 1];
+				}
 			}
 		}
 		else
@@ -5603,7 +5629,6 @@ var TouchDlgUtil = {
 
 		tr.className = tr.className.replace("grey_highlighting", "").trim();
 		this.greyTr = null;
-
 	},
 	
 	// "callback" - called after option selection / scroll back
@@ -5625,6 +5650,10 @@ var TouchDlgUtil = {
 		
 		this.focusHolder.focus();	
   },
+	
+	getGreyTr : function() {
+		return this.greyTr; 
+	},
 	
 	hasBlueRow : function() {
 		return this.blueTr != null;
@@ -7812,8 +7841,6 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     if(par && iframe.id == 'popupIframe') {
       par.appendChild(iframe);
     }
-    if (!isDivStatic && !Browser.mobile)
-      istyle.zIndex  = zIndex + 1;
   }
 
 
@@ -8116,7 +8143,11 @@ var FtsAutocomplete = {
 	onkeyup : function(e) {
 		var $t = FtsAutocomplete;
 		
-		// $t.field = getEventTarget(e);
+		var code = getKeyCode(e);
+		
+		if (code <= 40 && code != 8)
+			return; // skip not symbol keys except backspace and delete
+		
 		if ($t.timerId)
 			clearTimeout($t.timerId);
 		
@@ -8130,10 +8161,15 @@ var FtsAutocomplete = {
 			$t._createDiv();
 		
 		var code = getKeyCode(e);
-		var isVisible = getElementStyle($t.autocompleteDiv).display != "none";
+		// var isVisible = getElementStyle($t.autocompleteDiv).display != "none";
 		var hasText = FieldsWithEmptyValue.getValue($t.field).length != 0;
-		if (code == 40) {
+		if (code == 40 || code == 38) {
 			TouchDlgUtil.arrowsHandler(e);
+		}
+		else if (code == 13 && isVisible($t.autocompleteDiv)) { // enter
+			var greyTr = TouchDlgUtil.getGreyTr();
+			var shingle = getChildByClassName(greyTr, "menuItem");
+			$t.onSelection(e, shingle);
 		}
 	},
 	
@@ -8170,7 +8206,9 @@ var FtsAutocomplete = {
 		else {
 			TouchDlgUtil.closeAllDialogs(true);
 			$t.autocompleteDiv.innerHTML = content;
+			TouchDlgUtil.init($t.autocompleteDiv);
 			$t.autocompleteDiv.style.display = "";
+			TouchDlgUtil.setCurrentDialog($t.autocompleteDiv);
 		}
 	},
 	
@@ -8215,20 +8253,26 @@ var FtsAutocomplete = {
 	onclick : function(e) {
 		var $t = FtsAutocomplete;
 		var target = getEventTarget(e);
+		
+		if (target.parentNode.tagName.toLowerCase() == "a") {
+			this.hide();
+			return true;
+		}
+
 		var shingle = getAncestorByClassName(target, "menuItem");
+		$t.onSelection(e, shingle);
+	},
+	// slection by click or Enter
+	onSelection : function(e, shingle) {
 		if (!shingle)
 			return;
 
-		$t.hide();
-		if (target.parentNode.tagName.toLowerCase() == "a")
-			return true;
-
+		this.hide();
 		shingle.className = shingle.className.replace("blue_highlighting", "");
 		var textDiv = shingle.getElementsByTagName("div")[0];
 		var text = textDiv.innerHTML;
-		FieldsWithEmptyValue.setValue($t.field, text);
-		$t.search(e, $t.field);
-		
+		FieldsWithEmptyValue.setValue(this.field, text);
+		this.search(e, this.field);
 	},
 	
 	hide : function() {
