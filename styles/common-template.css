@@ -124,7 +124,7 @@ input[type=button], input[type=submit], .button {
      -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.5); 
   -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.5);
   
-	background-color: &[PrimaryColor_1];;
+	background-color: &[ToolbarColor];;
 	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_4];);
@@ -1691,7 +1691,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	white-space: nowrap;
 }
 
-.iphone_field input { color: &[SecondaryColorA_3];; background: transparent; -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
+.iphone_field input { width: 70% /* allows to fit filter on mobile */; color: &[SecondaryColorA_3];; background: transparent; -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
 #fts_filter .iphone_field input { width: 120px; }
 .iphone_field .clear_cross { position: relative; top: 4px; left: -2px; cursor: pointer; visibility: hidden; }
 .iphone_field .magnify_glass_small { position: relative; top: 3px; cursor: pointer; }
@@ -1806,22 +1806,21 @@ td.pBGr { background-color: #eeeeee;
 #auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
 #auto_complete .menuItem, #auto_complete .not_found { color: &[MenuLineColorA];; padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_4];; }
 #auto_complete .not_found { border-bottom: none; }
-#auto_complete td.menuItem:hover { color: &[SecondaryColorB_3];; background-color: &[PrimaryColor_4];; }
+#auto_complete .grey_highlighting td, #auto_complete .grey_highlighting a {  color: &[SecondaryColorB_3];; }
 #auto_complete tr:last-child td { border-bottom: none; }
 #auto_complete .menuItem div { float: left; line-height: 45px; margin-right: 5px; }
 #auto_complete .menuItem table { float: right; }
 #auto_complete .menuItem table td { text-align: center; padding: 0px 2px; }
 #auto_complete a { font-size: 12px; margin-left: 0px; color: &[MenuLineColorA];; }
-#auto_complete td.menuItem:hover a { color: &[SecondaryColorB_3];; }
-.dsk_auto_complete { padding: 2px; -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); }
+.dsk_auto_complete { -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); }
 .dsk_auto_complete .menuItem, .dsk_auto_complete .not_found { min-width: 460px; }
 
 /* RTE and styles editor */
 .ctrl_toolbar { position : relative; display: block; left: 0px; top: 0px; width: 100%; border-width: 0px; cursor: default;
     background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_1_rgb];, 0.5), rgba(&[PrimaryColor_4_rgb];, 0.5));
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb];, 0.5)), to(rgba(&[PrimaryColor_4_rgb];, 0.5)));
-    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
-    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
+    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=#77&[PrimaryColor_4_ie];);
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=#77&[PrimaryColor_4_ie];)";
 }
 .ctrl_toolbar_dlg { visibility: hidden; position: absolute;	background-color: &[BackgroundColor];; color: &[Label];; border: 1px solid &[PrimaryColor_1];; padding: 5px; }
 .ctrl_toolbar_dlg td { height: 32px; }
