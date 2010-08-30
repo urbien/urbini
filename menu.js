@@ -3644,11 +3644,12 @@ var ListBoxesHandler = {
 		}
 
     var selectedOptionsArr = $t.getSelectedOptions(lastClickedTr);
-    var td = getAncestorByTagName(textField, "td");
-    var chosenValuesDiv = getChildByClassName(td, "chosen_values");
+	 	var tr = getAncestorByClassName(textField, "param_tr");
+	  var rollupTd = getAncestorByClassName(textField, "rollup_td"); //getAncestorByTagName(textField, "td"); //getAncestorByClassName(textField, ["input_td"]);
+    var chosenValuesDiv = getChildByClassName(tr, "chosen_values");
 
-		if (td.className == "rollup_td") { // rollup
-			var img = td.getElementsByTagName("img")[0];
+		if (rollupTd != null) { // rollup
+			var img = rollupTd.getElementsByTagName("img")[0];
 	  	textField.value = lastClickedTr.id;
 			img.src = "icons/cakes.png";
 		}
@@ -3783,7 +3784,7 @@ var ListBoxesHandler = {
   makeParamReset : function() {
     // remove value in coresponding <input>s
     var form = document.forms[currentFormName];
-    
+  
 		// 1. text/hidden field
 		var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp];
 //    textField.value = "";
@@ -3813,7 +3814,8 @@ var ListBoxesHandler = {
     // 5. clear chosen_values in the filter
 		// chosen_values contains corresponding "display names" (like text field)
 		// and _select fields
-    var chosenValuesDiv = getChildByClassName(textField.parentNode, "chosen_values");
+		var paramTr = getAncestorByClassName(textField, "param_tr");
+    var chosenValuesDiv = getChildByClassName(paramTr, "chosen_values");
     if (chosenValuesDiv)
       chosenValuesDiv.innerHTML = "";
 
@@ -5209,6 +5211,8 @@ var TouchDlgUtil = {
 			this.focusHolder = document.createElement("input");
 			this.focusHolder.className = "shrunk_field";
 			this.focusHolder.setAttribute("readonly", "true");
+			if (Browser.ie)  // IE does not support "fixed position. So move focusHolder manually.
+				this.focusHolder.style.position = "absolute";
 		}
 		// autocomplete gets events from FTS field; others required "focusHolder"
 		if (dlgDiv.className != "dsk_auto_complete") {
@@ -5410,7 +5414,7 @@ var TouchDlgUtil = {
 			if (input && !input.getAttribute("readonly")) 
 				FieldsWithEmptyValue.setFocus(input);
 			else
-				this.focusHolder.focus();	
+				this._setFocusInFocusHolder();	
 			if (!isElemInView(passToTr))
 				passToTr.scrollIntoView(down == false);
 		}
@@ -5648,8 +5652,15 @@ var TouchDlgUtil = {
 		this.highlightRowGrey(this.blueTr); // make blue row "grey"
 		this.blueTr = null;
 		
-		this.focusHolder.focus();	
+		this._setFocusInFocusHolder();	
   },
+	
+	_setFocusInFocusHolder : function() {
+	  // IE does not support "fixed position. So move focusHolder manually.
+		if (Browser.ie)
+			this.focusHolder.style.top = getScrollXY()[1];
+		this.focusHolder.focus();		
+	},
 	
 	getGreyTr : function() {
 		return this.greyTr; 
@@ -11526,7 +11537,8 @@ var CheckButtonMgr = {
   },
 
   _switchState : function(btn, input) {
-    var xPos = getElementStyle(btn).backgroundPosition;
+		var stl = getElementStyle(btn);
+    var xPos = stl.backgroundPosition || stl.backgroundPositionX;
     var isChecked = (xPos && xPos.length != 0 && xPos.indexOf("0") != 0);
     this.setState(btn, input, !isChecked);
   },
