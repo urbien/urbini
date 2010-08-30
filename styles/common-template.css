@@ -1539,7 +1539,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .chosen_values {
 	text-align: right;
-  padding: 0px; 
+  padding: 0px;
+  width: 100%; 
   overflow: hidden;
 }
 .count { white-space: nowrap; font-size: 14px;}
