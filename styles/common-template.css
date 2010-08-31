@@ -35,8 +35,8 @@ a img {
 }
 	  
 H1 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; color: &[SecondaryColorA_1];; font-size: 34px; }
-H2 a {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; color: &[SecondaryColorB_1];; font-size: 21px;}
-H3 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; color: &[SecondaryColorB_1];; font-size: 13px; margin: 0}
+H2 a {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; color: &[SecondaryColorB_1];; font-size: 21px; margin: 0px;}
+H3 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; color: &[SecondaryColorB_1];; font-size: 13px; margin: 0px;}
 
 .pointer { cursor: pointer; }
 .dragable, .move { cursor: move; }
@@ -854,7 +854,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 /* for displayInline text properties */
 .description {border:solid #808080 2px; border-color: #1b62b6;}
 .blogDivider {border-bottom: 1px dotted #aaaaaa;}
-.blogTitle {padding-top:10px;}
+.blogTitle {padding-top:30px;}
 
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
@@ -872,8 +872,7 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 
 /*.lblue {background-color:#ACD2E2; font-size:10pt; width:99%; height:1px; border:0; vertical-align:left}*/
 
-.errMsg {font-family:san-serif,arial,verdana;font-size:14px;color:red;font-weight:bold;}
-.info {font-family:san-serif,arial,verdana;font-size:14px;color:blue;font-weight:bold;}
+.info { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; margin-left: 14px; color: &[Label];;}
 
 /* fe - div for Screencast grid element in which 'play' div will be displaying play button to play flash demo */
 .fe {
@@ -1072,7 +1071,7 @@ TD.toolbar {
   */
 }
 
-.dashboardLine, tr.rlHeader {
+.dashboardLine {
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
@@ -1737,6 +1736,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #div_info table { overflow: visible; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; overflow: visible; font-weight: bold; color: &[SecondaryColorB_3];;}
 #div_info td { overflow: visible; text-align: right; vertical-align: middle; }
+#div_info #rtitle { overflow: visible; text-align: center; vertical-align: middle; }
 #div_info .text_editor_container { text-align: left; }
 #div_info .text_editor_container .label { float: none; }
 
