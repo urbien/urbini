@@ -1083,8 +1083,8 @@ TD.toolbar {
  	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
 }
 
-.dashboard_btn { 
-  width: 60px; 
+.dashboard_btn {
+  padding-left:5px; padding-right:5px; 
   text-align: center;  
   overflow: visible; 
   border: 1px solid transparent;
