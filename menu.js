@@ -10372,7 +10372,7 @@ var WidgetRefresher = {
   _onInterval : function(divId) {
     var url = getBaseUri() + "widget/div/oneWidget.html";
     var bookmarkUrl = WidgetRefresher.widgetsArr[divId].bookmarkUrl;
-    var params = "-$action=explore&-refresh=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
+    var params = "-refresh=y&-b=" + encodeURIComponent(bookmarkUrl);
 
 //    var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
 
