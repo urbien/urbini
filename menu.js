@@ -5470,7 +5470,7 @@ var TouchDlgUtil = {
 			this.highlightRowGrey(passToTr);
 		}
 		else if (this.greyTr) // try to find suited TR again only if dialog supports highlighting
-			this._selectMenuItemWithArrow(dlg, code);	
+			this._selectMenuItemWithArrow(dlg, code);			
 	},
 	
 	// selector focused on opening dialog or panel
@@ -10310,19 +10310,18 @@ var WidgetRefresher = {
 		var cells = dashboardTable.rows[0].cells;
 		for (var i = 0; i < cells.length; i++) {
 			var children = cells[i].children;
-			for (var n = 0; n < children.length; n++)
-				if (children[n].className && children[n].className == "widget") {
-					var refreshDiv = getChildByClassName(children[n], "refresh");
+			for (var n = 0; n < children.length; n++) {
+                var clName = children[n].className;
+				if (clName  &&  (clName == "widget"  ||  clName == "propertySheet")) {
+                    var rel = children[n].getAttribute("rel");
 					
-					if (i==0 && n==0)
-						this.setInterval(children[n], "10");
-					
-					if (refreshDiv == null)
+					if (rel == null)
 						 continue;
 					
-					var intervalSeconds = refreshDiv.getAttribute("rel");
+					var intervalSeconds = rel.substring(8);
 					this.setInterval(children[n], intervalSeconds);
 				}
+			}
 		}
 	},
 
@@ -10372,7 +10371,7 @@ var WidgetRefresher = {
   _onInterval : function(divId) {
     var url = getBaseUri() + "widget/div/oneWidget.html";
     var bookmarkUrl = WidgetRefresher.widgetsArr[divId].bookmarkUrl;
-    var params = "-refresh=y&-b=" + encodeURIComponent(bookmarkUrl);
+    var params = "-refresh=y&-w=y&-b=" + encodeURIComponent(bookmarkUrl);
 
 //    var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
 
@@ -10668,8 +10667,8 @@ var OperaWidget = {
   },
 
   isWidget : function() {
-    if(typeof widget != 'undefined')
-      return true;
+//    if(typeof widget != 'undefined')
+//      return true;
     return false;
   }
 }
