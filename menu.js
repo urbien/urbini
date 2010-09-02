@@ -5469,8 +5469,8 @@ var TouchDlgUtil = {
 			}
 			this.highlightRowGrey(passToTr);
 		}
-		else
-			this._selectMenuItemWithArrow(dlg, code);			
+		else if (this.greyTr) // try to find suited TR again only if dialog supports highlighting
+			this._selectMenuItemWithArrow(dlg, code);	
 	},
 	
 	// selector focused on opening dialog or panel
@@ -8212,7 +8212,7 @@ var FtsAutocomplete = {
 		if ($t.autocompleteDiv == null)
 			$t._createDiv();
 
-		if (!content || content.length == 0) 
+		if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
 			$t.autocompleteDiv.style.display = "none";
 		else {
 			TouchDlgUtil.closeAllDialogs(true);
