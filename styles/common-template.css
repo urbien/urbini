@@ -1111,6 +1111,15 @@ TD.toolbar {
   color: &[Alternative_A];
 }
 
+/* doashboard layout, supporting only 3 columns for now */ 
+#col_1 td {
+  padding-right: 10px; 
+}
+
+#col_3 td {
+  padding-left: 10px; 
+}
+
 .menuTitle td, .menuTitle th {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
 }
