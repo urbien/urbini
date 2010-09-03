@@ -5547,7 +5547,7 @@ var TouchDlgUtil = {
 		else
 			tr = getAncestorByTagName(target, "tr");	
 		
-		if (!getTextContent(tr))
+		if (!tr || !getTextContent(tr))
 			return;
 			
 		if($t.greyTr)
@@ -10470,10 +10470,12 @@ function WidgetSlider() {
 
 		if ($t.step <= $t.HALF_STEPS_AMT) 
 			opacity = ($t.HALF_STEPS_AMT - $t.step) / $t.HALF_STEPS_AMT;
+		else if ($t.step == $t.HALF_STEPS_AMT * 2 - 1)
+			opacity = 1.0;	
 		else
 			opacity = ($t.step - $t.HALF_STEPS_AMT) / $t.HALF_STEPS_AMT;
 
-		changeOpacity($t.widgetDiv, opacity);
+		$t._changeOpacity(opacity);
 
 		// replace slides
 		if ($t.step == $t.HALF_STEPS_AMT) {
@@ -10495,9 +10497,19 @@ function WidgetSlider() {
 		}
 		else {
 			$t.step = 1;
-			changeOpacity($t.widgetDiv, 1.0);
 		} 
-		
+	}
+	this._changeOpacity = function(opacity) {
+		if (!Browser.ie) {
+			changeOpacity(this.widgetDiv, opacity);
+			return;
+		}
+		// IE's problem: need to change opacity for each element
+		// remained problem with text-nodes
+		var all = this.widgetDiv.getElementsByTagName("*");
+		for (var i = 0; i < all.length; i++) {
+			changeOpacity(all[i], opacity);
+		}
 	}
 }
 
