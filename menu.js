@@ -10298,11 +10298,18 @@ function callback(event, widget) {
   hideDiv(event, widget.id);
 }
 
+/*********************************************
+* Updates all widgets with refresh flag 
+*********************************************/
 var WidgetRefresher = {
   widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
   hdnDoc : null, // helps to load refreshed document
 
 	init : function() {
+		// No widget refreshing in edit page mode 
+		if (getUrlParam(null, "-editPage") == "y")
+			return;
+		
 		var dashboardTable = document.getElementById("dashboard");
 		if (!dashboardTable)
 			return;
@@ -10311,13 +10318,17 @@ var WidgetRefresher = {
 		for (var i = 0; i < cells.length; i++) {
 			var children = cells[i].children;
 			for (var n = 0; n < children.length; n++) {
-                var clName = children[n].className;
+        var clName = children[n].className;
 				if (clName  &&  (clName == "widget"  ||  clName == "propertySheet")) {
-                    var rel = children[n].getAttribute("rel");
+        	var rel = children[n].getAttribute("rel");
 					
 					if (rel == null)
 						 continue;
-					
+
+					// fix column width then widget keeps its width
+					// TODO: append code window.onresize
+					cells[i].style.width = cells[i].offsetWidth;
+
 					var intervalSeconds = rel.substring(8);
 					this.setInterval(children[n], intervalSeconds);
 				}
@@ -10330,13 +10341,13 @@ var WidgetRefresher = {
 
 		// 1. prepare new "widget member" or stop old one.
     if(typeof this.widgetsArr[divId] == 'undefined')
-      this.widgetsArr[divId] = new Object();
+      this.widgetsArr[divId] = new WidgetSlider; //new Object();
     else
-      clearInterval(this.widgetsArr[divId].timerId);
+      clearInterval(this.widgetsArr[divId].timerId); // ?
 
     // 2. Find the boorkmark url that is a part of "outer" div widget div
     // divId is an widget content div
-	  this.widgetsArr[divId].bookmarkUrl = divId.substr(7);//widgetDivId.substr(7);
+	  this.widgetsArr[divId].bookmarkUrl = divId.substr(7);
 
     // 4. launch widget refresh loop.
     var interval;
@@ -10369,8 +10380,9 @@ var WidgetRefresher = {
     }
   },
   _onInterval : function(divId) {
+		var $t = WidgetRefresher;
     var url = getBaseUri() + "widget/div/oneWidget.html";
-    var bookmarkUrl = WidgetRefresher.widgetsArr[divId].bookmarkUrl;
+    var bookmarkUrl = $t.widgetsArr[divId].bookmarkUrl;
     var params = "-refresh=y&-w=y&-b=" + encodeURIComponent(bookmarkUrl);
 
 //    var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
@@ -10393,24 +10405,100 @@ var WidgetRefresher = {
 
     }
 */
-    var divToRefresh;
     // refresh whole the widget including backside
-    var widgetDivId = "widget_" + bookmarkUrl;
-    divToRefresh = document.getElementById(widgetDivId);
+    if ($t.widgetsArr[divId].widgetDiv == null) {
+			var widgetDivId = "widget_" + bookmarkUrl;
+			var div = document.getElementById(widgetDivId);
+			$t.widgetsArr[divId].widgetDiv = div;
+		}
 
-    Debug.setMode(true);
-    Debug.log('_onInterval: url = ' + url + "; params = " + params);
-
-    postRequest(null, url, params, divToRefresh, null, WidgetRefresher.refresh, true, true);
+		// TODO: check if slider is in cache before loading
+    postRequest(null, url, params, $t.widgetsArr[divId].widgetDiv, null, WidgetRefresher.refresh, true, true);
   },
+	
   // called by postRequest
   refresh : function(event, div, hotSpot, content)  {
 		if (content.length == 0)
 			return;
-    div.innerHTML = content;
-    if(OperaWidget.isWidget())
+
+    var widgetSlider = WidgetRefresher.widgetsArr[div.id]
+		widgetSlider.showNewContent(content);
+		
+		if(OperaWidget.isWidget())
       OperaWidget.onWidgetRefresh();
   }
+}
+
+/***********************************************
+* associated with each widget with REFRESH flag
+* NOTE: meanwhile NO stroring of slides because
+* no check of secondary content loading! 
+************************************************/
+function WidgetSlider() {
+	var self = this;
+	// used and initialized in WidgetRefresher
+	this.timerId; // timer to refresh
+	this.interval; // refresh interval
+	this.bookmarkUrl;
+	this.widgetDiv;
+	
+	//-------------------
+	this.PRELOADING_TIMEOUT = 2000; // alows to download possible images in widget content
+	// fading animation
+	this.HALF_STEPS_AMT = 10;
+	this.TIMEOUT = 30;
+	this.step = 1;
+//	this.slidesArr = null; // no storing meanwhile
+
+	this.showNewContent = function(html) {
+    var slide = document.createElement("div");
+		slide.style.visibility = "hidden"; 
+    slide.innerHTML = html;
+
+		slide.style.width = 0;
+		slide.style.height = 0;
+		slide.style.overflow = "hidden";
+//		this.slides.push(slide);
+		this.widgetDiv.appendChild(slide); 
+		// preload with help of some delay	
+		setTimeout(function(){self.fading()}, $t.PRELOADING_TIMEOUT);
+	}
+	
+	this.fading = function() {
+		var $t = self;
+		var opacity;
+
+		if ($t.step <= $t.HALF_STEPS_AMT) 
+			opacity = ($t.HALF_STEPS_AMT - $t.step) / $t.HALF_STEPS_AMT;
+		else
+			opacity = ($t.step - $t.HALF_STEPS_AMT) / $t.HALF_STEPS_AMT;
+
+		changeOpacity($t.widgetDiv, opacity);
+
+		// replace slides
+		if ($t.step == $t.HALF_STEPS_AMT) {
+			
+			var oldSlide = getFirstChild($t.widgetDiv);
+			oldSlide.style.display = "none";
+			var newSlide = getNextSibling(oldSlide);
+			newSlide.style.width = "";
+			newSlide.style.height = "";
+			newSlide.style.visibility = "";
+			// note: remove child before check of slide loading loop
+			$t.widgetDiv.removeChild(oldSlide);
+		}
+		
+		$t.step++;
+		
+		if ($t.step < $t.HALF_STEPS_AMT * 2) {
+			setTimeout(function(){$t.fading()}, $t.TIMEOUT);
+		}
+		else {
+			$t.step = 1;
+			changeOpacity($t.widgetDiv, 1.0);
+		} 
+		
+	}
 }
 
 
