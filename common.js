@@ -1552,12 +1552,17 @@ function getBaseUri() {
 function changeOpacity(obj, level) {
   if (!obj)
     return;  
-	if(typeof obj.style.MozOpacity != 'undefined')
-		obj.style.MozOpacity = level;
-	else if(typeof obj.style.opacity != 'undefined')
-		obj.style.opacity = level;
-	else if(obj.style.filter != 'undefined')
-		obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
+	if (typeof obj.style.MozOpacity != 'undefined') 
+  	obj.style.MozOpacity = level;
+  else 
+  	if (typeof obj.style.opacity != 'undefined') 
+  		obj.style.opacity = level;
+  	else if (obj.style.filter != 'undefined') {
+			if (level == 1.0) 
+ 				obj.style.filter = '';
+			else	
+				obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
+		}
 }
 
 function copyAttributes(oNode, oNew) {
