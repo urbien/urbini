@@ -1559,9 +1559,10 @@ function changeOpacity(obj, level) {
   		obj.style.opacity = level;
   	else if (obj.style.filter != 'undefined') {
 			if (level == 1.0) 
- 				obj.style.filter = '';
-			else	
-				obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
+	  	obj.style.filter = '';
+	  else {
+	  	obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
+			}
 		}
 }
 
@@ -1793,6 +1794,15 @@ function removeClassName(elem, className) {
 function isVisible(elem) {
 	var stl = getElementStyle(elem);
 	return stl.display != 'none' && stl.visibility != 'hidden';
+}
+
+function hex2rgb(hexColor) {
+  if (hexColor.startsWith("#"))
+    hexColor = hexColor.substring(1);
+  var red   = parseInt(hexColor.substring(0,2), 16);
+  var green = parseInt(hexColor.substring(2,4), 16);
+  var blue  = parseInt(hexColor.substring(4,6), 16);
+  return [red, green, blue];
 }
 // flag that common.js was parsed
 g_loadedJsFiles["common.js"] = true;
