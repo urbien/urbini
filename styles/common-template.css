@@ -115,7 +115,7 @@ input[type=button], input[type=submit], .button {
   
   /* not all browser support these, but who cares? */
 
-  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2); 
+  text-shadow:0 0 2px rgba(0, 0, 0, 0.4); 
 
           border-radius: 5px; 
      -moz-border-radius: 5px; 
@@ -529,7 +529,7 @@ tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)";
 }
 
-.desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-family: arial; font-size: 18px; line-height:31px; text-align:center;}
+.desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-family: arial; font-size: 18px; line-height:31px; text-align:center; text-shadow:0 0 2px rgba(0, 0, 0, 0.4); }
 .desktop_search .right img { margin: 5px 0 0 8px; }
 
 /* VIEWS */
@@ -1071,7 +1071,7 @@ TD.toolbar {
   */
 }
 
-.dashboardLine {
+.dashboardLine, tr.rlHeader {
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
