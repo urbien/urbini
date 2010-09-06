@@ -1075,8 +1075,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
  			content =  this.document.body.innerHTML;
 	  }
 
+		var images = this.document.body.getElementsByTagName("img");
+		var hasImages = (images && images.length > 0);
+		
     // if there is no text (only tags and invisible symbols) then return empty string.
-  	if (typeof toCheckOnEmty == 'undefined' || toCheckOnEmty) {
+		// returns html if there are <img>s
+  	if (hasImages == false && (typeof toCheckOnEmty == 'undefined' || toCheckOnEmty)) {
   	  var tmp = content.plainText();
 	    tmp = tmp.replace(/&nbsp;| |\t|\n|\f|\r|\x0B]/g, "");
 	    if(tmp.length == 0)
