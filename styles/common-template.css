@@ -1112,11 +1112,11 @@ TD.toolbar {
 }
 
 /* doashboard layout, supporting only 3 columns for now */ 
-#col_1 td {
+#col_1 {
   padding-right: 10px; 
 }
 
-#col_3 td {
+#col_3 {
   padding-left: 10px; 
 }
 
@@ -1439,7 +1439,11 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	width: 100%;
 }
 
-#common_filter { width: 50%; min-width: 20em; max-width: 30em }
+/* title of data entry widget */
+#siteResourceList .widget .panel_block .containers  td { height: 30px; background-color: &[BackgroundColor];; }
+#siteResourceList .widget .panel_block .embed .containers  td { background-color: transparent; }
+
+#common_filter { width: 50%; min-width: 20em; max-width: 30em; }
 #fts_filter { width: auto; min-width: 150px;  overflow: visible; }
 #fts_filter .no_border td { border-bottom: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
