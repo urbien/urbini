@@ -1870,4 +1870,4 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .widget .containers h2 { margin: 5px 0px 0px 5px; }
 .widget .containers h2 a { font-size: 19px; padding: 0px; }
 
-.shrunk_field { position: fixed; font-size: 1px; width: 0; height: 0; border-width: 0; background: transparent; }
+.shrunk_field { position: fixed; font-size: 1px; width: 1px; border-width: 0; background: transparent; }
