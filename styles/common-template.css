@@ -1113,7 +1113,7 @@ TD.toolbar {
 
 /* doashboard layout, supporting only 3 columns for now */ 
 #col_1 {
-  padding-right: 10px; 
+  padding-right: 10px; padding-left: 10px;
 }
 
 #col_3 {
