@@ -5211,6 +5211,8 @@ var TouchDlgUtil = {
 			this.focusHolder = document.createElement("input");
 			this.focusHolder.className = "shrunk_field";
 			this.focusHolder.setAttribute("readonly", "true");
+			this.focusHolder.style.top = getScrollXY()[1];
+			
 			if (Browser.ie)  // IE does not support "fixed position. So move focusHolder manually.
 				this.focusHolder.style.position = "absolute";
 		}
@@ -5307,10 +5309,10 @@ var TouchDlgUtil = {
 		var isMenu = $t.isMenuPopupOpened();
 		var isAutocomplete = $t.isAutocompletePopup($t.curDlgDiv);
 
-		
 		if (isMenu || isAutocomplete) {
 			$t._selectMenuItemWithArrow($t.curDlgDiv, code);
-			stopEventPropagation(event);
+			if (code >= 37 && code <= 40)
+				stopEventPropagation(event);
 			return;
 		}
 
@@ -10422,7 +10424,8 @@ var WidgetRefresher = {
 			return;
 
     var widgetSlider = WidgetRefresher.widgetsArr[div.id]
-		widgetSlider.showNewContent(content);
+		if (widgetSlider)
+			widgetSlider.showNewContent(content);
 		
 		if(OperaWidget.isWidget())
       OperaWidget.onWidgetRefresh();
@@ -10455,15 +10458,14 @@ function WidgetSlider() {
 	this.bgRGB = null;
 		
 	this.showNewContent = function(html) {
-    var slide = document.createElement("div");
-		slide.style.visibility = "hidden"; 
-    slide.innerHTML = html;
-
-		slide.style.width = 0;
-		slide.style.height = 0;
-		slide.style.overflow = "hidden";
-//		this.slides.push(slide);
-		this.widgetDiv.appendChild(slide); 
+    this.newSlide = document.createElement("div");
+		// allow to download content (images) in background
+		this.newSlide.style.visibility = "hidden"; 
+    this.newSlide.style.width = 0;
+		this.newSlide.style.fontSize = "1px";  
+		this.newSlide.style.overflow = "hidden";
+		this.newSlide.innerHTML = html; 
+		this.widgetDiv.appendChild(this.newSlide);
 		// preload with help of some delay	
 		setTimeout(function(){self.fading()}, $t.PRELOADING_TIMEOUT);
 	}
@@ -10483,15 +10485,10 @@ function WidgetSlider() {
 
 		// replace slides
 		if ($t.step == $t.HALF_STEPS_AMT) {
-			
-			var oldSlide = getFirstChild($t.widgetDiv);
-			oldSlide.style.display = "none";
-			var newSlide = getNextSibling(oldSlide);
-			newSlide.style.width = "";
-			newSlide.style.height = "";
-			newSlide.style.visibility = "";
-			// note: remove child before check of slide loading loop
-			$t.widgetDiv.removeChild(oldSlide);
+			removeAllChildren($t.widgetDiv, $t.newSlide);
+		
+			$t.newSlide.style.width = "";
+			$t.newSlide.style.visibility = "";
 		}
 		
 		$t.step++;
