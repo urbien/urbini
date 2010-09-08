@@ -189,7 +189,7 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
 }
 .button div { float: left; }
 .btn_with_icon, a.btn_with_icon, .btn_with_icon:active, a.btn_with_icon:active { padding: 0px 3px 0px 10px; }
-.btn_with_symbol, a.btn_with_symbol, .btn_with_symbol:active, a.btn_with_symbol:active { font-size: 18px; padding: 0px 7px 2px 7px; }
+.btn_with_symbol, a.btn_with_symbol, .fts a.btn_with_symbol, .btn_with_symbol:active, a.btn_with_symbol:active { font-size: 18px; padding: 0px 7px 2px 7px; text-decoration: none; }
 
 /*********************** end of new buttons  *****************************/
 
@@ -1302,7 +1302,7 @@ TD.closePopup {
   height: 3em;
   border: solid #808080 1px
 }
-.fts a { color: &[SecondaryColorA_5];; }
+.fts a { color: &[Label];; text-decoration: underline; }
 .rl {
   white-space: nowrap;
   vertical-align: middle;
@@ -1867,8 +1867,8 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 .rounded_rect_tbl .blue_highlighting .label.rounded_rect_tbl .blue_highlighting .propLabel1, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[Label];; }
 
-.rounded_rect_tbl .empty_field, .iphone_field .empty_field, .empty_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.4);}
-.rounded_rect_tbl .focused_field, .iphone_field .focused_field, .focused_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.2); }
+.rounded_rect_tbl .empty_field, .iphone_field .empty_field, .empty_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.7);}
+.rounded_rect_tbl .focused_field, .iphone_field .focused_field, .focused_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.4); }
 
 .widget .dragable h2 { margin-bottom: 0px; font-size: 17px; } 
 .widget .containers h2 { margin: 5px 0px 0px 5px; }
