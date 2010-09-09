@@ -10331,7 +10331,8 @@ var WidgetRefresher = {
 					// TODO: append code window.onresize
 					cells[i].style.width = cells[i].offsetWidth;
 
-					var intervalSeconds = rel.substring(8);
+					var idx = rel.indexOf(";");
+					var intervalSeconds = (idx == -1) ? rel.substring(8) : rel.substring(8, idx);
 					this.setInterval(children[n], intervalSeconds);
 				}
 			}
@@ -10384,9 +10385,34 @@ var WidgetRefresher = {
   _onInterval : function(divId) {
 		var $t = WidgetRefresher;
     var url = getBaseUri() + "widget/div/oneWidget.html";
-    var bookmarkUrl = $t.widgetsArr[divId].bookmarkUrl;
-    var params = "-refresh=y&-w=y&-b=" + encodeURIComponent(bookmarkUrl);
+    var bookmarkId = $t.widgetsArr[divId].bookmarkUrl;
+    var params = "-refresh=y&-w=y&-b=" + encodeURIComponent(bookmarkId);
 
+    var wdiv = document.getElementById("div_" + bookmarkId);
+    
+    if (wdiv) {
+      var rel = wdiv.getAttribute("rel");
+      if (rel) {
+        var idx = rel.indexOf("recNmb:");
+        if (idx == -1) 
+          recNmb = 0;
+        else {
+          var idx1 = rel.indexOf(";", idx + 1);
+          recNmb = (idx1 == -1) ? rel.substring(idx + 7) : rel.substring(idx + 7, idx1);
+        }
+        var idx11 = rel.indexOf(";nmbOfResources=");
+        if (idx11 != -1) {
+          var idx12 = rel.indexOf(";", idx11);
+          if (idx12 == -1)
+            limit = rel.substring(idx11 + 16);
+          else
+            limit = rel.substring(idx11 + 16, idx12);
+          recNmb += limit;
+        }
+        params += "&recNmb=" + recNmb;
+//        alert(recNmb);
+      }
+    }
 //    var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
 
     var cookieDiv = document.getElementById("ad_session_id");
@@ -10409,7 +10435,7 @@ var WidgetRefresher = {
 */
     // refresh whole the widget including backside
     if ($t.widgetsArr[divId].widgetDiv == null) {
-			var widgetDivId = "widget_" + bookmarkUrl;
+			var widgetDivId = "widget_" + bookmarkId;
 			var div = document.getElementById(widgetDivId);
 			$t.widgetsArr[divId].widgetDiv = div;
 		}
