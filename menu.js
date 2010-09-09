@@ -3832,8 +3832,6 @@ var ListBoxesHandler = {
   },
 
   onOptionsBackBtn : function() {
-    var value = FieldsWithEmptyValue.getValue(this.textEntry);
-
     var form = document.forms[currentFormName];
     var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp]; // field of the form
 
@@ -3842,18 +3840,29 @@ var ListBoxesHandler = {
 			this.onBackBtn();
 			return;
 		}
-
-		// set value directly from "text_entry" field of options panel
+		
+		var value = "";
+		var chosenValuesDiv = getChildByClassName(this.curParamRow, "chosen_values"); 
+		// data entry: get 1st option item
+		if (!chosenValuesDiv) { 
+		  if (isVisible(this.curOptionsListDiv)) {
+		  	var optTr = getChildByClassName(this.curOptionsListDiv, "option_tr");
+				while (optTr && optTr.style.display == "none")
+					optTr = getNextSibling(optTr);
+				if (optTr && optTr.style.display != "none")
+					value = getTextContent(optTr);
+		  }
+		}
+		else // Filter: allows to set value from textEntry directly
+			value = FieldsWithEmptyValue.getValue(this.textEntry);
+		
 		if (value.length != 0) {
 			// remove possible selected values
 			this.makeParamReset();
-
-      var chosenValuesDiv = getChildByClassName(this.curParamRow, "chosen_values");
-      if (chosenValuesDiv) { // filter
-        chosenValuesDiv.innerHTML = "<div>" + value + "</div>";
-      }
+			if (chosenValuesDiv)
+      	chosenValuesDiv.innerHTML = "<div>" + value + "</div>";
       textField.value = value;
-    }
+		}
 		
     this.onBackBtn();
   },
