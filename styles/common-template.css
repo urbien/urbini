@@ -717,6 +717,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
 
 #siteResourceList #header td, #div_Info #header td { height: auto; }
+#siteResourceList #dashboard .front td {padding-bottom:10px;}
 
 .embed  {
   vertical-align: middle;
