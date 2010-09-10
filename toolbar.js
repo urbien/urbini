@@ -177,6 +177,18 @@ function FormPopup(innerFormHtml, flag) {
 				}
 		}
 	
+		// textarea
+		var taCol = i_am.formDiv.getElementsByTagName("textarea");
+		for(var i = 0; i < taCol.length; i++) {
+			var ta = taCol[i];
+			var type = ta.getAttribute("type");
+			var name = ta.getAttribute("name");
+			if(toGet)
+				getArr[name] = ta.value;
+			else
+				ta.value = setArr[name];
+		}
+	
 		if(toGet)
 			return getArr;
 	}
