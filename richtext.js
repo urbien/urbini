@@ -32,7 +32,7 @@ var RteEngine = {
 		buttons:{
 			style:true,	font:true, decoration:true,	align:true,	dent:true,
 			list:true, text_color: true, bg_color: true, link: true,
-			image: true, smile:false, line: true, table:false, supsub:true, reundo:true, html:true
+			image: true, object: true, smile:false, line: true, table:false, supsub:true, reundo:true, html:true
 		}
 	},
 	chatRTE : {
@@ -41,7 +41,7 @@ var RteEngine = {
 		buttons:{
 			style:false, font:true, decoration:true, align:true, dent:true,
 			list:true, text_color: true, bg_color: true, link: true,
-			image: true, smile:true, line: true, table:false, supsub:false, reundo:true, html:false
+			image: true, object: true, smile:true, line: true, table:false, supsub:false, reundo:true, html:false
 		}
 	},
 	advancedRTE : {
@@ -78,6 +78,7 @@ var RteEngine = {
 	bgColorPopup : null,
 	linkPopup : null,
 	imagePopup : null,
+	objectPopup : null,
 	imagePastePopup : null,
 	tablePopup : null,
 
@@ -240,6 +241,13 @@ var RteEngine = {
 		this.imagePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.imagePopup.div;
 	},
+	launchObjectPopup : function(btnObj, callback, cancelCallback) {
+		if(this.objectPopup == null)
+			this.createObjectPopup();
+		var parentDlg = getParentDialog(btnObj.div);
+		this.objectPopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
+		return this.objectPopup.div;
+	},
 	launchImagePastePopup : function(rteId) {
 		if(this.imagePastePopup == null)
 			this.createImagePastePopup();
@@ -324,6 +332,16 @@ var RteEngine = {
 			this.sizePopup.appendItem(itemDiv);
 		}
 		this.sizePopup.setWidth(50);
+	},
+	createObjectPopup : function() {
+		var innerFormHtml = '<table style="font-family:verdana; font-size:12px" cellpadding="4" cellspacing="0" border="0">'
+			+ ' <tr>'
+			+ ' <td align="left">Paste html code:</td>'
+			+ ' </tr><tr>'
+			+ ' <td><textarea name="html" type="text" id="html" rows="4" cols="50"></textarea></td>'
+      + ' </tr>'
+			+ '</table>';
+		this.objectPopup = new FormPopup(innerFormHtml);
 	},
 	createSmilePopup : function() {
 		var SMILES_AMT = 30;
@@ -845,6 +863,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.smileBtn = null;
 	this.linkBtn = null;
 	this.imageBtn = null;
+	this.objectBtn = null;
 	this.tableBtn = null;
 	this.htmlBtn = null;
 
@@ -964,6 +983,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			this.linkBtn = toolBar.appendButton(this.onLink, false, RteEngine.IMAGES_FOLDER + "hyperlink.png", "hyperlink");
 		if(this.rtePref.buttons.image) // image
 			this.imageBtn = toolBar.appendButton(this.onImage, false, RteEngine.IMAGES_FOLDER + "image.png", "image");
+		if(this.rtePref.buttons.object) // object/embed; widget
+			this.objectBtn = toolBar.appendButton(this.onObject, false, "icons/addThirdPartyWidget.png", "embeded object or widget");
+
 		if(this.rtePref.buttons.list) { // list: ordered + unordered
 			toolBar.appendButton(this.onOrderedList, false, RteEngine.IMAGES_FOLDER + "list_num.png", "ordered list");
 			toolBar.appendButton(this.onUnorderedList, false, RteEngine.IMAGES_FOLDER + "list_bullet.png", "unordered list");
@@ -1467,6 +1489,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		
 		i_am.currentPopup = RteEngine.launchImagePopup(i_am.imageBtn, i_am.setImage, i_am.iframeObj.id, i_am.cancelImage);
 	}
+	// object; widget
+	this.onObject = function() {
+		if(!i_am.isAllowedToExecute())
+			return;
+		
+		i_am.currentPopup = RteEngine.launchObjectPopup(i_am.objectBtn, i_am.setObject, i_am.iframeObj.id, i_am.cancelImage);
+	}
 	// 21
 	this.onTable = function() {
 		if(!i_am.isAllowedToExecute())
@@ -1651,6 +1680,23 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		}
 		return true;
 	}
+	
+	// setObject
+	this.setObject = function(params) {
+		// hack: hailed to insert <object>/<embed> directlly thru insertHTML
+		// so substitute some mark with the code
+		var mark = "[!object]";
+		i_am.insertHTML(mark);
+		var docHtml = i_am.document.body.innerHTML;
+		docHtml = docHtml.replace(mark, params.html);
+		i_am.document.body.innerHTML = docHtml;
+		
+		// inserted object is not loaded immediately
+		// to run it with turn on and then off of source
+		i_am.onSource(true);
+		i_am.onSource(false);
+	}
+	
 	// 9
 	this.setTable = function(params) {
 	// names of parameters are from the corresponding form
