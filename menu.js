@@ -2102,7 +2102,7 @@ var FormProcessor = {
 			if (!paramTr)
 				continue;
 	
-			var labelSpan = getChildByClassName(paramTr, "label");
+			var labelSpan = getChildByClassName(paramTr, ["label", "propLabel1"]);
 			// requred field
 			var isFieldRequired = labelSpan && (labelSpan.getAttribute("required") != null);
 			if (isFieldRequired && inputs[i].type != "password") {
