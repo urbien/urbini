@@ -717,7 +717,8 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
 
 #siteResourceList #header td, #div_Info #header td { height: auto; }
-#siteResourceList #dashboard .front td {padding-bottom:10px;}
+
+.grid {padding-bottom:10px;}
 
 .embed  {
   vertical-align: middle;
@@ -854,8 +855,8 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .changeCols {display: inline; margin: 0px;}
 /* for displayInline text properties */
 .description {border:solid #808080 2px; border-color: #1b62b6;}
-.blogDivider {border-bottom: 1px dotted #aaaaaa;}
-.blogTitle {padding-top:30px;}
+.blogDivider {border-top: 1px dotted #aaaaaa;}
+.blogTitle {padding-top: 7px;}
 
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
@@ -1114,11 +1115,11 @@ TD.toolbar {
 
 /* doashboard layout, supporting only 3 columns for now */ 
 #col_1 {
-  padding-right: 10px;
+  padding-right: 0.8em;
 }
 
 #col_3 {
-  padding-left: 10px; 
+  padding-left: 0.8em;
 }
 
 .menuTitle td, .menuTitle th {
