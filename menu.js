@@ -7224,23 +7224,20 @@ function showTab(e, td, hideDivId, unhideDivId) {
 			// TODO: probably to redo Tabs and to put all divs in one container.
 			if (i == 0) {
 		  	var parentTd = getAncestorByTagName(div, "td");
-		  	var hasDescription = (getChildById(parentTd, "div_Description") != null);
-		  	if (hasDescription && hideDivId.indexOf("div_Description") == -1) { 
+		  	var divDescription = getChildById(parentTd, "div_Description");
+		  	var hasDescription = (divDescription != null);
+		  	if (hasDescription && hideDivId.indexOf("div_Description") == -1)  
 		  		parentTd.style.width = "100%";
-//          div.style.maxWidth = "620px";
-		  	}
-		  	else { 
-	        var hasEdit = (getChildById(parentTd, "div_Edit") != null);
-	        if (hasEdit && hideDivId.indexOf("div_Edit") == -1) 
-	          parentTd.style.width = "50%";
-	        else if (hideDivId.indexOf("div_cp") == -1) 
-	          parentTd.style.width = "50%";
-	        else {
-	          parentTd.style.width = "100%";
-//	          div.style.maxWidth = "620px";
-	        }
-		  	}
-		  }
+  	  	else { 
+          var hasEdit = (getChildById(parentTd, "div_Edit") != null);
+          if (hasEdit && hideDivId.indexOf("div_Edit") == -1) 
+            parentTd.style.width = "50%";
+          else if (hideDivId.indexOf("div_cp") == -1) 
+            parentTd.style.width = "50%";
+          else 
+            parentTd.style.width = "100%";
+  	  	}
+	  	}
 
       div.style.visibility = Popup.HIDDEN;
       div.style.display = "none";
@@ -7278,8 +7275,12 @@ function showTab(e, td, hideDivId, unhideDivId) {
     divId = 'div_' + td.id;
 
   var curDiv = document.getElementById(divId);
-  curDiv.style.visibility = Popup.VISIBLE;
-  curDiv.style.display = 'inline';
+//  curDiv.style.visibility = Popup.VISIBLE;
+//  curDiv.style.display = 'inline';
+  curDiv.className = "";
+  curDiv.style.visibility = "";
+  curDiv.style.display = "";
+  
 
   if (td.className == "dashboard_btn")
     td.className = "dashboard_btn current";
@@ -7295,6 +7296,8 @@ function showTab(e, td, hideDivId, unhideDivId) {
       var div = document.getElementById(tok);
       if (!div)
         continue;
+
+      div.className = "";
       div.style.visibility = Popup.VISIBLE;
       div.style.display = 'inline';
       var tdId;
@@ -7321,7 +7324,6 @@ function showTab(e, td, hideDivId, unhideDivId) {
         }
       }
     }
-
   }
   ExecJS.runDivCode(curDiv);
   if(typeof ImageAnnotations != 'undefined')
