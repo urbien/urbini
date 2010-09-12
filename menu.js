@@ -7225,10 +7225,21 @@ function showTab(e, td, hideDivId, unhideDivId) {
 			if (i == 0) {
 		  	var parentTd = getAncestorByTagName(div, "td");
 		  	var hasDescription = (getChildById(parentTd, "div_Description") != null);
-		  	if (hasDescription && hideDivId.indexOf("div_Description") == -1) 
+		  	if (hasDescription && hideDivId.indexOf("div_Description") == -1) { 
 		  		parentTd.style.width = "100%";
-		  	else 
-		  		parentTd.style.width = "50%";
+//          div.style.maxWidth = "620px";
+		  	}
+		  	else { 
+	        var hasEdit = (getChildById(parentTd, "div_Edit") != null);
+	        if (hasEdit && hideDivId.indexOf("div_Edit") == -1) 
+	          parentTd.style.width = "50%";
+	        else if (hideDivId.indexOf("div_cp") == -1) 
+	          parentTd.style.width = "50%";
+	        else {
+	          parentTd.style.width = "100%";
+//	          div.style.maxWidth = "620px";
+	        }
+		  	}
 		  }
 
       div.style.visibility = Popup.HIDDEN;
