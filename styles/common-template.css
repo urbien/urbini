@@ -599,7 +599,7 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
   color: &[PrimaryColor_1];;
   background-color: &[BackgroundColor];; 
   overflow-y: visible;  
-  height: 100%; 
+  height: 100%;
 }
 #siteResourceList .rop {
   border:solid &[PrimaryColor_1]; 1px; 
@@ -1748,6 +1748,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   background: url(../images/frame/png/right_bottom.png) no-repeat;
 }
 
+#div_info { max-width:620px;}
+#div_description { max-width:620px;}
 #div_info table { overflow: visible; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; overflow: visible; font-weight: bold; color: &[SecondaryColorB_3];;}
 #div_info td { overflow: visible; text-align: right; vertical-align: middle; }
