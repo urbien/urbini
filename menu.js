@@ -10415,24 +10415,29 @@ var WidgetRefresher = {
     if (wdiv) {
       var rel = wdiv.getAttribute("rel");
       if (rel) {
+        /*
+        var idx11 = rel.indexOf(";numberOfResources:");
+//        alert(rel + "; idx11=" + idx11);
+        var limit = 5;
+        if (idx11 != -1) {
+          idx11 += 19;
+          var idx12 = rel.indexOf(";", idx11);
+          if (idx12 == -1)
+            limit = rel.substring(idx11);
+          else
+            limit = rel.substring(idx11, idx12);
+        }
+        */
         var idx = rel.indexOf("recNmb:");
         if (idx == -1) 
           recNmb = 0;
         else {
           var idx1 = rel.indexOf(";", idx + 1);
           recNmb = (idx1 == -1) ? rel.substring(idx + 7) : rel.substring(idx + 7, idx1);
+//          recNmb = parseInt(recNmb) + parseInt(limit);
         }
-        var idx11 = rel.indexOf(";nmbOfResources=");
-        if (idx11 != -1) {
-          var idx12 = rel.indexOf(";", idx11);
-          if (idx12 == -1)
-            limit = rel.substring(idx11 + 16);
-          else
-            limit = rel.substring(idx11 + 16, idx12);
-          recNmb += limit;
-        }
+console.log(rel + "; recNmb=" + recNmb);
         params += "&recNmb=" + recNmb;
-//        alert(recNmb);
       }
     }
 //    var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
@@ -10463,6 +10468,7 @@ var WidgetRefresher = {
 		}
 
 		// TODO: check if slider is in cache before loading
+console.log(url + "?" + params);
     postRequest(null, url, params, $t.widgetsArr[divId].widgetDiv, null, WidgetRefresher.refresh, true, true);
   },
 	
@@ -10470,11 +10476,17 @@ var WidgetRefresher = {
   refresh : function(event, div, hotSpot, content)  {
 		if (content.length == 0)
 			return;
-
     var widgetSlider = WidgetRefresher.widgetsArr[div.id]
-		if (widgetSlider)
+		if (widgetSlider) {
 			widgetSlider.showNewContent(content);
-		
+			/*
+			var idx = content.indexOf("rel=");
+			if (idx != -1) {
+	  		var idx1 = content.indexOf('"', idx + 5); 
+	  		console.log(content.substring(idx, idx1));
+			}
+			*/
+		}
 		if(OperaWidget.isWidget())
       OperaWidget.onWidgetRefresh();
   }
