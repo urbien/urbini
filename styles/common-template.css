@@ -1884,7 +1884,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .rounded_rect_tbl .focused_field, .iphone_field .focused_field, .focused_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.4); }
 
 .widget .dragable h2 { margin-bottom: 0px; font-size: 17px; } 
-.widget .containers h2 { margin: 5px 0px 0px 5px; }
+.widget .containers h2 { margin: 5px 0px 0px 0px; }
 .widget .containers h2 a { font-size: 19px; padding: 0px; }
 
 .shrunk_field { position: fixed; font-size: 1px; width: 1px; border-width: 0; background: transparent; }
