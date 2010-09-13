@@ -851,7 +851,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 /* OLD? .innerPopup {border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7} */
 .menuOnClick {background-color: #0055e6; padding-right:3; padding-top:3; padding-bottom:3}
 .toppad {padding-top: 5px; white-space:nowrap}
-.toprightpad {padding-top: 5px; padding-right: 5px; white-space:nowrap}
+.toprightpad {padding-right: 5px; white-space:nowrap; vertical-align: top;}
 .changeCols {display: inline; margin: 0px;}
 /* for displayInline text properties */
 .description {border:solid #808080 2px; border-color: #1b62b6;}
@@ -1115,11 +1115,13 @@ TD.toolbar {
 
 /* doashboard layout, supporting only 3 columns for now */ 
 #col_1 {
+  padding-left:  0.8em;
   padding-right: 0.8em;
 }
 
 #col_3 {
   padding-left: 0.8em;
+  padding-right: 0.8em;
 }
 
 .menuTitle td, .menuTitle th {
@@ -1748,8 +1750,14 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   background: url(../images/frame/png/right_bottom.png) no-repeat;
 }
 
-#div_info { max-width:620px;}
-#div_description { max-width:620px;}
+#div_description { 
+  max-width:800px;
+  width: expression(document.body.clientWidth > 1026? "1024px" : "auto"); /* for IE */
+}
+#div_info { 
+  max-width:620px;
+  width: expression(document.body.clientWidth > 1026? "1024px" : "auto"); /* for IE */
+}
 #div_info table { overflow: visible; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; overflow: visible; font-weight: bold; color: &[SecondaryColorB_3];;}
 #div_info td { overflow: visible; text-align: right; vertical-align: middle; }
@@ -1818,7 +1826,8 @@ td.pBGr { background-color: #eeeeee;
 }
 */
 .contentRelated {
-  padding-left: 7px;
+  padding-left: 50px;
+  padding-bottom: 50px;
 }
 
 #auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
