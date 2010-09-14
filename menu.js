@@ -10366,7 +10366,7 @@ var WidgetRefresher = {
 
 		// 1. prepare new "widget member" or stop old one.
     if(typeof this.widgetsArr[divId] == 'undefined')
-      this.widgetsArr[divId] = new WidgetSlider; //new Object();
+      this.widgetsArr[divId] = new WidgetSlider(widget);
     else
       clearInterval(this.widgetsArr[divId].timerId); // ?
 
@@ -10410,36 +10410,15 @@ var WidgetRefresher = {
     var bookmarkId = $t.widgetsArr[divId].bookmarkUrl;
     var params = "-refresh=y&-w=y&-b=" + encodeURIComponent(bookmarkId);
 
-    var wdiv = document.getElementById("div_" + bookmarkId);
+    var widgetSlider = WidgetRefresher.widgetsArr[divId];
+		var wdiv = widgetSlider.getWidgetDiv();
+//		else
+//    	wdiv = document.getElementById("widget_" + bookmarkId); // document.getElementById("div_" + bookmarkId);
     
     if (wdiv) {
-      var rel = wdiv.getAttribute("rel");
-      if (rel) {
-        /*
-        var idx11 = rel.indexOf(";numberOfResources:");
-//        alert(rel + "; idx11=" + idx11);
-        var limit = 5;
-        if (idx11 != -1) {
-          idx11 += 19;
-          var idx12 = rel.indexOf(";", idx11);
-          if (idx12 == -1)
-            limit = rel.substring(idx11);
-          else
-            limit = rel.substring(idx11, idx12);
-        }
-        */
-        var idx = rel.indexOf("recNmb:");
-        if (idx == -1) 
-          recNmb = 0;
-        else {
-          var idx1 = rel.indexOf(";", idx + 1);
-          recNmb = (idx1 == -1) ? rel.substring(idx + 7) : rel.substring(idx + 7, idx1);
-//          recNmb = parseInt(recNmb) + parseInt(limit);
-        }
-console.log(rel + "; recNmb=" + recNmb);
-        params += "&recNmb=" + recNmb;
-      }
-    }
+			var recNmb = $t.getRecNmb(wdiv);
+      params += "&recNmb=" + recNmb;
+   }
 //    var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
 
     var cookieDiv = document.getElementById("ad_session_id");
@@ -10460,36 +10439,50 @@ console.log(rel + "; recNmb=" + recNmb);
 
     }
 */
-    // refresh whole the widget including backside
-    if ($t.widgetsArr[divId].widgetDiv == null) {
-			var widgetDivId = "widget_" + bookmarkId;
-			var div = document.getElementById(widgetDivId);
-			$t.widgetsArr[divId].widgetDiv = div;
-		}
 
-		// TODO: check if slider is in cache before loading
-console.log(url + "?" + params);
-    postRequest(null, url, params, $t.widgetsArr[divId].widgetDiv, null, WidgetRefresher.refresh, true, true);
+		if (widgetSlider.showStoredContent(recNmb) == false) // show slide from cache if it is there
+    	postRequest(null, url, params, $t.widgetsArr[divId].widgetDiv, null, WidgetRefresher.refresh, true, true);
   },
 	
   // called by postRequest
   refresh : function(event, div, hotSpot, content)  {
 		if (content.length == 0)
 			return;
-    var widgetSlider = WidgetRefresher.widgetsArr[div.id]
-		if (widgetSlider) {
+
+    var widgetSlider = WidgetRefresher.widgetsArr[div.id];
+		if (widgetSlider)
 			widgetSlider.showNewContent(content);
-			/*
-			var idx = content.indexOf("rel=");
-			if (idx != -1) {
-	  		var idx1 = content.indexOf('"', idx + 5); 
-	  		console.log(content.substring(idx, idx1));
-			}
-			*/
-		}
+		
 		if(OperaWidget.isWidget())
       OperaWidget.onWidgetRefresh();
-  }
+  },
+	
+	// RecNmb is index of next resource
+	// retrieves recNmb from attribute [rel="recNmb:0;total:-1;nmbOfResources:1"] of 'front' div 
+	getRecNmb : function(div) {
+		var frontDiv = getChildByClassName(div, "front");
+	  var rel = frontDiv.getAttribute("rel");
+    if (!rel)
+			return 1; 
+			
+    var idx = rel.indexOf("recNmb:");
+    if (idx == -1) 
+      recNmb = 0;
+    else {
+      var idx1 = rel.indexOf(";", idx + 1);
+      recNmb = (idx1 == -1) ? rel.substring(idx + 7) : rel.substring(idx + 7, idx1);
+    }
+    var idx11 = rel.indexOf(";nmbOfResources=");
+    if (idx11 != -1) {
+      var idx12 = rel.indexOf(";", idx11);
+      if (idx12 == -1)
+        limit = rel.substring(idx11 + 16);
+      else
+        limit = rel.substring(idx11 + 16, idx12);
+      recNmb += limit;
+    }
+		return parseInt(recNmb);
+	}
 }
 
 /***********************************************
@@ -10497,7 +10490,7 @@ console.log(url + "?" + params);
 * NOTE: meanwhile NO stroring of slides because
 * no check of secondary content loading! 
 ************************************************/
-function WidgetSlider() {
+function WidgetSlider(widgetDiv) {
 	var self = this;
 	// used and initialized in WidgetRefresher
 	this.timerId; // timer to refresh
@@ -10511,12 +10504,14 @@ function WidgetSlider() {
 	this.HALF_STEPS_AMT = 10;
 	this.TIMEOUT = 30;
 	this.step = 1;
-//	this.slidesArr = null; // no storing meanwhile
+	this.slidesArr = new Array();
 	
 	// IE's hack for text fading
 	this.clrRGB = null;
 	this.bgRGB = null;
-		
+	this.init = function(widgetDiv) {
+		this.widgetDiv = widgetDiv;
+	},
 	this.showNewContent = function(html) {
     this.newSlide = document.createElement("div");
 		// allow to download content (images) in background
@@ -10524,10 +10519,24 @@ function WidgetSlider() {
     this.newSlide.style.width = 0;
 		this.newSlide.style.fontSize = "1px";  
 		this.newSlide.style.overflow = "hidden";
-		this.newSlide.innerHTML = html; 
+		this.newSlide.innerHTML = html;
+		
+		var recNmb = WidgetRefresher.getRecNmb(this.widgetDiv);
+		this.slidesArr[recNmb] = this.newSlide;
 		this.widgetDiv.appendChild(this.newSlide);
+		
 		// preload with help of some delay	
 		setTimeout(function(){self.fading()}, $t.PRELOADING_TIMEOUT);
+	}
+	this.showStoredContent = function(recNmb){
+  	if (typeof this.slidesArr[recNmb] == "undefined")
+			return false;
+		
+		this.newSlide = this.slidesArr[recNmb];
+		this.widgetDiv.appendChild(this.newSlide);
+		self.fading();
+		
+		return true;
 	}
 	
 	this.fading = function() {
@@ -10586,9 +10595,14 @@ function WidgetSlider() {
 			if (all[i].tagName.toLowerCase() == 'div')
 				all[i].style.color = color;
 		}
+	},
+	this.getWidgetDiv = function() {
+		return this.widgetDiv;
 	}
+	
+	// ---
+	this.init(widgetDiv);
 }
-
 
 function changeSkin(event) {
   var e = getDocumentEvent(event);
