@@ -1056,14 +1056,20 @@ function getAncestorByTagName(child, tagName) {
 	}
 	return null;
 }
+
 function removeAllChildren(obj, except) {
-	var children = obj.childNodes;
-	for (var i = 0; i < children.length; i++) {
-		if (except && comparePosition(children[i], except) == 0)
-			continue;
-		obj.removeChild(children[i]);
-	}
-}
+  var children = obj.childNodes;
+  var idx = 0;
+	// note: while removing children moved in the collection
+  var length = children.length;
+  for (var i = 0; i < length; i++) {
+	  if (except && comparePosition(children[idx], except) == 0) {
+		  idx++;
+		  continue;
+	  }
+	  obj.removeChild(children[idx]); 
+  }
+}  
 
 // for mobile version when server returns full html page but only part is used
 // returns object not inserted to document
