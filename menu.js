@@ -10533,6 +10533,8 @@ function WidgetSlider(widgetDiv) {
 			return false;
 		
 		this.newSlide = this.slidesArr[recNmb];
+		this.newSlide.style.visibility = "hidden"; 
+    this.newSlide.style.width = 0;
 		this.widgetDiv.appendChild(this.newSlide);
 		self.fading();
 		
@@ -10555,7 +10557,6 @@ function WidgetSlider(widgetDiv) {
 		// replace slides
 		if ($t.step == $t.HALF_STEPS_AMT) {
 			removeAllChildren($t.widgetDiv, $t.newSlide);
-		
 			$t.newSlide.style.width = "";
 			$t.newSlide.style.visibility = "";
 		}
