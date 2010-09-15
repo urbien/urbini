@@ -10269,8 +10269,6 @@ function submitWidgetPreferences(event, formId, tab) {
   if (param.charAt(0) == '&')
     param = param.substring(1);
   var url = form.action;
-  Debug.setMode(true);
-  Debug.log('submitWidgetPreferences: url = ' + url + "; param = " + param);
 
   var divId =  (formId.indexOf("_http") != -1) ? 'widget_' + formId.substring(5) : 'div_' + formId.substring(5);
 
@@ -10439,9 +10437,8 @@ var WidgetRefresher = {
 
     }
 */
-
 		if (widgetSlider.showStoredContent(recNmb) == false) // show slide from cache if it is there
-    	postRequest(null, url, params, $t.widgetsArr[divId].widgetDiv, null, WidgetRefresher.refresh, true, true);
+    	postRequest(null, url, params, wdiv, null, WidgetRefresher.refresh, true, true);
   },
 	
   // called by postRequest
@@ -10451,8 +10448,10 @@ var WidgetRefresher = {
 
     var widgetSlider = WidgetRefresher.widgetsArr[div.id];
 		if (widgetSlider)
-			widgetSlider.showNewContent(content);
-		
+			widgetSlider.showNewContent(content); // widget rotating
+		else
+			div.innerHTML = content; // widget view (backside options)
+			
 		if(OperaWidget.isWidget())
       OperaWidget.onWidgetRefresh();
   },
