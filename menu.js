@@ -2799,7 +2799,7 @@ var ListBoxesHandler = {
     var form = document.forms[currentFormName];
     var characterCode = getKeyCode(e); // code typed by the user
 	
-		if (characterCode <= 40 && characterCode != 8)
+		if (e.type != 'click' && characterCode <= 40 && characterCode != 8)
 			return; // skip not symbol keys except backspace and delete
 
     var propName  = target.name;
@@ -10460,6 +10460,8 @@ var WidgetRefresher = {
 	// retrieves recNmb from attribute [rel="recNmb:0;total:-1;nmbOfResources:1"] of 'front' div 
 	getRecNmb : function(div) {
 		var frontDiv = getChildByClassName(div, "front");
+		if (!frontDiv)
+			return 1; 
 	  var rel = frontDiv.getAttribute("rel");
     if (!rel)
 			return 1; 
@@ -10516,6 +10518,7 @@ function WidgetSlider(widgetDiv) {
 		// allow to download content (images) in background
 		this.newSlide.style.visibility = "hidden"; 
     this.newSlide.style.width = 0;
+		this.newSlide.style.height = 0;
 		this.newSlide.style.fontSize = "1px";  
 		this.newSlide.style.overflow = "hidden";
 		this.newSlide.innerHTML = html;
@@ -10534,6 +10537,7 @@ function WidgetSlider(widgetDiv) {
 		this.newSlide = this.slidesArr[recNmb];
 		this.newSlide.style.visibility = "hidden"; 
     this.newSlide.style.width = 0;
+		this.newSlide.style.height = 0;
 		this.widgetDiv.appendChild(this.newSlide);
 		self.fading();
 		
@@ -10557,6 +10561,7 @@ function WidgetSlider(widgetDiv) {
 		if ($t.step == $t.HALF_STEPS_AMT) {
 			removeAllChildren($t.widgetDiv, $t.newSlide);
 			$t.newSlide.style.width = "";
+			this.newSlide.style.height = "";
 			$t.newSlide.style.visibility = "";
 		}
 		
