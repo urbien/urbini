@@ -277,7 +277,9 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
     } catch (e) {}
   }
 
-  if (callInProgress(lastRequest)) {
+	// noLoadingCue means to load in background.
+	// Allow multiple request in background, for example, widget rotating
+  if (!noLoadingCue && callInProgress(lastRequest)) {
     // lastRequest.abort();
     // alert("please wait till your last request is processed");
     return;
