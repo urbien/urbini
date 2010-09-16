@@ -56,7 +56,6 @@
       else {
 				TabMenu.init();
 				DragEngine.initialize();
-				WidgetRefresher.init();
         FlashHandler.init();
 		    addSpellcheck();
 		    DictionaryHandler.init();
@@ -93,6 +92,7 @@
       }
       // 2.2. desktop
       else {
+				WidgetRefresher.init(); // requires more time - preloading
         /* in onDomLoaded */
       }
     }
