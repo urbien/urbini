@@ -37,7 +37,7 @@
   		  </tr>
   		  </table>
 		  </td>
-		  <tr>
+		  </tr>
 		  <tr itype="http://www.hudsonfog.com/voc/aspects/commerce/SoftBuyable">
 		    <td align="middle" colspan="3"><download/></td>
 		  </tr>
