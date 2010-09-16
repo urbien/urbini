@@ -22,14 +22,22 @@
 			<getResource/>
 			<table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
 			<!--tr><td colspan="3"><resourceTitle/></td></tr-->
-          <div hide="y">			
+      <div hide="y">			
 		  <tr noInner="y" class="fts" itype="!http://www.hudsonfog.com/voc/classifieds/siteTemplates/Slide">
 				<td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td>
 		  </tr>
-          </div>		  
+      </div>		  
 		  <tr>
-		    <td colspan="3"><include name="${type}_details_main.jsp" alt="propertySheet.jsp" /></td>
-		  </tr>
+		  <td colspan="3">
+  		  <table width="100%" cellpadding="0" cellspacing="0">
+  		  <tr>
+  		    <include name="${type}_details_left.jsp"/> <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
+  		    <td><include name="${type}_details_main.jsp" alt="propertySheet.jsp" /></td>
+          <include name="${type}_details_right.jsp"/> <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
+  		  </tr>
+  		  </table>
+		  </td>
+		  <tr>
 		  <tr itype="http://www.hudsonfog.com/voc/aspects/commerce/SoftBuyable">
 		    <td align="middle" colspan="3"><download/></td>
 		  </tr>
