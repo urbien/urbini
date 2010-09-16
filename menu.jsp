@@ -1,7 +1,7 @@
 <menuBar id="menuBar1">
 <table width="100%" cellspacing="0" cellpadding="0" border="0" id="mainMenu">
   <tr class="dashboardLine">
-    <td colspan="3">
+    <td>
       <table width="100%" cellspacing="0" cellpadding="0" border="0">
         <tr valign="top">
         <td width="85%" colspan="2">
@@ -25,14 +25,13 @@
        <changePassword/><userLogOff html="user-login.html"/><registerNewUser/><myProfile property="unread" />
     </td>
   </tr>
-  <tr class="menuLine">
-    <td valign="middle" class="menuLine" colspan="4">
-      <resourceTypeLabel/><!--resourceTitle/-->
+  <!---tr class="menuLine">
+    <td valign="middle" class="menuLine" colspan="2">
+      <resourceTypeLabel/>
     </td>
-    <!--td valign="top" class="menuLine" align="right"><resourceTitle/></td-->
-  </tr>
+  </tr--->
   <!--tr>
-    <td colspan="4" align="center" class="alphabeticIndex">
+    <td colspan="2" align="center" class="alphabeticIndex">
       <alphabeticIndex/>
     </td>
   </tr-->
