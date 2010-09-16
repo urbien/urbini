@@ -8173,9 +8173,11 @@ var FtsAutocomplete = {
 	
 	onkeyup : function(e) {
 		var $t = FtsAutocomplete;
-		
 		var code = getKeyCode(e);
-		
+		if (code == 27) { // esc
+			$t.hide();
+			return;
+		}
 		if (code <= 40 && code != 8)
 			return; // skip not symbol keys except backspace and delete
 		
@@ -8305,7 +8307,11 @@ var FtsAutocomplete = {
 		FieldsWithEmptyValue.setValue(this.field, text);
 		this.search(e, this.field);
 	},
-	
+	onCrossIcon : function(icon) {
+		this.hide();
+		this.prevText = "";
+		FieldsWithEmptyValue.onClickClearTextCtrl(icon, null);
+	},
 	hide : function() {
 		if (!this.autocompleteDiv)
 			return;
