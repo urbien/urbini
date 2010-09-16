@@ -3322,12 +3322,11 @@ var ListBoxesHandler = {
 				var input = tr.getElementsByTagName("input")[0];
 				//////// use class selection step only if no previously assigned resource value
 				//if (input.value.length == 0) {
-					if (this.classifierPanel == null) {
+					if (this.classifierPanel == null)
 						this.createClassifierPanel(this.tray);
-					}
+
 					this.classifierPanel.style.display = "inline";
 					this.toPutInClassifier = true;
-				//}
 			}
 			
 			// set name of text enry of current input field
@@ -3432,13 +3431,10 @@ var ListBoxesHandler = {
 		
 		panel.style.display = "inline";
 		popupDiv.style.display = "block";
-		
-		// RL editor: fit height of optionsPanel if classifierPanel was previous
-		if ($t.isEditList() && $t.toPutInClassifier == false) {
-			$t.optionsPanel.style.height = "";
-			if ($t.classifierPanel != null && $t.optionsPanel.offsetHeight < $t.classifierPanel.offsetHeight)
-				$t.optionsPanel.style.height = $t.classifierPanel.offsetHeight;
-		}
+		$t.optionsPanel.style.height = "";
+	
+		if ($t.optionsPanel.offsetHeight < $t.panelBlock.offsetHeight)
+			$t.optionsPanel.style.height = $t.panelBlock.offsetHeight;
 		
     popupDiv.style.visibility = "visible";
     
@@ -3845,7 +3841,7 @@ var ListBoxesHandler = {
 		var chosenValuesDiv = getChildByClassName(this.curParamRow, "chosen_values"); 
 		// data entry: get 1st option item
 		if (!chosenValuesDiv) { 
-		  if (isVisible(this.curOptionsListDiv)) {
+		  if (this.curOptionsListDiv && isVisible(this.curOptionsListDiv)) {
 		  	var optTr = getChildByClassName(this.curOptionsListDiv, "option_tr");
 				while (optTr && optTr.style.display == "none")
 					optTr = getNextSibling(optTr);
@@ -10354,6 +10350,8 @@ var WidgetRefresher = {
 					var idx = rel.indexOf(";");
 					var intervalSeconds = (idx == -1) ? rel.substring(8) : rel.substring(8, idx);
 					this.setInterval(children[n], intervalSeconds);
+					// make 1st preloading
+					this._onInterval(children[n].id);
 				}
 			}
 		}
@@ -10394,6 +10392,7 @@ var WidgetRefresher = {
     var timerId = setInterval("WidgetRefresher._onInterval(\"" + divId + "\")", interval);
     this.widgetsArr[divId].timerId = timerId;
   },
+	
   updateWidgetByUrl : function(url) {
     for(i in this.widgetsArr) {
       if(this.widgetsArr[i].bookmarkUrl == url) {
@@ -10402,6 +10401,7 @@ var WidgetRefresher = {
       }
     }
   },
+	
   _onInterval : function(divId) {
 		var $t = WidgetRefresher;
     var url = getBaseUri() + "widget/div/oneWidget.html";
@@ -10409,36 +10409,24 @@ var WidgetRefresher = {
     var params = "-refresh=y&-w=y&-b=" + encodeURIComponent(bookmarkId);
 
     var widgetSlider = WidgetRefresher.widgetsArr[divId];
+		// show preloaded slide
+		widgetSlider.showNextSlide();
+		
 		var wdiv = widgetSlider.getWidgetDiv();
-//		else
-//    	wdiv = document.getElementById("widget_" + bookmarkId); // document.getElementById("div_" + bookmarkId);
-    
     if (wdiv) {
-			var recNmb = $t.getRecNmb(wdiv);
+			var recNmb = widgetSlider.getRecNmb();
       params += "&recNmb=" + recNmb;
    }
-//    var params = "-$action=explore&-export=y&-grid=y&-featured=y&uri=" + encodeURIComponent(bookmarkUrl);
 
     var cookieDiv = document.getElementById("ad_session_id");
-//    opera.postError(cookieDiv);
     if (cookieDiv) {
       xcookie = cookieDiv.innerHTML;
-//      opera.postError(cookie);
-//      if (xcookie)
-//        document.cookie = escape(cookie);
     }
 
-/*
-    var encryptedPassword = widget.preferenceForKey(this.PREFS_STR_KEY_NAME);
-    if (!encryptedPassword) {
-      var pDiv = document.getElementById('publicKey');
-      if (pDiv)
-        var publicKey = widget.preferenceForKey(this.PREFS_STR_KEY_NAME);
-
-    }
-*/
-		if (widgetSlider.showStoredContent(recNmb) == false) // show slide from cache if it is there
-    	postRequest(null, url, params, wdiv, null, WidgetRefresher.refresh, true, true);
+		if (widgetSlider.isSlideLoaded(recNmb))
+    	widgetSlider.insetNextSlide(); // slide is in cache
+		else	
+			postRequest(null, url, params, wdiv, null, WidgetRefresher.refresh, true, true);
   },
 	
   // called by postRequest
@@ -10448,42 +10436,13 @@ var WidgetRefresher = {
 
     var widgetSlider = WidgetRefresher.widgetsArr[div.id];
 		if (widgetSlider)
-			widgetSlider.showNewContent(content); // widget rotating
+			widgetSlider.insetNextSlide(content);
 		else
 			div.innerHTML = content; // widget view (backside options)
 			
-		if(OperaWidget.isWidget())
-      OperaWidget.onWidgetRefresh();
-  },
-	
-	// RecNmb is index of next resource
-	// retrieves recNmb from attribute [rel="recNmb:0;total:-1;nmbOfResources:1"] of 'front' div 
-	getRecNmb : function(div) {
-		var frontDiv = getChildByClassName(div, "front");
-		if (!frontDiv)
-			return 1; 
-	  var rel = frontDiv.getAttribute("rel");
-    if (!rel)
-			return 1; 
-			
-    var idx = rel.indexOf("recNmb:");
-    if (idx == -1) 
-      recNmb = 0;
-    else {
-      var idx1 = rel.indexOf(";", idx + 1);
-      recNmb = (idx1 == -1) ? rel.substring(idx + 7) : rel.substring(idx + 7, idx1);
-    }
-    var idx11 = rel.indexOf(";nmbOfResources=");
-    if (idx11 != -1) {
-      var idx12 = rel.indexOf(";", idx11);
-      if (idx12 == -1)
-        limit = rel.substring(idx11 + 16);
-      else
-        limit = rel.substring(idx11 + 16, idx12);
-      recNmb += limit;
-    }
-		return parseInt(recNmb);
-	}
+		//if(OperaWidget.isWidget())
+    //  OperaWidget.onWidgetRefresh();
+  }
 }
 
 /***********************************************
@@ -10499,8 +10458,8 @@ function WidgetSlider(widgetDiv) {
 	this.bookmarkUrl;
 	this.widgetDiv;
 	
+	this.nextSlide = null;
 	//-------------------
-	this.PRELOADING_TIMEOUT = 2000; // alows to download possible images in widget content
 	// fading animation
 	this.HALF_STEPS_AMT = 10;
 	this.TIMEOUT = 30;
@@ -10510,38 +10469,32 @@ function WidgetSlider(widgetDiv) {
 	// IE's hack for text fading
 	this.clrRGB = null;
 	this.bgRGB = null;
+	
 	this.init = function(widgetDiv) {
 		this.widgetDiv = widgetDiv;
 	},
-	this.showNewContent = function(html) {
-    this.newSlide = document.createElement("div");
-		// allow to download content (images) in background
-		this.newSlide.style.visibility = "hidden"; 
-    this.newSlide.style.width = 0;
-		this.newSlide.style.height = 0;
-		this.newSlide.style.fontSize = "1px";  
-		this.newSlide.style.overflow = "hidden";
-		this.newSlide.innerHTML = html;
+	
+	this.insetNextSlide = function(html) {
+		var $t = self;
+		var recNmb = this.getRecNmb();
 		
-		var recNmb = WidgetRefresher.getRecNmb(this.widgetDiv);
-		this.slidesArr[recNmb] = this.newSlide;
-		this.widgetDiv.appendChild(this.newSlide);
+		if (!html) {
+			$t.nextSlide = $t.slidesArr[recNmb];
+		}
+		else {
+			$t.nextSlide = document.createElement("div");
+			$t.nextSlide.innerHTML = html;
+			$t.slidesArr[recNmb] = $t.nextSlide;
+		}
 		
-		// preload with help of some delay	
-		setTimeout(function(){self.fading()}, $t.PRELOADING_TIMEOUT);
+		$t.nextSlide.style.display = "none";
+		$t.widgetDiv.appendChild($t.nextSlide);
 	}
-	this.showStoredContent = function(recNmb){
-  	if (typeof this.slidesArr[recNmb] == "undefined")
-			return false;
-		
-		this.newSlide = this.slidesArr[recNmb];
-		this.newSlide.style.visibility = "hidden"; 
-    this.newSlide.style.width = 0;
-		this.newSlide.style.height = 0;
-		this.widgetDiv.appendChild(this.newSlide);
-		self.fading();
-		
-		return true;
+	
+	this.showNextSlide = function(){
+		if (this.nextSlide == null)
+			return;
+		this.fading();
 	}
 	
 	this.fading = function() {
@@ -10559,10 +10512,8 @@ function WidgetSlider(widgetDiv) {
 
 		// replace slides
 		if ($t.step == $t.HALF_STEPS_AMT) {
-			removeAllChildren($t.widgetDiv, $t.newSlide);
-			$t.newSlide.style.width = "";
-			this.newSlide.style.height = "";
-			$t.newSlide.style.visibility = "";
+			removeAllChildren($t.widgetDiv, $t.nextSlide);
+			$t.nextSlide.style.display = "";
 		}
 		
 		$t.step++;
@@ -10600,9 +10551,44 @@ function WidgetSlider(widgetDiv) {
 			if (all[i].tagName.toLowerCase() == 'div')
 				all[i].style.color = color;
 		}
-	},
+	}
 	this.getWidgetDiv = function() {
 		return this.widgetDiv;
+	}
+	this.isSlideLoaded = function(recNmb) {
+		if (typeof this.slidesArr[recNmb] == "undefined")
+			return false;
+		return true;	
+	}
+	
+	// RecNmb is index of next resource
+	this.getRecNmb = function() {
+		var div = this.nextSlide != null ? this.nextSlide : this.widgetDiv;
+		var frontDiv = getChildByClassName(div, "front");
+		if (!frontDiv)
+			return 1; 
+	  var rel = frontDiv.getAttribute("rel");
+    if (!rel)
+			return 1; 
+	
+    var idx = rel.indexOf("recNmb:");
+    if (idx == -1) 
+      recNmb = 0;
+    else {
+      var idx1 = rel.indexOf(";", idx + 1);
+      recNmb = (idx1 == -1) ? rel.substring(idx + 7) : rel.substring(idx + 7, idx1);
+    }
+    var idx11 = rel.indexOf(";nmbOfResources=");
+    if (idx11 != -1) {
+      var idx12 = rel.indexOf(";", idx11);
+      if (idx12 == -1)
+        limit = rel.substring(idx11 + 16);
+      else
+        limit = rel.substring(idx11 + 16, idx12);
+      recNmb += limit;
+    }
+
+		return parseInt(recNmb);
 	}
 	
 	// ---
