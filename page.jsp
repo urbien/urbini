@@ -24,14 +24,14 @@
     <tr class="abc">
       <div hide="y">
         <rightPanelPropertySheet id="fts_filter" ifParameter="-q,-cat"/>
-        <include name="${type}_left.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
+        <!--include name="${type}_left.jsp"/-->         <!-- this jsp will be included in ResourceList page only-->
         <include name="${type}_details_left.jsp"/> <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
       </div>
-      <td valign="top">
+      <td valign="top" width="100%">
         <div id="corePageContent"> <file/></div><!-- core page content -->
       </td>
       <div hide="y">
-        <include name="${type}_right.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
+        <!--include name="${type}_right.jsp"/-->         <!-- this jsp will be included in ResourceList page only-->
         <include name="${type}_details_right.jsp"/> <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
       </div>
     </tr>

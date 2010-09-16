@@ -17,7 +17,7 @@
 <errorMessage />
 
 
-	<table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
+<table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
 	<tr noInner="y" class="fts" valign="bottom">
   	<td><fullTextSearchChoice/></td><td><filter/></td><td align="right"><pagingResources /></td>
 	</tr>
@@ -25,30 +25,40 @@
     <td colspan="3" align="center"><filter addToTab="y"/></td>
   </tr>
 	<tr valign="top">
-  <td width="100%" colspan="3">
-		<div>
-		  <searchHistory/>
-		  <resourcesSearch resourcesUri = "text/search/resources" />
-		  <filesSearch     filesUri     = "text/search/files" />
-      <excelsSearch    excelsUri    = "text/search/excels" />
-		</div>
-    <taskTreeControl/>
-    <div id="siteResourceList">
-      <categories/>
-      <errorMessage additems="y"/>
-      <siteResourceList />
-  	  <uploadAttachment/>
-      <createResources/>
-    </div>
-    <div align="right"><measurement/></div>
-    <readOtherSiteInfo />
-<hideBlock>
-    <uploadMsProject/>
-    <uploadToDelegatedFileSystem/>
-    <pieChart/>
-	<filterUrl />
-</hideBlock>
+	  <td colspan="3">
+	  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+	  <tr valign="top">
+    <include name="${type}_left.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
+	
+    <td width="100%">
+  		<div>
+  		  <searchHistory/>
+  		  <resourcesSearch resourcesUri = "text/search/resources" />
+  		  <filesSearch     filesUri     = "text/search/files" />
+        <excelsSearch    excelsUri    = "text/search/excels" />
+  		</div>
+      <taskTreeControl/>
+      <div id="siteResourceList">
+        <categories/>
+        <errorMessage additems="y"/>
+        <siteResourceList />
+    	  <uploadAttachment/>
+        <createResources/>
+      </div>
+      <div align="right"><measurement/></div>
+      <readOtherSiteInfo />
+  <hideBlock>
+      <uploadMsProject/>
+      <uploadToDelegatedFileSystem/>
+      <pieChart/>
+  	<filterUrl />
+  </hideBlock>
   </td>
+  <include name="${type}_right.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
+
+  </tr>
+</table>
+
   </tr>
 </table>
  
