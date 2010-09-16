@@ -32,7 +32,7 @@
   		  <table width="100%" cellpadding="0" cellspacing="0">
   		  <tr>
   		    <include name="${type}_details_left.jsp"/> <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
-  		    <td><include name="${type}_details_main.jsp" alt="propertySheet.jsp" /></td>
+  		    <td valign="top"><include name="${type}_details_main.jsp" alt="propertySheet.jsp" /></td>
           <include name="${type}_details_right.jsp"/> <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
   		  </tr>
   		  </table>
