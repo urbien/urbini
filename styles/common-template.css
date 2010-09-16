@@ -500,15 +500,15 @@ tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
 	background: #FFFFFF;
 	width: 410;
 	height: 31px;
-	padding: 0px 3px 0px 10px;
+	padding: 0px 3px 0px 4px;
 }
 .ftsq {  color: &[SecondaryColorA_3];; }
 .desktop_search input { 
-    width: 100%; font: bold 16px Helvetica; border: none;
+    width: 95%;
+    font: bold 16px Helvetica;
+    border: none;
     padding: 0px 0px 0px 0px;
-    margin-top: 5px !important;
-    margin-top: 3px;
-
+    margin-top: 2px;
     line-height: 21px; 
     vertical-align: middle;   
  }
@@ -599,7 +599,7 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
   color: &[PrimaryColor_1];;
   background-color: &[BackgroundColor];; 
   overflow-y: visible;  
-  height: 100%;
+  height: 100%; 
 }
 #siteResourceList .rop {
   border:solid &[PrimaryColor_1]; 1px; 
@@ -1710,7 +1710,10 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .iphone_field input { width: 70% /* allows to fit filter on mobile */; color: &[SecondaryColorA_3];; background: transparent; -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
 #fts_filter .iphone_field input { width: 120px; }
-.iphone_field .clear_cross { position: relative; top: 4px; left: -2px; cursor: pointer; visibility: hidden; }
+.clear_cross { position: relative; cursor: pointer; visibility: hidden; }
+.iphone_field .clear_cross { top: 4px; left: -2px; }
+.desktop_search .clear_cross { top: 6px; }
+
 .iphone_field .magnify_glass_small { position: relative; top: 3px; cursor: pointer; }
 .iphone_search { -moz-border-radius: 50%;	-webkit-border-radius: 50%; } /* used for mobile only */
 
