@@ -1894,3 +1894,13 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .widget .containers h2 a { font-size: 19px; padding: 0px; }
 
 .shrunk_field { position: fixed; font-size: 1px; width: 1px; border-width: 0; background: transparent; }
+
+/* RTE font size */
+.lz_xx_small { font-size: 0.6em; }
+.lz_x_small { font-size: 0.75em; }
+.lz_small { font-size: 0.89em; }
+.lz_medium { font-size: 1em; }
+.lz_large { font-size: 1.2em; }
+.lz_x_large { font-size: 1.5em; }
+.lz_xx_large { font-size: 2em; }
+.lz_xxx_large { font-size: 3em; }
