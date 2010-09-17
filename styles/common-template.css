@@ -54,6 +54,8 @@ img.fade {
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
 #siteResourceList #front {background-color: &[BackgroundColor];}
 
+#resourceList td.top {height: 0px; }
+
 .mItems {
   text-align:center;
   vertical-align: top;
@@ -704,7 +706,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .itemsT {background-color: &[PrimaryColor_4];; font-weight:bold; font-size:12pt;text-align:center}
 
 /* SKINS */
-.menuLine {background-color: &[SecondaryColorA_5];; border-top: solid 1px &[SecondaryColorA_3];; font-weight:bold; font-size:8pt; padding-top: 1px;}
+.menuLine {background-color: &[SecondaryColorA_5];; font-weight:bold; font-size:8pt; }
 
 .alphabeticIndex {background-color: &[SecondaryColorA_5];; font-size:0.8em; vertical-align: top;}
 .alphabeticIndex div { height: 1.7em;}
