@@ -1,7 +1,6 @@
 /* text in link. You can see it in 'Hi "contactName"' */
 A {
   text-decoration : none; 
-  padding: 5px 0px; 
   font-size: 15px;
   line-height: 15px;
   color: &[SecondaryColorA_3];;
@@ -486,7 +485,7 @@ input.xxs {font-size: 10px; color: &[Alternative_A];;}
 .cat  {padding-left: 5px; padding-right: 3px; border: 0; width: 16px; height: 16px;}
 .cat1 {FONT-WEIGHT: bold;}
 
-tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
+tr.fts td { vertical-align: middle; padding: 2px 0px; color: &[Label];; }
 
 .desktop_search { width: 500px; }
 
@@ -1111,6 +1110,10 @@ TD.toolbar {
 }
 .dashboardLine td {
   color: &[Alternative_A];
+}
+
+.dashboardLine a {
+  padding: 5px 0px; 
 }
 
 /* doashboard layout, supporting only 3 columns for now */ 
