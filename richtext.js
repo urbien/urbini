@@ -60,7 +60,8 @@ var RteEngine = {
 		{name:"Heading 5", value:"<h5>"}, {name:"Heading 6", value:"<h6>"}, {name:"Address", value:"<address>"}, {name:"Formatted", value:"<pre>"}],
 	FONTS : ["arial", "arial black", "comic sans ms", "courier", "courier new", "georgia", "helvetica", "impact", "palatino", "times new roman", "trebuchet ms", "verdana"],
 	FONTS_FEW : ["arial", "arial black", "comic sans ms", "courier new", "helvetica", "times new roman", "verdana"],
-	FONT_SIZE : ["8pt", "10pt", "12pt", "14pt", "18pt", "24pt", "36pt"],
+	FONT_SIZE : [{name:"0.6em", value:"lz_xx_small"}, {name:"0.75em",value:"lz_x_small"}, {
+  	name: "0.89em",	value: "lz_small"}, {name:"1em",value:"lz_medium"}, {name:"1.2em",value:"lz_large"}, {name:"1.5em",value:"lz_x_large"}, {name:"2em",value:"lz_xx_large"}, {name:"3em",value:"lz_xxx_large"}],
 
   IMG_ATTRIBS_TO_DELETE : ["className", "class", "handler_mouseout", "handler_mouseover",
      "onclick", "allow", "tooltip", "id", "title"],
@@ -327,8 +328,8 @@ var RteEngine = {
 		this.sizePopup = new MyDropdownList();
 		for(var i = 0; i < this.FONT_SIZE.length; i++) {
 			var itemDiv = document.createElement('div');
-			itemDiv.innerHTML = "<NOBR><span style='font-size:" + this.FONT_SIZE[i] + ";'>" + (i + 1) + "</span>"
-				+ " (" + this.FONT_SIZE[i] + ")</NOBR>";
+			itemDiv.innerHTML = "<NOBR><span class='" + this.FONT_SIZE[i].value + "'>" + (i + 1) + "</span>"
+				+ " (" + this.FONT_SIZE[i].name + ")</NOBR>";
 			this.sizePopup.appendItem(itemDiv);
 		}
 		this.sizePopup.setWidth(50);
@@ -919,7 +920,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		
 		// attempt to overcome black background in Crome.
 		this.document.body.style.backgroundColor = "transparent";	
+		
+		// load css of the parent page
+    this.loadCSS();
 	}
+	
 	this.browserDetection = function() {
 		if(Browser.ie)
 			this.isIE = true;
@@ -952,6 +957,30 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   	addEvent(this.document, "keydown", this._onkeydown, false);
 	}
   
+	this.loadCSS = function() {
+		var cssFiles = new Array();
+		var sheets = document.styleSheets;
+		for (var i = 0; i < sheets.length; i++) {
+			if (sheets[i].href.indexOf("common") != -1) {
+		  	cssFiles.push(sheets[i].href); // insert only common_****.css file
+		  }
+		}
+		
+		for(var i = 0; i < cssFiles.length; i++) {
+		  if(this.document.createStyleSheet) {
+        this.document.createStyleSheet(cssFiles[i]);
+      }
+      else {
+        var head = this.document.getElementsByTagName('head')[0];
+        var css = document.createElement('link');
+        css.setAttribute('rel', 'stylesheet');
+        css.setAttribute('type', 'text/css');
+        css.setAttribute('href', cssFiles[i]);
+        head.appendChild(css);
+      } 
+    }
+  }
+	
 	this.createToolbar = function() {
 		// Note: after second insertion of a dialog on mobile, RTE requires new initialization (?!)
 		// need to remove old, not effective toolbar (!) 
@@ -1033,6 +1062,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		this.putContent(text);
 		this.initHtml = this.getHtmlContent(false);
 	}
+	
 	// putContent
 	this.putContent = function(text) {
 	  if(this.isNetscape || this.isOpera) {
@@ -1040,7 +1070,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
       var base = document.createElement('base');
       base.setAttribute('href', getBaseUri());
       head.appendChild(base);
-	    
+	   
 			this.document.body.innerHTML = text;
 			this.document.body.style.fontFamily = "Helvetica, arial";
 			this.document.body.style.fontSize = "16px";
@@ -1075,6 +1105,34 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		}
 		this.skipClose = true;
 	}
+	
+	//********************************************************
+	// wrapSelection utility
+	// wraps selection with some tag
+	// obtains wrapObj = document.createElement
+	//******************************************************** 
+	this.wrapSelection = function(wrapObj) {
+		if (typeof window.getSelection != "undefined") { // Gecko
+ 	  	var selection = this.window.getSelection();
+    	if (selection.rangeCount < 1)
+      	return; // no selection
+
+	    var range = selection.getRangeAt(0);
+	    if (range.startContainer != range.endContainer)
+	      return;  // reject case when selection contains different paragraphs (?)
+	
+	    wrapObj.appendChild(this.document.createTextNode(range.toString()));
+	    range.deleteContents();
+	    range.insertNode(wrapObj);
+	  }
+	  else { // IE - not implemented
+			this.curRange.select();
+			var tn = this.document.createTextNode(this.curRange.text);
+			wrapObj.appendChild(tn);
+			this.curRange.pasteHTML(wrapObj.outerHTML);
+	  }
+	}
+	
 	// not source view & (hack:) not immediate execution that autoclose the RTE
 	this.isAllowedToExecute = function() {
 		if(this.isSourceView)
@@ -1592,7 +1650,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// 3
 	this.setSize = function(idx) {
 		var value = idx + 1;
-		i_am.performCommand("fontsize", value);
+		var span = i_am.document.createElement("span");
+		span.className = RteEngine.FONT_SIZE[idx].value;
+		i_am.wrapSelection(span);
+		i_am.skipClose = true;
 		return true;
 	}
 	// 4
@@ -1689,8 +1750,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.insertHTML(mark);
 		var docHtml = i_am.document.body.innerHTML;
 		docHtml = docHtml.replace(mark, params.html);
+		// note: putContent "failed" to launch object
 		i_am.document.body.innerHTML = docHtml;
-		
 		// inserted object is not loaded immediately
 		// to run it with turn on and then off of source
 		i_am.onSource(true);
