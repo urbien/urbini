@@ -1079,7 +1079,7 @@ TD.toolbar {
 }
 .widget .dashboardLine { background-color: &[SecondaryColorA_5];; background-image: none; }
 
-* html .dashboardLine td {
+* html .dashboardLine td, * html tr.rlHeader td {
 	#filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
  	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
 }
