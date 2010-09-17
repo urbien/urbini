@@ -11,31 +11,24 @@
   </table>
 </div>
 
-<table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
+  <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
 	<tr noInner="y" class="fts" valign="bottom">
   	<td><fullTextSearchChoice/></td><td><filter/></td><td align="right"><pagingResources /></td>
-	</tr>
-	<tr valign="top" class="top">
-	  <td colspan="3"  class="top">
-			<div hide="y"><watchNote/></div>
-      <errorMessage />
-    </td>
 	</tr>
   <tr itype="http://www.hudsonfog.com/voc/system/designer/WebClass">    
     <td colspan="3" align="center"><filter addToTab="y"/></td>
   </tr>
-	<tr valign="top">
-	  <td colspan="3">
-	  <table width="100%" cellspacing="0" cellpadding="0" border="0">
-	  <tr valign="top">
-	  <td colspan="3" class="top">
-		  <table width="100%" cellpadding="0" cellspacing="0">
-		  <tr>
-        <include name="${type}_top.jsp"/>
-		  </tr>
-		  </table>
-	  </td>
-	  <tr>
+  </table>	
+
+	<div hide="y"><watchNote/></div>
+  <errorMessage />
+	<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;" border="0">
+	<tr>
+	  <include name="${type}_top.jsp"/>
+	</tr>
+	</table>
+
+  <table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
 	  <tr valign="top">
     <include name="${type}_left.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
 	
