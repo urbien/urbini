@@ -25,11 +25,11 @@
        <changePassword/><userLogOff html="user-login.html"/><registerNewUser/><myProfile property="unread" />
     </td>
   </tr>
-  <!---tr class="menuLine">
+  <tr class="menuLine">
     <td valign="middle" class="menuLine" colspan="2">
       <resourceTypeLabel/>
     </td>
-  </tr--->
+  </tr>
   <!--tr>
     <td colspan="2" align="center" class="alphabeticIndex">
       <alphabeticIndex/>
