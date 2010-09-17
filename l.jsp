@@ -1,7 +1,4 @@
 <div id="RL">
-<hideBlock id="hideBlock">
-  <watchNote/>
-</hideBlock>
 <getResource/>
 
 <div id="gallery" class = "box" style="width:auto !important; width:1px;height:auto !important; height:1px;display:none;position:absolute;" itype="http://www.hudsonfog.com/voc/model/portal/ImageResource">
@@ -14,12 +11,15 @@
   </table>
 </div>
 
-<errorMessage />
-
-
 <table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0">
 	<tr noInner="y" class="fts" valign="bottom">
   	<td><fullTextSearchChoice/></td><td><filter/></td><td align="right"><pagingResources /></td>
+	</tr>
+	<tr valign="top" class="top">
+	  <td colspan="3"  class="top">
+			<div hide="y"><watchNote/></div>
+      <errorMessage />
+    </td>
 	</tr>
   <tr itype="http://www.hudsonfog.com/voc/system/designer/WebClass">    
     <td colspan="3" align="center"><filter addToTab="y"/></td>
@@ -27,6 +27,15 @@
 	<tr valign="top">
 	  <td colspan="3">
 	  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+	  <tr valign="top">
+	  <td colspan="3" class="top">
+		  <table width="100%" cellpadding="0" cellspacing="0">
+		  <tr>
+        <include name="${type}_top.jsp"/>
+		  </tr>
+		  </table>
+	  </td>
+	  <tr>
 	  <tr valign="top">
     <include name="${type}_left.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
 	
@@ -47,19 +56,19 @@
       </div>
       <div align="right"><measurement/></div>
       <readOtherSiteInfo />
-  <hideBlock>
+  <div hide="y">
       <uploadMsProject/>
       <uploadToDelegatedFileSystem/>
       <pieChart/>
-  	<filterUrl />
-  </hideBlock>
+    	<filterUrl />
+  </div>
   </td>
   <include name="${type}_right.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
 
   </tr>
 </table>
 </td>
-  </tr>
+</tr>
 </table>
  
 </div>

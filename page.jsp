@@ -10,14 +10,14 @@
     <div id="mainskin" class="blue">
     <include name="menu.jsp"/>
     <div hide="y">
-      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <!--table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr class="abc">
         <td valign="top" align="center">
-          <include name="${type}_top.jsp"/>          <!-- this jsp will be included in ResourceList page only-->
-          <include name="${type}_details_top.jsp"/>  <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
+          <include name="${type}_top.jsp"/>     
+          <include name="${type}_details_top.jsp"/> 
         </td>
       </tr>
-      </table>
+      </table-->
     </div>
     <!--filter/-->
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
