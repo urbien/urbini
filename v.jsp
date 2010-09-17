@@ -46,6 +46,7 @@
         <div align="right"><measurement/></div>
         <newComment/>
         <chatHistory/>
+        <br/>
 </hideBlock>
       </td>
     </tr>
