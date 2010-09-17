@@ -1309,8 +1309,10 @@ TD.closePopup {
   padding: 0px;
   background: &[FTS];;
   height: 3em;
-  border: solid #808080 1px
+  border-top: solid #808080 1px;
+  border-bottom: solid #808080 1px
 }
+
 .fts a { color: &[Label];; text-decoration: underline; }
 .rl {
   white-space: nowrap;
