@@ -1755,11 +1755,11 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 #div_description { 
   max-width:800px;
-  width: expression(document.body.clientWidth > 1026? "1024px" : "auto"); /* for IE */
+  width: expression(document.body.clientWidth > 802? "800px" : "auto"); /* for IE */
 }
 #div_info { 
   max-width:620px;
-  width: expression(document.body.clientWidth > 1026? "1024px" : "auto"); /* for IE */
+  width: expression(document.body.clientWidth > 622? "620px" : "auto"); /* for IE */
 }
 #div_info table { overflow: visible; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; overflow: visible; font-weight: bold; color: &[SecondaryColorB_3];;}
