@@ -961,7 +961,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var cssFiles = new Array();
 		var sheets = document.styleSheets;
 		for (var i = 0; i < sheets.length; i++) {
-			if (sheets[i].href.indexOf("common") != -1) {
+			if (sheets[i] && sheets[i].href && sheets[i].href.indexOf("common") != -1) {
 		  	cssFiles.push(sheets[i].href); // insert only common_****.css file
 		  }
 		}
