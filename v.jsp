@@ -15,26 +15,24 @@
     <div id="allowSearchHighlighting2">
       <readOtherSiteInfo />
 			<getResource/>
-			<table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
-			<!--tr><td colspan="3"><resourceTitle/></td></tr-->
-      <div hide="y">			
-		  <tr noInner="y" class="fts" itype="!http://www.hudsonfog.com/voc/classifieds/siteTemplates/Slide">
-				<td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td>
-		  </tr>
-      </div>		  
-	    <tr><td colspan="3">
-	      <subscribeNote/>
-	      <errorMessage />
-	    </td></tr>
-		  <tr>
-		  <td colspan="3">
-  		  <table width="100%" cellpadding="0" cellspacing="0">
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  			<!--tr><td colspan="3"><resourceTitle/></td></tr-->
+        <div hide="y">			
+  		  <tr noInner="y" class="fts" itype="!http://www.hudsonfog.com/voc/classifieds/siteTemplates/Slide">
+  				<td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td>
+  		  </tr>
+        </div>
+      </table>		  
+      <subscribeNote/>
+  	  <errorMessage />
+  		<table width="100%" cellpadding="0" cellspacing="0" border="0">
   		  <tr>
           <include name="${type}_details_top.jsp"/>  <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
   		  </tr>
-  		  </table>
-		  </td>
-		  <tr>
+		  </table>
+
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" id="dataEntry">
+      <tr valign="top">
 		  <td colspan="3">
   		  <table width="100%" cellpadding="0" cellspacing="0">
   		  <tr>
