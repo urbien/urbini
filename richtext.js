@@ -756,11 +756,14 @@ var ImageUploader = {
   getImageByFilePath : function(rteObj, filePath) {
     var rteDoc = rteObj.getDocument();
     var images = rteDoc.getElementsByTagName("img");
-    for(var i = 0; i < images.length; i++) {
-      var filePathAttr = images[i].getAttribute("file_path"); //src 
+    
+		// Note: use "class" to identify image to set src=URL returned from server
+		// new FF's RTE does not accept cusom parameter like "file_path"
+		for(var i = 0; i < images.length; i++) {
+      var filePathAttr = images[i].getAttribute("class");
       if(filePathAttr != null &&
           filePathAttr == filePath) {
-        images[i].removeAttribute("file_path");
+        images[i].removeAttribute("class");
         return images[i];
       }
     }
@@ -1366,13 +1369,21 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// apply it if no scrolling
 		if(this.iframeObj.scrolling != 'no')
 			return;
-		var docH = i_am.document.body.scrollHeight;
+	
+		var lastChild = getLastChild(i_am.document.body);
+		if (!lastChild)
+			return;
+		// NOte: FF increases  i_am.document.body.scrollHeight;	on each key down
+		var docH = lastChild.offsetTop + lastChild.offsetHeight; 
 		if(docH < i_am.initFrameHeight)
 			return;
 
     // FF: limit max RTE height
     // IE & Opera: failed to turn on a scrollbar in JS.
     // So, on this moment, in IE & Opera no height limitation. 
+		
+		// New FF has problem with switching of scrollbar as well!!!
+		
 		var frmH = i_am.iframeObj.clientHeight;
 		var maxHeight = getWindowSize()[1] * 0.9;
 		if(docH > maxHeight && this.isNetscape) {
@@ -1382,7 +1393,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		else {
 		  if(frmH != docH)
 			  i_am.iframeObj.style.height = docH;
-   		  i_am.iframeObj.setAttribute("scrolling", "no"); 
+   		i_am.iframeObj.setAttribute("scrolling", "no"); 
 		}
 	}
   
@@ -1728,13 +1739,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		  // check on double encoding (for space only for now)
 		  if(url.indexOf("%2520") != -1)
 		    url = decodeURI(url);
- 
-		  html = "<img src=\"" + url + "\" align=\"" + align + "\"";
+			
+			// Note: use "class" to identify image to set src=URL returned from server
+			// new FF's RTE does not accept cusom parameter like "file_path"
+			var param = (selRadioIdx == 0) ? "class" : "src";
+			var html = "<img " + param + "=\"" + url + "\" align=\"" + align + "\"";
 			if (margin)
 				html += " style=\"margin:" + margin + ";\"";
-
-			if (selRadioIdx == 0) // uploading
-				html += " file_path=\"" + url + "\"";
 
 			html += " />";
 		  this.insertHTML(html);
