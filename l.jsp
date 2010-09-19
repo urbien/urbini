@@ -20,17 +20,18 @@
   </tr>
   </table>	
 
-	<div hide="y"><watchNote/></div>
   <errorMessage />
-	<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;" border="0">
-	<tr>
-	  <include name="${type}_top.jsp"/>
-	</tr>
-	</table>
-
+	<div hide="y">
+	  <watchNote/>
+  	<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;" border="0">
+  	<tr>
+  	  <include name="${type}_top.jsp"/>
+  	</tr>
+  	</table>
+  </div>
   <table id="resourceList" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
 	  <tr valign="top">
-    <include name="${type}_left.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
+    <div hide="y"><include name="${type}_left.jsp"/></div>       <!-- this jsp will be included in ResourceList page only-->
 	
     <td width="100%">
   		<div>
@@ -56,7 +57,7 @@
     	<filterUrl />
   </div>
   </td>
-  <include name="${type}_right.jsp"/>         <!-- this jsp will be included in ResourceList page only-->
+  <div hide="y"><include name="${type}_right.jsp"/></div>         <!-- this jsp will be included in ResourceList page only-->
 
   </tr>
 </table>
