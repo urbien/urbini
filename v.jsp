@@ -40,28 +40,32 @@
     	  <tr itype="http://www.hudsonfog.com/voc/aspects/commerce/SoftBuyable">
     	    <td align="middle" colspan="3"><download/></td>
     	  </tr>
-    		<tr>
-  		  <td></td><td colspan="2">
   <hideBlock id="hideBlock1">
+    		<tr>
+  		  <td colspan="3">
           <div align="right"><measurement/></div>
           <newComment/>
           <chatHistory/>
           <br/>
-  </hideBlock>
         </td>
       </tr>
+  </hideBlock>
       <div hide="y">      
       <tr>
         <td align="middle" colspan="3">
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr><include name="${type}_details_bottom_1.jsp"/></tr>
           </table>
-      </td>
+        </td>
       </tr>
       </div>
+      
       </table>
-    </div>
   
+    </td>
+    </tr>
+  </table>
+    </div>
     </td>
     </tr>
   </table>
