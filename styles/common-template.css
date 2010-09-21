@@ -1846,8 +1846,8 @@ td.pBGr { background-color: #eeeeee;
 }
 */
 .contentRelated {
-  padding-left: 50px;
-  padding-bottom: 50px;
+  padding-left: 30px;
+  padding-bottom: 30px;
 }
 
 #auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
