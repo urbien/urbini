@@ -484,7 +484,7 @@ span.light {color:#ffffff}
 input.xxs {font-size: 10px; color: &[Alternative_A];;}
 .text {font-size:0.9em; font-weight:bold;}
 /* FTS category image style */
-.cat  {padding-left: 5px; padding-right: 3px; border: 0; width: 16px; height: 16px;}
+.cat  { padding-right: 3px; border: 0; width: 16px; height: 16px;}
 .cat1 {FONT-WEIGHT: bold;}
 
 tr.fts td { vertical-align: middle; padding: 2px 0px; color: &[Label];; }
@@ -716,6 +716,12 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .menuLine A:active {color: &[SecondaryColorA_1];; background-color: &[SecondaryColorA_3]; }
 
 .propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
+
+div.leftSidebar {
+  padding-top:   0.4em;
+  padding-left:  0.8em;
+  padding-right: 0.8em;
+} 
 
 #siteResourceList #header td, #div_Info #header td { height: auto; }
 
@@ -1142,7 +1148,7 @@ TD.toolbar {
 }
 
 .menuItemIcon img {
-  width: 16px; height: 16px; border: 0px; text-align:center; margin: 0px 3px; padding: 0px;
+  width: 16px; height: 16px; border: 0px; text-align:center; padding: 0px;
 }
 
 .menuItemChk {
