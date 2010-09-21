@@ -722,6 +722,11 @@ div.leftSidebar {
   padding-left:  0.8em;
   padding-right: 0.8em;
 } 
+div.rightSidebar {
+  padding-top:   0.4em;
+  padding-left:  0.8em;
+  padding-right: 0.8em;
+} 
 
 #siteResourceList #header td, #div_Info #header td { height: auto; }
 
@@ -812,7 +817,6 @@ div.leftSidebar {
 .viewAll        {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold}
 
 .items {
-	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
 	font-size: 11px;
 	color: #666;
 }
