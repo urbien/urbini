@@ -1315,7 +1315,6 @@ TD.closePopup {
 .header .ftSearch, .topBar .ftSearch { float: left; } /* mobile toolbar */
 
 .fts {
-  font-size: 0.8em;
   font-weight: normal;
   white-space: nowrap;
   vertical-align: middle;
