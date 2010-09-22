@@ -720,12 +720,16 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 div.leftSidebar {
   padding-top:   0.4em;
   padding-left:  0.8em;
-  padding-right: 0.8em;
+  padding-right: 0.8em;  
+  *width: 8em;
+  min-width: 7em;
 } 
 div.rightSidebar {
   padding-top:   0.4em;
   padding-left:  0.8em;
   padding-right: 0.8em;
+  *width: 8em;
+  min-width: 7em;
 } 
 
 #siteResourceList #header td, #div_Info #header td { height: auto; }
@@ -1846,8 +1850,9 @@ td.pBGr { background-color: #eeeeee;
 }
 */
 .contentRelated {
-  padding-left: 30px;
-  padding-bottom: 30px;
+  padding: 0px 0px 30px 30px;
+  *margin-left: 30px;
+  *margin-bottom: 30px;  
 }
 
 #auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
