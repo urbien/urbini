@@ -1,19 +1,44 @@
-/* text in link. You can see it in 'Hi "contactName"' */
+/* styles from properties.css */ 
+body {
+  font-size: 100%;
+	font-family: arial, Helvetica, sans-serif;
+	padding: 0;
+	margin: 0;
+	background-color: &[BackgroundColor];;
+	color: &[Color];;
+  height: 100%;
+}
+
+H1 {font-weight: bold; color: &[SecondaryColorA_1];; font-size: 34px; }
+H2 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 21px; margin: 0px;}
+H3 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 13px; margin: 0px;}
+H4 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 12px}
+H5 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 10px}
+
+/* RTE font size */
+.lz_xx_small { font-size: 9px; }
+.lz_x_small { font-size: 10px; }
+.lz_small { font-size: 11px; }
+.lz_medium { font-size: 12px; }
+.lz_large { font-size: 14px; }
+.lz_x_large { font-size: 18px; }
+.lz_xx_large { font-size: 24px; }
+.lz_xxx_large { font-size: 36px; }
+ 
+ 
 A {
-  text-decoration : none; 
-  font-size: 15px;
-  line-height: 15px;
+  text-decoration: none; 
   color: &[SecondaryColorA_3];;
 }
 
-A:hover {color: &[SecondaryColorB_3];; text-decoration : none; cursor: pointer}
+A:hover {color: &[SecondaryColorB_3];; text-decoration: none; cursor: pointer}
 
-a img {
+A img {
 	border: 0;
 	vertical-align: middle; 
 }
  
-#mainMenu a { font-size: 13px; }
+#mainMenu a { font-size: 0.8em; }
 
 .requiredProp {
   color: #ff0000; font-weight: bold;
@@ -33,10 +58,6 @@ a img {
   font-family: "Li Sung", MingLiu; font-size:1em;
 }
 	  
-H1 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; color: &[SecondaryColorA_1];; font-size: 34px; }
-H2 a {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; color: &[SecondaryColorB_1];; font-size: 21px; margin: 0px;}
-H3 {font-family: Helvetica, arial, Verdana, geneva; font-weight: bold; color: &[SecondaryColorB_1];; font-size: 13px; margin: 0px;}
-
 .pointer { cursor: pointer; }
 .dragable, .move { cursor: move; }
 
@@ -50,7 +71,8 @@ img.fade {
 #user a { color: &[SecondaryColorA_3_brighter];}
 #user span { color: &[SecondaryColorA_3_brighter];; font-weight: bold;}
 
-#siteResourceList td, #resourceList td, #div_Info td, .widget td { font-size: 15px;  height: 30px; }
+#dataEntry td { font-size: 1em; }
+#siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; font-size: 1em; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
 #siteResourceList #front {background-color: &[BackgroundColor];}
 
@@ -236,7 +258,6 @@ td.textCol {
   padding-top: 8px;
 	padding-left: 4px;
 	font-size: 70%;
-	font-family: verdana;
 	font-weight: bold;
 	color: #337;
 }
@@ -253,7 +274,6 @@ td.iconCol {
 }
 
 td.textCell {
-	font-family: verdana;
 	font-size: 70%;
 	padding-left: 4px;
 	padding-top: 10px;
@@ -349,17 +369,6 @@ td.textCell {
   height: 11px; width: 11px; border: 0px; vertical-align: top;
 }
 
-/* styles from properties.css */ 
-body {
-	font-family: sans-serif, arial, Helvetica;
-	font-size: medium;
-	padding: 0;
-	margin: 0;
-	background-color: &[BackgroundColor];;
-	color: &[Color];;
-  height: 100%;
-}
-
 .printBody {
   background-color: #ffffff;
   color: #000000;
@@ -380,7 +389,7 @@ body {
 } 
 */
 
-input   { -webkit-appearance: none; font-family: helvetica, arial; font-style: normal; line-height: normal; font-weight: normal;}
+input   { -webkit-appearance: none; font-style: normal; line-height: normal; font-weight: normal;}
 
 .monospace { font-family:Courier,monospace; }
 
@@ -448,11 +457,8 @@ tr.sep {background-color:#cbcbcb; height:9pt;}
 /* Leave them as is for now                                                            */
 
 th {font-size:9pt;}
-/*input {font-size:9pt;}*/
 select.xxs {font-size:7pt;}
-form {font-size:9pt; padding:0; margin:0}
-
-/* input.button {font-size:8pt;} */
+form {padding:0; margin:0}
 
 span.xxl {font-weight:bold; font-size:16pt;}
 span.xl1 {font-weight:bold;}
@@ -530,7 +536,7 @@ tr.fts td { vertical-align: middle; padding: 2px 0px; color: &[Label];; }
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)";
 }
 
-.desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-family: arial; font-size: 18px; line-height:31px; text-align:center; text-shadow:0 0 2px rgba(0, 0, 0, 0.4); }
+.desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-size: 18px; line-height:31px; text-align:center; text-shadow:0 0 2px rgba(0, 0, 0, 0.4); }
 .desktop_search .right img { margin: 5px 0 0 8px; }
 
 /* VIEWS */
@@ -706,7 +712,10 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .itemsT {background-color: &[PrimaryColor_4];; font-weight:bold; font-size:12pt;text-align:center}
 
 /* SKINS */
-.menuLine {background-color: &[SecondaryColorA_5];; font-weight:bold; font-size:8pt; }
+.menuLine {
+  background-color: &[SecondaryColorA_5];; 
+  font-weight:bold; 
+}
 
 .alphabeticIndex {background-color: &[SecondaryColorA_5];; font-size:0.8em; vertical-align: top;}
 .alphabeticIndex div { height: 1.7em;}
@@ -821,8 +830,6 @@ div.rightSidebar {
 .viewAll        {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold}
 
 .items {
-	font-size: 11px;
-	color: #666;
 }
 
 .nowrap {white-space: nowrap;margin-left: 6px; white-space: nowrap; font-size: 16px; vertical-align: middle;}
@@ -839,7 +846,7 @@ div.rightSidebar {
 
 /* OLD? #titleBar {height: 22px; background:url(../images/skin/blue/title.gif); cursor:move; padding-left:5px;} */
 
-span.action {font-family:verdana,sans-serif,arial;font-weight:bold;font-size:8pt;color:#000066;}
+span.action   {font-weight:bold;font-size:8pt;color:#000066;}
 tr.submit     {background-image: url('../images/toolbar_bg.gif');cursor: pointer; color:darkblue;}
 td.submit     {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 tr.checkout   {background-image: url('../images/toolbar_bg.gif');cursor: pointer; color:darkblue;}
@@ -859,7 +866,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .yellow   {color:yellow}
 .darkblue {color:darkblue}
 
-.calendar_caller { cursor: pointer; box-shadow:2px 2px 2px rgba(0, 0, 0, 0.2); -moz-box-shadow:2px 2px 2px rgba(0, 0, 0, 0.2); -webkit-box-shadow:2px 2px 2px rgba(0, 0, 0, 0.2); border: 2px solid; font-family: helvetica,arial; font-size: 24px; font-weight:bold; height:40px; line-height:25px; text-align:center; width:40px; }
+.calendar_caller { cursor: pointer; box-shadow:2px 2px 2px rgba(0, 0, 0, 0.2); -moz-box-shadow:2px 2px 2px rgba(0, 0, 0, 0.2); -webkit-box-shadow:2px 2px 2px rgba(0, 0, 0, 0.2); border: 2px solid; font-size: 24px; font-weight:bold; height:40px; line-height:25px; text-align:center; width:40px; }
 .calendar_caller .header { background-color: &[PrimaryColor_4];; color: &[Label];; font-size:13px; height:15px; line-height:12px; padding-left:2px; }
 
 /* OLD? .outerPopup {border-style:solid; border-width: 1px; border-color:#666666 #666666 #666666 #666666} */
@@ -871,7 +878,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 /* for displayInline text properties */
 .description {border:solid #808080 2px; border-color: #1b62b6;}
 .blogDivider {border-top: 1px dotted #aaaaaa;}
-.blogTitle {padding-top: 7px;}
+.blogTitle {padding-top: 0px;}
 
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
@@ -975,7 +982,7 @@ li {
 }
 
 ul.chapter a {
-  font-family: arial, Verdana, geneva; font-size: 1em; 
+  font-size: 1em; 
 }
 
 ul.subchapter {
@@ -1014,10 +1021,10 @@ div.contentsRL {
   visibility:hidden;
   display:none;
 }
-.num {background-color:fffdc3; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-family:verdana,arial,sans-serif; font-size:7pt; vertical-align:middle;}
+.num {background-color:fffdc3; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-size:7pt; vertical-align:middle;}
 
 /* filter line: Search criteria if there was full text search criteria*/
-.ftxt {text-align:left; font-size:9px; font-family:Verdana, sans-serif}
+.ftxt {text-align:left; font-size:9px;}
 .ftxt1 {border: none; padding: 0px; margin-left: 0; margin-right: 0; vertical-align: middle}
 /* Style for message in data entry for property that was either not set or set incorrectly*/
 /*.msg {border: 1px solid rgb(160, 30, 0); background: rgb(251, 240, 248)}*/
@@ -1025,25 +1032,13 @@ div.contentsRL {
 
 /* uploadFrame iframe style */
 .uframe {position:absolute; top:0px; left:0px; visibility:hidden; display:none;}
-/*
-td.xl {font-family:sans-serif, arial; font-weight:bold; font-size:10pt;}
-
-span.xxl {font-family:sans-serif, arial; font-weight:bold; font-size:16pt;}
-span.xl1 {font-family:sans-serif, arial; font-weight:bold; font-size:12pt;}
-*/
-span.xl  {font-family:verdana, sans-serif, arial; font-size:1em;}
-/*
-img {
-  vertical-align: middle;
-}
-*/
+span.xl  {font-size:1em;}
 .dash {border:solid #808080 1px; border-collapse: collapse; background-color: #ffffff; color: #000000;}
 .content-title {padding-left:4px; padding-top:6px; font-family:Albertus,Tahoma; font-size:11pt; color:#6699CC; text-decoration: none;}
 
 
 /*********** mooved from menu.css ***********/
 TD.toolbar {
-  font-family: Verdana, Arial, sans-serif;
   font-size: 12px;
   background: #EEEEEE;
   color: Black;
@@ -1057,7 +1052,7 @@ TD.toolbar {
 }
 
 .popMenu td {
-  FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 1px; PADDING-TOP: 1px; FONT-STYLE: normal; FONT-FAMILY: Tahoma, Arial, Helvetica, sans-serif, "MS Sans Serif"; TEXT-DECORATION: none; white-space: nowrap;
+  FONT-WEIGHT: normal; FONT-SIZE: 11px; PADDING-BOTTOM: 1px; PADDING-TOP: 1px; FONT-STYLE: normal; TEXT-DECORATION: none; white-space: nowrap;
 }
 
 .popMenu tr {
@@ -1340,7 +1335,7 @@ TD.closePopup {
 #system_tooltip { visibility:hidden; padding:0; position:absolute; z-index:10000; min-width: 220px; max-width: 500px; }
 #tt_inner { background: &[PrimaryColor_4];; position: relative; }
 #system_tooltip .content_td { border: solid &[PrimaryColor_1]; 1px; }
-#system_tooltip #content { overflow: hidden; padding: 15px; color: &[PrimaryColor_3];; font-family: helvetica, arial, sans-serif; font-size: 14px; }
+#system_tooltip #content { overflow: hidden; padding: 15px; color: &[PrimaryColor_3];; font-size: 14px; }
 .system_tooltip_css3 {
 	box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3); 
   -webkit-box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3); 
@@ -1358,9 +1353,9 @@ TD.closePopup {
 .print {color:#000000;}
 .printB {font-weight:bold; white-space: nowrap;}
 .printBottom {	font: 90% arial, helvetica, sans-serif; color:#000000;}
-.titleGrey {font-family:arial, helvetica, sans-serif; font-size:1.2em; font-weight:bold;color:grey}
-.bigPrintTitle {font-family:arial black, helvetica, sans-serif; font-size:28px; color:lightgrey;}
-.printTitle {font-weight:bold; font-family:arial, helvetica, sans-serif; font-size:0.9em; background-color: &[PrimaryColor_1];; padding:3 3 3 3}
+.titleGrey {font-size:1.2em; font-weight:bold;color:grey}
+.bigPrintTitle {font-size:28px; color:lightgrey;}
+.printTitle {font-weight:bold; font-size:0.9em; background-color: &[PrimaryColor_1];; padding:3 3 3 3}
 tr.printHeader {border:solid #808080 1px;  
     background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];)); 
@@ -1554,7 +1549,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl a {color: &[Alternative_A];}
 
-/*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty { padding-right: 4px; font-family: helvetica, arial; font-size: 18px; font-weight: bold; text-align:center;}
+/*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty { padding-right: 4px; font-size: 18px; font-weight: bold; text-align:center;}
 
 .rounded_rect_tbl .label_td { white-space: nowrap; } 
 .rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
@@ -1703,7 +1698,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   position:relative;
 }
 
-.toggle_btn .label {  display:inline; font-family:helvetica,arial; font-size: 13px; font-weight:bold; line-height:21px; margin-left:16px; }
+.toggle_btn .label {  display:inline; font-size: 13px; font-weight:bold; line-height:21px; margin-left:16px; }
 .toggle_btn .left .label { color: &[MenuLineColorA]; !important;  }
 .toggle_btn .right .label { color: &[Label]; !important; }
 .toggle_btn .no { margin-left:-45px; }
@@ -1838,7 +1833,6 @@ td.pBGr { background-color: #eeeeee;
 
 .footertitle {
   font-weight: normal;
-  font-family: arial;
   color: #ffffff;
   font-size: 15px;
   padding-bottom: 15px;
@@ -1913,12 +1907,3 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 .shrunk_field { position: fixed; font-size: 1px; width: 1px; border-width: 0; background: transparent; }
 
-/* RTE font size */
-.lz_xx_small { font-size: 0.6em; }
-.lz_x_small { font-size: 0.75em; }
-.lz_small { font-size: 0.89em; }
-.lz_medium { font-size: 1em; }
-.lz_large { font-size: 1.2em; }
-.lz_x_large { font-size: 1.5em; }
-.lz_xx_large { font-size: 2em; }
-.lz_xxx_large { font-size: 3em; }
