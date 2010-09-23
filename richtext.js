@@ -1661,9 +1661,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// 3
 	this.setSize = function(idx) {
 		var value = idx + 1;
-		var span = i_am.document.createElement("span");
-		span.className = RteEngine.FONT_SIZE[idx].value;
-		i_am.wrapSelection(span);
+		var div = i_am.document.createElement("div");
+		div.className = RteEngine.FONT_SIZE[idx].value;
+		i_am.wrapSelection(div);
 		i_am.skipClose = true;
 		return true;
 	}
