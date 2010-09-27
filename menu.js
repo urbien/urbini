@@ -5699,9 +5699,17 @@ var TabMenu = {
 	
 	_findTabs : function() {
 		var mainMenu = document.getElementById("mainMenu");
-		this.homeTab = getChildByClassName(mainMenu, "dashboard_btn");
+		var homeTab = getChildByClassName(mainMenu, "dashboard_btn");
+		// there are possible 2 "mainMenu" (floordata)
+		if (!homeTab) {
+			mainMenu = getNextSibling(mainMenu);
+			homeTab = getChildByClassName(mainMenu, "dashboard_btn");
+			if (!homeTab) return;
+		}
+		this.homeTab = homeTab;
 		this.firstTab = getChildByClassName(getNextSibling(this.homeTab), "dashboard_btn");
-		this.lastTab = getLastChild(this.firstTab.parentNode);
+		if (this.firstTab)
+			this.lastTab = getLastChild(this.firstTab.parentNode);
 	},
 	
 	keyHandler: function(event){
@@ -5715,6 +5723,8 @@ var TabMenu = {
 		if (code == 18) { // Alt
 			if ($t.firstTab == null) 
 				$t._findTabs();
+			if ($t.firstTab == null) 
+				return;	
 			if ($t.activeTab == null) {
 				$t.activeTab = $t.firstTab;
 				appendClassName($t.activeTab, "active");
@@ -10328,13 +10338,16 @@ function callback(event, widget) {
 var WidgetRefresher = {
   widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
   hdnDoc : null, // helps to load refreshed document
-
 	init : function() {
 		// No widget refreshing in edit page mode 
 		if (getUrlParam(null, "-editPage") == "y")
 			return;
 		
 		var dashboardTable = document.getElementById("dashboard");
+		this.processDashboard(dashboardTable);
+	},
+	
+	processDashboard : function(dashboardTable) {
 		if (!dashboardTable)
 			return;
 		// NOTE: current dashboard structure: one TR!
