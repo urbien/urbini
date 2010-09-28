@@ -35,6 +35,8 @@ function FormPopup(innerFormHtml, flag) {
 		  this.buttonsDiv = this.createButtons(flag); 
 		  this.div.appendChild(this.buttonsDiv);
 		}
+		// 4. keys handler
+		addEvent(this.div, "keyup", this.onkeyup, true);	
 	}
 	// appends the hide icon (for now)
 	this.createHeader = function() {
@@ -123,7 +125,20 @@ function FormPopup(innerFormHtml, flag) {
 	  }
 	  i_am.hide();  
 	}
-
+	// onkeyup
+	this.onkeyup = function(event) {
+		var code = getKeyCode(event);
+		var target = getEventTarget(event);
+		if (code == 13) {
+			if (target.tagName.toLowerCase() != "textarea")
+				i_am._onok();
+			stopEventPropagation(event);
+		}
+		if (code == 27) {
+			i_am._oncancel();
+			stopEventPropagation(event);
+		}
+	}
 	this.hide = function() {
 		PopupHandler.hide();
 		i_am.is_opened = false;
@@ -1371,14 +1386,16 @@ var PopupHandler = {
 	
 	// handlers --
 	_onkeyup : function(evt) {
+		var $t = PopupHandler;
 		evt = (evt) ? evt : event;
 		var charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : 
 			((evt.which) ? evt.which : 0));
 		if (charCode == 27) {
-			PopupHandler.hide();
+			$t.hide();
       // used by popupform if it requires to handle ESC
-		  if(PopupHandler.onHideCallback)
-		    PopupHandler.onHideCallback();
+		  if($t.onHideCallback && typeof $t.onHideCallback == "function")
+		    $t.onHideCallback();
+			stopEventPropagation(evt);	
 		}
 	},
 	_onclick : function(evt) {
