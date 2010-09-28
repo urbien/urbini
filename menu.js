@@ -12033,7 +12033,16 @@ function showHideDidYouMean(event) {
 function alert(text) {
 	BrowserDialog.alert(text, null ,"yes");
 }
-
-
+// displays description in full after clicking on '>>' in RL
+function displayInFull(e) {
+  var a = getTargetElement(e);
+  var id = a.id;
+  var div = document.getElementById(id.substring(0, id.length - 5)); 
+  var a = document.getElementById(id).style.display='none'; 
+  div.className = ''; 
+  div.style.overflow = '';
+  div.style.height = '';
+  return stopEventPropagation(e);
+}
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
