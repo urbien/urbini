@@ -78,6 +78,10 @@ img.fade {
 
 #resourceList td.top {height: 0px; }
 
+.hideImg img {
+  visibility:hidden; display:none;
+}
+
 .mItems {
   text-align:center;
   vertical-align: top;
