@@ -10338,18 +10338,21 @@ function callback(event, widget) {
 var WidgetRefresher = {
   widgetsArr : new Array(), // member structure { timerId, bookmarkUrl }
   hdnDoc : null, // helps to load refreshed document
-	init : function() {
+	
+	// search widget to rotate in dashboard
+	// dashboardId: default value "dashboard"
+	init : function(dashboardId) {
 		// No widget refreshing in edit page mode 
 		if (getUrlParam(null, "-editPage") == "y")
 			return;
 		
-		var dashboardTable = document.getElementById("dashboard");
-		this.processDashboard(dashboardTable);
-	},
-	
-	processDashboard : function(dashboardTable) {
+		if (typeof dashboardId == 'undefined')
+			dashboardId = "dashboard";
+
+		var dashboardTable = document.getElementById(dashboardId);
 		if (!dashboardTable)
 			return;
+
 		// NOTE: current dashboard structure: one TR!
 		var cells = dashboardTable.rows[0].cells;
 		for (var i = 0; i < cells.length; i++) {
