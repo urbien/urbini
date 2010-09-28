@@ -81,7 +81,10 @@ img.fade {
 .hideImg img {
   visibility:hidden; display:none;
 }
-
+.hideImg p, .hideImg br {
+  display: inline;
+  float: none;
+}
 .mItems {
   text-align:center;
   vertical-align: top;
