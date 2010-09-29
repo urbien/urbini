@@ -10591,6 +10591,8 @@ function WidgetSlider(widgetDiv) {
 			return 1; 
 	  var rel = frontDiv.getAttribute("rel");
     if (!rel)
+			rel = div.getAttribute("rel"); // on 1st slide
+		if (!rel)
 			return 1; 
 	
     var idx = rel.indexOf("recNmb:");
@@ -12038,10 +12040,20 @@ function displayInFull(e) {
   var a = getTargetElement(e);
   var id = a.id;
   var div = document.getElementById(id.substring(0, id.length - 5)); 
-  var a = document.getElementById(id).style.display='none'; 
-  div.className = ''; 
+  document.getElementById(id).style.display='none'; 
+	// insert TR and move there text
+	var propsTR = getAncestorByTagName(a, "tr");
+	var newTR = document.createElement("tr");
+	var newTD = document.createElement("td");
+	newTD.setAttribute("colspan", 50); // use colspan pretty big
+	newTD.appendChild(div);
+	newTR.appendChild(newTD);
+	insertAfter(propsTR.parentNode, newTR, propsTR);
+	
+	div.className = ''; 
   div.style.overflow = '';
   div.style.height = '';
+	
   return stopEventPropagation(e);
 }
 // flag that menu.js was parsed
