@@ -1266,7 +1266,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
       return;
     
 
-		i_am.fitHeightToVisible();
+		i_am.fitHeightToVisible(true);
 		
 		
 		// makes toolbar 100% in IE
@@ -1328,7 +1328,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	
 	this._onkeyup = function(e) {
-		i_am.fitHeightToVisible();
+		i_am.fitHeightToVisible(false);
     
 		// FF2 and Opera onpaste
 		e = getDocumentEvent(e);
@@ -1365,7 +1365,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     }
   }
   
-	this.fitHeightToVisible = function() {
+	// Note: FF, Crome increases  i_am.document.body.scrollHeight;	on each key down
+	this.fitHeightToVisible = function(onFocus) {
 		// apply it if no scrolling
 		if(this.iframeObj.scrolling != 'no')
 			return;
@@ -1373,8 +1374,14 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var lastChild = getLastChild(i_am.document.body);
 		if (!lastChild)
 			return;
-		// NOte: FF increases  i_am.document.body.scrollHeight;	on each key down
-		var docH = lastChild.offsetTop + lastChild.offsetHeight; 
+		
+		var docH;
+		
+		if (onFocus || Browser.ie)
+			docH = i_am.document.body.scrollHeight;
+		else
+			docH = lastChild.offsetTop + lastChild.offsetHeight; 
+		
 		if(docH < i_am.initFrameHeight)
 			return;
 
