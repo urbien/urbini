@@ -16,14 +16,14 @@ H4 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 12px}
 H5 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 10px}
 
 /* RTE font size */
-.lz_xx_small { font-size: 9px; }
-.lz_x_small { font-size: 10px; }
-.lz_small { font-size: 11px; }
-.lz_medium { font-size: 12px; }
-.lz_large { font-size: 14px; }
-.lz_x_large { font-size: 18px; }
-.lz_xx_large { font-size: 24px; }
-.lz_xxx_large { font-size: 36px; }
+.lz_xx_small { font-size: 9px; display:inline; }
+.lz_x_small { font-size: 10px; display:inline; }
+.lz_small { font-size: 11px; display:inline; }
+.lz_medium { font-size: 12px; display:inline; }
+.lz_large { font-size: 14px; display:inline; }
+.lz_x_large { font-size: 18px; display:inline; }
+.lz_xx_large { font-size: 24px; display:inline; }
+.lz_xxx_large { font-size: 36px; display:inline; }
  
  
 A {
