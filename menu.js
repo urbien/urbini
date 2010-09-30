@@ -5719,7 +5719,6 @@ var TabMenu = {
 			return; // no Tab navigation while popup on screen
 		
 		var code = getKeyCode(event);
-		
 		if (code == 18) { // Alt
 			if ($t.firstTab == null) 
 				$t._findTabs();
@@ -5746,10 +5745,10 @@ var TabMenu = {
 		
 		if (code == 13 || code == 40) { // enter, down
 			var anchor = getChildByTagName($t.activeTab, "a");
-			if ($t.isHomeTabActive())
-				anchor.onclick(event);
+			if ($t.isHomeTabActive()) 
+	  	anchor.onclick(event);
 			else
-				LinkProcessor.onClickDisplayInner(event, anchor);
+		  	LinkProcessor.onClickDisplayInner(event, anchor);
 		}
 		else if (code == 39) { // right
 			var nextTab; 
@@ -12042,17 +12041,18 @@ function displayInFull(e) {
   var div = document.getElementById(id.substring(0, id.length - 5)); 
   document.getElementById(id).style.display='none'; 
 	// insert TR and move there text
-	var propsTR = getAncestorByTagName(a, "tr");
+	var parentTable = getAncestorByTagName(a, "table");
+	var propsTR = getAncestorByTagName(parentTable, "tr");
 	var newTR = document.createElement("tr");
+	newTR.className = propsTR.className; 
 	var newTD = document.createElement("td");
 	newTD.setAttribute("colspan", 50); // use colspan pretty big
 	newTD.appendChild(div);
 	newTR.appendChild(newTD);
 	insertAfter(propsTR.parentNode, newTR, propsTR);
 	
-	div.className = ''; 
-  div.style.overflow = '';
-  div.style.height = '';
+	div.style.overflow = 'visible';
+  div.style.height = 'auto';
 	
   return stopEventPropagation(e);
 }
