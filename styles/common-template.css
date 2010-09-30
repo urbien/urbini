@@ -85,6 +85,8 @@ img.fade {
   display: inline;
   float: none;
 }
+.displayInline { overflow:hidden; width: 100%; height: 1em; line-height: 0.9em; }
+
 .mItems {
   text-align:center;
   vertical-align: top;
