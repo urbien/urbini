@@ -1121,14 +1121,20 @@ function Rte(iframeObj, dataFieldId, rtePref) {
       	return; // no selection
 
 	    var range = selection.getRangeAt(0);
-	    if (range.startContainer != range.endContainer)
-	      return;  // reject case when selection contains different paragraphs (?)
-	
-	    wrapObj.appendChild(this.document.createTextNode(range.toString()));
-	    range.deleteContents();
-	    range.insertNode(wrapObj);
+			var nodes = range.cloneContents().childNodes;
+			range.deleteContents();
+			for (var i = nodes.length - 1; i >= 0; i--) {
+				if (nodes[i].nodeType != 3) {
+					range.insertNode(nodes[i]);
+					continue;
+				}
+				// text nodes
+				var wrapObjClone = wrapObj.cloneNode(true);
+				wrapObjClone.innerHTML = nodes[i].nodeValue;
+				range.insertNode(wrapObjClone);
+			}
 	  }
-	  else { // IE - not implemented
+	  else { // IE
 			this.curRange.select();
 			var tn = this.document.createTextNode(this.curRange.text);
 			wrapObj.appendChild(tn);
