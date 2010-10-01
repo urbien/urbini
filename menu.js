@@ -12049,6 +12049,7 @@ function displayInFull(e) {
 	newTD.setAttribute("colspan", 50); // use colspan pretty big
 	newTD.appendChild(div);
 	div.className = "";
+	div.innerHTML = div.innerHTML.replace(/\n/g, "<br />");
 	newTR.appendChild(newTD);
 	insertAfter(propsTR.parentNode, newTR, propsTR);
 	
