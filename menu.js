@@ -12048,11 +12048,9 @@ function displayInFull(e) {
 	var newTD = document.createElement("td");
 	newTD.setAttribute("colspan", 50); // use colspan pretty big
 	newTD.appendChild(div);
+	div.className = "";
 	newTR.appendChild(newTD);
 	insertAfter(propsTR.parentNode, newTR, propsTR);
-	
-	div.style.overflow = 'visible';
-  div.style.height = 'auto';
 	
   return stopEventPropagation(e);
 }
