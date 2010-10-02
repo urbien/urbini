@@ -42,7 +42,7 @@
 #iphone_calendar .header .forward, #iphone_calendar .header .forward_year { font-size:18px; float: right; margin-right: 22px;  margin-top: 3px; cursor: pointer; }
 #iphone_calendar .header .forward_year { margin-right: 25px; }
 
-#iphone_calendar .header .month_year { font-size: 20px; padding-top: 3px; padding-bottom: 0px; font-weight: 900; text-align: center; }
+#iphone_calendar .header .month_year { font-size: 20px; padding-top: 3px; padding-bottom: 0px; font-weight: 900; text-align: center; white-space: nowrap; }
 
 #iphone_calendar .header .day_name 
 {
