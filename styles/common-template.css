@@ -30,6 +30,8 @@ A {
   text-decoration: none; 
   color: &[SecondaryColorA_3];;
 }
+/* link in widget header */
+.containers h2 a { color: inherit; text-decoration: inherit; }
 
 A:hover {color: &[SecondaryColorB_3];; text-decoration: none; cursor: pointer}
 
@@ -1438,6 +1440,7 @@ input:focus { outline: 0 none; }
   box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
+  z-index: 100;
 }
 
 /* 'on page' */
