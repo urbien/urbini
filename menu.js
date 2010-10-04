@@ -5580,10 +5580,8 @@ var TouchDlgUtil = {
     var tr = getAncestorByClassName(target, $t.TR_CLASS);
 		if (!tr)
 			return;
-		if (target.className == "iphone_checkbox")
-			return; // skip click on iPhone-like checkbox
-		if (target.src && target.src.indexOf("icons/cakes") != -1)
-			return; // skip click on date rollup
+		if (isElemOfClass(target, "iphone_checkbox"))
+			return; // skip click on iPhone-like checkbox (roll-up)
 
     $t.highlightRowBlueProcess(tr);
 	},
@@ -5608,7 +5606,7 @@ var TouchDlgUtil = {
  		// possible if next selection was made too fast (in RL editor as well)
 		$t.bleachBlueRow();
 		$t.skipBleachBlue = skipBleachBlue;
-		
+
 		TouchDlgUtil.blueTr = tr;
 		
 		$t.bleachGreyRow();
