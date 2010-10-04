@@ -5174,8 +5174,14 @@ var TouchDlgUtil = {
 	curDlgDiv : null,
 	focusHolder : null,
 
+	wasOnceInit : false, // to hide autocomplete
+	
 	// it is called for 1) whole dialog + form panel 2) for each options list
 	init : function(parent) {
+		if (this.wasOnceInit == false) {
+			addEvent(document.body, 'click', this.onBodyClick, false);
+			wasOnceInit = true;
+		}
 		
 		// autocomplete popup
 		if (this.isAutocompletePopup(parent)) {
@@ -5281,6 +5287,9 @@ var TouchDlgUtil = {
 			myEvent.which = 13;
 			TabMenu.keyHandler(myEvent);
 		}
+	},
+	onBodyClick : function(){
+		FtsAutocomplete.hide();
 	},
 
 	isMenuPopupOpened : function() {
@@ -5788,12 +5797,14 @@ var TabMenu = {
 //**************************************************/
 var LinkProcessor = {
 	onLinkClick : function(e) {
+
 		var $t = LinkProcessor;
 	  e = getDocumentEvent(e);
 	  if (!e)
 	    return;
 
 	  var anchor = getTargetAnchor(e);
+		
 	  if (!anchor)
 	    return;
 	
