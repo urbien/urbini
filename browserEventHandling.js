@@ -92,8 +92,10 @@
       }
       // 2.2. desktop
       else {
-				WidgetRefresher.init(); // requires more time - preloading
-        /* in onDomLoaded */
+				// prevent exception while image uploading
+				if (typeof WidgetRefresher != 'undefined')
+					WidgetRefresher.init(); // requires more time - preloading
+        /* other initializations in onDomLoaded */
       }
     }
 
