@@ -4997,7 +4997,7 @@ var PlainDlg = {
 	show : function(e, urlStr, anchor) {
 		var $t = PlainDlg;
 	  e = getDocumentEvent(e); if (!e) return;
-	  
+  
 	  if (!anchor) {
 			var target = getTargetElement(e); if (!target) return;
 			anchor = getTargetAnchor(e);
@@ -5027,7 +5027,7 @@ var PlainDlg = {
 		if (typeof $t.dlgArr[urlStr] != 'undefined') { // this.dlgArr != null && 
 			$t.dlgDiv.appendChild($t.dlgArr[urlStr]);
 			$t._show(e, anchor);
-			return;
+			return stopEventPropagation(e);
 		}
 		
 	  var idx = urlStr.indexOf('.html');
@@ -5057,8 +5057,9 @@ var PlainDlg = {
 	  return stopEventPropagation(e);
 	},
 	
-	showPreloaded : function(event, id) {
+	showPreloaded : function(event, id, hotspot) {
 		var toInitialize = false;
+		
 		if (typeof this.dlgArr[id] == 'undefined') {
 			this.dlgArr[id] = document.getElementById(id);
 			this.dlgArr[id].className = ""; // remove "hdn" class to show content
@@ -5077,9 +5078,9 @@ var PlainDlg = {
 		this.dlgDiv.appendChild(this.dlgArr[id]);
 		if (toInitialize)
 			FormProcessor.initForms(this.dlgDiv);
-		var hotspot = getEventTarget(event);
 		// items navigation
 		TouchDlgUtil.init(this.dlgDiv);
+		hotspot = hotspot || getEventTarget(event);
 		this._show(event, hotspot);
 	},
 	
@@ -5088,6 +5089,9 @@ var PlainDlg = {
 
 		if(FullScreenPopup.show(this.dlgDiv, hotspot) == false)
 	    setDivVisible(event, this.dlgDiv, iframe, hotspot, 5, 5);
+		
+		if (TouchDlgUtil.isMenuPopup(this.dlgDiv))
+			TabMenu.setActiveTab(getAncestorByClassName(hotspot, "dashboard_btn"))
 	},
 	
 	// XHR callback
@@ -5105,8 +5109,10 @@ var PlainDlg = {
 		FormProcessor.initForms(div);
 		// items navigation
 		TouchDlgUtil.init(div);
+		
 		$t._show(event, hotspot);
-	  // update page if content is empty (all is ok)
+	  
+		// update page if content is empty (all is ok)
 	  if (content.length == 0)
 	    window.location.reload();
 	  
@@ -5282,10 +5288,7 @@ var TouchDlgUtil = {
 			PlainDlg.hide();
 			$t.curDlgDiv = null;
 			TabMenu.keyHandler(event);
-			var myEvent = cloneEvent(event); 
-			myEvent.charCode = 13;
-			myEvent.which = 13;
-			TabMenu.keyHandler(myEvent);
+			TabMenu.openActivePopup(event);
 		}
 	},
 	onBodyClick : function(){
@@ -5698,6 +5701,7 @@ var TabMenu = {
 	lastTab : null,
 	activeTab : null,
 	
+	isEmptyPopupOpened : false, // in case when item does not have popup 
 	init : function() {
 		// use keydown instead of keyup to prevent horizontal scrolling
 		addEvent(window, 'keydown', this.keyHandler, false);
@@ -5721,11 +5725,11 @@ var TabMenu = {
 	
 	keyHandler: function(event){
   	var $t = TabMenu;
-		
-		if (TouchDlgUtil.isMenuPopupOpened())
-			return; // no Tab navigation while popup on screen
-		
 		var code = getKeyCode(event);
+		
+		if (TouchDlgUtil.isMenuPopupOpened() && !$t.isEmptyPopupOpened)
+			return; // no Tab navigation while popup on screen
+
 		if (code == 18) { // Alt
 			if ($t.firstTab == null) 
 				$t._findTabs();
@@ -5750,13 +5754,8 @@ var TabMenu = {
 			if ($t.activeTab == null) 
 				return;
 		
-		if (code == 13 || code == 40) { // enter, down
-			var anchor = getChildByTagName($t.activeTab, "a");
-			if ($t.isHomeTabActive()) 
-	  	anchor.onclick(event);
-			else
-		  	LinkProcessor.onClickDisplayInner(event, anchor);
-		}
+		if (code == 13 || code == 40) // enter, down
+			$t.openActivePopup(event);
 		else if (code == 39) { // right
 			var nextTab; 
 			if ($t.isHomeTabActive())
@@ -5777,6 +5776,20 @@ var TabMenu = {
 			return;
 
 		stopEventPropagation(event);
+		
+		// open popup after that "previous" item without popup was active
+		if ($t.isEmptyPopupOpened) {
+			$t.openActivePopup(event);
+			$t.isEmptyPopupOpened = false;
+		}
+		
+	},
+	openActivePopup : function(event) {
+		var anchor = getChildByTagName(this.activeTab, "a");
+		if (this.isHomeTabActive()) 
+  		anchor.onclick(event);
+		else
+	  	this.isEmptyPopupOpened = LinkProcessor.onClickDisplayInner(event, anchor) == false;
 	},
 	
 	setActiveTab : function(newActiveTab) {
@@ -5787,8 +5800,11 @@ var TabMenu = {
 	},
 	
 	isHomeTabActive : function() {
+		if (this.firstTab == null) 
+			this._findTabs();
 		return (comparePosition(this.homeTab, this.activeTab) == 0);
 	}
+	
 }
 
 /**************************************************
@@ -5866,11 +5882,9 @@ var LinkProcessor = {
 	  if (!anchor)
 	    anchor = getTargetAnchor(e);
 	  if (!anchor || !anchor.id)
-	    return;
-	  e = getDocumentEvent(e); if (!e) return;
+	    return false;
+	  e = getDocumentEvent(e); if (!e) return false;
 	  var propName = anchor.id.substring(7);
-	//  var r;
-	
 		var urlStr;
 	  if (propName.indexOf("list.") == 0) {
 	    var ul = document.getElementById(propName);
@@ -5913,7 +5927,7 @@ var LinkProcessor = {
 		else
 			PlainDlg.show(e, urlStr, anchor);
 	  
-		return; //r;
+		return true;
 	},
 	
 	/**
