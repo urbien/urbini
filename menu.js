@@ -5793,6 +5793,8 @@ var TabMenu = {
 	},
 	
 	setActiveTab : function(newActiveTab) {
+		if (!newActiveTab)
+			return;
 		if (this.activeTab)
 			removeClassName(this.activeTab, "active");
 		this.activeTab = newActiveTab;
@@ -8183,6 +8185,8 @@ var FtsAutocomplete = {
 	autocompleteDiv : null,
 	
 	prevText : "",
+	wasVerticalKeyPressed : false,
+	selectedClassCell : null,
 	
 	// init called from FieldsWithEmptyVAlues
 	init : function(field) {
@@ -8210,7 +8214,7 @@ var FtsAutocomplete = {
 			$t.hide();
 			return;
 		}
-		if (code <= 40 && code != 8)
+		if (code < 40 && code != 8)
 			return; // skip not symbol keys except backspace and delete
 		
 		if ($t.timerId)
@@ -8226,13 +8230,34 @@ var FtsAutocomplete = {
 			$t._createDiv();
 		
 		var code = getKeyCode(e);
-		// var isVisible = getElementStyle($t.autocompleteDiv).display != "none";
-		var hasText = FieldsWithEmptyValue.getValue($t.field).length != 0;
-		if (code == 40 || code == 38) {
+		if (code == 40 || code == 38) { // down and up
+			if ($t.selectedClassCell) {
+		  	$t.selectedClassCell.className = "";
+				$t.selectedClassCell = null;
+		  }
 			TouchDlgUtil.arrowsHandler(e);
+			$t.wasVerticalKeyPressed = true;
+		}
+		
+		var greyTr = TouchDlgUtil.getGreyTr();
+		if (!greyTr)
+			return;
+		var hasText = FieldsWithEmptyValue.getValue($t.field).length != 0;
+		if ((code == 39 || code == 37) && $t.wasVerticalKeyPressed) {
+			if (!$t.selectedClassCell) {
+				var selectedCell = getChildByClassName(greyTr, "table");
+				var classesTbl = getChildByTagName(greyTr, "table");
+				$t.selectedClassCell = (code == 39) ? getFirstChild(classesTbl.rows[0]) : getLastChild(classesTbl.rows[0]);
+				$t.selectedClassCell.className = "selected";
+				return;
+	  	}
+			$t.selectedClassCell.className = "";
+			$t.selectedClassCell = (code == 39) ? getNextSibling($t.selectedClassCell) : getPreviousSibling($t.selectedClassCell);
+			
+			if ($t.selectedClassCell)
+				$t.selectedClassCell.className = "selected";
 		}
 		else if (code == 13 && isVisible($t.autocompleteDiv)) { // enter
-			var greyTr = TouchDlgUtil.getGreyTr();
 			var shingle = getChildByClassName(greyTr, "menuItem");
 			$t.onSelection(e, shingle);
 		}
@@ -8244,6 +8269,7 @@ var FtsAutocomplete = {
 		var form = getAncestorByTagName($t.field, 'form');
 		var text = FieldsWithEmptyValue.getValue($t.field);
 		if ($t.prevText == text) {
+			$t.autocompleteDiv.style.display = "";
 			return;
 		}
 	
@@ -8320,7 +8346,7 @@ var FtsAutocomplete = {
 		var target = getEventTarget(e);
 		
 		if (target.parentNode.tagName.toLowerCase() == "a") {
-			this.hide();
+			$t.hide();
 			return true;
 		}
 
@@ -8334,10 +8360,19 @@ var FtsAutocomplete = {
 
 		this.hide();
 		shingle.className = shingle.className.replace("blue_highlighting", "");
+		// set text in FTS
 		var textDiv = shingle.getElementsByTagName("div")[0];
 		var text = textDiv.innerHTML;
 		FieldsWithEmptyValue.setValue(this.field, text);
-		this.search(e, this.field);
+		
+		// class selection
+		if (this.selectedClassCell) {
+			var a = getChildByTagName(this.selectedClassCell, "a");
+			window.location.assign(a.href);
+			stopEventPropagation(e);
+		}
+		else
+			this.search(e, this.field);
 	},
 	onCrossIcon : function(icon) {
 		this.hide();
@@ -8350,6 +8385,10 @@ var FtsAutocomplete = {
 
 		this.autocompleteDiv.style.display = "none";
 	}
+//	,
+//	isVisible : function() {
+//		return getElementStyle(this.autocompleteDiv).display != "none";
+//	}
 }
 
 // like "search" fields
