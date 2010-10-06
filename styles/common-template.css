@@ -1868,7 +1868,8 @@ td.pBGr { background-color: #eeeeee;
 #auto_complete tr:last-child td { border-bottom: none; }
 #auto_complete .menuItem div { float: left; line-height: 45px; margin-right: 5px; }
 #auto_complete .menuItem table { float: right; }
-#auto_complete .menuItem table td { text-align: center; padding: 0px 2px; }
+#auto_complete .menuItem table td { border: 1px solid transparent; text-align: center; padding: 0px 3px; }
+#auto_complete .menuItem table td.selected { border: 1px solid &[SecondaryColorB_3];; background-color: transparent; }
 #auto_complete a { font-size: 12px; margin-left: 0px; color: &[MenuLineColorA];; }
 .dsk_auto_complete { -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); }
 .dsk_auto_complete .menuItem, .dsk_auto_complete .not_found { min-width: 460px; }
