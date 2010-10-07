@@ -4783,9 +4783,17 @@ var DataEntry = {
 		// onDataError happens on mkResource
 		if (onDataError || $t.isMkResource($t.currentUrl))
 			$t.doStateOnMkResource(div, true);
-
-		var itemSelector = getChildById(div, 'item_selector');
-		FieldsWithEmptyValue.initField(itemSelector, 'select')
+		
+		var tdsAmt = div.getElementsByTagName("tr").length; // includes "liquid" table TDs
+		// hide slector / iphone_field if data entry contains a little number of items		
+		if (tdsAmt < 20) {
+			var iphoneField = getChildByClassName(div, 'iphone_field'); // gui wrapper of item_selector
+				iphoneField.style.visibility = "hidden";
+		}
+		else {
+			var itemSelector = getChildById(div, 'item_selector');
+			FieldsWithEmptyValue.initField(itemSelector, 'select');
+		}
 
 		var textEntry = getChildById(div, 'text_entry');
 		FieldsWithEmptyValue.initField(textEntry, 'select')
@@ -8385,10 +8393,6 @@ var FtsAutocomplete = {
 
 		this.autocompleteDiv.style.display = "none";
 	}
-//	,
-//	isVisible : function() {
-//		return getElementStyle(this.autocompleteDiv).display != "none";
-//	}
 }
 
 // like "search" fields
