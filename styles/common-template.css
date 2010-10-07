@@ -1808,7 +1808,7 @@ td.pBGr { background-color: #eeeeee;
 .panel_block .no_matches { display: none; color: #f00; font-size: 16px; font-weight:bold; margin-left: 15px; }
 
 #siteResourceList #filter input[type=text] { height: auto; background-color: transparent; font-size: 16px; font-weight: normal; }
-#siteResourceList .input { border: 1px solid #bbb; }
+#siteResourceList .input { border: 1px solid  &[SecondaryColorA_5];; }
 #siteResourceList .pointer, .panel_block .pointer { border: none; background: transparent; }
 
 .backlink_counter { position: absolute; top: -7px; left: 15px; pointer-events: none; }
