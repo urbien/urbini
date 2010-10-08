@@ -7948,7 +7948,11 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 		// now adjust vertically - so we fit inside the viewport
 		if ((typeof positionEnforced == 'undefined' || positionEnforced == false) &&
 					distanceToBottomEdge < divCoords.height + margin) {
-			top = (screenY + scrollY) - divCoords.height;
+			if (hotspot)
+				top = findPosY(hotspot) - divCoords.height; // make vertical flip
+			else
+				top = (screenY + scrollY) - divCoords.height;
+			
 			if ((top - scrollY) - margin > 0) 
 				top -= margin; // adjust for a scrollbar
 			if (top < scrollY) // but not higher then top of viewport
