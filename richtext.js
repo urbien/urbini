@@ -218,7 +218,7 @@ var RteEngine = {
 		if(this.linkPopup == null)
 			this.createLinkPopup();
 		var parentDlg = getParentDialog(btnObj.div);
-		
+
 		this.linkPopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		var div = this.linkPopup.div;
 		// set url field value
@@ -226,11 +226,11 @@ var RteEngine = {
 		  getChildById(div, "url").value = href;
 		return div;
 	},
-	launchImagePopup : function(btnObj, callback, rteId, cancelCallback) {
+	launchImagePopup : function(btnObj, callback, rteId, cancelCallback, imgObj) {
 		if(this.imagePopup == null)
-			this.createImagePopup();
+			this.createImagePopup(imgObj);
 		else {
-		  var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert");
+		  var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert", imgObj);
 		  this.imagePopup.changeContent(innerFormHtml);
 		}	
 	  
@@ -239,6 +239,7 @@ var RteEngine = {
 	  var form = this.imagePopup.getForm();
 	  ImageUploader.putRteIdInForm(form, rteId);		
 		var parentDlg = getParentDialog(btnObj.div);
+		
 		this.imagePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.imagePopup.div;
 	},
@@ -372,8 +373,8 @@ var RteEngine = {
 			+ '</table>';
 		this.linkPopup = new FormPopup(innerFormHtml);
 	},
-	createImagePopup : function() {
-		var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert");
+	createImagePopup : function(imgObj) {
+		var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert", imgObj);
 		this.imagePopup = new FormPopup(innerFormHtml, "USE_SUBMIT_BTN");
 	},
   createImagePastePopup : function() {
@@ -567,7 +568,7 @@ var ImageUploader = {
  
   newImgPair : null,
   
-  getUploadImageFormContent : function(submitCallbackName, submitBtnText) {
+  getUploadImageFormContent : function(submitCallbackName, submitBtnText, imgObj) {
 		var forms = document.forms;
     var resourceUri;
     for (var i=0; i<forms.length; i++) {
@@ -577,6 +578,9 @@ var ImageUploader = {
         break;
       }
     }
+		
+		if (imgObj)
+			submitBtnText = "  Ok  "; 
 
     var formStr = "<form name=\"" + this.FORM_NAME + "\""
       + " target=\"" + this.HDN_IFRAME_NAME + "\""
@@ -586,23 +590,34 @@ var ImageUploader = {
       + " onsubmit=\"return " + submitCallbackName + "\""
       + ">"
       
-      + " <table style=\"font-family:verdana; font-size:12px;\"><tr><td>" 
+      + " <table style=\"font-family:verdana; font-size:12px;\"><tr><td>"; 
       
-      + "<input type=\"radio\" name=\"radio\" onclick=\"ImageUploader.imageLocationSwitch(0)\" checked>upload image"
-      + "&nbsp;&nbsp;"
-      + "<input type=\"radio\" name=\"radio\" onclick=\"ImageUploader.imageLocationSwitch(1)\">URL of image"
-      + "<br/><br/>"
-      
-      // two fields with the same name:
-      // 1) image uploading
-      // 2) URL of image
-      + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
-      + " style=\"font-family:verdana; font-size:12px\""
-      + " size=\"40\" onkeyup=\"ImageUploader.enterCatcher(event);\"  style=\"margin-top:20px;\">"
-      
-      + " <input type=\"text\" name=\"" + this.FILE_INPUT_NAME + "\""
-      + " style=\"display: none; font-family:verdana; font-size:12px\""
-      + " size=\"45\"  style=\"margin-top:20px;\">"
+			if (!imgObj) {
+		  	formStr += "<input type=\"radio\" name=\"radio\" onclick=\"ImageUploader.imageLocationSwitch(0)\" checked>upload image" +
+		  	"&nbsp;&nbsp;" +
+		  	"<input type=\"radio\" name=\"radio\" onclick=\"ImageUploader.imageLocationSwitch(1)\">URL of image" +
+		  	"<br/><br/>"
+		        
+	      // two fields with the same name:
+	      // 1) image uploading
+	      // 2) URL of image
+	      + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
+	      + " style=\"font-family:verdana; font-size:12px\""
+	      + " size=\"40\" onkeyup=\"ImageUploader.enterCatcher(event);\"  style=\"margin-top:20px;\">";
+			}
+			else
+				formStr += "image URL:<br /><br />";
+			
+			formStr += " <input type=\"text\" name=\"" + this.FILE_INPUT_NAME + "\""
+      + " style=\"font-family:verdana; font-size:12px;";
+     
+			
+			if (imgObj)
+				formStr += "\" value = \"" + imgObj.src + "\"";
+			else
+				formStr += " display: none;\"";
+			
+			formStr += " size=\"45\">"
 
       + " <input type=\"hidden\" name=\"" + this.RTE_ID_INPUT_NAME + "\""
       + " id=\"" + this.RTE_ID_INPUT_NAME + "\">"
@@ -610,13 +625,22 @@ var ImageUploader = {
       
       + " <tr><td><br/>align:&nbsp;<select id=\"" + this.IMG_ALIGN_ID + "\""
       + " style=\"font-family:verdana; font-size:12px\">"
-      + " <option value=\"left\">left</option>"
+			+ " <option value=\"left\">left</option>"
       + " <option value=\"middle\">middle</option>"
       + " <option value=\"right\">right</option>"
       + " <option value=\"bottom\">bottom</option>"
       + " <option value=\"top\">top</option>"
       + " </select>"
-			+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;margin:&nbsp;<input value=\"30px\" size=\"12\" type=\"text\" id=\"" + this.MARGIN_ID + "\">"
+			+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;margin:&nbsp;"
+			+ "<input size=\"12\" type=\"text\" id=\"" + this.MARGIN_ID + "\""
+			+ " value = \"";
+		
+			if (imgObj)
+	  		formStr += imgObj.style.margin;
+			else
+				formStr += "30px";
+			 
+			formStr += "\">"
 			+ "</td></tr>"
 			
       + " <tr><td align=\"center\"><br/>"
@@ -629,7 +653,13 @@ var ImageUploader = {
 
       + " </td></tr><table>"
     + " </form>";
-    
+
+		// set selected align 
+		if (imgObj && imgObj.align) {
+			var align = imgObj.align.toLowerCase();
+			formStr = formStr.replace(">" + align, " selected='selected'>" + align)
+		}
+
     return formStr;
   },
   
@@ -655,6 +685,8 @@ var ImageUploader = {
   // radio buttons : // 0) upload 1)URL
   getSelectedRadioBtnIdx : function(form) {
     var radios = form["radio"];
+		if (!radios)
+			return null;
     var selIdx = radios[0].checked ? 0 : 1;
     return selIdx;
   },
@@ -662,7 +694,11 @@ var ImageUploader = {
   getImagePathFromForm : function(form) {
     var selIdx = this.getSelectedRadioBtnIdx(form);
     var inputs = form[ImageUploader.FILE_INPUT_NAME]
-    var value = inputs[selIdx].value;
+    var value;
+		if (selIdx == null) // on dblclick - edit image properties
+			value = inputs.value;
+		else
+			value = inputs[selIdx].value;
     if (value.length == 0) {
       if (selIdx == 0) 
         alert("No image selected to upload!");
@@ -671,10 +707,12 @@ var ImageUploader = {
       return null;
     }
     
-    // not needed <input>
-    var notSelIdx = (selIdx == 0) ? 1 : 0;
-    var parent = inputs[notSelIdx].parentNode;
-    parent.removeChild(inputs[notSelIdx]);
+		if (selIdx != null) {
+			// not needed <input>
+			var notSelIdx = (selIdx == 0) ? 1 : 0;
+			var parent = inputs[notSelIdx].parentNode;
+			parent.removeChild(inputs[notSelIdx]);
+		}
     
     return value; 
   },
@@ -1416,7 +1454,14 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   }
   
   this._ondblclick = function(e) {
-    i_am.onLink(true);
+		var selection = i_am.getSelectedElement();
+		if (!selection.tagName)
+			return;
+		var tagName = selection.tagName.toLowerCase();
+		if (tagName == "a")
+    	i_am.onLink(true);
+		else if (tagName == "img")
+			i_am.onImage(true);	
   }
   
 	// --------------------------------------
@@ -1554,22 +1599,31 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     if (a && a.tagName && a.tagName.toLowerCase() == "a") {
       href = a.href;
     }
-    // not show the dialog on double click on not link 
+    // not show the dialog on double click if no href 
     if (onDblClick && href.length == 0)
       return;
     
     if (href.endsWith("/")) 
       href = href.substr(0, href.length - 1);
     
-    // show dialog  
-		i_am.currentPopup = RteEngine.launchLinkPopup(i_am.linkBtn, i_am.setLink, i_am.cancelLink, href);
+    // onDblClick show dialog under 1st, "styleBtn" button because "linkBtn" can be in hided overflow popup
+		var btn = (onDblClick) ? i_am.styleBtn : i_am.linkBtn;
+		i_am.currentPopup = RteEngine.launchLinkPopup(btn, i_am.setLink, i_am.cancelLink, href);
 	}
 	// 20
-	this.onImage = function() {
+	this.onImage = function(onDblClick) {
+    if (typeof onDblClick == 'undefined')
+      onDblClick = false;
+			
 		if(!i_am.isAllowedToExecute())
 			return;
 		
-		i_am.currentPopup = RteEngine.launchImagePopup(i_am.imageBtn, i_am.setImage, i_am.iframeObj.id, i_am.cancelImage);
+		var imgObj  = null;
+		if (onDblClick)  // show dialog with properties of image on DblClick 
+			imgObj = i_am.getSelectedElement(); 
+		// onDblClick show dialog under 1st, "styleBtn" button because "imageBtn" can be in hided overflow popup
+		var btn = (onDblClick) ? i_am.styleBtn : i_am.imageBtn;
+		i_am.currentPopup = RteEngine.launchImagePopup(btn, i_am.setImage, i_am.iframeObj.id, i_am.cancelImage, imgObj);
 	}
 	// object; widget
 	this.onObject = function() {
