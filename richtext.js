@@ -580,7 +580,7 @@ var ImageUploader = {
     }
 		
 		if (imgObj)
-			submitBtnText = "  Ok  "; 
+			submitBtnText = "   Ok   "; 
 
     var formStr = "<form name=\"" + this.FORM_NAME + "\""
       + " target=\"" + this.HDN_IFRAME_NAME + "\""
@@ -645,6 +645,8 @@ var ImageUploader = {
 			
       + " <tr><td align=\"center\"><br/>"
       + " <input type=\"submit\" value=\"" + submitBtnText + "\">"
+			
+			+ " &#160<input type=\"button\" value=\"Cancel\" onclick=\"RteEngine.imagePopup._oncancel();\" >"
 
       + " <input type=\"hidden\" name=\"-$action\" value=\"upload\">"
       + " <input type=\"hidden\" name=\"uri\" value=\""
