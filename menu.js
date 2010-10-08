@@ -2196,7 +2196,6 @@ function getTrNode(elem) {
     }
   }
   // end IE workaround
-
   if (elem_.tagName.toUpperCase() == 'TR')
     return elem_;
   e = elem_.parentNode;
@@ -4783,7 +4782,7 @@ var DataEntry = {
 		// onDataError happens on mkResource
 		if (onDataError || $t.isMkResource($t.currentUrl))
 			$t.doStateOnMkResource(div, true);
-		
+
 		var tdsAmt = div.getElementsByTagName("tr").length; // includes "liquid" table TDs
 		// hide slector / iphone_field if data entry contains a little number of items		
 		if (tdsAmt < 20) {
@@ -4791,7 +4790,7 @@ var DataEntry = {
 				iphoneField.style.visibility = "hidden";
 		}
 		else {
-			var itemSelector = getChildById(div, 'item_selector');
+	    	var itemSelector = getChildById(div, 'item_selector');
 			FieldsWithEmptyValue.initField(itemSelector, 'select');
 		}
 
@@ -5850,8 +5849,13 @@ var LinkProcessor = {
 	    else if(e.shiftKey || e.ctrlKey) 
 	      return stopEventPropagation(e);
 	    // 3. default browser behaviour
-	    else
-	      return;
+	    else {
+	      var className = anchor.className;
+	      if (className  &&  className == "external")  
+	        $t.onClickGoLinkOut(e, anchor);
+	      else
+	        return;
+	    }
 	  }
 		
 		// process only left mouse button (1)
@@ -5886,7 +5890,63 @@ var LinkProcessor = {
 			changeBoolean(e, anchor);
 	  }
 	},
-	
+	onClickGoLinkOut : function(e, anchor) {
+    if (!anchor)
+      anchor = getTargetAnchor(e);
+    if (!anchor)
+      return;
+    var a = decodeURIComponent(anchor.href);
+    if (a.indexOf('/LinkOut?targetUrl=') != -1)
+      return;
+    e = getDocumentEvent(e); if (!e) return false;
+    var div;
+    var tr = getTrNode(anchor);
+    while (tr) {
+      var id = tr.id;
+      if  (!id  ||  id.indexOf("uri") == -1 || !isDigit(id.charAt(3))) {  
+        var parent = tr.parentNode;
+        tr = getTrNode(parent);
+      }
+      else   
+        break;
+    }
+    if (!tr) 
+      return;
+    
+    var id = tr.id;
+    var idx = id.indexOf("_displayInFull"); 
+    if (idx != -1) {
+      var parentTable = getAncestorByTagName(tr, "table");
+      id = id.substring(0, idx);
+      var children = parentTable.getElementsByTagName("tr");
+      for (var i = 0; i < children.length; i++) {
+        if (children[i].id  &&  children[i].id == id) {
+          tr = children[i];
+          break;
+        }
+      }
+    }
+    var divs = tr.getElementsByTagName("div");
+    var cnt = divs.length;
+    for (var i=0; i<cnt; i++) {
+      var clName = divs[i].className;
+      if (!clName  ||   clName != "uri")
+        continue;
+      div = divs[i];
+    }
+    if (!div) 
+      return;
+    var rUri = div.textContent;
+    var idx = rUri.indexOf("?");
+    var href = anchor.href;
+    var len = href.length;
+    if (href.indexOf("http://") == 0  &&  href.charAt(len - 1) == '/'  &&  href.indexOf('/', 7) == len - 1) 
+      href = href.substring(0, len - 1);
+    var uri = 'sql/www.hudsonfog.com/voc/model/portal/LinkOut?targetUrl=' + href + '&' + rUri.substring(idx + 1);
+    var href = 'v.html?uri=' + encodeURIComponent(uri);
+    anchor.href = href;
+    anchor.target = "_blank"; 
+	},
 	// calls 1) DataEntry 2) PlainDlg
 	onClickDisplayInner : function(e, anchor) {
 	  if (!anchor)
@@ -8380,7 +8440,7 @@ var FtsAutocomplete = {
 			stopEventPropagation(e);
 		}
 		else
-			this.search(e, this.field);
+		this.search(e, this.field);
 	},
 	onCrossIcon : function(icon) {
 		this.hide();
@@ -12109,7 +12169,10 @@ function displayInFull(e) {
 	// insert TR and move there text
 	var parentTable = getAncestorByTagName(a, "table");
 	var propsTR = getAncestorByTagName(parentTable, "tr");
-	var newTR = document.createElement("tr");
+	var id = propsTR.id; 
+    var newTR = document.createElement("tr");
+	if (id  &&  id.indexOf("uri") == 0  &&  isDigit(id.charAt(3)))
+      newTR.id = id + "_displayInFull";    	  
 	newTR.className = propsTR.className; 
 	var newTD = document.createElement("td");
 	newTD.setAttribute("colspan", 50); // use colspan pretty big
