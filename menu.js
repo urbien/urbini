@@ -5940,10 +5940,13 @@ var LinkProcessor = {
     var idx = rUri.indexOf("?");
     var href = anchor.href;
     var len = href.length;
+//console.log("href = " + href);
+//console.log("rUri = " + rUri);
     if (href.indexOf("http://") == 0  &&  href.charAt(len - 1) == '/'  &&  href.indexOf('/', 7) == len - 1) 
       href = href.substring(0, len - 1);
-    var uri = 'sql/www.hudsonfog.com/voc/model/portal/LinkOut?targetUrl=' + href + '&' + rUri.substring(idx + 1);
-    var href = 'v.html?uri=' + encodeURIComponent(uri);
+//    alert(href);
+    var uri = 'v.html?uri=sql/www.hudsonfog.com/voc/model/portal/LinkOut%3FtargetUrl%3D' + encodeURIComponent(href) + '%26' + encodeURIComponent(rUri.substring(idx + 1));
+    var href = uri; //'v.html?uri=' + encodeURIComponent(uri);
     anchor.href = href;
     anchor.target = "_blank"; 
 	},
@@ -7951,8 +7954,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 			if (hotspot)
 				top = findPosY(hotspot) - divCoords.height; // make vertical flip
 			else
-				top = (screenY + scrollY) - divCoords.height;
-			
+			top = (screenY + scrollY) - divCoords.height;
 			if ((top - scrollY) - margin > 0) 
 				top -= margin; // adjust for a scrollbar
 			if (top < scrollY) // but not higher then top of viewport
