@@ -5944,10 +5944,15 @@ var LinkProcessor = {
 //console.log("rUri = " + rUri);
     if (href.indexOf("http://") == 0  &&  href.charAt(len - 1) == '/'  &&  href.indexOf('/', 7) == len - 1) 
       href = href.substring(0, len - 1);
-//    alert(href);
-    var uri = 'v.html?uri=sql/www.hudsonfog.com/voc/model/portal/LinkOut%3FtargetUrl%3D' + encodeURIComponent(href) + '%26' + encodeURIComponent(rUri.substring(idx + 1));
-    var href = uri; //'v.html?uri=' + encodeURIComponent(uri);
-    anchor.href = href;
+//    var uri = 'v.html?uri=sql/www.hudsonfog.com/voc/model/portal/LinkOut%3FtargetUrl%3D' + encodeURIComponent(href) + '%26' + encodeURIComponent(rUri.substring(idx + 1));
+    
+    href = encodeURI(href);
+    href = href.replaceAll('=', '%3D');
+    href = href.replaceAll('?', '%3F');
+    alert(href);
+    var uri = 'sql/www.hudsonfog.com/voc/model/portal/LinkOut?targetUrl=' + href + '&' + rUri.substring(idx + 1);   
+//alert(uri);    
+    anchor.href = 'v.html?uri=' + encodeURIComponent(uri);
     anchor.target = "_blank"; 
 	},
 	// calls 1) DataEntry 2) PlainDlg
