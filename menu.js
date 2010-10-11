@@ -9128,20 +9128,18 @@ function changeBoolean(e, target) {
         node = nodes[i];
     }
 
-    var tooltip = node.getAttribute('tooltip');
-    if (tooltip  &&  tooltip.length != 0  &&  tooltip == "Yes")
-      pValue = "No";
-    else
-      pValue = "Yes";
-    node.setAttribute('tooltip', pValue);
-
+		var yesIconName = target.getAttribute('yesIcon');
+		var noIconName = target.getAttribute('noIcon');
+		pValue = (node.src.indexOf(yesIconName) != -1) ? "No" : "Yes";
     if (node) {
       if (pValue == "Yes")
-        node.src = target.getAttribute('yesIcon');
+        node.src = yesIconName;
       else
-        node.src = target.getAttribute('noIcon');
+        node.src = noIconName;
     }
+		node.setAttribute('tooltip', pValue);
   }
+	
   params += encodeURIComponent(rUri) + "&" + propShort + "=" + pValue;
   if (bUri != null)
     params += "&bUri=" + encodeURIComponent(bUri);
