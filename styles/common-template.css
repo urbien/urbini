@@ -1573,11 +1573,11 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { 
 	margin: 0px; padding: 0px;
-	color: &[Alternative_A];; background: rgba(255, 255, 255, 0.1); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-size: 16px; font-weight: normal; }
+	color: &[Alternative_A];; background: rgba(255, 255, 255, 0.1); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-size: inherit; font-weight: normal; }
 
 .rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.9) !important; background: #ffffff; color: &[MenuLineColorA];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; }
 .rounded_rect_tbl .comment { text-align: left; color: &[Alternative_A];; font-size: 11px; }
-.rounded_rect_tbl .select { font-size: 14px; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
+.rounded_rect_tbl .select { font-size: inherit; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
 
 .rounded_rect_tbl input#rightPanelPropertySheet  { display: none; }
 .rounded_rect_tbl td#dIcon { height: 40px; PADDING-RIGHT: 2px; PADDING-LEFT: 5px; PADDING-TOP: 2px; white-space: nowrap;  vertical-align: top; }
@@ -1811,7 +1811,7 @@ td.pBGr { background-color: #eeeeee;
 .panel_block .no_matches { display: none; color: #f00; font-size: 16px; font-weight:bold; margin-left: 15px; }
 
 #siteResourceList #filter input[type=text] { height: auto; background-color: transparent; font-size: 16px; font-weight: normal; }
-#siteResourceList .input { border: 1px solid  &[SecondaryColorA_5];; }
+#siteResourceList .input { border: 1px solid &[PrimaryColor_1];; }
 #siteResourceList .pointer, .panel_block .pointer { border: none; background: transparent; }
 
 .backlink_counter { position: absolute; top: -7px; left: 15px; pointer-events: none; }
