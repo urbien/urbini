@@ -9166,11 +9166,12 @@ function changeBoolean(e, target) {
         url += encodeURIComponent(locationUrl.substring(idx));
     }
     document.location.replace(url);
+		return;
   }
 //  else
 //    listboxFrame.location.replace(url + "?" + params); // load data from server
                                                         // into iframe
-    postRequest(e, url, params, null, null);
+  postRequest(e, url, params, null, null);
 		
   if (Popup.tooltipPopup) {
     Popup.tooltipPopup.close();
