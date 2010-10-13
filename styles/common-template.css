@@ -4,10 +4,14 @@ body {
 	font-family: arial, Helvetica, sans-serif;
 	padding: 0;
 	margin: 0;
-	background-color: &[BackgroundColor];;
+	background-color: &[BodyBackgroundColor];;
 	color: &[Color];;
   height: 100%;
 }
+
+div#wrapper {
+  background-color: &[BackgroundColor];;
+} 
 
 H1 {font-weight: bold; color: &[SecondaryColorA_1];; font-size: 34px; }
 H2 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 21px; margin: 0px;}
