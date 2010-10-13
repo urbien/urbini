@@ -5502,13 +5502,15 @@ var TouchDlgUtil = {
 	// selector focused on opening dialog or panel
 	focusSelector : function(parent, delayed) {
 		var selector = getChildById(parent, ["item_selector", "parameter_selector", "text_entry"]);
-		if (!selector) {
+		if (!selector || !isVisible(selector)) {
 			selector = this.focusHolder;
+			this.focusHolder.focus();
 		}
-		else if (!selector.onfocus)
-			selector.onfocus = this._onFocusSelector;	
-			
-		FieldsWithEmptyValue.setFocus(selector, delayed, true);
+		else {
+			if (!selector.onfocus) 
+				selector.onfocus = this._onFocusSelector;
+			FieldsWithEmptyValue.setFocus(selector, delayed, true);
+		}
 		
 		this.greyTr = null;
 		return selector;
