@@ -4,6 +4,7 @@
   </head>
   <body id="body">
 
+  <div id="wrapper">
   <div class="abc">
     <include name="requiredHeader.jsp"/>
     <getResource/>
@@ -29,6 +30,7 @@
       <chatAutoStart/>
     </div>
   </div><!-- abc -->
+  </div><!-- wrapper -->
 
   </body>
 </html>
