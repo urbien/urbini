@@ -1868,7 +1868,8 @@ td.pBGr { background-color: #eeeeee;
   *margin-bottom: 30px;  
 }
 
-#auto_complete { z-index: 1; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
+#auto_complete { z-index: 101; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
+#auto_complete>table { width: 100%; }
 #auto_complete .menuItem, #auto_complete .not_found { color: &[MenuLineColorA];; padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_4];; }
 #auto_complete .not_found { border-bottom: none; }
 #auto_complete .grey_highlighting td, #auto_complete .grey_highlighting a {  color: &[SecondaryColorB_3];; }
