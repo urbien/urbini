@@ -32,12 +32,12 @@ H5 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 10px}
  
 A {
   text-decoration: none; 
-  color: &[SecondaryColorA_3];;
+  color: &[SecondaryColorB_3];;
 }
 /* link in widget header */
 .containers h2 a { color: inherit; text-decoration: inherit; }
 
-A:hover {color: &[SecondaryColorB_3];; text-decoration: none; cursor: pointer}
+A:hover { color: &[SecondaryColorB_2];; text-decoration: none; cursor: pointer}
 
 A img {
 	border: 0;
@@ -1577,7 +1577,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { 
 	margin: 0px; padding: 0px;
-	color: &[Alternative_A];; background: rgba(255, 255, 255, 0.1); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-size: inherit; font-weight: normal; }
+	color: &[Alternative_A];; background: rgba(255, 255, 255, 0.1); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-family:Helvetica,arial,sans-serif; font-size: inherit; font-weight: normal; }
 
 .rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.9) !important; background: #ffffff; color: &[MenuLineColorA];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; }
 .rounded_rect_tbl .comment { text-align: left; color: &[Alternative_A];; font-size: 11px; }
