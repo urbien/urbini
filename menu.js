@@ -5898,45 +5898,79 @@ var LinkProcessor = {
     if (!anchor)
       return;
     var a = decodeURIComponent(anchor.href);
-    if (a.indexOf('/LinkOut?targetUrl=') != -1)
+    if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
       return;
     e = getDocumentEvent(e); if (!e) return false;
     var div;
-    var tr = getTrNode(anchor);
-    while (tr) {
-      var id = tr.id;
+    
+    
+    var table = getAncestorByTagName(anchor, "table");
+    var grid;
+    while (table) {
+      if (table.id && table.id.indexOf("siteRL_") == 0) {
+        if (table.className  &&  table.className == "grid")
+          grid = true;
+        break;
+      }
+    }
+
+    var tag;
+    var tag = grid ? getTdNode(anchor) : getTrNode(anchor);
+    var i = 0;
+    while (tag  &&  i<10) {
+      var id = tag.id;
+      i++;
       if  (!id  ||  id.indexOf("uri") == -1 || !isDigit(id.charAt(3))) {  
-        var parent = tr.parentNode;
-        tr = getTrNode(parent);
+        var parent = grid ? tag.parentNode.parentNode : tag.parentNode;
+        tag = grid ? getTdNode(parent) : getTrNode(parent);
       }
       else   
         break;
     }
-    if (!tr) 
+    if (!tag)
       return;
     
-    var id = tr.id;
-    var idx = id.indexOf("_displayInFull"); 
-    if (idx != -1) {
-      var parentTable = getAncestorByTagName(tr, "table");
-      id = id.substring(0, idx);
-      var children = parentTable.getElementsByTagName("tr");
-      for (var i = 0; i < children.length; i++) {
-        if (children[i].id  &&  children[i].id == id) {
-          tr = children[i];
-          break;
+    // this clause only for list RL
+    if (!grid) {
+      var id = tag.id;
+      var idx = id.indexOf("_displayInFull"); 
+      if (idx != -1) {
+        var parentTable = getAncestorByTagName(tag, "table");
+        id = id.substring(0, idx);
+        var children = parentTable.getElementsByTagName("tr");
+        for (var i = 0; i < children.length; i++) {
+          if (children[i].id  &&  children[i].id == id) {
+            tag = children[i];
+            break;
+          }
         }
       }
     }
-    var divs = tr.getElementsByTagName("div");
+    var divs = tag.getElementsByTagName("div");
     var cnt = divs.length;
-    for (var i=0; i<cnt; i++) {
+    for (var i=0; i<cnt  &&  !div; i++) {
       var clName = divs[i].className;
-      if (!clName  ||   clName != "uri")
-        continue;
-      div = divs[i];
+      if (clName  &&  clName == "uri")
+        div = divs[i];
     }
     if (!div) 
+      return;
+
+    var linkOutDiv;
+    var parentDiv = getAncestorByTagName(tag, "div");
+    while (parentDiv  &&  !linkOutDiv) {
+      if (parentDiv  &&  (parentDiv.id == 'front' || parentDiv.className == 'front')) {
+        var children = parentDiv.getElementsByTagName('div');
+        for (var i = 0; i < children.length  &&  !linkOutDiv; i++) {
+          var d = children[i];
+          if (d.className  &&  d.className == 'linkOut') 
+            linkOutDiv = d;
+        }
+        break;
+      }
+      parentDiv = getAncestorByTagName(parentDiv, "div");
+    }
+    if (!linkOutDiv) 
       return;
     var rUri = div.textContent;
     var idx = rUri.indexOf("?");
@@ -5949,13 +5983,13 @@ var LinkProcessor = {
 //    var uri = 'v.html?uri=sql/www.hudsonfog.com/voc/model/portal/LinkOut%3FtargetUrl%3D' + encodeURIComponent(href) + '%26' + encodeURIComponent(rUri.substring(idx + 1));
     
     href = encodeURI(href);
-    href = href.replaceAll('=', '%3D');
-    href = href.replaceAll('?', '%3F');
-    alert(href);
-    var uri = 'sql/www.hudsonfog.com/voc/model/portal/LinkOut?targetUrl=' + href + '&' + rUri.substring(idx + 1);   
-//alert(uri);    
+    href = href.replace(/=/g, '%3D');
+    href = href.replace(/\?/g, '%3F');
+    var linkOutType = linkOutDiv.textContent;
+    var uri = 'sql' + linkOutType.substring(6) + '?targetUrl=' + href + '&' + rUri.substring(idx + 1);   
+    
     anchor.href = 'v.html?uri=' + encodeURIComponent(uri);
-    anchor.target = "_blank"; 
+    anchor.target = "_blank";
 	},
 	// calls 1) DataEntry 2) PlainDlg
 	onClickDisplayInner : function(e, anchor) {
@@ -10645,7 +10679,7 @@ function WidgetSlider(widgetDiv) {
 			$t.nextSlide.innerHTML = html;
 			$t.slidesArr[recNmb] = $t.nextSlide;
 		}
-				
+		
 		if (Browser.ie) // IE uses own transition Fade effect
 			return;
 		
