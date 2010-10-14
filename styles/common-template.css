@@ -1039,7 +1039,8 @@ div.contentsRL {
 }
 /* style for hidden <div> where URI of the resource resides */
 .uri { visibility:hidden;  display:none;}
-
+/* style for hidden <div> where LinkOut type for resources of the displayed type */
+.linkOut { visibility:hidden;  display:none;}
 .num {background-color:fffdc3; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-size:7pt; vertical-align:middle;}
 
 /* filter line: Search criteria if there was full text search criteria*/
@@ -1151,7 +1152,7 @@ TD.toolbar {
   padding-left:  0.8em;
   padding-right: 0.8em;
 }
-
+#col_1 table { font-size: 12px; }
 #col_3 {
   padding-left: 0.8em;
   padding-right: 0.8em;
