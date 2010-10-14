@@ -10645,6 +10645,9 @@ function WidgetSlider(widgetDiv) {
 			$t.nextSlide.innerHTML = html;
 			$t.slidesArr[recNmb] = $t.nextSlide;
 		}
+				
+		if (Browser.ie) // IE uses own transition Fade effect
+			return;
 		
 		$t.nextSlide.style.display = "none";
 		$t.widgetDiv.appendChild($t.nextSlide);
@@ -10653,6 +10656,21 @@ function WidgetSlider(widgetDiv) {
 	this.showNextSlide = function(){
 		if (this.nextSlide == null)
 			return;
+
+		if (Browser.ie) { // IE uses own transition Fade effect
+			if (!this.widgetDiv.filters[0]) {	
+				this.widgetDiv.style.width = this.widgetDiv.offsetWidth;
+				this.widgetDiv.style.height = this.widgetDiv.offsetHeight;
+				this.widgetDiv.style.filter = "progid:DXImageTransform.Microsoft.Fade(duration=1)";
+			}
+	
+			this.widgetDiv.filters[0].apply();
+			this.widgetDiv.innerHTML = this.nextSlide.innerHTML;
+			this.widgetDiv.filters[0].play();
+			return;
+		}	
+		
+		// other browsers
 		this.fading();
 	}
 	
@@ -10689,6 +10707,8 @@ function WidgetSlider(widgetDiv) {
 			changeOpacity(this.widgetDiv, opacity);
 			return;
 		}
+		
+/*	not used after	Fade transition was applied
 		// IE's problem: 1) need to change opacity for each element
 		// 2) color blend with background
 		var all = this.widgetDiv.getElementsByTagName("*");
@@ -10710,6 +10730,7 @@ function WidgetSlider(widgetDiv) {
 			if (all[i].tagName.toLowerCase() == 'div')
 				all[i].style.color = color;
 		}
+*/		
 	}
 	this.getWidgetDiv = function() {
 		return this.widgetDiv;
