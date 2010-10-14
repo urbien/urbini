@@ -5315,7 +5315,7 @@ var TouchDlgUtil = {
 		return true;
 	},
 	isAutocompletePopup : function(div) {
-		if (div.id != "auto_complete")
+		if (!div || div.id != "auto_complete")
 			return false;
 		
 		return true;
