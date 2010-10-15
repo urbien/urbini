@@ -5905,6 +5905,17 @@ var LinkProcessor = {
     
     
     var table = getAncestorByTagName(anchor, "table");
+    /*
+    table = getAncestorByTagName(table.parentNode, "table");
+    table = getAncestorByTagName(table.parentNode, "table");
+    table = getAncestorByTagName(table.parentNode, "table");
+    table = getAncestorByTagName(table.parentNode, "table");
+    table = getAncestorByTagName(table.parentNode, "table");
+    table = getAncestorByTagName(table.parentNode, "table");
+    table = getAncestorByTagName(table.parentNode, "table");
+    table = getAncestorByTagName(table.parentNode, "table");
+    */
+
     var grid;
     while (table) {
       if (table.id && table.id.indexOf("siteRL_") == 0) {
@@ -5912,14 +5923,13 @@ var LinkProcessor = {
           grid = true;
         break;
       }
+      table = getAncestorByTagName(table.parentNode, "table");
     }
-
     var tag;
     var tag = grid ? getTdNode(anchor) : getTrNode(anchor);
     var i = 0;
-    while (tag  &&  i<10) {
+    while (tag) {
       var id = tag.id;
-      i++;
       if  (!id  ||  id.indexOf("uri") == -1 || !isDigit(id.charAt(3))) {  
         var parent = grid ? tag.parentNode.parentNode : tag.parentNode;
         tag = grid ? getTdNode(parent) : getTrNode(parent);
@@ -5929,11 +5939,12 @@ var LinkProcessor = {
     }
     if (!tag)
       return;
+
     
     // this clause only for list RL
     if (!grid) {
       var id = tag.id;
-      var idx = id.indexOf("_displayInFull"); 
+      var idx = id.indexOf("_displayInFull");
       if (idx != -1) {
         var parentTable = getAncestorByTagName(tag, "table");
         id = id.substring(0, idx);
@@ -5946,6 +5957,7 @@ var LinkProcessor = {
         }
       }
     }
+
     var divs = tag.getElementsByTagName("div");
     var cnt = divs.length;
     for (var i=0; i<cnt  &&  !div; i++) {
