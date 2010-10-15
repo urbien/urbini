@@ -13,11 +13,12 @@ div#wrapper {
   background-color: &[BackgroundColor];;
 } 
 
-H1 {font-weight: bold; color: &[SecondaryColorA_1];; font-size: 34px; }
-H2 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 21px; margin: 0px;}
-H3 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 13px; margin: 0px;}
-H4 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 12px}
-H5 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 10px}
+/* avoid showing with link color */
+H1, H1 A {font-weight: bold; color: &[SecondaryColorA_1];; font-size: 34px; }
+H2, H2 A {font-weight: bold; color: &[SecondaryColorB_2];; font-size: 21px; margin: 0px;}
+H3, H3 A {font-weight: bold; color: &[SecondaryColorB_2];; font-size: 13px; margin: 0px;}
+H4, H4 A {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 12px}
+H5, H5 A {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 10px}
 
 /* RTE font size */
 .lz_xx_small { font-size: 9px; }
@@ -29,19 +30,22 @@ H5 {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 10px}
 .lz_xx_large { font-size: 24px; }
 .lz_xxx_large { font-size: 36px; }
  
- 
-A {
+
+a { 
   text-decoration: none; 
   color: &[SecondaryColorB_3];;
 }
 /* link in widget header */
 .containers h2 a { color: inherit; text-decoration: inherit; }
 
-A:hover { color: &[SecondaryColorB_2];; text-decoration: none; cursor: pointer}
+a:hover { color: &[SecondaryColorB_2];; text-decoration: none; cursor: pointer}
 
-A img {
+a [class=external] :not(img) {color: &[SecondaryColorB_3];; background: url(../icons/external.png) no-repeat center right}
+a img {
 	border: 0;
-	vertical-align: middle; 
+	vertical-align: middle;
+	/* suppress external link icon*/
+	background: transparent; padding-right: 0em;} 
 }
  
 #mainMenu a { font-size: 0.8em; }
@@ -749,6 +753,7 @@ div.leftSidebar {
   *width: 8em;
   min-width: 7em;
 } 
+div.leftSidebar A {color: inherit}
 div.rightSidebar {
   padding-top:   0.4em;
   padding-left:  0.8em;
@@ -1012,6 +1017,7 @@ ul.subchapter a {
 div.contents {
   float:right; width:20em;
 }
+div.contents A { color: inherit } 
 
 div.contentsRL {
   float:right; width:20em; overflow-x:auto; padding-left: 2px;
@@ -1145,6 +1151,7 @@ TD.toolbar {
 
 .dashboardLine a {
   padding: 5px 0px; 
+  font-size: 0.8em; 
 }
 
 /* doashboard layout, supporting only 3 columns for now */ 
