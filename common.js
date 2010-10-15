@@ -868,37 +868,52 @@ function swapNodes(node1, node2) {
   var nextSibling1 = node1.nextSibling;
   var nextSibling2 = node2.nextSibling;
 
-  if(nextSibling1)
-    parent1.insertBefore(node2, nextSibling1);
-  else
-    parent1.appendChild(node2);
-
-  if(nextSibling2)
-    parent2.insertBefore(node1, nextSibling2);
-  else
-    parent2.appendChild(node1);
+	if (parent1) {
+		if (nextSibling1) 
+			parent1.insertBefore(node2, nextSibling1);
+		else 
+			parent1.appendChild(node2);
+	}
+	if (parent2) {
+  	if (nextSibling2) 
+  		parent2.insertBefore(node1, nextSibling2);
+  	else 
+  		parent2.appendChild(node1);
+  }
 }
 
-function getNextSibling(obj) {
+function getNextSibling(obj, makeLoopIfNeed) {
 	if (!obj)
 		return null;
-  do obj = obj.nextSibling;
-  while (obj && obj.nodeType != 1);
-  return obj;
+	var nextObj = obj;
+  do nextObj = nextObj.nextSibling;
+  while (nextObj && nextObj.nodeType != 1);
+	
+	if (makeLoopIfNeed && nextObj == null )
+		return getFirstChild(obj.parentNode);
+		
+  return nextObj;
 }
 
-function getPreviousSibling(obj) {
+function getPreviousSibling(obj, makeLoopIfNeed) {
 	if (!obj)
 		return null;
-  do obj = obj.previousSibling;
-  while (obj && obj.nodeType != 1);
-  return obj;
+	var prevObj = obj;	
+  do prevObj = prevObj.previousSibling;
+  while (prevObj && prevObj.nodeType != 1);
+  
+	if (makeLoopIfNeed && prevObj == null )
+		return getLastChild(obj.parentNode);
+	
+	return prevObj;
 }
 
 function getFirstChild(parent) {
 	if (!parent)
 		return null;
 	var child = parent.firstChild;
+	if (!child)
+		return null;
 	return child.nodeType == 1 ? child : getNextSibling(child);
 }
 
@@ -906,6 +921,8 @@ function getLastChild(parent) {
 	if (!parent)
 		return null;
 	var child = parent.lastChild;
+	if (!child)
+		return null;
 	return child.nodeType == 1 ? child : getPreviousSibling(child);
 }
 
