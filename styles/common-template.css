@@ -88,7 +88,7 @@ img.fade {
 
 #resourceList td.top {height: 0px; }
 
-.hideImg img {
+.hideImg img, .hideImg object, .hideImg embed, .hideImg .swf, .hideImg .flv {
   visibility:hidden; display:none;
 }
 .hideImg p, .hideImg br {
