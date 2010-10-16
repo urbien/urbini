@@ -1616,6 +1616,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl td { border-bottom: solid &[PrimaryColor_1]; 1px; }
 #pane2 .rounded_rect_tbl td { border-bottom: none; }
 #pane2 #dashboard td { vertical-align: top; }
+#pane2 tr#dashboard td { vertical-align: middle; }
 
 .rounded_rect_tbl tr:last-child td, #siteResourceList .rounded_rect_tbl tr:last-child td{ border-bottom: none; }
 .rounded_rect_tbl table td { border: none; height: auto; }
@@ -1769,6 +1770,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
    font-weight: normal;
    text-shadow: 0 1px 1px rgba(0,0,0,0.25), 2px 0 1px rgba(0,0,0,0.25) !important;
  }
+ .icon_btn img { width: 30px; height: 30px; }
 .icon_btn_symb { -webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0.8))); }
 .dlg_cross { font-family: Geneva, Tahoma, Arial, Helvetica; font-weight: bold; }
 
