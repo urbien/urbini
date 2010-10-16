@@ -214,7 +214,7 @@ var RteEngine = {
 		PalettePopup.show(btnObj, 'center', callback, parentDlg, null, chosenBgClr);
 		return PalettePopup.div;
 	},
-	launchLinkPopup : function(btnObj, callback, cancelCallback, href) {
+	launchLinkPopup : function(btnObj, callback, cancelCallback, href, isBlank) {
 		if(this.linkPopup == null)
 			this.createLinkPopup();
 		var parentDlg = getParentDialog(btnObj.div);
@@ -224,6 +224,8 @@ var RteEngine = {
 		// set url field value
 		if (href)
 		  getChildById(div, "url").value = href;
+		if (isBlank)
+		  getChildById(div, "is_blank").checked = true;
 		return div;
 	},
 	launchImagePopup : function(btnObj, callback, rteId, cancelCallback, imgObj) {
@@ -1284,21 +1286,29 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   // it is used for link handling in the dialog
   this.getSelectedElement = function() {
     var elm = null;
-    if (typeof this.document.selection != 'undefined') {
+    if (typeof this.document.selection != 'undefined') { // IE
       // curRange - did not work in Opera
       var range = this.document.selection.createRange();
       var elm = range.parentElement();
     }
     else if (typeof this.window.getSelection != 'undefined') {
       var selection = this.window.getSelection();
-      var childNodesAmt = selection.focusNode.childNodes.length;
-      if (childNodesAmt == 0) {
-        elm = selection.focusNode.parentNode;
-      }
-      else if(childNodesAmt >= selection.focusOffset) {
-        var idx = (selection.focusOffset > 0) ? selection.focusOffset - 1 : 0;
-				elm = selection.focusNode.childNodes[idx];
-      }
+			if (Browser.webkit) { // Chrome's workaround
+		  	var range = selection.getRangeAt(0);
+		  	var elm = range.startContainer.parentNode;
+				// did not work -> var rangeObj = this.document.createRange(); rangeObj.selectNode(elm);
+		  } // FF
+		  else {
+		  	var childNodesAmt = selection.focusNode.childNodes.length;
+		  	if (childNodesAmt == 0) {
+		  		elm = selection.focusNode.parentNode;
+		  	}
+		  	else 
+		  		if (childNodesAmt >= selection.focusOffset) {
+		  			var idx = (selection.focusOffset > 0) ? selection.focusOffset - 1 : 0;
+		  			elm = selection.focusNode.childNodes[idx];
+		  		}
+		  }
     }
     return elm;
   }
@@ -1596,10 +1606,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(!i_am.isAllowedToExecute())
 			return;
     var href = "";
-
+		var isBlank = false;
+		
     var a = i_am.getSelectedElement();
     if (a && a.tagName && a.tagName.toLowerCase() == "a") {
       href = a.href;
+			isBlank = a.getAttribute("target") == "_blank";
     }
     // not show the dialog on double click if no href 
     if (onDblClick && href.length == 0)
@@ -1610,7 +1622,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     
     // onDblClick show dialog under 1st, "styleBtn" button because "linkBtn" can be in hided overflow popup
 		var btn = (onDblClick) ? i_am.styleBtn : i_am.linkBtn;
-		i_am.currentPopup = RteEngine.launchLinkPopup(btn, i_am.setLink, i_am.cancelLink, href);
+		i_am.currentPopup = RteEngine.launchLinkPopup(btn, i_am.setLink, i_am.cancelLink, href, isBlank);
 	}
 	// 20
 	this.onImage = function(onDblClick) {
@@ -1758,33 +1770,23 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	// 7
 	this.setLink = function(params) {
-    var newHref = params.url;
-    if(newHref.length == 0) {
-      // if new href is blank - replace link with its inner HTML
-      // does not work in IE
-      var a = i_am.getSelectedElement();
-      var oldHref = null;
-      if (a && a.tagName && a.tagName.toLowerCase() == "a") {
-        oldHref = a.href;
-      }
-      if (!oldHref)
-        return;
-      
-      var parent = a.parentNode;
-      
-      if (i_am.isNetscape) { // FF
-        parent.removeChild(a);
-        i_am.insertHTML(a.innerHTML);
-      }
-      else { // Safari, Opera
-        i_am.insertHTML(a.innerHTML);
-        parent.removeChild(a);
-      }
-
-      return;  
-    }
+		i_am.skipClose = true;
 		
+		var a = i_am.getSelectedElement();
+		var isLinkSelected = (a && a.tagName && a.tagName.toLowerCase() == "a");
 		
+    // 1. change parameters of existing link
+		if (isLinkSelected) { 
+			a.setAttribute("href", params.url);
+			if(params.is_blank)
+				a.setAttribute("target", "_blank");
+			else
+				a.removeAttribute("target");	
+			return;
+		}
+		
+		// 2. create new link
+		var newHref = params.url;
 		if(params.is_blank)
 		  newHref += "__$blank__";
 		
@@ -1799,7 +1801,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		    }
 		  }
 		}
-
+		
 		return true;
 	}
 	// 8
