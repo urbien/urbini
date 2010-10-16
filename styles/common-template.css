@@ -48,7 +48,7 @@ a img {
 	background: transparent; padding-right: 0em;} 
 }
  
-#mainMenu a { font-size: 0.8em; }
+/* #mainMenu A { font-size: 0.8em; } */
 
 .requiredProp {
   color: #ff0000; font-weight: bold;
@@ -245,9 +245,6 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
 	font-size:11px;
 	font-weight:bold;
 	padding:0px 2px 0px 2px;
-}
-.but_center A {
-	text-decoration: none
 }
 
 .pieTitle {font-weight:bold; font-size:16px; color:#00309C;}
@@ -737,9 +734,11 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
   font-weight:bold; 
 }
 
+/*
 .alphabeticIndex {background-color: &[SecondaryColorA_5];; font-size:0.8em; vertical-align: top;}
 .alphabeticIndex div { height: 1.7em;}
 .alphabeticIndex A { color: &[MenuLineColorA];; background-color: &[SecondaryColorA_5];; font-weight: bold;}
+*/
 
 .menuLine A { color: &[MenuLineColorA];; background-color: &[SecondaryColorA_5];; font-weight: bold;}
 .menuLine A:active {color: &[SecondaryColorA_1];; background-color: &[SecondaryColorA_3]; }
