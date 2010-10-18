@@ -10552,8 +10552,7 @@ var WidgetRefresher = {
 						 continue;
 
 					// fix column width then widget keeps its width
-					// TODO: append code window.onresize
-					cells[i].style.width = cells[i].offsetWidth;
+					// not used currently -> cells[i].style.width = cells[i].offsetWidth;
 
 					var idx = rel.indexOf(";");
 					var intervalSeconds = (idx == -1) ? rel.substring(8) : rel.substring(8, idx);
