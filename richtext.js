@@ -224,8 +224,11 @@ var RteEngine = {
 		// set url field value
 		if (href)
 		  getChildById(div, "url").value = href;
-		if (isBlank)
-		  getChildById(div, "is_blank").checked = true;
+
+		var checkBox = getChildById(div, "is_blank");
+		var touchBtn = getNextSibling(checkBox);
+		CheckButtonMgr.setState(touchBtn, checkBox, isBlank == true);
+
 		return div;
 	},
 	launchImagePopup : function(btnObj, callback, rteId, cancelCallback, imgObj) {
@@ -256,7 +259,7 @@ var RteEngine = {
 		if(this.imagePastePopup == null)
 			this.createImagePastePopup();
 		else { // need to "reload" form content, because input file is read-only
-		  var innerFormHtml = "<div style=\"font-family:verdana; font-size:12px\">"
+		  var innerFormHtml = "<div>"
         + "You pasted image that requires uploading.<br />Press \"Ctrl\" + \"V\" and then submit.</div>"
 		    + ImageUploader.getUploadImageFormContent("RteEngine.onImagePasteFormSubmit(event)", "submit");
 		  this.imagePastePopup.changeContent(innerFormHtml);
@@ -338,7 +341,7 @@ var RteEngine = {
 		this.sizePopup.setWidth(50);
 	},
 	createObjectPopup : function() {
-		var innerFormHtml = '<table style="font-family:verdana; font-size:12px" cellpadding="4" cellspacing="0" border="0">'
+		var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
 			+ ' <tr>'
 			+ ' <td align="left">Paste html code:</td>'
 			+ ' </tr><tr>'
@@ -364,23 +367,26 @@ var RteEngine = {
 	},
 
 	createLinkPopup : function() {
-		var innerFormHtml = '<table style="font-family:verdana; font-size:12px" cellpadding="4" cellspacing="0" border="0">'
+		var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
 			+ ' <tr>'
 			+ ' <td align="left">Enter URL:</td>'
 			+ ' </tr><tr>'
 			+ ' <td><input name="url" type="text" id="url" value="" size="35"></td>'
 			+ ' </tr><tr>'
-  		+ ' <td><input name="is_blank" type="checkbox" id="is_blank">load into a new window</td>'
+  		+ ' <td><table><tr><td>'
+			+ '<input name="is_blank" type="checkbox" id="is_blank"></td><td>'
+			+ 'load into a new window</td></tr></table></td>'
       + ' </tr>'
 			+ '</table>';
 		this.linkPopup = new FormPopup(innerFormHtml);
+		CheckButtonMgr.substitute(this.linkPopup.getFormDiv()); 
 	},
 	createImagePopup : function(imgObj) {
 		var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert", imgObj);
 		this.imagePopup = new FormPopup(innerFormHtml, "USE_SUBMIT_BTN");
 	},
   createImagePastePopup : function() {
-  	var innerFormHtml = "<div style=\"font-family:verdana; font-size:12px\">"
+  	var innerFormHtml = "<div>"
     + "You pasted image that requires uploading.<br />Press \"Ctrl\" + \"V\" and then submit.</div>"
 		+ ImageUploader.getUploadImageFormContent("RteEngine.onImagePasteFormSubmit(event)", "submit");
 		this.imagePastePopup = new FormPopup(innerFormHtml, "USE_SUBMIT_BTN");
@@ -392,7 +398,7 @@ var RteEngine = {
   
   // create END --------------------------------
 	getInsertTableHtml : function() {
-		var tblInsertHtml = '<table style="font-family:verdana; font-size:12px" cellpadding="4" cellspacing="0" border="0">'
+		var tblInsertHtml = '<table cellpadding="4" cellspacing="0" border="0">'
 			+ ' <tr>'
 			+ ' <td align="left">Table width:</td>'
 			+ ' <td><input name="width" type="text" id="width" value="90" size="4"></td>'
@@ -592,7 +598,7 @@ var ImageUploader = {
       + " onsubmit=\"return " + submitCallbackName + "\""
       + ">"
       
-      + " <table style=\"font-family:verdana; font-size:12px;\"><tr><td>"; 
+      + " <table><tr><td>"; 
       
 			if (!imgObj) {
 		  	formStr += "<input type=\"radio\" name=\"radio\" onclick=\"ImageUploader.imageLocationSwitch(0)\" checked>upload image" +
@@ -604,20 +610,17 @@ var ImageUploader = {
 	      // 1) image uploading
 	      // 2) URL of image
 	      + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
-	      + " style=\"font-family:verdana; font-size:12px\""
 	      + " size=\"40\" onkeyup=\"ImageUploader.enterCatcher(event);\"  style=\"margin-top:20px;\">";
 			}
 			else
 				formStr += "image URL:<br /><br />";
 			
-			formStr += " <input type=\"text\" name=\"" + this.FILE_INPUT_NAME + "\""
-      + " style=\"font-family:verdana; font-size:12px;";
-     
+			formStr += " <input type=\"text\" name=\"" + this.FILE_INPUT_NAME + "\"";
 			
 			if (imgObj)
-				formStr += "\" value = \"" + imgObj.src + "\"";
+				formStr += " value = \"" + imgObj.src + "\"";
 			else
-				formStr += " display: none;\"";
+				formStr += "style=\"display: none;\"";
 			
 			formStr += " size=\"45\">"
 
@@ -626,8 +629,7 @@ var ImageUploader = {
       + " </td></tr>"
       
       + " <tr><td><br/>align:&nbsp;<select id=\"" + this.IMG_ALIGN_ID + "\""
-      + " style=\"font-family:verdana; font-size:12px\">"
-			+ " <option value=\"left\">left</option>"
+      + " <option value=\"left\">left</option>"
       + " <option value=\"middle\">middle</option>"
       + " <option value=\"right\">right</option>"
       + " <option value=\"bottom\">bottom</option>"
@@ -1671,7 +1673,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(!i_am.isAllowedToExecute())
 			return;
 		
-		i_am.currentPopup = RteEngine.launchObjectPopup(i_am.objectBtn, i_am.setObject, i_am.iframeObj.id, i_am.cancelImage);
+		i_am.currentPopup = RteEngine.launchObjectPopup(i_am.objectBtn, i_am.setObject, i_am.cancelImage);
 	}
 	// 21
 	this.onTable = function() {
