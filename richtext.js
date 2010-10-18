@@ -1315,14 +1315,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 	// event handlers --------------
 	this.onfocus = function() {
-	  if(i_am.toolbar == null)
-	    i_am.toolbar = i_am.createToolbar();
+		if (i_am.toolbar == null) {
+			i_am.changeEditTabWidth(true); // expand EditTab before createToolbar
+			i_am.toolbar = i_am.createToolbar();
+		}
 
     if(i_am.toolbar.isVisible())
       return;
     
 		i_am.changeEditTabWidth(true);
-
 		i_am.fitHeightToVisible(true);
 		
 		
