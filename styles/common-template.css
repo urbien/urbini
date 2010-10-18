@@ -1899,7 +1899,11 @@ td.pBGr { background-color: #eeeeee;
     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=#77&[PrimaryColor_4_ie];);
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=#77&[PrimaryColor_4_ie];)";
 }
-.ctrl_toolbar_dlg { visibility: hidden; position: absolute;	background-color: &[BackgroundColor];; color: &[Label];; border: 1px solid &[PrimaryColor_1];; padding: 5px; }
+.ctrl_toolbar_dlg { visibility: hidden; position: absolute;	background-color: &[BackgroundColor];; color: &[Label];; border: 1px solid &[PrimaryColor_1];; padding: 5px;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+}
 .ctrl_toolbar_dlg td { height: 32px; }
 
 tr.grey_highlighting > td, * html tr.grey_highlighting td, .ctrl_toolbar_dlg .grey_highlighting {
