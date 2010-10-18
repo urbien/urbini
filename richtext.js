@@ -1321,6 +1321,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     if(i_am.toolbar.isVisible())
       return;
     
+		i_am.changeEditTabWidth(true);
 
 		i_am.fitHeightToVisible(true);
 		
@@ -1359,6 +1360,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     if(e && e.target && e.target.nodeName == "HTML")
       return;
 
+		i_am.changeEditTabWidth(false);
+
 		i_am.iframeObj.style.height = i_am.initFrameHeight;
 		if (i_am.toolbar)
 			i_am.iframeObj.style.marginTop = -i_am.toolbar.getHeight() + 5; 
@@ -1368,6 +1371,29 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.iframeObj.setAttribute("scrolling", "no");   
 	}
 
+	this.changeEditTabWidth = function(toEnlarge) {
+		var editDiv = getAncestorById(i_am.iframeObj, "div_Edit");
+		if (!editDiv)
+			return;
+					
+		var ropTd = editDiv.parentNode;	
+		var cpDiv = getNextSibling(ropTd);	
+		if (!cpDiv)
+			return;
+		
+		var dashboardLine = getPreviousSibling(ropTd.parentNode);
+		var cpTab = getChildById(dashboardLine, "cpTabs")
+			
+		if (toEnlarge) {
+			cpDiv.style.display = "none";
+			cpTab.style.display = "none";
+		}
+		else {
+			cpDiv.style.display = "";
+			cpTab.style.display = "";
+		}
+	}
+	
 	// IE's hack
 	// to store the current range to which to apply the command
 	this._ondeactivate = function() {
