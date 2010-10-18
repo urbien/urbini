@@ -7361,6 +7361,7 @@ function minMax(e, divId) {
   }
 }
 
+// Note: RTE hides (and restores) control panel to enlarge editing area.
 function showTab(e, td, hideDivId, unhideDivId) {
   e = getDocumentEvent(e);
 
@@ -7491,7 +7492,8 @@ function showTab(e, td, hideDivId, unhideDivId) {
   	TouchDlgUtil.init(panelBlock);
   	TouchDlgUtil.setCurrentDialog(panelBlock);
   }
-  return stopEventPropagation(e);
+	// commented out because RTE should get this event to restore control panel
+  //return stopEventPropagation(e);
 }
 var curSpan;
 function showTabLabel(label) {
