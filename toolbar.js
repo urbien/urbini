@@ -120,9 +120,9 @@ function FormPopup(innerFormHtml, flag) {
 		i_am.is_opened = false;
 	}
 	this._oncancel = function() {
-	  if(i_am.cancelCallback) {
+	  if(typeof i_am.cancelCallback == "function")
 	    i_am.cancelCallback();
-	  }
+
 	  i_am.hide();  
 	}
 	// onkeyup
@@ -1224,9 +1224,9 @@ var PopupHandler = {
 		var relObj = hotspot.div || hotspot.obj || hotspot;
 
     var pos;
-    if(Browser.gecko)		
-		  pos = this.findObjectPositio(relObj, document.body);
-		else
+//    if(Browser.gecko)		
+//		  pos = this.findObjectPositio(relObj, document.body);
+//		else
   	  pos = this.findObjectPositio(relObj, parentDlg);
 
     // 1. inside ("hotspot" - here "container)
@@ -1262,22 +1262,8 @@ var PopupHandler = {
 		if(screenHeight < this.y - getScrollXY()[1] + div.clientHeight)
 			this.y = pos.top - div.clientHeight - OFFSET_Y;
 		
-		if(Browser.gecko) {
-			div.style.position = 'fixed';
-			var scrl = getScrollXY();
-			if(hotspot.isOverflowed) { // (sub)popup: image dlg, etc.
-				div.style.left = this.x;
-			  div.style.top = this.y;
-			}
-			else {
-			  div.style.left = this.x - scrl[0];
-			  div.style.top = this.y - scrl[1];
-			}
-		}
-    else {
-		  div.style.left = this.x;
-		  div.style.top = this.y;
-		}
+	  div.style.left = this.x;
+	  div.style.top = this.y;
 
 		// set new div  data
 		this.popupDiv = div;
