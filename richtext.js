@@ -235,6 +235,7 @@ var RteEngine = {
 		if(this.imagePopup == null)
 			this.createImagePopup(imgObj);
 		else {
+			// note: insert new content on each launch because no way to reset File-browse field 
 		  var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert", imgObj);
 		  this.imagePopup.changeContent(innerFormHtml);
 		}	
@@ -245,6 +246,7 @@ var RteEngine = {
 	  ImageUploader.putRteIdInForm(form, rteId);		
 		var parentDlg = getParentDialog(btnObj.div);
 		
+		CheckButtonMgr.substitute(this.imagePopup.getFormDiv());
 		this.imagePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.imagePopup.div;
 	},
@@ -499,17 +501,17 @@ var RteEngine = {
 		var sel = getChildById(form, $t.IMG_ALIGN_ID);
 		var align = sel.options[sel.selectedIndex].value;
 	  var margin = getChildById(form, $t.MARGIN_ID).value; 
+		var modeIdx = $t.getImageInsertModeIdx(form);
+		var encImgUrl = encodeURI(imgUrl);
+		var rteObj = RteEngine.getRteById(RteEngine.curRteId);
 		
-	  RteEngine.imagePopup.hide();
-	  var rteObj = RteEngine.getRteById(RteEngine.curRteId);
-
-    var selRadioIdx = $t.getSelectedRadioBtnIdx(form);
-	  // insert image
-	  var encImgUrl = encodeURI(imgUrl);
-	  rteObj.setImage(encImgUrl, align, margin, selRadioIdx);
+		// hide dialog
+		RteEngine.imagePopup.hide();
+		// insert image
+	  rteObj.setImage(encImgUrl, align, margin, modeIdx);
 
 	  // URL - no uploading
-	  if($t.isImageLocal(imgUrl) == false || selRadioIdx == 1) {
+	  if($t.isImageLocal(imgUrl) == false || modeIdx == 1) {
 	    return false;
 	  }
 	  
@@ -601,16 +603,14 @@ var ImageUploader = {
       + " <table><tr><td>"; 
       
 			if (!imgObj) {
-		  	formStr += "<input type=\"radio\" name=\"radio\" onclick=\"ImageUploader.imageLocationSwitch(0)\" checked>upload image" +
-		  	"&nbsp;&nbsp;" +
-		  	"<input type=\"radio\" name=\"radio\" onclick=\"ImageUploader.imageLocationSwitch(1)\">URL of image" +
-		  	"<br/><br/>"
-		        
+				formStr += "<table><tr><td><input type=\"checkbox\" name=\"isuploading\" onclick=\"ImageUploader.imageLocationSwitch(this)\" checked>"
+				+ "</td><td>upload image</td></tr></table>"
+		    + "<br />"    
 	      // two fields with the same name:
 	      // 1) image uploading
 	      // 2) URL of image
 	      + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
-	      + " size=\"40\" onkeyup=\"ImageUploader.enterCatcher(event);\"  style=\"margin-top:20px;\">";
+	      + " size=\"40\" onkeyup=\"ImageUploader.enterCatcher(event);\">";
 			}
 			else
 				formStr += "image URL:<br /><br />";
@@ -622,7 +622,7 @@ var ImageUploader = {
 			else
 				formStr += "style=\"display: none;\"";
 			
-			formStr += " size=\"45\">"
+			formStr += " size=\"52\">"
 
       + " <input type=\"hidden\" name=\"" + this.RTE_ID_INPUT_NAME + "\""
       + " id=\"" + this.RTE_ID_INPUT_NAME + "\">"
@@ -669,17 +669,24 @@ var ImageUploader = {
     return formStr;
   },
   
-  imageLocationSwitch : function(idx) {
+  imageLocationSwitch : function(checkBox) {
     var form = RteEngine.imagePopup.getForm();
     var inputs = form[this.FILE_INPUT_NAME];
-    var radios = form["radio"];
-    
-    inputs[idx].style.display = "";
-    radios[idx].checked = true;
-    
-    var idx2 = (idx + 1) % 2; 
-    inputs[idx2].style.display = "none";
-    radios[idx2].checked = false;
+		var dlg = getAncestorByClassName(form, "ctrl_toolbar_dlg");
+		
+		if (!dlg.style.width) {
+			dlg.style.width = dlg.clientWidth - 10;
+		}
+
+		if (checkBox.checked) {
+			inputs[0].style.display = "";
+			inputs[1].style.display = "none";
+		}
+		else {
+			inputs[0].style.display = "none";
+			inputs[1].style.display = "";
+		}
+		
   },
   
   putRteIdInForm : function(form, rteId) {
@@ -689,16 +696,13 @@ var ImageUploader = {
   },
   
   // radio buttons : // 0) upload 1)URL
-  getSelectedRadioBtnIdx : function(form) {
-    var radios = form["radio"];
-		if (!radios)
-			return null;
-    var selIdx = radios[0].checked ? 0 : 1;
-    return selIdx;
+  getImageInsertModeIdx : function(form) {
+		var checkbox = form["isuploading"];
+		return checkbox.checked ? 0 : 1;
   },
   
   getImagePathFromForm : function(form) {
-    var selIdx = this.getSelectedRadioBtnIdx(form);
+    var selIdx = this.getImageInsertModeIdx(form);
     var inputs = form[ImageUploader.FILE_INPUT_NAME]
     var value;
 		if (selIdx == null) // on dblclick - edit image properties
@@ -1325,26 +1329,19 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     if(i_am.toolbar.isVisible())
       return;
     
+		// prevents from more than 1 opened RTE.
+		RteEngine.closeAllDisactived(i_am.iframeObj.id);
+		
 		i_am.changeEditTabWidth(true);
 		i_am.fitHeightToVisible(true);
 		
-		
-		// makes toolbar 100% in IE
-//		if (i_am.isIE) {
-//			var label = getPreviousSibling(i_am.toolbar.div.parentNode);
-//			label.style.styleFloat = "none";
-//		}
-
+	
 		// make offset for toolbar over the iframe
 		i_am.iframeObj.style.marginTop = 7; //i_am.toolbar.getHeight() + 1;
-		
-		i_am.toolbar.div.style.top =  5; // i_am.toolbar.getHeight() +
-		//////i_am.toolbar.div.style.left = 7; // RTE offset in Touch UI dialogs ~"hack" 
+		i_am.toolbar.div.style.top =  5; // RTE offset in Touch UI dialogs ~"hack" 
 			
 		i_am.toolbar.show();
 		
-		// prevents from more than 1 opened RTE.
-		RteEngine.closeAllDisactived(i_am.iframeObj.id);
 		i_am.openedAtTime = new Date().getTime();
 	}
 	// "closes" an active RTE
@@ -1834,7 +1831,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		return true;
 	}
 	// 8
-	this.setImage = function(url, align, margin, selRadioIdx) {
+	this.setImage = function(url, align, margin, modeIdx) {
 		if(url.length != 0) {
 		  // check on double encoding (for space only for now)
 		  if(url.indexOf("%2520") != -1)
@@ -1842,7 +1839,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			
 			// Note: use "class" to identify image to set src=URL returned from server
 			// new FF's RTE does not accept cusom parameter like "file_path"
-			var param = (selRadioIdx == 0) ? "class" : "src";
+			var param = (modeIdx == 0) ? "class" : "src";
 			var html = "<img " + param + "=\"" + url + "\" align=\"" + align + "\"";
 			if (margin)
 				html += " style=\"margin:" + margin + ";\"";
