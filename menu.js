@@ -5892,6 +5892,17 @@ var LinkProcessor = {
 			changeBoolean(e, anchor);
 	  }
 	},
+	
+	
+	/**
+	 * LinkOut/LinkOutShared has 2 primary keys: 'targetUrl' and 'source'. 'targetUrl' is href on whick click was made and 
+	 * 'source' is the resource where this link is refered as href type property or link in some longString or String(>500)
+	 * property like 'description' in CollaborationPoint.
+	 * To create LinkOut uri we need to know type of LinkOut and 'source' uri.
+	 * Type of LinkOut is located in HTML in <div class='linkOut'>
+	 * 'source' is genned in HTML in either <tr id='uri[rowNmb (0 in ROP case)]'><div class='uri'>uri of the resource</div></tr> or 
+	 * <td id='uri[rowNmb (0 in ROP case)]'><div class='uri'>uri of the resource</div></td> for grid RL mode
+	 */
 	onClickGoLinkOut : function(e, anchor) {
     if (!anchor)
       anchor = getTargetAnchor(e);
@@ -5905,16 +5916,6 @@ var LinkProcessor = {
     
     
     var table = getAncestorByTagName(anchor, "table");
-    /*
-    table = getAncestorByTagName(table.parentNode, "table");
-    table = getAncestorByTagName(table.parentNode, "table");
-    table = getAncestorByTagName(table.parentNode, "table");
-    table = getAncestorByTagName(table.parentNode, "table");
-    table = getAncestorByTagName(table.parentNode, "table");
-    table = getAncestorByTagName(table.parentNode, "table");
-    table = getAncestorByTagName(table.parentNode, "table");
-    table = getAncestorByTagName(table.parentNode, "table");
-    */
 
     var grid;
     while (table) {
@@ -5926,6 +5927,7 @@ var LinkProcessor = {
       table = getAncestorByTagName(table.parentNode, "table");
     }
     var tag;
+
     var tag = grid ? getTdNode(anchor) : getTrNode(anchor);
     var i = 0;
     while (tag) {
