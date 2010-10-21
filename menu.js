@@ -7292,7 +7292,8 @@ function minimizeRestoreDiv(e, hideDivId, property) {
 }
 // Dummy callback that is called after updating main boolmark
 function hideDiv(e, hideDivId) {
-  var div = document.getElementById(hideDivId);
+	var target = getEventTarget(e);
+  var div = getAncestorById(target, hideDivId);
   if (!div)
     return;
   div.style.visibility = Popup.HIDDEN;
