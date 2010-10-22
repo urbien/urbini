@@ -95,8 +95,8 @@ img.fade {
   display: inline;
   float: none;
 }
-.displayInline { overflow:hidden; width: 100%; height: 1em; line-height: 0.92em; }
-.displayInline div, .displayInline span { font-size:1em !important; font-weight:normal !important; margin:0 !important; }
+.displayInline  { overflow:hidden; width: 100%; height: 1em; line-height: 0.93em; }
+.displayInline, .displayInline * { font-size:1em !important; font-weight:normal !important; margin:0 !important; }
 
 .mItems {
   text-align:center;
@@ -881,14 +881,14 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
   width: 3px; overflow: hidden;
 	border-left: 3px solid #00aeef;
 }
-.bgyellow {background:yellow}
+.bgyellow { border: 2px solid &[ToolbarColor];; color: &[Label];; }
 /*.curMon {background:yellow; font-size:12px; font-weight:bold; color:#ec008c;}*/
 .nextPrevMon {font-size:12px; font-weight:bold; color:#00309C;}
 .yellow   {color:yellow}
 .darkblue {color:darkblue}
 
 .calendar_caller { cursor: pointer; box-shadow:2px 2px 2px rgba(0, 0, 0, 0.2); -moz-box-shadow:2px 2px 2px rgba(0, 0, 0, 0.2); -webkit-box-shadow:2px 2px 2px rgba(0, 0, 0, 0.2); border: 2px solid; font-size: 24px; font-weight:bold; height:40px; line-height:25px; text-align:center; width:40px; }
-.calendar_caller .header { background-color: &[PrimaryColor_4];; color: &[Label];; font-size:13px; height:15px; line-height:12px; padding-left:2px; }
+.calendar_caller .header { background-color: &[PrimaryColor_1];; color: &[Label];; font-size:13px; height:15px; line-height:12px; padding-left:2px; }
 
 /* OLD? .outerPopup {border-style:solid; border-width: 1px; border-color:#666666 #666666 #666666 #666666} */
 /* OLD? .innerPopup {border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7} */
@@ -1170,7 +1170,7 @@ TD.toolbar {
 }
 
 .menuItemIcon {
-	PADDING-RIGHT: 2px; PADDING-LEFT: 2px; white-space: nowrap; width: 20px
+	PADDING-RIGHT: 2px; PADDING-LEFT: 3px; white-space: nowrap; width: 20px
 }
 
 .poweredMenuItemIcon {
@@ -1529,6 +1529,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px;
 										/*box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); -moz-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);*/ border: solid &[PrimaryColor_1]; 1px; empty-cells:show; color: &[PrimaryColor_4_text];; }
+.rounded_rect_tbl_bg { background-color: &[PrimaryColor_4];; }
+
 /* the following rules required while item-rows highlighting */
 .rounded_rect_tbl tr:first-child td:first-child { border-radius: 10px 0px 0px 0px; -moz-border-radius: 10px 0px 0px 0px; -webkit-border-radius: 10px 0px 0px 0px; }
 .rounded_rect_tbl tr:first-child td:last-child { border-radius: 0px 10px 0px 0px; -moz-border-radius: 0px 10px 0px 0px; -webkit-border-radius: 0px 10px 0px 0px; }
@@ -1577,7 +1579,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl a {color: &[Alternative_A];}
 
-/*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty { padding-right: 4px; font-size: 18px; font-weight: bold; text-align:center;}
+/*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty { padding-right: 4px; min-width: 10px; font-size: 18px !important; font-weight: bold; text-align:center;}
 
 .rounded_rect_tbl .label_td { white-space: nowrap; } 
 .rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
@@ -1587,7 +1589,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	margin: 0px; padding: 0px; min-height: 22px;
 	color: &[Alternative_A];; background: rgba(255, 255, 255, 0.1); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; }
 
-.rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.9) !important; background: #ffffff; color: &[MenuLineColorA];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; }
+.rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.1) !important; background: #ffffff; color: &[Color];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; }
 .rounded_rect_tbl .comment { text-align: left; color: &[Alternative_A];; font-size: 11px; }
 .rounded_rect_tbl .select { font-size: inherit; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
 
