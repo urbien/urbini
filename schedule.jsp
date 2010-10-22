@@ -7,7 +7,7 @@
     <table width="100%" cellspacing="0" cellpadding="5" border="0">
       <tr valign="top">
       <td width="80%">
-        <div align="center"><day /></div>
+        <div align="center" class="rounded_rect_tbl_bg"><day /></div>
       </td>
       <td>
       <div>
