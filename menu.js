@@ -10544,8 +10544,9 @@ var WidgetRefresher = {
 
 		// NOTE: current dashboard structure: one TR!
 		var cells = dashboardTable.rows[0].cells;
+		
 		for (var i = 0; i < cells.length; i++) {
-			var children = cells[i].children;
+			var children = cells[i].childNodes;
 			for (var n = 0; n < children.length; n++) {
         var clName = children[n].className;
 				if (clName  &&  (clName == "widget"  ||  clName == "propertySheet")) {
