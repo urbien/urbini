@@ -1159,7 +1159,7 @@ TD.toolbar {
   padding-left:  0.8em;
   padding-right: 0.8em;
 }
-#col_1 table { font-size: 12px; }
+#col_1 table, #col_2 table, #col_3 table { font-size: 12px; }
 #col_3 {
   padding-left: 0.8em;
   padding-right: 0.8em;
