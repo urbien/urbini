@@ -901,7 +901,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.isNetscape = false;
 
 	this.skipClose = false;
-	this.FFhacked = false;
   
 	this.currentPopup = null; // prevents closing on popup opening
 	this.openedAtTime = 0;    // hack: prevents simultaneous openning and toolbar button execution
@@ -1355,11 +1354,17 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			i_am.skipClose = false;
 			return;
 		}
-
-		// FF: prevents toolbar close on scrolling
-    if(e && e.target && e.target.nodeName == "HTML")
-      return;
-
+		
+		if (e) {
+			var target = getEventTarget(e);
+			// FF: prevents toolbar close on scrolling
+			if (target.nodeName == "HTML") 
+				return;
+			// prevent RTE to get narrow (changeEditTabWidth) on click of toolbar button or option popup item
+			if (getAncestorByClassName(target, ["ctrl_toolbar", "ctrl_toolbar_dlg"]))
+				return; 
+		}
+		
 		i_am.changeEditTabWidth(false);
 
 		i_am.iframeObj.style.height = i_am.initFrameHeight;
