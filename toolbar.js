@@ -408,14 +408,7 @@ var PalettePopup = {
 	},
 	create : function() {
 		this.div = document.createElement('div');
-		var divStyle = this.div.style
-		divStyle.visibility = "hidden";
-		divStyle.position = "absolute";
-		divStyle.backgroundColor = "#fff";
-		divStyle.borderStyle = "solid";
-		divStyle.borderWidth = 1;
-		divStyle.borderColor = "#999";
-		divStyle.padding = 1;
+		this.div.className = "ctrl_toolbar_dlg";
 
 		this.div.innerHTML = this.getPaletteStr();
 		this.noClrCell = getChildById(this.div, "noClr");
@@ -423,8 +416,8 @@ var PalettePopup = {
 		this.chosenDiv = document.createElement('div');
 		this.chosenDiv.id = this.CHOSEN_DIV_ID;
 		var chDivStyle = this.chosenDiv.style;
-		chDivStyle.width  = 17;
-		chDivStyle.height = 17;
+		chDivStyle.width  = 31;
+		chDivStyle.height = 31;
 		chDivStyle.borderWidth = "1px";
 		chDivStyle.borderStyle = "dashed";
 	},
