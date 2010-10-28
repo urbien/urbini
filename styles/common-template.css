@@ -40,7 +40,11 @@ a {
 
 a:hover { color: &[SecondaryColorB_2];; text-decoration: none; cursor: pointer}
 
-a [class=external] :not(img) {color: &[SecondaryColorB_3];; background: url(../icons/external.png) no-repeat center right}
+a.external :not(img) {color: &[SecondaryColorB_3];; background: url(../icons/external.png) no-repeat center right; padding: 0px 13px 0px 0px; }
+/*
+a.external:link, a.external:visited{ color: &[SecondaryColorB_3];; background:transparent url(../icons/external.gif) no-repeat 99% 3px; padding-right:15px; }
+a.external:hover, a.external:active { color: &[SecondaryColorB_3];; background: #fcfcfc url(../icons/external.gif) no-repeat 99% -147px; padding-right:15px; }
+*/
 a img {
 	border: 0;
 	vertical-align: middle;
@@ -999,7 +1003,7 @@ ul.chapter {
   margin:0px; padding-left: 0px; text-indent: 0em; list-style-type:none;
 }
 
-li {
+ul.chapter li {
   margin:0px; padding-left: 2px; text-indent: 0em; list-style-type:none;
 }
 
