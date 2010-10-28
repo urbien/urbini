@@ -82,6 +82,7 @@ img.fade {
 #user span { color: &[SecondaryColorA_3_brighter];; font-weight: bold;}
 
 #dataEntry td { font-size: 1em; }
+#dataEntry table { border-collapse: collapse; }
 #siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; font-size: 1em; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
 #siteResourceList #front {background-color: &[BackgroundColor];}
