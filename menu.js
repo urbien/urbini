@@ -4897,7 +4897,6 @@ var DataEntry = {
 			form.removeAttribute("wasSubmitted");
 
 		var res = FormProcessor.onSubmitProcess(e, form);
-		
 	//	this.hide();
 		
 		if (Browser.mobile) {
@@ -4908,7 +4907,7 @@ var DataEntry = {
       	Mobile.getPage(e, url, true);
     }
 		// desktop; html form
-    else if (res == true)
+    else if (res == true) 
 			form.submit();  // submit is not a button, so send the form with help of JS.
 		
 		this.hide();
@@ -8450,6 +8449,7 @@ var FtsAutocomplete = {
 		if (Browser.mobile) {
 			//$t.autocompleteDiv.style.zIndex = Mobile.getCurrentPageDiv().style.zIndex + 1;
 			var header = getAncestorByClassName($t.field, "header");
+			$t.autocompleteDiv.className = "mbl_auto_complete";
 			$t.autocompleteDiv.style.top = header.clientHeight;
 			$t.autocompleteDiv.style.left = 0;
 			$t.autocompleteDiv.style.width = "100%";
@@ -12269,5 +12269,6 @@ function displayInFull(e) {
 	
   return stopEventPropagation(e);
 }
+
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
