@@ -1886,7 +1886,6 @@ td.pBGr { background-color: #eeeeee;
 }
 
 #auto_complete { z-index: 101; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
-#auto_complete>table { width: 100%; }
 #auto_complete .menuItem, #auto_complete .not_found { color: &[MenuLineColorA];; padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_4];; }
 #auto_complete .not_found { border-bottom: none; }
 #auto_complete .grey_highlighting td, #auto_complete .grey_highlighting a {  color: &[SecondaryColorB_3];; }
@@ -1898,6 +1897,8 @@ td.pBGr { background-color: #eeeeee;
 #auto_complete a { font-size: 12px; margin-left: 0px; color: &[MenuLineColorA];; }
 .dsk_auto_complete { -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); }
 .dsk_auto_complete .menuItem, .dsk_auto_complete .not_found { min-width: 460px; }
+.mbl_auto_complete { left: 0; width: 100%; }
+.mbl_auto_complete > table { width: 100%; }
 
 /* RTE and styles editor */
 .ctrl_toolbar { position : relative; display: block; left: 0px; top: 0px; width: 100%; border-width: 0px; cursor: default;
