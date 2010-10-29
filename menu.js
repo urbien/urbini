@@ -8430,6 +8430,10 @@ var FtsAutocomplete = {
 			TouchDlgUtil.closeAllDialogs(true);
 			$t.autocompleteDiv.innerHTML = content;
 			TouchDlgUtil.init($t.autocompleteDiv);
+			if (Browser.ie) {
+				var table = getChildByTagName($t.autocompleteDiv, "table");
+				table.style.width = "100%";
+			}
 			$t.autocompleteDiv.style.display = "";
 			TouchDlgUtil.setCurrentDialog($t.autocompleteDiv);
 		}
@@ -8458,7 +8462,7 @@ var FtsAutocomplete = {
 		}
 		else {
 			$t.autocompleteDiv.className = "dsk_auto_complete";
-			$t.autocompleteDiv.style.top = findPosY($t.field) + $t.field.offsetHeight + 7;
+			$t.autocompleteDiv.style.top = findPosY($t.field) + $t.field.offsetHeight + 8;
 			$t.autocompleteDiv.style.left = findPosX($t.field);
 		}
 		
@@ -12269,6 +12273,103 @@ function displayInFull(e) {
 	
   return stopEventPropagation(e);
 }
+
+var TagsField = {
+  fieldsProcArr : new Array(),
+  
+  initField : function(field) {
+		field.onmousedown = ""; // init on 1st mousedown only
+    var fieldProc = new this.fieldProcessor(field);
+    fieldProc.caretInp.focus(); 
+  },
+  
+  fieldProcessor : function(field) {
+    var $t = this;
+    this.field = field;
+    this.caretInp;
+		this.dataField,
+    
+    this.init = function() {
+      this.caretInp = getChildByClassName(this.field, "caret");
+      //this.caretInp.onkeyup = this.onkeyup;
+			addEvent(this.caretInp, "keyup", this.onkeyup, true);
+      this.dataField = getNextSibling(this.field);
+			this.field.onclick = this.onclick;
+			var items = this.field.childNodes;
+			// init cross
+			for (var i = 0; i < items.length; i++) {
+		  	if (items[i].className != "item") 
+		  		continue;
+		  	var crossImg = items[i].getElementsByTagName("img")[0];
+				crossImg.onclick = this.deleteItemOnCross;
+		  }
+    }
+    
+    this.onclick = function() { 
+      $t.caretInp.focus();
+      $t._putData();
+    }
+		
+    this.onOptionSelection = function(idx) {}
+
+    this.onkeyup = function(event) {
+			var code = getKeyCode(event);
+      
+      if (code == 188 || code == 13) { // comma or enter => create a new tag-item
+				$t.createItem();
+				stopEventPropagation(event);
+			}
+			else 
+				if (code == 8) // backspace
+					$t.deleteItemOnBackspace();   
+    }
+		
+    this.createItem = function() {
+      var itemDiv = document.createElement("div");
+      itemDiv.className = "item";
+      itemDiv.innerHTML = (this.caretInp.innerHTML.replace(",", "").plainText() 
+         + "<img src=\"icons/hide.gif\" />");
+      var crossImg = itemDiv.getElementsByTagName("img")[0];
+			crossImg.onclick = this.deleteItemOnCross;
+			this.caretInp.innerHTML = "";
+      this.field.insertBefore(itemDiv, this.caretInp);
+			this._putData();
+    }
+		  
+	  this.deleteItemOnCross = function(event) {
+	    var target = getEventTarget(event);
+			var itemDiv = getAncestorByClassName(target, "item");
+      $t._deleteItem(itemDiv)
+ 	  }
+    this.deleteItemOnBackspace = function() {
+      var itemDiv = getPreviousSibling(this.caretInp);
+      $t._deleteItem(itemDiv)
+    }
+		this._deleteItem = function(itemDiv) {
+			if (!itemDiv)
+				return;
+      this.field.removeChild(itemDiv);
+			this._putData();
+		}
+		
+		this._putData = function() {
+			var dataStr = "";
+			var items = this.field.childNodes;
+			for (var i = 0; i < items.length; i++) {
+				if (items[i].className != "item")
+					continue;
+				if (i > 0)
+					dataStr += ",";
+					
+				dataStr += getTextContent(items[i]);	
+			}
+			this.dataField.value = dataStr;
+		}
+    // ----------------
+    this.init();
+  }
+}
+
 
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
