@@ -2424,6 +2424,9 @@ function addCurrentDashboardAndCurrentTab(target) {
   if (!hasQuestion || a.indexOf('/tail?') != -1 || a.indexOf("/createResourceList?") != -1 || a.indexOf("/createParallelResourceList?") != -1)
     return;
   // Check if this is blog entry with contents
+  var className = target.className;
+  if (className  &&  className == 'external')
+    return 
   var idx =  a.indexOf('&-ulId=');
   if (idx != -1) {
     var idx0 = a.indexOf('#', idx);
@@ -5907,9 +5910,12 @@ var LinkProcessor = {
       anchor = getTargetAnchor(e);
     if (!anchor)
       return;
-    var a = decodeURIComponent(anchor.href);
-    if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
-      return;
+    var aa = anchor.href;
+    if (aa.indexOf('LinkOut') != -1) {
+      a = decodeURIComponent(aa);
+      if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
+        return;
+    }
     e = getDocumentEvent(e); if (!e) return false;
     var div;
     
@@ -5966,7 +5972,7 @@ var LinkProcessor = {
       if (clName  &&  clName == "uri")
         div = divs[i];
     }
-    if (!div) 
+    if (!div  ||  div.textContent.indexOf('/LinkOut') != -1) 
       return;
 
     var linkOutDiv;
@@ -5999,6 +6005,7 @@ var LinkProcessor = {
     href = href.replace(/=/g, '%3D');
     href = href.replace(/&/g, '%26');
     href = href.replace(/\?/g, '%3F');
+    
     var linkOutType = linkOutDiv.textContent;
     var uri = 'sql' + linkOutType.substring(6) + '?targetUrl=' + href + '&' + rUri.substring(idx + 1);   
     
