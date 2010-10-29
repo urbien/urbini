@@ -2426,7 +2426,7 @@ function addCurrentDashboardAndCurrentTab(target) {
   // Check if this is blog entry with contents
   var className = target.className;
   if (className  &&  className == 'external')
-    return 
+    return;
   var idx =  a.indexOf('&-ulId=');
   if (idx != -1) {
     var idx0 = a.indexOf('#', idx);
