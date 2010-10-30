@@ -5535,10 +5535,15 @@ var TouchDlgUtil = {
 		
 		if (event.type == 'click')
 			target = getEventTarget(event);
-		
-		var isDone = DataEntry.submit(event, target);
-		if(!isDone)
+
+		var isDone = false;
+		// 1. filter
+		if ($t.curDlgDiv.id == "common_filter")
 			isDone = Filter.submitProcess(event);
+		// 2. data entry
+		if(!isDone)
+			isDone = DataEntry.submit(event, target);
+		// 3. SubscribeAndWatch	
 		if(!isDone)
 			SubscribeAndWatch.submit(event);
 	
@@ -5913,8 +5918,8 @@ var LinkProcessor = {
     var aa = anchor.href;
     if (aa.indexOf('LinkOut') != -1) {
       a = decodeURIComponent(aa);
-      if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
-        return;
+    if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
+      return;
     }
     e = getDocumentEvent(e); if (!e) return false;
     var div;
@@ -6005,7 +6010,6 @@ var LinkProcessor = {
     href = href.replace(/=/g, '%3D');
     href = href.replace(/&/g, '%26');
     href = href.replace(/\?/g, '%3F');
-    
     var linkOutType = linkOutDiv.textContent;
     var uri = 'sql' + linkOutType.substring(6) + '?targetUrl=' + href + '&' + rUri.substring(idx + 1);   
     
@@ -12298,7 +12302,6 @@ var TagsField = {
     
     this.init = function() {
       this.caretInp = getChildByClassName(this.field, "caret");
-      //this.caretInp.onkeyup = this.onkeyup;
 			addEvent(this.caretInp, "keyup", this.onkeyup, true);
       this.dataField = getNextSibling(this.field);
 			this.field.onclick = this.onclick;
