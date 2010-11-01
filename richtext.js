@@ -1458,11 +1458,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(this.iframeObj.scrolling != 'no')
 			return;
 	
-		var lastChild = getLastChild(i_am.document.body);
-		if (!lastChild)
+		// get lastChild, including text node(!)
+		var children = i_am.document.body.childNodes;
+		if (children.length == 0)
 			return;
-		
-		var docH;
+		var lastChild = children[children.length - 1];
 		
 		if (onFocus || Browser.ie)
 			docH = i_am.document.body.scrollHeight;
