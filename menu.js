@@ -5535,7 +5535,7 @@ var TouchDlgUtil = {
 		
 		if (event.type == 'click')
 			target = getEventTarget(event);
-
+		
 		var isDone = false;
 		// 1. filter
 		if ($t.curDlgDiv.id == "common_filter")
@@ -5918,8 +5918,8 @@ var LinkProcessor = {
     var aa = anchor.href;
     if (aa.indexOf('LinkOut') != -1) {
       a = decodeURIComponent(aa);
-    if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
-      return;
+      if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
+        return;
     }
     e = getDocumentEvent(e); if (!e) return false;
     var div;
@@ -6007,9 +6007,11 @@ var LinkProcessor = {
 //    var uri = 'v.html?uri=sql/www.hudsonfog.com/voc/model/portal/LinkOut%3FtargetUrl%3D' + encodeURIComponent(href) + '%26' + encodeURIComponent(rUri.substring(idx + 1));
     
     href = encodeURI(href);
-    href = href.replace(/=/g, '%3D');
-    href = href.replace(/&/g, '%26');
+    href = href.replace(/=/g,  '%3D');
+    href = href.replace(/\$/g, '%24');
+    href = href.replace(/&/g,  '%26');
     href = href.replace(/\?/g, '%3F');
+    
     var linkOutType = linkOutDiv.textContent;
     var uri = 'sql' + linkOutType.substring(6) + '?targetUrl=' + href + '&' + rUri.substring(idx + 1);   
     
