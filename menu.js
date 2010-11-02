@@ -12308,6 +12308,7 @@ var TagsField = {
     this.init = function() {
       this.caretInp = getChildByClassName(this.field, "caret");
 			addEvent(this.caretInp, "keyup", this.onkeyup, true);
+			addEvent(this.caretInp, "keydown", this.onkeydown, false);
       this.dataField = getNextSibling(this.field);
 			this.field.onclick = this.onclick;
 			var items = this.field.childNodes;
@@ -12325,30 +12326,32 @@ var TagsField = {
       $t._putData();
     }
 		
-  //  this.onOptionSelection = function(idx) {}
-
     this.onkeyup = function(event){
 			var code = getKeyCode(event);
 			if (code == 188 || code == 13) { // comma or enter => create a new tag-item
 				$t.createItem();
 				stopEventPropagation(event);
 			}
-			else 
-				if (code == 8) { // backspace
-					var text = getTextContent($t.caretInp);
-					if (text.length == 0)
-						$t.deleteItemOnBackspace();
-				}
 	  }   
-
+    this.onkeydown = function(event){
+			var code = getKeyCode(event);
+			if (code == 8) { // backspace
+				var text = $t._getTypedText();
+				if (text.length == 0) 
+					$t.deleteItemOnBackspace();
+			}
+	  }   
+		
     this.createItem = function() {
       var itemDiv = document.createElement("div");
       itemDiv.className = "item";
-      itemDiv.innerHTML = (this.caretInp.innerHTML.replace(",", "").plainText() 
-         + "<img src=\"icons/hide.gif\" />");
+			var tagText = this._getTypedText(); 
+			itemDiv.innerHTML = (tagText + "<img src=\"icons/hide.gif\" />");
       var crossImg = itemDiv.getElementsByTagName("img")[0];
 			crossImg.onclick = this.deleteItemOnCross;
-			this.caretInp.innerHTML = "";
+			// hack: set initial &#160; (&nbsp;) to show caret in Chrome
+			this.caretInp.innerHTML = "&#160;";
+			this.caretInp.focus();
       this.field.insertBefore(itemDiv, this.caretInp);
 			this._putData();
     }
@@ -12368,7 +12371,10 @@ var TagsField = {
       this.field.removeChild(itemDiv);
 			this._putData();
 		}
-		
+		// get from "caret" div
+		this._getTypedText = function() {
+			return this.caretInp.innerHTML.replace(",", "").replace(/&#160;|&nbsp;/gi, "").plainText().trim();
+		}
 		this._putData = function() {
 			var dataStr = "";
 			var items = this.field.childNodes;
