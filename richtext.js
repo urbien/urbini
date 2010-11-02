@@ -1391,11 +1391,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			
 		if (toEnlarge) {
 			cpDiv.style.display = "none";
-			cpTab.style.display = "none";
+			if (cpTab)
+				cpTab.style.display = "none";
 		}
 		else {
 			cpDiv.style.display = "";
-			cpTab.style.display = "";
+			if (cpTab)
+				cpTab.style.display = "";
 		}
 	}
 	
