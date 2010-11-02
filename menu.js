@@ -5535,7 +5535,7 @@ var TouchDlgUtil = {
 		
 		if (event.type == 'click')
 			target = getEventTarget(event);
-		
+
 		var isDone = false;
 		// 1. filter
 		if ($t.curDlgDiv.id == "common_filter")
@@ -5918,8 +5918,8 @@ var LinkProcessor = {
     var aa = anchor.href;
     if (aa.indexOf('LinkOut') != -1) {
       a = decodeURIComponent(aa);
-      if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
-        return;
+    if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
+      return;
     }
     e = getDocumentEvent(e); if (!e) return false;
     var div;
@@ -6007,11 +6007,10 @@ var LinkProcessor = {
 //    var uri = 'v.html?uri=sql/www.hudsonfog.com/voc/model/portal/LinkOut%3FtargetUrl%3D' + encodeURIComponent(href) + '%26' + encodeURIComponent(rUri.substring(idx + 1));
     
     href = encodeURI(href);
-    href = href.replace(/=/g,  '%3D');
+    href = href.replace(/=/g, '%3D');
     href = href.replace(/\$/g, '%24');
-    href = href.replace(/&/g,  '%26');
+    href = href.replace(/&/g, '%26');
     href = href.replace(/\?/g, '%3F');
-    
     var linkOutType = linkOutDiv.textContent;
     var uri = 'sql' + linkOutType.substring(6) + '?targetUrl=' + href + '&' + rUri.substring(idx + 1);   
     
@@ -8730,6 +8729,8 @@ var FieldsWithEmptyValue = {
 			field.className = field.className.replace("empty_field", "focused_field");
 			setCaretPosition(field, 0);
 		}
+		// align "left" - more regular to type 
+		field.style.textAlign = "left";
 	},
 	
 	onkeydown : function(event) {
@@ -8765,6 +8766,8 @@ var FieldsWithEmptyValue = {
 			}
 		}	
 		$t.fieldForDelayedAction = null;
+		
+		field.style.textAlign = "";
   },
 	
 	// only for fields with clear text contol
@@ -12277,7 +12280,7 @@ function displayInFull(e) {
       newTR.id = id + "_displayInFull";    	  
 	newTR.className = propsTR.className; 
 	var newTD = document.createElement("td");
-	newTD.setAttribute("colspan", 50); // use colspan pretty big
+	newTD.setAttribute("colSpan", 50); // use colspan pretty big
 	newTD.appendChild(div);
 	div.className = "";
 	div.innerHTML = div.innerHTML.replace(/\n/g, "<br />");
@@ -12322,20 +12325,22 @@ var TagsField = {
       $t._putData();
     }
 		
-    this.onOptionSelection = function(idx) {}
+  //  this.onOptionSelection = function(idx) {}
 
-    this.onkeyup = function(event) {
+    this.onkeyup = function(event){
 			var code = getKeyCode(event);
-      
-      if (code == 188 || code == 13) { // comma or enter => create a new tag-item
+			if (code == 188 || code == 13) { // comma or enter => create a new tag-item
 				$t.createItem();
 				stopEventPropagation(event);
 			}
 			else 
-				if (code == 8) // backspace
-					$t.deleteItemOnBackspace();   
-    }
-		
+				if (code == 8) { // backspace
+					var text = getTextContent($t.caretInp);
+					if (text.length == 0)
+						$t.deleteItemOnBackspace();
+				}
+	  }   
+
     this.createItem = function() {
       var itemDiv = document.createElement("div");
       itemDiv.className = "item";
