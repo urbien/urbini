@@ -42,6 +42,7 @@
           		<tr>
         		  <td>
                 <div align="right"><measurement/></div>
+                <br/>
                 <newComment/>
                 <chatHistory/>
                 <br/>
