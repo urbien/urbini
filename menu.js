@@ -5251,7 +5251,10 @@ var TouchDlgUtil = {
 		if (this.isMenuPopup(dlgDiv))
 			this._selectMenuItemWithArrow(dlgDiv);
 	},
-	
+	getCurrentDialog : function() {
+		return this.curDlgDiv;
+	},
+		
 	keyHandler : function(event) {
 		var $t = TouchDlgUtil;
 		var code = getKeyCode(event);
@@ -8597,6 +8600,8 @@ var FieldsWithEmptyValue = {
 			setTimeout(FieldsWithEmptyValue._setFocusDelayed, 200);
 		else
 			field.focus();	
+			
+		field.style.textAlign = "left";	
 	},
 	// dialog shown from "cache" dose not allow immediate focus() set.
 	_setFocusDelayed : function() { 
@@ -11944,7 +11949,7 @@ var CheckButtonMgr = {
 			}
 				
 			// create checkbox
-			var div = document.createElement('div');
+			var div = document.createElement("button");
       div.className = this.classes[stlIdx];
       div.onclick = this.onClick;
   
