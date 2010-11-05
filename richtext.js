@@ -218,8 +218,11 @@ var RteEngine = {
 		if(this.linkPopup == null)
 			this.createLinkPopup();
 		var parentDlg = getParentDialog(btnObj.div);
-
-		this.linkPopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
+		
+		var dlgAlignment = 'center';
+		if (href)
+			dlgAlignment = "left"; // on double click: align to 1st toolbar button
+		this.linkPopup.show(btnObj, dlgAlignment, callback, parentDlg, cancelCallback);
 		var div = this.linkPopup.div;
 		// set url field value
 		if (href)
@@ -234,17 +237,18 @@ var RteEngine = {
 	launchImagePopup : function(btnObj, callback, rteId, cancelCallback, imgObj) {
 		if(this.imagePopup == null)
 			this.createImagePopup(imgObj);
-		else {
+
+			var parentDlg = getParentDialog(btnObj.div);
+			var parentForm = getChildByTagName(parentDlg, "form");
+
 			// note: insert new content on each launch because no way to reset File-browse field 
-		  var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert", imgObj);
+			var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert", imgObj, parentForm);
 		  this.imagePopup.changeContent(innerFormHtml);
-		}	
 	  
 	  this.curRteId = rteId;
-	  
+ 
 	  var form = this.imagePopup.getForm();
 	  ImageUploader.putRteIdInForm(form, rteId);		
-		var parentDlg = getParentDialog(btnObj.div);
 		
 		CheckButtonMgr.substitute(this.imagePopup.getFormDiv());
 		this.imagePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
@@ -257,15 +261,18 @@ var RteEngine = {
 		this.objectPopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.objectPopup.div;
 	},
-	launchImagePastePopup : function(rteId) {
+	launchImagePastePopup : function(rteId, filePath) {
 		if(this.imagePastePopup == null)
 			this.createImagePastePopup();
-		else { // need to "reload" form content, because input file is read-only
+
+			var parentDlg = TouchDlgUtil.getCurrentDialog();
+			var parentForm = getChildByTagName(parentDlg, "form");
+			
+		// need to "reload" form content, because input file is read-only
 		  var innerFormHtml = "<div>"
         + "You pasted image that requires uploading.<br />Press \"Ctrl\" + \"V\" and then submit.</div>"
-		    + ImageUploader.getUploadImageFormContent("RteEngine.onImagePasteFormSubmit(event)", "submit");
+		    + ImageUploader.getPasteImageFormContent("RteEngine.onImagePasteFormSubmit(event)", "submit", parentForm);
 		  this.imagePastePopup.changeContent(innerFormHtml);
-	  }
 	  
 	  this.curRteId = rteId;
 	  
@@ -274,8 +281,11 @@ var RteEngine = {
 
     var rteObj = this.getRteById(rteId);
     var rteIframe = rteObj.getIframe();
- 		var parentDlg = getParentDialog(btnObj.div);
+ 		
     this.imagePastePopup.show(rteIframe, "inside", null, parentDlg, this.onCanceledUploadPastedImage);
+
+		var fileField = getChildByAttribute(this.imagePastePopup.div, "name", "file");
+		fileField.focus();
 		
 		return this.imagePastePopup.div;
 	},
@@ -384,14 +394,10 @@ var RteEngine = {
 		CheckButtonMgr.substitute(this.linkPopup.getFormDiv()); 
 	},
 	createImagePopup : function(imgObj) {
-		var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert", imgObj);
-		this.imagePopup = new FormPopup(innerFormHtml, "USE_SUBMIT_BTN");
+		this.imagePopup = new FormPopup("", "USE_SUBMIT_BTN");
 	},
   createImagePastePopup : function() {
-  	var innerFormHtml = "<div>"
-    + "You pasted image that requires uploading.<br />Press \"Ctrl\" + \"V\" and then submit.</div>"
-		+ ImageUploader.getUploadImageFormContent("RteEngine.onImagePasteFormSubmit(event)", "submit");
-		this.imagePastePopup = new FormPopup(innerFormHtml, "USE_SUBMIT_BTN");
+		this.imagePastePopup = new FormPopup("", "USE_SUBMIT_BTN");
   },
 	createTablePopup : function() {
 		var innerFormHtml = this.getInsertTableHtml();
@@ -482,10 +488,10 @@ var RteEngine = {
       var isGecko = (ua.indexOf("gecko") != -1);
       if(src.indexOf("file:///") == 0 && !isGecko) // IE
         src = src.substr(8);
-      
+   
       copyToClipboard(src);
       // 3.2.3 show the dialog
-      this.launchImagePastePopup(rteId);
+      this.launchImagePastePopup(rteId, src);
     }
   },
   
@@ -567,7 +573,7 @@ var RteEngine = {
 var ImageUploader = {
   // image uploading (insertion) dialog
   FORM_NAME         : "image_uploading",
-  ACTION_URL        : "mkresource", // TODO:
+  ACTION_URL        : "mkresource",
   FILE_INPUT_NAME   : "file",
   RTE_ID_INPUT_NAME : "rte_id",
   IMG_ALIGN_ID      : "img_align",
@@ -578,16 +584,11 @@ var ImageUploader = {
  
   newImgPair : null,
   
-  getUploadImageFormContent : function(submitCallbackName, submitBtnText, imgObj) {
+  getUploadImageFormContent : function(submitCallbackName, submitBtnText, imgObj, parentForm) {
 		var forms = document.forms;
-    var resourceUri;
-    for (var i=0; i<forms.length; i++) {
-      if(forms[i].name  &&  forms[i].name.indexOf('tablePropertyList$') == 0
-          && forms[i].elements['uri']) {
-        resourceUri = forms[i].elements['uri'].value;
-        break;
-      }
-    }
+    
+		// NOTE: new resourse does not have URI!!!
+		var resourceUri = parentForm.elements['uri'] ? parentForm.elements['uri'].value : "";
 		
 		if (imgObj)
 			submitBtnText = "   Ok   "; 
@@ -669,6 +670,63 @@ var ImageUploader = {
     return formStr;
   },
   
+	getPasteImageFormContent : function(submitCallbackName, submitBtnText/*, imgObj*/, parentForm) {
+		var forms = document.forms;
+		// NOTE: new resourse does not have URI!!!
+		var resourceUri = parentForm.elements['uri'] ? parentForm.elements['uri'].value : "";
+		
+		if (!submitBtnText)
+			submitBtnText = "   Ok   "; 
+
+    var formStr = "<form name=\"" + this.FORM_NAME + "\""
+      + " target=\"" + this.HDN_IFRAME_NAME + "\""
+      + " method=\"post\""
+      + " enctype=\"multipart/form-data\""
+      + " action=\"" + this.ACTION_URL + "\""
+      + " onsubmit=\"return " + submitCallbackName + "\""
+      + ">"
+      
+      + " <table><tr><td>" 
+      + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
+      + " size=\"40\" onkeyup=\"ImageUploader.enterCatcher(event);\" value=\"" 
+      + "\" />"
+			
+			+ " <input type=\"hidden\" name=\"" + this.RTE_ID_INPUT_NAME + "\""
+      + " id=\"" + this.RTE_ID_INPUT_NAME + "\">"
+      + " </td></tr>"
+      
+      + " <tr><td><br/>align:&nbsp;<select id=\"" + this.IMG_ALIGN_ID + "\""
+      + " <option value=\"left\">left</option>"
+      + " <option value=\"middle\">middle</option>"
+      + " <option value=\"right\">right</option>"
+      + " <option value=\"bottom\">bottom</option>"
+      + " <option value=\"top\">top</option>"
+      + " </select>"
+			+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;margin:&nbsp;"
+			+ "<input size=\"12\" type=\"text\" id=\"" + this.MARGIN_ID + "\""
+			+ " value = \"";
+		
+			formStr += "30px";
+			 
+			formStr += "\">"
+			+ "</td></tr>"
+			
+      + " <tr><td align=\"center\"><br/>"
+      + " <input type=\"submit\" value=\"" + submitBtnText + "\">"
+			
+			+ " &#160<input type=\"button\" value=\"Cancel\" onclick=\"RteEngine.imagePastePopup._oncancel();\" >"
+
+      + " <input type=\"hidden\" name=\"-$action\" value=\"upload\">"
+      + " <input type=\"hidden\" name=\"uri\" value=\""
+      + resourceUri      
+      + "\">"
+
+      + " </td></tr><table>"
+    + " </form>";
+
+    return formStr;
+  },
+
   imageLocationSwitch : function(checkBox) {
     var form = RteEngine.imagePopup.getForm();
     var inputs = form[this.FILE_INPUT_NAME];
@@ -1632,23 +1690,27 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.currentPopup = RteEngine.launchBgColorPopup(i_am.bgColorBtn, i_am.setBackgroundColor, i_am.chosenBgClr);
 	}
 	// 19
-	this.onLink = function(onDblClick) {
-    if (typeof onDblClick == 'undefined')
-      onDblClick = false;
-
-		if(!i_am.isAllowedToExecute())
-			return;
-    var href = "";
-		var isBlank = false;
+	// "onDblClick" over existed link
+	this.onLink = function(onDblClick){
+  	if (typeof onDblClick == 'undefined') 
+  		onDblClick = false;
+  	
+  	if (!i_am.isAllowedToExecute()) 
+  		return;
+  	var href = "";
+  	var isBlank = false;
+  	
+  	var a = i_am.getSelectedElement();
+  	if (a && a.tagName && a.tagName.toLowerCase() == "a") {
+  		href = a.href;
+  		isBlank = a.getAttribute("target") == "_blank";
+  	}
 		
-    var a = i_am.getSelectedElement();
-    if (a && a.tagName && a.tagName.toLowerCase() == "a") {
-      href = a.href;
-			isBlank = a.getAttribute("target") == "_blank";
-    }
-    // not show the dialog on double click if no href 
-    if (onDblClick && href.length == 0)
-      return;
+		if (onDblClick) {
+			if (href.length == 0) 
+				return; // not show the dialog on double click if no href 
+			this._performBlankLinks(a); // additional check that "_blank" trick was passed ok 
+		}
     
     if (href.endsWith("/")) 
       href = href.substr(0, href.length - 1);
@@ -1802,6 +1864,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		return true;
 	}
 	// 7
+	this.blankSuffixForTrick = "__$blank__";
 	this.setLink = function(params) {
 		i_am.skipClose = true;
 		
@@ -1821,21 +1884,30 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// 2. create new link
 		var newHref = params.url;
 		if(params.is_blank)
-		  newHref += "__$blank__";
+		  newHref += i_am.blankSuffixForTrick;
 		
 		i_am.performCommand("createlink", newHref);
 		
-		if(params.is_blank) {
-		  var links = i_am.document.body.getElementsByTagName("a");
-		  for(var i = 0; i < links.length; i++) {
-		    if(links[i].href.indexOf("__$blank__") != -1) {
-		      links[i].setAttribute("target", "_blank");
-		      links[i].href = links[i].href.replace(/__\$blank__/, "");
-		    }
-		  }
-		}
+		if(params.is_blank)
+			i_am._performBlankLinks();
+
 		
 		return true;
+	}
+	// trick that appends target="_blank"
+	// link is not required
+	this._performBlankLinks = function(link) {
+		var links;
+		if (!link)
+			links = new Array(link);
+			
+		links = i_am.document.body.getElementsByTagName("a");
+	  for(var i = 0; i < links.length; i++) {
+	    if(links[i].href.indexOf(i_am.blankSuffixForTrick) != -1) {
+	      links[i].setAttribute("target", "_blank");
+			  links[i].href = links[i].href.replace(i_am.blankSuffixForTrick, "");
+	    }
+	  }
 	}
 	// 8
 	this.setImage = function(url, align, margin, modeIdx) {
