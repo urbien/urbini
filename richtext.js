@@ -238,12 +238,12 @@ var RteEngine = {
 		if(this.imagePopup == null)
 			this.createImagePopup(imgObj);
 
-			var parentDlg = getParentDialog(btnObj.div);
-			var parentForm = getChildByTagName(parentDlg, "form");
+		var parentDlg = getParentDialog(btnObj.div);
+		var parentForm = getChildByTagName(parentDlg, "form");
 
-			// note: insert new content on each launch because no way to reset File-browse field 
-			var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert", imgObj, parentForm);
-		  this.imagePopup.changeContent(innerFormHtml);
+		// note: insert new content on each launch because no way to reset File-browse field 
+		var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert", imgObj, parentForm);
+	  this.imagePopup.changeContent(innerFormHtml);
 	  
 	  this.curRteId = rteId;
  
@@ -588,7 +588,9 @@ var ImageUploader = {
 		var forms = document.forms;
     
 		// NOTE: new resourse does not have URI!!!
-		var resourceUri = parentForm.elements['uri'] ? parentForm.elements['uri'].value : "";
+		var resourceUri = null;
+		if (parentForm.elements['uri'])
+		 resourceUri = parentForm.elements['uri'].value;
 		
 		if (imgObj)
 			submitBtnText = "   Ok   "; 
@@ -623,7 +625,7 @@ var ImageUploader = {
 			else
 				formStr += "style=\"display: none;\"";
 			
-			formStr += " size=\"52\">"
+			formStr += " size=\"50\">"
 
       + " <input type=\"hidden\" name=\"" + this.RTE_ID_INPUT_NAME + "\""
       + " id=\"" + this.RTE_ID_INPUT_NAME + "\">"
@@ -653,13 +655,18 @@ var ImageUploader = {
 			
 			+ " &#160<input type=\"button\" value=\"Cancel\" onclick=\"RteEngine.imagePopup._oncancel();\" >"
 
-      + " <input type=\"hidden\" name=\"-$action\" value=\"upload\">"
-      + " <input type=\"hidden\" name=\"uri\" value=\""
-      + resourceUri      
-      + "\">"
-
-      + " </td></tr><table>"
-    + " </form>";
+      + " <input type=\"hidden\" name=\"-$action\" value=\"upload\">";
+	
+			if (resourceUri != null) {
+				formStr += 
+	      " <input type=\"hidden\" name=\"uri\" value=\""
+	      + resourceUri      
+	      + "\">";
+			}
+			
+			formStr +=
+      	" </td></tr><table>"
+    		+ " </form>";
 
 		// set selected align 
 		if (imgObj && imgObj.align) {
