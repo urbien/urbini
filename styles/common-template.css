@@ -55,8 +55,9 @@ a.external:hover span.textInLink, a.external:active span.textInLink { color: &[S
 */
 a img {
 	border: 0;
-	vertical-align: middle; 
-} 
+	vertical-align: middle;
+}
+ 
 /* #mainMenu A { font-size: 0.8em; } */
 
 .requiredProp {
@@ -998,7 +999,7 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 .swinp { width:32px; height:32px; padding-right:2px; padding-left:2px; border:0px; vertical-align:middle }
 .litxt { vertical-align:top; width:32px; height:32px; padding-right:2px; border:0px }
 .fmenu { vertical-align:middle; height:32px; border:0px }
-.fLeft  {float:left; padding-roght:15px}
+.fLeft  {float:left; padding-right:15px}
 .fRight {float:right; padding-right:10px}
 
 .ierr { vertical-align:top; width:64px; height:64px; padding-right:2px; border:0px }
@@ -1744,7 +1745,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .toggle_btn .right .label { color: &[Label]; !important; }
 .toggle_btn .no { margin-left:-45px; }
 
-.iphone_checkbox { margin: 0px 3px; width: 29px; height: 29px; background: url(../images/skin/iphone/checkbox.png); cursor: pointer; }
+.iphone_checkbox { border: none; margin: 0px 3px; width: 29px; height: 29px; background: url(../images/skin/iphone/checkbox.png); cursor: pointer; }
 .checked { background-position: 100% 0%; } 
 
 
