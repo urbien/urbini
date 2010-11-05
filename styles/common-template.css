@@ -40,18 +40,23 @@ a {
 
 a:hover { color: &[SecondaryColorB_2];; text-decoration: none; cursor: pointer}
 
-a.external :not(img) {color: &[SecondaryColorB_3];; background: url(../icons/external.png) no-repeat center right; padding: 0px 13px 0px 0px; }
 /*
-a.external:link, a.external:visited{ color: &[SecondaryColorB_3];; background:transparent url(../icons/external.gif) no-repeat 99% 3px; padding-right:15px; }
-a.external:hover, a.external:active { color: &[SecondaryColorB_3];; background: #fcfcfc url(../icons/external.gif) no-repeat 99% -147px; padding-right:15px; }
+a.external span.textInLink {
+  color: &[SecondaryColorB_3];; 
+  background: url(../icons/external.png);
+  background-position: 100% 50%;
+  background-repeat: no-repeat;
+  padding-right: 12px !important;
+}
+*/
+/*
+a.external:link span.textInLink, a.external:visited span.textInLink { color: &[SecondaryColorB_3];; background:transparent url(../icons/external.gif) no-repeat 99% 3px; padding-right:15px; }
+a.external:hover span.textInLink, a.external:active span.textInLink { color: &[SecondaryColorB_3];; background: #fcfcfc url(../icons/external.gif) no-repeat 99% -147px; padding-right:15px; }
 */
 a img {
 	border: 0;
-	vertical-align: middle;
-	/* suppress external link icon*/
-	background: transparent; padding-right: 0em;} 
-}
- 
+	vertical-align: middle; 
+} 
 /* #mainMenu A { font-size: 0.8em; } */
 
 .requiredProp {
@@ -993,7 +998,7 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 .swinp { width:32px; height:32px; padding-right:2px; padding-left:2px; border:0px; vertical-align:middle }
 .litxt { vertical-align:top; width:32px; height:32px; padding-right:2px; border:0px }
 .fmenu { vertical-align:middle; height:32px; border:0px }
-.fLeft  {float:left; padding-left:10px}
+.fLeft  {float:left; padding-roght:15px}
 .fRight {float:right; padding-right:10px}
 
 .ierr { vertical-align:top; width:64px; height:64px; padding-right:2px; border:0px }
