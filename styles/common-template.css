@@ -35,6 +35,14 @@ a {
   text-decoration: none; 
   color: &[SecondaryColorB_3];;
 }
+
+.href {
+  text-align: left; max-width:30em; white-space: nowrap; overflow: hidden;	text-overflow: ellipsis;
+}
+.href-ff { /* FF does not support ellipsis but can wrap long URLs */
+  text-align: left;
+}
+
 /* link in widget header */
 .containers h2 a { color: inherit; text-decoration: inherit; }
 
