@@ -99,9 +99,9 @@ img.fade {
 #user a { color: &[SecondaryColorA_3_brighter];}
 #user span { color: &[SecondaryColorA_3_brighter];; font-weight: bold;}
 
-#dataEntry td { font-size: 1em; }
+#dataEntry td { font-size: 0.8em; }
 #dataEntry table { border-collapse: collapse; }
-#siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; font-size: 1em; }
+#siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; font-size: 0.8em; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
 #siteResourceList #front {background-color: &[BackgroundColor];}
 
@@ -764,6 +764,8 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 .propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
 
+div.topSidebar {
+}
 div.leftSidebar {
   padding-top:   0.4em;
   padding-left:  0.8em;
