@@ -631,7 +631,7 @@ var ImageUploader = {
       + " id=\"" + this.RTE_ID_INPUT_NAME + "\">"
       + " </td></tr>"
       
-      + " <tr><td><br/>align:&nbsp;<select id=\"" + this.IMG_ALIGN_ID + "\""
+      + " <tr><td><br/>align:&nbsp;<select id=\"" + this.IMG_ALIGN_ID + "\">"
       + " <option value=\"left\">left</option>"
       + " <option value=\"middle\">middle</option>"
       + " <option value=\"right\">right</option>"
