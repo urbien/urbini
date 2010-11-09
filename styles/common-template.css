@@ -1965,5 +1965,6 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .rounded_rect_tbl .tags { height: 100px; margin-bottom:7px; }
 .rounded_rect_tbl .tags div { float: left; margin: 5px; height: 20px; line-height:20px; }
 .rounded_rect_tbl .tags .item { font-size: 14px; line-height:20px; padding: 2px 2px 2px 4px; }
-.rounded_rect_tbl .tags .item img { float:right; margin: 3px 0 0 2px; cursor: pointer; }
+.rounded_rect_tbl .tags .item img { position:relative; top:3px; cursor: pointer; }
 .rounded_rect_tbl .tags .caret { text-align:left; border: none; outline: 0 none; }
+
