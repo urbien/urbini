@@ -14,7 +14,7 @@ div#wrapper {
 } 
 
 /* avoid showing with link color */
-H1, H1 A {font-weight: bold; color: &[SecondaryColorA_1];; font-size: 34px; }
+H1, H1 A {font-weight: bold; color: &[SecondaryColorB_2];; font-size: 24px; }
 H2, H2 A {font-weight: bold; color: &[SecondaryColorB_2];; font-size: 21px; margin: 0px;}
 H3, H3 A {font-weight: bold; color: &[SecondaryColorB_2];; font-size: 13px; margin: 0px;}
 H4, H4 A {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 12px}
