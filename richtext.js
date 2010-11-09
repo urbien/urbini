@@ -613,7 +613,7 @@ var ImageUploader = {
 	      // 1) image uploading
 	      // 2) URL of image
 	      + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
-	      + " size=\"40\" onkeyup=\"ImageUploader.enterCatcher(event);\">";
+	      + " style=\"width: 100%\" onkeyup=\"ImageUploader.enterCatcher(event);\" />";
 			}
 			else
 				formStr += "image URL:<br /><br />";
@@ -621,11 +621,11 @@ var ImageUploader = {
 			formStr += " <input type=\"text\" name=\"" + this.FILE_INPUT_NAME + "\"";
 			
 			if (imgObj)
-				formStr += " value = \"" + imgObj.src + "\"";
+				formStr += " value = \"" + imgObj.src + "\" style=\"width: 100%\"";
 			else
-				formStr += "style=\"display: none;\"";
+				formStr += "style=\"display: none; width: 100%\"";
 			
-			formStr += " size=\"50\">"
+			formStr += " />"
 
       + " <input type=\"hidden\" name=\"" + this.RTE_ID_INPUT_NAME + "\""
       + " id=\"" + this.RTE_ID_INPUT_NAME + "\">"
