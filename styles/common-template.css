@@ -1825,7 +1825,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #div_info table { overflow: visible; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; overflow: visible; font-weight: bold; color: &[SecondaryColorB_3];;}
 #div_info td { overflow: visible; text-align: right; vertical-align: middle; }
-#div_info #rtitle { overflow: visible; text-align: center; vertical-align: middle; }
+#div_info #rtitle { overflow: visible; vertical-align: middle; text-align: left;}
 #div_info .text_editor_container { text-align: left; }
 #div_info .text_editor_container .label { float: none; }
 
