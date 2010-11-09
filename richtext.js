@@ -846,8 +846,12 @@ var ImageUploader = {
 
     // 2.3 replace URL of the image in the document
     var image = thisObj.getImageByFilePath(rteObj, originalUrl);
-    if(image)
-      image.src = uploadedUrl;
+    if (image) {
+			image.src = uploadedUrl;
+			// failed to use onload
+			// so fit RTE height after some delay while image should be downloaded 
+			setTimeout(rteObj.fitHeightToVisible, 1500);
+		}
   },
   
   // "original" means inserted url before replace with uploaded url
@@ -1482,6 +1486,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	
 	this._onkeyup = function(e) {
+
 		i_am.fitHeightToVisible(false);
     
 		// FF2 and Opera onpaste
@@ -1521,10 +1526,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   
 	// Note: FF, Crome increases  i_am.document.body.scrollHeight;	on each key down
 	this.fitHeightToVisible = function(onFocus) {
-		// apply it if no scrolling
-		if(this.iframeObj.scrolling != 'no')
-			return;
-	
 		// get lastChild, including text node(!)
 		var children = i_am.document.body.childNodes;
 		if (children.length == 0)
@@ -1536,8 +1537,16 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		else
 			docH = lastChild.offsetTop + lastChild.offsetHeight; 
 		
-		if(docH < i_am.initFrameHeight)
+		// 1. small content size - use initial height without scrolling
+		if (docH < i_am.initFrameHeight) {
+			i_am.iframeObj.style.height = i_am.initFrameHeight;
+			i_am.iframeObj.setAttribute("scrolling", "no"); 
 			return;
+		}
+		
+		// there is scrollbar - no need to fit height
+		if(i_am.iframeObj.scrolling != 'no')
+			return; 
 
     // FF: limit max RTE height
     // IE & Opera: failed to turn on a scrollbar in JS.
@@ -1547,10 +1556,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		
 		var frmH = i_am.iframeObj.clientHeight;
 		var maxHeight = getWindowSize()[1] * 0.9;
+		// 2. big content size - use scrolling
 		if(docH > maxHeight && this.isNetscape) {
 		  i_am.iframeObj.setAttribute("scrolling", "auto"); 
 		  i_am.iframeObj.style.height = maxHeight;
 		}
+		// 3. middle content size - use increased height
 		else {
 		  if(frmH != docH)
 			  i_am.iframeObj.style.height = docH;
@@ -1716,7 +1727,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if (onDblClick) {
 			if (href.length == 0) 
 				return; // not show the dialog on double click if no href 
-			this._performBlankLinks(a); // additional check that "_blank" trick was passed ok 
 		}
     
     if (href.endsWith("/")) 
@@ -1782,6 +1792,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// 0 allowToEdit if Ctrl key was pressed while mouseUp
 	this.onSource = function(pressed, allowToEdit) {
 		var html;
+		
 		if(i_am.document.importNode) { // FF --
 			if(pressed) {
 				html = document.createTextNode(i_am.document.body.innerHTML);
@@ -1871,10 +1882,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		return true;
 	}
 	// 7
-	this.blankSuffixForTrick = "__$blank__";
 	this.setLink = function(params) {
-		i_am.skipClose = true;
+		var blankSuffixForTrick = "__target_blank__";
 		
+		i_am.skipClose = true;
 		var a = i_am.getSelectedElement();
 		var isLinkSelected = (a && a.tagName && a.tagName.toLowerCase() == "a");
 		
@@ -1891,30 +1902,22 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// 2. create new link
 		var newHref = params.url;
 		if(params.is_blank)
-		  newHref += i_am.blankSuffixForTrick;
+		  newHref += blankSuffixForTrick;
 		
 		i_am.performCommand("createlink", newHref);
 		
-		if(params.is_blank)
-			i_am._performBlankLinks();
-
+		// trick that appends target="_blank"		
+		if (params.is_blank) {
+			var links = i_am.document.body.getElementsByTagName("a");
+			for (var i = 0; i < links.length; i++) {
+				if (links[i].href.indexOf(blankSuffixForTrick) != -1) {
+					links[i].setAttribute("target", "_blank");
+					links[i].href = links[i].href.replace(blankSuffixForTrick, "");
+				}
+			}
+		}
 		
 		return true;
-	}
-	// trick that appends target="_blank"
-	// link is not required
-	this._performBlankLinks = function(link) {
-		var links;
-		if (!link)
-			links = new Array(link);
-			
-		links = i_am.document.body.getElementsByTagName("a");
-	  for(var i = 0; i < links.length; i++) {
-	    if(links[i].href.indexOf(i_am.blankSuffixForTrick) != -1) {
-	      links[i].setAttribute("target", "_blank");
-			  links[i].href = links[i].href.replace(i_am.blankSuffixForTrick, "");
-	    }
-	  }
 	}
 	// 8
 	this.setImage = function(url, align, margin, modeIdx) {
