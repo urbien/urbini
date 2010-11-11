@@ -5195,6 +5195,8 @@ var TouchDlgUtil = {
 	init : function(parent) {
 		if (this.wasOnceInit == false) {
 			addEvent(document.body, 'click', this.onBodyClick, false);
+			// helps to handle ESK after click outside a dialog
+			addEvent(window, 'keyup', this.onBodyKeyup, false);
 			wasOnceInit = true;
 		}
 		
@@ -5227,6 +5229,8 @@ var TouchDlgUtil = {
 
 		addEvent(parent, 'keyup', this.keyHandler, false);
 		addEvent(parent, 'keydown', this.arrowsHandler, false);
+		// restores focus inside a dialog
+		addEvent(parent, 'click', this.onDlgClick, false);
 	},
 	
 	setCurrentDialog : function(dlgDiv) {
@@ -5303,8 +5307,21 @@ var TouchDlgUtil = {
 			TabMenu.openActivePopup(event);
 		}
 	},
+	onBodyKeyup : function(event) {
+		var code = getKeyCode(event);
+		if(code == 27)
+			TouchDlgUtil.closeAllDialogs();
+	},
 	onBodyClick : function(){
 		FtsAutocomplete.hide();
+	},
+	// restore focus in dialog
+	onDlgClick : function(event) {
+		var target = getEventTarget(event);
+		if (target && target.tagName.toLowerCase() == "input")
+			return;
+		var panel = ListBoxesHandler.getCurrentPanelDiv() || TouchDlgUtil.curDlgDiv;	
+		TouchDlgUtil.focusSelector(panel, false); 
 	},
 
 	isMenuPopupOpened : function() {
