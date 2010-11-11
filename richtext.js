@@ -1486,7 +1486,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	
 	this._onkeyup = function(e) {
-
 		i_am.fitHeightToVisible(false);
     
 		// FF2 and Opera onpaste
@@ -1515,13 +1514,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	// prevents default Ctrl+b behaviour in FF.
   this._onkeydown = function(e) {
-    if(i_am.isNetscape == false)
-      return;
-    // prevent for ctrl+b, ctrl+i, ctrl+u, ctrl+t  
-    if (e.ctrlKey && (e.keyCode == 66 || e.keyCode == 73 || 
-            e.keyCode == 85 || e.keyCode == 84)) {
-      e.preventDefault();
-    }
+		if (i_am.isNetscape) {// prevent ctrl+b, ctrl+i, ctrl+u, ctrl+t  
+	    if (e.ctrlKey && (e.keyCode == 66 || e.keyCode == 73 || 
+	            e.keyCode == 85 || e.keyCode == 84)) {
+	      e.preventDefault();
+	    }
+		}
+		else if (Browser.chrome && (e.keyCode == 33 || e.keyCode == 34)) {
+			e.preventDefault();
+		}
   }
   
 	// Note: FF, Crome increases  i_am.document.body.scrollHeight;	on each key down
@@ -1531,12 +1532,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if (children.length == 0)
 			return;
 		var lastChild = children[children.length - 1];
-		
+
 		if (onFocus || Browser.ie)
 			docH = i_am.document.body.scrollHeight;
 		else
 			docH = lastChild.offsetTop + lastChild.offsetHeight; 
 		
+		if (docH == 0)
+			return; // happens in webkit (?!)
+			
 		// 1. small content size - use initial height without scrolling
 		if (docH < i_am.initFrameHeight) {
 			i_am.iframeObj.style.height = i_am.initFrameHeight;
