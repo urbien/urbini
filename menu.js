@@ -4059,6 +4059,9 @@ var SlideSwaper = {
 
   // callback is not required
   moveForward : function(tray, reset, callback) {
+		
+	//	return;
+		
 		if (this.offset != 0)
       return;
 
@@ -5318,7 +5321,8 @@ var TouchDlgUtil = {
 	// restore focus in dialog
 	onDlgClick : function(event) {
 		var target = getEventTarget(event);
-		if (target && target.tagName.toLowerCase() == "input")
+
+		if (isElemOfClass(target, ["input", "select", "tags"]))
 			return;
 		var panel = ListBoxesHandler.getCurrentPanelDiv() || TouchDlgUtil.curDlgDiv;	
 		TouchDlgUtil.focusSelector(panel, false); 
