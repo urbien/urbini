@@ -833,7 +833,8 @@ function cloneEvent(eventObj) {
   return e;
 }
 
-function stopEventPropagation(e) {
+// is not required
+function stopEventPropagation(e, allowDefault) {
   if (!e)
     return true;
   try {
@@ -841,7 +842,7 @@ function stopEventPropagation(e) {
       return false;
     e.cancelBubble = true;
     e.returnValue  = false;
-    if (e.preventDefault)  e.preventDefault();
+    if (e.preventDefault && !allowDefault)  e.preventDefault();
     if (e.stopPropagation) e.stopPropagation();
     if (e.setAttribute)    e.setAttribute('eventProcessed', 'true');
     e.eventProcessed = true;
@@ -1769,7 +1770,7 @@ function isElemOfClass(elem, className) {
 	return false;
 }
 
-function isElemOfTagName(elem, tagName) {
+function isElemOfTag(elem, tagName) {
 	if (!elem.tagName)
 		return false;
 	var elemTagName = elem.tagName.toLowerCase();	
