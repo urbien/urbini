@@ -251,13 +251,10 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 	
 	this.create = function(iconWidth) { // create Button
 		this.div = document.createElement('div');
-		this.div.style.position = "absolute";
+		this.div.className = "tb_btn";
 		this.div.style.left = this.left;
 		this.div.style.top = this.top;
 		this.div.style.padding = this.toolbar.BTN_PADDING;
-		this.div.style.cursor = "pointer";
-		this.div.style.borderStyle = "solid";
-		this.div.style.borderWidth = "0px";
 		
 		var innerHTML = '<img src = "' + icon + '" border="0" tooltip="<b>' +
 			 this.title + '</b>" width=' + iconWidth + ' height=' + this.toolbar.iconHeight + '>';
@@ -408,7 +405,7 @@ var PalettePopup = {
 	},
 	create : function() {
 		this.div = document.createElement('div');
-		this.div.className = "ctrl_toolbar_dlg";
+		this.div.className = "ctrl_toolbar_dlg pallete_dlg";
 
 		this.div.innerHTML = this.getPaletteStr();
 		this.noClrCell = getChildById(this.div, "noClr");
