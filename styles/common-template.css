@@ -1684,6 +1684,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   position: relative;
   float: left;
   left: 0;
+ 
 }
 
 .form_panel, .options_panel, .classifier_panel, .calendar_panel { float: left; width: 20%; }
@@ -1924,6 +1925,8 @@ td.pBGr { background-color: #eeeeee;
 }
 .ctrl_toolbar_dlg td { height: 32px; }
 
+.ctrl_toolbar .tb_btn, .ctrl_toolbar_dlg .tb_btn { position: absolute; cursor: pointer; border-style: solid; border-width: 0px; }
+.palette_popup td { width: 31px; height: 31px; }
 tr.grey_highlighting > td, * html tr.grey_highlighting td, .ctrl_toolbar_dlg .grey_highlighting {
 	color: &[Label];;
 	background-color: rgba(&[PrimaryColor_1_rgb];, 0.1);
