@@ -4059,9 +4059,6 @@ var SlideSwaper = {
 
   // callback is not required
   moveForward : function(tray, reset, callback) {
-		
-	//	return;
-		
 		if (this.offset != 0)
       return;
 
@@ -5191,6 +5188,7 @@ var TouchDlgUtil = {
 	
 	curDlgDiv : null,
 	focusHolder : null,
+	isFocusInDialog : false,
 
 	wasOnceInit : false, // to hide autocomplete
 	
@@ -5317,15 +5315,19 @@ var TouchDlgUtil = {
 	},
 	onBodyClick : function(){
 		FtsAutocomplete.hide();
+		TouchDlgUtil.isFocusInDialog = false;
 	},
 	// restore focus in dialog
 	onDlgClick : function(event) {
-		var target = getEventTarget(event);
+		var $t = TouchDlgUtil;
+		// set focus in selector if previously dialog lost it
+		if ($t.isFocusInDialog == false) {
+			var panel = ListBoxesHandler.getCurrentPanelDiv() || TouchDlgUtil.curDlgDiv;
+			TouchDlgUtil.focusSelector(panel, false);
+		} 
 
-		if (isElemOfClass(target, ["input", "select", "tags"]))
-			return;
-		var panel = ListBoxesHandler.getCurrentPanelDiv() || TouchDlgUtil.curDlgDiv;	
-		TouchDlgUtil.focusSelector(panel, false); 
+		TouchDlgUtil.isFocusInDialog = true;
+		stopEventPropagation(event);
 	},
 
 	isMenuPopupOpened : function() {
@@ -5539,6 +5541,7 @@ var TouchDlgUtil = {
 		}
 		
 		this.greyTr = null;
+		this.isFocusInDialog = true;
 		return selector;
 	},
 	
