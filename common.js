@@ -292,6 +292,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
   }
 
   http_request.onreadystatechange = function() {
+
     var status;
     if (http_request.readyState != 4) // ignore for now: 0-Unintialized,
                                       // 1-Loading, 2-Loaded, 3-Interactive
@@ -1571,6 +1572,8 @@ function getTopPagePos() {
     }
     return nTop;
 }// eof getTopPagePos
+
+// returns base uri with trailed "/"
 function getBaseUri() {
   var baseUriO = document.getElementsByTagName('base');
   var baseUri = "";
@@ -1743,19 +1746,6 @@ function getUrlParam(url, paramName) {
     return results[1];
 }
 
-// returns base url with trailed "/"
-function getBaseUrl() {
-  var baseUriO = document.getElementsByTagName('base');
-  if (!baseUriO)
-    return "";
-  
-  var baseUri = baseUriO[0].href;
-  if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
-    baseUri += "/";
-
-  return baseUri;
-}
-
 // returns 'pane2' or 'panel_block'
 function getParentDialog(obj) {
 	return getAncestorByClassName(obj, 'panel_block') || getAncestorById(obj, 'pane2');
@@ -1774,6 +1764,21 @@ function isElemOfClass(elem, className) {
 
 	for	(var i = 0; i < className.length; i++) {
 		if (elem.className == className[i] || elem.className.indexOf(className[i] + " ") == 0)
+			return true;
+	}
+	return false;
+}
+
+function isElemOfTagName(elem, tagName) {
+	if (!elem.tagName)
+		return false;
+	var elemTagName = elem.tagName.toLowerCase();	
+	
+	if (typeof tagName == "string")
+		return (elemTagName == tagName);
+
+	for	(var i = 0; i < tagName.length; i++) {
+		if (elemTagName == tagName[i])
 			return true;
 	}
 	return false;
@@ -1805,6 +1810,7 @@ function setCaretPosition(elem, caretPos) {
         }
     }
 }
+
 function deselectField(field) {
 	var tmp = field.value;
 	field.value = "";
