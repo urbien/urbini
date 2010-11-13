@@ -5190,6 +5190,7 @@ var TouchDlgUtil = {
 	focusHolder : null,
 	
 	isFocusInDialog : false,
+	dlgWasClicked : false,
 
 	wasOnceInit : false, // to hide autocomplete
 	
@@ -5317,14 +5318,16 @@ var TouchDlgUtil = {
 	onBodyClick : function(){
 		var $t = TouchDlgUtil;
 		FtsAutocomplete.hide();
-		$t.isFocusInDialog = false;
+		
+		if (!$t.dlgWasClicked)
+			$t.isFocusInDialog = false;
+		$t.dlgWasClicked = false;
 	},
 	// restore focus in dialog
 	onDlgClick : function(event) {
 		var $t = TouchDlgUtil;
-		// set focus in selector if previously dialog lost it
-		// and new focus holder is not a control object
 		var target = getEventTarget(event);
+		// set focus in selector if previously dialog lost it
 		if ($t.isFocusInDialog == false &&
 				isElemOfTag(target, ["input", "textarea", "select"]) == false &&
 				isElemOfClass(target, "tags") == false) {
@@ -5333,7 +5336,7 @@ var TouchDlgUtil = {
 		} 
 
 		$t.isFocusInDialog = true;
-		stopEventPropagation(event, true);
+		$t.dlgWasClicked = true;
 	},
 
 	isMenuPopupOpened : function() {
