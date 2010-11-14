@@ -12431,6 +12431,23 @@ var TagsField = {
   }
 }
 
+function getActivity(e, uri) {
+  var table = document.getElementById("activity");
+  if (table)
+    return;
+  var params = "bUri=" + encodeURIComponent(uri) + "&-activity=y";
+  var div = document.getElementById('div_Activity');
+  postRequest(null, "smartPopup", params, div, null, getActivityCallBack);
+}
+
+function getActivityCallBack(e, div, hotspot, content, url) {
+  if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
+    div.style.display = "none";
+  else
+    div.innerHTML = content;
+}
+
+
 
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
