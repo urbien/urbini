@@ -12443,6 +12443,7 @@ function getActivityCallBack(e, div, hotspot, content, url) {
     div.style.display = "none";
   else
     div.innerHTML = content;
+  div.className = "";
 }
 
 
