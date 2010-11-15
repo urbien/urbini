@@ -9747,8 +9747,6 @@ function switchMenuMode(e, userUri) {
 var Dashboard = {
   MIN_COLUMN_WIDTH : 50,
 
-  PH_BACK_COLOR : "#eee",
-  PH_BORDER : "1px dashed #f00",
   DASHBOARD_ID : "dashboard",
 
   dragBlock : null,
@@ -9780,9 +9778,9 @@ var Dashboard = {
       this.initDashboardMap(widgetDiv);
       addEvent(document, "keyup", this.onEsc, false);
     }
-
     return widgetDiv;
   },
+	
   initDashboardMap : function(theWidget) {
     var dashboard = getAncestorById(theWidget, this.DASHBOARD_ID);
     // 1. widgets
@@ -9910,7 +9908,8 @@ var Dashboard = {
       else {
         phStyle.display = 'none';
       }
-      this.targetTab.setBackgroundAndBorder(this.PH_BACK_COLOR, this.PH_BORDER);
+			
+     // this.targetTab.setBackgroundAndBorder(this.PH_BACK_COLOR, this.PH_BORDER);
     } // 3.2 out without drop.
     else if(phStyle.display == 'none') {
       phStyle.display = '';
@@ -9992,12 +9991,7 @@ var Dashboard = {
   //--------------------------
   createPlaceholder : function() {
     this.placeholderDiv = document.createElement("div");
-    var phStyle = this.placeholderDiv.style;
-    phStyle.display = "none";
-    phStyle.width  = "100%";
-    phStyle.margin = 0;
-    phStyle.backgroundColor = this.PH_BACK_COLOR;
-    phStyle.border = this.PH_BORDER;
+		this.placeholderDiv.className = "place_holder";
     document.body.appendChild(this.placeholderDiv);
   },
 
