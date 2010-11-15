@@ -2631,6 +2631,8 @@ var Tooltip = {
 		var $t = Tooltip;
 		if ($t.isOverTooltip && !forcedHide)
 			return;
+		if (!$t.tooltipDiv)
+			return;	
    	$t.tooltipDiv.style.display = "none";
 		window.status = "";
 		$t.isShown = false;
@@ -10674,6 +10676,8 @@ var WidgetRefresher = {
   _onInterval : function(divId) {
 		var $t = WidgetRefresher;
     var url = getBaseUri() + "widget/div/oneWidget.html";
+		if (!$t.widgetsArr[divId])
+			return;
     var bookmarkId = $t.widgetsArr[divId].bookmarkUrl;
     var params = "-refresh=y&-w=y&-b=" + encodeURIComponent(bookmarkId);
 
