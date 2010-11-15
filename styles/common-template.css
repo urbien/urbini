@@ -1041,8 +1041,16 @@ div.contentsRL {
 { position: absolute; width: 14; height: 14; right: 0; bottom: 0; background-image: url(../images/bottom_right.gif); cursor: se-resize; -apple-dashboard-region: dashboard-region(control rectangle); }
 
 .nobr { white-space: nowrap; }
+
+/* dashboard (3column) & widgets */
+#dashboard { background-color: &[BackgroundColor];; }
+#col_1, #col_2, #col_3  { font-size: 12px; }
+#col_1, #col_3 { padding: 0 0.8em; }
+.widget, .place_holder{ margin-top: 0.4em; }
+.place_holder {  background-color: &[BodyBackgroundColor];; display: none; width: 100%; border: 1px dashed #808080; }
 .widgetTitle {vertical-align:top; color: &[SecondaryColorA_3];; font-weight:bold;white-space: nowrap;}
 .widgetIcon {width:16px; height:16px; padding-right:4px; border:0px }
+
 
 .iinp, .iinp_move, .iinp_btn { width:16px; height:16px; border:0px; vertical-align:middle }
 .iinp_move { cursor: move; }
@@ -1166,17 +1174,6 @@ TD.toolbar {
 .dashboardLine a {
   padding: 5px 0px; 
   font-size: 0.8em; 
-}
-
-/* doashboard layout, supporting only 3 columns for now */ 
-#col_1 {
-  padding-left:  0.8em;
-  padding-right: 0.8em;
-}
-#col_1 table, #col_2 table, #col_3 table { font-size: 12px; }
-#col_3 {
-  padding-left: 0.8em;
-  padding-right: 0.8em;
 }
 
 .menuTitle td, .menuTitle th {
