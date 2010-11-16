@@ -1700,7 +1700,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   border-radius:22px 0 0 22px;
   -moz-border-radius:22px 0 0 22px;
   -webkit-border-radius:22px 0 0 22px;
-   background-color: &[SecondaryColorA_5];;
+   background-color: &[PrimaryColor_1];;
    margin-left: 0px;
 }
 .toggle_btn .right {
@@ -1708,7 +1708,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   border-radius:0 22px 22px 0;
   -moz-border-radius:0 22px 22px 0;
   -webkit-border-radius:0 22px 22px 0;
-  background: &[PrimaryColor_4];;
+  background: &[BodyBackgroundColor];;
   margin-left:-5px;
 }
 
@@ -1741,9 +1741,11 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   position:relative;
 }
 
-.toggle_btn .label {  display:inline; font-size: 13px; font-weight:bold; line-height:21px; margin-left:16px; }
-.toggle_btn .left .label { color: &[MenuLineColorA]; !important;  }
+.toggle_btn .label { text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4); display:inline; font-size: 13px; font-weight:bold; line-height:21px; margin-left:16px; }
+
+.toggle_btn .left .label { color: &[MenuLineColorA]; !important; }
 .toggle_btn .right .label { color: &[Label]; !important; }
+
 .toggle_btn .no { margin-left:-45px; }
 
 .iphone_checkbox { border: none; margin: 0px 3px; width: 29px; height: 29px; background: url(../images/skin/iphone/checkbox.png); cursor: pointer; }
