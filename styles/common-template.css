@@ -146,6 +146,7 @@ input[type=button], input[type=submit], .button {
   background-color: &[PrimaryColor_4];;
   color: &[PrimaryColor_3];;
 }
+div.button { font-size: 15px; color: &[Label];; padding: 3px 10px;}
 
 /* the awesome size gets set here. Feel Free to add new sizes, like input[type=button].small or .small.large   */
 input[type=button], input[type=submit], .button, a.button { font-size: 15px; color: &[Label];; }
@@ -1814,7 +1815,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   background: url(../images/frame/png/right_bottom.png) no-repeat;
 }
 
-#div_description { 
+#div_description, #div_activity { 
   max-width:800px;
   width: expression(document.body.clientWidth > 802? "800px" : "auto"); /* for IE */
 }
