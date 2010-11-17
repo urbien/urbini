@@ -12447,7 +12447,6 @@ function getActivityCallBack(e, div, hotspot, content, url) {
 }
 
 function pageActivity(e, id, params) {
-  var isActivity = params.indexOf("-activity=y") != -1;
   var table = document.getElementById(id.toLowerCase());
   if (!table)
     return;
