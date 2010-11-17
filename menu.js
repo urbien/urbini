@@ -12446,6 +12446,15 @@ function getActivityCallBack(e, div, hotspot, content, url) {
   div.className = "";
 }
 
+function pageActivity(e, id, params) {
+  var isActivity = params.indexOf("-activity=y") != -1;
+  var table = document.getElementById(id.toLowerCase());
+  if (!table)
+    return;
+  var div = document.getElementById('div_' + id);
+  
+  postRequest(null, "smartPopup", params, div, null, getActivityCallBack);
+}
 
 
 // flag that menu.js was parsed
