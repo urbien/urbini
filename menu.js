@@ -3380,7 +3380,8 @@ var ListBoxesHandler = {
 		TouchDlgUtil.init(popupDiv);
 		
 		// bind click on option row 
-		var trs = popupDiv.getElementsByTagName("tr");
+		var opTable = getChildByClassName(popupDiv, "rounded_rect_tbl");
+		var trs = opTable.getElementsByTagName("tr");
 		for (var i = 0; i < trs.length; i++)
 			trs[i].onclick = $t.onOptionsItemClick;
 
@@ -12454,6 +12455,51 @@ function pageActivity(e, id, params) {
   
   postRequest(null, "smartPopup", params, div, null, getActivityCallBack);
 }
+
+
+function photoUploadCallback(imgUrl) {
+	//alert(imgUrl);
+}
+
+//****************************************
+// ImageUpload
+//****************************************
+var ImageUpload = {
+		HDN_IFRAME_NAME  : "imageUploadingIframe",
+		callback : null,
+		
+		onsubmit : function(callback) {
+			this.callback = callback;
+			setTimeout(ImageUpload.pollServerResponse, 150);
+		},
+		
+		pollServerResponse: function(){
+			var $t = ImageUpload;
+			// loop to wait on server response
+			if (!frameLoaded[$t.HDN_IFRAME_NAME]) {
+				setTimeout(ImageUpload.pollServerResponse, 50);
+				return;
+			}
+
+			// process the server response.
+			frameLoaded[$t.HDN_IFRAME_NAME] = false;
+			// get contain of location element or body
+			var frame = window.frames[$t.HDN_IFRAME_NAME];
+			var frameDoc = frame.document;
+			var frameBody = frameDoc.body;
+			var location = frameDoc.getElementById("location");
+			var uploadedUrl = location ? location.innerHTML : frameBody.innerHTML;
+			uploadedUrl = decodeURI(uploadedUrl);
+			
+			// reset hidden frame
+			frame.location.replace("about:blank");
+			
+			this.callback();
+			
+			this.callback = null;
+	}
+}
+
 /*
 function smartUpload(event, params) {
   var params1 = decodeURIComponent(params);
