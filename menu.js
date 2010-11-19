@@ -12454,7 +12454,51 @@ function pageActivity(e, id, params) {
   
   postRequest(null, "smartPopup", params, div, null, getActivityCallBack);
 }
+/*
+function smartUpload(event, params) {
+  var params1 = decodeURIComponent(params);
+  var ix = params1.indexOf("$form=");
+  ix += 6;
+  var ix2 = params1.indexOf("&", ix);
+  var formName = params1.substring(ix, ix2);
+  ix = params1.indexOf("&prop=");
+  ix += 6;
+  ix2 = params1.indexOf("&", ix);
+  var tableId = params1.substring(ix, ix2) + "_" + formName;
+  var table = document.getElementById(tableId);
+  table.id = params;
+  var form = document.getElementById('uploadProject');
+  form.submit();
+  var idx = form.action.indexOf("?");
+  var fParams = form.action.substring(idx + 1) + FormProcessor.getFormFilters(form, true, null, true);
+  postRequest(null, "mkresource", fParams, table, null, smartUpload1);
+  return stopEventPropagation(event);
+}
 
+function smartUpload1(event, table) {
+  var params = table.id;
+  var params1 = decodeURIComponent(params);
 
+  var ix = params1.indexOf("$form=");
+  var ix2 = params1.indexOf("&", ix);
+  var formName = params1.substring(ix + 6, ix2);
+  ix = params1.indexOf("&prop=");
+  ix += 6;
+  ix2 = params1.indexOf("&", ix);
+  tableId = params1.substring(ix, ix2) + "_" + formName;
+  table.id = tableId;
+  
+  postRequest(null, "smartPopup", params, table, null, smartUploadCallBack);
+  return stopEventPropagation(event);
+}
+
+function smartUploadCallBack(e, table, hotspot, content, url) {
+  if (content && content.length != 0 && content.indexOf("not_found") == -1) {
+//    alert(content);
+    var t = getDomObjectFromHtml(content, "id", table.id);
+    table.innerHTML = t.innerHTML;
+  }
+}
+*/
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
