@@ -3381,9 +3381,11 @@ var ListBoxesHandler = {
 		
 		// bind click on option row 
 		var opTable = getChildByClassName(popupDiv, "rounded_rect_tbl");
-		var trs = opTable.getElementsByTagName("tr");
-		for (var i = 0; i < trs.length; i++)
-			trs[i].onclick = $t.onOptionsItemClick;
+		if (opTable) {
+			var trs = opTable.getElementsByTagName("tr");
+			for (var i = 0; i < trs.length; i++) 
+				trs[i].onclick = $t.onOptionsItemClick;
+		}
 
 		$t.showOptions(popupDiv);
 
@@ -9746,7 +9748,7 @@ function switchMenuMode(e, userUri) {
 * (see WidgetRefresher too)
 ********************************************************/
 var Dashboard = {
-  MIN_COLUMN_WIDTH : 50,
+  MIN_COLUMN_DIM : 50,
 
   DASHBOARD_ID : "dashboard",
 
@@ -9793,18 +9795,25 @@ var Dashboard = {
         this.widgetsMap.push(widgetRect);
       }
     }
+
     // 2. free spaces
-    var cols = dashboard.rows[0].cells;
     this.freeSpacesMap = new Array();
-    for(var i = 0; i < cols.length; i++) {
-      var freeSpaceRect = new Dashboard.FreeSpaceRect(cols[i], this.widgetsMap);
-      this.freeSpacesMap.push(freeSpaceRect);
-      // set min column width on case if the column has no widgets.
-      if(typeof cols[i].style.minWidth != 'undefined')
-        cols[i].style.minWidth = this.MIN_COLUMN_WIDTH
-      else
-        cols[i].style.width = this.MIN_COLUMN_WIDTH;
-    }
+		for (var n = 0; n < dashboard.rows.length; n++) {
+			var cols = dashboard.rows[n].cells;
+			for (var i = 0; i < cols.length; i++) {
+				var freeSpaceRect = new Dashboard.FreeSpaceRect(cols[i], this.widgetsMap);
+				this.freeSpacesMap.push(freeSpaceRect);
+				// set min column width on case if the column has no widgets.
+				if (typeof cols[i].style.minWidth != 'undefined') {
+					cols[i].style.minWidth = this.MIN_COLUMN_DIM;
+					cols[i].style.minHeight = this.MIN_COLUMN_DIM;
+				}
+				else {
+					cols[i].style.width = this.MIN_COLUMN_DIM;
+					cols[i].style.height = this.MIN_COLUMN_DIM;
+				}
+			}
+		}
     // 3. tab "Header"
     // suppose that position of tab header is constant
     this.tabHeadersMap = new Array();
@@ -10597,27 +10606,27 @@ var WidgetRefresher = {
 		if (!dashboardTable)
 			return;
 
-		// NOTE: current dashboard structure: one TR!
-		var cells = dashboardTable.rows[0].cells;
-		
-		for (var i = 0; i < cells.length; i++) {
-			var children = cells[i].childNodes;
-			for (var n = 0; n < children.length; n++) {
-        var clName = children[n].className;
-				if (clName  &&  (clName == "widget"  ||  clName == "propertySheet")) {
-        	var rel = children[n].getAttribute("rel");
-					
-					if (rel == null)
-						 continue;
-
-					// fix column width then widget keeps its width
-					// not used currently -> cells[i].style.width = cells[i].offsetWidth;
-
-					var idx = rel.indexOf(";");
-					var intervalSeconds = (idx == -1) ? rel.substring(8) : rel.substring(8, idx);
-					this.setInterval(children[n], intervalSeconds);
-					// make 1st preloading
-					this._onInterval(children[n].id);
+		for (var r = 0; r < dashboardTable.rows.length; r++) {
+			var cells = dashboardTable.rows[r].cells;
+			for (var i = 0; i < cells.length; i++) {
+				var children = cells[i].childNodes;
+				for (var n = 0; n < children.length; n++) {
+					var clName = children[n].className;
+					if (clName && (clName == "widget" || clName == "propertySheet")) {
+						var rel = children[n].getAttribute("rel");
+						
+						if (rel == null) 
+							continue;
+						
+						// fix column width then widget keeps its width
+						// not used currently -> cells[i].style.width = cells[i].offsetWidth;
+						
+						var idx = rel.indexOf(";");
+						var intervalSeconds = (idx == -1) ? rel.substring(8) : rel.substring(8, idx);
+						this.setInterval(children[n], intervalSeconds);
+						// make 1st preloading
+						this._onInterval(children[n].id);
+					}
 				}
 			}
 		}
@@ -12458,7 +12467,7 @@ function pageActivity(e, id, params) {
 
 
 function photoUploadCallback(imgUrl) {
-	//alert(imgUrl);
+	// TODO
 }
 
 //****************************************
@@ -12467,8 +12476,18 @@ function photoUploadCallback(imgUrl) {
 var ImageUpload = {
 		HDN_IFRAME_NAME  : "imageUploadingIframe",
 		callback : null,
+		uploadedUrl : null,
+		img : null, // to preload
 		
-		onsubmit : function(callback) {
+		onsubmit : function(btn, callback) {
+			if (this.img == null ) {
+				this.img = new Image();
+				this.img.onload = this._onImageLoaded;
+			}
+			
+			if (Tooltip)
+    		Tooltip.showCueLoading(null, btn);
+		
 			this.callback = callback;
 			setTimeout(ImageUpload.pollServerResponse, 150);
 		},
@@ -12489,62 +12508,23 @@ var ImageUpload = {
 			var frameBody = frameDoc.body;
 			var location = frameDoc.getElementById("location");
 			var uploadedUrl = location ? location.innerHTML : frameBody.innerHTML;
-			uploadedUrl = decodeURI(uploadedUrl);
+			$t.uploadedUrl = decodeURI(uploadedUrl);
 			
 			// reset hidden frame
 			frame.location.replace("about:blank");
 			
-			this.callback();
-			
-			this.callback = null;
+			$t.img.src = $t.uploadedUrl;
+	},
+	_onImageLoaded : function() {
+		var $t = ImageUpload;
+		$t.callback($t.uploadedUrl);
+		$t.uploadedUrl = null
+		$t.callback = null;
+		if (Tooltip)
+			Tooltip.hideCueLoading();
 	}
 }
 
-/*
-function smartUpload(event, params) {
-  var params1 = decodeURIComponent(params);
-  var ix = params1.indexOf("$form=");
-  ix += 6;
-  var ix2 = params1.indexOf("&", ix);
-  var formName = params1.substring(ix, ix2);
-  ix = params1.indexOf("&prop=");
-  ix += 6;
-  ix2 = params1.indexOf("&", ix);
-  var tableId = params1.substring(ix, ix2) + "_" + formName;
-  var table = document.getElementById(tableId);
-  table.id = params;
-  var form = document.getElementById('uploadProject');
-  form.submit();
-  var idx = form.action.indexOf("?");
-  var fParams = form.action.substring(idx + 1) + FormProcessor.getFormFilters(form, true, null, true);
-  postRequest(null, "mkresource", fParams, table, null, smartUpload1);
-  return stopEventPropagation(event);
-}
 
-function smartUpload1(event, table) {
-  var params = table.id;
-  var params1 = decodeURIComponent(params);
-
-  var ix = params1.indexOf("$form=");
-  var ix2 = params1.indexOf("&", ix);
-  var formName = params1.substring(ix + 6, ix2);
-  ix = params1.indexOf("&prop=");
-  ix += 6;
-  ix2 = params1.indexOf("&", ix);
-  tableId = params1.substring(ix, ix2) + "_" + formName;
-  table.id = tableId;
-  
-  postRequest(null, "smartPopup", params, table, null, smartUploadCallBack);
-  return stopEventPropagation(event);
-}
-
-function smartUploadCallBack(e, table, hotspot, content, url) {
-  if (content && content.length != 0 && content.indexOf("not_found") == -1) {
-//    alert(content);
-    var t = getDomObjectFromHtml(content, "id", table.id);
-    table.innerHTML = t.innerHTML;
-  }
-}
-*/
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
