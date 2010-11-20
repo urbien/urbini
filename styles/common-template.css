@@ -1043,16 +1043,6 @@ div.contentsRL {
 
 .nobr { white-space: nowrap; }
 
-/* dashboard (3column) & widgets */
-#dashboard { background-color: &[BackgroundColor];; }
-#col_1, #col_2, #col_3  { font-size: 12px; }
-#col_1, #col_3 { padding: 0 0.8em; }
-.widget, .place_holder{ margin-top: 0.4em; }
-.place_holder {  background-color: &[BodyBackgroundColor];; display: none; width: 100%; border: 1px dashed #808080; }
-.widgetTitle {vertical-align:top; color: &[SecondaryColorA_3];; font-weight:bold;white-space: nowrap;}
-.widgetIcon {width:16px; height:16px; padding-right:4px; border:0px }
-
-
 .iinp, .iinp_move, .iinp_btn { width:16px; height:16px; border:0px; vertical-align:middle }
 .iinp_move { cursor: move; }
 .iinp_btn { cursor: pointer; }
@@ -1116,10 +1106,6 @@ TD.toolbar {
 }
 
 .menuTitle {
-}
-
-.dashboard {
-  padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:top;
 }
 
 .dashboardLine {
@@ -1190,7 +1176,7 @@ TD.toolbar {
 }
 
 .menuItemIcon img {
-  width: 16px; height: 16px; border: 0px; text-align:center; padding: 0px;
+  width: 16px; height: 16px; border: 0px; text-align:center; padding-left: 3px;
 }
 
 .menuItemChk {
@@ -1971,3 +1957,10 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .rounded_rect_tbl .tags .item img { position:relative; top:3px; cursor: pointer; }
 .rounded_rect_tbl .tags .caret { text-align:left; border: none; outline: 0 none; }
 
+/********** dashboard & widgets *********/
+#dashboard { width: 100%; padding: 0 0.2em; background-color: &[BackgroundColor];; }
+#col_1, #col_2, #col_3, #col_4 { padding: 0 0.3em; }
+.widget, .place_holder{ margin-top: 0.8em; }
+.place_holder {  background-color: &[BodyBackgroundColor];; display: none; width: 100%; border: 1px dashed #808080; }
+.widgetTitle {vertical-align:top; color: &[SecondaryColorA_3];; font-weight:bold;white-space: nowrap;}
+.widgetIcon {width:16px; height:16px; padding-right:4px; border:0px }
