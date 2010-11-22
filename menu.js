@@ -12466,9 +12466,6 @@ function pageActivity(e, id, params) {
 }
 
 
-function photoUploadCallback(imgUrl) {
-	// TODO
-}
 
 //****************************************
 // ImageUpload
@@ -12507,7 +12504,11 @@ var ImageUpload = {
 			var frameDoc = frame.document;
 			var frameBody = frameDoc.body;
 			var location = frameDoc.getElementById("location");
-			var uploadedUrl = location ? location.innerHTML : frameBody.innerHTML;
+			
+			if (!location)
+				return;
+			
+			var uploadedUrl = location.innerHTML; //location ? location.innerHTML : frameBody.innerHTML;
 			$t.uploadedUrl = decodeURI(uploadedUrl);
 			
 			// reset hidden frame
@@ -12515,9 +12516,12 @@ var ImageUpload = {
 			
 			$t.img.src = $t.uploadedUrl;
 	},
+	// expect thumbnail in JPG format!!!
 	_onImageLoaded : function() {
 		var $t = ImageUpload;
-		$t.callback($t.uploadedUrl);
+		var imageName = $t.uploadedUrl.replace(/.+\//, "");
+		var imageThumbnail = $t.uploadedUrl.replace(imageName, "") + "thumbnail/" + imageName + "_thumbnail.jpg";
+		$t.callback($t.uploadedUrl, imageName, imageThumbnail);
 		$t.uploadedUrl = null
 		$t.callback = null;
 		if (Tooltip)
@@ -12525,6 +12529,33 @@ var ImageUpload = {
 	}
 }
 
+// callback on image upload from options panel
+function photoUploadCallback(imgUrl, imgName, thumbnail) {
+	var optDiv = ListBoxesHandler.getCurrentOptionsList();
+	var optTableBody  = getFirstChild(getChildByClassName(optDiv, "rounded_rect_tbl"));
+
+	var newItemRow = document.createElement("tr");
+	newItemRow.className = "menuItemRow";
+	newItemRow.id = getBaseUri() + "sql/www.hudsonfog.com/voc/model/portal/Image?url=" + imgUrl;
+	
+	var td1 = document.createElement("td");
+	td1.innerHTML = "<td class=\"menuItemIcon\">&nbsp;</td>";
+	td1.className="menuItemIcon";
+	newItemRow.appendChild(td1);
+	
+	var td2 = document.createElement("td");
+	td2.className="menuItem";
+	td2.innerHTML = "<td class=\"menuItem\"><img src=\"" + thumbnail + "\">"
+		+ "&nbsp;&nbsp;&nbsp;" + imgName + "</td>";
+	newItemRow.appendChild(td2);
+
+	// assign event handlers for new TR (!)
+	addEvent(newItemRow, 'click', ListBoxesHandler.onOptionsItemClick, false);
+	addEvent(newItemRow, 'mouseover', TouchDlgUtil.highlightRowGreyOnOver, false);
+	addEvent(newItemRow, 'mouseout', TouchDlgUtil.bleachGreyRowOnOut, false);
+
+	optTableBody.appendChild(newItemRow);
+}
 
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
