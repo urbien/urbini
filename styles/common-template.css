@@ -1881,7 +1881,7 @@ td.pBGr { background-color: #eeeeee;
   *margin-bottom: 30px;  
 }
 
-#auto_complete { z-index: 101; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_5];; }
+#auto_complete { z-index: 101; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_4];; }
 #auto_complete .menuItem, #auto_complete .not_found { color: &[MenuLineColorA];; padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_4];; }
 #auto_complete .not_found { border-bottom: none; }
 #auto_complete .grey_highlighting td, #auto_complete .grey_highlighting a {  color: &[SecondaryColorB_3];; }
@@ -1964,3 +1964,8 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .place_holder {  background-color: &[BodyBackgroundColor];; display: none; width: 100%; border: 1px dashed #808080; }
 .widgetTitle {vertical-align:top; color: &[SecondaryColorA_3];; font-weight:bold;white-space: nowrap;}
 .widgetIcon {width:16px; height:16px; padding-right:4px; border:0px }
+
+/* preview in property sheet */
+.text_editor_container #dashboard, .menuItem #dashboard { width: auto; width: 100%; }
+.menuItem #dashboard { float: left; margin: 5px; width: 100px; }
+.text_editor_container #dashboard td, .menuItem #dashboard td { background-color: &[Label];; height:15px; border: 3px solid &[BodyBackgroundColor];; border-radius: 0; -moz-border-radius: 0; -webkit-border-radius:  0; }
