@@ -12460,9 +12460,7 @@ function pageActivity(e, id, params) {
   var table = document.getElementById(id.toLowerCase());
   if (!table)
     return;
-  var div = document.getElementById('div_' + id);
-  
-  postRequest(null, "smartPopup", params, div, null, getActivityCallBack);
+  postRequest(null, "smartPopup", params, table, null, getActivityCallBack);
 }
 
 
@@ -12504,7 +12502,7 @@ var ImageUpload = {
 			var frameDoc = frame.document;
 			var frameBody = frameDoc.body;
 			var location = frameDoc.getElementById("location");
-
+			
 			if (!location)
 				return;
 			
