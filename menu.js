@@ -12504,7 +12504,7 @@ var ImageUpload = {
 			var frameDoc = frame.document;
 			var frameBody = frameDoc.body;
 			var location = frameDoc.getElementById("location");
-			
+
 			if (!location)
 				return;
 			
@@ -12534,6 +12534,10 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
 	var optDiv = ListBoxesHandler.getCurrentOptionsList();
 	var optTableBody  = getFirstChild(getChildByClassName(optDiv, "rounded_rect_tbl"));
 
+	var noChoiceItem = getChildById(optTableBody, "$noValue");
+	if (noChoiceItem)
+		noChoiceItem.parentNode.removeChild(noChoiceItem);
+	
 	var newItemRow = document.createElement("tr");
 	newItemRow.className = "menuItemRow";
 	newItemRow.id = getBaseUri() + "sql/www.hudsonfog.com/voc/model/portal/Image?url=" + imgUrl;
