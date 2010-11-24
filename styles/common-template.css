@@ -1969,3 +1969,5 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .text_editor_container #dashboard, .menuItem #dashboard { width: auto; width: 100%; }
 .menuItem #dashboard { float: left; margin: 5px; width: 100px; }
 .text_editor_container #dashboard td, .menuItem #dashboard td { background-color: &[Label];; height:15px; border: 3px solid &[BodyBackgroundColor];; border-radius: 0; -moz-border-radius: 0; -webkit-border-radius:  0; }
+.layout_1 td, .layout_2 td, .layout_3_1 td, .layout_4_1 td { height: 30px !important; }
+.layout_4_6 td { height: 12px !important; }
