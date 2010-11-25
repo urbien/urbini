@@ -3431,10 +3431,7 @@ var ListBoxesHandler = {
 	    $t.curOptionsListDiv = popupDiv;
 		}
 		// set top offset (margin) to sutisfy current scroll position
-		if (!$t._isEditList) {
-			var topOffset = getScrollXY()[1] - findPosY($t.tray);
-			panel.style.marginTop = (topOffset > 0) ? topOffset : 0;
-		}
+		$t.fitOptionsYPosition(panel);
 		
 		panel.style.display = "inline";
 		popupDiv.style.display = "block";
@@ -3464,6 +3461,31 @@ var ListBoxesHandler = {
 		}
   },
 	
+	// helps to fit options vertically on open and on scroll
+	fitOptionsYPosition : function(panel) {
+		var $t = ListBoxesHandler;
+		
+		if ($t._isEditList) 
+			return;
+
+		var onOpen = true;
+		if (typeof panel != 'object') {
+			panel = $t.getCurrentPanelDiv();
+			onOpen = false;
+		}
+
+		var topOffset = getScrollXY()[1] - findPosY($t.tray);
+		topOffset = (topOffset > 0) ? topOffset : 0;
+		if (onOpen == true)
+			panel.style.marginTop = topOffset;
+		else {
+			var curTop = parseInt(panel.style.marginTop);
+			// scroll up while options opened; (allows 25 offset (?))
+			if (isNaN(curTop) == false && curTop > topOffset + 25)
+				panel.style.marginTop = topOffset;
+		}	
+		
+	},
 	// the following 2 functions try to speed up sliding in FF
 	// they hide invisible parameter-rows under bottom page edge.
 	// require more testing.
@@ -3509,8 +3531,7 @@ var ListBoxesHandler = {
 		var $t = ListBoxesHandler;
 		// set top offset (margin) to sutisfy current scroll position
 		var topOffset = getScrollXY()[1] - findPosY(this.tray);
-		$t.calendarPanel.style.marginTop = (topOffset > 0) ? topOffset : 0 ;
-
+		$t.fitOptionsYPosition($t.calendarPanel);
     $t.calendarPanel.style.display = "inline";
     
     var inputs = $t.getDateInputs(paramTr); //Filter.getPeriodInputs(paramTr);
@@ -5205,6 +5226,9 @@ var TouchDlgUtil = {
 			addEvent(document.body, 'click', this.onBodyClick, false);
 			// helps to handle ESK after click outside a dialog
 			addEvent(window, 'keyup', this.onBodyKeyup, false);
+			// helps to fit options vertically
+			addEvent(window, 'scroll', this.onscroll, false);
+
 			wasOnceInit = true;
 		}
 		
@@ -5342,6 +5366,11 @@ var TouchDlgUtil = {
 
 		$t.isFocusInDialog = true;
 		$t.dlgWasClicked = true;
+	},
+	
+	onscroll : function() {
+		if (ListBoxesHandler.isFormPanelCurrent() == false)
+			setTimeout(ListBoxesHandler.fitOptionsYPosition, 500);
 	},
 
 	isMenuPopupOpened : function() {
@@ -9781,6 +9810,7 @@ var Dashboard = {
       this.initDashboardMap(widgetDiv);
       addEvent(document, "keyup", this.onEsc, false);
     }
+		
     return widgetDiv;
   },
 	
