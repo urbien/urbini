@@ -1844,5 +1844,16 @@ function hex2rgb(hexColor) {
   var blue  = parseInt(hexColor.substring(4,6), 16);
   return [red, green, blue];
 }
+
+// helps with css3 translate compatibility. Meanwhile for WebKit only
+// x & y with % or px
+function css3Translate(obj, x, y) {
+	if (Browser.webkit) {
+  	obj.style.webkitTransform = "translate(" + x + "," + y + ")";
+  	return true;
+	}
+	return false;	
+}
+
 // flag that common.js was parsed
 g_loadedJsFiles["common.js"] = true;
