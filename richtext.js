@@ -1416,6 +1416,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		
 		i_am.openedAtTime = new Date().getTime();
 	}
+	
 	// "closes" an active RTE
 	this.onlosefocus = function(e) {
 		if(!i_am.isAllowedToExecute()) // not source view & not immediate execution
@@ -1433,18 +1434,24 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			// FF: prevents toolbar close on scrolling
 			if (target.nodeName == "HTML") 
 				return;
-			// prevent RTE to get narrow (changeEditTabWidth) on click of toolbar button or option popup item
-			if (getAncestorByClassName(target, ["ctrl_toolbar", "ctrl_toolbar_dlg"]))
+			// prevent: 1) to hide toolbar on dialog movement
+			// 2) RTE to get narrow (changeEditTabWidth) on click of toolbar button or option popup item
+			if (getAncestorByClassName(target, ["header", "ctrl_toolbar", "ctrl_toolbar_dlg"]))
 				return; 
 		}
 		
+		i_am._close();
+	}
+	
+	// hides toolbar and minimizes edit area
+	this._close  = function() {
 		i_am.changeEditTabWidth(false);
-
 		i_am.iframeObj.style.height = i_am.initFrameHeight;
-		if (i_am.toolbar)
-			i_am.iframeObj.style.marginTop = -i_am.toolbar.getHeight() + 5; 
-    if (i_am.toolbar)
-		  i_am.toolbar.hide();
+
+		if (i_am.toolbar) {
+			i_am.iframeObj.style.marginTop = -i_am.toolbar.getHeight() + 5;
+			i_am.toolbar.hide();
+		}
 		
 		i_am.iframeObj.setAttribute("scrolling", "no");   
 	}
@@ -1498,22 +1505,26 @@ function Rte(iframeObj, dataFieldId, rtePref) {
          || (e.shiftKey && e.keyCode == 45)) /* e.DOM_VK_INSERT */ {
      RteEngine.onPasteHandler(i_am.iframeObj.id); 
     }
-
     // FF: ctrl + b - bold (in other browsers it works by default)
-    if(i_am.isNetscape && e.ctrlKey && (e.keyCode == 66)) {
+    else if(i_am.isNetscape && e.ctrlKey && (e.keyCode == 66)) {
   	  i_am.performCommand("bold", null, true);
   	}
   	// FF: ctrl + i - italic
-    if(i_am.isNetscape && e.ctrlKey && (e.keyCode == 73)) {
+    else if(i_am.isNetscape && e.ctrlKey && (e.keyCode == 73)) {
   	  i_am.performCommand("italic", null, true);
   	}
   	// FF: ctrl + u - underline
-    if(i_am.isNetscape && e.ctrlKey && (e.keyCode == 85)) {
+    else if(i_am.isNetscape && e.ctrlKey && (e.keyCode == 85)) {
   	  i_am.performCommand("underline", null, true);
   	}
     // ctrl + t - monospace
-    if(e.ctrlKey && (e.keyCode == 84)) {
+    else if(e.ctrlKey && (e.keyCode == 84)) {
   	  i_am.setMonospace();
+  	}
+		// esc
+		else if(e.keyCode == 27) {
+  	  TouchDlgUtil.closeAllDialogs();
+			i_am._close();
   	}
 	}
 	// prevents default Ctrl+b behaviour in FF.
