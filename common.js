@@ -170,6 +170,7 @@ if (document.attachEvent && !Browser.opera) {
 
 Browser.gecko     = (agent.indexOf("Gecko") != -1 && agent.indexOf("Safari") == -1 && agent.indexOf("Konqueror") == -1) ? true : false;
 Browser.firefox3  = (agent.indexOf("Firefox/3.")) != -1 ? true : false;
+Browser.firefox4  = (agent.indexOf("Firefox/4.")) != -1 ? true : false;
 
 Browser.webkit    = (agent.indexOf("WebKit") != -1) ? true : false;
 Browser.safari    = (agent.indexOf("Safari") != -1) ? true : false;
@@ -335,7 +336,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
       openAjaxStatistics(event, http_request);
       //Boost.view.setProgressIndeterminate(false);
       if (callback)
-        callback(clonedEvent, div, hotspot, http_request.responseText, url);
+			 callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
     else if (status == 302) {
       try {location = http_request.getResponseHeader('Location');} catch(exception) {}
