@@ -3476,16 +3476,17 @@ var ListBoxesHandler = {
 
 		var topOffset = getScrollXY()[1] - findPosY($t.tray);
 		topOffset = (topOffset > 0) ? topOffset : 0;
-		if (onOpen == true)
+		var curTop = parseInt(panel.style.marginTop);
+		
+		if (onOpen == true) 
 			panel.style.marginTop = topOffset;
-		else {
-			var curTop = parseInt(panel.style.marginTop);
-			// scroll up while options opened; (allows 25 offset (?))
-			if (isNaN(curTop) == false && curTop > topOffset + 25)
+		else if (curTop > topOffset + 25) {
+			// scroll up while options opened; (allows 25 offset)
+			if (css3Translate(panel, "0px", (topOffset - curTop) + "px") == false)
 				panel.style.marginTop = topOffset;
 		}	
-		
 	},
+	
 	// the following 2 functions try to speed up sliding in FF
 	// they hide invisible parameter-rows under bottom page edge.
 	// require more testing.
@@ -5369,6 +5370,11 @@ var TouchDlgUtil = {
 	},
 	
 	onscroll : function() {
+		var $t = TouchDlgUtil;
+		
+		if ($t.curDlgDiv == null || $t.isMenuPopupOpened())
+			return;
+		// only for dialogs with opened "secondary" panel	
 		if (ListBoxesHandler.isFormPanelCurrent() == false)
 			setTimeout(ListBoxesHandler.fitOptionsYPosition, 500);
 	},
