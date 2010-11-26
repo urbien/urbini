@@ -446,6 +446,11 @@ var RteEngine = {
 	// ------------------------------------------
 	// onPasteHandler - (entersepts image paste only)
 	onPasteHandler : function(rteId) {
+		
+		// FF4 supports data URL image embedding
+		if (Browser.firefox4)
+			return;
+				
     var rteObj = RteEngine.getRteById(rteId);
     if(rteObj == null)
       return;
@@ -823,8 +828,7 @@ var ImageUploader = {
     if (d)
       frameBody = d;
 
-    uploadedUrl = frameBody.innerHTML;
-    
+    var uploadedUrl = frameBody.innerHTML;
     uploadedUrl = decodeURI( uploadedUrl );
 
 		// reset hidden frame
