@@ -520,7 +520,7 @@ span.light {color:#ffffff}
 input.xxs {font-size: 10px; color: &[Alternative_A];;}
 .text {font-size:0.9em; font-weight:bold;}
 /* FTS category image style */
-.cat  { padding-right: 3px; border: 0; width: 16px; height: 16px;}
+.cat  { padding-right: 3px; border: 0; width: 16px; height: 16px; vertical-align:text-bottom;}
 .cat1 {FONT-WEIGHT: bold;}
 
 tr.fts td { vertical-align: middle; padding: 2px 0px; color: &[Label];; }
@@ -1967,6 +1967,9 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 /********** dashboard & widgets *********/
 #dashboard { width: 100%; padding: 0 0.2em; background-color: &[BackgroundColor];; }
 #col_1, #col_2, #col_3, #col_4 { padding: 0 0.3em; }
+.fts-sift {vertical-align: top;}
+.fts-sift #col_1 td {white-space: nowrap; }
+.fts-sift .param_tr { background-color: &[BodyBackgroundColor];;}
 .widget, .place_holder{ margin-top: 0.8em; }
 .place_holder {  background-color: &[BodyBackgroundColor];; display: none; width: 100%; border: 1px dashed #808080; }
 .widgetTitle {vertical-align:top; color: &[SecondaryColorA_3];; font-weight:bold;white-space: nowrap;}
