@@ -1602,7 +1602,6 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   width: 100%; 
   overflow: hidden;
 }
-.count { white-space: nowrap; font-size: 14px;}
 
 .chosen_values div {
   overflow: hidden;
