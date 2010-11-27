@@ -14,11 +14,11 @@ div#wrapper {
 } 
 
 /* avoid showing with link color */
-H1, H1 A {font-weight: bold; color: &[SecondaryColorB_2];; font-size: 24px; }
-H2, H2 A {font-weight: bold; color: &[SecondaryColorB_2];; font-size: 21px; margin: 0px;}
-H3, H3 A {font-weight: bold; color: &[SecondaryColorB_2];; font-size: 13px; margin: 0px;}
-H4, H4 A {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 12px}
-H5, H5 A {font-weight: bold; color: &[SecondaryColorB_1];; font-size: 10px}
+H1, H1 A {color: &[SecondaryColorB_2];; }
+H2, H2 A {color: &[SecondaryColorB_2];; }
+H3, H3 A {color: &[SecondaryColorB_2];; }
+H4, H4 A {color: &[SecondaryColorB_2];; }
+H5, H5 A {color: &[SecondaryColorB_2];; }
 
 /* RTE font size */
 .lz_xx_small { font-size: 9px; }
@@ -41,7 +41,6 @@ a {
 
 a:hover { color: &[SecondaryColorB_2];; text-decoration: none; cursor: pointer}
 
-/*
 a.external span.textInLink {
   color: &[SecondaryColorB_3];; 
   background: url(../icons/external.png);
@@ -49,7 +48,7 @@ a.external span.textInLink {
   background-repeat: no-repeat;
   padding-right: 12px !important;
 }
-*/
+
 /*
 a.external:link span.textInLink, a.external:visited span.textInLink { color: &[SecondaryColorB_3];; background:transparent url(../icons/external.gif) no-repeat 99% 3px; padding-right:15px; }
 a.external:hover span.textInLink, a.external:active span.textInLink { color: &[SecondaryColorB_3];; background: #fcfcfc url(../icons/external.gif) no-repeat 99% -147px; padding-right:15px; }
@@ -92,10 +91,11 @@ img.fade {
 #user a { color: &[SecondaryColorA_3_brighter];}
 #user span { color: &[SecondaryColorA_3_brighter];; font-weight: bold;}
 
-#dataEntry td { font-size: 0.8em; }
+#dataEntry td { font-size: 1em; }
 #dataEntry table { border-collapse: collapse; }
-#siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; font-size: 0.8em; }
+#siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; font-size: 1em; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
+
 #siteResourceList #front {background-color: &[BackgroundColor];}
 
 #resourceList td.top {height: 0px; }
