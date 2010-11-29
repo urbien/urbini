@@ -3585,14 +3585,17 @@ var ListBoxesHandler = {
 		var target = getEventTarget(e);
 		var tr = getAncestorByTagName(target, "tr");
 				
+		$t.markedAsSelectedAndVerified(e, tr, target);
+		$t.onOptionsItemClickProcess(tr);
+	},
+	
+	markAsSelectedAndVerified : function(e, tr, target) {
 		// call "old" processor of option item click
 		// so, it sets _select and _verified
-		if (!$t.toPutInClassifier) {
-			var popup = Popup.getPopup($t.curOptionsListDiv.id)
+		if (!this.toPutInClassifier) {
+			var popup = Popup.getPopup(this.curOptionsListDiv.id)
 			popup.popupRowOnClick1(e, tr, target);
 		}
-		
-		$t.onOptionsItemClickProcess(tr);
 	},
 		
   onOptionsItemClickProcess : function(tr) {
@@ -5318,14 +5321,16 @@ var TouchDlgUtil = {
 					window.location.assign(a.href);
 				}
 			}
-			else if (!$t.greyTr)
+			else if (!$t.greyTr) 
 				ListBoxesHandler.onOptionsBackBtn();
-			else if (!ListBoxesHandler.isFormPanelCurrent())	
+			else if (!ListBoxesHandler.isFormPanelCurrent()) {
+	  		ListBoxesHandler.markAsSelectedAndVerified(null, $t.greyTr, $t.greyTr);
 				ListBoxesHandler.onOptionsItemClickProcess($t.greyTr);
-			else if (tagName != 'textarea'){
-				$t.submitOnEnter(event);
+		  }
+		  else if (tagName != 'textarea') {
+		  		$t.submitOnEnter(event);
+		  	}
 			}
-		}
 		// 3. esc
 		else if(code == 27) {
 			if ($t.isMenuPopupOpened())
@@ -5914,7 +5919,7 @@ var LinkProcessor = {
 	    return;
 
 	  var anchor = getTargetAnchor(e);
-		
+
 	  if (!anchor)
 	    return;
 	
