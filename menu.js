@@ -5926,7 +5926,11 @@ var LinkProcessor = {
 	  var id = anchor.id;
 	  // with purpose to speed up GUI we handle onmousedown
 	  if (e.type == "click") {
-	    // close popup menu on its item click
+	    
+			if (e.button && e.button == 2)
+				return; // right click
+			
+			// close popup menu on its item click
 	    var popupDiv = getAncestorByAttribute(anchor, "className", "popMenu");
 	    if (popupDiv)
 	      Popup.close0(popupDiv.id)
