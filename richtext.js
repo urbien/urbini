@@ -1136,7 +1136,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(this.rtePref.buttons.image) // image
 			this.imageBtn = toolBar.appendButton(this.onImage, false, RteEngine.IMAGES_FOLDER + "image.png", "image");
 		if(this.rtePref.buttons.object) // object/embed; widget
-			this.objectBtn = toolBar.appendButton(this.onObject, false, "icons/addThirdPartyWidget.png", "embeded object or widget");
+			this.objectBtn = toolBar.appendButton(this.onObject, false, "icons/addThirdPartyWidget.png", "embed object or widget");
 
 		if(this.rtePref.buttons.list) { // list: ordered + unordered
 			toolBar.appendButton(this.onOrderedList, false, RteEngine.IMAGES_FOLDER + "list_num.png", "ordered list");
