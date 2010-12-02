@@ -1418,7 +1418,7 @@ table.printFB {
 
 #register .input { border: 1px solid &[SecondaryColorA_3];; color: &[SecondaryColorB_3];; margin-right: 1em;}
 
-.rte { margin-bottom: 7px; background-color: rgba(255, 255, 255, 0.1); border: 1px solid &[PrimaryColor_1];; padding:0; width: 100%; height: 100px;  }
+.rte { margin-bottom: 7px; background-color: rgba(&[PrimaryColor_1_rgb];, 0.3); border: 2px solid &[PrimaryColor_1];; padding:0; width: 100%; height: 100px;  }
 
 /* like menu_Options in iphone.css */
 #browser_dlg { z-index: 1000; top: 0px; position: absolute; width: 320px; padding: 0px; visibility: hidden; }
@@ -1488,7 +1488,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #siteResourceList .widget .panel_block .containers  td { height: 30px; background-color: &[BackgroundColor];; }
 #siteResourceList .widget .panel_block .embed .containers  td { background-color: transparent; }
 
-#common_filter { width: 50%; min-width: 20em; max-width: 30em; }
+#common_filter { width: 50%; min-width: 20em; max-width: 45em; }
 #fts_filter { width: auto; min-width: 150px;  overflow: visible; }
 #fts_filter .no_border td { border-bottom: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
@@ -1585,7 +1585,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num, .rounded_rect_tbl .tags { 
 	margin: 0px; padding: 1px; min-height: 22px;
-	color: &[Alternative_A];; background: rgba(255, 255, 255, 0.1); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto; font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; }
+	color: &[Alternative_A];; background-color: rgba(&[PrimaryColor_1_rgb];, 0.3); border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto;
+	font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px; }
 
 .rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.1) !important; background: #ffffff; color: &[Color];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; }
 .rounded_rect_tbl .comment { text-align: left; color: &[Alternative_A];; font-size: 11px; }
@@ -1829,7 +1830,7 @@ td.pBGr { background-color: #eeeeee;
 #div_info a { margin-left: 5px; }
 
 /* set left alignment in description TD containing table */
-#div_info table table td { text-align: left; }
+/*#div_info table table td { text-align: left; }*/
 
 .panel_block .no_matches { display: none; color: #f00; font-size: 16px; font-weight:bold; margin-left: 15px; }
 
@@ -1965,12 +1966,12 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 /********** dashboard & widgets *********/
 #dashboard { width: 100%; padding: 0 0.2em; background-color: &[BackgroundColor];; }
-#col_1, #col_2, #col_3, #col_4 { padding: 0 0.3em; }
+#col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
 .fts-sift {vertical-align: top;}
 .fts-sift #col_1 td {white-space: nowrap; }
 .fts-sift .param_tr { background-color: &[BodyBackgroundColor];;}
-.widget, .place_holder{ margin-top: 0.8em; }
-.place_holder {  background-color: &[BodyBackgroundColor];; display: none; width: 100%; border: 1px dashed #808080; }
+.widget, .place_holder{ margin: 0 0 0.8em 0; }
+.place_holder {  background-color: &[BodyBackgroundColor];; display: none; /*width: 100%;*/ border: 1px dashed #808080; }
 .widgetTitle {vertical-align:top; color: &[SecondaryColorA_3];; font-weight:bold;white-space: nowrap;}
 .widgetIcon {width:16px; height:16px; padding-right:4px; border:0px }
 
