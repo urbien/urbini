@@ -3585,7 +3585,7 @@ var ListBoxesHandler = {
 		var target = getEventTarget(e);
 		var tr = getAncestorByTagName(target, "tr");
 				
-		$t.markedAsSelectedAndVerified(e, tr, target);
+		$t.markAsSelectedAndVerified(e, tr, target);
 		$t.onOptionsItemClickProcess(tr);
 	},
 	
