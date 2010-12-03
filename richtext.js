@@ -1405,7 +1405,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		RteEngine.closeAllDisactived(i_am.iframeObj.id);
 		
 		i_am.changeEditTabWidth(true);
-		i_am.fitHeightToVisible(true);
+		i_am.fitHeightToVisible();
 		
 	
 		// make offset for toolbar over the iframe
@@ -1497,7 +1497,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	
 	this._onkeyup = function(e) {
-		i_am.fitHeightToVisible(false);
+		i_am.fitHeightToVisible();
     
 		// FF2 and Opera onpaste
 		e = getDocumentEvent(e);
@@ -1541,14 +1541,14 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   }
   
 	// Note: FF, Crome increases  i_am.document.body.scrollHeight;	on each key down
-	this.fitHeightToVisible = function(onFocus) {
+	this.fitHeightToVisible = function() {
 		// get lastChild, including text node(!)
 		var children = i_am.document.body.childNodes;
 		if (children.length == 0)
 			return;
 		var lastChild = children[children.length - 1];
 
-		if (onFocus || Browser.ie)
+		if (Browser.ie)
 			docH = i_am.document.body.scrollHeight;
 		else
 			docH = lastChild.offsetTop + lastChild.offsetHeight; 
@@ -1581,8 +1581,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		  i_am.iframeObj.style.height = maxHeight;
 		}
 		// 3. middle content size - use increased height
-		else {
-		  if(frmH != docH)
+		else{
+		  if(frmH < docH)
 			  i_am.iframeObj.style.height = docH + 7;
    		i_am.iframeObj.setAttribute("scrolling", "no"); 
 		}
