@@ -9128,8 +9128,10 @@ var DragEngine = {
 		  return;
 
 		// warning: IE sends 2 events
-		if(thisObj.dragHandler && thisObj.dragHandler.onStartDrag)
-		  thisObj.dragHandler.onStartDrag(thisObj.dragBlock);
+		if (thisObj.dragHandler && thisObj.dragHandler.onStartDrag) {
+			var coord = getMouseEventCoordinates(evtobj);
+			thisObj.dragHandler.onStartDrag(thisObj.dragBlock, coord);
+		}
 
 		if (evtobj.preventDefault)
 			evtobj.preventDefault();
@@ -9879,7 +9881,7 @@ var Dashboard = {
         this.freeSpacesMap[i].update();
   },
 
-  onStartDrag : function(dragBlock) {
+  onStartDrag : function(dragBlock, coord) {
     this.dragBlock = dragBlock;
     this.isDragMode = true;
     this.isWidgetMoved = false;
@@ -9888,14 +9890,14 @@ var Dashboard = {
     if(this.placeholderDiv == null)
       this.createPlaceholder();
 
-    var width = dragBlock.offsetWidth;
-    var height = dragBlock.offsetHeight;
+    var width = dragBlock.clientWidth;
+    var height = dragBlock.clientHeight;
 
     var phStyle = this.placeholderDiv.style;
     var dbStyle = dragBlock.style;
 
-//    phStyle.width   = width;
-    phStyle.height  = height;
+  //  phStyle.width   = width - 2;
+    phStyle.height  = height - 2;
     phStyle.display = "block";
 
     var x = findPosX(dragBlock);
@@ -9910,7 +9912,24 @@ var Dashboard = {
     this.prevX = x;
 
     swapNodes(dragBlock, this.placeholderDiv);
+
+		// modify widget appearance on drag
+		var clipWidth = Math.min(width, 200); // 200px max height
+		var offsetX = coord.x - x;
+		var left = offsetX - Math.floor(clipWidth / 2);
+		if (left < 0)
+			left = 0;
+		var right = left + clipWidth;
+		var bottom = Math.min(height, 100); // 100px max height
+		dbStyle.clip = "rect(0px," + right + "px," + bottom +"px," + left + "px)";
+		var tdDragable = getChildByClassName(dragBlock, "dragable");
+		tdDragable.style.paddingLeft = left - 20;
+		var title = getChildByTagName(dragBlock, "tbody");
+		var content = getNextSibling(title);
+			changeOpacity(content, 0.3);
+
   },
+	
   onDrag : function(dragBlock, x, y) {
     if(this.isDragMode == false)
       return;
@@ -10002,12 +10021,22 @@ var Dashboard = {
     }
 
     // 2. move on other place in the current tab
+		
+		// restore widget appearence
+		var tdDragable = getChildByClassName(dragBlock, "dragable");
+		var title = getChildByTagName(dragBlock, "tbody");
+		var content = getNextSibling(title);
+		dragBlock.style.clip = "";
+		tdDragable.style.paddingLeft = "";
+		changeOpacity(content, 1.0);
+		
     // 2.1 check if a widget was moved
     if (this.oldWidgetIdx == this.getWidgetIndex(dragBlock))
       return;
     // 2.2 store changed on server
     var prevWidgetNew = this.getPrevSibling(dragBlock);
     this.onWidgetMovement(e, dragBlock, this.prevWidgetOld, prevWidgetNew);
+
   },
   onMaximizeWidget : function(maxIconObj) {
     widgetDiv = getAncestorByAttribute(maxIconObj, "className", "widget");
@@ -10028,7 +10057,7 @@ var Dashboard = {
 
     this.placeholderDiv.style.display = "none";
     dbStyle.position = "";
-    dbStyle.width = "100%";
+    dbStyle.width = "";//"100%";
     swapNodes(dragBlock, this.placeholderDiv);
     this.updateDashboardMap();
   },
