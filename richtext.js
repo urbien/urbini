@@ -1583,7 +1583,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// 3. middle content size - use increased height
 		else {
 		  if(frmH != docH)
-			  i_am.iframeObj.style.height = docH;
+			  i_am.iframeObj.style.height = docH + 7;
    		i_am.iframeObj.setAttribute("scrolling", "no"); 
 		}
 	}
