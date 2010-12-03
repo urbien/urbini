@@ -2983,7 +2983,6 @@ var ListBoxesHandler = {
 
   // Opens the popup when needed, e.g. on click, on enter, on autocomplete
   listboxOnClick1 : function(e, imgId, enteredText, enterFlag, classValue, arrowTd) {
-		debugger;
 		// cut off "_filter"
     var propName1 = imgId.substring(0, imgId.length - "_filter".length);   
 
