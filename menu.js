@@ -2983,6 +2983,7 @@ var ListBoxesHandler = {
 
   // Opens the popup when needed, e.g. on click, on enter, on autocomplete
   listboxOnClick1 : function(e, imgId, enteredText, enterFlag, classValue, arrowTd) {
+		debugger;
 		// cut off "_filter"
     var propName1 = imgId.substring(0, imgId.length - "_filter".length);   
 
@@ -5619,7 +5620,7 @@ var TouchDlgUtil = {
 
 		var isDone = false;
 		// 1. filter
-		if ($t.curDlgDiv.id == "common_filter")
+		if ($t.curDlgDiv && $t.curDlgDiv.id == "common_filter")
 			isDone = Filter.submitProcess(event);
 		// 2. data entry
 		if(!isDone)
@@ -8678,10 +8679,13 @@ var FieldsWithEmptyValue = {
 			field.className = field.className.replace("empty_field", "focused_field");
 			setCaretPosition(field, 0);
 		}
-		if (delayed)
-			setTimeout(FieldsWithEmptyValue._setFocusDelayed, 200);
-		else
-			field.focus();	
+		if (delayed) 
+		setTimeout(FieldsWithEmptyValue._setFocusDelayed, 200);
+		else {
+			try {
+	  		field.focus();
+	  	} catch (e) {};
+		}	
 			
 		field.style.textAlign = "left";	
 	},
@@ -12447,11 +12451,12 @@ var TagsField = {
     }
 		
     this.onkeyup = function(event){
-			var code = getKeyCode(event);
-			if (code == 188 || code == 13) { // comma or enter => create a new tag-item
-				$t.createItem();
-				stopEventPropagation(event);
-			}
+//			var code = getKeyCode(event);
+//			if (code == 188 || code == 13) { // comma or enter => create a new tag-item
+//				$t.createItem();
+//				stopEventPropagation(event);
+//			}
+			//ListBoxesHandler.listboxOnClick1()
 	  }   
     this.onkeydown = function(event){
 			var code = getKeyCode(event);
