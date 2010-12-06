@@ -12599,7 +12599,7 @@ var ImageUpload = {
 	_onImageLoaded : function() {
 		var $t = ImageUpload;
 		var imageName = $t.uploadedUrl.replace(/.+\//, "");
-		var imageThumbnail = $t.uploadedUrl.replace(imageName, "") + "thumbnail/" + imageName + "_thumbnail.jpg";
+		var imageThumbnail = $t.uploadedUrl.replace(imageName, "") + "thumbnail/" + imageName + "_thumb.jpg";
 		$t.callback($t.uploadedUrl, imageName, imageThumbnail);
 		$t.uploadedUrl = null
 		$t.callback = null;
