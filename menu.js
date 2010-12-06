@@ -5313,6 +5313,9 @@ var TouchDlgUtil = {
 		}
 		// 2. enter
 		else if (code == 13) {
+			// skip enter in file slection dialog
+			if (tagName == "input" && target.type.toLowerCase() == "file")
+				return;
 			// 2.1 set manually entered value
 			//if (target.id == "text_entry")
 			if ($t.isMenuPopupOpened()) {
@@ -5408,7 +5411,7 @@ var TouchDlgUtil = {
 		var $t = TouchDlgUtil;
 		var target = getEventTarget(event);
 		var code = getKeyCode(event);
-		
+
 		if ((code == 39 || code == 37) && target.className != "shrunk_field") // target.getAttribute("readonly") == null
 			return;
 		
