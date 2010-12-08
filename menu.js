@@ -1763,10 +1763,16 @@ var FormProcessor = {
 			formAction = form.elements['-$action'].value;
 		
     var allFields = true;
-    if (formAction != "searchText" && formAction != "searchLocal" && formAction != "searchParallel" && formAction != "mkResource")
+    // forms that require all fields
+		if (formAction != "searchText" && formAction != "searchLocal" && formAction != "searchParallel" && formAction != "mkResource")
       allFields = false;
     else if (currentFormName && currentFormName.indexOf("horizontalFilter") == 0)
       allFields = true;
+
+		// edit resource list: 'searchLocal' and 'submitUpdate' field
+		// commit only changed data
+		if (formAction == "searchLocal" && typeof form.elements['submitUpdate'] != 'undefined')
+			allFields = false;
 
     var params = "submit=y"; // HACK: since target.type return the value of &type
                               // instead of an input field's type property
@@ -1901,28 +1907,30 @@ var FormProcessor = {
       }
       
 			var type  = field.type;
-      
-			// several cases when to skip field even for allFields == true
+      var parentNode  = field.parentNode;
+			
+			// 1. several cases when to skip field even for allFields == true
 			if (!type || !name)
-        continue;
-      
+				continue; 
 			if (type == "submit")
         continue;
-
-      if (!value)
-        continue;
-    
-      if (value == '')
-        continue;
-      
-      if (type == "checkbox" || type == "radio" ) {
+      if (!value) {
+				if (!isXHR) { // remove empty fields in html-form
+					parentNode.removeChild(field);
+					idx--;
+				}
+				continue;
+			}
+        
+			if (type == "checkbox" || type == "radio" ) {
         if (field.checked == false)
           continue;
-        }
+       }
       if (value.indexOf(" --", value.length - 3) != -1)
         continue;
 
-      // allowed to send not all field ---
+
+      // 2. allowed to send not all field ---
       // remove not changed fields (except FrequencyPE case)
       var isFrequencyField = (name.indexOf("frequency_") == 0);
 			if (!allFields && !isFrequencyField) {
@@ -1943,13 +1951,13 @@ var FormProcessor = {
             var select = getChildByTagName(parentTr, 'select');
             if (select != null) {
               if (this.wasFormFieldModified(select))
-                toRemove = false;
+								doRemove = false;
              }
            }
            
            if (doRemove && !isXHR) {
              removedFieldName = name;
-             field.parentNode.removeChild(field);
+             parentNode.removeChild(field);
              idx--;
            }
          }
@@ -1957,7 +1965,7 @@ var FormProcessor = {
          // 2. 'hidden' (with suffixes _select, _verified, _class)
          // 2.1. hidden field containing RTE content
          else if (field.id == "rte_data"  && !isXHR) {
-           field.parentNode.removeChild(field);
+           parentNode.removeChild(field);
            idx--;
          }
 
@@ -1965,7 +1973,7 @@ var FormProcessor = {
          else {
            if (removedFieldName != ""  &&  name.indexOf(removedFieldName) != -1
 					 				 && !isXHR) {
-             field.parentNode.removeChild(field);
+             parentNode.removeChild(field);
              idx--;
            }
            else
@@ -2009,6 +2017,7 @@ var FormProcessor = {
 
   _storeInitialValues : function(form) {
     var initialValues = new Array();
+
     for (var j = 0; j < form.elements.length; j++) {
       var elem = form.elements[j];
       
@@ -2021,6 +2030,7 @@ var FormProcessor = {
       
       initialValues[elem.name] = elem.value;
     }
+		
     this.formInitialValues[form.name] = initialValues;
   },
   /*
@@ -3617,7 +3627,7 @@ var ListBoxesHandler = {
     var checkBox = chkCell.getElementsByTagName("input")[0];
     var vIcon = chkCell.getElementsByTagName("img")[0];
 		
-		// no checkbox - no single selection (data entry, rollup)
+		// no checkbox - single selection (data entry, rollup)
 		if (!checkBox) {
 			if (!vIcon) {
 		  	$t.onOptionsSelectionFinish(tr);
@@ -3637,12 +3647,10 @@ var ListBoxesHandler = {
 		// multiple selection (filter)
     if (checkBox.checked) {
       checkBox.checked = false;
-    //  checkBox.removeAttribute("checked");
       vIcon.style.visibility = "hidden";
     }
     else {
       checkBox.checked = true;
-    //  checkBox.setAttribute("checked", "true");
       vIcon.style.visibility = "visible";
     }
     // close options on timeout
