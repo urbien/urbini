@@ -1909,27 +1909,27 @@ var FormProcessor = {
 			var type  = field.type;
       var parentNode  = field.parentNode;
 			
-			// 1. several cases when to skip field even for allFields == true
-			if (!type || !name)
+			// 1. several cases when to skip fields with allFields == true.
+			// effective with XHR only.
+			// (current UI rule: mkResource is XHR; propPatch is html-form)			if (!type || !name)
 				continue; 
 			if (type == "submit")
         continue;
-      if (!value) {
-				if (!isXHR) { // remove empty fields in html-form
-					parentNode.removeChild(field);
-					idx--;
-				}
-				continue;
-			}
         
 			if (type == "checkbox" || type == "radio" ) {
         if (field.checked == false)
           continue;
-       }
+      }
+
+			// remove empty values in mkResource that requires allFields (propPatch only changed values)
+      if (allFields && value.length == 0)
+				continue;
+			
       if (value.indexOf(" --", value.length - 3) != -1)
         continue;
-
-
+			if (value == "- All -")
+        continue;
+			
       // 2. allowed to send not all field ---
       // remove not changed fields (except FrequencyPE case)
       var isFrequencyField = (name.indexOf("frequency_") == 0);
