@@ -1911,7 +1911,8 @@ var FormProcessor = {
 			
 			// 1. several cases when to skip fields with allFields == true.
 			// effective with XHR only.
-			// (current UI rule: mkResource is XHR; propPatch is html-form)			if (!type || !name)
+			// (current UI rule: mkResource is XHR; propPatch is html-form)
+			if (!type || !name)
 				continue; 
 			if (type == "submit")
         continue;
