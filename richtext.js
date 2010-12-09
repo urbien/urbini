@@ -1194,17 +1194,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
       base.setAttribute('href', getBaseUri());
       head.appendChild(base);
 	   
+		 	this.document.body.className = "rte_body";
 			this.document.body.innerHTML = text;
-			this.document.body.style.fontFamily = "Helvetica, arial";
-			this.document.body.style.fontSize = "16px";
-			this.document.body.style.margin = 5;
 	  }
 	  else {
 		  var frameHtml = "<html>\n";
 		  frameHtml += "<head>";
 			frameHtml += "<base href=\"" + getBaseUri() + "\" />";
 		  frameHtml += "</head>";
-		  frameHtml += "<body style=\"font-family:Helvetica,arial; font-size:16px; margin: 5px;\">";
+		  frameHtml += "<body class=\"rte_body\">";
 		  frameHtml += text + "";
 		  frameHtml += "</body>";
 		  frameHtml += "</html>";
