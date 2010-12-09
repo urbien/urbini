@@ -1419,6 +1419,7 @@ table.printFB {
 #register .input { border: 1px solid &[SecondaryColorA_3];; color: &[SecondaryColorB_3];; margin-right: 1em;}
 
 .rte { margin-bottom: 7px; background-color: rgba(&[PrimaryColor_1_rgb];, 0.3); border: 2px solid &[PrimaryColor_1];; padding:0; width: 100%; height: 107px;  }
+.rte_body { color: &[Alternative_A];; font-family :Helvetica, arial; fontSize : 16px; margin:5; }
 
 /* like menu_Options in iphone.css */
 #browser_dlg { z-index: 1000; top: 0px; position: absolute; width: 320px; padding: 0px; visibility: hidden; }
@@ -1575,7 +1576,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .data_td table { width: 100%; }
 .rounded_rect_tbl .data_td .input_td { width: 100%; text-align:right; padding: 0px 3px; color: &[PrimaryColor_4_text];;}
 
-.rounded_rect_tbl a {color: &[Alternative_A];}
+.rounded_rect_tbl a { color: &[PrimaryColor_4_text];; }
 
 /*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty { padding-right: 4px; min-width: 10px; font-size: 18px !important; font-weight: bold; text-align:center;}
 
@@ -1583,10 +1584,14 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 
-.rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num, .rounded_rect_tbl .tags { 
+.rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { 
 	margin: 0px; padding: 1px; min-height: 22px;
 	color: &[Alternative_A];; background-color: rgba(&[PrimaryColor_1_rgb];, 0.3); border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto;
 	font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px; }
+
+.grey_highlighting .input, .grey_highlighting .isel,  .grey_highlighting .num { color: &[Alternative_A];; }
+
+.rounded_rect_tbl .pointer { color: &[PrimaryColor_4_text];; }
 
 .rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.1) !important; background: #ffffff; color: &[Color];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; }
 .rounded_rect_tbl .comment { text-align: left; color: &[Alternative_A];; font-size: 11px; }
@@ -1611,6 +1616,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   font-size: 15px; 
   font-weight: 600;
 }
+.grey_highlighting .chosen_values div { color: &[Alternative_A];;  }
 
 .rounded_rect_tbl td, #siteResourceList .rounded_rect_tbl td { height: 40px; vertical-align: middle; }
 .rounded_rect_tbl td { border-bottom: solid &[PrimaryColor_1]; 1px; }
@@ -1928,7 +1934,7 @@ tr.grey_highlighting > td, * html tr.grey_highlighting td, .ctrl_toolbar_dlg .gr
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=&[PrimaryColor_4];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=&[PrimaryColor_4];)";
 }
-.rounded_rect_tbl .grey_highlighting .label, .rounded_rect_tbl .grey_highlighting .propLabel1 { color: &[Label];; }
+.rounded_rect_tbl .grey_highlighting .label, .rounded_rect_tbl .grey_highlighting .propLabel1, .rounded_rect_tbl .grey_highlighting a { color: &[Label];; }
 
 tr.blue_highlighting > td, * html tr.blue_highlighting td {
 	color: &[Label];;
@@ -1958,7 +1964,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .shrunk_field { position: fixed; font-size: 1px; width: 1px; border-width: 0; background: transparent; }
 
 /* like "TO" field in message */
-.rounded_rect_tbl .tags { height: 100px; margin-bottom:7px; }
+.rounded_rect_tbl .tags { width: auto; height: 35px; margin-bottom: 7px; }
 .rounded_rect_tbl .tags div { float: left; margin: 5px; height: 20px; line-height:20px; }
 .rounded_rect_tbl .tags .item { font-size: 14px; line-height:20px; padding: 2px 2px 2px 4px; }
 .rounded_rect_tbl .tags .item img { position:relative; top:3px; cursor: pointer; }
