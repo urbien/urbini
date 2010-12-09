@@ -3304,9 +3304,9 @@ var ListBoxesHandler = {
  //   if(getAncestorByClassName(target, "rollup_td") != null)
  //     return;
 
-		var isClassifier = this.isClassifier(tr);
+		var isClassifierNow = this.isClassifierNow(tr);
     var arrowTd = getChildByClassName(tr, "arrow_td");
-    if (!arrowTd && !isClassifier)
+    if (!arrowTd && !isClassifierNow)
       return false; // no options for this item 
 
     var input = getChildByClassName(tr, "input");
@@ -3332,9 +3332,9 @@ var ListBoxesHandler = {
 		}
 		// 2. options list
 		else {
-			// 2.1 specific for "classifier" options list
+			// specific for "classifier" options list
 			if (optionsSelectorStr == "classifier") {
-				var input = tr.getElementsByTagName("input")[0];
+				//var input = tr.getElementsByTagName("input")[0];
 				//////// use class selection step only if no previously assigned resource value
 				//if (input.value.length == 0) {
 					if (this.classifierPanel == null)
@@ -3344,9 +3344,14 @@ var ListBoxesHandler = {
 					this.toPutInClassifier = true;
 			}
 			
+			// specific for "multi_value" options list
+			if (optionsSelectorStr == "multi_value") {
+				input = tr.getElementsByTagName("input")[0];
+		  }
+			
 			// set name of text enry of current input field
 			// numeric selector should be initialized with previously manually entered value
-			if (this.textEntry && !isClassifier) {
+			if (this.textEntry && !isClassifierNow) {
 		  	this.textEntry.name = input.name;
 				if (tr.getAttribute("is_numeric") != null)
 					FieldsWithEmptyValue.setValue(this.textEntry, input.value);
@@ -3354,7 +3359,7 @@ var ListBoxesHandler = {
 			
 			var str = "";
 			var classValue = null;
-			if (isClassifier) { // 2.1 Classifier
+			if (isClassifierNow) { // 2.1 Classifier
 				var paramsTable = getAncestorByClassName(tr, "rounded_rect_tbl");
 				str = paramsTable.id.substr("table_".length) + "_filter";
 				classValue = tr.id;
@@ -3363,7 +3368,8 @@ var ListBoxesHandler = {
 				str = target.parentNode.id;
 			}
 			else // 2.3 options list
-				str = input.name + "_" + input.id + "_filter";
+				//str = input.name + "_" + input.id + "_filter";
+				str = input.name + "_" + input.form.name + "_filter";
 			
 			// show options list
 			this.listboxOnClick1(e, str, null, null, classValue, arrowTd);
@@ -3612,7 +3618,7 @@ var ListBoxesHandler = {
   onOptionsItemClickProcess : function(tr) {
 	  var $t = ListBoxesHandler;
 
-		if ($t.isClassifier(tr)) {
+		if ($t.isClassifierNow(tr)) {
 			$t.onClassifierItemClick(null, tr);
 			return;
 		}
@@ -4028,7 +4034,7 @@ var ListBoxesHandler = {
 		$t.localOptionsFilter(typedText, $t.curClassesPopupDiv);
 	},
 	
-	isClassifier : function(child) {
+	isClassifierNow : function(child) {
 		return getAncestorByClassName(child, "classifier_panel") != null;
   },
 	
