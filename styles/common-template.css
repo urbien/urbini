@@ -1589,9 +1589,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	color: &[Alternative_A];; background-color: rgba(&[PrimaryColor_1_rgb];, 0.3); border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto;
 	font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px; }
 
-.grey_highlighting .input, .grey_highlighting .isel,  .grey_highlighting .num { color: &[Alternative_A];; }
-
 .rounded_rect_tbl .pointer { color: &[PrimaryColor_4_text];; }
+.rounded_rect_tbl .grey_highlighting .pointer, .rounded_rect_tbl .blue_highlighting .pointer { color: &[Alternative_A];; }
 
 .rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.1) !important; background: #ffffff; color: &[Color];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; }
 .rounded_rect_tbl .comment { text-align: left; color: &[Alternative_A];; font-size: 11px; }
@@ -1894,10 +1893,9 @@ td.pBGr { background-color: #eeeeee;
   *margin-bottom: 30px;  
 }
 
-#auto_complete { z-index: 101; position: absolute; cursor: pointer; overflow: visible; background-color:&[SecondaryColorA_4];; }
-#auto_complete .menuItem, #auto_complete .not_found { color: &[MenuLineColorA];; padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_4];; }
+#auto_complete { z-index: 101; position: absolute; cursor: pointer; overflow: visible; background-color:&[PrimaryColor_4];; }
+#auto_complete .menuItem, #auto_complete .not_found { color: &[PrimaryColor_4_text];; padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_1];; }
 #auto_complete .not_found { border-bottom: none; }
-#auto_complete .grey_highlighting td, #auto_complete .grey_highlighting a {  color: &[SecondaryColorB_3];; }
 #auto_complete tr:last-child td { border-bottom: none; }
 #auto_complete .menuItem div { float: left; line-height: 45px; margin-right: 5px; }
 #auto_complete .menuItem table { float: right; }
@@ -1934,15 +1932,16 @@ tr.grey_highlighting > td, * html tr.grey_highlighting td, .ctrl_toolbar_dlg .gr
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=&[PrimaryColor_4];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#77&[PrimaryColor_1_ie];,endColorstr=&[PrimaryColor_4];)";
 }
-.rounded_rect_tbl .grey_highlighting .label, .rounded_rect_tbl .grey_highlighting .propLabel1, .rounded_rect_tbl .grey_highlighting a { color: &[Label];; }
+.rounded_rect_tbl .grey_highlighting .label, .rounded_rect_tbl .grey_highlighting .propLabel1, .rounded_rect_tbl .grey_highlighting a, #auto_complete .grey_highlighting td, #auto_complete .grey_highlighting a { color: &[Label];; }
+.rounded_rect_tbl .blue_highlighting .label, .rounded_rect_tbl .blue_highlighting .propLabel1, .rounded_rect_tbl .blue_highlighting a, #auto_complete .blue_highlighting td, #auto_complete .blue_highlighting a { color: &[Label];; }
 
 tr.blue_highlighting > td, * html tr.blue_highlighting td {
 	color: &[Label];;
-	background-color: &[SecondaryColorA_4];;
-  background-image: -moz-linear-gradient(top center, &[SecondaryColorA_1];, &[SecondaryColorA_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[SecondaryColorA_1];), to(&[SecondaryColorA_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[SecondaryColorA_1];,endColorstr=&[SecondaryColorA_4];);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[SecondaryColorA_1];,endColorstr=&[SecondaryColorA_4];)";
+	background-color: rgba(&[SecondaryColorA_4_rgb];, 0.2);
+  background-image: -moz-linear-gradient(top center, rgba(&[SecondaryColorA_1_rgb];, 0.7), rgba(&[SecondaryColorA_4_rgb];,0.2));
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[SecondaryColorA_1_rgb];, 0.7)), to(rgba(&[SecondaryColorA_4_rgb];, 0.2)));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#B2&[SecondaryColorA_1_ie];,endColorstr=#33&[SecondaryColorA_4_ie];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#B2&[SecondaryColorA_1_ie];,endColorstr=#33&[SecondaryColorA_4_ie];)";
 }
 
 * html tr.grey_highlighting table td, * html tr.blue_highlighting table td  {
@@ -1954,8 +1953,8 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 .rounded_rect_tbl .blue_highlighting .label.rounded_rect_tbl .blue_highlighting .propLabel1, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[Label];; }
 
-.rounded_rect_tbl .empty_field, .iphone_field .empty_field, .empty_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.7);}
-.rounded_rect_tbl .focused_field, .iphone_field .focused_field, .focused_field { color: rgba(&[SecondaryColorA_3_rgb];, 0.4); }
+.rounded_rect_tbl .empty_field, .iphone_field .empty_field, .empty_field { color: rgba(&[SecondaryColorA_4_rgb];, 0.7);}
+.rounded_rect_tbl .focused_field, .iphone_field .focused_field, .focused_field { color: rgba(&[SecondaryColorA_4_rgb];, 0.4); }
 
 .widget .dragable h2 { margin-bottom: 0px; font-size: 17px; } 
 .widget .containers h2 { margin: 5px 0px 0px 0px; }
