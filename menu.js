@@ -3599,8 +3599,9 @@ var ListBoxesHandler = {
 		var $t = ListBoxesHandler;
 		e = getDocumentEvent(e);
 		var target = getEventTarget(e);
-		var tr = getAncestorByTagName(target, "tr");
-				
+		var tr = getAncestorByClassName(target, ["menuItemRow", "option_tr"]);
+		if (!tr)
+			tr = getAncestorByTagName(target, "tr");		
 		$t.markAsSelectedAndVerified(e, tr, target);
 		$t.onOptionsItemClickProcess(tr);
 	},
