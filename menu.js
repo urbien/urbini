@@ -3336,10 +3336,9 @@ var ListBoxesHandler = {
 			if (optionsSelectorStr == "classifier") {
 				//var input = tr.getElementsByTagName("input")[0];
 				//////// use class selection step only if no previously assigned resource value
-				//if (input.value.length == 0) {
-					if (this.classifierPanel == null)
+//				if (input.value.length == 0) {
+					if (this.classifierPanel == null) 
 						this.createClassifierPanel(this.tray);
-
 					this.classifierPanel.style.display = "inline";
 					this.toPutInClassifier = true;
 			}
@@ -3370,7 +3369,7 @@ var ListBoxesHandler = {
 			else // 2.3 options list
 				//str = input.name + "_" + input.id + "_filter";
 				str = input.name + "_" + input.form.name + "_filter";
-			
+
 			// show options list
 			this.listboxOnClick1(e, str, null, null, classValue, arrowTd);
 		}
@@ -12536,11 +12535,11 @@ var TagsField = {
 }
 
 function getActivity(e, uri) {
-  var table = document.getElementById("activity");
-  if (table)
-    return;
+	var div = document.getElementById('div_Activity');
+  var tables = div.getElementsByTagName("table");
+  if (tables.length != 0)
+    return; // content table was already downloaded and inserted
   var params = "bUri=" + encodeURIComponent(uri) + "&-activity=y";
-  var div = document.getElementById('div_Activity');
   postRequest(null, "smartPopup", params, div, null, getActivityCallBack);
 }
 
