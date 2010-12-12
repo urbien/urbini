@@ -1975,7 +1975,9 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .fts-sift {vertical-align: top;}
 .fts-sift #col_1 td {white-space: nowrap; }
 .fts-sift .param_tr { background-color: &[BodyBackgroundColor];;}
-.widget, .place_holder{ margin: 0 0 0.8em 0; }
+/*.widget, .place_holder{ margin: 0 0 0.8em 0; }*/
+.ph{ margin: 0 0 0.8em 0; }
+.place_holder{ margin: 0 0 0.8em 0; }
 .place_holder {  background-color: &[BodyBackgroundColor];; display: none; /*width: 100%;*/ border: 1px dashed #808080; }
 .widgetTitle {vertical-align:top; color: &[SecondaryColorA_3];; font-weight:bold;white-space: nowrap;}
 .widgetIcon {width:16px; height:16px; padding-right:4px; border:0px }
