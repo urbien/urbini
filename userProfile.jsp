@@ -1,3 +1,3 @@
 <div align="right" class="toprightpad" id="user">
-  <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
+  <changePassword/>&#160;<userLogOff html="user-login.html"/>&#160;<registerNewUser/>
 </div>
