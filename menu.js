@@ -9181,10 +9181,13 @@ var DragEngine = {
 
 		var allowToMove; // 2D array
 		if(thisObj.dragBlock && thisObj.dragHandler && thisObj.dragHandler.onDrag) {
-		    if(thisObj.dragBlock.style.position == 'absolute')
-  		    allowToMove = thisObj.dragHandler.onDrag(thisObj.dragBlock, x, y);
-		    else
-  	      allowToMove = thisObj.dragHandler.onDrag(thisObj.dragBlock, evtobj.clientX, evtobj.clientY);
+	    if (thisObj.dragBlock.style.position == 'absolute') {
+				// note: may be getMouseEventCoordinates gan be used inside this D&D engine (?)
+				var pos = getMouseEventCoordinates(evtobj)
+	  		allowToMove = thisObj.dragHandler.onDrag(thisObj.dragBlock, pos.x, pos.y);
+	  }
+	  else 
+	  	allowToMove = thisObj.dragHandler.onDrag(thisObj.dragBlock, evtobj.clientX, evtobj.clientY);
   	}
 
 		if(thisObj.dragapproved == 1){
@@ -9854,36 +9857,54 @@ var Dashboard = {
 	
   initDashboardMap : function(theWidget) {
     var dashboard = getAncestorById(theWidget, this.DASHBOARD_ID);
-    // 1. widgets
-    var divs = dashboard.getElementsByTagName("div");
-    this.widgetsMap = new Array();
-    for(var i = 0; i < divs.length; i++) {
-      if(divs[i].className == "widget") {
-        var widgetRect = new Dashboard.WidgetRect(divs[i]);
-        this.widgetsMap.push(widgetRect);
-      }
-    }
 
-    // 2. free spaces
-    this.freeSpacesMap = new Array();
-		for (var n = 0; n < dashboard.rows.length; n++) {
-			var cols = dashboard.rows[n].cells;
-			for (var i = 0; i < cols.length; i++) {
-				var freeSpaceRect = new Dashboard.FreeSpaceRect(cols[i], this.widgetsMap);
-				this.freeSpacesMap.push(freeSpaceRect);
-				// set min column width on case if the column has no widgets.
-				if (typeof cols[i].style.minWidth != 'undefined') {
-					cols[i].style.minWidth = this.MIN_COLUMN_DIM;
-					cols[i].style.minHeight = this.MIN_COLUMN_DIM;
-				}
-				else {
-					cols[i].style.width = this.MIN_COLUMN_DIM;
-					cols[i].style.height = this.MIN_COLUMN_DIM;
+		var dashboardTables;
+		if (dashboard.tagName.toLowerCase() == "table") {
+			dashboardTables = new Array();
+			dashboardTables.push(dashboard);
+		}
+		else 
+			dashboardTables = dashboard.getElementsByTagName("table")
+		
+		this.widgetsMap = new Array();
+		this.freeSpacesMap = new Array();
+		
+		for (var t = 0; t < dashboardTables.length; t++) {
+			for (var r = 0; r < dashboardTables[t].rows.length; r++) {
+				var cells = dashboardTables[t].rows[r].cells;
+				for (var i = 0; i < cells.length; i++) {
+					if (cells[i].id.indexOf("col_") == -1) 
+						continue;
+	
+					// 1. widgets
+					var children = cells[i].childNodes;
+					for (var w = 0; w < children.length; w++) {
+						if (children[w].className && children[w].className == "widget") {
+							var widgetRect = new Dashboard.WidgetRect(children[w]);
+							this.widgetsMap.push(widgetRect);
+						}
+					}
+					
+					// 2. free spaces
+					var freeSpaceRect = new Dashboard.FreeSpaceRect(cells[i], this.widgetsMap);
+					this.freeSpacesMap.push(freeSpaceRect);
+					// set min column width on case if the column has no widgets.
+					if (typeof cells[i].style.minWidth != 'undefined') {
+						cells[i].style.minWidth = this.MIN_COLUMN_DIM;
+						cells[i].style.minHeight = this.MIN_COLUMN_DIM;
+					}
+					else {
+						cells[i].style.width = this.MIN_COLUMN_DIM;
+						cells[i].style.height = this.MIN_COLUMN_DIM;
+					}
+					
 				}
 			}
 		}
+		
     // 3. tab "Header"
-    // suppose that position of tab header is constant
+  	//TODO: need to redo it after new Touch UI  !!!
+		// suppose that position of tab header is constant
     this.tabHeadersMap = new Array();
     var tables = document.body.getElementsByTagName('table');
     for(var i = 0; i < tables.length; i++) {
@@ -9892,6 +9913,7 @@ var Dashboard = {
         this.tabHeadersMap.push(tabHeader);
       }
     }
+   
   },
   updateDashboardMap : function() {
     // 1. widgets
@@ -9957,8 +9979,8 @@ var Dashboard = {
 
     // 1. preparing
     // 1.1 "cross-hair" point
-    var chX = x + Math.ceil(dragBlock.offsetWidth / 2);
-    var chY = y + 15;
+    var chX = x; // + Math.ceil(dragBlock.offsetWidth / 2);
+    var chY = y; // + 15;
 
     // 1.2
     this.isDirUp = this.detectDirection(y);
@@ -10697,30 +10719,43 @@ var WidgetRefresher = {
 		if (typeof dashboardId == 'undefined')
 			dashboardId = "dashboard";
 
-		var dashboardTable = document.getElementById(dashboardId);
-		if (!dashboardTable)
+		var dashboard = document.getElementById(dashboardId);
+		if (!dashboard)
 			return;
-
-		for (var r = 0; r < dashboardTable.rows.length; r++) {
-			var cells = dashboardTable.rows[r].cells;
-			for (var i = 0; i < cells.length; i++) {
-				var children = cells[i].childNodes;
-				for (var n = 0; n < children.length; n++) {
-					var clName = children[n].className;
-					if (clName && (clName == "widget" || clName == "propertySheet")) {
-						var rel = children[n].getAttribute("rel");
-						
-						if (rel == null) 
-							continue;
-						
-						// fix column width then widget keeps its width
-						// not used currently -> cells[i].style.width = cells[i].offsetWidth;
-						
-						var idx = rel.indexOf(";");
-						var intervalSeconds = (idx == -1) ? rel.substring(8) : rel.substring(8, idx);
-						this.setInterval(children[n], intervalSeconds);
-						// make 1st preloading
-						this._onInterval(children[n].id);
+	
+		var dashboardTables;
+		if (dashboard.tagName.toLowerCase() == "table") {
+			dashboardTables = new Array();
+			dashboardTables.push(dashboard);
+		}
+		else 
+			dashboardTables = dashboard.getElementsByTagName("table")
+		
+		for (var t = 0; t < dashboardTables.length; t++) {
+			var dashboardTable = dashboardTables[t];
+			for (var r = 0; r < dashboardTable.rows.length; r++) {
+				var cells = dashboardTable.rows[r].cells;
+				for (var i = 0; i < cells.length; i++) {
+					if (cells[i].id.indexOf("col_") == -1)
+						continue;
+					var children = cells[i].childNodes;
+					for (var n = 0; n < children.length; n++) {
+						var clName = children[n].className;
+						if (clName && (clName == "widget" || clName == "propertySheet")) {
+							var rel = children[n].getAttribute("rel");
+							
+							if (rel == null) 
+								continue;
+							
+							// fix column width then widget keeps its width
+							// not used currently -> cells[i].style.width = cells[i].offsetWidth;
+							
+							var idx = rel.indexOf(";");
+							var intervalSeconds = (idx == -1) ? rel.substring(8) : rel.substring(8, idx);
+							this.setInterval(children[n], intervalSeconds);
+							// make 1st preloading
+							this._onInterval(children[n].id);
+						}
 					}
 				}
 			}
