@@ -3345,7 +3345,11 @@ var ListBoxesHandler = {
 			
 			// specific for "multi_value" options list
 			if (optionsSelectorStr == "multi_value") {
-				input = tr.getElementsByTagName("input")[0];
+				//input = tr.getElementsByTagName("input")[0];
+				var params = arrowTd.getAttribute("req");
+				var url = getBaseUri() + "smartPopup"
+				postRequest(e, url, params, document.body /*curOptionsListDiv*/, arrowTd, this.onListLoaded)
+				return;
 		  }
 			
 			// set name of text enry of current input field
@@ -3431,6 +3435,7 @@ var ListBoxesHandler = {
 			$t.panelBlock.style.left = x;
 			$t.panelBlock.style.top = y;
 			$t.panelBlock.style.visibility = "visible";
+
 		}
   },
 
@@ -3911,13 +3916,13 @@ var ListBoxesHandler = {
   },
 
   onBackBtn : function() {
-    var tray = getAncestorByClassName(this.optionsPanel, "tray");
+    var tray = this.tray; //getAncestorByClassName(this.optionsPanel, "tray");
     if (tray == null)
       var tray = getAncestorByClassName(this.calendarPanel, "tray");
 
 		if (tray == null)
 			return false;
-			
+
 		if (SlideSwaper.getTrayPosition(tray) == 0)
 			return false;
 		
@@ -4128,8 +4133,8 @@ var SlideSwaper = {
   moveBack : function(tray, callback) {
 	 	if (this.offset != 0)
       return;
-      
-		var trayPosition = this.getTrayPosition(tray);
+ 
+ 		var trayPosition = this.getTrayPosition(tray);
 		if (trayPosition == 0)
 			return;
 
@@ -4161,7 +4166,7 @@ var SlideSwaper = {
       dir = -1;
     else
       dir = 1;
-      
+
     bPoint = Math.bezierPoint($t.BEZIER_POINTS, $t.offset);
     $t.offset += 1.0 / $t.STEPS_AMT;
 		
@@ -8711,7 +8716,9 @@ var FieldsWithEmptyValue = {
 		var $t = FieldsWithEmptyValue;
 		if (!$t.fieldForDelayedAction)
 			return;
-		$t.fieldForDelayedAction.focus();
+		try {
+			$t.fieldForDelayedAction.focus();
+		} catch(e) {}
 		$t.fieldForDelayedAction = null;
 	},
 	
@@ -12469,7 +12476,7 @@ function displayInFull(e) {
 var TagsField = {
   fieldsProcArr : new Array(),
   
-  initField : function(field) {
+  initField : function(field, paramsList) {
 		field.onmousedown = ""; // init on 1st mousedown only
     var fieldProc = new this.fieldProcessor(field);
     fieldProc.caretInp.focus(); 
