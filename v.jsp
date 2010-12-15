@@ -39,13 +39,11 @@
           	    <td align="middle" colspan="3"><download/></td>
           	  </tr>
         <hideBlock id="hideBlock1">
-          		<tr>
+          		<tr class="layout_footer">
         		  <td>
                 <div align="right"><measurement/></div>
-                <br/>
                 <newComment/>
                 <chatHistory/>
-                <br/>
               </td>
               </tr>
         </hideBlock>
