@@ -12586,12 +12586,12 @@ function getActivity(e, uri) {
   postRequest(null, "smartPopup", params, div, null, getActivityCallBack);
 }
 
-function getActivityCallBack(e, div, hotspot, content, url) {
+function getActivityCallBack(e, elm, hotspot, content, url) {
   if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
-    div.style.display = "none";
+    elm.style.display = "none";
   else
-    div.innerHTML = content;
-  div.className = "";
+    elm.innerHTML = content;
+  elm.className = "";
 }
 
 function pageActivity(e, id, params) {
