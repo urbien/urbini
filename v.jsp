@@ -39,7 +39,7 @@
           	    <td align="middle" colspan="3"><download/></td>
           	  </tr>
         <hideBlock id="hideBlock1">
-          		<tr class="layout_footer">
+          		<tr class="v_footer">
         		  <td>
                 <div align="right"><measurement/></div>
                 <newComment/>
