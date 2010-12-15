@@ -1117,6 +1117,15 @@ TD.toolbar {
   background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_4_rgb];,0.8), rgba(&[PrimaryColor_4_rgb];,0.1));
   */
 }
+.accent {font-size: 25px}
+.aLetters {color: &[ToolbarColor];;}
+
+.layout_content { 
+  border:solid &[ToolbarColor]; 1px; 
+  background-color: #ffffff; 
+  padding: 0 0 5px 5px; 
+  align: center; text-align:left; max-width:930px; margin:0 auto; width: expression(document.body.clientWidth > 932? '930px' : 'auto');
+}
 
 .dashboardLine, tr.rlHeader {
   background-color: &[PrimaryColor_4];;
@@ -1970,8 +1979,11 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .rounded_rect_tbl .tags .caret { text-align:left; border: none; outline: 0 none; }
 
 /********** dashboard & widgets *********/
-#dashboard, #dashboard > table { width: 100%; padding: 0 0.2em; background-color: &[BackgroundColor];; }
+#dashboard, #dashboard > table { background-color: &[BackgroundColor];; }
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
+
+.layout_footer { background-color: &[BodyBackgroundColor];; }
+
 .fts-sift {vertical-align: top;}
 .fts-sift #col_1 td {white-space: nowrap; }
 .fts-sift .param_tr { background-color: &[BodyBackgroundColor];;}
