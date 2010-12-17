@@ -3160,7 +3160,6 @@ var ListBoxesHandler = {
       if (classValue)
         params += "&" + propName + "_class=" + classValue;
     }
-
     // request listbox context from the server via ajax
     postRequest(e, url, params, div, hotspot, this.onListLoaded);
  },
@@ -3342,15 +3341,6 @@ var ListBoxesHandler = {
 					this.classifierPanel.style.display = "inline";
 					this.toPutInClassifier = true;
 			}
-			
-			// specific for "multi_value" options list
-			if (optionsSelectorStr == "multi_value") {
-				//input = tr.getElementsByTagName("input")[0];
-				var params = arrowTd.getAttribute("req");
-				var url = getBaseUri() + "smartPopup"
-				postRequest(e, url, params, document.body /*curOptionsListDiv*/, arrowTd, this.onListLoaded)
-				return;
-		  }
 			
 			// set name of text enry of current input field
 			// numeric selector should be initialized with previously manually entered value
@@ -3718,16 +3708,31 @@ var ListBoxesHandler = {
 			}
 		}
 		else { // data entry
-			FieldsWithEmptyValue.setValue(textField, selectedOptionsArr[0]["value"]);
-			// "_select" and "_verified" hidden fields processed in popupRowOnClick1
-			
-			// change color of touched input/value
-			if ($t._isEditList) {
-				// setting font as bold changes width & height of a field. So, fix it previously
-				textField.style.width = textField.clientWidth;
-				textField.style.height = textField.clientHeight;
- 				textField.style.fontWeight = "bold";
+			// Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
+ 			var len = selectedOptionsArr.length;
+			// 1. multi value selection
+			if (len != 1 || selectedOptionsArr[0]["multi_value"] == "yes") {
+	  		var allTagsStr = "";
+				var tagsParentDiv = getPreviousSibling(textField);
+				TagsMgr.deleteAll(tagsParentDiv);
+				for (var i = 0; i < len; i++) {
+					TagsMgr.add(tagsParentDiv, selectedOptionsArr[i]["text"]);
+					allTagsStr += selectedOptionsArr[i]["text"] + ((i < len - 1) ? "," : "");
+				}
+				textField.value = allTagsStr;
 		  }
+			// 2. single value selection
+	  	else { 
+		  	FieldsWithEmptyValue.setValue(textField, selectedOptionsArr[0]["value"]);
+					
+				// change color of touched input/value
+				if ($t._isEditList) {
+					// setting font as bold changes width & height of a field. So, fix it previously
+					textField.style.width = textField.clientWidth;
+					textField.style.height = textField.clientHeight;
+					textField.style.fontWeight = "bold";
+				}
+			}
 		}
     
 		$t.prevSelectorInputValue = ""; // reset
@@ -3768,14 +3773,14 @@ var ListBoxesHandler = {
         if (checkBox.checked) {
 					var paramNameTd = getChildByClassName(tr, "menuItem"); //getNextSibling(getNextSibling(checkBox.parentNode));
           var text = getTextContent(paramNameTd);
-					selectedOptions.push({"text" : text, "value" : checkBox.value});
+					selectedOptions.push({"text" : text, "value" : checkBox.value, "multi_value":"yes"});
         }
       }
       else {
         // no checkbox(es) - data entry
 				if (typeof lastClickedTr == "object") {
 					var text = getTextContent(lastClickedTr).trim();
-					selectedOptions.push({"text": text,	"value": text});
+					selectedOptions.push({"text": text,	"value": text, "multi_value":"no"});
 				}
         break;
       }
@@ -4085,6 +4090,38 @@ var ListBoxesHandler = {
 	isFormPanelCurrent: function(){
   	return SlideSwaper.getTrayPosition(this.tray) == 0;
   }
+}
+
+/*
+ * for multiple selection
+ */
+
+var TagsMgr = {
+	// adds gui element
+	add : function(parentDiv, title){
+		if (parentDiv.className != "tags")
+			return;
+		var itemDiv = document.createElement("div");
+		itemDiv.className = "item";
+		itemDiv.innerHTML = (title + "<img src=\"icons/hide.gif\" onmousedown=\"TagsMgr.onDelete(this)\" />");
+		var crossImg = itemDiv.getElementsByTagName("img")[0];
+		crossImg.onclick = this.deleteItemOnCross;
+		parentDiv.appendChild(itemDiv);
+	},
+	// removes gui element and correspondent data in data field
+	onDelete : function(crossImg){
+		var itemDiv = getAncestorByClassName(crossImg, "item");
+		var label = getTextContent(itemDiv);
+		var dataField = getNextSibling(itemDiv.parentNode);
+		dataField.value = dataField.value.replace(label + ",", "").replace(label, "");
+		itemDiv.parentNode.removeChild(itemDiv);
+		//stopEventPropagation(event);
+	},
+	deleteAll : function(parentDiv) {
+		if (parentDiv.className != "tags")
+			return;
+		parentDiv.innerHTML = "";
+	}
 }
 
 /*******************************************
@@ -12473,110 +12510,6 @@ function displayInFull(e) {
   return stopEventPropagation(e);
 }
 
-var TagsField = {
-  fieldsProcArr : new Array(),
-  
-  initField : function(field, paramsList) {
-		field.onmousedown = ""; // init on 1st mousedown only
-    var fieldProc = new this.fieldProcessor(field);
-    fieldProc.caretInp.focus(); 
-  },
-  
-  fieldProcessor : function(field) {
-    var $t = this;
-    this.field = field;
-    this.caretInp;
-		this.dataField,
-    
-    this.init = function() {
-      this.caretInp = getChildByClassName(this.field, "caret");
-			addEvent(this.caretInp, "keyup", this.onkeyup, true);
-			addEvent(this.caretInp, "keydown", this.onkeydown, false);
-      this.dataField = getNextSibling(this.field);
-			this.field.onclick = this.onclick;
-			var items = this.field.childNodes;
-			// init cross
-			for (var i = 0; i < items.length; i++) {
-		  	if (items[i].className != "item") 
-		  		continue;
-		  	var crossImg = items[i].getElementsByTagName("img")[0];
-				crossImg.onclick = this.deleteItemOnCross;
-		  }
-    }
-    
-    this.onclick = function() { 
-      $t.caretInp.focus();
-      $t._putData();
-    }
-		
-    this.onkeyup = function(event){
-//			var code = getKeyCode(event);
-//			if (code == 188 || code == 13) { // comma or enter => create a new tag-item
-//				$t.createItem();
-//				stopEventPropagation(event);
-//			}
-			//ListBoxesHandler.listboxOnClick1()
-	  }   
-    this.onkeydown = function(event){
-			var code = getKeyCode(event);
-			if (code == 8) { // backspace
-				var text = $t._getTypedText();
-				if (text.length == 0) 
-					$t.deleteItemOnBackspace();
-			}
-	  }   
-		
-    this.createItem = function() {
-      var itemDiv = document.createElement("div");
-      itemDiv.className = "item";
-			var tagText = this._getTypedText(); 
-			itemDiv.innerHTML = (tagText + "<img src=\"icons/hide.gif\" />");
-      var crossImg = itemDiv.getElementsByTagName("img")[0];
-			crossImg.onclick = this.deleteItemOnCross;
-			// hack: set initial &#160; (&nbsp;) to show caret in Chrome
-			this.caretInp.innerHTML = "&#160;";
-			this.caretInp.focus();
-      this.field.insertBefore(itemDiv, this.caretInp);
-			this._putData();
-    }
-		  
-	  this.deleteItemOnCross = function(event) {
-	    var target = getEventTarget(event);
-			var itemDiv = getAncestorByClassName(target, "item");
-      $t._deleteItem(itemDiv)
- 	  }
-    this.deleteItemOnBackspace = function() {
-      var itemDiv = getPreviousSibling(this.caretInp);
-      $t._deleteItem(itemDiv)
-    }
-		this._deleteItem = function(itemDiv) {
-			if (!itemDiv)
-				return;
-      this.field.removeChild(itemDiv);
-			this._putData();
-		}
-		// get from "caret" div
-		this._getTypedText = function() {
-			return this.caretInp.innerHTML.replace(",", "").replace(/&#160;|&nbsp;/gi, "").plainText().trim();
-		}
-		this._putData = function() {
-			var dataStr = "";
-			var items = this.field.childNodes;
-			for (var i = 0; i < items.length; i++) {
-				if (items[i].className != "item")
-					continue;
-				if (i > 0)
-					dataStr += ",";
-					
-				dataStr += getTextContent(items[i]);	
-			}
-			this.dataField.value = dataStr;
-		}
-    // ----------------
-    this.init();
-  }
-}
-
 function getActivity(e, uri) {
 	var div = document.getElementById('div_Activity');
   var tables = div.getElementsByTagName("table");
@@ -12586,12 +12519,12 @@ function getActivity(e, uri) {
   postRequest(null, "smartPopup", params, div, null, getActivityCallBack);
 }
 
-function getActivityCallBack(e, elm, hotspot, content, url) {
+function getActivityCallBack(e, div, hotspot, content, url) {
   if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
-    elm.style.display = "none";
+    div.style.display = "none";
   else
-    elm.innerHTML = content;
-  elm.className = "";
+    div.innerHTML = content;
+  div.className = "";
 }
 
 function pageActivity(e, id, params) {
