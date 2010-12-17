@@ -149,7 +149,7 @@ input[type=button], input[type=submit], .button {
 div.button { font-size: 15px; color: &[Label];; padding: 3px 10px;}
 
 /* the awesome size gets set here. Feel Free to add new sizes, like input[type=button].small or .small.large   */
-input[type=button], input[type=submit], .button, a.button { font-size: 15px; color: &[Label];; }
+input[type=button], input[type=submit], .button, a.button, .tags .item { font-size: 15px; color: &[Label];; }
 input[type=button], input[type=submit] { padding: 6px 10px; }
 a.button, a.button:active { padding: 3px 10px; } /* anchor requires smaller padding than type=button */
 input[type=button]:active, input[type=submit]:active, .button:active	{ padding: 6px 10px 5px; }
@@ -1972,7 +1972,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .shrunk_field { position: fixed; font-size: 1px; width: 1px; border-width: 0; background: transparent; }
 
 /* like "TO" field in message */
-.rounded_rect_tbl .tags { width: auto; height: 35px; margin-bottom: 7px; }
+.rounded_rect_tbl .tags { width: auto; margin-bottom: 7px; }
 .rounded_rect_tbl .tags div { float: left; margin: 5px; height: 20px; line-height:20px; }
 .rounded_rect_tbl .tags .item { font-size: 14px; line-height:20px; padding: 2px 2px 2px 4px; }
 .rounded_rect_tbl .tags .item img { position:relative; top:3px; cursor: pointer; }
