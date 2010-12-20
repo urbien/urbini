@@ -714,7 +714,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (listsContainer != null) {
       var isMultipleSel = $t.onOptionsItemClick(tr);
       if (!isMultipleSel)
-        //ListBoxesHandler.onBackBtn();
         $t.onOptionsSelectionFinish(tr);
     }
 
@@ -3187,9 +3186,9 @@ var ListBoxesHandler = {
   
 	clonedEvent : null,
 	
-  // allows maltiple selection with help of delay.
-  timerId : null,
-  OPTIONS_DELAY : 1200,
+  // allows multiple selection with help of delay.
+  //timerId : null,
+  //OPTIONS_DELAY : 1200,
   
 	setTray : function(parent) {
 		var tray = getChildByClassName(parent, "tray");
@@ -3618,7 +3617,7 @@ var ListBoxesHandler = {
 			return;
 		}
 
-		clearTimeout($t.timerId);
+		// clearTimeout($t.timerId);
 		if (SlideSwaper.doesSlidingRun())
 			return true;
 			
@@ -3656,7 +3655,8 @@ var ListBoxesHandler = {
       vIcon.style.visibility = "visible";
     }
     // close options on timeout
-    $t.timerId = setTimeout(ListBoxesHandler.onOptionsSelectionFinish, $t.OPTIONS_DELAY);
+    // $t.timerId = setTimeout(ListBoxesHandler.onOptionsSelectionFinish, $t.OPTIONS_DELAY);
+		ListBoxesHandler.onOptionsSelectionFinish();
     return true;
   },
   
@@ -3714,7 +3714,6 @@ var ListBoxesHandler = {
 			if (len != 1 || selectedOptionsArr[0]["multi_value"] == "yes") {
 	  		var allTagsStr = "";
 				var tagsParentDiv = getPreviousSibling(textField);
-				TagsMgr.deleteAll(tagsParentDiv);
 				for (var i = 0; i < len; i++) {
 					TagsMgr.add(tagsParentDiv, selectedOptionsArr[i]["text"]);
 					allTagsStr += selectedOptionsArr[i]["text"] + ((i < len - 1) ? "," : "");
@@ -3839,8 +3838,7 @@ var ListBoxesHandler = {
     var form = document.forms[currentFormName];
   
 		// 1. text/hidden field
-		var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp];
-//    textField.value = "";
+		var textField = getOriginalPropField(form, originalProp);
 		FieldsWithEmptyValue.setEmpty(textField);
 
 		// 2. select field
@@ -3882,11 +3880,15 @@ var ListBoxesHandler = {
       if (targetImg)
         targetImg.src = "icons/cakes_gray.png";
     }
+		
+		var tagsDiv = getPreviousSibling(textField);
+		if (tagsDiv && tagsDiv.className == "tags")
+			TagsMgr.deleteAll(tagsDiv);
   },
 
   onOptionsBackBtn : function() {
     var form = document.forms[currentFormName];
-    var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp]; // field of the form
+    var textField = getOriginalPropField(form, originalProp);
 
     var td = getAncestorByTagName(textField, "td");
     if (td.className == "rollup_td") { // rollup, not parameter
@@ -3990,7 +3992,8 @@ var ListBoxesHandler = {
       if (!label)
         continue;
 			var chkCell = getChildByClassName(rows[i], "menuItemChk");
-      var labelName = getTextContent(label).toLowerCase();
+
+		  var labelName = getTextContent(label).toLowerCase();
 			
       if (labelName.indexOf(typedText) == 0) {
 		  	rows[i].style.display = "";
