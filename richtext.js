@@ -768,6 +768,8 @@ var ImageUploader = {
   // radio buttons : // 0) upload 1)URL
   getImageInsertModeIdx : function(form) {
 		var checkbox = form["isuploading"];
+		if (!checkbox)
+			return null;
 		return checkbox.checked ? 0 : 1;
   },
   
@@ -1770,9 +1772,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(!i_am.isAllowedToExecute())
 			return;
 		
-		var imgObj  = null;
-		if (onDblClick)  // show dialog with properties of image on DblClick 
-			imgObj = i_am.getSelectedElement(); 
+		var imgObj = i_am.getSelectedElement(); 
+		if (!imgObj || !imgObj.tagName || imgObj.tagName.toLowerCase() != "img")
+			imgObj = null;
 		// onDblClick show dialog under 1st, "styleBtn" button because "imageBtn" can be in hided overflow popup
 		var btn = (onDblClick) ? i_am.styleBtn : i_am.imageBtn;
 		i_am.currentPopup = RteEngine.launchImagePopup(btn, i_am.setImage, i_am.iframeObj.id, i_am.cancelImage, imgObj);
@@ -1916,7 +1918,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var isLinkSelected = (a && a.tagName && a.tagName.toLowerCase() == "a");
 		
     // 1. change parameters of existing link
-		if (isLinkSelected) { 
+		if (isLinkSelected) {
+			if (!params.url) { // removed URL then remove link object
+				i_am.performCommand("delete");
+				return;
+			}
 			a.setAttribute("href", params.url);
 			if(params.is_blank)
 				a.setAttribute("target", "_blank");
