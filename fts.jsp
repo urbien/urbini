@@ -1,1 +1,1 @@
-<fullTextSearchChoice/>
+<fullTextSearchChoice noMenu="y"/>

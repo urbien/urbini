@@ -1,1 +1,1 @@
-<dashboardMenus/>
+<dashboardMenus valign="middle"/>
