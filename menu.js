@@ -3718,7 +3718,9 @@ var ListBoxesHandler = {
 					TagsMgr.add(tagsParentDiv, selectedOptionsArr[i]["text"]);
 					allTagsStr += selectedOptionsArr[i]["text"] + ((i < len - 1) ? "," : "");
 				}
-				textField.value = allTagsStr;
+				if (textField.value/length != 0)
+					textField.value += ",";
+				textField.value += allTagsStr;
 		  }
 			// 2. single value selection
 	  	else { 
