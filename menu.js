@@ -5430,7 +5430,8 @@ var TouchDlgUtil = {
 		// set focus in selector if previously dialog lost it
 		if ($t.isFocusInDialog == false &&
 				isElemOfTag(target, ["input", "textarea", "select"]) == false &&
-				isElemOfClass(target, "tags") == false) {
+				isElemOfClass(target, "tags") == false &&
+				isElemOfClass(target.parentNode, "tb_btn") == false ) {
 			var panel = ListBoxesHandler.getCurrentPanelDiv() || TouchDlgUtil.curDlgDiv;
 			$t.focusSelector(panel, false);
 		} 
