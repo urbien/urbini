@@ -530,9 +530,6 @@ tr.fts td { vertical-align: middle; padding: 2px 0px; color: &[Label];; }
 
 .desktop_search .left {
  	float: left;
- 	border-radius: 15px 0px 0px 15px;
-  -moz-border-radius: 15px 0px 0px 15px;
-  -webkit-border-radius: 15px 0px 0px 15px;
   box-shadow: 1px 0px 2px rgba(0, 0, 0, 0.5) inset;
 	-moz-box-shadow: 1px 0 2px rgba(0, 0, 0, 0.5) inset;
 	background: #FFFFFF;
@@ -550,16 +547,30 @@ tr.fts td { vertical-align: middle; padding: 2px 0px; color: &[Label];; }
     line-height: 21px; 
     vertical-align: middle;   
  }
+ 
+.ftSearch .action_btn {
+ 	width: 40px;
+ 	border-radius: 15px 0 0 15px;
+ 	-moz-border-radius: 15px 0 0 15px;
+	-webkit-border-radius: 15px 0 0 15px;
+	margin-left:5px;
+}
+.ftSearch .action_btn a { display: block; }
+.ftSearch .action_btn img { width: 22px; height: 22px; margin: 4px 0 0 10px; }
+
 .desktop_search .right {
 	float: left;
 	border-radius: 0px 15px 15px 0px;
 	-moz-border-radius: 0px 15px 15px 0px;
 	-webkit-border-radius: 0px 15px 15px 0px;
+	width: 77px;
+	cursor: pointer;
+}
+
+.desktop_search .right, .ftSearch .action_btn {
+	height: 31px;
 	-moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 	-webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-	width: 77px;
-	height: 31px;
-	cursor: pointer;
 	background-color: &[ToolbarColor];;
 	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];));
@@ -1560,8 +1571,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .panel_block .header { 
     line-height:30px; 
     width: 100%; text-align: left; 
-    border-top: 1px solid &[FTS];; 
-    border-bottom: 1px solid &[FTS];;
+    border: 1px solid &[FTS];;
     background-color: &[FTS];;
 
     background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
