@@ -4,21 +4,21 @@
   </head>
 
   <body id="body">
-
+  <div id="wrapper">
     <include name="requiredHeader.jsp"/>
-<hideBlock>
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-    <tr>
-	    <td class="welcomeBig" valign="top">
-	      <a href="help.html"> <img src="icons/help.png" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" align="absmiddle"/></a>
-	      <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
-	    </td>
-	    <td valign="middle" nowrap="nowrap"  align="right">
-	      <a href="http://lablz.com"><img src="icons/universalPlatform.gif" align="absmiddle" border="0"/><span  class="poweredBy" style="padding-left: 5px"><text text="on"/> Universal</span><span class="poweredBy-b">Platform</span></a>
-	    </td>
-	  </tr>
-    </table>
-</hideBlock>
+    <div hide="y">
+	    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+	    <tr>
+		    <td class="welcomeBig" valign="top">
+		      <a href="help.html"> <img src="icons/help.png" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" align="absmiddle"/></a>
+		      <changePassword/><userLogOff html="user-login.html"/><registerNewUser/>
+		    </td>
+		    <td valign="middle" nowrap="nowrap"  align="right">
+		      <a href="http://lablz.com"><img src="icons/universalPlatform.gif" align="absmiddle" border="0"/><span  class="poweredBy" style="padding-left: 5px"><text text="on"/> Universal</span><span class="poweredBy-b">Platform</span></a>
+		    </td>
+		  </tr>
+	    </table>
+    </div>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td valign="top" colspan="2" width="100%">
@@ -29,7 +29,7 @@
 
     <br></br>
     <include name="requiredFooter.jsp"/>
-
+  </div> <!-- wrapper -->
   </body>
 </html>
 
