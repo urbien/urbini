@@ -409,6 +409,7 @@ var PalettePopup = {
 
 		this.div.innerHTML = this.getPaletteStr();
 		this.noClrCell = getChildById(this.div, "noClr");
+		this.noClrCell.style.fontSize = "16"
 		
 		this.chosenDiv = document.createElement('div');
 		this.chosenDiv.id = this.CHOSEN_DIV_ID;
@@ -1132,7 +1133,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 			return;
 		// new toolbar width including new object (btn) and the overflow button
 		var newTbWidth = lastBtnEdge + BTN_GAP + obj.width + BTN_GAP
-			 + OVF_ICON_WIDTH + this.BTN_PADDING * 2 + RIGHT_PADDING;
+			 + OVF_ICON_WIDTH + this.BTN_PADDING * 2 + RIGHT_PADDING + 2;
 		if(this.parentDiv.offsetWidth <= newTbWidth)
 			return true;
 		
