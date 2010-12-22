@@ -1526,6 +1526,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   	  TouchDlgUtil.closeAllDialogs();
 			i_am._close();
   	}
+		// allow arrow navigation if toolbar was closed
+		if (i_am.toolbar.isVisible() == false)  
+			TouchDlgUtil.arrowsHandler(e);
+
 	}
 	// prevents default Ctrl+b behaviour in FF.
   this._onkeydown = function(e) {
