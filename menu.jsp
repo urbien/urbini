@@ -7,7 +7,7 @@
         <td width="85%" colspan="2">
 	        <table>
 	          <tr valign="top">
-	            <td width="1%" class="dashboard_btn"><a href="javascript: ;" onclick="addOnClickToProfiling(event); PlainDlg.showPreloaded(event, 'viewSource', this);"><img src="icons/homePage-large.png" class="litxt" /><br/>Home</a></td><td><dashboardMenus/></td>
+	            <td><dashboardMenus/></td>
 <!--
 							<td class="dashboard_btn"><menu toolbar="calendarAndChart" /></td>
 -->
@@ -22,7 +22,7 @@
     </td>
      <td align="right" class="toprightpad" id="user">
        <!--a href="help.html"> <img src="icons/help.png" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" align="absmiddle"/></a-->
-       <changePassword/><userLogOff html="user-login.html"/><registerNewUser/><!--myProfile property="unread" /-->
+       <changePassword/>&#160;<userLogOff html="user-login.html"/><registerNewUser/><!--myProfile property="unread" /-->
     </td>
   </tr>
   <tr class="menuLine">
