@@ -1873,6 +1873,13 @@ var FormProcessor = {
   // 2) html form: removes not needed fields
 	// isXHR default value - false
   getFormFilters : function(form, allFields, exclude, isXHR) {
+	// Tags' items contain fields for options panel that should not be submitted with a form 
+	if (!allFields) {
+  	var tagsDiv = getChildByClassName(form, "tags");
+  	if (tagsDiv) 
+  		tagsDiv.parentNode.removeChild(tagsDiv);
+  }
+	
 	  var p = "";
     var fields = form.elements;
     // use idx and len because removeChild reduces fields collection
@@ -3713,14 +3720,14 @@ var ListBoxesHandler = {
 			// 1. multi value selection
 			if (len != 1 || selectedOptionsArr[0]["multi_value"] == "yes") {
 	  		var allTagsStr = "";
-				var tagsParentDiv = getPreviousSibling(textField);
+				var tagsParentDiv = getNextSibling(textField);
+				TagsMgr.deleteAll(tagsParentDiv);
 				for (var i = 0; i < len; i++) {
-					TagsMgr.add(tagsParentDiv, selectedOptionsArr[i]["text"]);
+					var selCtrlsStr = $t._genSelectedCtrls(selectedOptionsArr[i]["text"], selectedOptionsArr[i]["value"], textField.name);
+					TagsMgr.add(tagsParentDiv, selectedOptionsArr[i]["text"], selCtrlsStr);
 					allTagsStr += selectedOptionsArr[i]["text"] + ((i < len - 1) ? "," : "");
 				}
-				if (textField.value/length != 0)
-					textField.value += ",";
-				textField.value += allTagsStr;
+				textField.value = allTagsStr;
 		  }
 			// 2. single value selection
 	  	else { 
@@ -3810,27 +3817,30 @@ var ListBoxesHandler = {
   getSelectedOptionsHtml : function(selectedOptionsArr, propName) {
     var html = "";
     for (var i = 0; i < selectedOptionsArr.length; i++) {
-      html += "<div>" + selectedOptionsArr[i]["text"] + "</div>";
+			html += "<div>" + selectedOptionsArr[i]["text"] + "</div>";
       if (propName)
-      html +=
-				// display name
-			  "<input type=\"hidden\" value=\""
-        + selectedOptionsArr[i]["text"]
-        + "\" name=\""
-        + propName
-        + "\" />"
-				
-				// checkbox containig "reference" to the resource
-        + "<input type=\"checkbox\" checked=\"true\" value=\""
-        + selectedOptionsArr[i]["value"]
-        + "\" name=\""
-        + propName
-        + "_select\" class=\"hdn\"/>";
-    
+      html += 
+				this._genSelectedCtrls(selectedOptionsArr[i]["text"], selectedOptionsArr[i]["value"], propName);
     }
     return html;  
   },
-	
+	_genSelectedCtrls : function(text, value, propName) {
+		var html = 
+			// display name
+		  "<input type=\"hidden\" value=\""
+	    + text
+	    + "\" name=\""
+	    + propName
+	    + "\" />"
+			
+			// checkbox containig "reference" to the resource
+	    + "<input type=\"checkbox\" checked=\"true\" value=\""
+	    + value
+	    + "\" name=\""
+	    + propName
+	    + "_select\" class=\"hdn\"/>";
+		return html;
+	},
   onParamReset : function() {
 		this.makeParamReset();
 		this.onBackBtn();
@@ -3883,7 +3893,7 @@ var ListBoxesHandler = {
         targetImg.src = "icons/cakes_gray.png";
     }
 		
-		var tagsDiv = getPreviousSibling(textField);
+		var tagsDiv = getNextSibling(textField);
 		if (tagsDiv && tagsDiv.className == "tags")
 			TagsMgr.deleteAll(tagsDiv);
   },
@@ -4061,6 +4071,10 @@ var ListBoxesHandler = {
   },
 	
 	getCurrentPanelDiv : function() {
+		if (this.tray == null) { // on page dialog
+			var dlg = TouchDlgUtil.getCurrentDialog();
+			this.setTray(getChildByClassName(dlg, "tray"))
+		}
 		if (this.tray == null)
 			return null;
 		var offset = SlideSwaper.getTrayPosition(this.tray);
@@ -4103,12 +4117,12 @@ var ListBoxesHandler = {
 
 var TagsMgr = {
 	// adds gui element
-	add : function(parentDiv, title){
+	add : function(parentDiv, title, inner){
 		if (parentDiv.className != "tags")
 			return;
 		var itemDiv = document.createElement("div");
 		itemDiv.className = "item";
-		itemDiv.innerHTML = (title + "<img src=\"icons/hide.gif\" onmousedown=\"TagsMgr.onDelete(this)\" />");
+		itemDiv.innerHTML = (title + inner + "<img src=\"icons/hide.gif\" onmousedown=\"TagsMgr.onDelete(this)\" />");
 		var crossImg = itemDiv.getElementsByTagName("img")[0];
 		crossImg.onclick = this.deleteItemOnCross;
 		parentDiv.appendChild(itemDiv);
@@ -4117,7 +4131,7 @@ var TagsMgr = {
 	onDelete : function(crossImg){
 		var itemDiv = getAncestorByClassName(crossImg, "item");
 		var label = getTextContent(itemDiv);
-		var dataField = getNextSibling(itemDiv.parentNode);
+		var dataField = getPreviousSibling(itemDiv.parentNode);
 		dataField.value = dataField.value.replace(label + ",", "").replace(label, "");
 		itemDiv.parentNode.removeChild(itemDiv);
 		//stopEventPropagation(event);
@@ -5356,7 +5370,11 @@ var TouchDlgUtil = {
 	getCurrentDialog : function() {
 		return this.curDlgDiv;
 	},
-		
+	isCurDlgOnPage : function() {
+		if (!this.curDlgDiv)
+			return null;
+		return (getElementStyle(this.curDlgDiv).position == "static");
+	},	
 	keyHandler : function(event) {
 		var $t = TouchDlgUtil;
 		var code = getKeyCode(event);
@@ -5473,6 +5491,10 @@ var TouchDlgUtil = {
 	arrowsHandler : function(event) {
 		var $t = TouchDlgUtil;
 		var target = getEventTarget(event);
+		
+		if ($t.curDlgDiv == null)
+			$t.curDlgDiv = getAncestorByClassName(target, "panel_block");
+			
 		var code = getKeyCode(event);
 
 		if ((code == 39 || code == 37) && target.className != "shrunk_field") // target.getAttribute("readonly") == null
@@ -5709,15 +5731,12 @@ var TouchDlgUtil = {
 		FtsAutocomplete.hide();
 		if (!Browser.mobile)	 
 			Tooltip.hide(true);
+		this.bleachBlueRow();
 		
-		if (this.greyTr) {
+		if (this.isCurDlgOnPage() == false) {
 			this.bleachGreyRow();
-			this.greyTr = null;
+			this.curDlgDiv = null;
 		}
-
-		this.bleachBlueRow()
-		this.curDlgDiv = null;
-		this.blueTr = null;
 	},
 	
 	highlightRowGreyOnOver : function(event) {
