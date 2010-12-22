@@ -59,6 +59,7 @@ a img {
 }
  
 /* #mainMenu A { font-size: 0.8em; } */
+#menu .menu_Divider {border-top: 1px solid &[PrimaryColor_1];;}
 
 .requiredProp {
   color: #ff0000; font-weight: bold;
@@ -1120,13 +1121,56 @@ TD.toolbar {
 .accent {font-size: 25px}
 .aLetters {color: &[ToolbarColor];;}
 
-.layout_content { 
-  border:solid &[ToolbarColor]; 1px; 
-  background-color: #ffffff; 
-  padding: 0 0 5px 5px; 
-  align: center; text-align:left; max-width:930px; margin:0 auto; width: expression(document.body.clientWidth > 932? '930px' : 'auto');
+.layout { background-color: &[BodyBackgroundColor];; }
+.layoutTitle { background-color: &[ToolbarColor];; }
+
+.layout_content {
+  -webkit-box-shadow: 0 0 5px rgba(&[ToolbarColor_rgb];,0.4);
+  -moz-box-shadow: 0 0 3px rgba(&[ToolbarColor_rgb];,0.4);
+  box-shadow: 0 0 3px rgba(&[ToolbarColor_rgb];,0.4);
+  background-color: #ffffff;
+  align: center; text-align:left; max-width:930px; margin:0 auto; width: expression(document.body.clientWidth>  932? '930px' : 'auto');
+  min-height: 500px;
 }
 
+.signup_content {
+  -webkit-box-shadow: 0 0 5px rgba(&[ToolbarColor_rgb];,0.4);
+  -moz-box-shadow: 0 0 3px rgba(&[ToolbarColor_rgb];,0.4);
+  box-shadow: 0 0 3px rgba(&[ToolbarColor_rgb];,0.4);
+  background-color: #ffffff;
+  align: center; text-align:left; max-width:930px; margin:0 auto; width: expression(document.body.clientWidth>  932? '930px' : 'auto');
+  min-height: 500px;
+}
+
+input.primary {
+    -moz-border-radius: 4px 4px 4px 4px;
+    border-color: #095490;
+    font-size: 24px;
+    height: 50px;
+    margin-right: 4px;
+    padding: 7px 0 7px 9px;
+    vertical-align: bottom;
+    width: 270px;
+}
+.new-btn {
+    -moz-border-radius: 4px 4px 4px 4px;
+    height: 51px;
+    width: 90px;
+    background-color: #2883C6;
+    background-image: -moz-linear-gradient(100% 100% 90deg, #2883C6, #67B8ED);
+    border-color: #3596E9 #3596E9 #2C7EC4;
+    border-style: solid;
+    border-width: 1px;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 16px;
+    padding: 5px 10px;
+    text-shadow: 0 -1px 0 #2883C6;
+    vertical-align: middle;
+}
+////////
 .dashboardLine, tr.rlHeader {
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
@@ -1981,8 +2025,6 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 /********** dashboard & widgets *********/
 #dashboard, #dashboard > table { background-color: &[BackgroundColor];; }
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
-
-.layout_footer { background-color: &[BodyBackgroundColor];; }
 
 .fts-sift {vertical-align: top;}
 .fts-sift #col_1 td {white-space: nowrap; }
