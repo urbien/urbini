@@ -21,9 +21,6 @@
     </tr>
     </table>
     </div><!-- main skin -->
-    <div hide="y">
-      <codeBehindThePage showDialog="y"/>
-    </div>
     <include name="requiredFooter.jsp"/>
     <div hide="y">
       <include name="include/commonFooter"/>
