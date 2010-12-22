@@ -22,7 +22,7 @@
     </td>
      <td align="right" class="toprightpad" id="user">
        <!--a href="help.html"> <img src="icons/help.png" title="Site Help. Describes Operations, Menus, Navigation, Search" border="0" align="absmiddle"/></a-->
-       <changePassword/>&#160;<userLogOff html="user-login.html"/><registerNewUser/><!--myProfile property="unread" /-->
+       <changePassword/>&#160;<!--userLogOff html="user-login.html"/><registerNewUser/--><!--myProfile property="unread" /-->
     </td>
   </tr>
   <tr class="menuLine">
