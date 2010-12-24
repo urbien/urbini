@@ -714,7 +714,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (listsContainer != null) {
       var isMultipleSel = $t.onOptionsItemClick(tr);
       if (!isMultipleSel)
-        $t.onOptionsSelectionFinish(tr);
+        $t.onOptionsSelection(tr);
     }
 
     var ret = self.popupRowOnClick1(e, tr, target);
@@ -3195,10 +3195,6 @@ var ListBoxesHandler = {
   
 	clonedEvent : null,
 	
-  // allows multiple selection with help of delay.
-  //timerId : null,
-  //OPTIONS_DELAY : 1200,
-  
 	setTray : function(parent) {
 		var tray = getChildByClassName(parent, "tray");
 		if (tray)
@@ -3626,7 +3622,6 @@ var ListBoxesHandler = {
 			return;
 		}
 
-		// clearTimeout($t.timerId);
 		if (SlideSwaper.doesSlidingRun())
 			return true;
 			
@@ -3640,18 +3635,18 @@ var ListBoxesHandler = {
 		// no checkbox - single selection (data entry, rollup)
 		if (!checkBox) {
 			if (!vIcon) {
-		  	$t.onOptionsSelectionFinish(tr);
-		  	return; // false;
+		  	$t.onOptionsSelection(tr);
+		  	return;
 			}
-			var isVisable = (vIcon.style.visibility.toLowerCase() == "visible"); // hidden in css
+			var isVisable = (vIcon.style.visibility.toLowerCase() == "visible");
 			if (isVisable) 
 	  		vIcon.style.visibility = "hidden";
 		  else {
 		  	$t.removeV();
 		  	vIcon.style.visibility = "visible";
 		  }
-			$t.onOptionsSelectionFinish(tr);
-			return; // false;
+			$t.onOptionsSelection(tr);
+			return;
 		}
 		
 		// multiple selection (filter)
@@ -3663,9 +3658,8 @@ var ListBoxesHandler = {
       checkBox.checked = true;
       vIcon.style.visibility = "visible";
     }
-    // close options on timeout
-    // $t.timerId = setTimeout(ListBoxesHandler.onOptionsSelectionFinish, $t.OPTIONS_DELAY);
-		ListBoxesHandler.onOptionsSelectionFinish();
+ 
+ 		ListBoxesHandler.onOptionsSelection(tr);
     return true;
   },
   
@@ -3674,7 +3668,7 @@ var ListBoxesHandler = {
 		this.processClickParam(e, tr, "options");
 	},	
 	
-  onOptionsSelectionFinish : function(lastClickedTr) {
+  onOptionsSelection : function(lastClickedTr) {
 		var $t = ListBoxesHandler;
 		if (lastClickedTr && lastClickedTr.id == "$noValue") {
 			$t.onBackBtn();
@@ -3690,22 +3684,34 @@ var ListBoxesHandler = {
 			textField = getOriginalPropField(form, originalProp);
 		}
 
-    var selectedOptionsArr = $t.getSelectedOptions(lastClickedTr);
+    var selectedOption = $t.getSelectedOption(lastClickedTr);
 	 	var tr = getAncestorByClassName(textField, "param_tr");
 	  var rollupTd = getAncestorByClassName(textField, "rollup_td"); //getAncestorByTagName(textField, "td"); //getAncestorByClassName(textField, ["input_td"]);
     var chosenValuesDiv = getChildByClassName(tr, "chosen_values");
-
-		if (rollupTd != null) { // rollup
+		// 1. rollup
+		if (rollupTd != null) {
 			var img = rollupTd.getElementsByTagName("img")[0];
 	  	textField.value = lastClickedTr.id;
 			img.src = "icons/cakes.png";
 		}
-		else if (chosenValuesDiv) { // Filter or Subscribe
-			var html = $t.getSelectedOptionsHtml(selectedOptionsArr, textField.name);
-			chosenValuesDiv.innerHTML = html;
-			
-			// unselected all options / checkboxes
-			if (selectedOptionsArr.length == 0) {
+		// 2. Filter or Subscribe
+		else if (chosenValuesDiv) {
+			if (selectedOption.checked) {
+		  	var chosenItemDiv = $t.genChosenItem(selectedOption, textField.name);
+				chosenValuesDiv.appendChild(chosenItemDiv);
+		  }
+			else {
+				var inputs = chosenValuesDiv.getElementsByTagName("input");
+				for (var i = 0; i < inputs.length; i++) {
+					if (inputs[i].value == selectedOption["value"]){
+						chosenValuesDiv.removeChild(inputs[i].parentNode);
+						break;
+					}
+				}
+			}
+
+			// unselected all options / checkboxes (?)
+			if (chosenValuesDiv.getElementsByTagName("div").length == 0) {
 				textField.value = "";
 				var verifiedField = form.elements[originalProp + "_verified"] 
 				if (verifiedField)
@@ -3716,24 +3722,38 @@ var ListBoxesHandler = {
 				textField.value = "";
 			}
 		}
-		else { // data entry
+		// 3. data entry
+		else {
 			// Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
- 			var len = selectedOptionsArr.length;
-			// 1. multi value selection
-			if (len != 1 || selectedOptionsArr[0]["multi_value"] == "yes") {
-	  		var allTagsStr = "";
+
+			// 3.1. multi value selection
+			if (typeof selectedOption["checked"] != "undefined") { // /*len != 1 || selectedOptionsArr[0]["multi_value"] == "yes"*/
+
 				var tagsParentDiv = getNextSibling(textField);
-				TagsMgr.deleteAll(tagsParentDiv);
-				for (var i = 0; i < len; i++) {
-					var selCtrlsStr = $t._genSelectedCtrls(selectedOptionsArr[i]["text"], selectedOptionsArr[i]["value"], textField.name);
-					TagsMgr.add(tagsParentDiv, selectedOptionsArr[i]["text"], selCtrlsStr);
-					allTagsStr += selectedOptionsArr[i]["text"] + ((i < len - 1) ? "," : "");
+				if (selectedOption["checked"]) {
+					if (textField.value.length !=0)
+						textField.value += ",";
+					// data field	
+					textField.value += selectedOption["text"];	
+					// UI
+					var selCtrlsStr = $t._genSelectedCtrls(selectedOption["text"], selectedOption["value"], textField.name);
+					TagsMgr.add(tagsParentDiv, selectedOption["text"], selCtrlsStr);
 				}
-				textField.value = allTagsStr;
+				else {
+					var regExp = new RegExp(selectedOption["text"] + ",|" + selectedOption["text"] + "$");
+					textField.value = textField.value.replace(regExp, "").trim();
+					var inputs = tagsParentDiv.getElementsByTagName("input");
+					for (var i = 0; i < inputs.length; i++) {
+				  	if (inputs[i].value == selectedOption["text"]) {
+				  		TagsMgr.deleteTag(inputs[i].parentNode);
+				  		break;
+				  	}
+				  }
+				}
 		  }
-			// 2. single value selection
+			// 3.2. single value selection
 	  	else { 
-		  	FieldsWithEmptyValue.setValue(textField, selectedOptionsArr[0]["value"]);
+		  	FieldsWithEmptyValue.setValue(textField, selectedOption["value"]);
 					
 				// change color of touched input/value
 				if ($t._isEditList) {
@@ -3770,32 +3790,20 @@ var ListBoxesHandler = {
   
   // 1) multipele selection: checked [v]-icon.
   // 2) single selection allowed: lastClickedTr.
-  getSelectedOptions : function(lastClickedTr) {
-		var selectedOptions = new Array();
-    // loop on options table rows.
-    var optTable = getChildByClassName(this.curOptionsListDiv, "rounded_rect_tbl");
-    var amt = optTable.rows.length;
-    for (var i = 0; i < amt; i++) {
-			var tr = optTable.rows[i];
+  getSelectedOption : function(tr) {
       var chkCell = tr.cells[0];
       var checkBox = chkCell.getElementsByTagName("input")[0];
       if (checkBox) {
-        if (checkBox.checked) {
 					var paramNameTd = getChildByClassName(tr, "menuItem"); //getNextSibling(getNextSibling(checkBox.parentNode));
           var text = getTextContent(paramNameTd);
-					selectedOptions.push({"text" : text, "value" : checkBox.value, "multi_value":"yes"});
-        }
+					return {"text" : text, "value" : checkBox.value, "checked" : checkBox.checked }; // "multi_value":"yes"  
       }
       else {
         // no checkbox(es) - data entry
-				if (typeof lastClickedTr == "object") {
-					var text = getTextContent(lastClickedTr).trim();
-					selectedOptions.push({"text": text,	"value": text, "multi_value":"no"});
-				}
-        break;
+					var text = getTextContent(tr).trim();
+					return {"text": text,	"value": text}; // , "multi_value":"no"
       }
-    } // the loop end
-    return selectedOptions;
+		
   },
   
   // clears selections in options panel
@@ -3816,15 +3824,14 @@ var ListBoxesHandler = {
   
   },
   
-  getSelectedOptionsHtml : function(selectedOptionsArr, propName) {
-    var html = "";
-    for (var i = 0; i < selectedOptionsArr.length; i++) {
-			html += "<div>" + selectedOptionsArr[i]["text"] + "</div>";
-      if (propName)
-      html += 
-				this._genSelectedCtrls(selectedOptionsArr[i]["text"], selectedOptionsArr[i]["value"], propName);
-    }
-    return html;  
+  genChosenItem : function(selectedOption, propName) {
+			var div = document.createElement("div");
+			var html = selectedOption["text"];
+			if (propName)
+			html +=
+	      this._genSelectedCtrls(selectedOption["text"], selectedOption["value"], propName)
+		div.innerHTML = html;
+		return div;
   },
 	_genSelectedCtrls : function(text, value, propName) {
 		var html = 
@@ -4140,10 +4147,8 @@ var TagsMgr = {
 		itemDiv.parentNode.removeChild(itemDiv);
 		//stopEventPropagation(event);
 	},
-	deleteAll : function(parentDiv) {
-		if (parentDiv.className != "tags")
-			return;
-		parentDiv.innerHTML = "";
+	deleteTag : function(tag) {
+		tag.parentNode.removeChild(tag);
 	}
 }
 
