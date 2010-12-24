@@ -1923,7 +1923,7 @@ var FormProcessor = {
 			if (type == "submit")
         continue;
         
-			if (type == "checkbox" || type == "radio" ) {
+			if (type == "checkbox" || type == "radio") {
         if (field.checked == false)
           continue;
       }
@@ -2940,10 +2940,11 @@ var ListBoxesHandler = {
     var ac = target.getAttribute('autocomplete');
     if (ac && ac == 'off')
       return true;
- 		
+		
     if (fieldVerified) fieldVerified.value = 'n'; // value was modified and is not
                                                   // verified yet (i.e. not chose
-                                                  // from the list)
+
+/*  //Touch UI change: keep selections to mark them in filtered options list                                                // from the list)
     if (selectItems) {
       var len = selectItems.length;
       if (len) {
@@ -2958,6 +2959,7 @@ var ListBoxesHandler = {
         selectItems.value   = '';  // value was modified and is not verified yet
                                     // (i.e. not chose from the list)
     }
+*/    
     e = cloneEvent(e);
 
     var checkSubscribe = form.elements[propName + "_subscribe"];
@@ -3999,6 +4001,7 @@ var ListBoxesHandler = {
  
 		var rows = tbl.rows;
 		var noMatches = true;
+		
     for (var i = 0; i < rows.length; i++) {
       var label = getChildByClassName(rows[i], "menuItem");
       if (!label)
@@ -4006,7 +4009,8 @@ var ListBoxesHandler = {
 			var chkCell = getChildByClassName(rows[i], "menuItemChk");
 
 		  var labelName = getTextContent(label).toLowerCase();
-			
+			// remove "prefix" like "name:" in assignedTo
+			labelName = labelName.replace(/^[^:]*:/,"").trim(); 
       if (labelName.indexOf(typedText) == 0) {
 		  	rows[i].style.display = "";
 				noMatches = false;
