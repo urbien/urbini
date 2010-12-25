@@ -4008,7 +4008,13 @@ var ListBoxesHandler = {
  
 		var rows = tbl.rows;
 		var noMatches = true;
-		
+		var hasAsterisk = false; // wildcard [*] search
+
+		if (typedText.indexOf("*") != -1) {
+			typedText = typedText.replace(/\*/g, "");
+			hasAsterisk = true;
+		}
+				
     for (var i = 0; i < rows.length; i++) {
       var label = getChildByClassName(rows[i], "menuItem");
       if (!label)
@@ -4017,13 +4023,15 @@ var ListBoxesHandler = {
 
 		  var labelName = getTextContent(label).toLowerCase();
 			// remove "prefix" like "name:" in assignedTo
-			labelName = labelName.replace(/^[^:]*:/,"").trim(); 
-      if (labelName.indexOf(typedText) == 0) {
-		  	rows[i].style.display = "";
-				noMatches = false;
-		  }
-		  else 
-		  	rows[i].style.display = "none";
+			labelName = labelName.replace(/^[^:]*:/,"").trim();
+
+			if ((hasAsterisk && labelName.indexOf(typedText) != -1) ||
+				(!hasAsterisk && labelName.indexOf(typedText) == 0)) {
+	  		rows[i].style.display = "";
+	  		noMatches = false;
+	  	}
+	  	else 
+	  		rows[i].style.display = "none";
     }
 
 		var noMatchesDiv = getChildByClassName(this.optionsPanel, "no_matches");
