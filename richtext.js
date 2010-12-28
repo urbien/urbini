@@ -1523,7 +1523,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   	}
 		// esc
 		else if(e.keyCode == 27) {
-  	  TouchDlgUtil.closeAllDialogs();
+//  not to close dialog on Esc: //	  TouchDlgUtil.closeAllDialogs();
 			i_am._close();
   	}
 		// allow arrow navigation if toolbar was closed
