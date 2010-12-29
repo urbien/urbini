@@ -4840,8 +4840,8 @@ var DataEntry = {
 				
 				document.body.appendChild(this.dataEntryArr[key]);
 		  	// RTE requires new initialization after insertion into document (?!)
-				if (!Browser.mobile)
-					ExecJS.runDivCode(this.dataEntryArr[key]);
+	//			if (!Browser.mobile)
+	//				ExecJS.runDivCode(this.dataEntryArr[key]);
 			}
 			// on desktop only hide/show, without append/remove
 			setDivVisible(null, this.dataEntryArr[key], null, hotspot, 5, 5, null);
@@ -5054,6 +5054,8 @@ var DataEntry = {
 
 				if (inputs[i].id == "item_selector")
 					this.onParamNameTyping(inputs[i]); 
+				
+				RteEngine.resetContent(div);	
 		  }
 		}
 		if (!toSave)
