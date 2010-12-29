@@ -122,7 +122,7 @@ var RteEngine = {
 		  iframes = formObj.getElementsByTagName('textarea');
 		  
 		for(var i = 0; i < iframes.length; i++) {
-			var idx = RteEngine.getRteIndex(iframes[i])
+			var idx = RteEngine.getRteIndex(iframes[i]);
 			if(idx != -1) {
 				RteEngine.rteArr[idx].putRteData();
 
@@ -133,6 +133,16 @@ var RteEngine = {
 			}
 		}
 	},
+	// removes previously entered text in RTEs
+	resetContent : function(parent) {
+		var iframes = parent.getElementsByTagName('iframe');
+		for(var i = 0; i < iframes.length; i++) {
+			var idx = RteEngine.getRteIndex(iframes[i]);
+			if(idx != -1) 
+				RteEngine.rteArr[idx].resetContent();
+		}
+	},
+	
 	// param: obj is rte-object or its id
 	getRteIndex : function(obj) {
 	  var id;
@@ -1214,6 +1224,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		  this.document.close();
 		}
 	}
+	this.resetContent = function(){
+  	this.document.body.innerHTML = "";
+	}
+	
 	// it used for a non standart command like a table insert.
 	this.insertHTML = function(html) {
 		try {
@@ -1523,8 +1537,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   	}
 		// esc
 		else if(e.keyCode == 27) {
-//  not to close dialog on Esc: //	  TouchDlgUtil.closeAllDialogs();
-			i_am._close();
+			if (i_am.toolbar.isVisible())
+				i_am._close(); // close RTE on 1st Esc
+			else
+				TouchDlgUtil.closeAllDialogs(); // close dialog on 2nd Esc
   	}
 		// allow arrow navigation if toolbar was closed
 		if (i_am.toolbar.isVisible() == false)  
