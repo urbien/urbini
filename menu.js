@@ -714,7 +714,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     if (listsContainer != null) {
       var isMultipleSel = $t.onOptionsItemClick(tr);
       if (!isMultipleSel)
-        $t.onOptionsSelection(tr);
+        $t.onOptionSelection(tr);
     }
 
     var ret = self.popupRowOnClick1(e, tr, target);
@@ -2104,7 +2104,7 @@ var FormProcessor = {
 		}
 
 		// substitute checkboxes with own drawn ones.
-    CheckButtonMgr.substitute(parent);
+    CheckButtonMgr.prepare(parent);
 		this.initFieldsWithEmpltyValues(parent);
   },
 	
@@ -3390,8 +3390,8 @@ var ListBoxesHandler = {
 
 		popupDiv.innerHTML = content;
 
-		// add highlighting
-		TouchDlgUtil.init(popupDiv);
+		CheckButtonMgr.prepare(popupDiv, $t.onOptionsItemClick); // init touch checkboxes
+		TouchDlgUtil.init(popupDiv); // add highlighting
 		
 		// bind click on option row 
 		var opTable = getChildByClassName(popupDiv, "rounded_rect_tbl");
@@ -3593,7 +3593,6 @@ var ListBoxesHandler = {
     }
   },
   
-  // allows multiple selection timeout delay
 	onOptionsItemClick : function(e) {
 		var $t = ListBoxesHandler;
 		e = getDocumentEvent(e);
@@ -3602,20 +3601,6 @@ var ListBoxesHandler = {
 		if (!tr)
 			tr = getAncestorByTagName(target, "tr");		
 		$t.markAsSelectedAndVerified(e, tr, target);
-		$t.onOptionsItemClickProcess(tr);
-	},
-	
-	markAsSelectedAndVerified : function(e, tr, target) {
-		// call "old" processor of option item click
-		// so, it sets _select and _verified
-		if (!this.toPutInClassifier) {
-			var popup = Popup.getPopup(this.curOptionsListDiv.id)
-			popup.popupRowOnClick1(e, tr, target);
-		}
-	},
-		
-  onOptionsItemClickProcess : function(tr) {
-	  var $t = ListBoxesHandler;
 
 		if ($t.isClassifierNow(tr)) {
 			$t.onClassifierItemClick(null, tr);
@@ -3628,47 +3613,33 @@ var ListBoxesHandler = {
     if (tr.id == "$more" || tr.id.indexOf("$add") == 0) // prevent from "More" and "Add"
       return true;
 
-    chkCell = tr.cells[0];
-    var checkBox = chkCell.getElementsByTagName("input")[0];
-    var vIcon = chkCell.getElementsByTagName("img")[0];
-		
-		// no checkbox - single selection (data entry, rollup)
-		if (!checkBox) {
-			if (!vIcon) {
-		  	$t.onOptionsSelection(tr);
-		  	return;
-			}
-			var isVisable = (vIcon.style.visibility.toLowerCase() == "visible");
-			if (isVisable) 
-	  		vIcon.style.visibility = "hidden";
-		  else {
-		  	$t.removeV();
-		  	vIcon.style.visibility = "visible";
-		  }
-			$t.onOptionsSelection(tr);
-			return;
+
+		if (!isElemOfClass(target, "iphone_checkbox")) {
+			var checkBtn = getChildByClassName(tr, "iphone_checkbox");
+			if (checkBtn)
+				CheckButtonMgr.switchState(checkBtn);
+			$t.onBackBtn();// slide back
 		}
 		
-		// multiple selection (filter)
-    if (checkBox.checked) {
-      checkBox.checked = false;
-      vIcon.style.visibility = "hidden";
-    }
-    else {
-      checkBox.checked = true;
-      vIcon.style.visibility = "visible";
-    }
- 
- 		ListBoxesHandler.onOptionsSelection(tr);
-    return true;
-  },
-  
+		$t.onOptionSelection(tr);
+
+	},
+	
+	markAsSelectedAndVerified : function(e, tr, target) {
+		// call "old" processor of option item click
+		// so, it sets _select and _verified
+		if (!this.toPutInClassifier) {
+			var popup = Popup.getPopup(this.curOptionsListDiv.id)
+			popup.popupRowOnClick1(e, tr, target);
+		}
+	},
+
   onClassifierItemClick : function(e, tr) {
 		this.curClass = tr.id;
 		this.processClickParam(e, tr, "options");
 	},	
 	
-  onOptionsSelection : function(lastClickedTr) {
+  onOptionSelection : function(lastClickedTr) {
 		var $t = ListBoxesHandler;
 		if (lastClickedTr && lastClickedTr.id == "$noValue") {
 			$t.onBackBtn();
@@ -3766,8 +3737,6 @@ var ListBoxesHandler = {
 		}
     
 		$t.prevSelectorInputValue = ""; // reset
-    // slide back
-    $t.onBackBtn();
   },
   
   onPeriodSelectionFinish : function(fromInp, toInp) {
@@ -4368,7 +4337,7 @@ var Filter = {
     if (!paramsTable)
       return false;
     
-    CheckButtonMgr.substitute(filterDiv);
+    CheckButtonMgr.prepare(filterDiv);
  
     var paramSel = getChildById(filterDiv, 'parameter_selector');
     FieldsWithEmptyValue.initField(paramSel, 'select');
@@ -12175,7 +12144,7 @@ var ToggleBtnMgr = {
 var CheckButtonMgr = {
   classes : new Array("iphone_checkbox"),
   
-  substitute : function(div) {
+  prepare : function(div, onclickCallback) {
     if (div == null)
       return;
 
@@ -12190,8 +12159,8 @@ var CheckButtonMgr = {
 			else continue;		
 			
 			var isSubstituted = false;
-	  	var nextElem = getNextSibling(inputs[i])
-			if (nextElem && isElemOfClass(nextElem, ["iphone_checkbox"]))
+	  	var btn = getNextSibling(inputs[i])
+			if (btn && isElemOfClass(btn, ["iphone_checkbox"]))
 				isSubstituted = true; // this element was already subsituted in JAVA or JS
 
 			// no need to process hidden checkboxes that were not substituted on server-side
@@ -12200,8 +12169,10 @@ var CheckButtonMgr = {
 
 			// native element was substituted in JAVA or JS
 			if (isSubstituted) {
-				if (!nextElem.onclick) // assign handler if need
-					nextElem.onclick = this.onClick;
+				if (!btn.onclick) // assign handler if need
+					btn.onclick = this.onClick;
+				if (onclickCallback)
+					inputs[i].onclick = onclickCallback;
 				continue; 
 			}
 				
@@ -12219,20 +12190,22 @@ var CheckButtonMgr = {
       inputs[i].style.display = 'none';
     }
   },
-  
+  // catch event (stopEventPropagation) and call callback of a hidden checkbox
   onClick : function(event) {
     var $t = CheckButtonMgr;
-    var btn = this;
-    var checkbox = getPreviousSibling(btn);
-    $t._switchState(btn, checkbox);
+    var btn = getEventTarget(event); //this;
+ 
+    $t.switchState(btn);
 
+		var checkbox = getPreviousSibling(btn);
 		if (checkbox.onclick)
 			checkbox.onclick(event);
 			
 		stopEventPropagation(event);
   },
 
-  _switchState : function(btn, input) {
+  switchState : function(btn) {
+		var input = getPreviousSibling(btn);
 		var stl = getElementStyle(btn);
     var xPos = stl.backgroundPosition || stl.backgroundPositionX;
     var isChecked = (xPos && xPos.length != 0 && xPos.indexOf("0") != 0);
