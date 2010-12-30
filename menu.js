@@ -2650,6 +2650,7 @@ var Tooltip = {
 			return;
 		if (!$t.tooltipDiv)
 			return;	
+		clearTimeout($t.timerId);	
    	$t.tooltipDiv.style.display = "none";
 		window.status = "";
 		$t.isShown = false;
