@@ -5342,7 +5342,7 @@ var TouchDlgUtil = {
 			this.focusHolder = document.createElement("input");
 			this.focusHolder.className = "shrunk_field";
 			this.focusHolder.setAttribute("readonly", "true");
-			this.focusHolder.style.top = getScrollXY()[1];
+		////////	this.focusHolder.style.top = getScrollXY()[1];
 			
 			if (Browser.ie)  // IE does not support "fixed position. So move focusHolder manually.
 				this.focusHolder.style.position = "absolute";
