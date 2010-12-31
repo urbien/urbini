@@ -3191,6 +3191,9 @@ var ListBoxesHandler = {
 	toPutInClassifier : false,
 	curClass : null, // used for "2-steps" resource selection
 	
+	addNewResIcon : null,
+	addNewResBtn : null,
+	
   _isEditList : false,
   skipUserClick : false, // helps to skip "3rd" click in RL editor
   
@@ -3222,6 +3225,10 @@ var ListBoxesHandler = {
 		this.optionsPanel = getChildByClassName(this.tray, "options_panel");
 		this.classifierPanel = getChildByClassName(this.tray, "classifier_panel");
     this.calendarPanel = getChildByClassName(this.tray, "calendar_panel");
+		
+		var toolBar = getChildByClassName(this.optionsPanel, "header");
+		this.addNewResIcon = toolBar.getElementsByTagName("td")[3];
+		this.addNewResBtn = getChildByClassName(this.optionsPanel, "button");
 		
 		this.textEntry = getChildById(this.optionsPanel, "text_entry");
 		this.classifierTextEntry = getChildById(this.classifierPanel, "text_entry");
@@ -3402,6 +3409,7 @@ var ListBoxesHandler = {
 				trs[i].onclick = $t.onOptionsItemClick;
 		}
 
+		$t.changeAddNewState(popupDiv);
 		$t.showOptions(popupDiv);
 
 		// RL editor: align options list
@@ -3562,6 +3570,22 @@ var ListBoxesHandler = {
 		return this.calendarPanel != null && this.calendarPanel.style.display == "inline";
 	},
 
+	changeAddNewState : function(popupDiv) {
+		if (!this.addNewResIcon)
+			return;
+		
+		var hdnAddTr = getChildById(popupDiv, "$addNew");
+		this.addNewResIcon.style.display = this.addNewResBtn.style.display = (hdnAddTr != null) ? "" : "none";
+		if ((hdnAddTr != null))
+			getFirstChild(this.addNewResBtn).innerHTML = getChildByTagName(hdnAddTr, "a").innerHTML;
+	},
+	
+	addNewOptionResource : function(event, hotspot) {
+		var hdnAddTr = getChildById(this.curOptionsListDiv, "$addNew");
+		var url = getChildByTagName(hdnAddTr, "a").href;
+		DataEntry.show(event, url, hotspot);
+	},
+	
   // returns 2 inputs for the filter (period)
   // and 1 input for data entry (date)
   getDateInputs : function(parent) {
@@ -5356,6 +5380,7 @@ var TouchDlgUtil = {
 		if (this.isMenuPopup(dlgDiv))
 			this._selectMenuItemWithArrow(dlgDiv);
 	},
+	
 	getCurrentDialog : function() {
 		return this.curDlgDiv;
 	},
