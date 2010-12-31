@@ -539,7 +539,8 @@ tr.fts td { vertical-align: middle; padding: 2px 0px; color: &[Label];; }
 }
 .ftsq {  color: &[SecondaryColorA_3];; }
 .desktop_search input { 
-    width: 190px;
+    width: 190px !important;
+    width: 180px;
     font: bold 16px Helvetica;
     border: none;
     padding: 0px 0px 0px 0px;
