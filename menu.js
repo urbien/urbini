@@ -4018,14 +4018,18 @@ var ListBoxesHandler = {
 		  var labelName = getTextContent(label).toLowerCase();
 			// remove "prefix" like "name:" in assignedTo
 			labelName = labelName.replace(/^[^:]*:/,"").trim();
-
-			if ((hasAsterisk && labelName.indexOf(typedText) != -1) ||
-				(!hasAsterisk && labelName.indexOf(typedText) == 0)) {
-	  		rows[i].style.display = "";
-	  		noMatches = false;
-	  	}
-	  	else 
-	  		rows[i].style.display = "none";
+			var labelNameSplitted = labelName.split(";"); // in case like "Contact"
+			for (var n = 0; n < labelNameSplitted.length; n++) {
+				var token = labelNameSplitted[n].trim();
+		  	if ((hasAsterisk && token.indexOf(typedText) != -1) ||
+		  	(!hasAsterisk && token.indexOf(typedText) == 0)) {
+		  		rows[i].style.display = "";
+		  		noMatches = false;
+					break; // found in one token then to show (whole) item row
+		  	}
+		  	else 
+		  		rows[i].style.display = "none";
+		  }
     }
 
 		var noMatchesDiv = getChildByClassName(this.optionsPanel, "no_matches");
