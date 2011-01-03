@@ -236,7 +236,7 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
   -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
 }
 
-/* Safari doesn't support inset box shadow, so we better remove it */
+/* Chrome doesn't support inset box shadow for rounded corners correct, so we better remove it */
 @media screen and (-webkit-min-device-pixel-ratio:0){
   input[type=button]:active, input[type=submit]:active,.button:active	{ 
     -webkit-box-shadow: none;
@@ -528,13 +528,20 @@ tr.fts td { vertical-align: middle; padding: 2px 0px; color: &[Label];; }
 
 .desktop_search .left {
  	float: left;
-  box-shadow: 1px 0px 2px rgba(0, 0, 0, 0.5) inset;
-	-moz-box-shadow: 1px 0 2px rgba(0, 0, 0, 0.5) inset;
-	background: #FFFFFF;
+ 	box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+	-moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+	-webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+}
+
+.desktop_search .left_inner {
+  box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.5) inset;
+	-moz-box-shadow:0 0 2px rgba(0, 0, 0, 0.5) inset;
+	-webkit-box-shadow:0 0 2px rgba(0, 0, 0, 0.5) inset;
+	background: #ffffff;
 	width: 210;
 	height: 31px;
-	padding: 0px 3px 0px 4px;
 }
+
 .ftsq {  color: &[SecondaryColorA_3];; }
 .desktop_search input { 
     width: 190px !important;
