@@ -3197,6 +3197,8 @@ var ListBoxesHandler = {
   _isEditList : false,
   skipUserClick : false, // helps to skip "3rd" click in RL editor
   
+	madeSelection : false,
+	
 	clonedEvent : null,
 	
 	setTray : function(parent) {
@@ -3760,7 +3762,8 @@ var ListBoxesHandler = {
 				}
 			}
 		}
-    
+		
+    $t.madeSelection = true;
 		$t.prevSelectorInputValue = ""; // reset
   },
   
@@ -3926,14 +3929,14 @@ var ListBoxesHandler = {
 		else // Filter: allows to set value from textEntry directly
 			value = FieldsWithEmptyValue.getValue(this.textEntry);
 		
-		if (value.length != 0) {
+		if (value.length != 0 && !this.madeSelection) {
 			// remove possible selected values
 			this.makeParamReset();
 			if (chosenValuesDiv)
       	chosenValuesDiv.innerHTML = "<div>" + value + "</div>";
       textField.value = value;
 		}
-		
+		this.madeSelection = false;
     this.onBackBtn();
   },
 
