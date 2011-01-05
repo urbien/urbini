@@ -4158,6 +4158,9 @@ var TagsMgr = {
 	},
 	deleteTag : function(tag) {
 		tag.parentNode.removeChild(tag);
+	},
+	deleteAll : function(parentDiv) {
+		parentDiv.innerHTML = "";
 	}
 }
 
