@@ -1240,6 +1240,9 @@ input.primary {
 .menuItemIcon {
 	PADDING-RIGHT: 2px; PADDING-LEFT: 3px; white-space: nowrap; width: 20px
 }
+.menuItemIconEmpty {
+  PADDING-LEFT: 5px;
+}
 
 .poweredMenuItemIcon {
 	PADDING-RIGHT: 2px; PADDING-LEFT: 2px; BACKGROUND-COLOR: #EDECF8; white-space: nowrap; width: 30px
