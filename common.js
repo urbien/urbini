@@ -65,8 +65,7 @@ function comparePosition(a, b){
 * String extension
 ************************************************/
 String.prototype.startsWith = function (s){
-  var reg = new RegExp("^" + s);
-  return reg.test(this);
+	return this.indexOf(s) == 0;
 }
 String.prototype.endsWith = function(s){
   var reg = new RegExp(s + "$");
@@ -367,7 +366,13 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
 //        Boost.log("recursive redirect to " + url);
         return;
       }
-
+			
+			// created resource from options panel
+			if (location.indexOf("$createdForResource=1") != -1) {
+				ListBoxesHandler.setNewOptionResource(location);
+				return;
+			}
+			
       var paintInPage;
       if (Browser.mobile)
         paintInPage = true;
@@ -1742,10 +1747,14 @@ function getUrlParam(url, paramName) {
 		url = window.location.href
 	
   var results = regex.exec(url);
-  if( results == null )
-    return null;
-  else
-    return results[1];
+  if (results == null) {
+  	if (!paramName.startsWith(".")) // it is common to use dot in parameter name
+			return getUrlParam(url, "." + paramName)
+		else
+			return null;
+  }
+  else 
+  	return results[1];
 }
 
 // returns 'pane2' or 'panel_block'
