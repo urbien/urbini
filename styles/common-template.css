@@ -1237,7 +1237,7 @@ input.primary {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
 }
 
-.menuItemIcon {
+.menuItemIcon, .menuItemIconEmpty {
 	PADDING-RIGHT: 2px; PADDING-LEFT: 3px; white-space: nowrap; width: 20px
 }
 .menuItemIconEmpty {
