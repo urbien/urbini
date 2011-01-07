@@ -787,39 +787,43 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       return true;
 
     // 5. form
-    var form = document.forms[currentFormName];
-    if (form == null) {
-      throw new Error("not found html form for TR: " + tr.id);
-    }
+//    var form = document.forms[currentFormName];
+//    if (form == null) {
+//      throw new Error("not found html form for TR: " + tr.id);
+//    }
+
     var table  = tr.parentNode;
     var table1 = table.parentNode;
 
-    var propertyShortName = table1.id.substring("table_".length);
-    var idx = propertyShortName.lastIndexOf('_');
-    propertyShortName = propertyShortName.substring(0, idx);
-    var idx = propertyShortName.indexOf(".", 1);
-    var prop = null;
-    var pLen = propertyShortName.length;
-    if (idx == -1) {
-      idx = propertyShortName.indexOf("_class");
-      if (idx != -1)
-        prop = propertyShortName.substring(0, pLen - 6);
-      else
-        prop = propertyShortName;
-    }
-    else {
-      if (propertyShortName.indexOf(".type") == idx) {
-        if (idx + 5 != pLen)
-          prop = propertyShortName.substring(0, idx);
-        else
-          prop = propertyShortName;
-      }
-      else
-        prop = propertyShortName.substring(0, idx);
-    }
-    
-    var chosenTextField = getOriginalPropField(form, originalProp); //form.elements[originalProp];
-    var len = chosenTextField.length;
+    var chosenTextField = ListBoxesHandler.getTextFieldInParamRow();//getOriginalPropField(form, originalProp);
+		var form = chosenTextField.form;
+		var prop = chosenTextField.name;
+		
+//    var propertyShortName = table1.id.substring("table_".length);
+//    var idx = propertyShortName.lastIndexOf('_');
+//    propertyShortName = propertyShortName.substring(0, idx);
+//    var idx = propertyShortName.indexOf(".", 1);
+//    var prop = null;
+//    var pLen = propertyShortName.length;
+//    if (idx == -1) {
+//      idx = propertyShortName.indexOf("_class");
+//      if (idx != -1)
+//        prop = propertyShortName.substring(0, pLen - 6);
+//      else
+//        prop = propertyShortName;
+//    }
+//    else {
+//      if (propertyShortName.indexOf(".type") == idx) {
+//        if (idx + 5 != pLen)
+//          prop = propertyShortName.substring(0, idx);
+//        else
+//          prop = propertyShortName;
+//      }
+//      else
+//        prop = propertyShortName.substring(0, idx);
+//    }
+ 
+    var len = chosenTextField.length; // Note: it seems that currently it is only 1(!) field
     var verified = prop + "_verified";
     if (currentResourceUri)
       verified = currentResourceUri + ".$" + verified;
@@ -851,6 +855,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
                      currentFormName.indexOf("gridColsList") == 0  ||
                      currentFormName.indexOf("filterColsList") == 0;
     
+
+		
     if (isViewCols)
       select = prop;
     else
@@ -860,6 +866,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
     var formField = form.elements[select];
     
     var selectItems = form.elements[select];
+		
     if (tr.id.indexOf('$clear') == 0) {
       if (isViewCols) {
         // form url based on parameters that were set
@@ -3176,7 +3183,7 @@ var ListBoxesHandler = {
   // Touch UI CODE -----------------------------------
   panelBlock : null,
 	tray : null, // each tray contains own form, options and (optionaly) calendar panels.
-  
+  	
 	formPanel : null,
 	optionsPanel : null,
 	classifierPanel : null,
@@ -3197,6 +3204,8 @@ var ListBoxesHandler = {
   _isEditList : false,
   skipUserClick : false, // helps to skip "3rd" click in RL editor
   
+	suspended : null, // structure used for Add new resource from options panel
+
 	madeSelection : false,
 	
 	clonedEvent : null,
@@ -3383,7 +3392,7 @@ var ListBoxesHandler = {
 		}
 		return true; 
   },
-
+	
   onListLoaded : function(event, popupDiv, hotspot, content) {
 		var $t = ListBoxesHandler;
 		var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
@@ -3483,7 +3492,7 @@ var ListBoxesHandler = {
 			
 			// hide invisible param-rows under page bottom trying to speed up sliding in FF.
 			$t._hideInvisibleParams();
-			SlideSwaper.moveForward($t.tray, toResetTray, $t.onOptionsDisplayed);
+			SlideSwaper.moveForward($t.tray, $t.onOptionsDisplayed);
 		}
   },
 	
@@ -3565,7 +3574,7 @@ var ListBoxesHandler = {
 	  startCalendar($t.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
     
     // slide forward
-    SlideSwaper.moveForward($t.tray, true);
+    SlideSwaper.moveForward($t.tray);
   },
 	
 	isCalendar : function() {
@@ -3583,9 +3592,73 @@ var ListBoxesHandler = {
 	},
 	
 	addNewOptionResource : function(event, hotspot) {
+		this.suspended = new Object();
+		this.suspended.tray = this.tray;
+		this.suspended.curParamRow = this.curParamRow;
+		this.suspended.curOptionsListDiv = this.curOptionsListDiv;
+		this.suspended.curOptionsListDiv = this.curOptionsListDiv;
+		this.suspended.curClassesPopupDiv = this.curClassesPopupDiv;
+
 		var hdnAddTr = getChildById(this.curOptionsListDiv, "$addNew");
 		var url = getChildByTagName(hdnAddTr, "a").href;
+		
+		TouchDlgUtil.isThereChildDlg = true;
 		DataEntry.show(event, url, hotspot);
+	},
+	
+	// callback on resource creating from option panel
+	// retLocationStr: 1) Url string - on server response
+	// 2) false - to restore parent dlg only
+	setNewOptionResource : function(retLocationStr) {
+		var $t = ListBoxesHandler;
+
+		$t.restoreFromSuspended();
+		
+	//	if (retLocationStr == false)
+	//		return; // called on error in data of a child "New resorce" dialog
+		
+		var textField = $t.getTextFieldInParamRow(); 
+		var paramName = textField.name;
+		var paramValue = decodeURIComponent(getUrlParam(retLocationStr, paramName)).replace(/\+/g, " "); 
+		var paramSelectValue = decodeURIComponent(getUrlParam(retLocationStr, paramName + "_select")); 
+		
+		var newTr = document.createElement("tr");
+		newTr.className = "menuItemRow";
+		newTr.id = paramSelectValue;
+		var td1 = document.createElement("td");
+		td1.className = "menuItemIcon";
+		td1.innerHTML = "&nbsp;";
+		var td2 = document.createElement("td");
+		td2.className = "menuItem";
+		td2.innerHTML = paramValue;	
+
+		newTr.appendChild(td1);
+		newTr.appendChild(td2);
+		var tbody = getChildByTagName($t.curOptionsListDiv, "tbody");
+
+		if (getChildByClassName(tbody, "menuItemChk")) { // multiple selection - nead touch check button
+			var chTd = document.createElement("td");
+			chTd.className = "menuItemChk";
+			chTd.innerHTML = "<input type=\"checkbox\" checked=\"yes\" value=\"" + paramSelectValue + "\">"
+			CheckButtonMgr.prepare(chTd)
+			newTr.insertBefore(chTd, td1);
+		}
+		tbody.appendChild(newTr);
+		$t.onOptionSelection(newTr);
+		$t.onBackBtn(); // slide back
+		
+		$t.suspended = null;
+	},
+	
+	restoreFromSuspended : function(toRestore) {
+		if (toRestore == false) {
+			this.suspended = null;
+			return;
+		}
+		this.curParamRow = this.suspended.curParamRow;
+		this.curOptionsListDiv = this.suspended.curOptionsListDiv;
+		this.curClassesPopupDiv = this.suspended.curClassesPopupDiv; 
+		this.setTray(this.suspended.tray);
 	},
 	
   // returns 2 inputs for the filter (period)
@@ -3626,8 +3699,7 @@ var ListBoxesHandler = {
 		var target = getEventTarget(e);
 		var tr = getAncestorByClassName(target, ["menuItemRow", "option_tr"]);
 		if (!tr)
-			tr = getAncestorByTagName(target, "tr");		
-		$t.markAsSelectedAndVerified(e, tr, target);
+			tr = getAncestorByTagName(target, "tr");	
 
 		if ($t.isClassifierNow(tr)) {
 			$t.onClassifierItemClick(null, tr);
@@ -3666,30 +3738,32 @@ var ListBoxesHandler = {
 		this.processClickParam(e, tr, "options");
 	},	
 	
-  onOptionSelection : function(lastClickedTr) {
+  onOptionSelection : function(clickedTr) {
 		var $t = ListBoxesHandler;
-		if (lastClickedTr && lastClickedTr.id == "$noValue") {
+		if (clickedTr && clickedTr.id == "$noValue") {
 			$t.onBackBtn();
 			return;
 		}
+		
+		// Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
+		this.markAsSelectedAndVerified(null, clickedTr, clickedTr);
 		
 		var textField = null;
 		if ($t.isCalendar()) 
 			textField = PeriodPicker.onSetThruList();
 		
-		if (textField == null) {
-			var form = document.forms[currentFormName];
-			textField = getOriginalPropField(form, originalProp);
-		}
+		if (textField == null)
+			var textField = $t.getTextFieldInParamRow(); 
 
-    var selectedOption = $t.getSelectedOption(lastClickedTr);
+
+    var selectedOption = $t.getSelectedOption(clickedTr);
 	 	var tr = getAncestorByClassName(textField, "param_tr");
 	  var rollupTd = getAncestorByClassName(textField, "rollup_td"); //getAncestorByTagName(textField, "td"); //getAncestorByClassName(textField, ["input_td"]);
     var chosenValuesDiv = getChildByClassName(tr, "chosen_values");
 		// 1. rollup
 		if (rollupTd != null) {
 			var img = rollupTd.getElementsByTagName("img")[0];
-	  	textField.value = lastClickedTr.id;
+	  	textField.value = clickedTr.id;
 			img.src = "icons/cakes.png";
 		}
 		// 2. Filter or Subscribe
@@ -3722,8 +3796,6 @@ var ListBoxesHandler = {
 		}
 		// 3. data entry
 		else {
-			// Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
-
 			// 3.1. multi value selection
 			if (typeof selectedOption["checked"] != "undefined") { // /*len != 1 || selectedOptionsArr[0]["multi_value"] == "yes"*/
 
@@ -3762,7 +3834,7 @@ var ListBoxesHandler = {
 				}
 			}
 		}
-		
+    
     $t.madeSelection = true;
 		$t.prevSelectorInputValue = ""; // reset
   },
@@ -3785,8 +3857,6 @@ var ListBoxesHandler = {
     $t.onBackBtn(1); 
   },
   
-  // 1) multipele selection: checked [v]-icon.
-  // 2) single selection allowed: lastClickedTr.
   getSelectedOption : function(tr) {
       var chkCell = tr.cells[0];
       var checkBox = chkCell.getElementsByTagName("input")[0];
@@ -3941,6 +4011,10 @@ var ListBoxesHandler = {
   },
 
   onBackBtn : function() {
+		// process case of "creation a new resource from option panel"
+		if (TouchDlgUtil.isThereChildDlg && comparePosition(this.suspended.tray, this.tray) == 0)
+				return false; // no slide back on new resorce from option panel
+
     var tray = this.tray; //getAncestorByClassName(this.optionsPanel, "tray");
     if (tray == null)
       var tray = getAncestorByClassName(this.calendarPanel, "tray");
@@ -4089,7 +4163,11 @@ var ListBoxesHandler = {
 		$t.skipUserClick = false;
 		$t.onClickParam($t.clonedEvent);
   },
-	
+	// use it instead "old" currentFormName and originalProp
+	getTextFieldInParamRow : function() {
+		var dataTd = getChildByClassName(this.curParamRow, "data_td");
+		return dataTd.getElementsByTagName("input")[0];	
+	},
 	getCurrentPanelDiv : function() {
 		if (this.tray == null) { // on page dialog
 			var dlg = TouchDlgUtil.getCurrentDialog();
@@ -4178,26 +4256,24 @@ var SlideSwaper = {
 	
 	offset : 0,
   
-  curState : 0, // -1 means moveForward; -2 means moveForward twice.
   tray : null,
   callback: null,
   
-  factor : 1,
+	trayPosition : 0,
 
-  // callback is not required
-  moveForward : function(tray, reset, callback) {
+  // alway 1 "step"; callback is not required
+  moveForward : function(tray, callback) {
 		if (this.offset != 0)
       return;
 
     this.tray = tray;
     this.callback = callback;
     
-    if (typeof reset != 'undefined' && reset == true)
-      this.curState = 0;
+		this.trayPosition = this.getTrayPosition(tray);
     
     if (Browser.webkit) {
-      this.curState--;
-		  this.tray.style.webkitTransform = "translate(" + this.DISTANCE * this.curState + "%, 0%)";
+		 	var moveInPercents =  - this.DISTANCE * (this.trayPosition + 1);
+		  this.tray.style.webkitTransform = "translate(" + moveInPercents + "%, 0%)";
 			if (callback) // note: failed to use 'webkitAnimationEnd' event
         setTimeout(callback, 500); // 500 - arbitary quite big timeout
     }
@@ -4207,23 +4283,22 @@ var SlideSwaper = {
     }
   },
   
+	// always to the begining (to form panel) so possible 1, 2 or 3 "steps"
   moveBack : function(tray, callback) {
 	 	if (this.offset != 0)
       return;
- 
+
  		var trayPosition = this.getTrayPosition(tray);
 		if (trayPosition == 0)
 			return;
 
-    this.factor = trayPosition;  
-      
     this.tray = tray;
     this.callback = callback;
+		this.trayPosition = trayPosition;
 
     if (Browser.webkit) {
       this.curState += this.factor;
-      // to the beginning "translate(0%, 0%)";
-      this.tray.style.webkitTransform = "translate(" + this.DISTANCE * this.curState + "%, 0%)";
+			this.tray.style.webkitTransform = "translate(0%, 0%)";
     }
     else {
       this.isForward = false;
@@ -4251,8 +4326,10 @@ var SlideSwaper = {
 			bPoint[0] = 1.0;
 		}
 		
-		var distance = $t.factor * $t.DISTANCE;
-		var left = Math.floor(dir * distance * bPoint[0]) + ($t.DISTANCE * $t.curState);  
+		var distance = $t.DISTANCE;
+		if (!$t.isForward)
+			distance = $t.DISTANCE * $t.trayPosition;
+		var left = Math.floor(dir * distance * bPoint[0]) - ($t.DISTANCE * $t.trayPosition);  
 
     // for FF 3.1b2 that does not support -moz-transition-duration (?)
     if (typeof $t.tray.style.MozTransform != 'undefined') {
@@ -4269,8 +4346,6 @@ var SlideSwaper = {
       setTimeout($t._moveStep, $t.TIMEOUT);
     else { // finish
       $t.offset = 0;
-      $t.factor = 1;
-      $t.curState += dir;
       
 			// HACK! FF 3.5
 	    $t.tray.style.MozTransform = "translate(0%, 0%)";
@@ -4843,6 +4918,7 @@ var DataEntry = {
 	dataEntryArr : new Array(),
 	loadingUrl : null,
 	currentUrl : null,
+	suspendedUrl : null, // used to make New resource from Options panel
 	_hdnDiv : null, // used to convert html to DOM object
 	inpValues : null, // used for mkResource forms
 	
@@ -4857,10 +4933,12 @@ var DataEntry = {
 		this.hotspotDim = {x:0, y:0};
 		if (hotspot)
 			this.hotspotDim = getElementCoords(hotspot);
-		
-		// hide possible opened dialogs
-		TouchDlgUtil.closeAllDialogs();
 
+		if (!TouchDlgUtil.isThereChildDlg) // opening dialog is child
+			TouchDlgUtil.closeAllDialogs(); // hide possible opened dialogs
+		else
+			this.suspendedUrl = this.currentUrl;
+		
 		var isSecondClick = (this.currentUrl == url);		
 		if (isSecondClick)
 			return;
@@ -4942,15 +5020,20 @@ var DataEntry = {
 		var $t = DataEntry;
 		$t.onDataEntryLoaded(event, div, hotspot, html, url, true);
 	},
-	
-	hide : function (e, hideIcon) {
+
+	hide : function (onSubmit) {
 		var key = this._getKey(this.currentUrl);
+		
 		if (key == null)
 			return;
 		
 		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
 			return;
-		
+
+		if (TouchDlgUtil.isThereChildDlg &&
+			 comparePosition(TouchDlgUtil.getCurrentDialog(), this.dataEntryArr[key]) != 0)
+			return; // no hide "parent" dialog on "new resource" from option panel
+
 		// on desktop only hide/show, without append/remove
 		if (!Browser.mobile) {
 			this.dataEntryArr[key].style.display = "none";
@@ -4969,8 +5052,17 @@ var DataEntry = {
 			delete this.dataEntryArr[key];
 			this.onDataError  = false;
 		}
-		
-		this.currentUrl = null;
+
+		if (TouchDlgUtil.isThereChildDlg) {
+			if (!onSubmit)
+				ListBoxesHandler.restoreFromSuspended();
+			TouchDlgUtil.isThereChildDlg = false;
+			this.currentUrl = this.suspendedUrl;
+		}
+		else {
+			ListBoxesHandler.restoreFromSuspended(false); // remove suspended
+			this.currentUrl = null;
+		}
 	},
 	
 	// hides params with not suited beginning.		
@@ -5321,6 +5413,8 @@ var TouchDlgUtil = {
 	isFocusInDialog : false,
 	dlgWasClicked : false,
 
+	isThereChildDlg : false, // helps with creting of a new resorce from option panel
+	
 	wasOnceInit : false, // to hide autocomplete
 	
 	// it is called for 1) whole dialog + form panel 2) for each options list
@@ -5389,6 +5483,9 @@ var TouchDlgUtil = {
 		
 		if (this.isMenuPopup(dlgDiv))
 			this._selectMenuItemWithArrow(dlgDiv);
+	
+		if (ListBoxesHandler.suspended != null)
+			this.isThereChildDlg = true;		
 	},
 	
 	getCurrentDialog : function() {
@@ -5439,11 +5536,11 @@ var TouchDlgUtil = {
 		  	}
 			}
 		// 3. esc
-		else if(code == 27) {
-			if ($t.isMenuPopupOpened())
-				stopEventPropagation(event); // prevent TabMenu	processing of Esc
-			TouchDlgUtil.closeAllDialogs();
-		}
+//		else if(code == 27) {
+//			TouchDlgUtil.closeAllDialogs();
+			//if ($t.isMenuPopupOpened()) // prevent TabMenu	processing of Esc
+//			stopEventPropagation(event, true); // prevent to process Esc 
+//		}
 		// left, right with opened menu "popup"
 		else if ((code == 37 || code == 39) && $t.isMenuPopupOpened()) {
 			PlainDlg.hide();
@@ -5723,7 +5820,8 @@ var TouchDlgUtil = {
 		var target = null;
 
 		// prevent submit before sliding back (option selection) finished
-		if ($t.hasBlueRow()) 
+//		if ($t.hasBlueRow()) 
+		if (SlideSwaper.doesSlidingRun())
 			return;
 		
 		if (event.type == 'click')
@@ -5745,7 +5843,8 @@ var TouchDlgUtil = {
 	
 	// closes 1) data entry 2) filter 3) plain dialog
 	closeAllDialogs : function(isFtsAutocomplete) {
-		ListBoxesHandler.onBackBtn();
+		if (ListBoxesHandler.onBackBtn())
+			return; // slide back to form panel
 
 		DataEntry.hide();
 		if (!(isFtsAutocomplete && Browser.mobile))
@@ -5761,6 +5860,8 @@ var TouchDlgUtil = {
 			this.bleachGreyRow();
 			this.curDlgDiv = null;
 		}
+				
+		
 	},
 	
 	highlightRowGreyOnOver : function(event) {
