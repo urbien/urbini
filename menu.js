@@ -4918,9 +4918,10 @@ var DataEntry = {
 	dataEntryArr : new Array(),
 	loadingUrl : null,
 	currentUrl : null,
-	suspendedUrl : null, // used to make New resource from Options panel
 	_hdnDiv : null, // used to convert html to DOM object
 	inpValues : null, // used for mkResource forms
+	
+	suspended : new Object(), // used to make New resource from Options panel
 	
 	onDataError : false, // data entry was returned by server with errors on data entry
 	
@@ -4935,9 +4936,11 @@ var DataEntry = {
 			this.hotspotDim = getElementCoords(hotspot);
 
 		if (!TouchDlgUtil.isThereChildDlg) // opening dialog is child
-			TouchDlgUtil.closeAllDialogs(); // hide possible opened dialogs
-		else
-			this.suspendedUrl = this.currentUrl;
+		TouchDlgUtil.closeAllDialogs(); // hide possible opened dialogs
+		else {
+			this.suspended.currentUrl = this.currentUrl;
+			this.suspended.inpValues = this.inpValues;
+		}
 		
 		var isSecondClick = (this.currentUrl == url);		
 		if (isSecondClick)
@@ -5057,7 +5060,8 @@ var DataEntry = {
 			if (!onSubmit)
 				ListBoxesHandler.restoreFromSuspended();
 			TouchDlgUtil.isThereChildDlg = false;
-			this.currentUrl = this.suspendedUrl;
+			this.currentUrl = this.suspended.currentUrl;
+			this.inpValues = this.suspended.inpValues;
 		}
 		else {
 			ListBoxesHandler.restoreFromSuspended(false); // remove suspended
