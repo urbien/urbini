@@ -3,9 +3,7 @@
   <table border="0" align="center" cellpadding="3" cellspacing="0" cols="2" class="userLogin">
       <tr>
         <td colspan="2" class="poweredBy-td" valign="middle" align="center" height="40">
-          <a href="http://universalplatform.com" target="_blank" style="text-decoration: none">
-            <span class="large-poweredBy"><property name="owner.longName"/></span>
-          </a>
+          <span class="large-poweredBy"><property name="owner.longName"/></span>
         </td>
       </tr>
       <tr>
