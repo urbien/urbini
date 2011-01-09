@@ -43,12 +43,10 @@ a:hover { color: &[SecondaryColorB_2];; text-decoration: none; cursor: pointer}
 
 a.external span.textInLink {
   color: &[SecondaryColorB_3];; 
-  background: url(../icons/external.png);
-  background-position: 100% 50%;
-  background-repeat: no-repeat;
+  background: url(../icons/external.png) no-repeat scroll right center transparent;
+  border-bottom: 1px dotted #CCCCCC;
   padding-right: 12px !important;
 }
-
 /*
 a.external:link span.textInLink, a.external:visited span.textInLink { color: &[SecondaryColorB_3];; background:transparent url(../icons/external.gif) no-repeat 99% 3px; padding-right:15px; }
 a.external:hover span.textInLink, a.external:active span.textInLink { color: &[SecondaryColorB_3];; background: #fcfcfc url(../icons/external.gif) no-repeat 99% -147px; padding-right:15px; }
@@ -94,7 +92,7 @@ img.fade {
 
 #dataEntry td { font-size: 1em; }
 #dataEntry table { border-collapse: collapse; }
-#siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; font-size: 1em; }
+#siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; font-size: 12px; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
 
 #siteResourceList #front {background-color: &[BackgroundColor];}
@@ -384,6 +382,10 @@ td.textCell {
 .galleryItem td#whiteBottom {
   background-image:url(../images/frame/white_bg/bottom.jpg);
   vertical-align: top; background-position: top; text-align: left; background-repeat: repeat-x;
+}
+
+.galleryItem #whiteBottom td {
+  height: 11px;
 }
 
 .galleryItem img#rightTop {
