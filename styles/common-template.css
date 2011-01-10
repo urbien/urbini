@@ -2029,8 +2029,8 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .rounded_rect_tbl .blue_highlighting .label.rounded_rect_tbl .blue_highlighting .propLabel1, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[Label];; }
 .empty_field { color: rgba(&[PrimaryColor_4_text_rgb];, 0.6) !important;}
 .grey_highlighting .empty_field{ color: rgba(&[Alternative_A_rgb];, 0.6) !important;}
-
-.rounded_rect_tbl .focused_field, .iphone_field .focused_field, .focused_field { color: rgba(&[Alternative_A_rgb];, 0.4); }
+.rounded_rect_tbl .focused_field { color: rgba(&[Alternative_A_rgb];, 0.4); }
+.iphone_field .focused_field, .focused_field { color: rgba(&[PrimaryColor_4_text_rgb];, 0.4); }
 
 .widget .dragable h2 { margin-bottom: 0px; font-size: 17px; } 
 .widget .containers h2 { margin: 5px 0px 0px 0px; }
