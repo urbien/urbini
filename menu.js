@@ -5796,7 +5796,11 @@ var TouchDlgUtil = {
 		var selector = getChildById(parent, ["item_selector", "parameter_selector", "text_entry"]);
 		if (!selector || !isVisible(selector)) {
 			selector = this.focusHolder;
-			this.focusHolder.focus();
+			var fstInput = getChildByClassName(parent, "input");
+			if (fstInput &&  isVisible(fstInput))
+				fstInput.focus();
+			else	
+				this.focusHolder.focus();
 		}
 		else {
 			if (!selector.onfocus) 
@@ -9039,6 +9043,8 @@ var FieldsWithEmptyValue = {
 		var $t = FieldsWithEmptyValue;
 		var field = getEventTarget(event);
 		var code = getKeyCode(event);
+		if (code == 27)
+			return;
 		$t.setReady(field); 
   },
   
