@@ -47,6 +47,7 @@ a.external span.textInLink {
   border-bottom: 1px dotted #CCCCCC;
   padding-right: 12px !important;
 }
+
 /*
 a.external:link span.textInLink, a.external:visited span.textInLink { color: &[SecondaryColorB_3];; background:transparent url(../icons/external.gif) no-repeat 99% 3px; padding-right:15px; }
 a.external:hover span.textInLink, a.external:active span.textInLink { color: &[SecondaryColorB_3];; background: #fcfcfc url(../icons/external.gif) no-repeat 99% -147px; padding-right:15px; }
@@ -2035,7 +2036,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .widget .containers h2 { margin: 5px 0px 0px 0px; }
 .widget .containers h2 a { font-size: 19px; padding: 0px; }
 
-.shrunk_field { position: fixed; font-size: 1px; width: 1px; border-width: 0; background: transparent; }
+.shrunk_field { position: absolute; font-size: 1px; width: 1px; border-width: 0; background: transparent; }
 
 /* like "TO" field in message */
 .rounded_rect_tbl .tags { width: auto; margin-bottom: 7px; }
