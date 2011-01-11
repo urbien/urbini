@@ -107,9 +107,9 @@ img.fade {
   display: inline;
   float: none;
 }
-.displayInline  { overflow:hidden; width: 100%; height: 2em; line-height: 2em; }
-.displayInline, .displayInline * { font-size:1em !important; font-weight:normal !important; margin:0 !important; }
-
+.displayInline  { overflow: hidden; width: 100%; height: 2em; line-height: 2em; text-align:justify; }
+.displayInline, .displayInline * { font-size: 1em !important; font-weight: normal !important; margin: 0 !important; }
+.displayInline * { display: inline; padding-right: 0.5em; }
 .mItems {
   text-align:center;
   vertical-align: top;
