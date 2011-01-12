@@ -4926,12 +4926,14 @@ var DataEntry = {
 	onDataError : false, // data entry was returned by server with errors on data entry
 	
 	hotspotDim : null,
-	
-	show : function(e, url, hotspot) {
+	// parentDivId is not required
+	show : function(e, url, hotspot, parentDivId) {
 		if (this.loadingUrl != null)
 			return;
-
-		this.hotspotDim = {x:0, y:0};
+//debugger;
+		this.hotspotDim = {x:100, y:100};
+		if (!hotspot && e)
+			hotspot = getEventTarget(e);
 		if (hotspot)
 			this.hotspotDim = getElementCoords(hotspot);
 
@@ -4947,7 +4949,8 @@ var DataEntry = {
 			return;
 		
 		var key = this._getKey(url);
-		if (this.dataEntryArr[key]) { // data entry stored (in mobile mode)
+		// show stored data entry 
+		if (this.dataEntryArr[key]) {
 			if (this.isMkResource(url))
 				this.doStateOnMkResource(this.dataEntryArr[key], true);
 			
@@ -4960,18 +4963,23 @@ var DataEntry = {
 	//				ExecJS.runDivCode(this.dataEntryArr[key]);
 			}
 			// on desktop only hide/show, without append/remove
-			setDivVisible(null, this.dataEntryArr[key], null, hotspot, 5, 5, null);
+			if (parentDivId)
+				this.dataEntryArr[key].style.display = "block";
+			else
+				setDivVisible(null, this.dataEntryArr[key], null, hotspot, 5, 5, null);
 			this.currentUrl = url;
 		}
+		// load data entry 
 		else {
 			this.loadingUrl = url;
 			urlParts = url.split('?');
-			postRequest(e, urlParts[0], urlParts[1], null, null, this.onDataEntryLoaded);
+			var parentDiv = (parentDivId) ? document.getElementById(parentDivId) : null;
+			postRequest(e, urlParts[0], urlParts[1], parentDiv, hotspot, this.onDataEntryLoaded);
 		}
 	},
 
 	// parameters provided by XHR and not all used
-	onDataEntryLoaded : function(event, div, hotspot, html, url, onDataError) {
+	onDataEntryLoaded : function(event, parentDiv, hotspot, html, url, onDataError) {
 		var $t = DataEntry;
 
 		if (onDataError) { // server returned previously submitted data dialog with errors of data entry
@@ -4988,7 +4996,10 @@ var DataEntry = {
 		div = getDomObjectFromHtml(html, "className", "panel_block");
 		div.style.visibility = "hidden";
 		// insert in DOM
-		div = document.body.appendChild(div);
+		if (parentDiv)
+			div = parentDiv.appendChild(div);
+		else	
+			div = document.body.appendChild(div);
 	
 		// onDataError happens on mkResource
 		if (onDataError || $t.isMkResource($t.currentUrl))
@@ -5032,6 +5043,9 @@ var DataEntry = {
 		
 		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
 			return;
+
+		if (TouchDlgUtil.isDlgOnPage(this.dataEntryArr[key]))
+			return; //dialog embeded into page
 
 		if (TouchDlgUtil.isThereChildDlg &&
 			 comparePosition(TouchDlgUtil.getCurrentDialog(), this.dataEntryArr[key]) != 0)
@@ -5492,10 +5506,13 @@ var TouchDlgUtil = {
 	getCurrentDialog : function() {
 		return this.curDlgDiv;
 	},
+	isDlgOnPage : function(dlg) {
+		return (getElementStyle(dlg).position.toLowerCase() == "static");
+	},	
 	isCurDlgOnPage : function() {
 		if (!this.curDlgDiv)
 			return null;
-		return (getElementStyle(this.curDlgDiv).position == "static");
+		return this.isDlgOnPage(this.curDlgDiv);
 	},	
 	keyHandler : function(event) {
 		var $t = TouchDlgUtil;
@@ -7800,11 +7817,11 @@ function showTab(e, td, hideDivId, unhideDivId) {
 
   resizeIframeOnTabSelection(curDiv); // IE
   
-	var panelBlock = getChildByClassName(curDiv, "panel_block");
-	if (panelBlock) {
-  	TouchDlgUtil.init(panelBlock);
-  	TouchDlgUtil.setCurrentDialog(panelBlock);
-  }
+//	var panelBlock = getChildByClassName(curDiv, "panel_block");
+//	if (panelBlock) {
+//  	TouchDlgUtil.init(panelBlock);
+//  	TouchDlgUtil.setCurrentDialog(panelBlock);
+//  }
 	// commented out because RTE should get this event to restore control panel
   //return stopEventPropagation(e);
 }
