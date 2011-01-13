@@ -4921,6 +4921,7 @@ var DataEntry = {
 	_hdnDiv : null, // used to convert html to DOM object
 	inpValues : null, // used for mkResource forms
 	
+	initDataStr : null, 
 	suspended : new Object(), // used to make New resource from Options panel
 	
 	onDataError : false, // data entry was returned by server with errors on data entry
@@ -4930,7 +4931,7 @@ var DataEntry = {
 	show : function(e, url, hotspot, parentDivId) {
 		if (this.loadingUrl != null)
 			return;
-//debugger;
+
 		this.hotspotDim = {x:100, y:100};
 		if (!hotspot && e)
 			hotspot = getEventTarget(e);
@@ -4968,6 +4969,8 @@ var DataEntry = {
 			else
 				setDivVisible(null, this.dataEntryArr[key], null, hotspot, 5, 5, null);
 			this.currentUrl = url;
+			
+			this.initDataStr = this._getFormDataStr(this.dataEntryArr[key], true);
 		}
 		// load data entry 
 		else {
@@ -4995,6 +4998,7 @@ var DataEntry = {
 
 		div = getDomObjectFromHtml(html, "className", "panel_block");
 		div.style.visibility = "hidden";
+		
 		// insert in DOM
 		if (parentDiv)
 			div = parentDiv.appendChild(div);
@@ -5026,6 +5030,8 @@ var DataEntry = {
 		// show dialog after GUI initialization
 		setDivVisible(event, div, null, null, 5, 5, $t.hotspotDim);
 		
+		$t.initDataStr = $t._getFormDataStr(div, true);
+		
 		var key = $t._getKey($t.currentUrl);
 		$t.dataEntryArr[key] = div;
 	},
@@ -5050,7 +5056,22 @@ var DataEntry = {
 		if (TouchDlgUtil.isThereChildDlg &&
 			 comparePosition(TouchDlgUtil.getCurrentDialog(), this.dataEntryArr[key]) != 0)
 			return; // no hide "parent" dialog on "new resource" from option panel
-
+		
+		// check if entered unsaved data in a dialog
+		var curDataStr = this._getFormDataStr(this.dataEntryArr[key], false);
+		if (this.initDataStr != curDataStr) {
+			BrowserDialog.setCallbackThis(this);
+			BrowserDialog.setCallbackArguments(key, onSubmit);
+			BrowserDialog.confirm("You have entered data.<br /><br />Do you want to close the dialog without saving?", this.continueHide)
+			return;
+		}
+		
+		this.continueHide(true, key, onSubmit);
+	},
+	
+	continueHide : function(toContinue, key, onSubmit) {
+		if (!toContinue)
+			return; 	
 		// on desktop only hide/show, without append/remove
 		if (!Browser.mobile) {
 			this.dataEntryArr[key].style.display = "none";
@@ -5111,7 +5132,6 @@ var DataEntry = {
 		}
 		else
 			noMatchesDiv.style.display = "none";
-			
   },
 	
   submit : function(e, submitIcon) {
@@ -5171,7 +5191,13 @@ var DataEntry = {
 		}
 		return url;	
 	},
-	
+	// helps to detect entered changes
+	_getFormDataStr : function(parentDiv, onInit) {
+		var form = getChildByTagName(parentDiv, "form");
+		if (!onInit && RteEngine.wasTextChanged(form))
+			return "_$RTE_changed_"; // different from init
+		return FormProcessor.getFormFilters(form, true, null, true);
+	},
 	isMkResource : function(url) {
 		return (url.indexOf("-$action=mkResource") != -1);
 	},
@@ -12552,7 +12578,7 @@ var BrowserDialog = {
 	
 	oncancel : function() {
 		var $t = BrowserDialog;
-		if ($t.callback) {
+		if ($t.callbackThis) {
 			if (!$t.isPrompt) {
 				// confirm
 				$t.callbackParamsArr[0] = false;
