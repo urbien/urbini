@@ -133,6 +133,22 @@ var RteEngine = {
 			}
 		}
 	},
+
+	wasTextChanged : function(formObj) {
+		var iframes;
+		if(this.toUseTArea == false)
+		  iframes = formObj.getElementsByTagName('iframe');
+		else
+		  iframes = formObj.getElementsByTagName('textarea');
+  
+		for(var i = 0; i < iframes.length; i++) {
+			var idx = RteEngine.getRteIndex(iframes[i]);
+			if(idx != -1 && RteEngine.rteArr[idx].wasTextChanged())
+				return true;
+		}
+		return false;
+	},
+	
 	// removes previously entered text in RTEs
 	resetContent : function(parent) {
 		var iframes = parent.getElementsByTagName('iframe');
@@ -1372,6 +1388,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		*/
 		// set value in hidden data field.
 		this.getDataField().value = text;
+	}
+	
+	this.wasTextChanged = function() {
+		var rteText = this.getHtmlContent();
+		var dataText = this.getDataField().value;
+		return (rteText != dataText);
 	}
 	
   // get highlighted element
