@@ -276,7 +276,7 @@ var RteEngine = {
 	  var form = this.imagePopup.getForm();
 	  ImageUploader.putRteIdInForm(form, rteId);		
 		
-		CheckButtonMgr.substitute(this.imagePopup.getFormDiv());
+		CheckButtonMgr.prepare(this.imagePopup.getFormDiv());
 		this.imagePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.imagePopup.div;
 	},
