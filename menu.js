@@ -3701,26 +3701,7 @@ var ListBoxesHandler = {
 		if (!tr)
 			tr = getAncestorByTagName(target, "tr");	
 
-		if ($t.isClassifierNow(tr)) {
-			$t.onClassifierItemClick(null, tr);
-			return;
-		}
-
-		if (SlideSwaper.doesSlidingRun())
-			return true;
-			
-    if (tr.id == "$more" || tr.id.indexOf("$add") == 0) // prevent from "More" and "Add"
-      return true;
-
-
-		if (!isElemOfClass(target, "iphone_checkbox")) {
-			var checkBtn = getChildByClassName(tr, "iphone_checkbox");
-			if (checkBtn)
-				CheckButtonMgr.switchState(checkBtn);
-			$t.onBackBtn();// slide back
-		}
-		
-		$t.onOptionSelection(tr);
+		$t.onOptionSelection(tr, !isElemOfClass(target, "iphone_checkbox"));
 
 	},
 	
@@ -3737,12 +3718,31 @@ var ListBoxesHandler = {
 		this.curClass = tr.id;
 		this.processClickParam(e, tr, "options");
 	},	
-	
-  onOptionSelection : function(clickedTr) {
+	// isSingleSelection - selected row, not a checkbox
+  onOptionSelection : function(clickedTr, isSingleSelection) {
 		var $t = ListBoxesHandler;
 		if (clickedTr && clickedTr.id == "$noValue") {
 			$t.onBackBtn();
 			return;
+		}
+		
+		if ($t.isClassifierNow(tr)) {
+			$t.onClassifierItemClick(null, tr);
+			return;
+		}
+
+		if (SlideSwaper.doesSlidingRun())
+			return true;
+			
+    if (clickedTr.id == "$more" || clickedTr.id.indexOf("$add") == 0) // prevent from "More" and "Add"
+      return true;
+
+
+		if (isSingleSelection) {
+			var checkBtn = getChildByClassName(clickedTr, "iphone_checkbox");
+			if (checkBtn)
+				CheckButtonMgr.switchState(checkBtn);
+			$t.onBackBtn();// slide back
 		}
 		
 		// Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
@@ -5575,7 +5575,7 @@ var TouchDlgUtil = {
 				ListBoxesHandler.onOptionsBackBtn();
 			else if (!ListBoxesHandler.isFormPanelCurrent()) {
 	  		ListBoxesHandler.markAsSelectedAndVerified(null, $t.greyTr, $t.greyTr);
-				ListBoxesHandler.onOptionSelection($t.greyTr);//onOptionsItemClickProcess($t.greyTr);
+				ListBoxesHandler.onOptionSelection($t.greyTr, true);
 		  }
 		  else if (tagName != 'textarea') {
 		  		$t.submitOnEnter(event);
