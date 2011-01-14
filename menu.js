@@ -5056,14 +5056,16 @@ var DataEntry = {
 		if (TouchDlgUtil.isThereChildDlg &&
 			 comparePosition(TouchDlgUtil.getCurrentDialog(), this.dataEntryArr[key]) != 0)
 			return; // no hide "parent" dialog on "new resource" from option panel
-		
-		// check if entered unsaved data in a dialog
-		var curDataStr = this._getFormDataStr(this.dataEntryArr[key], false);
-		if (this.initDataStr != curDataStr) {
-			BrowserDialog.setCallbackThis(this);
-			BrowserDialog.setCallbackArguments(key, onSubmit);
-			BrowserDialog.confirm("You have entered data.<br /><br />Do you want to close the dialog without saving?", this.continueHide)
-			return;
+
+		if (!onSubmit) {
+			// check if entered unsaved data in a dialog
+			var curDataStr = this._getFormDataStr(this.dataEntryArr[key], false);
+			if (this.initDataStr != curDataStr) {
+				BrowserDialog.setCallbackThis(this);
+				BrowserDialog.setCallbackArguments(key, onSubmit);
+				BrowserDialog.confirm("You have entered data.<br /><br />Do you want to close the dialog without saving?", this.continueHide)
+				return;
+			}
 		}
 		
 		this.continueHide(true, key, onSubmit);
@@ -5170,7 +5172,7 @@ var DataEntry = {
     else if (res == true) 
 			form.submit();  // submit is not a button, so send the form with help of JS.
 		
-		this.hide();
+		this.hide(true);
 		
 		return true;	
   },
@@ -5573,7 +5575,7 @@ var TouchDlgUtil = {
 				ListBoxesHandler.onOptionsBackBtn();
 			else if (!ListBoxesHandler.isFormPanelCurrent()) {
 	  		ListBoxesHandler.markAsSelectedAndVerified(null, $t.greyTr, $t.greyTr);
-				ListBoxesHandler.onOptionsItemClickProcess($t.greyTr);
+				ListBoxesHandler.onOptionSelection($t.greyTr);//onOptionsItemClickProcess($t.greyTr);
 		  }
 		  else if (tagName != 'textarea') {
 		  		$t.submitOnEnter(event);
