@@ -252,8 +252,9 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
 
   // visual cue that click was made, using the tooltip
   var addLineItem = document.location.href.indexOf('addLineItem.html?') != -1;
-  if (!noLoadingCue && typeof Tooltip != 'undefined')
-    Tooltip.showCueLoading(event, hotspot);
+
+  if (!noLoadingCue)
+		LoadingIndicator.show(div); // or hotspot (?)
 
   if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla,
                                                                         // Safari,...
@@ -287,10 +288,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
   this.lastRequest = http_request;
   var clonedEvent = cloneEvent(event);
   
-  if (Browser.mobile) {
-    CueLoading.show();
-  }
-
   http_request.onreadystatechange = function() {
 
     var status;
@@ -299,10 +296,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
       return;
 
     // stop cueLoading
-    if (Browser.mobile)
-      CueLoading.hide();
-    else if (!noLoadingCue)
-      Tooltip.hideCueLoading();
+		LoadingIndicator.hide();
 
     var location;
     
@@ -406,6 +400,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
       callback(clonedEvent, div, hotspot, http_request.responseText, url);
     }
   };
+
   if (!Browser.opera8  && !Browser.s60Browser) {
     try {
       http_request.open('POST', url, true);
