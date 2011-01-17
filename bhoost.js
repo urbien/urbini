@@ -2278,18 +2278,6 @@ function spriteAnimation(src, parent) {
   this._init(src);
 }
 
-var CueLoading = {
-  animation : null,
-  init : function() {
-    this.animation = new spriteAnimation("/images/skin/iphone/loading_sprite.png");
-  },
-  show : function() {
-    this.animation.show(36, 36, 9, 100);
-  },
-  hide : function() {
-    this.animation.hide();
-  }
-}
 
 /********************************************
 * BottomToolbar
@@ -2432,7 +2420,7 @@ var BottomToolbar = {
 		var h = getWindowSize()[1];
 		var bottomLevel = window.pageYOffset + h;
 
-		this.toolbar.style.top = bottomLevel - offset;
+		this.toolbar.style.top = bottomLevel - offset; // Palm's hack  -110
 	}
 /*	
 	updateBottomLevel : function(e) {
