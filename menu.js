@@ -538,7 +538,6 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           }
           addCurrentDashboardAndCurrentTab(anchor);
           var href = anchor.href;
-
           // anchors[0].href = 'javascript:;';
           elem.setAttribute('href', href);
           // anchors[0].disabled = true;
@@ -6425,6 +6424,12 @@ var LinkProcessor = {
 	  // add current dashboard ID and current tab ID to url if they are not there
 	  var a = link.href;
 	  addCurrentDashboardAndCurrentTab(link);
+	  // Login to Facebook
+    var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
+    if (fbdiv) { 
+      a += '&-fb=y';
+	    link.href = a;
+	  }
 	  if     (e.ctrlKey) {
 	    p = '_ctrlKey=y';
 	  }
