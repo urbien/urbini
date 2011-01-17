@@ -538,6 +538,7 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
           }
           addCurrentDashboardAndCurrentTab(anchor);
           var href = anchor.href;
+
           // anchors[0].href = 'javascript:;';
           elem.setAttribute('href', href);
           // anchors[0].disabled = true;
@@ -2662,18 +2663,6 @@ var Tooltip = {
 		$t.isShown = false;
 	},
 	
-	showCueLoading : function(e, hotspot) {
-		this.showArgs.e = e;
-		this.showArgs.target = hotspot;
-		this.showArgs.tooltipText = "<b> loading . . . </b>";
-		this.hideOptionsBtn();
-		this.show();
-	},
-	hideCueLoading : function() {
-		this.hide();
-		this.showOptionsBtn();
-	},
-	
 	process : function(obj) {
     var titleText = obj.title;
 		obj.title = "";
@@ -2711,26 +2700,6 @@ var Tooltip = {
       Tooltip.shiftPrefSwitch();
   },
 	
-	// show /hide used with Loading cue
-  showOptionsBtn : function()  {
-    if (Browser.mobile)
-      return;
-
-    if(!this.tooltip)
-      this.init();
-    if(this.optBtn.obj)
-      this.optBtn.obj.style.display = "";
-  },
-  hideOptionsBtn : function()  {
-    if (Browser.mobile)
-      return;
-
-    if(!this.tooltip)
-      this.init();
-
-    if (this.optBtn.obj)
-      this.optBtn.obj.style.display = "none";
-  },
   isShiftRequired : function() {
     if (Browser.mobile)
       return;
@@ -2739,6 +2708,7 @@ var Tooltip = {
       this.init();
     return this.options.isShiftRequired;
   },
+	
   initShiftPref : function () {
     if (Browser.mobile)
       return;
@@ -12839,6 +12809,92 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
 
 	optTableBody.appendChild(newItemRow);
 }
+
+
+var LoadingIndicator = {
+	BULLETS_AMOUNT: 12,
+	dimension: null,
+	loadingDiv: null,
+	bullets: null,
+	animationStep: 0, // used to animate
+	init: function(){
+		this.loadingDiv = document.createElement("div");
+		this.loadingDiv.id = "loading";
+		
+		var html = "";
+		for (var i = 0; i < this.BULLETS_AMOUNT; i++) 
+			html += "<span>&bull;</span>"
+		document.body.appendChild(this.loadingDiv);
+		this.dimension = this.loadingDiv.clientWidth;
+		
+		this.loadingDiv.innerHTML = html;
+		this.bullets = this.loadingDiv.getElementsByTagName("span");
+		
+		for (var i = 0; i < this.BULLETS_AMOUNT; i++) {
+			var fontSize = (50 + 50 * (this.BULLETS_AMOUNT / 2 - i) / this.BULLETS_AMOUNT);
+			this.bullets[i].style.fontSize = (fontSize + "px");
+			changeOpacity(this.bullets[i], 1.0 / i);
+		}
+		
+		this.align();
+	},
+	
+	align: function(angleOffset){
+		angleOffset = angleOffset || 0;
+		for (var i = 0; i < this.BULLETS_AMOUNT; i++) {
+			var angle = i * 2.0 * Math.PI / this.BULLETS_AMOUNT + angleOffset;
+			
+			var centerOffset = this.dimension / 2;
+			var radius = 0.7 * this.dimension / 2;
+			
+			var x = radius * Math.cos(angle) + centerOffset;
+			var y = radius * Math.sin(angle) + centerOffset;
+			
+			x -= this.bullets[i].clientWidth / 2;
+			y -= this.bullets[i].clientHeight / 2;
+			
+			this.bullets[i].style.left = Math.floor(x) + "px";
+			this.bullets[i].style.top = Math.floor(y) + "px";
+		}
+	},
+	show: function(overElem){
+		if (this.loadingDiv == null) 
+			this.init();
+		var x = -1, y;
+
+		if (overElem && isVisible(overElem)) {
+			x = (findPosX(overElem) + overElem.clientWidth - this.loadingDiv.clientWidth) / 2;
+			y = (findPosY(overElem) + overElem.clientHeight - this.loadingDiv.clientHeight) / 2;
+		}
+		if (x < 0) {
+			var scroll = getScrollXY();
+			var size = getWindowSize();
+			x = (size[0] - this.loadingDiv.clientWidth) / 2 + scroll[0];
+			y = (size[1] - this.loadingDiv.clientHeight) / 2 + scroll[1];
+		}
+		
+		this.loadingDiv.style.left = x;
+		this.loadingDiv.style.top = y;
+		
+		this.loadingDiv.style.visibility = "visible";
+		this.animate();
+	},
+	hide: function(){
+		this.loadingDiv.style.visibility = "hidden";
+		this.angleOffset = 0;
+	},
+	animate: function(){
+		var $t = LoadingIndicator;
+		var angleOffset = $t.animationStep * 2.0 * Math.PI / 50.0;
+		$t.align(angleOffset);
+		$t.animationStep++;
+		if ($t.animationStep == 50) 
+			$t.animationStep = 0;
+		if ($t.loadingDiv.style.display != "none") 
+			setTimeout($t.animate, 20);
+	}
+}
+
 
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
