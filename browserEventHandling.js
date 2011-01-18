@@ -86,9 +86,6 @@
         Boost.init(event);
         Mobile.init(event);
 		    MobilePageAnimation.init();
-        
-        // preload sprite
-        CueLoading.init();
       }
       // 2.2. desktop
       else {
