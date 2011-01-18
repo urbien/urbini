@@ -2471,20 +2471,14 @@ function addCurrentDashboardAndCurrentTab(target) {
       return;
     var s = div.innerHTML.split(';');
     if (s  &&  s.length > 0) {
-      if (hasQuestion) {
-        if (addDashboardId  &&  s[0]) {
-          a += '&-d=' + s[0];
-          if (s.length > 1)
-            a += '&-t=' + s[1];
-        }
-      }
-      else {
-        if (addDashboardId && s[0]) {
-          a += '?-d=' + s[0];
-          if (s.length > 1) {
-            a += '&-t=' + s[1];
-          }
-        }
+      if (s[0]) {
+	      if (hasQuestion) 
+	        a += '&-d=' + s[0];
+	      else 
+	        a += '?-d=' + s[0];
+	      
+        if (s.length > 1) 
+          a += '&-t=' + s[1];
       }
       target.href = a;
     }
