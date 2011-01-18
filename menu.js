@@ -1864,6 +1864,7 @@ var FormProcessor = {
 	      form.setAttribute("wasSubmitted", "true");
 	    }
 			
+			LoadingIndicator.show();
       return true;
     }
   },
@@ -8405,7 +8406,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   }
 
 	// used to handle key-arrows events
-	if (div.id != "system_tooltip") {
+	if (div.id != "system_tooltip" && div.id != "loading") {
 		TouchDlgUtil.setCurrentDialog(div);
 		ListBoxesHandler.setTray(div);
 	}
@@ -12862,19 +12863,17 @@ var LoadingIndicator = {
 			this.init();
 		var x = -1, y;
 
-		if (overElem && isVisible(overElem)) {
-			x = (findPosX(overElem) + overElem.clientWidth - this.loadingDiv.clientWidth) / 2;
-			y = (findPosY(overElem) + overElem.clientHeight - this.loadingDiv.clientHeight) / 2;
+		if (overElem && isVisible(overElem) && !Browser.mobile) {
+			setDivVisible(null, this.loadingDiv, null, overElem);
 		}
-		if (x < 0) {
+		else {
 			var scroll = getScrollXY();
 			var size = getWindowSize();
 			x = (size[0] - this.loadingDiv.clientWidth) / 2 + scroll[0];
 			y = (size[1] - this.loadingDiv.clientHeight) / 2 + scroll[1];
+			this.loadingDiv.style.left = x;
+			this.loadingDiv.style.top = y;
 		}
-		
-		this.loadingDiv.style.left = x;
-		this.loadingDiv.style.top = y;
 		
 		this.loadingDiv.style.visibility = "visible";
 		this.animate();
