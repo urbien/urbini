@@ -254,7 +254,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
   var addLineItem = document.location.href.indexOf('addLineItem.html?') != -1;
 
   if (!noLoadingCue)
-		LoadingIndicator.show(div); // or hotspot (?)
+		LoadingIndicator.show(hotspot);
 
   if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla,
                                                                         // Safari,...
