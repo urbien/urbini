@@ -1208,8 +1208,7 @@ input.primary {
   /*border-color: &[PrimaryColor_4];*/
 }
 
-.dashboard_btn a { color: &[Label];; font-weight: bold; display: block; white-space: nowrap; }
-.current a { color: &[SecondaryColorB_2];; }
+.dashboard_btn a { color: &[SecondaryColorB_3];; font-weight: bold; display: block; white-space: nowrap; }
 
 .dashboardLine td.dashboard_btn:hover, .dashboardLine td.active, .dashboardLine td.current {  
 	border-left-color: &[PrimaryColor_5];;
@@ -1223,14 +1222,9 @@ input.primary {
   -webkit-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
   -moz-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
 }
-.dashboardLine td {
-  color: &[Alternative_A];
-}
-
-.dashboardLine a {
-  padding: 5px 0px; 
-  font-size: 0.8em; 
-}
+.dashboardLine td { color: &[SecondaryColorB_3]; }
+.dashboardLine .current, .dashboardLine .current a { color: &[PrimaryColor_4_text];; }
+.dashboardLine a { padding: 5px 0px;  font-size: 0.8em; }
 
 .menuTitle td, .menuTitle th {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
