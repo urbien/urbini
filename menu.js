@@ -12812,6 +12812,8 @@ var LoadingIndicator = {
 	loadingDiv: null,
 	bullets: null,
 	animationStep: 0, // used to animate
+	curOpacity: null,
+	
 	init: function(){
 		this.loadingDiv = document.createElement("div");
 		this.loadingDiv.id = "loading";
@@ -12851,6 +12853,7 @@ var LoadingIndicator = {
 			this.bullets[i].style.top = Math.floor(y) + "px";
 		}
 	},
+	
 	show: function(overElem){
 		if (this.loadingDiv == null) 
 			this.init();
@@ -12867,6 +12870,8 @@ var LoadingIndicator = {
 			this.loadingDiv.style.left = x;
 			this.loadingDiv.style.top = y;
 		}
+		this.curOpacity = 0.2; // initial value
+		changeOpacity(this.loadingDiv, this.curOpacity);
 		
 		this.loadingDiv.style.visibility = "visible";
 		this.animate();
@@ -12877,13 +12882,20 @@ var LoadingIndicator = {
 	},
 	animate: function(){
 		var $t = LoadingIndicator;
+		
+		if ($t.loadingDiv.style.visibility == "hidden") 
+			return;
+			
 		var angleOffset = $t.animationStep * 2.0 * Math.PI / 50.0;
 		$t.align(angleOffset);
 		$t.animationStep++;
-		if ($t.animationStep == 50) 
+		if ($t.animationStep == 50) {
 			$t.animationStep = 0;
-		if ($t.loadingDiv.style.display != "none") 
-			setTimeout($t.animate, 20);
+			$t.curOpacity = Math.min($t.curOpacity + 0.1, 1.0);
+			changeOpacity($t.loadingDiv, $t.curOpacity);
+		}
+		
+		setTimeout($t.animate, 20);
 	}
 }
 
