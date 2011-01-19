@@ -2473,13 +2473,13 @@ function addCurrentDashboardAndCurrentTab(target) {
     if (s  &&  s.length > 0) {
       if (s[0]) {
 	      if (hasQuestion) 
-	        a += '&-d=' + s[0];
+          a += '&-d=' + s[0];
 	      else 
 	        a += '?-d=' + s[0];
 	      
-        if (s.length > 1) 
-          a += '&-t=' + s[1];
-      }
+          if (s.length > 1)
+            a += '&-t=' + s[1];
+        }
       target.href = a;
     }
   }
@@ -12826,11 +12826,10 @@ var LoadingIndicator = {
 		this.bullets = this.loadingDiv.getElementsByTagName("span");
 		
 		for (var i = 0; i < this.BULLETS_AMOUNT; i++) {
-			var fontSize = (50 + 50 * (this.BULLETS_AMOUNT / 2 - i) / this.BULLETS_AMOUNT);
+			var fontSize = this.dimension / 3 * (1 + (this.BULLETS_AMOUNT / 2 - i) / this.BULLETS_AMOUNT);
 			this.bullets[i].style.fontSize = (fontSize + "px");
-			changeOpacity(this.bullets[i], 1.0 / i);
+			changeOpacity(this.bullets[i], 0.7 * (this.BULLETS_AMOUNT - i * 0.8) / this.BULLETS_AMOUNT);
 		}
-		
 		this.align();
 	},
 	
