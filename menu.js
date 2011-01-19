@@ -2965,7 +2965,7 @@ var ListBoxesHandler = {
 		if (isRollup || !hasMore && this.prevSelectorInputValue.length != 0 && newValue.indexOf(this.prevSelectorInputValue) == 0)
       this.localOptionsFilter(newValue);
     else {
-        this.listboxOnClick1(e, keyPressedImgId, newValue, null, this.curClass);
+      this.listboxOnClick1(e, keyPressedImgId, newValue, null, this.curClass);
     }
 		
 		this.prevSelectorInputValue = newValue;
@@ -4059,7 +4059,7 @@ var ListBoxesHandler = {
 		  var labelName = getTextContent(label).toLowerCase();
 			// remove "prefix" like "name:" in assignedTo
 			labelName = labelName.replace(/^[^:]*:/,"").trim();
-			var labelNameSplitted = labelName.split(";"); // in case like "Contact"
+			var labelNameSplitted = labelName.split(/\s|,|;/); // split for " " , ;
 			for (var n = 0; n < labelNameSplitted.length; n++) {
 				var token = labelNameSplitted[n].trim();
 		  	if ((hasAsterisk && token.indexOf(typedText) != -1) ||
