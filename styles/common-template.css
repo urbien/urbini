@@ -521,8 +521,8 @@ input.xxs {font-size: 10px; color: &[Alternative_A];;}
 .cat  { padding-right: 3px; border: 0; width: 16px; height: 16px; vertical-align:text-bottom;}
 .cat1 {FONT-WEIGHT: bold;}
 
-tr.fts td { vertical-align: middle; padding: 2px 0px; color: &[Label];; }
-
+tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
+tr.ftSearch td { padding: 0px; }
 .desktop_search { width: 300px; }
 
 .desktop_search .left {
@@ -1230,11 +1230,8 @@ input.primary {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
 }
 
-.menuItemIcon, .menuItemIconEmpty {
+.menuItemIcon/*, .menuItemIconEmpty*/ {
 	PADDING-RIGHT: 2px; PADDING-LEFT: 3px; white-space: nowrap; width: 20px
-}
-.menuItemIconEmpty {
-  PADDING-LEFT: 5px;
 }
 
 .poweredMenuItemIcon {
@@ -2056,6 +2053,6 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .layout_1 td, .layout_2 td, .layout_3_1 td, .layout_4_1 td { height: 30px !important; }
 .layout_4_6 td { height: 12px !important; }
 
-#loading { z-index: 101; position: absolute; width: 150px; height: 150px; visibility: hidden; }
+#loading { z-index: 101; position: absolute; width: 70px; height: 150px; visibility: hidden; }
 
-#loading span { color: &[SecondaryColorB_1];; position: absolute; padding: 0; margin: 0; border: 0; font-family:arial,helvetica; font-weight:bold; }
+#loading span { color: &[PrimaryColor_3];; position: absolute; padding: 0; margin: 0; border: 0; font-family:arial,helvetica; font-weight:bold; }
