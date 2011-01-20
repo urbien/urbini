@@ -107,7 +107,10 @@ img.fade {
 }
 .displayInline  { overflow: hidden; width: 100%; height: 2em; line-height: 2em; text-align:justify; }
 .displayInline, .displayInline * { font-size: 1em !important; font-weight: normal !important; margin: 0 !important; }
-.displayInline * { display: inline; padding-right: 0.5em; }
+.displayInline * { display: inline; padding-right: 0.5em; border: none; }
+.displayInline td { float: left; }
+/* * html .displayInline table { display: none; } */
+
 .mItems {
   text-align:center;
   vertical-align: top;
@@ -174,9 +177,9 @@ input[type=button], input[type=submit], .button, .tags .item {
           border-radius: 5px; 
      -moz-border-radius: 5px; 
   -webkit-border-radius: 5px; 
-          box-shadow: 0 1px 2px rgba(0,0,0,0.5); 
-     -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.5); 
-  -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+          box-shadow: 0 1px 3px rgba(0,0,0,0.5); 
+     -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.5); 
+  -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
   
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_1];);
@@ -533,6 +536,7 @@ tr.ftSearch td { padding: 0px; }
 }
 
 .desktop_search .left_inner {
+	padding-left:1px;
   box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.5) inset;
 	-moz-box-shadow:0 0 2px rgba(0, 0, 0, 0.5) inset;
 	-webkit-box-shadow:0 0 2px rgba(0, 0, 0, 0.5) inset;
@@ -1122,18 +1126,8 @@ TD.toolbar {
 	POSITION: relative; BACKGROUND-COLOR: #3366cc; cursor: text;
 }
 
-.menuTitle {
-}
+.menuTitle {}
 
-.dashboardLine {
-  margin: 0px 0px 0px 0px;
-  padding: 0px 0px 0px 0px;
-  background-repeat:repeat-x;
-  /*
-  background-color: &[PrimaryColor_4];;
-  background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_4_rgb];,0.8), rgba(&[PrimaryColor_4_rgb];,0.1));
-  */
-}
 .accent {font-size: 25px}
 .aLetters {color: &[ToolbarColor];;}
 
@@ -1186,7 +1180,7 @@ input.primary {
     text-shadow: 0 -1px 0 #2883C6;
     vertical-align: middle;
 }
-////////
+
 .dashboardLine, tr.rlHeader {
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
@@ -1532,6 +1526,7 @@ div .panel_block, td .panel_block {
   -moz-box-shadow : none;
   -webkit-box-shadow: none;
 }
+#corePageContent > div > .panel_block { max-width: 500px; margin-top: 10px; }
 
 div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
@@ -1553,6 +1548,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #siteResourceList .widget .panel_block .embed .containers  td { background-color: transparent; }
 
 #common_filter { width: 50%; min-width: 20em; max-width: 45em; }
+
+/*********************************** not used now ?
 #fts_filter { width: auto; min-width: 150px;  overflow: visible; }
 #fts_filter .no_border td { border-bottom: none; }
 #fts_filter .filter_stat a { margin-left: 30px; }
@@ -1566,6 +1563,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 #fts_filter .filter .param_tr { background-color: &[OddRowBackgroundColor];; padding-top: 3px; padding-bottom: 3px; }
 #fts_filter .filter .param_tr .label { font-weight: bold; font-size: 15px; color: &[SecondaryColorA_3];;}
+***********************************************************************/
 
 .panel_block .header { 
     line-height:30px; 
@@ -1816,7 +1814,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 /** iPhone field **/
 .iphone_field {
 	display: inline;
-	margin: 0px 3px 0px 0px;
+	margin: 0px 2px;
 	padding: 4px;
 	border-radius:5px 5px 5px 5px;
 	-moz-border-radius:5px 5px 5px 5px;
@@ -2037,8 +2035,9 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
 
 .fts-sift {vertical-align: top;}
-.fts-sift #col_1 td {white-space: nowrap; }
-.fts-sift .param_tr { background-color: &[BodyBackgroundColor];;}
+.fts-sift #col_1 td {white-space: nowrap;}
+.fts-sif .filter { border: 1px solid; }
+.fts-sift .param_tr { cursor: pointer; background-color: &[PrimaryColor_4];; color: &[Label];; height:1.5em;}
 /*.widget, .place_holder{ margin: 0 0 0.8em 0; }*/
 .ph{ margin: 0 0 0.8em 0; }
 .place_holder{ margin: 0 0 0.8em 0; }
