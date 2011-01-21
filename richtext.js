@@ -1430,7 +1430,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// event handlers --------------
 	this.onfocus = function() {
 		if (i_am.toolbar == null) {
-			i_am.changeEditTabWidth(true); // expand EditTab before createToolbar
+			i_am.changePanelWidth(true); // expand EditTab before createToolbar
 			i_am.toolbar = i_am.createToolbar();
 		}
 
@@ -1440,7 +1440,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// prevents from more than 1 opened RTE.
 		RteEngine.closeAllDisactived(i_am.iframeObj.id);
 		
-		i_am.changeEditTabWidth(true);
+		i_am.changePanelWidth(true);
 		i_am.fitHeightToVisible();
 		
 	
@@ -1471,7 +1471,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			if (target.nodeName == "HTML") 
 				return;
 			// prevent: 1) to hide toolbar on dialog movement
-			// 2) RTE to get narrow (changeEditTabWidth) on click of toolbar button or option popup item
+			// 2) RTE to get narrow (changePanelWidth) on click of toolbar button or option popup item
 			if (getAncestorByClassName(target, ["header", "ctrl_toolbar", "ctrl_toolbar_dlg"]))
 				return; 
 		}
@@ -1481,7 +1481,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	
 	// hides toolbar and minimizes edit area
 	this._close  = function() {
-		i_am.changeEditTabWidth(false);
+		i_am.changePanelWidth(false);
 		i_am.iframeObj.style.height = i_am.initFrameHeight;
 
 		if (i_am.toolbar) {
@@ -1492,10 +1492,14 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.iframeObj.setAttribute("scrolling", "no");   
 	}
 
-	this.changeEditTabWidth = function(toEnlarge) {
+	this.changePanelWidth = function(toEnlarge) {
 		var editDiv = getAncestorById(i_am.iframeObj, "div_Edit");
-		if (!editDiv)
+		if (!editDiv) {
+			var panelBlock = getAncestorByClassName(i_am.iframeObj, "panel_block");
+			if (panelBlock && isParentDialogOnPage(panelBlock))
+				panelBlock.style.maxWidth = (toEnlarge) ? "none" : "500px";
 			return;
+		}
 					
 		var ropTd = editDiv.parentNode;	
 		var cpDiv = getNextSibling(ropTd);	
