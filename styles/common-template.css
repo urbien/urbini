@@ -1525,8 +1525,12 @@ div .panel_block, td .panel_block {
   box-shadow : none;
   -moz-box-shadow : none;
   -webkit-box-shadow: none;
+  
+  -webkit-transition-property: width;
+  -webkit-transition-duration: 0.4s;
+  -webkit-transition-timing-function: easy-in-out;
 }
-#corePageContent > div > .panel_block { max-width: 500px; margin-top: 10px; }
+#corePageContent > div > .panel_block { width: 500px; margin-top: 10px;}
 
 div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
