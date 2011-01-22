@@ -12870,19 +12870,23 @@ var LoadingIndicator = {
 			this.loadingDiv.style.left = x;
 			this.loadingDiv.style.top = y;
 		}
-		this.curOpacity = 0.2; // initial value
+		this.curOpacity = 0.3; // initial value
 		changeOpacity(this.loadingDiv, this.curOpacity);
 		
 		this.loadingDiv.style.visibility = "visible";
 		this.animate();
 	},
 	hide: function(){
+		if (!this.loadingDiv)
+			return;
 		this.loadingDiv.style.visibility = "hidden";
 		this.angleOffset = 0;
 	},
 	animate: function(){
 		var $t = LoadingIndicator;
-		
+		if ($t.loadingDiv == null) 
+			$t.init();
+	
 		if ($t.loadingDiv.style.visibility == "hidden") 
 			return;
 			
