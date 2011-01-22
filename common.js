@@ -295,8 +295,9 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
                                       // 1-Loading, 2-Loaded, 3-Interactive
       return;
 
-    // stop cueLoading
-		LoadingIndicator.hide();
+    // stop Loading cue
+		if (!noLoadingCue)
+			LoadingIndicator.hide();
 
     var location;
     
