@@ -1493,14 +1493,17 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 
 	this.changePanelWidth = function(toEnlarge) {
+		var panelBlock = getAncestorByClassName(i_am.iframeObj, "panel_block");
+		if (!panelBlock)
+			return;
 		var editDiv = getAncestorById(i_am.iframeObj, "div_Edit");
 		if (!editDiv) {
-			var panelBlock = getAncestorByClassName(i_am.iframeObj, "panel_block");
-			if (panelBlock && isParentDialogOnPage(panelBlock))
-				panelBlock.style.maxWidth = (toEnlarge) ? "none" : "500px";
+			if (isParentDialogOnPage(panelBlock)) { // mkResource page
+		  	panelBlock.style.width = (toEnlarge) ? (panelBlock.parentNode.clientWidth + "px") : "500px";
+		  }
 			return;
 		}
-					
+
 		var ropTd = editDiv.parentNode;	
 		var cpDiv = getNextSibling(ropTd);	
 		if (!cpDiv)
@@ -1508,17 +1511,30 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		
 		var dashboardLine = getPreviousSibling(ropTd.parentNode);
 		var cpTab = getChildById(dashboardLine, "cpTabs")
-			
+		
+		
 		if (toEnlarge) {
+			panelBlock.parentNode.style.textAlign = "left";
+			if (Browser.webkit) // webkit transition /animation
+				panelBlock.style.width = (panelBlock.parentNode.clientWidth + "px");
+			
 			cpDiv.style.display = "none";
 			if (cpTab)
 				cpTab.style.display = "none";
+
+			if (Browser.webkit)
+				panelBlock.style.width = (panelBlock.parentNode.clientWidth + "px");	
 		}
 		else {
 			cpDiv.style.display = "";
 			if (cpTab)
 				cpTab.style.display = "";
+			
+			if (Browser.webkit)	
+				panelBlock.style.width = "100%";
 		}
+
+		
 	}
 	
 	// IE's hack
