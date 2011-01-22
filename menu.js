@@ -8391,7 +8391,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   div.style.display    = 'none';   // hide it before movement to calculated position
   reposition(div, left, top); // move the div to calculated position
   div.style.visibility = Popup.VISIBLE; // show div
-	div.style.display    = 'inline';
+	div.style.display    = "block"; //////// 'inline';
 
   if (Browser.lt_ie7 && !isDivStatic  && !Browser.mobile) {
     istyle.display = 'none';
