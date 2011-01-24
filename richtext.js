@@ -417,7 +417,7 @@ var RteEngine = {
       + ' </tr>'
 			+ '</table>';
 		this.linkPopup = new FormPopup(innerFormHtml);
-		CheckButtonMgr.substitute(this.linkPopup.getFormDiv()); 
+		CheckButtonMgr.prepare(this.linkPopup.getFormDiv()); 
 	},
 	createImagePopup : function(imgObj) {
 		this.imagePopup = new FormPopup("", "USE_SUBMIT_BTN");
