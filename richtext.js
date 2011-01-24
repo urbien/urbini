@@ -2006,7 +2006,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			for (var i = 0; i < links.length; i++) {
 				if (links[i].href.indexOf(blankSuffixForTrick) != -1) {
 					links[i].setAttribute("target", "_blank");
-					links[i].href = links[i].href.replace(blankSuffixForTrick, "");
+					links[i].href = links[i].href.replace(blankSuffixForTrick, "").replace(/\/$/, "");
 				}
 			}
 		}
