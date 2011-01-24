@@ -364,8 +364,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
 			
 			// created resource from options panel
 			if (location.indexOf("$createdForResource=1") != -1) {
-				ListBoxesHandler.setNewOptionResource(location);
-				return;
+				if (ListBoxesHandler.setNewOptionResource(location) == true)
+					return;
 			}
 			
       var paintInPage;
