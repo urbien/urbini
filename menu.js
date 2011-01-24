@@ -3576,7 +3576,8 @@ var ListBoxesHandler = {
 	setNewOptionResource : function(retLocationStr) {
 		var $t = ListBoxesHandler;
 
-		$t.restoreFromSuspended();
+		if ($t.restoreFromSuspended() == false)
+			return false; // no suspended dialog
 		
 	//	if (retLocationStr == false)
 	//		return; // called on error in data of a child "New resorce" dialog
@@ -3612,17 +3613,22 @@ var ListBoxesHandler = {
 		$t.onBackBtn(); // slide back
 		
 		$t.suspended = null;
+		
+		return true;
 	},
 	
 	restoreFromSuspended : function(toRestore) {
+		if (!this.suspended)
+			return false; // no suspended (parent) dialog 
 		if (toRestore == false) {
 			this.suspended = null;
-			return;
+			return true;
 		}
 		this.curParamRow = this.suspended.curParamRow;
 		this.curOptionsListDiv = this.suspended.curOptionsListDiv;
 		this.curClassesPopupDiv = this.suspended.curClassesPopupDiv; 
 		this.setTray(this.suspended.tray);
+		return true;
 	},
 	
   // returns 2 inputs for the filter (period)
@@ -4242,8 +4248,8 @@ var SlideSwaper = {
         setTimeout(callback, 500); // 500 - arbitary quite big timeout
     }
     else {
-      this.isForward = true;
-      this._moveStep();
+     	this.isForward = true;
+     	this._moveStep();
     }
   },
   
