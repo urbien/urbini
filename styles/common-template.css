@@ -98,21 +98,15 @@ img.fade {
 
 #resourceList td.top {height: 0px; }
 
-.hideImg img, .hideImg object, .hideImg embed, .hideImg .swf, .hideImg .flv {
-  visibility:hidden; display:none;
-}
-.hideImg p, .hideImg br {
-  display: inline;
-  float: none;
-}
+
+.hideImg * { display: inline; padding-right: 0.5em; border: none; }
+.hideImg table, .hideImg img, .hideImg object, .hideImg embed, .hideImg .swf, .hideImg .flv { display: none; }
+@-moz-document url-prefix() { .hideImg table { display: table; } .hideImg table td { float: left; } }
 
 .displayInline  { overflow: hidden; width: 100%; height: 2em; line-height: 2em; text-align:justify; }
 .displayInline, .displayInline * { font-size: 1em !important; font-weight: normal !important; margin: 0 !important; }
 
-div.displayInline * { display: inline; padding-right: 0.5em; border: none; }
-div.displayInline td { float: left; }
-/* hide table in IE:     * html div.displayInline table { display: none; }    */
-
+ 
 .mItems {
   text-align:center;
   vertical-align: top;
@@ -1226,9 +1220,8 @@ input.primary {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
 }
 
-.menuItemIcon/*, .menuItemIconEmpty*/ {
-	PADDING-RIGHT: 2px; PADDING-LEFT: 3px; white-space: nowrap; width: 20px
-}
+.menuItemIcon {	PADDING-RIGHT: 2px; PADDING-LEFT: 3px; white-space: nowrap; width: 20px; }
+.menuItemIconEmpty { width: 5px; }
 
 .poweredMenuItemIcon {
 	PADDING-RIGHT: 2px; PADDING-LEFT: 2px; BACKGROUND-COLOR: #EDECF8; white-space: nowrap; width: 30px
@@ -1527,11 +1520,13 @@ div .panel_block, td .panel_block {
   box-shadow : none;
   -moz-box-shadow : none;
   -webkit-box-shadow: none;
-  
-  -webkit-transition-property: width;
-  -webkit-transition-duration: 0.4s;
-  -webkit-transition-timing-function: easy-in-out;
+
+  -webkit-transition: width 1s ease-in-out;
+	-o-transition: width 1s ease-in-out;
+	-moz-transition: width 1s ease-in-out;
+	transition: width 1s ease-in-out;
 }
+
 #corePageContent > div > .panel_block { width: 500px; margin-top: 10px;}
 
 div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
@@ -1723,13 +1718,13 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	-webkit-background-size: 4px 1px;
 	height: auto;
 }
- 
+
+/*
 .options_panel, .classifier_panel .calendar_panel {
-  -webkit-transition-property: -webkit-transform;
-  -webkit-transition-duration: 0.4s;
-  -webkit-transition-timing-function: easy-in-out;
+	-webkit-transition: -webkit-transform 0.4s easy-in-out; 
   -webkit-transform: translate(0px, 0px); 
 }
+*/
 
 #siteResourceList .frame { background: none; }
 
