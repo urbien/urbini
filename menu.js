@@ -12732,8 +12732,7 @@ var ImageUpload = {
 				this.img.onload = this._onImageLoaded;
 			}
 			
-			if (Tooltip)
-    		Tooltip.showCueLoading(null, btn);
+			LoadingIndicator.show(btn);
 		
 			this.callback = callback;
 			setTimeout(ImageUpload.pollServerResponse, 150);
@@ -12774,8 +12773,7 @@ var ImageUpload = {
 		$t.callback($t.uploadedUrl, imageName, imageThumbnail);
 		$t.uploadedUrl = null
 		$t.callback = null;
-		if (Tooltip)
-			Tooltip.hideCueLoading();
+		LoadingIndicator.hide();
 	}
 }
 
