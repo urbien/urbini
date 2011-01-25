@@ -1898,7 +1898,8 @@ td.pBGr { background-color: #eeeeee;
 
 .panel_block .no_matches { display: none; color: #f00; font-size: 16px; font-weight:bold; margin-left: 15px; }
 
-#siteResourceList #filter input[type=text] { height: auto; background-color: transparent; font-size: 16px; font-weight: normal; }
+#siteResourceList #filter input[type=text] { color: &[PrimaryColor_4_text];;  width: 100%; height: auto; background-color: transparent; font-size: 16px; font-weight: normal; }
+#siteResourceList #filter input[type=text].changed { color: &[SecondaryColorB_3];;   }
 #siteResourceList .input { border: 1px solid &[PrimaryColor_1];; }
 #siteResourceList .pointer, .panel_block .pointer { border: none; background: transparent; }
 
