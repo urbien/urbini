@@ -358,9 +358,7 @@ td.textCell {
   border-spacing: 0px;
 }
 
-/* native shadow, meanwhile for WebKit only */
-.galleryItem_css3 { box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.4); -webkit-box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.4); -moz-box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.4); }
-.galleryItem_chrome { -webkit-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4); }
+.galleryItem_css3 { display: table; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); -moz-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); }
 
 .galleryItem td#grayRight {
   background-image:url(../images/frame/gray_bg/right.jpg);
