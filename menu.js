@@ -3797,10 +3797,8 @@ var ListBoxesHandler = {
 					
 				// change color of touched input/value
 				if ($t._isEditList) {
-					// setting font as bold changes width & height of a field. So, fix it previously
-					textField.style.width = textField.clientWidth;
-					textField.style.height = textField.clientHeight;
-					textField.style.fontWeight = "bold";
+					if (textField.className.indexOf(" changed") == -1)
+						textField.className += " changed";
 				}
 			}
 		}
@@ -4136,6 +4134,8 @@ var ListBoxesHandler = {
 	// use it instead "old" currentFormName and originalProp
 	getTextFieldInParamRow : function() {
 		var dataTd = getChildByClassName(this.curParamRow, "data_td");
+		if (!dataTd)
+			dataTd = this.curParamRow.cells[0];
 		return dataTd.getElementsByTagName("input")[0];	
 	},
 	getCurrentPanelDiv : function() {
