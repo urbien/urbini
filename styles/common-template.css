@@ -18,18 +18,18 @@ input  { -webkit-appearance: none; font-style: normal; line-height: normal; font
 
 /* avoid showing with link color */
 H1, H1 A {color: &[SecondaryColorB_2];; }
-H2, H2 A {color: &[SecondaryColorB_2];; }
+H2, H2 A {color: &[SecondaryColorB_2];;}
 H3, H3 A {color: &[SecondaryColorB_2];; }
 H4, H4 A {color: &[SecondaryColorB_2];; }
 H5, H5 A {color: &[SecondaryColorB_2];; }
 
-/* RTE font size */
+/* RTE font size & IE's H */
 .lz_xx_small { font-size: 9px; }
 .lz_x_small { font-size: 10px; }
 .lz_small { font-size: 11px; }
 .lz_medium { font-size: 12px; }
 .lz_large { font-size: 14px; }
-.lz_x_large { font-size: 18px; }
+.lz_x_large, * html h2 { font-size: 18px; }
 .lz_xx_large { font-size: 24px; }
 .lz_xxx_large { font-size: 36px; }
  
