@@ -797,8 +797,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
 
     var chosenTextField = ListBoxesHandler.getTextFieldInParamRow();//getOriginalPropField(form, originalProp);
 		var form = chosenTextField.form;
+	
 		var prop = chosenTextField.name;
-		
 //    var propertyShortName = table1.id.substring("table_".length);
 //    var idx = propertyShortName.lastIndexOf('_');
 //    propertyShortName = propertyShortName.substring(0, idx);
@@ -825,8 +825,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
  
     var len = chosenTextField.length; // Note: it seems that currently it is only 1(!) field
     var verified = prop + "_verified";
-    if (currentResourceUri)
-      verified = currentResourceUri + ".$" + verified;
+//    if (currentResourceUri)
+//      verified = currentResourceUri + ".$" + verified;
     var fieldLabel = document.getElementById(prop + "_span");
 
     var iclass = prop + "_class";
@@ -861,8 +861,8 @@ function Popup(divRef, hotspotRef, frameRef, contents) {
       select = prop;
     else
       select = prop + "_select";
-    if (currentResourceUri)
-      select = currentResourceUri + ".$" + select;
+//    if (currentResourceUri)
+//      select = currentResourceUri + ".$" + select;
     var formField = form.elements[select];
     
     var selectItems = form.elements[select];
@@ -3695,9 +3695,9 @@ var ListBoxesHandler = {
 			$t.onBackBtn();
 			return;
 		}
-		
-		if ($t.isClassifierNow(tr)) {
-			$t.onClassifierItemClick(null, tr);
+
+		if ($t.isClassifierNow(clickedTr)) {
+			$t.onClassifierItemClick(null, clickedTr);
 			return;
 		}
 
@@ -3844,7 +3844,9 @@ var ListBoxesHandler = {
   // clears selections in options panel
   removeV : function() {
     var optTable = getChildByClassName(this.curOptionsListDiv, "rounded_rect_tbl");
-    var amt = optTable.rows.length;
+    if (!optTable)
+			return;
+		var amt = optTable.rows.length;
     for (var i = 0; i < amt; i++) {
       var chkCell = optTable.rows[i].cells[0];
       var checkBox = chkCell.getElementsByTagName("input")[0];
@@ -3854,8 +3856,7 @@ var ListBoxesHandler = {
         checkBox.checked = false;
       if (img)
 				img.style.visibility = "hidden";
-
-    } // the loop end
+    }
   
   },
   
