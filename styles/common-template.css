@@ -1,7 +1,9 @@
 /* styles from properties.css */ 
 body {
   font-size: 100%;
-	font-family: arial, Helvetica, sans-serif;
+/*	font-family: "lucida grande", "tahoma", "verdana", "arial", "Helvetica", "sans-serif";*/
+  font-family: "arial", "Helvetica", "sans-serif";
+
 	padding: 0;
 	margin: 0;
 	background-color: &[BodyBackgroundColor];;
@@ -89,7 +91,7 @@ img.fade {
 #user a { color: &[SecondaryColorA_3_brighter];}
 #user span { color: &[SecondaryColorA_3_brighter];; font-weight: bold;}
 
-#dataEntry td { font-size: 1em; }
+#dataEntry td { font-size: 12px; }
 #dataEntry table { border-collapse: collapse; }
 #siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; font-size: 12px; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
@@ -457,8 +459,29 @@ tr.prTitle {
 .paging { font-size: 18px; font-style: normal; font-weight: bold; vertical-align: top;}
 .prevNext {padding-bottom:2px; padding-right:2px; padding-left:2px;}
 tr.dark   {background-color: &[OddRowBackgroundColor];}
-
 tr.darkPrint   {background-color: #eeeeee;}
+
+.commentList {
+  background-color: &[PrimaryColor_4];; 
+  border-bottom-color: &[BackgroundColor];; 
+  border-bottom-style: solid; 
+  border-bottom-width: 1px; 
+  padding-top: 12px; 
+  padding-bottom: 12px;
+}
+.commentListDate {
+  color: #999999;
+  font-size: 11px;
+}
+.writeComment {
+  background: &[BodyBackground];; 
+  border: 1px solid;
+  border-color: lightgrey;
+  width: 100%;
+  height: 24px;
+  padding: 3px;
+}
+.commentList a {font-size:11px;}
 
 #reportPrint {color: #000000;}
 
@@ -646,7 +669,8 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 .fHeader {background: #D6E7E7}
 /* border for read/edit resource properties in non=widget */
 .rop {
-  border:solid &[PrimaryColor_1]; 1px; 
+/*  border:solid &[PrimaryColor_1]; 1px; */
+  border:solid &[SecondaryColorA_5]; 1px; 
   border-collapse: collapse; 
   color: &[PrimaryColor_1];;
   background-color: &[BackgroundColor];; 
@@ -662,7 +686,11 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
   height: 100%; 
 }
 
-td.controlPanel { border:solid &[PrimaryColor_1]; 1px; background-color: &[BackgroundColor];;}
+td.controlPanel { 
+/*  border:solid &[PrimaryColor_1]; 1px; */
+  border:solid &[SecondaryColorA_5]; 1px; 
+  background-color: &[BackgroundColor];;
+}
 td.controlPanel span { font-size: 16px; }
 td.folders      {border:solid #808080 1px; background-color: #e7ebf0; color: #000000}
 /*span.xxl {font-weight:bold; font-size:20pt;}*/
