@@ -1492,6 +1492,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.iframeObj.setAttribute("scrolling", "no");   
 	}
 
+	this.initPanelBlockWidth = null;
 	this.changePanelWidth = function(toEnlarge) {
 		var panelBlock = getAncestorByClassName(i_am.iframeObj, "panel_block");
 		if (!panelBlock)
@@ -1512,11 +1513,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var dashboardLine = getPreviousSibling(ropTd.parentNode);
 		var cpTab = getChildById(dashboardLine, "cpTabs")
 		
-		
 		if (toEnlarge) {
 			panelBlock.parentNode.style.textAlign = "left";
-			if (Browser.webkit) // webkit transition /animation
+			if (Browser.webkit) { // webkit transition /animation
+				if (this.initPanelBlockWidth == null)
+					this.initPanelBlockWidth = panelBlock.parentNode.clientWidth;
 				panelBlock.style.width = (panelBlock.parentNode.clientWidth + "px");
+			}
 			
 			cpDiv.style.display = "none";
 			if (cpTab)
@@ -1531,7 +1534,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 				cpTab.style.display = "";
 			
 			if (Browser.webkit)	
-				panelBlock.style.width = "100%";
+				panelBlock.style.width = this.initPanelBlockWidth + "px";//(panelBlock.parentNode.clientWidth + "px"); //"100%";
 		}
 
 		
@@ -1945,9 +1948,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// 3
 	this.setSize = function(idx) {
 		var value = idx + 1;
-		var div = i_am.document.createElement("span");
-		div.className = RteEngine.FONT_SIZE[idx].value;
-		i_am.wrapSelection(div);
+		var span = i_am.document.createElement("span");
+		span.className = RteEngine.FONT_SIZE[idx].value;
+		i_am.wrapSelection(span);
 		i_am.skipClose = true;
 		return true;
 	}
@@ -1957,14 +1960,27 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var imgPath = hostUrl + RteEngine.IMAGES_FOLDER + "smiles/" + (idx + 1) + ".gif";
 		i_am.insertHTML("<img src=" + imgPath + ">");
 	}
-	// 5
-	this.setTextColor = function(color) {
+	// 5 isStyle means set color thru CSS class
+	this.setTextColor = function(color, isStyle) {
+		if (isStyle) {
+			var span = i_am.document.createElement("span");
+			span.className = "csp_" + color;
+			i_am.wrapSelection(span);
+			return;
+		}
+		
 		i_am.performCommand("forecolor", color);
 		i_am.chosenTextClr = color;
 		return true;
 	}
 	// 6
-	this.setBackgroundColor = function(color) {
+	this.setBackgroundColor = function(color, isStyle) {
+		if (isStyle) {
+			var span = i_am.document.createElement("span");
+			span.className = "csp_bg_" + color;
+			i_am.wrapSelection(span);
+			return;
+		}
 		if(i_am.performCommand("hilitecolor", color) == false) { // FF
 			i_am.performCommand("backcolor", color) // IE
 		}
