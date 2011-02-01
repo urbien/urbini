@@ -2139,3 +2139,24 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .csp_bg_35 { background-color: &[SecondaryColorB_5];; }
 
 
+.deal {
+  background: white;
+  color: #757575;
+  border: 2px solid &[SecondaryColorB_1];;
+  -moz-border-radius: 9px;
+  -webkit-border-radius: 9px;
+  border-radius: 9px;
+  background-clip: padding-box;
+  clear: both;
+  margin-bottom: 20px;
+  padding: 15px 10px 10px 10px;
+  position: relative;
+  z-index: 10; 
+}
+.deal #first {
+  color: #000000;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 18px;
+  text-align: center; 
+}
