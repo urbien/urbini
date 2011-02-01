@@ -5487,7 +5487,7 @@ var TouchDlgUtil = {
 			this.focusHolder = document.createElement("input");
 			this.focusHolder.className = "shrunk_field";
 			this.focusHolder.setAttribute("readonly", "true");
-			this.focusHolder.style.top = getScrollXY()[1];
+			this.focusHolder.style.top = 0; // set focus holder at bottom of a dialog
 		}
 		// autocomplete gets events from FTS field; others required "focusHolder"
 		if (dlgDiv.className != "dsk_auto_complete") {
@@ -6002,7 +6002,7 @@ var TouchDlgUtil = {
 	
 	_setFocusInFocusHolder : function() {
 	  // IE does not support "fixed position. So move focusHolder manually.
-		this.focusHolder.style.top = getScrollXY()[1];
+		this.focusHolder.style.top = getScrollXY()[1]; /////// - findPosY(curDlgDiv);
 		this.focusHolder.focus();		
 	},
 	
