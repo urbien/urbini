@@ -418,10 +418,10 @@ var PalettePopup = {
 		this.div.innerHTML = html;
 
 		var schemeClrsTbl = this.div.getElementsByTagName("table")[0];
-		schemeClrsTbl.onclick = this.onSchemeColorSelection;
+		addEvent(schemeClrsTbl, "click", this.onSchemeColorSelection, false);
 		
 		var grayscaleClrsTbl = this.div.getElementsByTagName("table")[1];
-		grayscaleClrsTbl.onclick = this.onOtherColorSelection;
+		addEvent(grayscaleClrsTbl, "click", this.onOtherColorSelection, false);
 
 		this.otherClrsDiv = this.div.getElementsByTagName("div")[0];
 		if (this.otherClrsDiv) {
@@ -519,7 +519,7 @@ var PalettePopup = {
 	},
 
 	getSchemePaletteStr : function() {
-		var palette =	"<h4>scheme colors</h4>"
+		var palette =	"<h3>scheme colors:</h3>"
 			+ "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\">";
 			for (var r = 1; r <= 3; r++) {
 				palette += "<tr>";
@@ -533,7 +533,7 @@ var PalettePopup = {
 	
 	getGrayscalePaletteStr : function() {
 		var colors = ["#FFFFFF", "#CCCCCC", "#C0C0C0", "#999999", "#666666", "#333333", "#000000"]
-		var html = "<h4>grayscale</h4>"
+		var html = "<h3>grayscale:</h3>"
 			+ "<table  width=\"100%\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\">";
 		html += "<tr>";
 		for (var c = 0; c < colors.length; c++)
