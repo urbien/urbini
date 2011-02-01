@@ -1153,6 +1153,20 @@ TD.toolbar {
 .accent {font-size: 25px}
 .aLetters {color: &[ToolbarColor];;}
 
+.couponDeal { 
+   background-color: &[PrimaryColor_4];; 
+/*border: 1px solid &[ToolbarColor];;*/
+   padding-top: 10px;
+   margin-top:-12px;
+ }
+.couponBuy {
+  background: url(../icons/price_tag.png); 
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 287px;
+  height: 92px;
+}
+
 .layout { background-color: &[BodyBackgroundColor];; }
 .layoutTitle { background-color: &[ToolbarColor];; }
 
@@ -2083,3 +2097,25 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 #loading { z-index: 101; position: absolute; width: 70px; height: 150px; visibility: hidden; }
 
 #loading span { color: &[PrimaryColor_3];; position: absolute; padding: 0; margin: 0; border: 0; font-family:arial,helvetica; font-weight:bold; }
+
+.deal {
+  background: white;
+  color: #757575;
+  border: 2px solid &[SecondaryColorB_1];;
+  -moz-border-radius: 9px;
+  -webkit-border-radius: 9px;
+  border-radius: 9px;
+  background-clip: padding-box;
+  clear: both;
+  margin-bottom: 20px;
+  padding: 15px 10px 10px 10px;
+  position: relative;
+  z-index: 10; 
+}
+.deal #first {
+  color: #000000;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 18px;
+  text-align: center; 
+}
