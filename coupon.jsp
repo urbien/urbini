@@ -27,7 +27,7 @@
            <div id="for_a_friend">Buy it for a friend!</div>
            <div id="remaining_time_container">
              <div class="countdown_container clearfix">
-               <img src="images/deal/hourglass.gif" alt="Hourglass"/>
+               <img src="images/obval/hourglass.gif" alt="Hourglass"/>
                <ul id="counter"><li class="countdown_label">Time Left To Buy</li><li><property name="timeLeftToBuy" noIcon="y"/></li></ul>
              </div>
            </div>
@@ -54,7 +54,7 @@
              </where>
              <where value="couponsLeftToBuy &lt;= 0 &amp;&amp;  couponBuysCount &gt; 0">
                <div class="tipped_check_mark">
-                 <span><img width="27" height="28" title="" src="images/deal/check_mark.png" class="ib" alt=""/><text text="The deal is on!"/></span>
+                 <span><img width="27" height="28" title="" src="images/obval/check_mark.png" class="ib" alt=""/><text text="The deal is on!"/></span>
                </div>
                <div class="tipped_at"></div>
                <p class="tipping"><span class="number"><property name="tippedAt" noIcon="y"/></span> bought</p>
