@@ -1500,7 +1500,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var editDiv = getAncestorById(i_am.iframeObj, "div_Edit");
 		if (!editDiv) {
 			if (isParentDialogOnPage(panelBlock)) { // mkResource page
-		  	panelBlock.style.width = (toEnlarge) ? (panelBlock.parentNode.clientWidth + "px") : "500px";
+		  	panelBlock.style.width = (toEnlarge) ? (panelBlock.parentNode.offsetWidth + "px") : "500px";
 		  }
 			return;
 		}
@@ -1517,8 +1517,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			panelBlock.parentNode.style.textAlign = "left";
 			if (Browser.webkit) { // webkit transition /animation
 				if (this.initPanelBlockWidth == null)
-					this.initPanelBlockWidth = panelBlock.parentNode.clientWidth;
-				panelBlock.style.width = (panelBlock.parentNode.clientWidth + "px");
+					this.initPanelBlockWidth = panelBlock.parentNode.offsetWidth;
+				panelBlock.style.width = (panelBlock.parentNode.offsetWidth + "px");
 			}
 			
 			cpDiv.style.display = "none";
