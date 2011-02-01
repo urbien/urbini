@@ -4,8 +4,8 @@
   <link href="styles/common.css"     type="text/css" rel="stylesheet" title="common"/>
   <link href="styles/properties.css" type="text/css" rel="stylesheet" />
   <link href="styles/iphone.css"     type="text/css" rel="stylesheet" /><!-- media="only screen and (max-device-width:480px)"  /-->
-  <link href="styles/deal/index.css"     type="text/css" rel="stylesheet"/>
-  <link href="styles/deal/base.css"     type="text/css" rel="stylesheet"/>
+  <link href="styles/obval/index.css"     type="text/css" rel="stylesheet"/>
+  <link href="styles/obval/base.css"     type="text/css" rel="stylesheet"/>
   <feed/>
   <meta name="keywords" content=""></meta>
   <meta name="description" content=""></meta>
