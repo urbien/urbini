@@ -194,14 +194,6 @@ var PeriodPicker = {
     
     // callback
     $t.callback($t.fromInp, $t.toInp);
-
-    // reset buttons state
-    if ($t.toBtn != null) {
-			$t.toBtn.style.backgroundColor = "transparent";
-      var fromBtn = getPreviousSibling($t.toBtn);
-			fromBtn.style.backgroundColor = $t.BLUE_BG;
-    }
-
 		$t._reset();
   },
   
@@ -232,10 +224,17 @@ var PeriodPicker = {
 		this.fromDate = null;
     this.toDate = null;
     this.isEuropeanFormat = false;
-    this.toBtn = null;
-    this.fromInp = null;
+		this.fromInp = null;
     this.toInp = null;
 		this.curInp = null;
+		
+		// reset buttons state
+    if (this.toBtn != null) {
+			this.toBtn.style.backgroundColor = "transparent";
+      var fromBtn = getPreviousSibling(this.toBtn);
+			fromBtn.style.backgroundColor = this.BLUE_BG;
+    }
+    this.toBtn = null;
 	}
 }
 
@@ -270,13 +269,14 @@ var iPhoneCalendar = {
     if (this.calendarDiv == null)
       this._initCalendar();
     // 1.
-    if (typeof initYearOrTimestampOrDateObj == "undefined")
+    if (typeof initYearOrTimestampOrDateObj == "undefined" || initYearOrTimestampOrDateObj == null)
       this.curDate = new Date();
     else if (typeof initMonth == "undefined" || typeof initDay == "undefined") {
       // 2.
       if (typeof initYearOrTimestampOrDateObj == "object")
         this.curDate = initYearOrTimestampOrDateObj;
-      else  // 3.
+      // 3.
+			else if (initYearOrTimestampOrDateObj != null) 
         this.curDate = new Date(initYearOrTimestampOrDateObj);
     }
     else  { // 4.
@@ -524,6 +524,6 @@ function getTextFromDate(dateObj, isEuropeanFormat) {
     return dateObj.getDate() + "-" + (dateObj.getMonth() + 1) + "-" +
       dateObj.getFullYear(); 
   else     
-    return (dateObj.getMonth() + 1) + "-" + dateObj.getDate() + "-" +
+    return (dateObj.getMonth() + 1) + "/" + dateObj.getDate() + "/" +
       dateObj.getFullYear(); 
 }
