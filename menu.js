@@ -3533,7 +3533,6 @@ var ListBoxesHandler = {
 		var topOffset = getScrollXY()[1] - findPosY(this.tray);
 		$t.fitOptionsYPosition($t.calendarPanel);
     $t.calendarPanel.style.display = "inline";
-    
     var inputs = $t.getDateInputs(paramTr); //Filter.getPeriodInputs(paramTr);
 	  startCalendar($t.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
     
@@ -3715,16 +3714,12 @@ var ListBoxesHandler = {
 			$t.onBackBtn();// slide back
 		}
 		
-		// Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
-		this.markAsSelectedAndVerified(null, clickedTr, clickedTr);
-		
 		var textField = null;
 		if ($t.isCalendar()) 
 			textField = PeriodPicker.onSetThruList();
 		
 		if (textField == null)
 			var textField = $t.getTextFieldInParamRow(); 
-
 
     var selectedOption = $t.getSelectedOption(clickedTr);
 	 	var tr = getAncestorByClassName(textField, "param_tr");
@@ -3738,7 +3733,16 @@ var ListBoxesHandler = {
 		}
 		// 2. Filter or Subscribe
 		else if (chosenValuesDiv) {
-			if (selectedOption.checked) {
+			// Note: data parameter always has inputs and divs for 2 values!
+			var isDate = typeof selectedOption.checked == 'undefined';
+			if (isDate) { 
+				if (textField.name.indexOf("_From") != -1)  // From at top; To at bottom
+					getFirstChild(chosenValuesDiv).innerHTML = selectedOption["text"];
+				else
+					getLastChild(chosenValuesDiv).innerHTML = selectedOption["text"];
+				textField.value = selectedOption["value"];
+			}
+			else if (selectedOption.checked) {
 		  	var chosenItemDiv = $t.genChosenItem(selectedOption, textField.name);
 				chosenValuesDiv.appendChild(chosenItemDiv);
 		  }
@@ -3759,7 +3763,7 @@ var ListBoxesHandler = {
 				if (verifiedField)
 					verifiedField.value = "n";
 			}
-			else { // on selection from options list remove value from textField
+			else if(!isDate) { // on selection from options list remove value from textField
 						 // textField used on manual data entry (!)
 				textField.value = "";
 			}
@@ -3803,6 +3807,10 @@ var ListBoxesHandler = {
 			}
 		}
     
+		// Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
+		this.markAsSelectedAndVerified(null, clickedTr, clickedTr);
+
+		
     $t.madeSelection = true;
 		$t.prevSelectorInputValue = ""; // reset
   },
