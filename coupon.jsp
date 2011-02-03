@@ -61,6 +61,7 @@
                <p class="tipping"></p>
              </where>
            </div>
+             <div><like value="Like"/>&#160;<like value="DontLike"/></div>
            <div class="optimizer_test_share_links_v2">
              <div class="variant_2">
                <div class="sharing">
