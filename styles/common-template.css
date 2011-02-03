@@ -2170,6 +2170,10 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
   position: relative;
   z-index: 10; 
 }
+.deal a {
+  background: white;
+  color: #757575;
+}
 .deal #first {
   color: #000000;
   font-size: 16px;
