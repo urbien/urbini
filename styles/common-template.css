@@ -802,6 +802,33 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 
 .propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
 
+.fbRegFrame {width: 340px; border:solid &[SecondaryColorA_5]; 1px;  vertical-align: top; font-size: 12px; background-color: #eeeeee; border-collapse: collapse; }
+.fbRegHeader { padding: 15px; }
+.fbRegistration {border-top:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: #ffffff; padding: 20px; width: 300px;}
+.fbUser {
+  border:solid &[SecondaryColorA_5]; 1px; 
+  border-collapse: collapse; 
+  display-inline; 
+  padding: 5px;
+  vertical-align: middle;
+  background-color: #eeeeee; 
+  color: #757575; 
+  text-align:left;
+  font-weight: bold;
+}
+input.fbInput {
+/*    -moz-border-radius: 4px 4px 4px 4px;*/
+    border: &[SecondaryColorA_5]; solid 1px;
+    background-color: #eeeeee; 
+    color: #757575; 
+    font-size: 16px;
+    height: 25px;
+    margin-right: 4px;
+    padding: 3px 0 3px 5px; 
+    vertical-align: bottom;
+    width: 300px; 
+}
+
 div.topSidebar {
 }
 div.leftSidebar {
@@ -1189,16 +1216,6 @@ TD.toolbar {
   min-height: 500px;
 }
 
-input.primary {
-    -moz-border-radius: 4px 4px 4px 4px;
-    border-color: #095490;
-    font-size: 24px;
-    height: 50px;
-    margin-right: 4px;
-    padding: 7px 0 7px 9px;
-    vertical-align: bottom;
-    width: 270px;
-}
 .new-btn {
     -moz-border-radius: 4px 4px 4px 4px;
     height: 51px;
