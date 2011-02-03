@@ -1,6 +1,7 @@
 <div id="register" align="center">
+  <table border="0" cellpadding="3" cellspacing="0" cols="2" class="userLogin"><tr><td>
   <form name="loginform" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
-    <table border="0" cellpadding="3" cellspacing="0" cols="2" class="userLogin">
+    <table border="0" cellpadding="3" cellspacing="0" cols="2">
       <tr>
         <td colspan="2" class="poweredBy-td" valign="middle" align="center" height="40">
           <span class="large-poweredBy"><property name="owner.longName"/></span>
@@ -33,15 +34,20 @@
         <td align="middle" colspan="2" valign="CENTER"><br/>
           <input type="submit" value="Sign In" name="logonButton"/><registerNewUser/>
 				  <br/><br/>
-				  <authenticateByFacebook/>
+				  <!--authenticateByFacebook/ -->
         </td>
       </tr>
-      <tr>
+      <!--tr>
         <td colspan="2"><br/></td>
-      </tr>
+      </tr-->
     </table>
     <returnUri /> <challenge />
   </form>
+  </td></tr>
+  <tr><td>
+	  <authenticateByFacebook/>
+	</td></tr>
+	</table>
   <div id="fb-root"></div>
   <div xmlns:fb="http://www.facebook.com/2008/fbml">
   <script src="http://connect.facebook.net/en_US/all.js"></script>
