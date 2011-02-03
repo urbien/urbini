@@ -5408,7 +5408,7 @@ var PlainDlg = {
 		this.dlgDiv.id = this.ID;
 		this.dlgDiv.className = "panel_block";
 		
-		if (Browser.ie || Browser.opera)
+		if (Browser.ie)
 			this.dlgDiv.style.width = 200;
 			
 		document.body.appendChild(this.dlgDiv);
