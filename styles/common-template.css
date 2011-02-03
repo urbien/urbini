@@ -1239,7 +1239,7 @@ input.primary {
   /*border-color: &[PrimaryColor_4];*/
 }
 
-.dashboard_btn a { color: &[SecondaryColorB_3];; font-weight: bold; display: block; white-space: nowrap; }
+.dashboard_btn a { color: &[PrimaryColor_4_text];; font-weight: bold; display: block; white-space: nowrap; }
 
 .dashboardLine td.dashboard_btn:hover, .dashboardLine td.active, .dashboardLine td.current {  
 	border-left-color: &[PrimaryColor_5];;
@@ -1253,7 +1253,7 @@ input.primary {
   -webkit-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
   -moz-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
 }
-.dashboardLine td { color: &[SecondaryColorB_3]; }
+.dashboardLine td { color: &[PrimaryColor_4_text]; }
 .dashboardLine .current, .dashboardLine .current a { color: &[PrimaryColor_4_text];; }
 .dashboardLine a { padding: 5px 0px;  font-size: 0.8em; }
 
@@ -1694,7 +1694,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .pointer { color: &[PrimaryColor_4_text];; }
 .rounded_rect_tbl .grey_highlighting .pointer, .rounded_rect_tbl .blue_highlighting .pointer { color: &[Alternative_A];; }
 
-.rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.1) !important; background: #ffffff; color: &[Color];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; }
+.rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.1) !important; background: #ffffff; color: &[Alternative_A];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; }
 .rounded_rect_tbl .comment { text-align: left; color: &[Alternative_A];; font-size: 11px; }
 .rounded_rect_tbl .select { font-size: inherit; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
 
