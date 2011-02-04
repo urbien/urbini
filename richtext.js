@@ -1197,7 +1197,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			toolBar.appendButton(this.onRedo, false, RteEngine.IMAGES_FOLDER + "redo.png", "redo");
 		}
 		if(this.rtePref.buttons.html) // html
-			this.htmlBtn = toolBar.appendButton(this.onSource, true, RteEngine.IMAGES_FOLDER + "html.png", "HTML source code<br />use Ctrl + Shift to edit", "view mode");
+			this.htmlBtn = toolBar.appendButton(this.onSource, true, RteEngine.IMAGES_FOLDER + "html.png", "edit HTML source code", "view mode");
 		
 		return toolBar;
 	}
@@ -1883,8 +1883,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	
 	// 0 allowToEdit if Ctrl key was pressed while mouseUp
-	this.onSource = function(pressed, allowToEdit) {
+	this.onSource = function(pressed/*, allowToEdit*/) {
 		var html;
+	
+		var allowToEdit = true; // always allow to edit
 
 		if(i_am.document.importNode) { // FF --
 			if(pressed) {
