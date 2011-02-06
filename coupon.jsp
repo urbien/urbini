@@ -7,7 +7,7 @@
            <div id="price_tag">
              <div id="price_tag_inner">
                <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
-               <a id="buy_btn" href="mkresource?type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;customer=-$me&amp;coupon=-$this">Buy</a>
+                 <a id="buy_btn" href="mkResource.html?displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;customer=-$me&amp;coupon=-$this"><text text="Buy"/></a>
              </div>
            </div>
            <div id="deal_discount" class="clearfix">
@@ -29,7 +29,7 @@
            <div id="remaining_time_container">
              <div class="countdown_container clearfix">
                <img src="images/obval/hourglass.gif" alt="Hourglass"/>
-               <ul id="counter"><li class="countdown_label">Time Left To Buy</li><li><property name="timeLeftToBuy" noIcon="y"/></li></ul>
+               <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li><property name="timeLeftToBuy" noIcon="y"/></li></ul>
              </div>
            </div>
            <div id="number_sold_container" data-periodical_ajax_updater="data-periodical_ajax_updater" data-path="/deals/elthos-spa/deal_status.json" data-json_key="number_sold_container" data-interval="300" style="">
@@ -62,7 +62,6 @@
                <p class="tipping"></p>
              </where>
            </div>
-             <!-- div><like value="Like"/></div -->
            <div class="optimizer_test_share_links_v2">
              <div class="variant_2">
                <div class="sharing">
