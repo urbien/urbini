@@ -24,7 +24,8 @@
                <dd><property name="dealDiscount" noIcon="y"/></dd>
              </dl>
            </div>
-           <div id="for_a_friend">Buy it for a friend!</div>
+           <!-- div id="for_a_friend">Buy it for a friend!</div -->
+           <div id="like"><like value="Like"/><where value="commentsCount &gt; 0"><br/>See all <div class="small"><property name="comments" noIcon="y"/></div></where></div>
            <div id="remaining_time_container">
              <div class="countdown_container clearfix">
                <img src="images/obval/hourglass.gif" alt="Hourglass"/>
@@ -61,7 +62,7 @@
                <p class="tipping"></p>
              </where>
            </div>
-             <div><like value="Like"/>&#160;<like value="DontLike"/></div>
+             <!-- div><like value="Like"/></div -->
            <div class="optimizer_test_share_links_v2">
              <div class="variant_2">
                <div class="sharing">
