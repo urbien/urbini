@@ -2182,3 +2182,10 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
   line-height: 18px;
   text-align: center; 
 }
+
+#like img {
+  padding-bottom: 3px;
+  padding-right: 3px;
+  width: 16px;
+  height: 16px;
+} 
