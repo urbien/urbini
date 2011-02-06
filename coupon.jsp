@@ -25,7 +25,7 @@
              </dl>
            </div>
            <!-- div id="for_a_friend">Buy it for a friend!</div -->
-           <div id="like"><like value="Like"/><where value="commentsCount &gt; 0"><br/>See all <div class="small"><property name="comments" noIcon="y"/></div></where></div>
+           <div id="like"><like value="Like"/><where value="commentsCount &gt; 0"><br/><div class="small"><property name="comments" noIcon="y"/></div></where></div>
            <div id="remaining_time_container">
              <div class="countdown_container clearfix">
                <img src="images/obval/hourglass.gif" alt="Hourglass"/>
