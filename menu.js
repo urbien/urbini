@@ -3166,6 +3166,7 @@ var ListBoxesHandler = {
 	addNewResBtn : null,
 	
   _isEditList : false,
+	_isFtsSift : false,
   skipUserClick : false, // helps to skip "3rd" click in RL editor
   
 	suspended : null, // structure used for Add new resource from options panel
@@ -3207,6 +3208,9 @@ var ListBoxesHandler = {
 		
 		this.textEntry = getChildById(this.optionsPanel, "text_entry");
 		this.classifierTextEntry = getChildById(this.classifierPanel, "text_entry");
+		
+		// 5. _isFtsSift
+		this._isFtsSift = this.panelBlock.parentNode.id == "fts-sift";
 	},	
 	
   onClickParam : function(event, optionsSelectorStr) {
@@ -3390,30 +3394,7 @@ var ListBoxesHandler = {
 		// RL editor: align options list
 		if ($t._isEditList && !isVisible($t.panelBlock)) {
 			var form = getAncestorByAttribute(hotspot, "name", "siteResourceList");
-			var scXY = getScrollXY();
-			var leftEdge = findPosX(form) + scXY[0];
-			var x = findPosX(hotspot) - $t.panelBlock.clientWidth;
-
-			var y = findPosY(hotspot);
-			var pageHeight = getWindowSize()[1] + scXY[1];
-			
-			if (pageHeight > y + $t.panelBlock.clientHeight + 30)  // show under item
-	  		y += 30;
-	  	else if (y - $t.panelBlock.clientHeight - 5 > 0)  // flip
-	  		y -= $t.panelBlock.clientHeight + 5;
-	  	else { // prevet showing over page top edge
-	  		y = 0;
-				x -= $t.curParamRow.clientWidth;
-	  	}	
-			
-			// prevet showing more left than page left edge
-			if (x < leftEdge)
-				x = leftEdge;
-			
-			$t.panelBlock.style.left = x;
-			$t.panelBlock.style.top = y;
-			$t.panelBlock.style.visibility = "visible";
-
+			$t.showStandAloneOptions(hotspot, form);
 		}
   },
 
@@ -3460,6 +3441,38 @@ var ListBoxesHandler = {
 		}
   },
 	
+	// RL editor and Fts-Sift
+	showStandAloneOptions : function(hotspot, parent) {
+		var $t = ListBoxesHandler;
+		
+		var scXY = getScrollXY();
+		var leftEdge = findPosX(parent) + scXY[0];
+		var x = findPosX(hotspot) - $t.panelBlock.clientWidth;
+
+		var y = findPosY(hotspot);
+		var pageHeight = getWindowSize()[1] + scXY[1];
+		
+		if (pageHeight > y + $t.panelBlock.clientHeight + 30)  // show under item
+  		y += 30;
+  	else if (y - $t.panelBlock.clientHeight - 5 > 0)  // flip
+  		y -= $t.panelBlock.clientHeight + 5;
+  	else { // prevent showing over page top edge
+  		y = 0;
+			x -= $t.curParamRow.clientWidth;
+  	}	
+		
+		// prevet showing more left than page left edge
+		if (x < leftEdge)
+			x = leftEdge;
+		
+		
+	//	x += hotspot.clientWidth;
+		
+		$t.panelBlock.style.left = x;
+		$t.panelBlock.style.top = y;
+		$t.panelBlock.style.visibility = "visible";
+	},
+	
 	// helps to fit options vertically on open and on scroll
 	fitOptionsYPosition : function(panel) {
 		var $t = ListBoxesHandler;
@@ -3499,6 +3512,8 @@ var ListBoxesHandler = {
 	},
 	
 	_hideInvisibleParams : function() {
+		if (!this.curParamRow)
+			return;
 		var table = this.curParamRow.parentNode;
 		var idx = table.rows[0].cells.length - 2;
 		var bottomEdge = getWindowSize()[1] + getScrollXY()[1];
@@ -3523,7 +3538,7 @@ var ListBoxesHandler = {
 		TouchDlgUtil.focusSelector(textEntry, false);
 		$t.skipUserClick = false; // accept click on parameter	
 		
-		if ($t._isEditList)
+		if ($t._isEditList || $t._isFtsSift)
 			setShadow($t.panelBlock, "6px 6px 25px rgba(0, 0, 0, 0.5)");
   },
 
@@ -3545,7 +3560,7 @@ var ListBoxesHandler = {
 	},
 
 	changeAddNewState : function(popupDiv) {
-		if (!this.addNewResIcon)
+		if (!this.addNewResIcon || this._isFtsSift)
 			return;
 		
 		var hdnAddTr = getChildById(popupDiv, "$addNew");
@@ -3653,6 +3668,8 @@ var ListBoxesHandler = {
     var itemNameDiv = getChildById(this.optionsPanel, "item_name");
     
     var form = document.forms[currentFormName];
+		if (!form)
+			return;
     var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp];
     
     var label = getPreviousSibling(textField.parentNode);
@@ -3706,8 +3723,7 @@ var ListBoxesHandler = {
     if (clickedTr.id == "$more" || clickedTr.id.indexOf("$add") == 0) // prevent from "More" and "Add"
       return true;
 
-
-		if (isSingleSelection) {
+		if (isSingleSelection) { // clicked parameter row, not a checkbox
 			var checkBtn = getChildByClassName(clickedTr, "iphone_checkbox");
 			if (checkBtn)
 				CheckButtonMgr.switchState(checkBtn);
@@ -3806,13 +3822,17 @@ var ListBoxesHandler = {
 				}
 			}
 		}
-    
-		// Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
-		this.markAsSelectedAndVerified(null, clickedTr, clickedTr);
 
-		
-    $t.madeSelection = true;
+	  $t.madeSelection = true;
 		$t.prevSelectorInputValue = ""; // reset
+		
+		
+		if ($t._isFtsSift) {
+			if (isSingleSelection)
+				FtsSift.submit();
+		}
+		else // Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
+	 		this.markAsSelectedAndVerified(null, clickedTr, clickedTr);
   },
   
   onPeriodSelectionFinish : function(fromInp, toInp) {
@@ -4002,7 +4022,7 @@ var ListBoxesHandler = {
 		if (SlideSwaper.getTrayPosition(tray) == 0)
 			return false;
 		
-		if (this._isEditList)
+		if (this._isEditList || this._isFtsSift)
 			setShadow(this.panelBlock, "");
 
     SlideSwaper.moveBack(tray);
@@ -4030,8 +4050,8 @@ var ListBoxesHandler = {
 			$t.classifierPanel.style.display = "none";
 			$t.curClassesPopupDiv.style.display = "none";
 		}
-		
-		if ($t._isEditList) // hide panel block using on RL editor
+
+		if ($t._isEditList || $t._isFtsSift) // hide panel block using on RL editor
 			$t.panelBlock.style.visibility = "";
 		
 		$t.textEntry.name = "";
@@ -5823,7 +5843,7 @@ var TouchDlgUtil = {
 			var fstInput = getChildByClassName(parent, "input");
 			if (fstInput &&  isVisible(fstInput))
 				fstInput.focus();
-			else	
+			else if (this.focusHolder)
 				this.focusHolder.focus();
 		}
 		else {
@@ -8645,8 +8665,90 @@ var DesktopSearchField = {
 			this.arrowDiv.innerHTML = "&#9650;";
 		
 		this.isFilterOpened = !this.isFilterOpened;
-	}
+	},
 	
+	getValue : function() {
+		if (this.field == null)
+			this.field = document.getElementById("-q");
+		if (this.field == null)
+			return "";
+		return FieldsWithEmptyValue.getValue(this.field);	
+	}
+}
+
+var FtsSift = {
+	div : null,
+	ftsFilter : null,
+	paramRow : null,
+	type : null,
+	show : function(tr) {
+		if (!this.div) {
+			this.ftsFilter = getAncestorById(tr, "fts-sift");
+			this.div = getChildByClassName(this.ftsFilter, "panel_block");
+		}
+
+		if (isVisible(this.div)) {
+			ListBoxesHandler.onBackBtn();
+			return;
+		}
+		
+		this.paramRow	= tr;
+		ListBoxesHandler.curParamRow = this.paramRow;  // set "manually" so to simulate click.		
+			
+	//	var url = "smartPopup";
+		var params = "-$action=searchLocal&$form=rightPanelPropertySheet&$selectOnly=y";
+			//debugger; // &.status_filter=y
+		var prop = tr.getElementsByTagName("input")[0]["name"]; // name of input is property name
+		params += "&prop=" + prop;
+		params += "&" + prop + "_filter=y";
+		var a = getChildByTagName(getNextSibling(tr), "a"); // links in tr bellow have type in href
+		this.type = getUrlParam(a.href, "type");
+		params += "&type=" + this.type;
+		
+		var chosenValuesDiv = getChildByClassName(this.paramRow, "chosen_values");
+		var inputs = chosenValuesDiv.getElementsByTagName("input");
+		for (var i = 0; i < inputs.length; i++)
+			params += "&" + inputs[i].name + "=" + inputs[i].value; // allows to mark previously selected options
+		
+		postRequest(null, "smartPopup", params, this.div, tr, this.onload);
+	},
+	
+	onload : function(event, dlgDiv, hotspot, content) {
+		var $t = FtsSift;
+
+		ListBoxesHandler.setTray(dlgDiv);
+		var popupDiv = document.createElement("div");
+		
+		ListBoxesHandler.onListLoaded(event, popupDiv, hotspot, content);
+
+		var x = findPosX(hotspot) + hotspot.clientWidth + 5;
+		var scrollY = getScrollXY()[1];
+		var y = Math.max(findPosY(hotspot) - dlgDiv.clientHeight / 2, scrollY + 5);
+		var bottomEdge = getWindowSize()[1] + scrollY;
+
+		if (y > bottomEdge - dlgDiv.clientHeight)
+			y = Math.max(bottomEdge - dlgDiv.clientHeight, scrollY);
+		
+		dlgDiv.style.left = x;
+		dlgDiv.style.top = y;
+		dlgDiv.style.visibility = "visible";
+	},
+	submit : function() {
+		var params = "-$action=searchLocal&submitFilter=Filter&-cat=on";
+		params += "&-q=" + DesktopSearchField.getValue();
+		params += "&type=" + this.type;
+
+		var chosenValuesDiv = getChildByClassName(this.paramRow, "chosen_values");
+		var inputs = chosenValuesDiv.getElementsByTagName("input");
+		if (inputs.length == 0)
+			return;
+		for (var i = 0; i < inputs.length; i++)
+			params += "&" + inputs[i].name + "=" + inputs[i].value;
+		params += "&" + inputs[0].name + "_verified=y"; // verified flag
+		
+		LoadingIndicator.show();
+		window.location.assign("l.html?" + params);
+	}
 }
 
 // FtsAutocomplete - full text search autocomplete 
