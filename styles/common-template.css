@@ -1725,6 +1725,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   width: 100%; 
   overflow: hidden;
 }
+#fts-sift .chosen_values { display: none; }
 
 .chosen_values div {
   overflow: hidden;
