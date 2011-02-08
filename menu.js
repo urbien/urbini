@@ -3060,7 +3060,7 @@ var ListBoxesHandler = {
     
     if (false/*enteredText && div != null*/) { // it seems (!) the following made thru localOptionsFilter()
       hideResetRow(div, currentFormName, originalProp);
-      this.showOptions(div)
+      this.showOptionsOrClasses(div)
       return;
     }
     else {
@@ -3189,6 +3189,13 @@ var ListBoxesHandler = {
 		if (!tray) {
 			var resourceListDiv = document.getElementById("siteResourceList");
 	  	tray = getChildByClassName(resourceListDiv, "tray");
+			this._isEditList = tray != null;
+		}
+		// 2.2 tray in fts-sift
+		if (!tray) {
+			var ftsSift = document.getElementById("fts-sift");
+	  	tray = getChildByClassName(ftsSift, "tray");
+			this._isFtsSift = tray != null;
 		}
 
 		// 3. test if we continue to work with the same tray
@@ -3209,8 +3216,8 @@ var ListBoxesHandler = {
 		this.textEntry = getChildById(this.optionsPanel, "text_entry");
 		this.classifierTextEntry = getChildById(this.classifierPanel, "text_entry");
 		
-		// 5. _isFtsSift
-		this._isFtsSift = this.panelBlock.parentNode.id == "fts-sift";
+		if (this.textEntry && (this._isEditList || this._isFtsSift))
+			FieldsWithEmptyValue.initField(this.textEntry, 'select'); // init options selector of stand alone optionss panel
 	},	
 	
   onClickParam : function(event, optionsSelectorStr) {
@@ -3256,18 +3263,11 @@ var ListBoxesHandler = {
 		if (SlideSwaper.doesSlidingRun($t.tray))
 			return;
 
-		// resource list: formPanel is empty (except \n)
-		$t._isEditList = $t.formPanel.innerHTML.length < 10; ///*$t.tray == null || */($t.formPanel && $t.formPanel.innerHTML.length < 10);
-		if ($t._isEditList) { 
-			// init options selector in RL editor
-			FieldsWithEmptyValue.initField($t.textEntry, "select")
-	  }
-
 		$t.clonedEvent = cloneEvent(event);
 		$t.curClass = null; 
-		 
+
 		// 2nd click in RL editor; options list is opened
-		if ($t._isEditList && isVisible($t.panelBlock)) {
+		if (($t._isEditList || $t._isFtsSift) && isVisible($t.panelBlock)) {
 			$t.onOptionsBackBtn();
 
 			// click on different parameter then invoke this function with delay 800 ms
@@ -3348,12 +3348,14 @@ var ListBoxesHandler = {
 				str = paramsTable.id.substr("table_".length) + "_filter";
 				classValue = tr.id;
 			}
-			else if(isDateRollup) { // 2.2 date rollup
-				str = target.parentNode.id;
-			}
-			else // 2.3 options list
+			else 
+				if (isDateRollup) { // 2.2 date rollup
+					str = target.parentNode.id;
+				}
+			else {// 2.3 options list
 				//str = input.name + "_" + input.id + "_filter";
 				str = input.name + "_" + input.form.name + "_filter";
+			}
 
 			// show options list
 			this.listboxOnClick1(e, str, null, null, classValue, arrowTd);
@@ -3389,16 +3391,16 @@ var ListBoxesHandler = {
 		}
 
 		$t.changeAddNewState(popupDiv);
-		$t.showOptions(popupDiv);
+		$t.showOptionsOrClasses(popupDiv);
 
 		// RL editor: align options list
-		if ($t._isEditList && !isVisible($t.panelBlock)) {
-			var form = getAncestorByAttribute(hotspot, "name", "siteResourceList");
+		if (($t._isEditList || $t._isFtsSift) && !isVisible($t.panelBlock)) {
+			var form = getAncestorByAttribute(hotspot, "name", ["siteResourceList", "rightPanelPropertySheet"]);
 			$t.showStandAloneOptions(hotspot, form);
 		}
   },
 
-  showOptions : function(popupDiv) {
+  showOptionsOrClasses : function(popupDiv) {
     var $t = ListBoxesHandler;
 
 		var panel;
@@ -3416,19 +3418,20 @@ var ListBoxesHandler = {
 		panel.style.display = "inline";
 		popupDiv.style.display = "block";
 		$t.optionsPanel.style.height = "";
-	
-		if ($t.optionsPanel.offsetHeight < $t.panelBlock.offsetHeight)
-			$t.optionsPanel.style.height = $t.panelBlock.offsetHeight;
+		
+		// fit panel height
+		if (panel.offsetHeight < $t.panelBlock.offsetHeight)
+			panel.style.height = $t.panelBlock.offsetHeight;
 		
     popupDiv.style.visibility = "visible";
     
     // show item/parameter name (if it is too long)
     $t.displayItemName();
 
-		if ($t.panelBlock.id == "fts_filter" && Browser.ie) { // IE does not support min-width
-			if ($t.optionsPanel.clientWidth > $t.panelBlock.clientWidth)
-				$t.panelBlock.style.width = $t.optionsPanel.clientWidth;
-		}
+//		if ($t.panelBlock.id == "fts_filter" && Browser.ie) { // IE does not support min-width
+//			if ($t.optionsPanel.clientWidth > $t.panelBlock.clientWidth)
+//				$t.panelBlock.style.width = $t.optionsPanel.clientWidth;
+//		}
 		
     // slide forward
 		var curPanel = $t.getCurrentPanelDiv();
@@ -3443,41 +3446,49 @@ var ListBoxesHandler = {
 	
 	// RL editor and Fts-Sift
 	showStandAloneOptions : function(hotspot, parent) {
-		var $t = ListBoxesHandler;
-		
 		var scXY = getScrollXY();
-		var leftEdge = findPosX(parent) + scXY[0];
-		var x = findPosX(hotspot) - $t.panelBlock.clientWidth;
-
-		var y = findPosY(hotspot);
-		var pageHeight = getWindowSize()[1] + scXY[1];
+		var wndSize = getWindowSize();
+		var x, y;
 		
-		if (pageHeight > y + $t.panelBlock.clientHeight + 30)  // show under item
-  		y += 30;
-  	else if (y - $t.panelBlock.clientHeight - 5 > 0)  // flip
-  		y -= $t.panelBlock.clientHeight + 5;
-  	else { // prevent showing over page top edge
-  		y = 0;
-			x -= $t.curParamRow.clientWidth;
-  	}	
-		
-		// prevet showing more left than page left edge
-		if (x < leftEdge)
-			x = leftEdge;
-		
-		
-	//	x += hotspot.clientWidth;
-		
-		$t.panelBlock.style.left = x;
-		$t.panelBlock.style.top = y;
-		$t.panelBlock.style.visibility = "visible";
+		if (this._isEditList) {
+			var leftEdge = findPosX(parent) + scXY[0];
+			x = findPosX(hotspot) - this.panelBlock.clientWidth;
+			y = findPosY(hotspot);
+			var pageHeight = wndSize[1] + scXY[1];
+			
+			if (pageHeight > y + this.panelBlock.clientHeight + 30) // show under item
+				y += 30;
+			else 
+				if (y - this.panelBlock.clientHeight - 5 > 0) // flip
+					y -= this.panelBlock.clientHeight + 5;
+				else { // prevent showing over page top edge
+					y = 0;
+					x -= this.curParamRow.clientWidth;
+				}
+			
+			// prevet showing more left than page left edge
+			if (x < leftEdge) 
+				x = leftEdge;
+		}
+		else if (this._isFtsSift) {
+			x = findPosX(hotspot) + hotspot.clientWidth + 5;
+			y = Math.max(findPosY(hotspot) - this.panelBlock.clientHeight / 2, scXY[1] + 5);
+			var bottomEdge = wndSize[1] + scXY[1];
+	
+			if (y > bottomEdge - this.panelBlock.clientHeight)
+				y = Math.max(bottomEdge - this.panelBlock.clientHeight, scXY[1]);
+		}
+	
+		this.panelBlock.style.left = x;
+		this.panelBlock.style.top = y;
+		this.panelBlock.style.visibility = "visible";
 	},
 	
 	// helps to fit options vertically on open and on scroll
 	fitOptionsYPosition : function(panel) {
 		var $t = ListBoxesHandler;
 		
-		if ($t._isEditList) 
+		if ($t._isEditList || $t._isFtsSift) 
 			return;
 
 		var onOpen = true;
@@ -3704,6 +3715,7 @@ var ListBoxesHandler = {
 		this.curClass = tr.id;
 		this.processClickParam(e, tr, "options");
 	},	
+
 	// isSingleSelection - selected row, not a checkbox
   onOptionSelection : function(clickedTr, isSingleSelection) {
 		var $t = ListBoxesHandler;
@@ -3774,10 +3786,7 @@ var ListBoxesHandler = {
 
 			// unselected all options / checkboxes (?)
 			if (chosenValuesDiv.getElementsByTagName("div").length == 0) {
-				textField.value = "";
-				var verifiedField = form.elements[originalProp + "_verified"] 
-				if (verifiedField)
-					verifiedField.value = "n";
+					$t.makeParamReset();
 			}
 			else if(!isDate) { // on selection from options list remove value from textField
 						 // textField used on manual data entry (!)
@@ -3788,7 +3797,6 @@ var ListBoxesHandler = {
 		else {
 			// 3.1. multi value selection
 			if (typeof selectedOption["checked"] != "undefined") { // /*len != 1 || selectedOptionsArr[0]["multi_value"] == "yes"*/
-
 				var tagsParentDiv = getNextSibling(textField);
 				if (selectedOption["checked"]) {
 					if (textField.value.length !=0)
@@ -3825,14 +3833,15 @@ var ListBoxesHandler = {
 
 	  $t.madeSelection = true;
 		$t.prevSelectorInputValue = ""; // reset
-		
+	
+		// Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
+		if (selectedOption["checked"] != false)
+			this.markAsSelectedAndVerified(null, clickedTr, clickedTr);
 		
 		if ($t._isFtsSift) {
 			if (isSingleSelection)
-				FtsSift.submit();
+				textField.form.submit();
 		}
-		else // Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
-	 		this.markAsSelectedAndVerified(null, clickedTr, clickedTr);
   },
   
   onPeriodSelectionFinish : function(fromInp, toInp) {
@@ -3869,25 +3878,6 @@ var ListBoxesHandler = {
 		
   },
   
-  // clears selections in options panel
-  removeV : function() {
-    var optTable = getChildByClassName(this.curOptionsListDiv, "rounded_rect_tbl");
-    if (!optTable)
-			return;
-		var amt = optTable.rows.length;
-    for (var i = 0; i < amt; i++) {
-      var chkCell = optTable.rows[i].cells[0];
-      var checkBox = chkCell.getElementsByTagName("input")[0];
-      var img = chkCell.getElementsByTagName("img")[0];
-
-      if (checkBox)
-        checkBox.checked = false;
-      if (img)
-				img.style.visibility = "hidden";
-    }
-  
-  },
-  
   genChosenItem : function(selectedOption, propName) {
 			var div = document.createElement("div");
 			var html = selectedOption["text"];
@@ -3916,16 +3906,19 @@ var ListBoxesHandler = {
 	},
   onParamReset : function() {
 		this.makeParamReset();
-		this.onBackBtn();
+		if (this._isFtsSift)
+			this.submitFtsSift();
+		else	
+			this.onBackBtn();
 	},
   makeParamReset : function() {
     // remove value in coresponding <input>s
-    var form = document.forms[currentFormName];
   
 		// 1. text/hidden field
-		var textField = getOriginalPropField(form, originalProp);
+		var textField = this.getTextFieldInParamRow(); //getOriginalPropField(form, originalProp);
 		FieldsWithEmptyValue.setEmpty(textField);
 
+		var form = textField.form;
 		// 2. select field
 		var selectField = form.elements[originalProp + "_select"] 
 		if (selectField) {
@@ -3954,9 +3947,6 @@ var ListBoxesHandler = {
     var chosenValuesDiv = getChildByClassName(paramTr, "chosen_values");
     if (chosenValuesDiv)
       chosenValuesDiv.innerHTML = "";
-
-    // remove selections in options panel
-    this.removeV();
 
     // reset icon of complex date rollup
     var prop = textField.name;
@@ -4066,6 +4056,8 @@ var ListBoxesHandler = {
 		TouchDlgUtil.bleachBlueRow();
 		$t._showInvisibleParams();
 
+		$t._isEditList = false;
+		$t._isFtsSift = false;
 		$t.skipUserClick = false; // accept click on parameter
   },
 
@@ -4113,6 +4105,11 @@ var ListBoxesHandler = {
 		}
 		else
 			noMatchesDiv.style.display = "none";
+			
+		// fit height of current panel	
+		var curPanel =	this.getCurrentPanelDiv();
+		if (curPanel.offsetHeight < this.panelBlock.offsetHeight)
+			curPanel.style.height = this.panelBlock.offsetHeight;
   },
   
   // create Calendar
@@ -4205,7 +4202,13 @@ var ListBoxesHandler = {
   },
 	isFormPanelCurrent: function(){
   	return SlideSwaper.getTrayPosition(this.tray) == 0;
-  }
+  },
+	
+	// submitFtsSift ---
+	submitFtsSift : function() {
+		var textField = this.getTextFieldInParamRow();
+		textField.form.submit(); 
+	}
 }
 
 /*
@@ -8673,81 +8676,6 @@ var DesktopSearchField = {
 		if (this.field == null)
 			return "";
 		return FieldsWithEmptyValue.getValue(this.field);	
-	}
-}
-
-var FtsSift = {
-	div : null,
-	ftsFilter : null,
-	paramRow : null,
-	type : null,
-	show : function(tr) {
-		if (!this.div) {
-			this.ftsFilter = getAncestorById(tr, "fts-sift");
-			this.div = getChildByClassName(this.ftsFilter, "panel_block");
-		}
-
-		if (isVisible(this.div)) {
-			ListBoxesHandler.onBackBtn();
-			return;
-		}
-		
-		this.paramRow	= tr;
-		ListBoxesHandler.curParamRow = this.paramRow;  // set "manually" so to simulate click.		
-			
-	//	var url = "smartPopup";
-		var params = "-$action=searchLocal&$form=rightPanelPropertySheet&$selectOnly=y";
-			//debugger; // &.status_filter=y
-		var prop = tr.getElementsByTagName("input")[0]["name"]; // name of input is property name
-		params += "&prop=" + prop;
-		params += "&" + prop + "_filter=y";
-		var a = getChildByTagName(getNextSibling(tr), "a"); // links in tr bellow have type in href
-		this.type = getUrlParam(a.href, "type");
-		params += "&type=" + this.type;
-		
-		var chosenValuesDiv = getChildByClassName(this.paramRow, "chosen_values");
-		var inputs = chosenValuesDiv.getElementsByTagName("input");
-		for (var i = 0; i < inputs.length; i++)
-			params += "&" + inputs[i].name + "=" + inputs[i].value; // allows to mark previously selected options
-		
-		postRequest(null, "smartPopup", params, this.div, tr, this.onload);
-	},
-	
-	onload : function(event, dlgDiv, hotspot, content) {
-		var $t = FtsSift;
-
-		ListBoxesHandler.setTray(dlgDiv);
-		var popupDiv = document.createElement("div");
-		
-		ListBoxesHandler.onListLoaded(event, popupDiv, hotspot, content);
-
-		var x = findPosX(hotspot) + hotspot.clientWidth + 5;
-		var scrollY = getScrollXY()[1];
-		var y = Math.max(findPosY(hotspot) - dlgDiv.clientHeight / 2, scrollY + 5);
-		var bottomEdge = getWindowSize()[1] + scrollY;
-
-		if (y > bottomEdge - dlgDiv.clientHeight)
-			y = Math.max(bottomEdge - dlgDiv.clientHeight, scrollY);
-		
-		dlgDiv.style.left = x;
-		dlgDiv.style.top = y;
-		dlgDiv.style.visibility = "visible";
-	},
-	submit : function() {
-		var params = "-$action=searchLocal&submitFilter=Filter&-cat=on";
-		params += "&-q=" + DesktopSearchField.getValue();
-		params += "&type=" + this.type;
-
-		var chosenValuesDiv = getChildByClassName(this.paramRow, "chosen_values");
-		var inputs = chosenValuesDiv.getElementsByTagName("input");
-		if (inputs.length == 0)
-			return;
-		for (var i = 0; i < inputs.length; i++)
-			params += "&" + inputs[i].name + "=" + inputs[i].value;
-		params += "&" + inputs[0].name + "_verified=y"; // verified flag
-		
-		LoadingIndicator.show();
-		window.location.assign("l.html?" + params);
 	}
 }
 
