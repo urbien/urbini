@@ -7,7 +7,8 @@
            <div id="price_tag">
              <div id="price_tag_inner">
                <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
-               <div class="buy_btn"><a id="-inner" class="coupon_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy"/></a></div>
+               <!--div class="buy_btn"><a id="-inner" class="coupon_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy"/></a></div -->
+               <a id="-inner" class="button" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy"/></a>             
              </div>
            </div>
            <div id="deal_discount" class="clearfix">
@@ -28,7 +29,7 @@
            <div id="like"><like value="Like"/><where value="commentsCount &gt; 0"><br/><div class="small"><property name="comments" noIcon="y"/></div></where></div>
            <div id="remaining_time_container">
              <div class="countdown_container clearfix">
-               <img src="images/obval/hourglass.gif" alt="Hourglass"/>
+               <img src="images/obval/countdown.png" style="margin-left: -10px" alt="Hourglass"/>
                <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li><property name="timeLeftToBuy" noIcon="y"/></li></ul>
              </div>
            </div>
@@ -82,7 +83,12 @@
             <ul>
               <li><property name="image" noIcon="y" /><!-- image --></li>
             </ul>
-          </div>
+           </div>
+           <div>
+            <ul>
+            	<li><property name="vendor" noicon="y"></property></li>
+           	</ul>
+           </div>
           <div class="fine_print">
             <h3><text text="Fine print"/></h3>
             <ul>
