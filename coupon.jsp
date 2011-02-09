@@ -28,7 +28,7 @@
            <div id="like"><like value="Like"/><where value="commentsCount &gt; 0"><br/><div class="small"><property name="comments" noIcon="y"/></div></where></div>
            <div id="remaining_time_container">
              <div class="countdown_container clearfix">
-               <img src="images/obval/countdown.png" style="margin-left: -10px" alt="Hourglass"/>
+               <img src="images/obval/countdown.png" style="margin-left: -15px" alt="Hourglass"/>
                <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li><property name="timeLeftToBuy" noIcon="y"/></li></ul>
              </div>
            </div>
