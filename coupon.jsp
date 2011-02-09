@@ -7,8 +7,7 @@
            <div id="price_tag">
              <div id="price_tag_inner">
                <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
-               <!--div class="buy_btn"><a id="-inner" class="coupon_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy"/></a></div -->
-               <a id="-inner" class="button" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy"/></a>             
+               <div><a id="-inner" class="coupon_buy button" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
              </div>
            </div>
            <div id="deal_discount" class="clearfix">
