@@ -2172,10 +2172,12 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
   position: relative;
   z-index: 10; 
 }
+/*
 .deal a {
   background: white;
   color: #757575;
 }
+*/
 .deal #first {
   color: #000000;
   font-size: 16px;
@@ -2190,3 +2192,17 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
   width: 16px;
   height: 16px;
 } 
+
+.coupon_buy {
+  /*disable text selection (Firefox only)*/
+  -moz-user-select: none;
+  position: absolute;
+  left: 145px;
+  top: 10px;
+  line-height: 2em;
+  height: 50px;
+  width: 100px;
+}
+a.coupon_buy {
+  font-size: 24px; 
+}
