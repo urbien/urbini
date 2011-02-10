@@ -1428,9 +1428,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   }
 
 	// event handlers --------------
-	this.onfocus = function() {
+	this.onfocus = function(wasDelayedForExpanding) {
 		if (i_am.toolbar == null) {
 			i_am.changePanelWidth(true); // expand EditTab before createToolbar
+			
+			if (Browser.webkit && wasDelayedForExpanding != true) {
+				setTimeout(function f(){i_am.onfocus(true)	}, 410);
+				return;
+			}	
+			
 			i_am.toolbar = i_am.createToolbar();
 		}
 
