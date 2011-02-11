@@ -4,9 +4,7 @@
   <link href="styles/common.css"     type="text/css" rel="stylesheet" title="common"/>
   <link href="styles/properties.css" type="text/css" rel="stylesheet" />
   <link href="styles/iphone.css"     type="text/css" rel="stylesheet" /><!-- media="only screen and (max-device-width:480px)"  /-->
-  <link href="styles/index.css"      type="text/css" rel="stylesheet"/>
-  <link href="styles/base.css"       type="text/css" rel="stylesheet"/>
-  <feed/>
+	<feed/>
   <meta name="keywords" content=""></meta>
   <meta name="description" content=""></meta>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.7, maximum-scale=1.0"></meta>
