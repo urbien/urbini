@@ -1591,7 +1591,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #siteResourceList .panel_block, #fts-sift .panel_block{
 	position: absolute;
 	visibility: hidden;
-	width: 30%;
+	width: 35%;
   min-width: 300px;
   max-width: 500px;
 }
@@ -2157,52 +2157,3 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .csp_bg_34 { background-color: &[SecondaryColorB_4];; }
 .csp_bg_35 { background-color: &[SecondaryColorB_5];; }
 
-
-.deal {
-  background: white;
-  color: #757575;
-  border: 2px solid &[SecondaryColorB_1];;
-  -moz-border-radius: 9px;
-  -webkit-border-radius: 9px;
-  border-radius: 9px;
-  background-clip: padding-box;
-  clear: both;
-  margin-bottom: 20px;
-  padding: 15px 10px 10px 10px;
-  position: relative;
-  z-index: 10; 
-}
-/*
-.deal a {
-  background: white;
-  color: #757575;
-}
-*/
-.deal #first {
-  color: #000000;
-  font-size: 16px;
-  font-weight: bold;
-  line-height: 18px;
-  text-align: center; 
-}
-
-#like img {
-  padding-bottom: 3px;
-  padding-right: 3px;
-  width: 16px;
-  height: 16px;
-} 
-
-.coupon_buy {
-  /*disable text selection (Firefox only)*/
-  -moz-user-select: none;
-  position: absolute;
-  left: 145px;
-  top: 10px;
-  line-height: 2em;
-  height: 50px;
-  width: 100px;
-}
-a.coupon_buy {
-  font-size: 24px; 
-}
