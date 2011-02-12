@@ -3839,7 +3839,7 @@ var ListBoxesHandler = {
 			this.markAsSelectedAndVerified(null, clickedTr, clickedTr);
 		
 		if ($t._isFtsSift) {
-			if (isSingleSelection)
+			if (isSingleSelection) 
 				textField.form.submit();
 		}
   },
@@ -4207,7 +4207,8 @@ var ListBoxesHandler = {
 	// submitFtsSift ---
 	submitFtsSift : function() {
 		var textField = this.getTextFieldInParamRow();
-		textField.form.submit(); 
+		textField.form.submit();
+		this.onBackBtn();  
 	}
 }
 
@@ -5040,7 +5041,8 @@ var DataEntry = {
 	
 	onDataEntryRejection : function(event, div, hotspot, html, url) {
 		var $t = DataEntry;
-		$t.onDataEntryLoaded(event, div, hotspot, html, url, true);
+		if (div)
+			$t.onDataEntryLoaded(event, div, hotspot, html, url, true);
 	},
 
 	hide : function (onSubmit) {
