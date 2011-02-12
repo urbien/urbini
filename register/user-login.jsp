@@ -1,17 +1,17 @@
 <div id="register" align="center">
   <table border="0" cellpadding="3" cellspacing="0" cols="2" class="userLogin"><tr><td>
   <form name="loginform" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
-    <table border="0" cellpadding="3" cellspacing="0" cols="2">
+    <table border="0" cellpadding="3" cellspacing="0" cols="2" width="100%">
       <tr>
         <td colspan="2" class="poweredBy-td" valign="middle" align="center" height="40">
           <span class="large-poweredBy"><property name="owner.longName"/></span>
         </td>
       </tr>
-      <tr>
+      <!--tr>
         <td colspan="2" align="CENTER">
           <errorMessage/>
         </td>
-      </tr>
+      </tr-->
       <tr>
         <td width="40%" class="nowrap" align="right"><text text="User name:"/></td>
         <td>
@@ -60,9 +60,9 @@
 		  
 		  FB.Event.subscribe('auth.sessionChange', function(response) {
 		    if (response.session) {
-		      alert("A user has logged in, and a new cookie has been saved");
+//		      alert("A user has logged in, and a new cookie has been saved");
 		    } else {
-		      alert("The user has logged out, and the cookie has been cleared");
+//		      alert("The user has logged out, and the cookie has been cleared");
 		    }
 		  });
 ]]>	  
