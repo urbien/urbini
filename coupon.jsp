@@ -35,30 +35,19 @@
        </div>
      </div>
      <div id="number_sold_container" data-periodical_ajax_updater="data-periodical_ajax_updater" data-path="/deals/elthos-spa/deal_status.json" data-json_key="number_sold_container" data-interval="300" style="">
-       <table class="status">
-       <tbody>
        <where value="couponBuysQuantity &gt; 0">
-         <tr class="sum"><td class="deal_left"><span class="number"><property name="couponBuysQuantity" noIcon="y" /></span></td><td class="deal_right">bought</td></tr>
-       </where>
-       </tbody>
-       <tbody>
+					<span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>
+					bought
+			 </where>
        <where value="couponsLeftToBuy == tippingPoint ">
-         <tr>
-         <td colspan="2" id="first">
          <text text="Be first one to buy"/>
-         </td></tr>
        </where>
-       </tbody>
-       <tbody>
        <where value="couponsLeftToBuy &gt; 0 ">
-         <tr class="remaining">
-         <td colspan="2" class="full">
-         <property name="couponsLeftToBuy" noIcon="y" />&#160;
-         <text text="more needed to get the deal"/>
-         </td></tr>
+         <div class="remaining">
+	         <property name="couponsLeftToBuy" noIcon="y" />&#160;
+     	    <text text="more needed to get the deal"/>
+         </div>
        </where>
-       </tbody>
-       </table>
        <where value="couponsLeftToBuy &lt;= 0 &amp;&amp;  couponBuysQuantity &gt; 0">
          <div class="tipped_check_mark">
            <span><img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on!"/></span>
