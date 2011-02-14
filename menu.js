@@ -1844,7 +1844,7 @@ var FormProcessor = {
 			// if "dialog" inside not body then it is "on page"
 			if (dlg.parentNode.tagName.toLowerCase() != 'body')
 				params += "&on_page=y"
-		
+	
 			if (dlg.id == 'pane2')	
 				postRequest(e, url, params, dlg, getTargetElement(e), PlainDlg.onDialogLoaded); // showDialog
 			else
@@ -3973,15 +3973,15 @@ var ListBoxesHandler = {
 		
 		var value = "";
 		var chosenValuesDiv = getChildByClassName(this.curParamRow, "chosen_values"); 
-		// data entry: get 1st option item
-		if (!chosenValuesDiv) { 
-		  if (this.curOptionsListDiv && isVisible(this.curOptionsListDiv)) {
-		  	var optTr = getChildByClassName(this.curOptionsListDiv, "option_tr");
-				while (optTr && optTr.style.display == "none")
-					optTr = getNextSibling(optTr);
-				if (optTr && optTr.style.display != "none")
-					value = getTextContent(optTr);
-		  }
+		if (!chosenValuesDiv) { // data entry
+//////////////// get 1st option item
+//		  if (this.curOptionsListDiv && isVisible(this.curOptionsListDiv)) {
+//		  	var optTr = getChildByClassName(this.curOptionsListDiv, "option_tr");
+//				while (optTr && optTr.style.display == "none")
+//					optTr = getNextSibling(optTr);
+//				if (optTr && optTr.style.display != "none")
+//					value = getTextContent(optTr);
+//		  }
 		}
 		else // Filter: allows to set value from textEntry directly
 			value = FieldsWithEmptyValue.getValue(this.textEntry);
@@ -5038,11 +5038,10 @@ var DataEntry = {
 		var key = $t._getKey($t.currentUrl);
 		$t.dataEntryArr[key] = div;
 	},
-	
+	// div is null here; the dialog with error message is in html code
 	onDataEntryRejection : function(event, div, hotspot, html, url) {
 		var $t = DataEntry;
-		if (div)
-			$t.onDataEntryLoaded(event, div, hotspot, html, url, true);
+		$t.onDataEntryLoaded(event, div, hotspot, html, url, true);
 	},
 
 	hide : function (onSubmit) {
