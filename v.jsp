@@ -73,5 +73,5 @@
 
 <PointOfSale/>
 <filterUrl />
-<br/>
+
 </div>
