@@ -23,7 +23,7 @@
     </div><!-- main skin -->
     <include name="requiredFooter.jsp"/>
     <div hide="y">
-      <include name="include/commonFooter"/>
+      <include name="include/commonFooter" alt="include/commonFooter.jsp" />
       <chatAutoStart/>
     </div>
   </div><!-- abc -->
