@@ -1,5 +1,5 @@
 <div id="obval_item">
-   <h2 class="fn control_title"><property name="title" noIcon="y" /></h2>
+   <h2 class="fn control_title"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
    <div class="left">
      <div id="price_tag">
        <div id="price_tag_inner">
@@ -34,7 +34,7 @@
          <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li class="timeLeft"><property name="timeLeftToBuy" noIcon="y"/></li></ul>
        </div>
      </div>
-     <div id="number_sold_container" data-periodical_ajax_updater="data-periodical_ajax_updater" data-path="/deals/elthos-spa/deal_status.json" data-json_key="number_sold_container" data-interval="300" style="">
+     <div id="number_sold_container" data-periodical_ajax_updater="data-periodical_ajax_updater" data-path="/deals/elthos-spa/deal_status.json" data-json_key="number_sold_container" data-interval="300">
        <where value="couponBuysQuantity &gt; 0">
 					<span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>
 					bought
@@ -80,9 +80,9 @@
       </ul>
      </div>
      <div>
-      <ul>
-      	<li><property name="vendor" noIcon="y"></property></li>
-     	</ul>
+      <!--ul>
+      	<li><property name="vendor" noIcon="y" /></li>
+     	</ul-->
      </div>
     <div class="fine_print">
       <h3><text text="Fine print"/></h3>
