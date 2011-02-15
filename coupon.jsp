@@ -31,7 +31,7 @@
          <where value="timeLeftToBuy &gt; 86400"> 
            <img src="images/obval/countdown1.png" />
          </where>
-         <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li><property name="timeLeftToBuy" noIcon="y"/></li></ul>
+         <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li class="timeLeft"><property name="timeLeftToBuy" noIcon="y"/></li></ul>
        </div>
      </div>
      <div id="number_sold_container" data-periodical_ajax_updater="data-periodical_ajax_updater" data-path="/deals/elthos-spa/deal_status.json" data-json_key="number_sold_container" data-interval="300" style="">
