@@ -7,11 +7,11 @@
           <span class="large-poweredBy"><property name="owner.longName"/></span>
         </td>
       </tr>
-      <!--tr>
+      <tr>
         <td colspan="2" align="CENTER">
           <errorMessage/>
         </td>
-      </tr-->
+      </tr>
       <tr>
         <td width="40%" class="nowrap" align="right"><text text="User name:"/></td>
         <td>
