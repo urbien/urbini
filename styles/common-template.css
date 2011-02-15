@@ -20,7 +20,7 @@ input  { -webkit-appearance: none; font-style: normal; line-height: normal; font
 
 /* avoid showing with link color */
 H1, H1 A {color: &[SecondaryColorB_2];; }
-H2, H2 A {color: &[SecondaryColorB_2];;}
+H2, H2 A {color: &[SecondaryColorB_2];; }
 H3, H3 A {color: &[SecondaryColorB_2];; }
 H4, H4 A {color: &[SecondaryColorB_2];; }
 H5, H5 A {color: &[SecondaryColorB_2];; }
@@ -1256,7 +1256,7 @@ TD.toolbar {
   /*border-color: &[PrimaryColor_4];*/
 }
 
-.dashboard_btn a { color: &[PrimaryColor_4_text];; font-weight: bold; display: block; white-space: nowrap; }
+.dashboard_btn a { padding: 5px 0px; font-size: 0.8em; color: &[PrimaryColor_4_text];; font-weight: bold; display: block; white-space: nowrap; }
 
 .dashboardLine td.dashboard_btn:hover, .dashboardLine td.active, .dashboardLine td.current {  
 	border-left-color: &[PrimaryColor_5];;
@@ -1272,7 +1272,7 @@ TD.toolbar {
 }
 .dashboardLine td { color: &[PrimaryColor_4_text]; }
 .dashboardLine .current, .dashboardLine .current a { color: &[PrimaryColor_4_text];; }
-.dashboardLine a { padding: 5px 0px;  font-size: 0.8em; }
+/*.dashboardLine a { padding: 5px 0px;  font-size: 0.8em; }*/
 
 .menuTitle td, .menuTitle th {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
