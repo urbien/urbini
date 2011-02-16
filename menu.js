@@ -3742,6 +3742,10 @@ var ListBoxesHandler = {
 			$t.onBackBtn();// slide back
 		}
 		
+		// option icon
+		var opIconTd = getChildByClassName(clickedTr, "menuItemIcon");
+		var selectedIcon = (opIconTd != null) ? getChildByTagName(opIconTd, "img") : null;
+		
 		var textField = null;
 		if ($t.isCalendar()) 
 			textField = PeriodPicker.onSetThruList();
@@ -3828,6 +3832,16 @@ var ListBoxesHandler = {
 					if (textField.className.indexOf(" changed") == -1)
 						textField.className += " changed";
 				}
+
+				// set option icon
+				if (selectedIcon) {
+					var iconTd = getChildByClassName($t.curParamRow, "option_icon_td");
+					if (iconTd) {
+				  	iconTd.innerHTML = "";
+						iconTd.appendChild(selectedIcon.cloneNode(false))
+				  }
+				}
+				
 			}
 		}
 
@@ -3906,6 +3920,11 @@ var ListBoxesHandler = {
 	},
   onParamReset : function() {
 		this.makeParamReset();
+
+		var iconTd = getChildByClassName(this.curParamRow, "option_icon_td");
+		if (iconTd)
+	  	iconTd.innerHTML = "";
+
 		if (this._isFtsSift)
 			this.submitFtsSift();
 		else	
@@ -4986,6 +5005,9 @@ var DataEntry = {
 
 	// parameters provided by XHR and not all used
 	onDataEntryLoaded : function(event, parentDiv, hotspot, html, url, onDataError) {
+		if (!html)
+			return; // possible (server) error!
+			
 		var $t = DataEntry;
 
 		if (onDataError) { // server returned previously submitted data dialog with errors of data entry
