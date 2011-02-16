@@ -3606,7 +3606,7 @@ var ListBoxesHandler = {
 		
 	//	if (retLocationStr == false)
 	//		return; // called on error in data of a child "New resorce" dialog
-		
+	
 		var textField = $t.getTextFieldInParamRow(); 
 		var paramName = textField.name;
 		var paramValue = decodeURIComponent(getUrlParam(retLocationStr, paramName)).replace(/\+/g, " "); 
@@ -12853,15 +12853,19 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
 	newItemRow.id = getBaseUri() + "sql/www.hudsonfog.com/voc/model/portal/Image?url=" + imgUrl;
 	
 	var td1 = document.createElement("td");
-	td1.innerHTML = "<td class=\"menuItemIcon\">&nbsp;</td>";
+	td1.innerHTML = "&nbsp;";
 	td1.className="menuItemIcon";
 	newItemRow.appendChild(td1);
 	
 	var td2 = document.createElement("td");
 	td2.className="menuItem";
-	td2.innerHTML = "<td class=\"menuItem\"><img src=\"" + thumbnail + "\">"
-		+ "&nbsp;&nbsp;&nbsp;" + imgName + "</td>";
+	td2.innerHTML = "<img width=\"105\" src=\"" + thumbnail + "\">"; // width="105"!
 	newItemRow.appendChild(td2);
+
+	var td3 = document.createElement("td");
+	td3.width = "100%";
+	td3.innerHTML = "&nbsp;&nbsp;&nbsp;" + imgName;
+	newItemRow.appendChild(td3);
 
 	// assign event handlers for new TR (!)
 	addEvent(newItemRow, 'click', ListBoxesHandler.onOptionsItemClick, false);
