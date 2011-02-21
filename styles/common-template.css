@@ -19,7 +19,7 @@ a { text-decoration: none; color: &[SecondaryColorB_3];; -webkit-tap-highlight-c
 input  { -webkit-appearance: none; font-style: normal; line-height: normal; font-weight: normal; -webkit-tap-highlight-color: rgba(0,0,0,0); }
 
 /* avoid showing with link color */
-H1, H1 A {color: &[SecondaryColorB_2];; }
+H1, H1 A {color: &[SecondaryColorB_2];; margin: 0px;}
 H2, H2 A {color: &[SecondaryColorB_2];; }
 H3, H3 A {color: &[SecondaryColorB_2];; }
 H4, H4 A {color: &[SecondaryColorB_2];; }
@@ -677,6 +677,15 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
   overflow-y: visible;  
   height: 100%; 
 }
+.rop1 {
+/*  border:solid &[PrimaryColor_1]; 1px; */
+  border-top:solid &[SecondaryColorA_5]; 1px; 
+  border-collapse: collapse; 
+  color: &[PrimaryColor_1];;
+  background-color: &[BackgroundColor];; 
+  overflow-y: visible;  
+  height: 100%; 
+}
 
 #siteResourceList .rop {
   border:solid &[PrimaryColor_1]; 1px; 
@@ -838,6 +847,14 @@ div.leftSidebar {
   *width: 8em;
   min-width: 7em;
 } 
+
+div.leftSidebarWithImage {
+  padding-top:   0.4em;
+  padding-left:  0.8em;
+  *width: 8em;
+  min-width: 7em;
+} 
+
 div.leftSidebar A {color: inherit}
 div.rightSidebar {
   padding-top:   0.4em;
@@ -986,6 +1003,8 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .description {border:solid #808080 2px; border-color: #1b62b6;}
 .blogDivider {border-top: 1px dotted #aaaaaa;}
 .blogTitle {padding-top: 0px;}
+
+.treeControlDivider {border-top:solid &[SecondaryColorA_5]; 1px; }
 
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
@@ -2097,6 +2116,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 /********** dashboard & widgets *********/
 #dashboard, #dashboard > table { background-color: &[BackgroundColor];; }
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
+#ropLeft {border-right:solid &[SecondaryColorA_5]; 1px;}
 
 #fts-sift {vertical-align: top;}
 #fts-sift #col_1 td {white-space: nowrap;}
@@ -2156,4 +2176,3 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .csp_bg_33 { background-color: &[SecondaryColorB_3];; }
 .csp_bg_34 { background-color: &[SecondaryColorB_4];; }
 .csp_bg_35 { background-color: &[SecondaryColorB_5];; }
-
