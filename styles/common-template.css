@@ -1712,6 +1712,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .data_td { width: 100%; }
 .rounded_rect_tbl .data_td table { width: 100%; }
 .rounded_rect_tbl .data_td .input_td { width: 100%; text-align:right; padding: 0px 3px; color: &[PrimaryColor_4_text];;}
+.rounded_rect_tbl .option_icon_td { padding-right: 4px; }
+.rounded_rect_tbl .option_icon_td img { width: 16px; height: 16px; }
 
 .rounded_rect_tbl a { color: &[PrimaryColor_4_text];; }
 
@@ -1967,6 +1969,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #div_info #rtitle { overflow: visible; vertical-align: middle; text-align: left;}
 #div_info .text_editor_container { text-align: left; }
 #div_info .text_editor_container .label { float: none; }
+#div_info .text_editor_container table { margin: 2px; }
+#div_info .text_editor_container td { border: 1px solid #000; width: 80px; }
 
 #div_info td.pGr { background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_5];);
                    font-weight:bold; font-size:1em; text-align:center; text-align: center; }
@@ -1984,7 +1988,7 @@ td.pBGr { background-color: #eeeeee;
 #siteResourceList .input { border: 1px solid &[PrimaryColor_1];; }
 #siteResourceList .pointer, .panel_block .pointer { border: none; background: transparent; }
 
-.backlink_counter { position: absolute; top: -7px; left: 15px; pointer-events: none; }
+.backlink_counter { float: right; }
 .backlink_counter .left, .backlink_counter .right { height: 25px; background: transparent url(../images/skin/iphone/backlink_counter.png) no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
 .backlink_counter .right { float: left; width: auto; line-height: 19px; text-align: center; padding-right: 14px; color: #fff; font-size: 12px; font-weight: bold;  background-position: center right; }
@@ -2117,6 +2121,8 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 #dashboard, #dashboard > table { background-color: &[BackgroundColor];; }
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
 #ropLeft {border-right:solid &[SecondaryColorA_5]; 1px;}
+#ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 13px; line-height: 25px; }
+
 
 #fts-sift {vertical-align: top;}
 #fts-sift #col_1 td {white-space: nowrap;}
