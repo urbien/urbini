@@ -849,8 +849,7 @@ div.leftSidebar {
 } 
 
 div.leftSidebarWithImage {
-  padding-top:   0.4em;
-  padding-left:  0.8em;
+  padding: 0.4em 0 0.8em 0.8em;
   *width: 8em;
   min-width: 7em;
 } 
@@ -1988,7 +1987,12 @@ td.pBGr { background-color: #eeeeee;
 #siteResourceList .input { border: 1px solid &[PrimaryColor_1];; }
 #siteResourceList .pointer, .panel_block .pointer { border: none; background: transparent; }
 
-.backlink_counter { float: right; }
+.cp_item_left, .cp_item_right { position: relative; white-space:nowrap; }
+.cp_item_left { min-height: 30px; }
+.backlink_counter { position: absolute; pointer-events: none; }
+.cp_item_right .backlink_counter { top: -7px; left: 15px; }
+.cp_item_left .backlink_counter { top: -7px; right: 5px; }
+
 .backlink_counter .left, .backlink_counter .right { height: 25px; background: transparent url(../images/skin/iphone/backlink_counter.png) no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
 .backlink_counter .right { float: left; width: auto; line-height: 19px; text-align: center; padding-right: 14px; color: #fff; font-size: 12px; font-weight: bold;  background-position: center right; }
