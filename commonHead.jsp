@@ -4,6 +4,8 @@
   <link href="styles/common.css"     type="text/css" rel="stylesheet" title="common"/>
   <link href="styles/properties.css" type="text/css" rel="stylesheet" />
   <link href="styles/iphone.css"     type="text/css" rel="stylesheet" /><!-- media="only screen and (max-device-width:480px)"  /-->
+  <getResource/>
+  <link href=""  rel="image_src" />
 	<feed/>
   <meta name="keywords" content=""></meta>
   <meta name="description" content=""></meta>
@@ -12,6 +14,5 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black"></meta>
   <meta name="google-site-verification" content="YJrn1vi9ouT5vFSUmhYmCIuVCdVhXkp8NBOVNplcfOs" />
   <include name="analytics-tracker.jsp" />
-  <getResource/>
   <siteTitle />
 </container>
