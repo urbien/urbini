@@ -2107,7 +2107,7 @@ var FormProcessor = {
 				var itemSelector = getChildById(panelBlock, "item_selector");
 				FieldsWithEmptyValue.initField(itemSelector, 'select');
 				var textEntry = getChildById(panelBlock, "text_entry");
-				FieldsWithEmptyValue.initField(textEntry, 'select')
+				FieldsWithEmptyValue.initField(textEntry, '&[select];')
 			}
 		}
 
@@ -2131,17 +2131,16 @@ var FormProcessor = {
 			// requred field
 			var isFieldRequired = labelSpan && (labelSpan.getAttribute("required") != null);
 			if (isFieldRequired && inputs[i].type != "password") {
-				FieldsWithEmptyValue.initField(inputs[i], "Required");
+				FieldsWithEmptyValue.initField(inputs[i], "&[Required];");
 			}
 			// insert "type" text if paramTr does not contain arrow_td
 			else 
 				if (getChildByClassName(paramTr, "arrow_td") == null && inputs[i].type != "password")  
-					FieldsWithEmptyValue.initField(inputs[i], "type");
+					FieldsWithEmptyValue.initField(inputs[i], "&[type];");
 		}
 	}
 
 }
-
 
 
 function setTime() {
@@ -3217,7 +3216,7 @@ var ListBoxesHandler = {
 		this.classifierTextEntry = getChildById(this.classifierPanel, "text_entry");
 		
 		if (this.textEntry && (this._isEditList || this._isFtsSift))
-			FieldsWithEmptyValue.initField(this.textEntry, 'select'); // init options selector of stand alone optionss panel
+			FieldsWithEmptyValue.initField(this.textEntry, '&[select];'); // init options selector of stand alone optionss panel
 	},	
 	
   onClickParam : function(event, optionsSelectorStr) {
@@ -4152,7 +4151,7 @@ var ListBoxesHandler = {
 		this.classifierTextEntry.onkeyup = this.onClassNameTyping;
 
 		this.classifierTextEntry.value = "";
-		FieldsWithEmptyValue.initField(this.classifierTextEntry, "select", true)
+		FieldsWithEmptyValue.initField(this.classifierTextEntry, "&[select];", true)
     
 		parent = this.optionsPanel.parentNode || parent; 
     parent.insertBefore(this.classifierPanel, this.optionsPanel);
@@ -4447,7 +4446,7 @@ var Filter = {
   initFilter : function(filterDiv) {
 		var filterHeader = getChildByClassName(filterDiv, "header");
 		var textEntry = getChildById(filterDiv, 'text_entry');
-		FieldsWithEmptyValue.initField(textEntry, 'select')
+		FieldsWithEmptyValue.initField(textEntry, '&[select];')
 		
 		// set event handlers for toobar buttons
 		var submitBtn = getChildById(filterHeader, "submitFilter");
@@ -4472,9 +4471,9 @@ var Filter = {
     CheckButtonMgr.prepare(filterDiv);
  
     var paramSel = getChildById(filterDiv, 'parameter_selector');
-    FieldsWithEmptyValue.initField(paramSel, 'select');
+    FieldsWithEmptyValue.initField(paramSel, '&[select];');
     var textSearch = getChildById(filterDiv, '-q');
-    FieldsWithEmptyValue.initField(textSearch, 'search');
+    FieldsWithEmptyValue.initField(textSearch, '&[search];');
 
     for (var i = 0; i < paramsTable.rows.length; i++) {
       var td = paramsTable.rows[i].cells[1];
@@ -4857,9 +4856,9 @@ var SubscribeAndWatch = {
 		var paramsTable = getChildByClassName(this.panelBlock, "rounded_rect_tbl");
 		
 		var paramSel = getChildById(this.panelBlock, 'item_selector');
-    FieldsWithEmptyValue.initField(paramSel, 'select');
+    FieldsWithEmptyValue.initField(paramSel, '&[select];');
     var optionSel = getChildById(this.panelBlock, 'text_entry');
-    FieldsWithEmptyValue.initField(optionSel, 'search');
+    FieldsWithEmptyValue.initField(optionSel, '&[search];');
     
 		// init
 		FormProcessor.initForms(this.panelBlock);
@@ -5042,11 +5041,11 @@ var DataEntry = {
 		}
 		else {
 	    	var itemSelector = getChildById(div, 'item_selector');
-			FieldsWithEmptyValue.initField(itemSelector, 'select');
+			FieldsWithEmptyValue.initField(itemSelector, '&[select];');
 		}
 
 		var textEntry = getChildById(div, 'text_entry');
-		FieldsWithEmptyValue.initField(textEntry, 'select')
+		FieldsWithEmptyValue.initField(textEntry, '&[select];')
 
 		FormProcessor.initForms(div);
 		TouchDlgUtil.init(div); // moved from ListBoxes
@@ -12972,7 +12971,6 @@ var LoadingIndicator = {
 		setTimeout($t.animate, 20);
 	}
 }
-
 
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
