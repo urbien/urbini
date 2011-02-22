@@ -19,8 +19,8 @@ a { text-decoration: none; color: &[SecondaryColorB_3];; -webkit-tap-highlight-c
 input  { -webkit-appearance: none; font-style: normal; line-height: normal; font-weight: normal; -webkit-tap-highlight-color: rgba(0,0,0,0); }
 
 /* avoid showing with link color */
-H1, H1 A {color: &[SecondaryColorB_2];; margin: 0px;}
-H2, H2 A {color: &[SecondaryColorB_2];; }
+H1, H1 A {color: &[SecondaryColorB_2];; }
+H2, H2 A {color: &[SecondaryColorB_2];;}
 H3, H3 A {color: &[SecondaryColorB_2];; }
 H4, H4 A {color: &[SecondaryColorB_2];; }
 H5, H5 A {color: &[SecondaryColorB_2];; }
@@ -105,8 +105,8 @@ img.fade {
 .hideImg table, .hideImg img, .hideImg object, .hideImg embed, .hideImg .swf, .hideImg .flv { display: none; }
 @-moz-document url-prefix() { .hideImg table { display: table; } .hideImg table td { float: left; } }
 
-.displayInline  { overflow: hidden; width: 100%; height: 2em; line-height: 2em; text-align:justify; }
-.displayInline, .displayInline * { font-size: 1em !important; font-weight: normal !important; margin: 0 !important; }
+.displayInline  { overflow:hidden; width: 100%; height: 1em; line-height: 0.93em; text-align:justify; }
+.displayInline, .displayInline * { font-size:1em !important; font-weight:normal !important; margin:0 !important; }
 
  
 .mItems {
@@ -228,7 +228,7 @@ input[type=button]:active, input[type=submit]:active, .button:active	{
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_4];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_4];)";
-  
+
           box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
      -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7); 
   -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
@@ -433,7 +433,7 @@ td.textCell {
 .rlHeader a:hover { color: &[SecondaryColorB_3]; }
 .rlHeader .label {color: &[Alternative_A];}
 
-tr.prTitle { 
+tr.prTitle {
     background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];)); 
     color:#000000; font-weight:bold; font-size:8pt;
@@ -561,7 +561,7 @@ tr.ftSearch td { padding: 0px; }
 	width: 210;
 	height: 31px;
 }
-
+/*.ftsq {  color: &[SecondaryColorA_3];; }*/
 .ftsq {  color: &[PrimaryColor_4_text];; }
 .desktop_search input { 
     width: 185px !important;
@@ -679,14 +679,12 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 }
 .rop1 {
 /*  border:solid &[PrimaryColor_1]; 1px; */
-  border-top:solid &[SecondaryColorA_5]; 1px; 
-  border-collapse: collapse; 
+  border-top:solid &[SecondaryColorA_5]; 1px;   border-collapse: collapse; 
   color: &[PrimaryColor_1];;
   background-color: &[BackgroundColor];; 
   overflow-y: visible;  
   height: 100%; 
 }
-
 #siteResourceList .rop {
   border:solid &[PrimaryColor_1]; 1px; 
   border-collapse: collapse; 
@@ -810,6 +808,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .menuLine A:active {color: &[SecondaryColorA_1];; background-color: &[SecondaryColorA_3]; }
 
 .propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
+.propertySheet H1 { margin: 0px;}
 
 .fbRegFrame {width: 340px; border:solid &[SecondaryColorA_5]; 1px;  vertical-align: top; font-size: 11px; background-color: #eeeeee; border-collapse: collapse; }
 .fbRegHeader { padding: 15px; }
@@ -1119,7 +1118,7 @@ ul.subchapter a {
 }
 
 div.contents {
-  float:right; width:20em;
+  float:right; width:20em; padding: 0px 0px 30px 30px;
 }
 div.contents A { color: inherit } 
 
@@ -1275,6 +1274,7 @@ TD.toolbar {
 }
 
 .dashboard_btn a { padding: 5px 0px; font-size: 0.8em; color: &[PrimaryColor_4_text];; font-weight: bold; display: block; white-space: nowrap; }
+.current a { color: &[AccentedLetter];; }
 
 .dashboardLine td.dashboard_btn:hover, .dashboardLine td.active, .dashboardLine td.current {  
 	border-left-color: &[PrimaryColor_5];;
@@ -1290,7 +1290,6 @@ TD.toolbar {
 }
 .dashboardLine td { color: &[PrimaryColor_4_text]; }
 .dashboardLine .current, .dashboardLine .current a { color: &[PrimaryColor_4_text];; }
-/*.dashboardLine a { padding: 5px 0px;  font-size: 0.8em; }*/
 
 .menuTitle td, .menuTitle th {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
@@ -2127,10 +2126,11 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
 #ropLeft {border-right:solid &[SecondaryColorA_5]; 1px;}
 #ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 13px; line-height: 25px; }
-
+  
+.editMode #dashboard td { border:solid &[SecondaryColorA_5]; 1px;}
 
 #fts-sift {vertical-align: top;}
-#fts-sift #col_1 td {white-space: nowrap;}
+#fts-sift #col_1 td {white-space: nowrap; }
 .fts-sif .filter { border: 1px solid; }
 #fts-sift .param_tr, #fts-sift .param_tr .label { cursor: pointer; background-color: &[PrimaryColor_4];; color: &[Label];; height:1.5em;}
 /*.widget, .place_holder{ margin: 0 0 0.8em 0; }*/
