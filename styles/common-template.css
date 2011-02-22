@@ -2107,6 +2107,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .widget .dragable h2 { margin-bottom: 0px; font-size: 17px; } 
 .widget .containers h2 { margin: 5px 0px 0px 0px; }
 .widget .containers h2 a { font-size: 19px; padding: 0px; }
+#dataEntry .containers td {line-height: 25px; padding-left: 5px;}
 
 .shrunk_field { position: absolute; font-size: 1px; width: 1px; border-width: 0; background: transparent; }
 
@@ -2132,7 +2133,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .ph{ margin: 0 0 0.8em 0; }
 .place_holder{ margin: 0 0 0.8em 0; }
 .place_holder {  background-color: &[BodyBackgroundColor];; display: none; /*width: 100%;*/ border: 1px dashed #808080; }
-.widgetTitle {vertical-align:top; color: &[Alternative_A];; font-weight:bold;white-space: nowrap;}
+.widgetTitle {vertical-align:top; color: &[Alternative_A];; font-weight:bold;white-space: nowrap; }
 .widgetIcon {width:16px; height:16px; padding-right:4px; border:0px }
 
 /* preview in property sheet */
