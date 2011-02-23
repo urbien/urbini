@@ -882,7 +882,7 @@ var Boost = {
 			if (a.href.indexOf("l.html") != -1) 
 		  	newUrl = a.href;
 		  else {
-		  	doConfirm("Do you realy want to delete this resource?");
+		  	doConfirm("&[Do you realy want to delete this resource];?");
 		  	newUrl = null;
 		  }
 		}
@@ -923,7 +923,7 @@ var Boost = {
        return null;
     }
     if (id == 'menu_exit') {
-	  BrowserDialog.confirm("Do you really want to exit this application?", $t.onExisCallback);
+	  BrowserDialog.confirm("&[Do you really want to exit this application];?", $t.onExisCallback);
       return null;
     }
     if (id == 'menu_Refresh') {

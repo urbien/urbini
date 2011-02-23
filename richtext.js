@@ -56,7 +56,7 @@ var RteEngine = {
 	// ----------------------------
 
 	IMAGES_FOLDER : "images/wysiwyg/",
-	STYLES : [{name:"Paragraph", value:"<p>"}, {name:"Heading 1", value:"<h1>"}, {name:"Heading 2", value:"<h2>"}, {name:"Heading 3", value:"<h3>"}, {name:"Heading 4", value:"<h4>"},
+	STYLES : [{name:"&[Paragraph];", value:"<p>"}, {name:"&[Heading]; 1", value:"<h1>"}, {name:"&[Heading]; 2", value:"<h2>"}, {name:"&[Heading]; 3", value:"<h3>"}, {name:"&[Heading]; 4", value:"<h4>"},
 		{name:"Heading 5", value:"<h5>"}, {name:"Heading 6", value:"<h6>"}, {name:"Address", value:"<address>"}, {name:"Formatted", value:"<pre>"}],
 	FONTS : ["arial", "arial black", "comic sans ms", "courier", "courier new", "georgia", "helvetica", "impact", "palatino", "times new roman", "trebuchet ms", "verdana"],
 	FONTS_FEW : ["arial", "arial black", "comic sans ms", "courier new", "helvetica", "times new roman", "verdana"],
@@ -268,7 +268,7 @@ var RteEngine = {
 		var parentForm = getChildByTagName(parentDlg, "form");
 
 		// note: insert new content on each launch because no way to reset File-browse field 
-		var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "insert", imgObj, parentForm);
+		var innerFormHtml = ImageUploader.getUploadImageFormContent("RteEngine.onImageFormSubmit(event)", "&[insert];", imgObj, parentForm);
 	  this.imagePopup.changeContent(innerFormHtml);
 	  
 	  this.curRteId = rteId;
@@ -296,7 +296,7 @@ var RteEngine = {
 			
 		// need to "reload" form content, because input file is read-only
 		  var innerFormHtml = "<div>"
-        + "You pasted image that requires uploading.<br />Press \"Ctrl\" + \"V\" and then submit.</div>"
+        + "&[You pasted image that requires uploading];.<br />&[Press]; \"Ctrl\" + \"V\" &[and then submit];.</div>"
 		    + ImageUploader.getPasteImageFormContent("RteEngine.onImagePasteFormSubmit(event)", "submit", parentForm);
 		  this.imagePastePopup.changeContent(innerFormHtml);
 	  
@@ -381,7 +381,7 @@ var RteEngine = {
 	createObjectPopup : function() {
 		var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
 			+ ' <tr>'
-			+ ' <td align="left">Paste html code:</td>'
+			+ ' <td align="left">&[Paste]; html &[code];:</td>'
 			+ ' </tr><tr>'
 			+ ' <td><textarea name="html" type="text" id="html" rows="4" cols="50"></textarea></td>'
       + ' </tr>'
@@ -407,13 +407,13 @@ var RteEngine = {
 	createLinkPopup : function() {
 		var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
 			+ ' <tr>'
-			+ ' <td align="left">Enter URL:</td>'
+			+ ' <td align="left">&[Enter URL];:</td>'
 			+ ' </tr><tr>'
 			+ ' <td><input name="url" type="text" id="url" value="" size="35"></td>'
 			+ ' </tr><tr>'
   		+ ' <td><table><tr><td>'
 			+ '<input name="is_blank" type="checkbox" id="is_blank"></td><td>'
-			+ 'load into a new window</td></tr></table></td>'
+			+ '&[load into a new window];</td></tr></table></td>'
       + ' </tr>'
 			+ '</table>';
 		this.linkPopup = new FormPopup(innerFormHtml);
@@ -434,30 +434,30 @@ var RteEngine = {
 	getInsertTableHtml : function() {
 		var tblInsertHtml = '<table cellpadding="4" cellspacing="0" border="0">'
 			+ ' <tr>'
-			+ ' <td align="left">Table width:</td>'
+			+ ' <td align="left">&[Table width];:</td>'
 			+ ' <td><input name="width" type="text" id="width" value="90" size="4"></td>'
 			+ ' <td align="left">'
 				+ ' <select name="widthType" id="widthType">'
-					+ ' <option value="px">pixels</option>' // value="pixels"
-					+ ' <option value="%" selected>percent</option>' //value="percent"
+					+ ' <option value="px">&[pixels];</option>' // value="pixels"
+					+ ' <option value="%" selected>&[percent];</option>' //value="percent"
 					+ ' </select>'
 				+ ' </td>'
 			+ ' <tr>'
-			+	' <td align="left">Rows:</td>'
+			+	' <td align="left">&[Rows];:</td>'
 			+	' <td><input name="rows" type="text" id="rows" value="2" size="4"></td>'
 			+ ' </tr>'
-			+	' <td align="left">Columns:</td>'
+			+	' <td align="left">&[Columns];:</td>'
 			+ ' <td><input name="columns" type="text" id="columns" value="2" size="4"></td>'
 			+ ' </tr>'
 			+ ' <tr>'
 			+ ' </tr>'
 			+ ' <tr>'
-				+ ' <td align="left">Border thickness:</td>'
+				+ ' <td align="left">&[Border thickness];:</td>'
 				+ ' <td><input name="border" type="text" id="border" value="1" size="4"></td>'
-				+ ' <td align="left">pixels</td>'
+				+ ' <td align="left">&[pixels];</td>'
 			+ ' </tr>'
 			+ ' <tr>'
-				+ ' <td align="left">Cell padding:</td>'
+				+ ' <td align="left">&[Cell padding];:</td>'
 				+ ' <td><input name="padding" type="text" id="padding" value="0" size="4"></td>'
 				+ ' </tr>'
 				+ ' <tr>'
@@ -638,7 +638,7 @@ var ImageUploader = {
       
 			if (!imgObj) {
 				formStr += "<table><tr><td><input type=\"checkbox\" name=\"isuploading\" onclick=\"ImageUploader.imageLocationSwitch(this)\" checked>"
-				+ "</td><td>upload image</td></tr></table>"
+				+ "</td><td>&[upload image];</td></tr></table>"
 		    + "<br />"    
 	      // two fields with the same name:
 	      // 1) image uploading
@@ -662,14 +662,14 @@ var ImageUploader = {
       + " id=\"" + this.RTE_ID_INPUT_NAME + "\">"
       + " </td></tr>"
       
-      + " <tr><td><br/>align:&nbsp;<select id=\"" + this.IMG_ALIGN_ID + "\">"
-      + " <option value=\"left\">left</option>"
-      + " <option value=\"middle\">middle</option>"
-      + " <option value=\"right\">right</option>"
-      + " <option value=\"bottom\">bottom</option>"
-      + " <option value=\"top\">top</option>"
+      + " <tr><td><br/>&[align];:&nbsp;<select id=\"" + this.IMG_ALIGN_ID + "\">"
+      + " <option value=\"left\">&[left];</option>"
+      + " <option value=\"middle\">&[middle];</option>"
+      + " <option value=\"right\">&[right];</option>"
+      + " <option value=\"bottom\">&[bottom];</option>"
+      + " <option value=\"top\">&[top];</option>"
       + " </select>"
-			+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;margin:&nbsp;"
+			+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&[margin];:&nbsp;"
 			+ "<input size=\"12\" type=\"text\" id=\"" + this.MARGIN_ID + "\""
 			+ " value = \"";
 		
@@ -684,7 +684,7 @@ var ImageUploader = {
       + " <tr><td align=\"center\"><br/>"
       + " <input type=\"submit\" value=\"" + submitBtnText + "\">"
 			
-			+ " &#160<input type=\"button\" value=\"Cancel\" onclick=\"RteEngine.imagePopup._oncancel();\" >"
+			+ " &#160<input type=\"button\" value=\"&[Cancel];\" onclick=\"RteEngine.imagePopup._oncancel();\" >"
 
       + " <input type=\"hidden\" name=\"-$action\" value=\"upload\">";
 	
@@ -734,11 +734,11 @@ var ImageUploader = {
       + " </td></tr>"
       
       + " <tr><td><br/>align:&nbsp;<select id=\"" + this.IMG_ALIGN_ID + "\""
-      + " <option value=\"left\">left</option>"
-      + " <option value=\"middle\">middle</option>"
-      + " <option value=\"right\">right</option>"
-      + " <option value=\"bottom\">bottom</option>"
-      + " <option value=\"top\">top</option>"
+      + " <option value=\"left\">&[left];</option>"
+      + " <option value=\"middle\">&[middle];</option>"
+      + " <option value=\"right\">&[right];</option>"
+      + " <option value=\"bottom\">&[bottom];</option>"
+      + " <option value=\"top\">&[top];</option>"
       + " </select>"
 			+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;margin:&nbsp;"
 			+ "<input size=\"12\" type=\"text\" id=\"" + this.MARGIN_ID + "\""
@@ -752,7 +752,7 @@ var ImageUploader = {
       + " <tr><td align=\"center\"><br/>"
       + " <input type=\"submit\" value=\"" + submitBtnText + "\">"
 			
-			+ " &#160<input type=\"button\" value=\"Cancel\" onclick=\"RteEngine.imagePastePopup._oncancel();\" >"
+			+ " &#160<input type=\"button\" value=\"&[Cancel];\" onclick=\"RteEngine.imagePastePopup._oncancel();\" >"
 
       + " <input type=\"hidden\" name=\"-$action\" value=\"upload\">"
       + " <input type=\"hidden\" name=\"uri\" value=\""
@@ -809,9 +809,9 @@ var ImageUploader = {
 			value = inputs[selIdx].value;
     if (value.length == 0) {
       if (selIdx == 0) 
-        alert("No image selected to upload!");
+        alert("&[No image selected to upload];!");
       else
-        alert("No URL of image!");
+        alert("&[No URL of image];!");
       return null;
     }
     
@@ -1144,60 +1144,60 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var toolBar = new Toolbar(this.parentDiv, this, 32, false, this.iframeObj);
 		// 2. add buttons
 		if(this.rtePref.buttons.style) // style
-			this.styleBtn = toolBar.appendButton(this.onStyle, false, RteEngine.IMAGES_FOLDER + "style.png", "style");
+			this.styleBtn = toolBar.appendButton(this.onStyle, false, RteEngine.IMAGES_FOLDER + "style.png", "&[style];");
 		if(this.rtePref.buttons.font) { // font + size
-			this.fontBtn = toolBar.appendButton(this.onFont, false, RteEngine.IMAGES_FOLDER + "font.png", "font");
-			this.sizeBtn = toolBar.appendButton(this.onSize, false, RteEngine.IMAGES_FOLDER + "size.png", "size");
+			this.fontBtn = toolBar.appendButton(this.onFont, false, RteEngine.IMAGES_FOLDER + "font.png", "&[font];");
+			this.sizeBtn = toolBar.appendButton(this.onSize, false, RteEngine.IMAGES_FOLDER + "size.png", "&[size];");
 		}
 		if(this.rtePref.buttons.decoration) { // bold + italic + underline
-			toolBar.appendButton(this.onBold, false, RteEngine.IMAGES_FOLDER + "bold.png", "bold"); // bold.gif
-			toolBar.appendButton(this.onItalic, false, RteEngine.IMAGES_FOLDER + "italic.png", "italic");
-			toolBar.appendButton(this.onUnderline, false, RteEngine.IMAGES_FOLDER + "underline.png", "underline");
+			toolBar.appendButton(this.onBold, false, RteEngine.IMAGES_FOLDER + "bold.png", "&[bold];"); // bold.gif
+			toolBar.appendButton(this.onItalic, false, RteEngine.IMAGES_FOLDER + "italic.png", "&[italic];");
+			toolBar.appendButton(this.onUnderline, false, RteEngine.IMAGES_FOLDER + "underline.png", "&[underline];");
 		}
 		
 		if(this.rtePref.buttons.text_color)  // text color
-			this.textColorBtn = toolBar.appendButton(this.onTextColor, false, RteEngine.IMAGES_FOLDER + "font_color.png", "text color");
+			this.textColorBtn = toolBar.appendButton(this.onTextColor, false, RteEngine.IMAGES_FOLDER + "font_color.png", "&[text color];");
 		if(this.rtePref.buttons.bg_color)  // background color
-			this.bgColorBtn = toolBar.appendButton(this.onBackgroundColor, false, RteEngine.IMAGES_FOLDER + "background_color.png", "background color");
+			this.bgColorBtn = toolBar.appendButton(this.onBackgroundColor, false, RteEngine.IMAGES_FOLDER + "background_color.png", "&[background color];");
 		if(this.rtePref.buttons.link) // hyperlink
-			this.linkBtn = toolBar.appendButton(this.onLink, false, RteEngine.IMAGES_FOLDER + "hyperlink.png", "hyperlink");
+			this.linkBtn = toolBar.appendButton(this.onLink, false, RteEngine.IMAGES_FOLDER + "hyperlink.png", "&[hyperlink];");
 		if(this.rtePref.buttons.image) // image
-			this.imageBtn = toolBar.appendButton(this.onImage, false, RteEngine.IMAGES_FOLDER + "image.png", "image");
+			this.imageBtn = toolBar.appendButton(this.onImage, false, RteEngine.IMAGES_FOLDER + "image.png", "&[image];");
 		if(this.rtePref.buttons.object) // object/embed; widget
-			this.objectBtn = toolBar.appendButton(this.onObject, false, "icons/addThirdPartyWidget.png", "embed object or widget");
+			this.objectBtn = toolBar.appendButton(this.onObject, false, "icons/addThirdPartyWidget.png", "&[embed object or widget];");
 
 		if(this.rtePref.buttons.list) { // list: ordered + unordered
-			toolBar.appendButton(this.onOrderedList, false, RteEngine.IMAGES_FOLDER + "list_num.png", "ordered list");
-			toolBar.appendButton(this.onUnorderedList, false, RteEngine.IMAGES_FOLDER + "list_bullet.png", "unordered list");
+			toolBar.appendButton(this.onOrderedList, false, RteEngine.IMAGES_FOLDER + "list_num.png", "&[ordered list];");
+			toolBar.appendButton(this.onUnorderedList, false, RteEngine.IMAGES_FOLDER + "list_bullet.png", "&[unordered list];");
 		}
 		if(this.rtePref.buttons.reundo) { // undo (redo bellow)
-			toolBar.appendButton(this.onUndo, false, RteEngine.IMAGES_FOLDER + "undo.png", "undo");
+			toolBar.appendButton(this.onUndo, false, RteEngine.IMAGES_FOLDER + "undo.png", "&[undo];");
 		}
 		if(this.rtePref.buttons.align) { // align: left + centre + right + justifyfull
-			toolBar.appendButton(this.onAlignLeft, false, RteEngine.IMAGES_FOLDER + "align_left.png", "align left");
-			toolBar.appendButton(this.onAlignCenter, false, RteEngine.IMAGES_FOLDER + "align_center.png", "align center");
-			toolBar.appendButton(this.onAlignRight, false, RteEngine.IMAGES_FOLDER + "align_right.png", "align right");
-			toolBar.appendButton(this.onAlignJustify, false, RteEngine.IMAGES_FOLDER + "justifyfull.png", "justify");
+			toolBar.appendButton(this.onAlignLeft, false, RteEngine.IMAGES_FOLDER + "align_left.png", "&[align]; &[left];");
+			toolBar.appendButton(this.onAlignCenter, false, RteEngine.IMAGES_FOLDER + "align_center.png", "&[align]; &[center];");
+			toolBar.appendButton(this.onAlignRight, false, RteEngine.IMAGES_FOLDER + "align_right.png", "&[align]; &[right];");
+			toolBar.appendButton(this.onAlignJustify, false, RteEngine.IMAGES_FOLDER + "justifyfull.png", "&[justify];");
 		}
 		if(this.rtePref.buttons.dent) { // outdent + indent
-			toolBar.appendButton(this.onOutdent, false, RteEngine.IMAGES_FOLDER + "outdent.png", "outdent");
-			toolBar.appendButton(this.onIndent, false, RteEngine.IMAGES_FOLDER + "indent.png", "indent");
+			toolBar.appendButton(this.onOutdent, false, RteEngine.IMAGES_FOLDER + "outdent.png", "&[outdent];");
+			toolBar.appendButton(this.onIndent, false, RteEngine.IMAGES_FOLDER + "indent.png", "&[indent];");
 		}
 		if(this.rtePref.buttons.supsub) { // superscript + subscript
-			toolBar.appendButton(this.onSuperscript, false, RteEngine.IMAGES_FOLDER + "superscript.png", "superscript");
-			toolBar.appendButton(this.onSubscript, false, RteEngine.IMAGES_FOLDER + "subscript.png", "subscript");
+			toolBar.appendButton(this.onSuperscript, false, RteEngine.IMAGES_FOLDER + "superscript.png", "&[superscript];");
+			toolBar.appendButton(this.onSubscript, false, RteEngine.IMAGES_FOLDER + "subscript.png", "&[subscript];");
 		}
 		if(this.rtePref.buttons.smile) // smile
 			this.smileBtn = toolBar.appendButton(this.onSmile, false, RteEngine.IMAGES_FOLDER + "smile.gif", "smile");
 		if(this.rtePref.buttons.line) // line
-			toolBar.appendButton(this.onHorizontalRule, false, RteEngine.IMAGES_FOLDER + "hr.png", "horizontal line");
+			toolBar.appendButton(this.onHorizontalRule, false, RteEngine.IMAGES_FOLDER + "hr.png", "&[horizontal line];");
 		if(this.rtePref.buttons.table) // table
-			this.tableBtn = toolBar.appendButton(this.onTable, false, RteEngine.IMAGES_FOLDER + "table.png", "table");
+			this.tableBtn = toolBar.appendButton(this.onTable, false, RteEngine.IMAGES_FOLDER + "table.png", "&[table];");
 		if(this.rtePref.buttons.reundo) { // redo
-			toolBar.appendButton(this.onRedo, false, RteEngine.IMAGES_FOLDER + "redo.png", "redo");
+			toolBar.appendButton(this.onRedo, false, RteEngine.IMAGES_FOLDER + "redo.png", "&[redo];");
 		}
 		if(this.rtePref.buttons.html) // html
-			this.htmlBtn = toolBar.appendButton(this.onSource, true, RteEngine.IMAGES_FOLDER + "html.png", "edit HTML source code", "view mode");
+			this.htmlBtn = toolBar.appendButton(this.onSource, true, RteEngine.IMAGES_FOLDER + "html.png", "&[edit HTML source code];", "&[view mode];");
 		
 		return toolBar;
 	}

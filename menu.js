@@ -17,7 +17,7 @@ function addEvent(obj, evType, fn, useCapture) {
     return r;
   }
   else {
-    alert("You need to upgrade to a newer browser. Error: 'event handler could not be be added'");
+    alert("&[You need to upgrade to a newer browser];. Error: 'event handler could not be be added'");
   }
 }
 
@@ -5087,7 +5087,7 @@ var DataEntry = {
 			if (this.initDataStr != curDataStr) {
 				BrowserDialog.setCallbackThis(this);
 				BrowserDialog.setCallbackArguments(key, onSubmit);
-				BrowserDialog.confirm("You have entered data.<br /><br />Do you want to close the dialog without saving?", this.continueHide)
+				BrowserDialog.confirm("&[You have entered data];.<br /><br />&[Do you want to close the dialog without saving];?", this.continueHide)
 				return;
 			}
 		}
@@ -7280,7 +7280,7 @@ function addAndShowWait(event, body, hotspot, content, url, noInsert, isReplace)
       var iframeWindow = frames[frameId];
       body = iframeWindow.document.getElementById(frameBodyId);
       if (!body) {
-	      alert("Warning: server did not return options data - check connection to server");
+	      alert("&[Warning: server did not return options data - check connection to server];");
 				setTimeout("ListBoxesHandler.onBackBtn()", 1000);
         return;
       }
@@ -8624,7 +8624,7 @@ var DesktopSearchField = {
 		var form = getAncestorByTagName(sendBtn, 'form');
 		var input = getChildByClassName(form, "ftsq");
 		if (FieldsWithEmptyValue.isEmptyValue(input)) {
-			alert("Enter search criteria"); // works for icon, not <enter>
+			alert("&[Enter search criteria];"); // works for icon, not <enter>
 			return;
 		}
 		form.submit();
@@ -12495,7 +12495,7 @@ var BrowserDialog = {
 			+ "<table class=\"btns_panel\"><tr><td>"
 			+ "<div class=\"iphone_dlg_btn\">Ok</div>"
 			+ "</td><td>"
-			+ "<div class=\"iphone_dlg_btn\">Cancel</div>"
+			+ "<div class=\"iphone_dlg_btn\">&[Cancel];</div>"
 			+ "</td></tr></table>"
 			+ "</div>"
 			+ "</td></tr>"
@@ -12565,7 +12565,7 @@ var BrowserDialog = {
 		if (!okBtnLabel)
 			okBtnLabel = "OK";
 		if (!cancelBtnLabel)
-			cancelBtnLabel = "Cancel";
+			cancelBtnLabel = "&[Cancel];";
 		
 		this.okBtnDiv.innerHTML = okBtnLabel;
 		if (type != 'alert') {

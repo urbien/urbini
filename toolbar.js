@@ -62,7 +62,7 @@ function FormPopup(innerFormHtml, flag) {
 				
 				if(flag != "NO_CANCEL") { // cancel btn
 				  html += ' <td>'
-					    + ' <input type="button" value="Cancel" style="width:70; font-family:verdana; font-size:12px" />'
+					    + ' <input type="button" value="&[Cancel];" style="width:70; font-family:verdana; font-size:12px" />'
 				    + ' </td>';
 				}
 				
@@ -256,8 +256,8 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 		this.div.style.top = this.top;
 		this.div.style.padding = this.toolbar.BTN_PADDING;
 		
-		var innerHTML = '<img src = "' + icon + '" border="0" tooltip="<b>' +
-			 this.title + '</b>" width=' + iconWidth + ' height=' + this.toolbar.iconHeight + '>';
+		var innerHTML = '<img src = "' + icon + '" border="0" tooltip="' + this.title
+		 + '" width=' + iconWidth + ' height=' + this.toolbar.iconHeight + '>';
 		
 		this.div.innerHTML = innerHTML;
 		// register of handlers
@@ -478,14 +478,13 @@ var PalettePopup = {
 	*/
 	
 	showOtherColors : function(btn) {
-//		debugger;
 		if (this.isOtherClrsVisible) {
 			this.otherClrsDiv.style.display = "none";
-			btn.innerHTML = "show other colors &#187";
+			btn.innerHTML = "&[show]; &[other colors]; &#187";
 		}
 		else {
 			this.otherClrsDiv.style.display = "block";
-			btn.innerHTML = "hide other colors &#171;";
+			btn.innerHTML = "&[hide]; &[other colors]; &#171;";
 		}
 		this.isOtherClrsVisible = !this.isOtherClrsVisible;
 	},
@@ -519,7 +518,7 @@ var PalettePopup = {
 	},
 
 	getSchemePaletteStr : function() {
-		var palette =	"<h3>scheme colors:</h3>"
+		var palette =	"<h3>&[scheme colors];:</h3>"
 			+ "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\">";
 			for (var r = 1; r <= 3; r++) {
 				palette += "<tr>";
@@ -533,7 +532,7 @@ var PalettePopup = {
 	
 	getGrayscalePaletteStr : function() {
 		var colors = ["#FFFFFF", "#CCCCCC", "#C0C0C0", "#999999", "#666666", "#333333", "#000000"]
-		var html = "<h3>grayscale:</h3>"
+		var html = "<h3>&[grayscale];:</h3>"
 			+ "<table  width=\"100%\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\">";
 		html += "<tr>";
 		for (var c = 0; c < colors.length; c++)
@@ -556,7 +555,7 @@ var PalettePopup = {
 			["#330000", "#663300", "#663333", "#333300", "#003300", "#003333", "#000066", "#330099", "#330033"]
 		];
 
-		var html = "<div style=\"display: none;\"><h4>other colors:</h4>"
+		var html = "<div style=\"display: none;\"><h4>[&other]; &[colors];:</h4>"
 			+ "<table  width=\"100%\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\">";
 			for (var r = 0; r < colors.length; r++) {
 				html += "<tr>";
@@ -999,7 +998,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 	// "overflow" --
 	var OVF_ICON_WIDTH = 24;
 	var OVF_POPUP_COL = 4;
-	var OVF_BTN_TITLE = "more options";
+	var OVF_BTN_TITLE = "&[more options];";
 	this.overflowBtn = null;
 	this.overflowPopup = null;
 	

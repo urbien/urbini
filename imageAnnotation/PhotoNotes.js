@@ -417,7 +417,7 @@ PhotoNote.prototype.CreateElements = function()
                 }
                 else
                 {
-                    alert("error saving note");
+                    alert("&[error saving note];");
                     currentNote.Cancel();                        
                 }
             }
@@ -456,7 +456,7 @@ PhotoNote.prototype.CreateElements = function()
                 }
                 else
                 {
-                    alert("error deleting note");
+                    alert("&[error deleting note];");
                 }
             }
             else
