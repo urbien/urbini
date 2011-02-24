@@ -808,7 +808,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .menuLine A:active {color: &[SecondaryColorA_1];; background-color: &[SecondaryColorA_3]; }
 
 .propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
-.propertySheet H1 { margin: 0px;}
+#title H1 {margin: 0; padding-top: 3px; padding-bottom: 3px;}
 
 .fbRegFrame {width: 340px; border:solid &[SecondaryColorA_5]; 1px;  vertical-align: top; font-size: 11px; background-color: #eeeeee; border-collapse: collapse; }
 .fbRegHeader { padding: 15px; }
@@ -1990,7 +1990,7 @@ td.pBGr { background-color: #eeeeee;
 .cp_item_left { min-height: 30px; }
 .backlink_counter { position: absolute; pointer-events: none; }
 .cp_item_right .backlink_counter { top: -7px; left: 15px; }
-.cp_item_left .backlink_counter { top: -7px; right: 5px; }
+.cp_item_left  .backlink_counter { top: 0px; right: 5px; }
 
 .backlink_counter .left, .backlink_counter .right { height: 25px; background: transparent url(../images/skin/iphone/backlink_counter.png) no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
