@@ -36,16 +36,16 @@
      </div>
      <div id="number_sold_container" data-periodical_ajax_updater="data-periodical_ajax_updater" data-path="/deals/elthos-spa/deal_status.json" data-json_key="number_sold_container" data-interval="300">
        <where value="couponBuysQuantity &gt; 0">
-					<span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>
-					bought
+          <text text="Bought"/>&#160; 
+					<span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;
 			 </where>
        <where value="couponsLeftToBuy == tippingPoint ">
          <text text="Be first one to buy"/>
        </where>
        <where value="couponsLeftToBuy &gt; 0 ">
          <div class="remaining">
-	         <property name="couponsLeftToBuy" noIcon="y" />&#160;
-     	    <text text="more needed to get the deal"/>
+           <text text="Number of people should buy to get the deal"/>:&#160;
+	         <property name="couponsLeftToBuy" noIcon="y" />
          </div>
        </where>
        <where value="couponsLeftToBuy &lt;= 0 &amp;&amp;  couponBuysQuantity &gt; 0">
