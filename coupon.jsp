@@ -4,7 +4,12 @@
      <div id="price_tag">
        <div id="price_tag_inner">
          <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
-         <div><a id="-inner" class="coupon_buy button" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+         <where value="timeLeftToBuy &gt; 0">
+           <div><a id="-inner" class="coupon_buy button" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+         </where>
+         <where value="timeLeftToBuy == null">
+           <div style="text-decoration:line-through;color:red;"><a id="-inner" class="coupon_buy button" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+         </where>
        </div>
      </div>
      <div id="deal_discount">
@@ -50,7 +55,7 @@
        </where>
        <where value="couponsLeftToBuy &lt;= 0 &amp;&amp;  couponBuysQuantity &gt; 0">
          <div class="tipped_check_mark">
-           <span><img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on!"/></span>
+           <span><img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!</span>
          </div>
          <div class="tipped_at"><span class="number"><text text="Tipped at"/> <property name="tippedAt" noIcon="y"/></span>
          <text text="with" /> <span class="number"><property name="tippingPoint" noIcon="y"/></span> bought</div>
