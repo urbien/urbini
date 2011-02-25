@@ -48,11 +48,5 @@
 	  <authenticateByFacebook/>
 	</td></tr>
 	</table>
-	
-<!--fb:login-button perms="email,offline_access,publish_stream,user_groups,read_friendlists,manage_friendlists" registration-url="http://newcrm.lablz.com"></fb:login-button-->	
-  <!--a href="https://graph.facebook.com/oauth/authorize?client_id=8841648310&amp;display=page&amp;redirect_uri=http://newcrm.lablz.com/social/fbsignup&amp;scope=publish_stream,email,offline_access,user_groups,read_friendlists,manage_friendlists
-"><span class="blue"><text text="Login to Facebook and authorize" /></span></a-->
-  </div>
-  
-  
+    
 </div>
