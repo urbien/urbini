@@ -6105,8 +6105,14 @@ var TabMenu = {
 	
 	keyHandler: function(event){
   	var $t = TabMenu;
-		var code = getKeyCode(event);
+
+		var target = getEventTarget(event);
+		if (isElemOfClass(target, "input")) { // event came from input field
+			$t.disactivate(); 
+			return;
+		}
 		
+		var code = getKeyCode(event);
 		if (TouchDlgUtil.isMenuPopupOpened() && !$t.isEmptyPopupOpened)
 			return; // no Tab navigation while popup on screen
 
@@ -6120,15 +6126,13 @@ var TabMenu = {
 				appendClassName($t.activeTab, "active");
 			}
 			else {
-				removeClassName($t.activeTab, "active");
-				$t.activeTab = null;
+				$t.disactivate();
 			}
 			stopEventPropagation(event);
 			return;
 		}
 		else if (code == 27 && $t.activeTab != null) { // esc
-			removeClassName($t.activeTab, "active");
-			$t.activeTab = null;
+			$t.disactivate();
 		}
 		else 
 			if ($t.activeTab == null) 
@@ -6185,6 +6189,12 @@ var TabMenu = {
 		if (this.firstTab == null) 
 			this._findTabs();
 		return (comparePosition(this.homeTab, this.activeTab) == 0);
+	},
+	disactivate : function() {
+		if (this.activeTab == null)
+			return;
+		removeClassName(this.activeTab, "active");
+		this.activeTab = null;
 	}
 	
 }
