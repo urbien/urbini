@@ -41,7 +41,7 @@
      </div>
      <div id="number_sold_container" data-periodical_ajax_updater="data-periodical_ajax_updater" data-path="/deals/elthos-spa/deal_status.json" data-json_key="number_sold_container" data-interval="300">
        <where value="couponBuysQuantity &gt; 0">
-          <text text="Bought"/>&#160; 
+          <text text="Bought"/>:&#160; 
 					<span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;
 			 </where>
        <where value="couponsLeftToBuy == tippingPoint ">
@@ -49,16 +49,20 @@
        </where>
        <where value="couponsLeftToBuy &gt; 0 ">
          <div class="remaining">
-           <text text="Number of people should buy to get the deal"/>:&#160;
+           <text text="Short of"/>:&#160;
 	         <property name="couponsLeftToBuy" noIcon="y" />
          </div>
        </where>
        <where value="couponsLeftToBuy &lt;= 0 &amp;&amp;  couponBuysQuantity &gt; 0">
-         <div class="tipped_check_mark">
-           <span><img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!</span>
+         <div class="dealOn">
+           <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
-         <div class="tipped_at"><span class="number"><text text="Tipped at"/> <property name="tippedAt" noIcon="y"/></span>
-         <text text="with" /> <span class="number"><property name="tippingPoint" noIcon="y"/></span> bought</div>
+         <div class="join">
+           <text text="Join us" />
+           <!--text text="Tipped when"/> 
+           <property name="tippedAt" noIcon="y"/> <text text="with" / > 
+           <property name="tippingPoint" noIcon="y"/> bought -->
+         </div>
        </where>
      </div>
 	<!--	 
