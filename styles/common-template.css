@@ -541,7 +541,7 @@ input.xxs {font-size: 10px; color: &[Alternative_A];;}
 .cat  { padding-right: 3px; border: 0; width: 16px; height: 16px; vertical-align:text-bottom;}
 .cat1 {FONT-WEIGHT: bold;}
 
-tr.fts td { vertical-align: middle; padding: 2px; color: &[Label];; }
+tr.fts td { vertical-align: middle; padding: 2px; color: &[SecondaryColorB_5];; }
 tr.ftSearch td { padding: 0px; }
 .desktop_search { width: 300px; }
 
@@ -1544,8 +1544,8 @@ table.printFB {
 
 #register .input { border: 1px solid &[SecondaryColorA_3];; color: &[SecondaryColorB_3];; margin-right: 1em;}
 
-.rte { margin-bottom: 7px; background-color: rgba(&[PrimaryColor_1_rgb];, 0.3); border: 2px solid &[PrimaryColor_1];; padding:0; width: 100%; height: 107px;  }
-.rte_body { color: &[Alternative_A];; font-family :Helvetica, arial; fontSize : 16px; margin:5; }
+.rte { margin-bottom: 7px; background-color: rgba(&[PrimaryColor_5_rgb];, 0.8); border: 2px solid &[PrimaryColor_1];; padding:0; width: 100%; height: 107px;  }
+.rte_body { color: &[PrimaryColor_4_text];; font-family :Helvetica, arial; fontSize : 16px; margin:5; }
 
 /* like menu_Options in iphone.css */
 #browser_dlg { z-index: 1000; top: 0px; position: absolute; width: 320px; padding: 0px; visibility: hidden; }
@@ -1723,13 +1723,13 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel,  .rounded_rect_tbl .num { 
 	margin: 0px; padding: 1px; min-height: 22px;
-	color: &[Alternative_A];; background-color: rgba(&[PrimaryColor_1_rgb];, 0.3); border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto;
+	color: &[PrimaryColor_4_text];; background-color: rgba(&[PrimaryColor_5_rgb];, 0.8); border: 1px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 100%; height: auto;
 	font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px; }
 
 .rounded_rect_tbl .pointer { color: &[PrimaryColor_4_text];; }
 .rounded_rect_tbl .grey_highlighting .pointer, .rounded_rect_tbl .blue_highlighting .pointer { color: &[Alternative_A];; }
 
-.rounded_rect_tbl .textarea { background: rgba(255, 255, 255, 0.1) !important; background: #ffffff; color: &[Alternative_A];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; }
+.rounded_rect_tbl .textarea { background: rgba(&[PrimaryColor_5_rgb];, 0.8) !important; background: #ffffff; color: &[Alternative_A];; margin-bottom: 5px; width: 100%; border: 1px solid &[PrimaryColor_1];; font:inherit; }
 .rounded_rect_tbl .comment { text-align: left; color: &[Alternative_A];; font-size: 11px; }
 .rounded_rect_tbl .select { font-size: inherit; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
 
