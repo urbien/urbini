@@ -58,6 +58,7 @@
           <td align="middle" colspan="3">
             <table width="100%" cellpadding="0" cellspacing="0">
               <tr><include name="${type}_details_bottom_1.jsp"/></tr>
+            <mapMaker />
             </table>
           </td>
         </tr>
