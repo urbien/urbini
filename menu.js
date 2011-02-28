@@ -6217,9 +6217,10 @@ var LinkProcessor = {
 	    return;
 	
 	  var id = anchor.id;
-	  // with purpose to speed up GUI we handle onmousedown
+		
+		// click event ---
+	  // Note: with purpose to speed up GUI we handle onmousedown
 	  if (e.type == "click") {
-	    
 			if (e.button && e.button == 2)
 				return; // right click
 			
@@ -6244,6 +6245,10 @@ var LinkProcessor = {
 	        return;
 	    }
 	  }
+		
+		// mouse down event ---
+		if (anchor.className == "external")
+			return;
 		
 		// process only left mouse button (1)
 		var btn = e.which || e.button;
@@ -6370,7 +6375,7 @@ var LinkProcessor = {
         }
         break;
       }
-      parentDiv = getAncestorByTagName(parentDiv, "div");
+      parentDiv = getAncestorByTagName(parentDiv, "div", true);
     }
     if (!linkOutDiv) 
       return;
@@ -6378,8 +6383,7 @@ var LinkProcessor = {
     var idx = rUri.indexOf("?");
     var href = anchor.href;
     var len = href.length;
-//console.log("href = " + href);
-//console.log("rUri = " + rUri);
+
     if (href.indexOf("http://") == 0  &&  href.charAt(len - 1) == '/'  &&  href.indexOf('/', 7) == len - 1) 
       href = href.substring(0, len - 1);
 //    var uri = 'v.html?uri=sql/www.hudsonfog.com/voc/model/portal/LinkOut%3FtargetUrl%3D' + encodeURIComponent(href) + '%26' + encodeURIComponent(rUri.substring(idx + 1));
