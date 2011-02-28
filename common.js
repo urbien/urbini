@@ -835,7 +835,7 @@ function cloneEvent(eventObj) {
   return e;
 }
 
-// is not required
+// allowDefault is not required
 function stopEventPropagation(e, allowDefault) {
   if (!e)
     return true;
@@ -1066,11 +1066,12 @@ function getAncestorByAttribute(child, attribName, attribValue) {
 	}
 	return null;
 }
-// return "child" if it is of required tagName
-function getAncestorByTagName(child, tagName) {
+
+// enforceAncestor is not required used to get only Ancestor element
+function getAncestorByTagName(child, tagName, enforceAncestor) {
   tagName = tagName.toLowerCase();
-	if(child.tagName.toLowerCase() == tagName)
-		return child;
+	if(child.tagName.toLowerCase() == tagName && enforceAncestor != true)
+		return child; // return "current" element
 	var parent;
 	while((parent = child.parentNode) != null) {
 		if(parent.tagName && parent.tagName.toLowerCase() == tagName)
