@@ -644,6 +644,28 @@ function getTop(overlay, offsettype){
   return totaloffset;
 }
 
+// corrects element (div) position to insure it inside the screen
+// TODO: 1)22 takes into acount scrollbar width that can be not preset
+// 2) Possible to use it in setDivVisible function!
+function getElemInsideScreenPosition(x, y, elem) {
+	var scXY = getScrollXY();
+	var wndSize = getWindowSize();
+
+	var xEdge = wndSize[0] + scXY[0] - elem.clientWidth - 22;
+	if (x > xEdge)
+		x = xEdge - 2;
+	if (x < scXY[0])
+		x = scXY[0] + 2;	
+		
+	var yEdge = wndSize[1] + scXY[1] - elem.clientHeight - 22;
+	if (y > yEdge)
+		y = yEdge - 2;
+	if (y < scXY[1])
+		y = scXY[1] + 2;
+	
+	return [x, y];			
+}				
+
 /*********************************************
 * Events and event target util functions
 **********************************************/
