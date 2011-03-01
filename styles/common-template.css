@@ -2075,7 +2075,7 @@ td.pBGr { background-color: #eeeeee;
 .ctrl_toolbar .tb_btn, .ctrl_toolbar_dlg .tb_btn { position: absolute; cursor: pointer; border-style: solid; border-width: 0px; }
 .palette_popup td { width: 31px; height: 31px; }
 tr.grey_highlighting > td, * html tr.grey_highlighting td, .ctrl_toolbar_dlg .grey_highlighting {
-	color: &[Label];;
+	color: &[PrimaryColor_4_text];;
 	background-color: rgba(&[PrimaryColor_1_rgb];, 0.1);
   background-image: -moz-linear-gradient(top center, rgba(&[PrimaryColor_1_rgb];, 0.5), &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(&[PrimaryColor_1_rgb];, 0.5)), to(&[PrimaryColor_4];));
@@ -2187,3 +2187,10 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .csp_bg_33 { background-color: &[SecondaryColorB_3];; }
 .csp_bg_34 { background-color: &[SecondaryColorB_4];; }
 .csp_bg_35 { background-color: &[SecondaryColorB_5];; }
+
+.image_mag { position: absolute; visibility: hidden;
+	box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
