@@ -1203,13 +1203,13 @@ var PopupHandler = {
 	oldOnScroll : null,
 
 	overflowPopup : null,
+	noCloseTimeout : false,
 	
 	// div is a popup
 	// alignment: left, center, right, inside
 	// hotspot is a control object
 	// onHideCallback - not required
-	showRelatively : function(hotspot, alignment, div, autohide, parentDlg, onHideCallback) {
-		var OFFSET_Y = 7;
+	showRelatively : function(hotspot, alignment, div, autohide, parentDlg, onHideCallback, noCloseTimeout) {
 		// only 1 popup can be opened concurrently, except the overflow popup
 		if(this.popupDiv != null)
 			this.hide(typeof hotspot.isOverflowed != 'undefined' && hotspot.isOverflowed);
@@ -1223,54 +1223,13 @@ var PopupHandler = {
 		else
 			document.body.appendChild(div);
 		
-		var relObj = hotspot.div || hotspot.obj || hotspot;
-
-    var pos;
-//    if(Browser.gecko)		
-//		  pos = this.findObjectPositio(relObj, document.body);
-//		else
-  	  pos = this.findObjectPositio(relObj, parentDlg);
-
-    // 1. inside ("hotspot" - here "container)
-    if(alignment == 'inside') {
-      var xDelta = Math.max((relObj.clientWidth - div.clientWidth) / 2, 0);
-      this.x = pos.left + xDelta;
-      
-      var yDelta = Math.max((relObj.clientHeight - div.clientHeight) / 2, 0);
-      this.y = pos.top + yDelta;
-    }
-    // 2. left
-		else if(alignment == 'left')
-			this.x = pos.left;
-		// 3. center 	 
-		else if(alignment == 'center') 
-			this.x = pos.left - (div.clientWidth - hotspot.width) / 2;
-		// 4. right
-		else                           
-			this.x = pos.left - (div.clientWidth - hotspot.width);
-		
-		if(alignment != 'inside')
-		  this.y = pos.top + hotspot.height + OFFSET_Y;
-		
-		var screenWidth  = screen.width;
-		var screenHeight = screen.height;
-		// small screen
-//		if(Browser.mobile || Browser.iphone) {
-//		  this.y = 0; // top
-//		  this.x = (Math.abs(screenWidth - div.clientWidth)) / 2; // middle
-//		}
-		// to open above a hotspot.
-		//else 
-		if(screenHeight < this.y - getScrollXY()[1] + div.clientHeight)
-			this.y = pos.top - div.clientHeight - OFFSET_Y;
-		
-	  div.style.left = this.x;
-	  div.style.top = this.y;
+		this.align(hotspot, alignment, div, autohide, parentDlg);
 
 		// set new div  data
 		this.popupDiv = div;
 		this.parentDlg = parentDlg;
 		this.onHideCallback = onHideCallback;
+		this.noCloseTimeout = noCloseTimeout;
 		// make visible
 		this._show(autohide);
 
@@ -1286,6 +1245,54 @@ var PopupHandler = {
 		this.firstClick = true;
 		this.popupDiv.style.visibility = "visible";	
 	},
+	// allows to make animation
+	align : function (hotspot, alignment, div, autohide, parentDlg) {
+		var OFFSET_Y = 7;
+
+		var relObj = hotspot.div || hotspot.obj || hotspot;
+
+    var pos;
+//    if(Browser.gecko)		
+//		  pos = this.findObjectPositio(relObj, document.body);
+//		else
+  	  pos = this.findObjectPositio(relObj, parentDlg);
+
+    // 1. inside ("hotspot" - here "container)
+    if(alignment == 'inside') {
+      var xDelta = (relObj.clientWidth - div.clientWidth) / 2;//Math.max((relObj.clientWidth - div.clientWidth) / 2, 0);
+      this.x = pos.left + xDelta;
+      
+      var yDelta = (relObj.clientHeight - div.clientHeight) / 2;//Math.max((relObj.clientHeight - div.clientHeight) / 2, 0);
+      this.y = pos.top + yDelta;
+    }
+    // 2. left
+		else if(alignment == 'left')
+			this.x = pos.left;
+		// 3. center 	 
+		else if(alignment == 'center') 
+			this.x = pos.left - (div.clientWidth - hotspot.width) / 2;
+		// 4. right
+		else                           
+			this.x = pos.left - (div.clientWidth - hotspot.width);
+		
+		// correct position
+		if (alignment == 'inside') {
+			var onScrPos = getElemInsideScreenPosition(this.x, this.y, div);
+			this.x = onScrPos[0];
+			this.y = onScrPos[1];
+		}
+		else { // under or over hotspot
+			var scXY = getScrollXY();
+			var wndSize = getWindowSize();
+			this.y = pos.top + hotspot.height + OFFSET_Y;
+			if (wndSize[1] < this.y - scXY[1] + div.clientHeight) 
+				this.y = pos.top - div.clientHeight - OFFSET_Y; // flip if need
+		}
+		
+	  div.style.left = this.x;
+	  div.style.top = this.y;
+	},
+	
 	// not to hide the overflow popup
 	hide : function(isOverflowed) {
 		if(this.popupDiv == null)
@@ -1296,7 +1303,7 @@ var PopupHandler = {
 		}
 		else {
 			this.popupDiv.style.visibility = "hidden";
-  		document.body.appendChild(this.popupDiv);
+  //		document.body.appendChild(this.popupDiv);
 			if(this.overflowPopup != null) {
 				this.overflowPopup.style.visibility = "hidden";
 	  		document.body.appendChild(this.overflowPopup);
@@ -1404,14 +1411,22 @@ var PopupHandler = {
 			clearInterval(PopupHandler.timerid);
 	},
 	_onmouseout : function(event) {
+		var $t = PopupHandler;
 		var related;
 		if (window.event) related = window.event.toElement;
 		else related = event.relatedTarget;
 		if(related == null)
 			return;
-		if (PopupHandler.popupDiv != related && !PopupHandler.contains(PopupHandler.popupDiv, related)) {
-			PopupHandler.timerid = setInterval(PopupHandler.suspendedHide, PopupHandler.CLOSE_TIMEOUT);
+
+		if ($t.popupDiv != related && !$t.contains($t.popupDiv, related)) {
+			if ($t.noCloseTimeout)
+				$t.hide();
+			else	
+				$t.timerid = setInterval($t.suspendedHide, $t.CLOSE_TIMEOUT);
 		}
+	},
+	setMouseoutTimeout : function(mouseoutTimeout) {
+		this.mouseoutTimeout = mouseoutTimeout;
 	},
 	// used for FF and position=fixed. It is a hack for cursor in <input> over iframe
 	_onscroll : function(event) {
