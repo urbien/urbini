@@ -5120,6 +5120,7 @@ var DataEntry = {
 		if (TouchDlgUtil.isThereChildDlg) {
 			if (!onSubmit)
 				ListBoxesHandler.restoreFromSuspended();
+			
 			TouchDlgUtil.isThereChildDlg = false;
 			this.currentUrl = this.suspended.currentUrl;
 			this.inpValues = this.suspended.inpValues;
@@ -5911,8 +5912,6 @@ var TouchDlgUtil = {
 		// 3. SubscribeAndWatch	
 		if(!isDone)
 			SubscribeAndWatch.submit(event);
-	
-		$t.closeAllDialogs();
 	},
 	
 	// closes 1) data entry 2) filter 3) plain dialog
@@ -12983,6 +12982,80 @@ var LoadingIndicator = {
 		}
 		
 		setTimeout($t.animate, 20);
+	}
+}
+
+/*****************************************
+* ImageMag image magnification on "hover"
+******************************************/
+var ImageMag = {
+	TIMEOUT : 500,
+	timerId : null,
+	curThumb : null,
+	img : null,
+	imgDim : new Array(),
+	scaleFactor : null,
+	
+	_init : function() {
+		this.img = new Image();
+		this.img.className = "image_mag";
+		this.img.onload = this.onImageLoaded;
+		document.body.appendChild(this.img);
+	},
+	onmouseover : function(event, thumb) {
+		if (this.img == null)
+			this._init();
+		if (!thumb.onmouseout)
+			thumb.onmouseout = this.onmouseout;
+		this.curThumb = thumb;
+		this.timerId = setTimeout(this.mouseoverProcess, this.TIMEOUT);
+	},
+	onmouseout : function() {
+		var $t = ImageMag;
+		clearTimeout($t.timerId);
+	},
+	mouseoverProcess : function() {
+		var $t = ImageMag;
+		$t.img.src = $t.getImageSrc($t.curThumb.src);
+		LoadingIndicator.show($t.curThumb);
+	},
+	onImageLoaded : function() {
+		var $t = ImageMag;
+		LoadingIndicator.hide($t.curThumb);
+		
+		PopupHandler.setMouseoutTimeout(0);
+		
+		// strore real size of the image with previous reset
+		$t.img.style.width = "";
+		$t.img.style.height = "";
+		$t.imgDim[0] = $t.img.offsetWidth;
+		$t.imgDim[1] = $t.img.offsetHeight;
+
+		$t.scaleFactor = 0.25; // use 4 stage animation
+		$t.setImageSize($t.scaleFactor); 
+		PopupHandler.showRelatively($t.curThumb, "inside", $t.img, true, null, null, true);
+		setTimeout($t.animate, 30);
+	},
+	
+	setImageSize :function(factor) {
+		var width = this.curThumb.offsetWidth + (this.imgDim[0] - this.curThumb.offsetWidth) * factor;
+		var height = this.curThumb.offsetHeight + (this.imgDim[1] - this.curThumb.offsetHeight) * factor;
+		this.img.style.width = width;
+		this.img.style.height = height;
+	},
+	animate : function() {
+		var $t = ImageMag;
+		$t.scaleFactor += 0.25;
+		$t.setImageSize($t.scaleFactor);
+		PopupHandler.align($t.curThumb, "inside", $t.img, true, null, null, true);
+		if ($t.scaleFactor < 1.0)
+			setTimeout($t.animate, 30);
+	},
+	getImageSrc : function(thumbSrc) {
+		var src = thumbSrc.replace("thumbnail/", "").replace(/_featured\.\w{3,3}$/, "");
+		if (src.lastIndexOf(".") != src.length - 4)
+			src += ".jpg"; // in some cases thumbnail does not contain extention of the image then append .JPG
+		return src;
 	}
 }
 
