@@ -100,6 +100,7 @@ img.fade {
 
 #resourceList td.top {height: 0px; }
 
+div .href {display: inline;}
 
 .hideImg * { display: inline; padding-right: 0.5em; border: none; }
 .hideImg table, .hideImg img, .hideImg object, .hideImg embed, .hideImg .swf, .hideImg .flv { display: none; }
