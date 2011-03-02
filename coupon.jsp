@@ -99,10 +99,13 @@
         <li><property name="conditions" noIcon="y"/></li>
       </ul>
       <br/>
+      <where value="redemptionLocationCount > 0">
       <h3><text text="Redemption Location"/></h3>
-      <ul>
+      <siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/RedemptionLocation&amp;coupon_select=-$this&amp;coupon_verified=y&amp;-suppressHeader=y&amp;-gridCols=vendor&amp;-grid=y&amp;-inRowW=3"/>
+      <!--ul>
         <li><property name="redemptionLocation.vendor" br="y"/></li>
-      </ul>
+      </ul -->
+      </where>
     </div><!-- fine print -->
     <div class="highlights">
       <h3><text text="Highlights"/></h3>
