@@ -100,11 +100,11 @@
       </ul>
       <br/>
       <where value="redemptionLocationCount > 0">
-      <h3><text text="Redemption Location"/></h3>
-      <siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/RedemptionLocation&amp;coupon_select=-$this&amp;coupon_verified=y&amp;-suppressHeader=y&amp;-gridCols=vendor&amp;-grid=y&amp;-inRowW=3"/>
-      <!--ul>
-        <li><property name="redemptionLocation.vendor" br="y"/></li>
-      </ul -->
+      <!-- h3><text text="Available locations"/></h3 -->
+      <!--siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/RedemptionLocation&amp;coupon_select=-$this&amp;coupon_verified=y&amp;-suppressHeader=y&amp;-gridCols=vendor&amp;-grid=y&amp;-inRowW=3"/ -->
+      <ul>
+        <li><h3><property name="redemptionLocation" br="y"/></h3></li>
+      </ul>
       </where>
     </div><!-- fine print -->
     <div class="highlights">
