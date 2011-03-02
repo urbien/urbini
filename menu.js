@@ -12819,7 +12819,7 @@ var ImageUpload = {
 	_onImageLoaded : function() {
 		var $t = ImageUpload;
 		var imageName = $t.uploadedUrl.replace(/.+\//, "");
-		var imageThumbnail = $t.uploadedUrl.replace(imageName, "") + "thumbnail/" + imageName + "_thumb.jpg";
+		var imageThumbnail = $t.uploadedUrl.replace(imageName, "") + "thumbnail/" + imageName + "_thumbnail.jpg";
 		$t.callback($t.uploadedUrl, imageName, imageThumbnail);
 		$t.uploadedUrl = null
 		$t.callback = null;
@@ -12847,7 +12847,8 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
 	
 	var td2 = document.createElement("td");
 	td2.className="menuItem";
-	td2.innerHTML = "<img width=\"105\" src=\"" + thumbnail + "\">"; // width="105"!
+	td2.innerHTML = "<img src=\"" + thumbnail + "\">"; // width="105"!
+//  td2.innerHTML = "<img width=\"105\" src=\"" + thumbnail + "\">"; // width="105"!
 	newItemRow.appendChild(td2);
 
 	var td3 = document.createElement("td");
