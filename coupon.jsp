@@ -98,13 +98,18 @@
       <ul>
         <li><property name="conditions" noIcon="y"/></li>
       </ul>
+      <br/>
+      <h3><text text="Redemption Location"/></h3>
+      <ul>
+        <li><property name="redemptionLocation.vendor" br="y"/></li>
+      </ul>
     </div><!-- fine print -->
     <div class="highlights">
       <h3><text text="Highlights"/></h3>
       <ul>
          <li><property name="description" noIcon="y"/></li>
       </ul>
-    </div>
+    </div><!-- highlights -->
   </div>
 </div>
 
