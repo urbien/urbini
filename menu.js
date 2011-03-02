@@ -11250,30 +11250,6 @@ function WidgetSlider(widgetDiv) {
 			changeOpacity(this.widgetDiv, opacity);
 			return;
 		}
-		
-/*	not used after	Fade transition was applied
-		// IE's problem: 1) need to change opacity for each element
-		// 2) color blend with background
-		var all = this.widgetDiv.getElementsByTagName("*");
-		var color = "";
-		if (opacity != 1.0) {
-			if (this.clrRGB == null) {
-				this.clrRGB = hex2rgb(getElementStyle(this.widgetDiv).color);
-				this.bgRGB = hex2rgb(getElementStyle(document.body).backgroundColor);
-			}
-			
-			var r = this.clrRGB[0] * opacity + this.bgRGB[0] * (1.0 - opacity);
-			var g = this.clrRGB[1] * opacity + this.bgRGB[1] * (1.0 - opacity);
-			var b = this.clrRGB[2] * opacity + this.bgRGB[2] * (1.0 - opacity);
-			color = "rgb(" + r + "," + g + "," + b + ")";
-		}
-		
-		for (var i = 0; i < all.length; i++) {
-			changeOpacity(all[i], opacity);
-			if (all[i].tagName.toLowerCase() == 'div')
-				all[i].style.color = color;
-		}
-*/		
 	}
 	this.getWidgetDiv = function() {
 		return this.widgetDiv;
@@ -13016,6 +12992,7 @@ var ImageMag = {
 	},
 	mouseoverProcess : function() {
 		var $t = ImageMag;
+		$t.img.src = ""; // reset src before. It allows to fire onload callback in Chrome.
 		$t.img.src = $t.getImageSrc($t.curThumb.src);
 		LoadingIndicator.show($t.curThumb);
 	},
