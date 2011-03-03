@@ -12977,11 +12977,13 @@ var ImageMag = {
 		this.img = new Image();
 		this.img.className = "image_mag";
 		this.img.onload = this.onImageLoaded;
+		this.img.onerror = this.onImageError;
 		document.body.appendChild(this.img);
 	},
 	onmouseover : function(event, thumb) {
 		if (this.img == null)
 			this._init();
+			
 		if (!thumb.onmouseout)
 			thumb.onmouseout = this.onmouseout;
 		this.curThumb = thumb;
@@ -12999,7 +13001,7 @@ var ImageMag = {
 	},
 	onImageLoaded : function() {
 		var $t = ImageMag;
-		LoadingIndicator.hide($t.curThumb);
+		LoadingIndicator.hide();
 		
 		PopupHandler.setMouseoutTimeout(0);
 		
@@ -13014,7 +13016,11 @@ var ImageMag = {
 		PopupHandler.showRelatively($t.curThumb, "inside", $t.img, true, null, null, true);
 		setTimeout($t.animate, 30);
 	},
-	
+	onImageError : function() {
+		var $t = ImageMag;
+		LoadingIndicator.hide();
+		$t.curThumb.onmouseover = null; 
+	},
 	setImageSize :function(factor) {
 		var width = this.curThumb.offsetWidth + (this.imgDim[0] - this.curThumb.offsetWidth) * factor;
 		var height = this.curThumb.offsetHeight + (this.imgDim[1] - this.curThumb.offsetHeight) * factor;
