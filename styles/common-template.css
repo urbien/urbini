@@ -180,11 +180,14 @@ input[type=button], input[type=submit], .button, .tags .item {
      -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.5); 
   -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
   
-  background-color: &[PrimaryColor_4];;
+  background-color: &[PrimaryColor_1];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_1];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_1];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];)";
+
+  box-shadow: inset &[PrimaryColor_4]; 0px 17px 17px; /* Opera */
+  border: 1px solid &[PrimaryColor_1];;
   
   /* cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ */
   display: -moz-inline-stack;
@@ -215,23 +218,23 @@ input[type=button]:hover,
 input[type=submit]:focus,
 input[type=submit]:hover,
 .button:focus,
-.button:hover {
+.button:hover,
+input[type=button]:active,
+input[type=submit]:active,
+.button:active
+ {
 	background-color: &[ToolbarColor];;
-	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_4];);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_4];)";
+	background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[ToolbarColor];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[ToolbarColor];));
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[ToolbarColor];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[ToolbarColor];)";
+	box-shadow: inset &[PrimaryColor_4]; 0px 17px 17px; /* Opera */
+	border: 1px solid &[ToolbarColor];;
 }
 
 input[type=button]:active, input[type=submit]:active, .button:active	{ 
-	background-color: &[ToolbarColor];;
-	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_4];));
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_4];);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_4];)";
-
-          box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
-     -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7); 
+ /*  box-shadow: inset 0 1px 2px rgba(0,0,0,0.7); == used for gradient in Opera */
+  -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7); 
   -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
 }
 
@@ -598,11 +601,12 @@ tr.ftSearch td { padding: 0px; }
 	height: 31px;
 	-moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 	-webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-	background-color: &[ToolbarColor];;
+	background-color: &[PrimaryColor_1];;
 	background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)";
+	box-shadow: inset &[ToolbarColor]; 0px 17px 17px;
 }
 
 .desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-size: 18px; line-height:31px; text-align:center; text-shadow:0 0 2px rgba(0, 0, 0, 0.4); }
@@ -1253,17 +1257,16 @@ TD.toolbar {
     vertical-align: middle;
 }
 
-.dashboardLine, tr.rlHeader {
+#menuBar1/*, tr.rlHeader*/ {
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
-}
-.widget .dashboardLine { background-color: &[SecondaryColorA_5];; background-image: none; }
-
-* html .dashboardLine td, * html tr.rlHeader td {
 	#filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
  	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
+ 	box-shadow: inset &[PrimaryColor_1]; 0px 17px 17px; /* Opera */
 }
+
+.widget .dashboardLine { background-color: &[SecondaryColorA_5];; background-image: none; }
 
 .dashboard_btn {
   padding-left:5px; padding-right:5px; 
@@ -1644,8 +1647,10 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .panel_block .header { 
     line-height:30px; 
     width: 100%; text-align: left; 
-    border: 1px solid &[FTS];;
-    background-color: &[FTS];;
+    border: 1px solid &[ToolbarColor];;
+    background-color: &[PrimaryColor_1];;
+		
+		box-shadow: inset &[ToolbarColor]; 0px 15px 15px; /* Opera */
 
     background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[ToolbarColor];), to(&[PrimaryColor_1];)); 
