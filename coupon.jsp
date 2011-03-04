@@ -30,16 +30,21 @@
      <div id="like"><like value="Like"/></div>
      <div id="remaining_time_container">
        <div class="countdown_container">
-         <where value="timeLeftToBuy &lt; 86400"> 
+         <where value="timeLeftToBuy &lt; 86400  &amp;&amp; timeLeftToBuy &gt; 0"> 
            <img src="images/obval/countdown.png" />
          </where>
          <where value="timeLeftToBuy &gt; 86400"> 
            <img src="images/obval/countdown1.png" />
          </where>
-         <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li class="timeLeft"><property name="timeLeftToBuy" noIcon="y"/></li></ul>
+         <where value="timeLeftToBuy &gt; 0">
+           <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li class="timeLeft"><property name="timeLeftToBuy" noIcon="y"/></li></ul>
+         </where>
+         <where value="timeLeftToBuy &lt;= 0">
+           <ul id="counter"><li class="off_label"><text text="The deal is off"/>!</li></ul>
+         </where>
        </div>
      </div>
-     <div id="number_sold_container" data-periodical_ajax_updater="data-periodical_ajax_updater" data-path="/deals/elthos-spa/deal_status.json" data-json_key="number_sold_container" data-interval="300">
+     <div id="number_sold_container">
        <where value="couponBuysQuantity &gt; 0">
           <text text="Bought"/>:&#160; 
 					<span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;
@@ -47,13 +52,13 @@
        <where value="couponsLeftToBuy == tippingPoint ">
          <text text="Be first one to buy"/>
        </where>
-       <where value="couponsLeftToBuy &gt; 0 ">
+       <where value="couponsLeftToBuy &gt; 0">
          <div class="remaining">
            <text text="Short of"/>:&#160;
 	         <property name="couponsLeftToBuy" noIcon="y" />
          </div>
        </where>
-       <where value="couponsLeftToBuy &lt;= 0 &amp;&amp;  couponBuysQuantity &gt; 0">
+       <where value="couponsLeftToBuy &lt;= 0  &amp;&amp;  couponBuysQuantity &gt; 0  &amp;&amp;  timeLeftToBuy &gt; 0">
          <div class="dealOn">
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
@@ -84,15 +89,10 @@
 	</div>
   <div class="right">
     <div id="everyscape" class="photos">
-      <ul>
-        <li><property name="image" noIcon="y" /><!-- image --></li>
-      </ul>
-     </div>
-     <div>
-      <!--ul>
-      	<li><property name="vendor" noIcon="y" /></li>
-     	</ul-->
-     </div>
+     <ul>
+       <li><property name="image" noIcon="y" /><!-- image --></li>
+     </ul>
+    </div>
     <div class="fine_print">
       <h3><text text="Fine print"/></h3>
       <ul>
