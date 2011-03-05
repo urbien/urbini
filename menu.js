@@ -12756,6 +12756,7 @@ function getActivityCallBack(e, div, hotspot, content, url) {
   else
     div.innerHTML = content;
   div.className = "";
+	window.scrollTo(0, 0);
 }
 
 function pageActivity(e, id, params) {
