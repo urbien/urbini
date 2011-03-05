@@ -94,7 +94,7 @@
      </ul>
     </div>
     <div class="fine_print">
-      <h3><text text="Fine print"/></h3>
+      <h3 class="csp_33"><text text="Fine print"/></h3>
       <ul>
         <li><property name="conditions" noIcon="y"/></li>
       </ul>
@@ -108,7 +108,7 @@
       </where>
     </div><!-- fine print -->
     <div class="highlights">
-      <h3><text text="Highlights"/></h3>
+      <h3 class="csp_33"><text text="Highlights"/></h3>
       <ul>
          <li><property name="description" noIcon="y"/></li>
       </ul>
