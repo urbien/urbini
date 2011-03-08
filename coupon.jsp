@@ -27,7 +27,7 @@
        </dl>
      </div>
      <!-- div id="for_a_friend">Buy it for a friend!</div -->
-     <div id="like"><like value="Like"/></div>
+     <div id="likeAndComment"><like value="Like"/></div>
      <div id="remaining_time_container">
        <div class="countdown_container">
          <where value="timeLeftToBuy &lt; 86400  &amp;&amp; timeLeftToBuy &gt; 0"> 
