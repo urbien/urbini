@@ -19,7 +19,8 @@ However this JSP is used for pages containig errors message too (?)
 	  	<errorMessage />
 	    <views />
       <siteTitle name="title" />
-		  <tablePropertyList/>
+		  <!--tablePropertyList/ -->
+      <include name="${type}_details_main.jsp" alt="propertySheet.jsp" />
 		  <siteResourceList/>
       <parallelResourceList/>
       <resourcesSearch resourcesUri = "text/search/resources" />
