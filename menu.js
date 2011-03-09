@@ -4118,11 +4118,11 @@ var ListBoxesHandler = {
 
 		var noMatchesDiv = getChildByClassName(this.optionsPanel, "no_matches");
 		if (noMatches) {
-			noMatchesDiv.innerHTML = "no matches for \"" + typedText + "\"";
+			noMatchesDiv.innerHTML = "&[no matches for]; \"" + typedText + "\"";
 			noMatchesDiv.style.display = "block";
 		}
 		else
-			noMatchesDiv.style.display = "none";
+			noMatchesDiv.style.displasy = "none";
 			
 		// fit height of current panel	
 		var curPanel =	this.getCurrentPanelDiv();
@@ -4824,7 +4824,7 @@ var Filter = {
 		var formPanel = getAncestorByClassName(paramsTable, "form_panel");
 		var noMatchesDiv = getChildByClassName(formPanel, "no_matches");
 		if (noMatches) {
-			noMatchesDiv.innerHTML = "no matches for \"" + typedText + "\"";
+			noMatchesDiv.innerHTML = "&[no matches for]; \"" + typedText + "\"";
 			noMatchesDiv.style.display = "block";
 		}
 		else
@@ -5154,7 +5154,7 @@ var DataEntry = {
 		var formPanel = getAncestorByClassName(paramsTable, "form_panel");
 		var noMatchesDiv = getChildByClassName(formPanel, "no_matches");
 		if (noMatches) {
-			noMatchesDiv.innerHTML = "no matches for \"" + typedText + "\"";
+			noMatchesDiv.innerHTML = "&[no matches for]; \"" + typedText + "\"";
 			noMatchesDiv.style.display = "block";
 		}
 		else
@@ -12984,7 +12984,6 @@ var ImageMag = {
 	onmouseover : function(event, thumb) {
 		if (this.img == null)
 			this._init();
-			
 		if (!thumb.onmouseout)
 			thumb.onmouseout = this.onmouseout;
 		this.curThumb = thumb;
