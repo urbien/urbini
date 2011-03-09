@@ -18,7 +18,7 @@ div#wrapper {
 a { text-decoration: none; color: &[SecondaryColorB_3];; -webkit-tap-highlight-color: rgba(0,0,0,0); }
 input  { -webkit-appearance: none; font-style: normal; line-height: normal; font-weight: normal; -webkit-tap-highlight-color: rgba(0,0,0,0); }
 
-.photos {width: 900px; margin-bottom: 10px; overflow: hidden; }
+.photos {width: 450px; margin-bottom: 10px; overflow: hidden; }
 .photos li {float: left; line-height: 0px; padding-left: 2px;}
 .photosEmpty {width: 97px; height: 67px; background-color: &[OddRowBackgroundColor];; padding: 5 0 0 0; text-align:justify;}
 
@@ -2025,16 +2025,17 @@ td.pBGr { background-color: #eeeeee;
 #footer { width: 85%; min-width: 760px; max-width: 984px;    margin: 0 auto;  color:white} 
 
 .footer { 
-  background-color: &[PrimaryColor_4];;
+  background-color: &[BodyBackgroundColor];;
+  /*
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
-  
+  */
   color: &[Alternative_A];;
   height: 2em;
 }
-
+.footer a {color: &[PrimaryColor_5];; font-size: 12px;}
 
 .footertitle {
   font-weight: normal;
@@ -2134,7 +2135,13 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .rounded_rect_tbl .tags .caret { text-align:left; border: none; outline: 0 none; }
 
 /********** dashboard & widgets *********/
-#dashboard, #dashboard > table { background-color: &[BackgroundColor];; }
+#dashboard, #dashboard > table { 
+  background-color: &[BackgroundColor];; 
+  background-image: -moz-linear-gradient(center top , &[PrimaryColor_1];, &[BackgroundColor];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[BackgroundColor];));
+}
+/* Opera */
+#dashboard { background-color: &[BackgroundColor];; box-shadow: inset &[PrimaryColor_1]; 0px 300px 300px;  }
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
 #ropLeft {border-right:solid &[SecondaryColorA_5]; 1px;}
 #ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 13px; line-height: 25px; }
