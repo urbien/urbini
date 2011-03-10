@@ -1410,7 +1410,7 @@ TD.closePopup {
 /*********** moved from tree.css ***********/
 .dtree {
 	white-space: nowrap;
-	color: &[ToolbarColor];;
+/*	color: &[ToolbarColor];; */
 }
 .dtree img {
 	border: 0px;
