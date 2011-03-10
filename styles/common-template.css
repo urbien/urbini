@@ -114,7 +114,6 @@ div .href {display: inline;}
 
 .displayInline  { overflow:hidden; width: 100%; height: 1em; line-height: 0.93em; text-align:justify; }
 .displayInline, .displayInline * { font-size:1em !important; font-weight:normal !important; margin:0 !important; }
-
  
 .mItems {
   text-align:center;
@@ -157,8 +156,8 @@ div.button { font-size: 15px; color: &[Label];; padding: 3px 10px;}
 /* the awesome size gets set here. Feel Free to add new sizes, like input[type=button].small or .small.large   */
 input[type=button], input[type=submit], .button, a.button, .tags .item { font-size: 15px; color: &[Label];; -webkit-tap-highlight-color: rgba(0,0,0,0); }
 input[type=button], input[type=submit] { padding: 6px 10px; }
-a.button, a.button:active { padding: 3px 10px; } /* anchor requires smaller padding than type=button */
-input[type=button]:active, input[type=submit]:active, .button:active	{ padding: 6px 10px 5px; }
+a.button  { padding: 3px 10px; } /* a.button:active - anchor requires smaller padding than type=button */
+/*input[type=button]:active, input[type=submit]:active, .button:active	{ padding: 6px 10px 5px; }*/
 
 /* Touch the rest at your own risk. */
 input[type=button], input[type=submit], .button, .tags .item { 
@@ -177,7 +176,7 @@ input[type=button], input[type=submit], .button, .tags .item {
   
   /* not all browser support these, but who cares? */
 
-  text-shadow:0 0 2px rgba(0, 0, 0, 0.4); 
+  /* text-shadow:0 0 2px rgba(0, 0, 0, 0.4); */
 
           border-radius: 5px; 
      -moz-border-radius: 5px; 
@@ -1798,9 +1797,10 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   padding: 0;
   border: none;
 }
-
+/* show options without form */
 .frame, #siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel, #pane2 .content, #siteResourceList .widget .frame, 
-		#fts-sift .options_panel, #fts-sift .classifier_panel, #fts-sift .calendar_panel, #pane2 .content, #fts-sift .widget .frame	 
+		#fts-sift .options_panel, #fts-sift .classifier_panel, #fts-sift .calendar_panel, #pane2 .content, #fts-sift .widget .frame,	 
+		.oneparamselection .options_panel, .oneparamselection .classifier_panel, .oneparamselection .calendar_panel
 	{ 
 	background-color: &[PrimaryColor_4];;
 	background-image: url(../images/skin/iphone/pinstripes.png);
@@ -1817,7 +1817,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 }
 */
 
-#siteResourceList .frame, #fts-sift .frame { background: none; }
+#siteResourceList .frame, #fts-sift .frame, .oneparamselection .frame { background: none; }
 
 .tray {
   -webkit-transition-property: -webkit-transform;
@@ -1836,6 +1836,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 
 .form_panel, .options_panel, .classifier_panel, .calendar_panel { float: left; width: 20%; min-height: 1px;  }
+.oneparamselection { box-shadow: none; -moz-box-shadow: none; -webkit-box-shadow: none; }
+.oneparamselection .form_panel { height: 0px; overflow: hidden; visibility: hidden; }
 
 /*#siteResourceList .form_panel, #fts-sift .panel_block {  min-height: 1px;  }*/
 
