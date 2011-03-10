@@ -3166,7 +3166,9 @@ var ListBoxesHandler = {
 	
   _isEditList : false,
 	_isFtsSift : false,
-  skipUserClick : false, // helps to skip "3rd" click in RL editor
+	_isOneParamSelection : false,
+  
+	skipUserClick : false, // helps to skip "3rd" click in RL editor
   
 	suspended : null, // structure used for Add new resource from options panel
 
@@ -3196,7 +3198,7 @@ var ListBoxesHandler = {
 	  	tray = getChildByClassName(ftsSift, "tray");
 			this._isFtsSift = tray != null;
 		}
-
+		
 		// 3. test if we continue to work with the same tray
 		if (this.tray != null && comparePosition(tray, this.tray) == 0)
 			return;
@@ -3209,7 +3211,7 @@ var ListBoxesHandler = {
     this.calendarPanel = getChildByClassName(this.tray, "calendar_panel");
 		
 		var toolBar = getChildByClassName(this.optionsPanel, "header");
-		this.addNewResIcon = toolBar.getElementsByTagName("td")[3];
+		this.addNewResIcon = toolBar.rows[0].cells[toolBar.rows[0].cells.length - 1];//toolBar.getElementsByTagName("td")[3];
 		this.addNewResBtn = getChildByClassName(this.optionsPanel, "button");
 		
 		this.textEntry = getChildById(this.optionsPanel, "text_entry");
@@ -3217,12 +3219,15 @@ var ListBoxesHandler = {
 		
 		if (this.textEntry && (this._isEditList || this._isFtsSift))
 			FieldsWithEmptyValue.initField(this.textEntry, '&[select];'); // init options selector of stand alone optionss panel
+		
+		// similar to _isFtsSift
+		this._isOneParamSelection = this.panelBlock.className.indexOf(" oneparamselection") != -1;		
 	},	
 	
   onClickParam : function(event, optionsSelectorStr) {
 		var $t = ListBoxesHandler;
 		var target = getEventTarget(event);
-		
+	
 		if (isElemOfClass(target, "input") && target.getAttribute("readonly") == null)
 			return;
 
@@ -3236,7 +3241,6 @@ var ListBoxesHandler = {
 		
 		if (!event)
 			event = $t.clonedEvent;
-		
 		
 		var isLink = getAncestorByTagName(target, "a") != null;
 		var isRollUp = getAncestorByClassName(target, "rollup_td") != null;
@@ -3276,8 +3280,8 @@ var ListBoxesHandler = {
 		  }
 			return;
 		}
-		else
-			$t.curParamRow = tr;
+	//	else
+	//		$t.curParamRow = tr;
 			
     return $t.processClickParam(event, tr, optionsSelectorStr);
   },
@@ -3287,11 +3291,14 @@ var ListBoxesHandler = {
 		if (SlideSwaper.doesSlidingRun())
 			return;
 
-    var target = getEventTarget(e);
+  //  var target = tr;
+	//	getEventTarget(e);
 
     // skip click on rollup (checkbox) td
  //   if(getAncestorByClassName(target, "rollup_td") != null)
  //     return;
+
+		this.curParamRow = tr;
 
 		var isClassifierNow = this.isClassifierNow(tr);
     var arrowTd = getChildByClassName(tr, "arrow_td");
@@ -3393,7 +3400,7 @@ var ListBoxesHandler = {
 		$t.showOptionsOrClasses(popupDiv);
 
 		// RL editor: align options list
-		if (($t._isEditList || $t._isFtsSift) && !isVisible($t.panelBlock)) {
+		if (($t._isEditList || $t._isFtsSift) && !isVisible($t.panelBlock) || $t._isOneParamSelection) {
 			var form = getAncestorByAttribute(hotspot, "name", ["siteResourceList", "rightPanelPropertySheet"]);
 			$t.showStandAloneOptions(hotspot, form);
 		}
@@ -3469,15 +3476,21 @@ var ListBoxesHandler = {
 			if (x < leftEdge) 
 				x = leftEdge;
 		}
-		else if (this._isFtsSift) {
-			x = findPosX(hotspot) + hotspot.clientWidth + 5;
-			y = Math.max(findPosY(hotspot) - this.panelBlock.clientHeight / 2, scXY[1] + 5);
+		else if (this._isFtsSift || this._isOneParamSelection) {
+			var hotspotDim = new Array();
+			if (this._isOneParamSelection)
+				hotspotDim = DataEntry.getHotspotDim();
+			else
+				hotspotDim = getElementCoords(hotspot, null);
+
+			x = hotspotDim.left + hotspotDim.width + 5;
+			y = Math.max(hotspotDim.top - this.panelBlock.clientHeight / 2, scXY[1] + 5);
 			var bottomEdge = wndSize[1] + scXY[1];
 	
 			if (y > bottomEdge - this.panelBlock.clientHeight)
-				y = Math.max(bottomEdge - this.panelBlock.clientHeight, scXY[1]);
+				y = Math.max(bottomEdge - this.panelBlock.clientHeight, scXY[1]) - 5;
 		}
-	
+
 		this.panelBlock.style.left = x;
 		this.panelBlock.style.top = y;
 		this.panelBlock.style.visibility = "visible";
@@ -3487,7 +3500,7 @@ var ListBoxesHandler = {
 	fitOptionsYPosition : function(panel) {
 		var $t = ListBoxesHandler;
 		
-		if ($t._isEditList || $t._isFtsSift) 
+		if ($t._isEditList || $t._isFtsSift || $t._isOneParamSelection) 
 			return;
 
 		var onOpen = true;
@@ -3548,7 +3561,7 @@ var ListBoxesHandler = {
 		TouchDlgUtil.focusSelector(textEntry, false);
 		$t.skipUserClick = false; // accept click on parameter	
 		
-		if ($t._isEditList || $t._isFtsSift)
+		if ($t._isEditList || $t._isFtsSift || $t._isOneParamSelection)
 			setShadow($t.panelBlock, "6px 6px 25px rgba(0, 0, 0, 0.5)");
   },
 
@@ -3851,7 +3864,7 @@ var ListBoxesHandler = {
 		if (selectedOption["checked"] != false)
 			this.markAsSelectedAndVerified(null, clickedTr, clickedTr);
 		
-		if ($t._isFtsSift) {
+		if ($t._isFtsSift || $t._isOneParamSelection) {
 			if (isSingleSelection) 
 				textField.form.submit();
 		}
@@ -4030,7 +4043,7 @@ var ListBoxesHandler = {
 		if (SlideSwaper.getTrayPosition(tray) == 0)
 			return false;
 		
-		if (this._isEditList || this._isFtsSift)
+		if (this._isEditList || this._isFtsSift || this._isOneParamSelection)
 			setShadow(this.panelBlock, "");
 
     SlideSwaper.moveBack(tray);
@@ -4058,10 +4071,12 @@ var ListBoxesHandler = {
 			$t.classifierPanel.style.display = "none";
 			$t.curClassesPopupDiv.style.display = "none";
 		}
-
-		if ($t._isEditList || $t._isFtsSift) // hide panel block using on RL editor
+ 		// hide stand alone options
+		if ($t._isEditList || $t._isFtsSift)
 			$t.panelBlock.style.visibility = "";
-		
+		if ($t._isOneParamSelection)
+			DataEntry.hide();
+			
 		$t.textEntry.name = "";
 		
 		if ($t.panelBlock.id == "fts_filter" && Browser.ie) { // IE width fitting
@@ -4076,6 +4091,7 @@ var ListBoxesHandler = {
 
 		$t._isEditList = false;
 		$t._isFtsSift = false;
+		$t._isOneParamSelection = false;
 		$t.skipUserClick = false; // accept click on parameter
   },
 
@@ -4946,8 +4962,10 @@ var DataEntry = {
 	suspended : new Object(), // used to make New resource from Options panel
 	
 	onDataError : false, // data entry was returned by server with errors on data entry
-	
 	hotspotDim : null,
+	
+	oneParameterInputName : null, // select only one parameter thus hide form panel
+	
 	// parentDivId is not required
 	show : function(e, url, hotspot, parentDivId) {
 		if (this.loadingUrl != null)
@@ -4960,12 +4978,12 @@ var DataEntry = {
 			this.hotspotDim = getElementCoords(hotspot);
 
 		if (!TouchDlgUtil.isThereChildDlg) // opening dialog is child
-		TouchDlgUtil.closeAllDialogs(); // hide possible opened dialogs
+			TouchDlgUtil.closeAllDialogs(); // hide possible opened dialogs
 		else {
 			this.suspended.currentUrl = this.currentUrl;
 			this.suspended.inpValues = this.inpValues;
 		}
-		
+
 		var isSecondClick = (this.currentUrl == url);		
 		if (isSecondClick)
 			return;
@@ -4998,10 +5016,18 @@ var DataEntry = {
 			this.loadingUrl = url;
 			urlParts = url.split('?');
 			var parentDiv = (parentDivId) ? document.getElementById(parentDivId) : null;
+			if (this.oneParameterInputName)
+				urlParts[1] += "&oneparameteronly=y"
+			
 			postRequest(e, urlParts[0], urlParts[1], parentDiv, hotspot, this.onDataEntryLoaded);
 		}
 	},
-
+	// parameterInputname, forexample  name=".priority"
+	showOneParameterOnly : function(e, url, hotspot, oneParameterInputName) {
+		this.oneParameterInputName = oneParameterInputName;
+		this.show(e, url, hotspot, null);
+	},
+	
 	// parameters provided by XHR and not all used
 	onDataEntryLoaded : function(event, parentDiv, hotspot, html, url, onDataError) {
 		if (!html)
@@ -5051,6 +5077,17 @@ var DataEntry = {
 		TouchDlgUtil.init(div); // moved from ListBoxes
 		ExecJS.runDivCode(div);
 
+		if ($t.oneParameterInputName) { // select only one parameter
+			appendClassName(div, "oneparamselection");
+			ListBoxesHandler.setTray(div);
+			//var tbl = getChildByClassName(div, "rounded_rect_tbl");
+			var input = getChildByAttribute(div, "name", $t.oneParameterInputName);
+			var tr = getAncestorByClassName(input, "param_tr");
+			ListBoxesHandler.processClickParam(null, tr);
+			div.style.visibility = "visible";
+			return;
+		}
+
 		// show dialog after GUI initialization
 		setDivVisible(event, div, null, null, 5, 5, $t.hotspotDim);
 		
@@ -5059,6 +5096,7 @@ var DataEntry = {
 		var key = $t._getKey($t.currentUrl);
 		$t.dataEntryArr[key] = div;
 	},
+	
 	// div is null here; the dialog with error message is in html code
 	onDataEntryRejection : function(event, div, hotspot, html, url) {
 		var $t = DataEntry;
@@ -5070,9 +5108,13 @@ var DataEntry = {
 		
 		if (key == null)
 			return;
-		
+		if (this.oneParameterInputName != null) {
+			this.oneParameterInputName = null;
+			this.currentUrl = null;
+		}
 		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
 			return;
+
 
 		if (TouchDlgUtil.isDlgOnPage(this.dataEntryArr[key]))
 			return; //dialog embeded into page
@@ -5129,6 +5171,8 @@ var DataEntry = {
 			ListBoxesHandler.restoreFromSuspended(false); // remove suspended
 			this.currentUrl = null;
 		}
+		
+		this.oneParameterInputName = null;
 	},
 	
 	// hides params with not suited beginning.		
@@ -5280,7 +5324,10 @@ var DataEntry = {
 		// ---
 		
 		return null;
-	}
+	},
+	getHotspotDim: function(){
+  	return this.hotspotDim;
+  }
 }
 
 /*****************************************************************
