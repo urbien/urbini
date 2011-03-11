@@ -15,7 +15,7 @@
       <div hide="y">      
     		<table width="100%" border="0" cellspacing="0" cellpadding="0">
     		  <tr noInner="y" class="fts" itype="!http://www.hudsonfog.com/voc/classifieds/siteTemplates/Slide">
-    				<td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td>
+    				<td><fullTextSearchChoice/></td><td><location/><filter/></td><td><pagingResources /></td>
     		  </tr>
         </table>		  
       </div>
