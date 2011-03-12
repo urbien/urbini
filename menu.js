@@ -1829,7 +1829,13 @@ var FormProcessor = {
     if (pane2  &&  pane2.contains(form))  {   // dialog?
       setDivInvisible(pane2, dialogIframe);
     }
-
+		
+		//******************************************************
+		// 3 cases:
+		// a) mobile: returns URL;
+		// b) XHR: returns nothing / 'undefined'
+		// c) HTML form: return true
+		//*******************************************************
 		// 1. mobile: return url for further XHR
 		if (Browser.mobile) {
       return url + "?" + params;
@@ -1848,9 +1854,10 @@ var FormProcessor = {
 			if (dlg.id == 'pane2')	
 				postRequest(e, url, params, dlg, getTargetElement(e), PlainDlg.onDialogLoaded); // showDialog
 			else
-				postRequest(e, url, params, null, getTargetElement(e), DataEntry.onDataEntryRejection);	
+				postRequest(e, url, params, dlg, getTargetElement(e), DataEntry.onDataEntrySubmitted);	
       
-			return stopEventPropagation(e);
+			stopEventPropagation(e);
+			return;
     }
 		// 3. send html form
     else {
@@ -1897,7 +1904,7 @@ var FormProcessor = {
 
 		if (typeof isXHR == 'undefined')
 			isXHR = false;
-		
+
     for (var i = 0; i < len; i++) {
       idx++;
 
@@ -1905,7 +1912,7 @@ var FormProcessor = {
 			var name  = field.name;
       var value = field.value;
 			
-			// reset field with empty value ("full text search", for example)
+     // reset field with empty value ("full text search", for example)
       var isEmptyValue = field.getAttribute("is_empty_value")
       if (isEmptyValue && isEmptyValue == "y") {
 		  	if (!isXHR)
@@ -3863,11 +3870,11 @@ var ListBoxesHandler = {
 		// Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
 		if (selectedOption["checked"] != false)
 			this.markAsSelectedAndVerified(null, clickedTr, clickedTr);
-		
-		if ($t._isFtsSift || $t._isOneParamSelection) {
-			if (isSingleSelection) 
-				textField.form.submit();
-		}
+	
+		if ($t._isFtsSift && isSingleSelection)
+			textField.form.submit();
+		if ($t._isOneParamSelection)
+			DataEntry.submit(null, textField);
   },
   
   onPeriodSelectionFinish : function(fromInp, toInp) {
@@ -3939,8 +3946,11 @@ var ListBoxesHandler = {
 
 		if (this._isFtsSift)
 			this.submitFtsSift();
-		else	
-			this.onBackBtn();
+
+		if (this._isOneParamSelection)
+			DataEntry.submit(null, iconTd);
+			
+		this.onBackBtn();
 	},
   makeParamReset : function() {
     // remove value in coresponding <input>s
@@ -4242,7 +4252,6 @@ var ListBoxesHandler = {
 	submitFtsSift : function() {
 		var textField = this.getTextFieldInParamRow();
 		textField.form.submit();
-		this.onBackBtn();  
 	}
 }
 
@@ -4966,6 +4975,18 @@ var DataEntry = {
 	
 	oneParameterInputName : null, // select only one parameter thus hide form panel
 	
+	
+ /********************************************************************************
+ * specificHandlers - Specific process functions / callbacks.
+ * It is a JS 'class' which name is pointe out in attribute "specificHandlers" (!)
+ * There are functions with predefined names. Currently
+ * 1) init - used to pass target (hotspot)
+ * 2) onSubmitted
+ * Not all function should be implemented.
+ * Better to place specific JS code separatly from common JS code
+ ********************************************************************************/
+	specificHandlers : null,
+	
 	// parentDivId is not required
 	show : function(e, url, hotspot, parentDivId) {
 		if (this.loadingUrl != null)
@@ -5021,7 +5042,15 @@ var DataEntry = {
 			
 			postRequest(e, urlParts[0], urlParts[1], parentDiv, hotspot, this.onDataEntryLoaded);
 		}
+		
+		// specific JS code
+		this.specificHandlers = hotspot.getAttribute("specificHandlers");
+		if (this.specificHandlers) {
+			this.specificHandlers = eval(this.specificHandlers);
+			this.specificHandlers.init(hotspot);
+		}
 	},
+	
 	// parameterInputname, forexample  name=".priority"
 	showOneParameterOnly : function(e, url, hotspot, oneParameterInputName) {
 		this.oneParameterInputName = oneParameterInputName;
@@ -5029,7 +5058,7 @@ var DataEntry = {
 	},
 	
 	// parameters provided by XHR and not all used
-	onDataEntryLoaded : function(event, parentDiv, hotspot, html, url, onDataError) {
+	onDataEntryLoaded : function(event, parentDiv, hotspot, html, url, params, onDataError) {
 		if (!html)
 			return; // possible (server) error!
 			
@@ -5098,9 +5127,13 @@ var DataEntry = {
 	},
 	
 	// div is null here; the dialog with error message is in html code
-	onDataEntryRejection : function(event, div, hotspot, html, url) {
+	onDataEntrySubmitted : function(event, div, hotspot, html, url, params) {
 		var $t = DataEntry;
-		$t.onDataEntryLoaded(event, div, hotspot, html, url, true);
+		
+		if ($t.specificHandlers && $t.specificHandlers.onSubmitted)
+			$t.specificHandlers.onSubmitted(params, div);
+		if (html)	// show new content (form with entering errors)
+			$t.onDataEntryLoaded(event, div, hotspot, html, url, params, true);
 	},
 
 	hide : function (onSubmit) {
@@ -5205,13 +5238,13 @@ var DataEntry = {
 			noMatchesDiv.style.display = "none";
   },
 	
-  submit : function(e, submitIcon) {
+  submit : function(e, formChildElem) { // formChildElem: like submit icon
 		var $t = DataEntry;
 		var form = null;
-		if (submitIcon) {
-			form = getAncestorByTagName(submitIcon, "form");
+		if (formChildElem) {
+			form = getAncestorByTagName(formChildElem, "form");
 			if (form == null) {
-				var panel = getAncestorByClassName(submitIcon, "panel_block");
+				var panel = getAncestorByClassName(formChildElem, "panel_block");
 				form = getChildByTagName(panel, "form");
 			}
 		}
@@ -5228,7 +5261,6 @@ var DataEntry = {
 			form.removeAttribute("wasSubmitted");
 
 		var res = FormProcessor.onSubmitProcess(e, form);
-	//	this.hide();
 		
 		if (Browser.mobile) {
       var url = res;
