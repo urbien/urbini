@@ -324,13 +324,13 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
 //      if (div)
 //        Boost.view.setProgressIndeterminate(false);
 
-      callback(clonedEvent, div, hotspot, http_request.responseText, url);
+      callback(clonedEvent, div, hotspot, http_request.responseText, url, parameters);
     }
     else if (status == 200) {
       openAjaxStatistics(event, http_request);
       //Boost.view.setProgressIndeterminate(false);
-      if (callback)
-			 callback(clonedEvent, div, hotspot, http_request.responseText, url);
+			if (callback)
+			 callback(clonedEvent, div, hotspot, http_request.responseText, url, parameters);
     }
     else if (status == 302) {
       try {location = http_request.getResponseHeader('Location');} catch(exception) {}
@@ -398,7 +398,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
       if (typeof openAjaxStatistics != 'undefined')
       openAjaxStatistics(event, http_request);
       //Boost.view.setProgressIndeterminate(false);
-      callback(clonedEvent, div, hotspot, http_request.responseText, url);
+      callback(clonedEvent, div, hotspot, http_request.responseText, url, parameters);
     }
   };
 
@@ -408,7 +408,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
     }
     catch (err) {
 //      Boost.log("error in ajax request open(): " + url + '?' + parameters);
-      callback(clonedEvent, div, hotspot, "", url);
+      callback(clonedEvent, div, hotspot, "", url, parameters);
       return;
     }
 
