@@ -3594,9 +3594,10 @@ var ListBoxesHandler = {
 			return;
 		
 		var hdnAddTr = getChildById(popupDiv, "$addNew");
+		if (!hdnAddTr)
+			return;
 		this.addNewResIcon.style.display = this.addNewResBtn.style.display = (hdnAddTr != null) ? "" : "none";
-		if ((hdnAddTr != null))
-			getFirstChild(this.addNewResBtn).innerHTML = getChildByTagName(hdnAddTr, "a").innerHTML;
+		getFirstChild(this.addNewResBtn).innerHTML = getChildByTagName(hdnAddTr, "a").innerHTML;
 	},
 	
 	addNewOptionResource : function(event, hotspot) {
@@ -13115,10 +13116,13 @@ var ImageMag = {
 			setTimeout($t.animate, 30);
 	},
 	getImageSrc : function(thumbSrc) {
-		var src = thumbSrc.replace("thumbnail/", "").replace(/_featured\.\w{3,3}$/, "");
-		if (src.lastIndexOf(".") != src.length - 4)
-			src += ".jpg"; // in some cases thumbnail does not contain extention of the image then append .JPG
-		return src;
+//		var src = thumbSrc.replace("thumbnail/", "").replace(/_featured\.\w{3,3}$/, "");
+//		if (src.lastIndexOf(".") != src.length - 4)
+//			src += ".jpg"; // in some cases thumbnail does not contain extention of the image then append .JPG
+//		return src;
+
+		// Note: return "featured" image that is thumbSrc
+		return thumbSrc;
 	}
 }
 
