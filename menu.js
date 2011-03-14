@@ -3497,9 +3497,11 @@ var ListBoxesHandler = {
 			if (y > bottomEdge - this.panelBlock.clientHeight)
 				y = Math.max(bottomEdge - this.panelBlock.clientHeight, scXY[1]) - 5;
 		}
-
-		this.panelBlock.style.left = x;
-		this.panelBlock.style.top = y;
+		// insure to show on screen //TODO: make it more generic
+		var pos = getElemInsideScreenPosition(x, y, this.panelBlock);
+		this.panelBlock.style.left = pos[0];
+		this.panelBlock.style.top = pos[1];
+		
 		this.panelBlock.style.visibility = "visible";
 	},
 	
@@ -5112,6 +5114,8 @@ var DataEntry = {
 			ListBoxesHandler.setTray(div);
 			//var tbl = getChildByClassName(div, "rounded_rect_tbl");
 			var input = getChildByAttribute(div, "name", $t.oneParameterInputName);
+			if (!input)
+				throw new Error("DataEntry - one parameter selection: NO input!");
 			var tr = getAncestorByClassName(input, "param_tr");
 			ListBoxesHandler.processClickParam(null, tr);
 			div.style.visibility = "visible";
@@ -6284,7 +6288,6 @@ var TabMenu = {
 //**************************************************/
 var LinkProcessor = {
 	onLinkClick : function(e) {
-
 		var $t = LinkProcessor;
 	  e = getDocumentEvent(e);
 	  if (!e)
@@ -6302,7 +6305,7 @@ var LinkProcessor = {
 	  if (e.type == "click") {
 			if (e.button && e.button == 2)
 				return; // right click
-			
+		
 			// close popup menu on its item click
 	    var popupDiv = getAncestorByAttribute(anchor, "className", "popMenu");
 	    if (popupDiv)
