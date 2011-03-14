@@ -3298,8 +3298,9 @@ var ListBoxesHandler = {
 		if (SlideSwaper.doesSlidingRun())
 			return;
 
-  //  var target = tr;
-	//	getEventTarget(e);
+    var target = tr; 
+		if (e)
+			target = getEventTarget(e);
 
     // skip click on rollup (checkbox) td
  //   if(getAncestorByClassName(target, "rollup_td") != null)
@@ -5064,7 +5065,7 @@ var DataEntry = {
 	onDataEntryLoaded : function(event, parentDiv, hotspot, html, url, params, onDataError) {
 		if (!html)
 			return; // possible (server) error!
-			
+	
 		var $t = DataEntry;
 
 		if (onDataError) { // server returned previously submitted data dialog with errors of data entry
@@ -13118,16 +13119,6 @@ var ImageMag = {
 		if ($t.scaleFactor < 1.0)
 			setTimeout($t.animate, 30);
 	},
-	/*
-  getImageSrc : function(thumbSrc) {
-  //  var src = thumbSrc.replace("thumbnail/", "").replace(/_featured\.\w{3,3}$/, "");
-    // Note: return "big thumb image" image
-    var src = thumbSrc.replace(/_featured/, "_image");
-  //  if (src.lastIndexOf(".") != src.length - 4)
-  //    src += ".jpg"; // in some cases thumbnail does not contain extention of the image then append .JPG
-    return src;
-  }
-	*/
 	getImageSrc : function(thumbSrc) {
 //		var src = thumbSrc.replace("thumbnail/", "").replace(/_featured\.\w{3,3}$/, "");
 //		if (src.lastIndexOf(".") != src.length - 4)
@@ -13137,7 +13128,6 @@ var ImageMag = {
 		// Note: return "featured" image that is thumbSrc
 		return thumbSrc;
 	}
-	
 }
 
 // flag that menu.js was parsed
