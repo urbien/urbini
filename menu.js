@@ -13118,6 +13118,15 @@ var ImageMag = {
 		if ($t.scaleFactor < 1.0)
 			setTimeout($t.animate, 30);
 	},
+  getImageSrc : function(thumbSrc) {
+  //  var src = thumbSrc.replace("thumbnail/", "").replace(/_featured\.\w{3,3}$/, "");
+    // Note: return "big thumb image" image
+    var src = thumbSrc.replace(/_featured/, "_image");
+  //  if (src.lastIndexOf(".") != src.length - 4)
+  //    src += ".jpg"; // in some cases thumbnail does not contain extention of the image then append .JPG
+    return src;
+  }
+	/*
 	getImageSrc : function(thumbSrc) {
 //		var src = thumbSrc.replace("thumbnail/", "").replace(/_featured\.\w{3,3}$/, "");
 //		if (src.lastIndexOf(".") != src.length - 4)
@@ -13127,6 +13136,7 @@ var ImageMag = {
 		// Note: return "featured" image that is thumbSrc
 		return thumbSrc;
 	}
+	*/
 }
 
 // flag that menu.js was parsed
