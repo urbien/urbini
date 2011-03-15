@@ -3485,11 +3485,8 @@ var ListBoxesHandler = {
 				x = leftEdge;
 		}
 		else if (this._isFtsSift || this._isOneParamSelection) {
-			var hotspotDim = new Array();
-			if (this._isOneParamSelection)
-				hotspotDim = DataEntry.getHotspotDim();
-			else
-				hotspotDim = getElementCoords(hotspot, null);
+			hotspot = (this._isOneParamSelection) ? DataEntry.getHotspot() : hotspot;
+			var hotspotDim = getElementCoords(hotspot, null);
 
 			x = hotspotDim.left + hotspotDim.width + 5;
 			y = Math.max(hotspotDim.top - this.panelBlock.clientHeight / 2, scXY[1] + 5);
@@ -4975,32 +4972,19 @@ var DataEntry = {
 	suspended : new Object(), // used to make New resource from Options panel
 	
 	onDataError : false, // data entry was returned by server with errors on data entry
-	hotspotDim : null,
+	hotspot : null,
 	
 	oneParameterInputName : null, // select only one parameter thus hide form panel
+	submitCallback : null,
 	
-	
- /********************************************************************************
- * specificHandlers - Specific process functions / callbacks.
- * It is a JS 'class' which name is pointe out in attribute "specificHandlers" (!)
- * There are functions with predefined names. Currently
- * 1) init - used to pass target (hotspot)
- * 2) onSubmitted
- * Not all function should be implemented.
- * Better to place specific JS code separatly from common JS code
- ********************************************************************************/
-	specificHandlers : null,
-	
-	// parentDivId is not required
-	show : function(e, url, hotspot, parentDivId) {
+  // parentDivId and submitCallback are not required
+	show : function(e, url, hotspot, parentDivId, submitCallback) {
 		if (this.loadingUrl != null)
 			return;
 
-		this.hotspotDim = {x:100, y:100};
-		if (!hotspot && e)
-			hotspot = getEventTarget(e);
-		if (hotspot)
-			this.hotspotDim = getElementCoords(hotspot);
+		this.hotspot = hotspot;
+		if (!this.hotspot)
+			this.hotspot = getEventTarget(e);
 
 		if (!TouchDlgUtil.isThereChildDlg) // opening dialog is child
 			TouchDlgUtil.closeAllDialogs(); // hide possible opened dialogs
@@ -5042,23 +5026,18 @@ var DataEntry = {
 			urlParts = url.split('?');
 			var parentDiv = (parentDivId) ? document.getElementById(parentDivId) : null;
 			if (this.oneParameterInputName)
-				urlParts[1] += "&oneparameteronly=y&prop=" + this.oneParameterInputName;
+				urlParts[1] += "&oneparameteronly=y"
 			
 			postRequest(e, urlParts[0], urlParts[1], parentDiv, hotspot, this.onDataEntryLoaded);
 		}
-		
-		// specific JS code
-		this.specificHandlers = hotspot.getAttribute("specificHandlers");
-		if (this.specificHandlers) {
-			this.specificHandlers = eval(this.specificHandlers);
-			this.specificHandlers.init(hotspot);
-		}
+		// specific JS code callback
+		this.submitCallback = submitCallback;
 	},
 	
 	// parameterInputname, forexample  name=".priority"
-	showOneParameterOnly : function(e, url, hotspot, oneParameterInputName) {
+	showOneParameterOnly : function(e, url, hotspot, oneParameterInputName, submitCallback) {
 		this.oneParameterInputName = oneParameterInputName;
-		this.show(e, url, hotspot, null);
+		this.show(e, url, hotspot, null, submitCallback);
 	},
 	
 	// parameters provided by XHR and not all used
@@ -5124,7 +5103,7 @@ var DataEntry = {
 		}
 
 		// show dialog after GUI initialization
-		setDivVisible(event, div, null, null, 5, 5, $t.hotspotDim);
+		setDivVisible(event, div, null, null, 5, 5, $t.hotspot);
 		
 		$t.initDataStr = $t._getFormDataStr(div, true);
 		
@@ -5135,9 +5114,10 @@ var DataEntry = {
 	// div is null here; the dialog with error message is in html code
 	onDataEntrySubmitted : function(event, div, hotspot, html, url, params) {
 		var $t = DataEntry;
+
+		if ($t.submitCallback)
+			$t.submitCallback(params, div, $t.hotspot);
 		
-		if ($t.specificHandlers && $t.specificHandlers.onSubmitted)
-			$t.specificHandlers.onSubmitted(params, div);
 		if (html)	// show new content (form with entering errors)
 			$t.onDataEntryLoaded(event, div, hotspot, html, url, params, true);
 	},
@@ -5363,8 +5343,8 @@ var DataEntry = {
 		
 		return null;
 	},
-	getHotspotDim: function(){
-  	return this.hotspotDim;
+	getHotspot: function(){
+  	return this.hotspot;
   }
 }
 
