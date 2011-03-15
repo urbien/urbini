@@ -5042,7 +5042,7 @@ var DataEntry = {
 			urlParts = url.split('?');
 			var parentDiv = (parentDivId) ? document.getElementById(parentDivId) : null;
 			if (this.oneParameterInputName)
-				urlParts[1] += "&oneparameteronly=y"
+				urlParts[1] += "&oneparameteronly=y&prop=" + this.oneParameterInputName;
 			
 			postRequest(e, urlParts[0], urlParts[1], parentDiv, hotspot, this.onDataEntryLoaded);
 		}
