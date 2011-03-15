@@ -42,7 +42,7 @@
           		<tr class="v_footer">
         		  <td>
                 <div align="right"><measurement/></div>
-                <newComment/>
+                <!--newComment/ -->
                 <chatHistory/>
               </td>
               </tr>
