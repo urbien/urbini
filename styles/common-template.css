@@ -550,7 +550,7 @@ input.xxs {font-size: 10px; color: &[Alternative_A];;}
 .cat  { padding-right: 3px; border: 0; width: 16px; height: 16px; vertical-align:text-bottom;}
 .cat1 {FONT-WEIGHT: bold;}
 
-tr.fts td { vertical-align: middle; padding: 2px; color: &[SecondaryColorB_5];; }
+tr.fts td { vertical-align: middle; padding: 2px; color: &[SecondaryColorA_5];; }
 tr.ftSearch td { padding: 0px; }
 .desktop_search { width: 300px; }
 
