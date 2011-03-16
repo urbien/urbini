@@ -19,7 +19,7 @@
        </dl>
        <dl>
          <dt><text text="Discount"/></dt>
-         <dd><property name="discount" noIcon="y" />%</dd>
+         <dd><property name="discount" noIcon="y" /></dd>
        </dl>
        <dl>
          <dt><text text="You Save" /></dt>
