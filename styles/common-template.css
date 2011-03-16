@@ -1,8 +1,7 @@
 /* styles from properties.css */ 
 body {
   font-size: 100%;
-/*	font-family: "lucida grande", "tahoma", "verdana", "arial", "Helvetica", "sans-serif";*/
-  font-family: "arial", "Helvetica", "sans-serif";
+  font-family: Tahoma, Lucida Grande, Verdana, Arial, Helvetica, sans-serif;
 
 	padding: 0;
 	margin: 0;
@@ -548,6 +547,7 @@ input.xxs {font-size: 10px; color: &[Alternative_A];;}
 .text {font-size:0.9em; font-weight:bold;}
 /* FTS category image style */
 .cat  { padding-right: 3px; border: 0; width: 16px; height: 16px; vertical-align:text-bottom;}
+.cat32  { padding-right: 3px; border: 0; width: 32px; height: 32px; vertical-align:text-bottom;}
 .cat1 {FONT-WEIGHT: bold;}
 
 tr.fts td { vertical-align: middle; padding: 2px; color: &[SecondaryColorA_5];; }
@@ -820,22 +820,26 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
 #title H1 {margin: 0; padding-top: 3px; padding-bottom: 3px;}
 
-.fbRegFrame {width: 340px; border:solid &[SecondaryColorA_5]; 1px;  vertical-align: top; font-size: 11px; background-color: #eeeeee; border-collapse: collapse; }
+table.fbRegFrame {width:100%; border:solid &[SecondaryColorA_5]; 1px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
+table.fbConnect {width:90%; border:solid &[SecondaryColorA_5]; 1px; margin-left:10px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
 .fbRegHeader { padding: 15px; }
-.fbRegistration {border-top:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: #ffffff; padding: 20px; width: 300px;}
 .fbUser {
   border:solid &[SecondaryColorA_5]; 1px; 
   border-collapse: collapse; 
   display-inline; 
-  padding: 5px;
   vertical-align: middle;
-  background-color: #eeeeee; 
-  color: #757575; 
-  text-align:left;
+  text-align:center;
   font-weight: bold;
 }
-input.fbInput {
-/*    -moz-border-radius: 4px 4px 4px 4px;*/
+.cityScape {
+  border: 0px; 
+  border-collapse: collapse;
+  display-inline; 
+  vertical-align: middle;
+  text-align:center;
+  font-weight: bold;
+}
+/*input.fbInput {
     border: &[SecondaryColorA_5]; solid 1px;
     background-color: #eeeeee; 
     color: #757575; 
@@ -845,7 +849,7 @@ input.fbInput {
     padding: 3px 0px 3px 5px; 
     vertical-align: bottom;
     width: 300px; 
-}
+}*/
 
 div.topSidebar {
 }
