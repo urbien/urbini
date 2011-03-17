@@ -111,8 +111,9 @@ div .href {display: inline;}
 .hideImg table, .hideImg img, .hideImg object, .hideImg embed, .hideImg .swf, .hideImg .flv { display: none; }
 @-moz-document url-prefix() { .hideImg table { display: table; } .hideImg table td { float: left; } }
 
-.displayInline  { overflow:hidden; width: 100%; height: 1em; line-height: 0.93em; text-align:justify; }
-.displayInline, .displayInline * { font-size:1em !important; font-weight:normal !important; margin:0 !important; }
+.displayInline, .displayIn4lines { overflow:hidden; width: 100%; height: 1em; line-height: 0.9em; text-align:justify; }
+.displayInline, .displayInline *, .displayIn4lines, .displayIn4lines * { font-size:1em !important; font-weight:normal !important; margin:0 !important; }
+.displayIn4lines { height: 4em; line-height: 1em; margin-bottom: 5px !important; }
  
 .mItems {
   text-align:center;
@@ -968,7 +969,7 @@ div.rightSidebar A {color: inherit}
 .items {
 }
 
-.nowrap {white-space: nowrap;margin-left: 6px; white-space: nowrap; font-size: 16px; vertical-align: middle;}
+.nowrap, .nowrap * {white-space: nowrap; white-space: nowrap; font-size: 16px; vertical-align: middle;}
 
 .nowrapB {white-space: nowrap;color:black}
 .cursor {cursor: pointer;}
@@ -1841,7 +1842,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .form_panel, .options_panel, .classifier_panel, .calendar_panel { float: left; width: 20%; min-height: 1px;  }
 .oneparamselection { box-shadow: none; -moz-box-shadow: none; -webkit-box-shadow: none; }
-.oneparamselection .form_panel { height: 0px; overflow: hidden; visibility: hidden; }
+.oneparamselection .form_panel { height: 1px; overflow: hidden; visibility: hidden; }
 
 /*#siteResourceList .form_panel, #fts-sift .panel_block {  min-height: 1px;  }*/
 
