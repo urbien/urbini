@@ -3590,7 +3590,7 @@ var ListBoxesHandler = {
 	},
 
 	changeAddNewState : function(popupDiv) {
-		if (!this.addNewResIcon || this._isFtsSift)
+		if (!this.addNewResIcon || !this.addNewResBtn || this._isFtsSift)
 			return;
 		
 		var hdnAddTr = getChildById(popupDiv, "$addNew");
