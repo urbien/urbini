@@ -6461,7 +6461,7 @@ var LinkProcessor = {
     anchor.href = 'v.html?uri=' + encodeURIComponent(uri);
     anchor.target = "_blank";
 	},
-	// calls 1) DataEntry 2) PlainDlg
+	// calls 1) DataEntry 2) xhrcallback - specific JS code 3) PlainDlg
 	onClickDisplayInner : function(e, anchor) {
 	  if (!anchor)
 	    anchor = getTargetAnchor(e);
@@ -6502,12 +6502,17 @@ var LinkProcessor = {
 	      }
 	    }
 	  }
-		
+		var XHRCallback = anchor.getAttribute("xhrcallback");
+		// 1. Data Entry
 		if (urlStr.indexOf("mkResource.html") != -1 ||
 	  			urlStr.indexOf("editProperties.html") != -1)
 	  	DataEntry.show(e, urlStr, anchor);
-//		else if (urlStr.endsWith("subscribe.html"))
-//			SubscribeAndWatch.show(event, div, hotspot, content, url);
+		// 2. XHR with specific callback
+		else if (XHRCallback) {
+			var urlArr = urlStr.split("?");
+			postRequest(e, urlArr[0], urlArr[1], null, anchor, eval(XHRCallback)); 
+		}
+		// 3. PlainDlg
 		else
 			PlainDlg.show(e, urlStr, anchor);
 	  
