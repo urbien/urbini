@@ -3594,10 +3594,9 @@ var ListBoxesHandler = {
 			return;
 		
 		var hdnAddTr = getChildById(popupDiv, "$addNew");
-		if (!hdnAddTr)
-			return;
 		this.addNewResIcon.style.display = this.addNewResBtn.style.display = (hdnAddTr != null) ? "" : "none";
-		getFirstChild(this.addNewResBtn).innerHTML = getChildByTagName(hdnAddTr, "a").innerHTML;
+		if (hdnAddTr)
+			getFirstChild(this.addNewResBtn).innerHTML = getChildByTagName(hdnAddTr, "a").innerHTML;
 	},
 	
 	addNewOptionResource : function(event, hotspot) {
