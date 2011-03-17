@@ -117,10 +117,16 @@
 	
 	<script type="text/javascript" language="JavaScript">
 		<![CDATA[
-			function likeCallback(e) {
-				var likeAnchor = getEventTarget(e);
-				var counterAnchor = getPreviousSibling(likeAnchor);
-				var textNode = counterAnchor.childNodes[0];
+			function likeCallback() {
+				incrementOnCouponPage("like");
+			}
+			function commentCallback() {
+				incrementOnCouponPage("comments");
+			}
+			function incrementOnCouponPage(id) {
+				var div = document.getElementById(id);
+				anchor = div.getElementsByTagName("a")[0];
+				var textNode = anchor.childNodes[0];
 				textNode.nodeValue = parseInt(textNode.nodeValue) + 1 + " ";
 			}
 		]]>	  		
