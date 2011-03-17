@@ -115,15 +115,16 @@
     </div><!-- highlights -->
   </div>
 	
-		<script type="text/javascript" language="JavaScript">
+	<script type="text/javascript" language="JavaScript">
 		<![CDATA[
 			function likeCallback(e) {
-				alert('TODO: implement')
+				var likeAnchor = getEventTarget(e);
+				var counterAnchor = getPreviousSibling(likeAnchor);
+				var textNode = counterAnchor.childNodes[0];
+				textNode.nodeValue = parseInt(textNode.nodeValue) + 1 + " ";
 			}
 		]]>	  		
 	</script>
-	
-	
 	
 </div>
 
