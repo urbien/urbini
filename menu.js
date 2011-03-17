@@ -1851,11 +1851,13 @@ var FormProcessor = {
 			if (dlg.parentNode.tagName.toLowerCase() != 'body')
 				params += "&on_page=y"
 	
-			if (dlg.id == 'pane2')	
-				postRequest(e, url, params, dlg, getTargetElement(e), PlainDlg.onDialogLoaded); // showDialog
-			else
-				postRequest(e, url, params, dlg, getTargetElement(e), DataEntry.onDataEntrySubmitted);	
-      
+			if (dlg.id == 'pane2') 
+	  		postRequest(e, url, params, dlg, getTargetElement(e), PlainDlg.onDialogLoaded); // showDialog
+			else {
+				if (DataEntry.hasSubmitCallback())
+					params += "&-changeInplace=y"; // supress redirect if submit callback was provided
+				postRequest(e, url, params, dlg, getTargetElement(e), DataEntry.onDataEntrySubmitted);
+			}
 			stopEventPropagation(e);
 			return;
     }
@@ -5114,8 +5116,8 @@ var DataEntry = {
 	onDataEntrySubmitted : function(event, div, hotspot, html, url, params) {
 		var $t = DataEntry;
 
-		if ($t.submitCallback)
-			$t.submitCallback(params, div, $t.hotspot);
+		if ($t.submitCallback) // specific callback (has parameters like postRequest calls)
+			$t.submitCallback(event, div, $t.hotspot, html, url, params);
 		
 		if (html)	// show new content (form with entering errors)
 			$t.onDataEntryLoaded(event, div, hotspot, html, url, params, true);
@@ -5344,7 +5346,12 @@ var DataEntry = {
 	},
 	getHotspot: function(){
   	return this.hotspot;
-  }
+  },
+	hasSubmitCallback : function() {
+		if (this.submitCallback)
+			return true;
+		return false;
+	}
 }
 
 /*****************************************************************
@@ -6461,7 +6468,7 @@ var LinkProcessor = {
     anchor.href = 'v.html?uri=' + encodeURIComponent(uri);
     anchor.target = "_blank";
 	},
-	// calls 1) DataEntry 2) xhrcallback - specific JS code 3) PlainDlg
+	// calls 1) DataEntry (+xhrcallback) 2) callback only (xhrcallback) 3) PlainDlg
 	onClickDisplayInner : function(e, anchor) {
 	  if (!anchor)
 	    anchor = getTargetAnchor(e);
@@ -6502,11 +6509,12 @@ var LinkProcessor = {
 	      }
 	    }
 	  }
+
 		var XHRCallback = anchor.getAttribute("xhrcallback");
 		// 1. Data Entry
 		if (urlStr.indexOf("mkResource.html") != -1 ||
 	  			urlStr.indexOf("editProperties.html") != -1)
-	  	DataEntry.show(e, urlStr, anchor);
+	  	DataEntry.show(e, urlStr, anchor, null, eval(XHRCallback));
 		// 2. XHR with specific callback
 		else if (XHRCallback) {
 			var urlArr = urlStr.split("?");
