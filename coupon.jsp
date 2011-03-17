@@ -114,6 +114,17 @@
       </ul>
     </div><!-- highlights -->
   </div>
+	
+		<script type="text/javascript" language="JavaScript">
+		<![CDATA[
+			function likeCallback(e) {
+				alert('TODO: implement')
+			}
+		]]>	  		
+	</script>
+	
+	
+	
 </div>
 
 
