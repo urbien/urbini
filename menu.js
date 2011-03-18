@@ -1854,9 +1854,11 @@ var FormProcessor = {
 			if (dlg.id == 'pane2') 
 	  		postRequest(e, url, params, dlg, getTargetElement(e), PlainDlg.onDialogLoaded); // showDialog
 			else {
-				if (DataEntry.hasSubmitCallback())
-					params += "&-changeInplace=y"; // supress redirect if submit callback was provided
-				postRequest(e, url, params, dlg, getTargetElement(e), DataEntry.onDataEntrySubmitted);
+				if (DataEntry.execBeforeSubmit(params) != false) {
+					if (DataEntry.hasSubmitCallback()) 
+						params += "&-changeInplace=y"; // supress redirect if submit callback was provided
+					postRequest(e, url, params, dlg, getTargetElement(e), DataEntry.onDataEntrySubmitted);
+				}
 			}
 			stopEventPropagation(e);
 			return;
@@ -5226,15 +5228,18 @@ var DataEntry = {
 		else
 			noMatchesDiv.style.display = "none";
   },
-	
+	execBeforeSubmit : function(params) {
+		if (!this.beforeSubmitCallback) 
+			return true;
+		var data = this.oneParameterInputName ? getUrlParam(params, this.oneParameterInputName)	: params;
+		if (this.beforeSubmitCallback(data) == false) {
+			this.hide(true);
+			return false; // forbidden to commit
+		}
+		return true;
+	},
   submit : function(e, formChildElem) { // formChildElem: like submit icon
 		var $t = DataEntry;
-		
-		if ($t.beforeSubmitCallback) 
-			if ($t.beforeSubmitCallback() == false) {
-				this.hide(true);
-				return; // forbidden to commit
-			}
 		
 		var form = null;
 		if (formChildElem) {
