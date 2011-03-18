@@ -4977,9 +4977,10 @@ var DataEntry = {
 	
 	oneParameterInputName : null, // select only one parameter thus hide form panel
 	submitCallback : null,
+	beforeSubmitCallback : null, // called before submit: "validator" on return false - not to commit
 	
-  // parentDivId and submitCallback are not required
-	show : function(e, url, hotspot, parentDivId, submitCallback) {
+  // parentDivId and submitCallback, beforeSubmitCallback are not required
+	show : function(e, url, hotspot, parentDivId, submitCallback, beforeSubmitCallback) {
 		if (this.loadingUrl != null)
 			return;
 
@@ -5033,12 +5034,13 @@ var DataEntry = {
 		}
 		// specific JS code callback
 		this.submitCallback = submitCallback;
+		this.beforeSubmitCallback = beforeSubmitCallback;
 	},
 	
 	// parameterInputname, forexample  name=".priority"
-	showOneParameterOnly : function(e, url, hotspot, oneParameterInputName, submitCallback) {
+	showOneParameterOnly : function(e, url, hotspot, oneParameterInputName, submitCallback, beforeSubmitCallback) {
 		this.oneParameterInputName = oneParameterInputName;
-		this.show(e, url, hotspot, null, submitCallback);
+		this.show(e, url, hotspot, null, submitCallback, beforeSubmitCallback);
 	},
 	
 	// parameters provided by XHR and not all used
@@ -5227,6 +5229,13 @@ var DataEntry = {
 	
   submit : function(e, formChildElem) { // formChildElem: like submit icon
 		var $t = DataEntry;
+		
+		if ($t.beforeSubmitCallback) 
+			if ($t.beforeSubmitCallback() == false) {
+				this.hide(true);
+				return; // forbidden to commit
+			}
+		
 		var form = null;
 		if (formChildElem) {
 			form = getAncestorByTagName(formChildElem, "form");
@@ -6468,7 +6477,13 @@ var LinkProcessor = {
     anchor.href = 'v.html?uri=' + encodeURIComponent(uri);
     anchor.target = "_blank";
 	},
+	
+	//****************************************************************************** 
 	// calls 1) DataEntry (+xhrcallback) 2) callback only (xhrcallback) 3) PlainDlg
+	// anchor can supply:
+	// a) callback after XHR as a parameter "xhrcallback"
+	// b) callback before XHR as a parameter "xhrcallbackbefore"
+	//******************************************************************************* 
 	onClickDisplayInner : function(e, anchor) {
 	  if (!anchor)
 	    anchor = getTargetAnchor(e);
@@ -6510,15 +6525,20 @@ var LinkProcessor = {
 	    }
 	  }
 
-		var XHRCallback = anchor.getAttribute("xhrcallback");
+		var XHRCallback = eval(anchor.getAttribute("xhrcallback"));
+		var XHRCallbackBefore = eval(anchor.getAttribute("xhrcallbackbefore"));
 		// 1. Data Entry
 		if (urlStr.indexOf("mkResource.html") != -1 ||
 	  			urlStr.indexOf("editProperties.html") != -1)
-	  	DataEntry.show(e, urlStr, anchor, null, eval(XHRCallback));
+	  	DataEntry.show(e, urlStr, anchor, null, XHRCallback, XHRCallbackBefore);
 		// 2. XHR with specific callback
 		else if (XHRCallback) {
+			if (XHRCallbackBefore) {
+				if (XHRCallbackBefore() == false)
+					return;
+			}
 			var urlArr = urlStr.split("?");
-			postRequest(e, urlArr[0], urlArr[1], null, anchor, eval(XHRCallback)); 
+			postRequest(e, urlArr[0], urlArr[1], null, anchor, XHRCallback); 
 		}
 		// 3. PlainDlg
 		else
