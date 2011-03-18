@@ -960,7 +960,9 @@ div.rightSidebar A {color: inherit}
 /* Recall_orders page styles */
 .allButton      {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold; cursor: pointer;}
 .categoryButton {border:solid #808080 1px; background-color:#f8f4ef; color: darkblue; font-size:12pt;font-weight:bold; cursor: pointer;}
-.itemButton     {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;text-decoration:none; cursor: pointer;}
+/*.itemButton     {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;text-decoration:none; cursor: pointer;}*/
+.itemButton { background: &[BodyBackground];; border: 1px solid &[FTS];; height:40pt; text-decoration:none; cursor: pointer; font-size: 12px; }  
+
 
 /* Add items styles */
 .backTo         {color:red}
