@@ -93,6 +93,11 @@
        <li><property name="image" noIcon="y" /><!-- image --></li>
      </ul>
     </div>
+    <div>
+     <ul>
+       <li><showIntent/></li>
+     </ul>
+    </div>
     <div class="fine_print">
       <h3 class="csp_33"><text text="Fine print"/></h3>
       <ul>
