@@ -5123,8 +5123,8 @@ var DataEntry = {
 		if ($t.submitCallback) // specific callback (has parameters like postRequest calls)
 			$t.submitCallback(event, div, $t.hotspot, html, url, params);
 		
-		if (html)	// show new content (form with entering errors)
-			$t.onDataEntryLoaded(event, div, hotspot, html, url, params, true);
+		if (html)	// show new content error messages
+			$t.onDataEntryLoaded(event, null, hotspot, html, url, params, true);
 	},
 
 	hide : function (onSubmit) {
