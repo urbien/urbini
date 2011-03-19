@@ -5622,6 +5622,7 @@ var TouchDlgUtil = {
 		if (!isElemOfClass(dlgDiv, ["panel_block", "dsk_auto_complete"]))
 			return;
 		this.curDlgDiv = dlgDiv;
+		
 		if (this.focusHolder == null) {
 			this.focusHolder = document.createElement("input");
 			this.focusHolder.className = "shrunk_field";
@@ -7379,9 +7380,9 @@ function cancelItemAndWait(event) {
   }
 }
 
-function addAndShowWait(event, body, hotspot, content, url, noInsert, isReplace)	{
-  var frameId = "resourceList";
-  if (!noInsert) {
+function addAndShowWait(event, body, hotspot, content, url/*, noInsert, isReplace*/)	{
+	var frameId = "resourceList";
+//  if (!noInsert) {
     if (!content) {
       var frameBodyId = "siteResourceList";
       if (!frameLoaded[frameId]) {
@@ -7402,7 +7403,7 @@ function addAndShowWait(event, body, hotspot, content, url, noInsert, isReplace)
     else {
       setInnerHtml(body, content);
     }
-  }
+//  }
   var divCopyTo = document.getElementById(frameId + "_div");
   if (!divCopyTo) {
     throw new Error("Warning: target div not found: " + frameId + "_div");
@@ -7450,10 +7451,10 @@ function addAndShowWait(event, body, hotspot, content, url, noInsert, isReplace)
       else if (elms[j].id == "results")
         curResultsTR = elms[j];
     }
-    else if (noInsert) {
-      if (!found)
-        currentTR = elms[j];
-    }
+//    else if (noInsert) {
+//      if (!found)
+//        currentTR = elms[j];
+//    }
   }
   // Find TR in previous list that was current and change style of the row
   elms = divCopyTo.getElementsByTagName('a');
