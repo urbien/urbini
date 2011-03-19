@@ -3,8 +3,9 @@
   <form name="loginform" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
     <table border="0" cellpadding="3" cellspacing="0" cols="2" width="100%">
       <tr>
-        <td colspan="2" class="poweredBy-td" valign="middle" align="center" height="40">
+        <td colspan="2" valign="middle" align="center" height="40">
           <span class="large-poweredBy"><property name="owner.longName"/></span>
+          <property name="descriptionOfSite"/>
         </td>
       </tr>
       <tr>

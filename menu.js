@@ -2569,8 +2569,10 @@ var Tooltip = {
 		addEvent(document.body, "mouseover", this.onMouseOver, false);
 		addEvent(document.body, "mouseout", this.onMouseOut, false);
 		addEvent(document.body, "click", this.onClick, false);
-		addEvent(this.tooltipDiv, "mouseover", this.onMouseOverTooltip, true);
-		addEvent(this.tooltipDiv, "mouseout", this.onMouseOutTooltip, true);
+		if (this.tooltipDiv) {
+		  addEvent(this.tooltipDiv, "mouseover", this.onMouseOverTooltip, true);
+		  addEvent(this.tooltipDiv, "mouseout", this.onMouseOutTooltip, true);
+		}
   },
 	
   onMouseOver : function(e) {
@@ -5622,7 +5624,6 @@ var TouchDlgUtil = {
 		if (!isElemOfClass(dlgDiv, ["panel_block", "dsk_auto_complete"]))
 			return;
 		this.curDlgDiv = dlgDiv;
-		
 		if (this.focusHolder == null) {
 			this.focusHolder = document.createElement("input");
 			this.focusHolder.className = "shrunk_field";
@@ -7381,7 +7382,7 @@ function cancelItemAndWait(event) {
 }
 
 function addAndShowWait(event, body, hotspot, content, url/*, noInsert, isReplace*/)	{
-	var frameId = "resourceList";
+  var frameId = "resourceList";
 //  if (!noInsert) {
     if (!content) {
       var frameBodyId = "siteResourceList";

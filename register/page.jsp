@@ -5,10 +5,12 @@
   </head>
 
   <body id="body" login="true">
+    <include name="requiredFooter.jsp"/>
     
      <robotDetector/>
     
-    <include name="include/commonHeader.jsp"/>
+    <!--include name="include/commonHeader.jsp"/-->
+    <include name="requiredHeader.jsp"/>
 
     <script src="register/hashScript.js" type="text/javascript" language="JavaScript"></script>
 
