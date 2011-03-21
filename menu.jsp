@@ -7,15 +7,16 @@
         <td width="85%" colspan="2">
 	        <table>
 	          <tr valign="top">
-	            <td><dashboardMenus/></td>
+	            <td><dashboardMenus/> </td>
 <!--
 							<td class="dashboard_btn"><menu toolbar="calendarAndChart" /></td>
 -->
 	          </tr>
 	        </table>
         </td>
-        <td align="right" class="toprightpad">
+        <td align="right" valign="middle" class="toprightpad">
 	        <shoppingCart/>
+	        <location/>
 	       </td>
 	      </tr>
       </table>
