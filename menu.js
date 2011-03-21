@@ -5110,7 +5110,7 @@ var DataEntry = {
 		}
 
 		// show dialog after GUI initialization
-		setDivVisible(event, div, null, null, 5, 5, $t.hotspot);
+		setDivVisible(event, div, null, $t.hotspot, 5, 5);
 		
 		$t.initDataStr = $t._getFormDataStr(div, true);
 		
