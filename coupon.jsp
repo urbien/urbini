@@ -122,8 +122,10 @@
 	
 	<script type="text/javascript" language="JavaScript">
 		<![CDATA[
-			function likeCallback() {
+			function likeCallback(event) {
 				incrementOnCouponPage("like");
+				var target = getEventTarget(event);
+				target.style.display="none";
 			}
 			function commentCallback() {
 				incrementOnCouponPage("comments");
@@ -134,6 +136,11 @@
 				var textNode = anchor.childNodes[0];
 				textNode.nodeValue = parseInt(textNode.nodeValue) + 1 + " ";
 			}
+			
+			function test() {
+				return false;
+			}
+			
 		]]>	  		
 	</script>
 	
