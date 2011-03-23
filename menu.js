@@ -3604,8 +3604,8 @@ var ListBoxesHandler = {
 	changeAddNewState : function(popupDiv) {
 		if (!this.addNewResIcon || !this.addNewResBtn || this._isFtsSift)
 			return;
-		
-		var hdnAddTr = getChildById(popupDiv, "$addNew");
+		// hide "Add New" in dialog with hidden form panel
+		var hdnAddTr = this._isFormPanelHidden ? null : getChildById(popupDiv, "$addNew");
 		this.addNewResIcon.style.display = this.addNewResBtn.style.display = (hdnAddTr != null) ? "" : "none";
 		if (hdnAddTr)
 			getFirstChild(this.addNewResBtn).innerHTML = getChildByTagName(hdnAddTr, "a").innerHTML;
@@ -5102,8 +5102,7 @@ var DataEntry = {
 		TouchDlgUtil.init(div); // moved from ListBoxes
 		ExecJS.runDivCode(div);
  		
-		// select only one parameter. Note: it is "child" dialog can not be "select only one parameter" 
-		if ($t.oneParameterInputName && TouchDlgUtil.isThereChildDlg == false) {
+		if ($t.oneParameterInputName) {	// select only one parameter 
 			appendClassName(div, "oneparamselection");
 			ListBoxesHandler.setTray(div);
 			//var tbl = getChildByClassName(div, "rounded_rect_tbl");
