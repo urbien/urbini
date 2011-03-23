@@ -1718,8 +1718,8 @@ var FormProcessor = {
     }
 
     // put rte data in the hidden field(s)
-    if(typeof RteEngine != 'undefined')
-      RteEngine.putRteDataOfForm(form);
+    if(typeof RteEngine != 'undefined') // mkResource dialog kept to use secondary
+      RteEngine.putRteDataOfForm(form, DataEntry.isMkResource());
 
     // desktop - "text search" form is a separated form
     // Add full text search criteria to filter
@@ -3180,6 +3180,7 @@ var ListBoxesHandler = {
   _isEditList : false,
 	_isFtsSift : false,
 	_isOneParamSelection : false,
+	_isFormPanelHidden : false, // = _isEditList || _isFtsSift || _isOneParamSelection
   
 	skipUserClick : false, // helps to skip "3rd" click in RL editor
   
@@ -3235,6 +3236,7 @@ var ListBoxesHandler = {
 		
 		// similar to _isFtsSift
 		this._isOneParamSelection = this.panelBlock.className.indexOf(" oneparamselection") != -1;		
+		this._isFormPanelHidden = this._isEditList || this._isFtsSift || this._isOneParamSelection;
 	},	
 	
   onClickParam : function(event, optionsSelectorStr) {
@@ -3513,7 +3515,7 @@ var ListBoxesHandler = {
 	fitOptionsYPosition : function(panel) {
 		var $t = ListBoxesHandler;
 		
-		if ($t._isEditList || $t._isFtsSift || $t._isOneParamSelection) 
+		if ($t._isFormPanelHidden) 
 			return;
 
 		var onOpen = true;
@@ -3539,6 +3541,9 @@ var ListBoxesHandler = {
 	// they hide invisible parameter-rows under bottom page edge.
 	// require more testing.
 	_showInvisibleParams : function() {
+		if (this._isFormPanelHidden)
+			return;
+			
 		var table = this.curParamRow.parentNode;
 		for (var i = 0; i < table.rows.length; i++) {
 			var row = table.rows[i];
@@ -3548,8 +3553,9 @@ var ListBoxesHandler = {
 	},
 	
 	_hideInvisibleParams : function() {
-		if (!this.curParamRow)
+		if (!this.curParamRow || this._isFormPanelHidden)
 			return;
+			
 		var table = this.curParamRow.parentNode;
 		var idx = table.rows[0].cells.length - 2;
 		var bottomEdge = getWindowSize()[1] + getScrollXY()[1];
@@ -3574,7 +3580,7 @@ var ListBoxesHandler = {
 		TouchDlgUtil.focusSelector(textEntry, false);
 		$t.skipUserClick = false; // accept click on parameter	
 		
-		if ($t._isEditList || $t._isFtsSift || $t._isOneParamSelection)
+		if ($t._isFormPanelHidden)
 			setShadow($t.panelBlock, "6px 6px 25px rgba(0, 0, 0, 0.5)");
   },
 
@@ -4059,7 +4065,7 @@ var ListBoxesHandler = {
 		if (SlideSwaper.getTrayPosition(tray) == 0)
 			return false;
 		
-		if (this._isEditList || this._isFtsSift || this._isOneParamSelection)
+		if (this._isFormPanelHidden)
 			setShadow(this.panelBlock, "");
 
     SlideSwaper.moveBack(tray);
@@ -5002,7 +5008,7 @@ var DataEntry = {
 		var isSecondClick = (this.currentUrl == url);		
 		if (isSecondClick)
 			return;
-		
+	
 		var key = this._getKey(url);
 		// show stored data entry 
 		if (this.dataEntryArr[key]) {
@@ -5057,8 +5063,8 @@ var DataEntry = {
 		if (onDataError) { // server returned previously submitted data dialog with errors of data entry
 			$t.onDataError = true;
 			$t.currentUrl = url;
-			// to show dialog at page top
-			window.scrollTo(0, 0);
+			// to show dialog at page top (?)
+			// window.scrollTo(0, 0);
 		}
 		else 
 			$t.currentUrl = $t.loadingUrl;
@@ -5075,7 +5081,7 @@ var DataEntry = {
 			div = document.body.appendChild(div);
 	
 		// onDataError happens on mkResource
-		if (onDataError || $t.isMkResource($t.currentUrl))
+		if (onDataError || $t.isMkResource())
 			$t.doStateOnMkResource(div, true);
 
 		var tdsAmt = div.getElementsByTagName("tr").length; // includes "liquid" table TDs
@@ -5095,8 +5101,9 @@ var DataEntry = {
 		FormProcessor.initForms(div);
 		TouchDlgUtil.init(div); // moved from ListBoxes
 		ExecJS.runDivCode(div);
-
-		if ($t.oneParameterInputName) { // select only one parameter
+ 		
+		// select only one parameter. Note: it is "child" dialog can not be "select only one parameter" 
+		if ($t.oneParameterInputName && TouchDlgUtil.isThereChildDlg == false) {
 			appendClassName(div, "oneparamselection");
 			ListBoxesHandler.setTray(div);
 			//var tbl = getChildByClassName(div, "rounded_rect_tbl");
@@ -5108,7 +5115,7 @@ var DataEntry = {
 			div.style.visibility = "visible";
 			return;
 		}
-
+	
 		// show dialog after GUI initialization
 		setDivVisible(event, div, null, $t.hotspot, 5, 5);
 		
@@ -5176,7 +5183,7 @@ var DataEntry = {
 		}
 
 		// resore initial state of MkResource dialog
-		if (this.isMkResource(this.currentUrl)) 
+		if (this.isMkResource()) 
 			this.doStateOnMkResource(this.dataEntryArr[key], false);
 
 		// enforce to reload data entry without error message.
@@ -5304,8 +5311,10 @@ var DataEntry = {
 			return "_$RTE_changed_"; // different from init
 		return FormProcessor.getFormFilters(form, true, null, true);
 	},
+	
 	isMkResource : function(url) {
-		return (url.indexOf("-$action=mkResource") != -1);
+		url = url || this.currentUrl;
+		return (url != null) ? (url.indexOf("mkResource.html") != -1) : false; // -$action=mkResource
 	},
 	
 	// mkResource form used for all URLs with the same resource type
@@ -5331,12 +5340,12 @@ var DataEntry = {
 
 				if (inputs[i].id == "item_selector")
 					this.onParamNameTyping(inputs[i]); 
-				
-				RteEngine.resetContent(div);	
 		  }
 		}
-		if (!toSave)
+		if (!toSave) {
 			this.inpValues = null;
+			RteEngine.resetContent(div);	
+		}
 	},
 	
 	getCurrentDataEntry : function() {
@@ -12854,7 +12863,7 @@ function getActivity(e, uri) {
 }
 
 function getActivityCallBack(e, div, hotspot, content, url) {
-  if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
+	if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
     div.style.display = "none";
   else
     div.innerHTML = content;
