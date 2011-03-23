@@ -134,7 +134,8 @@
 				var div = document.getElementById(id);
 				anchor = div.getElementsByTagName("a")[0];
 				var textNode = anchor.childNodes[0];
-				textNode.nodeValue = parseInt(textNode.nodeValue) + 1 + " ";
+				var curNum = parseInt(textNode.nodeValue);
+				textNode.nodeValue = (isNaN(curNum) ? 0 : curNum) + 1 + " ";
 			}
 			
 			function test() {
