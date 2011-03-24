@@ -1,21 +1,5 @@
-    /*
-     * Cross-browser method of adding event handlers.
-     * If useCapture is true - handler is registered for 'capture phase', otherwise for 'bubbling phase'.
-     * Although IE6- does not support capture - so we always pass false.
-     */
-    function addEvent(obj, evType, fn, useCapture) {
-     if (obj.addEventListener) { // NS
-       obj.addEventListener(evType, fn, useCapture);
-       return true;
-      }
-      else if (obj.attachEvent) { // IE
-        var r = obj.attachEvent("on" + evType, fn);
-        return r;
-      }
-      else {
-        alert("You need to upgrade to a newer browser. Error: event handler could not be be added");
-      }
-    }
+	// Note: function addEvent was moved to Body to be able
+	// to use it from embeded into a page JS code.
 
     function removeEvent(obj, evType, fn, useCapture) {
       if (obj.removeEventListener) {
