@@ -6517,8 +6517,15 @@ var LinkProcessor = {
 	    }
 	  }
 
-		var XHRCallback = eval(anchor.getAttribute("xhrcallback"));
-		var XHRCallbackBefore = eval(anchor.getAttribute("xhrcallbackbefore"));
+		var XHRCallback = null;
+		try {
+			XHRCallback = eval(anchor.getAttribute("xhrcallback"));
+		} catch(e) {} // in case if the callback is not included but "xhrcallback" was assigned
+		var XHRCallbackBefore = null;
+		try {
+			XHRCallbackBefore = eval(anchor.getAttribute("xhrcallbackbefore"));
+		} catch(e) {}
+
 		// 1. Data Entry
 		if (urlStr.indexOf("mkResource.html") != -1 ||
 	  			urlStr.indexOf("editProperties.html") != -1)
