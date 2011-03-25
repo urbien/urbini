@@ -1305,7 +1305,7 @@ TD.toolbar {
   -moz-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
 }
 .dashboardLine td { color: &[PrimaryColor_4_text]; }
-.dashboardLine .current, .dashboardLine .current a { color: &[PrimaryColor_4_text];; }
+.dashboardLine .current, .dashboardLine .current a { color: &[SecondaryColorA_3];; }
 
 .menuTitle td, .menuTitle th {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
@@ -1471,6 +1471,7 @@ TD.closePopup {
   padding-right: 5px;
   padding-bottom: 2px;
   padding-left: 15px;
+  color: &[PrimaryColor_4_text];;
 }
 
 /* Note: iPhone.css contains topBar class */
@@ -2145,12 +2146,10 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 /********** dashboard & widgets *********/
 #dashboard, #dashboard > table { 
-  background-color: &[BackgroundColor];; 
+  background-color: &[PrimaryColor_1];; 
   background-image: -moz-linear-gradient(center top , &[PrimaryColor_1];, &[BackgroundColor];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[BackgroundColor];));
 }
-/* Opera */
-#dashboard { background-color: &[BackgroundColor];; box-shadow: inset &[PrimaryColor_1]; 0px 300px 100px;  }
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
 #ropLeft {border-right:solid &[SecondaryColorA_5]; 1px;}
 #ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 13px; line-height: 25px; }
