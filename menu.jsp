@@ -7,10 +7,7 @@
         <td width="85%" colspan="2">
 	        <table>
 	          <tr valign="top">
-	            <td><dashboardMenus/> </td>
-<!--
-							<td class="dashboard_btn"><menu toolbar="calendarAndChart" /></td>
--->
+	            <td><table><tr><td><logo src="images/logo10.png"/></td><td><dashboardMenus/></td></tr></table></td>
 	          </tr>
 	        </table>
         </td>
@@ -31,10 +28,5 @@
       <resourceTypeLabel/>
     </td>
   </tr>
-  <!--tr>
-    <td colspan="2" align="center" class="alphabeticIndex">
-      <alphabeticIndex/>
-    </td>
-  </tr-->
 </table>
 </menuBar>
