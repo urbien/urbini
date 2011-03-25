@@ -17,7 +17,7 @@ div#wrapper {
 a { text-decoration: none; color: &[SecondaryColorB_3];; -webkit-tap-highlight-color: rgba(0,0,0,0); }
 input  { -webkit-appearance: none; font-style: normal; line-height: normal; font-weight: normal; -webkit-tap-highlight-color: rgba(0,0,0,0); }
 
-.photos {width: 620px; margin-bottom: 10px; overflow: hidden; }
+.photos {width: 520px; margin-bottom: 10px; overflow: hidden; }
 .photos li {float: left; line-height: 0px; padding-left: 2px;}
 .photosEmpty {width: 97px; height: 67px; background-color: &[OddRowBackgroundColor];; padding: 5 0 0 0; text-align:justify;}
 
@@ -113,7 +113,7 @@ div .href {display: inline;}
 
 .displayInline, .displayIn4lines { overflow:hidden; width: 100%; height: 1em; line-height: 0.9em; text-align:justify; }
 .displayInline, .displayInline *, .displayIn4lines, .displayIn4lines * { font-size:1em !important; font-weight:normal !important; margin:0 !important; }
-.displayIn4lines { height: 4em; line-height: 1em; margin-bottom: 5px !important; }
+.displayIn4lines { height: 3.5em; line-height: 1em; margin-bottom: 5px !important; }
  
 .mItems {
   text-align:center;
@@ -695,6 +695,7 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
   background-color: &[BackgroundColor];; 
   overflow-y: visible;  
   height: 100%; 
+/*  align: left;*/
 }
 #siteResourceList .rop {
   border:solid &[PrimaryColor_1]; 1px; 
@@ -819,7 +820,8 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .menuLine A:active {color: &[SecondaryColorA_1];; background-color: &[SecondaryColorA_3]; }
 
 .propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
-#title H1 {margin: 0; padding-top: 3px; padding-bottom: 3px;}
+#title H1 {margin: 0; padding-top: 7px; padding-bottom: 7px;}
+#title, #title div { padding-bottom: 7px; }
 
 table.fbRegFrame {width:100%; border:solid &[SecondaryColorA_5]; 1px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
 table.fbConnect {width:90%; border:solid &[SecondaryColorA_5]; 1px; margin-left:10px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
@@ -863,9 +865,10 @@ div.leftSidebar {
 } 
 
 div.leftSidebarWithImage {
-  padding: 0.4em 0 0.8em 0.8em;
+/*  padding: 0.4em 0 0.8em 0.8em;*/
   *width: 8em;
   min-width: 7em;
+  text-align: center;
 } 
 
 div.leftSidebar A {color: inherit}
@@ -1012,7 +1015,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 /* OLD? .innerPopup {border-style:solid; border-width: 1px; border-color:#F9F8F7 #F9F8F7 #F9F8F7 #F9F8F7} */
 .menuOnClick {background-color: #0055e6; padding-right:3; padding-top:3; padding-bottom:3}
 .toppad {padding-top: 5px; white-space:nowrap}
-.toprightpad {padding-right: 5px; white-space:nowrap; vertical-align: top;}
+.toprightpad {padding-right: 5px; white-space:nowrap; vertical-align: middle;}
 .changeCols {display: inline; margin: 0px;}
 /* for displayInline text properties */
 .description {border:solid #808080 2px; border-color: #1b62b6;}
@@ -1618,7 +1621,7 @@ div .panel_block, td .panel_block {
 	transition: width 0.4s ease-in-out;
 }
 
-#corePageContent > div > .panel_block { width: 620px; margin-top: 4px;}
+#corePageContent > div > .panel_block { width: 520px; margin-top: 4px;}
 
 div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
@@ -1975,13 +1978,13 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   background: url(../images/frame/png/right_bottom.png) no-repeat;
 }
 
-#div_description, #div_activity { 
-  max-width:800px;
-  width: expression(document.body.clientWidth > 802? "800px" : "auto"); /* for IE */
+#div_description { 
+  max-width:520px;
+  width: expression(document.body.clientWidth > 522? "520px" : "auto"); /* for IE */
 }
 #div_info, .rop_only #div_Edit {
-  max-width:620px;
-  width: expression(document.body.clientWidth > 622? "620px" : "auto"); /* for IE */
+  max-width:520px;
+  width: expression(document.body.clientWidth > 522? "520px" : "auto"); /* for IE */
 }
 #div_info table { overflow: visible; }
 #div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; overflow: visible; font-weight: bold; color: &[SecondaryColorB_3];;}
@@ -2151,8 +2154,8 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[BackgroundColor];));
 }
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
-#ropLeft {border-right:solid &[SecondaryColorA_5]; 1px;}
-#ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 13px; line-height: 25px; }
+#ropLeft {border-right:solid &[SecondaryColorA_5]; 1px; min-width: 150px; width: 1%; padding-top: 10px; vertical-align: top; text-align: center}
+#ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 110%; line-height: 25px; }
   
 .editMode #dashboard td { border:solid &[SecondaryColorA_5]; 1px;}
 
@@ -2221,3 +2224,5 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
   -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   z-index: 100;
 }
+
+.langSwitch {border-bottom: 1px solid &[FTS];; padding-left: 1px; vertical-align:top; padding-right: 1px; padding-top: 1px}
