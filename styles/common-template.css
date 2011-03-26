@@ -873,9 +873,10 @@ div.leftSidebarWithImage {
 
 div.leftSidebar A {color: inherit}
 div.rightSidebar {
-  padding-top:   0.4em;
-  padding-left:  0.8em;
-  padding-right: 0.8em;
+  padding-top:     0.4em;
+  padding-left:    0.8em;
+  padding-right:   0.8em;
+  padding-bottom:  0.4em;
   *width: 8em;
   min-width: 7em;
 } 
@@ -1230,6 +1231,14 @@ TD.toolbar {
   background-position: center;
   width: 287px;
   height: 92px;
+}
+
+.intent {margin-top: 10px;}
+#intent a { font-size: 12px; }
+#intent {
+  background-color: &[SecondaryColorB_5];;
+  border: 1px solid &[BodyBackgroundColor];;
+  padding-bottom: 5px; 
 }
 
 .layout { background-color: &[BodyBackgroundColor];; }
@@ -2012,7 +2021,7 @@ td.pBGr { background-color: #eeeeee;
 #siteResourceList .pointer, .panel_block .pointer { border: none; background: transparent; }
 
 .cp_item_left, .cp_item_right { position: relative; white-space:nowrap; }
-.cp_item_left { min-height: 30px; }
+/*.cp_item_left { min-height: 30px; }*/
 .backlink_counter { position: absolute; pointer-events: none; }
 .cp_item_right .backlink_counter { top: -7px; left: 15px; }
 .cp_item_left  .backlink_counter { top: 0px; right: 5px; }
@@ -2156,6 +2165,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
 #ropLeft {border-right:solid &[SecondaryColorA_5]; 1px; min-width: 150px; width: 1%; padding-top: 10px; vertical-align: top; text-align: center}
 #ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 110%; line-height: 25px; }
+#ropRight {border-left:solid &[SecondaryColorA_5]; 1px;}
   
 .editMode #dashboard td { border:solid &[SecondaryColorA_5]; 1px;}
 
@@ -2224,5 +2234,4 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
   -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   z-index: 100;
 }
-
 .langSwitch {border-bottom: 1px solid &[FTS];; padding-left: 1px; vertical-align:top; padding-right: 1px; padding-top: 1px}
