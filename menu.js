@@ -12811,12 +12811,17 @@ function showHideDidYouMean(event) {
 function alert(text) {
 	BrowserDialog.alert(text, null ,"yes");
 }
-// displays description in full after clicking on '>>' in RL
-function displayInFull(e) {
-  var a = getTargetElement(e);
+// displays description in full after clicking 1) on '>>' in RL
+// 2) more... in description / MultiLine - show in the same tr
+function displayInFull(e, a, isMultiLine) {
+	a.style.display='none'; 
   var id = a.id;
   var div = document.getElementById(id.substring(0, id.length - 5)); 
-  document.getElementById(id).style.display='none'; 
+  div.className = "";
+	div.innerHTML = div.innerHTML.replace(/\n/g, "<br />");
+	if (isMultiLine)
+		return stopEventPropagation(e);
+		
 	// insert TR and move there text
 	var parentTable = getAncestorByTagName(a, "table");
 	var propsTR = getAncestorByTagName(parentTable, "tr");
@@ -12828,8 +12833,7 @@ function displayInFull(e) {
 	var newTD = document.createElement("td");
 	newTD.setAttribute("colSpan", 50); // use colspan pretty big
 	newTD.appendChild(div);
-	div.className = "";
-	div.innerHTML = div.innerHTML.replace(/\n/g, "<br />");
+
 	newTR.appendChild(newTD);
 	insertAfter(propsTR.parentNode, newTR, propsTR);
 	
