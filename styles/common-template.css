@@ -1233,13 +1233,6 @@ TD.toolbar {
   height: 92px;
 }
 
-.intent {margin-top: 10px;}
-#intent a { font-size: 12px; }
-#intent {
-  background-color: &[SecondaryColorB_5];;
-  border: 1px solid &[BodyBackgroundColor];;
-  padding-bottom: 5px; 
-}
 
 .layout { background-color: &[BodyBackgroundColor];; }
 .layoutTitle { background-color: &[ToolbarColor];; }
