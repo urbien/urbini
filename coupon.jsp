@@ -1,3 +1,11 @@
+<div>
+<div id="social">
+   <table width="100%" cellspacing="0"><tr>
+     <td id="likeAndComment"><like value="Like"/></td>
+     <td id="likeAndComment"><showIntent/></td>
+     <td id="likeAndComment"><text text="Something else"/></td>
+   </tr></table>
+</div>
 <div id="obval_item">
    <h2 class="fn control_title"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
    <div class="left">
@@ -5,7 +13,7 @@
        <div id="price_tag_inner">
          <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
          <where value="timeLeftToBuy &gt; 0">
-           <div><a id="-inner" class="coupon_buy button" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+           <div><a id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
          </where>
          <where value="timeLeftToBuy == null">
            <div style="text-decoration:line-through;color:red;"><a id="-inner" class="coupon_buy button" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
@@ -26,8 +34,6 @@
          <dd><property name="dealDiscount" noIcon="y"/></dd>
        </dl>
      </div>
-     <!-- div id="for_a_friend">Buy it for a friend!</div -->
-     <div id="likeAndComment"><like value="Like"/></div>
      <div id="remaining_time_container">
        <div class="countdown_container">
          <where value="timeLeftToBuy &lt; 86400  &amp;&amp; timeLeftToBuy &gt; 0"> 
@@ -93,11 +99,6 @@
        <li><property name="image" noIcon="y" /><!-- image --></li>
      </ul>
     </div>
-    <div>
-     <ul>
-       <li><showIntent/></li>
-     </ul>
-    </div>
     <div class="fine_print">
       <h3 class="csp_33"><text text="Fine print"/></h3>
       <ul>
@@ -145,6 +146,7 @@
 		]]>	  		
 	</script>
 	
+</div>
 </div>
 
 
