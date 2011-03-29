@@ -1,11 +1,11 @@
 <div>
-<div id="social">
+<!--div id="social">
    <table width="100%" cellspacing="0"><tr>
      <td id="likeAndComment"><like value="Like"/></td>
      <td id="likeAndComment"><showIntent/></td>
      <td id="likeAndComment"><text text="Something else"/></td>
    </tr></table>
-</div>
+</div-->
 <div id="obval_item">
    <h2 class="fn control_title"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
    <div class="left">
