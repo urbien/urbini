@@ -8,9 +8,9 @@
 				
 				div#wrapper { 
 				  text-align:left; /* reset text alignment */ 
-				  max-width:1024px; /* or a percentage, or whatever */ 
+				  max-width:981px; /* or a percentage, or whatever */ 
 				  margin:0 auto; /* for the rest */ 
-				  width: expression(document.body.clientWidth > 1026? "1024px" : "auto");  /* for IE */
+				  width: expression(document.body.clientWidth > 983? "981px" : "auto");  /* for IE */
         }
     </style>    
   </head>
