@@ -1,13 +1,14 @@
 <div>
-<!--div id="social">
-   <table width="100%" cellspacing="0"><tr>
-     <td id="likeAndComment"><like value="Like"/></td>
-     <td id="likeAndComment"><showIntent/></td>
-     <td id="likeAndComment"><text text="Something else"/></td>
-   </tr></table>
-</div-->
-<div id="obval_item">
-   <h2 class="fn control_title"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
+<table width="100%" id="obval_item">
+<tr width="100%" valign="middle" height="74">
+  <td colspan="2" style="border: 1px solid #d9d9d9;">
+     <h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
+  </td>
+</tr>
+<tr valign="top">
+<td id="coupon">
+<div>
+   <!--h2 class="fn control_title"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2-->
    <div class="left">
      <div id="price_tag">
        <div id="price_tag_inner">
@@ -70,28 +71,9 @@
          </div>
          <div class="join">
            <text text="Join us" />
-           <!--text text="Tipped when"/> 
-           <property name="tippedAt" noIcon="y"/> <text text="with" / > 
-           <property name="tippingPoint" noIcon="y"/> bought -->
          </div>
        </where>
      </div>
-	<!--	 
-     <div class="optimizer_test_share_links_v2">
-       <div class="variant_2">
-         <div class="sharing">
-           <p class="share_label">Share:</p>
-           <div class="share">
-             <ul class="share_links">
-               <li class="twitter_share" title="Share with twitter.">Tweet!</li>
-               <li class="email_share" title="Share with email.">Email!</li>
-               <li class="facebook_like" title="Like it!"></li>
-             </ul>
-           </div>
-         </div>
-      </div>
-    </div>
-  -->
 	</div>
   <div class="right">
     <div id="everyscape" class="photos">
@@ -106,8 +88,6 @@
       </ul>
       <br/>
       <where value="redemptionLocationCount > 0">
-      <!-- h3><text text="Available locations"/></h3 -->
-      <!--siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/RedemptionLocation&amp;coupon_select=-$this&amp;coupon_verified=y&amp;-suppressHeader=y&amp;-gridCols=vendor&amp;-grid=y&amp;-inRowW=3"/ -->
       <ul>
         <li><h3><property name="redemptionLocation" br="y"/></h3></li>
       </ul>
@@ -120,6 +100,15 @@
       </ul>
     </div><!-- highlights -->
   </div>
+  </div>
+</td>
+<td valign="top">
+<div>
+  <siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;-inRow=1&amp;-adTitle=Upcoming+deals&amp;-limit=3"/>
+</div>
+</td>
+</tr>
+</table>
 	
 	<script type="text/javascript" language="JavaScript">
 		<![CDATA[
@@ -146,7 +135,6 @@
 		]]>	  		
 	</script>
 	
-</div>
 </div>
 
 
