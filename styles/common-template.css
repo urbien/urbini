@@ -2155,6 +2155,13 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
   background-image: -moz-linear-gradient(center top , &[PrimaryColor_1];, &[BackgroundColor];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[BackgroundColor];));
 }
+/* IE's dashboard gradient (hack) */
+#col_1, #col_2, #col_3, #col_4 { 
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[BackgroundColor];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[BackgroundColor];)";
+}
+
+
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
 #ropLeft {border-right:solid &[SecondaryColorA_5]; 1px; min-width: 150px; width: 1%; padding-top: 10px; vertical-align: top; text-align: center}
 #ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 110%; line-height: 25px; }
