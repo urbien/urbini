@@ -2164,7 +2164,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
 
 /* widget colors! */
-.widget { background-color: &[PrimaryColor_4];; color: &[PrimaryColor_4_text];; } 
+.widget { /*background-color: &[PrimaryColor_4];;*/ color: &[PrimaryColor_4_text];; } 
 
 #ropLeft {border-right:solid &[SecondaryColorA_5]; 1px; min-width: 150px; width: 1%; padding-top: 10px; vertical-align: top; text-align: center}
 #ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 110%; line-height: 25px; }
