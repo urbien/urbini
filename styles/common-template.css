@@ -13,6 +13,9 @@ body {
 div#wrapper {
   background-color: &[BackgroundColor];;
 } 
+.mainskin {
+  min-height: 500px;
+}
 
 a { text-decoration: none; color: &[SecondaryColorB_3];; -webkit-tap-highlight-color: rgba(0,0,0,0); }
 input  { -webkit-appearance: none; font-style: normal; line-height: normal; font-weight: normal; -webkit-tap-highlight-color: rgba(0,0,0,0); }
@@ -1156,6 +1159,7 @@ div.contentsRL {
 .iinp_move { cursor: move; }
 .iinp_btn { cursor: pointer; }
 .liinp { width:32px; height:32px; border:0px; vertical-align:middle }
+.riinp { width:32px; border:0px; vertical-align:middle }
 .finp { width:32px; height:32px; padding-right:2px;border:0px; vertical-align:middle }
 .iiphone { width:48px; height:48px; border:0px; vertical-align:middle }
 .icursor {cursor: pointer; /*width:16px; height:16px;*/ border:0px; vertical-align:middle}
@@ -2163,8 +2167,10 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 #col_1, #col_2, #col_3, #col_4 { padding: 0.5em 0.3em; }
 
-/* widget colors! */
+/* widget colors! 
 .widget { /*background-color: &[PrimaryColor_4];;*/ color: &[PrimaryColor_4_text];; } 
+*/
+#intentFor {border-right:solid &[SecondaryColorA_5]; 1px; padding: 5px; vertical-align: top; text-align: center; min-height: 600px}
 
 #ropLeft {border-right:solid &[SecondaryColorA_5]; 1px; min-width: 150px; width: 1%; padding-top: 10px; vertical-align: top; text-align: center}
 #ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 110%; line-height: 25px; }
