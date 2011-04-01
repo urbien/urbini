@@ -627,7 +627,7 @@ function addEvent(o, n, f, l)
   e = e || window.event;
   var r = true;
   if (b) r = o[b](e) != false && r;
-  r = o[s](e) != false && r;
+  r = (typeof o[s] != 'undefined' ) && o[s](e) != false && r;
   return r;
  };
  aeOL[aeOL.length] = { o: o, h: h };
