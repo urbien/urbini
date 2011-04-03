@@ -110,15 +110,43 @@
 </tr>
 </table>
 	
-	<script type="text/javascript" language="JavaScript">
-		<![CDATA[
-			function likeCallback(event) {
+	<div id="vk_api_transport"></div>
+	<script type="text/javascript">
+	  <![CDATA[
+	  window.vkAsyncInit = function() {
+	    VK.init({
+	    });
+	  };
+	
+	  (function() {
+	    var el = document.createElement("script");
+	    el.type = "text/javascript";
+	    el.charset = "windows-1251";
+	    el.src = "http://vkontakte.ru/js/api/xd_connection.js?2";
+	    el.async = true;
+	    document.getElementById("vk_api_transport").appendChild(el);
+	  }());
+	    ]]>       
+	</script>
+  <script type="text/javascript">
+  <![CDATA[
+			function likeCallback(event, div, hotspot, content, url, params, http_request) {
 				incrementOnCouponPage("like");
 				var target = getEventTarget(event);
 				target.style.display="none";
+        if (http_request)
+          repostToVK(http_request);
+        else {
+          if (typeof console != 'undefined') console.log('no http_request');
+        }
 			}
-			function commentCallback() {
+			function commentCallback(event, div, hotspot, content, url, params, http_request) {
 				incrementOnCouponPage("comments");
+				if (http_request)
+					repostToVK(http_request);
+				else {
+					if (typeof console != 'undefined') console.log('no http_request');
+				}
 			}
 			function incrementOnCouponPage(id) {
 				var div = document.getElementById(id);

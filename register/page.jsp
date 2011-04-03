@@ -6,6 +6,7 @@
 
   <body id="body" login="true">
     <include name="requiredFooter.jsp"/>
+    <!--script src="common.js" type="text/javascript" language="JavaScript"></script-->
     
      <robotDetector/>
     

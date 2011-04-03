@@ -13145,5 +13145,24 @@ var ImageMag = {
 	}
 }
 
+function repostToVK(http_request) {
+	if (!inIFrame()) {
+		if (typeof console != 'undefined') console.log('not in iFrame, aborting repost to vkontakte');
+		return;
+	}
+	if (typeof console != 'undefined') console.log(http_request + http_request.getResponseHeader('X-VKontakte-wallpost-hash'));
+	var h = http_request.getResponseHeader('X-VKontakte-wallpost-hash');
+    if (h) {
+    	VK.callMethod('saveWallPost', h);
+    }
+}
+
+function inIFrame() {
+	if (window != window.top) {
+		return true;
+	}
+	return false;
+}
+
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
