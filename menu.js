@@ -13146,6 +13146,7 @@ var ImageMag = {
 }
 
 function repostToVK(http_request) {
+	if (typeof console != 'undefined') console.log('in repost');
 	if (!inIFrame()) {
 		if (typeof console != 'undefined') console.log('not in iFrame, aborting repost to vkontakte');
 		return;
