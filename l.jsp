@@ -11,7 +11,7 @@
   </table>
 </div>
 
-  <div hide="y">
+  <div id="fts" hide="y">
     <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
   	<tr noInner="y" class="fts" valign="bottom">
     	<td><fullTextSearchChoice/></td><td><filter/></td><td align="right"><pagingResources /></td>
