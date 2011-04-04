@@ -131,6 +131,7 @@
   <script type="text/javascript">
   <![CDATA[
 			function likeCallback(event, div, hotspot, content, url, params, http_request) {
+        if (typeof console != 'undefined') console.log('in likeCallback');
 				incrementOnCouponPage("like");
 				var target = getEventTarget(event);
 				target.style.display="none";
@@ -141,6 +142,7 @@
         }
 			}
 			function commentCallback(event, div, hotspot, content, url, params, http_request) {
+        if (typeof console != 'undefined') console.log('in commentCallback');
 				incrementOnCouponPage("comments");
 				if (http_request)
 					repostToVK(http_request);
