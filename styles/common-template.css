@@ -9,7 +9,6 @@ body {
 	color: &[Color];;
   height: 100%;
 }
-
 div#wrapper {
   background-color: &[BackgroundColor];;
 } 
@@ -95,6 +94,8 @@ img.fade {
 
 #fts td {padding-bottom: 1.2em;}
 #fts {font-size: small;}
+
+#user td {   font-size: 12px; }
 
 #user a { color: &[SecondaryColorA_3_brighter];}
 #user span { color: &[SecondaryColorA_3_brighter];; font-weight: bold;}
@@ -2170,11 +2171,12 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 /* widget colors! 
 .widget { /*background-color: &[PrimaryColor_4];;*/ color: &[PrimaryColor_4_text];; } 
 */
-#intentFor {border-right:solid &[SecondaryColorA_5]; 1px; padding: 5px; vertical-align: top; text-align: center; min-height: 600px}
+td #corePageContent { min-height: 600px;}
 
-#ropLeft {border-right:solid &[SecondaryColorA_5]; 1px; min-width: 150px; width: 1%; padding-top: 10px; vertical-align: top; text-align: center}
+#ropLeft {border-right:solid &[SecondaryColorA_5]; 1px;  min-height: 600px; min-width: 150px; width: 1%; padding-top: 10px; vertical-align: top; text-align: center}
 #ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 110%; line-height: 25px; }
 #ropRight {border-left:solid &[SecondaryColorA_5]; 1px;}
+#ropTop  {border-bottom:solid &[SecondaryColorA_5]; 1px; }
   
 .editMode #dashboard td { border:solid &[SecondaryColorA_5]; 1px;}
 
@@ -2243,4 +2245,5 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
   -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   z-index: 100;
 }
-.langSwitch {border-bottom: 1px solid &[FTS];; padding-left: 1px; vertical-align:top; padding-right: 1px; padding-top: 1px}
+.langSwitch {border-bottom: 1px solid &[SecondaryColorA_2];; padding-left: 1px; vertical-align:top; padding-right: 1px; padding-top: 1px}
+#user {background: &[BodyBackgroundColor];;}
