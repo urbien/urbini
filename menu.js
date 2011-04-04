@@ -3041,7 +3041,6 @@ var ListBoxesHandler = {
     // close popup if it was already opened
     var popup = Popup.getPopup(divId);
     var div = getChildById(this.optionsPanel, divId);
-    
     var hotspot = getTargetElement(e); //document.getElementById(imgId);
     hotspot = arrowTd || hotspot || document.body;
     // Use existing DIV from cache (unless text was Enter-ed - in which case
@@ -3993,6 +3992,8 @@ var ListBoxesHandler = {
 
   onOptionsBackBtn : function() {
     var form = document.forms[currentFormName];
+		if (!form)
+			return;
     var textField = getOriginalPropField(form, originalProp);
 
     var td = getAncestorByTagName(textField, "td");
@@ -5087,6 +5088,7 @@ var DataEntry = {
 			if (!input)
 				throw new Error("DataEntry - one parameter selection: NO input!");
 			var tr = getAncestorByClassName(input, "param_tr");
+			
 			ListBoxesHandler.processClickParam(null, tr);
 			div.style.visibility = "visible";
 			return;
@@ -5102,11 +5104,11 @@ var DataEntry = {
 	},
 	
 	// div is null here; the dialog with error message is in html code
-	onDataEntrySubmitted : function(event, div, hotspot, html, url, params) {
+	onDataEntrySubmitted : function(event, div, hotspot, html, url, params, http_request) {
 		var $t = DataEntry;
 
 		if ($t.submitCallback) // specific callback (has parameters like postRequest calls)
-			$t.submitCallback(event, div, $t.hotspot, html, url, params);
+			$t.submitCallback(event, div, $t.hotspot, html, url, params, http_request);
 		
 		if (html)	// show new content error messages
 			$t.onDataEntryLoaded(event, null, hotspot, html, url, params, true);
@@ -12818,7 +12820,7 @@ function displayInFull(e, a, isMultiLine) {
   var id = a.id;
   var div = document.getElementById(id.substring(0, id.length - 5)); 
   div.className = "";
-	div.innerHTML = div.innerHTML.replace(/\n/g, "<br />");
+	div.innerHTML = div.innerHTML.trim().replace(/\n/g, "<br />");
 	if (isMultiLine)
 		return stopEventPropagation(e);
 		
