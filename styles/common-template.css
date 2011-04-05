@@ -105,6 +105,8 @@ img.fade {
 #siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; font-size: 12px; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
 
+.rounded_rect_tbl #siteResourceList { text-align: center; } /* align menu items */
+.rounded_rect_tbl #menu{ margin: 0 auto; }
 #siteResourceList #front {background-color: &[BackgroundColor];}
 
 #resourceList td.top {height: 0px; }
@@ -2246,4 +2248,3 @@ td #corePageContent { min-height: 600px;}
   z-index: 100;
 }
 .langSwitch {border-bottom: 1px solid &[SecondaryColorA_2];; padding-left: 1px; vertical-align:top; padding-right: 1px; padding-top: 1px}
-#user {background: &[BodyBackgroundColor];;}
