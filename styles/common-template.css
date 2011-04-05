@@ -828,7 +828,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 #title, #title div { padding-bottom: 7px; }
 
 table.fbRegFrame {width:100%; border:solid &[SecondaryColorA_5]; 1px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
-table.fbConnect {width:90%; border:solid &[SecondaryColorA_5]; 1px; margin-left:10px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
+table.fbConnect {width:90%; border:solid &[SecondaryColorA_5]; 1px; margin-left:10px; margin-right:10px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
 .fbRegHeader { padding: 15px; }
 .fbUser {
   border:solid &[SecondaryColorA_5]; 1px; 
