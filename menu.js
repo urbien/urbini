@@ -3086,8 +3086,8 @@ var ListBoxesHandler = {
     }
     else {
   // if (formAction != "showPropertiesForEdit" && formAction != "mkResource") {
-        /* Add full text search criteria to filter */
-        if (form.id && form.id == 'filter') {
+        /* Add full text search criteria to filter, except FtsSift case */
+        if (form.id && form.id == 'filter' && !this._isFtsSift) {
           var fullTextSearchForm = document.forms['searchForm'];
           // there are 2 forms 'searchForm' on desktop
           //if (fullTextSearchForm.length)
@@ -3990,7 +3990,7 @@ var ListBoxesHandler = {
 			TagsMgr.deleteAll(tagsDiv);
   },
 
-  onOptionsBackBtn : function() {
+  onOptionsBackBtn : function(isEnterKey) {
     var form = document.forms[currentFormName];
 		if (!form)
 			return;
@@ -4013,6 +4013,8 @@ var ListBoxesHandler = {
 //				if (optTr && optTr.style.display != "none")
 //					value = getTextContent(optTr);
 //		  }
+			if (isEnterKey)
+				return; // no slide back on enter in Data Entry
 		}
 		else // Filter: allows to set value from textEntry directly
 			value = FieldsWithEmptyValue.getValue(this.textEntry);
@@ -5119,14 +5121,15 @@ var DataEntry = {
 		
 		if (key == null)
 			return;
+
+		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
+			return;
+
 		if (this.oneParameterInputName != null) {
 			this.oneParameterInputName = null;
 			this.currentUrl = null;
 		}
-		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
-			return;
-
-
+		
 		if (TouchDlgUtil.isDlgOnPage(this.dataEntryArr[key]))
 			return; //dialog embeded into page
 
@@ -5182,7 +5185,6 @@ var DataEntry = {
 			ListBoxesHandler.restoreFromSuspended(false); // remove suspended
 			this.currentUrl = null;
 		}
-		
 		this.oneParameterInputName = null;
 	},
 	
@@ -5671,7 +5673,7 @@ var TouchDlgUtil = {
 				}
 			}
 			else if (!$t.greyTr) 
-				ListBoxesHandler.onOptionsBackBtn();
+				ListBoxesHandler.onOptionsBackBtn(true);
 			else if (!ListBoxesHandler.isFormPanelCurrent()) {
 	  		ListBoxesHandler.markAsSelectedAndVerified(null, $t.greyTr, $t.greyTr);
 				ListBoxesHandler.onOptionSelection($t.greyTr, true);
