@@ -1301,7 +1301,7 @@ TD.toolbar {
   /*border-color: &[PrimaryColor_4];*/
 }
 
-.dashboard_btn a { padding: 5px 0px; font-size: 0.8em; color: &[PrimaryColor_4_text];; font-weight: bold; display: block; white-space: nowrap; }
+.dashboard_btn a { padding: 5px 0px; font-size: 12px; color: &[PrimaryColor_4_text];; font-weight: bold; display: block; white-space: nowrap; }
 .current a { color: &[AccentedLetter];; }
 
 .dashboardLine td.dashboard_btn:hover, .dashboardLine td.active, .dashboardLine td.current {  
