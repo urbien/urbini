@@ -3290,9 +3290,10 @@ var ListBoxesHandler = {
  //   if(getAncestorByClassName(target, "rollup_td") != null)
  //     return;
 
-		this.curParamRow = tr;
-
 		var isClassifierNow = this.isClassifierNow(tr);
+		if (isClassifierNow == false) // ParamRow is on form panel 
+			this.curParamRow = tr;
+
     var arrowTd = getChildByClassName(tr, "arrow_td");
     if (!arrowTd && !isClassifierNow)
       return false; // no options for this item 
@@ -3706,7 +3707,6 @@ var ListBoxesHandler = {
 			tr = getAncestorByTagName(target, "tr");	
 
 		$t.onOptionSelection(tr, !isElemOfClass(target, "iphone_checkbox"));
-
 	},
 	
 	markAsSelectedAndVerified : function(e, tr, target) {
