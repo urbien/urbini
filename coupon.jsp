@@ -131,7 +131,6 @@
   <script type="text/javascript">
   <![CDATA[
 			function likeCallback(event, div, hotspot, content, url, params, http_request) {
-        if (typeof console != 'undefined') console.log('in likeCallback');
 				incrementOnCouponPage("like");
 				var target = getEventTarget(event);
 				target.style.display="none";
@@ -152,16 +151,11 @@
 			}
 			function incrementOnCouponPage(id) {
 				var div = document.getElementById(id);
-				anchor = div.getElementsByTagName("a")[0];
-				var textNode = anchor.childNodes[0];
+				img = div.getElementsByTagName("img")[0];
+				var textNode = img.previousSibling; //anchor.childNodes[0];
 				var curNum = parseInt(textNode.nodeValue);
 				textNode.nodeValue = (isNaN(curNum) ? 0 : curNum) + 1 + " ";
 			}
-			
-			function test() {
-				return false;
-			}
-			
 		]]>	  		
 	</script>
 	
