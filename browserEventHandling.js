@@ -27,10 +27,10 @@
     **************************************/
     // 1. initialization on DOM loaded.
     function onDomLoaded(event) {
-      if (window.parent != window) {
-        onLoadPopup();
-        return;
-      }
+//      if (window.parent != window) {
+//        onLoadPopup();
+//        return;
+//      }
       // 1.1 mobile
       if (typeof Mobile != 'undefined') {
         Browser.mobile = true;
