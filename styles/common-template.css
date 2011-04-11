@@ -11,7 +11,11 @@ body {
 }
 div#wrapper {
   background-color: &[BackgroundColor];;
+  min-height: 100%; /* used to stick footer to the page bottom */
+  position: relative;
 } 
+#commonFooter { position: absolute; width: 100%; bottom: 0px; }
+
 .mainskin {
   min-height: 500px;
 }
@@ -2055,7 +2059,7 @@ td.pBGr { background-color: #eeeeee;
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
   */
   color: &[Alternative_A];;
-  height: 2em;
+  /*height: 2em;*/
 }
 .footer a {color: &[PrimaryColor_5];; font-size: 12px;}
 
