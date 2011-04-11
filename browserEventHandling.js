@@ -38,6 +38,7 @@
       }
       // 1.2. desktop
       else {
+				setFooterOnPage();
 				TabMenu.init();
 				DragEngine.initialize();
         FlashHandler.init();
