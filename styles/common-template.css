@@ -836,6 +836,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 table.fbRegFrame {width:100%; border:solid &[SecondaryColorA_5]; 1px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
 table.fbConnect {width:90%; border:solid &[SecondaryColorA_5]; 1px; margin-left:10px; margin-right:10px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
 .fbRegHeader { padding: 15px; }
+
 .fbUser {
   border:solid &[SecondaryColorA_5]; 1px; 
   border-collapse: collapse; 
@@ -844,6 +845,9 @@ table.fbConnect {width:90%; border:solid &[SecondaryColorA_5]; 1px; margin-left:
   text-align:center;
   font-weight: bold;
 }
+.fbUser div { position: relative; }
+.fbUser div .icon16 { position: absolute; bottom: 0; right: 0; }
+
 .cityScape {
   border: 0px; 
   border-collapse: collapse;
@@ -1746,7 +1750,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .data_td table { width: 100%; }
 .rounded_rect_tbl .data_td .input_td { width: 100%; text-align:right; padding: 0px 3px; color: &[PrimaryColor_4_text];;}
 .rounded_rect_tbl .option_icon_td { padding-right: 4px; }
-.rounded_rect_tbl .option_icon_td img { width: 16px; height: 16px; }
+.rounded_rect_tbl .option_icon_td img, .icon16 { width: 16px; height: 16px; }
 
 .rounded_rect_tbl a { color: &[PrimaryColor_4_text];; }
 
