@@ -9556,7 +9556,6 @@ var DragEngine = {
 
 	drag: function(e){
   	var thisObj = DragEngine;
-
 	  if(thisObj.dragapproved != 1)
 	    return;
 
@@ -13167,6 +13166,14 @@ function inIFrame() {
 		return true;
 	}
 	return false;
+}
+
+/* used to stick footer to the page bottom */
+function setFooterOnPage() {
+	var footer = document.getElementById("commonFooter");
+	if (!footer)
+		return;
+	footer.parentNode.style.paddingBottom = footer.offsetHeight;	
 }
 
 // flag that menu.js was parsed
