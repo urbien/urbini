@@ -5034,14 +5034,13 @@ var DataEntry = {
 	},
 	
 	// parameters provided by XHR and not all used
-	onDataEntryLoaded : function(event, parentDiv, hotspot, html, url, params, onDataError) {
+	onDataEntryLoaded : function(event, parentDiv, hotspot, html, url, params) {
 		if (!html)
 			return; // possible (server) error!
 	
 		var $t = DataEntry;
 
-		if (onDataError) { // server returned previously submitted data dialog with errors of data entry
-			$t.onDataError = true;
+		if ($t.onDataError) { // server returned previously submitted data dialog with errors of data entry
 			$t.currentUrl = url;
 			// to show dialog at page top (?)
 			// window.scrollTo(0, 0);
@@ -5061,7 +5060,7 @@ var DataEntry = {
 			div = document.body.appendChild(div);
 	
 		// onDataError happens on mkResource
-		if (onDataError || $t.isMkResource())
+		if ($t.onDataError || $t.isMkResource())
 			$t.doStateOnMkResource(div, true);
 
 		var tdsAmt = div.getElementsByTagName("tr").length; // includes "liquid" table TDs
@@ -5112,8 +5111,10 @@ var DataEntry = {
 		if ($t.submitCallback) // specific callback (has parameters like postRequest calls)
 			$t.submitCallback(event, div, $t.hotspot, html, url, params, http_request);
 		
-		if (html)	// show new content error messages
-			$t.onDataEntryLoaded(event, null, hotspot, html, url, params, true);
+		if (html) { // show new content with error messages
+			$t.onDataError = true;
+			$t.onDataEntryLoaded(event, null, hotspot, html, url, params);
+		}
 	},
 
 	hide : function (onSubmit) {
