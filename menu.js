@@ -6246,7 +6246,7 @@ var TabMenu = {
 	},
 	openActivePopup : function(event) {
 		var anchor = getChildByTagName(this.activeTab, "a");
-		if (this.isHomeTabActive()) 
+		if (this.isHomeTabActive() && anchor.onclick) 
   		anchor.onclick(event);
 		else
 	  	this.isEmptyPopupOpened = LinkProcessor.onClickDisplayInner(event, anchor) == false;
@@ -12818,14 +12818,17 @@ function alert(text) {
 // displays description in full after clicking 1) on '>>' in RL
 // 2) more... in description / MultiLine - show in the same tr
 function displayInFull(e, a, isMultiLine) {
-	a.style.display='none'; 
   var id = a.id;
   var div = document.getElementById(id.substring(0, id.length - 5)); 
   div.className = "";
 	div.innerHTML = div.innerHTML.trim().replace(/\n/g, "<br />");
-	if (isMultiLine)
-		return stopEventPropagation(e);
-		
+	if (isMultiLine) {
+		a.onmousedown = displayInLine;
+		a.innerHTML = "&#171; &[Less];"
+  	return stopEventPropagation(e);
+  }
+	
+	a.style.display='none'; 
 	// insert TR and move there text
 	var parentTable = getAncestorByTagName(a, "table");
 	var propsTR = getAncestorByTagName(parentTable, "tr");
@@ -12842,6 +12845,19 @@ function displayInFull(e, a, isMultiLine) {
 	insertAfter(propsTR.parentNode, newTR, propsTR);
 	
   return stopEventPropagation(e);
+}
+
+function displayInLine() { // for MultiLine only
+	var a = this;
+  var id = a.id;
+  var div = document.getElementById(id.substring(0, id.length - 5)); 
+  div.className = "displayIn4lines hideImg";
+	div.innerHTML = div.innerHTML.trim().replace(/<br>|<br\/>|<br \/>/gi, "\n");
+
+	a.onmousedown = "";
+	a.innerHTML = "&[More];..."
+	div.style.paddingBottom = "";
+	return false;
 }
 
 function getActivity(e, uri) {
