@@ -1302,16 +1302,16 @@ TD.toolbar {
     vertical-align: middle;
 }
 
-#menuBar1/*, tr.rlHeader*/ {
+.dashboardLine /*#menuBar1, tr.rlHeader*/ {
   background-color: &[PrimaryColor_4];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
   background-image: -o-linear-gradient(&[PrimaryColor_1];, &[PrimaryColor_4];);
 }
 
-#menuBar1 td { 
-	#filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
- 	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
+.dashboardLine td { 
+	#filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff&[PrimaryColor_1_ie];,endColorstr=#ff&[PrimaryColor_4_ie];);
+ 	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#ff&[PrimaryColor_1_ie];,endColorstr=#ff&[PrimaryColor_4_ie];)";
 }
 
 .widget .dashboardLine { background-color: &[SecondaryColorA_5];; background-image: none; }
