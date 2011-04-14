@@ -4102,38 +4102,8 @@ var ListBoxesHandler = {
     parentDiv = parentDiv || this.curOptionsListDiv
 		var tbl = parentDiv.getElementsByTagName("table")[0];
  
-		var rows = tbl.rows;
-		var noMatches = true;
-		var hasAsterisk = false; // wildcard [*] search
-
-		if (typedText.indexOf("*") != -1) {
-			typedText = typedText.replace(/\*/g, "");
-			hasAsterisk = true;
-		}
-				
-    for (var i = 0; i < rows.length; i++) {
-      var label = getChildByClassName(rows[i], "menuItem");
-      if (!label)
-        continue;
-			var chkCell = getChildByClassName(rows[i], "menuItemChk");
-
-		  var labelName = getTextContent(label).toLowerCase();
-			// remove "prefix" like "name:" in assignedTo
-			labelName = labelName.replace(/^[^:]*:/,"").trim();
-			var labelNameSplitted = labelName.split(/\s|,|;/); // split for " " , ;
-			for (var n = 0; n < labelNameSplitted.length; n++) {
-				var token = labelNameSplitted[n].trim();
-		  	if ((hasAsterisk && token.indexOf(typedText) != -1) ||
-		  	(!hasAsterisk && token.indexOf(typedText) == 0)) {
-		  		rows[i].style.display = "";
-		  		noMatches = false;
-					break; // found in one token then to show (whole) item row
-		  	}
-		  	else 
-		  		rows[i].style.display = "none";
-		  }
-    }
-
+		var noMatches = TouchDlgUtil.filterItems(tbl.rows, "menuItem", typedText);
+	
 		var noMatchesDiv = getChildByClassName(this.optionsPanel, "no_matches");
 		if (noMatches) {
 			noMatchesDiv.innerHTML = "&[no matches for]; \"" + typedText + "\"";
@@ -4813,30 +4783,8 @@ var Filter = {
     var paramsTable = getChildByClassName($t.filtersArr[$t.currentFilterUrl], "rounded_rect_tbl");
     if (!paramsTable)
       return;
-    var rows = paramsTable.rows;
-    var noMatches = true;
-		for (var i = 0; i < rows.length; i++) {
-      var label = getChildByClassName(rows[i], "label");
-			
-			if (!label) {
-				// FTS filter contains statistic data / row
-				if (rows[i].className == "filter_stat" && i > 0) {
-					if (rows[i - 1].style.display == "none")
-						rows[i].style.display = "none";
-					else
-						rows[i].style.display = "";	
-				}
-				continue;
-			}
-			
-      var labelName = getTextContent(label).toLowerCase();
-      if (labelName.indexOf(typedText) == 0) {
-	  	rows[i].style.display = "";
-				noMatches = false;
-		  }
-		  else 
-		  	rows[i].style.display = "none";
-	  }
+
+		var noMatches = TouchDlgUtil.filterItems(paramsTable.rows, "label", typedText);
 		
 		var formPanel = getAncestorByClassName(paramsTable, "form_panel");
 		var noMatchesDiv = getChildByClassName(formPanel, "no_matches");
@@ -5192,24 +5140,11 @@ var DataEntry = {
 	// hides params with not suited beginning.		
   onParamNameTyping : function(paramNameField) {
     var typedText = FieldsWithEmptyValue.getValue(paramNameField).toLowerCase();
-    var paramsTable = getAncestorById(paramNameField, "dataEntry");
-    var spans = paramsTable.getElementsByTagName("span");
-    var noMatches = true;
-		for (var i = 0; i < spans.length; i++) {
-			var classes = ["label", "propLabel1"];
-			if (!isElemOfClass(spans[i], classes))
-        continue;
-      var labelName = getTextContent(spans[i]).toLowerCase();
-      var row = getAncestorByClassName(spans[i], "param_tr");
-      if (labelName.indexOf(typedText) == 0 && row) {
-		  	row.style.display = "";
-				noMatches = false;
-		  }
-		  else if (row)
-		  	row.style.display = "none";
-	  }
-		
-		var formPanel = getAncestorByClassName(paramsTable, "form_panel");
+
+		var formPanel = getAncestorByClassName(paramNameField, "form_panel");
+		var tbl = getChildByClassName(formPanel, "rounded_rect_tbl");
+
+		var noMatches = TouchDlgUtil.filterItems(tbl.rows, "label", typedText);
 		var noMatchesDiv = getChildByClassName(formPanel, "no_matches");
 		if (noMatches) {
 			noMatchesDiv.innerHTML = "&[no matches for]; \"" + typedText + "\"";
@@ -6133,6 +6068,39 @@ var TouchDlgUtil = {
 	  // IE does not support "fixed position. So move focusHolder manually.
 		this.focusHolder.style.top = getScrollXY()[1]; /////// - findPosY(curDlgDiv);
 		this.focusHolder.focus();		
+	},
+	
+	// used in 1)form panel of DataEntry and 2) Filter and on 3) options panel
+	filterItems : function(rows, classNameOfLabel, typedText) {
+		var noMatches = true;
+		var hasAsterisk = false; // wildcard [*] search
+
+		if (typedText.indexOf("*") != -1) {
+			typedText = typedText.replace(/\*/g, "");
+			hasAsterisk = true;
+		}
+	    for (var i = 0; i < rows.length; i++) {
+      var label = getChildByClassName(rows[i], classNameOfLabel);
+      if (!label)
+        continue;
+
+		  var labelName = getTextContent(label).toLowerCase();
+			// remove "prefix" like "name:" in assignedTo
+			labelName = labelName.replace(/^[^:]*:/,"").trim();
+			var labelNameSplitted = labelName.split(/\s|,|;/); // split for " " , ;
+			for (var n = 0; n < labelNameSplitted.length; n++) {
+				var token = labelNameSplitted[n].trim();
+		  	if ((hasAsterisk && token.indexOf(typedText) != -1) ||
+		  	(!hasAsterisk && token.indexOf(typedText) == 0)) {
+		  		rows[i].style.display = "";
+		  		noMatches = false;
+					break; // found in one token then to show (whole) item row
+		  	}
+		  	else 
+		  		rows[i].style.display = "none";
+		  }
+    }
+		return noMatches;
 	},
 	
 	getGreyTr : function() {
@@ -12699,7 +12667,6 @@ var BrowserDialog = {
 		  		$t.callbackOrForm.submit();
 		  }
 		}
-
 		$t.hide();
 	},
 	
