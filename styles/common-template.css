@@ -2014,7 +2014,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 }
 
 #div_description { 
-  max-width:520px;
+/*  max-width:520px;*/
   width: expression(document.body.clientWidth > 522? "520px" : "auto"); /* for IE */
 }
 #div_info, .rop_only #div_Edit {
