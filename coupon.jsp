@@ -133,7 +133,9 @@
 			function likeCallback(event, div, hotspot, content, url, params, http_request) {
 				incrementOnCouponPage("like");
 				var target = getEventTarget(event);
-				target.style.display="none";
+				var text = getTextContent(target);
+				target.parentNode.appendChild(document.createTextNode(text.substr(0, text.length -1)));
+				target.parentNode.removeChild(target);
         if (http_request)
           repostToVK(http_request);
         else {
