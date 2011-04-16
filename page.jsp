@@ -15,10 +15,9 @@
     </style>    
   </head>
   <body id="body">
-
+  <include name="requiredHeader.jsp"/>
   <div id="wrapper">
   <div class="abc">
-    <include name="requiredHeader.jsp"/>
     <getResource/>
     <div id="mainskin" class="blue">
     <include name="menu.jsp"/>
