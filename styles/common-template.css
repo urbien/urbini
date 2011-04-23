@@ -90,7 +90,8 @@ a img {
 .propLabel:lang(zh) {
   font-family: "Li Sung", MingLiu; font-size:1em;
 }
-	  
+
+.relative { position: relative }	  
 .pointer { cursor: pointer; }
 .dragable, .move { cursor: move; }
 
@@ -380,12 +381,17 @@ td.textCell {
 }
 
 /* Gallery */
-.galleryItem, .galleryItem_css3, .galleryItem_chrome {
+.galleryItem_container { position: relative; display: inline-block; margin: 10px; }
+.galleryItem_note { position: absolute; bottom: 0px; right: 0px; background: rgba(0, 0, 0, 0.35); color: #ffffff;  padding: 1%; width: 98%; }
+.galleryItem_note a { color: #ffffff; }
+
+.galleryItem, .galleryItem_css3 {
   border-width: 0px;
   padding: 0px;
-  margin: 10px;
   border-spacing: 0px;
+  margin: 10px;
 }
+.galleryItem_container .galleryItem, .galleryItem_container .galleryItem_css3 { margin: 0px; }
 
 .galleryItem_css3 { display: table; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); -moz-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); }
 
@@ -844,7 +850,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .menuLine A { color: &[MenuLineColorA];; background-color: &[SecondaryColorA_5];; font-weight: bold;}
 .menuLine A:active {color: &[SecondaryColorA_1];; background-color: &[SecondaryColorA_3]; }
 
-.propertySheet {border:solid &[SecondaryColorA_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
+.propertySheet {border:solid &[PrimaryColor_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
 #title H1 {margin: 0; padding-top: 7px; padding-bottom: 7px;}
 #title { padding-bottom: 7px; }
 
@@ -1499,7 +1505,6 @@ TD.closePopup {
   min-width: 20em;
 }
 /***************************************************************/
-.relative { position: relative }
 .h21 {height: 1em}
 
 .tag {
@@ -2005,7 +2010,6 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .shadow_bottom {
 	width: 100% !important;
 	width: auto;
-  height: 11px;
   float: left;
   background: url(../images/frame/png/bottom.png) no-repeat;
 }
