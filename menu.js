@@ -5424,7 +5424,7 @@ var PlainDlg = {
 		TouchDlgUtil.init(div);
 		
 		$t._show(event, hotspot);
-	  
+
 		// update page if content is empty (all is ok)
 	  if (content.length == 0)
 	    window.location.reload();
@@ -6127,8 +6127,7 @@ var TabMenu = {
 	
 	isEmptyPopupOpened : false, // in case when item does not have popup 
 	init : function() {
-		// use keydown instead of keyup to prevent horizontal scrolling
-		addEvent(window, 'keydown', this.keyHandler, false);
+		addEvent(window, 'keyup', this.keyHandler, false);
 		window.focus();
 	},
 	
@@ -6149,7 +6148,6 @@ var TabMenu = {
 	
 	keyHandler: function(event){
   	var $t = TabMenu;
-
 		var target = getEventTarget(event);
 		if (isElemOfClass(target, "input")) { // event came from input field
 			$t.disactivate(); 
@@ -6181,7 +6179,7 @@ var TabMenu = {
 		else 
 			if ($t.activeTab == null) 
 				return;
-		
+
 		if (code == 13 || code == 40) // enter, down
 			$t.openActivePopup(event);
 		else if (code == 39) { // right
@@ -6214,10 +6212,12 @@ var TabMenu = {
 	},
 	openActivePopup : function(event) {
 		var anchor = getChildByTagName(this.activeTab, "a");
-		if (this.isHomeTabActive() && anchor.onclick) 
+		if (anchor.id == "-inner") 
+	  	this.isEmptyPopupOpened = LinkProcessor.onClickDisplayInner(event, anchor) == false;
+		else if (anchor.onclick) 
   		anchor.onclick(event);
 		else
-	  	this.isEmptyPopupOpened = LinkProcessor.onClickDisplayInner(event, anchor) == false;
+			window.location.assign(anchor.href);
 	},
 	
 	setActiveTab : function(newActiveTab) {
