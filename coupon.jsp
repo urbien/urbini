@@ -13,10 +13,10 @@
      <div id="price_tag">
        <div id="price_tag_inner">
          <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
-         <where value="timeLeftToBuy &gt; 0">
+         <where value="getTimeLeft() &gt; 0">
            <div><a id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
          </where>
-         <where value="timeLeftToBuy == null">
+         <where value="getTimeLeft() == null">
            <div style="text-decoration:line-through;color:red;"><a id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
          </where>
        </div>
@@ -37,16 +37,16 @@
      </div>
      <div id="remaining_time_container">
        <div class="countdown_container">
-         <where value="timeLeftToBuy &lt; 86400  &amp;&amp; timeLeftToBuy &gt; 0"> 
+         <where value="getTimeLeft() &lt; 86400  &amp;&amp; getTimeLeft() &gt; 0"> 
            <img src="images/obval/countdown.png" />
          </where>
-         <where value="timeLeftToBuy &gt; 86400"> 
+         <where value="getTimeLeft() &gt; 86400"> 
            <img src="images/obval/countdown1.png" />
          </where>
-         <where value="timeLeftToBuy &gt; 0">
+         <where value="getTimeLeft() &gt; 0">
            <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li class="timeLeft"><property name="timeLeftToBuy" noIcon="y"/></li></ul>
          </where>
-         <where value="timeLeftToBuy &lt;= 0">
+         <where value="getTimeLeft() &lt;= 0">
            <ul id="counter"><li class="off_label"><text text="The deal is off"/>!</li></ul>
          </where>
        </div>
@@ -65,7 +65,7 @@
 	         <property name="couponsLeftToBuy" noIcon="y" />
          </div>
        </where>
-       <where value="couponsLeftToBuy &lt;= 0  &amp;&amp;  couponBuysQuantity &gt; 0  &amp;&amp;  timeLeftToBuy &gt; 0">
+       <where value="couponsLeftToBuy &lt;= 0  &amp;&amp;  couponBuysQuantity &gt; 0  &amp;&amp;  getTimeLeft() &gt; 0">
          <div class="dealOn">
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
