@@ -5011,11 +5011,16 @@ var DataEntry = {
 		if ($t.onDataError || $t.isMkResource())
 			$t.doStateOnMkResource(div, true);
 
-		var tdsAmt = div.getElementsByTagName("tr").length; // includes "liquid" table TDs
-		// hide slector / iphone_field if data entry contains a little number of items		
-		if (tdsAmt < 20) {
+		// hide selector / iphone_field if data entry contains less than 5 parameters
+		var paramsCounter = 0;
+		var spans = div.getElementsByTagName("span"); // includes "liquid" table TDs
+		for (var i = 0; i < spans.length; i++) {
+			if (spans[i].className == "label") // each parameter row contains one label
+				paramsCounter++;
+		}
+		if (paramsCounter < 5) {
 			var iphoneField = getChildByClassName(div, 'iphone_field'); // gui wrapper of item_selector
-				iphoneField.style.visibility = "hidden";
+			iphoneField.style.visibility = "hidden";
 		}
 		else {
 	    	var itemSelector = getChildById(div, 'item_selector');
