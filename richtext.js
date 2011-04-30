@@ -54,7 +54,7 @@ var RteEngine = {
 		}
 	},
 	guestCommentRTE : {
-		autoClose:true,
+		autoClose:false,
 		isFewFonts:true,
 		buttons:{
 			style:false, font:true, decoration:true,	align:false,	dent:false,
@@ -1066,12 +1066,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     if (!this.isIE)
 	    this.document.designMode = "On";
 
-		// create toolbar if it is not autoClose
-		// else create it on 1st click in - (onfocus handler)
+
+		// show toolbar immediately (otherwise create it on 1st click in - onfocus handler)
 		if(!this.rtePref.autoClose) {
 				this.toolbar = this.createToolbar();
-				this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
+				// set focus in RTE
+				this.window.focus();
+			////////////	this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
 		}
+		
 		// set handlers
 		this.setHandlers();
 	  
