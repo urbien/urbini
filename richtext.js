@@ -53,14 +53,16 @@ var RteEngine = {
 			image: true, smile:false, line: true, table:true, supsub:true, reundo:true, html:true
 		}
 	},
-	guestRTE : {
+	guestCommentRTE : {
 		autoClose:true,
 		isFewFonts:true,
 		buttons:{
-			style:false,	font:true, decoration:true,	align:true,	dent:true,
+			style:false, font:true, decoration:true,	align:false,	dent:false,
 			list:true, text_color: true, bg_color: false, link: false,
 			image: false, object: false, smile:false, line: false, table:false, supsub:false, reundo:true, html:false
-		}
+		},
+		noFontSize : true,
+		noRedo : true
 	},
 	// ----------------------------
 
@@ -1157,6 +1159,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			this.styleBtn = toolBar.appendButton(this.onStyle, false, RteEngine.IMAGES_FOLDER + "style.png", "&[style];");
 		if(this.rtePref.buttons.font) { // font + size
 			this.fontBtn = toolBar.appendButton(this.onFont, false, RteEngine.IMAGES_FOLDER + "font.png", "&[font];");
+			if (!this.rtePref.noFontSize)
 			this.sizeBtn = toolBar.appendButton(this.onSize, false, RteEngine.IMAGES_FOLDER + "size.png", "&[size];");
 		}
 		if(this.rtePref.buttons.decoration) { // bold + italic + underline
@@ -1203,7 +1206,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			toolBar.appendButton(this.onHorizontalRule, false, RteEngine.IMAGES_FOLDER + "hr.png", "&[horizontal line];");
 		if(this.rtePref.buttons.table) // table
 			this.tableBtn = toolBar.appendButton(this.onTable, false, RteEngine.IMAGES_FOLDER + "table.png", "&[table];");
-		if(this.rtePref.buttons.reundo) { // redo
+		if(this.rtePref.buttons.reundo && !this.rtePref.noRedo) { // redo
 			toolBar.appendButton(this.onRedo, false, RteEngine.IMAGES_FOLDER + "redo.png", "&[redo];");
 		}
 		if(this.rtePref.buttons.html) // html
