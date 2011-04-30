@@ -53,6 +53,15 @@ var RteEngine = {
 			image: true, smile:false, line: true, table:true, supsub:true, reundo:true, html:true
 		}
 	},
+	guestRTE : {
+		autoClose:true,
+		isFewFonts:true,
+		buttons:{
+			style:false,	font:true, decoration:true,	align:true,	dent:true,
+			list:true, text_color: true, bg_color: false, link: false,
+			image: false, object: false, smile:false, line: false, table:false, supsub:false, reundo:true, html:false
+		}
+	},
 	// ----------------------------
 
 	IMAGES_FOLDER : "images/wysiwyg/",
@@ -838,6 +847,7 @@ var ImageUploader = {
 		// loop to wait on server response
     var thisObj = ImageUploader;
     var frameId = thisObj.HDN_IFRAME_NAME;
+		
     if (!frameLoaded[frameId]) {
       var timeOutFunction = function () { ImageUploader.onHdnDocLoad(rteId, originalUrl) };
       setTimeout(timeOutFunction, 50);
