@@ -109,25 +109,6 @@
 </td>
 </tr>
 </table>
-	
-	<div id="vk_api_transport"></div>
-	<script type="text/javascript">
-	  <![CDATA[
-	  window.vkAsyncInit = function() {
-	    VK.init({
-	    });
-	  };
-	
-	  (function() {
-	    var el = document.createElement("script");
-	    el.type = "text/javascript";
-	    el.charset = "windows-1251";
-	    el.src = "http://vkontakte.ru/js/api/xd_connection.js?2";
-	    el.async = true;
-	    document.getElementById("vk_api_transport").appendChild(el);
-	  }());
-	    ]]>       
-	</script>
   <script type="text/javascript">
   <![CDATA[
 			function likeCallback(event, div, hotspot, content, url, params, http_request) {
@@ -136,20 +117,20 @@
 				var text = getTextContent(target);
 				target.parentNode.appendChild(document.createTextNode(text.substr(0, text.length -1)));
 				target.parentNode.removeChild(target);
-        if (http_request)
+/*        if (http_request)
           repostToVK(http_request);
         else {
           if (typeof console != 'undefined') console.log('no http_request');
-        }
+        } */
 			}
 			function commentCallback(event, div, hotspot, content, url, params, http_request) {
         if (typeof console != 'undefined') console.log('in commentCallback');
 				incrementOnCouponPage("comments");
-				if (http_request)
+/*				if (http_request)
 					repostToVK(http_request);
 				else {
 					if (typeof console != 'undefined') console.log('no http_request');
-				}
+				} */
 			}
 			function incrementOnCouponPage(id) {
 				var div = document.getElementById(id);
