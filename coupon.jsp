@@ -1,5 +1,5 @@
 <div>
-<table width="100%" id="obval_item">
+<table width="100%" class="obval_item">
 <tr width="100%" valign="middle" height="74">
   <td colspan="2" style="border: 1px solid #d9d9d9;">
      <h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
