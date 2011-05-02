@@ -201,7 +201,7 @@ input[type=button], input[type=submit], .button, .tags .item {
   background-color: &[PrimaryColor_1];;
   background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_1];);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_1];));
-	background-image: -moz-linear-gradient(&[PrimaryColor_4];, &[PrimaryColor_1];);
+	background-image: -o-linear-gradient(&[PrimaryColor_4];, &[PrimaryColor_1];);
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];)";
 
@@ -1712,6 +1712,9 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)";
  }
+ div .panel_block .header { cursor: auto  !important; }
+ div .panel_block #dataEntry .iphone_field { visibility: hidden; }
+ 
 /*.panel_block .header td { width: 100%; }*/ 
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
 .panel_block .header #item_selector { /*width: 100%;*/ }
