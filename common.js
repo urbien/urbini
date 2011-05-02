@@ -720,7 +720,7 @@ function getTargetElement(e) {
   }
   else {
     elem = e.srcElement;
-    if(elem && elem.parentNode && elem.parentNode.tagName.toLowerCase() == "a")
+    if(elem && elem.parentNode && elem.parentNode.tagName && elem.parentNode.tagName.toLowerCase() == "a")
       elem = elem.parentNode;
   }
   return elem;
@@ -1319,7 +1319,9 @@ var ExecJS = {
         var evalStr = scripts[i].text || scripts[i].innerHTML;
         var containsFocusCommand = (evalStr.indexOf("focus(") != -1);
         if(containsFocusCommand == false || this.isObjectTotallyVisible(parent)) {
-          window.eval(evalStr);
+          // not evaluate JS that declarates a function
+					if (evalStr.indexOf("function") == -1)
+						window.eval(evalStr);
         }
         else { // or exec it with delay 1 sec.
           // expect that div should be shown shortly
@@ -1397,7 +1399,7 @@ function findPosX(obj) {
   var curleft = 0;
   if (obj.offsetParent) {
     while (obj.offsetParent) {
-      curleft += obj.offsetLeft;
+			curleft += obj.offsetLeft;
       obj = obj.offsetParent;
     }
   }
