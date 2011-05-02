@@ -2080,22 +2080,28 @@ var FormProcessor = {
 	// Touch UI ---------------
 	MIN_INPUT_WIDTH : 30,
   initForTouchUI : function(parent) {
-		
+	  // Note: currently "filter on page" (FTS) does not contain selector	
 		// "rightPanelPropertySheet" is a filter init it as a filter.
 		// It happens with on_page filter
-		if (parent.name ==	"rightPanelPropertySheet") {
-			var panelBlock = getAncestorByClassName(parent, "panel_block");
-			Filter.initFilter(panelBlock);
-			return;
-		}
-		// "tablePropertyList" is Data Entry. Init Selector and Text entry fields.
-		else if (parent.name.indexOf("tablePropertyList") != -1) {
+//		if (parent.name ==	"rightPanelPropertySheet") {
+//			var panelBlock = getAncestorByClassName(parent, "panel_block");
+//			Filter.initFilter(panelBlock);
+//			return;
+//		}
+//		// "tablePropertyList" is Data Entry. Init Selector and Text entry fields.
+//		else 
+		if (parent.name.indexOf("tablePropertyList") != -1) {
 			var panelBlock = getAncestorByClassName(parent, "panel_block");
 			if (panelBlock) {
 				var itemSelector = getChildById(panelBlock, "item_selector");
 				FieldsWithEmptyValue.initField(itemSelector, 'select');
 				var textEntry = getChildById(panelBlock, "text_entry");
-				FieldsWithEmptyValue.initField(textEntry, '&[select];')
+				FieldsWithEmptyValue.initField(textEntry, '&[select];');
+				// "dialog on page"
+				if (isParentDialogOnPage)
+					TouchDlgUtil.init(panelBlock);
+				
+				
 			}
 		}
 
@@ -4985,7 +4991,7 @@ var DataEntry = {
 	onDataEntryLoaded : function(event, parentDiv, hotspot, html, url, params) {
 		if (!html)
 			return; // possible (server) error!
-	
+
 		var $t = DataEntry;
 
 		if ($t.onDataError) { // server returned previously submitted data dialog with errors of data entry
@@ -5010,22 +5016,6 @@ var DataEntry = {
 		// onDataError happens on mkResource
 		if ($t.onDataError || $t.isMkResource())
 			$t.doStateOnMkResource(div, true);
-
-		// hide selector / iphone_field if data entry contains less than 5 parameters
-		var paramsCounter = 0;
-		var spans = div.getElementsByTagName("span"); // includes "liquid" table TDs
-		for (var i = 0; i < spans.length; i++) {
-			if (spans[i].className == "label") // each parameter row contains one label
-				paramsCounter++;
-		}
-		if (paramsCounter < 5) {
-			var iphoneField = getChildByClassName(div, 'iphone_field'); // gui wrapper of item_selector
-			iphoneField.style.visibility = "hidden";
-		}
-		else {
-	    	var itemSelector = getChildById(div, 'item_selector');
-			FieldsWithEmptyValue.initField(itemSelector, '&[select];');
-		}
 
 		var textEntry = getChildById(div, 'text_entry');
 		FieldsWithEmptyValue.initField(textEntry, '&[select];')
@@ -5548,6 +5538,30 @@ var TouchDlgUtil = {
 		addEvent(parent, 'keydown', this.arrowsHandler, false);
 		// restores focus inside a dialog
 		addEvent(parent, 'click', this.onDlgClick, false);
+		
+		this._hideSelectorInSmallDialog(parent);
+	},
+	
+	// hide selector / iphone_field if "form" contains less than 5 parameters
+	_hideSelectorInSmallDialog : function(div) {
+		var iphoneField = getChildByClassName(div, 'iphone_field'); // gui wrapper of item_selector
+		if (!iphoneField)
+			return;
+				
+		var paramsCounter = 0;
+		var spans = div.getElementsByTagName("span"); // includes "liquid" table TDs
+		for (var i = 0; i < spans.length; i++) {
+			if (spans[i].className == "label") // each parameter row contains one label
+				paramsCounter++;
+		}
+
+		if (paramsCounter < 5)
+			iphoneField.style.visibility = "hidden";
+		else {
+			iphoneField.style.visibility = "visible";
+	    var itemSelector = getChildById(div, 'item_selector');
+			FieldsWithEmptyValue.initField(itemSelector, '&[select];');
+		}
 	},
 	
 	setCurrentDialog : function(dlgDiv) {
