@@ -243,10 +243,10 @@ var PeriodPicker = {
 * returns date as a Date object
 ***********************************************************/
 var iPhoneCalendar = {
-  
-  MONTH_NAME : ["January", "February", "March", "April", "May", "June", "July", "August",
-    "September", "October", "November", "December"],
-  DAY_NAME : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+ 
+  MONTH_NAME : ["&[January];", "&[February];", "&[March];", "&[April];", "&[May];", "&[June];", "&[July];", "&[August];",
+    "&[September];", "&[October];", "&[November];", "&[December];"],
+  DAY_NAME : ["&[Sun];", "&[Mon];", "&[Tue];", "&[Wed];", "&[Thu];", "&[Fri];", "&[Sat];"],
 
   curDate : null,
   dayOfMonth : null,
