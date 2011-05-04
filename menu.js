@@ -5024,25 +5024,25 @@ var DataEntry = {
 		TouchDlgUtil.init(div); // moved from ListBoxes
 		ExecJS.runDivCode(div);
  		
-		if ($t.oneParameterInputName) {	// select only one parameter 
+		if ($t.oneParameterInputName) { // select only one parameter 
 			appendClassName(div, "oneparamselection");
 			ListBoxesHandler.setTray(div);
 			//var tbl = getChildByClassName(div, "rounded_rect_tbl");
 			var input = getChildByAttribute(div, "name", $t.oneParameterInputName);
-			if (!input)
+			if (!input) 
 				throw new Error("DataEntry - one parameter selection: NO input!");
 			var tr = getAncestorByClassName(input, "param_tr");
 			
 			ListBoxesHandler.processClickParam(null, tr);
 			div.style.visibility = "visible";
 			return;
+			// NOTE: not save dialog for one parameter select in "cache"!
 		}
-	
+
 		// show dialog after GUI initialization
 		setDivVisible(event, div, null, $t.hotspot, 5, 5);
-		
 		$t.initDataStr = $t._getFormDataStr(div, true);
-		
+
 		var key = $t._getKey($t.currentUrl);
 		$t.dataEntryArr[key] = div;
 	},
@@ -5062,18 +5062,19 @@ var DataEntry = {
 
 	hide : function (onSubmit) {
 		var key = this._getKey(this.currentUrl);
-		
-		if (key == null)
-			return;
 
-		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
+		if (key == null)
 			return;
 
 		if (this.oneParameterInputName != null) {
 			this.oneParameterInputName = null;
 			this.currentUrl = null;
+			return;
 		}
 		
+		if (!this.dataEntryArr[key] || !this.dataEntryArr[key].parentNode)
+			return;
+
 		if (TouchDlgUtil.isDlgOnPage(this.dataEntryArr[key]))
 			return; //dialog embeded into page
 
