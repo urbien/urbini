@@ -86,6 +86,12 @@
        <li><property name="image" noIcon="y" /><!-- image --></li>
      </ul>
     </div>
+    <div class="highlights">
+      <h3 class="csp_33"><text text="Highlights"/></h3>
+      <ul>
+         <li><property name="description" noIcon="y"/></li>
+      </ul>
+    </div><!-- highlights -->
     <div class="fine_print">
       <h3 class="csp_33"><text text="Fine print"/></h3>
       <ul>
@@ -98,12 +104,6 @@
       </ul>
       </where>
     </div><!-- fine print -->
-    <div class="highlights">
-      <h3 class="csp_33"><text text="Highlights"/></h3>
-      <ul>
-         <li><property name="description" noIcon="y"/></li>
-      </ul>
-    </div><!-- highlights -->
   </div>
   </div>
 </td>
