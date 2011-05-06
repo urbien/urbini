@@ -62,7 +62,7 @@
 					<span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;
 			 </where>
        <where value="couponsLeftToBuy == tippingPoint ">
-         <text text="Be first one to buy"/>
+         <text text="Be the first to buy"/>
        </where>
        <where value="couponsLeftToBuy &gt; 0">
          <div class="remaining">
