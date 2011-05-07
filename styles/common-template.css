@@ -383,7 +383,7 @@ td.textCell {
 /* Gallery */
 .galleryItem_container { position: relative; display: inline-block; margin: 10px; }
 .galleryItem_note { position: absolute; bottom: 0px; right: 0px; background: rgba(0, 0, 0, 0.35); color: #ffffff;  padding: 1%; width: 98%; }
-#siteResourceList .galleryItem_note a { color: #ffffff; }
+.galleryItem_note a, #siteResourceList .galleryItem_note a { color: #ffffff; }
 
 .galleryItem, .galleryItem_css3 {
   border-width: 0px;
