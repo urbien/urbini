@@ -1,69 +1,55 @@
-<div>
-
-<table  border="0" cellpadding="10" class="obval_item">
+<div style="padding:10px; background-color:#cccccc">
+<table bgcolor="#FFFFFF" border="0" cellpadding="10" class="obval_item" style="border:2px dashed">
   <tr>
-    <td width="60%"><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
+    <td width="10%"></td>
+    <td width="40%"><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
     <h3><property name="coupon.title" noIcon="y"/></h3></td>
-    <td width="3%"></td>
-    <td><h2><property name="customer" noIcon="y" /></h2><text text=" this is your coupon"/></td>
-  </tr>
-  <tr>
-    <td colspan="3"></td>
-  </tr>
-  <tr>
-    <td rowspan="2"><property name="coupon.featured" /></td>
-    <td></td>
+    <td width="5%"></td>
+    <td width="40%"><div style="display:table-cell; vertical-align:top"><font style="font-size:24px"><property name="customer" noIcon="y" /></font><property name="customer.thumb" noIcon="y" /></div>    </td>
     <td></td>
   </tr>
   <tr>
     <td></td>
-
+    <td rowspan="2"><property name="coupon.image" /></td>
+    <td></td>
     <td>
-        <li>Please follow these simple steps to redeem this coupon</li>
-        <li>Print this coupon</li>
-        <li>Your unique code is &#160;<b><property name="couponSecret" /></b></li>
-        <li>Take this coupon with you to <property name="coupon.vendor.name" noIcon="y" /></li>  
-        <br /> 
+        <div style="background-color:#CCCCCC;padding: 10px 20px 20px 10px;">
+        <font size="+1" color="#FFFFFF"><text text="Your coupon code is" /> &#160;<b><property name="couponSecret" /></b></font>
+        
+        <where value="quantity > 1"><br><font size="+1" color="#FFFFFF"><text text="You have" />&#160;<property name="quantity" noIcon="y" />&#160;<text text="coupons" /></font></br></where>
+        </div>
+      <h3 class="csp_33"><text text="How to redeem"/></h3>
+        <li><text text="Print this coupon" /></li>
+        <li><text text="Take this coupon with you" /></li>    </td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+    <td>
       <h3 class="csp_33"><text text="Address"/></h3>
       <ul>
+        <li><b><property name="coupon.vendor.name" noIcon="y" /></b></li>
         <li><text text="Phone" />&#160;<property name="coupon.vendor.phone" noIcon="y"/></li>
         <li><text text="Website" />&#160;<property name="coupon.vendor.website" noIcon="y"/></li>
-        <where value="coupon.vendor.address1 != null"><li><text text="Address" />&#160;<property name="coupon.vendor.address1" noIcon="y"/></li></where>
-        <where value="coupon.vendor.postalCode != null"><li><text text="post code" />&#160;<property name="coupon.vendor.postalCode" noIcon="y"/></li></where>
-      </ul>
-    </td>
+        <where value="coupon.vendor.address1 != null"><li><text text="Address" />&#160;
+        <property name="coupon.vendor.address1" noIcon="y"/></li></where>
+        <where value="coupon.vendor.postalCode != null"><li><text text="Postcode" />&#160;
+        <property name="coupon.vendor.postalCode" noIcon="y"/></li></where>
+      </ul>    </td>
+    <td></td>
   </tr>
-  <tr>
-    <td>	        <div class="fine_print">
-      <h3><text text="Fine print"/></h3>
+  <tr valign="top">
+    <td></td>
+    <td>      <h3><text text="Fine print"/></h3>
      
-        <li><property name="coupon.conditions" noIcon="y"/></li>
+        <property name="coupon.conditions" noIcon="y"/>    
+        <text text="This coupon must be redeemed by" />&#160;<property name="coupon.redeemBy" noIcon="y"/>        </td>
+    <td></td>
+    <td><mapMaker width="300" height="300" /></td>
+    <td></td>
+  </tr>
 
-        <li>This coupon must be redeemed by <property name="coupon.redeemBy" noIcon="y"/></li>
-        <where value="couponSecret != null"><li><property name="couponSecret" noIcon="y"/></li></where>
-      
-      <br/>
-   </div><!-- fine print -->
-	</td>
-    <td></td>
-    <td><mapMaker /></td>
-  </tr>
-  <tr>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr>
-    <td valign="top">      
-     </td>
-    <td></td>
-    <td valign="top">
-   </td>
-  </tr>
-  <tr>
-    <td colspan="3">
-		</td>
-    </tr>
 </table>
-  
+
 </div>
