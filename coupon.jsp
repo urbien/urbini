@@ -64,7 +64,7 @@
           <text text="Bought"/>:&#160; 
 					<span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;
 			 </where>
-       <where value="couponsLeftToBuy == tippingPoint ">
+       <where value="dealPrice &gt; 0  &&  tippingPoint &gt; 1 &&  couponsLeftToBuy == tippingPoint ">
          <text text="Be the first to buy"/>
        </where>
        <where value="couponsLeftToBuy &gt; 0">
@@ -74,10 +74,10 @@
 	         <property name="couponsLeftToBuy" noIcon="y" />
          </div>
        </where>
-       <div class="cap">
+       <!--div class="cap">
         <text text="Cap"/>:&#160; 
         <span class="number"><property name="cap" noIcon="y" /></span>&#160;
-       </div>
+       </div-->
        <where value="couponsLeftToBuy &lt;= 0  &amp;&amp;  couponBuysQuantity &gt; 0  &amp;&amp;  isBuyable()">
          <div class="dealOn">
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
