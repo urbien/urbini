@@ -13,7 +13,7 @@
      <div id="price_tag">
        <div id="price_tag_inner">
          <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
-         <where value="getTimeLeft() &gt; 0">
+         <where value="isBuyable()">
            <where value="dealPrice &gt; 0">
              <div><a id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
            </where>
@@ -21,7 +21,7 @@
              <div><a id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="FREE!"/></a></div>
            </where>
          </where>
-         <where value="getTimeLeft() == null">
+         <where value="!isBuyable()">
            <div style="text-decoration:line-through;color:red;"><a id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
          </where>
        </div>
@@ -48,10 +48,13 @@
          <where value="getTimeLeft() &gt; 86400"> 
            <img src="images/obval/countdown1.png" />
          </where>
-         <where value="getTimeLeft() &gt; 0">
+         <where value="isBuyable()">
            <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li class="timeLeft"><property name="timeLeftToBuy" noIcon="y"/></li></ul>
          </where>
-         <where value="getTimeLeft() &lt;= 0">
+         <where value="!isBuyable() &amp;&amp; tippedAt != null">
+           <ul id="counter"><li class="off_label"><text text="The deal is over"/>!</li></ul>
+         </where>
+         <where value="!isBuyable() &amp;&amp; tippedAt == null">
            <ul id="counter"><li class="off_label"><text text="The deal is off"/>!</li></ul>
          </where>
        </div>
@@ -65,12 +68,17 @@
          <text text="Be the first to buy"/>
        </where>
        <where value="couponsLeftToBuy &gt; 0">
+         <br />
          <div class="remaining">
            <text text="Short of"/>:&#160;
 	         <property name="couponsLeftToBuy" noIcon="y" />
          </div>
        </where>
-       <where value="couponsLeftToBuy &lt;= 0  &amp;&amp;  couponBuysQuantity &gt; 0  &amp;&amp;  getTimeLeft() &gt; 0">
+       <div class="cap">
+        <text text="Cap"/>:&#160; 
+        <span class="number"><property name="cap" noIcon="y" /></span>&#160;
+       </div>
+       <where value="couponsLeftToBuy &lt;= 0  &amp;&amp;  couponBuysQuantity &gt; 0  &amp;&amp;  isBuyable()">
          <div class="dealOn">
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
