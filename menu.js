@@ -2094,14 +2094,12 @@ var FormProcessor = {
 			var panelBlock = getAncestorByClassName(parent, "panel_block");
 			if (panelBlock) {
 				var itemSelector = getChildById(panelBlock, "item_selector");
-				FieldsWithEmptyValue.initField(itemSelector, 'select');
+				FieldsWithEmptyValue.initField(itemSelector, '&[select];');
 				var textEntry = getChildById(panelBlock, "text_entry");
 				FieldsWithEmptyValue.initField(textEntry, '&[select];');
 				// "dialog on page"
 				if (isParentDialogOnPage)
 					TouchDlgUtil.init(panelBlock);
-				
-				
 			}
 		}
 
