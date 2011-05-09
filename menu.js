@@ -13150,6 +13150,19 @@ var ImageMag = {
 	}
 }
 
+// 
+function setHoursOrMinutesInInput(selector, isHour) {
+	var newValue = getTextContent(selector.options[selector.selectedIndex]);
+	if (isNaN(parseInt(newValue)))
+		return; // initial "--" value was selected
+	var input = selector.parentNode.getElementsByTagName('input')[0];
+	var parts = input.value.split(":");
+	if (isHour)
+		input.value = newValue + ":" + parts[1];
+	else
+		input.value = parts[0] + ":" + newValue;
+}
+
 function repostToVK(http_request) {
 	if (typeof console != 'undefined') console.log('in repost');
 	if (!inIFrame()) {
