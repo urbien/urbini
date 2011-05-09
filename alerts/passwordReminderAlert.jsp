@@ -4,7 +4,7 @@
   <tr>
     <td width="2%"></td>
     <td width="98%">
-      Dear <property name="to" href="y"/>
+      <text text="Dear"/> <property name="to" href="y"/>
       <br/><br/>
       To change a password please click here
       <br/><br/>
