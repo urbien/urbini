@@ -64,7 +64,7 @@
           <text text="Bought"/>:&#160; 
 					<span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;
 			 </where>
-       <where value="dealPrice &gt; 0  &&  tippingPoint &gt; 1 &&  couponsLeftToBuy == tippingPoint ">
+       <where value="dealPrice &gt; 0  &amp;&amp;  tippingPoint &gt; 1 &amp;&amp;  couponsLeftToBuy == tippingPoint">
          <text text="Be the first to buy"/>
        </where>
        <where value="couponsLeftToBuy &gt; 0">
