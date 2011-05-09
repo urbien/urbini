@@ -26,7 +26,7 @@
       <tr>
         <td align="middle" colspan="2" valign="CENTER"><br/>
           <input type="submit" value="Submit" name="logonButton"/>
-          <input type="hidden" name="passwordReminder" value="y" />
+          <input type="hidden" name="-passwordReminder" value="y" />
         </td>
       </tr>
       <tr>
