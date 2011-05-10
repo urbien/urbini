@@ -54,10 +54,10 @@
          <where value="!isBuyable() &amp;&amp; tippedAt != null">
            <ul id="counter"><li class="off_label"><text text="The deal is over"/>!</li></ul>
          </where>
-         <where value="!isBuyable() &amp;&amp; tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; hasExpired()">
+         <where value="!isBuyable() &amp;&amp; tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; new Date().getTime()">
            <ul id="counter"><li class="off_label"><text text="The deal is off"/>!</li></ul>
          </where>
-         <where value="!isBuyable() &amp;&amp; dateFeatured != null &amp;&amp; dateFeatured > new Date().getTime()">
+         <where value="!isBuyable() &amp;&amp; dateFeatured != null &amp;&amp; dateFeatured &gt; new Date().getTime()">
            <ul id="counter"><li class="off_label"><text text="Not yet featured"/>!</li></ul>
          </where>
        </div>
