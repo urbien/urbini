@@ -1,15 +1,18 @@
-<div>
+<div style="border: 2px solid #f55200; background-color: #fefefe;">
 <br/>
 <table width="100%" border="0">
+  <tr style="padding: 9px; background-color: #ef6f16;">
+    <td colspan="3" style="padding: 12px"><logo srcLarge="images/logo10.png"/></td>
+  </tr>
 <tr>
   <td width="2%"></td>
   <td>
-		Dear <property name="to" href="y"/>
+		<text text="Dear"/> <property name="to" href="y" noIcon="y"/>
 		<br/><br/>
-		The <property name="forum" type="y"/> <property name="forum" href="y"/> was modified.
+		<text text="The" /> <property name="forum" type="y"/> <property name="forum" href="y"/> <text text="was modified." />
 		<br/>
 		<where value="modification != null">
-		  Changes made by <property name="modification.modifiedBy" href="y" /> are below:
+		  <text text="Changes made by " /> <property name="modification.modifiedBy" href="y" /> <text text=" are below:" />
 		</where>
   </td>
 	<td align="right" valign="top">
@@ -26,11 +29,11 @@
     <br/>
 		</where>
 		<newComment/>
-		Customer Service
+		<text text="Customer Service"/>
 		<br/>
-		<siteOwner/>
-		<br/><br/>
-		<b>Powered by</b> <a href="http://lablz.com" target="_blank">Lablz</a>
+		<!--siteOwner/-->
+		<br/>
+		<b><text text="Powered by"/></b> <a href="http://lablz.com" target="_blank">Lablz</a>
 	</td>
 </tr>
 </table>
