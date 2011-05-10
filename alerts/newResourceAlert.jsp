@@ -1,12 +1,14 @@
-<div>
-<br/>
-<table width="100%" border="0">
+<div style="border: 2px solid #f55200; background-color: #fefefe;">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr style="padding: 9px; background-color: #ef6f16;">
+    <td colspan="3" style="padding: 12px"><logo srcLarge="images/logo10.png"/></td>
+  </tr>
 <tr>
 	<td width="2%"></td>
 	<td width="98%">
-		Dear <property name="to" href="y"/>
+		<text text="Dear"/> <property name="to" href="y" noIcon="y"/>
 		<br/><br/>
-		The <property name="forum" type="y"/> <property name="forum" href="y"/> has been created.
+		The <property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/> <text text="has been created"/>.
   </td>
 	<td align="right" valign="top">
 		<a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a>
@@ -18,11 +20,13 @@
 		<propertySheet name="forum"/>
 		<newComment/>
 		
-		Customer Service
+		<text text="Customer Service"/>
 		<br/>
-		<siteOwner/>
+		<!--siteOwner/-->
 		<br/>
-		<b>Powered by</b> <a href="http://lablz.com" target="_blank">Lablz</a>
+		<b><text text="Powered by"/></b> <a href="http://lablz.com" target="_blank">Lablz</a>
+    <br/>
+    <br/>
   </td>
 </tr>
 </table>  
