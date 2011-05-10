@@ -382,7 +382,10 @@ td.textCell {
 
 /* Gallery */
 .galleryItem_container { position: relative; display: inline-block; margin: 10px; }
-.galleryItem_note { position: absolute; bottom: 0px; right: 0px; background: rgba(0, 0, 0, 0.35); color: #ffffff;  padding: 1%; width: 98%; }
+.galleryItem_note { position: absolute; bottom: 0px; right: 0px; font-size: 13px; background: rgba(0, 0, 0, 0.4); color: #ffffff; text-shadow: 1px 1px 1px #000; padding: 1% 2%; width: 96%; pointer-events: none; }
+/* Chrome renders bad shadow here */
+@media screen and (-webkit-min-device-pixel-ratio:0) { .galleryItem_note{ text-shadow: none;  } }
+
 .galleryItem_note a, #siteResourceList .galleryItem_note a { color: #ffffff; }
 
 .galleryItem, .galleryItem_css3 {
