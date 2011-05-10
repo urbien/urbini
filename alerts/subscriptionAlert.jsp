@@ -1,12 +1,15 @@
-<div>
+<div style="border: 2px solid #f55200; background-color: #fefefe;">
 <br/>
 <table width="100%" border="0">
+  <tr style="padding: 9px; background-color: #ef6f16;">
+    <td colspan="3" style="padding: 12px"><logo srcLarge="images/logo10.png"/></td>
+  </tr>
 <tr>
 	<td width="2%"></td>
 	<td>
-		Dear <property name="to" href="y"/>
+		<text text="Dear"/> <property name="to" href="y" noIcon="y"/>
 		<br/><br/>
-    You are now subscribed to receive alerts for the <property name="forum" type="y"/> <property name="forum" href="y"/>
+    	<text text="You are now subscribed to receive alerts for the " /> <property name="forum" type="y"/> <property name="forum" href="y"/>
   </td>
 	<td align="right" valign="top">
 		<a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a>
@@ -20,16 +23,14 @@
 		<newComment/>
 		<br/>
 
-		You can modify your subscription alert level or unsubscribe at any time.
+		<text text="You can modify your subscription alert level or unsubscribe at any time." />
 		<br/>
 		<br/>
-		Customer Service
+		<text text="Customer Service"/>
 		<br/>
-		<siteOwner/>
+		<!--siteOwner/-->
 		<br/>
-		<br/>
-
-		<b>Powered by</b> <a href="http://lablz.com" target="_blank">Lablz</a>
+		<b><text text="Powered by"/></b> <a href="http://lablz.com" target="_blank">Lablz</a>
 	</td>
 </tr>
 </table>
