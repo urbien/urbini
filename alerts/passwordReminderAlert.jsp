@@ -9,7 +9,7 @@
 <br/>
       <text text="Dear"/> <property name="to" href="y" noIcon="y"/>
       <br/><br/>
-      <text text="To change a password please click or visit the link below"/>
+      <text text="To change your password please click or visit the link below"/>
       <br/>
 <br/>
       Link here
