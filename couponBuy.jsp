@@ -16,7 +16,7 @@
         <div style="background-color:#CCCCCC;padding: 10px 10px 10px 10px;">
         <font size="+1" color="#FFFFFF"><text text="Your coupon code is" /> &#160;<b><property name="couponID" /> &#45; <property name="couponSecret" /></b></font>
         
-        <where value="quantity > 1"><br><font size="+1" color="#FFFFFF"><text text="You have" />&#160;<property name="quantity" noIcon="y" />&#160;<text text="coupons" /></font></br></where>
+        <where value="quantity &gt; 1"><br><font size="+1" color="#FFFFFF"><text text="You have" />&#160;<property name="quantity" noIcon="y" />&#160;<text text="coupons" /></font></br></where>
         </div>
         <br />
       <h3 class="csp_33"><text text="How to redeem"/></h3>
