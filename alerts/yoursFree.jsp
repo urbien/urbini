@@ -1,4 +1,4 @@
-<div>
+<div style="border: 2px solid #f55200; background-color: #fefefe;">
 <br/>
 <table width="100%" border="0">
 <tr style="padding: 9px; background-color: #ef6f16;">
@@ -31,6 +31,7 @@
   <td colspan="2">
     <br/><br/>
     <text text="Customer Service" />
+    <br/>
   </td>
 </tr>
 </table>  
