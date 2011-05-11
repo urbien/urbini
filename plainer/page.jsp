@@ -1,8 +1,8 @@
 <html>
   <head>
-    <include name="commonHead.jsp"/>
+    <getResource />
   </head>
   <body>
-  <div id="corePageContent"> <file/> </div>
+  <div> <file/> </div>
   </body>
 </html>
