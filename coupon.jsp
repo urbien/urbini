@@ -51,17 +51,20 @@
          <where value="isBuyable()">
            <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li class="timeLeft"><property name="timeLeftToBuy" noIcon="y"/></li></ul>
          </where>
-         <where value="!isBuyable() &amp;&amp; tippedAt != null">
-           <ul id="counter"><li class="off_label"><text text="The deal is over"/>!</li></ul>
-         </where>
-         <where value="!isBuyable() &amp;&amp; tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; new Date().getTime()">
-           <ul id="counter"><li class="off_label"><text text="The deal is off"/>!</li></ul>
-         </where>
-         <where value="!isBuyable() &amp;&amp; dateFeatured != null &amp;&amp; dateFeatured &gt; new Date().getTime()">
-           <ul id="counter"><li class="off_label"><text text="Not yet featured"/>!</li></ul>
+         <where value="!isBuyable()">
+	         <where value="tippedAt != null">
+	           <ul id="counter"><li class="off_label"><text text="The deal is over"/>!</li></ul>
+	         </where>
+	         <where value="tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; new Date().getTime()">
+	           <ul id="counter"><li class="off_label"><text text="The deal is off"/>!</li></ul>
+	         </where>
+	         <where value="dateFeatured != null &amp;&amp; dateFeatured &gt; new Date().getTime()">
+	           <ul id="counter"><li class="off_label"><text text="Not yet featured"/>!</li></ul>
+	         </where>
          </where>
        </div>
      </div>
+     <where value="isBuyable()">
      <div id="number_sold_container">
        <where value="couponBuysQuantity &gt; 0">
           <text text="Bought"/>:&#160; 
@@ -89,7 +92,11 @@
            <text text="Join us" />
          </div>
        </where>
+       <where value="dealPrice &lt;= 0  &amp;&amp;  couponBuysQuantity == null">
+         <text text="Be the first to try"/>
+       </where>
      </div>
+     </where>
 	</div>
   <div class="right">
     <div id="everyscape" class="photos">
