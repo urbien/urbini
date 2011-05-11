@@ -33,7 +33,7 @@
       <tr>
         <td></td>
         <td>
-           <a href="register/password-reminder.html"><span class="red"><text text="Forgot password?" /></span></a>&#160;<registration href="y"/>
+           <registration href="y"/>&#160;<a href="register/password-reminder.html"><span class="red"><text text="Forgot password?" /></span></a>
         </td>
       </tr>
       <tr>
