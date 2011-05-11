@@ -15,13 +15,10 @@
     <br/><br/>
     <property name="forum" href="y"/>
   </td>
-  <td align="right" valign="top">
-    <br /><br />
-    <a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a>
-  </td>
 </tr>
 <tr>
-  <td colspan="3">    
+  <td></td>    
+  <td>    
     <br/><br/>
     <property name="resourceMediumImage" noIcon="y" />
   </td>
@@ -31,7 +28,7 @@
   <td colspan="2">
     <br/><br/>
     <text text="Customer Service" />
-    <br/>
+    <br/><br/>
   </td>
 </tr>
 </table>  
