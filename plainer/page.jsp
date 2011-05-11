@@ -1,5 +1,7 @@
 <html>
-  <head></head>
+  <head>
+    <include name="commonHead.jsp"/>
+  </head>
   <body>
   <div id="corePageContent"> <file/> </div>
   </body>
