@@ -15,9 +15,6 @@
 <tr>
   <td></td>
   <td colspan="2">
-    <propertySheet name="forum"/>
-    <newComment/>
-    
     Customer Service
     <br/>
     <siteOwner/>
