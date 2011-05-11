@@ -6,7 +6,7 @@
   <td width="98%">
     Dear <property name="to" href="y"/>
     <br/><br/>
-    <property name="forum" type="y"/> <property name="forum" href="y"/> has just aired!
+    <property name="forum" type="y"/> <property name="forum" href="y"/> <text text="has just aired!" />
   </td>
   <td align="right" valign="top">
     <a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a>
