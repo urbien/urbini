@@ -1,12 +1,14 @@
-<div style="border: 2px solid #f55200; background-color: #fefefe;">
+<div>
 <br/>
-<table width="100%" border="0">
+<div style="border: 2px solid #f55200; background-color: #fefefe;">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr style="padding: 9px; background-color: #ef6f16;">
-    <td colspan="3" style="padding: 12px"><logo srcLarge="images/logo10.png"/></td>
+    <td colspan="3" style="padding: 12px"><logo srcHuge="images/logo10.png" srcLarge="icons/logo-large.png"/></td>
   </tr>
 <tr>
   <td width="2%"></td>
   <td>
+    <br/>
 		<text text="Dear"/> <property name="to" href="y" noIcon="y"/>
 		<br/><br/>
 		<text text="The" /> <property name="forum" type="y"/> <property name="forum" href="y"/> <text text="was modified." />
@@ -22,11 +24,14 @@
 <tr>
   <td></td>
   <td colspan="2">
-		<propertySheet name="modification"/>
+		<!--propertySheet name="modification"/-->
+    <br/>
+		<property name="modification.newValues" noIcon="y"/>
+    <br/>
     <where value="modification == null">
-    <br/>
-		  <property name="description" noIcon="y"/>
-    <br/>
+      <br/>
+  		  <property name="description" noIcon="y"/>
+      <br/>
 		</where>
 		<newComment/>
 		<text text="Customer Service"/>
@@ -37,4 +42,6 @@
 	</td>
 </tr>
 </table>
+    <br/>
+</div>
 </div>
