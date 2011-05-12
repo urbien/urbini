@@ -33,11 +33,12 @@
       <tr>
         <td></td>
         <td>
-           <registration href="y"/>&#160;<a href="register/password-reminder.html"><span class="red"><text text="Forgot password?" /></span></a>
+           <a href="register/password-reminder.html"><span style="font-size: 11px;"><text text="Forgot password?" /></span></a>
         </td>
       </tr>
       <tr>
-        <td align="middle" colspan="2" valign="CENTER"><br/>
+      <td align="right"><registration href="y"/></td>
+        <td valign="CENTER"><br/>
           <input type="submit" value="Sign In" name="logonButton"/><registerNewUser/>
 				  <br/><br/>
 				  <!--authenticateByFacebook/ -->
