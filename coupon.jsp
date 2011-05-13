@@ -141,30 +141,33 @@
 				var text = getTextContent(target);
 				target.parentNode.appendChild(document.createTextNode(text.substr(0, text.length -1)));
 				target.parentNode.removeChild(target);
-        if (http_request)
-          printRepostLink(http_request);
+
+/*        if (content) {
+          printRepostLink(content);
+        }
         else {
-          toConsole('no http_request');
+          toConsole('no content');
         } 
+*/
 /*        if (http_request)
           repostToVK(http_request);
         else {
-          if (typeof console != 'undefined') console.log('no http_request');
+          toConsole('no http_request');
         } */
 			}
 			function commentCallback(event, div, hotspot, content, url, params, http_request) {
-        if (typeof console != 'undefined') console.log('in commentCallback');
+        toConsole('in commentCallback');
 				incrementOnCouponPage("comments");
-        if (http_request)
-          printRepostLink(http_request);
+        if (content)
+          printRepostLink(content);
         else {
-          toConsole('no http_request');
+          toConsole('no content');
         } 
 
 /*				if (http_request)
 					repostToVK(http_request);
 				else {
-					if (typeof console != 'undefined') console.log('no http_request');
+					toConsole('no http_request');
 				} */
 			}
 			function incrementOnCouponPage(id) {

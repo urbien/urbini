@@ -13165,12 +13165,12 @@ function setHoursOrMinutesInInput(selector, isHour) {
 }
 
 function repostToVK(http_request) {
-	toConsole('in repost');
+	if (typeof console != 'undefined') console.log('in repost');
 	if (!inIFrame()) {
-		toConsole('not in iFrame, aborting repost to vkontakte');
+		if (typeof console != 'undefined') console.log('not in iFrame, aborting repost to vkontakte');
 		return;
 	}
-	toConsole(http_request + http_request.getResponseHeader('X-VKontakte-wallpost-hash'));
+	if (typeof console != 'undefined') console.log(http_request + http_request.getResponseHeader('X-VKontakte-wallpost-hash'));
 	var h = http_request.getResponseHeader('X-VKontakte-wallpost-hash');
     if (h) {
     	VK.callMethod('saveWallPost', h);
@@ -13178,26 +13178,18 @@ function repostToVK(http_request) {
 }
 
 function toConsole(text) {
-  if (typeof console != 'undefined')
+  if (console != 'undefined')
     console.log(text);
 }
 
-function printRepostLink(http_request) {
-  toConsole('in print repost');
-  toConsole(http_request + http_request.getResponseHeader('X-Repost-Link'));
-  var h = http_request.getResponseHeader('X-Repost-Link');
-  if (!h) {
-    toConsole('no X-Repost-Link header');
-    return;
-  }
-  
+function printRepostLink(html) {
   var errDiv1 = document.getElementById('errorMessage');
   if (!errDiv1) {
     toConsole('no errorMessage div');
     return;
   }
 
-  errDiv1.innerHTML = h;
+  errDiv1.innerHTML = html;
   setDivVisible(null, errDiv1);
 }
 
