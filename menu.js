@@ -13176,6 +13176,30 @@ function repostToVK(http_request) {
     }
 }
 
+function toConsole(text) {
+  if (console != 'undefined')
+    console.log(text);
+}
+
+function printRepostLink(http_request) {
+  toConsole('in print repost');
+  toConsole(http_request + http_request.getResponseHeader('X-Repost-Link'));
+  var h = http_request.getResponseHeader('X-Repost-Link');
+  if (!h) {
+    toConsole('no X-Repost-Link header');
+    return;
+  }
+  
+  var errDiv1 = document.getElementById('errorMessage');
+  if (!errDiv1) {
+    toConsole('no errorMessage div');
+    return;
+  }
+
+  errDiv1.innerHTML = h;
+  setDivVisible(null, errDiv1);
+}
+
 function inIFrame() {
 	if (window != window.top) {
 		return true;

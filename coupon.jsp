@@ -141,6 +141,11 @@
 				var text = getTextContent(target);
 				target.parentNode.appendChild(document.createTextNode(text.substr(0, text.length -1)));
 				target.parentNode.removeChild(target);
+        if (http_request)
+          printRepostLink(http_request);
+        else {
+          toConsole('no http_request');
+        } 
 /*        if (http_request)
           repostToVK(http_request);
         else {
@@ -150,6 +155,12 @@
 			function commentCallback(event, div, hotspot, content, url, params, http_request) {
         if (typeof console != 'undefined') console.log('in commentCallback');
 				incrementOnCouponPage("comments");
+        if (http_request)
+          printRepostLink(http_request);
+        else {
+          toConsole('no http_request');
+        } 
+
 /*				if (http_request)
 					repostToVK(http_request);
 				else {
