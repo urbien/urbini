@@ -14,14 +14,20 @@
     <td></td>
     <td>
         <div style="background-color:#CCCCCC;padding: 10px 10px 10px 10px;">
-        <font size="+1" color="#FFFFFF"><text text="Your coupon code is" /> &#160;<b><property name="couponID" /> &#45; <property name="couponSecret" /></b></font>
+        
+        <where value="cancelled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been cancelled" /></b></font></where>
+        <where value="!cancelled"><font size="+1" color="#FFFFFF"><text text="Your coupon code is" /> &#160;<b><property name="couponID" /> &#45; <property name="couponSecret" /></b></font></where>
+        
         
         <where value="quantity &gt; 1"><br><font size="+1" color="#FFFFFF"><text text="You have" />&#160;<property name="quantity" noIcon="y" />&#160;<text text="coupons" /></font></br></where>
         </div>
         <br />
-      <h3 class="csp_33"><text text="How to redeem"/></h3>
-        <li><text text="Print this coupon" /></li>
-        <li><text text="Take this coupon with you" /></li>    </td>
+        <where value="!cancelled">
+      			<h3 class="csp_33"><text text="How to redeem"/></h3>
+        		<li><text text="Print this coupon" /></li>
+		        <li><text text="Take this coupon with you" /></li>    
+        </where>
+        </td>
     <td></td>
   </tr>
   <tr>
@@ -32,7 +38,7 @@
       <ul>
         <li><b><property name="coupon.vendor.name" noIcon="y" /></b></li>
         <li><text text="Phone" />&#160;<property name="coupon.vendor.phone" noIcon="y"/></li>
-        <li><text text="Website" />&#160;<property name="coupon.vendor.website" noIcon="y"/></li>
+        <li><text text="Website" />&#160;<property name="coupon.(http://www.hudsonfog.com/voc/model/company/ExternalOrganization)vendor.website" href="y"/></li>
         <where value="coupon.vendor.address1 != null"><li><text text="Address" />&#160;
         <property name="coupon.vendor.address1" noIcon="y"/></li></where>
         <where value="coupon.vendor.postalCode != null"><li><text text="Postcode" />&#160;
