@@ -5217,7 +5217,7 @@ var DataEntry = {
 	// helps to detect entered changes
 	_getFormDataStr : function(parentDiv, onInit) {
 		var form = getChildByTagName(parentDiv, "form");
-		if (!onInit && RteEngine.wasTextChanged(form))
+		if (!Browser.mobile && !onInit && RteEngine.wasTextChanged(form))
 			return "_$RTE_changed_"; // different from init
 		return FormProcessor.getFormFilters(form, true, null, true);
 	},
@@ -5254,7 +5254,8 @@ var DataEntry = {
 		}
 		if (!toSave) {
 			this.inpValues = null;
-			RteEngine.resetContent(div);	
+			if (!Browser.mobile)
+				RteEngine.resetContent(div);	
 		}
 	},
 	
@@ -13023,7 +13024,7 @@ var LoadingIndicator = {
 			this.init();
 		var x = -1, y;
 
-		if (overElem && isVisible(overElem) && !Browser.mobile) {
+		if (!Browser.mobile && overElem && isVisible(overElem)) {
 			setDivVisible(null, this.loadingDiv, null, overElem);
 		}
 		else {
@@ -13164,12 +13165,12 @@ function setHoursOrMinutesInInput(selector, isHour) {
 }
 
 function repostToVK(http_request) {
-	if (typeof console != 'undefined') console.log('in repost');
+	toConsole('in repost');
 	if (!inIFrame()) {
-		if (typeof console != 'undefined') console.log('not in iFrame, aborting repost to vkontakte');
+		toConsole('not in iFrame, aborting repost to vkontakte');
 		return;
 	}
-	if (typeof console != 'undefined') console.log(http_request + http_request.getResponseHeader('X-VKontakte-wallpost-hash'));
+	toConsole(http_request + http_request.getResponseHeader('X-VKontakte-wallpost-hash'));
 	var h = http_request.getResponseHeader('X-VKontakte-wallpost-hash');
     if (h) {
     	VK.callMethod('saveWallPost', h);
@@ -13177,7 +13178,7 @@ function repostToVK(http_request) {
 }
 
 function toConsole(text) {
-  if (console != 'undefined')
+  if (typeof console != 'undefined')
     console.log(text);
 }
 
