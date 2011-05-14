@@ -2092,6 +2092,11 @@ td.pBGr { background-color: #eeeeee;
   color: &[Alternative_A];;
   /*height: 2em;*/
 }
+
+@media print {
+  .footer, #social, .fts, #menuBar1, .noprint { display:none; visibility: hidden } 
+}
+
 .footer a {color: &[PrimaryColor_5];; font-size: 12px;}
 
 .footertitle {
