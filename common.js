@@ -424,7 +424,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
     http_request.setRequestHeader("X-Ajax",       "y");
     if (Browser.android)
       http_request.setRequestHeader("X-Accept-Boost", "menu-button");
-    http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http_request.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=UTF-8");
     // cookie is inherited by widget and now needs to be set on request to not to be forced to login
     if (xcookie) {
       opera.postError('postRequest' + xcookie);
