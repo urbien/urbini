@@ -141,14 +141,14 @@
 				var text = getTextContent(target);
 				target.parentNode.appendChild(document.createTextNode(text.substr(0, text.length -1)));
 				target.parentNode.removeChild(target);
-
-/*        if (content) {
+				
+        if (content) {
           printRepostLink(content);
         }
         else {
           toConsole('no content');
         } 
-*/
+
 /*        if (http_request)
           repostToVK(http_request);
         else {
