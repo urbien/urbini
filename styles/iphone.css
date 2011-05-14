@@ -239,3 +239,5 @@ tr.dark  {background-color:#eeeeee; /*height: 35px;*/ }
 
 
 #bottom_toolbar { position: absolute; z-index: 10; padding-right: 3 0 3 0; text-align: center;  /*bottom: 0px;*/ width: 100%; background: url(../images/skin/iphone/bottom_toolbar_bg.png) repeat; /*opacity: 0.2;*/ }
+
+.panel_block, .panel_block > table, .panel_block .frame { height: 100%; }
