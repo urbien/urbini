@@ -386,7 +386,7 @@ td.textCell {
 /* Chrome renders bad shadow here */
 @media screen and (-webkit-min-device-pixel-ratio:0) { .galleryItem_note{ text-shadow: none;  } }
 
-.galleryItem_note a, #siteResourceList .galleryItem_note a { color: #ffffff; }
+.galleryItem_note a, #siteResourceList .galleryItem_note a, #resourceList .galleryItem_note a { color: #ffffff !important; }
 
 .galleryItem, .galleryItem_css3 {
   border-width: 0px;
