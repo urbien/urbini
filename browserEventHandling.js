@@ -15,22 +15,11 @@
       }
     }
 
-    //***** upon iframe loading inform the parent
-    function onLoadPopup() {
-      if (parent && parent.frameLoaded) {
-        parent.frameLoaded[window.name] = true;
-      }
-    }
-
     /*************************************
     * Initialization
     **************************************/
     // 1. initialization on DOM loaded.
     function onDomLoaded(event) {
-//      if (window.parent != window) {
-//        onLoadPopup();
-//        return;
-//      }
       // 1.1 mobile
       if (typeof Mobile != 'undefined') {
         Browser.mobile = true;
@@ -66,7 +55,7 @@
       // 2.1. mobile
       if (typeof Mobile != 'undefined') {
         Browser.mobile = true;
-        
+    
         BottomToolbar.init();
         Boost.init(event);
         Mobile.init(event);
