@@ -32,6 +32,9 @@ However this JSP is used for pages containig errors message too (?)
 	  </div>
 	</div>
 	
+	<!-- for dialogs painting  -->
+		<file/>
+	
   <include name="requiredFooter.jsp"/>
   </body>
 </html>
