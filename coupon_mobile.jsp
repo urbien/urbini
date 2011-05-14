@@ -82,26 +82,30 @@
          </where>
        </div>
      </div>
-		 
+		
+		<br/>
+		<div class="highlights">
+      <h3 class="csp_33"><text text="Highlights"/></h3>
+      <ul>
+         <li><property name="description" noIcon="y"/></li>
+      </ul>
+    </div><!-- highlights --> 
+		<br />
 		<div class="fine_print">
       <h3 class="csp_33"><text text="Fine print"/></h3>
       <ul>
         <li><property name="conditions" noIcon="y"/></li>
       </ul>
+			
       <br/>
+			
       <where value="redemptionLocationCount > 0">
       <ul>
         <li><h3><property name="redemptionLocation" br="y"/></h3></li>
       </ul>
       </where>
     </div><!-- fine print -->
-    <div class="highlights">
-      <h3 class="csp_33"><text text="Highlights"/></h3>
-      <ul>
-         <li><property name="description" noIcon="y"/></li>
-      </ul>
-    </div><!-- highlights -->
-	
+		
 </td>
 
 </tr>
