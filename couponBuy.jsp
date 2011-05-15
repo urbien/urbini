@@ -14,7 +14,7 @@
     <td></td>
     <td>
         <div style="background-color:#CCCCCC;padding: 10px 10px 10px 10px;">
-	        <where value="cancelled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been cancelled" /></b></font></where>
+	        <where value="cancelled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been canceled" /></b></font></where>
 	        <where value="!cancelled">
 						<where value="paymentStatus == 'Success'">
 							<font size="+1" color="#FFFFFF"><text text="Coupon #" />:&#160;<b><property name="couponID" />&#45;<property name="couponSecret" /></b></font>
@@ -45,7 +45,7 @@
         <li><text text="Website" />&#160;<property name="coupon.(http://www.hudsonfog.com/voc/model/company/ExternalOrganization)vendor.website" href="y"/></li>
         <where value="coupon.vendor.address1 != null"><li><text text="Address" />&#160;
         <property name="coupon.vendor.address1" noIcon="y"/></li></where>
-        <where value="coupon.vendor.postalCode != null"><li><text text="Postcode" />&#160;
+        <where value="coupon.vendor.postalCode != null"><li><text text="Postal code" />&#160;
         <property name="coupon.vendor.postalCode" noIcon="y"/></li></where>
       </ul>    </td>
     <td></td>
