@@ -12,8 +12,9 @@
     <div id="allowSearchHighlighting2">
       <readOtherSiteInfo />
   		<getResource/>
+  		
       <div id="fts" hide="y">      
-    		<table width="100%" border="0" cellspacing="0" cellpadding="0">
+    		<table width="100%" border="0" cellspacing="0" cellpadding="0" itype="!http://www.hudsonfog.com/voc/model/social/IntentMessage">
     		  <tr noInner="y" class="fts" itype="!http://www.hudsonfog.com/voc/classifieds/siteTemplates/Slide">
     				<td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td>
     		  </tr>
