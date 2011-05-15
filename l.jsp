@@ -12,7 +12,7 @@
 </div>
 
   <div id="fts" hide="y">
-    <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"  itype="!http://www.hudsonfog.com/voc/model/social/Intent">
   	<tr noInner="y" class="fts" valign="bottom">
     	<td><fullTextSearchChoice/></td><td><filter/></td><td align="right"><pagingResources /></td>
   	</tr>
