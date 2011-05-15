@@ -9,7 +9,7 @@
   <td width="98%">
     <text text="Dear" /> <property name="to" href="y"/>
     <br/><br/>
-    <text text="This coupon has just reached the tipping point! You can now redeem it any time!" />..
+    <text text="This coupon has just reached the tipping point! You can now redeem it any time!" />
     <br/><br/> 
     <property name="forum" href="y"/>
   </td>

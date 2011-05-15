@@ -8,7 +8,7 @@
   <td width="98%">
     <text text="Dear"/> <property name="to" href="y" noIcon="y"/>
     <br/><br/>
-    <text text="There was an error with your payment for " /> <property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/> 
+    <text text="There was an error with your payment for" /> <property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/> 
   </td>
   <td align="right" valign="top">
     <a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a>
