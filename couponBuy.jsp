@@ -15,13 +15,18 @@
     <td>
         <div style="background-color:#CCCCCC;padding: 10px 10px 10px 10px;">
 	        <where value="cancelled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been cancelled" /></b></font></where>
-	        <where value="!cancelled"><font size="+1" color="#FFFFFF"><text text="Coupon #" />:&#160;<b><property name="couponID" />&#45;<property name="couponSecret" /></b></font></where>
-	        
-	        <br/><font size="+1" color="#FFFFFF"><text text="Quantity" />:&#160;<property name="quantity" noIcon="y" /></font>
-	         &#160;<a href="#" class="button noprint" onclick="window.print();return false;"><text text="Print" /></a>
-        </div>
+	        <where value="!cancelled">
+						<where value="paymentStatus == 'Success'">
+							<font size="+1" color="#FFFFFF"><text text="Coupon #" />:&#160;<b><property name="couponID" />&#45;<property name="couponSecret" /></b></font>
+						  <br/><font size="+1" color="#FFFFFF"><text text="Quantity" />:&#160;<property name="quantity" noIcon="y" /></font> &#160;<a href="#" class="button noprint" onclick="window.print();return false;"><text text="Print" /></a>
+    
+						</where>
+						<where value="paymentStatus == 'Pending'"><font size="+1" color="#ef6f16"><b><text text="This coupon is still waiting for payment" /></b></font></where>
+					</where>
+        
+	      </div>
         <br />
-        <where value="!cancelled">
+        <where value="!cancelled &amp;&amp; paymentStatus == 'Success'">
       			<h3 class="csp_33"><text text="How to redeem"/></h3>
         		<li><text text="Print this coupon" /></li>
 		        <li><text text="Take this coupon with you" /></li>    
