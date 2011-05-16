@@ -58,6 +58,9 @@
 	         <where value="tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; new Date().getTime()">
 	           <ul id="counter"><li class="off_label"><text text="The deal is off"/>!</li></ul>
 	         </where>
+           <where value="couponBuysQuantity &gt;= cap">
+             <ul id="counter"><li class="off_label"><text text="Sold out"/>!</li></ul>
+           </where>
 	         <where value="dateFeatured != null &amp;&amp; dateFeatured &gt; new Date().getTime()">
 	           <ul id="counter"><li class="off_label"><text text="Not yet featured"/>!</li></ul>
 	         </where>
@@ -80,10 +83,6 @@
 	         <property name="couponsLeftToBuy" noIcon="y" />
          </div>
        </where>
-       <!--div class="cap">
-        <text text="Cap"/>:&#160; 
-        <span class="number"><property name="cap" noIcon="y" /></span>&#160;
-       </div-->
        <where value="couponsLeftToBuy &lt;= 0  &amp;&amp;  couponBuysQuantity &gt; 0  &amp;&amp;  isBuyable()">
          <div class="dealOn">
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
