@@ -8369,6 +8369,16 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 		div.style.display = "block";
 		return;
   }
+	
+	// limit div / dialog width gotten from "max_width" parameter
+	if (hotspot) {
+		var maxWidth = hotspot.getAttribute("max_width");
+		if (maxWidth) {
+			div.style.maxWidth = maxWidth;
+			if (Browser.ie)
+				div.style.width = maxWidth;
+		}
+	}
 
   var isDivStatic = (div.style.position.toLowerCase() == 'static');
 	
