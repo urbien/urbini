@@ -11,10 +11,10 @@
     <br/>
 		<text text="Dear"/> <property name="to" href="y" noIcon="y"/>
 		<br/><br/>
-		<text text="The" /> <property name="forum" type="y"/> <property name="forum" href="y"/> <text text="was modified." />
+		<property name="forum" type="y"/> <property name="forum" href="y"/> <text text="was modified." />
 		<br/>
 		<where value="modification != null">
-		  <text text="Changes made by " /> <property name="modification.modifiedBy" href="y" /> <text text=" are below:" />
+		  <text text="Changes made by" /> <property name="modification.modifiedBy" href="y" /> <text text="are below:" />
 		</where>
   </td>
 	<td align="right" valign="top">
