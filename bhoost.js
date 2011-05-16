@@ -1920,7 +1920,7 @@ var MobilePageAnimation = {
   newDiv : null,
   rightToLeft : true,
 
-  wndWidth : null,
+  // wndWidth : null,
 
   totalOffset : 0,
   step : 1,
@@ -1931,16 +1931,16 @@ var MobilePageAnimation = {
 
   init : function() {
     this.isInitialized = true;
-    this.wndWidth = Mobile.getScreenWidth();
+    ////// this.wndWidth = 100;//Mobile.getScreenWidth();
 
     var div = document.getElementById('mainDiv');
     if (div) {
-      div.style.width = this.wndWidth;
+    ////////////  div.style.width = this.wndWidth;
       div.position = "absolute";
       this.curDiv = div;
       this.pageTopOffset = getTop(div);
     }
-    setTimeout(this.checkOrientation, 200);
+   //////// setTimeout(this.checkOrientation, 200);
   },
   
   showPage : function(curDiv, newDiv, isBack) {
@@ -1977,7 +1977,8 @@ var MobilePageAnimation = {
     var x;
 
     var arg = (thisObj.step - thisObj.STEPS_NUM / 2) / 1.5;
-    var delta = thisObj.wndWidth / 2.6 * Math.exp(-arg*arg);
+    var wndWidth = Mobile.getScreenWidth();
+		var delta = wndWidth / 2.6 * Math.exp(-arg*arg);
     thisObj.totalOffset += delta;
 
     // 1. calculation
@@ -1986,28 +1987,28 @@ var MobilePageAnimation = {
       if(thisObj.step == thisObj.STEPS_NUM)
         x = 0;
       else
-        x = thisObj.wndWidth - thisObj.totalOffset;
+        x = wndWidth - thisObj.totalOffset;
 
-      curDivStl.left  = x - thisObj.wndWidth;
+      curDivStl.left  = x - wndWidth;
       newDivStl.left =  x;
     }
     // 1.2. left to right // for "Back"
     else {
       if(thisObj.step == thisObj.STEPS_NUM)
-        x = thisObj.wndWidth;
+        x = wndWidth;
       else
         x = thisObj.totalOffset;
 
-      newDivStl.left  = x - thisObj.wndWidth;
+      newDivStl.left  = x - wndWidth;
       curDivStl.left =  x;
     }
     if (thisObj.step == 1) {
       newDivStl.top = thisObj.pageTopOffset;
-      newDivStl.width  = thisObj.wndWidth;
-      newDivStl.position = "absolute";
+    	/////////////  newDivStl.width  = thisObj.wndWidth;
+      //newDivStl.position = "absolute";
 
-      curDivStl.width  = thisObj.wndWidth;
-      curDivStl.position = "absolute";
+     // curDivStl.width  = thisObj.wndWidth;
+     // curDivStl.position = "absolute";
 
       newDivStl.visibility = "visible";
       newDivStl.display = "";
@@ -2031,12 +2032,18 @@ var MobilePageAnimation = {
   },
   getPageTopOffset : function() {
     return this.pageTopOffset;
-  },
-  
+  }
+/*	
+	,
   checkOrientation : function() {
+		
+		return;
+		
     var $t = MobilePageAnimation;
     var wndWidth = Mobile.getScreenWidth();
     
+	//	alert(wndWidth + " / " + $t.wndWidth);
+		
     if (wndWidth != $t.wndWidth) {
       $t.wndWidth = wndWidth;
       if ($t.curDiv)
@@ -2044,6 +2051,7 @@ var MobilePageAnimation = {
     }
     setTimeout($t.checkOrientation, 200);
   }
+*/  
 }
 
 
