@@ -62,6 +62,7 @@
   <div hide="y"><include name="${type}_right.jsp"/></div>         <!-- this jsp will be included in ResourceList page only-->
 
   </tr>
+  <div hide="y"><include name="${type}_bottom.jsp"/></div>         <!-- this jsp will be included in ResourceList page only-->
 </table>
 
 </div>
