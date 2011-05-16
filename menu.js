@@ -8361,7 +8361,7 @@ function saveButtonClicked(e) {
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim, positionEnforced) {
 	if (Browser.mobile) {
     div.style.left = 0 + 'px';
-    div.style.top  = 0 + 'px';
+    div.style.top  = getScrollXY()[1] + 'px';
     div.style.minWidth = "none";
 		div.style.maxWidth = "none";
 		
