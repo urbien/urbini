@@ -7,7 +7,7 @@
    <property name="title" noIcon="y"/ -->
 </where>
 <div style="margin-left:7px; margin-right:7px;text-align:left">
-<text text="Welcome! Your name for this coupon is:" /> <b><property name="name" /></b><br /><br />
+<text text="Welcome! Your name for this coupon is:" /> <b><siteResourceList uri="l.html?-$action=searchLocal&amp;forResource=-$this&amp;type=http://www.hudsonfog.com/voc/model/social/Intent&amp;submitter=-$me"/><!--property name="name" /--></b><br /><br />
 <b><text text="LEFT:"/></b> <text text="the coupon you're scoping out" /><br /><br /> 
 <b><text text="MIDDLE:"/></b> <text text="everyone who's here to find a buddy for the deal, or even just to chat, see what kind of crowd's going. Click a photo to see a basic profile." /><br /><br />
 <b><text text="RIGHT:"/></b> <text text="people you've called and people who called you. Refresh the page to see if you got any replies. Click one of the photos to talk in private with your latest victim." /><br /><br /> 
