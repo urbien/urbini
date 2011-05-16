@@ -28,6 +28,8 @@ a:hover img {
 }
 */
 
+.mobile_page { position: absolute; width: 100%; }
+
 td {font-family:Helvetica; font-size:12pt;}
 table {font-family:Helvetica; font-size:12pt;}
 tt {font-family:Helvetica; font-size:12pt;}
