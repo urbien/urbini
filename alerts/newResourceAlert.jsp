@@ -6,35 +6,34 @@
 <tr>
 	<td width="2%" height="80"></td>
 	<td width="90%" valign="center" height="80">
-		<text text="Dear"/> <property name="to" href="y" noIcon="y"/>
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
 		<br/><br/>
 		<property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/> <text text="has been created"/>.
-                 </td>
+  </td>
 	<td align="right" valign="center" height="80">
 		<a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a>	</td>
     <td width="2%" height="80"></td>
 </tr>
 <tr>
   <td></td>
-  <td>
-<property name="subject" href="y" noIcon="y"/>  </td>
-  <td align="right" valign="top">
-  <property name="resourceImage" />  </td>
+  <td><!--property name="subject" href="y" noIcon="y"/-->  </td>
+  <td align="right" valign="top">  <property name="resourceImage" />  </td>
   <td align="right" valign="top"></td>
 </tr>
 <tr>
   <td></td>
   <td colspan="3">
 
-		<newComment/>
-		
+		<!--newComment/-->
+		<br/><br/>
 		<text text="Customer Service"/>
 		<br/>
 		<!--siteOwner/-->
-		<br/>
+		<!--br/>
 		<b><text text="Powered by"/></b> <a href="http://lablz.com" target="_blank">Lablz</a>
-    <br/>
-    <br/>  </td>
+    <br/ -->
+    <br/>  
+  </td>
 </tr>
 </table>  
 </div>

@@ -7,7 +7,8 @@
     <td width="2%"></td>
     <td width="98%">
 <br/>
-      <text text="Dear"/> <property name="to" href="y" noIcon="y"/>
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
+      <!--text text="Dear"/> <property name="to" href="y" noIcon="y"/ -->
       <br/><br/>
       <text text="To change your password please click or visit the link below"/>
       <br/>

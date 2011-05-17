@@ -4,10 +4,10 @@
 <tr>
   <td width="2%"></td>
   <td>
-    Dear <property name="to" href="y"/>
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
+    <!-- Dear <property name="to" href="y"/ -->
 		<br/><br/>
-		
-		<property name="subject"/>
+
 		This alert is related to <property name="forum" type="y"/> <property name="forum" href="y"/>
   </td>
 	<td align="right" valign="top">

@@ -7,16 +7,17 @@
 <tr>
 	<td width="2%"></td>
 	<td>
-		<text text="Dear"/> <property name="to" href="y"/>
+		<!--text text="Dear"/> <property name="to" href="y"/-->
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
 		<br/><br/>
 		<text text="Comment"/> <property name="comment"/> <br/>
-		<text text="has been added to the"/> <property name="forum" type="y"/> <property name="forum" href="y"/>
+		<text text="has been added to the"/> <property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/>
   </td>
 	<td align="right" valign="top">
 		<a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a>
 	</td>
 </tr>
-<tr>
+<!--tr>
   <td width="2%"></td>
   <td colspan="2">
 		
@@ -26,9 +27,10 @@
 		<br/><br/>
 		<text text="Customer Service"/>
 		<br/>
-		<!--siteOwner/-->
+		<siteOwner/>
 		<br/>
 		<b><text text="Powered by"/></b> <a href="http://lablz.com" target="_blank">Lablz</a>
 	</td>
-</tr></table>
+</tr -->
+</table>
 </div>

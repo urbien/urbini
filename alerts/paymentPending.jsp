@@ -6,7 +6,8 @@
 <tr>
   <td width="2%"></td>
   <td width="98%">
-    <text text="Dear"/> <property name="to" href="y" noIcon="y"/>
+    <!--text text="Dear"/> <property name="to" href="y" noIcon="y"/ -->
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
     <br/><br/>
     <text text="Payment transaction has not yet completed, we will notify you as soon as it has:" /> <property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/> 
   </td>

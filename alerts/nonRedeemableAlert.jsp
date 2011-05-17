@@ -7,7 +7,8 @@
 <tr>
   <td width="2%"></td>
   <td width="98%">
-    <text text="Dear" /> <property name="to" href="y"/>
+    <!--text text="Dear" /> <property name="to" href="y"/ -->
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
     <br/><br/>
     <text text="We are sorry. This coupon has passed its 'Redeem by' date." />..
     <br/><br/> 
