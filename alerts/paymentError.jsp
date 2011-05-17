@@ -18,7 +18,7 @@
 <tr>
   <td></td>
   <td>
-  <text text="Pleae check with your payment service." />
+  <text text="Please check with your payment service." />
   </td>
   <td align="right" valign="top">
   <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" />  </td>
