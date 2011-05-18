@@ -4,7 +4,7 @@
 <tr>
   <td width="2%"></td>
   <td width="98%">
-    Dear <property name="to" href="y"/>
+    Dear <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
     <br/><br/>
     <property name="forum" type="y"/> <property name="forum" href="y"/> <text text="has just aired!" />
   </td>
