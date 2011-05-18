@@ -2359,6 +2359,14 @@ var BottomToolbar = {
     if (tagName == "input" || tagName == "a")
       return;
 
+
+		// show the toolbar only if clicked in top half of a view (if it is needed?!!!!!!!)
+		// it prevents showing our toolbar when user whant to scroll tapping at bottom of view
+    if (e.clientY > getWindowSize()[1] / 2 + window.pageYOffset) {
+			return;
+		}
+
+
 		// click inside a dialog; skip it
 		if (getParentDialog(target) != null)
 			return;
