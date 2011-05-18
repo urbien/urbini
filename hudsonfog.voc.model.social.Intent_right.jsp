@@ -10,7 +10,7 @@ var tips=new Array();
 //Configure the below array to hold the 31 possible tips of the month
 
 var randomIdx;
-var links = '&lt;br /&gt;&lt;a href=&quot;javascript:previousTip();&quot; style=&quot;font-size:30px&quot;&gt;&amp;#x25C2;&lt;/a&gt;&lt;a href=&quot;javascript:nextTip();&quot; style=&quot;font-size:30px&quot;&gt;&amp;#x25B8;&lt;/a&gt;';
+var links = '&lt;center&gt;&lt;br /&gt;&lt;a href=&quot;javascript:previousTip();&quot; style=&quot;font-size:30px&quot;&gt;&amp;#x25C2;&lt;/a&gt;&lt;a href=&quot;javascript:nextTip();&quot; style=&quot;font-size:30px&quot;&gt;&amp;#x25B8;&lt;/a&gt;&lt;/center&gt;'
 function initTips() {
   randomIdx = Math.floor(Math.random()*tips.length);
   var i = 0;
