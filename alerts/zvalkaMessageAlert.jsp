@@ -25,6 +25,7 @@
     <br/>
     <text text="Customer Service" />
     <br/><br/>
+    <unsubscribeFromEmails />
   </td>
 </tr>
 </table>  

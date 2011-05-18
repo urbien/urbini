@@ -34,8 +34,9 @@
 		<!--siteOwner/-->
 		<br/>
 		<b><text text="Powered by"/></b> <a href="http://lablz.com" target="_blank">Lablz</a>
-    <br/>
-    <br/>  </td>
+    <br/><br/>
+    <unsubscribeFromEmails />
+  </td>
 </tr>
 </table>  
 </div>
