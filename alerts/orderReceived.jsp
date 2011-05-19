@@ -19,7 +19,7 @@
   <td>
 <property name="subject" href="y" noIcon="y"/>  </td>
   <td align="right" valign="top">
-  <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" />  </td>
+  <!--property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" /-->  </td>
   <td align="right" valign="top"></td>
 </tr>
 <tr>
