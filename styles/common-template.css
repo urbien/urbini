@@ -1663,7 +1663,7 @@ div .panel_block, td .panel_block {
 	transition: width 0.4s ease-in-out;
 }
 
-#corePageContent > div > .panel_block { width: 520px; margin-top: 4px;}
+div .standalone_dlg, td .standalone_dlg { width: 520px; margin: 4px;}
 
 div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
@@ -1858,11 +1858,12 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 		#fts-sift .options_panel, #fts-sift .classifier_panel, #fts-sift .calendar_panel, #pane2 .content, #fts-sift .widget .frame,	 
 		.oneparamselection .options_panel, .oneparamselection .classifier_panel, .oneparamselection .calendar_panel
 	{ 
-	background-color: &[PrimaryColor_4];;
+	background-color: &[PrimaryColor_1];;
 	background-image: url(../images/skin/iphone/pinstripes.png);
 	background-image: -moz-repeating-linear-gradient(0deg, &[PrimaryColor_1]; 0px, &[PrimaryColor_4]; 4px);
 	background-image: -webkit-gradient(linear, 0 0, 100% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
 	-webkit-background-size: 4px 1px;
+	background-image: -o-repeating-linear-gradient(0deg, &[PrimaryColor_1]; 0px, &[PrimaryColor_4]; 4px);
 	height: auto;
 }
 
