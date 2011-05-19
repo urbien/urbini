@@ -11,7 +11,7 @@
 		<br/><br/>
 		<text text="Congratulations, you have got your coupon!" />  </td>
 	<td align="right" valign="center" height="80">
-		<a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a>	</td>
+		<!--a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a-->	</td>
     <td width="2%" height="80"></td>
 </tr>
 <tr>

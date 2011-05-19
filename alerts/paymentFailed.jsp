@@ -11,7 +11,7 @@
 		<br/><br/>
     <text text="Your payment failed to complete for " /> <property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/>		</td>
 	<td align="right" valign="center" height="80">
-		<a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a>	</td>
+		<!--a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a-->	</td>
     <td width="2%" height="80"></td>
 </tr>
 <tr>

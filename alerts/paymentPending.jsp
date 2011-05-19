@@ -12,7 +12,7 @@
     <text text="Payment transaction has not yet completed, we will notify you as soon as it has:" /> <property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/> 
   </td>
   <td align="right" valign="top">
-    <a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a>
+    <!--a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a-->
   </td>
 </tr>
 <tr>
