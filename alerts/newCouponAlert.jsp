@@ -21,8 +21,6 @@
     Customer Service
     <br/>
     <siteOwner/>
-    <br/>
-    <b>Powered by</b> <a href="http://lablz.com" target="_blank">Lablz</a>
     <br/><br/>
     <unsubscribeFromEmails />
   </td>

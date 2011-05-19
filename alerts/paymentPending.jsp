@@ -33,10 +33,9 @@
     <newComment/>
     
     <text text="Customer Service"/>
-    <br/>
     <!--siteOwner/-->
-    <br/>
-    <b><text text="Powered by"/></b> <a href="http://lablz.com" target="_blank">Lablz</a>
+    <!--br/>
+    <b><text text="Powered by"/></b> <a href="http://lablz.com" target="_blank">Lablz</a-->
     <br/><br/>
     <unsubscribeFromEmails />
   </td>
