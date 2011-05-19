@@ -52,18 +52,18 @@
            <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li class="timeLeft"><property name="timeLeftToBuy" noIcon="y"/></li></ul>
          </where>
          <where value="!isBuyable()">
-	         <where value="tippedAt != null">
-	           <ul id="counter"><li class="off_label"><text text="The deal is over"/>!</li></ul>
-	         </where>
-	         <where value="tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; new Date().getTime()">
-	           <ul id="counter"><li class="off_label"><text text="The deal is off"/>!</li></ul>
-	         </where>
+           <where value="tippedAt != null">
+             <ul id="counter"><li class="off_label"><text text="The deal is over"/>!</li></ul>
+           </where>
+           <where value="tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; new Date().getTime()">
+             <ul id="counter"><li class="off_label"><text text="The deal is off"/>!</li></ul>
+           </where>
            <where value="couponBuysQuantity &gt;= cap">
              <ul id="counter"><li class="off_label"><text text="Sold out"/>!</li></ul>
            </where>
-	         <where value="dateFeatured != null &amp;&amp; dateFeatured &gt; new Date().getTime()">
-	           <ul id="counter"><li class="off_label"><text text="Not yet featured"/>!</li></ul>
-	         </where>
+           <where value="dateFeatured != null &amp;&amp; dateFeatured &gt; new Date().getTime()">
+             <ul id="counter"><li class="off_label"><text text="Not yet featured"/>!</li></ul>
+           </where>
          </where>
        </div>
      </div>
@@ -71,8 +71,8 @@
      <div id="number_sold_container">
        <where value="couponBuysQuantity &gt; 0">
           <text text="Bought"/>:&#160; 
-					<span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;
-			 </where>
+          <span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;
+       </where>
        <where value="dealPrice &gt; 0  &amp;&amp;  tippingPoint &gt; 1 &amp;&amp;  couponsLeftToBuy == tippingPoint">
          <text text="Be the first to buy"/>
        </where>
@@ -80,7 +80,7 @@
          <br />
          <div class="remaining">
            <text text="Short of"/>:&#160;
-	         <property name="couponsLeftToBuy" noIcon="y" />
+           <property name="couponsLeftToBuy" noIcon="y" />
          </div>
        </where>
        <where value="couponsLeftToBuy &lt;= 0  &amp;&amp;  couponBuysQuantity &gt; 0  &amp;&amp;  isBuyable()">
@@ -96,7 +96,7 @@
        </where>
      </div>
      </where>
-	</div>
+  </div>
   <div class="right">
     <div id="everyscape" class="photos">
      <ul>
@@ -121,6 +121,8 @@
       </ul>
       </where>
     </div><!-- fine print -->
+    <!-- video -->
+    <div><property name="video" noIcon="y"/> </div>
   </div>
   </div>
 </td>
@@ -134,13 +136,13 @@
 </table>
   <script type="text/javascript">
   <![CDATA[
-			function likeCallback(event, div, hotspot, content, url, params, http_request) {
-				incrementOnCouponPage("like");
-				var target = getEventTarget(event);
-				var text = getTextContent(target);
-				target.parentNode.appendChild(document.createTextNode(text.substr(0, text.length -1)));
-				target.parentNode.removeChild(target);
-				
+      function likeCallback(event, div, hotspot, content, url, params, http_request) {
+        incrementOnCouponPage("like");
+        var target = getEventTarget(event);
+        var text = getTextContent(target);
+        target.parentNode.appendChild(document.createTextNode(text.substr(0, text.length -1)));
+        target.parentNode.removeChild(target);
+        
         if (content) {
           printRepostLink(content);
         }
@@ -153,32 +155,32 @@
         else {
           toConsole('no http_request');
         } */
-			}
-			function commentCallback(event, div, hotspot, content, url, params, http_request) {
+      }
+      function commentCallback(event, div, hotspot, content, url, params, http_request) {
         toConsole('in commentCallback');
-				incrementOnCouponPage("comments");
+        incrementOnCouponPage("comments");
         if (content)
           printRepostLink(content);
         else {
           toConsole('no content');
         } 
 
-/*				if (http_request)
-					repostToVK(http_request);
-				else {
-					toConsole('no http_request');
-				} */
-			}
-			function incrementOnCouponPage(id) {
-				var div = document.getElementById(id);
-				img = div.getElementsByTagName("img")[0];
-				var textNode = img.previousSibling; //anchor.childNodes[0];
-				var curNum = parseInt(textNode.nodeValue);
-				textNode.nodeValue = (isNaN(curNum) ? 0 : curNum) + 1 + " ";
-			}
-		]]>	  		
-	</script>
-	
+/*        if (http_request)
+          repostToVK(http_request);
+        else {
+          toConsole('no http_request');
+        } */
+      }
+      function incrementOnCouponPage(id) {
+        var div = document.getElementById(id);
+        img = div.getElementsByTagName("img")[0];
+        var textNode = img.previousSibling; //anchor.childNodes[0];
+        var curNum = parseInt(textNode.nodeValue);
+        textNode.nodeValue = (isNaN(curNum) ? 0 : curNum) + 1 + " ";
+      }
+    ]]>       
+  </script>
+  
 </div>
 
 
