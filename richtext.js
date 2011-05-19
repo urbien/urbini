@@ -32,7 +32,7 @@ var RteEngine = {
 		buttons:{
 			style:true,	font:true, decoration:true,	align:true,	dent:true,
 			list:true, text_color: true, bg_color: true, link: true,
-			image: true, object: true, smile:false, line: true, table:false, supsub:true, reundo:true, html:true
+			image: true, object: true, youtube: true, smile:false, line: true, table:false, supsub:true, reundo:true, html:true
 		}
 	},
 	chatRTE : {
@@ -41,7 +41,7 @@ var RteEngine = {
 		buttons:{
 			style:false, font:true, decoration:true, align:true, dent:true,
 			list:true, text_color: true, bg_color: true, link: true,
-			image: true, object: true, smile:true, line: true, table:false, supsub:false, reundo:true, html:false
+			image: true, object: true, youtube: false, smile:true, line: true, table:false, supsub:false, reundo:true, html:false
 		}
 	},
 	advancedRTE : {
@@ -50,7 +50,7 @@ var RteEngine = {
 		buttons:{
 			style:true,	font:true, decoration:true,	align:true,	dent:true,
 			list:true, text_color: true, bg_color: true, link: true,
-			image: true, smile:false, line: true, table:true, supsub:true, reundo:true, html:true
+			image: true, object: true, youtube: true, smile:false, line: true, table:true, supsub:true, reundo:true, html:true
 		}
 	},
 	guestCommentRTE : {
@@ -59,7 +59,7 @@ var RteEngine = {
 		buttons:{
 			style:false, font:true, decoration:true,	align:false,	dent:false,
 			list:true, text_color: true, bg_color: false, link: false,
-			image: false, object: false, smile:false, line: false, table:false, supsub:false, reundo:true, html:false
+			image: false, object: false, youtube: false, smile:false, line: false, table:false, supsub:false, reundo:true, html:false
 		},
 		noFontSize : true,
 		noRedo : true
@@ -91,6 +91,7 @@ var RteEngine = {
 	linkPopup : null,
 	imagePopup : null,
 	objectPopup : null,
+	youtubePopup : null,
 	imagePastePopup : null,
 	tablePopup : null,
 
@@ -291,6 +292,13 @@ var RteEngine = {
 		this.imagePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.imagePopup.div;
 	},
+	launchYoutubePopup : function(btnObj, callback, cancelCallback) {
+		if(this.youtubePopup == null)
+			this.createYoutubePopup();
+		var parentDlg = getParentDialog(btnObj.div);
+		this.youtubePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
+		return this.youtubePopup.div;
+	},
 	launchObjectPopup : function(btnObj, callback, cancelCallback) {
 		if(this.objectPopup == null)
 			this.createObjectPopup();
@@ -398,6 +406,21 @@ var RteEngine = {
       + ' </tr>'
 			+ '</table>';
 		this.objectPopup = new FormPopup(innerFormHtml);
+	},
+	createYoutubePopup : function() {
+		var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
+			+ ' <tr><td colspan="2" align="left">'
+			+ ' YouTube ID:<input style="width:100%" name="youtube_id" type="text" id="youtube_id" />'
+      + ' </td></tr>'
+			
+			+ ' <tr><td>'
+			+ ' width:&nbsp;<input size="4" name="width" type="text" id="width" />&nbsp;px&nbsp;'
+			+ ' </td><td align="left">'
+			+ ' height:&nbsp;<input size="4" name="height" type="text" id="height" />&nbsp;px&nbsp;</td>'
+      + ' </tr>'
+			
+			+ '</table>';
+		this.youtubePopup = new FormPopup(innerFormHtml);
 	},
 	createSmilePopup : function() {
 		var SMILES_AMT = 30;
@@ -1028,6 +1051,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.linkBtn = null;
 	this.imageBtn = null;
 	this.objectBtn = null;
+	this.youtubeBtn = null;
 	this.tableBtn = null;
 	this.htmlBtn = null;
 
@@ -1179,9 +1203,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			this.linkBtn = toolBar.appendButton(this.onLink, false, RteEngine.IMAGES_FOLDER + "hyperlink.png", "&[hyperlink];");
 		if(this.rtePref.buttons.image) // image
 			this.imageBtn = toolBar.appendButton(this.onImage, false, RteEngine.IMAGES_FOLDER + "image.png", "&[image];");
+		if(this.rtePref.buttons.youtube)
+			this.youtubeBtn = toolBar.appendButton(this.onYoutube, false, RteEngine.IMAGES_FOLDER + "youtube.png", "&[insert]; YouTube &[video];");
 		if(this.rtePref.buttons.object) // object/embed; widget
 			this.objectBtn = toolBar.appendButton(this.onObject, false, "icons/addThirdPartyWidget.png", "&[embed object or widget];");
-
 		if(this.rtePref.buttons.list) { // list: ordered + unordered
 			toolBar.appendButton(this.onOrderedList, false, RteEngine.IMAGES_FOLDER + "list_num.png", "&[ordered list];");
 			toolBar.appendButton(this.onUnorderedList, false, RteEngine.IMAGES_FOLDER + "list_bullet.png", "&[unordered list];");
@@ -1866,12 +1891,19 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var btn = (onDblClick) ? i_am.styleBtn : i_am.imageBtn;
 		i_am.currentPopup = RteEngine.launchImagePopup(btn, i_am.setImage, i_am.iframeObj.id, i_am.cancelImage, imgObj);
 	}
+	// YouTube video
+	this.onYoutube = function() {
+		if(!i_am.isAllowedToExecute())
+			return;
+		
+		i_am.currentPopup = RteEngine.launchYoutubePopup(i_am.youtubeBtn, i_am.setYoutube/*, i_am.cancelImage*/);
+	}
 	// object; widget
 	this.onObject = function() {
 		if(!i_am.isAllowedToExecute())
 			return;
 		
-		i_am.currentPopup = RteEngine.launchObjectPopup(i_am.objectBtn, i_am.setObject, i_am.cancelImage);
+		i_am.currentPopup = RteEngine.launchObjectPopup(i_am.objectBtn, i_am.setObject/*, i_am.cancelImage*/);
 	}
 	// 21
 	this.onTable = function() {
@@ -2071,6 +2103,25 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		  this.insertHTML(html);
 		}
 		return true;
+	}
+	// setYoutube
+	this.setYoutube = function(params){
+  	if (!params.youtube_id || !params.width || !params.height) {
+			alert("&[enter]; &[all]; &[parameters];!")
+			return;
+		}
+		
+		var html = "<iframe width='"
+			+ params.width
+			+ "' height='"
+			+ params.height
+			+ "' src='http://www.youtube.com/embed/"
+			+ params.youtube_id
+			+ "?rel=0' frameborder='0' wmode='transparent'></iframe>";
+		
+		i_am.insertHTML(html);
+		// so fit RTE height after some delay while image should be downloaded 
+		setTimeout(i_am.fitHeightToVisible, 1500);
 	}
 	
 	// setObject
