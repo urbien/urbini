@@ -1962,7 +1962,14 @@ var MobilePageAnimation = {
       this.rightToLeft = false;
    
     // hides the location bar
-    scrollTo(0, 1)
+    scrollTo(0, 1);
+		
+
+		// set toolbar at bottom of the new mobile page
+		newDiv.appendChild(BottomToolbar.toolbar);
+		BottomToolbar.toolbar.style.display = "";
+		
+		
     setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
   },
 
@@ -2304,7 +2311,10 @@ var BottomToolbar = {
   
   init : function() {
     this.createToolbarObject();
-   
+	
+	// show always toolbar at bottom of a mobile page
+		
+/*   
 	 	this.offset = this.HEIGHT;
 		this.setBottomLevelOffset(this.offset);
 	 
@@ -2317,6 +2327,7 @@ var BottomToolbar = {
 		addEvent(document, "touchmove", this.hide, false);
 
 		this.timerId = setTimeout(BottomToolbar.down, this.DELAY);
+*/		
 	},
   
   createToolbarObject : function() {
@@ -2336,9 +2347,10 @@ var BottomToolbar = {
         "<a href=\"javascript: ;\" onclick=\"Filter.show();\"><img src=\"../images/skin/iphone/search_filter_button.png\" /></a>"
         + "<a  id='optionsMenu' href=\"javascript: ;\"><img src=\"../images/skin/iphone/menu_button.png\" /></a>"; 
  
-    document.body.appendChild(this.toolbar);
+    //document.body.appendChild(this.toolbar);
+		Mobile.getCurrentPageDiv().appendChild(this.toolbar);
   },
-  
+	
   ontouch : function(e) {
 		var $t = BottomToolbar;
 		
