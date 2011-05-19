@@ -20,7 +20,10 @@
   <!--br />
 <property name="subject" href="y" noIcon="y"/-->  </td>
   <td align="right" valign="top">
-  <!--property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" /-->  </td>
+    <div itype="http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy">
+      <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" />
+    </div>  
+  </td>
   <td align="right" valign="top"></td>
 </tr>
 <tr>
