@@ -1252,9 +1252,9 @@ var PopupHandler = {
 		var relObj = hotspot.div || hotspot.obj || hotspot;
 
     var pos;
-//    if(Browser.gecko)		
-//		  pos = this.findObjectPositio(relObj, document.body);
-//		else
+    if (Browser.ie && isParentDialogOnPage(parentDlg)) // (may be problem with	findObjectPositio for IE?)	
+		  pos = this.findObjectPositio(relObj, document.body);
+		else
   	  pos = this.findObjectPositio(relObj, parentDlg);
 
     // 1. inside ("hotspot" - here "container)
