@@ -15,13 +15,11 @@
     <td width="2%" height="80"></td>
 </tr>
 <tr>
-  <td></td>
-  <td>
-  <!--br />
-<property name="subject" href="y" noIcon="y"/-->  </td>
-  <td align="right" valign="top">
+  <!--td></td>
+  <td><br /><property name="subject" href="y" noIcon="y"/>  </td-->
+  <td colspan="3" valign="top">
     <where value="forum.getType() == 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy'">
-      <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" />
+      <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" />
     </where>  
   </td>
   <td align="right" valign="top"></td>
@@ -33,6 +31,7 @@
 		<text text="Customer Service"/>
     <br/><br/>
     <unsubscribeFromEmails />
+    <br/><br/>
     </td>
 </tr>
 </table>  
