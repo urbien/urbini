@@ -17,7 +17,7 @@
 <tr>
   <td width="2%"></td>
   <td colspan="2">
-		<propertySheet name="forum"/>
+		<!--propertySheet name="forum"/-->
 		<br/>
 		Customer Service
 		<br/>
