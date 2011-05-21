@@ -2117,7 +2117,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			+ params.height
 			+ "' src='http://www.youtube.com/embed/"
 			+ params.youtube_id
-			+ "?rel=0' frameborder='0' wmode='transparent'></iframe>";
+			+ "?rel=0;wmode=transparent' frameborder='0' wmode='transparent'></iframe>";
 		
 		i_am.insertHTML(html);
 		// so fit RTE height after some delay while image should be downloaded 
