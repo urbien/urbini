@@ -9,15 +9,17 @@
 		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
 		<!--text text="Dear"/> <property name="to" href="y" noIcon="y"/ -->
 		<br/><br/>
-		<text text="We hope your payment process goes smoothly! You can check the status of your transaction in 'Purchasing history'" /> <onYourProfile />  </td>
+		<text text="We hope you have a pleasant purchasing experience with:" />  </td>
 	<td align="right" valign="center" height="80">
 		<!--a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a-->	</td>
     <td width="2%" height="80"></td>
 </tr>
 <tr>
-  <!--td></td>
-  <td><br /><property name="subject" href="y" noIcon="y"/>  </td-->
-  <td colspan="3" valign="top">
+  <td></td>
+  <td>
+  <br />
+<property name="resourceDescription" href="y" noIcon="y"/>  </td>
+  <td align="right" valign="top">
     <where value="forum.getType() == 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy'">
       <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" />
     </where>  
@@ -27,11 +29,12 @@
 <tr>
   <td></td>
   <td colspan="3">
-    <br/>
+    <br/><br/>
+    <text text="You can check the status of your transaction in 'Purchasing history'" /> <onYourProfile />
+    <br/><br/>
 		<text text="Customer Service"/>
     <br/><br/>
     <unsubscribeFromEmails />
-    <br/><br/>
     </td>
 </tr>
 </table>  
