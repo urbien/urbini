@@ -11,7 +11,8 @@
         return r;
       }
       else {
-        alert("You need to upgrade to a newer browser. Error: event handler could not be removed");
+        // Error: event handler could not be removed
+        alert("&[We are sorry. We do not support the version of the Web Browser you are using. Would you be so kind as to upgrade to a newer browser. We support Firefox, Chrome, Safari, Opera and Internet Explorer 7 (IE 7) and above.];");
       }
     }
 
