@@ -1,5 +1,4 @@
 <div style="border: 2px solid #f55200; background-color: #fefefe;">
-<br/>
 <table width="100%" border="0">
   <tr style="padding: 9px; background-color: #ef6f16;">
     <td colspan="3" style="padding: 12px"><logo srcLarge="images/logo10.png"/></td>
