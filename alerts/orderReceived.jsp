@@ -16,13 +16,11 @@
 </tr>
 <tr>
   <td></td>
-  <td>
-  <br />
-<property name="resourceDescription" href="y" noIcon="y"/>  </td>
-  <td align="right" valign="top">
+  <td colspan="2" valign="top">
     <where value="forum.getType() == 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy'">
       <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" />
     </where>  
+    <property name="resourceDescription" href="y" noIcon="y"/>
   </td>
   <td align="right" valign="top"></td>
 </tr>
