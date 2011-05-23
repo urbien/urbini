@@ -19,7 +19,7 @@
   <td>
     <verifyEmailLink />
     <br/><br/>
-    <text text="This verification code expires in an hour." /><br /><br />
+    <text text="This verification email expires in an hour." /><br /><br />
     <text text="Customer Service"/>
     <br/>
     <!--siteOwner/--><!--logo srcLarge="images/logo10.png"/-->
