@@ -55,8 +55,10 @@
     <td>      <h3><text text="Fine print"/></h3>
      
         <property name="coupon.conditions" noIcon="y"/>    
+        <where value="!cancelled &amp;&amp; paymentStatus == 'Success'">
         <text text="This coupon must be redeemed by" />&#160;<property name="coupon.redeemBy" noIcon="y"/>        </td>
-    <td></td>
+        </where>
+        <td></td>
     <td><mapMaker width="300" height="300" /></td>
     <td></td>
   </tr>
