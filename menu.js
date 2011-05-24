@@ -5001,8 +5001,11 @@ var DataEntry = {
 			$t.currentUrl = $t.loadingUrl;
 			
 		$t.loadingUrl = null;
-
 		div = getDomObjectFromHtml(html, "className", "panel_block");
+		if (!div) {
+//			alert("Data Entry: Server response does not contain a dialog!");
+			return;
+		}
 		div.style.visibility = "hidden";
 		
 		// insert in DOM
@@ -5975,7 +5978,7 @@ var TouchDlgUtil = {
 		if (ListBoxesHandler.isFormPanelCurrent())
     	tr = getAncestorByClassName(target, $t.TR_CLASS);
 		else
-			tr = getAncestorByTagName(target, "tr");	
+			tr = getAncestorByClassName(target, "menuItemRow");	
 		
 		if (!tr || !getTextContent(tr))
 			return;
