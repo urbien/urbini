@@ -21,7 +21,9 @@
 <text text="Once your payment has completed you will receive another email stating whether it was successful."/>
 <text text="Check your email (and spam folder) once completed."/>
 <text text="You can also look at the status in your profile under purchase history."/>
-<property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" />
+  <where value="forum.getType() == 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy'">
+    <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" />
+  </where>  
 
 </td>
 <td></td>

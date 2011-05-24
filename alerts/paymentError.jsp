@@ -21,7 +21,10 @@
   <text text="Please check with your payment service." />
   </td>
   <td align="right" valign="top">
-  <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" />  </td>
+    <where value="forum.getType() == 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy'">
+      <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" />
+    </where>  
+  </td>
   <td align="right" valign="top"></td>
 </tr>
 <tr>
