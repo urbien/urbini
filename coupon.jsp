@@ -58,7 +58,7 @@
            <where value="tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; new Date().getTime()">
              <ul id="counter"><li class="off_label"><text text="The deal is off"/>!</li></ul>
            </where>
-           <where value="couponBuysQuantity &gt;= cap">
+            <where value="cap != null &amp;&amp; couponBuysQuantity &gt;= cap">
              <ul id="counter"><li class="off_label"><text text="Sold out"/>!</li></ul>
            </where>
            <where value="dateFeatured != null &amp;&amp; dateFeatured &gt; new Date().getTime()">
