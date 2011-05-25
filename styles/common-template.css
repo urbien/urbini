@@ -1610,6 +1610,7 @@ table.printFB {
 
 .rte { margin-bottom: 7px; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; padding:0; width: 100%; height: 107px;  }
 .rte_body { color: &[PrimaryColor_4_text];; font-family :Helvetica, arial; fontSize : 16px; margin:5; }
+.rte_body object { display: block; background: #000000; }
 
 /* like menu_Options in iphone.css */
 #browser_dlg { z-index: 1000; top: 0px; position: absolute; width: 320px; padding: 0px; visibility: hidden; }
