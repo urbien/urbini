@@ -24,6 +24,7 @@
       <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" />
     </where>  
   </td>
+  <td align="right" valign="top"></td>
 </tr>
 <tr>
   <td></td>
