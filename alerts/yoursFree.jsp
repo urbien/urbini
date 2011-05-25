@@ -1,36 +1,69 @@
-<div style="border: 2px solid #f55200; background-color: #fefefe;">
-<table width="100%" border="0">
-<tr style="padding: 9px; background-color: #ef6f16;">
-  <td colspan="2" style="padding: 12px"><logo srcLarge="images/logo10.png"/></td>
-</tr>
-<tr>
-  <td width="2%"></td>
-  <td width="98%">
-    <!--text text="Dear" /> <property name="to" href="y"/ -->
-		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
-    <br/><br/>
-    <text text="You have just gotten" /> "<property name="forum" href="y"/>" <text text="completely free of charge!" />
-    <br/><br/>
-    <text text="Visit the link below to print your coupon" />
-    <br/><br/>
-    <property name="forum" href="y"/>
-  </td>
-</tr>
-<tr>
-  <td></td>    
-  <td>    
-    <br/><br/>
-    <property name="resourceMediumImage" noIcon="y" />
-  </td>
-</tr>
-<tr>
-  <td></td>
-  <td colspan="2">
-    <br/><br/>
-    <text text="Customer Service" />
-    <br/><br/>
-    <unsubscribeFromEmails />
-  </td>
-</tr>
-</table>  
+<div style=" font-family:'lucida grande', tahoma, verdana, arial; " >
+
+<table border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>
+<table border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td height="30"  bgcolor="#FF9900"><div align="left"><span style=" padding-left:20px; color:#FFFFFF"><strong>obval</strong></span></div></td>
+  </tr>
+  <tr>
+    <td>
+    <table border="1" cellpadding="0" cellspacing="0" bordercolor="#dddddd">
+  <tr>
+    <td>
+    <table width="600px" border="0" align="left" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
+  <tr valign="bottom">
+    <td width="30"></td>
+    <td height="30"><text text="Hi"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/></td>
+    <td></td>
+  </tr>
+  <tr valign="bottom">
+    <td width="30"></td>
+    <td height="30"><text text="You have just gotten" /> <property name="forum" href="y"/> <text text="completely free of charge!" /></td>
+    <td></td>
+  </tr>
+  <tr valign="bottom">
+    <td width="30">    </td>
+    <td height="30"><text text="Visit the link below to print your coupon" /></td>
+    <td></td>
+  </tr>
+  <tr valign="bottom">
+    <td width="30"></td>
+    <td height="30" valign="middle"><property name="forum" href="y"/></td>
+    <td></td>
+  </tr>
+  <tr valign="bottom">
+    <td width="30"></td>
+    <td height="30"><property name="resourceImage" noIcon="y" /></td>
+    <td></td>
+  </tr>
+  <tr valign="bottom">
+    <td></td>
+    <td height="30"> </td>
+    <td></td>
+  </tr>
+  <tr valign="bottom">
+    <td></td>
+    <td height="30"><unsubscribeFromEmails /></td>
+    <td></td>
+  </tr>
+  <tr valign="bottom">
+    <td></td>
+    <td height="30">&nbsp;</td>
+    <td></td>
+  </tr>
+</table>
+    </td>
+  </tr>
+</table>
+
+    </td>
+  </tr>
+</table>
+
+    </td>
+  </tr>
+</table>
+
 </div>
