@@ -23,7 +23,7 @@
     <where value="forum.getType() == 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy'">
       <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" />
     </where>  
-  <td align="right" valign="top"></td>
+  </td>
 </tr>
 <tr>
   <td></td>
