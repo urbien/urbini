@@ -17,41 +17,51 @@
   <tr valign="bottom">
     <td width="30"></td>
     <td height="30"><text text="Hi"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/></td>
-    <td></td>
+    <td width="30"></td>
   </tr>
   <tr valign="bottom">
     <td width="30"></td>
     <td height="30"><text text="You have just gotten" /> <property name="forum" href="y"/> <text text="completely free of charge!" /></td>
-    <td></td>
+    <td width="30"></td>
   </tr>
   <tr valign="bottom">
     <td width="30">    </td>
     <td height="30"><text text="Visit the link below to print your coupon" /></td>
-    <td></td>
+    <td width="30"></td>
   </tr>
   <tr valign="bottom">
     <td width="30"></td>
     <td height="30" valign="middle"><property name="forum" href="y"/></td>
-    <td></td>
+    <td width="30"></td>
   </tr>
   <tr valign="bottom">
     <td width="30"></td>
     <td height="30"><property name="resourceImage" noIcon="y" /></td>
-    <td></td>
+    <td width="30"></td>
   </tr>
   <tr valign="bottom">
     <td></td>
     <td height="30"> </td>
+    <td width="30"></td>
+  </tr>
+  <tr valign="bottom">
     <td></td>
+    <td height="10"><hr/></td>
+    <td height="10"></td>
   </tr>
   <tr valign="bottom">
     <td></td>
     <td height="30"><unsubscribeFromEmails /></td>
-    <td></td>
+    <td width="30"></td>
   </tr>
   <tr valign="bottom">
     <td></td>
-    <td height="30">&nbsp;</td>
+    <td height="30">Obval Team</td>
+    <td width="30"></td>
+  </tr>
+  <tr valign="bottom">
+    <td></td>
+    <td height="30"></td>
     <td></td>
   </tr>
 </table>
