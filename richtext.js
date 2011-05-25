@@ -2110,15 +2110,25 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			alert("&[enter]; &[all]; &[parameters];!")
 			return;
 		}
-		
-		var html = "<iframe width='"
+
+		var html = "<object wmode='transparent' width='"
 			+ params.width
 			+ "' height='"
 			+ params.height
-			+ "' src='http://www.youtube.com/embed/"
+			+ "'><param name='movie' value='http://www.youtube.com/v/"
 			+ params.youtube_id
-			+ "?rel=0;wmode=transparent' frameborder='0' wmode='transparent'></iframe>";
-		
+			+ "?fs=1&amp;rel=0;wmode=transparent'></param>"
+			+ "<param name='allowFullScreen' value='true'></param>"
+			+ "<param name='allowscriptaccess' value='always'></param>"
+			+ "<param value='transparent' name='wmode'></param>"
+			+ "<embed src='http://www.youtube.com/v/"
+			+ params.youtube_id
+			+ "?fs=1&amp;rel=0;wmode=transparent' type='application/x-shockwave-flash' width='"
+			+ params.width
+			+ "' height='"
+			+ params.height 
+			+ "' allowscriptaccess='always' allowfullscreen='true' wmode='transparent' '></embed></object>";
+
 		i_am.insertHTML(html);
 		// so fit RTE height after some delay while image should be downloaded 
 		setTimeout(i_am.fitHeightToVisible, 1500);
