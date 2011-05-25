@@ -1,4 +1,4 @@
-<div style=" font-family:'lucida grande', tahoma, verdana, arial; " >
+<div style=" margin:-8px; padding:20px; width:100%; height:100%; background-color:#f3f3f3; font-family:'lucida grande', tahoma, verdana, arial; " >
 
 <table border="0" cellspacing="0" cellpadding="0">
   <tr>
@@ -7,6 +7,7 @@
   <tr>
     <td height="30"  bgcolor="#FF9900"><div align="left"><span style=" padding-left:20px; color:#FFFFFF"><strong>obval</strong></span></div></td>
   </tr>
+  
   <tr>
     <td>
     <table border="1" cellpadding="0" cellspacing="0" bordercolor="#dddddd">
