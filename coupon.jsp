@@ -22,7 +22,12 @@
            </where>
          </where>
          <where value="new Date().getTime() &lt; dateFeatured || !isBuyable()">
-           <div style="text-decoration:line-through;color:red;"><a max_width="400" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+           <where value="dealPrice &gt; 0">
+             <div style="text-decoration:line-through;color:red;"><a max_width="400" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+           </where>
+           <where value="dealPrice == 0">
+             <div style="text-decoration:line-through;color:red;"><a max_width="400" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Free!"/></a></div>
+           </where>
          </where>
        </div>
      </div>
