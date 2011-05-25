@@ -1378,12 +1378,13 @@ TD.toolbar {
 	PADDING-LEFT: 8px; width: 10px
 }
 
-.menuItem { margin-left: 6px; white-space: nowrap; font-size: 16px; vertical-align: middle; color: &[PrimaryColor_4_text];; }
+.menuItem { width:100%; padding-left: 5px; white-space: nowrap; font-size: 16px; vertical-align: middle; color: &[PrimaryColor_4_text];; }
 #\$more .menuItem { color: #999; font-size: 14px; padding-left: 15px; height: 20px; }
 
-.menuItem a { 
-  margin-left: 6px; white-space: nowrap; font-size: 16px; 
-}
+.grid_option_cell .menuItem { font-size: 12px; white-space:normal; text-align: center; padding: 5px; border-right: solid &[PrimaryColor_1]; 1px; }
+
+.menuItem a { margin-left: 6px; white-space: nowrap; font-size: 16px; }
+
 
 .menuItemRed {
   color:red;
