@@ -44,19 +44,19 @@
     <td height="30"> </td>
     <td width="30"></td>
   </tr>
-  <tr valign="bottom">
+  <tr valign="top">
     <td></td>
-    <td height="10"><hr/></td>
-    <td height="10"></td>
+    <td height="30">Obval Team</td>
+    <td></td>
   </tr>
   <tr valign="bottom">
     <td></td>
-    <td height="30"><unsubscribeFromEmails /></td>
+    <td height="10"><hr/></td>
     <td width="30"></td>
   </tr>
   <tr valign="bottom">
     <td></td>
-    <td height="30">Obval Team</td>
+    <td height="30"><font size="-6"><unsubscribeFromEmails /></font></td>
     <td width="30"></td>
   </tr>
   <tr valign="bottom">
