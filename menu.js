@@ -3706,7 +3706,9 @@ var ListBoxesHandler = {
 		var $t = ListBoxesHandler;
 		e = getDocumentEvent(e);
 		var target = getEventTarget(e);
-		var tr = getAncestorByClassName(target, ["menuItemRow", "option_tr"]);
+		var tr = getAncestorByClassName(target, "menuItemRow"); // ["menuItemRow", "option_tr"]
+		if (!tr && Browser.ie) // problem with IE7
+			tr = getChildByClassName(target, "menuItemRow");	
 		if (!tr)
 			tr = getAncestorByTagName(target, "tr");	
 
