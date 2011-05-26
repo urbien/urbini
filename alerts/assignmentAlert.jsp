@@ -8,7 +8,7 @@
     <br/><br/>		
 		<property name="subject"/>
     <br/>		
-		This alert is related to <property name="workEffort" type="y"/> <property name="workEffort" href="y"/> of <property name="forum" type="y"/> <property name="forum" href="y"/>
+		<text text="This alert is related to" /> <property name="workEffort" type="y"/> <property name="workEffort" href="y"/> of <property name="forum" type="y"/> <property name="forum" href="y"/>
 	</td>	
 	<td align="right" valign="top">
 		<!--a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a-->
