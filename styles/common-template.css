@@ -169,7 +169,7 @@ div.button { font-size: 15px; color: &[Label];; padding: 3px 10px;}
 
 /* the awesome size gets set here. Feel Free to add new sizes, like input[type=button].small or .small.large   */
 input[type=button], input[type=submit], .button, a.button, .tags .item { font-size: 15px; color: &[Label];; -webkit-tap-highlight-color: rgba(0,0,0,0); }
-input[type=button], input[type=submit] { padding: 6px 10px; }
+input[type=button], input[type=submit] { padding: 5px 10px; }
 a.button  { padding: 3px 10px; } /* a.button:active - anchor requires smaller padding than type=button */
 /*input[type=button]:active, input[type=submit]:active, .button:active	{ padding: 6px 10px 5px; }*/
 
@@ -206,7 +206,8 @@ input[type=button], input[type=submit], .button, .tags .item {
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];)";
 
-  border: 1px solid &[PrimaryColor_1];;
+  border: 1px solid &[PrimaryColor_1]; !important;
+  border: 1px solid &[ToolbarColor];;
   
   /* cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ */
   display: -moz-inline-stack;
