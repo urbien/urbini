@@ -9,7 +9,7 @@
 		<!--text text="Dear"/> <property name="to" href="y" noIcon="y"/ -->
 		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
 		<br/><br/>
-    <text text="Your payment failed to complete for " /> <property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/>		</td>
+    <text text="Your payment failed to complete for" /> <property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/>		</td>
 	<td align="right" valign="center" height="80">
 		<!--a href="#"><IMG src="icons/logo-large.png" border="0" height="32" align="right" /></a-->	</td>
     <td width="2%" height="80"></td>
@@ -17,7 +17,7 @@
 <tr>
   <td></td>
   <td>
-  <text text="Pleae check with your payment service." />
+  <text text="Please check with your payment service." />
   </td>
   <td align="right" valign="top">
     <where value="forum.getType() == 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy'">
