@@ -1,3 +1,16 @@
+<table>
+<tr>
+<td></td>
+<td>
+<include name="${type}_details_top.jsp"/>
+</td>
+<td></td>
+</tr>
+<tr>
+<td width="25%" align="center">
+<include name="${type}_details_left.jsp"/>
+</td>
+<td>
 <div align="center">
 	
 	<getResource/>
@@ -16,4 +29,9 @@
 		</form>
 	</panelBlock>
 </div>
-
+</td>
+<td width="25%">
+<include name="${type}_details_right.jsp"/>
+</td>
+</tr>
+</table>
