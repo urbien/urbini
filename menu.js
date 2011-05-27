@@ -3393,6 +3393,7 @@ var ListBoxesHandler = {
 				trs[i].onclick = $t.onOptionsItemClick;
 		}
 
+		$t.changeOptionSelectionState(opTable);
 		$t.changeAddNewState(popupDiv);
 		$t.showOptionsOrClasses(popupDiv);
 
@@ -3422,7 +3423,7 @@ var ListBoxesHandler = {
 		popupDiv.style.display = "block";
 		$t.optionsPanel.style.height = "";
 		
-		// fit panel height
+		// fit panel height 
 		if (panel.offsetHeight < $t.panelBlock.offsetHeight)
 			panel.style.height = $t.panelBlock.offsetHeight;
 		
@@ -3530,7 +3531,7 @@ var ListBoxesHandler = {
 			var row = table.rows[i];
 			row.style.display = "";
 		}
-		this.panelBlock.style.height = "";
+	//	this.panelBlock.style.height = "";
 	},
 	
 	_hideInvisibleParams : function() {
@@ -3543,7 +3544,7 @@ var ListBoxesHandler = {
 		var tableTop = findPosY(table);
 		
 		// prevent from change of vertical scrollbar height
-		this.panelBlock.style.height = this.panelBlock.offsetHeight;
+	//	this.panelBlock.style.height = this.panelBlock.offsetHeight;
 		
 		for (var i = table.rows.length - 1; i >= 0; i--) {
 			var row = table.rows[i];
@@ -3590,6 +3591,11 @@ var ListBoxesHandler = {
 		this.addNewResIcon.style.display = this.addNewResBtn.style.display = (hdnAddTr != null) ? "" : "none";
 		if (hdnAddTr)
 			getFirstChild(this.addNewResBtn).innerHTML = getChildByTagName(hdnAddTr, "a").innerHTML;
+	},
+	changeOptionSelectionState : function(opTable) {
+		var isGrid = (opTable.rows[0] && opTable.rows[0].cells[0].className.indexOf("grid_option_cell") != -1);
+		this.textEntry.parentNode.style.visibility = (isGrid) ? "hidden" : "";
+		
 	},
 	
 	addNewOptionResource : function(event, hotspot) {
@@ -8378,11 +8384,12 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 	// limit div / dialog width gotten from "max_width" parameter
 	if (hotspot) {
 		var maxWidth = hotspot.getAttribute("max_width");
-		if (maxWidth) {
-			div.style.maxWidth = maxWidth;
-			if (Browser.ie)
+		//if (maxWidth) {
+		//	div.style.maxWidth = maxWidth;
+		//	if (Browser.ie)
 				div.style.width = maxWidth;
-		}
+		//		div.style.overflow = "visible";
+		//}
 	}
 
   var isDivStatic = (div.style.position.toLowerCase() == 'static');
