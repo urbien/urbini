@@ -7,7 +7,7 @@
 	<td width="2%" height="80"></td>
 	<td width="90%" valign="center" height="80">
 		<!--text text="Dear"/> <property name="to" href="y" noIcon="y"/ -->
-		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>,
 		<br/><br/>
     <text text="Your payment failed to complete for" /> <property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/>		</td>
 	<td align="right" valign="center" height="80">

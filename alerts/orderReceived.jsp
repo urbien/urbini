@@ -6,7 +6,7 @@
 <tr>
 	<td width="2%" height="80"></td>
 	<td width="90%" valign="center" height="80">
-		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>,
 		<!--text text="Dear"/> <property name="to" href="y" noIcon="y"/ -->
 		<br/><br/>
 		<text text="We hope you have a pleasant purchasing experience with:" />  </td>

@@ -7,7 +7,7 @@
 <tr>
 	<td width="2%"></td>
 	<td>
-		<text text="Dear" /> <property name="to" href="y"/>
+		<text text="Dear" /> <property name="to" href="y"/>,
 		<br/><br/>
 		
 		<text text="You are invited to receive alerts for the " /> <property name="forum" type="y"/> <property name="forum" href="y"/>

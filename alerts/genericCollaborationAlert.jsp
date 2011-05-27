@@ -4,7 +4,7 @@
 <tr>
   <td width="2%"></td>
   <td>
-		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>,
     <!-- Dear <property name="to" href="y"/ -->
 		<br/><br/>
 

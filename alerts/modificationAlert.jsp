@@ -9,7 +9,7 @@
   <td width="2%"></td>
   <td>
     <br/>
-		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>,
 		<br/><br/>
 		<!--property name="subject" href="y"/-->
 		<property name="forum" type="y"/>  <property name="forum" href="y" noIcon="y"/> <text text="was modified"/> 

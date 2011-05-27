@@ -8,7 +8,7 @@
   <td width="2%"></td>
   <td width="98%">
     <!--text text="Dear" /> <property name="to" href="y"/ -->
-		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>,
     <br/><br/>
     <text text="Sorry, this coupon never reached the tipping point! The payment you made has been deposited to your account on Obval!" />
     <br/><br/> 

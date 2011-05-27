@@ -24,7 +24,7 @@
 	<td width="2%"></td>
 	<td width="98%">
 	  <br/>
- 		<text text="Dear"/> <property name="email" noIcon="y" /><br/><br/>
+ 		<text text="Dear"/> <property name="email" noIcon="y" />,<br/><br/>
 	</td>
 </tr>
 <tr>

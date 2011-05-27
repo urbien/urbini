@@ -8,7 +8,7 @@
 	<td width="2%"></td>
 	<td>
 		<!--text text="Dear"/> <property name="to" href="y"/-->
-		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>,
 		<br/><br/>
 		<text text="Comment"/> <property name="comment"/> <br/>
 		<text text="has been added to the"/> <property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/>

@@ -6,7 +6,7 @@
 <tr>
 	<td width="2%" height="80"></td>
 	<td width="90%" valign="center" height="80">
-		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>
+		<text text="Dear"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>,
 		<br/><br/>
 		<property name="forum" type="y"/> <property name="forum" href="y" noIcon="y"/> <text text="has been created"/>.
   </td>
