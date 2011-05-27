@@ -2071,7 +2071,7 @@ td.pBGr { background-color: #eeeeee;
 .backlink_counter .left, .backlink_counter .right { height: 25px; background: transparent url(../images/skin/iphone/backlink_counter.png) no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
 .backlink_counter .right { float: left; width: auto; line-height: 19px; text-align: center; padding-right: 14px; color: #fff; font-size: 12px; font-weight: bold;  background-position: center right; }
-
+.backlink_counter .right span {font-size: 12px; text-decoration: line-through; }
 .sidebar {
    empty-cells: hide;
    border:none;
