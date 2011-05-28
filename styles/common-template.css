@@ -110,7 +110,7 @@ img.fade {
 
 #dataEntry td { font-size: 12px; }
 #dataEntry table { border-collapse: collapse; }
-#siteResourceList td, #resourceList td, #div_Info td, .widget td { height: 30px; font-size: 12px; }
+#siteResourceList td, #resourceList td, #div_Info td, .widget td, #mkresource td { height: 30px; font-size: 12px; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
 
 .rounded_rect_tbl #siteResourceList { text-align: center; } /* align menu items */
