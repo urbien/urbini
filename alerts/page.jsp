@@ -21,7 +21,7 @@
     <table width="600px" border="0" align="left" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
   <tr valign="center">
     <td width="30"></td>
-    <td height="50"><text text="Hi"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/></td>
+    <td height="50"><text text="Hi"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>,</td>
     <td width="30"></td>
   </tr>
 <tr><td></td><td>
@@ -29,7 +29,7 @@
 </td><td></td></tr>  
   <tr valign="center">
     <td></td>
-    <td height="50">Obval Team</td>
+    <td height="50"><text text="Obval Team" /></td>
     <td></td>
   </tr>
   <tr valign="bottom">
