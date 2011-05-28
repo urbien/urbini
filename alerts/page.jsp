@@ -39,7 +39,7 @@
   </tr>
   <tr valign="bottom">
     <td></td>
-    <td height="30"><font size="-6"><unsubscribeFromEmails /></font></td>
+    <td height="30"><font color="#888888" size="-1"><unsubscribeFromEmails /></font></td>
     <td width="30"></td>
   </tr>
   <tr valign="bottom">
