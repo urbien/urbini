@@ -1552,10 +1552,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			return;
 		}
 
-		var ropTd = editDiv.parentNode;	
+		var ropTd = editDiv.parentNode;
+		var editTab = getChildById(ropTd, "div_Edit");	
 		var cpDiv = getNextSibling(ropTd);	
-		if (!cpDiv)
-			return;
 		
 		var dashboardLine = getPreviousSibling(ropTd.parentNode);
 		var cpTab = getChildById(dashboardLine, "cpTabs")
@@ -1567,8 +1566,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 					this.initPanelBlockWidth = panelBlock.parentNode.offsetWidth;
 				panelBlock.style.width = (panelBlock.parentNode.offsetWidth + "px");
 			}
-			
-			cpDiv.style.display = "none";
+
+			if (cpDiv)
+				cpDiv.style.display = "none";
+			else
+				editTab.style.maxWidth = "none";
+					
 			if (cpTab)
 				cpTab.style.display = "none";
 
@@ -1576,15 +1579,17 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 				panelBlock.style.width = (panelBlock.parentNode.clientWidth + "px");	
 		}
 		else {
-			cpDiv.style.display = "";
+			if (cpDiv)
+				cpDiv.style.display = "";
+			else
+				editTab.style.maxWidth = "520px"; // like initially in CSS
+					
 			if (cpTab)
 				cpTab.style.display = "";
 			
 			if (Browser.webkit)	
 				panelBlock.style.width = this.initPanelBlockWidth + "px";//(panelBlock.parentNode.clientWidth + "px"); //"100%";
 		}
-
-		
 	}
 	
 	// IE's hack
