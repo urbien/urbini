@@ -1,14 +1,14 @@
-<table>
+<table id="mkresource">
 <tr>
 <td></td>
 <td>
-<include name="${type}_details_top.jsp"/>
+<include name="${type}_mkresource_top.jsp"/>
 </td>
 <td></td>
 </tr>
 <tr>
-<td width="25%" align="center">
-<include name="${type}_details_left.jsp"/>
+<td width="25%" valign="top" align="center">
+<include name="${type}_mkresource_left.jsp"/>
 </td>
 <td>
 <div align="center">
@@ -20,18 +20,16 @@
 		 <errorMessage />
 		 
 		 <tablePropertyList/>
-		 
-		 
-		 
+		 	 
 		 <div align="right"><span class="xs"><measurement/></span></div>
 		 <input type="hidden" name="-$action" value="mkResource" />
 		
 		</form>
 	</panelBlock>
 </div>
-</td>
-<td width="25%">
-<include name="${type}_details_right.jsp"/>
+
+<td width="25%" valign="top">
+<include name="${type}_mkresource_right.jsp"/>
 </td>
 </tr>
 </table>
