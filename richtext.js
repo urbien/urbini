@@ -58,7 +58,7 @@ var RteEngine = {
 		isFewFonts:true,
 		buttons:{
 			style:false, font:true, decoration:true,	align:false,	dent:false,
-			list:true, text_color: true, bg_color: false, link: false,
+			list:true, text_color: true, bg_color: false, link: true,
 			image: false, object: false, youtube: false, smile:false, line: false, table:false, supsub:false, reundo:true, html:false
 		},
 		noFontSize : true,
