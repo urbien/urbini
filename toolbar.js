@@ -1104,9 +1104,7 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 		//this.titlestrip.hide();
 	}
 	this.isVisible = function() {
-	  if(this.div.style.visibility == "visible")
-	    return true;
-	  return false;  
+		return isVisible(this.div);
 	}
 	this.onTitleVisible = function() {
 		this.div.style.top = this.titlestrip.height;
