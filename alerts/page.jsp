@@ -19,11 +19,15 @@
   <tr>
     <td>
     <table width="600px" border="0" align="left" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-  <tr valign="center">
-    <td width="30"></td>
-    <td height="50"><text text="Hi"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>,</td>
-    <td width="30"></td>
-  </tr>
+      <tr valign="center">
+        <td width="30"></td>
+        <td height="50">
+          <where value="to != null">
+            <text text="Hi"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>,
+          </where>
+        </td>
+        <td width="30"></td>
+      </tr>
 <tr><td></td><td>
   <file/>
 </td><td></td></tr>  
