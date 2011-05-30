@@ -40,13 +40,15 @@
           	    <td align="middle" colspan="3"><download/></td>
           	  </tr>
         <hideBlock id="hideBlock1">
-          		<tr class="v_footer">
+          		<!--
+							<tr class="v_footer">
         		  <td>
                 <div align="right"><measurement/></div>
-                <!--newComment/ -->
+             
                 <chatHistory/>
               </td>
               </tr>
+							-->
         </hideBlock>
             </table>
           </td>
