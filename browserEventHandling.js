@@ -57,8 +57,10 @@
       if (typeof Mobile != 'undefined') {
         Browser.mobile = true;
     
+		/*  // commented out for test of swiping problem on Android
         BottomToolbar.init();
-        Boost.init(event);
+    */   
+			  Boost.init(event);
         Mobile.init(event);
 		    MobilePageAnimation.init();
       }
