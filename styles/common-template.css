@@ -1640,7 +1640,7 @@ input:focus { outline: 0 none; }
 /* dialog: body is a parent */
 .panel_block {
   position: absolute;
-  width: 50%; 
+  width: 500px; /*50%*/
   min-width: 300px;
   max-width: 1100px;
   padding: 0px;
