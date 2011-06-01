@@ -57,7 +57,7 @@
          </where>
        </div>
      </div>
-     <div style="position: absolute; top: 130px; padding: 10px; width: 220px;" id="remaining_time_container">
+     <div style="position: absolute; top: 130px; padding: 5px; width: 255px;" id="remaining_time_container">
        <div class="countdown_container">
          <where value="getTimeLeft() &lt; 86400  &amp;&amp; getTimeLeft() &gt; 0"> 
            <img src="images/obval/countdown.png" />
