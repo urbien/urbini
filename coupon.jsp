@@ -14,7 +14,7 @@
      <ul>
        <li><property name="image" frame="y" noIcon="y" /><!-- image --></li>
      </ul>
-     <div style="position:absolute; top: 5px;"><h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2></div>
+     <div style="position:absolute; top: 15px; left: 5px;"><h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2></div>
      
      <div id="deal_discount">
        <dl>
@@ -57,7 +57,7 @@
          </where>
        </div>
      </div>
-     <div style="position: absolute; top: 130px; padding: 5px; width: 255px;" id="remaining_time_container">
+     <div id="remaining_time_container">
        <div class="countdown_container">
          <where value="getTimeLeft() &lt; 86400  &amp;&amp; getTimeLeft() &gt; 0"> 
            <img src="images/obval/countdown.png" />
@@ -113,10 +113,9 @@
      </div>
      </where>
      </div>
-    </div>
       <where value="redemptionLocationCount > 0">
       <br/>
-      <div id="locations">
+      <div id="locations" style="position: absolute; bottom: 100px; left: 15px;" >
       <ul>
         <li><h3><property name="redemptionLocation" br="y" labelOnly="y"/></h3></li>
         <li><siteResourceList uri="l.html?bUri=-$this%26m_p=redemptionLocation%26b_p=coupon&amp;-list=y&amp;-limit=2&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/RedemptionLocation&amp;-suppressHeader=y"/></li>
@@ -127,6 +126,7 @@
       </ul>
       </div>
       </where>
+    </div>
     </div>
   <div>
     <div class="highlights">
