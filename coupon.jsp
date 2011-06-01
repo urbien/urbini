@@ -1,16 +1,36 @@
 <div>
 <table width="100%" class="obval_item">
-<tr width="100%" valign="middle" height="74">
+<!--tr width="100%" valign="middle" height="74">
   <td colspan="2" style="border: 1px solid #d9d9d9;">
      <h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
   </td>
-</tr>
+</tr-->
 <tr valign="top">
 <td id="coupon">
-<div>
+<div >
    <!--h2 class="fn control_title"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2-->
-   <div class="left">
-     <div id="price_tag">
+   <div style="position: relative">
+    <div id="everyscape" class="photos">
+     <ul>
+       <li><property name="image" noIcon="y" /><!-- image --></li>
+     </ul>
+     <div style="position:absolute; top: 5px;"><h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2></div>
+     
+     <div id="deal_discount">
+       <dl>
+         <dt><text text="Value"/></dt>
+         <dd><property name="dealValue" noIcon="y"/></dd>
+       </dl>
+       <dl>
+         <dt><text text="Discount"/></dt>
+         <dd><property name="discount" noIcon="y" /></dd>
+       </dl>
+       <dl>
+         <dt><text text="You Save" /></dt>
+         <dd><property name="dealDiscount" noIcon="y"/></dd>
+       </dl>
+     </div>
+     <div id="price_tag" >
        <div id="price_tag_inner">
          <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
          <where value="isBuyable()">
@@ -31,21 +51,7 @@
          </where>
        </div>
      </div>
-     <div id="deal_discount">
-       <dl>
-         <dt><text text="Value"/></dt>
-         <dd><property name="dealValue" noIcon="y"/></dd>
-       </dl>
-       <dl>
-         <dt><text text="Discount"/></dt>
-         <dd><property name="discount" noIcon="y" /></dd>
-       </dl>
-       <dl>
-         <dt><text text="You Save" /></dt>
-         <dd><property name="dealDiscount" noIcon="y"/></dd>
-       </dl>
-     </div>
-     <div id="remaining_time_container">
+     <div style="position: absolute; top: 130px; padding: 10px; width: 220px;" id="remaining_time_container">
        <div class="countdown_container">
          <where value="getTimeLeft() &lt; 86400  &amp;&amp; getTimeLeft() &gt; 0"> 
            <img src="images/obval/countdown.png" />
@@ -71,9 +77,8 @@
            </where>
          </where>
        </div>
-     </div>
-     <where value="isBuyable()">
-     <div id="number_sold_container">
+    <where value="isBuyable()">
+      <div id="number_sold_container">
        <where value="couponBuysQuantity &gt; 0">
           <text text="Bought"/>:&#160; 
           <span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;
@@ -101,13 +106,23 @@
        </where>
      </div>
      </where>
-  </div>
-  <div class="right">
-    <div id="everyscape" class="photos">
-     <ul>
-       <li><property name="image" noIcon="y" /><!-- image --></li>
-     </ul>
+     </div>
     </div>
+      <where value="redemptionLocationCount > 0">
+      <br/>
+      <div id="locations">
+      <ul>
+        <li><h3><property name="redemptionLocation" br="y" labelOnly="y"/></h3></li>
+        <li><siteResourceList uri="l.html?bUri=-$this%26m_p=redemptionLocation%26b_p=coupon&amp;-list=y&amp;-limit=2&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/RedemptionLocation&amp;-suppressHeader=y"/></li>
+        <where value="redemptionLocationCount > 2">
+           
+          <li><h3><text text="See all"/><property name="redemptionLocation" br="y" noLabel="y"/></h3></li>
+        </where>
+      </ul>
+      </div>
+      </where>
+    </div>
+  <div>
     <div class="highlights">
       <h3 class="csp_33"><text text="Highlights"/></h3>
       <ul>
@@ -131,12 +146,12 @@
   </div>
   </div>
 </td>
-<td valign="top">
+<!--td valign="top">
 <div class="more_items">
   <siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;-inRow=1&amp;-adTitle=Future+deals&amp;-limit=3&amp;-featured=y"/>
   <siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRow=1&amp;-adTitle=Upcoming+deals&amp;-limit=3&amp;-featured=y"/>
 </div>
-</td>
+</td-->
 </tr>
 </table>
   <script type="text/javascript">
