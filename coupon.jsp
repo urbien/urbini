@@ -35,13 +35,19 @@
          <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
          <where value="isBuyable()">
            <where value="dealPrice &gt; 0">
-             <div><a max_width="500" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+             <div>
+             	 <a max_width="500" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
+	             <!--a max_width="500" id="-inner" class="coupon_buy button_buy_gift" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;gift=true&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Gift!"/></a-->
+	           </div>
            </where>
            <where value="dealPrice == 0">
-             <div><a max_width="500" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="FREE!"/></a></div>
+             <div>
+               <a max_width="500" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="FREE!"/></a>
+               <!--a max_width="500" id="-inner" class="coupon_buy button_buy_gift" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;gift=true&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Gift!"/></a-->
+             </div>
            </where>
          </where>
-         <where value="new Date().getTime() &lt; dateFeatured || !isBuyable()">
+         <where value="getTimeNow() &lt; dateFeatured || !isBuyable()">
            <where value="dealPrice &gt; 0">
              <div style="text-decoration:line-through;color:red;"><a max_width="500" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
            </where>
@@ -63,16 +69,16 @@
            <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li class="timeLeft"><property name="timeLeftToBuy" noIcon="y"/></li></ul>
          </where>
          <where value="!isBuyable()">
-           <where value="tippedAt != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; new Date().getTime()">
+           <where value="tippedAt != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; getTimeNow()">
              <ul id="counter"><li class="off_label"><text text="The deal is over"/>!</li></ul>
            </where>
-           <where value="tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; new Date().getTime()">
+           <where value="tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; getTimeNow()">
              <ul id="counter"><li class="off_label"><text text="The deal is off"/>!</li></ul>
            </where>
            <where value="cap != null &amp;&amp; couponBuysQuantity &gt;= cap">
              <ul id="counter"><li class="off_label"><text text="Sold out"/>!</li></ul>
            </where>
-           <where value="dateFeatured != null &amp;&amp; dateFeatured &gt; new Date().getTime()">
+           <where value="dateFeatured != null &amp;&amp; dateFeatured &gt; getTimeNow()">
              <ul id="counter"><li class="off_label"><text text="Not yet featured"/>!</li></ul>
            </where>
          </where>
