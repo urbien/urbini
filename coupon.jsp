@@ -1,5 +1,5 @@
 <div>
-<table width="100%" class="obval_item">
+<table width="100%" class="obval_item" cellpadding="0" cellspacing="0" border="0">
 <!--tr width="100%" valign="middle" height="74">
   <td colspan="2" style="border: 1px solid #d9d9d9;">
      <h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
@@ -10,17 +10,17 @@
 <div >
    <!--h2 class="fn control_title"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2-->
    <div style="position: relative">
-    <div id="everyscape" class="photos">
+    <div id="everyscape" class="photo">
      <ul>
        <li><property name="image" frame="y" noIcon="y" /><!-- image --></li>
      </ul>
      <div style="position:absolute; top: 15px; left: 5px;"><h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2></div>
      
      <div id="deal_discount">
-       <dl>
+       <!--dl>
          <dt><text text="Value"/></dt>
          <dd><property name="dealValue" noIcon="y"/></dd>
-       </dl>
+       </dl -->
        <dl>
          <dt><text text="Discount"/></dt>
          <dd><property name="discount" noIcon="y" /></dd>
@@ -131,7 +131,7 @@
       </where>
     </div>
     </div>
-  <div>
+  <div id="conditions">
     <div class="highlights">
       <h3 class="csp_33"><text text="Highlights"/></h3>
       <ul>
