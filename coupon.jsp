@@ -14,7 +14,7 @@
      <ul>
        <li><property name="image" frame="y" noIcon="y" /><!-- image --></li>
      </ul>
-     <div style="position:absolute; top: 15px; left: 5px;"><h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2></div>
+     <h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
      
      <div id="deal_discount">
        <!--dl>
