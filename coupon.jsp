@@ -58,7 +58,7 @@
        </div>
      </div>
      <div id="remaining_time_container">
-       <div class="countdown_container">
+       <div class="lightTextLightBackground">
          <where value="getTimeLeft() &lt; 86400  &amp;&amp; getTimeLeft() &gt; 0"> 
            <img src="images/obval/countdown.png" />
          </where>
