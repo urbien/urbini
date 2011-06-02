@@ -89,8 +89,8 @@
     <where value="isBuyable()">
       <div id="number_sold_container">
        <where value="couponBuysQuantity &gt; 0">
-          <text text="Bought"/>:&#160; 
-          <span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;
+          <div class="deal_titles"><text text="Bought"/>:&#160; 
+          <span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;</div>
        </where>
        <div class="deal_titles">
        <where value="dealPrice &gt; 0  &amp;&amp;  tippingPoint &gt; 1 &amp;&amp;  couponsLeftToBuy == tippingPoint">
