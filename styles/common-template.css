@@ -2087,7 +2087,7 @@ td.pBGr { background-color: #eeeeee;
 }
 
 #footerwrap { bottom: 0;    width: 100%;  background-image:url(../images/footerBg.png);}   
-#footer { width: 85%; min-width: 760px; max-width: 984px;    margin: 0 auto;  color:white} 
+#footer { width: 85%; min-width: 760px; max-width: 964px;    margin: 0 auto;  color:white} 
 
 .footer { 
   background-color: &[BodyBackgroundColor];;
