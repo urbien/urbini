@@ -66,7 +66,10 @@
            <img src="images/obval/countdown1.png" />
          </where>
          <where value="isBuyable()">
-           <ul id="counter"><li class="countdown_label"><text text="Time Left To Buy"/></li><li class="timeLeft"><property name="timeLeftToBuy" noIcon="y"/></li></ul>
+           <ul id="counter">
+             <li class="countdown_label"><text text="Time Left To Buy"/></li>
+             <li class="timeLeft"><property name="timeLeftToBuy" noIcon="y"/></li>
+           </ul>
          </where>
          <where value="!isBuyable()">
            <where value="tippedAt != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; getTimeNow()">
