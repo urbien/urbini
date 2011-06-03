@@ -16,7 +16,7 @@
      </ul>
      <h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
      
-     <div id="deal_discount">
+     <div id="deal_discount" class="${overlay}">
        <!--dl>
          <dt><text text="Value"/></dt>
          <dd><property name="dealValue" noIcon="y"/></dd>
@@ -30,7 +30,7 @@
          <dd><property name="dealDiscount" noIcon="y"/></dd>
        </dl>
      </div>
-     <div id="price_tag" >
+     <div id="price_tag">
        <div id="price_tag_inner">
          <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
          <where value="isBuyable()">
@@ -58,7 +58,7 @@
        </div>
      </div>
      <div id="remaining_time_container">
-       <div class="lightTextLightBackground">
+       <div class="countdown_container ${overlay}">
          <where value="getTimeLeft() &lt; 86400  &amp;&amp; getTimeLeft() &gt; 0"> 
            <img src="images/obval/countdown.png" />
          </where>
@@ -87,7 +87,7 @@
          </where>
        </div>
     <where value="isBuyable()">
-      <div id="number_sold_container">
+      <div id="number_sold_container" class="${overlay}">
        <where value="couponBuysQuantity &gt; 0">
           <div class="deal_titles"><text text="Bought"/>:&#160; 
           <span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;</div>
