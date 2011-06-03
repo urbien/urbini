@@ -1640,7 +1640,8 @@ input:focus { outline: 0 none; }
 /* dialog: body is a parent */
 .panel_block {
   position: absolute;
-  width: 500px; /*50%*/
+ 
+  width: 550px;
   min-width: 300px;
   max-width: 1100px;
   padding: 0px;
@@ -1789,9 +1790,12 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 /*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty { padding-right: 4px; min-width: 10px; font-size: 18px !important; font-weight: bold; text-align:center;}
 
-.rounded_rect_tbl .label_td { white-space: nowrap; } 
+.rounded_rect_tbl .label_td { white-space: nowrap; position: relative; } 
+.rounded_rect_tbl .field_comment { height: 50px; }
 .rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
+.rounded_rect_tbl .comment { position: absolute; margin-top: -2px; color: &[Alternative_A];; font-size: 11px; }
+.field_comment .comment { margin-top: 2px; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input { 
 	margin: 0px; padding: 1px; min-height: 22px;
@@ -1804,7 +1808,6 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .grey_highlighting .pointer, .rounded_rect_tbl .blue_highlighting .pointer { color: &[Alternative_A];; }
 
 .rounded_rect_tbl .textarea { color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];;  margin-bottom: 5px; width: 100%; border: 2px solid &[PrimaryColor_1];; font:inherit; }
-.rounded_rect_tbl .comment { text-align: left; color: &[Alternative_A];; font-size: 11px; }
 .rounded_rect_tbl .select { font-size: inherit; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
 
 .rounded_rect_tbl input#rightPanelPropertySheet  { display: none; }
