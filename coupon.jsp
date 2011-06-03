@@ -2,7 +2,7 @@
 <table width="100%" class="obval_item" cellpadding="0" cellspacing="0" border="0">
 <!--tr width="100%" valign="middle" height="74">
   <td colspan="2" style="border: 1px solid #d9d9d9;">
-     <h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
+     <h2><div><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
   </td>
 </tr-->
 <tr valign="top">
@@ -14,7 +14,7 @@
      <ul>
        <li><property name="image" frame="y" noIcon="y" /><!-- image --></li>
      </ul>
-     <h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
+     <div id="h2"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></div>
      
      <div id="deal_discount" class="${overlay}">
        <!--dl>
@@ -68,28 +68,28 @@
          <where value="isBuyable()">
            <ul id="counter">
              <li class="deal_titles"><text text="Time Left To Buy"/></li>
-             <li class="deal_values ${overlay}"><property name="timeLeftToBuy" noIcon="y"/></li>
+             <li class="deal_values"><property name="timeLeftToBuy" noIcon="y"/></li>
            </ul>
          </where>
          <where value="!isBuyable()">
            <where value="tippedAt != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; getTimeNow()">
-             <ul id="counter"><li class="deal_values  ${overlay}"><text text="The deal is over"/>!</li></ul>
+             <ul id="counter"><li class="deal_values"><text text="The deal is over"/>!</li></ul>
            </where>
            <where value="tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; getTimeNow()">
-             <ul id="counter"><li class="deal_values ${overlay}"><text text="The deal is off"/>!</li></ul>
+             <ul id="counter"><li class="deal_values"><text text="The deal is off"/>!</li></ul>
            </where>
            <where value="cap != null &amp;&amp; couponBuysQuantity &gt;= cap">
-             <ul id="counter"><li class="deal_values ${overlay}"><text text="Sold out"/>!</li></ul>
+             <ul id="counter"><li class="deal_values"><text text="Sold out"/>!</li></ul>
            </where>
            <where value="dateFeatured != null &amp;&amp; dateFeatured &gt; getTimeNow()">
-             <ul id="counter"><li class="deal_values ${overlay}"><text text="Not yet featured"/>!</li></ul>
+             <ul id="counter"><li class="deal_values"><text text="Not yet featured"/>!</li></ul>
            </where>
          </where>
        </div>
     <where value="isBuyable()">
       <div id="number_sold_container" class="${overlay}">
        <where value="couponBuysQuantity &gt; 0">
-          <div class="deal_titles ${overlay}"><text text="Bought"/>:&#160; 
+          <div class="deal_titles"><text text="Bought"/>:&#160; 
           <span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;</div>
        </where>
        <div class="deal_titles">
