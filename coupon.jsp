@@ -153,8 +153,8 @@
     </div><!-- fine print -->
     <div class="more_items">
     <h3 class="csp_33"><text text="more deals"/></h3>
-    <siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;-inRow=1&amp;-adTitle=Future+deals&amp;-limit=3&amp;-featured=y"/>
-    <siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRow=1&amp;-adTitle=Upcoming+deals&amp;-limit=3&amp;-featured=y"/>
+    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRow=1&amp;-adTitle=Future+deals&amp;-limit=3&amp;-featured=y"/>
+    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape_select=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRow=1&amp;-adTitle=Upcoming+deals&amp;-limit=3&amp;-featured=y"/>
     </div>
     <!-- video -->
     <div><property name="video" noIcon="y"/> </div>
