@@ -57,6 +57,40 @@
          </where>
        </div>
      </div>
+     <div id="buy_to_friend">
+       <a class="buy_gift" id="-inner" href="mkResource.html?-$action=mkResource&amp;gift=y&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon">
+       <img src="icons/gift.png" width="32"/><br/>
+       <where value="photo != null">
+       <where value="photo.overlay != null">
+         <where value="photo.overlay == 'lightTextLightBackground'">
+           <span style="color: #f85400">
+           <text text="Gift"/>
+           </span>
+         </where>
+         <where value="photo.overlay == 'lightTextDarkBackground'">
+           <span style="color: #ffffff">
+           <text text="Gift"/>
+           </span>
+         </where>
+         <where value="photo.overlay == 'darkTextDarkBackground'">
+           <span style="color: #ffffff">
+           <text text="Gift"/>
+           </span>
+         </where>
+         <where value="photo.overlay == 'darkTextLightBackground'">
+           <span style="color: #ffffff">
+           <text text="Gift"/>
+           </span>
+         </where>
+       </where>
+       <where value="photo.overlay == null">
+         <span style="color: #ffffff">
+         <text text="Gift"/>
+         </span>
+       </where>
+       </where>
+       </a>
+     </div>
      <div id="remaining_time_container">
        <div class="countdown_container ${overlay}">
          <where value="getTimeLeft() &lt; 86400  &amp;&amp; getTimeLeft() &gt; 0"> 
