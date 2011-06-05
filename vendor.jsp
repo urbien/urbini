@@ -15,12 +15,12 @@
 </tr>
 <tr>
   <td></td>
-  <td rowspan="3"><h3 class="csp_33" align="center"><text text="our locations" />
-    </h3>    <div><siteResourceList uri="l.html?-$action=searchLocal&amp;headOffice=-$this&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Vendor&amp;-inRow=2&amp;-adTitle=Locations&amp;-limit=2"/>
+  <td rowspan="3"><h3 class="csp_33" align="center"><text text="other locations" />
+    </h3>    <div><siteResourceList uri="l.html?-$action=searchLocal&amp;headOffice=-$this&amp;.-viewCols=place&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Vendor&amp;-inRow=2&amp;-adTitle=Locations&amp;-limit=2"/>
     </div></td>
   <td rowspan="3" valign="top"><h3 class="csp_33" align="center"><text text="our guys" /></h3><div><siteResourceList uri="l.html?-$action=searchLocal&amp;-grid=y&amp;vendor=-$this&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Person&amp;-inRow=6&amp;-adTitle=Employees&amp;-limit=1"/></div></td>
-  <td rowspan="3" valign="top"><h3 class="csp_33" align="center"><text text="who checked in" /></h3><siteResourceList uri="l.html?-$action=searchLocal&amp;vendor=-$this&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CheckIn&amp;-inRow=1&amp;-adTitle=CheckIns&amp;-limit=2"/></td>
-  <td rowspan="3" align="right" valign="top"><h3 class="csp_33" align="center"><text text="our deals" /></h3><siteResourceList uri="l.html?-$action=searchLocal&amp;vendor=-$this&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRow=1&amp;-adTitle=Upcoming+deals&amp;-limit=2&amp;-featured=y"/></td>
+  <td rowspan="3" valign="top"><where value="checkIn &gt; 0"><h3 class="csp_33" align="center"><text text="who checked in" /></h3><siteResourceList uri="l.html?-$action=searchLocal&amp;vendor=-$this&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CheckIn&amp;-inRow=1&amp;-adTitle=CheckIns&amp;-limit=2"/></where></td>
+  <td rowspan="3" align="right" valign="top"><where value="currentDeals &gt; 0"><h3 class="csp_33" align="center"><text text="our deals" /></h3><siteResourceList uri="l.html?-$action=searchLocal&amp;vendor=-$this&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRow=1&amp;-adTitle=Upcoming+deals&amp;-limit=2&amp;-featured=y"/></where></td>
 </tr>
 <tr>
   <td></td>
