@@ -59,7 +59,7 @@
      </div>
      <div id="buy_to_friend">
        <a class="buy_gift" id="-inner" href="mkResource.html?-$action=mkResource&amp;gift=y&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon">
-       <img src="icons/gift.png" width="32"/><br/>
+       <img src="icons/24-gift.png" width="24"/><br/>
        <where value="photo != null">
        <where value="photo.overlay != null">
          <where value="photo.overlay == 'lightTextLightBackground'">
@@ -126,11 +126,11 @@
           <div class="deal_titles"><text text="Bought"/>:&#160; 
           <span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;</div>
        </where>
-       <div class="deal_titles">
        <where value="dealPrice &gt; 0  &amp;&amp;  tippingPoint &gt; 1 &amp;&amp;  couponsLeftToBuy == tippingPoint">
+       <div class="deal_titles">
          <text text="Be the first to buy"/>
-       </where>
        </div>
+       </where>
        <where value="couponsLeftToBuy &gt; 0">
          <div class="deal_values">
            <text text="Short of"/>:&#160;
@@ -141,9 +141,9 @@
          <div class="dealOn">
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
-         <div class="join">
+         <!--div class="join">
            <text text="Join us" />
-         </div>
+         </div-->
        </where>
        <where value="dealPrice &lt;= 0  &amp;&amp;  couponBuysQuantity == null">
          <div class="deal_titles"><text text="Be the first to try"/></div>
