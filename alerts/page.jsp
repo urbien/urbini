@@ -19,7 +19,7 @@
   <tr>
     <td>
     <table width="600px" border="0" align="left" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-      <where value="to != null">
+      <where value="to != null" itype="http://www.hudsonfog.com/voc/model/workflow/IncomingWorkflowMessage">
       <tr valign="center">
         <td width="30"></td>
         <td height="50">
