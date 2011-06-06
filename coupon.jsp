@@ -145,7 +145,7 @@
            <text text="Join us" />
          </div-->
        </where>
-       <where value="dealPrice &lt;= 0  &amp;&amp;  couponBuysQuantity &lt; cap">
+       <where value="dealPrice &lt;= 0  &amp;&amp;  couponBuysQuantity &lt; cap  &amp;&amp; couponsLeftToBuy &gt; 0">
          <div class="dealOn">
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
