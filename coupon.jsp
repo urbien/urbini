@@ -102,42 +102,42 @@
          <where value="isBuyable()">
            <ul id="counter">
              <li class="deal_titles"><text text="Time Left To Buy"/></li>
-             <li class="deal_values"><property name="timeLeftToBuy" noIcon="y"/></li>
+             <li class="time_left"><property name="timeLeftToBuy" noIcon="y"/></li>
            </ul>
          </where>
          <where value="!isBuyable()">
            <where value="tippedAt != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; getTimeNow()">
-             <ul id="counter"><li class="deal_values"><text text="The deal is over"/>!</li></ul>
+             <ul id="counter"><li class="time_left"><text text="The deal is over"/>!</li></ul>
            </where>
            <where value="tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; getTimeNow()">
-             <ul id="counter"><li class="deal_values"><text text="The deal is off"/>!</li></ul>
+             <ul id="counter"><li class="time_left"><text text="The deal is off"/>!</li></ul>
            </where>
            <where value="cap != null &amp;&amp; couponBuysQuantity &gt;= cap">
-             <ul id="counter"><li class="deal_values"><text text="Sold out"/>!</li></ul>
+             <ul id="counter"><li class="time_left"><text text="Sold out"/>!</li></ul>
            </where>
            <where value="dateFeatured != null &amp;&amp; dateFeatured &gt; getTimeNow()">
-             <ul id="counter"><li class="deal_values"><text text="Not yet featured"/>!</li></ul>
+             <ul id="counter"><li class="time_left"><text text="Not yet featured"/>!</li></ul>
            </where>
          </where>
        </div>
     <where value="isBuyable()">
       <div id="number_sold_container" class="${overlay}">
        <where value="couponBuysQuantity &gt; 0">
-          <div class="deal_titles"><text text="Bought"/>:&#160; 
+          <div class="time_left"><text text="Bought"/>:&#160; 
           <span class="number"><property name="couponBuysQuantity" noIcon="y" /></span>&#160;</div>
        </where>
        <where value="dealPrice &gt; 0  &amp;&amp;  tippingPoint &gt; 1 &amp;&amp;  couponsLeftToBuy == tippingPoint">
-       <div class="deal_titles">
+       <div class="time_left">
          <text text="Be the first to buy"/>
        </div>
        </where>
-       <where value="couponsLeftToBuy &gt; 0">
-         <div class="deal_values">
+       <where value="couponsLeftToBuy &gt; 0  &amp;&amp; couponBuysQuantity &gt; 0">
+         <div class="deal_titles">
            <text text="Short of"/>:&#160;
            <property name="couponsLeftToBuy" noIcon="y" />
          </div>
        </where>
-       <where value="couponsLeftToBuy &lt;= 0  &amp;&amp;  couponBuysQuantity &gt; 0  &amp;&amp;  isBuyable()">
+       <where value="couponsLeftToBuy &lt;= 0  &amp;&amp;  couponBuysQuantity &gt; 0">
          <div class="dealOn">
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
@@ -145,8 +145,14 @@
            <text text="Join us" />
          </div-->
        </where>
+       <where value="dealPrice &lt;= 0  &amp;&amp;  couponBuysQuantity &lt; cap">
+         <div class="dealOn">
+           <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
+         </div>
+       </where>
+       
        <where value="dealPrice &lt;= 0  &amp;&amp;  couponBuysQuantity == null">
-         <div class="deal_titles"><text text="Be the first to try"/></div>
+         <div class="time_left"><text text="Be the first to try"/></div>
        </where>
      </div>
      </where>
