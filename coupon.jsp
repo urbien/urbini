@@ -157,19 +157,6 @@
      </div>
      </where>
      </div>
-      <where value="redemptionLocationCount > 0">
-      <br/>
-      <div id="locations" style="position: absolute; bottom: 100px; left: 15px;" >
-      <ul>
-        <li><h3><property name="redemptionLocation" br="y" labelOnly="y"/></h3></li>
-        <li><siteResourceList uri="l.html?bUri=-$this%26m_p=redemptionLocation%26b_p=coupon&amp;-list=y&amp;-limit=2&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/RedemptionLocation&amp;-suppressHeader=y"/></li>
-        <where value="redemptionLocationCount > 2">
-           
-          <li><h3><text text="See all"/><property name="redemptionLocation" br="y" noLabel="y"/></h3></li>
-        </where>
-      </ul>
-      </div>
-      </where>
     </div>
     </div>
   <div id="conditions">
@@ -181,20 +168,27 @@
     </div><!-- highlights -->
     <div class="fine_print">
       <h3 class="csp_33"><text text="Fine print"/></h3>
+      <where value="redemptionLocationCount > 0">
+      <!--div id="locations" style="position: absolute; bottom: 100px; left: 15px;" -->
+      <ul style="padding-left:5px; padding-bottom: 10px; padding-top: 5px; background: rgba(127, 127, 127, 0.1);">
+        <li id="h3"><property name="redemptionLocation" labelOnly="y"/>
+        <where value="redemptionLocationCount > 2">
+          <property name="redemptionLocation" noLabel="y"/>
+        </where>
+        </li>
+        <li><siteResourceList uri="l.html?bUri=-$this%26m_p=redemptionLocation%26b_p=coupon&amp;-list=y&amp;-limit=2&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/RedemptionLocation&amp;-suppressHeader=y&amp;-inRowW=2&amp;-titleLink=y"/></li>
+      </ul>
+      <!--  /div -->
+      </where>
       <ul>
         <li><property name="conditions" noIcon="y"/></li>
       </ul>
       <br/>
-      <where value="redemptionLocationCount > 0">
-      <ul>
-        <li><h3><property name="redemptionLocation" br="y"/></h3></li>
-      </ul>
-      </where>
     </div><!-- fine print -->
     <div class="more_items">
     <h3 class="csp_33"><text text="more deals"/></h3>
-    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRow=1&amp;-adTitle=Future+deals&amp;-limit=3&amp;-featured=y"/>
-    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape_select=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRow=1&amp;-adTitle=Upcoming+deals&amp;-limit=3&amp;-featured=y"/>
+    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRow=1&amp;-title=Future+deals&amp;-limit=3&amp;-featured=y"/>
+    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape_select=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRow=1&amp;-title=Upcoming+deals&amp;-limit=3&amp;-featured=y"/>
     </div>
     <!-- video -->
     <div><property name="video" noIcon="y"/> </div>
