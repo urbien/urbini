@@ -5,7 +5,16 @@
     <td width="40%"><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
     <h3><property name="coupon.title" noIcon="y"/></h3></td>
     <td width="5%"></td>
-    <td width="40%"><div style="display:table-cell; vertical-align:top"><property name="customer.thumb" frame="y" noIcon="y" /><font style="font-size:24px"><property name="customer" noIcon="y" /></font></div>    </td>
+    <td width="40%">
+    <div style="display:table-cell; vertical-align:top">
+      <where value="giftTo == null">
+        <property name="customer.thumb" frame="y" noIcon="y" /><font style="font-size:24px"><property name="customer" noIcon="y" /></font>
+      </where>
+      <where value="giftTo != null">
+        <property name="giftTo.thumb" frame="y" noIcon="y" /><font style="font-size:24px"><property name="giftTo" noIcon="y" /></font>
+      </where>
+    </div>
+    </td>
     <td></td>
   </tr>
   <tr>
