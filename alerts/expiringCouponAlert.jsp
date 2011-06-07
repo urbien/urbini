@@ -3,5 +3,5 @@
     <br/><br />
     <property name="resourceMediumImage" noIcon="y" />
     <br/><br />
-    <setCityScape />
+    <!--setCityScape /-->
 </div>
