@@ -5,12 +5,12 @@
     <td width="40%"><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
     <h3><property name="coupon.title" noIcon="y"/></h3></td>
     <td width="5%"></td>
-    <td width="40%"><div style="display:table-cell; vertical-align:top"><font style="font-size:24px"><property name="customer" noIcon="y" /></font><property name="customer.thumb" noIcon="y" /></div>    </td>
+    <td width="40%"><div style="display:table-cell; vertical-align:top"><property name="customer.thumb" frame="y" noIcon="y" /><font style="font-size:24px"><property name="customer" noIcon="y" /></font></div>    </td>
     <td></td>
   </tr>
   <tr>
     <td></td>
-    <td rowspan="2"><property name="coupon.image" /></td>
+    <td rowspan="2"><property frame="y" name="coupon.featured" /></td>
     <td></td>
     <td>
         <div style="background-color:#CCCCCC;padding: 10px 10px 10px 10px;">
