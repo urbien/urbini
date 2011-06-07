@@ -52,7 +52,7 @@
   </tr>
   <tr valign="bottom">
     <td></td>
-    <td height="30" align="right"><font color="#e1e1e1" size="-6"><property name="alertType" href="y"/></font></td>
+    <td height="30" align="right"></td>
     <td></td>
   </tr>
 </table>
