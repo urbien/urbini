@@ -35,27 +35,39 @@
         </td>
         <td width="30"></td>
       </tr>  
-  <tr valign="center">
-    <td></td>
-    <td height="50"><text text="Obval Team" /></td>
-    <td></td>
-  </tr>
-  <tr valign="bottom">
-    <td></td>
-    <td height="10"><hr/></td>
-    <td width="30"></td>
-  </tr>
-  <tr valign="bottom">
-    <td></td>
-    <td height="30"><font color="#888888" size="-1"><unsubscribeFromEmails /></font></td>
-    <td width="30"></td>
-  </tr>
-  <tr valign="bottom">
-    <td></td>
-    <td height="30" align="right"></td>
-    <td></td>
-  </tr>
-</table>
+      <tr valign="center">
+        <td></td>
+        <td height="50"><font color="#E12E05" size="-1"><promptToSetCityScape /></font></td>
+        <td></td>
+      </tr>
+      <tr valign="center">
+        <td></td>
+        <td height="50"><text text="Obval Team" /></td>
+        <td></td>
+      </tr>
+      <tr valign="bottom">
+        <td></td>
+        <td height="10"><hr/></td>
+        <td width="30"></td>
+      </tr>
+      <tr valign="bottom">
+        <td></td>
+        <td height="30"><font color="#888888" size="-1"><unsubscribeFromEmails /></font></td>
+        <td width="30"></td>
+      </tr>
+      
+      <tr valign="bottom">
+        <td></td>
+        <td height="30" align="right">
+          <where value="alertType != null" itype="http://www.hudsonfog.com/voc/model/workflow/IncomingWorkflowMessage">
+            <font color="#e1e1e1" size="-6"><property name="alertType" href="y"/></font>
+          </where>
+        </td>
+        <td></td>
+      </tr>
+
+  </table>
+  
     </td>
   </tr>
 </table>
