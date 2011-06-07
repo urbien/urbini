@@ -12,7 +12,7 @@
    <div style="position: relative">
     <div id="everyscape" class="photo">
      <ul>
-       <li><property name="image" frame="y" noIcon="y" /><!-- image --></li>
+       <li><!--property name="image" frame="y" noIcon="y" / --> <slideShow/><!-- image --></li>
      </ul>
      <div id="h2"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></div>
      
