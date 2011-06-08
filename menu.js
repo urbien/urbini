@@ -3700,10 +3700,9 @@ var ListBoxesHandler = {
 		if (!form)
 			return;
     var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp];
-    
     var label = getPreviousSibling(textField.parentNode);
     if (label) {
-      itemNameDiv.innerHTML = getTextContent(label);
+      itemNameDiv.innerHTML = label.innerHTML;//getTextContent(label);
       itemNameDiv.style.display = "";
     }
   },
