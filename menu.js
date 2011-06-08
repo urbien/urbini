@@ -4948,7 +4948,7 @@ var DataEntry = {
 		var isSecondClick = (this.currentUrl == url);		
 		if (isSecondClick)
 			return;
-	
+
 		var key = this._getKey(url);
 		// show stored data entry 
 		if (this.dataEntryArr[key]) {
@@ -5216,13 +5216,18 @@ var DataEntry = {
 		}
 		else if(url == null)
 			return null;
-		
-		if (this.isMkResource(url)) {
-			var key = getUrlParam(url, "type");
-			if (url.indexOf("$rootFolder=") != -1) // $rootFolder also defines type
-				key += "_rf";
-			return key;	
-		}
+
+// TODO: previously mkResource separated only by parameter type and $rootFolder
+// after Obval's Buy vs. Gift it was commented out!!!
+// May be to find additional parameters	to check.
+
+//		if (this.isMkResource(url)) {
+//			var key = getUrlParam(url, "type");
+//			if (url.indexOf("$rootFolder=") != -1) // $rootFolder also defines type
+//				key += "_rf";
+//			return key;	
+//		}
+
 		return url;	
 	},
 	// helps to detect entered changes
@@ -11234,7 +11239,7 @@ var WidgetRefresher = {
     }
 
 		if (widgetSlider.isSlideLoaded(recNmb))
-    	widgetSlider.insetNextSlide(); // slide is in cache
+    	widgetSlider.insertNextSlide(); // slide is in cache
 		else	
 			postRequest(null, url, params, wdiv, null, WidgetRefresher.refresh, true, true);
   },
@@ -11246,7 +11251,7 @@ var WidgetRefresher = {
 
     var widgetSlider = WidgetRefresher.widgetsArr[div.id];
 		if (widgetSlider)
-			widgetSlider.insetNextSlide(content);
+			widgetSlider.insertNextSlide(content);
 		else
 			div.innerHTML = content; // widget view (backside options)
 			
@@ -11284,7 +11289,7 @@ function WidgetSlider(widgetDiv) {
 		this.widgetDiv = widgetDiv;
 	},
 	
-	this.insetNextSlide = function(html) {
+	this.insertNextSlide = function(html) {
 		var $t = self;
 		var recNmb = this.getRecNmb();
 		
