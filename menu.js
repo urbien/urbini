@@ -11431,6 +11431,7 @@ var BacklinkImagesSlideshow = {
 	widgetSlider : null,
 	maxSideIdx : null,
 	curImageIdx : 0,
+	timerId : null,
 	init : function() {
 		this.slideShowDiv = document.getElementById("slideShow");
 		if (!this.slideShowDiv)
@@ -11438,8 +11439,19 @@ var BacklinkImagesSlideshow = {
 		this.slideShowStoreDiv = document.getElementById("slideShow_store");	
 		this.maxSideIdx = this.slideShowStoreDiv.getElementsByTagName("img").length;
 		this.widgetSlider = new WidgetSlider(this.slideShowDiv);
+
+		addEvent(this.slideShowDiv, "mouseover", this.onmouseover, false);
+		addEvent(this.slideShowDiv, "mouseout", this.onmouseout, false);
 		
-		setTimeout(this.rotate, this.DELAY);
+		this.timerId = setTimeout(this.rotate, this.DELAY / 2);
+	},
+	onmouseover : function() {
+		var $t = BacklinkImagesSlideshow;
+		clearTimeout($t.timerId);
+	},
+	onmouseout : function() {
+		var $t = BacklinkImagesSlideshow;
+		$t.timerId = setTimeout($t.rotate, $t.DELAY / 3);
 	},
 	rotate : function() {
 		var $t = BacklinkImagesSlideshow;
@@ -11454,7 +11466,7 @@ var BacklinkImagesSlideshow = {
 		
 		$t.widgetSlider.insertNextSlide(img, $t.curImageIdx);	
 		
-		setTimeout($t.rotate, $t.DELAY);
+		$t.timerId = setTimeout($t.rotate, $t.DELAY);
 	}
 }
 
