@@ -1821,7 +1821,7 @@ var FormProcessor = {
 		// change view cols dialog sendig as form to get new page
    else if (isFormInDialog && form.id != "viewColsList" && form.id != "uploadProject"
 	 			&& form.id != "gridColsList")  {
-	 		// -inner=y for dialog on desktop															
+			// -inner=y for dialog on desktop															
 			params += "&-inner=y"; // params for XHR means inner/dialog.
 	 		var dlg = getParentDialog(form);
 			// if "dialog" inside not body then it is "on page"
@@ -3702,7 +3702,7 @@ var ListBoxesHandler = {
     var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp];
     var label = getPreviousSibling(textField.parentNode);
     if (label) {
-      itemNameDiv.innerHTML = label.innerHTML;//getTextContent(label);
+      itemNameDiv.innerHTML = label.innerHTML;
       itemNameDiv.style.display = "";
     }
   },
@@ -11161,7 +11161,7 @@ var WidgetRefresher = {
 							var intervalSeconds = (idx == -1) ? rel.substring(8) : rel.substring(8, idx);
 							this.setInterval(children[n], intervalSeconds);
 							// make 1st preloading
-							this._onInterval(children[n].id);
+							this._onInterval(children[n].id, true);
 						}
 					}
 				}
@@ -11214,7 +11214,7 @@ var WidgetRefresher = {
     }
   },
 	
-  _onInterval : function(divId) {
+  _onInterval : function(divId, isInitial) {
 		var $t = WidgetRefresher;
     var url = getBaseUri() + "widget/div/oneWidget.html";
 		if (!$t.widgetsArr[divId])
@@ -11224,7 +11224,8 @@ var WidgetRefresher = {
 
     var widgetSlider = WidgetRefresher.widgetsArr[divId];
 		// show preloaded slide
-		widgetSlider.showNextSlide();
+		if (!isInitial)
+			widgetSlider.showNextSlide();
 		
 		var wdiv = widgetSlider.getWidgetDiv();
     if (wdiv) {
@@ -11276,7 +11277,7 @@ function WidgetSlider(widgetDiv) {
 	//-------------------
 	// fading animation
 	this.HALF_STEPS_AMT = 10;
-	this.TIMEOUT = 30;
+	this.TIMEOUT = 20;
 	this.step = 1;
 	this.slidesArr = new Array();
 	
@@ -11286,19 +11287,24 @@ function WidgetSlider(widgetDiv) {
 	
 	this.init = function(widgetDiv) {
 		this.widgetDiv = widgetDiv;
+
+		// crerate a widget from initial content		
+		var recNmb = 0; //this.getRecNmb() || 0;
+		this._createNewSlide(widgetDiv.innerHTML, recNmb);
 	},
 	
-	this.insertNextSlide = function(html) {
+	// slideIdx for slideshow without RecNmb,like backlink images
+	this.insertNextSlide = function(htmlOrObject, slideIdx) {
 		var $t = self;
-		var recNmb = this.getRecNmb();
-		
-		if (!html) {
+				
+		var recNmb = (typeof slideIdx != 'undefined') ? slideIdx : this.getRecNmb();
+		// 1. exist slide from cache 
+		if (!htmlOrObject) {
 			$t.nextSlide = $t.slidesArr[recNmb];
 		}
+		// 2. new slide
 		else {
-			$t.nextSlide = document.createElement("div");
-			$t.nextSlide.innerHTML = html;
-			$t.slidesArr[recNmb] = $t.nextSlide;
+			$t._createNewSlide(htmlOrObject, recNmb);
 		}
 		
 		if (Browser.ie) // IE uses own transition Fade effect
@@ -11307,7 +11313,16 @@ function WidgetSlider(widgetDiv) {
 		$t.nextSlide.style.display = "none";
 		$t.widgetDiv.appendChild($t.nextSlide);
 	}
-	
+	this._createNewSlide = function(htmlOrObject, recNmb) {
+		this.nextSlide = document.createElement("div");
+		if (typeof htmlOrObject == "string")
+			this.nextSlide.innerHTML = htmlOrObject;
+		else {
+			this.nextSlide.innerHTML = "";
+			this.nextSlide.appendChild(htmlOrObject);
+		}	
+		this.slidesArr[recNmb] = this.nextSlide;
+	}
 	this.showNextSlide = function(){
 		if (this.nextSlide == null)
 			return;
@@ -11407,6 +11422,42 @@ function WidgetSlider(widgetDiv) {
 	// ---
 	this.init(widgetDiv);
 }
+
+
+var BacklinkImagesSlideshow = {
+	DELAY : 3000,
+	slideShowDiv : null,
+	slideShowStoreDiv : null,
+	widgetSlider : null,
+	maxSideIdx : null,
+	curImageIdx : 0,
+	init : function() {
+		this.slideShowDiv = document.getElementById("slideShow");
+		if (!this.slideShowDiv)
+			return;
+		this.slideShowStoreDiv = document.getElementById("slideShow_store");	
+		this.maxSideIdx = this.slideShowStoreDiv.getElementsByTagName("img").length;
+		this.widgetSlider = new WidgetSlider(this.slideShowDiv);
+		
+		setTimeout(this.rotate, this.DELAY);
+	},
+	rotate : function() {
+		var $t = BacklinkImagesSlideshow;
+		$t.widgetSlider.showNextSlide();
+		
+		$t.curImageIdx++;
+		if ($t.curImageIdx > $t.maxSideIdx)
+			$t.curImageIdx = 0;
+	
+		// insertNextSlide moves the image from the store
+		var img = getFirstChild($t.slideShowStoreDiv, $t.curImageIdx);
+		
+		$t.widgetSlider.insertNextSlide(img, $t.curImageIdx);	
+		
+		setTimeout($t.rotate, $t.DELAY);
+	}
+}
+
 
 function changeSkin(event) {
   var e = getDocumentEvent(event);
