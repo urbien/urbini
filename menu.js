@@ -11277,7 +11277,7 @@ function WidgetSlider(widgetDiv) {
 	//-------------------
 	// fading animation
 	this.HALF_STEPS_AMT = 20;
-	this.TIMEOUT = 20;
+	this.TIMEOUT = 30;
 	this.step = 1;
 	this.slidesArr = new Array();
 	
