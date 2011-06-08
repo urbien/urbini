@@ -11265,7 +11265,7 @@ var WidgetRefresher = {
 * NOTE: meanwhile NO stroring of slides because
 * no check of secondary content loading! 
 ************************************************/
-function WidgetSlider(widgetDiv) {
+function WidgetSlider(widgetDiv, callback) {
 	var self = this;
 	// used and initialized in WidgetRefresher
 	this.timerId; // timer to refresh
@@ -11284,6 +11284,8 @@ function WidgetSlider(widgetDiv) {
 	// IE's hack for text fading
 	this.clrRGB = null;
 	this.bgRGB = null;
+	
+	this.callback = callback; // to call "owner" callback on animation finish
 	
 	this.init = function(widgetDiv) {
 		this.widgetDiv = widgetDiv;
@@ -11337,6 +11339,10 @@ function WidgetSlider(widgetDiv) {
 			this.widgetDiv.filters[0].apply();
 			this.widgetDiv.innerHTML = this.nextSlide.innerHTML;
 			this.widgetDiv.filters[0].play();
+
+			if (this.callback)
+				setTimeout(this.callback, 2 * this.HALF_STEPS_AMT *	this.TIMEOUT);
+
 			return;
 		}	
 		
@@ -11370,6 +11376,8 @@ function WidgetSlider(widgetDiv) {
 		}
 		else {
 			$t.step = 1;
+			if (this.callback)
+				this.callback();
 		} 
 	}
 	this._changeOpacity = function(opacity) {
@@ -11440,7 +11448,7 @@ var BacklinkImagesSlideshow = {
 		if (!this.slideShowStoreDiv)
 			return;
 		this.maxSideIdx = this.slideShowStoreDiv.getElementsByTagName("img").length;
-		this.widgetSlider = new WidgetSlider(this.slideShowDiv);
+		this.widgetSlider = new WidgetSlider(this.slideShowDiv, this.onslidingFinish);
 
 		addEvent(this.slideShowDiv, "mouseover", this.onmouseover, false);
 		addEvent(this.slideShowDiv, "mouseout", this.onmouseout, false);
@@ -11468,6 +11476,10 @@ var BacklinkImagesSlideshow = {
 		
 		$t.widgetSlider.insertNextSlide(img, $t.curImageIdx);	
 		
+		//$t.timerId = setTimeout($t.rotate, $t.DELAY);
+	},
+	onslidingFinish : function() {
+		var $t = BacklinkImagesSlideshow;
 		$t.timerId = setTimeout($t.rotate, $t.DELAY);
 	}
 }
