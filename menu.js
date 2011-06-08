@@ -11437,6 +11437,8 @@ var BacklinkImagesSlideshow = {
 		if (!this.slideShowDiv)
 			return;
 		this.slideShowStoreDiv = document.getElementById("slideShow_store");	
+		if (!this.slideShowStoreDiv)
+			return;
 		this.maxSideIdx = this.slideShowStoreDiv.getElementsByTagName("img").length;
 		this.widgetSlider = new WidgetSlider(this.slideShowDiv);
 
