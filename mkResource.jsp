@@ -1,3 +1,4 @@
+<div>
 <table id="mkresource">
 <tr>
   <td></td>
@@ -25,3 +26,4 @@
   <td width="25%" valign="top"><include name="${type}_mkresource_right.jsp"/></td>
 </tr>
 </table>
+</div>
