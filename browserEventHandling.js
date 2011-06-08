@@ -69,6 +69,9 @@
 				// prevent exception while image uploading
 				if (typeof WidgetRefresher != 'undefined')
 					WidgetRefresher.init(); // requires more time - preloading
+				//if (typeof BacklinkImagesSlideshow != 'undefined')
+					BacklinkImagesSlideshow.init();	
+					
         /* other initializations in onDomLoaded */
       }
     }
