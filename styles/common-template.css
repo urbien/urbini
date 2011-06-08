@@ -115,7 +115,7 @@ img.fade {
 
 .rounded_rect_tbl #siteResourceList { text-align: center; } /* align menu items */
 .rounded_rect_tbl #menu{ margin: 0 auto; }
-#siteResourceList #front {background-color: &[BackgroundColor]; }
+#siteResourceList #front {background-color: &[BackgroundColor];}
 #siteResourceList #front .label {font-size:12px; }
 
 #resourceList td.top {height: 0px; }
@@ -1073,6 +1073,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 .innerTitle { font-size: 18px;}
 #subscribeNote { font-size: 15px; padding: 5px 5px 0 0; }
 .panel_block .property_group, .panel_block #item_name { font-size: 16px; margin-top: 15px;}
+.panel_block #item_name .comment { font-size: 12px; font-weight:normal; }
 
 *:lang(ja-jp) { font: 900 14pt/16pt "Heisei Mincho W9", serif }
 BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, serif; }
@@ -1797,6 +1798,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 .rounded_rect_tbl .comment { position: absolute; margin-top: -2px; color: &[Alternative_A];; font-size: 11px; }
+* html .rounded_rect_tbl .comment { left: 0; }
 .field_comment .comment { margin-top: 2px; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input { 
