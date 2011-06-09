@@ -11434,20 +11434,27 @@ function WidgetSlider(widgetDiv, callback) {
 
 var BacklinkImagesSlideshow = {
 	DELAY : 3000,
+	MAX_LOOPS : 2,
 	slideShowDiv : null,
 	slideShowStoreDiv : null,
 	widgetSlider : null,
-	maxSideIdx : null,
+	maxSlideIdx : null,
 	curImageIdx : 0,
 	timerId : null,
+	loopsCounter : 1,
 	init : function() {
 		this.slideShowDiv = document.getElementById("slideShow");
 		if (!this.slideShowDiv)
 			return;
+
 		this.slideShowStoreDiv = document.getElementById("slideShow_store");	
 		if (!this.slideShowStoreDiv)
 			return;
-		this.maxSideIdx = this.slideShowStoreDiv.getElementsByTagName("img").length;
+
+		this.maxSlideIdx = this.slideShowStoreDiv.getElementsByTagName("img").length;
+		if (this.maxSlideIdx == 0)
+			return;
+		
 		this.widgetSlider = new WidgetSlider(this.slideShowDiv, this.onslidingFinish);
 
 		addEvent(this.slideShowDiv, "mouseover", this.onmouseover, false);
@@ -11468,19 +11475,23 @@ var BacklinkImagesSlideshow = {
 		$t.widgetSlider.showNextSlide();
 		
 		$t.curImageIdx++;
-		if ($t.curImageIdx > $t.maxSideIdx)
+		if ($t.curImageIdx > $t.maxSlideIdx) {
+			$t.loopsCounter++;
+			if ($t.loopsCounter > $t.MAX_LOOPS)
+				removeEvent($t.slideShowDiv, "mouseout", $t.onmouseout, false);
+
 			$t.curImageIdx = 0;
+		}
 	
 		// insertNextSlide moves the image from the store
 		var img = getFirstChild($t.slideShowStoreDiv, $t.curImageIdx);
 		
 		$t.widgetSlider.insertNextSlide(img, $t.curImageIdx);	
-		
-		//$t.timerId = setTimeout($t.rotate, $t.DELAY);
 	},
 	onslidingFinish : function() {
 		var $t = BacklinkImagesSlideshow;
-		$t.timerId = setTimeout($t.rotate, $t.DELAY);
+		if ($t.loopsCounter <= $t.MAX_LOOPS)
+			$t.timerId = setTimeout($t.rotate, $t.DELAY);
 	}
 }
 
