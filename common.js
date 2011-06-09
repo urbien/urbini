@@ -681,7 +681,8 @@ function getDocumentEvent(e) {
  * Utility that discovers the actual html element which generated the event If
  * handler is on table and click was on td - it returns td
  */
-function getEventTarget(e) {
+// expectedTagName is not required
+function getEventTarget(e, expectedTagName) {
   e = getDocumentEvent(e); if (!e) return null;
   var target = null;
   if (e.target) {
@@ -697,7 +698,11 @@ function getEventTarget(e) {
   while (target.nodeType != 1) {
     target = target.parentNode;
   }
-  return target;
+	if (typeof expectedTagName == 'undefined')
+  	return target;
+	if (!target.tagName || target.tagName.toLowerCase() != expectedTagName.toLowerCase())
+		return null;
+	return target;		
 }
 
 /**
@@ -933,7 +938,14 @@ function getPreviousSibling(obj, makeLoopIfNeed) {
 	
 	return prevObj;
 }
-
+function getSiblingIndex(obj) {
+	if (!obj)
+		return null;
+	var idx  = 0;
+	while ((obj = getPreviousSibling(obj)) != null)
+		idx++;
+	return idx;
+}
 function getFirstChild(parent) {
 	if (!parent)
 		return null;
@@ -1134,8 +1146,10 @@ function getDomObjectFromHtml(html, attribName, attribValue){
 	_hdnDivForDom.innerHTML = html;
 	
 	var obj = getChildByAttribute(_hdnDivForDom, attribName, attribValue);
-	if (!obj) 
-		return null;
+	if (!obj) {
+		_hdnDivForDom.innerHTML = "";
+  	return null;
+  }
 	
 	// remove not needed html from DOM		
 	obj = obj.parentNode.removeChild(obj);
