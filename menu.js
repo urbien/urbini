@@ -11439,7 +11439,7 @@ function WidgetSlider(widgetDiv, callback) {
 
 var BacklinkImagesSlideshow = {
 	DELAY : 3000,
-	MAX_LOOPS : 2,
+	MAX_LOOPS : 1,
 	slideShowDiv : null,
 	slideShowStoreDiv : null,
 	widgetSlider : null,
@@ -11461,8 +11461,8 @@ var BacklinkImagesSlideshow = {
 		this._prepareSlides();
 
 		//var everyscape = getAncestorById(this.slideShowDiv, "everyscape");
-		addEvent(this.slideShowDiv, "mouseover", this.onmouseover, false);
-		addEvent(this.slideShowDiv, "mouseout", this.onmouseout, false);
+	//	addEvent(this.slideShowDiv, "mouseover", this.onmouseover, false);
+	//	addEvent(this.slideShowDiv, "mouseout", this.onmouseout, false);
 		addEvent(pager, "click", this.onPagerClick, false);
 		
 		this.timerId = setTimeout(this.rotate, this.DELAY / 2);
@@ -11482,6 +11482,7 @@ var BacklinkImagesSlideshow = {
 		
 		return true;
 	},
+	/*
 	onmouseover : function() {
 		var $t = BacklinkImagesSlideshow;
 		clearTimeout($t.timerId);
@@ -11491,15 +11492,15 @@ var BacklinkImagesSlideshow = {
 		var target = getEventTarget(event);
 		$t.timerId = setTimeout($t.rotate, $t.DELAY / 3);
 	},
-	
+	*/
 	// for manual paging
-	rotate : function(isPager, newImageIdx) {
+	rotate : function(newImageIdx) {
 		var $t = BacklinkImagesSlideshow;
-		
+
 		$t.widgetSlider.showNextSlide();
 		
 		$t.pagerSlots[$t.curImageIdx].src = "../icons/pagination_slot.png";
-		$t.curImageIdx = (isPager == true) ? newImageIdx : $t.curImageIdx + 1;
+		$t.curImageIdx = ($t.loopsCounter > $t.MAX_LOOPS) ? newImageIdx : $t.curImageIdx + 1;
 		if ($t.curImageIdx > $t.maxSlideIdx) {
 			$t.loopsCounter++;
 			if ($t.loopsCounter > $t.MAX_LOOPS)
@@ -11518,10 +11519,11 @@ var BacklinkImagesSlideshow = {
 		var $t = BacklinkImagesSlideshow;
 		var img = getEventTarget(event, "img");
 		var idx = getSiblingIndex(img);
+
 		if (idx != null) {
+			$t.loopsCounter = $t.MAX_LOOPS + 1; // to stop automatic paging
 			clearTimeout($t.timerId);
-			$t.loopsCounter = $t.MAX_LOOPS; // to stop automatic paging
-			$t.rotate(true, idx);
+			$t.rotate(idx);
 		}
 	},
 	onslidingFinish : function() {
