@@ -11292,7 +11292,7 @@ function WidgetSlider(widgetDiv, callback) {
 
 		// crerate a widget from initial content		
 		var recNmb = 0; //this.getRecNmb() || 0;
-		this._createNewSlide(widgetDiv.innerHTML, recNmb);
+		this.createNewSlide(widgetDiv.innerHTML, recNmb);
 	},
 	
 	// slideIdx for slideshow without RecNmb,like backlink images
@@ -11306,7 +11306,7 @@ function WidgetSlider(widgetDiv, callback) {
 		}
 		// 2. new slide
 		else {
-			$t._createNewSlide(htmlOrObject, recNmb);
+			$t.createNewSlide(htmlOrObject, recNmb);
 		}
 		
 		if (Browser.ie) // IE uses own transition Fade effect
@@ -11315,14 +11315,19 @@ function WidgetSlider(widgetDiv, callback) {
 		$t.nextSlide.style.display = "none";
 		$t.widgetDiv.appendChild($t.nextSlide);
 	}
-	this._createNewSlide = function(htmlOrObject, recNmb) {
+	// it CAN be called outside to create preloaded pages manually, like Backlink images
+	// for widgets it is inner function
+	// recNmb is not required
+	this.createNewSlide = function(htmlOrObject, recNmb) {
 		this.nextSlide = document.createElement("div");
 		if (typeof htmlOrObject == "string")
 			this.nextSlide.innerHTML = htmlOrObject;
 		else {
 			this.nextSlide.innerHTML = "";
 			this.nextSlide.appendChild(htmlOrObject);
-		}	
+		}
+		if (typeof recNmb == 'undefined')
+			recNmb = this.slidesArr.length;	
 		this.slidesArr[recNmb] = this.nextSlide;
 	}
 	this.showNextSlide = function(){
@@ -11442,39 +11447,59 @@ var BacklinkImagesSlideshow = {
 	curImageIdx : 0,
 	timerId : null,
 	loopsCounter : 1,
+	pagerSlots : null,
 	init : function() {
 		this.slideShowDiv = document.getElementById("slideShow");
 		if (!this.slideShowDiv)
 			return;
-
-		this.slideShowStoreDiv = document.getElementById("slideShow_store");	
-		if (!this.slideShowStoreDiv)
-			return;
-
-		this.maxSlideIdx = this.slideShowStoreDiv.getElementsByTagName("img").length;
-		if (this.maxSlideIdx == 0)
-			return;
 		
-		this.widgetSlider = new WidgetSlider(this.slideShowDiv, this.onslidingFinish);
+		var pager = document.getElementById("slides_pager");
+		if (!pager)
+			return;
+		this.pagerSlots = pager.getElementsByTagName("img");	
+		this.slideShowStoreDiv = document.getElementById("slideShow_store");	
+		this._prepareSlides();
 
+		//var everyscape = getAncestorById(this.slideShowDiv, "everyscape");
 		addEvent(this.slideShowDiv, "mouseover", this.onmouseover, false);
 		addEvent(this.slideShowDiv, "mouseout", this.onmouseout, false);
+		addEvent(pager, "click", this.onPagerClick, false);
 		
 		this.timerId = setTimeout(this.rotate, this.DELAY / 2);
+	},
+	
+	_prepareSlides : function() {
+		var images = this.slideShowStoreDiv.getElementsByTagName("img");
+		this.maxSlideIdx = images.length; // == initial slide + stored slides
+		
+		if (this.maxSlideIdx == 0)
+			return false;
+		
+		this.widgetSlider = new WidgetSlider(this.slideShowDiv, this.onslidingFinish);
+		 // images moved from 'images' collection while slides collection so 0! is always!
+		for (var idx = 0; idx < this.maxSlideIdx; idx++)
+			this.widgetSlider.createNewSlide(images[0]);
+		
+		return true;
 	},
 	onmouseover : function() {
 		var $t = BacklinkImagesSlideshow;
 		clearTimeout($t.timerId);
 	},
-	onmouseout : function() {
+	onmouseout : function(event) {
 		var $t = BacklinkImagesSlideshow;
+		var target = getEventTarget(event);
 		$t.timerId = setTimeout($t.rotate, $t.DELAY / 3);
 	},
-	rotate : function() {
+	
+	// for manual paging
+	rotate : function(isPager, newImageIdx) {
 		var $t = BacklinkImagesSlideshow;
+		
 		$t.widgetSlider.showNextSlide();
 		
-		$t.curImageIdx++;
+		$t.pagerSlots[$t.curImageIdx].src = "../icons/pagination_slot.png";
+		$t.curImageIdx = (isPager == true) ? newImageIdx : $t.curImageIdx + 1;
 		if ($t.curImageIdx > $t.maxSlideIdx) {
 			$t.loopsCounter++;
 			if ($t.loopsCounter > $t.MAX_LOOPS)
@@ -11482,14 +11507,26 @@ var BacklinkImagesSlideshow = {
 
 			$t.curImageIdx = 0;
 		}
-	
+		$t.pagerSlots[$t.curImageIdx].src = "../icons/pagination_dot.png";
 		// insertNextSlide moves the image from the store
-		var img = getFirstChild($t.slideShowStoreDiv, $t.curImageIdx);
+	//	var img = getFirstChild($t.slideShowStoreDiv, $t.curImageIdx);
 		
-		$t.widgetSlider.insertNextSlide(img, $t.curImageIdx);	
+		$t.widgetSlider.insertNextSlide(null/*img*/, $t.curImageIdx);	
+
+	},
+	onPagerClick : function(event) {
+		var $t = BacklinkImagesSlideshow;
+		var img = getEventTarget(event, "img");
+		var idx = getSiblingIndex(img);
+		if (idx != null) {
+			clearTimeout($t.timerId);
+			$t.loopsCounter = $t.MAX_LOOPS; // to stop automatic paging
+			$t.rotate(true, idx);
+		}
 	},
 	onslidingFinish : function() {
 		var $t = BacklinkImagesSlideshow;
+		clearTimeout($t.timerId);
 		if ($t.loopsCounter <= $t.MAX_LOOPS)
 			$t.timerId = setTimeout($t.rotate, $t.DELAY);
 	}
