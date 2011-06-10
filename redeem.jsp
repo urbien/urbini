@@ -8,7 +8,7 @@
         <redeemedCouponBuy />
       </td>
     </tr>
-    <where value="getRequest().isUserInRole('admin') || getRequest().isUserInRole('owner')">
+    <!--where value="getContact() != null &amp;&amp; getContact().vendor != null"-->
       <where value="getRequest().getParameter('cbUri') == null || getRequest().getParameter('couponId') != null">
         <tr>
           <td align="center" style="background-color:#BBBBBB">
@@ -56,6 +56,6 @@
           </td>
         </tr>
       </where>
-    </where>
+    <!--/where-->
   </table>
 </div>
