@@ -10,6 +10,9 @@
 <tr valign="top">
   <td valign="top"><siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;expired=true&amp;vendor=-$this&amp;-title=Prior+Deals&amp;-sidebar=right&amp;-limitW=2&amp;-titleLink=y"/></td>
 </tr>
+<tr valign="top">
+  <td valign="top"><siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CheckIn&amp;vendor=-$this&amp;-title=Check+Ins&amp;-sidebar=right&amp;-limitW=2&amp;$order=dateSubmitted&amp;-asc=-1&amp;-titleLink=y"/></td>
+</tr>
 </table>
 
 </td>
