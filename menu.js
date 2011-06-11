@@ -5047,6 +5047,7 @@ var DataEntry = {
 			// NOTE: not save dialog for one parameter select in "cache"!
 		}
 
+		BacklinkImagesSlideshow.stopAutomaticSiding(); // possible it runs
 		// show dialog after GUI initialization
 		setDivVisible(event, div, null, $t.hotspot, 5, 5);
 		$t.initDataStr = $t._getFormDataStr(div, true);
@@ -11277,6 +11278,7 @@ function WidgetSlider(widgetDiv, callback) {
 	//-------------------
 	// fading animation
 	this.HALF_STEPS_AMT = 20;
+	this.halfStepsAmt = null;
 	this.TIMEOUT = 30;
 	this.step = 1;
 	this.slidesArr = new Array();
@@ -11330,9 +11332,11 @@ function WidgetSlider(widgetDiv, callback) {
 			recNmb = this.slidesArr.length;	
 		this.slidesArr[recNmb] = this.nextSlide;
 	}
-	this.showNextSlide = function(){
+	this.showNextSlide = function(acceleration){
 		if (this.nextSlide == null)
 			return;
+
+		this.halfStepsAmt = (typeof acceleration != 'undefined') ? Math.ceil(this.HALF_STEPS_AMT / acceleration) : this.HALF_STEPS_AMT;
 
 		if (Browser.ie) { // IE uses own transition Fade effect
 			if (!this.widgetDiv.filters[0]) {	
@@ -11344,9 +11348,9 @@ function WidgetSlider(widgetDiv, callback) {
 			this.widgetDiv.filters[0].apply();
 			this.widgetDiv.innerHTML = this.nextSlide.innerHTML;
 			this.widgetDiv.filters[0].play();
-
+	
 			if (this.callback)
-				setTimeout(this.callback, 2 * this.HALF_STEPS_AMT *	this.TIMEOUT);
+				setTimeout(this.callback, 2 * this.halfStepsAmt *	this.TIMEOUT);
 
 			return;
 		}	
@@ -11359,24 +11363,24 @@ function WidgetSlider(widgetDiv, callback) {
 		var $t = self;
 		var opacity;
 
-		if ($t.step <= $t.HALF_STEPS_AMT) 
-			opacity = ($t.HALF_STEPS_AMT - $t.step) / $t.HALF_STEPS_AMT;
-		else if ($t.step == $t.HALF_STEPS_AMT * 2 - 1)
+		if ($t.step <= $t.halfStepsAmt) 
+			opacity = ($t.halfStepsAmt - $t.step) / $t.halfStepsAmt;
+		else if ($t.step == $t.halfStepsAmt * 2 - 1)
 			opacity = 1.0;	
 		else
-			opacity = ($t.step - $t.HALF_STEPS_AMT) / $t.HALF_STEPS_AMT;
+			opacity = ($t.step - $t.halfStepsAmt) / $t.halfStepsAmt;
 
 		$t._changeOpacity(opacity);
 
 		// replace slides
-		if ($t.step == $t.HALF_STEPS_AMT) {
+		if ($t.step == $t.halfStepsAmt) {
 			removeAllChildren($t.widgetDiv, $t.nextSlide);
 			$t.nextSlide.style.display = "";
 		}
 		
 		$t.step++;
 		
-		if ($t.step < $t.HALF_STEPS_AMT * 2) {
+		if ($t.step < $t.halfStepsAmt * 2) {
 			setTimeout(function(){$t.fading()}, $t.TIMEOUT);
 		}
 		else {
@@ -11439,7 +11443,7 @@ function WidgetSlider(widgetDiv, callback) {
 
 var BacklinkImagesSlideshow = {
 	DELAY : 3000,
-	MAX_LOOPS : 1,
+	MAX_LOOPS : 2,
 	slideShowDiv : null,
 	slideShowStoreDiv : null,
 	widgetSlider : null,
@@ -11456,13 +11460,13 @@ var BacklinkImagesSlideshow = {
 		var pager = document.getElementById("slides_pager");
 		if (!pager)
 			return;
-		this.pagerSlots = pager.getElementsByTagName("img");	
+		this.pagerSlots = pager.getElementsByTagName("a");	
 		this.slideShowStoreDiv = document.getElementById("slideShow_store");	
 		this._prepareSlides();
 
 		//var everyscape = getAncestorById(this.slideShowDiv, "everyscape");
-	//	addEvent(this.slideShowDiv, "mouseover", this.onmouseover, false);
-	//	addEvent(this.slideShowDiv, "mouseout", this.onmouseout, false);
+//		addEvent(this.slideShowDiv, "mouseover", this.onmouseover, false);
+//		addEvent(this.slideShowDiv, "mouseout", this.onmouseout, false);
 		addEvent(pager, "click", this.onPagerClick, false);
 		
 		this.timerId = setTimeout(this.rotate, this.DELAY / 2);
@@ -11471,7 +11475,7 @@ var BacklinkImagesSlideshow = {
 	_prepareSlides : function() {
 		var images = this.slideShowStoreDiv.getElementsByTagName("img");
 		this.maxSlideIdx = images.length; // == initial slide + stored slides
-		
+	
 		if (this.maxSlideIdx == 0)
 			return false;
 		
@@ -11479,52 +11483,60 @@ var BacklinkImagesSlideshow = {
 		 // images moved from 'images' collection while slides collection so 0! is always!
 		for (var idx = 0; idx < this.maxSlideIdx; idx++)
 			this.widgetSlider.createNewSlide(images[0]);
-		
+			
 		return true;
 	},
-	/*
+/*
 	onmouseover : function() {
 		var $t = BacklinkImagesSlideshow;
 		clearTimeout($t.timerId);
+		$t.pagerSlots[0].parentNode.style.display = "block";
+		//console.log("over");
 	},
 	onmouseout : function(event) {
 		var $t = BacklinkImagesSlideshow;
 		var target = getEventTarget(event);
 		$t.timerId = setTimeout($t.rotate, $t.DELAY / 3);
+		$t.pagerSlots[0].parentNode.style.display = "none";
 	},
-	*/
-	// for manual paging
+*/
+	// newImageIdx for manual paging
+	// manual paging means $t.loopsCounter > $t.MAX_LOOPS
 	rotate : function(newImageIdx) {
 		var $t = BacklinkImagesSlideshow;
-
-		$t.widgetSlider.showNextSlide();
+	
+		// make manual pagging faster
+		var accelaration =  ($t.loopsCounter > $t.MAX_LOOPS) ? 5 : 1;
 		
-		$t.pagerSlots[$t.curImageIdx].src = "../icons/pagination_slot.png";
+		$t.pagerSlots[$t.curImageIdx].className = "";
 		$t.curImageIdx = ($t.loopsCounter > $t.MAX_LOOPS) ? newImageIdx : $t.curImageIdx + 1;
 		if ($t.curImageIdx > $t.maxSlideIdx) {
 			$t.loopsCounter++;
-			if ($t.loopsCounter > $t.MAX_LOOPS)
-				removeEvent($t.slideShowDiv, "mouseout", $t.onmouseout, false);
+			//if ($t.loopsCounter > $t.MAX_LOOPS)
+			//	removeEvent($t.slideShowDiv, "mouseout", $t.onmouseout, false);
 
 			$t.curImageIdx = 0;
 		}
-		$t.pagerSlots[$t.curImageIdx].src = "../icons/pagination_dot.png";
-		// insertNextSlide moves the image from the store
-	//	var img = getFirstChild($t.slideShowStoreDiv, $t.curImageIdx);
+		$t.pagerSlots[$t.curImageIdx].className = "current";
 		
-		$t.widgetSlider.insertNextSlide(null/*img*/, $t.curImageIdx);	
-
+		$t.widgetSlider.insertNextSlide(null, $t.curImageIdx);	
+		$t.widgetSlider.showNextSlide(accelaration);
 	},
+	
 	onPagerClick : function(event) {
 		var $t = BacklinkImagesSlideshow;
-		var img = getEventTarget(event, "img");
-		var idx = getSiblingIndex(img);
+		var a = getEventTarget(event, "a");
+		var idx = getSiblingIndex(a);
 
 		if (idx != null) {
 			$t.loopsCounter = $t.MAX_LOOPS + 1; // to stop automatic paging
 			clearTimeout($t.timerId);
 			$t.rotate(idx);
 		}
+	},
+	stopAutomaticSiding : function() {
+		clearTimeout(this.timerId);
+		this.loopsCounter = this.MAX_LOOPS + 1;
 	},
 	onslidingFinish : function() {
 		var $t = BacklinkImagesSlideshow;
