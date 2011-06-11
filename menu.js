@@ -11452,6 +11452,9 @@ var BacklinkImagesSlideshow = {
 	timerId : null,
 	loopsCounter : 1,
 	pagerSlots : null,
+	
+	colorScemeArr : new Array(), // to switch light / dark of overlays - Specific code!!!
+	
 	init : function() {
 		this.slideShowDiv = document.getElementById("slideShow");
 		if (!this.slideShowDiv)
@@ -11475,14 +11478,21 @@ var BacklinkImagesSlideshow = {
 	_prepareSlides : function() {
 		var images = this.slideShowStoreDiv.getElementsByTagName("img");
 		this.maxSlideIdx = images.length; // == initial slide + stored slides
-	
+
 		if (this.maxSlideIdx == 0)
 			return false;
 		
 		this.widgetSlider = new WidgetSlider(this.slideShowDiv, this.onslidingFinish);
+		
+		// TEST color scheme
+		var dealDiscount = document.getElementById("deal_discount");
+		this.colorScemeArr.push(dealDiscount.className);
+		
 		 // images moved from 'images' collection while slides collection so 0! is always!
-		for (var idx = 0; idx < this.maxSlideIdx; idx++)
+		for (var idx = 0; idx < this.maxSlideIdx; idx++) {
+			this.colorScemeArr.push(images[0].id.replace(/_\d{1,}/,""));
 			this.widgetSlider.createNewSlide(images[0]);
+		}
 			
 		return true;
 	},
@@ -11543,6 +11553,20 @@ var BacklinkImagesSlideshow = {
 		clearTimeout($t.timerId);
 		if ($t.loopsCounter <= $t.MAX_LOOPS)
 			$t.timerId = setTimeout($t.rotate, $t.DELAY);
+		
+		// TEST color scheme	
+		var dealDiscount = document.getElementById("deal_discount");
+		dealDiscount.className = $t.colorScemeArr[$t.curImageIdx];
+		
+		var remainingTimeContainer = document.getElementById("remaining_time_container");
+		var countdownContainer = getChildByClassName(remainingTimeContainer, "countdown_container")
+		countdownContainer.className = "countdown_container " + $t.colorScemeArr[$t.curImageIdx];
+
+		var numberSoldContainer = getChildById(remainingTimeContainer, "number_sold_container")
+		if (numberSoldContainer)
+			numberSoldContainer.className = $t.colorScemeArr[$t.curImageIdx];
+		
+		
 	}
 }
 
