@@ -46,7 +46,7 @@
              </div>
            </where>
          </where>
-         <where value="getTimeNow() &lt; dateFeatured || !isBuyable()">
+         <where value="getTime() &lt; dateFeatured || !isBuyable()">
            <where value="dealPrice &gt; 0">
              <div style="text-decoration:line-through;color:red;"><a max_width="500" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
            </where>
@@ -105,16 +105,16 @@
            </ul>
          </where>
          <where value="!isBuyable()">
-           <where value="tippedAt != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; getTimeNow()">
+           <where value="tippedAt != null &amp;&amp; dateExpired &lt; getTime()">
              <ul id="counter"><li class="time_left"><text text="The deal is over"/>!</li></ul>
            </where>
-           <where value="tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired + 24 * 3600 * 1000 &lt; getTimeNow()">
+           <where value="tippedAt == null &amp;&amp; dateExpired != null &amp;&amp; dateExpired &lt; getTime()">
              <ul id="counter"><li class="time_left"><text text="The deal is off"/>!</li></ul>
            </where>
            <where value="cap != null &amp;&amp; couponBuysQuantity &gt;= cap">
              <ul id="counter"><li class="time_left"><text text="Sold out"/>!</li></ul>
            </where>
-           <where value="dateFeatured != null &amp;&amp; dateFeatured &gt; getTimeNow()">
+           <where value="dateFeatured != null &amp;&amp; dateFeatured &gt; getTime()">
              <ul id="counter"><li class="time_left"><text text="Not yet featured"/>!</li></ul>
            </where>
          </where>
