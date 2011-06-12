@@ -99,9 +99,9 @@
 			
       <br/>
 			
-      <where value="redemptionLocationCount > 0">
+      <where value="redemptionLocationsCount &gt; 0">
       <ul>
-        <li><h3><property name="redemptionLocation" br="y"/></h3></li>
+        <li><h3><property name="redemptionLocations" br="y"/></h3></li>
       </ul>
       </where>
     </div><!-- fine print -->
