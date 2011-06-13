@@ -11270,7 +11270,7 @@ var WidgetRefresher = {
 * NOTE: meanwhile NO stroring of slides because
 * no check of secondary content loading! 
 ************************************************/
-function WidgetSlider(widgetDiv, callback) {
+function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 	var self = this;
 	// used and initialized in WidgetRefresher
 	this.timerId; // timer to refresh
@@ -11291,7 +11291,8 @@ function WidgetSlider(widgetDiv, callback) {
 	this.clrRGB = null;
 	this.bgRGB = null;
 	
-	this.callback = callback; // to call "owner" callback on animation finish
+	this.callbackFinish = callbackFinish; // to call "owner" callback on animation finish
+	this.callbackHalfFinish = callbackHalfFinish;
 	
 	this.init = function(widgetDiv) {
 		this.widgetDiv = widgetDiv;
@@ -11352,9 +11353,12 @@ function WidgetSlider(widgetDiv, callback) {
 			this.widgetDiv.filters[0].apply();
 			this.widgetDiv.innerHTML = this.nextSlide.innerHTML;
 			this.widgetDiv.filters[0].play();
+
+			if (this.callbackHalfFinish)
+				setTimeout(this.callbackHalfFinish, this.halfStepsAmt *	this.TIMEOUT);
 	
-			if (this.callback)
-				setTimeout(this.callback, 2 * this.halfStepsAmt *	this.TIMEOUT);
+			if (this.callbackFinish)
+				setTimeout(this.callbackFinish, 2 * this.halfStepsAmt *	this.TIMEOUT);
 
 			return;
 		}	
@@ -11378,6 +11382,8 @@ function WidgetSlider(widgetDiv, callback) {
 
 		// replace slides
 		if ($t.step == $t.halfStepsAmt) {
+			if (this.callbackHalfFinish)
+				this.callbackHalfFinish();
 			removeAllChildren($t.widgetDiv, $t.nextSlide);
 			$t.nextSlide.style.display = "";
 		}
@@ -11389,8 +11395,8 @@ function WidgetSlider(widgetDiv, callback) {
 		}
 		else {
 			$t.step = 1;
-			if (this.callback)
-				this.callback();
+			if (this.callbackFinish)
+				this.callbackFinish();
 		} 
 	}
 	this._changeOpacity = function(opacity) {
@@ -11486,7 +11492,7 @@ var BacklinkImagesSlideshow = {
 		if (this.maxSlideIdx == 0)
 			return false;
 		
-		this.widgetSlider = new WidgetSlider(this.slideShowDiv, this.onslidingFinish);
+		this.widgetSlider = new WidgetSlider(this.slideShowDiv, this.onslidingFinish, this.onslidingHalfFinish);
 		
 		// TEST color scheme
 		var dealDiscount = document.getElementById("deal_discount");
@@ -11552,13 +11558,10 @@ var BacklinkImagesSlideshow = {
 		clearTimeout(this.timerId);
 		this.loopsCounter = this.MAX_LOOPS + 1;
 	},
-	onslidingFinish : function() {
+	
+	onslidingHalfFinish : function() {
 		var $t = BacklinkImagesSlideshow;
-		clearTimeout($t.timerId);
-		if ($t.loopsCounter <= $t.MAX_LOOPS)
-			$t.timerId = setTimeout($t.rotate, $t.DELAY);
-		
-		// TEST color scheme	
+		// Note: cpecific Obval's coupon code!
 		var dealDiscount = document.getElementById("deal_discount");
 		dealDiscount.className = $t.colorScemeArr[$t.curImageIdx];
 		
@@ -11569,9 +11572,14 @@ var BacklinkImagesSlideshow = {
 		var numberSoldContainer = getChildById(remainingTimeContainer, "number_sold_container")
 		if (numberSoldContainer)
 			numberSoldContainer.className = $t.colorScemeArr[$t.curImageIdx];
-		
-		
-	}
+	},
+	
+	onslidingFinish: function(){
+  	var $t = BacklinkImagesSlideshow;
+  	clearTimeout($t.timerId);
+  	if ($t.loopsCounter <= $t.MAX_LOOPS) 
+  		$t.timerId = setTimeout($t.rotate, $t.DELAY);
+  }
 }
 
 
