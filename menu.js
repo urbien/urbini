@@ -3146,6 +3146,7 @@ var ListBoxesHandler = {
 	calendarPanel : null,
   
 	curParamRow : null,
+	isRollUp : false,
   curOptionsListDiv : null, // in Touch UI it is embeded options list
   textEntry : null,
   classifierTextEntry : null,
@@ -3236,16 +3237,16 @@ var ListBoxesHandler = {
 		
 		if (!event)
 			event = $t.clonedEvent;
-		
+
 		var isLink = getAncestorByTagName(target, "a") != null;
-		var isRollUp = getAncestorByClassName(target, "rollup_td") != null;
+		$t.isRollUp = getAncestorByClassName(target, "rollup_td") != null;
 
 		// There are links in date rollup that should be processed
 		// rollup td without link inside
-		if (isRollUp && !isLink)
+		if ($t.isRollUp && !isLink)
 			return;
 		// link not in rollup td
-		if (isLink && !isRollUp)
+		if (isLink && !$t.isRollUp)
 			return;
 	
 		var tr = getAncestorByClassName(target, "param_tr");
@@ -3767,22 +3768,25 @@ var ListBoxesHandler = {
 		var textField = null;
 		if ($t.isCalendar()) 
 			textField = PeriodPicker.onSetThruList();
-		
+	
 		if (textField == null)
 			var textField = $t.getTextFieldInParamRow(); 
 
     var selectedOption = $t.getSelectedOption(clickedTr);
 	 	var tr = getAncestorByClassName(textField, "param_tr");
-	  var rollupTd = getAncestorByClassName(textField, "rollup_td"); //getAncestorByTagName(textField, "td"); //getAncestorByClassName(textField, ["input_td"]);
-    var chosenValuesDiv = getChildByClassName(tr, "chosen_values");
+	  var chosenValuesDiv = getChildByClassName(tr, "chosen_values");
+
 		// 1. rollup
-		if (rollupTd != null) {
+		if ($t.isRollUp/*rollupTd != null*/) {
+			var rollupTd = getChildByClassName(tr, "rollup_td");
+			var field = rollupTd.getElementsByTagName("input")[0];
 			var img = rollupTd.getElementsByTagName("img")[0];
-	  	textField.value = clickedTr.id;
+	  	field.value = clickedTr.id;
 			img.src = "icons/cakes.png";
+			return;
 		}
 		// 2. Filter or Subscribe
-		else if (chosenValuesDiv) {
+		if (chosenValuesDiv) {
 			// Note: data parameter always has inputs and divs for 2 values!
 			var isDate = typeof selectedOption.checked == 'undefined';
 			if (isDate) { 
