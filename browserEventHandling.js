@@ -31,7 +31,6 @@
 				setFooterOnPage();
 				TabMenu.init();
 				DragEngine.initialize();
-        FlashHandler.init();
 		    addSpellcheck();
 		    DictionaryHandler.init();
 		    Tooltip.init();
@@ -67,10 +66,11 @@
 				// prevent exception while image uploading
 				if (typeof WidgetRefresher != 'undefined')
 					WidgetRefresher.init(); // requires more time - preloading
-				//if (typeof BacklinkImagesSlideshow != 'undefined')
-					BacklinkImagesSlideshow.init();	
+
+				BacklinkImagesSlideshow.init();	
+				FlashHandler.init();
 					
-        /* other initializations in onDomLoaded */
+        /* other initializations in onDomLoaded function*/
       }
     }
 
