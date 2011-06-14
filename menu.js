@@ -12276,20 +12276,16 @@ var OrderRows = {
 var FlashHandler = {
   emdCodeArr : null,
   embed : function(id, flashCode, htmlCode) {
-  
     if (this.emdCodeArr == null) {
       this.emdCodeArr = new Array();
-      if (!Browser.ie)
-        addEvent(window, "load", this.onload, false);
     }
     this.emdCodeArr.push([id, flashCode, htmlCode]);
   },
   init : function() {
-    if (Browser.ie)
-      this.onload();
+    setTimeout(FlashHandler.onload, 100);
   },
   onload : function() {
-    var thisObj = FlashHandler;
+	  var thisObj = FlashHandler;
 
     if (thisObj.emdCodeArr == null)
       return;
