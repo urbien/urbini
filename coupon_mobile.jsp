@@ -4,8 +4,36 @@
 <tr valign="top">
 	
 <td id="coupon">
-	<h2><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></h2>
-	<div id="remaining_time_container">
+	<div id="h2"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></div>
+
+		<table>
+			<tr>
+    <td class="photos"> <!--  id="everyscape"  -->
+     <ul>
+       <li><property name="featured" noIcon="y" /><!-- image --></li>
+     </ul>
+    </td>
+    
+		 <td id="deal_discount">
+      <!--
+			 <dl>
+         <dt><text text="Value"/></dt>
+         <dd><property name="dealValue" noIcon="y"/></dd>
+       </dl>
+			 -->
+       <dl>
+         <dt><text text="Discount"/></dt>
+         <dd><property name="discount" noIcon="y" /></dd>
+       </dl>
+       <dl>
+         <dt><text text="You Save" /></dt>
+         <dd><property name="dealDiscount" noIcon="y"/></dd>
+       </dl>
+     </td>
+		 </tr>
+		 </table>
+		
+		<div id="remaining_time_container">
      <div class="countdown_container">
          <where value="getTimeLeft() &lt; 86400  &amp;&amp; getTimeLeft() &gt; 0"> 
            <img src="images/obval/countdown.png" />
@@ -20,32 +48,7 @@
            <ul id="counter"><li class="off_label"><text text="The deal is off"/>!</li></ul>
          </where>
        </div>
-    </div>
-	
-		<table>
-			<tr>
-    <td class="photos"> <!--  id="everyscape"  -->
-     <ul>
-       <li><property name="featured" noIcon="y" /><!-- image --></li>
-     </ul>
-    </td>
-    
-		 <td id="deal_discount">
-       <dl>
-         <dt><text text="Value"/></dt>
-         <dd><property name="dealValue" noIcon="y"/></dd>
-       </dl>
-       <dl>
-         <dt><text text="Discount"/></dt>
-         <dd><property name="discount" noIcon="y" /></dd>
-       </dl>
-       <dl>
-         <dt><text text="You Save" /></dt>
-         <dd><property name="dealDiscount" noIcon="y"/></dd>
-       </dl>
-     </td>
-		 </tr>
-		 </table>
+    	</div>
 		
 		 <div id="number_sold_container">
        <where value="couponBuysQuantity &gt; 0">
