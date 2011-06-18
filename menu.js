@@ -3787,14 +3787,15 @@ var ListBoxesHandler = {
 		}
 		// 2. Filter or Subscribe
 		if (chosenValuesDiv) {
-			// Note: data parameter always has inputs and divs for 2 values!
-			var isDate = typeof selectedOption.checked == 'undefined';
-			if (isDate) { 
+			var isDateList = typeof selectedOption.checked == 'undefined';
+			if (isDateList) {
+				// Note: date parameter always has inputs and divs for 2 values! 
 				if (textField.name.indexOf("_From") != -1)  // From at top; To at bottom
 					getFirstChild(chosenValuesDiv).innerHTML = selectedOption["text"];
 				else
 					getLastChild(chosenValuesDiv).innerHTML = selectedOption["text"];
 				textField.value = selectedOption["value"];
+				return;
 			}
 			else if (selectedOption.checked) {
 		  	var chosenItemDiv = $t.genChosenItem(selectedOption, textField.name);
@@ -3811,13 +3812,11 @@ var ListBoxesHandler = {
 			}
 
 			// unselected all options / checkboxes (?)
-			if (chosenValuesDiv.getElementsByTagName("div").length == 0) {
+			if (chosenValuesDiv.getElementsByTagName("div").length == 0)
 					$t.makeParamReset();
-			}
-			else if(!isDate) { // on selection from options list remove value from textField
-						 // textField used on manual data entry (!)
+			else // on selection from options list remove value from textField textField used on manual data entry (!)
 				textField.value = "";
-			}
+			
 		}
 		// 3. data entry
 		else {
@@ -3869,7 +3868,7 @@ var ListBoxesHandler = {
 
 	  $t.madeSelection = true;
 		$t.prevSelectorInputValue = ""; // reset
-	
+
 		// Note: // "_select" and "_verified" hidden fields processed in popupRowOnClick1
 		if (selectedOption["checked"] != false)
 			this.markAsSelectedAndVerified(null, clickedTr, clickedTr);
@@ -3880,9 +3879,10 @@ var ListBoxesHandler = {
 			DataEntry.submit(null, textField);
   },
   
+	// period selected in the calendar
   onPeriodSelectionFinish : function(fromInp, toInp) {
 		var $t = ListBoxesHandler;
-    var td = getAncestorByTagName(fromInp, "td");
+	  var td = getAncestorByTagName(fromInp, "td");
     var chosenValuesDiv = getChildByClassName(td, "chosen_values");
 		if (chosenValuesDiv) {
 			var html = "";
