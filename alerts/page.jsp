@@ -18,8 +18,8 @@
     <table border="1" cellpadding="0" cellspacing="0" bordercolor="#dddddd">
   <tr>
     <td>
-    <table width="600px" border="0" align="left" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-      <where value="to != null" itype="http://www.hudsonfog.com/voc/model/workflow/IncomingWorkflowMessage">
+    <table width="600px" border="0" align="left" cellpadding="5" cellspacing="0" bgcolor="#FFFFFF">
+      <where value="to != null" itype="http://www.hudsonfog.com/voc/model/workflow/Alert">
       <tr valign="center">
         <td width="30"></td>
         <td height="50">
@@ -59,7 +59,7 @@
       <tr valign="bottom">
         <td></td>
         <td height="30" align="right">
-          <where value="alertType != null" itype="http://www.hudsonfog.com/voc/model/workflow/IncomingWorkflowMessage">
+          <where value="alertType != null" itype="http://www.hudsonfog.com/voc/model/workflow/Alert">
             <font color="#e1e1e1" size="-6"><property name="alertType" href="y"/></font>
           </where>
         </td>
