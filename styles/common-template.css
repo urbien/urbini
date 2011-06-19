@@ -1794,7 +1794,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 /*.rounded_rect_tbl*/ .arrow_td, .arrow_td_empty { padding-right: 4px; min-width: 10px; font-size: 18px !important; font-weight: bold; text-align:center;}
 
 .rounded_rect_tbl .label_td { white-space: nowrap; position: relative; } 
-.rounded_rect_tbl .field_comment { height: 50px; }
+.rounded_rect_tbl .field_comment, #mkresource .field_comment { height: 52px !important; }
 .rounded_rect_tbl .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
 .rounded_rect_tbl .label img { margin-right: 3px; }
 .rounded_rect_tbl .comment { position: absolute; margin-top: -2px; color: &[Alternative_A];; font-size: 11px; }
