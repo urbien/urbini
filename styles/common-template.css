@@ -385,7 +385,7 @@ td.textCell {
 
 /* Gallery */
 .galleryItem_container { position: relative; display: inline-block; margin: 10px; }
-.galleryItem_note { position: absolute; bottom: 0px; right: 0px; font-size: 13px; background: rgba(0, 0, 0, 0.4); color: #ffffff; text-shadow: 1px 1px 1px #333333; padding: 1% 2%; width: 96%; pointer-events: none; }
+.galleryItem_note { position: absolute; bottom: 0px; right: 0px; font-size: 13px; background: rgba(0, 0, 0, 0.4); color: #ffffff; text-shadow: 1px 2px 2px #000000; padding: 1% 2%; width: 96%; pointer-events: none; }
 /* Chrome renders bad shadow here */
 @media screen and (-webkit-min-device-pixel-ratio:0) { .galleryItem_note{ text-shadow: none;  } }
 
@@ -2238,7 +2238,7 @@ td #corePageContent { min-height: 600px;}
 #intentMessage { min-height:600px; border-right:solid &[PrimaryColor_5]; 1px;} 
 
 #ropLeft {border-right:solid &[PrimaryColor_5]; 1px;  min-height: 600px; min-width: 150px; width: 1%; padding-top: 10px; vertical-align: top; text-align: center}
-#ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 100%; line-height: 25px; }
+#ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 100%; line-height: 25px; height: auto !important; height: 14px; }
 #ropRight {border-left:solid &[SecondaryColorA_5]; 1px;}
 #ropTop  {border-bottom:solid &[SecondaryColorA_5]; 1px; }
   
