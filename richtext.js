@@ -1557,7 +1557,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var cpDiv = getNextSibling(ropTd);	
 		
 		var dashboardLine = getPreviousSibling(ropTd.parentNode);
-		var cpTab = getChildById(dashboardLine, "cpTabs")
+		var cpTab = getChildById(dashboardLine, "cpTabs");
+		
+		if (cpDiv != null && cpTab == null && dashboardLine.cells.length > 1)
+			cpTab = getLastChild(dashboardLine); // there is empty cell taken place like cpTab
 		
 		if (toEnlarge) {
 			panelBlock.parentNode.style.textAlign = "left";
