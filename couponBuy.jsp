@@ -39,10 +39,14 @@
 						</where>
 				  <where value="paymentStatus == 'Pending'"><font size="+1" color="#ef6f16"><b><text text="This coupon is still waiting for payment" /></b></font></where>
           <where value="paymentStatus == 'Failure'"><font size="+1" color="#ef6f16"><b><text text="Payment Failed" /></b></font></where>
-					</where>
-        
+					</where>        
 	      </div>
         <br />
+        <where value="paymentStatus == 'Pending' &amp;&amp; paymentTutorial != null">
+            <h3 class="csp_33"><text text="How to pay"/></h3>
+            <li><property name="paymentTutorial" href="y" /></li>
+            <br />
+        </where>
         <where value="!cancelled &amp;&amp; paymentStatus == 'Success'">
       			<h3 class="csp_33"><text text="How to redeem"/></h3>
         		<li><text text="Print this coupon" /></li>
