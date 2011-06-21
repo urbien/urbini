@@ -17,18 +17,22 @@
      <div id="h2"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></div>
      
      <div id="deal_discount" class="${overlay}">
-       <!--dl>
-         <dt><text text="Value"/></dt>
-         <dd><property name="dealValue" noIcon="y"/></dd>
-       </dl -->
+       <where value="couponType == null || couponType == 'Standard'">
+         <!--dl>
+           <dt><text text="Value"/></dt>
+           <dd><property name="dealValue" noIcon="y"/></dd>
+         </dl -->
+       </where>
        <dl>
          <dt><text text="Discount"/></dt>
          <dd><property name="discount" noIcon="y" /></dd>
        </dl>
-       <dl>
-         <dt><text text="You Save" /></dt>
-         <dd><property name="dealDiscount" noIcon="y"/></dd>
-       </dl>
+       <where value="couponType == null || couponType == 'Standard'">
+         <dl>
+           <dt><text text="You Save" /></dt>
+           <dd><property name="dealDiscount" noIcon="y"/></dd>
+         </dl>
+       </where>
      </div>
      <div id="price_tag">
        <div id="price_tag_inner">
