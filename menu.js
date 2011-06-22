@@ -6282,7 +6282,6 @@ var TabMenu = {
 	
 }
 
-
 /**
  * remove modifier, like ctrl_y
  */
@@ -7562,6 +7561,9 @@ function showTab(e, td, hideDivId, unhideDivId) {
 
       div.style.visibility = Popup.HIDDEN;
       div.style.display = "none";
+
+			if (div.id == "div_SlideShow")
+				BacklinkImagesSlideshow.stop();
 			
       var tdId;
       if (tok.charAt(0) == 'i') {
@@ -7589,6 +7591,7 @@ function showTab(e, td, hideDivId, unhideDivId) {
     if (tt)
       tt.className = "currentTabTitleHidden";
   }
+	
   var divId;
   if (hasPrefix)
     divId = 'idiv_' + td.id;
@@ -11120,13 +11123,13 @@ var BacklinkImagesSlideshow = {
 	loopsCounter : 1,
 	pagerSlots : null,
 	
-	colorScemeArr : new Array(), // to switch light / dark of overlays - Specific code!!!
+	colorScemeArr : null, // to switch light / dark of overlays - Specific code!!!
 	
 	init : function() {
-		this.slideShowDiv = document.getElementById("slideShow");
+		this.slideShowDiv = document.getElementById("slideShow_scene");
 		if (!this.slideShowDiv)
 			return;
-		
+	
 		var pager = document.getElementById("slides_pager");
 		if (!pager)
 			return;
@@ -11134,12 +11137,10 @@ var BacklinkImagesSlideshow = {
 		this.slideShowStoreDiv = document.getElementById("slideShow_store");	
 		this._prepareSlides();
 
-		//var everyscape = getAncestorById(this.slideShowDiv, "everyscape");
-//		addEvent(this.slideShowDiv, "mouseover", this.onmouseover, false);
-//		addEvent(this.slideShowDiv, "mouseout", this.onmouseout, false);
 		addEvent(pager, "click", this.onPagerClick, false);
-		
-		this.timerId = setTimeout(this.rotate, this.DELAY / 2);
+
+		if (ExecJS.isObjectTotallyVisible(this.slideShowDiv)) // slideshow on closed tab!
+			this.timerId = setTimeout(this.rotate, this.DELAY / 2);
 	},
 	
 	_prepareSlides : function() {
@@ -11151,37 +11152,37 @@ var BacklinkImagesSlideshow = {
 		
 		this.widgetSlider = new WidgetSlider(this.slideShowDiv, this.onslidingFinish, this.onslidingHalfFinish);
 		
-		// TEST color scheme
+		// color scheme for Obval's coupon
 		var dealDiscount = document.getElementById("deal_discount");
-		this.colorScemeArr.push(dealDiscount.className);
+		if (dealDiscount) {
+			this.colorScemeArr = new Array()
+			this.colorScemeArr.push(dealDiscount.className);
+		}
 		
 		 // images moved from 'images' collection while slides collection so 0! is always!
 		for (var idx = 0; idx < this.maxSlideIdx; idx++) {
-			this.colorScemeArr.push(images[0].id.replace(/_\d{1,}/,""));
+			if (this.colorScemeArr)
+				this.colorScemeArr.push(images[0].id.replace(/_\d{1,}/,""));
 			this.widgetSlider.createNewSlide(images[0]);
 		}
 			
 		return true;
 	},
-/*
-	onmouseover : function() {
-		var $t = BacklinkImagesSlideshow;
-		clearTimeout($t.timerId);
-		$t.pagerSlots[0].parentNode.style.display = "block";
-		//console.log("over");
+	
+	run : function() {
+		if (!this.pagerSlots)
+			return;
+		this.timerId = setTimeout(this.rotate, this.DELAY);
 	},
-	onmouseout : function(event) {
-		var $t = BacklinkImagesSlideshow;
-		var target = getEventTarget(event);
-		$t.timerId = setTimeout($t.rotate, $t.DELAY / 3);
-		$t.pagerSlots[0].parentNode.style.display = "none";
+	stop : function() {
+		clearTimeout(this.timerId);
 	},
-*/
+
 	// newImageIdx for manual paging
 	// manual paging means $t.loopsCounter > $t.MAX_LOOPS
 	rotate : function(newImageIdx) {
 		var $t = BacklinkImagesSlideshow;
-	
+
 		// make manual pagging faster
 		var accelaration =  ($t.loopsCounter > $t.MAX_LOOPS) ? 5 : 1;
 		
@@ -11204,13 +11205,13 @@ var BacklinkImagesSlideshow = {
 		var $t = BacklinkImagesSlideshow;
 		var a = getEventTarget(event, "a");
 		var idx = getSiblingIndex(a);
-
 		if (idx != null) {
 			$t.loopsCounter = $t.MAX_LOOPS + 1; // to stop automatic paging
 			clearTimeout($t.timerId);
 			$t.rotate(idx);
 		}
 	},
+	
 	stopAutomaticSiding : function() {
 		clearTimeout(this.timerId);
 		this.loopsCounter = this.MAX_LOOPS + 1;
@@ -11219,6 +11220,8 @@ var BacklinkImagesSlideshow = {
 	onslidingHalfFinish : function() {
 		var $t = BacklinkImagesSlideshow;
 		// Note: cpecific Obval's coupon code!
+		if ($t.colorScemeArr == null)
+			return;
 		var dealDiscount = document.getElementById("deal_discount");
 		dealDiscount.className = $t.colorScemeArr[$t.curImageIdx];
 		
@@ -13062,11 +13065,12 @@ function setFooterOnPage() {
 	footer.parentNode.style.paddingBottom = footer.offsetHeight;	
 }
 
-/****************************************************************
+
+/************************************************************
 * LinkProcessor
 * handles anchors with help of onmousedown on BODY.
 * it is at the file bottom to allow other code to be parsed(?!)
-//***************************************************************/
+//***********************************************************/
 var LinkProcessor = {
 	onLinkClick : function(e) {
 		var $t = LinkProcessor;
@@ -13405,7 +13409,7 @@ var LinkProcessor = {
 	  return true;
 	}
 }
-	
+
 
 
 // flag that menu.js was parsed
