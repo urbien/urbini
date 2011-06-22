@@ -2215,6 +2215,36 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .rounded_rect_tbl .tags .item img { position:relative; top:3px; cursor: pointer; }
 .rounded_rect_tbl .tags .caret { text-align:left; border: none; outline: 0 none; }
 
+/********** Slide Show *********/
+#slides_pager { 
+	position: absolute; 
+	top: 10px;
+	right: 10px;
+	padding: 5px;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
+	-moz-box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
+	-webkit-box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
+}
+
+#slides_pager a { 
+	background: url("../icons/slider_pager_dots.png");
+	cursor: pointer;
+	float:left;
+	height: 16px;
+	width: 16px;
+	-moz-border-radius: 16px;
+	margin: 0 2px;
+}
+
+#slides_pager a.current { background-position: center bottom; }
+
+#div_SlideShow { position: relative; margin: 10px 10px 10px 2px; }
+#div_SlideShow .galleryItem_css3 { margin: 0; }
+
+
 /********** dashboard & widgets *********/
 #dashboard, #dashboard > table { 
   background-color: &[PrimaryColor_1];; 
