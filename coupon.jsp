@@ -171,22 +171,23 @@
     </div><!-- highlights -->
     <div class="fine_print">
       <h3 class="csp_33"><text text="Fine print"/></h3>
-      <where value="redemptionLocationsCount &gt; 0">
-      <!--div id="locations" style="position: absolute; bottom: 100px; left: 15px;" -->
-      <ul style="padding-left:5px; padding-bottom: 10px; padding-top: 5px; background: rgba(127, 127, 127, 0.1);">
-        <li id="h3"><property name="redemptionLocations" labelOnly="y"/>
-        <where value="redemptionLocationsCount &gt; 2">
-          <property name="redemptionLocations" noLabel="y"/>
-        </where>
-        </li>
-        <li><siteResourceList uri="l.html?bUri=-$this%26m_p=redemptionLocations%26b_p=coupon&amp;-list=y&amp;-limit=2&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/RedemptionLocation&amp;-suppressHeader=y&amp;-inRowW=2&amp;-titleLink=y"/></li>
-      </ul>
-      <!--  /div -->
-      </where>
       <ul>
         <li><property name="conditions" noIcon="y"/></li>
       </ul>
       <br/>
+      <where value="redemptionLocationsCount &gt; 0">
+      <!--div id="locations" style="position: absolute; bottom: 100px; left: 15px;" -->
+      <ul style="padding-left:5px; padding-bottom: 10px; padding-top: 5px; background: rgba(127, 127, 127, 0.1);">
+        <li id="h3"><property name="redemptionLocations" labelOnly="y"/>
+ 
+        <where value="redemptionLocationsCount &gt; 2">
+          <property name="redemptionLocations" noLabel="y"/>
+        </where>
+        </li>
+        <li><siteResourceList uri="l.html?bUri=-$this%26m_p=redemptionLocations%26b_p=coupon&amp;-list=y&amp;-limit=12&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/RedemptionLocation&amp;-suppressHeader=y&amp;-inRowW=3&amp;-titleLink=y"/></li>
+      </ul>
+      <!--  /div -->
+      </where>
     </div><!-- fine print -->
     <div class="more_items">
     <!--h3 class="csp_33"><text text="more deals"/></h3>
