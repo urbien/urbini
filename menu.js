@@ -6282,349 +6282,6 @@ var TabMenu = {
 	
 }
 
-/**************************************************
-* LinkProcessor
-* handles anchors with help of onmousedown on BODY.
-//**************************************************/
-var LinkProcessor = {
-	onLinkClick : function(e) {
-		var $t = LinkProcessor;
-	  e = getDocumentEvent(e);
-	  if (!e)
-	    return;
-
-	  var anchor = getTargetAnchor(e);
-
-	  if (!anchor)
-	    return;
-	
-	  var id = anchor.id;
-		
-		// click event ---
-	  // Note: with purpose to speed up GUI we handle onmousedown
-	  if (e.type == "click") {
-			if (e.button && e.button == 2)
-				return; // right click
-		
-			// close popup menu on its item click
-	    var popupDiv = getAncestorByAttribute(anchor, "className", "popMenu");
-	    if (popupDiv)
-	      Popup.close0(popupDiv.id)
-	
-	    // 1. stop click event on anchors with href == "about:blank"
-	    // because we handled it with onmousedown
-	    if (anchor.href == "about:blank" || id == "-inner")
-	      return stopEventPropagation(e);
-	    // 2. pressed with shift or ctrl key
-	    else if(e.shiftKey || e.ctrlKey) 
-	      return stopEventPropagation(e);
-	    // 3. default browser behaviour
-	    else {
-	      var className = anchor.className;
-	      if (className  &&  className == "external")  
-	        $t.onClickGoLinkOut(e, anchor);
-	      else
-	        return;
-	    }
-	  }
-		
-		// mouse down event ---
-		if (anchor.className == "external")
-			return;
-		
-		// process only left mouse button (1)
-		var btn = e.which || e.button;
-		if (typeof btn != 'undefined' && btn != 1)
-			return;
-	
-	  $t.linkHrefModifier(e, anchor);
-	
-	  if (!id)
-	    return;
-	
-	  var idLen = id.length;
-
-	  // 1.
-	  if (id.startsWith("-inner")) {
-	    $t.onClickDisplayInner(e, anchor);
-	  }
-	  // 2.
-	  else if (id.startsWith('menuLink_')) {
-	    menuOnClick(e, anchor);
-	  }
-	  // 3. 
-	  /// commenten out because whole TD is event target
-//	  else if (id.indexOf("_filter", idLen - "_filter".length) != -1) {
-//	    ListBoxesHandler.listboxOnClick1(e, id);
-//	  }
-	 
-	  // 4. Boolean toggle (in UI it looks like a dot)
-	  else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
-	        id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
-			changeBoolean(e, anchor);
-	  }
-	},
-	
-	
-	/**
-	 * LinkOut/LinkOutShared has 2 primary keys: 'targetUrl' and 'source'. 'targetUrl' is href on whick click was made and 
-	 * 'source' is the resource where this link is refered as href type property or link in some longString or String(>500)
-	 * property like 'description' in CollaborationPoint.
-	 * To create LinkOut uri we need to know type of LinkOut and 'source' uri.
-	 * Type of LinkOut is located in HTML in <div class='linkOut'>
-	 * 'source' is genned in HTML in either <tr id='uri[rowNmb (0 in ROP case)]'><div class='uri'>uri of the resource</div></tr> or 
-	 * <td id='uri[rowNmb (0 in ROP case)]'><div class='uri'>uri of the resource</div></td> for grid RL mode
-	 */
-	onClickGoLinkOut : function(e, anchor) {
-    if (!anchor)
-      anchor = getTargetAnchor(e);
-    if (!anchor)
-      return;
-    var aa = anchor.href;
-    if (aa.indexOf('LinkOut') != -1) {
-      a = decodeURIComponent(aa);
-    if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
-      return;
-    }
-    e = getDocumentEvent(e); if (!e) return false;
-    var div;
-    
-    
-    var table = getAncestorByTagName(anchor, "table");
-
-    var grid;
-    while (table) {
-      if (table.id && table.id.indexOf("siteRL_") == 0) {
-        if (table.className  &&  table.className == "grid")
-          grid = true;
-        break;
-      }
-      table = getAncestorByTagName(table.parentNode, "table");
-    }
-    var tag;
-
-    var tag = grid ? getTdNode(anchor) : getTrNode(anchor);
-    var i = 0;
-    while (tag) {
-      var id = tag.id;
-      if  (!id  ||  id.indexOf("uri") == -1 || !isDigit(id.charAt(3))) {  
-        var parent = grid ? tag.parentNode.parentNode : tag.parentNode;
-        tag = grid ? getTdNode(parent) : getTrNode(parent);
-      }
-      else   
-        break;
-    }
-    if (!tag)
-      return;
-
-    
-    // this clause only for list RL
-    if (!grid) {
-      var id = tag.id;
-      var idx = id.indexOf("_displayInFull");
-      if (idx != -1) {
-        var parentTable = getAncestorByTagName(tag, "table");
-        id = id.substring(0, idx);
-        var children = parentTable.getElementsByTagName("tr");
-        for (var i = 0; i < children.length; i++) {
-          if (children[i].id  &&  children[i].id == id) {
-            tag = children[i];
-            break;
-          }
-        }
-      }
-    }
-
-    var divs = tag.getElementsByTagName("div");
-    var cnt = divs.length;
-    for (var i=0; i<cnt  &&  !div; i++) {
-      var clName = divs[i].className;
-      if (clName  &&  clName == "uri")
-        div = divs[i];
-    }
-    if (!div  ||  div.textContent.indexOf('/LinkOut') != -1) 
-      return;
-
-    var linkOutDiv;
-    var parentDiv = getAncestorByTagName(tag, "div");
-    while (parentDiv  &&  !linkOutDiv) {
-      if (parentDiv  &&  (parentDiv.id == 'front' || parentDiv.className == 'front')) {
-        var children = parentDiv.getElementsByTagName('div');
-        for (var i = 0; i < children.length  &&  !linkOutDiv; i++) {
-          var d = children[i];
-          if (d.className  &&  d.className == 'linkOut') 
-            linkOutDiv = d;
-        }
-        break;
-      }
-      parentDiv = getAncestorByTagName(parentDiv, "div", true);
-    }
-    if (!linkOutDiv) 
-      return;
-    var rUri = div.textContent;
-    var idx = rUri.indexOf("?");
-    var href = anchor.href;
-    var len = href.length;
-
-    if (href.indexOf("http://") == 0  &&  href.charAt(len - 1) == '/'  &&  href.indexOf('/', 7) == len - 1) 
-      href = href.substring(0, len - 1);
-//    var uri = 'v.html?uri=sql/www.hudsonfog.com/voc/model/portal/LinkOut%3FtargetUrl%3D' + encodeURIComponent(href) + '%26' + encodeURIComponent(rUri.substring(idx + 1));
-    
-    href = encodeURI(href);
-    href = href.replace(/=/g, '%3D');
-    href = href.replace(/\$/g, '%24');
-    href = href.replace(/&/g, '%26');
-    href = href.replace(/\?/g, '%3F');
-    var linkOutType = linkOutDiv.textContent;
-    var uri = 'sql' + linkOutType.substring(6) + '?targetUrl=' + href + '&' + rUri.substring(idx + 1);   
-    
-    anchor.href = 'v.html?uri=' + encodeURIComponent(uri);
-    anchor.target = "_blank";
-	},
-	
-	//****************************************************************************** 
-	// calls 1) DataEntry (+xhrcallback) 2) callback only (xhrcallback) 3) PlainDlg
-	// anchor can supply:
-	// a) callback after XHR as a parameter "xhrcallback"
-	// b) callback before XHR as a parameter "xhrcallbackbefore"
-	//******************************************************************************* 
-	onClickDisplayInner : function(e, anchor) {
-	  if (!anchor)
-	    anchor = getTargetAnchor(e);
-	  if (!anchor || !anchor.id)
-	    return false;
-	  e = getDocumentEvent(e); if (!e) return false;
-	  var propName = anchor.id.substring(7);
-		var urlStr;
-	  if (propName.indexOf("list.") == 0) {
-	    var ul = document.getElementById(propName);
-	
-	    if (!ul) {
-	      var strippedProp = propName.substring(5);
-	      //r = PlainDlg.show(e, innerListUrls[strippedProp]);
-				urlStr = innerListUrls[strippedProp];
-	    }
-	    else {
-	      var li = ul.getElementsByTagName("li");
-	      //r = PlainDlg.show(e, decodeURL(li[0].innerHTML));
-				urlStr = decodeURL(li[0].innerHTML);
-	    }
-	  }
-	  else {
-	    var a = anchor.href;
-	
-	    if (a != 'about:blank')
-	      //r = PlainDlg.show(e, a);
-				urlStr = a;
-	    else {
-	      var ul = document.getElementById(propName);
-	      if (!ul)
-	        //r = PlainDlg.show(e, innerUrls[propName]);
-					urlStr = innerUrls[propName];
-	      else {
-	        var li = ul.getElementsByTagName("li");
-	        //r = PlainDlg.show(e, decodeURL(li[0].innerHTML));
-					urlStr = decodeURL(li[0].innerHTML);
-	      }
-	    }
-	  }
-
-		var XHRCallback = null;
-		try {
-			XHRCallback = eval(anchor.getAttribute("xhrcallback"));
-		} catch(e) {} // in case if the callback is not included but "xhrcallback" was assigned
-		var XHRCallbackBefore = null;
-		try {
-			XHRCallbackBefore = eval(anchor.getAttribute("xhrcallbackbefore"));
-		} catch(e) {}
-
-		// 1. Data Entry
-		if (urlStr.indexOf("mkResource.html") != -1 ||
-	  			urlStr.indexOf("editProperties.html") != -1)
-	  	DataEntry.show(e, urlStr, anchor, null, XHRCallback, XHRCallbackBefore);
-		// 2. XHR with specific callback
-		else if (XHRCallback) {
-			if (XHRCallbackBefore) {
-				if (XHRCallbackBefore() == false)
-					return;
-			}
-			var urlArr = urlStr.split("?");
-			postRequest(e, urlArr[0], urlArr[1], null, anchor, XHRCallback); 
-		}
-		// 3. PlainDlg
-		else
-			PlainDlg.show(e, urlStr, anchor);
-	  
-		return true;
-	},
-	
-	/**
-	 * Registered to receive control on a click on any link. Adds control key
-	 * modifier as param to url, e.g. _ctrlKey=y
-	 */
-	linkHrefModifier : function(e, link) {
-	  detectClick = true;
-	  var p;
-	
-	  // add current dashboard ID and current tab ID to url if they are not there
-	  var a = link.href;
-	  addCurrentDashboardAndCurrentTab(link);
-	  // Login to Facebook
-    var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
-    if (fbdiv) { 
-      a += '&-fb=y';
-	    link.href = a;
-	  }
-	  if     (e.ctrlKey) {
-	    p = '_ctrlKey=y';
-	  }
-	  else if(e.shiftKey) {
-	    p = '_shiftKey=y';
-	  }
-	/*
-	 * else if(e.altKey) { p = '_altKey=y'; var frameId = 'bottomFrame'; var
-	 * bottomFrame = frames[frameId]; // show content in a second pane // if
-	 * (bottomFrame) { removeModifier(link, '_shiftKey=y'); removeModifier(link,
-	 * '_ctrlKey=y'); removeModifier(link, '_altKey=y'); return displayInner(e,
-	 * link.href); } }
-	 */
-	  if (p) {
-	    removeModifier(link, '_shiftKey=y');
-	    removeModifier(link, '_ctrlKey=y');
-	    removeModifier(link, '_altKey=y');
-	    addUrlParam(link, p, null);
-	
-	    var rc = stopEventPropagation(e);
-	    document.location.href = link.href;
-	    return rc;
-	  }
-	  else if (link.id  &&  link.id.startsWith('-inner')) {
-	    return;
-	  }
-	
-	  var idx = link.href.indexOf("&-ulId=");
-	
-	  if (idx == -1)
-	    return true;
-	  var idx1 = link.href.indexOf("&", idx + 1);
-	  var ulId;
-	  if (idx1 == -1)
-	    ulId = link.href.substring(idx + 7);
-	  else
-	    ulId = link.href.substring(idx + 7, idx1);
-	  var ul = document.getElementById(ulId);
-	  if (ul) {
-	    var li = ul.getElementsByTagName("li");
-	    if (li) {
-	      var qs = li[0].innerHTML;
-	      if (qs.length > 0  &&  link.href.indexOf('&-paging=') == -1)
-	        link.href += "&-paging=" + encodeURIComponent(decodeURL(qs));
-	    }
-	  }
-	  return true;
-	}
-}
-	
 
 /**
  * remove modifier, like ctrl_y
@@ -13404,6 +13061,352 @@ function setFooterOnPage() {
 		return;
 	footer.parentNode.style.paddingBottom = footer.offsetHeight;	
 }
+
+/****************************************************************
+* LinkProcessor
+* handles anchors with help of onmousedown on BODY.
+* it is at the file bottom to allow other code to be parsed(?!)
+//***************************************************************/
+var LinkProcessor = {
+	onLinkClick : function(e) {
+		var $t = LinkProcessor;
+	  e = getDocumentEvent(e);
+	  if (!e)
+	    return;
+
+	  var anchor = getTargetAnchor(e);
+
+	  if (!anchor)
+	    return;
+	
+	  var id = anchor.id;
+		
+		// click event ---
+	  // Note: with purpose to speed up GUI we handle onmousedown
+	  if (e.type == "click") {
+			if (e.button && e.button == 2)
+				return; // right click
+		
+			// close popup menu on its item click
+	    var popupDiv = getAncestorByAttribute(anchor, "className", "popMenu");
+	    if (popupDiv)
+	      Popup.close0(popupDiv.id)
+	
+	    // 1. stop click event on anchors with href == "about:blank"
+	    // because we handled it with onmousedown
+	    if (anchor.href == "about:blank" || id == "-inner")
+	      return stopEventPropagation(e);
+	    // 2. pressed with shift or ctrl key
+	    else if(e.shiftKey || e.ctrlKey) 
+	      return stopEventPropagation(e);
+	    // 3. default browser behaviour
+	    else {
+	      var className = anchor.className;
+	      if (className  &&  className == "external")  
+	        $t.onClickGoLinkOut(e, anchor);
+	      else
+	        return;
+	    }
+	  }
+		
+		// mouse down event ---
+		if (anchor.className == "external")
+			return;
+		
+		// process only left mouse button (1)
+		var btn = e.which || e.button;
+		if (typeof btn != 'undefined' && btn != 1)
+			return;
+	
+	  $t.linkHrefModifier(e, anchor);
+	
+	  if (!id)
+	    return;
+	
+	  var idLen = id.length;
+
+	  // 1.
+	  if (id.startsWith("-inner")) {
+	    $t.onClickDisplayInner(e, anchor);
+	  }
+	  // 2.
+	  else if (id.startsWith('menuLink_')) {
+	    menuOnClick(e, anchor);
+	  }
+	  // 3. 
+	  /// commenten out because whole TD is event target
+//	  else if (id.indexOf("_filter", idLen - "_filter".length) != -1) {
+//	    ListBoxesHandler.listboxOnClick1(e, id);
+//	  }
+	 
+	  // 4. Boolean toggle (in UI it looks like a dot)
+	  else if (id.indexOf("_boolean", idLen - "_boolean".length) != -1  ||
+	        id.indexOf("_boolean_refresh", idLen - "_boolean_refresh".length) != -1) {
+			changeBoolean(e, anchor);
+	  }
+	},
+	
+	
+	/**
+	 * LinkOut/LinkOutShared has 2 primary keys: 'targetUrl' and 'source'. 'targetUrl' is href on whick click was made and 
+	 * 'source' is the resource where this link is refered as href type property or link in some longString or String(>500)
+	 * property like 'description' in CollaborationPoint.
+	 * To create LinkOut uri we need to know type of LinkOut and 'source' uri.
+	 * Type of LinkOut is located in HTML in <div class='linkOut'>
+	 * 'source' is genned in HTML in either <tr id='uri[rowNmb (0 in ROP case)]'><div class='uri'>uri of the resource</div></tr> or 
+	 * <td id='uri[rowNmb (0 in ROP case)]'><div class='uri'>uri of the resource</div></td> for grid RL mode
+	 */
+	onClickGoLinkOut : function(e, anchor) {
+    if (!anchor)
+      anchor = getTargetAnchor(e);
+    if (!anchor)
+      return;
+    var aa = anchor.href;
+    if (aa.indexOf('LinkOut') != -1) {
+      a = decodeURIComponent(aa);
+    if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
+      return;
+    }
+    e = getDocumentEvent(e); if (!e) return false;
+    var div;
+    
+    
+    var table = getAncestorByTagName(anchor, "table");
+
+    var grid;
+    while (table) {
+      if (table.id && table.id.indexOf("siteRL_") == 0) {
+        if (table.className  &&  table.className == "grid")
+          grid = true;
+        break;
+      }
+      table = getAncestorByTagName(table.parentNode, "table");
+    }
+    var tag;
+
+    var tag = grid ? getTdNode(anchor) : getTrNode(anchor);
+    var i = 0;
+    while (tag) {
+      var id = tag.id;
+      if  (!id  ||  id.indexOf("uri") == -1 || !isDigit(id.charAt(3))) {  
+        var parent = grid ? tag.parentNode.parentNode : tag.parentNode;
+        tag = grid ? getTdNode(parent) : getTrNode(parent);
+      }
+      else   
+        break;
+    }
+    if (!tag)
+      return;
+
+    
+    // this clause only for list RL
+    if (!grid) {
+      var id = tag.id;
+      var idx = id.indexOf("_displayInFull");
+      if (idx != -1) {
+        var parentTable = getAncestorByTagName(tag, "table");
+        id = id.substring(0, idx);
+        var children = parentTable.getElementsByTagName("tr");
+        for (var i = 0; i < children.length; i++) {
+          if (children[i].id  &&  children[i].id == id) {
+            tag = children[i];
+            break;
+          }
+        }
+      }
+    }
+
+    var divs = tag.getElementsByTagName("div");
+    var cnt = divs.length;
+    for (var i=0; i<cnt  &&  !div; i++) {
+      var clName = divs[i].className;
+      if (clName  &&  clName == "uri")
+        div = divs[i];
+    }
+    if (!div  ||  div.textContent.indexOf('/LinkOut') != -1) 
+      return;
+
+    var linkOutDiv;
+    var parentDiv = getAncestorByTagName(tag, "div");
+    while (parentDiv  &&  !linkOutDiv) {
+      if (parentDiv  &&  (parentDiv.id == 'front' || parentDiv.className == 'front')) {
+        var children = parentDiv.getElementsByTagName('div');
+        for (var i = 0; i < children.length  &&  !linkOutDiv; i++) {
+          var d = children[i];
+          if (d.className  &&  d.className == 'linkOut') 
+            linkOutDiv = d;
+        }
+        break;
+      }
+      parentDiv = getAncestorByTagName(parentDiv, "div", true);
+    }
+    if (!linkOutDiv) 
+      return;
+    var rUri = div.textContent;
+    var idx = rUri.indexOf("?");
+    var href = anchor.href;
+    var len = href.length;
+
+    if (href.indexOf("http://") == 0  &&  href.charAt(len - 1) == '/'  &&  href.indexOf('/', 7) == len - 1) 
+      href = href.substring(0, len - 1);
+//    var uri = 'v.html?uri=sql/www.hudsonfog.com/voc/model/portal/LinkOut%3FtargetUrl%3D' + encodeURIComponent(href) + '%26' + encodeURIComponent(rUri.substring(idx + 1));
+    
+    href = encodeURI(href);
+    href = href.replace(/=/g, '%3D');
+    href = href.replace(/\$/g, '%24');
+    href = href.replace(/&/g, '%26');
+    href = href.replace(/\?/g, '%3F');
+    var linkOutType = linkOutDiv.textContent;
+    var uri = 'sql' + linkOutType.substring(6) + '?targetUrl=' + href + '&' + rUri.substring(idx + 1);   
+    
+    anchor.href = 'v.html?uri=' + encodeURIComponent(uri);
+    anchor.target = "_blank";
+	},
+	
+	//****************************************************************************** 
+	// calls 1) DataEntry (+xhrcallback) 2) callback only (xhrcallback) 3) PlainDlg
+	// anchor can supply:
+	// a) callback after XHR as a parameter "xhrcallback"
+	// b) callback before XHR as a parameter "xhrcallbackbefore"
+	//******************************************************************************* 
+	onClickDisplayInner : function(e, anchor) {
+	  if (!anchor)
+	    anchor = getTargetAnchor(e);
+	  if (!anchor || !anchor.id)
+	    return false;
+	  e = getDocumentEvent(e); if (!e) return false;
+	  var propName = anchor.id.substring(7);
+		var urlStr;
+	  if (propName.indexOf("list.") == 0) {
+	    var ul = document.getElementById(propName);
+	
+	    if (!ul) {
+	      var strippedProp = propName.substring(5);
+	      //r = PlainDlg.show(e, innerListUrls[strippedProp]);
+				urlStr = innerListUrls[strippedProp];
+	    }
+	    else {
+	      var li = ul.getElementsByTagName("li");
+	      //r = PlainDlg.show(e, decodeURL(li[0].innerHTML));
+				urlStr = decodeURL(li[0].innerHTML);
+	    }
+	  }
+	  else {
+	    var a = anchor.href;
+	
+	    if (a != 'about:blank')
+	      //r = PlainDlg.show(e, a);
+				urlStr = a;
+	    else {
+	      var ul = document.getElementById(propName);
+	      if (!ul)
+	        //r = PlainDlg.show(e, innerUrls[propName]);
+					urlStr = innerUrls[propName];
+	      else {
+	        var li = ul.getElementsByTagName("li");
+	        //r = PlainDlg.show(e, decodeURL(li[0].innerHTML));
+					urlStr = decodeURL(li[0].innerHTML);
+	      }
+	    }
+	  }
+
+		var XHRCallback = null;
+		try {
+			XHRCallback = eval(anchor.getAttribute("xhrcallback"));
+		} catch(e) {} // in case if the callback is not included but "xhrcallback" was assigned
+		var XHRCallbackBefore = null;
+		try {
+			XHRCallbackBefore = eval(anchor.getAttribute("xhrcallbackbefore"));
+		} catch(e) {}
+
+		// 1. Data Entry
+		if (urlStr.indexOf("mkResource.html") != -1 ||
+	  			urlStr.indexOf("editProperties.html") != -1)
+	  	DataEntry.show(e, urlStr, anchor, null, XHRCallback, XHRCallbackBefore);
+		// 2. XHR with specific callback
+		else if (XHRCallback) {
+			if (XHRCallbackBefore) {
+				if (XHRCallbackBefore() == false)
+					return;
+			}
+			var urlArr = urlStr.split("?");
+			postRequest(e, urlArr[0], urlArr[1], null, anchor, XHRCallback); 
+		}
+		// 3. PlainDlg
+		else
+			PlainDlg.show(e, urlStr, anchor);
+	  
+		return true;
+	},
+	
+	/**
+	 * Registered to receive control on a click on any link. Adds control key
+	 * modifier as param to url, e.g. _ctrlKey=y
+	 */
+	linkHrefModifier : function(e, link) {
+	  detectClick = true;
+	  var p;
+	
+	  // add current dashboard ID and current tab ID to url if they are not there
+	  var a = link.href;
+	  addCurrentDashboardAndCurrentTab(link);
+	  // Login to Facebook
+    var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
+    if (fbdiv) { 
+      a += '&-fb=y';
+	    link.href = a;
+	  }
+	  if     (e.ctrlKey) {
+	    p = '_ctrlKey=y';
+	  }
+	  else if(e.shiftKey) {
+	    p = '_shiftKey=y';
+	  }
+	/*
+	 * else if(e.altKey) { p = '_altKey=y'; var frameId = 'bottomFrame'; var
+	 * bottomFrame = frames[frameId]; // show content in a second pane // if
+	 * (bottomFrame) { removeModifier(link, '_shiftKey=y'); removeModifier(link,
+	 * '_ctrlKey=y'); removeModifier(link, '_altKey=y'); return displayInner(e,
+	 * link.href); } }
+	 */
+	  if (p) {
+	    removeModifier(link, '_shiftKey=y');
+	    removeModifier(link, '_ctrlKey=y');
+	    removeModifier(link, '_altKey=y');
+	    addUrlParam(link, p, null);
+	
+	    var rc = stopEventPropagation(e);
+	    document.location.href = link.href;
+	    return rc;
+	  }
+	  else if (link.id  &&  link.id.startsWith('-inner')) {
+	    return;
+	  }
+	
+	  var idx = link.href.indexOf("&-ulId=");
+	
+	  if (idx == -1)
+	    return true;
+	  var idx1 = link.href.indexOf("&", idx + 1);
+	  var ulId;
+	  if (idx1 == -1)
+	    ulId = link.href.substring(idx + 7);
+	  else
+	    ulId = link.href.substring(idx + 7, idx1);
+	  var ul = document.getElementById(ulId);
+	  if (ul) {
+	    var li = ul.getElementsByTagName("li");
+	    if (li) {
+	      var qs = li[0].innerHTML;
+	      if (qs.length > 0  &&  link.href.indexOf('&-paging=') == -1)
+	        link.href += "&-paging=" + encodeURIComponent(decodeURL(qs));
+	    }
+	  }
+	  return true;
+	}
+}
+	
+
 
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
