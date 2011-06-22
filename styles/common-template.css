@@ -883,6 +883,7 @@ table.fbConnect {width:90%; border:solid &[SecondaryColorA_5]; 1px; margin-left:
   vertical-align: middle;
   text-align:center;
   font-weight: bold;
+  white-space: nowrap;
 }
 /*input.fbInput {
     border: &[SecondaryColorA_5]; solid 1px;
