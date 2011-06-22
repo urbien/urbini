@@ -1250,7 +1250,7 @@ var PopupHandler = {
 		var relObj = hotspot.div || hotspot.obj || hotspot;
 
     var pos;
-    if (Browser.ie && isParentDialogOnPage(parentDlg)) // (may be problem with	findObjectPositio for IE?)	
+    if (Browser.ie && (!parentDlg || isParentDialogOnPage(parentDlg))) // (may be problem with	findObjectPositio for IE?)	
 		  pos = this.findObjectPositio(relObj, document.body);
 		else
   	  pos = this.findObjectPositio(relObj, parentDlg);
