@@ -3407,7 +3407,6 @@ var ListBoxesHandler = {
 
   showOptionsOrClasses : function(popupDiv) {
     var $t = ListBoxesHandler;
-
 		var panel;
 		if ($t.toPutInClassifier) {
 			panel = $t.classifierPanel;
@@ -3454,7 +3453,7 @@ var ListBoxesHandler = {
 		var scXY = getScrollXY();
 		var wndSize = getWindowSize();
 		var x, y;
-		
+
 		if (this._isEditList) {
 			var leftEdge = findPosX(parent) + scXY[0];
 			x = findPosX(hotspot) - this.panelBlock.clientWidth;
@@ -3489,6 +3488,7 @@ var ListBoxesHandler = {
 		// insure to show on screen //TODO: make it more generic
 		var pos = getElemInsideScreenPosition(x, y, this.panelBlock);
 		this.panelBlock.style.left = pos[0];
+
 		this.panelBlock.style.top = pos[1];
 		
 		this.panelBlock.style.visibility = "visible";
@@ -11169,13 +11169,37 @@ var BacklinkImagesSlideshow = {
 		return true;
 	},
 	
+	// used with Slideshow on a Tab of property sheet
 	run : function() {
 		if (!this.pagerSlots)
 			return;
+		
+		this._fitWideShow();
 		this.timerId = setTimeout(this.rotate, this.DELAY);
+	},
+	
+	// show slide show over whole working area if need (used for Obval's coupon)
+	_fitWideShow : function () {
+		var ropLeft = document.getElementById("ropLeft");
+		if (ropLeft) {
+			var parentTdWidth = getAncestorByTagName(this.slideShowDiv, "td").offsetWidth;
+			var imgWidth = this.slideShowDiv.getElementsByTagName("img")[0].width;
+			if (!imgWidth) { // IE
+				this.slideShowDiv.parentNode.style.display = "block";
+				imgWidth = this.slideShowDiv.getElementsByTagName("img")[0].offsetWidth;
+			}
+			if (imgWidth > parentTdWidth) {
+				ropLeft.style.display = "none";
+				this.slideShowDiv.style.marginLeft = "-10px";
+				this.slideShowDiv.parentNode.style.marginRight = "-10px";
+			}
+		}
 	},
 	stop : function() {
 		clearTimeout(this.timerId);
+		var ropLeft = document.getElementById("ropLeft");
+		if (ropLeft)
+			ropLeft.style.display = "";
 	},
 
 	// newImageIdx for manual paging
