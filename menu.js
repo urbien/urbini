@@ -3485,13 +3485,15 @@ var ListBoxesHandler = {
 			if (y > bottomEdge - this.panelBlock.clientHeight)
 				y = Math.max(bottomEdge - this.panelBlock.clientHeight, scXY[1]) - 5;
 		}
+
 		// insure to show on screen //TODO: make it more generic
 		var pos = getElemInsideScreenPosition(x, y, this.panelBlock);
 		this.panelBlock.style.left = pos[0];
 
 		// hack: IE7 showed black background on city selection on Obval
+		// 10 is min top offset returned by getElemInsideScreenPosition
 		// need to test with IE8 !
-		if (Browser.ie7 && pos[1] <= 5)
+		if (Browser.ie7 && pos[1] == 10)
 			pos[1] = -1;
 			
 		this.panelBlock.style.top = pos[1];
