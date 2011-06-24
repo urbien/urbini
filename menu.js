@@ -3489,6 +3489,11 @@ var ListBoxesHandler = {
 		var pos = getElemInsideScreenPosition(x, y, this.panelBlock);
 		this.panelBlock.style.left = pos[0];
 
+		// hack: IE7 showed black background on city selection on Obval
+		// need to test with IE8 !
+		if (Browser.ie7 && pos[1] <= 5)
+			pos[1] = -1;
+			
 		this.panelBlock.style.top = pos[1];
 		
 		this.panelBlock.style.visibility = "visible";
