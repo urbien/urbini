@@ -652,16 +652,16 @@ function getElemInsideScreenPosition(x, y, elem) {
 	var wndSize = getWindowSize();
 
 	var xEdge = wndSize[0] + scXY[0] - elem.clientWidth - 22;
-	if (x > xEdge)
-		x = xEdge - 2;
-	if (x < scXY[0])
-		x = scXY[0] + 2;	
+	if (x > xEdge - 10)
+		x = xEdge - 10;
+	if (x < scXY[0] + 10)
+		x = scXY[0] + 10;	
 		
 	var yEdge = wndSize[1] + scXY[1] - elem.clientHeight - 22;
-	if (y > yEdge)
-		y = yEdge - 2;
-	if (y < scXY[1])
-		y = scXY[1] + 2;
+	if (y > yEdge - 10)
+		y = yEdge - 10;
+	if (y < scXY[1] + 10)
+		y = scXY[1] + 10;
 	
 	return [x, y];			
 }				
