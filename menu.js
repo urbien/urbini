@@ -1597,14 +1597,16 @@ var FormProcessor = {
   formInitialValues : new Array(),
 
   // methods ----
-  // inits DataEntry and ListBoxesHandler!
+  // inits DataEntry and ListBoxesHandler on page an in dialogs!
   initForms : function(div) {
     var forms;
     if (div)
       forms = div.getElementsByTagName('form');
     else
       forms = document.forms;
-
+		
+		// div == 'undefined' for downloaded document processing
+		var wasDlgOnPageInitialized = (typeof div == 'undefined') ? false : true;
     for (var i = 0; i < forms.length; i++) {
       var form = forms[i];
       var initialValues = new Array(form.elements.length);
@@ -1614,10 +1616,19 @@ var FormProcessor = {
 //      if (form.id != 'filter')
 //        continue;
 
-
 			// init Touch UI for all forms
 			this.initForTouchUI(form);
       this._storeInitialValues(form);
+
+			// used to handle key-arrows events for 1st dialog embeded on a page
+			if (wasDlgOnPageInitialized == false) {
+		  	var panelBlock = getAncestorByClassName(form, 'panel_block');
+		  	if (panelBlock) {
+		  		TouchDlgUtil.setCurrentDialog(panelBlock);
+		  		ListBoxesHandler.setTray(panelBlock);
+					wasFirstDlgFound = true;
+		  	}
+		  }
 
       ListBoxesHandler.init(form);
       
@@ -12934,6 +12945,7 @@ var LoadingIndicator = {
 			return;
 		this.loadingDiv.style.visibility = "hidden";
 		this.angleOffset = 0;
+
 	},
 	animate: function(){
 		var $t = LoadingIndicator;
@@ -12994,8 +13006,7 @@ var ImageMag = {
 	},
 	onImageLoaded : function() {
 		var $t = ImageMag;
-		LoadingIndicator.hide();
-		
+	
 		PopupHandler.setMouseoutTimeout(0);
 		
 		// strore real size of the image with previous reset
@@ -13027,6 +13038,7 @@ var ImageMag = {
 		PopupHandler.align($t.curThumb, "inside", $t.img, true, null, null, true);
 		if ($t.scaleFactor < 1.0)
 			setTimeout($t.animate, 30);
+		LoadingIndicator.hide();	// moved here because of IE
 	},
 	getImageSrc : function(thumbSrc) {
 //		var src = thumbSrc.replace("thumbnail/", "").replace(/_featured\.\w{3,3}$/, "");
