@@ -1639,7 +1639,8 @@ form { margin-top: 0; margin-bottom: 0; }
 /* prevents blue rect in WebKit browsers */
 input:focus { outline: 0 none; }
 
-#pane2 { position: absolute; display: inline; left: 0px; top: 0px; min-width: 1px; width: auto; /* IE & Opera width in JS */ }
+#pane2 { position: absolute; width: auto; display: inline; left: 0px; top: 0px; min-width: 1px; }
+* html #pane2 { width: 300px; }
 
 /* dialog: body is a parent */
 .panel_block {
@@ -1654,6 +1655,7 @@ input:focus { outline: 0 none; }
   -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   z-index: 100;
 }
+
 
 /* 'on page' */
 div .panel_block, td .panel_block {
@@ -2029,14 +2031,12 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   background: url(../images/frame/png/right.png) repeat-y;
 }
 .shadow_bottom {
-	width: 100% !important;
+	height: 11px;
 	width: auto;
   float: left;
   background: url(../images/frame/png/bottom.png) no-repeat;
 }
-.shadow_right_bottom {
-  background: url(../images/frame/png/right_bottom.png) no-repeat;
-}
+.shadow_right_bottom { height: 11px; background: url(../images/frame/png/right_bottom.png) no-repeat; }
 
 #div_description { 
 /*  max-width:520px;*/
@@ -2244,7 +2244,11 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 #div_SlideShow { position: relative; margin: 10px 10px 10px 2px; }
 #div_SlideShow .galleryItem_css3 { margin: 0; }
-
+#slides_pager {
+	background-color: rgba(239, 239, 239, 0.6);
+   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#99efefef,endColorstr=#99efefef);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#99efefef,endColorstr=#99efefef)";
+ }
 
 /********** dashboard & widgets *********/
 #dashboard, #dashboard > table { 
