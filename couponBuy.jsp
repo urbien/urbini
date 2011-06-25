@@ -111,8 +111,10 @@
     <td>
     </td>
     <td>
-    <couponBuyRedemptionLocation />
+    <where value="coupon.redemptionLocationsCount != null &amp;&amp; coupon.redemptionLocationsCount > 1">
+      <couponBuyRedemptionLocation />
       <br /><br />
+    </where>
     <mapMaker width="300" height="300" />
     </td>
     <td></td>
