@@ -1344,13 +1344,8 @@ TD.toolbar {
 .dashboard_btn a { padding: 5px; font-size: 12px; color: &[PrimaryColor_4_text];; font-weight: bold; display: block; white-space: nowrap; }
 .current a { color: &[AccentedLetter];; }
 
-.dashboardLine td.dashboard_btn:hover, .dashboardLine td.active, .dashboardLine td.current {  
-	border-left-color: &[PrimaryColor_5];;
-	border-top-color: &[PrimaryColor_5];;
-	border-right-color: &[PrimaryColor_1];;
-	border-bottom-color: &[PrimaryColor_1];;
-	
-	/* background: rgba(0,0,0,0.25); */ /* makes glass effect darker */
+.dashboardLine td.dashboard_btn:hover, .dashboardLine td.active, .dashboardLine td.current, #tabs .current{  
+	background: rgba(&[PrimaryColor_5_rgb]; ,0.35);  /* makes glass effect darker */
 	box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
   -o-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
   -webkit-box-shadow: 0 2px 6px rgba(&[PrimaryColor_1_rgb];,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 7px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(&[PrimaryColor_4_rgb];,0.3);
@@ -1780,7 +1775,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	border-right-color: &[PrimaryColor_5];;
 	border-bottom-color: &[PrimaryColor_5];;
 }
-
+.changeViewCols .dashboard_btn  span { color: &[SecondaryColorA_5];; }
 
 .viewColsTabs { color: &[PrimaryColor_3];; cursor: pointer; font-weight: bold; white-space: nowrap;}
 .viewCols {background-color: &[PrimaryColor_4];}
