@@ -20,7 +20,7 @@ function copyToClipboard(text2copy) {
 *	RteEngine
 **************************************************/
 function initRTE(iframeId, rteDataFieldId, rtePref) {
-  setTimeout(function() { RteEngine.register(iframeId, rteDataFieldId, rtePref); }, 200);
+	setTimeout(function() { RteEngine.register(iframeId, rteDataFieldId, rtePref); }, 200);
 }
 
 var RteEngine = {
@@ -54,7 +54,7 @@ var RteEngine = {
 		}
 	},
 	guestCommentRTE : {
-		autoClose:false,
+		autoClose:true,
 		isFewFonts:true,
 		buttons:{
 			style:false, font:true, decoration:true,	align:false,	dent:false,
@@ -1090,15 +1090,18 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     if (!this.isIE)
 	    this.document.designMode = "On";
 
-
 		// show toolbar immediately (otherwise create it on 1st click in - onfocus handler)
 		if(!this.rtePref.autoClose) {
 				this.toolbar = this.createToolbar();
-				// set focus in RTE
-				this.window.focus();
 			////////////	this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
 		}
-		
+	
+		// set focus in RTE if it is a 1st parameter of DataEntry
+		if (TouchDlgUtil.isElementFirstParameter(this.iframeObj)) {
+			this.window.focus();
+			this.onfocus();
+		}
+	
 		// set handlers
 		this.setHandlers();
 	  
