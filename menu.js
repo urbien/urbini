@@ -1636,10 +1636,10 @@ var FormProcessor = {
     }
 
     // Not set focus in fields of menu. Otherwise arrow keys navigation is broken.
-    if (div && div.className != 'popMenu')
-      this.uiFocus(div);
+//    if (div && div.className != 'popMenu')
+//      this.uiFocus(div);
   },
-
+/*
   uiFocus : function(div) {
     if (!div)
       div = document;
@@ -1677,7 +1677,7 @@ var FormProcessor = {
     }
     return false;
   },
-
+*/
   // submit event handler
   onSubmit : function(e) {
     var $t = FormProcessor;
@@ -5603,6 +5603,7 @@ var TouchDlgUtil = {
 	},
 	
 	setCurrentDialog : function(dlgDiv) {
+		
 		if (!isElemOfClass(dlgDiv, ["panel_block", "dsk_auto_complete"]))
 			return;
 		this.curDlgDiv = dlgDiv;
@@ -5935,11 +5936,12 @@ var TouchDlgUtil = {
 		var selector = getChildById(parent, ["item_selector", "parameter_selector", "text_entry"]);
 		if (!selector || !isVisible(selector)) {
 			selector = this.focusHolder;
+
 			var fstInput = getChildByClassName(parent, "input");
-			if (fstInput &&  isVisible(fstInput))
+			if (fstInput && isVisible(fstInput)) 
 				fstInput.focus();
-			else if (this.focusHolder)
-				this.focusHolder.focus();
+	    else if (this.focusHolder) 
+	  		this.focusHolder.focus();
 		}
 		else {
 			if (!selector.onfocus) 
@@ -6172,6 +6174,11 @@ var TouchDlgUtil = {
 		if (this.blueTr == null)
 			return false;
 		return this.blueTr.contains(field);
+	},
+	
+	isElementFirstParameter : function(elem) {
+		var paramTr = getAncestorByClassName(elem, "param_tr");
+		return comparePosition(paramTr, getFirstChild(paramTr.parentNode)) == 0;
 	}
 }
 
