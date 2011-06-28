@@ -2237,7 +2237,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 #slides_pager a.current { background-position: center bottom; }
 
-#div_SlideShow { position: relative; margin: 10px 10px 10px 2px; }
+#div_SlideShow { position: relative; margin: 10px 10px 10px 2px; float: left; }
 #div_SlideShow .galleryItem_css3 { margin: 0; }
 #slides_pager {
 	background-color: rgba(239, 239, 239, 0.6);
