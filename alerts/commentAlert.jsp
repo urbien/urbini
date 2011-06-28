@@ -8,7 +8,7 @@
 		<where value="getWebSite().sharedHost == true">
     <br/>
     <br/>
-		  <a href="l.html?-q=how+to+earn+karma+points">
+		  <a href="/l.html?-q=how+to+earn+karma+points">
 		    <text text="Each comment gives you karma points"/>
 		  </a>
 		</where>
