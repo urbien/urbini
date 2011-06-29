@@ -11139,7 +11139,7 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 var BacklinkImagesSlideshow = {
 	DELAY : 3000,
 	MAX_LOOPS : 2,
-	slideShowDiv : null,
+	slideShowSceneDiv : null,
 	slideShowStoreDiv : null,
 	widgetSlider : null,
 	maxSlideIdx : null,
@@ -11147,12 +11147,14 @@ var BacklinkImagesSlideshow = {
 	timerId : null,
 	loopsCounter : 1,
 	pagerSlots : null,
+	descOverlay : null,
 	
 	colorScemeArr : null, // to switch light / dark of overlays - Specific code!!!
+	descArr : null,
 	
 	init : function() {
-		this.slideShowDiv = document.getElementById("slideShow_scene");
-		if (!this.slideShowDiv)
+		this.slideShowSceneDiv = document.getElementById("slideShow_scene");
+		if (!this.slideShowSceneDiv)
 			return;
 	
 		var pager = document.getElementById("slides_pager");
@@ -11164,7 +11166,7 @@ var BacklinkImagesSlideshow = {
 
 		addEvent(pager, "click", this.onPagerClick, false);
 
-		if (ExecJS.isObjectTotallyVisible(this.slideShowDiv)) // slideshow on closed tab!
+		if (ExecJS.isObjectTotallyVisible(this.slideShowSceneDiv)) // slideshow on closed tab!
 			this.timerId = setTimeout(this.rotate, this.DELAY / 2);
 	},
 	
@@ -11175,19 +11177,32 @@ var BacklinkImagesSlideshow = {
 		if (this.maxSlideIdx == 0)
 			return false;
 		
-		this.widgetSlider = new WidgetSlider(this.slideShowDiv, this.onslidingFinish, this.onslidingHalfFinish);
+		this.widgetSlider = new WidgetSlider(this.slideShowSceneDiv, this.onslidingFinish, this.onslidingHalfFinish);
 		
-		// color scheme for Obval's coupon
+		// initial image: color scheme for Obval's coupon
 		var dealDiscount = document.getElementById("deal_discount");
 		if (dealDiscount) {
 			this.colorScemeArr = new Array()
 			this.colorScemeArr.push(dealDiscount.className);
 		}
 		
-		 // images moved from 'images' collection while slides collection so 0! is always!
+		// initial image: image description
+		this.descOverlay = getChildByClassName(this.slideShowSceneDiv.parentNode, "galleryItem_note");
+		if (this.descOverlay) {
+			this.descArr = new Array();
+			var desc = this.slideShowSceneDiv.getElementsByTagName("img")[0].getAttribute("desc");
+			this.descArr.push(desc == null ? "" : desc);
+		}
+
+		// color scheme and description of the next images
+		// note: images moved from 'images' collection while slides collection so 0! is always!
 		for (var idx = 0; idx < this.maxSlideIdx; idx++) {
 			if (this.colorScemeArr)
 				this.colorScemeArr.push(images[0].id.replace(/_\d{1,}/,""));
+			if (this.descArr) {
+				var desc = images[0].getAttribute("desc");
+	  		this.descArr.push(desc == null ? "" : desc);
+	  	}
 			this.widgetSlider.createNewSlide(images[0]);
 		}
 			
@@ -11207,16 +11222,16 @@ var BacklinkImagesSlideshow = {
 	_fitWideShow : function () {
 		var ropLeft = document.getElementById("ropLeft");
 		if (ropLeft) {
-			var parentTdWidth = getAncestorByTagName(this.slideShowDiv, "td").offsetWidth;
-			var imgWidth = this.slideShowDiv.getElementsByTagName("img")[0].width;
+			var parentTdWidth = getAncestorByTagName(this.slideShowSceneDiv, "td").offsetWidth;
+			var imgWidth = this.slideShowSceneDiv.getElementsByTagName("img")[0].width;
 			if (!imgWidth) { // IE
-				this.slideShowDiv.parentNode.style.display = "block";
-				imgWidth = this.slideShowDiv.getElementsByTagName("img")[0].offsetWidth;
+				this.slideShowSceneDiv.parentNode.style.display = "block";
+				imgWidth = this.slideShowSceneDiv.getElementsByTagName("img")[0].offsetWidth;
 			}
 			if (imgWidth > parentTdWidth) {
 				ropLeft.style.display = "none";
-				this.slideShowDiv.style.marginLeft = "-10px";
-				this.slideShowDiv.parentNode.style.marginRight = "-10px";
+				this.slideShowSceneDiv.style.marginLeft = "-10px";
+				this.slideShowSceneDiv.parentNode.style.marginRight = "-10px";
 			}
 		}
 	},
@@ -11240,7 +11255,7 @@ var BacklinkImagesSlideshow = {
 		if ($t.curImageIdx > $t.maxSlideIdx) {
 			$t.loopsCounter++;
 			//if ($t.loopsCounter > $t.MAX_LOOPS)
-			//	removeEvent($t.slideShowDiv, "mouseout", $t.onmouseout, false);
+			//	removeEvent($t.slideShowSceneDiv, "mouseout", $t.onmouseout, false);
 
 			$t.curImageIdx = 0;
 		}
@@ -11268,9 +11283,14 @@ var BacklinkImagesSlideshow = {
 	
 	onslidingHalfFinish : function() {
 		var $t = BacklinkImagesSlideshow;
+		
+		if ($t.descArr)
+			$t.descOverlay.innerHTML = $t.descArr[$t.curImageIdx];
+		
 		// Note: cpecific Obval's coupon code!
 		if ($t.colorScemeArr == null)
 			return;
+			
 		var dealDiscount = document.getElementById("deal_discount");
 		dealDiscount.className = $t.colorScemeArr[$t.curImageIdx];
 		
