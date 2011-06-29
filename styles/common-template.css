@@ -385,7 +385,7 @@ td.textCell {
 
 /* Gallery */
 .galleryItem_container { position: relative; display: inline-block; margin: 10px; }
-.galleryItem_note { position: absolute; bottom: 0px; right: 0px; font-size: 13px; background: rgba(0, 0, 0, 0.4); color: #ffffff; text-shadow: 1px 2px 2px #000000; padding: 1% 2%; width: 96%; pointer-events: none; }
+.galleryItem_note { position: absolute; bottom: 0px; left: 0px; font-size: 13px; background: rgba(0, 0, 0, 0.4); color: #ffffff; text-shadow: 1px 2px 2px #000000; padding: 1% 2%; width: 96%; pointer-events: none; }
 /* Chrome renders bad shadow here */
 @media screen and (-webkit-min-device-pixel-ratio:0) { .galleryItem_note{ text-shadow: none;  } }
 
@@ -2240,11 +2240,11 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 #div_SlideShow { position: relative; margin: 10px 10px 10px 2px; float: left; }
 #div_SlideShow .galleryItem_css3 { margin: 0; }
 #slides_pager {
-	background-color: rgba(239, 239, 239, 0.6);
-   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#99efefef,endColorstr=#99efefef);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#99efefef,endColorstr=#99efefef)";
+	background-color: rgba(255, 255, 255, 0.6);
+   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#99ffffff,endColorstr=#99ffffff);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#99ffffff,endColorstr=#99ffffff)";
  }
-
+#div_SlideShow .galleryItem_note { font-size: 20px; width: 100%; padding: 10px 0; min-height: 0; text-shadow: 1px 2px 2px #000000; }
 /********** dashboard & widgets *********/
 #dashboard, #dashboard > table { 
   background-color: &[PrimaryColor_1];; 
