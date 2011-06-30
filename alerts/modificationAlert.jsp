@@ -1,5 +1,5 @@
 <div>
-		<property name="forum" type="y"/>  <property name="forum" href="y" noIcon="y"/> <text text="was modified"/> 
+		<text text="Modified resource"/> <property name="forum" type="y"/>  <property name="forum" href="y" noIcon="y"/> 
 		<br/><br/>
 		<where value="modification != null">
 		  <text text="Changes below are made by" />: <property name="sender.firstName" href="y" /> <property name="sender.lastName" href="y" />
