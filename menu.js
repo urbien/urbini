@@ -11185,12 +11185,13 @@ var BacklinkImagesSlideshow = {
 			this.colorScemeArr = new Array()
 			this.colorScemeArr.push(dealDiscount.className);
 		}
-		
+
 		// initial image: image description
 		this.descOverlay = getChildByClassName(this.slideShowSceneDiv.parentNode, "galleryItem_note");
 		if (this.descOverlay) {
 			this.descArr = new Array();
-			var desc = this.slideShowSceneDiv.getElementsByTagName("img")[0].getAttribute("desc");
+			var desc = this.slideShowSceneDiv.getElementsByTagName("img")[0].getAttribute("alt");
+
 			this.descArr.push(desc == null ? "" : desc);
 		}
 
@@ -11200,7 +11201,7 @@ var BacklinkImagesSlideshow = {
 			if (this.colorScemeArr)
 				this.colorScemeArr.push(images[0].id.replace(/_\d{1,}/,""));
 			if (this.descArr) {
-				var desc = images[0].getAttribute("desc");
+				var desc = images[0].getAttribute("alt");
 	  		this.descArr.push(desc == null ? "" : desc);
 	  	}
 			this.widgetSlider.createNewSlide(images[0]);
