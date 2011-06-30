@@ -12,6 +12,7 @@
            <td><vkontakteLikeWidget /></td>
          </tr>
          </table>
+         <br/>
          <text text="Act to" /> <a href="v.html?uri=sql/www.hudsonfog.com/voc/media/publishing/Article%3FarticleId%3D32155" style="color: #F55200;"><text text="gain reputation" /></a>!
        </td>
      </tr>
