@@ -17,7 +17,15 @@
      </tr>
      </table>
    </td>
-   <td id="likeAndComment"><table width="100%"><tr valign="top"><td style="padding-right:10px;"><img src="images/girls-left-gg.png" height="70"/></td><td><showIntent/> <text text="The Call"/> - <a href="v.html?uri=sql/www.hudsonfog.com/voc/media/publishing/Article%3FarticleId%3D32156"><span style="color: #F55200;"><text text="Game rules"/></span></a></td><td style="padding-left:10px;"><img align="right" src="images/group2-gg.png" height="70"/></td></tr></table></td>
+   <td id="likeAndComment">
+     <table width="100%">
+     <tr valign="top">
+       <td style="padding-right:10px;"><img src="images/girls-left-gg.png" height="70"/></td>
+       <td><showIntent/> <text text="The Call"/> - <a href="v.html?uri=sql/www.hudsonfog.com/voc/media/publishing/Article%3FarticleId%3D32156"><span style="color: #F55200;"><text text="Game rules"/></span></a></td>
+       <td style="padding-left:10px;"><img align="right" src="images/group2-gg.png" height="70"/></td>
+     </tr>
+     </table>
+   </td>
    </tr>
    
  </table>
