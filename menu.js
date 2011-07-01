@@ -11185,7 +11185,7 @@ var BacklinkImagesSlideshow = {
 			this.colorScemeArr = new Array()
 			this.colorScemeArr.push(dealDiscount.className);
 		}
-		
+
 		// initial image: image description
 		this.descOverlay = getChildByClassName(this.slideShowSceneDiv.parentNode, "galleryItem_note");
 		if (this.descOverlay) {
@@ -11211,10 +11211,11 @@ var BacklinkImagesSlideshow = {
 	
 	// used with Slideshow on a Tab of property sheet
 	run : function() {
+		this._fitWideShow();
+		
 		if (!this.pagerSlots)
 			return;
 		
-		this._fitWideShow();
 		this.timerId = setTimeout(this.rotate, this.DELAY);
 	},
 	
