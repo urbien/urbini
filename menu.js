@@ -5687,7 +5687,7 @@ var TouchDlgUtil = {
 			PlainDlg.hide();
 			$t.curDlgDiv = null;
 			TabMenu.keyHandler(event);
-			TabMenu.openActivePopup(event);
+			TabMenu.openActivePopup(event, code);
 		}
 	},
 	onBodyKeyup : function(event) {
@@ -6245,7 +6245,7 @@ var TabMenu = {
 				return;
 
 		if (code == 13 || code == 40) // enter, down
-			$t.openActivePopup(event);
+			$t.openActivePopup(event, code);
 		else if (code == 39) { // right
 			var nextTab; 
 			if ($t.isHomeTabActive())
@@ -6269,18 +6269,18 @@ var TabMenu = {
 		
 		// open popup after that "previous" item without popup was active
 		if ($t.isEmptyPopupOpened) {
-			$t.openActivePopup(event);
+			$t.openActivePopup(event, code);
 			$t.isEmptyPopupOpened = false;
 		}
 		
 	},
-	openActivePopup : function(event) {
+	openActivePopup : function(event, code) {
 		var anchor = getChildByTagName(this.activeTab, "a");
 		if (anchor.id == "-inner") 
 	  	this.isEmptyPopupOpened = LinkProcessor.onClickDisplayInner(event, anchor) == false;
 		else if (anchor.onclick) 
   		anchor.onclick(event);
-		else
+		else if (code == 13)
 			window.location.assign(anchor.href);
 	},
 	
