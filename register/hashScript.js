@@ -200,7 +200,7 @@ function computeRequestDigest(form) {
 function hash(form, login_url) {
   if (document.all || document.getElementById) {
     form.logonButton.disabled = true;
-    form.logonButton.value = "Please wait";
+    form.logonButton.value = "&[Please wait];";
     form.logonButton.style.cursor = 'wait';
   }
 
