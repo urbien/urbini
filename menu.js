@@ -2557,7 +2557,7 @@ var Tooltip = {
 				
 		this.optBtn.obj = getChildById(this.tooltipDiv, "opt_btn");
     this.initShiftPref();
-		
+	
 		addEvent(document.body, "mouseover", this.onMouseOver, false);
 		addEvent(document.body, "mouseout", this.onMouseOut, false);
 		addEvent(document.body, "click", this.onClick, false);
@@ -2574,32 +2574,38 @@ var Tooltip = {
 			return;
 
     var target = getEventTarget(e);
-    if(!$t.isProcessed(target))
-      $t.process(target);
 
-    var tooltipText = target.getAttribute($t.TOOLTIP_ATTR);
+		if ($t.putContent(e, target))
+			$t.timerId = setTimeout($t.show, $t.SHOW_DELAY);
+  },
+
+	putContent : function(e, target) {
+		if(!this.isProcessed(target))
+      this.process(target);
+
+    var tooltipText = target.getAttribute(this.TOOLTIP_ATTR);
     if(!tooltipText) {
 			var parentA = target.parentNode;
     	if (parentA && parentA.tagName.toLowerCase() == 'a')
-				tooltipText =  parentA.getAttribute($t.TOOLTIP_ATTR);
+				tooltipText =  parentA.getAttribute(this.TOOLTIP_ATTR);
 		}
 
 		if (!tooltipText || tooltipText.plainText().trim().length == 0)
-			return;
+			return false;
 
-		$t.showArgs.shiftKey = e.shiftKey;
-		$t.showArgs.target = target;
-		$t.showArgs.tooltipText = tooltipText;
+		this.showArgs.shiftKey = e.shiftKey;
+		this.showArgs.target = target;
+		this.showArgs.tooltipText = tooltipText;
 		
-		$t.timerId = setTimeout(Tooltip.show, $t.SHOW_DELAY);
-  },
+		return true;
+	},
 
   onMouseOut : function(e) {
 		var $t = Tooltip;
 
 		if ($t.isOverTooltip)
 			return;
-			
+		
 		if ($t.isShown)
 			$t.timerId = setTimeout(Tooltip.hide, $t.HIDE_DELAY);
 		else 
@@ -2619,17 +2625,24 @@ var Tooltip = {
 		$t.onMouseOut(e);
 	},
 	
-	onClick : function() {
+	onClick : function(e) {
 		var $t = Tooltip;
 		if ($t.isShown)
 			$t.hide();
 		else 
 			clearTimeout($t.timerId); // prevent showing
+
+		// show tooltip on click on help icon
+		var target = getEventTarget(e);
+		if (target.tagName.toLowerCase() == 'img' && target.src.indexOf("help.png" != -1)) {
+			$t.putContent(e, target);
+			$t.show();
+		}
 	},
 	
   show : function() {
 		var $t = Tooltip;
-		
+
 		if ($t.isOverTooltip)
 			return;
 		
@@ -2656,6 +2669,7 @@ var Tooltip = {
 			return;
 		if (!$t.tooltipDiv)
 			return;	
+				
 		clearTimeout($t.timerId);	
    	$t.tooltipDiv.style.display = "none";
 		window.status = "";
