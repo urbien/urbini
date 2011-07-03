@@ -39,6 +39,9 @@
           	  <tr itype="http://www.hudsonfog.com/voc/aspects/commerce/SoftBuyable">
           	    <td align="middle" colspan="3"><download/></td>
           	  </tr>
+              <tr>
+                <td colspan="3"><br/><br/><reply/></td>
+              </tr>
         <hideBlock id="hideBlock1">
           		<!--
 							<tr class="v_footer">
