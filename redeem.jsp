@@ -22,7 +22,11 @@
                 <tr>
                   <td width="40%" class="nowrap" align="right"><text text="Coupon Secret:"/></td>
                   <td>
-                      <input type="Text" class="input" name="couponSecret" size="20" maxlength="50"/>
+                    <input type="Text" class="input" id="secret" name="couponSecret" size="20" maxlength="50"/>
+                  </td>
+                  <td>
+                    <couponUriInputField />
+                    <!--input type="hidden" class="input" id="couponUri" name="coupon" size="20" maxlength="50"/-->
                   </td>
                   <td valign="center">
                     <input type="submit" value="Redeem!" name="redeemButton"/>
@@ -38,6 +42,13 @@
 
     <script type="text/javascript" language="JavaScript">
 <![CDATA[   
+/*  function setCouponUri() {
+    var couponUri = getUrlParam(window.location.href, "coupon");
+    document.getElementById("couponUri").value = decodeURIComponent(couponUri);
+  }
+  setTimeout(setCouponUri, 50);
+*/
+
   function focusRedeem() {
     var f = document.forms['redeemForm'];
     if (f) {
