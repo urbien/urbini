@@ -735,6 +735,10 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
   height: 100%; 
 /*  align: left;*/
 }
+
+/* Chrome: prevent page break on too long links */
+.rop1 div { max-width: 750px; word-wrap: break-word; }
+
 #siteResourceList .rop {
   border:solid &[PrimaryColor_1]; 1px; 
   border-collapse: collapse; 
