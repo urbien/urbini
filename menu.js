@@ -13363,6 +13363,9 @@ var LinkProcessor = {
 	    anchor = getTargetAnchor(e);
 	  if (!anchor || !anchor.id)
 	    return false;
+		if (typeof DataEntry == 'undefined')
+			return false;	// prevents click processing before JS parsed
+				
 	  e = getDocumentEvent(e); if (!e) return false;
 	  var propName = anchor.id.substring(7);
 		var urlStr;
