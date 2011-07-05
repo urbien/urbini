@@ -1,6 +1,12 @@
 <div>
 <text text="Comment"/> <property name="comment" noIcon="y"/> <br/>
-		<text text="has been added to the"/>: <property name="forum" href="y" noIcon="y"/>
+		<text text="has been added to the"/>: 
+		<where value="forum.getUri() != getContact()">
+		  <property name="forum" href="y" noIcon="y"/>
+		</where>
+    <where value="forum.getUri() == getContact()">
+      <property name="forum" href="y" noIcon="y" adTitle="your profile"/>
+    </where>
 		<br/>
 		<br/>
 		<text text="To reply to this comment follow the link above"/>.
