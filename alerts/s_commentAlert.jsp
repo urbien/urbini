@@ -4,6 +4,4 @@
 		You added Comment <property name="comment"/>
 		to the <property name="forum" type="y"/> <property name="forum" href="y"/>
     <br/>
-		<propertySheet name="comment"/>
-		<newComment/>
 </div>

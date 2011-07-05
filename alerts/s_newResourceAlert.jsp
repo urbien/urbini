@@ -5,7 +5,4 @@
 		<br/><br/>
 		<property name="forum" type="y"/> <property name="forum" href="y"/>
 		<br/>
-		<propertySheet name="forum"/>
-		<br/>
-		<newComment/>
 </div>
