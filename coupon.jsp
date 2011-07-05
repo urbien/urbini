@@ -155,6 +155,11 @@
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
        </where>
+       <where value="isBuyable()">
+         <where value="cap != null &amp;&amp; couponsLeftToBuy &lt;= maxPerPerson"><br />
+           <ul id="counter"><li class="time_left"><span style="color: #f85400"><text text="Hurry! Only"/> <property name="couponsLeftToBuy" /> <text text="left!"/></span></li></ul>
+         </where>
+       </where>
        <where value="dealPrice &lt;= 0  &amp;&amp;  totalCouponBuysQuantity == null">
          <div class="time_left"><text text="Be the first to try"/></div>
        </where>
