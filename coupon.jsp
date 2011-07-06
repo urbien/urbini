@@ -156,7 +156,7 @@
          </div>
        </where>
        <where value="isBuyable()">
-         <where value="cap != null &amp;&amp; couponsLeftToBuy &lt;= maxPerPerson"><br />
+         <where value="cap != null &amp;&amp; cap - couponBuysQuantity &lt;= maxPerPerson"><br />
            <ul id="counter"><li class="time_left"><span style="color: #f85400"><text text="Hurry! Only"/> <property name="couponsLeftToBuy" /> <text text="left!"/></span></li></ul>
          </where>
        </where>
