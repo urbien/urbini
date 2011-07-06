@@ -5,7 +5,7 @@
 		<br/>
 		<text text="You can modify your subscription alert level or unsubscribe at any time." />
 		<br/>
-		<propertySheet name="forum"/>
+		<!--propertySheet name="forum"/>
 		<br/>
-		<newComment/>
+		<newComment/ -->
 </div>
