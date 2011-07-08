@@ -2657,7 +2657,9 @@ var Tooltip = {
 		}
     if (!$t.tooltipDiv)
       return false; 
-    
+		if (!tooltipText)
+      return false; 
+			
 		$t.contentDiv.innerHTML = tooltipText;
 		setDivVisible(/*e*/null, $t.tooltipDiv, $t.tooltipFrame, target, 0, 30);
 		$t.isShown = true;
@@ -2980,12 +2982,12 @@ var ListBoxesHandler = {
     // check if to do local filter only
     var hasMore = getChildById(this.optionsPanel, "$more");
 		var isRollup = this.curOptionsListDiv.id.indexOf("_groupBy_") != -1;
-		if (isRollup || !hasMore && this.prevSelectorInputValue.length != 0 && newValue.indexOf(this.prevSelectorInputValue) == 0)
+		// Note: commented out a part of the following check (?!)
+		if (isRollup || !hasMore /* && this.prevSelectorInputValue.length != 0 */ && newValue.indexOf(this.prevSelectorInputValue) == 0)
       this.localOptionsFilter(newValue);
     else {
       this.listboxOnClick1(e, keyPressedImgId, newValue, null, this.curClass);
     }
-		
 		this.prevSelectorInputValue = newValue;
   },
 
@@ -3626,8 +3628,8 @@ var ListBoxesHandler = {
 			getFirstChild(this.addNewResBtn).innerHTML = getChildByTagName(hdnAddTr, "a").innerHTML;
 	},
 	changeOptionSelectionState : function(opTable) {
-		var isGrid = (opTable.rows[0] && opTable.rows[0].cells[0].className.indexOf("grid_option_cell") != -1);
-		this.textEntry.parentNode.style.visibility = (isGrid) ? "hidden" : "";
+	//	var isGrid = (opTable.rows[0] && opTable.rows[0].cells[0].className.indexOf("grid_option_cell") != -1);
+	//	this.textEntry.parentNode.style.visibility = (isGrid) ? "hidden" : "";
 		
 	},
 	
@@ -4146,10 +4148,11 @@ var ListBoxesHandler = {
 
   localOptionsFilter : function(typedText, parentDiv) {
 	  typedText = typedText.toLowerCase();
-    parentDiv = parentDiv || this.curOptionsListDiv
+    
+		parentDiv = parentDiv || this.curOptionsListDiv
 		var tbl = parentDiv.getElementsByTagName("table")[0];
  
-		var noMatches = TouchDlgUtil.filterItems(tbl.rows, "menuItem", typedText);
+		var noMatches = ListBoxesHandler.filterItems(tbl, "menuItem", typedText);
 	
 		var noMatchesDiv = getChildByClassName(this.optionsPanel, "no_matches");
 		if (noMatches) {
@@ -4165,6 +4168,69 @@ var ListBoxesHandler = {
 			curPanel.style.height = this.panelBlock.offsetHeight;
   },
   
+	// used in 1)form panel of DataEntry and 2) Filter and on 3) options panel
+	// Note: on remove letter in the selector, options list fetched from server!
+	filterItems : function(table, classNameOfLabel, typedText) {
+		var noMatches = true;
+		var hasAsterisk = false; // wildcard [*] search
+
+		if (typedText.indexOf("*") != -1) {
+			typedText = typedText.replace(/\*/g, "");
+			hasAsterisk = true;
+		}
+		
+		var rows = table.rows;
+		var isGrid = rows[0].cells[0].className.indexOf("grid_option_cell") != -1;
+
+	  for (var i = 0; i < rows.length; i++) {
+			for (var k = 0; k < rows[i].cells.length; k++) {
+			
+				var label = getChildByClassName(rows[i].cells[k], classNameOfLabel);
+				if (!label) 
+					continue;
+
+				var obj = (isGrid) ? rows[i].cells[k] : rows[i];
+				var labelName = getTextContent(label).toLowerCase();
+				// remove "prefix" like "name:" in assignedTo
+				labelName = labelName.replace(/^[^:]*:/, "").trim();
+				var labelNameSplitted = labelName.split(/\s|,|;/); // split for " " , ;
+				for (var n = 0; n < labelNameSplitted.length; n++) {
+					var token = labelNameSplitted[n].trim();
+					if ((hasAsterisk && token.indexOf(typedText) != -1) ||
+			  				(!hasAsterisk && token.indexOf(typedText) == 0)) {
+			  		obj.style.display = "";
+				  	noMatches = false;
+				  	break; // found in one token then to show (whole) item row
+					}
+					else
+						obj.style.display = "none";
+				}
+			}
+		}
+		
+		if (isGrid)
+			arrangeTableCells(table);
+		
+		return noMatches;
+	},
+/*	
+	// absence of cells parameter means to turn off filter
+	showFiteredOptionsGrid : function(cells) {
+		var optionsTable = getFirstChild(this.curOptionsListDiv);
+		var filteredOptionsTable = getNextSibling(optionsTable);
+		if (filteredOptionsTable)
+			filteredOptionsTable.parentNode.removeChild(filteredOptionsTable);
+
+		if (cells) { // filter
+			filteredOptionsTable = buildTableFromCells(cells, false);
+			optionsTable.style.display = "none";
+			optionsTable.parentNode.appendChild(filteredOptionsTable);
+		}
+		else // reset
+			optionsTable.style.display = "" 
+	},
+*/
+	
   // create Calendar
   createCalendarPanel : function(parent) {
     this.calendarPanel = document.createElement("div");
@@ -4831,7 +4897,7 @@ var Filter = {
     if (!paramsTable)
       return;
 
-		var noMatches = TouchDlgUtil.filterItems(paramsTable.rows, "label", typedText);
+		var noMatches = ListBoxesHandler.filterItems(paramsTable, "label", typedText);
 		
 		var formPanel = getAncestorByClassName(paramsTable, "form_panel");
 		var noMatchesDiv = getChildByClassName(formPanel, "no_matches");
@@ -5185,7 +5251,7 @@ var DataEntry = {
 		var formPanel = getAncestorByClassName(paramNameField, "form_panel");
 		var tbl = getChildByClassName(formPanel, "rounded_rect_tbl");
 
-		var noMatches = TouchDlgUtil.filterItems(tbl.rows, "label", typedText);
+		var noMatches = ListBoxesHandler.filterItems(tbl, "label", typedText);
 		var noMatchesDiv = getChildByClassName(formPanel, "no_matches");
 		if (noMatches) {
 			noMatchesDiv.innerHTML = "&[no matches for]; \"" + typedText + "\"";
@@ -6141,39 +6207,6 @@ var TouchDlgUtil = {
 	  // IE does not support "fixed position. So move focusHolder manually.
 		this.focusHolder.style.top = getScrollXY()[1]; /////// - findPosY(curDlgDiv);
 		this.focusHolder.focus();		
-	},
-	
-	// used in 1)form panel of DataEntry and 2) Filter and on 3) options panel
-	filterItems : function(rows, classNameOfLabel, typedText) {
-		var noMatches = true;
-		var hasAsterisk = false; // wildcard [*] search
-
-		if (typedText.indexOf("*") != -1) {
-			typedText = typedText.replace(/\*/g, "");
-			hasAsterisk = true;
-		}
-	    for (var i = 0; i < rows.length; i++) {
-      var label = getChildByClassName(rows[i], classNameOfLabel);
-      if (!label)
-        continue;
-
-		  var labelName = getTextContent(label).toLowerCase();
-			// remove "prefix" like "name:" in assignedTo
-			labelName = labelName.replace(/^[^:]*:/,"").trim();
-			var labelNameSplitted = labelName.split(/\s|,|;/); // split for " " , ;
-			for (var n = 0; n < labelNameSplitted.length; n++) {
-				var token = labelNameSplitted[n].trim();
-		  	if ((hasAsterisk && token.indexOf(typedText) != -1) ||
-		  	(!hasAsterisk && token.indexOf(typedText) == 0)) {
-		  		rows[i].style.display = "";
-		  		noMatches = false;
-					break; // found in one token then to show (whole) item row
-		  	}
-		  	else 
-		  		rows[i].style.display = "none";
-		  }
-    }
-		return noMatches;
 	},
 	
 	getGreyTr : function() {
