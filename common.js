@@ -323,7 +323,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
       openAjaxStatistics(event, http_request);
 //      if (div)
 //        Boost.view.setProgressIndeterminate(false);
-
       callback(clonedEvent, div, hotspot, http_request.responseText, url, parameters, http_request);
     }
     else if (status == 200) {
@@ -370,7 +369,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
 			
       var paintInPage;
       if (Browser.mobile)
-        paintInPage = true;
+	  		paintInPage = true;
       if (!paintInPage) {
         try { paintInPage = http_request.getResponseHeader('X-Paint-In-Page');} catch (exc) {}
 //        Boost.log('got back on postrequest, paintinpage ' + paintInPage);
@@ -383,10 +382,10 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
         var repaintDialog = location.indexOf('-addItems=') != 1;
         if (repaintDialog) {
           hotspot = null; // second time do not show 'loading...' popup
-          // stay on current page and resubmit request using URL from Location header
-				  var urlParts = location.split('?');
-
-          postRequest(clonedEvent, urlParts[0], urlParts[1], div, hotspot, callback);
+		  	// stay on current page and resubmit request using URL from Location header
+					var urlParts = location.split('?');
+					
+					postRequest(clonedEvent, urlParts[0], urlParts[1], div, hotspot, callback);
         }
         else {
           document.location = location;  // reload full page
@@ -1158,6 +1157,38 @@ function getDomObjectFromHtml(html, attribName, attribValue){
 	return obj;
 }
 
+// removes hidden cells and arranges cells again
+// used in filterItems. It is not generic for now. 
+// colsAmount is not required
+function arrangeTableCells(table, colsAmount) {
+	var cells = new Array();
+	// retrieve cells
+	for (var i = 0; i < table.rows.length; i++) {
+		if (!isVisible(table.rows[i]))
+			continue;
+		table.rows[i].style.display = "none";	
+		while (typeof table.rows[i].cells[0] != 'undefined') {
+			var cell = table.rows[i].removeChild(table.rows[i].cells[0]);
+			if (isVisible(cell))
+				cells.push(cell);
+		}
+	}
+
+	if (typeof colsAmount == 'undefined')
+		colsAmount = Math.ceil(Math.sqrt(cells.length)); 	
+	// rearrange cells
+	var idx = 0;
+	for (var i = 0; i < table.rows.length; i++) {
+		var tr = table.rows[i];
+  	for (var n = 0; n < colsAmount; n++) {
+  		if (idx < cells.length) {
+				tr.appendChild(cells[idx]);
+				tr.style.display = "";
+		  	idx++;
+		  }
+  	}
+  }
+}
 //********************************************
 // setInnerHtml
 // Note: automatically runs inner JS code
