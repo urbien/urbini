@@ -2659,7 +2659,8 @@ var Tooltip = {
       return false; 
 		if (!tooltipText)
       return false; 
-			
+		if (PopupHandler.isVisible()) // popups of RTE and StyleSheet
+			return false;	
 		$t.contentDiv.innerHTML = tooltipText;
 		setDivVisible(/*e*/null, $t.tooltipDiv, $t.tooltipFrame, target, 0, 30);
 		$t.isShown = true;
