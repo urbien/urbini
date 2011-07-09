@@ -1241,7 +1241,8 @@ var PopupHandler = {
 		this.setHandlers();
 		
 		this.firstClick = true;
-		this.popupDiv.style.visibility = "visible";	
+		this.popupDiv.style.visibility = "visible";
+		Tooltip.hide(true);	
 	},
 	// allows to make animation
 	align : function (hotspot, alignment, div, autohide, parentDlg) {
@@ -1454,5 +1455,8 @@ var PopupHandler = {
 		while (b.parentNode)
 			if ((b = b.parentNode) == a) return true;
 		return false;
+	},
+	isVisible : function() {
+		return this.popupDiv != null && this.popupDiv.style.visibility == "visible";
 	}
 }
