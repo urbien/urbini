@@ -67,8 +67,8 @@ var RteEngine = {
 	// ----------------------------
 
 	IMAGES_FOLDER : "images/wysiwyg/",
-	STYLES : [{name:"&[Paragraph];", value:"<p>"}, {name:"&[Heading]; 1", value:"<h1>"}, {name:"&[Heading]; 2", value:"<h2>"}, {name:"&[Heading]; 3", value:"<h3>"}, {name:"&[Heading]; 4", value:"<h4>"},
-		{name:"Heading 5", value:"<h5>"}, {name:"Heading 6", value:"<h6>"}, {name:"Address", value:"<address>"}, {name:"Formatted", value:"<pre>"}],
+	STYLES : [{name:"&[Paragraph];", value:"p"}, {name:"&[Heading]; 1", value:"h1"}, {name:"&[Heading]; 2", value:"h2"}, {name:"&[Heading]; 3", value:"h3"}, {name:"&[Heading]; 4", value:"h4"},
+		{name:"Heading 5", value:"h5"}, {name:"Heading 6", value:"h6"}, {name:"Address", value:"address"}, {name:"Formatted", value:"pre"}],
 	FONTS : ["arial", "arial black", "comic sans ms", "courier", "courier new", "georgia", "helvetica", "impact", "palatino", "times new roman", "trebuchet ms", "verdana"],
 	FONTS_FEW : ["arial", "arial black", "comic sans ms", "courier new", "helvetica", "times new roman", "verdana"],
 	FONT_SIZE : [{name:"0.6em", value:"lz_xx_small"}, {name:"0.75em",value:"lz_x_small"}, {
@@ -349,15 +349,9 @@ var RteEngine = {
 		this.stylePopup = new MyDropdownList();
 		var len = this.STYLES.length;
 		for(var i = 0; i < len; i++) {
-		
   		var itemDiv;	
   		var userAgent = navigator.userAgent.toLowerCase();
-	  	 // Opera & Safari do not want to work with font directly
-	  	if(userAgent.indexOf('opera') != -1 || userAgent.indexOf('safari') != -1 )
-		  	itemDiv = document.createElement('div');
-			else
-			  itemDiv = document.createElement(this.STYLES[i].value);
-			
+		  itemDiv = document.createElement(this.STYLES[i].value);
 			itemDiv.style.margin = 0;
 			itemDiv.innerHTML = this.STYLES[i].name;
 			this.stylePopup.appendItem(itemDiv);
@@ -1372,7 +1366,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	    if(tmp.length == 0)
 	      return "";
     }
-    
+		// remove possible trailed br
+    content.replace(/<br[^>]*>$/)
 		return content;
 	}
 
