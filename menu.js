@@ -13141,12 +13141,12 @@ function setHoursOrMinutesInInput(selector, isHour) {
 }
 
 function repostToVK(http_request) {
-	if (typeof console != 'undefined') console.log('in repost');
+	toConsole('in repost');
 	if (!inIFrame()) {
-		if (typeof console != 'undefined') console.log('not in iFrame, aborting repost to vkontakte');
+		toConsole('not in iFrame, aborting repost to vkontakte');
 		return;
 	}
-	if (typeof console != 'undefined') console.log(http_request + http_request.getResponseHeader('X-VKontakte-wallpost-hash'));
+	toConsole(http_request + http_request.getResponseHeader('X-VKontakte-wallpost-hash'));
 	var h = http_request.getResponseHeader('X-VKontakte-wallpost-hash');
     if (h) {
     	VK.callMethod('saveWallPost', h);
@@ -13154,7 +13154,9 @@ function repostToVK(http_request) {
 }
 
 function toConsole(text) {
-  if (console != 'undefined')
+  if (typeof console === 'undefined')
+    return;
+  else
     console.log(text);
 }
 
