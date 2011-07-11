@@ -2271,7 +2271,7 @@ td #corePageContent { min-height: 600px;}
 
 #intentMessage { min-height:600px; border-right:solid &[PrimaryColor_5]; 1px;} 
 
-#ropLeft {border-right:solid &[PrimaryColor_5]; 1px;  min-height: 600px; min-width: 150px; width: 1%; padding-top: 10px; vertical-align: top; text-align: center}
+#ropLeft {border-right:solid &[PrimaryColor_5]; 1px;  min-height: 600px; width: 1% !important; width: 200px; min-width: 200px; padding-top: 10px; vertical-align: top; text-align: center}
 #ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 100%; line-height: 25px; height: auto !important; height: 14px; }
 #ropRight {border-left:solid &[SecondaryColorA_5]; 1px;}
 #ropTop  {border-bottom:solid &[SecondaryColorA_5]; 1px; }
