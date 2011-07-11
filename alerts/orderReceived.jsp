@@ -4,6 +4,8 @@
       <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" />
     </where>  
     <property name="resourceDescription" href="y" noIcon="y"/>
-    <br/><br/>
+    <br/>
+    <orderReceived />
+    <br /><br />
     <text text="You can check the status of your transaction in 'Purchasing history'" /> <onYourProfile />
 </div>
