@@ -8110,6 +8110,7 @@ function saveButtonClicked(e) {
 //
 // positionEnforced enforced to set dialog in accordance to hotspot position
 // without regarding if bottom of a dialog is bellow a page bottom (used for filter)
+// processes custom parameter of hotspot: "max_width", "full_height" (height of options panel)
 //****************************************************************
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim, positionEnforced) {
 	if (Browser.mobile) {
@@ -8241,7 +8242,44 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     }
   }
 
-	// move box to the left of the hotspot if the distance to window border isn't
+	
+	// allows to place dialog taking into account options panel height (Obval's Buy)
+	var optionsHeight = hotspot.getAttribute("full_height");
+	if (optionsHeight)
+		divCoords.height = optionsHeight;
+
+
+	// adjust vertically - so we fit inside the viewport
+	if ((typeof positionEnforced == 'undefined' || positionEnforced == false) &&
+				distanceToBottomEdge < divCoords.height + margin) {
+		if (hotspot)
+			top = findPosY(hotspot) - divCoords.height; // make vertical flip
+		else
+			top = (screenY + scrollY) - divCoords.height;
+		
+		if ((top - scrollY) - margin > 0) 
+			top -= margin; // adjust for a scrollbar
+		if (top < scrollY) // but not higher then top of viewport
+			top = scrollY + 1;
+		
+
+		// overlaps hotspot: show just on screen 
+		if (top < findPosY(hotspot) && top > findPosY(hotspot) - divCoords.height) {
+			top = getElemInsideScreenPosition(0, findPosY(hotspot) + 5, divCoords)[1];
+			// move it right trying to avoid overlap
+			// TODO: in horizontal adjustment try to make flip
+			distanceToRightEdge -= hotspot.clientWidth + 5; 
+			left += hotspot.clientWidth + 5;
+		}
+	
+	}
+	else { // apply user requested offset only if no adjustment
+		if (offsetY) 
+			top = top + offsetY;
+	}
+
+
+	// horizontaly: move box to the left of the hotspot if the distance to window border isn't
   // enough to accomodate the whole div box
   if (distanceToRightEdge < divCoords.width + margin) {
     left = (screenX + scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
@@ -8254,24 +8292,6 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     if (offsetX)
       left = left + offsetX;
   }
-
-
-		// now adjust vertically - so we fit inside the viewport
-		if ((typeof positionEnforced == 'undefined' || positionEnforced == false) &&
-					distanceToBottomEdge < divCoords.height + margin) {
-			if (hotspot)
-				top = findPosY(hotspot) - divCoords.height; // make vertical flip
-			else
-			top = (screenY + scrollY) - divCoords.height;
-			if ((top - scrollY) - margin > 0) 
-				top -= margin; // adjust for a scrollbar
-			if (top < scrollY) // but not higher then top of viewport
-				top = scrollY + 1;
-		}
-		else { // apply user requested offset only if no adjustment
-			if (offsetY) 
-				top = top + offsetY;
-		}
 
 
 	// no vertical scrollbar for Touch UI dialogs
