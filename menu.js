@@ -8242,12 +8242,12 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     }
   }
 
-	
 	// allows to place dialog taking into account options panel height (Obval's Buy)
-	var optionsHeight = hotspot.getAttribute("full_height");
-	if (optionsHeight)
-		divCoords.height = optionsHeight;
-
+	if (hotspot) {
+  	var optionsHeight = hotspot.getAttribute("full_height");
+  	if (optionsHeight) 
+  		divCoords.height = optionsHeight;
+  }
 
 	// adjust vertically - so we fit inside the viewport
 	if ((typeof positionEnforced == 'undefined' || positionEnforced == false) &&
