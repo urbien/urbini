@@ -179,6 +179,7 @@
       <h3 class="csp_33"><text text="Fine print"/></h3>
       <ul>
         <li><property name="conditions" noIcon="y"/></li>
+        <li><text text="Must be redeemed by"/>&#160;<property name="redeemBy" noIcon="y"/></li>
       </ul>
       <br/>
       <where value="redemptionLocationsCount &gt; 0">
