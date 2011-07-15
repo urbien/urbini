@@ -2634,7 +2634,7 @@ var Tooltip = {
 
 		// show tooltip on click on help icon
 		var target = getEventTarget(e);
-		if (target.tagName.toLowerCase() == 'img' && target.src.indexOf("help.png" != -1)) {
+		if (target.tagName.toLowerCase() == 'img' && target.src.indexOf("help.png") != -1) {
 			$t.putContent(e, target);
 			$t.show();
 		}
