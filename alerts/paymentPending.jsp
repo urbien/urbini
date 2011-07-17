@@ -6,7 +6,7 @@
 <text text="Check your email (and spam folder) once completed."/>
 <text text="You can also look at the status in your profile under purchase history."/>
   <where value="forum.getType() == 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy'">
-    <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" />
+    <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" />
   </where>  
   <newComment/>  
 </div>
