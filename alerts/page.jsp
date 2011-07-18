@@ -10,7 +10,7 @@
     <td>
 <table border="0" cellspacing="0" cellpadding="0">
   <tr>
-    <td height="30"  bgcolor="#FF9900"><div align="left"><span style=" padding-left:20px; color:#FFFFFF"><strong>obval</strong></span></div></td>
+    <td height="30"  bgcolor="#FF9900"><div align="left"><span style=" padding-left:20px; color:#FFFFFF"><strong><logo/></strong></span></div></td>
   </tr>
   
   <tr>
