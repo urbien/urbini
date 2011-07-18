@@ -150,11 +150,11 @@
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
        </where>
-       <where value="dealPrice &lt;= 0  &amp;&amp;  couponBuysQuantity &lt; cap  &amp;&amp; couponsLeftToBuy &lt;= 0">
+       <!--where value="dealPrice &lt;= 0  &amp;&amp;  couponBuysQuantity &lt; cap  &amp;&amp; couponsLeftToBuy &lt;= 0">
          <div class="dealOn">
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
-       </where>
+       </where-->
        <where value="isBuyable()">
          <where value="cap != null &amp;&amp; cap - couponBuysQuantity &lt;= maxPerPerson"><br />
            <ul id="counter"><li class="time_left"><span style="color: #f85400"><text text="Hurry! Only"/> <property name="couponsLeftToBuy" /> <text text="left!"/></span></li></ul>
