@@ -2989,6 +2989,7 @@ var ListBoxesHandler = {
     else {
       this.listboxOnClick1(e, keyPressedImgId, newValue, null, this.curClass);
     }
+		
 		this.prevSelectorInputValue = newValue;
   },
 
@@ -4149,8 +4150,7 @@ var ListBoxesHandler = {
 
   localOptionsFilter : function(typedText, parentDiv) {
 	  typedText = typedText.toLowerCase();
-    
-		parentDiv = parentDiv || this.curOptionsListDiv
+    parentDiv = parentDiv || this.curOptionsListDiv
 		var tbl = parentDiv.getElementsByTagName("table")[0];
  
 		var noMatches = ListBoxesHandler.filterItems(tbl, "menuItem", typedText);
@@ -7601,6 +7601,9 @@ function minMax(e, divId) {
 // Note: RTE hides (and restores) control panel to enlarge editing area.
 function showTab(e, td, hideDivId, unhideDivId) {
   e = getDocumentEvent(e);
+	
+	if (typeof td == 'string')
+		td = document.getElementById(td);
 
   var isViewAll = td.id == 'viewAll';
   var hasPrefix;
@@ -8250,17 +8253,16 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   }
 
 	// adjust vertically - so we fit inside the viewport
-	if ((typeof positionEnforced == 'undefined' || positionEnforced == false) &&
-				distanceToBottomEdge < divCoords.height + margin) {
-		if (hotspot)
-			top = findPosY(hotspot) - divCoords.height; // make vertical flip
-		else
+		if ((typeof positionEnforced == 'undefined' || positionEnforced == false) &&
+					distanceToBottomEdge < divCoords.height + margin) {
+			if (hotspot)
+				top = findPosY(hotspot) - divCoords.height; // make vertical flip
+			else
 			top = (screenY + scrollY) - divCoords.height;
-		
-		if ((top - scrollY) - margin > 0) 
-			top -= margin; // adjust for a scrollbar
-		if (top < scrollY) // but not higher then top of viewport
-			top = scrollY + 1;
+			if ((top - scrollY) - margin > 0) 
+				top -= margin; // adjust for a scrollbar
+			if (top < scrollY) // but not higher then top of viewport
+				top = scrollY + 1;
 		
 
 		// overlaps hotspot: show just on screen 
@@ -8272,11 +8274,11 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 			left += hotspot.clientWidth + 5;
 		}
 	
-	}
-	else { // apply user requested offset only if no adjustment
-		if (offsetY) 
-			top = top + offsetY;
-	}
+		}
+		else { // apply user requested offset only if no adjustment
+			if (offsetY) 
+				top = top + offsetY;
+		}
 
 
 	// horizontaly: move box to the left of the hotspot if the distance to window border isn't
@@ -11090,6 +11092,7 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 			recNmb = this.slidesArr.length;	
 		this.slidesArr[recNmb] = this.nextSlide;
 	}
+	
 	this.showNextSlide = function(acceleration){
 		if (this.nextSlide == null)
 			return;
@@ -11197,6 +11200,9 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
     }
 
 		return parseInt(recNmb);
+	},
+	this.getSlides = function() {
+		return this.slidesArr;
 	}
 	
 	// ---
@@ -11273,7 +11279,6 @@ var BacklinkImagesSlideshow = {
 	  	}
 			this.widgetSlider.createNewSlide(images[0]);
 		}
-			
 		return true;
 	},
 	
@@ -11312,24 +11317,31 @@ var BacklinkImagesSlideshow = {
 	},
 
 	// newImageIdx for manual paging
+	// imgSrc used to show 1st slide on tab
 	// manual paging means $t.loopsCounter > $t.MAX_LOOPS
-	rotate : function(newImageIdx) {
+	rotate : function(newImageIdx, imgSrc) {
 		var $t = BacklinkImagesSlideshow;
 
 		// make manual pagging faster
 		var accelaration =  ($t.loopsCounter > $t.MAX_LOOPS) ? 5 : 1;
 		
-		$t.pagerSlots[$t.curImageIdx].className = "";
-		$t.curImageIdx = ($t.loopsCounter > $t.MAX_LOOPS) ? newImageIdx : $t.curImageIdx + 1;
-		if ($t.curImageIdx > $t.maxSlideIdx) {
-			$t.loopsCounter++;
-			//if ($t.loopsCounter > $t.MAX_LOOPS)
-			//	removeEvent($t.slideShowSceneDiv, "mouseout", $t.onmouseout, false);
-
-			$t.curImageIdx = 0;
-		}
-		$t.pagerSlots[$t.curImageIdx].className = "current";
+		if (typeof $t.pagerSlots[$t.curImageIdx] != 'undefined')
+			$t.pagerSlots[$t.curImageIdx].className = "";
 		
+		$t.curImageIdx = ($t.loopsCounter > $t.MAX_LOOPS) ? newImageIdx : $t.curImageIdx + 1;
+
+		if (typeof $t.pagerSlots[$t.curImageIdx] != 'undefined')
+			$t.pagerSlots[$t.curImageIdx].className = "current";
+	
+		// slide show on tab
+		if ($t.slideShowSceneDiv.parentNode.id == 'div_SlideShow') {
+			var tab = document.getElementById('div_SlideShow');
+			if (!isVisible(tab)) { // 1st slide on tab show immediately
+	  		$t.slideShowSceneDiv.innerHTML = "<img src=\"" + imgSrc + "\">";
+				return;
+	  	}
+		}
+	
 		$t.widgetSlider.insertNextSlide(null, $t.curImageIdx);	
 		$t.widgetSlider.showNextSlide(accelaration);
 	},
@@ -11338,11 +11350,42 @@ var BacklinkImagesSlideshow = {
 		var $t = BacklinkImagesSlideshow;
 		var a = getEventTarget(event, "a");
 		var idx = getSiblingIndex(a);
-		if (idx != null) {
-			$t.loopsCounter = $t.MAX_LOOPS + 1; // to stop automatic paging
-			clearTimeout($t.timerId);
-			$t.rotate(idx);
+		$t.setSlide(idx);
+	},
+	
+	onThumbItemClick : function(event) {
+		var target = getEventTarget(event);
+		var imgSrc = this.getImageSrc(target.style.backgroundImage);
+		var slides = this.widgetSlider.getSlides();
+		
+		var isSlidePresent = false;
+		var idx = 0;
+		for (idx = 0; idx < slides.length; idx++) {
+			if (decodeURI(getFirstChild(slides[idx]).src).indexOf(imgSrc) != -1) {
+				isSlidePresent = true;
+				break;
+			}
 		}
+	
+		// create slide for image that is absent in slide show (small image of photo bar) 
+		if (isSlidePresent == false)
+			this.widgetSlider.createNewSlide("<img src=\"" + imgSrc + "\">", idx);
+		
+		this._fitWideShow();
+		this.setSlide(idx, imgSrc);
+	},
+	
+	getImageSrc : function(thumbSrc) {
+		var src = thumbSrc.replace("url(", "").replace(")", "").replace(/"/g, "").replace("thumbnail/", "").replace(/_featured\.\w{3,3}$/, "");
+		if (src.lastIndexOf(".") != src.length - 4)
+			src += ".jpg"; // in some cases thumbnail does not contain extention of the image then append .JPG
+		return src;
+	},
+
+	setSlide : function(idx, imgSrc) {
+		this.loopsCounter = this.MAX_LOOPS + 1; // to stop automatic paging
+		clearTimeout(this.timerId);
+		this.rotate(idx, imgSrc);
 	},
 	
 	stopAutomaticSiding : function() {
@@ -11352,10 +11395,10 @@ var BacklinkImagesSlideshow = {
 	
 	onslidingHalfFinish : function() {
 		var $t = BacklinkImagesSlideshow;
-	
+		
 		if ($t.descArr) {
 			if ($t.descArr[$t.curImageIdx] != null) {
-	  		$t.descOverlay.innerHTML = $t.descArr[$t.curImageIdx];
+			$t.descOverlay.innerHTML = $t.descArr[$t.curImageIdx];
 				$t.descOverlay.style.display = "";
 	  	}
 			else
@@ -13072,7 +13115,9 @@ var LoadingIndicator = {
 
 /*****************************************
 * ImageMag image magnification on "hover"
+NOT used currently
 ******************************************/
+/*
 var ImageMag = {
 	TIMEOUT : 500,
 	timerId : null,
@@ -13152,7 +13197,7 @@ var ImageMag = {
 		return thumbSrc;
 	}
 }
-
+*/
 // 
 function setHoursOrMinutesInInput(selector, isHour) {
 	var newValue = getTextContent(selector.options[selector.selectedIndex]);
