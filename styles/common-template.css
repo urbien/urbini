@@ -27,7 +27,7 @@ input  { -webkit-appearance: none; font-style: normal; line-height: normal; font
 
 .photos {width: 520px; margin-bottom: 10px; overflow: hidden; }
 .photos li {float: left; line-height: 0px; padding-left: 2px;}
-.photosEmpty {width: 97px; height: 67px; background-color: &[OddRowBackgroundColor];; padding: 5 0 0 0; text-align:justify;}
+.photos li div { width: 97px; height: 67px; background-position: 50% 25%; background-color: &[OddRowBackgroundColor];; padding: 5 0 0 0; text-align:justify;}
 
 .photoBar { display: block; width:900px; list-style-type: none; margin-top: 0px;margin-left: -2px; padding: 0px}
 .thumb {position: relative;}
@@ -1808,6 +1808,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 250px; /*100%*/; height: auto;
 	font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px; }
 
+.mobile_dlg { width: 100%; height: 100%; -moz-box-shadow : none; -webkit-box-shadow: none; }
 .mobile_dlg .rounded_rect_tbl .input, .mobile_dlg .rounded_rect_tbl .isel, .mobile_dlg .rounded_rect_tbl .num, .mobile_dlg .false_input { width: 100%; }
 
 .rounded_rect_tbl .pointer { color: &[PrimaryColor_4_text];; }
