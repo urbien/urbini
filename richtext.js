@@ -1148,9 +1148,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var cssFiles = new Array();
 		var sheets = document.styleSheets;
 		for (var i = 0; i < sheets.length; i++) {
-			if (sheets[i] && sheets[i].href && sheets[i].href.indexOf("common") != -1) {
+		// Note: currently load all CSS files including specific properties.css
+		//	if (sheets[i] && sheets[i].href && sheets[i].href.indexOf("common") != -1) {
 		  	cssFiles.push(sheets[i].href); // insert only common_****.css file
-		  }
+		//  }
 		}
 		
 		for(var i = 0; i < cssFiles.length; i++) {
