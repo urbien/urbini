@@ -11258,8 +11258,8 @@ var BacklinkImagesSlideshow = {
 		this.descOverlay = getChildByClassName(this.slideShowSceneDiv.parentNode, "galleryItem_note");
 		if (this.descOverlay) {
 			this.descArr = new Array();
-			var desc = this.slideShowSceneDiv.getElementsByTagName("img")[0].getAttribute("desc");
-			this.descArr.push(desc == null ? "&#160;" : desc);
+			var desc = this.slideShowSceneDiv.getElementsByTagName("img")[0].getAttribute("alt");
+			this.descArr.push(desc);
 		}
 
 		// color scheme and description of the next images
@@ -11269,7 +11269,7 @@ var BacklinkImagesSlideshow = {
 				this.colorScemeArr.push(images[0].id.replace(/_\d{1,}/,""));
 			if (this.descArr) {
 				var desc = images[0].getAttribute("alt");
-	  		this.descArr.push(desc == null ? "&#160;" : desc);
+	  		this.descArr.push(desc);
 	  	}
 			this.widgetSlider.createNewSlide(images[0]);
 		}
@@ -11352,9 +11352,15 @@ var BacklinkImagesSlideshow = {
 	
 	onslidingHalfFinish : function() {
 		var $t = BacklinkImagesSlideshow;
-		
-		if ($t.descArr)
-			$t.descOverlay.innerHTML = $t.descArr[$t.curImageIdx];
+	
+		if ($t.descArr) {
+			if ($t.descArr[$t.curImageIdx] != null) {
+	  		$t.descOverlay.innerHTML = $t.descArr[$t.curImageIdx];
+				$t.descOverlay.style.display = "";
+	  	}
+			else
+				$t.descOverlay.style.display = "none";
+		}
 		
 		// Note: cpecific Obval's coupon code!
 		if ($t.colorScemeArr == null)
