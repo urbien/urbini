@@ -2471,6 +2471,18 @@ function addCurrentDashboardAndCurrentTab(target) {
     var div = document.getElementById('dashboardCredentials');
     if (!div)
       return;
+    // check if link leads to other party server
+    var idx = a.indexOf("://");
+    var idx1 = a.indexOf("/", idx + 3);
+    var aUri = a.substring(idx + 3, idx1);
+    var loc = document.location.href;
+    idx = loc.indexOf("://");
+    idx1 = loc.indexOf("/", idx + 3);
+    var lUri = loc.substring(idx + 3, idx1);
+//    alert(aUri + "; " + lUri);
+    if (lUri != aUri)
+      return;
+    
     var s = div.innerHTML.split(';');
     if (s  &&  s.length > 0) {
       if (s[0]) {
@@ -5252,7 +5264,7 @@ var DataEntry = {
 		var content = getChildByClassName(formPanel, "content");
 		var tbls = content.getElementsByTagName("table");
 		var noMatches = true;
-	
+
 	// loop over all sections ("rounded_rect_tbl")
 		for (var i = 0; i < tbls.length; i++) { 
 			if (!isElemOfClass(tbls[i], "rounded_rect_tbl"))
@@ -5263,7 +5275,7 @@ var DataEntry = {
 			if (isElemOfClass(sectionName, "property_group"))
 				sectionName.style.display = noInTableMatches ? "none" : "";
 		}
-		
+
 		var noMatchesDiv = getChildByClassName(formPanel, "no_matches");
 		if (noMatches) {
 			noMatchesDiv.innerHTML = "&[no matches for]; \"" + typedText + "\"";
@@ -11312,7 +11324,7 @@ var BacklinkImagesSlideshow = {
 			if (!this.imgWidth) {
 	  	this.imgWidth = this.slideShowSceneDiv.getElementsByTagName("img")[0].width;
 	  	if (!this.imgWidth) { // IE
-					this.slideShowSceneDiv.parentNode.style.display = "block";
+				this.slideShowSceneDiv.parentNode.style.display = "block";
 					this.imgWidth = this.slideShowSceneDiv.getElementsByTagName("img")[0].offsetWidth;
 				}
 			}
@@ -11385,10 +11397,9 @@ var BacklinkImagesSlideshow = {
 	
 	onThumbItemClick : function(event) {
 		var target = getEventTarget(event);
-		
 		var imgSrc = this.getImageSrc(target.style.backgroundImage);
 		var slides = this.widgetSlider.getSlides();
-	
+		
 		var isSlidePresent = false;
 		var idx = 0;
 		for (idx = 0; idx < slides.length; idx++) {
@@ -11460,7 +11471,7 @@ var BacklinkImagesSlideshow = {
   },
 	isManualPaging : function() {
 		return this.loopsCounter > this.MAX_LOOPS;
-	}
+  }
 }
 
 
