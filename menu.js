@@ -5253,7 +5253,7 @@ var DataEntry = {
 		var tbls = content.getElementsByTagName("table");
 		var noMatches = true;
 	
-		// loop over all sections ("rounded_rect_tbl")
+	// loop over all sections ("rounded_rect_tbl")
 		for (var i = 0; i < tbls.length; i++) { 
 			if (!isElemOfClass(tbls[i], "rounded_rect_tbl"))
 				continue;
@@ -5398,15 +5398,14 @@ var DataEntry = {
 		}	
 		
 		// 2. on page data entry. Note: it is not "recorded" in dataEntryArr!
-		var divEdit = document.getElementById("div_Edit");
+		var divEdit = document.getElementById("div_Edit"); // in tab
+		if (!divEdit)
+			divEdit = document.getElementById("corePageContent"); // on page / standalone
 		if (divEdit && getElementStyle(divEdit).display != 'none') {
 			var onPageDataEntry = getChildByClassName(divEdit, "panel_block");
 			if (onPageDataEntry) 
 				return onPageDataEntry;
 		}
-		
-		// 3. on page data entry
-		// ---
 		
 		return null;
 	},
