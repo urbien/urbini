@@ -5248,11 +5248,22 @@ var DataEntry = {
 	// hides params with not suited beginning.		
   onParamNameTyping : function(paramNameField) {
     var typedText = FieldsWithEmptyValue.getValue(paramNameField).toLowerCase();
-
 		var formPanel = getAncestorByClassName(paramNameField, "form_panel");
-		var tbl = getChildByClassName(formPanel, "rounded_rect_tbl");
-
-		var noMatches = ListBoxesHandler.filterItems(tbl, "label", typedText);
+		var content = getChildByClassName(formPanel, "content");
+		var tbls = content.getElementsByTagName("table");
+		var noMatches = true;
+	
+		// loop over all sections ("rounded_rect_tbl")
+		for (var i = 0; i < tbls.length; i++) { 
+			if (!isElemOfClass(tbls[i], "rounded_rect_tbl"))
+				continue;
+  		var noInTableMatches = ListBoxesHandler.filterItems(tbls[i], "label", typedText);
+			noMatches = noMatches && noInTableMatches;
+			var sectionName = getPreviousSibling(tbls[i]);
+			if (isElemOfClass(sectionName, "property_group"))
+				sectionName.style.display = noInTableMatches ? "none" : "";
+		}
+		
 		var noMatchesDiv = getChildByClassName(formPanel, "no_matches");
 		if (noMatches) {
 			noMatchesDiv.innerHTML = "&[no matches for]; \"" + typedText + "\"";
