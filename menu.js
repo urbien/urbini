@@ -11226,6 +11226,8 @@ var BacklinkImagesSlideshow = {
 	colorScemeArr : null, // to switch light / dark of overlays - Specific code!!!
 	descArr : null,
 	
+	imgWidth : null, // used the same width for all slides / images
+	
 	init : function() {
 		this.slideShowSceneDiv = document.getElementById("slideShow_scene");
 		if (!this.slideShowSceneDiv)
@@ -11284,7 +11286,7 @@ var BacklinkImagesSlideshow = {
 	
 	// used with Slideshow on a Tab of property sheet
 	run : function() {
-		this._fitWideShow();
+		this.fitWideShow();
 		
 		if (!this.pagerSlots)
 			return;
@@ -11293,16 +11295,18 @@ var BacklinkImagesSlideshow = {
 	},
 	
 	// show slide show over whole working area if need (used for Obval's coupon)
-	_fitWideShow : function () {
+	fitWideShow : function () {
 		var ropLeft = document.getElementById("ropLeft");
 		if (ropLeft) {
 			var parentTdWidth = getAncestorByTagName(this.slideShowSceneDiv, "td").offsetWidth;
-			var imgWidth = this.slideShowSceneDiv.getElementsByTagName("img")[0].width;
-			if (!imgWidth) { // IE
-				this.slideShowSceneDiv.parentNode.style.display = "block";
-				imgWidth = this.slideShowSceneDiv.getElementsByTagName("img")[0].offsetWidth;
+			if (!this.imgWidth) {
+	  	this.imgWidth = this.slideShowSceneDiv.getElementsByTagName("img")[0].width;
+	  	if (!this.imgWidth) { // IE
+					this.slideShowSceneDiv.parentNode.style.display = "block";
+					this.imgWidth = this.slideShowSceneDiv.getElementsByTagName("img")[0].offsetWidth;
+				}
 			}
-			if (imgWidth > parentTdWidth) {
+			if (this.imgWidth > parentTdWidth) {
 				ropLeft.style.display = "none";
 				this.slideShowSceneDiv.style.marginLeft = "-10px";
 				this.slideShowSceneDiv.parentNode.style.marginRight = "-10px";
@@ -11323,21 +11327,33 @@ var BacklinkImagesSlideshow = {
 		var $t = BacklinkImagesSlideshow;
 
 		// make manual pagging faster
-		var accelaration =  ($t.loopsCounter > $t.MAX_LOOPS) ? 5 : 1;
-		
-		if (typeof $t.pagerSlots[$t.curImageIdx] != 'undefined')
+		var accelaration =  ($t.isManualPaging()) ? 5 : 1;
+		// additinal slide is a slide created from small image, not included into 'automatic' slide show
+		var isAdditinalSlide = typeof $t.pagerSlots[$t.curImageIdx] == 'undefined';
+		if (!isAdditinalSlide)
 			$t.pagerSlots[$t.curImageIdx].className = "";
 		
-		$t.curImageIdx = ($t.loopsCounter > $t.MAX_LOOPS) ? newImageIdx : $t.curImageIdx + 1;
+		if ($t.isManualPaging()) 
+			$t.curImageIdx = newImageIdx;
+		else {
+			$t.curImageIdx++;
+			if ($t.curImageIdx > $t.maxSlideIdx) {
+	  		$t.loopsCounter++;
+	  		$t.curImageIdx = 0;
+	  	}
+		}
+		isAdditinalSlide = typeof $t.pagerSlots[$t.curImageIdx] == 'undefined';
 
-		if (typeof $t.pagerSlots[$t.curImageIdx] != 'undefined')
+		if (!isAdditinalSlide)
 			$t.pagerSlots[$t.curImageIdx].className = "current";
 	
 		// slide show on tab
 		if ($t.slideShowSceneDiv.parentNode.id == 'div_SlideShow') {
 			var tab = document.getElementById('div_SlideShow');
-			if (!isVisible(tab)) { // 1st slide on tab show immediately
+			if (!isVisible(tab) && imgSrc) { // 1st slide on tab show immediately
 	  		$t.slideShowSceneDiv.innerHTML = "<img src=\"" + imgSrc + "\">";
+				var w = (isAdditinalSlide) ? "" : ("\" width=\"" + $t.imgWidth);
+	  		$t.slideShowSceneDiv.innerHTML = "<img src=\"" + imgSrc + w + "\">";
 				return;
 	  	}
 		}
@@ -11352,12 +11368,17 @@ var BacklinkImagesSlideshow = {
 		var idx = getSiblingIndex(a);
 		$t.setSlide(idx);
 	},
+	onMainThumbClick : function() {
+		this.setSlide(0);
+		this.fitWideShow();
+	},
 	
 	onThumbItemClick : function(event) {
 		var target = getEventTarget(event);
+		
 		var imgSrc = this.getImageSrc(target.style.backgroundImage);
 		var slides = this.widgetSlider.getSlides();
-		
+	
 		var isSlidePresent = false;
 		var idx = 0;
 		for (idx = 0; idx < slides.length; idx++) {
@@ -11371,7 +11392,7 @@ var BacklinkImagesSlideshow = {
 		if (isSlidePresent == false)
 			this.widgetSlider.createNewSlide("<img src=\"" + imgSrc + "\">", idx);
 		
-		this._fitWideShow();
+		this.fitWideShow();
 		this.setSlide(idx, imgSrc);
 	},
 	
@@ -11424,9 +11445,12 @@ var BacklinkImagesSlideshow = {
 	onslidingFinish: function(){
   	var $t = BacklinkImagesSlideshow;
   	clearTimeout($t.timerId);
-  	if ($t.loopsCounter <= $t.MAX_LOOPS) 
+  	if (!$t.isManualPaging()) 
   		$t.timerId = setTimeout($t.rotate, $t.DELAY);
-  }
+  },
+	isManualPaging : function() {
+		return this.loopsCounter > this.MAX_LOOPS;
+	}
 }
 
 
