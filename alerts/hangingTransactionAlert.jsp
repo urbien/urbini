@@ -1,0 +1,3 @@
+<div>
+    <hangingTransaction />
+</div>
