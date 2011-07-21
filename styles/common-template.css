@@ -2218,7 +2218,8 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 /********** Slide Show *********/
 #slides_pager { 
-	position: absolute; 
+	position: absolute;
+	z-index: 10; 
 	top: 10px;
 	right: 10px;
 	padding: 5px;
@@ -2229,6 +2230,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 	-moz-box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
 	-webkit-box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
 }
+#div_SlideShow #slides_pager { top: 40px; }
 
 #slides_pager a { 
 	background: url("../icons/slider_pager_dots.png");
@@ -2249,7 +2251,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#99ffffff,endColorstr=#99ffffff);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#99ffffff,endColorstr=#99ffffff)";
  }
-#div_SlideShow .galleryItem_note { font-size: 20px; width: 100%; padding: 10px 0; min-height: 0; text-shadow: 1px 2px 2px #000000; }
+#div_SlideShow .galleryItem_note { top: 0; bottom: auto; font-size: 18px; width: 100%; padding: 5px 0; min-height: 0; text-shadow: 1px 2px 2px #000000; }
 /********** dashboard & widgets *********/
 #dashboard, #dashboard > table { 
   background-color: &[PrimaryColor_1];; 
