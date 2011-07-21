@@ -2093,7 +2093,11 @@ var MobileMenuAnimation = {
 		
     if (optDivStl.position == '')
       optDivStl.position = 'absolute';
-    optDivStl.zIndex = curPageDiv.style.zIndex + 1;
+		
+		// set menu position in accordance to current "scrolled" position
+		optDivStl.top = window.pageYOffset;	
+
+		optDivStl.zIndex = curPageDiv.style.zIndex + 1;
     optDivStl.display = "block";
     optDivStl.visibility = "visible";
   },
