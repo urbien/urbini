@@ -3430,7 +3430,7 @@ var ListBoxesHandler = {
 		// bind click on option row 
 		var opTable = getChildByClassName(popupDiv, "rounded_rect_tbl");
 		if (opTable) {
-			var trs = opTable.getElementsByTagName("tr");
+			var trs = opTable.rows;
 			for (var i = 0; i < trs.length; i++) 
 				trs[i].onclick = $t.onOptionsItemClick;
 		}
