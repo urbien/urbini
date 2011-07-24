@@ -2,7 +2,7 @@
     <property name="forum" type="y"/> "<property name="forum" href="y"/>" <text text="has just aired!" />
     <br/><br />
     <couponCityScape />
-    <property name="(http://www.hudsonfog.com/voc/commerce/coupon/Coupon)forum.featured" noIcon="y" />
+    <property name="(http://www.hudsonfog.com/voc/commerce/coupon/Coupon)forum.featured" noIcon="y" /> <!--giftThisCoupon --/><!--suggestToFriend /-->
     <br/>
     <!--text text="Discount"/>:
     <span style="color: #f55200; font-weight: bold"><property name="(http://www.hudsonfog.com/voc/commerce/coupon/Coupon)forum.discount" /></span-->  
