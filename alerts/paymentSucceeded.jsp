@@ -5,7 +5,7 @@
       <text text="Payment completed" /> <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.paymentConfirmationTime" />
       <claimCouponLink />
       <br/><br/>
-      <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" />
+      <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" />
       <br /><br />
       <text text="We've been informed on a secure channel that your mouse is hungry. Feed it some clicks!" />
       <br /><br />
@@ -20,7 +20,7 @@
           <td width="99%"><text text="Like this coupon? We can't hear you...click louder." /></td>
         </tr>
         <tr>
-          <td width="1%" style="text-align:center"><newComment onlyIcon="y" /></td>
+          <td width="1%" style="text-align:center"><newComment onlyIcon="y" forum="coupon"/></td>
           <td width="99%"><text text="We're listening for once. Speak into your keyboard (supported on Windows, Mac, Ubuntu and weak minds). Now click." /></td>
         </tr>
         <showIntent />
