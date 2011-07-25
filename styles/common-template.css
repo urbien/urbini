@@ -1609,6 +1609,7 @@ table.printFB {
 .login {background-color: transparent; border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px}
 .lButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 .userLogin { width: auto !important; max-width: 350px; background-color: &[BackgroundColor];; color: &[SecondaryColorA_3];; border: 1px solid &[SecondaryColorA_3];; padding: 5 5 5 5; }
+.userLogin #errorMessage { max-width: 320px; }
 .redeem { width: auto !important; width: 100px; background-color: #ffffff; color: #2B0764; border: 1px solid #cccccc; padding: 5 5 5 5; }
 
 #register .input { border: 1px solid &[SecondaryColorA_3];; color: &[SecondaryColorB_3];; margin-right: 1em;}
@@ -2069,7 +2070,7 @@ td.pBGr { background-color: #eeeeee;
 #siteResourceList #filter input[type=text] { color: &[PrimaryColor_4_text];;  width: 100%; height: auto; background-color: transparent; font-size: 16px; font-weight: normal; }
 #siteResourceList #filter input[type=text].changed { color: &[SecondaryColorB_3];;   }
 #siteResourceList .input { border: 1px solid &[PrimaryColor_1];; }
-#siteResourceList .pointer, .panel_block .pointer { border: none; background: transparent; width: 100%; }
+#siteResourceList .pointer, .panel_block .pointer { border: none; background: transparent; }
 
 .cp_item_left, .cp_item_right { position: relative; white-space:nowrap; }
 /*.cp_item_left { min-height: 30px; }*/
