@@ -24,7 +24,7 @@
         <td width="30"></td>
         <td height="50">
           <where value="to.firstName != null">
-            <text text="Hi"/> <property name="to.firstName" href="y" noIcon="y"/> <property name="to.lastName" href="y" noIcon="y"/>,
+            <text text="Hi"/> <property name="to.firstName" href="y" noIcon="y"/>,
           </where>
           <where value="to.firstName == null">
             <text text="Hi"/> <property name="to.email" href="y" noIcon="y"/>,
