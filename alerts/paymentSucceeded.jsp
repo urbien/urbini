@@ -7,13 +7,15 @@
       <br/><br/>
       <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" />
       <br /><br />
-      <text text="We've been informed on a secure channel that your mouse is hungry. Feed it some clicks!" />
+      <insertJoke variation="You're mouse is dangerously low on clicks, click something before it's too late!" />
       <br /><br />
-      <table width="100%" cellpadding="5">
-        <tr>
-          <td width="1%" style="text-align:center"><giftThisCoupon /></td>
-          <td width="99%"><text text="Feeling generous? Give your coupon to someone (else)! Somewhere in this email is a poorly veiled opportunity to bribe your boss." /></td>
-        </tr>
+      <table width="100%" cellpadding="5">       
+        <where value="gifteeEmail == null">
+          <tr>
+            <td width="1%" style="text-align:center"><giftThisCoupon /></td>
+            <td width="99%"><text text="Feeling generous? Give your coupon to someone (else)! Somewhere in this email is a poorly veiled opportunity to bribe your boss." /></td>
+          </tr>
+        </where>
         <tr>
       <!--like value="Like" type="Obval" /-->
           <td width="1%" style="text-align:center"><like value="Like" type="forum" /></td>
