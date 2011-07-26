@@ -47,7 +47,7 @@
       </tr>
       <tr valign="center">
         <td></td>
-        <td height="50"><text text="Obval Team" /></td>
+        <td height="50"><text text="Obval.com" /></td>
         <td></td>
       </tr>
       <tr valign="bottom">
