@@ -1,8 +1,10 @@
 <div>
 <table width="100%" class="obval_item" cellpadding="0" cellspacing="0" border="0">
+<where value="couponVariantsCount &gt; 0">
 <tr valign="top" id="variantsRL" class="hdn"><td>
    <siteResourceList uri="l.html?-$action=searchLocal&amp;-more=y&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;-title=Coupon+variants&amp;-gridCols=title,dealPrice,discount&amp;-viewCols=title,dealPrice,discount&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;basedOnTemplate_select=-$this&amp;basedOnTemplate_verified=y&amp;cancelled_select=false&amp;cancelled_verified=y&amp;expired_select=false&amp;expired_verified=y"/>
 </td></tr>
+</where>
 <tr valign="top">
 <td id="coupon">
 <div >
@@ -12,7 +14,7 @@
      <ul>
        <li><!--property name="image" frame="y" noIcon="y" / --> <slideShow/><!-- image --></li>
      </ul>
-     <where value="clonesCount &gt; 0">
+     <where value="couponVariantsCount &gt; 0">
        <!--div id="variants"  class="${overlay}">
          <span class="variants" onClick="showHide('variantsRL', event)"><h3 margin="0"><text text="Variants"/></h3></span>
        </div-->
@@ -41,12 +43,12 @@
          <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
          <where value="isBuyable()">
            <where value="dealPrice &gt; 0">
-             <where value="clonesCount &gt; 0">
+             <where value="couponVariantsCount &gt; 0">
                <div>
                	 <a max_width="500" onMouseOver="document.getElementById('variantsRL').className=''" full_height="695" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
   	           </div>
 	           </where>
-             <where value="clonesCount &lt;= 0">
+             <where value="couponVariantsCount &lt;= 0">
                <div>
                  <a max_width="500" full_height="695" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
                </div>
