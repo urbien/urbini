@@ -13316,8 +13316,8 @@ var LinkProcessor = {
 	    return;
 
 	  var anchor = getTargetAnchor(e);
-
-	  if (!anchor)
+		
+		if (!anchor)
 	    return;
 	
 	  var id = anchor.id;
@@ -13536,7 +13536,7 @@ var LinkProcessor = {
 	    }
 	  }
 	  else {
-	    var a = anchor.href;
+	    var a = anchor.getAttribute("href");
 	
 	    if (a != 'about:blank')
 	      //r = PlainDlg.show(e, a);
@@ -13564,8 +13564,8 @@ var LinkProcessor = {
 		} catch(e) {}
 
 		// 1. Data Entry
-		if (urlStr.indexOf("mkResource.html") != -1 ||
-	  			urlStr.indexOf("editProperties.html") != -1)
+		if (urlStr.indexOf("mkResource.html?") != -1 ||
+	  			urlStr.indexOf("editProperties.html?") != -1)
 	  	DataEntry.show(e, urlStr, anchor, null, XHRCallback, XHRCallbackBefore);
 		// 2. XHR with specific callback
 		else if (XHRCallback) {
