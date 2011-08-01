@@ -13317,11 +13317,14 @@ var LinkProcessor = {
 
 	  var anchor = getTargetAnchor(e);
 		
-		if (!anchor)
-	    return;
-	
+		// note: a link can not contain table(s), div(s) then to use div instead	
+		if (!anchor) {
+			anchor = getAncestorById(getEventTarget(e), "-inner");
+			if (!anchor || !anchor.getAttribute("href"))
+	 	   return;
+		}
+	 
 	  var id = anchor.id;
-		
 		// click event ---
 	  // Note: with purpose to speed up GUI we handle onmousedown
 	  if (e.type == "click") {
@@ -13562,6 +13565,7 @@ var LinkProcessor = {
 		try {
 			XHRCallbackBefore = eval(anchor.getAttribute("xhrcallbackbefore"));
 		} catch(e) {}
+
 
 		// 1. Data Entry
 		if (urlStr.indexOf("mkResource.html?") != -1 ||
