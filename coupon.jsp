@@ -246,6 +246,8 @@
         else {
           toConsole('no http_request');
         } */
+        
+        repostCallback(event, div, hotspot, content, url, params, http_request);
       }
       function commentCallback(event, div, hotspot, content, url, params, http_request) {
         toConsole('in commentCallback');
@@ -261,6 +263,8 @@
         else {
           toConsole('no http_request');
         } */
+
+        repostCallback(event, div, hotspot, content, url, params, http_request);
       }
       function incrementOnCouponPage(id) {
         var div = document.getElementById(id);

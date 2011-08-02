@@ -40,6 +40,19 @@
   </div><!-- abc -->
   </div><!-- wrapper -->
 
+  <script type="text/javascript">
+  <![CDATA[
+      function repostCallback(event, div, hotspot, content, url, params, http_request) {
+        toConsole('in repostCallback');
+        if (content)
+          printRepostOptions(content);
+        else {
+          toConsole('no content');
+        }
+      }
+    ]]>       
+  </script>
+
   </body>
 </html>
 
