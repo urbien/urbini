@@ -13282,8 +13282,18 @@ function printRepostLink(html) {
     toConsole('no errorMessage div');
     return;
   }
+  
+  if (!html)
+    return;
 
-  errDiv1.innerHTML = html;
+  var json = eval ("(" + String(html) + ")");
+  var repostLink = json.repostLink;
+  if (!repostLink) {
+    toConsole('no repostLink div');
+    return;
+  }
+
+  errDiv1.innerHTML = repostLink;
   setDivVisible(null, errDiv1);
 }
 
@@ -13654,6 +13664,78 @@ var LinkProcessor = {
 	}
 }
 
+/// SHAKE IMAGE
+var ImageShaker = {
+  stopit : null,
+  a : 1,
+  rector : 1,
+  shake : null,
+
+  start : function(which, howHard){
+    stopit=null;
+    shake=which;
+    shake.style.left=0;
+    shake.style.top=0;
+    rector = howHard;
+    this.shakeimage(shake);
+  },
+
+  shakeimage : function(shake) {
+    if ((!document.all&&!document.getElementById)||stopit==shake) {
+      return;
+    }
+    if (this.a==1){
+      shake.style.top=parseInt(shake.style.top)+rector+"px";
+    }
+    else if (this.a==2){
+      shake.style.left=parseInt(shake.style.left)+rector+"px";
+    }
+    else if (this.a==3){
+      shake.style.top=parseInt(shake.style.top)-rector+"px";
+    }
+    else {
+      shake.style.left=parseInt(shake.style.left)-rector+"px";
+    }
+    if (this.a<4)
+      this.a++;
+    else
+      this.a=1;
+    setTimeout(function() {ImageShaker.shakeimage(shake)},100);
+  },
+
+  stop : function(which) {
+    stopit=which;
+    which.style.left=0;
+    which.style.top=0;
+  }
+}
+
+function isUndefined(x) {
+  return typeof x == 'undefined';
+}
+
+function printRepostOptions(content) {
+  toConsole('in printRepostOptions');
+  var socialOptionsDiv = document.getElementById('socialRepostDiv');
+  if (isUndefined(socialOptionsDiv) || isUndefined(content))
+    return;
+  
+  var json = eval ("(" + String(content) + ")");
+  var repostOptions = json.repostOptions;
+  if (!repostOptions) {
+    toConsole('repostOptions div null');
+    return;
+  }
+  
+  socialOptionsDiv.style.display = 'block';
+  socialOptionsDiv.style.visibility = 'visible';
+  socialOptionsDiv.innerHTML = repostOptions;
+  var repostImg = document.getElementById('repostImg');
+  if (!repostImg)
+    return;
+  
+  ImageShaker.start(repostImg, 10);
+}
 
 
 // flag that menu.js was parsed
