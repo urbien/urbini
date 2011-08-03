@@ -109,14 +109,17 @@
         <property name="coupon.conditions" noIcon="y"/>    
         <where value="!cancelled &amp;&amp; paymentStatus == 'Success'">
           <br />
+          <where value="redeemFrom != null &amp;&amp; redeemTo != null">
+            <text text="This coupon is valid from #### to ####" params="redeemFrom,redeemTo" />
+          </where>
           <where value="redeemFrom == null">
             <text text="This coupon can be redeemed as soon as the deal tips" /> 
           </where>
-          <where value="redeemFrom != null">
+          <!--where value="redeemFrom != null">
             <text text="This coupon is valid from" />&#160;<property name="coupon.redeemFrom" noIcon="y"/>
           </where>
           <br /><br />
-          <text text="This coupon is valid until" />&#160;<property name="coupon.redeemBy" noIcon="y"/> 
+          <text text="This coupon is valid until" />&#160;<property name="coupon.redeemBy" noIcon="y"/--> 
         </where>
     </td>
     <td>
