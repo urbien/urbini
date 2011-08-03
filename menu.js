@@ -13734,9 +13734,14 @@ function printRepostOptions(content) {
   if (!repostImg)
     return;
   
-  ImageShaker.start(repostImg, 10);
+  ImageShaker.start(repostImg, 1);
+  
+  setTimeout(function() {
+    socialOptionsDiv.style.display = 'none';
+    socialOptionsDiv.style.visibility = 'hidden';
+    socialOptionsDiv.innerHTML = null;
+  }, 5 * 60 * 1000); // give them 5 minutes to change settings
 }
-
 
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
