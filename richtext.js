@@ -1479,9 +1479,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			
 			i_am.toolbar = i_am.createToolbar();
 		}
-
-    if(i_am.toolbar.isVisible())
-      return;
+    else if(i_am.toolbar.isVisible())
+      return; // click inside focused RTE
     
 		// prevents from more than 1 opened RTE.
 		RteEngine.closeAllDisactived(i_am.iframeObj.id);
