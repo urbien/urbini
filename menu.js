@@ -5536,8 +5536,7 @@ var PlainDlg = {
 	_show : function(event, hotspot) {
 		var iframe = document.getElementById('dialogIframe');
 
-		if(FullScreenPopup.show(this.dlgDiv, hotspot) == false)
-	    setDivVisible(event, this.dlgDiv, iframe, hotspot, 5, 5);
+    setDivVisible(event, this.dlgDiv, iframe, hotspot, 5, 5);
 		
 		if (TouchDlgUtil.isMenuPopup(this.dlgDiv))
 			TabMenu.setActiveTab(getAncestorByClassName(hotspot, "dashboard_btn"))
@@ -11965,142 +11964,6 @@ var resizeHandle = {
   }
 }
 
-var FullScreenPopup = {
-  INTERVAL : 10, // ms
-  STEPS_NUM : 7,
-
-  wndWidth : null,
-  contentDiv : null,
-  div : null,
-  step : 0,
-  toShow : true,
-  oldMarginLeft : null,
-
-  submitBtn : null,
-
-  show : function(div, hotspot) {
-    if(!Browser.mobile)
-      return false;
-
-    this.div = div;
-    // suppose that "mainskin" is always applicable
-    this.contentDiv = document.getElementById("mainskin");
-    this.oldMarginLeft = this.contentDiv.style.marginLeft;
-
-    document.body.style.overflow = "hidden";
-
-    var divStl = div.style;
-    div.style.visibility = "visible";
-    var wndSize = getWindowSize();
-    this.wndWidth = wndSize[0];
-    divStl.height = wndSize[1];
-    divStl.top = 0;
-
-    var zIndex = 1;
-    if (hotspot) {
-      var z = hotspot.style.zIndex;
-      if (z != null && z != '')
-        zIndex = z;
-    }
-    divStl.zIndex = zIndex + 2;
-    this.toShow = true;
-    this._prepareDialog();
-    this._animate();
-    return true;
-  },
-  hide : function(div) {
-    if(typeof div != 'undefined') {
-      if(typeof div == 'string')
-        div = document.getElementById(div);
-      this.div = div;
-    }
-    this.contentDiv.style.display = "";
-    this.toShow = false;
-    this._animate();
-  },
-  _prepareDialog : function() {
-    if(this.div.id != 'pane2')
-      return;
-    this.submitBtn = getChildByAttribute(this.div, "name", "submit");
-    if(this.submitBtn != null) {
-      this.submitBtn.style.display = "none";
-    }
-    var cancelBtn = getChildByAttribute(this.div, "name", "cancel");
-    if(cancelBtn != null)
-      cancelBtn.style.display = "none";
-  },
-  // replace "dummy" submit image with submit button
-  _prepareSubmitButton : function() {
-    if(this.submitBtn == null)
-      return;
-    var submitImg = getChildById(this.div, "submit_img");
-    if(submitImg == null)
-      return;
-    var x = findPosX(submitImg);
-    var y = findPosY(submitImg);
-    submitImg.style.display = "none";
-
-    var sbStl = this.submitBtn.style;
-    sbStl.position = "absolute";
-    sbStl.left = x;
-    sbStl.top  = y;
-    sbStl.borderWidth = 0;
-    sbStl.background = "url(images/skin/iphone/submit.png)";
-    sbStl.width = 68;
-    sbStl.height = 30;
-    this.submitBtn.value = "";
-    sbStl.display = "";
-  },
-  _animate : function() {
-    var thisObj = FullScreenPopup;
-    var divStl = thisObj.div.style;
-    var cntDivStl = thisObj.contentDiv.style;
-    var x;
-
-    var delta = Math.floor(thisObj.wndWidth / thisObj.STEPS_NUM);
-
-    if(thisObj.toShow) {
-      if(thisObj.step == thisObj.STEPS_NUM)
-        x = this.wndWidth;
-      else
-        x = thisObj.step * delta;
-    }
-    // to hide popup
-    else {
-      if(thisObj.step == thisObj.STEPS_NUM) {
-        divStl.visibility = "hidden";
-        x = thisObj.oldMarginLeft;
-      }
-      else
-        x = thisObj.wndWidth - (thisObj.step * delta);
-    }
-
-    cntDivStl.marginLeft = x;
-
-    divStl.left  = x - thisObj.div.clientWidth;
-    divStl.width =  this.wndWidth;
-
-    if(thisObj.step < thisObj.STEPS_NUM) {
-      thisObj.step++;
-      setTimeout("FullScreenPopup._animate();", thisObj.INTERVAL);
-    }
-    else { // stop animation
-      if(thisObj.toShow) {
-        cntDivStl.display = "none";
-        thisObj._prepareSubmitButton();
-      }
-      else {
-        // overflow "auto" did not work in Safari
-        var wndSize = getWindowSize();
-        if(wndSize[0] < document.body.scrollWidth ||
-            wndSize[1] < document.body.scrollHeight)
-          document.body.style.overflow = "scroll";
-      }
-      thisObj.step = 0;
-    }
-  }
-}
-
 // allows reorder table rows
 var OrderRows = {
   BG_COLOR : "rgb(172, 210, 226)",
@@ -12254,18 +12117,20 @@ var LoadOnDemand = {
     }
   },
   includeJS : function(fileName) {
-      var html_doc = document.getElementsByTagName('head')[0];
-      var js = document.createElement('script');
-      js.setAttribute('type', 'text/javascript');
-
       // suppress minify
       if(location.href.indexOf("-minify-js=n") != -1)
         fileName = fileName.replace("m.js", ".js")
-
+			var keyName = fileName.replace(/_[0-9]*\.js/, ".js");			
+			
+			if (g_loadedJsFiles[keyName])
+				return; // file is already downloaded // TODO: for CSS (generic)
+				
+      var js = document.createElement('script');
+      js.setAttribute('type', 'text/javascript');
       js.setAttribute('src', fileName);
+			var html_doc = document.getElementsByTagName('head')[0];
       html_doc.appendChild(js);
 			
-			var keyName = fileName.replace(/_[0-9]*\.js/, ".js");			
       g_loadedJsFiles[keyName] = true;
 			
 			return false;
@@ -13282,7 +13147,7 @@ function printRepostLink(html) {
     toConsole('no errorMessage div');
     return;
   }
-  
+
   if (!html)
     return;
 
@@ -13664,6 +13529,7 @@ var LinkProcessor = {
 	}
 }
 
+
 /// SHAKE IMAGE
 var ImageShaker = {
   stopit : null,
@@ -13742,6 +13608,7 @@ function printRepostOptions(content) {
     socialOptionsDiv.innerHTML = null;
   }, 5 * 60 * 1000); // give them 5 minutes to change settings
 }
+
 
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
