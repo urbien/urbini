@@ -1602,9 +1602,32 @@ var Boost = {
 				return;
 		  }
 
+	
+		// login page: it contains register/hashScript.js
+		// remove register if it was previously created
+		var regDiv = document.getElementById("register");
+		if (regDiv)
+			regDiv.parentNode.removeChild(regDiv);
+		// create register dialog an initialize it
+		if (content.indexOf("register/hashScript") != -1) {
+			var regDiv = getDomObjectFromHtml(content, "id", "register");
+			if (regDiv) {
+				regDiv.className = "mobile_dlg";
+				document.body.appendChild(regDiv);
+				setDivVisible(event, regDiv, null, hotspot);
+				// download hashScript.js on demand with timestamp suffix
+				LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
+				// set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
+				var jstest = getChildByAttribute(regDiv, "name", '.jstest');
+				jstest.value = "ok";
+				return;
+			}
+		}
+
 			// hack: in case if serever returns full html page instead
 			//(page with error message, for example; generated from widget/page.jsp)
 			// mobile_page div content then retrieve mobile_page content only
+			
 			var page = getDomObjectFromHtml(content, "className", "mobile_page");
 			if (page != null) {
 				page.id = "";
@@ -2405,6 +2428,8 @@ var BottomToolbar = {
 	// immediate hide the toolbar
   hide : function() {
 		var $t = BottomToolbar;
+		if (!$t.toolbar)
+			return;
 		$t.toolbar.style.display = "none";
 		$t.offset = 0;
   },
