@@ -11288,7 +11288,7 @@ var BacklinkImagesSlideshow = {
 		if (this.descOverlay) {
 			this.descArr = new Array();
 			var desc = this.slideShowSceneDiv.getElementsByTagName("img")[0].getAttribute("alt");
-			this.descArr.push(desc);
+          this.descArr.push(desc == null ? "&#160;" : desc);
 		}
 
 		// color scheme and description of the next images
@@ -11298,7 +11298,7 @@ var BacklinkImagesSlideshow = {
 				this.colorScemeArr.push(images[0].id.replace(/_\d{1,}/,""));
 			if (this.descArr) {
 				var desc = images[0].getAttribute("alt");
-	  		this.descArr.push(desc);
+	  		this.descArr.push(desc == null ? "&#160;" : desc);
 	  	}
 			this.widgetSlider.createNewSlide(images[0]);
 		}
@@ -13135,7 +13135,7 @@ function repostToVK(http_request) {
 }
 
 function toConsole(text) {
-  if (typeof console === 'undefined')
+  if (typeof console == 'undefined')
     return;
   else
     console.log(text);
@@ -13566,7 +13566,7 @@ var ImageShaker = {
       this.a++;
     else
       this.a=1;
-    setTimeout(function() {ImageShaker.shakeimage(shake)},50);
+    setTimeout(function() {ImageShaker.shakeimage(shake)},100);
   },
 
   stop : function(which) {
