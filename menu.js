@@ -13566,7 +13566,7 @@ var ImageShaker = {
       this.a++;
     else
       this.a=1;
-    setTimeout(function() {ImageShaker.shakeimage(shake)},100);
+    setTimeout(function() {ImageShaker.shakeimage(shake)},50);
   },
 
   stop : function(which) {
@@ -13609,6 +13609,10 @@ function printRepostOptions(content) {
   }, 5 * 60 * 1000); // give them 5 minutes to change settings
 }
 
+function hide(me) {
+  me.style.display = 'none';
+  me.style.visibility = 'hidden';
+}
 
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
