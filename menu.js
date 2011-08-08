@@ -11418,7 +11418,7 @@ var BacklinkImagesSlideshow = {
 	},
 	
 	getImageSrc : function(thumbSrc) {
-		var src = thumbSrc.replace("url(", "").replace(")", "").replace(/"/g, "").replace("thumbnail/", "").replace(/_featured\.\w{3,3}$/, "");
+		var src = thumbSrc.replace("url(", "").replace(")", "").replace(/"/g, "").replace("thumbnail/", "").replace("thumbnail-_/", "").replace(/_featured\.\w{3,3}$/, "");
 		if (src.lastIndexOf(".") != src.length - 4)
 			src += ".jpg"; // in some cases thumbnail does not contain extention of the image then append .JPG
 		return src;
