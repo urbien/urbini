@@ -11350,7 +11350,7 @@ var BacklinkImagesSlideshow = {
 		// make manual pagging faster
 		var accelaration =  ($t.isManualPaging()) ? 5 : 1;
 		// additinal slide is a slide created from small image, not included into 'automatic' slide show
-		var isAdditinalSlide = typeof $t.pagerSlots[$t.curImageIdx] == 'undefined';
+		var isAdditinalSlide = !$t.pagerSlots || typeof $t.pagerSlots[$t.curImageIdx] == 'undefined';
 		if (!isAdditinalSlide)
 			$t.pagerSlots[$t.curImageIdx].className = "";
 		
@@ -11363,7 +11363,7 @@ var BacklinkImagesSlideshow = {
 	  		$t.curImageIdx = 0;
 	  	}
 		}
-		isAdditinalSlide = typeof $t.pagerSlots[$t.curImageIdx] == 'undefined';
+		isAdditinalSlide = !$t.pagerSlots || typeof $t.pagerSlots[$t.curImageIdx] == 'undefined';
 
 		if (!isAdditinalSlide)
 			$t.pagerSlots[$t.curImageIdx].className = "current";
@@ -11378,9 +11378,10 @@ var BacklinkImagesSlideshow = {
 				return;
 	  	}
 		}
-	
-		$t.widgetSlider.insertNextSlide(null, $t.curImageIdx);	
-		$t.widgetSlider.showNextSlide(accelaration);
+		if ($t.widgetSlider) {
+			$t.widgetSlider.insertNextSlide(null, $t.curImageIdx);
+			$t.widgetSlider.showNextSlide(accelaration);
+		}
 	},
 	
 	onPagerClick : function(event) {
