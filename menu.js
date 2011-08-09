@@ -13200,8 +13200,12 @@ var LinkProcessor = {
 	 	   return;
 		}
 	 
-	  var id = anchor.id;
-		// click event ---
+    if (anchor.getAttribute("href").startsWith("#"))
+      return;
+
+    var id = anchor.id;
+	  
+	  // click event ---
 	  // Note: with purpose to speed up GUI we handle onmousedown
 	  if (e.type == "click") {
 			if (e.button && e.button == 2)
