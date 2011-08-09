@@ -34,7 +34,17 @@
                 <text text="REDEEMED" />
               </where>
               <where value="!redeemed">
-							  <property name="couponID" />&#45;<property name="couponSecret" />
+                <where value="!mustBeGifted">
+							    <property name="couponID" />&#45;<property name="couponSecret" />
+							  </where>
+                <where value="mustBeGifted">
+                  <where value="gifteeEmail == null">
+                    <text text="Gift me to see the codes!" />
+                  </where>
+                  <where value="gifteeEmail != null">
+                    <property name="couponID" />&#45;<property name="couponSecret" />
+                  </where>
+                </where>
 							</where>
 							</b></font>
 						  <!--br/><font size="+1" color="#FFFFFF"><text text="Quantity" />:&#160;<property name="quantity" noIcon="y" /></font> &#160;<a href="#" class="button noprint" onclick="window.print();return false;"><text text="Print" /></a-->

@@ -95,6 +95,7 @@
     </div><!-- highlights --> 
 		<br />
 		<div class="fine_print">
+      <a name="fp"></a>
       <h3 class="csp_33"><text text="Fine print"/></h3>
       <ul>
         <li><property name="conditions" noIcon="y"/></li>
