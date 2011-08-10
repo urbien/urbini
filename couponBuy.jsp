@@ -39,7 +39,7 @@
 							  </where>
                 <where value="mustBeGifted">
                   <where value="gifteeEmail == null">
-                    <text text="Gift me to see the codes!" />
+                    <giftMe />
                   </where>
                   <where value="gifteeEmail != null">
                     <property name="couponID" />&#45;<property name="couponSecret" />
