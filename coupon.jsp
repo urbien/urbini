@@ -208,6 +208,10 @@
       <!--  /div -->
       </where>
     </div><!-- fine print -->
+		
+		<!-- button to extend details -->
+		<a class="button" style="width: 97%; margin-left: 1.5%; padding: 0;" href="javascript: ;" onclick="showMoreCouponDetailes(this);"><text text="Show More"/></a>
+		
     <div class="more_items">
     <!--h3 class="csp_33"><text text="more deals"/></h3>
     <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRow=1&amp;-title=Future+deals&amp;-limit=3&amp;-featured=y&amp;basedOnTemplate=null"/>
@@ -274,6 +278,16 @@
         var curNum = parseInt(textNode.nodeValue);
         textNode.nodeValue = (isNaN(curNum) ? 0 : curNum) + 1 + " ";
       }
+			function showMoreCouponDetailes(button) {
+				var highlights = getChildByClassName(button.parentNode, "highlights");
+				var textDiv1 = getChildByClassName(highlights, "displayIn4lines");
+				var finePrint = getChildByClassName(button.parentNode, "fine_print");
+				var textDiv2 = getChildByClassName(finePrint, "displayIn4lines");
+				button.style.display = "none";
+				textDiv1.className = "";
+				textDiv2.className = "";
+				
+			}
     ]]>       
   </script>
   
