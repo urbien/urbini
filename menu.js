@@ -13199,8 +13199,9 @@ var LinkProcessor = {
 			if (!anchor || !anchor.getAttribute("href"))
 	 	   return;
 		}
-	 
-    if (anchor.getAttribute("href").startsWith("#"))
+
+		var href = anchor.getAttribute("href");
+    if (href && href.startsWith("#"))
       return;
 
     var id = anchor.id;
@@ -13215,10 +13216,10 @@ var LinkProcessor = {
 	    var popupDiv = getAncestorByAttribute(anchor, "className", "popMenu");
 	    if (popupDiv)
 	      Popup.close0(popupDiv.id)
-	
+
 	    // 1. stop click event on anchors with href == "about:blank"
 	    // because we handled it with onmousedown
-	    if (anchor.href == "about:blank" || id == "-inner")
+	    if (href == "about:blank" || id == "-inner")
 	      return stopEventPropagation(e);
 	    // 2. pressed with shift or ctrl key
 	    else if(e.shiftKey || e.ctrlKey) 
