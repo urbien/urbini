@@ -13201,8 +13201,16 @@ var LinkProcessor = {
 		}
 
 		var href = anchor.getAttribute("href");
-    if (href && href.startsWith("#"))
-      return;
+			
+		// bookmark (hash)
+    if (href) {
+			if (Browser.ie)
+				href = href.replace(getBaseUri(), "");
+ 			if (href.startsWith("#")) {
+	  		window.location.hash = href;
+				return stopEventPropagation(e);
+			}
+		}	
 
     var id = anchor.id;
 	  
