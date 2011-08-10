@@ -1,13 +1,11 @@
 <div>
-<text text="Your payment completed successfully for" /> <property name="forum" href="y" noIcon="y"/> 
-<br/>
+<text text="Your payment completed successfully for" /> <couponBuyList /> 
     <where value="forum.getType() == 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy'">
-      <text text="Payment completed" /> <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.paymentConfirmationTime" />
+      <text text="Payment completed" /> <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.paymentConfirmationTime" />.
       <claimCouponLink />
-      <br/><br/>
-      <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" />
-      <br /><br />
-      <insertJoke variation="You're mouse is dangerously low on clicks, click something before it's too late!" />
+      <br/><br />
+      <giftIfOverLimit />
+      <!--insertJoke variation="You're mouse is dangerously low on clicks, click something before it's too late!" /-->
       <br /><br />
       <table width="100%" cellpadding="5">       
         <where value="forum.gifteeEmail == null">
