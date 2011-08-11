@@ -45,28 +45,28 @@
            <where value="dealPrice &gt; 0">
              <where value="couponVariantsCount &gt; 0">
                <div>
-               	 <a max_width="500" onMouseOver="showHide('variants', event)" full_height="695" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
+               	 <a max_width="500" onMouseOver="showHide('variants', event)" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
   	           </div>
 	           </where>
              <where value="couponVariantsCount &lt;= 0">
                <div>
-                 <a max_width="500" full_height="695" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
+                 <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
                </div>
              </where>
            </where>
            <where value="dealPrice == 0">
              <div>
-               <a max_width="500" full_height="695" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="FREE!"/></a>
+               <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="FREE!"/></a>
                <!--a max_width="500" id="-inner" class="coupon_buy button_buy_gift" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;gift=true&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Gift!"/></a-->
              </div>
            </where>
          </where>
          <where value="getTime() &lt; dateFeatured || !isBuyable()">
            <where value="dealPrice &gt; 0">
-             <div style="text-decoration:line-through;color:red;"><a max_width="500" full_height="695" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+             <div style="text-decoration:line-through;color:red;"><a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
            </where>
            <where value="dealPrice == 0">
-             <div style="text-decoration:line-through;color:red;"><a max_width="500" full_height="695" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="FREE!"/></a></div>
+             <div style="text-decoration:line-through;color:red;"><a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="FREE!"/></a></div>
            </where>
          </where>
        </div>
@@ -210,7 +210,9 @@
     </div><!-- fine print -->
 		
 		<!-- button to extend details -->
-		<a class="button" style="width: 97%; margin-left: 1.5%; padding: 0;" href="javascript: ;" onclick="showMoreCouponDetailes(this);"><text text="Show More"/></a>
+		<center>
+			<a class="button" style="width: 97%; padding: 0;" href="javascript: ;" onclick="showMoreCouponDetailes(this);"><text text="Show More"/></a>
+		</center>
 		
     <div class="more_items">
     <!--h3 class="csp_33"><text text="more deals"/></h3>
@@ -279,14 +281,35 @@
         textNode.nodeValue = (isNaN(curNum) ? 0 : curNum) + 1 + " ";
       }
 			function showMoreCouponDetailes(button) {
-				var highlights = getChildByClassName(button.parentNode, "highlights");
+				var conditionsDiv = getAncestorById(button, "conditions")
+				var highlights = getChildByClassName(conditionsDiv, "highlights");
 				var textDiv1 = getChildByClassName(highlights, "displayIn4lines");
-				var finePrint = getChildByClassName(button.parentNode, "fine_print");
+				var finePrint = getChildByClassName(conditionsDiv, "fine_print");
 				var textDiv2 = getChildByClassName(finePrint, "displayIn4lines");
 				button.style.display = "none";
-				textDiv1.className = "";
-				textDiv2.className = "";
 				
+				textDiv1.style.height = textDiv1.offsetHeight;
+				textDiv1.style.overflow = "hidden";
+				textDiv1.className = "";
+				textDiv2.style.height = textDiv2.offsetHeight;
+				textDiv2.style.overflow = "hidden";
+				textDiv2.className = "";
+				_showMoreCouponDetailesAnimation(textDiv1, textDiv2);
+			}
+			function _showMoreCouponDetailesAnimation(textDiv1, textDiv2) {
+				var h1 = textDiv1.scrollHeight / 7 + parseInt(textDiv1.style.height);
+				var h2 = textDiv2.scrollHeight / 7 + parseInt(textDiv2.style.height);
+				if (textDiv1.scrollHeight > h1 || textDiv2.scrollHeight > h2) {
+					textDiv1.style.height = h1;
+					textDiv2.style.height = h2;
+					setTimeout(function f() { _showMoreCouponDetailesAnimation(textDiv1, textDiv2); }, 30);
+				}
+				else {
+					textDiv1.style.height = "";
+					textDiv1.style.overflow = "";
+					textDiv2.style.height = "";
+					textDiv2.style.overflow = "";
+				}	
 			}
     ]]>       
   </script>
