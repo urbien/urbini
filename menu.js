@@ -8209,6 +8209,13 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   reposition(div, 0, 0);
 
 	var divCoords = getElementDimensions(div);
+	// allows to place dialog taking into account options panel height (Obval's Buy)
+	if (hotspot) {
+  	var optionsHeight = hotspot.getAttribute("full_height");
+  	if (optionsHeight) 
+  		divCoords.height = parseInt(optionsHeight);
+  }
+
 	// set the div in screen center if neither hotspotDim nor hotspot where provided.
 	if (hotspotDim == null && left == 0 && top == 0 && !positionEnforced) {
 		left = (screenX + scrollX - divCoords.width) / 2;
@@ -8266,20 +8273,13 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     }
   }
 
-	// allows to place dialog taking into account options panel height (Obval's Buy)
-	if (hotspot) {
-  	var optionsHeight = hotspot.getAttribute("full_height");
-  	if (optionsHeight) 
-  		divCoords.height = optionsHeight;
-  }
-
 	// adjust vertically - so we fit inside the viewport
 		if ((typeof positionEnforced == 'undefined' || positionEnforced == false) &&
 					distanceToBottomEdge < divCoords.height + margin) {
 			if (hotspot)
 				top = findPosY(hotspot) - divCoords.height; // make vertical flip
 			else
-			top = (screenY + scrollY) - divCoords.height;
+				top = (screenY + scrollY) - divCoords.height;
 			if ((top - scrollY) - margin > 0) 
 				top -= margin; // adjust for a scrollbar
 			if (top < scrollY) // but not higher then top of viewport
@@ -8288,7 +8288,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 
 		// overlaps hotspot: show just on screen 
 		if (top < findPosY(hotspot) && top > findPosY(hotspot) - divCoords.height) {
-			top = getElemInsideScreenPosition(0, findPosY(hotspot) + 5, divCoords)[1];
+			top = getElemInsideScreenPosition(0, top + 5, divCoords)[1];
 			// move it right trying to avoid overlap
 			// TODO: in horizontal adjustment try to make flip
 			distanceToRightEdge -= hotspot.clientWidth + 5; 
