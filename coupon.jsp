@@ -211,7 +211,9 @@
 		
 		<!-- button to extend details -->
 		<center>
-			<a class="button" style="width: 97%; padding: 0;" href="javascript: ;" onclick="showMoreCouponDetailes(this);"><text text="Show More"/></a>
+			<a id="more_details_btn" class="button hdn" style="width: 97%; padding: 0;" href="javascript: ;" onclick="ShowHideCouponDetailes.onclick(this);">
+				<span><text text="Show More" />&#9660;</span><span style="display: none;"><text text="Show Less" />&#9650;</span>
+			</a>
 		</center>
 		
     <div class="more_items">
@@ -280,37 +282,65 @@
         var curNum = parseInt(textNode.nodeValue);
         textNode.nodeValue = (isNaN(curNum) ? 0 : curNum) + 1 + " ";
       }
-			function showMoreCouponDetailes(button) {
-				var conditionsDiv = getAncestorById(button, "conditions")
-				var highlights = getChildByClassName(conditionsDiv, "highlights");
-				var textDiv1 = getChildByClassName(highlights, "displayIn4lines");
-				var finePrint = getChildByClassName(conditionsDiv, "fine_print");
-				var textDiv2 = getChildByClassName(finePrint, "displayIn4lines");
-				button.style.display = "none";
+			
+			var ShowHideCouponDetailes = {
+				textDiv1 : null,
+				textDiv2 : null,
+				init : function() {
+					var button = document.getElementById("more_details_btn");
+					var conditionsDiv = getAncestorById(button, "conditions")
+					var highlights = getChildByClassName(conditionsDiv, "highlights");
+					this.textDiv1 = getChildByClassName(highlights, "displayIn4lines");
+					var finePrint = getChildByClassName(conditionsDiv, "fine_print");
+					this.textDiv2 = getChildByClassName(finePrint, "displayIn4lines");
+					if (this.textDiv1.scrollHeight >= this.textDiv1.offsetHeight ||
+							this.textDiv2.scrollHeight >= this.textDiv2.offsetHeight)
+						button.className = "button";
+					else {
+						this.textDiv1.className = "";
+						this.textDiv1.className = "";
+					}	
+				},
+				onclick : function(button) {
+					var $t = ShowHideCouponDetailes;
+					if (isElemOfClass($t.textDiv1, "displayIn4lines")) {
+						$t.textDiv1.style.height = this.textDiv1.offsetHeight;
+						$t.textDiv1.style.overflow = "hidden";
+						$t.textDiv1.className = "";
+						$t.textDiv2.style.height = this.textDiv2.offsetHeight;
+						$t.textDiv2.style.overflow = "hidden";
+						$t.textDiv2.className = "";
+						$t._showMoreCouponDetailesAnimation();
+						getFirstChild(button).style.display = "none";
+						getLastChild(button).style.display = "inline";
+					}
+					else {
+						$t.textDiv1.className = "displayIn4lines hideImg";
+						$t.textDiv2.className = "displayIn4lines hideImg";
+						getFirstChild(button).style.display = "inline";
+						getLastChild(button).style.display = "none";
+					}
+				},
 				
-				textDiv1.style.height = textDiv1.offsetHeight;
-				textDiv1.style.overflow = "hidden";
-				textDiv1.className = "";
-				textDiv2.style.height = textDiv2.offsetHeight;
-				textDiv2.style.overflow = "hidden";
-				textDiv2.className = "";
-				_showMoreCouponDetailesAnimation(textDiv1, textDiv2);
-			}
-			function _showMoreCouponDetailesAnimation(textDiv1, textDiv2) {
-				var h1 = textDiv1.scrollHeight / 7 + parseInt(textDiv1.style.height);
-				var h2 = textDiv2.scrollHeight / 7 + parseInt(textDiv2.style.height);
-				if (textDiv1.scrollHeight > h1 || textDiv2.scrollHeight > h2) {
-					textDiv1.style.height = h1;
-					textDiv2.style.height = h2;
-					setTimeout(function f() { _showMoreCouponDetailesAnimation(textDiv1, textDiv2); }, 30);
+				_showMoreCouponDetailesAnimation : function() {
+					var $t = ShowHideCouponDetailes;
+					var h1 = this.textDiv1.scrollHeight / 7 + parseInt(this.textDiv1.style.height);
+					var h2 = this.textDiv2.scrollHeight / 7 + parseInt(this.textDiv2.style.height);
+					if ($t.textDiv1.scrollHeight > h1 || this.textDiv2.scrollHeight > h2) {
+						$t.textDiv1.style.height = h1;
+						$t.textDiv2.style.height = h2;
+						setTimeout(function f() { $t._showMoreCouponDetailesAnimation(); }, 30);
+					}
+					else {
+						this.textDiv1.style.height = "";
+						this.textDiv1.style.overflow = "";
+						this.textDiv2.style.height = "";
+						this.textDiv2.style.overflow = "";
+					}	
 				}
-				else {
-					textDiv1.style.height = "";
-					textDiv1.style.overflow = "";
-					textDiv2.style.height = "";
-					textDiv2.style.overflow = "";
-				}	
 			}
+			runJSCode("ShowHideCouponDetailes.init()", null, "common.js");
+			
     ]]>       
   </script>
   
