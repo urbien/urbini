@@ -1804,7 +1804,7 @@ var FormProcessor = {
           if (trim(s).startsWith('function'))
             elem.onsubmit = eval(s);
           else
-            elem.onsubmit = eval('function (event) {' + s + '}');
+            elem.onsubmit = eval('function f(event) {' + s + '}');
           elem.setAttribute('onSubmitFixed', 'true');
         }
         elem.onsubmit();
