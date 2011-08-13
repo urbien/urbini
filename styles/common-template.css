@@ -235,11 +235,11 @@ input[type=button], input[type=submit], .button {
 input[type=button]::-moz-focus-inner, input[type=submit]::-moz-focus-inner, .button::-moz-focus-inner {
   border: none; /* remove dotted lines for buttons */
 }
-input[type=button]:focus,
+/*input[type=button]:focus,*/
 input[type=button]:hover,
-input[type=submit]:focus,
+/*input[type=submit]:focus,*/
 input[type=submit]:hover,
-.button:focus,
+/*.button:focus,*/
 .button:hover,
 input[type=button]:active,
 input[type=submit]:active,
