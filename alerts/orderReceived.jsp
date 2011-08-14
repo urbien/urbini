@@ -8,4 +8,6 @@
     <orderReceived />
     <br /><br />
     <text text="You can check the status of your transaction in 'Purchasing history'" /> <onYourProfile />
+    <br /><br />
+    <supportLink />
 </div>

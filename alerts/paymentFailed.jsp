@@ -17,5 +17,7 @@
       <br />
     </where>  
     <br />
+    <supportLink />
+    <br /><br />
 		<newComment/>
 </div>
