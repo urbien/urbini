@@ -2139,7 +2139,7 @@ var FormProcessor = {
 			// insert "type" text if paramTr does not contain arrow_td
 			else 
 				if (getChildByClassName(paramTr, "arrow_td") == null && inputs[i].type != "password")  
-					FieldsWithEmptyValue.initField(inputs[i], "&[type];");
+					FieldsWithEmptyValue.initField(inputs[i], "&[type here];");
 		}
 	}
 
