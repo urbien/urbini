@@ -1800,11 +1800,10 @@ var FormProcessor = {
       if (atts) {
         if (!elem.getAttribute('onSubmitFixed')) {
           var s = atts.replace(/\(this\)/, ''); // e.g. replace setTime(this) into setTime
-
-          if (trim(s).startsWith('function'))
+         // if (trim(s).startsWith('function'))
             elem.onsubmit = eval(s);
-          else
-            elem.onsubmit = eval('function f(event) {' + s + '}');
+         // else 
+         //   elem.onsubmit = eval('function f(event) {' + s + '}');
           elem.setAttribute('onSubmitFixed', 'true');
         }
         elem.onsubmit();
