@@ -3263,7 +3263,7 @@ var ListBoxesHandler = {
   onClickParam : function(event, optionsSelectorStr) {
 		var $t = ListBoxesHandler;
 		var target = getEventTarget(event);
-	
+
 		if (isElemOfClass(target, "input") && target.getAttribute("readonly") == null)
 			return;
 
@@ -5799,7 +5799,6 @@ var TouchDlgUtil = {
 	onBodyClick : function(){
 		var $t = TouchDlgUtil;
 		FtsAutocomplete.hide();
-		
 		if (!$t.dlgWasClicked)
 			$t.isFocusInDialog = false;
 		$t.dlgWasClicked = false;
@@ -6146,7 +6145,7 @@ var TouchDlgUtil = {
 			return;
 		if (isElemOfClass(target, "iphone_checkbox"))
 			return; // skip click on iPhone-like checkbox (roll-up)
-
+	
     $t.highlightRowBlueProcess(tr);
 	},
 		
@@ -6161,6 +6160,9 @@ var TouchDlgUtil = {
 		// previous click on parameter is processed
 		if (ListBoxesHandler.isBusy())
 			return;
+		
+		if (this.isThereChildDlg)
+			return; // in child dialog
 		
 		var skipBleachBlue = false;
 		if ($t.hasBlueRow() && ListBoxesHandler.isEditList() &&
@@ -6213,6 +6215,9 @@ var TouchDlgUtil = {
 			this.skipBleachBlue = false;
 			return;
 		}
+		
+		if (this.isThereChildDlg)
+			return; // in child dialog
 
 		this.blueTr.className = this.blueTr.className.replace(/blue_highlighting|grey_highlighting/g, "").trim();
 
