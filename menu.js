@@ -1879,12 +1879,12 @@ var FormProcessor = {
   // 2) html form: removes not needed fields
 	// isXHR default value - false
   getFormFilters : function(form, allFields, exclude, isXHR) {
-	// Tags' items contain fields for options panel that should not be submitted with a form 
-	if (!allFields) {
-  	var tagsDiv = getChildByClassName(form, "tags");
-  	if (tagsDiv) 
-  		tagsDiv.parentNode.removeChild(tagsDiv);
-  }
+		// Tags' items contain fields for options panel that should not be submitted with a form 
+		if (!allFields) {
+	  	var tagsDiv = getChildByClassName(form, "tags");
+	  	if (tagsDiv) 
+	  		tagsDiv.parentNode.removeChild(tagsDiv);
+	  }
 	
 	  var p = "";
     var fields = form.elements;
@@ -1989,7 +1989,7 @@ var FormProcessor = {
              parentNode.removeChild(field);
              idx--;
            }
-           else
+           else if (field.id != "rte_data") // except fields containing RTE text
             doRemove = false;
          }
           
@@ -3155,7 +3155,7 @@ var ListBoxesHandler = {
         
         var allFields = true;
         if (formAction != "searchLocal" && formAction != "searchParallel") {
-          if (enterFlag)
+         /* NOT USED currently: if (enterFlag) */
             allFields = false;
         }
  			var exclude = this.textEntry ? this.textEntry.name : null;
@@ -3402,7 +3402,7 @@ var ListBoxesHandler = {
 			}
 
 			// show options list
-			this.listboxOnClick1(e, str, null, null, classValue, arrowTd);
+			this.listboxOnClick1(e, str, input.value, null, classValue, arrowTd);
 		}
 		return true; 
   },
