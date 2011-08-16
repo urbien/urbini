@@ -196,7 +196,6 @@
         <li><property name="conditions" noIcon="y"/></li>
         <li><text text="Must be redeemed by"/>&#160;<property name="redeemBy" noIcon="y"/></li>
       </ul>
-      <br/>
       <where value="redemptionLocationsCount &gt; 0">
       <!--div id="locations" style="position: absolute; bottom: 100px; left: 15px;" -->
       <ul style="padding-left:5px; padding-bottom: 10px; padding-top: 5px; background: rgba(127, 127, 127, 0.1);">
@@ -215,7 +214,7 @@
 		
 		<!-- button to extend details -->
 		<center style="clear: both;">
-			<a id="more_details_btn" class="button hdn" style="width: 97%; margin-top: 20px; padding: 0;" href="javascript: ;" onclick="ShowHideCouponDetailes.onclick(this);">
+			<a id="more_details_btn" class="button hdn" style="width: 97%; margin-top: 10px; padding: 0;" href="javascript: ;" onclick="ShowHideCouponDetailes.onclick(this);">
 				<span><text text="Show More" />&#9660;</span><span style="display: none;"><text text="Show Less" />&#9650;</span>
 			</a>
 		</center>
