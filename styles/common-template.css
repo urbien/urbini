@@ -69,7 +69,10 @@ a img {
 	border: 0;
 	vertical-align: middle;
 }
- 
+
+/* use it instead table parameters cellpadding and cellspacing */
+table.tight, table.tight td { padding: 0 !importa; border-collapse: collapse !importa; }
+
 /* #mainMenu A { font-size: 0.8em; } */
 #menu .menu_Divider {border-top: 1px solid &[PrimaryColor_1];;}
 
