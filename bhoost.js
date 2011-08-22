@@ -2371,7 +2371,8 @@ var BottomToolbar = {
         + "<a href=\"javascript: ;\"  onclick=\"document.location.reload();\"><img src=\"../images/skin/iphone/reload_button.png\" /></a>";
     else
       this.toolbar.innerHTML =
-        "<a href=\"javascript: ;\" onclick=\"Filter.show();\"><img src=\"../images/skin/iphone/search_filter_button.png\" /></a>"
+				"<a href=\"javascript: ;\" onclick=\"window.location.reload();\"><img src=\"../images/skin/iphone/home_button.png\" /></a>"
+        + "<a href=\"javascript: ;\" onclick=\"Filter.show();\"><img src=\"../images/skin/iphone/search_filter_button.png\" /></a>"
         + "<a  id='optionsMenu' href=\"javascript: ;\"><img src=\"../images/skin/iphone/menu_button.png\" /></a>"; 
  
     //document.body.appendChild(this.toolbar);
