@@ -2285,7 +2285,7 @@ td #corePageContent { min-height: 600px;}
 .editMode #dashboard td { border:solid &[SecondaryColorA_5]; 1px;}
 
 #fts-sift {vertical-align: top;}
-#fts-sift #col_1 td {white-space: nowrap; }
+#fts-sift #col_1 td { max-width: 130px; overflow: hidden; white-space: nowrap; }
 .fts-sif .filter { border: 1px solid; }
 #fts-sift .param_tr, #fts-sift .param_tr .label { cursor: pointer; background-color: &[PrimaryColor_4];; color: &[Label];; height:1.5em;}
 #fts-sift a, #fts-sift span { font-size: 12px; }
