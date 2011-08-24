@@ -18,7 +18,7 @@
       </where>
     </div>
     </td>
-    <td></td>
+    <td valign="top"><a href="#" class="button noprint" onclick="window.print();return false;"><text text="Print" /></a></td>
   </tr>
   <tr>
     <td></td>
@@ -47,7 +47,7 @@
                 </where>
 							</where>
 							</b></font>
-						  <!--br/><font size="+1" color="#FFFFFF"><text text="Quantity" />:&#160;<property name="quantity" noIcon="y" /></font> &#160;<a href="#" class="button noprint" onclick="window.print();return false;"><text text="Print" /></a-->
+						  
     
 						</where>
 				  <where value="paymentStatus == 'Pending'"><font size="+1" color="#ef6f16"><b><text text="This coupon is still waiting for payment" /></b></font></where>
