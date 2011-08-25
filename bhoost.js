@@ -1665,6 +1665,7 @@ var Boost = {
 	
   _loadMoreItems: function(event, div, hotspot, content) {
     var $t = Mobile;
+
     setInnerHtml(div, content);
     var elms = div.getElementsByTagName('table');
     var table;
@@ -1695,14 +1696,17 @@ var Boost = {
           headerTR = tt;
       }
     }
+		
     if (!tr)
       return;
 
     var curTbody = tr.parentNode;
-
-    elms = tbody.childNodes;
-    for (var i=0; i<elms.length; i++)
-      curTbody.appendChild(elms[i]);
+		// insert new records
+		curTbody.parentNode.appendChild(tbody);
+		// "Get 10 More" / "_replace" can be out of new tbody - insert it additionaly
+		if (getChildById(tbody, "_replace") == null)
+ 			curTbody.parentNode.appendChild(getChildById(table, "_replace"));
+			
     var coords = getElementCoords(tr);
     tr.className = "hdn";
     tr.id = '';
