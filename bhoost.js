@@ -1717,6 +1717,10 @@ var Boost = {
     Boost.view.setProgressIndeterminate(false);
     Boost.log('left = ' + coords.left + '; top = ' + coords.top);
     window.scrollTo(coords.left, coords.top);
+		
+		// show bottom toolbar at the same mobile page
+		BottomToolbar.toolbar.style.display = "";
+		
   },
 
   // browsing history forward and backward
@@ -1995,7 +1999,7 @@ var MobilePageAnimation = {
 		// set toolbar at bottom of the new mobile page
 		newDiv.appendChild(BottomToolbar.toolbar);
 		BottomToolbar.toolbar.style.display = "";
-		
+
 		
     setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
   },
@@ -2375,7 +2379,7 @@ var BottomToolbar = {
         + "<a href=\"javascript: ;\"  onclick=\"document.location.reload();\"><img src=\"../images/skin/iphone/reload_button.png\" /></a>";
     else
       this.toolbar.innerHTML =
-				"<a href=\"javascript: ;\" onclick=\"window.location.reload();\"><img src=\"../images/skin/iphone/home_button.png\" /></a>"
+				"<a href=\"javascript: ;\" onclick=\"window.location.replace(getBaseUri());\"><img src=\"../images/skin/iphone/home_button.png\" /></a>"
         + "<a href=\"javascript: ;\" onclick=\"Filter.show();\"><img src=\"../images/skin/iphone/search_filter_button.png\" /></a>"
         + "<a  id='optionsMenu' href=\"javascript: ;\"><img src=\"../images/skin/iphone/menu_button.png\" /></a>"; 
  
@@ -2438,7 +2442,8 @@ var BottomToolbar = {
 		$t.toolbar.style.display = "none";
 		$t.offset = 0;
   },
-  
+// NOTE: currently the bar is always at the same place, at a mobile page bottom	
+/* 
 	up : function() {
 		var $t = BottomToolbar;
 		if ($t.offset == 0) 
@@ -2484,7 +2489,6 @@ var BottomToolbar = {
 
 		this.toolbar.style.top = bottomLevel - offset; // Palm's hack  -110
 	}
-/*	
 	updateBottomLevel : function(e) {
 		var h = getWindowSize()[1];
 		this.bottomLevel = h;
