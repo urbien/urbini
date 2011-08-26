@@ -1,10 +1,12 @@
 <div>
-<text text="Your payment completed successfully for" /> <couponBuyList /> 
+<text text="Your payment completed successfully for" /> <couponBuyList />. 
     <where value="forum.getType() == 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy'">
       <text text="Payment completed" /> <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.paymentConfirmationTime" />.
       <claimCouponLink />
       <br/><br />
-      <giftIfOverLimit />
+      <where value="gifteeEmail == null">
+        <giftIfOverLimit />
+      </where>
       <!--insertJoke variation="You're mouse is dangerously low on clicks, click something before it's too late!" /-->
       <br /><br />
       <table width="100%" cellpadding="5">       
