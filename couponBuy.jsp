@@ -38,12 +38,12 @@
 							    <property name="couponID" />&#45;<property name="couponSecret" />
 							  </where>
                 <where value="mustBeGifted">
-                  <where value="gifteeEmail == null">
-                    <editMe linkText="Gift me to see the codes!" />
-                  </where>
+                  <!--where value="gifteeEmail == null"-->
+                    <editMe linkText="Gift me!" />
+                  <!--/where>
                   <where value="gifteeEmail != null">
                     <property name="couponID" />&#45;<property name="couponSecret" />
-                  </where>
+                  </where-->
                 </where>
 							</where>
 							</b></font>
