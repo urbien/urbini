@@ -1901,7 +1901,7 @@ var FormProcessor = {
 
       var field = fields[idx];
 			var name  = field.name;
-      var value = field.value;
+			var value = field.value;
 			
      // reset field with empty value ("full text search", for example)
       var isEmptyValue = field.getAttribute("is_empty_value")
@@ -3402,7 +3402,7 @@ var ListBoxesHandler = {
 			}
 
 			// show options list
-			this.listboxOnClick1(e, str, input.value, null, classValue, arrowTd);
+			this.listboxOnClick1(e, str, FieldsWithEmptyValue.getValue(input), null, classValue, arrowTd);
 		}
 		return true; 
   },
