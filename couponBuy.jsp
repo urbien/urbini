@@ -14,7 +14,9 @@
         <br />(<text text="Gifted but not yet accepted" />)
       </where>
       <where value="giftTo != null">
-        <property name="giftTo.thumb" frame="y" noIcon="y" /><font style="font-size:24px"><property name="giftTo" noIcon="y" /></font>
+        <where value="giftTo.getUri() == getContact()">
+          <property name="giftTo.thumb" frame="y" noIcon="y" /><font style="font-size:24px"><property name="giftTo" noIcon="y" /></font>
+        </where>
       </where>
     </div>
     </td>
