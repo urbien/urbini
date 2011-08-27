@@ -36,7 +36,7 @@
                 <text text="REDEEMED" />
               </where>
               <where value="!redeemed">
-                <where value="gifteeEmail == null">                 <!-- if coupon hasn't been gifted -->
+                <where value="gifteeEmail == null &amp;&amp; giftTo == null">                 <!-- if coupon hasn't been gifted -->
                   <where value="mustBeGifted">
                     <editMe linkText="Gift me!" />
                   </where>
@@ -55,7 +55,7 @@
                     </where>
                   </where>
                 </where>
-                <where value="giftTo != null &amp;&amp;  gifteeEmail == giftTo.email">               <!-- if coupon has been gifted and delivered -->
+                <where value="gifteeEmail == null &amp;&amp; giftTo != null">               <!-- if coupon has been gifted and delivered -->
                   <where value="giftTo.getUri() != getContact()">
                     <text text="Gifted" />
                   </where>
