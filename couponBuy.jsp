@@ -34,21 +34,40 @@
                 <text text="REDEEMED" />
               </where>
               <where value="!redeemed">
-                <where value="!mustBeGifted">
-							    <property name="couponID" />&#45;<property name="couponSecret" />
-							  </where>
-                <where value="mustBeGifted">
-                  <!--where value="gifteeEmail == null"-->
+                <where value="gifteeEmail == null">                 <!-- if coupon hasn't been gifted -->
+                  <where value="mustBeGifted">
                     <editMe linkText="Gift me!" />
-                  <!--/where>
-                  <where value="gifteeEmail != null">
+                  </where>
+                  <where value="!mustBeGifted">
                     <property name="couponID" />&#45;<property name="couponSecret" />
-                  </where-->
+                  </where>
+                </where>
+                <where value="gifteeEmail != null">                           <!-- if coupon has been gifted but not delivered yet -->
+                  <where value="giftTo == null || gifteeEmail != giftTo.email">
+                    <where value="giftTo == null || giftTo.getUri() == getContact()">
+                      <text text="Gifted to" /> <property name="gifteeEmail" /><br />
+                      <text text="If this is incorrect, please regift:" /> <editMe linkText="Gift me!" />
+                    </where>
+                    <where value="giftTo != null &amp;&amp; giftTo.getUri() != getContact()">
+                      <text text="Gifted" />
+                    </where>
+                  </where>
+                </where>
+                <where value="giftTo != null &amp;&amp;  gifteeEmail == giftTo.email">               <!-- if coupon has been gifted and delivered -->
+                  <where value="giftTo.getUri() != getContact()">
+                    <text text="Gifted" />
+                  </where>
+                  <where value="giftTo.getUri() == getContact()">
+                    <where value="mustBeGifted">
+                      <editMe linkText="Gift me!" />
+                    </where>
+                    <where value="!mustBeGifted">
+                      <property name="couponID" />&#45;<property name="couponSecret" />
+                    </where>
+                  </where>
                 </where>
 							</where>
 							</b></font>
-						  
-    
 						</where>
 				  <where value="paymentStatus == 'Pending'"><font size="+1" color="#ef6f16"><b><text text="This coupon is still waiting for payment" /></b></font></where>
           <where value="paymentStatus == 'Failure'"><font size="+1" color="#ef6f16"><b><text text="Payment Failed" /></b></font></where>
