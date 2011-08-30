@@ -20,13 +20,17 @@
             <form id="redeemForm" name="redeemCBform" action="redeemCouponBuy" method="POST" autocomplete="off">
               <table border="0" cellpadding="3" cellspacing="0" cols="2" width="100%">
                 <tr>
-                  <td width="40%" class="nowrap" align="right"><text text="Coupon Secret:"/></td>
-                  <td>
-                    <input type="Text" class="input" id="secret" name="couponSecret" size="20" maxlength="50"/>
-                  </td>
                   <td>
                     <couponUriInputField />
                     <!--input type="hidden" class="input" id="couponUri" name="coupon" size="20" maxlength="50"/-->
+                  </td>
+                </tr>
+              </table>
+              <table border="0" cellpadding="3" cellspacing="0" cols="2" width="100%">
+                <tr>
+                  <td width="40%" class="nowrap" align="right"><text text="Coupon Secret:"/></td>
+                  <td>
+                    <input type="Text" class="input" id="secret" name="couponSecret" size="20" maxlength="50"/>
                   </td>
                   <td valign="center">
                     <input type="submit" value="Redeem!" name="redeemButton"/>
