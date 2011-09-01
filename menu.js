@@ -4192,7 +4192,7 @@ var ListBoxesHandler = {
 		}
 		
 		var rows = table.rows;
-		var isGrid = rows[0].cells[0].className.indexOf("grid_option_cell") != -1;
+		var isGrid = (rows[0].cells[0] && rows[0].cells[0].className.indexOf("grid_option_cell") != -1);
 
 	  for (var i = 0; i < rows.length; i++) {
 			for (var k = 0; k < rows[i].cells.length; k++) {
@@ -12398,10 +12398,11 @@ var ToggleBtnMgr = {
   }
 }
 
-/*******************************************
+/************************************************************************
 * CheckButtonMgr
 * curently, it has one style
-********************************************/
+* use parent element with class name "radio_set" for radio buttons set
+*************************************************************************/
 var CheckButtonMgr = {
   classes : new Array("iphone_checkbox"),
   
@@ -12461,7 +12462,19 @@ var CheckButtonMgr = {
 		var checkbox = getPreviousSibling(btn);
 		if (checkbox.onclick)
 			checkbox.onclick(event);
-			
+		
+		var isRadio = btn.className.indexOf(" radio") != -1;
+		if (isRadio) {
+			// expect all radio buttons are in all parent element
+			var radioSet = getAncestorByClassName(btn, "radio_set");
+			if (radioSet) {
+		  	var buttons = radioSet.getElementsByTagName("button");
+		  	for (var i = 0; i < buttons.length; i++) {
+		  		if (comparePosition(buttons[i], btn) != 0) 
+		  			$t.setState(buttons[i], getPreviousSibling(buttons[i]), false);
+		  	}
+		  }
+		}	
 		stopEventPropagation(event);
   },
 
