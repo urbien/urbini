@@ -2,7 +2,7 @@
 <table bgcolor="#FFFFFF" border="0" cellpadding="10" class="obval_item" style="border:2px dashed">
   <tr>
     <td width="10%"></td>
-    <td width="40%"><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
+    <td width="40%"><h1><hostSignature /></h1><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
     <h3><property name="coupon.title" noIcon="y"/></h3></td>
     <td width="5%"></td>
     <td width="40%">
