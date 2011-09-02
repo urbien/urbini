@@ -3402,7 +3402,7 @@ var ListBoxesHandler = {
 			}
 
 			// show options list
-			this.listboxOnClick1(e, str, FieldsWithEmptyValue.getValue(input), null, classValue, arrowTd);
+			this.listboxOnClick1(e, str, null/*no entered text to supply!!!*/, null, classValue, arrowTd);
 		}
 		return true; 
   },
