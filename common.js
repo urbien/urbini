@@ -1175,7 +1175,7 @@ function arrangeTableCells(table, colsAmount) {
 	}
 
 	if (typeof colsAmount == 'undefined')
-		colsAmount = Math.ceil(Math.sqrt(cells.length)); 	
+		colsAmount = Math.floor(Math.sqrt(cells.length)); 	
 	// rearrange cells
 	var idx = 0;
 	for (var i = 0; i < table.rows.length; i++) {
