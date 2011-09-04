@@ -2445,6 +2445,8 @@ function addCurrentDashboardAndCurrentTab(target) {
   var a = target.href;
   if (!a || a == 'about:blank')
     return;
+  if (a.indexOf('javascript:') != -1)
+    return target;
   var hasQuestion    = a.indexOf('?') != -1;
   // Fixed for DUDE
   if (!hasQuestion || a.indexOf('/tail?') != -1 || a.indexOf("/createResourceList?") != -1 || a.indexOf("/createParallelResourceList?") != -1)
@@ -13643,6 +13645,27 @@ function printRepostOptions(content) {
 function hide(me) {
   me.style.display = 'none';
   me.style.visibility = 'hidden';
+}
+
+function redirectToCurrentDeals() {
+  var baseUriO = document.getElementsByTagName('base');
+  var baseUri = "";
+  if (baseUriO) {
+    baseUri = baseUriO[0].href;
+    if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
+      baseUri += "/";
+  }
+
+  var url = baseUri + "currentDeals";
+  var csLink = document.getElementById("cityScape");
+  if (csLink != null) {
+    var csName = csLink.innerHTML;
+    var idx = csName.indexOf("<");
+    if (idx != -1)
+      csName = csName.substring(0, idx);
+    url += "?cityScape=" + encodeURIComponent(csName);
+  }
+  window.location = url;
 }
 
 // flag that menu.js was parsed
