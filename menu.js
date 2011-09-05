@@ -1879,13 +1879,14 @@ var FormProcessor = {
   // 2) html form: removes not needed fields
 	// isXHR default value - false
   getFormFilters : function(form, allFields, exclude, isXHR) {
-		// Tags' items contain fields for options panel that should not be submitted with a form 
+/* commented out: no side effect but keep UI div on option selection (?)		
+ Tags' items contain fields for options panel that should not be submitted with a form 
 		if (!allFields) {
 	  	var tagsDiv = getChildByClassName(form, "tags");
 	  	if (tagsDiv) 
 	  		tagsDiv.parentNode.removeChild(tagsDiv);
 	  }
-	
+*/	
 	  var p = "";
     var fields = form.elements;
     // use idx and len because removeChild reduces fields collection
@@ -4194,7 +4195,10 @@ var ListBoxesHandler = {
 		}
 		
 		var rows = table.rows;
-		var isGrid = (rows[0].cells[0] && rows[0].cells[0].className.indexOf("grid_option_cell") != -1);
+		if (typeof rows[0] == 'undefined')
+			return;
+			
+		var isGrid = (rows[0].cells[0].className.indexOf("grid_option_cell") != -1);
 
 	  for (var i = 0; i < rows.length; i++) {
 			for (var k = 0; k < rows[i].cells.length; k++) {
@@ -6176,7 +6180,7 @@ var TouchDlgUtil = {
 		$t.skipBleachBlue = skipBleachBlue;
 
 		TouchDlgUtil.blueTr = tr;
-		
+	
 		$t.bleachGreyRow();
 		appendClassName(tr, "blue_highlighting");
 		tr.setAttribute("blue", "y");
