@@ -63,7 +63,12 @@
          </where>
          <where value="getTime() &lt; dateFeatured || !isBuyable()">
            <where value="dealPrice &gt; 0">
-             <div style="text-decoration:line-through;color:red;"><a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+             <where value="couponVariantsCount &gt; 0">
+               <div style="text-decoration:line-through;color:red;"><a max_width="500" onMouseOver="showHide('variants', event)" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+             </where>
+             <where value="couponVariantsCount &lt;= 0">
+               <div style="text-decoration:line-through;color:red;"><a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+             </where>
            </where>
            <where value="dealPrice == 0">
              <div style="text-decoration:line-through;color:red;"><a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="FREE!"/></a></div>
@@ -150,6 +155,11 @@
            <text text="Be the first to buy"/>
          </div>
        </where>
+       <where value="dealPrice &gt; 0  &amp;&amp;  totalCouponBuysQuantity == 0">
+         <div class="time_left">
+           <text text="Be the first to buy"/>
+         </div>
+       </where>
        <where value="couponsLeftToBuy &gt; 0  &amp;&amp; totalCouponBuysQuantity &gt; 0">
          <div class="deal_titles">
            <text text="Short of"/>:&#160;
@@ -166,10 +176,8 @@
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
        </where-->
-       <where value="isBuyable()">
-         <where value="cap != null &amp;&amp; cap - couponBuysQuantity &lt;= maxPerPerson"><br />
-           <ul id="counter"><li class="time_left"><span style="color: #f85400"><text text="Hurry! Only"/> <property name="couponsLeftToBuy" /> <text text="left!"/></span></li></ul>
-         </where>
+       <where value="cap != null &amp;&amp; couponsLeftToBuy != null &amp;&amp; cap - couponBuysQuantity &lt;= maxPerPerson"><br />
+         <ul id="counter"><li class="time_left"><span style="color: #f85400"><text text="Hurry! Only"/> <property name="couponsLeftToBuy" /> <text text="left!"/></span></li></ul>
        </where>
        <where value="dealPrice &lt;= 0  &amp;&amp;  totalCouponBuysQuantity == null">
          <div class="time_left"><text text="Be the first to try"/></div>
@@ -184,7 +192,7 @@
       <h3 class="csp_33"><text text="Highlights"/></h3>
 			<div class="displayIn4lines hideImg">
       <ul>
-         <li><property name="description" noIcon="y"/></li>
+         <li><property name="description" noIcon="y"/><!--property name="tags"/ --></li>
       </ul>
 			</div>
     </div><!-- highlights -->
@@ -192,7 +200,7 @@
       <a name="fp"></a>
       <h3 class="csp_33"><text text="Fine print"/></h3>
       <div class="displayIn4lines hideImg">
-			<ul>
+      <ul>
         <li><property name="conditions" noIcon="y"/></li>
         <li><text text="Must be redeemed by"/>&#160;<property name="redeemBy" noIcon="y"/></li>
       </ul>
@@ -227,12 +235,12 @@
     <!-- video -->
     <div><property name="video" noIcon="y"/> </div>
   </div>
-		<div id="docked_bar">
-	    <!--h3 class="csp_33"><text text="more deals"/></h3-->
-	    <siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;event=-$this&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CheckIn&amp;-inRowW=6&amp;-title=Check+Ins&amp;-limitW=1&amp;basedOnTemplate=null"/>
-	    <siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;cityScape=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRowW=3&amp;-title=Future+deals&amp;-limitW=1&amp;-featured=y&amp;basedOnTemplate=null"/>
-	    <siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;cityScape_select=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRowW=5&amp;-limitW=1&amp;-featured=y&amp;basedOnTemplate=null"/>
-	<!--    <siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1"/>-->
+		<div id="docked_bar1">
+    <!--h3 class="csp_33"><text text="more deals"/></h3-->
+    <siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;event=-$this&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CheckIn&amp;-inRowW=6&amp;-title=Check+Ins&amp;-limitW=1&amp;basedOnTemplate=null"/>
+    <siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;cityScape=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRowW=3&amp;-title=Future+deals&amp;-limitW=1&amp;-featured=y&amp;basedOnTemplate=null"/>
+	<siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;cityScape_select=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRowW=4&amp;-limitW=1&amp;-featured=y&amp;basedOnTemplate=null"/>
+	<siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1"/>
  		</div>
   </div>
 </td>
@@ -356,7 +364,7 @@
 					this.bar.style.display = "block";
 				}
 			}
-			runJSCode("DockedBar.init()", null, "common.js");
+//			runJSCode("DockedBar.init()", null, "common.js");
 			
     ]]>       
   </script>
