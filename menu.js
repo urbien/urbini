@@ -1817,6 +1817,12 @@ var FormProcessor = {
       setDivInvisible(pane2, dialogIframe);
     }
 		
+		// Tags' items contain fields for options panel that no need to submit with a form 
+  	var tagsDiv = getChildByClassName(form, "tags");
+  	if (tagsDiv) 
+  		tagsDiv.parentNode.removeChild(tagsDiv);
+
+	
 		//******************************************************
 		// 3 cases:
 		// a) mobile: returns URL;
@@ -1879,14 +1885,6 @@ var FormProcessor = {
   // 2) html form: removes not needed fields
 	// isXHR default value - false
   getFormFilters : function(form, allFields, exclude, isXHR) {
-/* commented out: no side effect but keep UI div on option selection (?)		
- Tags' items contain fields for options panel that should not be submitted with a form 
-		if (!allFields) {
-	  	var tagsDiv = getChildByClassName(form, "tags");
-	  	if (tagsDiv) 
-	  		tagsDiv.parentNode.removeChild(tagsDiv);
-	  }
-*/	
 	  var p = "";
     var fields = form.elements;
     // use idx and len because removeChild reduces fields collection
@@ -2223,7 +2221,7 @@ function getTrNode(elem) {
     }
   }
   // end IE workaround
-  if (elem_.tagName.toUpperCase() == 'TR')
+  if (typeof elem_.tagName != 'undefined' && elem_.tagName.toUpperCase() == 'TR')
     return elem_;
   e = elem_.parentNode;
   if (e) {
@@ -3017,7 +3015,7 @@ var ListBoxesHandler = {
     if (idx == -1)
       return;
     currentFormName = propName1.substring(idx + 1);
-    var form = document.forms[currentFormName];
+    var form = getChildByTagName(this.formPanel, "form"); //document.forms[currentFormName];
 		propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
     currentImgId  = imgId;
 
@@ -3746,12 +3744,7 @@ var ListBoxesHandler = {
 
   displayItemName : function() {
     var itemNameDiv = getChildById(this.optionsPanel, "item_name");
-    
-    var form = document.forms[currentFormName];
-		if (!form)
-			return;
-    var textField = getOriginalPropField(form, originalProp); // form.elements[originalProp];
-    var label = getPreviousSibling(textField.parentNode);
+    var label = getChildByClassName(this.curParamRow, "label_td");
     if (label) {
       itemNameDiv.innerHTML = label.innerHTML;
       itemNameDiv.style.display = "";
@@ -4056,11 +4049,7 @@ var ListBoxesHandler = {
   },
 
   onOptionsBackBtn : function(isEnterKey) {
-    var form = document.forms[currentFormName];
-		if (!form)
-			return;
-    var textField = getOriginalPropField(form, originalProp);
-
+		var textField = getChildByClassName(this.curParamRow, "input");
     var td = getAncestorByTagName(textField, "td");
     if (td.className == "rollup_td") { // rollup, not parameter
 			this.onBackBtn();
