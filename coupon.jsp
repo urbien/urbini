@@ -145,11 +145,6 @@
           <div class="time_left"><text text="Bought"/>:&#160; 
           <span class="number"><property name="totalCouponBuysQuantity" noIcon="y" /></span>&#160;</div>
        </where>
-       <where value="dealPrice &gt; 0  &amp;&amp;  mainCoupon.tippingPoint &gt; 1 &amp;&amp;  couponsLeftToBuy == mainCoupon.tippingPoint">
-         <div class="time_left">
-           <text text="Be the first to buy"/>
-         </div>
-       </where>
        <where value="dealPrice &gt; 0  &amp;&amp;  mainCoupon.tippingPoint == 1 &amp;&amp;  couponsLeftToBuy == 1">
          <div class="time_left">
            <text text="Be the first to buy"/>
