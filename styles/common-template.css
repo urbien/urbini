@@ -1910,7 +1910,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   float: left;
   left: 0;
 }
-
+.tray_slidesshow { width: auto; }
 
 .form_panel, .options_panel, .classifier_panel, .calendar_panel { float: left; width: 20%; min-height: 1px;  }
 .oneparamselection { box-shadow: none; -moz-box-shadow: none; -webkit-box-shadow: none; }
