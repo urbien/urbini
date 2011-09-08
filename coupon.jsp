@@ -248,7 +248,7 @@
 			</td>
 			<td width="900"> 
 				<div class="frame" style="width: 900px;">
-					<div class="tray" style="width: auto;">   
+					<div class="tray tray_slidesshow">   
 						<relatedResources uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;-limitW=4&amp;-inRowW=4&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
 					</div>
 				</div> 
