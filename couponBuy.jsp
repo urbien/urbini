@@ -20,11 +20,15 @@
       </where>
     </div>
     </td>
-    <td valign="top"><a href="#" class="button noprint" onclick="window.print();return false;"><text text="Print" /></a></td>
+    <td align="right" valign="top">
+    <div><a href="#" class="button noprint" onclick="window.print();return false;"><text text="Print" /></a></div>
+    <br/>
+    <div class="button"><editMe linkText="Gift it"/></div>
+    </td>
   </tr>
   <tr>
     <td></td>
-    <td rowspan="2"><property frame="y" name="coupon.featured" /></td>
+    <td rowspan="2"><property frame="y" name="coupon.featured" /><h2><property name="dealPrice" noIcon="y" /></h2></td>
     <td></td>
     <td>
         <div style="background-color:#CCCCCC;padding: 10px 10px 10px 10px;">
