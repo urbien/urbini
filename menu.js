@@ -4455,19 +4455,34 @@ var SlideSwaper = {
 		}
 		
 		var distance = $t.DISTANCE;
+		var isSlideshow = $t.tray.className.indexOf("tray_slidesshow") != -1;
+		
+		if (isSlideshow)
+			distance = $t.tray.parentNode.offsetWidth / $t.tray.offsetWidth * 100;
+		
+		var trayRelativeWidth = 100 / distance;
+		
 		if (!$t.isForward)
-			distance = $t.DISTANCE * $t.trayPosition;
+			distance *= $t.trayPosition;
+			
 		var left = Math.floor(dir * distance * bPoint[0]) - ($t.DISTANCE * $t.trayPosition);  
+
+		if (isSlideshow) {
+			var maxOffset = ($t.tray.parentNode.offsetWidth - $t.tray.offsetWidth) / $t.tray.offsetWidth * 100;
+			if (left < maxOffset) // neagtive values
+				left = maxOffset;
+			if (left > 0)	
+				left = 0;
+		}
 
     // for FF 3.1b2 that does not support -moz-transition-duration (?)
     if (typeof $t.tray.style.MozTransform != 'undefined') {
 			// HACK! FF 3.5
 			$t.tray.style.left = 0; 
-
 			$t.tray.style.MozTransform = "translate(" + left + "%, 0%)";
 		}
 		else 
-			$t.tray.style.left = left * 5 + "%"; // tray is 5 width of a panel
+			$t.tray.style.left = left * trayRelativeWidth + "%"; // tray is 5 width of a panel
 
 
     if ($t.offset <= 1.0)
@@ -4475,9 +4490,9 @@ var SlideSwaper = {
     else { // finish
       $t.offset = 0;
       
-			// HACK! FF 3.5
-	    $t.tray.style.MozTransform = "translate(0%, 0%)";
-	    $t.tray.style.left = left * 5 + "%"; 
+			// HACK! FF 3.5: on focus in a field FF scrolls it into view
+	  	$t.tray.style.MozTransform = "translate(0%, 0%)";
+	  	$t.tray.style.left = left * trayRelativeWidth + "%";
 
       if ($t.callback)
         $t.callback();
