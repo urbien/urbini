@@ -52,7 +52,7 @@
                   <where value="giftTo == null || gifteeEmail != giftTo.email">
                     <where value="giftTo == null || giftTo.getUri() == getContact()">
                       <text text="Gifted to" /> <property name="gifteeEmail" /><br />
-                      <text text="If this is incorrect, please regift:" /> <editMe linkText="Gift me!" />
+                      <text text="If this is incorrect, please regift:" /> <editMe linkText="Regift" />
                     </where>
                     <where value="giftTo != null &amp;&amp; giftTo.getUri() != getContact()">
                       <text text="Gifted" />
@@ -75,12 +75,13 @@
 							</where>
 							</b></font>
 						</where>
+          <where value="paymentStatus == 'Abandoned'"><font size="+1" color="#ef6f16"><b><text text="You abandoned this transaction half-way" /></b></font></where>
 				  <where value="paymentStatus == 'Pending'"><font size="+1" color="#ef6f16"><b><text text="This coupon is still waiting for payment" /></b></font></where>
           <where value="paymentStatus == 'Failure'"><font size="+1" color="#ef6f16"><b><text text="Payment Failed" /></b></font></where>
 					</where>        
 	      </div>
         <br />
-        <where value="paymentStatus == 'Pending' &amp;&amp; paymentTutorial != null">
+        <where value="paymentStatus != 'Success' &amp;&amp; paymentTutorial != null">
             <h3 class="csp_33"><text text="How to pay"/></h3>
             <li><property name="paymentTutorial" href="y" /></li>
             <br />

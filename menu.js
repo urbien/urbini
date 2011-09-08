@@ -13640,26 +13640,5 @@ function hide(me) {
   me.style.visibility = 'hidden';
 }
 
-function redirectToCurrentDeals() {
-  var baseUriO = document.getElementsByTagName('base');
-  var baseUri = "";
-  if (baseUriO) {
-    baseUri = baseUriO[0].href;
-    if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
-      baseUri += "/";
-  }
-
-  var url = baseUri + "currentDeals";
-  var csLink = document.getElementById("cityScape");
-  if (csLink != null) {
-    var csName = csLink.innerHTML;
-    var idx = csName.indexOf("<");
-    if (idx != -1)
-      csName = csName.substring(0, idx);
-    url += "?cityScape=" + encodeURIComponent(csName);
-  }
-  window.location = url;
-}
-
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
