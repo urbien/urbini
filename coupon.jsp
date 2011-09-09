@@ -249,7 +249,7 @@
 			<td width="900"> 
 				<div class="frame" style="width: 900px;">
 					<div class="tray tray_slidesshow">   
-						<relatedResources uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;-limitW=4&amp;-inRowW=4&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
+						<relatedResources uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;-limitW=4&amp;-inRowW=20&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
 					</div>
 				</div> 
 			</td>
@@ -259,7 +259,7 @@
 		</tr>
 	</table>
 	
-	<siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=20&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1"/>
+	<siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1"/>
  		<!--
 		</div>
   	-->
