@@ -70,7 +70,7 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		if (oldToolbar != null)
 			oldToolbar.parentNode.removeChild(oldToolbar);
 		
-		toolBar = new Toolbar(parentDiv, this, 32, true);
+		toolBar = new Toolbar(parentDiv, this, 32, false);
 		// 3. create the toolbar's control objects.
 
 		// font family
@@ -104,6 +104,11 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		
 		// CSS view
 		//var styleViewBtn = toolBar.appendButton(this.onStyleView, true, IMAGES_FOLDER + "properties.gif", "CSS view");
+
+		//text align
+		toolBar.appendButton(this.onAlignLeft, false, IMAGES_FOLDER + "align_left.png", "&[align]; &[left];");
+		toolBar.appendButton(this.onAlignCenter, false, IMAGES_FOLDER + "align_center.png", "&[align]; &[center];");
+		toolBar.appendButton(this.onAlignRight, false, IMAGES_FOLDER + "align_right.png", "&[align]; &[right];");
 
 		// clear style
 		this.clearBtn = toolBar.appendButton(this.onClear, false, IMAGES_FOLDER + "clear.png", "clear style");
@@ -352,6 +357,10 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
       var applyTo = BORDER_APPLY_TO[this.borderDesc.applyToIdx].valueHtml;
 		  style += applyTo + ": " + brdStl + "; "
 		}
+		// text alignment
+		if(sampleDiv.style.textAlign != "")
+		  style += "text-align: " + sampleDiv.style.textAlign + "; ";
+
 		return style;
 	}
   
@@ -518,6 +527,22 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		i_am.centeringSampleDiv();
 	}
 
+	this.onAlignLeft = function() {
+		sampleDiv.style.textAlign = "left";
+		i_am.centeringSampleDiv();
+		i_am.putStyleStr();
+	}
+	this.onAlignCenter = function() {
+		sampleDiv.style.textAlign = "center";
+		i_am.centeringSampleDiv();
+		i_am.putStyleStr();
+	}
+	this.onAlignRight = function() {
+		sampleDiv.style.textAlign = "right";
+		i_am.centeringSampleDiv();
+		i_am.putStyleStr();
+	}
+	
 	// "setters" -------------------------
 	this.setFontFamily = function(idx) {
 		sampleDiv.style.fontFamily = FONT[idx].value;
