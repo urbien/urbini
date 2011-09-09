@@ -243,17 +243,17 @@
 	
 	<table class="tight">
 		<tr>
-			<td width="30">
+			<td>
 				<a class="button slide_btn" href="javascript: ;" onclick="slideBack(this);">&#9664;</a>
 			</td>
-			<td width="900"> 
-				<div class="frame" style="width: 900px;">
+			<td> 
+				<div class="frame" style="width: 900px; background: transparent;">
 					<div class="tray tray_slidesshow">   
 						<relatedResources uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;-limitW=4&amp;-inRowW=20&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
 					</div>
 				</div> 
 			</td>
-			<td width="30">
+			<td>
 				<a class="button slide_btn" href="javascript: ;" onclick="slideForward(this);">&#9654;</a>
 			</td>
 		</tr>
