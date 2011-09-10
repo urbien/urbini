@@ -3520,15 +3520,16 @@ var ListBoxesHandler = {
 			var hotspotDim = getElementCoords(hotspot, null);
 
 			x = hotspotDim.left + hotspotDim.width + 5;
-			y = Math.max(hotspotDim.top - this.panelBlock.clientHeight / 2, scXY[1] + 5);
+			y = Math.max(hotspotDim.top - this.optionsPanel.clientHeight / 2, scXY[1] + 5);
 			var bottomEdge = wndSize[1] + scXY[1];
 	
-			if (y > bottomEdge - this.panelBlock.clientHeight)
-				y = Math.max(bottomEdge - this.panelBlock.clientHeight, scXY[1]) - 5;
+			if (y > bottomEdge - this.optionsPanel.clientHeight)
+				y = Math.max(bottomEdge - this.optionsPanel.clientHeight, scXY[1]) - 5;
 		}
 
 		// insure to show on screen //TODO: make it more generic
-		var pos = getElemInsideScreenPosition(x, y, this.panelBlock);
+		var pos = getElemInsideScreenPosition(x, y, this.optionsPanel);
+		// reposit parent dialog
 		this.panelBlock.style.left = pos[0];
 
 		// hack: IE7 showed black background on city selection on Obval
@@ -5161,6 +5162,7 @@ var DataEntry = {
 			ListBoxesHandler.setTray(div);
 			//var tbl = getChildByClassName(div, "rounded_rect_tbl");
 			var input = getChildByAttribute(div, "name", $t.oneParameterInputName);
+
 			if (!input) 
 				throw new Error("DataEntry - one parameter selection: NO input!");
 			var tr = getAncestorByClassName(input, "param_tr");
@@ -8225,7 +8227,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 	var divCoords = getElementDimensions(div);
 	// allows to place dialog taking into account options panel height (Obval's Buy)
 	if (hotspot) {
-  	var optionsHeight = hotspot.getAttribute("full_height");
+	 	var optionsHeight = hotspot.getAttribute("full_height");
   	if (optionsHeight) 
   		divCoords.height = parseInt(optionsHeight);
   }
@@ -8330,7 +8332,6 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       left = left + offsetX;
   }
 
-
 	// no vertical scrollbar for Touch UI dialogs
 	if (div.className == 'panel_block')
 		divCoords.height = "";
@@ -8370,11 +8371,11 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   }
 
   div.style.display    = 'none';   // hide it before movement to calculated position
-  reposition(div, left, top); // move the div to calculated position
+	reposition(div, left, top); // move the div to calculated position
   div.style.visibility = Popup.VISIBLE; // show div
 	div.style.display    = "block"; //////// 'inline';
-
-  if (Browser.lt_ie7 && !isDivStatic  && !Browser.mobile) {
+	
+	if (Browser.lt_ie7 && !isDivStatic  && !Browser.mobile) {
     istyle.display = 'none';
     istyle.visibility  = Popup.VISIBLE;
     reposition(iframe, iframeLeft, iframeTop); // place iframe under div
