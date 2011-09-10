@@ -22,8 +22,10 @@
     </td>
     <td align="right" valign="top">
     <div><a href="#" class="button noprint" onclick="window.print();return false;"><text text="Print" /></a></div>
+    <where value="giftTo == null || gifteeEmail != null || getContact().getUri() == giftTo">
     <br/>
     <div class="button"><editMe linkText="Gift it"/></div>
+    </where>
     </td>
   </tr>
   <tr>
