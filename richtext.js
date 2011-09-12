@@ -1559,7 +1559,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		
 		if (cpDiv != null && cpTab == null && dashboardLine.cells.length > 1)
 			cpTab = getLastChild(dashboardLine); // there is empty cell taken place like cpTab
-		
+
 		if (toEnlarge) {
 			panelBlock.parentNode.style.textAlign = "left";
 			if (Browser.webkit) { // webkit transition /animation
@@ -1577,7 +1577,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 				cpTab.style.display = "none";
 
 			if (Browser.webkit)
-				panelBlock.style.width = (panelBlock.parentNode.clientWidth + "px");	
+				panelBlock.style.width = (panelBlock.parentNode.clientWidth - 10 + "px");	
 		}
 		else {
 			if (cpDiv)
