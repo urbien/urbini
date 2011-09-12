@@ -10153,7 +10153,7 @@ var Dashboard = {
     dbStyle.top   = y;
     dbStyle.position = "absolute";
 
-    this.prevWidgetOld = this.getPrevSibling(dragBlock);
+    this.prevWidgetOld = this.getPrevWidget(dragBlock);
     this.prevY = y;
     this.prevX = x;
 
@@ -10280,7 +10280,7 @@ var Dashboard = {
     if (this.oldWidgetIdx == this.getWidgetIndex(dragBlock))
       return;
     // 2.2 store changed on server
-    var prevWidgetNew = this.getPrevSibling(dragBlock);
+    var prevWidgetNew = this.getPrevWidget(dragBlock);
     this.onWidgetMovement(e, dragBlock, this.prevWidgetOld, prevWidgetNew);
 
   },
@@ -10409,7 +10409,7 @@ var Dashboard = {
   },
   // relative to the placeholder
   isWidgetUpper : function(widget) {
-    var prev = this.getPrevSibling(this.placeholderDiv); //.previousSibling;
+    var prev = this.getPrevWidget(this.placeholderDiv); //.previousSibling;
    // while(prev && prev.nodeType != 1) // skip whitespaces
    //   prev = prev.previousSibling;
 
@@ -10434,10 +10434,10 @@ var Dashboard = {
     }
     return -1;
   },
-  getPrevSibling : function(widgetDiv) {
-    var prev = widgetDiv.previousSibling;
-    while(prev && prev.nodeType != 1) // skip whitespaces
-      prev = prev.previousSibling;
+  getPrevWidget : function(widgetDiv) {
+    var prev = getPreviousSibling(widgetDiv);
+    while(prev && prev.className != "widget")
+      prev = getPreviousSibling(prev);
 
     return prev;
   },
@@ -10544,7 +10544,7 @@ var Dashboard = {
     else
       params += '&.previousInColumn_select=' + encodeURIComponent(widgetUri);
     var target = getTargetElement(e);
-    postRequest(e, 'proppatch', params, widget, td, callback);
+		postRequest(e, 'proppatch', params, widget, td, callback);
     function callback() {
     }
     return ret;
