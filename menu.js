@@ -3015,7 +3015,10 @@ var ListBoxesHandler = {
     if (idx == -1)
       return;
     currentFormName = propName1.substring(idx + 1);
-    var form = getChildByTagName(this.formPanel, "form"); //document.forms[currentFormName];
+    var form = getChildByTagName(this.formPanel, "form"); // correct with FTS additional filter
+		if (form == null)
+			form = document.forms[currentFormName]; // RL editor
+			
 		propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
     currentImgId  = imgId;
 
@@ -3312,8 +3315,8 @@ var ListBoxesHandler = {
 
 			// click on different parameter then invoke this function with delay 800 ms
 			if ($t.curParamRow && comparePosition($t.curParamRow, tr) != 0) {
-		  	setTimeout("ListBoxesHandler.onClickParam(null, " + optionsSelectorStr + ")", 800);
-		  	 $t.skipUserClick = true; // to skip additional clicks
+	  		setTimeout("ListBoxesHandler.onClickParam(ListBoxesHandler.clonedEvent, " + optionsSelectorStr + ")", 800);
+				 $t.skipUserClick = true; // to skip additional clicks
 		  }
 			return;
 		}
