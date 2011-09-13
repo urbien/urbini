@@ -3825,11 +3825,7 @@ var ListBoxesHandler = {
 
 		// 1. rollup
 		if ($t.isRollUp/*rollupTd != null*/) {
-			var rollupTd = getChildByClassName(tr, "rollup_td");
-			var field = rollupTd.getElementsByTagName("input")[0];
-			var img = rollupTd.getElementsByTagName("img")[0];
-	  	field.value = clickedTr.id;
-			img.src = "icons/cakes.png";
+			this.setRollup(clickedTr.id);
 			return;
 		}
 		// 2. Filter or Subscribe
@@ -4002,9 +3998,15 @@ var ListBoxesHandler = {
 			
 		this.onBackBtn();
 	},
+	
   makeParamReset : function() {
+		// reset icon of complex date rollup
+		if (this.isRollUp) {
+			this.setRollup("");
+			return;
+		}
+		
     // remove value in coresponding <input>s
-  
 		// 1. text/hidden field
 		var textField = this.getTextFieldInParamRow(); //getOriginalPropField(form, originalProp);
 		FieldsWithEmptyValue.setEmpty(textField);
@@ -4034,23 +4036,25 @@ var ListBoxesHandler = {
     // 5. clear chosen_values in the filter
 		// chosen_values contains corresponding "display names" (like text field)
 		// and _select fields
-		var paramTr = getAncestorByClassName(textField, "param_tr");
-    var chosenValuesDiv = getChildByClassName(paramTr, "chosen_values");
+    var chosenValuesDiv = getChildByClassName(this.curParamRow, "chosen_values");
     if (chosenValuesDiv)
       chosenValuesDiv.innerHTML = "";
 
-    // reset icon of complex date rollup
-    var prop = textField.name;
-    if (prop.indexOf("_groupBy") == prop.length - 8) {
-      var targetImg = textField.parentNode.getElementsByTagName("img")[0];
-      if (targetImg)
-        targetImg.src = "icons/cakes_gray.png";
-    }
-		
 		var tagsDiv = getNextSibling(textField);
 		if (tagsDiv && tagsDiv.className == "tags")
 			TagsMgr.deleteAll(tagsDiv);
   },
+
+	setRollup : function(value) {
+		var rollupTd = getChildByClassName(this.curParamRow, "rollup_td");
+		var field = rollupTd.getElementsByTagName("input")[0];
+		var img = rollupTd.getElementsByTagName("img")[0];
+  	field.value = value;
+		if (value)
+			img.src = "icons/cakes.png";
+		else
+			img.src = "icons/cakes_gray.png";	
+	},
 
   onOptionsBackBtn : function(isEnterKey) {
 		var textField = getChildByClassName(this.curParamRow, "input");
