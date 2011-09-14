@@ -21,7 +21,7 @@
       <tr>
         <td width="40%" class="nowrap" align="right"><text text="User name:"/></td>
         <td>
-          <input type="Text" class="input" name="j_username" size="15" maxlength="50"/>
+          <loginFormUserName />
         </td>
       </tr>
       <tr>
