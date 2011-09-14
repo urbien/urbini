@@ -4,7 +4,7 @@
     <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" noIcon="y" />
     <br/><br/>
     <where value="resourceDescription != null">
-      <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.giftFrom.firstName" href="y" noIcon="y"/> <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.giftFrom.lastName" href="y" noIcon="y" />: <property name="resourceDescription" href="y" noIcon="y" />
+      <property name="resourceDescription" href="y" noIcon="y" />
     </where>
     
     <where value="forum.mustBeGifted">
