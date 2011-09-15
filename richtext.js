@@ -1660,15 +1660,16 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   
 	// Note: FF, Crome increases  i_am.document.body.scrollHeight;	on each key down
 	this.fitHeightToVisible = function() {
-		// get lastChild, including text node(!)
-		var children = i_am.document.body.childNodes;
-		if (children.length == 0)
-			return;
-		var lastChild = children[children.length - 1];
+		// hack that no need now (?!) get lastChild, including text node(!)
+//		var children = i_am.document.body.childNodes;
+//		if (children.length == 0)
+//			return;
+//		var lastChild = children[children.length - 1];
 		
 		var docH = 0;
-		if (Browser.ie)
+	//	if (Browser.ie)
 			docH = i_am.document.body.scrollHeight;
+/*			
 		else {
 			var h = lastChild.offsetHeight;
 			// div containing image has h == 0 with overflow visible and NO style.height
@@ -1679,7 +1680,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			}	
 			docH = lastChild.offsetTop + h; 
 		}
-		
+*/		
 		if (docH == 0)
 			return; // happens in webkit (?!)
 			
