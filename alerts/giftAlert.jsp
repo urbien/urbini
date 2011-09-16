@@ -1,5 +1,5 @@
 <div>
-    <text text="You got a gift:" /> "<property name="forum" href="y"/>"
+    <text text="You got a gift:" /> "<property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.coupon.title" />"
     <br/><br/>
     <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" noIcon="y" />
     <br/><br/>
