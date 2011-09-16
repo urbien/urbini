@@ -1704,16 +1704,17 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var frmH = i_am.iframeObj.clientHeight;
 		var maxHeight = getWindowSize()[1] * 0.9;
 		// 2. big content size - use scrolling
-		if(docH > maxHeight && this.isNetscape) {
-		  i_am.iframeObj.setAttribute("scrolling", "auto"); 
-		  i_am.iframeObj.style.height = maxHeight;
-		}
-		// 3. middle content size - use increased height
-		else{
+// Note: FF 6 failed with switching scrollbar on, so the following was 
+//		if(docH > maxHeight && this.isNetscape) {
+//		  i_am.iframeObj.setAttribute("scrolling", "auto"); 
+//		  i_am.iframeObj.style.height = maxHeight;
+//		}
+//		// 3. middle content size - use increased height
+//		else{
 		  if(frmH < docH)
 			  i_am.iframeObj.style.height = docH + 7;
-   		i_am.iframeObj.setAttribute("scrolling", "no"); 
-		}
+//   		i_am.iframeObj.setAttribute("scrolling", "no"); 
+//		}
 	}
   
   this._onpaste = function(e) {
