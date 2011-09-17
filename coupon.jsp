@@ -238,28 +238,9 @@
     <siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;cityScape=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRowW=3&amp;-title=Future+deals&amp;-limitW=1&amp;-featured=y&amp;basedOnTemplate=null"/>
 	<!--siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;cityScape_select=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRowW=4&amp;-limitW=1&amp;-featured=y&amp;basedOnTemplate=null"/ -->
 	
-
-	
-	
-	<table class="tight">
-		<tr>
-			<td>
-				<a class="button slide_btn" href="javascript: ;" onclick="slideBack(this);">&#9664;</a>
-			</td>
-			<td> 
-				<div class="frame" style="width: 900px; background: transparent;">
-					<div class="tray tray_slidesshow">   
-						<relatedResources uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;-limitW=4&amp;-inRowW=20&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
-					</div>
-				</div> 
-			</td>
-			<td>
-				<a class="button slide_btn" href="javascript: ;" onclick="slideForward(this);">&#9654;</a>
-			</td>
-		</tr>
-	</table>
-	
+	<relatedResources uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;-limitW=20&amp;-inRowW=20&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
 	<siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1"/>
+
  		<!--
 		</div>
   	-->
@@ -387,16 +368,51 @@
 			}
 //			runJSCode("DockedBar.init()", null, "common.js");
 		
-			
-			function slideForward(button) {
-				var tray = getChildByClassName(getAncestorByTagName(button, "table"), "tray");
-				SlideSwaper.moveForward(tray);
+			var RelatedResourcesSlider = {
+				forwardBtn : null,
+				isForwardDisabled : false,
+				backBtn : null,
+				isBackDisabled : true,
+				forward : function (button) {
+					if (this.isForwardDisabled)
+						return;
+					
+					if (this.forwardBtn == null) {	
+						this.forwardBtn = button;
+						var table = getAncestorByTagName(button, "table");
+						this.backBtn = getChildByClassName(table, "button");
+					}
+					
+					var tray = getChildByClassName(getAncestorByTagName(button, "table"), "tray");
+					SlideSwaper.moveForward(tray, this.onForwardStop);
+					this.isBackDisabled = false;
+					changeOpacity(this.backBtn, 1.0);
+				},
+				back : function (button) {
+					if (this.isBackDisabled)
+						return;
+					
+					var tray = getChildByClassName(getAncestorByTagName(button, "table"), "tray");
+					SlideSwaper.moveBack(tray, this.onBackStop);
+					
+					this.isForwardDisabled = false;
+					changeOpacity(this.forwardBtn, 1);
+				},
+				onForwardStop : function(wasReachedEnd) {
+					var $t = RelatedResourcesSlider;
+					if (!wasReachedEnd)
+						return;
+					$t.isForwardDisabled = true;
+					changeOpacity($t.forwardBtn, 0.3);
+				},
+				onBackStop : function(wasReachedEnd) {
+					var $t = RelatedResourcesSlider;
+					if (!wasReachedEnd)
+						return;
+					$t.isBackDisabled = true;
+					changeOpacity($t.backBtn, 0.3);
+				}
 			}
-			function slideBack(button) {
-				var tray = getChildByClassName(getAncestorByTagName(button, "table"), "tray");
-				SlideSwaper.moveBack(tray);
-			}
-
 			
 			
     ]]>       
