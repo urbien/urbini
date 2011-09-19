@@ -1486,7 +1486,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		RteEngine.closeAllDisactived(i_am.iframeObj.id);
 		
 		i_am.changePanelWidth(true);
-		i_am.fitHeightToVisible();
+		i_am.fitHeightToVisible(true);
 		
 	
 		// make offset for toolbar over the iframe
@@ -1659,13 +1659,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   }
   
 	// Note: FF, Crome increases  i_am.document.body.scrollHeight;	on each key down
-	this.fitHeightToVisible = function() {
-		
-		i_am.iframeObj.style.height = "auto"; // possible side effect (?)
-		
-		var docH = i_am.document.body.offsetHeight; // ff, Chr offsetH
-		if (Browser.ie || Browser.opera)
-			docH = i_am.document.body.scrollHeight;
+	this.fitHeightToVisible = function(onFocus) {
+		var docH = i_am.document.body.scrollHeight;
+		if ((Browser.gecko || Browser.webkit) && !onFocus)
+			docH = i_am.document.body.offsetHeight;
 			
 		// 1. small content size - use initial height without scrolling
 		if (docH < i_am.initFrameHeight) {
@@ -1674,7 +1671,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		}
 		
 		var frmH = i_am.iframeObj.clientHeight;
-	  if(frmH < docH)
+	  if(frmH < docH || (Browser.gecko && frmH > docH - 7))
 		  i_am.iframeObj.style.height = docH + 7;
 	}
   
