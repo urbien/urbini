@@ -569,7 +569,6 @@ var RteEngine = {
 		var modeIdx = $t.getImageInsertModeIdx(form);
 		var encImgUrl = encodeURI(imgUrl);
 		var rteObj = RteEngine.getRteById(RteEngine.curRteId);
-		
 		// hide dialog
 		RteEngine.imagePopup.hide();
 		// insert image
@@ -1255,13 +1254,14 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	
 	// putContent
 	this.putContent = function(text) {
-	  if(this.isNetscape || this.isOpera) {
+	  if(!Browser.ie/*this.isNetscape || this.isOpera*/) {
 			var head = this.document.getElementsByTagName('head')[0];
       var base = document.createElement('base');
       base.setAttribute('href', getBaseUri());
       head.appendChild(base);
 	   
 		 	this.document.body.className = "rte_body";
+			this.document.body.style.height = "auto";
 			this.document.body.innerHTML = text;
 	  }
 	  else {
@@ -1660,61 +1660,22 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   
 	// Note: FF, Crome increases  i_am.document.body.scrollHeight;	on each key down
 	this.fitHeightToVisible = function() {
-		// hack that no need now (?!) get lastChild, including text node(!)
-//		var children = i_am.document.body.childNodes;
-//		if (children.length == 0)
-//			return;
-//		var lastChild = children[children.length - 1];
 		
-		var docH = 0;
-	//	if (Browser.ie)
+		i_am.iframeObj.style.height = "auto"; // possible side effect (?)
+		
+		var docH = i_am.document.body.offsetHeight; // ff, Chr offsetH
+		if (Browser.ie || Browser.opera)
 			docH = i_am.document.body.scrollHeight;
-/*			
-		else {
-			var h = lastChild.offsetHeight;
-			// div containing image has h == 0 with overflow visible and NO style.height
-			if (h == 0 && lastChild.style) {
-				lastChild.style.overflow = "auto";
-				h = lastChild.offsetHeight;
-				lastChild.style.overflow = "";
-			}	
-			docH = lastChild.offsetTop + h; 
-		}
-*/		
-		if (docH == 0)
-			return; // happens in webkit (?!)
 			
 		// 1. small content size - use initial height without scrolling
 		if (docH < i_am.initFrameHeight) {
 			i_am.iframeObj.style.height = i_am.initFrameHeight;
-			i_am.iframeObj.setAttribute("scrolling", "no"); 
 			return;
 		}
 		
-		// there is scrollbar - no need to fit height
-		if(i_am.iframeObj.scrolling != 'no')
-			return; 
-
-    // FF: limit max RTE height
-    // IE & Opera: failed to turn on a scrollbar in JS.
-    // So, on this moment, in IE & Opera no height limitation. 
-		
-		// New FF has problem with switching of scrollbar as well!!!
-		
 		var frmH = i_am.iframeObj.clientHeight;
-		var maxHeight = getWindowSize()[1] * 0.9;
-		// 2. big content size - use scrolling
-// Note: FF 6 failed with switching scrollbar on, so the following was 
-//		if(docH > maxHeight && this.isNetscape) {
-//		  i_am.iframeObj.setAttribute("scrolling", "auto"); 
-//		  i_am.iframeObj.style.height = maxHeight;
-//		}
-//		// 3. middle content size - use increased height
-//		else{
-		  if(frmH < docH)
-			  i_am.iframeObj.style.height = docH + 7;
-//   		i_am.iframeObj.setAttribute("scrolling", "no"); 
-//		}
+	  if(frmH < docH)
+		  i_am.iframeObj.style.height = docH + 7;
 	}
   
   this._onpaste = function(e) {
@@ -2289,7 +2250,7 @@ function TArea(iframeObj, dataFieldId, rtePref) {
   }
 
   // focus
-  this. onfocus = function() {
+  this.onfocus = function() {
     i_am.fitHeightToVisible();
 	  RteEngine.closeAllDisactived(i_am.iframeObj.id);
   }
