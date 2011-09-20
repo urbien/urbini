@@ -25,5 +25,8 @@
   </td>
   <td width="25%" valign="top"><include name="${type}_mkresource_right.jsp"/></td>
 </tr>
+<tr>
+<td colspan="3"><include name="${type}_mkresource_bottom.jsp"/></td>
+</tr>
 </table>
 </div>
