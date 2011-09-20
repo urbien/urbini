@@ -1,15 +1,15 @@
 <div id="RL">
 <getResource/>
 
-<div id="gallery" class = "box" style="width:auto !important; width:1px;height:auto !important; height:1px;display:none;position:absolute;" itype="http://www.hudsonfog.com/voc/model/portal/ImageResource">
-  <table bgcolor="#ffffff" cellpadding="0" cellspacing="0">
-  	<tr><td>
-	    <div id="titleBar" class="drag" dragcontainer="gallery"></div>
-    </td></tr>
-    <tr valign="top"><td class="largeImage" style="padding:5px;" valign="top"><img id="galleryImage" src="about:blank"></img></td></tr>
-    <!--tr valign="top"><td class="largeImageWithHide" valign="top"><img id="galleryImage" src="javascript: ;"></img><img src="icons/hide.gif" border="0" width="16" height="16" align="top" onclick="return hide('gallery')" style="cursor: pointer;" title="click to close"></img></td></tr-->
-  </table>
-</div>
+  <div id="gallery" class = "box" style="width:auto !important; width:1px;height:auto !important; height:1px;display:none;position:absolute;" itype="http://www.hudsonfog.com/voc/model/portal/ImageResource">
+    <table bgcolor="#ffffff" cellpadding="0" cellspacing="0">
+    	<tr><td>
+  	    <div id="titleBar" class="drag" dragcontainer="gallery"></div>
+      </td></tr>
+      <tr valign="top"><td class="largeImage" style="padding:5px;" valign="top"><img id="galleryImage" src="about:blank"></img></td></tr>
+      <!--tr valign="top"><td class="largeImageWithHide" valign="top"><img id="galleryImage" src="javascript: ;"></img><img src="icons/hide.gif" border="0" width="16" height="16" align="top" onclick="return hide('gallery')" style="cursor: pointer;" title="click to close"></img></td></tr-->
+    </table>
+  </div>
 
   <div id="fts" hide="y">
     <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"  itype="!http://www.hudsonfog.com/voc/model/social/Intent">
@@ -46,20 +46,21 @@
       <div id="siteResourceList">
         <categories/>
         <errorMessage additems="y"/>
+        <buyableTags />
         <siteResourceList />
     	  <uploadAttachment/>
         <createResources/>
       </div>
       <div align="right"><measurement/></div>
       <readOtherSiteInfo />
-  <div hide="y">
-      <uploadMsProject/>
-      <uploadToDelegatedFileSystem/>
-      <pieChart/>
-    	<filterUrl />
-  </div>
-  </td>
-  <div hide="y"><include name="${type}_right.jsp"/></div>         <!-- this jsp will be included in ResourceList page only-->
+      <div hide="y">
+        <uploadMsProject/>
+        <uploadToDelegatedFileSystem/>
+        <pieChart/>
+      	<filterUrl />
+      </div>
+    </td>
+    <div hide="y"><include name="${type}_right.jsp"/></div>         <!-- this jsp will be included in ResourceList page only-->
 
   </tr>
   <div hide="y"><include name="${type}_bottom.jsp"/></div>         <!-- this jsp will be included in ResourceList page only-->
