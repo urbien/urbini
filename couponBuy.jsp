@@ -54,7 +54,8 @@
                   <where value="giftTo == null || gifteeEmail != giftTo.email">
                     <where value="giftTo == null || giftTo.getUri() == getContact()">
                       <text text="Gifted to" /> <property name="gifteeEmail" /><br />
-                      <text text="If this is incorrect, please regift:" /> <editMe linkText="Regift" />
+                      <text text="If this is incorrect, please" />&#160;<editMe linkText="regift" /><br />
+                      <text text="Correct?" />&#160;<confirmGiftTransfer />
                     </where>
                     <where value="giftTo != null &amp;&amp; giftTo.getUri() != getContact()">
                       <text text="Gifted" />
