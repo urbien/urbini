@@ -1176,6 +1176,11 @@ function arrangeTableCells(table, colsAmount) {
 
 	if (typeof colsAmount == 'undefined')
 		colsAmount = Math.floor(Math.sqrt(cells.length)); 	
+	
+	// show 3 columns for mobile (portrait)
+	if (Browser.mobile && colsAmount > 3)
+  	colsAmount = 3;
+		
 	// rearrange cells
 	var idx = 0;
 	for (var i = 0; i < table.rows.length; i++) {
@@ -1664,7 +1669,7 @@ function changeOpacity(obj, level) {
 	if (typeof obj.style.MozOpacity != 'undefined') 
   	obj.style.MozOpacity = level;
   else 
-  	if (typeof obj.style.opacity != 'undefined') 
+  	if (typeof obj.style.opacity != 'undefined' && !Browser.ie) 
   		obj.style.opacity = level;
   	else if (obj.style.filter != 'undefined') {
 			if (level == 1.0) 
