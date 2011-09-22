@@ -936,7 +936,7 @@ div.rightSidebar A {color: inherit}
 #siteResourceList #header td, #div_Info #header td { height: auto; }
 
 .grid {padding-bottom:10px;}
-
+.bigGrid {padding-bottom: 10px; margin: -3px}
 .embed  {
   vertical-align: middle;
   color: &[SecondaryColorB_3];;
@@ -2351,3 +2351,6 @@ td #corePageContent { min-height: 600px;}
   z-index: 100;
 }
 .langSwitch {border-bottom: 1px solid &[SecondaryColorA_2];; padding-left: 1px; vertical-align:top; padding-right: 1px; padding-top: 1px}
+.bigGridS { text-align:left; height:84px; font-size:16px; padding: 8px; }
+.bigGridP { font-size:16px; padding-bottom: 8px; }
+.bigGridP .bigLabel { font-size: 16px; font-weight: bold; }
