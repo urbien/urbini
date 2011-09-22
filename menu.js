@@ -4396,6 +4396,8 @@ var SlideSwaper = {
   callback: null,
   
 	trayPosition : 0,
+	
+	isSlideshow : false,
 
   // alway 1 "step"; callback is not required
   moveForward : function(tray, callback) {
@@ -4404,10 +4406,11 @@ var SlideSwaper = {
 
     this.tray = tray;
     this.callback = callback;
+		this.isSlideshow = this.tray.className.indexOf("tray_slidesshow") != -1;
     
 		this.trayPosition = this.getTrayPosition(tray);
     
-    if (Browser.webkit) {
+    if (Browser.webkit && !this.isSlideshow) {
 		 	var moveInPercents =  - this.DISTANCE * (this.trayPosition + 1);
 		  this.tray.style.webkitTransform = "translate(" + moveInPercents + "%, 0%)";
 			if (callback) // note: failed to use 'webkitAnimationEnd' event
@@ -4431,8 +4434,9 @@ var SlideSwaper = {
     this.tray = tray;
     this.callback = callback;
 		this.trayPosition = trayPosition;
+		this.isSlideshow = this.tray.className.indexOf("tray_slidesshow") != -1;
 
-    if (Browser.webkit) {
+    if (Browser.webkit && !this.isSlideshow) {
       this.curState += this.factor;
 			this.tray.style.webkitTransform = "translate(0%, 0%)";
     }
@@ -4465,7 +4469,7 @@ var SlideSwaper = {
 		var distance = $t.DISTANCE;
 		var isSlideshow = $t.tray.className.indexOf("tray_slidesshow") != -1;
 		
-		if (isSlideshow)
+		if ($t.isSlideshow)
 			distance = $t.tray.parentNode.offsetWidth / $t.tray.offsetWidth * 100;
 		
 		var trayRelativeWidth = 100 / distance;
@@ -4475,7 +4479,7 @@ var SlideSwaper = {
 			
 		var left = Math.floor(dir * distance * bPoint[0]) - ($t.DISTANCE * $t.trayPosition);  
 
-		if (isSlideshow) {
+		if ($t.isSlideshow) {
 			var maxOffset = ($t.tray.parentNode.offsetWidth - $t.tray.offsetWidth) / $t.tray.offsetWidth * 100;
 			if (left < maxOffset) // neagtive values
 				left = maxOffset;
@@ -4503,7 +4507,8 @@ var SlideSwaper = {
 	  	$t.tray.style.left = left * trayRelativeWidth + "%";
 
       if ($t.callback)
-        $t.callback();
+			  // returns true if tray reached its end; used with slides show
+        $t.callback(left == maxOffset || left == 0);
     }
   },
   
@@ -4535,7 +4540,7 @@ var SlideSwaper = {
 		var numberStr = str.replace("translate(", "");
     return parseInt(numberStr); 
   },
-	
+		
 	// returns integer 0, 1, 2
 	getTrayPosition : function(tray) {
 		return -Math.floor(this.getTrayPositionInPercents(tray) / this.DISTANCE);
@@ -13060,11 +13065,9 @@ var LoadingIndicator = {
 }
 
 /*****************************************
-* ImageMag image magnification on "hover"
-NOT used currently
+* ThumbnailMag image magnification on "hover"
 ******************************************/
-/*
-var ImageMag = {
+var ThumbnailMag = {
 	TIMEOUT : 500,
 	timerId : null,
 	curThumb : null,
@@ -13088,17 +13091,17 @@ var ImageMag = {
 		this.timerId = setTimeout(this.mouseoverProcess, this.TIMEOUT);
 	},
 	onmouseout : function() {
-		var $t = ImageMag;
+		var $t = ThumbnailMag;
 		clearTimeout($t.timerId);
 	},
 	mouseoverProcess : function() {
-		var $t = ImageMag;
+		var $t = ThumbnailMag;
 		$t.img.src = ""; // reset src before. It allows to fire onload callback in Chrome.
-		$t.img.src = $t.getImageSrc($t.curThumb.src);
+		$t.img.src = $t.getImageSrc($t.curThumb);
 		LoadingIndicator.show($t.curThumb);
 	},
 	onImageLoaded : function() {
-		var $t = ImageMag;
+		var $t = ThumbnailMag;
 	
 		PopupHandler.setMouseoutTimeout(0);
 		
@@ -13114,7 +13117,7 @@ var ImageMag = {
 		setTimeout($t.animate, 30);
 	},
 	onImageError : function() {
-		var $t = ImageMag;
+		var $t = ThumbnailMag;
 		LoadingIndicator.hide();
 		$t.curThumb.onmouseover = null; 
 	},
@@ -13125,7 +13128,7 @@ var ImageMag = {
 		this.img.style.height = height;
 	},
 	animate : function() {
-		var $t = ImageMag;
+		var $t = ThumbnailMag;
 		$t.scaleFactor += 0.25;
 		$t.setImageSize($t.scaleFactor);
 		PopupHandler.align($t.curThumb, "inside", $t.img, true, null, null, true);
@@ -13133,17 +13136,12 @@ var ImageMag = {
 			setTimeout($t.animate, 30);
 		LoadingIndicator.hide();	// moved here because of IE
 	},
-	getImageSrc : function(thumbSrc) {
-//		var src = thumbSrc.replace("thumbnail/", "").replace(/_featured\.\w{3,3}$/, "");
-//		if (src.lastIndexOf(".") != src.length - 4)
-//			src += ".jpg"; // in some cases thumbnail does not contain extention of the image then append .JPG
-//		return src;
-
-		// Note: return "featured" image that is thumbSrc
-		return thumbSrc;
+	getImageSrc : function(thumbDiv) {
+		var src = thumbDiv.style.backgroundImage.replace("url(", "").replace(")", "").replace(/\"/g, "");
+		return src.replace("_featured", "_bigFeatured");
 	}
 }
-*/
+
 // 
 function setHoursOrMinutesInInput(selector, isHour) {
 	var newValue = getTextContent(selector.options[selector.selectedIndex]);
