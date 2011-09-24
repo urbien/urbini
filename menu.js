@@ -4358,7 +4358,6 @@ var TagsMgr = {
 		itemDiv.className = "item";
 		itemDiv.innerHTML = (title + inner + "<img src=\"icons/hide.gif\" onmousedown=\"TagsMgr.onDelete(this)\" />");
 		var crossImg = itemDiv.getElementsByTagName("img")[0];
-		crossImg.onclick = this.deleteItemOnCross;
 		parentDiv.appendChild(itemDiv);
 	},
 	// removes gui element and correspondent data in data field
