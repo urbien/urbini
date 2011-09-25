@@ -404,7 +404,9 @@ td.textCell {
 .galleryItem_container .galleryItem, .galleryItem_container .galleryItem_css3 { margin: 0px; }
 
 .galleryItem_css3 { display: table; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); -moz-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); }
-.bigGridPic { background: #ffffff}
+.bigGridPicL { padding-top: 10px; padding-right: 10px; }
+.bigGridPicR { padding-top: 10px;}
+.bigGridPic  { background: #fff; border: 2px solid #dbdbdb }
 .galleryItem td#grayRight {
   background-image:url(../images/frame/gray_bg/right.jpg);
   vertical-align: top; background-position: top; background-repeat: repeat-y;
