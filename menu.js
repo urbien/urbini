@@ -8873,7 +8873,7 @@ var FieldsWithEmptyValue = {
         return;
     }
 
-		if (getElementStyle(field).display == "none")
+		if (getElementStyle(field).display == "none" || field.type == "hidden")
 			return; // hidden field does not require to be handled
 
 		if (forceInit) {
