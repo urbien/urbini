@@ -3759,6 +3759,7 @@ var ListBoxesHandler = {
 		var $t = ListBoxesHandler;
 		e = getDocumentEvent(e);
 		var target = getEventTarget(e);
+		
 		var tr = getAncestorByClassName(target, "menuItemRow"); // ["menuItemRow", "option_tr"]
 		if (!tr && Browser.ie) // problem with IE7
 			tr = getChildByClassName(target, "menuItemRow");	
@@ -5832,6 +5833,7 @@ var TouchDlgUtil = {
 		var target = getEventTarget(event);
 		// set focus in selector if previously dialog lost it
 		if ($t.isFocusInDialog == false &&
+				!$t.hasBlueRow() &&
 				isElemOfTag(target, ["input", "textarea", "select"]) == false &&
 				isElemOfClass(target, "tags") == false &&
 				isElemOfClass(target.parentNode, "tb_btn") == false ) {
@@ -12477,8 +12479,9 @@ var CheckButtonMgr = {
   // catch event (stopEventPropagation) and call callback of a hidden checkbox
   onClick : function(event) {
     var $t = CheckButtonMgr;
-    var btn = getEventTarget(event); //this;
- 
+		event = getDocumentEvent(event);
+   
+	  var btn = getEventTarget(event); //this;
     $t.switchState(btn);
 
 		var checkbox = getPreviousSibling(btn);
