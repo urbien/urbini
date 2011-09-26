@@ -1822,7 +1822,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input { 
 	margin: 0px; padding: 1px; min-height: 22px;
-	color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 250px; /*100%*/; height: auto;
+	color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 250px !important; width: auto; /*100%*/; height: auto;
 	font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px; }
 
 .rounded_rect_tbl .pointer { color: &[PrimaryColor_4_text];; }
