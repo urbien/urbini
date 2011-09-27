@@ -7,7 +7,7 @@
 </tr>
 <tr>
   <td width="25%" valign="top" align="center"><include name="${type}_mkresource_left.jsp"/></td>
-  <td>
+  <td width="50%" valign="top">
     <div align="center">
     	<getResource/>
     	<panelBlock>
