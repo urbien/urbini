@@ -3268,7 +3268,7 @@ var ListBoxesHandler = {
 		var $t = ListBoxesHandler;
 		var target = getEventTarget(event);
 
-		if (isElemOfClass(target, "input") && target.getAttribute("readonly") == null)
+		if (isElemOfClass(target, "input") && !target.getAttribute("readonly"))
 			return;
 
 		if ($t.skipUserClick) {
@@ -5831,12 +5831,14 @@ var TouchDlgUtil = {
 	onDlgClick : function(event) {
 		var $t = TouchDlgUtil;
 		var target = getEventTarget(event);
-		// set focus in selector if previously dialog lost it
+		// set focus in selector if previously dialog lost it and click on "striped surface"
 		if ($t.isFocusInDialog == false &&
-				!$t.hasBlueRow() &&
-				isElemOfTag(target, ["input", "textarea", "select"]) == false &&
-				isElemOfClass(target, "tags") == false &&
-				isElemOfClass(target.parentNode, "tb_btn") == false ) {
+			getAncestorByClassName(target, "rounded_rect_tbl") == null)
+//				!$t.hasBlueRow() &&
+//				isElemOfTag(target, ["input", "textarea", "select"]) == false &&
+//				isElemOfClass(target, "tags") == false &&
+//				isElemOfClass(target.parentNode, "tb_btn") == false )
+				 {
 			var panel = ListBoxesHandler.getCurrentPanelDiv() || TouchDlgUtil.curDlgDiv;
 			$t.focusSelector(panel, false);
 		} 
