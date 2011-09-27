@@ -1,7 +1,11 @@
 <div id="register" align="center">
-  <table border="0" cellpadding="3" cellspacing="0" cols="2" class="userLogin"><tr><td align="center">
-          <span class="large-poweredBy"><property name="owner.longName"/></span>
-          <!--property name="descriptionOfSite"/-->
+<table>
+<tr>
+<td width="30%">
+<include name="user-login-help.jsp"/>
+</td>
+<td width="40%"><table border="0" cellpadding="3" cellspacing="0" cols="2" class="userLogin"><tr><td align="center">
+          <h2><property name="owner.name"/></h2>
         </td>
       </tr>
       <tr><td>
@@ -56,5 +60,6 @@
     <td><authenticateByFacebook/></td>
   </tr>
 	</table>
-    
+</td>
+<td width="30%"></td>
 </div>
