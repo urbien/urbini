@@ -1661,7 +1661,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// Note: FF, Crome increases  i_am.document.body.scrollHeight;	on each key down
 	this.fitHeightToVisible = function(onFocus) {
 		var docH = i_am.document.body.scrollHeight;
-		if ((Browser.gecko || Browser.webkit) && !onFocus)
+
+		if ((Browser.gecko || Browser.webkit) && !onFocus
+					 && i_am.document.body.offsetHeight != 0)
 			docH = i_am.document.body.offsetHeight;
 			
 		// 1. small content size - use initial height without scrolling
