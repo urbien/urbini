@@ -869,9 +869,14 @@ var ImageUploader = {
     if (!frameLoaded[frameId]) {
       var timeOutFunction = function () { ImageUploader.onHdnDocLoad(rteId, originalUrl) };
       setTimeout(timeOutFunction, 50);
-      return;
+			return;
     }
 
+		if (frameLoaded[frameId] == "error") {
+			alert("&[Failed to upload image];!<br />&[Try to use other];.");
+			frameLoaded[frameId] = false;
+			return;
+		}
     // process the server response.
     frameLoaded[frameId] = false;
     
