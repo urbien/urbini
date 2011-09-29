@@ -1391,6 +1391,10 @@ var Boost = {
     var link = getAncestorByTagName(l, "a"); //getAnchorForEventTarget1(l);
     if (!link || !link.href || link.href == null)
       return true;
+		
+		if (link.className == "external") // go to other web site
+			return true;
+			
     var ln = link.href;
     if ($t._preventingDoubleClick)
 			return stopEventPropagation(e);
