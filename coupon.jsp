@@ -37,6 +37,12 @@
            <dd><property name="dealDiscount" noIcon="y"/></dd>
          </dl>
        </where>
+       <where value="couponType == 'Buy Limited Discount'">
+         <dl>
+           <dt><text text="You Save" /></dt>
+           <dd><property name="dealValue" noIcon="y"/></dd>
+         </dl>
+       </where>
      </div>
      <div id="price_tag">
        <div id="price_tag_inner">
