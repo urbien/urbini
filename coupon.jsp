@@ -37,7 +37,7 @@
            <dd><property name="dealDiscount" noIcon="y"/></dd>
          </dl>
        </where>
-       <where value="couponType == 'Buy Limited Discount'">
+       <where value="couponType == 'BuyLimitedDiscount'">
          <dl>
            <dt><text text="You Save" /></dt>
            <dd><property name="dealValue" noIcon="y"/></dd>
