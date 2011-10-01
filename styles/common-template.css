@@ -1817,10 +1817,11 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .label img { margin-right: 3px; }
 .rounded_rect_tbl .comment { position: absolute; margin-top: -2px; color: &[Alternative_A];; font-size: 11px; }
 .rounded_rect_tbl .comment a { font-size: 11px; }
-* html .rounded_rect_tbl .comment { left: 0; }
+* html .label_td .comment { left: 0; }
+* html .dat_td .comment { left: 5px; } /* hack for multivalue */
 .field_comment .comment { margin-top: 2px; }
 
-.rounded_rect_tbl .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input { 
+.rounded_rect_tbl .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input, .false_empty_field { 
 	margin: 0px; padding: 1px; min-height: 22px;
 	color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 250px !important; width: auto; /*100%*/; height: auto;
 	font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px; }
@@ -1912,7 +1913,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   -webkit-transition-duration: 0.4s;
   -webkit-transition-timing-function: easy-in-out;
   -webkit-transform: translate(0px, 0px); 
-
+ 
   padding: 0;
   margin: 0;
   width: 500%; /* 5 x frame width -> allowas 5 frames; then each frame has width 20% */
@@ -2211,7 +2212,8 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 }
 
 .rounded_rect_tbl .blue_highlighting .label.rounded_rect_tbl .blue_highlighting .propLabel1, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[Label];; }
-.empty_field { color: rgba(&[PrimaryColor_4_text_rgb];, 0.6) !important;}
+.empty_field, .false_empty_field { color: rgba(&[PrimaryColor_4_text_rgb];, 0.6) !important;}
+.false_empty_field { float: right; font-weight: bold; line-height: 20px; margin-right: 7px; }
 .grey_highlighting .empty_field{ color: rgba(&[Alternative_A_rgb];, 0.6) !important;}
 .rounded_rect_tbl .focused_field { color: rgba(&[Alternative_A_rgb];, 0.4); }
 .iphone_field .focused_field, .focused_field { color: rgba(&[PrimaryColor_4_text_rgb];, 0.4); }
