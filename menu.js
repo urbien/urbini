@@ -3866,7 +3866,7 @@ var ListBoxesHandler = {
 		else {
 			// 3.1. multi value selection
 			if (typeof selectedOption["checked"] != "undefined") { // /*len != 1 || selectedOptionsArr[0]["multi_value"] == "yes"*/
-				var tagsParentDiv = getNextSibling(textField);
+				var tagsParentDiv = getChildByClassName(textField.parentNode, "tags");
 				if (selectedOption["checked"]) {
 					if (textField.value.length !=0)
 						textField.value += ",";
@@ -4041,7 +4041,7 @@ var ListBoxesHandler = {
     if (chosenValuesDiv)
       chosenValuesDiv.innerHTML = "";
 
-		var tagsDiv = getNextSibling(textField);
+		var tagsDiv = getChildByClassName(textField.parentNode, "tags"); //getNextSibling(textField);
 		if (tagsDiv && tagsDiv.className == "tags")
 			TagsMgr.deleteAll(tagsDiv);
   },
@@ -4360,21 +4360,33 @@ var TagsMgr = {
 		itemDiv.innerHTML = (title + inner + "<img src=\"icons/hide.gif\" onmousedown=\"TagsMgr.onDelete(this)\" />");
 		var crossImg = itemDiv.getElementsByTagName("img")[0];
 		parentDiv.appendChild(itemDiv);
+		TagsMgr._processIfRequired(parentDiv);
 	},
 	// removes gui element and correspondent data in data field
 	onDelete : function(crossImg){
 		var itemDiv = getAncestorByClassName(crossImg, "item");
 		var label = getTextContent(itemDiv);
-		var dataField = getPreviousSibling(itemDiv.parentNode);
+		var tagsDiv = itemDiv.parentNode
+		var dataField = getChildByTagName(tagsDiv.parentNode, "input");
 		dataField.value = dataField.value.replace(label + ",", "").replace(label, "");
 		itemDiv.parentNode.removeChild(itemDiv);
 		//stopEventPropagation(event);
+		TagsMgr._processIfRequired(tagsDiv);
 	},
 	deleteTag : function(tag) {
 		tag.parentNode.removeChild(tag);
+		TagsMgr._processIfRequired(tag.parentNode);
 	},
 	deleteAll : function(parentDiv) {
 		parentDiv.innerHTML = "";
+		TagsMgr._processIfRequired(parentDiv);
+	},
+	_processIfRequired : function(tagsContainer) {
+		var req = getChildByClassName(tagsContainer.parentNode, "false_empty_field");
+		if (!req)
+			return;
+		// show / hide div with "required" alert
+		req.style.display = (getFirstChild(tagsContainer) == null) ? "block" : "none";
 	}
 }
 
