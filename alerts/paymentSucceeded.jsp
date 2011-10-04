@@ -3,7 +3,7 @@
     <where value="forum.getType() == 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy'">
       <text text="Payment completed" /> <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.paymentConfirmationTime" />.
       <claimCouponLink />
-      <br/><br />
+      <br/>
       <where value="gifteeEmail == null">
         <giftIfOverLimit />
       </where>
