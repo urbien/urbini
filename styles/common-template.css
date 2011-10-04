@@ -742,8 +742,9 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 /*  align: left;*/
 }
 
-/* Chrome: prevent page break on too long links */
-#div_Activity div, #div_Info div { max-width: 750px; word-wrap: break-word; }
+/* Chrome: prevent page break on too long links; 'rop1' == 'rop_only' ? */
+.rop1 #div_Activity div, .rop1 #div_Info div { max-width: 725px; word-wrap: break-word; }
+.rop #div_Activity div, .rop #div_Info div { max-width: 490px; word-wrap: break-word; }
 
 #siteResourceList .rop {
   border:solid &[PrimaryColor_1]; 1px; 
