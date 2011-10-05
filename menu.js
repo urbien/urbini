@@ -3567,7 +3567,7 @@ var ListBoxesHandler = {
 			panel.style.marginTop = topOffset;
 		else if (curTop > topOffset + 25) {
 			// scroll up while options opened; (allows 25 offset)
-			if (css3Translate(panel, "0px", (topOffset - curTop) + "px") == false)
+			if (setTransformProperty(panel, "translate(0px, " + (topOffset - curTop) + "px)") == false)
 				panel.style.marginTop = topOffset;
 		}	
 	},
@@ -4395,10 +4395,9 @@ var TagsMgr = {
 * tray contains 2 slides that are swaped
 ********************************************/
 var SlideSwaper = {
-  STEPS_AMT : 5,
-  TIMEOUT : 25, // timeout between steps. On FF3 can not be applied too short timeout.
+  STEPS_AMT : 12,
+  TIMEOUT : 30, // timeout between steps. On FF3 can not be applied too short timeout.
   DISTANCE : 20, // pecents of tray width 
-  
 	// ease-in-out // currently used for WebKit in common.css
 	BEZIER_POINTS : [[0.0, 0.0], [0.42, 0.0], [0.58, 1.0], [1.0, 1.0]],
 	
@@ -4409,55 +4408,31 @@ var SlideSwaper = {
   
 	trayPosition : 0,
 	
-	isSlideshow : false,
-
   // alway 1 "step"; callback is not required
   moveForward : function(tray, callback) {
-		if (this.offset != 0)
-      return;
-
-    this.tray = tray;
-    this.callback = callback;
-		this.isSlideshow = this.tray.className.indexOf("tray_slidesshow") != -1;
-    
-		this.trayPosition = this.getTrayPosition(tray);
-    
-    if (Browser.webkit && !this.isSlideshow) {
-		 	var moveInPercents =  - this.DISTANCE * (this.trayPosition + 1);
-		  this.tray.style.webkitTransform = "translate(" + moveInPercents + "%, 0%)";
-			if (callback) // note: failed to use 'webkitAnimationEnd' event
-        setTimeout(callback, 500); // 500 - arbitary quite big timeout
-    }
-    else {
-     	this.isForward = true;
-     	this._moveStep();
-    }
-  },
+  	this.move(tray, callback, true);
+	},
   
 	// always to the begining (to form panel) so possible 1, 2 or 3 "steps"
   moveBack : function(tray, callback) {
-	 	if (this.offset != 0)
+	  this.move(tray, callback, false);
+  },
+  
+	move : function(tray, callback, isForward) {
+		if (this.offset != 0)
       return;
 
  		var trayPosition = this.getTrayPosition(tray);
-		if (trayPosition == 0)
+		if (isForward == false && trayPosition == 0)
 			return;
 
     this.tray = tray;
     this.callback = callback;
 		this.trayPosition = trayPosition;
-		this.isSlideshow = this.tray.className.indexOf("tray_slidesshow") != -1;
-
-    if (Browser.webkit && !this.isSlideshow) {
-      this.curState += this.factor;
-			this.tray.style.webkitTransform = "translate(0%, 0%)";
-    }
-    else {
-      this.isForward = false;
-      this._moveStep();
-    }
-  },
-  
+    this.isForward = isForward;
+    this._moveStep();
+	},
+	
 	// There is a (temporary) HACK(!) - FF 3.6 FIXED!!!
 	// focus/click in options selector containing in moved tray by MozTransfor invokes
 	// additional offset (FF's bug). It was overcame with hack when on last step
@@ -4471,17 +4446,17 @@ var SlideSwaper = {
     else
       dir = 1;
 
-    bPoint = Math.bezierPoint($t.BEZIER_POINTS, $t.offset);
+    bPoint = Math.bezierPoint($t.BEZIER_POINTS, $t.offset)[1]; // use y / [1]
     $t.offset += 1.0 / $t.STEPS_AMT;
 		
 		if ($t.offset > 1.0) { // last step
-			bPoint[0] = 1.0;
+			bPoint = 1.0;
 		}
 		
 		var distance = $t.DISTANCE;
 		var isSlideshow = $t.tray.className.indexOf("tray_slidesshow") != -1;
 		
-		if ($t.isSlideshow)
+		if (isSlideshow)
 			distance = $t.tray.parentNode.offsetWidth / $t.tray.offsetWidth * 100;
 		
 		var trayRelativeWidth = 100 / distance;
@@ -4489,22 +4464,19 @@ var SlideSwaper = {
 		if (!$t.isForward)
 			distance *= $t.trayPosition;
 			
-		var left = Math.floor(dir * distance * bPoint[0]) - ($t.DISTANCE * $t.trayPosition);  
+		var left = dir * distance * bPoint - $t.DISTANCE * $t.trayPosition;  // Math.floor(
 
-		if ($t.isSlideshow) {
+		if (isSlideshow) {
 			var maxOffset = ($t.tray.parentNode.offsetWidth - $t.tray.offsetWidth) / $t.tray.offsetWidth * 100;
 			if (left < maxOffset) // neagtive values
 				left = maxOffset;
 			if (left > 0)	
 				left = 0;
 		}
-
-    // for FF 3.1b2 that does not support -moz-transition-duration (?)
-    if (typeof $t.tray.style.MozTransform != 'undefined') {
-			// HACK! FF 3.5
-			$t.tray.style.left = 0; 
-			$t.tray.style.MozTransform = "translate(" + left + "%, 0%)";
-		}
+		
+   // for FF 3.1b2 that does not support -moz-transition-duration (?)
+	 if (setTransformProperty($t.tray, "translate(" + left + "%, 0%)"))
+			$t.tray.style.left = 0; // FF's focus hack
 		else 
 			$t.tray.style.left = left * trayRelativeWidth + "%"; // tray is 5 width of a panel
 
@@ -4515,7 +4487,8 @@ var SlideSwaper = {
       $t.offset = 0;
       
 			// HACK! FF 3.5: on focus in a field FF scrolls it into view
-	  	$t.tray.style.MozTransform = "translate(0%, 0%)";
+	  	//$t.tray.style.MozTransform = "translate(0%, 0%)";
+			setTransformProperty($t.tray, "translate(0%, 0%)");
 	  	$t.tray.style.left = left * trayRelativeWidth + "%";
 
       if ($t.callback)
@@ -5143,9 +5116,10 @@ var DataEntry = {
 	
 	// parameters provided by XHR and not all used
 	onDataEntryLoaded : function(event, parentDiv, hotspot, html, url, params) {
-		if (!html)
+		if (!html) {
+			alert("Data Entry: Server returned empty response!");
 			return; // possible (server) error!
-
+		}
 		var $t = DataEntry;
 
 		if ($t.onDataError) { // server returned previously submitted data dialog with errors of data entry
@@ -5159,7 +5133,7 @@ var DataEntry = {
 		$t.loadingUrl = null;
 		div = getDomObjectFromHtml(html, "className", "panel_block");
 		if (!div) {
-//			alert("Data Entry: Server response does not contain a dialog!");
+			alert("Data Entry: Server response does not contain a dialog!");
 			return;
 		}
 		div.style.visibility = "hidden";
