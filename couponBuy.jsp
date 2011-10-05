@@ -1,5 +1,12 @@
 <div style="padding:10px; background-color:#cccccc">
-<table bgcolor="#FFFFFF" border="0" cellpadding="10" class="obval_item" style="border:2px dashed">
+<style>
+  @media print {
+    body { color: #444444; background-color: white }
+  }
+  .galleryItem_css3 { margin:0px}
+  .csp_33 { color:444444}
+</style>
+<table bgcolor="#FFFFFF" border="0" cellpadding="10" style="border:2px dashed">
   <tr>
     <td width="10%"></td>
     <td width="40%"><h1><hostSignature /></h1><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
@@ -21,23 +28,20 @@
     </div>
     </td>
     <td align="right" valign="top">
-    <div><a href="#" class="button noprint" onclick="window.print();return false;"><text text="Print" /></a></div>
-    <where value="giftTo == null || gifteeEmail != null || getContact().getUri() == giftTo">
-    <br/>
-    <div class="button"><editMe linkText="Gift it"/></div>
-    </where>
     </td>
   </tr>
   <tr>
     <td></td>
-    <td rowspan="2"><property frame="y" name="coupon.featured" /><h2><property name="dealPrice" noIcon="y" /></h2></td>
+    <td rowspan="2" valign="top"><property frame="y" name="coupon.bigFeatured" /><h2><property name="dealPrice" noIcon="y" /></h2>
+    <where value="coupon.couponType == null || coupon.couponType == 'Standard'"> <text text="No extra payment to vendor is required"/> </where>
+    </td>
     <td></td>
     <td>
         <div style="background-color:#CCCCCC;padding: 10px 10px 10px 10px;">
-	        <where value="cancelled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been canceled" /></b></font></where>
-	        <where value="!cancelled">
-						<where value="paymentStatus == 'Success'">
-							<font size="+1" color="#FFFFFF"><text text="Coupon #" />:&#160;<b>
+          <where value="cancelled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been canceled" /></b></font></where>
+          <where value="!cancelled">
+            <where value="paymentStatus == 'Success'">
+              <font size="+1" color="#FFFFFF"><text text="Coupon #" />:&#160;<b>
               <where value="redeemed">
                 <text text="REDEEMED" />
               </where>
@@ -75,24 +79,31 @@
                     </where>
                   </where>
                 </where>
-							</where>
-							</b></font>
-						</where>
+              </where>
+              </b></font>
+            </where>
           <where value="paymentStatus == 'Abandoned'"><font size="+1" color="#ef6f16"><b><text text="You abandoned this transaction half-way" /></b></font></where>
-				  <where value="paymentStatus == 'Pending'"><font size="+1" color="#ef6f16"><b><text text="This coupon is still waiting for payment" /></b></font></where>
+          <where value="paymentStatus == 'Pending'"><font size="+1" color="#ef6f16"><b><text text="This coupon is still waiting for payment" /></b></font></where>
           <where value="paymentStatus == 'Failure'"><font size="+1" color="#ef6f16"><b><text text="Payment Failed" /></b></font></where>
-					</where>        
-	      </div>
+          </where>        
+        </div>
         <br />
+        <div align="right">
+            <where value="giftTo == null || gifteeEmail != null || getContact().getUri() == giftTo">
+            <div class="button"><editMe linkText="Gift it"/></div>
+            </where>
+            <a href="#" class="button noprint" onclick="window.print();return false;"><text text="Print" /></a>
+        </div>
+        
         <where value="paymentStatus != 'Success' &amp;&amp; paymentTutorial != null">
             <h3 class="csp_33"><text text="How to pay"/></h3>
             <li><property name="paymentTutorial" href="y" /></li>
             <br />
         </where>
         <where value="!cancelled &amp;&amp; paymentStatus == 'Success'">
-      			<h3 class="csp_33"><text text="How to redeem"/></h3>
-        		<li><text text="Print this coupon" /></li>
-		        <li><text text="Take this coupon with you" /></li>    
+            <h3 class="csp_33"><text text="How to redeem"/></h3>
+            <li><text text="Print this coupon" /></li>
+            <li><text text="Take this coupon with you" /></li>    
         </where>
         </td>
     <td></td>
