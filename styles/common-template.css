@@ -1910,11 +1910,6 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 #siteResourceList .frame, #fts-sift .frame, .oneparamselection .frame { background: none; }
 
 .tray {
-  -webkit-transition-property: -webkit-transform;
-  -webkit-transition-duration: 0.4s;
-  -webkit-transition-timing-function: easy-in-out;
-  -webkit-transform: translate(0px, 0px); 
- 
   padding: 0;
   margin: 0;
   width: 500%; /* 5 x frame width -> allowas 5 frames; then each frame has width 20% */
