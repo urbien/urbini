@@ -1926,14 +1926,17 @@ function hex2rgb(hexColor) {
   return [red, green, blue];
 }
 
-// helps with css3 translate compatibility. Meanwhile for WebKit only
-// x & y with % or px
-function css3Translate(obj, x, y) {
-	if (Browser.webkit) {
-  	obj.style.webkitTransform = "translate(" + x + "," + y + ")";
-  	return true;
-	}
-	return false;	
+function setTransformProperty(element, transformStr) {
+    // Note that in some versions of IE9 it is critical that
+    // msTransform appear in this list before MozTransform
+   var cssKeys = ['transform', 'WebkitTransform', 'msTransform', 'MozTransform', 'OTransform'];
+	 for (var i = 0; i < cssKeys.length; i++) {
+      if (typeof element.style[cssKeys[i]] != 'undefined') {
+		  	element.style[cssKeys[i]] = transformStr;
+				return true;
+		  }
+  }
+	return false;
 }
 
 // flag that common.js was parsed
