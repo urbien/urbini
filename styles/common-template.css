@@ -2320,7 +2320,7 @@ td #corePageContent { min-height: 600px;}
 
 #loading { z-index: 101; position: absolute; width: 70px; height: 150px; visibility: hidden; }
 
-#loading span { color: &[PrimaryColor_3];; position: absolute; padding: 0; margin: 0; border: 0; font-family:arial,helvetica; font-weight:bold; }
+#loading span { color: &[PrimaryColor_3];; position: absolute; padding: 0; margin: 0; border: 0; font-family:arial,helvetica; font-weight:bold; background: none; }
 
 /*  colors scheme palette*/
 .csp_11 { color: &[PrimaryColor_1];; }
