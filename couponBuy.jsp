@@ -83,7 +83,7 @@
                   <where value="giftTo.getUri() == getContact() || giftFrom.getUri() == getContact()">
                     <where value="mustBeGifted">
                       <where value="giftTo.getUri() == getContact()">
-                        <editMe linkText="Gift me!" />
+                        <editMe type="http://www.hudsonfog.com/voc/commerce/coupon/GiftYourCoupon" linkText="Gift me!" />
                       </where>
                       <where value="giftTo.getUri() != getContact()">
                         <text text="Gifted" />
