@@ -82,7 +82,12 @@
                   </where>
                   <where value="giftTo.getUri() == getContact() || giftFrom.getUri() == getContact()">
                     <where value="mustBeGifted">
-                      <editMe linkText="Gift me!" />
+                      <where value="giftTo.getUri() == getContact()">
+                        <editMe linkText="Gift me!" />
+                      </where>
+                      <where value="giftTo.getUri() != getContact()">
+                        <text text="Gifted" />
+                      </where>
                     </where>
                     <where value="!mustBeGifted">
                       <property name="couponID" />&#45;<property name="couponSecret" />
