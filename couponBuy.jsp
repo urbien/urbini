@@ -7,25 +7,35 @@
   .csp_33 { color:444444}
 </style>
 <table bgcolor="#FFFFFF" border="0" cellpadding="10" style="border:2px dashed">
+  <tr height="1%"><td colspan="5"></td></tr>
   <tr>
-    <td width="10%"></td>
-    <td width="40%"><h1><hostSignature /></h1><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
+    <td width="5%"></td>
+    <td width="40%" style="vertical-align:top"><h1><hostSignature /></h1><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
     <h3><property name="coupon.title" noIcon="y"/></h3></td>
     <td width="5%"></td>
-    <td width="40%">
-    <div style="display:table-cell; vertical-align:top">
-      <where value="giftTo == null">
-        <property name="customer.thumb" frame="y" noIcon="y" /><font style="font-size:24px"><property name="customer" noIcon="y" /></font>
-      </where>
-      <where value="giftTo == null &amp;&amp; gifteeEmail != null">
-        <br />(<text text="Gifted but not yet accepted" />)
-      </where>
-      <where value="giftTo != null">
-        <where value="giftTo.getUri() == getContact()">
-          <property name="giftTo.thumb" frame="y" noIcon="y" /><font style="font-size:24px"><property name="giftTo" noIcon="y" /></font>
-        </where>
-      </where>
-    </div>
+    <td width="45%" style="vertical-align:top">
+      <div style="display:block; vertical-align:top; width:100%">
+        <table width="100%">
+          <tr>
+            <td style="vertical-align:top; align:left; width:99%"><div style="height:17px"></div> <!--- to align with qr image, since qr image comes with a whitespace border -->
+              <where value="giftTo == null">
+                <property name="customer.mediumImage" frame="y" noIcon="y" /><font style="font-size:24px"><property name="customer" noIcon="y" /></font>
+              </where>
+              <where value="giftTo == null &amp;&amp; gifteeEmail != null">
+                <br />(<text text="Gifted but not yet accepted" />)
+              </where>
+              <where value="giftTo != null">
+                <where value="giftTo.getUri() == getContact()">
+                  <property name="giftTo.thumb" frame="y" noIcon="y" /><font style="font-size:24px"><property name="giftTo" noIcon="y" /></font>
+                </where>
+              </where>
+            </td>
+            <td style="vertical-align:top; align:right; width:1%">
+              <couponBuyQRCode />
+            </td>
+          </tr>
+        </table>
+      </div>
     </td>
     <td align="right" valign="top">
     </td>
@@ -37,7 +47,7 @@
     </td>
     <td></td>
     <td>
-        <div style="background-color:#CCCCCC;padding: 10px 10px 10px 10px;">
+        <div style="background-color:#CCCCCC;padding: 10px 10px 10px 10px">
           <where value="cancelled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been canceled" /></b></font></where>
           <where value="!cancelled">
             <where value="paymentStatus == 'Success'">
@@ -48,7 +58,7 @@
               <where value="!redeemed">
                 <where value="gifteeEmail == null &amp;&amp; giftTo == null">                 <!-- if coupon hasn't been gifted -->
                   <where value="mustBeGifted">
-                    <editMe linkText="Gift me!" />
+                    <editMe type="http://www.hudsonfog.com/voc/commerce/coupon/GiftYourCoupon" linkText="Gift me!" />
                   </where>
                   <where value="!mustBeGifted">
                     <property name="couponID" />&#45;<property name="couponSecret" />
@@ -58,7 +68,7 @@
                   <where value="giftTo == null || gifteeEmail != giftTo.email">
                     <where value="giftTo == null || giftTo.getUri() == getContact()">
                       <text text="Gifted to" /> <property name="gifteeEmail" /><br />
-                      <text text="If this is incorrect, please" />&#160;<editMe linkText="regift" /><br />
+                      <text text="If this is incorrect, please" />&#160;<editMe type="http://www.hudsonfog.com/voc/commerce/coupon/GiftYourCoupon" linkText="regift" /><br />
                       <text text="Correct?" />&#160;<confirmGiftTransfer />
                     </where>
                     <where value="giftTo != null &amp;&amp; giftTo.getUri() != getContact()">
@@ -67,10 +77,10 @@
                   </where>
                 </where>
                 <where value="gifteeEmail == null &amp;&amp; giftTo != null">               <!-- if coupon has been gifted and delivered -->
-                  <where value="giftTo.getUri() != getContact()">
+                  <where value="giftTo.getUri() != getContact() &amp;&amp; giftFrom.getUri() != getContact()">
                     <text text="Gifted" />
                   </where>
-                  <where value="giftTo.getUri() == getContact()">
+                  <where value="giftTo.getUri() == getContact() || giftFrom.getUri() == getContact()">
                     <where value="mustBeGifted">
                       <editMe linkText="Gift me!" />
                     </where>
@@ -88,11 +98,19 @@
           </where>        
         </div>
         <br />
-        <div align="right">
-            <where value="giftTo == null || gifteeEmail != null || getContact().getUri() == giftTo">
-            <div class="button"><editMe linkText="Gift it"/></div>
-            </where>
-            <a href="#" class="button noprint" onclick="window.print();return false;"><text text="Print" /></a>
+        <div align="left">
+          <table width="100%">
+            <tr>
+              <td width="50%" style="align:left">
+                <where value="giftTo == null || gifteeEmail != null || getContact().getUri() == giftTo">
+                  <div class="button" style="width:80%"><editMe linkText="Gift it"/></div>
+                </where>
+              </td>
+              <td width="50%" style="align:right">
+                <a href="#" class="button noprint" style="width:80%;align:right" onclick="window.print();return false;"><text text="Print" /></a>
+              </td>
+            </tr>
+          </table>
         </div>
         
         <where value="paymentStatus != 'Success' &amp;&amp; paymentTutorial != null">
@@ -179,11 +197,10 @@
       <couponBuyRedemptionLocation />
       <br /><br />
     </where>
-    <mapMaker width="300" height="300" />
+    <mapMaker width="400" height="400" />
+    <br /><br />
     </td>
     <td></td>
   </tr>
-
 </table>
-
 </div>
