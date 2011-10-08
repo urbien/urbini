@@ -222,8 +222,8 @@
     </div><!-- fine print -->
 		
 		<!-- button to extend details -->
-		<center style="clear: both;">
-			<a id="more_details_btn" class="button hdn" style="width: 97%; margin-top: 10px; padding: 0;" href="javascript: ;" onclick="ShowHideCouponDetailes.onclick(this);">
+		<center style="clear: both; height: auto !important; height: 1px;">
+			<a id="more_details_btn" class="button hdn" style="width: 97%; margin-top: -5px !important; margin-top: 0; padding: 0;" href="javascript: ;" onclick="ShowHideCouponDetailes.onclick(this);">
 				<span><text text="Show More" />&#9660;</span><span style="display: none;"><text text="Show Less" />&#9650;</span>
 			</a>
 		</center>
