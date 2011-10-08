@@ -11,7 +11,10 @@
   <tr>
     <td width="5%"></td>
     <td width="40%" style="vertical-align:top"><h1><hostSignature /></h1><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
-    <h3><property name="coupon.title" noIcon="y"/></h3></td>
+    <h3><property name="coupon.title" noIcon="y"/></h3>
+    <property name="coupon.summary"/>
+    </td>
+    
     <td width="5%"></td>
     <td width="45%" style="vertical-align:top">
       <div style="display:block; vertical-align:top; width:100%">
@@ -120,13 +123,15 @@
         
         <where value="paymentStatus != 'Success' &amp;&amp; paymentTutorial != null">
             <h3 class="csp_33"><text text="How to pay"/></h3>
-            <li><property name="paymentTutorial" href="y" /></li>
+            <ul><li><property name="paymentTutorial" href="y" /></li></ul>
             <br />
         </where>
         <where value="!cancelled &amp;&amp; paymentStatus == 'Success'">
             <h3 class="csp_33"><text text="How to redeem"/></h3>
+            <ul>
             <li><text text="Print this coupon" /></li>
-            <li><text text="Take this coupon with you" /></li>    
+            <li><text text="Take this coupon with you" /></li>
+            </ul>    
         </where>
         </td>
     <td></td>
