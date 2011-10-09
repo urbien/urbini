@@ -130,7 +130,11 @@ div .href {display: inline;}
 @-moz-document url-prefix() { .hideImg table { display: table; } .hideImg table td { float: left; } }
 
 .displayInline, .displayIn4lines { max-width: 750px; word-wrap: break-word; overflow:hidden; width: 100%; height: 1em; line-height: 0.9em; text-align:justify; }
-.displayInline, .displayInline * { font-size: 1em !important; font-weight:normal !important; margin:0 !important; }
+.displayInline, .displayInline * { 
+  font-size: 1em !important; 
+/*  font-weight:normal !important; */ 
+/*  margin:0 !important;  */
+}
 .displayIn4lines, .displayIn4lines * { font-size: 14px !important; line-height: 14px; height: 56px; /* 56 == 14 * 4 */ text-align: left; font-weight:normal !important; margin:0 !important; padding: 2px;} /* good with 12px font in full view */
 
 .mItems {
