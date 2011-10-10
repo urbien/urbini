@@ -151,11 +151,11 @@
           <div class="time_left"><text text="Bought"/>:&#160; 
           <span class="number"><property name="totalCouponBuysQuantity" noIcon="y" /></span>&#160;</div>
        </where>
-       <where value="dealPrice &gt; 0  &amp;&amp;  mainCoupon.tippingPoint == 1 &amp;&amp;  couponsLeftToBuy == 1">
+       <!--where value="dealPrice &gt; 0  &amp;&amp;  mainCoupon.tippingPoint == 1 &amp;&amp;  couponsLeftToBuy == 1">
          <div class="time_left">
            <text text="Be the first to buy"/>
          </div>
-       </where>
+       </where-->
        <where value="dealPrice &gt; 0  &amp;&amp;  totalCouponBuysQuantity == 0">
          <div class="time_left">
            <text text="Be the first to buy"/>
@@ -177,9 +177,9 @@
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
        </where-->
-       <where value="cap != null &amp;&amp; availableToBuy != null &amp;&amp; availableToBuy &lt;= maxPerPerson"><br />
+       <!--where value="cap != null &amp;&amp; availableToBuy != null &amp;&amp; availableToBuy &lt;= maxPerPerson"><br />
          <ul id="counter"><li class="time_left"><span style="color: #f85400"><text text="Hurry! Only"/> <property name="availableToBuy" /> <text text="left!"/></span></li></ul>
-       </where>
+       </where-->
        <where value="dealPrice &lt;= 0  &amp;&amp;  totalCouponBuysQuantity == null">
          <div class="time_left"><text text="Be the first to try"/></div>
        </where>
