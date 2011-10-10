@@ -13547,6 +13547,8 @@ var LinkProcessor = {
 	
 	  if (idx == -1)
 	    return true;
+	  if (document.getElementById("-sharedHost") != null) 
+	    return true;
 	  var idx1 = link.href.indexOf("&", idx + 1);
 	  var ulId;
 	  if (idx1 == -1)
