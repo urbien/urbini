@@ -2273,7 +2273,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
    #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#99ffffff,endColorstr=#99ffffff);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#99ffffff,endColorstr=#99ffffff)";
  }
-#div_SlideShow .galleryItem_note { top: 0; bottom: auto; font-size: 18px; width: 100%; padding: 5px 0; min-height: 0; text-shadow: 1px 2px 2px #000000; }
+#div_SlideShow .galleryItem_note { font-size: 18px; width: 100% !important; padding: 5px 0; min-height: 0; text-shadow: 1px 2px 2px #000000; }
 /********** dashboard & widgets *********/
 #dashboard, #dashboard > table { 
   background-color: &[PrimaryColor_1];; 
