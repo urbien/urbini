@@ -28,8 +28,8 @@
                 <br />(<text text="Gifted but not yet accepted" />)
               </where>
               <where value="giftTo != null">
-                <where value="giftTo.getUri() == getContact()">
-                  <property name="giftTo.thumb" frame="y" noIcon="y" /><font style="font-size:24px"><property name="giftTo" noIcon="y" /></font>
+                <where value="giftTo.getUri() == getContact() || giftFrom.getUri() == getContact()">
+                  <property name="giftTo.mediumImage" frame="y" noIcon="y" /><font style="font-size:24px"><property name="giftTo" noIcon="y" /></font>
                 </where>
               </where>
             </td>
@@ -111,7 +111,7 @@
             <tr>
               <td width="50%" style="align:left">
                 <where value="giftTo == null || gifteeEmail != null || getContact().getUri() == giftTo">
-                  <div class="button" style="width:80%"><editMe linkText="Gift it"/></div>
+                  <div class="button" style="width:80%"><editMe type="http://www.hudsonfog.com/voc/commerce/coupon/GiftYourCoupon" linkText="Gift it"/></div>
                 </where>
               </td>
               <td width="50%" style="align:right">
