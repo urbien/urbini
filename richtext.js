@@ -2062,7 +2062,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.setImage = function(url, align, margin, modeIdx) {
 		if(url.length != 0) {
 		  // check on double encoding (for space only for now)
-		  if(url.indexOf("%2520") != -1)
+		  if(url.indexOf("%2520") != -1 || url.indexOf("%252F") != -1)
 		    url = decodeURI(url);
 			
 			// Note: use "class" to identify image to set src=URL returned from server
