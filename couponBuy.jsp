@@ -112,7 +112,7 @@
             <tr>
               <td width="50%" style="align:left">
                 <where value="giftTo == null || gifteeEmail != null || getContact().getUri() == giftTo">
-                  <div class="button" style="width:80%"><editMe type="http://www.hudsonfog.com/voc/commerce/coupon/GiftYourCoupon" linkText="Gift it"/></div>
+                  <editMe type="http://www.hudsonfog.com/voc/commerce/coupon/GiftYourCoupon" button="y" style="width:80%" linkText="Gift it"/>
                 </where>
               </td>
               <td width="50%" style="align:right">
