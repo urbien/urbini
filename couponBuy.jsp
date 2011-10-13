@@ -28,10 +28,10 @@
                 <br />(<text text="Gifted but not yet delivered" />)
               </where>
               <where value="giftTo != null">
-                <br />(<text text="Gifted and delivered to..." />)
                 <where value="giftTo.getUri() == getContact() || giftFrom.getUri() == getContact()">
                   <property name="giftTo.mediumImage" frame="y" noIcon="y" /><font style="font-size:24px"><property name="giftTo" noIcon="y" /></font>
                 </where>
+                <!--br (<text text="Gifted and delivered to..." />) -->
               </where>
             </td>
             <td style="vertical-align:top; align:right; width:1%">
