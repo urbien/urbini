@@ -81,10 +81,10 @@
                   </where>
                 </where>
                 <where value="gifteeEmail == null &amp;&amp; giftTo != null">               <!-- if coupon has been gifted and delivered -->
-                  <where value="giftTo.getUri() != getContact() &amp;&amp; giftFrom.getUri() != getContact()">
+                  <where value="giftTo.getUri() != getContact() &amp;&amp; giftFrom.getUri() != getContact() &amp;&amp; !isSiteOwner()">
                     <text text="Gifted" />
                   </where>
-                  <where value="giftTo.getUri() == getContact() || giftFrom.getUri() == getContact()">
+                  <where value="giftTo.getUri() == getContact() || giftFrom.getUri() == getContact() || isSiteOwner()">
                     <where value="mustBeGifted">
                       <where value="giftTo.getUri() == getContact()">
                         <editMe type="http://www.hudsonfog.com/voc/commerce/coupon/GiftYourCoupon" linkText="Gift me!" />
