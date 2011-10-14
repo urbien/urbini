@@ -11383,7 +11383,7 @@ var BacklinkImagesSlideshow = {
 
 		if (!isAdditinalSlide)
 			$t.pagerSlots[$t.curImageIdx].className = "current";
-	
+
 		// slide show on tab
 		if ($t.slideShowSceneDiv.parentNode.id == 'div_SlideShow') {
 			var tab = document.getElementById('div_SlideShow');
@@ -11414,12 +11414,13 @@ var BacklinkImagesSlideshow = {
 	onThumbItemClick : function(event) {
 		var target = getEventTarget(event);
 		var imgSrc = this.getImageSrc(target.style.backgroundImage);
+		var imgName = getFileName(imgSrc);
 		var slides = this.widgetSlider.getSlides();
 		
 		var isSlidePresent = false;
 		var idx = 0;
 		for (idx = 0; idx < slides.length; idx++) {
-			if (decodeURI(getFirstChild(slides[idx]).src).indexOf(imgSrc) != -1) {
+			if (decodeURI(getFirstChild(slides[idx]).src).indexOf(imgName) != -1) {
 				isSlidePresent = true;
 				break;
 			}
