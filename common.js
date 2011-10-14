@@ -1828,6 +1828,11 @@ function getUrlParam(url, paramName) {
   	return results[1];
 }
 
+// returns file name from a URL
+function getFileName(path) {
+    return path.match(/[-_\w]+[.][\w]+$/i)[0];
+}
+
 // returns 'pane2' or 'panel_block'
 function getParentDialog(obj) {
 	return getAncestorByClassName(obj, 'panel_block') || getAncestorById(obj, 'pane2');
