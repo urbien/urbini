@@ -28,7 +28,7 @@
                 <br />(<text text="Gifted but not yet delivered" />)
               </where>
               <where value="giftTo != null">
-                <where value="giftTo.getUri() == getContact() || giftFrom.getUri() == getContact()">
+                <where value="giftTo.getUri() == getContact() || giftFrom.getUri() == getContact() || isSiteOwner()">
                   <property name="giftTo.mediumImage" frame="y" noIcon="y" /><font style="font-size:24px"><property name="giftTo" noIcon="y" /></font>
                 </where>
                 <!--br (<text text="Gifted and delivered to..." />) -->
