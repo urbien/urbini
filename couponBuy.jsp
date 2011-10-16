@@ -86,7 +86,7 @@
                   </where>
                   <where value="giftTo.getUri() == getContact() || giftFrom.getUri() == getContact() || isSiteOwner()">
                     <where value="mustBeGifted">
-                      <where value="giftTo.getUri() == getContact()">
+                      <where value="giftTo.getUri() == getContact() || isSiteOwner()">
                         <editMe type="http://www.hudsonfog.com/voc/commerce/coupon/GiftYourCoupon" linkText="Gift me!" />
                       </where>
                       <where value="giftTo.getUri() != getContact()">
@@ -111,7 +111,7 @@
           <table width="100%">
             <tr>
               <td width="50%" style="align:left">
-                <where value="giftTo == null || gifteeEmail != null || getContact().getUri() == giftTo">
+                <where value="giftTo == null || gifteeEmail != null || getContact() == giftTo.getUri() || isSiteOwner()">
                   <editMe type="http://www.hudsonfog.com/voc/commerce/coupon/GiftYourCoupon" button="y" style="width:80%" linkText="Gift it"/>
                 </where>
               </td>
