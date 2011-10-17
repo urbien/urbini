@@ -223,7 +223,7 @@
 		
 		<!-- button to extend details -->
 		<center style="clear: both; height: auto !important; height: 1px;">
-			<a id="more_details_btn" class="button hdn" style="width: 97%; margin-top: -5px !important; margin-top: 0; padding: 0;" href="javascript: ;" onclick="ShowHideCouponDetailes.onclick(this);">
+			<a id="more_details_btn" class="button hdn" style="width: 97%; margin-top: -4px; padding: 0;" href="javascript: ;" onclick="ShowHideCouponDetailes.onclick(this);">
 				<span><text text="Show More" />&#9660;</span><span style="display: none;"><text text="Show Less" />&#9650;</span>
 			</a>
 		</center>
@@ -330,7 +330,7 @@
 					$t._showMoreCouponDetailesAnimation(true);
 					getFirstChild(button).style.display = $t.isOpening ? "none" : "inline";
 					getLastChild(button).style.display = $t.isOpening ? "inline" : "none";
-					
+					button.style.marginTop = $t.isOpening ? 4 : -4; // overlap in hidden state
 				},
 				
 				_showMoreCouponDetailesAnimation : function(isStart) {
@@ -353,7 +353,6 @@
 						setTimeout(function f() { $t._showMoreCouponDetailesAnimation(); }, 30);
 					}
 					else { // stop animation
-					//debugger;
 						$t.textDiv1.style.height = "";
 						$t.textDiv1.style.overflow = "";
 						$t.textDiv2.style.height = "";
