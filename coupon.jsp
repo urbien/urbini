@@ -70,7 +70,7 @@
          <where value="getTime() &lt; dateFeatured || !isBuyable()">
            <where value="dealPrice &gt; 0">
              <where value="couponVariantsCount &gt; 0">
-               <div style="text-decoration:line-through;color:red;"><a max_width="500" onMouseOver="showHide('variants', event)" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+               <div style="text-decoration:line-through;color:red;"><a max_width="500" onMouseOver="showHide('variants', event, true)" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
              </where>
              <where value="couponVariantsCount &lt;= 0">
                <div style="text-decoration:line-through;color:red;"><a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
