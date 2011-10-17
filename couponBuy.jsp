@@ -10,7 +10,7 @@
   <tr height="1%"><td colspan="5"></td></tr>
   <tr>
     <td width="5%"></td>
-    <td width="40%" style="vertical-align:top"><h1><hostSignature /></h1><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
+    <td width="40%" style="vertical-align:top"><img width="200" src="images/logoOrange.png"/><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
     <h3><property name="coupon.title" noIcon="y"/></h3>
     <property name="coupon.summary"/>
     </td>
@@ -51,7 +51,7 @@
     </td>
     <td></td>
     <td>
-        <div style="background-color:#CCCCCC;padding: 10px 10px 10px 10px">
+        <div style="background-color:#777777;padding: 10px 10px 10px 10px">
           <where value="cancelled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been canceled" /></b></font></where>
           <where value="!cancelled">
             <where value="paymentStatus == 'Success'">
