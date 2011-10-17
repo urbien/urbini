@@ -70,7 +70,7 @@
          <where value="getTime() &lt; dateFeatured || !isBuyable()">
            <where value="dealPrice &gt; 0">
              <where value="couponVariantsCount &gt; 0">
-               <div style="text-decoration:line-through;color:red;"><a max_width="500" onMouseOver="showHide('variants', event, true)" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+               <div style="text-decoration:line-through;color:red;"><a max_width="500" onMouseOver="showHide('variants', event)" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
              </where>
              <where value="couponVariantsCount &lt;= 0">
                <div style="text-decoration:line-through;color:red;"><a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
@@ -147,27 +147,27 @@
        </div>
     <where value="isBuyable()">
       <div id="number_sold_container" class="${overlay}">
-       <where value="totalCouponBuysQuantity &gt; 0">
+       <where value="totalCouponBuysCount &gt; 0">
           <div class="time_left"><text text="Bought"/>:&#160; 
-          <span class="number"><property name="totalCouponBuysQuantity" noIcon="y" /></span>&#160;</div>
+          <span class="number"><property name="totalCouponBuysCount" noIcon="y" /></span>&#160;</div>
        </where>
        <!--where value="dealPrice &gt; 0  &amp;&amp;  mainCoupon.tippingPoint == 1 &amp;&amp;  couponsLeftToBuy == 1">
          <div class="time_left">
            <text text="Be the first to buy"/>
          </div>
        </where-->
-       <where value="dealPrice &gt; 0  &amp;&amp;  totalCouponBuysQuantity == 0">
+       <where value="dealPrice &gt; 0  &amp;&amp;  totalCouponBuysCount == 0">
          <div class="time_left">
            <text text="Be the first to buy"/>
          </div>
        </where>
-       <where value="couponsLeftToBuy &gt; 0  &amp;&amp; totalCouponBuysQuantity &gt; 0">
+       <where value="couponsLeftToBuy &gt; 0  &amp;&amp; totalCouponBuysCount &gt; 0">
          <div class="deal_titles">
            <text text="Short of"/>:&#160;
            <property name="couponsLeftToBuy" noIcon="y" />
          </div>
        </where>
-       <where value="couponsLeftToBuy &lt;= 0  &amp;&amp;  totalCouponBuysQuantity &gt; 0">
+       <where value="couponsLeftToBuy &lt;= 0  &amp;&amp;  totalCouponBuysCount &gt; 0">
          <div class="dealOn">
            <img width="27" height="27" src="images/obval/check_mark.png" alt=""/><text text="The deal is on"/>!
          </div>
@@ -180,7 +180,7 @@
        <!--where value="cap != null &amp;&amp; availableToBuy != null &amp;&amp; availableToBuy &lt;= maxPerPerson"><br />
          <ul id="counter"><li class="time_left"><span style="color: #f85400"><text text="Hurry! Only"/> <property name="availableToBuy" /> <text text="left!"/></span></li></ul>
        </where-->
-       <where value="dealPrice &lt;= 0  &amp;&amp;  totalCouponBuysQuantity == null">
+       <where value="dealPrice &lt;= 0  &amp;&amp;  totalCouponBuysCount == null">
          <div class="time_left"><text text="Be the first to try"/></div>
        </where>
      </div>
