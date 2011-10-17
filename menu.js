@@ -12765,8 +12765,10 @@ function changeCss(cssTitle, file) {
   }
 }
 // FTS improvements
-function showHide(id, event) {
+function showHide(id, event, toSuppressEmpty) {
   var tt = document.getElementById(id);
+	if (toSuppressEmpty && getFirstChild(tt) == null)
+		return;
   if (tt.className  &&  tt.className == 'hdn')
     tt.className = '';
   else
