@@ -145,35 +145,35 @@
       <ul>
         <li><b><property name="coupon.vendor.name" noIcon="y" /></b></li>
         <where value="location != null">
-          <li><text text="Phone" />&#160;
+          <li><text text="Phone" />:&#160;
             <property name="location.vendor.phone" noIcon="y"/>
           </li>
-          <li><text text="Website" />&#160;<property name="coupon.(http://www.hudsonfog.com/voc/model/company/ExternalOrganization)vendor.website" href="y"/></li>
+          <li><text text="Website" />:&#160;<property name="location.vendor.website" href="y"/></li>
           <where value="location.vendor.address1 != null">
-            <li><text text="Address" />&#160;
+            <li><text text="Address" />:&#160;
               <property name="location.vendor.address1" noIcon="y"/>
             </li>
           </where>
           <where value="location.vendor.postalCode != null">
-            <li><text text="Postal code" />&#160;
+            <li><text text="Postal code" />:&#160;
               <property name="location.vendor.postalCode" noIcon="y"/>
             </li>
           </where>
         </where>
         <where value="location == null">
-          <li><text text="Phone" />&#160;
+          <li><text text="Phone" />:&#160;
             <property name="coupon.vendor.phone" noIcon="y"/>
           </li>
-          <li><text text="Website" />&#160;
-            <property name="coupon.(http://www.hudsonfog.com/voc/model/company/ExternalOrganization)vendor.website" href="y"/>
+          <li><text text="Website" />:&#160;
+            <property name="coupon.vendor.website" href="y"/>
           </li>
           <where value="coupon.vendor.address1 != null">
-            <li><text text="Address" />&#160;
+            <li><text text="Address" />:&#160;
               <property name="coupon.vendor.address1" noIcon="y"/>
             </li>
           </where>
           <where value="coupon.vendor.postalCode != null">
-            <li><text text="Postal code" />&#160;
+            <li><text text="Postal code" />:&#160;
               <property name="coupon.vendor.postalCode" noIcon="y"/>
             </li>
           </where>
