@@ -1862,7 +1862,7 @@ var FormProcessor = {
 	    if (form.name.indexOf("tablePropertyList") != -1) { // is it a data entry
 	      var wasSubmitted = form.getAttribute("wasSubmitted");
 	      if (wasSubmitted) { //  && !Browser.mobile
-	        alert("Can not submit the same form twice");
+	        alert("&[Can not submit the same form twice];");
 	        return stopEventPropagation(e);
 	      }
 	      form.setAttribute("wasSubmitted", "true");
