@@ -2308,6 +2308,7 @@ td #corePageContent { min-height: 600px;}
 .fts-sif .filter { border: 1px solid; }
 #fts-sift .param_tr, #fts-sift .param_tr .label { cursor: pointer; background-color: &[PrimaryColor_4];; color: &[Label];; height:1.5em;}
 #fts-sift a, #fts-sift span { font-size: 12px; }
+#fts_more { cursor: pointer; margin-left: 18px; font-size: 12px; }
 /*.widget, .place_holder{ margin: 0 0 0.8em 0; }*/
 .ph{ margin: 0 0 0.8em 0; }
 .place_holder{ margin: 0 0 0.8em 0; }
