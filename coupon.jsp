@@ -14,11 +14,13 @@
      <ul>
        <li><!--property name="image" frame="y" noIcon="y" / --> <slideShow/><!-- image --></li>
      </ul>
-     <where value="couponVariantsCount &gt; 0">
+
+    <where value="couponVariantsCount &gt; 0">
        <div id="variants" class="hdn">
          <siteResourceList uri="l.html?-$action=searchLocal&amp;-more=y&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;-title=Coupon+variants&amp;-gridCols=title,dealPrice,discount&amp;-viewCols=title,dealPrice,discount&amp;-limitW=5&amp;-grid=y&amp;-inRowW=1&amp;basedOnTemplate_select=-$this&amp;basedOnTemplate_verified=y&amp;cancelled_select=false&amp;cancelled_verified=y&amp;expired_select=false&amp;expired_verified=y&amp;-featured=y"/>
-       </div>
-     </where>
+      </div>
+     </where>		 
+
      <div id="h2"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></div>
      <div id="deal_discount" class="${overlay}">
        <where value="couponType == null || couponType == 'Standard'">
@@ -81,7 +83,7 @@
            </where>
          </where>
        </div>
-     </div>
+		 </div>
      <div id="buy_to_friend">
        <a class="buy_gift" id="-inner" href="mkResource.html?-$action=mkResource&amp;gift=y&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon">
        <img src="icons/24-gift.png" width="24"/><br/>
@@ -309,6 +311,9 @@
 				textDiv2 : null,
 				isOpening : null,
 				delta : null,
+				scrollHeight1 : null,
+				scrollHeight2 : null,
+				
 				init : function() {
 					var button = document.getElementById("more_details_btn");
 					var conditionsDiv = getAncestorById(button, "conditions")
@@ -344,9 +349,13 @@
 						$t.textDiv1.className = $t.isOpening ? "" : "displayIn4lines hideImg";
 						$t.textDiv2.className = $t.isOpening ? "" : "displayIn4lines hideImg";
 						$t.delta = Math.max(this.textDiv1.scrollHeight / 7, this.textDiv2.scrollHeight / 7);
+						
+						$t.scrollHeight1 = $t.textDiv1.scrollHeight;
+						$t.scrollHeight2 = $t.textDiv2.scrollHeight;
 					}
+
 					var h = parseInt(this.textDiv1.style.height) + ($t.isOpening ? $t.delta : -$t.delta);
-					if (($t.isOpening && ($t.textDiv1.scrollHeight > h || this.textDiv2.scrollHeight > h)) ||
+					if (($t.isOpening && ($t.scrollHeight1 > h || $t.scrollHeight2 > h)) ||
 							(!$t.isOpening && h > 56)) {
 						$t.textDiv1.style.height = h;
 						$t.textDiv2.style.height = h;
