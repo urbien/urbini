@@ -1304,29 +1304,19 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	
 	//********************************************************
-	// wrapSelection utility
+	// wrapSelectedText utility
 	// wraps selection with some tag
 	// obtains wrapObj = document.createElement
+	// Note: used to wrap text nodes only		
 	//******************************************************** 
-	this.wrapSelection = function(wrapObj) {
+	this.wrapSelectedText = function(wrapObj) {
 		if (typeof window.getSelection != "undefined") { // Gecko
  	  	var selection = this.window.getSelection();
     	if (selection.rangeCount < 1)
       	return; // no selection
 
 	    var range = selection.getRangeAt(0);
-			var nodes = range.cloneContents().childNodes;
-			range.deleteContents();
-			for (var i = nodes.length - 1; i >= 0; i--) {
-				if (nodes[i].nodeType != 3) {
-					range.insertNode(nodes[i]);
-					continue;
-				}
-				// text nodes
-				var wrapObjClone = wrapObj.cloneNode(true);
-				wrapObjClone.innerHTML = nodes[i].nodeValue;
-				range.insertNode(wrapObjClone);
-			}
+			this._wrapTextNodess(range.commonAncestorContainer, wrapObj);
 	  }
 	  else { // IE
 			this.curRange.select();
@@ -1334,6 +1324,21 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			wrapObj.appendChild(tn);
 			this.curRange.pasteHTML(wrapObj.outerHTML);
 	  }
+	}
+	
+	this._wrapTextNodess = function (node, wrapObj) {
+		// not a text node
+		if (node.nodeType != 3) {
+			var childNodes = node.childNodes;
+	  	for (var i = childNodes.length - 1; i >= 0; i--) 
+	  		this._wrapTextNodess(childNodes[i], wrapObj);
+		}
+		// text node
+		else {
+			var wrapObjClone = wrapObj.cloneNode(true);
+			wrapObjClone.innerHTML = node.nodeValue;
+			swapNodes(node, wrapObjClone);
+		}
 	}
 	
 	// not source view & (hack:) not immediate execution that autoclose the RTE
@@ -1979,7 +1984,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var value = idx + 1;
 		var span = i_am.document.createElement("span");
 		span.className = RteEngine.FONT_SIZE[idx].value;
-		i_am.wrapSelection(span);
+		i_am.wrapSelectedText(span);
 		i_am.skipClose = true;
 		return true;
 	}
@@ -1994,7 +1999,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if (isStyle) {
 			var span = i_am.document.createElement("span");
 			span.className = "csp_" + color;
-			i_am.wrapSelection(span);
+			i_am.wrapSelectedText(span);
 			return;
 		}
 		
@@ -2007,7 +2012,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if (isStyle) {
 			var span = i_am.document.createElement("span");
 			span.className = "csp_bg_" + color;
-			i_am.wrapSelection(span);
+			i_am.wrapSelectedText(span);
 			return;
 		}
 		if(i_am.performCommand("hilitecolor", color) == false) { // FF
