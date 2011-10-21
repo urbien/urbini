@@ -7,7 +7,13 @@
   .csp_33 { color:444444}
 </style>
 <table bgcolor="#FFFFFF" border="0" cellpadding="10" style="border:2px dashed">
-  <tr height="1%"><td colspan="5"></td></tr>
+  <tr height="1%">
+    <td colspan="5" style="text-align:center">
+      <where value="mustBePrinted">
+        <font style="font-size:24px;font-weight:bold;color:red;"><text text="MUST BE PRINTED" /></font>
+      </where>
+    </td>
+  </tr>
   <tr>
     <td width="5%"></td>
     <td width="40%" style="vertical-align:top"><img width="200" src="images/logoOrange.png"/><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
