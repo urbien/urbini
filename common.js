@@ -904,12 +904,17 @@ function swapNodes(node1, node2) {
 		else 
 			parent1.appendChild(node2);
 	}
+	else
+		parent2.removeChild(node2);
+		
 	if (parent2) {
   	if (nextSibling2) 
   		parent2.insertBefore(node1, nextSibling2);
   	else 
   		parent2.appendChild(node1);
   }
+	else
+		parent1.removeChild(node1);
 }
 
 function getNextSibling(obj, makeLoopIfNeed) {
