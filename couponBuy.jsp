@@ -57,11 +57,11 @@
     </td>
     <td></td>
     <td>
-        <div style="background-color:#777777;padding: 10px 10px 10px 10px">
+        <div style="border:3px; border-style:solid; border-color:#f99136;padding: 10px 10px 10px 10px; margin-right:20px;">
           <where value="cancelled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been canceled" /></b></font></where>
           <where value="!cancelled">
             <where value="paymentStatus == 'Success'">
-              <font size="+1" color="#FFFFFF"><text text="Coupon #" />:&#160;<b>
+              <font size="+1" color="#222222"><text text="Coupon #" />:&#160;<b>
               <where value="redeemed">
                 <text text="REDEEMED" />
               </where>
