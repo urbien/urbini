@@ -52,12 +52,16 @@
   </tr>
   <tr>
     <td></td>
-    <td rowspan="2" valign="top"><property frame="y" name="coupon.bigFeatured" /><h2><property name="dealPrice" noIcon="y" /></h2>
+    <td rowspan="2" valign="top"><property frame="y" name="coupon.bigFeatured" />
+    <br/>
+    <div style="border:2px; border-style:solid; border-color:#f99136;padding: 10px 10px 10px 10px;">
+    <font size="+1" color="#222222"><property name="dealPrice" noIcon="y" /></font>
     <where value="coupon.couponType == null || coupon.couponType == 'Standard'"> <text text="No extra payment to vendor is required"/> </where>
+    </div>
     </td>
     <td></td>
     <td>
-        <div style="border:3px; border-style:solid; border-color:#f99136;padding: 10px 10px 10px 10px; margin-right:20px;">
+        <div style="border:2px; border-style:solid; border-color:#f99136;padding: 10px 10px 10px 10px; margin-right:20px;">
           <where value="cancelled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been canceled" /></b></font></where>
           <where value="!cancelled">
             <where value="paymentStatus == 'Success'">
