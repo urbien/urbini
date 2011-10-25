@@ -2285,7 +2285,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 	background-image: -o-linear-gradient(&[PrimaryColor_1];, &[BackgroundColor];);
 }
 /* IE's dashboard gradient (hack) */
-#col_1, #col_2, #col_3, #col_4 { 
+* html #corePageContent #col_1, * html #corePageContent #col_2, * html #corePageContent #col_3, #col_4 { 
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[BackgroundColor];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[BackgroundColor];)";
 }
