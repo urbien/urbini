@@ -4,7 +4,7 @@
       <text text="Payment completed" /> <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.paymentConfirmationTime" />.
       <claimCouponLink />
       <br/>
-      <where value="gifteeEmail == null">
+      <where value="forum.gifteeEmail == null">
         <giftIfOverLimit />
       </where>
       <!--insertJoke variation="You're mouse is dangerously low on clicks, click something before it's too late!" /-->
