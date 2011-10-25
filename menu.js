@@ -11270,6 +11270,9 @@ var BacklinkImagesSlideshow = {
 		if (!this.slideShowSceneDiv)
 			return;
 	
+		// widgetSlider used for small images (not slides) too.
+		this.widgetSlider = new WidgetSlider(this.slideShowSceneDiv, this.onslidingFinish, this.onslidingHalfFinish);
+	
 		var pager = document.getElementById("slides_pager");
 		if (!pager)
 			return;
@@ -11289,8 +11292,6 @@ var BacklinkImagesSlideshow = {
 
 		if (this.maxSlideIdx == 0)
 			return false;
-		
-		this.widgetSlider = new WidgetSlider(this.slideShowSceneDiv, this.onslidingFinish, this.onslidingHalfFinish);
 		
 		// initial image: color scheme for Obval's coupon
 		var dealDiscount = document.getElementById("deal_discount");
