@@ -16,8 +16,8 @@
   </tr>
   <tr>
     <td width="5%"></td>
-    <td width="40%" style="vertical-align:top"><img width="200" src="images/logoOrange.png"/><h2><property name="coupon.vendor.name" noIcon="y"/> </h2>
-    <h3><property name="coupon.title" noIcon="y"/></h3>
+    <td width="40%" style="vertical-align:top"><img width="200" src="images/logoOrange.png"/><h2><property name="vendor" noIcon="y"/> </h2>
+    <h3><property name="coupon" noIcon="y"/></h3>
     <property name="coupon.summary"/>
     </td>
     
