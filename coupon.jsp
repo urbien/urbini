@@ -14,13 +14,6 @@
      <ul>
        <li><!--property name="image" frame="y" noIcon="y" / --> <slideShow/><!-- image --></li>
      </ul>
-
-    <where value="couponVariantsCount &gt; 0">
-       <div id="variants" class="hdn">
-         <siteResourceList uri="l.html?-$action=searchLocal&amp;-more=y&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;-title=Coupon+variants&amp;-gridCols=title,dealPrice,discount&amp;-viewCols=title,dealPrice,discount&amp;-limitW=5&amp;-grid=y&amp;-inRowW=1&amp;basedOnTemplate_select=-$this&amp;basedOnTemplate_verified=y&amp;cancelled_select=false&amp;cancelled_verified=y&amp;expired_select=false&amp;expired_verified=y&amp;-featured=y"/>
-      </div>
-     </where>		 
-
      <div id="h2"><property name="title" noIcon="y" /><where value="vendor != null">&#160;-&#160;<property name="vendor" noIcon="y" /></where></div>
      <div id="deal_discount" class="${overlay}">
        <where value="couponType == null || couponType == 'Standard'">
@@ -53,7 +46,7 @@
            <where value="dealPrice &gt; 0">
              <where value="couponVariantsCount &gt; 0">
                <div>
-               	 <a max_width="500" onMouseOver="showHide('variants', event)" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
+               	 <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
   	           </div>
 	           </where>
              <where value="couponVariantsCount &lt;= 0">
@@ -72,7 +65,7 @@
          <where value="getTime() &lt; dateFeatured || !isBuyable()">
            <where value="dealPrice &gt; 0">
              <where value="couponVariantsCount &gt; 0">
-               <div style="text-decoration:line-through;color:red;"><a max_width="500" onMouseOver="showHide('variants', event)" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
+               <div style="text-decoration:line-through;color:red;"><a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
              </where>
              <where value="couponVariantsCount &lt;= 0">
                <div style="text-decoration:line-through;color:red;"><a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a></div>
@@ -83,6 +76,9 @@
            </where>
          </where>
        </div>
+			 <where value="couponVariantsCount &gt; 0">
+			 <a id="-inner" class="other_variants pointer" onmousedown="onVariantsMouseDown(this);" href="l.html?-$action=searchLocal&amp;-more=y&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;-title=Coupon+variants&amp;-gridCols=title,dealPrice,discount&amp;-viewCols=title,dealPrice,discount&amp;-limitW=5&amp;-grid=y&amp;-inRowW=1&amp;basedOnTemplate_select=-$this&amp;basedOnTemplate_verified=y&amp;cancelled_select=false&amp;cancelled_verified=y&amp;expired_select=false&amp;expired_verified=y&amp;-featured=y"><text text="more" /></a>
+			 </where>
 		 </div>
      <div id="buy_to_friend">
        <a class="buy_gift" id="-inner" href="mkResource.html?-$action=mkResource&amp;gift=y&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon">
@@ -353,7 +349,6 @@
 						$t.scrollHeight1 = $t.textDiv1.scrollHeight;
 						$t.scrollHeight2 = $t.textDiv2.scrollHeight;
 					}
-
 					var h = parseInt(this.textDiv1.style.height) + ($t.isOpening ? $t.delta : -$t.delta);
 					if (($t.isOpening && ($t.scrollHeight1 > h || $t.scrollHeight2 > h)) ||
 							(!$t.isOpening && h > 56)) {
@@ -427,7 +422,12 @@
 					changeOpacity($t.backBtn, 0.3);
 				}
 			}
-			
+			// substitudes -$this with coupon ID
+			function onVariantsMouseDown(a) {
+				var loc= window.location.href;
+				var id = loc.match(/\/\d+\/|\/\d+$/)[0].replace(/\//g, "");
+				a.href = a.href.replace("-$this", id);
+			}
 			
     ]]>       
   </script>
