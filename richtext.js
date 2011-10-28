@@ -1,21 +1,3 @@
-function copyToClipboard(text2copy) {
-  var FLASHCOPIER_ID = 'flashcopier';
-  if (window.clipboardData) {
-    window.clipboardData.setData("Text",text2copy);
-  } else {
-    if(!document.getElementById(FLASHCOPIER_ID)) {
-      var flashcopier = document.createElement('div');
-      flashcopier.id = FLASHCOPIER_ID;
-      document.body.appendChild(flashcopier);
-    }
-    if(typeof flashcopier == 'undefined')
-      var flashcopier = document.getElementById(FLASHCOPIER_ID);
-    flashcopier.innerHTML = '';
-    var divinfo = '<embed src="_clipboard.swf" FlashVars="clipboard='+escape(text2copy)+'" width="0" height="0" type="application/x-shockwave-flash"></embed>';
-    flashcopier.innerHTML = divinfo;
-  }
-}
-
 /*************************************************
 *	RteEngine
 **************************************************/
@@ -92,7 +74,6 @@ var RteEngine = {
 	imagePopup : null,
 	objectPopup : null,
 	youtubePopup : null,
-	imagePastePopup : null,
 	tablePopup : null,
 
   toUseTArea : false,
@@ -306,34 +287,6 @@ var RteEngine = {
 		this.objectPopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.objectPopup.div;
 	},
-	launchImagePastePopup : function(rteId, filePath) {
-		if(this.imagePastePopup == null)
-			this.createImagePastePopup();
-
-			var parentDlg = TouchDlgUtil.getCurrentDialog();
-			var parentForm = getChildByTagName(parentDlg, "form");
-			
-		// need to "reload" form content, because input file is read-only
-		  var innerFormHtml = "<div>"
-        + "&[You pasted image that requires uploading];.<br />&[Press]; \"Ctrl\" + \"V\" &[and then submit];.</div>"
-		    + ImageUploader.getPasteImageFormContent("RteEngine.onImagePasteFormSubmit(event)", "submit", parentForm);
-		  this.imagePastePopup.changeContent(innerFormHtml);
-	  
-	  this.curRteId = rteId;
-	  
- 	  var form = this.imagePastePopup.getForm();
-	  ImageUploader.putRteIdInForm(form, rteId);		
-
-    var rteObj = this.getRteById(rteId);
-    var rteIframe = rteObj.getIframe();
- 		
-    this.imagePastePopup.show(rteIframe, "inside", null, parentDlg, this.onCanceledUploadPastedImage);
-
-		var fileField = getChildByAttribute(this.imagePastePopup.div, "name", "file");
-		fileField.focus();
-		
-		return this.imagePastePopup.div;
-	},
 	launchTablePopup : function(btnObj, callback, cancelCallback) {
 		if(this.tablePopup == null)
 			this.createTablePopup();
@@ -450,9 +403,6 @@ var RteEngine = {
 	createImagePopup : function(imgObj) {
 		this.imagePopup = new FormPopup("", "USE_SUBMIT_BTN");
 	},
-  createImagePastePopup : function() {
-		this.imagePastePopup = new FormPopup("", "USE_SUBMIT_BTN");
-  },
 	createTablePopup : function() {
 		var innerFormHtml = this.getInsertTableHtml();
 		this.tablePopup = new FormPopup(innerFormHtml);
@@ -500,58 +450,10 @@ var RteEngine = {
 	// ------------------------------------------
 	// onPasteHandler - (entersepts image paste only)
 	onPasteHandler : function(rteId) {
-		
-		// FF4 supports data URL image embedding
-		if (Browser.firefox4)
-			return;
-				
     var rteObj = RteEngine.getRteById(rteId);
     if(rteObj == null)
       return;
-
-    var rteDoc = rteObj.getDocument();
-    
-    var imgUrlsArr = rteObj.getImgUrlsArray();
-    this.currentImgUrlsArr = imgUrlsArr;
-    
-    var images = rteDoc.getElementsByTagName("img");
-    if(images.length == 0)
-      return;
- 
-    // loop all images
-    for(var i = 0; i < images.length; i++) {
-      var src = images[i].src;
-      // 1. skip already loaded and waiting for responce images
-      if(ImageUploader.isImageHandled(imgUrlsArr, src))
-        continue;
-      // cleanup: remove inserted image attributes
-      for(var atrIdx = 0; atrIdx < this.IMG_ATTRIBS_TO_DELETE.length; atrIdx++) {
-        images[i].removeAttribute(this.IMG_ATTRIBS_TO_DELETE[atrIdx]);
-      }
-      // skip web-images
-      if(ImageUploader.isImageLocal(images[i]) == false)
-        continue;
-
-      // 2. check if it is copy of already loaded image
-      var uplUrlOfCopy = ImageUploader.getUploadedUrlOfCopy(imgUrlsArr, src);
-      if(uplUrlOfCopy != null) {
-        images[i].src = uplUrlOfCopy;
-        continue;
-      } 
-
-      // 3. required uploading
-      // 3.2 copy to clipboard
-      src = decodeURI(src); // IE
-      
-      var ua = navigator.userAgent.toLowerCase();
-      var isGecko = (ua.indexOf("gecko") != -1);
-      if(src.indexOf("file:///") == 0 && !isGecko) // IE
-        src = src.substr(8);
-   
-      copyToClipboard(src);
-      // 3.2.3 show the dialog
-      this.launchImagePastePopup(rteId, src);
-    }
+		rteObj.fitHeightToVisible();
   },
   
   onImageFormSubmit : function() {
@@ -586,41 +488,7 @@ var RteEngine = {
     $t.onHdnDocLoad(RteEngine.curRteId, encImgUrl);
 	  
 	  return true;
-	},
-	onImagePasteFormSubmit : function() {
-	  var thisObj = ImageUploader;
-	  var imgUrl = null;
-	  var form = RteEngine.imagePastePopup.getForm();
-	  imgUrl = thisObj.getImagePathFromForm(form);
-	  if(imgUrl == null)
-	    return false;
-	
-	  copyToClipboard(" ");
-    RteEngine.imagePastePopup.hide();
-	  
-	  // not upload web-image
-	  if(ImageUploader.isImageLocal(imgUrl) == false)
-	    return false;
-	  
-	  // mark image as waiting
-	  var rteObj = RteEngine.getRteById(RteEngine.curRteId);
-	  var urlPairsArr = rteObj.getImgUrlsArray();
-	  thisObj.markImageAsWaiting(urlPairsArr, imgUrl);
-	  
-	  //set align
-	  var align = thisObj.getImageAlignFromForm(form);
-    var image = thisObj.getImageByOrigUrl(rteObj, imgUrl);
-    if(image)
-      image.setAttribute("align", align);
-	  
-	  thisObj.onHdnDocLoad(RteEngine.curRteId, imgUrl);
-	  return true;
-	}, 
-  onCanceledUploadPastedImage : function() {
-    var rteObj = RteEngine.getRteById(RteEngine.curRteId);
-    rteObj.onUndo(); // does not work with IE!
-  }
-
+	}
 }
 
 /***********************************************
@@ -735,63 +603,6 @@ var ImageUploader = {
     return formStr;
   },
   
-	getPasteImageFormContent : function(submitCallbackName, submitBtnText/*, imgObj*/, parentForm) {
-		var forms = document.forms;
-		// NOTE: new resourse does not have URI!!!
-		var resourceUri = parentForm.elements['uri'] ? parentForm.elements['uri'].value : "";
-		
-		if (!submitBtnText)
-			submitBtnText = "   Ok   "; 
-
-    var formStr = "<form name=\"" + this.FORM_NAME + "\""
-      + " target=\"" + this.HDN_IFRAME_NAME + "\""
-      + " method=\"post\""
-      + " enctype=\"multipart/form-data\""
-      + " action=\"" + this.ACTION_URL + "\""
-      + " onsubmit=\"return " + submitCallbackName + "\""
-      + ">"
-      
-      + " <table><tr><td>" 
-      + " <input type=\"file\" name=\"" + this.FILE_INPUT_NAME + "\""
-      + " size=\"40\" onkeyup=\"ImageUploader.enterCatcher(event);\" value=\"" 
-      + "\" />"
-			
-			+ " <input type=\"hidden\" name=\"" + this.RTE_ID_INPUT_NAME + "\""
-      + " id=\"" + this.RTE_ID_INPUT_NAME + "\">"
-      + " </td></tr>"
-      
-      + " <tr><td><br/>align:&nbsp;<select id=\"" + this.IMG_ALIGN_ID + "\""
-      + " <option value=\"left\">&[left];</option>"
-      + " <option value=\"middle\">&[middle];</option>"
-      + " <option value=\"right\">&[right];</option>"
-      + " <option value=\"bottom\">&[bottom];</option>"
-      + " <option value=\"top\">&[top];</option>"
-      + " </select>"
-			+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;margin:&nbsp;"
-			+ "<input size=\"12\" type=\"text\" id=\"" + this.MARGIN_ID + "\""
-			+ " value = \"";
-		
-			formStr += "30px";
-			 
-			formStr += "\">"
-			+ "</td></tr>"
-			
-      + " <tr><td align=\"center\"><br/>"
-      + " <input type=\"submit\" value=\"" + submitBtnText + "\">"
-			
-			+ " &#160<input type=\"button\" value=\"&[Cancel];\" onclick=\"RteEngine.imagePastePopup._oncancel();\" >"
-
-      + " <input type=\"hidden\" name=\"-$action\" value=\"upload\">"
-      + " <input type=\"hidden\" name=\"uri\" value=\""
-      + resourceUri      
-      + "\">"
-
-      + " </td></tr><table>"
-    + " </form>";
-
-    return formStr;
-  },
-
   imageLocationSwitch : function(checkBox) {
     var form = RteEngine.imagePopup.getForm();
     var inputs = form[this.FILE_INPUT_NAME];
@@ -852,8 +663,6 @@ var ImageUploader = {
     return value; 
   },
   
-  // failed to get correct current value from
-  // select in "image paste dialog", so onchange of the select was used.
   // mark image as waiting on the server response
   markImageAsWaiting : function(urlPairsArr, originalUrl) {
     var pair = new ImageUploader.UrlPair(originalUrl, ImageUploader.WAIT_FLAG);
