@@ -117,6 +117,7 @@
           </where>        
         </div>
         <br />
+        <where value="!cancelled">
         <div align="left">
           <table width="100%">
             <tr>
@@ -131,6 +132,7 @@
             </tr>
           </table>
         </div>
+        </where>
         
         <where value="paymentStatus != 'Success' &amp;&amp; paymentTutorial != null">
             <h3 class="csp_33"><text text="How to pay"/></h3>
