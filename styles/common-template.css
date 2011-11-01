@@ -1251,8 +1251,7 @@ div.contentsRL {
 .ftxt {text-align:left; font-size:9px;}
 .ftxt1 {border: none; padding: 0px; margin-left: 0; margin-right: 0; vertical-align: middle}
 /* Style for message in data entry for property that was either not set or set incorrectly*/
-/*.msg {border: 1px solid rgb(160, 30, 0); background: rgb(251, 240, 248)}*/
-.msg {background: rgb(251, 240, 248)}
+.msg { position: absolute; margin-top: -29px; }
 
 /* uploadFrame iframe style */
 .uframe {position:absolute; top:0px; left:0px; visibility:hidden; display:none;}
