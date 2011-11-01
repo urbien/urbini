@@ -415,7 +415,7 @@ var PalettePopup = {
 		
 		var html = 
 			'<table><tr><td><input type="checkbox" onclick=\"PalettePopup.onRainbowCheckbox(event);\"></td>'
-				  +'<td>&[use rainbow colors];</td></tr></table>'
+				  +'<td style="\cursor: text;\">&[use rainbow colors];</td></tr></table>'
 			+ "<div id='safe_clrs_div'>"
 			+ (this.getSchemePaletteStr() + "<br />"	+ this.getGrayscalePaletteStr()
 			+ "</div><div style='display: none;' id='rainbow_clrs_div'>"
