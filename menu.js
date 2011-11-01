@@ -12470,7 +12470,7 @@ var CheckButtonMgr = {
   onClick : function(event) {
     var $t = CheckButtonMgr;
 		event = getDocumentEvent(event);
-   
+
 	  var btn = getEventTarget(event); //this;
     $t.switchState(btn);
 
@@ -12495,9 +12495,7 @@ var CheckButtonMgr = {
 
   switchState : function(btn) {
 		var input = getPreviousSibling(btn);
-		var stl = getElementStyle(btn);
-    var xPos = stl.backgroundPosition || stl.backgroundPositionX;
-    var isChecked = (xPos && xPos.length != 0 && xPos.indexOf("0") != 0);
+    var isChecked = this.isChecked(btn);
     this.setState(btn, input, !isChecked);
   },
 
@@ -12521,6 +12519,11 @@ var CheckButtonMgr = {
     }
     else
       btn.style.backgroundPosition = "0% 0%"
+  },
+	isChecked: function(btn){
+		var stl = getElementStyle(btn);
+    var xPos = stl.backgroundPosition || stl.backgroundPositionX;
+  	return (xPos && xPos.length != 0 && xPos.indexOf("0") != 0);
   }
 }
 
