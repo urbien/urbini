@@ -376,6 +376,9 @@ var PalettePopup = {
 	otherClrsDiv : null,
 	isOtherClrsVisible : false, 
 	
+	safeColorsDiv : null,
+	rainbowColorsDiv : null,
+	
 	//show
 	// noColorTitle is a text to show in noClrCell
 	show : function(hotspot, alignment, callback, parentDlg, noColorTitle, chosenClr) {
@@ -410,25 +413,33 @@ var PalettePopup = {
 		this.div = document.createElement('div');
 		this.div.className = "ctrl_toolbar_dlg pallete_dlg";
 		
-		var html = (this.getSchemePaletteStr() + "<br />"	+ this.getGrayscalePaletteStr()
-	 		+ this.getButtonsStr()); 
-			// NOTE: not to show arbitrary, other colors for now!!!!!!
-			// + this.getOthersPaletteStr());
-			
-		this.div.innerHTML = html;
+		var html = 
+			'<table><tr><td><input type="checkbox" onclick=\"PalettePopup.onRainbowCheckbox(event);\"></td>'
+				  +'<td>&[use rainbow colors];</td></tr></table>'
+			+ "<div id='safe_clrs_div'>"
+			+ (this.getSchemePaletteStr() + "<br />"	+ this.getGrayscalePaletteStr()
+			+ "</div><div style='display: none;' id='rainbow_clrs_div'>"
+			+ this.getRainbowPaletteStr()
+			+ "</div>"
+			+ this.getButtonsStr()); 
 
-		var schemeClrsTbl = this.div.getElementsByTagName("table")[0];
-		addEvent(schemeClrsTbl, "click", this.onSchemeColorSelection, false);
+		this.div.innerHTML = html;
+		CheckButtonMgr.prepare(this.div);
 		
-		var grayscaleClrsTbl = this.div.getElementsByTagName("table")[1];
+		// scheme & grayscale colors
+		this.safeColorsDiv = getChildById(this.div, 'safe_clrs_div');
+		var tables = this.safeColorsDiv.getElementsByTagName("table");
+		var schemeClrsTbl = tables[0];
+		addEvent(schemeClrsTbl, "click", this.onSchemeColorSelection, false);
+		var grayscaleClrsTbl = tables[1];
 		addEvent(grayscaleClrsTbl, "click", this.onOtherColorSelection, false);
 
-		this.otherClrsDiv = this.div.getElementsByTagName("div")[0];
-		if (this.otherClrsDiv) {
-			var otherClrsTbl = this.div.getElementsByTagName("table")[0];
-			otherClrsTbl.onclick = this.onOtherColorSelection;
-		}
-		
+		// rainbow colors
+		this.rainbowColorsDiv = getChildById(this.div, 'rainbow_clrs_div');
+		tables = this.rainbowColorsDiv.getElementsByTagName("table");
+		var rainbowClrsTbl = tables[0];
+		addEvent(rainbowClrsTbl, "click", this.onOtherColorSelection, false);
+
 		this.noClrCell = getChildById(this.div, "noClr");
 		this.noClrCell.style.fontSize = "16"
 		
@@ -439,6 +450,13 @@ var PalettePopup = {
 		chDivStyle.height = 31;
 		chDivStyle.borderWidth = "1px";
 		chDivStyle.borderStyle = "dashed";
+	},
+	onRainbowCheckbox : function(event) {
+		var $t = PalettePopup;
+		var btn = getEventTarget(event); //this;
+		var isChecked = CheckButtonMgr.isChecked(btn);
+		$t.safeColorsDiv.style.display = isChecked ? "none" : "block";
+		$t.rainbowColorsDiv.style.display = isChecked ? "block" : "none";
 	},
 /*	
 	setChosenColor : function(chosenClr) {
@@ -543,7 +561,7 @@ var PalettePopup = {
 		return html;     
 	},
 	// not used for now!
-	getOthersPaletteStr : function() {
+	getRainbowPaletteStr : function() {
 		var colors =
 		[
 			["#FFCCCC", "#FFCC99", "#FFFF99", "#FFFFCC", "#99FF99", "#99FFFF", "#CCFFFF", "#CCCCFF", "#FFCCFF"],
@@ -555,7 +573,7 @@ var PalettePopup = {
 			["#330000", "#663300", "#663333", "#333300", "#003300", "#003333", "#000066", "#330099", "#330033"]
 		];
 
-		var html = "<div style=\"display: none;\"><h4>[&other]; &[colors];:</h4>"
+		var html = "<h4>&[other]; &[colors];:</h4>" // <div style=\"display: none;\">
 			+ "<table  width=\"100%\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\">";
 			for (var r = 0; r < colors.length; r++) {
 				html += "<tr>";
@@ -563,7 +581,7 @@ var PalettePopup = {
 					html += ("<td style=\"background-color:" +	colors[r][c]	+	"\"></td>");
 				html += '<tr>';
 			}
-			html += '</table></div>';
+			html += '</table>'; //</div>
 			return html;     
 	}
 
@@ -1233,6 +1251,10 @@ var PopupHandler = {
 
     setTimeout("PopupHandler.setFocusInInput()", 50);
 	},
+	show : function(div, autohide) {
+		this.popupDiv = div;
+		this._show(autohide);
+	},
 	_show : function(autohide) {
 		if(typeof autohide == 'undefined' || autohide) 
 			this.isAutoHide = true;
@@ -1241,6 +1263,7 @@ var PopupHandler = {
 		this.setHandlers();
 		
 		this.firstClick = true;
+		this.popupDiv.style.display = "block";
 		this.popupDiv.style.visibility = "visible";
 		Tooltip.hide(true);	
 	},
@@ -1251,10 +1274,10 @@ var PopupHandler = {
 		var relObj = hotspot.div || hotspot.obj || hotspot;
 
     var pos;
-    if (Browser.ie && (!parentDlg || isParentDialogOnPage(parentDlg))) // (may be problem with	findObjectPositio for IE?)	
-		  pos = this.findObjectPositio(relObj, document.body);
+    if (Browser.ie && (!parentDlg || isParentDialogOnPage(parentDlg))) // (may be problem with	findObjectPosition for IE?)	
+		  pos = this.findObjectPosition(relObj, document.body);
 		else
-  	  pos = this.findObjectPositio(relObj, parentDlg);
+  	  pos = this.findObjectPosition(relObj, parentDlg);
 
     // 1. inside ("hotspot" - here "container)
     if(alignment == 'inside') {
@@ -1317,7 +1340,7 @@ var PopupHandler = {
 	},
 	// find position relative to the document.body (by default)
 	// or relative to the some ancestor.
-	findObjectPositio : function(obj, tillParent) {
+	findObjectPosition : function(obj, tillParent) {
 		var curLeft = 0;
 		var curTop = 0;
 		tillParent = tillParent || document.body;
