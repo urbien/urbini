@@ -72,10 +72,15 @@
               <where value="!redeemed">
                 <where value="gifteeEmail == null &amp;&amp; giftTo == null">                 <!-- if coupon hasn't been gifted -->
                   <where value="mustBeGifted">
+                    <!--editMe type="http://www.hudsonfog.com/voc/commerce/coupon/GiftYourCoupon" linkText="Gift" /> / <editMe type="http://www.hudsonfog.com/voc/commerce/coupon/GiftAsVal" linkText="Val" /-->
                     <editMe type="http://www.hudsonfog.com/voc/commerce/coupon/GiftYourCoupon" linkText="Gift me!" />
                   </where>
                   <where value="!mustBeGifted">
                     <property name="couponID" />&#45;<property name="couponSecret" />
+                    <br /><br />
+                    <!--codesViaSMS />
+                    <br /-->
+                    <codesViaEmail />
                   </where>
                 </where>
                 <where value="gifteeEmail != null">                           <!-- if coupon has been gifted but not delivered yet -->
@@ -105,6 +110,10 @@
                     </where>
                     <where value="!mustBeGifted">
                       <property name="couponID" />&#45;<property name="couponSecret" />
+                      <br /><br />
+                      <!--codesViaSMS />
+                      <br /-->
+                      <codesViaEmail />
                     </where>
                   </where>
                 </where>
