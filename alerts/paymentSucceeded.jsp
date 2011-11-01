@@ -5,7 +5,7 @@
       <claimCouponLink />
       <br/>
       <where value="forum.gifteeEmail == null">
-        <giftIfOverLimit />
+        <center><giftIfOverLimit /></center>
       </where>
       <!--insertJoke variation="You're mouse is dangerously low on clicks, click something before it's too late!" /-->
       <br /><br />

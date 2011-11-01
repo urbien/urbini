@@ -1,5 +1,9 @@
 <div>
-<text text="You are now subscribed to receive alerts for the" /> <property name="forum" type="y"/> <property name="forum" href="y"/>
+<text text="You are now subscribed to receive alerts for the following" />&#160;<b><property name="forum" type="y"/></b>:
+
+<br /><br /><br />
+
+<center><property name="forum" href="y"/></center>
 <br/>
 		<!--propertySheet name="forum"/>
 		<br/>
