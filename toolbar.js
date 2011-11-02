@@ -578,7 +578,7 @@ var PalettePopup = {
 			for (var r = 0; r < colors.length; r++) {
 				html += "<tr>";
 				for (var c = 0; c < colors[r].length; c++)
-					html += ("<td style=\"background-color:" +	colors[r][c]	+	"\"></td>");
+					html += ("<td width=\"11.111%\" style=\"background-color:" +	colors[r][c]	+	"\"></td>");
 				html += '<tr>';
 			}
 			html += '</table>'; //</div>
