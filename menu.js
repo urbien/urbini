@@ -13660,5 +13660,11 @@ function hide(me) {
   me.style.visibility = 'hidden';
 }
 
+function selectAll(id)
+{
+  document.getElementById(id).focus();
+  document.getElementById(id).select();
+}
+
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
