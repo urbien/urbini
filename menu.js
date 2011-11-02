@@ -3328,7 +3328,7 @@ var ListBoxesHandler = {
 	
   // optionsSelectorStr is not required parameter
   processClickParam : function(e, tr, optionsSelectorStr) {
-		if (SlideSwaper.doesSlidingRun())
+		if (SlideSwaper.doesSlidingRun(this.tray))
 			return;
 
     var target = tr; 
@@ -3796,7 +3796,7 @@ var ListBoxesHandler = {
 			return;
 		}
 
-		if (SlideSwaper.doesSlidingRun())
+		if (SlideSwaper.doesSlidingRun($t.tray))
 			return true;
 			
     if (clickedTr.id == "$more" || clickedTr.id.indexOf("$add") == 0) // prevent from "More" and "Add"
@@ -4530,11 +4530,12 @@ var SlideSwaper = {
 	getTrayPosition : function(tray) {
 		return -Math.floor(this.getTrayPositionInPercents(tray) / this.DISTANCE);
 	},
-	doesSlidingRun : function() {
-		if (!this.tray)
+	doesSlidingRun : function(tray) {
+		tray = tray || this.tray
+		if (!tray)
 			return false;
 			
-		var pos = this.getTrayPositionInPercents(this.tray);
+		var pos = this.getTrayPositionInPercents(tray);
 		if (pos % this.DISTANCE == 0)
 			return false;
 		return true;		
@@ -6079,8 +6080,8 @@ var TouchDlgUtil = {
 		var target = null;
 
 		// prevent submit before sliding back (option selection) finished
-//		if ($t.hasBlueRow()) 
-		if (SlideSwaper.doesSlidingRun())
+		var tray = getChildByClassName($t.curDlgDiv, "tray");	
+		if (tray && SlideSwaper.doesSlidingRun(tray))
 			return;
 		
 		if (event.type == 'click')
