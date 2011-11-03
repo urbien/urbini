@@ -6942,9 +6942,10 @@ function addAndShow(td, e) {
 
   var a = td.getElementsByTagName("a");
 
-// iframe.style.display = "none";
-
   var anchor = a[0].href;
+	if (a[0].className == "external" && a[1])
+		anchor = a[1].href;
+	
   return addAndShow1(anchor, e);
 }
 
