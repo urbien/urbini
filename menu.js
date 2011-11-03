@@ -3015,9 +3015,12 @@ var ListBoxesHandler = {
     if (idx == -1)
       return;
     currentFormName = propName1.substring(idx + 1);
-    var form = getChildByTagName(this.formPanel, "form"); // correct with FTS additional filter
+    
+		// note: possible 2 forms with the same name, like FTS "sift" filter
+		var form = getAncestorByTagName(arrowTd, "form");
+		// in case when popup is outside the form, like in RL editor
 		if (form == null)
-			form = document.forms[currentFormName]; // RL editor
+			form = document.forms[currentFormName]; 
 			
 		propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
     currentImgId  = imgId;
@@ -6245,6 +6248,8 @@ var TouchDlgUtil = {
 	
 	_setFocusInFocusHolder : function() {
 	  // IE does not support "fixed position. So move focusHolder manually.
+		if (!this.focusHolder)
+			return;
 		this.focusHolder.style.top = getScrollXY()[1]; /////// - findPosY(curDlgDiv);
 		this.focusHolder.focus();		
 	},
