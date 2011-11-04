@@ -960,6 +960,12 @@ div.rightSidebar A {color: inherit}
   background-color: &[BodyBackgroundColor];;
   padding-left: 5px;
 }
+#categoryTags #currentTag a {
+  color: &[SecondaryColorA_1];;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
 .embed  {
   vertical-align: middle;
   color: &[SecondaryColorB_3];;
