@@ -4571,7 +4571,7 @@ var Filter = {
 		var filterHeader = getChildByClassName(filterDiv, "header");
 		var textEntry = getChildById(filterDiv, 'text_entry');
 		FieldsWithEmptyValue.initField(textEntry, '&[select];')
-		
+
 		// set event handlers for toobar buttons
 		var submitBtn = getChildById(filterHeader, "submitFilter");
 		if (submitBtn)
@@ -6092,8 +6092,8 @@ var TouchDlgUtil = {
 
 		var isDone = false;
 		// 1. filter
-		if ($t.curDlgDiv && $t.curDlgDiv.id == "common_filter")
-			isDone = Filter.submitProcess(event);
+	//	if ($t.curDlgDiv && $t.curDlgDiv.id == "common_filter")
+		isDone = Filter.submitProcess(event);
 		// 2. data entry
 		if(!isDone)
 			isDone = DataEntry.submit(event, target);
