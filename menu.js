@@ -3010,16 +3010,17 @@ var ListBoxesHandler = {
   listboxOnClick1 : function(e, imgId, enteredText, enterFlag, classValue, arrowTd) {
 		// cut off "_filter"
     var propName1 = imgId.substring(0, imgId.length - "_filter".length);   
-
     var idx = propName1.lastIndexOf('_');
     if (idx == -1)
       return;
     currentFormName = propName1.substring(idx + 1);
-    
+
 		// note: possible 2 forms with the same name, like FTS "sift" filter
-		var form = getAncestorByTagName(arrowTd, "form");
+		var form = null;
+		if (arrowTd)
+			form = getAncestorByTagName(arrowTd, "form");
 		// in case when popup is outside the form, like in RL editor
-		if (form == null)
+		else
 			form = document.forms[currentFormName]; 
 			
 		propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
@@ -4211,7 +4212,7 @@ var ListBoxesHandler = {
 				var obj = (isGrid) ? rows[i].cells[k] : rows[i];
 				var labelName = getTextContent(label).toLowerCase();
 				// remove "prefix" like "name:" in assignedTo
-				labelName = labelName.replace(/^[^:]*:/, "").trim();
+				labelName = labelName.plainText().replace(/^[^:]*:/, "").trim();
 				var labelNameSplitted = labelName.split(/\s|,|;/); // split for " " , ;
 				for (var n = 0; n < labelNameSplitted.length; n++) {
 					var token = labelNameSplitted[n].trim();
