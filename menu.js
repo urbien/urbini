@@ -1763,6 +1763,11 @@ var FormProcessor = {
     else if (currentFormName && currentFormName.indexOf("horizontalFilter") == 0)
       allFields = true;
 
+		// submit all parameters of a form after error in previously entered values
+		// TODO: it would be better to submit only paramters that were rejected previously (+ changed)	
+		if (typeof g_rejectedOnEntryError != 'undefined')
+			allFields = true;
+		
 		// edit resource list: 'searchLocal' and 'submitUpdate' field
 		// commit only changed data
 		if (formAction == "searchLocal" && typeof form.elements['submitUpdate'] != 'undefined')
