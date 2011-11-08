@@ -634,9 +634,8 @@ tr.ftSearch td { padding: 0px; }
     font: bold 16px Helvetica;
     border: none;
     padding: 0px 0px 0px 0px;
-    margin-top: 2px;
-    line-height: 21px; 
-    vertical-align: middle;   
+    margin-top: 6px !important;
+    margin-top: 4px;
  }
  
 .ftSearch .action_btn {
