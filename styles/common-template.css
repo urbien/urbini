@@ -17,6 +17,7 @@ div#wrapper {
 * html div#wrapper { height: 100%; }
 
 #commonFooter { position: absolute; width: 100%; bottom: 0px; }
+#commonFooter h2 { margin: 0px; font-size: 16px; font-weight: bold;  }
 
 .mainskin {
   min-height: 500px;
