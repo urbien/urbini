@@ -1402,7 +1402,7 @@ TD.toolbar {
 }
 
 .menuItemIcon img { width: 24px; height: 24px; border: 0px; text-align:center; padding-left: 3px; }
-.menuItemIcon span { color: #fff !important;  color: #000; font-size: 14px; font-weight: bold; position: relative; left: -10px; text-shadow: 0 2px 5px #000000; pointer-events: none; }
+.menuItemIcon span { color: #fff !important;  color: #000; font-size: 15px; font-weight: bold; position: relative; left: -11px; top: -2px; text-shadow: 1px 2px 1px #000000; pointer-events: none; }
 
 .menuItemChk {
 	width: 16px; padding-left: 5px;
