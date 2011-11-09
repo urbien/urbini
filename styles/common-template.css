@@ -1394,16 +1394,15 @@ TD.toolbar {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
 }
 
-.menuItemIcon {	PADDING-RIGHT: 2px; PADDING-LEFT: 3px; white-space: nowrap; width: 20px; }
+.menuItemIcon {	/*PADDING-RIGHT: 2px;*/ PADDING-LEFT: 3px; white-space: nowrap; width: 20px; }
 .menuItemIconEmpty { width: 5px; }
 
 .poweredMenuItemIcon {
 	PADDING-RIGHT: 2px; PADDING-LEFT: 2px; BACKGROUND-COLOR: #EDECF8; white-space: nowrap; width: 30px
 }
 
-.menuItemIcon img {
-  width: 16px; height: 16px; border: 0px; text-align:center; padding-left: 3px;
-}
+.menuItemIcon img { width: 24px; height: 24px; border: 0px; text-align:center; padding-left: 3px; }
+.menuItemIcon span { color: #fff !important;  color: #000; font-size: 14px; font-weight: bold; position: relative; left: -10px; text-shadow: 0 2px 5px #000000; pointer-events: none; }
 
 .menuItemChk {
 	width: 16px; padding-left: 5px;
@@ -1854,7 +1853,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .select { font-size: inherit; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
 
 .rounded_rect_tbl input#rightPanelPropertySheet  { display: none; }
-.rounded_rect_tbl td#dIcon { height: 40px; PADDING-RIGHT: 2px; PADDING-LEFT: 5px; PADDING-TOP: 2px; white-space: nowrap;  /*vertical-align: top;*/ }
+/*.rounded_rect_tbl td#dIcon { height: 40px; PADDING-RIGHT: 2px; PADDING-LEFT: 5px; PADDING-TOP: 2px; white-space: nowrap; } */
 
 .menuItemRow, .option_tr { cursor: pointer; }
 
