@@ -2644,17 +2644,19 @@ var Tooltip = {
 	
 	onClick : function(e) {
 		var $t = Tooltip;
+	
 		if ($t.isShown)
 			$t.hide();
 		else 
 			clearTimeout($t.timerId); // prevent showing
 
-		// show tooltip on click on help icon
+		// show tooltip on click on (help & property) icon
 		var target = getEventTarget(e);
-		if (target.tagName.toLowerCase() == 'img' && target.src.indexOf("help.png") != -1) {
-			$t.putContent(e, target);
+		if ($t.putContent(e, target)) {
 			$t.show();
+			stopEventPropagation(e);
 		}
+		
 	},
 	
   show : function() {
@@ -3293,10 +3295,12 @@ var ListBoxesHandler = {
 
 		var isLink = getAncestorByTagName(target, "a") != null;
 		$t.isRollUp = getAncestorByClassName(target, "rollup_td") != null;
-
+		// in most cases it is help tooltip
+		var isPropIconTd = getAncestorByClassName(target, "menuItemIcon") != null;
+		
 		// There are links in date rollup that should be processed
 		// rollup td without link inside
-		if ($t.isRollUp && !isLink)
+		if ($t.isRollUp && !isLink || isPropIconTd)
 			return;
 		// link not in rollup td
 		if (isLink && !$t.isRollUp)
@@ -4844,7 +4848,7 @@ var Filter = {
 		if (!parent) { // on <enter> key
 			if (typeof this.filtersArr[this.currentFilterUrl] != 'undefined') {
 		  	parent = this.filtersArr[this.currentFilterUrl];
-				if (parent.style.display == 'none')
+				if (!isVisible(parent))
 					return false;	
 		  }
 		  else 
@@ -6098,8 +6102,7 @@ var TouchDlgUtil = {
 
 		var isDone = false;
 		// 1. filter
-	//	if ($t.curDlgDiv && $t.curDlgDiv.id == "common_filter")
-		isDone = Filter.submitProcess(event);
+		isDone = Filter.submitProcess(event); // submits opened(!) Filter dialog
 		// 2. data entry
 		if(!isDone)
 			isDone = DataEntry.submit(event, target);
@@ -6168,6 +6171,9 @@ var TouchDlgUtil = {
 			return;
 		if (isElemOfClass(target, "iphone_checkbox"))
 			return; // skip click on iPhone-like checkbox (roll-up)
+	
+		if (isElemOfClass(target.parentNode, "menuItemIcon"))
+			return; // skip click on property icon that in most cases contains tooltip text
 	
     $t.highlightRowBlueProcess(tr);
 	},
