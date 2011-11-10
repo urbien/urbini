@@ -2380,6 +2380,6 @@ td #corePageContent { min-height: 600px;}
   z-index: 100;
 }
 .langSwitch {border-bottom: 1px solid &[SecondaryColorA_2];; padding-left: 1px; vertical-align:top; padding-right: 1px; padding-top: 1px}
-.bigGridS { text-align:left; width: 440px; height:90px; font-size:14px; padding: 8px; }
+.bigGridS { text-align:left; width: 444px; height:90px; font-size:14px; padding: 8px; }
 .bigGridP { font-size:16px; padding-bottom: 8px; }
 .bigGridP .bigLabel { font-size: 16px; font-weight: bold; text-shadow: 1px 1px 1px #333333;}
