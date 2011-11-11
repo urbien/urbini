@@ -2592,8 +2592,12 @@ var Tooltip = {
 
     var target = getEventTarget(e);
 
-		if ($t.putContent(e, target))
-			$t.timerId = setTimeout($t.show, $t.SHOW_DELAY);
+		if ($t.putContent(e, target)) {
+			if (getTextContent(target) == "[?]")
+				$t.show();
+			else
+				$t.timerId = setTimeout($t.show, $t.SHOW_DELAY);
+		}
   },
 
 	putContent : function(e, target) {
@@ -3295,12 +3299,10 @@ var ListBoxesHandler = {
 
 		var isLink = getAncestorByTagName(target, "a") != null;
 		$t.isRollUp = getAncestorByClassName(target, "rollup_td") != null;
-		// in most cases it is help tooltip
-		var isPropIconTd = getAncestorByClassName(target, "menuItemIcon") != null;
-		
+		var isHelpTooltip = getTextContent(target) == "[?]";
 		// There are links in date rollup that should be processed
 		// rollup td without link inside
-		if ($t.isRollUp && !isLink || isPropIconTd)
+		if ($t.isRollUp && !isLink || isHelpTooltip)
 			return;
 		// link not in rollup td
 		if (isLink && !$t.isRollUp)
@@ -6172,8 +6174,8 @@ var TouchDlgUtil = {
 		if (isElemOfClass(target, "iphone_checkbox"))
 			return; // skip click on iPhone-like checkbox (roll-up)
 	
-		if (isElemOfClass(target.parentNode, "menuItemIcon"))
-			return; // skip click on property icon that in most cases contains tooltip text
+		if (getTextContent(target) == "[?]")
+			return; // skip click on 'help'
 	
     $t.highlightRowBlueProcess(tr);
 	},
