@@ -1,5 +1,5 @@
 <div id="socialBar">
-<div id="social"><!-- class="lightTextDarkBackground"-->
+<!--div id="social">
  <table width="100%" border="0" cellspacing="0" cellpadding="10"><tr>
    <td id="likeAndComment">
      <table>
@@ -21,7 +21,7 @@
    </td>
    </tr>
  </table>
-</div>
+</div-->
 <div id="social1" class="lightTextDarkBackground">
  <table width="100%" border="0" cellspacing="0" cellpadding="0"><tr>
    <tr>
