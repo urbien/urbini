@@ -24,7 +24,7 @@ div#wrapper {
 }
 
 a { text-decoration: none; color: &[SecondaryColorB_3];; -webkit-tap-highlight-color: rgba(0,0,0,0); }
-a img, a span { vertical-align: middle; } /* helps to align vertically image inside anchor */ 
+/*** a img, a span { vertical-align: middle; }  helps to align vertically image inside anchor ***/ 
 
 input  { -webkit-appearance: none; font-style: normal; line-height: normal; font-weight: normal; -webkit-tap-highlight-color: rgba(0,0,0,0); }
 
@@ -1600,7 +1600,6 @@ TD.closePopup {
 }
 
 .system_tooltip_css3 #tt_inner { background: transparent; }
-#system_tooltip #opt_btn { position: relative; top: 10; left: 10; cursor: pointer; width: 16px; height: 16px; }
 
 .print {color:#000000;}
 .printB {font-weight:bold; white-space: nowrap;}
