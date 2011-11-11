@@ -2549,9 +2549,6 @@ var Tooltip = {
   tooltipFrame : null,
 	contentDiv : null,
 	
-  options : {isShiftRequired : false},
-  optBtn : {obj: null, width: 16, height: 16}, // button image object and size
-	
 	isShown : false,
 	isOverTooltip : false,
 	timerId : null,
@@ -2571,10 +2568,7 @@ var Tooltip = {
 			if (!this.tooltipFrame) 
 				throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
 		}
-				
-		this.optBtn.obj = getChildById(this.tooltipDiv, "opt_btn");
-    this.initShiftPref();
-	
+
 		addEvent(document.body, "mouseover", this.onMouseOver, false);
 		addEvent(document.body, "mouseout", this.onMouseOut, false);
 		addEvent(document.body, "click", this.onClick, false);
@@ -2598,6 +2592,8 @@ var Tooltip = {
 			else
 				$t.timerId = setTimeout($t.show, $t.SHOW_DELAY);
 		}
+		else if ($t.isShown && $t.timerId == null)
+			$t.timerId = setTimeout(Tooltip.hide, $t.HIDE_DELAY);
   },
 
 	putContent : function(e, target) {
@@ -2626,17 +2622,20 @@ var Tooltip = {
 
 		if ($t.isOverTooltip)
 			return;
-		
-		if ($t.isShown)
+
+		if ($t.isShown && $t.timerId == null)
 			$t.timerId = setTimeout(Tooltip.hide, $t.HIDE_DELAY);
-		else 
+		else {
 			clearTimeout($t.timerId); // prevent showing
+			$t.timerId = null;
+		}
   },
 
 	onMouseOverTooltip : function(e) {
 		var $t = Tooltip;
 		$t.isOverTooltip = true;
 		clearTimeout($t.timerId); // prevent closing if mouse over tooltip
+		$t.timerId = null;
 	},
 
 	onMouseOutTooltip : function(e) {
@@ -2672,12 +2671,6 @@ var Tooltip = {
 		var target = $t.showArgs.target;
 		var tooltipText = $t.showArgs.tooltipText;
 
-		var toShow = !($t.isShiftRequired() && !$t.showArgs.shiftKey);
-    if(!toShow) {
-			var plainTooltipText = tooltipText.replace(/<\/?[^>]+(>|$)/g, " ")
-    	window.status = plainTooltipText;
-			return;
-		}
     if (!$t.tooltipDiv)
       return false; 
 		if (!tooltipText)
@@ -2721,67 +2714,6 @@ var Tooltip = {
   isProcessed : function(obj) {
 		var titleText = obj.title;
 		return (titleText == null || titleText.length == 0);
-  },
-	
-	// Options: shift pref ---------------------------
-  onOptionsBtn : function(e) {
-    if (Browser.mobile)
-      return;
-		
-		stopEventPropagation(e);
-
-		var msg = this.isShiftRequired() ? "show tooltips always" : "show tooltips when shift pressed";
-		Tooltip.hide(true);
-		BrowserDialog.confirm(msg, this.onShiftPrefChange);
-	},
-
-  onShiftPrefChange : function() {
-      Tooltip.shiftPrefSwitch();
-  },
-	
-  isShiftRequired : function() {
-    if (Browser.mobile)
-      return;
-
-    if(!this.tooltip)
-      this.init();
-    return this.options.isShiftRequired;
-  },
-	
-  initShiftPref : function () {
-    if (Browser.mobile)
-      return;
-
-	  if(Popup.isShiftRequired == null) {
-		  var aCookie = document.cookie.split("; ");
-		  var bValue = false;
-		  for (var i=0; i < aCookie.length; i++) {
-			  // a name/value pair (a crumb) is separated by an equal sign
-			  var aCrumb = aCookie[i].split("=");
-			  if (aCrumb[0] == "shift_pressed") {
-				  if(unescape(aCrumb[1]) == "yes")
-					  bValue = true;
-				  break;
-			  }
-		  }
-		  this.options.isShiftRequired = bValue;
-	  }
-  },
-  shiftPrefSwitch : function () {
-    if (Browser.mobile)
-      return;
-
-    this.options.isShiftRequired = !this.options.isShiftRequired;
-	  // set cookie
-	  var sValue = this.options.isShiftRequired ? "yes" : "no";
-	  var expiresData = new Date();
-    expiresData.setTime(expiresData.getTime() + (1000 * 86400 * 365));
-    document.cookie = "shift_pressed=" + escape(sValue)
-        + "; expires=" + expiresData.toGMTString();
-
-    var tooltipObj = Popup.getPopup('system_tooltip');
-	  if(tooltipObj)
-	    tooltipObj.delayedClose();
   }
 }
 
