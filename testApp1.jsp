@@ -25,7 +25,10 @@
 //        oauthExample("printDeals");
       }      
 
-      makeAuthenticatedApiCall("Vendor?select=name", "printJson");
+//      makeAuthenticatedApiCall("me/purchasingHistory?select=title,adjustedTotal", "printJson");
+//      makeAuthenticatedApiCall("Vendor?select=name", "printJson");
+//      makeAuthenticatedApiCall("Vendor?where=" + encodeURIComponent('city=Moscow') + "&select=name", "printJson");
+//      makeAuthenticatedApiCall("Vendor/2/coupons?select=title", "printJson");
       
 			// make api call to url: serverName/api/v1/Coupon?where=dateExpired%3E%3Dtoday,featured!=null&select=featured,title
 			//			   http://aurora2.lablz.com/api/v1/Coupon?where=dateExpired%3E%3Dtoday,featured!=null&select=featured,title
@@ -122,7 +125,8 @@
           window.location = url;
         } 
         else {
-          makeSecureApiCall(query, callbackName);
+          var access_token = window.location.hash.substring(1); // sth like 'access_token=erefkdsnfkldsjflkdsjflsdfs'
+          makeSecureApiCall(query + "&" + access_token, callbackName);
         }
       }
 
