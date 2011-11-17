@@ -25,7 +25,8 @@
 //        oauthExample("printDeals");
       }      
 
-//      makeAuthenticatedApiCall("me/purchasingHistory?select=title,adjustedTotal", "printJson");
+//getFormerDeals("printJson");
+ //     makeAuthenticatedApiCall("me/purchasingHistory?select=title,adjustedTotal", "printJson");
 //      makeAuthenticatedApiCall("Vendor?select=name", "printJson");
 //      makeAuthenticatedApiCall("Vendor?where=" + encodeURIComponent('city=Moscow') + "&select=name", "printJson");
 //      makeAuthenticatedApiCall("Vendor/2/coupons?select=title", "printJson");
