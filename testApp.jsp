@@ -11,6 +11,7 @@
   <script type="text/javascript">
 <![CDATA[   
         
+      var apiUrl = "https://mark.obval.com/obval/api/v1/";
       // assuming we got their titles at least
       function printCouponTitlesAndPics(response) {
         var div = document.getElementById('lablz_data');        
@@ -84,6 +85,11 @@
 //          var path = "https://mark.obval.com/obval/api/v1/me?";
 //          var queryParams = [access_token, 'callback=printJson', 'select=all'];
 
+          // make comment example
+//          var path = "https://mark.obval.com/obval/api/v1/m/Comment?";
+//          var queryParams = [access_token, 'callback=printJson', 'where=' + encodeURIComponent("forum='uri:Coupon/32232',title='the greatest comment in the world, a tribute2'")];
+          var path = "https://mark.obval.com/obval/api/v1/e/Comment/3/32232?";
+          var queryParams = [access_token, 'callback=printJson', 'where=' + encodeURIComponent("title='the second greatest comment in the world, a tribute'")];
           var query = queryParams.join('&');
           var url = path + query;
    
@@ -112,6 +118,7 @@
       }
       
       function output(inp) {
+        toConsole(inp);
         var pre = document.createElement('pre');
         pre.innerHTML = inp;
         document.getElementById('lablz_data').appendChild(pre);
