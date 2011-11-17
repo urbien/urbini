@@ -1,10 +1,14 @@
-      var serverName = "mark.obval.com/obval"; 
-//      var serverName = "aurora2.lablz.com";
+//      var serverName = "mark.obval.com/obval"; 
+      var serverName = "aurora2.lablz.com";
 //      var serverName = "www.obval.com";
 //    var serverName = "dev.obval.com";
       var apiUrl = "http://" + serverName + "/api/v1/";
       var secureApiUrl = "https://" + serverName + "/api/v1/";
-
+      var appId;
+      
+      function initLablz(id) {
+        appId = id;
+      }
 
       // make api call with JSONP. Feed data received to function with name = callbackName 
       // where query is sth like "Coupon?where=...&select=..."      
@@ -22,11 +26,10 @@
         document.body.appendChild(script);        
       }
       
-      function makeAuthenticatedApiCall(query, callbackName) {
+      function makeAuthenticatedApiCall(query, callbackName, appID) {
         if (window.location.hash.length == 0) {
-          var appID = "f57c0964f4442fc37597aede2f05681";
           var path = secureApiUrl + 'authenticate?';
-          var queryParams = ['client_id=' + appID, 'redirect_uri=' + window.location, 'response_type=token']; //, 'state=' + ]; // CSRF protection
+          var queryParams = ['client_id=' + appId, 'redirect_uri=' + window.location, 'response_type=token']; //, 'state=' + ]; // CSRF protection
           var query = queryParams.join('&');
           var url = path + query;
           window.location = url;
