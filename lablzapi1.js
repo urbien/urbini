@@ -1,5 +1,5 @@
-//      var serverName = "mark.obval.com/obval"; 
-      var serverName = "aurora2.lablz.com";
+      var serverName = "mark.obval.com/obval"; 
+//      var serverName = "aurora2.lablz.com";
 //      var serverName = "www.obval.com";
 //    var serverName = "dev.obval.com";
       var apiUrl = "http://" + serverName + "/api/v1/";
@@ -26,7 +26,7 @@
         document.body.appendChild(script);        
       }
       
-      function makeAuthenticatedApiCall(query, callbackName, appID) {
+      function makeAuthenticatedApiCall(query, callbackName) {
         if (window.location.hash.length == 0) {
           var path = secureApiUrl + 'authenticate?';
           var queryParams = ['client_id=' + appId, 'redirect_uri=' + window.location, 'response_type=token']; //, 'state=' + ]; // CSRF protection
