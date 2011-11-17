@@ -1,4 +1,4 @@
-      var serverName = "mark.obval.com/obval";
+      var serverName = "mark.obval.com/obval"; 
 //      var serverName = "aurora2.lablz.com";
 //      var serverName = "www.obval.com";
 //    var serverName = "dev.obval.com";
