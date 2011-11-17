@@ -10,8 +10,9 @@
   <script type="text/javascript">
 <![CDATA[   
         
-      var serverName = "www.obval.com";
+      var serverName = "aurora2.lablz.com";
       var apiUrl = "http://" + serverName + "/api/v1/";
+      var secureApiUrl = "https://" + serverName + "/api/v1/";
       // convert imageUri to imageUrl 
       function getImageUrl(imgUri) {
         return imgUri == null ? null : 'http://' + serverName + '/' + imgUri.substring(imgUri.indexOf('url=') + 4);
@@ -103,18 +104,25 @@
         script.src = fullUrl;
         document.body.appendChild(script);        
       }
+
+      function makeSecureApiCall(query, callbackName) {
+        var fullUrl = secureApiUrl + query + "&callback=" + callbackName;
+        var script = document.createElement('script');
+        script.src = fullUrl;
+        document.body.appendChild(script);        
+      }
       
       function makeAuthenticatedApiCall(query, callbackName) {
         if (window.location.hash.length == 0) {
-          var appID = "rpt6nb8qfg1foj1s6vh3e6ci5k6tnj";
-          var path = 'https://mark.obval.com/obval/api/v1/authenticate?';
+          var appID = "749b5ee823d75a5967b04c594bd560da";
+          var path = secureApiUrl + 'authenticate?';
           var queryParams = ['client_id=' + appID, 'redirect_uri=' + window.location, 'response_type=token']; //, 'state=' + ]; // CSRF protection
           var query = queryParams.join('&');
           var url = path + query;
           window.location = url;
         } 
         else {
-          makeApiCall(query, callbackName);
+          makeSecureApiCall(query, callbackName);
         }
       }
 
