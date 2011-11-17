@@ -22,25 +22,25 @@
         getFormerDeals("printDeals");
       }      
 
-			// make api call to url: serverName/api/v1/Coupon?where=dateExpired%3E%3Dtoday&featured!=null&select=featured,title
-			//			   http://aurora2.lablz.com/api/v1/Coupon?where=dateExpired%3E%3Dtoday&featured!=null&select=featured,title
+			// make api call to url: serverName/api/v1/Coupon?where=dateExpired%3E%3Dtoday,featured!=null&select=featured,title
+			//			   http://aurora2.lablz.com/api/v1/Coupon?where=dateExpired%3E%3Dtoday,featured!=null&select=featured,title
 			// api call: fetch me all Coupon resources whose dateExpired <= today and who have a thumbnail picture ("featured" property)
 			// feed data received to the function with name = callbackName     
       function getCurrentDeals(callbackName) {
         var path = "Coupon?";
-        var queryParams = ['where=dateExpired%3E%3Dtoday&featured!=null', 'select=featured,title'];  // 'featured' is the name of the image property        
+        var queryParams = ['where=dateExpired%3E%3Dtoday,featured!=null', 'select=featured,title'];  // 'featured' is the name of the image property        
         var query = queryParams.join('&');
         var url = path + query;
         makeApiCall(url, callbackName);
       }
       
-			// make api call to url: serverName/api/v1/Coupon?where=dateExpired%3Ctoday&featured!=null&select=featured,title
-			//			   http://aurora2.lablz.com/api/v1/Coupon?where=dateExpired%3Ctoday&featured!=null&select=featured,title
+			// make api call to url: serverName/api/v1/Coupon?where=dateExpired%3Ctoday,featured!=null&select=featured,title
+			//			   http://aurora2.lablz.com/api/v1/Coupon?where=dateExpired%3Ctoday,featured!=null&select=featured,title
 			// api call: fetch me all Coupon resources whose dateExpired <= today and who have a thumbnail picture ("featured" property)
 			// feed data received to the function with name = callbackName     
       function getFormerDeals(callbackName) {
         var path = "Coupon?";
-        var queryParams = ['where=dateExpired%3Ctoday&featured!=null', 'select=featured,title'];  // 'featured' is the name of the image property        
+        var queryParams = ['where=dateExpired%3Ctoday,featured!=null', 'select=featured,title'];  // 'featured' is the name of the image property        
         var query = queryParams.join('&');
         var url = path + query;
         makeApiCall(url, callbackName);
