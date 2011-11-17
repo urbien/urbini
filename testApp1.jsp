@@ -1,25 +1,22 @@
-<html>
-<head>
-  <script src="http://mark.obval.com/obval/lablzapi1.js" type="text/javascript"></script>
-</head>
-
-<body>
+<div>
+  <script src="lablzapi1.js" type="text/javascript"></script>
   <div id="lablz_data"></div>
   <div id="coupon_view"></div>
   <div id="coupon_list"></div>
   <div id="userName"></div>   
   <script type="text/javascript">
 <![CDATA[   
+      initLablz("749b5ee823d75a5967b04c594bd560da");
         
 			// print former/current deals. Click on any coupon image to view large image and title
       function couponExample() {
 //        getCurrentDeals("printDeals");
-        getFormerDeals("printDeals");
+//        getFormerDeals("printDeals");
 //        oauthExample("printDeals");
       }      
 
 //getFormerDeals("printJson");
- //     makeAuthenticatedApiCall("me/purchasingHistory?select=title,adjustedTotal", "printJson");
+      makeAuthenticatedApiCall("me/purchasingHistory?select=title,adjustedTotal", "printJson");
 //      makeAuthenticatedApiCall("Vendor?select=name", "printJson");
 //      makeAuthenticatedApiCall("Vendor?where=" + encodeURIComponent('city=Moscow') + "&select=name", "printJson");
 //      makeAuthenticatedApiCall("Vendor/2/coupons?select=title", "printJson");
@@ -94,6 +91,4 @@
       couponExample();
 ]]>       
   </script>
-</body>
-
-</html>
+</div>
