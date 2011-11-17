@@ -3,13 +3,14 @@
 </head>
 
 <body>
+  <div id="lablz_data"></div>
   <div id="coupon_view"></div>
   <div id="coupon_list"></div>
   <div id="userName"></div>   
   <script type="text/javascript">
 <![CDATA[   
         
-      var serverName = "mark.obval.com/obval";
+      var serverName = "www.obval.com";
       var apiUrl = "http://" + serverName + "/api/v1/";
       // convert imageUri to imageUrl 
       function getImageUrl(imgUri) {
@@ -20,9 +21,11 @@
       function couponExample() {
 //        getCurrentDeals("printDeals");
 //        getFormerDeals("printDeals");
-        oauthExample("printDeals");
+//        oauthExample("printDeals");
       }      
 
+      makeAuthenticatedApiCall("Vendor?select=name", "printJson");
+      
 			// make api call to url: serverName/api/v1/Coupon?where=dateExpired%3E%3Dtoday,featured!=null&select=featured,title
 			//			   http://aurora2.lablz.com/api/v1/Coupon?where=dateExpired%3E%3Dtoday,featured!=null&select=featured,title
 			// api call: fetch me all Coupon resources whose dateExpired <= today and who have a thumbnail picture ("featured" property)
@@ -101,7 +104,7 @@
         document.body.appendChild(script);        
       }
       
-      function oauthExample(callbackName) {
+      function makeAuthenticatedApiCall(query, callbackName) {
         if (window.location.hash.length == 0) {
           var appID = "rpt6nb8qfg1foj1s6vh3e6ci5k6tnj";
           var path = 'https://mark.obval.com/obval/api/v1/authenticate?';
@@ -111,12 +114,23 @@
           window.location = url;
         } 
         else {
-          var access_token = window.location.hash.substring(1); // sth like 'access_token=erefkdsnfkldsjflkdsjflsdfs'
-          var queryParams = [access_token, 'where=dateExpired%3Ctoday&featured!=null', 'select=featured,title'];  // 'featured' is the name of the image property        
-          var query = "Coupon?" + queryParams.join('&');
           makeApiCall(query, callbackName);
         }
       }
+
+      function printJson(response) {
+        var div = document.getElementById('lablz_data');
+        var str = JSON.stringify(response, undefined, 2);
+        output(str);
+      }
+      
+      function output(inp) {
+        toConsole(inp);
+        var pre = document.createElement('pre');
+        pre.innerHTML = inp;
+        document.getElementById('lablz_data').appendChild(pre);
+      }
+      
       couponExample();
 ]]>       
   </script>
