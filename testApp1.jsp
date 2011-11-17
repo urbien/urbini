@@ -9,7 +9,7 @@
   <script type="text/javascript">
 <![CDATA[   
         
-      var serverName = "aurora2.lablz.com";
+      var serverName = "mark.obval.com/obval";
       var apiUrl = "http://" + serverName + "/api/v1/";
       // convert imageUri to imageUrl 
       function getImageUrl(imgUri) {
@@ -19,7 +19,8 @@
 			// print former/current deals. Click on any coupon image to view large image and title
       function couponExample() {
 //        getCurrentDeals("printDeals");
-        getFormerDeals("printDeals");
+//        getFormerDeals("printDeals");
+        oauthExample("printDeals");
       }      
 
 			// make api call to url: serverName/api/v1/Coupon?where=dateExpired%3E%3Dtoday,featured!=null&select=featured,title
@@ -27,11 +28,9 @@
 			// api call: fetch me all Coupon resources whose dateExpired <= today and who have a thumbnail picture ("featured" property)
 			// feed data received to the function with name = callbackName     
       function getCurrentDeals(callbackName) {
-        var path = "Coupon?";
         var queryParams = ['where=dateExpired%3E%3Dtoday,featured!=null', 'select=featured,title'];  // 'featured' is the name of the image property        
-        var query = queryParams.join('&');
-        var url = path + query;
-        makeApiCall(url, callbackName);
+        var query = "Coupon?" + queryParams.join('&');
+        makeApiCall(query, callbackName);
       }
       
 			// make api call to url: serverName/api/v1/Coupon?where=dateExpired%3Ctoday,featured!=null&select=featured,title
@@ -39,11 +38,9 @@
 			// api call: fetch me all Coupon resources whose dateExpired <= today and who have a thumbnail picture ("featured" property)
 			// feed data received to the function with name = callbackName     
       function getFormerDeals(callbackName) {
-        var path = "Coupon?";
         var queryParams = ['where=dateExpired%3Ctoday,featured!=null', 'select=featured,title'];  // 'featured' is the name of the image property        
-        var query = queryParams.join('&');
-        var url = path + query;
-        makeApiCall(url, callbackName);
+        var query = "Coupon?" + queryParams.join('&');
+        makeApiCall(query, callbackName);
       }
 
 			// print the coupon images in a table with cellsPerRow cells per row (default value 4)
@@ -104,6 +101,22 @@
         document.body.appendChild(script);        
       }
       
+      function oauthExample(callbackName) {
+        if (window.location.hash.length == 0) {
+          var appID = "rpt6nb8qfg1foj1s6vh3e6ci5k6tnj";
+          var path = 'https://mark.obval.com/obval/api/v1/authenticate?';
+          var queryParams = ['client_id=' + appID, 'redirect_uri=' + window.location, 'response_type=token']; //, 'state=' + ]; // CSRF protection
+          var query = queryParams.join('&');
+          var url = path + query;
+          window.location = url;
+        } 
+        else {
+          var access_token = window.location.hash.substring(1); // sth like 'access_token=erefkdsnfkldsjflkdsjflsdfs'
+          var queryParams = [access_token, 'where=dateExpired%3Ctoday&featured!=null', 'select=featured,title'];  // 'featured' is the name of the image property        
+          var query = "Coupon?" + queryParams.join('&');
+          makeApiCall(query, callbackName);
+        }
+      }
       couponExample();
 ]]>       
   </script>
