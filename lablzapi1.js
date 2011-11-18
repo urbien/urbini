@@ -1,10 +1,10 @@
-//      var serverName = "mark.obval.com/obval"; 
-//      var serverName = "aurora2.lablz.com";
-      var serverName = "www.obval.com";
-//    var serverName = "dev.obval.com";
-      var apiUrl = "http://" + serverName + "/api/v1/";
-      var secureApiUrl = "https://" + serverName + "/api/v1/";
-      var appId;
+var serverName = "mark.obval.com/obval"; 
+//var serverName = "aurora2.lablz.com";
+//var serverName = "www.obval.com";
+//var serverName = "dev.obval.com";
+var apiUrl = "http://" + serverName + "/api/v1/";
+var secureApiUrl = "https://" + serverName + "/api/v1/";
+var appId;
 
 Lablz = {};
 
@@ -21,7 +21,7 @@ Lablz.simpleCall = function(query, callbackName, secure) {
   script.src = fullUrl;
   document.body.appendChild(script);        
 }
-      
+
 Lablz.call = function(query, callbackName) {
   if (appId == null)
     throw new "init must be called before authenticatedCall";
@@ -34,7 +34,7 @@ Lablz.call = function(query, callbackName) {
   } 
   else {
     var access_token = window.location.hash.substring(1); // sth like 'access_token=erefkdsnfkldsjflkdsjflsdfs'
-    makeSecureApiCall(query + "&" + access_token, callbackName);
+    Lablz.simpleCall(query + "&" + access_token, callbackName, true);
   }
 }
 
@@ -45,9 +45,9 @@ Lablz.printJson = function(response) {
 }
       
 Lablz.output = function(inp) {
-  toConsole(inp);
   var pre = document.createElement('pre');
   pre.innerHTML = inp;
+  document.getElementById('lablz_data').innerHTML = "";
   document.getElementById('lablz_data').appendChild(pre);
 }
       // convert imageUri to imageUrl 

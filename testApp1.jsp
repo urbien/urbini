@@ -6,18 +6,18 @@
   <div id="userName"></div>   
   <script type="text/javascript">
 <![CDATA[   
-      Lablz.init("f57c0964f4442fc37597aede2f05681");
+      Lablz.init("137adb2fd8c5d72ba9e3917245abc");
         
 			// print former/current deals. Click on any coupon image to view large image and title
       function couponExample() {
 //        getCurrentDeals("printDeals");
-//        getFormerDeals("printDeals");
+        getFormerDeals("printDeals");
 //        oauthExample("printDeals");
       }      
 
 //getFormerDeals("Lablz.printJson");
 //      Lablz.call("me/purchasingHistory?select=title,adjustedTotal", "Lablz.printJson");
-      Lablz.call("Vendor?select=name", "Lablz.printJson");
+//      Lablz.call("Vendor?select=email", "Lablz.printJson");
 //      Lablz.call("Vendor?where=" + encodeURIComponent('city=Moscow') + "&select=name", "Lablz.printJson");
 //      Lablz.call("Vendor/2/coupons?select=title", "Lablz.printJson");
       
@@ -45,6 +45,11 @@
 			// the data comes back as a json object {"data" : [array of coupon json objects]
 		  var cellsPerRow = 4;
       function printDeals(response) {
+        if (response.error) {
+          Lablz.printJson(response);
+          return;
+        }
+      
         var div = document.getElementById('coupon_list');        
         var data = response.data;
         var numCells = data.length;
@@ -63,7 +68,7 @@
           for (j = i; j < numCells && j < i + cellsPerRow; j++) {
             cell[j] = document.createElement('td');
 //            cell[j].innerHTML = data[j].title + "<br /><a href=\"javascript:getCouponInfo('" + data[j]._uri + "','printCouponInfo')\"><img src='" + Lablz.getImageUrl(data[j].featured) + "' /></a>";
-            cell[j].innerHTML = "<a href=\"javascript:getCouponInfo('" + data[j]._uri + "','printCouponInfo')\"><img src='" + Lablz.getImageUrl(data[j].featured) + "' /></a>";
+            cell[j].innerHTML = "<a href=\"javascript:getCouponInfo('" + data[j]._uri + "','Lablz.printJson')\"><img src='" + Lablz.getImageUrl(data[j].featured) + "' /></a>";
       
             row[rowNum].appendChild(cell[j]);
           }
