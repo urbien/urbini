@@ -1,10 +1,10 @@
-var serverName = "mark.obval.com/obval"; 
-//var serverName = "aurora2.lablz.com";
-//var serverName = "www.obval.com";
-//var serverName = "dev.obval.com";
-var apiUrl = "http://" + serverName + "/api/v1/";
-var secureApiUrl = "https://" + serverName + "/api/v1/";
-var appId;
+//      var serverName = "mark.obval.com/obval"; 
+//      var serverName = "aurora2.lablz.com";
+      var serverName = "www.obval.com";
+//    var serverName = "dev.obval.com";
+      var apiUrl = "http://" + serverName + "/api/v1/";
+      var secureApiUrl = "https://" + serverName + "/api/v1/";
+      var appId;
 
 Lablz = {};
 
@@ -41,7 +41,7 @@ Lablz.call = function(query, callbackName) {
 Lablz.printJson = function(response) {
   var div = document.getElementById('lablz_data');
   var str = JSON.stringify(response, undefined, 2);
-  output(str);
+  Lablz.output(str);
 }
       
 Lablz.output = function(inp) {
