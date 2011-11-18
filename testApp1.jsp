@@ -11,15 +11,15 @@
 			// print former/current deals. Click on any coupon image to view large image and title
       function couponExample() {
 //        getCurrentDeals("printDeals");
-        getFormerDeals("printDeals");
+//        getFormerDeals("printDeals");
 //        oauthExample("printDeals");
       }      
 
-//getFormerDeals("printJson");
-//      Lablz.call("me/purchasingHistory?select=title,adjustedTotal", "printJson");
-//      Lablz.call("Vendor?select=name", "printJson");
-//      Lablz.call("Vendor?where=" + encodeURIComponent('city=Moscow') + "&select=name", "printJson");
-//      Lablz.call("Vendor/2/coupons?select=title", "printJson");
+//getFormerDeals("Lablz.printJson");
+//      Lablz.call("me/purchasingHistory?select=title,adjustedTotal", "Lablz.printJson");
+      Lablz.call("Vendor?select=name", "Lablz.printJson");
+//      Lablz.call("Vendor?where=" + encodeURIComponent('city=Moscow') + "&select=name", "Lablz.printJson");
+//      Lablz.call("Vendor/2/coupons?select=title", "Lablz.printJson");
       
 			// make api call to url: serverName/api/v1/Coupon?where=dateExpired%3E%3Dtoday,featured!=null&select=featured,title
 			//			   http://aurora2.lablz.com/api/v1/Coupon?where=dateExpired%3E%3Dtoday,featured!=null&select=featured,title
@@ -28,7 +28,7 @@
       function getCurrentDeals(callbackName) {
         var queryParams = ['where=dateExpired%3E%3Dtoday,featured!=null', 'select=featured,title'];  // 'featured' is the name of the image property        
         var query = "Coupon?" + queryParams.join('&');
-        Lablz.simpleCall(query, callbackName, false);
+        Lablz.simpleCall(query, callbackName);
       }
       
 			// make api call to url: serverName/api/v1/Coupon?where=dateExpired%3Ctoday,featured!=null&select=featured,title
