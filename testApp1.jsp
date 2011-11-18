@@ -3,20 +3,19 @@
   <div id="lablz_data"></div>
   <div id="coupon_view"></div>
   <div id="coupon_list"></div>
-  <div id="userName"></div>   
   <script type="text/javascript">
 <![CDATA[   
-      Lablz.init("137adb2fd8c5d72ba9e3917245abc");
+      Lablz.init("34bfac842674d2ef11b6b1cfb26fdee");
         
 			// print former/current deals. Click on any coupon image to view large image and title
       function couponExample() {
 //        getCurrentDeals("printDeals");
-        getFormerDeals("printDeals");
+//        getFormerDeals("printDeals");
 //        oauthExample("printDeals");
       }      
 
 //getFormerDeals("Lablz.printJson");
-//      Lablz.call("me/purchasingHistory?select=title,adjustedTotal", "Lablz.printJson");
+      Lablz.call("me/purchasingHistory?select=title,adjustedTotal", "Lablz.printJson");
 //      Lablz.call("Vendor?select=email", "Lablz.printJson");
 //      Lablz.call("Vendor?where=" + encodeURIComponent('city=Moscow') + "&select=name", "Lablz.printJson");
 //      Lablz.call("Vendor/2/coupons?select=title", "Lablz.printJson");
