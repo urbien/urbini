@@ -1,4 +1,7 @@
 <div>
+  <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab" width="498" height="380" id="test1">
+  <param name="movie" value="http://aurora2.lablz.com/LablzApiTest.swf" /><embed src="http://aurora2.lablz.com/LablzApiTest.swf" width="498" height="380" name="test1" type="application/x-shockwave-flash" pluginspage="http://www.adobe.com/go/getflashplayer" /></object>
+
   <script src="http://mark.obval.com/obval/lablzapi1.js" type="text/javascript"></script>
   <div id="lablz_data"></div>
   <div id="coupon_view"></div>
@@ -15,7 +18,8 @@
       }      
 
 //getFormerDeals("Lablz.printJson");
-      Lablz.call("me/purchasingHistory?select=title,adjustedTotal", "Lablz.printJson");
+//      Lablz.simpleCall("Coupon?select=shortTitle&limit=1", "Lablz.printJson");
+//      Lablz.call("me/purchasingHistory?select=title,adjustedTotal", "Lablz.printJson");
 //      Lablz.call("Vendor?select=email", "Lablz.printJson");
 //      Lablz.call("Vendor?where=" + encodeURIComponent('city=Moscow') + "&select=name", "Lablz.printJson");
 //      Lablz.call("Vendor/2/coupons?select=title", "Lablz.printJson");
