@@ -23,6 +23,19 @@
   </div></td>
   <td colspan="4" valign="top" style="padding:20px;"><property name="description" noIcon="y" /></td>
   </tr>
+  <tr>
+  <td colspan="5" align="right" style="font-size:12px; margin:4px;">
+  <where value="getContact().vendor.name != name">
+  <a href="claimYourBiz.html">Is this your business?  Claim your site today for free!</a>
+  </where>
+  <where value="getContact().vendor.name == name">
+  <div>
+  <property name="-$me.firstName">,&#160;<text text="you can start building your business now" />
+  <div><a href="claimYourBiz.html">See what things you can do here</a></div>
+  </div>
+  </where>
+  </td>
+  </tr>
 <tr>
   <td colspan="5" valign="center"><siteResourceList uri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/media/publishing/ProductType&amp;suppliers.company_verified=y&amp;suppliers.company_select=-$this&amp;-gridCols=description&amp;-title=Our+Products&amp;-inRowW=8&amp;-titleLink=y&amp;-suppressHeader=y&amp;-sidebar=right"/></td>
 </tr>
