@@ -23,7 +23,7 @@
  </table>
 </div-->
 <div id="social1" class="lightTextDarkBackground">
- <table width="100%" border="0" cellspacing="0" cellpadding="0"><tr>
+ <table width="100%" border="0" cellspacing="0" cellpadding="0">
    <tr>
    <td id="likeAndComment">
      <table width="100%">
