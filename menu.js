@@ -3697,11 +3697,8 @@ var ListBoxesHandler = {
 
   displayItemName : function() {
     var itemNameDiv = getChildById(this.optionsPanel, "item_name");
-    var label = getChildByClassName(this.curParamRow, "label_td");
-    if (label) {
-      itemNameDiv.innerHTML = label.innerHTML;
-      itemNameDiv.style.display = "";
-    }
+    var label = getChildByClassName(this.curParamRow, "label");
+    itemNameDiv.innerHTML = (label != null) ? label.innerHTML : "";
   },
   
 	onOptionsItemClick : function(e) {
