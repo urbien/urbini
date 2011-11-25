@@ -2139,10 +2139,12 @@ var FormProcessor = {
 			if (isFieldRequired && inputs[i].type != "password") {
 				FieldsWithEmptyValue.initField(inputs[i], "&[Required];");
 			}
-			// insert "type" text if paramTr does not contain arrow_td
-			else 
-				if (getChildByClassName(paramTr, "arrow_td") == null && inputs[i].type != "password")  
-					FieldsWithEmptyValue.initField(inputs[i], "&[type here];");
+			
+		//	removed! the "type here" text as it's quite obvious for web users these days
+		// insert "type" text if paramTr does not contain arrow_td
+//			else 
+//				if (getChildByClassName(paramTr, "arrow_td") == null && inputs[i].type != "password")  
+//					FieldsWithEmptyValue.initField(inputs[i], "&[type here];");
 		}
 	}
 
