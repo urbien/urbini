@@ -16,7 +16,8 @@ Lablz.init = function (id) {
       // where query is sth like "Coupon?where=...&select=..."
       // default to HTTPS
 Lablz.simpleCall = function(query, callbackName, secure) {
-  var fullUrl = (typeof secure == 'undefined' || secure ? secureApiUrl : apiUrl) + query + "&callback=" + callbackName;
+  var separator = query.indexOf('?') == -1 ? '?' : '&';
+  var fullUrl = (typeof secure == 'undefined' || secure ? secureApiUrl : apiUrl) + query + separator + "callback=" + callbackName;
   var script = document.createElement('script');
   script.src = fullUrl;
   document.body.appendChild(script);        
@@ -28,27 +29,29 @@ Lablz.call = function(query, callbackName) {
   if (window.location.hash.length == 0) {
     var path = secureApiUrl + 'authenticate?';
     var queryParams = ['client_id=' + appId, 'redirect_uri=' + window.location, 'response_type=token']; //, 'state=' + ]; // CSRF protection
-    var query = queryParams.join('&');
-    var url = path + query;
+    var qry = queryParams.join('&');
+    var url = path + qry;
     window.location = url;
   } 
   else {
     var access_token = window.location.hash.substring(1); // sth like 'access_token=erefkdsnfkldsjflkdsjflsdfs'
-    Lablz.simpleCall(query + "&" + access_token, callbackName, true);
+    var separator = query.indexOf('?') == -1 ? '?' : '&';
+    Lablz.simpleCall(query + separator + access_token, callbackName, true);
   }
 }
 
 Lablz.printJson = function(response) {
   var div = document.getElementById('lablz_data');
+  if (div == null) {
+    div = document.createElement('div');
+    div.id = 'lablz_data';
+    document.body.appendChild(div);
+  }
   var str = JSON.stringify(response, undefined, 2);
-  Lablz.output(str);
-}
-      
-Lablz.output = function(inp) {
   var pre = document.createElement('pre');
-  pre.innerHTML = inp;
-  document.getElementById('lablz_data').innerHTML = "";
-  document.getElementById('lablz_data').appendChild(pre);
+  pre.innerHTML = str;
+  div.innerHTML = "";
+  div.appendChild(pre);
 }
       // convert imageUri to imageUrl 
 Lablz.getImageUrl = function(imgUri) {
