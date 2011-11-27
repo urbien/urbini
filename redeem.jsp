@@ -5,6 +5,11 @@
   <table border="0" cellpadding="3" cellspacing="0" cols="2" class="redeem">
     <tr>
       <td>
+        <errorMessage />
+      </td>
+    </tr>
+    <tr>
+      <td>
         <redeemedCouponBuy />
       </td>
     </tr>
