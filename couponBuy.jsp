@@ -78,8 +78,8 @@
                   <where value="!mustBeGifted">
                     <property name="couponID" />&#45;<property name="couponSecret" />
                     <br /><br />
-                    <codesViaSMS />
-                    <br />
+                    <!--codesViaSMS />
+                    <br /-->
                     <codesViaEmail />
                   </where>
                 </where>
@@ -111,8 +111,8 @@
                     <where value="!mustBeGifted">
                       <property name="couponID" />&#45;<property name="couponSecret" />
                       <br /><br />
-                      <codesViaSMS />
-                      <br />
+                      <!--codesViaSMS />
+                      <br /-->
                       <codesViaEmail />
                     </where>
                   </where>
