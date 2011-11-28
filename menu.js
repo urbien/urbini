@@ -13618,5 +13618,37 @@ function selectAll(id)
   document.getElementById(id).select();
 }
 
+function getUrlMinusReferrer() {
+  var url = window.location.href;
+  var referrerSeparator = "/-/";
+  if (url.contains(referrerSeparator))
+    url = url.substring(0, url.indexOf(referrerSeparator));
+  
+  return url;
+}
+
+function asyncLoadScript(scriptUrl, scriptDiv, callback) {
+  setTimeout(function() {
+    loadScript(scriptUrl, scriptDiv, callback);
+  }, 0);
+}
+
+function loadScript(scriptUrl, scriptDiv, callback) {
+  var el = document.createElement('script');
+  el.type = 'text/javascript';
+  el.src = scriptUrl;
+  el.async = true;
+  // most browsers
+  el.onload = callback;
+  // IE 6-7
+  el.onreadystatechange = function() {
+    if (this.readyState == 'complete') {
+      if (typeof callback == 'function')
+        callback();
+    }
+  }
+  scriptDiv.appendChild(el);
+}
+
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
