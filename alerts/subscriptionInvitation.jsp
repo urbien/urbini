@@ -1,5 +1,5 @@
 <div>
-		<text text="You are invited to receive alerts for the following" />&#160;<b><property name="forum" type="y"/></b>&#160;:
+		<text text="You are invited to receive alerts for the following" />&#160;<b><property name="forum" type="y" itype="!http://www.hudsonfog.com/voc/model/company/Contact" /></b>&#160;:
     <br/><br/><br />
     <center><property name="forum" href="y"/></center>
 		<br/><br/>
