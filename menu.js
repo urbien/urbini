@@ -4328,6 +4328,8 @@ var TagsMgr = {
 		TagsMgr._processIfRequired(parentDiv);
 	},
 	_processIfRequired : function(tagsContainer) {
+		if (!tagsContainer)
+			return;
 		var req = getChildByClassName(tagsContainer.parentNode, "false_empty_field");
 		if (!req)
 			return;
