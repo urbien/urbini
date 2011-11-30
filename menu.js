@@ -2657,11 +2657,11 @@ var Tooltip = {
 
 		// show tooltip on click on (help & property) icon
 		var target = getEventTarget(e);
-		if ($t.putContent(e, target)) {
+		// allow browsing on a link click
+		if (!isElemOfTag(target, "a") && $t.putContent(e, target)) {
 			$t.show();
 			stopEventPropagation(e);
 		}
-		
 	},
 	
   show : function() {
