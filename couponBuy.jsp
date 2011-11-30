@@ -141,11 +141,10 @@
             </tr>
             <where value="couponCode != null">
               <tr>
-                <where value="checkInsCount == null || checkInsCount == 0">
-                <!--where value="checkInsCount == 0 || checkInsCount == canceledCheckInsCount"-->
+                <where value="checkIn == null">
                   <td colspan="2" width="100%" style="align:left">
                     <br />
-                    <a class="check_in button" style="width:90%" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CheckIn&amp;bUri=-$this%26m_p=checkIns%26b_p=event"><text text="Check In!"/></a>
+                    <createReview text="Check in!"/>
                   </td>
                 </where>
               </tr>
