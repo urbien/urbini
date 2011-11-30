@@ -5,6 +5,7 @@
     <property name="resourceMediumImage" noIcon="y" /><br /><br />
     <br/><br/>
     <h3><text text="So fess up, did you go to this event?"/></h3><br /> 
-    <reviewCouponLinks />
+    <!--reviewCouponLinks /-->
+    <createReview text="Yes" />
   
 </div>
