@@ -2658,7 +2658,7 @@ var Tooltip = {
 		// show tooltip on click on (help & property) icon
 		var target = getEventTarget(e);
 		// allow browsing on a link click
-		if (!isElemOfTag(target, "a") && $t.putContent(e, target)) {
+		if (getAncestorByTagName("a") == null && $t.putContent(e, target)) {
 			$t.show();
 			stopEventPropagation(e);
 		}
