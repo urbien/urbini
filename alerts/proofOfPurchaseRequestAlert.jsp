@@ -5,5 +5,5 @@
     <br/><br/>
     <property name="resourceMediumImage" noIcon="y" />
     <br/><br/>
-    <reviewCouponLinks edit="y" />
+    <createReview text="Update check-in" />
 </div>
