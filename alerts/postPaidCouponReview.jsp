@@ -6,6 +6,6 @@
     <br/><br/>
     <h3><text text="So fess up, did you go to this event?"/></h3><br /> 
     <!--reviewCouponLinks /-->
-    <createReview text="Yes" />
+    <createReview paid="n" options="amnesia,no" />
   
 </div>
