@@ -1,18 +1,13 @@
-<div align="center" valign="bottom">
-  <!--br />
-<span style="font-size:18px; font-style:italic; font-weight: bold"><text text="Dear "/>&#160;<property noIcon="y" name="submittedBy"/></span>
-  <br />
-  <br / -->
-<!--where value="purchase.redeemed == false">
-  <br />
-  <font style="font-weight:bold;color:red"><text text="NOTE: you'll get your reward money as soon as the vendor redeems your coupon. To make sure he does..." /></font>
-  <br />
-</where>
-  <br />
-  <font style="font-weight:bold;color:red"><text text="Please add any photos/proofs of purchase below" /></font>
-  <br />
-  <br / -->
-</div>
+<div style="text-align:left;margin-left:20px;margin-right:20px" valign="bottom">
+  <br /><br />
+  <where value="purchase.coupon.rewardForCheckIn != null &amp;&amp; purchase.coupon.rewardForCheckIn.value &gt; 0">
+    <text text="You will get a reward when the Vendor redeems your coupon. The Vendor must do it within 3 days of receiving the coupon. Please submit your review with photos of your visit to the Vendor." />
+    <text text="For deliveries, please take pictures of products when they arrive. We will use what is shown on the pictures and their timestamps as your proof of purchase." />
+    <text text="Please set your phone number on your profile so we can contact you if the Vendor plays hooky." />
+    <br /><br />
+  </where>
+  <div style="font-weight:bold;color:red;text-align:center;"><text text="Add any photos/proofs of purchase below" /></div>
+
 
 <!--div valign="bottom">
 <where value="submittedBy.getUri() == getContact()" >
@@ -27,3 +22,4 @@
   </table>
 </where>
 </div-->
+</div>
