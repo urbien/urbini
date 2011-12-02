@@ -13191,10 +13191,22 @@ var LinkProcessor = {
 	    return;
 
 	  var anchor = getTargetAnchor(e);
-		
+
 		// note: a link can not contain table(s), div(s) then to use div instead	
 		if (!anchor) {
 			anchor = getAncestorById(getEventTarget(e), "-inner");
+			
+			// Opera's hack for overlays because Opera does not support pointer-events: none;
+			if (Browser.opera) {
+				var target = getEventTarget(e);
+				var galleryItem = getAncestorByClassName(target, "galleryItem_container");
+				if (galleryItem) {
+					anchor = getChildByTagName(galleryItem, "a");
+					window.location.assign(anchor.href);
+					return;
+				}
+			}
+			
 			if (!anchor || !anchor.getAttribute("href"))
 	 	   return;
 		}
