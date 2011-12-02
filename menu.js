@@ -4292,10 +4292,11 @@ var ListBoxesHandler = {
 	}
 }
 
-/*
- * for multiple selection
- */
-
+//*****************************************************************
+// multi value selection:
+// 1) UI for selection from the options list 
+// 2) data putting for displayinline (checkboxes list)
+//*****************************************************************
 var TagsMgr = {
 	// adds gui element
 	add : function(parentDiv, title, inner){
@@ -4335,6 +4336,20 @@ var TagsMgr = {
 			return;
 		// show / hide div with "required" alert
 		req.style.display = (getFirstChild(tagsContainer) == null) ? "block" : "none";
+	},
+	// displayinline (set of checkboxes)
+	putValuesForDisplayInline : function(btn) {
+		var parentTd = getAncestorByClassName(btn, "data_td");
+		var inputs = parentTd.getElementsByTagName("input");
+		var dataInput = inputs[0];
+		dataInput.value = "";
+		for (var i = 1; i < inputs.length; i++) {
+			if (inputs[i].checked) {
+				if (dataInput.value.length > 0)
+					dataInput.value += " ,";
+	  		dataInput.value += inputs[i].value;;
+	  	}
+		}
 	}
 }
 
