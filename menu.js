@@ -2765,9 +2765,13 @@ var ListBoxesHandler = {
       return;
 
     keyPressedTime = new Date().getTime();
-    
+
     //var form = target.form;
     var form = document.forms[currentFormName];
+		// page can contain 2 'rightPanelPropertySheet' forms (sift and dialog)
+		if (typeof form.elements == 'undefined')
+			form = form[1]; // 2nd is a dialog
+			
     var characterCode = getKeyCode(e); // code typed by the user
 	
 		if (e.type != 'click' && characterCode <= 40 && characterCode != 8)
@@ -2962,12 +2966,15 @@ var ListBoxesHandler = {
 
 		// note: possible 2 forms with the same name, like FTS "sift" filter
 		var form = null;
-		if (arrowTd)
+		if (arrowTd) 
 			form = getAncestorByTagName(arrowTd, "form");
 		// in case when popup is outside the form, like in RL editor
-		else
-			form = document.forms[currentFormName]; 
-			
+		else {
+			form = document.forms[currentFormName];
+			// page can contain 2 'rightPanelPropertySheet' forms (sift and dialog)
+			if (typeof form.elements == 'undefined')
+				form = form[1]; // 2nd is a dialog
+		}	
 		propName1 = propName1.substring(0, propName1.length - (currentFormName.length + 1));
     currentImgId  = imgId;
 
