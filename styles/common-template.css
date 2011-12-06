@@ -709,7 +709,7 @@ td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
   font-size: 0.9em; height:16px;
 }
 
-.errorTextStd {font-size:12px;font-weight:bold;color:#A01E00}
+.errorTextStd {font-size:12px; font-weight:bold; color:#A01E00; white-space: nowrap;}
 
 .dashedBlock {border-style:dashed; border-width: 2px; border-color:#ADADD5 #ADADD5 #ADADD5 #ADADD5}
 
