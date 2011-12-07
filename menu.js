@@ -4352,16 +4352,16 @@ var TagsMgr = {
 		var inputs = parentTd.getElementsByTagName("input");
 		var dataInput = inputs[0];
 		if (isSingleResource)
-			dataInput.value = btn.value;
+		  dataInput.value = btn.value;
 		else {
-			dataInput.value = "";
-			for (var i = 1; i < inputs.length; i++) {
-				if (inputs[i].checked) {
-					if (dataInput.value.length > 0) 
-						dataInput.value += " ,";
+		  dataInput.value = "";
+		  for (var i = 1; i < inputs.length; i++) {
+			if (inputs[i].checked) {
+				if (dataInput.value.length > 0)
+					dataInput.value += " ,";
 					dataInput.value += inputs[i].value;
 				}
-			}
+	    	}
 		}
 	}
 }
@@ -13694,3 +13694,48 @@ function loadScript(scriptUrl, scriptDiv, callback) {
 
 // flag that menu.js was parsed
 g_loadedJsFiles["menu.js"] = true;
+
+// callback on image upload from options panel
+function photoUploadOnMkresourceCallback(imgUrl, imgName, thumbnail) {
+  var curDiv = document.getElementById("currentPhoto");
+  var curDivHTML = curDiv.innerHTML;
+  curDiv.id = '';
+
+  var img = document.getElementById("$noValue");
+  img.src = imgUrl;
+  img.height = 67;
+  img.id = '';
+  
+  var photosRow = document.getElementById("photos");
+  var elms = photosRow.getElementsByTagName("input");
+  
+  var att = document.createElement("input");
+  att.type = "hidden";
+  att.value = imgUrl;
+  att.name = "-attachment";
+  
+  photosRow.appendChild(att);
+  
+  var divs = photosRow.getElementsByTagName("div");
+  var n = divs.length;
+  var cDiv;
+  for (var i=0; i<n; i++) {
+    var d = divs[i];
+    if (d.className  && d.className == 'photosEmpty') {
+      d.innerHTML = curDivHTML;
+      cDiv = d;
+      d.id = 'currentPhoto';
+      d.className = '';
+      break; 
+    }
+  }
+  
+  
+  /* assign event handlers for new TR (!) 
+  if (cDiv) {
+    addEvent(cDiv, 'click', ListBoxesHandler.onOptionsItemClick, false);
+    addEvent(cDiv, 'mouseover', TouchDlgUtil.highlightRowGreyOnOver, false);
+    addEvent(cDiv, 'mouseout', TouchDlgUtil.bleachGreyRowOnOut, false);
+  }
+  */  
+}
