@@ -4344,18 +4344,24 @@ var TagsMgr = {
 		// show / hide div with "required" alert
 		req.style.display = (getFirstChild(tagsContainer) == null) ? "block" : "none";
 	},
-	// displayinline (set of checkboxes)
-	putValuesForDisplayInline : function(btn) {
+	
+	// displayinline used for
+	// 1) set of checkboxes (multi value) or 2) single value of object (radio button)
+	putValuesForDisplayInline : function(btn, isSingleResource) {
 		var parentTd = getAncestorByClassName(btn, "data_td");
 		var inputs = parentTd.getElementsByTagName("input");
 		var dataInput = inputs[0];
-		dataInput.value = "";
-		for (var i = 1; i < inputs.length; i++) {
-			if (inputs[i].checked) {
-				if (dataInput.value.length > 0)
-					dataInput.value += " ,";
-	  		dataInput.value += inputs[i].value;;
-	  	}
+		if (isSingleResource)
+			dataInput.value = btn.value;
+		else {
+			dataInput.value = "";
+			for (var i = 1; i < inputs.length; i++) {
+				if (inputs[i].checked) {
+					if (dataInput.value.length > 0) 
+						dataInput.value += " ,";
+					dataInput.value += inputs[i].value;
+				}
+			}
 		}
 	}
 }
