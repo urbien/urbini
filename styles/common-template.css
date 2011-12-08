@@ -1708,7 +1708,7 @@ div .panel_block, td .panel_block {
 	transition: width 0.4s ease-in-out;
 }
 
-div .standalone_dlg, td .standalone_dlg { width: 520px; margin: 4px;}
+div .standalone_dlg, td .standalone_dlg { width: 520px; margin-top: 4px;}
 
 div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
