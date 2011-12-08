@@ -6,7 +6,7 @@
     <property name="resourceMediumImage" noIcon="y" /><br /><br />
     <br/><br/>
     <h3><text text="So fess up, did you go to this event?"/></h3><br /> 
-    <createReview />
+    <createReview options="amnesia,no" />
   </where>    
   <where value="forum.coupon.rewardForCheckIn != null">
     <!--text text="Earn #### #### by checking in for this deal!" params="forum.coupon.rewardForCheckIn.value,forum.coupon.rewardForCheckIn.currency" /-->
