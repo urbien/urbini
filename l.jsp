@@ -44,9 +44,9 @@
   		</div>
       <taskTreeControl/>
       <div id="siteResourceList">
-        <categories/>
         <errorMessage additems="y"/>
         <buyableTags />
+        <categories/>
         <siteResourceList />
     	  <uploadAttachment/>
         <createResources/>
