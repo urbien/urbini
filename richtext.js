@@ -1364,8 +1364,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var editDiv = getAncestorById(i_am.iframeObj, "div_Edit");
 		if (!editDiv) {
 			if (isParentDialogOnPage(panelBlock)) { // mkResource page
-		  	panelBlock.style.width = (toEnlarge) ? (panelBlock.parentNode.offsetWidth + "px") : "500px";
-		  }
+		  	if (toEnlarge)
+					panelBlock.style.width = panelBlock.parentNode.offsetWidth + "px";
+		  	else if (this.initPanelBlockWidth != null)
+					panelBlock.style.width = this.initPanelBlockWidth;
+			}
 			return;
 		}
 
