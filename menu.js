@@ -13730,6 +13730,7 @@ function photoUploadOnMkresourceCallback(imgUrl, imgName, thumbnail) {
     }
   }
   
+	PlainDlg.hide();
   
   /* assign event handlers for new TR (!) 
   if (cDiv) {
