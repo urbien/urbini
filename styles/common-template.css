@@ -138,7 +138,7 @@ div .href {display: inline;}
 /*  font-weight:normal !important; */ 
 /*  margin:0 !important;  */
 }
-.displayIn4lines, .displayIn4lines * { font-size: 14px !important; line-height: 16px; height: 64px; /* 64 == 16 * 4 */ text-align: left; font-weight:normal !important; margin:0 !important; padding: 2px;} /* good with 12px font in full view */
+.displayIn4lines, .displayIn4lines * { font-size: 14px !important; line-height: 16px; height: 64px; /* 64 == 16 * 4 */ text-align: left; font-weight:normal !important; margin:0 !important; padding-right: 4px;} 
 
 .mItems {
   text-align:center;
