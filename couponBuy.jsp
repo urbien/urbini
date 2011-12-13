@@ -7,21 +7,42 @@
   .csp_33 { color:444444}
 </style>
 <table bgcolor="#FFFFFF" border="0" cellpadding="10" style="border:2px dashed">
+  <where value="mustBePrinted">
   <tr height="1%">
     <td colspan="5" style="text-align:center">
-      <where value="mustBePrinted">
         <font style="font-size:24px;font-weight:bold;color:red;"><text text="MUST BE PRINTED" /></font>
-      </where>
     </td>
   </tr>
+  </where>
   <tr>
-    <td width="5%"></td>
-    <td width="40%" style="vertical-align:top"><img width="200" src="images/logoOrange.png"/><h2><property name="vendor" noIcon="y"/> </h2>
-    <h3><property name="coupon" noIcon="y"/></h3>
-    <property name="coupon.summary"/>
+    <td width="40%" style="padding-left:25px; vertical-align:top">
+      <img width="200" src="images/logoOrange.png"/><h2><property name="vendor" noIcon="y"/> </h2>
+      <h3><property name="coupon" noIcon="y"/></h3>
+      <property name="coupon.summary"/>
+      <br/>
+      <property frame="y" name="coupon.bigFeatured" />
+      <br/>
+      <div style="width:416px; border:2px; border-style:solid; border-color:#f99136;padding: 10px 10px 10px 10px;">
+        <font size="+1" color="#222222"><property name="dealPrice" noIcon="y" /></font>
+        <where value="coupon.couponType == null || coupon.couponType == 'Standard'"> <text text="No extra payment to vendor is required"/> </where>
+      </div>
+      <h3><text text="Fine print"/></h3>
+      <property name="coupon.conditions" noIcon="y"/>    
+      <where value="!cancelled &amp;&amp; paymentStatus == 'Success'">
+        <br />
+        <where value="redeemFrom != null &amp;&amp; redeemTo != null">
+          <text text="This coupon is valid from #### to ####" params="redeemFrom,redeemTo" />
+        </where>
+        <where value="redeemFrom == null">
+          <text text="This coupon can be redeemed as soon as the deal tips" /> 
+        </where>
+        <!--where value="redeemFrom != null">
+          <text text="This coupon is valid from" />&#160;<property name="coupon.redeemFrom" noIcon="y"/>
+        </where>
+        <br /><br />
+        <text text="This coupon is valid until" />&#160;<property name="coupon.redeemBy" noIcon="y"/--> 
+      </where>
     </td>
-    
-    <td width="5%"></td>
     <td width="45%" style="vertical-align:top">
       <div style="display:block; vertical-align:top; width:100%">
         <table width="100%">
@@ -46,21 +67,6 @@
           </tr>
         </table>
       </div>
-    </td>
-    <td align="right" valign="top">
-    </td>
-  </tr>
-  <tr>
-    <td></td>
-    <td rowspan="2" valign="top"><property frame="y" name="coupon.bigFeatured" />
-    <br/>
-    <div style="border:2px; border-style:solid; border-color:#f99136;padding: 10px 10px 10px 10px;">
-    <font size="+1" color="#222222"><property name="dealPrice" noIcon="y" /></font>
-    <where value="coupon.couponType == null || coupon.couponType == 'Standard'"> <text text="No extra payment to vendor is required"/> </where>
-    </div>
-    </td>
-    <td></td>
-    <td>
         <div style="border:2px; border-style:solid; border-color:#f99136;padding: 10px 10px 10px 10px; margin-right:20px;">
           <where value="cancelled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been canceled" /></b></font></where>
           <where value="!cancelled">
@@ -147,6 +153,12 @@
                     <createReview text="Check in!"/>
                   </td>
                 </where>
+                <where value="checkIn != null">
+                  <td colspan="2" width="100%" style="align:left">
+                    <br />
+                    <createReview text="Edit check in!"/>
+                  </td>
+                </where>
               </tr>
             </where>
           </table>
@@ -159,19 +171,24 @@
             <br />
         </where>
         <where value="!cancelled &amp;&amp; paymentStatus == 'Success'">
+          <where value="dealPrice != 0">
             <h3 class="csp_33"><text text="How to redeem"/></h3>
             <ul>
             <li><text text="Print this coupon" /></li>
             <li><text text="Take this coupon with you" /></li>
             </ul>    
+          </where>   
+          <where value="dealPrice == 0">
+            <h3 class="csp_33"><text text="How to use coupon"/></h3>
+            <ul>
+            <li><text text="Print this coupon" /></li>
+            <li><text text="Hand this coupon when paying for service and save the check" /></li>
+            <li><text text="Go to your profile page then click on 'My coupons', find the right coupon and click button 'Check In'"/></li>
+            <li><text text="As soon as vendor will mark coupon as redeemed you will receive the reward of" /> <property name="coupon.rewardForCheckIn" noLabel="y"/></li>
+            </ul>    
+          </where>   
         </where>
-        </td>
-    <td></td>
-  </tr>
-  <tr>
-    <td></td>
-    <td></td>
-    <td valign="top">
+
       <h3 class="csp_33"><text text="Address"/></h3>
       <ul>
         <li><b><property name="coupon.vendor.name" noIcon="y" /></b></li>
@@ -209,40 +226,14 @@
             </li>
           </where>
         </where>
-      </ul>    </td>
-    <td></td>
-  </tr>
-  <tr valign="top">
-    <td></td>
-    <td>      <h3><text text="Fine print"/></h3>
-     
-        <property name="coupon.conditions" noIcon="y"/>    
-        <where value="!cancelled &amp;&amp; paymentStatus == 'Success'">
-          <br />
-          <where value="redeemFrom != null &amp;&amp; redeemTo != null">
-            <text text="This coupon is valid from #### to ####" params="redeemFrom,redeemTo" />
-          </where>
-          <where value="redeemFrom == null">
-            <text text="This coupon can be redeemed as soon as the deal tips" /> 
-          </where>
-          <!--where value="redeemFrom != null">
-            <text text="This coupon is valid from" />&#160;<property name="coupon.redeemFrom" noIcon="y"/>
-          </where>
-          <br /><br />
-          <text text="This coupon is valid until" />&#160;<property name="coupon.redeemBy" noIcon="y"/--> 
-        </where>
-    </td>
-    <td>
-    </td>
-    <td>
-    <where value="coupon.redemptionLocationsCount != null &amp;&amp; coupon.redemptionLocationsCount > 1">
-      <couponBuyRedemptionLocation />
+      </ul>
+      <where value="coupon.redemptionLocationsCount != null &amp;&amp; coupon.redemptionLocationsCount > 1">
+        <couponBuyRedemptionLocation />
+        <br /><br />
+      </where>
+      <mapMaker width="400" height="400" />
       <br /><br />
-    </where>
-    <mapMaker width="400" height="400" />
-    <br /><br />
     </td>
-    <td></td>
   </tr>
 </table>
 </div>
