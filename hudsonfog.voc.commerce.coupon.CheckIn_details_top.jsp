@@ -1,12 +1,12 @@
 <div style="text-align:left;margin-left:20px;margin-right:20px" valign="bottom">
-  <br /><br />
+  <!--br /><br />
   <where value="purchase.coupon.rewardForCheckIn != null &amp;&amp; purchase.coupon.rewardForCheckIn.value &gt; 0">
     <text text="You get reimbursed when the vendor redeems the coupon, which he must do within 3 days of you using it."> <text text="Please submit your review with photos as a proof of purchase. Alternatively you can upload the scan of your receipt." />
     <!--text text="You will get a reward when the Vendor redeems your coupon. The Vendor must do it within 3 days of receiving the coupon. Please submit your review with photos of your visit to the Vendor." />
     <text text="For deliveries, please take pictures of products when they arrive. We will use what is shown on the pictures and their timestamps as your proof of purchase." />
     <text text="Please set your phone number on your profile so we can contact you if the Vendor plays hooky." /-->
     <br /><br />
-  </where>
+  </where-->
   <div style="font-weight:bold;color:red;text-align:center;"><text text="Add any photos/proofs of purchase below" /></div>
 
 
