@@ -47,7 +47,13 @@
       <div style="display:block; vertical-align:top; width:100%">
         <table width="100%">
           <tr>
-            <td style="vertical-align:top; align:left; width:99%"><div style="height:17px"></div> <!--- to align with qr image, since qr image comes with a whitespace border -->
+            <td style='background-color: #DDDDDD; text-align:center' width='10%'>
+              <a id='hideShowPhotoLink' href="javascript:toggleVisibility('personPhoto', 'hideShowPhotoLink');">Hide</a>
+            </td>
+            <td></td>
+          </tr>
+          <tr>
+            <td id='personPhoto' style="vertical-align:top; align:left; width:99%"><div style="height:17px"></div> <!--- to align with qr image, since qr image comes with a whitespace border -->
               <where value="giftTo == null">
                 <property name="customer.mediumImage" frame="y" noIcon="y" /><font style="font-size:24px"><property name="customer" noIcon="y" /></font>
               </where>
@@ -236,4 +242,24 @@
     </td>
   </tr>
 </table>
+<script type="text/javascript">
+  function toggleVisibility(elmId, linkId) {
+    var hideText = document.getElementById("hideTr").innerHTML;
+    var showText = document.getElementById("showTr").innerHTML;
+    var elm = document.getElementById(elmId);
+    var link = document.getElementById(linkId);
+    if (elm.style.visibility == 'hidden') {
+//      elm.style.display = 'block';
+      elm.style.visibility = 'visible';
+      link.innerHTML = hideText;
+    }
+    else {
+//      elm.style.display = 'none';
+      elm.style.visibility = 'hidden';
+      link.innerHTML = showText;
+    }
+  }
+</script>
+<div id='showTr'><text text="Show" /></div>
+<div id='hideTr'><text text="Hide" /></div>
 </div>
