@@ -8,9 +8,9 @@
 </style>
 <table bgcolor="#FFFFFF" border="0" cellpadding="10" style="border:2px dashed">
   <where value="mustBePrinted">
-  <tr height="1%">
+  <tr height="1%" style="background: #eeeeee">
     <td colspan="5" style="text-align:center">
-        <font style="font-size:24px;font-weight:bold;color:red;"><text text="MUST BE PRINTED" /></font>
+        <font style="font-size:24px;font-weight:bold;color:#f77200; text-shadow: 1px 1px 1px #777777"><text text="MUST BE PRINTED" /></font>
     </td>
   </tr>
   </where>
@@ -182,7 +182,7 @@
             <h3 class="csp_33"><text text="How to use coupon"/></h3>
             <ul>
             <li><text text="Print this coupon" /></li>
-            <li><text text="Hand this coupon when paying for service and save the check" /></li>
+            <li><text text="Hand this coupon when paying for the service and save the check" /></li>
             <li><text text="Go to your profile page then click on 'My coupons', find the right coupon and click button 'Check In'"/></li>
             <li><text text="As soon as vendor will mark coupon as redeemed you will receive the reward of" /> <property name="coupon.rewardForCheckIn" noLabel="y"/></li>
             </ul>    
