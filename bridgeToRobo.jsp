@@ -5,13 +5,13 @@
 </div>
 <script type="text/javascript">
 <![CDATA[   
-  function tryRedirect(url) {
+  function tryRedirect() {
     var time = getUrlParam(window.location.href, "time");
     if (time && (new Date().getTime() - new Date(parseInt(time)).getTime() > (30 * 60 * 1000))) { // expires after 30 mins
       alert(document.getElementById('timeout').innerHTML);
     }
     else {
-      window.location = url;
+      window.location.href = document.getElementById('toRobo').href;
     }
   }
 ]]>       
