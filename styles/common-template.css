@@ -709,7 +709,7 @@ td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
   font-size: 0.9em; height:16px;
 }
 
-.errorTextStd {font-size:12px; font-weight:bold; color:#A01E00; white-space: nowrap;}
+.errorTextStd {font-size:12px; font-weight:bold; color:#A01E00; /* white-space: nowrap;*/ }
 
 .dashedBlock {border-style:dashed; border-width: 2px; border-color:#ADADD5 #ADADD5 #ADADD5 #ADADD5}
 
@@ -1258,7 +1258,7 @@ div.contentsRL {
 .ftxt {text-align:left; font-size:9px;}
 .ftxt1 {border: none; padding: 0px; margin-left: 0; margin-right: 0; vertical-align: middle}
 /* Style for message in data entry for property that was either not set or set incorrectly*/
-.msg { position: absolute; margin-top: -29px; }
+/* .msg { position: absolute; margin-top: -29px; } */
 
 /* uploadFrame iframe style */
 .uframe {position:absolute; top:0px; left:0px; visibility:hidden; display:none;}
@@ -1395,7 +1395,7 @@ TD.toolbar {
 	PADDING-TOP: 2px; PADDING-BOTTOM: 2px; PADDING-LEFT: 10px; PADDING-RIGHT: 5px; FONT-WEIGHT: bold; COLOR: #FFFFFF; BACKGROUND-COLOR: #3366cc; cursor: text;
 }
 
-.menuItemIcon {	PADDING-RIGHT: 2px; PADDING-LEFT: 3px; white-space: nowrap; width: 20px; }
+.menuItemIcon { padding: 12px 2px 0px 3px; vertical-align: top;  white-space: nowrap; width: 20px; }
 .menuItemIconEmpty { width: 5px; }
 
 .poweredMenuItemIcon {
@@ -1821,7 +1821,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 /* ??? label + chosen_value_div */
 .rounded_rect_tbl .data_td { width: 100%; }
 .rounded_rect_tbl .data_td table { width: 100%; }
-.rounded_rect_tbl .data_td .input_td { width: 100%; text-align:right; padding: 0px 3px; color: &[PrimaryColor_4_text];;}
+.rounded_rect_tbl .data_td .input_td { height: 40px; width: 100%; text-align:right; padding: 0px 3px; color: &[PrimaryColor_4_text];;}
 * html .data_td .input_td td { text-align:right; } /* fields alignment in IE */
 .rounded_rect_tbl .option_icon_td { padding-right: 4px; }
 .rounded_rect_tbl .option_icon_td img, .icon16 { width: 16px; height: 16px; }
@@ -1834,8 +1834,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .param_tr .field_comment, #mkresource .field_comment { height: 55px !important; }
 .param_tr .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
 .param_tr .label img { margin-right: 3px; }
-.param_tr .comment, .param_tr .comment_static { color: &[Alternative_A];; font-size: 11px; }
-.param_tr .comment { position: absolute; margin-top: -2px; }
+.param_tr .comment { color: &[Alternative_A];; font-size: 11px; }
 .param_tr .comment a { font-size: 11px; }
 * html .label_td .comment { left: 0; }
 * html .dat_td .comment { left: 5px; } /* hack for multivalue */
@@ -1856,7 +1855,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl .select { font-size: inherit; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
 
 .rounded_rect_tbl input#rightPanelPropertySheet  { display: none; }
-.rounded_rect_tbl td#dIcon { height: 40px; PADDING-RIGHT: 2px; PADDING-LEFT: 5px; PADDING-TOP: 2px; white-space: nowrap;  /*vertical-align: top;*/ }
+/* .rounded_rect_tbl td#dIcon { height: 40px; PADDING-RIGHT: 2px; PADDING-LEFT: 5px; PADDING-TOP: 2px; white-space: nowrap;  vertical-align: top; } */
 
 .menuItemRow, .option_tr { cursor: pointer; }
 
@@ -1877,7 +1876,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 }
 .grey_highlighting .chosen_values div { color: &[Alternative_A];;  }
 
-.rounded_rect_tbl tr, #siteResourceList .rounded_rect_tbl tr { height: 40px; vertical-align: middle; }
+.rounded_rect_tbl tr, #siteResourceList .rounded_rect_tbl tr { /* height: 40px; */ vertical-align: middle; }
 .rounded_rect_tbl td { border-bottom: solid &[PrimaryColor_1]; 1px; }
 #pane2 .rounded_rect_tbl td { border-bottom: none; }
 #pane2 #dashboard td { vertical-align: top; }
