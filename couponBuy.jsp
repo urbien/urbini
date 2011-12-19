@@ -48,7 +48,7 @@
         <table width="100%">
           <tr>
             <td style='background-color: #DDDDDD; text-align:center' width='10%'>
-              <a id='hideShowPhotoLink' href="javascript:toggleVisibility('personPhoto', 'hideShowPhotoLink');">Hide</a>
+              <a id='hideShowPhotoLink' href="javascript:toggleVisibility('personPhoto', 'hideShowPhotoLink');"><text text="Hide" /></a>
             </td>
             <td></td>
           </tr>
