@@ -116,7 +116,7 @@ img.fade {
 
 #dataEntry td { font-size: 12px; }
 #dataEntry table { border-collapse: collapse; }
-#siteResourceList td, #resourceList td, #div_Info td, .widget td, #mkresource td { height: 30px; font-size: 12px; }
+#siteResourceList td, #resourceList td, #div_Info td, .widget td/*, #mkresource td*/ { height: 30px; font-size: 12px; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
 
 .rounded_rect_tbl #siteResourceList { text-align: center; } /* align menu items */
@@ -1784,7 +1784,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .rounded_rect_tbl #front {background-color: &[BackgroundColor];}
 
-#common_filter .param_tr { cursor: pointer; }
+#common_filter .param_tr { cursor: pointer; height: 40px; }
 
 .rounded_rect_tbl .param_tr .rollup_td { cursor: text; }
 .rounded_rect_tbl .param_tr .rollup_td img { margin: 2px; }
