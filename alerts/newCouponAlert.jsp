@@ -1,44 +1,32 @@
-<div>
-    <text text="Today's best offer on"/> Obval.com
-    <br/><br />
-    <couponCityScape />
-    <property name="forum" type="y"/> <property name="forum" href="y"/> <!-- text text="has just aired!" / -->
+<div width="100%">
+<br/>
+
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr>
+  <td  style="font-weight:bold; padding-bottom:10px; font-size:20px; color: #ff2000">
+    <!--div>
+    <table background="http://dev.obval.com/images/obval/price_tag.png" width="310" height="82">
+    <tr><td valign="center">  
+      &#160;&#160;&#160;<a style="color: #fff; font-size: 16px; top: 5px; font-weight: bold; text-decoration: none" href="/deals?-when=current"><property name="(http://www.hudsonfog.com/voc/commerce/coupon/Person)to.cityScape.name"/> <text text="today"/></a>
+    </td>
+    </tr>
+    </table>
+    </div -->
+    <a style="color: #ff2000; font-size: 20px; top: 5px; bottom: 20px; font-weight: bold; text-decoration: none" href="/deals?-when=current"><property name="(http://www.hudsonfog.com/voc/commerce/coupon/Person)to.cityScape.name"/> - <text text="today's deals"/></a>
     <br/><br/>
-    <property name="(http://www.hudsonfog.com/voc/commerce/coupon/Coupon)forum.bigFeatured" frame="y" noIcon="y" />
-    <br/>
-    <!--text text="Discount"/>:
-    <span style="color: #f55200; font-weight: bold"><property name="(http://www.hudsonfog.com/voc/commerce/coupon/Coupon)forum.discount" /></span-->  
-    <!-- span style="color:#757575" -->
-      <!--br/><br />
-      <span style="font-size:12px;"><property name="(http://www.hudsonfog.com/voc/commerce/coupon/Coupon)forum.description"/></span -->
-      <!--br/><br />
-      <span style="color:black"><text text="Food for mathematicians"/>:</span -->
-      <!--br/><br />
-      <text text="They pay"/>: <b><property name="(http://www.hudsonfog.com/voc/commerce/coupon/Coupon)forum.dealValue"/></b -->
-      <br />
-      <text text="You pay"/>: <b><property name="(http://www.hudsonfog.com/voc/commerce/coupon/Coupon)forum.dealPrice"/></b>&#160;
-      <text text="You save"/>: <b><property name="(http://www.hudsonfog.com/voc/commerce/coupon/Coupon)forum.discount"/></b>
-      <br /><br />
-      <table width="100%" cellpadding="5">       
-        <tr>
-          <td width="1%" style="text-align:center"><giftThisCoupon /></td>
-          <td width="99%"><insertJoke variation="Feeling generous? Buy a coupon for someone (else)! Somewhere in this email is a poorly veiled opportunity to bribe your boss." /></td>
-        </tr>
-        <tr>
-      <!--like value="Like" type="Obval" /-->
-          <td width="1%" style="text-align:center"><like value="Like" type="forum" /></td>
-          <td width="99%"><insertJoke variation="Like this coupon? We can't hear you...click louder." /></td>
-        </tr>
-        <tr>
-          <td width="1%" style="text-align:center"><newComment onlyIcon="y" /></td>
-          <td width="99%"><insertJoke variation="We're listening for once. Speak into your keyboard (supported on Windows, Mac, Ubuntu and weak minds). Now click." /></td>
-        </tr>
-        <tr>
-          <td width="1%" style="text-align:center"><localLink href="/l.html?&amp;-max=y&amp;-b=35796"><localImage src="icons/give-me-more.png" /></localLink></td>
-          <td width="99%"><insertJoke variation="Please sir, can I have some more?" /></td>
-        </tr>
-        <showIntent />
-      </table>
+    <div style="border: 1px solid #eee; padding-left: 5px; padding-right: 5px; background:#f9faef;">
+      <siteResourceList uri="l.html?-$action=searchLocal&amp;-gridCols=shortTitle,dealPrice,discount,summary&amp;-$alert=y&amp;-limit=6&amp;-inRow=2&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured_From=yesterday&amp;dateFeatured_To=today&amp;-featured=y&amp;basedOnTemplate=null&amp;accessLevel_verified=y&amp;accessLevel_select=Standard" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.(http://www.hudsonfog.com/voc/commerce/coupon/Coupon)forum.cityScape&amp;cityScape.isNational=true" />
+      <!-- relatedResources uri="l.html?-$action=searchLocal&amp;-gridCols=shortTitle,dealPrice,discount,summary&amp;-$alert=y&amp;-limit=4&amp;-inRow=2&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.(http://www.hudsonfog.com/voc/commerce/coupon/Coupon)forum.cityScape&amp;cityScape.isNational=true" / -->
+      <br/>
+    </div>
+    </td>
+  </tr>
+</table>
+<table width="100%" cellpadding="5" style="font-size:12px;">       
+  <tr>
+    <td style="font-size: 16px"><a style="text-decoration: none; color: #ff5200;" href="/deals?-when=current"><text text="More on OBVAL.COM"/></a></td>
+  </tr>
+</table>
     <!-- /span -->
     <!--setCityScape /-->
 </div>
