@@ -13510,13 +13510,27 @@ var LinkProcessor = {
 	
 	  // add current dashboard ID and current tab ID to url if they are not there
 	  var a = link.href;
+	  var isJSCall = a == null || a.indexOf("javascript:") == 0; 
 	  addCurrentDashboardAndCurrentTab(link);
-	  // Login to Facebook
-    var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
-    if (fbdiv) { 
-      a += '&-fb=y';
-	    link.href = a;
+	  if (!isJSCall) {
+	    // Login to Facebook
+      var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
+      if (fbdiv) { 
+        a += '&-fb=y';
+  	    link.href = a;
+  	  }
+
+      // append latitude / longitude to url
+      var locDiv = document.getElementById("geoLocation");
+      if (locDiv) {
+        var loc = locDiv.innerHTML;
+        if (loc != null && loc.indexOf(',') != -1) {
+          a = addOrReplaceUrlParam(a, "-loc", loc);
+          link.href = a;
+        }
+      }
 	  }
+	  
 	  if     (e.ctrlKey) {
 	    p = '_ctrlKey=y';
 	  }
@@ -13673,6 +13687,20 @@ function asyncLoadScript(scriptUrl, scriptDiv, callback) {
   setTimeout(function() {
     loadScript(scriptUrl, scriptDiv, callback);
   }, 0);
+}
+
+function addOrReplaceUrlParam(url, name, value) {
+  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+  var regexS = "[\\?&]" + name + "=([^&#]*)";
+  var regex = new RegExp(regexS);
+  var results = regex.exec(url);
+  if (results == null) {
+    var separator = url.indexOf('?') == -1 ? '?' : '&';
+    return url + separator + name + '=' + value;
+  }
+  else {
+    return url.replace(results[0], value == null ? '' : results[0].replace(/=(.*)/, '=' + value));
+  }
 }
 
 function loadScript(scriptUrl, scriptDiv, callback) {
