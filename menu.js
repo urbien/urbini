@@ -5211,7 +5211,8 @@ var DataEntry = {
 			return; 	
 		// on desktop only hide/show, without append/remove
 		if (!Browser.mobile) {
-			this.dataEntryArr[key].style.display = "none";
+			//this.dataEntryArr[key].style.display = "none";
+			setDivInvisible(this.dataEntryArr[key]);
 		}
 		// mobile: append/remove dialogs
 		else {
@@ -5432,7 +5433,7 @@ var PlainDlg = {
 	show : function(e, urlStr, anchor) {
 		var $t = PlainDlg;
 	  e = getDocumentEvent(e); if (!e) return;
-  
+
 	  if (!anchor) {
 			var target = getTargetElement(e); if (!target) return;
 			anchor = getTargetAnchor(e);
@@ -5522,8 +5523,18 @@ var PlainDlg = {
 	_show : function(event, hotspot) {
 		var iframe = document.getElementById('dialogIframe');
 
+		// login: show it as a modal dialog
+		if (this.curUrl && this.curUrl.indexOf("j_security_check") != -1) {
+			LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
+			// set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
+			var jstest = getChildByAttribute(this.dlgDiv, "name", '.jstest');
+			if (jstest)
+				jstest.value = "ok";
+			setDivVisible(null, this.dlgDiv, iframe, null, 0, 0, null, null, true);
+			return;
+		}
+
     setDivVisible(event, this.dlgDiv, iframe, hotspot, 5, 5);
-		
 		if (TouchDlgUtil.isMenuPopup(this.dlgDiv))
 			TabMenu.setActiveTab(getAncestorByClassName(hotspot, "dashboard_btn"))
 	},
@@ -5539,6 +5550,13 @@ var PlainDlg = {
 			return;
 		}
 		
+/*	// for login dialog after wrong user name / pw 	
+		if (url.endsWith("user-login.html")) {
+			div = $t.dlgArr[$t.curUrl];// $t.dlgDiv;
+			content = getDomObjectFromHtml(content, "id", "register");
+		}
+*/		
+
 	  setInnerHtml(div, content);
 		FormProcessor.initForms(div);
 		// items navigation
@@ -5586,6 +5604,7 @@ var PlainDlg = {
 		this.dlgDiv = document.createElement("div");
 		this.dlgDiv.id = this.ID;
 		this.dlgDiv.className = "panel_block";
+		this.dlgDiv.style.visibility = "hidden";
 		
 		if (Browser.ie)
 			this.dlgDiv.style.width = 200;
@@ -5621,11 +5640,13 @@ var TouchDlgUtil = {
 	
 	wasOnceInit : false, // to hide autocomplete
 	
+	pageOverlay : null, // used to show modal dialog
+	
 	// it is called for 1) whole dialog + form panel 2) for each options list
 	init : function(parent) {
 		if (this.wasOnceInit == false) {
 			addEvent(document.body, 'click', this.onBodyClick, false);
-			// helps to handle ESK after click outside a dialog
+			// helps to handle ESC after click outside a dialog
 			addEvent(window, 'keyup', this.onBodyKeyup, false);
 			// helps to fit options vertically
 			addEvent(window, 'scroll', this.onscroll, false);
@@ -5796,12 +5817,8 @@ var TouchDlgUtil = {
 		var target = getEventTarget(event);
 		// set focus in selector if previously dialog lost it and click on "striped surface"
 		if ($t.isFocusInDialog == false &&
-			getAncestorByClassName(target, "rounded_rect_tbl") == null)
-//				!$t.hasBlueRow() &&
-//				isElemOfTag(target, ["input", "textarea", "select"]) == false &&
-//				isElemOfClass(target, "tags") == false &&
-//				isElemOfClass(target.parentNode, "tb_btn") == false )
-				 {
+				getAncestorByClassName(target, "rounded_rect_tbl") == null &&
+				isElemOfTag(target, ["input", "textarea", "select"]) == false) {
 			var panel = ListBoxesHandler.getCurrentPanelDiv() || TouchDlgUtil.curDlgDiv;
 			$t.focusSelector(panel, false);
 		} 
@@ -5824,10 +5841,14 @@ var TouchDlgUtil = {
 		return (this.curDlgDiv != null && isVisible(this.curDlgDiv) && this.isMenuPopup(this.curDlgDiv));
 	},	
 	isMenuPopup : function(div) {
+
 		if (div.id != "pane2")
 			return false;
 		var firstChild = getFirstChild(div);
-		if(firstChild && getFirstChild(firstChild).className != "menu")
+		if (!firstChild)
+			return false;
+		var nextChild = getFirstChild(firstChild);	
+		if(nextChild && nextChild.className != "menu")
 			return false;
 		
 		return true;
@@ -6246,7 +6267,20 @@ var TouchDlgUtil = {
 	isElementFirstParameter : function(elem) {
 		var paramTr = getAncestorByClassName(elem, "param_tr");
 		return comparePosition(paramTr, getFirstChild(paramTr.parentNode)) == 0;
+	},
+	
+	showPageOverlay: function(dlg) {
+		if (!this.pageOverlay) {
+			this.pageOverlay = document.createElement("div");
+	    this.pageOverlay.className = "page_overlay";
+	    document.body.appendChild(this.pageOverlay);
+		}
+    this.pageOverlay.style.height = Math.max(document.body.scrollHeight, dlg.clientHeight + 5);
+    this.pageOverlay.style.display = "block";
 	}
+//	,hidePageOverlay: function(){
+//  	this.pageOverlay.style.display = "none";
+//	}
 }
 
 // TabMenu
@@ -8135,7 +8169,7 @@ function saveButtonClicked(e) {
 // without regarding if bottom of a dialog is bellow a page bottom (used for filter)
 // processes custom parameter of hotspot: "max_width", "full_height" (height of options panel)
 //****************************************************************
-function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim, positionEnforced) {
+function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim, positionEnforced, isModal) {
 	if (Browser.mobile) {
     div.style.left = 0 + 'px';
     div.style.top  = getScrollXY()[1] + 'px';
@@ -8353,6 +8387,11 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
     }
   }
 
+	// MODAL dialog
+	if (isModal) {
+		TouchDlgUtil.showPageOverlay(div);
+	}
+
   div.style.display    = 'none';   // hide it before movement to calculated position
 	reposition(div, left, top); // move the div to calculated position
   div.style.visibility = Popup.VISIBLE; // show div
@@ -8381,6 +8420,9 @@ function setDivInvisible(div, iframe) {
     div.style.display    = "none";
   if (iframe && iframe.style)
     iframe.style.display = "none";
+
+	//if (div.className.indexOf("modal") != -1)
+	//	TouchDlgUtil.hidePageOverlay(); // a modal dilog
 
   // return popupIframe to body from a dialog (see setDivVisible)
   var popupIframe = getChildById(div, 'popupIframe');
@@ -13187,7 +13229,7 @@ function setFooterOnPage() {
 	var footer = document.getElementById("commonFooter");
 	if (!footer)
 		return;
-	footer.parentNode.style.paddingBottom = footer.offsetHeight;	
+	footer.parentNode.style.paddingBottom = footer.offsetHeight + 'px';	
 }
 
 
@@ -13513,12 +13555,12 @@ var LinkProcessor = {
 	  var isJSCall = a == null || a.indexOf("javascript:") == 0; 
 	  addCurrentDashboardAndCurrentTab(link);
 	  if (!isJSCall) {
-	    // Login to Facebook
-      var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
-      if (fbdiv) { 
-        a += '&-fb=y';
-  	    link.href = a;
-  	  }
+	  // Login to Facebook
+    var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
+    if (fbdiv) { 
+      a += '&-fb=y';
+	    link.href = a;
+	  }
 
       // append latitude / longitude to url
       var locDiv = document.getElementById("geoLocation");
