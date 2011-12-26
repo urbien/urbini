@@ -294,7 +294,6 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
     if (http_request.readyState != 4) // ignore for now: 0-Unintialized,
                                       // 1-Loading, 2-Loaded, 3-Interactive
       return;
-
     // stop Loading cue
 		if (!noLoadingCue)
 			LoadingIndicator.hide();
@@ -1203,21 +1202,18 @@ function arrangeTableCells(table, colsAmount) {
 // setInnerHtml
 // Note: automatically runs inner JS code
 //********************************************
-function setInnerHtml(div, text) {
+function setInnerHtml(div, textOrObj) {
   // write in child with id = "content" if it exists.
   var contentDiv = getChildById(div, "content");
   if(contentDiv != null)
 	  div = contentDiv;
-
-  if (Browser.ns4) {
-    div.document.open();
-    div.document.write(text);
-    div.document.close();
-  }
-  else {
-    div.innerHTML = '';
-    div.innerHTML = text;
-  }
+	
+	div.innerHTML = '';
+  
+	if (typeof textOrObj == 'string')
+		div.innerHTML = textOrObj;
+  else
+		div.appendChild(textOrObj);
   
   // execute / download JS code containing in the div content.
   ExecJS.runDivCode(div);
@@ -1940,6 +1936,7 @@ function setTransformProperty(element, transformStr) {
     // Note that in some versions of IE9 it is critical that
     // msTransform appear in this list before MozTransform
    var cssKeys = ['transform', 'WebkitTransform', 'msTransform', 'MozTransform', 'OTransform'];
+
 	 for (var i = 0; i < cssKeys.length; i++) {
       if (typeof element.style[cssKeys[i]] != 'undefined') {
 		  	element.style[cssKeys[i]] = transformStr;
