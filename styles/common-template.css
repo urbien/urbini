@@ -2388,11 +2388,6 @@ td #corePageContent { min-height: 600px;}
 .bigGridP .bigLabel { font-size: 16px; font-weight: bold; text-shadow: 1px 1px 1px #333333;}
 #note {font-size: 16px;  width: 500px;}
 
-
-
-
-
-
 .arrow_td div {
   position: absolute;
   border-color:  transparent #ff0000;
@@ -2408,3 +2403,5 @@ td #corePageContent { min-height: 600px;}
   } 
   
 .arrow_td div div {   font-size: 30px;  color: #ffffff; margin: -15px 0 0 -20px; }
+
+.page_overlay { position: absolute; z-index: 11; top: 0; left: 0; display: none; width: 100%; background-color: #000; opacity: 0.6; -moz-opacity: 0.6;  filter: alpha(opacity:60); } /* for modal dialogs */
