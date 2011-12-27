@@ -1885,11 +1885,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			// Note: use "class" to identify image to set src=URL returned from server
 			// new FF's RTE does not accept cusom parameter like "file_path"
 			var param = (modeIdx == 0) ? "class" : "src";
-			var html = "<img " + param + "=\"" + url + "\" align=\"" + align + "\"";
+			// align image with help of parent paragraph. It helps with carret.
+			var html = "<p style=\"text-align:" + align + ";\"><img " + param + "=\"" + url + "\"";
 			if (margin)
 				html += " style=\"margin:" + margin + ";\"";
 
-			html += " />";
+			html += " /></p>";
+			
 		  this.insertHTML(html);
 		}
 		return true;
