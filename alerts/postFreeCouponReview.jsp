@@ -12,6 +12,8 @@
     <!--text text="Earn #### #### by checking in for this deal!" params="forum.coupon.rewardForCheckIn.value,forum.coupon.rewardForCheckIn.currency" /-->
     <text text="Yes, it's time to earn some money." />
     <br/><br/>
+    <text text="Every month we give away some bodacious prizes to those who used the most free coupons. Check in after you go and win big!" />
+    <br/><br/>
     <property name="resourceMediumImage" noIcon="y" />
     <br/><br/>
     <where value="forum.redeemed == true">
