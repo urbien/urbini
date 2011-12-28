@@ -45,11 +45,11 @@
         <td height="50"><br /><font color="#E12E05" size="-1"><promptToSetCityScape /></font></td>
         <td></td>
       </tr>
-      <tr valign="center">
+      <!-- tr valign="center">
         <td></td>
         <td height="50"><hostSignature /></td>
         <td></td>
-      </tr>
+      </tr -->
       <tr valign="bottom">
         <td></td>
         <td height="10"><hr/></td>
