@@ -1370,8 +1370,11 @@ var ExecJS = {
         var evalStr = scripts[i].text || scripts[i].innerHTML;
         var containsFocusCommand = (evalStr.indexOf("focus(") != -1);
         if(containsFocusCommand == false || this.isObjectTotallyVisible(parent)) {
-          // not evaluate JS that declarates a function
-					if (evalStr.indexOf("function") == -1)
+					// prevent double evaluation of auxiliary, temparary code from body.java
+					if (evalStr.indexOf("function runJSCode") != -1)
+						continue;
+					////////// not evaluate JS that declarates a function
+					////////// if (evalStr.indexOf("function") == -1)
 						window.eval(evalStr);
         }
         else { // or exec it with delay 1 sec.
