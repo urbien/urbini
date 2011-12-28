@@ -13196,15 +13196,15 @@ function toConsole(text) {
     console.log(text);
 }
 
-function printRepostLink(html) {
+function printRepostLink(html) {  
+  if (!html)
+    return;
+
   var errDiv1 = document.getElementById('errorMessage');
   if (!errDiv1) {
     toConsole('no errorMessage div');
     return;
   }
-
-  if (!html)
-    return;
 
   var json = eval ("(" + String(html) + ")");
   var repostLink = json.repostLink;
@@ -13737,6 +13737,9 @@ function addOrReplaceUrlParam(url, name, value) {
   var regex = new RegExp(regexS);
   var results = regex.exec(url);
   if (results == null) {
+    if (value == null)
+      return url;
+    
     var separator = url.indexOf('?') == -1 ? '?' : '&';
     return url + separator + name + '=' + value;
   }
