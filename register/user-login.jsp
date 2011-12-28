@@ -1,5 +1,5 @@
 <div id="register" align="center">
-<table>
+<table cellspacing="0" cellpadding="0">
 <tr>
 <td width="30%">
 <include name="user-login-help.jsp"/>
