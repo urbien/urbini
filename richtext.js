@@ -1882,14 +1882,28 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		  if(url.indexOf("%2520") != -1 || url.indexOf("%252F") != -1)
 		    url = decodeURI(url);
 			
+			var isLeftOrRight = (align == 'left' || align == 'right');
+			
 			// Note: use "class" to identify image to set src=URL returned from server
 			// new FF's RTE does not accept cusom parameter like "file_path"
 			var param = (modeIdx == 0) ? "class" : "src";
-			var html = "<img " + param + "=\"" + url + "\" align=\"" + align + "\"";
+			var html = "<img " + param + "=\"" + url + "\"";;
+			var stl = "";
+
+			if (isLeftOrRight)
+				stl += "float: " + align + ";";
+			else
+				html += " align=\"" + align + "\"";
+			
 			if (margin)
-				html += " style=\"margin:" + margin + ";\"";
+				stl += "margin:" + margin + ";";
+			
+			html += " style=\"" + stl + "\"";
 
 			html += " />";
+			
+			// allows to set caret bellow inserted image. Possible problem with storing of empty RTE (?)
+			html += "<br style='clear: both;' />";
 			
 		  this.insertHTML(html);
 		}
