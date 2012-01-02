@@ -1431,7 +1431,7 @@ var Boost = {
 
 	// intoCurrentPage in case of data entry
   getPage: function(e, link, intoCurrentPage) {
-    var $t = Mobile;
+		var $t = Mobile;
     if (!$t.currentUrl) {
       $t.currentUrl = document.location.href;
       var s = new Array();
@@ -1455,6 +1455,10 @@ var Boost = {
 
     var isMore;
     var isRemoteLink;
+		
+		if (link.id == "-inner")
+			return; // dialog processed in onClickDisplayInner
+		
     if (link.target) {
       // Remote link like 'Locate <avatar>'
       if (link.target == '_self') {
@@ -2014,8 +2018,6 @@ var MobilePageAnimation = {
     if(!thisObj.curDiv || !thisObj.newDiv)
       return;
 
-    var newDivStl = thisObj.newDiv.style;
-    var curDivStl = thisObj.curDiv.style;
     var x;
 
     var arg = (thisObj.step - thisObj.STEPS_NUM / 2) / 1.5;
@@ -2029,10 +2031,10 @@ var MobilePageAnimation = {
       if(thisObj.step == thisObj.STEPS_NUM)
         x = 0;
       else
-        x = wndWidth - thisObj.totalOffset;
+        x = Math.floor(wndWidth - thisObj.totalOffset);
 
-      curDivStl.left  = x - wndWidth;
-      newDivStl.left =  x;
+			setTransformProperty(thisObj.curDiv, "translate(" + (x - wndWidth) + "px, 0px)");
+			setTransformProperty(thisObj.newDiv, "translate(" + x + "px, 0px)");
     }
     // 1.2. left to right // for "Back"
     else {
@@ -2041,10 +2043,11 @@ var MobilePageAnimation = {
       else
         x = thisObj.totalOffset;
 
-      newDivStl.left  = x - wndWidth;
-      curDivStl.left =  x;
+			setTransformProperty(thisObj.newDiv, "translate(" + (x - wndWidth) + "px, 0px)");
+			setTransformProperty(thisObj.curDiv, "translate(" + x + "px, 0px)");
     }
     if (thisObj.step == 1) {
+			var newDivStl = thisObj.newDiv.style;
       newDivStl.top = thisObj.pageTopOffset;
     	/////////////  newDivStl.width  = thisObj.wndWidth;
       //newDivStl.position = "absolute";
