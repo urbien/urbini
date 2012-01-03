@@ -23,11 +23,19 @@
       <tr valign="center">
         <td width="30"></td>
         <td height="50">
-          <where value="to.firstName != null">
-            <text text="Hello"/> <property name="to.firstName" href="y" noIcon="y"/>,
+          <where value="alertType == 'NewsCouponAlert'">
+            <text text="name###"/>
           </where>
-          <where value="to.firstName == null">
-            <text text="Hello"/> <property name="to.email" href="y" noIcon="y"/>,
+          <where value="alertType == 'NewCouponAlert'">
+            <text text="Hello"/> <text text="name####"/>
+          </where>
+          <where value="alertType != 'NewsCouponAlert'  &amp;&amp;  alertType != 'NewCouponAlert'">
+            <where value="to.firstName != null">
+              <text text="Hello"/> <property name="to.firstName" href="y" noIcon="y"/>,
+            </where>
+            <where value="to.firstName == null">
+              <text text="Hello"/> <property name="to.email" href="y" noIcon="y"/>,
+            </where>
           </where>
         </td>
         <td width="30"></td>
