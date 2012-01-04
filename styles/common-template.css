@@ -885,20 +885,9 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 #title H1 {margin: 0; padding-top: 7px; padding-bottom: 7px;}
 #title { padding-bottom: 7px; }
 
-table.fbRegFrame {width:100%; border:solid &[SecondaryColorA_5]; 1px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
 table.fbConnect {width:90%; border:solid &[SecondaryColorA_5]; 1px; margin-left:10px; margin-right:10px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
 .fbRegHeader { padding: 15px; }
-
-.fbUser {
-  border:solid &[SecondaryColorA_5]; 1px; 
-  border-collapse: collapse; 
-  display-inline; 
-  vertical-align: middle;
-  text-align:center;
-  font-weight: bold;
-}
-.fbUser div { position: relative; }
-.fbUser div .icon16 { position: absolute; bottom: 0; right: 0; }
+/*.fbUser div .icon16 { position: absolute; bottom: 0; right: 0; }*/
 
 .cityScape {
   border: 0px; 
@@ -1108,7 +1097,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
-.innerTitle, .panel_block .property_group, .panel_block #item_name, #subscribeNote { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; margin-left: 15px; color: &[Label];;}
+.innerTitle, .userLogin h2, .panel_block .property_group, .panel_block #item_name, #subscribeNote { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; margin-left: 15px; color: &[Label];;}
 .innerTitle { font-size: 18px;}
 #subscribeNote { font-size: 15px; padding: 5px 5px 0 0; }
 .panel_block .property_group, .panel_block #item_name { font-size: 16px; margin-top: 15px;}
@@ -1638,14 +1627,15 @@ table.printFB {
 .captcha .i { background-position: 75% 100%; padding: 0; margin: 0;}
 .captcha .j { background-position: 100% 100%; padding: 0; margin: 0;}
 
-
+/*
 .login {background-color: transparent; border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px}
 .lButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
-.userLogin { width: auto !important; max-width: 350px; background-color: &[BackgroundColor];; color: &[SecondaryColorA_3];; border: 1px solid &[SecondaryColorA_3];; padding: 5 5 5 5; }
+*/
+.userLogin {font-weight: bold; width: auto !important; max-width: 350px; color: &[SecondaryColorA_3];; border: 2px solid &[PrimaryColor_1];; padding: 10px;}
+.userLogin a.button { display: block; height: 38px; padding: 3px; margin-top: 4px; }
 .userLogin #errorMessage { max-width: 320px; }
+#loginForm td { font-weight: bold; }
 .redeem { width: auto !important; width: 100px; background-color: #ffffff; color: #2B0764; border: 1px solid #cccccc; padding: 5 5 5 5; }
-
-#register .input { border: 1px solid &[SecondaryColorA_3];; color: &[SecondaryColorB_3];; margin-right: 1em;}
 
 .rte { margin-bottom: 7px; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; padding:0; width: 100%; height: 107px;  }
 .rte_body { color: &[PrimaryColor_4_text];; font-family :Helvetica, arial; fontSize : 16px; margin:5; }
@@ -1840,10 +1830,13 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 * html .dat_td .comment { left: 5px; } /* hack for multivalue */
 .field_comment .comment { margin-top: 5px; }
 
-.rounded_rect_tbl .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input, .false_textarea, .false_empty_field { 
+.rounded_rect_tbl .input, #register .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input, .false_textarea, .false_empty_field { 
 	margin: 0px; padding: 1px; min-height: 22px;
 	color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 250px !important; width: auto; /*100%*/; height: auto;
-	font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px; }
+	font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px;
+}
+
+#register .input { text-align: left;  height: 30px; }
 
 .false_input, .false_textarea { display: inline-block; text-align: left; cursor: text !important; }
 .false_textarea { height: 50px; width: 500px !important; }
@@ -1911,7 +1904,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 /* show options without form */
 .frame, #siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel, #pane2 .content, #siteResourceList .widget .frame, 
 		#fts-sift .options_panel, #fts-sift .classifier_panel, #fts-sift .calendar_panel, #pane2 .content, #fts-sift .widget .frame,	 
-		.oneparamselection .options_panel, .oneparamselection .classifier_panel, .oneparamselection .calendar_panel, .mobile_dlg
+		.oneparamselection .options_panel, .oneparamselection .classifier_panel, .oneparamselection .calendar_panel, .mobile_dlg, .userLogin
 	{ 
 	background-color: &[PrimaryColor_1];;
 	background-image: url(../images/skin/iphone/pinstripes.png);
