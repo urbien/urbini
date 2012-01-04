@@ -6268,7 +6268,6 @@ var TouchDlgUtil = {
 		var paramTr = getAncestorByClassName(elem, "param_tr");
 		return comparePosition(paramTr, getFirstChild(paramTr.parentNode)) == 0;
 	},
-	
 	showPageOverlay: function(dlg) {
 		if (!this.pageOverlay) {
 			this.pageOverlay = document.createElement("div");
@@ -6277,10 +6276,10 @@ var TouchDlgUtil = {
 		}
     this.pageOverlay.style.height = Math.max(document.body.scrollHeight, dlg.clientHeight + 5);
     this.pageOverlay.style.display = "block";
+	},
+	hidePageOverlay: function(){
+  	this.pageOverlay.style.display = "none";
 	}
-//	,hidePageOverlay: function(){
-//  	this.pageOverlay.style.display = "none";
-//	}
 }
 
 // TabMenu
@@ -8178,13 +8177,15 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 		
     div.style.visibility = Popup.VISIBLE;
 		div.style.display = "block";
+		
+		// TouchDlgUtil.showPageOverlay(div);
 		return;
   }
 	
 	// limit div / dialog width gotten from "max_width" parameter
 	if (hotspot) {
 		var maxWidth = hotspot.getAttribute("max_width");
-		//if (maxWidth) {
+		if (maxWidth) // {
 		//	div.style.maxWidth = maxWidth;
 		//	if (Browser.ie)
 				div.style.width = maxWidth;
@@ -8390,6 +8391,10 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 	// MODAL dialog
 	if (isModal) {
 		TouchDlgUtil.showPageOverlay(div);
+		if (Browser.ie)
+			document.body.style.overflow = 'hidden';
+		else
+			div.style.position = "fixed";	
 	}
 
   div.style.display    = 'none';   // hide it before movement to calculated position
@@ -8421,8 +8426,8 @@ function setDivInvisible(div, iframe) {
   if (iframe && iframe.style)
     iframe.style.display = "none";
 
-	//if (div.className.indexOf("modal") != -1)
-	//	TouchDlgUtil.hidePageOverlay(); // a modal dilog
+	if (div.className.indexOf("modal") != -1 || Browser.mobile)
+		TouchDlgUtil.hidePageOverlay(); // a modal dilog
 
   // return popupIframe to body from a dialog (see setDivVisible)
   var popupIframe = getChildById(div, 'popupIframe');
@@ -13538,7 +13543,8 @@ var LinkProcessor = {
 		// 3. PlainDlg
 		else
 			PlainDlg.show(e, urlStr, anchor);
-	  
+
+		stopEventPropagation(e);
 		return true;
 	},
 	
