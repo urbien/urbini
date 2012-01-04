@@ -4,7 +4,7 @@
 <td width="30%">
 <include name="user-login-help.jsp"/>
 </td>
-<td width="40%"><table border="0" cellpadding="3" cellspacing="0" cols="2" class="userLogin"><tr><td align="center">
+<td width="40%"><table border="0" cellpadding="0" cellspacing="0" cols="2" class="userLogin"><tr><td align="center">
           <h2><property name="owner.name"/></h2>
         </td>
       </tr>
@@ -41,8 +41,14 @@
         </td>
       </tr>
       <tr>
+      	
+				
+			<!--	
       <td align="right"><registration href="y"/></td>
-        <td valign="CENTER"><br/>
+      -->  
+				
+				
+				<td align="center" colspan="2">
           <input type="submit" value="Sign In" name="logonButton"/><registerNewUser/>
 				  <br/><br/>
 				  <!--authenticateByFacebook/ -->
@@ -54,10 +60,16 @@
     </table>
     <returnUri /> <challenge />
   </form>
-    <registration/>
+    
   </td></tr>
   <tr>
     <td><authenticateByFacebook/></td>
+  </tr>
+	<tr>
+    <td>
+    	<registration/>
+		  <registration href="y"/>
+		</td>
   </tr>
 	</table>
 </td>
