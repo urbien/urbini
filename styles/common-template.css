@@ -1632,7 +1632,8 @@ table.printFB {
 .lButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 */
 .userLogin {font-weight: bold; width: auto !important; max-width: 350px; color: &[SecondaryColorA_3];; border: 2px solid &[PrimaryColor_1];; padding: 10px;}
-.userLogin a.button { display: block; height: 38px; padding: 3px; margin-top: 4px; }
+.userLogin .button { display: block; padding: 3px; margin-top: 4px; }
+.userLogin a.button { height: 38px; }
 .userLogin #errorMessage { max-width: 320px; }
 #loginForm td { font-weight: bold; }
 .redeem { width: auto !important; width: 100px; background-color: #ffffff; color: #2B0764; border: 1px solid #cccccc; padding: 5 5 5 5; }
