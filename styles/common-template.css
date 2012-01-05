@@ -1634,6 +1634,7 @@ table.printFB {
 .userLogin {font-weight: bold; width: auto !important; max-width: 350px; color: &[SecondaryColorA_3];; border: 2px solid &[PrimaryColor_1];; padding: 10px;}
 .userLogin .button { display: block; padding: 3px; margin-top: 4px; }
 .userLogin a.button { height: 38px; }
+.userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
 .userLogin #errorMessage { max-width: 320px; }
 #loginForm td { font-weight: bold; }
 .redeem { width: auto !important; width: 100px; background-color: #ffffff; color: #2B0764; border: 1px solid #cccccc; padding: 5 5 5 5; }
