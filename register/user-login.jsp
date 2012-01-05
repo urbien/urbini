@@ -10,7 +10,7 @@
       </tr>
       <tr><td>
   <form id="loginForm" name="loginform" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
-    <table border="0" cellpadding="3" cellspacing="0" cols="2" width="100%">
+    <table class="rounded_rect_tbl" border="0" cellpadding="3" cellspacing="0" cols="2" width="100%">
       <!--tr>
         <td colspan="2" valign="middle" align="center" height="40">
           <span class="large-poweredBy"><property name="owner.longName"/></span>
@@ -50,7 +50,6 @@
 				
 				<td align="center" colspan="2">
           <input type="submit" value="Sign In" name="logonButton"/><registerNewUser/>
-				  <br/><br/>
 				  <!--authenticateByFacebook/ -->
         </td>
       </tr>
