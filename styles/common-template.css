@@ -1636,6 +1636,8 @@ table.printFB {
 .userLogin a.button { height: 38px; }
 .userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
 .userLogin #errorMessage { max-width: 320px; }
+.fbUser div { position: relative; }
+.fbUser .icon16 { position: absolute; bottom: 0; right: 0; }
 #loginForm td { font-weight: bold; }
 .redeem { width: auto !important; width: 100px; background-color: #ffffff; color: #2B0764; border: 1px solid #cccccc; padding: 5 5 5 5; }
 
