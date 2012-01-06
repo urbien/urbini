@@ -5432,8 +5432,20 @@ var PlainDlg = {
 	// anchor can be omitted and retrieved from click-event
 	show : function(e, urlStr, anchor) {
 		var $t = PlainDlg;
-	  e = getDocumentEvent(e); if (!e) return;
+		e = getDocumentEvent(e); 
 
+		// called from JS code: no event and clicked anchor
+		// meanwhile used to show login dialog on page loading
+  	if (!e && urlStr) {
+			$t.curUrl = urlStr;
+			if (!$t.dlgDiv)
+				$t.createDiv();
+		
+			urlStr = urlStr.split("?");
+			postRequest(null, urlStr[0], urlStr[1], $t.dlgDiv, null, PlainDlg.onDialogLoaded);
+			return;
+		}
+		
 	  if (!anchor) {
 			var target = getTargetElement(e); if (!target) return;
 			anchor = getTargetAnchor(e);
@@ -8177,8 +8189,6 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 		
     div.style.visibility = Popup.VISIBLE;
 		div.style.display = "block";
-		
-		// TouchDlgUtil.showPageOverlay(div);
 		return;
   }
 	
@@ -8319,15 +8329,14 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 			if (top < scrollY) // but not higher then top of viewport
 				top = scrollY + 1;
 		
-
-		// overlaps hotspot: show just on screen 
-		if (top < findPosY(hotspot) && top > findPosY(hotspot) - divCoords.height) {
-			top = getElemInsideScreenPosition(0, top + 5, divCoords)[1];
-			// move it right trying to avoid overlap
-			// TODO: in horizontal adjustment try to make flip
-			distanceToRightEdge -= hotspot.clientWidth + 5; 
-			left += hotspot.clientWidth + 5;
-		}
+			// overlaps hotspot: show just on screen 
+			if (hotspot && (top < findPosY(hotspot) && top > findPosY(hotspot) - divCoords.height)) {
+				top = getElemInsideScreenPosition(0, top + 5, divCoords)[1];
+				// move it right trying to avoid overlap
+				// TODO: in horizontal adjustment try to make flip
+				distanceToRightEdge -= hotspot.clientWidth + 5; 
+				left += hotspot.clientWidth + 5;
+			}
 	
 		}
 		else { // apply user requested offset only if no adjustment
