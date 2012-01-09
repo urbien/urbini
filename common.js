@@ -577,7 +577,7 @@ function getWindowSize() {
     widthPlusScrollbar  = document.documentElement.offsetWidth ;
     heightPlusScrollbar = document.documentElement.offsetHeight ;
   }
-  else if (d.body && typeof d.body.offsetWidth != "undefined") {
+  else if (document.body && typeof document.body.offsetWidth != "undefined") {
     widthPlusScrollbar  = document.body.offsetWidth ;
     heightPlusScrollbar = document.body.offsetHeight ;
   };
@@ -1278,7 +1278,6 @@ var ExecJS = {
   
   runCode : function(jsCode, refObjId, requiredJsFileName) {
     $t = ExecJS;
- 
     // check if required JS file was loaded and parsed
     // ondemandloaded JS-file has requiredJsFileName = null
     var toWait = false;
@@ -1464,6 +1463,7 @@ function findPosX(obj) {
 
 function findPosY(obj) {
   var curtop = 0;
+
   if (obj.offsetParent) {
     while (obj.offsetParent) {
       curtop += obj.offsetTop;
