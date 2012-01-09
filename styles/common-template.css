@@ -9,12 +9,14 @@ body {
 	color: &[Color];;
   height: 100%;
 }
-div#wrapper {
+div#wrapper, div#wrapperM {
   background-color: &[BackgroundColor];;
   min-height: 100%; /* used to stick footer to the page bottom */
   position: relative;
 } 
+
 * html div#wrapper { height: 100%; }
+* html div#wrapperM { height: 100%; }
 
 #commonFooter { position: absolute; width: 100%; bottom: 0px; }
 #commonFooter h2 { margin: 0px; font-size: 16px; font-weight: bold;  }
@@ -1112,7 +1114,8 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 
 /*.lblue {background-color:#ACD2E2; font-size:10pt; width:99%; height:1px; border:0; vertical-align:left}*/
 
-.info { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; margin-left: 14px; color: &[Label];; padding-right: 5px;}
+/*.info { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; margin-left: 14px; color: &[Label];; padding-right: 5px;}*/
+.info { font-weight:bold; color: &[Label];; padding-right: 5px;}
 
 /* fe - div for Screencast grid element in which 'play' div will be displaying play button to play flash demo */
 .fe {
@@ -1184,7 +1187,7 @@ BODY *:lang(zh-tw) { font-family: 800 14pt/16.5pt "Li Sung", MingLiu, arial, ser
 .litxt { vertical-align:top; width:32px; height:32px; padding-right:2px; border:0px }
 .fmenu { vertical-align:middle; height:32px; border:0px }
 .fLeft  {float:left; padding-right:15px}
-.fRight {float:right; padding-right:10px}
+.fRight {float:right;} /* padding-right:10px}*/
 
 .ierr { vertical-align:top; width:64px; height:64px; padding-right:2px; border:0px }
 
@@ -1226,7 +1229,7 @@ div.contentsRL {
 .iinp, .iinp_move, .iinp_btn { width:16px; height:16px; border:0px; vertical-align:middle }
 .iinp_move { cursor: move; }
 .iinp_btn { cursor: pointer; }
-.liinp { width:32px; height:32px; border:0px; vertical-align:middle }
+.liinp { width:32px; height:32px; border:0px; padding-right: 3px; padding-bottom: 3px; vertical-align:middle }
 .riinp { width:32px; border:0px; vertical-align:middle }
 .finp { width:32px; height:32px; padding-right:2px;border:0px; vertical-align:middle }
 .iiphone { width:48px; height:48px; border:0px; vertical-align:middle }
@@ -2305,6 +2308,7 @@ td #corePageContent { min-height: 600px;}
 
 #intentMessage { min-height:600px; border-right:solid &[PrimaryColor_5]; 1px;} 
 
+#ropLeftMobile {min-height: 600px; width: 1% !important; width: 200px; min-width: 200px; padding-top: 10px; vertical-align: top; text-align: center}
 #ropLeft {border-right:solid &[PrimaryColor_5]; 1px;  min-height: 600px; width: 1% !important; width: 200px; min-width: 200px; padding-top: 10px; vertical-align: top; text-align: center}
 #ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 100%; line-height: 25px; height: auto !important; height: 14px; }
 #ropRight {border-left:solid &[SecondaryColorA_5]; 1px;}
@@ -2402,3 +2406,10 @@ td #corePageContent { min-height: 600px;}
 .arrow_td div div {   font-size: 30px;  color: #ffffff; margin: -15px 0 0 -20px; }
 
 .page_overlay { position: absolute; z-index: 11; top: 0; left: 0; display: none; width: 100%; background-color: #000; opacity: 0.6; -moz-opacity: 0.6;  filter: alpha(opacity:60); } /* for modal dialogs */
+.mTitle {
+  font-size:18px;
+  font-weight: bold;
+  text-align: left;
+  font-family:Arial;
+  line-height: 20px;
+}
