@@ -18,7 +18,7 @@
     <table cellpadding="0" cellspacing="0" style="border: 1px solid #cccccc">
   <tr>
     <td>
-    <table width="600px" border="0" align="left" cellpadding="5" cellspacing="0" bgcolor="#ffffff">
+    <table border="0" align="left" cellpadding="5" cellspacing="0" bgcolor="#ffffff">
       <where value="to != null" itype="http://www.hudsonfog.com/voc/model/workflow/Alert">
       <tr valign="center">
         <td width="30"></td>
