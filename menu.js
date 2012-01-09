@@ -8220,6 +8220,18 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   var scrollX = scrollXY[0];
   var scrollY = scrollXY[1];
 
+	// MODAL dialog
+	if (isModal) {
+		TouchDlgUtil.showPageOverlay(div);
+		if (Browser.ie) 
+			document.body.style.overflow = 'hidden';
+		else {
+			div.style.position = "fixed";
+			scrollX = 0;
+  		scrollY = 0;
+		}	
+	}
+
   var left = 0;
   var top  = 0;
 
@@ -8396,15 +8408,6 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
       }
     }
   }
-
-	// MODAL dialog
-	if (isModal) {
-		TouchDlgUtil.showPageOverlay(div);
-		if (Browser.ie)
-			document.body.style.overflow = 'hidden';
-		else
-			div.style.position = "fixed";	
-	}
 
   div.style.display    = 'none';   // hide it before movement to calculated position
 	reposition(div, left, top); // move the div to calculated position
