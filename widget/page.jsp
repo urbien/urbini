@@ -11,6 +11,7 @@ However this JSP is used for pages containig errors message too (?)
   <body id="body">
   <include name="requiredHeader.jsp"/>
   <!-- include name="BhoostApplet.jsp" /-->
+  <div id="wrapperM">
   <div id="mainskin" class="blue">
     <options />
     <div id="myScreenName" class="hdn" />
@@ -31,6 +32,7 @@ However this JSP is used for pages containig errors message too (?)
 		  <filterUrl />
 	  </div>
 	</div>
+    </div>
 	
 	<!-- for dialogs painting  -->
 		<file/>
