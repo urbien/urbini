@@ -8222,14 +8222,15 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 
 	// MODAL dialog
 	if (isModal) {
-		TouchDlgUtil.showPageOverlay(div);
 		if (Browser.ie) 
 			document.body.style.overflow = 'hidden';
 		else {
 			div.style.position = "fixed";
 			scrollX = 0;
   		scrollY = 0;
-		}	
+		}
+		setShadow(div, "none");
+		TouchDlgUtil.showPageOverlay(div);
 	}
 
   var left = 0;
