@@ -1831,7 +1831,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .param_tr .field_comment, #mkresource .field_comment { height: 55px !important; }
 .param_tr .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
 .param_tr .label img { margin-right: 3px; }
-.param_tr .comment { color: &[Alternative_A];; font-size: 11px; }
+.param_tr .comment { color: &[SecondaryColorB_3];; font-size: 11px; }
 .param_tr .comment a { font-size: 11px; }
 * html .label_td .comment { left: 0; }
 * html .dat_td .comment { left: 5px; } /* hack for multivalue */
