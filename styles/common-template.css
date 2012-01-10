@@ -2421,6 +2421,6 @@ td #corePageContent { min-height: 600px;}
 /* BOARD CELL
 --------------------------------------------------------------------------------------- */
 .pinBoard {width: 222px !important; padding: 0 !important;}
-.pinBoard h3 {padding: 9px 15px 0; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0\}
+.pinBoard h3 {padding: 9px 15px 0; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
 .pinBoard .link {display: block; height: 200px; background: url(../images/BoardBackground.png) 15px 9px no-repeat; padding: 9px 0 4px 15px; overflow: hidden;}
 .pinBoard .link img {float: left; width: 61px; height: 61px; margin: 0 4px 4px 0;}
