@@ -10143,7 +10143,6 @@ var Dashboard = {
 						cells[i].style.width = this.MIN_COLUMN_DIM;
 						cells[i].style.height = this.MIN_COLUMN_DIM;
 					}
-					
 				}
 			}
 		}
@@ -11131,6 +11130,15 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 	this.init = function(widgetDiv) {
 		this.widgetDiv = widgetDiv;
 
+    if (Browser.ie) {
+			this.widgetDiv.style.width = this.widgetDiv.offsetWidth;
+			this.widgetDiv.style.height = this.widgetDiv.offsetHeight;
+	  }
+		else {
+      this.widgetDiv.style.minWidth = this.widgetDiv.offsetWidth;
+      this.widgetDiv.style.minHeight = this.widgetDiv.offsetHeight;
+		}
+
 		// crerate a widget from initial content		
 		var recNmb = 0; //this.getRecNmb() || 0;
 		this.createNewSlide(widgetDiv.innerHTML, recNmb);
@@ -11180,8 +11188,6 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 
 		if (Browser.ie) { // IE uses own transition Fade effect
 			if (!this.widgetDiv.filters[0]) {	
-				this.widgetDiv.style.width = this.widgetDiv.offsetWidth;
-				this.widgetDiv.style.height = this.widgetDiv.offsetHeight;
 				this.widgetDiv.style.filter = "progid:DXImageTransform.Microsoft.Fade(duration=1)";
 			}
 	
