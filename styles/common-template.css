@@ -1635,8 +1635,10 @@ table.printFB {
 .lButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 */
 .userLogin {font-weight: bold; width: auto !important; max-width: 350px; color: &[SecondaryColorA_3];; border: 2px solid &[PrimaryColor_1];; padding: 10px;}
-.userLogin .button { display: block; padding: 3px; margin-top: 4px; }
-.userLogin a.button { height: 38px; }
+.userLogin .button, #ropLeft .button { display: block; padding: 3px; margin-top: 4px; }
+#ropLeft .button { margin: 0px 5px 10px 5px; }
+#ropLeft .button td { font-size: 16px; }
+
 .userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
 .userLogin #errorMessage { max-width: 320px; }
 .fbUser div { position: relative; }
@@ -2417,7 +2419,6 @@ td #corePageContent { min-height: 600px;}
 /* PIN CELL
 --------------------------------------------------------------------------------------- */
 .pin { width: 192px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; box-shadow: 0 1px 3px rgba(34,25,25,0.4); -moz-box-shadow: 0 1px 3px rgba(34,25,25,0.4); -webkit-box-shadow: 0 1px 3px rgba(34,25,25,0.4);}
-
 /* BOARD CELL
 --------------------------------------------------------------------------------------- */
 .pinBoard {width: 222px !important; padding: 0 !important;}
