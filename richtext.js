@@ -1462,6 +1462,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			else
 				TouchDlgUtil.closeAllDialogs(); // close dialog on 2nd Esc
   	}
+		// 'clear' inserts row bellow image, for example
+		else if (e.keyCode == 13 && e.altKey) {
+			i_am.insertHTML("<br style='clear: both;' /><br />");
+			i_am.fitHeightToVisible();
+		}
+		
 		// allow arrow navigation if toolbar was closed
 		if (i_am.toolbar.isVisible() == false)  
 			TouchDlgUtil.arrowsHandler(e);
@@ -1903,7 +1909,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			html += " />";
 			
 			// allows to set caret bellow inserted image. Possible problem with storing of empty RTE (?)
-			html += "<br style='clear: both;' />";
+			// use Shift + Enter hot key
+			//// html += "<br style='clear: both;' />";
 			
 		  this.insertHTML(html);
 		}
