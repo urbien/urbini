@@ -1684,7 +1684,7 @@ var FormProcessor = {
     e = getDocumentEvent(e);
     if (!e)
       return;
-      
+   
     var form = getTargetElement(e);
     $t.onSubmitProcess(e, form);
   },
@@ -1827,7 +1827,7 @@ var FormProcessor = {
   	if (tagsDiv) 
   		tagsDiv.parentNode.removeChild(tagsDiv);
 
-	
+
 		//******************************************************
 		// 3 cases:
 		// a) mobile: returns URL;
@@ -1841,7 +1841,7 @@ var FormProcessor = {
  		// 2. form in dialog: send via XHR  ///// action.indexOf("l.html") == -1
 		// change view cols dialog sendig as form to get new page
    else if (isFormInDialog && form.id != "viewColsList" && form.id != "uploadProject"
-	 			&& form.id != "gridColsList")  {
+	 			&& form.id != "gridColsList" && action.indexOf("registerByEmail") == -1)  {
 			// -inner=y for dialog on desktop															
 			params += "&-inner=y"; // params for XHR means inner/dialog.
 	 		var dlg = getParentDialog(form);
@@ -10147,7 +10147,7 @@ var Dashboard = {
 			}
 		}
 		
-    // 3. tab "Header"
+		// 3. tab "Header"
   	//TODO: need to redo it after new Touch UI  !!!
 		// suppose that position of tab header is constant
     this.tabHeadersMap = new Array();
