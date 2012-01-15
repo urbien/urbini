@@ -12741,8 +12741,10 @@ var BrowserDialog = {
 	
 	hide : function() {
 		var $t = BrowserDialog;
-		$t.div.style.visibility = "hidden";
-		$t.promptInp.style.display = "none";
+		if ($t.div)
+		  $t.div.style.visibility = "hidden";
+		if ($t.promptInp)
+		  $t.promptInp.style.display = "none";
 		$t.callbackThis = null;
 		$t.callbackParamsArr = new Array();
 	}
