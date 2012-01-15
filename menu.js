@@ -13792,6 +13792,29 @@ function addOrReplaceUrlParam(url, name, value) {
   }
 }
 
+function initializeMap(panoDivId, mapDivId, lat, lon) {
+  var panorama;
+  if (panoDivId != null) {
+    panorama = new  google.maps.StreetViewPanorama(document.getElementById(panoDivId), {
+   position: new google.maps.LatLng(lat, lon),
+   visible: true
+    });
+  }
+  var map = new google.maps.Map(document.getElementById(mapDivId), {
+    center: new google.maps.LatLng(lat, lon),
+    zoom: 14,
+    mapTypeId: google.maps.MapTypeId.ROADMAP,
+    streetViewControl: true,
+    streetView: panorama
+  });
+
+  if (panoDivId != null) {
+    google.maps.event.addListener(panorama, "position_changed", function() {
+      map.setCenter(panorama.getPosition());
+    });
+  }
+}
+
 function loadScript(scriptUrl, scriptDiv, callback) {
   var el = document.createElement('script');
   el.type = 'text/javascript';
