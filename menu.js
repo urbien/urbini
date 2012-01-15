@@ -13756,6 +13756,25 @@ function asyncLoadScript(scriptUrl, scriptDiv, callback) {
   }, 0);
 }
 
+function initFacebookLikeHandler(serverUrl) {
+  if (isUndefined(FB)) {
+    toConsole('no FB');
+    return;
+  }
+  
+  FB.Event.subscribe('edge.create', function(response) {
+    var vIdx = response.indexOf('/v/');
+    if (vIdx == -1)
+      return;
+    
+    response = response.substring(vIdx + 3);
+    var params = 'submit=y&.initialized=true&.initialized_select=true&.initialized_verified=y&-$action=showPropertiesForEdit&-fbLike=y';
+    params +=  "&uri=" + response;
+    var url = serverUrl + '/proppatch';
+    postRequest(null, url, params, null, null, null);
+  });
+}    
+
 function addOrReplaceUrlParam(url, name, value) {
   name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
   var regexS = "[\\?&]" + name + "=([^&#]*)";
