@@ -13769,7 +13769,7 @@ function initFacebookLikeHandler(serverUrl) {
     if (vIdx == -1)
       return;
     
-    response = response.substring(vIdx + 3);
+    response = response.substring(vIdx);
     var params = 'submit=y&.initialized=true&.initialized_select=true&.initialized_verified=y&-$action=showPropertiesForEdit&-fbLike=y';
     params +=  "&uri=" + response;
     var url = serverUrl + '/proppatch';
