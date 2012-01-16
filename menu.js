@@ -13795,21 +13795,58 @@ function addOrReplaceUrlParam(url, name, value) {
 }
 
 function initializeMap(panoDivId, mapDivId, lat, lon) {
-  var panorama;
-  if (panoDivId != null) {
-    panorama = new  google.maps.StreetViewPanorama(document.getElementById(panoDivId), {
-   position: new google.maps.LatLng(lat, lon),
-   visible: true
-    });
-  }
-  var map = new google.maps.Map(document.getElementById(mapDivId), {
-    center: new google.maps.LatLng(lat, lon),
+  var latLon = new google.maps.LatLng(lat, lon);
+  var mapOptions = {
+    center: latLon,
     zoom: 14,
-    mapTypeId: google.maps.MapTypeId.ROADMAP,
-    streetViewControl: true,
-    streetView: panorama
-  });
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  };
+  
+  var map = new google.maps.Map(document.getElementById(mapDivId), mapOptions);
+  var panoramaOptions = {
+    position: latLon,
+    visible: false,
+//    pov: {
+//      heading: 34,
+//      pitch: 10,
+//      zoom: 1
+//    }
+  };
 
+  var marker = new google.maps.Marker({
+    position: latLon,
+    map: map,
+  });
+  
+  var panorama = new  google.maps.StreetViewPanorama(document.getElementById(panoDivId), panoramaOptions);
+  map.setStreetView(panorama);  
+//  GEvent.addListener(map,"click", function(overlay,latlng) {
+//    panorama.setLocationAndPOV(latlng);
+//  });
+
+  var streetViewService = new google.maps.StreetViewService();
+  streetViewService.getPanoramaByLocation(latLon, 50, function (streetViewPanoramaData, status) {
+    if (status === google.maps.StreetViewStatus.OK) {
+      toConsole("Street View is available at this location");
+      panorama.setVisible(true);
+      marker.setVisible(false);
+    } 
+    else {
+      toConsole("no Street View is available at this location");
+      panorama.setVisible(false);
+    }
+  });
+//  var svClient = new GStreetviewClient();
+//
+//  svClient.getNearestPanoramaLatLng(latLon, function (nearest) {
+//     if ((nearest !== null) && (testPoint.distanceFrom(nearest) <= 100)) {
+//        alert('Street View Available');             // Within 100 meters
+//     }
+//     else {
+//        alert('Street View Noet Available');        // Not within 100 meters
+//     }
+//  })
+  
   if (panoDivId != null) {
     google.maps.event.addListener(panorama, "position_changed", function() {
       map.setCenter(panorama.getPosition());
