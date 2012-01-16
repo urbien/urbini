@@ -13806,6 +13806,7 @@ function initializeMap(panoDivId, mapDivId, lat, lon) {
   var panoramaOptions = {
     position: latLon,
     visible: false,
+    addressControl: false,
 //    pov: {
 //      heading: 34,
 //      pitch: 10,
