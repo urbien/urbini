@@ -2416,7 +2416,8 @@ td #corePageContent { min-height: 600px;}
   font-family:Arial;
   line-height: 20px;
 }
-#dataEntry .sortable li {float: left; width: 222px; margin: 0 0 15px 15px;}
+
+#dataEntry .sortable li, #siteResourceList .sortable li {float: left; width: 222px; margin: 0 0 15px 15px;}
 /* PIN CELL
 --------------------------------------------------------------------------------------- */
 .pin { width: 192px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; box-shadow: 0 1px 3px rgba(34,25,25,0.4); -moz-box-shadow: 0 1px 3px rgba(34,25,25,0.4); -webkit-box-shadow: 0 1px 3px rgba(34,25,25,0.4);}
@@ -2426,4 +2427,4 @@ td #corePageContent { min-height: 600px;}
 .pinBoard h3 {padding: 9px 15px 0; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
 .pinBoard .link {display: block; height: 200px; background: url(../images/BoardBackground.png) 15px 9px no-repeat; padding: 9px 0 4px 15px; overflow: hidden;}
 .pinBoard .link img {float: left; width: 61px; height: 61px; margin: 0 4px 4px 0;}
-.boardsTitle {font-size: 16pt; color: #cb2027; }
+.boardsTitle {padding-top: 5px; font-size: 16pt; color: #cb2027; }
