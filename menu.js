@@ -13779,25 +13779,40 @@ function initFacebookLikeHandler(serverUrl) {
 
 function initSocialLikes(likeContainer) {
   var innerDiv = getChildByClassName(likeContainer, "fbLikeWidget");
-  var likeHtml = innerDiv.innerHTML;
-  if (likeHtml.charAt(0) == '\"') {  
-    likeHtml = "<" + likeHtml.substring(1, likeHtml.length - 1) + ">";
-    innerDiv.innerHTML = likeHtml;
-    FB.XFBML.parse(innerDiv);
-  }
+  if (innerDiv != null) {
+    var likeHtml = innerDiv.innerHTML;
+    if (likeHtml.charAt(0) == '\"') {  
+      likeHtml = "<" + likeHtml.substring(1, likeHtml.length - 1) + ">";
+      innerDiv.innerHTML = likeHtml;
+      FB.XFBML.parse(innerDiv);
+    }
   
-  innerDiv.style.visibility = "visible";
-  innerDiv.style.display = "block";
+    innerDiv.style.visibility = "visible";
+    innerDiv.style.display = "block";
+  }
   
   var googleDiv = getChildByClassName(likeContainer, "googlePlusWidget");
   if (googleDiv != null) {
-    gapi.plusone.render(googleDiv);
+    var likeHtml = googleDiv.innerHTML;
+    if (likeHtml.charAt(0) === '\"') {
+      likeHtml = "<" + likeHtml.substring(1, likeHtml.length - 1) + ">";
+      googleDiv.innerHTML = likeHtml;
+      gapi.plusone.render(googleDiv);
+    }
     googleDiv.style.visibility = "visible";
     googleDiv.style.display = "block";
   }
 }
 
 function hideSocialLikes(likeContainer) {
+//  if (event===undefined) 
+//    event = window.event;
+//  
+//  var target = 'target' in event ? event.target : event.srcElement;
+//
+//  if (target!==this) 
+//    return;  
+  
   var innerDiv = getChildByClassName(likeContainer, "fbLikeWidget");
   if (innerDiv != null) {
     innerDiv.style.visibility = "hidden";
