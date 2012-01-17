@@ -13777,6 +13777,40 @@ function initFacebookLikeHandler(serverUrl) {
   });
 }    
 
+function initSocialLikes(likeContainer) {
+  var innerDiv = getChildByClassName(likeContainer, "fbLikeWidget");
+  var likeHtml = innerDiv.innerHTML;
+  if (likeHtml.charAt(0) == '\"') {  
+    likeHtml = "<" + likeHtml.substring(1, likeHtml.length - 1) + ">";
+    innerDiv.innerHTML = likeHtml;
+    FB.XFBML.parse(innerDiv);
+  }
+  
+  innerDiv.style.visibility = "visible";
+  innerDiv.style.display = "block";
+  
+  var googleDiv = getChildByClassName(likeContainer, "googlePlusWidget");
+  if (googleDiv != null) {
+    gapi.plusone.render(googleDiv);
+    googleDiv.style.visibility = "visible";
+    googleDiv.style.display = "block";
+  }
+}
+
+function hideSocialLikes(likeContainer) {
+  var innerDiv = getChildByClassName(likeContainer, "fbLikeWidget");
+  if (innerDiv != null) {
+    innerDiv.style.visibility = "hidden";
+    innerDiv.style.display = "none";  
+  }
+  
+  var googleDiv = getChildByClassName(likeContainer, "googlePlusWidget");
+  if (googleDiv != null) {
+    googleDiv.style.visibility = "hidden";
+    googleDiv.style.display = "none";
+  }
+}
+
 function addOrReplaceUrlParam(url, name, value) {
   name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
   var regexS = "[\\?&]" + name + "=([^&#]*)";
@@ -13806,7 +13840,7 @@ function initializeMap(panoDivId, mapDivId, lat, lon) {
   var panoramaOptions = {
     position: latLon,
     visible: false,
-    addressControl: false,
+    addressControl: false
 //    pov: {
 //      heading: 34,
 //      pitch: 10,
@@ -13816,7 +13850,7 @@ function initializeMap(panoDivId, mapDivId, lat, lon) {
 
   var marker = new google.maps.Marker({
     position: latLon,
-    map: map,
+    map: map
   });
   
   var panorama = new  google.maps.StreetViewPanorama(document.getElementById(panoDivId), panoramaOptions);
