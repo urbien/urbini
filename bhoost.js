@@ -1383,7 +1383,7 @@ var Boost = {
   onClick: function(e) {
 		var $t = Mobile;
     e = getDocumentEvent(e);
-		
+
     var l = getEventTarget(e);
 //    if (!Popup.android  &&  l.tagName.toUpperCase() != 'A'  &&  l.tagName.toUpperCase() != 'IMG')
 //      return;
@@ -1426,6 +1426,12 @@ var Boost = {
     if (ln.endsWith('.gif') || ln.endsWith('.png') || ln.endsWith('.jpg') || ln.endsWith('.jpeg') || ln.endsWith('.svg')
          || (ln.startsWith('javascript') && link.id.length == 0))
       return true;
+		// social nets buttons: should be directed to social nets web-sites	
+		if (getAncestorByTagName(link, "div").id.indexOf("LoginDiv") != -1)	 
+		  return true;
+		if (link.className  &&  link.className == "external")
+		  return true; 
+			
     return $t.getPage(e, link);
   },
 
@@ -1623,6 +1629,8 @@ var Boost = {
 				regDiv.className = "mobile_dlg";
 				document.body.appendChild(regDiv);
 				setDivVisible(event, regDiv, null, hotspot);
+				// execute inner script for social nets
+				ExecJS.runDivCode(regDiv);
 				// download hashScript.js on demand with timestamp suffix
 				LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
 				// set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
