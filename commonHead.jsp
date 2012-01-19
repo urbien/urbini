@@ -9,6 +9,7 @@
 	<feed/>
   <meta name="keywords" content=""></meta>
   <meta name="description" content=""></meta>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.7, maximum-scale=1.0"></meta>
   <meta name="apple-mobile-web-app-capable" content="yes"></meta>
   <meta name="apple-mobile-web-app-status-bar-style" content="black"></meta>
@@ -16,4 +17,11 @@
   <meta name="openGraph" content=""></meta>
   <include name="analytics-tracker.jsp" />
   <siteTitle />
+  <!-- Facebook bug, they attach #_=_ even if redirect_uri is explicitly provided -->
+  <script type="text/javascript">
+    if (window.location.hash == '#_=_') {
+      console.log("hash stripped");
+      window.location.hash = '';
+    }
+  </script>
 </container>
