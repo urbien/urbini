@@ -429,8 +429,7 @@ td.textCell {
   background-image:url(../images/frame/gray_bg/right.jpg);
   vertical-align: top; background-position: top; background-repeat: repeat-y;
 }
-.galleryItem_container .likes_tbl { position: absolute; top: 0; width: 100%; }
-
+.galleryItem_container .likes_tbl { position: absolute; z-index: 1; top: 0; width: 100%; }
 
 .galleryItem td#whiteRight {
   background-image:url(../images/frame/white_bg/right.jpg);
