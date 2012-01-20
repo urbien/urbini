@@ -11095,7 +11095,16 @@ var WidgetRefresher = {
 			
 		//if(OperaWidget.isWidget())
     //  OperaWidget.onWidgetRefresh();
-  }
+  },
+	isParentWidgetSliding : function(child){
+  	var parentWidget = getAncestorByClassName(child, "widget");
+  	if (!parentWidget || !parentWidget.id) 
+  		return false;
+  	var widgetSlider = WidgetRefresher.widgetsArr[parentWidget.id];
+  	if (!widgetSlider) 
+  		return false;
+  	return widgetSlider.isSlidingNow();
+  }	
 }
 
 /***********************************************
@@ -11118,6 +11127,7 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 	this.halfStepsAmt = null;
 	this.TIMEOUT = 30;
 	this.step = 1;
+	this._isSlidingNow = false;
 	this.slidesArr = new Array();
 	
 	// IE's hack for text fading
@@ -11185,7 +11195,8 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 			return;
 
 		this.halfStepsAmt = (typeof acceleration != 'undefined') ? Math.ceil(this.HALF_STEPS_AMT / acceleration) : this.HALF_STEPS_AMT;
-
+    this._isSlidingNow = true;
+		
 		if (Browser.ie) { // IE uses own transition Fade effect
 			if (!this.widgetDiv.filters[0]) {	
 				this.widgetDiv.style.filter = "progid:DXImageTransform.Microsoft.Fade(duration=1)";
@@ -11236,6 +11247,7 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 		}
 		else {
 			$t.step = 1;
+			$t._isSlidingNow = false;
 			if (this.callbackFinish)
 				this.callbackFinish();
 		} 
@@ -11285,10 +11297,13 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
     }
 
 		return parseInt(recNmb);
-	},
+	}
 	this.getSlides = function() {
 		return this.slidesArr;
 	}
+	this.isSlidingNow = function() {
+    return this._isSlidingNow;
+  }
 	
 	// ---
 	this.init(widgetDiv);
@@ -12742,9 +12757,9 @@ var BrowserDialog = {
 	hide : function() {
 		var $t = BrowserDialog;
 		if ($t.div)
-		  $t.div.style.visibility = "hidden";
+		$t.div.style.visibility = "hidden";
 		if ($t.promptInp)
-		  $t.promptInp.style.display = "none";
+		$t.promptInp.style.display = "none";
 		$t.callbackThis = null;
 		$t.callbackParamsArr = new Array();
 	}
@@ -13267,6 +13282,7 @@ function setFooterOnPage() {
 var LinkProcessor = {
 	onLinkClick : function(e) {
 		var $t = LinkProcessor;
+
 	  e = getDocumentEvent(e);
 	  if (!e)
 	    return;
@@ -13758,6 +13774,7 @@ function asyncLoadScript(scriptUrl, scriptDiv, callback) {
   }, 0);
 }
 
+
 function initFacebookLikeHandler(serverUrl) {
   if (isUndefined(FB)) {
     toConsole('no FB');
@@ -13778,6 +13795,8 @@ function initFacebookLikeHandler(serverUrl) {
 }    
 
 function initSocialLikes(likeContainer) {
+	if (WidgetRefresher.isParentWidgetSliding(likeContainer))
+	  return;
   var innerDiv = getChildByClassName(likeContainer, "fbLikeWidget");
   if (innerDiv != null) {
     var likeHtml = innerDiv.innerHTML;
