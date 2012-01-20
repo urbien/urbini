@@ -13773,7 +13773,7 @@ function initFacebookLikeHandler(serverUrl) {
     var params = 'submit=y&.initialized=true&.initialized_select=true&.initialized_verified=y&-$action=showPropertiesForEdit&-fbLike=y';
     params +=  "&uri=" + response;
     var url = serverUrl + '/proppatch';
-    postRequest(null, url, params, null, null, null);
+    setTimeout('postRequest(null, url, params, null, null, null)',0);
   });
 }    
 
