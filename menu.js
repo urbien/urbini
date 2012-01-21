@@ -12757,9 +12757,9 @@ var BrowserDialog = {
 	hide : function() {
 		var $t = BrowserDialog;
 		if ($t.div)
-		$t.div.style.visibility = "hidden";
+		  $t.div.style.visibility = "hidden";
 		if ($t.promptInp)
-		$t.promptInp.style.display = "none";
+		  $t.promptInp.style.display = "none";
 		$t.callbackThis = null;
 		$t.callbackParamsArr = new Array();
 	}
@@ -13595,6 +13595,8 @@ var LinkProcessor = {
 	
 	  // add current dashboard ID and current tab ID to url if they are not there
 	  var a = link.href;
+	  if (!a || a == 'about:blank')
+	    return;
 	  var isJSCall = a == null || a.indexOf("javascript:") == 0; 
 	  addCurrentDashboardAndCurrentTab(link);
 	  if (!isJSCall) {
@@ -13792,6 +13794,8 @@ function initFacebookLikeHandler(serverUrl) {
     params +=  "&uri=" + response;
     var url = serverUrl + '/proppatch';
     setTimeout('postRequest(null, url, params, null, null, null)',0);
+    postRequest(null, url, params, null, null, null);
+//    setTimeout('postRequest(null, \"' + url + '\", \"' + params + '\", null, null, null)',0);
   });
 }    
 
