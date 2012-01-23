@@ -13954,9 +13954,6 @@ function loadScript(scriptUrl, scriptDiv, callback) {
   scriptDiv.appendChild(el);
 }
 
-// flag that menu.js was parsed
-g_loadedJsFiles["menu.js"] = true;
-
 // callback on image upload from options panel
 function photoUploadOnMkresourceCallback(imgUrl, imgName, thumbnail) {
   var curDiv = document.getElementById("currentPhoto");
@@ -14002,3 +13999,54 @@ function photoUploadOnMkresourceCallback(imgUrl, imgName, thumbnail) {
   }
   */  
 }
+
+// slider to select related item (coupon, for example)
+var RelatedResourcesSlider = {
+  forwardBtn : null,
+  isForwardDisabled : false,
+  backBtn : null,
+  isBackDisabled : true,
+  forward : function (button) {
+    if (this.isForwardDisabled)
+      return;
+    
+    if (this.forwardBtn == null) {  
+      this.forwardBtn = button;
+      var table = getAncestorByTagName(button, "table");
+      this.backBtn = getChildByClassName(table, "button");
+    }
+    
+    var tray = getChildByClassName(getAncestorByTagName(button, "table"), "tray");
+    SlideSwaper.moveForward(tray, this.onForwardStop);
+    this.isBackDisabled = false;
+    changeOpacity(this.backBtn, 1.0);
+  },
+  back : function (button) {
+    if (this.isBackDisabled)
+      return;
+    
+    var tray = getChildByClassName(getAncestorByTagName(button, "table"), "tray");
+    SlideSwaper.moveBack(tray, this.onBackStop);
+    
+    this.isForwardDisabled = false;
+    changeOpacity(this.forwardBtn, 1);
+  },
+  onForwardStop : function(wasReachedEnd) {
+    var $t = RelatedResourcesSlider;
+    if (!wasReachedEnd)
+      return;
+    $t.isForwardDisabled = true;
+    changeOpacity($t.forwardBtn, 0.3);
+  },
+  onBackStop : function(wasReachedEnd) {
+    var $t = RelatedResourcesSlider;
+    if (!wasReachedEnd)
+      return;
+    $t.isBackDisabled = true;
+    changeOpacity($t.backBtn, 0.3);
+  }
+}
+
+
+// flag that menu.js was parsed. should be last in the file
+g_loadedJsFiles["menu.js"] = true;
