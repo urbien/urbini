@@ -2669,8 +2669,17 @@ var Tooltip = {
 
 		if ($t.isOverTooltip)
 			return;
-		
+
 		var target = $t.showArgs.target;
+		// if dialog opened then show tooltip only for elements inside it.
+		var cuDlg = TouchDlgUtil.getCurrentDialog();
+		if (cuDlg) {
+			var parentDlg = getParentDialog(target);
+			if (!parentDlg)
+			  return;
+			// possible additinally to check if parentDlg is cuDlg but in most cases we have one dlg on page	 
+		}
+		
 		var tooltipText = $t.showArgs.tooltipText;
 
     if (!$t.tooltipDiv)
@@ -5586,7 +5595,7 @@ var PlainDlg = {
 		var $t = PlainDlg;
 		if ($t.dlgDiv == null) // || $t.curUrl == null
 			return;
-		
+	
 	  // var dialogIframe = document.getElementById('dialogIframe');
 	  setDivInvisible($t.dlgDiv/*, dialogIframe*/);
 	 	if (!Browser.mobile)
@@ -12757,9 +12766,9 @@ var BrowserDialog = {
 	hide : function() {
 		var $t = BrowserDialog;
 		if ($t.div)
-		  $t.div.style.visibility = "hidden";
+		$t.div.style.visibility = "hidden";
 		if ($t.promptInp)
-		  $t.promptInp.style.display = "none";
+		$t.promptInp.style.display = "none";
 		$t.callbackThis = null;
 		$t.callbackParamsArr = new Array();
 	}
