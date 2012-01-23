@@ -332,6 +332,7 @@
         textNode.nodeValue = (isNaN(curNum) ? 0 : curNum) + 1 + " ";
       }
 			
+/*		'more_details_btn' button	in this version is absent
 			var ShowHideCouponDetailes = {
 				textDiv1 : null,
 				textDiv2 : null,
@@ -394,7 +395,8 @@
 					}	
 				}
 			}
-			runJSCode("ShowHideCouponDetailes.init()", null, "common.js");
+			// runJSCode("ShowHideCouponDetailes.init()", null, "");
+*/
 			
 			// bar docked to bottom edge
 			var DockedBar = {
@@ -407,51 +409,8 @@
 			}
 //			runJSCode("DockedBar.init()", null, "common.js");
 		
-			var RelatedResourcesSlider = {
-				forwardBtn : null,
-				isForwardDisabled : false,
-				backBtn : null,
-				isBackDisabled : true,
-				forward : function (button) {
-					if (this.isForwardDisabled)
-						return;
-					
-					if (this.forwardBtn == null) {	
-						this.forwardBtn = button;
-						var table = getAncestorByTagName(button, "table");
-						this.backBtn = getChildByClassName(table, "button");
-					}
-					
-					var tray = getChildByClassName(getAncestorByTagName(button, "table"), "tray");
-					SlideSwaper.moveForward(tray, this.onForwardStop);
-					this.isBackDisabled = false;
-					changeOpacity(this.backBtn, 1.0);
-				},
-				back : function (button) {
-					if (this.isBackDisabled)
-						return;
-					
-					var tray = getChildByClassName(getAncestorByTagName(button, "table"), "tray");
-					SlideSwaper.moveBack(tray, this.onBackStop);
-					
-					this.isForwardDisabled = false;
-					changeOpacity(this.forwardBtn, 1);
-				},
-				onForwardStop : function(wasReachedEnd) {
-					var $t = RelatedResourcesSlider;
-					if (!wasReachedEnd)
-						return;
-					$t.isForwardDisabled = true;
-					changeOpacity($t.forwardBtn, 0.3);
-				},
-				onBackStop : function(wasReachedEnd) {
-					var $t = RelatedResourcesSlider;
-					if (!wasReachedEnd)
-						return;
-					$t.isBackDisabled = true;
-					changeOpacity($t.backBtn, 0.3);
-				}
-			}
+//		RelatedResourcesSlider - moved to menu.js
+		
 			// substitudes -$this with coupon ID
 			function onVariantsMouseDown(a) {
 				var loc= window.location.href;
