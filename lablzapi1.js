@@ -1,5 +1,6 @@
-var serverName = "mark.obval.com/obval"; 
+//var serverName = "mark.obval.com/obval"; 
 //var serverName = "aurora2.lablz.com";
+var serverName = "urbien.com";
 //var serverName = "www.obval.com";
 //var serverName = "dev.obval.com";
 var apiUrl = "http://" + serverName + "/api/v1/";
@@ -55,5 +56,5 @@ Lablz.printJson = function(response) {
 }
       // convert imageUri to imageUrl 
 Lablz.getImageUrl = function(imgUri) {
-  return imgUri == null ? null : 'http://' + serverName + '/' + imgUri.substring(imgUri.indexOf('url=') + 4);
+  return imgUri == null ? null : 'http://' + serverName + imgUri.substring(imgUri.indexOf('Image') + 5);
 }
