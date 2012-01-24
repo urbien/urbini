@@ -13007,33 +13007,49 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
 	var noChoiceItem = getChildById(optTableBody, "$noValue");
 	if (noChoiceItem)
 		noChoiceItem.parentNode.removeChild(noChoiceItem);
-	
-	var newItemRow = document.createElement("tr");
-	newItemRow.className = "menuItemRow";
-	newItemRow.id = getBaseUri() + "sql/www.hudsonfog.com/voc/model/portal/Image?url=" + imgUrl;
-	
-	var td1 = document.createElement("td");
-	td1.innerHTML = "&nbsp;";
-	td1.className="menuItemIcon";
-	newItemRow.appendChild(td1);
-	
-	var td2 = document.createElement("td");
-	td2.className="menuItem";
-	td2.innerHTML = "<img src=\"" + thumbnail + "\">"; // width="105"!
-//  td2.innerHTML = "<img width=\"105\" src=\"" + thumbnail + "\">"; // width="105"!
-	newItemRow.appendChild(td2);
 
-	var td3 = document.createElement("td");
-	td3.width = "100%";
-	td3.innerHTML = "&nbsp;&nbsp;&nbsp;" + imgName;
-	newItemRow.appendChild(td3);
+	var td = document.createElement("td");
+  td.className="grid_option_cell";
+  var id = getBaseUri() + "sql/www.hudsonfog.com/voc/model/portal/Image?url=" + imgUrl;
+	var html =
+		"<table width=\"100%\" height=\"100%\" cellspacing=\"0\">"
+		+ "<tr class=\"menuItemRow\" id=\""
+		+ id
+		+ "\">"
+		+ "<td class=\"menuItemIconEmpty\">"
+		+ "</td>"
+		+ "<td class=\"menuItem\">"
+		+ "<img align=\"middle\" width=\"124\" src=\""
+		+ thumbnail
+		+ "\"><br>"
+		+ imgName
+		+ "</td>"
+		+ "</tr>"
+		+ "</table>";
+	 
+  td.innerHTML = html;
+	var rows = optTableBody.rows
+	var toinsertIntoNewRow = false;
+	if (rows.length == 0)
+    toinsertIntoNewRow = true;
+	else if (rows.length == 1) {
+		toinsertIntoNewRow = rows[0].cells.length >= 3; // use 3 column in new option list
+	}	
+	else {
+		toinsertIntoNewRow = (rows[rows.length - 1].cells.length == 
+		  rows[rows.length - 2].cells.length);
+	}
 
-	// assign event handlers for new TR (!)
-	addEvent(newItemRow, 'click', ListBoxesHandler.onOptionsItemClick, false);
-	addEvent(newItemRow, 'mouseover', TouchDlgUtil.highlightRowGreyOnOver, false);
-	addEvent(newItemRow, 'mouseout', TouchDlgUtil.bleachGreyRowOnOut, false);
-
-	optTableBody.appendChild(newItemRow);
+	if (toinsertIntoNewRow) {
+		var tr = document.createElement("tr");
+		tr.appendChild(td);
+		optTableBody.appendChild(tr);
+		addEvent(tr, 'click', ListBoxesHandler.onOptionsItemClick, false);
+    addEvent(tr, 'mouseover', TouchDlgUtil.highlightRowGreyOnOver, false);
+    addEvent(tr, 'mouseout', TouchDlgUtil.bleachGreyRowOnOut, false);
+	}
+	else
+    optTableBody.rows[rows.length - 1].appendChild(td);
 }
 
 
