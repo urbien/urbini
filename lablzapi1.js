@@ -26,7 +26,7 @@ Lablz.simpleCall = function(query, callbackName, secure) {
 
 Lablz.call = function(query, callbackName) {
   if (appId == null)
-    throw new "init must be called before authenticatedCall";
+    throw new Error("init must be called before authenticatedCall");
   if (window.location.hash.length == 0) {
     var path = secureApiUrl + 'authenticate?';
     var queryParams = ['client_id=' + appId, 'redirect_uri=' + window.location, 'response_type=token']; //, 'state=' + ]; // CSRF protection
