@@ -2041,8 +2041,8 @@ var MobilePageAnimation = {
       else
         x = Math.floor(wndWidth - thisObj.totalOffset);
 
-			setTransformProperty(thisObj.curDiv, "translate(" + (x - wndWidth) + "px, 0px)");
-			setTransformProperty(thisObj.newDiv, "translate(" + x + "px, 0px)");
+			setTransformProperty(thisObj.curDiv, "translate3d(" + (x - wndWidth) + "px, 0px, 0px)");
+			setTransformProperty(thisObj.newDiv, "translate3d(" + x + "px, 0px, 0px)");
     }
     // 1.2. left to right // for "Back"
     else {
@@ -2051,8 +2051,8 @@ var MobilePageAnimation = {
       else
         x = thisObj.totalOffset;
 
-			setTransformProperty(thisObj.newDiv, "translate(" + (x - wndWidth) + "px, 0px)");
-			setTransformProperty(thisObj.curDiv, "translate(" + x + "px, 0px)");
+			setTransformProperty(thisObj.newDiv, "translate3d(" + (x - wndWidth) + "px, 0px, 0px)");
+			setTransformProperty(thisObj.curDiv, "translate3d(" + x + "px, 0px, 0px)");
     }
     if (thisObj.step == 1) {
 			var newDivStl = thisObj.newDiv.style;
