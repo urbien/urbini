@@ -1646,7 +1646,7 @@ table.printFB {
 #ropLeft .button td { font-size: 16px; }
 
 .userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
-.userLogin #errorMessage { max-width: 320px; }
+.userLogin #errorMessage { max-width: 420px; }
 .fbUser div { position: relative; }
 .fbUser .icon16 { position: absolute; bottom: 0; right: 0; }
 #loginForm td { font-weight: bold; }
