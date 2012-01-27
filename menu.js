@@ -12917,7 +12917,7 @@ function getActivity(e, uri) {
   var tables = div.getElementsByTagName("table");
   if (tables.length != 0)
     return; // content table was already downloaded and inserted
-  var params = "bUri=" + encodeURIComponent(uri) + "&-activity=y";
+  var params = "bUri=" + encodeURIComponent(uri) + "&-locSort=n&-activity=y";
   postRequest(null, "smartPopup", params, div, null, getActivityCallBack);
 }
 
@@ -13007,7 +13007,7 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
 	var noChoiceItem = getChildById(optTableBody, "$noValue");
 	if (noChoiceItem)
 		noChoiceItem.parentNode.removeChild(noChoiceItem);
-
+	
 	var td = document.createElement("td");
   td.className="grid_option_cell";
   var id = getBaseUri() + "sql/www.hudsonfog.com/voc/model/portal/Image?url=" + imgUrl;
@@ -13026,7 +13026,7 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
 		+ "</td>"
 		+ "</tr>"
 		+ "</table>";
-	 
+	
   td.innerHTML = html;
 	var rows = optTableBody.rows
 	var toinsertIntoNewRow = false;
@@ -13039,7 +13039,7 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
 		toinsertIntoNewRow = (rows[rows.length - 1].cells.length == 
 		  rows[rows.length - 2].cells.length);
 	}
-
+	
 	if (toinsertIntoNewRow) {
 		var tr = document.createElement("tr");
 		tr.appendChild(td);
@@ -13625,16 +13625,16 @@ var LinkProcessor = {
 	  var isJSCall = a == null || a.indexOf("javascript:") == 0; 
 	  addCurrentDashboardAndCurrentTab(link);
 	  if (!isJSCall) {
-	  // Login to Facebook
-    var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
-    if (fbdiv) { 
-      a += '&-fb=y';
-	    link.href = a;
-	  }
-
-      // append latitude / longitude to url
+  	  // Login to Facebook
+      var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
+      if (fbdiv) { 
+        a += '&-fb=y';
+  	    link.href = a;
+  	  }
+  
+        // append latitude / longitude to url
       var locDiv = document.getElementById("geoLocation");
-      if (locDiv) {
+      if (locDiv  &&  (a.indexOf("-loc") != -1  ||  a.indexOf("&bUri") == -1)) {
         var loc = locDiv.innerHTML;
         if (loc != null && loc.indexOf(',') != -1) {
           a = addOrReplaceUrlParam(a, "-loc", loc);
@@ -13642,8 +13642,7 @@ var LinkProcessor = {
           link.href = a;
         }
       }
-	  }
-	  
+	  }	  
 	  if     (e.ctrlKey) {
 	    p = '_ctrlKey=y';
 	  }
