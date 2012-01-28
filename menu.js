@@ -13007,7 +13007,7 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
 	var noChoiceItem = getChildById(optTableBody, "$noValue");
 	if (noChoiceItem)
 		noChoiceItem.parentNode.removeChild(noChoiceItem);
-	
+
 	var td = document.createElement("td");
   td.className="grid_option_cell";
   var id = getBaseUri() + "sql/www.hudsonfog.com/voc/model/portal/Image?url=" + imgUrl;
@@ -13026,7 +13026,7 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
 		+ "</td>"
 		+ "</tr>"
 		+ "</table>";
-	
+	 
   td.innerHTML = html;
 	var rows = optTableBody.rows
 	var toinsertIntoNewRow = false;
@@ -13039,7 +13039,7 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
 		toinsertIntoNewRow = (rows[rows.length - 1].cells.length == 
 		  rows[rows.length - 2].cells.length);
 	}
-	
+
 	if (toinsertIntoNewRow) {
 		var tr = document.createElement("tr");
 		tr.appendChild(td);
@@ -13625,14 +13625,14 @@ var LinkProcessor = {
 	  var isJSCall = a == null || a.indexOf("javascript:") == 0; 
 	  addCurrentDashboardAndCurrentTab(link);
 	  if (!isJSCall) {
-  	  // Login to Facebook
-      var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
-      if (fbdiv) { 
-        a += '&-fb=y';
-  	    link.href = a;
-  	  }
-  
-        // append latitude / longitude to url
+	  // Login to Facebook
+    var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
+    if (fbdiv) { 
+      a += '&-fb=y';
+	    link.href = a;
+	  }
+
+      // append latitude / longitude to url
       var locDiv = document.getElementById("geoLocation");
       if (locDiv  &&  (a.indexOf("-loc") != -1  ||  a.indexOf("&bUri") == -1)) {
         var loc = locDiv.innerHTML;
@@ -13642,7 +13642,8 @@ var LinkProcessor = {
           link.href = a;
         }
       }
-	  }	  
+	  }
+	  
 	  if     (e.ctrlKey) {
 	    p = '_ctrlKey=y';
 	  }
@@ -13834,9 +13835,6 @@ function initSocialLikes(likeContainer) {
       innerDiv.innerHTML = likeHtml;
       FB.XFBML.parse(innerDiv);
     }
-  
-    innerDiv.style.visibility = "visible";
-    innerDiv.style.display = "block";
   }
   
   var googleDiv = getChildByClassName(likeContainer, "googlePlusWidget");
@@ -13847,31 +13845,21 @@ function initSocialLikes(likeContainer) {
       googleDiv.innerHTML = likeHtml;
       gapi.plusone.render(googleDiv);
     }
-    googleDiv.style.visibility = "visible";
-    googleDiv.style.display = "block";
   }
+	
+	var likeTbl = getChildByClassName(likeContainer, "likes_tbl");
+	var discountLayer = getChildById(likeContainer.parentNode, "discount");
+	if (discountLayer)
+	  likeTbl.style.top = discountLayer.offsetHeight;
+	likeTbl.style.visibility = "visible";
+	googleDiv.style.display = "block";
 }
 
 function hideSocialLikes(likeContainer) {
-//  if (event===undefined) 
-//    event = window.event;
-//  
-//  var target = 'target' in event ? event.target : event.srcElement;
-//
-//  if (target!==this) 
-//    return;  
-  
-  var innerDiv = getChildByClassName(likeContainer, "fbLikeWidget");
-  if (innerDiv != null) {
-    innerDiv.style.visibility = "hidden";
-    innerDiv.style.display = "none";  
-  }
-  
-  var googleDiv = getChildByClassName(likeContainer, "googlePlusWidget");
-  if (googleDiv != null) {
-    googleDiv.style.visibility = "hidden";
-    googleDiv.style.display = "none";
-  }
+  var likeTbl = getChildByClassName(likeContainer, "likes_tbl");
+  likeTbl.style.visibility = "hidden";
+	var googleDiv = getChildByClassName(likeContainer, "googlePlusWidget");
+	googleDiv.style.display = "none";
 }
 
 function addOrReplaceUrlParam(url, name, value) {
