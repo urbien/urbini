@@ -14,7 +14,7 @@
 		<where value="getWebSite().sharedHost == true">
     <br/>
     <br/>
-      <localLink href="/l.html?-q=how+to+earn+karma+points">
+      <localLink href="/alias/karma">
 		    <text text="Each comment gives you karma points"/>
 		  </localLink>
 		</where>
