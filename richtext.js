@@ -14,7 +14,7 @@ var RteEngine = {
 		buttons:{
 			style:true,	font:true, decoration:true,	align:true,	dent:true,
 			list:true, text_color: true, bg_color: true, link: true,
-			image: true, object: true, youtube: true, smile:false, line: true, table:false, supsub:true, reundo:true, html:true
+			image: true, object: true, youtube: true, facebook: true, smile:false, line: true, table:false, supsub:true, reundo:true, html:true
 		}
 	},
 	chatRTE : {
@@ -23,7 +23,7 @@ var RteEngine = {
 		buttons:{
 			style:false, font:true, decoration:true, align:true, dent:true,
 			list:true, text_color: true, bg_color: true, link: true,
-			image: true, object: true, youtube: false, smile:true, line: true, table:false, supsub:false, reundo:true, html:false
+			image: true, object: true, youtube: false, facebook: false, smile:true, line: true, table:false, supsub:false, reundo:true, html:false
 		}
 	},
 	advancedRTE : {
@@ -32,7 +32,7 @@ var RteEngine = {
 		buttons:{
 			style:true,	font:true, decoration:true,	align:true,	dent:true,
 			list:true, text_color: true, bg_color: true, link: true,
-			image: true, object: true, youtube: true, smile:false, line: true, table:true, supsub:true, reundo:true, html:true
+			image: true, object: true, youtube: true, facebook: true, smile:false, line: true, table:true, supsub:true, reundo:true, html:true
 		}
 	},
 	guestCommentRTE : {
@@ -41,7 +41,7 @@ var RteEngine = {
 		buttons:{
 			style:false, font:true, decoration:true,	align:false,	dent:false,
 			list:true, text_color: true, bg_color: false, link: true,
-			image: false, object: false, youtube: false, smile:false, line: false, table:false, supsub:false, reundo:true, html:false
+			image: false, object: false, youtube: false, facebook: false, smile:false, line: false, table:false, supsub:false, reundo:true, html:false
 		},
 		noFontSize : true,
 		noRedo : true
@@ -74,6 +74,7 @@ var RteEngine = {
 	imagePopup : null,
 	objectPopup : null,
 	youtubePopup : null,
+  facebookPopup : null,
 	tablePopup : null,
 
   toUseTArea : false,
@@ -280,6 +281,13 @@ var RteEngine = {
 		this.youtubePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.youtubePopup.div;
 	},
+  launchFacebookPopup : function(btnObj, callback, cancelCallback) {
+    if(this.facebookPopup == null)
+      this.createFacebookPopup();
+    var parentDlg = getParentDialog(btnObj.div);
+    this.facebookPopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
+    return this.facebookPopup.div;
+  },
 	launchObjectPopup : function(btnObj, callback, cancelCallback) {
 		if(this.objectPopup == null)
 			this.createObjectPopup();
@@ -357,7 +365,7 @@ var RteEngine = {
 	createYoutubePopup : function() {
 		var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
 			+ ' <tr><td colspan="2" align="left">'
-			+ ' YouTube ID:<input style="width:100%" name="youtube_id" type="text" id="youtube_id" />'
+			+ ' YouTube URL:<input style="width:100%" name="youtube_url" type="text" id="youtube_url" />'
       + ' </td></tr>'
 			
 			+ ' <tr><td>'
@@ -369,6 +377,21 @@ var RteEngine = {
 			+ '</table>';
 		this.youtubePopup = new FormPopup(innerFormHtml);
 	},
+  createFacebookPopup : function() {
+    var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
+      + ' <tr><td colspan="2" align="left">'
+      + ' Video ID:<input style="width:100%" name="fb_id" type="text" id="fb_id" />'
+      + ' </td></tr>'
+      
+      + ' <tr><td>'
+      + ' width:&nbsp;<input size="4" name="width" type="text" id="width" />&nbsp;px&nbsp;'
+      + ' </td><td align="left">'
+      + ' height:&nbsp;<input size="4" name="height" type="text" id="height" />&nbsp;px&nbsp;</td>'
+      + ' </tr>'
+      
+      + '</table>';
+    this.facebookPopup = new FormPopup(innerFormHtml);
+  },
 	createSmilePopup : function() {
 		var SMILES_AMT = 30;
 		var PADDING = 5;
@@ -859,6 +882,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.imageBtn = null;
 	this.objectBtn = null;
 	this.youtubeBtn = null;
+  this.facebookBtn = null;
 	this.tableBtn = null;
 	this.htmlBtn = null;
 
@@ -1016,6 +1040,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			this.imageBtn = toolBar.appendButton(this.onImage, false, RteEngine.IMAGES_FOLDER + "image.png", "&[image];");
 		if(this.rtePref.buttons.youtube)
 			this.youtubeBtn = toolBar.appendButton(this.onYoutube, false, RteEngine.IMAGES_FOLDER + "youtube.png", "&[insert]; YouTube &[video];");
+    if(this.rtePref.buttons.facebook)
+      this.facebookBtn = toolBar.appendButton(this.onFacebook, false, RteEngine.IMAGES_FOLDER + "facebook.png", "&[insert]; Facebook &[video];");
 		if(this.rtePref.buttons.object) // object/embed; widget
 			this.objectBtn = toolBar.appendButton(this.onObject, false, "icons/addThirdPartyWidget.png", "&[embed object or widget];");
 		if(this.rtePref.buttons.list) { // list: ordered + unordered
@@ -1694,6 +1720,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		
 		i_am.currentPopup = RteEngine.launchYoutubePopup(i_am.youtubeBtn, i_am.setYoutube/*, i_am.cancelImage*/);
 	}
+  // Facebook video
+  this.onFacebook = function() {
+    if(!i_am.isAllowedToExecute())
+      return;
+    
+    i_am.currentPopup = RteEngine.launchFacebookPopup(i_am.facebookBtn, i_am.setFacebook/*, i_am.cancelImage*/);
+  }
 	// object; widget
 	this.onObject = function() {
 		if(!i_am.isAllowedToExecute())
@@ -1918,35 +1951,66 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	// setYoutube
 	this.setYoutube = function(params){
-  	if (!params.youtube_id || !params.width || !params.height) {
-			alert("&[enter]; &[all]; &[parameters];!")
+  	if (!params.youtube_url) {
+			alert("&[enter]; &[YouTube]; &[URL];!")
 			return;
 		}
 
-		var html = "<object wmode='transparent' width='"
-			+ params.width
-			+ "' height='"
-			+ params.height
-			+ "'><param name='movie' value='http://www.youtube.com/v/"
-			+ params.youtube_id
+  	var width = params.width ? " width='" + params.width + "' " : "";
+    var height = params.height ? " height='" + params.height + "' " : "";
+  	var id = getUrlParam(params.youtube_url, "v");
+		var html = "<object wmode='transparent' "
+			+ width
+			+ height
+			+ "><param name='movie' value='http://www.youtube.com/v/"
+			+ id
 			+ "?fs=1&amp;rel=0;wmode=transparent'></param>"
 			+ "<param name='allowFullScreen' value='true'></param>"
 			+ "<param name='allowscriptaccess' value='always'></param>"
 			+ "<param value='transparent' name='wmode'></param>"
 			+ "<embed src='http://www.youtube.com/v/"
-			+ params.youtube_id
-			+ "?fs=1&amp;rel=0;wmode=transparent' type='application/x-shockwave-flash' width='"
-			+ params.width
-			+ "' height='"
-			+ params.height 
-			+ "' allowscriptaccess='always' allowfullscreen='true' wmode='transparent' '></embed></object>";
+			+ id
+			+ "?fs=1&amp;rel=0;wmode=transparent' type='application/x-shockwave-flash' "
+			+ width
+			+ height 
+			+ " allowscriptaccess='always' allowfullscreen='true' wmode='transparent'></embed></object>";
 
 		i_am.insertHTML(html);
 		// so fit RTE height after some delay while image should be downloaded 
 		setTimeout(i_am.fitHeightToVisible, 1500);
 	}
 	
-	// setObject
+  // setFacebook
+  this.setFacebook = function(params){
+    if (!params.fb_id) {
+      alert("&[enter]; &[Video]; &[ID];!")
+      return;
+    }
+
+    var width = params.width ? " width='" + params.width + "' " : "";
+    var height = params.height ? " height='" + params.height + "' " : "";
+    var html = "<object wmode='transparent' "
+      + width
+      + height
+      + "><param name='movie' value='http://www.facebook.com/v/"
+      + params.fb_id
+      + "?fs=1&amp;rel=0;wmode=transparent'></param>"
+      + "<param name='allowFullScreen' value='true'></param>"
+      + "<param name='allowscriptaccess' value='always'></param>"
+      + "<param value='transparent' name='wmode'></param>"
+      + "<embed src='http://www.facebook.com/v/"
+      + params.fb_id
+      + "' type='application/x-shockwave-flash' "
+      + width
+      + height 
+      + " allowscriptaccess='always' allowfullscreen='true' wmode='transparent'></embed></object>";
+
+    i_am.insertHTML(html);
+    // so fit RTE height after some delay while image should be downloaded 
+    setTimeout(i_am.fitHeightToVisible, 1500);
+  }
+
+  // setObject
 	this.setObject = function(params) {
 		// hack: hailed to insert <object>/<embed> directlly thru insertHTML
 		// so substitute some mark with the code
