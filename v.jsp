@@ -1,4 +1,13 @@
 <div>
+
+  <facebookLocalLikeWidget />
+  <where value="Packages.hudsonfog.voc.system.parse.FileSystem.davClass.isAssignableFrom(Packages.com.fogx.webdav.DavClass.getDavClass(getType())) &amp;&amp; hasAudio">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js" language="JavaScript" type="text/javascript"></script>
+    <script src="jquery.jplayer.min.js" language="JavaScript" type="text/javascript"></script>
+    <script src="jplayer.playlist.min.js" language="JavaScript" type="text/javascript"></script>
+    <embeddedAudioPlayer />
+  </where>
+  
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr><td colspan="3">
   
@@ -22,7 +31,6 @@
       </div>
       <subscribeNote/>
   	  <errorMessage />
-
   		<table width="100%" cellpadding="0" cellspacing="0" border="0">
   		  <tr><include name="${type}_details_top.jsp"/></tr>  <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
   	  </table>
