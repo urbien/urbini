@@ -13845,21 +13845,27 @@ function initSocialLikes(likeContainer) {
       googleDiv.innerHTML = likeHtml;
       gapi.plusone.render(googleDiv);
     }
+
+    googleDiv.style.display = "block";
   }
 	
 	var likeTbl = getChildByClassName(likeContainer, "likes_tbl");
-	var discountLayer = getChildById(likeContainer.parentNode, "discount");
-	if (discountLayer)
-	  likeTbl.style.top = discountLayer.offsetHeight;
-	likeTbl.style.visibility = "visible";
-	googleDiv.style.display = "block";
+	if (likeTbl) {
+  	var discountLayer = getChildById(likeContainer.parentNode, "discount");
+  	if (discountLayer)
+  	  likeTbl.style.top = discountLayer.offsetHeight;
+  	likeTbl.style.visibility = "visible";
+	}
 }
 
 function hideSocialLikes(likeContainer) {
   var likeTbl = getChildByClassName(likeContainer, "likes_tbl");
-  likeTbl.style.visibility = "hidden";
+  if (likeTbl)
+    likeTbl.style.visibility = "hidden";
+  
 	var googleDiv = getChildByClassName(likeContainer, "googlePlusWidget");
-	googleDiv.style.display = "none";
+	if (googleDiv)
+	  googleDiv.style.display = "none";
 }
 
 function addOrReplaceUrlParam(url, name, value) {
