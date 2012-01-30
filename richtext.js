@@ -1424,8 +1424,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			if (cpTab)
 				cpTab.style.display = "none";
 
-			if (Browser.webkit)
-				panelBlock.style.width = (panelBlock.parentNode.clientWidth - 10 + "px");	
+		//	if (Browser.webkit)
+		//		panelBlock.style.width = (panelBlock.parentNode.clientWidth - 10 + "px");	
 		}
 		else {
 			if (cpDiv)
