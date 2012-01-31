@@ -4,7 +4,8 @@
   <link href="styles/common.css"     type="text/css" rel="stylesheet" title="common"/>
   <link href="styles/properties.css" type="text/css" rel="stylesheet" />
   <link href="styles/iphone.css"     type="text/css" rel="stylesheet" /><!-- media="only screen and (max-device-width:480px)"  /-->
-  <link href='styles/jplayer.blue.monday.css' rel='stylesheet' type='text/css' />
+  <link href='styles/jplayer/pink.flag/jplayer.pink.flag.css' rel='stylesheet' type='text/css' />
+  <!--link href='styles/jplayer/blue.monday/jplayer.blue.monday.css' rel='stylesheet' type='text/css' /-->
   <getResource/>
   <link href=""  rel="image_src" />
 	<feed/>
