@@ -5,7 +5,6 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js" language="JavaScript" type="text/javascript"></script>
     <script src="jquery.jplayer.min.js" language="JavaScript" type="text/javascript"></script>
     <script src="jplayer.playlist.min.js" language="JavaScript" type="text/javascript"></script>
-    <embeddedAudioPlayer />
   </where>
   
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
