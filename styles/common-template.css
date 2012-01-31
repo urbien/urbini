@@ -1866,7 +1866,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 .rounded_rect_tbl input#rightPanelPropertySheet  { display: none; }
 /* .rounded_rect_tbl td#dIcon { height: 40px; PADDING-RIGHT: 2px; PADDING-LEFT: 5px; PADDING-TOP: 2px; white-space: nowrap;  vertical-align: top; } */
 
-.menuItemRow, .option_tr { cursor: pointer; height: 40px; }
+.menuItemRow, .option_tr, #lists_container .pointer { cursor: pointer; height: 40px; }
 
 .chosen_values {
 	text-align: right;
@@ -2089,7 +2089,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
   width: expression(document.body.clientWidth > 522? "520px" : "auto"); /* for IE */
 }
 #div_info table { overflow: visible; }
-#div_info table .label, #div_info table .propLabelI, #div_info table .xs { float: left; overflow: visible; font-weight: bold; color: &[SecondaryColorB_3];;}
+#div_info table .label, #div_info table .bigLabel, #div_info table .propLabelI, #div_info table .xs { float: left; overflow: visible; font-weight: bold; color: &[SecondaryColorB_3];;}
 #div_info td { overflow: visible; text-align: right; vertical-align: middle; }
 #div_info #rtitle { overflow: visible; vertical-align: middle; text-align: left;}
 #div_info .text_editor_container { text-align: left; }
