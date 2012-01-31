@@ -4393,8 +4393,11 @@ var SlideSwaper = {
   
 	trayPosition : 0,
 	
-  // alway 1 "step"; callback is not required
+  // always 1 "step"; callback is not required
   moveForward : function(tray, callback) {
+		// trying to prevent sliding in non-legitimate cases. 
+		if (TouchDlgUtil.getCurrentDialog() && !TouchDlgUtil.hasBlueRow())
+		  return;
   	this.move(tray, callback, true);
 	},
   
@@ -13851,21 +13854,20 @@ function initSocialLikes(likeContainer) {
 	
 	var likeTbl = getChildByClassName(likeContainer, "likes_tbl");
 	if (likeTbl) {
-  	var discountLayer = getChildById(likeContainer.parentNode, "discount");
-  	if (discountLayer)
-  	  likeTbl.style.top = discountLayer.offsetHeight;
-  	likeTbl.style.visibility = "visible";
-	}
+	var discountLayer = getChildById(likeContainer.parentNode, "discount");
+	if (discountLayer)
+	  likeTbl.style.top = discountLayer.offsetHeight;
+	likeTbl.style.visibility = "visible";
+}
 }
 
 function hideSocialLikes(likeContainer) {
   var likeTbl = getChildByClassName(likeContainer, "likes_tbl");
   if (likeTbl)
-    likeTbl.style.visibility = "hidden";
-  
+  likeTbl.style.visibility = "hidden";
 	var googleDiv = getChildByClassName(likeContainer, "googlePlusWidget");
 	if (googleDiv)
-	  googleDiv.style.display = "none";
+	googleDiv.style.display = "none";
 }
 
 function addOrReplaceUrlParam(url, name, value) {
