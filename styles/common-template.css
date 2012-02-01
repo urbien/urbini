@@ -143,7 +143,7 @@ div .href {display: inline;}
 }
 .displayIn4lines, .displayIn4lines * { font-size: 14px !important; line-height: 16px; height: 64px; /* 64 == 16 * 4 */ text-align: left; font-weight:normal !important; margin:0 !important; padding-right: 4px;} 
 
-.commentList .displayIn4lines * {font-size: 12px !important; }
+.commentList .displayIn4lines * {font-size: 12px !important;  line-height: 12px; }
 
 .mItems {
   text-align:center;
