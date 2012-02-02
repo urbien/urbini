@@ -11096,10 +11096,16 @@ var WidgetRefresher = {
 	
   // called by postRequest
   refresh : function(event, div, hotSpot, content)  {
-		if (content.length == 0)
-			return;
-
-    var widgetSlider = WidgetRefresher.widgetsArr[div.id];
+		var $t = WidgetRefresher;
+		var widgetSlider = $t.widgetsArr[div.id];
+		
+		if (content.length == 0) {
+			// stop rotating on empty server response: exception
+		  if (widgetSlider)
+			  clearInterval(widgetSlider.timerId);
+		  return;
+	  }
+   
 		if (widgetSlider)
 			widgetSlider.insertNextSlide(content);
 		else
@@ -13310,7 +13316,7 @@ function setFooterOnPage() {
 var LinkProcessor = {
 	onLinkClick : function(e) {
 		var $t = LinkProcessor;
-
+//debugger;
 	  e = getDocumentEvent(e);
 	  if (!e)
 	    return;
