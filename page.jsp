@@ -52,7 +52,8 @@
       }
     ]]>       
   </script>
-
+  
+  <cityAdsPixel />
   </body>
 </html>
 
