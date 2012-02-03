@@ -75,5 +75,4 @@
 <td width="30%"></td>
 </tr>
 </table>
-<cityAdsPixel />
 </div>
