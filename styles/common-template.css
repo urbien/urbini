@@ -351,11 +351,13 @@ td.textCell {
 
 /* Tabs for control panel and property sheet */
 
-#tabs  td.dashboard_btn {
-     padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;  
+#tabs td.dashboard_btn {
+     padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom; background: #ffffff;
      font-size:11px; white-space:nowrap;
   }
-
+#tabs  td.current {
+  background: rgba(&[PrimaryColor_5_rgb]; ,0.55);  /* makes glass effect darker */
+}
   .cpTabs {
     cursor: pointer;
     padding-top:2px; padding-left:10px; padding-right:10px; padding-bottom:2px;vertical-align:bottom;
