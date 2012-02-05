@@ -2436,7 +2436,7 @@ td #corePageContent { min-height: 600px;}
 
 .pList {padding-top:15px;padding-left:15px; background: #eaeaea;}
 .aList {padding-top:15px;}
-.pLink {color: #757575;}
+#resourceList .pin .pLink {color: #757575;}
 /* BOARD CELL
 --------------------------------------------------------------------------------------- */
 .pinBoard {width: 222px !important; padding: 0 !important;}
