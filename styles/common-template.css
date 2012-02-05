@@ -2431,6 +2431,12 @@ td #corePageContent { min-height: 600px;}
 /* PIN CELL
 --------------------------------------------------------------------------------------- */
 .pin { width: 192px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; box-shadow: 0 1px 3px rgba(34,25,25,0.4); -moz-box-shadow: 0 1px 3px rgba(34,25,25,0.4); -webkit-box-shadow: 0 1px 3px rgba(34,25,25,0.4);}
+#resourceList .pin td, #siteResourceList #front .pin .label {font-size: 11px;}
+#resourceList .pin .action {color: #98c165; font-weight:bold;} 
+
+.pList {padding-top:15px;padding-left:15px; background: #eaeaea;}
+.aList {padding-top:15px;}
+.pLink {color: #757575;}
 /* BOARD CELL
 --------------------------------------------------------------------------------------- */
 .pinBoard {width: 222px !important; padding: 0 !important;}
@@ -2439,4 +2445,4 @@ td #corePageContent { min-height: 600px;}
 /*.pinBoard .link img {float: left; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
 .pinBoard .link img {float: left; height: 61px; }
 .boardsTitle {padding-top: 5px; font-size: 16pt; color: #cb2027; }
- .pinBoard .link div {width:61px; overflow:hidden; float:left; margin:0px 0px 4px 4px;}
+.pinBoard .link div {width:61px; overflow:hidden; float:left; margin:0px 0px 4px 4px;}
