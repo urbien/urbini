@@ -13877,6 +13877,14 @@ function hideSocialLikes(likeContainer) {
 }
 
 function addOrReplaceUrlParam(url, name, value) {
+  var newUrl = url;
+  var hashIdx = newUrl.indexOf("#");
+  var afterHash;
+  if (hashIdx != -1) {
+    afterHash = newUrl.substring(hashIdx);
+    newUrl = newUrl.substring(0, hashIdx);
+  }
+    
   name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
   var regexS = "[\\?&]" + name + "=([^&#]*)";
   var regex = new RegExp(regexS);
@@ -13886,11 +13894,16 @@ function addOrReplaceUrlParam(url, name, value) {
       return url;
     
     var separator = url.indexOf('?') == -1 ? '?' : '&';
-    return url + separator + name + '=' + value;
+    newUrl = newUrl + separator + name + '=' + value;
   }
   else {
-    return url.replace(results[0], value == null ? '' : results[0].replace(/=(.*)/, '=' + value));
+    newUrl = newUrl.replace(results[0], value == null ? '' : results[0].replace(/=(.*)/, '=' + value));
   }
+  
+  if (afterHash)
+    newUrl = newUrl + afterHash;
+  
+  return newUrl;
 }
 
 function initializeMap(panoDivId, mapDivId, lat, lon) {
@@ -13920,32 +13933,18 @@ function initializeMap(panoDivId, mapDivId, lat, lon) {
   
   var panorama = new  google.maps.StreetViewPanorama(document.getElementById(panoDivId), panoramaOptions);
   map.setStreetView(panorama);  
-//  GEvent.addListener(map,"click", function(overlay,latlng) {
-//    panorama.setLocationAndPOV(latlng);
-//  });
-
   var streetViewService = new google.maps.StreetViewService();
   streetViewService.getPanoramaByLocation(latLon, 50, function (streetViewPanoramaData, status) {
     if (status === google.maps.StreetViewStatus.OK) {
-      toConsole("Street View is available at this location");
+//      toConsole("Street View is available at this location");
       panorama.setVisible(true);
       marker.setVisible(false);
     } 
     else {
-      toConsole("no Street View is available at this location");
+//      toConsole("no Street View is available at this location");
       panorama.setVisible(false);
     }
   });
-//  var svClient = new GStreetviewClient();
-//
-//  svClient.getNearestPanoramaLatLng(latLon, function (nearest) {
-//     if ((nearest !== null) && (testPoint.distanceFrom(nearest) <= 100)) {
-//        alert('Street View Available');             // Within 100 meters
-//     }
-//     else {
-//        alert('Street View Noet Available');        // Not within 100 meters
-//     }
-//  })
   
   if (panoDivId != null) {
     google.maps.event.addListener(panorama, "position_changed", function() {
