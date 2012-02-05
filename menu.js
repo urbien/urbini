@@ -14064,6 +14064,100 @@ var RelatedResourcesSlider = {
   }
 }
 
+/////////////////////////// LOCATION ////////////////////////////
+
+var checkFreq = 60000;
+var lat, lon;
+var newLat, newLon;
+function getCurrentLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(updateLocation, locationError);
+  } else {
+  }
+}
+
+function updateLocation(position) {
+  newLat = position.coords.latitude;
+  newLon = position.coords.longitude;
+  lat = lat == null ? newLat : lat;
+  lon = lon == null ? newLon : lon;
+  document.getElementById('geoLocation').innerHTML = newLat + ',' + newLon;
+  showLocalActivityButtons();
+  setTimeout(checkLocation, checkFreq);
+}
+
+function checkLocation() {
+  if (lat == null || lon == null || newLat == null || newLon == null) {
+    setTimeout(checkLocation, checkFreq);
+    return;
+  }
+  lat = newLat;
+  lon = newLon;
+  setTimeout(checkLocation, checkFreq);
+//  var distance = getDistance(lat, lon, newLat, newLon);
+//  if (distance >= 1.6)
+//    alert("You've traveled over a mile since you've last detected your location. Click the 'Detect location' button to re-detect")
+}
+
+var earthRadius = 6371; // km
+function getDistance(lat1, lon1, lat2, lon2) {
+  return Math.acos(Math.sin(lat1)*Math.sin(lat2) + 
+                   Math.cos(lat1)*Math.cos(lat2) *
+                   Math.cos(lon2-lon1)) * earthRadius;
+}
+  
+function showLocalActivityButtons() {
+  var button1 = document.getElementById('activity_near_me');    
+  if (button1 && lat && lon) {
+    button1.innerHTML = '<a class=\"button\" style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + lat + ',' + lon + '\">Activity near me</a>';
+  }
+  
+  var button2 = document.getElementById('activity_near_here');    
+  if (button2) {
+    var resourceLoc = document.getElementById("resourceGeoLocation");
+    if (resourceLoc == null)
+      return;
+    
+    var latLon = resourceLoc.innerHTML.split(",");
+    button2.innerHTML = '<a class=\"button\" style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\">Activity near here</a>';
+  }
+}
+
+
+// next function is the error callback
+
+function locationError(error) {
+  switch(error.code) {
+  case error.TIMEOUT:
+    break;
+  case error.POSITION_UNAVAILABLE:
+    break;
+  case error.PERMISSION_DENIED:
+    var locSortParam = getUrlParam(window.location.href, '-locSort');
+    if (locSortParam == null || locSortParam == 'n')
+      return;
+    
+    alert('You disabled location detection in your browser. To see location-based results, enable it and refresh the page.');
+    break;
+  case error.UNKNOWN_ERROR:
+    break;
+  }
+}
+
+function toggleLocationAwareness(on) {
+  if (on) {
+    var loc = document.getElementById('geoLocation').innerHTML;
+    if (loc != null && loc.indexOf(',') != -1) {
+      var locUrl = addOrReplaceUrlParam(window.location.href, '-loc', loc);
+      window.location.replace(addOrReplaceUrlParam(locUrl, '-locSort', 'y'));
+    } 
+    else {
+      alert('You disabled location detection in your browser. To see location-based results, enable it and refresh the page.');
+    }
+  } else {
+    window.location.replace(addOrReplaceUrlParam(window.location.href, '-locSort', 'n'));
+  }
+}
 
 // flag that menu.js was parsed. should be last in the file
 g_loadedJsFiles["menu.js"] = true;
