@@ -1,7 +1,9 @@
 <div>
 
-  <!--facebookLocalLikeWidget /-->
-  <where value="Packages.hudsonfog.voc.system.parse.FileSystem.davClass.isAssignableFrom(Packages.com.fogx.webdav.DavClass.getDavClass(getType())) &amp;&amp; hasAudio">
+  <facebookLocalLikeWidget />
+  <where value="Packages.hudsonfog.voc.system.parse.FileSystem.davClass.isAssignableFrom(Packages.com.fogx.webdav.DavClass.getDavClass(getType())) &amp;&amp; 
+	  Packages.com.fogx.webdav.DavClass.getDavClass(getType()).getProperty(Packages.hudsonfog.voc.system.parse.FileSystem._hasAudio) &amp;&amp;
+	  hasAudio">
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js" language="JavaScript" type="text/javascript"></script>
     <script src="jquery.jplayer.min.js" language="JavaScript" type="text/javascript"></script>
     <script src="jplayer.playlist.min.js" language="JavaScript" type="text/javascript"></script>
