@@ -13835,7 +13835,11 @@ function initFacebookLikeHandler(serverUrl) {
   });
 }    
 
-function initSocialLikes(likeContainer) {
+// uses parent table (grid) to get events
+function initSocialLikes(event) {
+	var likeContainer = getAncestorByClassName(getEventTarget(event), ['galleryItem_css3', 'galleryItem']);
+	if (!likeContainer)
+	  return; 
 	if (WidgetRefresher.isParentWidgetSliding(likeContainer))
 	  return;
   var innerDiv = getChildByClassName(likeContainer, "fbLikeWidget");
@@ -13862,15 +13866,19 @@ function initSocialLikes(likeContainer) {
 	
 	var likeTbl = getChildByClassName(likeContainer, "likes_tbl");
 	if (likeTbl) {
-	var discountLayer = getChildById(likeContainer.parentNode, "discount");
-	if (discountLayer)
-	  likeTbl.style.top = discountLayer.offsetHeight;
-	likeTbl.style.visibility = "visible";
-}
+		var discountLayer = getChildById(likeContainer.parentNode, "discount");
+		if (discountLayer)
+		  likeTbl.style.top = discountLayer.offsetHeight;
+		likeTbl.style.visibility = "visible";
+  }
 }
 
-function hideSocialLikes(likeContainer) {
-  var likeTbl = getChildByClassName(likeContainer, "likes_tbl");
+function hideSocialLikes(event) {
+  var likeContainer = getAncestorByClassName(getEventTarget(event), ['galleryItem_css3', 'galleryItem']);
+  if (!likeContainer)
+    return; 
+
+	var likeTbl = getChildByClassName(likeContainer, "likes_tbl");
   if (likeTbl)
   likeTbl.style.visibility = "hidden";
 	var googleDiv = getChildByClassName(likeContainer, "googlePlusWidget");
