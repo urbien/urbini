@@ -1,6 +1,6 @@
 <div>
 
-  <facebookLocalLikeWidget />
+  <!--facebookLocalLikeWidget /-->
   <where value="Packages.hudsonfog.voc.system.parse.FileSystem.davClass.isAssignableFrom(Packages.com.fogx.webdav.DavClass.getDavClass(getType())) &amp;&amp; hasAudio">
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js" language="JavaScript" type="text/javascript"></script>
     <script src="jquery.jplayer.min.js" language="JavaScript" type="text/javascript"></script>
@@ -22,7 +22,7 @@
   		<getResource/>
   		
       <div id="fts" hide="y">      
-    		<table width="100%" border="0" cellspacing="0" cellpadding="0" itype="!http://www.hudsonfog.com/voc/model/social/IntentMessage">
+    		<table width="100%" border="0" cellspacing="0" cellpadding="0"><!-- itype="!http://www.hudsonfog.com/voc/model/social/IntentMessage" -->
     		  <tr noInner="y" class="fts" itype="!http://www.hudsonfog.com/voc/classifieds/siteTemplates/Slide">
     				<td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td>
     		  </tr>
