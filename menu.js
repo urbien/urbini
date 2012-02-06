@@ -13647,7 +13647,9 @@ var LinkProcessor = {
         var loc = locDiv.innerHTML;
         if (loc != null && loc.indexOf(',') != -1) {
           a = addOrReplaceUrlParam(a, "-loc", loc);
-          a = addOrReplaceUrlParam(a, "-locSort", 'y');
+          var locSort = getUrlParam(window.location.href, '-locSort');
+          a = addOrReplaceUrlParam(a, "-locSort", locSort == 'y' ? 'y' : 'n');
+          
           link.href = a;
         }
       }
