@@ -2671,6 +2671,8 @@ var Tooltip = {
 			return;
 
 		var target = $t.showArgs.target;
+		if (isElemOfTag(target, "iframe")) // prevent tooltip over social Like buttons
+		  return;
 		// if dialog opened then show tooltip only for elements inside it.
 		var cuDlg = TouchDlgUtil.getCurrentDialog();
 		if (cuDlg) {
