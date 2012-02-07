@@ -1,6 +1,6 @@
 <div>
 
-  <facebookLocalLikeWidget />
+  <!--facebookLocalLikeWidget /-->
   <where value="Packages.hudsonfog.voc.system.parse.FileSystem.davClass.isAssignableFrom(Packages.com.fogx.webdav.DavClass.getDavClass(getType())) &amp;&amp; 
 	  Packages.com.fogx.webdav.DavClass.getDavClass(getType()).getProperty(Packages.hudsonfog.voc.system.parse.FileSystem._hasAudio) &amp;&amp;
 	  hasAudio">
