@@ -24,7 +24,7 @@
         <td width="30"></td>
         <td height="50">
           <where value="alertType == 'NewsCouponAlert'">
-            <text text="name###"/>
+            <text text="name####"/>
           </where>
           <where value="alertType == 'NewCouponAlert'">
             <text text="Hello"/> <text text="name####"/>
