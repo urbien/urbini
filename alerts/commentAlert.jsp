@@ -14,8 +14,8 @@
 		<where value="getWebSite().sharedHost == true">
     <br/>
     <br/>
-      <localLink href="/alias/karma">
-		    <text text="Each comment gives you karma points"/>
+      <localLink href="/alias/mojo">
+		    <text text="Each comment gives you mojo points"/>
 		  </localLink>
 		</where>
 		<where value="resourceDescription != null  &&  !getWebSite().sharedHost">
