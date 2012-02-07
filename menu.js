@@ -2542,7 +2542,7 @@ function resizeWindow(event) {
 * Tooltip
 *********************************************************/
 var Tooltip = {
-	SHOW_DELAY : 1000,
+	SHOW_DELAY : 500,// 1000,
 	HIDE_DELAY : 500,
 	TOOLTIP_ID : "system_tooltip",
   TOOLTIP_ATTR : "tooltip",
@@ -2589,13 +2589,17 @@ var Tooltip = {
     var target = getEventTarget(e);
 
 		if ($t.putContent(e, target)) {
-			if (getTextContent(target) == "[?]")
-				$t.show();
+		if (getTextContent(target) == "[?]") 
+			$t.show();
+		else 
+			$t.timerId = setTimeout($t.show, $t.SHOW_DELAY);
+	 }
+	 else if ($t.isShown && $t.timerId == null) {
+	 	 if ($t.hasLinkInside())
+			  $t.timerId = setTimeout(Tooltip.hide, $t.HIDE_DELAY);
 			else
-				$t.timerId = setTimeout($t.show, $t.SHOW_DELAY);
+			 $t.hide();	
 		}
-		else if ($t.isShown && $t.timerId == null)
-			$t.timerId = setTimeout(Tooltip.hide, $t.HIDE_DELAY);
   },
 
 	putContent : function(e, target) {
@@ -2625,8 +2629,12 @@ var Tooltip = {
 		if ($t.isOverTooltip)
 			return;
 
-		if ($t.isShown && $t.timerId == null)
-			$t.timerId = setTimeout(Tooltip.hide, $t.HIDE_DELAY);
+		if ($t.isShown && $t.timerId == null) {
+			if ($t.hasLinkInside())
+        $t.timerId = setTimeout(Tooltip.hide, $t.HIDE_DELAY);
+      else
+       $t.hide(); 
+		}
 		else {
 			clearTimeout($t.timerId); // prevent showing
 			$t.timerId = null;
@@ -2727,7 +2735,10 @@ var Tooltip = {
   isProcessed : function(obj) {
 		var titleText = obj.title;
 		return (titleText == null || titleText.length == 0);
-  }
+  },
+	hasLinkInside : function() {
+		return getChildByTagName(this.contentDiv, "a") != null;
+	}
 }
 
 
