@@ -2432,7 +2432,7 @@ td #corePageContent { min-height: 600px;}
 --------------------------------------------------------------------------------------- */
 .pin { width: 192px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; box-shadow: 0 1px 3px rgba(34,25,25,0.4); -moz-box-shadow: 0 1px 3px rgba(34,25,25,0.4); -webkit-box-shadow: 0 1px 3px rgba(34,25,25,0.4);}
 #resourceList .pin td, #siteResourceList #front .pin .label {font-size: 11px;}
-#resourceList .pin .action {color: #98c165; font-weight:bold;} 
+#resourceList .pin .action, #div_Activity .pin .action {color: #98c165; font-weight:bold;} 
 
 .pList {padding-top:15px;padding-left:15px; background: #eaeaea;}
 .aList {padding-top:15px;}
