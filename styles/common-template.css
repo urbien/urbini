@@ -1108,8 +1108,8 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
-.innerTitle, .userLogin h2, .panel_block .property_group, .panel_block #item_name, #subscribeNote { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; margin-left: 15px; color: &[Label];;}
-.innerTitle { font-size: 18px;}
+.innerTitle { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; color: &[SecondaryColorB_1];; font-size: 18px; }
+.userLogin h2, .panel_block .property_group, .panel_block #item_name, #subscribeNote { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; margin-left: 15px; color: &[Label];;}
 #subscribeNote { font-size: 15px; padding: 5px 5px 0 0; }
 .panel_block .property_group, .panel_block #item_name { font-size: 16px; margin-top: 15px;}
 .panel_block #item_name .comment { font-size: 12px; font-weight:normal; }
@@ -2026,7 +2026,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 /** iPhone field **/
 .iphone_field {
-	display: inline;
+	display: none;
 	margin: 0px 2px;
 	padding: 4px;
 	border-radius:5px 5px 5px 5px;
@@ -2257,7 +2257,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .shrunk_field { position: absolute; font-size: 1px; width: 1px; border-width: 0; background: transparent; }
 
 /* like "TO" field in message */
-.rounded_rect_tbl .tags { width: auto; margin-bottom: 7px; }
+.rounded_rect_tbl .tags { width: auto; margin-bottom: 7px; min-height: 12px; }
 .rounded_rect_tbl .tags div { float: left; margin: 5px; height: 20px; line-height:20px; }
 .rounded_rect_tbl .tags .item { font-size: 14px; line-height:20px; padding: 2px 2px 2px 4px; }
 .rounded_rect_tbl .tags .item img { position:relative; top:3px; cursor: pointer; }
