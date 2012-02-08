@@ -1410,11 +1410,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 		if (toEnlarge) {
 			panelBlock.parentNode.style.textAlign = "left";
-			if (Browser.webkit) { // webkit transition /animation
-				if (this.initPanelBlockWidth == null)
-					this.initPanelBlockWidth = panelBlock.parentNode.offsetWidth;
-				panelBlock.style.width = (panelBlock.parentNode.offsetWidth + "px");
-			}
+//			if (Browser.webkit) { // webkit transition /animation
+//				if (this.initPanelBlockWidth == null)
+//					this.initPanelBlockWidth = panelBlock.parentNode.offsetWidth;
+//				panelBlock.style.width = (panelBlock.parentNode.offsetWidth + "px");
+//			}
 
 			if (cpDiv)
 				cpDiv.style.display = "none";
@@ -1436,8 +1436,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			if (cpTab)
 				cpTab.style.display = "";
 			
-			if (Browser.webkit)	
-				panelBlock.style.width = this.initPanelBlockWidth + "px";//(panelBlock.parentNode.clientWidth + "px"); //"100%";
+//			if (Browser.webkit)	
+//				panelBlock.style.width = this.initPanelBlockWidth + "px";//(panelBlock.parentNode.clientWidth + "px"); //"100%";
 		}
 	}
 	
