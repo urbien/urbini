@@ -2683,7 +2683,7 @@ var Tooltip = {
 		  return;
 		// if dialog opened then show tooltip only for elements inside it.
 		var cuDlg = TouchDlgUtil.getCurrentDialog();
-		if (cuDlg) {
+		if (cuDlg && isVisible(cuDlg)) {
 			var parentDlg = getParentDialog(target);
 			if (!parentDlg)
 			  return;
@@ -5723,33 +5723,45 @@ var TouchDlgUtil = {
 		// restores focus inside a dialog
 		addEvent(parent, 'click', this.onDlgClick, false);
 		
-		this._hideSelectorInSmallDialog(parent);
+		this._hideSelectorSwitcherInSmallDialog(parent);
 	},
 	
-	// hide selector / iphone_field if "form" contains less than 5 parameters
-	_hideSelectorInSmallDialog : function(div) {
-		var iphoneField = getChildByClassName(div, 'iphone_field'); // gui wrapper of item_selector
+	
+	 // hide selector / iphone_field if "form" contains less than 5 parameters
+  _hideSelectorSwitcherInSmallDialog : function(div) {
+    var switcher = getChildByClassName(div, 'selector_switcher'); // gui wrapper of item_selector
+    if (!switcher)
+      return;
+        
+    var paramsCounter = 0;
+    var spans = div.getElementsByTagName("span"); // includes "liquid" table TDs
+    for (var i = 0; i < spans.length; i++) {
+      if (spans[i].className == "label") // each parameter row contains one label
+        paramsCounter++;
+    }
+
+    if (paramsCounter < 5)
+      switcher.style.display = "none";
+    
+		// init prompt text in items selector
+    var itemSelector = getChildById(div, 'item_selector');
+    FieldsWithEmptyValue.initField(itemSelector, '&[select];');
+  },
+	
+	// show / hide field of parameters selector
+	onSelectorSwitcher : function(switcher) {
+		var header = getAncestorByClassName(switcher, "header");
+		var iphoneField = getChildByClassName(header, 'iphone_field');
+		var title = getChildByClassName(header, 'innerTitle');
 		if (!iphoneField)
 			return;
-				
-		var paramsCounter = 0;
-		var spans = div.getElementsByTagName("span"); // includes "liquid" table TDs
-		for (var i = 0; i < spans.length; i++) {
-			if (spans[i].className == "label") // each parameter row contains one label
-				paramsCounter++;
-		}
-
-		if (paramsCounter < 5)
-			iphoneField.style.visibility = "hidden";
-		else {
-			iphoneField.style.visibility = "visible";
-	    var itemSelector = getChildById(div, 'item_selector');
-			FieldsWithEmptyValue.initField(itemSelector, '&[select];');
-		}
+		
+		var isFieldVisible = isVisible(iphoneField);		
+		iphoneField.style.display = isFieldVisible ? "none" : "inline";
+		title.style.display = isFieldVisible ? "inline" : "none";
 	},
 	
 	setCurrentDialog : function(dlgDiv) {
-		
 		if (!isElemOfClass(dlgDiv, ["panel_block", "dsk_auto_complete"]))
 			return;
 		this.curDlgDiv = dlgDiv;
