@@ -2498,9 +2498,9 @@ function addCurrentDashboardAndCurrentTab(target) {
 	      else 
 	        a += '?-d=' + s[0];
 	      
-          if (s.length > 1)
-            a += '&-t=' + s[1];
-        }
+        if (s.length > 1)
+          a += '&-t=' + s[1];
+      }
       target.href = a;
     }
   }
@@ -13464,8 +13464,9 @@ var LinkProcessor = {
     var aa = anchor.href;
     if (aa.indexOf('LinkOut') != -1) {
       a = decodeURIComponent(aa);
-    if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
-      return;
+//      alert(aa);      
+      if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
+        return;
     }
     e = getDocumentEvent(e); if (!e) return false;
     var div;
@@ -13550,7 +13551,9 @@ var LinkProcessor = {
     if (href.indexOf("http://") == 0  &&  href.charAt(len - 1) == '/'  &&  href.indexOf('/', 7) == len - 1) 
       href = href.substring(0, len - 1);
 //    var uri = 'v.html?uri=sql/www.hudsonfog.com/voc/model/portal/LinkOut%3FtargetUrl%3D' + encodeURIComponent(href) + '%26' + encodeURIComponent(rUri.substring(idx + 1));
-    
+    href = href.replace('%5B', '[');
+    href = href.replace('%5D', ']');
+//    alert(href);    
     href = encodeURI(href);
     href = href.replace(/=/g, '%3D');
     href = href.replace(/\$/g, '%24');
@@ -13582,7 +13585,6 @@ var LinkProcessor = {
 		var urlStr;
 	  if (propName.indexOf("list.") == 0) {
 	    var ul = document.getElementById(propName);
-	
 	    if (!ul) {
 	      var strippedProp = propName.substring(5);
 	      //r = PlainDlg.show(e, innerListUrls[strippedProp]);
