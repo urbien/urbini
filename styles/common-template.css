@@ -1108,8 +1108,8 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
-.innerTitle, .innerTitle1 { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; color: &[SecondaryColorB_1];; font-size: 18px; }
-#dataEntry .innerTitle { margin-left: 18px; }
+.innerTitle, .innerTitle1 { margin-left: 18px; text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; color: &[SecondaryColorB_1];; font-size: 18px; }
+/* #dataEntry .innerTitle { margin-left: 18px; } */
 
 .userLogin h2, .panel_block .property_group, .panel_block #item_name, #subscribeNote { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; margin-left: 15px; color: &[Label];;}
 .panel_block .property_group {margin-left: 10px; }
@@ -2029,7 +2029,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 /** iPhone field **/
 .iphone_field {
-	display: none;
+  display: inline;
 	margin: 0px 2px;
 	padding: 4px;
 	border-radius:5px 5px 5px 5px;
@@ -2041,8 +2041,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 	background: #ffffff;
 	cursor: auto;
 	white-space: nowrap;
+	font-size: 12px;
 }
-
 .iphone_field input { width: 70% /* allows to fit filter on mobile */; color: &[SecondaryColorA_3];; background: transparent; -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
 #fts_filter .iphone_field input { width: 120px; }
 .clear_cross { position: relative; cursor: pointer; visibility: hidden; }
