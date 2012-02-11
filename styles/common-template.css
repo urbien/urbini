@@ -1649,9 +1649,10 @@ table.printFB {
 .lButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 */
 .userLogin {font-weight: bold; width: auto !important; max-width: 350px; color: &[SecondaryColorA_3];; border: 2px solid &[PrimaryColor_1];; padding: 10px;}
-.userLogin .button, #ropLeft .button { display: block; padding: 3px; margin-top: 4px; }
-#ropLeft .button { margin: 0px 5px 10px 5px; font-weight: normal; color: &[SecondaryColorB_3];; }
-#ropLeft .button td { font-size: 16px; }
+.userLogin .button, #ropLeft .button { display: block; padding: 7px; margin-top: 4px; text-align: left; }
+.userLogin .button img, #ropLeft .button img { float: left; margin-right: 7px; }
+
+#ropLeft .button { margin: 0px 5px 10px 5px; white-space: normal; }
 
 .userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
 .userLogin #errorMessage { max-width: 420px; }
