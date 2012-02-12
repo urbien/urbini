@@ -1,3 +1,5 @@
+var server = "http://urbien.com/urbien/pinit";
+
 function isIE() {
     return /msie/i.test(navigator.userAgent) && !/opera/i.test(navigator.userAgent)
 }
@@ -78,8 +80,8 @@ function isIOS() {
 //            var w = "http://pinterest.com/pin/create/bookmarklet/",
 //                x = "pinit12://pinterest.com/pin/create/bookmarklet/",
 //                q = null;
-          var w = "http://mark.obval.com/urbien/pinit",
-              x = "http://mark.obval.com/urbien/pinit",
+          var w = server,
+              x = server,
               q = null;
           
           var s = s();
