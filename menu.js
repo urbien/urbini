@@ -2498,9 +2498,9 @@ function addCurrentDashboardAndCurrentTab(target) {
 	      else 
 	        a += '?-d=' + s[0];
 	      
-        if (s.length > 1)
-          a += '&-t=' + s[1];
-      }
+          if (s.length > 1)
+            a += '&-t=' + s[1];
+        }
       target.href = a;
     }
   }
@@ -5752,7 +5752,7 @@ var TouchDlgUtil = {
 	onSelectorSwitcher : function(switcher) {
 		var header = getAncestorByClassName(switcher, "header");
 		var iphoneField = getChildByClassName(header, 'iphone_field');
-		var title = getChildByClassName(header, 'innerTitle');
+		var title = getChildByClassName(header, ['innerTitle', 'innerTitle1']);
 		if (!iphoneField)
 			return;
 		
@@ -13341,7 +13341,7 @@ function setFooterOnPage() {
 var LinkProcessor = {
 	onLinkClick : function(e) {
 		var $t = LinkProcessor;
-//debugger;
+
 	  e = getDocumentEvent(e);
 	  if (!e)
 	    return;
@@ -13464,9 +13464,8 @@ var LinkProcessor = {
     var aa = anchor.href;
     if (aa.indexOf('LinkOut') != -1) {
       a = decodeURIComponent(aa);
-//      alert(aa);      
-      if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
-        return;
+    if (a.indexOf('/LinkOut?targetUrl=') != -1 || a.indexOf('/LinkOutShared?targetUrl=') != -1)
+      return;
     }
     e = getDocumentEvent(e); if (!e) return false;
     var div;
@@ -13585,6 +13584,7 @@ var LinkProcessor = {
 		var urlStr;
 	  if (propName.indexOf("list.") == 0) {
 	    var ul = document.getElementById(propName);
+	
 	    if (!ul) {
 	      var strippedProp = propName.substring(5);
 	      //r = PlainDlg.show(e, innerListUrls[strippedProp]);
@@ -13674,7 +13674,7 @@ var LinkProcessor = {
         var loc = locDiv.innerHTML;
         if (loc != null && loc.indexOf(',') != -1) {
           if (a.indexOf("-loc") == -1)
-            a = addOrReplaceUrlParam(a, "-loc", loc);
+          a = addOrReplaceUrlParam(a, "-loc", loc);
           a = addOrReplaceUrlParam(a, "-locSort", 'y');
           link.href = a;
         }
@@ -13863,6 +13863,7 @@ function initFacebookLikeHandler(serverUrl) {
 
 // uses parent table (grid) to get events
 function initSocialLikes(event) {
+	var init = false;
 	var likeContainer = getAncestorByClassName(getEventTarget(event), ['galleryItem_css3', 'galleryItem']);
 	if (!likeContainer)
 	  return; 
@@ -13885,8 +13886,8 @@ function initSocialLikes(event) {
       likeHtml = "<" + likeHtml.substring(1, likeHtml.length - 1) + ">";
       googleDiv.innerHTML = likeHtml;
       gapi.plusone.render(googleDiv);
+			init = true;
     }
-
     googleDiv.style.display = "block";
   }
 	
@@ -13896,6 +13897,9 @@ function initSocialLikes(event) {
 		if (discountLayer)
 		  likeTbl.style.top = discountLayer.offsetHeight;
 		likeTbl.style.visibility = "visible";
+    if (init)
+		  setTransitionProperty(likeTbl, "opacity 1s ease-in-out");
+		changeOpacity(likeTbl, 1.0);
   }
 }
 
@@ -13906,10 +13910,7 @@ function hideSocialLikes(event) {
 
 	var likeTbl = getChildByClassName(likeContainer, "likes_tbl");
   if (likeTbl)
-  likeTbl.style.visibility = "hidden";
-	var googleDiv = getChildByClassName(likeContainer, "googlePlusWidget");
-	if (googleDiv)
-	googleDiv.style.display = "none";
+    changeOpacity(likeTbl, 0);
 }
 
 function addOrReplaceUrlParam(url, name, value) {
