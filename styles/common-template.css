@@ -103,7 +103,7 @@ table.tight, table.tight td { padding: 0 !importa; border-collapse: collapse !im
 .relative { position: relative }	  
 .pointer { cursor: pointer; }
 .dragable, .move { cursor: move; }
-
+    
 img.fade {
    opacity:       0.6;
 }
@@ -432,8 +432,8 @@ td.textCell {
   background-image:url(../images/frame/gray_bg/right.jpg);
   vertical-align: top; background-position: top; background-repeat: repeat-y;
 }
-.likes_tbl { position: absolute; visibility: hidden; z-index: 1; top: 0px; left: 0px; border-collapse: collapse; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); }
-.likes_tbl td { background-color: #fff; padding: 0px; width: auto; }
+.likes_tbl { position: absolute; opacity: 0; visibility: hidden; z-index: 1; top: 0px; left: 0px; border-collapse: collapse; }
+.likes_tbl td { background-color: rgba(0, 0, 0, 0.4) !important; background-color: #000; padding: 0px; width: auto; }
 .likes_tbl .fbLikeWidget { margin: 0 5; }
 
 .galleryItem td#whiteRight {
