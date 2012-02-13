@@ -1649,7 +1649,7 @@ table.printFB {
 .lButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 */
 .userLogin {font-weight: bold; width: auto !important; max-width: 350px; color: &[SecondaryColorA_3];; border: 2px solid &[PrimaryColor_1];; padding: 10px;}
-.userLogin .button, #ropLeft .button { display: block; padding: 7px; margin-top: 4px; text-align: left; }
+.userLogin .button, #ropLeft .button { display: block; padding: 7px; margin-top: 4px; text-align: left; font-size: 16px; font-weight: normal; color: &[Color];; }
 .userLogin .button img, #ropLeft .button img { float: left; margin-right: 7px; }
 
 #ropLeft .button { margin: 0px 5px 10px 5px; white-space: normal; }
@@ -1774,7 +1774,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[ToolbarColor];,endColorstr=&[PrimaryColor_1];)";
  }
  div .panel_block .header { cursor: auto  !important; }
- div .panel_block #dataEntry .iphone_field { visibility: hidden; }
+div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
  
 /*.panel_block .header td { width: 100%; }*/ 
 #siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
