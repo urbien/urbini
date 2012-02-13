@@ -1276,12 +1276,17 @@ var ExecJS = {
   runCodeArr : new Array(),
   isWaitingOnReady : false,
   
+	// default requiredJsFileName = "menu.js"
   runCode : function(jsCode, refObjId, requiredJsFileName) {
     $t = ExecJS;
     // check if required JS file was loaded and parsed
     // ondemandloaded JS-file has requiredJsFileName = null
     var toWait = false;
-    if (requiredJsFileName && typeof g_loadedJsFiles[requiredJsFileName] == 'undefined')
+		
+		if (!requiredJsFileName)
+		  requiredJsFileName = "menu.js";
+		
+    if (typeof g_loadedJsFiles[requiredJsFileName] == 'undefined')
       toWait = true;
     
     if (toWait || typeof g_loadedJsFiles["common.js"] == 'undefined') {
@@ -1317,7 +1322,7 @@ var ExecJS = {
   
   // executes js code if refObjId is visible - [hidden tab].
   _runRelativeCode : function(jsCode, refObjId, isSecondAttempt) {
-    if(document.all && document.readyState != "complete") {
+		if(document.all && document.readyState != "complete") {
 			if(this.isWaitingOnReady == false) {
 			  addEvent(document, 'readystatechange', this._runOnDocumentReady, false);
 			  this.isWaitingOnReady = true;
@@ -1935,11 +1940,23 @@ function hex2rgb(hexColor) {
   return [red, green, blue];
 }
 
+// usage: 1) example: 'all 1s ease-in-out' - after that all CSS changes will animate 2) 'none' - turn off
+function setTransitionProperty(element, transitionStr) {
+  var cssKeys = ['transition', 'WebkitTransition', 'msTransition', 'MozTransition', 'OTransition'];
+     for (var i = 0; i < cssKeys.length; i++) {
+      if (typeof element.style[cssKeys[i]] != 'undefined') {
+        element.style[cssKeys[i]] = transitionStr;
+        return true;
+      }
+  }
+  return false;
+}
+
+
 function setTransformProperty(element, transformStr) {
     // Note that in some versions of IE9 it is critical that
     // msTransform appear in this list before MozTransform
    var cssKeys = ['transform', 'WebkitTransform', 'msTransform', 'MozTransform', 'OTransform'];
-
 	 for (var i = 0; i < cssKeys.length; i++) {
       if (typeof element.style[cssKeys[i]] != 'undefined') {
 		  	element.style[cssKeys[i]] = transformStr;
