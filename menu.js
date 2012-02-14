@@ -8217,46 +8217,46 @@ function saveButtonClicked(e) {
 // without regarding if bottom of a dialog is bellow a page bottom (used for filter)
 // processes custom parameter of hotspot: "max_width", "full_height" (height of options panel)
 //****************************************************************
-function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim, positionEnforced, isModal) {
+function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim, positionEnforced, isModal){
 	if (Browser.mobile) {
-    div.style.left = 0 + 'px';
-    div.style.top  = getScrollXY()[1] + 'px';
-    div.style.minWidth = "none";
+		div.style.left = 0 + 'px';
+		div.style.top = getScrollXY()[1] + 'px';
+		div.style.minWidth = "none";
 		div.style.maxWidth = "none";
 		
-    div.style.visibility = Popup.VISIBLE;
+		div.style.visibility = Popup.VISIBLE;
 		div.style.display = "block";
 		return;
-  }
+	}
 	
 	// limit div / dialog width gotten from "max_width" parameter
 	if (hotspot) {
 		var maxWidth = hotspot.getAttribute("max_width");
 		if (maxWidth) // {
-		//	div.style.maxWidth = maxWidth;
-		//	if (Browser.ie)
-				div.style.width = maxWidth;
+			//	div.style.maxWidth = maxWidth;
+			//	if (Browser.ie)
+			div.style.width = maxWidth;
 		//		div.style.overflow = "visible";
 		//}
 	}
-
-  var isDivStatic = (div.style.position.toLowerCase() == 'static');
 	
-	if (!iframe)
+	var isDivStatic = (div.style.position.toLowerCase() == 'static');
+	
+	if (!iframe) 
 		iframe = document.getElementById('dialogIframe');
-		
-  // only IE < 7 has a problem with form elements 'showing through' the popup
-  var istyle;
-  if (Browser.lt_ie7 && !Browser.mobile) {
-    var istyle = iframe.style;
-    istyle.visibility = Popup.HIDDEN;
-  }
-
-  div.style.visibility = Popup.HIDDEN;   // mark hidden - otherwise it shows up as soon as we set display = 'inline'
-  var scrollXY = getScrollXY();
-  var scrollX = scrollXY[0];
-  var scrollY = scrollXY[1];
-
+	
+	// only IE < 7 has a problem with form elements 'showing through' the popup
+	var istyle;
+	if (Browser.lt_ie7 && !Browser.mobile) {
+		var istyle = iframe.style;
+		istyle.visibility = Popup.HIDDEN;
+	}
+	
+	div.style.visibility = Popup.HIDDEN; // mark hidden - otherwise it shows up as soon as we set display = 'inline'
+	var scrollXY = getScrollXY();
+	var scrollX = scrollXY[0];
+	var scrollY = scrollXY[1];
+	
 	// MODAL dialog
 	if (isModal) {
 		if (Browser.ie) 
@@ -8264,52 +8264,52 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 		else {
 			div.style.position = "fixed";
 			scrollX = 0;
-  		scrollY = 0;
+			scrollY = 0;
 		}
 		setShadow(div, "none");
 		TouchDlgUtil.showPageOverlay(div);
 	}
-
-  var left = 0;
-  var top  = 0;
-
-  if (hotspotDim) {
-    left = hotspotDim.left;
-    top  = hotspotDim.top;
-  }
+	
+	var left = 0;
+	var top = 0;
+	
+	if (hotspotDim) {
+		left = hotspotDim.left;
+		top = hotspotDim.top;
+	}
   else if (event || hotspot) {
-//    var coords = getElementPosition(hotspot, event);
-//    left = coords.left;
-//    top  = coords.top;
-		
-		if (!hotspot)
-			hotspot = getEventTarget(event);
-		
-		left = findPosX(hotspot);
-    top  = findPosY(hotspot);
-  }
-
+			//    var coords = getElementPosition(hotspot, event);
+			//    left = coords.left;
+			//    top  = coords.top;
+			
+			if (!hotspot) 
+				hotspot = getEventTarget(event);
+			
+			left = findPosX(hotspot);
+			top = findPosY(hotspot);
+		}
+	
 	if (hotspot) // show div under bottom of hotspot
 		top += hotspot.offsetHeight;
-
-  var screenXY = getWindowSize();
-  var screenX = screenXY[0];
-  var screenY = screenXY[1];
-
-  // first position the div box in the top left corner in order to measure its dimensions
-  // (otherwise, if position correctly and only then measure dimensions - the
-  // width/height will get cut off at the scroll boundary - at least in firefox 1.0)
-  div.style.display    = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
-  reposition(div, 0, 0);
-
+	
+	var screenXY = getWindowSize();
+	var screenX = screenXY[0];
+	var screenY = screenXY[1];
+	
+	// first position the div box in the top left corner in order to measure its dimensions
+	// (otherwise, if position correctly and only then measure dimensions - the
+	// width/height will get cut off at the scroll boundary - at least in firefox 1.0)
+	div.style.display = 'inline'; // must first make it 'inline' - otherwise div coords will be 0
+	reposition(div, 0, 0);
+	
 	var divCoords = getElementDimensions(div);
 	// allows to place dialog taking into account options panel height (Obval's Buy)
 	if (hotspot) {
-	 	var optionsHeight = hotspot.getAttribute("full_height");
-  	if (optionsHeight) 
-  		divCoords.height = parseInt(optionsHeight);
-  }
-
+		var optionsHeight = hotspot.getAttribute("full_height");
+		if (optionsHeight) 
+			divCoords.height = parseInt(optionsHeight);
+	}
+	
 	// set the div in screen center if neither hotspotDim nor hotspot where provided.
 	if (hotspotDim == null && left == 0 && top == 0 && !positionEnforced) {
 		left = (screenX + scrollX - divCoords.width) / 2;
@@ -8319,139 +8319,145 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 	}
 	
 	// Find out how close hotspot is to the edges of the window
-  var distanceToRightEdge  = screenX + scrollX - left;
-  var distanceToBottomEdge = screenY + scrollY - top;
+	var distanceToRightEdge = screenX + scrollX - left;
+	var distanceToBottomEdge = screenY + scrollY - top;
 	
 	
-  var margin = 40;
-  // cut popup dimensions to fit the screen
-  var mustCutDimension = (div.id == 'pane2' || Browser.joystickBased) ? false: true;
-  // var mustCutDimension = false;
-
-  if (mustCutDimension) {
-    var xFixed = false;
-    var yFixed = false;
-    if (divCoords.width > screenX - margin * 2) {
-      div.style.width = screenX - margin * 2 + 'px';
-      xFixed = true;
-    }
-   
-		if (divCoords.height > screenY - margin * 2) { // * 2 <- top & bottom margins
-      //div.style.height = screenY - margin * 2 + 'px';
-      //yFixed = true;
-    }
-    // recalc coords and add scrolling if we fixed dimensions
-    if (typeof div.style.overflowX == 'undefined') {
-      if (xFixed || yFixed) {
-        div.style.overflow = "auto";
-        divCoords = getElementDimensions(div);
-      }
-    }
-    else {
-      if (typeof div.style.overflowX != 'undefined') {
-        if (xFixed)
-			    div.style.overflowX = "auto";
-		    if (yFixed)
-			    div.style.overflowY = "auto";
-	    }
-	    else {
-		    if (xFixed || yFixed)
-			  div.style.overflow = "auto";
-	    }
-	    // get div size after scrolling appending
-      if (xFixed || yFixed)
-        divCoords = getElementDimensions(div);
-      // reset position of the scrolls (it could be scrolled from prev. using)
-      div.scrollLeft = 0;
-      div.scrollTop  = 0;
-    }
-  }
-
-	// adjust vertically - so we fit inside the viewport
-		if ((typeof positionEnforced == 'undefined' || positionEnforced == false) &&
-					distanceToBottomEdge < divCoords.height + margin) {
-			if (hotspot)
-				top = findPosY(hotspot) - divCoords.height; // make vertical flip
-			else
-				top = (screenY + scrollY) - divCoords.height;
-			if ((top - scrollY) - margin > 0) 
-				top -= margin; // adjust for a scrollbar
-			if (top < scrollY) // but not higher then top of viewport
-				top = scrollY + 1;
+	var margin = 40;
+	// cut popup dimensions to fit the screen
+	var mustCutDimension = (div.id == 'pane2' || Browser.joystickBased) ? false : true;
+	// var mustCutDimension = false;
+	
+	if (mustCutDimension) {
+		var xFixed = false;
+		var yFixed = false;
+		if (divCoords.width > screenX - margin * 2) {
+			div.style.width = screenX - margin * 2 + 'px';
+			xFixed = true;
+		}
 		
-			// overlaps hotspot: show just on screen 
-			if (hotspot && (top < findPosY(hotspot) && top > findPosY(hotspot) - divCoords.height)) {
-				top = getElemInsideScreenPosition(0, top + 5, divCoords)[1];
-				// move it right trying to avoid overlap
-				// TODO: in horizontal adjustment try to make flip
-				distanceToRightEdge -= hotspot.clientWidth + 5; 
-				left += hotspot.clientWidth + 5;
+		if (divCoords.height > screenY - margin * 2) { // * 2 <- top & bottom margins
+			//div.style.height = screenY - margin * 2 + 'px';
+			//yFixed = true;
+		}
+		// recalc coords and add scrolling if we fixed dimensions
+		if (typeof div.style.overflowX == 'undefined') {
+			if (xFixed || yFixed) {
+				div.style.overflow = "auto";
+				divCoords = getElementDimensions(div);
 			}
+		}
+		else {
+			if (typeof div.style.overflowX != 'undefined') {
+				if (xFixed) 
+					div.style.overflowX = "auto";
+				if (yFixed) 
+					div.style.overflowY = "auto";
+			}
+			else {
+				if (xFixed || yFixed) 
+					div.style.overflow = "auto";
+			}
+			// get div size after scrolling appending
+			if (xFixed || yFixed) 
+				divCoords = getElementDimensions(div);
+			// reset position of the scrolls (it could be scrolled from prev. using)
+			div.scrollLeft = 0;
+			div.scrollTop = 0;
+		}
+	}
 	
+	// adjust vertically - so we fit inside the viewport
+	if ((typeof positionEnforced == 'undefined' || positionEnforced == false) &&
+	distanceToBottomEdge < divCoords.height + margin) {
+		if (hotspot) 
+			top = findPosY(hotspot) - divCoords.height; // make vertical flip
+		else 
+			top = (screenY + scrollY) - divCoords.height;
+		if ((top - scrollY) - margin > 0) 
+			top -= margin; // adjust for a scrollbar
+		if (top < scrollY) // but not higher then top of viewport
+			top = scrollY + 1;
+		
+		// overlaps hotspot: show just on screen 
+		if (hotspot && (top < findPosY(hotspot) && top > findPosY(hotspot) - divCoords.height)) {
+			top = getElemInsideScreenPosition(0, top + 5, divCoords)[1];
+			// move it right trying to avoid overlap
+			// TODO: in horizontal adjustment try to make flip
+			distanceToRightEdge -= hotspot.clientWidth + 5;
+			left += hotspot.clientWidth + 5;
 		}
-		else { // apply user requested offset only if no adjustment
-			if (offsetY) 
-				top = top + offsetY;
-		}
-
-
+		
+	}
+	else { // apply user requested offset only if no adjustment
+		if (offsetY) 
+			top = top + offsetY;
+	}
+	
+	
 	// horizontaly: move box to the left of the hotspot if the distance to window border isn't
-  // enough to accomodate the whole div box
-  if (distanceToRightEdge < divCoords.width + margin) {
-    left = (screenX + scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
-    if (left - margin > 0)
-      left -= margin;   // adjust for a scrollbar
-    if (left < scrollX) // but not over the left edge
-      left = scrollX + 1;
-  }
-  else { // apply user requested offset only if no adjustment
-    if (offsetX)
-      left = left + offsetX;
-  }
-
+	// enough to accomodate the whole div box
+	if (distanceToRightEdge < divCoords.width + margin) {
+		left = (screenX + scrollX) - divCoords.width; // move menu to the left by its width and to the right by scroll value
+		if (left - margin > 0) 
+			left -= margin; // adjust for a scrollbar
+		if (left < scrollX) // but not over the left edge
+			left = scrollX + 1;
+	}
+	else { // apply user requested offset only if no adjustment
+		if (offsetX) 
+			left = left + offsetX;
+	}
+	
 	// no vertical scrollbar for Touch UI dialogs
-	if (div.className == 'panel_block')
+	if (div.className == 'panel_block') 
 		divCoords.height = "";
 	
-// set div size!
-////  div.style.width  = divCoords.width;
-////  div.style.height = divCoords.height;
-
-  if (Browser.lt_ie7) {
-    // for listboxes in Dialog - makes iframe under a listbox.
-    var par = getAncestorById(div, 'pane2');
-    if(par && iframe.id == 'popupIframe') {
-      par.appendChild(iframe);
-    }
+	// set div size!
+	////  div.style.width  = divCoords.width;
+	////  div.style.height = divCoords.height;
+	
+	if (Browser.lt_ie7) {
+		// for listboxes in Dialog - makes iframe under a listbox.
+		var par = getAncestorById(div, 'pane2');
+		if (par && iframe.id == 'popupIframe') {
+			par.appendChild(iframe);
+		}
+	}
+	
+	
+	// Make position/size of the underlying iframe same as div's position/size
+	var iframeLeft = left;
+	var iframeTop = top;
+	if (Browser.lt_ie7) {
+		if (!isDivStatic && !Browser.mobile) {
+			istyle.width = divCoords.width;
+			istyle.height = divCoords.height;
+		}
+		// to make dialog shadow visible (without iframe background).
+		if (div.id == 'pane2') {
+			var SHADOW_WIDTH = 11;
+			var contentObj = getChildById(div, "dataEntry");
+			if (contentObj == null) 
+				contentObj = getChildById(div, "resourceList");
+			if (contentObj != null && !isDivStatic && contentObj.clientWidth > SHADOW_WIDTH) {
+				istyle.width = contentObj.clientWidth - SHADOW_WIDTH + 'px';
+				istyle.height = contentObj.clientHeight - SHADOW_WIDTH + 'px';
+			}
+		}
+	}
+	
+	if (div.className == "panel_block") {
+		setTransitionProperty(div, "opacity 0.5s ease-in-out");
+		changeOpacity(div, 1.0);
   }
-
-
-  // Make position/size of the underlying iframe same as div's position/size
-  var iframeLeft = left;
-  var iframeTop = top;
-  if(Browser.lt_ie7) {
-    if (!isDivStatic  && !Browser.mobile) {
-      istyle.width     = divCoords.width;
-      istyle.height    = divCoords.height;
-    }
-    // to make dialog shadow visible (without iframe background).
-    if(div.id == 'pane2') {
-      var SHADOW_WIDTH = 11;
-      var contentObj = getChildById(div, "dataEntry");
-      if (contentObj == null)
-        contentObj = getChildById(div, "resourceList");
-      if (contentObj != null && !isDivStatic && contentObj.clientWidth > SHADOW_WIDTH) {
-        istyle.width   = contentObj.clientWidth  - SHADOW_WIDTH + 'px';
-        istyle.height  = contentObj.clientHeight - SHADOW_WIDTH + 'px';
-      }
-    }
-  }
-
+	
   div.style.display    = 'none';   // hide it before movement to calculated position
 	reposition(div, left, top); // move the div to calculated position
   div.style.visibility = Popup.VISIBLE; // show div
 	div.style.display    = "block"; //////// 'inline';
 	
+
 	if (Browser.lt_ie7 && !isDivStatic  && !Browser.mobile) {
     istyle.display = 'none';
     istyle.visibility  = Popup.VISIBLE;
@@ -8470,11 +8476,15 @@ function setDivInvisible(div, iframe) {
   // release a popup (menu) belongs to the hidding div
   if(typeof PopupHandler != 'undefined')
     PopupHandler.checkHidingDiv(div);
+  
 
   if (div.style)
     div.style.display    = "none";
   if (iframe && iframe.style)
     iframe.style.display = "none";
+
+  if (div.className == "panel_block")
+    changeOpacity(div, 0);
 
 	if (div.className.indexOf("modal") != -1 || Browser.mobile)
 		TouchDlgUtil.hidePageOverlay(); // a modal dilog
@@ -13863,7 +13873,6 @@ function initFacebookLikeHandler(serverUrl) {
 
 // uses parent table (grid) to get events
 function initSocialLikes(event) {
-	var init = false;
 	var likeContainer = getAncestorByClassName(getEventTarget(event), ['galleryItem_css3', 'galleryItem']);
 	if (!likeContainer)
 	  return; 
@@ -13886,7 +13895,6 @@ function initSocialLikes(event) {
       likeHtml = "<" + likeHtml.substring(1, likeHtml.length - 1) + ">";
       googleDiv.innerHTML = likeHtml;
       gapi.plusone.render(googleDiv);
-			init = true;
     }
     googleDiv.style.display = "block";
   }
@@ -13897,8 +13905,8 @@ function initSocialLikes(event) {
 		if (discountLayer)
 		  likeTbl.style.top = discountLayer.offsetHeight;
 		likeTbl.style.visibility = "visible";
-    if (init)
-		  setTransitionProperty(likeTbl, "opacity 1s ease-in-out");
+
+		setTransitionProperty(likeTbl, "opacity 1s ease-in-out");
 		changeOpacity(likeTbl, 1.0);
   }
 }
