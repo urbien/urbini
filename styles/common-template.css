@@ -1686,7 +1686,7 @@ form { margin-top: 0; margin-bottom: 0; }
 /* prevents blue rect in WebKit browsers */
 input:focus { outline: 0 none; }
 
-#pane2 { position: absolute; width: auto; display: inline; left: 0px; top: 0px; min-width: 1px; }
+#pane2 {position: absolute; width: auto; display: inline; left: 0px; top: 0px; min-width: 1px; }
 * html #pane2 { width: 300px; }
 
 /* dialog: body is a parent */
@@ -1701,6 +1701,7 @@ input:focus { outline: 0 none; }
   -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   z-index: 100;
+  opacity: 0;
 }
 
 
@@ -2448,6 +2449,6 @@ td #corePageContent { min-height: 600px;}
 .pinBoard h3 {padding: 9px 15px 0; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
 .pinBoard .link {display: block; height: 200px; background: url(../images/BoardBackground.png) 15px 9px no-repeat; padding: 9px 0 4px 12px; overflow: hidden;}
 /*.pinBoard .link img {float: left; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
-.pinBoard .link img {float: left; height: 61px; }
+.pinBoard .link img {float: left; width: 100px; /* magnify: 100 / 61 */ margin-left: -20px; /* set at horizontal center */ }
 .boardsTitle {padding-top: 5px; font-size: 16pt; color: #cb2027; }
-.pinBoard .link div {width:61px; overflow:hidden; float:left; margin:0px 0px 4px 4px;}
+.pinBoard .link div { width: 61px; height: 61px; overflow: hidden; float:left; margin:0px 0px 4px 4px;}
