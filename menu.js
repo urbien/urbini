@@ -11502,7 +11502,7 @@ var BacklinkImagesSlideshow = {
 			$t.pagerSlots[$t.curImageIdx].className = "current";
 
 		// slide show on tab
-		if ($t.slideShowSceneDiv.parentNode.id == 'div_SlideShow') {
+		if ($t.slideShowSceneDiv && $t.slideShowSceneDiv.parentNode.id == 'div_SlideShow') {
 			var tab = document.getElementById('div_SlideShow');
 			if (!isVisible(tab) && imgSrc) { // 1st slide on tab show immediately
 	  		$t.slideShowSceneDiv.innerHTML = "<img src=\"" + imgSrc + "\">";
