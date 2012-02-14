@@ -1942,28 +1942,29 @@ function hex2rgb(hexColor) {
 
 // usage: 1) example: 'all 1s ease-in-out' - after that all CSS changes will animate 2) 'none' - turn off
 function setTransitionProperty(element, transitionStr) {
-  var cssKeys = ['transition', 'WebkitTransition', 'msTransition', 'MozTransition', 'OTransition'];
-     for (var i = 0; i < cssKeys.length; i++) {
-      if (typeof element.style[cssKeys[i]] != 'undefined') {
-        element.style[cssKeys[i]] = transitionStr;
-        return true;
-      }
-  }
-  return false;
+  return setCSS3Property(element, 'transition', transitionStr);
 }
 
-
 function setTransformProperty(element, transformStr) {
-    // Note that in some versions of IE9 it is critical that
-    // msTransform appear in this list before MozTransform
-   var cssKeys = ['transform', 'WebkitTransform', 'msTransform', 'MozTransform', 'OTransform'];
-	 for (var i = 0; i < cssKeys.length; i++) {
-      if (typeof element.style[cssKeys[i]] != 'undefined') {
-		  	element.style[cssKeys[i]] = transformStr;
-				return true;
-		  }
+  return setCSS3Property(element, 'transform', transformStr);
+}
+
+// note may be need to avoid setting of the same property value many times
+function setCSS3Property(element, propName, cssStr/*, delay*/) {
+  var prefix = ['', 'Webkit', 'ms', 'Moz', 'O'];
+	var propNameSpec;
+  for (var i = 0; i < prefix.length; i++) {
+		if (i == 1)
+		  propName = propName.charAt(0).toUpperCase() + propName.slice(1);
+	  if (typeof element.style[(prefix[i] + propName)] != 'undefined') {
+//	    if (delay)
+//			  setTimeout(function () { element.style[(prefix[i] + propName)] = cssStr; } , delay)
+//			else
+			 element.style[(prefix[i] + propName)] = cssStr;
+	    return true;
+	  }
   }
-	return false;
+  return false;
 }
 
 // flag that common.js was parsed
