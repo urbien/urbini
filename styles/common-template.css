@@ -1702,7 +1702,7 @@ input:focus { outline: 0 none; }
   -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   z-index: 100;
-  opacity: 0;
+/*  opacity: 0; */
 }
 
 
@@ -2452,4 +2452,6 @@ td #corePageContent { min-height: 600px;}
 /*.pinBoard .link img {float: left; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
 .pinBoard .link img {float: left; width: 100px; /* magnify: 100 / 61 */ margin-left: -20px; /* set at horizontal center */ }
 .boardsTitle {padding-top: 5px; font-size: 16pt; color: #cb2027; }
-.pinBoard .link div { width: 61px; height: 61px; overflow: hidden; float:left; margin:0px 0px 4px 4px;}
+.pinBoard .link div {width:61px; height:61px; overflow:hidden; float:left; margin:0px 4px 4px 0px;}
+/*.pinBoard .div div {overflow: hidden; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
+/*.pinBoard .link div { width: 61px; height: 61px; overflow: hidden; float:left; margin:0px 4px 4px 0px;}*/
