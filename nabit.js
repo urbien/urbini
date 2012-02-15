@@ -55,7 +55,7 @@ function isIOS() {
             window.location = d
         } 
         else 
-          window.open(c, "Nab" + (new Date).getTime(), "status=no,resizable=no,scrollbars=yes,personalbar=no,directories=no,location=no,toolbar=no,menubar=no,width=600,height=400,left=0,top=0");
+          window.open(c, "Nab" + (new Date).getTime(), "status=no,resizable=no,scrollbars=yes,personalbar=no,directories=no,location=no,toolbar=no,menubar=no,width=750,height=450,left=0,top=0");
     }
     
     function y(a) {
