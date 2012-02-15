@@ -750,7 +750,8 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 /* border for read/edit resource properties in non=widget */
 .rop {
 /*  border:solid &[PrimaryColor_1]; 1px; */
-  border:solid &[SecondaryColorA_5]; 1px; 
+/*  border:solid &[SecondaryColorA_5]; 1px; */
+  border: 1px solid #d0d0d0; 
   border-collapse: collapse; 
   color: &[PrimaryColor_1];;
   background-color: &[BackgroundColor];; 
@@ -782,7 +783,8 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 
 td.controlPanel { 
 /*  border:solid &[PrimaryColor_1]; 1px; */
-  border:solid &[SecondaryColorA_5]; 1px; 
+  border:solid #d0d0d0 1px;  
+  /*border:solid &[SecondaryColorA_5]; 1px; */ 
   background-color: &[BackgroundColor];;
 }
 td.controlPanel span { font-size: 16px; }
