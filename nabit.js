@@ -228,11 +228,11 @@ function isIOS() {
                         e.setAttribute("alt", "Nab It");
                         e.className = "ImageToNab";
                         b.appendChild(e);
-//                        var c = document.createElement("img");
-                        var c = document.createElement("button");
+                        var c = document.createElement("img");
+//                        var c = document.createElement("button");
                         if (isIE()) c.className = "tpm_NabIt";
                         else c.setAttribute("class", "tpm_NabIt");
-//                        c.src = "http://d3io1k5o0zdpqr.cloudfront.net/images/NabThis.png";
+                        c.src = "images/nabit/NabThis.png";
                         c.setAttribute("alt", "Nab It");
                         c.innerHTML = "Nab It";
                         if (isIE()) {
