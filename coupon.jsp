@@ -2,7 +2,7 @@
 <table width="100%" class="obval_item" cellpadding="0" cellspacing="0" border="0">
 <tr valign="top">
 <td id="coupon">
-<div >
+<div>
    <div style="position: relative">
     <div id="everyscape" class="photo">
      <ul>
@@ -45,18 +45,18 @@
            <where value="dealPrice &gt; 0">
              <where value="couponVariantsCount &gt; 0">
                <div>
-               	 <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
+               	 <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;-inner=y&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
   	           </div>
 	           </where>
              <where value="couponVariantsCount &lt;= 0">
                <div>
-                 <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
+                 <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;-inner=y&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
                </div>
              </where>
            </where>
            <where value="dealPrice == 0">
              <div>
-               <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="FREE!"/></a>
+               <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;-inner=y&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="FREE!"/></a>
                <!--a max_width="500" id="-inner" class="coupon_buy button_buy_gift" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;gift=true&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Gift!"/></a-->
              </div>
            </where>
@@ -192,10 +192,10 @@
    <div id="likeAndComment">
      <table cellpadding="5" width="100%">
      <tr>
-       <td width="380"><like value="Like"/></td>
-       <td><vkontakteLikeWidget /></td>
-       <td style="padding-left: 20px" >
-         <text text="Act to" /> <a href="v.html?uri=sql/www.hudsonfog.com/voc/media/publishing/Article%3FarticleId%3D32155" style="color: #F55200;"><text text="gain reputation" /></a>!
+       <td width="40%"><like value="Like"/></td>
+       <td width="10%"><vkontakteLikeWidget /></td>
+       <td width="30%">
+         <span class="nowrap"><text text="Act to" /></span> <a href="v.html?uri=sql/www.hudsonfog.com/voc/media/publishing/Article%3FarticleId%3D32155" style="color: #F55200;"><text text="gain reputation" /></a>!
        </td>
                <!--td align="right"><div class="conditions" onclick="showHide('rules', event);"><text text="Conditions!"/></div></td -->
               <td align="right" id="details"><a  href="about:blank" class="coupon_buy conditions button_buy" style="align:right; color:#000000" onclick="showHide('rules', event);"><text text="Details!"/></a></td>
@@ -219,7 +219,7 @@
           <!--property name="couponVariants" noLabel="y"/ -->
         </li>
         <li>
-          <siteResourceList uri="l.html?bUri=-$this%26m_p%3dcouponVariants%26b_p%3dbasedOnTemplate&amp;-list=y&amp;-viewCols=shortTitle,dealPrice,discount&amp;-limit=12&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;-inRowW=1&amp;-titleLink=y&amp;canceled_select=false&amp;canceled_verified=y&amp;dateExpired_From=tomorrow"/>
+          <siteResourceList uri="l.html?bUri=-$this%26m_p%3dcouponVariants%26b_p%3dbasedOnTemplate&amp;-list=y&amp;-viewCols=shortTitle,dealPrice,discount&amp;-limit=12&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;-inRowW=1&amp;-titleLink=y&amp;canceled_select=false&amp;canceled_verified=y&amp;dateExpired_From=tomorrow&amp;-big=n"/>
         </li>
       </ul>
       </where>
@@ -258,8 +258,8 @@
 		
     <!--div class="more_items">
     <h3 class="csp_33"><text text="more deals"/></h3>
-    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRow=1&amp;-title=Future+deals&amp;-limit=3&amp;-featured=y&amp;basedOnTemplate=null"/>
-    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape_select=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRow=1&amp;-title=Upcoming+deals&amp;-limit=3&amp;-featured=y&amp;basedOnTemplate=null"/>
+    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRow=1&amp;-title=Future+deals&amp;-limit=3&amp;-featured=y&amp;-big=n&amp;basedOnTemplate=null"/>
+    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape_select=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRow=1&amp;-title=Upcoming+deals&amp;-limit=3&amp;-big=n&amp;-featured=y&amp;basedOnTemplate=null"/>
     </div -->
     <!-- video -->
     <div><property name="video" noIcon="y"/> </div>
@@ -269,11 +269,11 @@
 	-->	
     <!--h3 class="csp_33"><text text="more deals"/></h3-->
     <!--siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;event=-$this&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CheckIn&amp;-inRowW=6&amp;-title=Check+Ins&amp;-limitW=1&amp;basedOnTemplate=null"/ -->
-    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRowW=3&amp;-title=Future+deals&amp;-limitW=1&amp;-featured=y&amp;basedOnTemplate=null"/>
+    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRowW=3&amp;-title=Future+deals&amp;-limitW=1&amp;-featured=y&amp;-big=n&amp;basedOnTemplate=null"/>
 	<!--siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;cityScape_select=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRowW=4&amp;-limitW=1&amp;-featured=y&amp;basedOnTemplate=null"/ -->
 	
-	<relatedResources uri="l.html?-$action=searchLocal&amp;-limitW=20&amp;-inRowW=20&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
-	<siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1"/>
+	<relatedResources uri="l.html?-$action=searchLocal&amp;-limitW=20&amp;-inRowW=20&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null&amp;-big=n" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
+	<siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1&amp;-big=n"/>
 
  		<!--
 		</div>
