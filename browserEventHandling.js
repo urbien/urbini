@@ -56,7 +56,6 @@
       if (typeof Mobile != 'undefined') {
         Browser.mobile = true;
     
-        BottomToolbar.init();   
         Boost.init(event);
         Mobile.init(event);
         MobilePageAnimation.init();
