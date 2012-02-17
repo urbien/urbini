@@ -30,7 +30,9 @@ However this JSP is used for pages containig errors message too (?)
       <pagingResources/>
 		  <menu toolbar="file" flat="y"/>
 		  <filterUrl />
+			<include name="mobileFooter.jsp" />
 	  </div>
+		     
 	</div>
     </div>
 	
