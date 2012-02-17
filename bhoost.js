@@ -1445,8 +1445,6 @@ var Boost = {
       $t.browsingHistory = s;
     }
 
-		BottomToolbar.hide();
-
     var newUrl;
     if (typeof link == 'string')
       newUrl = link;
@@ -1733,10 +1731,6 @@ var Boost = {
     Boost.view.setProgressIndeterminate(false);
     Boost.log('left = ' + coords.left + '; top = ' + coords.top);
     window.scrollTo(coords.left, coords.top);
-		
-		// show bottom toolbar at the same mobile page
-		BottomToolbar.toolbar.style.display = "";
-		
   },
 
   // browsing history forward and backward
@@ -2010,12 +2004,6 @@ var MobilePageAnimation = {
    
     // hides the location bar
     scrollTo(0, 1);
-		
-
-		// set toolbar at bottom of the new mobile page
-		newDiv.appendChild(BottomToolbar.toolbar);
-		BottomToolbar.toolbar.style.display = "";
-
 		
     setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
   },
@@ -2341,175 +2329,4 @@ function spriteAnimation(src, parent) {
   
   // call initialization function
   this._init(src);
-}
-
-
-/********************************************
-* BottomToolbar
-* note: current code was fitted for Android's emulator
-*********************************************/
-var BottomToolbar = {
-  HEIGHT : 50,
-  DELAY : 3000, // delay before hide
-
-  toolbar : null,
-	
-	//bottomLevel : null,
-	offset : null,
-  
-	timerId : null,
-  
-  init : function() {
-    this.createToolbarObject();
-	
-	// show always toolbar at bottom of a mobile page
-		
-/*   
-	 	this.offset = this.HEIGHT;
-		this.setBottomLevelOffset(this.offset);
-	 
-		if (Browser.iPhone) 
-			addEvent(document, "touchend", this.ontouch, false);
-		else	
-    	addEvent(document, "click", this.ontouch, false);
-
-		// hide the toolbar on "scrolling" (?)
-		addEvent(document, "touchmove", this.hide, false);
-
-		this.timerId = setTimeout(BottomToolbar.down, this.DELAY);
-*/		
-	},
-  
-  createToolbarObject : function() {
-    this.toolbar = document.createElement("div");
-    this.toolbar.id = "bottom_toolbar";
-    this.toolbar.style.height = this.HEIGHT;
-		
-    if (Browser.palmApp)
-      this.toolbar.innerHTML =
-        "<a href=\"javascript: ;\" style=\"visibility: hidden;\" onclick=\"Mobile.oneStep(event, -1);\"><img src=\"../images/skin/iphone/back_button.png\" /></a>"
-        + "<a href=\"javascript: ;\" style=\"visibility: hidden;\" onclick=\"Mobile.oneStep(event, 1);\"><img src=\"../images/skin/iphone/forward_button.png\" /></a>"
-        + "<a href=\"javascript: ;\" onclick=\"Filter.show();\"><img src=\"../images/skin/iphone/search_filter_button.png\" /></a>"
-        + "<a id='optionsMenu' href=\"javascript: ;\"><img src=\"../images/skin/iphone/menu_button.png\" /></a>" 
-        + "<a href=\"javascript: ;\"  onclick=\"document.location.reload();\"><img src=\"../images/skin/iphone/reload_button.png\" /></a>";
-    else
-      this.toolbar.innerHTML =
-				"<a href=\"javascript: ;\" onclick=\"window.location.replace(getBaseUri());\"><img src=\"../images/skin/iphone/home_button.png\" /></a>"
-        + "<a href=\"javascript: ;\" onclick=\"Filter.show();\"><img src=\"../images/skin/iphone/search_filter_button.png\" /></a>"
-        + "<a  id='optionsMenu' href=\"javascript: ;\"><img src=\"../images/skin/iphone/menu_button.png\" /></a>"; 
- 
-    //document.body.appendChild(this.toolbar);
-		Mobile.getCurrentPageDiv().appendChild(this.toolbar);
-  },
-	
-  ontouch : function(e) {
-		var $t = BottomToolbar;
-		
-		//$t.updateBottomLevel(e);
-		
-		$t.hide();
-		
-		clearTimeout($t.timerId); 
-    var e = getDocumentEvent(e);
-    var target = getEventTarget(e);
-    var tagName = target.tagName.toLowerCase();
-    
-		// touch in the toolbar
-		if (getAncestorById(target, "bottom_toolbar") != null)
-			return true;
-		
-		// show the toolbar only if clicked on free / not handled space
-    if (tagName == "input" || tagName == "a")
-      return;
-
-
-		// show the toolbar only if clicked in top half of a view (if it is needed?!!!!!!!)
-		// it prevents showing our toolbar when user whant to scroll tapping at bottom of view
-    if (e.clientY > getWindowSize()[1] / 2 + window.pageYOffset) {
-			return;
-		}
-
-
-		// click inside a dialog; skip it
-		if (getParentDialog(target) != null)
-			return;
-		
-		//$t.updateNavigationButtons();
-   	
-		$t.up();
-  },
-  
-  updateNavigationButtons : function() {
-		if (!Browser.palmApp)
-			return;
-
-			var anchors = this.toolbar.getElementsByTagName('a');
-			// show / hide back and forward buttons
-			anchors[0].style.visibility = Mobile.isBackAvailable() ? "visible" : "hidden";
-			anchors[1].style.visibility = Mobile.isForwardAvailable() ? "visible" : "hidden";
-	},
-	
-	// immediate hide the toolbar
-  hide : function() {
-		var $t = BottomToolbar;
-		if (!$t.toolbar)
-			return;
-		$t.toolbar.style.display = "none";
-		$t.offset = 0;
-  },
-// NOTE: currently the bar is always at the same place, at a mobile page bottom	
-/* 
-	up : function() {
-		var $t = BottomToolbar;
-		if ($t.offset == 0) 
-			$t.toolbar.style.display = "block";
-		
-		// end of sliding
-		if ($t.offset >= $t.HEIGHT) {
-			$t.offset = $t.HEIGHT;
-			$t.setBottomLevelOffset($t.offset);
-			$t.timerId = setTimeout(BottomToolbar.down, $t.DELAY);
-			return;
-		}	 
-		
-		$t.setBottomLevelOffset($t.offset);
-		
-		$t.offset += 5;
-		$t.timerId = setTimeout($t.up, 25);
-	},
-	
-	down : function() {
-		var $t = BottomToolbar;
-
-		// end of sliding
-		if ($t.offset <= 0) {
-			$t.offset = 0;
-			$t.setBottomLevelOffset($t.offset);
-			$t.toolbar.style.display = "none";
-			return;
-		}	 
-		
-		$t.setBottomLevelOffset($t.offset);
-		
-		$t.offset -= 5;
-		$t.timerId = setTimeout($t.down, 25);
-	},
-	
-	setBottomLevelOffset : function(offset) {
-		//if (this.bottomLevel == null)
-		//	this.updateBottomLevel();
-		
-		var h = getWindowSize()[1];
-		var bottomLevel = window.pageYOffset + h;
-
-		this.toolbar.style.top = bottomLevel - offset; // Palm's hack  -110
-	}
-	updateBottomLevel : function(e) {
-		var h = getWindowSize()[1];
-		this.bottomLevel = h;
-		//if (typeof e != 'undefined')
-		//	this.bottomLevel = (e.pageY - e.screenY) + h;
-		this.bottomLevel = window.pageYOffset - window.screenY + h;
-	}
-*/
 }
