@@ -8223,9 +8223,9 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 		div.style.top = getScrollXY()[1] + 'px';
 		div.style.minWidth = "none";
 		div.style.maxWidth = "none";
-		
 		div.style.visibility = Popup.VISIBLE;
 		div.style.display = "block";
+    _fadeInDialog(div);
 		return;
 	}
 	
@@ -8447,15 +8447,13 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 		}
 	}
 	
-	if (div.className == "panel_block") {
-		setTransitionProperty(div, "opacity 0.5s ease-in-out");
-		changeOpacity(div, 1.0);
-  }
-	
+ _fadeInDialog(div);
+ 
   div.style.display    = 'none';   // hide it before movement to calculated position
 	reposition(div, left, top); // move the div to calculated position
   div.style.visibility = Popup.VISIBLE; // show div
 	div.style.display    = "block"; //////// 'inline';
+	
 	
 
 	if (Browser.lt_ie7 && !isDivStatic  && !Browser.mobile) {
@@ -8472,19 +8470,29 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
 
 }
 
+function _fadeInDialog(div) {
+	if (isElemOfClass(div, "panel_block")) {
+	  if (div.style.opacity == "") {
+	    div.style.opacity = 0
+	    setTimeout(function(){ setTransitionProperty(div, "opacity 0.5s ease-in-out");  div.style.opacity = 1;}, 1);
+	  }
+	  else
+	    div.style.opacity = 1;
+	}
+}
+
 function setDivInvisible(div, iframe) {
   // release a popup (menu) belongs to the hidding div
   if(typeof PopupHandler != 'undefined')
     PopupHandler.checkHidingDiv(div);
-  
 
   if (div.style)
     div.style.display    = "none";
   if (iframe && iframe.style)
     iframe.style.display = "none";
 
-  if (div.className == "panel_block")
-    changeOpacity(div, 0);
+  if (isElemOfClass(div,"panel_block"))
+    div.style.opacity = 0;
 
 	if (div.className.indexOf("modal") != -1 || Browser.mobile)
 		TouchDlgUtil.hidePageOverlay(); // a modal dilog
