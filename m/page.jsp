@@ -1,5 +1,4 @@
 <div>
-	
 	<!--include name="BhoostApplet.jsp" /-->
   <getResource/>
   <views />
@@ -15,6 +14,6 @@
   
   <filterUrl />
   <pagingResources/>
-  
+  <include name="mobileFooter.jsp" />
 </div>
 
