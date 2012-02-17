@@ -32,7 +32,7 @@ a:hover img {
 .mobile_page { position: absolute; width: 100%; }
 
 .mobile_dlg { position: absolute; width: 100% !important; height: 100% !important; -moz-box-shadow : none; -webkit-box-shadow: none; }
-.mobile_dlg .rounded_rect_tbl .input, .mobile_dlg .rounded_rect_tbl .isel, .mobile_dlg .rounded_rect_tbl .num, .mobile_dlg .false_input { width: 100%; }
+.mobile_dlg .rounded_rect_tbl .input, .mobile_dlg .rounded_rect_tbl .isel, .mobile_dlg .rounded_rect_tbl .num, .mobile_dlg .false_input, #register .input { width: 100% !important; border: none; }
 .mobile_dlg .userLogin { width: 100% !important; }
 
 td {font-family:Helvetica; font-size:12pt;}
@@ -250,3 +250,5 @@ tr.dark  {background-color:#eeeeee; /*height: 35px;*/ }
 .panel_block, .panel_block > table, .panel_block .frame { height: 100%; }
 
 #div_info, .rop_only #div_Edit { max-width: none; }
+
+.false_textarea { display: inline; }
