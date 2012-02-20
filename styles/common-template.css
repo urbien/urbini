@@ -420,7 +420,7 @@ td.textCell {
   border-width: 0px;
   padding: 0px;
   border-spacing: 0px;
-  margin: 10px;
+  margin: 10px 10px 6px 10px;
 }
 .galleryItem_container .galleryItem, .galleryItem_container .galleryItem_css3 { margin: 0px; }
 .galleryItem, .galleryItem_css3 { position: relative; }
@@ -432,7 +432,7 @@ td.textCell {
   background-image:url(../images/frame/gray_bg/right.jpg);
   vertical-align: top; background-position: top; background-repeat: repeat-y;
 }
-.likes_tbl { position: absolute; opacity: 0; visibility: hidden; z-index: 1; top: 0px; left: 0px; border-collapse: collapse; }
+.likes_tbl {  position: absolute; opacity: 0; visibility: hidden; z-index: 1; top: 0px; left: 0px; border-collapse: collapse; }
 .likes_tbl td { background-color: rgba(0, 0, 0, 0.4); #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000);  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000)";
   padding: 0px; width: auto; }
 .likes_tbl .fbLikeWidget { margin: 0 5; }
@@ -1704,7 +1704,6 @@ input:focus { outline: 0 none; }
   -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   z-index: 100;
-/*  opacity: 0; */
 }
 
 
@@ -2410,22 +2409,6 @@ td #corePageContent { min-height: 600px;}
 .bigGridP { font-size:16px; padding-bottom: 8px; }
 .bigGridP .bigLabel { font-size: 16px; font-weight: bold; text-shadow: 1px 1px 1px #333333;}
 #note {font-size: 16px;  width: 500px;}
-
-.arrow_td div {
-  position: absolute;
-  border-color:  transparent #ff0000;
-  border-style: solid;
-  border-width: 20px 0px 20px 20px;
-
-  height: 0px;
-  width: 0px;
-  -moz-transform:rotate(-45deg);
-	-webkit-transform:rotate(-45deg);
-	-o-transform:rotate(-45deg);
-	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678); 
-  } 
-  
-.arrow_td div div {   font-size: 30px;  color: #ffffff; margin: -15px 0 0 -20px; }
 
 .page_overlay { position: absolute; z-index: 11; top: 0; left: 0; display: none; width: 100%; background-color: #000; opacity: 0.6; -moz-opacity: 0.6;  filter: alpha(opacity:60); } /* for modal dialogs */
 .mTitle {
