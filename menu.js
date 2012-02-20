@@ -12895,9 +12895,9 @@ function changeCss(cssTitle, file) {
   }
 }
 // FTS improvements
-function showHide(id, event, toSuppressEmpty) {
+function showHide(id, event) {
   var tt = document.getElementById(id);
-	if (toSuppressEmpty && getFirstChild(tt) == null)
+	if (getFirstChild(tt) == null) // not to show empty popup
 		return;
   if (tt.className  &&  tt.className == 'hdn')
     tt.className = '';
