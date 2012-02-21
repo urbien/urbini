@@ -1941,30 +1941,32 @@ function hex2rgb(hexColor) {
 }
 
 // usage: 1) example: 'all 1s ease-in-out' - after that all CSS changes will animate 2) 'none' - turn off
-function setTransitionProperty(element, transitionStr) {
-  return setCSS3Property(element, 'transition', transitionStr);
+function setTransitionProperty(element, transitionStr, callback) {
+  var specTransName = setCSS3Property(element, 'transition', transitionStr);
+	if (callback && specTransName)
+  	addEvent(element, (specTransName + 'End'), callback);
+	return specTransName;
 }
 
 function setTransformProperty(element, transformStr) {
   return setCSS3Property(element, 'transform', transformStr);
 }
 
-// note may be need to avoid setting of the same property value many times
-function setCSS3Property(element, propName, cssStr/*, delay*/) {
+// returns applied CSS3 property in the browser
+// note: may be need to avoid setting of the same property value many times
+function setCSS3Property(element, propName, cssStr) {
   var prefix = ['', 'Webkit', 'ms', 'Moz', 'O'];
 	var propNameSpec;
   for (var i = 0; i < prefix.length; i++) {
 		if (i == 1)
 		  propName = propName.charAt(0).toUpperCase() + propName.slice(1);
-	  if (typeof element.style[(prefix[i] + propName)] != 'undefined') {
-//	    if (delay)
-//			  setTimeout(function () { element.style[(prefix[i] + propName)] = cssStr; } , delay)
-//			else
-			 element.style[(prefix[i] + propName)] = cssStr;
-	    return true;
+	    var specPropName = prefix[i] + propName;
+		if (typeof element.style[specPropName] != 'undefined') {
+		  element.style[specPropName] = cssStr;
+		  return specPropName;
 	  }
   }
-  return false;
+  return null;
 }
 
 // flag that common.js was parsed
