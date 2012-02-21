@@ -9,4 +9,5 @@
     <a id="optionsMenu" href="javascript: ;">
         <img src="../images/skin/iphone/menu_button.png"/>
     </a>
+		<br /><br />
 </div>
