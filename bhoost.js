@@ -1797,7 +1797,6 @@ var Boost = {
 					$t.curHash = hashVal;
 			}
       
-			BottomToolbar.updateNavigationButtons();
       MobilePageAnimation.showPage(currentDiv, div, step < 0);
     }
     if (e)
@@ -1961,7 +1960,7 @@ var MobilePageAnimation = {
   newDiv : null,
   rightToLeft : true,
 
-  // wndWidth : null,
+  dlgDiv : null,
 
   totalOffset : 0,
   step : 1,
@@ -2007,7 +2006,37 @@ var MobilePageAnimation = {
 		
     setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
   },
-
+  showDialog : function(div) {
+		this.dlgDiv = div;
+	  div.style.top = getScrollXY()[1] + 'px';
+		div.style.minHeight = getWindowSize()[1] + 'px';
+		div.style.visibility = "visible";
+		addEvent(div, "webkitTransitionEnd", MobilePageAnimation._onZoomInDialogEnd);
+		div.style.WebkitTransform = "scale(1.0)";
+		div.style.opacity = "1.0";
+	},
+	 _onZoomInDialogEnd : function() {
+    var $t = MobilePageAnimation;
+		Mobile.getCurrentPageDiv().style.opacity = 0;
+    removeEvent($t.dlgDiv, "webkitTransitionEnd", MobilePageAnimation._onZoomInDialogEnd);
+  },
+	
+	hideDialog : function(div) {
+		this.dlgDiv = div;
+		addEvent(div, "webkitTransitionEnd", MobilePageAnimation._onZoomOutDialogEnd);
+    Mobile.getCurrentPageDiv().style.opacity = 1
+		div.style.WebkitTransform = "scale(0.1)";
+	  div.style.opacity = "0.1";
+  },
+	
+	_onZoomOutDialogEnd : function() {
+		var $t = MobilePageAnimation;
+		$t.dlgDiv.style.visibility = "hidden";
+		// remove dialog from document to avoid interference with other dialogs
+		$t.dlgDiv.parentNode.removeChild($t.dlgDiv);
+		removeEvent($t.dlgDiv, "webkitTransitionEnd", MobilePageAnimation._onZoomOutDialogEnd);
+	},
+	
   _animate : function() {
     var thisObj = MobilePageAnimation;
 
