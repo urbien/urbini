@@ -1,10 +1,10 @@
 <div id="register" align="center">
 <table cellspacing="0" cellpadding="0">
 <tr>
-<td width="30%">
+<td>
 <include name="user-login-help.jsp"/>
 </td>
-<td width="40%"><table border="0" cellpadding="0" cellspacing="0" cols="2" class="userLogin"><tr><td align="center">
+<td><table border="0" cellpadding="0" cellspacing="0" cols="2" class="userLogin"><tr><td align="center">
           <h2><property name="owner.name"/></h2>
         </td>
       </tr>
@@ -72,7 +72,7 @@
   </tr>
 	</table>
 </td>
-<td width="30%"></td>
+<td></td>
 </tr>
 </table>
 </div>
