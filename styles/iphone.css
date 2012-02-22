@@ -40,14 +40,13 @@ a:hover img {
   left: 0px;
   -webkit-box-shadow: none;
   -webkit-transition-property: -webkit-transform, opacity; 
-  -webkit-transition-duration: 1.0s, 1.0s;
-  -webkit-transition-function: 0.2s;
+  -webkit-transition-duration: 0.8s, 0.8s;
   -webkit-transform: scale(0.1);
   opacity: 0.1;
 }
   
 .mobile_dlg .rounded_rect_tbl .input, .mobile_dlg .rounded_rect_tbl .isel, .mobile_dlg .rounded_rect_tbl .num, .mobile_dlg .false_input, #register .input { width: 100% !important; border: none; }
-.mobile_dlg .userLogin { width: 100% !important; }
+#register table { width: 100% !important; }
 
 td {font-family:Helvetica; font-size:12pt;}
 table {font-family:Helvetica; font-size:12pt;}
