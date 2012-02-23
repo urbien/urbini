@@ -1,4 +1,5 @@
 <div>
+	<include name="mobileFooter.jsp" />
 	<!--include name="BhoostApplet.jsp" /-->
   <getResource/>
   <views />
@@ -11,9 +12,7 @@
   <filesSearch     filesUri     = "text/search/files" />
   <excelsSearch    excelsUri    = "text/search/excels" />
   <menu toolbar="file" flat="y"/>
-  
   <filterUrl />
   <pagingResources/>
-  <include name="mobileFooter.jsp" />
 </div>
 
