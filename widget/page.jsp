@@ -17,6 +17,7 @@ However this JSP is used for pages containig errors message too (?)
     <div id="myScreenName" class="hdn" />
     <div id="im_empty" class="hdn" />
 	  <div id="mainDiv" class="mobile_page">
+	  	<include name="mobileFooter.jsp" />
 	  	<errorMessage />
 	    <views />
       <siteTitle name="title" />
@@ -30,9 +31,7 @@ However this JSP is used for pages containig errors message too (?)
       <pagingResources/>
 		  <menu toolbar="file" flat="y"/>
 		  <filterUrl />
-			<include name="mobileFooter.jsp" />
 	  </div>
-		     
 	</div>
     </div>
 	
