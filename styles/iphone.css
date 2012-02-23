@@ -258,8 +258,8 @@ tr.dark  {background-color:#eeeeee; /*height: 35px;*/ }
 .touch_screen img { width: 1000px; height: 1000px; border: 0px; }
 
 
-#bottom_toolbar { background: #000; background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#74797F), to(#000000)); margin: 0; height: 50px; text-align: center; width: 100%; }
-#bottom_toolbar img { margin: 10 20px 10px 20px; }
+#bottom_toolbar { background: #000; background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#74797F), to(#000000)); margin: 0; height: 35px; text-align: center; width: 100%; }
+#bottom_toolbar img { margin: 2px 35px 3px 35px; }
 
 .panel_block, .panel_block > table, .panel_block .frame { height: 100%; }
 
