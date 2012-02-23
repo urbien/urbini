@@ -258,7 +258,7 @@ tr.dark  {background-color:#eeeeee; /*height: 35px;*/ }
 .touch_screen img { width: 1000px; height: 1000px; border: 0px; }
 
 
-#bottom_toolbar { padding-right: 3 0 3 0; text-align: center; width: 100%; }
+#bottom_toolbar { margin: 5px; text-align: center; width: 100%; }
 
 .panel_block, .panel_block > table, .panel_block .frame { height: 100%; }
 
