@@ -911,8 +911,7 @@ var Boost = {
       return null;
     }
     if (id == 'menu_cancel') {
-      optionsDiv.style.visibility = "hidden";
-      optionsDiv.style.display = "none";
+		  MobileMenuAnimation.hide();
       var currentDiv = $t.urlToDivs[$t.currentUrl];
       if (!currentDiv) {
         currentDiv = document.getElementById('mainDiv');
@@ -2018,7 +2017,7 @@ var MobilePageAnimation = {
 	 _onZoomInDialogEnd : function() {
     var $t = MobilePageAnimation;
 		Mobile.getCurrentPageDiv().style.opacity = 0;
-    removeEvent($t.dlgDiv, "webkitTransitionEnd", MobilePageAnimation._onZoomInDialogEnd);
+		removeEvent($t.dlgDiv, "webkitTransitionEnd", MobilePageAnimation._onZoomInDialogEnd);
   },
 	
 	hideDialog : function(div) {
@@ -2129,80 +2128,49 @@ var MobilePageAnimation = {
  * MobileMenuAnimation
  **********************************/
 var MobileMenuAnimation = {
-  TOP_OFFSET : 60,
   optionsDiv : null,
 	editItem : null,
 
-  // default: effectIdx = 1 - "fading effect"
-  show : function(curPageDiv, effectIdx) {
-    effectIdx = effectIdx || 1;
-    //if (!this.isInitialized)
-    //  return;
+  show : function(curPageDiv) {
 		if (this.optionsDiv == null) {
 			this.optionsDiv = document.getElementById('menu_Options');
 			this.editItem = getChildById(this.optionsDiv, 'menu_Edit');
 		}
-    var optDivStl = this.optionsDiv.style;
     // hide menu if it is already opened
-    if(optDivStl.visibility == "visible") {
+    if(isVisible(this.optionsDiv)) {
       this.hide();
       return;
     }
-    if (effectIdx == 1 && !Browser.ie) {
-      this.opaqueAnimation(this.optionsDiv, 0.25, 1.0, 0.35);
-    }
-
 		this.setEditItemState();
-		
-    if (optDivStl.position == '')
-      optDivStl.position = 'absolute';
-		
+    
+		var optDivStl = this.optionsDiv.style;
 		// set menu position in accordance to current "scrolled" position
 		optDivStl.top = window.pageYOffset;	
-
 		optDivStl.zIndex = curPageDiv.style.zIndex + 1;
     optDivStl.display = "block";
-    optDivStl.visibility = "visible";
+		optDivStl.visibility = "visible";
+  	optDivStl.opacity = 1.0;
   },
 	
 	setEditItemState : function() {
 		var page = Mobile.getCurrentPageDiv();
 		var a = getChildById(page, 'edit_url_hdn');
 		if (a == null) 
-			//this.editItem.style.visibility = "hidden";
 			changeOpacity(this.editItem, 0.3);
 		else
-			//this.editItem.style.visibility = "";
 			changeOpacity(this.editItem, 1.0);
-			
 	},
 	
   hide : function() {
-    var optDivStl = this.optionsDiv.style;
-    optDivStl.display = "none";
-    optDivStl.visibility = "hidden";
+    addEvent(this.optionsDiv, "webkitTransitionEnd", this._finishHide);
+		this.optionsDiv.style.opacity = "0.1";
   },
-  opaqueAnimation : function(div, from, to, step) {
-    this.TIME_OUT = 0;
-    this.div = div;
-    this.from = from;
-    this.to = to;
-    this.step = step;
-    this.counter = 0;
-
-    this._animate = function() {
-      var thisObj = MobileMenuAnimation;
-      var level = thisObj.from + thisObj.step * thisObj.counter;
-      if (level > thisObj.to)
-        level = thisObj.to;
-      changeOpacity(thisObj.div, level);
-      thisObj.counter++;
-      if (level < thisObj.to)
-        setTimeout(function(){ thisObj._animate()},
-          thisObj.TIME_OUT);
-    }
-    this._animate();
-  }
+	_finishHide: function(){
+		var $t = MobileMenuAnimation;
+    MobileMenuAnimation.optionsDiv.style.visibility = "hidden";
+		removeEvent($t.optionsDiv, "webkitTransitionEnd", $t._finishHide);
+		
+	}
 }
 
 /** Set password and deviceId for mobile registration */
