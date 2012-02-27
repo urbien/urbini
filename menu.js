@@ -5130,7 +5130,7 @@ var DataEntry = {
       return;
     }
     div.style.visibility = "hidden";
-    
+		
     // onDataError happens on mkResource
     if ($t.onDataError || $t.isMkResource())
       $t.doStateOnMkResource(div, true);
@@ -5159,10 +5159,15 @@ var DataEntry = {
     }
 
     BacklinkImagesSlideshow.stopAutomaticSiding(); // possible it runs
-    // show dialog after GUI initialization
-    setDivVisible(event, div, null, $t.hotspot, 5, 5);
-    $t.initDataStr = $t._getFormDataStr(div, true);
 
+		if (getUrlParam($t.currentUrl, "-onPage") == "y") {
+			var parent = document.getElementById("div_Edit");
+			if (parent)
+			 parent.appendChild(div);
+		}
+    setDivVisible(event, div, null, $t.hotspot, 5, 5);
+  
+	  $t.initDataStr = $t._getFormDataStr(div, true);
     var key = $t._getKey($t.currentUrl);
     $t.dataEntryArr[key] = div;
   },
@@ -5706,14 +5711,14 @@ var TouchDlgUtil = {
   
    // hide selector / iphone_field if "form" contains less than 5 parameters
   _hideSelectorSwitcherInSmallDialog : function(div) {
-    var switcher = getChildByClassName(div, 'selector_switcher'); // gui wrapper of item_selector
+		var switcher = getChildByClassName(div, 'selector_switcher'); // gui wrapper of item_selector
     if (!switcher)
       return;
         
     var paramsCounter = 0;
     var spans = div.getElementsByTagName("span"); // includes "liquid" table TDs
     for (var i = 0; i < spans.length; i++) {
-      if (spans[i].className == "label") // each parameter row contains one label
+      if (isElemOfClass(spans[i], ["label", "bigLabel"])) // each parameter row contains one label
         paramsCounter++;
     }
 
