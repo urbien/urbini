@@ -423,6 +423,8 @@ td.textCell {
   margin: 10px 10px 6px 10px;
 }
 .galleryItem_container .galleryItem, .galleryItem_container .galleryItem_css3 { margin: 0px; }
+.nab .anab  { margin: -10px; box-shadow: none;}
+
 .galleryItem, .galleryItem_css3 { position: relative; }
 .galleryItem_css3 { display: inline-block; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); -moz-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); }
 .bigGridPicL { padding-top: 10px; padding-right: 5px; }
@@ -940,6 +942,7 @@ div.leftSidebarWithImage {
   min-width: 7em;
   text-align: center;
 } 
+div.leftSidebarWithImage img {max-width: 200px;}
 
 div.leftSidebar A {color: inherit}
 div.rightSidebar {
@@ -1557,6 +1560,12 @@ TD.closePopup {
 }
 /***************************************************************/
 .h21 {height: 1em}
+
+.nab .tag {
+  background: none;
+  padding-left: 5px;
+  border-right: none;
+}
 
 .tag {
   background: url(../images/tag.gif) left center no-repeat;
@@ -2420,23 +2429,36 @@ td #corePageContent { min-height: 600px;}
 }
 
 #dataEntry .sortable li, #siteResourceList .sortable li {float: left; width: 222px; margin: 0 0 15px 15px;}
-/* PIN CELL
+/* NAB CELL
 --------------------------------------------------------------------------------------- */
-.pin { width: 192px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; box-shadow: 0 1px 3px rgba(34,25,25,0.4); -moz-box-shadow: 0 1px 3px rgba(34,25,25,0.4); -webkit-box-shadow: 0 1px 3px rgba(34,25,25,0.4);}
-#resourceList .pin td, #siteResourceList #front .pin .label {font-size: 11px;}
-#resourceList .pin .action, #div_Activity .pin .action {color: #98c165; font-weight:bold;} 
+.nab { width: 192px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; box-shadow: 0 1px 3px rgba(34,25,25,0.4); -moz-box-shadow: 0 1px 3px rgba(34,25,25,0.4); -webkit-box-shadow: 0 1px 3px rgba(34,25,25,0.4);}
+.nab .anab img {width: 192px;}
+#resourceList .nab td, #siteResourceList #front .nab .label {font-size: 11px;}
+#resourceList .nab .action, #div_Activity .nab .action {color: #98c165; font-weight:bold;} 
 
 .pList {padding-top:15px;padding-left:15px; background: #eaeaea;}
 .aList {padding-top:15px;}
-#resourceList .pin .pLink {color: #757575;}
+#resourceList .nab .pLink {color: #757575;}
 /* BOARD CELL
 --------------------------------------------------------------------------------------- */
-.pinBoard {width: 222px !important; padding: 0 !important;}
-.pinBoard h3 {padding: 9px 15px 0; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
-.pinBoard .link {display: block; height: 200px; background: url(../images/BoardBackground.png) 15px 9px no-repeat; padding: 9px 0 4px 12px; overflow: hidden;}
-/*.pinBoard .link img {float: left; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
-.pinBoard .link img {float: left; width: 100px; /* magnify: 100 / 61 */ margin-left: -20px; /* set at horizontal center */ }
+.nabBoard {width: 222px !important; padding: 0 !important;}
+.nabBoard h3 {padding: 9px 15px 0; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
+.nabBoard .link {display: block; height: 200px; background: url(../images/BoardBackground.png) 15px 9px no-repeat; padding: 9px 0 4px 12px; overflow: hidden;}
+/*.nabBoard .link img {float: left; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
+.nabBoard .link img {float: left; width: 100px; /* magnify: 100 / 61 */ margin-left: -20px; /* set at horizontal center */ }
 .boardsTitle {padding-top: 5px; font-size: 16pt; color: #cb2027; }
-.pinBoard .link div {width:61px; height:61px; overflow:hidden; float:left; margin:0px 4px 4px 0px;}
-/*.pinBoard .div div {overflow: hidden; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
-/*.pinBoard .link div { width: 61px; height: 61px; overflow: hidden; float:left; margin:0px 4px 4px 0px;}*/
+.nabBoard .link div {width:61px; height:61px; overflow:hidden; float:left; margin:0px 4px 4px 0px;}
+/*.nabBoard .div div {overflow: hidden; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
+/*.nabBoard .link div { width: 61px; height: 61px; overflow: hidden; float:left; margin:0px 4px 4px 0px;}*/
+
+.Button {position: relative; display: inline-block; padding: .45em .825em .45em; text-align: center; line-height: 1em; border: 1px solid transparent; border-radius: .3em; -moz-border-radius: .3em; -webkit-border-radius: .3em; -moz-transition-property: color, -moz-box-shadow, text-shadow; -moz-transition-duration: .05s; -moz-transition-timing-function: ease-in-out; -webkit-transition-property: color, -webkit-box-shadow, text-shadow; -webkit-transition-duration: .05s; -webkit-transition-timing-function: ease-in-out; box-shadow: 0 1px rgba(255,255,255,0.8), inset 0 1px rgba(255,255,255,0.35); -moz-box-shadow: 0 1px rgba(255,255,255,0.8), inset 0 1px rgba(255,255,255,0.35); -webkit-box-shadow: 0 1px rgba(255,255,255,0.8), inset 0 1px rgba(255,255,255,0.35);}
+.Button strong {position: relative; z-index: 2;}
+
+.Button span {position: absolute; z-index: 1; top: -1px; right: -1px; bottom: -1px; left: -1px; display: block; border: 1px solid; opacity: 1; border-radius: .3em; -moz-border-radius: .3em; -webkit-border-radius: .3em; box-shadow: inset 0 1px rgba(255,255,255,0.35); -moz-box-shadow: inset 0 1px rgba(255,255,255,0.35); -webkit-box-shadow: inset 0 1px rgba(255,255,255,0.35); -moz-transition-property: opacity; -moz-transition-duration: 0.5s; -moz-transition-timing-function: ease-in-out; -webkit-transition-property: opacity; -webkit-transition-duration: 0.5s; -webkit-transition-timing-function: ease-in-out;}
+.nabBoard .followBoard {padding: 0 15px 11px; text-align: center;}
+.nabBoard .followBoard .Button {display: block; padding: 0.5em 0.825em;}
+
+.Button13,
+.Button13 span {font-size: 13px; border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; color: #b0b0b0}
+.followBoard a {font-size: 13px;} 
+.WhiteButton {color: #524d4d; text-shadow: 0 1px rgba(255,255,255,0.9);}
