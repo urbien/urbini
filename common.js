@@ -1678,13 +1678,13 @@ function changeOpacity(obj, level) {
 	if (typeof obj.style.MozOpacity != 'undefined') 
   	obj.style.MozOpacity = level;
   else 
-  	if (typeof obj.style.opacity != 'undefined' && !Browser.ie) 
+  	if (typeof obj.style.opacity != 'undefined') 
   		obj.style.opacity = level;
   	else if (obj.style.filter != 'undefined') {
 			if (level == 1.0) 
 	  	obj.style.filter = '';
 	  else {
-	  	obj.style.filter = 'progid:DXImageTransform.Microsoft.BasicImage(opacity=' + level + ')';
+	  	obj.style.filter = 'progid:DXImageTransform.Microsoft.Alpha(opacity=' + (level * 100) + ')';
 			}
 		}
 }
@@ -1894,7 +1894,9 @@ function setCaretPosition(elem, caretPos) {
         if(elem.createTextRange) {
             var range = elem.createTextRange();
             range.move('character', caretPos);
-            range.select();
+            try {
+				      range.select();
+			      } catch(e) {}
         }
         else {
             if(elem.selectionStart) {
