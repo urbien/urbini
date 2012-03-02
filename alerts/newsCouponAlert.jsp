@@ -16,9 +16,15 @@
 </table>
 <table width="100%" cellpadding="5" style="font-size:12px;">       
   <tr>
-    <td style="font-size: 16px"><a style="text-decoration: none; color: #ff5200;" href="/deals?-when=current"><text text="More on OBVAL.COM"/></a></td>
+    <td style="font-size: 16px"><a style="text-decoration: none; color: #ff5200;" href="/deals?-when=current"><text text="More coupons on OBVAL.COM"/></a></td>
   </tr>
 </table>
+<table width="100%" cellpadding="5" cellspacing="0">
+<tr>
+  <td style="font-size: 11px;">
+    <text text="Delivered by"/> <hostSignature address="y"/>
+  </td>
+</tr>
     <!-- /span -->
     <!--setCityScape /-->
 </div>
