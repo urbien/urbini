@@ -1204,9 +1204,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		var objects = this.document.body.getElementsByTagName("object");
 		var hasObjects = (objects && objects.length > 0);
 
+    var iframes = this.document.body.getElementsByTagName("iframe");
+    var hasIframes = (iframes && iframes.length > 0);
+
     // if there is no text (only tags and invisible symbols) then return empty string.
-		// returns html if there are <img>s or <object>s
-  	if (hasImages == false && hasObjects == false && (typeof toCheckOnEmty == 'undefined' || toCheckOnEmty)) {
+		// returns html if there are <img>s or <object>s or <iframe>s
+  	if (hasImages == false && hasObjects == false && hasIframes == false && (typeof toCheckOnEmty == 'undefined' || toCheckOnEmty)) {
   	  var tmp = content.plainText();
 	    tmp = tmp.replace(/&nbsp;| |\t|\n|\f|\r|\x0B]/g, "");
 	    if(tmp.length == 0)
@@ -1246,6 +1249,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	  // probably it invokes error when document is not stored.
 	  //if(this.isChanged == false)
 	  //  return;
+	
 		var text = this.getHtmlContent();
 		// compare with initial RTE content
 		// then no need to change.
@@ -1410,12 +1414,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 		if (toEnlarge) {
 			panelBlock.parentNode.style.textAlign = "left";
-//			if (Browser.webkit) { // webkit transition /animation
-//				if (this.initPanelBlockWidth == null)
-//					this.initPanelBlockWidth = panelBlock.parentNode.offsetWidth;
-//				panelBlock.style.width = (panelBlock.parentNode.offsetWidth + "px");
-//			}
-
 			if (cpDiv)
 				cpDiv.style.display = "none";
 			else
@@ -1423,9 +1421,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 					
 			if (cpTab)
 				cpTab.style.display = "none";
-
-		//	if (Browser.webkit)
-		//		panelBlock.style.width = (panelBlock.parentNode.clientWidth - 10 + "px");	
 		}
 		else {
 			if (cpDiv)
@@ -1435,9 +1430,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 					
 			if (cpTab)
 				cpTab.style.display = "";
-			
-//			if (Browser.webkit)	
-//				panelBlock.style.width = this.initPanelBlockWidth + "px";//(panelBlock.parentNode.clientWidth + "px"); //"100%";
 		}
 	}
 	
