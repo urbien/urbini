@@ -1251,6 +1251,7 @@ function getTextContent(elm) {
   return text;
 }
 
+// Note: Chrome 17 was buggy (?!)
 function getElementStyle(elem) {
 	if(typeof elem == 'string')
 	  elem = document.getElementById(elem);
@@ -1929,6 +1930,8 @@ function removeClassName(elem, className) {
 	elem.className = elem.className.replace(regexp, "").trim();
 }
 function isVisible(elem) {
+	if (elem.clientWidth == 0)
+	  return false;
 	var stl = getElementStyle(elem);
 	return stl.display != 'none' && stl.visibility != 'hidden';
 }
