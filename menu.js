@@ -13555,8 +13555,9 @@ var LinkProcessor = {
 //    var uri = 'v.html?uri=sql/www.hudsonfog.com/voc/model/portal/LinkOut%3FtargetUrl%3D' + encodeURIComponent(href) + '%26' + encodeURIComponent(rUri.substring(idx + 1));
     href = href.replace('%5B', '[');
     href = href.replace('%5D', ']');
-//    alert(href);    
     href = encodeURI(href);
+    href = href.replace('#', '%23');
+//    alert(href);    
     href = href.replace(/=/g, '%3D');
     href = href.replace(/\$/g, '%24');
     href = href.replace(/&/g, '%26');
