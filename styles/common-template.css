@@ -532,6 +532,7 @@ tr.prTitle {
 }
 
 .title {  font-size: 18px; font-style: normal; font-weight: bold;}
+
 /* paging */
 .paging { font-size: 18px; font-style: normal; font-weight: bold; vertical-align: top;}
 .prevNext {padding-bottom:2px; padding-right:2px; padding-left:2px;}
@@ -773,6 +774,7 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 /* Chrome: prevent page break on too long links; 'rop1' == 'rop_only' ? */
 .rop1 #div_Activity div, .rop1 #div_Info div { max-width: 725px; word-wrap: break-word; }
 .rop #div_Activity div, .rop #div_Info div { max-width: 490px; word-wrap: break-word; }
+#div_Activity {background: #f7f5f7;}
 
 #siteResourceList .rop {
   border:solid &[PrimaryColor_1]; 1px; 
@@ -898,8 +900,10 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .menuLine A:active {color: &[SecondaryColorA_1];; background-color: &[SecondaryColorA_3]; }
 
 .propertySheet {border:solid &[PrimaryColor_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
-#title H1 {margin: 0; padding-top: 7px; padding-bottom: 7px;}
-#title { padding-bottom: 7px; }
+#title H1, #one H1 {margin: 0; padding-top: 7px; padding-bottom: 7px;}
+#title  { padding-bottom: 7px; }
+#one { padding-bottom: 7px; padding-left: 7px;}
+#one { background: #f7f5f7; }
 
 table.fbConnect {width:90%; border:solid &[SecondaryColorA_5]; 1px; margin-left:10px; margin-right:10px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
 .fbRegHeader { padding: 15px; }
@@ -2433,11 +2437,13 @@ td #corePageContent { min-height: 600px;}
 --------------------------------------------------------------------------------------- */
 .nab { width: 192px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; box-shadow: 0 1px 3px rgba(34,25,25,0.4); -moz-box-shadow: 0 1px 3px rgba(34,25,25,0.4); -webkit-box-shadow: 0 1px 3px rgba(34,25,25,0.4);}
 .nab .anab img {width: 192px;}
+#resourceList .grid .renab { font-size: bold; color: #98c165;}
+.nab .renab img {width: 12px; height: 12px; }
 #resourceList .nab td, #siteResourceList #front .nab .label {font-size: 11px;}
 #resourceList .nab .action, #div_Activity .nab .action {color: #98c165; font-weight:bold;} 
 
-.pList {padding-top:15px;padding-left:15px; background: #eaeaea;}
-.aList {padding-top:15px;}
+.pList {padding-top:15px;padding-left:15px; background: #f7f5f7;}
+.aList {padding-top:15px; background: #f7f5f7;}
 #resourceList .nab .pLink {color: #757575;}
 /* BOARD CELL
 --------------------------------------------------------------------------------------- */
@@ -2451,14 +2457,62 @@ td #corePageContent { min-height: 600px;}
 /*.nabBoard .div div {overflow: hidden; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
 /*.nabBoard .link div { width: 61px; height: 61px; overflow: hidden; float:left; margin:0px 4px 4px 0px;}*/
 
-.Button {position: relative; display: inline-block; padding: .45em .825em .45em; text-align: center; line-height: 1em; border: 1px solid transparent; border-radius: .3em; -moz-border-radius: .3em; -webkit-border-radius: .3em; -moz-transition-property: color, -moz-box-shadow, text-shadow; -moz-transition-duration: .05s; -moz-transition-timing-function: ease-in-out; -webkit-transition-property: color, -webkit-box-shadow, text-shadow; -webkit-transition-duration: .05s; -webkit-transition-timing-function: ease-in-out; box-shadow: 0 1px rgba(255,255,255,0.8), inset 0 1px rgba(255,255,255,0.35); -moz-box-shadow: 0 1px rgba(255,255,255,0.8), inset 0 1px rgba(255,255,255,0.35); -webkit-box-shadow: 0 1px rgba(255,255,255,0.8), inset 0 1px rgba(255,255,255,0.35);}
-.Button strong {position: relative; z-index: 2;}
+.Buttn {background-color: &[PrimaryColor_4];;color: &[PrimaryColor_3];;
+  border: 0; 
+  cursor: pointer; 
+  font-style: normal; 
+  font-weight: bold; 
+  line-height: 30px;
+  position: relative; 
+  text-align: center;
+  text-decoration: none; 
+  
+  /* vertical margin is the opposite of button's awesomeness */
+  margin-top: 0;
+  margin-bottom: 0;
+  
+  /* not all browser support these, but who cares? */
 
-.Button span {position: absolute; z-index: 1; top: -1px; right: -1px; bottom: -1px; left: -1px; display: block; border: 1px solid; opacity: 1; border-radius: .3em; -moz-border-radius: .3em; -webkit-border-radius: .3em; box-shadow: inset 0 1px rgba(255,255,255,0.35); -moz-box-shadow: inset 0 1px rgba(255,255,255,0.35); -webkit-box-shadow: inset 0 1px rgba(255,255,255,0.35); -moz-transition-property: opacity; -moz-transition-duration: 0.5s; -moz-transition-timing-function: ease-in-out; -webkit-transition-property: opacity; -webkit-transition-duration: 0.5s; -webkit-transition-timing-function: ease-in-out;}
-.nabBoard .followBoard {padding: 0 15px 11px; text-align: center;}
-.nabBoard .followBoard .Button {display: block; padding: 0.5em 0.825em;}
+  /* text-shadow:0 0 2px rgba(0, 0, 0, 0.4); */
+
+          border-radius: 5px; 
+     -moz-border-radius: 5px; 
+  -webkit-border-radius: 5px; 
+          box-shadow: 0 1px 3px rgba(0,0,0,0.5); 
+     -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.5); 
+  -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+   
+  background-color: &[PrimaryColor_1];;
+  background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_1];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_1];));
+  background-image: -o-linear-gradient(&[PrimaryColor_4];, &[PrimaryColor_1];);
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];)";
+
+  border: 1px solid &[PrimaryColor_1]; !important;
+  border: 1px solid &[ToolbarColor];;
+  
+  /* cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ */
+  display: -moz-inline-stack;
+  display: inline-block;
+  vertical-align: middle;
+  *display: inline;
+  position: relative;
+  
+  /* IE luv */
+  zoom: 1;
+  
+  /*disable text selection (Firefox only)*/
+  -moz-user-select: none;
+}
+.Buttn {position: relative; display: inline-block; padding: .45em .825em .45em; text-align: center; line-height: 1em; border: 1px solid transparent; border-radius: .3em; -moz-border-radius: .3em; -webkit-border-radius: .3em; -moz-transition-property: color, -moz-box-shadow, text-shadow; -moz-transition-duration: .05s; -moz-transition-timing-function: ease-in-out; -webkit-transition-property: color, -webkit-box-shadow, text-shadow; -webkit-transition-duration: .05s; -webkit-transition-timing-function: ease-in-out; box-shadow: 0 1px rgba(255,255,255,0.8), inset 0 1px rgba(255,255,255,0.35); -moz-box-shadow: 0 1px rgba(255,255,255,0.8), inset 0 1px rgba(255,255,255,0.35); -webkit-box-shadow: 0 1px rgba(255,255,255,0.8), inset 0 1px rgba(255,255,255,0.35);}
+.Buttn strong {position: relative; z-index: 2;}
+
+.Buttn span {position: absolute; z-index: 1; top: -1px; right: -1px; bottom: -1px; left: -1px; display: block; border: 1px solid; opacity: 1; border-radius: .3em; -moz-border-radius: .3em; -webkit-border-radius: .3em; box-shadow: inset 0 1px rgba(255,255,255,0.35); -moz-box-shadow: inset 0 1px rgba(255,255,255,0.35); -webkit-box-shadow: inset 0 1px rgba(255,255,255,0.35); -moz-transition-property: opacity; -moz-transition-duration: 0.5s; -moz-transition-timing-function: ease-in-out; -webkit-transition-property: opacity; -webkit-transition-duration: 0.5s; -webkit-transition-timing-function: ease-in-out;}
+.nabBoard .editBoard {padding: 0 15px 11px; text-align: center;}
+.nabBoard .editBoard .Buttn {display: block; padding: 0.5em 0.825em;}
 
 .Button13,
 .Button13 span {font-size: 13px; border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; color: #b0b0b0}
-.followBoard a {font-size: 13px;} 
+.editBoard a {font-size: 13px;} 
 .WhiteButton {color: #524d4d; text-shadow: 0 1px rgba(255,255,255,0.9);}
