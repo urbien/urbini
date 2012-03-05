@@ -190,7 +190,9 @@
             <li><text text="Print this coupon" /></li>
             <li><text text="Hand this coupon when paying for the service and save the check" /></li>
             <li><text text="Go to your profile page then click on 'My coupons', find the right coupon and click button 'Check In'"/></li>
+            <where value="coupon.rewardForCheckIn != null">
             <li><text text="As soon as vendor will mark coupon as redeemed you will receive the reward of" /> <property name="coupon.rewardForCheckIn" noLabel="y"/></li>
+            </where>
             </ul>    
           </where>   
         </where>
