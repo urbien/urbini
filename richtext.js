@@ -1411,12 +1411,15 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		
 		if (cpDiv != null && cpTab == null && dashboardLine.cells.length > 1)
 			cpTab = getLastChild(dashboardLine); // there is empty cell taken place like cpTab
+    
+		var parClN = editTab.parentNode.className;
+		var isRopOnly = parClN && parClN.indexOf("rop_only") != -1;
 
 		if (toEnlarge) {
 			panelBlock.parentNode.style.textAlign = "left";
 			if (cpDiv)
 				cpDiv.style.display = "none";
-			else
+			else if (isRopOnly)
 				editTab.style.maxWidth = "none";
 					
 			if (cpTab)
@@ -1425,8 +1428,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		else {
 			if (cpDiv)
 				cpDiv.style.display = "";
-			else
-				editTab.style.maxWidth = "520px"; // like initially in CSS
+			else if (isRopOnly)
+				editTab.style.maxWidth = "520px"; // in CSS for "rop_only"
 					
 			if (cpTab)
 				cpTab.style.display = "";
