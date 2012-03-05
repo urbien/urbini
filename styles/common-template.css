@@ -900,10 +900,10 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .menuLine A:active {color: &[SecondaryColorA_1];; background-color: &[SecondaryColorA_3]; }
 
 .propertySheet {border:solid &[PrimaryColor_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
-#title H1, #one H1 {margin: 0; padding-top: 7px; padding-bottom: 7px;}
+#title H1, #view H1 {margin: 0; padding-top: 7px; padding-bottom: 7px;}
 #title  { padding-bottom: 7px; }
-#one { padding-bottom: 7px; padding-left: 7px;}
-#one { background: #f7f5f7; }
+#view { padding-bottom: 7px; padding-left: 7px;}
+#view { background: #f7f5f7; }
 
 table.fbConnect {width:90%; border:solid &[SecondaryColorA_5]; 1px; margin-left:10px; margin-right:10px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
 .fbRegHeader { padding: 15px; }
