@@ -12549,7 +12549,7 @@ var CheckButtonMgr = {
         isSubstituted = true; // this element was already subsituted in JAVA or JS
 
       // no need to process hidden checkboxes that were not substituted on server-side
-      if (stlIdx == 0 && !isSubstituted && !isVisible(inputs[i]))
+			if (stlIdx == 0 && !isSubstituted && inputs[i].className == "hdn")
         continue;
 
       // native element was substituted in JAVA or JS
