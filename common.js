@@ -1930,7 +1930,7 @@ function removeClassName(elem, className) {
 	elem.className = elem.className.replace(regexp, "").trim();
 }
 function isVisible(elem) {
-	if (elem.clientWidth == 0)
+	if (elem.offsetWidth == 0)
 	  return false;
 	var stl = getElementStyle(elem);
 	return stl.display != 'none' && stl.visibility != 'hidden';
