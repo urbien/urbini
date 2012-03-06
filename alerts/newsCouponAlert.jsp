@@ -25,6 +25,7 @@
     <text text="Delivered by"/> <hostSignature address="y"/>
   </td>
 </tr>
+</table>
     <!-- /span -->
     <!--setCityScape /-->
 </div>
