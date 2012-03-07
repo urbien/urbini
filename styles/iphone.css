@@ -7,27 +7,28 @@ body {
 }
 
 /**************************************
-body {
-  -webkit-text-size-adjust:80%;
-  -webkit-column-width: 7em;
-  -webkit-column-gap: 1em;
-}
-
-.menu {
-  background: #000000;
-  color: lightGrey;
-}
-
-img {
-  width: 75px;
-  height: 75px;
-}
-
-a:hover img {
-  width: 140px;
-  height: 140px;
-}
+                    body {
+                      -webkit-text-size-adjust:80%;
+                      -webkit-column-width: 7em;
+                      -webkit-column-gap: 1em;
+                    }
+                    
+                    .menu {
+                      background: #000000;
+                      color: lightGrey;
+                    }
+                    
+                    img {
+                      width: 75px;
+                      height: 75px;
+                    }
+                    
+                    a:hover img {
+                      width: 140px;
+                      height: 140px;
+                    }
 ***********************************************/
+#wrapperM, #mainskin { width: 100%; } 
 
 .mobile_page { position: absolute; width: 100%; }
 
