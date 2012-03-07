@@ -661,8 +661,18 @@ tr.ftSearch td { padding: 0px; }
 	-webkit-border-radius: 15px 0 0 15px;
 	margin-left:5px;
 }
-.ftSearch .action_btn a { display: block; }
-.ftSearch .action_btn img { width: 22px; height: 22px; margin: 4px 0 0 10px; }
+.ftSearch .action_btn a, .ftSearch .action_btn1 a  { display: block; }
+.ftSearch .action_btn img, .ftSearch .action_btn1 img  { width: 22px; height: 22px; margin: 4px 0 0 10px; }
+
+
+.ftSearch .action_btn1 {
+  width: 40px;
+  border-radius: 15px 0 0 15px;
+  -moz-border-radius: 15px 0 0 15px;
+  -webkit-border-radius: 15px 0 0 15px;
+  margin-left:-5px;
+}
+
 
 .desktop_search .right {
 	float: left;
@@ -673,7 +683,7 @@ tr.ftSearch td { padding: 0px; }
 	cursor: pointer;
 }
 
-.desktop_search .right, .ftSearch .action_btn {
+.desktop_search .right, .ftSearch .action_btn, .ftSearch .action_btn1 {
 	height: 31px;
 	box-shadow:  1px 1px 5px rgba(0, 0, 0, 0.3);
 	-moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
@@ -1591,12 +1601,15 @@ TD.closePopup {
   color: darkblue;
   padding: 0px;
   background: &[FTS];;
+/*
   height: 3em;
   border-top: solid #808080 1px;
   border-bottom: solid #808080 1px
+*/
 }
 
 .fts a { color: &[Label];; text-decoration: underline; }
+.fts .near a { text-decoration: none; }
 .rl {
   white-space: nowrap;
   vertical-align: middle;
