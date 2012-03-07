@@ -3458,7 +3458,7 @@ var ListBoxesHandler = {
 //      if ($t.optionsPanel.clientWidth > $t.panelBlock.clientWidth)
 //        $t.panelBlock.style.width = $t.optionsPanel.clientWidth;
 //    }
-    
+   
     // slide forward
     var curPanel = $t.getCurrentPanelDiv();
     if (curPanel && curPanel.className != panel.className) {
@@ -3527,7 +3527,7 @@ var ListBoxesHandler = {
   // helps to fit options vertically on open and on scroll
   fitOptionsYPosition : function(panel) {
     var $t = ListBoxesHandler;
-    
+
     if ($t._isFormPanelHidden) 
       return;
 
@@ -3542,11 +3542,11 @@ var ListBoxesHandler = {
     var curTop = parseInt(panel.style.marginTop);
     
     if (onOpen == true) 
-      panel.style.marginTop = topOffset;
+      panel.style.marginTop = topOffset + "px";
     else if (curTop > topOffset + 25) {
       // scroll up while options opened; (allows 25 offset)
       if (setTransformProperty(panel, "translate(0px, " + (topOffset - curTop) + "px)") == false)
-        panel.style.marginTop = topOffset;
+        panel.style.marginTop = topOffset + "px";
     } 
   },
   
@@ -4125,7 +4125,7 @@ var ListBoxesHandler = {
     
     FieldsWithEmptyValue.setEmpty(this.textEntry);
     FieldsWithEmptyValue.setEmpty(this.classifierTextEntry);
-    
+   
     TouchDlgUtil.bleachBlueRow();
     $t._showInvisibleParams();
 
@@ -4141,9 +4141,9 @@ var ListBoxesHandler = {
     var tbl = parentDiv.getElementsByTagName("table")[0];
  
     var noMatches = ListBoxesHandler.filterItems(tbl, "menuItem", typedText);
-  
+
     var noMatchesDiv = getChildByClassName(this.optionsPanel, "no_matches");
-    if (noMatches) {
+    if (noMatches && typedText) {
       noMatchesDiv.innerHTML = "&[no matches for]; \"" + typedText + "\"";
       noMatchesDiv.style.display = "block";
     }
@@ -4914,7 +4914,7 @@ var Filter = {
     
     var formPanel = getAncestorByClassName(paramsTable, "form_panel");
     var noMatchesDiv = getChildByClassName(formPanel, "no_matches");
-    if (noMatches) {
+    if (noMatches && typedText) {
       noMatchesDiv.innerHTML = "&[no matches for]; \"" + typedText + "\"";
       noMatchesDiv.style.display = "block";
     }
@@ -5130,7 +5130,7 @@ var DataEntry = {
       return;
     }
     div.style.visibility = "hidden";
-		
+    
     // onDataError happens on mkResource
     if ($t.onDataError || $t.isMkResource())
       $t.doStateOnMkResource(div, true);
@@ -5160,14 +5160,14 @@ var DataEntry = {
 
     BacklinkImagesSlideshow.stopAutomaticSiding(); // possible it runs
 
-		if (getUrlParam($t.currentUrl, "-onPage") == "y") {
-			var parent = document.getElementById("div_Edit");
-			if (parent)
-			 parent.appendChild(div);
-		}
+    if (getUrlParam($t.currentUrl, "-onPage") == "y") {
+      var parent = document.getElementById("div_Edit");
+      if (parent)
+       parent.appendChild(div);
+    }
     setDivVisible(event, div, null, $t.hotspot, 5, 5);
   
-	  $t.initDataStr = $t._getFormDataStr(div, true);
+    $t.initDataStr = $t._getFormDataStr(div, true);
     var key = $t._getKey($t.currentUrl);
     $t.dataEntryArr[key] = div;
   },
@@ -5272,7 +5272,7 @@ var DataEntry = {
     }
 
     var noMatchesDiv = getChildByClassName(formPanel, "no_matches");
-    if (noMatches) {
+    if (noMatches && typedText) {
       noMatchesDiv.innerHTML = "&[no matches for]; \"" + typedText + "\"";
       noMatchesDiv.style.display = "block";
     }
@@ -5624,7 +5624,7 @@ var PlainDlg = {
     this.dlgDiv.id = this.ID;
     this.dlgDiv.className = "panel_block";
     this.dlgDiv.style.visibility = "hidden";
-    
+   
     if (Browser.ie)
       this.dlgDiv.style.width = 200;
       
@@ -5711,7 +5711,7 @@ var TouchDlgUtil = {
   
    // hide selector / iphone_field if "form" contains less than 5 parameters
   _hideSelectorSwitcherInSmallDialog : function(div) {
-		var switcher = getChildByClassName(div, 'selector_switcher'); // gui wrapper of item_selector
+    var switcher = getChildByClassName(div, 'selector_switcher'); // gui wrapper of item_selector
     if (!switcher)
       return;
         
@@ -5749,9 +5749,8 @@ var TouchDlgUtil = {
     this.curDlgDiv = dlgDiv;
     if (this.focusHolder == null) {
       this.focusHolder = document.createElement("input");
-      this.focusHolder.className = "shrunk_field";
+      this.focusHolder.className = "enter_field";
       this.focusHolder.setAttribute("readonly", "true");
-      this.focusHolder.style.top = 0; // set focus holder at bottom of a dialog
     }
     // autocomplete gets events from FTS field; others required "focusHolder"
     if (dlgDiv.className != "dsk_auto_complete") {
@@ -5860,7 +5859,6 @@ var TouchDlgUtil = {
   
   onscroll : function() {
     var $t = TouchDlgUtil;
-    
     if ($t.curDlgDiv == null || $t.isMenuPopupOpened())
       return;
     // only for dialogs with opened "secondary" panel 
@@ -6274,10 +6272,6 @@ var TouchDlgUtil = {
   },
   
   _setFocusInFocusHolder : function() {
-    // IE does not support "fixed position. So move focusHolder manually.
-    if (!this.focusHolder)
-      return;
-    this.focusHolder.style.top = getScrollXY()[1]; /////// - findPosY(curDlgDiv);
     this.focusHolder.focus();   
   },
   
@@ -6297,7 +6291,7 @@ var TouchDlgUtil = {
   
   isElementFirstParameter : function(elem) {
     var paramTr = getAncestorByClassName(elem, "param_tr");
-    return comparePosition(paramTr, getFirstChild(paramTr.parentNode)) == 0;
+    return comparePosition(paramTr, getChildByClassName(this.curDlgDiv, "param_tr")) == 0;
   },
   showPageOverlay: function(dlg) {
     if (!this.pageOverlay) {
@@ -6305,7 +6299,6 @@ var TouchDlgUtil = {
       this.pageOverlay.className = "page_overlay";
       document.body.appendChild(this.pageOverlay);
     }
-    this.pageOverlay.style.height = Math.max(document.body.scrollHeight, dlg.clientHeight + 5);
     this.pageOverlay.style.display = "block";
   },
   hidePageOverlay: function(){
@@ -7702,22 +7695,22 @@ function showTab(e, td, hideDivId, unhideDivId) {
       
       // div_Description occupies 100% that's why make its parent TD 100%
       // TODO: probably to redo Tabs and to put all divs in one container.
-      if (i == 0) {
-        var parentTd = getAncestorByTagName(div, "td");
-        var divDescription = getChildById(parentTd, "div_Description");
-        var hasDescription = (divDescription != null);
-        if (hasDescription && hideDivId.indexOf("div_Description") == -1)  
-          parentTd.style.width = "100%";
-        else { 
-          var hasEdit = (getChildById(parentTd, "div_Edit") != null);
-          if (hasEdit && hideDivId.indexOf("div_Edit") == -1) 
-            parentTd.style.width = "50%";
-          else if (hideDivId.indexOf("div_cp") == -1) 
-            parentTd.style.width = "50%";
-          else 
-            parentTd.style.width = "100%";
-        }
-      }
+//      if (i == 0) {
+//        var parentTd = getAncestorByTagName(div, "td");
+//        var divDescription = getChildById(parentTd, "div_Description");
+//        var hasDescription = (divDescription != null);
+//        if (hasDescription && hideDivId.indexOf("div_Description") == -1)  
+//          parentTd.style.width = "100%";
+//        else { 
+//          var hasEdit = (getChildById(parentTd, "div_Edit") != null);
+//          if (hasEdit && hideDivId.indexOf("div_Edit") == -1) 
+//            parentTd.style.width = "";
+//          else if (hideDivId.indexOf("div_cp") == -1) 
+//            parentTd.style.width = "50%";
+//          else 
+//            parentTd.style.width = "100%";
+//        }
+//      }
 
       div.style.visibility = Popup.HIDDEN;
       div.style.display = "none";
@@ -8204,8 +8197,8 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   if (!div.parentNode)
     document.body.appendChild(div);
 
-	if (Browser.mobile) {
-  	MobilePageAnimation.showDialog(div);
+  if (Browser.mobile) {
+    MobilePageAnimation.showDialog(div);
     return;
   }
   
@@ -8239,13 +8232,9 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   
   // MODAL dialog
   if (isModal) {
-    if (Browser.ie) 
-      document.body.style.overflow = 'hidden';
-    else {
-      div.style.position = "fixed";
-      scrollX = 0;
-      scrollY = 0;
-    }
+    div.style.position = "fixed";
+    scrollX = 0;
+    scrollY = 0;
     setShadow(div, "none");
     TouchDlgUtil.showPageOverlay(div);
   }
@@ -8461,14 +8450,14 @@ function _fadeInDialog(div) {
 
 function setDivInvisible(div, iframe) {
   if (Browser.mobile) {
-	  MobilePageAnimation.hideDialog(div);
+    MobilePageAnimation.hideDialog(div);
     return;
   }
   
-	if (isElemOfClass(div, "panel_block")) {
+  if (isElemOfClass(div, "panel_block")) {
     div.style.opacity = 0;
   }
-	
+  
   // release a popup (menu) belongs to the hidding div
   if(typeof PopupHandler != 'undefined')
     PopupHandler.checkHidingDiv(div);
@@ -9478,14 +9467,14 @@ var DragEngine = {
 
     if(thisObj.dragapproved == 1){
       if(typeof allowToMove == 'undefined' || allowToMove[0] == true)
-        thisObj.dragBlock.style.left = x;
+        thisObj.dragBlock.style.left = x + "px";
       if(typeof allowToMove == 'undefined' || allowToMove[1] == true)
-        thisObj.dragBlock.style.top  = y;
+        thisObj.dragBlock.style.top  = y + "px";
 
       if(thisObj.dialogIframe != null && thisObj.dragBlock.id == 'pane2' &&
            thisObj.dialogIframe.style.visibility == 'visible') {
-        thisObj.dialogIframe.style.left = x;
-        thisObj.dialogIframe.style.top = y;
+        thisObj.dialogIframe.style.left = x + "px";
+        thisObj.dialogIframe.style.top = y + "px";
       }
 
       return false;
@@ -12882,7 +12871,7 @@ function changeCss(cssTitle, file) {
 // FTS improvements
 function showHide(id, event) {
   var tt = document.getElementById(id);
-	if (getFirstChild(tt) == null) // not to show empty popup
+  if (getFirstChild(tt) == null) // not to show empty popup
     return;
   if (tt.className  &&  tt.className == 'hdn')
     tt.className = '';
@@ -13901,7 +13890,7 @@ function initSocialLikes(event) {
   if (likeTbl) {
     var discountLayer = getChildById(likeContainer.parentNode, "discount");
     if (discountLayer)
-      likeTbl.style.top = discountLayer.offsetHeight;
+      likeTbl.style.top = discountLayer.offsetHeight + "px";
     likeTbl.style.visibility = "visible";
 
     setTransitionProperty(likeTbl, "opacity 1s ease-in-out");
