@@ -252,8 +252,8 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
 	this.create = function(iconWidth) { // create Button
 		this.div = document.createElement('div');
 		this.div.className = "tb_btn";
-		this.div.style.left = this.left;
-		this.div.style.top = this.top;
+		this.div.style.left = this.left + "px";
+		this.div.style.top = this.top  + "px";
 		this.div.style.padding = this.toolbar.BTN_PADDING;
 		
 		var innerHTML = '<img src = "' + icon + '" border="0" tooltip="' + this.title
@@ -345,16 +345,16 @@ function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, to
     if(stl.borderWidth.indexOf("1px") != -1)
       return;
 		stl.borderWidth = "1px";
-		stl.left = parseInt(i_am.div.style.left, 10) - 1;
-		stl.top = parseInt(i_am.div.style.top, 10) - 1;
+		stl.left = (parseInt(i_am.div.style.left, 10) - 1) + "px";
+		stl.top = (parseInt(i_am.div.style.top, 10) - 1) + "px";
   }
   this._removeBorder = function() {
     var stl = i_am.div.style
  		if(stl.borderWidth.indexOf("0px") != -1)
  		  return;
  		stl.borderWidth = "0px";
-		stl.left = parseInt(i_am.div.style.left, 10) + 1;
-		stl.top = parseInt(i_am.div.style.top, 10) + 1;
+		stl.left = (parseInt(i_am.div.style.left, 10) + 1) + "px";
+		stl.top = (parseInt(i_am.div.style.top, 10) + 1) + "px";
   }
 	// constructor's body
 	this.create(iconWidth);
@@ -1114,12 +1114,10 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 			return this.height;
 	}
 	this.show = function() {
-		this.div.style.visibility = "visible";
-		//this.titlestrip.show();
+		this.div.style.display = "block";
 	}
 	this.hide = function() {
-		this.div.style.visibility = "hidden";
-		//this.titlestrip.hide();
+		this.div.style.display = "none";
 	}
 	this.isVisible = function() {
 		return isVisible(this.div);
@@ -1311,8 +1309,8 @@ var PopupHandler = {
 				this.y = pos.top - div.clientHeight - OFFSET_Y; // flip if need
 		}
 		
-	  div.style.left = this.x;
-	  div.style.top = this.y;
+	  div.style.left = this.x + "px";
+	  div.style.top = this.y + "px";
 	},
 	
 	// not to hide the overflow popup
