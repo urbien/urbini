@@ -1,5 +1,5 @@
 
-<div id="requiredHeader">
+<div id="requiredHeader" style="height: 0px;">
   <robotDetector/>
 	<tooltip/>
 	<UtilFrames/>
