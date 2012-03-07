@@ -1,18 +1,7 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns:og="http://opengraphprotocol.org/schema/" xmlns:fb="http://www.facebook.com/2008/fbml" xmlns:lablz_china="http://mark.obval.com/obval/ns#">
   <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# urbienne: http://ogp.me/ns/fb/urbienne#">
     <include name="commonHead.jsp" />
-    <style> 
-				body { 
-				 text-align:center; /* for IE */
-				}
-				
-				div#wrapper { 
-				  text-align:left; /* reset text alignment */ 
-				  max-width:960px; /* or a percentage, or whatever */ 
-				  margin:0 auto; /* for the rest */ 
-				  width: expression(document.body.clientWidth > 962? "960px" : "auto");  /* for IE */
-        }
-    </style>    
   </head>
   <body id="body">
   <include name="requiredHeader.jsp"/>
