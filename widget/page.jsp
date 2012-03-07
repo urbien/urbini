@@ -3,6 +3,9 @@ This JSP is full html page and contains 1st "mobile" page
 for further "mobile" pages m/page.jsp is used.
 However this JSP is used for pages containig errors message too (?)
 -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 <html>
   <head>
     <include name="commonHead.jsp"/>
