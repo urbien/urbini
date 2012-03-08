@@ -658,7 +658,6 @@ tr.ftSearch td { padding: 0px; }
     font: bold 16px Helvetica;
     border-width: 0px;
     padding: 0px 0px 0px 0px;
-    margin-top: 6px !important;
     margin-top: 4px;
  }
  
@@ -675,10 +674,10 @@ tr.ftSearch td { padding: 0px; }
 
 .ftSearch .action_btn1 {
   width: 40px;
+  margin-left: 5px;
   border-radius: 15px 0 0 15px;
   -moz-border-radius: 15px 0 0 15px;
   -webkit-border-radius: 15px 0 0 15px;
-  margin-left:-5px;
 }
 
 
@@ -2081,7 +2080,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 #fts_filter .iphone_field input { width: 120px; }
 .clear_cross { position: relative; cursor: pointer; visibility: hidden; }
 .iphone_field .clear_cross { top: 5px; left: -2px; }
-.desktop_search .clear_cross { top: 6px; margin: 0 1px; }
+.desktop_search .clear_cross { top: 5px; margin: 0 1px; }
 
 .iphone_field .magnify_glass_small { position: relative; top: 3px; cursor: pointer; }
 .iphone_search { -moz-border-radius: 50%; -webkit-border-radius: 50%; } /* used for mobile only */
