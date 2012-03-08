@@ -230,8 +230,7 @@ input[type=button], input[type=submit], .button, .tags .item {
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];)";
 
-  border: 1px solid &[PrimaryColor_1]; !important;
-  border: 1px solid &[ToolbarColor];;
+  border: 1px solid &[PrimaryColor_1];;
   
   /* cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ */
   display: -moz-inline-stack;
@@ -410,12 +409,11 @@ td.textCell {
 
 /* Gallery */
 .galleryItem_container { position: relative; margin: 10px; display: inline-block; /* IE hack-> */ zoom: 1; *display:inline;  }
-.galleryItem_note { position: absolute; bottom: 0px !important; bottom: 11px; left: 0px; font-size: 13px;
+.galleryItem_note { position: absolute; bottom: 0px; left: 0px; font-size: 13px;
     background: rgba(0, 0, 0, 0.4); #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000);  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000)";
     color: #ffffff; text-shadow: 1px 2px 2px #000000; pointer-events: none;
     padding: 1% 2%;
-    width: 96% !important;
-    width: 200px; overflow: hidden; /* IE */
+    width: 96%;
     cursor: pointer;
 }
 /* Chrome renders bad shadow here */
@@ -653,12 +651,11 @@ tr.ftSearch td { padding: 0px; }
 /*.ftsq {  color: &[SecondaryColorA_3];; }*/
 .ftsq {  color: &[PrimaryColor_4_text];; }
 .desktop_search input { 
-    width: 185px !important;
-    width: 175px;
+    width: 185px;
     font: bold 16px Helvetica;
     border-width: 0px;
     padding: 0px 0px 0px 0px;
-    margin-top: 4px;
+    margin-top: 5px;
  }
  
 .ftSearch .action_btn {
@@ -1696,7 +1693,7 @@ table.printFB {
 .fbUser div { position: relative; }
 .fbUser .icon16 { position: absolute; bottom: 0; right: 0; }
 #loginForm td { font-weight: bold; }
-.redeem { width: auto !important; width: 100px; background-color: #ffffff; color: #2B0764; border: 1px solid #cccccc; padding: 5 5 5 5; }
+.redeem { width: auto; background-color: #ffffff; color: #2B0764; border: 1px solid #cccccc; padding: 5 5 5 5; }
 
 .rte { margin-bottom: 7px; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; padding:0; width: 100%; height: 107px;  }
 .rte_body { color: &[PrimaryColor_4_text];; font-family :Helvetica, arial; fontSize : 16px; margin:5; }
@@ -1759,7 +1756,7 @@ div .panel_block, td .panel_block {
   transition: width 0.4s ease-in-out;
 }
 
-div .standalone_dlg, td .standalone_dlg { width: 520px !important; width: 600px; margin-top: 4px;}
+div .standalone_dlg, td .standalone_dlg { width: 520px; margin-top: 4px;}
 
 div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
@@ -1814,7 +1811,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
  
 /*.panel_block .header td { width: 100%; }*/ 
-#siteResourceList .panel_block .header #text_entry { width: 205px !important; width: 185px; }
+#siteResourceList .panel_block .header #text_entry { width: 205px; }
 .panel_block .header #item_selector { /*width: 100%;*/ }
 .panel_block .header .wide_cell { width: 100%; text-align: center; }
 .panel_block #lists_container { padding: 10px; width: 100%; color: &[Alternative_A];;}
@@ -1894,7 +1891,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 
 .rounded_rect_tbl .input, #register .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input, .false_textarea, .false_empty_field { 
   margin: 0px; padding: 1px; min-height: 22px;
-  color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 250px !important; width: auto; /*100%*/; height: auto;
+  color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 250px; height: auto;
   font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px;
 }
 
@@ -1999,7 +1996,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 
 /** Touch UI buttons **/
 .panel_block .toggle_btn { float: right; text-align: right; }
-.toggle_btn  { height:32px; overflow:hidden; width: 72px !important; width: 82px; padding: 0px 3px; }
+.toggle_btn  { height:32px; overflow:hidden; width: 72px; padding: 0px 3px; }
 .toggle_btn div::selection, .toggle_btn div::-moz-selection { background: transparent; }
 .toggle_btn .toggle_btn_tray { width:300px; cursor: pointer; margin-left: 0px; }
 .toggle_btn .toggle_btn_tray div { float: left; }
@@ -2028,7 +2025,6 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
   -moz-border-radius: 28px 28px 28px 28px;
   -webkit-border-radius: 28px 28px 28px 28px;
   
-  background-color: &[SecondaryColorA_5]; !important;
   background-color: &[SecondaryColorA_5];;
   
   box-shadow: 0px 0px 15px &[ToolbarColor]; inset; /* for Opera - no gradient there */
@@ -2070,8 +2066,8 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
   -webkit-border-radius:5px 5px 5px 5px;
   box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
   -moz-box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
-  background: rgba(255, 255, 255, 0.9) !important;
   background: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
   cursor: auto;
   white-space: nowrap;
   font-size: 12px;
@@ -2354,9 +2350,9 @@ td #corePageContent { min-height: 600px;}
 
 #intentMessage { min-height:600px; border-right:solid &[PrimaryColor_5]; 1px;} 
 
-#ropLeftMobile {min-height: 600px; width: 1% !important; width: 200px; min-width: 200px; padding-top: 10px; vertical-align: top; text-align: center}
-#ropLeft {border-right:solid &[PrimaryColor_5]; 1px;  min-height: 600px; width: 1% !important; width: 200px; min-width: 200px; padding-top: 10px; vertical-align: top; text-align: center}
-#ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 100%; line-height: 25px; height: auto !important; height: 14px; }
+#ropLeftMobile {min-height: 600px; width: 1%; min-width: 200px; padding-top: 10px; vertical-align: top; text-align: center}
+#ropLeft {border-right:solid &[PrimaryColor_5]; 1px;  min-height: 600px; width: 1%; min-width: 200px; padding-top: 10px; vertical-align: top; text-align: center}
+#ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 100%; line-height: 25px; height: auto; }
 #ropRight {border-left:solid &[SecondaryColorA_5]; 1px;}
 #ropTop  {border-bottom:solid &[SecondaryColorA_5]; 1px; }
   
@@ -2500,8 +2496,7 @@ td #corePageContent { min-height: 600px;}
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];)";
 
-  border: 1px solid &[PrimaryColor_1]; !important;
-  border: 1px solid &[ToolbarColor];;
+  border: 1px solid &[PrimaryColor_1];;
   
   /* cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ */
   display: -moz-inline-stack;
