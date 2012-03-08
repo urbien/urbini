@@ -198,13 +198,13 @@
          <span class="nowrap"><text text="Act to" /></span> <a href="v.html?uri=sql/www.hudsonfog.com/voc/media/publishing/Article%3FarticleId%3D32155" style="color: #F55200;"><text text="gain reputation" /></a>!
        </td>
                <!--td align="right"><div class="conditions" onclick="showHide('rules', event);"><text text="Conditions!"/></div></td -->
-              <td align="right" id="details"><a  href="about:blank" class="coupon_buy conditions button_buy" style="align:right; color:#000000" onclick="showHide('rules', event);"><text text="Details!"/></a></td>
+              <td align="right" id="details"><!--a  href="about:blank" class="coupon_buy conditions button_buy" style="align:right; color:#000000" onclick="showHide('rules', event);"><text text="Details!"/></a--></td>
        
        </tr>
      </table>
    </div>
    </div>
-   <div id="rules" class="hdn">
+   <div id="rules"><!-- class="hdn" -->
     <div class="highlights">
       <h3 class="csp_33"><text text="Highlights"/></h3>
 			<div>
