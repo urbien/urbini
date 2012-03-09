@@ -7695,22 +7695,22 @@ function showTab(e, td, hideDivId, unhideDivId) {
       
       // div_Description occupies 100% that's why make its parent TD 100%
       // TODO: probably to redo Tabs and to put all divs in one container.
-//      if (i == 0) {
-//        var parentTd = getAncestorByTagName(div, "td");
-//        var divDescription = getChildById(parentTd, "div_Description");
-//        var hasDescription = (divDescription != null);
-//        if (hasDescription && hideDivId.indexOf("div_Description") == -1)  
-//          parentTd.style.width = "100%";
-//        else { 
-//          var hasEdit = (getChildById(parentTd, "div_Edit") != null);
-//          if (hasEdit && hideDivId.indexOf("div_Edit") == -1) 
-//            parentTd.style.width = "";
-//          else if (hideDivId.indexOf("div_cp") == -1) 
-//            parentTd.style.width = "50%";
-//          else 
-//            parentTd.style.width = "100%";
-//        }
-//      }
+	    if (i == 0) {
+        var parentTd = getAncestorByTagName(div, "td");
+        var divDescription = getChildById(parentTd, "div_Description");
+        var hasDescription = (divDescription != null);
+        if (hasDescription && hideDivId.indexOf("div_Description") == -1)  
+          parentTd.style.width = "100%";
+        else { 
+          var hasEdit = (getChildById(parentTd, "div_Edit") != null);
+          if (hasEdit && hideDivId.indexOf("div_Edit") == -1) 
+            parentTd.style.width = "";
+          else if (hideDivId.indexOf("div_cp") == -1) 
+            parentTd.style.width = "50%";
+          else 
+            parentTd.style.width = "100%";
+        }
+      }
 
       div.style.visibility = Popup.HIDDEN;
       div.style.display = "none";
