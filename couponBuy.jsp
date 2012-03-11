@@ -262,6 +262,4 @@
     }
   }
 </script>
-<div id='showTr'><text text="Show" /></div>
-<div id='hideTr'><text text="Hide" /></div>
 </div>
