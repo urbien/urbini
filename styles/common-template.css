@@ -442,7 +442,7 @@ td.textCell {
 }
 .likes_tbl {  position: absolute; opacity: 0; visibility: hidden; z-index: 1; top: 0px; left: 0px; border-collapse: collapse; }
 .likes_tbl td { background-color: rgba(0, 0, 0, 0.4); #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000);  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000)";
-  padding: 0px; width: auto; }
+  padding: 0 5px 5px 5px; width: auto; }
 .likes_tbl .fbLikeWidget { margin: 0 5; }
 
 .galleryItem td#whiteRight {
