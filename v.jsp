@@ -26,10 +26,11 @@
       <div id="fts" hide="y">      
     		<table width="100%" border="0" cellspacing="0" cellpadding="0"><!-- itype="!http://www.hudsonfog.com/voc/model/social/IntentMessage" -->
     		  <tr noInner="y" class="fts" itype="!http://www.hudsonfog.com/voc/classifieds/siteTemplates/Slide">
-    				<td><fullTextSearchChoice/></td><td><filter/></td><td><pagingResources /></td>
+    				<td><fullTextSearchChoice place="middle"/></td><td><filter/></td><td><pagingResources /></td>
     		  </tr>
         </table>		  
       </div>
+
       <subscribeNote/>
   	  <errorMessage />
   		<table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -49,7 +50,7 @@
           	  <tr itype="http://www.hudsonfog.com/voc/aspects/commerce/SoftBuyable">
           	    <td align="middle" colspan="3"><download/></td>
           	  </tr>
-              <tr>
+              <tr itype="http://www.hudsonfog.com/voc/model/portal/Comment">
                 <td colspan="3"><br/><br/><reply/></td>
               </tr>
         <hideBlock id="hideBlock1">
@@ -73,7 +74,7 @@
         <tr>
           <td align="middle" colspan="3">
             <table width="100%" cellpadding="0" cellspacing="0">
-              <tr><include name="${type}_details_bottom_1.jsp"/></tr>
+              <tr><td><include name="${type}_details_bottom.jsp"/></td></tr>
               <tr><include name="socialLinks.jsp"/></tr>
 
             </table>
