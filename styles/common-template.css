@@ -2452,7 +2452,7 @@ td #corePageContent { min-height: 600px;}
 /* NAB CELL
 --------------------------------------------------------------------------------------- */
 .nab { width: 192px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; box-shadow: 0 1px 3px rgba(34,25,25,0.4); -moz-box-shadow: 0 1px 3px rgba(34,25,25,0.4); -webkit-box-shadow: 0 1px 3px rgba(34,25,25,0.4);}
-.gnab { font-size: 11px; background-color: #fff; border: 1px solid #d5d3d4; }
+.gnab { font-size: 11px; }
 .nab .anab .galleryItem_css3 img {width: 202px;}
 #resourceList .grid .renab { font-size: bold; color: #98c165;}
 .nab .renab img {width: 12px; height: 12px; }
@@ -2463,16 +2463,19 @@ td #corePageContent { min-height: 600px;}
 .aList {padding-top:15px; background: #f7f5f7;}
 #resourceList .nab .pLink {color: #757575;}
 /* BOARD CELL
+
 --------------------------------------------------------------------------------------- */
 .nabBoard {width: 222px !important; padding: 0 !important;}
 .nabBoard h3, .gridBoard h3 {padding: 9px 15px 0; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
-.gridBoard {width: 669px !important; padding: 0 !important;}
+.gridBoard {max-width: 669px !important; padding: 0 !important;}
 .nabBoard .link {height: 200px;}
-.nabBoard .link {display: block; background: url(../images/BoardBackground.png) 15px 9px no-repeat; padding: 9px 0 4px 12px; overflow: hidden;}
-.gridBoard .link {display: block; background: url(../images/BoardBackground.png) 15px 9px no-repeat; padding: 9px 0 4px 12px; overflow: hidden;}
+.nabBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
+.gridBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
 .nabBoard .link img, .gridBoard .link img  {float: left; width: 100px; /* magnify: 100 / 61 */ margin-left: -20px; /* set at horizontal center */ }
-.boardsTitle {padding-top: 5px; font-size: 16pt; color: #cb2027; }
+.boardsTitle, .nabTitle {padding-top: 5px; font-size: 16pt; color: #cb2027; }
 .boardsTitle a { color: #f47414; }
+
+#comments a, #renabs a {color: #f47414; }
 .nabBoard .link div, .gridBoard .link div {width:61px; height:61px; overflow:hidden; float:left; margin:0px 4px 4px 0px;}
 /*.nabBoard .div div {overflow: hidden; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
 /*.nabBoard .link div { width: 61px; height: 61px; overflow: hidden; float:left; margin:0px 4px 4px 0px;}*/
