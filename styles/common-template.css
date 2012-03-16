@@ -2454,6 +2454,8 @@ td #corePageContent { min-height: 600px;}
 .nab { width: 192px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; box-shadow: 0 1px 3px rgba(34,25,25,0.4); -moz-box-shadow: 0 1px 3px rgba(34,25,25,0.4); -webkit-box-shadow: 0 1px 3px rgba(34,25,25,0.4);}
 .gnab { font-size: 11px; }
 .nab .anab .galleryItem_css3 img {width: 202px;}
+.nab .anab .galleryItem_css3 { display: inline-block; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
+
 #resourceList .grid .renab { font-size: bold; color: #98c165;}
 .nab .renab img {width: 12px; height: 12px; }
 #resourceList .nab td, #siteResourceList #front .nab .label {font-size: 11px;}
