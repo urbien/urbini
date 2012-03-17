@@ -2474,7 +2474,7 @@ td #corePageContent { min-height: 600px;}
 .nabBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
 .gridBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
 .nabBoard .link img, .gridBoard .link img  {float: left; width: 100px; /* magnify: 100 / 61 */ margin-left: -20px; /* set at horizontal center */ }
-.boardsTitle, .nabTitle {padding-top: 5px; font-size: 16pt; color: #cb2027; }
+.boardsTitle, .nabTitle {margin-left: 10px; padding-top: 5px; font-size: 16pt; color: #cb2027; }
 .boardsTitle a { color: #f47414; }
 
 #comments a, #renabs a {color: #f47414; }
