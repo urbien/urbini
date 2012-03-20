@@ -14205,6 +14205,10 @@ var EndlessPager = {
 
 		if ($t.indicatorTd == null)
 		  $t.indicatorTd = document.getElementById("endlesspage_indicator");
+		if ($t.indicatorTd == null) { // no "endlesspage_indicator"
+			removeEvent(window, "scroll", EndlessPager.onscroll, false);
+			return;
+		}
 		if (!isElemInView($t.indicatorTd))
 			return;
 		$t.skip = true;	
@@ -14215,11 +14219,13 @@ var EndlessPager = {
 			var pagerTd = getNextSibling(this.indicatorTd);
 			this.anchors = pagerTd.getElementsByTagName("a");
 		}
-		if (this.curPage >= this.anchors.length) { // no more "pages"
-		  this.indicatorTd.style.display = "none";
+		// no more "pages"
+		if (this.curPage >= this.anchors.length) { // -1 is the last "Next" anchor
+			this.stop();
 			return;
 	  }	
 		var urlArr = this.anchors[this.curPage].href.split("?");
+		
 		postRequest(event, urlArr[0], urlArr[1], null, $t.indicatorTd, this.onContentLoaded);
 		this.curPage++;
     this.indicatorTd.innerHTML = "&[Loading];...";  
@@ -14228,12 +14234,19 @@ var EndlessPager = {
 	onContentLoaded : function(event, parentDiv, hotspot, html, url, params) {
 		var $t = EndlessPager;
 		LoadingIndicator.hide();
-    $t.indicatorTd.innerHTML = "";  
+		$t.indicatorTd.innerHTML = "";  
 		if ($t.nabsGrid == null)
 		  $t.nabsGrid = document.getElementById("nabs_grid");
-		var items = $(getDomObjectFromHtml(html, 'id', 'nabs_grid').innerHTML);
-    $($t.nabsGrid).append(items).masonry('appended', items);
+		var newGrid = getDomObjectFromHtml(html, 'id', 'nabs_grid');
+		if (getChildByClassName(newGrid, "nab") == null)
+		  return $t.stop();
+		var items = $(newGrid.innerHTML);
+		$($t.nabsGrid).append(items).masonry('appended', items);
 	  $t.skip = false; 
+	},
+	stop : function() {
+	  removeEvent(window, "scroll", EndlessPager.onscroll, false);
+    this.indicatorTd.style.display = "none";
 	}
 }
 
