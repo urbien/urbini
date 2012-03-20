@@ -4632,9 +4632,9 @@ var Filter = {
 
     var filterUrl = this.retrieveFilterUrl();
 
-    // no type in url - no filter
-    if (getUrlParam(filterUrl, "type") == null)
-      return;
+    // commented out: no type to filter
+ //   if (getUrlParam(filterUrl, "type") == null)
+ //     return;
  
     // hide possible opened dialogs
     TouchDlgUtil.closeAllDialogs();
@@ -4854,10 +4854,12 @@ var Filter = {
     // Call the onsubmit event handler directly
     var url = FormProcessor.onSubmitProcess(e, filterForm);
     
-    if (Browser.mobile)
-      Mobile.getPage(e, url);
-    else 
-      filterForm.submit();
+    if (Browser.mobile) {
+			FtsAutocomplete.hide();
+			Mobile.getPage(e, url);
+		}
+		else 
+		filterForm.submit();
     
     // hide (and reset for mobile) filter
     this.hide();
@@ -14225,7 +14227,7 @@ var EndlessPager = {
 			return;
 	  }	
 		var urlArr = this.anchors[this.curPage].href.split("?");
-		
+		urlArr[1] += "&hideMenuBar=y&hideFts=y&hideCommonFooter=y"; // minify server response
 		postRequest(event, urlArr[0], urlArr[1], null, $t.indicatorTd, this.onContentLoaded);
 		this.curPage++;
     this.indicatorTd.innerHTML = "&[Loading];...";  
