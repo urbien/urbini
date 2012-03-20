@@ -2451,8 +2451,9 @@ td #corePageContent { min-height: 600px;}
 #dataEntry .sortable li, #siteResourceList .sortable li {float: left; width: 222px; margin: 0 0 15px 15px;}
 /* NAB CELL
 --------------------------------------------------------------------------------------- */
-.nab { visibility: hidden;  float: left; width: 192px; margin: 5px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; box-shadow: 0 1px 3px rgba(34,25,25,0.4); -moz-box-shadow: 0 1px 3px rgba(34,25,25,0.4); -webkit-box-shadow: 0 1px 3px rgba(34,25,25,0.4);}
-.masonry-brick { visibility: visible; }
+.nab { float: left; width: 192px; margin: 5px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; box-shadow: 0 1px 3px rgba(34,25,25,0.4); -moz-box-shadow: 0 1px 3px rgba(34,25,25,0.4); -webkit-box-shadow: 0 1px 3px rgba(34,25,25,0.4);}
+#nabs_grid .nab { visibility: hidden; }
+#nabs_grid .masonry-brick { visibility: visible; }
 .gnab { font-size: 11px; }
 .nab .anab .galleryItem_css3 img {width: 202px;}
 .nab .anab .galleryItem_css3 { display: inline-block; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
@@ -2468,7 +2469,7 @@ td #corePageContent { min-height: 600px;}
 /* BOARD CELL
 
 --------------------------------------------------------------------------------------- */
-.nabBoard {width: 222px !important; padding: 0 !important;}
+.nabBoard {width: 222px !important; padding: 0 !important; }
 .nabBoard h3, .gridBoard h3 {padding: 9px 15px 0; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
 .gridBoard {max-width: 669px !important; padding: 0 !important;}
 .nabBoard .link {height: 200px;}
