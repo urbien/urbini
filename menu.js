@@ -3240,7 +3240,13 @@ var ListBoxesHandler = {
     // similar to _isFtsSift
     this._isOneParamSelection = this.panelBlock.className.indexOf(" oneparamselection") != -1;    
     this._isFormPanelHidden = this._isEditList || this._isFtsSift || this._isOneParamSelection;
-  },  
+    
+		// prevent too wide "standalone" dialog on a page
+	  if (isParentDialogOnPage(this.panelBlock)) {
+			if (document.getElementById("div_cp") == null)
+			  this.panelBlock.style.width = this.panelBlock.clientWidth + "px";
+		}
+	},  
   
   onClickParam : function(event, optionsSelectorStr) {
     var $t = ListBoxesHandler;
@@ -3438,10 +3444,11 @@ var ListBoxesHandler = {
       panel = $t.optionsPanel;
       $t.curOptionsListDiv = popupDiv;
     }
+		
     // set top offset (margin) to sutisfy current scroll position
     $t.fitOptionsYPosition(panel);
-    
-    panel.style.display = "inline";
+
+    panel.style.display = "block";
     popupDiv.style.display = "block";
     $t.optionsPanel.style.height = "";
     
@@ -3454,11 +3461,6 @@ var ListBoxesHandler = {
     // show item/parameter name (if it is too long)
     $t.displayItemName();
 
-//    if ($t.panelBlock.id == "fts_filter" && Browser.ie) { // IE does not support min-width
-//      if ($t.optionsPanel.clientWidth > $t.panelBlock.clientWidth)
-//        $t.panelBlock.style.width = $t.optionsPanel.clientWidth;
-//    }
-   
     // slide forward
     var curPanel = $t.getCurrentPanelDiv();
     if (curPanel && curPanel.className != panel.className) {
