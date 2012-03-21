@@ -925,7 +925,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .propertySheet {border:solid &[PrimaryColor_5]; 1px; border-collapse: collapse; background-color: &[BackgroundColor];; }
 #title H1, #view H1 {margin: 0; padding-top: 7px; padding-bottom: 7px;}
 #title  { padding-bottom: 7px; }
-#view { padding-bottom: 7px; padding-left: 7px;}
+#view { padding-bottom: 7px; padding-left: 7px; }
 #view { background: #f7f5f7; }
 
 table.fbConnect {width:90%; border:solid &[SecondaryColorA_5]; 1px; margin-left:10px; margin-right:10px; vertical-align: middle; font-size: 70%; background-color: #eeeeee; border-collapse: collapse; }
@@ -1806,7 +1806,8 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
 
 .panel_block .header { 
     /*line-height:30px; */
-    width: 100%; text-align: left; 
+    width: 100%;
+    text-align: left; 
     border: 1px solid &[ToolbarColor];;
     background-color: &[PrimaryColor_1];;
     
@@ -2360,7 +2361,8 @@ td #corePageContent { min-height: 600px;}
 #intentMessage { min-height:600px; border-right:solid &[PrimaryColor_5]; 1px;} 
 
 #ropLeftMobile {min-height: 600px; width: 1%; min-width: 200px; padding-top: 10px; vertical-align: top; text-align: center}
-#ropLeft {border-right:solid &[PrimaryColor_5]; 1px;  min-height: 600px; width: 1%; min-width: 200px; padding-top: 10px; vertical-align: top; text-align: center}
+#ropLeft {border-right:solid &[PrimaryColor_5]; 1px;  min-height: 600px; width: 1%; min-width: 200px; padding-top: 10px; vertical-align: top; /*text-align: center;*/}
+#ropLeft td {text-align: left; }
 #ropLeft #div_cp a, #ropLeft #div_cp span { font-size: 100%; line-height: 25px; height: auto; }
 #ropRight {border-left:solid &[SecondaryColorA_5]; 1px;}
 #ropTop  {border-bottom:solid &[SecondaryColorA_5]; 1px; }
