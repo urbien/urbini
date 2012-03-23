@@ -13131,23 +13131,22 @@ var LoadingIndicator = {
     }
   },
   
-  show: function(overElem){
+  show: function(hotspot){
     if (this.loadingDiv == null) 
       this.init();
     var x = -1, y;
-
-    if (!Browser.mobile && overElem && isVisible(overElem)) {
-      setDivVisible(null, this.loadingDiv, null, overElem);
+ 
+		if (!Browser.mobile && hotspot && isVisible(hotspot)) {
+			this.loadingDiv.style.position = "absolute";
+      setDivVisible(null, this.loadingDiv, null, hotspot);
     }
     else {
-      var scroll = getScrollXY();
-      var size = getWindowSize();
-      x = (size[0] - this.loadingDiv.clientWidth) / 2 + scroll[0];
-      y = (size[1] - this.loadingDiv.clientHeight) / 2 + scroll[1];
-      this.loadingDiv.style.left = x;
-      this.loadingDiv.style.top = y;
+			this.loadingDiv.style.position = "fixed";
+      this.loadingDiv.style.left = "49%";
+      this.loadingDiv.style.top = "49%";
     }
-    this.curOpacity = 0.3; // initial value
+		
+    this.curOpacity = 0.4; // initial value
     changeOpacity(this.loadingDiv, this.curOpacity);
     
     this.loadingDiv.style.visibility = "visible";
@@ -13158,7 +13157,6 @@ var LoadingIndicator = {
       return;
     this.loadingDiv.style.visibility = "hidden";
     this.angleOffset = 0;
-
   },
   animate: function(){
     var $t = LoadingIndicator;
