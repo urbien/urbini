@@ -8195,6 +8195,7 @@ function saveButtonClicked(e) {
 // positionEnforced enforced to set dialog in accordance to hotspot position
 // without regarding if bottom of a dialog is bellow a page bottom (used for filter)
 // processes custom parameter of hotspot: "max_width", "full_height" (height of options panel)
+// without "hotspot" it shows a div in center of a screen
 //****************************************************************
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim, positionEnforced, isModal){
   // insert in DOM
@@ -12710,23 +12711,8 @@ var BrowserDialog = {
   show : function(type, msg, callbackOrForm, okBtnLabel, cancelBtnLabel) {
     if (this.div == null)
       this.init();
-    
-    // set at window center
-    var wndSize = getWindowSize();
-    var dlgWidth = this.div.clientWidth;
-    var dlgHeight = this.div.clientHeight;
 
-    var scroll = getScrollXY();
-    var style = this.div.style;
-    if (wndSize[0] > dlgWidth)
-      style.left = Math.ceil((wndSize[0] - dlgWidth) / 2)  + scroll[0];
-    else
-      style.left = scroll[0] + 2;
-    
-    if (wndSize[1] > dlgHeight)  
-      style.top = Math.ceil((wndSize[1] - dlgHeight) / 2)  + scroll[1];
-    else
-      style.top = scroll[1] + 2;
+    setDivVisible(null, this.div, null);
 
     this.textDiv.innerHTML = msg;
     if (!okBtnLabel)
@@ -13136,24 +13122,17 @@ var LoadingIndicator = {
       this.init();
     var x = -1, y;
  
-		if (!Browser.mobile && hotspot && isVisible(hotspot)) {
-			this.loadingDiv.style.position = "absolute";
-      setDivVisible(null, this.loadingDiv, null, hotspot);
-    }
-    else {
-			this.loadingDiv.style.position = "fixed";
-      this.loadingDiv.style.left = "49%";
-      this.loadingDiv.style.top = "49%";
-    }
+		if (hotspot && !isVisible(hotspot))
+		  hotspot = null; 
+    setDivVisible(null, this.loadingDiv, null, hotspot);
 		
     this.curOpacity = 0.4; // initial value
     changeOpacity(this.loadingDiv, this.curOpacity);
     
-    this.loadingDiv.style.visibility = "visible";
     this.animate();
   },
   hide: function(){
-    if (!this.loadingDiv)
+	if (!this.loadingDiv)
       return;
     this.loadingDiv.style.visibility = "hidden";
     this.angleOffset = 0;
