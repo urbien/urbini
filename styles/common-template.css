@@ -561,6 +561,7 @@ tr.darkPrint   {background-color: #eeeeee;}
   border-bottom-width: 1px; 
   padding-top: 12px; 
   padding-bottom: 12px;
+  text-align: left;
 }
 .commentListDate {
   color: #999999;
