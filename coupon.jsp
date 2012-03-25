@@ -42,23 +42,28 @@
        <div id="price_tag_inner">
          <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
          <where value="isBuyable()">
-           <where value="dealPrice &gt; 0">
-             <where value="couponVariantsCount &gt; 0">
+           <where value="affiliateUrl != null">
+             <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="-$this.dealPrice.value hey hey hey -$this.affiliateUrl"><text text="Get it on"/><br /><font size='2'><property name="publisher.name" /></font></a>           
+           </where>
+           <where value="affiliateUrl == null">
+             <where value="dealPrice &gt; 0">
+               <where value="couponVariantsCount &gt; 0">
+                 <div>
+                 	 <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;-inner=y&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
+    	           </div>
+  	           </where>
+               <where value="couponVariantsCount &lt;= 0">
+                 <div>
+                   <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;-inner=y&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
+                 </div>
+               </where>
+             </where>
+             <where value="dealPrice == 0">
                <div>
-               	 <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;-inner=y&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
-  	           </div>
-	           </where>
-             <where value="couponVariantsCount &lt;= 0">
-               <div>
-                 <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;-inner=y&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Buy!"/></a>
+                 <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;-inner=y&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="FREE!"/></a>
+                 <!--a max_width="500" id="-inner" class="coupon_buy button_buy_gift" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;gift=true&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Gift!"/></a-->
                </div>
              </where>
-           </where>
-           <where value="dealPrice == 0">
-             <div>
-               <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;-inner=y&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="FREE!"/></a>
-               <!--a max_width="500" id="-inner" class="coupon_buy button_buy_gift" href="mkResource.html?-$action=mkResource&amp;displayProps=y&amp;gift=true&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon"><text text="Gift!"/></a-->
-             </div>
            </where>
          </where>
          <where value="getTime() &lt; dateFeatured || !isBuyable()">
