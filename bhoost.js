@@ -1590,9 +1590,9 @@ var Boost = {
 
     $t._preventingDoubleClick = true;
     if (isMore)
-      postRequest(e, url, urlParts[1], div, link, $t._loadMoreItems);
+      postRequest(e, url, urlParts[1], div, null, $t._loadMoreItems);
     else
-      postRequest(e, url, urlParts[1], div, link, loadPage);
+      postRequest(e, url, urlParts[1], div, null, loadPage);
 
 		// loadPage
     function loadPage(event, div, hotspot, content, url) {
@@ -1625,6 +1625,7 @@ var Boost = {
 			if (regDiv) {
 				regDiv.className = "mobile_dlg";
 				document.body.appendChild(regDiv);
+				scrollTo(0, 1);
 				setDivVisible(event, regDiv, null, hotspot);
 				// execute inner script for social nets
 				ExecJS.runDivCode(regDiv);
@@ -2327,3 +2328,26 @@ function spriteAnimation(src, parent) {
   // call initialization function
   this._init(src);
 }
+
+
+/*
+// window.orientation returns a value that indicates whether iPhone is in portrait mode, landscape mode with the screen turned to the
+// left, or landscape mode with the screen turned to the right.
+window.onorientationchange = function() {
+  var orientation = window.orientation;
+  switch(orientation) {
+    // portrait mode
+    case 0:
+		break; 
+      
+		// landscape mode with the screen turned to the left
+    case 90:
+      fitGridOnOrientation(false);
+		break;
+
+    // landscape mode with the screen turned to the right
+    case -90: 
+		break;
+  }
+}
+*/
