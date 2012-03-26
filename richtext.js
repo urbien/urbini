@@ -1376,10 +1376,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// hides toolbar and minimizes edit area
 	this._close  = function() {
 		i_am.changePanelWidth(false);
-		i_am.iframeObj.style.height = i_am.initFrameHeight;
+		i_am.iframeObj.style.height = i_am.initFrameHeight + "px";
 
 		if (i_am.toolbar) {
-			i_am.iframeObj.style.marginTop = -i_am.toolbar.getHeight() + 5;
+		//////	i_am.iframeObj.style.marginTop = -i_am.toolbar.getHeight() + "px";
 			i_am.toolbar.hide();
 		}
 		
@@ -1513,17 +1513,17 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 		if ((Browser.gecko || Browser.webkit) && !onFocus
 					 && i_am.document.body.offsetHeight != 0)
-			docH = i_am.document.body.offsetHeight;
+			docH = i_am.document.body.offsetHeight + "px";
 			
 		// 1. small content size - use initial height without scrolling
 		if (docH < i_am.initFrameHeight) {
-			i_am.iframeObj.style.height = i_am.initFrameHeight;
+			i_am.iframeObj.style.height = i_am.initFrameHeight + "px";
 			return;
 		}
 		
 		var frmH = i_am.iframeObj.clientHeight;
 	  if(frmH < docH || (Browser.gecko && frmH > docH - 7))
-		  i_am.iframeObj.style.height = docH + 7;
+		  i_am.iframeObj.style.height = docH + 7  + "px";
 	}
   
   this._onpaste = function(e) {
