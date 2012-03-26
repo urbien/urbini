@@ -439,6 +439,7 @@ td.textCell {
 .nab .nabP { background: #f2f2f2; }
 .nab .nabP td, .nab .modP td { padding: 10px 2px 10px 0; vertical-align: top;}
 .nab .nabP img  { width: 24px; padding-right: 5px; border: 0; }
+.nab .nabP #-inner img  { width: 16px; height: 16px;  padding-right: 5px; border: 0; vertical-align: bottom;}
 .nab .modP img { padding-right: 5px; }
 .galleryItem, .galleryItem_css3, .galleryItem_Nab { position: relative; }
 .galleryItem_css3, galleryItem_nab { display: inline-block; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); -moz-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); }
@@ -2461,7 +2462,7 @@ td #corePageContent { min-height: 600px;}
 .nab .anab .galleryItem_css3 img {width: 202px;}
 .nab .anab .galleryItem_css3 { display: inline-block; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
 
-#resourceList .grid .renab { font-size: bold; color: #98c165;}
+#resourceList .grid .renab { font-size: bold; color: #98c165; text-align: center;}
 .nab .renab img {width: 12px; height: 12px; }
 #resourceList .nab td, #siteResourceList #front .nab .label {font-size: 11px;}
 #resourceList .nab .action, #div_Activity .nab .action {color: #98c165; font-weight:bold;} 
