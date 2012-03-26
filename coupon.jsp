@@ -43,7 +43,7 @@
          <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
          <where value="isBuyable()">
            <where value="affiliateUrl != null">
-             <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="-$this.dealPrice.value hey hey hey -$this.affiliateUrl"><text text="Get it on"/><br /><font size='2'><property name="publisher.name" /></font></a>           
+             <a max_width="500" full_height="705" id="-inner" class="coupon_buy button_buy" href="-$this.affiliateUrl"><text text="Get it on"/><br /><font size='2'><property name="publisher.name" /></font></a>           
            </where>
            <where value="affiliateUrl == null">
              <where value="dealPrice &gt; 0">
