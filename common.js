@@ -1355,17 +1355,15 @@ var ExecJS = {
       if (src && src.length != 0) {
 				var keyName = src.replace(/_[0-9]*\.js/, ".js");
 				if (typeof g_loadedJsFiles[keyName]) { /*!this.isScriptFileLoaded(src)*/
-			  	var html_doc = document.getElementsByTagName('head')[0];
 			  	var js = document.createElement('script');
 			  	js.setAttribute('type', 'text/javascript');
 		  	// suppress minify
 					if (location.href.indexOf("-minify-js=n") != -1) 
 						fileName = fileName.replace("m.js", ".js")
-					
 					js.setAttribute('src', src);
-					html_doc.appendChild(js);
-					
-					g_loadedJsFiles[keyName] = true;
+					document.body.appendChild(js);
+					keyName = keyName.replace(getBaseUri(), "")
+  				g_loadedJsFiles[keyName] = true;
 				}
       }
       // 2. inner JS block
