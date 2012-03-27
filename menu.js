@@ -12246,10 +12246,12 @@ var LoadOnDemand = {
       
       if (g_loadedJsFiles[keyName])
         return; // file is already downloaded // TODO: for CSS (generic)
-        
+    
       var js = document.createElement('script');
       js.setAttribute('type', 'text/javascript');
-      js.setAttribute('src', fileName);
+      if (!fileName.startsWith("http:"))
+			  fileName = getBaseUri() +  fileName;
+			js.setAttribute('src', fileName);
       var html_doc = document.getElementsByTagName('head')[0];
       html_doc.appendChild(js);
       
