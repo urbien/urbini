@@ -13534,6 +13534,7 @@ var LinkProcessor = {
     href = href.replace(/\$/g, '%24');
     href = href.replace(/&/g, '%26');
     href = href.replace(/\?/g, '%3F');
+    href = href.replace(/\!/g, '%21');
     var linkOutType = linkOutDiv.textContent;
     var uri = 'sql' + linkOutType.substring(6) + '?targetUrl=' + href + '&' + rUri.substring(idx + 1);   
     
