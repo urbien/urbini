@@ -8,6 +8,15 @@
           <h2><property name="owner.name"/></h2>
         </td>
       </tr>
+  <tr>
+    <td><authenticateByFacebook/></td>
+  </tr>
+	<tr>
+    <td>
+    	<registration/>
+		  <registration href="y"/>
+		</td>
+  </tr>
       <tr><td>
   <form id="loginForm" name="loginform" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
     <table class="rounded_rect_tbl" border="0" cellpadding="3" cellspacing="0" cols="2" width="100%">
@@ -41,16 +50,16 @@
         </td>
       </tr>
       <tr>
-      	
-				
-			<!--	
+        
+        
+      <!--  
       <td align="right"><registration href="y"/></td>
       -->  
-				
-				
-				<td align="center" colspan="2">
+        
+        
+        <td align="center" colspan="2">
           <input type="submit" value="Sign In" name="logonButton"/><registerNewUser/>
-				  <!--authenticateByFacebook/ -->
+          <!--authenticateByFacebook/ -->
         </td>
       </tr>
       <!--tr>
@@ -61,15 +70,6 @@
   </form>
     
   </td></tr>
-  <tr>
-    <td><authenticateByFacebook/></td>
-  </tr>
-	<tr>
-    <td>
-    	<registration/>
-		  <registration href="y"/>
-		</td>
-  </tr>
 	</table>
 </td>
 <td></td>
