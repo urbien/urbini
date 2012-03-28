@@ -7820,6 +7820,7 @@ function showTab(e, td, hideDivId, unhideDivId) {
   // commented out because RTE should get this event to restore control panel
   //return stopEventPropagation(e);
 }
+
 var curSpan;
 function showTabLabel(label) {
   if (curSpan)
@@ -14124,7 +14125,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
 function showLocalActivityButtons() {
   var button1 = document.getElementById('activity_near_me');    
   if (button1 && lat && lon) {
-    button1.innerHTML = '<a class=\"button\" style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + lat + ',' + lon + '\">Activity near me</a>';
+    button1.innerHTML = '<a style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + lat + ',' + lon + '\">Activity near me</a>';
   }
   
   var button2 = document.getElementById('activity_near_here');    
@@ -14134,7 +14135,7 @@ function showLocalActivityButtons() {
       return;
     
     var latLon = resourceLoc.innerHTML.split(",");
-    button2.innerHTML = '<a class=\"button\" style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\">Activity near here</a>';
+    button2.innerHTML = '<a style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\">Activity near here</a>';
   }
 }
 
@@ -14239,5 +14240,36 @@ var EndlessPager = {
 	}
 }
 
+function getMoreBoards(e, id, exclude) {
+  e = getDocumentEvent(e);
+  
+  var tokens = exclude.split(',');
+  var len = tokens.length;
+  var s;
+  for(var i = 0; i < len; i++) {
+    var tok = trim(tokens[i]);
+    s += '&-exclude=' + tok;    
+  }
+  params = 'type=http://www.hudsonfog.com/voc/model/portal/ImageResource&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y' + s;
+  var td = document.getElementById(id);
+
+  postRequest(e, "l.html", params, td, getTargetElement(e), onBoardsLoaded); 
+  function onBoardsLoaded(event, td, hotspot, content) {
+    var d = document.createElement("div");
+    d.innerHTML = content;
+    var newUL = d.getElementsByTagName("ul");
+    var ul = td.getElementsByTagName("ul");
+    var count = newUL[0].getElementsByTagName("li").length;
+    ul[0].innerHTML += newUL[0].innerHTML;
+    var titleDiv = td.getElementsByTagName("div");
+    for (var i=0; i<titleDiv.length; i++) {
+      var t = titleDiv[i].className;
+      if (t != null  &&  t == 'boardsTitle') 
+        titleDiv[i].innerHTML = (count + 4) + " boards";
+    }
+    hotspot.onclick = '';
+  } 
+  return stopEventPropagation(e);
+}
 // flag that menu.js was parsed. should be last in the file
 g_loadedJsFiles["menu.js"] = true;
