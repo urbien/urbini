@@ -14108,7 +14108,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
 function showLocalActivityButtons() {
   var button1 = document.getElementById('activity_near_me');    
   if (button1 && lat && lon) {
-    button1.innerHTML = '<a style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + lat + ',' + lon + '\">Activity near me</a>';
+    button1.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + lat + ',' + lon + '\">Activity near me</a>';
   }
   
   var button2 = document.getElementById('activity_near_here');    
@@ -14118,7 +14118,7 @@ function showLocalActivityButtons() {
       return;
     
     var latLon = resourceLoc.innerHTML.split(",");
-    button2.innerHTML = '<a style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\">Activity near here</a>';
+    button2.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\">Activity near here</a>';
   }
 }
 
