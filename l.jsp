@@ -11,7 +11,9 @@
     </table>
   </div>
 
-  <div id="fts" hide="y"  itype="!http://www.hudsonfog.com/voc/system/changeHistory/Modification">
+  <allBoards onlyIf="-showBoards" itype="http://www.hudsonfog.com/voc/system/changeHistory/Modification"/>
+
+  <div id="fts" hide="y"><!--  itype="!http://www.hudsonfog.com/voc/system/changeHistory/Modification"-->
     <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"  itype="!http://www.hudsonfog.com/voc/model/social/Intent">
   	<tr noInner="y" class="fts" valign="bottom">
     	<td><fullTextSearchChoice place="middle"/></td><td class="near"><showActivityLink/></td><td><filter/></td><td align="right"><pagingResources /></td>
@@ -40,12 +42,12 @@
   		  <searchHistory/>
   		  <resourcesSearch resourcesUri = "text/search/resources" />
   		  <filesSearch     filesUri     = "text/search/files" />
-        <excelsSearch    excelsUri    = "text/search/excels" />
+        <!-- excelsSearch    excelsUri    = "text/search/excels" / -->
   		</div>
       <taskTreeControl/>
       <div id="siteResourceList">
         <errorMessage additems="y"/>
-        <buyableTags />
+        <!-- buyableTags / -->
         <categories/>
         <siteResourceList />
     	  <uploadAttachment/>
