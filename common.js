@@ -1339,10 +1339,13 @@ var ExecJS = {
     }
   },
 
-  // evaluates script blocks including in some DIV
-  // contDiv is a div that contains JS code - [dialog].
+  // evaluates script blocks including in some DIV obtained via XHR
+  // contDiv is a div that contains JS code - (dialog, tab).
   // it automatically called from setInnerHtml() function
-  runDivCode : function(contDiv) {
+	runDivCode : function(contDiv) {
+	  setTimeout(function(){ ExecJS._runDivCode(contDiv); }, 150);
+	},
+  _runDivCode : function(contDiv) {
     if(!contDiv)
       return;
     var scripts = contDiv.getElementsByTagName('script');
@@ -1354,16 +1357,18 @@ var ExecJS = {
       var src = scripts[i].src;
       if (src && src.length != 0) {
 				var keyName = src.replace(/_[0-9]*\.js/, ".js");
-				if (typeof g_loadedJsFiles[keyName]) { /*!this.isScriptFileLoaded(src)*/
+				keyName = keyName.replace(getBaseUri(), "");
+				
+				if (typeof g_loadedJsFiles[keyName] == "undefined") { /*!this.isScriptFileLoaded(src)*/
 			  	var js = document.createElement('script');
 			  	js.setAttribute('type', 'text/javascript');
 		  	// suppress minify
 					if (location.href.indexOf("-minify-js=n") != -1) 
 						fileName = fileName.replace("m.js", ".js")
-					js.setAttribute('src', src);
-					document.body.appendChild(js);
-					keyName = keyName.replace(getBaseUri(), "")
+  				js.setAttribute('src', src);
+					loadScript(src, document.body, function() { ExecJS._runDivCode(contDiv) });
   				g_loadedJsFiles[keyName] = true;
+					return;
 				}
       }
       // 2. inner JS block
@@ -1418,6 +1423,27 @@ var ExecJS = {
        window.eval(ExecJS.runCodeArr[i].jsCode);
     }
   }
+}
+
+function loadScript(scriptUrl, scriptDiv, callback){
+  var el = document.createElement('script');
+  el.type = 'text/javascript';
+  el.src = scriptUrl;
+  el.async = true;
+  if (callback) {
+    // most browsers
+    el.onload = callback;
+    // IE 6-7
+    el.onreadystatechange = function(){
+      if (this.readyState == 'complete') {
+        if (typeof callback == 'function') 
+          callback();
+      }
+    }
+  }
+  if (!scriptDiv)
+    scriptDiv = document.body;
+  scriptDiv.appendChild(el);
 }
 
 //************************************************
