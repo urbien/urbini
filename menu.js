@@ -7806,6 +7806,7 @@ function showTab(e, td, hideDivId, unhideDivId) {
       }
     }
   }
+
   ExecJS.runDivCode(curDiv);
   if(typeof ImageAnnotations != 'undefined')
     ImageAnnotations.onTabSelection(curDiv);
@@ -7820,7 +7821,6 @@ function showTab(e, td, hideDivId, unhideDivId) {
   // commented out because RTE should get this event to restore control panel
   //return stopEventPropagation(e);
 }
-
 var curSpan;
 function showTabLabel(label) {
   if (curSpan)
@@ -12944,7 +12944,7 @@ function getActivityCallBack(e, div, hotspot, content, url) {
   if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
     div.style.display = "none";
   else
-    div.innerHTML = content;
+		setInnerHtml(div, content);
   div.className = "";
   window.scrollTo(0, 0);
 }
@@ -13968,23 +13968,6 @@ function initializeMap(panoDivId, mapDivId, lat, lon) {
       map.setCenter(panorama.getPosition());
     });
   }
-}
-
-function loadScript(scriptUrl, scriptDiv, callback) {
-  var el = document.createElement('script');
-  el.type = 'text/javascript';
-  el.src = scriptUrl;
-  el.async = true;
-  // most browsers
-  el.onload = callback;
-  // IE 6-7
-  el.onreadystatechange = function() {
-    if (this.readyState == 'complete') {
-      if (typeof callback == 'function')
-        callback();
-    }
-  }
-  scriptDiv.appendChild(el);
 }
 
 // callback on image upload from options panel
