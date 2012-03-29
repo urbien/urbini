@@ -1822,7 +1822,7 @@ var Boost = {
     var isAdd = $t.getElementById('add_url_hdn') != null;
     var isEdit = $t.getElementById('edit_url_hdn') != null;
     var isDelete = $t.getElementById('delete_url_hdn') != null;
-    
+
     var addA = document.getElementById('menu_Add');
     var addTd = addA.parentNode;
     if (isAdd)
@@ -1868,7 +1868,7 @@ var Boost = {
     if (!viewsTr)
       return;
     if (views) {
-      viewsTr.style.visibility = "visible";
+      viewsTr.style.visibility = "";
       viewsTr.style.display = "inline";
     }
     else {
@@ -1887,7 +1887,7 @@ var Boost = {
       found = false;
       for (var j=0; j<views.length  &&  !found; j++) {
         if (views[j] == id) {
-          td.style.visibility = "visible";
+          td.style.visibility = "";
           found = true;
         }
       }
