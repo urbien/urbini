@@ -267,3 +267,5 @@ tr.dark  {background-color:#eeeeee; /*height: 35px;*/ }
 #div_info, .rop_only #div_Edit { max-width: none; }
 
 .false_textarea { display: inline; }
+
+#nabs_grid .nab { visibility: visible; }
