@@ -680,9 +680,7 @@ tr.ftSearch td { padding: 0px; }
   margin-left:5px;
 }
 .ftSearch .action_btn a, .ftSearch .action_btn1 a  { display: block; }
-.ftSearch .action_btn img, .ftSearch .action_btn1 img  { width: 22px; height: 22px; margin: 4px 0 0 10px; }
-
-
+.ftSearch .action_btn img, .ftSearch .action_btn1 img  { width: 22px; height: 22px; margin: 5px 0 0 10px; }
 .ftSearch .action_btn1 {
   width: 40px;
   margin-left: 5px;
@@ -690,7 +688,6 @@ tr.ftSearch td { padding: 0px; }
   -moz-border-radius: 15px 0 0 15px;
   -webkit-border-radius: 15px 0 0 15px;
 }
-
 
 .desktop_search .right {
   float: left;
@@ -2460,7 +2457,7 @@ td #corePageContent { min-height: 600px;}
 --------------------------------------------------------------------------------------- */
 .nab { float: left; width: 192px; margin: 5px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; box-shadow: 0 1px 3px rgba(34,25,25,0.4); -moz-box-shadow: 0 1px 3px rgba(34,25,25,0.4); -webkit-box-shadow: 0 1px 3px rgba(34,25,25,0.4);}
 #nabs_grid .nab { visibility: hidden; }
-#nabs_grid .masonry-brick, #activity #nabs_grid .nab { visibility: visible; }
+#nabs_grid .masonry-brick { visibility: visible; }
 
 .gnab { font-size: 11px; }
 .nab .anab .galleryItem_css3 img {width: 202px;}
