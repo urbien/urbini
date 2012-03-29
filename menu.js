@@ -8203,7 +8203,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   if (!div.parentNode)
     document.body.appendChild(div);
 
-  if (Browser.mobile) {
+  if (Browser.mobile && div.id != "loading") {
     MobilePageAnimation.showDialog(div);
     return;
   }
@@ -13127,7 +13127,8 @@ var LoadingIndicator = {
  
 		if (hotspot && !isVisible(hotspot))
 		  hotspot = null; 
-    setDivVisible(null, this.loadingDiv, null, hotspot);
+
+	  setDivVisible(null, this.loadingDiv, null, hotspot);
 		
     this.curOpacity = 0.4; // initial value
     changeOpacity(this.loadingDiv, this.curOpacity);
