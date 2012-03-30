@@ -1589,7 +1589,7 @@ var Boost = {
       return stopEventPropagation(e);
 
     $t._preventingDoubleClick = true;
-    if (isMore)
+    if (isMore) 
       postRequest(e, url, urlParts[1], div, null, $t._loadMoreItems);
     else
       postRequest(e, url, urlParts[1], div, null, loadPage);
@@ -1680,17 +1680,25 @@ var Boost = {
   _loadMoreItems: function(event, div, hotspot, content) {
     var $t = Mobile;
 
-    setInnerHtml(div, content);
+   // setInnerHtml(div, content);
+    div.innerHTML = content;
+
     var elms = div.getElementsByTagName('table');
     var table;
-    for (var i=0; i<elms.length  &&  !tt; i++) {
+		
+    for (var i=0; i<elms.length; i++) {
       var tt = elms[i];
-      if (tt.id && tt.id.startsWith('siteRL_'))
-        table = tt;
+			
+			if (tt.id && tt.id.startsWith('siteRL_')) {
+	  	  table = tt;
+				break;
+	    }
     }
     $t._preventingDoubleClick = false;
-    if (!table)
+		
+		if (!table)
       return;
+			
     var tbody = table.getElementsByTagName('tbody')[0];
 
     var currentDiv = $t.urlToDivs[$t.currentUrl];
@@ -1720,7 +1728,7 @@ var Boost = {
 		// "Get 10 More" / "_replace" can be out of new tbody - insert it additionaly
 		if (getChildById(tbody, "_replace") == null)
  			curTbody.parentNode.appendChild(getChildById(table, "_replace"));
-			
+		
     var coords = getElementCoords(tr);
     tr.className = "hdn";
     tr.id = '';
@@ -1729,8 +1737,9 @@ var Boost = {
       totalsTR.id = '';
     }
     Boost.view.setProgressIndeterminate(false);
-    Boost.log('left = ' + coords.left + '; top = ' + coords.top);
-    window.scrollTo(coords.left, coords.top);
+	  Boost.log('left = ' + coords.left + '; top = ' + coords.top);
+	
+		window.scrollTo(coords.left, coords.top);
   },
 
   // browsing history forward and backward
