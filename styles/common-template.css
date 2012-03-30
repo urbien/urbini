@@ -10,7 +10,7 @@ body {
   color: &[Color];;
   height: 100%;
 }
-div#wrapper, div#wrapperM {
+div#wrapper, .mobile_page  {
   background-color: &[BackgroundColor];;
   min-height: 100%; /* used to stick footer to the page bottom */
 
