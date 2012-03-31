@@ -2460,7 +2460,7 @@ td #corePageContent { min-height: 600px;}
 #nabs_grid .masonry-brick { visibility: visible; }
 
 .gnab { font-size: 11px; }
-.nab .anab .galleryItem_css3 img {width: 202px;}
+.nab .anab .galleryItem_css3 img {max-width: 202px;}
 .nab .anab .galleryItem_css3 { display: inline-block; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
 
 #resourceList .grid .renab { font-size: bold; color: #98c165; text-align: center;}
