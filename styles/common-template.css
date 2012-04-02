@@ -2479,7 +2479,7 @@ td #corePageContent { min-height: 600px;}
 .nabBoard h3, .gridBoard h3 {padding: 9px 15px 0; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
 .gridBoard {max-width: 669px !important; padding: 0 !important;}
 .nabBoard .link {height: 200px;}
-.nabBoard .link {display: block; padding: 9px 0 4px 18px; overflow: hidden;}
+.nabBoard .link {display: block; padding: 9px 0 4px 16px; overflow: hidden;}
 .gridBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
 .nabBoard .link img, .gridBoard .link img  {float: left; width: 100px; /* magnify: 100 / 61 */ margin-left: -20px; /* set at horizontal center */ }
 .boardsTitle, .nabTitle {margin-left: 10px; padding-top: 5px; font-size: 16pt; color: #cb2027; }
