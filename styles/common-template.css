@@ -2568,7 +2568,7 @@ td #corePageContent { min-height: 600px;}
   -ms-transform:rotate(-90deg);
   opacity: 0.7;
   
-  background-color: #ef6f16;
+  background-color: #ef6f16; 
   background-image: -moz-linear-gradient(top center, #ff9f0a, #ef6f16);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ff9f0a), to(#ef6f16));
   background-image: -o-linear-gradient(#ff9f0a, #ef6f16);
@@ -2576,3 +2576,5 @@ td #corePageContent { min-height: 600px;}
   
 }
 .footer .support_tab a { color: #fff; display: block; }
+
+#fts h3 {margin:0px;}
