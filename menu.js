@@ -8793,7 +8793,14 @@ var FtsAutocomplete = {
 
     var form = getAncestorByTagName($t.field, 'form');
     var text = FieldsWithEmptyValue.getValue($t.field);
-    if ($t.prevText == text) {
+ 
+		if ($t.autocompleteDiv == null)
+      $t._createDiv();
+
+    if (Browser.mobile) // "Bookmark" type has FTS field in middle of a dialog
+      $t.autocompleteDiv.style.top = (getAncestorByClassName($t.field, 'header') != null) ? "40px" : "180px";
+		
+		if ($t.prevText == text) {
       $t.autocompleteDiv.style.display = "";
       return;
     }
@@ -8809,15 +8816,12 @@ var FtsAutocomplete = {
     params += "&-ac=y";
 
     postRequest(null, "smartPopup", params, null, null, $t.autocompleteCallback);
-  },
+	},
   
   autocompleteCallback : function(e, contentTr, hotspot, content, url) {
     var $t = FtsAutocomplete;
 
-    if ($t.autocompleteDiv == null)
-      $t._createDiv();
-
-    if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
+		if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
       $t.autocompleteDiv.style.display = "none";
     else {
       TouchDlgUtil.closeAllDialogs(true);
@@ -8845,18 +8849,12 @@ var FtsAutocomplete = {
 
     if (Browser.mobile) {
       //$t.autocompleteDiv.style.zIndex = Mobile.getCurrentPageDiv().style.zIndex + 1;
-      var header = getAncestorByClassName($t.field, "header");
       $t.autocompleteDiv.className = "mbl_auto_complete";
-      $t.autocompleteDiv.style.top = header.clientHeight;
-      $t.autocompleteDiv.style.left = 0;
-      $t.autocompleteDiv.style.width = "100%";
-      // instead to make all parent elements with height 100%
-      //$t.autocompleteDiv.style.height = getWindowSize()[1];
     }
     else {
       $t.autocompleteDiv.className = "dsk_auto_complete";
-      $t.autocompleteDiv.style.top = findPosY($t.field) + $t.field.offsetHeight + 8;
-      $t.autocompleteDiv.style.left = findPosX($t.field);
+      $t.autocompleteDiv.style.top = findPosY($t.field) + $t.field.offsetHeight + 8 + "px";
+      $t.autocompleteDiv.style.left = findPosX($t.field) - 20 + "px";
     }
     
     document.body.appendChild($t.autocompleteDiv);
