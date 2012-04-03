@@ -36,7 +36,7 @@ div.jp-video {
 }
 div.jp-audio {
 	width:201px;
-	padding:20px;
+	padding:7px;
 }
 
 div.jp-video-270p {
@@ -523,7 +523,7 @@ div.jp-type-playlist div.jp-playlist a:hover {
 div.jp-type-playlist div.jp-playlist li.jp-playlist-current {
 /*	background-color: #26102e; */
 	background-color: #555555;
-	margin: 0 -20px;
+/*	margin: 0 -20px; */
 	padding: 2px 20px;
 /*	border-top: 1px solid #26102e; */
 	border-top: 1px solid #555555;
