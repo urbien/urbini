@@ -8287,8 +8287,8 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   
   // set the div in screen center if neither hotspotDim nor hotspot where provided.
   if (hotspotDim == null && left == 0 && top == 0 && !positionEnforced) {
-    left = (screenX + scrollX - divCoords.width) / 2;
-    top = (screenY + scrollY - divCoords.height) / 2;
+    left = (screenX - divCoords.width) / 2 + scrollX;
+    top = (screenY - divCoords.height) / 2 + scrollY;
     if (left < 0) left = 0;
     if (top < 0) top = 0;
   }
@@ -8429,7 +8429,6 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   div.style.visibility = Popup.VISIBLE; // show div
   div.style.display    = "block"; //////// 'inline';
   
-
   if (Browser.lt_ie7 && !isDivStatic  && !Browser.mobile) {
     istyle.display = 'none';
     istyle.visibility  = Popup.VISIBLE;
@@ -13122,7 +13121,7 @@ var LoadingIndicator = {
     if (this.loadingDiv == null) 
       this.init();
     var x = -1, y;
- 
+
 		if (hotspot && !isVisible(hotspot))
 		  hotspot = null; 
 
@@ -14166,6 +14165,9 @@ var EndlessPager = {
 	nabsGrid : null,
 	skip : false,
 	onscroll : function(event) {
+		
+
+		
 		var $t = EndlessPager;
 		if ($t.skip)
 		  return;
@@ -14201,7 +14203,7 @@ var EndlessPager = {
 	onContentLoaded : function(event, parentDiv, hotspot, html, url, params) {
 		var $t = EndlessPager;
 		LoadingIndicator.hide();
-		$t.indicatorTd.innerHTML = "";  
+		$t.indicatorTd.innerHTML = "&#160;";  
 		if ($t.nabsGrid == null)
 		  $t.nabsGrid = document.getElementById("nabs_grid");
 		var newGrid = getDomObjectFromHtml(html, 'id', 'nabs_grid');
