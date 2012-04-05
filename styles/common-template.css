@@ -2477,7 +2477,7 @@ td #corePageContent { min-height: 600px;}
 --------------------------------------------------------------------------------------- */
 .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
 .nabBoard h3, .gridBoard h3 {padding: 9px 15px 0; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
-.gridBoard {max-width: 669px !important; padding: 0 !important;}
+.gridBoard {max-width: 669px !important; padding: 0 !important;cursor: pointer;}
 .nabBoard .link {height: 200px;}
 .nabBoard .link {display: block; padding: 9px 0 4px 16px; overflow: hidden;}
 .gridBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
