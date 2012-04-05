@@ -7539,9 +7539,8 @@ function closeDiv(e, hideDivId) {
 
 function showBoard(e, divId) {
   e = getDocumentEvent(e);
-  var div = document.getElementById(divId);
-  alert(div.innerHTML);
-  document.location.href = div.innerHTML;
+  var a = document.getElementById(divId);
+  document.location.href = a.href;
   return stopEventPropagation(e);
 }
 
