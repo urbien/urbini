@@ -7537,6 +7537,14 @@ function closeDiv(e, hideDivId) {
   return ret;
 }
 
+function showBoard(e, divId) {
+  e = getDocumentEvent(e);
+  var div = document.getElementById(divId);
+  alert(div.innerHTML);
+  document.location.href = div.innerHTML;
+  return stopEventPropagation(e);
+}
+
 // Show/hide all neiboghring bookmarks and update main Bookmark
 function showHideAll(e, divId) {
   e = getDocumentEvent(e);
