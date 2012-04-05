@@ -1536,8 +1536,8 @@ var Boost = {
 			}
     }
     else {
-	  // page is in history
-	  div = $t.urlToDivs[newUrl];
+	   // page is in history
+	    div = $t.urlToDivs[newUrl];
       $t.currentUrl = newUrl;
       if (div  &&  !isRefresh) {
         $t.setTitle(div);
@@ -1637,7 +1637,7 @@ var Boost = {
 				return;
 			}
 		}
-
+    
 			// hack: in case if serever returns full html page instead
 			//(page with error message, for example; generated from widget/page.jsp)
 			// mobile_page div content then retrieve mobile_page content only
@@ -1993,12 +1993,8 @@ var MobilePageAnimation = {
   },
   
   showPage : function(curDiv, newDiv, isBack) {
-    if (!this.isInitialized) {
-      if (Browser.ie) // some problem with initialization in iE (?)
-        this.init();
-      else  
-        return; // expected not loaded DOM
-    }
+    if (!this.isInitialized)
+      return; // expected not loaded DOM
 
     if(!curDiv || !newDiv)
       return;
@@ -2099,7 +2095,6 @@ var MobilePageAnimation = {
     }
     else { // stop animation
       thisObj.curDiv.style.visibility = "hidden";
-      thisObj.curDiv.style.display = "none";
       thisObj.totalOffset = 0;
       thisObj.step = 1;
       if (Boost.view) {
@@ -2338,7 +2333,7 @@ function spriteAnimation(src, parent) {
   this._init(src);
 }
 
-
+	
 /*
 // window.orientation returns a value that indicates whether iPhone is in portrait mode, landscape mode with the screen turned to the
 // left, or landscape mode with the screen turned to the right.
