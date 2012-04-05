@@ -665,11 +665,11 @@ tr.ftSearch td { padding: 0px; }
 /*.ftsq {  color: &[SecondaryColorA_3];; }*/
 .ftsq {  color: &[PrimaryColor_4_text];; }
 .desktop_search input { 
-    width: 185px;
+    width: 180px;
     font: bold 16px Helvetica;
     border-width: 0px;
     padding: 0px 0px 0px 0px;
-    margin-top: 5px;
+    margin: 5px 5px 0px 0px;
  }
  
 .ftSearch .action_btn {
@@ -2228,7 +2228,7 @@ td.pBGr { background-color: #eeeeee;
 #auto_complete a { font-size: 12px; margin-left: 0px; color: &[MenuLineColorA];; }
 .dsk_auto_complete { -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5); }
 .dsk_auto_complete .menuItem, .dsk_auto_complete .not_found { min-width: 460px; }
-.mbl_auto_complete { left: 0; width: 100%; }
+.mbl_auto_complete { left: 0; width: 100%; height: 100%; }
 .mbl_auto_complete > table { width: 100%; }
 * html .dsk_auto_complete { width: 465px; }
 
@@ -2470,7 +2470,7 @@ td #corePageContent { min-height: 600px;}
 
 #col_1 .pList {padding-right:25px;}
 .pList {padding-top:15px;padding-left:15px; background: #f7f5f7;}
-.aList {padding-top:15px; background: #f7f5f7;}
+.aList { padding:15px 0px 0px 0px; background: #f7f5f7;}
 #resourceList .nab .pLink {color: #757575;}
 /* BOARD CELL
 
