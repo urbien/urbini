@@ -14217,11 +14217,13 @@ var EndlessPager = {
 		if (getChildByClassName(newGrid, "nab") == null)
 		  return $t.stop();
 		var items = $(newGrid.innerHTML);
-
+    
+		// obtain nabs_grid each time because it is possible different one in mobile mode
+		var masonryGridJQ = $('#nabs_grid'); 
     if (typeof g_endlessPageAfterImages != "undefined") // arrange items after images downloading
-			g_masonryGridJQ.append(items).imagesLoaded(function(){g_masonryGridJQ.masonry('appended', items);});
+			masonryGridJQ.append(items).imagesLoaded(function(){masonryGridJQ.masonry('appended', items);});
 		else // arrange items immediately (images have height)
-			g_masonryGridJQ.append(items).masonry('appended', items);
+			masonryGridJQ.append(items).masonry('appended', items);
 	  
 		$t.skip = false; 
 	},
