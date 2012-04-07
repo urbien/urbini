@@ -1343,7 +1343,7 @@ var ExecJS = {
   // contDiv is a div that contains JS code - (dialog, tab).
   // it automatically called from setInnerHtml() function
 	runDivCode : function(contDiv) {
-	  setTimeout(function(){ ExecJS._runDivCode(contDiv); }, 150);
+	  setTimeout(function(){ ExecJS._runDivCode(contDiv); }, Browser.mobile ? 700 : 150);
 	},
   _runDivCode : function(contDiv) {
     if(!contDiv)
@@ -1366,7 +1366,7 @@ var ExecJS = {
 					if (location.href.indexOf("-minify-js=n") != -1) 
 						fileName = fileName.replace("m.js", ".js")
   				js.setAttribute('src', src);
-					loadScript(src, document.body, function() { ExecJS._runDivCode(contDiv) });
+					loadScript(src, document.body, function() { setTimeout(function(){ ExecJS._runDivCode(contDiv); }, 100) });
   				g_loadedJsFiles[keyName] = true;
 					return;
 				}
@@ -1384,6 +1384,7 @@ var ExecJS = {
 					////////// not evaluate JS that declarates a function
 					////////// if (evalStr.indexOf("function") == -1)
 						window.eval(evalStr);
+					//	setTimeout(evalStr, 1000);
         }
         else { // or exec it with delay 1 sec.
           // expect that div should be shown shortly
@@ -1429,7 +1430,7 @@ function loadScript(scriptUrl, scriptDiv, callback){
   var el = document.createElement('script');
   el.type = 'text/javascript';
   el.src = scriptUrl;
-  el.async = true;
+  el.async = false; // insure that previous required JS file was downloaded (like "jQery")
   if (callback) {
     // most browsers
     el.onload = callback;
