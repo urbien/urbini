@@ -274,11 +274,6 @@
 	-->	
     <!--h3 class="csp_33"><text text="more deals"/></h3-->
     <!--siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;event=-$this&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CheckIn&amp;-inRowW=6&amp;-title=Check+Ins&amp;-limitW=1&amp;basedOnTemplate=null"/ -->
-    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRowW=3&amp;-title=Future+deals&amp;-limitW=1&amp;-featured=y&amp;-big=n&amp;basedOnTemplate=null"/>
-	<!--siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;cityScape_select=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=!null&amp;dateExpired_From=tomorrow&amp;-inRowW=4&amp;-limitW=1&amp;-featured=y&amp;basedOnTemplate=null"/ -->
-	
-	<relatedResources uri="l.html?-$action=searchLocal&amp;-limitW=20&amp;-inRowW=20&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null&amp;-big=n" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
-	<siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1&amp;-big=n"/>
 
  		<!--
 		</div>
@@ -288,6 +283,9 @@
 
 </tr>
 </table>
+    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRowW=3&amp;-title=Future+deals&amp;-limitW=1&amp;-featured=y&amp;-big=n&amp;basedOnTemplate=null"/>
+	<relatedResources uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;-limitW=20&amp;-inRowW=20&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null&amp;-big=n&amp;-grid=y;&amp;-nab=n&amp;-title=Related" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
+	<siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1&amp;-big=n&amp;-nab=n"/>
   <script type="text/javascript">
   <![CDATA[
       function likeCallback(event, div, hotspot, content, url, params, http_request) {
