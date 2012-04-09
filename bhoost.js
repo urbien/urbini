@@ -1552,12 +1552,6 @@ var Boost = {
 	  	else {
 	  		div = document.createElement("DIV");
 				div.className = "mobile_page";
-				div.style.visibility = "hidden";
-				div.style.display = "none";
-				if (currentDiv) 
-					insertAfter(currentDiv.parentNode, div, currentDiv);
-				else 
-					document.body.appendChild(div);
 			}
 			$t.urlToDivs[newUrl] = div;
     }
@@ -2009,7 +2003,9 @@ var MobilePageAnimation = {
     // hides the location bar
     scrollTo(0, 1);
 		
-    setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
+		curDiv.parentNode.appendChild(newDiv);
+    
+		setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
   },
   showDialog : function(div) {
 		this.dlgDiv = div;
@@ -2036,7 +2032,6 @@ var MobilePageAnimation = {
 	
 	_onZoomOutDialogEnd : function() {
 		var $t = MobilePageAnimation;
-		$t.dlgDiv.style.visibility = "hidden";
 		// remove dialog from document to avoid interference with other dialogs
 		$t.dlgDiv.parentNode.removeChild($t.dlgDiv);
 		removeEvent($t.dlgDiv, "webkitTransitionEnd", MobilePageAnimation._onZoomOutDialogEnd);
@@ -2079,14 +2074,6 @@ var MobilePageAnimation = {
     if (thisObj.step == 1) {
 			var newDivStl = thisObj.newDiv.style;
       newDivStl.top = thisObj.pageTopOffset;
-    	/////////////  newDivStl.width  = thisObj.wndWidth;
-      //newDivStl.position = "absolute";
-
-     // curDivStl.width  = thisObj.wndWidth;
-     // curDivStl.position = "absolute";
-
-      newDivStl.visibility = "visible";
-      newDivStl.display = "";
     }
 
     if(thisObj.step < thisObj.STEPS_NUM) {
@@ -2094,7 +2081,8 @@ var MobilePageAnimation = {
       setTimeout("MobilePageAnimation._animate();", thisObj.INTERVAL);
     }
     else { // stop animation
-      thisObj.curDiv.style.visibility = "hidden";
+			thisObj.curDiv.parentNode.removeChild(thisObj.curDiv);
+			
       thisObj.totalOffset = 0;
       thisObj.step = 1;
       if (Boost.view) {
@@ -2354,4 +2342,11 @@ window.onorientationchange = function() {
 		break;
   }
 }
+*/
+/*
+function errorHandler(msg, url, linenumber) {
+  Boost.log(msg);
+  return true; 
+}
+window.onerror = errorHandler;
 */
