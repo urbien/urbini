@@ -3429,7 +3429,8 @@ var ListBoxesHandler = {
     // RL editor: align options list
     if (($t._isEditList || $t._isFtsSift) && !isVisible($t.panelBlock) || $t._isOneParamSelection) {
       var form = getAncestorByAttribute(hotspot, "name", ["siteResourceList", "rightPanelPropertySheet"]);
-      $t.showStandAloneOptions(hotspot, form);
+           document.body.appendChild(div);
+		  $t.showStandAloneOptions(hotspot, form);
     }
   },
 
@@ -3513,7 +3514,7 @@ var ListBoxesHandler = {
     // insure to show on screen //TODO: make it more generic
     var pos = getElemInsideScreenPosition(x, y, this.optionsPanel);
     // reposit parent dialog
-    this.panelBlock.style.left = pos[0];
+    this.panelBlock.style.left = (pos[0] + "px");
 
     // hack: IE7 showed black background on city selection on Obval
     // 10 is min top offset returned by getElemInsideScreenPosition
@@ -3521,7 +3522,7 @@ var ListBoxesHandler = {
     if (Browser.ie7 && pos[1] == 10)
       pos[1] = -1;
       
-    this.panelBlock.style.top = pos[1];
+    this.panelBlock.style.top = pos[1] + "px";
     
     this.panelBlock.style.visibility = "visible";
   },
@@ -4410,7 +4411,7 @@ var SlideSwaper = {
   
   // always 1 "step"; callback is not required
   moveForward : function(tray, callback) {
-    // trying to prevent sliding in non-legitimate cases. 
+	  // trying to prevent sliding in non-legitimate cases. 
     if (TouchDlgUtil.getCurrentDialog() && !TouchDlgUtil.hasBlueRow())
       return;
     this.move(tray, callback, true);
@@ -8465,7 +8466,7 @@ function setDivInvisible(div, iframe) {
     MobilePageAnimation.hideDialog(div);
     return;
   }
-  
+
   if (isElemOfClass(div, "panel_block")) {
     div.style.opacity = 0;
   }
@@ -14209,7 +14210,7 @@ var EndlessPager = {
 	},
 	onContentLoaded : function(event, parentDiv, hotspot, html, url, params) {
 		var $t = EndlessPager;
-		LoadingIndicator.hide();
+
 		$t.indicatorTd.innerHTML = "&#160;";  
 		if ($t.nabsGrid == null)
 		  $t.nabsGrid = document.getElementById("nabs_grid");
@@ -14225,6 +14226,7 @@ var EndlessPager = {
 		else // arrange items immediately (images have height)
 			masonryGridJQ.append(items).masonry('appended', items);
 	  
+		LoadingIndicator.hide();
 		$t.skip = false; 
 	},
 	stop : function() {
