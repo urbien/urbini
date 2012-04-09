@@ -1875,6 +1875,8 @@ function getParentDialog(obj) {
 
 // note: 'panel_block' can be on page, so its parentNode is not BODY
 function isParentDialogOnPage(dialog) {
+	if (!dialog.parentNode)
+	  return false;
 	return dialog.parentNode.tagName.toLowerCase() != "body";
 }
 
