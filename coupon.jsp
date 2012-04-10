@@ -208,6 +208,7 @@
      </table>
    </div-->
    </div>
+   <br/>
    <div id="rules"><!-- class="hdn" -->
     <div class="highlights">
       <h3 class="csp_33"><text text="Highlights"/></h3>
