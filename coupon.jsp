@@ -85,8 +85,9 @@
 			 </where>
      </div>
      <div id="buy_to_friend">
-       &#160;&#160;&#160;<a class="buy_gift" id="-inner" href="mkResource.html?-$action=mkResource&amp;gift=y&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon">
-       <img src="icons/24-gift.png" width="24"/><br/>&#160;&#160;&#160;
+       &#160;<like value="Like"/><!--vkontakteLikeWidget / -->
+       <div class="lc" style="display:inline"><a class="lc" id="-inner" href="mkResource.html?-$action=mkResource&amp;gift=y&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon">
+       <img src="icons/gift.png" width="24"/>&#160;
        <where value="photo != null">
        <where value="photo.overlay != null">
          <where value="photo.overlay == 'lightTextLightBackground'">
@@ -95,28 +96,28 @@
            </span>
          </where>
          <where value="photo.overlay == 'lightTextDarkBackground'">
-           <span style="color: #ffffff">
+           <span style="color: #808080">
            <text text="Gift"/>
            </span>
          </where>
          <where value="photo.overlay == 'darkTextDarkBackground'">
-           <span style="color: #ffffff">
+           <span style="color: #808080">
            <text text="Gift"/>
            </span>
          </where>
          <where value="photo.overlay == 'darkTextLightBackground'">
-           <span style="color: #ffffff">
+           <span style="color: #808080">
            <text text="Gift"/>
            </span>
          </where>
        </where>
        <where value="photo.overlay == null">
-         <span style="color: #ffffff">
+         <span style="color: #808080">
          <text text="Gift"/>
          </span>
        </where>
        </where>
-       </a>
+       </a></div>
        <!--a  href="about:blank" class="coupon_buy conditions button_buy" onclick="showHide('rules', event);"><text text="Details!"/></a -->
      </div>
      <div id="remaining_time_container">
@@ -191,10 +192,9 @@
      </div>
     </div>
     </div>
-        <!--div id="overlap">&#160;</div-->
   <div id="conditions"><!-- style="padding-bottom:10px;" -->
    <div class="darkTextVeryLightBackground">
-   <div id="likeAndComment">
+   <!--div id="likeAndComment">
      <table cellpadding="5" width="100%">
      <tr>
        <td width="40%"><like value="Like"/></td>
@@ -202,17 +202,16 @@
        <td width="30%">
          <span class="nowrap"><text text="Act to" /></span> <a href="v.html?uri=sql/www.hudsonfog.com/voc/media/publishing/Article%3FarticleId%3D32155" style="color: #F55200;"><text text="gain reputation" /></a>!
        </td>
-               <!--td align="right"><div class="conditions" onclick="showHide('rules', event);"><text text="Conditions!"/></div></td -->
-              <td align="right" id="details"><!--a  href="about:blank" class="coupon_buy conditions button_buy" style="align:right; color:#000000" onclick="showHide('rules', event);"><text text="Details!"/></a--></td>
+        <td align="right" id="details"></td>
        
        </tr>
      </table>
-   </div>
+   </div-->
    </div>
    <div id="rules"><!-- class="hdn" -->
     <div class="highlights">
       <h3 class="csp_33"><text text="Highlights"/></h3>
-			<div>
+      <div class="displayIn4lines hideImg">
          <property name="description" noIcon="y"/>
          <br/>
          <tagCategories/>
@@ -233,7 +232,7 @@
     <div class="fine_print">
       <a name="fp"></a>
       <h3 class="csp_33"><text text="Fine print"/></h3>
-      <div>
+      <div class="displayIn4lines hideImg">
       <ul>
         <li><property name="conditions" noIcon="y"/></li>
         <li><text text="Must be redeemed by"/>&#160;<property name="redeemBy" noIcon="y"/></li>
@@ -255,11 +254,11 @@
     </div><!-- fine print -->
 		</div>
 		<!-- button to extend details -->
-		<!--center style="clear: both; height: auto !important; height: 1px;">
+		<center style="clear: both; height: auto !important; height: 1px;">
 			<a id="more_details_btn" class="button hdn" style="width: 97%; margin-top: -4px; padding: 0;" href="javascript: ;" onclick="ShowHideCouponDetailes.onclick(this);">
 				<span><text text="Show More" />&#9660;</span><span style="display: none;"><text text="Show Less" />&#9650;</span>
 			</a>
-		</center-->
+		</center>
 		
     <!--div class="more_items">
     <h3 class="csp_33"><text text="more deals"/></h3>
@@ -274,6 +273,9 @@
 	-->	
     <!--h3 class="csp_33"><text text="more deals"/></h3-->
     <!--siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;event=-$this&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CheckIn&amp;-inRowW=6&amp;-title=Check+Ins&amp;-limitW=1&amp;basedOnTemplate=null"/ -->
+    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRowW=3&amp;-title=Future+deals&amp;-limitW=1&amp;-featured=y&amp;-big=n&amp;basedOnTemplate=null"/>
+  <relatedResources uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;-limitW=20&amp;-inRowW=20&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null&amp;-big=n&amp;-grid=y;&amp;-nab=n&amp;-title=Related" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
+  <siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1&amp;-big=n&amp;-nab=n"/>
 
  		<!--
 		</div>
@@ -283,9 +285,9 @@
 
 </tr>
 </table>
-    <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRowW=3&amp;-title=Future+deals&amp;-limitW=1&amp;-featured=y&amp;-big=n&amp;basedOnTemplate=null"/>
+    <!--siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRowW=3&amp;-title=Future+deals&amp;-limitW=1&amp;-featured=y&amp;-big=n&amp;basedOnTemplate=null"/>
 	<relatedResources uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;-limitW=20&amp;-inRowW=20&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null&amp;-big=n&amp;-grid=y;&amp;-nab=n&amp;-title=Related" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
-	<siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1&amp;-big=n&amp;-nab=n"/>
+	<siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1&amp;-big=n&amp;-nab=n"/ -->
   <script type="text/javascript">
   <![CDATA[
       function likeCallback(event, div, hotspot, content, url, params, http_request) {
@@ -335,7 +337,6 @@
         textNode.nodeValue = (isNaN(curNum) ? 0 : curNum) + 1 + " ";
       }
 			
-/*		'more_details_btn' button	in this version is absent
 			var ShowHideCouponDetailes = {
 				textDiv1 : null,
 				textDiv2 : null,
@@ -398,8 +399,7 @@
 					}	
 				}
 			}
-			// runJSCode("ShowHideCouponDetailes.init()", null, "");
-*/
+			runJSCode("ShowHideCouponDetailes.init()", null, "common.js");
 			
 			// bar docked to bottom edge
 			var DockedBar = {
