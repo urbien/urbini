@@ -2465,7 +2465,8 @@ td #corePageContent { min-height: 600px;}
 
 #resourceList .grid .renab { font-size: bold; color: #98c165; text-align: center;}
 #resourceList .grid .renab img { width:16px;height:14px; margin-top: -4px;}
-.nab .renab img {width: 14px; height: 14px; padding-right: 3px; }
+.renab img { width:16px;height:14px; margin-top: -4px;}
+.renab img {max-width: 14px; padding-right: 3px; }
 #resourceList .nab td, #siteResourceList #front .nab .label {font-size: 11px;}
 #resourceList .nab .action, #div_Activity .nab .action {color: #98c165; font-weight:bold;} 
 
@@ -2579,3 +2580,71 @@ td #corePageContent { min-height: 600px;}
 .footer .support_tab a { color: #fff; display: block; }
 
 #fts h3 {margin:0px;}
+#buy_to_friend .lc, .lc td, div.lc {text-align: center; padding-bottom: 5px; padding-top: 3px;}
+.lc img {text-align: center; max-width:14px;}
+#resourceList .grid .lc a {
+  font-weight: normal; 
+}
+.lc a { 
+  border: 0; 
+  cursor: pointer; 
+  font-style: normal;
+  line-height: 20px; 
+  padding-left:5px;
+  padding-right:5px;
+  font-size: 11px;
+  position: relative; 
+  text-align: center;
+  text-decoration: none;
+  color: #000000; 
+  /* vertical margin is the opposite of button's awesomeness */
+  margin-top: 0;
+  margin-bottom: 0;
+  
+  /* not all browser support these, but who cares? */
+
+  text-shadow:1px -2px 5px #ffffff;
+
+          border-radius: 10px; 
+     -moz-border-radius: 10px; 
+  -webkit-border-radius: 10px; 
+        box-shadow: 0 1px 3px rgba(0,0,0,0.5); 
+     -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.5); 
+  -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  
+  background-color: #eeeeee;
+  background-image: -moz-linear-gradient(top center, #eeeeee, #ffffff);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#eeeeee), to(#ffffff));
+  background-image: -o-linear-gradient(#eeeeee, #ffffff);
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#eeeeee,endColorstr=#ffffff);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#eeeeee,endColorstr=#ffffff)";
+  
+  border: 1px solid #eeeeee;
+  
+  /* cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ */
+  display: -moz-inline-stack;
+  display: inline-block;
+  vertical-align: middle;
+  *display: inline;
+  position: relative;
+  
+  /* IE luv */
+  zoom: 1;
+  
+  /*disable text selection (Firefox only)*/
+  -moz-user-select: none;
+}
+
+.lc a:hover, .lc a:focus {
+  color: #000000; 
+  background-color: #ffc416;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5); /* reset box-shadow for WebKit */
+  background-image: -moz-linear-gradient(top center, #fffa76, #ffc416);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fffa76), to(#ffc416));
+  background-image: -o-linear-gradient(#fffa76, #ffc416);
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#fffa76,endColorstr=#ffc416);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#fffa76,endColorstr=#ffc416)";
+  
+  border: 1px solid #ffba24;
+}
