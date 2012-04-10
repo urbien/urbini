@@ -43,7 +43,7 @@
          <div id="amount"><property name="dealPrice" noIcon="y" /></div>&#160;&#160;
          <where value="isBuyable()">
            <where value="affiliateUrl != null">
-             <a max_width="500" full_height="705" class="coupon_buy button_buy" href="-$this.affiliateUrl"><text text="Get it on"/><br /><font size='2'><property name="publisher.name" /></font></a>           
+             <a max_width="500" full_height="705" class="coupon_buy button_buy" href="-$this.affiliateUrl"><text text="Get it on"/><span style="font-size:14px;float:left; color:#fff;margin-top:-8px;padding-left:22px;"><property name="publisher.name" /></span></a>           
            </where>
            <where value="affiliateUrl == null">
              <where value="dealPrice &gt; 0">
@@ -274,7 +274,7 @@
     <!--h3 class="csp_33"><text text="more deals"/></h3-->
     <!--siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;event=-$this&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CheckIn&amp;-inRowW=6&amp;-title=Check+Ins&amp;-limitW=1&amp;basedOnTemplate=null"/ -->
     <siteResourceList uri="l.html?-$action=searchLocal&amp;cityScape=-$this.cityScape&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateFeatured=null&amp;.dateExpired_From=tomorrow&amp;-inRowW=3&amp;-title=Future+deals&amp;-limitW=1&amp;-featured=y&amp;-big=n&amp;basedOnTemplate=null"/>
-  <relatedResources uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;-limitW=20&amp;-inRowW=20&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null&amp;-big=n&amp;-grid=y;&amp;-nab=n&amp;-title=Related" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
+  <relatedResources uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;-limitW=20&amp;-inRowW=20&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;dateExpired_From=tomorrow&amp;dateFeatured=!null&amp;-featured=y&amp;basedOnTemplate=null&amp;-big=n&amp;-grid=y;&amp;-nab=n" orUri="l.html?-$action=searchLocal&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;cityScape=-$this.cityScape&amp;cityScape.isNational=true" />
   <siteResourceList uri="l.html?-$action=searchLocal&amp;-sidebar=y&amp;type=http://www.hudsonfog.com/voc/system/readHistory/MyTrackedRead&amp;-title=My+recently+viewed&amp;-gridCols=forResource&amp;-viewCols=forResource&amp;-limitW=1&amp;-grid=y&amp;-inRowW=5&amp;application_select=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;application_verified=y&amp;$order=dateAccessed&amp;-asc=-1&amp;-big=n&amp;-nab=n"/>
 
  		<!--
