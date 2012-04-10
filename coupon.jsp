@@ -260,6 +260,7 @@
 				<span><text text="Show More" />&#9660;</span><span style="display: none;"><text text="Show Less" />&#9650;</span>
 			</a>
 		</center>
+		<br/>
 		
     <!--div class="more_items">
     <h3 class="csp_33"><text text="more deals"/></h3>
