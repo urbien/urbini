@@ -1956,34 +1956,17 @@ var Boost = {
  * + checks orientation and fit page width
  **********************************************/
 var MobilePageAnimation = {
-  INTERVAL : 0, // ms
-  STEPS_NUM : 6,
-
-  curDiv : null,
-  newDiv : null,
-  rightToLeft : true,
-
   dlgDiv : null,
-
-  totalOffset : 0,
-  step : 1,
-
-  pageTopOffset : null,
-
   isInitialized : false,
 
   init : function() {
     this.isInitialized = true;
-    ////// this.wndWidth = 100;//Mobile.getScreenWidth();
-
     var div = document.getElementById('mainDiv');
     if (div) {
-    ////////////  div.style.width = this.wndWidth;
       div.position = "absolute";
       this.curDiv = div;
       this.pageTopOffset = getTop(div);
     }
-   //////// setTimeout(this.checkOrientation, 200);
   },
   
   showPage : function(curDiv, newDiv, isBack) {
@@ -1993,20 +1976,16 @@ var MobilePageAnimation = {
     if(!curDiv || !newDiv)
       return;
 
-    this.curDiv = curDiv;
-    this.newDiv = newDiv;
-    if (typeof isBack == 'undefined' || isBack == false)
-      this.rightToLeft = true;
-    else
-      this.rightToLeft = false;
-   
-    // hides the location bar
-    scrollTo(0, 1);
-		
-		curDiv.parentNode.insertBefore(newDiv, curDiv);
-    
-		setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
+		if (typeof isBack == 'undefined')
+		  isBack = false;
+
+		scrollTo(0, 1);
+		curDiv.parentNode.insertBefore(newDiv, null); 
+    // TODO: may be creation function here leads to memory leak?
+  	setTimeout(function f() { curDiv.style.WebkitTransform = "translate3d(" + (isBack ? 1 : -1) * 100 + "%, 0%, 0%)"; }, 150)
+	  setTimeout(function f() { newDiv.style.WebkitTransform = "translate3d(0%, 0%, 0%)" }, 150)
   },
+	
   showDialog : function(div) {
 		this.dlgDiv = div;
 	  div.style.top = getScrollXY()[1] + 'px';
@@ -2036,84 +2015,10 @@ var MobilePageAnimation = {
 		$t.dlgDiv.parentNode.removeChild($t.dlgDiv);
 		removeEvent($t.dlgDiv, "webkitTransitionEnd", MobilePageAnimation._onZoomOutDialogEnd);
 	},
-	
-  _animate : function() {
-    var thisObj = MobilePageAnimation;
 
-    if(!thisObj.curDiv || !thisObj.newDiv)
-      return;
-
-    var x;
-
-    var arg = (thisObj.step - thisObj.STEPS_NUM / 2) / 1.5;
-    var wndWidth = Mobile.getScreenWidth();
-		var delta = wndWidth / 2.6 * Math.exp(-arg*arg);
-    thisObj.totalOffset += delta;
-
-    // 1. calculation
-    // 1.1. right to left
-    if(thisObj.rightToLeft) {
-      if(thisObj.step == thisObj.STEPS_NUM)
-        x = 0;
-      else
-        x = Math.floor(wndWidth - thisObj.totalOffset);
-
-			setTransformProperty(thisObj.curDiv, "translate3d(" + (x - wndWidth) + "px, 0px, 0px)");
-			setTransformProperty(thisObj.newDiv, "translate3d(" + x + "px, 0px, 0px)");
-    }
-    // 1.2. left to right // for "Back"
-    else {
-      if(thisObj.step == thisObj.STEPS_NUM)
-        x = wndWidth;
-      else
-        x = thisObj.totalOffset;
-
-			setTransformProperty(thisObj.newDiv, "translate3d(" + (x - wndWidth) + "px, 0px, 0px)");
-			setTransformProperty(thisObj.curDiv, "translate3d(" + x + "px, 0px, 0px)");
-    }
-    if (thisObj.step == 1) {
-			var newDivStl = thisObj.newDiv.style;
-      newDivStl.top = thisObj.pageTopOffset;
-    }
-
-    if(thisObj.step < thisObj.STEPS_NUM) {
-      thisObj.step++;
-      setTimeout("MobilePageAnimation._animate();", thisObj.INTERVAL);
-    }
-    else { // stop animation
-			thisObj.curDiv.parentNode.removeChild(thisObj.curDiv);
-			
-      thisObj.totalOffset = 0;
-      thisObj.step = 1;
-      if (Boost.view) {
-        Boost.view.setProgressIndeterminate(false);
-        if (Boost.view.refocus)
-          Boost.view.refocus();
-      }
-    }
-  },
   getPageTopOffset : function() {
     return this.pageTopOffset;
   }
-/*	
-	,
-  checkOrientation : function() {
-		
-		return;
-		
-    var $t = MobilePageAnimation;
-    var wndWidth = Mobile.getScreenWidth();
-    
-	//	alert(wndWidth + " / " + $t.wndWidth);
-		
-    if (wndWidth != $t.wndWidth) {
-      $t.wndWidth = wndWidth;
-      if ($t.curDiv)
-        $t.curDiv.style.width = wndWidth;
-    }
-    setTimeout($t.checkOrientation, 200);
-  }
-*/  
 }
 
 
