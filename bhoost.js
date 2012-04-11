@@ -2003,7 +2003,7 @@ var MobilePageAnimation = {
     // hides the location bar
     scrollTo(0, 1);
 		
-		curDiv.parentNode.appendChild(newDiv);
+		curDiv.parentNode.insertBefore(newDiv, curDiv);
     
 		setTimeout("MobilePageAnimation._animate();", this.INTERVAL);
   },
