@@ -13661,9 +13661,10 @@ var LinkProcessor = {
             a = addOrReplaceUrlParam(a, "-loc", loc);
 
           var locSort = getUrlParam(window.location.href, '-locSort');
-          if (locSort != "y")
+          var aLocSort = getUrlParam(a, '-locSort');
+          if (locSort != "y"  &&  aLocSort != 'y')
             a = addOrReplaceUrlParam(a, "-locSort", 'n');
-            
+          
           link.href = a;
         }
       }
