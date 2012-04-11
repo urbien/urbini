@@ -1981,11 +1981,18 @@ var MobilePageAnimation = {
 
 		scrollTo(0, 1);
 		curDiv.parentNode.insertBefore(newDiv, null); 
-    // TODO: may be creation function here leads to memory leak?
-  	setTimeout(function f() { curDiv.style.WebkitTransform = "translate3d(" + (isBack ? 1 : -1) * 100 + "%, 0%, 0%)"; }, 150)
-	  setTimeout(function f() { newDiv.style.WebkitTransform = "translate3d(0%, 0%, 0%)" }, 150)
+  	addEvent(curDiv, "webkitTransitionEnd", MobilePageAnimation._onPageSlidingEnd);
+		// TODO: may be creation function here leads to memory leak?
+		setTimeout(function f() { curDiv.style.WebkitTransform = "translate(" + (isBack ? 1 : -1) * 100 + "%, 0%)"; }, 150)
+	  setTimeout(function f() { newDiv.style.WebkitTransform = "translate(0%, 0%)" }, 150)
   },
-	
+	_onPageSlidingEnd : function(event) {
+    var hiddenPage = getEventTarget(event);
+		removeEvent(hiddenPage, "webkitTransitionEnd", MobilePageAnimation._onPageSlidingEnd);
+		// remove hidden page to avoid several elements with the same ID, for example
+		hiddenPage.parentNode.removeChild(hiddenPage);
+		// here possible to call some other new page initializations
+	},
   showDialog : function(div) {
 		this.dlgDiv = div;
 	  div.style.top = getScrollXY()[1] + 'px';
@@ -1995,7 +2002,7 @@ var MobilePageAnimation = {
 		div.style.WebkitTransform = "scale(1.0)";
 		div.style.opacity = "1.0";
 	},
-	 _onZoomInDialogEnd : function() {
+	 _onZoomInDialogEnd : function(event) {
     var $t = MobilePageAnimation;
 		Mobile.getCurrentPageDiv().style.opacity = 0;
 		removeEvent($t.dlgDiv, "webkitTransitionEnd", MobilePageAnimation._onZoomInDialogEnd);
