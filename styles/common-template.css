@@ -437,9 +437,10 @@ td.textCell {
 .nab .anab  { box-shadow: none;}
 .nab .anab span { padding-right: 12px; }
 .nab .nabP { background: #f2f2f2; }
-.nab .nabP td, .nab .modP td { padding: 10px 2px 10px 0; vertical-align: top;}
+.nab .nabP td, .nab .modP td { padding: 0px 2px 0px 0; vertical-align: top;}
 .nab .nabP img  { width: 24px; padding-right: 5px; border: 0; }
-.nab .nabP #-inner img  { width: 16px; height: 16px;  padding-right: 2px; border: 0; vertical-align: top; }
+/*.nab .nabP #-inner img  { max-width: 16px; height: 16px;  padding-right: 2px; border: 0; vertical-align: top; }*/
+.nab .nabP #-inner img  { padding-right: 0px; }
 
 .anab .nabRL #-inner img  { width: 16px;  padding-right: 2px; border: 0; /*vertical-align: top;height: 16px; */}
 
@@ -2463,7 +2464,7 @@ td #corePageContent { min-height: 600px;}
 .nab .anab .galleryItem_css3 img {max-width: 202px;}
 .nab .anab .galleryItem_css3 { display: inline-block; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
 
-#resourceList .grid .renab { font-size: bold; color: #98c165; text-align: center;}
+#resourceList .grid .renab { font-size: bold; color: #757575; text-align: center;}
 #resourceList .grid .renab img { width:16px;height:14px; margin-top: -4px;}
 .renab img { width:16px;height:14px; margin-top: -4px;}
 .renab img {max-width: 14px; padding-right: 3px; }
@@ -2475,6 +2476,8 @@ td #corePageContent { min-height: 600px;}
 .aList { padding:15px 0px 0px 0px; background: #f7f5f7;}
 #resourceList .nab .pLink {color: #757575;}
 /* BOARD CELL
+
+#renabs span.action   {font-weight:bold;font-size:8pt;color:#000066;}
 
 --------------------------------------------------------------------------------------- */
 .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
@@ -2596,7 +2599,7 @@ td #corePageContent { min-height: 600px;}
   position: relative; 
   text-align: center;
   text-decoration: none;
-  color: #000000; 
+  color: #757575; 
   /* vertical margin is the opposite of button's awesomeness */
   margin-top: 0;
   margin-bottom: 0;
@@ -2636,7 +2639,7 @@ td #corePageContent { min-height: 600px;}
 }
 
 .lc a:hover, .lc a:focus {
-  color: #000000; 
+  color: #757575; 
   background-color: #ffc416;
   box-shadow: 0 1px 3px rgba(0,0,0,0.5);
   -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.5); /* reset box-shadow for WebKit */
