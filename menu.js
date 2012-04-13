@@ -13664,7 +13664,7 @@ var LinkProcessor = {
           var aLocSort = getUrlParam(a, '-locSort');
           if (locSort != "y"  &&  aLocSort != 'y')
             a = addOrReplaceUrlParam(a, "-locSort", 'n');
-          
+            
           link.href = a;
         }
       }
@@ -14219,13 +14219,13 @@ var EndlessPager = {
 		if (getChildByClassName(newGrid, "nab") == null)
 		  return $t.stop();
 		var items = $(newGrid.innerHTML);
-    
+
 		// obtain nabs_grid each time because it is possible different one in mobile mode
-		var masonryGridJQ = $('#nabs_grid'); 
-    if (typeof g_endlessPageAfterImages != "undefined") // arrange items after images downloading
+		var masonryGridJQ = $('#nabs_grid'); // expected 1 member in the set 
+    if (masonryGridJQ[0].getAttribute("hasImgHeight") == "y")
+		  masonryGridJQ.append(items).masonry('appended', items); // arrange items immediately (images have height)
+		else // arrange items after images downloading
 			masonryGridJQ.append(items).imagesLoaded(function(){masonryGridJQ.masonry('appended', items);});
-		else // arrange items immediately (images have height)
-			masonryGridJQ.append(items).masonry('appended', items);
 	  
 		LoadingIndicator.hide();
 		$t.skip = false; 
