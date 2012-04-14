@@ -1377,11 +1377,14 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this._close  = function() {
 		i_am.changePanelWidth(false);
 		i_am.iframeObj.style.height = i_am.initFrameHeight + "px";
-
-		if (i_am.toolbar) {
-		//////	i_am.iframeObj.style.marginTop = -i_am.toolbar.getHeight() + "px";
-			i_am.toolbar.hide();
+    
+		// hide parent dialog if there is only one parameter - this RTE
+    if (TouchDlgUtil.isElementFirstParameter(this.iframeObj) &&
+			     getNextSibling(getAncestorByClassName(this.iframeObj, "param_tr")) == null) {
+		  DataEntry.hide();
 		}
+    else if (i_am.toolbar)
+			i_am.toolbar.hide();
 		
 		i_am.iframeObj.setAttribute("scrolling", "no");   
 	}
