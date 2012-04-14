@@ -3421,16 +3421,16 @@ var ListBoxesHandler = {
       for (var i = 0; i < trs.length; i++) 
         trs[i].onclick = $t.onOptionsItemClick;
     }
-
+		
     $t.changeOptionSelectionState(opTable);
-    $t.changeAddNewState(popupDiv);
-    $t.showOptionsOrClasses(popupDiv);
-
+		$t.changeAddNewState(popupDiv);
+		$t.showOptionsOrClasses(popupDiv);
+		
     // RL editor: align options list
     if (($t._isEditList || $t._isFtsSift) && !isVisible($t.panelBlock) || $t._isOneParamSelection) {
       var form = getAncestorByAttribute(hotspot, "name", ["siteResourceList", "rightPanelPropertySheet"]);
-           document.body.appendChild(div);
-		  $t.showStandAloneOptions(hotspot, form);
+      document.body.appendChild(div);
+	  	$t.showStandAloneOptions(hotspot, form);
     }
   },
 
@@ -6082,7 +6082,7 @@ var TouchDlgUtil = {
     if (!selector || !isVisible(selector)) {
       selector = this.focusHolder;
 
-      var fstInput = getChildByClassName(parent, "input");
+      var fstInput = getChildByClassName(parent, ["input", "rte"]);
       if (fstInput && isVisible(fstInput)) 
         fstInput.focus();
       else if (this.focusHolder) 
