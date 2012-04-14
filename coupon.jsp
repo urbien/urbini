@@ -87,7 +87,7 @@
      <div id="buy_to_friend">
        &#160;<like value="Like"/><!--vkontakteLikeWidget / -->
        <div class="lc" style="display:inline"><a class="lc" id="-inner" href="mkResource.html?-$action=mkResource&amp;gift=y&amp;displayProps=y&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy&amp;bUri=-$this%26m_p=couponBuys%26b_p=coupon">
-       <img src="icons/gift.png" width="24"/>&#160;
+       <img src="icons/gift.png"/>&#160;
        <where value="photo != null">
        <where value="photo.overlay != null">
          <where value="photo.overlay == 'lightTextLightBackground'">
