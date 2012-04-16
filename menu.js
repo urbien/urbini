@@ -14208,15 +14208,15 @@ var EndlessPager = {
 	  }	
 		var urlArr = this.anchors[this.curPage].href.split("?");
 		urlArr[1] += "&hideMenuBar=y&hideFts=y&hideCommonFooter=y"; // minify server response
-		postRequest(event, urlArr[0], urlArr[1], null, $t.indicatorTd, this.onContentLoaded);
+		postRequest(event, urlArr[0], urlArr[1], null, $t.indicatorTd, this.onContentLoaded, null, true);
 		this.curPage++;
-    this.indicatorTd.innerHTML = "&[Loading];...";  
+    this.indicatorTd.style.visibility = "visible";  
 
 	},
 	onContentLoaded : function(event, parentDiv, hotspot, html, url, params) {
 		var $t = EndlessPager;
 
-		$t.indicatorTd.innerHTML = "&#160;";  
+		$t.indicatorTd.style.visibility = "hidden";  
 		if ($t.nabsGrid == null)
 		  $t.nabsGrid = document.getElementById("nabs_grid");
 		var newGrid = getDomObjectFromHtml(html, 'id', 'nabs_grid');
