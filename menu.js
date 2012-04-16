@@ -14178,9 +14178,6 @@ var EndlessPager = {
 	nabsGrid : null,
 	skip : false,
 	onscroll : function(event) {
-		
-
-		
 		var $t = EndlessPager;
 		if ($t.skip)
 		  return;
@@ -14191,8 +14188,11 @@ var EndlessPager = {
 			removeEvent(window, "scroll", EndlessPager.onscroll, false);
 			return;
 		}
-		if (!isElemInView($t.indicatorTd))
-			return;
+		
+    // download new "portion" when to end of a page remained a half of a screen 
+	  if (findPosY($t.indicatorTd) > getScrollXY()[1] + getWindowSize()[1] * 1.5)
+		  return;
+		
 		$t.skip = true;	
 		$t.loadNewContent(event);
 	},
