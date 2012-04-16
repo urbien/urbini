@@ -1875,9 +1875,7 @@ function getParentDialog(obj) {
 
 // note: 'panel_block' can be on page, so its parentNode is not BODY
 function isParentDialogOnPage(dialog) {
-	if (!dialog.parentNode)
-	  return false;
-	return dialog.parentNode.tagName.toLowerCase() != "body";
+	return dialog.parentNode && dialog.parentNode.tagName && dialog.parentNode.tagName.toLowerCase() != "body";
 }
 
 // helps with class names composed from 2 or more parts
@@ -1948,8 +1946,9 @@ function setShadow(div, shadowStyle) {
 	div.style.webkitBoxShadow = shadowStyle;
 }
 function appendClassName(elem, className) {
-	if (elem.className.indexOf(" " + className) != -1)
-		return;
+	var regexp = new RegExp("[ ]+" + className + "[ ]+", "g");
+	if ((" " + elem.className + " ").match(regexp) != null)
+	  return;
 	elem.className += (elem.className.length == 0) ? className : (" " + className);
 }
 function removeClassName(elem, className) {
