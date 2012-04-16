@@ -8208,14 +8208,18 @@ function saveButtonClicked(e) {
 //****************************************************************
 function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim, positionEnforced, isModal){
   // insert in DOM
-  if (!div.parentNode)
+  if (!div.parentNode || !div.parentNode.tagName)
     document.body.appendChild(div);
 
   if (Browser.mobile && div.id != "loading") {
     MobilePageAnimation.showDialog(div);
     return;
   }
-  
+	
+  // hack: panel_block has width = 550px need to extend it
+//	if (isElemOfClass(div, "panel_block"))
+//		div.style.minWidth = getFirstChild(div).clientWidth;
+	
   // limit div / dialog width gotten from "max_width" parameter
   if (hotspot) {
     var maxWidth = hotspot.getAttribute("max_width");
