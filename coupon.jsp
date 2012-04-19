@@ -149,7 +149,7 @@
            </where>
          </where>
        </div>
-    <where value="isBuyable()">
+    <where value="affiliateUrl == null &amp;&amp; isBuyable()">
       <div id="number_sold_container" class="${overlay}">
        <where value="totalCouponBuysCount &gt; 0">
           <div class="time_left"><text text="Bought"/>:&#160; 
