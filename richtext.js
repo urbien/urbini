@@ -1510,23 +1510,37 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		}
   }
   
-	// Note: FF, Crome increases  i_am.document.body.scrollHeight;	on each key down
+	// fitHeightToVisible
 	this.fitHeightToVisible = function(onFocus) {
-		var docH = i_am.document.body.scrollHeight;
-
-		if ((Browser.gecko || Browser.webkit) && !onFocus
-					 && i_am.document.body.offsetHeight != 0)
-			docH = i_am.document.body.offsetHeight + "px";
+		var docH = 0;
+		// 1) fit height with help of position of last element
+		// worked in FF and IE
+		var lastElem = getLastChild(i_am.document.body);
+		if (lastElem) {
+		  var lastElemY = findPosY(lastElem);
+			if (lastElemY != 0)
+	  	  docH = lastElemY + lastElem.offsetHeight;
+	  }
+		
+		// 2) fit height with help of body size
+		// Chrome and Opera failed with 1st variant: problem with findPosY / obj.offsetTop
+		if (docH == 0) {
+		  if (onFocus)
+			  docH = i_am.document.body.scrollHeight;
+			else if (i_am.document.body.offsetHeight != 0)
+				docH = i_am.document.body.offsetHeight;
+		}
+		  
 			
 		// 1. small content size - use initial height without scrolling
 		if (docH < i_am.initFrameHeight) {
 			i_am.iframeObj.style.height = i_am.initFrameHeight + "px";
 			return;
 		}
-		
+		// 2. big content
 		var frmH = i_am.iframeObj.clientHeight;
 	  if(frmH < docH || (Browser.gecko && frmH > docH - 7))
-		  i_am.iframeObj.style.height = docH + 7  + "px";
+		  i_am.iframeObj.style.height = docH + 5  + "px";
 	}
   
   this._onpaste = function(e) {
