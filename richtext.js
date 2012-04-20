@@ -1007,12 +1007,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   }
 	
 	this.createToolbar = function() {
-		// Note: after second insertion of a dialog on mobile, RTE requires new initialization (?!)
-		// need to remove old, not effective toolbar (!) 
-		// (TODO: to investigate it more)
-		var oldToolbar = getChildByClassName(this.iframeObj.parentNode, 'ctrl_toolbar');
-		if (oldToolbar != null)
-			oldToolbar.parentNode.removeChild(oldToolbar);
+		var toolBarDiv = getChildByClassName(this.iframeObj.parentNode, 'ctrl_toolbar');
+		if (toolBarDiv != null)
+			return; // toolbar was already created in init()
 		
 		// 1.
 		var toolBar = new Toolbar(this.parentDiv, this, 32, false, this.iframeObj);
