@@ -83,11 +83,14 @@ var RteEngine = {
   
 	//register the RTEs.
 	register : function(iframeId, rteDataFieldId, rtePref) {
+    if( this.getRteById(iframeId))
+      return; // already initialized
+
     var iframeObj = document.getElementById(iframeId);
 
 		if(typeof rtePref == 'undefined')
 			rtePref = this.simpleRTE;
-
+    
 		if(iframeObj.id	== "")
 			iframeObj.id = new Date().getTime();
 
@@ -1007,10 +1010,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   }
 	
 	this.createToolbar = function() {
-		var toolBarDiv = getChildByClassName(this.iframeObj.parentNode, 'ctrl_toolbar');
-		if (toolBarDiv != null)
-			return; // toolbar was already created in init()
-		
 		// 1.
 		var toolBar = new Toolbar(this.parentDiv, this, 32, false, this.iframeObj);
 		// 2. add buttons
