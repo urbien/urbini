@@ -2657,7 +2657,6 @@ var Tooltip = {
   
   onClick : function(e) {
     var $t = Tooltip;
-  
     if ($t.isShown)
       $t.hide();
     else 
@@ -2666,7 +2665,8 @@ var Tooltip = {
     // show tooltip on click on (help & property) icon
     var target = getEventTarget(e);
     // allow browsing on a link click
-    if (getAncestorByTagName(target, "a") == null && $t.putContent(e, target)) {
+		var a = getAncestorByTagName(target, "a");
+    if (a != null && getTextContent(a) == "[?]" && $t.putContent(e, target)) {
       $t.show();
       stopEventPropagation(e);
     }
