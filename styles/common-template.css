@@ -1907,7 +1907,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
   color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 250px; height: auto;
   font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px;
 }
-
+.rounded_rect_tbl .with_units .input { width: 150px; }
 #register .input { text-align: left;  height: 25px; }
 
 .false_input, .false_textarea { display: inline-block; text-align: left; cursor: text !important; }
@@ -1917,7 +1917,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 .rounded_rect_tbl .grey_highlighting .pointer, .rounded_rect_tbl .blue_highlighting .pointer { color: &[Alternative_A];; }
 
 .rounded_rect_tbl .textarea { color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];;  margin-bottom: 5px; width: 100%; border: 2px solid &[PrimaryColor_1];; font:inherit; }
-.rounded_rect_tbl .select { font-size: inherit; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
+.rounded_rect_tbl .select { font-size: inherit; width: 100px; height: 20px; color: &[SecondaryColorA_3];; background-color: &[PrimaryColor_5];; }
 
 .rounded_rect_tbl input#rightPanelPropertySheet  { display: none; }
 /* .rounded_rect_tbl td#dIcon { height: 40px; PADDING-RIGHT: 2px; PADDING-LEFT: 5px; PADDING-TOP: 2px; white-space: nowrap;  vertical-align: top; } */
