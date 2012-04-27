@@ -1,5 +1,5 @@
 <div>
 <text text="Your account has been activated, welcome home!" />
 <br /><br />
-<a href="/" /><text text="Take me to my account, NOW" /></a>
+<a href="alias/missions"><text text="So...what is there to do?" /></a>
 </div>
