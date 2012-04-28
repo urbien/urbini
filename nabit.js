@@ -18,21 +18,25 @@ function isIOS() {
 var openGraphImages = [];
 var loadedOGImages = false;
 var nabbed = false;
+var ogTitle;
 for (c = document.getElementsByTagName("meta"), k = 0; k < c.length; k++) {
   var p = c[k].getAttribute('property');
-  if (p != 'og:image')
-    continue;
-  
-  var img = new Image(); 
-  img.src = c[k].getAttribute('content');
-  img.onload = function() {
-    loadedOGImages = true;
-    if (!nabbed) {
-      nabbed = true;
-      nab();
-    }
-  };
-  openGraphImages.push(img);
+  if (p == 'og:title') {
+    ogTitle = c[k].getAttribute('content');
+  }
+  if (p == 'og:image') {
+    var img = new Image(); 
+    img.src = c[k].getAttribute('content');
+    img.onload = function() {
+      loadedOGImages = true;
+      if (!nabbed) {
+        nabbed = true;
+        nab();
+      }
+    };
+    if (isValidImage(img))
+      openGraphImages.push(img);
+  }
 }
 if (openGraphImages.length == 0 && !nabbed) {
   nabbed = true;
@@ -50,6 +54,9 @@ setTimeout(4000,
     }
 );
 
+function isValidImage(img) {
+  return img.height && img.height >= 80;
+}
 function nab() {
     function s() {
         var a = window,
@@ -64,7 +71,7 @@ function nab() {
             originalImageUrl: a.src,
             sourceUrl: b,
             alt: a.alt,
-            title: document.title,
+            title: ogTitle || document.title,
             isVideo: a.type == "video"
         };
         if (q) b.description = q;
@@ -250,7 +257,7 @@ function nab() {
         n.appendChild(f);
         document.getElementById("tpm_RemoveLink").onclick = i;
         i = {};
-        for (var h = 0; h < m.length; h++) if (!(i[m[h].src] || m[h].im2.height && m[h].im2.height < 80)) {
+        for (var h = 0; h < m.length; h++) if (!(i[m[h].src] || isValidImage(m[h]))) {
             i[m[h].src] = 1;
             (function (a) {
                 var b = document.createElement("div");
