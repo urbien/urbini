@@ -1973,12 +1973,34 @@ function hex2rgb(hexColor) {
 
 // usage: 1) example: 'all 1s ease-in-out' - after that all CSS changes will animate 2) 'none' - turn off
 function setTransitionProperty(element, transitionStr, callback) {
+	if (transitionStr && transitionStr.indexOf("transform") == 0) {
+		var specTfCSS = "-" + setTransformProperty(element, null).toLowerCase().replace("transform", "-transform");
+		transitionStr = transitionStr.replace("transform", specTfCSS);
+	}
   var specTransName = setCSS3Property(element, 'transition', transitionStr);
-	if (callback && specTransName)
-  	addEvent(element, (specTransName + 'End'), callback);
+	if (callback && specTransName) {
+		if (Browser.webkit)
+		  eventName = "webkitTransitionEnd";
+		else if (Browser.gecko)
+		  eventName = "transitionend";
+		else if (Browser.opera)
+		  eventName = "oTransitionEnd";
+		else if (Browser.ie)
+			eventName = "msTransitionEnd";
+			
+    if (eventName) {
+			//element.ontransitionend = callback;
+			if (transitionStr) 
+				addEvent(element, eventName, callback);
+			else 
+				removeEvent(element, eventName, callback);
+		}	// else append event (IE)
+  }
 	return specTransName;
 }
-
+function removeTransitionCallback(element, callback){
+	setTransitionProperty(element, null, callback);
+}
 function setTransformProperty(element, transformStr) {
   return setCSS3Property(element, 'transform', transformStr);
 }
@@ -1993,7 +2015,8 @@ function setCSS3Property(element, propName, cssStr) {
 		  propName = propName.charAt(0).toUpperCase() + propName.slice(1);
 	    var specPropName = prefix[i] + propName;
 		if (typeof element.style[specPropName] != 'undefined') {
-		  element.style[specPropName] = cssStr;
+		  if (cssStr != null)
+			  element.style[specPropName] = cssStr;
 		  return specPropName;
 	  }
   }
