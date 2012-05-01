@@ -1978,17 +1978,24 @@ var MobilePageAnimation = {
 
 		if (typeof isBack == 'undefined')
 		  isBack = false;
+ 		
+		setTransformProperty(curDiv, "translate(0%, 0%)");
+		setTransformProperty(newDiv, "translate(" + (isBack ? -1 : 1) * 100 + "%, 0%)");
+		
+		setTransitionProperty(curDiv, "transform 0.5s ease-in-out", MobilePageAnimation._onPageSlidingEnd);
+		setTransitionProperty(newDiv, "transform 0.5s ease-in-out");
 
 		scrollTo(0, 1);
 		curDiv.parentNode.insertBefore(newDiv, null); 
-  	addEvent(curDiv, "webkitTransitionEnd", MobilePageAnimation._onPageSlidingEnd);
-		// TODO: may be creation function here leads to memory leak?
-		setTimeout(function f() { curDiv.style.WebkitTransform = "translate(" + (isBack ? 1 : -1) * 100 + "%, 0%)"; }, 150)
-	  setTimeout(function f() { newDiv.style.WebkitTransform = "translate(0%, 0%)" }, 150)
+ 
+    setTimeout(function f() { setTransformProperty(curDiv, "translate(" + (isBack ? 1 : -1) * 100 + "%, 0%)"); }, 150)
+    setTimeout(function f() { setTransformProperty(newDiv, "translate(0%, 0%)") }, 150)
   },
+	
 	_onPageSlidingEnd : function(event) {
     var hiddenPage = getEventTarget(event);
-		removeEvent(hiddenPage, "webkitTransitionEnd", MobilePageAnimation._onPageSlidingEnd);
+		// removeEvent(hiddenPage, "webkitTransitionEnd", MobilePageAnimation._onPageSlidingEnd);
+		removeTransitionCallback(hiddenPage, MobilePageAnimation._onPageSlidingEnd);
 		// remove hidden page to avoid several elements with the same ID, for example
 		hiddenPage.parentNode.removeChild(hiddenPage);
 		// here possible to call some other new page initializations
@@ -2163,6 +2170,7 @@ function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
 * SpriteAnimation - use it instead animated GIF on iPhone
 * if parent is "undefined"  then place it in right top corner of screen
 *******************************************************************/
+/* NOT used currently
 function spriteAnimation(src, parent) {
   var $t = this;
   
@@ -2232,7 +2240,7 @@ function spriteAnimation(src, parent) {
   // call initialization function
   this._init(src);
 }
-
+*/
 	
 /*
 // window.orientation returns a value that indicates whether iPhone is in portrait mode, landscape mode with the screen turned to the
