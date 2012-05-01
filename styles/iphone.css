@@ -30,8 +30,7 @@ body {
 ***********************************************/
 #wrapperM, #mainskin { width: 100%; } 
 
-#mainDiv { -webkit-transform : translate(0%, 0%); }
-.mobile_page { position: absolute; width: 100%; -webkit-transform: translate(100%, 0%); -webkit-transition: -webkit-transform 0.5s ease-in-out; }
+.mobile_page { position: absolute; width: 100%; }
 
 .mobile_dlg { 
   position: absolute;
