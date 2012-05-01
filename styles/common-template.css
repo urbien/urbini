@@ -2457,7 +2457,7 @@ td #corePageContent { min-height: 600px;}
 #dataEntry .sortable li, #siteResourceList .sortable li {float: left; width: 222px; margin: 0 0 15px 15px;}
 /* NAB CELL
 --------------------------------------------------------------------------------------- */
-.nab { float: left; width: 192px; margin: 5px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 1px 3px #AAAAAA;}
+.nab { float: left; width: 192px; margin: 5px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
 #nabs_grid .nab { visibility: hidden; }
 #nabs_grid .masonry-brick { visibility: visible; }
 
@@ -2589,7 +2589,7 @@ td #corePageContent { min-height: 600px;}
 #resourceList .grid .lc a {
   font-weight: normal; 
 }
-.lc a { 
+.lc a, .lc1 a { 
   border: 0; 
   cursor: pointer; 
   font-style: normal;
@@ -2638,8 +2638,23 @@ td #corePageContent { min-height: 600px;}
   /*disable text selection (Firefox only)*/
   -moz-user-select: none;
 }
+.lc1 a {
+  padding: 5px;
+  background-color: #ffba24;
+  background-image: -moz-linear-gradient(top center, #fff167, #ffba24);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fff167), to(#ffba24));
+  background-image: -o-linear-gradient(#fff167, #ffba24);
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#fff167,endColorstr=#ffba24);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#fff167,endColorstr=#ffba24)";
+  
+  border: 1px solid #ffba24;
+  
+}
+.lc1 img {
+  max-width: 32px;
+}
 
-.lc a:hover, .lc a:focus {
+.lc a:hover, .lc a:focus, .lc1 a:hover, .lc1 a:focus {
   color: #757575; 
   background-color: #ffc416;
   box-shadow: 0 1px 3px rgba(0,0,0,0.5);
