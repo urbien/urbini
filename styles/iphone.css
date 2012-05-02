@@ -39,10 +39,8 @@ body {
   width: 100% !important;
   height: 100% !important;
   left: 0px;
+  box-shadow: none;
   -webkit-box-shadow: none;
-  -webkit-transition-property: -webkit-transform, opacity; 
-  -webkit-transition-duration: 0.8s, 0.8s;
-  -webkit-transform: scale(0.1);
   opacity: 0.1;
 }
   
@@ -233,7 +231,7 @@ tr.dark  {background-color:#eeeeee; /*height: 35px;*/ }
     color: #000000;
 }
 
-#menu_Options { position: absolute; -webkit-transition: opacity 0.5s ease-in-out; opacity: 0.1; left: 1px; }
+#menu_Options { position: absolute; opacity: 0.1; left: 1px; }
 
 #options_container { position: relative; width: 320px;}
 #options_container  #top { margin: 0px; background: url(../images/skin/iphone/options_back.png) top center; padding-top: 35px; }
