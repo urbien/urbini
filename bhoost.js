@@ -471,7 +471,7 @@ var Boost = {
       return false;
     }
     var optionsDiv = document.getElementById('menu_Options');
-    if (!$t.urlToDivs) {
+		if (!$t.urlToDivs) {
       var u = new Array();
       $t.urlToDivs = u;
     }
@@ -1136,8 +1136,8 @@ var Boost = {
     }
 
 	// hide menu
-    optionsDiv.style.visibility = "hidden";
-    optionsDiv.style.display = "none";
+   optionsDiv.style.visibility = "hidden";
+   MobileMenuAnimation.hide();
 
     return newUrl;
   },
@@ -1994,7 +1994,6 @@ var MobilePageAnimation = {
 	
 	_onPageSlidingEnd : function(event) {
     var hiddenPage = getEventTarget(event);
-		// removeEvent(hiddenPage, "webkitTransitionEnd", MobilePageAnimation._onPageSlidingEnd);
 		removeTransitionCallback(hiddenPage, MobilePageAnimation._onPageSlidingEnd);
 		// remove hidden page to avoid several elements with the same ID, for example
 		hiddenPage.parentNode.removeChild(hiddenPage);
@@ -2004,22 +2003,24 @@ var MobilePageAnimation = {
 		this.dlgDiv = div;
 	  div.style.top = getScrollXY()[1] + 'px';
 		div.style.minHeight = getWindowSize()[1] + 'px';
+		setTransformProperty(div, "scale(0.1)");
 		div.style.visibility = "visible";
-		addEvent(div, "webkitTransitionEnd", MobilePageAnimation._onZoomInDialogEnd);
-		div.style.WebkitTransform = "scale(1.0)";
-		div.style.opacity = "1.0";
+
+	  setTransitionCallback(div, MobilePageAnimation._onZoomInDialogEnd); 
+		setTimeout(function f() { setTransitionProperty(div, "all 0.8s ease-in-out"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
 	},
 	 _onZoomInDialogEnd : function(event) {
     var $t = MobilePageAnimation;
 		Mobile.getCurrentPageDiv().style.opacity = 0;
-		removeEvent($t.dlgDiv, "webkitTransitionEnd", MobilePageAnimation._onZoomInDialogEnd);
+		removeTransitionCallback($t.dlgDiv, MobilePageAnimation._onZoomInDialogEnd); 
   },
 	
 	hideDialog : function(div) {
 		this.dlgDiv = div;
-		addEvent(div, "webkitTransitionEnd", MobilePageAnimation._onZoomOutDialogEnd);
-    Mobile.getCurrentPageDiv().style.opacity = 1
-		div.style.WebkitTransform = "scale(0.1)";
+
+    setTransitionCallback(div, MobilePageAnimation._onZoomOutDialogEnd); 
+		Mobile.getCurrentPageDiv().style.opacity = 1
+		setTransformProperty(div, "scale(0.1)");
 	  div.style.opacity = "0.1";
   },
 	
@@ -2027,7 +2028,7 @@ var MobilePageAnimation = {
 		var $t = MobilePageAnimation;
 		// remove dialog from document to avoid interference with other dialogs
 		$t.dlgDiv.parentNode.removeChild($t.dlgDiv);
-		removeEvent($t.dlgDiv, "webkitTransitionEnd", MobilePageAnimation._onZoomOutDialogEnd);
+		removeTransitionCallback($t.dlgDiv, MobilePageAnimation._onZoomOutDialogEnd); 
 	},
 
   getPageTopOffset : function() {
@@ -2046,8 +2047,10 @@ var MobileMenuAnimation = {
   show : function(curPageDiv) {
 		if (this.optionsDiv == null) {
 			this.optionsDiv = document.getElementById('menu_Options');
+			setTransitionProperty(this.optionsDiv, "opacity 0.5s ease-in-out");
 			this.editItem = getChildById(this.optionsDiv, 'menu_Edit');
 		}
+		
     // hide menu if it is already opened
     if(isVisible(this.optionsDiv)) {
       this.hide();
@@ -2074,14 +2077,13 @@ var MobileMenuAnimation = {
 	},
 	
   hide : function() {
-    addEvent(this.optionsDiv, "webkitTransitionEnd", this._finishHide);
+		setTransitionCallback(this.optionsDiv, this._finishHide);
 		this.optionsDiv.style.opacity = "0.1";
   },
 	_finishHide: function(){
 		var $t = MobileMenuAnimation;
     MobileMenuAnimation.optionsDiv.style.visibility = "hidden";
-		removeEvent($t.optionsDiv, "webkitTransitionEnd", $t._finishHide);
-		
+		removeTransitionCallback($t.optionsDiv, $t._finishHide);
 	}
 }
 
@@ -2164,7 +2166,6 @@ function addBeforeProcessing(chatRoom, tbodyId, subject, event) {
   function updateTR(event, body, hotspot, content)  {
   }
 }
-
 
 /*******************************************************************
 * SpriteAnimation - use it instead animated GIF on iPhone
