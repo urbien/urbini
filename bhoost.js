@@ -282,7 +282,7 @@ var Boost = {
     if (!Browser.mobile)
       return;
     Boost.view.setProgressIndeterminate(false);
-		
+    
     // process redirect ourselves so that page is loaded into cache, added to history, etc.
     var redirect = document.getElementById('$redirect');
     var location;
@@ -301,7 +301,7 @@ var Boost = {
     Boost.addEventHandler('geoLocation',  $t.onGeoLocation);
     
     addEvent(document.body, 'click',  $t.onClick, false);
-		
+    
     Boost.view.setProgressIndeterminate(false);
     if (Boost.cache)
       Boost.cache.cookieSync();
@@ -451,8 +451,8 @@ var Boost = {
   },
 
   getCurrentUrl: function() {
-		if (!this.currentUrl)
-			return window.location.href;
+    if (!this.currentUrl)
+      return window.location.href;
     return this.currentUrl;
   },
 
@@ -470,14 +470,15 @@ var Boost = {
       $t.hideHistoryView($t.getCurrentPageDiv());
       return false;
     }
+
     var optionsDiv = document.getElementById('menu_Options');
-		if (!$t.urlToDivs) {
+    if (!$t.urlToDivs) {
       var u = new Array();
       $t.urlToDivs = u;
     }
     var currentDiv = $t.getCurrentPageDiv();
     $t.displayActionsAndViewsFor(currentDiv, optionsDiv);
-    MobileMenuAnimation.show(currentDiv);
+    MobileMenuAnimation.show(currentDiv, optionsDiv);
     return true;
   },
 
@@ -724,7 +725,7 @@ var Boost = {
       var lablzStr = 'lablz.com/';
       var cutoffIndex = sender.lastIndexOf('lablz.com') + lablzStr.length;
       Boost.log("cutoffindex: " + cutoffIndex);
-      Boost.log("new name:" +	" " + sender.substring(cutoffIndex));
+      Boost.log("new name:" + " " + sender.substring(cutoffIndex));
       if (sender && sender.lastIndexOf('lablz.com') != -1)
         sender = sender.substring(cutoffIndex);
     }
@@ -864,29 +865,29 @@ var Boost = {
         stopEventPropagation(e);
       return null;
     }
-		
-		if (id == 'menu_Add') {
-			var a = $t.getElementById('add_url_hdn');
-			DataEntry.show(e, a.href);
-			newUrl = null;
-		}
-		if (id == 'menu_Edit') {
-			var a = $t.getElementById('edit_url_hdn');
-			if (a == null)
-				return stopEventPropagation(e);
-			DataEntry.show(e, a.href);
-			newUrl = null;
-		}
-		if (id == 'menu_Delete') {
-			var a = $t.getElementById('delete_url_hdn');
-			if (a.href.indexOf("l.html") != -1) 
-		  	newUrl = a.href;
-		  else {
-		  	doConfirm("&[Do you realy want to delete this resource];?");
-		  	newUrl = null;
-		  }
-		}
-		
+    
+    if (id == 'menu_Add') {
+      var a = $t.getElementById('add_url_hdn');
+      DataEntry.show(e, a.href);
+      newUrl = null;
+    }
+    if (id == 'menu_Edit') {
+      var a = $t.getElementById('edit_url_hdn');
+      if (a == null)
+        return stopEventPropagation(e);
+      DataEntry.show(e, a.href);
+      newUrl = null;
+    }
+    if (id == 'menu_Delete') {
+      var a = $t.getElementById('delete_url_hdn');
+      if (a.href.indexOf("l.html") != -1) 
+        newUrl = a.href;
+      else {
+        doConfirm("&[Do you realy want to delete this resource];?");
+        newUrl = null;
+      }
+    }
+    
     if (id == 'menu_Desktop') {
       var uri = $t.currentUrl;
       var idx = uri.indexOf('-mobile=');
@@ -911,7 +912,7 @@ var Boost = {
       return null;
     }
     if (id == 'menu_cancel') {
-		  MobileMenuAnimation.hide();
+      MobileMenuAnimation.hide();
       var currentDiv = $t.urlToDivs[$t.currentUrl];
       if (!currentDiv) {
         currentDiv = document.getElementById('mainDiv');
@@ -922,7 +923,7 @@ var Boost = {
        return null;
     }
     if (id == 'menu_exit') {
-	  BrowserDialog.confirm("&[Do you really want to exit this application];?", $t.onExisCallback);
+    BrowserDialog.confirm("&[Do you really want to exit this application];?", $t.onExisCallback);
       return null;
     }
     if (id == 'menu_Refresh') {
@@ -1135,18 +1136,18 @@ var Boost = {
       return null;
     }
 
-	// hide menu
+  // hide menu
    optionsDiv.style.visibility = "hidden";
    MobileMenuAnimation.hide();
 
     return newUrl;
   },
-	
-	onExisCallback : function(toExit) {
-		if (toExit)
-			Boost.view.exit();
-	},
-	
+  
+  onExisCallback : function(toExit) {
+    if (toExit)
+      Boost.view.exit();
+  },
+  
   changePresentationItemsState: function() {
       var item, level;
       var optionsDiv = document.getElementById('menu_Options');
@@ -1380,7 +1381,7 @@ var Boost = {
   },
 
   onClick: function(e) {
-		var $t = Mobile;
+    var $t = Mobile;
     e = getDocumentEvent(e);
 
     var l = getEventTarget(e);
@@ -1390,13 +1391,13 @@ var Boost = {
     var link = getAncestorByTagName(l, "a"); //getAnchorForEventTarget1(l);
     if (!link || !link.href || link.href == null)
       return true;
-		
-		if (link.className == "external") // go to other web site
-			return true;
-			
+    
+    if (link.className == "external") // go to other web site
+      return true;
+      
     var ln = link.href;
     if ($t._preventingDoubleClick)
-			return stopEventPropagation(e);
+      return stopEventPropagation(e);
 
     if (ln.startsWith('tel:')) {
       if (Boost.phone) {
@@ -1425,18 +1426,18 @@ var Boost = {
     if (ln.endsWith('.gif') || ln.endsWith('.png') || ln.endsWith('.jpg') || ln.endsWith('.jpeg') || ln.endsWith('.svg')
          || (ln.startsWith('javascript') && link.id.length == 0))
       return true;
-		// social nets buttons: should be directed to social nets web-sites	
-		if (getAncestorByTagName(link, "div").id.indexOf("LoginDiv") != -1)	 
-		  return true;
-		if (link.className  &&  link.className == "external")
-		  return true; 
-			
+    // social nets buttons: should be directed to social nets web-sites 
+    if (getAncestorByTagName(link, "div").id.indexOf("LoginDiv") != -1)  
+      return true;
+    if (link.className  &&  link.className == "external")
+      return true; 
+      
     return $t.getPage(e, link);
   },
 
-	// intoCurrentPage in case of data entry
+  // intoCurrentPage in case of data entry
   getPage: function(e, link, intoCurrentPage) {
-		var $t = Mobile;
+    var $t = Mobile;
     if (!$t.currentUrl) {
       $t.currentUrl = document.location.href;
       var s = new Array();
@@ -1458,10 +1459,10 @@ var Boost = {
 
     var isMore;
     var isRemoteLink;
-		
-		if (link.id == "-inner")
-			return; // dialog processed in onClickDisplayInner
-		
+    
+    if (link.id == "-inner")
+      return; // dialog processed in onClickDisplayInner
+    
     if (link.target) {
       // Remote link like 'Locate <avatar>'
       if (link.target == '_self') {
@@ -1525,19 +1526,19 @@ var Boost = {
 
     var div;
     if (isMore) {
-			if (intoCurrentPage) 
-	  		div = currentDiv;
-		  else {
-		  	div = document.createElement("DIV");
-		  	// class "mobile_page" to distinguish it as a page.
-				div.className = "mobile_page";
-				div.style.visibility = "hidden";
-				div.style.display = "none";
-			}
+      if (intoCurrentPage) 
+        div = currentDiv;
+      else {
+        div = document.createElement("DIV");
+        // class "mobile_page" to distinguish it as a page.
+        div.className = "mobile_page";
+        div.style.visibility = "hidden";
+        div.style.display = "none";
+      }
     }
     else {
-	   // page is in history
-	    div = $t.urlToDivs[newUrl];
+     // page is in history
+      div = $t.urlToDivs[newUrl];
       $t.currentUrl = newUrl;
       if (div  &&  !isRefresh) {
         $t.setTitle(div);
@@ -1545,15 +1546,15 @@ var Boost = {
         $t.setLocationHash(newUrl);
         return stopEventPropagation(e);
       }
-			
-			// new mobile page
-			if (intoCurrentPage) 
-	  		div = currentDiv;
-	  	else {
-	  		div = document.createElement("DIV");
-				div.className = "mobile_page";
-			}
-			$t.urlToDivs[newUrl] = div;
+      
+      // new mobile page
+      if (intoCurrentPage) 
+        div = currentDiv;
+      else {
+        div = document.createElement("DIV");
+        div.className = "mobile_page";
+      }
+      $t.urlToDivs[newUrl] = div;
     }
     var urlParts = newUrl.split('?');
     var url = urlParts[0];
@@ -1588,69 +1589,76 @@ var Boost = {
     else
       postRequest(e, url, urlParts[1], div, null, loadPage);
 
-		// loadPage
+    // loadPage
     function loadPage(event, div, hotspot, content, url) {
-			$t._preventingDoubleClick = false;
+      $t._preventingDoubleClick = false;
 
-			// if server returned HTML containing "panel_block"
-			// then it is data entry dialog with error message.
-			if (content.indexOf("panel_block") != -1) {
-				// "roll back" appending of new div
-				div.parentNode.removeChild(div);
-				delete $t.urlToDivs[$t.currentUrl];
-				$t.browsingHistoryPos--;
-				$t.currentUrl = $t.browsingHistory[$t.browsingHistoryPos];
-			
-				DataEntry.onDataEntryLoaded(event, div, hotspot, content, null, true);
-		    // hides the location bar
-		    scrollTo(0, 1);
-				return;
-		  }
+      // if server returned HTML containing "panel_block"
+      // then it is data entry dialog with error message.
+      if (content.indexOf("panel_block") != -1) {
+        // "roll back" appending of new div
+        div.parentNode.removeChild(div);
+        delete $t.urlToDivs[$t.currentUrl];
+        $t.browsingHistoryPos--;
+        $t.currentUrl = $t.browsingHistory[$t.browsingHistoryPos];
+      
+        DataEntry.onDataEntryLoaded(event, div, hotspot, content, null, true);
+        // hides the location bar
+        scrollTo(0, 1);
+        return;
+      }
 
-	
-		// login page: it contains register/hashScript.js
-		// remove register if it was previously created
-		var regDiv = document.getElementById("register");
-		if (regDiv)
-			regDiv.parentNode.removeChild(regDiv);
-		// create register dialog an initialize it
-		if (content.indexOf("register/hashScript") != -1) {
-			var regDiv = getDomObjectFromHtml(content, "id", "register");
-			if (regDiv) {
-				regDiv.className = "mobile_dlg";
-				document.body.appendChild(regDiv);
-				scrollTo(0, 1);
-				setDivVisible(event, regDiv, null, hotspot);
-				// execute inner script for social nets
-				ExecJS.runDivCode(regDiv);
-				// download hashScript.js on demand with timestamp suffix
-				LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
-				// set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
-				var jstest = getChildByAttribute(regDiv, "name", '.jstest');
-				jstest.value = "ok";
-				return;
-			}
-		}
+  
+    // login page: it contains register/hashScript.js
+    // remove register if it was previously created
+    var regDiv = document.getElementById("register");
+    if (regDiv)
+      regDiv.parentNode.removeChild(regDiv);
+    // create register dialog an initialize it
+    if (content.indexOf("register/hashScript") != -1) {
+      var regDiv = getDomObjectFromHtml(content, "id", "register");
+      if (regDiv) {
+        regDiv.className = "mobile_dlg";
+        document.body.appendChild(regDiv);
+        scrollTo(0, 1);
+        setDivVisible(event, regDiv, null, hotspot);
+        // execute inner script for social nets
+        ExecJS.runDivCode(regDiv);
+        // download hashScript.js on demand with timestamp suffix
+        LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
+        // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
+        var jstest = getChildByAttribute(regDiv, "name", '.jstest');
+        jstest.value = "ok";
+        return;
+      }
+    }
     
-			// hack: in case if serever returns full html page instead
-			//(page with error message, for example; generated from widget/page.jsp)
-			// mobile_page div content then retrieve mobile_page content only
+      // hack: in case if serever returns full html page instead
+      //(page with error message, for example; generated from widget/page.jsp)
+      // mobile_page div content then retrieve mobile_page content only
+      
+      var page = getDomObjectFromHtml(content, "className", "mobile_page");
+      if (page != null) {
+        page.id = "";
+        setInnerHtml(div, page.innerHTML);
+        $t.setTitle(div);
+      }
+      
+		// update mobile menu after log in
+      if (content.indexOf("menu_Options") != -1) {
+        var newOptDiv = getDomObjectFromHtml(content, "id", "menu_Options");
+        var oldOptDiv = document.getElementById("menu_Options");
+        var parent = oldOptDiv.parentNode;
+        parent.removeChild(oldOptDiv);
+        parent.appendChild(newOptDiv);
+      }
 			
-			var page = getDomObjectFromHtml(content, "className", "mobile_page");
-			if (page != null) {
-				page.id = "";
-	  		content = page.innerHTML;
-	  	}
-			
-			setInnerHtml(div, content);
-			$t.setTitle(div);
-
-			// init for each new 'mobile' page
-			FormProcessor.initForms();
-							
-			// in case of data entry put content in current div, so no sliding effect
-			if (intoCurrentPage)
-				return;
+      // init for each new 'mobile' page
+      FormProcessor.initForms();
+              
+      // in case of data entry put content in current div, so no sliding effect
+      if (intoCurrentPage)
+        return;
 
       $t.onPageLoad(newUrl, div);
       if (Boost.cache && loadedFromCache == false) {
@@ -1668,9 +1676,10 @@ var Boost = {
 //      window.scroll(offset.left, offset.top);
       $t.setLocationHash(newUrl);
     }
+    
     return stopEventPropagation(e);
   },
-	
+  
   _loadMoreItems: function(event, div, hotspot, content) {
     var $t = Mobile;
 
@@ -1679,20 +1688,20 @@ var Boost = {
 
     var elms = div.getElementsByTagName('table');
     var table;
-		
+    
     for (var i=0; i<elms.length; i++) {
       var tt = elms[i];
-			
-			if (tt.id && tt.id.startsWith('siteRL_')) {
-	  	  table = tt;
-				break;
-	    }
+      
+      if (tt.id && tt.id.startsWith('siteRL_')) {
+        table = tt;
+        break;
+      }
     }
     $t._preventingDoubleClick = false;
-		
-		if (!table)
+    
+    if (!table)
       return;
-			
+      
     var tbody = table.getElementsByTagName('tbody')[0];
 
     var currentDiv = $t.urlToDivs[$t.currentUrl];
@@ -1712,17 +1721,17 @@ var Boost = {
           headerTR = tt;
       }
     }
-		
+    
     if (!tr)
       return;
 
     var curTbody = tr.parentNode;
-		// insert new records
-		curTbody.parentNode.appendChild(tbody);
-		// "Get 10 More" / "_replace" can be out of new tbody - insert it additionaly
-		if (getChildById(tbody, "_replace") == null)
- 			curTbody.parentNode.appendChild(getChildById(table, "_replace"));
-		
+    // insert new records
+    curTbody.parentNode.appendChild(tbody);
+    // "Get 10 More" / "_replace" can be out of new tbody - insert it additionaly
+    if (getChildById(tbody, "_replace") == null)
+      curTbody.parentNode.appendChild(getChildById(table, "_replace"));
+    
     var coords = getElementCoords(tr);
     tr.className = "hdn";
     tr.id = '';
@@ -1731,9 +1740,9 @@ var Boost = {
       totalsTR.id = '';
     }
     Boost.view.setProgressIndeterminate(false);
-	  Boost.log('left = ' + coords.left + '; top = ' + coords.top);
-	
-		window.scrollTo(coords.left, coords.top);
+    Boost.log('left = ' + coords.left + '; top = ' + coords.top);
+  
+    window.scrollTo(coords.left, coords.top);
   },
 
   // browsing history forward and backward
@@ -1742,10 +1751,10 @@ var Boost = {
     if (typeof softKeyPressed == 'undefined')
       softKeyPressed = true;
 
-		Filter.hide();
-		DataEntry.hide();
-		
-		// optionsDiv is common for all mobile pages
+    Filter.hide();
+    DataEntry.hide();
+    
+    // optionsDiv is common for all mobile pages
     var optionsDiv = document.getElementById('menu_Options');
     // options menu opened no passes in history
     if (optionsDiv && optionsDiv.style.visibility == "visible")
@@ -1786,19 +1795,19 @@ var Boost = {
       Boost.log("starting sliding");
       
       if (softKeyPressed) {
-				$t.curHash = null;
-				history.go(step);
+        $t.curHash = null;
+        history.go(step);
         
         var hashVal;
         if (Browser.gecko)
-					hashVal = location.hash.substr(1);
-				else
-					hashVal = decodeURIComponent(location.hash).substr(1);
-				if (hashVal.length == 0) {
-					hashVal = location.href;
-				}
-					$t.curHash = hashVal;
-			}
+          hashVal = location.hash.substr(1);
+        else
+          hashVal = decodeURIComponent(location.hash).substr(1);
+        if (hashVal.length == 0) {
+          hashVal = location.href;
+        }
+          $t.curHash = hashVal;
+      }
       
       MobilePageAnimation.showPage(currentDiv, div, step < 0);
     }
@@ -1808,17 +1817,17 @@ var Boost = {
       return;
   },
 
-	isBackAvailable : function() {
-		if (!this.browsingHistory)
-			return false;
-		return this.browsingHistoryPos > 0;
-	},
-	
-	isForwardAvailable : function() {
-		if (!this.browsingHistory)
-			return false;
-		return this.browsingHistoryPos < this.browsingHistory.length - 1;
-	},
+  isBackAvailable : function() {
+    if (!this.browsingHistory)
+      return false;
+    return this.browsingHistoryPos > 0;
+  },
+  
+  isForwardAvailable : function() {
+    if (!this.browsingHistory)
+      return false;
+    return this.browsingHistoryPos < this.browsingHistory.length - 1;
+  },
 
   displayActionsAndViewsFor: function(div, optionsDiv) {
     var $t = Mobile;
@@ -1944,10 +1953,10 @@ var Boost = {
     else
       return getWindowSize()[0];
   },
-	// currently all mobile pages in a document, so return element from the current page
-	getElementById : function(id) {
-	 return getChildById(this.getCurrentPageDiv(), id);
-	}
+  // currently all mobile pages in a document, so return element from the current page
+  getElementById : function(id) {
+   return getChildById(this.getCurrentPageDiv(), id);
+  }
 }
 
 
@@ -1973,63 +1982,63 @@ var MobilePageAnimation = {
     if (!this.isInitialized)
       return; // expected not loaded DOM
 
-    if(!curDiv || !newDiv)
+    if(!curDiv || !curDiv.parentNode || !newDiv)
       return;
 
-		if (typeof isBack == 'undefined')
-		  isBack = false;
- 		
-		setTransformProperty(curDiv, "translate(0%, 0%)");
-		setTransformProperty(newDiv, "translate(" + (isBack ? -1 : 1) * 100 + "%, 0%)");
-		
-		setTransitionProperty(curDiv, "transform 0.5s ease-in-out", MobilePageAnimation._onPageSlidingEnd);
-		setTransitionProperty(newDiv, "transform 0.5s ease-in-out");
+    if (typeof isBack == 'undefined')
+      isBack = false;
+    
+    setTransformProperty(curDiv, "translate(0%, 0%)");
+    setTransformProperty(newDiv, "translate(" + (isBack ? -1 : 1) * 100 + "%, 0%)");
+    
+    setTransitionProperty(curDiv, "transform 0.5s ease-in-out", MobilePageAnimation._onPageSlidingEnd);
+    setTransitionProperty(newDiv, "transform 0.5s ease-in-out");
 
-		scrollTo(0, 1);
-		curDiv.parentNode.insertBefore(newDiv, null); 
+    scrollTo(0, 1);
+    curDiv.parentNode.insertBefore(newDiv, null); 
  
     setTimeout(function f() { setTransformProperty(curDiv, "translate(" + (isBack ? 1 : -1) * 100 + "%, 0%)"); }, 150)
     setTimeout(function f() { setTransformProperty(newDiv, "translate(0%, 0%)") }, 150)
   },
-	
-	_onPageSlidingEnd : function(event) {
+  
+  _onPageSlidingEnd : function(event) {
     var hiddenPage = getEventTarget(event);
-		removeTransitionCallback(hiddenPage, MobilePageAnimation._onPageSlidingEnd);
-		// remove hidden page to avoid several elements with the same ID, for example
-		hiddenPage.parentNode.removeChild(hiddenPage);
-		// here possible to call some other new page initializations
-	},
-  showDialog : function(div) {
-		this.dlgDiv = div;
-	  div.style.top = getScrollXY()[1] + 'px';
-		div.style.minHeight = getWindowSize()[1] + 'px';
-		setTransformProperty(div, "scale(0.1)");
-		div.style.visibility = "visible";
-
-	  setTransitionCallback(div, MobilePageAnimation._onZoomInDialogEnd); 
-		setTimeout(function f() { setTransitionProperty(div, "all 0.8s ease-in-out"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
-	},
-	 _onZoomInDialogEnd : function(event) {
-    var $t = MobilePageAnimation;
-		Mobile.getCurrentPageDiv().style.opacity = 0;
-		removeTransitionCallback($t.dlgDiv, MobilePageAnimation._onZoomInDialogEnd); 
+    removeTransitionCallback(hiddenPage, MobilePageAnimation._onPageSlidingEnd);
+    // remove hidden page to avoid several elements with the same ID, for example
+    hiddenPage.parentNode.removeChild(hiddenPage);
+    // here possible to call some other new page initializations
   },
-	
-	hideDialog : function(div) {
-		this.dlgDiv = div;
+  showDialog : function(div) {
+    this.dlgDiv = div;
+    div.style.top = getScrollXY()[1] + 'px';
+    div.style.minHeight = getWindowSize()[1] + 'px';
+    setTransformProperty(div, "scale(0.1)");
+    div.style.visibility = "visible";
+
+    setTransitionCallback(div, MobilePageAnimation._onZoomInDialogEnd); 
+    setTimeout(function f() { setTransitionProperty(div, "all 0.8s ease-in-out"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
+  },
+   _onZoomInDialogEnd : function(event) {
+    var $t = MobilePageAnimation;
+    Mobile.getCurrentPageDiv().style.opacity = 0;
+    removeTransitionCallback($t.dlgDiv, MobilePageAnimation._onZoomInDialogEnd); 
+  },
+  
+  hideDialog : function(div) {
+    this.dlgDiv = div;
 
     setTransitionCallback(div, MobilePageAnimation._onZoomOutDialogEnd); 
-		Mobile.getCurrentPageDiv().style.opacity = 1
-		setTransformProperty(div, "scale(0.1)");
-	  div.style.opacity = "0.1";
+    Mobile.getCurrentPageDiv().style.opacity = 1
+    setTransformProperty(div, "scale(0.1)");
+    div.style.opacity = "0.1";
   },
-	
-	_onZoomOutDialogEnd : function() {
-		var $t = MobilePageAnimation;
-		// remove dialog from document to avoid interference with other dialogs
-		$t.dlgDiv.parentNode.removeChild($t.dlgDiv);
-		removeTransitionCallback($t.dlgDiv, MobilePageAnimation._onZoomOutDialogEnd); 
-	},
+  
+  _onZoomOutDialogEnd : function() {
+    var $t = MobilePageAnimation;
+    // remove dialog from document to avoid interference with other dialogs
+    $t.dlgDiv.parentNode.removeChild($t.dlgDiv);
+    removeTransitionCallback($t.dlgDiv, MobilePageAnimation._onZoomOutDialogEnd); 
+  },
 
   getPageTopOffset : function() {
     return this.pageTopOffset;
@@ -2042,49 +2051,47 @@ var MobilePageAnimation = {
  **********************************/
 var MobileMenuAnimation = {
   optionsDiv : null,
-	editItem : null,
+  editItem : null,
 
-  show : function(curPageDiv) {
-		if (this.optionsDiv == null) {
-			this.optionsDiv = document.getElementById('menu_Options');
-			setTransitionProperty(this.optionsDiv, "opacity 0.5s ease-in-out");
-			this.editItem = getChildById(this.optionsDiv, 'menu_Edit');
-		}
-		
+  show : function(curPageDiv, optionsDiv) {
+    this.optionsDiv = optionsDiv;
+    setTransitionProperty(this.optionsDiv, "opacity 0.5s ease-in-out");
+    this.editItem = getChildById(this.optionsDiv, 'menu_Edit');
+    
     // hide menu if it is already opened
     if(isVisible(this.optionsDiv)) {
       this.hide();
       return;
     }
-		this.setEditItemState();
+    this.setEditItemState();
     
-		var optDivStl = this.optionsDiv.style;
-		// set menu position in accordance to current "scrolled" position
-		optDivStl.top = window.pageYOffset;	
-		optDivStl.zIndex = curPageDiv.style.zIndex + 1;
+    var optDivStl = this.optionsDiv.style;
+    // set menu position in accordance to current "scrolled" position
+    optDivStl.top = window.pageYOffset; 
+    optDivStl.zIndex = curPageDiv.style.zIndex + 1;
     optDivStl.display = "block";
-		optDivStl.visibility = "visible";
-  	optDivStl.opacity = 1.0;
+    optDivStl.visibility = "visible";
+    optDivStl.opacity = 1.0;
   },
-	
-	setEditItemState : function() {
-		var page = Mobile.getCurrentPageDiv();
-		var a = getChildById(page, 'edit_url_hdn');
-		if (a == null) 
-			changeOpacity(this.editItem, 0.3);
-		else
-			changeOpacity(this.editItem, 1.0);
-	},
-	
+  
+  setEditItemState : function() {
+    var page = Mobile.getCurrentPageDiv();
+    var a = getChildById(page, 'edit_url_hdn');
+    if (a == null) 
+      changeOpacity(this.editItem, 0.3);
+    else
+      changeOpacity(this.editItem, 1.0);
+  },
+  
   hide : function() {
-		setTransitionCallback(this.optionsDiv, this._finishHide);
-		this.optionsDiv.style.opacity = "0.1";
+    setTransitionCallback(this.optionsDiv, this._finishHide);
+    this.optionsDiv.style.opacity = "0.1";
   },
-	_finishHide: function(){
-		var $t = MobileMenuAnimation;
+  _finishHide: function(){
+    var $t = MobileMenuAnimation;
     MobileMenuAnimation.optionsDiv.style.visibility = "hidden";
-		removeTransitionCallback($t.optionsDiv, $t._finishHide);
-	}
+    removeTransitionCallback($t.optionsDiv, $t._finishHide);
+  }
 }
 
 /** Set password and deviceId for mobile registration */
@@ -2242,7 +2249,7 @@ function spriteAnimation(src, parent) {
   this._init(src);
 }
 */
-	
+  
 /*
 // window.orientation returns a value that indicates whether iPhone is in portrait mode, landscape mode with the screen turned to the
 // left, or landscape mode with the screen turned to the right.
@@ -2251,16 +2258,16 @@ window.onorientationchange = function() {
   switch(orientation) {
     // portrait mode
     case 0:
-		break; 
+    break; 
       
-		// landscape mode with the screen turned to the left
+    // landscape mode with the screen turned to the left
     case 90:
       fitGridOnOrientation(false);
-		break;
+    break;
 
     // landscape mode with the screen turned to the right
     case -90: 
-		break;
+    break;
   }
 }
 */
