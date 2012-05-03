@@ -1609,42 +1609,31 @@ var Boost = {
       }
 
   
-    // login page: it contains register/hashScript.js
-    // remove register if it was previously created
-    var regDiv = document.getElementById("register");
-    if (regDiv)
-      regDiv.parentNode.removeChild(regDiv);
-    // create register dialog an initialize it
-    if (content.indexOf("register/hashScript") != -1) {
-      var regDiv = getDomObjectFromHtml(content, "id", "register");
-      if (regDiv) {
-        regDiv.className = "mobile_dlg";
-        document.body.appendChild(regDiv);
-        scrollTo(0, 1);
-        setDivVisible(event, regDiv, null, hotspot);
-        // execute inner script for social nets
-        ExecJS.runDivCode(regDiv);
-        // download hashScript.js on demand with timestamp suffix
-        LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
-        // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
-        var jstest = getChildByAttribute(regDiv, "name", '.jstest');
-        jstest.value = "ok";
-        return;
-      }
-    }
+	    // login page: it contains register/hashScript.js
+	    // remove register if it was previously created
+	    var regDiv = document.getElementById("register");
+	    if (regDiv)
+	      regDiv.parentNode.removeChild(regDiv);
+	    // create register dialog an initialize it
+	    if (content.indexOf("register/hashScript") != -1) {
+	      var regDiv = getDomObjectFromHtml(content, "id", "register");
+	      if (regDiv) {
+	        regDiv.className = "mobile_dlg";
+	        document.body.appendChild(regDiv);
+	        scrollTo(0, 1);
+	        setDivVisible(event, regDiv, null, hotspot);
+	        // execute inner script for social nets
+	        ExecJS.runDivCode(regDiv);
+	        // download hashScript.js on demand with timestamp suffix
+	        LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
+	        // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
+	        var jstest = getChildByAttribute(regDiv, "name", '.jstest');
+	        jstest.value = "ok";
+	        return;
+	      }
+	    }
     
-      // hack: in case if serever returns full html page instead
-      //(page with error message, for example; generated from widget/page.jsp)
-      // mobile_page div content then retrieve mobile_page content only
-      
-      var page = getDomObjectFromHtml(content, "className", "mobile_page");
-      if (page != null) {
-        page.id = "";
-        setInnerHtml(div, page.innerHTML);
-        $t.setTitle(div);
-      }
-      
-		// update mobile menu after log in
+		  // update mobile menu after log in
       if (content.indexOf("menu_Options") != -1) {
         var newOptDiv = getDomObjectFromHtml(content, "id", "menu_Options");
         var oldOptDiv = document.getElementById("menu_Options");
@@ -1652,6 +1641,18 @@ var Boost = {
         parent.removeChild(oldOptDiv);
         parent.appendChild(newOptDiv);
       }
+			
+			// finally, set NEW PAGE content
+      // hack: in case if serever returns full html page instead
+      //(page with error message, for example; generated from widget/page.jsp)
+      // mobile_page div content then retrieve mobile_page content only
+      var page = getDomObjectFromHtml(content, "className", "mobile_page");
+      if (page != null) {
+        page.id = "";
+	  		content = page.innerHTML;
+      }
+ 			setInnerHtml(div, content);
+			$t.setTitle(div);
 			
       // init for each new 'mobile' page
       FormProcessor.initForms();
