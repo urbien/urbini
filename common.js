@@ -1972,34 +1972,37 @@ function hex2rgb(hexColor) {
 }
 
 // usage: 1) example: 'all 1s ease-in-out' - after that all CSS changes will animate 2) 'none' - turn off
+// callback is not required
 function setTransitionProperty(element, transitionStr, callback) {
 	if (transitionStr && transitionStr.indexOf("transform") == 0) {
 		var specTfCSS = "-" + setTransformProperty(element, null).toLowerCase().replace("transform", "-transform");
 		transitionStr = transitionStr.replace("transform", specTfCSS);
 	}
   var specTransName = setCSS3Property(element, 'transition', transitionStr);
-	if (callback && specTransName) {
-		if (Browser.webkit)
-		  eventName = "webkitTransitionEnd";
-		else if (Browser.gecko)
-		  eventName = "transitionend";
-		else if (Browser.opera)
-		  eventName = "oTransitionEnd";
-		else if (Browser.ie)
-			eventName = "msTransitionEnd";
-			
-    if (eventName) {
-			//element.ontransitionend = callback;
-			if (transitionStr) 
-				addEvent(element, eventName, callback);
-			else 
-				removeEvent(element, eventName, callback);
-		}	// else append event (IE)
-  }
+	if (callback) 
+	  setTransitionCallback(element, callback);
 	return specTransName;
 }
+// toRemove is not required
+function setTransitionCallback(element, callback, toRemove) {
+    if (Browser.webkit)
+      eventName = "webkitTransitionEnd";
+    else if (Browser.gecko)
+      eventName = "transitionend";
+    else if (Browser.opera)
+      eventName = "oTransitionEnd";
+    else if (Browser.ie)
+      eventName = "msTransitionEnd";
+
+    if (eventName) {
+      if (toRemove == true) 
+			  removeEvent(element, eventName, callback);
+      else
+			  addEvent(element, eventName, callback); 
+    }
+}
 function removeTransitionCallback(element, callback){
-	setTransitionProperty(element, null, callback);
+	setTransitionCallback(element, callback, true);
 }
 function setTransformProperty(element, transformStr) {
   return setCSS3Property(element, 'transform', transformStr);
