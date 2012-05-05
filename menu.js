@@ -3425,11 +3425,11 @@ var ListBoxesHandler = {
     $t.changeOptionSelectionState(opTable);
 		$t.changeAddNewState(popupDiv);
 		$t.showOptionsOrClasses(popupDiv);
-		
+
     // RL editor: align options list
     if (($t._isEditList || $t._isFtsSift) && !isVisible($t.panelBlock) || $t._isOneParamSelection) {
       var form = getAncestorByAttribute(hotspot, "name", ["siteResourceList", "rightPanelPropertySheet"]);
-      document.body.appendChild(div);
+      ////// document.body.appendChild(/*div*/);
 	  	$t.showStandAloneOptions(hotspot, form);
     }
   },
@@ -5770,6 +5770,14 @@ var TouchDlgUtil = {
       this.isThereChildDlg = true;    
   },
   
+	resetCurrentDialog : function() {
+		if (this.curDlgDiv == null)
+		  return;
+	  if (this.curDlgDiv.className.indexOf("modal") != -1/* || Browser.mobile*/)
+      this.hidePageOverlay(); // a modal dilog
+    this.curDlgDiv = null;  
+  },
+	
   getCurrentDialog : function() {
     return this.curDlgDiv;
   },
@@ -8484,9 +8492,7 @@ function setDivInvisible(div, iframe) {
   if (iframe && iframe.style)
     iframe.style.display = "none";
 
-
-  if (div.className.indexOf("modal") != -1/* || Browser.mobile*/)
-    TouchDlgUtil.hidePageOverlay(); // a modal dilog
+  TouchDlgUtil.resetCurrentDialog();
 
   // return popupIframe to body from a dialog (see setDivVisible)
   var popupIframe = getChildById(div, 'popupIframe');
@@ -14215,7 +14221,6 @@ var EndlessPager = {
 	},
 	onContentLoaded : function(event, parentDiv, hotspot, html, url, params) {
 		var $t = EndlessPager;
-
 		$t.indicatorTd.style.visibility = "hidden";  
 		if ($t.nabsGrid == null)
 		  $t.nabsGrid = document.getElementById("nabs_grid");
@@ -14271,5 +14276,6 @@ function getMoreBoards(e, id, exclude) {
   } 
   return stopEventPropagation(e);
 }
+
 // flag that menu.js was parsed. should be last in the file
 g_loadedJsFiles["menu.js"] = true;
