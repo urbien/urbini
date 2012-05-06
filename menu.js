@@ -13655,12 +13655,11 @@ var LinkProcessor = {
     var isJSCall = a == null || a.indexOf("javascript:") == 0; 
     addCurrentDashboardAndCurrentTab(link);
     if (!isJSCall) {
-    // Login to Facebook
-    var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
-    if (fbdiv) { 
-      a += '&-fb=y';
-      link.href = a;
-    }
+      // Login to Facebook
+      var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
+      if (fbdiv) { 
+        a += '&-fb=y';
+      }
 
       // append latitude / longitude to url
       var locDiv = document.getElementById("geoLocation");
@@ -13675,10 +13674,17 @@ var LinkProcessor = {
           if (locSort != "y"  &&  aLocSort != 'y')
             a = addOrReplaceUrlParam(a, "-locSort", 'n');
             
-          link.href = a;
         }
       }
+      
+      var contactUri = document.getElementById('contactUri');
+      if (contactUri != null) {
+        var uri = contactUri.innerHTML;
+        a = addOrReplaceUrlParam(a, "-ref", uri);
+      }
     }
+
+    link.href = a;
     
     if     (e.ctrlKey) {
       p = '_ctrlKey=y';
@@ -13911,6 +13917,7 @@ function hideSocialLikes(event) {
 }
 
 function addOrReplaceUrlParam(url, name, value) {
+  value = encodeURIComponent(value);
   var newUrl = url;
   var hashIdx = newUrl.indexOf("#");
   var afterHash;
