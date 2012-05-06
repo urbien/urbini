@@ -7,6 +7,7 @@
   <include name="requiredHeader.jsp"/>
   <div id="wrapper">
   <div class="abc">
+    <contactUri />
     <getResource/>
     <div id="mainskin" class="blue">
     <include name="menu.jsp"/>
