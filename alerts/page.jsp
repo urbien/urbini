@@ -63,21 +63,23 @@
         <td height="10"><hr/></td>
         <td width="30"></td>
       </tr>
-      <tr valign="bottom">
-        <td></td>
-        <td height="30"><font color="#888888" size="-1"><unsubscribeFromEmails /></font></td>
-        <td width="30"></td>
-      </tr>
-      
-      <tr valign="bottom">
-        <td></td>
-        <td height="30" align="right">
-          <where value="alertType != null" itype="http://www.hudsonfog.com/voc/model/workflow/Alert">
-            <font color="#e1e1e1" size="-6"><property name="alertType" href="y"/></font>
-          </where>
-        </td>
-        <td></td>
-      </tr>
+      <where value="alertType != 'NewContactAlert' &amp;&amp; alertType != 'VerifyEmailAlert'" itype="http://www.hudsonfog.com/voc/model/workflow/Alert">
+        <tr valign="bottom">
+          <td></td>
+          <td height="30"><font color="#888888" size="-1"><unsubscribeFromEmails /></font></td>
+          <td width="30"></td>
+        </tr>
+        
+        <tr valign="bottom">
+          <td></td>
+          <td height="30" align="right">
+            <where value="alertType != null" itype="http://www.hudsonfog.com/voc/model/workflow/Alert">
+              <font color="#e1e1e1" size="-6"><property name="alertType" href="y"/></font>
+            </where>
+          </td>
+          <td></td>
+        </tr>
+      </where>
 
   </table>
   
