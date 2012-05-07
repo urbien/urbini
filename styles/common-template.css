@@ -2132,7 +2132,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 .shadow_right_bottom { height: 11px; background: url(../images/frame/png/right_bottom.png) no-repeat; }
 
 #div_description { /*  max-width:520px;*/ }
-#div_info, .rop_only #div_Edit { max-width:520px; }
+#div_Info, .rop_only #div_Edit { max-width:725px; } /* 725px is for current pages */
 
 #div_Info table { overflow: visible; }
 #div_Info table .label, #div_Info table .bigLabel, #div_Info table .propLabelI, #div_Info table .xs { float: left; overflow: visible; font-weight: bold; color: &[SecondaryColorB_3];;}
