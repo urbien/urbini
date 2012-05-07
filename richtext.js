@@ -1427,8 +1427,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		else {
 			if (cpDiv)
 				cpDiv.style.display = "";
-			else if (isRopOnly)
-				editTab.style.maxWidth = "520px"; // in CSS for "rop_only"
+// commented out because "edit" panel takes 100% width in "rop only" case now. For current pages it is >725px				
+////			else if (isRopOnly)
+////				editTab.style.maxWidth = "520px"; // in CSS for "rop_only"
 					
 			if (cpTab)
 				cpTab.style.display = "";
