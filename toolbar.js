@@ -96,6 +96,12 @@ function FormPopup(innerFormHtml, flag) {
 	
 	// not required parameter cancelCallback
 	this.show = function(obj, alignment, callback, parentDlg, cancelCallback) {
+    // hide popup if it is already opened; expected 2nd click on a caller / icon
+		if (this.is_opened) {
+		  PopupHandler.hide();
+			this.is_opened = false;
+			return;
+	  }
 		this.callback       = callback;
     this.cancelCallback = cancelCallback;
     
@@ -1342,11 +1348,18 @@ var PopupHandler = {
 		var curLeft = 0;
 		var curTop = 0;
 		tillParent = tillParent || document.body;
+		
 		if (obj.offsetParent) {
-			while (tillParent != obj && obj.offsetParent) {
+			while (tillParent != obj && obj.offsetParent) { // is "tillParent != obj" right comparation?!!
 				curLeft += obj.offsetLeft;
 				curTop += obj.offsetTop;
 				obj = obj.offsetParent;
+				
+				// hack: div#wrapper has relative position that makes calculation wrong
+				// breaking on div#wrapper gives right result
+				if (obj.id == "wrapper") {
+					break;
+				}
 			}
 		}
 		else {
