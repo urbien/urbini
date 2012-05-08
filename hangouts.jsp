@@ -24,10 +24,10 @@
 <script type="text/javascript">
 <![CDATA[
 
+var callbackUrl = "social/hangout";
 onApiReady = function() {
   var gdParam = getUrlParam(window.location.href, "gd");
   var hangoutUrl = gapi.hangout.getHangoutUrl();
-  var callbackUrl = "social/hangout";
   
   $.ajax({
     url: callbackUrl,
