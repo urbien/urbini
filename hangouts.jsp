@@ -45,6 +45,34 @@ onApiReady = function() {
   });
 }
 
+onParticipantsChanged = function(participants) {
+  var list = "";
+  for (var index in participants) {
+    var part = participants[index];
+
+    if (part.person == null) {
+      retVal += '<li>An unknown person</li>';
+      continue;
+    }
+
+    list += stripHTML(part.person.displayName) + ',';
+  }
+
+  $.ajax({
+    url: callbackUrl,
+    dataType: 'json',
+    data: {
+      "participants": list
+    }
+  }).done( 
+      function(data, status, xhr) {
+        $('msg').html(data.msg);
+  }).fail( 
+      function(xhr, status, error) {
+        $('msg').html("There was a problem contacting Urbien. Please try again. (" + status + ")");
+  });
+}
+
 
 /** This is where we put status updates. */
 var apiStatusDiv = document.getElementById('apiStatus');
@@ -116,6 +144,9 @@ function onClientReady() {
           }, 1);
     }
   });
+
+  gapi.hangout.onParticipantsChanged.add(onParticipantsChanged);
+
   document.getElementById('gd').innerHTML = encodeURIComponent(getUrlParam(window.location.href, 'gd'));
   document.getElementById('token').innerHTML = getUrlParam(window.location.href, 'token');
 }
