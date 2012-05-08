@@ -84,20 +84,21 @@ function updateParticipants() {
   var retVal = '<ul>';
   var participants = gapi.hangout.getParticipants();
 
-  for (var index in participants) {
-    var part = participants[index];
-
-    if (part.person == null) {
-      retVal += '<li>An unknown person</li>';
-      continue;
-    }
-
-    retVal += '<li>' + stripHTML(part.person.displayName) + '</li>';
-  }
-
-  retVal += '</ul>';
-
-  participantsDiv.innerHTML = retVal;
+  onParticipantsChanged(participants);
+//  for (var index in participants) {
+//    var part = participants[index];
+//
+//    if (part.person == null) {
+//      retVal += '<li>An unknown person</li>';
+//      continue;
+//    }
+//
+//    retVal += '<li>' + stripHTML(part.person.displayName) + '</li>';
+//  }
+//
+//  retVal += '</ul>';
+//
+//  participantsDiv.innerHTML = retVal;
 }
 
 /** Make an authenticated Google+ API call using the access token. */
