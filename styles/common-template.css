@@ -728,6 +728,7 @@ td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
 .input {
   background-color:transparent;
   border: 1px solid #C0C9D7;
+  border-radius: 3px;
   font-size:14px;
   font-weight:normal;
   height:auto;
@@ -2132,7 +2133,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 .shadow_right_bottom { height: 11px; background: url(../images/frame/png/right_bottom.png) no-repeat; }
 
 #div_description { /*  max-width:520px;*/ }
-#div_Info, .rop_only #div_Edit { max-width:725px; } /* 725px is for current pages */
+#div_Info, .rop_only #div_Edit { max-width:735px; } /* 725px is for current pages */
 
 #div_Info table { overflow: visible; }
 #div_Info table .label, #div_Info table .bigLabel, #div_Info table .propLabelI, #div_Info table .xs { float: left; overflow: visible; font-weight: bold; color: &[SecondaryColorB_3];;}
@@ -2484,10 +2485,9 @@ td #corePageContent { min-height: 600px;}
 
 --------------------------------------------------------------------------------------- */
 .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
-.nabBoard h3, .gridBoard h3 {padding: 9px 15px 0; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
+.nabBoard h3, .gridBoard h3 { height: 20px; padding: 9px 15px 5px; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
 .gridBoard {max-width: 669px !important; padding: 0 !important;cursor: pointer;}
-.nabBoard .link {height: 200px;}
-.nabBoard .link {display: block; padding: 9px 0 4px 16px; overflow: hidden;}
+.nabBoard .link { height: 200px; display: block; padding: 0 0 4px 16px; overflow: hidden;}
 .gridBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
 .nabBoard .link img, .gridBoard .link img  {float: left; width: 100px; /* magnify: 100 / 61 */ margin-left: -20px; /* set at horizontal center */ }
 .boardsTitle, .nabTitle {margin-left: 10px; padding-top: 5px; font-size: 16pt; color: #cb2027; }
