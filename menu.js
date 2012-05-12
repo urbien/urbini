@@ -5157,8 +5157,8 @@ var DataEntry = {
         throw new Error("DataEntry - one parameter selection: NO input!");
       var tr = getAncestorByClassName(input, "param_tr");
       
-      ListBoxesHandler.processClickParam(null, tr);
-      div.style.visibility = "visible";
+      setDivVisible(event, div, null, hotspot, 0, 0); // show dialof
+      ListBoxesHandler.processClickParam(null, tr); // show required options
       return;
       // NOTE: not save dialog for one parameter select in "cache"!
     }
@@ -6293,7 +6293,8 @@ var TouchDlgUtil = {
   },
   
   hasBlueRow : function() {
-    return this.blueTr != null;
+    return (this.curDlgDiv && (this.blueTr != null ||
+		   this.curDlgDiv.className.indexOf(" oneparamselection") != -1));
   },
   
   isFieldBlueHighlight : function(field) {
