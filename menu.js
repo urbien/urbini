@@ -7550,6 +7550,8 @@ function closeDiv(e, hideDivId) {
 function showBoard(e, divId) {
   e = getDocumentEvent(e);
   var a = document.getElementById(divId);
+  
+  LinkProcessor.linkHrefModifier(e, a);
   document.location.href = a.href;
   return stopEventPropagation(e);
 }
