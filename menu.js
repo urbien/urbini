@@ -13653,8 +13653,10 @@ var LinkProcessor = {
     var a = link.href;
     if (!a || a == 'about:blank')
       return;
+    
     var isJSCall = a == null || a.indexOf("javascript:") == 0; 
     addCurrentDashboardAndCurrentTab(link);
+    a = link.href;
     if (!isJSCall) {
       // Login to Facebook
       var fbdiv = document.getElementById("facebook") != null  ||  document.location.href.indexOf('signed_request') != -1;
@@ -13677,7 +13679,6 @@ var LinkProcessor = {
             
         }
       }
-      
       var contactUri = document.getElementById('contactUri');
       if (contactUri != null) {
         var uri = contactUri.innerHTML;
