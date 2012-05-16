@@ -13139,6 +13139,9 @@ var LoadingIndicator = {
   show: function(hotspot){
     if (this.loadingDiv == null) 
       this.init();
+		else if (isVisible(this.loadingDiv))
+			return;
+	
     var x = -1, y;
 
 		if (hotspot && !isVisible(hotspot))
@@ -13653,7 +13656,6 @@ var LinkProcessor = {
     var a = link.href;
     if (!a || a == 'about:blank')
       return;
-    
     var isJSCall = a == null || a.indexOf("javascript:") == 0; 
     addCurrentDashboardAndCurrentTab(link);
     a = link.href;
@@ -13679,6 +13681,7 @@ var LinkProcessor = {
             
         }
       }
+      
       var contactUri = document.getElementById('contactUri');
       if (contactUri != null) {
         var uri = contactUri.innerHTML;
