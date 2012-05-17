@@ -2073,32 +2073,6 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 .checked { background-position: 100% 0%; } 
 
 
-/** iPhone field **/
-.iphone_field {
-  display: inline;
-  margin: 0px 2px;
-  padding: 4px;
-  border-radius:5px 5px 5px 5px;
-  -moz-border-radius:5px 5px 5px 5px;
-  -webkit-border-radius:5px 5px 5px 5px;
-  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
-  -moz-box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) inset;
-  background: #ffffff;
-  background: rgba(255, 255, 255, 0.9);
-  cursor: auto;
-  white-space: nowrap;
-  font-size: 12px;
-}
-.iphone_field input { width: 70% /* allows to fit filter on mobile */; color: &[SecondaryColorA_3];; background: transparent; -webkit-appearance: none; font: bold 17px Helvetica; border: none; }
-#fts_filter .iphone_field input { width: 120px; }
-.clear_cross { position: relative; cursor: pointer; visibility: hidden; }
-.iphone_field .clear_cross { top: 5px; left: -2px; }
-.desktop_search .clear_cross { top: 5px; margin: 0 1px; }
-
-.iphone_field .magnify_glass_small { position: relative; top: 3px; cursor: pointer; }
-.iphone_search { -moz-border-radius: 50%; -webkit-border-radius: 50%; } /* used for mobile only */
-
-
 /*.toolbar_icons_set { width: 25; height: 40; background-image: url(../images/skin/iphone/toolbar_icons_set.png) }*/
 .icon_btn, .icon_btn_symb { 
    width: 30px; color: #eee;  cursor: pointer; 
@@ -2487,14 +2461,14 @@ td #corePageContent { min-height: 600px;}
 .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
 .nabBoard h3, .gridBoard h3 { height: 20px; padding: 9px 15px 5px; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
 .gridBoard {max-width: 669px !important; padding: 0 !important;cursor: pointer;}
-.nabBoard .link { height: 200px; display: block; padding: 0 0 4px 16px; overflow: hidden;}
+.nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
 .gridBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
 .nabBoard .link img, .gridBoard .link img  {float: left; width: 100px; /* magnify: 100 / 61 */ margin-left: -20px; /* set at horizontal center */ }
 .boardsTitle, .nabTitle {margin-left: 10px; padding-top: 5px; font-size: 16pt; color: #cb2027; }
 .boardsTitle a { color: #f47414; }
 
 #comments a, #renabs a {color: #f47414; }
-.nabBoard .link div, .gridBoard .link div {width:61px; height:61px; overflow:hidden; float:left; margin:0px 4px 4px 0px;}
+.nabBoard .link div, .gridBoard .link div { width: 61px; height: 61px; border: 1px solid #f0f0f0; overflow: hidden; float: left; margin: 0px 4px 4px 0px;}
 /*.nabBoard .div div {overflow: hidden; width: 61px; height: 61px; margin: 0 4px 4px 0;}*/
 /*.nabBoard .link div { width: 61px; height: 61px; overflow: hidden; float:left; margin:0px 4px 4px 0px;}*/
 
