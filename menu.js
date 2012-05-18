@@ -2453,9 +2453,8 @@ function addCurrentDashboardAndCurrentTab(target) {
     return;
   if (a.indexOf('javascript:') != -1)
     return target;
-  var hasQuestion    = a.indexOf('?') != -1;
   // Fixed for DUDE
-  if (!hasQuestion || a.indexOf('/tail?') != -1 || a.indexOf("/createResourceList?") != -1 || a.indexOf("/createParallelResourceList?") != -1)
+  if (a.indexOf('/tail?') != -1 || a.indexOf("/createResourceList?") != -1 || a.indexOf("/createParallelResourceList?") != -1)
     return;
   // Check if this is blog entry with contents
   var className = target.className;
@@ -2473,6 +2472,13 @@ function addCurrentDashboardAndCurrentTab(target) {
   var parentDiv = getDivNode(target);
   if (parentDiv  &&  parentDiv.id == 'otherSite')
     return;
+  var hasQuestion    = a.indexOf('?') != -1;
+  if (!hasQuestion) {
+    var base = document.getElementsByTagName("base");
+    if (!base  ||  a.indexOf(base[0].href) == -1)
+      return;
+    a += "?";
+  }
   var addDashboardId = a.indexOf('-d=') == -1;
   if (addDashboardId) {
     var div = document.getElementById('dashboardCredentials');
