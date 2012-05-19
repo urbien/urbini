@@ -142,7 +142,17 @@ div .href {display: inline;}
 .hideImg table, .hideImg img, .hideImg object, .hideImg embed, .hideImg .swf, .hideImg .flv { display: none; }
 @-moz-document url-prefix() { .hideImg table { display: table; } .hideImg table td { float: left; } }
 
-.displayInline, .displayIn4lines { max-width: 750px; word-wrap: break-word; overflow:hidden; width: 100%; height: 1em; line-height: 0.9em; text-align:justify; }
+.displayInline, .displayIn4lines { 
+  max-width: 750px; 
+  word-wrap: break-word; 
+  overflow:hidden; 
+  width: 100%; 
+  height: 1em; 
+/*
+  line-height: 0.9em; 
+  text-align:justify;
+*/   
+}
 .displayInline, .displayInline * { 
   font-size: 1em !important; 
 /*  font-weight:normal !important; */ 
