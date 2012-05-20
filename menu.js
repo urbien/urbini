@@ -12980,7 +12980,53 @@ function pageActivity(e, id, params) {
   postRequest(null, "smartPopup", params, table, null, getActivityCallBack);
 }
 
+function locationCallback(event, div, hotspot, html, url, params) {
+ var cityScape = getUrlParam(params, '.cityScape'); 
+ if (!cityScape) 
+   return; 
+ 
+ var baseUriO = document.getElementsByTagName('base');
+ var baseUri = "";
+ if (baseUriO) {
+   baseUri = baseUriO[0].href;
+   if (baseUri  &&  baseUri.lastIndexOf('/') != baseUri.length - 1)
+     baseUri += "/";
+ }
+ 
+ if (cityScape.indexOf('&') == -1 && cityScape.indexOf('.') == -1) {
+   if (window.location.href.indexOf('when=current') != -1)
+     window.location = baseUri + 'deals?-when=current&cityScape=' + cityScape;
+   else if (window.location.href.indexOf('when=former') != -1)
+     window.location = baseUri + 'deals?-when=former&cityScape=' + cityScape;
+   else {
+     var hasReferrer = document.referrer != null && document.referrer != '';
+     window.location = hasReferrer ? document.referrer : baseUri;
+   }
+ }
+}
 
+function beforeLocationCallback(cityScape) {
+ var baseUriO = document.getElementsByTagName('base');
+ var baseUri = "";
+ if (baseUriO) {
+   baseUri = baseUriO[0].href;
+   if (baseUri  &&  baseUri.lastIndexOf('/') != baseUri.length - 1)
+     baseUri += "";
+ }
+
+ if (cityScape.indexOf('&') == -1 && cityScape.indexOf('.') == -1) {
+   if (window.location.href.indexOf('when=current') != -1)
+     window.location = baseUri + 'deals?-when=current&cityScape=' + cityScape;
+   else if (window.location.href.indexOf('when=former') != -1)
+     window.location = baseUri + 'deals?-when=former&cityScape=' + cityScape;
+   else {
+     var hasReferrer = document.referrer != null && document.referrer != '';
+     window.location = hasReferrer ? document.referrer : baseUri;
+   }
+ }
+ 
+ return false;
+}
 
 //****************************************
 // ImageUpload
