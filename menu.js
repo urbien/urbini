@@ -13029,14 +13029,12 @@ function beforeLocationCallback(cityScape) {
        else
          href = href.substring(0, idx) + href.substring(idx1);
      }
-     alert(href);
      if (href.indexOf("?") == -1)
        href += "?";
      else
        href += "&";
        
      href += "cityScape=" + cityScape;
-     alert(href);
      window.location = href;
    }
  }
