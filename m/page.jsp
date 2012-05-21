@@ -9,6 +9,7 @@
   <siteResourceList/>
   <parallelResourceList/>
   <resourcesSearch resourcesUri = "text/search/resources" />
+  <include name="${type}_details_bottom.jsp" />
   <filesSearch     filesUri     = "text/search/files" />
   <excelsSearch    excelsUri    = "text/search/excels" />
   <menu toolbar="file" flat="y"/>
