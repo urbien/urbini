@@ -2477,7 +2477,6 @@ function addCurrentDashboardAndCurrentTab(target) {
     var base = document.getElementsByTagName("base");
     if (!base  ||  a.indexOf(base[0].href) == -1)
       return;
-    a += "?";
   }
   var addDashboardId = a.indexOf('-d=') == -1;
   if (addDashboardId) {
@@ -2504,9 +2503,9 @@ function addCurrentDashboardAndCurrentTab(target) {
         else 
           a += '?-d=' + s[0];
         
-          if (s.length > 1)
-            a += '&-t=' + s[1];
-        }
+        if (s.length > 1)
+          a += '&-t=' + s[1];
+      }
       target.href = a;
     }
   }
