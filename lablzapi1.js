@@ -63,6 +63,13 @@ Lablz.call = function(query, callbackName) {
 //  }
 //}
 
+Lablz.getUrl = function(uri) {
+  if (uri[0] === uri[0].toUpperCase()) // is short uri
+    return "http://" + serverName + "/v/" + uri;
+  else
+    return "http://" + serverName + "/v.html?uri=" + encodeURIComponent(uri);
+}
+
 Lablz.printJson = function(response, overwrite) {
   var div = document.getElementById('lablz_data');
   if (div == null) {
