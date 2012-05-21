@@ -2503,9 +2503,9 @@ function addCurrentDashboardAndCurrentTab(target) {
         else 
           a += '?-d=' + s[0];
         
-        if (s.length > 1)
-          a += '&-t=' + s[1];
-      }
+          if (s.length > 1)
+            a += '&-t=' + s[1];
+        }
       target.href = a;
     }
   }
@@ -13012,15 +13012,32 @@ function beforeLocationCallback(cityScape) {
    if (baseUri  &&  baseUri.lastIndexOf('/') != baseUri.length - 1)
      baseUri += "";
  }
-
  if (cityScape.indexOf('&') == -1 && cityScape.indexOf('.') == -1) {
    if (window.location.href.indexOf('when=current') != -1)
      window.location = baseUri + 'deals?-when=current&cityScape=' + cityScape;
    else if (window.location.href.indexOf('when=former') != -1)
      window.location = baseUri + 'deals?-when=former&cityScape=' + cityScape;
    else {
-     var hasReferrer = document.referrer != null && document.referrer != '';
-     window.location = hasReferrer ? document.referrer : baseUri;
+     var href = document.location.href;
+     var idx = href.indexOf("&cityScape=");
+     if (idx == -1)
+       idx = href.indexOf("?cityScape=");
+     if (idx != -1) {
+       var idx1 = href.indexOf("&", idx + 1);
+       if (idx1 == -1)
+         href = href.substring(0, idx);
+       else
+         href = href.substring(0, idx) + href.substring(idx1);
+     }
+     alert(href);
+     if (href.indexOf("?") == -1)
+       href += "?";
+     else
+       href += "&";
+       
+     href += "cityScape=" + cityScape;
+     alert(href);
+     window.location = href;
    }
  }
  
