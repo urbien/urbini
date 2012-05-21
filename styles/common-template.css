@@ -941,7 +941,9 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 #title H1, #view H1, #duel H1 {margin: 0; padding-top: 7px; padding-bottom: 7px;}
 td#title  { padding-bottom: 7px; border-collapse: separate; }
 #view { padding-bottom: 7px; padding-left: 7px; }
-#view, #duel { background: #f7f5f7; }
+#mview { padding-bottom: 7px; }
+
+#view, #mview, #duel { background: #f7f5f7; }
 
 #duel { padding-bottom: 7px; padding-left: 5px; }
 
