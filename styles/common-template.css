@@ -658,6 +658,9 @@ tr.fts td { /*vertical-align: middle;*/ padding: 2px; color: &[SecondaryColorA_5
 tr.ftSearch td { padding: 0px; }
 .desktop_search { width: 300px; }
 
+.clear_cross { cursor: pointer; position: relative; visibility: hidden; }
+.desktop_search .clear_cross { margin: 0 2px; top: 15%; }
+
 .desktop_search .left {
   float: left;
    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
@@ -681,7 +684,7 @@ tr.ftSearch td { padding: 0px; }
     font: bold 16px Helvetica;
     border-width: 0px;
     padding: 0px 0px 0px 0px;
-    margin: 5px 5px 0px 0px;
+    margin: 5px 2px 0px 0px;
  }
  
 .ftSearch .action_btn {
