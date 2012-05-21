@@ -684,7 +684,7 @@ tr.ftSearch td { padding: 0px; }
     font: bold 16px Helvetica;
     border-width: 0px;
     padding: 0px 0px 0px 0px;
-    margin: 5px 2px 0px 0px;
+    margin: 5px 2px 0px 2px;
  }
  
 .ftSearch .action_btn {
@@ -2451,6 +2451,7 @@ td #corePageContent { min-height: 600px;}
 --------------------------------------------------------------------------------------- */
 .nab { float: left; width: 192px; margin: 5px; padding: 15px 15px 0; font-size: 11px; background-color: #fff; border: 1px solid #DDDDDD; box-shadow: 0 0px 1px #AAAAAA;}
 #nabs_grid .nab { visibility: hidden; }
+.dList #nabs_grid .nab { visibility: visible; } /* TODO: implement 2 (RL) masonry and delete this rule */
 #nabs_grid .masonry-brick { visibility: visible; }
 
 .gnab { font-size: 11px; }
