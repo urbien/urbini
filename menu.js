@@ -9193,7 +9193,7 @@ var FieldsWithEmptyValue = {
     var $t = FieldsWithEmptyValue;
     if (!$t.hasClearTextCtrl(field))
       return;
-    var clearImg = getPreviousSibling(field);
+    var clearImg = field.parentNode.getElementsByTagName("img")[0];
     var value = $t.getValue(field);
     clearImg.style.visibility = (value.length == 0) ? "hidden" : "visible";
   },
@@ -9221,7 +9221,7 @@ var FieldsWithEmptyValue = {
   },
   
   hasClearTextCtrl : function(field) {
-    var img = getPreviousSibling(field);
+    var img = field.parentNode.getElementsByTagName("img")[0];
     if (!img)
       return false;
     
