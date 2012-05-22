@@ -5555,6 +5555,7 @@ var PlainDlg = {
 
     // login: show it as a modal dialog
     if (this.curUrl && this.curUrl.indexOf("j_security_check") != -1) {
+			LoadingIndicator.show();
       LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
       // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
       var jstest = getChildByAttribute(this.dlgDiv, "name", '.jstest');
@@ -5579,14 +5580,12 @@ var PlainDlg = {
       SubscribeAndWatch.onLoaded(event, div, hotspot, content, url);
       return;
     }
-    
-/*  // for login dialog after wrong user name / pw  
+		
+    // for login dialog // (wrong user name / pw ?) 
     if (url.endsWith("user-login.html")) {
-      div = $t.dlgArr[$t.curUrl];// $t.dlgDiv;
       content = getDomObjectFromHtml(content, "id", "register");
     }
-*/    
-
+    
     setInnerHtml(div, content);
     FormProcessor.initForms(div);
     // items navigation
@@ -6161,8 +6160,7 @@ var TouchDlgUtil = {
       this.bleachGreyRow();
       this.curDlgDiv = null;
     }
-        
-    
+    this.hidePageOverlay();    
   },
   
   highlightRowGreyOnOver : function(event) {
@@ -6321,7 +6319,8 @@ var TouchDlgUtil = {
     this.pageOverlay.style.display = "block";
   },
   hidePageOverlay: function(){
-    this.pageOverlay.style.display = "none";
+		if (this.pageOverlay)
+      this.pageOverlay.style.display = "none";
   }
 }
 
@@ -13230,8 +13229,8 @@ var LoadingIndicator = {
   },
   animate: function(){
     var $t = LoadingIndicator;
-    if ($t.loadingDiv == null) 
-      $t.init();
+//    if ($t.loadingDiv == null) 
+//      $t.init();
   
     if ($t.loadingDiv.style.visibility == "hidden") 
       return;
