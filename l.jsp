@@ -11,7 +11,8 @@
     </table>
   </div>
 
-  <allBoards onlyIf="-showBoards" itype="http://www.hudsonfog.com/voc/system/changeHistory/Modification"/>
+  <!--allBoards onlyIf="-showBoards" itype="http://www.hudsonfog.com/voc/system/changeHistory/Modification"/ -->
+  <allBoards itype="http://www.hudsonfog.com/voc/system/changeHistory/Modification"/>
 
   <div id="fts" hide="y"><!--  itype="!http://www.hudsonfog.com/voc/system/changeHistory/Modification"-->
     <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"  itype="!http://www.hudsonfog.com/voc/model/social/Intent">
@@ -47,7 +48,7 @@
       <taskTreeControl/>
       <div id="siteResourceList">
         <errorMessage additems="y"/>
-        <!-- buyableTags / -->
+        <buyableTags />
         <categories/>
         <siteResourceList />
     	  <uploadAttachment/>
