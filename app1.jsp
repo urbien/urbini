@@ -11,13 +11,13 @@
       var div = document.getElementById('lablz_data');
       Lablz.init("466f8d17bdf0cedf16d752b4e2699b76");
       
-      var random = ((1 + Math.random()) + '').substring(0, 3);
+      var random = ((1 + Math.random()) + '').substring(0, 5);
       var desc = 'I like NY ' + random + ' times as much as yesterday'; 
       
       // comment on my profile
-      var where = ["forum=_me","description='" + desc + "'"].join("&");
-      var call = "m/Comment?where=" + encodeURIComponent(where);
-      msg.innerHTML = msg.innerHTML + "Creating a comment: '" + desc + "' with API call:<br /> " + call;
+      var query = ["forum=_me","description=" + encodeURIComponent(desc)].join("&");
+      var call = "m/Comment?" + query;
+      msg.innerHTML = msg.innerHTML + "Creating a comment: " + desc + " with API call:<br /> " + call;
       Lablz.call(call, "findComment");
 
       // print the properties of a created resource
@@ -27,11 +27,11 @@
   //      div.innerHTML = div.innerHTML + "<br /><br />We can find the comment easily by its URI: <b>" + commentUri + "</b>, but let's search for it by its description:";
   
         // find comments on myself with a specific title
-  //      var where = ["forum=_me","OR(description='" + desc + "'|description=null)"].join("&");
-  //      Lablz.call("_me/commentsSubmittedByMe?where=" + encodeURIComponent(where), "Lablz.printJson");
+  //      var where = ["forum=_me","OR(description=" + desc + "|description=null)"].join("&");
+  //      Lablz.call("_me/commentsSubmittedByMe?$where=" + encodeURIComponent(where), "Lablz.printJson");
   
-        var where = ["forum=_me","description='" + desc + "'"].join("&");
-        call = "_me/commentsSubmittedByMe?where=" + encodeURIComponent(where);
+        var where = ["forum=_me","description=" + encodeURIComponent(desc)].join("&");
+        call = "_me/commentsSubmittedByMe?$where=" + encodeURIComponent(where);
         msg.innerHTML = msg.innerHTML + "<br /><br />We can find the comment (via the API) easily by its URI: " + commentUri + ", but let's search for it by its description with the API call: " + call;
         Lablz.call(call, "Lablz.printJson");
   
@@ -41,8 +41,8 @@
       
       function editComment() {
         var text = document.getElementById('newText').value;
-        var where = ["description='" + text + "'"].join("&");
-        call = "e/" + commentUri + "?where=" + encodeURIComponent(where);
+        var query = ["description=" + encodeURIComponent(text)].join("&");
+        call = "e/" + commentUri + "?" + query;
         msg.innerHTML = msg.innerHTML + "<br /><br />Edit API call: " + call;
         Lablz.call(call, "lookupAndPrint");
       }

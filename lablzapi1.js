@@ -18,27 +18,42 @@ Lablz.init = function (id) {
       // default to HTTPS
 Lablz.simpleCall = function(query, callbackName, secure) {
   var separator = query.indexOf('?') == -1 ? '?' : '&';
-  var fullUrl = (typeof secure == 'undefined' || secure ? secureApiUrl : apiUrl) + query + separator + "callback=" + callbackName;
+  var fullUrl = (typeof secure == 'undefined' || secure ? secureApiUrl : apiUrl) + query + separator + "$callback=" + callbackName;
   var script = document.createElement('script');
   script.src = fullUrl;
   document.body.appendChild(script);        
 }
 
+Lablz.authenticate = function() {
+  var path = secureApiUrl + 'authenticate?';
+  var queryParams = ['client_id=' + appId, 'redirect_uri=' + window.location, 'response_type=token']; //, 'state=' + ]; // CSRF protection
+  var qry = queryParams.join('&');
+  var url = path + qry;
+  window.location = url;
+}
+
 Lablz.call = function(query, callbackName) {
   if (appId == null)
     throw new Error("init must be called before authenticatedCall");
+  if (query == null)
+    throw new Error("you didn't specify an api call...");
   if (window.location.hash.length == 0) {
-    var path = secureApiUrl + 'authenticate?';
-    var queryParams = ['client_id=' + appId, 'redirect_uri=' + window.location, 'response_type=token']; //, 'state=' + ]; // CSRF protection
-    var qry = queryParams.join('&');
-    var url = path + qry;
-    window.location = url;
-  } 
-  else {
-    var access_token = window.location.hash.substring(1); // sth like 'access_token=erefkdsnfkldsjflkdsjflsdfs'
-    var separator = query.indexOf('?') == -1 ? '?' : '&';
-    Lablz.simpleCall(query + separator + access_token, callbackName, true);
+    Lablz.authenticate();
+    return;
   }
+  var access_token = window.location.hash.substring(1); // sth like 'access_token=erefkdsnfkldsjflkdsjflsdfs'
+  var ampIdx = access_token.indexOf("&");
+  if (ampIdx != -1) {
+    var split = access_token.split('&');
+    for (i in split) {
+      if (split[i].indexOf('access_token') == 0) {
+        access_token = split[i];
+        break;
+      }
+    }  
+  }
+  var separator = query.indexOf('?') == -1 ? '?' : '&';
+  Lablz.simpleCall(query + separator + access_token, callbackName, true);
 }
 
 //Lablz.call = function(path, select, where, callbackName) {
