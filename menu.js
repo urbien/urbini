@@ -5584,8 +5584,11 @@ var PlainDlg = {
     // for login dialog // (wrong user name / pw ?) 
     if (url.endsWith("user-login.html")) {
       content = getDomObjectFromHtml(content, "id", "register");
+			// login dialog with error opened on a page, not as a dialog (?!!!)
+			if (getChildById(content, "errorMessage").className != "hdn")
+			 return;
     }
-    
+
     setInnerHtml(div, content);
     FormProcessor.initForms(div);
     // items navigation
@@ -5748,7 +5751,7 @@ var TouchDlgUtil = {
       return;
     
     var isFieldVisible = isVisible(iphoneField);    
-    iphoneField.style.display = isFieldVisible ? "none" : "inline";
+    iphoneField.style.display = isFieldVisible ? "none" : "inline-block";
     title.style.display = isFieldVisible ? "inline" : "none";
   },
   
