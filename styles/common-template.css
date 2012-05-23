@@ -658,9 +658,11 @@ tr.ftSearch td { padding: 0px; }
 
 /** iPhone field : used on desktop too!  **/
 .iphone_field {
-  display: inline;
+  width: 200px;
+  display: inline-block;
+  height: 25px;
   margin: 0px 2px;
-  padding: 4px;
+  padding: 0px 4px;
   border-radius:5px 5px 5px 5px;
   -moz-border-radius:5px 5px 5px 5px;
   -webkit-border-radius:5px 5px 5px 5px;
@@ -673,15 +675,13 @@ tr.ftSearch td { padding: 0px; }
   font-size: 12px;
 }
 
-.iphone_field input { width: 70% /* allows to fit filter on mobile */; color: &[SecondaryColorA_3];; background: transparent; -webkit-appearance: none; outline: none; font: bold 17px Helvetica; border: none; }
+.iphone_field input { width: 175px;  margin: 0px 5px 0px 2px; color: &[SecondaryColorA_3];; background: transparent; -webkit-appearance: none; outline: none; font: bold 17px Helvetica; border: none; }
 #fts_filter .iphone_field input { width: 120px; }
-.clear_cross { position: relative; cursor: pointer; visibility: hidden; }
-.iphone_field .clear_cross { top: 5px; left: -2px; }
+.clear_cross { position: relative; top: 4px; width: 19px; height: 19px; cursor: pointer; visibility: hidden; }
 .desktop_search .clear_cross { top: 5px; margin: 0 1px; }
 
 .iphone_field .magnify_glass_small { position: relative; top: 3px; cursor: pointer; }
-.iphone_search { border-radius: 5px; } 
-
+.iphone_search { border: 2px solid &[PrimaryColor_1];; }
 
 .clear_cross { cursor: pointer; position: relative; visibility: hidden; }
 .desktop_search .clear_cross { margin: 0 2px; top: 15%; }
@@ -822,7 +822,7 @@ table.rightPanel {border:solid #808080 1px; background-color: #eeeeee; color: #0
 /*  border:solid &[SecondaryColorA_5]; 1px; */
   border: 1px solid #d0d0d0; 
   border-collapse: collapse; 
-  color: &[PrimaryColor_1];;
+  color: &[PrimaryColor_1];; /* ? */
   background-color: &[BackgroundColor];; 
   overflow-y: visible;  
   height: 100%; 
