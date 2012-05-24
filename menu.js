@@ -2677,7 +2677,15 @@ var Tooltip = {
     }
   },
   
-  show : function() {
+	show : function() {
+  	Tooltip._show(); 
+	},
+	// use showText to notify a user with help of a tooltip
+	showText : function(text) {
+		// setTimeout allows to call it onclick, onmouseup
+    setTimeout("Tooltip._show('" + text + "');", 100); 
+  },
+  _show : function(tooltipText) {
     var $t = Tooltip;
 
     if ($t.isOverTooltip)
@@ -2688,14 +2696,15 @@ var Tooltip = {
       return;
     // if dialog opened then show tooltip only for elements inside it.
     var cuDlg = TouchDlgUtil.getCurrentDialog();
-    if (cuDlg && isVisible(cuDlg)) {
+    if (cuDlg /*&& isVisible(cuDlg)*/ && !isParentDialogOnPage(cuDlg)) {
       var parentDlg = getParentDialog(target);
       if (!parentDlg)
         return;
       // possible additinally to check if parentDlg is cuDlg but in most cases we have one dlg on page   
     }
     
-    var tooltipText = $t.showArgs.tooltipText;
+		if (!tooltipText)
+      tooltipText = $t.showArgs.tooltipText;
 
     if (!$t.tooltipDiv)
       return false; 
