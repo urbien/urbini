@@ -123,6 +123,7 @@ Math.bezierPoint =
  }
 /***********************************************
 * Browser detection
+* (testing with 'fake' user agent can lead to mistakes)
 ************************************************/
 var Browser = {};
 var agent = navigator.userAgent
@@ -1173,7 +1174,7 @@ function arrangeTableCells(table, colsAmount) {
 		table.rows[i].style.display = "none";	
 		while (typeof table.rows[i].cells[0] != 'undefined') {
 			var cell = table.rows[i].removeChild(table.rows[i].cells[0]);
-			if (isVisible(cell))
+			if (isVisible(cell, true))
 				cells.push(cell);
 		}
 	}
@@ -1955,8 +1956,11 @@ function removeClassName(elem, className) {
 	var regexp = new RegExp(className, "g");
 	elem.className = elem.className.replace(regexp, "").trim();
 }
-function isVisible(elem) {
-	if (elem.offsetWidth == 0)
+
+// checks visibility by size != 0 too because of some problems with computed style (?)
+// to enforce only by style use onlyByStyle
+function isVisible(elem, onlyByStyle) {
+	if (onlyByStyle != true && elem.offsetWidth == 0)
 	  return false;
 	var stl = getElementStyle(elem);
 	return stl.display != 'none' && stl.visibility != 'hidden';
