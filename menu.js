@@ -2692,6 +2692,10 @@ var Tooltip = {
       return;
 
     var target = $t.showArgs.target;
+		// Chrome had a problem with "ZeroClipboard" embeded object
+		if (target.parentNode.tagName.toLowerCase() == "a") 
+		  target = target.parentNode;
+			
     if (isElemOfTag(target, "iframe")) // prevent tooltip over social Like buttons
       return;
     // if dialog opened then show tooltip only for elements inside it.
@@ -2713,7 +2717,7 @@ var Tooltip = {
     if (PopupHandler.isVisible()) // popups of RTE and StyleSheet
       return false; 
     $t.contentDiv.innerHTML = tooltipText;
-    setDivVisible(/*e*/null, $t.tooltipDiv, $t.tooltipFrame, target, 0, 30);
+    setDivVisible(/*e*/null, $t.tooltipDiv, $t.tooltipFrame, target, 0, 25);
     $t.isShown = true;
   },
   
