@@ -5569,6 +5569,8 @@ var PlainDlg = {
     // login: show it as a modal dialog
     if (this.curUrl && this.curUrl.indexOf("j_security_check") != -1) {
 			LoadingIndicator.show();
+			 // hack for local host that do not hide the spinner after postRequest
+			setTimeout("LoadingIndicator.hide()", 10000);
       LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
       // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
       var jstest = getChildByAttribute(this.dlgDiv, "name", '.jstest');
