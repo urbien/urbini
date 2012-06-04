@@ -5569,8 +5569,10 @@ var PlainDlg = {
     // login: show it as a modal dialog
     if (this.curUrl && this.curUrl.indexOf("j_security_check") != -1) {
 			LoadingIndicator.show();
-			 // hack for local host that do not hide the spinner after postRequest
-			setTimeout("LoadingIndicator.hide()", 10000);
+			// hack: FaceBook can not to call a callback (on a local host).
+			// So hide the spinner "manually" (faster to do it on dev.hudsonfog.com site)
+			var timeout = getBaseUri().indexOf("dev.hudsonfog.com") != -1 ? 2000 : 10000;
+			setTimeout("LoadingIndicator.hide()", timeout);
       LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
       // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
       var jstest = getChildByAttribute(this.dlgDiv, "name", '.jstest');
