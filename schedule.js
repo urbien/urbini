@@ -644,7 +644,7 @@ function addCalendarItem(popupRowAnchor, event, contactPropAndIdx) {
  * anchor;
  */
   // close menu popup
-  Popup.close0(contactDivId);
+ ///// Popup.close0(contactDivId);
 
   var idx = anchor.indexOf("?");
   var div = document.createElement('div');
