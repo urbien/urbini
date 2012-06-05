@@ -1,1445 +1,5 @@
-/**
- * Popup system. Supports menu, dynamicaly generated listboxes, tooltips.
- * Supports row selection (one or many) in menu, listbox. Support stacking up
- * one popup on top of another (e.g.
- */
-
-var keyPressedImgId;
-var keyPressedElement;
-var autoCompleteTimeoutId;
-var keyPressedTime;
-
-Popup.currentDivs          = new Array(); // distinct divs that can be open at
-                                          // the same time (since they have
-                                          // different canvases)
-Popup.popups               = new Array(); // pool of all popups with different
-                                          // divId(s)
-Popup.openTimeoutId        = null; // timeout after which we need to open the
-                                    // delayed popup
-Popup.delayedPopup         = null; // the delayed popup
-Popup.lastClickTime        = null; // last time user clicked on anything
-Popup.lastOpenTime         = null; // moment when last popup was opened
-Popup.delayedPopupOpenTime = null; // moment when delayed popup was requested
-Popup.tooltipPopup         = null;
-Popup.DarkMenuItem  = '#AABFCD'; // '#95B0C3'; //'#dee6e6';
-Popup.LightMenuItem = '';
-Popup.autoCompleteDefaultTimeout = 200;
-
-Popup.HIDDEN  =  'hidden';
-Popup.VISIBLE =  'visible';
-if (document.layers) {
-  Popup.HIDDEN  = 'hide';
-  Popup.VISIBLE = 'show';
-}
-
-
-// for forced position of popup
-Popup.POS_LEFT_TOP = 'left_top';
-
-/**
- * returns iframe that serves as a canvas for this popup (overlaying the
- * underlying form fields)
- */
-Popup.getCanvas = function (frameRef) {
-  var defaultCanvas = 'popupIframe';
-  var iframe;
-  if (frameRef)
-    iframe         = frameRef;
-  else {
-    iframe         = document.getElementById(defaultCanvas);
-    //if (!iframe) // No popupIframe on Mobile
-    //  throw new Error("document structure invalid: iframe '" + defaultCanvas + "' is missing");
-  }
-  return iframe;
-};
-
-Popup.allowTooltip = function (target) {
-  if (Browser.mobile)
-    return false;
-    
-  var noOpenPopups = true;
-  for (var i=0; i<Popup.popups.length; i++) {
-    var popup = Popup.popups[i];
-    if (typeof popup == 'undefined')
-      continue;
-    if (popup.isOpen() &&         // if popup is already open then we need only
-                                  // tooltips in it (and not the tooltips on
-                                  // areas outside popup)
-        !popup.isTooltip()) {     // but if open popup is a tooltip - ignore it
-      noOpenPopups = false;
-      if (popup.contains(target))
-        return true;
-      else
-        continue;
-    }
-  }
-  if (noOpenPopups) // if no open popups - allow tooltip
-    return true;
-  else
-    return false;
-};
-
-/**
- * Static function. returns a Popup by divId if exists, otherwise - null
- * mobile: 
- * 1. returns popups currently embeded into a document.
- * 2. popups cancontain single popups or set of popups with the same id;
- *    only one popup with particular id should be in document at a moment.
- */
-Popup.getPopup = function (divId) {
-  var popup = Popup.popups[divId];
-  if (!popup)
-    return null;
-    
-  // popup object
-  if (typeof popup.length == 'undefined') {
-    if (getAncestorByTagName(popup.div, "body")) 
-      return popup;
-    else 
-      return null;
-  }
-  // array of popup objects
-   else {
-    var popupArr = popup;
-    for (var i = 0; i < popupArr.length; i++) {
-      popup = popupArr[i];
-      if (getAncestorByTagName(popup.div, "body") != null)
-        return popup;
-    }
-    return null;
-  }
-};
-
-/**
- * Open popup after delay
- */
-Popup.openAfterDelay = function (event, divId, offsetX, offsetY) {
-  // alert('event.clientX: ' + event.clientX + ', offsetX: ' + offsetX + ',
-  // divId: ' + divId);
-
-  if ( (Popup.lastOpenTime   && (Popup.lastOpenTime  > Popup.delayedPopupOpenTime)) ||
-       (Popup.lastClickTime  && (Popup.lastClickTime > Popup.delayedPopupOpenTime)) ||
-       (keyPressedTime       && (keyPressedTime      > Popup.delayedPopupOpenTime))
-      ) {
-    return; // do not open delayed popup if other popup was already opened
-            // during the timeout
-  }
-  
-  
-  
-  Popup.delayedPopup = null;
-  var popup = Popup.getPopup(divId);
-  if (popup) {
-    popup.open1(event, offsetX, offsetY);
-  }
-};
-
-/**
- * Static function. Opens a menu with a specified DIV and places it on the
- * screen relative to hotspot (IMG, link, etc). Note: uses frameRef to draw this
- * DIV on top of the iframe in order to block underlying form fields (which
- * otherwise would show through).
- */
-Popup.open = function (event, divId, hotspotRef, frameRef, offsetX, offsetY, delay, contents) {
-  var divRef = document.getElementById(divId);
-  var popup = Popup.getPopup(divId);
-  if (popup == null)
-    popup = new Popup(divRef, hotspotRef, frameRef, contents);
-  else
-    popup.reset(hotspotRef, frameRef, contents);
-
-  if (delay) {
-    popup.openDelayed(event, offsetX, offsetY, delay);
-    return;
-  }
-  return popup.open1(event, offsetX, offsetY);
-};
-
-Popup.delayedClose0 = function (divId) {
-  var popup = Popup.getPopup(divId);
-  if (!popup)
-    return;
-  popup.delayedClose();
-};
-
-// part of delayed close after the timeout
-Popup.delayedClose1 = function (divId) {
-  var popup = Popup.getPopup(divId);
-  if (!popup)
-    return;
-
-  if (!popup.delayedCloseIssued) // delayed close canceled
-    return;
-  popup.close();
-};
-
-Popup.close0 = function (divId) {
-  var popup = Popup.getPopup(divId);
-  if (!popup)
-    return;
-  popup.close();
-};
-
-/**
- * Loads the ajax popup into the div
- */
-Popup.load = function (event, div, hotspot, content) {
-  var popup = Popup.getPopup(div.id);
-  popup.setInnerHtml(content);
-  var div = popup.div;
-  
-  var tables = div.getElementsByTagName('table');
-  /*
-  if (popup.firstRow() == null) {
-    alert("Warning: server did not return listbox data - check connection to server");
-    return;
-  }
-  */
-
-  // /
-  var idx = propName.indexOf(".", 1);
-  var shortPropName = propName;
-  if (idx != -1)
-    shortPropName = propName.substring(0, idx);
-
-  var addToTableName = "";
-  if (originalProp.indexOf("_class") != -1) {
-    var field = propName + "_class";
-    if (document.forms[currentFormName].elements[field].value == "")
-      addToTableName = "_class";
-  }
-
-//  hideResetRow(div, currentFormName, originalProp);
-
-  popup.open1(event, 0, 16);
-  loadedPopups[div.id] = div;
-  
-};
-
-/**
- * Close popup if mouse cursor is out
- */
-Popup.closeIfOut0 = function (divId) {
-  var popup = Popup.getPopup(divId);
-  if (!popup)
-    return;
-  popup.closeIfOut();
-};
-
-function Popup(divRef, hotspotRef, frameRef, contents) {
-  if (!divRef)
-    throw new Error("divRef parameter is null");
-  if (typeof difRef == 'string')
-    throw new Error("div parameter must be an object, not a string");
-  if (!divRef.id)
-    throw new Error("divRef parameter has no id: " + difRef);
-  if (!hotspotRef)
-    throw new Error("hotspotRef parameter is null");
-  if (typeof hotspotRef == 'string')
-    throw new Error("hotspot parameter must be an object, not a string");
-
-  this.div            = divRef;     // div for this popup
-  this.iframe         = Popup.getCanvas(frameRef); // iframe beneath this popup
-                                                    // (to cover input elements
-                                                    // on the page below popup)
-  this.hotspot        = hotspotRef; // hotspot that triggered this popup
-  this.contents       = contents;
-  this.isTooltipFlag  = contents ? true : false;
-
-  this.resourceUri    = null;       // popup was activated for one of the
-                                    // properties of the Resource in resource
-                                    // list (RL). resourceUri is this resource's
-                                    // URI.
-
-  // this.originalProp = null; // Resource property for which popup was
-  // activated
-  // this.propName = null; // same, but encoded - has extra info such as HTML
-  // form name, interface name, etc.
-  // this.formName = null; // name of the HTML form which element generated last
-  // event in the popup
-  this.closeTimeoutId = null;       // timeout after which we need to close this popup
-  this.offsetX        = null;       // position at which we have opened last time
-  this.offsetY        = null;       // ...
-  this.popupClosed    = true;
-  this.items          = new Array(); // items of this popup (i.e. menu rows)
-  this.currentRow     = null;       // currently selected row in this popup
-  this.delayedCloseIssued = false;
-  this.initialized    = false;      // it is not yet initialized - event handlers not added
-  var self = this;
-
-  // add to the list of popups
-  if (typeof Popup.popups[divRef.id] == 'undefined') 
-    Popup.popups[divRef.id] = this;
-  else {
-    if (typeof Popup.popups[divRef.id].length == 'undefined') {
-      var tmp = Popup.popups[divRef.id];
-      Popup.popups[divRef.id] = new Array();
-      Popup.popups[divRef.id].push(tmp);
-    }
-    Popup.popups[divRef.id].push(this); 
-  }
-      
-  
-  //Popup.register(divRef.id, this);
-
-//  this.register = function(id, obj) {
-//    Popup.popups[id] = obj;
-//  }
-
-  this.reset = function (hotspotRef, frameRef, contents) {
-    this.hotspot        = hotspotRef;
-    this.iframe         = Popup.getCanvas(frameRef); // iframe beneath this popup (to cover input elements on the page below popup)
-    this.contents       = contents;
-    this.isTooltipFlag  = contents ? true : false;
-  }
-
-  /**
-   * Get current div. One div per canvas since a canvas may hold only one div.
-   */
-  this.getCurrentDiv = function (iframe) {
-    var iframeId;
-    if (iframe)
-      iframeId = iframe.id;
-    else if (self.iframe)
-      iframeId = self.iframe.id;
-    else
-      return null;
-
-    return Popup.currentDivs[iframeId];
-  }
-
-  this.setCurrentDiv = function () {
-    if (self.iframe)
-      Popup.currentDivs[self.iframe.id] = self.div;
-  }
-
-  this.unsetCurrentDiv = function () {
-    if (self.iframe)
-      Popup.currentDivs[self.iframe.id] = null;
-  }
-
-  this.contains = function (target) {
-    var nodes = self.div.childNodes;
-    for (var i=0; i<nodes.length; i++) {
-      if (nodes[i] == target)
-        return true;
-    }
-  }
-
-  this.isTooltip = function () {
-    return self.isTooltipFlag;
-  }
-
-  this.open1 = function (event, offsetX, offsetY) {
-    var hotspot = getEventTarget(event);
-    var hotspotDim = getElementCoords(hotspot, event);
-    if (Popup.tooltipPopup) {
-      Popup.tooltipPopup.close();
-      Popup.tooltipPopup = null;
-    }
-    var currentDiv = self.getCurrentDiv();
-    if (currentDiv) {
-      var curDivId = currentDiv.id;
-      var currentPopup = Popup.getPopup(curDivId);
-
-      if (currentPopup) {
-        var offsetX1 = currentPopup.offsetX;
-        var offsetY1 = currentPopup.offsetY;
-        currentPopup.close();
-// opening the same popup at the same place? - just quit
-        if (self.div.id == curDivId &&
-            self.hotspotDim.equals(hotspotDim) &&
-            (offsetX1 == offsetX && offsetY1 == offsetY) &&
-             self.div.style == 'visible') {
-          return;
-        }
-      }
-    }
-    self.hotspotDim = hotspotDim;
-    self.offsetX = offsetX; // save position at which we have opened last time
-    self.offsetY = offsetY;
-    Popup.lastOpenTime = new Date().getTime();  // mark when we opened this popup
-    
-  if (Popup.openTimeoutId) {                  // clear any delayed popup open
-      clearTimeout(Popup.openTimeoutId);
-      Popup.openTimeoutId = null;
-    }
-    
-    if (self.isTooltip()) {
-      self.setInnerHtml(self.contents);
-    }
-    // alert('visible');
-    self.setVisible(event, offsetX, offsetY, hotspotDim);
-    self.popupClosed = false;
-
-    self.deselectRow();
-    self.setCurrentDiv();
-    self.setFocus();
-    
-    if (!self.initialized) {
-      TouchDlgUtil.init(self.div);
-      FormProcessor.initForms(self.div);
-      self.initilized = true;
-    }
-    if (self.isTooltip()) {
-      Popup.tooltipPopup = self;
-      // fit tooltip height
-      makeDivAutosize(self.div, true);
-      // call "delayedClose" onmouseout
-    }
-    else
-      Popup.tooltipPopup = null;
-    return self;
-  }
-
-  this.isOpen = function() {
-    if (typeof self.popupClosed == 'undefined')
-      return false;
-    return !(self.popupClosed);
-  }
-
-  this.setInnerHtml = function (text) {
-    setInnerHtml(self.div, text);
-  }
-
-  /**
-   * Open delayed popup: initialize a delayed popup and quit
-   */
-  this.openDelayed = function (event, offsetX, offsetY, delay) {
-    Popup.lastOpenTime         = new Date().getTime();
-    Popup.delayedPopupOpenTime = new Date().getTime();
-
-    // detected re-entering into the popup - thus clear a delayed close
-    self.delayedCloseIssued = false;
-  var clonedEvent = cloneEvent(event);
-
-    if (Popup.openTimeoutId) {                  // clear any prior delayed popup open
-      clearTimeout(Popup.openTimeoutId);
-      Popup.openTimeoutId = null;
-    }
-    
-    Popup.openTimeoutId = setTimeout(function () {Popup.openAfterDelay(clonedEvent, self.div.id, offsetX, offsetY)}, delay);
-    Popup.delayedPopup = self;
-  }
-
-  /**
-   * Show popup
-   */
-  this.setVisible = function (event, offsetX, offsetY, hotspotDim) {
-    return setDivVisible(event, self.div, self.iframe, self.hotspot, offsetX, offsetY, hotspotDim);
-  }
-
-  /**
-   * Hide popup
-   */
-  this.setInvisible = function () {
-    return setDivInvisible(self.div, self.iframe);
-  }
-
-  /**
-   * close popup uncoditionally and immediately with no regard to mouse position
-   */
-  this.close = function () {
-    self.popupClosed = true;
-    var div      = self.div;
-    var divStyle = div.style;
-    
-    if (divStyle.display == "inline") {
-      self.setInvisible();
-    }
-    self.unsetCurrentDiv();
-  }
-
-  /**
-   * [Delayed] Close popup
-   */
-  this.delayedClose = function (timeout) {
-    var div   = self.div;
-    if (div.style.position.toLowerCase() == "static")
-      return;
-
-    var divId = div.id;
-    if (timeout == null)
-      timeout = 600;
-    self.delayedCloseIssued = true;
-
-    if (self.closeTimeoutId != null)
-      clearTimeout(self.closeTimeoutId);
-
-    self.closeTimeoutId = setTimeout(function() {Popup.delayedClose1(divId)}, timeout);
-  }
-
-  /**
-   * Intercept events generated within the popup
-   */
-  this.interceptEvents = function () {
-    var div     = self.div;
-    var hotspot = self.hotspot;
-   
-    if (!Browser.penBased && !Browser.joystickBased) {
-      addEvent(div,     'mouseover', self.popupOnMouseOver, false);
-      addEvent(div,     'mouseout',  self.popupOnMouseOut,  false);
-      addEvent(hotspot, 'mouseout',  self.popupOnMouseOut,  false);
-    }
-    
-    var firstRow = self.firstRow();
-    if (firstRow == null)
-      return; // popup structure without rows
-
-    var tables = div.getElementsByTagName('table');
-   
-    // popup contains rows that can be selected
-    if (Browser.ie) { // IE - some keys (like backspace) work only on keydown
-      addEvent(div,  'keydown',   self.popupRowOnKeyPress,  false);
-    }
-    else {          // Mozilla - only keypress allows to call e.preventDefault() to prevent default browser action, like scrolling the page
-      addEvent(div,  'keypress',  self.popupRowOnKeyPress,  false);
-    }
-
-    var elems = tables[0].getElementsByTagName("tr");
-    var n = elems.length;
-    
-    for (var i = 0; i < n; i++) {
-      var elem = elems[i];
-      var popupItem = new PopupItem(elem, i);
-      self.items[popupItem.id];
-      // avoid per-row onClick handler if table has its own
-      if (!tables[1] || !tables[1].onclick /*!table.onclick*/) {
-        addEvent(elem, 'click',     self.popupRowOnClick,     false);
-        var anchors = elem.getElementsByTagName('a');
-        if (anchors  &&  anchors.length != 0) {
-          var anchor = anchors[0];
-          if (anchor.onclick) {
-            anchor.onclick1 = anchor.onclick;
-            anchor.onclick = '';
-          }
-          addCurrentDashboardAndCurrentTab(anchor);
-          var href = anchor.href;
-
-          // anchors[0].href = 'javascript:;';
-          elem.setAttribute('href', href);
-          // anchors[0].disabled = true;
-        }
-      }
-      
-      addEvent(elem, 'mouseover', self.popupRowOnMouseOver, false);
-      addEvent(elem, 'mousedown', self.popupRowOnMouseDown, false);
-      addEvent(elem, 'mouseout',  self.popupRowOnMouseOut,  false);
-    }
-    // reset
-    self.currentRow = null;
-  }
-
-  /*
-   * set keyboard focus on this popup
-   */
-  this.setFocus = function () {
-    // make popup active for key input
-    var as = self.div.getElementsByTagName('a');
-    if (!as)
-      return;
-    var a = as[0];
-    if(!a)
-      return;
-
-    if (a.href == 'about:blank') { // special dummy A tag just to be able to set focus (if does not exist - no need to focus)
-      if (document.all) { // simple in IE
-        if (self.div.focus)
-          try { self.div.focus(); } catch(e) {};
-      }
-      else {                // hack for Netscape (using an empty anchor element to focus on)
-        if (a.focus) {
-          try { a.focus(); } catch(e) {};
-        }
-      }
-    }
-  }
-  /**
-   * Popup's on mouseover handler
-   */
-  this.popupOnMouseOver = function (e) {
-    if (typeof getDocumentEvent == 'undefined') return; // js is not yet fully interpreted by the browser
-    e = getDocumentEvent(e); if (!e) return;
-    var target = getTargetElement(e);
-    if (!target)
-      return;
-
-    // detected re-entering into the popup - thus clear a timeout
-    self.delayedCloseIssued = false;
-    if (self.closeTimeoutId != null) {
-      clearTimeout(self.closeTimeoutId);
-      self.closeTimeoutId = null;
-    }
-    return true;
-  }
-
-  /**
-   * Popup's and hotspot's on mouseout handler
-   */
-  this.popupOnMouseOut = function (e) {
-    if (typeof getDocumentEvent == 'undefined') return;
-    e = getDocumentEvent(e); if (!e) return;
-
-    var target1 = getEventTarget(e);
-    if (target1.tagName.toLowerCase() == 'input')
-      return true;
-
-    var target = getMouseOutTarget(e);
-    if (!target)
-      return true;
-    self.delayedClose(600);
-    return true;
-  }
-
-  // ***************************************** row functions
-  // ****************************
-  /**
-   * This handler allows to use arrow keys to move through the menu and Enter to
-   * choose the menu element.
-   */
-  this.popupRowOnKeyPress = function(e) {
-    e = getDocumentEvent(e); if (!e) return;
-
-    var currentDiv = self.getCurrentDiv();
-    var characterCode = getKeyCode(e); // code typed by the user
-
-    // the following is for menu of a tab that allows tab name changing.
-    var target = getEventTarget(e);
-    if (target.tagName.toLowerCase() == 'input')
-      return;
-
-    var tr = self.currentRow;
-    if (!tr)
-      tr = self.firstRow();
-
-    switch (characterCode) {
-      case 38:  // up arrow
-      case 40:  // down arrow
-        break;
-      case 9:   // tab
-        if (currentDiv) {
-          var form = document.forms[currentFormName];
-          if (form) {
-            var inputField = getOriginalPropField(form, originalProp); //form.elements[originalProp];
-            try {
-            inputField.focus(); } catch(e) {};
-          }
-          Popup.close0(currentDiv.id);
-        }
-        return stopEventPropagation(e);
-      case 27:  // esc
-        if (currentDiv)
-          Popup.close0(currentDiv.id);
-        return stopEventPropagation(e);
-      case 13:  // enter
-        self.popupRowOnClick1(e, tr, target);
-        return stopEventPropagation(e);
-      case 8:   // backspace or "C" in S60
-        if(Browser.s60Browser) {
-           if (currentDiv)
-              Popup.close0(currentDiv.id);
-            return stopEventPropagation(e);
-        }
-        else {
-          if (currentDiv) {
-            // var form = getFormNode(self.currentRow);
-            var form = document.forms[currentFormName];
-            if (form) {
-              var inputField = getOriginalPropField(form, originalProp); //form.elements[originalProp];
-              setKeyboardFocus(inputField);
-              autoComplete1(e, inputField);
-              if (characterCode == 8) {
-                // problem with IE - move line below to another place
-                inputField.value = inputField.value.substring(0, inputField.value.length - 1);
-              }
-            }
-          }
-          return stopEventPropagation(e);
-        }
-    }
-    if (characterCode == 40) {       // down arrow
-      self.deselectRow();
-      self.nextRow();
-      self.selectRow();
-    }
-    else if (characterCode == 38) {  // up arrow
-      self.deselectRow();
-      self.prevRow();
-      self.selectRow();
-    }
-
-    return stopEventPropagation(e);
-  }
-
-  /**
-   * Reacts to clicks inside the popup
-   */
-  this.popupRowOnClick = function (e) {
-    var $t = ListBoxesHandler;
-    e = getDocumentEvent(e); if (!e) return;
-    var target = getTargetElement(e);
-    var tr = getTrNode(target);
-    if (!tr)
-      return stopEventPropagation(e);
-    
-    if (getAncestorByClassName(tr, "classifier_panel") != null) {
-      $t.onClassifierItemClick(e, tr);
-      return;
-    }
- 
-    var listsContainer = getAncestorById(tr, "lists_container");
-    if (listsContainer != null) {
-      var isMultipleSel = $t.onOptionsItemClick(tr);
-      if (!isMultipleSel)
-        $t.onOptionSelection(tr);
-    }
-
-    var ret = self.popupRowOnClick1(e, tr, target);
-    self.selectRow();
-    stopEventPropagation(e);
-    return ret;
-  }
-
-  /*************************************************
-  * popupRowOnClick1
-  * sets values in hidden inputs
-  **************************************************/
-  this.popupRowOnClick1 = function (e, tr, target) {
-    var $t = ListBoxesHandler;
-
-    Popup.lastClickTime = new Date().getTime();
-    var currentDiv = self.getCurrentDiv();
-   
-    if (!tr)
-      tr = self.currentRow;
-    if (self.isHeaderRow(tr)) // skip clicks on menu header
-      return;
-
-    // 1. if there is a link on this row - follow it
-    if (target.tagName.toLowerCase() == 'a')
-      return;
-    if (tr)
-      var anchors = tr.getElementsByTagName('A');
-    if (anchors  &&  anchors.length != 0) {
-      if (currentDiv) {
-        loadedPopups[currentDiv.id] = null;
-        Popup.close0(currentDiv.id);
-      }
-      var anchor = anchors[0];
-      var trg = anchor.getAttribute('target');
-      if (trg) {
-        var url = anchor.getAttribute('href');
-        window.open(url, trg, "width=600, height=600, top=20, left=20, menubar=no,"
-           + "status=0, location=no, toolbar=no, scrollbars=1 status=no, resizable=yes");
-        stopEventPropagation(e);
-        return true;
-      }
-
-      if (anchor.id.startsWith('-inner'))       // display as on-page dialog
-        return LinkProcessor.onClickDisplayInner(e, anchor);
-      if (anchor.onclick1) {
-        anchor.onclick1(e);
-      }
-      else {
-        var href = tr.getAttribute('href', href);
-         if (href) {
-           stopEventPropagation(e)
-          document.location.href = href;
-         }
-      }
-      return false;
-    }
-
-    // 2. tr has no id.
-    if (!tr.id)
-      return;
-    
-    // 3. id = '$noValue'  
-    if (tr.id && tr.id == '$noValue')
-      return;
-    
-    // 4. calendar
-    var isCalendar = tr.id.indexOf("_$calendar") != -1 ? true: false;
-    if (isCalendar)
-      return true;
-
-    // 5. form
-//    var form = document.forms[currentFormName];
-//    if (form == null) {
-//      throw new Error("not found html form for TR: " + tr.id);
-//    }
-
-    var table  = tr.parentNode;
-    var table1 = table.parentNode;
-
-    var chosenTextField = ListBoxesHandler.getTextFieldInParamRow();//getOriginalPropField(form, originalProp);
-    var form = chosenTextField.form;
-  
-    var prop = chosenTextField.name;
-//    var propertyShortName = table1.id.substring("table_".length);
-//    var idx = propertyShortName.lastIndexOf('_');
-//    propertyShortName = propertyShortName.substring(0, idx);
-//    var idx = propertyShortName.indexOf(".", 1);
-//    var prop = null;
-//    var pLen = propertyShortName.length;
-//    if (idx == -1) {
-//      idx = propertyShortName.indexOf("_class");
-//      if (idx != -1)
-//        prop = propertyShortName.substring(0, pLen - 6);
-//      else
-//        prop = propertyShortName;
-//    }
-//    else {
-//      if (propertyShortName.indexOf(".type") == idx) {
-//        if (idx + 5 != pLen)
-//          prop = propertyShortName.substring(0, idx);
-//        else
-//          prop = propertyShortName;
-//      }
-//      else
-//        prop = propertyShortName.substring(0, idx);
-//    }
- 
-    var len = chosenTextField.length; // Note: it seems that currently it is only 1(!) field
-    var verified = prop + "_verified";
-//    if (currentResourceUri)
-//      verified = currentResourceUri + ".$" + verified;
-    var fieldLabel = document.getElementById(prop + "_span");
-
-    var iclass = prop + "_class";
-    var formFieldClass    = form.elements[iclass];
-    var formFieldVerified = form.elements[verified];
-
-    // Note: delayed selection finish is like checkboxClicked = true
-    var checkboxClicked = true;
-    var deleteCurrentDiv = false;
-    if (formFieldVerified) {
-      if (formFieldVerified.value == 'n')
-        deleteCurrentDiv = true;
-      formFieldVerified.value = 'y'; // value was modified and is verified
-                                      // since it is not typed but is chosen
-                                      // from the list
-    }
-
-    // row clicked corresponds to a property with range 'interface', meaning
-    // that we need to open a list of classes that implement this interface
-    if (originalProp.indexOf('_class') != -1) {
-      formFieldClass.value = ($t.curClass != null) ? $t.curClass : "";
-    }
-
-    var select;
-    var isViewCols = currentFormName.indexOf("viewColsList") == 0  ||
-                     currentFormName.indexOf("gridColsList") == 0  ||
-                     currentFormName.indexOf("filterColsList") == 0;
-    
-
-    
-    if (isViewCols)
-      select = prop;
-    else
-      select = prop + "_select";
-//    if (currentResourceUri)
-//      select = currentResourceUri + ".$" + select;
-    var formField = form.elements[select];
-    
-    var selectItems = form.elements[select];
-    
-    if (tr.id.indexOf('$clear') == 0) {
-      if (isViewCols) {
-        // form url based on parameters that were set
-        var formAction = form.elements['-$action'].value;
-        var allFields = true;
-        if (formAction == "showproperties")
-          allFields = false;
-        var params;
-        var arr = new Array(3);
-        if (currentFormName.indexOf("viewColsList") == 0) {
-          arr["-viewCols"] = "-viewCols";
-          arr[".-viewCols"] = ".-viewCols";
-          arr["-curViewCols"] = "-curViewCols";
-        }
-        else if (currentFormName.indexOf("gridColsList") == 0) {
-          arr["-gridCols"] = "-gridCols";
-          arr[".-gridCols"] = ".-gridCols";
-          arr["-curGridCols"] = "-curGridCols";
-        }
-        else {
-          arr["-filterCols"] = "-filterCols";
-          arr[".-filterCols"] = ".-filterCols";
-          arr["-curFilterCols"] = "-curFilterCols";
-        }
-        params = FormProcessor.getFormFilters(form, allFields, arr, true);
-        var formAction = form.elements['-$action'].value;
-        var baseUriO = document.getElementsByTagName('base');
-        var baseUri = "";
-        if (baseUriO) {
-          baseUri = baseUriO[0].href;
-          if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
-            baseUri += "/";
-        }
-        var url = baseUri + "l.html?" + params;
-        document.location.replace(url);
-        return;
-      }
-      else {
-        if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate
-                                                                                  // rollup
-          chosenTextField.value = '';
-          var targetImg = self.hotspot;
-          if(targetImg.tagName.toLowerCase() == 'a')
-            targetImg = targetImg.getElementsByTagName('img')[0];
-          if(typeof targetImg != 'undefined')
-            targetImg.src = "icons/checkbox.gif";
-          return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
-        }
-
-        var isTablePropertyList = currentFormName.indexOf("tablePropertyList") == 0;
-        if (len > 1) {
-          if (!isTablePropertyList)
-            chosenTextField[0].value   = tr.id.substring(6);
-          else
-            chosenTextField[0].value   = '';
-        }
-        else {
-          //if (!isTablePropertyList) chosenTextField.value   = tr.id.substring(6); else
-            chosenTextField.value   = '';
-        }
-        if (chosenTextField.style)
-          chosenTextField.style.backgroundColor = '';
-      }
-      formField.value         = '';
-      if (formFieldClass)
-        formFieldClass.value  = '';
-
-      // hide property label that is displayed on top of the text field
-      //if (fieldLabel) fieldLabel.style.display    = "none";
-      if (formFieldVerified)
-        formFieldVerified.value = 'n';
-      if (selectItems) {
-        for (var i=0; i<selectItems.length; i++) {
-          if (selectItems[i].type.toLowerCase() == "checkbox")
-            selectItems[i].checked = false;
-          else
-            selectItems[i].value = null;
-        }
-      }
-      if (currentDiv)
-        loadedPopups[currentDiv.id] = null;
-      var imgId  = prop + "_class_img";
-      var img = document.getElementById(imgId);
-      if (img) {
-        document.getElementById(imgId).src = "icons/blank.gif";
-        document.getElementById(imgId).title = "";
-      }
-    }
-    else  {
-      var val = getChildByClassName(tr, 'menuItem').innerHTML;
-      var idx = val.lastIndexOf(">");
-      if (!isViewCols) {
-        if (len > 1) {
-          chosenTextField[0].value = val.substring(idx + 1);
-          if (chosenTextField[0].style)
-            chosenTextField[0].style.backgroundColor = '#ffffff';
-        }
-        
-        /* // commented out after Touch UI - need to test it more
-        else {
-          if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate
-            chosenTextField.value = tr.id;
-            //var dateImg = tr.getElementsByTagName('img');
-            var targetImg = this.hotspot;
-            if(targetImg.tagName.toLowerCase() == 'a')
-              targetImg = targetImg.getElementsByTagName('img')[0];
-            if(typeof targetImg != 'undefined')
-              //targetImg.src = dateImg[0].src;
-              targetImg.src = "icons/cakes.png";
-            return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
-          }
-          else {
-            chosenTextField.value = val.substring(idx + 1);
-            if (tr.style)
-              chosenTextField.style.backgroundColor = tr.style.backgroundColor;
-            else
-              chosenTextField.style.backgroundColor = '#ffffff';
-          }
-        }
-        */
-        var fr = form.elements[originalProp + "_From"];
-        var to = form.elements[originalProp + "_To"];
-        if (fr)
-          fr.value = '';
-        else if (to)
-          to.value = '';
-      }
-      
-      // show property label since label inside input field is now overwritten
-      /*
-      if (currentFormName.indexOf('rightPanelPropertySheet') == 0) {
-        if (fieldLabel)
-          fieldLabel.style.display = '';
-      }
-      */
-      
-      var nmbChecked = 0;
-      var selectedItem;
-      var selectedIdx = 0;
-
-      if (!selectItems) // happens in Touch UI
-        return;
-
-      if (!selectItems.length) {
-        var t = selectItems.type.toLowerCase();
-       
-        if (t == "hidden") { // used for data entry
-          selectItems.value = tr.id; // property value corresponding to a listitem
-        }
-      }
-      else {
-        selectItems.value = '';
-        // go over selected items and count all checked
-        var hiddenSelectedItem;
-        for (var i=0; i<selectItems.length; i++) {
-          if (selectItems[i].type.toLowerCase() == "hidden") {
-            hiddenSelectedItem = selectItems[i];
-            selectItems[i].value = '';
-            continue;
-          }
-          if (!selectItems[i].checked) {
-            var sValue = selectItems[i].value;
-            var sidx = sValue.indexOf("displayname__");
-            if (sidx != -1) {
-              sidx = sValue.indexOf("=");
-              var s = "";
-              var first = true;
-              while (true) {
-                var sidx1 = sValue.indexOf("&amp;", sidx);
-                if (!first)
-                  s += ' ';
-                else
-                  first = false;
-                if (sidx1 == -1) {
-                  s += sValue.substring(sidx + 1);
-                  break;
-                }
-                else {
-                  s += sValue.substring(sidx + 1, sidx1);
-                  sidx = sValue.indexOf("=", sidx1 + 3);
-                  if (sidx == -1)
-                    break;
-                }
-              }
-              sValue = s;
-            }
-            if (sValue == tr.id) { // check that item was selected by clicking
-                                    // on popup row not explicitely on checkbox
-              if (!checkboxClicked)              // mark row's checkbox
-                selectItems[i].checked = true;
-            }
-          }
-          if (selectItems[i].checked == true) {
-            selectedItem = selectItems[i];
-            selectedIdx = i;
-            nmbChecked++;
-          }
-        }
-        
-/*      // not needed with TouchUI (?)  
-        if (!isViewCols) {
-          if (nmbChecked == 0) {
-            if (fieldLabel) {
-              //fieldLabel.style.display    = "none";
-              var textContent = getTextContent(fieldLabel);
-              if (textContent) {
-                var idx = textContent.indexOf("\r");
-                if (idx != -1)
-                  textContent = textContent.substring(0, idx);
-                chosenTextField.value = textContent;// + " --";
-              }
-            }
-            else
-              chosenTextField.value = "";
-          }
-          else {
-            var checkSubscribe = form.elements[prop + '_subscribe'];
-            if (checkSubscribe)
-              checkSubscribe.checked = true;
-            if (nmbChecked == 1) {
-              if (hiddenSelectedItem != null)
-                hiddenSelectedItem.value = selectedItem.value;
-                
-              var trNode = getTrNode(selectedItem);
-              var items = trNode.getElementsByTagName('td');
-              var val = items[2].innerHTML;
-              var idx = val.lastIndexOf(">");
-
-              if (len > 1)
-                chosenTextField[0].value = val.substring(idx + 1);
-              else
-                chosenTextField.value = val.substring(idx + 1);
-              trNode.style.cssText = tr.style.cssText;
-            }
-            else {
-              if (hiddenSelectedItem != null)
-                hiddenSelectedItem.value = selectedItem.value;
-              chosenTextField.value = '<...>';
-              chosenTextField.style.backgroundColor = '#ffffff';
-            }
-          }
-        }
-*/        
-        
-      }
-    }
-
-    // close popup
-    idx = prop.indexOf(".type");
-
-    var divId = (idx != -1  &&  prop.length == idx + 5) ? prop.substring(0, idx) + "_" + currentFormName : prop + "_" + currentFormName;
-    if (currentResourceUri != null) {
-      if (divId.indexOf(".") == 0)
-        divId = currentResourceUri + ".$" + divId;
-      else
-        divId = currentResourceUri + ".$." + divId;
-    }
-    var div = document.getElementById(divId);
-    if (deleteCurrentDiv && currentDiv)
-      loadedPopups[currentDiv.id] = null;
- }
-  
-
-  function closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked) {
-    // close popup
-    var divId = prop + "_" + currentFormName;
-    if (currentResourceUri != null) {
-      if (divId.indexOf(".") == 0)
-        divId = currentResourceUri + ".$" + divId;
-      else
-        divId = currentResourceUri + ".$." + divId;
-    }
-    var div = document.getElementById(divId);
-    if (deleteCurrentDiv && currentDiv)
-      loadedPopups[currentDiv.id] = null;
-    // if checkbox was clicked, then do not close popup so that user can check
-    // checboxes, if needed
-    if (!checkboxClicked)
-      Popup.close0(div.id);
-    clearOtherPopups(div);
-    if (checkboxClicked)
-      return true;
-    else
-      return false;
-  }
-
-  this.popupRowOnMouseOver = function (e) {
-    if (typeof getDocumentEvent == 'undefined') return;
-    e = getDocumentEvent(e); if (!e) return;
-
-    var target = getEventTarget(e);
-    var tr = getTrNode(target);
-    
-    if (target.id == "$more")
-      return;
-    if (!tr)
-      return true;
-
-    if (self.isHeaderRow(tr))
-      return true;
-
-    self.deselectRow();
-    // darken new current row
-    self.currentRow = tr;
-    self.selectRow();
-    
-    return true;
-  }
-
-  this.popupRowOnMouseOut = function (e) {
-    if (typeof getDocumentEvent == 'undefined') return;
-    e = getDocumentEvent(e); if (!e) return;
-    var target = getMouseOutTarget(e);
-    if (!target)
-      return true;
-
-    if (target.tagName.toLowerCase() != 'tr')
-      return;
-
-    var tr = getTrNode(target);
-    if (!tr)
-      return true;
-
-    self.deselectRow();
-    self.currentRow = null;
-    return true;
-  }
-
-  this.popupRowOnMouseDown = function (e) {
-    if (typeof getDocumentEvent == 'undefined') return;
-    e = getDocumentEvent(e); if (!e) return;
-    var target = getMouseOutTarget(e);
-    if (!target)
-      return true;
-    if (target.id == "$more")
-      return;
-      
-    var tr = getTrNode(target);
-    if (!tr)
-      return true;
-    
-  tr.className = tr.className + " blue_highlighting";
-    return true;
-  }
-
-  this.deselectRow = function () {
-    if (self.currentRow == null)
-      return;
-
-    var trId = self.currentRow.id;
-    if (self.currentRow == null)
-      return;
-
-    //self.currentRow.style.backgroundColor = Popup.LightMenuItem;
-  self.currentRow.className = self.currentRow.className.replace(/grey_highlighting|blue_highlighting/g, "");
-  }
-
-  // currently makes row grey
-  this.selectRow = function () {
-    if (self.currentRow == null)
-      return;
-    
-    var trId = self.currentRow.id;
-    if (trId.length == 0)
-      return;
-    
-    if (trId == '$noValue')
-      return;
-
-    self.currentRow.className = self.currentRow.className + " grey_highlighting";
-  }
-
-  this.nextRow = function () {
-    var cur = self.currentRow;
-    if (self.currentRow == null) {
-      self.currentRow = self.firstRow();
-      // if (cur == self.currentRow)
-      // a = 1;
-      return self.currentRow;
-    }
-
-    var table = self.currentRow.parentNode;
-    var trs = table.rows;
-    var curIdx = self.currentRow.sectionRowIndex;
-    var nextIdx = curIdx;
-
-    for (var i = 1; i < trs.length; i++) {
-      var idx = (curIdx + i < trs.length) ? curIdx + i : curIdx + i - trs.length;
-      if (!self.isHeaderRow(trs[idx]) && trs[idx].style.display != 'none') {
-        nextIdx = idx;
-        break;
-      }
-    }
-    var next = table.rows[nextIdx];
-
-    // The following is needed to work around FireFox and other Netscape-based
-    // browsers. They will return a #text node for nextSibling instead of a TR.
-    // However, the next TR sibling is the one we're after.
-    var exitIfBusted = 0;
-    var nextTr = next;
-    while (nextTr.nodeName && nextTr.nodeName.toUpperCase() != 'TR') {
-      nextTr = nextTr.nextSibling;
-      if (nextTr == null) {
-        self.currentRow = self.firstRow();
-        // if (cur == nextTr)
-        // a = 1;
-        return self.currentRow;
-      }
-      exitIfBusted++;
-      if (exitIfBusted > 10) {
-        throw new Error('could not locate next row for ' + self.currentRow.id);
-        return null;
-      }
-    }
-    next = nextTr;
-    if (next.id.indexOf('divider') == -1 && next.id.indexOf("_$calendar") == -1) {
-      self.currentRow = next;
-      // if (cur == next)
-      // a = 1;
-      return next;
-    }
-    else {
-      self.currentRow = next;
-      next = self.nextRow();
-      // if (cur == next)
-      // a = 1;
-      return next;
-    }
-  }
-
-  this.prevRow = function () {
-    if (self.currentRow == null) {
-      self.currentRow = self.firstRow();
-      if (self.currentRow == null)
-        return null;
-      return self.prevRow();
-    }
-
-    //var prev = self.currentRow.previousSibling;
-    var table = self.currentRow.parentNode;
-    var trs = table.rows;
-    var curIdx = self.currentRow.sectionRowIndex;
-    var prevIdx = curIdx;
-
-    for (var i = 1; i < trs.length; i++) {
-      var idx = (curIdx - i >= 0) ? curIdx - i : curIdx + trs.length - i;
-      if (!self.isHeaderRow(trs[idx]) && trs[idx].style.display != 'none') {
-        prevIdx = idx;
-        break;
-      }
-    }
-    var prev = table.rows[prevIdx];
-
-    if (prev == null || self.isHeaderRow(prev)) {
-      // self.deselectRow();
-      self.currentRow = self.lastRow();
-      // self.selectRow();
-      return self.currentRow;
-    }
-
-    if (prev.tagName && prev.tagName.toUpperCase() == 'TR' && prev.id.indexOf('divider') == -1 && prev.id.indexOf("_$calendar") == -1) {
-      // self.deselectRow();
-      self.currentRow = prev;
-      // self.selectRow();
-      return prev;
-    }
-    else {
-      self.currentRow = prev;
-      return self.prevRow();
-    }
-  }
-
-  this.isHeaderRow = function (tr) {
-    if (tr && tr.className == 'menuTitle')
-      return true;
-    else
-      return false;
-  }
-
-  /**
-   * return first row in popup
-   */
-  this.firstRow = function() {
-    var tables = self.div.getElementsByTagName('table');
-    
-    /*
-    if (!tables || !tables[1] || tables[1].id.startsWith('-not-menu') || (tables[2] && tables[2].id.startsWith('-not-menu')) )
-      return null;
-    
-    var trs = tables[1].getElementsByTagName('tr');
-    if (trs == null)
-      return null;
-*/
-
-    if (tables.length == 0)
-      return null;
-    
-    var trs;
-    if (tables.lenght == 1)
-      trs = tables[0].getElementsByTagName('tr');
-    else if(tables.lenght > 1) {
-      if (tables[1].id.startsWith('-not-menu') || (tables[2] && tables[2].id.startsWith('-not-menu')) )
-        return null;
-      trs = tables[1].getElementsByTagName('tr');
-    }
-
-    var trs = tables[0].getElementsByTagName('tr');
-    
-    for (var i=0; i<trs.length; i++) {
-      if (!self.isHeaderRow(trs[i]) && trs[i].style.display != 'none')
-        break;
-    }
-    
-    return trs[i];
-  }
-
-  /**
-   * return last row in popup
-   */
-  this.lastRow = function() {
-    var tables = self.div.getElementsByTagName('table');
-    if (!tables || !tables[1])
-      return null;
-
-    var trs = tables[1].getElementsByTagName('tr');
-    if (trs == null)
-      return null;
-
-    for (var i = trs.length - 1; i >= 0; i--) {
-      if (!self.isHeaderRow(trs[i]) && trs[i].style.display != 'none')
-        break;
-    }
-    return trs[i];
-  }
-
-  /**
-   * return number of rows in popup
-   */
-  this.rowCount = function() {
-    var tables = self.div.getElementsByTagName('table');
-    if (!tables || !tables[1])
-      return null;
-
-    var trs = tables[1].getElementsByTagName('tr');
-    if (trs == null)
-      return null;
-    return trs.length;
-  }
-
-  /**
-   * Returns popup item by its name. Usually popup item corresponds to a row in
-   * popup.
-   */
-  this.getPopupItem = function(itemName) {
-    return self.items[itemName];
-  }
-
-}
-
-/**
- * Individual element in popup, usually represented by one row.
- */
-function PopupItem(element, seq) {
-  this.id        = element.id; // item id
-  this.seq       = seq;        // sequence number of this item from the top of
-                                // popup
-
-  this.checked   = false;      // item may be checked (true) or not (false)
-  this.selected  = false;      // item may be currently selected (highlighted)
-                                // or not
-  this.onChosen  = null;       // event handler that receives control when user
-                                // clicked on this popup element or pressed
-                                // Enter
-  this.onOver    = null;       // event handler that receives control when this
-                                // popup element is selected (highlighted)
-  this.onOut     = null;       // event handler that receives control when this
-                                // popup element is unselected (becomes passive)
-  this.onCheck   = null;       // event handler that receives control when item
-                                // is checked
-  this.onUncheck = null;       // event handler that receives control when item
-                                // is unchecked
-}
-
-var originalProp = null;
-var propName = null;
-var loadedPopups = new Array();
-var div2frame = new Array();
-var currentDiv = null;
-var closeTimeoutId;
-var currentImgId = null;
+// global variable left after removed Popup code
 var currentFormName = null;
-var currentResourceUri = null;
-// defined in JAVA because menu.js is loaded at the page bottom
-/* var innerUrls = new Array(); */
-var innerListUrls = new Array();
-
 
 // Note: Touch UI uses display names for all selected options in filter and Watch
 // As a result it appends additional fields with the same name to [originalProp]
@@ -1695,12 +255,11 @@ var FormProcessor = {
 
     var button = form.elements[buttonName];
     var pane2        = PlainDlg.getPane2Dialog();
-    var dialogIframe = document.getElementById('dialogIframe');
 
     var isCancel = button && button.name.toUpperCase() == 'CANCEL';
     if (isCancel) {    // cancel button clicked?
       if (pane2  &&  pane2.contains(form))  {   // inner dialog?
-        setDivInvisible(pane2, dialogIframe);
+        setDivInvisible(pane2);
         return stopEventPropagation(e);
       }
     }
@@ -1819,7 +378,7 @@ var FormProcessor = {
       form.action = "FormRedirect";
 
     if (pane2  &&  pane2.contains(form))  {   // dialog?
-      setDivInvisible(pane2, dialogIframe);
+      setDivInvisible(pane2);
     }
     
     // Tags' items contain fields for options panel that no need to submit with a form 
@@ -2424,27 +983,6 @@ function hideResetRow(div, currentFormName, originalProp) {
   }
 }
 
-/** ********************************* Menu ********************************** */
-/* Opens the menu when needed, e.g. on click, on enter
- */
-function menuOnClick(e, target) {
-  var id = target.id;
-  var title;
-  if (id.indexOf('menuLink_') == 0)
-    title = id.substring('menuLink_'.length);
-  else
-    title = id.substring('menuicon_'.length);
-
-  addCurrentDashboardAndCurrentTab(target);
-  var divId = 'menudiv_' + title;
-  var divRef = document.getElementById(divId); // this is a menu item without
-                                                // popup, exit
-  if (!divRef)
-    return true;
-  var popup = Popup.open(e, divId, target, null, 0, 19);
-  return stopEventPropagation(e);
-}
-
 function addCurrentDashboardAndCurrentTab(target) {
   if(target.tagName.toLowerCase() == "img")
     return;
@@ -2565,16 +1103,9 @@ var Tooltip = {
     // no need tooltips on touch devices.
     if (Browser.mobile || Browser.touchDesktop || Browser.penBased)
       return;
-    //if (Popup.penBased) // pen-based devices have problem with tooltips
-    //  return;
     
     this.tooltipDiv = document.getElementById(this.TOOLTIP_ID);
     this.contentDiv = getChildById(this.tooltipDiv, "content");
-    if (Browser.ie) {
-      this.tooltipFrame = document.getElementById('tooltipIframe');
-      if (!this.tooltipFrame) 
-        throw new Error("document must contain iframe '" + iframeId + "' to display enhanced tooltip");
-    }
 
     addEvent(document.body, "mouseover", this.onMouseOver, false);
     addEvent(document.body, "mouseout", this.onMouseOut, false);
@@ -2717,7 +1248,7 @@ var Tooltip = {
     if (PopupHandler.isVisible()) // popups of RTE and StyleSheet
       return false; 
     $t.contentDiv.innerHTML = tooltipText;
-    setDivVisible(/*e*/null, $t.tooltipDiv, $t.tooltipFrame, target, 0, 25);
+    setDivVisible(/*e*/null, $t.tooltipDiv, target, 0, 25);
     $t.isShown = true;
   },
   
@@ -2847,87 +1378,13 @@ var ListBoxesHandler = {
     hotspot = hotspot || document.body;
 
     keyPressedElement   = target;
-    var currentPopup = Popup.getPopup(divId);
-
     var isAuto = target.getAttribute("autocomplete");
 
     // for a stage of openning of a listbox (currentPopup == null)
     // handle arrow down as click on listbox icon.
-    if(isAuto != null && isAuto == "off" && currentPopup == null && characterCode != 40)
+    if(isAuto != null && isAuto == "off" /*&& currentPopup == null*/ && characterCode != 40)
       return;
 
-  /*
-  * !!!!!!!!!!!!! this below did not work to clear the previous popup if
-  * (currentDiv) { var p = Popup.getPopup(currentDiv); if (p) p.close(); }
-  */
-
-  
-/*  // not use with Touch UI (!)
-    switch (characterCode) {
-    case 38:  // up arrow
-      if (currentPopup && currentPopup.isOpen()) {
-        currentPopup.deselectRow();
-        currentPopup.prevRow();
-        currentPopup.selectRow();
-      }
-      else {
-        this.listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
-        // Popup.open(e, divId, hotspot, null, 0, 16);
-      }
-      return stopEventPropagation(e);
-    case 40:  // down arrow
-      if (currentPopup && currentPopup.isOpen()) {
-        currentPopup.deselectRow();
-        currentPopup.nextRow();
-        currentPopup.selectRow();
-      }
-      else {
-        this.listboxOnClick1(e, keyPressedImgId, keyPressedElement.value);
-        // Popup.open(e, divId, hotspot, null, 0, 16);
-      }
-      return stopEventPropagation(e);
-    case 37:  // left arrow
-    case 39:  // right arrow
-    case 33:  // page up
-    case 34:  // page down
-    case 36:  // home
-    case 35:  // end
-      return true;
-    case 27:  // esc
-      if (currentPopup && currentPopup.isOpen()) {
-        currentPopup.close();
-      }
-      return stopEventPropagation(e);
-    case 16:  // shift
-    case 17:  // ctrl
-    case 18:  // alt s
-    case 20:  // caps lock
-      return true;
-    case 127: // ctrl-enter
-    case 13:  // enter
-      if (currentPopup && currentPopup.isOpen()) {
-        // listboxOnClick1(keyPressedImgId, keyPressedElement.value);
-        currentPopup.popupRowOnClick1(e, null, target);
-        return stopEventPropagation(e); // tell browser not to do submit on
-                                          // 'enter'
-      }
-    case 9:   // tab
-      if (currentDiv)
-        currentPopup.close();
-      return true;
-    case 8:   // backspace or "C" in S60
-      if(Browser.s60Browser) {
-        if (currentPopup && currentPopup.isOpen()) {
-            currentPopup.close(); // the same like esc
-          }
-          return stopEventPropagation(e);
-      }
-    case 46:  // delete
-      break;
-    }
-*/    
-    if (currentPopup)
-      currentPopup.close();
 
     // for numeric value - do not perform autocomplete (except arrow down, ESC,
     // etc.)
@@ -2960,15 +1417,13 @@ var ListBoxesHandler = {
     if (checkSubscribe)
       checkSubscribe.checked = true;
     var f = function() { ListBoxesHandler.autoCompleteTimeout(e, keyPressedTime); };
-    autoCompleteTimeoutId = setTimeout(f, Popup.autoCompleteDefaultTimeout);
+    autoCompleteTimeoutId = setTimeout(f, 200);
     // make property label visible since overwritten inside the field
     var filterLabel = document.getElementById(propName1 + "_span");
     if (filterLabel) {
       filterLabel.style.display = '';
     //  filterLabel.className = 'xs';
     }
-    if (currentPopup)
-      clearOtherPopups(currentPopup.div);
     return true;
   },
 
@@ -3082,8 +1537,6 @@ var ListBoxesHandler = {
       }
     }
 
-    // close popup if it was already opened
-    var popup = Popup.getPopup(divId);
     var div = getChildById(this.optionsPanel, divId);
     var hotspot = getTargetElement(e); //document.getElementById(imgId);
     hotspot = arrowTd || hotspot || document.body;
@@ -3096,18 +1549,12 @@ var ListBoxesHandler = {
       return;
     }
     else {
-      var popup = Popup.getPopup(divId);
-      if (popup == null) {
+			if (!div) {
         div = document.getElementById(divId);
         if (!div) {
           div = document.createElement("div");
           div.id = divId;  
         }
-        popup = new Popup(div, hotspot);
-      }
-      else {
-        div = popup.div;
-        popup.reset(hotspot);
       }
     }
 
@@ -3765,14 +2212,410 @@ var ListBoxesHandler = {
     $t.onOptionSelection(tr, !isElemOfClass(target, "iphone_checkbox"));
   },
   
+  //*************************************************
+  // sets values in hidden inputs
+	// (inherited from old popupRowOnClick1)
+  //**************************************************
   markAsSelectedAndVerified : function(e, tr, target) {
-    // call "old" processor of option item click
-    // so, it sets _select and _verified
-    if (!this.toPutInClassifier) {
-      var popup = Popup.getPopup(this.curOptionsListDiv.id)
-      popup.popupRowOnClick1(e, tr, target);
+    var $t = ListBoxesHandler;
+    // 1. if there is a link on this row - follow it
+    if (target.tagName.toLowerCase() == 'a')
+      return;
+    if (tr)
+      var anchors = tr.getElementsByTagName('A');
+    if (anchors  &&  anchors.length != 0) {
+      if (currentDiv) {
+        loadedPopups[currentDiv.id] = null;
+        // Popup.close0(currentDiv.id);
+      }
+      var anchor = anchors[0];
+      var trg = anchor.getAttribute('target');
+      if (trg) {
+        var url = anchor.getAttribute('href');
+        window.open(url, trg, "width=600, height=600, top=20, left=20, menubar=no,"
+           + "status=0, location=no, toolbar=no, scrollbars=1 status=no, resizable=yes");
+        stopEventPropagation(e);
+        return true;
+      }
+
+      if (anchor.id.startsWith('-inner'))       // display as on-page dialog
+        return LinkProcessor.onClickDisplayInner(e, anchor);
+      if (anchor.onclick1) {
+        anchor.onclick1(e);
+      }
+      else {
+        var href = tr.getAttribute('href', href);
+         if (href) {
+           stopEventPropagation(e)
+          document.location.href = href;
+         }
+      }
+      return false;
     }
-  },
+
+    // 2. tr has no id.
+    if (!tr.id)
+      return;
+    
+    // 3. id = '$noValue'  
+    if (tr.id && tr.id == '$noValue')
+      return;
+    
+    // 4. calendar
+    var isCalendar = tr.id.indexOf("_$calendar") != -1 ? true: false;
+    if (isCalendar)
+      return true;
+
+    // 5. form
+//    var form = document.forms[currentFormName];
+//    if (form == null) {
+//      throw new Error("not found html form for TR: " + tr.id);
+//    }
+
+    var table  = tr.parentNode;
+    var table1 = table.parentNode;
+
+    var chosenTextField = ListBoxesHandler.getTextFieldInParamRow();//getOriginalPropField(form, originalProp);
+    var form = chosenTextField.form;
+  
+    var prop = chosenTextField.name;
+//    var propertyShortName = table1.id.substring("table_".length);
+//    var idx = propertyShortName.lastIndexOf('_');
+//    propertyShortName = propertyShortName.substring(0, idx);
+//    var idx = propertyShortName.indexOf(".", 1);
+//    var prop = null;
+//    var pLen = propertyShortName.length;
+//    if (idx == -1) {
+//      idx = propertyShortName.indexOf("_class");
+//      if (idx != -1)
+//        prop = propertyShortName.substring(0, pLen - 6);
+//      else
+//        prop = propertyShortName;
+//    }
+//    else {
+//      if (propertyShortName.indexOf(".type") == idx) {
+//        if (idx + 5 != pLen)
+//          prop = propertyShortName.substring(0, idx);
+//        else
+//          prop = propertyShortName;
+//      }
+//      else
+//        prop = propertyShortName.substring(0, idx);
+//    }
+ 
+    var len = chosenTextField.length; // Note: it seems that currently it is only 1(!) field
+    var verified = prop + "_verified";
+//    if (currentResourceUri)
+//      verified = currentResourceUri + ".$" + verified;
+    var fieldLabel = document.getElementById(prop + "_span");
+
+    var iclass = prop + "_class";
+    var formFieldClass    = form.elements[iclass];
+    var formFieldVerified = form.elements[verified];
+
+    // Note: delayed selection finish is like checkboxClicked = true
+    var checkboxClicked = true;
+    var deleteCurrentDiv = false;
+    if (formFieldVerified) {
+      if (formFieldVerified.value == 'n')
+        deleteCurrentDiv = true;
+      formFieldVerified.value = 'y'; // value was modified and is verified
+                                      // since it is not typed but is chosen
+                                      // from the list
+    }
+
+    // row clicked corresponds to a property with range 'interface', meaning
+    // that we need to open a list of classes that implement this interface
+    if (originalProp.indexOf('_class') != -1) {
+      formFieldClass.value = ($t.curClass != null) ? $t.curClass : "";
+    }
+
+    var select;
+    var isViewCols = currentFormName.indexOf("viewColsList") == 0  ||
+                     currentFormName.indexOf("gridColsList") == 0  ||
+                     currentFormName.indexOf("filterColsList") == 0;
+    
+
+    
+    if (isViewCols)
+      select = prop;
+    else
+      select = prop + "_select";
+//    if (currentResourceUri)
+//      select = currentResourceUri + ".$" + select;
+    var formField = form.elements[select];
+    
+    var selectItems = form.elements[select];
+    
+    if (tr.id.indexOf('$clear') == 0) {
+      if (isViewCols) {
+        // form url based on parameters that were set
+        var formAction = form.elements['-$action'].value;
+        var allFields = true;
+        if (formAction == "showproperties")
+          allFields = false;
+        var params;
+        var arr = new Array(3);
+        if (currentFormName.indexOf("viewColsList") == 0) {
+          arr["-viewCols"] = "-viewCols";
+          arr[".-viewCols"] = ".-viewCols";
+          arr["-curViewCols"] = "-curViewCols";
+        }
+        else if (currentFormName.indexOf("gridColsList") == 0) {
+          arr["-gridCols"] = "-gridCols";
+          arr[".-gridCols"] = ".-gridCols";
+          arr["-curGridCols"] = "-curGridCols";
+        }
+        else {
+          arr["-filterCols"] = "-filterCols";
+          arr[".-filterCols"] = ".-filterCols";
+          arr["-curFilterCols"] = "-curFilterCols";
+        }
+        params = FormProcessor.getFormFilters(form, allFields, arr, true);
+        var formAction = form.elements['-$action'].value;
+        var baseUriO = document.getElementsByTagName('base');
+        var baseUri = "";
+        if (baseUriO) {
+          baseUri = baseUriO[0].href;
+          if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
+            baseUri += "/";
+        }
+        var url = baseUri + "l.html?" + params;
+        document.location.replace(url);
+        return;
+      }
+      else {
+        if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate
+                                                                                  // rollup
+          chosenTextField.value = '';
+          var targetImg = self.hotspot;
+          if(targetImg.tagName.toLowerCase() == 'a')
+            targetImg = targetImg.getElementsByTagName('img')[0];
+          if(typeof targetImg != 'undefined')
+            targetImg.src = "icons/checkbox.gif";
+          return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
+        }
+
+        var isTablePropertyList = currentFormName.indexOf("tablePropertyList") == 0;
+        if (len > 1) {
+          if (!isTablePropertyList)
+            chosenTextField[0].value   = tr.id.substring(6);
+          else
+            chosenTextField[0].value   = '';
+        }
+        else {
+          //if (!isTablePropertyList) chosenTextField.value   = tr.id.substring(6); else
+            chosenTextField.value   = '';
+        }
+        if (chosenTextField.style)
+          chosenTextField.style.backgroundColor = '';
+      }
+      formField.value         = '';
+      if (formFieldClass)
+        formFieldClass.value  = '';
+
+      // hide property label that is displayed on top of the text field
+      //if (fieldLabel) fieldLabel.style.display    = "none";
+      if (formFieldVerified)
+        formFieldVerified.value = 'n';
+      if (selectItems) {
+        for (var i=0; i<selectItems.length; i++) {
+          if (selectItems[i].type.toLowerCase() == "checkbox")
+            selectItems[i].checked = false;
+          else
+            selectItems[i].value = null;
+        }
+      }
+      if (currentDiv)
+        loadedPopups[currentDiv.id] = null;
+      var imgId  = prop + "_class_img";
+      var img = document.getElementById(imgId);
+      if (img) {
+        document.getElementById(imgId).src = "icons/blank.gif";
+        document.getElementById(imgId).title = "";
+      }
+    }
+    else  {
+      var val = getChildByClassName(tr, 'menuItem').innerHTML;
+      var idx = val.lastIndexOf(">");
+      if (!isViewCols) {
+        if (len > 1) {
+          chosenTextField[0].value = val.substring(idx + 1);
+          if (chosenTextField[0].style)
+            chosenTextField[0].style.backgroundColor = '#ffffff';
+        }
+        
+        /* // commented out after Touch UI - need to test it more
+        else {
+          if (prop.length > 8  &&  prop.indexOf("_groupBy") == prop.length - 8)  { // ComplexDate
+            chosenTextField.value = tr.id;
+            //var dateImg = tr.getElementsByTagName('img');
+            var targetImg = this.hotspot;
+            if(targetImg.tagName.toLowerCase() == 'a')
+              targetImg = targetImg.getElementsByTagName('img')[0];
+            if(typeof targetImg != 'undefined')
+              //targetImg.src = dateImg[0].src;
+              targetImg.src = "icons/cakes.png";
+            return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
+          }
+          else {
+            chosenTextField.value = val.substring(idx + 1);
+            if (tr.style)
+              chosenTextField.style.backgroundColor = tr.style.backgroundColor;
+            else
+              chosenTextField.style.backgroundColor = '#ffffff';
+          }
+        }
+        */
+        var fr = form.elements[originalProp + "_From"];
+        var to = form.elements[originalProp + "_To"];
+        if (fr)
+          fr.value = '';
+        else if (to)
+          to.value = '';
+      }
+      
+      // show property label since label inside input field is now overwritten
+      /*
+      if (currentFormName.indexOf('rightPanelPropertySheet') == 0) {
+        if (fieldLabel)
+          fieldLabel.style.display = '';
+      }
+      */
+      
+      var nmbChecked = 0;
+      var selectedItem;
+      var selectedIdx = 0;
+
+      if (!selectItems) // happens in Touch UI
+        return;
+
+      if (!selectItems.length) {
+        var t = selectItems.type.toLowerCase();
+       
+        if (t == "hidden") { // used for data entry
+          selectItems.value = tr.id; // property value corresponding to a listitem
+        }
+      }
+      else {
+        selectItems.value = '';
+        // go over selected items and count all checked
+        var hiddenSelectedItem;
+        for (var i=0; i<selectItems.length; i++) {
+          if (selectItems[i].type.toLowerCase() == "hidden") {
+            hiddenSelectedItem = selectItems[i];
+            selectItems[i].value = '';
+            continue;
+          }
+          if (!selectItems[i].checked) {
+            var sValue = selectItems[i].value;
+            var sidx = sValue.indexOf("displayname__");
+            if (sidx != -1) {
+              sidx = sValue.indexOf("=");
+              var s = "";
+              var first = true;
+              while (true) {
+                var sidx1 = sValue.indexOf("&amp;", sidx);
+                if (!first)
+                  s += ' ';
+                else
+                  first = false;
+                if (sidx1 == -1) {
+                  s += sValue.substring(sidx + 1);
+                  break;
+                }
+                else {
+                  s += sValue.substring(sidx + 1, sidx1);
+                  sidx = sValue.indexOf("=", sidx1 + 3);
+                  if (sidx == -1)
+                    break;
+                }
+              }
+              sValue = s;
+            }
+            if (sValue == tr.id) { // check that item was selected by clicking
+                                    // on popup row not explicitely on checkbox
+              if (!checkboxClicked)              // mark row's checkbox
+                selectItems[i].checked = true;
+            }
+          }
+          if (selectItems[i].checked == true) {
+            selectedItem = selectItems[i];
+            selectedIdx = i;
+            nmbChecked++;
+          }
+        }
+        
+/*      // not needed with TouchUI (?)  
+        if (!isViewCols) {
+          if (nmbChecked == 0) {
+            if (fieldLabel) {
+              //fieldLabel.style.display    = "none";
+              var textContent = getTextContent(fieldLabel);
+              if (textContent) {
+                var idx = textContent.indexOf("\r");
+                if (idx != -1)
+                  textContent = textContent.substring(0, idx);
+                chosenTextField.value = textContent;// + " --";
+              }
+            }
+            else
+              chosenTextField.value = "";
+          }
+          else {
+            var checkSubscribe = form.elements[prop + '_subscribe'];
+            if (checkSubscribe)
+              checkSubscribe.checked = true;
+            if (nmbChecked == 1) {
+              if (hiddenSelectedItem != null)
+                hiddenSelectedItem.value = selectedItem.value;
+                
+              var trNode = getTrNode(selectedItem);
+              var items = trNode.getElementsByTagName('td');
+              var val = items[2].innerHTML;
+              var idx = val.lastIndexOf(">");
+
+              if (len > 1)
+                chosenTextField[0].value = val.substring(idx + 1);
+              else
+                chosenTextField.value = val.substring(idx + 1);
+              trNode.style.cssText = tr.style.cssText;
+            }
+            else {
+              if (hiddenSelectedItem != null)
+                hiddenSelectedItem.value = selectedItem.value;
+              chosenTextField.value = '<...>';
+              chosenTextField.style.backgroundColor = '#ffffff';
+            }
+          }
+        }
+*/        
+        
+      }
+    }
+
+    // close popup
+    idx = prop.indexOf(".type");
+
+    var divId = (idx != -1  &&  prop.length == idx + 5) ? prop.substring(0, idx) + "_" + currentFormName : prop + "_" + currentFormName;
+    if (currentResourceUri != null) {
+      if (divId.indexOf(".") == 0)
+        divId = currentResourceUri + ".$" + divId;
+      else
+        divId = currentResourceUri + ".$." + divId;
+    }
+    var div = document.getElementById(divId);
+    if (deleteCurrentDiv && currentDiv)
+      loadedPopups[currentDiv.id] = null;
+ },
+
+
+
+
+
+
+
+
 
   onClassifierItemClick : function(e, tr) {
     this.curClass = tr.id;
@@ -4667,7 +3510,7 @@ var Filter = {
       //  this.filtersArr[filterUrl] = document.body.appendChild(this.filtersArr[filterUrl]);
         this.handleFilterState(true);
       }
-      setDivVisible(null, this.filtersArr[filterUrl], null, null, x, y, null, true);
+      setDivVisible(null, this.filtersArr[filterUrl], null, x, y, null, true);
     }
     // 2. download new filter for this type
     else {
@@ -4752,7 +3595,7 @@ var Filter = {
         x = $t.loadingPosition[0];
         y = $t.loadingPosition[1];
       }
-      setDivVisible(null, loadedFilter, null, null, x, y, null, true);
+      setDivVisible(null, loadedFilter, null, x, y, null, true);
     }
     
     $t.handleFilterState(true);
@@ -4980,7 +3823,7 @@ var SubscribeAndWatch = {
     document.body.appendChild(this.panelBlock);
     
     addEvent(this.panelBlock, "change", this.onchange, false);
-    setDivVisible(event, this.panelBlock, null, null, 5, 5);
+    setDivVisible(event, this.panelBlock, null, 5, 5);
   },
   
   submit : function(e) {
@@ -5104,7 +3947,7 @@ var DataEntry = {
       if (parentDivId)
         this.dataEntryArr[key].style.display = "block";
       else
-        setDivVisible(null, this.dataEntryArr[key], null, hotspot, 5, 5, null);
+        setDivVisible(null, this.dataEntryArr[key], hotspot, 5, 5, null);
       this.currentUrl = url;
       
       this.initDataStr = this._getFormDataStr(this.dataEntryArr[key], true);
@@ -5175,7 +4018,7 @@ var DataEntry = {
         throw new Error("DataEntry - one parameter selection: NO input!");
       var tr = getAncestorByClassName(input, "param_tr");
       
-      setDivVisible(event, div, null, hotspot, 0, 0); // show dialof
+      setDivVisible(event, div, hotspot, 0, 0); // show dialof
       ListBoxesHandler.processClickParam(null, tr); // show required options
       return;
       // NOTE: not save dialog for one parameter select in "cache"!
@@ -5188,7 +4031,7 @@ var DataEntry = {
       if (parent)
        parent.appendChild(div);
     }
-    setDivVisible(event, div, null, $t.hotspot, 5, 5);
+    setDivVisible(event, div, $t.hotspot, 5, 5);
   
     $t.initDataStr = $t._getFormDataStr(div, true);
     var key = $t._getKey($t.currentUrl);
@@ -5564,8 +4407,6 @@ var PlainDlg = {
   },
   
   _show : function(event, hotspot) {
-    var iframe = document.getElementById('dialogIframe');
-
     // login: show it as a modal dialog
     if (this.curUrl && this.curUrl.indexOf("j_security_check") != -1) {
 			LoadingIndicator.show();
@@ -5578,11 +4419,11 @@ var PlainDlg = {
       var jstest = getChildByAttribute(this.dlgDiv, "name", '.jstest');
       if (jstest)
         jstest.value = "ok";
-      setDivVisible(null, this.dlgDiv, iframe, null, 0, 0, null, null, true);
+      setDivVisible(null, this.dlgDiv, null, 0, 0, null, null, true);
       return;
     }
 
-    setDivVisible(event, this.dlgDiv, iframe, hotspot, 5, 5);
+    setDivVisible(event, this.dlgDiv, hotspot, 5, 5);
     if (TouchDlgUtil.isMenuPopup(this.dlgDiv))
       TabMenu.setActiveTab(getAncestorByClassName(hotspot, "dashboard_btn"))
   },
@@ -6920,83 +5761,83 @@ function getTdNode(elem) {
 
 var hotspot1;
 
-function largeImageOnLoad(e) {
-  Popup.open(e, 'gallery', hotspot1, null, 0, 19);
-  return true;
-}
-
-function showLargeImage(e, current, largeImageUrl) {
-  var div = document.getElementById('gallery');
-  var img = document.getElementById('galleryImage');
-  if(!div || !img)
-    return;
-
-  makeDivAutosize(div);
-
-  if (!largeImageUrl) {
-    e = getDocumentEvent(e); if (!e) return;
-    var target = getTargetElement(e);
-
-    var thumbnailUrl = target.src;
-    var idx = thumbnailUrl.lastIndexOf('.');
-    var file = thumbnailUrl.substring(0, idx);
-    var ext  = thumbnailUrl.substring(idx);
-    var idx1 = file.lastIndexOf('_');
-    var file1 = file.substring(0, idx);
-    largeImageUrl = file1 + '_image' + ext;
-
-    hotspot1 = target;
-    hotspot1.forcedPosition = Popup.POS_LEFT_TOP;
-    addEvent(img, 'load',  largeImageOnLoad,  false);
-    img.src = "";
-    img.src = largeImageUrl;
-    return true;
-  }
-
-  img.src = "";
-
-  if (div.style.display == "block") {
-    div.style.display = "none";
-    // img.src always has host in it; largeImageUrl not always that is why using
-    // indexOf
-    if (img.src.indexOf(largeImageUrl) == img.src.length - largeImageUrl.length) {
-      img.src = "";
-      return false;
-    }
-  }
-  // se the title text
-  var titleObj = getChildById(gallery, "titleBar");
-  if(titleObj != null) {
-    var idx1 = largeImageUrl.lastIndexOf("/");
-    var idx2 = largeImageUrl.indexOf("_image", idx1); // always suffix "_image"
-    var fileName = largeImageUrl.substring(idx1 + 1, idx2);
-    titleObj.innerHTML = fileName;
-    titleObj.noWrap = true;
-  }
-
-  hotspot1 = current;
-  hotspot1.forcedPosition = Popup.POS_LEFT_TOP;
-  addEvent(img, 'load',  largeImageOnLoad,  false);
-  img.src = largeImageUrl;
-  return true;
-}
+//function largeImageOnLoad(e) {
+//  Popup.open(e, 'gallery', hotspot1, null, 0, 19);
+//  return true;
+//}
+//
+//function showLargeImage(e, current, largeImageUrl) {
+//  var div = document.getElementById('gallery');
+//  var img = document.getElementById('galleryImage');
+//  if(!div || !img)
+//    return;
+//
+//  makeDivAutosize(div);
+//
+//  if (!largeImageUrl) {
+//    e = getDocumentEvent(e); if (!e) return;
+//    var target = getTargetElement(e);
+//
+//    var thumbnailUrl = target.src;
+//    var idx = thumbnailUrl.lastIndexOf('.');
+//    var file = thumbnailUrl.substring(0, idx);
+//    var ext  = thumbnailUrl.substring(idx);
+//    var idx1 = file.lastIndexOf('_');
+//    var file1 = file.substring(0, idx);
+//    largeImageUrl = file1 + '_image' + ext;
+//
+//    hotspot1 = target;
+//    hotspot1.forcedPosition = Popup.POS_LEFT_TOP;
+//    addEvent(img, 'load',  largeImageOnLoad,  false);
+//    img.src = "";
+//    img.src = largeImageUrl;
+//    return true;
+//  }
+//
+//  img.src = "";
+//
+//  if (div.style.display == "block") {
+//    div.style.display = "none";
+//    // img.src always has host in it; largeImageUrl not always that is why using
+//    // indexOf
+//    if (img.src.indexOf(largeImageUrl) == img.src.length - largeImageUrl.length) {
+//      img.src = "";
+//      return false;
+//    }
+//  }
+//  // se the title text
+//  var titleObj = getChildById(gallery, "titleBar");
+//  if(titleObj != null) {
+//    var idx1 = largeImageUrl.lastIndexOf("/");
+//    var idx2 = largeImageUrl.indexOf("_image", idx1); // always suffix "_image"
+//    var fileName = largeImageUrl.substring(idx1 + 1, idx2);
+//    titleObj.innerHTML = fileName;
+//    titleObj.noWrap = true;
+//  }
+//
+//  hotspot1 = current;
+//  hotspot1.forcedPosition = Popup.POS_LEFT_TOP;
+//  addEvent(img, 'load',  largeImageOnLoad,  false);
+//  img.src = largeImageUrl;
+//  return true;
+//}
 
 // makes div / container to fit to content size.
-function makeDivAutosize(div, fitHeightOnly) {
-  var stl = div.style;
-  if(typeof fitHeightOnly == 'undefine')
-    fitHeightOnly = false;
-  if(Browser.ie) { // IE
-    stl.height = "1px";
-    if(!fitHeightOnly)
-      stl.width = "1px";
-  }
-  else if(stl.width != "auto") {
-    stl.height = "auto";
-    if(!fitHeightOnly)
-      stl.width = "auto";
-  }
-}
+//function makeDivAutosize(div, fitHeightOnly) {
+//  var stl = div.style;
+//  if(typeof fitHeightOnly == 'undefine')
+//    fitHeightOnly = false;
+//  if(Browser.ie) { // IE
+//    stl.height = "1px";
+//    if(!fitHeightOnly)
+//      stl.width = "1px";
+//  }
+//  else if(stl.width != "auto") {
+//    stl.height = "auto";
+//    if(!fitHeightOnly)
+//      stl.width = "auto";
+//  }
+//}
 
 function hide(target) {
   if (typeof target == 'string')
@@ -7519,11 +6360,11 @@ function processTransaction(e) {
 function showDiv(e, td, hideDivId) {
   e = getDocumentEvent(e);
   var div = document.getElementById(hideDivId);
-  div.style.visibility = Popup.HIDDEN;
+  div.style.visibility = 'hidden';
   div.style.display = "none";
   var divId = 'div_' + td.id;
   div = document.getElementById(divId);
-  div.style.visibility = Popup.VISIBLE;
+  div.style.visibility = 'visible';
   div.style.display = 'inline';
   return stopEventPropagation(e);
 }
@@ -7564,7 +6405,7 @@ function closeDiv(e, hideDivId) {
     // find tr in dashboard menu that corresponds to deleted widget and hide it
     var tr = document.getElementById('dm_' + hideDivId.substring(idx + 1));
     if (tr) {
-      tr.style.visibility = Popup.HIDDEN;
+      tr.style.visibility = 'hidden';
       tr.style.display = "none";
     }
   }
@@ -7654,7 +6495,7 @@ function hideDiv(e, hideDivId) {
   var div = getAncestorById(target, hideDivId);
   if (!div)
     return;
-  div.style.visibility = Popup.HIDDEN;
+  div.style.visibility = 'hidden';
   div.style.display = "none";
   return stopEventPropagation(e);
 }
@@ -7675,7 +6516,7 @@ function displayDiv(e, showDivId) {
   var div = document.getElementById(showDivId);
   if (!div)
     return;
-  div.style.visibility = Popup.VISIBLE;
+  div.style.visibility = 'visible';
 }
 
 function minMaxAndFlip(e, div) {
@@ -7711,12 +6552,12 @@ function minMax(e, divId) {
   var div = document.getElementById(divId);
   div.className = '';
   if (elm.src.indexOf('minimize.gif') != -1) {
-    div.style.visibility = Popup.HIDDEN;
+    div.style.visibility = 'hidden';
     div.style.display = "none";
     elm.src = 'icons/restore.gif';
   }
   else {
-    div.style.visibility = Popup.VISIBLE;
+    div.style.visibility = 'visible';
     div.style.display = '';
     elm.src = 'icons/minimize.gif';
   }
@@ -7759,7 +6600,7 @@ function showTab(e, td, hideDivId, unhideDivId) {
         }
       }
 
-      div.style.visibility = Popup.HIDDEN;
+      div.style.visibility = 'hidden';
       div.style.display = "none";
 
       if (div.id == "div_SlideShow")
@@ -7799,7 +6640,7 @@ function showTab(e, td, hideDivId, unhideDivId) {
     divId = 'div_' + td.id;
 
   var curDiv = document.getElementById(divId);
-//  curDiv.style.visibility = Popup.VISIBLE;
+//  curDiv.style.visibility = 'visible';
 //  curDiv.style.display = 'inline';
   curDiv.className = "";
   curDiv.style.visibility = "";
@@ -7822,7 +6663,7 @@ function showTab(e, td, hideDivId, unhideDivId) {
         continue;
 
       div.className = "";
-      div.style.visibility = Popup.VISIBLE;
+      div.style.visibility = 'visible';
       div.style.display = 'inline';
       var tdId;
       if (tok.charAt(0) == 'i') {
@@ -7854,8 +6695,6 @@ function showTab(e, td, hideDivId, unhideDivId) {
   if(typeof ImageAnnotations != 'undefined')
     ImageAnnotations.onTabSelection(curDiv);
 
-  resizeIframeOnTabSelection(curDiv); // IE
-  
 //  var panelBlock = getChildByClassName(curDiv, "panel_block");
 //  if (panelBlock) {
 //    TouchDlgUtil.init(panelBlock);
@@ -7872,25 +6711,6 @@ function showTabLabel(label) {
   if (span)
     span.style.display = 'inline';
   curSpan = span;
-}
-// IE specific function. (Tab in a dialog)
-function resizeIframeOnTabSelection(tabDiv) {
-  var dialogIframe = document.getElementById('dialogIframe');
-  if(dialogIframe && dialogIframe.style.visibility == "visible") {
-    var div = getAncestorById(tabDiv, "pane2");
-    if(!div)
-      return;
-
-    var SHADOW_WIDTH = 11;
-    var istyle = dialogIframe.style;
-    var contentObj = getChildById(div, "dataEntry");
-    if (contentObj == null)
-      contentObj = getChildById(div, "resourceList");
-    if (contentObj != null) {
-      istyle.width   = contentObj.clientWidth  - SHADOW_WIDTH + 'px';
-      istyle.height  = contentObj.clientHeight - SHADOW_WIDTH + 'px';
-    }
-  }
 }
 
 function hideShowControlPanel(hide) {
@@ -7956,7 +6776,7 @@ function showRows(e, td, hideRowsId, unhideRowsId) {
   }
   var rowgroupId = 'div_' + td.id;
   rowgroup = document.getElementById(rowgroupId);
-  rowgroup.style.visibility = Popup.VISIBLE;
+  rowgroup.style.visibility = 'visible';
   rowgroup.style.display = 'inline';
 
   var t = td.getElementsByTagName("table");
@@ -7980,78 +6800,6 @@ function onHideDialogIcon(e, hideIcon) {
 }
 */
 
-function openPopup1(divId1, alertName, hotSpot, e) {
-  var etarget = getEventTarget(e);
-  var isCalendar = etarget.tagName.toLowerCase() == 'img'  &&  etarget.src.indexOf('calendar.gif') != -1;
-
-// alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',
-// e=' + e + ', maxDuration=' + maxDuration);
-  if (isCalendar  ||  e.ctrlKey)  // ctrl-enter
-    showAlert(alertName);
-  else
-    openPopup(divId1, null, hotSpot, e);
-}
-
-function openPopup(divId1, divId2, hotSpot, e, maxDuration) {
-  if (divId2 != null) {
-    if (resourceCalendars[divId2] == null)
-      divId2 = null;
-    else
-      divId2 = "a." + divId2;
-  }
-  var etarget = getEventTarget(e);
-  var isCalendar = etarget.tagName.toLowerCase() == 'img'  &&  etarget.src.indexOf('calendar.gif') != -1;
-
-
-// alert('divId1=' + divId1 + ', divId2=' + divId2 + ', hotSpot=' + hotSpot + ',
-// e=' + e + ', maxDuration=' + maxDuration);
-  if (isCalendar  ||  e.ctrlKey)  {// ctrl-enter
-    if (!maxDuration) {
-      Popup.open(e, divId2, hotSpot);
-      return stopEventPropagation(e);
-      return;
-    }
-    var div = document.getElementById(divId2);
-    var tables = div.getElementsByTagName("table");
-    var table;
-    for (var i=0; i<tables.length && !table; i++) {
-      if (tables[i].id  &&  tables[i].id.indexOf("table_") == 0)
-        table = tables[i];
-    }
-    var trs = table.getElementsByTagName('tr');
-    var trLen = trs.length;
-    for (var i=1; i<trLen; i++) {
-      var tr = trs[i];
-// var anchor = tr.getElementsByTagName('a');
-// var s = anchor[0].innerHTML;
-      var s = tr.id;
-
-      var idx = s.indexOf("=");
-      s = s.substring(idx + 1);
-      if (parseInt(s) > maxDuration) {
-        tr.style.visibility = Popup.HIDDEN;
-        tr.style.display = "none";
-      }
-      else {
-        tr.style.visibility = Popup.VISIBLE;
-        tr.style.display = "";
-      }
-    }
-    Popup.open(e, divId2, hotSpot);
-  }
-  else {
-    if (divId1 != null) {
-      var target = getTdNode(hotSpot);
-      if (!currentCell || currentCell != target)
-        schedule(e);
-      else
-        Popup.open(e, 'e.' + divId1, hotSpot);
-    }
-  }
-  calendarCell = hotSpot;
-  return stopEventPropagation(e);
-// return false;
-}
 
 function setCurrentItem (event, tr) {
   tr.style.backgroundColor = '#F5ABE6';
@@ -8241,7 +6989,7 @@ function saveButtonClicked(e) {
 // processes custom parameter of hotspot: "max_width", "full_height" (height of options panel)
 // without "hotspot" it shows a div in center of a screen
 //****************************************************************
-function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim, positionEnforced, isModal){
+function setDivVisible(event, div, hotspot, offsetX, offsetY, hotspotDim, positionEnforced, isModal){
   // insert in DOM
   if (!div.parentNode || !div.parentNode.tagName)
     document.body.appendChild(div);
@@ -8268,17 +7016,7 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   
   var isDivStatic = (div.style.position.toLowerCase() == 'static');
   
-  if (!iframe) 
-    iframe = document.getElementById('dialogIframe');
-  
-  // only IE < 7 has a problem with form elements 'showing through' the popup
-  var istyle;
-  if (Browser.lt_ie7 && !Browser.mobile) {
-    var istyle = iframe.style;
-    istyle.visibility = Popup.HIDDEN;
-  }
-  
-  div.style.visibility = Popup.HIDDEN; // mark hidden - otherwise it shows up as soon as we set display = 'inline'
+  div.style.visibility = 'hidden'; // mark hidden - otherwise it shows up as soon as we set display = 'inline'
   var scrollXY = getScrollXY();
   var scrollX = scrollXY[0];
   var scrollY = scrollXY[1];
@@ -8439,49 +7177,13 @@ function setDivVisible(event, div, iframe, hotspot, offsetX, offsetY, hotspotDim
   ////  div.style.width  = divCoords.width;
   ////  div.style.height = divCoords.height;
   
-  if (Browser.lt_ie7) {
-    // for listboxes in Dialog - makes iframe under a listbox.
-    var par = getAncestorById(div, 'pane2');
-    if (par && iframe.id == 'popupIframe') {
-      par.appendChild(iframe);
-    }
-  }
-  
-  
-  // Make position/size of the underlying iframe same as div's position/size
-  var iframeLeft = left;
-  var iframeTop = top;
-  if (Browser.lt_ie7) {
-    if (!isDivStatic && !Browser.mobile) {
-      istyle.width = divCoords.width;
-      istyle.height = divCoords.height;
-    }
-    // to make dialog shadow visible (without iframe background).
-    if (div.id == 'pane2') {
-      var SHADOW_WIDTH = 11;
-      var contentObj = getChildById(div, "dataEntry");
-      if (contentObj == null) 
-        contentObj = getChildById(div, "resourceList");
-      if (contentObj != null && !isDivStatic && contentObj.clientWidth > SHADOW_WIDTH) {
-        istyle.width = contentObj.clientWidth - SHADOW_WIDTH + 'px';
-        istyle.height = contentObj.clientHeight - SHADOW_WIDTH + 'px';
-      }
-    }
-  }
-  
  _fadeInDialog(div);
  
   div.style.display    = 'none';   // hide it before movement to calculated position
   reposition(div, left, top); // move the div to calculated position
-  div.style.visibility = Popup.VISIBLE; // show div
+  div.style.visibility = 'visible'; // show div
   div.style.display    = "block"; //////// 'inline';
   
-  if (Browser.lt_ie7 && !isDivStatic  && !Browser.mobile) {
-    istyle.display = 'none';
-    istyle.visibility  = Popup.VISIBLE;
-    reposition(iframe, iframeLeft, iframeTop); // place iframe under div
-  }
-
   // used to handle key-arrows events
   if (div.id != "system_tooltip" && div.id != "loading") {
     TouchDlgUtil.setCurrentDialog(div);
@@ -8500,7 +7202,7 @@ function _fadeInDialog(div) {
   }
 }
 
-function setDivInvisible(div, iframe) {
+function setDivInvisible(div) {
   if (Browser.mobile) {
     MobilePageAnimation.hideDialog(div);
     return;
@@ -8516,15 +7218,8 @@ function setDivInvisible(div, iframe) {
 
   if (div.style)
     div.style.display    = "none";
-  if (iframe && iframe.style)
-    iframe.style.display = "none";
 
   TouchDlgUtil.resetCurrentDialog();
-
-  // return popupIframe to body from a dialog (see setDivVisible)
-  var popupIframe = getChildById(div, 'popupIframe');
-  if(popupIframe)
-    document.body.appendChild(popupIframe);
 }
 
 function doConfirm(msg) {
@@ -8748,7 +7443,7 @@ var DesktopSearchField = {
 // FtsAutocomplete - full text search autocomplete 
 var FtsAutocomplete = {
   AUTOCOMPLETE_ID : "auto_complete",
-  TIMEOUT : Popup.autoCompleteDefaultTimeout,
+  TIMEOUT : 200,
   field : null,
   timerId : null,
   autocompleteDiv : null,
@@ -9417,9 +8112,7 @@ function removeSpaces(str) {
  * DragEngine is not called in mobile mode
  ******************************************************************************/
 var DragEngine = {
-
   dragBlock : null,
-  dialogIframe : null, //IE: prevents dialog from underlaid <select>
   dragHandler : null,
   // offset of left and top edges relative to "caught point"
   offsetX: null, offsetY: null,
@@ -9431,7 +8124,6 @@ var DragEngine = {
     addEvent(document, 'mousedown', this.startDrag, false);
     addEvent(document, 'mouseup', this.stopDrag, false);
     addEvent(document, 'mousemove', this.drag, false);
-    this.dialogIframe = document.getElementById('dialogIframe');
   },
 
   startDrag: function(e){
@@ -9518,12 +8210,6 @@ var DragEngine = {
         thisObj.dragBlock.style.left = x + "px";
       if(typeof allowToMove == 'undefined' || allowToMove[1] == true)
         thisObj.dragBlock.style.top  = y + "px";
-
-      if(thisObj.dialogIframe != null && thisObj.dragBlock.id == 'pane2' &&
-           thisObj.dialogIframe.style.visibility == 'visible') {
-        thisObj.dialogIframe.style.left = x + "px";
-        thisObj.dialogIframe.style.top = y + "px";
-      }
 
       return false;
     }
@@ -9682,13 +8368,6 @@ function changeBoolean(e, target) {
 //    listboxFrame.location.replace(url + "?" + params); // load data from server
                                                         // into iframe
   postRequest(e, url, params, null, null);
-    
-  if (Popup.tooltipPopup) {
-    Popup.tooltipPopup.close();
-    Popup.tooltipPopup = null;
-  }
-  // tooltipMouseOut0(target); // remove and ...
-  // tooltipMouseOver0(target); // repaint the tooltip on this boolean icon
   return stopEventPropagation(e);
 }
 
@@ -9863,9 +8542,9 @@ var closingOnEsc = {
     if(div.id == 'pane2')
       PlainDlg.hide(e);
     // 2. popup
-    else if(div.className == 'popMenu') {
-      Popup.close0(div.id)
-   }
+//    else if(div.className == 'popMenu') {
+//      Popup.close0(div.id)
+//   }
 
     div = null;
     stopEventPropagation(e);
@@ -10097,13 +8776,13 @@ function showMenu(e, divId) {
   e = getDocumentEvent(e);
   if (hideMenu) {
     var div = document.getElementById(divId);
-    div.style.visibility = Popup.HIDDEN;
+    div.style.visibility = 'hidden';
     div.style.display = "none";
     hideMenu = false;
   }
   else {
     div = document.getElementById(divId);
-    div.style.visibility = Popup.VISIBLE;
+    div.style.visibility = 'visible';
     div.style.display = 'inline';
     hideMenu = true;
   }
@@ -10794,7 +9473,7 @@ var Dashboard = {
       errIcon[0].src = 'icons/info-msg.gif';
       var errMsg = errDiv.getElementsByTagName('span');
       errMsg[0].innerHTML = 'Drag-and-drop was successful';
-      errDiv.style.visibility = Popup.VISIBLE;
+      errDiv.style.visibility = 'visible';
       errDiv.style.display = 'inline';
 //      errDiv.innerHTML = "<table border='0' width='100%' class='commentevent'><tr><td valign='bottom' align='center' width='70'><img src='icons/info-msg.gif' width='64' /></td><td><span class='info'>Drag-and-drop was successful</span></td><td valign='top'><img src='icons/hide.gif' width=16 height=16 onclick='hideDiv(event, \"errorMessage\");'/></td></tr></table>";
     }
@@ -12478,7 +11157,7 @@ function showMobileTab(e, hideDivId, unhideDivId) {
       var div = document.getElementById(tok);
       if (!div)
         continue;
-      div.style.visibility = Popup.HIDDEN;
+      div.style.visibility = 'hidden';
       div.style.display = "none";
     }
   }
@@ -12490,15 +11169,13 @@ function showMobileTab(e, hideDivId, unhideDivId) {
       var div = document.getElementById(tok);
       if (!div)
         continue;
-      div.style.visibility = Popup.VISIBLE;
+      div.style.visibility = 'visible';
       div.style.display = 'inline';
     }
   }
 //  ExecJS.runDivCode(curDiv);
 //  if(typeof ImageAnnotations != 'undefined')
 //    ImageAnnotations.onTabSelection(curDiv);
-
-//  resizeIframeOnTabSelection(curDiv); // IE
 
   return stopEventPropagation(e);
 }
@@ -12757,7 +11434,7 @@ var BrowserDialog = {
     if (this.div == null)
       this.init();
 
-    setDivVisible(null, this.div, null);
+    setDivVisible(null, this.div);
 
     this.textDiv.innerHTML = msg;
     if (!okBtnLabel)
@@ -13234,7 +11911,7 @@ var LoadingIndicator = {
 		if (hotspot && !isVisible(hotspot))
 		  hotspot = null; 
 
-	  setDivVisible(null, this.loadingDiv, null, hotspot);
+	  setDivVisible(null, this.loadingDiv, hotspot);
 		
     this.curOpacity = 0.4; // initial value
     changeOpacity(this.loadingDiv, this.curOpacity);
@@ -13471,9 +12148,9 @@ var LinkProcessor = {
         return; // right click
     
       // close popup menu on its item click
-      var popupDiv = getAncestorByAttribute(anchor, "className", "popMenu");
-      if (popupDiv)
-        Popup.close0(popupDiv.id)
+//      var popupDiv = getAncestorByAttribute(anchor, "className", "popMenu");
+//      if (popupDiv)
+//        Popup.close0(popupDiv.id)
 
       // 1. stop click event on anchors with href == "about:blank"
       // because we handled it with onmousedown
