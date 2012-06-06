@@ -2087,7 +2087,7 @@ var ListBoxesHandler = {
       return;
     // hide "Add New" in dialog with hidden form panel
     var hdnAddTr = this._isFormPanelHidden ? null : getChildById(popupDiv, "$addNew");
-    this.addNewResIcon.style.display = this.addNewResBtn.style.display = (hdnAddTr != null) ? "" : "none";
+		this.addNewResIcon.style.display = this.addNewResBtn.style.display = (hdnAddTr != null) ? "" : "none";
     if (hdnAddTr)
       getFirstChild(this.addNewResBtn).innerHTML = getChildByTagName(hdnAddTr, "a").innerHTML;
   },
@@ -3099,6 +3099,8 @@ var ListBoxesHandler = {
   
   // createClassesPanel
   createClassifierPanel : function(parent) {
+		// hide add resource buttons on the "classifier_panel"
+		this.addNewResBtn.style.display = this.addNewResIcon.style.display = "none";
     this.classifierPanel = this.optionsPanel.cloneNode(true);
     this.classifierPanel.className = "classifier_panel";
 
