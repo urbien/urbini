@@ -2641,9 +2641,11 @@ td #corePageContent { min-height: 600px;}
   background-image: -moz-linear-gradient(top center, #eeeeee, #ffffff);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#eeeeee), to(#ffffff));
   background-image: -o-linear-gradient(#eeeeee, #ffffff);
+  background-image:  url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2VlZWVlZSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+  /*
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#eeeeee,endColorstr=#ffffff);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#eeeeee,endColorstr=#ffffff)";
-  
+  */
   border: 1px solid #eeeeee;
   
   /* cross browser inline block hack; see http://blog.mozilla.com/webdev/2009/02/20/cross-browser-inline-block/ */
@@ -2655,6 +2657,7 @@ td #corePageContent { min-height: 600px;}
   
   /* IE luv */
   zoom: 1;
+  behavior: url(PIE.htc);
   
   /*disable text selection (Firefox only)*/
   -moz-user-select: none;
@@ -2667,7 +2670,7 @@ td #corePageContent { min-height: 600px;}
   background-image: -o-linear-gradient(#fff167, #ffba24);
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#fff167,endColorstr=#ffba24);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#fff167,endColorstr=#ffba24)";
-  
+
   border: 1px solid #ffba24;
   
 }
@@ -2683,9 +2686,11 @@ td #corePageContent { min-height: 600px;}
   background-image: -moz-linear-gradient(top center, #fffa76, #ffc416);
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fffa76), to(#ffc416));
   background-image: -o-linear-gradient(#fffa76, #ffc416);
+  background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxIDEiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPgo8bGluZWFyR3JhZGllbnQgaWQ9Imc2NTUiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkZBNzYiIG9mZnNldD0iMCIvPjxzdG9wIHN0b3AtY29sb3I9IiNGRkM0MTYiIG9mZnNldD0iMSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2c2NTUpIiAvPgo8L3N2Zz4=);
+  /*
   #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#fffa76,endColorstr=#ffc416);
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#fffa76,endColorstr=#ffc416)";
-  
+  */
   border: 1px solid #ffba24;
 }
 .cl {padding-left: 12px;}
