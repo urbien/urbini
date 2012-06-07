@@ -1083,7 +1083,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	this.initContent = function() {
 		var text = this.getDataField().value;
-
+    // insert <br /> for better height fitting in EMTY document
+		if (text.length == 0)
+		  text = "<br />";
 		this.putContent(text);
 		this.initHtml = this.getHtmlContent(false);
 	}
@@ -1116,7 +1118,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		}
 	}
 	this.resetContent = function(){
-  	this.document.body.innerHTML = "";
+		// insert <br /> for better height fitting in EMTY document
+  	this.document.body.innerHTML = "<br />";
 	}
 	
 	// it used for a non standart command like a table insert.
@@ -1261,6 +1264,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 		// 2. trim.
 		text = trim(text);
+		
+    // remove break inserted for better height fitting
+		text = text.replace(/<br>|<br\/>|<br \/>$/i, "");
+		
 		// 3. convert all tags to lower case
 		// - no need because we check if document was changed.
 		// IE (Opera) returns in uppercase; FF in lower case. It can change RTE resource.
