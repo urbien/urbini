@@ -956,7 +956,7 @@ function getFirstChild(parent) {
 	var child = parent.firstChild;
 	if (!child)
 		return null;
-	return child.nodeType == 1 ? child : getNextSibling(child);
+	return child.nodeType != 1 ? child : getNextSibling(child);
 }
 
 function getLastChild(parent) {
@@ -965,7 +965,7 @@ function getLastChild(parent) {
 	var child = parent.lastChild;
 	if (!child)
 		return null;
-	return child.nodeType == 1 ? child : getPreviousSibling(child);
+	return child.nodeType != 1 ? child : getPreviousSibling(child);
 }
 
 function insertAfter(parent, newElement, referenceElement) {
@@ -1779,7 +1779,7 @@ function getElementPosition(elem, e) {
   // special position that is relative to the element
   if (elem  &&  typeof elem.forcedPosition != 'undefined') {
     var scrollXY = getScrollXY();
-    if (elem.forcedPosition == Popup.POS_LEFT_TOP)
+    if (elem.forcedPosition == 'left_top')
       return {left : scrollXY[0] + 10, top : scrollXY[1]};
   }
 
