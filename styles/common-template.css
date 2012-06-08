@@ -952,7 +952,7 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .bg   { background:#Bedbe9 }
 .itemsT {background-color: &[PrimaryColor_4];; font-weight:bold; font-size:12pt;text-align:center}
 
-#dataEntry td .itemsT {background-color: &[PrimaryColor_4];; font-weight:normal; font-size:16px; padding-left: 2px; text-align: left;}
+#dataEntry td .itemsT {background-color: &[PrimaryColor_4];; font-size:14px; padding-left: 2px; text-align: left;}
 
 /* SKINS */
 .menuLine {
