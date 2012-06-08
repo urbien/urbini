@@ -148,8 +148,10 @@ div .href {display: inline;}
   overflow:hidden; 
   width: 100%; 
   height: 1em; 
+/*
   line-height: 0.9em; 
   text-align:justify;
+*/   
 }
 .displayInline, .displayInline * { 
   font-size: 1em !important; 
@@ -949,6 +951,8 @@ td.horizontalFilterSubmit {background-color:#C0C9D7} /* To display submit button
 .blueLine { background:#ACD2E2 }
 .bg   { background:#Bedbe9 }
 .itemsT {background-color: &[PrimaryColor_4];; font-weight:bold; font-size:12pt;text-align:center}
+
+#dataEntry td .itemsT {background-color: &[PrimaryColor_4];; font-weight:normal; font-size:16px; padding-left: 2px; text-align: left;}
 
 /* SKINS */
 .menuLine {
