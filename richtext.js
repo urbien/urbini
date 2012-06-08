@@ -1377,14 +1377,16 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	
 	// hides toolbar and minimizes edit area
-	this._close  = function() {
+	this._close  = function(onEsc) {
 		i_am.changePanelWidth(false);
 		i_am.iframeObj.style.height = i_am.initFrameHeight + "px";
-    
-		// hide parent dialog if there is only one parameter - this RTE
+
+		// parent dialog contains only single RTE
     if (TouchDlgUtil.isElementFirstParameter(this.iframeObj) &&
 			     getNextSibling(getAncestorByClassName(this.iframeObj, "param_tr")) == null) {
-		  DataEntry.hide();
+		  if (onEsc)
+			 DataEntry.hide(); // onEsc: hide parent dialog
+			return; 
 		}
     else if (i_am.toolbar)
 			i_am.toolbar.hide();
@@ -1486,7 +1488,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// esc
 		else if(e.keyCode == 27) {
 			if (i_am.toolbar.isVisible())
-				i_am._close(); // close RTE on 1st Esc
+				i_am._close(true); // close RTE on 1st Esc
 			else
 				TouchDlgUtil.closeAllDialogs(); // close dialog on 2nd Esc
   	}
