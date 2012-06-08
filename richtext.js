@@ -1083,15 +1083,12 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	this.initContent = function() {
 		var text = this.getDataField().value;
-    // insert <br /> for better height fitting in EMTY document
-		if (text.length == 0)
-		  text = "<br />";
-		this.putContent(text);
+		this.setContent(text);
 		this.initHtml = this.getHtmlContent(false);
 	}
 	
-	// putContent
-	this.putContent = function(text) {
+	// setContent
+	this.setContent = function(text) {
 	  if(!Browser.ie/*this.isNetscape || this.isOpera*/) {
 			var head = this.document.getElementsByTagName('head')[0];
       var base = document.createElement('base');
@@ -1116,6 +1113,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		  this.document.write(frameHtml);
 		  this.document.close();
 		}
+
+    // insert <br /> for better height fitting in EMTY document
+    // it will be removed with all trailed <br>
+    if (text.length == 0) {
+		  var br = document.createElement("br");
+		  this.document.body.appendChild(br);
+	  }
 	}
 	this.resetContent = function(){
 		// insert <br /> for better height fitting in EMTY document
@@ -1214,8 +1218,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	    if(tmp.length == 0)
 	      return "";
     }
+
 		// remove possible trailed br
-    content.replace(/<br[^>]*>$/)
+    content = content.replace(/<br[^>]*>$/, "");
 		return content;
 	}
 
@@ -1243,6 +1248,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		}
 		return this.dataField;
 	}
+	// put RTE text into a form field 
 	this.putRteData = function() {
 	  // not use detection of a document changing.
 	  // probably it invokes error when document is not stored.
@@ -1264,10 +1270,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 		// 2. trim.
 		text = trim(text);
-		
-    // remove break inserted for better height fitting
-		text = text.replace(/<br>|<br\/>|<br \/>$/i, "");
-		
+
 		// 3. convert all tags to lower case
 		// - no need because we check if document was changed.
 		// IE (Opera) returns in uppercase; FF in lower case. It can change RTE resource.
@@ -1519,10 +1522,16 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	// fitHeightToVisible
 	this.fitHeightToVisible = function(onFocus) {
 		var docH = 0;
+
 		// 1) fit height with help of position of last element
 		// worked in FF and IE
 		var lastElem = getLastChild(i_am.document.body);
 		if (lastElem) {
+			// hack: when all text is embrased into a div with height = 100%
+			// it takes height of parent iframe. So remove height = 100%
+			if (lastElem.style.height == "100%")
+			  lastElem.style.height = "";
+				
 		  var lastElemY = findPosY(lastElem);
 			if (lastElemY != 0)
 	  	  docH = lastElemY + lastElem.offsetHeight;
@@ -1536,7 +1545,6 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			else if (i_am.document.body.offsetHeight != 0)
 				docH = i_am.document.body.offsetHeight;
 		}
-		  
 			
 		// 1. small content size - use initial height without scrolling
 		if (docH < i_am.initFrameHeight) {
@@ -1810,14 +1818,14 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 				var iHTML = i_am.document.body.innerHTML;
 				if (!allowToEdit)
 					i_am.document.designMode = "Off";
-				i_am.putContent(iHTML); // hack: restore the document after designMode = "Off"
+				i_am.setContent(iHTML); // hack: restore the document after designMode = "Off"
 				i_am.document.body.innerText = iHTML;
 			}
 			else {
 				var iText = i_am.document.body.innerText;
 				//i_am.document.body.innerHTML = iText;
 				i_am.document.designMode = "On";
-				i_am.putContent(iText);
+				i_am.setContent(iText);
 			}
 		}
 		i_am.isSourceView = pressed;
@@ -2036,7 +2044,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.insertHTML(mark);
 		var docHtml = i_am.document.body.innerHTML;
 		docHtml = docHtml.replace(mark, params.html);
-		// note: putContent "failed" to launch object
+		// note: setContent "failed" to launch object
 		i_am.document.body.innerHTML = docHtml;
 		// inserted object is not loaded immediately
 		// to run it with turn on and then off of source
