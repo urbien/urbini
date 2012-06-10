@@ -2611,6 +2611,7 @@ td #corePageContent { min-height: 600px;}
 #fts h3 {margin:0px;}
 #buy_to_friend .lc, .lc td, div.lc {text-align: center; padding-bottom: 5px; padding-top: 3px;}
 .lc img {text-align: center; max-width:14px;}
+#feed .lc {text-align: left }
 #resourceList .grid .lc a {
   font-weight: normal; 
 }
