@@ -3,6 +3,7 @@
   <tr>
     <td>    
       <classChooser />
+      <subPropertyOfChooser itype="http://www.hudsonfog.com/voc/system/designer/WebProperty"/>
     </td>
   </tr>
 </table>
