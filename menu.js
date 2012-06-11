@@ -12952,14 +12952,17 @@ function toggleLocationAwareness(on) {
     window.location.replace(addOrReplaceUrlParam(window.location.href, '-locSort', 'n'));
   }
 }
+
 //***********************************
 // EndlessPager for masonry layout
+// two cases: 1)masonry 2) blog
 //***********************************
 var EndlessPager = {
 	indicatorTd : null,
 	anchors : null, // pages buttons
 	curPage : 0,
-	nabsGrid : null,
+	nabsGrid : null,  // masonry
+	blogTable : null, // blog
 	skip : false,
 	onscroll : function(event) {
 		var $t = EndlessPager;
@@ -13000,8 +13003,27 @@ var EndlessPager = {
 	onContentLoaded : function(event, parentDiv, hotspot, html, url, params) {
 		var $t = EndlessPager;
 		$t.indicatorTd.style.visibility = "hidden";  
-		if ($t.nabsGrid == null)
+
+		if ($t.nabsGrid == null && $t.blogTable == null) {
 		  $t.nabsGrid = document.getElementById("nabs_grid");
+			$t.blogTable = document.getElementById("blog");
+	  }
+		
+		// blog ---
+		if ($t.nabsGrid == null) { // table#blog is on masonry page too
+			$t.blogTable = document.getElementById("blog");
+			var newBlogTable = getDomObjectFromHtml(html, "id", "blog");
+			if ($t.blogTable && newBlogTable) {
+				var tr = newBlogTable.rows[0];
+				while (tr) {
+			   $t.blogTable.appendChild(tr);
+				 tr = newBlogTable.rows[0];
+		    }
+			}
+			return;
+		}
+		
+		// masonry ---
 		var newGrid = getDomObjectFromHtml(html, 'id', 'nabs_grid');
 		if (getChildByClassName(newGrid, "nab") == null)
 		  return $t.stop();
