@@ -1465,7 +1465,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	
 	this._onkeyup = function(e) {
 		i_am.fitHeightToVisible();
-    
+   
 		// FF2 and Opera onpaste
 		e = getDocumentEvent(e);
     if((e.ctrlKey && e.keyCode == 86) // e.DOM_VK_V
@@ -1514,9 +1514,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	      e.preventDefault();
 	    }
 		}
-		else if (Browser.chrome && (e.keyCode == 33 || e.keyCode == 34)) {
-			e.preventDefault();
-		}
+// there was some problem wit page up and page down in Chrome (?!)		
+//		else if (Browser.chrome && (e.keyCode == 33 || e.keyCode == 34)) {
+//			e.preventDefault();
+//		}
   }
   
 	// fitHeightToVisible
