@@ -1858,7 +1858,7 @@ div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
     /*line-height:30px; */
     width: 100%;
     text-align: left; 
-    border: 1px solid &[ToolbarColor];;
+    /*border: 1px solid &[ToolbarColor];;*/
     background-color: &[PrimaryColor_1];;
     
     background-image: -moz-linear-gradient(top center, &[ToolbarColor];, &[PrimaryColor_1];); 
