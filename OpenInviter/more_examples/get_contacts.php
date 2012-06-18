@@ -1,19 +1,72 @@
 <?php
-include('openinviter.php');
+$contents="<html>
+<head>
+<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js' type='text/javascript' charset='utf-8'></script>
+<script src='js/jquery.uniform.min.js' type='text/javascript' charset='utf-8'></script>
+<script type='text/javascript' charset='utf-8'>
+  $(function(){
+	$('input, textarea, select, button').uniform();
+  });
+</script>
+<link rel='stylesheet' href='css/uniform.default.css' type='text/css' media='screen'>
+<style type='text/css' media='screen'>
+body {
+font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+color: #666;
+padding: 40px;
+}
+h1 {
+margin-top: 0;
+}
+ul {
+list-style: none;
+padding: 0;
+margin: 0;
+}
+li {
+margin-bottom: 20px;
+clear: both;
+}
+label {
+font-size: 10px;
+font-weight: bold;
+text-transform: uppercase;
+display: block;
+margin-bottom: 3px;
+clear: both;
+}
+</style>
+</head>
+";
+include('../openinviter.php');
 $inviter=new OpenInviter();
 $oi_services=$inviter->getPlugins();
+$pluginContent="";
 if (isset($_POST['provider_box'])) 
-{
+	{
 	if (isset($oi_services['email'][$_POST['provider_box']])) $plugType='email';
 	elseif (isset($oi_services['social'][$_POST['provider_box']])) $plugType='social';
 	else $plugType='';
-}
-else $plugType = '';
+	if ($plugType) $pluginContent=createPluginContent($_POST['provider_box']);
+	}
+elseif(!empty($_GET['provider_box']))
+	{
+	if (isset($oi_services['email'][$_GET['provider_box']])) $plugType='email';
+	elseif (isset($oi_services['social'][$_GET['provider_box']])) $plugType='social';
+	else $plugType='';
+	if($plugType) 
+		{ 
+		$_POST['provider_box']=$_GET['provider_box'];
+		$pluginContent=createPluginContent($_GET['provider_box']);
+		}
+	}
+else { $plugType = ''; $_POST['provider_box']=''; }
+
 function ers($ers)
 	{
 	if (!empty($ers))
 		{
-		$contents="<table cellspacing='0' cellpadding='0' style='border:1px solid red;' align='center'><tr><td valign='middle' style='padding:3px' valign='middle'><img src='images/ers.gif'></td><td valign='middle' style='color:red;padding:5px;'>";
+		$contents="<table cellspacing='0' cellpadding='0' style='border:1px solid red;' align='center'><tr><td valign='middle' style='padding:3px' valign='middle'><img src='imgs/ers.gif'></td><td valign='middle' style='color:red;padding:5px;'>";
 		foreach ($ers as $key=>$error)
 			$contents.="{$error}<br >";
 		$contents.="</td></tr></table><br >";
@@ -25,7 +78,7 @@ function oks($oks)
 	{
 	if (!empty($oks))
 		{
-		$contents="<table border='0' cellspacing='0' cellpadding='10' style='border:1px solid #5897FE;' align='center'><tr><td valign='middle' valign='middle'><img src='images/oks.gif' ></td><td valign='middle' style='color:#5897FE;padding:5px;'>	";
+		$contents="<table border='0' cellspacing='0' cellpadding='10' style='border:1px solid #5897FE;' align='center'><tr><td valign='middle' valign='middle'><img src='imgs/oks.gif' ></td><td valign='middle' style='color:#5897FE;padding:5px;'>	";
 		foreach ($oks as $key=>$msg)
 			$contents.="{$msg}<br >";
 		$contents.="</td></tr></table><br >";
@@ -44,9 +97,9 @@ if ($_SERVER['REQUEST_METHOD']=='POST')
 		if (empty($_POST['email_box']))
 			$ers['email']="Email missing !";
 		if (empty($_POST['password_box']))
-			$ers['password']="Password missing !";
+			$ers['password']="Password missing !";	
 		if (empty($_POST['provider_box']))
-			$ers['provider']="Provider missing !";
+			$ers['provide']='Provider missing!';
 		if (count($ers)==0)
 			{
 			$inviter->startPlugin($_POST['provider_box']);
@@ -127,10 +180,9 @@ else
 	{
 	$_POST['email_box']='';
 	$_POST['password_box']='';
-	$_POST['provider_box']='';
 	}
 
-$contents="<script type='text/javascript'>
+$contents.="<script type='text/javascript'>
 	function toggleAll(element) 
 	{
 	var form = document.forms.openinviter, z = 0;
@@ -147,48 +199,37 @@ if (!$done)
 	if ($step=='get_contacts')
 		{
 		$contents.="<table align='center' class='thTable' cellspacing='2' cellpadding='0' style='border:none;'>
-			<tr class='thTableRow'><td align='right'><label for='email_box'>Email</label></td><td><input class='thTextbox' type='text' name='email_box' value='{$_POST['email_box']}'></td></tr>
-			<tr class='thTableRow'><td align='right'><label for='password_box'>Password</label></td><td><input class='thTextbox' type='password' name='password_box' value='{$_POST['password_box']}'></td></tr>
-			<tr class='thTableRow'><td align='right'><label for='provider_box'>Email provider</label></td><td><select class='thSelect' name='provider_box'><option value=''></option>";
-		foreach ($oi_services as $type=>$providers)	
-			{
-			$contents.="<optgroup label='{$inviter->pluginTypes[$type]}'>";
-			foreach ($providers as $provider=>$details)
-				$contents.="<option value='{$provider}'".($_POST['provider_box']==$provider?' selected':'').">{$details['name']}</option>";
-			$contents.="</optgroup>";
-			}
-		$contents.="</select></td></tr>
-			<tr class='thTableImportantRow'><td colspan='2' align='center'><input class='thButton' type='submit' name='import' value='Import Contacts'></td></tr>
-		</table><input type='hidden' name='step' value='get_contacts'>";
+			<tr><td align='right'><label for='email_box'>Email</label></td><td><input type='text' name='email_box' value='{$_POST['email_box']}'></td></tr>
+			<tr><td align='right'><label for='password_box'>Password</label></td><td><input type='password' name='password_box' value='{$_POST['password_box']}'></td></tr>			
+			<tr><td colspan='2' align='center'><input type='submit' name='import' value='Import Contacts'></td></tr>
+		</table><input type='hidden' name='provider_box' value='{$_POST['provider_box']}'><input type='hidden' name='step' value='get_contacts'>";
 		}
 	else
 		$contents.="<table class='thTable' cellspacing='0' cellpadding='0' style='border:none;'>
-				<tr class='thTableRow'><td align='right' valign='top'><label for='message_box'>Message</label></td><td><textarea rows='5' cols='50' name='message_box' class='thTextArea' style='width:300px;'>{$_POST['message_box']}</textarea></td></tr>
-				<tr class='thTableRow'><td align='center' colspan='2'><input type='submit' name='send' value='Send Invites' class='thButton' ></td></tr>
+				<tr><td align='center' valign='top'><label for='message_box'>Message</label></td><td><textarea rows='5' cols='50' name='message_box' style='width:300px;'>{$_POST['message_box']}</textarea></td></tr>
+				<tr><td align='center' colspan='2'><input type='submit' name='send' value='Send Invites' ></td></tr>
 			</table>";
 	}
-$contents.="<center><a href='http://openinviter.com/'><img src='http://openinviter.com/images/banners/banner_blue_1.gif?nr=53886' border='0' alt='Powered by OpenInviter.com' title='Powered by OpenInviter.com'></a></center>";
+$contents.="<center>{$pluginContent}</center>";
 if (!$done)
 	{
 	if ($step=='send_invites')
-		{
+		{		
 		if ($inviter->showContacts())
-			{
-			$contents.="<table class='thTable' align='center' cellspacing='0' cellpadding='0'><tr class='thTableHeader'><td colspan='".($plugType=='email'? "3":"2")."'>Your contacts</td></tr>";
+			{			
+			$contents.="<table align='center' cellspacing='0' cellpadding='0'><tr><td colspan='".($plugType=='email'? "3":"2")."'>Your contacts</td></tr>";
 			if (count($contacts)==0)
-				$contents.="<tr class='thTableOddRow'><td align='center' style='padding:20px;' colspan='".($plugType=='email'? "3":"2")."'>You do not have any contacts in your address book.</td></tr>";
+				$contents.="<tr><td align='center' style='padding:20px;' colspan='".($plugType=='email'? "3":"2")."'>You do not have any contacts in your address book.</td></tr>";
 			else
 				{
-				$contents.="<tr class='thTableDesc'><td><input type='checkbox' onChange='toggleAll(this)' name='toggle_all' title='Select/Deselect all' checked>Invite?</td><td>Name</td>".($plugType == 'email' ?"<td>E-mail</td>":"")."</tr>";
-				$odd=true;$counter=0;
+				$contents.="<tr><td><input type='checkbox' onChange='toggleAll(this)' name='toggle_all' title='Select/Deselect all' checked>Invite?</td><td>Name</td>".($plugType == 'email' ?"<td>E-mail</td>":"")."</tr>";
+				$counter=0;
 				foreach ($contacts as $email=>$name)
 					{
-					$counter++;
-					if ($odd) $class='thTableOddRow'; else $class='thTableEvenRow';
-					$contents.="<tr class='{$class}'><td><input name='check_{$counter}' value='{$counter}' type='checkbox' class='thCheckbox' checked><input type='hidden' name='email_{$counter}' value='{$email}'><input type='hidden' name='name_{$counter}' value='{$name}'></td><td>{$name}</td>".($plugType == 'email' ?"<td>{$email}</td>":"")."</tr>";
-					$odd=!$odd;
+					$counter++;					
+					$contents.="<tr><td><input name='check_{$counter}' value='{$counter}' type='checkbox' checked><input type='hidden' name='email_{$counter}' value='{$email}'><input type='hidden' name='name_{$counter}' value='{$name}'></td><td>{$name}</td>".($plugType == 'email' ?"<td>{$email}</td>":"")."</tr>";
 					}
-				$contents.="<tr class='thTableFooter'><td colspan='".($plugType=='email'? "3":"2")."' style='padding:3px;'><input type='submit' name='send' value='Send invites' class='thButton'></td></tr>";
+				$contents.="<tr><td colspan='".($plugType=='email'? "3":"2")."' style='padding:3px;'><input type='submit' name='send' value='Send invites'></td></tr>";
 				}
 			$contents.="</table>";
 			}
@@ -196,8 +237,17 @@ if (!$done)
 			<input type='hidden' name='provider_box' value='{$_POST['provider_box']}'>
 			<input type='hidden' name='email_box' value='{$_POST['email_box']}'>
 			<input type='hidden' name='oi_session_id' value='{$_POST['oi_session_id']}'>";
+		$contents.="<script>self.parent.$.fancybox.resize();</script>";
 		}
 	}
 $contents.="</form>";
 echo $contents;
+
+function createPluginContent($pr)
+	{
+	global $oi_services,$plugType;
+	$a=array_keys($oi_services[$plugType]);
+	foreach($a as $r=>$sv) if ($sv==$pr) break;
+	return $contentPlugin="<div style='border:none; display:block; height:60px; margin:0; padding:0; width:130px; background-position: 0px ".(-60*$r)."px; background-image:url(\"imgs/{$plugType}_services.png\");'></div>";
+	}
 ?>
