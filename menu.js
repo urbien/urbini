@@ -1452,7 +1452,7 @@ var ListBoxesHandler = {
 
   // Opens the popup when needed, e.g. on click, on enter, on autocomplete
   listboxOnClick1 : function(e, imgId, enteredText, enterFlag, classValue, arrowTd) {
-    // cut off "_filter"
+		// cut off "_filter"
     var propName1 = imgId.substring(0, imgId.length - "_filter".length);   
     var idx = propName1.lastIndexOf('_');
     if (idx == -1)
@@ -1619,6 +1619,7 @@ var ListBoxesHandler = {
       if (classValue)
         params += "&" + propName + "_class=" + classValue;
     }
+
     // request listbox context from the server via ajax
     postRequest(e, url, params, div, hotspot, this.onListLoaded);
  },
@@ -1765,7 +1766,7 @@ var ListBoxesHandler = {
       // click on different parameter then invoke this function with delay 800 ms
       if ($t.curParamRow && comparePosition($t.curParamRow, tr) != 0) {
         setTimeout("ListBoxesHandler.onClickParam(ListBoxesHandler.clonedEvent, " + optionsSelectorStr + ")", 800);
-         $t.skipUserClick = true; // to skip additional clicks
+        $t.skipUserClick = true; // to skip additional clicks
       }
       return;
     }
@@ -1816,6 +1817,10 @@ var ListBoxesHandler = {
         this.createCalendarPanel(this.tray);
       }
       this.showCalendar(tr);
+      if (this._isEditList) {
+				var form = getAncestorByAttribute(target, "name", ["siteResourceList", "rightPanelPropertySheet"]);
+				this.showStandAloneOptions(target, form);
+			}
     }
     // 2. options list
     else {
@@ -2055,6 +2060,22 @@ var ListBoxesHandler = {
     }
   },
 
+  showCalendar : function(paramTr) {
+    var $t = ListBoxesHandler;
+    // set top offset (margin) to sutisfy current scroll position
+    var topOffset = getScrollXY()[1] - findPosY(this.tray);
+    $t.fitOptionsYPosition($t.calendarPanel);
+    $t.calendarPanel.style.display = "inline";
+    var inputs = $t.getDateInputs(paramTr); //Filter.getPeriodInputs(paramTr);
+    startCalendar($t.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
+		
+    // slide forward
+		SlideSwaper.moveForward($t.tray, $t.onOptionsDisplayed);
+  },
+  isCalendar : function() {
+    return this.calendarPanel != null && this.calendarPanel.style.display == "inline";
+  },
+	
   onOptionsDisplayed : function() {
     var $t = ListBoxesHandler;
     var textEntry = $t.toPutInClassifier ? $t.classifierTextEntry : $t.textEntry;
@@ -2064,24 +2085,7 @@ var ListBoxesHandler = {
     if ($t._isFormPanelHidden)
       setShadow($t.panelBlock, "6px 6px 25px rgba(0, 0, 0, 0.5)");
   },
-
-  showCalendar : function(paramTr) {
-    var $t = ListBoxesHandler;
-    // set top offset (margin) to sutisfy current scroll position
-    var topOffset = getScrollXY()[1] - findPosY(this.tray);
-    $t.fitOptionsYPosition($t.calendarPanel);
-    $t.calendarPanel.style.display = "inline";
-    var inputs = $t.getDateInputs(paramTr); //Filter.getPeriodInputs(paramTr);
-    startCalendar($t.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
-    
-    // slide forward
-    SlideSwaper.moveForward($t.tray);
-  },
-  
-  isCalendar : function() {
-    return this.calendarPanel != null && this.calendarPanel.style.display == "inline";
-  },
-
+	
   changeAddNewState : function(popupDiv) {
     if (!this.addNewResIcon || !this.addNewResBtn || this._isFtsSift)
       return;
