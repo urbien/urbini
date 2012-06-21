@@ -10077,47 +10077,86 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
   this.init(widgetDiv);
 }
 
-
+// manages of (several) slide shows
 var BacklinkImagesSlideshow = {
-  DELAY : 3000,
-  MAX_LOOPS : 2,
-  slideShowSceneDiv : null,
-  slideShowStoreDiv : null,
-  widgetSlider : null,
-  maxSlideIdx : null,
-  curImageIdx : 0,
-  timerId : null,
-  loopsCounter : 1,
-  pagerSlots : null,
-  descOverlay : null,
+	DELAY: 3000,
+	MAX_LOOPS: 2,
+	slideshowArr : new Array(),
+	initialized : false,
+	
+	// called onload
+	register : function(slideImg) {
+		if (this.initialized)
+		  return;
+		this.slideshowArr.push(new slideshow(slideImg.parentNode));
+	},
+	init : function() {
+		this.initialized = true;
+		for (var i = 0; i < this.slideshowArr.length; i++)
+		  this.slideshowArr[i].init();
+	},
+	
+	// slide show on a Tab (Edit page) containong one slide show
+	onMainThumbClick : function() {
+		this.slideshowArr[0].onMainThumbClick();
+	},
+	onThumbItemClick : function(event) {
+    this.slideshowArr[0].onThumbItemClick(event);
+  },
+	run : function() {
+    this.slideshowArr[0].run();
+  },
+	stop : function() {
+    this.slideshowArr[0].stop();
+  },
+	// called on a dialoag opening ("buy" dialog)
+	stopAutomaticSiding : function() {
+    this.slideshowArr[0].stopAutomaticSiding();
+  }
+}
+
+// one slide show
+function slideshow(slideShowSceneDiv) {
+	var $t = this;
+  this.slideShowSceneDiv = null;
+  this.slideShowStoreDiv = null;
+  this.widgetSlider = null;
+  this.maxSlideIdx = null;
+  this.curImageIdx = 0;
+  this.timerId = null;
+  this.loopsCounter = 1;
+  this.pagerSlots = null;
+  this.descOverlay = null;
   
-  colorScemeArr : null, // to switch light / dark of overlays - Specific code!!!
-  descArr : null,
+  this.colorScemeArr = null; // to switch light / dark of overlays - Specific code!!!
+  this.descArr = null;
   
-  imgWidth : null, // used the same width for all slides / images
+  this.imgWidth = null; // used the same width for all slides / images
   
-  init : function() {
-    this.slideShowSceneDiv = document.getElementById("slideShow_scene");
+	this.slideShowSceneDiv = slideShowSceneDiv;
+	
+	this.init = function() {
     if (!this.slideShowSceneDiv)
       return;
   
     // widgetSlider used for small images (not slides) too.
     this.widgetSlider = new WidgetSlider(this.slideShowSceneDiv, this.onslidingFinish, this.onslidingHalfFinish);
   
-    var pager = document.getElementById("slides_pager");
+	  var parent = this.slideShowSceneDiv.parentNode;
+    var pager = getChildByClassName(parent, "slides_pager");
     if (!pager)
       return;
     this.pagerSlots = pager.getElementsByTagName("a");  
-    this.slideShowStoreDiv = document.getElementById("slideShow_store");  
+    this.slideShowStoreDiv = getChildByClassName(parent, "slideShow_store");  
     this._prepareSlides();
 
     addEvent(pager, "click", this.onPagerClick, false);
 
     if (ExecJS.isObjectTotallyVisible(this.slideShowSceneDiv)) // slideshow on closed tab!
-      this.timerId = setTimeout(this.rotate, this.DELAY / 2);
-  },
+      this.timerId = setTimeout(this.rotate, BacklinkImagesSlideshow.DELAY / 2);
+  }
   
-  _prepareSlides : function() {
+  this._prepareSlides = function() {
     var images = this.slideShowStoreDiv.getElementsByTagName("img");
     this.maxSlideIdx = images.length; // == initial slide + stored slides
 
@@ -10151,20 +10190,20 @@ var BacklinkImagesSlideshow = {
       this.widgetSlider.createNewSlide(images[0]);
     }
     return true;
-  },
+  }
   
   // used with Slideshow on a Tab of property sheet
-  run : function() {
+  this.run = function() {
     this.fitWideShow();
     
     if (!this.pagerSlots)
       return;
     
-    this.timerId = setTimeout(this.rotate, this.DELAY);
-  },
+    this.timerId = setTimeout(this.rotate, BacklinkImagesSlideshow.DELAY);
+  }
   
   // show slide show over whole working area if need (used for Obval's coupon)
-  fitWideShow : function () {
+  this.fitWideShow = function () {
     var ropLeft = document.getElementById("ropLeft");
     if (ropLeft) {
       var parentTdWidth = getAncestorByTagName(this.slideShowSceneDiv, "td").offsetWidth;
@@ -10181,20 +10220,18 @@ var BacklinkImagesSlideshow = {
         this.slideShowSceneDiv.parentNode.style.marginRight = "-10px";
       }
     }
-  },
-  stop : function() {
+  }
+  this.stop = function() {
     clearTimeout(this.timerId);
     var ropLeft = document.getElementById("ropLeft");
     if (ropLeft)
       ropLeft.style.display = "";
-  },
+  }
 
   // newImageIdx for manual paging
   // imgSrc used to show 1st slide on tab
   // manual paging means $t.loopsCounter > $t.MAX_LOOPS
-  rotate : function(newImageIdx, imgSrc) {
-    var $t = BacklinkImagesSlideshow;
-
+  this.rotate = function(newImageIdx, imgSrc) {
     // make manual pagging faster
     var accelaration =  ($t.isManualPaging()) ? 5 : 1;
     // additinal slide is a slide created from small image, not included into 'automatic' slide show
@@ -10230,20 +10267,19 @@ var BacklinkImagesSlideshow = {
       $t.widgetSlider.insertNextSlide(null, $t.curImageIdx);
       $t.widgetSlider.showNextSlide(accelaration);
     }
-  },
+  }
   
-  onPagerClick : function(event) {
-    var $t = BacklinkImagesSlideshow;
+  this.onPagerClick = function(event) {
     var a = getEventTarget(event, "a");
     var idx = getSiblingIndex(a);
     $t.setSlide(idx);
-  },
-  onMainThumbClick : function() {
+  }
+  this.onMainThumbClick = function() {
     this.setSlide(0);
     this.fitWideShow();
-  },
+  }
   
-  onThumbItemClick : function(event) {
+  this.onThumbItemClick = function(event) {
     var target = getEventTarget(event);
     var imgSrc = this.getImageSrc(target.style.backgroundImage);
     var imgName = getFileName(imgSrc);
@@ -10264,29 +10300,27 @@ var BacklinkImagesSlideshow = {
     
     this.fitWideShow();
     this.setSlide(idx, imgSrc);
-  },
+  }
   
-  getImageSrc : function(thumbSrc) {
+  this.getImageSrc = function(thumbSrc) {
     var src = thumbSrc.replace("url(", "").replace(")", "").replace(/"/g, "").replace("thumbnail/", "").replace("thumbnail-_/", "").replace(/_featured\.\w{3,3}$/, "");
     if (src.lastIndexOf(".") != src.length - 4)
       src += ".jpg"; // in some cases thumbnail does not contain extention of the image then append .JPG
     return src;
-  },
+  }
 
-  setSlide : function(idx, imgSrc) {
-    this.loopsCounter = this.MAX_LOOPS + 1; // to stop automatic paging
+  this.setSlide = function(idx, imgSrc) {
+    this.loopsCounter = BacklinkImagesSlideshow.MAX_LOOPS + 1; // to stop automatic paging
     clearTimeout(this.timerId);
     this.rotate(idx, imgSrc);
-  },
+  }
   
-  stopAutomaticSiding : function() {
+  this.stopAutomaticSiding = function() {
     clearTimeout(this.timerId);
-    this.loopsCounter = this.MAX_LOOPS + 1;
-  },
+    this.loopsCounter = BacklinkImagesSlideshow.MAX_LOOPS + 1;
+  }
   
-  onslidingHalfFinish : function() {
-    var $t = BacklinkImagesSlideshow;
-    
+  this.onslidingHalfFinish = function() {
     if ($t.descArr) {
       if ($t.descArr[$t.curImageIdx] != null) {
       $t.descOverlay.innerHTML = $t.descArr[$t.curImageIdx];
@@ -10310,16 +10344,15 @@ var BacklinkImagesSlideshow = {
     var numberSoldContainer = getChildById(remainingTimeContainer, "number_sold_container")
     if (numberSoldContainer)
       numberSoldContainer.className = $t.colorScemeArr[$t.curImageIdx];
-  },
+  }
   
-  onslidingFinish: function(){
-    var $t = BacklinkImagesSlideshow;
+  this.onslidingFinish = function(){
     clearTimeout($t.timerId);
     if (!$t.isManualPaging()) 
-      $t.timerId = setTimeout($t.rotate, $t.DELAY);
-  },
-  isManualPaging : function() {
-    return this.loopsCounter > this.MAX_LOOPS;
+      $t.timerId = setTimeout($t.rotate, BacklinkImagesSlideshow.DELAY);
+  }
+  this.isManualPaging = function() {
+    return this.loopsCounter > BacklinkImagesSlideshow.MAX_LOOPS;
   }
 }
 
