@@ -14,7 +14,7 @@
       </td>
     </tr>
     <!--where value="getContact() != null &amp;&amp; getContact().vendor != null"-->
-      <where value="getRequest().getParameter('cbUri') == null || getRequest().getParameter('couponId') != null">
+      <where value="getRequest().getParameter('uri') == null || getRequest().getParameter('redeemId') != null">
         <tr>
           <td align="center" style="background-color:#BBBBBB">
             <text text="Redeem a coupon" />
