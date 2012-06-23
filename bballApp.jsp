@@ -9,7 +9,7 @@
       var gameUri;
       var msg = document.getElementById('lablz_msg');
       var div = document.getElementById('lablz_data');
-      Lablz.init("bb5e644f22cad7f821787f30da36b84");
+      Lablz.init("c859b0a533a0b56f7c877c2522601c1d");
       if (window.location.hash.length == 0)
         Lablz.authenticate();
 
@@ -23,30 +23,22 @@
       var call = "m/BasketballGame?" + query;
       Lablz.call(call, "afterMadeResource");
 
-      // print the properties of a created resource
-      function afterMadeResource(json) {
-        gameUri = json._uri;  
-        if (gameUri == null)
-          div.innerHTML += "failed to make game, " + json.error.code + ": " + json.error.details;
-        Lablz.call(json._uri, "Lablz.printJson");
-      }
-
 //      editGame("BasketballGame/35181");
-//      function editGame(uri) {
-//        call = "e/" + uri + "?comment=" + encodeURIComponent("oh alright, everyone is welcome to play");
+//      function editGame(game) {
+//        call = "e/" + game + "?comment=" + encodeURIComponent("oh alright, everyone is welcome to play");
 //        Lablz.call(call, "lookupAndPrint");
 //      }
-
-      function lookupAndPrint(json) {
-        var gameUri = json._uri;  
-        if (gameUri == null)
-          div.innerHTML += "failed to make game, " + json.error.code + ": " + json.error.details;
-        Lablz.call(json._uri, "printProps");
-      }
-      
-      function printProps(json) {
-        Lablz.printJson(json, true);
-      }
+//
+//      function lookupAndPrint(json) {
+//        var gameUri = json._uri;  
+//        if (gameUri == null)
+//          div.innerHTML += "failed to make game, " + json.error.code + ": " + json.error.details;
+//        Lablz.call(json._uri, "printProps");
+//      }
+//      
+//      function printProps(json) {
+//        Lablz.printJson(json, true);
+//      }
 ]]>       
   </script>
 </div>
