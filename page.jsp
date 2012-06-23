@@ -45,6 +45,7 @@
   
   <cityAdsPixel />
   <clickburner />
+  <script type="text/javascript" src="http://s.skimresources.com/js/27470X860433.skimlinks.js"></script>	
   </body>
 </html>
 
