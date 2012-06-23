@@ -1,8 +1,8 @@
 <html>
 <head>
-  <!--script src="http://mark.obval.com/obval/jsonUtils.js" type="text/javascript"></script>
+  <!--script src="http://aurora2.lablz.com/jsonUtils.js" type="text/javascript"></script>
   <script src="http://vkontakte.ru/js/api/xd_connection.js?3" type="text/javascript"></script>
-  <script src="http://mark.obval.com/obval/lablzapi.js?1" type="text/javascript"></script-->
+  <script src="http://aurora2.lablz.com/lablzapi.js?1" type="text/javascript"></script-->
 </head>
 
 <body>
@@ -52,13 +52,13 @@
       }
       
       function getImageUrl(imgUri) {
-        return 'http://mark.obval.com/obval/' + imgUri.substring(imgUri.indexOf('url=') + 4);
+        return 'http://aurora2.lablz.com/' + imgUri.substring(imgUri.indexOf('url=') + 4);
       }
 
       function selfContainedExample() {
         if (window.location.hash.length == 0) {
-          var appID = "rpt6nb8qfg1foj1s6vh3e6ci5k6tnj";
-          var path = 'https://mark.obval.com/obval/api/v1/authenticate?';
+          var appID = "749b5ee823d75a5967b04c594bd560da";
+          var path = 'https://aurora2.lablz.com/api/v1/authenticate?';
           var queryParams = ['client_id=' + appID, 'redirect_uri=' + window.location, 'response_type=token']; //, 'state=' + ]; // CSRF protection
           var query = queryParams.join('&');
           var url = path + query;
@@ -68,21 +68,25 @@
           var access_token = window.location.hash.substring(1); // sth like 'access_token=erefkdsnfkldsjflkdsjflsdfs'
 
           // purchasing history example
-//          var path = "https://mark.obval.com/obval/api/v1/me/purchasingHistory?";
-//          var queryParams = [access_token, 'callback=printCouponTitlesAndPics', 'select=featured,title'];
+//         var path = "https://aurora2.lablz.com/api/v1/me/purchasingHistory?";
+//         var queryParams = [access_token, 'callback=printCouponTitlesAndPics', 'select=featured,title'];
+//          var queryParams = [access_token, 'callback=printJson', 'select=featured,title,adjustedTotal'];
 
           // profile example
-//          var path = "https://mark.obval.com/obval/api/v1/me?";
+//          var path = "https://aurora2.lablz.com/api/v1/me?";
 //          var queryParams = [access_token, 'callback=scareUser', 'select=firstName,lastName,email,photo'];
+//          var queryParams = [access_token, 'callback=printJson', 'select=all'];
+//          really this just builds a url:
+//          htpp://aurora2.lablz.com/api/v1/me?select=all&callback=printJson&access_token=....
 
           // list people examples - pick 'path' and one of 'queryParams'
-//          var path = "https://mark.obval.com/obval/api/v1/Person?";
+          var path = "https://aurora2.lablz.com/api/v1/Person?";
 //          var queryParams = [access_token, 'callback=printNamesAndEmails', 'select=email,firstName,lastName,gender', 'where=' + encodeURIComponent("OR (lastName=null,firstName=null), OR (email='stupid@gmail.com',email IN ('mvayngrib+ab@gmail.com', 'mvayngrib+ac@gmail.com', 'mvayngrib+ad@gmail.com')), OR (gender='Male',gender=null)")];
 //          var queryParams = [access_token, 'callback=printNamesAndEmails', 'select=email,firstName,lastName,gender', 'where=' + encodeURIComponent("OR (email='mark.vayngrib@lablz.com',email IN ('mvayngrib+ab@gmail.com', 'mvayngrib+ac@gmail.com', 'mvayngrib+ad@gmail.com'))")];
-//          var queryParams = [access_token, 'callback=printJson', 'select=email,firstName,lastName,vendor', 'where=' + encodeURIComponent("OR (vendor='uri:Vendor/2',vendor='uri:Vendor/1')")];
+          var queryParams = [access_token, 'callback=printJson', 'select=email,firstName,lastName,vendor', 'where=' + encodeURIComponent("vendor IN ('uri:Vendor/2','uri:Vendor/34422')")];
 
           // print json example
-//          var path = "https://mark.obval.com/obval/api/v1/me?";
+//          var path = "https://aurora2.lablz.com/api/v1/me?";
 //          var queryParams = [access_token, 'callback=printJson', 'select=all'];
 
           // make comment example
