@@ -2328,6 +2328,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .rounded_rect_tbl .tags .caret { text-align:left; border: none; outline: 0 none; }
 
 /********** Slide Show *********/
+.slideShow { position: relative; display: inline-block; }
 .slides_pager { 
   position: absolute;
   z-index: 10; 
