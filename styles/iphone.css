@@ -261,7 +261,7 @@ tr.dark  {background-color:#eeeeee; /*height: 35px;*/ }
 
 
 #bottom_toolbar { background: #000; background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#74797F), to(#000000)); margin: 0; height: 35px; text-align: center; width: 100%; }
-#bottom_toolbar img { margin: 2px 35px 3px 35px; }
+#bottom_toolbar img { margin: 2px 20px 3px 20px; padding-bottom: 3px;}
 
 .panel_block, .panel_block > table, .panel_block .frame { height: 100%; }
 
