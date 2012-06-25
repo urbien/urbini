@@ -1621,7 +1621,7 @@ var Boost = {
 	        regDiv.className = "mobile_dlg";
 	        document.body.appendChild(regDiv);
 	        scrollTo(0, 1);
-	        setDivVisible(event, regDiv, null, hotspot);
+	        setDivVisible(event, regDiv, hotspot);
 	        // execute inner script for social nets
 	        ExecJS.runDivCode(regDiv);
 	        // download hashScript.js on demand with timestamp suffix
@@ -2015,8 +2015,8 @@ var MobilePageAnimation = {
     div.style.minHeight = getWindowSize()[1] + 'px';
     setTransformProperty(div, "scale(0.1)");
     div.style.visibility = "visible";
-
-    setTransitionCallback(div, MobilePageAnimation._onZoomInDialogEnd); 
+    if (!isDialogOnPage(div))
+      setTransitionCallback(div, MobilePageAnimation._onZoomInDialogEnd); 
     setTimeout(function f() { setTransitionProperty(div, "all 0.8s ease-in-out"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
   },
    _onZoomInDialogEnd : function(event) {
