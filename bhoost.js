@@ -1597,11 +1597,12 @@ var Boost = {
       // then it is data entry dialog with error message.
       if (content.indexOf("panel_block") != -1) {
         // "roll back" appending of new div
-        div.parentNode.removeChild(div);
-        delete $t.urlToDivs[$t.currentUrl];
-        $t.browsingHistoryPos--;
-        $t.currentUrl = $t.browsingHistory[$t.browsingHistoryPos];
-      
+				if (div.parentNode) {
+					div.parentNode.removeChild(div);
+					delete $t.urlToDivs[$t.currentUrl];
+					$t.browsingHistoryPos--;
+					$t.currentUrl = $t.browsingHistory[$t.browsingHistoryPos];
+				}
         DataEntry.onDataEntryLoaded(event, div, hotspot, content, null, true);
         // hides the location bar
         scrollTo(0, 1);
