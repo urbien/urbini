@@ -12668,7 +12668,7 @@ function initFacebookLikeHandler(serverUrl) {
     var params = 'submit=y&.initialized=true&.initialized_select=true&.initialized_verified=y&-$action=showPropertiesForEdit&-fbLike=y';
     params +=  "&uri=" + response;
     var url = serverUrl + '/proppatch';
-    setTimeout('postRequest(null, url, params, null, null, null)',0);
+//    setTimeout('postRequest(null, url, params, null, null, null)',0);
     postRequest(null, url, params, null, null, null);
 //    setTimeout('postRequest(null, \"' + url + '\", \"' + params + '\", null, null, null)',0);
   });

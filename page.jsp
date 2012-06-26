@@ -45,7 +45,58 @@
   
   <cityAdsPixel />
   <clickburner />
-  <script type="text/javascript" src="http://s.skimresources.com/js/27470X860433.skimlinks.js"></script>	
+  <!--script type="text/javascript" src="http://s.skimresources.com/js/27470X860433.skimlinks.js"></script-->
+
+  <!-- START CloudSponge -->  
+  <!-- Include these scripts to import address books with CloudSponge -->
+  <!--script type="text/javascript" src="https://api.cloudsponge.com/address_books.js"></script>
+  <script type="text/javascript" charset="utf-8"-->
+  <![CDATA[
+//    var csPageOptions = {
+//      domain_key:"ZV2PFWE5BLX4EZQKZ4S8", 
+//      afterSubmitContacts : function(contacts, source, owner) {
+//        var json = [];
+//        for (var i = 0; i < contacts.length; i++) {
+//          var contact = contacts[i];
+//          json.push({first_name: contact.first_name, last_name: contact.last_name, email: contact.primaryEmail()});
+//        }
+//        
+//        postRequest(null, "social/importContacts", "contacts=" + encodeURIComponent(JSON.stringify(json)), null, null, afterImport);
+//      },  
+//    };
+//    
+//    afterImport = function(response) {
+//      toConsole("afterImport");
+//      toConsole(response);
+//    }
+  ]]>       
+  </script>
+
+  <!-- Any link with a class="cs_import" will start the import process -->
+  <!--a class="cs_import">Add from Address Book</a>
+  
+  <div id="emailsList"></div>
+  <a href="javascript:window.open('http://mark.obval.com/urbien/social/cloudsponge?service=yahoo', '', 'width=900,height=600,resizable,scrollbars')">Import Yahoo Contacts</a>
+  <br />
+  <a href="javascript:window.open('http://mark.obval.com/urbien/social/cloudsponge?service=gmail', '', 'width=900,height=600,resizable,scrollbars')">Import GMail Contacts</a>
+  <br />
+  <a href="javascript:window.open('http://mark.obval.com/urbien/social/cloudsponge?service=windowslive', '', 'width=900,height=600,resizable,scrollbars')">Import WindowsLive Contacts</a-->
+
+  <script type="text/javascript" charset="utf-8">
+  <![CDATA[
+//    window.startImport = function(params) {
+//      toConsole("starting import...");
+//      postRequest(null, "social/cloudsponge", params, null, null, printEmails);
+//    }
+//    
+//    window.printEmails = function(e, div, hotspot, content, url) {
+//      if (content == null)
+//        return;
+//      
+//      document.getElementById("emailsList").innerHTML = content;
+//    }
+  ]]>
+  </script>
   </body>
 </html>
 
