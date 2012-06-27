@@ -49,26 +49,26 @@
 
   <!-- START CloudSponge -->  
   <!-- Include these scripts to import address books with CloudSponge -->
-  <!--script type="text/javascript" src="https://api.cloudsponge.com/address_books.js"></script>
-  <script type="text/javascript" charset="utf-8"-->
+  <!--script type="text/javascript" src="https://api.cloudsponge.com/address_books.js"></script-->
+  <script type="text/javascript" charset="utf-8">
   <![CDATA[
-//    var csPageOptions = {
-//      domain_key:"ZV2PFWE5BLX4EZQKZ4S8", 
-//      afterSubmitContacts : function(contacts, source, owner) {
-//        var json = [];
-//        for (var i = 0; i < contacts.length; i++) {
-//          var contact = contacts[i];
-//          json.push({first_name: contact.first_name, last_name: contact.last_name, email: contact.primaryEmail()});
-//        }
-//        
-//        postRequest(null, "social/importContacts", "contacts=" + encodeURIComponent(JSON.stringify(json)), null, null, afterImport);
-//      },  
-//    };
-//    
-//    afterImport = function(response) {
-//      toConsole("afterImport");
-//      toConsole(response);
-//    }
+    var csPageOptions = {
+      domain_key:"ZV2PFWE5BLX4EZQKZ4S8", 
+      afterSubmitContacts : function(contacts, source, owner) {
+        var json = [];
+        for (var i = 0; i < contacts.length; i++) {
+          var contact = contacts[i];
+          json.push({first_name: contact.first_name, last_name: contact.last_name, email: contact.primaryEmail()});
+        }
+        
+        postRequest(null, "social/importContacts", "contacts=" + encodeURIComponent(JSON.stringify(json)), null, null, afterImport);
+      },  
+    };
+    
+    afterImport = function(response) {
+      toConsole("afterImport");
+      toConsole(response);
+    }
   ]]>       
   </script>
 
@@ -84,19 +84,20 @@
 
   <script type="text/javascript" charset="utf-8">
   <![CDATA[
-//    window.startImport = function(params) {
-//      toConsole("starting import...");
-//      postRequest(null, "social/cloudsponge", params, null, null, printEmails);
-//    }
-//    
-//    window.printEmails = function(e, div, hotspot, content, url) {
-//      if (content == null)
-//        return;
-//      
-//      document.getElementById("emailsList").innerHTML = content;
-//    }
+    window.startImport = function(params) {
+      toConsole("starting import...");
+      postRequest(null, "social/cloudsponge", params, null, null, printEmails);
+    }
+    
+    window.printEmails = function(e, div, hotspot, content, url) {
+      if (content == null)
+        return;
+      
+      document.getElementById("emailsList").innerHTML = content;
+    }
   ]]>
   </script>
+  <authenticateByFacebook />
   </body>
 </html>
 
