@@ -1,5 +1,8 @@
 <!-- toolbar -->
 <div id="bottom_toolbar">
+	   <a href="javascript: ;" onclick="Mobile.showActionMenu();">
+        <img src="icons/action_gear1.png"/>
+    </a>
     <a href="javascript: ;" onclick="window.location.replace(getBaseUri());">
         <img src="../images/skin/iphone/home_button.png"/>
     </a>
