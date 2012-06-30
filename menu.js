@@ -3981,7 +3981,7 @@ var DataEntry = {
   
   // parameters provided by XHR and not all used
   onDataEntryLoaded : function(event, parentDiv, hotspot, html, url, params) {
-    if (!html) {
+	  if (!html) {
       alert("Data Entry: Server returned empty response!");
       return; // possible (server) error!
     }
@@ -3993,7 +3993,7 @@ var DataEntry = {
       // window.scrollTo(0, 0);
     }
     else 
-      $t.currentUrl = $t.loadingUrl;
+      $t.currentUrl = $t.loadingUrl || url;
       
     $t.loadingUrl = null;
     div = getDomObjectFromHtml(html, "className", "panel_block");
@@ -4082,7 +4082,7 @@ var DataEntry = {
     if (!onSubmit) {
       // check if entered unsaved data in a dialog
       var curDataStr = this._getFormDataStr(this.dataEntryArr[key], false);
-      if (this.initDataStr != curDataStr) {
+			if (this.initDataStr != curDataStr) {
         BrowserDialog.setCallbackThis(this);
         BrowserDialog.setCallbackArguments(key, onSubmit);
         BrowserDialog.confirm("&[You have entered data];.<br /><br />&[Do you want to close the dialog without saving];?", this.continueHide)
@@ -4402,7 +4402,13 @@ var PlainDlg = {
     if (isSecondClick)
       return;
     
-    this.curUrl = id; 
+    this.curUrl = id;
+    
+		// empty dialog before new content insertion. Need?!!!
+//    var curContentElem = this.dlgDiv.firstChild;
+//    if (curContentElem)
+//      this.dlgDiv.removeChild(curContentElem);
+   
     this.dlgDiv.appendChild(this.dlgArr[id]);
     if (toInitialize)
       FormProcessor.initForms(this.dlgDiv);
@@ -4465,7 +4471,7 @@ var PlainDlg = {
       window.location.reload();
     
   },
-  
+	
   hide : function (e) {
     var $t = PlainDlg;
     if ($t.dlgDiv == null) // || $t.curUrl == null
@@ -4479,9 +4485,6 @@ var PlainDlg = {
       $t.dlgArr = new Array();
     
     var curContentElem = $t.dlgDiv.firstChild;
-
-    if (curContentElem)
-      $t.dlgDiv.removeChild(curContentElem);
     
     // store content
     if ($t.curUrl && $t.curUrl.indexOf("-menu=y") != -1)
@@ -5015,14 +5018,14 @@ var TouchDlgUtil = {
 
     DataEntry.hide();
     if (!(isFtsAutocomplete && Browser.mobile))
-      Filter.hide();
+   	 Filter.hide();
     PlainDlg.hide();
     SubscribeAndWatch.hide();
     FtsAutocomplete.hide();
     if (!Browser.mobile)   
       Tooltip.hide(true);
     this.bleachBlueRow();
-    
+
     if (this.isCurDlgOnPage() == false) {
       this.bleachGreyRow();
       this.curDlgDiv = null;
@@ -7001,7 +7004,7 @@ function setDivVisible(event, div, hotspot, offsetX, offsetY, hotspotDim, positi
     document.body.appendChild(div);
 
   if (Browser.mobile && div.id != "loading") {
-    MobilePageAnimation.showDialog(div);
+     MobilePageAnimation.showDialog(div);
     return;
   }
 	

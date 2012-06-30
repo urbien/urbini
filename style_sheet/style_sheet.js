@@ -349,7 +349,8 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 		if(sampleDiv.style.color != "")
 		  style += "color: " + sampleDiv.style.color + "; ";
 		// 6. background color
-		if(sampleDiv.style.backgroundColor != "")
+		if(sampleDiv.style.backgroundColor != "" && 
+		    sampleDiv.style.backgroundColor != "transparent")
 		  style += "background-color: " + sampleDiv.style.backgroundColor + "; ";
 		// border
 		var brdStl = this.getBorderStyleStr();
@@ -562,7 +563,7 @@ function StyleSheet(parentDivId, sampleDivId, formName, fieldName)
 	
 	this.setBackgroundColor = function(colorStr) {
 	  if(colorStr.length == 0) // "no background"
-	    sampleDiv.style.backgroundColor = "transparent";
+	    sampleDiv.style.backgroundColor = ""; //"transparent";
 	  else
 	    sampleDiv.style.backgroundColor = colorStr;
 		i_am.putStyleStr();

@@ -37,13 +37,13 @@ if (window.Node && Node.prototype && !Node.prototype.contains) {
 }
 
 /*
-000000  0  	Elements are identical.
-000001 	1 	The nodes are in different documents (or one is outside of a document).
-000010 	2 	Node B precedes Node A.
-000100 	4 	Node A precedes Node B.
-001000 	8 	Node B contains Node A.
-010000 	16 	Node A contains Node B.
-100000 	32 	For private use by the browser.
+000000  0   Elements are identical.
+000001  1   The nodes are in different documents (or one is outside of a document).
+000010  2   Node B precedes Node A.
+000100  4   Node A precedes Node B.
+001000  8   Node B contains Node A.
+010000  16  Node A contains Node B.
+100000  32  For private use by the browser.
 
 example: a contains b returns 20 (4 + 16)
  */
@@ -65,7 +65,7 @@ function comparePosition(a, b){
 * String extension
 ************************************************/
 String.prototype.startsWith = function (s){
-	return this.indexOf(s) == 0;
+  return this.indexOf(s) == 0;
 }
 String.prototype.endsWith = function(s){
   var reg = new RegExp(s + "$");
@@ -206,7 +206,7 @@ Browser.mobile    = Browser.palm || Browser.android || (Browser.mobileSafari && 
 // http://developer.apple.com/internet/webcontent/xmlhttpreq.html
 var lastRequest;
 function postRequest(event, url, parameters, div, hotspot, callback, noCache, noLoadingCue) {
-	if (url == null)
+  if (url == null)
     throw new Error('postRequest url parameter is null');
   if (url == 'about:blank')
     throw new Error('postRequest url parameter is: ' + url);
@@ -255,7 +255,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
   var addLineItem = document.location.href.indexOf('addLineItem.html?') != -1;
 
   if (!noLoadingCue)
-		LoadingIndicator.show(hotspot);
+    LoadingIndicator.show(hotspot);
 
   if (typeof XMLHttpRequest != 'undefined' && window.XMLHttpRequest) { // Mozilla,
                                                                         // Safari,...
@@ -279,8 +279,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
     } catch (e) {}
   }
 
-	// noLoadingCue means to load in background.
-	// Allow multiple request in background, for example, widget rotating
+  // noLoadingCue means to load in background.
+  // Allow multiple request in background, for example, widget rotating
   if (!noLoadingCue && callInProgress(lastRequest)) {
     // lastRequest.abort();
     // alert("please wait till your last request is processed");
@@ -296,8 +296,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
                                       // 1-Loading, 2-Loaded, 3-Interactive
       return;
     // stop Loading cue
-		if (!noLoadingCue)
-			LoadingIndicator.hide();
+    if (!noLoadingCue)
+      LoadingIndicator.hide();
 
     var location;
     
@@ -328,8 +328,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
     else if (status == 200) {
       openAjaxStatistics(event, http_request);
       //Boost.view.setProgressIndeterminate(false);
-			if (callback)
-			 callback(clonedEvent, div, hotspot, http_request.responseText, url, parameters, http_request);
+      if (callback)
+       callback(clonedEvent, div, hotspot, http_request.responseText, url, parameters, http_request);
     }
     else if (status == 302) {
       try {location = http_request.getResponseHeader('Location');} catch(exception) {}
@@ -360,16 +360,16 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
 //        Boost.log("recursive redirect to " + url);
         return;
       }
-			
-			// created resource from options panel
-			if (location.indexOf("$createdForResource=1") != -1) {
-				if (ListBoxesHandler.setNewOptionResource(location) == true)
-					return;
-			}
-			
+      
+      // created resource from options panel
+      if (location.indexOf("$createdForResource=1") != -1) {
+        if (ListBoxesHandler.setNewOptionResource(location) == true)
+          return;
+      }
+      
       var paintInPage;
       if (Browser.mobile)
-	  		paintInPage = true;
+        paintInPage = true;
       if (!paintInPage) {
         try { paintInPage = http_request.getResponseHeader('X-Paint-In-Page');} catch (exc) {}
 //        Boost.log('got back on postrequest, paintinpage ' + paintInPage);
@@ -382,10 +382,10 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
         var repaintDialog = location.indexOf('-addItems=') != 1;
         if (repaintDialog) {
           hotspot = null; // second time do not show 'loading...' popup
-		  	// stay on current page and resubmit request using URL from Location header
-					var urlParts = location.split('?');
-					
-					postRequest(clonedEvent, urlParts[0], urlParts[1], div, hotspot, callback);
+        // stay on current page and resubmit request using URL from Location header
+          var urlParts = location.split('?');
+          
+          postRequest(clonedEvent, urlParts[0], urlParts[1], div, hotspot, callback);
         }
         else {
           document.location = location;  // reload full page
@@ -647,23 +647,23 @@ function getTop(overlay, offsettype){
 // TODO: 1)22 takes into acount scrollbar width that can be not preset
 // 2) Possible to use it in setDivVisible function!
 function getElemInsideScreenPosition(x, y, elem) {
-	var scXY = getScrollXY();
-	var wndSize = getWindowSize();
+  var scXY = getScrollXY();
+  var wndSize = getWindowSize();
 
-	var xEdge = wndSize[0] + scXY[0] - elem.clientWidth - 22;
-	if (x > xEdge - 10)
-		x = xEdge - 10;
-	if (x < scXY[0] + 10)
-		x = scXY[0] + 10;	
-		
-	var yEdge = wndSize[1] + scXY[1] - elem.clientHeight - 22;
-	if (y > yEdge - 10)
-		y = yEdge - 10;
-	if (y < scXY[1] + 10)
-		y = scXY[1] + 10;
-	
-	return [x, y];			
-}				
+  var xEdge = wndSize[0] + scXY[0] - elem.clientWidth - 22;
+  if (x > xEdge - 10)
+    x = xEdge - 10;
+  if (x < scXY[0] + 10)
+    x = scXY[0] + 10; 
+    
+  var yEdge = wndSize[1] + scXY[1] - elem.clientHeight - 22;
+  if (y > yEdge - 10)
+    y = yEdge - 10;
+  if (y < scXY[1] + 10)
+    y = scXY[1] + 10;
+  
+  return [x, y];      
+}       
 
 /*********************************************
 * Events and event target util functions
@@ -697,11 +697,11 @@ function getEventTarget(e, expectedTagName) {
   while (target.nodeType != 1) {
     target = target.parentNode;
   }
-	if (typeof expectedTagName == 'undefined')
-  	return target;
-	if (!target.tagName || target.tagName.toLowerCase() != expectedTagName.toLowerCase())
-		return null;
-	return target;		
+  if (typeof expectedTagName == 'undefined')
+    return target;
+  if (!target.tagName || target.tagName.toLowerCase() != expectedTagName.toLowerCase())
+    return null;
+  return target;    
 }
 
 /**
@@ -898,74 +898,74 @@ function swapNodes(node1, node2) {
   var nextSibling1 = node1.nextSibling;
   var nextSibling2 = node2.nextSibling;
 
-	if (parent1) {
-		if (nextSibling1) 
-			parent1.insertBefore(node2, nextSibling1);
-		else 
-			parent1.appendChild(node2);
-	}
-	else
-		parent2.removeChild(node2);
-		
-	if (parent2) {
-  	if (nextSibling2) 
-  		parent2.insertBefore(node1, nextSibling2);
-  	else 
-  		parent2.appendChild(node1);
+  if (parent1) {
+    if (nextSibling1) 
+      parent1.insertBefore(node2, nextSibling1);
+    else 
+      parent1.appendChild(node2);
   }
-	else
-		parent1.removeChild(node1);
+  else
+    parent2.removeChild(node2);
+    
+  if (parent2) {
+    if (nextSibling2) 
+      parent2.insertBefore(node1, nextSibling2);
+    else 
+      parent2.appendChild(node1);
+  }
+  else
+    parent1.removeChild(node1);
 }
 
 function getNextSibling(obj, makeLoopIfNeed) {
-	if (!obj)
-		return null;
-	var nextObj = obj;
+  if (!obj)
+    return null;
+  var nextObj = obj;
   do nextObj = nextObj.nextSibling;
   while (nextObj && nextObj.nodeType != 1);
-	
-	if (makeLoopIfNeed && nextObj == null )
-		return getFirstChild(obj.parentNode);
-		
+  
+  if (makeLoopIfNeed && nextObj == null )
+    return getFirstChild(obj.parentNode);
+    
   return nextObj;
 }
 
 function getPreviousSibling(obj, makeLoopIfNeed) {
-	if (!obj)
-		return null;
-	var prevObj = obj;	
+  if (!obj)
+    return null;
+  var prevObj = obj;  
   do prevObj = prevObj.previousSibling;
   while (prevObj && prevObj.nodeType != 1);
   
-	if (makeLoopIfNeed && prevObj == null )
-		return getLastChild(obj.parentNode);
-	
-	return prevObj;
+  if (makeLoopIfNeed && prevObj == null )
+    return getLastChild(obj.parentNode);
+  
+  return prevObj;
 }
 function getSiblingIndex(obj) {
-	if (!obj)
-		return null;
-	var idx  = 0;
-	while ((obj = getPreviousSibling(obj)) != null)
-		idx++;
-	return idx;
+  if (!obj)
+    return null;
+  var idx  = 0;
+  while ((obj = getPreviousSibling(obj)) != null)
+    idx++;
+  return idx;
 }
 function getFirstChild(parent) {
-	if (!parent)
-		return null;
-	var child = parent.firstChild;
-	if (!child)
-		return null;
-	return child.nodeType == 1 ? child : getNextSibling(child);
+  if (!parent)
+    return null;
+  var child = parent.firstChild;
+  if (!child)
+    return null;
+  return child.nodeType == 1 ? child : getNextSibling(child);
 }
 
 function getLastChild(parent) {
-	if (!parent)
-		return null;
-	var child = parent.lastChild;
-	if (!child)
-		return null;
-	return child.nodeType == 1 ? child : getPreviousSibling(child);
+  if (!parent)
+    return null;
+  var child = parent.lastChild;
+  if (!child)
+    return null;
+  return child.nodeType == 1 ? child : getPreviousSibling(child);
 }
 
 function insertAfter(parent, newElement, referenceElement) {
@@ -973,78 +973,78 @@ function insertAfter(parent, newElement, referenceElement) {
 }
 // returns a child of any nesting.
 function getChildById(parent, id) {
-	return getChildByAttribute(parent, "id", id);
+  return getChildByAttribute(parent, "id", id);
 }
 function getChildByClassName(parent, className) {
-	return this.getChildByAttribute(parent, "className", className);
+  return this.getChildByAttribute(parent, "className", className);
 }
 
 // note: returns object started from requested className!
 // attribValue - string or array of strings
 function getChildByAttribute(parent, attribName, attribValue) {
-	  if(!parent)
-	    return null;
-		
-		if (typeof attribValue == 'string') {
-			attribValue = [attribValue];
-		}
-					
-		for (var n = 0; n < attribValue.length; n++) {
-	  	if (parent[attribName] == attribValue[n]) 
-	  		return parent;
-	  	
-	  	if (attribName == "className" && parent[attribName] &&
-	  	parent[attribName].indexOf(attribValue[n] + " ") != -1) 
-	  		return parent;
-  	}
+    if(!parent)
+      return null;
+    
+    if (typeof attribValue == 'string') {
+      attribValue = [attribValue];
+    }
+          
+    for (var n = 0; n < attribValue.length; n++) {
+      if (parent[attribName] == attribValue[n]) 
+        return parent;
+      
+      if (attribName == "className" && parent[attribName] &&
+      parent[attribName].indexOf(attribValue[n] + " ") != -1) 
+        return parent;
+    }
   
-	  var children = parent.childNodes;
-	  var len = children.length;
-	  if(len == 0)
-		  return null;
-	  
-		for (var n = 0; n < attribValue.length; n++) {
-			for (var i = 0; i < len; i++) {
-				if (children[i].childNodes.length != 0) {
-					var reqChild = null;
-					if ((reqChild = getChildByAttribute(children[i], attribName, attribValue[n])) != null) 
-						return reqChild;
-				}
-				
-				if (children[i].nodeType != 3 && children[i][attribName] == attribValue[n]) 
-					return children[i];
-				
-				if (children[i].nodeType != 3 && attribName == "className" && children[i][attribName] &&
-				children[i][attribName].indexOf(attribValue[n] + " ") != -1) 
-					return children[i];
-			}
-		}
-	  
-	  return null;
+    var children = parent.childNodes;
+    var len = children.length;
+    if(len == 0)
+      return null;
+    
+    for (var n = 0; n < attribValue.length; n++) {
+      for (var i = 0; i < len; i++) {
+        if (children[i].childNodes.length != 0) {
+          var reqChild = null;
+          if ((reqChild = getChildByAttribute(children[i], attribName, attribValue[n])) != null) 
+            return reqChild;
+        }
+        
+        if (children[i].nodeType != 3 && children[i][attribName] == attribValue[n]) 
+          return children[i];
+        
+        if (children[i].nodeType != 3 && attribName == "className" && children[i][attribName] &&
+        children[i][attribName].indexOf(attribValue[n] + " ") != -1) 
+          return children[i];
+      }
+    }
+    
+    return null;
 }
 
 // return "parent" if it is of required tagName
 function getChildByTagName(parent, tagName) {
-	if(!parent)
-	  return null;
+  if(!parent)
+    return null;
   tagName = tagName.toLowerCase();
-	if(parent.tagName.toLowerCase() == tagName)
-		return parent;
+  if(parent.tagName.toLowerCase() == tagName)
+    return parent;
 
-	var children = parent.childNodes;
-	var len = children.length;
-	if(len == 0)
-		return null;
-	for(var i = 0; i < len; i++) {
-		if(children[i].childNodes.length != 0) {
-			var reqChild = null;
-			if((reqChild = getChildByTagName(children[i], tagName)) != null)
-				return reqChild;
-		}
-		if(children[i].tagName && children[i].tagName.toLowerCase() == tagName)
-			return children[i];
-	}
-	return null;
+  var children = parent.childNodes;
+  var len = children.length;
+  if(len == 0)
+    return null;
+  for(var i = 0; i < len; i++) {
+    if(children[i].childNodes.length != 0) {
+      var reqChild = null;
+      if((reqChild = getChildByTagName(children[i], tagName)) != null)
+        return reqChild;
+    }
+    if(children[i].tagName && children[i].tagName.toLowerCase() == tagName)
+      return children[i];
+  }
+  return null;
 }
 
 function getAncestorById(child, id) {
@@ -1057,79 +1057,79 @@ function getAncestorByClassName(child, className) {
 // note: returns object started from requested className!
 // attribValue - string or array of strings
 function getAncestorByAttribute(child, attribName, attribValue) {
-	if(!child)
-	  return null;
-	var isArray = (typeof attribValue != 'string')
+  if(!child)
+    return null;
+  var isArray = (typeof attribValue != 'string')
 
-	if(isArray) {
-	  for (var i = 0; i < attribValue.length; i++) {
-			if (child[attribName] == attribValue[i]) 
-				return child;
-			
-			if (attribName == "className" && child[attribName] &&
-			child[attribName].indexOf(attribValue[i] + " ") != -1) 
-				return child;
-		}  
-	}
-	else {
-	  if(child[attribName] == attribValue)
-		  return child;
-		if (attribName == "className" && child[attribName] &&
-    	child[attribName].indexOf(attribValue + " ") != -1)
+  if(isArray) {
+    for (var i = 0; i < attribValue.length; i++) {
+      if (child[attribName] == attribValue[i]) 
+        return child;
+      
+      if (attribName == "className" && child[attribName] &&
+      child[attribName].indexOf(attribValue[i] + " ") != -1) 
+        return child;
+    }  
+  }
+  else {
+    if(child[attribName] == attribValue)
+      return child;
+    if (attribName == "className" && child[attribName] &&
+      child[attribName].indexOf(attribValue + " ") != -1)
       return child;   
   }
 
-	var parent;
-	while((parent = child.parentNode) != null) {
-		if(isArray) {
-  	  for (var i = 0; i < attribValue.length; i++) {
-		  	if (parent[attribName] == attribValue[i]) 
-		  		return parent;
-		  	
-		  	if (attribName == "className" && parent[attribName] &&
-		  	parent[attribName].indexOf(attribValue[i] + " ") != -1) 
-		  		return parent;
-		  }  
-		}
-		else {
-		  if(parent[attribName] == attribValue)
-			  return parent;
-			
-			if (attribName == "className" && parent[attribName] &&
+  var parent;
+  while((parent = child.parentNode) != null) {
+    if(isArray) {
+      for (var i = 0; i < attribValue.length; i++) {
+        if (parent[attribName] == attribValue[i]) 
+          return parent;
+        
+        if (attribName == "className" && parent[attribName] &&
+        parent[attribName].indexOf(attribValue[i] + " ") != -1) 
+          return parent;
+      }  
+    }
+    else {
+      if(parent[attribName] == attribValue)
+        return parent;
+      
+      if (attribName == "className" && parent[attribName] &&
          parent[attribName].indexOf(attribValue + " ") != -1)
       return parent;   
-		}
+    }
 
-		child = parent;
-	}
-	return null;
+    child = parent;
+  }
+  return null;
 }
 
 // enforceAncestor is not required used to get only Ancestor element
 function getAncestorByTagName(child, tagName, enforceAncestor) {
   tagName = tagName.toLowerCase();
-	if(child.tagName.toLowerCase() == tagName && enforceAncestor != true)
-		return child; // return "current" element
-	var parent;
-	while((parent = child.parentNode) != null) {
-		if(parent.tagName && parent.tagName.toLowerCase() == tagName)
-			return parent;
-		child = parent;
-	}
-	return null;
+  if(child.tagName.toLowerCase() == tagName && enforceAncestor != true)
+    return child; // return "current" element
+  var parent;
+  while((parent = child.parentNode) != null) {
+    if(parent.tagName && parent.tagName.toLowerCase() == tagName)
+      return parent;
+    child = parent;
+  }
+  return null;
 }
 
 function removeAllChildren(obj, except) {
   var children = obj.childNodes;
   var idx = 0;
-	// note: while removing children moved in the collection
+  // note: while removing children moved in the collection
   var length = children.length;
   for (var i = 0; i < length; i++) {
-	  if (except && comparePosition(children[idx], except) == 0) {
-		  idx++;
-		  continue;
-	  }
-	  obj.removeChild(children[idx]); 
+    if (except && comparePosition(children[idx], except) == 0) {
+      idx++;
+      continue;
+    }
+    obj.removeChild(children[idx]); 
   }
 }  
 
@@ -1137,66 +1137,66 @@ function removeAllChildren(obj, except) {
 // returns object not inserted to document
 var _hdnDivForDom = null;
 function getDomObjectFromHtml(html, attribName, attribValue){
-	
-	if (html.indexOf(attribValue) == -1)
-		return null;
-	
-	if (_hdnDivForDom == null) {
-		_hdnDivForDom = document.createElement("div");
-		_hdnDivForDom.style.display = "none";
-		document.body.appendChild(_hdnDivForDom);
-	}
-	// use innerHTML instead setInnerHtml
-	_hdnDivForDom.innerHTML = html;
-	
-	var obj = getChildByAttribute(_hdnDivForDom, attribName, attribValue);
-	if (!obj) {
-		_hdnDivForDom.innerHTML = "";
-  	return null;
+  
+  if (html.indexOf(attribValue) == -1)
+    return null;
+  
+  if (_hdnDivForDom == null) {
+    _hdnDivForDom = document.createElement("div");
+    _hdnDivForDom.style.display = "none";
+    document.body.appendChild(_hdnDivForDom);
   }
-	
-	// remove not needed html from DOM		
-	obj = obj.parentNode.removeChild(obj);
-	_hdnDivForDom.innerHTML = "";
-	
-	return obj;
+  // use innerHTML instead setInnerHtml
+  _hdnDivForDom.innerHTML = html;
+  
+  var obj = getChildByAttribute(_hdnDivForDom, attribName, attribValue);
+  if (!obj) {
+    _hdnDivForDom.innerHTML = "";
+    return null;
+  }
+  
+  // remove not needed html from DOM    
+  obj = obj.parentNode.removeChild(obj);
+  _hdnDivForDom.innerHTML = "";
+  
+  return obj;
 }
 
 // removes hidden cells and arranges cells again
 // used in filterItems. It is not generic for now. 
 // colsAmount is not required
 function arrangeTableCells(table, colsAmount) {
-	var cells = new Array();
-	// retrieve cells
-	for (var i = 0; i < table.rows.length; i++) {
-		if (!isVisible(table.rows[i]))
-			continue;
-		table.rows[i].style.display = "none";	
-		while (typeof table.rows[i].cells[0] != 'undefined') {
-			var cell = table.rows[i].removeChild(table.rows[i].cells[0]);
-			if (isVisible(cell, true))
-				cells.push(cell);
-		}
-	}
+  var cells = new Array();
+  // retrieve cells
+  for (var i = 0; i < table.rows.length; i++) {
+    if (!isVisible(table.rows[i]))
+      continue;
+    table.rows[i].style.display = "none"; 
+    while (typeof table.rows[i].cells[0] != 'undefined') {
+      var cell = table.rows[i].removeChild(table.rows[i].cells[0]);
+      if (isVisible(cell, true))
+        cells.push(cell);
+    }
+  }
 
-	if (typeof colsAmount == 'undefined')
-		colsAmount = Math.floor(Math.sqrt(cells.length)); 	
-	
-	// show 3 columns for mobile (portrait)
-	if (Browser.mobile && colsAmount > 3)
-  	colsAmount = 3;
-		
-	// rearrange cells
-	var idx = 0;
-	for (var i = 0; i < table.rows.length; i++) {
-		var tr = table.rows[i];
-  	for (var n = 0; n < colsAmount; n++) {
-  		if (idx < cells.length) {
-				tr.appendChild(cells[idx]);
-				tr.style.display = "";
-		  	idx++;
-		  }
-  	}
+  if (typeof colsAmount == 'undefined')
+    colsAmount = Math.floor(Math.sqrt(cells.length));   
+  
+  // show 3 columns for mobile (portrait)
+  if (Browser.mobile && colsAmount > 3)
+    colsAmount = 3;
+    
+  // rearrange cells
+  var idx = 0;
+  for (var i = 0; i < table.rows.length; i++) {
+    var tr = table.rows[i];
+    for (var n = 0; n < colsAmount; n++) {
+      if (idx < cells.length) {
+        tr.appendChild(cells[idx]);
+        tr.style.display = "";
+        idx++;
+      }
+    }
   }
 }
 //********************************************
@@ -1207,14 +1207,14 @@ function setInnerHtml(div, textOrObj) {
   // write in child with id = "content" if it exists.
   var contentDiv = getChildById(div, "content");
   if(contentDiv != null)
-	  div = contentDiv;
-	
-	div.innerHTML = '';
+    div = contentDiv;
   
-	if (typeof textOrObj == 'string')
-		div.innerHTML = textOrObj;
+  div.innerHTML = '';
+  
+  if (typeof textOrObj == 'string')
+    div.innerHTML = textOrObj;
   else
-		div.appendChild(textOrObj);
+    div.appendChild(textOrObj);
   
   // execute / download JS code containing in the div content.
   ExecJS.runDivCode(div);
@@ -1232,7 +1232,7 @@ function getTextContent(elm) {
   if (typeof elm.textContent != "undefined") {                // W3C DOM Level 3
     text = elm.textContent;
   }
-	 else if (typeof elm.innerText != "undefined") {             // IE
+   else if (typeof elm.innerText != "undefined") {             // IE
     text = elm.innerText;
   }
   else if (elm.childNodes && elm.childNodes.length) {         // W3C DOM Level 2
@@ -1254,16 +1254,16 @@ function getTextContent(elm) {
 
 // Note: Chrome 17 was buggy (?!)
 function getElementStyle(elem) {
-	if(typeof elem == 'string')
-	  elem = document.getElementById(elem);
+  if(typeof elem == 'string')
+    elem = document.getElementById(elem);
   // <html> dose not have style property
-	if(elem.nodeType == 9)
-	  return null;
+  if(elem.nodeType == 9)
+    return null;
 
-	if (elem.currentStyle)
-		return elem.currentStyle;
-	else if (window.getComputedStyle)
-		return document.defaultView.getComputedStyle(elem, null);
+  if (elem.currentStyle)
+    return elem.currentStyle;
+  else if (window.getComputedStyle)
+    return document.defaultView.getComputedStyle(elem, null);
 }
 
 
@@ -1278,16 +1278,16 @@ var ExecJS = {
   runCodeArr : new Array(),
   isWaitingOnReady : false,
   
-	// default requiredJsFileName = "menu.js"
+  // default requiredJsFileName = "menu.js"
   runCode : function(jsCode, refObjId, requiredJsFileName) {
     $t = ExecJS;
     // check if required JS file was loaded and parsed
     // ondemandloaded JS-file has requiredJsFileName = null
     var toWait = false;
-		
-		if (!requiredJsFileName)
-		  requiredJsFileName = "menu.js";
-		
+    
+    if (!requiredJsFileName)
+      requiredJsFileName = "menu.js";
+    
     if (typeof g_loadedJsFiles[requiredJsFileName] == 'undefined')
       toWait = true;
     
@@ -1324,53 +1324,53 @@ var ExecJS = {
   
   // executes js code if refObjId is visible - [hidden tab].
   _runRelativeCode : function(jsCode, refObjId, isSecondAttempt) {
-		if(document.all && document.readyState != "complete") {
-			if(this.isWaitingOnReady == false) {
-			  addEvent(document, 'readystatechange', this._runOnDocumentReady, false);
-			  this.isWaitingOnReady = true;
-			}
-			this.runCodeArr.push({"jsCode": jsCode, "refObjId": refObjId});
-		}
-		else {
+    if(document.all && document.readyState != "complete") {
+      if(this.isWaitingOnReady == false) {
+        addEvent(document, 'readystatechange', this._runOnDocumentReady, false);
+        this.isWaitingOnReady = true;
+      }
+      this.runCodeArr.push({"jsCode": jsCode, "refObjId": refObjId});
+    }
+    else {
       if(this.isObjectTotallyVisible(refObjId))
         this.eval(jsCode);
-			else if (!isSecondAttempt) 
-				// expect that div should be shown shortly
-				setTimeout(function() { ExecJS._runRelativeCode(jsCode, refObjId, true)}, 100);	
+      else if (!isSecondAttempt) 
+        // expect that div should be shown shortly
+        setTimeout(function() { ExecJS._runRelativeCode(jsCode, refObjId, true)}, 100); 
     }
   },
 
   // evaluates script blocks including in some DIV obtained via XHR
   // contDiv is a div that contains JS code - (dialog, tab).
   // it automatically called from setInnerHtml() function
-	runDivCode : function(contDiv) {
-	  setTimeout(function(){ ExecJS._runDivCode(contDiv); }, Browser.mobile ? 700 : 150);
-	},
+  runDivCode : function(contDiv) {
+    setTimeout(function(){ ExecJS._runDivCode(contDiv); }, Browser.mobile ? 700 : 150);
+  },
   _runDivCode : function(contDiv) {
     if(!contDiv)
       return;
     var scripts = contDiv.getElementsByTagName('script');
-	  for(var i = 0; i < scripts.length; i++) {
+    for(var i = 0; i < scripts.length; i++) {
       // note: currently removed the check if script block was evaluated
-			//if(typeof scripts[i].evaluated == 'undefined' || !scripts[i].evaluated) {
+      //if(typeof scripts[i].evaluated == 'undefined' || !scripts[i].evaluated) {
       
-			// 1. external JS code
+      // 1. external JS code
       var src = scripts[i].src;
       if (src && src.length != 0) {
-				var keyName = src.replace(/_[0-9]*\.js/, ".js");
-				keyName = keyName.replace(getBaseUri(), "");
-				
-				if (typeof g_loadedJsFiles[keyName] == "undefined") { /*!this.isScriptFileLoaded(src)*/
-			  	var js = document.createElement('script');
-			  	js.setAttribute('type', 'text/javascript');
-		  	// suppress minify
-					if (location.href.indexOf("-minify-js=n") != -1) 
-						fileName = fileName.replace("m.js", ".js")
-  				js.setAttribute('src', src);
-					loadScript(src, document.body, function() { setTimeout(function(){ ExecJS._runDivCode(contDiv); }, 100) });
-  				g_loadedJsFiles[keyName] = true;
-					return;
-				}
+        var keyName = src.replace(/_[0-9]*\.js/, ".js");
+        keyName = keyName.replace(getBaseUri(), "");
+        
+        if (typeof g_loadedJsFiles[keyName] == "undefined") { /*!this.isScriptFileLoaded(src)*/
+          var js = document.createElement('script');
+          js.setAttribute('type', 'text/javascript');
+        // suppress minify
+          if (location.href.indexOf("-minify-js=n") != -1) 
+            fileName = fileName.replace("m.js", ".js")
+          js.setAttribute('src', src);
+          loadScript(src, document.body, function() { setTimeout(function(){ ExecJS._runDivCode(contDiv); }, 100) });
+          g_loadedJsFiles[keyName] = true;
+          return;
+        }
       }
       // 2. inner JS block
       else {
@@ -1379,20 +1379,20 @@ var ExecJS = {
         var evalStr = scripts[i].text || scripts[i].innerHTML;
         var containsFocusCommand = (evalStr.indexOf("focus(") != -1);
         if(containsFocusCommand == false || this.isObjectTotallyVisible(parent)) {
-					// prevent double evaluation of auxiliary, temparary code from body.java
-					if (evalStr.indexOf("function runJSCode") != -1)
-						continue;
-					////////// not evaluate JS that declarates a function
-					////////// if (evalStr.indexOf("function") == -1)
-						window.eval(evalStr);
-					//	setTimeout(evalStr, 1000);
+          // prevent double evaluation of auxiliary, temparary code from body.java
+          if (evalStr.indexOf("function runJSCode") != -1)
+            continue;
+          ////////// not evaluate JS that declarates a function
+          ////////// if (evalStr.indexOf("function") == -1)
+            window.eval(evalStr);
+          //  setTimeout(evalStr, 1000);
         }
         else { // or exec it with delay 1 sec.
           // expect that div should be shown shortly
           setTimeout(evalStr, 1000);
         }
         
-				//scripts[i].evaluated = true;
+        //scripts[i].evaluated = true;
       }
       //}
     }
@@ -1405,18 +1405,18 @@ var ExecJS = {
       obj = document.getElementById(obj);
     if(obj == null)
       return false;
-	  var parent = obj;
-	  
-	  while(parent != null) {
-		  var stl = getElementStyle(parent);
-		  if (stl != null) {
-		    if (stl.visibility == 'hidden' || stl.display == 'none')
-		      return false;
-			}
-		  parent = obj.parentNode;
-		  obj = parent;
-	  }
-	  return true;
+    var parent = obj;
+    
+    while(parent != null) {
+      var stl = getElementStyle(parent);
+      if (stl != null) {
+        if (stl.visibility == 'hidden' || stl.display == 'none')
+          return false;
+      }
+      parent = obj.parentNode;
+      obj = parent;
+    }
+    return true;
   },
 
   _runOnDocumentReady : function() {
@@ -1484,7 +1484,7 @@ function findPosX(obj) {
   var curleft = 0;
   if (obj.offsetParent) {
     while (obj.offsetParent) {
-			curleft += obj.offsetLeft;
+      curleft += obj.offsetLeft;
       obj = obj.offsetParent;
     }
   }
@@ -1702,18 +1702,18 @@ function getBaseUri() {
 function changeOpacity(obj, level) {
   if (!obj)
     return;  
-	if (typeof obj.style.MozOpacity != 'undefined') 
-  	obj.style.MozOpacity = level;
+  if (typeof obj.style.MozOpacity != 'undefined') 
+    obj.style.MozOpacity = level;
   else 
-  	if (typeof obj.style.opacity != 'undefined') 
-  		obj.style.opacity = level;
-  	else if (obj.style.filter != 'undefined') {
-			if (level == 1.0) 
-	  	obj.style.filter = '';
-	  else {
-	  	obj.style.filter = 'progid:DXImageTransform.Microsoft.Alpha(opacity=' + (level * 100) + ')';
-			}
-		}
+    if (typeof obj.style.opacity != 'undefined') 
+      obj.style.opacity = level;
+    else if (obj.style.filter != 'undefined') {
+      if (level == 1.0) 
+      obj.style.filter = '';
+    else {
+      obj.style.filter = 'progid:DXImageTransform.Microsoft.Alpha(opacity=' + (level * 100) + ')';
+      }
+    }
 }
 
 function copyAttributes(oNode, oNew) {
@@ -1807,7 +1807,7 @@ function getElementCoords(elem, e) {
 
 function getElementDimensions(elem) {
   var dim = new Dim();
-	dim.width  = parseInt(elem.offsetWidth);
+  dim.width  = parseInt(elem.offsetWidth);
   dim.height = parseInt(elem.offsetHeight);
   return dim;
 }
@@ -1849,19 +1849,19 @@ function getUrlParam(url, paramName) {
   paramName = paramName.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
   var regexS = "[\\?&]" + paramName + "=([^&#]*)";
   var regex = new RegExp( regexS );
-	
-	if (!url)
-		url = window.location.href
-	
+  
+  if (!url)
+    url = window.location.href
+  
   var results = regex.exec(url);
   if (results == null) {
-  	if (!paramName.startsWith(".")) // it is common to use dot in parameter name
-			return getUrlParam(url, "." + paramName)
-		else
-			return null;
+    if (!paramName.startsWith(".")) // it is common to use dot in parameter name
+      return getUrlParam(url, "." + paramName)
+    else
+      return null;
   }
   else 
-  	return results[1];
+    return results[1];
 }
 
 // returns file name from a URL
@@ -1871,48 +1871,50 @@ function getFileName(path) {
 
 // returns 'pane2' or 'panel_block'
 function getParentDialog(obj) {
-	return getAncestorByClassName(obj, 'panel_block') || getAncestorById(obj, 'pane2');
+  return getAncestorByClassName(obj, 'panel_block') || getAncestorById(obj, 'pane2');
 }
 
 // note: 'panel_block' can be on page, so its parentNode is not BODY
 function isParentDialogOnPage(dialog) {
-	return dialog.parentNode && dialog.parentNode.tagName && dialog.parentNode.tagName.toLowerCase() != "body";
+  return dialog.parentNode && dialog.parentNode.tagName && dialog.parentNode.tagName.toLowerCase() != "body";
 }
-
+function isDialogOnPage(dialog) {
+  return isParentDialogOnPage(dialog);
+}
 // helps with class names composed from 2 or more parts
 // obtains array as well
 function isElemOfClass(elem, className) {
-	if (typeof className == "string")
-		return elem.className == className || elem.className.indexOf(className + " ") == 0;
+  if (typeof className == "string")
+    return elem.className == className || elem.className.indexOf(className + " ") == 0;
 
-	for	(var i = 0; i < className.length; i++) {
-		if (elem.className == className[i] || elem.className.indexOf(className[i] + " ") == 0)
-			return true;
-	}
-	return false;
+  for (var i = 0; i < className.length; i++) {
+    if (elem.className == className[i] || elem.className.indexOf(className[i] + " ") == 0)
+      return true;
+  }
+  return false;
 }
 
 function isElemOfTag(elem, tagName) {
-	if (!elem.tagName)
-		return false;
-	var elemTagName = elem.tagName.toLowerCase();	
-	
-	if (typeof tagName == "string")
-		return (elemTagName == tagName);
+  if (!elem.tagName)
+    return false;
+  var elemTagName = elem.tagName.toLowerCase(); 
+  
+  if (typeof tagName == "string")
+    return (elemTagName == tagName);
 
-	for	(var i = 0; i < tagName.length; i++) {
-		if (elemTagName == tagName[i])
-			return true;
-	}
-	return false;
+  for (var i = 0; i < tagName.length; i++) {
+    if (elemTagName == tagName[i])
+      return true;
+  }
+  return false;
 }
 
 // note: meanwhile it is for vertical scrolling only!
 function isElemInView(elem) {
-	var topEdge = getScrollXY()[1];
-	var bottomEdge = topEdge + getWindowSize()[1];
-	var y = findPosY(elem);
-	return (y >= topEdge && y <= bottomEdge - elem.offsetHeight);
+  var topEdge = getScrollXY()[1];
+  var bottomEdge = topEdge + getWindowSize()[1];
+  var y = findPosY(elem);
+  return (y >= topEdge && y <= bottomEdge - elem.offsetHeight);
 }
 
 function setCaretPosition(elem, caretPos) {
@@ -1922,8 +1924,8 @@ function setCaretPosition(elem, caretPos) {
             var range = elem.createTextRange();
             range.move('character', caretPos);
             try {
-				      range.select();
-			      } catch(e) {}
+              range.select();
+            } catch(e) {}
         }
         else {
             if(elem.selectionStart) {
@@ -1937,33 +1939,33 @@ function setCaretPosition(elem, caretPos) {
 }
 
 function deselectField(field) {
-	var tmp = field.value;
-	field.value = "";
-	field.value = tmp;
+  var tmp = field.value;
+  field.value = "";
+  field.value = tmp;
 }
 function setShadow(div, shadowStyle) {
-	div.style.boxShadow = shadowStyle;
-	div.style.MozBoxShadow = shadowStyle;
-	div.style.webkitBoxShadow = shadowStyle;
+  div.style.boxShadow = shadowStyle;
+  div.style.MozBoxShadow = shadowStyle;
+  div.style.webkitBoxShadow = shadowStyle;
 }
 function appendClassName(elem, className) {
-	var regexp = new RegExp("[ ]+" + className + "[ ]+", "g");
-	if ((" " + elem.className + " ").match(regexp) != null)
-	  return;
-	elem.className += (elem.className.length == 0) ? className : (" " + className);
+  var regexp = new RegExp("[ ]+" + className + "[ ]+", "g");
+  if ((" " + elem.className + " ").match(regexp) != null)
+    return;
+  elem.className += (elem.className.length == 0) ? className : (" " + className);
 }
 function removeClassName(elem, className) {
-	var regexp = new RegExp(className, "g");
-	elem.className = elem.className.replace(regexp, "").trim();
+  var regexp = new RegExp(className, "g");
+  elem.className = elem.className.replace(regexp, "").trim();
 }
 
 // checks visibility by size != 0 too because of some problems with computed style (?)
 // to enforce only by style use onlyByStyle
 function isVisible(elem, onlyByStyle) {
-	if (onlyByStyle != true && elem.offsetWidth == 0)
-	  return false;
-	var stl = getElementStyle(elem);
-	return stl.display != 'none' && stl.visibility != 'hidden';
+  if (onlyByStyle != true && elem.offsetWidth == 0)
+    return false;
+  var stl = getElementStyle(elem);
+  return stl.display != 'none' && stl.visibility != 'hidden';
 }
 
 function hex2rgb(hexColor) {
@@ -1978,14 +1980,14 @@ function hex2rgb(hexColor) {
 // usage: 1) example: 'all 1s ease-in-out' - after that all CSS changes will animate 2) 'none' - turn off
 // callback is not required
 function setTransitionProperty(element, transitionStr, callback) {
-	if (transitionStr && transitionStr.indexOf("transform") == 0) {
-		var specTfCSS = "-" + setTransformProperty(element, null).toLowerCase().replace("transform", "-transform");
-		transitionStr = transitionStr.replace("transform", specTfCSS);
-	}
+  if (transitionStr && transitionStr.indexOf("transform") == 0) {
+    var specTfCSS = "-" + setTransformProperty(element, null).toLowerCase().replace("transform", "-transform");
+    transitionStr = transitionStr.replace("transform", specTfCSS);
+  }
   var specTransName = setCSS3Property(element, 'transition', transitionStr);
-	if (callback) 
-	  setTransitionCallback(element, callback);
-	return specTransName;
+  if (callback) 
+    setTransitionCallback(element, callback);
+  return specTransName;
 }
 // toRemove is not required
 function setTransitionCallback(element, callback, toRemove) {
@@ -2000,13 +2002,13 @@ function setTransitionCallback(element, callback, toRemove) {
 
     if (eventName) {
       if (toRemove == true) 
-			  removeEvent(element, eventName, callback);
+        removeEvent(element, eventName, callback);
       else
-			  addEvent(element, eventName, callback); 
+        addEvent(element, eventName, callback); 
     }
 }
 function removeTransitionCallback(element, callback){
-	setTransitionCallback(element, callback, true);
+  setTransitionCallback(element, callback, true);
 }
 function setTransformProperty(element, transformStr) {
   return setCSS3Property(element, 'transform', transformStr);
@@ -2016,16 +2018,16 @@ function setTransformProperty(element, transformStr) {
 // note: may be need to avoid setting of the same property value many times
 function setCSS3Property(element, propName, cssStr) {
   var prefix = ['', 'Webkit', 'ms', 'Moz', 'O'];
-	var propNameSpec;
+  var propNameSpec;
   for (var i = 0; i < prefix.length; i++) {
-		if (i == 1)
-		  propName = propName.charAt(0).toUpperCase() + propName.slice(1);
-	    var specPropName = prefix[i] + propName;
-		if (typeof element.style[specPropName] != 'undefined') {
-		  if (cssStr != null)
-			  element.style[specPropName] = cssStr;
-		  return specPropName;
-	  }
+    if (i == 1)
+      propName = propName.charAt(0).toUpperCase() + propName.slice(1);
+      var specPropName = prefix[i] + propName;
+    if (typeof element.style[specPropName] != 'undefined') {
+      if (cssStr != null)
+        element.style[specPropName] = cssStr;
+      return specPropName;
+    }
   }
   return null;
 }
