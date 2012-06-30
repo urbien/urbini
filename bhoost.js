@@ -463,7 +463,12 @@ var Boost = {
     }
     return $t.urlToDivs[$t.currentUrl];
   },
-
+  showActionMenu : function(event, link) {
+		var urlLink = getChildById(this.getCurrentPageDiv(), "action_menu_url_link");
+		if (!urlLink)
+		  return; // ?
+    PlainDlg.show(event, urlLink.href, link);
+	},
   showOptionsMenu: function() {
     var $t = Mobile;
     if ($t.isHistoryView) {
@@ -1597,12 +1602,13 @@ var Boost = {
       // then it is data entry dialog with error message.
       if (content.indexOf("panel_block") != -1) {
         // "roll back" appending of new div
-        div.parentNode.removeChild(div);
-        delete $t.urlToDivs[$t.currentUrl];
-        $t.browsingHistoryPos--;
-        $t.currentUrl = $t.browsingHistory[$t.browsingHistoryPos];
-      
-        DataEntry.onDataEntryLoaded(event, div, hotspot, content, null, true);
+				if (div.parentNode) {
+					div.parentNode.removeChild(div);
+					delete $t.urlToDivs[$t.currentUrl];
+					$t.browsingHistoryPos--;
+					$t.currentUrl = $t.browsingHistory[$t.browsingHistoryPos];
+				}
+        DataEntry.onDataEntryLoaded(event, div, hotspot, content, url, true);
         // hides the location bar
         scrollTo(0, 1);
         return;
@@ -1621,7 +1627,7 @@ var Boost = {
 	        regDiv.className = "mobile_dlg";
 	        document.body.appendChild(regDiv);
 	        scrollTo(0, 1);
-	        setDivVisible(event, regDiv, null, hotspot);
+	        setDivVisible(event, regDiv, hotspot);
 	        // execute inner script for social nets
 	        ExecJS.runDivCode(regDiv);
 	        // download hashScript.js on demand with timestamp suffix
@@ -1967,6 +1973,7 @@ var Boost = {
  **********************************************/
 var MobilePageAnimation = {
   dlgDiv : null,
+	dlgDivToHide : null,
   isInitialized : false,
 
   init : function() {
@@ -2014,20 +2021,26 @@ var MobilePageAnimation = {
     div.style.top = getScrollXY()[1] + 'px';
     div.style.minHeight = getWindowSize()[1] + 'px';
     setTransformProperty(div, "scale(0.1)");
+		if (div.id != "browser_dlg") // browser_dlg is our alert dialog
+		  appendClassName(div, "mobile_dlg");
     div.style.visibility = "visible";
-
-    setTransitionCallback(div, MobilePageAnimation._onZoomInDialogEnd); 
-    setTimeout(function f() { setTransitionProperty(div, "all 0.8s ease-in-out"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
+    if (!isDialogOnPage(div))
+      setTransitionCallback(div, MobilePageAnimation._onZoomInDialogEnd); 
+    // on fast animation a dialog can disapeared for a moment
+    // so 0.8 sec was changed on 1.2 sec (as minimum)
+    setTimeout(function f() { setTransitionProperty(div, "all 1.2s ease-in-out"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
   },
    _onZoomInDialogEnd : function(event) {
     var $t = MobilePageAnimation;
+			
     Mobile.getCurrentPageDiv().style.opacity = 0;
     removeTransitionCallback($t.dlgDiv, MobilePageAnimation._onZoomInDialogEnd); 
   },
   
   hideDialog : function(div) {
-    this.dlgDiv = div;
-
+    if (!isVisible(div))
+		  return;
+    this.dlgDivToHide = div;
     setTransitionCallback(div, MobilePageAnimation._onZoomOutDialogEnd); 
     Mobile.getCurrentPageDiv().style.opacity = 1
     setTransformProperty(div, "scale(0.1)");
@@ -2037,8 +2050,8 @@ var MobilePageAnimation = {
   _onZoomOutDialogEnd : function() {
     var $t = MobilePageAnimation;
     // remove dialog from document to avoid interference with other dialogs
-    $t.dlgDiv.parentNode.removeChild($t.dlgDiv);
-    removeTransitionCallback($t.dlgDiv, MobilePageAnimation._onZoomOutDialogEnd); 
+ 		$t.dlgDivToHide.parentNode.removeChild($t.dlgDivToHide);
+    removeTransitionCallback($t.dlgDivToHide, MobilePageAnimation._onZoomOutDialogEnd); 
   },
 
   getPageTopOffset : function() {
@@ -2085,6 +2098,8 @@ var MobileMenuAnimation = {
   },
   
   hide : function() {
+		if (!this.optionsDiv)
+		  return;
     setTransitionCallback(this.optionsDiv, this._finishHide);
     this.optionsDiv.style.opacity = "0.1";
   },
