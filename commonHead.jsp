@@ -15,7 +15,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"></meta>
   <meta name="apple-mobile-web-app-capable" content="yes"></meta>
   <meta name="apple-mobile-web-app-status-bar-style" content="black"></meta>
-  <meta name="google-site-verification" content="YJrn1vi9ouT5vFSUmhYmCIuVCdVhXkp8NBOVNplcfOs" />
+  <meta name="google-site-verification" content="YJrn1vi9ouT5vFSUmhYmCIuVCdVhXkp8NBOVNplcfOs"></meta>
   <meta name="openGraph" content=""></meta>
   <include name="analytics-tracker.jsp" />
   <siteTitle />
@@ -25,9 +25,5 @@
       console.log("hash stripped");
       window.location.hash = '';
     }
-  </script>
-  <script type="text/javascript">
-    var oneall_js_protocol = (("https:" == document.location.protocol) ? "https" : "http");
-    document.write(unescape("%3Cscript src='" + oneall_js_protocol + "://urbien.api.oneall.com/socialize/library.js' type='text/javascript'%3E%3C/script%3E"));
   </script>
  </container>
