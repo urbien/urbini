@@ -26,7 +26,7 @@ Lablz.simpleCall = function(query, callbackName, secure) {
 
 Lablz.authenticate = function() {
   var path = secureApiUrl + 'authenticate?';
-  var queryParams = ['client_id=' + appId, 'redirect_uri=' + window.location, 'response_type=token']; //, 'state=' + ]; // CSRF protection
+  var queryParams = ['client_id=' + encodeURIComponent(appId), 'redirect_uri=' + encodeURIComponent(window.location), 'response_type=token']; //, 'state=' + ]; // CSRF protection
   var qry = queryParams.join('&');
   var url = path + qry;
   window.location = url;

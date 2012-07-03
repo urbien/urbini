@@ -9,7 +9,7 @@
       var commentUri;
       var msg = document.getElementById('lablz_msg');
       var div = document.getElementById('lablz_data');
-      Lablz.init("466f8d17bdf0cedf16d752b4e2699b76");
+      Lablz.init("b2f8665037fe2ab7ede31478116966a");
       
       var random = ((1 + Math.random()) + '').substring(0, 5);
       var desc = 'I like NY ' + random + ' times as much as yesterday'; 
@@ -22,6 +22,13 @@
 
       // print the properties of a created resource
       function findComment(json) {
+        if (json.error != null) {
+          if (json.error.type == "invalid_auth")
+            Lablz.authenticate();
+          else
+            msg.innerHTML = msg.innerHTML + "<br /><br />error: " + JSON.stringify(json);
+        }
+        
         commentUri = json["_uri"];
         msg.innerHTML = msg.innerHTML + "<br /><br />See the comment here: <a href='" + Lablz.getUrl(commentUri) + "'>" + commentUri + "</a>";
   //      div.innerHTML = div.innerHTML + "<br /><br />We can find the comment easily by its URI: <b>" + commentUri + "</b>, but let's search for it by its description:";
