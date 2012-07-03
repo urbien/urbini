@@ -28,7 +28,7 @@
       </div>
       <h3><text text="Fine print"/></h3>
       <property name="coupon.conditions" noIcon="y"/>    
-      <where value="!cancelled &amp;&amp; paymentStatus == 'Success'">
+      <where value="!canceled">
         <br />
         <where value="redeemFrom != null &amp;&amp; redeemTo != null">
           <text text="This coupon is valid from #### to ####" params="redeemFrom,redeemTo" />
@@ -74,9 +74,9 @@
         </table>
       </div>
         <div style="border:2px; border-style:solid; border-color:#f99136;padding: 10px 10px 10px 10px; margin-right:20px;">
-          <where value="cancelled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been canceled" /></b></font></where>
-          <where value="!cancelled">
-            <where value="paymentStatus == 'Success'">
+          <where value="canceled"><font size="+1" color="#ef6f16"><b><text text="This coupon has been canceled" /></b></font></where>
+          <where value="!canceled">
+            <!--where value="paymentStatus == 'Success'"-->
               <font size="+1" color="#222222"><text text="Coupon #" />:&#160;<b>
               <where value="redeemed">
                 <text text="REDEEMED" />
@@ -131,14 +131,14 @@
                 </where>
               </where>
               </b></font>
-            </where>
-          <where value="paymentStatus == 'Abandoned'"><font size="+1" color="#ef6f16"><b><text text="You abandoned this transaction half-way" /></b></font></where>
+            <!--/where-->
+          <!--where value="paymentStatus == 'Abandoned'"><font size="+1" color="#ef6f16"><b><text text="You abandoned this transaction half-way" /></b></font></where>
           <where value="paymentStatus == 'Pending'"><font size="+1" color="#ef6f16"><b><text text="This coupon is still waiting for payment" /></b></font></where>
-          <where value="paymentStatus == 'Failure'"><font size="+1" color="#ef6f16"><b><text text="Payment Failed" /></b></font></where>
+          <where value="paymentStatus == 'Failure'"><font size="+1" color="#ef6f16"><b><text text="Payment Failed" /></b></font></where-->
           </where>        
         </div>
         <br />
-        <where value="!cancelled">
+        <where value="!canceled">
         <div align="left">
           <table width="100%">
             <tr>
@@ -171,12 +171,12 @@
         </div>
         </where>
         
-        <where value="paymentStatus != 'Success' &amp;&amp; paymentTutorial != null">
+        <!--where value="paymentStatus != 'Success' &amp;&amp; paymentTutorial != null">
             <h3 class="csp_33"><text text="How to pay"/></h3>
             <ul><li><property name="paymentTutorial" href="y" /></li></ul>
             <br />
-        </where>
-        <where value="!cancelled &amp;&amp; paymentStatus == 'Success'">
+        </where-->
+        <where value="!canceled">
           <where value="dealPrice != 0">
             <h3 class="csp_33"><text text="How to redeem"/></h3>
             <ul>

@@ -8,6 +8,6 @@
 		<!--propertySheet name="forum"/>
 		<br/>
 		<newComment/-->
-		<br/>
-		<text text="You can modify your subscription alert level or unsubscribe at any time." />
+		<p><text text="You can modify your subscription alert level or unsubscribe at any time." /></p>
+		<p><a href="l.html?bUri=-$this.to%26m_p=mySubscriptions%26b_p=owner">See my subscriptions</p>
 </div>
