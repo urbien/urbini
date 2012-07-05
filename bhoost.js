@@ -466,8 +466,10 @@ var Boost = {
   showActionMenu : function(event, link) {
 		var urlLink = getChildById(this.getCurrentPageDiv(), "action_menu_url_link");
 		if (!urlLink)
-		  return; // ?
-    PlainDlg.show(event, urlLink.href, link);
+		  return;
+		// set real URL to UI link
+		link.href = urlLink.href;
+		LinkProcessor.onClickDisplayInner(event, urlLink);
 	},
   showOptionsMenu: function() {
     var $t = Mobile;
