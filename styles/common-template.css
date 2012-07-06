@@ -2700,20 +2700,3 @@ td #corePageContent { min-height: 600px;}
   border: 1px solid #ffba24;
 }
 .cl {padding-left: 12px;}
-
-/* marketing pages */
-.section { background: url("../images/dividerdown.jpg") no-repeat; padding: 50px; margin: 0px; border-top: 1px solid rgb(232, 232, 233);}
-.section * { margin: 0px; }
-.section table.c1 td { vertical-align: top; }
-.section table.c1 td.b1, .section table.c1 td.b2 { padding: 10px 15px 15px 15px; }
-.section table.c1 td.bb1, .section table.c1 td.bb2, .section table.c1 td.bb3 { width: 49%; }
-.section table.c1 td.bb3 { padding-left: 40px}
-.section table.c1 { margin: 25px;}
-.section .section-header {text-align: center; margin-bottom: 45px}
-.section p {font-size: 14px;}
-.section p.intro { font-size: 18px; line-height: 26px; }
-.section h1, .section h2, .section h3, .section h4 {color: black; font-weight: normal;}
-.section h2 {font-size: 33px; line-height: 34px}
-.section h4 {font-size: 18px; line-height: 24px; margin-bottom: 3px;}
-.section h2 + p.intro { margin-top: 16px; }
-.section h1, .section h2, .section h3 { margin-bottom: 5px; }
