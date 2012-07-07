@@ -14,5 +14,5 @@
     <br/><br/>    
     <property name="forum" href="y" noIcon="y"/> 
     <br/><br/>
-    <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.thumb" />
+    <property name="(http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy)forum.featured" frame="y"/>
 </div>
