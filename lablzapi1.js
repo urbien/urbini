@@ -1,6 +1,6 @@
-//var serverName = "mark.obval.com/urbien"; 
+var serverName = "mark.obval.com/urbien"; 
 //var serverName = "aurora2.lablz.com";
-var serverName = "urbien.com";
+//var serverName = "urbien.com";
 //var serverName = "www.obval.com";
 //var serverName = "dev.obval.com";
 var apiUrl = "http://" + serverName + "/api/v1/";
@@ -26,7 +26,7 @@ Lablz.simpleCall = function(query, callbackName, secure) {
 
 Lablz.authenticate = function() {
   var path = secureApiUrl + 'authenticate?';
-  var queryParams = ['client_id=' + appId, 'redirect_uri=' + window.location, 'response_type=token']; //, 'state=' + ]; // CSRF protection
+  var queryParams = ['client_id=' + encodeURIComponent(appId), 'redirect_uri=' + encodeURIComponent(window.location), 'response_type=token']; //, 'state=' + ]; // CSRF protection
   var qry = queryParams.join('&');
   var url = path + qry;
   window.location = url;

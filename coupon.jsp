@@ -224,7 +224,7 @@
           <!--property name="couponVariants" noLabel="y"/ -->
         </li>
         <li>
-          <siteResourceList uri="l.html?bUri=-$this%26m_p%3dcouponVariants%26b_p%3dbasedOnTemplate&amp;-list=y&amp;-viewCols=shortTitle,dealPrice,discount&amp;-limit=12&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;-inRowW=1&amp;-titleLink=y&amp;canceled_select=false&amp;canceled_verified=y&amp;dateExpired_From=tomorrow&amp;-big=n"/>
+          <siteResourceList uri="l.html?bUri=-$this%26m_p%3dcouponVariants%26b_p%3dbasedOnTemplate&amp;-list=y&amp;-viewCols=shortTitle,dealPrice,discount&amp;-limit=12&amp;type=http://www.hudsonfog.com/voc/commerce/coupon/Coupon&amp;-inRowW=1&amp;-titleLink=y&amp;cancelled_select=false&amp;cancelled_verified=y&amp;dateExpired_From=tomorrow&amp;-big=n"/>
         </li>
       </ul>
       </where>

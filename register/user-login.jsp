@@ -8,6 +8,20 @@
           <h2><property name="owner.name"/></h2>
         </td>
       </tr>
+      <tr><td>
+      <!-- The plugin will be embedded into this div //-->
+      <!--div id="social_login_container"></div>
+
+      <script type="text/javascript">
+       oneall.api.plugins.social_login.build("social_login_container", {
+        'providers' :  ['facebook', 'github', 'google', 'hyves', 'linkedin', 'livejournal', 'mailru', 'openid', 'paypal', 'skyrock', 'stackexchange', 'steam', 'twitter', 'vkontakte', 'windowslive', 'wordpress', 'yahoo'], 
+        'grid_size_x': '3',
+        'grid_size_y': '5',
+        'css_theme_uri': 'https://oneallcdn.com/css/api/socialize/themes/buildin/signin/large-v1.css',
+        'callback_uri': 'http://mark.obval.com/urbien/social/oneall'
+       });
+      </script-->
+    </td></tr>
   <tr>
     <td><authenticateByFacebook/></td>
   </tr>
