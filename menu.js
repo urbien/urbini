@@ -10107,10 +10107,12 @@ var BacklinkImagesSlideshow = {
     this.slideshowArr[0].onThumbItemClick(event);
   },
 	run : function() {
-    this.slideshowArr[0].run();
+    if (this.slideshowArr.length > 0)
+		  this.slideshowArr[0].run();
   },
 	stop : function() {
-    this.slideshowArr[0].stop();
+		if (this.slideshowArr.length > 0)
+      this.slideshowArr[0].stop();
   },
 	// called on a dialoag opening ("buy" dialog)
 	stopAutomaticSiding : function() {
