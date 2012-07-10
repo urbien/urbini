@@ -13086,7 +13086,7 @@ var EndlessPager = {
 	}
 }
 
-function getMoreBoards(e, id, exclude) {
+function getMoreBoards(e, id, exclude, profile) {
   e = getDocumentEvent(e);
   
   var tokens = exclude.split(',');
@@ -13096,22 +13096,44 @@ function getMoreBoards(e, id, exclude) {
     var tok = trim(tokens[i]);
     s += '&-exclude=' + tok;    
   }
-  params = 'type=http://www.hudsonfog.com/voc/model/portal/ImageResource&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y' + s;
   var td = document.getElementById(id);
 
-  postRequest(e, "l.html", params, td, getTargetElement(e), onBoardsLoaded); 
+  if (profile) {
+    params = "uri=" + encodeURIComponent(profile) + "&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y" + s;
+    postRequest(e, "v.html", params, td, getTargetElement(e), onBoardsLoaded);
+  }
+  else {
+    params = 'type=http://www.hudsonfog.com/voc/model/portal/ImageResource&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y' + s;
+    postRequest(e, "l.html", params, td, getTargetElement(e), onBoardsLoaded);
+  }
   function onBoardsLoaded(event, td, hotspot, content) {
     var d = document.createElement("div");
     d.innerHTML = content;
     var newUL = d.getElementsByTagName("ul");
+    var newCurrentUL;
+    for (var i=0; i<newUL.length  &&  !newCurrentUL; i++) {
+      var cl = newUL[i];
+      if (cl  &&  cl.className == 'sortable')
+        newCurrentUL = newUL[i];
+    }
+    
     var ul = td.getElementsByTagName("ul");
-    var count = newUL[0].getElementsByTagName("li").length;
-    ul[0].innerHTML += newUL[0].innerHTML;
-    var titleDiv = td.getElementsByTagName("div");
+
+    var count = newCurrentUL.getElementsByTagName("li").length;
+    var isView = td.tagName.toUpperCase() == 'DIV';
+    if (isView)
+      ul[0].innerHTML = newCurrentUL.innerHTML;
+    else
+      ul[0].innerHTML += newCurrentUL.innerHTML;
+    var titleDiv = isView ? td.getElementsByTagName("span") : td.getElementsByTagName("div");
     for (var i=0; i<titleDiv.length; i++) {
       var t = titleDiv[i].className;
-      if (t != null  &&  t == 'boardsTitle') 
+      if (t == null)
+        continue;
+      if (t == 'boardsTitle') 
         titleDiv[i].innerHTML = (count + 4) + " boards";
+      else if (isView  &&  t == 'moreBoards_tab')
+        titleDiv[i].innerHTML = "";
     }
     hotspot.onclick = '';
   } 
