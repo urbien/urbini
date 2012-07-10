@@ -1114,12 +1114,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		  this.document.close();
 		}
 
-    // insert <br /> for better height fitting in EMTY document
+    // append <br /> for better height fitting
     // it will be removed with all trailed <br>
-    if (text.length == 0) {
-		  var br = document.createElement("br");
-		  this.document.body.appendChild(br);
-	  }
+	  var br = document.createElement("br");
+	  this.document.body.appendChild(br);
+
 	}
 	this.resetContent = function(){
 		// insert <br /> for better height fitting in EMTY document
