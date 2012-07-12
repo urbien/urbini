@@ -861,6 +861,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.dataField = null; // hidden field to transfer data
 	this.curRange = null;
 	this.isSourceView = false;
+	this.MAX_RTE_HEIGHT = 500; // use scrollbar over this RTE height
 	this.initFrameHeight = null;
 
   this.initHtml = ""; // initial content to prevent hisstory change
@@ -1393,7 +1394,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     else if (i_am.toolbar)
 			i_am.toolbar.hide();
 		
-		i_am.iframeObj.setAttribute("scrolling", "no");   
+		i_am.document.body.style.overflow = "hidden";   
 	}
 
 	this.initPanelBlockWidth = null;
@@ -1505,58 +1506,67 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			TouchDlgUtil.arrowsHandler(e);
 
 	}
-	// prevents default Ctrl+b behaviour in FF.
+
   this._onkeydown = function(e) {
-		if (i_am.isNetscape) {// prevent ctrl+b, ctrl+i, ctrl+u, ctrl+t  
+		// FF: prevent ctrl+b, ctrl+i, ctrl+u, ctrl+t
+		if (i_am.isNetscape) {
 	    if (e.ctrlKey && (e.keyCode == 66 || e.keyCode == 73 || 
 	            e.keyCode == 85 || e.keyCode == 84)) {
 	      e.preventDefault();
 	    }
 		}
-// there was some problem wit page up and page down in Chrome (?!)		
-//		else if (Browser.chrome && (e.keyCode == 33 || e.keyCode == 34)) {
-//			e.preventDefault();
-//		}
+
+    // Chrome: pageUp / pageDown move a tray of a dialog - prevent it		
+		else if (Browser.chrome && (e.keyCode == 33 || e.keyCode == 34)) {
+			e.preventDefault();
+		}
   }
   
 	// fitHeightToVisible
-	this.fitHeightToVisible = function(onFocus) {
-		var docH = 0;
-
-		// 1) fit height with help of position of last element
-		// worked in FF and IE
-		var lastElem = getLastChild(i_am.document.body);
-		if (lastElem) {
-			// hack: when all text is embrased into a div with height = 100%
-			// it takes height of parent iframe. So remove height = 100%
-			if (lastElem.style.height == "100%")
-			  lastElem.style.height = "";
+	this.fitHeightToVisible = function(onFocus){
+  	var docH = 0;
+  	
+  	// 1) fit height with help of position of last element
+			// worked in FF and IE
+			var lastElem = getLastChild(i_am.document.body);
+			if (lastElem) {
+				// hack: when all text is embrased into a div with height = 100%
+				// it takes height of parent iframe. So remove height = 100%
+				if (lastElem.style.height == "100%") 
+					lastElem.style.height = "";
 				
-		  var lastElemY = findPosY(lastElem);
-			if (lastElemY != 0)
-	  	  docH = lastElemY + lastElem.offsetHeight;
-	  }
-		
-		// 2) fit height with help of body size
-		// Chrome and Opera failed with 1st variant: problem with findPosY / obj.offsetTop
-		if (docH == 0) {
-		  if (onFocus)
-			  docH = i_am.document.body.scrollHeight;
-			else if (i_am.document.body.offsetHeight != 0)
-				docH = i_am.document.body.offsetHeight;
-		}
+				var lastElemY = findPosY(lastElem);
+				if (lastElemY != 0) 
+					docH = lastElemY + lastElem.offsetHeight;
+			}
 			
-		// 1. small content size - use initial height without scrolling
-		if (docH < i_am.initFrameHeight) {
-			i_am.iframeObj.style.height = i_am.initFrameHeight + "px";
-			return;
-		}
-		// 2. big content
-		var frmH = i_am.iframeObj.clientHeight;
-	  if(frmH < docH || (Browser.gecko && frmH > docH - 7))
-		  i_am.iframeObj.style.height = docH + 5  + "px";
+			// 2) fit height with help of body size
+			// Chrome and Opera failed with 1st variant: problem with findPosY / obj.offsetTop
+			if (docH == 0) {
+				if (onFocus) 
+					docH = i_am.document.body.scrollHeight;
+				else if (i_am.document.body.offsetHeight != 0) 
+				  docH = i_am.document.body.offsetHeight;
+			}
+			
+			var frmH = i_am.iframeObj.clientHeight;
+			// 1. small content size - use initial height without scrolling
+			if (docH < i_am.initFrameHeight) {
+				i_am.iframeObj.style.height = i_am.initFrameHeight + "px";
+				i_am.document.body.style.overflow = "hidden";
+			}
+			// 2. big content
+			else if (docH >= i_am.MAX_RTE_HEIGHT) {
+				i_am.iframeObj.style.height = i_am.MAX_RTE_HEIGHT + "px";
+				i_am.document.body.style.overflow = "auto";
+			}
+			// 3. middle content - fit height
+			else /*if (frmH < docH || (Browser.gecko && frmH > docH - 7))*/ {
+				i_am.iframeObj.style.height = docH + 5 + "px";
+				i_am.document.body.style.overflow = "hidden";
+			}
 	}
-  
+	
   this._onpaste = function(e) {
      var execCode = "RteEngine.onPasteHandler('" + i_am.iframeObj.id + "')"
      setTimeout(execCode, 1);
