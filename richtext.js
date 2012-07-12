@@ -366,17 +366,13 @@ var RteEngine = {
 		this.objectPopup = new FormPopup(innerFormHtml);
 	},
 	createYoutubePopup : function() {
-		var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
-			+ ' <tr><td colspan="2" align="left">'
-			+ ' YouTube URL:<input style="width:100%" name="youtube_url" type="text" id="youtube_url" />'
-      + ' </td></tr>'
-			
-			+ ' <tr><td>'
-			+ ' width:&nbsp;<input size="4" name="width" type="text" id="width" />&nbsp;px&nbsp;'
-			+ ' </td><td align="left">'
-			+ ' height:&nbsp;<input size="4" name="height" type="text" id="height" />&nbsp;px&nbsp;</td>'
+    var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
+      + ' <tr>'
+      + ' <td align="left">&[Paste]; YouTube\'s embed &[code];:</td>'
+      + ' </tr><tr>'
+      + ' <td><textarea name="embed" type="text" id="html" rows="4" cols="50"></textarea></td>'
       + ' </tr>'
-			
+      + '</table>';
 			+ '</table>';
 		this.youtubePopup = new FormPopup(innerFormHtml);
 	},
@@ -1987,31 +1983,20 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	// setYoutube
 	this.setYoutube = function(params){
-  	if (!params.youtube_url) {
-			alert("&[enter]; &[YouTube]; &[URL];!")
+  	var embed = params.embed;
+		if (!embed) {
+			alert("&[enter]; YouTube's (new) embeded &[code];!")
 			return;
 		}
+		
+		// add wmode=transparent to show a dialog above
+    if (embed.indexOf("<iframe") != -1) { // only for new format
+			var src = embed.match(/src="[^"]+"/)[0];
+			var srcTr = src.replace(/"$/, "?wmode=transparent\"");
+			embed = embed.replace(src, srcTr);
+		}
 
-  	var width = params.width ? " width='" + params.width + "' " : "";
-    var height = params.height ? " height='" + params.height + "' " : "";
-  	var id = getUrlParam(params.youtube_url, "v");
-		var html = "<object wmode='transparent' "
-			+ width
-			+ height
-			+ "><param name='movie' value='http://www.youtube.com/v/"
-			+ id
-			+ "?fs=1&amp;rel=0;wmode=transparent'></param>"
-			+ "<param name='allowFullScreen' value='true'></param>"
-			+ "<param name='allowscriptaccess' value='always'></param>"
-			+ "<param value='transparent' name='wmode'></param>"
-			+ "<embed src='http://www.youtube.com/v/"
-			+ id
-			+ "?fs=1&amp;rel=0;wmode=transparent' type='application/x-shockwave-flash' "
-			+ width
-			+ height 
-			+ " allowscriptaccess='always' allowfullscreen='true' wmode='transparent'></embed></object>";
-
-		i_am.insertHTML(html);
+		i_am.insertHTML(embed);
 		// so fit RTE height after some delay while image should be downloaded 
 		setTimeout(i_am.fitHeightToVisible, 1500);
 	}
