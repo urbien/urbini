@@ -5,5 +5,5 @@
       <property name="(http://www.hudsonfog.com/voc/model/company/Friend)forum.friend1.photo" href="y" />
       <br /><br />
     </where>
-    <a href="v.html?uri=-$this.forum&amp;-$action=showPropertiesForEdit">Confirm Friendship</a> 
+    <a href="v.html?uri=-$this.forum&amp;-$action=showPropertiesForEdit"><text text="Confirm Friendship" /></a> 
 </div>

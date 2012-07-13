@@ -1,6 +1,6 @@
-var serverName = "mark.obval.com/urbien"; 
+//var serverName = "mark.obval.com/urbien"; 
 //var serverName = "aurora2.lablz.com";
-//var serverName = "urbien.com";
+var serverName = "urbien.com";
 //var serverName = "www.obval.com";
 //var serverName = "dev.obval.com";
 var apiUrl = "http://" + serverName + "/api/v1/";
