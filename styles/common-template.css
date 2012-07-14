@@ -420,12 +420,13 @@ td.textCell {
 
 /* Gallery */
 .galleryItem_container { position: relative; margin: 10px; display: inline-block; /* IE hack-> */ zoom: 1; *display:inline;  }
-.galleryItem_note { position: absolute; bottom: 0px; left: 0px; font-size: 13px;
+.galleryItem_note { position: absolute; bottom: 0px; left: 0px; font-size: 14px;
     background: rgba(0, 0, 0, 0.4); #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000);  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000)";
     color: #ffffff; text-shadow: 1px 2px 2px #000000; pointer-events: none;
     padding: 1% 2%;
     width: 96%;
     cursor: pointer;
+    text-align: center;
 }
 /* Chrome renders bad shadow here */
 @media screen and (-webkit-min-device-pixel-ratio:0) { .galleryItem_note{ text-shadow: none;  } }
@@ -2336,18 +2337,15 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
   right: 10px;
   padding: 5px;
   border-radius: 5px;
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
   box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
-  -moz-box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
-  -webkit-box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 #div_SlideShow .slides_pager { top: 40px; }
 
 .slides_pager a { 
   background: url("../icons/slider_pager_dots.png");
   cursor: pointer;
-  float:left;
+  display: inline-block;
   height: 16px;
   width: 16px;
   -moz-border-radius: 16px;
