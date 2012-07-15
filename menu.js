@@ -13089,12 +13089,14 @@ var EndlessPager = {
 function getMoreBoards(e, id, exclude, profile) {
   e = getDocumentEvent(e);
   
+  if (exclude) {
   var tokens = exclude.split(',');
   var len = tokens.length;
   var s;
   for(var i = 0; i < len; i++) {
     var tok = trim(tokens[i]);
     s += '&-exclude=' + tok;    
+  }
   }
   var td = document.getElementById(id);
 
