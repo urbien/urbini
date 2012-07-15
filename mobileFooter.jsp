@@ -1,6 +1,6 @@
 <!-- toolbar -->
 <div id="bottom_toolbar">
-	   <a href="javascript: ;" onclick="Mobile.showActionMenu();">
+	   <a href="javascript: ;" onclick="Mobile.showActionMenu(event, this);">
         <img src="icons/action_gear1.png"/>
     </a>
     <a href="javascript: ;" onclick="window.location.replace(getBaseUri());">
