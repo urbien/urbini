@@ -2168,6 +2168,8 @@ td.pBGr { background-color: #eeeeee;
                    font-weight:bold; font-size:1em; text-align:center; text-align: center; }
 #div_Info a { margin-left: 5px; }
 
+#div_Feed img {max-width: 600px;}
+
 /* set left alignment in description TD containing table */
 /*#div_Info table table td { text-align: left; }*/
 
