@@ -7871,6 +7871,10 @@ var FieldsWithEmptyValue = {
     var $t = FieldsWithEmptyValue;
     var field = getEventTarget(event);
     var code = getKeyCode(event);
+    if (Browser.gecko && (code == 33 || code == 34)) {
+      field.blur(); // pageDown/Up: go out a field to allow window scrolling 
+      return;
+    } 
     if (code == 27)
       return;
     $t.setReady(field); 
