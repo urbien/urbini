@@ -10106,15 +10106,17 @@ var BacklinkImagesSlideshow = {
 	onThumbItemClick : function(event) {
     this.slideshowArr[0].onThumbItemClick(event);
   },
-	run : function() {
-    this.slideshowArr[0].run();
+  run : function() {
+    if (this.slideshowArr.length > 0)
+      this.slideshowArr[0].run();
   },
-	stop : function() {
-    this.slideshowArr[0].stop();
+  stop : function() {
+    if (this.slideshowArr.length > 0)
+      this.slideshowArr[0].stop();
   },
-	// called on a dialoag opening ("buy" dialog)
-	stopAutomaticSiding : function() {
-		if (this.slideshowArr.length > 0)
+  // called on a dialoag opening ("buy" dialog)
+  stopAutomaticSiding : function() {
+    if (this.slideshowArr.length > 0)
       this.slideshowArr[0].stopAutomaticSiding();
   }
 }
@@ -12672,7 +12674,7 @@ function initFacebookLikeHandler(serverUrl) {
     var params = 'submit=y&.initialized=true&.initialized_select=true&.initialized_verified=y&-$action=showPropertiesForEdit&-fbLike=y';
     params +=  "&uri=" + response;
     var url = serverUrl + '/proppatch';
-//    setTimeout('postRequest(null, url, params, null, null, null)',0);
+    setTimeout('postRequest(null, url, params, null, null, null)',0);
     postRequest(null, url, params, null, null, null);
 //    setTimeout('postRequest(null, \"' + url + '\", \"' + params + '\", null, null, null)',0);
   });

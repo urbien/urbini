@@ -366,17 +366,13 @@ var RteEngine = {
 		this.objectPopup = new FormPopup(innerFormHtml);
 	},
 	createYoutubePopup : function() {
-		var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
-			+ ' <tr><td colspan="2" align="left">'
-			+ ' YouTube URL:<input style="width:100%" name="youtube_url" type="text" id="youtube_url" />'
-      + ' </td></tr>'
-			
-			+ ' <tr><td>'
-			+ ' width:&nbsp;<input size="4" name="width" type="text" id="width" />&nbsp;px&nbsp;'
-			+ ' </td><td align="left">'
-			+ ' height:&nbsp;<input size="4" name="height" type="text" id="height" />&nbsp;px&nbsp;</td>'
+    var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
+      + ' <tr>'
+      + ' <td align="left">&[Paste]; YouTube\'s embed &[code];:</td>'
+      + ' </tr><tr>'
+      + ' <td><textarea name="embed" type="text" id="html" rows="4" cols="50"></textarea></td>'
       + ' </tr>'
-			
+      + '</table>';
 			+ '</table>';
 		this.youtubePopup = new FormPopup(innerFormHtml);
 	},
@@ -861,6 +857,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.dataField = null; // hidden field to transfer data
 	this.curRange = null;
 	this.isSourceView = false;
+	this.MAX_RTE_HEIGHT = 500; // use scrollbar over this RTE height
 	this.initFrameHeight = null;
 
   this.initHtml = ""; // initial content to prevent hisstory change
@@ -1114,12 +1111,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		  this.document.close();
 		}
 
-    // insert <br /> for better height fitting in EMTY document
+    // append <br /> for better height fitting
     // it will be removed with all trailed <br>
-    if (text.length == 0) {
-		  var br = document.createElement("br");
-		  this.document.body.appendChild(br);
-	  }
+	  var br = document.createElement("br");
+	  this.document.body.appendChild(br);
+
 	}
 	this.resetContent = function(){
 		// insert <br /> for better height fitting in EMTY document
@@ -1394,7 +1390,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
     else if (i_am.toolbar)
 			i_am.toolbar.hide();
 		
-		i_am.iframeObj.setAttribute("scrolling", "no");   
+		i_am.document.body.style.overflow = "hidden";   
 	}
 
 	this.initPanelBlockWidth = null;
@@ -1506,58 +1502,67 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			TouchDlgUtil.arrowsHandler(e);
 
 	}
-	// prevents default Ctrl+b behaviour in FF.
+
   this._onkeydown = function(e) {
-		if (i_am.isNetscape) {// prevent ctrl+b, ctrl+i, ctrl+u, ctrl+t  
+		// FF: prevent ctrl+b, ctrl+i, ctrl+u, ctrl+t
+		if (i_am.isNetscape) {
 	    if (e.ctrlKey && (e.keyCode == 66 || e.keyCode == 73 || 
 	            e.keyCode == 85 || e.keyCode == 84)) {
 	      e.preventDefault();
 	    }
 		}
-// there was some problem wit page up and page down in Chrome (?!)		
-//		else if (Browser.chrome && (e.keyCode == 33 || e.keyCode == 34)) {
-//			e.preventDefault();
-//		}
+
+    // Chrome: pageUp / pageDown move a tray of a dialog - prevent it		
+		else if (Browser.chrome && (e.keyCode == 33 || e.keyCode == 34)) {
+			e.preventDefault();
+		}
   }
   
 	// fitHeightToVisible
-	this.fitHeightToVisible = function(onFocus) {
-		var docH = 0;
-
-		// 1) fit height with help of position of last element
-		// worked in FF and IE
-		var lastElem = getLastChild(i_am.document.body);
-		if (lastElem) {
-			// hack: when all text is embrased into a div with height = 100%
-			// it takes height of parent iframe. So remove height = 100%
-			if (lastElem.style.height == "100%")
-			  lastElem.style.height = "";
+	this.fitHeightToVisible = function(onFocus){
+  	var docH = 0;
+  	
+  	// 1) fit height with help of position of last element
+			// worked in FF and IE
+			var lastElem = getLastChild(i_am.document.body);
+			if (lastElem) {
+				// hack: when all text is embrased into a div with height = 100%
+				// it takes height of parent iframe. So remove height = 100%
+				if (lastElem.style.height == "100%") 
+					lastElem.style.height = "";
 				
-		  var lastElemY = findPosY(lastElem);
-			if (lastElemY != 0)
-	  	  docH = lastElemY + lastElem.offsetHeight;
-	  }
-		
-		// 2) fit height with help of body size
-		// Chrome and Opera failed with 1st variant: problem with findPosY / obj.offsetTop
-		if (docH == 0) {
-		  if (onFocus)
-			  docH = i_am.document.body.scrollHeight;
-			else if (i_am.document.body.offsetHeight != 0)
-				docH = i_am.document.body.offsetHeight;
-		}
+				var lastElemY = findPosY(lastElem);
+				if (lastElemY != 0) 
+					docH = lastElemY + lastElem.offsetHeight;
+			}
 			
-		// 1. small content size - use initial height without scrolling
-		if (docH < i_am.initFrameHeight) {
-			i_am.iframeObj.style.height = i_am.initFrameHeight + "px";
-			return;
-		}
-		// 2. big content
-		var frmH = i_am.iframeObj.clientHeight;
-	  if(frmH < docH || (Browser.gecko && frmH > docH - 7))
-		  i_am.iframeObj.style.height = docH + 5  + "px";
+			// 2) fit height with help of body size
+			// Chrome and Opera failed with 1st variant: problem with findPosY / obj.offsetTop
+			if (docH == 0) {
+				if (onFocus) 
+					docH = i_am.document.body.scrollHeight;
+				else if (i_am.document.body.offsetHeight != 0) 
+				  docH = i_am.document.body.offsetHeight;
+			}
+			
+			var frmH = i_am.iframeObj.clientHeight;
+			// 1. small content size - use initial height without scrolling
+			if (docH < i_am.initFrameHeight) {
+				i_am.iframeObj.style.height = i_am.initFrameHeight + "px";
+				i_am.document.body.style.overflow = "hidden";
+			}
+			// 2. big content
+			else if (docH >= i_am.MAX_RTE_HEIGHT) {
+				i_am.iframeObj.style.height = i_am.MAX_RTE_HEIGHT + "px";
+				i_am.document.body.style.overflow = "auto";
+			}
+			// 3. middle content - fit height
+			else /*if (frmH < docH || (Browser.gecko && frmH > docH - 7))*/ {
+				i_am.iframeObj.style.height = docH + 5 + "px";
+				i_am.document.body.style.overflow = "hidden";
+			}
 	}
-  
+	
   this._onpaste = function(e) {
      var execCode = "RteEngine.onPasteHandler('" + i_am.iframeObj.id + "')"
      setTimeout(execCode, 1);
@@ -1978,31 +1983,20 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	}
 	// setYoutube
 	this.setYoutube = function(params){
-  	if (!params.youtube_url) {
-			alert("&[enter]; &[YouTube]; &[URL];!")
+  	var embed = params.embed;
+		if (!embed) {
+			alert("&[enter]; YouTube's (new) embeded &[code];!")
 			return;
 		}
+		
+		// add wmode=transparent to show a dialog above
+    if (embed.indexOf("<iframe") != -1) { // only for new format
+			var src = embed.match(/src="[^"]+"/)[0];
+			var srcTr = src.replace(/"$/, "?wmode=transparent\"");
+			embed = embed.replace(src, srcTr);
+		}
 
-  	var width = params.width ? " width='" + params.width + "' " : "";
-    var height = params.height ? " height='" + params.height + "' " : "";
-  	var id = getUrlParam(params.youtube_url, "v");
-		var html = "<object wmode='transparent' "
-			+ width
-			+ height
-			+ "><param name='movie' value='http://www.youtube.com/v/"
-			+ id
-			+ "?fs=1&amp;rel=0;wmode=transparent'></param>"
-			+ "<param name='allowFullScreen' value='true'></param>"
-			+ "<param name='allowscriptaccess' value='always'></param>"
-			+ "<param value='transparent' name='wmode'></param>"
-			+ "<embed src='http://www.youtube.com/v/"
-			+ id
-			+ "?fs=1&amp;rel=0;wmode=transparent' type='application/x-shockwave-flash' "
-			+ width
-			+ height 
-			+ " allowscriptaccess='always' allowfullscreen='true' wmode='transparent'></embed></object>";
-
-		i_am.insertHTML(html);
+		i_am.insertHTML(embed);
 		// so fit RTE height after some delay while image should be downloaded 
 		setTimeout(i_am.fitHeightToVisible, 1500);
 	}

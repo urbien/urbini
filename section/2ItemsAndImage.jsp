@@ -24,7 +24,7 @@
           </td>
           <td class="bb2" rowspan="2">
             <div class="slideshow">
-              <slideShow width="500"/>
+              <slideShow width="500" switchOverlay="n" textOverlay="n" frame="n"/>
             </div>
           </td>
         </tr>

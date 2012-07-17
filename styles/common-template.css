@@ -68,7 +68,6 @@ H5, H5 A {color: &[SecondaryColorB_2];; }
 a:hover { color: &[SecondaryColorB_2];; text-decoration: none; cursor: pointer}
 
 a.external span.textInLink {
-  color: &[SecondaryColorB_3];; 
   background: url(../icons/external.png) no-repeat scroll right center transparent;
   border-bottom: 1px dotted #CCCCCC;
   padding-right: 12px !important;
@@ -420,12 +419,13 @@ td.textCell {
 
 /* Gallery */
 .galleryItem_container { position: relative; margin: 10px; display: inline-block; /* IE hack-> */ zoom: 1; *display:inline;  }
-.galleryItem_note { position: absolute; bottom: 0px; left: 0px; font-size: 13px;
+.galleryItem_note { position: absolute; bottom: 0px; left: 0px; font-size: 14px;
     background: rgba(0, 0, 0, 0.4); #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000);  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000)";
     color: #ffffff; text-shadow: 1px 2px 2px #000000; pointer-events: none;
     padding: 1% 2%;
     width: 96%;
     cursor: pointer;
+    text-align: center;
 }
 /* Chrome renders bad shadow here */
 @media screen and (-webkit-min-device-pixel-ratio:0) { .galleryItem_note{ text-shadow: none;  } }
@@ -1751,12 +1751,12 @@ table.printFB {
 .userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
 .userLogin #errorMessage { max-width: 420px; }
 .fbUser div { position: relative; }
-.fbUser .icon16 { position: absolute; bottom: 0; right: 0; }
+.fbUser img.icon16 { position: absolute; bottom: 0; right: 0; margin: 0px; }
 #loginForm td { font-weight: bold; }
 .redeem { width: auto; background-color: #ffffff; color: #2B0764; border: 1px solid #cccccc; padding: 5 5 5 5; }
 
 .rte { margin-bottom: 7px; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; padding:0; width: 100%; height: 107px;  }
-.rte_body { color: &[PrimaryColor_4_text];; font-family :Helvetica, arial; fontSize : 16px; margin:5; }
+.rte_body { overflow: hidden; color: &[PrimaryColor_4_text];; font-family :Helvetica, arial; fontSize : 16px; margin:5; }
 .rte_body object { display: block; background: #000000; }
 
 /* like menu_Options in iphone.css */
@@ -2338,18 +2338,15 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
   right: 10px;
   padding: 5px;
   border-radius: 5px;
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
   box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
-  -moz-box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
-  -webkit-box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 #div_SlideShow .slides_pager { top: 40px; }
 
 .slides_pager a { 
   background: url("../icons/slider_pager_dots.png");
   cursor: pointer;
-  float:left;
+  display: inline-block;
   height: 16px;
   width: 16px;
   -moz-border-radius: 16px;
@@ -2712,11 +2709,11 @@ td #corePageContent { min-height: 600px;}
 .section table.c1 td.bb3 { padding-left: 40px}
 .section table.c1 { margin: 25px;}
 .section .section-header {text-align: center; margin-bottom: 45px}
-.section p {font-size: 14px;}
-.section p.intro { font-size: 18px; line-height: 26px; }
+.section div.intro { font-size: 18px; line-height: 26px; }
 .section h1, .section h2, .section h3, .section h4 {color: black; font-weight: normal;}
 .section h2 {font-size: 33px; line-height: 34px}
 .section h4 {font-size: 18px; line-height: 24px; margin-bottom: 3px;}
 .section h2 + p.intro { margin-top: 16px; }
 .section h1, .section h2, .section h3 { margin-bottom: 5px; }
 .section .p div {font-size: 14px; margin-bottom:25px;}
+.section .galleryItem_css3 { box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
