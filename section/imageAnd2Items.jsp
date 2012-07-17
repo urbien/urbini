@@ -13,7 +13,7 @@
     </div>
     -->
     <div id="slideshow1" align="center">
-      <slideShow />
+      <slideShow switchOverlay="n" textOverlay="n" frame="n"/>
     </div>    
    <p />
     <table class="c1">

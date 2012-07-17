@@ -14,7 +14,7 @@
         <tr>
           <td class="bb1" rowspan="4">
             <div class="slideshow">
-              <slideShow width="500" />
+              <slideShow width="500" switchOverlay="n" textOverlay="n" frame="n"/>
             </div>
           </td>
           <td class="bb3">
