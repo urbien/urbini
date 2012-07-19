@@ -1996,9 +1996,10 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.setYoutube = function(params){
 		var html;
   	var embed = params.embed;
-		if (!embed) {
-			alert("&[enter]; YouTube's (new) embeded &[code];!")
-			return;
+		if (!embed ||
+		    (embed.indexOf("<iframe") == -1 && embed.indexOf("<object") == -1)) {
+			alert("&[Error]; <br /> &[Enter]; embed &[code];!")
+			return false;
 		}
 			 
 		// retrieves src from new and old embeded code
