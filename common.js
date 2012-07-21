@@ -1023,12 +1023,12 @@ function getChildByAttribute(parent, attribName, attribValue) {
     return null;
 }
 
-// return "parent" if it is of required tagName
-function getChildByTagName(parent, tagName) {
+// can return "parent" if skipParent is not true
+function getChildByTagName(parent, tagName, skipParent) {
   if(!parent)
     return null;
   tagName = tagName.toLowerCase();
-  if(parent.tagName.toLowerCase() == tagName)
+  if(!skipParent && parent.tagName.toLowerCase() == tagName)
     return parent;
 
   var children = parent.childNodes;
