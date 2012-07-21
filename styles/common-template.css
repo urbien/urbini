@@ -421,7 +421,8 @@ td.textCell {
 /* Gallery */
 .galleryItem_container { position: relative; margin: 10px; display: inline-block; /* IE hack-> */ zoom: 1; *display:inline;  }
 .galleryItem_note { position: absolute; bottom: 0px; left: 0px; font-size: 14px;
-    background: rgba(0, 0, 0, 0.4); #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000);  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000)";
+    background: rgba(0, 0, 0, 0.4);
+     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000);  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000)";
     color: #ffffff; text-shadow: 1px 2px 2px #000000; pointer-events: none;
     padding: 1% 2%;
     width: 96%;
@@ -2331,6 +2332,8 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 /********** Slide Show *********/
 .slideShow { position: relative; display: inline-block; }
+.slideShow_scene .slide { position: absolute; opacity: 0; }
+
 .slides_pager { 
   position: absolute;
   z-index: 10; 
