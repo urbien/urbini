@@ -9934,27 +9934,25 @@ var WidgetRefresher = {
   } 
 }
 
-/***********************************************
+/*********************************************************
 * associated with each widget with REFRESH flag
 * NOTE: meanwhile NO stroring of slides because
 * no check of secondary content loading! 
-************************************************/
+* all slides except 1st are absoulutly positioned DIVs
+**********************************************************/
 function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
-  var self = this;
+  var $t = this;
   // used and initialized in WidgetRefresher
   this.timerId; // timer to refresh
   this.interval; // refresh interval
   this.bookmarkUrl;
   this.widgetDiv;
   
+	this.curSlide = null;
   this.nextSlide = null;
-  //-------------------
-  // fading animation
-  this.HALF_STEPS_AMT = 20;
-  this.halfStepsAmt = null;
-  this.TIMEOUT = 30;
-  this.step = 1;
-  this._isSlidingNow = false;
+
+  // transition time 1sec;
+  this._isSlidingNow = false; // used with transition (not IE filter)
   this.slidesArr = new Array();
   
   // IE's hack for text fading
@@ -9967,14 +9965,8 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
   this.init = function(widgetDiv) {
     this.widgetDiv = widgetDiv;
 
-    if (Browser.ie) {
-      this.widgetDiv.style.width = this.widgetDiv.offsetWidth;
-      this.widgetDiv.style.height = this.widgetDiv.offsetHeight;
-    }
-    else {
-      this.widgetDiv.style.minWidth = this.widgetDiv.offsetWidth;
-      this.widgetDiv.style.minHeight = this.widgetDiv.offsetHeight;
-    }
+    this.widgetDiv.style.minWidth = this.widgetDiv.offsetWidth;
+    this.widgetDiv.style.minHeight = this.widgetDiv.offsetHeight;
 
     // crerate a widget from initial content    
     var recNmb = 0; //this.getRecNmb() || 0;
@@ -9983,29 +9975,27 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
   
   // slideIdx for slideshow without RecNmb,like backlink images
   this.insertNextSlide = function(htmlOrObject, slideIdx) {
-    var $t = self;
-        
-    var recNmb = (typeof slideIdx != 'undefined') ? slideIdx : this.getRecNmb();
+		var recNmb = (typeof slideIdx != 'undefined') ? slideIdx : this.getRecNmb();
     // 1. exist slide from cache 
-    if (!htmlOrObject) {
-      $t.nextSlide = $t.slidesArr[recNmb];
-    }
-    // 2. new slide
-    else {
-      $t.createNewSlide(htmlOrObject, recNmb);
-    }
-    
-    if (Browser.ie) // IE uses own transition Fade effect
-      return;
-    
-    $t.nextSlide.style.display = "none";
-    $t.widgetDiv.appendChild($t.nextSlide);
+	  if (!htmlOrObject) 
+			$t.nextSlide = $t.slidesArr[recNmb];
+		// 2. new slide
+		else
+			$t.createNewSlide(htmlOrObject, recNmb);
+
+    if (!Browser.ie) // IE uses own filter
+		  $t.widgetDiv.insertBefore($t.nextSlide, getFirstChild($t.widgetDiv));
   }
+	
   // it CAN be called outside to create preloaded pages manually, like Backlink images
   // for widgets it is inner function
   // recNmb is not required
   this.createNewSlide = function(htmlOrObject, recNmb) {
     this.nextSlide = document.createElement("div");
+		this.nextSlide.className = "slide";
+//		this.nextSlide.style.zIndex = 1;
+		setTransitionProperty(this.nextSlide, 'opacity 1s ease-in-out');
+
     if (typeof htmlOrObject == "string")
       this.nextSlide.innerHTML = htmlOrObject;
     else {
@@ -10017,74 +10007,54 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
     this.slidesArr[recNmb] = this.nextSlide;
   }
   
-  this.showNextSlide = function(acceleration){
+  this.showNextSlide = function(fast){
     if (this.nextSlide == null)
       return;
 
-    this.halfStepsAmt = (typeof acceleration != 'undefined') ? Math.ceil(this.HALF_STEPS_AMT / acceleration) : this.HALF_STEPS_AMT;
-    this._isSlidingNow = true;
-    
-    if (Browser.ie) { // IE uses own transition Fade effect
+		// IE:  use filter --- 
+    if (Browser.ie) { 
       if (!this.widgetDiv.filters[0]) { 
         this.widgetDiv.style.filter = "progid:DXImageTransform.Microsoft.Fade(duration=1)";
       }
-  
+
       this.widgetDiv.filters[0].apply();
       this.widgetDiv.innerHTML = this.nextSlide.innerHTML;
       this.widgetDiv.filters[0].play();
 
       if (this.callbackHalfFinish)
-        setTimeout(this.callbackHalfFinish, this.halfStepsAmt * this.TIMEOUT);
+        setTimeout(this.callbackHalfFinish, 200);
   
       if (this.callbackFinish)
-        setTimeout(this.callbackFinish, 2 * this.halfStepsAmt * this.TIMEOUT);
+        setTimeout(this.callbackFinish, 1000);
 
       return;
-    } 
-    
-    // other browsers
-    this.fading();
-  }
-  
-  this.fading = function() {
-    var $t = self;
-    var opacity;
-
-    if ($t.step <= $t.halfStepsAmt) 
-      opacity = ($t.halfStepsAmt - $t.step) / $t.halfStepsAmt;
-    else if ($t.step == $t.halfStepsAmt * 2 - 1)
-      opacity = 1.0;  
-    else
-      opacity = ($t.step - $t.halfStepsAmt) / $t.halfStepsAmt;
-
-    $t._changeOpacity(opacity);
-
-    // replace slides
-    if ($t.step == $t.halfStepsAmt) {
-      if (this.callbackHalfFinish)
-        this.callbackHalfFinish();
-      removeAllChildren($t.widgetDiv, $t.nextSlide);
-      $t.nextSlide.style.display = "";
     }
-    
-    $t.step++;
-    
-    if ($t.step < $t.halfStepsAmt * 2) {
-      setTimeout(function(){$t.fading()}, $t.TIMEOUT);
-    }
-    else {
-      $t.step = 1;
-      $t._isSlidingNow = false;
-      if (this.callbackFinish)
-        this.callbackFinish();
-    } 
+		
+    // Other browsers: use transition --- 
+		if (fast)
+		  setTransitionProperty(this.nextSlide, 'opacity 0.2s ease-in-out');
+
+    setTransitionCallback(this.nextSlide, this.onSlidingFinish); 
+    this.nextSlide.style.zIndex = "1";
+		if (this.curSlide)
+      this.curSlide.style.zIndex = "0";
+		this.nextSlide.style.opacity = "1.0";
+
+    if (this.callbackHalfFinish)
+      setTimeout(this.callbackHalfFinish, 200);
   }
-  this._changeOpacity = function(opacity) {
-    if (!Browser.ie) {
-      changeOpacity(this.widgetDiv, opacity);
-      return;
-    }
-  }
+	
+	this.onSlidingFinish = function() {
+		 if ($t.curSlide) {
+	 	   $t.curSlide.style.opacity = "0.0";
+			 removeTransitionCallback($t.curSlide, $t.onSlidingFinish);
+	   }
+		 $t.curSlide = $t.nextSlide;  	 
+		 if ($t.callbackFinish)
+		   $t.callbackFinish();
+//    $t._isSlidingNow = false;
+	}
+
   this.getWidgetDiv = function() {
     return this.widgetDiv;
   }
@@ -10140,17 +10110,14 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 var BacklinkImagesSlideshow = {
   DELAY: 3000,
   MAX_LOOPS: 2,
-  slideshowArr : new Array(),
-  initialized : false,
+  slideshowArr : new Array(), // 
+//  initialized : false,
   
-  // called onload
-  register : function(slideImg) {
-    if (this.initialized)
-      return;
-    this.slideshowArr.push(new slideshow(slideImg.parentNode));
+  register : function(sceneId) {
+    this.slideshowArr.push(new slideshow(document.getElementById(sceneId)));
   },
   init : function() {
-    this.initialized = true;
+ //   this.initialized = true;
     for (var i = 0; i < this.slideshowArr.length; i++)
       this.slideshowArr[i].init();
   },
@@ -10242,7 +10209,7 @@ function slideshow(slideShowSceneDiv) {
 
     // color scheme and description of the next images
     // note: images moved from 'images' collection while slides collection so 0! is always!
-    for (var idx = 0; idx < this.maxSlideIdx; idx++) {
+    for ( var idx = 0; idx < this.maxSlideIdx; idx++ ) {
       if (this.colorScemeArr)
         this.colorScemeArr.push(images[0].id.replace(/_\d{1,}/,""));
       if (this.descArr) {
@@ -10294,8 +10261,6 @@ function slideshow(slideShowSceneDiv) {
   // imgSrc used to show 1st slide on tab
   // manual paging means $t.loopsCounter > $t.MAX_LOOPS
   this.rotate = function(newImageIdx, imgSrc) {
-    // make manual pagging faster
-    var accelaration =  ($t.isManualPaging()) ? 5 : 1;
     // additinal slide is a slide created from small image, not included into 'automatic' slide show
     var isAdditinalSlide = !$t.pagerSlots || typeof $t.pagerSlots[$t.curImageIdx] == 'undefined';
     if (!isAdditinalSlide)
@@ -10325,9 +10290,11 @@ function slideshow(slideShowSceneDiv) {
         return;
       }
     }
-    if ($t.widgetSlider) {
+
+    if ( $t.widgetSlider ) {
       $t.widgetSlider.insertNextSlide(null, $t.curImageIdx);
-      $t.widgetSlider.showNextSlide(accelaration);
+			    // make manual pagging faster
+			setTimeout(function f(){ $t.widgetSlider.showNextSlide($t.isManualPaging()) }, 100);
     }
   }
   
@@ -10430,7 +10397,7 @@ function changeSkin(event) {
   var t = target;
   while (true) {
     var parent = t.parentNode;
-    if (!parent)
+    if ( !parent )
       break;
     if (parent.tagName.toLowerCase() == 'div') {
       var div = parent;
