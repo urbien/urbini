@@ -704,7 +704,7 @@ var ImageUploader = {
     }
 
 		if (frameLoaded[frameId] == "error") {
-			alert("&[Failed to upload image];!<br />&[Try to use other];.");
+			alert("&[Failed to upload image];!<br />&[Check that your session is not expired];.");
 			frameLoaded[frameId] = false;
 			return;
 		}

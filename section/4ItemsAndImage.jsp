@@ -71,6 +71,6 @@
     </table>
   </div>
   <div id="slideshow1" align="center">
-	  <slideShow flat="y"/>
+	  <slideShow switchOverlay="n" textOverlay="n" frame="n"/>
 	</div>  
 </div> <!-- section -->

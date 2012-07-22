@@ -13134,8 +13134,12 @@ function getMoreBoards(e, id, exclude, profile) {
       var t = titleDiv[i].className;
       if (t == null)
         continue;
-      if (t == 'boardsTitle') 
-        titleDiv[i].innerHTML = (count + 4) + " boards";
+      if (t == 'boardsTitle') { 
+        if (isView)
+          titleDiv[i].innerHTML = count + " boards";
+        else
+          titleDiv[i].innerHTML = (count + 4) + " boards";
+      }
       else if (isView  &&  t == 'moreBoards_tab')
         titleDiv[i].innerHTML = "";
     }
