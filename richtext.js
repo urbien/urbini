@@ -1527,9 +1527,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   }
   
 	// fitHeightToVisible
-	this.fitHeightToVisible = function(onFocus){
+	this.fitHeightToVisible = function(/*onFocus*/){
   	var docH = 0;
-  	
   	// 1) fit height with help of position of last element
 			// worked in FF and IE
 			var lastElem = getLastChild(i_am.document.body);
@@ -1547,10 +1546,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			// 2) fit height with help of body size
 			// Chrome and Opera failed with 1st variant: problem with findPosY / obj.offsetTop
 			if (docH == 0) {
-				if (onFocus) 
-					docH = i_am.document.body.scrollHeight;
-				else if (i_am.document.body.offsetHeight != 0) 
-				  docH = i_am.document.body.offsetHeight;
+//				if (onFocus) 
+//					docH = i_am.document.body.scrollHeight;
+//				else if (i_am.document.body.offsetHeight != 0) 
+//				  docH = i_am.document.body.offsetHeight;
+        var auxiliaryDiv = document.createElement("div");
+        i_am.document.body.appendChild(auxiliaryDiv);
+        return this.fitHeightToVisible(/*onFocus*/);
 			}
 			
 			var frmH = i_am.iframeObj.clientHeight;
