@@ -281,6 +281,10 @@ var RteEngine = {
 		if(this.youtubePopup == null)
 			this.createYoutubePopup();
 		var parentDlg = getParentDialog(btnObj.div);
+		
+		var checkBox = getChildById(div, "fullwindow");
+    var touchBtn = getNextSibling(checkBox);
+		
 		this.youtubePopup.show(btnObj, 'center', callback, parentDlg, cancelCallback);
 		return this.youtubePopup.div;
 	},
@@ -368,13 +372,17 @@ var RteEngine = {
 	createYoutubePopup : function() {
     var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
       + ' <tr>'
-      + ' <td align="left">&[Paste]; YouTube\'s embed &[code];:</td>'
+      + ' <td align="left" colspan="2">&[Paste]; YouTube\'s embed &[code];:</td>'
       + ' </tr><tr>'
-      + ' <td><textarea name="embed" type="text" id="html" rows="4" cols="50"></textarea></td>'
-      + ' </tr>'
+      + ' <td colspan="2"><textarea name="embed" type="text" id="embed" rows="4" cols="50"></textarea></td>'
+      + ' </tr><tr>'
+      + ' <td style="width:1%;"><input type="checkbox" name="fullwindow" id="fullwindow"></td>'
+      + ' <td>&[open in full window mode];</td>'
+			+ ' </tr>'
       + '</table>';
 			+ '</table>';
 		this.youtubePopup = new FormPopup(innerFormHtml);
+		CheckButtonMgr.prepare(this.youtubePopup.getFormDiv());
 	},
   createFacebookPopup : function() {
     var innerFormHtml = '<table cellpadding="4" cellspacing="0" border="0">'
@@ -704,7 +712,7 @@ var ImageUploader = {
     }
 
 		if (frameLoaded[frameId] == "error") {
-			alert("&[Failed to upload image];!<br />&[Check that your session is not expired];.");
+			alert("&[Failed to upload image];!<br />&[Try to use other];.");
 			frameLoaded[frameId] = false;
 			return;
 		}
@@ -1519,9 +1527,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
   }
   
 	// fitHeightToVisible
-	this.fitHeightToVisible = function(onFocus){
+	this.fitHeightToVisible = function(/*onFocus*/){
   	var docH = 0;
-  	
   	// 1) fit height with help of position of last element
 			// worked in FF and IE
 			var lastElem = getLastChild(i_am.document.body);
@@ -1539,10 +1546,13 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 			// 2) fit height with help of body size
 			// Chrome and Opera failed with 1st variant: problem with findPosY / obj.offsetTop
 			if (docH == 0) {
-				if (onFocus) 
-					docH = i_am.document.body.scrollHeight;
-				else if (i_am.document.body.offsetHeight != 0) 
-				  docH = i_am.document.body.offsetHeight;
+//				if (onFocus) 
+//					docH = i_am.document.body.scrollHeight;
+//				else if (i_am.document.body.offsetHeight != 0) 
+//				  docH = i_am.document.body.offsetHeight;
+        var auxiliaryDiv = document.createElement("div");
+        i_am.document.body.appendChild(auxiliaryDiv);
+        return this.fitHeightToVisible(/*onFocus*/);
 			}
 			
 			var frmH = i_am.iframeObj.clientHeight;
@@ -1981,22 +1991,44 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		}
 		return true;
 	}
-	// setYoutube
+
+	// setYoutube: 2 ways possible
+	// 1) embed video on a page
+	// 2) open video in full window mode
 	this.setYoutube = function(params){
+		var html;
   	var embed = params.embed;
-		if (!embed) {
-			alert("&[enter]; YouTube's (new) embeded &[code];!")
-			return;
+		if (!embed ||
+		    (embed.indexOf("<iframe") == -1 && embed.indexOf("<object") == -1)) {
+			alert("&[Error]; <br /> &[Enter]; embed &[code];!")
+			return false;
 		}
+			 
+		// retrieves src from new and old embeded code
+		embed = embed.replace("/v/", "/embed/");
+		var src = embed.match(/src="[^"\?]+/)[0] + "\"";
+
+    var width = embed.match(/width="[^"]+\"/)[0];
+    var height = embed.match(/height="[^"]+\"/)[0];
 		
-		// add wmode=transparent to show a dialog above
-    if (embed.indexOf("<iframe") != -1) { // only for new format
-			var src = embed.match(/src="[^"]+"/)[0];
-			var srcTr = src.replace(/"$/, "?wmode=transparent\"");
-			embed = embed.replace(src, srcTr);
+    // open in full window mode 
+		if (params.fullwindow) {
+      var playLeft = Math.floor((parseInt(width.replace("width=\"", "")) - 48) / 2);
+			var playTop = Math.floor((parseInt(height.replace("height=\"", "")) - 48) / 2);
+			var id = src.match(/\/\w+\"/)[0].replace("\"", "").replace("src=", "");
+			html = "<div class=\"video_a\"><img src=\"http://img.youtube.com/vi" + id + "/0.jpg\"" +
+				" onclick='fullWindowVideo(this, " + src.replace("src=", "") + ")' " +
+				width + " " + height + " />" +
+				"<img class=\"play_icon\" style=\" left:" +	playLeft + "px; top:" + 
+				playTop +"px;\" src=\"icons/video_play.png\" />";
+				"</div>";
+		}
+		else {
+			 html = '<iframe ' + width + ' ' + height + ' ' + src + 
+        '?wmode=transparent&amp;rel=0" frameborder="0"></iframe>'; // allowfullscreen
 		}
 
-		i_am.insertHTML(embed);
+		i_am.insertHTML(html);
 		// so fit RTE height after some delay while image should be downloaded 
 		setTimeout(i_am.fitHeightToVisible, 1500);
 	}
