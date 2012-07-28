@@ -1942,7 +1942,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 .arrow_td { background-color: &[PrimaryColor_1];;}
 
 .param_tr .label_td { white-space: nowrap; position: relative; } 
-.param_tr .field_comment, #mkresource .field_comment { height: 55px !important; }
+.param_tr .field_comment, #mkresource .field_comment { height: 57px !important; }
 .param_tr .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
 .param_tr .label img { margin-right: 3px; }
 .param_tr .comment { color: &[SecondaryColorB_3];; font-size: 11px; }
