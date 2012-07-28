@@ -1757,8 +1757,8 @@ table.printFB {
 #loginForm td { font-weight: bold; }
 .redeem { width: auto; background-color: #ffffff; color: #2B0764; border: 1px solid #cccccc; padding: 5 5 5 5; }
 
-.rte { margin-bottom: 7px; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; padding:0; height: 107px; width: 99.3%; /*trying to align with inputs*/ }
-.rte_body { overflow: hidden; color: &[PrimaryColor_4_text];; font-family :Helvetica, arial; fontSize : 16px; margin:5; }
+.rte { margin-bottom: 7px; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; padding:0; height: 107px; width: 98%; float: right; margin-right: 3px; /*trying to align with inputs*/ }
+.rte_body { overflow: hidden; color: &[PrimaryColor_4_text];; font-family :Helvetica, arial; font-size : 16px; margin:5; }
 .rte_body object { display: block; background: #000000; }
 
 /* like menu_Options in iphone.css */
@@ -1937,7 +1937,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 
 /*.rounded_rect_tbl a { color: &[PrimaryColor_4_text];; }*/
 
-.arrow_td, .arrow_td_empty { padding-right: 4px; min-width: 10px; font-size: 18px !important; font-weight: bold; text-align:center; }
+.arrow_td, .arrow_td_empty { padding: 0px 2px; min-width: 10px; font-size: 18px !important; font-weight: bold; text-align:center; }
 .arrow_td { cursor: pointer; }
 .arrow_td { background-color: &[PrimaryColor_1];;}
 
