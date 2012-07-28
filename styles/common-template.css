@@ -652,7 +652,7 @@ span.light {color:#ffffff}
 input.xxs {font-size: 10px; color: &[Alternative_A];;}
 .text {font-size:0.9em; font-weight:bold;}
 /* FTS category image style */
-.cat  { padding-right: 3px; border: 0; width: 16px; height: 16px; vertical-align:text-bottom;}
+.cat  { padding-right: 3px; border: 0; width: 16px; height: 16px; vertical-align: middle;}
 .cat32  { padding-right: 3px; border: 0; width: 32px; height: 32px; vertical-align:text-bottom;}
 .cat1 {FONT-WEIGHT: bold;}
 
@@ -2185,7 +2185,7 @@ td.pBGr { background-color: #eeeeee;
 /*.cp_item_left { min-height: 30px; }*/
 .backlink_counter { position: absolute; pointer-events: none; }
 .cp_item_right .backlink_counter { top: -7px; left: 15px; }
-.cp_item_left  .backlink_counter { top: 0px; right: 5px; }
+.cp_item_left  .backlink_counter { top: 2px; right: 5px; }
 
 .backlink_counter .left, .backlink_counter .right { height: 25px; background-image: url(../images/skin/iphone/backlink_counter.png); background-repeat: no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
