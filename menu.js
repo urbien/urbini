@@ -7615,7 +7615,7 @@ var FtsAutocomplete = {
     var params = FormProcessor.getFormFilters(form, true, null, true);
     params += "&-ac=y";
 
-    postRequest(null, "smartPopup", params, null, null, $t.autocompleteCallback);
+    postRequest(null, "smartPopup", params, null, $t.field, $t.autocompleteCallback);
   },
   
   autocompleteCallback : function(e, contentTr, hotspot, content, url) {
@@ -13155,7 +13155,6 @@ function fullWindowVideo(hotspot, src) {
 	hotspot.setAttribute("hide_icon", "y");
 	PlainDlg.showHtml(null, src, embed, hotspot);
 }
-
 
 // flag that menu.js was parsed. should be last in the file
 g_loadedJsFiles["menu.js"] = true;
