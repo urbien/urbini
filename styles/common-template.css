@@ -2243,7 +2243,7 @@ td.pBGr { background-color: #eeeeee;
   *margin-bottom: 30px;  
 }
 
-#auto_complete { z-index: 101; position: absolute; cursor: pointer; overflow: visible; background-color:&[PrimaryColor_4];; }
+#auto_complete { z-index: 101; position: absolute; box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.3); cursor: pointer; overflow: visible; background-color:&[PrimaryColor_4];; }
 #auto_complete .menuItem, #auto_complete .not_found { color: &[PrimaryColor_4_text];; padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_1];; }
 #auto_complete .not_found { border-bottom: none; }
 #auto_complete tr:last-child td { border-bottom: none; }
