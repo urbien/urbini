@@ -4761,7 +4761,7 @@ var TouchDlgUtil = {
   onBodyKeyup : function(event) {
     var code = getKeyCode(event);
     if(code == 27)
-      TouchDlgUtil.closeAllDialogs();
+      TouchDlgUtil.closeAllDialogs("esc");
   },
   onBodyClick : function(){
     var $t = TouchDlgUtil;
@@ -5054,13 +5054,14 @@ var TouchDlgUtil = {
   },
   
   // closes 1) data entry 2) filter 3) plain dialog
-  closeAllDialogs : function(isFtsAutocomplete) {
+  closeAllDialogs : function(flag) {
     if (ListBoxesHandler.onBackBtn())
-      return; // slide back to form panel
+      if (flag == "esc")
+			  return; // slide back to form panel
 
     DataEntry.hide();
-    if (!(isFtsAutocomplete && Browser.mobile))
-     Filter.hide();
+    if (!(Browser.mobile && flag == "fts_autocomplete")) // not hide mobile filter on autocomplete
+      Filter.hide();
     PlainDlg.hide();
     SubscribeAndWatch.hide();
     FtsAutocomplete.hide();
@@ -7615,7 +7616,7 @@ var FtsAutocomplete = {
     var params = FormProcessor.getFormFilters(form, true, null, true);
     params += "&-ac=y";
 
-    postRequest(null, "smartPopup", params, null, null, $t.autocompleteCallback);
+    postRequest(null, "smartPopup", params, null, $t.field, $t.autocompleteCallback);
   },
   
   autocompleteCallback : function(e, contentTr, hotspot, content, url) {
@@ -7624,7 +7625,7 @@ var FtsAutocomplete = {
     if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
       $t.autocompleteDiv.style.display = "none";
     else {
-      TouchDlgUtil.closeAllDialogs(true);
+      TouchDlgUtil.closeAllDialogs("fts_autocomplete");
       $t.autocompleteDiv.innerHTML = content;
       TouchDlgUtil.init($t.autocompleteDiv);
       if (Browser.ie) {
@@ -13155,7 +13156,6 @@ function fullWindowVideo(hotspot, src) {
 	hotspot.setAttribute("hide_icon", "y");
 	PlainDlg.showHtml(null, src, embed, hotspot);
 }
-
 
 // flag that menu.js was parsed. should be last in the file
 g_loadedJsFiles["menu.js"] = true;
