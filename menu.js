@@ -10353,7 +10353,7 @@ function slideshow(slideShowSceneDiv) {
   this.onslidingHalfFinish = function() {
     if ($t.descArr) {
       if ($t.descArr[$t.curImageIdx] != null) {
-      $t.descOverlay.innerHTML = $t.descArr[$t.curImageIdx];
+      $t.descOverlay.innerHTML = $t.descArr[$t.curImageIdx].plainText();
         $t.descOverlay.style.display = "";
       }
       else
