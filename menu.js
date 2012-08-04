@@ -1201,19 +1201,19 @@ var Tooltip = {
     // show tooltip on click on (help & property) icon
     var target = getEventTarget(e);
     // allow browsing on a link click
-		var a = getAncestorByTagName(target, "a");
+    var a = getAncestorByTagName(target, "a");
     if (a != null && getTextContent(a) == "[?]" && $t.putContent(e, target)) {
       $t.show();
       stopEventPropagation(e);
     }
   },
   
-	show : function() {
-  	Tooltip._show(); 
-	},
-	// use showText to notify a user with help of a tooltip
-	showText : function(text) {
-		// setTimeout allows to call it onclick, onmouseup
+  show : function() {
+    Tooltip._show(); 
+  },
+  // use showText to notify a user with help of a tooltip
+  showText : function(text) {
+    // setTimeout allows to call it onclick, onmouseup
     setTimeout("Tooltip._show('" + text + "');", 100); 
   },
   _show : function(tooltipText) {
@@ -1223,10 +1223,10 @@ var Tooltip = {
       return;
 
     var target = $t.showArgs.target;
-		// Chrome had a problem with "ZeroClipboard" embeded object
-		if (target.parentNode.tagName.toLowerCase() == "a") 
-		  target = target.parentNode;
-			
+    // Chrome had a problem with "ZeroClipboard" embeded object
+    if (target.parentNode.tagName.toLowerCase() == "a") 
+      target = target.parentNode;
+      
     if (isElemOfTag(target, "iframe")) // prevent tooltip over social Like buttons
       return;
     // if dialog opened then show tooltip only for elements inside it.
@@ -1238,7 +1238,7 @@ var Tooltip = {
       // possible additinally to check if parentDlg is cuDlg but in most cases we have one dlg on page   
     }
     
-		if (!tooltipText)
+    if (!tooltipText)
       tooltipText = $t.showArgs.tooltipText;
 
     if (!$t.tooltipDiv)
@@ -1452,7 +1452,7 @@ var ListBoxesHandler = {
 
   // Opens the popup when needed, e.g. on click, on enter, on autocomplete
   listboxOnClick1 : function(e, imgId, enteredText, enterFlag, classValue, arrowTd) {
-		// cut off "_filter"
+    // cut off "_filter"
     var propName1 = imgId.substring(0, imgId.length - "_filter".length);   
     var idx = propName1.lastIndexOf('_');
     if (idx == -1)
@@ -1549,7 +1549,7 @@ var ListBoxesHandler = {
       return;
     }
     else {
-			if (!div) {
+      if (!div) {
         div = document.getElementById(divId);
         if (!div) {
           div = document.createElement("div");
@@ -1707,12 +1707,12 @@ var ListBoxesHandler = {
     this._isOneParamSelection = this.panelBlock.className.indexOf(" oneparamselection") != -1;    
     this._isFormPanelHidden = this._isEditList || this._isFtsSift || this._isOneParamSelection;
     
-		// prevent too wide "standalone" dialog on a page
-	  if (isParentDialogOnPage(this.panelBlock)) {
-			if (document.getElementById("div_cp") == null)
-			  this.panelBlock.style.width = this.panelBlock.clientWidth + "px";
-		}
-	},  
+    // prevent too wide "standalone" dialog on a page
+    if (isParentDialogOnPage(this.panelBlock)) {
+      if (document.getElementById("div_cp") == null)
+        this.panelBlock.style.width = this.panelBlock.clientWidth + "px";
+    }
+  },  
   
   onClickParam : function(event, optionsSelectorStr) {
     var $t = ListBoxesHandler;
@@ -1818,9 +1818,9 @@ var ListBoxesHandler = {
       }
       this.showCalendar(tr);
       if (this._isEditList) {
-				var form = getAncestorByAttribute(target, "name", ["siteResourceList", "rightPanelPropertySheet"]);
-				this.showStandAloneOptions(target, form);
-			}
+        var form = getAncestorByAttribute(target, "name", ["siteResourceList", "rightPanelPropertySheet"]);
+        this.showStandAloneOptions(target, form);
+      }
     }
     // 2. options list
     else {
@@ -1891,16 +1891,16 @@ var ListBoxesHandler = {
       for (var i = 0; i < trs.length; i++) 
         trs[i].onclick = $t.onOptionsItemClick;
     }
-		
+    
     $t.changeOptionSelectionState(opTable);
-		$t.changeAddNewState(popupDiv);
-		$t.showOptionsOrClasses(popupDiv);
+    $t.changeAddNewState(popupDiv);
+    $t.showOptionsOrClasses(popupDiv);
 
     // RL editor: align options list
     if (($t._isEditList || $t._isFtsSift) && !isVisible($t.panelBlock) || $t._isOneParamSelection) {
       var form = getAncestorByAttribute(hotspot, "name", ["siteResourceList", "rightPanelPropertySheet"]);
       ////// document.body.appendChild(/*div*/);
-	  	$t.showStandAloneOptions(hotspot, form);
+      $t.showStandAloneOptions(hotspot, form);
     }
   },
 
@@ -1915,7 +1915,7 @@ var ListBoxesHandler = {
       panel = $t.optionsPanel;
       $t.curOptionsListDiv = popupDiv;
     }
-		
+    
     // set top offset (margin) to sutisfy current scroll position
     $t.fitOptionsYPosition(panel);
 
@@ -2068,14 +2068,14 @@ var ListBoxesHandler = {
     $t.calendarPanel.style.display = "inline";
     var inputs = $t.getDateInputs(paramTr); //Filter.getPeriodInputs(paramTr);
     startCalendar($t.calendarPanel, $t.onPeriodSelectionFinish, inputs[0], inputs[1]); // calCont
-		
+    
     // slide forward
-		SlideSwaper.moveForward($t.tray, $t.onOptionsDisplayed);
+    SlideSwaper.moveForward($t.tray, $t.onOptionsDisplayed);
   },
   isCalendar : function() {
     return this.calendarPanel != null && this.calendarPanel.style.display == "inline";
   },
-	
+  
   onOptionsDisplayed : function() {
     var $t = ListBoxesHandler;
     var textEntry = $t.toPutInClassifier ? $t.classifierTextEntry : $t.textEntry;
@@ -2085,13 +2085,13 @@ var ListBoxesHandler = {
     if ($t._isFormPanelHidden)
       setShadow($t.panelBlock, "6px 6px 25px rgba(0, 0, 0, 0.5)");
   },
-	
+  
   changeAddNewState : function(popupDiv) {
     if (!this.addNewResIcon || !this.addNewResBtn || this._isFtsSift)
       return;
     // hide "Add New" in dialog with hidden form panel
     var hdnAddTr = this._isFormPanelHidden ? null : getChildById(popupDiv, "$addNew");
-		this.addNewResIcon.style.display = this.addNewResBtn.style.display = (hdnAddTr != null) ? "" : "none";
+    this.addNewResIcon.style.display = this.addNewResBtn.style.display = (hdnAddTr != null) ? "" : "none";
     if (hdnAddTr)
       getFirstChild(this.addNewResBtn).innerHTML = getChildByTagName(hdnAddTr, "a").innerHTML;
   },
@@ -2218,7 +2218,7 @@ var ListBoxesHandler = {
   
   //*************************************************
   // sets values in hidden inputs
-	// (inherited from old popupRowOnClick1)
+  // (inherited from old popupRowOnClick1)
   //**************************************************
   markAsSelectedAndVerified : function(e, tr, target) {
     var $t = ListBoxesHandler;
@@ -3103,8 +3103,8 @@ var ListBoxesHandler = {
   
   // createClassesPanel
   createClassifierPanel : function(parent) {
-		// hide add resource buttons on the "classifier_panel"
-		this.addNewResBtn.style.display = this.addNewResIcon.style.display = "none";
+    // hide add resource buttons on the "classifier_panel"
+    this.addNewResBtn.style.display = this.addNewResIcon.style.display = "none";
     this.classifierPanel = this.optionsPanel.cloneNode(true);
     this.classifierPanel.className = "classifier_panel";
 
@@ -3278,7 +3278,7 @@ var SlideSwaper = {
   
   // always 1 "step"; callback is not required
   moveForward : function(tray, callback) {
-	  // trying to prevent sliding in non-legitimate cases. 
+    // trying to prevent sliding in non-legitimate cases. 
     if (TouchDlgUtil.getCurrentDialog() && !TouchDlgUtil.hasBlueRow())
       return;
     this.move(tray, callback, true);
@@ -3725,11 +3725,11 @@ var Filter = {
     var url = FormProcessor.onSubmitProcess(e, filterForm);
     
     if (Browser.mobile) {
-			FtsAutocomplete.hide();
-			Mobile.getPage(e, url);
-		}
-		else 
-		filterForm.submit();
+      FtsAutocomplete.hide();
+      Mobile.getPage(e, url);
+    }
+    else 
+    filterForm.submit();
     
     // hide (and reset for mobile) filter
     this.hide();
@@ -3981,7 +3981,7 @@ var DataEntry = {
   
   // parameters provided by XHR and not all used
   onDataEntryLoaded : function(event, parentDiv, hotspot, html, url, params) {
-	  if (!html) {
+    if (!html) {
       alert("Data Entry: Server returned empty response!");
       return; // possible (server) error!
     }
@@ -4082,7 +4082,7 @@ var DataEntry = {
     if (!onSubmit) {
       // check if entered unsaved data in a dialog
       var curDataStr = this._getFormDataStr(this.dataEntryArr[key], false);
-			if (this.initDataStr != curDataStr) {
+      if (this.initDataStr != curDataStr) {
         BrowserDialog.setCallbackThis(this);
         BrowserDialog.setCallbackArguments(key, onSubmit);
         BrowserDialog.confirm("&[You have entered data];.<br /><br />&[Do you want to close the dialog without saving];?", this.continueHide)
@@ -4299,16 +4299,19 @@ var DataEntry = {
 }
 
 /*****************************************************************
-* PlainDlg
+* PlainDlg - used on dialog div (with hide icon)
+*   and divs wrappes content
 * menu popups and "blue" dalogs
 * NOTE: menu popus content is stored but NOT "blue" dalogs' one
+* Use hotspot attributes "modal" and "hide_icon"
 ******************************************************************/
 var PlainDlg = {
   ID : "pane2", // "pane2" name was inherited from previous UI version
   dlgDiv : null, 
   dlgArr : new Array(), // stores content of previously downloaded dialogs. Used for MENU only!
   curUrl : null,
-
+  hideIcon: null,
+  
   // anchor can be omitted and retrieved from click-event
   show : function(e, urlStr, anchor) {
     var $t = PlainDlg;
@@ -4350,7 +4353,7 @@ var PlainDlg = {
     if (!$t.dlgDiv)
       $t.createDiv();
     
-    $t.dlgDiv.innerHTML = "";
+    /////// $t.dlgDiv.innerHTML = "";
     // show stored content
     if (typeof $t.dlgArr[urlStr] != 'undefined') { // this.dlgArr != null && 
       $t.dlgDiv.appendChild($t.dlgArr[urlStr]);
@@ -4385,11 +4388,30 @@ var PlainDlg = {
     return stopEventPropagation(e);
   },
   
+  // id used to avoid secondary time div creation
+  // possible to use id as a timestamp in string format
+  showHtml : function(event, id, html, hotspot) {
+    var div; 
+    if (typeof this.dlgArr[id] != 'undefined')
+      div = this.dlgArr[id];
+    else {  
+      div = document.createElement("div");
+      div.innerHTML = html;
+      div.id = id;
+    }
+    this.showDiv(event, div, hotspot);
+  },
+  
   showPreloaded : function(event, id, hotspot) {
+    this.showDiv(event, document.getElementById(id), hotspot);
+  },
+  
+  showDiv : function(event, div, hotspot) {
     var toInitialize = false;
-    
+    var id = div.id; 
+
     if (typeof this.dlgArr[id] == 'undefined') {
-      this.dlgArr[id] = document.getElementById(id);
+      this.dlgArr[id] = div;
       this.dlgArr[id].className = ""; // remove "hdn" class to show content
       toInitialize = true;
     }
@@ -4404,7 +4426,7 @@ var PlainDlg = {
     
     this.curUrl = id;
     
-		// empty dialog before new content insertion. Need?!!!
+    // empty dialog before new content insertion. Need?!!!
 //    var curContentElem = this.dlgDiv.firstChild;
 //    if (curContentElem)
 //      this.dlgDiv.removeChild(curContentElem);
@@ -4418,14 +4440,15 @@ var PlainDlg = {
     this._show(event, hotspot);
   },
   
+	// hotspot can have attributes: 1) "modal" 2) "hide_icon"
   _show : function(event, hotspot) {
     // login: show it as a modal dialog
     if (this.curUrl && this.curUrl.indexOf("j_security_check") != -1) {
-			LoadingIndicator.show();
-			// hack: FaceBook can not to call a callback (on a local host).
-			// So hide the spinner "manually" (faster to do it on dev.hudsonfog.com site)
-			var timeout = getBaseUri().indexOf("dev.hudsonfog.com") != -1 ? 2000 : 10000;
-			setTimeout("LoadingIndicator.hide()", timeout);
+      LoadingIndicator.show();
+      // hack: FaceBook can not to call a callback (on a local host).
+      // So hide the spinner "manually" (faster to do it on dev.hudsonfog.com site)
+      var timeout = getBaseUri().indexOf("dev.hudsonfog.com") != -1 ? 2000 : 10000;
+      setTimeout("LoadingIndicator.hide()", timeout);
       LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
       // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
       var jstest = getChildByAttribute(this.dlgDiv, "name", '.jstest');
@@ -4435,34 +4458,44 @@ var PlainDlg = {
       return;
     }
 
-    setDivVisible(event, this.dlgDiv, hotspot, 5, 5);
+    var isModal = false;
+    var showHideIcon = false;
+    if (hotspot) {
+      isModal = hotspot.getAttribute("modal") !== null;
+      showHideIcon = hotspot.getAttribute("hide_icon") !== null;
+    }
+    this.hideIcon.style.display = showHideIcon ? "block" : "none";
+
+    setDivVisible(event, this.dlgDiv, hotspot, 5, 5, null, null, isModal);
+
     if (TouchDlgUtil.isMenuPopup(this.dlgDiv))
       TabMenu.setActiveTab(getAncestorByClassName(hotspot, "dashboard_btn"))
   },
   
   // XHR callback
-  onDialogLoaded : function (event, div, hotspot, content, url) { 
+  onDialogLoaded : function (event, dlgDiv, hotspot, content, url) { 
     var $t = PlainDlg;
 
     // SubscribeAndWatch.
     // TODO: call it in better way, for example, thru LinkProcessor.onClickDisplayInner 
     if (url.endsWith("subscribe.html")) {
-      SubscribeAndWatch.onLoaded(event, div, hotspot, content, url);
+      SubscribeAndWatch.onLoaded(event, dlgDiv, hotspot, content, url);
       return;
     }
-		
+    
     // for login dialog // (wrong user name / pw ?) 
     if (url.endsWith("user-login.html")) {
       content = getDomObjectFromHtml(content, "id", "register");
-			// login dialog with error opened on a page, not as a dialog (?!!!)
-			if (getChildById(content, "errorMessage").className != "hdn")
-			 return;
+      // login dialog with error opened on a page, not as a dialog (?!!!)
+      if (getChildById(content, "errorMessage").className != "hdn")
+       return;
     }
-
+    var div = document.createElement("div"); // put new content in wrapper div
     setInnerHtml(div, content);
-    FormProcessor.initForms(div);
+    dlgDiv.appendChild(div);
+    FormProcessor.initForms(dlgDiv);
     // items navigation
-    TouchDlgUtil.init(div);
+    TouchDlgUtil.init(dlgDiv);
     
     $t._show(event, hotspot);
 
@@ -4471,24 +4504,29 @@ var PlainDlg = {
       window.location.reload();
     
   },
-	
+  
   hide : function (e) {
     var $t = PlainDlg;
     if ($t.dlgDiv == null) // || $t.curUrl == null
       return;
-  
+
     setDivInvisible($t.dlgDiv);
     if (!Browser.mobile)
       Tooltip.hide(true);
     
     if ($t.dlgArr == null)
       $t.dlgArr = new Array();
-    
-    var curContentElem = $t.dlgDiv.firstChild;
-    
-    // store content
-    if ($t.curUrl && $t.curUrl.indexOf("-menu=y") != -1)
-      $t.dlgArr[$t.curUrl] = curContentElem;  
+
+    if ($t.curUrl == null)
+      return stopEventPropagation(e);
+
+    var curContentDiv = getChildByTagName($t.dlgDiv, "div", true);
+ 
+    if (curContentDiv ) {
+    if ($t.curUrl.indexOf("-menu=y") != -1) 
+      $t.dlgArr[$t.curUrl] = curContentDiv;  // store content
+    $t.dlgDiv.removeChild(curContentDiv); // empty plain dialog content
+  }
     
     $t.curUrl = null;
     return stopEventPropagation(e);
@@ -4506,7 +4544,11 @@ var PlainDlg = {
    
     if (Browser.ie)
       this.dlgDiv.style.width = 200;
-      
+    
+    this.dlgDiv.innerHTML =
+      "<img class=\"hide_icon\" style=\"display: none;\" src=\"icons/hide_big.png\" onclick=\"PlainDlg.hide(event);\">";
+
+    this.hideIcon = this.dlgDiv.getElementsByTagName("img")[0]; 
     document.body.appendChild(this.dlgDiv);
   },
   getPane2Dialog : function() {
@@ -4644,14 +4686,14 @@ var TouchDlgUtil = {
       this.isThereChildDlg = true;    
   },
   
-	resetCurrentDialog : function() {
-		if (this.curDlgDiv == null)
-		  return;
-	  if (this.curDlgDiv.className.indexOf("modal") != -1/* || Browser.mobile*/)
+  resetCurrentDialog : function() {
+    if (this.curDlgDiv == null)
+      return;
+    if (this.curDlgDiv.className.indexOf("modal") != -1/* || Browser.mobile*/)
       this.hidePageOverlay(); // a modal dilog
     this.curDlgDiv = null;  
   },
-	
+  
   getCurrentDialog : function() {
     return this.curDlgDiv;
   },
@@ -4719,7 +4761,7 @@ var TouchDlgUtil = {
   onBodyKeyup : function(event) {
     var code = getKeyCode(event);
     if(code == 27)
-      TouchDlgUtil.closeAllDialogs();
+      TouchDlgUtil.closeAllDialogs("esc");
   },
   onBodyClick : function(){
     var $t = TouchDlgUtil;
@@ -5012,13 +5054,14 @@ var TouchDlgUtil = {
   },
   
   // closes 1) data entry 2) filter 3) plain dialog
-  closeAllDialogs : function(isFtsAutocomplete) {
+  closeAllDialogs : function(flag) {
     if (ListBoxesHandler.onBackBtn())
-      return; // slide back to form panel
+      if (flag == "esc")
+			  return; // slide back to form panel
 
     DataEntry.hide();
-    if (!(isFtsAutocomplete && Browser.mobile))
-   	 Filter.hide();
+    if (!(Browser.mobile && flag == "fts_autocomplete")) // not hide mobile filter on autocomplete
+      Filter.hide();
     PlainDlg.hide();
     SubscribeAndWatch.hide();
     FtsAutocomplete.hide();
@@ -5167,7 +5210,7 @@ var TouchDlgUtil = {
   
   hasBlueRow : function() {
     return (this.curDlgDiv && (this.blueTr != null ||
-		   this.curDlgDiv.className.indexOf(" oneparamselection") != -1));
+       this.curDlgDiv.className.indexOf(" oneparamselection") != -1));
   },
   
   isFieldBlueHighlight : function(field) {
@@ -5189,7 +5232,7 @@ var TouchDlgUtil = {
     this.pageOverlay.style.display = "block";
   },
   hidePageOverlay: function(){
-		if (this.pageOverlay)
+    if (this.pageOverlay)
       this.pageOverlay.style.display = "none";
   }
 }
@@ -6592,7 +6635,7 @@ function showTab(e, td, hideDivId, unhideDivId) {
       
       // div_Description occupies 100% that's why make its parent TD 100%
       // TODO: probably to redo Tabs and to put all divs in one container.
-	    if (i == 0) {
+      if (i == 0) {
         var parentTd = getAncestorByTagName(div, "td");
         var divDescription = getChildById(parentTd, "div_Description");
         var hasDescription = (divDescription != null);
@@ -7007,11 +7050,11 @@ function setDivVisible(event, div, hotspot, offsetX, offsetY, hotspotDim, positi
      MobilePageAnimation.showDialog(div);
     return;
   }
-	
+  
   // hack: panel_block has width = 550px need to extend it
-//	if (isElemOfClass(div, "panel_block"))
-//		div.style.minWidth = getFirstChild(div).clientWidth;
-	
+//  if (isElemOfClass(div, "panel_block"))
+//    div.style.minWidth = getFirstChild(div).clientWidth;
+  
   // limit div / dialog width gotten from "max_width" parameter
   if (hotspot) {
     var maxWidth = hotspot.getAttribute("max_width");
@@ -7032,11 +7075,13 @@ function setDivVisible(event, div, hotspot, offsetX, offsetY, hotspotDim, positi
   
   // MODAL dialog
   if (isModal) {
-    div.style.position = "fixed";
+//    div.style.position = "fixed";
     scrollX = 0;
     scrollY = 0;
-    setShadow(div, "none");
+ //   setShadow(div, "none");
+    hotspot = null; // show modal dialog at screen center
     TouchDlgUtil.showPageOverlay(div);
+    appendClassName(div, "modal");
   }
   
   var left = 0;
@@ -7227,8 +7272,16 @@ function setDivInvisible(div) {
 
   if (div.style)
     div.style.display    = "none";
-
+  
   TouchDlgUtil.resetCurrentDialog();
+  if (div.className.indexOf("modal") != -1) {
+    removeClassName(div, "modal");
+//    div.style.position = "";
+//    setShadow(div, "");
+//    TouchDlgUtil.hidePageOverlay();
+  }
+  
+  
 }
 
 function doConfirm(msg) {
@@ -7542,13 +7595,13 @@ var FtsAutocomplete = {
     var form = getAncestorByTagName($t.field, 'form');
     var text = FieldsWithEmptyValue.getValue($t.field);
  
-		if ($t.autocompleteDiv == null)
+    if ($t.autocompleteDiv == null)
       $t._createDiv();
 
     if (Browser.mobile) // "Bookmark" type has FTS field in middle of a dialog
       $t.autocompleteDiv.style.top = (getAncestorByClassName($t.field, 'header') != null) ? "40px" : "180px";
-		
-		if ($t.prevText == text) {
+    
+    if ($t.prevText == text) {
       $t.autocompleteDiv.style.display = "";
       return;
     }
@@ -7563,16 +7616,16 @@ var FtsAutocomplete = {
     var params = FormProcessor.getFormFilters(form, true, null, true);
     params += "&-ac=y";
 
-    postRequest(null, "smartPopup", params, null, null, $t.autocompleteCallback);
-	},
+    postRequest(null, "smartPopup", params, null, $t.field, $t.autocompleteCallback);
+  },
   
   autocompleteCallback : function(e, contentTr, hotspot, content, url) {
     var $t = FtsAutocomplete;
 
-		if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
+    if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
       $t.autocompleteDiv.style.display = "none";
     else {
-      TouchDlgUtil.closeAllDialogs(true);
+      TouchDlgUtil.closeAllDialogs("fts_autocomplete");
       $t.autocompleteDiv.innerHTML = content;
       TouchDlgUtil.init($t.autocompleteDiv);
       if (Browser.ie) {
@@ -7871,6 +7924,10 @@ var FieldsWithEmptyValue = {
     var $t = FieldsWithEmptyValue;
     var field = getEventTarget(event);
     var code = getKeyCode(event);
+    if (Browser.gecko && (code == 33 || code == 34)) {
+      field.blur(); // pageDown/Up: go out a field to allow window scrolling 
+      return;
+    } 
     if (code == 27)
       return;
     $t.setReady(field); 
@@ -9878,27 +9935,25 @@ var WidgetRefresher = {
   } 
 }
 
-/***********************************************
+/*********************************************************
 * associated with each widget with REFRESH flag
 * NOTE: meanwhile NO stroring of slides because
 * no check of secondary content loading! 
-************************************************/
+* all slides except 1st are absoulutly positioned DIVs
+**********************************************************/
 function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
-  var self = this;
+  var $t = this;
   // used and initialized in WidgetRefresher
   this.timerId; // timer to refresh
   this.interval; // refresh interval
   this.bookmarkUrl;
   this.widgetDiv;
   
+	this.curSlide = null;
   this.nextSlide = null;
-  //-------------------
-  // fading animation
-  this.HALF_STEPS_AMT = 20;
-  this.halfStepsAmt = null;
-  this.TIMEOUT = 30;
-  this.step = 1;
-  this._isSlidingNow = false;
+
+  // transition time 1sec;
+  this._isSlidingNow = false; // used with transition (not IE filter)
   this.slidesArr = new Array();
   
   // IE's hack for text fading
@@ -9911,14 +9966,8 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
   this.init = function(widgetDiv) {
     this.widgetDiv = widgetDiv;
 
-    if (Browser.ie) {
-      this.widgetDiv.style.width = this.widgetDiv.offsetWidth;
-      this.widgetDiv.style.height = this.widgetDiv.offsetHeight;
-    }
-    else {
-      this.widgetDiv.style.minWidth = this.widgetDiv.offsetWidth;
-      this.widgetDiv.style.minHeight = this.widgetDiv.offsetHeight;
-    }
+    this.widgetDiv.style.minWidth = this.widgetDiv.offsetWidth;
+    this.widgetDiv.style.minHeight = this.widgetDiv.offsetHeight;
 
     // crerate a widget from initial content    
     var recNmb = 0; //this.getRecNmb() || 0;
@@ -9927,29 +9976,27 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
   
   // slideIdx for slideshow without RecNmb,like backlink images
   this.insertNextSlide = function(htmlOrObject, slideIdx) {
-    var $t = self;
-        
-    var recNmb = (typeof slideIdx != 'undefined') ? slideIdx : this.getRecNmb();
+		var recNmb = (typeof slideIdx != 'undefined') ? slideIdx : this.getRecNmb();
     // 1. exist slide from cache 
-    if (!htmlOrObject) {
-      $t.nextSlide = $t.slidesArr[recNmb];
-    }
-    // 2. new slide
-    else {
-      $t.createNewSlide(htmlOrObject, recNmb);
-    }
-    
-    if (Browser.ie) // IE uses own transition Fade effect
-      return;
-    
-    $t.nextSlide.style.display = "none";
-    $t.widgetDiv.appendChild($t.nextSlide);
+	  if (!htmlOrObject) 
+			$t.nextSlide = $t.slidesArr[recNmb];
+		// 2. new slide
+		else
+			$t.createNewSlide(htmlOrObject, recNmb);
+
+    if (!Browser.ie) // IE uses own filter
+		  $t.widgetDiv.insertBefore($t.nextSlide, getFirstChild($t.widgetDiv));
   }
+	
   // it CAN be called outside to create preloaded pages manually, like Backlink images
   // for widgets it is inner function
   // recNmb is not required
   this.createNewSlide = function(htmlOrObject, recNmb) {
     this.nextSlide = document.createElement("div");
+		this.nextSlide.className = "slide";
+//		this.nextSlide.style.zIndex = 1;
+		setTransitionProperty(this.nextSlide, 'opacity 1s ease-in-out');
+
     if (typeof htmlOrObject == "string")
       this.nextSlide.innerHTML = htmlOrObject;
     else {
@@ -9961,74 +10008,54 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
     this.slidesArr[recNmb] = this.nextSlide;
   }
   
-  this.showNextSlide = function(acceleration){
+  this.showNextSlide = function(fast){
     if (this.nextSlide == null)
       return;
 
-    this.halfStepsAmt = (typeof acceleration != 'undefined') ? Math.ceil(this.HALF_STEPS_AMT / acceleration) : this.HALF_STEPS_AMT;
-    this._isSlidingNow = true;
-    
-    if (Browser.ie) { // IE uses own transition Fade effect
+		// IE:  use filter --- 
+    if (Browser.ie) { 
       if (!this.widgetDiv.filters[0]) { 
         this.widgetDiv.style.filter = "progid:DXImageTransform.Microsoft.Fade(duration=1)";
       }
-  
+
       this.widgetDiv.filters[0].apply();
       this.widgetDiv.innerHTML = this.nextSlide.innerHTML;
       this.widgetDiv.filters[0].play();
 
       if (this.callbackHalfFinish)
-        setTimeout(this.callbackHalfFinish, this.halfStepsAmt * this.TIMEOUT);
+        setTimeout(this.callbackHalfFinish, 200);
   
       if (this.callbackFinish)
-        setTimeout(this.callbackFinish, 2 * this.halfStepsAmt * this.TIMEOUT);
+        setTimeout(this.callbackFinish, 1000);
 
       return;
-    } 
-    
-    // other browsers
-    this.fading();
-  }
-  
-  this.fading = function() {
-    var $t = self;
-    var opacity;
-
-    if ($t.step <= $t.halfStepsAmt) 
-      opacity = ($t.halfStepsAmt - $t.step) / $t.halfStepsAmt;
-    else if ($t.step == $t.halfStepsAmt * 2 - 1)
-      opacity = 1.0;  
-    else
-      opacity = ($t.step - $t.halfStepsAmt) / $t.halfStepsAmt;
-
-    $t._changeOpacity(opacity);
-
-    // replace slides
-    if ($t.step == $t.halfStepsAmt) {
-      if (this.callbackHalfFinish)
-        this.callbackHalfFinish();
-      removeAllChildren($t.widgetDiv, $t.nextSlide);
-      $t.nextSlide.style.display = "";
     }
-    
-    $t.step++;
-    
-    if ($t.step < $t.halfStepsAmt * 2) {
-      setTimeout(function(){$t.fading()}, $t.TIMEOUT);
-    }
-    else {
-      $t.step = 1;
-      $t._isSlidingNow = false;
-      if (this.callbackFinish)
-        this.callbackFinish();
-    } 
+		
+    // Other browsers: use transition --- 
+		if (fast)
+		  setTransitionProperty(this.nextSlide, 'opacity 0.2s ease-in-out');
+
+    setTransitionCallback(this.nextSlide, this.onSlidingFinish); 
+    this.nextSlide.style.zIndex = "1";
+		if (this.curSlide)
+      this.curSlide.style.zIndex = "0";
+		this.nextSlide.style.opacity = "1.0";
+
+    if (this.callbackHalfFinish)
+      setTimeout(this.callbackHalfFinish, 200);
   }
-  this._changeOpacity = function(opacity) {
-    if (!Browser.ie) {
-      changeOpacity(this.widgetDiv, opacity);
-      return;
-    }
-  }
+	
+	this.onSlidingFinish = function() {
+		 if ($t.curSlide) {
+	 	   $t.curSlide.style.opacity = "0.0";
+			 removeTransitionCallback($t.curSlide, $t.onSlidingFinish);
+	   }
+		 $t.curSlide = $t.nextSlide;  	 
+		 if ($t.callbackFinish)
+		   $t.callbackFinish();
+//    $t._isSlidingNow = false;
+	}
+
   this.getWidgetDiv = function() {
     return this.widgetDiv;
   }
@@ -10082,28 +10109,25 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 
 // manages of (several) slide shows
 var BacklinkImagesSlideshow = {
-	DELAY: 3000,
-	MAX_LOOPS: 2,
-	slideshowArr : new Array(),
-	initialized : false,
-	
-	// called onload
-	register : function(slideImg) {
-		if (this.initialized)
-		  return;
-		this.slideshowArr.push(new slideshow(slideImg.parentNode));
-	},
-	init : function() {
-		this.initialized = true;
-		for (var i = 0; i < this.slideshowArr.length; i++)
-		  this.slideshowArr[i].init();
-	},
-	
-	// slide show on a Tab (Edit page) containong one slide show
-	onMainThumbClick : function() {
-		this.slideshowArr[0].onMainThumbClick();
-	},
-	onThumbItemClick : function(event) {
+  DELAY: 3000,
+  MAX_LOOPS: 2,
+  slideshowArr : new Array(), // 
+//  initialized : false,
+  
+  register : function(sceneId) {
+    this.slideshowArr.push(new slideshow(document.getElementById(sceneId)));
+  },
+  init : function() {
+ //   this.initialized = true;
+    for (var i = 0; i < this.slideshowArr.length; i++)
+      this.slideshowArr[i].init();
+  },
+  
+  // slide show on a Tab (Edit page) containong one slide show
+  onMainThumbClick : function() {
+    this.slideshowArr[0].onMainThumbClick();
+  },
+  onThumbItemClick : function(event) {
     this.slideshowArr[0].onThumbItemClick(event);
   },
   run : function() {
@@ -10123,7 +10147,7 @@ var BacklinkImagesSlideshow = {
 
 // one slide show
 function slideshow(slideShowSceneDiv) {
-	var $t = this;
+  var $t = this;
   this.slideShowSceneDiv = null;
   this.slideShowStoreDiv = null;
   this.widgetSlider = null;
@@ -10139,16 +10163,16 @@ function slideshow(slideShowSceneDiv) {
   
   this.imgWidth = null; // used the same width for all slides / images
   
-	this.slideShowSceneDiv = slideShowSceneDiv;
-	
-	this.init = function() {
+  this.slideShowSceneDiv = slideShowSceneDiv;
+  
+  this.init = function() {
     if (!this.slideShowSceneDiv)
       return;
   
     // widgetSlider used for small images (not slides) too.
     this.widgetSlider = new WidgetSlider(this.slideShowSceneDiv, this.onslidingFinish, this.onslidingHalfFinish);
   
-	  var parent = this.slideShowSceneDiv.parentNode;
+    var parent = this.slideShowSceneDiv.parentNode;
     var pager = getChildByClassName(parent, "slides_pager");
     if (!pager)
       return;
@@ -10186,7 +10210,7 @@ function slideshow(slideShowSceneDiv) {
 
     // color scheme and description of the next images
     // note: images moved from 'images' collection while slides collection so 0! is always!
-    for (var idx = 0; idx < this.maxSlideIdx; idx++) {
+    for ( var idx = 0; idx < this.maxSlideIdx; idx++ ) {
       if (this.colorScemeArr)
         this.colorScemeArr.push(images[0].id.replace(/_\d{1,}/,""));
       if (this.descArr) {
@@ -10238,8 +10262,6 @@ function slideshow(slideShowSceneDiv) {
   // imgSrc used to show 1st slide on tab
   // manual paging means $t.loopsCounter > $t.MAX_LOOPS
   this.rotate = function(newImageIdx, imgSrc) {
-    // make manual pagging faster
-    var accelaration =  ($t.isManualPaging()) ? 5 : 1;
     // additinal slide is a slide created from small image, not included into 'automatic' slide show
     var isAdditinalSlide = !$t.pagerSlots || typeof $t.pagerSlots[$t.curImageIdx] == 'undefined';
     if (!isAdditinalSlide)
@@ -10269,9 +10291,11 @@ function slideshow(slideShowSceneDiv) {
         return;
       }
     }
-    if ($t.widgetSlider) {
+
+    if ( $t.widgetSlider ) {
       $t.widgetSlider.insertNextSlide(null, $t.curImageIdx);
-      $t.widgetSlider.showNextSlide(accelaration);
+			    // make manual pagging faster
+			setTimeout(function f(){ $t.widgetSlider.showNextSlide($t.isManualPaging()) }, 100);
     }
   }
   
@@ -10374,7 +10398,7 @@ function changeSkin(event) {
   var t = target;
   while (true) {
     var parent = t.parentNode;
-    if (!parent)
+    if ( !parent )
       break;
     if (parent.tagName.toLowerCase() == 'div') {
       var div = parent;
@@ -11017,8 +11041,8 @@ var LoadOnDemand = {
       var js = document.createElement('script');
       js.setAttribute('type', 'text/javascript');
       if (!fileName.startsWith("http:"))
-			  fileName = getBaseUri() +  fileName;
-			js.setAttribute('src', fileName);
+        fileName = getBaseUri() +  fileName;
+      js.setAttribute('src', fileName);
       var html_doc = document.getElementsByTagName('head')[0];
       html_doc.appendChild(js);
       
@@ -11310,7 +11334,7 @@ var CheckButtonMgr = {
         isSubstituted = true; // this element was already subsituted in JAVA or JS
 
       // no need to process hidden checkboxes that were not substituted on server-side
-			if (stlIdx == 0 && !isSubstituted && inputs[i].className == "hdn")
+      if (stlIdx == 0 && !isSubstituted && inputs[i].className == "hdn")
         continue;
 
       // native element was substituted in JAVA or JS
@@ -11708,7 +11732,7 @@ function getActivityCallBack(e, div, hotspot, content, url) {
   if (!content || content.length == 0 || content.indexOf("not_found") != -1) 
     div.style.display = "none";
   else
-		setInnerHtml(div, content);
+    setInnerHtml(div, content);
   div.className = "";
   window.scrollTo(0, 0);
 }
@@ -11948,23 +11972,23 @@ var LoadingIndicator = {
   show: function(hotspot){
     if (this.loadingDiv == null) 
       this.init();
-		else if (isVisible(this.loadingDiv))
-			return;
-	
+    else if (isVisible(this.loadingDiv))
+      return;
+  
     var x = -1, y;
 
-		if (hotspot && !isVisible(hotspot))
-		  hotspot = null; 
+    if (hotspot && !isVisible(hotspot))
+      hotspot = null; 
 
-	  setDivVisible(null, this.loadingDiv, hotspot);
-		
+    setDivVisible(null, this.loadingDiv, hotspot);
+    
     this.curOpacity = 0.4; // initial value
     changeOpacity(this.loadingDiv, this.curOpacity);
     
     this.animate();
   },
   hide: function(){
-	if (!this.loadingDiv)
+  if (!this.loadingDiv)
       return;
     this.loadingDiv.style.visibility = "hidden";
     this.angleOffset = 0;
@@ -13001,97 +13025,96 @@ function toggleLocationAwareness(on) {
 // two cases: 1)masonry 2) blog
 //***********************************
 var EndlessPager = {
-	indicatorTd : null,
-	anchors : null, // pages buttons
-	curPage : 0,
-	nabsGrid : null,  // masonry
-	blogTable : null, // blog
-	skip : false,
-	onscroll : function(event) {
-		var $t = EndlessPager;
-		if ($t.skip)
-		  return;
+  indicatorTd : null,
+  anchors : null, // pages buttons
+  curPage : 0,
+  nabsGrid : null,  // masonry
+  blogTable : null, // blog
+  skip : false,
+  onscroll : function(event) {
+    var $t = EndlessPager;
+    if ($t.skip)
+      return;
 
-		if ($t.indicatorTd == null)
-		  $t.indicatorTd = document.getElementById("endlesspage_indicator");
-		if ($t.indicatorTd == null) { // no "endlesspage_indicator"
-			removeEvent(window, "scroll", EndlessPager.onscroll, false);
-			return;
-		}
-		
+    if ($t.indicatorTd == null)
+      $t.indicatorTd = document.getElementById("endlesspage_indicator");
+    if ($t.indicatorTd == null) { // no "endlesspage_indicator"
+      removeEvent(window, "scroll", EndlessPager.onscroll, false);
+      return;
+    }
+    
     // download new "portion" when to end of a page remained a half of a screen 
-	  if (findPosY($t.indicatorTd) > getScrollXY()[1] + getWindowSize()[1] * 1.5)
-		  return;
-		
-		$t.skip = true;	
-		$t.loadNewContent(event);
-	},
-	loadNewContent : function(event) {
-		if (this.anchors == null) {
-			var pagerTd = getNextSibling(this.indicatorTd);
-			this.anchors = pagerTd.getElementsByTagName("a");
-		}
-		// no more "pages"
-		if (this.curPage >= this.anchors.length) { // -1 is the last "Next" anchor
-			this.stop();
-			return;
-	  }	
-		var urlArr = this.anchors[this.curPage].href.split("?");
-		urlArr[1] += "&hideMenuBar=y&hideFts=y&hideCommonFooter=y"; // minify server response
-		postRequest(event, urlArr[0], urlArr[1], null, $t.indicatorTd, this.onContentLoaded, null, true);
-		this.curPage++;
+    if (findPosY($t.indicatorTd) > getScrollXY()[1] + getWindowSize()[1] * 1.5)
+      return;
+    
+    $t.skip = true; 
+    $t.loadNewContent(event);
+  },
+  loadNewContent : function(event) {
+    if (this.anchors == null) {
+      var pagerTd = getNextSibling(this.indicatorTd);
+      this.anchors = pagerTd.getElementsByTagName("a");
+    }
+    // no more "pages"
+    if (this.curPage >= this.anchors.length) { // -1 is the last "Next" anchor
+      this.stop();
+      return;
+    } 
+    var urlArr = this.anchors[this.curPage].href.split("?");
+    urlArr[1] += "&hideMenuBar=y&hideFts=y&hideCommonFooter=y"; // minify server response
+    postRequest(event, urlArr[0], urlArr[1], null, $t.indicatorTd, this.onContentLoaded, null, true);
+    this.curPage++;
     this.indicatorTd.style.visibility = "visible";  
 
-	},
-	onContentLoaded : function(event, parentDiv, hotspot, html, url, params) {
-		var $t = EndlessPager;
-		$t.indicatorTd.style.visibility = "hidden";  
+  },
+  onContentLoaded : function(event, parentDiv, hotspot, html, url, params) {
+    var $t = EndlessPager;
+    $t.indicatorTd.style.visibility = "hidden";  
 
-		if ($t.nabsGrid == null && $t.blogTable == null) {
-		  $t.nabsGrid = document.getElementById("nabs_grid");
-			$t.blogTable = document.getElementById("blog");
-	  }
-		
-		// blog ---
-		if ($t.nabsGrid == null) { // table#blog is on masonry page too
-			$t.blogTable = document.getElementById("blog");
-			var newBlogTable = getDomObjectFromHtml(html, "id", "blog");
-			if ($t.blogTable && newBlogTable) {
-				var tr = newBlogTable.rows[0];
-				while (tr) {
-			   $t.blogTable.appendChild(tr);
-				 tr = newBlogTable.rows[0];
-		    }
-			}
-			return;
-		}
-		
-		// masonry ---
-		var newGrid = getDomObjectFromHtml(html, 'id', 'nabs_grid');
-		if (getChildByClassName(newGrid, "nab") == null)
-		  return $t.stop();
-		var items = $(newGrid.innerHTML);
+    if ($t.nabsGrid == null && $t.blogTable == null) {
+      $t.nabsGrid = document.getElementById("nabs_grid");
+      $t.blogTable = document.getElementById("blog");
+    }
+    
+    // blog ---
+    if ($t.nabsGrid == null) { // table#blog is on masonry page too
+      $t.blogTable = document.getElementById("blog");
+      var newBlogTable = getDomObjectFromHtml(html, "id", "blog");
+      if ($t.blogTable && newBlogTable) {
+        var tr = newBlogTable.rows[0];
+        while (tr) {
+         $t.blogTable.appendChild(tr);
+         tr = newBlogTable.rows[0];
+        }
+      }
+      return;
+    }
+    
+    // masonry ---
+    var newGrid = getDomObjectFromHtml(html, 'id', 'nabs_grid');
+    if (getChildByClassName(newGrid, "nab") == null)
+      return $t.stop();
+    var items = $(newGrid.innerHTML);
 
-		// obtain nabs_grid each time because it is possible different one in mobile mode
-		var masonryGridJQ = $('#nabs_grid'); // expected 1 member in the set 
+    // obtain nabs_grid each time because it is possible different one in mobile mode
+    var masonryGridJQ = $('#nabs_grid'); // expected 1 member in the set 
     if (masonryGridJQ[0].getAttribute("hasImgHeight") == "y")
-		  masonryGridJQ.append(items).masonry('appended', items); // arrange items immediately (images have height)
-		else // arrange items after images downloading
-			masonryGridJQ.append(items).imagesLoaded(function(){masonryGridJQ.masonry('appended', items);});
-	  
-		LoadingIndicator.hide();
-		$t.skip = false; 
-	},
-	stop : function() {
-	  removeEvent(window, "scroll", EndlessPager.onscroll, false);
+      masonryGridJQ.append(items).masonry('appended', items); // arrange items immediately (images have height)
+    else // arrange items after images downloading
+      masonryGridJQ.append(items).imagesLoaded(function(){masonryGridJQ.masonry('appended', items);});
+    
+    LoadingIndicator.hide();
+    $t.skip = false; 
+  },
+  stop : function() {
+    removeEvent(window, "scroll", EndlessPager.onscroll, false);
     this.indicatorTd.style.display = "none";
-	}
+  }
 }
 
-function getMoreBoards(e, id, exclude, profile) {
+function getMoreBoards(e, id, exclude) {
   e = getDocumentEvent(e);
   
-  if (exclude) {
   var tokens = exclude.split(',');
   var len = tokens.length;
   var s;
@@ -13099,53 +13122,39 @@ function getMoreBoards(e, id, exclude, profile) {
     var tok = trim(tokens[i]);
     s += '&-exclude=' + tok;    
   }
-  }
+  params = 'type=http://www.hudsonfog.com/voc/model/portal/ImageResource&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y' + s;
   var td = document.getElementById(id);
 
-  if (profile) {
-    params = "uri=" + encodeURIComponent(profile) + "&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y" + s;
-    postRequest(e, "v.html", params, td, getTargetElement(e), onBoardsLoaded);
-  }
-  else {
-    params = 'type=http://www.hudsonfog.com/voc/model/portal/ImageResource&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y' + s;
-    postRequest(e, "l.html", params, td, getTargetElement(e), onBoardsLoaded);
-  }
+  postRequest(e, "l.html", params, td, getTargetElement(e), onBoardsLoaded); 
   function onBoardsLoaded(event, td, hotspot, content) {
     var d = document.createElement("div");
     d.innerHTML = content;
     var newUL = d.getElementsByTagName("ul");
-    var newCurrentUL;
-    for (var i=0; i<newUL.length  &&  !newCurrentUL; i++) {
-      var cl = newUL[i];
-      if (cl  &&  cl.className == 'sortable')
-        newCurrentUL = newUL[i];
-    }
-    
     var ul = td.getElementsByTagName("ul");
-
-    var count = newCurrentUL.getElementsByTagName("li").length;
-    var isView = td.tagName.toUpperCase() == 'DIV';
-    if (isView)
-      ul[0].innerHTML = newCurrentUL.innerHTML;
-    else
-      ul[0].innerHTML += newCurrentUL.innerHTML;
-    var titleDiv = isView ? td.getElementsByTagName("span") : td.getElementsByTagName("div");
+    var count = newUL[0].getElementsByTagName("li").length;
+    ul[0].innerHTML += newUL[0].innerHTML;
+    var titleDiv = td.getElementsByTagName("div");
     for (var i=0; i<titleDiv.length; i++) {
       var t = titleDiv[i].className;
-      if (t == null)
-        continue;
-      if (t == 'boardsTitle') { 
-        if (isView)
-          titleDiv[i].innerHTML = count + " boards";
-        else
-          titleDiv[i].innerHTML = (count + 4) + " boards";
-      }
-      else if (isView  &&  t == 'moreBoards_tab')
-        titleDiv[i].innerHTML = "";
+      if (t != null  &&  t == 'boardsTitle') 
+        titleDiv[i].innerHTML = (count + 4) + " boards";
     }
     hotspot.onclick = '';
   } 
   return stopEventPropagation(e);
+}
+
+
+function fullWindowVideo(hotspot, src) {
+  var width = getWindowSize()[0] - 100;
+  var ratio = parseInt(hotspot.getAttribute("height")) / parseInt(hotspot.getAttribute("width"))
+  var height = Math.floor(width * ratio);
+  var embed = '<iframe width="' + width + 'px" height="' + height + 'px" src="' + src + 
+    '?wmode=transparent&amp;autoplay=1&amp;rel=0" frameborder="0"></iframe>'; // allowfullscreen
+  
+	hotspot.setAttribute("modal", "y");
+	hotspot.setAttribute("hide_icon", "y");
+	PlainDlg.showHtml(null, src, embed, hotspot);
 }
 
 // flag that menu.js was parsed. should be last in the file

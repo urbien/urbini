@@ -2023,18 +2023,20 @@ var MobilePageAnimation = {
     div.style.top = getScrollXY()[1] + 'px';
     div.style.minHeight = getWindowSize()[1] + 'px';
     setTransformProperty(div, "scale(0.1)");
-		if (div.id != "browser_dlg") // browser_dlg is our alert dialog
-		  appendClassName(div, "mobile_dlg");
-    div.style.visibility = "visible";
-    if (!isDialogOnPage(div))
-      setTransitionCallback(div, MobilePageAnimation._onZoomInDialogEnd); 
-    // on fast animation a dialog can disapeared for a moment
+		
+		if (div.id != "browser_dlg") { // browser_dlg is our alert dialog
+			appendClassName(div, "mobile_dlg");
+			if (!isDialogOnPage(div)) 
+				setTransitionCallback(div, MobilePageAnimation._onZoomInDialogEnd);
+	  }
+		
+		div.style.visibility = "visible";
+		// on fast animation a dialog can disapeared for a moment
     // so 0.8 sec was changed on 1.2 sec (as minimum)
     setTimeout(function f() { setTransitionProperty(div, "all 1.2s ease-in-out"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
   },
    _onZoomInDialogEnd : function(event) {
     var $t = MobilePageAnimation;
-			
     Mobile.getCurrentPageDiv().style.opacity = 0;
     removeTransitionCallback($t.dlgDiv, MobilePageAnimation._onZoomInDialogEnd); 
   },

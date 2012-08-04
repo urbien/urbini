@@ -35,7 +35,7 @@
       beforeClosing : function() {
         toConsole("beforeClosing, imported = " + imported + ", redirect to: " + addOrReplaceUrlParam(window.location.href, "-info", "Your friends are on the way. Feel free to import more."));
         if (imported)
-          window.location.href = addOrReplaceUrlParam(window.location.href, "-info", "Your friends are on the way. Feel free to import more.");
+          window.location.href = addOrReplaceUrlParam(window.location.href, "-info", "We've sent invites to your selected friends and you'll see them on your profile once they join Urbien. Feel free to invite more.");
       },
     };
         

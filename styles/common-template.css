@@ -300,6 +300,7 @@ input[type=button]:active, input[type=submit]:active, .button:active  {
 .button div { float: left; }
 .btn_with_icon, a.btn_with_icon, .btn_with_icon:active, a.btn_with_icon:active { padding: 0px 3px 0px 10px; }
 .btn_with_symbol, a.btn_with_symbol, .fts a.btn_with_symbol, .btn_with_symbol:active, a.btn_with_symbol:active { font-size: 18px; padding: 0px 7px 2px 7px; text-decoration: none; }
+.btn_with_icon span { position: relative; top: 1px; }
 
 /*********************** end of new buttons  *****************************/
 
@@ -420,7 +421,8 @@ td.textCell {
 /* Gallery */
 .galleryItem_container { position: relative; margin: 10px; display: inline-block; /* IE hack-> */ zoom: 1; *display:inline;  }
 .galleryItem_note { position: absolute; bottom: 0px; left: 0px; font-size: 14px;
-    background: rgba(0, 0, 0, 0.4); #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000);  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000)";
+    background: rgba(0, 0, 0, 0.4);
+     #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000);  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000)";
     color: #ffffff; text-shadow: 1px 2px 2px #000000; pointer-events: none;
     padding: 1% 2%;
     width: 96%;
@@ -650,7 +652,7 @@ span.light {color:#ffffff}
 input.xxs {font-size: 10px; color: &[Alternative_A];;}
 .text {font-size:0.9em; font-weight:bold;}
 /* FTS category image style */
-.cat  { padding-right: 3px; border: 0; width: 16px; height: 16px; vertical-align:text-bottom;}
+.cat  { padding-right: 3px; border: 0; width: 16px; height: 16px; vertical-align: middle;}
 .cat32  { padding-right: 3px; border: 0; width: 32px; height: 32px; vertical-align:text-bottom;}
 .cat1 {FONT-WEIGHT: bold;}
 
@@ -1193,7 +1195,7 @@ td.checkout   {PADDING-RIGHT: 8px; PADDING-LEFT: 8px; FONT-WEIGHT: bold;}
 
 .blogEntry {border:solid #808080 2px; border-color: #1b62b6; background: #ffffff}
 /* title for edit mode property sheet in inner dialog */
-.innerTitle, .innerTitle1 { text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; color: &[SecondaryColorB_1];; font-size: 18px; }
+.innerTitle, .innerTitle1 { top: -2px; position: relative; text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4); font-weight:bold; color: &[SecondaryColorB_1];; font-size: 18px; }
 #dataEntry .innerTitle { margin-left: 18px; }
 #dataEntry .innerTitle1 { margin-right: 10px; } 
 
@@ -1757,8 +1759,8 @@ table.printFB {
 #loginForm td { font-weight: bold; }
 .redeem { width: auto; background-color: #ffffff; color: #2B0764; border: 1px solid #cccccc; padding: 5 5 5 5; }
 
-.rte { margin-bottom: 7px; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; padding:0; width: 100%; height: 107px;  }
-.rte_body { overflow: hidden; color: &[PrimaryColor_4_text];; font-family :Helvetica, arial; fontSize : 16px; margin:5; }
+.rte { margin-bottom: 7px; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; padding:0; height: 107px; width: 98%; float: right; margin-right: 3px; /*trying to align with inputs*/ }
+.rte_body { overflow: hidden; color: &[PrimaryColor_4_text];; font-family :Helvetica, arial; font-size : 16px; margin:5; }
 .rte_body object { display: block; background: #000000; }
 
 /* like menu_Options in iphone.css */
@@ -1782,7 +1784,7 @@ form { margin-top: 0; margin-bottom: 0; }
 /* prevents blue rect in WebKit browsers */
 input:focus { outline: 0 none; }
 
-#pane2 {position: absolute; width: auto; display: inline; left: 0px; top: 0px; min-width: 1px; }
+#pane2 {/*position: absolute;*/ width: auto; display: inline; left: 0px; top: 0px; min-width: 1px; }
 * html #pane2 { width: 300px; }
 
 /* dialog: body is a parent */
@@ -1793,11 +1795,9 @@ input:focus { outline: 0 none; }
   max-width: 1100px;
   padding: 0px;
   box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
-  -moz-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
-  -webkit-box-shadow: 6px 6px 25px rgba(0, 0, 0, 0.5);
   z-index: 100;
 }
-
+.modal { position: fixed; box-shadow: none; }
 
 /* 'on page' */
 div .panel_block, td .panel_block {
@@ -1939,11 +1939,12 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 
 /*.rounded_rect_tbl a { color: &[PrimaryColor_4_text];; }*/
 
-.arrow_td, .arrow_td_empty { padding-right: 4px; min-width: 10px; font-size: 18px !important; font-weight: bold; text-align:center; cursor: pointer; }
-/*.arrow_td { background-color: &[PrimaryColor_1];;}*/
+.arrow_td, .arrow_td_empty { padding: 0px 2px; min-width: 10px; font-size: 18px !important; font-weight: bold; text-align:center; }
+.arrow_td { cursor: pointer; }
+.arrow_td { background-color: &[PrimaryColor_1];;}
 
 .param_tr .label_td { white-space: nowrap; position: relative; } 
-.param_tr .field_comment, #mkresource .field_comment { height: 55px !important; }
+.param_tr .field_comment, #mkresource .field_comment { height: 57px !important; }
 .param_tr .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
 .param_tr .label img { margin-right: 3px; }
 .param_tr .comment { color: &[SecondaryColorB_3];; font-size: 11px; }
@@ -2008,7 +2009,9 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 
 .listArrow { width: 25px; height: 20px; }
 
-.panel_block #hide_icon, #menu_Options #hide_icon { position: relative; z-index: 2; top: 25px; left: -5px; cursor: pointer; }
+.panel_block .hide_icon { position: absolute; top: 5px; left: -35px; cursor: pointer; }
+#menu_Options #hide_icon { position: relative; z-index: 2; top: 15px; left: -4px; cursor: pointer; }
+
 #menu_Options #hide_icon { top: 15px; left: -4px; }
 /* #pane2 - "plain" dialogs */
 #pane2 .content { padding: 15px 10px; }
@@ -2186,7 +2189,7 @@ td.pBGr { background-color: #eeeeee;
 /*.cp_item_left { min-height: 30px; }*/
 .backlink_counter { position: absolute; pointer-events: none; }
 .cp_item_right .backlink_counter { top: -7px; left: 15px; }
-.cp_item_left  .backlink_counter { top: 0px; right: 5px; }
+.cp_item_left  .backlink_counter { top: 2px; right: 5px; }
 
 .backlink_counter .left, .backlink_counter .right { height: 25px; background-image: url(../images/skin/iphone/backlink_counter.png); background-repeat: no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
@@ -2244,7 +2247,7 @@ td.pBGr { background-color: #eeeeee;
   *margin-bottom: 30px;  
 }
 
-#auto_complete { z-index: 101; position: absolute; cursor: pointer; overflow: visible; background-color:&[PrimaryColor_4];; }
+#auto_complete { z-index: 101; position: absolute; box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.3); cursor: pointer; overflow: visible; background-color:&[PrimaryColor_4];; }
 #auto_complete .menuItem, #auto_complete .not_found { color: &[PrimaryColor_4_text];; padding: 2px 5px; vertical-align: middle; width:100%; font-weight: bold; border-bottom: 2px groove &[PrimaryColor_1];; }
 #auto_complete .not_found { border-bottom: none; }
 #auto_complete tr:last-child td { border-bottom: none; }
@@ -2334,6 +2337,8 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 /********** Slide Show *********/
 .slideShow { position: relative; display: inline-block; }
+.slideShow_scene .slide { position: absolute; opacity: 0; }
+
 .slides_pager { 
   position: absolute;
   z-index: 10; 
@@ -2487,7 +2492,7 @@ td #corePageContent { min-height: 600px;}
 #nabs_grid .masonry-brick { visibility: visible; }
 
 .gnab { font-size: 11px; }
-.nab .anab .galleryItem_css3 img {max-width: 204px;}
+.nab .anab .galleryItem_css3 img {max-width: 205px;}
 .nab .anab .galleryItem_css3 { display: inline-block; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
 
 #resourceList .grid .renab { font-size: bold; color: #757575; text-align: center;}
@@ -2702,7 +2707,6 @@ td #corePageContent { min-height: 600px;}
   border: 1px solid #ffba24;
 }
 .cl {padding-left: 12px;}
-
 /* marketing pages */
 .section { background: url("../images/dividerdown.jpg") no-repeat; padding: 50px; margin: 0px; border-top: 1px solid rgb(232, 232, 233);}
 .section * { margin: 0px; }
@@ -2720,3 +2724,7 @@ td #corePageContent { min-height: 600px;}
 .section h1, .section h2, .section h3 { margin-bottom: 5px; }
 .section .p div {font-size: 14px; margin-bottom:25px;}
 .section .galleryItem_css3 { box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
+/* thumbnail of video */
+.video_a { display: inline-block; position: relative; cursor: pointer; }
+.video_a .play_icon { position: absolute; pointer-events: none; width: 48px; height: 48px; opacity: 0.5; }
+.video_a:hover .play_icon { opacity: 1.0; }
