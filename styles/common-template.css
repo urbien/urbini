@@ -725,7 +725,7 @@ tr.ftSearch td { padding: 0px; }
 .ftSearch .action_btn img, .ftSearch .action_btn1 img  { width: 22px; height: 22px; margin: 5px 0 0 10px; }
 .ftSearch .action_btn1 {
   width: 40px;
-  margin-left: 5px;
+/*  margin-left: 5px; */
   border-radius: 15px 0 0 15px;
   -moz-border-radius: 15px 0 0 15px;
   -webkit-border-radius: 15px 0 0 15px;
@@ -2163,9 +2163,9 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 #div_Info .text_editor_container td { border: 1px solid #000; width: 80px; }
 
 #div_Info td.pGr { background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_5];);
-                   font-weight:bold; font-size:1em; text-align:center; text-align: center; }
+                   font-weight:bold; font-size:1em; text-align: center; }
 td.pBGr { background-color: #eeeeee;
-                   font-weight:bold; font-size:1em; text-align:center; text-align: center; }
+                   font-weight:bold; font-size:1em; text-align: center; }
 #div_Info a { margin-left: 5px; }
 
 #div_Feed img {max-width: 600px;}
@@ -2313,6 +2313,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .grey_highlighting .empty_field{ color: rgba(&[Alternative_A_rgb];, 0.6) !important;}
 .rounded_rect_tbl .focused_field { color: rgba(&[Alternative_A_rgb];, 0.4); }
 .iphone_field .focused_field, .focused_field { color: rgba(&[PrimaryColor_4_text_rgb];, 0.4); }
+.ftSearch .focused_field { color: rgba(&[Alternative_A_rgb];, 0.4); }
 
 .widget .dragable h2 { margin-bottom: 0px; font-size: 17px; } 
 .widget .containers h2 { margin: 5px 0px 0px 0px; }
