@@ -756,6 +756,7 @@ tr.ftSearch td { padding: 0px; }
 .desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-size: 18px; line-height:31px; text-align:center; text-shadow:0 0 2px rgba(0, 0, 0, 0.4); }
 .desktop_search .right img { margin: 5px 0 0 8px; }
 
+
 /* VIEWS */
 td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
 
@@ -1746,6 +1747,7 @@ table.printFB {
 .userLogin .button, #ropLeft .button { display: block; padding: 7px; margin-top: 4px; text-align: left; font-size: 16px; font-weight: normal; color: &[Color];; }
 .userLogin .button img, #ropLeft .button img { float: left; margin-right: 7px; }
 
+#ropLeft h3 {margin: 0px -10px 5px -10px; padding: 5px 0px 5px 10px; background: #ccc; font-weight: normal;}
 #ropLeft .button { margin: 0px 5px 10px 5px; white-space: normal; }
 
 .userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
