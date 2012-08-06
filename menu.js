@@ -4444,16 +4444,19 @@ var PlainDlg = {
   _show : function(event, hotspot) {
     // login: show it as a modal dialog
     if (this.curUrl && this.curUrl.indexOf("j_security_check") != -1) {
-      LoadingIndicator.show();
-      // hack: FaceBook can not to call a callback (on a local host).
-      // So hide the spinner "manually" (faster to do it on dev.hudsonfog.com site)
-      var timeout = getBaseUri().indexOf("dev.hudsonfog.com") != -1 ? 2000 : 10000;
-      setTimeout("LoadingIndicator.hide()", timeout);
-      LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
+      if (getChildByClassName(this.dlgDiv, "button") != null) { // no social buttons - no waiting
+	  	  LoadingIndicator.show();
+	  	// hack: FaceBook can not to call a callback (on a local host).
+				// So hide the spinner "manually" (faster to do it on dev.hudsonfog.com site)
+				var timeout = getBaseUri().indexOf("dev.hudsonfog.com") != -1 ? 2000 : 10000;
+				setTimeout("LoadingIndicator.hide()", timeout);
+			}
+			LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
       // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
       var jstest = getChildByAttribute(this.dlgDiv, "name", '.jstest');
       if (jstest)
         jstest.value = "ok";
+
       setDivVisible(null, this.dlgDiv, null, 0, 0, null, null, true);
       return;
     }
@@ -10353,7 +10356,7 @@ function slideshow(slideShowSceneDiv) {
   this.onslidingHalfFinish = function() {
     if ($t.descArr) {
       if ($t.descArr[$t.curImageIdx] != null) {
-      $t.descOverlay.innerHTML = $t.descArr[$t.curImageIdx].plainText();
+      $t.descOverlay.innerHTML = $t.descArr[$t.curImageIdx].rtrim(true);
         $t.descOverlay.style.display = "";
       }
       else
