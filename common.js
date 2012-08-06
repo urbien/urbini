@@ -87,7 +87,9 @@ String.prototype.trim = function() {
 String.prototype.ltrim = function() {
   return this.replace(/^\s+/,"");
 }
-String.prototype.rtrim = function() {
+String.prototype.rtrim = function(toRemoveTrailedBR) {
+	if (toRemoveTrailedBR)
+		return this.replace(/\s+$/,"").replace(/(<br[^>]*>)+$/, "");
   return this.replace(/\s+$/,"");
 }
 // removes tags
@@ -352,7 +354,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
       if (!location) {
         var response = responseXML.documentElement;
         location = response.getElementById('$redirect').getAttribute('href');
-        if (!location)
+
+				if (!location)
           return;
       }
 
