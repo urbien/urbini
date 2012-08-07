@@ -4945,13 +4945,13 @@ var TouchDlgUtil = {
         FieldsWithEmptyValue.setFocus(input);
       else
         this._setFocusInFocusHolder();  
-      if (!isElemInView(passToTr))
+      if (!isElemInViewport(passToTr))
         passToTr.scrollIntoView(down == false);
     }
     else { // go into Selector
       var activePanel = ListBoxesHandler.getCurrentPanelDiv();
       var selector = this.focusSelector(activePanel);
-      if (selector && !isElemInView(selector)) {
+      if (selector && !isElemInViewport(selector)) {
         var header = getAncestorByClassName(selector, "header");
         if (header)
           header.scrollIntoView(true);  
@@ -10114,14 +10114,12 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 var BacklinkImagesSlideshow = {
   DELAY: 3000,
   MAX_LOOPS: 2,
-  slideshowArr : new Array(), // 
-//  initialized : false,
+  slideshowArr : new Array(), 
   
   register : function(sceneId) {
     this.slideshowArr.push(new slideshow(document.getElementById(sceneId)));
   },
   init : function() {
- //   this.initialized = true;
     for (var i = 0; i < this.slideshowArr.length; i++)
       this.slideshowArr[i].init();
   },
@@ -10168,6 +10166,8 @@ function slideshow(slideShowSceneDiv) {
   
   this.slideShowSceneDiv = slideShowSceneDiv;
   
+	this.rotateTimerId = null,
+	
   this.init = function() {
     if (!this.slideShowSceneDiv)
       return;
@@ -10265,6 +10265,13 @@ function slideshow(slideShowSceneDiv) {
   // imgSrc used to show 1st slide on tab
   // manual paging means $t.loopsCounter > $t.MAX_LOOPS
   this.rotate = function(newImageIdx, imgSrc) {
+		// prevent rotation of a slide show out of viewport (margin -200 px)
+    if ($t.isManualPaging() != true && !isElemInViewport($t.widgetSlider.widgetDiv, -200)) {
+      $t.rotateTimerId = setTimeout(function(){ $t.rotate(newImageIdx, imgSrc) }, 200);
+      return;
+    }
+    clearTimeout($t.rotateTimerId);
+				
     // additinal slide is a slide created from small image, not included into 'automatic' slide show
     var isAdditinalSlide = !$t.pagerSlots || typeof $t.pagerSlots[$t.curImageIdx] == 'undefined';
     if (!isAdditinalSlide)
