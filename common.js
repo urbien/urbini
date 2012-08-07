@@ -1913,11 +1913,14 @@ function isElemOfTag(elem, tagName) {
 }
 
 // note: meanwhile it is for vertical scrolling only!
-function isElemInView(elem) {
+// margin: default 0
+function isElemInViewport(elem, margin) {
   var topEdge = getScrollXY()[1];
   var bottomEdge = topEdge + getWindowSize()[1];
+	if (typeof margin == "undefined")
+	  margin = 0;
   var y = findPosY(elem);
-  return (y >= topEdge && y <= bottomEdge - elem.offsetHeight);
+  return (y >= topEdge + margin && y <= bottomEdge - elem.offsetHeight - margin);
 }
 
 function setCaretPosition(elem, caretPos) {
