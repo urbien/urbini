@@ -1866,7 +1866,7 @@ var ListBoxesHandler = {
   },
   
   onListLoaded : function(event, popupDiv, hotspot, content) {
-    var $t = ListBoxesHandler;
+	  var $t = ListBoxesHandler;
     var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
 
     var listsCont = getChildById(panel, "lists_container");
@@ -1895,7 +1895,6 @@ var ListBoxesHandler = {
     $t.changeOptionSelectionState(opTable);
     $t.changeAddNewState(popupDiv);
     $t.showOptionsOrClasses(popupDiv);
-
     // RL editor: align options list
     if (($t._isEditList || $t._isFtsSift) && !isVisible($t.panelBlock) || $t._isOneParamSelection) {
       var form = getAncestorByAttribute(hotspot, "name", ["siteResourceList", "rightPanelPropertySheet"]);
@@ -1993,7 +1992,8 @@ var ListBoxesHandler = {
       pos[1] = -1;
       
     this.panelBlock.style.top = pos[1] + "px";
-    
+    // hack: use cross icon for one option selection (detected on the fly)
+    this.optionsPanel.getElementsByTagName("img")[0].src = "images/skin/iphone/cross.png";
     this.panelBlock.style.visibility = "visible";
   },
   
@@ -3975,7 +3975,7 @@ var DataEntry = {
   
   // parameterInputname, forexample  name=".priority"
   showOneParameterOnly : function(e, url, hotspot, oneParameterInputName, submitCallback, beforeSubmitCallback) {
-    this.oneParameterInputName = oneParameterInputName;
+		this.oneParameterInputName = oneParameterInputName;
     this.show(e, url, hotspot, null, submitCallback, beforeSubmitCallback);
   },
   
@@ -4001,6 +4001,7 @@ var DataEntry = {
       alert("Data Entry: Server response does not contain a dialog!");
       return;
     }
+		
     div.style.visibility = "hidden";
     
     // onDataError happens on mkResource
@@ -4037,11 +4038,20 @@ var DataEntry = {
       if (parent)
        parent.appendChild(div);
     }
+
+		// dialog contains one "selector" parameter - show its options list immediately
+		var arrowTd = getChildByClassName(div, "arrow_td");
+    if (true || arrowTd && TouchDlgUtil.isSingleParameterInDialog(arrowTd)) {
+			appendClassName(div, "oneparamselection");
+			var tr = getChildByClassName(div, "param_tr");
+			ListBoxesHandler.processClickParam(null, tr); 
+    }
+		
     setDivVisible(event, div, $t.hotspot, 5, 5);
-  
     $t.initDataStr = $t._getFormDataStr(div, true);
     var key = $t._getKey($t.currentUrl);
     $t.dataEntryArr[key] = div;
+
   },
   
   // div is null here; the dialog with error message is in html code
@@ -5224,8 +5234,17 @@ var TouchDlgUtil = {
   
   isElementFirstParameter : function(elem) {
     var paramTr = getAncestorByClassName(elem, "param_tr");
-    return comparePosition(paramTr, getChildByClassName(this.curDlgDiv, "param_tr")) == 0;
+		var dlg = this.curDlgDiv || getAncestorByClassName(paramTr, "panel_block");
+    return comparePosition(paramTr, getChildByClassName(dlg, "param_tr")) == 0;
   },
+  // elem is a child of "param_tr"
+  isSingleParameterInDialog : function(elem) { 	
+	  if (TouchDlgUtil.isElementFirstParameter(elem) &&
+	       getNextSibling(getAncestorByClassName(elem, "param_tr")) == null)
+			return true;
+		return false;	
+	},
+	
   showPageOverlay: function(dlg) {
     if (!this.pageOverlay) {
       this.pageOverlay = document.createElement("div");
