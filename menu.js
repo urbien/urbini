@@ -9474,7 +9474,7 @@ var Dashboard = {
         if (widgetUri == null) {
           var f = document.getElementById("pref_" + widget.id.substring(wLen));
           if (f) {
-            formId = f.id;
+						formId = f.id;
             // create backlink bookmark and move it to Tab
             submitWidgetPreferences(e, formId, tab);
             return ret;
@@ -10010,7 +10010,7 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 		  $t.widgetDiv.insertBefore($t.nextSlide, getFirstChild($t.widgetDiv));
   }
 	
-  // it CAN be called outside to create preloaded pages manually, like Backlink images
+	// it CAN be called outside to create preloaded pages manually, like Backlink images
   // for widgets it is inner function
   // recNmb is not required
   this.createNewSlide = function(htmlOrObject, recNmb) {
@@ -10133,21 +10133,32 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 var BacklinkImagesSlideshow = {
   DELAY: 3000,
   MAX_LOOPS: 2,
-  slideshowArr : new Array(), 
-  
+  slideshowArr : null, 
+  _init1stTime : true, // hack for Opera(!) where init executed before register
   register : function(sceneId) {
+		if (this.slideshowArr == null)
+		  this.slideshowArr = new Array();
     this.slideshowArr.push(new slideshow(document.getElementById(sceneId)));
   },
   init : function() {
+    var $t = BacklinkImagesSlideshow;
+    if (Browser.opera && $t._init1stTime) {
+			$t._init1stTime = false;
+			setTimeout($t.init, 500);
+		}
+		
+		if (!$t.slideshowArr)
+		  return;
+			
   	// 1. launch 1st slideshow
-		this.slideshowArr[this.slideshowArr.length - 1].init();
-    // 2. download "stored" slides of not 1st slideshow after 1st slideshow was complitly downloaded
-		for (var i = this.slideshowArr.length - 2; i >= 0; i--) {
-			var slidesStore = getChildByClassName( this.slideshowArr[i].slideShowSceneDiv.parentNode, "slideShow_store")
+		$t.slideshowArr[$t.slideshowArr.length - 1].init();
+    // 2. download "stored" slides of not 1st slideshow after 1st slideshow was completely downloaded
+		for (var i = $t.slideshowArr.length - 2; i >= 0; i--) {
+			var slidesStore = getChildByClassName( $t.slideshowArr[i].slideShowSceneDiv.parentNode, "slideShow_store")
 			var images = slidesStore.getElementsByTagName("img");
 			for (var n = 0; n < images.length; n++) {
 		  	if (i == 0 && n == images.length - 1) 
-		  		images[n].onload = this._delayedInit;
+		  		images[n].onload = $t._delayedInit;
 		  	images[n].src = images[n].getAttribute("delayed_src");
 		  }	 
 		}
@@ -10165,11 +10176,11 @@ var BacklinkImagesSlideshow = {
     this.slideshowArr[0].onThumbItemClick(event);
   },
   run : function() {
-    if (this.slideshowArr.length > 0)
+    if (this.slideshowArr)
       this.slideshowArr[0].run();
   },
   stop : function() {
-    if (this.slideshowArr.length > 0)
+    if (this.slideshowArr)
       this.slideshowArr[0].stop();
   },
   // called on a dialoag opening ("buy" dialog)
