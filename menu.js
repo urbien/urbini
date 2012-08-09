@@ -10139,10 +10139,24 @@ var BacklinkImagesSlideshow = {
     this.slideshowArr.push(new slideshow(document.getElementById(sceneId)));
   },
   init : function() {
-    for (var i = 0; i < this.slideshowArr.length; i++)
-      this.slideshowArr[i].init();
+  	// 1. launch 1st slideshow
+		this.slideshowArr[this.slideshowArr.length - 1].init();
+    // 2. download "stored" slides of not 1st slideshow after 1st slideshow was complitly downloaded
+		for (var i = this.slideshowArr.length - 2; i >= 0; i--) {
+			var slidesStore = getChildByClassName( this.slideshowArr[i].slideShowSceneDiv.parentNode, "slideShow_store")
+			var images = slidesStore.getElementsByTagName("img");
+			for (var n = 0; n < images.length; n++) {
+		  	if (i == 0 && n == images.length - 1) 
+		  		images[n].onload = this._delayedInit;
+		  	images[n].src = images[n].getAttribute("delayed_src");
+		  }	 
+		}
   },
-  
+  _delayedInit : function() {
+		var $t = BacklinkImagesSlideshow;
+	  for (var i = $t.slideshowArr.length - 2; i >= 0; i--)
+		  $t.slideshowArr[i].init(); 
+	},
   // slide show on a Tab (Edit page) containong one slide show
   onMainThumbClick : function() {
     this.slideshowArr[0].onMainThumbClick();
