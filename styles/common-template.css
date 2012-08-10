@@ -2728,3 +2728,6 @@ td #corePageContent { min-height: 600px;}
 .video_a { display: inline-block; position: relative; cursor: pointer; }
 .video_a .play_icon { position: absolute; pointer-events: none; width: 48px; height: 48px; opacity: 0.5; }
 .video_a:hover .play_icon { opacity: 1.0; }
+#resourceList #listChooser { padding-left:10px; padding-right:10px; color: #757575}
+#resourceList #listChooser a {color: #f52000}
+#resourceList #listChooser a.current_backlink {color: #757575}
