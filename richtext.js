@@ -1223,8 +1223,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	      return "";
     }
 
-		// remove possible trailed br
-    content = content.replace(/<br[^>]*>$/, "");
+		// remove ALL possible trailed br
+    content = content.replace(/(<br[^>]*>)+$/, "");
+		
 		return content;
 	}
 
@@ -1389,9 +1390,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.iframeObj.style.height = i_am.initFrameHeight + "px";
 
 		// parent dialog contains only single RTE
-    if (TouchDlgUtil.isElementFirstParameter(this.iframeObj) &&
-			     getNextSibling(getAncestorByClassName(this.iframeObj, "param_tr")) == null) {
-		  if (onEsc)
+		if (TouchDlgUtil.isInDialogSingleParameter(this.iframeObj)) {
+			if (onEsc)
 			 DataEntry.hide(); // onEsc: hide parent dialog
 			return; 
 		}
