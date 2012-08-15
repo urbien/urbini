@@ -1954,9 +1954,11 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 
 .rounded_rect_tbl .input, #register .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input, .false_textarea, .false_empty_field { 
   margin: 0px; padding: 1px; min-height: 22px;
-  color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; text-align: right; width: 250px; height: auto;
+  color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; width: 250px; height: auto;
   font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px;
 }
+.rounded_rect_tbl .pointer input, .mobile_dlg input { text-align: right; }
+
 .rounded_rect_tbl .with_units .input { width: 150px; }
 #register .input { text-align: left;  height: 25px; }
 
