@@ -4041,7 +4041,7 @@ var DataEntry = {
 
 		// dialog contains one "selector" parameter - show its options list immediately
 		var arrowTd = getChildByClassName(div, "arrow_td");
-    if (true || arrowTd && TouchDlgUtil.isSingleParameterInDialog(arrowTd)) {
+    if (arrowTd && TouchDlgUtil.isSingleParameterInDialog(arrowTd)) {
 			appendClassName(div, "oneparamselection");
 			var tr = getChildByClassName(div, "param_tr");
 			ListBoxesHandler.processClickParam(null, tr); 
@@ -7803,7 +7803,7 @@ var FieldsWithEmptyValue = {
       } catch (e) {};
     } 
       
-    field.style.textAlign = "left"; 
+    ///// field.style.textAlign = "left"; 
   },
   // dialog shown from "cache" dose not allow immediate focus() set.
   _setFocusDelayed : function() { 
@@ -7939,7 +7939,7 @@ var FieldsWithEmptyValue = {
       setCaretPosition(field, 0);
     }
     // align "left" - more regular to type 
-    field.style.textAlign = "left";
+    //////// field.style.textAlign = "left";
   },
   
   onkeydown : function(event) {
@@ -7982,7 +7982,7 @@ var FieldsWithEmptyValue = {
     } 
     $t.fieldForDelayedAction = null;
     
-    field.style.textAlign = "";
+    /////// field.style.textAlign = "";
   },
   
   // only for fields with clear text contol
@@ -10185,7 +10185,7 @@ var BacklinkImagesSlideshow = {
   },
   // called on a dialoag opening ("buy" dialog)
   stopAutomaticSiding : function() {
-    if (this.slideshowArr.length > 0)
+    if (this.slideshowArr)
       this.slideshowArr[0].stopAutomaticSiding();
   }
 }
