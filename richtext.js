@@ -1390,7 +1390,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		i_am.iframeObj.style.height = i_am.initFrameHeight + "px";
 
 		// parent dialog contains only single RTE
-		if (TouchDlgUtil.isInDialogSingleParameter(this.iframeObj)) {
+		if (TouchDlgUtil.isSingleParameterInDialog(this.iframeObj)) {
 			if (onEsc)
 			 DataEntry.hide(); // onEsc: hide parent dialog
 			return; 
