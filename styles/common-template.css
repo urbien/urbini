@@ -727,7 +727,7 @@ tr.ftSearch td { padding: 0px; }
 .ftSearch .action_btn img, .ftSearch .action_btn1 img  { width: 22px; height: 22px; margin: 5px 0 0 10px; }
 .ftSearch .action_btn1 {
   width: 40px;
-  margin-left: 5px;
+/*  margin-left: 5px; */
   border-radius: 15px 0 0 15px;
   -moz-border-radius: 15px 0 0 15px;
   -webkit-border-radius: 15px 0 0 15px;
@@ -757,6 +757,7 @@ tr.ftSearch td { padding: 0px; }
 
 .desktop_search .right div { float: left; color: #F2F2F2; width: 33px; height: 100%; border-right: 2px groove &[PrimaryColor_4];; font-size: 18px; line-height:31px; text-align:center; text-shadow:0 0 2px rgba(0, 0, 0, 0.4); }
 .desktop_search .right img { margin: 5px 0 0 8px; }
+
 
 /* VIEWS */
 td.views   {PADDING-RIGHT: 6px; PADDING-LEFT: 8px; FONT-WEIGHT: bold; }
@@ -1748,6 +1749,7 @@ table.printFB {
 .userLogin .button, #ropLeft .button { display: block; padding: 7px; margin-top: 4px; text-align: left; font-size: 16px; font-weight: normal; color: &[Color];; }
 .userLogin .button img, #ropLeft .button img { float: left; margin-right: 7px; }
 
+#ropLeft h3 {margin: 0px -10px 5px -10px; padding: 5px 0px 5px 10px; background: #ccc; font-weight: normal;}
 #ropLeft .button { margin: 0px 5px 10px 5px; white-space: normal; }
 
 .userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
@@ -2166,9 +2168,9 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 #div_Info .text_editor_container td { border: 1px solid #000; width: 80px; }
 
 #div_Info td.pGr { background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_5];);
-                   font-weight:bold; font-size:1em; text-align:center; text-align: center; }
+                   font-weight:bold; font-size:1em; text-align: center; }
 td.pBGr { background-color: #eeeeee;
-                   font-weight:bold; font-size:1em; text-align:center; text-align: center; }
+                   font-weight:bold; font-size:1em; text-align: center; }
 #div_Info a { margin-left: 5px; }
 
 #div_Feed img {max-width: 600px;}
@@ -2726,3 +2728,6 @@ td #corePageContent { min-height: 600px;}
 .video_a { display: inline-block; position: relative; cursor: pointer; }
 .video_a .play_icon { position: absolute; pointer-events: none; width: 48px; height: 48px; opacity: 0.5; }
 .video_a:hover .play_icon { opacity: 1.0; }
+#resourceList #listChooser { padding-left:10px; padding-right:10px; color: #757575}
+#resourceList #listChooser a {color: #f52000}
+#resourceList #listChooser a.current_backlink {color: #757575}
