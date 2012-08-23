@@ -15,26 +15,26 @@ function startCalendar(parentDiv, callback, fromInp, toInp) {
       if (isCalendarNavigation == false) {
         html +=
         "<tr><td class=\"header\">" +
-				"<table><tr>" +
-				"<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onBackBtn(1);\"><img src=\"../images/skin/iphone/back_arrow.png\" /></td>" + //&#9664;
-				"<td class=\"icon_btn\" onclick=\"DatePicker.onDateClear();\"> <img src=\"../images/skin/iphone/clear.png\" /></td>" +
-				"<td width=\"100%\"></td>" +
-				"<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onDatesList();\"> <img src=\"../images/skin/iphone/list_bullets.png\" /></td>" +
-				"</tr></table>" +
+        "<table><tr>" +
+        "<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onBackBtn(1);\"><img src=\"../images/skin/iphone/back_arrow.png\" /></td>" + //&#9664;
+        "<td class=\"icon_btn\" onclick=\"DatePicker.onDateClear();\"> <img src=\"../images/skin/iphone/clear.png\" /></td>" +
+        "<td width=\"100%\"></td>" +
+        "<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onDatesList();\"> <img src=\"../images/skin/iphone/list_bullets.png\" /></td>" +
+        "</tr></table>" +
         
-				"</td></tr>" +
+        "</td></tr>" +
 
         // TR 2nd period header ---
         "<tr><td class=\"header\">" +
-					"<table><tr>" +
-					"<td class=\"icon_btn\" onclick=\"PeriodPicker.onDoneBtn();\"><img src=\"../images/skin/iphone/back_arrow.png\" /></td>" + // &#9664;&#9642;
-					"<td class=\"icon_btn\" onclick=\"Filter.onPeriodReset();\"><img src=\"../images/skin/iphone/clear.png\" /></td>" +					
-					"<td width=\"100%\"></td>" +
-					"<td class=\"icon_btn\" onclick=\"PeriodPicker.onFromBtn(this);\" style=\"background-color: " + PeriodPicker.BLUE_BG + "\"><span class=\"icon_btn_symb\">&#9616;&#9664;</span></td>" + // <img src=\"../images/skin/iphone/from.png\" />
-					"<td class=\"icon_btn\" onclick=\"PeriodPicker.onToBtn(this);\"><span class=\"icon_btn_symb\">&#9654;&#9612;</span></td>" + //	<img src=\"../images/skin/iphone/to.png\" />			
-					"<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onDatesList();\"><img src=\"../images/skin/iphone/list_bullets.png\" /></td>" +
-					"</tr></table>" +
-				"</td></tr>";
+          "<table><tr>" +
+          "<td class=\"icon_btn\" onclick=\"PeriodPicker.onDoneBtn();\"><img src=\"../images/skin/iphone/back_arrow.png\" /></td>" + // &#9664;&#9642;
+          "<td class=\"icon_btn\" onclick=\"Filter.onPeriodReset();\"><img src=\"../images/skin/iphone/clear.png\" /></td>" +         
+          "<td width=\"100%\"></td>" +
+          "<td class=\"icon_btn\" onclick=\"PeriodPicker.onFromBtn(this);\" style=\"background-color: " + PeriodPicker.BLUE_BG + "\"><span class=\"icon_btn_symb\">&#9616;&#9664;</span></td>" + // <img src=\"../images/skin/iphone/from.png\" />
+          "<td class=\"icon_btn\" onclick=\"PeriodPicker.onToBtn(this);\"><span class=\"icon_btn_symb\">&#9654;&#9612;</span></td>" + //  <img src=\"../images/skin/iphone/to.png\" />      
+          "<td class=\"icon_btn\" onclick=\"ListBoxesHandler.onDatesList();\"><img src=\"../images/skin/iphone/list_bullets.png\" /></td>" +
+          "</tr></table>" +
+        "</td></tr>";
       }
       
     html +=
@@ -46,7 +46,7 @@ function startCalendar(parentDiv, callback, fromInp, toInp) {
   
   var calCont = getChildById(parentDiv, "calendar_container");
 
-	var table = parentDiv.getElementsByTagName("table")[0];  
+  var table = parentDiv.getElementsByTagName("table")[0];  
   var trs = table.rows;
   if (!toInp) {
     if (!isCalendarNavigation) {
@@ -71,8 +71,9 @@ function startCalendar(parentDiv, callback, fromInp, toInp) {
 * structure of html is inserted in menu.js
 ***********************************************************/
 var DatePicker = {
-	input : null,
-  isEuropeanFormat : null,
+  input : null,
+  isEuropeanFormat : false,
+	hasTime : false,
   callback : null,
   
   show : function(calCont, input, callback) {
@@ -90,11 +91,27 @@ var DatePicker = {
       iPhoneCalendar.show(calCont, this.onSelection, dateTmp);
     else
       iPhoneCalendar.show(calCont, this.onSelection);
+
+		// time picker	
+		this.hasTime = dateFormat.toLowerCase().indexOf('h') != -1;
+		if (this.hasTime)
+		  TimePicker.show(calCont, this.isEuropeanFormat);
+		else	
+			TimePicker.hide();
   },
   
   onSelection : function(date) {
     var $t = DatePicker;
-    $t._setValue(getTextFromDate(date, $t.isEuropeanFormat));
+		var value = getTextFromDate(date, $t.isEuropeanFormat);
+		
+		if ($t.hasTime) {
+			var timeArr = TimePicker.getValue(); // "h", "m", 1/2 - A/M
+		  
+			var timeStr = " " + (parseInt(timeArr[0]) + 12 * ((typeof timeArr[2] != 'undefined') ? timeArr[2] : 0)) 
+			   + ":" + timeArr[1];
+				 value += timeStr;
+	  }
+		$t._setValue(value);
   },
   
   onDateClear : function() {
@@ -102,9 +119,9 @@ var DatePicker = {
   },
   
   _setValue : function(value) {
-		FieldsWithEmptyValue.setValue(this.input, value);
+    FieldsWithEmptyValue.setValue(this.input, value);
     if (this.callback)
-	  this.callback(this.input);
+      this.callback(this.input);
     else  
       ListBoxesHandler.onBackBtn(1);
   }
@@ -117,7 +134,7 @@ var DatePicker = {
 var PeriodPicker = {
   CALENDAR_DELAY : 1200,
   BLUE_BG : "#1c7fe5",
-	
+  
   calCont : null, // calendar parent div
   fromInp : null,
   toInp : null,
@@ -129,7 +146,8 @@ var PeriodPicker = {
   toBtn : null,
   
   isEuropeanFormat : false,
-  
+  hasTime : false,
+	
   timerId : null,
   
   show : function(calCont, fromInp, toInp, doneCallback) {
@@ -137,7 +155,7 @@ var PeriodPicker = {
     this.fromInp = fromInp;
     this.toInp = toInp;
     this.callback = doneCallback;
-		this.curInp = fromInp; // helps to set value form list of dates
+    this.curInp = fromInp; // helps to set value form list of dates
 
     var dateFormat = fromInp.getAttribute("date_format");
     if (dateFormat.toLowerCase().indexOf('m') == 0) 
@@ -150,6 +168,13 @@ var PeriodPicker = {
       iPhoneCalendar.show(this.calCont, this.fromCallback, fromDateTmp);
     else
       iPhoneCalendar.show(this.calCont, this.fromCallback);
+		
+		// time picker - not used in the filter currently
+//		this.hasTime = dateFormat.toLowerCase().indexOf('h') != -1; 
+//    if (this.hasTime)
+//      TimePicker.show(calCont, this.isEuropeanFormat);
+//		else	
+//			TimePicker.hide();	
   },
   
   // buttons click handlers ---
@@ -160,13 +185,13 @@ var PeriodPicker = {
       fromDateTmp = getDateFromText(this.fromInp.value, this.isEuropeanFormat);
     iPhoneCalendar.show(this.calCont, this.fromCallback, fromDateTmp);
     
-		fromBtn.style.backgroundColor = this.BLUE_BG;
+    fromBtn.style.backgroundColor = this.BLUE_BG;
     var toBtn = getNextSibling(fromBtn);
-		toBtn.style.backgroundColor = "transparent";
-		
-		this.curInp = this.fromInp;
+    toBtn.style.backgroundColor = "transparent";
+    
+    this.curInp = this.fromInp;
   },
-	
+  
   onToBtn : function(toBtn) {
     clearTimeout(this.timerId);
     var toDateTmp = this.toDate;
@@ -175,11 +200,11 @@ var PeriodPicker = {
     iPhoneCalendar.show(this.calCont, this.toCallback, toDateTmp);
   
     this.toBtn = toBtn;
-		this.toBtn.style.backgroundColor = this.BLUE_BG;
+    this.toBtn.style.backgroundColor = this.BLUE_BG;
     var fromBtn = getPreviousSibling(this.toBtn);
-		fromBtn.style.backgroundColor = "transparent";
-		
-		this.curInp = this.toInp;
+    fromBtn.style.backgroundColor = "transparent";
+    
+    this.curInp = this.toInp;
   },
   
   onDoneBtn : function() {
@@ -194,16 +219,16 @@ var PeriodPicker = {
     
     // callback
     $t.callback($t.fromInp, $t.toInp);
-		$t._reset();
+    $t._reset();
   },
   
-	// value set thru list of dates
-	onSetThruList : function() {
-		var curInp = this.curInp;
-		this._reset();
-		return curInp;
-	},
-	
+  // value set thru list of dates
+  onSetThruList : function() {
+    var curInp = this.curInp;
+    this._reset();
+    return curInp;
+  },
+  
   // callbacks -----------------------------
   fromCallback : function(dateObj) {
     var $t = PeriodPicker;
@@ -220,22 +245,22 @@ var PeriodPicker = {
   getInputs : function() {
     return [ this.fromInp, this.toInp ];
   },
-	_reset : function() {
-		this.fromDate = null;
+  _reset : function() {
+    this.fromDate = null;
     this.toDate = null;
     this.isEuropeanFormat = false;
-		this.fromInp = null;
+    this.fromInp = null;
     this.toInp = null;
-		this.curInp = null;
-		
-		// reset buttons state
+    this.curInp = null;
+    
+    // reset buttons state
     if (this.toBtn != null) {
-			this.toBtn.style.backgroundColor = "transparent";
+      this.toBtn.style.backgroundColor = "transparent";
       var fromBtn = getPreviousSibling(this.toBtn);
-			fromBtn.style.backgroundColor = this.BLUE_BG;
+      fromBtn.style.backgroundColor = this.BLUE_BG;
     }
     this.toBtn = null;
-	}
+  }
 }
 
 /**********************************************************
@@ -254,7 +279,7 @@ var iPhoneCalendar = {
   calendarDiv : null,
   header : null,
   box : null,
-	cellsTable : null,
+  cellsTable : null,
   cells : null,
   curCell : null,
   
@@ -266,7 +291,7 @@ var iPhoneCalendar = {
   // 3. show(parentDiv, callback, timestamp);
   // 4. show(parentDiv, callback, year, month, day);
   show : function(parentDiv, callback, initYearOrTimestampOrDateObj, initMonth, initDay) {
-    if (this.calendarDiv == null)
+	  if (this.calendarDiv == null)
       this._initCalendar();
     // 1.
     if (typeof initYearOrTimestampOrDateObj == "undefined" || initYearOrTimestampOrDateObj == null)
@@ -276,7 +301,7 @@ var iPhoneCalendar = {
       if (typeof initYearOrTimestampOrDateObj == "object")
         this.curDate = initYearOrTimestampOrDateObj;
       // 3.
-			else if (initYearOrTimestampOrDateObj != null) 
+      else if (initYearOrTimestampOrDateObj != null) 
         this.curDate = new Date(initYearOrTimestampOrDateObj);
     }
     else  { // 4.
@@ -301,62 +326,62 @@ var iPhoneCalendar = {
     this.header.innerHTML = 
       "<div class=\"back_year\" onclick=\"iPhoneCalendar.onYearMove(-1);\">" +
       //"<img src=\"calendar/img/back_year.jpg\" />" +
-			"&#9664;&#9616;" +
+      "&#9664;&#9616;" +
       "</div>" +
       
       "<div class=\"back\" onclick=\"iPhoneCalendar.onMonthMove(-1);\">" +
       //"<img src=\"calendar/img/back.jpg\" />" +
-			"&#9664;" +
+      "&#9664;" +
       "</div>" +
 
       "<div class=\"forward_year\" onclick=\"iPhoneCalendar.onYearMove(1);\">" +
       //"<img src=\"calendar/img/forward_year.jpg\" />" +
-			"&#9612;&#9654;" +
+      "&#9612;&#9654;" +
       "</div>" +
 
       "<div class=\"forward\" onclick=\"iPhoneCalendar.onMonthMove(1);\">" +
       //"<img src=\"calendar/img/forward.jpg\" />" +
-			"&#9654;" +
+      "&#9654;" +
       "</div>" +
 
       "<div class=\"month_year\"></div>";
-		
-		// days table(=row)
-		var daysTable = document.createElement("table");
-		daysTable.cellPadding = 0;
-		daysTable.cellSpacing = 0;
-		daysTable.style.width = "100%";
-		var daysTBody = document.createElement("tbody");
-		var daysTr = document.createElement("tr");
-		
-		daysTBody.appendChild(daysTr);
-		daysTable.appendChild(daysTBody);
     
-		for (var dayIdx = 0; dayIdx < 7; dayIdx++) {
+    // days table(=row)
+    var daysTable = document.createElement("table");
+    daysTable.cellPadding = 0;
+    daysTable.cellSpacing = 0;
+    daysTable.style.width = "100%";
+    var daysTBody = document.createElement("tbody");
+    var daysTr = document.createElement("tr");
+    
+    daysTBody.appendChild(daysTr);
+    daysTable.appendChild(daysTBody);
+    
+    for (var dayIdx = 0; dayIdx < 7; dayIdx++) {
       var day = document.createElement("td");
       day.className = "day_name";
       day.innerHTML = this.DAY_NAME[dayIdx];
 
       daysTr.appendChild(day);
     }
-		this.header.appendChild(daysTable);
+    this.header.appendChild(daysTable);
     
-		this.calendarDiv.appendChild(this.header);
+    this.calendarDiv.appendChild(this.header);
     
     // cells of days -------------
     this.box = document.createElement("div");
     this.box.className = "box";
     
-		this.cellsTable = document.createElement("table");
-		this.cellsTable.cellPadding = 0;
-		this.cellsTable.cellSpacing = 0;
-		var tbody = document.createElement("tbody");
-		
+    this.cellsTable = document.createElement("table");
+    this.cellsTable.cellPadding = 0;
+    this.cellsTable.cellSpacing = 0;
+    var tbody = document.createElement("tbody");
+    
     this.cells = new Array();
     
     for (var verIdx = 0; verIdx < 6; verIdx++) {
-			var tr = document.createElement("tr");
-			
+      var tr = document.createElement("tr");
+      
       for (var horIdx = 0; horIdx < 7; horIdx++) {
         var cell = document.createElement("td");
         this.cells.push(cell);
@@ -364,17 +389,17 @@ var iPhoneCalendar = {
         cell.className = "cell";
         cell.onmousedown = this.onDayMouseDown;
         cell.onmouseup = this.onDayMouseUp;
-				
-				if (horIdx == 6)
-					cell.style.borderRight = "none";
+        
+        if (horIdx == 6)
+          cell.style.borderRight = "none";
 
-				tr.appendChild(cell);
+        tr.appendChild(cell);
       }
-			tbody.appendChild(tr);
+      tbody.appendChild(tr);
     } // for end
     
-		this.cellsTable.appendChild(tbody);
-		this.box.appendChild(this.cellsTable);
+    this.cellsTable.appendChild(tbody);
+    this.box.appendChild(this.cellsTable);
     this.calendarDiv.appendChild(this.box);
   },
   
@@ -408,18 +433,18 @@ var iPhoneCalendar = {
      }
    }
   
-	// 3. show / hide last row(s)
-	 var fiveth = "none";
-	 var sixth = "none";
+  // 3. show / hide last row(s)
+   var fiveth = "none";
+   var sixth = "none";
  
-	 if (lastDayIdx > 27)
-			fiveth = "";
-	 if (lastDayIdx > 34)
-	 	sixth = "";
+   if (lastDayIdx > 27)
+      fiveth = "";
+   if (lastDayIdx > 34)
+    sixth = "";
 
-	 this.cellsTable.rows[4].style.display = fiveth;
-	 this.cellsTable.rows[5].style.display = sixth;
-	 
+   this.cellsTable.rows[4].style.display = fiveth;
+   this.cellsTable.rows[5].style.display = sixth;
+   
    // 4. set current day
    this.curCell = this.cells[curDayIdx];
    this.curCell.className = "cell_current";
@@ -495,6 +520,52 @@ var iPhoneCalendar = {
   }
 }
 
+// TimePicker
+// based on http://www.htmldrive.net/items/demo/1005/like-iPhone-jQuery-scroller-Date-and-Time-picker 
+var TimePicker = {
+	input : null,
+	picker : null,
+	show : function(parent, isEur) {
+		if (this.input == null) 
+			this.create(parent, isEur);
+		else {
+			parent.appendChild(this.input);
+			parent.appendChild(this.picker);
+		}	
+	},
+  create : function(parent, isEur) {
+		this.input = document.createElement("input");
+    this.input.style.display = "none";
+    parent.appendChild(this.input);
+
+    $(function(){
+        $(TimePicker.input).scroller({
+            preset: 'time',
+            theme: 'ios',
+            display: 'inline',
+            mode: 'scroller',
+						showLabel: true,
+						hourText: '&[hours];', 
+						minuteText: '&[minutes];', 
+						timeFormat: isEur ? 'HH:ii' : 'hh:ii A',
+						ampm: isEur ? false : true,
+        });    
+    });
+		this.picker = getNextSibling(this.input);
+  },
+//	show : function() {
+//		this.input.value = "";
+//		  $(this.input).scroller('show') 
+//	},
+  hide : function() {
+		if (this.input != null)
+		  $(this.input).scroller('hide') 
+  },
+	getValue : function() {
+		return $(this.input).scroller('getValue');
+	}
+	
+}
 
   // utils -----------------------------
   // delimeter "-"
@@ -509,10 +580,10 @@ function getDateFromText(dateStr, isEuropeanFormat) {
     return null;
 
   var year = dateArr[2];
-	var idx = year.indexOf(" ");  // " " delimeter of possible time
-	if (idx != -1)
-		year = year.substr(0, idx);
-		
+  var idx = year.indexOf(" ");  // " " delimeter of possible time
+  if (idx != -1)
+    year = year.substr(0, idx);
+    
   if (isEuropeanFormat)  
     return new Date(year, dateArr[1] - 1, dateArr[0]);
   else     
