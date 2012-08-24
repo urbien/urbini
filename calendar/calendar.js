@@ -525,18 +525,31 @@ var iPhoneCalendar = {
 var TimePicker = {
 	input : null,
 	picker : null,
+	
+	parent : null,
+	isEur : null,
+	
 	show : function(parent, isEur) {
 		if (this.input == null) 
 			this.create(parent, isEur);
 		else {
+			// insert controls each time because it can be new (other) dialog
 			parent.appendChild(this.input);
 			parent.appendChild(this.picker);
 		}	
 	},
-  create : function(parent, isEur) {
-		this.input = document.createElement("input");
-    this.input.style.display = "none";
-    parent.appendChild(this.input);
+	create : function(parent, isEur) {
+		this.parent = parent;
+		this.isEur = isEur;
+		loadStyle("mobiscroll.custom.min.css");
+		loadScript("http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js");
+		loadScript("mobiscroll.custom.min.js", this._create);
+	},
+  _create : function() {
+		var $t = TimePicker;
+		$t.input = document.createElement("input");
+    $t.input.style.display = "none";
+    $t.parent.appendChild($t.input);
 
     $(function(){
         $(TimePicker.input).scroller({
@@ -547,19 +560,24 @@ var TimePicker = {
 						showLabel: true,
 						hourText: '&[hours];', 
 						minuteText: '&[minutes];', 
-						timeFormat: isEur ? 'HH:ii' : 'hh:ii A',
-						ampm: isEur ? false : true,
+						timeFormat: $t.isEur ? 'HH:ii' : 'hh:ii A',
+						ampm: $t.isEur ? false : true //,
+					//	timeWheels : 'hhii',
+          //  width: 80
         });    
     });
-		this.picker = getNextSibling(this.input);
+		setTimeout(TimePicker._findPicker, 10);
   },
+	_findPicker : function() {
+		TimePicker.picker = getNextSibling(TimePicker.input);
+	},
 //	show : function() {
 //		this.input.value = "";
 //		  $(this.input).scroller('show') 
 //	},
   hide : function() {
 		if (this.input != null)
-		  $(this.input).scroller('hide') 
+		  $(this.input).scroller('hide'); 
   },
 	getValue : function() {
 		return $(this.input).scroller('getValue');
