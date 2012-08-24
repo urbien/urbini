@@ -11028,10 +11028,7 @@ var FlashHandler = {
 
 function startCalendar() {
 // calling function in the last file
-  var FILES_TO_LOAD = ["http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js",
-		"mobiscroll.custom.min.css", "mobiscroll.custom.min.js",
-		"calendar/calendar.css", "calendar/calendar.js"
-	];
+  var FILES_TO_LOAD = ["calendar/calendar.css", "calendar/calendar.js"];
   startCalendar = null;
   LoadOnDemand.doit(FILES_TO_LOAD, "startCalendar", arguments);
 }
@@ -12732,13 +12729,6 @@ function getUrlMinusReferrer() {
   
   return url;
 }
-
-function asyncLoadScript(scriptUrl, scriptDiv, callback) {
-  setTimeout(function() {
-    loadScript(scriptUrl, scriptDiv, callback);
-  }, 0);
-}
-
 
 function initFacebookLikeHandler(serverUrl) {
   if (isUndefined(FB)) {
