@@ -561,9 +561,9 @@ var TimePicker = {
 						hourText: '&[hours];', 
 						minuteText: '&[minutes];', 
 						timeFormat: $t.isEur ? 'HH:ii' : 'hh:ii A',
-						ampm: $t.isEur ? false : true //,
-					//	timeWheels : 'hhii',
-          //  width: 80
+						ampm: $t.isEur ? false : true ,
+						timeWheels : $t.isEur ? 'HHii' : 'hhii A',
+            width : $t.isEur ? 80 : 50
         });    
     });
 		setTimeout(TimePicker._findPicker, 10);
