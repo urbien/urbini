@@ -612,7 +612,8 @@ function getTextFromDate(dateObj, isEuropeanFormat) {
   if (isEuropeanFormat)
     return dateObj.getDate() + "-" + (dateObj.getMonth() + 1) + "-" +
       dateObj.getFullYear(); 
-  else     
-    return (dateObj.getMonth() + 1) + "/" + dateObj.getDate() + "/" +
+  else   
+	  // Note: previously delimeter "/" was used in american date  
+    return (dateObj.getMonth() + 1) + "-" + dateObj.getDate() + "-" +
       dateObj.getFullYear(); 
 }
