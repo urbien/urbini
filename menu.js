@@ -733,7 +733,7 @@ function getKeyCode(e) {
       throw new Error("can't detect the key pressed");
   }
 }
-
+/*
 function clearOtherPopups(div) {
 // alert("div=" + div.id + ", loadedPopups.length=" + openedPopups.length)
   for (var p in loadedPopups) {
@@ -743,7 +743,7 @@ function clearOtherPopups(div) {
       loadedPopups[p] = null;
   }
 }
-
+*/
 
 function getFormNode(elem) { 
   var f = elem.parentNode; 
@@ -2228,10 +2228,10 @@ var ListBoxesHandler = {
     if (tr)
       var anchors = tr.getElementsByTagName('A');
     if (anchors  &&  anchors.length != 0) {
-      if (currentDiv) {
-        loadedPopups[currentDiv.id] = null;
-        // Popup.close0(currentDiv.id);
-      }
+//      if (currentDiv) {
+//        loadedPopups[currentDiv.id] = null;
+//        // Popup.close0(currentDiv.id);
+//      }
       var anchor = anchors[0];
       var trg = anchor.getAttribute('target');
       if (trg) {
@@ -2397,7 +2397,7 @@ var ListBoxesHandler = {
             targetImg = targetImg.getElementsByTagName('img')[0];
           if(typeof targetImg != 'undefined')
             targetImg.src = "icons/checkbox.gif";
-          return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
+          return; //closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
         }
 
         var isTablePropertyList = currentFormName.indexOf("tablePropertyList") == 0;
@@ -2430,8 +2430,8 @@ var ListBoxesHandler = {
             selectItems[i].value = null;
         }
       }
-      if (currentDiv)
-        loadedPopups[currentDiv.id] = null;
+//      if (currentDiv)
+//        loadedPopups[currentDiv.id] = null;
       var imgId  = prop + "_class_img";
       var img = document.getElementById(imgId);
       if (img) {
@@ -2609,17 +2609,9 @@ var ListBoxesHandler = {
         divId = currentResourceUri + ".$." + divId;
     }
     var div = document.getElementById(divId);
-    if (deleteCurrentDiv && currentDiv)
-      loadedPopups[currentDiv.id] = null;
+//    if (deleteCurrentDiv && currentDiv)
+//      loadedPopups[currentDiv.id] = null;
  },
-
-
-
-
-
-
-
-
 
   onClassifierItemClick : function(e, tr) {
     this.curClass = tr.id;
@@ -3917,7 +3909,7 @@ var DataEntry = {
   
   // parentDivId and submitCallback, beforeSubmitCallback are not required
   show : function(e, url, hotspot, parentDivId, submitCallback, beforeSubmitCallback) {
-    if (this.loadingUrl != null)
+	  if (this.loadingUrl != null)
       return;
 
     this.hotspot = hotspot;
@@ -12303,8 +12295,8 @@ var LinkProcessor = {
   
     $t.linkHrefModifier(e, anchor);
   
-    if (!id)
-      return;
+    if (!id) 
+		  return;
   
     var idLen = id.length;
 
@@ -12512,7 +12504,9 @@ var LinkProcessor = {
 
     // 1. Data Entry
     if (urlStr.indexOf("mkResource.html?") != -1 ||
-          urlStr.indexOf("editProperties.html?") != -1)
+          urlStr.indexOf("editProperties.html?") != -1 ||
+					(Browser.mobile && urlStr.indexOf("-$action=showPropertiesForEdit") != -1)
+				)
       DataEntry.show(e, urlStr, anchor, null, XHRCallback, XHRCallbackBefore);
     // 2. XHR with specific callback
     else if (XHRCallback) {
