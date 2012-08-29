@@ -57,7 +57,7 @@ H5, H5 A {color: &[SecondaryColorB_2];; }
 .lz_small { font-size: 11px; }
 .lz_medium { font-size: 12px; }
 .lz_large { font-size: 14px; }
-.lz_x_large, /* html h2 { font-size: 18px; } */
+.lz_x_large/*  html h2 */ { font-size: 18px; }
 .lz_xx_large { font-size: 24px; }
 .lz_xxx_large { font-size: 36px; }
  
