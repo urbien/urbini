@@ -13070,7 +13070,7 @@ var EndlessPager = {
   anchors : null, // pages buttons
   curPage : 0,
   nabsGrid : null,  // masonry
-  blogTable : null, // blog
+  recourseTable : null, // blog
   skip : false,
   onscroll : function(event) {
     var $t = EndlessPager;
@@ -13112,20 +13112,20 @@ var EndlessPager = {
     var $t = EndlessPager;
     $t.indicatorTd.style.visibility = "hidden";  
 
-    if ($t.nabsGrid == null && $t.blogTable == null) {
+    if ($t.nabsGrid == null && $t.recourseTable == null) {
       $t.nabsGrid = document.getElementById("nabs_grid");
-      $t.blogTable = document.getElementById("blog");
+      $t.recourseTable = $t._getResourseTable();
     }
-    
-    // blog ---
-    if ($t.nabsGrid == null) { // table#blog is on masonry page too
-      $t.blogTable = document.getElementById("blog");
-      var newBlogTable = getDomObjectFromHtml(html, "id", "blog");
-      if ($t.blogTable && newBlogTable) {
-        var tr = newBlogTable.rows[0];
+
+    // siteResourceList ---
+    if ($t.nabsGrid == null) { // siteResourceList table is on masonry page too
+      $t.recourseTable = $t._getResourseTable();
+      var newrecourseTable = getDomObjectFromHtml(html, "id", $t.recourseTable.id);
+      if ($t.recourseTable && newrecourseTable) {
+        var tr = newrecourseTable.rows[0];
         while (tr) {
-         $t.blogTable.appendChild(tr);
-         tr = newBlogTable.rows[0];
+         $t.recourseTable.appendChild(tr);
+         tr = newrecourseTable.rows[0];
         }
       }
       return;
@@ -13150,7 +13150,11 @@ var EndlessPager = {
   stop : function() {
     removeEvent(window, "scroll", EndlessPager.onscroll, false);
     this.indicatorTd.style.display = "none";
-  }
+  },
+	_getResourseTable : function() {
+		var frontDiv = getChildById(document.getElementById("siteResourceList"), "front");
+    return frontDiv.getElementsByTagName("table")[0];
+	}
 }
 
 function getMoreBoards(e, id, exclude) {
