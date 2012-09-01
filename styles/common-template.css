@@ -2337,7 +2337,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 /********** Slide Show *********/
 .slideShow { position: relative; display: inline-block; }
-.slideShow_scene .slide { position: absolute; opacity: 0; }
+.slideShow_scene .slide, .widget .slide { position: absolute; opacity: 0; }
 
 .slides_pager { 
   position: absolute;
