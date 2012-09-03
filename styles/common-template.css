@@ -140,7 +140,7 @@ div .href {display: inline;}
 
 .hideImg * { display: inline; padding-right: 0.5em; border: none; }
 .hideImg table, .hideImg img, .hideImg object, .hideImg embed, .hideImg .swf, .hideImg .flv { display: none; }
-@-moz-document url-prefix() { .hideImg table { display: table; } .hideImg table td { float: left; } }
+/* @-moz-document url-prefix() { .hideImg table { display: table; } .hideImg table td { float: left; } } */
 
 .displayInline, .displayIn4lines { 
   max-width: 750px; 
