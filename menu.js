@@ -6652,9 +6652,12 @@ function showTab(e, td, hideDivId, unhideDivId) {
         }
       }
 
-      div.style.visibility = 'hidden';
-      div.style.display = "none";
-
+     if (div.tagName.toLowerCase() == 'td')
+        div.className = 'hdn';
+      else {
+        div.style.visibility = 'hidden';
+        div.style.display = "none";
+      } 
       if (div.id == "div_SlideShow")
         BacklinkImagesSlideshow.stop();
       
@@ -6713,10 +6716,12 @@ function showTab(e, td, hideDivId, unhideDivId) {
       var div = document.getElementById(tok);
       if (!div)
         continue;
-
-      div.className = "";
-      div.style.visibility = 'visible';
-      div.style.display = 'inline';
+      if (div.tagName.toLowerCase() == 'td')
+        div.className = "";
+      else {
+        div.style.visibility = 'visible';
+        div.style.display = 'inline';
+      }
       var tdId;
       if (tok.charAt(0) == 'i') {
         tdId = tok.substring(5);
