@@ -127,7 +127,7 @@ img.fade {
 #dataEntry table { border-collapse: collapse; }
 #siteResourceList td, #resourceList td, #div_Info td, .widget td/*, #mkresource td*/ { height: 30px; font-size: 12px; }
 #siteResourceList #blog td, #siteResourceList .panel_block td { height: auto; }
-
+#blog img {max-width: 145px; }
 .rounded_rect_tbl #siteResourceList { text-align: center; } /* align menu items */
 .rounded_rect_tbl #menu{ margin: 0 auto; }
 #siteResourceList #front {background-color: &[BackgroundColor];}
@@ -1727,19 +1727,18 @@ table.printFB {
 }
 
 /* captcha */
-.captcha td { /*padding-left: 25px; text-align: center; */}
-.captcha table td { width: 51; height: 50; } /* puzzle td */
-.captcha .a { background-position: 0% 0%; padding: 0; margin: 0;}
-.captcha .b { background-position: 25% 0%; padding: 0; margin: 0;}
-.captcha .c { background-position: 50% 0%; padding: 0; margin: 0;}
-.captcha .d { background-position: 75% 0%; padding: 0; margin: 0;}
-.captcha .e { background-position: 100% 0%; padding: 0; margin: 0;}
+.captcha table td { width: 51px; height: 50px; background-repeat: no-repeat; padding: 0px; margin: 0px;} /* puzzle td */
+.captcha .a { background-position: 0% 0%;  }
+.captcha .b { background-position: 25% 0%; }
+.captcha .c { background-position: 50% 0%; }
+.captcha .d { background-position: 75% 0%; }
+.captcha .e { background-position: 100% 0%;}
 
-.captcha .f { background-position: 0% 100%; padding: 0; margin: 0;}
-.captcha .g { background-position: 25% 100%; padding: 0; margin: 0;}
-.captcha .h { background-position: 50% 100%; padding: 0; margin: 0;}
-.captcha .i { background-position: 75% 100%; padding: 0; margin: 0;}
-.captcha .j { background-position: 100% 100%; padding: 0; margin: 0;}
+.captcha .f { background-position: 0% 100%; }
+.captcha .g { background-position: 25% 100%;}
+.captcha .h { background-position: 50% 100%;}
+.captcha .i { background-position: 75% 100%; }
+.captcha .j { background-position: 100% 100%;}
 
 /*
 .login {background-color: transparent; border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px}
@@ -2337,7 +2336,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 
 /********** Slide Show *********/
 .slideShow { position: relative; display: inline-block; }
-.slideShow_scene .slide { position: absolute; opacity: 0; }
+.slideShow_scene .slide, .widget .slide { position: absolute; opacity: 0; }
 
 .slides_pager { 
   position: absolute;
