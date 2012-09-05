@@ -1038,6 +1038,8 @@ function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 			this.parentDiv.insertBefore(this.div, this.insertBeforeObj);
 		else
 			this.parentDiv.appendChild(this.div);
+			
+			Debug.log("toolbar parent div created");
 	}
 	// DropdownList is not support the overflow for now!
 	this.appendDropdownList = function(fieldWidth, title, callback) {
