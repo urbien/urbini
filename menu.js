@@ -13119,9 +13119,9 @@ var EndlessPager = {
 
 function getMoreBoards(e, id, exclude) {
   e = getDocumentEvent(e);
-  
-  var tokens = exclude.split(',');
-  var len = tokens.length;
+  var tokens = exclude ? exclude.split(',') : null;
+  var len = tokens ? tokens.length : 0;
+
   var s;
   for(var i = 0; i < len; i++) {
     var tok = trim(tokens[i]);
