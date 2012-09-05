@@ -872,7 +872,7 @@ var Boost = {
         stopEventPropagation(e);
       return null;
     }
-    
+// NOTE: the following command used from "Action" menu now !!!    
     if (id == 'menu_Add') {
       var a = $t.getElementById('add_url_hdn');
       DataEntry.show(e, a.href);
@@ -2022,7 +2022,7 @@ var MobilePageAnimation = {
     this.dlgDiv = div;
     div.style.top = getScrollXY()[1] + 'px';
     div.style.minHeight = getWindowSize()[1] + 'px';
-    setTransformProperty(div, "scale(0.1)");
+    setTransformProperty(div, "scale(0.3)");
 		
 		if (div.id != "browser_dlg") { // browser_dlg is our alert dialog
 			appendClassName(div, "mobile_dlg");
@@ -2032,8 +2032,8 @@ var MobilePageAnimation = {
 		
 		div.style.visibility = "visible";
 		// on fast animation a dialog can disapeared for a moment
-    // so 0.8 sec was changed on 1.2 sec (as minimum)
-    setTimeout(function f() { setTransitionProperty(div, "all 1.2s ease-in-out"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
+    // increas time to overcome it
+    setTimeout(function f() { setTransitionProperty(div, "all 0.8s ease-in-out"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
   },
    _onZoomInDialogEnd : function(event) {
     var $t = MobilePageAnimation;
@@ -2047,7 +2047,7 @@ var MobilePageAnimation = {
     this.dlgDivToHide = div;
     setTransitionCallback(div, MobilePageAnimation._onZoomOutDialogEnd); 
     Mobile.getCurrentPageDiv().style.opacity = 1
-    setTransformProperty(div, "scale(0.1)");
+    setTransformProperty(div, "scale(0.3)");
     div.style.opacity = "0.1";
   },
   
