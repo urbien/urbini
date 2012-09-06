@@ -1137,7 +1137,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
     // append <br /> for better height fitting
     // it will be removed with all trailed <br>
-	  var br = document.createElement("br");
+	  var br = this.document.createElement("br");
 	  this.document.body.appendChild(br);
 
 	}
