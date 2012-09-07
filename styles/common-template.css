@@ -1817,7 +1817,8 @@ div .panel_block, td .panel_block {
 
 div .standalone_dlg, td .standalone_dlg { width: 520px; margin-top: 4px;}
 
-div .panel_block .dlg_cross, td .panel_block .dlg_cross { display: none; }
+div .panel_block .dlg_cross img, td .panel_block .dlg_cross img { display: none; }
+div .panel_block .dlg_cross, td .panel_block .dlg_cross { padding: 7px; }
 
 #siteResourceList .panel_block, #fts-sift .panel_block{
   position: absolute;
