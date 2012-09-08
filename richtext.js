@@ -1976,8 +1976,11 @@ function Rte(iframeObj, dataFieldId, rtePref) {
       else
         html += " align=\"" + align + "\"";
       
-      if (margin)
-        stl += "margin:" + margin + ";";
+      if (margin) {
+				if (/\D/.test(margin) == false)
+				  margin += "px";
+	  	  stl += "margin:" + margin + ";";
+	    }
       
       html += " style=\"" + stl + "\"";
 
