@@ -733,7 +733,7 @@ function getKeyCode(e) {
       throw new Error("can't detect the key pressed");
   }
 }
-
+/*
 function clearOtherPopups(div) {
 // alert("div=" + div.id + ", loadedPopups.length=" + openedPopups.length)
   for (var p in loadedPopups) {
@@ -743,7 +743,7 @@ function clearOtherPopups(div) {
       loadedPopups[p] = null;
   }
 }
-
+*/
 
 function getFormNode(elem) { 
   var f = elem.parentNode; 
@@ -1866,7 +1866,7 @@ var ListBoxesHandler = {
   },
   
   onListLoaded : function(event, popupDiv, hotspot, content) {
-    var $t = ListBoxesHandler;
+	  var $t = ListBoxesHandler;
     var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
 
     var listsCont = getChildById(panel, "lists_container");
@@ -1895,7 +1895,6 @@ var ListBoxesHandler = {
     $t.changeOptionSelectionState(opTable);
     $t.changeAddNewState(popupDiv);
     $t.showOptionsOrClasses(popupDiv);
-
     // RL editor: align options list
     if (($t._isEditList || $t._isFtsSift) && !isVisible($t.panelBlock) || $t._isOneParamSelection) {
       var form = getAncestorByAttribute(hotspot, "name", ["siteResourceList", "rightPanelPropertySheet"]);
@@ -1993,7 +1992,8 @@ var ListBoxesHandler = {
       pos[1] = -1;
       
     this.panelBlock.style.top = pos[1] + "px";
-    
+    // hack: use cross icon for one option selection (detected on the fly)
+    this.optionsPanel.getElementsByTagName("img")[0].src = "images/skin/iphone/cross.png";
     this.panelBlock.style.visibility = "visible";
   },
   
@@ -2228,10 +2228,10 @@ var ListBoxesHandler = {
     if (tr)
       var anchors = tr.getElementsByTagName('A');
     if (anchors  &&  anchors.length != 0) {
-      if (currentDiv) {
-        loadedPopups[currentDiv.id] = null;
-        // Popup.close0(currentDiv.id);
-      }
+//      if (currentDiv) {
+//        loadedPopups[currentDiv.id] = null;
+//        // Popup.close0(currentDiv.id);
+//      }
       var anchor = anchors[0];
       var trg = anchor.getAttribute('target');
       if (trg) {
@@ -2397,7 +2397,7 @@ var ListBoxesHandler = {
             targetImg = targetImg.getElementsByTagName('img')[0];
           if(typeof targetImg != 'undefined')
             targetImg.src = "icons/checkbox.gif";
-          return closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
+          return; //closePopup(prop, currentDiv, deleteCurrentDiv, checkboxClicked);
         }
 
         var isTablePropertyList = currentFormName.indexOf("tablePropertyList") == 0;
@@ -2430,8 +2430,8 @@ var ListBoxesHandler = {
             selectItems[i].value = null;
         }
       }
-      if (currentDiv)
-        loadedPopups[currentDiv.id] = null;
+//      if (currentDiv)
+//        loadedPopups[currentDiv.id] = null;
       var imgId  = prop + "_class_img";
       var img = document.getElementById(imgId);
       if (img) {
@@ -2609,17 +2609,9 @@ var ListBoxesHandler = {
         divId = currentResourceUri + ".$." + divId;
     }
     var div = document.getElementById(divId);
-    if (deleteCurrentDiv && currentDiv)
-      loadedPopups[currentDiv.id] = null;
+//    if (deleteCurrentDiv && currentDiv)
+//      loadedPopups[currentDiv.id] = null;
  },
-
-
-
-
-
-
-
-
 
   onClassifierItemClick : function(e, tr) {
     this.curClass = tr.id;
@@ -3917,7 +3909,7 @@ var DataEntry = {
   
   // parentDivId and submitCallback, beforeSubmitCallback are not required
   show : function(e, url, hotspot, parentDivId, submitCallback, beforeSubmitCallback) {
-    if (this.loadingUrl != null)
+	  if (this.loadingUrl != null)
       return;
 
     this.hotspot = hotspot;
@@ -3975,7 +3967,7 @@ var DataEntry = {
   
   // parameterInputname, forexample  name=".priority"
   showOneParameterOnly : function(e, url, hotspot, oneParameterInputName, submitCallback, beforeSubmitCallback) {
-    this.oneParameterInputName = oneParameterInputName;
+		this.oneParameterInputName = oneParameterInputName;
     this.show(e, url, hotspot, null, submitCallback, beforeSubmitCallback);
   },
   
@@ -4001,6 +3993,7 @@ var DataEntry = {
       alert("Data Entry: Server response does not contain a dialog!");
       return;
     }
+		
     div.style.visibility = "hidden";
     
     // onDataError happens on mkResource
@@ -4037,11 +4030,20 @@ var DataEntry = {
       if (parent)
        parent.appendChild(div);
     }
+
+		// dialog contains one "selector" parameter - show its options list immediately
+		var arrowTd = getChildByClassName(div, "arrow_td");
+    if (arrowTd && TouchDlgUtil.isSingleParameterInDialog(arrowTd)) {
+			appendClassName(div, "oneparamselection");
+			var tr = getChildByClassName(div, "param_tr");
+			ListBoxesHandler.processClickParam(null, tr); 
+    }
+		
     setDivVisible(event, div, $t.hotspot, 5, 5);
-  
     $t.initDataStr = $t._getFormDataStr(div, true);
     var key = $t._getKey($t.currentUrl);
     $t.dataEntryArr[key] = div;
+
   },
   
   // div is null here; the dialog with error message is in html code
@@ -4444,16 +4446,19 @@ var PlainDlg = {
   _show : function(event, hotspot) {
     // login: show it as a modal dialog
     if (this.curUrl && this.curUrl.indexOf("j_security_check") != -1) {
-      LoadingIndicator.show();
-      // hack: FaceBook can not to call a callback (on a local host).
-      // So hide the spinner "manually" (faster to do it on dev.hudsonfog.com site)
-      var timeout = getBaseUri().indexOf("dev.hudsonfog.com") != -1 ? 2000 : 10000;
-      setTimeout("LoadingIndicator.hide()", timeout);
-      LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
+      if (getChildByClassName(this.dlgDiv, "button") != null) { // no social buttons - no waiting
+	  	  LoadingIndicator.show();
+	  	// hack: FaceBook can not to call a callback (on a local host).
+				// So hide the spinner "manually" (faster to do it on dev.hudsonfog.com site)
+				var timeout = getBaseUri().indexOf("dev.hudsonfog.com") != -1 ? 2000 : 10000;
+				setTimeout("LoadingIndicator.hide()", timeout);
+			}
+			LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
       // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
       var jstest = getChildByAttribute(this.dlgDiv, "name", '.jstest');
       if (jstest)
         jstest.value = "ok";
+
       setDivVisible(null, this.dlgDiv, null, 0, 0, null, null, true);
       return;
     }
@@ -4942,13 +4947,13 @@ var TouchDlgUtil = {
         FieldsWithEmptyValue.setFocus(input);
       else
         this._setFocusInFocusHolder();  
-      if (!isElemInView(passToTr))
+      if (!isElemInViewport(passToTr))
         passToTr.scrollIntoView(down == false);
     }
     else { // go into Selector
       var activePanel = ListBoxesHandler.getCurrentPanelDiv();
       var selector = this.focusSelector(activePanel);
-      if (selector && !isElemInView(selector)) {
+      if (selector && !isElemInViewport(selector)) {
         var header = getAncestorByClassName(selector, "header");
         if (header)
           header.scrollIntoView(true);  
@@ -5221,8 +5226,17 @@ var TouchDlgUtil = {
   
   isElementFirstParameter : function(elem) {
     var paramTr = getAncestorByClassName(elem, "param_tr");
-    return comparePosition(paramTr, getChildByClassName(this.curDlgDiv, "param_tr")) == 0;
+		var dlg = this.curDlgDiv || getAncestorByClassName(paramTr, "panel_block");
+    return comparePosition(paramTr, getChildByClassName(dlg, "param_tr")) == 0;
   },
+  // elem is a child of "param_tr"
+  isSingleParameterInDialog : function(elem) { 	
+	  if (TouchDlgUtil.isElementFirstParameter(elem) &&
+	       getNextSibling(getAncestorByClassName(elem, "param_tr")) == null)
+			return true;
+		return false;	
+	},
+	
   showPageOverlay: function(dlg) {
     if (!this.pageOverlay) {
       this.pageOverlay = document.createElement("div");
@@ -7781,7 +7795,7 @@ var FieldsWithEmptyValue = {
       } catch (e) {};
     } 
       
-    field.style.textAlign = "left"; 
+    ///// field.style.textAlign = "left"; 
   },
   // dialog shown from "cache" dose not allow immediate focus() set.
   _setFocusDelayed : function() { 
@@ -7917,7 +7931,7 @@ var FieldsWithEmptyValue = {
       setCaretPosition(field, 0);
     }
     // align "left" - more regular to type 
-    field.style.textAlign = "left";
+    //////// field.style.textAlign = "left";
   },
   
   onkeydown : function(event) {
@@ -7960,7 +7974,7 @@ var FieldsWithEmptyValue = {
     } 
     $t.fieldForDelayedAction = null;
     
-    field.style.textAlign = "";
+    /////// field.style.textAlign = "";
   },
   
   // only for fields with clear text contol
@@ -9452,7 +9466,7 @@ var Dashboard = {
         if (widgetUri == null) {
           var f = document.getElementById("pref_" + widget.id.substring(wLen));
           if (f) {
-            formId = f.id;
+						formId = f.id;
             // create backlink bookmark and move it to Tab
             submitWidgetPreferences(e, formId, tab);
             return ret;
@@ -9988,7 +10002,7 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 		  $t.widgetDiv.insertBefore($t.nextSlide, getFirstChild($t.widgetDiv));
   }
 	
-  // it CAN be called outside to create preloaded pages manually, like Backlink images
+	// it CAN be called outside to create preloaded pages manually, like Backlink images
   // for widgets it is inner function
   // recNmb is not required
   this.createNewSlide = function(htmlOrObject, recNmb) {
@@ -10111,18 +10125,41 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 var BacklinkImagesSlideshow = {
   DELAY: 3000,
   MAX_LOOPS: 2,
-  slideshowArr : new Array(), // 
-//  initialized : false,
-  
+  slideshowArr : null, 
+  _init1stTime : true, // hack for Opera(!) where init executed before register
   register : function(sceneId) {
+		if (this.slideshowArr == null)
+		  this.slideshowArr = new Array();
     this.slideshowArr.push(new slideshow(document.getElementById(sceneId)));
   },
   init : function() {
- //   this.initialized = true;
-    for (var i = 0; i < this.slideshowArr.length; i++)
-      this.slideshowArr[i].init();
+    var $t = BacklinkImagesSlideshow;
+    if (Browser.opera && $t._init1stTime) {
+			$t._init1stTime = false;
+			setTimeout($t.init, 500);
+		}
+		
+		if (!$t.slideshowArr)
+		  return;
+			
+  	// 1. launch 1st slideshow
+		$t.slideshowArr[$t.slideshowArr.length - 1].init();
+    // 2. download "stored" slides of not 1st slideshow after 1st slideshow was completely downloaded
+		for (var i = $t.slideshowArr.length - 2; i >= 0; i--) {
+			var slidesStore = getChildByClassName( $t.slideshowArr[i].slideShowSceneDiv.parentNode, "slideShow_store")
+			var images = slidesStore.getElementsByTagName("img");
+			for (var n = 0; n < images.length; n++) {
+		  	if (i == 0 && n == images.length - 1) 
+		  		images[n].onload = $t._delayedInit;
+		  	images[n].src = images[n].getAttribute("delayed_src");
+		  }	 
+		}
   },
-  
+  _delayedInit : function() {
+		var $t = BacklinkImagesSlideshow;
+	  for (var i = $t.slideshowArr.length - 2; i >= 0; i--)
+		  $t.slideshowArr[i].init(); 
+	},
   // slide show on a Tab (Edit page) containong one slide show
   onMainThumbClick : function() {
     this.slideshowArr[0].onMainThumbClick();
@@ -10131,16 +10168,16 @@ var BacklinkImagesSlideshow = {
     this.slideshowArr[0].onThumbItemClick(event);
   },
   run : function() {
-    if (this.slideshowArr.length > 0)
+    if (this.slideshowArr)
       this.slideshowArr[0].run();
   },
   stop : function() {
-    if (this.slideshowArr.length > 0)
+    if (this.slideshowArr)
       this.slideshowArr[0].stop();
   },
   // called on a dialoag opening ("buy" dialog)
   stopAutomaticSiding : function() {
-    if (this.slideshowArr.length > 0)
+    if (this.slideshowArr)
       this.slideshowArr[0].stopAutomaticSiding();
   }
 }
@@ -10165,6 +10202,8 @@ function slideshow(slideShowSceneDiv) {
   
   this.slideShowSceneDiv = slideShowSceneDiv;
   
+	this.rotateTimerId = null,
+	
   this.init = function() {
     if (!this.slideShowSceneDiv)
       return;
@@ -10262,6 +10301,13 @@ function slideshow(slideShowSceneDiv) {
   // imgSrc used to show 1st slide on tab
   // manual paging means $t.loopsCounter > $t.MAX_LOOPS
   this.rotate = function(newImageIdx, imgSrc) {
+		// prevent rotation of a slide show out of viewport (margin -200 px)
+    if ($t.isManualPaging() != true && !isElemInViewport($t.widgetSlider.widgetDiv, -200)) {
+      $t.rotateTimerId = setTimeout(function(){ $t.rotate(newImageIdx, imgSrc) }, 200);
+      return;
+    }
+    clearTimeout($t.rotateTimerId);
+				
     // additinal slide is a slide created from small image, not included into 'automatic' slide show
     var isAdditinalSlide = !$t.pagerSlots || typeof $t.pagerSlots[$t.curImageIdx] == 'undefined';
     if (!isAdditinalSlide)
@@ -10353,7 +10399,7 @@ function slideshow(slideShowSceneDiv) {
   this.onslidingHalfFinish = function() {
     if ($t.descArr) {
       if ($t.descArr[$t.curImageIdx] != null) {
-      $t.descOverlay.innerHTML = $t.descArr[$t.curImageIdx];
+      $t.descOverlay.innerHTML = $t.descArr[$t.curImageIdx].rtrim(true);
         $t.descOverlay.style.display = "";
       }
       else
@@ -12249,8 +12295,8 @@ var LinkProcessor = {
   
     $t.linkHrefModifier(e, anchor);
   
-    if (!id)
-      return;
+    if (!id) 
+		  return;
   
     var idLen = id.length;
 
@@ -12458,7 +12504,9 @@ var LinkProcessor = {
 
     // 1. Data Entry
     if (urlStr.indexOf("mkResource.html?") != -1 ||
-          urlStr.indexOf("editProperties.html?") != -1)
+          urlStr.indexOf("editProperties.html?") != -1 ||
+					(Browser.mobile && urlStr.indexOf("-$action=showPropertiesForEdit") != -1)
+				)
       DataEntry.show(e, urlStr, anchor, null, XHRCallback, XHRCallbackBefore);
     // 2. XHR with specific callback
     else if (XHRCallback) {
@@ -12675,13 +12723,6 @@ function getUrlMinusReferrer() {
   
   return url;
 }
-
-function asyncLoadScript(scriptUrl, scriptDiv, callback) {
-  setTimeout(function() {
-    loadScript(scriptUrl, scriptDiv, callback);
-  }, 0);
-}
-
 
 function initFacebookLikeHandler(serverUrl) {
   if (isUndefined(FB)) {
@@ -13029,7 +13070,7 @@ var EndlessPager = {
   anchors : null, // pages buttons
   curPage : 0,
   nabsGrid : null,  // masonry
-  blogTable : null, // blog
+  recourseTable : null, // blog
   skip : false,
   onscroll : function(event) {
     var $t = EndlessPager;
@@ -13071,20 +13112,20 @@ var EndlessPager = {
     var $t = EndlessPager;
     $t.indicatorTd.style.visibility = "hidden";  
 
-    if ($t.nabsGrid == null && $t.blogTable == null) {
+    if ($t.nabsGrid == null && $t.recourseTable == null) {
       $t.nabsGrid = document.getElementById("nabs_grid");
-      $t.blogTable = document.getElementById("blog");
+      $t.recourseTable = $t._getResourseTable();
     }
-    
-    // blog ---
-    if ($t.nabsGrid == null) { // table#blog is on masonry page too
-      $t.blogTable = document.getElementById("blog");
-      var newBlogTable = getDomObjectFromHtml(html, "id", "blog");
-      if ($t.blogTable && newBlogTable) {
-        var tr = newBlogTable.rows[0];
+
+    // siteResourceList ---
+    if ($t.nabsGrid == null) { // siteResourceList table is on masonry page too
+      $t.recourseTable = $t._getResourseTable();
+      var newrecourseTable = getDomObjectFromHtml(html, "id", $t.recourseTable.id);
+      if ($t.recourseTable && newrecourseTable) {
+        var tr = newrecourseTable.rows[0];
         while (tr) {
-         $t.blogTable.appendChild(tr);
-         tr = newBlogTable.rows[0];
+         $t.recourseTable.appendChild(tr);
+         tr = newrecourseTable.rows[0];
         }
       }
       return;
@@ -13109,7 +13150,11 @@ var EndlessPager = {
   stop : function() {
     removeEvent(window, "scroll", EndlessPager.onscroll, false);
     this.indicatorTd.style.display = "none";
-  }
+  },
+	_getResourseTable : function() {
+		var frontDiv = getChildById(document.getElementById("siteResourceList"), "front");
+    return frontDiv.getElementsByTagName("table")[0];
+	}
 }
 
 function getMoreBoards(e, id, exclude) {
