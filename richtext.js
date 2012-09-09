@@ -1,3 +1,5 @@
+Debug.setMode(true);
+
 /*************************************************
 *	RteEngine
 **************************************************/
@@ -98,12 +100,14 @@ var RteEngine = {
 		if(this.toUseTArea == false) {
 		  try {
 			  rteObj = new Rte(iframeObj, rteDataFieldId, rtePref);
-		  }catch(e) {	this.toUseTArea = true;}
+		  }catch(e) { Debug.log("failed to set designMode=on!");	this.toUseTArea = true;}
 		}
     
     if(this.toUseTArea)
   	  rteObj = new TArea(iframeObj, rteDataFieldId, rtePref);
-
+    else
+		  Debug.log("designMode=on - success!");
+			
 		if(rteObj != null)
 			this.rteArr.push(rteObj);
 	},
@@ -914,7 +918,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		// set text and edit mode
 		this.window = this.iframeObj.contentWindow;
 		this.document = this.window.document;
+
 		if(typeof this.document.designMode == 'undefined') {
+			Debug.log("designMode undefined");
 		  throw new Error("designMode is not supported");
 		}
 
@@ -931,6 +937,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 		// show toolbar immediately (otherwise create it on 1st click in - onfocus handler)
 		if(!this.rtePref.autoClose) {
+			  Debug.log("NOT autoClose");
 				this.toolbar = this.createToolbar();
 			////////////	this.iframeObj.style.marginTop = this.toolbar.getHeight() + 1;
 		}
@@ -939,14 +946,18 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if (TouchDlgUtil.isElementFirstParameter(this.iframeObj)) {
 			this.window.focus();
 			this.onfocus();
+			Debug.log("set focus at 1st RTE");
 		}
 	
 		// set handlers
 		this.setHandlers();
-	  
+	  Debug.log("setHandlers - ok");
+		
 	  if(this.isNetscape) // turn on Mozila's spellcheck
       this.document.body.spellcheck = true;
     
+		Debug.log("isNetscape: " + this.isNetscape);
+		
     if(typeof Browser != 'undefined' && Browser.iPhone)
       this.document.body.style.webkitUserModify = "read-write";
 		
@@ -955,6 +966,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		
 		// load css of the parent page
     this.loadCSS();
+		Debug.log("loadCSS - ok");
 	}
 	
 	this.browserDetection = function() {
@@ -1017,6 +1029,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	this.createToolbar = function() {
 		// 1.
 		var toolBar = new Toolbar(this.parentDiv, this, 32, false, this.iframeObj);
+		Debug.log("new Toolbar - ok");
+		
 		// 2. add buttons
 		if(this.rtePref.buttons.style) // style
 			this.styleBtn = toolBar.appendButton(this.onStyle, false, RteEngine.IMAGES_FOLDER + "style.png", "&[style];");
@@ -1078,6 +1092,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 		if(this.rtePref.buttons.html) // html
 			this.htmlBtn = toolBar.appendButton(this.onSource, true, RteEngine.IMAGES_FOLDER + "html.png", "&[edit HTML source code];", "&[view mode];");
 		
+		Debug.log("appendButtons - ok");
+		
 		return toolBar;
 	}
 
@@ -1121,7 +1137,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
     // append <br /> for better height fitting
     // it will be removed with all trailed <br>
-	  var br = document.createElement("br");
+	  var br = this.document.createElement("br");
 	  this.document.body.appendChild(br);
 
 	}
@@ -1223,8 +1239,9 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	      return "";
     }
 
-		// remove possible trailed br
-    content = content.replace(/<br[^>]*>$/, "");
+		// remove ALL possible trailed br
+    content = content.replace(/(<br[^>]*>)+$/, "");
+		
 		return content;
 	}
 
@@ -1328,19 +1345,25 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
 	// event handlers --------------
 	this.onfocus = function(wasDelayedForExpanding) {
+		Debug.log("onfocus event - fires");
+		
 		if (i_am.toolbar == null) {
 			i_am.changePanelWidth(true); // expand EditTab before createToolbar
-			
 			if (Browser.webkit && wasDelayedForExpanding != true) {
-				setTimeout(function f(){i_am.onfocus(true)	}, 410);
+				setTimeout(function f(){
+					i_am.onfocus(true)
+				}, 410);
+				Debug.log("wasDelayedForExpanding");
 				return;
-			}	
+			}
 			
 			i_am.toolbar = i_am.createToolbar();
 		}
-    else if(i_am.toolbar.isVisible())
-      return; // click inside focused RTE
-    
+		else if (i_am.toolbar.isVisible()) {
+			Debug.log("click inside focused RTE - return");
+			return; // click inside focused RTE
+		}
+		
 		// prevents from more than 1 opened RTE.
 		RteEngine.closeAllDisactived(i_am.iframeObj.id);
 		
@@ -1359,6 +1382,8 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	
 	// "closes" an active RTE
 	this.onlosefocus = function(e) {
+		Debug.log("onlosefocus - fires");
+		
 		if(!i_am.isAllowedToExecute()) // not source view & not immediate execution
 			return;
 		if(i_am.currentPopup != null && i_am.currentPopup.style.visibility == "visible")
@@ -1385,13 +1410,16 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 	
 	// hides toolbar and minimizes edit area
 	this._close  = function(onEsc) {
+		
+		if (typeof console.trace != "undefined")
+		  console.trace();
+		
 		i_am.changePanelWidth(false);
 		i_am.iframeObj.style.height = i_am.initFrameHeight + "px";
 
 		// parent dialog contains only single RTE
-    if (TouchDlgUtil.isElementFirstParameter(this.iframeObj) &&
-			     getNextSibling(getAncestorByClassName(this.iframeObj, "param_tr")) == null) {
-		  if (onEsc)
+		if (TouchDlgUtil.isSingleParameterInDialog(this.iframeObj)) {
+			if (onEsc)
 			 DataEntry.hide(); // onEsc: hide parent dialog
 			return; 
 		}

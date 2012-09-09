@@ -17,7 +17,7 @@
   <div><property name="country.name" noIcon="y" /></div>
   <div><text text="Phone" /> <property name="phone" noIcon="y" /> </div>    
   <where value="fax != null"><div><text text="Fax" /> <property name="fax" noIcon="y" /> </div></where>    
-  <div style="padding-top:10px"><b><property name="website" href="y" /></b></div>
+  <div style="padding-top:10px"><property name="website" href="y" /></div>
   <div><property name="email" href="y" /></div>
   <div style="margin-top:10px"><mapMaker width="250" height="200" /></div>
   </div></td>
@@ -26,12 +26,12 @@
   <tr>
   <td colspan="5" align="right" style="font-size:12px; margin:4px;">
   <where value="getContact().vendor.name != name">
-  <a href="claimYourBiz.html">Is this your business?  Claim your site today for free!</a>
+    <a href="claimYourBiz.html">Is this your business?  Claim your site today for free!</a>
   </where>
   <where value="getContact().vendor.name == name">
   <div>
-  <property name="-$me.firstName">,&#160;<text text="you can start building your business now" />
-  <div><a href="claimYourBiz.html">See what things you can do here</a></div>
+    <property name="-$me.firstName" />,&#160;<text text="you can start building your business now" />
+    <div><a href="claimYourBiz.html">See what things you can do here</a></div>
   </div>
   </where>
   </td>
@@ -60,7 +60,5 @@
   <td colspan="5" valign="top"><siteResourceList uri="l.html?-$action=searchLocal&amp;company=-$this&amp;type=http://www.hudsonfog.com/voc/media/publishing/Video&amp;-title=Some+Vidoes&amp;-titleLink=y&amp;-inRowW=6&amp;-sidebar=right"/></td>
 </tr>
 </table>
-</div>
-
-
+</div> <!-- company.jsp -->
 

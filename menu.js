@@ -744,7 +744,6 @@ function clearOtherPopups(div) {
   }
 }
 
-
 function getFormNode(elem) { 
   var f = elem.parentNode; 
   if (!f) 
@@ -1866,7 +1865,7 @@ var ListBoxesHandler = {
   },
   
   onListLoaded : function(event, popupDiv, hotspot, content) {
-    var $t = ListBoxesHandler;
+	  var $t = ListBoxesHandler;
     var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
 
     var listsCont = getChildById(panel, "lists_container");
@@ -1895,7 +1894,6 @@ var ListBoxesHandler = {
     $t.changeOptionSelectionState(opTable);
     $t.changeAddNewState(popupDiv);
     $t.showOptionsOrClasses(popupDiv);
-
     // RL editor: align options list
     if (($t._isEditList || $t._isFtsSift) && !isVisible($t.panelBlock) || $t._isOneParamSelection) {
       var form = getAncestorByAttribute(hotspot, "name", ["siteResourceList", "rightPanelPropertySheet"]);
@@ -2612,14 +2610,6 @@ var ListBoxesHandler = {
     if (deleteCurrentDiv && currentDiv)
       loadedPopups[currentDiv.id] = null;
  },
-
-
-
-
-
-
-
-
 
   onClassifierItemClick : function(e, tr) {
     this.curClass = tr.id;
@@ -3917,7 +3907,7 @@ var DataEntry = {
   
   // parentDivId and submitCallback, beforeSubmitCallback are not required
   show : function(e, url, hotspot, parentDivId, submitCallback, beforeSubmitCallback) {
-    if (this.loadingUrl != null)
+	  if (this.loadingUrl != null)
       return;
 
     this.hotspot = hotspot;
@@ -3975,7 +3965,7 @@ var DataEntry = {
   
   // parameterInputname, forexample  name=".priority"
   showOneParameterOnly : function(e, url, hotspot, oneParameterInputName, submitCallback, beforeSubmitCallback) {
-    this.oneParameterInputName = oneParameterInputName;
+		this.oneParameterInputName = oneParameterInputName;
     this.show(e, url, hotspot, null, submitCallback, beforeSubmitCallback);
   },
   
@@ -4001,6 +3991,7 @@ var DataEntry = {
       alert("Data Entry: Server response does not contain a dialog!");
       return;
     }
+		
     div.style.visibility = "hidden";
     
     // onDataError happens on mkResource
@@ -4038,10 +4029,11 @@ var DataEntry = {
        parent.appendChild(div);
     }
     setDivVisible(event, div, $t.hotspot, 5, 5);
-  
+
     $t.initDataStr = $t._getFormDataStr(div, true);
     var key = $t._getKey($t.currentUrl);
     $t.dataEntryArr[key] = div;
+
   },
   
   // div is null here; the dialog with error message is in html code
@@ -4444,16 +4436,17 @@ var PlainDlg = {
   _show : function(event, hotspot) {
     // login: show it as a modal dialog
     if (this.curUrl && this.curUrl.indexOf("j_security_check") != -1) {
-      LoadingIndicator.show();
-      // hack: FaceBook can not to call a callback (on a local host).
-      // So hide the spinner "manually" (faster to do it on dev.hudsonfog.com site)
-      var timeout = getBaseUri().indexOf("dev.hudsonfog.com") != -1 ? 2000 : 10000;
-      setTimeout("LoadingIndicator.hide()", timeout);
-      LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
+	  	  LoadingIndicator.show();
+	  	// hack: FaceBook can not to call a callback (on a local host).
+				// So hide the spinner "manually" (faster to do it on dev.hudsonfog.com site)
+				var timeout = getBaseUri().indexOf("dev.hudsonfog.com") != -1 ? 2000 : 10000;
+				setTimeout("LoadingIndicator.hide()", timeout);
+			LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
       // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
       var jstest = getChildByAttribute(this.dlgDiv, "name", '.jstest');
       if (jstest)
         jstest.value = "ok";
+
       setDivVisible(null, this.dlgDiv, null, 0, 0, null, null, true);
       return;
     }
@@ -5222,7 +5215,8 @@ var TouchDlgUtil = {
   isElementFirstParameter : function(elem) {
     var paramTr = getAncestorByClassName(elem, "param_tr");
     return comparePosition(paramTr, getChildByClassName(this.curDlgDiv, "param_tr")) == 0;
-  },
+	},
+	
   showPageOverlay: function(dlg) {
     if (!this.pageOverlay) {
       this.pageOverlay = document.createElement("div");
@@ -9457,7 +9451,7 @@ var Dashboard = {
         if (widgetUri == null) {
           var f = document.getElementById("pref_" + widget.id.substring(wLen));
           if (f) {
-            formId = f.id;
+						formId = f.id;
             // create backlink bookmark and move it to Tab
             submitWidgetPreferences(e, formId, tab);
             return ret;
@@ -9993,7 +9987,7 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 		  $t.widgetDiv.insertBefore($t.nextSlide, getFirstChild($t.widgetDiv));
   }
 	
-  // it CAN be called outside to create preloaded pages manually, like Backlink images
+	// it CAN be called outside to create preloaded pages manually, like Backlink images
   // for widgets it is inner function
   // recNmb is not required
   this.createNewSlide = function(htmlOrObject, recNmb) {
@@ -10127,7 +10121,7 @@ var BacklinkImagesSlideshow = {
     for (var i = 0; i < this.slideshowArr.length; i++)
       this.slideshowArr[i].init();
   },
-  
+		
   // slide show on a Tab (Edit page) containong one slide show
   onMainThumbClick : function() {
     this.slideshowArr[0].onMainThumbClick();
@@ -12254,8 +12248,8 @@ var LinkProcessor = {
   
     $t.linkHrefModifier(e, anchor);
   
-    if (!id)
-      return;
+    if (!id) 
+		  return;
   
     var idLen = id.length;
 
@@ -13091,7 +13085,7 @@ var EndlessPager = {
       $t.nabsGrid = document.getElementById("nabs_grid");
       $t.blogTable = document.getElementById("blog");
     }
-    
+
     // blog ---
     if ($t.nabsGrid == null) { // table#blog is on masonry page too
       $t.blogTable = document.getElementById("blog");
@@ -13125,7 +13119,7 @@ var EndlessPager = {
   stop : function() {
     removeEvent(window, "scroll", EndlessPager.onscroll, false);
     this.indicatorTd.style.display = "none";
-  }
+	}
 }
 
 function getMoreBoards(e, id, exclude, uri) {
