@@ -1899,16 +1899,16 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 .rounded_rect_tbl .param_tr .rollup_td img { margin: 2px; }
 
 
-.changeViewCols {
-  margin: 0px 0px 0px 0px;
-  padding: 0px 0px 0px 0px;
+.changeViewCols td { 
+  padding: 0px 5px;
+  vertical-align: middle;
 
-  background-color: &[PrimaryColor_4];;
-  background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
-  background-image: -o-linear-gradient(&[PrimaryColor_1];, &[PrimaryColor_4];);
-  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
+  background-color: &[PrimaryColor_1];;
+  background-image: -moz-linear-gradient(top center, &[PrimaryColor_4];, &[PrimaryColor_1];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_4];), to(&[PrimaryColor_1];));
+  background-image: -o-linear-gradient(&[PrimaryColor_4];, &[PrimaryColor_1];);
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_4];,endColorstr=&[PrimaryColor_1];)";
 }
 .changeViewCols td.dashboard_btn:hover {  
   border-left-color: &[PrimaryColor_5];;
@@ -1917,12 +1917,14 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
   border-bottom-color: &[PrimaryColor_1];;
 }
 .changeViewCols td.current {
-  border-left-color: &[PrimaryColor_1];;
-  border-top-color: &[PrimaryColor_1];;
-  border-right-color: &[PrimaryColor_5];;
-  border-bottom-color: &[PrimaryColor_5];;
+  background-color: #f00;
+  background-image: -moz-linear-gradient(top center, &[PrimaryColor_1];, &[PrimaryColor_4];);
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(&[PrimaryColor_1];), to(&[PrimaryColor_4];));
+  background-image: -o-linear-gradient(&[PrimaryColor_1];, &[PrimaryColor_4];);
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=&[PrimaryColor_1];,endColorstr=&[PrimaryColor_4];)";
 }
-.changeViewCols .dashboard_btn  span { color: &[SecondaryColorA_5];; }
+.changeViewCols td.current span { color: &[MenuLineColorA];; }
 
 .viewColsTabs { color: &[PrimaryColor_3];; cursor: pointer; font-weight: bold; white-space: nowrap;}
 .viewCols {background-color: &[PrimaryColor_4];}
