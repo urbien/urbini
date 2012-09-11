@@ -12987,10 +12987,10 @@ function showLocalActivityButtons() {
 
     var button4 = document.getElementById('311_near_here');
     if (button4)
-      button4.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Forestry311Call?-locSort=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\"><img src=\"icons/classes/AgencyCalls.png\" height=\"20\" /> calls nearby</a>';
+      button4.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Forestry311Call?-locSort=y&-$action=searchLocal&-list=y&-loc=' + latLon[0] + ',' + latLon[1] + '\"><img src=\"icons/classes/AgencyCalls.png\" height=\"20\" /> calls nearby</a>';
     var button5 = document.getElementById('wo_near_here');
     if (button5)
-      button5.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/ForestryWorkOrder?-locSort=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\">Work orders nearby</a>';
+      button5.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/ForestryWorkOrder?-locSort=y&-$action=searchLocal&-list=y&-loc=' + latLon[0] + ',' + latLon[1] + '\">Work orders nearby</a>';
   }
 }
 
