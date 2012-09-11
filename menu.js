@@ -12057,7 +12057,10 @@ var LoadingIndicator = {
     }
     
     setTimeout($t.animate, 20);
-  }
+  },
+	isVisible : function() {
+		return (this.loadingDiv != null && isVisible(this.loadingDiv));
+	}
 }
 
 /*****************************************
@@ -13054,6 +13057,15 @@ function toggleLocationAwareness(on) {
       window.location.replace(addOrReplaceUrlParam(locUrl, '-locSort', 'y'));
     } 
     else {
+			 // FF requires timeout (5 sec) to retrieve geolocation data
+			 if (!LoadingIndicator.isVisible()) {
+			 	 LoadingIndicator.show();
+				 setTimeout(function f() { toggleLocationAwareness(on); }, 5000);
+				 return;
+			 }
+			 else
+			   LoadingIndicator.hide();
+			
       alert('You disabled location detection in your browser. To see location-based results, enable it and refresh the page.');
     }
   } else {
