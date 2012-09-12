@@ -4,218 +4,218 @@
 *****************************************************/
 // return parameter name is its a name in the form 
 function FormPopup(innerFormHtml, flag) {
-	var HIDE_ICON = "icons/hide.gif";
-	var i_am = this;
-	this.div = null;
-	this.formDiv = null;
-	this.headerDiv = null;
-	this.buttonsDiv = null;
-	this.callback = null;
-	this.cancelCallback = null;
-	this.initValues = null;
-	this.is_opened = false;
-	
-	this.create = function(innerFormHtml, flag) {
-		this.div = document.createElement('div');
-		this.div.className = "ctrl_toolbar_dlg";
+  var HIDE_ICON = "icons/hide.gif";
+  var i_am = this;
+  this.div = null;
+  this.formDiv = null;
+  this.headerDiv = null;
+  this.buttonsDiv = null;
+  this.callback = null;
+  this.cancelCallback = null;
+  this.initValues = null;
+  this.is_opened = false;
+  
+  this.create = function(innerFormHtml, flag) {
+    this.div = document.createElement('div');
+    this.div.className = "ctrl_toolbar_dlg";
     
-		// 1. header
+    // 1. header
     this.headerDiv = this.createHeader();
     this.div.appendChild(this.headerDiv);
 
-		// 2. content
-		this.formDiv = document.createElement('div');
-		this.formDiv.innerHTML = innerFormHtml;
-		this.div.appendChild(this.formDiv);
+    // 2. content
+    this.formDiv = document.createElement('div');
+    this.formDiv.innerHTML = innerFormHtml;
+    this.div.appendChild(this.formDiv);
 
     // 3. "controll" buttons
-		if(flag == "USE_SUBMIT_BTN")
-		  this.useSubmitButton();
-		else {
-		  this.buttonsDiv = this.createButtons(flag); 
-		  this.div.appendChild(this.buttonsDiv);
-		}
-		// 4. keys handler
-		addEvent(this.div, "keyup", this.onkeyup, true);	
-	}
-	// appends the hide icon (for now)
-	this.createHeader = function() {
-	  var headerDiv = document.createElement('div');
-		headerDiv.align = "right";
-		headerDiv.innerHTML = "<a><img src=" + HIDE_ICON + " style=\"cursor:pointer;\"></a>";
+    if(flag == "USE_SUBMIT_BTN")
+      this.useSubmitButton();
+    else {
+      this.buttonsDiv = this.createButtons(flag); 
+      this.div.appendChild(this.buttonsDiv);
+    }
+    // 4. keys handler
+    addEvent(this.div, "keyup", this.onkeyup, true);  
+  }
+  // appends the hide icon (for now)
+  this.createHeader = function() {
+    var headerDiv = document.createElement('div');
+    headerDiv.align = "right";
+    headerDiv.innerHTML = "<a><img src=" + HIDE_ICON + " style=\"cursor:pointer;\"></a>";
     var anchor = headerDiv.getElementsByTagName("a")[0];
     anchor.onclick = this._oncancel;
-		return headerDiv;
-	}
-	// ok, cancel
-	this.createButtons = function(flag) {
-		var btnDiv = document.createElement('div');
-		btnDiv.align = "center";
-		btnDiv.style.paddingTop = 10;
-		
-		var html = 
-		  '<table>'
-			  + ' <tr>'
-				  + ' <td>'
-					  + ' <input type="button" value="Ok" style="width:70; font-family:verdana; font-size:12px" />'
-				  + ' </td>';
-				
-				if(flag != "NO_CANCEL") { // cancel btn
-				  html += ' <td>'
-					    + ' <input type="button" value="&[Cancel];" style="width:70; font-family:verdana; font-size:12px" />'
-				    + ' </td>';
-				}
-				
-			html += ' </tr></table>';
-	
-		btnDiv.innerHTML = html;
-		var btns = btnDiv.getElementsByTagName('input');
-		btns[0].onclick = this._onok; // Ok
-		if(btns[1])
-		  btns[1].onclick = this._oncancel; // Cancel
-		return btnDiv;
-	}
-	this.useSubmitButton = function() {
+    return headerDiv;
+  }
+  // ok, cancel
+  this.createButtons = function(flag) {
+    var btnDiv = document.createElement('div');
+    btnDiv.align = "center";
+    btnDiv.style.paddingTop = 10;
+    
+    var html = 
+      '<table>'
+        + ' <tr>'
+          + ' <td>'
+            + ' <input type="button" value="Ok" style="width:70; font-family:verdana; font-size:12px" />'
+          + ' </td>';
+        
+        if(flag != "NO_CANCEL") { // cancel btn
+          html += ' <td>'
+              + ' <input type="button" value="&[Cancel];" style="width:70; font-family:verdana; font-size:12px" />'
+            + ' </td>';
+        }
+        
+      html += ' </tr></table>';
+  
+    btnDiv.innerHTML = html;
+    var btns = btnDiv.getElementsByTagName('input');
+    btns[0].onclick = this._onok; // Ok
+    if(btns[1])
+      btns[1].onclick = this._oncancel; // Cancel
+    return btnDiv;
+  }
+  this.useSubmitButton = function() {
     // The following is commented out. - Not to hide a dialog on invalid data
     // var form = this.formDiv.getElementsByTagName("form")[0];
     // addEvent(form, "submit", this.hide, false);
-	}
-	this.changeContent = function(innerFormHtml) {
-	  this.formDiv.innerHTML = innerFormHtml;
-	}
-	this.getFormDiv = function() {
-	  return this.formDiv;
-	}
-	this.getForm = function(formIdx) {
-	  formIdx = formIdx || 0;
-	  var forms = this.formDiv.getElementsByTagName("form");
-	  if(formIdx < forms.length)
-	    return forms[formIdx];
-	  return null;
-	}
-	
-	// not required parameter cancelCallback
-	this.show = function(obj, alignment, callback, parentDlg, cancelCallback) {
+  }
+  this.changeContent = function(innerFormHtml) {
+    this.formDiv.innerHTML = innerFormHtml;
+  }
+  this.getFormDiv = function() {
+    return this.formDiv;
+  }
+  this.getForm = function(formIdx) {
+    formIdx = formIdx || 0;
+    var forms = this.formDiv.getElementsByTagName("form");
+    if(formIdx < forms.length)
+      return forms[formIdx];
+    return null;
+  }
+  
+  // not required parameter cancelCallback
+  this.show = function(obj, alignment, callback, parentDlg, cancelCallback) {
     // hide popup if it is already opened; expected 2nd click on a caller / icon
-		if (this.is_opened) {
-		  PopupHandler.hide();
-			this.is_opened = false;
-			return;
-	  }
-		this.callback       = callback;
+    if (this.is_opened) {
+      PopupHandler.hide();
+      this.is_opened = false;
+      return;
+    }
+    this.callback       = callback;
     this.cancelCallback = cancelCallback;
     
-		PopupHandler.showRelatively(obj, alignment, this.div, false, parentDlg, cancelCallback);
-		
-		// store init values to restore on closing
-		if(this.initValues == null)
-			this.initValues = this._handleControlsValue();
+    PopupHandler.showRelatively(obj, alignment, this.div, false, parentDlg, cancelCallback);
+    
+    // store init values to restore on closing
+    if(this.initValues == null)
+      this.initValues = this._handleControlsValue();
 
-	  this.is_opened = true;
-	}
+    this.is_opened = true;
+  }
   
-	this._onok = function() {
-		var retArr = i_am._handleControlsValue();
-		var retVal = i_am.callback(retArr);
-		
-		// not close if callback returns false
-		if(typeof retVal != 'undefined' && retVal == false)
-		  return;
-		
-		i_am.hide();
-		i_am.is_opened = false;
-	}
-	this._oncancel = function() {
-	  if(typeof i_am.cancelCallback == "function")
-	    i_am.cancelCallback();
+  this._onok = function() {
+    var retArr = i_am._handleControlsValue();
+    var retVal = i_am.callback(retArr);
+    
+    // not close if callback returns false
+    if(typeof retVal != 'undefined' && retVal == false)
+      return;
+    
+    i_am.hide();
+    i_am.is_opened = false;
+  }
+  this._oncancel = function() {
+    if(typeof i_am.cancelCallback == "function")
+      i_am.cancelCallback();
 
-	  i_am.hide();  
-	}
-	// onkeyup
-	this.onkeyup = function(event) {
-		var code = getKeyCode(event);
-		var target = getEventTarget(event);
-		if (code == 13) {
-			if (target.tagName.toLowerCase() != "textarea")
-				i_am._onok();
-			stopEventPropagation(event);
-		}
-		if (code == 27) {
-			i_am._oncancel();
-			stopEventPropagation(event);
-		}
-	}
-	this.hide = function() {
-		PopupHandler.hide();
-		i_am.is_opened = false;
-		// restore values
-		i_am._handleControlsValue(i_am.initValues);
-	}
-	this.isOpened = function() {
-	  return this.is_opened;
-	}
-	// get or set values of the controls
-	// uses attribute - name.
-	this._handleControlsValue = function(setArr) {
-		var getArr;
-		var toGet = false;
-		if(typeof setArr == 'undefined') {
-			toGet = true;
-			getArr = new Array();	
-		}
-		
-		var inpCol = i_am.formDiv.getElementsByTagName("input");
-		// inputs - only "text" realized
-		for(var i = 0; i < inpCol.length; i++) {
-			var inp = inpCol[i];
-			var type = inp.getAttribute("type");
-			var name = inp.getAttribute("name");
-			if(type == "text" || type == "hidden") {
-				if(toGet)
-					getArr[name] = inp.value;
-				else
-					inp.value = setArr[name];
-			}
-			if(type == "checkbox") {
-				if(toGet)
-					getArr[name] = inp.checked;
-				else
-					inp.checked = setArr[name];
-			}
-		}
-		// selects; returns text value
-		var selectCol = i_am.formDiv.getElementsByTagName("select");
-		for(i = 0; i < selectCol.length; i++) {
-			var select = selectCol[i];
-			var options = select.options;
-			var name = select.getAttribute("name");
-				if(toGet)
-					getArr[name] = options[select.selectedIndex].value;
-				else {
-					for(var i = 0; i < options.length; i++)
-						if(options[i].value == setArr[name])
-							options[i].selected = true;		
-				}
-		}
-	
-		// textarea
-		var taCol = i_am.formDiv.getElementsByTagName("textarea");
-		for(var i = 0; i < taCol.length; i++) {
-			var ta = taCol[i];
-			var type = ta.getAttribute("type");
-			var name = ta.getAttribute("name");
-			if(toGet)
-				getArr[name] = ta.value;
-			else
-				ta.value = setArr[name];
-		}
-	
-		if(toGet)
-			return getArr;
-	}
-	// constructor ---
-	flag = flag || "";
-	this.create(innerFormHtml, flag);
+    i_am.hide();  
+  }
+  // onkeyup
+  this.onkeyup = function(event) {
+    var code = getKeyCode(event);
+    var target = getEventTarget(event);
+    if (code == 13) {
+      if (target.tagName.toLowerCase() != "textarea")
+        i_am._onok();
+      stopEventPropagation(event);
+    }
+    if (code == 27) {
+      i_am._oncancel();
+      stopEventPropagation(event);
+    }
+  }
+  this.hide = function() {
+    PopupHandler.hide();
+    i_am.is_opened = false;
+    // restore values
+    i_am._handleControlsValue(i_am.initValues);
+  }
+  this.isOpened = function() {
+    return this.is_opened;
+  }
+  // get or set values of the controls
+  // uses attribute - name.
+  this._handleControlsValue = function(setArr) {
+    var getArr;
+    var toGet = false;
+    if(typeof setArr == 'undefined') {
+      toGet = true;
+      getArr = new Array(); 
+    }
+    
+    var inpCol = i_am.formDiv.getElementsByTagName("input");
+    // inputs - only "text" realized
+    for(var i = 0; i < inpCol.length; i++) {
+      var inp = inpCol[i];
+      var type = inp.getAttribute("type");
+      var name = inp.getAttribute("name");
+      if(type == "text" || type == "hidden") {
+        if(toGet)
+          getArr[name] = inp.value;
+        else
+          inp.value = setArr[name];
+      }
+      if(type == "checkbox") {
+        if(toGet)
+          getArr[name] = inp.checked;
+        else
+          inp.checked = setArr[name];
+      }
+    }
+    // selects; returns text value
+    var selectCol = i_am.formDiv.getElementsByTagName("select");
+    for(i = 0; i < selectCol.length; i++) {
+      var select = selectCol[i];
+      var options = select.options;
+      var name = select.getAttribute("name");
+        if(toGet)
+          getArr[name] = options[select.selectedIndex].value;
+        else {
+          for(var i = 0; i < options.length; i++)
+            if(options[i].value == setArr[name])
+              options[i].selected = true;   
+        }
+    }
+  
+    // textarea
+    var taCol = i_am.formDiv.getElementsByTagName("textarea");
+    for(var i = 0; i < taCol.length; i++) {
+      var ta = taCol[i];
+      var type = ta.getAttribute("type");
+      var name = ta.getAttribute("name");
+      if(toGet)
+        getArr[name] = ta.value;
+      else
+        ta.value = setArr[name];
+    }
+  
+    if(toGet)
+      return getArr;
+  }
+  // constructor ---
+  flag = flag || "";
+  this.create(innerFormHtml, flag);
 }
 
 
@@ -235,161 +235,161 @@ function CtrlBase() {
 function ToolbarButton(index, callback, isToggle, icon, iconWidth, left, top, toolbar, title, titlePressed)
 {
   var i_am = this;
-	this.div = null;
-	
-	this.index = index;
-	this.callback = callback;
-	this.isToggle = isToggle;
-	this.icon = icon;
-	this.toolbar = toolbar;
-	this.title = title;
-	this.titlePressed = null;
-	
-	this.left = left;
-	this.top = top;
-	this.width = null;
-	this.height = null;
+  this.div = null;
+  
+  this.index = index;
+  this.callback = callback;
+  this.isToggle = isToggle;
+  this.icon = icon;
+  this.toolbar = toolbar;
+  this.title = title;
+  this.titlePressed = null;
+  
+  this.left = left;
+  this.top = top;
+  this.width = null;
+  this.height = null;
 
-	this.isPressed = false;
-	this.isDisabled = false;
-	
-	this.isOverflowed = false;
-	
-	this.create = function(iconWidth) { // create Button
-		this.div = document.createElement('div');
-		this.div.className = "tb_btn";
-		this.div.style.left = this.left + "px";
-		this.div.style.top = this.top  + "px";
-		this.div.style.padding = this.toolbar.BTN_PADDING;
-		
-		var innerHTML = '<img src = "' + icon + '" border="0" tooltip="' + this.title
-		 + '" width=' + iconWidth + ' height=' + this.toolbar.iconHeight + '>';
-		
-		this.div.innerHTML = innerHTML;
-		// register of handlers
-		this.div.onmouseover = this.onMouseOver;
-		this.div.onmouseout = this.onMouseOut;
-		this.div.onmousedown = this.onMouseDown;
-		this.div.onmouseup = this.onMouseUp;
+  this.isPressed = false;
+  this.isDisabled = false;
+  
+  this.isOverflowed = false;
+  
+  this.create = function(iconWidth) { // create Button
+    this.div = document.createElement('div');
+    this.div.className = "tb_btn";
+    this.div.style.left = this.left + "px";
+    this.div.style.top = this.top  + "px";
+    this.div.style.padding = this.toolbar.BTN_PADDING;
+    
+    var innerHTML = '<img src = "' + icon + '" border="0" tooltip="' + this.title
+     + '" width=' + iconWidth + ' height=' + this.toolbar.iconHeight + '>';
+    
+    this.div.innerHTML = innerHTML;
+    // register of handlers
+    this.div.onmouseover = this.onMouseOver;
+    this.div.onmouseout = this.onMouseOut;
+    this.div.onmousedown = this.onMouseDown;
+    this.div.onmouseup = this.onMouseUp;
 
-		this.width = iconWidth + 2 * this.toolbar.BTN_PADDING;
-		this.height = this.toolbar.iconHeight + 2 * this.toolbar.BTN_PADDING;
-	}
-	
-	this.enable = function() {
-		changeOpacity(this.div, 1.0);
-		this.div.style.cursor = "pointer";
-		this.isDisabled = false; 
-	}
-	
-	this.disable = function() {
-		changeOpacity(this.div, 0.3);
-		this.div.style.cursor = "default";
-		this.isDisabled = true;  
-	}
-	// mouse handlers ---------------	
-	this.onMouseOver = function() {
-		if(i_am.isDisabled) return;
-		if(i_am.isPressed)  return;
-		
-		i_am.div.style.borderLeftColor = i_am.div.style.borderTopColor = "ButtonHighlight";
-		i_am.div.style.borderRightColor = i_am.div.style.borderBottomColor = "ButtonShadow";
-		if(i_am.isOverflowed == false)
-    	i_am._addBorder();
-	}
-	
-	this.onMouseOut = function() {
-		if(i_am.isDisabled) return;
-		if(i_am.isPressed)  return;
-		i_am._removeBorder();
-	}	
-	
-	this.onMouseDown = function() {
-		if(i_am.isDisabled)
-			return;
+    this.width = iconWidth + 2 * this.toolbar.BTN_PADDING;
+    this.height = this.toolbar.iconHeight + 2 * this.toolbar.BTN_PADDING;
+  }
+  
+  this.enable = function() {
+    changeOpacity(this.div, 1.0);
+    this.div.style.cursor = "pointer";
+    this.isDisabled = false; 
+  }
+  
+  this.disable = function() {
+    changeOpacity(this.div, 0.3);
+    this.div.style.cursor = "default";
+    this.isDisabled = true;  
+  }
+  // mouse handlers --------------- 
+  this.onMouseOver = function() {
+    if(i_am.isDisabled) return;
+    if(i_am.isPressed)  return;
+    
+    i_am.div.style.borderLeftColor = i_am.div.style.borderTopColor = "ButtonHighlight";
+    i_am.div.style.borderRightColor = i_am.div.style.borderBottomColor = "ButtonShadow";
+    if(i_am.isOverflowed == false)
+      i_am._addBorder();
+  }
+  
+  this.onMouseOut = function() {
+    if(i_am.isDisabled) return;
+    if(i_am.isPressed)  return;
+    i_am._removeBorder();
+  } 
+  
+  this.onMouseDown = function() {
+    if(i_am.isDisabled)
+      return;
 
-		i_am.div.style.borderLeftColor = i_am.div.style.borderTopColor = "ButtonShadow";
-		i_am.div.style.borderRightColor = i_am.div.style.borderBottomColor = "ButtonHighlight";
-		i_am._addBorder();
-		if(i_am.isToggle) {
-			i_am.isPressed = !i_am.isPressed;
-			if(i_am.isPressed) {
-				if(i_am.titlePressed != null)
-					i_am.div.title = i_am.titlePressed;
-			}
-			else {
-				i_am.onMouseOut();
-				if(i_am.titlePressed != null)
-					i_am.div.title = i_am.title;
-			}
-		}
-	}	
-	
-	this.onMouseUp = function(e) {
-		e = getDocumentEvent(e);
-		if(i_am.isDisabled)
-		  return;
-		i_am.onMouseOver();
-		// closePopup used only in the overflow pupup
-		// for a buttons that do not call a (sub)popup
-		var closePopup = i_am.callback(i_am.isPressed, e.ctrlKey);
-		if(i_am.isOverflowed && closePopup)
-			PopupHandler.hide();
-	}
+    i_am.div.style.borderLeftColor = i_am.div.style.borderTopColor = "ButtonShadow";
+    i_am.div.style.borderRightColor = i_am.div.style.borderBottomColor = "ButtonHighlight";
+    i_am._addBorder();
+    if(i_am.isToggle) {
+      i_am.isPressed = !i_am.isPressed;
+      if(i_am.isPressed) {
+        if(i_am.titlePressed != null)
+          i_am.div.title = i_am.titlePressed;
+      }
+      else {
+        i_am.onMouseOut();
+        if(i_am.titlePressed != null)
+          i_am.div.title = i_am.title;
+      }
+    }
+  } 
+  
+  this.onMouseUp = function(e) {
+    e = getDocumentEvent(e);
+    if(i_am.isDisabled)
+      return;
+    i_am.onMouseOver();
+    // closePopup used only in the overflow pupup
+    // for a buttons that do not call a (sub)popup
+    var closePopup = i_am.callback(i_am.isPressed, e.ctrlKey);
+    if(i_am.isOverflowed && closePopup)
+      PopupHandler.hide();
+  }
 
-	// press toggle button without callback execution.
-	// used for GUI initialization	
-	this.pressToggleButton = function() {
-		this.isPressed = true; //!i_am.isPressed;
-		this.div.style.borderLeftColor = i_am.div.style.borderTopColor = "ButtonShadow";
-		this.div.style.borderRightColor = i_am.div.style.borderBottomColor = "ButtonHighlight";
-		this._addBorder();
-	}
+  // press toggle button without callback execution.
+  // used for GUI initialization  
+  this.pressToggleButton = function() {
+    this.isPressed = true; //!i_am.isPressed;
+    this.div.style.borderLeftColor = i_am.div.style.borderTopColor = "ButtonShadow";
+    this.div.style.borderRightColor = i_am.div.style.borderBottomColor = "ButtonHighlight";
+    this._addBorder();
+  }
 
   this._addBorder = function() {
     var stl = i_am.div.style
     if(stl.borderWidth.indexOf("1px") != -1)
       return;
-		stl.borderWidth = "1px";
-		stl.left = (parseInt(i_am.div.style.left, 10) - 1) + "px";
-		stl.top = (parseInt(i_am.div.style.top, 10) - 1) + "px";
+    stl.borderWidth = "1px";
+    stl.left = (parseInt(i_am.div.style.left, 10) - 1) + "px";
+    stl.top = (parseInt(i_am.div.style.top, 10) - 1) + "px";
   }
   this._removeBorder = function() {
     var stl = i_am.div.style
- 		if(stl.borderWidth.indexOf("0px") != -1)
- 		  return;
- 		stl.borderWidth = "0px";
-		stl.left = (parseInt(i_am.div.style.left, 10) + 1) + "px";
-		stl.top = (parseInt(i_am.div.style.top, 10) + 1) + "px";
+    if(stl.borderWidth.indexOf("0px") != -1)
+      return;
+    stl.borderWidth = "0px";
+    stl.left = (parseInt(i_am.div.style.left, 10) + 1) + "px";
+    stl.top = (parseInt(i_am.div.style.top, 10) + 1) + "px";
   }
-	// constructor's body
-	this.create(iconWidth);
-	this.onMouseOut(); // draw "invisible" borders 
-	if(typeof titlePressed != 'undefined')
-		this.titlePressed = titlePressed;	
+  // constructor's body
+  this.create(iconWidth);
+  this.onMouseOut(); // draw "invisible" borders 
+  if(typeof titlePressed != 'undefined')
+    this.titlePressed = titlePressed; 
 }
 /*********************************************
 * PALETTE gloabal object
 **********************************************/
 var PalettePopup = {
-	div : null,
-	noClrCell : null,
-	callback : null,
-	hotspotIdx : -1, // index of control calling the palette (-1 on hidden palette)
-	chosenDiv : null, // highlights last chosen color
-	CHOSEN_DIV_ID : "chosen_div_id",
-	
-	otherClrsDiv : null,
-	isOtherClrsVisible : false, 
-	
-	safeColorsDiv : null,
-	rainbowColorsDiv : null,
-	
-	//show
-	// noColorTitle is a text to show in noClrCell
-	show : function(hotspot, alignment, callback, parentDlg, noColorTitle, chosenClr) {
-		if(this.div == null)
-			this.create();
+  div : null,
+  noClrCell : null,
+  callback : null,
+  hotspotIdx : -1, // index of control calling the palette (-1 on hidden palette)
+  chosenDiv : null, // highlights last chosen color
+  CHOSEN_DIV_ID : "chosen_div_id",
+  
+  otherClrsDiv : null,
+  isOtherClrsVisible : false, 
+  
+  safeColorsDiv : null,
+  rainbowColorsDiv : null,
+  
+  //show
+  // noColorTitle is a text to show in noClrCell
+  show : function(hotspot, alignment, callback, parentDlg, noColorTitle, chosenClr) {
+    if(this.div == null)
+      this.create();
  
     // close the palette on calling of the same control.
     if(this.hotspotIdx == hotspot.index && this.div.style.visibility == "visible" ) {
@@ -401,265 +401,265 @@ var PalettePopup = {
     this.hotspotIdx = hotspot.index;
     
     // 1. show or hide no color cell
-		if(typeof noColorTitle != 'undefined' && noColorTitle != null) {
-		  this.noClrCell.innerHTML = noColorTitle;
-		  this.noClrCell.style.display = "";
-		}
-		else
- 		  this.noClrCell.style.display = "none";
+    if(typeof noColorTitle != 'undefined' && noColorTitle != null) {
+      this.noClrCell.innerHTML = noColorTitle;
+      this.noClrCell.style.display = "";
+    }
+    else
+      this.noClrCell.style.display = "none";
 
     // 2. highlight last chosen color
     // this.setChosenColor(chosenClr);
     
     // 3. launch
-		this.callback = callback;
-  	PopupHandler.showRelatively(hotspot, alignment, this.div, true, parentDlg);
-	},
-	create : function() {
-		this.div = document.createElement('div');
-		this.div.className = "ctrl_toolbar_dlg pallete_dlg";
-		
-		var html = 
-			'<table><tr><td><input type="checkbox" onclick=\"PalettePopup.onRainbowCheckbox(event);\"></td>'
-				  +'<td style="\cursor: text;\">&[use rainbow colors];</td></tr></table>'
-			+ "<div id='safe_clrs_div'>"
-			+ (this.getSchemePaletteStr() + "<br />"	+ this.getGrayscalePaletteStr()
-			+ "</div><div style='display: none;' id='rainbow_clrs_div'>"
-			+ this.getRainbowPaletteStr()
-			+ "</div>"
-			+ this.getButtonsStr()); 
+    this.callback = callback;
+    PopupHandler.showRelatively(hotspot, alignment, this.div, true, parentDlg);
+  },
+  create : function() {
+    this.div = document.createElement('div');
+    this.div.className = "ctrl_toolbar_dlg pallete_dlg";
+    
+    var html = 
+      '<table><tr><td><input type="checkbox" onclick=\"PalettePopup.onRainbowCheckbox(event);\"></td>'
+          +'<td style="\cursor: text;\">&[use rainbow colors];</td></tr></table>'
+      + "<div id='safe_clrs_div'>"
+      + (this.getSchemePaletteStr() + "<br />"  + this.getGrayscalePaletteStr()
+      + "</div><div style='display: none;' id='rainbow_clrs_div'>"
+      + this.getRainbowPaletteStr()
+      + "</div>"
+      + this.getButtonsStr()); 
 
-		this.div.innerHTML = html;
-		CheckButtonMgr.prepare(this.div);
-		
-		// scheme & grayscale colors
-		this.safeColorsDiv = getChildById(this.div, 'safe_clrs_div');
-		var tables = this.safeColorsDiv.getElementsByTagName("table");
-		var schemeClrsTbl = tables[0];
-		addEvent(schemeClrsTbl, "click", this.onSchemeColorSelection, false);
-		var grayscaleClrsTbl = tables[1];
-		addEvent(grayscaleClrsTbl, "click", this.onOtherColorSelection, false);
+    this.div.innerHTML = html;
+    CheckButtonMgr.prepare(this.div);
+    
+    // scheme & grayscale colors
+    this.safeColorsDiv = getChildById(this.div, 'safe_clrs_div');
+    var tables = this.safeColorsDiv.getElementsByTagName("table");
+    var schemeClrsTbl = tables[0];
+    addEvent(schemeClrsTbl, "click", this.onSchemeColorSelection, false);
+    var grayscaleClrsTbl = tables[1];
+    addEvent(grayscaleClrsTbl, "click", this.onOtherColorSelection, false);
 
-		// rainbow colors
-		this.rainbowColorsDiv = getChildById(this.div, 'rainbow_clrs_div');
-		tables = this.rainbowColorsDiv.getElementsByTagName("table");
-		var rainbowClrsTbl = tables[0];
-		addEvent(rainbowClrsTbl, "click", this.onOtherColorSelection, false);
+    // rainbow colors
+    this.rainbowColorsDiv = getChildById(this.div, 'rainbow_clrs_div');
+    tables = this.rainbowColorsDiv.getElementsByTagName("table");
+    var rainbowClrsTbl = tables[0];
+    addEvent(rainbowClrsTbl, "click", this.onOtherColorSelection, false);
 
-		this.noClrCell = getChildById(this.div, "noClr");
-		this.noClrCell.style.fontSize = "16"
-		
-		this.chosenDiv = document.createElement('div');
-		this.chosenDiv.id = this.CHOSEN_DIV_ID;
-		var chDivStyle = this.chosenDiv.style;
-		chDivStyle.width  = 31;
-		chDivStyle.height = 31;
-		chDivStyle.borderWidth = "1px";
-		chDivStyle.borderStyle = "dashed";
-	},
-	onRainbowCheckbox : function(event) {
-		var $t = PalettePopup;
-		var btn = getEventTarget(event); //this;
-		var isChecked = CheckButtonMgr.isChecked(btn);
-		$t.safeColorsDiv.style.display = isChecked ? "none" : "block";
-		$t.rainbowColorsDiv.style.display = isChecked ? "block" : "none";
-	},
-/*	
-	setChosenColor : function(chosenClr) {
+    this.noClrCell = getChildById(this.div, "noClr");
+    this.noClrCell.style.fontSize = "16"
+    
+    this.chosenDiv = document.createElement('div');
+    this.chosenDiv.id = this.CHOSEN_DIV_ID;
+    var chDivStyle = this.chosenDiv.style;
+    chDivStyle.width  = 31;
+    chDivStyle.height = 31;
+    chDivStyle.borderWidth = "1px";
+    chDivStyle.borderStyle = "dashed";
+  },
+  onRainbowCheckbox : function(event) {
+    var $t = PalettePopup;
+    var btn = getEventTarget(event); //this;
+    var isChecked = CheckButtonMgr.isChecked(btn);
+    $t.safeColorsDiv.style.display = isChecked ? "none" : "block";
+    $t.rainbowColorsDiv.style.display = isChecked ? "block" : "none";
+  },
+/*  
+  setChosenColor : function(chosenClr) {
     if(typeof chosenClr == 'undefined' || chosenClr == null) {
       this.chosenDiv.style.display = "none";
       return;
     }
 
     var chosenClr_LC = chosenClr.toLowerCase();
-	  cells = this.div.getElementsByTagName("td");
-	  for(var i = 0; i < cells.length; i++) {
-	    var bgClr = cells[i].getAttribute("bgcolor");
-	    
-	    if(bgClr == chosenClr || bgClr == chosenClr_LC) {
-	      // 1. detect brightness of the cell
-	      if(bgClr.indexOf("#") == 0)
-	        bgClr = bgClr.substr(1);
-	      
-	      bgClrInt = parseInt(bgClr , 16);
-	      var r = (bgClrInt >> 16) & 0xff;
+    cells = this.div.getElementsByTagName("td");
+    for(var i = 0; i < cells.length; i++) {
+      var bgClr = cells[i].getAttribute("bgcolor");
+      
+      if(bgClr == chosenClr || bgClr == chosenClr_LC) {
+        // 1. detect brightness of the cell
+        if(bgClr.indexOf("#") == 0)
+          bgClr = bgClr.substr(1);
+        
+        bgClrInt = parseInt(bgClr , 16);
+        var r = (bgClrInt >> 16) & 0xff;
         var g = (bgClrInt >> 8 ) & 0xff;
         var b = (bgClrInt      ) & 0xff;
-	      
-	      var brightness = r + g + b; // max - 765
-	      // 2. set border color
-	      if(brightness > 475)
-	        this.chosenDiv.style.borderColor = "#000";
-	      else
-	        this.chosenDiv.style.borderColor = "#fff";
-	        
-	      // 3. append chosenDiv
-	      cells[i].appendChild(this.chosenDiv);
- 	      this.chosenDiv.style.display = "block";
-	    }
-	  }
-	},
-	*/
-	
-	showOtherColors : function(btn) {
-		if (this.isOtherClrsVisible) {
-			this.otherClrsDiv.style.display = "none";
-			btn.innerHTML = "&[show]; &[other colors]; &#187";
-		}
-		else {
-			this.otherClrsDiv.style.display = "block";
-			btn.innerHTML = "&[hide]; &[other colors]; &#171;";
-		}
-		this.isOtherClrsVisible = !this.isOtherClrsVisible;
-	},
-	
-	// sets color class
-	onSchemeColorSelection : function(event) {
-		var target = getEventTarget(event);
-		var idx = target.className.replace("csp_bg_", "");
-		if (idx.length != 2)
-			return
-		PopupHandler.hide();
-		PalettePopup.callback(idx, true);
-	},
-	// sets color value
-	onOtherColorSelection : function(event, isBlank) {
-		var target = getEventTarget(event);
-		var color = target.style.backgroundColor;
-		if (!color && !isBlank)
-			return;
-		PopupHandler.hide();
-		PalettePopup.callback(color);
-	},
-	
-	getButtonsStr : function() {
-		var html = "<table width=\"100%\" cellspacing=\"0\" cellpadding=\"5\" border=\"0\">"
-			+ "<tr>"
-			//"<td align=\"center\"><a href=\"javascript: ;\" onclick=\"PalettePopup.showOtherColors(this);\" class=\"button\">show other colors &#187;</a></td>"
-			+ "<td id=\"noClr\"><a href=\"javascript: ;\" onclick = \"PalettePopup.onOtherColorSelection(event, true);\" class=\"button\"><img src=\"images/skin/iphone/cross.png\" />remove color</a></td>"
-			+ "</table>";
-		return html;	
-	},
+        
+        var brightness = r + g + b; // max - 765
+        // 2. set border color
+        if(brightness > 475)
+          this.chosenDiv.style.borderColor = "#000";
+        else
+          this.chosenDiv.style.borderColor = "#fff";
+          
+        // 3. append chosenDiv
+        cells[i].appendChild(this.chosenDiv);
+        this.chosenDiv.style.display = "block";
+      }
+    }
+  },
+  */
+  
+  showOtherColors : function(btn) {
+    if (this.isOtherClrsVisible) {
+      this.otherClrsDiv.style.display = "none";
+      btn.innerHTML = "&[show]; &[other colors]; &#187";
+    }
+    else {
+      this.otherClrsDiv.style.display = "block";
+      btn.innerHTML = "&[hide]; &[other colors]; &#171;";
+    }
+    this.isOtherClrsVisible = !this.isOtherClrsVisible;
+  },
+  
+  // sets color class
+  onSchemeColorSelection : function(event) {
+    var target = getEventTarget(event);
+    var idx = target.className.replace("csp_bg_", "");
+    if (idx.length != 2)
+      return
+    PopupHandler.hide();
+    PalettePopup.callback(idx, true);
+  },
+  // sets color value
+  onOtherColorSelection : function(event, isBlank) {
+    var target = getEventTarget(event);
+    var color = target.style.backgroundColor;
+    if (!color && !isBlank)
+      return;
+    PopupHandler.hide();
+    PalettePopup.callback(color);
+  },
+  
+  getButtonsStr : function() {
+    var html = "<table width=\"100%\" cellspacing=\"0\" cellpadding=\"5\" border=\"0\">"
+      + "<tr>"
+      //"<td align=\"center\"><a href=\"javascript: ;\" onclick=\"PalettePopup.showOtherColors(this);\" class=\"button\">show other colors &#187;</a></td>"
+      + "<td id=\"noClr\"><a href=\"javascript: ;\" onclick = \"PalettePopup.onOtherColorSelection(event, true);\" class=\"button\"><img src=\"images/skin/iphone/cross.png\" />remove color</a></td>"
+      + "</table>";
+    return html;  
+  },
 
-	getSchemePaletteStr : function() {
-		var palette =	"<h3>&[scheme colors];:</h3>"
-			+ "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\">";
-			for (var r = 1; r <= 3; r++) {
-				palette += "<tr>";
-				for (var c = 1; c <= 5; c++)
-					palette += ("<td width=\"20%\" class=\"csp_bg_" +	r) + (c	+	"\"></td>");
-				palette += '</tr>';
-			}
-			palette += '</table>';
-			return palette;     
-	},
-	
-	getGrayscalePaletteStr : function() {
-		var colors = ["#FFFFFF", "#CCCCCC", "#C0C0C0", "#999999", "#666666", "#333333", "#000000"]
-		var html = "<h3>&[grayscale];:</h3>"
-			+ "<table  width=\"100%\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\">";
-		html += "<tr>";
-		for (var c = 0; c < colors.length; c++)
-			html += ("<td width=\"14.28%\" style=\"background-color:" +	colors[c]	+	"\"></td>");
-		html += '<tr>';
+  getSchemePaletteStr : function() {
+    var palette = "<h3>&[scheme colors];:</h3>"
+      + "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\">";
+      for (var r = 1; r <= 3; r++) {
+        palette += "<tr>";
+        for (var c = 1; c <= 5; c++)
+          palette += ("<td width=\"20%\" class=\"csp_bg_" + r) + (c + "\"></td>");
+        palette += '</tr>';
+      }
+      palette += '</table>';
+      return palette;     
+  },
+  
+  getGrayscalePaletteStr : function() {
+    var colors = ["#FFFFFF", "#CCCCCC", "#C0C0C0", "#999999", "#666666", "#333333", "#000000"]
+    var html = "<h3>&[grayscale];:</h3>"
+      + "<table  width=\"100%\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\">";
+    html += "<tr>";
+    for (var c = 0; c < colors.length; c++)
+      html += ("<td width=\"14.28%\" style=\"background-color:" + colors[c] + "\"></td>");
+    html += '<tr>';
 
-		html += '</table></div>';
-		return html;     
-	},
-	// not used for now!
-	getRainbowPaletteStr : function() {
-		var colors =
-		[
-			["#FFCCCC", "#FFCC99", "#FFFF99", "#FFFFCC", "#99FF99", "#99FFFF", "#CCFFFF", "#CCCCFF", "#FFCCFF"],
-			["#FF6666", "#FF9966", "#FFFF66", "#FFFF33", "#66FF99", "#33FFFF", "#66FFFF", "#9999FF", "#FF99FF"],
-			["#FF0000", "#FF9900", "#FFCC66", "#FFFF00", "#33FF33", "#66CCCC", "#33CCFF", "#6666CC", "#CC66CC"],
-			["#CC0000", "#FF6600", "#FFCC33", "#FFCC00", "#33CC00", "#00CCCC", "#3366FF", "#6633FF", "#CC33CC"],
-			["#990000", "#CC6600", "#CC9933", "#999900", "#009900", "#339999", "#3333FF", "#6600CC", "#993399"],
-			["#660000", "#993300", "#996633", "#666600", "#006600", "#336666", "#000099", "#333399", "#663366"],
-			["#330000", "#663300", "#663333", "#333300", "#003300", "#003333", "#000066", "#330099", "#330033"]
-		];
+    html += '</table></div>';
+    return html;     
+  },
+  // not used for now!
+  getRainbowPaletteStr : function() {
+    var colors =
+    [
+      ["#FFCCCC", "#FFCC99", "#FFFF99", "#FFFFCC", "#99FF99", "#99FFFF", "#CCFFFF", "#CCCCFF", "#FFCCFF"],
+      ["#FF6666", "#FF9966", "#FFFF66", "#FFFF33", "#66FF99", "#33FFFF", "#66FFFF", "#9999FF", "#FF99FF"],
+      ["#FF0000", "#FF9900", "#FFCC66", "#FFFF00", "#33FF33", "#66CCCC", "#33CCFF", "#6666CC", "#CC66CC"],
+      ["#CC0000", "#FF6600", "#FFCC33", "#FFCC00", "#33CC00", "#00CCCC", "#3366FF", "#6633FF", "#CC33CC"],
+      ["#990000", "#CC6600", "#CC9933", "#999900", "#009900", "#339999", "#3333FF", "#6600CC", "#993399"],
+      ["#660000", "#993300", "#996633", "#666600", "#006600", "#336666", "#000099", "#333399", "#663366"],
+      ["#330000", "#663300", "#663333", "#333300", "#003300", "#003333", "#000066", "#330099", "#330033"]
+    ];
 
-		var html = "<h4>&[other]; &[colors];:</h4>" // <div style=\"display: none;\">
-			+ "<table  width=\"100%\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\">";
-			for (var r = 0; r < colors.length; r++) {
-				html += "<tr>";
-				for (var c = 0; c < colors[r].length; c++)
-					html += ("<td width=\"11.111%\" style=\"background-color:" +	colors[r][c]	+	"\"></td>");
-				html += '<tr>';
-			}
-			html += '</table>'; //</div>
-			return html;     
-	}
+    var html = "<h4>&[other]; &[colors];:</h4>" // <div style=\"display: none;\">
+      + "<table  width=\"100%\" cellpadding=\"0\" cellspacing=\"1\" border=\"0\">";
+      for (var r = 0; r < colors.length; r++) {
+        html += "<tr>";
+        for (var c = 0; c < colors[r].length; c++)
+          html += ("<td width=\"11.111%\" style=\"background-color:" +  colors[r][c]  + "\"></td>");
+        html += '<tr>';
+      }
+      html += '</table>'; //</div>
+      return html;     
+  }
 
 }
 
 /****************************************************
-*	ListItem class
-*	parent is the MyDropdownList
+* ListItem class
+* parent is the MyDropdownList
 *****************************************************/
 function ListItem(index, innerDiv, parent, noHighlight) 
 {
-	var MARGIN = 2;
-	var i_am = this;
-	this.index = index;
-	this.innerDiv = innerDiv;
-	this.parent = parent;
-	this.liObj = null;
+  var MARGIN = 2;
+  var i_am = this;
+  this.index = index;
+  this.innerDiv = innerDiv;
+  this.parent = parent;
+  this.liObj = null;
   this.isDisabled = false;
 
-	this.create = function() {
-		// 1. create
-		this.liObj = document.createElement('td');
-		this.liObj.style.cursor = "pointer";
+  this.create = function() {
+    // 1. create
+    this.liObj = document.createElement('td');
+    this.liObj.style.cursor = "pointer";
 
-		// 2. set handlers
-		this.liObj.onmouseover = this.onMouseOver;
-		this.liObj.onmouseout = this.onMouseOut;
-		this.liObj.onmouseup = this.onMouseUp;
+    // 2. set handlers
+    this.liObj.onmouseover = this.onMouseOver;
+    this.liObj.onmouseout = this.onMouseOut;
+    this.liObj.onmouseup = this.onMouseUp;
 
-		// 3. append
-		this.liObj.appendChild(innerDiv);
-		this.parent.curRow.appendChild(this.liObj);
-	}
-	
-	this.getInnerDiv = function() {
-		return this.innerDiv;
-	}
-	this.changeContent = function(html) {
-	  this.innerDiv.innerHTML = html;
-	}
-	
-	// mouse handlers
-	this.onMouseOver = function() {
-		if(i_am.isDisabled)
-		  return;
-		i_am.liObj.className = "grey_highlighting";
-	}
-	this.onMouseOut = function() {
+    // 3. append
+    this.liObj.appendChild(innerDiv);
+    this.parent.curRow.appendChild(this.liObj);
+  }
+  
+  this.getInnerDiv = function() {
+    return this.innerDiv;
+  }
+  this.changeContent = function(html) {
+    this.innerDiv.innerHTML = html;
+  }
+  
+  // mouse handlers
+  this.onMouseOver = function() {
     if(i_am.isDisabled)
-		  return;
-		i_am.liObj.className = "";
-	}
-	this.onMouseUp = function(e) {
-  	if(i_am.isDisabled)
-		  return;
-		i_am.liObj.className = "";
-		i_am.parent.onItemSelection(i_am.index);
-	}
-	
+      return;
+    i_am.liObj.className = "grey_highlighting";
+  }
+  this.onMouseOut = function() {
+    if(i_am.isDisabled)
+      return;
+    i_am.liObj.className = "";
+  }
+  this.onMouseUp = function(e) {
+    if(i_am.isDisabled)
+      return;
+    i_am.liObj.className = "";
+    i_am.parent.onItemSelection(i_am.index);
+  }
+  
   this.removeHighlight = function() {
-		i_am.liObj.className = "";
+    i_am.liObj.className = "";
   }
   this.enable = function() {
- 		this.liObj.style.cursor = "pointer";
+    this.liObj.style.cursor = "pointer";
     this.isDisabled = false;
   }
   this.disable = function() {
- 		this.liObj.style.cursor = "";
+    this.liObj.style.cursor = "";
     this.isDisabled = true;
   }
-	// constructor's body
-	this.create();
+  // constructor's body
+  this.create();
 }
 
 /*****************************************************
@@ -669,27 +669,27 @@ function ListItem(index, innerDiv, parent, noHighlight)
 // width - needs for dropdown list
 // default parameters: colAmt: 1;
 function MyDropdownList(colAmt) {
-	this.div = null;
-	this.table = null;
-	this.tablebody = null;
-	this.curRow = null;
-	
-	this.colAmt = colAmt || 1;
-	this.itemsArr = null;
+  this.div = null;
+  this.table = null;
+  this.tablebody = null;
+  this.curRow = null;
+  
+  this.colAmt = colAmt || 1;
+  this.itemsArr = null;
 
-	this.create = function(parentElt) {
-		this.div = document.createElement('div');
-		this.div.className = "ctrl_toolbar_dlg";
-		
-		this.table = document.createElement('table');
-		//	this.table.cellPadding = 10;	//	this.table.cellSpacing = 0; 
-		this.tablebody = document.createElement("tbody");
-		this.table.appendChild(this.tablebody);
-		this.div.onmouseup = function(e) {e = e || event; e.cancelBubble = true;}
-		this.div.appendChild(this.table);
-	}
-	this.show = function(hotspot, alignment, callback, parentDlg) {
-		this.callback = callback;
+  this.create = function(parentElt) {
+    this.div = document.createElement('div');
+    this.div.className = "ctrl_toolbar_dlg";
+    
+    this.table = document.createElement('table');
+    //  this.table.cellPadding = 10;  //  this.table.cellSpacing = 0; 
+    this.tablebody = document.createElement("tbody");
+    this.table.appendChild(this.tablebody);
+    this.div.onmouseup = function(e) {e = e || event; e.cancelBubble = true;}
+    this.div.appendChild(this.table);
+  }
+  this.show = function(hotspot, alignment, callback, parentDlg) {
+    this.callback = callback;
     
     for(var i = 0; i < this.itemsArr.length; i++) {
       this.itemsArr[i].removeHighlight();
@@ -699,47 +699,47 @@ function MyDropdownList(colAmt) {
       PopupHandler.hide(false);
       return;
     }
-		PopupHandler.showRelatively(hotspot, alignment, this.div, true, parentDlg);
-	}
-	this.hide = function() {
-	  PopupHandler.hide();
-	}	
-	this.appendItem = function(innerDiv) {
-		if(this.itemsArr == null)
-			this.itemsArr = new Array();
-		
-		innerDiv.style.position = "static";
-		var idx = this.itemsArr.length;
-		if(this.isFirstRowItem(idx)) {
-			this.curRow = document.createElement("tr");
-			this.tablebody.appendChild(this.curRow);
-		}
-		this.itemsArr[idx] = new ListItem(idx, innerDiv, this);
-	}
-	this.changeItemContent = function(idx, html) {
-	  this.itemsArr[idx].changeContent(html);
-	}
-	
-	// needs for dropdown menu
-	this.setWidth = function(width) {
-		this.table.width = width;
-	}
-	// for multycolumn list
-	this.isMultyColumn = function(idx) {
-		if(this.colAmt > 1)
-			return true;
-		else
-			return false;
-	}
-	this.isFirstRowItem = function(idx) { 
-		if(this.colAmt > 1) { 
-			if(idx % this.colAmt == 0)
-				return true;
-			else
-				return false;	
-		}
-		return true;
-	}
+    PopupHandler.showRelatively(hotspot, alignment, this.div, true, parentDlg);
+  }
+  this.hide = function() {
+    PopupHandler.hide();
+  } 
+  this.appendItem = function(innerDiv) {
+    if(this.itemsArr == null)
+      this.itemsArr = new Array();
+    
+    innerDiv.style.position = "static";
+    var idx = this.itemsArr.length;
+    if(this.isFirstRowItem(idx)) {
+      this.curRow = document.createElement("tr");
+      this.tablebody.appendChild(this.curRow);
+    }
+    this.itemsArr[idx] = new ListItem(idx, innerDiv, this);
+  }
+  this.changeItemContent = function(idx, html) {
+    this.itemsArr[idx].changeContent(html);
+  }
+  
+  // needs for dropdown menu
+  this.setWidth = function(width) {
+    this.table.width = width;
+  }
+  // for multycolumn list
+  this.isMultyColumn = function(idx) {
+    if(this.colAmt > 1)
+      return true;
+    else
+      return false;
+  }
+  this.isFirstRowItem = function(idx) { 
+    if(this.colAmt > 1) { 
+      if(idx % this.colAmt == 0)
+        return true;
+      else
+        return false; 
+    }
+    return true;
+  }
   
   this.enableAllItems = function() {
     for(var idx = 0; idx < this.itemsArr.length; idx++)
@@ -754,534 +754,534 @@ function MyDropdownList(colAmt) {
     } 
   }
   
-	// onItemSelection
-	this.onItemSelection = function(itemIdx) {
-		if (this.callback != null) {
-			this.callback(itemIdx);
-			this.hide(); // PopupHandler.hide();
-		}
-	}
-	this.getItemObject = function(idx) {
-		return this.itemsArr[idx];
-	}
-	this.getItemsAmount = function() {
-		return this.itemsArr.length;
-	}
-	this.getSelectedItem = function(idx) {
-		return this.selectedItemIdx;
-	}
-	
-	// list's "constructor" --
-	this.create();
+  // onItemSelection
+  this.onItemSelection = function(itemIdx) {
+    if (this.callback != null) {
+      this.callback(itemIdx);
+      this.hide(); // PopupHandler.hide();
+    }
+  }
+  this.getItemObject = function(idx) {
+    return this.itemsArr[idx];
+  }
+  this.getItemsAmount = function() {
+    return this.itemsArr.length;
+  }
+  this.getSelectedItem = function(idx) {
+    return this.selectedItemIdx;
+  }
+  
+  // list's "constructor" --
+  this.create();
 }
 
 /****************************************************
-*	DropdownList class
+* DropdownList class
 * current realization: 
 * the dropdown list contains a unique list objet
 * probably better to make tha list global, so to share it.
 *****************************************************/
 //DropdownList.prototype = new CtrlBase();
 function DropdownList(index, callback, left, top, fieldWidth, title, toolbarIn) {
-	var FONT_FAMILY = "verdana";
-	var FONT_SIZE = "12px";
-	var IMAGES_FOLDER = "images/wysiwyg/";
-	var FIELD_HEIGHT = 22;
-	var ARROW_BUTTON_WIDTH = 20;
-	var ARROW_BUTTON_HEIGHT = 20;
+  var FONT_FAMILY = "verdana";
+  var FONT_SIZE = "12px";
+  var IMAGES_FOLDER = "images/wysiwyg/";
+  var FIELD_HEIGHT = 22;
+  var ARROW_BUTTON_WIDTH = 20;
+  var ARROW_BUTTON_HEIGHT = 20;
 
-	var i_am = this;
-	this.index = index; // index in the parent toolbar
-	this.callback = callback;
-	this.left = left;
-	this.top = top;
-	this.fieldWidth = fieldWidth; // equals to the list width
-	this.title = title;
-	this.toolbar = toolbarIn;
-	this.width = null; // fieldWidth + ARROW_BUTTON_WIDTH
-	this.height = null;
-	
-	this.div = null;
-	this.itemCloneObj = null;
-	
-	this.buttonDiv = null;
-	this.btnImg = null;
-	
-	this.listDiv = null;
-	this.listObj = null;
-	
-	this.selectedItemIdx = 0;
-	
-	this.isOverflowed = false;
-	
-	this.isDisabled = false;
-	
-	// create -----------------
-	this.create = function() {
-		// 1. create the list
-		var listTop = this.top + FIELD_HEIGHT + 1;
-		this.list = new MyDropdownList();
+  var i_am = this;
+  this.index = index; // index in the parent toolbar
+  this.callback = callback;
+  this.left = left;
+  this.top = top;
+  this.fieldWidth = fieldWidth; // equals to the list width
+  this.title = title;
+  this.toolbar = toolbarIn;
+  this.width = null; // fieldWidth + ARROW_BUTTON_WIDTH
+  this.height = null;
+  
+  this.div = null;
+  this.itemCloneObj = null;
+  
+  this.buttonDiv = null;
+  this.btnImg = null;
+  
+  this.listDiv = null;
+  this.listObj = null;
+  
+  this.selectedItemIdx = 0;
+  
+  this.isOverflowed = false;
+  
+  this.isDisabled = false;
+  
+  // create -----------------
+  this.create = function() {
+    // 1. create the list
+    var listTop = this.top + FIELD_HEIGHT + 1;
+    this.list = new MyDropdownList();
 
-		// 2. field - shows selected item
-		this.div = document.createElement('div');
-		this.div.style.position = "absolute";
-		this.div.style.left = this.left;
-		this.div.style.top = this.top;
-		this.div.style.width = this.fieldWidth;
-		this.div.style.height = FIELD_HEIGHT;
-		this.div.style.fontFamily = FONT_FAMILY;
-		this.div.style.fontSize = FONT_SIZE;
-		this.div.style.paddingLeft = this.div.style.paddingRight = 4;
-		this.div.style.paddingTop = 1;
-		this.div.style.backgroundColor = this.list.LIST_BACKGROUND;
-		this.div.style.borderWidth = "1px";
-		this.div.style.borderStyle = "solid";
-		this.div.style.overflow = "visible";
-		this.div.title = this.title;
-		this.toolbar.div.appendChild(this.div);
-		
-		this.fieldWidth = this.div.clientWidth; // get real size of the field; for FF
-		this.list.setWidth(this.fieldWidth);
+    // 2. field - shows selected item
+    this.div = document.createElement('div');
+    this.div.style.position = "absolute";
+    this.div.style.left = this.left;
+    this.div.style.top = this.top;
+    this.div.style.width = this.fieldWidth;
+    this.div.style.height = FIELD_HEIGHT;
+    this.div.style.fontFamily = FONT_FAMILY;
+    this.div.style.fontSize = FONT_SIZE;
+    this.div.style.paddingLeft = this.div.style.paddingRight = 4;
+    this.div.style.paddingTop = 1;
+    this.div.style.backgroundColor = this.list.LIST_BACKGROUND;
+    this.div.style.borderWidth = "1px";
+    this.div.style.borderStyle = "solid";
+    this.div.style.overflow = "visible";
+    this.div.title = this.title;
+    this.toolbar.div.appendChild(this.div);
+    
+    this.fieldWidth = this.div.clientWidth; // get real size of the field; for FF
+    this.list.setWidth(this.fieldWidth);
 
-		if(this.div.clientHeight != FIELD_HEIGHT)
-			this.div.style.height = 2*FIELD_HEIGHT - this.div.clientHeight;
-		
-		// 3. button to open list
-		// 3.1 create button & button image
-		this.buttonDiv = document.createElement('div');
-		this.buttonDiv.style.position = "absolute";
-		this.buttonDiv.style.left = this.left + this.fieldWidth + 3;
-		this.buttonDiv.style.top = this.top + (FIELD_HEIGHT - ARROW_BUTTON_HEIGHT)/2;
-				
-		this.btnImg = document.createElement('IMG');
-		this.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
-		this.btnImg.style.cursor = "pointer"
-		
-		this.btnImg.width = ARROW_BUTTON_WIDTH;
-		this.btnImg.height = ARROW_BUTTON_HEIGHT;
-		
-		// 3.2 set arrow button handlers
-		this.buttonDiv.onmouseover = this.onMouseOverBtn;
-		this.buttonDiv.onmouseout = this.onMouseOutBtn;
-		this.buttonDiv.onmousedown = this.onMouseDownBtn;
-		this.buttonDiv.onmouseup = this.onMouseUpBtn
-		// 3.3 append the arrow button 
-		this.buttonDiv.appendChild(this.btnImg);
-		this.toolbar.div.appendChild(this.buttonDiv);
-		
-		// 4.4
-		this.width = this.fieldWidth + ARROW_BUTTON_WIDTH;
-		this.height = this.div.clientHeight;
-	}
-	
-	this.appendItem = function(itemDiv) {
-		this.list.appendItem(itemDiv);
-	}
-	this.getItemObject = function(idx) {
-		return this.list.getItemObject(idx);
-	}
-	this.getSelectedItem = function(idx) {
-		return this.list.getItemObject(idx);
-	}
-	this.setSelectedItem = function(itemIdx) {
-		i_am.selectedItemIdx = itemIdx;
-	
-		if(i_am.itemCloneObj != null)
-			i_am.div.removeChild(i_am.itemCloneObj);
-			
-		i_am.itemCloneObj = i_am.getItemObject(itemIdx).getInnerDiv().cloneNode(true);
-		i_am.div.appendChild(i_am.itemCloneObj);
-		i_am.callback(itemIdx);
-	}
-	
-	this.enable = function() {
-		changeOpacity(this.div, 1.0);
-		changeOpacity(this.buttonDiv, 1.0);
-		this.isDisabled = false; 
-	}
-	
-	this.disable = function() {
-		changeOpacity(this.div, 0.3);
-		changeOpacity(this.buttonDiv, 0.3);
-		this.isDisabled = true;  
-	}
+    if(this.div.clientHeight != FIELD_HEIGHT)
+      this.div.style.height = 2*FIELD_HEIGHT - this.div.clientHeight;
+    
+    // 3. button to open list
+    // 3.1 create button & button image
+    this.buttonDiv = document.createElement('div');
+    this.buttonDiv.style.position = "absolute";
+    this.buttonDiv.style.left = this.left + this.fieldWidth + 3;
+    this.buttonDiv.style.top = this.top + (FIELD_HEIGHT - ARROW_BUTTON_HEIGHT)/2;
+        
+    this.btnImg = document.createElement('IMG');
+    this.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
+    this.btnImg.style.cursor = "pointer"
+    
+    this.btnImg.width = ARROW_BUTTON_WIDTH;
+    this.btnImg.height = ARROW_BUTTON_HEIGHT;
+    
+    // 3.2 set arrow button handlers
+    this.buttonDiv.onmouseover = this.onMouseOverBtn;
+    this.buttonDiv.onmouseout = this.onMouseOutBtn;
+    this.buttonDiv.onmousedown = this.onMouseDownBtn;
+    this.buttonDiv.onmouseup = this.onMouseUpBtn
+    // 3.3 append the arrow button 
+    this.buttonDiv.appendChild(this.btnImg);
+    this.toolbar.div.appendChild(this.buttonDiv);
+    
+    // 4.4
+    this.width = this.fieldWidth + ARROW_BUTTON_WIDTH;
+    this.height = this.div.clientHeight;
+  }
+  
+  this.appendItem = function(itemDiv) {
+    this.list.appendItem(itemDiv);
+  }
+  this.getItemObject = function(idx) {
+    return this.list.getItemObject(idx);
+  }
+  this.getSelectedItem = function(idx) {
+    return this.list.getItemObject(idx);
+  }
+  this.setSelectedItem = function(itemIdx) {
+    i_am.selectedItemIdx = itemIdx;
+  
+    if(i_am.itemCloneObj != null)
+      i_am.div.removeChild(i_am.itemCloneObj);
+      
+    i_am.itemCloneObj = i_am.getItemObject(itemIdx).getInnerDiv().cloneNode(true);
+    i_am.div.appendChild(i_am.itemCloneObj);
+    i_am.callback(itemIdx);
+  }
+  
+  this.enable = function() {
+    changeOpacity(this.div, 1.0);
+    changeOpacity(this.buttonDiv, 1.0);
+    this.isDisabled = false; 
+  }
+  
+  this.disable = function() {
+    changeOpacity(this.div, 0.3);
+    changeOpacity(this.buttonDiv, 0.3);
+    this.isDisabled = true;  
+  }
 
-	// arrow button handlers
-	this.onMouseOverBtn = function() {
-	  if(i_am.isDisabled)
-	    return;
-		i_am.btnImg.src = IMAGES_FOLDER + "arrow_button_over.gif";
-	}
-	this.onMouseOutBtn = function() {
-		  if(i_am.isDisabled)
-	    return;
-		i_am.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
-	}
-	this.onMouseDownBtn = function() {
-	  if(i_am.isDisabled)
-	    return;
-		i_am.btnImg.src = IMAGES_FOLDER + "arrow_button_pressed.gif";
-	}
-	this.onMouseUpBtn = function() {
-	  if(i_am.isDisabled)
-	    return;
-		i_am.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
-		var top = i_am.top + i_am.div.clientHeight + 1;
-		
-		var parentDlg = getParentDialog(i_am.div); 
-		i_am.list.show(i_am, 'left', i_am.setSelectedItem, parentDlg);
-	}
-	// constructor's body
-	this.create();
+  // arrow button handlers
+  this.onMouseOverBtn = function() {
+    if(i_am.isDisabled)
+      return;
+    i_am.btnImg.src = IMAGES_FOLDER + "arrow_button_over.gif";
+  }
+  this.onMouseOutBtn = function() {
+      if(i_am.isDisabled)
+      return;
+    i_am.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
+  }
+  this.onMouseDownBtn = function() {
+    if(i_am.isDisabled)
+      return;
+    i_am.btnImg.src = IMAGES_FOLDER + "arrow_button_pressed.gif";
+  }
+  this.onMouseUpBtn = function() {
+    if(i_am.isDisabled)
+      return;
+    i_am.btnImg.src = IMAGES_FOLDER + "arrow_button.gif";
+    var top = i_am.top + i_am.div.clientHeight + 1;
+    
+    var parentDlg = getParentDialog(i_am.div); 
+    i_am.list.show(i_am, 'left', i_am.setSelectedItem, parentDlg);
+  }
+  // constructor's body
+  this.create();
 }
 
 /***************************************************
-*	Titlestrip class
+* Titlestrip class
 ****************************************************/
 function Titlestrip(parentDiv, toolbar)
 {
-	var HEIGHT = 25;
-	var TOP_PADDING = 7;
-	
-	var FONT_FAMILY = "verdana";
-	var FONT_SIZE = "12px";
-	this.parentDiv = parentDiv;
-	this.toolbar = toolbar;
-	this.div = null;
-	this.height = 0;
-	
-	this.create = function() {
-		// 1. create div
-		this.div = document.createElement('div');
-		this.div.style.visibility = "hidden"; // make it visible only on title adding
-		this.div.style.position = "absolute";
-		this.div.style.left = 0;
-		this.div.style.top = 0;
-		this.div.style.width = "100%";
-		this.div.style.height = HEIGHT;
-		this.div.style.borderWidth = 0;
-		// 2. append to parent
-		this.parentDiv.appendChild(this.div);
-		
-		// get "real" height
-		this.height = this.div.clientHeight;
-	}
-	this.appendTitle = function(left, text) {
-		var titleDivTmp = document.createElement('div');
-		titleDivTmp.style.position = "absolute";
-		titleDivTmp.style.left = left;
-		titleDivTmp.style.top = TOP_PADDING;
-		titleDivTmp.style.fontFamily = FONT_FAMILY;
-		titleDivTmp.style.fontSize = FONT_SIZE;
-		titleDivTmp.innerHTML = text;
-		this.div.appendChild(titleDivTmp);
-		this.div.style.visibility = "visible";
-		this.toolbar.onTitleVisible();
-	}
-	this.resize = function(width) {
-		//this.div.style.width = width;
-	}
-	this.isVisible = function() {
-		if(this.div.style.visibility == "visible")
-			return true;
-		else
-			return false;
-	}
-	
-	// constructor's body
-	this.create();
+  var HEIGHT = 25;
+  var TOP_PADDING = 7;
+  
+  var FONT_FAMILY = "verdana";
+  var FONT_SIZE = "12px";
+  this.parentDiv = parentDiv;
+  this.toolbar = toolbar;
+  this.div = null;
+  this.height = 0;
+  
+  this.create = function() {
+    // 1. create div
+    this.div = document.createElement('div');
+    this.div.style.visibility = "hidden"; // make it visible only on title adding
+    this.div.style.position = "absolute";
+    this.div.style.left = 0;
+    this.div.style.top = 0;
+    this.div.style.width = "100%";
+    this.div.style.height = HEIGHT;
+    this.div.style.borderWidth = 0;
+    // 2. append to parent
+    this.parentDiv.appendChild(this.div);
+    
+    // get "real" height
+    this.height = this.div.clientHeight;
+  }
+  this.appendTitle = function(left, text) {
+    var titleDivTmp = document.createElement('div');
+    titleDivTmp.style.position = "absolute";
+    titleDivTmp.style.left = left;
+    titleDivTmp.style.top = TOP_PADDING;
+    titleDivTmp.style.fontFamily = FONT_FAMILY;
+    titleDivTmp.style.fontSize = FONT_SIZE;
+    titleDivTmp.innerHTML = text;
+    this.div.appendChild(titleDivTmp);
+    this.div.style.visibility = "visible";
+    this.toolbar.onTitleVisible();
+  }
+  this.resize = function(width) {
+    //this.div.style.width = width;
+  }
+  this.isVisible = function() {
+    if(this.div.style.visibility == "visible")
+      return true;
+    else
+      return false;
+  }
+  
+  // constructor's body
+  this.create();
 }
 
 /****************************************************
-*	Toolbar class
+* Toolbar class
 *****************************************************/
 function Toolbar(parentDiv, masterObj, iconHeight, noOverflow, insertBeforeObj)
 {
-	var LEFT_PADDING = 10; // pix
-	var RIGHT_PADDING = 10;
-	var TOP_PADDING = 4;
-	var BOTTOM_PADDING = 5;
-	this.BTN_PADDING = 2;
-	var BTN_GAP = 4
+  var LEFT_PADDING = 10; // pix
+  var RIGHT_PADDING = 10;
+  var TOP_PADDING = 4;
+  var BOTTOM_PADDING = 5;
+  this.BTN_PADDING = 2;
+  var BTN_GAP = 4
 
-	var i_am = this;
-	this.parentDiv = parentDiv;
-	this.insertBeforeObj = insertBeforeObj;
-	this.masterObj = masterObj;
-	this.iconHeight = iconHeight;
-	this.noOverflow = noOverflow;
-	this.controlsArr = new Array();
-	this.div = null;
-	this.titlestrip = null;
+  var i_am = this;
+  this.parentDiv = parentDiv;
+  this.insertBeforeObj = insertBeforeObj;
+  this.masterObj = masterObj;
+  this.iconHeight = iconHeight;
+  this.noOverflow = noOverflow;
+  this.controlsArr = new Array();
+  this.div = null;
+  this.titlestrip = null;
 
-	var lastBtnEdge = 0;
-	
-	this.width = 0;
-	this.height = 0;
-	
-	// "overflow" --
-	var OVF_ICON_WIDTH = 24;
-	var OVF_POPUP_COL = 4;
-	var OVF_BTN_TITLE = "&[more options];";
-	this.overflowBtn = null;
-	this.overflowPopup = null;
-	
+  var lastBtnEdge = 0;
+  
+  this.width = 0;
+  this.height = 0;
+  
+  // "overflow" --
+  var OVF_ICON_WIDTH = 24;
+  var OVF_POPUP_COL = 4;
+  var OVF_BTN_TITLE = "&[more options];";
+  this.overflowBtn = null;
+  this.overflowPopup = null;
+  
 
-	this.create = function() {
-		// 1. create title bar
-		this.titlestrip = new Titlestrip(this.parentDiv, this);
-		// 2. create, namely, toolbar
-		this.div = document.createElement('div');
-		this.div.className = "ctrl_toolbar";
+  this.create = function() {
+    // 1. create title bar
+    this.titlestrip = new Titlestrip(this.parentDiv, this);
+    // 2. create, namely, toolbar
+    this.div = document.createElement('div');
+    this.div.className = "ctrl_toolbar";
 
-		if (this.insertBeforeObj)
-			this.parentDiv.insertBefore(this.div, this.insertBeforeObj);
-		else
-			this.parentDiv.appendChild(this.div);
-	}
-	// DropdownList is not support the overflow for now!
-	this.appendDropdownList = function(fieldWidth, title, callback) {
-		var idx = this.controlsArr.length;
-		var left = (idx > 0) ? lastBtnEdge + BTN_GAP : LEFT_PADDING;
-		this.controlsArr[idx] = new DropdownList(idx, callback, left, TOP_PADDING, fieldWidth, title, this);
-		this.titlestrip.appendTitle(left, title);
-		
-		this.resize(this.controlsArr[idx]);
-		
-		return this.controlsArr[idx];
-	}
-	// optional parameters:
-	// 1)titlePressed is for toggle button 2)iconWidth for icons with width != height
-	this.appendButton = function(callback, isToggle, icon, title, titlePressed, iconWidth) {
-		var idx = this.controlsArr.length;
-		var left = (idx > 0) ? lastBtnEdge + BTN_GAP : LEFT_PADDING;
-		var top = 0;
-		
-		iconWidth = iconWidth || this.iconHeight;
-		this.controlsArr[idx] = new ToolbarButton(idx, callback, isToggle, icon, iconWidth, left, TOP_PADDING, this, title, titlePressed);
+    if (this.insertBeforeObj)
+      this.parentDiv.insertBefore(this.div, this.insertBeforeObj);
+    else
+      this.parentDiv.appendChild(this.div);
+  }
+  // DropdownList is not support the overflow for now!
+  this.appendDropdownList = function(fieldWidth, title, callback) {
+    var idx = this.controlsArr.length;
+    var left = (idx > 0) ? lastBtnEdge + BTN_GAP : LEFT_PADDING;
+    this.controlsArr[idx] = new DropdownList(idx, callback, left, TOP_PADDING, fieldWidth, title, this);
+    this.titlestrip.appendTitle(left, title);
+    
+    this.resize(this.controlsArr[idx]);
+    
+    return this.controlsArr[idx];
+  }
+  // optional parameters:
+  // 1)titlePressed is for toggle button 2)iconWidth for icons with width != height
+  this.appendButton = function(callback, isToggle, icon, title, titlePressed, iconWidth) {
+    var idx = this.controlsArr.length;
+    var left = (idx > 0) ? lastBtnEdge + BTN_GAP : LEFT_PADDING;
+    var top = 0;
+    
+    iconWidth = iconWidth || this.iconHeight;
+    this.controlsArr[idx] = new ToolbarButton(idx, callback, isToggle, icon, iconWidth, left, TOP_PADDING, this, title, titlePressed);
 
-		// insert a button
-		if(this.isOverflow(this.controlsArr[idx])) {
-			if(this.overflowPopup == null)
-				this.prepareToOverflow();
-			this.overflowPopup.appendItem(this.controlsArr[idx].div);
-			this.controlsArr[idx].isOverflowed = true;
-		}
-		else {
-			this.div.appendChild(this.controlsArr[idx].div);
-			this.resize(this.controlsArr[idx]);
-		}
-		return this.controlsArr[idx];
-	}
-	
-	// resize toolbar according to new appended button
-	this.resize = function(obj){ //idx
-		//obj = this.controlsArr[idx];
-		var newHeight = obj.height + (TOP_PADDING + BOTTOM_PADDING);
-		if(this.height < newHeight)
-			this.height = newHeight;
-					
-		if(this.controlsArr.length == 1)
-			this.width = LEFT_PADDING + obj.width + RIGHT_PADDING;
-		else
-			this.width += BTN_GAP + obj.width;	
+    // insert a button
+    if(this.isOverflow(this.controlsArr[idx])) {
+      if(this.overflowPopup == null)
+        this.prepareToOverflow();
+      this.overflowPopup.appendItem(this.controlsArr[idx].div);
+      this.controlsArr[idx].isOverflowed = true;
+    }
+    else {
+      this.div.appendChild(this.controlsArr[idx].div);
+      this.resize(this.controlsArr[idx]);
+    }
+    return this.controlsArr[idx];
+  }
+  
+  // resize toolbar according to new appended button
+  this.resize = function(obj){ //idx
+    //obj = this.controlsArr[idx];
+    var newHeight = obj.height + (TOP_PADDING + BOTTOM_PADDING);
+    if(this.height < newHeight)
+      this.height = newHeight;
+          
+    if(this.controlsArr.length == 1)
+      this.width = LEFT_PADDING + obj.width + RIGHT_PADDING;
+    else
+      this.width += BTN_GAP + obj.width;  
 
-		lastBtnEdge = this.width - RIGHT_PADDING;
-						
-		// full rte iframe width // this.div.style.width = this.width;
-		this.div.style.height = this.height;
-		
-		this.titlestrip.resize(this.width); // resize titlestrip
-	}
-	
-	this.getControlObj = function(idx) {
-		return this.controlsArr[idx];
-	}
-	this.getNextControlObj = function(obj) {
-	  var idx = obj.index + 1;
-	  if(typeof this.controlsArr[idx] != 'undefined')
-		  return this.controlsArr[idx];
+    lastBtnEdge = this.width - RIGHT_PADDING;
+            
+    // full rte iframe width // this.div.style.width = this.width;
+    this.div.style.height = this.height;
+    
+    this.titlestrip.resize(this.width); // resize titlestrip
+  }
+  
+  this.getControlObj = function(idx) {
+    return this.controlsArr[idx];
+  }
+  this.getNextControlObj = function(obj) {
+    var idx = obj.index + 1;
+    if(typeof this.controlsArr[idx] != 'undefined')
+      return this.controlsArr[idx];
     return null;
-	}
-	this.getPrevControlObj = function(obj) {
-	  var idx = obj.index - 1;
-	  if(typeof this.controlsArr[idx] != 'undefined')
-		  return this.controlsArr[idx];
+  }
+  this.getPrevControlObj = function(obj) {
+    var idx = obj.index - 1;
+    if(typeof this.controlsArr[idx] != 'undefined')
+      return this.controlsArr[idx];
     return null;
-	}
-	this.getWidth = function() {
-		return this.width;
-	}
-	
-	this.getHeight = function() {
-		if(this.titlestrip.isVisible())
-			return (this.height + this.titlestrip.height);
-		else
-			return this.height;
-	}
-	this.show = function() {
-		this.div.style.display = "block";
-	}
-	this.hide = function() {
-		this.div.style.display = "none";
-	}
-	this.isVisible = function() {
-		return isVisible(this.div);
-	}
-	this.onTitleVisible = function() {
-		this.div.style.top = this.titlestrip.height;
-	}
-	
-	this.enableAllControls = function() {
-		for(var i = 0; i < this.controlsArr.length; i++)
-			this.controlsArr[i].enable();
-		
-		if (this.overflowPopup)
-		  this.overflowPopup.enableAllItems();
-	}
-	this.disableAllControls = function(excludeCtrl) {
-		var exclIdx = -1;
-		if(typeof excludeCtrl != 'undefined')
-			exclIdx = excludeCtrl.index;
-			
-		for(var i = 0; i < this.controlsArr.length; i++)
-			if(i != exclIdx)
-				this.controlsArr[i].disable();
-		
-		if (this.overflowPopup) {		
-		  var lastItemIdx = this.overflowPopup.getItemsAmount() - 1;
-		  this.overflowPopup.disableAllItems(lastItemIdx);
-		}		
-	}
-	
-		// "overflow" popup ----------------
-	this.isOverflow = function(obj) {
-		if(this.noOverflow)
-			return false;
-		if(this.overflowPopup != null)
-			return true;
-		if(this.parentDiv.offsetWidth == 0)
-			return;
-		// new toolbar width including new object (btn) and the overflow button
-		var newTbWidth = lastBtnEdge + BTN_GAP + obj.width + BTN_GAP
-			 + OVF_ICON_WIDTH + this.BTN_PADDING * 2 + RIGHT_PADDING + 2;
-		if(this.parentDiv.offsetWidth <= newTbWidth)
-			return true;
-		
-		return false;
-	}
-	
-	this.prepareToOverflow = function() {
-		var idx = this.controlsArr.length;
-		var left = lastBtnEdge + BTN_GAP;
-		var icon = "images/wysiwyg/overflow.png";
-		// 1. create overflow button
-		this.overflowBtn = new ToolbarButton(idx, this.showOverflowPopup, false, icon, OVF_ICON_WIDTH, left, TOP_PADDING, this, OVF_BTN_TITLE);
-		this.div.appendChild(this.overflowBtn.div);
-		this.resize(this.overflowBtn);
-		// 2. create overflow list
-		this.overflowPopup = new MyDropdownList(OVF_POPUP_COL);
-	}
-	
-	this.showOverflowPopup = function(){
-		var parentDlg = getParentDialog(this.div);
-		
-		// "onOverflowBtn" - is an interface function
-		if(typeof i_am.masterObj.onOverflowBtn != 'undefined')
-			i_am.masterObj.onOverflowBtn();
+  }
+  this.getWidth = function() {
+    return this.width;
+  }
+  
+  this.getHeight = function() {
+    if(this.titlestrip.isVisible())
+      return (this.height + this.titlestrip.height);
+    else
+      return this.height;
+  }
+  this.show = function() {
+    this.div.style.display = "block";
+  }
+  this.hide = function() {
+    this.div.style.display = "none";
+  }
+  this.isVisible = function() {
+    return isVisible(this.div);
+  }
+  this.onTitleVisible = function() {
+    this.div.style.top = this.titlestrip.height;
+  }
+  
+  this.enableAllControls = function() {
+    for(var i = 0; i < this.controlsArr.length; i++)
+      this.controlsArr[i].enable();
+    
+    if (this.overflowPopup)
+      this.overflowPopup.enableAllItems();
+  }
+  this.disableAllControls = function(excludeCtrl) {
+    var exclIdx = -1;
+    if(typeof excludeCtrl != 'undefined')
+      exclIdx = excludeCtrl.index;
+      
+    for(var i = 0; i < this.controlsArr.length; i++)
+      if(i != exclIdx)
+        this.controlsArr[i].disable();
+    
+    if (this.overflowPopup) {   
+      var lastItemIdx = this.overflowPopup.getItemsAmount() - 1;
+      this.overflowPopup.disableAllItems(lastItemIdx);
+    }   
+  }
+  
+    // "overflow" popup ----------------
+  this.isOverflow = function(obj) {
+    if(this.noOverflow)
+      return false;
+    if(this.overflowPopup != null)
+      return true;
+    if(this.parentDiv.offsetWidth == 0)
+      return;
+    // new toolbar width including new object (btn) and the overflow button
+    var newTbWidth = lastBtnEdge + BTN_GAP + obj.width + BTN_GAP
+       + OVF_ICON_WIDTH + this.BTN_PADDING * 2 + RIGHT_PADDING + 2;
+    if(this.parentDiv.offsetWidth <= newTbWidth)
+      return true;
+    
+    return false;
+  }
+  
+  this.prepareToOverflow = function() {
+    var idx = this.controlsArr.length;
+    var left = lastBtnEdge + BTN_GAP;
+    var icon = "images/wysiwyg/overflow.png";
+    // 1. create overflow button
+    this.overflowBtn = new ToolbarButton(idx, this.showOverflowPopup, false, icon, OVF_ICON_WIDTH, left, TOP_PADDING, this, OVF_BTN_TITLE);
+    this.div.appendChild(this.overflowBtn.div);
+    this.resize(this.overflowBtn);
+    // 2. create overflow list
+    this.overflowPopup = new MyDropdownList(OVF_POPUP_COL);
+  }
+  
+  this.showOverflowPopup = function(){
+    var parentDlg = getParentDialog(this.div);
+    
+    // "onOverflowBtn" - is an interface function
+    if(typeof i_am.masterObj.onOverflowBtn != 'undefined')
+      i_am.masterObj.onOverflowBtn();
 
-		if(i_am.overflowPopup.div.parentNode != document.body)
-			document.body.appendChild(i_am.overflowPopup.div);
+    if(i_am.overflowPopup.div.parentNode != document.body)
+      document.body.appendChild(i_am.overflowPopup.div);
 
-		i_am.overflowPopup.show(i_am.overflowBtn, "right", null, parentDlg, false);
-	}
-	// END "overflow" --------
+    i_am.overflowPopup.show(i_am.overflowBtn, "right", null, parentDlg, false);
+  }
+  // END "overflow" --------
 
-	
-	// Toolbar constructor's body
-	this.create();
+  
+  // Toolbar constructor's body
+  this.create();
 }
 
 /*****************************************
 * PopupHandler
 *****************************************/
 var PopupHandler = {
-	CLOSE_TIMEOUT : 500,
-	popupDiv : null,
-	parentDlg : null,
-	oldOnKeyUp : null,
-	oldOnClick : null,
-	timerid  : 0,
-	firstClick : true, // prevents a closing from button's onmouseup 
-	
-	isAutoHide : true,
-	onHideCallback : null,
-	
-	// FF: use fixed position to overcome lack of caret in input fields.
-	x : 0,
-	y : 0,
-	oldOnScroll : null,
+  CLOSE_TIMEOUT : 500,
+  popupDiv : null,
+  parentDlg : null,
+  oldOnKeyUp : null,
+  oldOnClick : null,
+  timerid  : 0,
+  firstClick : true, // prevents a closing from button's onmouseup 
+  
+  isAutoHide : true,
+  onHideCallback : null,
+  
+  // FF: use fixed position to overcome lack of caret in input fields.
+  x : 0,
+  y : 0,
+  oldOnScroll : null,
 
-	overflowPopup : null,
-	noCloseTimeout : false,
-	
-	// div is a popup
-	// alignment: left, center, right, inside
-	// hotspot is a control object
-	// onHideCallback - not required
-	showRelatively : function(hotspot, alignment, div, autohide, parentDlg, onHideCallback, noCloseTimeout) {
-		// only 1 popup can be opened concurrently, except the overflow popup
-		if(this.popupDiv != null)
-			this.hide(typeof hotspot.isOverflowed != 'undefined' && hotspot.isOverflowed);
-		// above the overflow popup
-		if(this.overflowPopup != null) { 
-			div.style.zIndex = this.overflowPopup.style.zIndex + 1; 
-		}
-		// set popup's parentDlg
-		if(parentDlg != null)
-			parentDlg.appendChild(div);
-		else
-			document.body.appendChild(div);
-		
-		this.align(hotspot, alignment, div, autohide, parentDlg);
+  overflowPopup : null,
+  noCloseTimeout : false,
+  
+  // div is a popup
+  // alignment: left, center, right, inside
+  // hotspot is a control object
+  // onHideCallback - not required
+  showRelatively : function(hotspot, alignment, div, autohide, parentDlg, onHideCallback, noCloseTimeout) {
+    // only 1 popup can be opened concurrently, except the overflow popup
+    if(this.popupDiv != null)
+      this.hide(typeof hotspot.isOverflowed != 'undefined' && hotspot.isOverflowed);
+    // above the overflow popup
+    if(this.overflowPopup != null) { 
+      div.style.zIndex = this.overflowPopup.style.zIndex + 1; 
+    }
+    // set popup's parentDlg
+    if(parentDlg != null)
+      parentDlg.appendChild(div);
+    else
+      document.body.appendChild(div);
+    
+    this.align(hotspot, alignment, div, autohide, parentDlg);
 
-		// set new div  data
-		this.popupDiv = div;
-		this.parentDlg = parentDlg;
-		this.onHideCallback = onHideCallback;
-		this.noCloseTimeout = noCloseTimeout;
-		// make visible
-		this._show(autohide);
+    // set new div  data
+    this.popupDiv = div;
+    this.parentDlg = parentDlg;
+    this.onHideCallback = onHideCallback;
+    this.noCloseTimeout = noCloseTimeout;
+    // make visible
+    this._show(autohide);
 
     setTimeout("PopupHandler.setFocusInInput()", 50);
-	},
-	show : function(div, autohide) {
-		this.popupDiv = div;
-		this._show(autohide);
-	},
-	_show : function(autohide) {
-		if(typeof autohide == 'undefined' || autohide) 
-			this.isAutoHide = true;
-		else
-			this.isAutoHide = false;
-		this.setHandlers();
-		
-		this.firstClick = true;
-		this.popupDiv.style.display = "block";
-		this.popupDiv.style.visibility = "visible";
-		Tooltip.hide(true);	
-	},
-	// allows to make animation
-	align : function (hotspot, alignment, div, autohide, parentDlg) {
-		var OFFSET_Y = 7;
+  },
+  show : function(div, autohide) {
+    this.popupDiv = div;
+    this._show(autohide);
+  },
+  _show : function(autohide) {
+    if(typeof autohide == 'undefined' || autohide) 
+      this.isAutoHide = true;
+    else
+      this.isAutoHide = false;
+    this.setHandlers();
+    
+    this.firstClick = true;
+    this.popupDiv.style.display = "block";
+    this.popupDiv.style.visibility = "visible";
+    Tooltip.hide(true); 
+  },
+  // allows to make animation
+  align : function (hotspot, alignment, div, autohide, parentDlg) {
+    var OFFSET_Y = 7;
 
-		var relObj = hotspot.div || hotspot.obj || hotspot;
+    var relObj = hotspot.div || hotspot.obj || hotspot;
 
     var pos;
-    if (Browser.ie && (!parentDlg || isParentDialogOnPage(parentDlg))) // (may be problem with	findObjectPosition for IE?)	
-		  pos = this.findObjectPosition(relObj, document.body);
-		else
-  	  pos = this.findObjectPosition(relObj, parentDlg);
+    if (Browser.ie && (!parentDlg || isParentDialogOnPage(parentDlg))) // (may be problem with  findObjectPosition for IE?) 
+      pos = this.findObjectPosition(relObj, document.body);
+    else
+      pos = this.findObjectPosition(relObj, parentDlg);
 
     // 1. inside ("hotspot" - here "container)
     if(alignment == 'inside') {
@@ -1292,205 +1292,205 @@ var PopupHandler = {
       this.y = pos.top + yDelta;
     }
     // 2. left
-		else if(alignment == 'left')
-			this.x = pos.left;
-		// 3. center 	 
-		else if(alignment == 'center') 
-			this.x = pos.left - (div.clientWidth - hotspot.width) / 2;
-		// 4. right
-		else                           
-			this.x = pos.left - (div.clientWidth - hotspot.width);
-		
-		// correct position
-		if (alignment == 'inside') {
-			var onScrPos = getElemInsideScreenPosition(this.x, this.y, div);
-			this.x = onScrPos[0];
-			this.y = onScrPos[1];
-		}
-		else { // under or over hotspot
-			var scXY = getScrollXY();
-			var wndSize = getWindowSize();
-			this.y = pos.top + hotspot.height + OFFSET_Y;
-			if (wndSize[1] < this.y - scXY[1] + div.clientHeight) 
-				this.y = pos.top - div.clientHeight - OFFSET_Y; // flip if need
-		}
-		
-	  div.style.left = this.x + "px";
-	  div.style.top = this.y + "px";
-	},
-	
-	// not to hide the overflow popup
-	hide : function(isOverflowed) {
-		if(this.popupDiv == null)
-			return;
-			
-		if(isOverflowed && this.overflowPopup == null) {
-				this.overflowPopup = this.popupDiv;
-		}
-		else {
-			this.popupDiv.style.visibility = "hidden";
-  //		document.body.appendChild(this.popupDiv);
-			if(this.overflowPopup != null) {
-				this.overflowPopup.style.visibility = "hidden";
-	  		document.body.appendChild(this.overflowPopup);
-				this.overflowPopup = null;
-			}
-		}
-		this.resetHandlers();
-	},
-	suspendedHide : function() {
-		clearInterval(PopupHandler.timerid);
-		PopupHandler.hide();
-	},
-	// find position relative to the document.body (by default)
-	// or relative to the some ancestor.
-	findObjectPosition : function(obj, tillParent) {
-		var curLeft = 0;
-		var curTop = 0;
-		tillParent = tillParent || document.body;
-		
-		if (obj.offsetParent) {
-			while (tillParent != obj && obj.offsetParent) { // is "tillParent != obj" right comparation?!!
-				curLeft += obj.offsetLeft;
-				curTop += obj.offsetTop;
-				obj = obj.offsetParent;
-				
-				// hack: div#wrapper has relative position that makes calculation wrong
-				// breaking on div#wrapper gives right result
-				if (obj.id == "wrapper") {
-					break;
-				}
-			}
-		}
-		else {
-			if (obj.x) curLeft = obj.x;
-			if (obj.y) curTop = obj.y;
-		}
-		return {left: curLeft, top: curTop};
-	},
-	setHandlers : function() {
-		if(this.isAutoHide) {
-			this.oldOnClick = document.onclick;
-			document.onclick = this._onclick;
-			
-			this.popupDiv.onmouseover = this._onmouseover;
-			this.popupDiv.onmouseout  = this._onmouseout;
-		}
+    else if(alignment == 'left')
+      this.x = pos.left;
+    // 3. center   
+    else if(alignment == 'center') 
+      this.x = pos.left - (div.clientWidth - hotspot.width) / 2;
+    // 4. right
+    else                           
+      this.x = pos.left - (div.clientWidth - hotspot.width);
+    
+    // correct position
+    if (alignment == 'inside') {
+      var onScrPos = getElemInsideScreenPosition(this.x, this.y, div);
+      this.x = onScrPos[0];
+      this.y = onScrPos[1];
+    }
+    else { // under or over hotspot
+      var scXY = getScrollXY();
+      var wndSize = getWindowSize();
+      this.y = pos.top + hotspot.height + OFFSET_Y;
+      if (wndSize[1] < this.y - scXY[1] + div.clientHeight) 
+        this.y = pos.top - div.clientHeight - OFFSET_Y; // flip if need
+    }
+    
+    div.style.left = this.x + "px";
+    div.style.top = this.y + "px";
+  },
+  
+  // not to hide the overflow popup
+  hide : function(isOverflowed) {
+    if(this.popupDiv == null)
+      return;
+      
+    if(isOverflowed && this.overflowPopup == null) {
+        this.overflowPopup = this.popupDiv;
+    }
+    else {
+      this.popupDiv.style.visibility = "hidden";
+  //    document.body.appendChild(this.popupDiv);
+      if(this.overflowPopup != null) {
+        this.overflowPopup.style.visibility = "hidden";
+        document.body.appendChild(this.overflowPopup);
+        this.overflowPopup = null;
+      }
+    }
+    this.resetHandlers();
+  },
+  suspendedHide : function() {
+    clearInterval(PopupHandler.timerid);
+    PopupHandler.hide();
+  },
+  // find position relative to the document.body (by default)
+  // or relative to the some ancestor.
+  findObjectPosition : function(obj, tillParent) {
+    var curLeft = 0;
+    var curTop = 0;
+    tillParent = tillParent || document.body;
+    
+    if (obj.offsetParent) {
+      while (tillParent != obj && obj.offsetParent) { // is "tillParent != obj" right comparation?!!
+        curLeft += obj.offsetLeft;
+        curTop += obj.offsetTop;
+        obj = obj.offsetParent;
+        
+        // hack: div#wrapper has relative position that makes calculation wrong
+        // breaking on div#wrapper gives right result
+        if (obj.id == "wrapper") {
+          break;
+        }
+      }
+    }
+    else {
+      if (obj.x) curLeft = obj.x;
+      if (obj.y) curTop = obj.y;
+    }
+    return {left: curLeft, top: curTop};
+  },
+  setHandlers : function() {
+    if(this.isAutoHide) {
+      this.oldOnClick = document.onclick;
+      document.onclick = this._onclick;
+      
+      this.popupDiv.onmouseover = this._onmouseover;
+      this.popupDiv.onmouseout  = this._onmouseout;
+    }
     // to handle ESC in formPopups
-		this.oldOnKeyUp = document.onkeyup;
-  	document.onkeyup = this._onkeyup;
+    this.oldOnKeyUp = document.onkeyup;
+    document.onkeyup = this._onkeyup;
 
-		// FF: fixed position
-		if(this.isFixedPosition) {
-			this.oldOnScroll = window.onscroll
-			window.onscroll = this._onscroll;	
-		}
+    // FF: fixed position
+    if(this.isFixedPosition) {
+      this.oldOnScroll = window.onscroll
+      window.onscroll = this._onscroll; 
+    }
 
-		//window.onscroll
-		//document.onkeyup = this.onscroll;
-		//addEvent(document, 'scroll', this._onscroll, false);
-	},
-	resetHandlers : function() {
-		if(this.isAutoHide) {
-			document.onclick = this.oldOnClick;
-			this.popupDiv.onmouseover = null;
-			this.popupDiv.onmouseout = null;
-		}
-		document.onkeyup = this.oldOnKeyUp;
+    //window.onscroll
+    //document.onkeyup = this.onscroll;
+    //addEvent(document, 'scroll', this._onscroll, false);
+  },
+  resetHandlers : function() {
+    if(this.isAutoHide) {
+      document.onclick = this.oldOnClick;
+      this.popupDiv.onmouseover = null;
+      this.popupDiv.onmouseout = null;
+    }
+    document.onkeyup = this.oldOnKeyUp;
 
-		if(this.isFixedPosition) {
-			window.onscroll = this.oldOnScroll;
-		}
+    if(this.isFixedPosition) {
+      window.onscroll = this.oldOnScroll;
+    }
 
-		this.popupDiv = null;
-	},
-	
-	checkHidingDiv : function(div) {
-	  if(this.parentDlg == null)
-	    return;
-	  if(this.parentDlg.id == div.id)
-	    this.hide();
-	},
-	
-	// handlers --
-	_onkeyup : function(evt) {
-		var $t = PopupHandler;
-		evt = (evt) ? evt : event;
-		var charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : 
-			((evt.which) ? evt.which : 0));
-		if (charCode == 27) {
-			$t.hide();
+    this.popupDiv = null;
+  },
+  
+  checkHidingDiv : function(div) {
+    if(this.parentDlg == null)
+      return;
+    if(this.parentDlg.id == div.id)
+      this.hide();
+  },
+  
+  // handlers --
+  _onkeyup : function(evt) {
+    var $t = PopupHandler;
+    evt = (evt) ? evt : event;
+    var charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : 
+      ((evt.which) ? evt.which : 0));
+    if (charCode == 27) {
+      $t.hide();
       // used by popupform if it requires to handle ESC
-		  if($t.onHideCallback && typeof $t.onHideCallback == "function")
-		    $t.onHideCallback();
-			stopEventPropagation(evt);	
-		}
-	},
-	_onclick : function(evt) {
-		if(PopupHandler.firstClick)	{
-			PopupHandler.firstClick = false;
-			return;
-		}
-		var evt = evt || window.event;
-		var target = evt.target || evt.srcElement; 
-		if (PopupHandler.contains(PopupHandler.popupDiv, target) == false )
-			PopupHandler.hide();
-	},
-	_onmouseover : function(event) {
-		var related;
-		if (window.event) related = window.event.toElement;
-		else related = event.relatedTarget;
-		if (PopupHandler.popupDiv == related || PopupHandler.contains(PopupHandler.popupDiv, related))
-			clearInterval(PopupHandler.timerid);
-	},
-	_onmouseout : function(event) {
-		var $t = PopupHandler;
-		var related;
-		if (window.event) related = window.event.toElement;
-		else related = event.relatedTarget;
-		if(related == null)
-			return;
+      if($t.onHideCallback && typeof $t.onHideCallback == "function")
+        $t.onHideCallback();
+      stopEventPropagation(evt);  
+    }
+  },
+  _onclick : function(evt) {
+    if(PopupHandler.firstClick) {
+      PopupHandler.firstClick = false;
+      return;
+    }
+    var evt = evt || window.event;
+    var target = evt.target || evt.srcElement; 
+    if (PopupHandler.contains(PopupHandler.popupDiv, target) == false )
+      PopupHandler.hide();
+  },
+  _onmouseover : function(event) {
+    var related;
+    if (window.event) related = window.event.toElement;
+    else related = event.relatedTarget;
+    if (PopupHandler.popupDiv == related || PopupHandler.contains(PopupHandler.popupDiv, related))
+      clearInterval(PopupHandler.timerid);
+  },
+  _onmouseout : function(event) {
+    var $t = PopupHandler;
+    var related;
+    if (window.event) related = window.event.toElement;
+    else related = event.relatedTarget;
+    if(related == null)
+      return;
 
-		if ($t.popupDiv != related && !$t.contains($t.popupDiv, related)) {
-			if ($t.noCloseTimeout)
-				$t.hide();
-			else	
-				$t.timerid = setInterval($t.suspendedHide, $t.CLOSE_TIMEOUT);
-		}
-	},
-	setMouseoutTimeout : function(mouseoutTimeout) {
-		this.mouseoutTimeout = mouseoutTimeout;
-	},
-	// used for FF and position=fixed. It is a hack for cursor in <input> over iframe
-	_onscroll : function(event) {
-		var scrl = getScrollXY();
-		PopupHandler.popupDiv.style.left = PopupHandler.x - scrl[0];
-		PopupHandler.popupDiv.style.top = PopupHandler.y - scrl[1];
-	},
-	setFocusInInput : function() {
-		var inputs = PopupHandler.popupDiv.getElementsByTagName('input');
-		var input = null;
-		for(var i = 0; i < inputs.length; i++) {
-		  if(inputs[i].type == "text" || inputs[i].type == "file") {
-		    input = inputs[i];
-		    break;
-		  }
-		}
-		if(input) {
-		  try {
-		    input.focus();
-		  } catch(e){};
-		}
-	},
-	// Return true if node a contains node b.
-	contains : function (a, b) {
-		if(a == null || b == null)
-			return false;
-		while (b.parentNode)
-			if ((b = b.parentNode) == a) return true;
-		return false;
-	},
-	isVisible : function() {
-		return this.popupDiv != null && this.popupDiv.style.visibility == "visible";
-	}
+    if ($t.popupDiv != related && !$t.contains($t.popupDiv, related)) {
+      if ($t.noCloseTimeout)
+        $t.hide();
+      else  
+        $t.timerid = setInterval($t.suspendedHide, $t.CLOSE_TIMEOUT);
+    }
+  },
+  setMouseoutTimeout : function(mouseoutTimeout) {
+    this.mouseoutTimeout = mouseoutTimeout;
+  },
+  // used for FF and position=fixed. It is a hack for cursor in <input> over iframe
+  _onscroll : function(event) {
+    var scrl = getScrollXY();
+    PopupHandler.popupDiv.style.left = PopupHandler.x - scrl[0];
+    PopupHandler.popupDiv.style.top = PopupHandler.y - scrl[1];
+  },
+  setFocusInInput : function() {
+    var inputs = PopupHandler.popupDiv.getElementsByTagName('input');
+    var input = null;
+    for(var i = 0; i < inputs.length; i++) {
+      if(inputs[i].type == "text" || inputs[i].type == "file") {
+        input = inputs[i];
+        break;
+      }
+    }
+    if(input) {
+      try {
+        input.focus();
+      } catch(e){};
+    }
+  },
+  // Return true if node a contains node b.
+  contains : function (a, b) {
+    if(a == null || b == null)
+      return false;
+    while (b.parentNode)
+      if ((b = b.parentNode) == a) return true;
+    return false;
+  },
+  isVisible : function() {
+    return this.popupDiv != null && this.popupDiv.style.visibility == "visible";
+  }
 }
