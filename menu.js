@@ -12062,7 +12062,10 @@ var LoadingIndicator = {
     }
     
     setTimeout($t.animate, 20);
-  }
+  },
+	isVisible : function() {
+		return (this.loadingDiv != null && isVisible(this.loadingDiv));
+	}
 }
 
 /*****************************************
@@ -13059,6 +13062,15 @@ function toggleLocationAwareness(on) {
       window.location.replace(addOrReplaceUrlParam(locUrl, '-locSort', 'y'));
     } 
     else {
+			 // FF requires timeout (5 sec) to retrieve geolocation data
+			 if (!LoadingIndicator.isVisible()) {
+			 	 LoadingIndicator.show();
+				 setTimeout(function f() { toggleLocationAwareness(on); }, 5000);
+				 return;
+			 }
+			 else
+			   LoadingIndicator.hide();
+			
       alert('You disabled location detection in your browser. To see location-based results, enable it and refresh the page.');
     }
   } else {
@@ -13162,53 +13174,32 @@ var EndlessPager = {
 	}
 }
 
-function getMoreBoards(e, id, exclude, uri) {
+function getMoreBoards(e, id, exclude) {
   e = getDocumentEvent(e);
   
-  var s = "";
-  if (exclude) {
-    var tokens = exclude.split(',');
-    var len = tokens.length;
-    for(var i = 0; i < len; i++) {
-      var tok = trim(tokens[i]);
-      s += '&-exclude=' + tok;    
-    }
+  var tokens = exclude.split(',');
+  var len = tokens.length;
+  var s;
+  for(var i = 0; i < len; i++) {
+    var tok = trim(tokens[i]);
+    s += '&-exclude=' + tok;    
   }
-  if (uri)
-    params = 'uri=' + encodeURIComponent(uri);
-  else
-    params = 'type=http://www.hudsonfog.com/voc/model/portal/ImageResource';
-  params += '&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y' + s;
+  params = 'type=http://www.hudsonfog.com/voc/model/portal/ImageResource&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y' + s;
   var td = document.getElementById(id);
 
-  if (uri)
-    postRequest(e, "v.html", params, td, getTargetElement(e), onBoardsLoaded);
-  else
-    postRequest(e, "l.html", params, td, getTargetElement(e), onBoardsLoaded); 
+  postRequest(e, "l.html", params, td, getTargetElement(e), onBoardsLoaded); 
   function onBoardsLoaded(event, td, hotspot, content) {
     var d = document.createElement("div");
     d.innerHTML = content;
     var newUL = d.getElementsByTagName("ul");
-    var idx = -1;
-    for (var i=0; i<newUL.length; i++) {
-      var className = newUL[i].className;
-      if (className != null  &&  className == 'sortable')
-        idx = i;
-    }
-    if (idx == -1)
-      return stopEventPropagation(e);
     var ul = td.getElementsByTagName("ul");
-    var count = newUL[idx].getElementsByTagName("li").length;
-    ul[0].innerHTML += newUL[idx].innerHTML;
-    var titleDiv = td.tagName.toLowerCase() == 'td' ? td.getElementsByTagName("div") : td.getElementsByTagName("span");
+    var count = newUL[0].getElementsByTagName("li").length;
+    ul[0].innerHTML += newUL[0].innerHTML;
+    var titleDiv = td.getElementsByTagName("div");
     for (var i=0; i<titleDiv.length; i++) {
       var t = titleDiv[i].className;
-      if (t != null) {
-        if (t == 'boardsTitle')  
-          titleDiv[i].innerHTML = (count + 4) + " boards";
-        else if (t == 'moreBoards_tab')
-          titleDiv[i].innerHTML = '';
-      }    
+      if (t != null  &&  t == 'boardsTitle') 
+        titleDiv[i].innerHTML = (count + 4) + " boards";
     }
     hotspot.onclick = '';
   } 

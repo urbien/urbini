@@ -87,7 +87,9 @@ String.prototype.trim = function() {
 String.prototype.ltrim = function() {
   return this.replace(/^\s+/,"");
 }
-String.prototype.rtrim = function() {
+String.prototype.rtrim = function(toRemoveTrailedBR) {
+	if (toRemoveTrailedBR)
+		return this.replace(/\s+$/,"").replace(/(<br[^>]*>)+$/, "");
   return this.replace(/\s+$/,"");
 }
 // removes tags
@@ -352,7 +354,8 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
       if (!location) {
         var response = responseXML.documentElement;
         location = response.getElementById('$redirect').getAttribute('href');
-        if (!location)
+
+				if (!location)
           return;
       }
 
@@ -1427,12 +1430,37 @@ var ExecJS = {
   }
 }
 
-function loadScript(scriptUrl, scriptDiv, callback){
-  var el = document.createElement('script');
-  el.type = 'text/javascript';
-  el.src = scriptUrl;
-  el.async = false; // insure that previous required JS file was downloaded (like "jQery")
-  if (callback) {
+function asyncLoadScript(scriptUrl, scriptDiv, callback) {
+  setTimeout(function() {
+    loadScript(scriptUrl/*, scriptDiv*/, callback, true);
+  }, 0);
+}
+function loadScript (scriptUrl, callback, isAsync){
+  loadScriptOrStyle (scriptUrl, callback, isAsync);
+}
+function loadStyle (url, callback/*, isAsync*/){
+  loadScriptOrStyle (url, callback, true);
+}
+
+// TODO: try to use it in "ondemand" code
+function loadScriptOrStyle (url, callback, isAsync) {
+	var el;
+  var isJs = url.indexOf(".css") == -1;
+	if (isJs) {
+  	el = document.createElement('script');
+  	el.type = 'text/javascript';
+  	el.src = url;
+  	// false - insure that previous required JS file was downloaded (like "jQery")
+		el.async = (isAsync == true) ? true : false;
+	}
+	else {
+		el = document.createElement('link');
+		el.setAttribute('rel', 'stylesheet');
+		el.setAttribute('type', 'text/css');
+		el.setAttribute('href', url);
+	}
+	
+	if (callback) {
     // most browsers
     el.onload = callback;
     // IE 6-7
@@ -1443,9 +1471,10 @@ function loadScript(scriptUrl, scriptDiv, callback){
       }
     }
   }
-  if (!scriptDiv)
-    scriptDiv = document.body;
-  scriptDiv.appendChild(el);
+//  if (!scriptDiv)
+//    scriptDiv = document.body;
+//  scriptDiv.appendChild(el);
+    document.body.appendChild(el);
 }
 
 //************************************************
@@ -1910,11 +1939,14 @@ function isElemOfTag(elem, tagName) {
 }
 
 // note: meanwhile it is for vertical scrolling only!
-function isElemInView(elem) {
+// margin: default 0
+function isElemInViewport(elem, margin) {
   var topEdge = getScrollXY()[1];
   var bottomEdge = topEdge + getWindowSize()[1];
+	if (typeof margin == "undefined")
+	  margin = 0;
   var y = findPosY(elem);
-  return (y >= topEdge && y <= bottomEdge - elem.offsetHeight);
+  return (y >= topEdge + margin && y <= bottomEdge - elem.offsetHeight - margin);
 }
 
 function setCaretPosition(elem, caretPos) {
