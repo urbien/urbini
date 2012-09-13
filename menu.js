@@ -13185,32 +13185,53 @@ var EndlessPager = {
 	}
 }
 
-function getMoreBoards(e, id, exclude) {
+function getMoreBoards(e, id, exclude, uri) {
   e = getDocumentEvent(e);
   
-  var tokens = exclude.split(',');
-  var len = tokens.length;
-  var s;
-  for(var i = 0; i < len; i++) {
-    var tok = trim(tokens[i]);
-    s += '&-exclude=' + tok;    
+  var s = "";
+  if (exclude) {
+    var tokens = exclude.split(',');
+    var len = tokens.length;
+    for(var i = 0; i < len; i++) {
+      var tok = trim(tokens[i]);
+      s += '&-exclude=' + tok;    
+    }
   }
-  params = 'type=http://www.hudsonfog.com/voc/model/portal/ImageResource&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y' + s;
+  if (uri)
+    params = 'uri=' + encodeURIComponent(uri);
+  else
+    params = 'type=http://www.hudsonfog.com/voc/model/portal/ImageResource';
+  params += '&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y' + s;
   var td = document.getElementById(id);
 
-  postRequest(e, "l.html", params, td, getTargetElement(e), onBoardsLoaded); 
+  if (uri)
+    postRequest(e, "v.html", params, td, getTargetElement(e), onBoardsLoaded);
+  else
+    postRequest(e, "l.html", params, td, getTargetElement(e), onBoardsLoaded); 
   function onBoardsLoaded(event, td, hotspot, content) {
     var d = document.createElement("div");
     d.innerHTML = content;
     var newUL = d.getElementsByTagName("ul");
+    var idx = -1;
+    for (var i=0; i<newUL.length; i++) {
+      var className = newUL[i].className;
+      if (className != null  &&  className == 'sortable')
+        idx = i;
+    }
+    if (idx == -1)
+      return stopEventPropagation(e);
     var ul = td.getElementsByTagName("ul");
-    var count = newUL[0].getElementsByTagName("li").length;
-    ul[0].innerHTML += newUL[0].innerHTML;
-    var titleDiv = td.getElementsByTagName("div");
+    var count = newUL[idx].getElementsByTagName("li").length;
+    ul[0].innerHTML += newUL[idx].innerHTML;
+    var titleDiv = td.tagName.toLowerCase() == 'td' ? td.getElementsByTagName("div") : td.getElementsByTagName("span");
     for (var i=0; i<titleDiv.length; i++) {
       var t = titleDiv[i].className;
-      if (t != null  &&  t == 'boardsTitle') 
-        titleDiv[i].innerHTML = (count + 4) + " boards";
+      if (t != null) {
+        if (t == 'boardsTitle')  
+          titleDiv[i].innerHTML = (count + 4) + " boards";
+        else if (t == 'moreBoards_tab')
+          titleDiv[i].innerHTML = '';
+      }    
     }
     hotspot.onclick = '';
   } 
