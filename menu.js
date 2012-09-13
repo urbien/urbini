@@ -13029,7 +13029,18 @@ function showLocalActivityButtons() {
       return;
     
     var latLon = resourceLoc.innerHTML.split(",");
-    button2.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\">Activity near here</a>';
+    button2.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\">Activity nearby</a>';
+
+    var button3 = document.getElementById('trees_near_here');
+    if (button3)
+      button3.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Tree?-locSort=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\"><img src=\"icons/classes/Tree.png\" height=\"20\" /> Trees nearby</a>';
+
+    var button4 = document.getElementById('311_near_here');
+    if (button4)
+      button4.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Forestry311Call?-locSort=y&-$action=searchLocal&-list=y&-loc=' + latLon[0] + ',' + latLon[1] + '\"><img src=\"icons/classes/AgencyCalls.png\" height=\"20\" /> calls nearby</a>';
+    var button5 = document.getElementById('wo_near_here');
+    if (button5)
+      button5.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/ForestryWorkOrder?-locSort=y&-$action=searchLocal&-list=y&-loc=' + latLon[0] + ',' + latLon[1] + '\">Work orders nearby</a>';
   }
 }
 
@@ -13188,32 +13199,53 @@ var EndlessPager = {
 	}
 }
 
-function getMoreBoards(e, id, exclude) {
+function getMoreBoards(e, id, exclude, uri) {
   e = getDocumentEvent(e);
   
-  var tokens = exclude.split(',');
-  var len = tokens.length;
-  var s;
-  for(var i = 0; i < len; i++) {
-    var tok = trim(tokens[i]);
-    s += '&-exclude=' + tok;    
+  var s = "";
+  if (exclude) {
+    var tokens = exclude.split(',');
+    var len = tokens.length;
+    for(var i = 0; i < len; i++) {
+      var tok = trim(tokens[i]);
+      s += '&-exclude=' + tok;    
+    }
   }
-  params = 'type=http://www.hudsonfog.com/voc/model/portal/ImageResource&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y' + s;
+  if (uri)
+    params = 'uri=' + encodeURIComponent(uri);
+  else
+    params = 'type=http://www.hudsonfog.com/voc/model/portal/ImageResource';
+  params += '&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y' + s;
   var td = document.getElementById(id);
 
-  postRequest(e, "l.html", params, td, getTargetElement(e), onBoardsLoaded); 
+  if (uri)
+    postRequest(e, "v.html", params, td, getTargetElement(e), onBoardsLoaded);
+  else
+    postRequest(e, "l.html", params, td, getTargetElement(e), onBoardsLoaded); 
   function onBoardsLoaded(event, td, hotspot, content) {
     var d = document.createElement("div");
     d.innerHTML = content;
     var newUL = d.getElementsByTagName("ul");
+    var idx = -1;
+    for (var i=0; i<newUL.length; i++) {
+      var className = newUL[i].className;
+      if (className != null  &&  className == 'sortable')
+        idx = i;
+    }
+    if (idx == -1)
+      return stopEventPropagation(e);
     var ul = td.getElementsByTagName("ul");
-    var count = newUL[0].getElementsByTagName("li").length;
-    ul[0].innerHTML += newUL[0].innerHTML;
-    var titleDiv = td.getElementsByTagName("div");
+    var count = newUL[idx].getElementsByTagName("li").length;
+    ul[0].innerHTML += newUL[idx].innerHTML;
+    var titleDiv = td.tagName.toLowerCase() == 'td' ? td.getElementsByTagName("div") : td.getElementsByTagName("span");
     for (var i=0; i<titleDiv.length; i++) {
       var t = titleDiv[i].className;
-      if (t != null  &&  t == 'boardsTitle') 
-        titleDiv[i].innerHTML = (count + 4) + " boards";
+      if (t != null) {
+        if (t == 'boardsTitle')  
+          titleDiv[i].innerHTML = (count + 4) + " boards";
+        else if (t == 'moreBoards_tab')
+          titleDiv[i].innerHTML = '';
+      }    
     }
     hotspot.onclick = '';
   } 
