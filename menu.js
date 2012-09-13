@@ -13078,6 +13078,20 @@ function toggleLocationAwareness(on) {
   }
 }
 
+function paintPolygon(map, shapeDiv) {
+	var json = eval(shapeDiv.innerHTML);
+	var numRings = json.length;
+	for (var i = 0; i < numRings; i++) {
+		var polygon = json[i];
+		var p = L.polygon(polygon).addTo(map);
+//    var p = L.polygon(polygon, {
+//      color: 'red',
+//      fillColor: '#f03',
+//      fillOpacity: 0.5
+//    }).addTo(map);
+	}
+}
+
 //***********************************
 // EndlessPager for masonry layout
 // two cases: 1)masonry 2) blog
