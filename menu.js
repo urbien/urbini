@@ -1016,7 +1016,7 @@ function addCurrentDashboardAndCurrentTab(target) {
     if (!base  ||  a.indexOf(base[0].href) == -1)
       return;
   }
-  var addDashboardId = a.indexOf('-d=') == -1;
+  var addDashboardId = false; //a.indexOf('-d=') == -1;
   if (addDashboardId) {
     var div = document.getElementById('dashboardCredentials');
     if (!div)
@@ -13222,8 +13222,13 @@ function getMoreBoards(e, id, exclude, uri) {
       return stopEventPropagation(e);
     var ul = td.getElementsByTagName("ul");
     var count = newUL[idx].getElementsByTagName("li").length;
-    ul[0].innerHTML += newUL[idx].innerHTML;
-    var titleDiv = td.tagName.toLowerCase() == 'td' ? td.getElementsByTagName("div") : td.getElementsByTagName("span");
+    var isTD = td.tagName.toLowerCase() == 'td';
+    var titleDiv = isTD ? td.getElementsByTagName("div") : td.getElementsByTagName("span");
+    if (isTD)
+      ul[0].innerHTML += newUL[idx].innerHTML;
+    else
+      ul[0].innerHTML = newUL[idx].innerHTML;
+
     for (var i=0; i<titleDiv.length; i++) {
       var t = titleDiv[i].className;
       if (t != null) {
