@@ -51,6 +51,7 @@
         <errorMessage additems="y"/>
         <buyableTags />
         <categories/>
+        <superMap />
         <siteResourceList />
     	  <uploadAttachment/>
         <createResources/>
