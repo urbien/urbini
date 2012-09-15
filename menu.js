@@ -11713,6 +11713,14 @@ function showHide(id, event) {
   return stopEventPropagation(event);
 }
 
+function changeMoreForLess(id, s1, s2) {
+  var spn = document.getElementById(id);
+  var s = spn.innerHTML;
+  if (s == s1) 
+    spn.innerHTML = s2;
+  else 
+    spn.innerHTML = s1;
+}
 function showHideDidYouMean(event) {
   showHide('didYouMean', event);
   var img = document.getElementById('fts_arrow'); 
@@ -13031,16 +13039,16 @@ function showLocalActivityButtons() {
     var latLon = resourceLoc.innerHTML.split(",");
     button2.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\">Activity nearby</a>';
 
-    var button3 = document.getElementById('trees_near_here');
-    if (button3)
-      button3.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Tree?-locSort=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\"><img src=\"icons/classes/Tree.png\" height=\"20\" /> Trees nearby</a>';
-
-    var button4 = document.getElementById('311_near_here');
-    if (button4)
-      button4.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Forestry311Call?-locSort=y&-$action=searchLocal&-list=y&-loc=' + latLon[0] + ',' + latLon[1] + '\"><img src=\"icons/classes/AgencyCalls.png\" height=\"20\" /> calls nearby</a>';
-    var button5 = document.getElementById('wo_near_here');
-    if (button5)
-      button5.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/ForestryWorkOrder?-locSort=y&-$action=searchLocal&-list=y&-loc=' + latLon[0] + ',' + latLon[1] + '\">Work orders nearby</a>';
+//    var button3 = document.getElementById('trees_near_here');
+//    if (button3)
+//      button3.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Tree?-locSort=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\"><img src=\"icons/classes/Tree.png\" height=\"20\" /> Trees nearby</a>';
+//
+//    var button4 = document.getElementById('311_near_here');
+//    if (button4)
+//      button4.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Forestry311Call?-locSort=y&-$action=searchLocal&-list=y&-loc=' + latLon[0] + ',' + latLon[1] + '\"><img src=\"icons/classes/AgencyCalls.png\" height=\"20\" /> calls nearby</a>';
+//    var button5 = document.getElementById('wo_near_here');
+//    if (button5)
+//      button5.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/ForestryWorkOrder?-locSort=y&-$action=searchLocal&-list=y&-loc=' + latLon[0] + ',' + latLon[1] + '\">Work orders nearby</a>';
   }
 }
 
@@ -13234,8 +13242,10 @@ function getMoreBoards(e, id, exclude, uri) {
       if (t != null) {
         if (t == 'boardsTitle')  
           titleDiv[i].innerHTML = (count + 4) + " boards";
-        else if (t == 'moreBoards_tab')
+        else if (t == 'moreBoards_tab') {
           titleDiv[i].innerHTML = '';
+          titleDiv[i].className = '';
+        }
       }    
     }
     hotspot.onclick = '';
