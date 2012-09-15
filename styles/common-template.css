@@ -1748,7 +1748,7 @@ table.printFB {
 .userLogin .button, #ropLeft .button { display: block; padding: 7px; margin-top: 4px; text-align: left; font-size: 16px; font-weight: normal; color: &[Color];; }
 .userLogin .button img, #ropLeft .button img { float: left; margin-right: 7px; }
 
-#ropLeft h3 {margin: 0px -10px 5px -10px; padding: 5px 0px 5px 10px; background: #ccc; font-weight: normal;}
+#ropLeft h3 {margin: 0px -5px 5px -5px; padding: 5px 0px 5px 10px; background: #ccc; font-weight: normal;}
 #ropLeft .button { margin: 0px 5px 10px 5px; white-space: normal; }
 
 .userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
@@ -2189,7 +2189,8 @@ td.pBGr { background-color: #eeeeee;
 #siteResourceList .input { border: 1px solid &[PrimaryColor_1];; }
 #siteResourceList .pointer, .panel_block .pointer { border: none; background: transparent; }
 
-.cp_item_left, .cp_item_right { position: relative; white-space:nowrap; margin-left: 5px; }
+.cp_item_left { position: relative; white-space:nowrap; }
+.cp_item_right { position: relative; white-space:nowrap; margin-left: 5px; }
 /*.cp_item_left { min-height: 30px; }*/
 .backlink_counter { position: absolute; pointer-events: none; }
 .cp_item_right .backlink_counter { top: -7px; left: 15px; }
@@ -2735,3 +2736,5 @@ td #corePageContent { min-height: 600px;}
 #resourceList #listChooser { padding-left:10px; padding-right:10px; color: #757575}
 #resourceList #listChooser a {color: #f52000}
 #resourceList #listChooser a.current_backlink {color: #757575}
+#moreNearby div {padding-top: 17px;}
+#cp td {vertical-align: top;}
