@@ -27,6 +27,7 @@
       <include name="include/commonFooter" alt="include/commonFooter.jsp" />
       <chatAutoStart/>
     </div>
+    <mapMaker />
   </div><!-- abc -->
   </div><!-- wrapper -->
 
@@ -43,8 +44,8 @@
     ]]>       
   </script>
   
-  <cityAdsPixel />
-  <clickburner />
+  <!--cityAdsPixel />
+  <clickburner /-->
   </body>
 </html>
 
