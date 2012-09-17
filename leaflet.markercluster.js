@@ -374,7 +374,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 //		}
 		
 		var size = this.color ? diameter + 10 : 40;
-		return new L.DivIcon({ html: html, className: 'marker-cluster ' + (custom ? 'marker-cluster-black': c), iconSize: new L.Point(size, size) });
+		return new L.DivIcon({ html: html, className: 'marker-cluster ' + (this.color ? 'marker-cluster-black': c), iconSize: new L.Point(size, size) });
 	},
 	
 	_bindEvents: function () {
