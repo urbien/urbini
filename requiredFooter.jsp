@@ -5,4 +5,5 @@
   <script src="richtext.js" language="JavaScript" type="text/javascript"></script>
   <script src="toolbar.js"  language="JavaScript" type="text/javascript"></script>
   <script src="browserEventHandling.js" language="JavaScript" type="text/javascript"></script>
+  <leaflet />
 </div>

@@ -9,7 +9,6 @@
   <getResource/>
   <link href=""  rel="image_src" />
 	<feed/>
-	<leaflet />
   <meta name="keywords" content=""></meta>
   <meta name="description" content=""></meta>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
