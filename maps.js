@@ -67,10 +67,16 @@ function paintPolygon(map, shapeDiv) {
   }
 }
 
-var minMapDensity = 0;
-var maxMapDensity = 10;
+var defaultMinMapDensity = 0;
+var defaultMaxMapDensity = 10;
+var minResolution = 0.01
 function getLeafletMapTileColor(d) {
-  var percentile = (d - minMapDensity) * 100 / (maxMapDensity - minMapDensity);
+  var min = minMapDensity || defaultMinMapDensity;
+  var max = maxMapDensity || defaultMaxMapDensity;
+  if (max < minResolution)
+    return getColorForPercentile(0);
+  
+  var percentile = (d - min) * 100 / (max - min);
   var color = getColorForPercentile(percentile);
 //  console.log("returning color " + color + " for percentile " + percentile);
   return color;
@@ -101,12 +107,12 @@ function getColorForPercentile(percentile) {
 
 function simpleStyle(feature) {
   return {
-      fillColor: '#ff7800',
+      fillColor: '#efefff',
       weight: 2,
       opacity: 1,
-      color: 'white',
+      color: 'blue',
       dashArray: '3',
-      fillOpacity: 0.7
+      fillOpacity: 0.4
   };
 }
 
@@ -126,25 +132,32 @@ function zoomToFeature(e) {
 }
 
 function addMapLegend(mapObj) {
+  var max = maxMapDensity || defaultMaxMapDensity;
+  if (max < minResolution)
+    return;
+  
   var legend = L.control({position: 'bottomright'});
   legend.onAdd = function (mapObj) {
-  var grades = [];
-  for (var i = 0; i < percentiles.length; i++) {
-    grades.push(Math.round(percentiles[i] * maxMapDensity) / 100);
-  }
-      var div = L.DomUtil.create('div', 'mapInfo mapLegend'),
+    var grades = [];
+    for (var i = 0; i < percentiles.length; i++) {
+      var grade = Math.round(percentiles[i] * maxMapDensity) / 100;
+      if (grade > 0)
+        grades.push(grade);
+    }
+    
+    var div = L.DomUtil.create('div', 'mapInfo mapLegend'),
 //          grades = percentiles,
-          grades,
-          labels = [];
-  
-      // loop through our density intervals and generate a label with a colored square for each interval
-      for (var i = 0; i < grades.length; i++) {
-          div.innerHTML +=
-              '<i style="background:' + getColorForPercentile(percentiles[i] + 0.01) + '"></i> ' +
-              grades[i] + (grades[i + 1] ? ' &ndash; ' + grades[i + 1] + '<br>' : '+');
-      }
-  
-      return div;
+        grades,
+        labels = [];
+
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+            '<p><i style="background:' + getColorForPercentile(percentiles[i] + 0.1) + '"></i> ' +
+            grades[i] + (grades[i + 1] ? ' &ndash; ' + grades[i + 1] : '+') + "</p>";
+    }
+
+    return div;
   };
   
   legend.addTo(mapObj);
