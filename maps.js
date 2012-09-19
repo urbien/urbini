@@ -128,7 +128,8 @@ function leafletDensityMapStyle(feature) {
 }
 
 function zoomToFeature(e) {
-  map.fitBounds(e.target.getBounds());
+  if (map)
+    map.fitBounds(e.target.getBounds());
 }
 
 function addMapLegend(mapObj) {
