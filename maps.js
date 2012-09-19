@@ -1,5 +1,23 @@
-var info;
-var basicInfo;
+var mapInfoObjs = [];
+
+function clearInfos(e) {
+  for (info in mapInfoObjs) {
+    mapInfoObjs[info].update();
+  }  
+}
+
+function updateInfosForLayer(layer) {
+  for (info in mapInfoObjs) {
+    if (layer.feature.properties)
+      mapInfoObjs[info].update(layer.feature.properties);
+  }
+}
+
+function updateInfosWithHTML(html) {
+  for (info in mapInfoObjs) {
+    mapInfoObjs[info].updateWithHTML(html);
+  }
+}
 
 function addBasicMapInfo(mapObj, init) {
   var mapInfo = L.control();
@@ -10,29 +28,46 @@ function addBasicMapInfo(mapObj, init) {
   };
 
   // method that we will use to update the control based on feature properties passed
-  mapInfo.update = function (html) {
+  mapInfo.update = function (properties) {
+    var html = properties ? properties.name : null;
+    this._div.innerHTML = html ? init + html : init;
+  };
+
+  mapInfo.updateWithHTML = function (html) {
     this._div.innerHTML = html ? init + html : init;
   };
 
   mapInfo.addTo(mapObj);
+  mapInfoObjs.push(mapInfo);
   return mapInfo;
 }
 
 function addMapInfo(mapObj, item, areaType, areaUnit) {
-  info = L.control();
+  var info = L.control();
   info.onAdd = function (map) {
       this._div = L.DomUtil.create('div', 'mapInfo'); // create a div with a class "info"
       this.update();
       return this._div;
   };
 
+  var init = '<h4>' + item + ' population density</h4>';
   // method that we will use to update the control based on feature properties passed
   info.update = function (props) {
-      this._div.innerHTML = '<h4>' + item + ' population density</h4>' + 
+      this._div.innerHTML = init + 
           (props ? '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + item + 's / ' + areaUnit + '<sup>2</sup>' : 'Hover over a ' + areaType);
   };
 
+  info.updateWithHTML = function (html) {
+    this._div.innerHTML = init + html;
+  };
+
+  mapInfoObjs.push(info);
   info.addTo(mapObj);  
+}
+
+function updateInfos(e) {
+  var layer = e.target;
+  updateInfosForLayer(layer);
 }
 
 function highlightFeature(e) {
@@ -49,8 +84,9 @@ function highlightFeature(e) {
         layer.bringToFront();
     }
     
-    if (info && layer.feature)
-      info.update(layer.feature.properties);
+    if (layer.feature) {
+      updateInfosForLayer(layer);
+    }
 }
 
 function paintPolygon(map, shapeDiv) {
@@ -110,7 +146,7 @@ function simpleStyle(feature) {
       fillColor: '#efefff',
       weight: 2,
       opacity: 1,
-      color: 'blue',
+      color: '#5555ff',
       dashArray: '3',
       fillOpacity: 0.4
   };
