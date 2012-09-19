@@ -1121,7 +1121,7 @@ function Rte(iframeObj, dataFieldId, rtePref) {
 
     // append <br /> for better height fitting
     // it will be removed with all trailed <br>
-	  var br = this.document.createElement("br");
+    var br = this.document.createElement("br");
     this.document.body.appendChild(br);
 
   }
@@ -1977,10 +1977,14 @@ function Rte(iframeObj, dataFieldId, rtePref) {
         html += " align=\"" + align + "\"";
       
       if (margin) {
-				if (/\D/.test(margin) == false)
-				  margin += "px";
-	  	  stl += "margin:" + margin + ";";
-	    }
+        margins = margin.split(" ");
+        margin = "";
+        for (var i = 0; i < margins.length; i++)
+          if (/\D/.test(margins[i]) == false)
+            margin += margins[i] + "px "; // append "px" to each margin(s) value without unit
+
+        stl += " margin:" + margin.trim() + ";";
+      }
       
       html += " style=\"" + stl + "\"";
 
