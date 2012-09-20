@@ -11368,7 +11368,10 @@ var CheckButtonMgr = {
   prepare : function(div, onclickCallback) {
     if (div == null)
       return;
-
+    // hack for leaflet
+    if (div.className == "leaflet-control-layers-overlays")
+      return;
+  
     if (typeof div == 'undefined')
       div = document.body;
     
