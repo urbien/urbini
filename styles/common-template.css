@@ -37,6 +37,7 @@ a { text-decoration: none; color: &[SecondaryColorB_3];; -webkit-tap-highlight-c
 /*** a img, a span { vertical-align: middle; }  helps to align vertically image inside anchor ***/ 
 
 input  { -webkit-appearance: none; font-style: normal; line-height: normal; font-weight: normal; -webkit-tap-highlight-color: rgba(0,0,0,0); }
+input[type="checkbox"] { -webkit-appearance: checkbox; } /* '-webkit-appearance: none;' it hides checkboxes. do we need this rule? */
 
 .photos {width: 520px; padding-top: 7px; margin-bottom: 10px; overflow: hidden; }
 .photos li {float: left; line-height: 0px; padding-left: 2px;}
