@@ -13097,102 +13097,6 @@ function toggleLocationAwareness(on) {
   }
 }
 
-golden_ratio_conjugate = 0.618033988749895;
-function generateColors(total, seed) {
-  var r = [];
-  var third = total / 3;
-  var secondThird = third * 2;
-  var sum = 0;
-  var h = seed || Math.random();
-  for (var i = 0; i < total; i++) {
-    h += golden_ratio_conjugate;
-    h %= 1;
-    var s, v;
-    if (i < third) {
-      s = 0.5;
-      v = 0.95;
-    }
-    else if (i < secondThird) {
-      s = 0.99;
-      v = 0.8;
-    }
-    else {
-      s = 0.3;
-      v = 0.99;
-    }
-    
-    r.push([h, s, v]);
-  }
-  
-  return r;
-  
-//    var i = 360 / (total - 1); // distribute the colors evenly on the hue range
-//    var r = []; // hold the generated colors
-//    for (var x = 0; x < total; x++) {
-//      r.push(hsvToRgb(i * x, 100, 100)); // you can also alternate the saturation and value for even more contrast between the colors
-//    }
-//    
-//    return r;
-}
-
-function hsv2rgb(h, s, v) {
-  //Adapted from http://www.easyrgb.com/math.html
-  //hsv values = 0 - 1, rgb values = 0 - 255
-  var r, g, b;
-  var RGB = new Array();
-  if (s == 0) {
-      RGB['red'] = RGB['green'] = RGB['blue'] = Math.round(v * 255);
-  } else {
-      // h must be < 1
-      var var_h = h * 6;
-      if (var_h == 6) var_h = 0;
-      //Or ... var_i = floor( var_h )
-      var var_i = Math.floor(var_h);
-      var var_1 = v * (1 - s);
-      var var_2 = v * (1 - s * (var_h - var_i));
-      var var_3 = v * (1 - s * (1 - (var_h - var_i)));
-      if (var_i == 0) {
-          var_r = v;
-          var_g = var_3;
-          var_b = var_1;
-      } else if (var_i == 1) {
-          var_r = var_2;
-          var_g = v;
-          var_b = var_1;
-      } else if (var_i == 2) {
-          var_r = var_1;
-          var_g = v;
-          var_b = var_3
-      } else if (var_i == 3) {
-          var_r = var_1;
-          var_g = var_2;
-          var_b = v;
-      } else if (var_i == 4) {
-          var_r = var_3;
-          var_g = var_1;
-          var_b = v;
-      } else {
-          var_r = v;
-          var_g = var_1;
-          var_b = var_2
-      }
-      //rgb results = 0 ÷ 255  
-      RGB['red'] = Math.round(var_r * 255);
-      RGB['green'] = Math.round(var_g * 255);
-      RGB['blue'] = Math.round(var_b * 255);
-  }
-  
-  return RGB;
-};
-
-function componentToHex(c) {
-  var hex = c.toString(16);
-  return hex.length == 1 ? "0" + hex : hex;
-}
-
-function rgbToHex(r, g, b) {
-  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-}
 
 //***********************************
 // EndlessPager for masonry layout
@@ -13348,6 +13252,24 @@ function getMoreBoards(e, id, exclude, uri) {
     hotspot.onclick = '';
   } 
   return stopEventPropagation(e);
+}
+
+function getWindowDimension() {
+  if( typeof( window.innerWidth ) == 'number' ) {
+    //Non-IE
+    windowwidth = window.innerWidth;
+    windowheight = window.innerHeight;
+  } else if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+    //IE 6+ in 'standards compliant mode'
+    windowwidth = document.documentElement.clientWidth;
+    windowheight = document.documentElement.clientHeight;
+  } else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
+    //IE 4 compatible
+    windowwidth = document.body.clientWidth;
+    windowheight = document.body.clientHeight;
+  }
+  
+  return [windowwidth, windowheight];
 }
 
 
