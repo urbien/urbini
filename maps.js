@@ -1,3 +1,151 @@
+golden_ratio_conjugate = 0.618033988749895;
+function generateColors(total, seed) {
+  var r = [];
+  var third, secondThird;
+  if (total < 3) {
+    third = 1;
+  }
+  else {
+    third = total / 3;
+    var secondThird = third * 2;
+  }
+  
+  var sum = 0;
+  var h = seed || Math.random();
+  for (var i = 0; i < total; i++) {
+    h += golden_ratio_conjugate;
+    h %= 1;
+    var s, v;
+    if (i < third) {
+      s = 0.5;
+      v = 0.95;
+    }
+    else if (i < secondThird) {
+      s = 0.99;
+      v = 0.8;
+    }
+    else {
+      s = 0.3;
+      v = 0.99;
+    }
+    
+    r.push([h, s, v]);
+  }
+  
+  return r;
+}
+
+function getTextColor(bgR, bgG, bgB) {
+  var d = 0;
+  
+  // Counting the perceptive luminance - human eye favors green color... 
+  var a = 1 - ( 0.299 * bgR + 0.587 * bgG + 0.114 * bgB)/255;
+
+  if (a < 0.5)
+    d = 80; // bright colors - black font
+  else
+    d = 255; // dark colors - white font
+
+  return rgbToHex(d, d, d);
+}
+
+function componentToHex(c) {
+  var hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+function hexToRGB(h) {
+  var num = (h.charAt(0)=="#") ? h.substring(1,7): h;
+  return [parseInt(num.substring(0,2),16), parseInt(num.substring(2,4),16), parseInt(num.substring(4,6), 16)];
+}
+
+function hsv2rgb(h, s, v) {
+  //Adapted from http://www.easyrgb.com/math.html
+  //hsv values = 0 - 1, rgb values = 0 - 255
+  var r, g, b;
+  var RGB = new Array();
+  if (s == 0) {
+      var r = Math.round(v * 255);
+      RGB = [r, r, r];
+  } else {
+      // h must be < 1
+      var var_h = h * 6;
+      if (var_h == 6) var_h = 0;
+      //Or ... var_i = floor( var_h )
+      var var_i = Math.floor(var_h);
+      var var_1 = v * (1 - s);
+      var var_2 = v * (1 - s * (var_h - var_i));
+      var var_3 = v * (1 - s * (1 - (var_h - var_i)));
+      if (var_i == 0) {
+          var_r = v;
+          var_g = var_3;
+          var_b = var_1;
+      } else if (var_i == 1) {
+          var_r = var_2;
+          var_g = v;
+          var_b = var_1;
+      } else if (var_i == 2) {
+          var_r = var_1;
+          var_g = v;
+          var_b = var_3
+      } else if (var_i == 3) {
+          var_r = var_1;
+          var_g = var_2;
+          var_b = v;
+      } else if (var_i == 4) {
+          var_r = var_3;
+          var_g = var_1;
+          var_b = v;
+      } else {
+          var_r = v;
+          var_g = var_1;
+          var_b = var_2
+      }
+      //rgb results = 0 ÷ 255  
+      RGB = [Math.round(var_r * 255), Math.round(var_g * 255), Math.round(var_b * 255)];
+  }
+  
+  return RGB;
+};
+
+function rgb2hsv (r,g,b) {
+  var computedH = 0;
+  var computedS = 0;
+  var computedV = 0;
+
+  //remove spaces from input RGB values, convert to int
+  r=r/255; g=g/255; b=b/255;
+  var minRGB = Math.min(r,Math.min(g,b));
+  var maxRGB = Math.max(r,Math.max(g,b));
+
+  // Black-gray-white
+  if (minRGB==maxRGB) {
+   computedV = minRGB;
+   return [0,0,computedV];
+  }
+
+  // Colors other than black-gray-white:
+  var d = (r==minRGB) ? g-b : ((b==minRGB) ? r-g : b-r);
+  var h = (r==minRGB) ? 3 : ((b==minRGB) ? 1 : 5);
+  computedH = 60*(h - d/(maxRGB - minRGB));
+  computedS = (maxRGB - minRGB)/maxRGB;
+  computedV = maxRGB;
+  return [computedH/360,computedS,computedV];
+}
+
+function componentToHex(c) {
+  var hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
 var mapInfoObjs = [];
 
 function clearInfos(e) {
@@ -112,7 +260,7 @@ function getLeafletMapTileColor(d) {
   if (max < minResolution)
     return getColorForPercentile(0);
   
-  var percentile = (d - min) * 100 / (max - min);
+  var percentile = max == min ? 100 : (d - min) * 100 / (max - min);
   var color = getColorForPercentile(percentile);
 //  console.log("returning color " + color + " for percentile " + percentile);
   return color;
@@ -126,7 +274,7 @@ function getLeafletMapTileColor(d) {
 //                        '#FFEDA0';
 }
 
-var percentiles = [0, 1, 2, 5, 10, 25, 50, 90];
+var percentiles = [0, 10, 20, 40, 66, 75, 90, 95];
 function getColorForPercentile(percentile) {
   var color =
     percentile > percentiles[7] ? '#800026' :
@@ -141,13 +289,18 @@ function getColorForPercentile(percentile) {
   return color;
 }
 
+function simpleDashedStyle(feature) {
+  var simple = simpleStyle(feature);
+  simple['dashArray'] = '3';
+  return simple;
+}
+
 function simpleStyle(feature) {
   return {
       fillColor: '#efefff',
       weight: 2,
       opacity: 1,
       color: '#5555ff',
-      dashArray: '3',
       fillOpacity: 0.4
   };
 }
@@ -168,18 +321,88 @@ function zoomToFeature(e) {
     map.fitBounds(e.target.getBounds());
 }
 
+function addSizeButton(mapDiv, mapObj, bounds) {
+  var btn = L.control({position: 'bottomleft'});
+  btn.onAdd = function (mapObj) {
+    var maxImg = "<img src='icons/map-fullscreen.png' />";
+    var minImg = "<img src='icons/map-unfullscreen.png' />";
+    var oWidth = mapDiv.offsetWidth;
+    var oHeight = mapDiv.offsetHeight;
+    var oTop = mapDiv.offsetTop;
+    var oLeft = mapDiv.offsetLeft;
+    var parent = mapDiv.parentNode;
+    var div = L.DomUtil.create('div', 'resize');
+    div.innerHTML = maxImg;
+    div.onclick = function(e) {
+      var maximized = mapDiv.innerHTML.indexOf('map-full') == -1;
+      if (maximized) {
+        // restore
+        mapDiv.style.position = 'relative';
+        mapDiv.style.width = oWidth;
+        mapDiv.style.height = oHeight;
+        mapDiv.style.top = oTop;
+        mapDiv.style.left = oLeft;
+        document.body.style.overflow = 'auto';
+        div.innerHTML = maxImg;
+        mapObj.invalidateSize(true);
+        mapObj.fitBounds(bounds);
+      }
+      else {
+        // maximize
+        var scroll = getScrollXY();
+        var wDim = getWindowDimension();
+        mapDiv.style.position = 'absolute';
+        mapDiv.style.top = scroll[1] + "px"; 
+        mapDiv.style.left = scroll[0] + "px"; 
+        mapDiv.style.width = wDim[0] + "px";
+        mapDiv.style.height = wDim[1] + "px";
+        document.body.appendChild(mapDiv);
+        document.body.style.overflow = 'hidden';
+        div.innerHTML = minImg;
+        mapObj.invalidateSize(true);
+      }
+    };
+    
+    return div;
+  }
+  
+  btn.addTo(mapObj);  
+}
+
+function addReZoomButton(mapObj, bounds) {
+  var rezoom = L.control({position: 'bottomleft'});
+  rezoom.onAdd = function (mapObj) {
+    var div = L.DomUtil.create('div', 'rezoom');
+    div.innerHTML = "<img src='icons/homePage.png' />";
+    div.onclick = function(e) {
+      mapObj.fitBounds(bounds);
+    };
+    
+    return div;
+  }
+  
+  rezoom.addTo(mapObj);
+}
+
 function addMapLegend(mapObj) {
   var max = maxMapDensity || defaultMaxMapDensity;
   if (max < minResolution)
     return;
-  
+
+  var min = minMapDensity || defaultMinMapDensity;
   var legend = L.control({position: 'bottomright'});
   legend.onAdd = function (mapObj) {
     var grades = [];
-    for (var i = 0; i < percentiles.length; i++) {
-      var grade = Math.round(percentiles[i] * maxMapDensity) / 100;
-      if (grade > 0)
-        grades.push(grade);
+    var range = max - min;
+    if (range == 0) {
+      grades.push(max);
+    }
+    else {
+      for (var i = 0; i < percentiles.length; i++) {
+        var grade = Math.round(100 *(min + (percentiles[i] / 100) * range)) / 100;
+        if (grade > 0 && grades.indexOf(grade) == -1)
+          grades.push(grade);
+      }
     }
     
     var div = L.DomUtil.create('div', 'mapInfo mapLegend'),
@@ -188,9 +411,12 @@ function addMapLegend(mapObj) {
         labels = [];
 
     // loop through our density intervals and generate a label with a colored square for each interval
+    if (grades.length == 1)
+      return div;
+    
     for (var i = 0; i < grades.length; i++) {
         div.innerHTML +=
-            '<p><i style="background:' + getColorForPercentile(percentiles[i] + 0.1) + '"></i> ' +
+            '<p><i style="background:' + getColorForPercentile(100 * ((grades[i] - min) / range + 0.1)) + '"></i> ' +
             grades[i] + (grades[i + 1] ? ' &ndash; ' + grades[i + 1] : '+') + "</p>";
     }
 
@@ -199,3 +425,85 @@ function addMapLegend(mapObj) {
   
   legend.addTo(mapObj);
 }
+
+function addGeoJsonShapes(map, geoJsons, style) {
+  var layers = [];
+  for (name in geoJsons) {
+    var gj;
+    var resetHighlight = function(e) {
+      gj.resetStyle(e.target);
+      clearInfos(e);
+    };
+    
+    var onEachFeature = function(feature, layer) {
+      layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: zoomToFeature
+      });
+    };
+  
+    gj = L.geoJson(geoJsons[name], {style: style ? style : simpleStyle, onEachFeature: onEachFeature}).addTo(map);
+    layers.push(gj);
+  }
+  
+  return layers;
+}
+
+function addClustersForGeoJsons(map, nameToGeoJson, clusterOptions, style, highlight, zoom, hexColor, colorSeed) {
+  var i = 0;
+  var layers = [];
+  for (name in nameToGeoJson) {
+    var g = nameToGeoJson[name];
+    var gj;
+//    var resetHighlight = function(e) {
+//      gj.resetStyle(e.target);
+//    };
+//    
+//    var onEachFeature = function(feature, layer) {
+//      layer.on({
+//        mouseover: highlight ? highlightFeature : updateInfos,
+//        mouseout: highlight ? resetHighlight : updateInfos,
+//        click: zoom ? zoomToFeature : null
+//      });
+//    };
+    
+    var options = clusterOptions ? clusterOptions : {};
+    if (!hexColor) {
+      var colors = generateColors(1, colorSeed || 0.5);
+      colorSeed = colors[0][0];
+      var color = hsv2rgb(colors[0][0], colors[0][1], colors[0][2]);
+      color = rgbToHex(color[0], color[1], color[2]);
+      options.color = color;
+    }
+    else {
+      options.color = hexColor;
+      var rgb = hexToRGB(hexColor);
+      colorSeed = rgb2hsv(rgb[0], rgb[1], rgb[2])[0];
+      hexColor = null;
+    }
+    
+    var markers = new L.MarkerClusterGroup(options);
+    var pointToLayer = function(feature, latlng) {
+      var marker = L.marker(latlng);
+      if (feature.properties.width) {
+        marker.bindPopup(feature.properties.html, {minWidth: feature.properties.width, minHeight: feature.properties.height});        
+      }
+      else {
+        marker.bindPopup(feature.properties.html);
+      }
+
+      marker.on('mouseover', function(e) {updateInfosWithHTML(feature.properties.name);});
+      marker.on('mouseout', function(e) {clearInfos(e);});
+      markers.addLayer(marker);
+      return markers;
+    };
+    
+    gj = L.geoJson(g, {style: style ? style : simpleStyle, pointToLayer: pointToLayer}).addTo(map);
+    layers[name] = gj;
+    i++;
+  }
+  
+  return layers;
+}
+

@@ -4,35 +4,6 @@
  https://github.com/danzel/Leaflet.markercluster
 */
 
-  function getTextColor(bgR, bgG, bgB) {
-    var d = 0;
-    
-    // Counting the perceptive luminance - human eye favors green color... 
-    var a = 1 - ( 0.299 * bgR + 0.587 * bgG + 0.114 * bgB)/255;
-
-    if (a < 0.5)
-      d = 80; // bright colors - black font
-    else
-      d = 255; // dark colors - white font
-
-    return rgbToHex(d, d, d);
-  }
-  
-  function componentToHex(c) {
-    var hex = c.toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
-  }
-
-  function rgbToHex(r, g, b) {
-    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-  }
-
-  function hexToRGB(h) {
-    var num = (h.charAt(0)=="#") ? h.substring(1,7): h;
-    return [parseInt(num.substring(0,2),16), parseInt(num.substring(2,4),16), parseInt(num.substring(4,6), 16)];
-  }
-
-
 (function (window, undefined) {
 
 
@@ -360,18 +331,15 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
     var html = '<div><span>' + childCount + '</span></div>';
 		var children = cluster.getAllChildMarkers();
 		var radius;
-//		if (children != null && children.length > 0) {
-//		  var color = children[0].options['fillColor'];
-		  if (this.color) {
-		    custom = true;
-		    var rgb = hexToRGB(this.color);
-		    var background = "background-color: rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", 0.7); color: " + getTextColor(rgb[0], rgb[1], rgb[2]) + ";";
-		    var zoom = cluster._zoom || 10;
-		    diameter = 30 + Math.round(150 * Math.log(childCount) / zoom);
-		    var width = "width: " + diameter + "px; height: " + diameter + "px; line-height: " + diameter + "px;";
-		    html = '<div style=\"' + background + width + '\"><span>' + childCount + '</span></div>';
-		  }
-//		}
+	  if (this.color) {
+	    custom = true;
+	    var rgb = hexToRGB(this.color);
+	    var background = "background-color: rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", 0.7); color: " + getTextColor(rgb[0], rgb[1], rgb[2]) + ";";
+	    var zoom = cluster._zoom || 10;
+	    diameter = 30 + Math.round(150 * Math.log(childCount) / zoom);
+	    var width = "width: " + diameter + "px; height: " + diameter + "px; line-height: " + diameter + "px;";
+	    html = '<div style=\"' + background + width + '\"><span>' + childCount + '</span></div>';
+	  }
 		
 		var size = this.color ? diameter + 10 : 40;
 		return new L.DivIcon({ html: html, className: 'marker-cluster ' + (this.color ? 'marker-cluster-black': c), iconSize: new L.Point(size, size) });
