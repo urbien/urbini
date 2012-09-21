@@ -11369,7 +11369,7 @@ var CheckButtonMgr = {
     if (div == null)
       return;
     // hack for leaflet
-    if (div.className == "leaflet-control-layers-overlays")
+    if (div.className && div.className.indexOf("leaflet-control-layers") == 0)
       return;
   
     if (typeof div == 'undefined')
@@ -12184,7 +12184,7 @@ function repostToVK(http_request) {
 }
 
 function toConsole(text) {
-  if (typeof console == 'undefined')
+  if (typeof console === 'undefined')
     return;
   else
     console.log(text);
