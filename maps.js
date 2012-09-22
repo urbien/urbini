@@ -1,5 +1,6 @@
 golden_ratio_conjugate = 0.618033988749895;
 function generateColors(total, seed) {
+  'use strict';
   var r = [];
   var third, secondThird;
   if (total < 3) {
@@ -36,6 +37,7 @@ function generateColors(total, seed) {
 }
 
 function getTextColor(bgR, bgG, bgB) {
+  'use strict';
   var d = 0;
   
   // Counting the perceptive luminance - human eye favors green color... 
@@ -50,20 +52,24 @@ function getTextColor(bgR, bgG, bgB) {
 }
 
 function componentToHex(c) {
+  'use strict';
   var hex = c.toString(16);
   return hex.length == 1 ? "0" + hex : hex;
 }
 
 function rgbToHex(r, g, b) {
+  'use strict';
   return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
 function hexToRGB(h) {
+  'use strict';
   var num = (h.charAt(0)=="#") ? h.substring(1,7): h;
   return [parseInt(num.substring(0,2),16), parseInt(num.substring(2,4),16), parseInt(num.substring(4,6), 16)];
 }
 
 function hsv2rgb(h, s, v) {
+  'use strict';
   //Adapted from http://www.easyrgb.com/math.html
   //hsv values = 0 - 1, rgb values = 0 - 255
   var r, g, b;
@@ -72,6 +78,7 @@ function hsv2rgb(h, s, v) {
       var r = Math.round(v * 255);
       RGB = [r, r, r];
   } else {
+      var var_r, var_g, var_b;
       // h must be < 1
       var var_h = h * 6;
       if (var_h == 6) var_h = 0;
@@ -103,7 +110,7 @@ function hsv2rgb(h, s, v) {
       } else {
           var_r = v;
           var_g = var_1;
-          var_b = var_2
+          var_b = var_2;
       }
       //rgb results = 0 ÷ 255  
       RGB = [Math.round(var_r * 255), Math.round(var_g * 255), Math.round(var_b * 255)];
@@ -113,6 +120,7 @@ function hsv2rgb(h, s, v) {
 };
 
 function rgb2hsv (r,g,b) {
+  'use strict';
   var computedH = 0;
   var computedS = 0;
   var computedV = 0;
@@ -138,36 +146,42 @@ function rgb2hsv (r,g,b) {
 }
 
 function componentToHex(c) {
+  'use strict';
   var hex = c.toString(16);
   return hex.length == 1 ? "0" + hex : hex;
 }
 
 function rgbToHex(r, g, b) {
+  'use strict';
   return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
 var mapInfoObjs = [];
 
 function clearInfos(e) {
-  for (info in mapInfoObjs) {
+  'use strict';
+  for (var info in mapInfoObjs) {
     mapInfoObjs[info].update();
   }  
 }
 
 function updateInfosForLayer(layer) {
-  for (info in mapInfoObjs) {
+  'use strict';
+  for (var info in mapInfoObjs) {
     if (layer.feature.properties)
       mapInfoObjs[info].update(layer.feature.properties);
   }
 }
 
 function updateInfosWithHTML(html) {
-  for (info in mapInfoObjs) {
+  'use strict';
+  for (var info in mapInfoObjs) {
     mapInfoObjs[info].updateWithHTML(html);
   }
 }
 
 function addBasicMapInfo(mapObj, init) {
+  'use strict';
   var mapInfo = L.control();
   mapInfo.onAdd = function (map) {
       this._div = L.DomUtil.create('div', 'mapInfo'); // create a div with a class "info"
@@ -191,6 +205,7 @@ function addBasicMapInfo(mapObj, init) {
 }
 
 function addMapInfo(mapObj, item, areaType, areaUnit) {
+  'use strict';
   var info = L.control();
   info.onAdd = function (map) {
       this._div = L.DomUtil.create('div', 'mapInfo'); // create a div with a class "info"
@@ -214,11 +229,13 @@ function addMapInfo(mapObj, item, areaType, areaUnit) {
 }
 
 function updateInfos(e) {
+  'use strict';
   var layer = e.target;
   updateInfosForLayer(layer);
 }
 
 function highlightFeature(e) {
+  'use strict';
     var layer = e.target;
 
     layer.setStyle({
@@ -238,6 +255,7 @@ function highlightFeature(e) {
 }
 
 function paintPolygon(map, shapeDiv) {
+  'use strict';
   var json = eval(shapeDiv.innerHTML);
   var numRings = json.length;
   for (var i = 0; i < numRings; i++) {
@@ -255,6 +273,7 @@ var defaultMinMapDensity = 0;
 var defaultMaxMapDensity = 10;
 var minResolution = 0.01
 function getLeafletMapTileColor(d) {
+  'use strict';
   var min = minMapDensity || defaultMinMapDensity;
   var max = maxMapDensity || defaultMaxMapDensity;
   if (max < minResolution)
@@ -276,6 +295,7 @@ function getLeafletMapTileColor(d) {
 
 var percentiles = [0, 10, 20, 40, 66, 75, 90, 95];
 function getColorForPercentile(percentile) {
+  'use strict';
   var color =
     percentile > percentiles[7] ? '#800026' :
     percentile > percentiles[6]  ? '#BD0026' :
@@ -290,12 +310,14 @@ function getColorForPercentile(percentile) {
 }
 
 function simpleDashedStyle(feature) {
+  'use strict';
   var simple = simpleStyle(feature);
   simple['dashArray'] = '3';
   return simple;
 }
 
 function simpleStyle(feature) {
+  'use strict';
   return {
       fillColor: '#efefff',
       weight: 2,
@@ -306,6 +328,7 @@ function simpleStyle(feature) {
 }
 
 function leafletDensityMapStyle(feature) {
+  'use strict';
   return {
       fillColor: getLeafletMapTileColor(feature.properties.density),
       weight: 2,
@@ -317,11 +340,13 @@ function leafletDensityMapStyle(feature) {
 }
 
 function zoomToFeature(e) {
+  'use strict';
   if (map)
     map.fitBounds(e.target.getBounds());
 }
 
 function addSizeButton(mapDiv, mapObj, bounds) {
+  'use strict';
   var btn = L.control({position: 'bottomleft'});
   btn.onAdd = function (mapObj) {
     var maxImg = "<img src='icons/map-fullscreen.png' />";
@@ -370,6 +395,7 @@ function addSizeButton(mapDiv, mapObj, bounds) {
 }
 
 function addReZoomButton(mapObj, bounds) {
+  'use strict';
   var rezoom = L.control({position: 'bottomleft'});
   rezoom.onAdd = function (mapObj) {
     var div = L.DomUtil.create('div', 'rezoom');
@@ -385,6 +411,7 @@ function addReZoomButton(mapObj, bounds) {
 }
 
 function addMapLegend(mapObj) {
+  'use strict';
   var max = maxMapDensity || defaultMaxMapDensity;
   if (max < minResolution)
     return;
@@ -426,9 +453,10 @@ function addMapLegend(mapObj) {
   legend.addTo(mapObj);
 }
 
-function addGeoJsonShapes(map, geoJsons, style) {
-  var layers = [];
-  for (name in geoJsons) {
+function addGeoJsonShapes(map, mapLayers, geoJsons, style) {
+  'use strict';
+  var layers = mapLayers || [];
+  for (var name in geoJsons) {
     var gj;
     var resetHighlight = function(e) {
       gj.resetStyle(e.target);
@@ -444,16 +472,20 @@ function addGeoJsonShapes(map, geoJsons, style) {
     };
   
     gj = L.geoJson(geoJsons[name], {style: style ? style : simpleStyle, onEachFeature: onEachFeature}).addTo(map);
+    if (geoJsons[name].properties.html)
+      gj.bindPopup(geoJsons[name].properties.html);
+    
     layers.push(gj);
   }
   
   return layers;
 }
 
-function addClustersForGeoJsons(map, nameToGeoJson, clusterOptions, style, highlight, zoom, hexColor, colorSeed) {
+function addClustersForGeoJsons(map, mapLayers, nameToGeoJson, clusterOptions, style, highlight, zoom, hexColor, colorSeed) {
+  'use strict';
   var i = 0;
-  var layers = [];
-  for (name in nameToGeoJson) {
+  var layers = mapLayers || {};
+  for (var name in nameToGeoJson) {
     var g = nameToGeoJson[name];
     var gj;
 //    var resetHighlight = function(e) {
@@ -503,7 +535,33 @@ function addClustersForGeoJsons(map, nameToGeoJson, clusterOptions, style, highl
     layers[name] = gj;
     i++;
   }
-  
+
+//  var all = new L.layerGroup([layers]);
+//  var outer = {'All': all};
+//  for (name in layers) {
+//    outer[name] = layers[name];
+//  }
+//  
+//  return outer;
   return layers;
 }
 
+function addLayersControlToMap(map, layers) {
+  var all = new L.layerGroup();
+  for (var name in layers) {
+    all.addLayer(layers[name]);
+  }
+  
+  all.addTo(map);
+  var outer = {'Show/Hide All': all};
+  for (var name in layers) {
+    outer[name] = layers[name];
+  }
+//  layers['Show/Hide All'] = all;
+//  var outer = {'All': all};
+//  for (var name in layers) {
+//    outer[name] = layers[name];
+//  }
+  
+  var lControl = L.control.layers(null, outer).addTo(map);
+}
