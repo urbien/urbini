@@ -160,23 +160,23 @@ var mapInfoObjs = [];
 
 function clearInfos(e) {
   'use strict';
-  for (var info in mapInfoObjs) {
-    mapInfoObjs[info].update();
+  for (var i = 0; i < mapInfoObjs.length; i++) {
+    mapInfoObjs[i].update();
   }  
 }
 
 function updateInfosForLayer(layer) {
   'use strict';
-  for (var info in mapInfoObjs) {
+  for (var i = 0; i < mapInfoObjs.length; i++) {
     if (layer.feature.properties)
-      mapInfoObjs[info].update(layer.feature.properties);
+      mapInfoObjs[i].update(layer.feature.properties);
   }
 }
 
 function updateInfosWithHTML(html) {
   'use strict';
-  for (var info in mapInfoObjs) {
-    mapInfoObjs[info].updateWithHTML(html);
+  for (var i = 0; i < mapInfoObjs.length; i++) {
+    mapInfoObjs[i].updateWithHTML(html);
   }
 }
 
@@ -339,12 +339,6 @@ function leafletDensityMapStyle(feature) {
   };
 }
 
-function zoomToFeature(e) {
-  'use strict';
-  if (map)
-    map.fitBounds(e.target.getBounds());
-}
-
 function addSizeButton(mapDiv, mapObj, bounds) {
   'use strict';
   var btn = L.control({position: 'bottomleft'});
@@ -410,8 +404,12 @@ function addReZoomButton(mapObj, bounds) {
   rezoom.addTo(mapObj);
 }
 
-function addMapLegend(mapObj) {
+function addDensityLegend(mapObj, geoJsons) {
   'use strict';
+//  var length = geoJsons.length;
+//  var numPercentiles = Math.min(Math.log(length), 8);
+  
+  
   var max = maxMapDensity || defaultMaxMapDensity;
   if (max < minResolution)
     return;
@@ -421,13 +419,18 @@ function addMapLegend(mapObj) {
   legend.onAdd = function (mapObj) {
     var grades = [];
     var range = max - min;
+    var rangeDigits = Math.round(Math.log(range) / Math.log(10));
+    var pow = -rangeDigits + 2;
+    var multiplier = Math.pow(10, pow);
     if (range == 0) {
       grades.push(max);
     }
     else {
       for (var i = 0; i < percentiles.length; i++) {
-        var grade = Math.round(100 *(min + (percentiles[i] / 100) * range)) / 100;
-        if (grade > 0 && grades.indexOf(grade) == -1)
+        var grade = min + (percentiles[i] / 100) * range;
+        grade = Math.round(multiplier * grade) / multiplier;
+        
+        if (grades.indexOf(grade) == -1)
           grades.push(grade);
       }
     }
@@ -456,13 +459,17 @@ function addMapLegend(mapObj) {
 function addGeoJsonShapes(map, mapLayers, geoJsons, style) {
   'use strict';
   var layers = mapLayers || [];
-  for (var name in geoJsons) {
+  for (var i = 0; i < geoJsons.length; i++) {
     var gj;
     var resetHighlight = function(e) {
       gj.resetStyle(e.target);
       clearInfos(e);
     };
     
+    var zoomToFeature = function(e) {
+      map.fitBounds(e.target.getBounds());
+    }
+
     var onEachFeature = function(feature, layer) {
       layer.on({
         mouseover: highlightFeature,
@@ -471,9 +478,9 @@ function addGeoJsonShapes(map, mapLayers, geoJsons, style) {
       });
     };
   
-    gj = L.geoJson(geoJsons[name], {style: style ? style : simpleStyle, onEachFeature: onEachFeature}).addTo(map);
-    if (geoJsons[name].properties.html)
-      gj.bindPopup(geoJsons[name].properties.html);
+    gj = L.geoJson(geoJsons[i], {style: style ? style : simpleStyle, onEachFeature: onEachFeature}).addTo(map);
+    if (geoJsons[i].properties.html)
+      gj.bindPopup(geoJsons[i].properties.html);
     
     layers.push(gj);
   }
