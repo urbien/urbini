@@ -88,8 +88,8 @@ String.prototype.ltrim = function() {
   return this.replace(/^\s+/,"");
 }
 String.prototype.rtrim = function(toRemoveTrailedBR) {
-	if (toRemoveTrailedBR)
-		return this.replace(/\s+$/,"").replace(/(<br[^>]*>)+$/, "");
+  if (toRemoveTrailedBR)
+    return this.replace(/\s+$/,"").replace(/(<br[^>]*>)+$/, "");
   return this.replace(/\s+$/,"");
 }
 // removes tags
@@ -355,7 +355,7 @@ function postRequest(event, url, parameters, div, hotspot, callback, noCache, no
         var response = responseXML.documentElement;
         location = response.getElementById('$redirect').getAttribute('href');
 
-				if (!location)
+        if (!location)
           return;
       }
 
@@ -1370,7 +1370,7 @@ var ExecJS = {
           if (location.href.indexOf("-minify-js=n") != -1) 
             fileName = fileName.replace("m.js", ".js")
           js.setAttribute('src', src);
-          loadScript(src, document.body, function() { setTimeout(function(){ ExecJS._runDivCode(contDiv); }, 100) });
+          loadScript(src, function() { setTimeout(function(){ ExecJS._runDivCode(contDiv); }, 100) });
           g_loadedJsFiles[keyName] = true;
           return;
         }
@@ -1444,23 +1444,23 @@ function loadStyle (url, callback/*, isAsync*/){
 
 // TODO: try to use it in "ondemand" code
 function loadScriptOrStyle (url, callback, isAsync) {
-	var el;
+  var el;
   var isJs = url.indexOf(".css") == -1;
-	if (isJs) {
-  	el = document.createElement('script');
-  	el.type = 'text/javascript';
-  	el.src = url;
-  	// false - insure that previous required JS file was downloaded (like "jQery")
-		el.async = (isAsync == true) ? true : false;
-	}
-	else {
-		el = document.createElement('link');
-		el.setAttribute('rel', 'stylesheet');
-		el.setAttribute('type', 'text/css');
-		el.setAttribute('href', url);
-	}
-	
-	if (callback) {
+  if (isJs) {
+    el = document.createElement('script');
+    el.type = 'text/javascript';
+    el.src = url;
+    // false - insure that previous required JS file was downloaded (like "jQuery")
+    el.async = (isAsync == true) ? true : false;
+  }
+  else {
+    el = document.createElement('link');
+    el.setAttribute('rel', 'stylesheet');
+    el.setAttribute('type', 'text/css');
+    el.setAttribute('href', url);
+  }
+  
+  if (callback) {
     // most browsers
     el.onload = callback;
     // IE 6-7
@@ -1468,9 +1468,9 @@ function loadScriptOrStyle (url, callback, isAsync) {
       if (this.readyState == 'complete') {
         if (typeof callback == 'function') 
           callback();
+        }
       }
     }
-  }
 //  if (!scriptDiv)
 //    scriptDiv = document.body;
 //  scriptDiv.appendChild(el);
@@ -1943,8 +1943,8 @@ function isElemOfTag(elem, tagName) {
 function isElemInViewport(elem, margin) {
   var topEdge = getScrollXY()[1];
   var bottomEdge = topEdge + getWindowSize()[1];
-	if (typeof margin == "undefined")
-	  margin = 0;
+  if (typeof margin == "undefined")
+    margin = 0;
   var y = findPosY(elem);
   return (y >= topEdge + margin && y <= bottomEdge - elem.offsetHeight - margin);
 }
