@@ -462,22 +462,50 @@ function addDensityLegend(mapObj, geoJsons) {
   legend.addTo(mapObj);
 }
 
-function addGeoJsonShapeLayers(map, mapLayers, geoJsonLayers, style) {
+function addGeoJsonShapeLayers(map, mapLayers, shapes, propsArrArr, style) {
   'use strict';
   var layers = mapLayers || [];
+//  var counter = 0;
+//  for (var name in geoJsonLayers) {
+//    var layer = addGeoJsonShapes(map, null, geoJsonLayers[name], style);
+//    var newLayer = new L.layerGroup(layer);
+//    if (counter++ == 0)
+//      newLayer.addTo(map);
+//    layers[name] = newLayer;
+//  }
+  
+  var geoJsonLayers = {};
+  for (var name in propsArrArr) {
+    var propsArr = propsArrArr[name];
+    var geoJsonLayer = [];
+    for (var j = 0; j < propsArr.length; j++) {
+      var props = propsArr[j];
+      var shapeId = props['id'];
+      var shapeJson = shapes[shapeId];
+      var geoJson = JSON.parse(JSON.stringify(shapeJson)); //jQuery.extend(true, {}, shapeJson);
+      if (props.density)
+        geoJson.properties.density = props.density;
+      
+      geoJsonLayer.push(geoJson);
+    }
+    
+    geoJsonLayers[name] = geoJsonLayer;
+  }
+
   var counter = 0;
   for (var name in geoJsonLayers) {
     var layer = addGeoJsonShapes(map, null, geoJsonLayers[name], style);
+    console.log(name + " shapes: " + geoJsonLayers[name].length);
     var newLayer = new L.layerGroup(layer);
     if (counter++ == 0)
       newLayer.addTo(map);
     layers[name] = newLayer;
   }
-  
+
   return layers;
 }
 
-function addGeoJsonShapes(map, mapLayers, geoJsons, style) {
+function addGeoJsonShapes(map, mapLayers, geoJsons, style, autoAdd) {
   'use strict';
   var layers = mapLayers || [];
   for (var i = 0; i < geoJsons.length; i++) {
@@ -500,6 +528,9 @@ function addGeoJsonShapes(map, mapLayers, geoJsons, style) {
     };
   
     gj = L.geoJson(geoJsons[i], {style: style ? style : simpleStyle, onEachFeature: onEachFeature});
+    if (autoAdd)
+      gj.addTo(map);
+    
     if (geoJsons[i].properties.html)
       gj.bindPopup(geoJsons[i].properties.html);
     
@@ -513,34 +544,37 @@ function addClustersForGeoJsons(map, mapLayers, nameToGeoJson, clusterOptions, s
   'use strict';
   var i = 0;
   var layers = mapLayers || {};
+  var length = Object.size(nameToGeoJson);
   for (var name in nameToGeoJson) {
     var g = nameToGeoJson[name];
     var gj;
-//    var resetHighlight = function(e) {
-//      gj.resetStyle(e.target);
-//    };
-//    
-//    var onEachFeature = function(feature, layer) {
-//      layer.on({
-//        mouseover: highlight ? highlightFeature : updateInfos,
-//        mouseout: highlight ? resetHighlight : updateInfos,
-//        click: zoom ? zoomToFeature : null
-//      });
-//    };
+    var resetHighlight = function(e) {
+      gj.resetStyle(e.target);
+    };
+    
+    var onEachFeature = function(feature, layer) {
+      layer.on({
+        mouseover: highlight ? highlightFeature : updateInfos,
+        mouseout: highlight ? resetHighlight : updateInfos,
+        click: zoom ? zoomToFeature : null
+      });
+    };
     
     var options = clusterOptions ? clusterOptions : {};
-    if (!hexColor) {
-      var colors = generateColors(1, colorSeed || 0.5);
-      colorSeed = colors[0][0];
-      var color = hsv2rgb(colors[0][0], colors[0][1], colors[0][2]);
-      color = rgbToHex(color[0], color[1], color[2]);
-      options.color = color;
-    }
-    else {
-      options.color = hexColor;
-      var rgb = hexToRGB(hexColor);
-      colorSeed = rgb2hsv(rgb[0], rgb[1], rgb[2])[0];
-      hexColor = null;
+    if (length > 1) {
+      if (!hexColor) {
+        var colors = generateColors(1, colorSeed || 0.5);
+        colorSeed = colors[0][0];
+        var color = hsv2rgb(colors[0][0], colors[0][1], colors[0][2]);
+        color = rgbToHex(color[0], color[1], color[2]);
+        options.color = color;
+      }
+      else {
+        options.color = hexColor;
+        var rgb = hexToRGB(hexColor);
+        colorSeed = rgb2hsv(rgb[0], rgb[1], rgb[2])[0];
+        hexColor = null;
+      }
     }
     
     var markers = new L.MarkerClusterGroup(options);
