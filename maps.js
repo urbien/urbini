@@ -216,8 +216,14 @@ function addMapInfo(mapObj, item, areaType, areaUnit) {
   var init = '<h4>' + item + ' population density</h4>';
   // method that we will use to update the control based on feature properties passed
   info.update = function (props) {
-      this._div.innerHTML = init + 
-          (props ? '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + item + 's / ' + areaUnit + '<sup>2</sup>' : 'Hover over a ' + areaType);
+    if (props) {
+      if (props.density)
+        this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + item + 's / ' + areaUnit + '<sup>2</sup>';
+      else
+        this._div.innerHTML = init;
+    }
+    else
+      this._div.innerHTML = init + 'Hover over a ' + areaType;
   };
 
   info.updateWithHTML = function (html) {
@@ -456,6 +462,21 @@ function addDensityLegend(mapObj, geoJsons) {
   legend.addTo(mapObj);
 }
 
+function addGeoJsonShapeLayers(map, mapLayers, geoJsonLayers, style) {
+  'use strict';
+  var layers = mapLayers || [];
+  var counter = 0;
+  for (var name in geoJsonLayers) {
+    var layer = addGeoJsonShapes(map, null, geoJsonLayers[name], style);
+    var newLayer = new L.layerGroup(layer);
+    if (counter++ == 0)
+      newLayer.addTo(map);
+    layers[name] = newLayer;
+  }
+  
+  return layers;
+}
+
 function addGeoJsonShapes(map, mapLayers, geoJsons, style) {
   'use strict';
   var layers = mapLayers || [];
@@ -478,7 +499,7 @@ function addGeoJsonShapes(map, mapLayers, geoJsons, style) {
       });
     };
   
-    gj = L.geoJson(geoJsons[i], {style: style ? style : simpleStyle, onEachFeature: onEachFeature}).addTo(map);
+    gj = L.geoJson(geoJsons[i], {style: style ? style : simpleStyle, onEachFeature: onEachFeature});
     if (geoJsons[i].properties.html)
       gj.bindPopup(geoJsons[i].properties.html);
     
@@ -553,22 +574,20 @@ function addClustersForGeoJsons(map, mapLayers, nameToGeoJson, clusterOptions, s
   return layers;
 }
 
-function addLayersControlToMap(map, layers) {
-  var all = new L.layerGroup();
-  for (var name in layers) {
-    all.addLayer(layers[name]);
-  }
+function addLayersControlToMap(map, radioLayers, checkboxLayers, options) {
+  options = options || {position: 'topright'};
+  var lControl = L.control.layers(radioLayers, checkboxLayers, options).addTo(map);
   
-  all.addTo(map);
-  var outer = {'Show/Hide All': all};
-  for (var name in layers) {
-    outer[name] = layers[name];
-  }
-//  layers['Show/Hide All'] = all;
-//  var outer = {'All': all};
+//  var all = new L.layerGroup();
+//  for (var name in layers) {
+//    all.addLayer(layers[name]);
+//  }
+//  
+//  all.addTo(map);
+//  var outer = {'Show/Hide All': all};
 //  for (var name in layers) {
 //    outer[name] = layers[name];
 //  }
-  
-  var lControl = L.control.layers(null, outer).addTo(map);
+//  
+//  var lControl = L.control.layers(null, outer, {position: 'topleft'}).addTo(map);
 }
