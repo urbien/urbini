@@ -218,7 +218,7 @@ function addMapInfo(mapObj, item, areaType, areaUnit) {
   info.update = function (props) {
     if (props) {
       if (props.density)
-        this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + item + 's / ' + areaUnit + '<sup>2</sup>';
+        this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (item || props.item) + 's / ' + areaUnit + '<sup>2</sup>';
       else
         this._div.innerHTML = init;
     }
@@ -460,11 +460,13 @@ function addDensityLegend(mapObj, geoJsons) {
   };
   
   legend.addTo(mapObj);
+  return legend;
 }
 
 function addGeoJsonShapeLayers(map, mapLayers, shapes, propsArrArr, style) {
   'use strict';
   var layers = mapLayers || [];
+  var densityLegends = [];
 //  var counter = 0;
 //  for (var name in geoJsonLayers) {
 //    var layer = addGeoJsonShapes(map, null, geoJsonLayers[name], style);
@@ -483,8 +485,10 @@ function addGeoJsonShapeLayers(map, mapLayers, shapes, propsArrArr, style) {
       var shapeId = props['id'];
       var shapeJson = shapes[shapeId];
       var geoJson = JSON.parse(JSON.stringify(shapeJson)); //jQuery.extend(true, {}, shapeJson);
-      if (props.density)
-        geoJson.properties.density = props.density;
+      for (var prop in props) {
+        if (props.hasOwnProperty(prop))
+          geoJson.properties[prop] = props[prop];
+      }
       
       geoJsonLayer.push(geoJson);
     }
@@ -500,8 +504,18 @@ function addGeoJsonShapeLayers(map, mapLayers, shapes, propsArrArr, style) {
     if (counter++ == 0)
       newLayer.addTo(map);
     layers[name] = newLayer;
+//    newLayer.onAdd = function(map) {
+//      this._map = map;
+//      for (var i = 0; i < densityLegends.length; i++) {
+//        densityLegends[i].removeFrom(map);
+//      }
+//      
+//      var legend = addDensityLegend(map, geoJsonLayers[name]);
+//      densityLegends.push(legend);
+//    }
   }
 
+  addDensityLegend(map, geoJsonLayers);
   return layers;
 }
 
