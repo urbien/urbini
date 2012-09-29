@@ -204,7 +204,7 @@ function addBasicMapInfo(mapObj, init) {
   return mapInfo;
 }
 
-function addMapInfo(mapObj, item, areaType, areaUnit) {
+function addMapInfo(mapObj, type, subType, areaType, areaUnit) {
   'use strict';
   var info = L.control();
   info.onAdd = function (map) {
@@ -213,12 +213,12 @@ function addMapInfo(mapObj, item, areaType, areaUnit) {
       return this._div;
   };
 
-  var init = '<h4>' + item + ' population density</h4>';
+  var init = '<h4>' + type + ' population density</h4>';
   // method that we will use to update the control based on feature properties passed
   info.update = function (props) {
     if (props) {
       if (props.density)
-        this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (item || props.item) + 's / ' + areaUnit + '<sup>2</sup>';
+        this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (subType || props.item) + 's / ' + areaUnit + '<sup>2</sup>';
       else
         this._div.innerHTML = init;
     }
@@ -351,11 +351,6 @@ function addSizeButton(mapDiv, mapObj, bounds) {
   btn.onAdd = function (mapObj) {
     var maxImg = "<img src='icons/map-fullscreen.png' />";
     var minImg = "<img src='icons/map-unfullscreen.png' />";
-    var oWidth = mapDiv.offsetWidth;
-    var oHeight = mapDiv.offsetHeight;
-    var oTop = mapDiv.offsetTop;
-    var oLeft = mapDiv.offsetLeft;
-    var parent = mapDiv.parentNode;
     var div = L.DomUtil.create('div', 'resize');
     div.innerHTML = maxImg;
     div.onclick = function(e) {
@@ -363,11 +358,10 @@ function addSizeButton(mapDiv, mapObj, bounds) {
       if (maximized) {
         // restore
         mapDiv.style.position = 'relative';
-        mapDiv.style.width = oWidth;
-        mapDiv.style.height = oHeight;
-        mapDiv.style.top = oTop;
-        mapDiv.style.left = oLeft;
+        mapDiv.style.height = "";
         document.body.style.overflow = 'auto';
+        var parent = document.getElementById("siteResourceList");
+        parent.insertBefore(mapDiv, getFirstChild(parent));
         div.innerHTML = maxImg;
         mapObj.invalidateSize(true);
         mapObj.fitBounds(bounds);
@@ -379,7 +373,6 @@ function addSizeButton(mapDiv, mapObj, bounds) {
         mapDiv.style.position = 'absolute';
         mapDiv.style.top = scroll[1] + "px"; 
         mapDiv.style.left = scroll[0] + "px"; 
-        mapDiv.style.width = wDim[0] + "px";
         mapDiv.style.height = wDim[1] + "px";
         document.body.appendChild(mapDiv);
         document.body.style.overflow = 'hidden';
