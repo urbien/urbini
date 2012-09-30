@@ -217,10 +217,13 @@ function addMapInfo(mapObj, type, subType, areaType, areaUnit) {
   // method that we will use to update the control based on feature properties passed
   info.update = function (props) {
     if (props) {
-      if (props.density)
+      if (props.density != null)
         this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (subType || props.item) + 's / ' + areaUnit + '<sup>2</sup>';
       else
         this._div.innerHTML = init;
+      
+//      if (props.count != null)
+//        this._div.innerHTML += 'Total: ' + props.count + ' ' + (subType || props.item) + 's';
     }
     else
       this._div.innerHTML = init + 'Hover over a ' + areaType;
