@@ -22,6 +22,13 @@ div#wrapper {
   position: relative; /* for the footer */
 }
 
+/* use the following classes as additionl ones */
+/*.transition { -webkit-transition: all 0.3s ease-in-out; -moz-transition: all 10.3s ease-in-out; -o-transition: all 0.1s ease-in-out; transition: all 0.3s ease-in-out; }*/
+.relative { position: relative; }    
+.pointer { cursor: pointer; }
+.dragable, .move { cursor: move; }
+.no_selection { -webkit-user-select:none; -moz-user-select:none; -o-user-select:none; user-select:none; }    
+/**********************************************?
 
 /* html div#wrapper { height: 100%; width: 960px; } * html div#wrapperM { width: 960px; height: 100%; } */
 
@@ -107,13 +114,7 @@ table.tight, table.tight td { padding: 0 !importa; border-collapse: collapse !im
   font-family: "Li Sung", MingLiu; font-size:1em;
 }
 
-.relative { position: relative }    
-.pointer { cursor: pointer; }
-.dragable, .move { cursor: move; }
-    
-img.fade {
-   opacity:       0.6;
-}
+img.fade { opacity: 0.6; }
 
 #fts td {padding-bottom: 1.2em;}
 #fts {font-size: small;}
@@ -1752,11 +1753,15 @@ table.printFB {
 #ropLeft h3 {margin: 0px -5px 5px -5px; padding: 5px 0px 5px 10px; background: #ccc; font-weight: normal;}
 #ropLeft .button { margin: 0px 5px 10px 5px; white-space: normal; }
 
-.userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
-.userLogin #errorMessage { max-width: 420px; }
 .fbUser div { position: relative; }
 .fbUser img.icon16 { position: absolute; bottom: 0; right: 0; margin: 0px; }
+
+/*
+.userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
+.userLogin #errorMessage { max-width: 420px; }
 #loginForm td { font-weight: bold; }
+*/
+
 .redeem { width: auto; background-color: #ffffff; color: #2B0764; border: 1px solid #cccccc; padding: 5 5 5 5; }
 
 .rte { margin-bottom: 7px; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; padding:0; height: 107px; width: 98%; float: right; margin-right: 3px; /*trying to align with inputs*/ }
@@ -1956,7 +1961,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 * html .dat_td .comment { left: 5px; } /* hack for multivalue */
 .field_comment .comment { margin-top: 5px; }
 
-.rounded_rect_tbl .input, #register .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input, .false_textarea, .false_empty_field { 
+.rounded_rect_tbl .input, #register .input, #register .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input, .false_textarea, .false_empty_field { 
   margin: 0px; padding: 1px; min-height: 22px;
   color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; width: 250px; height: auto;
   font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px;
@@ -1964,7 +1969,6 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 .rounded_rect_tbl .pointer input, .mobile_dlg input { text-align: right; }
 
 .rounded_rect_tbl .with_units .input { width: 150px; }
-#register .input { text-align: left;  height: 25px; }
 
 .false_input, .false_textarea { display: inline-block; text-align: left; cursor: text !important; }
 .false_textarea { height: 50px; width: 500px !important; }
@@ -2195,7 +2199,7 @@ td.pBGr { background-color: #eeeeee;
 /*.cp_item_left { min-height: 30px; }*/
 .backlink_counter { position: absolute; pointer-events: none; }
 .cp_item_right .backlink_counter { top: -7px; left: 15px; }
-.cp_item_left  .backlink_counter { top: 2px; right: 5px; }
+.cp_item_left  .backlink_counter { top: 2px; right: 0px; }
 
 .backlink_counter .left, .backlink_counter .right { height: 25px; background-image: url(../images/skin/iphone/backlink_counter.png); background-repeat: no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
