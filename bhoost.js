@@ -464,13 +464,13 @@ var Boost = {
     return $t.urlToDivs[$t.currentUrl];
   },
   showActionMenu : function(event, link) {
-		var urlLink = getChildById(this.getCurrentPageDiv(), "action_menu_url_link");
-		if (!urlLink)
-		  return;
-		// set real URL to UI link
-		link.href = urlLink.href;
-		LinkProcessor.onClickDisplayInner(event, urlLink);
-	},
+    var urlLink = getChildById(this.getCurrentPageDiv(), "action_menu_url_link");
+    if (!urlLink)
+      return;
+    // set real URL to UI link
+    link.href = urlLink.href;
+    LinkProcessor.onClickDisplayInner(event, urlLink);
+  },
   showOptionsMenu: function() {
     var $t = Mobile;
     if ($t.isHistoryView) {
@@ -1399,7 +1399,7 @@ var Boost = {
     if (!link || !link.href || link.href == null)
       return true;
     
-    if (link.className == "external") // go to other web site
+    if (link.className == "external" || link.id == "-inner") // go to other web site
       return true;
       
     var ln = link.href;
@@ -1445,7 +1445,7 @@ var Boost = {
   // intoCurrentPage in case of data entry
   getPage: function(e, link, intoCurrentPage) {
     var $t = Mobile;
-    if (!$t.currentUrl) {
+    if (!$t.currentUrl /*&& !intoCurrentPage*/) {
       $t.currentUrl = document.location.href;
       var s = new Array();
       s[0] = $t.currentUrl;
@@ -1518,7 +1518,7 @@ var Boost = {
       currentDiv.style.display = "inline";
       return stopEventPropagation(e);
     }
-    if (isRefresh)
+    if (isRefresh /*|| intoCurrentPage*/)
       newUrl = $t.currentUrl;
     else if (!isMore) {
       $t.browsingHistory[$t.browsingHistoryPos] = newUrl;
@@ -1530,21 +1530,22 @@ var Boost = {
         $t.browsingHistory[i] = null;
       }
     }
-
     var div;
-    if (isMore) {
-      if (intoCurrentPage) 
-        div = currentDiv;
-      else {
-        div = document.createElement("DIV");
-        // class "mobile_page" to distinguish it as a page.
-        div.className = "mobile_page";
-        div.style.visibility = "hidden";
-        div.style.display = "none";
-      }
+    // if (isMore) {
+      // if (intoCurrentPage) 
+        // div = currentDiv;
+      // else {
+        // div = document.createElement("div");
+        // // class "mobile_page" to distinguish it as a page.
+        // div.className = "mobile_page";
+        // div.style.visibility = "hidden";
+        // div.style.display = "none";
+      // }
+    // }
+    if (isMore || intoCurrentPage) {
+      div = currentDiv;
     }
-    else {
-     // page is in history
+    else { // page is in history
       div = $t.urlToDivs[newUrl];
       $t.currentUrl = newUrl;
       if (div  &&  !isRefresh) {
@@ -1600,16 +1601,18 @@ var Boost = {
     function loadPage(event, div, hotspot, content, url) {
       $t._preventingDoubleClick = false;
 
+      MobilePageAnimation.hideDialog(); // possible opened (login dialog, for example)
+
       // if server returned HTML containing "panel_block"
       // then it is data entry dialog with error message.
       if (content.indexOf("panel_block") != -1) {
         // "roll back" appending of new div
-				if (div.parentNode) {
-					div.parentNode.removeChild(div);
-					delete $t.urlToDivs[$t.currentUrl];
-					$t.browsingHistoryPos--;
-					$t.currentUrl = $t.browsingHistory[$t.browsingHistoryPos];
-				}
+        if (div.parentNode) {
+          div.parentNode.removeChild(div);
+          delete $t.urlToDivs[$t.currentUrl];
+          $t.browsingHistoryPos--;
+          $t.currentUrl = $t.browsingHistory[$t.browsingHistoryPos];
+        }
         DataEntry.onDataEntryLoaded(event, div, hotspot, content, url, true);
         // hides the location bar
         scrollTo(0, 1);
@@ -1617,31 +1620,31 @@ var Boost = {
       }
 
   
-	    // login page: it contains register/hashScript.js
-	    // remove register if it was previously created
-	    var regDiv = document.getElementById("register");
-	    if (regDiv)
-	      regDiv.parentNode.removeChild(regDiv);
-	    // create register dialog an initialize it
-	    if (content.indexOf("register/hashScript") != -1) {
-	      var regDiv = getDomObjectFromHtml(content, "id", "register");
-	      if (regDiv) {
-	        regDiv.className = "mobile_dlg";
-	        document.body.appendChild(regDiv);
-	        scrollTo(0, 1);
-	        setDivVisible(event, regDiv, hotspot);
-	        // execute inner script for social nets
-	        ExecJS.runDivCode(regDiv);
-	        // download hashScript.js on demand with timestamp suffix
-	        LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
-	        // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
-	        var jstest = getChildByAttribute(regDiv, "name", '.jstest');
-	        jstest.value = "ok";
-	        return;
-	      }
-	    }
+      // login page: it contains register/hashScript.js
+      // remove register if it was previously created
+      var regDiv = document.getElementById("register");
+      if (regDiv)
+        regDiv.parentNode.removeChild(regDiv);
+      // create register dialog an initialize it
+      if (content.indexOf("register/hashScript") != -1) {
+        var regDiv = getDomObjectFromHtml(content, "id", "register");
+        if (regDiv) {
+          regDiv.className = "mobile_dlg";
+          document.body.appendChild(regDiv);
+          scrollTo(0, 1);
+          setDivVisible(event, regDiv, hotspot);
+          // execute inner script for social nets
+          ExecJS.runDivCode(regDiv);
+          // download hashScript.js on demand with timestamp suffix
+          LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
+          // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
+          var jstest = getChildByAttribute(regDiv, "name", '.jstest');
+          jstest.value = "ok";
+          return;
+        }
+      }
     
-		  // update mobile menu after log in
+      // update mobile menu after log in
       if (content.indexOf("menu_Options") != -1) {
         var newOptDiv = getDomObjectFromHtml(content, "id", "menu_Options");
         var oldOptDiv = document.getElementById("menu_Options");
@@ -1649,19 +1652,19 @@ var Boost = {
         parent.removeChild(oldOptDiv);
         parent.appendChild(newOptDiv);
       }
-			
-			// finally, set NEW PAGE content
+      
+      // finally, set NEW PAGE content
       // hack: in case if serever returns full html page instead
       //(page with error message, for example; generated from widget/page.jsp)
       // mobile_page div content then retrieve mobile_page content only
       var page = getDomObjectFromHtml(content, "className", "mobile_page");
       if (page != null) {
         page.id = "";
-	  		content = page.innerHTML;
+        content = page.innerHTML;
       }
- 			setInnerHtml(div, content);
-			$t.setTitle(div);
-			
+      setInnerHtml(div, content);
+      $t.setTitle(div);
+      
       // init for each new 'mobile' page
       FormProcessor.initForms();
               
@@ -1975,7 +1978,7 @@ var Boost = {
  **********************************************/
 var MobilePageAnimation = {
   dlgDiv : null,
-	dlgDivToHide : null,
+  dlgDivToHide : null,
   isInitialized : false,
 
   init : function() {
@@ -2023,15 +2026,15 @@ var MobilePageAnimation = {
     div.style.top = getScrollXY()[1] + 'px';
     div.style.minHeight = getWindowSize()[1] + 'px';
     setTransformProperty(div, "scale(0.3)");
-		
-		if (div.id != "browser_dlg") { // browser_dlg is our alert dialog
-			appendClassName(div, "mobile_dlg");
-			if (!isDialogOnPage(div)) 
-				setTransitionCallback(div, MobilePageAnimation._onZoomInDialogEnd);
-	  }
-		
-		div.style.visibility = "visible";
-		// on fast animation a dialog can disapeared for a moment
+    
+    if (div.id != "browser_dlg") { // browser_dlg is our alert dialog
+      appendClassName(div, "mobile_dlg");
+      if (!isDialogOnPage(div)) 
+        setTransitionCallback(div, MobilePageAnimation._onZoomInDialogEnd);
+    }
+    
+    div.style.visibility = "visible";
+    // on fast animation a dialog can disapeared for a moment
     // increas time to overcome it
     setTimeout(function f() { setTransitionProperty(div, "all 0.8s ease-in-out"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
   },
@@ -2042,8 +2045,10 @@ var MobilePageAnimation = {
   },
   
   hideDialog : function(div) {
-    if (!isVisible(div))
-		  return;
+    if (!div)
+      div = document.getElementById("pane2");
+    if (!div || !isVisible(div))
+      return;
     this.dlgDivToHide = div;
     setTransitionCallback(div, MobilePageAnimation._onZoomOutDialogEnd); 
     Mobile.getCurrentPageDiv().style.opacity = 1
@@ -2054,7 +2059,7 @@ var MobilePageAnimation = {
   _onZoomOutDialogEnd : function() {
     var $t = MobilePageAnimation;
     // remove dialog from document to avoid interference with other dialogs
- 		$t.dlgDivToHide.parentNode.removeChild($t.dlgDivToHide);
+    $t.dlgDivToHide.parentNode.removeChild($t.dlgDivToHide);
     removeTransitionCallback($t.dlgDivToHide, MobilePageAnimation._onZoomOutDialogEnd); 
   },
 
@@ -2102,8 +2107,8 @@ var MobileMenuAnimation = {
   },
   
   hide : function() {
-		if (!this.optionsDiv)
-		  return;
+    if (!this.optionsDiv)
+      return;
     setTransitionCallback(this.optionsDiv, this._finishHide);
     this.optionsDiv.style.opacity = "0.1";
   },
