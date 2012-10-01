@@ -4376,7 +4376,11 @@ var PlainDlg = {
     }
     else
       finalUrl += '&';
-    finalUrl += "-inner=y";
+      
+    if (Browser.mobile && anchor.href.indexOf("j_security_check") != -1) // mobile login 
+      finalUrl += "returnUri=" + encodeURIComponent(Mobile.getCurrentUrl());
+    else  
+      finalUrl += "-inner=y";
   
     var action = getUrlParam(finalUrl, "-$action");
     var url = finalUrl;
@@ -9026,14 +9030,14 @@ var Dashboard = {
     var dbStyle = dragBlock.style;
 
   //  phStyle.width   = width - 2;
-    phStyle.height  = height - 2;
+    phStyle.height  = height - 2 + "px";
     phStyle.display = "block";
 
     var x = findPosX(dragBlock);
     var y = findPosY(dragBlock);
-    dbStyle.width = width;
-    dbStyle.left  = x;
-    dbStyle.top   = y;
+    dbStyle.width = width + "px";
+    dbStyle.left  = x + "px";
+    dbStyle.top   = y + "px";
     dbStyle.position = "absolute";
 
     this.prevWidgetOld = this.getPrevWidget(dragBlock);
@@ -13112,6 +13116,16 @@ var EndlessPager = {
   nabsGrid : null,  // masonry
   recourseTable : null, // blog
   skip : false,
+  init : function() {
+    if (this.indicatorTd != null)
+      return; // initialized
+
+    addEvent(window, "scroll", EndlessPager.onscroll, false);
+    // no scrollbar - to bring a portion of resources to show a scrollbar
+    // thus to enable endless page
+    if (document.body.clientHeight == document.body.scrollHeight)
+      EndlessPager.onscroll();
+  },
   onscroll : function(event) {
     var $t = EndlessPager;
     if ($t.skip)
