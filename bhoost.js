@@ -1398,8 +1398,8 @@ var Boost = {
     var link = getAncestorByTagName(l, "a"); //getAnchorForEventTarget1(l);
     if (!link || !link.href || link.href == null)
       return true;
-    
-    if (link.className == "external" || link.id == "-inner") // go to other web site
+    // dialog or other web site
+    if (link.id == "-inner" || link.className == "external")
       return true;
       
     var ln = link.href;

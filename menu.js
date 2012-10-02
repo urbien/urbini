@@ -4376,10 +4376,6 @@ var PlainDlg = {
     }
     else
       finalUrl += '&';
-      
-    if (Browser.mobile && anchor.href.indexOf("j_security_check") != -1) // mobile login 
-      finalUrl += "returnUri=" + encodeURIComponent(Mobile.getCurrentUrl());
-    else  
       finalUrl += "-inner=y";
   
     var action = getUrlParam(finalUrl, "-$action");
@@ -13116,16 +13112,6 @@ var EndlessPager = {
   nabsGrid : null,  // masonry
   recourseTable : null, // blog
   skip : false,
-  init : function() {
-    if (this.indicatorTd != null)
-      return; // initialized
-
-    addEvent(window, "scroll", EndlessPager.onscroll, false);
-    // no scrollbar - to bring a portion of resources to show a scrollbar
-    // thus to enable endless page
-    if (document.body.clientHeight == document.body.scrollHeight)
-      EndlessPager.onscroll();
-  },
   onscroll : function(event) {
     var $t = EndlessPager;
     if ($t.skip)
