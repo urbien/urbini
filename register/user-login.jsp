@@ -1,4 +1,39 @@
 <div id="register" align="center">
+
+<!-- style -->
+<style>
+.userLogin .rounded_rect_tbl { padding: 5px 10px; }
+.userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
+.userLogin #errorMessage { max-width: 420px; }
+.userLogin .input { height: 25px; 
+  border-radius: 3px 3px 3px 3px;
+   /*
+    
+    box-shadow: 0 0 0 #000000, 0 3px 3px #EEEEEE inset;
+*/
+}
+
+
+	.userLogin .prompt {
+	  opacity: 0.6;
+	  bottom: 1px;
+	  /*color: #999999;*/
+	  cursor: text;
+	  font-size: 13px;
+	  height: 20px;
+	  top: 3px;
+	  left: 3px;
+	  line-height: 20px;
+	  padding: 4px;
+	  position: absolute;
+	  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+	  white-space: nowrap;
+	  z-index: 1;
+	  font-size: 100%;
+	}
+</style>
+
+
 <table cellspacing="0" cellpadding="0">
 <tr>
 <td>
@@ -46,21 +81,32 @@
         </td>
       </tr>
       <tr>
+        <!--
         <td width="40%" class="nowrap" align="right"><text text="User name:"/></td>
+        -->
         <td>
           <loginFormUserName />
         </td>
       </tr>
       <tr>
-        <td align="right"> <text text="Password:"/></td>
+        <!-- 
+          <td align="right"> <text text="Password:"/></td>
+        -->
         <td>
-          <input type="Password" class="input" name="j_password"  size="15" maxlength="50"/>
+	        <div class="relative">
+	          <input id="password_input" type="password" class="input" name="j_password"  size="15" maxlength="50"/>
+	          <label class="prompt no_selection" for="password_input">
+	            <text text="Password"/>
+	          </label>
+	        </div>
         </td>
       </tr>
       <tr>
+      <!--
         <td></td>
+      -->  
         <td>
-           <a href="register/password-reminder.html"><span style="font-size: 11px;"><text text="Forgot password?" /></span></a>
+           <a style="float: right;" href="register/password-reminder.html"><span style="font-size: 11px;"><text text="Forgot password?" /></span></a>
         </td>
       </tr>
       <tr>
@@ -89,4 +135,37 @@
 <td></td>
 </tr>
 </table>
+
+<script type="text/javascript">
+<![CDATA[ 
+var PromptField = {
+	bind : function(fields) {
+    for (var i = 0; i < fields.length; i++) {
+    	fields[i].onfocus  = this.handler;
+      fields[i].onkeydown  = this.handler;
+      fields[i].onblur  = this.handler;
+      console.log(getNextSibling)
+      var label = getNextSibling(fields[i]);
+      setTransitionProperty(label, "opacity 0.2s linear");
+    }
+  },
+	handler : function(event) {
+    var field = getEventTarget(event);
+    var label = getNextSibling(field);
+    if (event.type == "focus")
+      label.style.opacity = 0.3;
+    else if (event.type == "keydown")
+      label.style.visibility = "hidden";
+    else if (event.type == "blur" && field.value.length == 0){
+      label.style.opacity = 0.6;
+      label.style.visibility = "";
+    }
+  }
+}
+PromptField.bind([document.getElementById("password_input"), document.getElementById("j_username")]);
+]]>
+</script>
+
+
+
 </div>

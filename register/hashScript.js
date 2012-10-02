@@ -257,7 +257,7 @@ function hash(form, login_url) {
 
   // mobile mode: load page in div with help of Ajax request.
   if (typeof Mobile != 'undefined')
-    Mobile.getPage(null, url);
+    Mobile.getPage(null, url, true);
   else 
     location.href = url;
     

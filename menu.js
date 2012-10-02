@@ -4376,7 +4376,7 @@ var PlainDlg = {
     }
     else
       finalUrl += '&';
-    finalUrl += "-inner=y";
+      finalUrl += "-inner=y";
   
     var action = getUrlParam(finalUrl, "-$action");
     var url = finalUrl;
@@ -9026,14 +9026,14 @@ var Dashboard = {
     var dbStyle = dragBlock.style;
 
   //  phStyle.width   = width - 2;
-    phStyle.height  = height - 2;
+    phStyle.height  = height - 2 + "px";
     phStyle.display = "block";
 
     var x = findPosX(dragBlock);
     var y = findPosY(dragBlock);
-    dbStyle.width = width;
-    dbStyle.left  = x;
-    dbStyle.top   = y;
+    dbStyle.width = width + "px";
+    dbStyle.left  = x + "px";
+    dbStyle.top   = y + "px";
     dbStyle.position = "absolute";
 
     this.prevWidgetOld = this.getPrevWidget(dragBlock);
