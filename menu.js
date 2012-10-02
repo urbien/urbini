@@ -12184,7 +12184,7 @@ function repostToVK(http_request) {
 }
 
 function toConsole(text) {
-  if (typeof console == 'undefined')
+  if (typeof console === 'undefined')
     return;
   else
     console.log(text);
@@ -13100,6 +13100,13 @@ function toggleLocationAwareness(on) {
   }
 }
 
+Object.size = function(obj) {
+  var size = 0, key;
+  for (key in obj) {
+      if (obj.hasOwnProperty(key)) size++;
+  }
+  return size;
+};
 
 //***********************************
 // EndlessPager for masonry layout

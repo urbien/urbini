@@ -1,5 +1,6 @@
 golden_ratio_conjugate = 0.618033988749895;
 function generateColors(total, seed) {
+  'use strict';
   var r = [];
   var third, secondThird;
   if (total < 3) {
@@ -36,6 +37,7 @@ function generateColors(total, seed) {
 }
 
 function getTextColor(bgR, bgG, bgB) {
+  'use strict';
   var d = 0;
   
   // Counting the perceptive luminance - human eye favors green color... 
@@ -50,20 +52,24 @@ function getTextColor(bgR, bgG, bgB) {
 }
 
 function componentToHex(c) {
+  'use strict';
   var hex = c.toString(16);
   return hex.length == 1 ? "0" + hex : hex;
 }
 
 function rgbToHex(r, g, b) {
+  'use strict';
   return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
 function hexToRGB(h) {
+  'use strict';
   var num = (h.charAt(0)=="#") ? h.substring(1,7): h;
   return [parseInt(num.substring(0,2),16), parseInt(num.substring(2,4),16), parseInt(num.substring(4,6), 16)];
 }
 
 function hsv2rgb(h, s, v) {
+  'use strict';
   //Adapted from http://www.easyrgb.com/math.html
   //hsv values = 0 - 1, rgb values = 0 - 255
   var r, g, b;
@@ -72,6 +78,7 @@ function hsv2rgb(h, s, v) {
       var r = Math.round(v * 255);
       RGB = [r, r, r];
   } else {
+      var var_r, var_g, var_b;
       // h must be < 1
       var var_h = h * 6;
       if (var_h == 6) var_h = 0;
@@ -103,7 +110,7 @@ function hsv2rgb(h, s, v) {
       } else {
           var_r = v;
           var_g = var_1;
-          var_b = var_2
+          var_b = var_2;
       }
       //rgb results = 0 ÷ 255  
       RGB = [Math.round(var_r * 255), Math.round(var_g * 255), Math.round(var_b * 255)];
@@ -113,6 +120,7 @@ function hsv2rgb(h, s, v) {
 };
 
 function rgb2hsv (r,g,b) {
+  'use strict';
   var computedH = 0;
   var computedS = 0;
   var computedV = 0;
@@ -138,36 +146,42 @@ function rgb2hsv (r,g,b) {
 }
 
 function componentToHex(c) {
+  'use strict';
   var hex = c.toString(16);
   return hex.length == 1 ? "0" + hex : hex;
 }
 
 function rgbToHex(r, g, b) {
+  'use strict';
   return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
 var mapInfoObjs = [];
 
 function clearInfos(e) {
-  for (info in mapInfoObjs) {
-    mapInfoObjs[info].update();
+  'use strict';
+  for (var i = 0; i < mapInfoObjs.length; i++) {
+    mapInfoObjs[i].update();
   }  
 }
 
 function updateInfosForLayer(layer) {
-  for (info in mapInfoObjs) {
+  'use strict';
+  for (var i = 0; i < mapInfoObjs.length; i++) {
     if (layer.feature.properties)
-      mapInfoObjs[info].update(layer.feature.properties);
+      mapInfoObjs[i].update(layer.feature.properties);
   }
 }
 
 function updateInfosWithHTML(html) {
-  for (info in mapInfoObjs) {
-    mapInfoObjs[info].updateWithHTML(html);
+  'use strict';
+  for (var i = 0; i < mapInfoObjs.length; i++) {
+    mapInfoObjs[i].updateWithHTML(html);
   }
 }
 
 function addBasicMapInfo(mapObj, init) {
+  'use strict';
   var mapInfo = L.control();
   mapInfo.onAdd = function (map) {
       this._div = L.DomUtil.create('div', 'mapInfo'); // create a div with a class "info"
@@ -190,7 +204,8 @@ function addBasicMapInfo(mapObj, init) {
   return mapInfo;
 }
 
-function addMapInfo(mapObj, item, areaType, areaUnit) {
+function addMapInfo(mapObj, type, subType, areaType, areaUnit) {
+  'use strict';
   var info = L.control();
   info.onAdd = function (map) {
       this._div = L.DomUtil.create('div', 'mapInfo'); // create a div with a class "info"
@@ -198,11 +213,20 @@ function addMapInfo(mapObj, item, areaType, areaUnit) {
       return this._div;
   };
 
-  var init = '<h4>' + item + ' population density</h4>';
+  var init = '<h4>' + type + ' population density</h4>';
   // method that we will use to update the control based on feature properties passed
   info.update = function (props) {
-      this._div.innerHTML = init + 
-          (props ? '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + item + 's / ' + areaUnit + '<sup>2</sup>' : 'Hover over a ' + areaType);
+    if (props) {
+      if (props.density != null)
+        this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (subType || props.item) + 's / ' + areaUnit + '<sup>2</sup>';
+      else
+        this._div.innerHTML = init;
+      
+//      if (props.count != null)
+//        this._div.innerHTML += 'Total: ' + props.count + ' ' + (subType || props.item) + 's';
+    }
+    else
+      this._div.innerHTML = init + 'Hover over a ' + areaType;
   };
 
   info.updateWithHTML = function (html) {
@@ -214,11 +238,13 @@ function addMapInfo(mapObj, item, areaType, areaUnit) {
 }
 
 function updateInfos(e) {
+  'use strict';
   var layer = e.target;
   updateInfosForLayer(layer);
 }
 
 function highlightFeature(e) {
+  'use strict';
     var layer = e.target;
 
     layer.setStyle({
@@ -238,6 +264,7 @@ function highlightFeature(e) {
 }
 
 function paintPolygon(map, shapeDiv) {
+  'use strict';
   var json = eval(shapeDiv.innerHTML);
   var numRings = json.length;
   for (var i = 0; i < numRings; i++) {
@@ -255,6 +282,7 @@ var defaultMinMapDensity = 0;
 var defaultMaxMapDensity = 10;
 var minResolution = 0.01
 function getLeafletMapTileColor(d) {
+  'use strict';
   var min = minMapDensity || defaultMinMapDensity;
   var max = maxMapDensity || defaultMaxMapDensity;
   if (max < minResolution)
@@ -276,6 +304,7 @@ function getLeafletMapTileColor(d) {
 
 var percentiles = [0, 10, 20, 40, 66, 75, 90, 95];
 function getColorForPercentile(percentile) {
+  'use strict';
   var color =
     percentile > percentiles[7] ? '#800026' :
     percentile > percentiles[6]  ? '#BD0026' :
@@ -290,12 +319,14 @@ function getColorForPercentile(percentile) {
 }
 
 function simpleDashedStyle(feature) {
+  'use strict';
   var simple = simpleStyle(feature);
   simple['dashArray'] = '3';
   return simple;
 }
 
 function simpleStyle(feature) {
+  'use strict';
   return {
       fillColor: '#efefff',
       weight: 2,
@@ -306,6 +337,7 @@ function simpleStyle(feature) {
 }
 
 function leafletDensityMapStyle(feature) {
+  'use strict';
   return {
       fillColor: getLeafletMapTileColor(feature.properties.density),
       weight: 2,
@@ -316,21 +348,12 @@ function leafletDensityMapStyle(feature) {
   };
 }
 
-function zoomToFeature(e) {
-  if (map)
-    map.fitBounds(e.target.getBounds());
-}
-
 function addSizeButton(mapDiv, mapObj, bounds) {
+  'use strict';
   var btn = L.control({position: 'bottomleft'});
   btn.onAdd = function (mapObj) {
     var maxImg = "<img src='icons/map-fullscreen.png' />";
     var minImg = "<img src='icons/map-unfullscreen.png' />";
-    var oWidth = mapDiv.offsetWidth;
-    var oHeight = mapDiv.offsetHeight;
-    var oTop = mapDiv.offsetTop;
-    var oLeft = mapDiv.offsetLeft;
-    var parent = mapDiv.parentNode;
     var div = L.DomUtil.create('div', 'resize');
     div.innerHTML = maxImg;
     div.onclick = function(e) {
@@ -338,11 +361,10 @@ function addSizeButton(mapDiv, mapObj, bounds) {
       if (maximized) {
         // restore
         mapDiv.style.position = 'relative';
-        mapDiv.style.width = oWidth;
-        mapDiv.style.height = oHeight;
-        mapDiv.style.top = oTop;
-        mapDiv.style.left = oLeft;
+        mapDiv.style.height = "";
         document.body.style.overflow = 'auto';
+        var parent = document.getElementById("siteResourceList");
+        parent.insertBefore(mapDiv, getFirstChild(parent));
         div.innerHTML = maxImg;
         mapObj.invalidateSize(true);
         mapObj.fitBounds(bounds);
@@ -354,7 +376,6 @@ function addSizeButton(mapDiv, mapObj, bounds) {
         mapDiv.style.position = 'absolute';
         mapDiv.style.top = scroll[1] + "px"; 
         mapDiv.style.left = scroll[0] + "px"; 
-        mapDiv.style.width = wDim[0] + "px";
         mapDiv.style.height = wDim[1] + "px";
         document.body.appendChild(mapDiv);
         document.body.style.overflow = 'hidden';
@@ -370,6 +391,7 @@ function addSizeButton(mapDiv, mapObj, bounds) {
 }
 
 function addReZoomButton(mapObj, bounds) {
+  'use strict';
   var rezoom = L.control({position: 'bottomleft'});
   rezoom.onAdd = function (mapObj) {
     var div = L.DomUtil.create('div', 'rezoom');
@@ -384,7 +406,12 @@ function addReZoomButton(mapObj, bounds) {
   rezoom.addTo(mapObj);
 }
 
-function addMapLegend(mapObj) {
+function addDensityLegend(mapObj, geoJsons) {
+  'use strict';
+//  var length = geoJsons.length;
+//  var numPercentiles = Math.min(Math.log(length), 8);
+  
+  
   var max = maxMapDensity || defaultMaxMapDensity;
   if (max < minResolution)
     return;
@@ -394,13 +421,18 @@ function addMapLegend(mapObj) {
   legend.onAdd = function (mapObj) {
     var grades = [];
     var range = max - min;
+    var rangeDigits = Math.round(Math.log(range) / Math.log(10));
+    var pow = -rangeDigits + 2;
+    var multiplier = Math.pow(10, pow);
     if (range == 0) {
       grades.push(max);
     }
     else {
       for (var i = 0; i < percentiles.length; i++) {
-        var grade = Math.round(100 *(min + (percentiles[i] / 100) * range)) / 100;
-        if (grade > 0 && grades.indexOf(grade) == -1)
+        var grade = min + (percentiles[i] / 100) * range;
+        grade = Math.round(multiplier * grade) / multiplier;
+        
+        if (grades.indexOf(grade) == -1)
           grades.push(grade);
       }
     }
@@ -424,17 +456,79 @@ function addMapLegend(mapObj) {
   };
   
   legend.addTo(mapObj);
+  return legend;
 }
 
-function addGeoJsonShapes(map, geoJsons, style) {
-  var layers = [];
-  for (name in geoJsons) {
+function addGeoJsonShapeLayers(map, mapLayers, shapes, propsArrArr, style) {
+  'use strict';
+  var layers = mapLayers || [];
+  var densityLegends = [];
+//  var counter = 0;
+//  for (var name in geoJsonLayers) {
+//    var layer = addGeoJsonShapes(map, null, geoJsonLayers[name], style);
+//    var newLayer = new L.layerGroup(layer);
+//    if (counter++ == 0)
+//      newLayer.addTo(map);
+//    layers[name] = newLayer;
+//  }
+  
+  var geoJsonLayers = {};
+  for (var name in propsArrArr) {
+    var propsArr = propsArrArr[name];
+    var geoJsonLayer = [];
+    for (var j = 0; j < propsArr.length; j++) {
+      var props = propsArr[j];
+      var shapeId = props['id'];
+      var shapeJson = shapes[shapeId];
+      var geoJson = JSON.parse(JSON.stringify(shapeJson)); //jQuery.extend(true, {}, shapeJson);
+      for (var prop in props) {
+        if (props.hasOwnProperty(prop))
+          geoJson.properties[prop] = props[prop];
+      }
+      
+      geoJsonLayer.push(geoJson);
+    }
+    
+    geoJsonLayers[name] = geoJsonLayer;
+  }
+
+  var counter = 0;
+  for (var name in geoJsonLayers) {
+    var layer = addGeoJsonShapes(map, null, geoJsonLayers[name], style);
+    console.log(name + " shapes: " + geoJsonLayers[name].length);
+    var newLayer = new L.layerGroup(layer);
+    if (counter++ == 0)
+      newLayer.addTo(map);
+    layers[name] = newLayer;
+//    newLayer.onAdd = function(map) {
+//      this._map = map;
+//      for (var i = 0; i < densityLegends.length; i++) {
+//        densityLegends[i].removeFrom(map);
+//      }
+//      
+//      var legend = addDensityLegend(map, geoJsonLayers[name]);
+//      densityLegends.push(legend);
+//    }
+  }
+
+  addDensityLegend(map, geoJsonLayers);
+  return layers;
+}
+
+function addGeoJsonShapes(map, mapLayers, geoJsons, style, autoAdd) {
+  'use strict';
+  var layers = mapLayers || [];
+  for (var i = 0; i < geoJsons.length; i++) {
     var gj;
     var resetHighlight = function(e) {
       gj.resetStyle(e.target);
       clearInfos(e);
     };
     
+    var zoomToFeature = function(e) {
+      map.fitBounds(e.target.getBounds());
+    }
+
     var onEachFeature = function(feature, layer) {
       layer.on({
         mouseover: highlightFeature,
@@ -443,44 +537,54 @@ function addGeoJsonShapes(map, geoJsons, style) {
       });
     };
   
-    gj = L.geoJson(geoJsons[name], {style: style ? style : simpleStyle, onEachFeature: onEachFeature}).addTo(map);
+    gj = L.geoJson(geoJsons[i], {style: style ? style : simpleStyle, onEachFeature: onEachFeature});
+    if (autoAdd)
+      gj.addTo(map);
+    
+    if (geoJsons[i].properties.html)
+      gj.bindPopup(geoJsons[i].properties.html);
+    
     layers.push(gj);
   }
   
   return layers;
 }
 
-function addClustersForGeoJsons(map, nameToGeoJson, clusterOptions, style, highlight, zoom, hexColor, colorSeed) {
+function addClustersForGeoJsons(map, mapLayers, nameToGeoJson, clusterOptions, style, highlight, zoom, hexColor, colorSeed) {
+  'use strict';
   var i = 0;
-  var layers = [];
-  for (name in nameToGeoJson) {
+  var layers = mapLayers || {};
+  var length = Object.size(nameToGeoJson);
+  for (var name in nameToGeoJson) {
     var g = nameToGeoJson[name];
     var gj;
-//    var resetHighlight = function(e) {
-//      gj.resetStyle(e.target);
-//    };
-//    
-//    var onEachFeature = function(feature, layer) {
-//      layer.on({
-//        mouseover: highlight ? highlightFeature : updateInfos,
-//        mouseout: highlight ? resetHighlight : updateInfos,
-//        click: zoom ? zoomToFeature : null
-//      });
-//    };
+    var resetHighlight = function(e) {
+      gj.resetStyle(e.target);
+    };
+    
+    var onEachFeature = function(feature, layer) {
+      layer.on({
+        mouseover: highlight ? highlightFeature : updateInfos,
+        mouseout: highlight ? resetHighlight : updateInfos,
+        click: zoom ? zoomToFeature : null
+      });
+    };
     
     var options = clusterOptions ? clusterOptions : {};
-    if (!hexColor) {
-      var colors = generateColors(1, colorSeed || 0.5);
-      colorSeed = colors[0][0];
-      var color = hsv2rgb(colors[0][0], colors[0][1], colors[0][2]);
-      color = rgbToHex(color[0], color[1], color[2]);
-      options.color = color;
-    }
-    else {
-      options.color = hexColor;
-      var rgb = hexToRGB(hexColor);
-      colorSeed = rgb2hsv(rgb[0], rgb[1], rgb[2])[0];
-      hexColor = null;
+    if (length > 1) {
+      if (!hexColor) {
+        var colors = generateColors(1, colorSeed || 0.5);
+        colorSeed = colors[0][0];
+        var color = hsv2rgb(colors[0][0], colors[0][1], colors[0][2]);
+        color = rgbToHex(color[0], color[1], color[2]);
+        options.color = color;
+      }
+      else {
+        options.color = hexColor;
+        var rgb = hexToRGB(hexColor);
+        colorSeed = rgb2hsv(rgb[0], rgb[1], rgb[2])[0];
+        hexColor = null;
+      }
     }
     
     var markers = new L.MarkerClusterGroup(options);
@@ -503,7 +607,31 @@ function addClustersForGeoJsons(map, nameToGeoJson, clusterOptions, style, highl
     layers[name] = gj;
     i++;
   }
-  
+
+//  var all = new L.layerGroup([layers]);
+//  var outer = {'All': all};
+//  for (name in layers) {
+//    outer[name] = layers[name];
+//  }
+//  
+//  return outer;
   return layers;
 }
 
+function addLayersControlToMap(map, radioLayers, checkboxLayers, options) {
+  options = options || {position: 'topright'};
+  var lControl = L.control.layers(radioLayers, checkboxLayers, options).addTo(map);
+  
+//  var all = new L.layerGroup();
+//  for (var name in layers) {
+//    all.addLayer(layers[name]);
+//  }
+//  
+//  all.addTo(map);
+//  var outer = {'Show/Hide All': all};
+//  for (var name in layers) {
+//    outer[name] = layers[name];
+//  }
+//  
+//  var lControl = L.control.layers(null, outer, {position: 'topleft'}).addTo(map);
+}
