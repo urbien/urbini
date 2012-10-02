@@ -34,6 +34,7 @@
 
       <subscribeNote/>
   	  <errorMessage />
+      <superMap />
   		<table width="100%" cellpadding="0" cellspacing="0" border="0">
   		  <tr><include name="${type}_details_top.jsp"/></tr>  <!-- _details_ is a keyword meaning that this jsp will be included in PropertySheet page only-->
   	  </table>

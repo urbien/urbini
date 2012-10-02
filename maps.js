@@ -8,7 +8,7 @@ function generateColors(total, seed) {
   }
   else {
     third = total / 3;
-    var secondThird = third * 2;
+    secondThird = third * 2;
   }
   
   var sum = 0;
@@ -495,7 +495,7 @@ function addGeoJsonShapeLayers(map, mapLayers, shapes, propsArrArr, style) {
   var counter = 0;
   for (var name in geoJsonLayers) {
     var layer = addGeoJsonShapes(map, null, geoJsonLayers[name], style);
-    console.log(name + " shapes: " + geoJsonLayers[name].length);
+//    console.log(name + " shapes: " + geoJsonLayers[name].length);
     var newLayer = new L.layerGroup(layer);
     if (counter++ == 0)
       newLayer.addTo(map);
@@ -549,8 +549,8 @@ function addGeoJsonShapes(map, mapLayers, geoJsons, style, autoAdd) {
   
   return layers;
 }
-
-function addClustersForGeoJsons(map, mapLayers, nameToGeoJson, clusterOptions, style, highlight, zoom, hexColor, colorSeed) {
+  
+function addGeoJsonPoints(map, mapLayers, nameToGeoJson, options, style, doCluster, highlight, zoom, hexColor, colorSeed, icon) {
   'use strict';
   var i = 0;
   var layers = mapLayers || {};
@@ -570,7 +570,7 @@ function addClustersForGeoJsons(map, mapLayers, nameToGeoJson, clusterOptions, s
       });
     };
     
-    var options = clusterOptions ? clusterOptions : {};
+    options = options || {};
     if (length > 1) {
       if (!hexColor) {
         var colors = generateColors(1, colorSeed || 0.5);
@@ -587,9 +587,15 @@ function addClustersForGeoJsons(map, mapLayers, nameToGeoJson, clusterOptions, s
       }
     }
     
-    var markers = new L.MarkerClusterGroup(options);
+    if (doCluster)
+      var markers = new L.MarkerClusterGroup(options);
     var pointToLayer = function(feature, latlng) {
-      var marker = L.marker(latlng);
+      var marker;
+      if (icon)
+        marker = L.marker(latlng, {icon: icon});
+      else
+        marker = L.marker(latlng);
+      
       if (feature.properties.width) {
         marker.bindPopup(feature.properties.html, {minWidth: feature.properties.width, minHeight: feature.properties.height});        
       }
@@ -599,23 +605,31 @@ function addClustersForGeoJsons(map, mapLayers, nameToGeoJson, clusterOptions, s
 
       marker.on('mouseover', function(e) {updateInfosWithHTML(feature.properties.name);});
       marker.on('mouseout', function(e) {clearInfos(e);});
-      markers.addLayer(marker);
-      return markers;
+      if (doCluster)
+        markers.addLayer(marker);
+      
+      return doCluster ? markers : marker;
     };
     
     gj = L.geoJson(g, {style: style ? style : simpleStyle, pointToLayer: pointToLayer}).addTo(map);
     layers[name] = gj;
     i++;
   }
-
-//  var all = new L.layerGroup([layers]);
-//  var outer = {'All': all};
-//  for (name in layers) {
-//    outer[name] = layers[name];
-//  }
-//  
-//  return outer;
+  
   return layers;
+}
+
+function fitBounds(map, mapBounds) {
+  if (map && mapBounds)
+    map.fitBounds(mapBounds);
+}
+
+function addMap(apiKey, styleId, maxZoom, center) {
+  var cloudmadeUrl = 'http://{s}.tile.cloudmade.com/' + apiKey + '/' + styleId + '/' + '256/{z}/{x}/{y}.png';
+  var cloudmadeAttribution = 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2011 CloudMade'
+  var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: maxZoom, attribution: cloudmadeAttribution});
+  var latlng = new L.LatLng(center[0], center[1]);
+  return new L.Map('map', {center: latlng, zoom: 12, maxZoom: maxZoom, layers: [cloudmade]});
 }
 
 function addLayersControlToMap(map, radioLayers, checkboxLayers, options) {
