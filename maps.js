@@ -218,7 +218,8 @@ function addMapInfo(mapObj, type, subType, areaType, areaUnit) {
   info.update = function (props) {
     if (props) {
       if (props.density != null)
-        this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (subType || props.item) + 's / ' + areaUnit + '<sup>2</sup>';
+        this._div.innerHTML = init + '<b>' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (subType || props.item) + ' / ' + areaUnit + '<sup>2</sup>';
+//        this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (subType || props.item) + 's / ' + areaUnit + '<sup>2</sup>';
       else
         this._div.innerHTML = init;
       
