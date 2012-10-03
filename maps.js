@@ -365,6 +365,7 @@ function addSizeButton(mapDiv, mapObj, bounds) {
         mapDiv.style.height = "";
         document.body.style.overflow = 'auto';
         var parent = document.getElementById("siteResourceList");
+        parent = parent || document.getElementById("corePageContent");
         parent.insertBefore(mapDiv, getFirstChild(parent));
         div.innerHTML = maxImg;
         mapObj.invalidateSize(true);
