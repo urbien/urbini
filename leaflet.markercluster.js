@@ -30,7 +30,8 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 		// If you are adding individual markers set to true, if adding bulk markers leave false for massive performance gains.
 		animateAddingMarkers: false,
 		info: null, // L.Control info object to update when focus changes
-		color: null
+		color: null,
+		doScale: true
 	},
 
 	initialize: function (options) {
@@ -331,17 +332,23 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
     var html = '<div><span>' + childCount + '</span></div>';
 		var children = cluster.getAllChildMarkers();
 		var radius;
+		var size = 40;
+		var diameter = 30;
 	  if (this.color) {
 	    custom = true;
 	    var rgb = hexToRGB(this.color);
 	    var background = "background-color: rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", 0.7); color: " + getTextColor(rgb[0], rgb[1], rgb[2]) + ";";
 	    var zoom = cluster._zoom || 10;
-	    diameter = 30 + Math.round(150 * Math.log(childCount) / zoom);
-	    var width = "width: " + diameter + "px; height: " + diameter + "px; line-height: " + diameter + "px;";
+	    var width;
+	    if (this.doScale) {
+  	    diameter = 30 + Math.round(150 * Math.log(childCount) / zoom);
+  	    size = diameter + 10;
+  	    width = "width: " + diameter + "px; height: " + diameter + "px; line-height: " + diameter + "px;";
+	    }
+	    
 	    html = '<div style=\"' + background + width + '\"><span>' + childCount + '</span></div>';
 	  }
-		
-		var size = this.color ? diameter + 10 : 40;
+	  
 		return new L.DivIcon({ html: html, className: 'marker-cluster ' + (this.color ? 'marker-cluster-black': c), iconSize: new L.Point(size, size) });
 	},
 	
