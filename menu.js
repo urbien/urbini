@@ -4376,6 +4376,10 @@ var PlainDlg = {
     }
     else
       finalUrl += '&';
+      
+    if (Browser.mobile && anchor.href.indexOf("j_security_check") != -1) // mobile login 
+      finalUrl += "returnUri=" + encodeURIComponent(Mobile.getCurrentUrl());
+    else  
       finalUrl += "-inner=y";
   
     var action = getUrlParam(finalUrl, "-$action");
@@ -13059,19 +13063,20 @@ function showLocalActivityButtons() {
 // next function is the error callback
 
 function locationError(error) {
+  LoadingIndicator.hide();
   switch(error.code) {
-  case error.TIMEOUT:
-    break;
-  case error.POSITION_UNAVAILABLE:
-    break;
-  case error.PERMISSION_DENIED:
-    var locSortParam = getUrlParam(window.location.href, '-locSort');
-    if (locSortParam == null || locSortParam == 'n')
-      return;
-    
-    alert('You disabled location detection in your browser. To see location-based results, enable it and refresh the page.');
-    break;
-  case error.UNKNOWN_ERROR:
+    case error.TIMEOUT:
+      break;
+    case error.POSITION_UNAVAILABLE:
+      break;
+    case error.PERMISSION_DENIED:
+      var locSortParam = getUrlParam(window.location.href, '-locSort');
+      if (locSortParam == null || locSortParam == 'n')
+        return;
+      
+      alert('You disabled location detection in your browser. To see location-based results, enable it and refresh the page.');
+      break;
+    case error.UNKNOWN_ERROR:
     break;
   }
 }
@@ -13083,16 +13088,23 @@ function toggleLocationAwareness(on) {
       var locUrl = addOrReplaceUrlParam(window.location.href, '-loc', loc);
       window.location.replace(addOrReplaceUrlParam(locUrl, '-locSort', 'y'));
     } 
-    else {
-			 // FF requires timeout (5 sec) to retrieve geolocation data
-			 if (!LoadingIndicator.isVisible()) {
-			 	 LoadingIndicator.show();
-				 setTimeout(function f() { toggleLocationAwareness(on); }, 5000);
-				 return;
-			 }
-			 else
-			   LoadingIndicator.hide();
-			
+    else { // no location
+      if (typeof attemptNum == 'undefined') {
+        getCurrentLocation();
+        attemptNum = 1;
+      }
+      else
+       attemptNum++;
+     // FF does not fire error callback and takes about 5 sec to retrieve geolocation data
+     // wait 10 sec including a user permision and geolocation
+     if (attemptNum < 10) {
+       LoadingIndicator.show();
+       setTimeout(function f(){toggleLocationAwareness(on, attemptNum);}, 1000);
+       return;
+     }
+     else
+       LoadingIndicator.hide();
+
       alert('You disabled location detection in your browser. To see location-based results, enable it and refresh the page.');
     }
   } else {
@@ -13119,6 +13131,16 @@ var EndlessPager = {
   nabsGrid : null,  // masonry
   recourseTable : null, // blog
   skip : false,
+  init : function() {
+    if (this.indicatorTd != null)
+      return; // initialized
+
+    addEvent(window, "scroll", EndlessPager.onscroll, false);
+    // no scrollbar - to bring a portion of resources to show a scrollbar
+    // thus to enable endless page
+    if (document.body.clientHeight == document.body.scrollHeight)
+      EndlessPager.onscroll();
+  },
   onscroll : function(event) {
     var $t = EndlessPager;
     if ($t.skip)
