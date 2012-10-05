@@ -264,43 +264,21 @@ function highlightFeature(e) {
     }
 }
 
-function paintPolygon(map, shapeDiv) {
-  'use strict';
-  var json = eval(shapeDiv.innerHTML);
-  var numRings = json.length;
-  for (var i = 0; i < numRings; i++) {
-    var polygon = json[i];
-    var p = L.polygon(polygon).addTo(map);
-//    var p = L.polygon(polygon, {
-//      color: 'red',
-//      fillColor: '#f03',
-//      fillOpacity: 0.5
-//    }).addTo(map);
-  }
-}
-
-var defaultMinMapDensity = 0;
-var defaultMaxMapDensity = 10;
-var minResolution = 0.01
+var minResolution = 0.01;
 function getLeafletMapTileColor(d) {
   'use strict';
-  var min = minMapDensity || defaultMinMapDensity;
-  var max = maxMapDensity || defaultMaxMapDensity;
+  var minMax = LablzMapInfo.getCurrentLayerMinMaxDensity();
+  var min = minMax[0];
+  var max = minMax[1];
   if (max < minResolution)
     return getColorForPercentile(0);
   
+  if (min == max)
+    min = 0;
+
   var percentile = max == min ? 100 : (d - min) * 100 / (max - min);
   var color = getColorForPercentile(percentile);
-//  console.log("returning color " + color + " for percentile " + percentile);
   return color;
-//      return d > 1000 ? '#800026' :
-//             d > 500  ? '#BD0026' :
-//             d > 200  ? '#E31A1C' :
-//             d > 100  ? '#FC4E2A' :
-//             d > 50   ? '#FD8D3C' :
-//             d > 20   ? '#FEB24C' :
-//             d > 10   ? '#FED976' :
-//                        '#FFEDA0';
 }
 
 var percentiles = [0, 10, 20, 40, 66, 75, 90, 95];
@@ -315,7 +293,6 @@ function getColorForPercentile(percentile) {
     percentile > percentiles[2]   ? '#FEB24C' :
     percentile > percentiles[1]   ? '#FED976' : '#FFEDA0';
     
-//  console.log("getColorForPercentile(" + percentile + ") = " + color); 
   return color;
 }
 
@@ -408,17 +385,60 @@ function addReZoomButton(mapObj, bounds) {
   rezoom.addTo(mapObj);
 }
 
-function addDensityLegend(mapObj, geoJsons) {
+var LablzMapInfo = {
+    layerToDensity : {},
+    currentLayerDensity : null,
+    currentLayerName : null,
+    
+    setMinMaxDensity : function(name, minMax) {
+      this.layerToDensity[name] = minMax;
+    },
+    
+    setCurrentLayer : function(name) {
+      this.currentLayerName = name;
+      this.currentLayerDensity = this.layerToDensity[name];
+    },
+    
+    getMinMaxDensity : function(name) {
+      return this.layerToDensity[name];
+    },
+    
+    getCurrentLayerMinMaxDensity : function() {
+      return this.currentLayerDensity;
+    },
+    
+    getCurrentLayerName : function() {
+      return this.currentLayerName;
+    }
+}
+
+function getMinMaxDensity(geoJsons) {
+  var max;
+  var min;
+  for (var i = 0; i < geoJsons.length; i++) {
+    var gj = geoJsons[i];
+    var props = gj.properties;
+    if (!props || props.density == null)
+      continue;
+    
+    var d = props.density;
+    max = max ? Math.max(d, max) : d;
+    min = min ? Math.min(d, min) : d;
+  }
+  
+  return [min, max];
+}
+
+function addDensityLegend(mapObj, geoJsons, minMax) {
   'use strict';
-//  var length = geoJsons.length;
-//  var numPercentiles = Math.min(Math.log(length), 8);
-  
-  
-  var max = maxMapDensity || defaultMaxMapDensity;
+  var max = minMax[1];
   if (max < minResolution)
     return;
 
-  var min = minMapDensity || defaultMinMapDensity;
+  var min = minMax[0];
+  if (min == max)
+    min = 0;
+  
   var legend = L.control({position: 'bottomright'});
   legend.onAdd = function (mapObj) {
     var grades = [];
@@ -464,16 +484,6 @@ function addDensityLegend(mapObj, geoJsons) {
 function addGeoJsonShapeLayers(map, mapLayers, shapes, propsArrArr, style) {
   'use strict';
   var layers = mapLayers || [];
-  var densityLegends = [];
-//  var counter = 0;
-//  for (var name in geoJsonLayers) {
-//    var layer = addGeoJsonShapes(map, null, geoJsonLayers[name], style);
-//    var newLayer = new L.layerGroup(layer);
-//    if (counter++ == 0)
-//      newLayer.addTo(map);
-//    layers[name] = newLayer;
-//  }
-  
   var geoJsonLayers = {};
   for (var name in propsArrArr) {
     var propsArr = propsArrArr[name];
@@ -495,61 +505,84 @@ function addGeoJsonShapeLayers(map, mapLayers, shapes, propsArrArr, style) {
   }
 
   var counter = 0;
-  for (var name in geoJsonLayers) {
-    var layer = addGeoJsonShapes(map, null, geoJsonLayers[name], style);
-//    console.log(name + " shapes: " + geoJsonLayers[name].length);
-    var newLayer = new L.layerGroup(layer);
-    if (counter++ == 0)
+  var firstLayer;
+  for (var name in geoJsonLayers) {    
+    var minMax = getMinMaxDensity(geoJsonLayers[name]);
+    LablzMapInfo.setMinMaxDensity(name, minMax);
+    LablzMapInfo.setCurrentLayer(name);
+    if (counter == 0)
+      firstLayer = name;
+    
+    var newLayer = mkLayerGroup(map, name, geoJsonLayers[name], minMax, style);
+    if (counter == 0)
       newLayer.addTo(map);
+    
     layers[name] = newLayer;
-//    newLayer.onAdd = function(map) {
-//      this._map = map;
-//      for (var i = 0; i < densityLegends.length; i++) {
-//        densityLegends[i].removeFrom(map);
-//      }
-//      
-//      var legend = addDensityLegend(map, geoJsonLayers[name]);
-//      densityLegends.push(legend);
-//    }
+    counter++;
   }
 
-  addDensityLegend(map, geoJsonLayers);
+  LablzMapInfo.setCurrentLayer(firstLayer);
   return layers;
+}
+
+function mkLayerGroup(map, name, geoJson, minMax, style) {
+  var layers = addGeoJsonShapes(map, null, geoJson, style);
+  var newLayer = new L.layerGroup(layers);
+  newLayer.onAdd = function(mapObj) {
+    LablzMapInfo.setCurrentLayer(name);
+    this._map = mapObj;
+    this.eachLayer(mapObj.addLayer, mapObj);
+    this.densityLegend = addDensityLegend(mapObj, geoJson, minMax);
+  };
+  
+  newLayer.onRemove = function(mapObj) {
+    this._map = mapObj;
+    this.eachLayer(mapObj.removeLayer, mapObj);
+    if (this.densityLegend)
+      mapObj.removeControl(this.densityLegend);
+  };
+
+  return newLayer;
 }
 
 function addGeoJsonShapes(map, mapLayers, geoJsons, style, autoAdd) {
   'use strict';
   var layers = mapLayers || [];
   for (var i = 0; i < geoJsons.length; i++) {
-    var gj;
-    var resetHighlight = function(e) {
-      gj.resetStyle(e.target);
-      clearInfos(e);
-    };
-    
-    var zoomToFeature = function(e) {
-      map.fitBounds(e.target.getBounds());
-    }
-
-    var onEachFeature = function(feature, layer) {
-      layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: zoomToFeature
-      });
-    };
-  
-    gj = L.geoJson(geoJsons[i], {style: style ? style : simpleStyle, onEachFeature: onEachFeature});
-    if (autoAdd)
-      gj.addTo(map);
-    
-    if (geoJsons[i].properties.html)
-      gj.bindPopup(geoJsons[i].properties.html);
-    
+    var gj = makeLayerFromGeoJsonShape(map, geoJsons[i], style, autoAdd);
     layers.push(gj);
   }
   
   return layers;
+}
+
+function makeLayerFromGeoJsonShape(map, geoJson, style, autoAdd) {
+  var gj;
+  var resetHighlight = function(e) {
+    gj.resetStyle(e.target);
+    clearInfos(e);
+  };
+  
+  var zoomToFeature = function(e) {
+    map.fitBounds(e.target.getBounds());
+  }
+
+  var onEachFeature = function(feature, layer) {
+    layer.on({
+      mouseover: highlightFeature,
+      mouseout: resetHighlight,
+      click: zoomToFeature
+    });
+  };
+
+  gj = L.geoJson(geoJson, {style: style ? style : simpleStyle, onEachFeature: onEachFeature});
+  if (autoAdd)
+    gj.addTo(map);
+  
+  if (geoJson.properties.html)
+    gj.bindPopup(geoJson.properties.html);
+  
+  return gj;
 }
   
 function addGeoJsonPoints(map, mapLayers, nameToGeoJson, options, style, doCluster, highlight, zoom, hexColor, colorSeed, icon) {

@@ -13276,7 +13276,7 @@ function getMoreBoards(e, id, exclude, uri) {
     var ul = td.getElementsByTagName("ul");
     var count = newUL[idx].getElementsByTagName("li").length;
     var isTD = td.tagName.toLowerCase() == 'td';
-    var titleDiv = isTD ? td.getElementsByTagName("div") : td.getElementsByTagName("span");
+    var titleDiv = td.getElementsByTagName("div"); //isTD ? td.getElementsByTagName("div") : td.getElementsByTagName("span");
     if (isTD)
       ul[0].innerHTML += newUL[idx].innerHTML;
     else
