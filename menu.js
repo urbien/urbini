@@ -10006,7 +10006,7 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 		// 2. new slide
 		else
 			$t.createNewSlide(htmlOrObject, recNmb);
-
+//debugger;
     if (!Browser.ie) // IE uses own filter
 		  $t.widgetDiv.insertBefore($t.nextSlide, getFirstChild($t.widgetDiv));
   }
@@ -10150,25 +10150,37 @@ var BacklinkImagesSlideshow = {
 		
 		if (!$t.slideshowArr)
 		  return;
-			
+
+  // NOTE: delayed slideshow loading does not work with "resourceShow" currently.
+  // So this feature was disabled! (order of slideshow is defferent for "staticShow" and "resourceShow"
+
+/*			
   	// 1. launch 1st slideshow
-		$t.slideshowArr[$t.slideshowArr.length - 1].init();
+		// $t.slideshowArr[$t.slideshowArr.length - 1].init();
+		$t.slideshowArr[0].init();
     // 2. download "stored" slides of not 1st slideshow after 1st slideshow was completely downloaded
-		for (var i = $t.slideshowArr.length - 2; i >= 0; i--) {
+		//for (var i = $t.slideshowArr.length - 2; i >= 0; i--) {
+		for (var i = 1; i < $t.slideshowArr.length; i++) {
 			var slidesStore = getChildByClassName( $t.slideshowArr[i].slideShowSceneDiv.parentNode, "slideShow_store")
 			var images = slidesStore.getElementsByTagName("img");
 			for (var n = 0; n < images.length; n++) {
-		  	if (i == 0 && n == images.length - 1) 
+		 // 	if (i == 0 && n == images.length - 1)
+		    if (i == $t.slideshowArr.length - 1 && n == images.length - 1) 
 		  		images[n].onload = $t._delayedInit;
 		  	images[n].src = images[n].getAttribute("delayed_src");
-		  }	 
+		  }
 		}
+*/		
+    for (var i = 0; i < $t.slideshowArr.length; i++)
+    $t.slideshowArr[i].init();
   },
+/*  
   _delayedInit : function() {
+    console.log("_delayedInit");
 		var $t = BacklinkImagesSlideshow;
 	  for (var i = $t.slideshowArr.length - 2; i >= 0; i--)
-		  $t.slideshowArr[i].init(); 
-	},
+	   $t.slideshowArr[i].init(); 
+	},*/
   // slide show on a Tab (Edit page) containong one slide show
   onMainThumbClick : function() {
     this.slideshowArr[0].onMainThumbClick();
@@ -10216,7 +10228,7 @@ function slideshow(slideShowSceneDiv) {
   this.init = function() {
     if (!this.slideShowSceneDiv)
       return;
-  
+
     // widgetSlider used for small images (not slides) too.
     this.widgetSlider = new WidgetSlider(this.slideShowSceneDiv, this.onslidingFinish, this.onslidingHalfFinish);
   
