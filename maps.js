@@ -156,240 +156,566 @@ function rgbToHex(r, g, b) {
   return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
-var mapInfoObjs = [];
-
-function clearInfos(e) {
-  'use strict';
-  for (var i = 0; i < mapInfoObjs.length; i++) {
-    mapInfoObjs[i].update();
-  }  
-}
-
-function updateInfosForLayer(layer) {
-  'use strict';
-  for (var i = 0; i < mapInfoObjs.length; i++) {
-    if (layer.feature.properties)
-      mapInfoObjs[i].update(layer.feature.properties);
-  }
-}
-
-function updateInfosWithHTML(html) {
-  'use strict';
-  for (var i = 0; i < mapInfoObjs.length; i++) {
-    mapInfoObjs[i].updateWithHTML(html);
-  }
-}
-
-function addBasicMapInfo(mapObj, init) {
-  'use strict';
-  var mapInfo = L.control();
-  mapInfo.onAdd = function (map) {
-      this._div = L.DomUtil.create('div', 'mapInfo'); // create a div with a class "info"
-      this.update();
-      return this._div;
-  };
-
-  // method that we will use to update the control based on feature properties passed
-  mapInfo.update = function (properties) {
-    var html = properties ? properties.name : null;
-    this._div.innerHTML = html ? init + html : init;
-  };
-
-  mapInfo.updateWithHTML = function (html) {
-    this._div.innerHTML = html ? init + html : init;
-  };
-
-  mapInfo.addTo(mapObj);
-  mapInfoObjs.push(mapInfo);
-  return mapInfo;
-}
-
-function addMapInfo(mapObj, type, subType, areaType, areaUnit) {
-  'use strict';
-  var info = L.control();
-  info.onAdd = function (map) {
-      this._div = L.DomUtil.create('div', 'mapInfo'); // create a div with a class "info"
-      this.update();
-      return this._div;
-  };
-
-  var init = '<h4>' + type + ' population density</h4>';
-  // method that we will use to update the control based on feature properties passed
-  info.update = function (props) {
-    if (props) {
-      if (props.density != null)
-        this._div.innerHTML = init + '<b>' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (subType || props.item) + ' / ' + areaUnit + '<sup>2</sup>';
-//        this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (subType || props.item) + 's / ' + areaUnit + '<sup>2</sup>';
-      else
-        this._div.innerHTML = init;
-      
-//      if (props.count != null)
-//        this._div.innerHTML += 'Total: ' + props.count + ' ' + (subType || props.item) + 's';
-    }
-    else
-      this._div.innerHTML = init + 'Hover over a ' + areaType;
-  };
-
-  info.updateWithHTML = function (html) {
-    this._div.innerHTML = init + html;
-  };
-
-  mapInfoObjs.push(info);
-  info.addTo(mapObj);  
-}
-
-function updateInfos(e) {
-  'use strict';
-  var layer = e.target;
-  updateInfosForLayer(layer);
-}
-
-function highlightFeature(e) {
-  'use strict';
-    var layer = e.target;
-
-    layer.setStyle({
-        weight: 5,
-        color: '#666',
-        dashArray: '',
-        fillOpacity: 0.7
-    });
-
-    if (!L.Browser.ie && !L.Browser.opera) {
-        layer.bringToFront();
-    }
-    
-    if (layer.feature) {
-      updateInfosForLayer(layer);
-    }
-}
-
-var minResolution = 0.01;
-function getLeafletMapTileColor(d) {
-  'use strict';
-  var minMax = LablzMapInfo.getCurrentLayerMinMaxDensity();
-  var min = minMax[0];
-  var max = minMax[1];
-  if (max < minResolution)
-    return getColorForPercentile(0);
-  
-  if (min == max)
-    min = 0;
-
-  var percentile = max == min ? 100 : (d - min) * 100 / (max - min);
-  var color = getColorForPercentile(percentile);
-  return color;
-}
-
-var percentiles = [0, 10, 20, 40, 66, 75, 90, 95];
-function getColorForPercentile(percentile) {
-  'use strict';
-  var color =
-    percentile > percentiles[7] ? '#800026' :
-    percentile > percentiles[6]  ? '#BD0026' :
-    percentile > percentiles[5]  ? '#E31A1C' :
-    percentile > percentiles[4]  ? '#FC4E2A' :
-    percentile > percentiles[3]   ? '#FD8D3C' :
-    percentile > percentiles[2]   ? '#FEB24C' :
-    percentile > percentiles[1]   ? '#FED976' : '#FFEDA0';
-    
-  return color;
-}
-
-function simpleDashedStyle(feature) {
-  'use strict';
-  var simple = simpleStyle(feature);
-  simple['dashArray'] = '3';
-  return simple;
-}
-
-function simpleStyle(feature) {
-  'use strict';
-  return {
-      fillColor: '#efefff',
-      weight: 2,
-      opacity: 1,
-      color: '#5555ff',
-      fillOpacity: 0.4
-  };
-}
-
-function leafletDensityMapStyle(feature) {
-  'use strict';
-  return {
-      fillColor: getLeafletMapTileColor(feature.properties.density),
-      weight: 2,
-      opacity: 1,
-      color: 'white',
-      dashArray: '3',
-      fillOpacity: 0.7
-  };
-}
-
-function addSizeButton(mapDiv, mapObj, bounds) {
-  'use strict';
-  var btn = L.control({position: 'bottomleft'});
-  btn.onAdd = function (mapObj) {
-    var maxImg = "<img src='icons/map-fullscreen.png' />";
-    var minImg = "<img src='icons/map-unfullscreen.png' />";
-    var div = L.DomUtil.create('div', 'resize');
-    div.innerHTML = maxImg;
-    div.onclick = function(e) {
-      var maximized = mapDiv.innerHTML.indexOf('map-full') == -1;
-      if (maximized) {
-        // restore
-        mapDiv.style.position = 'relative';
-        mapDiv.style.height = "";
-        document.body.style.overflow = 'auto';
-        var parent = document.getElementById("siteResourceList");
-        parent = parent || document.getElementById("corePageContent");
-        parent.insertBefore(mapDiv, getFirstChild(parent));
-        div.innerHTML = maxImg;
-        mapObj.invalidateSize(true);
-        mapObj.fitBounds(bounds);
-      }
-      else {
-        // maximize
-        var scroll = getScrollXY();
-        var wDim = getWindowDimension();
-        mapDiv.style.position = 'absolute';
-        mapDiv.style.top = scroll[1] + "px"; 
-        mapDiv.style.left = scroll[0] + "px"; 
-        mapDiv.style.height = wDim[1] + "px";
-        document.body.appendChild(mapDiv);
-        document.body.style.overflow = 'hidden';
-        div.innerHTML = minImg;
-        mapObj.invalidateSize(true);
-      }
-    };
-    
-    return div;
-  }
-  
-  btn.addTo(mapObj);  
-}
-
-function addReZoomButton(mapObj, bounds) {
-  'use strict';
-  var rezoom = L.control({position: 'bottomleft'});
-  rezoom.onAdd = function (mapObj) {
-    var div = L.DomUtil.create('div', 'rezoom');
-    div.innerHTML = "<img src='icons/homePage.png' />";
-    div.onclick = function(e) {
-      mapObj.fitBounds(bounds);
-    };
-    
-    return div;
-  }
-  
-  rezoom.addTo(mapObj);
-}
-
-var LablzMapInfo = {
+var LablzLeaflet = {
+    map : null,
+    shapes : null,
+    mapInfoObjs : [],
     layerToDensity : {},
     currentLayerDensity : null,
     currentLayerName : null,
+    addBasicMapInfo : function(init) {
+      'use strict';
+      var mapInfo = L.control();
+      mapInfo.onAdd = function (map) {
+          this._div = L.DomUtil.create('div', 'mapInfo'); // create a div with a class "info"
+          this.update();
+          return this._div;
+      };
+
+      // method that we will use to update the control based on feature properties passed
+      mapInfo.update = function (properties) {
+        var html = properties ? properties.name : null;
+        this._div.innerHTML = html ? init + html : init;
+      };
+
+      mapInfo.updateWithHTML = function (html) {
+        this._div.innerHTML = html ? init + html : init;
+      };
+
+      mapInfo.addTo(this.map);
+      this.mapInfoObjs.push(mapInfo);
+      return mapInfo;
+    },
+
+    addMapInfo : function(type, subType, areaType, areaUnit) {
+      'use strict';
+      var info = L.control();
+      info.onAdd = function (map) {
+          this._div = L.DomUtil.create('div', 'mapInfo'); // create a div with a class "info"
+          this.update();
+          return this._div;
+      };
+
+      var init = '<h4>' + type + ' population density</h4>';
+      // method that we will use to update the control based on feature properties passed
+      info.update = function (props) {
+        if (props) {
+          if (props.density != null)
+            this._div.innerHTML = init + '<b>' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (subType || props.item) + ' / ' + areaUnit + '<sup>2</sup>';
+//            this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (subType || props.item) + 's / ' + areaUnit + '<sup>2</sup>';
+          else
+            this._div.innerHTML = init;
+          
+//          if (props.count != null)
+//            this._div.innerHTML += 'Total: ' + props.count + ' ' + (subType || props.item) + 's';
+        }
+        else
+          this._div.innerHTML = init + 'Hover over a ' + areaType;
+      };
+
+      info.updateWithHTML = function (html) {
+        this._div.innerHTML = init + html;
+      };
+
+      this.mapInfoObjs.push(info);
+      info.addTo(this.map);  
+    },
+
+    clearInfos : function(e) {
+      'use strict';
+      for (var i = 0; i < LablzLeaflet.mapInfoObjs.length; i++) {
+        LablzLeaflet.mapInfoObjs[i].update();
+      }  
+    },
+
+    updateInfosForLayer : function(layer) {
+      'use strict';
+      for (var i = 0; i < LablzLeaflet.mapInfoObjs.length; i++) {
+        if (layer.feature.properties)
+          LablzLeaflet.mapInfoObjs[i].update(layer.feature.properties);
+      }
+    },
+
+    updateInfosWithHTML : function(html) {
+      'use strict';
+      for (var i = 0; i < LablzLeaflet.mapInfoObjs.length; i++) {
+        LablzLeaflet.mapInfoObjs[i].updateWithHTML(html);
+      }
+    },
+
+    updateInfos : function(e) {
+      'use strict';
+      var layer = e.target;
+      LablzLeaflet.updateInfosForLayer(layer);
+    },
+
+    highlightFeature : function(e) {
+      'use strict';
+        var layer = e.target;
+
+        layer.setStyle({
+            weight: 5,
+            color: '#666',
+            dashArray: '',
+            fillOpacity: 0.7
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera) {
+            layer.bringToFront();
+        }
+        
+        if (layer.feature) {
+          LablzLeaflet.updateInfosForLayer(layer);
+        }
+    },
+
+    minResolution : 0.01,
+    getLeafletMapTileColor : function(d) {
+      'use strict';
+      var minMax = LablzLeaflet.currentLayerDensity;
+      var min = minMax[0];
+      var max = minMax[1];
+      if (max < LablzLeaflet.minResolution)
+        return LablzLeaflet.getColorForPercentile(0);
+      
+      if (min == max)
+        min = 0;
+
+      var percentile = max == min ? 100 : (d - min) * 100 / (max - min);
+      var color = LablzLeaflet.getColorForPercentile(percentile);
+      return color;
+    },
+
+    percentiles : [0, 10, 20, 40, 66, 75, 90, 95],
     
+    getColorForPercentile : function(percentile) {
+      'use strict';
+      var color =
+        percentile > LablzLeaflet.percentiles[7] ? '#800026' :
+        percentile > LablzLeaflet.percentiles[6]  ? '#BD0026' :
+        percentile > LablzLeaflet.percentiles[5]  ? '#E31A1C' :
+        percentile > LablzLeaflet.percentiles[4]  ? '#FC4E2A' :
+        percentile > LablzLeaflet.percentiles[3]   ? '#FD8D3C' :
+        percentile > LablzLeaflet.percentiles[2]   ? '#FEB24C' :
+        percentile > LablzLeaflet.percentiles[1]   ? '#FED976' : '#FFEDA0';
+        
+      return color;
+    },
+
+    simpleDashedStyle : function(feature) {
+      'use strict';
+      var simple = LablzLeaflet.simpleStyle(feature);
+      simple['dashArray'] = '3';
+      return simple;
+    },
+
+    simpleStyle : function(feature) {
+      'use strict';
+      return {
+          fillColor: '#efefff',
+          weight: 2,
+          opacity: 1,
+          color: '#5555ff',
+          fillOpacity: 0.4
+      };
+    },
+
+    leafletDensityMapStyle : function(feature) {
+      'use strict';
+      return {
+          fillColor: LablzLeaflet.getLeafletMapTileColor(feature.properties.density),
+          weight: 2,
+          opacity: 1,
+          color: 'white',
+          dashArray: '3',
+          fillOpacity: 0.7
+      };
+    },
+
+    addSizeButton : function(mapDiv, bounds) {
+      'use strict';
+      var btn = L.control({position: 'bottomleft'});
+      btn.onAdd = function (mapObj) {
+        var maxImg = "<img src='icons/map-fullscreen.png' />";
+        var minImg = "<img src='icons/map-unfullscreen.png' />";
+        var div = L.DomUtil.create('div', 'resize');
+        div.innerHTML = maxImg;
+        div.onclick = function(e) {
+          var maximized = mapDiv.innerHTML.indexOf('map-full') == -1;
+          if (maximized) {
+            // restore
+            mapDiv.style.position = 'relative';
+            mapDiv.style.height = "";
+            document.body.style.overflow = 'auto';
+            var parent = document.getElementById("siteResourceList");
+            parent = parent || document.getElementById("corePageContent");
+            parent.insertBefore(mapDiv, getFirstChild(parent));
+            div.innerHTML = maxImg;
+            mapObj.invalidateSize(true);
+            mapObj.fitBounds(bounds);
+          }
+          else {
+            // maximize
+            var scroll = getScrollXY();
+            var wDim = getWindowDimension();
+            mapDiv.style.position = 'absolute';
+            mapDiv.style.top = scroll[1] + "px"; 
+            mapDiv.style.left = scroll[0] + "px"; 
+            mapDiv.style.height = wDim[1] + "px";
+            document.body.appendChild(mapDiv);
+            document.body.style.overflow = 'hidden';
+            div.innerHTML = minImg;
+            mapObj.invalidateSize(true);
+          }
+        };
+        
+        return div;
+      }
+      
+      btn.addTo(this.map);  
+    },
+
+    addReZoomButton : function(bounds) {
+      'use strict';
+      var rezoom = L.control({position: 'bottomleft'});
+      rezoom.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'rezoom');
+        div.innerHTML = "<img src='icons/homePage.png' />";
+        div.onclick = function(e) {
+          map.fitBounds(bounds);
+        };
+        
+        return div;
+      }
+      
+      rezoom.addTo(this.map);
+    },
+
+    addDensityLegend : function(geoJsons, minMax) {
+      'use strict';
+      var max = minMax[1];
+      if (max < this.minResolution)
+        return;
+
+      var min = minMax[0];
+      if (min == max)
+        min = 0;
+      
+      var legend = L.control({position: 'bottomright'});
+      legend.onAdd = function (mapObj) {
+        var grades = [];
+        var range = max - min;
+        var rangeDigits = Math.round(Math.log(range) / Math.log(10));
+        var pow = -rangeDigits + 2;
+        var multiplier = Math.pow(10, pow);
+        if (range == 0) {
+          grades.push(max);
+        }
+        else {
+          for (var i = 0; i < LablzLeaflet.percentiles.length; i++) {
+            var grade = min + (LablzLeaflet.percentiles[i] / 100) * range;
+            grade = Math.round(multiplier * grade) / multiplier;
+            
+            if (grades.indexOf(grade) == -1)
+              grades.push(grade);
+          }
+        }
+        
+        var div = L.DomUtil.create('div', 'mapInfo mapLegend'),
+//              grades = percentiles,
+            grades,
+            labels = [];
+
+        // loop through our density intervals and generate a label with a colored square for each interval
+        if (grades.length == 1)
+          return div;
+        
+        for (var i = 0; i < grades.length; i++) {
+            div.innerHTML +=
+                '<p><i style="background:' + LablzLeaflet.getColorForPercentile(100 * ((grades[i] - min) / range + 0.1)) + '"></i> ' +
+                grades[i] + (grades[i + 1] ? ' &ndash; ' + grades[i + 1] : '+') + "</p>";
+        }
+
+        return div;
+      };
+      
+      legend.addTo(this.map);
+      return legend;
+    },
+
+    addGeoJsonShapeLayers : function(mapLayers, shapes, nameToPropsArr, style) {
+      'use strict';
+      this.shapes = shapes;
+      var layers = mapLayers || [];
+      var geoJsonLayers = {};
+      for (var name in nameToPropsArr) {
+        var nameToProps = nameToPropsArr[name];
+        var geoJsonLayer = [];
+        for (var j = 0; j < nameToProps.length; j++) {
+          var props = nameToProps[j];
+          var shapeId = props['id'];
+          var shapeJson = shapes[shapeId];
+          var geoJson = JSON.parse(JSON.stringify(shapeJson)); //jQuery.extend(true, {}, shapeJson);
+          for (var prop in props) {
+            if (props.hasOwnProperty(prop))
+              geoJson.properties[prop] = props[prop];
+          }
+          
+          geoJsonLayer.push(geoJson);
+        }
+        
+        geoJsonLayers[name] = geoJsonLayer;
+      }
+
+      var counter = 0;
+      var firstLayer;
+      for (var name in geoJsonLayers) {    
+        var minMax = getMinMaxDensity(geoJsonLayers[name]);
+        this.setMinMaxDensity(name, minMax);
+        this.currentLayerName = name;
+        this.currentLayerDensity = minMax;
+        if (counter == 0)
+          firstLayer = name;
+        
+        var newLayer = this.mkLayerGroup(name, geoJsonLayers[name], minMax, style);
+        if (counter == 0)
+          newLayer.addTo(this.map);
+        
+        layers[name] = newLayer;
+        counter++;
+      }
+
+      this.currentLayerName = firstLayer;
+      return layers;
+    },
+
+    mkLayerGroup : function(name, geoJson, minMax, style) {
+      var layers = this.addGeoJsonShapes(null, geoJson, style);
+      var newLayer = new L.layerGroup(layers);
+      newLayer.onAdd = function(mapObj) {
+        currentLayerName = name;
+        this._map = mapObj;
+        this.eachLayer(mapObj.addLayer, mapObj);
+        this.densityLegend = LablzLeaflet.addDensityLegend(geoJson, minMax);
+//        LablzLeaflet.fetchLayer("TreesBySpeciesAndPostalCode", "species=TreeSpecies/PLAC", this);
+      };
+      
+      newLayer.onRemove = function(mapObj) {
+        this._map = mapObj;
+        this.eachLayer(mapObj.removeLayer, mapObj);
+        if (this.densityLegend)
+          mapObj.removeControl(this.densityLegend);
+      };
+
+      return newLayer;
+    },
+
+    addGeoJsonShapes : function(mapLayers, geoJsons, style, autoAdd) {
+      'use strict';
+      var layers = mapLayers || [];
+      for (var i = 0; i < geoJsons.length; i++) {
+        var gj = this.makeLayerFromGeoJsonShape(geoJsons[i], style, autoAdd);
+        layers.push(gj);
+      }
+      
+      return layers;
+    },
+
+    makeLayerFromGeoJsonShape : function(geoJson, style, autoAdd) {
+      var gj;
+      var resetHighlight = function(e) {
+        gj.resetStyle(e.target);
+        LablzLeaflet.clearInfos(e);
+      };
+      
+      var zoomToFeature = function(e) {
+        LablzLeaflet.fitBounds(e.target.getBounds());
+      }
+
+      var onEachFeature = function(feature, layer) {
+        layer.on({
+          mouseover: LablzLeaflet.highlightFeature,
+          mouseout: resetHighlight,
+          click: zoomToFeature
+        });
+      };
+
+      gj = L.geoJson(geoJson, {style: style ? style : this.simpleStyle, onEachFeature: onEachFeature});
+      if (autoAdd)
+        gj.addTo(this.map);
+      
+      if (geoJson.properties.html)
+        gj.bindPopup(geoJson.properties.html);
+      
+      return gj;
+    },
+      
+    addGeoJsonPoints : function(mapLayers, nameToGeoJson, options, style, doCluster, highlight, zoom, hexColor, colorSeed, icon) {
+      'use strict';
+      var i = 0;
+      var layers = mapLayers || {};
+      var length = Object.size(nameToGeoJson);
+      for (var name in nameToGeoJson) {
+        var g = nameToGeoJson[name];
+        var gj;
+        var resetHighlight = function(e) {
+          gj.resetStyle(e.target);
+        };
+        
+        var onEachFeature = function(feature, layer) {
+          layer.on({
+            mouseover: highlight ? highlightFeature : updateInfos,
+            mouseout: highlight ? resetHighlight : updateInfos,
+            click: zoom ? zoomToFeature : null
+          });
+        };
+        
+        options = options || {};
+        if (length > 1) {
+          if (!hexColor) {
+            var colors = generateColors(1, colorSeed || 0.5);
+            colorSeed = colors[0][0];
+            var color = hsv2rgb(colors[0][0], colors[0][1], colors[0][2]);
+            color = rgbToHex(color[0], color[1], color[2]);
+            options.color = color;
+          }
+          else {
+            options.color = hexColor;
+            var rgb = hexToRGB(hexColor);
+            colorSeed = rgb2hsv(rgb[0], rgb[1], rgb[2])[0];
+            hexColor = null;
+          }
+        }
+        
+        if (doCluster)
+          var markers = new L.MarkerClusterGroup(options);
+        var pointToLayer = function(feature, latlng) {
+          var marker;
+          if (icon)
+            marker = L.marker(latlng, {icon: icon});
+          else
+            marker = L.marker(latlng);
+          
+          if (feature.properties.width) {
+            marker.bindPopup(feature.properties.html, {minWidth: feature.properties.width, minHeight: feature.properties.height});        
+          }
+          else {
+            marker.bindPopup(feature.properties.html);
+          }
+
+          marker.on('mouseover', function(e) {this.updateInfosWithHTML(feature.properties.name);});
+          marker.on('mouseout', function(e) {this.clearInfos(e);});
+          if (doCluster)
+            markers.addLayer(marker);
+          
+          return doCluster ? markers : marker;
+        };
+        
+        gj = L.geoJson(g, {style: style ? style : simpleStyle, pointToLayer: pointToLayer}).addTo(this.map);
+        layers[name] = gj;
+        i++;
+      }
+      
+      return layers;
+    },
+
+    fitBounds : function(mapBounds) {
+      if (mapBounds)
+        this.map.fitBounds(mapBounds);
+    },
+
+    addMap : function(apiKey, styleId, maxZoom, center) {
+      var cloudmadeUrl = 'http://{s}.tile.cloudmade.com/' + apiKey + '/' + styleId + '/' + '256/{z}/{x}/{y}.png';
+      var cloudmadeAttribution = 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2011 CloudMade'
+      var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: maxZoom, attribution: cloudmadeAttribution});
+      var latlng = new L.LatLng(center[0], center[1]);
+      this.map = new L.Map('map', {center: latlng, zoom: 12, maxZoom: maxZoom, layers: [cloudmade]});
+    },
+
+    addLayersControlToMap : function(radioLayers, checkboxLayers, options) {
+      options = options || {position: 'topright'};
+      var lControl = L.control.layers(radioLayers, checkboxLayers, options).addTo(this.map);
+      
+//      var all = new L.layerGroup();
+//      for (var name in layers) {
+//        all.addLayer(layers[name]);
+//      }
+    //  
+//      all.addTo(map);
+//      var outer = {'Show/Hide All': all};
+//      for (var name in layers) {
+//        outer[name] = layers[name];
+//      }
+    //  
+//      var lControl = L.control.layers(null, outer, {position: 'topleft'}).addTo(map);
+    },
+
+    fetchLayer : function(type, where, layerGroup) {
+//      if (layerGroup) {
+//        
+//      }
+      
+      var baseUriO = document.getElementsByTagName('base');
+      var baseUri = "";
+      if (baseUriO) {
+        baseUri = baseUriO[0].href;
+        if (baseUri  &&  baseUri.lastIndexOf("/") != baseUri.length - 1)
+          baseUri += "/";
+      }
+
+      function fetchedLayer(e, div, hotspot, content, url) {
+        if (!content)
+          return;
+        
+        content = eval("(" + content + ")");
+        if (content.error || !content.data)
+          return;
+
+        var data = content.data;
+        if (data.length == 0)
+          return;
+        
+        var geoJson = {};
+        var propsArr = [];
+        var name = data[0][LablzLeaflet.getLayerName(type)];
+        for (var i = 0; i < data.length; i++) {
+          var props = LablzLeaflet.toPropertiesGeoJson(data[i], type);
+          propsArr.push(props);
+        }
+
+        var minMax = getMinMaxDensityFromPropertiesArray(propsArr);
+        LablzLeaflet.setMinMaxDensity(name, minMax);
+        LablzLeaflet.currentLayerName = name;
+        LablzLeaflet.currentLayerDensity = minMax;
+        LablzLeaflet.addGeoJsonShapeLayers(null, shapes, {name: propsArr}, LablzLeaflet.leafletDensityMapStyle);
+      }
+      
+      postRequest(null, baseUri + "api/v1/" + type, where, null, null, fetchedLayer);
+    },
+
+    toPropertiesGeoJson : function(item, type) {
+      var shapeUri = item[Aggregation[type]['shape']];
+      var shape = LablzLeaflet.shapes[shapeUri];
+      if (!shape)
+        return null;
+      
+      var props = {};
+      props.id = shapeUri;
+      props.item = item['DAV:displayname'];
+      props.count = item[Aggregation[type]['count']];
+      if (typeof props.count != 'undefined' && typeof shape.properties.area != 'undefined')
+        props.density = props.count / shape.properties.area;
+      
+      return props;
+    },
+
+    getLayerName : function(type) {
+      switch (type) {
+      case 'TreesBySpeciesAndPostalCode':
+      case 'TreesBySpeciesAndCensusBlock':
+        return 'species.commonName';
+      }  
+    },
     setMinMaxDensity : function(name, minMax) {
       this.layerToDensity[name] = minMax;
     },
@@ -403,13 +729,11 @@ var LablzMapInfo = {
       return this.layerToDensity[name];
     },
     
-    getCurrentLayerMinMaxDensity : function() {
-      return this.currentLayerDensity;
-    },
-    
-    getCurrentLayerName : function() {
-      return this.currentLayerName;
-    }
+}
+
+var Aggregation = {
+  'TreesBySpeciesAndPostalCode' : {'shape': 'geoLocation', 'nonShape' : 'species', 'count' : 'treesCount'},
+  'TreesBySpeciesAndCensusBlock' : {'shape': 'censusBlock', 'nonShape' : 'species', 'count' : 'treesCount'},
 }
 
 function getMinMaxDensity(geoJsons) {
@@ -429,258 +753,18 @@ function getMinMaxDensity(geoJsons) {
   return [min, max];
 }
 
-function addDensityLegend(mapObj, geoJsons, minMax) {
-  'use strict';
-  var max = minMax[1];
-  if (max < minResolution)
-    return;
-
-  var min = minMax[0];
-  if (min == max)
-    min = 0;
-  
-  var legend = L.control({position: 'bottomright'});
-  legend.onAdd = function (mapObj) {
-    var grades = [];
-    var range = max - min;
-    var rangeDigits = Math.round(Math.log(range) / Math.log(10));
-    var pow = -rangeDigits + 2;
-    var multiplier = Math.pow(10, pow);
-    if (range == 0) {
-      grades.push(max);
-    }
-    else {
-      for (var i = 0; i < percentiles.length; i++) {
-        var grade = min + (percentiles[i] / 100) * range;
-        grade = Math.round(multiplier * grade) / multiplier;
-        
-        if (grades.indexOf(grade) == -1)
-          grades.push(grade);
-      }
-    }
+function getMinMaxDensityFromPropertiesArray(propsArr) {
+  var max;
+  var min;
+  for (var i = 0; i < propsArr.length; i++) {
+    var props = propsArr[i];
+    if (!props || props.density == null)
+      continue;
     
-    var div = L.DomUtil.create('div', 'mapInfo mapLegend'),
-//          grades = percentiles,
-        grades,
-        labels = [];
-
-    // loop through our density intervals and generate a label with a colored square for each interval
-    if (grades.length == 1)
-      return div;
-    
-    for (var i = 0; i < grades.length; i++) {
-        div.innerHTML +=
-            '<p><i style="background:' + getColorForPercentile(100 * ((grades[i] - min) / range + 0.1)) + '"></i> ' +
-            grades[i] + (grades[i + 1] ? ' &ndash; ' + grades[i + 1] : '+') + "</p>";
-    }
-
-    return div;
-  };
-  
-  legend.addTo(mapObj);
-  return legend;
-}
-
-function addGeoJsonShapeLayers(map, mapLayers, shapes, propsArrArr, style) {
-  'use strict';
-  var layers = mapLayers || [];
-  var geoJsonLayers = {};
-  for (var name in propsArrArr) {
-    var propsArr = propsArrArr[name];
-    var geoJsonLayer = [];
-    for (var j = 0; j < propsArr.length; j++) {
-      var props = propsArr[j];
-      var shapeId = props['id'];
-      var shapeJson = shapes[shapeId];
-      var geoJson = JSON.parse(JSON.stringify(shapeJson)); //jQuery.extend(true, {}, shapeJson);
-      for (var prop in props) {
-        if (props.hasOwnProperty(prop))
-          geoJson.properties[prop] = props[prop];
-      }
-      
-      geoJsonLayer.push(geoJson);
-    }
-    
-    geoJsonLayers[name] = geoJsonLayer;
-  }
-
-  var counter = 0;
-  var firstLayer;
-  for (var name in geoJsonLayers) {    
-    var minMax = getMinMaxDensity(geoJsonLayers[name]);
-    LablzMapInfo.setMinMaxDensity(name, minMax);
-    LablzMapInfo.setCurrentLayer(name);
-    if (counter == 0)
-      firstLayer = name;
-    
-    var newLayer = mkLayerGroup(map, name, geoJsonLayers[name], minMax, style);
-    if (counter == 0)
-      newLayer.addTo(map);
-    
-    layers[name] = newLayer;
-    counter++;
-  }
-
-  LablzMapInfo.setCurrentLayer(firstLayer);
-  return layers;
-}
-
-function mkLayerGroup(map, name, geoJson, minMax, style) {
-  var layers = addGeoJsonShapes(map, null, geoJson, style);
-  var newLayer = new L.layerGroup(layers);
-  newLayer.onAdd = function(mapObj) {
-    LablzMapInfo.setCurrentLayer(name);
-    this._map = mapObj;
-    this.eachLayer(mapObj.addLayer, mapObj);
-    this.densityLegend = addDensityLegend(mapObj, geoJson, minMax);
-  };
-  
-  newLayer.onRemove = function(mapObj) {
-    this._map = mapObj;
-    this.eachLayer(mapObj.removeLayer, mapObj);
-    if (this.densityLegend)
-      mapObj.removeControl(this.densityLegend);
-  };
-
-  return newLayer;
-}
-
-function addGeoJsonShapes(map, mapLayers, geoJsons, style, autoAdd) {
-  'use strict';
-  var layers = mapLayers || [];
-  for (var i = 0; i < geoJsons.length; i++) {
-    var gj = makeLayerFromGeoJsonShape(map, geoJsons[i], style, autoAdd);
-    layers.push(gj);
+    var d = props.density;
+    max = max ? Math.max(d, max) : d;
+    min = min ? Math.min(d, min) : d;
   }
   
-  return layers;
-}
-
-function makeLayerFromGeoJsonShape(map, geoJson, style, autoAdd) {
-  var gj;
-  var resetHighlight = function(e) {
-    gj.resetStyle(e.target);
-    clearInfos(e);
-  };
-  
-  var zoomToFeature = function(e) {
-    map.fitBounds(e.target.getBounds());
-  }
-
-  var onEachFeature = function(feature, layer) {
-    layer.on({
-      mouseover: highlightFeature,
-      mouseout: resetHighlight,
-      click: zoomToFeature
-    });
-  };
-
-  gj = L.geoJson(geoJson, {style: style ? style : simpleStyle, onEachFeature: onEachFeature});
-  if (autoAdd)
-    gj.addTo(map);
-  
-  if (geoJson.properties.html)
-    gj.bindPopup(geoJson.properties.html);
-  
-  return gj;
-}
-  
-function addGeoJsonPoints(map, mapLayers, nameToGeoJson, options, style, doCluster, highlight, zoom, hexColor, colorSeed, icon) {
-  'use strict';
-  var i = 0;
-  var layers = mapLayers || {};
-  var length = Object.size(nameToGeoJson);
-  for (var name in nameToGeoJson) {
-    var g = nameToGeoJson[name];
-    var gj;
-    var resetHighlight = function(e) {
-      gj.resetStyle(e.target);
-    };
-    
-    var onEachFeature = function(feature, layer) {
-      layer.on({
-        mouseover: highlight ? highlightFeature : updateInfos,
-        mouseout: highlight ? resetHighlight : updateInfos,
-        click: zoom ? zoomToFeature : null
-      });
-    };
-    
-    options = options || {};
-    if (length > 1) {
-      if (!hexColor) {
-        var colors = generateColors(1, colorSeed || 0.5);
-        colorSeed = colors[0][0];
-        var color = hsv2rgb(colors[0][0], colors[0][1], colors[0][2]);
-        color = rgbToHex(color[0], color[1], color[2]);
-        options.color = color;
-      }
-      else {
-        options.color = hexColor;
-        var rgb = hexToRGB(hexColor);
-        colorSeed = rgb2hsv(rgb[0], rgb[1], rgb[2])[0];
-        hexColor = null;
-      }
-    }
-    
-    if (doCluster)
-      var markers = new L.MarkerClusterGroup(options);
-    var pointToLayer = function(feature, latlng) {
-      var marker;
-      if (icon)
-        marker = L.marker(latlng, {icon: icon});
-      else
-        marker = L.marker(latlng);
-      
-      if (feature.properties.width) {
-        marker.bindPopup(feature.properties.html, {minWidth: feature.properties.width, minHeight: feature.properties.height});        
-      }
-      else {
-        marker.bindPopup(feature.properties.html);
-      }
-
-      marker.on('mouseover', function(e) {updateInfosWithHTML(feature.properties.name);});
-      marker.on('mouseout', function(e) {clearInfos(e);});
-      if (doCluster)
-        markers.addLayer(marker);
-      
-      return doCluster ? markers : marker;
-    };
-    
-    gj = L.geoJson(g, {style: style ? style : simpleStyle, pointToLayer: pointToLayer}).addTo(map);
-    layers[name] = gj;
-    i++;
-  }
-  
-  return layers;
-}
-
-function fitBounds(map, mapBounds) {
-  if (map && mapBounds)
-    map.fitBounds(mapBounds);
-}
-
-function addMap(apiKey, styleId, maxZoom, center) {
-  var cloudmadeUrl = 'http://{s}.tile.cloudmade.com/' + apiKey + '/' + styleId + '/' + '256/{z}/{x}/{y}.png';
-  var cloudmadeAttribution = 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2011 CloudMade'
-  var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: maxZoom, attribution: cloudmadeAttribution});
-  var latlng = new L.LatLng(center[0], center[1]);
-  return new L.Map('map', {center: latlng, zoom: 12, maxZoom: maxZoom, layers: [cloudmade]});
-}
-
-function addLayersControlToMap(map, radioLayers, checkboxLayers, options) {
-  options = options || {position: 'topright'};
-  var lControl = L.control.layers(radioLayers, checkboxLayers, options).addTo(map);
-  
-//  var all = new L.layerGroup();
-//  for (var name in layers) {
-//    all.addLayer(layers[name]);
-//  }
-//  
-//  all.addTo(map);
-//  var outer = {'Show/Hide All': all};
-//  for (var name in layers) {
-//    outer[name] = layers[name];
-//  }
-//  
-//  var lControl = L.control.layers(null, outer, {position: 'topleft'}).addTo(map);
+  return [min, max];
 }
