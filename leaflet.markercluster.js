@@ -22,7 +22,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 		zoomToBoundsOnClick: true,
 		singleMarkerMode: false,
 
-		disableClusteringAtZoom: null,
+		disableClusteringAtZoom: 15,
 
 		skipDuplicateAddTesting: false,
 
@@ -31,6 +31,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 		animateAddingMarkers: false,
 		info: null, // L.Control info object to update when focus changes
 		color: null,
+		doSpiderfy: true,
 		doScale: true
 	},
 
@@ -1355,11 +1356,16 @@ L.MarkerCluster.include({
 
 		//TODO Maybe: childMarkers order by distance to center
 
-		if (childMarkers.length >= this._circleSpiralSwitchover) {
-			positions = this._generatePointsSpiral(childMarkers.length, center);
-		} else {
-			center.y += 10; //Otherwise circles look wrong
-			positions = this._generatePointsCircle(childMarkers.length, center);
+		if (this.doSpiderfy) {
+  		if (childMarkers.length >= this._circleSpiralSwitchover) {
+  			positions = this._generatePointsSpiral(childMarkers.length, center);
+  		} else {
+  			center.y += 10; //Otherwise circles look wrong
+  			positions = this._generatePointsCircle(childMarkers.length, center);
+  		}
+		}
+		else {
+		  positions = this._generatePointPositions(childMarkers);
 		}
 
 		this._animationSpiderfy(childMarkers, positions);
@@ -1374,6 +1380,22 @@ L.MarkerCluster.include({
 
 		this._group._spiderfied = null;
 	},
+
+	 _generatePointPositions: function (points) {
+    var group = this._group,
+    map = group._map,
+    center = map.latLngToLayerPoint(this._latlng),
+    res = [],
+    count = points.length;
+    res.length = count;
+
+    for (i = count - 1; i >= 0; i--) {
+      var latLng = points[i].getLatLng();
+      res[i] = map.latLngToLayerPoint(latLng);
+    }
+
+    return res;
+  },
 
 	_generatePointsCircle: function (count, centerPt) {
 		var circumference = this._circleFootSeparation * (2 + count),
