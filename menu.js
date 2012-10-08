@@ -7545,6 +7545,10 @@ var FtsAutocomplete = {
   },
   
   search : function(e, field) {
+     if (FieldsWithEmptyValue.isEmptyValue(field)) {
+      alert("&[Enter search criteria];"); // mobile FTS
+      return;
+    }
     var form = getAncestorByTagName(field, 'form')
     if (Browser.mobile) {
       var url = FormProcessor.onSubmitProcess(e, form);
@@ -13109,7 +13113,7 @@ function toggleLocationAwareness(on) {
        attemptNum++;
      // FF does not fire error callback and takes about 5 sec to retrieve geolocation data
      // wait 10 sec including a user permision and geolocation
-     if (attemptNum < 10) {
+     if (attemptNum < 12) {
        LoadingIndicator.show();
        setTimeout(function f(){toggleLocationAwareness(on, attemptNum);}, 1000);
        return;
