@@ -531,7 +531,7 @@ var LablzLeaflet = {
         counter++;
       }
 
-      this.currentLayerName = firstLayer || this.currentLayerName;
+      this.setCurrentLayer(firstLayer || this.currentLayerName);
     },
 
     loadLayer : function(name, layerGroup, callback) {
@@ -567,11 +567,11 @@ var LablzLeaflet = {
           mapObj.removeControl(self.densityLegend);
       };
 
-      var numLayers = LablzLeaflet.pointLayers ? Object.size(LablzLeaflet.pointLayers) : 0;
-      numLayers += LablzLeaflet.shapeLayers ? Object.size(LablzLeaflet.shapeLayers) : 0;
-      setTimeout(function() {
-        LablzLeaflet.loadLayer(name, newLayer, callback);
-      }, 500 * numLayers);
+//      var numLayers = LablzLeaflet.pointLayers ? Object.size(LablzLeaflet.pointLayers) : 0;
+//      numLayers += LablzLeaflet.shapeLayers ? Object.size(LablzLeaflet.shapeLayers) : 0;
+//      setTimeout(function() {
+//        LablzLeaflet.loadLayer(name, newLayer, callback);
+//      }, 500 * numLayers);
       
       return newLayer;
     },
