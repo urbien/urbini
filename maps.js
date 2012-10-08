@@ -222,7 +222,7 @@ var LablzLeaflet = {
       info.update = function (props) {
         if (props) {
           if (props.density != null) {
-            var name = subType || props.item + 's';
+            var name = subType || props.item + (props.item.charAt(props.item.length - 1) != 's' ? 's' : '');
 //            name = props.type ? props.type + ' ' + name : name;
             this._div.innerHTML = init + '<b>' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + name + ' / ' + areaUnit + '<sup>2</sup>';
           }
