@@ -836,13 +836,22 @@ var LablzLeaflet = {
         this.map.fitBounds(mapBounds);
     },
 
-    addMap : function(apiKey, styleId, maxZoom, center) {
+    addMap : function(apiKey, styleId, maxZoom, center, pointOfInterest) {
       this.maxZoom = maxZoom;
       var cloudmadeUrl = 'http://{s}.tile.cloudmade.com/' + apiKey + '/' + styleId + '/' + '256/{z}/{x}/{y}.png';
       var cloudmadeAttribution = 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2011 CloudMade'
       var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: maxZoom, attribution: cloudmadeAttribution});
       var latlng = new L.LatLng(center[0], center[1]);
       this.map = new L.Map('map', {center: latlng, zoom: 12, maxZoom: maxZoom, layers: [cloudmade]});
+//      if (!pointOfInterest)
+//        return;
+//      
+//      var gj = L.geoJson(pointOfInterest);
+//      gj.addTo(this.map);
+//      
+//      if (geoJson.properties.html)
+//        gj.bindPopup(geoJson.properties.html);
+      
       var loc = getUrlParam(window.location.href, "-loc");
       if (loc == null)
         return;
@@ -851,7 +860,7 @@ var LablzLeaflet = {
       if (loc.length != 2)
         return;
       
-      var point = new L.LatLng(parseFloat(loc[0]), parseFloat(loc[1]));  
+      var point = new L.LatLng(parseFloat(loc[0]), parseFloat(loc[1]));
       this.map.setView(point);
       var marker = L.marker(point, {zIndexOffset: 1000, title: "Point of Interest"}).addTo(this.map);
       marker.bindPopup("<a href='javascript: history.go(-1);'>Probe me deeper</a>");
