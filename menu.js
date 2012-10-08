@@ -13244,7 +13244,6 @@ var EndlessPager = {
 
 function getMoreBoards(e, id, exclude, uri) {
   e = getDocumentEvent(e);
-  
   var s = "";
   if (exclude) {
     var tokens = exclude.split(',');
@@ -13258,6 +13257,10 @@ function getMoreBoards(e, id, exclude, uri) {
     params = 'uri=' + encodeURIComponent(uri);
   else
     params = 'type=http://www.hudsonfog.com/voc/model/portal/ImageResource';
+  
+//  var t = getTargetElement(e);
+//  if (t == null  ||  t.innerHTML.indexOf("MORE boards") != -1)
+//    params += '&-allBoards=y';
   params += '&-allBoards=y&hideMenuBar=y&hideFts=y&hideCommonFooter=y' + s;
   var td = document.getElementById(id);
 
@@ -13292,8 +13295,12 @@ function getMoreBoards(e, id, exclude, uri) {
         if (t == 'boardsTitle')  
           titleDiv[i].innerHTML = (count + 4) + " boards";
         else if (t == 'moreBoards_tab') {
-          titleDiv[i].innerHTML = '';
-          titleDiv[i].className = '';
+          if (isTD) {
+            titleDiv[i].innerHTML = '';
+            titleDiv[i].className = '';
+          }
+          else 
+            titleDiv[i].innerHTML = '&#160;&#160;LESS boards...';
         }
       }    
     }
