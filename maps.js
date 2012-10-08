@@ -175,7 +175,7 @@ var LablzLeaflet = {
     currentLayerName : null,
     userAskedFor : {},
     getNextColor : function(seed) {
-      var hsv = generateColors(1, seed || (LablzLeaflet.color ? LablzLeaflet.color[0] : 0.5));
+      var hsv = generateColors(1, seed || (LablzLeaflet.color ? LablzLeaflet.color[0] : 0.7));
       LablzLeaflet.color = hsv[0]; 
       var rgb = hsv2rgb(hsv[0][0], hsv[0][1], hsv[0][2]);
       return rgbToHex(rgb[0], rgb[1], rgb[2]);
@@ -222,9 +222,9 @@ var LablzLeaflet = {
       info.update = function (props) {
         if (props) {
           if (props.density != null) {
-            var name = subType || props.item;
-            name = props.type ? props.type + ' ' + name : name;
-            this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + name + ' / ' + areaUnit + '<sup>2</sup>';
+            var name = subType || props.item + 's';
+//            name = props.type ? props.type + ' ' + name : name;
+            this._div.innerHTML = init + '<b>' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + name + ' / ' + areaUnit + '<sup>2</sup>';
           }
 //            this._div.innerHTML = init + '<b>' + areaType + ': ' + props.name + '</b><br />' + (Math.round(props.density * 100) / 100) + ' ' + (subType || props.item) + 's / ' + areaUnit + '<sup>2</sup>';
           else
@@ -421,8 +421,8 @@ var LablzLeaflet = {
         this.map.removeControl(this.densityLegend);
       
       var max = minMax[1];
-      if (max < this.minResolution)
-        return;
+//      if (max < this.minResolution)
+//        return;
 
       var min = minMax[0];
       if (min == max)
@@ -670,17 +670,80 @@ var LablzLeaflet = {
       return gj;
     },
       
-    shapeToGeoJson : function(shape) {
+    toBasicGeoJsonShape : function(shape) {
       var shapeType = shape.shapeType ? (shape.shapeType.toLowerCase() == 'multipolygon' ? 'MultiPolygon' : 'Polygon') : 'Polygon';
-      return {"type" : "Feature", "properties": {"name" : shape["DAV:displayname"]}, "geometry": {"type": shapeType, "coordinates": eval('(' + shape.shapeJson + ')')}};
+      return {"type" : "Feature", "properties": {"name" : shape["DAV:displayname"], "html": html}, "geometry": {"type": shapeType, "coordinates": eval('(' + shape.shapeJson + ')')}};
     },
 
     toBasicGeoJsonPoint : function(point) {
       return {"type" : "Feature", "properties": {"name" : point["DAV:displayname"]}, "geometry": {"type": "Point", "coordinates": [point.longitude, point.latitude]}};
     },
     
-    addGeoJsonPoints : function(nameToGeoJson, type, options, style, doCluster, highlight, zoom, hexColor, colorSeed, icon) {
+    getScaledClusterIconCreateFunction: function(color, doScale, showCount) {
+      return function(cluster) {
+        var childCount = cluster.getChildCount();
+        var children = cluster.getAllChildMarkers();
+        var radius;
+        var size = 40;
+        var diameter = 30;
+        custom = true;
+        var rgb = hexToRGB(color || getNextColor(Math.random()));
+        var background = "background-color: rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", 0.7); color: " + getTextColor(rgb[0], rgb[1], rgb[2]) + ";";
+        var zoom = cluster._zoom || 10;
+        var width;
+        var font;
+        if (doScale) {
+          diameter = 10 + Math.round(100 * Math.log(childCount) / zoom);
+          size = diameter + 6; // +10 if marker-cluster padding is 5px 
+          width = "width: " + diameter + "px; height: " + diameter + "px; line-height: " + (diameter + 1) + "px;";
+          font = "font-size: " + Math.ceil(size / 4 + 5) + "px;" // + (size < 20 ? '8px' : size < 60 ? '15px' : '25px') + ";";
+        }
+        
+        html = '<div style=\"' + (background || '') + (width || '') + (font || '') + '\">' + (showCount && childCount > 1 ? childCount : '') + '</div>';
+        
+        return new L.DivIcon({ html: html, className: 'marker-cluster marker-cluster-tight marker-cluster-green', iconSize: new L.Point(size, size) });
+      }
+    },
+
+    getSimpleClusterIconCreateFunction: function() {
+      return function(cluster) {
+        var childCount = cluster.getChildCount();
+        var one = childCount == 1;
+        var size = 40;
+        var c;
+        if (one) {
+          size = 15;
+          c = 'marker-cluster marker-cluster-tight marker-cluster-green';
+        }
+        else {
+          c = ' marker-cluster-';
+          if (childCount < 10) {
+            c += 'small';
+          } else if (childCount < 100) {
+            c += 'medium';
+          } else {
+            c += 'large';
+          }
+          
+          c = 'marker-cluster ' + c;
+        }
+
+        var div;
+        if (one) {
+          var diameter = size - 6;
+          div = "<div style=\"width:" + diameter + "px; height: " + diameter + "px; line-height: " + (diameter + 1) + "px; background-color: rgba(0, 255, 0, 0.5);\">";
+        }
+        else
+          div = '<div>';
+
+          
+        return new L.DivIcon({ html: div + (one ? '' : '<span>' + childCount + '</span>') + '</div>', className: c, iconSize: new L.Point(size, size) });
+      }
+    },
+
+    addGeoJsonPoints : function(nameToGeoJson, type, markerOptions, style, behaviorOptions) {
       'use strict';
+      behaviorOptions = behaviorOptions || {doCluster: false, highlight: false, zoom: false, hexColor: undefined, colorSeed: undefined, icon: undefined};
       var self = this;
       var style = style ? style : this.simpleStyle;
       var i = 0;
@@ -695,35 +758,42 @@ var LablzLeaflet = {
         
         var onEachFeature = function(feature, layer) {
           layer.on({
-            mouseover: highlight ? highlightFeature : updateInfos,
-            mouseout: highlight ? resetHighlight : updateInfos,
-            click: zoom ? zoomToFeature : null
+            mouseover: behaviorOptions.highlight ? highlightFeature : updateInfos,
+            mouseout: behaviorOptions.highlight ? resetHighlight : updateInfos,
+            click: behaviorOptions.zoom ? zoomToFeature : null
           });
         };
         
-        options = options || {};
+        markerOptions = markerOptions || {};
 //        if (!hexColor) {
-//          var colors = generateColors(1, colorSeed || 0.5);
+//          var colors = generateColors(1, behaviorOptions.colorSeed || 0.5);
 //          colorSeed = colors[0][0];
 //          var color = hsv2rgb(colors[0][0], colors[0][1], colors[0][2]);
 //          color = rgbToHex(color[0], color[1], color[2]);
-//          options.color = color;
+//          markerOptions.color = color;
 //        }
-        if (hexColor) {
-          options.color = hexColor;
-          var rgb = hexToRGB(hexColor);
-          colorSeed = rgb2hsv(rgb[0], rgb[1], rgb[2])[0];
-          hexColor = null;
+        if (behaviorOptions.hexColor) {
+          var c = behaviorOptions.hexColor;
+          markerOptions.color = c;
+          var rgb = hexToRGB(c);
+          behaviorOptions.colorSeed = rgb2hsv(rgb[0], rgb[1], rgb[2])[0];
+          behaviorOptions.hexColor = null;
         }
         
         var markers;
-        if (doCluster)
-          markers = new L.MarkerClusterGroup(options);
+        if (behaviorOptions.doCluster) {
+          if (markerOptions.doScale)
+            markerOptions.iconCreateFunction = self.getScaledClusterIconCreateFunction(markerOptions.color, markerOptions.doScale, markerOptions.showCount);
+          else
+            markerOptions.iconCreateFunction = self.getSimpleClusterIconCreateFunction();
+          
+          markers = new L.MarkerClusterGroup(markerOptions);
+        }
         
         var pointToLayer = function(feature, latlng) {
           var marker;
-          if (icon)
-            marker = L.marker(latlng, {icon: icon});
+          if (behaviorOptions.icon)
+            marker = L.marker(latlng, {icon: behaviorOptions.icon});
           else
             marker = L.marker(latlng);
           
@@ -739,13 +809,13 @@ var LablzLeaflet = {
           else
             marker.bindPopup(feature.properties.html);
 
-          var name = type + ': ' + feature.properties.name;
-          marker.on('mouseover', function(e) {self.updateInfosWithHTML(name);});
+//          var name = type + ': ' + feature.properties.name;
+          marker.on('mouseover', function(e) {self.updateInfosWithHTML(feature.properties.name);});
           marker.on('mouseout', function(e) {self.clearInfos(e);});
-          if (doCluster)
+          if (behaviorOptions.doCluster)
             markers.addLayer(marker);
           
-          return doCluster ? markers : marker;
+          return behaviorOptions.doCluster ? markers : marker;
         };
         
         gj = L.geoJson(g, {style: style, pointToLayer: pointToLayer});
@@ -790,6 +860,10 @@ var LablzLeaflet = {
     },
 
     addLayersControlToMap : function(radioLayers, checkboxLayers, options) {
+      if ((!radioLayers && !checkboxLayers) ||
+          (Object.size(radioLayers) == 1 && !checkboxLayers))
+        return;
+      
       options = options || {position: 'topright'};
       var lControl = L.control.layers(radioLayers, checkboxLayers, options).addTo(this.map);
     },
@@ -801,8 +875,9 @@ var LablzLeaflet = {
     },
 
     addDensityLayer : function(name, propsArr) {
+      var none = !propsArr || propsArr.length == 0;
       LablzLeaflet.shapeLayerInfos[name] = propsArr;
-      var minMax = getMinMaxDensityFromPropertiesArray(propsArr);
+      var minMax = none ? [0, 0] : getMinMaxDensityFromPropertiesArray(propsArr);
       LablzLeaflet.setMinMaxDensity(name, minMax);
       if (LablzLeaflet.userAskedFor[name]) {
         LablzLeaflet.currentLayerName = name;
@@ -813,10 +888,10 @@ var LablzLeaflet = {
       LablzLeaflet.buildGeoJsonShapeLayers(LablzLeaflet.leafletDensityMapStyle, name);
     },
     
-    addPointsLayer : function(name, type, geoJsons) {
+    addPointsLayer : function(name, geoJsons, type) {
       var nameToGJ = {};
       nameToGJ[name] = geoJsons;
-      LablzLeaflet.addGeoJsonPoints(nameToGJ, type, {disableClusteringAtZoom: LablzLeaflet.maxZoom + 1, singleMarkerMode: true, doScale: false}, null, true, true, false, LablzLeaflet.getNextColor());      
+      LablzLeaflet.addGeoJsonPoints(nameToGJ, type || name, {disableClusteringAtZoom: LablzLeaflet.maxZoom + 1, singleMarkerMode: true, doScale: true, showCount: true, doSpiderfy: false}, null, {doCluster: true, highlight: true, zoom: false, hexColor: LablzLeaflet.getNextColor()});      
     },
     
     fetchLayer : function(name, query, toGeoJson, callback) {
@@ -847,7 +922,7 @@ var LablzLeaflet = {
         var geoJson = {};
         var propsArr = [];
         for (var i = 0; i < data.length; i++) {
-          var props = toGeoJson(data[i]);
+          var props = toGeoJson(data[i], name);
           if (props)
             propsArr.push(props);
         }
@@ -864,13 +939,6 @@ var LablzLeaflet = {
       postRequest(null, this.serverName + "api/v1/" + path[0], path.length > 1 ? path[1] : null, null, null, fetchedLayer);
     },
 
-    getLayerName : function(type) {
-      switch (type) {
-      case 'TreesBySpeciesAndPostalCode':
-      case 'TreesBySpeciesAndCensusBlock':
-        return 'species.commonName';
-      }  
-    },
     setMinMaxDensity : function(name, minMax) {
       this.layerToDensity[name] = minMax;
     },
@@ -899,17 +967,13 @@ var LablzLeaflet = {
       geoJson.properties.height = height;
     },
     
-    setHTML : function(geoJson, item, img) {
+    setHTML : function(type, geoJson, item, img) {
       var width = geoJson.properties.width;
       var height = geoJson.properties.height;
       var hasWidth = typeof width != 'undefined';
       var hasHeight = typeof height != 'undefined';
       var isShort = item._uri.indexOf('http') != 0;
-      var name = item["DAV:displayname"];
-      var type = item["type"];
-      if (type)
-        name = type.name + ' ' + name;
-      
+      var name = type + '<br />' + item["DAV:displayname"] + "<br/>";
       var html = "<a href='" + (isShort ? "v/" + item._uri : "v.html?uri=" + encodeURIComponent(item._uri)) + "'>" + name;
       if (img)
         html += "<img src='" + getImageUrl(img, this.serverName) + "'" + (hasWidth ? " width=\"" + width + "\"" : "") + (hasHeight ? " height=\"" + height + "\"" : "") + " />";
@@ -929,8 +993,8 @@ function getImageUrl(imgUri, serverName) {
 //}
 
 function getMinMaxDensity(geoJsons) {
-  var max;
-  var min;
+  var max = 0;
+  var min = 0;
   for (var i = 0; i < geoJsons.length; i++) {
     var gj = geoJsons[i];
     var props = gj.properties;
@@ -942,12 +1006,12 @@ function getMinMaxDensity(geoJsons) {
     min = min ? Math.min(d, min) : d;
   }
   
-  return typeof min != 'undefined' && typeof max != 'undefined' ? [min, max] : undefined;
+  return [min, max];
 }
 
 function getMinMaxDensityFromPropertiesArray(propsArr) {
-  var max;
-  var min;
+  var max = 0;
+  var min = 0;
   for (var i = 0; i < propsArr.length; i++) {
     var props = propsArr[i];
     if (!props || props.density == null)
