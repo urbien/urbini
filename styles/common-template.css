@@ -1012,7 +1012,7 @@ table.fbConnect {width:90%; border:solid &[SecondaryColorA_5]; 1px; margin-left:
 div.topSidebar {
 }
 div.leftSidebar {
-  padding-top:   0.4em;
+  padding-top:   0.8em;
   padding-left:  0.8em;
   padding-right: 0.8em;  
   /*width: 8em;*/
@@ -2743,3 +2743,4 @@ td #corePageContent { min-height: 600px;}
 #resourceList #listChooser a.current_backlink {color: #757575}
 #moreNearby div {padding-top: 17px;}
 #cp td {vertical-align: top;}
+#nearby { cursor: pointer; }

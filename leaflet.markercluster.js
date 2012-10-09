@@ -22,7 +22,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 		zoomToBoundsOnClick: true,
 		singleMarkerMode: false,
 
-		disableClusteringAtZoom: null,
+		disableClusteringAtZoom: 15,
 
 		skipDuplicateAddTesting: false,
 
@@ -31,6 +31,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 		animateAddingMarkers: false,
 		info: null, // L.Control info object to update when focus changes
 		color: null,
+		doSpiderfy: true,
 		doScale: true
 	},
 
@@ -329,33 +330,14 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 			c += 'large';
 		}
 
-    var html = '<div><span>' + childCount + '</span></div>';
-		var children = cluster.getAllChildMarkers();
-		var radius;
-		var size = 40;
-		var diameter = 30;
-	  if (this.color) {
-	    custom = true;
-	    var rgb = hexToRGB(this.color);
-	    var background = "background-color: rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", 0.7); color: " + getTextColor(rgb[0], rgb[1], rgb[2]) + ";";
-	    var zoom = cluster._zoom || 10;
-	    var width;
-	    if (this.doScale) {
-  	    diameter = 30 + Math.round(150 * Math.log(childCount) / zoom);
-  	    size = diameter + 10;
-  	    width = "width: " + diameter + "px; height: " + diameter + "px; line-height: " + diameter + "px;";
-	    }
-	    
-	    html = '<div style=\"' + background + width + '\"><span>' + childCount + '</span></div>';
-	  }
-	  
-		return new L.DivIcon({ html: html, className: 'marker-cluster ' + (this.color ? 'marker-cluster-black': c), iconSize: new L.Point(size, size) });
+		return new L.DivIcon({ html: '<div><span>' + childCount + '</span></div>', className: 'marker-cluster' + c, iconSize: new L.Point(40, 40) });
 	},
 	
 	_bindEvents: function () {
 		var shownPolygon = null,
 			map = this._map,
 
+      doSpiderfy = this.options.doSpiderfy,
 			spiderfyOnMaxZoom = this.options.spiderfyOnMaxZoom,
 			showCoverageOnHover = this.options.showCoverageOnHover,
 			zoomToBoundsOnClick = this.options.zoomToBoundsOnClick;
@@ -365,7 +347,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 			this.on('clusterclick', function (a) {
 				if (map.getMaxZoom() === map.getZoom()) {
 					if (spiderfyOnMaxZoom) {
-						a.layer.spiderfy();
+						a.layer.spiderfy(doSpiderfy);
 					}
 				} else if (zoomToBoundsOnClick) {
 					a.layer.zoomToBounds();
@@ -1339,7 +1321,7 @@ L.MarkerCluster.include({
 	_circleSpiralSwitchover: 9, //show spiral instead of circle from this marker count upwards.
 								// 0 -> always spiral; Infinity -> always circle
 
-	spiderfy: function () {
+	spiderfy: function (toActualPositions) {
 		if (this._group._spiderfied === this || this._group._inZoomAnimation) {
 			return;
 		}
@@ -1355,11 +1337,16 @@ L.MarkerCluster.include({
 
 		//TODO Maybe: childMarkers order by distance to center
 
-		if (childMarkers.length >= this._circleSpiralSwitchover) {
-			positions = this._generatePointsSpiral(childMarkers.length, center);
-		} else {
-			center.y += 10; //Otherwise circles look wrong
-			positions = this._generatePointsCircle(childMarkers.length, center);
+		if (toActualPositions) {
+		  positions = this._generatePointPositions(childMarkers);
+		}
+		else {
+		  if (childMarkers.length >= this._circleSpiralSwitchover) {
+		    positions = this._generatePointsSpiral(childMarkers.length, center);
+		  } else {
+		    center.y += 10; //Otherwise circles look wrong
+		    positions = this._generatePointsCircle(childMarkers.length, center);
+		  }
 		}
 
 		this._animationSpiderfy(childMarkers, positions);
@@ -1374,6 +1361,36 @@ L.MarkerCluster.include({
 
 		this._group._spiderfied = null;
 	},
+
+ _generatePointPositions: function (points) {
+    var group = this._group,
+    map = group._map,
+    center = map.latLngToLayerPoint(this._latlng),
+    res = [],
+    count = points.length;
+    res.length = count;
+
+    var legLength = this._spiralLengthStart, angle = 0, n = 0;
+    for (var i = count - 1; i >= 0; i--) {
+      var latLng = points[i].getLatLng();
+      var point = map.latLngToLayerPoint(latLng);
+      var collision;
+      for (var j = count - 1; j > i; j--) {
+        if (res[j].x == point.x && res[j].y == point.y) {
+          point.x += 15;
+//          angle += this._spiralFootSeparation / legLength + (n++) * 0.0005;
+//          point.x += legLength * Math.cos(angle);
+//          point.y += legLength * Math.sin(angle);
+//          point._round();
+//          legLength += this._2PI * this._spiralLengthFactor / angle;
+        }
+      }
+      
+      res[i] = point;
+    }
+
+    return res;
+  },
 
 	_generatePointsCircle: function (count, centerPt) {
 		var circumference = this._circleFootSeparation * (2 + count),
