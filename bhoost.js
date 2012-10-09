@@ -2025,7 +2025,7 @@ var MobilePageAnimation = {
     this.dlgDiv = div;
     div.style.top = getScrollXY()[1] + 'px';
     div.style.minHeight = getWindowSize()[1] + 'px';
-    setTransformProperty(div, "scale(0.3)");
+    setTransformProperty(div, "scale(0.8)");
     
     if (div.id != "browser_dlg") { // browser_dlg is our alert dialog
       appendClassName(div, "mobile_dlg");
@@ -2036,7 +2036,7 @@ var MobilePageAnimation = {
     div.style.visibility = "visible";
     // on fast animation a dialog can disapeared for a moment
     // increas time to overcome it
-    setTimeout(function f() { setTransitionProperty(div, "all 0.8s ease-in-out"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
+    setTimeout(function f() { setTransitionProperty(div, "all 0.5s linear"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
   },
    _onZoomInDialogEnd : function(event) {
     var $t = MobilePageAnimation;
@@ -2052,7 +2052,7 @@ var MobilePageAnimation = {
     this.dlgDivToHide = div;
     setTransitionCallback(div, MobilePageAnimation._onZoomOutDialogEnd); 
     Mobile.getCurrentPageDiv().style.opacity = 1
-    setTransformProperty(div, "scale(0.3)");
+    setTransformProperty(div, "scale(0.8)");
     div.style.opacity = "0.1";
   },
   
