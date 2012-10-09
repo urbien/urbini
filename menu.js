@@ -13053,14 +13053,14 @@ function showLocalActivityButtons() {
     button1.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + lat + ',' + lon + '\">Activity near me</a>';
   }
   
-  var button2 = document.getElementById('activity_near_here');    
-  if (button2) {
-    var resourceLoc = document.getElementById("resourceGeoLocation");
-    if (resourceLoc == null)
-      return;
-    
-    var latLon = resourceLoc.innerHTML.split(",");
-    button2.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\">Activity nearby</a>';
+//  var button2 = document.getElementById('activity_near_here');    
+//  if (button2) {
+//    var resourceLoc = document.getElementById("resourceGeoLocation");
+//    if (resourceLoc == null)
+//      return;
+//    
+//    var latLon = resourceLoc.innerHTML.split(",");
+//    button2.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/Modification?-locSort=y&accessLevel_select=!Owner&accessLevel_verified=y&-$action=searchLocal&-loc=' + latLon[0] + ',' + latLon[1] + '\">Activity nearby</a>';
 
 //    var button3 = document.getElementById('trees_near_here');
 //    if (button3)
