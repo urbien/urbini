@@ -13072,7 +13072,7 @@ function showLocalActivityButtons() {
 //    var button5 = document.getElementById('wo_near_here');
 //    if (button5)
 //      button5.innerHTML = '<a class=\"button_backlink\" style=\"margin-top:-10px\" href=\"l/ForestryWorkOrder?-locSort=y&-$action=searchLocal&-list=y&-loc=' + latLon[0] + ',' + latLon[1] + '\">Work orders nearby</a>';
-  }
+//  }
 }
 
 
