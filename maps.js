@@ -979,14 +979,21 @@ var LablzLeaflet = {
       geoJson.properties.height = height;
     },
     
-    setHTML : function(type, geoJson, item, img) {
+    setHTML : function(type, geoJson, item, img, linkToMap) {
       var width = geoJson.properties.width;
       var height = geoJson.properties.height;
       var hasWidth = typeof width != 'undefined';
       var hasHeight = typeof height != 'undefined';
       var isShort = item._uri.indexOf('http') != 0;
       var name = type + '<br />' + item["DAV:displayname"] + "<br/>";
-      var html = "<a href='" + (isShort ? "v/" + item._uri : "v.html?uri=" + encodeURIComponent(item._uri)) + "'>" + name;
+      var html = "<a href='";
+      if (isShort)
+        html += "v/" + item._uri + (linkToMap ? '?-map=y' : '');
+      else
+        html += "v.html?uri=" + encodeURIComponent(item._uri) + (linkToMap ? '&-may' : '');
+      
+      html += "'>" + name;
+      
       if (img)
         html += "<img src='" + getImageUrl(img, this.serverName) + "'" + (hasWidth ? " width=\"" + width + "\"" : "") + (hasHeight ? " height=\"" + height + "\"" : "") + " />";
           
