@@ -843,29 +843,32 @@ var LablzLeaflet = {
       var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: maxZoom, attribution: cloudmadeAttribution});
       var latlng = new L.LatLng(center[0], center[1]);
       this.map = new L.Map('map', {center: latlng, zoom: 12, maxZoom: maxZoom, layers: [cloudmade]});
-//      if (!pointOfInterest)
+      if (!pointOfInterest)
+        return;
+      
+      var gj = L.geoJson(pointOfInterest, { 
+          onEachFeature: function (feature, layer) {
+            layer.bindPopup(pointOfInterest.properties.html).openPopup();
+          }
+        }
+      );
+      
+      gj.addTo(this.map);
+      
+//      var loc = getUrlParam(window.location.href, "-loc");
+//      if (loc == null)
 //        return;
 //      
-//      var gj = L.geoJson(pointOfInterest);
-//      gj.addTo(this.map);
+//      loc = loc.split(",");
+//      if (loc.length != 2)
+//        return;
 //      
-//      if (geoJson.properties.html)
-//        gj.bindPopup(geoJson.properties.html);
-      
-      var loc = getUrlParam(window.location.href, "-loc");
-      if (loc == null)
-        return;
-      
-      loc = loc.split(",");
-      if (loc.length != 2)
-        return;
-      
-      var point = new L.LatLng(parseFloat(loc[0]), parseFloat(loc[1]));
-      this.map.setView(point);
-      var marker = L.marker(point, {zIndexOffset: 1000, title: "Point of Interest"}).addTo(this.map);
-      marker.bindPopup("<a href='javascript: history.go(-1);'>Probe me deeper</a>");
-      this.pointOfInterest.marker = marker;
-      this.pointOfInterest.name = "Baloney name";
+//      var point = new L.LatLng(parseFloat(loc[0]), parseFloat(loc[1]));
+//      this.map.setView(point);
+//      var marker = L.marker(point, {zIndexOffset: 1000, title: "Point of Interest"}).addTo(this.map);
+//      marker.bindPopup("<a href='javascript: history.go(-1);'>Probe me deeper</a>");
+//      this.pointOfInterest.marker = marker;
+//      this.pointOfInterest.name = "Baloney name";
     },
 
     addLayersControlToMap : function(radioLayers, checkboxLayers, options) {
