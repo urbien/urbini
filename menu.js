@@ -4837,7 +4837,7 @@ var TouchDlgUtil = {
       
     var code = getKeyCode(event);
 
-    if ((code == 39 || code == 37) && target.className != "shrunk_field") // target.getAttribute("readonly") == null
+    if ((code == 39 || code == 37) && target.className != "enter_field") // target.getAttribute("readonly") == null
       return;
     
     var isMenu = $t.isMenuPopupOpened();
