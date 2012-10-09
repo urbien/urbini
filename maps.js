@@ -174,6 +174,7 @@ var LablzLeaflet = {
     currentLayerDensity : null,
     currentLayerName : null,
     userAskedFor : {},
+    layerControl : null,
     getNextColor : function(seed) {
       var hsv = generateColors(1, seed || (LablzLeaflet.color ? LablzLeaflet.color[0] : 0.7));
       LablzLeaflet.color = hsv[0]; 
@@ -550,6 +551,25 @@ var LablzLeaflet = {
       LablzLeaflet.fetchLayer(name, info.query, LablzLeaflet[info.toGeoJson], callback);
     },
 
+    toggleLayerControl : function(on) {
+      if (!LablzLeaflet.layerControl)
+        return;
+
+      var base = LablzLeaflet.layerControl._baseLayersList;
+      if (base) {
+        for (var i = 0; i < base.childNodes.length; i++) {
+          base.childNodes[i].childNodes[0].disabled = !on;
+        }
+      }
+      
+      var overlays = LablzLeaflet.layerControl._overlaysList;
+      if (overlays) {
+        for (var i = 0; i < overlays.childNodes.length; i++) {
+          overlays.childNodes[i].childNodes[0].disabled = !on;
+        }
+      }
+    },
+    
     addDelayedLayer : function(name, callback) {
       var self = this;
       var newLayer = new L.layerGroup();
@@ -557,6 +577,8 @@ var LablzLeaflet = {
         self.userAskedFor[name] = "y";
         LablzLeaflet.currentLayerName = name;
         this._map = mapObj;
+        self.toggleLayerControl(false);
+        setTimeout(function () {LablzLeaflet.toggleLayerControl(true);}, 5000);
         LablzLeaflet.loadLayer(name, newLayer, callback);
       };
       
@@ -877,7 +899,7 @@ var LablzLeaflet = {
         return;
       
       options = options || {position: 'topright'};
-      var lControl = L.control.layers(radioLayers, checkboxLayers, options).addTo(this.map);
+      this.layerControl = L.control.layers(radioLayers, checkboxLayers, options).addTo(this.map);
     },
 
     addShapesLayer : function(name, shapesArr) {
@@ -945,6 +967,8 @@ var LablzLeaflet = {
         callback(name, propsArr);
         if (LablzLeaflet.userAskedFor)
           LablzLeaflet.userAskedFor[name] = null;
+        
+        LablzLeaflet.toggleLayerControl(true);
       }
       
       var path = query.split("?");
