@@ -470,7 +470,21 @@ var LablzLeaflet = {
       legend.addTo(this.map);
       this.densityLegend = legend;
     },
-
+    
+    clearNonShapeProps : function(shapeJson) {
+      'use strict';
+      var props = shapeJson.properties;
+      for (var prop in props) {
+        if (!props.hasOwnProperty(prop))
+          continue;
+          
+        if (prop == 'name' || prop == 'html' || prop == 'width' || prop == 'height' || prop == 'area')
+          continue;
+        
+        props[prop] = undefined;
+      }
+    },
+    
     buildGeoJsonShapeLayers : function(style, name) {
       'use strict';
       if (!this.shapeJsons || !this.shapeLayerInfos)
@@ -499,13 +513,14 @@ var LablzLeaflet = {
           var props = nameToProps[j];
           var shapeId = props['id'];
           var shapeJson = this.shapeJsons[shapeId];
-          var geoJson = JSON.parse(JSON.stringify(shapeJson)); //jQuery.extend(true, {}, shapeJson);
+          this.clearNonShapeProps(shapeJson);
+//          var geoJson = JSON.parse(JSON.stringify(shapeJson)); //jQuery.extend(true, {}, shapeJson);
           for (var prop in props) {
             if (props.hasOwnProperty(prop))
-              geoJson.properties[prop] = props[prop];
+              shapeJson.properties[prop] = props[prop];
           }
           
-          geoJsonLayer.push(geoJson);
+          geoJsonLayer.push(shapeJson);
         }
         
         geoJsonLayers[name] = geoJsonLayer;
@@ -514,7 +529,8 @@ var LablzLeaflet = {
       var counter = 0;
       var firstLayer;
       for (var name in geoJsonLayers) {
-        var minMax = getMinMaxDensity(geoJsonLayers[name]);
+        var minMax = this.getMinMaxDensity(name);
+        minMax = typeof minMax == 'undefined' ? getMinMaxDensity(geoJsonLayers[name]) : minMax;
         if (minMax != null) {
           this.setMinMaxDensity(name, minMax);
           this.currentLayerName = name;
@@ -551,25 +567,6 @@ var LablzLeaflet = {
       LablzLeaflet.fetchLayer(name, info.query, LablzLeaflet[info.toGeoJson], callback);
     },
 
-    toggleLayerControl : function(on) {
-      if (!LablzLeaflet.layerControl)
-        return;
-
-      var base = LablzLeaflet.layerControl._baseLayersList;
-      if (base) {
-        for (var i = 0; i < base.childNodes.length; i++) {
-          base.childNodes[i].childNodes[0].disabled = !on;
-        }
-      }
-      
-      var overlays = LablzLeaflet.layerControl._overlaysList;
-      if (overlays) {
-        for (var i = 0; i < overlays.childNodes.length; i++) {
-          overlays.childNodes[i].childNodes[0].disabled = !on;
-        }
-      }
-    },
-    
     addDelayedLayer : function(name, callback) {
       var self = this;
       var newLayer = new L.layerGroup();
@@ -577,9 +574,8 @@ var LablzLeaflet = {
         self.userAskedFor[name] = "y";
         LablzLeaflet.currentLayerName = name;
         this._map = mapObj;
-        self.toggleLayerControl(false);
-        setTimeout(function () {LablzLeaflet.toggleLayerControl(true);}, 5000);
         LablzLeaflet.loadLayer(name, newLayer, callback);
+        alert('Please wait a moment while we fly in the goodies');
       };
       
       newLayer.onRemove = function(mapObj) {
@@ -876,21 +872,6 @@ var LablzLeaflet = {
       );
       
       gj.addTo(this.map);
-      
-//      var loc = getUrlParam(window.location.href, "-loc");
-//      if (loc == null)
-//        return;
-//      
-//      loc = loc.split(",");
-//      if (loc.length != 2)
-//        return;
-//      
-//      var point = new L.LatLng(parseFloat(loc[0]), parseFloat(loc[1]));
-//      this.map.setView(point);
-//      var marker = L.marker(point, {zIndexOffset: 1000, title: "Point of Interest"}).addTo(this.map);
-//      marker.bindPopup("<a href='javascript: history.go(-1);'>Probe me deeper</a>");
-//      this.pointOfInterest.marker = marker;
-//      this.pointOfInterest.name = "Baloney name";
     },
 
     addLayersControlToMap : function(radioLayers, checkboxLayers, options) {
@@ -967,8 +948,6 @@ var LablzLeaflet = {
         callback(name, propsArr);
         if (LablzLeaflet.userAskedFor)
           LablzLeaflet.userAskedFor[name] = null;
-        
-        LablzLeaflet.toggleLayerControl(true);
       }
       
       var path = query.split("?");
@@ -1014,7 +993,7 @@ var LablzLeaflet = {
       if (isShort)
         html += "v/" + item._uri + (linkToMap ? '?-map=y' : '');
       else
-        html += "v.html?uri=" + encodeURIComponent(item._uri) + (linkToMap ? '&-may' : '');
+        html += "v.html?uri=" + encodeURIComponent(item._uri) + (linkToMap ? '&-map=y' : '');
       
       html += "'>" + name;
       
