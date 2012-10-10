@@ -2339,7 +2339,7 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 .enter_field { position: fixed; top: 0px; font-size: 1px; width: 1px; border-width: 0; background: transparent; }
 
 /* like "TO" field in message */
-.rounded_rect_tbl .tags { width: auto; margin-bottom: 7px; min-height: 12px; }
+.rounded_rect_tbl .tags { width: auto; margin-bottom: 7px; min-height: 4px; }
 .rounded_rect_tbl .tags div { float: left; margin: 5px; height: 20px; line-height:20px; }
 .rounded_rect_tbl .tags .item { font-size: 14px; line-height:20px; padding: 2px 2px 2px 4px; }
 .rounded_rect_tbl .tags .item img { position:relative; top:3px; cursor: pointer; }
