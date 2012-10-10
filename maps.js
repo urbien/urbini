@@ -567,6 +567,26 @@ var LablzLeaflet = {
       LablzLeaflet.fetchLayer(name, info.query, LablzLeaflet[info.toGeoJson], callback);
     },
 
+    toggleLayerControl : function(on) {
+      if (!LablzLeaflet.layerControl)
+        return;
+    
+      var base = LablzLeaflet.layerControl._baseLayersList;
+      if (base) {
+        for (var i = 0; i < base.childNodes.length; i++) {
+          base.childNodes[i].childNodes[0].disabled = !on;
+        }
+      }
+      
+      var overlays = LablzLeaflet.layerControl._overlaysList;
+      if (overlays) {
+        for (var i = 0; i < overlays.childNodes.length; i++) {
+          overlays.childNodes[i].childNodes[0].disabled = !on;
+        }
+      }
+    },
+
+
     addDelayedLayer : function(name, callback) {
       var self = this;
       var newLayer = new L.layerGroup();
@@ -575,7 +595,9 @@ var LablzLeaflet = {
         LablzLeaflet.currentLayerName = name;
         this._map = mapObj;
         LablzLeaflet.loadLayer(name, newLayer, callback);
-        alert('Please wait a moment while we fly in the goodies');
+        self.toggleLayerControl(false);
+        setTimeout(function () {LablzLeaflet.toggleLayerControl(true);}, 5000);
+//        alert('Please wait a moment while we fly in the goodies');
       };
       
       newLayer.onRemove = function(mapObj) {
@@ -948,6 +970,8 @@ var LablzLeaflet = {
         callback(name, propsArr);
         if (LablzLeaflet.userAskedFor)
           LablzLeaflet.userAskedFor[name] = null;
+        
+        LablzLeaflet.toggleLayerControl(true);
       }
       
       var path = query.split("?");
