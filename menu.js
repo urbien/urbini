@@ -1718,6 +1718,10 @@ var ListBoxesHandler = {
     var $t = ListBoxesHandler;
     var target = getEventTarget(event);
 
+    var tr = getAncestorByClassName(target, "param_tr");
+    if (!tr || tr.className.indexOf(" pointer") == -1) // not prop. or not clickable
+      return; 
+
     if (isElemOfClass(target, "input") && !target.getAttribute("readonly"))
       return;
 
@@ -1743,10 +1747,6 @@ var ListBoxesHandler = {
     if (isLink && !$t.isRollUp)
       return;
   
-    var tr = getAncestorByClassName(target, "param_tr");
-    if (!tr)
-      return; 
-
     // reset tray if parent dialog was closed
     // note: not optimized for RL editor when "dialog" opened many times
     if (!$t.panelBlock || !isVisible($t.panelBlock) || $t.panelBlock.parentNode == null)
