@@ -485,13 +485,14 @@ var LablzLeaflet = {
       }
     },
     
-    buildGeoJsonShapeLayers : function(style, name) {
+    buildGeoJsonShapeLayers : function(style, name, autoAdd) {
       'use strict';
       if (!this.shapeJsons || !this.shapeLayerInfos)
         return;
       
       var geoJsonLayers = {};
       var names = name == null ? Object.keys(this.shapeLayerInfos) : [name];
+      var firstLayer;
       for (var i = 0; i < names.length; i++) {
         var name = names[i];
         if (this.shapeLayers && this.shapeLayers[name]) {
@@ -513,22 +514,24 @@ var LablzLeaflet = {
           var props = nameToProps[j];
           var shapeId = props['id'];
           var shapeJson = this.shapeJsons[shapeId];
-          this.clearNonShapeProps(shapeJson);
-//          var geoJson = JSON.parse(JSON.stringify(shapeJson)); //jQuery.extend(true, {}, shapeJson);
+          var geoJson = shapeJson;
+//          var geoJson = names.length == 1 ? shapeJson : JSON.parse(JSON.stringify(shapeJson));
+//          if (names.length == 1) // reuse the shapes from the current layer
+//            this.clearNonShapeProps(geoJson);
+          
           for (var prop in props) {
             if (props.hasOwnProperty(prop))
-              shapeJson.properties[prop] = props[prop];
+              geoJson.properties[prop] = props[prop];
           }
           
-          geoJsonLayer.push(shapeJson);
+          geoJsonLayer.push(geoJson);
         }
         
         geoJsonLayers[name] = geoJsonLayer;
-      }
-
-      var counter = 0;
-      var firstLayer;
-      for (var name in geoJsonLayers) {
+//      }
+//
+//      var counter = 0;
+//      for (var name in geoJsonLayers) {
         var minMax = this.getMinMaxDensity(name);
         minMax = typeof minMax == 'undefined' ? getMinMaxDensity(geoJsonLayers[name]) : minMax;
         if (minMax != null) {
@@ -537,15 +540,15 @@ var LablzLeaflet = {
           this.currentLayerDensity = minMax;
         }
         
-        if (counter == 0 && this.userAskedFor[name])
+        if (i == 0 && this.userAskedFor[name])
           firstLayer = name;
         
         var newLayer = this.mkShapeLayerGroup(name, geoJsonLayers[name], minMax, style, this.shapeLayers[name]);
-        if (counter == 0 && this.userAskedFor[name])
+        if (autoAdd || (i == 0 && this.userAskedFor[name]))
           newLayer.addTo(this.map);
         
         this.shapeLayers[name] = newLayer;
-        counter++;
+//        counter++;
       }
 
       this.setCurrentLayer(firstLayer || this.currentLayerName);
@@ -1026,7 +1029,7 @@ var LablzLeaflet = {
           
       html += "</a>";
       geoJson.properties.html = html;
-    },
+    }
 }
 
 function getImageUrl(imgUri, serverName) {
