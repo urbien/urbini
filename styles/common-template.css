@@ -2199,7 +2199,7 @@ td.pBGr { background-color: #eeeeee;
 /*.cp_item_left { min-height: 30px; }*/
 .backlink_counter { position: absolute; pointer-events: none; }
 .cp_item_right .backlink_counter { top: -7px; left: 15px; }
-.cp_item_left  .backlink_counter { top: 2px; right: 0px; }
+.cp_item_left  .backlink_counter { top: -3px; right: 0px; }
 
 .backlink_counter .left, .backlink_counter .right { height: 25px; background-image: url(../images/skin/iphone/backlink_counter.png); background-repeat: no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
