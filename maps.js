@@ -515,7 +515,9 @@ var LablzLeaflet = {
           var shapeId = props['id'];
           var shapeJson = this.shapeJsons[shapeId];
           var geoJson = shapeJson;
-          this.clearNonShapeProps(geoJson);
+//          var geoJson = names.length == 1 ? shapeJson : JSON.parse(JSON.stringify(shapeJson));
+//          if (names.length == 1) // reuse the shapes from the current layer
+//            this.clearNonShapeProps(geoJson);
           
           for (var prop in props) {
             if (props.hasOwnProperty(prop))
