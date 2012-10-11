@@ -1946,6 +1946,10 @@ var ListBoxesHandler = {
       $t._hideInvisibleParams();
       SlideSwaper.moveForward($t.tray, $t.onOptionsDisplayed);
     }
+    
+    // hide options selector (text entry) if number of options is less than 7
+    var optionsNum = getChildByTagName(popupDiv, "table").rows.length;
+    $t.textEntry.parentNode.style.display = (optionsNum > 7) ? "" : "none";
   },
   
   // RL editor and Fts-Sift
@@ -2055,7 +2059,6 @@ var ListBoxesHandler = {
     
     // prevent from change of vertical scrollbar height
   //  this.panelBlock.style.height = this.panelBlock.offsetHeight;
-    
     for (var i = table.rows.length - 1; i >= 0; i--) {
       var row = table.rows[i];
       var rowBottom = tableTop + row.offsetTop;
