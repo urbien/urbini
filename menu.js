@@ -1719,7 +1719,7 @@ var ListBoxesHandler = {
     var target = getEventTarget(event);
 
     var tr = getAncestorByClassName(target, "param_tr");
-    if (tr == null)
+    if (!tr)
       return; 
 
     if (isElemOfClass(target, "input") && !target.getAttribute("readonly"))
@@ -1730,8 +1730,10 @@ var ListBoxesHandler = {
       if (event != null)
         return;
     }
-    else if (tr.className.indexOf(" pointer") != -1) // not prop. or not clickable)
-      $t.skipUserClick = true; // prevent secondary click on (other) parameter
+    // prevent click on other property while options panel opening
+    // options panel means clickable (cursor == "pointer")
+    else if (getElementStyle(tr).cursor == "pointer")
+      $t.skipUserClick = true;
     
     if (!event)
       event = $t.clonedEvent;
@@ -1747,6 +1749,10 @@ var ListBoxesHandler = {
     if (isLink && !$t.isRollUp)
       return;
   
+    var tr = getAncestorByClassName(target, "param_tr");
+    if (!tr)
+      return; 
+
     // reset tray if parent dialog was closed
     // note: not optimized for RL editor when "dialog" opened many times
     if (!$t.panelBlock || !isVisible($t.panelBlock) || $t.panelBlock.parentNode == null)
