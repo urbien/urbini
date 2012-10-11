@@ -681,6 +681,23 @@ var LablzLeaflet = {
       return layers;
     },
 
+    _getResetHighlight : function(gj) {
+      return function(e) {
+        gj.resetStyle(e.target);
+        LablzLeaflet.clearInfos(e);
+      };
+    },
+
+    getOnEachShapeFeature : function(gj) {
+      return function(feature, layer) {
+        layer.on({
+          mouseover: LablzLeaflet.highlightFeature,
+          mouseout: LablzLeaflet._getResetHighlight,
+          click: LablzLeaflet.zoomToFeature
+        });
+      };
+    },
+
     makeLayerFromGeoJsonShape : function(geoJson, style, autoAdd) {
       style = style ? style : this.simpleStyle;
       var gj;
@@ -886,13 +903,17 @@ var LablzLeaflet = {
       this.map = new L.Map('map', {center: latlng, zoom: 12, maxZoom: maxZoom, layers: [cloudmade]});
       if (!pointOfInterest)
         return;
-      
-      var gj = L.geoJson(pointOfInterest, { 
-          onEachFeature: function (feature, layer) {
-            layer.bindPopup(pointOfInterest.properties.html).openPopup();
+
+      if (pointOfInterest.geometry.type == 'Point') {
+        var gj = L.geoJson(pointOfInterest, { 
+            onEachFeature: function (feature, layer) {
+              layer.bindPopup(pointOfInterest.properties.html);
+            }
           }
-        }
-      );
+        );
+      }
+      else
+        gj = LablzLeaflet.makeLayerFromGeoJsonShape(pointOfInterest, LablzLeaflet.simpleStyle, true);
       
       gj.addTo(this.map);
     },
