@@ -1719,7 +1719,7 @@ var ListBoxesHandler = {
     var target = getEventTarget(event);
 
     var tr = getAncestorByClassName(target, "param_tr");
-    if (!tr || tr.className.indexOf(" pointer") == -1) // not prop. or not clickable
+    if (tr == null)
       return; 
 
     if (isElemOfClass(target, "input") && !target.getAttribute("readonly"))
@@ -1730,7 +1730,7 @@ var ListBoxesHandler = {
       if (event != null)
         return;
     }
-    else
+    else if (tr.className.indexOf(" pointer") != -1) // not prop. or not clickable)
       $t.skipUserClick = true; // prevent secondary click on (other) parameter
     
     if (!event)
