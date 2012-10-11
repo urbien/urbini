@@ -1321,7 +1321,7 @@ L.MarkerCluster.include({
 	_circleSpiralSwitchover: 9, //show spiral instead of circle from this marker count upwards.
 								// 0 -> always spiral; Infinity -> always circle
 
-	spiderfy: function (toActualPositions) {
+	spiderfy: function (generateCircleOrSpiral) {
 		if (this._group._spiderfied === this || this._group._inZoomAnimation) {
 			return;
 		}
@@ -1337,16 +1337,16 @@ L.MarkerCluster.include({
 
 		//TODO Maybe: childMarkers order by distance to center
 
-		if (toActualPositions) {
-		  positions = this._generatePointPositions(childMarkers);
-		}
-		else {
+		if (!generateCircleOrSpiral) {
 		  if (childMarkers.length >= this._circleSpiralSwitchover) {
 		    positions = this._generatePointsSpiral(childMarkers.length, center);
 		  } else {
 		    center.y += 10; //Otherwise circles look wrong
 		    positions = this._generatePointsCircle(childMarkers.length, center);
 		  }
+		}
+		else {
+		  positions = this._generatePointPositions(childMarkers);
 		}
 
 		this._animationSpiderfy(childMarkers, positions);
