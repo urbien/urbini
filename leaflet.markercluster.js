@@ -1337,7 +1337,7 @@ L.MarkerCluster.include({
 
 		//TODO Maybe: childMarkers order by distance to center
 
-		if (!generateCircleOrSpiral) {
+		if (generateCircleOrSpiral) {
 		  if (childMarkers.length >= this._circleSpiralSwitchover) {
 		    positions = this._generatePointsSpiral(childMarkers.length, center);
 		  } else {
