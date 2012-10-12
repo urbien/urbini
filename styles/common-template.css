@@ -1947,7 +1947,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 
 /*.rounded_rect_tbl a { color: &[PrimaryColor_4_text];; }*/
 
-.arrow_td, .arrow_td_empty { padding: 0px 2px; min-width: 10px; font-size: 18px !important; font-weight: bold; text-align:center; }
+.arrow_td, .arrow_td_empty { padding: 0px 2px; min-width: 14px; font-size: 18px !important; font-weight: bold; text-align:center; }
 .arrow_td { cursor: pointer; }
 .arrow_td { background-color: &[PrimaryColor_1];;}
 
@@ -2195,11 +2195,12 @@ td.pBGr { background-color: #eeeeee;
 #siteResourceList .pointer, .panel_block .pointer { border: none; background: transparent; }
 
 .cp_item_left { position: relative; white-space:nowrap; }
+.cp_item_left a { line-height: 25px; }
 .cp_item_right { position: relative; white-space:nowrap; margin-left: 5px; }
 /*.cp_item_left { min-height: 30px; }*/
 .backlink_counter { position: absolute; pointer-events: none; }
 .cp_item_right .backlink_counter { top: -7px; left: 15px; }
-.cp_item_left  .backlink_counter { top: -3px; right: 0px; }
+.cp_item_left .backlink_counter { top: 2px; right: 0px; }
 
 .backlink_counter .left, .backlink_counter .right { height: 25px; background-image: url(../images/skin/iphone/backlink_counter.png); background-repeat: no-repeat; }
 .backlink_counter .left { float: left; width: 9px; background-position: center left; }
