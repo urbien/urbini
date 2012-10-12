@@ -1321,7 +1321,7 @@ L.MarkerCluster.include({
 	_circleSpiralSwitchover: 9, //show spiral instead of circle from this marker count upwards.
 								// 0 -> always spiral; Infinity -> always circle
 
-	spiderfy: function (toActualPositions) {
+	spiderfy: function (generateCircleOrSpiral) {
 		if (this._group._spiderfied === this || this._group._inZoomAnimation) {
 			return;
 		}
@@ -1337,16 +1337,16 @@ L.MarkerCluster.include({
 
 		//TODO Maybe: childMarkers order by distance to center
 
-		if (toActualPositions) {
-		  positions = this._generatePointPositions(childMarkers);
-		}
-		else {
+		if (generateCircleOrSpiral) {
 		  if (childMarkers.length >= this._circleSpiralSwitchover) {
 		    positions = this._generatePointsSpiral(childMarkers.length, center);
 		  } else {
 		    center.y += 10; //Otherwise circles look wrong
 		    positions = this._generatePointsCircle(childMarkers.length, center);
 		  }
+		}
+		else {
+		  positions = this._generatePointPositions(childMarkers);
 		}
 
 		this._animationSpiderfy(childMarkers, positions);
@@ -1371,24 +1371,37 @@ L.MarkerCluster.include({
     res.length = count;
 
     var legLength = this._spiralLengthStart, angle = 0, n = 0;
+    var xyToPoints = {};
     for (var i = count - 1; i >= 0; i--) {
       var latLng = points[i].getLatLng();
-      var point = map.latLngToLayerPoint(latLng);
-      var collision;
-      for (var j = count - 1; j > i; j--) {
-        if (res[j].x == point.x && res[j].y == point.y) {
-          point.x += 15;
-//          angle += this._spiralFootSeparation / legLength + (n++) * 0.0005;
-//          point.x += legLength * Math.cos(angle);
-//          point.y += legLength * Math.sin(angle);
-//          point._round();
-//          legLength += this._2PI * this._spiralLengthFactor / angle;
-        }
-      }
-      
-      res[i] = point;
+      res[i] = map.latLngToLayerPoint(latLng);
+//      var xy = point.x + ',' + point.y;
+//      var pointArr = xyToPoints[xy];
+//      if (pointArr)
+//        pointArr.push(points[i]);
+//      else
+//        xyToPoints[xy] = [points[i]];
     }
-
+    
+//    var pointToPos = {}; 
+//    for (var xy in xyToPoints) {
+//      var pts = xyToPoints[xy];
+//      var center = map.latLngToLayerPoint(pts[0].getLatLng());
+//      if (pts.length == 1) {
+//        pointToPos[pts[0]._popup._content] = center;
+//        continue;
+//      }
+//
+//      var subRes = this._generatePointsCircle(pts.length, center);
+//      for (var i = 0; i < subRes.length; i++) {
+//        pointToPos[pts[i]._popup._content] = subRes[i];
+//      }
+//    }
+//
+//    for (var i = 0; i < points.length; i++) {
+//      res[i] = pointToPos[points[i]._popup._content];
+//    }
+    
     return res;
   },
 
