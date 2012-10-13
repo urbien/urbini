@@ -66,11 +66,13 @@
 				if (typeof WidgetRefresher != 'undefined')
 					WidgetRefresher.init(); // requires more time - preloading
 
-				BacklinkImagesSlideshow.init();	
 				FlashHandler.init();
 					
         /* other initializations in onDomLoaded function*/
       }
+      
+      // 2.3 common (mobile & desktop)
+      BacklinkImagesSlideshow.init();
     }
 
     /*
