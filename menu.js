@@ -13159,6 +13159,12 @@ var EndlessPager = {
   init : function() {
     if (this.indicatorTd != null)
       return; // initialized
+    
+    // possible endless page for 2 cases:
+    // 1) nabs grid 2) RL
+    this.nabsGrid = document.getElementById("nabs_grid");
+    if (this.nabsGrid == null)
+      this.recourseTable = this._getResourseTable();
 
     addEvent(window, "scroll", EndlessPager.onscroll, false);
     // no scrollbar - to bring a portion of resources to show a scrollbar
@@ -13206,14 +13212,8 @@ var EndlessPager = {
     var $t = EndlessPager;
     $t.indicatorTd.style.visibility = "hidden";  
 
-    if ($t.nabsGrid == null && $t.recourseTable == null) {
-      $t.nabsGrid = document.getElementById("nabs_grid");
-      $t.recourseTable = $t._getResourseTable();
-    }
-
     // siteResourceList ---
     if ($t.nabsGrid == null) { // siteResourceList table is on masonry page too
-      $t.recourseTable = $t._getResourseTable();
       var newrecourseTable = getDomObjectFromHtml(html, "id", $t.recourseTable.id);
       if ($t.recourseTable && newrecourseTable) {
         var tr = newrecourseTable.rows[0];
