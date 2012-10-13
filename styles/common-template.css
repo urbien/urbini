@@ -2640,9 +2640,11 @@ td #corePageContent { min-height: 600px;}
   border: 0; 
   cursor: pointer; 
   font-style: normal;
-  line-height: 20px; 
+  /* line-height: 20px; 
   padding-left:5px;
   padding-right:5px;
+  */
+  padding: 3px 5px;
   font-size: 11px;
   position: relative; 
   text-align: center;
