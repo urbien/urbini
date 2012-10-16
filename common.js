@@ -1357,10 +1357,12 @@ var ExecJS = {
       // note: currently removed the check if script block was evaluated
       //if(typeof scripts[i].evaluated == 'undefined' || !scripts[i].evaluated) {
       
-      // 1. external JS code
       var src = scripts[i].src;
+      // 1. included JS file
       if (src && src.length != 0) {
-        var keyName = src.replace(/_[0-9]*\.js/, ".js");
+        // remove timestamp and language suffixes in our files
+        // convertion like "http://urbien.com/common_en_1350357851000.js" to "common.js"
+        var keyName = src.replace(/_[0-9]*\.js/, ".js").replace(/_\w*\.js/, ".js");
         keyName = keyName.replace(getBaseUri(), "");
         
         if (typeof g_loadedJsFiles[keyName] == "undefined") { /*!this.isScriptFileLoaded(src)*/
@@ -2009,11 +2011,29 @@ function hex2rgb(hexColor) {
   return [red, green, blue];
 }
 
+//********************************************************************
+// CSS3 animation (a set of functions)
+//********************************************************************
+function animateCSS3(elem, propertyName, newValue, transition, initValue, callback) {
+    var tr = setCSS3Property(elem, "transition");
+    if (tr == null)
+      return false;
+    var wasInitiated = elem.style[tr];
+    if (!wasInitiated) {
+      setCSS3Property(elem, propertyName, initValue);
+      setTransitionProperty(elem, transition,callback);
+    }
+    setTimeout(function f() { setCSS3Property(elem, propertyName, newValue); }, 150)
+    return true;
+}
+
 // usage: 1) example: 'all 1s ease-in-out' - after that all CSS changes will animate 2) 'none' - turn off
 // callback is not required
 function setTransitionProperty(element, transitionStr, callback) {
   if (transitionStr && transitionStr.indexOf("transform") == 0) {
-    var specTfCSS = "-" + setTransformProperty(element, null).toLowerCase().replace("transform", "-transform");
+    var specTfCSS = setTransformProperty(element, null);
+    if (specTfCSS != "transform")
+      specTfCSS = "-" + specTfCSS.toLowerCase().replace("transform", "-transform");
     transitionStr = transitionStr.replace("transform", specTfCSS);
   }
   var specTransName = setCSS3Property(element, 'transition', transitionStr);
@@ -2047,16 +2067,16 @@ function setTransformProperty(element, transformStr) {
 }
 
 // returns applied CSS3 property in the browser
-// note: may be need to avoid setting of the same property value many times
+// not supply cssStr to get CSS3 property name
 function setCSS3Property(element, propName, cssStr) {
   var prefix = ['', 'Webkit', 'ms', 'Moz', 'O'];
   var propNameSpec;
   for (var i = 0; i < prefix.length; i++) {
-    if (i == 1)
+    if (prefix[i].length != 0)
       propName = propName.charAt(0).toUpperCase() + propName.slice(1);
-      var specPropName = prefix[i] + propName;
+    var specPropName = prefix[i] + propName;
     if (typeof element.style[specPropName] != 'undefined') {
-      if (cssStr != null)
+      if (cssStr != null /*&& element.style[specPropName] != cssStr*/)
         element.style[specPropName] = cssStr;
       return specPropName;
     }
