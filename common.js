@@ -1349,23 +1349,34 @@ var ExecJS = {
   runDivCode : function(contDiv) {
     setTimeout(function(){ ExecJS._runDivCode(contDiv); }, Browser.mobile ? 700 : 150);
   },
+  
+  // called only once to insert all included JS files in a page
+  // note: g_loadedJsFiles will contain common_en_1350357851000.js and common.js
+  _isLoadedJsProcessed : false,
+  _initLoadedJsFiles : function() {
+    this._isLoadedJsProcessed = true;
+    for( var i = 0; i < document.scripts.length; i++) {
+      var src = document.scripts[i].src;
+      if (src)
+        g_loadedJsFiles[src] = true;
+    }
+  },
   _runDivCode : function(contDiv) {
     if(!contDiv)
       return;
+
+    if (!this._isLoadedJsProcessed) 
+      this._initLoadedJsFiles();
+    
     var scripts = contDiv.getElementsByTagName('script');
-    for(var i = 0; i < scripts.length; i++) {
+    for( var i = 0; i < scripts.length; i++) {
       // note: currently removed the check if script block was evaluated
       //if(typeof scripts[i].evaluated == 'undefined' || !scripts[i].evaluated) {
       
       var src = scripts[i].src;
       // 1. included JS file
-      if (src && src.length != 0) {
-        // remove timestamp and language suffixes in our files
-        // convertion like "http://urbien.com/common_en_1350357851000.js" to "common.js"
-        var keyName = src.replace(/_[0-9]*\.js/, ".js").replace(/_\w*\.js/, ".js");
-        keyName = keyName.replace(getBaseUri(), "");
-        
-        if (typeof g_loadedJsFiles[keyName] == "undefined") { /*!this.isScriptFileLoaded(src)*/
+      if (src) {
+        if (typeof g_loadedJsFiles[src] == "undefined") { /*  keyName    // !this.isScriptFileLoaded(src)*/
           var js = document.createElement('script');
           js.setAttribute('type', 'text/javascript');
         // suppress minify
@@ -1373,7 +1384,7 @@ var ExecJS = {
             fileName = fileName.replace("m.js", ".js")
           js.setAttribute('src', src);
           loadScript(src, function() { setTimeout(function(){ ExecJS._runDivCode(contDiv); }, 100) });
-          g_loadedJsFiles[keyName] = true;
+          g_loadedJsFiles[src] = true; // keyName
           return;
         }
       }
