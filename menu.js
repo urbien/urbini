@@ -3302,7 +3302,7 @@ var SlideSwaper = {
     this.callback = callback;
     this.trayPosition = trayPosition;
     this.isForward = isForward;
-    this._moveStep();
+    this._moveStep();  
   },
   
   // There is a (temporary) HACK(!) - FF 3.6 FIXED!!!
@@ -3358,7 +3358,7 @@ var SlideSwaper = {
     else { // finish
       $t.offset = 0;
       
-      // HACK! FF 3.5: on focus in a field FF scrolls it into view
+      // HACK! FF on focus in a field FF scrolls it into view
       //$t.tray.style.MozTransform = "translate(0%, 0%)";
       setTransformProperty($t.tray, "translate(0%, 0%)");
       $t.tray.style.left = left * trayRelativeWidth + "%";
@@ -3366,6 +3366,7 @@ var SlideSwaper = {
       if ($t.callback)
         // returns true if tray reached its end; used with slides show
         $t.callback(left == maxOffset || left == 0);
+    
     }
   },
   
@@ -10156,11 +10157,12 @@ var BacklinkImagesSlideshow = {
   },
   init : function() {
     var $t = BacklinkImagesSlideshow;
-    if (Browser.opera && $t._init1stTime) {
+    if (/*Browser.opera &&*/ $t._init1stTime) {
 			$t._init1stTime = false;
 			setTimeout($t.init, 500);
+			return;
 		}
-		
+
 		if (!$t.slideshowArr)
 		  return;
 
@@ -10185,7 +10187,7 @@ var BacklinkImagesSlideshow = {
 		}
 */		
     for (var i = 0; i < $t.slideshowArr.length; i++)
-    $t.slideshowArr[i].init();
+      $t.slideshowArr[i].init();
   },
 /*  
   _delayedInit : function() {
@@ -13247,7 +13249,7 @@ var EndlessPager = {
   },
 	_getResourseTable : function() {
 		var frontDiv = getChildById(document.getElementById("siteResourceList"), "front");
-    return frontDiv.getElementsByTagName("table")[0];
+    return (frontDiv != null) ? frontDiv.getElementsByTagName("table")[0] : null;
 	}
 }
 
