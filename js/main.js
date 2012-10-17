@@ -50,13 +50,15 @@ var AppRouter = Backbone.Router.extend({
         "view/:type/:id":"view"
     },
 
-    list:function (type) {
+    list: function (type) {
       var typeCl = eval('Lablz.' + type) || Lablz.Resource;
       this.resList = new Lablz.ResourceList({model: typeCl});
       var self = this;
       var success = function() {
-        Lablz.indexedDB.addCollection(self.resList);
         app.showView('#sidebar', new Lablz.ResourceListView({model:self.resList}));
+        setTimeout(function() {
+          Lablz.indexedDB.addCollection(self.resList);
+        }, 0);
       };
       var error = function() {
         var str = '';
@@ -70,7 +72,7 @@ var AppRouter = Backbone.Router.extend({
 //        $('#sidebar').html(new Lablz.ResourceListView({model:this.resList}).render().el);
     },
 
-    view:function (type, id) {
+    view: function (type, id) {
       var typeCl = eval('Lablz.' + type);
   		this.res = this.resList ? this.resList.get(id) : new typeCl({id: id});
   		this.resView = new Lablz.ResourceView({model:this.res});
