@@ -2,8 +2,6 @@ Backbone.Model.prototype._super = function(funcName){
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
 };
 
-Lablz.serverName = "http://mark.obval.com/urbien";
-Lablz.apiUrl = Lablz.serverName + "/api/v1/";
 Lablz.getType = function(uri) {
 	var qIdx = uri.indexOf("?");
 	if (qIdx != -1)
@@ -57,6 +55,7 @@ var AppRouter = Backbone.Router.extend({
       this.resList = new Lablz.ResourceList({model: typeCl});
       var self = this;
       var success = function() {
+        Lablz.indexedDB.addCollection(self.resList);
         app.showView('#sidebar', new Lablz.ResourceListView({model:self.resList}));
       };
       var error = function() {
@@ -77,8 +76,10 @@ var AppRouter = Backbone.Router.extend({
   		this.resView = new Lablz.ResourceView({model:this.res});
   		var self = this;
   		var success = function() {
+        Lablz.indexedDB.addItem(self.res);
   			app.showView('#content', new Lablz.ResourceView({model:self.res}));
   		};
+  		
   		var error = function() {
   			var str = '';
   			for (var name in arguments) {
@@ -158,7 +159,7 @@ Lablz.createObjectStore = function(name, options) {
   }
 }
 
-Lablz.indexedDB.open = function(storeName, options) { // optional params: "storeName" to create, "options" to create it with
+Lablz.indexedDB.open = function(storeName, options, success, error) { // optional params: "storeName" to create, "options" to create it with
   var request = indexedDB.open("lablz", Lablz.DB_VERSION);
 
   request.onsuccess = function(e) {
@@ -187,6 +188,9 @@ Lablz.indexedDB.open = function(storeName, options) { // optional params: "store
     }
     else {}
 //      Lablz.indexedDB.getItems();
+    
+    if (success)
+      success();
   };
   
   request.onupgradeneeded = function(e) {
@@ -200,22 +204,49 @@ Lablz.indexedDB.open = function(storeName, options) { // optional params: "store
     e.target.transaction.oncomplete = function() {
 //      Lablz.indexedDB.getItems(storeName);
     };
+    
+    if (success)
+      success();
   }
   
-  request.onerror = Lablz.indexedDB.onerror;
+  request.onerror = function(e) {
+    if (error)
+      error(e);
+    
+    Lablz.indexedDB.onerror(e);
+  };
 };
 
-Lablz.indexedDB.addItem = function(item) {
-  var type = Lablz.getType(item._uri);
-  if (type == item._uri) {
-    getItems(type);
+Lablz.indexedDB.addCollection = function(collection) {
+  if (!collection || !collection.length)
     return;
-  }
   
+  var type = collection.className;
+  var db = Lablz.indexedDB.db;
+  if (!db)
+    return;
+  
+  var trans = db.transaction([type], "readwrite");
+  var store = trans.objectStore(type);
+  collection.each(function(item) {
+    var request = store.put(item.toJSON());
+  
+    request.onsuccess = function(e) {
+  //    Lablz.indexedDB.getItems(type);
+    };
+  
+    request.onerror = function(e) {
+      console.log("Error Adding: ", e);
+    };
+  });
+};
+
+Lablz.indexedDB.addItem = function(model) {
+  var type = Lablz.getType(model.get('_uri'));
   var db = Lablz.indexedDB.db;
   var trans = db.transaction([type], "readwrite");
   var store = trans.objectStore(type);
-  var request = store.put(item);
+  var request = store.put(model.toJSON());
 
   request.onsuccess = function(e) {
 //    Lablz.indexedDB.getItems(type);
@@ -245,7 +276,13 @@ Lablz.indexedDB.deleteItem = function(uri) {
 
 Lablz.indexedDB.getItem = function(uri, success, error) {
   var type = Lablz.getType(uri);
+  if (type == uri)
+    return Lablz.indexedDB.getItems(type, success, error);
+  
   var db = Lablz.indexedDB.db;
+  if (!db || db.objectStoreNames.length == 0)
+    return false;
+  
   var trans = db.transaction(type);
   var store = trans.objectStore(type);
   var request = objectStore.get(uri);
@@ -260,29 +297,44 @@ Lablz.indexedDB.getItem = function(uri, success, error) {
     
     Lablz.indexedDB.onerror(e);
   }
+  
+  return true;
 }
 
-Lablz.indexedDB.getItems = function(type) {
+Lablz.indexedDB.getItems = function(type, success, error) {
   // var todos = document.getElementById("todoItems");
   // todos.innerHTML = "";
 
   var db = Lablz.indexedDB.db;
+  if (!db || db.objectStoreNames.length == 0)
+    return false;
+  
   var trans = db.transaction([type], "readwrite");
   var store = trans.objectStore(type);
 
   // Get everything in the store;
+  var results = [];
   var cursorRequest = store.openCursor();
-
   cursorRequest.onsuccess = function(e) {
     var result = e.target.result;
-    if(!!result == false)
-      return;
-
-    // renderTodo(result.value);
-    result.continue();
+    if (result) {
+      results.push(result.value);
+      result.continue();
+    }
+    else {
+      if (success)
+        success(results);
+    }
   };
 
-  cursorRequest.onerror = Lablz.indexedDB.onerror;
+  cursorRequest.onerror = function (e) {
+    if (error)
+      error(e);
+    
+    Lablz.indexedDB.onerror(e);
+  }
+  
+  return true;
 };
 
 // function renderTodo(row) {
@@ -305,13 +357,15 @@ function addItem(item) {
   Lablz.indexedDB.addTodo(item);
 }
 
-function init() {
-  Lablz.indexedDB.open();
+function init(success, error) {
+  Lablz.indexedDB.open("Urbien", {keyPath: "_uri"}, success, error);
 }
 
 //window.addEventListener("DOMContentLoaded", init, false);
-//tpl.loadTemplates(['ListItem', 'View', 'Props'], function() {
-    init();
-    app = new AppRouter();
-    Backbone.history.start();
+//tpl.loadTemplates(['ListItem', 'View', 'Props', 'string', 'int', 'uri', 'image', 'date'], function() {
+    init(function() {
+      app = new AppRouter();
+      Backbone.history.start();
+    });
+//    $.mobile.pushStateEnabled = false;
 //});

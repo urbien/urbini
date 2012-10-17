@@ -23,6 +23,7 @@ Lablz.ResourceListItemView = Backbone.View.extend({
 	initialize: function() {
     _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
 		this.template = _.template($('#listItemTemplate').html());
+//    this.template = _.template(tpl.get('ListItem'));
 	},
 
   render:function (eventName) {
@@ -36,6 +37,7 @@ Lablz.ResourceView = Backbone.View.extend({
 	initialize: function() {
 		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
 		this.template = _.template($('#viewTemplate').html());
+//    this.template = _.template(tpl.get('View'));
 	},
 	
   render:function (eventName) {
@@ -56,10 +58,18 @@ Lablz.ResourceView = Backbone.View.extend({
 			var propTemplate = Lablz.templates[prop.type];
 			if (propTemplate)
 				json[p] = _.template($(propTemplate).html())({value: json[p]});
+//      var propTemplate = tpl.get(prop.type);
+//      if (propTemplate)
+//        json[p] = _.template(propTemplate)({value: json[p]});
 		}
 		
 		var j = {"props": json};
-        $(this.el).html(this.template(j));
-        return this;
-    }
+    $(this.el).html(this.template(j));
+    return this;
+  }
+//	,
+//  navigateToResource() {
+//    Backbone.history.navigate('/' + type + '/' + this.model.toJSON().id, {trigger: true});
+//    return this;
+//  }
 });

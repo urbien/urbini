@@ -1,4 +1,7 @@
 var Lablz = {};
+Lablz.serverName = "http://mark.obval.com/urbien";
+Lablz.apiUrl = Lablz.serverName + "/api/v1/";
+
 var Utils = {};
 Utils.getFirstUppercaseCharIdx = function(str) {
 	for (var i = 0; i < str.length; i++) {
@@ -25,7 +28,7 @@ Utils.getFirstUppercaseCharIdx = function(str) {
 //        var loadTemplate = function(index) {
 //            var name = names[index];
 //            console.log('Loading template: ' + name);
-//            $.get('tpls/' + name + '.html', function(data) {
+//            $.get(Lablz.serverName + '/tpls/' + name + '.html', function(data) {
 //                that.templates[name] = data;
 //                index++;
 //                if (index < names.length) {
