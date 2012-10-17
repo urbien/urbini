@@ -1349,21 +1349,34 @@ var ExecJS = {
   runDivCode : function(contDiv) {
     setTimeout(function(){ ExecJS._runDivCode(contDiv); }, Browser.mobile ? 700 : 150);
   },
+  
+  // called only once to insert all included JS files in a page
+  // note: g_loadedJsFiles will contain common_en_1350357851000.js and common.js
+  _isLoadedJsProcessed : false,
+  _initLoadedJsFiles : function() {
+    this._isLoadedJsProcessed = true;
+    for( var i = 0; i < document.scripts.length; i++) {
+      var src = document.scripts[i].src;
+      if (src)
+        g_loadedJsFiles[src] = true;
+    }
+  },
   _runDivCode : function(contDiv) {
     if(!contDiv)
       return;
+
+    if (!this._isLoadedJsProcessed) 
+      this._initLoadedJsFiles();
+    
     var scripts = contDiv.getElementsByTagName('script');
-    for(var i = 0; i < scripts.length; i++) {
+    for( var i = 0; i < scripts.length; i++) {
       // note: currently removed the check if script block was evaluated
       //if(typeof scripts[i].evaluated == 'undefined' || !scripts[i].evaluated) {
       
-      // 1. external JS code
       var src = scripts[i].src;
-      if (src && src.length != 0) {
-        var keyName = src.replace(/_[0-9]*\.js/, ".js");
-        keyName = keyName.replace(getBaseUri(), "");
-        
-        if (typeof g_loadedJsFiles[keyName] == "undefined") { /*!this.isScriptFileLoaded(src)*/
+      // 1. included JS file
+      if (src) {
+        if (typeof g_loadedJsFiles[src] == "undefined") { /*  keyName    // !this.isScriptFileLoaded(src)*/
           var js = document.createElement('script');
           js.setAttribute('type', 'text/javascript');
         // suppress minify
@@ -1371,7 +1384,7 @@ var ExecJS = {
             fileName = fileName.replace("m.js", ".js")
           js.setAttribute('src', src);
           loadScript(src, function() { setTimeout(function(){ ExecJS._runDivCode(contDiv); }, 100) });
-          g_loadedJsFiles[keyName] = true;
+          g_loadedJsFiles[src] = true; // keyName
           return;
         }
       }
@@ -2009,11 +2022,29 @@ function hex2rgb(hexColor) {
   return [red, green, blue];
 }
 
+//********************************************************************
+// CSS3 animation (a set of functions)
+//********************************************************************
+function animateCSS3(elem, propertyName, newValue, transition, initValue, callback) {
+    var tr = setCSS3Property(elem, "transition");
+    if (tr == null)
+      return false;
+    var wasInitiated = elem.style[tr];
+    if (!wasInitiated) {
+      setCSS3Property(elem, propertyName, initValue);
+      setTransitionProperty(elem, transition,callback);
+    }
+    setTimeout(function f() { setCSS3Property(elem, propertyName, newValue); }, 150)
+    return true;
+}
+
 // usage: 1) example: 'all 1s ease-in-out' - after that all CSS changes will animate 2) 'none' - turn off
 // callback is not required
 function setTransitionProperty(element, transitionStr, callback) {
   if (transitionStr && transitionStr.indexOf("transform") == 0) {
-    var specTfCSS = "-" + setTransformProperty(element, null).toLowerCase().replace("transform", "-transform");
+    var specTfCSS = setTransformProperty(element, null);
+    if (specTfCSS != "transform")
+      specTfCSS = "-" + specTfCSS.toLowerCase().replace("transform", "-transform");
     transitionStr = transitionStr.replace("transform", specTfCSS);
   }
   var specTransName = setCSS3Property(element, 'transition', transitionStr);
@@ -2047,16 +2078,16 @@ function setTransformProperty(element, transformStr) {
 }
 
 // returns applied CSS3 property in the browser
-// note: may be need to avoid setting of the same property value many times
+// not supply cssStr to get CSS3 property name
 function setCSS3Property(element, propName, cssStr) {
   var prefix = ['', 'Webkit', 'ms', 'Moz', 'O'];
   var propNameSpec;
   for (var i = 0; i < prefix.length; i++) {
-    if (i == 1)
+    if (prefix[i].length != 0)
       propName = propName.charAt(0).toUpperCase() + propName.slice(1);
-      var specPropName = prefix[i] + propName;
+    var specPropName = prefix[i] + propName;
     if (typeof element.style[specPropName] != 'undefined') {
-      if (cssStr != null)
+      if (cssStr != null /*&& element.style[specPropName] != cssStr*/)
         element.style[specPropName] = cssStr;
       return specPropName;
     }

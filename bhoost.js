@@ -2001,17 +2001,21 @@ var MobilePageAnimation = {
     if (typeof isBack == 'undefined')
       isBack = false;
     
-    setTransformProperty(curDiv, "translate(0%, 0%)");
-    setTransformProperty(newDiv, "translate(" + (isBack ? -1 : 1) * 100 + "%, 0%)");
-    
-    setTransitionProperty(curDiv, "transform 0.5s ease-in-out", MobilePageAnimation._onPageSlidingEnd);
-    setTransitionProperty(newDiv, "transform 0.5s ease-in-out");
-
     scrollTo(0, 1);
     curDiv.parentNode.insertBefore(newDiv, null); 
  
-    setTimeout(function f() { setTransformProperty(curDiv, "translate(" + (isBack ? 1 : -1) * 100 + "%, 0%)"); }, 150)
-    setTimeout(function f() { setTransformProperty(newDiv, "translate(0%, 0%)") }, 150)
+ animateCSS3(curDiv, "transform",
+    "translate(" + (isBack ? 1 : -1) * 100 + "%, 0%)",
+    "transform 0.5s ease-in-out",
+    "translate(0%, 0%)",
+    MobilePageAnimation._onPageSlidingEnd);
+    
+    
+  animateCSS3(newDiv, "transform",
+    "translate(0%, 0%)",
+    "transform 0.5s ease-in-out",
+    "translate(" + (isBack ? -1 : 1) * 100 + "%, 0%)");
+    
   },
   
   _onPageSlidingEnd : function(event) {
