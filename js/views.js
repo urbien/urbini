@@ -5,6 +5,7 @@ Lablz.ResourceListView = Backbone.View.extend({
     initialize:function () {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
       this.model.bind("reset", this.render, this);
+      return this;
     },
 
     render:function (eventName) {
@@ -23,6 +24,7 @@ Lablz.ResourceListItemView = Backbone.View.extend({
 	initialize: function() {
     _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
 		this.template = _.template($('#listItemTemplate').html());
+		return this;
 //    this.template = _.template(tpl.get('ListItem'));
 	},
 
@@ -37,12 +39,14 @@ Lablz.ResourceView = Backbone.View.extend({
 	initialize: function() {
 		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
 		this.template = _.template($('#viewTemplate').html());
+    return this;
 //    this.template = _.template(tpl.get('View'));
 	},
 	
   render:function (eventName) {
-    var type = this.model.className;
-		var meta = eval('Lablz.' + type + '.prototype.setProperties().properties');
+    var type = this.model.type;
+    var path = Utils.getPackagePath(type);
+		var meta = eval('packages.' + path + '.' + Utils.getClassName(type) + '.properties');
 		meta = meta || this.model.properties;
 		if (!meta)
 			return this;
