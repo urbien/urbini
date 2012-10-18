@@ -13182,9 +13182,11 @@ var EndlessPager = {
     // possible endless page for 2 cases:
     // 1) nabs grid 2) RL
     this.nabsGrid = document.getElementById("nabs_grid");
-    if (this.nabsGrid == null)
+    if (this.nabsGrid == null) {
       this.recourseTable = this._getResourseTable();
-
+      if (this.recourseTable == null)
+        return;
+    }
     addEvent(window, "scroll", EndlessPager.onscroll, false);
     // no scrollbar - to bring a portion of resources to show a scrollbar
     // thus to enable endless page
