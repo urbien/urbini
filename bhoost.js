@@ -2026,6 +2026,10 @@ var MobilePageAnimation = {
     // here possible to call some other new page initializations
   },
   showDialog : function(div) {
+    //  prevent processing of opened dialog in transition callback
+    if (this.dlgDivToHide && comparePosition(div, this.dlgDivToHide) == 0) 
+      this.dlgDivToHide = null;
+  
     this.dlgDiv = div;
     div.style.top = getScrollXY()[1] + 'px';
     div.style.minHeight = getWindowSize()[1] + 'px';
@@ -2038,6 +2042,8 @@ var MobilePageAnimation = {
     }
     
     div.style.visibility = "visible";
+    document.body.appendChild(div);
+
     // on fast animation a dialog can disapeared for a moment
     // increas time to overcome it
     setTimeout(function f() { setTransitionProperty(div, "all 0.5s linear"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
@@ -2062,6 +2068,11 @@ var MobilePageAnimation = {
   
   _onZoomOutDialogEnd : function() {
     var $t = MobilePageAnimation;
+    // happened when PlainDlg div used for parent "Action" menu dialog
+    // and for child (opened from "Action" menu) "Menu" dialog
+    if (!$t.dlgDivToHide) 
+      return;
+
     // remove dialog from document to avoid interference with other dialogs
     $t.dlgDivToHide.parentNode.removeChild($t.dlgDivToHide);
     removeTransitionCallback($t.dlgDivToHide, MobilePageAnimation._onZoomOutDialogEnd); 
