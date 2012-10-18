@@ -2002,30 +2002,40 @@ var MobilePageAnimation = {
       isBack = false;
     
     scrollTo(0, 1);
-    curDiv.parentNode.insertBefore(newDiv, null); 
+    curDiv.parentNode.insertBefore(newDiv, null);
+    // possible currrent mobile page is "hidden"
+    // because of a dialog which called a new mobile page
+    curDiv.style.opacity = 1; 
  
- animateCSS3(curDiv, "transform",
-    "translate(" + (isBack ? 1 : -1) * 100 + "%, 0%)",
-    "transform 0.5s ease-in-out",
-    "translate(0%, 0%)",
-    MobilePageAnimation._onPageSlidingEnd);
-    
-    
-  animateCSS3(newDiv, "transform",
-    "translate(0%, 0%)",
-    "transform 0.5s ease-in-out",
-    "translate(" + (isBack ? -1 : 1) * 100 + "%, 0%)");
+
+    animateCSS3(newDiv, "transform",
+      "translate(0%, 0%)",
+      "transform 0.5s ease-in-out",
+      "translate(" + (isBack ? -1 : 1) * 100 + "%, 0%)");
+      
+    animateCSS3(curDiv, "transform",
+      "translate(" + (isBack ? 1 : -1) * 100 + "%, 0%)",
+      "transform 0.5s ease-in-out",
+      "translate(0%, 0%)",
+      MobilePageAnimation._onPageSlidingEnd);
+      
     
   },
-  
   _onPageSlidingEnd : function(event) {
     var hiddenPage = getEventTarget(event);
     removeTransitionCallback(hiddenPage, MobilePageAnimation._onPageSlidingEnd);
     // remove hidden page to avoid several elements with the same ID, for example
     hiddenPage.parentNode.removeChild(hiddenPage);
-    // here possible to call some other new page initializations
+    // assign callback to currently on screen page (without timeout it fires immediately)
+    setTimeout(function() {
+      setTransitionCallback(Mobile.getCurrentPageDiv(), MobilePageAnimation._onPageSlidingEnd);},
+      10);
   },
   showDialog : function(div) {
+    //  prevent processing of opened dialog in transition callback
+    if (this.dlgDivToHide && comparePosition(div, this.dlgDivToHide) == 0) 
+      this.dlgDivToHide = null;
+  
     this.dlgDiv = div;
     div.style.top = getScrollXY()[1] + 'px';
     div.style.minHeight = getWindowSize()[1] + 'px';
@@ -2038,6 +2048,8 @@ var MobilePageAnimation = {
     }
     
     div.style.visibility = "visible";
+    document.body.appendChild(div);
+
     // on fast animation a dialog can disapeared for a moment
     // increas time to overcome it
     setTimeout(function f() { setTransitionProperty(div, "all 0.5s linear"); setTransformProperty(div, "scale(1.0)"); div.style.opacity = "1.0"} , 150);
@@ -2055,13 +2067,18 @@ var MobilePageAnimation = {
       return;
     this.dlgDivToHide = div;
     setTransitionCallback(div, MobilePageAnimation._onZoomOutDialogEnd); 
-    Mobile.getCurrentPageDiv().style.opacity = 1
+    Mobile.getCurrentPageDiv().style.opacity = 1;
     setTransformProperty(div, "scale(0.8)");
     div.style.opacity = "0.1";
   },
   
   _onZoomOutDialogEnd : function() {
     var $t = MobilePageAnimation;
+    // happened when PlainDlg div used for parent "Action" menu dialog
+    // and for child (opened from "Action" menu) "Menu" dialog
+    if (!$t.dlgDivToHide) 
+      return;
+
     // remove dialog from document to avoid interference with other dialogs
     $t.dlgDivToHide.parentNode.removeChild($t.dlgDivToHide);
     removeTransitionCallback($t.dlgDivToHide, MobilePageAnimation._onZoomOutDialogEnd); 
