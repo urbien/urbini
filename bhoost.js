@@ -2002,28 +2002,34 @@ var MobilePageAnimation = {
       isBack = false;
     
     scrollTo(0, 1);
-    curDiv.parentNode.insertBefore(newDiv, null); 
+    curDiv.parentNode.insertBefore(newDiv, null);
+    // possible currrent mobile page is "hidden"
+    // because of a dialog which called a new mobile page
+    curDiv.style.opacity = 1; 
  
- animateCSS3(curDiv, "transform",
-    "translate(" + (isBack ? 1 : -1) * 100 + "%, 0%)",
-    "transform 0.5s ease-in-out",
-    "translate(0%, 0%)",
-    MobilePageAnimation._onPageSlidingEnd);
-    
-    
-  animateCSS3(newDiv, "transform",
-    "translate(0%, 0%)",
-    "transform 0.5s ease-in-out",
-    "translate(" + (isBack ? -1 : 1) * 100 + "%, 0%)");
+
+    animateCSS3(newDiv, "transform",
+      "translate(0%, 0%)",
+      "transform 0.5s ease-in-out",
+      "translate(" + (isBack ? -1 : 1) * 100 + "%, 0%)");
+      
+    animateCSS3(curDiv, "transform",
+      "translate(" + (isBack ? 1 : -1) * 100 + "%, 0%)",
+      "transform 0.5s ease-in-out",
+      "translate(0%, 0%)",
+      MobilePageAnimation._onPageSlidingEnd);
+      
     
   },
-  
   _onPageSlidingEnd : function(event) {
     var hiddenPage = getEventTarget(event);
     removeTransitionCallback(hiddenPage, MobilePageAnimation._onPageSlidingEnd);
     // remove hidden page to avoid several elements with the same ID, for example
     hiddenPage.parentNode.removeChild(hiddenPage);
-    // here possible to call some other new page initializations
+    // assign callback to currently on screen page (without timeout it fires immediately)
+    setTimeout(function() {
+      setTransitionCallback(Mobile.getCurrentPageDiv(), MobilePageAnimation._onPageSlidingEnd);},
+      10);
   },
   showDialog : function(div) {
     //  prevent processing of opened dialog in transition callback
@@ -2061,7 +2067,7 @@ var MobilePageAnimation = {
       return;
     this.dlgDivToHide = div;
     setTransitionCallback(div, MobilePageAnimation._onZoomOutDialogEnd); 
-    Mobile.getCurrentPageDiv().style.opacity = 1
+    Mobile.getCurrentPageDiv().style.opacity = 1;
     setTransformProperty(div, "scale(0.8)");
     div.style.opacity = "0.1";
   },
