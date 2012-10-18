@@ -1872,7 +1872,7 @@ var ListBoxesHandler = {
   },
   
   onListLoaded : function(event, popupDiv, hotspot, content) {
-	  var $t = ListBoxesHandler;
+    var $t = ListBoxesHandler;
     var panel = $t.toPutInClassifier ? $t.classifierPanel : $t.optionsPanel;
 
     var listsCont = getChildById(panel, "lists_container");
@@ -3302,8 +3302,21 @@ var SlideSwaper = {
     this.callback = callback;
     this.trayPosition = trayPosition;
     this.isForward = isForward;
-    this._moveStep();  
+
+    var offset = (isForward ? (-20 * (trayPosition + 1)) : 0);
+    if (animateCSS3(tray, "transform",
+      "translate(" + offset + "%, 0%)",
+      "transform 0.5s ease-in-out",
+      "translate(0%, 0%)",
+      this._onSlidingFinish) == false)
+          this._moveStep(); //"step by step" animation in case of transition failure 
   },
+  
+  _onSlidingFinish : function() {
+    var $t = SlideSwaper;
+    var trayPosition = $t.getTrayPosition($t.tray);
+    if ($t.callback) // "tray_slidesshow" returns true if it reached start/end - not tested!
+      $t.callback(trayPosition == 0 || trayPosition == 4); },
   
   // There is a (temporary) HACK(!) - FF 3.6 FIXED!!!
   // focus/click in options selector containing in moved tray by MozTransfor invokes
@@ -3324,6 +3337,7 @@ var SlideSwaper = {
     if ($t.offset > 1.0) { // last step
       bPoint = 1.0;
     }
+
     
     var distance = $t.DISTANCE;
     var isSlideshow = $t.tray.className.indexOf("tray_slidesshow") != -1;
@@ -3345,12 +3359,12 @@ var SlideSwaper = {
       if (left > 0) 
         left = 0;
     }
-    
-   // for FF 3.1b2 that does not support -moz-transition-duration (?)
-   if (setTransformProperty($t.tray, "translate(" + left + "%, 0%)"))
-      $t.tray.style.left = 0; // FF's focus hack
-    else 
-      $t.tray.style.left = left * trayRelativeWidth + "%"; // tray is 5 width of a panel
+   
+      // for FF 3.1b2 that does not support -moz-transition-duration (?)
+      if (setTransformProperty($t.tray, "translate(" + left + "%, 0%)"))
+        $t.tray.style.left = 0; // FF's focus hack
+      else 
+        $t.tray.style.left = left * trayRelativeWidth + "%"; // tray is 5 width of a panel
 
 
     if ($t.offset <= 1.0)
@@ -3386,11 +3400,7 @@ var SlideSwaper = {
       return parseInt(str) / 5;
     
     // translate --- 
-    if (typeof tray.style.webkitTransform != 'undefined')
-      str = tray.style.webkitTransform;
-    else if (typeof tray.style.MozTransform != 'undefined')
-      str = tray.style.MozTransform;
-    
+    str = getCSS3Property(tray, "transform");    
     if (str.length == 0)
       return 0;
     
@@ -3919,7 +3929,7 @@ var DataEntry = {
   
   // parentDivId and submitCallback, beforeSubmitCallback are not required
   show : function(e, url, hotspot, parentDivId, submitCallback, beforeSubmitCallback) {
-	  if (this.loadingUrl != null)
+    if (this.loadingUrl != null)
       return;
 
     this.hotspot = hotspot;
@@ -3977,7 +3987,7 @@ var DataEntry = {
   
   // parameterInputname, forexample  name=".priority"
   showOneParameterOnly : function(e, url, hotspot, oneParameterInputName, submitCallback, beforeSubmitCallback) {
-		this.oneParameterInputName = oneParameterInputName;
+    this.oneParameterInputName = oneParameterInputName;
     this.show(e, url, hotspot, null, submitCallback, beforeSubmitCallback);
   },
   
@@ -4003,7 +4013,7 @@ var DataEntry = {
       alert("Data Entry: Server response does not contain a dialog!");
       return;
     }
-		
+    
     div.style.visibility = "hidden";
     
     // onDataError happens on mkResource
@@ -4041,14 +4051,14 @@ var DataEntry = {
        parent.appendChild(div);
     }
 
-		// dialog contains one "selector" parameter - show its options list immediately
-		var arrowTd = getChildByClassName(div, "arrow_td");
+    // dialog contains one "selector" parameter - show its options list immediately
+    var arrowTd = getChildByClassName(div, "arrow_td");
     if (arrowTd && TouchDlgUtil.isSingleParameterInDialog(arrowTd)) {
-			appendClassName(div, "oneparamselection");
-			var tr = getChildByClassName(div, "param_tr");
-			ListBoxesHandler.processClickParam(null, tr); 
+      appendClassName(div, "oneparamselection");
+      var tr = getChildByClassName(div, "param_tr");
+      ListBoxesHandler.processClickParam(null, tr); 
     }
-		
+    
     setDivVisible(event, div, $t.hotspot, 5, 5);
     $t.initDataStr = $t._getFormDataStr(div, true);
     var key = $t._getKey($t.currentUrl);
@@ -4456,18 +4466,18 @@ var PlainDlg = {
     this._show(event, hotspot);
   },
   
-	// hotspot can have attributes: 1) "modal" 2) "hide_icon"
+  // hotspot can have attributes: 1) "modal" 2) "hide_icon"
   _show : function(event, hotspot) {
     // login: show it as a modal dialog
     if (this.curUrl && this.curUrl.indexOf("j_security_check") != -1) {
       if (getChildByClassName(this.dlgDiv, "button") != null) { // no social buttons - no waiting
-	  	  LoadingIndicator.show();
-	  	// hack: FaceBook can not to call a callback (on a local host).
-				// So hide the spinner "manually" (faster to do it on dev.hudsonfog.com site)
-				var timeout = getBaseUri().indexOf("dev.hudsonfog.com") != -1 ? 2000 : 10000;
-				setTimeout("LoadingIndicator.hide()", timeout);
-			}
-			LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
+        LoadingIndicator.show();
+      // hack: FaceBook can not to call a callback (on a local host).
+        // So hide the spinner "manually" (faster to do it on dev.hudsonfog.com site)
+        var timeout = getBaseUri().indexOf("dev.hudsonfog.com") != -1 ? 2000 : 10000;
+        setTimeout("LoadingIndicator.hide()", timeout);
+      }
+      LoadOnDemand.includeJS("register/hashScript_" + g_onDemandFiles['register/hashScript.js'] + ".js");
       // set flag '.jstest' that JS is enabled (note: use 'DOM' instead of 'form')
       var jstest = getChildByAttribute(this.dlgDiv, "name", '.jstest');
       if (jstest)
@@ -5022,6 +5032,12 @@ var TouchDlgUtil = {
   // selector focused on opening dialog or panel
   focusSelector : function(parent, delayed) {
     var selector = getChildById(parent, ["item_selector", "parameter_selector", "text_entry"]);
+    
+    // hack: on focus inside options selector it moves option panel
+    // it is hacked here after transition application
+    if (Browser.gecko && selector.id == "text_entry")  
+      selector = this.focusHolder
+    
     if (!selector || !isVisible(selector)) {
       selector = this.focusHolder;
 
@@ -5076,7 +5092,7 @@ var TouchDlgUtil = {
   closeAllDialogs : function(flag) {
     if (ListBoxesHandler.onBackBtn())
       if (flag == "esc")
-			  return; // slide back to form panel
+        return; // slide back to form panel
 
     DataEntry.hide();
     if (!(Browser.mobile && flag == "fts_autocomplete")) // not hide mobile filter on autocomplete
@@ -5240,17 +5256,17 @@ var TouchDlgUtil = {
   
   isElementFirstParameter : function(elem) {
     var paramTr = getAncestorByClassName(elem, "param_tr");
-		var dlg = this.curDlgDiv || getAncestorByClassName(paramTr, "panel_block");
+    var dlg = this.curDlgDiv || getAncestorByClassName(paramTr, "panel_block");
     return comparePosition(paramTr, getChildByClassName(dlg, "param_tr")) == 0;
   },
   // elem is a child of "param_tr"
-  isSingleParameterInDialog : function(elem) { 	
-	  if (TouchDlgUtil.isElementFirstParameter(elem) &&
-	       getNextSibling(getAncestorByClassName(elem, "param_tr")) == null)
-			return true;
-		return false;	
-	},
-	
+  isSingleParameterInDialog : function(elem) {  
+    if (TouchDlgUtil.isElementFirstParameter(elem) &&
+         getNextSibling(getAncestorByClassName(elem, "param_tr")) == null)
+      return true;
+    return false; 
+  },
+  
   showPageOverlay: function(dlg) {
     if (!this.pageOverlay) {
       this.pageOverlay = document.createElement("div");
@@ -9489,7 +9505,7 @@ var Dashboard = {
         if (widgetUri == null) {
           var f = document.getElementById("pref_" + widget.id.substring(wLen));
           if (f) {
-						formId = f.id;
+            formId = f.id;
             // create backlink bookmark and move it to Tab
             submitWidgetPreferences(e, formId, tab);
             return ret;
@@ -9986,7 +10002,7 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
   this.bookmarkUrl;
   this.widgetDiv;
   
-	this.curSlide = null;
+  this.curSlide = null;
   this.nextSlide = null;
 
   // transition time 1sec;
@@ -10013,26 +10029,26 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
   
   // slideIdx for slideshow without RecNmb,like backlink images
   this.insertNextSlide = function(htmlOrObject, slideIdx) {
-		var recNmb = (typeof slideIdx != 'undefined') ? slideIdx : this.getRecNmb();
+    var recNmb = (typeof slideIdx != 'undefined') ? slideIdx : this.getRecNmb();
     // 1. exist slide from cache 
-	  if (!htmlOrObject) 
-			$t.nextSlide = $t.slidesArr[recNmb];
-		// 2. new slide
-		else
-			$t.createNewSlide(htmlOrObject, recNmb);
+    if (!htmlOrObject) 
+      $t.nextSlide = $t.slidesArr[recNmb];
+    // 2. new slide
+    else
+      $t.createNewSlide(htmlOrObject, recNmb);
 //debugger;
     if (!Browser.ie) // IE uses own filter
-		  $t.widgetDiv.insertBefore($t.nextSlide, getFirstChild($t.widgetDiv));
+      $t.widgetDiv.insertBefore($t.nextSlide, getFirstChild($t.widgetDiv));
   }
-	
-	// it CAN be called outside to create preloaded pages manually, like Backlink images
+  
+  // it CAN be called outside to create preloaded pages manually, like Backlink images
   // for widgets it is inner function
   // recNmb is not required
   this.createNewSlide = function(htmlOrObject, recNmb) {
     this.nextSlide = document.createElement("div");
-		this.nextSlide.className = "slide";
-//		this.nextSlide.style.zIndex = 1;
-		setTransitionProperty(this.nextSlide, 'opacity 1s ease-in-out');
+    this.nextSlide.className = "slide";
+//    this.nextSlide.style.zIndex = 1;
+    setTransitionProperty(this.nextSlide, 'opacity 1s ease-in-out');
 
     if (typeof htmlOrObject == "string")
       this.nextSlide.innerHTML = htmlOrObject;
@@ -10049,7 +10065,7 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
     if (this.nextSlide == null)
       return;
 
-		// IE:  use filter --- 
+    // IE:  use filter --- 
     if (Browser.ie) { 
       if (!this.widgetDiv.filters[0]) { 
         this.widgetDiv.style.filter = "progid:DXImageTransform.Microsoft.Fade(duration=1)";
@@ -10067,31 +10083,31 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 
       return;
     }
-		
+    
     // Other browsers: use transition --- 
-		if (fast)
-		  setTransitionProperty(this.nextSlide, 'opacity 0.2s ease-in-out');
+    if (fast)
+      setTransitionProperty(this.nextSlide, 'opacity 0.2s ease-in-out');
 
     setTransitionCallback(this.nextSlide, this.onSlidingFinish); 
     this.nextSlide.style.zIndex = "1";
-		if (this.curSlide)
+    if (this.curSlide)
       this.curSlide.style.zIndex = "0";
-		this.nextSlide.style.opacity = "1.0";
+    this.nextSlide.style.opacity = "1.0";
 
     if (this.callbackHalfFinish)
       setTimeout(this.callbackHalfFinish, 200);
   }
-	
-	this.onSlidingFinish = function() {
-		 if ($t.curSlide) {
-	 	   $t.curSlide.style.opacity = "0.0";
-			 removeTransitionCallback($t.curSlide, $t.onSlidingFinish);
-	   }
-		 $t.curSlide = $t.nextSlide;  	 
-		 if ($t.callbackFinish)
-		   $t.callbackFinish();
+  
+  this.onSlidingFinish = function() {
+     if ($t.curSlide) {
+       $t.curSlide.style.opacity = "0.0";
+       removeTransitionCallback($t.curSlide, $t.onSlidingFinish);
+     }
+     $t.curSlide = $t.nextSlide;     
+     if ($t.callbackFinish)
+       $t.callbackFinish();
 //    $t._isSlidingNow = false;
-	}
+  }
 
   this.getWidgetDiv = function() {
     return this.widgetDiv;
@@ -10151,51 +10167,52 @@ var BacklinkImagesSlideshow = {
   slideshowArr : null, 
   _init1stTime : true, // hack for Opera(!) where init executed before register
   register : function(sceneId) {
-		if (this.slideshowArr == null)
-		  this.slideshowArr = new Array();
+    if (this.slideshowArr == null)
+      this.slideshowArr = new Array();
     this.slideshowArr.push(new slideshow(document.getElementById(sceneId)));
   },
   init : function() {
     var $t = BacklinkImagesSlideshow;
-    if (/*Browser.opera &&*/ $t._init1stTime) {
-			$t._init1stTime = false;
-			setTimeout($t.init, 500);
-			return;
-		}
+    if ($t._init1stTime) {
+      $t._init1stTime = false;
+      setTimeout($t.init, 500);
+      return;
+    }
 
-		if (!$t.slideshowArr)
-		  return;
+    if (!$t.slideshowArr)
+      return;
 
   // NOTE: delayed slideshow loading does not work with "resourceShow" currently.
   // So this feature was disabled! (order of slideshow is defferent for "staticShow" and "resourceShow"
 
-/*			
-  	// 1. launch 1st slideshow
-		// $t.slideshowArr[$t.slideshowArr.length - 1].init();
-		$t.slideshowArr[0].init();
+/*      
+    // 1. launch 1st slideshow
+    // $t.slideshowArr[$t.slideshowArr.length - 1].init();
+    $t.slideshowArr[0].init();
     // 2. download "stored" slides of not 1st slideshow after 1st slideshow was completely downloaded
-		//for (var i = $t.slideshowArr.length - 2; i >= 0; i--) {
-		for (var i = 1; i < $t.slideshowArr.length; i++) {
-			var slidesStore = getChildByClassName( $t.slideshowArr[i].slideShowSceneDiv.parentNode, "slideShow_store")
-			var images = slidesStore.getElementsByTagName("img");
-			for (var n = 0; n < images.length; n++) {
-		 // 	if (i == 0 && n == images.length - 1)
-		    if (i == $t.slideshowArr.length - 1 && n == images.length - 1) 
-		  		images[n].onload = $t._delayedInit;
-		  	images[n].src = images[n].getAttribute("delayed_src");
-		  }
-		}
-*/		
+    //for (var i = $t.slideshowArr.length - 2; i >= 0; i--) {
+    for (var i = 1; i < $t.slideshowArr.length; i++) {
+      var slidesStore = getChildByClassName( $t.slideshowArr[i].slideShowSceneDiv.parentNode, "slideShow_store")
+      var images = slidesStore.getElementsByTagName("img");
+      for (var n = 0; n < images.length; n++) {
+     //   if (i == 0 && n == images.length - 1)
+        if (i == $t.slideshowArr.length - 1 && n == images.length - 1) 
+          images[n].onload = $t._delayedInit;
+        images[n].src = images[n].getAttribute("delayed_src");
+      }
+    }
+*/    
     for (var i = 0; i < $t.slideshowArr.length; i++)
       $t.slideshowArr[i].init();
   },
 /*  
   _delayedInit : function() {
     console.log("_delayedInit");
-		var $t = BacklinkImagesSlideshow;
-	  for (var i = $t.slideshowArr.length - 2; i >= 0; i--)
-	   $t.slideshowArr[i].init(); 
-	},*/
+    var $t = BacklinkImagesSlideshow;
+    for (var i = $t.slideshowArr.length - 2; i >= 0; i--)
+     $t.slideshowArr[i].init(); 
+  },
+*/
   // slide show on a Tab (Edit page) containong one slide show
   onMainThumbClick : function() {
     this.slideshowArr[0].onMainThumbClick();
@@ -10238,8 +10255,8 @@ function slideshow(slideShowSceneDiv) {
   
   this.slideShowSceneDiv = slideShowSceneDiv;
   
-	this.rotateTimerId = null,
-	
+  this.rotateTimerId = null,
+  
   this.init = function() {
     if (!this.slideShowSceneDiv)
       return;
@@ -10337,13 +10354,13 @@ function slideshow(slideShowSceneDiv) {
   // imgSrc used to show 1st slide on tab
   // manual paging means $t.loopsCounter > $t.MAX_LOOPS
   this.rotate = function(newImageIdx, imgSrc) {
-		// prevent rotation of a slide show out of viewport (margin -200 px)
+    // prevent rotation of a slide show out of viewport (margin -200 px)
     if ($t.isManualPaging() != true && !isElemInViewport($t.widgetSlider.widgetDiv, -200)) {
       $t.rotateTimerId = setTimeout(function(){ $t.rotate(newImageIdx, imgSrc) }, 200);
       return;
     }
     clearTimeout($t.rotateTimerId);
-				
+        
     // additinal slide is a slide created from small image, not included into 'automatic' slide show
     var isAdditinalSlide = !$t.pagerSlots || typeof $t.pagerSlots[$t.curImageIdx] == 'undefined';
     if (!isAdditinalSlide)
@@ -10376,8 +10393,8 @@ function slideshow(slideShowSceneDiv) {
 
     if ( $t.widgetSlider ) {
       $t.widgetSlider.insertNextSlide(null, $t.curImageIdx);
-			    // make manual pagging faster
-			setTimeout(function f(){ $t.widgetSlider.showNextSlide($t.isManualPaging()) }, 100);
+          // make manual pagging faster
+      setTimeout(function f(){ $t.widgetSlider.showNextSlide($t.isManualPaging()) }, 100);
     }
   }
   
@@ -12105,9 +12122,9 @@ var LoadingIndicator = {
     
     setTimeout($t.animate, 20);
   },
-	isVisible : function() {
-		return (this.loadingDiv != null && isVisible(this.loadingDiv));
-	}
+  isVisible : function() {
+    return (this.loadingDiv != null && isVisible(this.loadingDiv));
+  }
 }
 
 /*****************************************
@@ -12346,7 +12363,7 @@ var LinkProcessor = {
     $t.linkHrefModifier(e, anchor);
   
     if (!id) 
-		  return;
+      return;
   
     var idLen = id.length;
 
@@ -12555,8 +12572,8 @@ var LinkProcessor = {
     // 1. Data Entry
     if (urlStr.indexOf("mkResource.html?") != -1 ||
           urlStr.indexOf("editProperties.html?") != -1 ||
-					(Browser.mobile && urlStr.indexOf("-$action=showPropertiesForEdit") != -1)
-				)
+          (Browser.mobile && urlStr.indexOf("-$action=showPropertiesForEdit") != -1)
+        )
       DataEntry.show(e, urlStr, anchor, null, XHRCallback, XHRCallbackBefore);
     // 2. XHR with specific callback
     else if (XHRCallback) {
@@ -13247,10 +13264,10 @@ var EndlessPager = {
     removeEvent(window, "scroll", EndlessPager.onscroll, false);
     this.indicatorTd.style.display = "none";
   },
-	_getResourseTable : function() {
-		var frontDiv = getChildById(document.getElementById("siteResourceList"), "front");
+  _getResourseTable : function() {
+    var frontDiv = getChildById(document.getElementById("siteResourceList"), "front");
     return (frontDiv != null) ? frontDiv.getElementsByTagName("table")[0] : null;
-	}
+  }
 }
 
 function getMoreBoards(e, id, exclude, uri) {
@@ -13346,9 +13363,9 @@ function fullWindowVideo(hotspot, src) {
   var embed = '<iframe width="' + width + 'px" height="' + height + 'px" src="' + src + 
     '?wmode=transparent&amp;autoplay=1&amp;rel=0" frameborder="0"></iframe>'; // allowfullscreen
   
-	hotspot.setAttribute("modal", "y");
-	hotspot.setAttribute("hide_icon", "y");
-	PlainDlg.showHtml(null, src, embed, hotspot);
+  hotspot.setAttribute("modal", "y");
+  hotspot.setAttribute("hide_icon", "y");
+  PlainDlg.showHtml(null, src, embed, hotspot);
 }
 
 // flag that menu.js was parsed. should be last in the file
