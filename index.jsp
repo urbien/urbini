@@ -1,6 +1,6 @@
 <div id="jQUi">
   <div id="header">
-    <a id="backButton" href="javascript:;" class="button">Back</a> 
+    <a id="backButton" href="javascript:;" class="button" style="visibility: hidden">Back</a> 
     <h1 id="pageTitle">Urbien</h1> 
   </div>
   <div id="content">
@@ -16,7 +16,7 @@
     <div id="navbar">
        <a target="#welcome" class="icon home">Home</a>
     </div>
-    <!-- nav >
+    <!-- nav>
         <div class='title'>Home</div>
         <ul>
             <li class="icon home mini"><a href="#main">Home</a></li>
@@ -30,7 +30,7 @@
     </nav -->
 <!-- Templates -->
 <script type="text/template" id="stringTemplate">
-    <span>{{value}}</span>
+    <span>{{ value }}</span>
 </script>
 
 <script type="text/template" id="dateTemplate">
@@ -50,7 +50,7 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a data-transition='slide' href='#view/{{ _uri }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? '' : mediumImage.indexOf('http') == 0 ? mediumImage : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}" />&#160;{{ davDisplayName }}</a>
+  <a data-transition='slide' href='#view/{{ _uri }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}" />&#160;{{ davDisplayName }}</a>
 </script>
 
 <script type="text/template" id="viewTemplate">
