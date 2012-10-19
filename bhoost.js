@@ -443,10 +443,6 @@ var Boost = {
       $t.oneStep(null, -1);
       return stopEventPropagation(e);
     }
-    else if (k == 1) { // menu button
-      $t.showOptionsMenu();
-      return stopEventPropagation(e);
-    }
     return true;
   },
 
@@ -471,24 +467,6 @@ var Boost = {
     link.href = urlLink.href;
     LinkProcessor.onClickDisplayInner(event, urlLink);
   },
-  showOptionsMenu: function() {
-    var $t = Mobile;
-    if ($t.isHistoryView) {
-      $t.hideHistoryView($t.getCurrentPageDiv());
-      return false;
-    }
-
-    var optionsDiv = document.getElementById('menu_Options');
-    if (!$t.urlToDivs) {
-      var u = new Array();
-      $t.urlToDivs = u;
-    }
-    var currentDiv = $t.getCurrentPageDiv();
-    $t.displayActionsAndViewsFor(currentDiv, optionsDiv);
-    MobileMenuAnimation.show(currentDiv, optionsDiv);
-    return true;
-  },
-
   onChatMessage: function(e) {
     Boost.log('onChatMessage(): ' + e);
     var $t = Mobile;
@@ -852,333 +830,11 @@ var Boost = {
     Boost.log('Photo url for Avatar: ' + url);
   },
 
-  mobileMenu: function(e, link) {
-    var $t = Mobile;
-
-    var id = link.id;
-    var newUrl = link.href;
-    var optionsDiv = document.getElementById('menu_Options');
-    if (!id) {
-      if (optionsDiv) {
-        optionsDiv.style.visibility = "hidden";
-        optionsDiv.style.display = "none";
-      }
-
-      return newUrl;
-    }
-    if (id == 'optionsMenu') {
-      $t.changePresentationItemsState();
-      if($t.showOptionsMenu() == false)
-        stopEventPropagation(e);
-      return null;
-    }
-// NOTE: the following command used from "Action" menu now !!!    
-    if (id == 'menu_Add') {
-      var a = $t.getElementById('add_url_hdn');
-      DataEntry.show(e, a.href);
-      newUrl = null;
-    }
-    if (id == 'menu_Edit') {
-      var a = $t.getElementById('edit_url_hdn');
-      if (a == null)
-        return stopEventPropagation(e);
-      DataEntry.show(e, a.href);
-      newUrl = null;
-    }
-    if (id == 'menu_Delete') {
-      var a = $t.getElementById('delete_url_hdn');
-      if (a.href.indexOf("l.html") != -1) 
-        newUrl = a.href;
-      else {
-        doConfirm("&[Do you realy want to delete this resource];?");
-        newUrl = null;
-      }
-    }
-    
-    if (id == 'menu_Desktop') {
-      var uri = $t.currentUrl;
-      var idx = uri.indexOf('-mobile=');
-      if (idx != -1) {
-        var idx1 = uri.indexOf('&', idx);
-        if (idx1 == -1)
-          uri = uri.substring(0, idx);
-        else {
-          if (uri.charAt(idx - 1) == '&')
-            uri = uri.substring(0, idx - 1) + uri.substring(idx1);
-          else
-            uri = uri.substring(0, idx) + uri.substring(idx1 + 1);
-        }
-      }
-      var idx2 = uri.indexOf('#');
-      if (idx2 == -1)
-      uri += '&-desktop=y';
-      else
-        uri = uri.substring(0, idx2) + '&-desktop=y';   
-      Boost.view.setProgressIndeterminate(true);
-      document.location.replace(uri);
-      return null;
-    }
-    if (id == 'menu_cancel') {
-      MobileMenuAnimation.hide();
-      var currentDiv = $t.urlToDivs[$t.currentUrl];
-      if (!currentDiv) {
-        currentDiv = document.getElementById('mainDiv');
-        var u = new Array();
-        u[0] = $t.currentDiv;
-        $t.urlToDivs = u;
-      }
-       return null;
-    }
-    if (id == 'menu_exit') {
-    BrowserDialog.confirm("&[Do you really want to exit this application];?", $t.onExisCallback);
-      return null;
-    }
-    if (id == 'menu_Refresh') {
-      // Write browsing history to the server and load it when loading new page
-      Boost.view.setProgressIndeterminate(true);
-      document.location.replace($t.currentUrl);
-      return null;
-    }
-    /*
-    if (id == 'menu_logoff') {
-      // Write browsing history to the server and load it when loading new page
-      var a = $t.getElementById('logoff_url_hdn');
-      DataEntry.show(a.href);
-      newUrl = null;
-    }
-    */
-    if (id == 'menu_Reload') {
-      Boost.view.setProgressIndeterminate(true);
-      optionsDiv.style.visibility = "hidden";
-      optionsDiv.style.display = "none";
-      
-      document.location.reload();
-      return null;
-    }
-    if (id == 'menu_History') {
-      if (typeof Boost.zoom) {
-         // zoom out to appropriate percentage
-         // unhide the divs in urlToDivs
-        if (typeof Boost.zoom != 'undefined')
-         $t.showHistoryView();
-      }
-      return null;
-    }
-    if (id == 'menu_List') {
-      optionsDiv.style.visibility = "hidden";
-      optionsDiv.style.display = "none";
-      newUrl = $t.currentUrl;
-      var idx = newUrl.indexOf('-featured=');
-      if (idx != -1) {
-        idx1 = newUrl.indexOf('&', idx);
-        if (idx1 == -1) {
-          if (newUrl.charAt(idx - 1) == '&')
-            idx--;
-          newUrl = newUrl.substring(0, idx);
-        }
-        else
-          newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
-      }
-
-      var idx = newUrl.indexOf('-grid=');
-      if (idx != -1) {
-        var idx1 = newUrl.indexOf('&', idx);
-        if (idx1 == -1) {
-          if (newUrl.charAt(idx - 1) == '&')
-            idx--;
-          newUrl = newUrl.substring(0, idx);
-        }
-        else
-          newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
-        newUrl += '&-list=y';
-      }
-      else if (newUrl.indexOf('-list=') == -1)
-        newUrl = newUrl + '&-list=y';
-    }
-    else if (id == 'menu_Grid') {
-      optionsDiv.style.visibility = "hidden";
-      optionsDiv.style.display = "none";
-      newUrl = $t.currentUrl;
-
-      var idx = newUrl.indexOf('-featured=');
-      if (idx != -1) {
-        idx1 = newUrl.indexOf('&', idx);
-        if (idx1 == -1) {
-          if (newUrl.charAt(idx - 1) == '&')
-            idx--;
-          newUrl = newUrl.substring(0, idx);
-        }
-        else
-          newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
-      }
-
-      idx = newUrl.indexOf('-list=');
-      if (idx != -1) {
-        var idx1 = newUrl.indexOf('&', idx);
-        if (idx1 == -1) {
-          if (newUrl.charAt(idx - 1) == '&')
-            idx--;
-          newUrl = newUrl.substring(0, idx);
-        }
-        else
-          newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
-        newUrl += '&-grid=y';
-      }
-      else {
-        idx = newUrl.indexOf('-grid=');
-        if (idx == -1)
-          newUrl += '&-grid=y';
-      }
-    }
-    else if (id == 'menu_LargeGrid') {
-      optionsDiv.style.visibility = "hidden";
-      optionsDiv.style.display = "none";
-      newUrl = $t.currentUrl;
-
-      var idx = newUrl.indexOf('-featured=');
-      if (idx == -1)
-        newUrl += '&-featured=y';
-
-      idx = newUrl.indexOf('-list=');
-      if (idx != -1) {
-        var idx1 = newUrl.indexOf('&', idx);
-        if (idx1 == -1) {
-          if (newUrl.charAt(idx - 1) == '&')
-            idx--;
-          newUrl = newUrl.substring(0, idx);
-        }
-        else
-          newUrl = newUrl.substring(0, idx) + newUrl.substring(idx1 + 1);
-        newUrl += '&-grid=y';
-      }
-      else {
-        idx = newUrl.indexOf('-grid=');
-        if (idx == -1)
-          newUrl += '&-grid=y';
-      }
-    }
-    else if (id.indexOf('actions_Photo_') != -1) {
-      if (!Boost.camera)
-        return null;
-      $t.myBuddy = id.substring(14);
-      Boost.camera.takePicture(newUrl);
-      Boost.log('picture was taken');
-      return null;
-    }
-    else if (id == 'actions_IM') {
-      var privateRoomId;
-      var idx0 = newUrl.indexOf('@');
-      var s = newUrl.substring(0, idx0);
-      var idx01 = s.lastIndexOf('/');
-      if (idx01 != -1)
-        newUrl = s.substring(idx01 + 1) + newUrl.substring(idx0);
-
-//      newUrl = newUrl.substring(idx + 1) + partUrl;
-      Boost.log("privateIM: " + newUrl);
-      if ($t.privateRooms)
-        privateRoomId = $t.privateRooms[newUrl];
-      var div;
-      if (privateRoomId)
-        div = $t.urlToDivs[newUrl];
-      else
-        privateRoomId = newUrl;
-      var currentDiv = $t.urlToDivs[$t.currentUrl];
-      if (!currentDiv) {
-        currentDiv = document.getElementById('mainDiv');
-        $t.urlToDivs[$t.currentUrl] = currentDiv;
-        $t.browsingHistory[$t.browsingHistoryPos] = $t.currentUrl;
-      }
-      if (!div) {
-        $t.privateRooms[privateRoomId] = newUrl;
-        var div_empty = document.getElementById('im_empty');
-        Boost.log("cloneDiv: im_empty");
-        var div = document.createElement('DIV');
-//        var div = cloneNode(div_empty);
-        insertAfter(currentDiv.parentNode, div, currentDiv);
-        setInnerHtml(div, div_empty.innerHTML);
-        $t.activatePrivateChat(div, newUrl);
-
-        // newUrl is sender in this case
-        newUrl = newUrl.toLowerCase();
-        div.id = newUrl;
-        div.className = '';
-        Boost.log("'IM me' clicked on: " + div.id);
-        $t.urlToDivs[newUrl] = div;
-        var e = {
-          getBody:   function() {return "Please 'IM' me"},
-          getSender: function() {return $t.myName + '@' + $t.XMPPHost},
-          getTime:   function() {return new Date().getTime()}
-        };
-        Mobile.insertChatMessage(e, div);
-      }
-      else
-        Boost.log("found div: " + newUrl);
-/*
-      var currentDiv = $t.urlToDivs[$t.currentUrl];
-
-      if (!currentDiv) {
-        currentDiv = document.getElementById('mainDiv');
-        $t.urlToDivs[$t.currentUrl] = currentDiv;
-        $t.browsingHistory[$t.browsingHistoryPos] = $t.currentUrl;
-      }
-*/
-/*
-      currentDiv.style.display = 'none';
-      currentDiv.style.visibility = "hidden";
-      div.style.display = 'inline';
-      div.classname = '';
-      div.style.visibility = "visible";
-*/
-      MobilePageAnimation.showPage(currentDiv, div);
-      $t.setLocationHash(newUrl);
-
-      Boost.log('currentDiv.parentNode:' + currentDiv.parentNode.id);
-//      insertAfter(currentDiv.parentNode, div, currentDiv);
-
-      $t.browsingHistoryPos++;
-      $t.browsingHistory[$t.browsingHistoryPos] = newUrl;
-      $t.currentUrl = newUrl;
-      if (Boost.xmpp)
-        Boost.xmpp.sendMessage("Please 'IM' me", newUrl + "/marco-android");
-      return null;
-    }
-
-  // hide menu
-   optionsDiv.style.visibility = "hidden";
-   MobileMenuAnimation.hide();
-
-    return newUrl;
-  },
-  
   onExisCallback : function(toExit) {
     if (toExit)
       Boost.view.exit();
   },
   
-  changePresentationItemsState: function() {
-      var item, level;
-      var optionsDiv = document.getElementById('menu_Options');
-
-      var selectedItemId = 'menu_Grid';
-      var url = Mobile.currentUrl || window.location.href;
-      if (url.indexOf('-list=') != -1)
-        selectedItemId = 'menu_List';
-      else if (url.indexOf('-featured=') != -1)
-        selectedItemId = 'menu_LargeGrid';
-
-      item = getChildById(optionsDiv, 'menu_List');
-      level = (selectedItemId == 'menu_List') ? 0.5 : 1;
-      changeOpacity(item, level);
-
-      item = getChildById(optionsDiv, 'menu_Grid');
-      level = (selectedItemId == 'menu_Grid') ? 0.5 : 1;
-      changeOpacity(item, level);
-
-      item = getChildById(optionsDiv, 'menu_LargeGrid');
-      level = (selectedItemId == 'menu_LargeGrid') ? 0.5 : 1;
-      changeOpacity(item, level);
-  },
-
   writeBrowsingHistoryOnServer: function(e, link) {
     if ($t.browsingHistory <= 1)
       return;
@@ -1238,7 +894,6 @@ var Boost = {
         $t.getPage(null, hashVal);
       }
       $t.curHash = hashVal;
-      Mobile.changePresentationItemsState();
     }
     setTimeout($t.checkLocation, 100);
   },
@@ -1248,7 +903,6 @@ var Boost = {
     var SPACE = 30;
     this.isHistoryView = true;
 
-    MobileMenuAnimation.hide();
     var scrWidth = this.getScreenWidth();
     if (Boost.zoom)
       Boost.zoom.setZoomWidth(scrWidth * 2 + SPACE * 3);
@@ -1452,14 +1106,7 @@ var Boost = {
       $t.browsingHistory = s;
     }
 
-    var newUrl;
-    if (typeof link == 'string')
-      newUrl = link;
-    else {
-      // mobileMenu returns link.href or url based on
-      // menu item ID.
-      newUrl = $t.mobileMenu(e, link);
-    }
+    var newUrl = (typeof link == 'string') ? link : link.href;
     if (!newUrl) {
       return stopEventPropagation(e);
     }
@@ -1570,22 +1217,6 @@ var Boost = {
     if (url.indexOf('.html') != -1)
       url = url.substring(0, idx + 1) + 'm' + url.substring(idx);
     var loadedFromCache = false;
-    if (Boost.cache) {
-      var id = link.id;
-      if (id  &&  (id == 'menu_Reload' || id == 'menu_Refresh'))
-        loadedFromCache = false;
-
-      /*
-      else {
-        var content = Boost.cache.get(newUrl);
-        if (content) {
-          Boost.log("getting content from cache for url " + newUrl);
-          loadedFromCache = true;
-          loadPage(e, div, link, content, div);
-        }
-      }
-      */
-    }
     if (isMore)
       loadFromCache = false;
     if (loadedFromCache == true)
@@ -1644,15 +1275,6 @@ var Boost = {
         }
       }
     
-      // update mobile menu after log in
-      if (content.indexOf("menu_Options") != -1) {
-        var newOptDiv = getDomObjectFromHtml(content, "id", "menu_Options");
-        var oldOptDiv = document.getElementById("menu_Options");
-        var parent = oldOptDiv.parentNode;
-        parent.removeChild(oldOptDiv);
-        parent.appendChild(newOptDiv);
-      }
-      
       // finally, set NEW PAGE content
       // hack: in case if serever returns full html page instead
       //(page with error message, for example; generated from widget/page.jsp)
@@ -1766,12 +1388,6 @@ var Boost = {
     Filter.hide();
     DataEntry.hide();
     
-    // optionsDiv is common for all mobile pages
-    var optionsDiv = document.getElementById('menu_Options');
-    // options menu opened no passes in history
-    if (optionsDiv && optionsDiv.style.visibility == "visible")
-      return;
-
     var $t = Mobile;
     $t.browsingHistoryPos += step;
 
@@ -1835,91 +1451,6 @@ var Boost = {
     return this.browsingHistoryPos > 0;
   },
   
-  isForwardAvailable : function() {
-    if (!this.browsingHistory)
-      return false;
-    return this.browsingHistoryPos < this.browsingHistory.length - 1;
-  },
-
-  displayActionsAndViewsFor: function(div, optionsDiv) {
-    var $t = Mobile;
-    var isAdd = $t.getElementById('add_url_hdn') != null;
-    var isEdit = $t.getElementById('edit_url_hdn') != null;
-    var isDelete = $t.getElementById('delete_url_hdn') != null;
-
-    var addA = document.getElementById('menu_Add');
-    var addTd = addA.parentNode;
-    if (isAdd)
-      addTd.className = '';
-    else
-      addTd.className = 'hdn';
-    var editA = document.getElementById('menu_Edit');
-    var editTd = editA.parentNode;
-    if (isEdit)
-      editTd.className = '';
-    else
-      editTd.className = 'hdn';
-    var delA = document.getElementById('menu_Delete');
-    var delTd = delA.parentNode;
-    if (isDelete)
-      delTd.className = '';
-    else
-      delTd.className = 'hdn';
-
-    var divs = div.getElementsByTagName('div');
-    var viewsDiv;
-    for (var i=0; i<divs.length  &&  viewsDiv == null; i++) {
-      var tDiv = divs[i];
-      if (tDiv.id  &&  tDiv.id == 'options_Views')
-        viewsDiv = tDiv;
-    }
-    var views;
-    if (viewsDiv) {
-      views = viewsDiv.innerHTML;
-      if (!views  ||  trim(views).length == 0)
-        views = null;
-      else
-        views = views.split(',');
-    }
-    var trs = optionsDiv.getElementsByTagName('table');
-    var viewsTr;
-    for (var i=0; i<trs.length  &&  !viewsTr; i++) {
-      var tr = trs[i];
-      if (!tr.id  ||  tr.id != 'menu_Views')
-        continue;
-      viewsTr = tr;
-    }
-    if (!viewsTr)
-      return;
-    if (views) {
-      viewsTr.style.visibility = "";
-      viewsTr.style.display = "inline";
-    }
-    else {
-      viewsTr.style.visibility = "hidden";
-      viewsTr.style.display = "none";
-      return;
-    }
-
-    var tds = viewsTr.getElementsByTagName('td');
-    var found;
-    for (var i=0; i<tds.length; i++) {
-      var td = tds[i];
-      var id = td.id;
-      if (!id)
-        continue;
-      found = false;
-      for (var j=0; j<views.length  &&  !found; j++) {
-        if (views[j] == id) {
-          td.style.visibility = "";
-          found = true;
-        }
-      }
-      if (!found)
-        td.style.visibility = "hidden";
-    }
-
-  },
   getPageTitle: function(pageDiv) {
     var divs = pageDiv.getElementsByTagName('div');
     var titleDiv;
@@ -2084,57 +1615,6 @@ var MobilePageAnimation = {
 
   getPageTopOffset : function() {
     return this.pageTopOffset;
-  }
-}
-
-
-/**********************************
- * MobileMenuAnimation
- **********************************/
-var MobileMenuAnimation = {
-  optionsDiv : null,
-  editItem : null,
-
-  show : function(curPageDiv, optionsDiv) {
-    this.optionsDiv = optionsDiv;
-    setTransitionProperty(this.optionsDiv, "opacity 0.5s ease-in-out");
-    this.editItem = getChildById(this.optionsDiv, 'menu_Edit');
-    
-    // hide menu if it is already opened
-    if(isVisible(this.optionsDiv)) {
-      this.hide();
-      return;
-    }
-    this.setEditItemState();
-    
-    var optDivStl = this.optionsDiv.style;
-    // set menu position in accordance to current "scrolled" position
-    optDivStl.top = window.pageYOffset; 
-    optDivStl.zIndex = curPageDiv.style.zIndex + 1;
-    optDivStl.display = "block";
-    optDivStl.visibility = "visible";
-    optDivStl.opacity = 1.0;
-  },
-  
-  setEditItemState : function() {
-    var page = Mobile.getCurrentPageDiv();
-    var a = getChildById(page, 'edit_url_hdn');
-    if (a == null) 
-      changeOpacity(this.editItem, 0.3);
-    else
-      changeOpacity(this.editItem, 1.0);
-  },
-  
-  hide : function() {
-    if (!this.optionsDiv)
-      return;
-    setTransitionCallback(this.optionsDiv, this._finishHide);
-    this.optionsDiv.style.opacity = "0.1";
-  },
-  _finishHide: function(){
-    var $t = MobileMenuAnimation;
-    MobileMenuAnimation.optionsDiv.style.visibility = "hidden";
-    removeTransitionCallback($t.optionsDiv, $t._finishHide);
   }
 }
 
