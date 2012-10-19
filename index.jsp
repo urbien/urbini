@@ -58,7 +58,13 @@
   <a data-transition='slide' href='#view/{{ _uri }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}" />&#160;{{ davDisplayName }}</a>
 </script>
 
-<script type="text/template" id="viewTemplate">
+<script type="text/template" id="propRowTemplate">
+  <div>
+    <div class="propRow">{{ name }}: {{ value }}</div>
+  </div>
+</script>
+
+<!--script type="text/template" id="viewTemplate">
 	<div>
 		{{ for (var name in props) { }} 
 			{{ if (props.hasOwnProperty(name)) { }}
@@ -66,6 +72,6 @@
 			{{ } }}
 		{{ } }}
 	</div>
-</script>
+</script-->
 
 </div>

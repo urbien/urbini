@@ -38,7 +38,8 @@ Lablz.ResourceListItemView = Backbone.View.extend({
 Lablz.ResourceView = Backbone.View.extend({
 	initialize: function() {
 		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
-		this.template = _.template($('#viewTemplate').html());
+//		this.template = _.template($('#viewTemplate').html());
+		this.propRowTemplate = _.template($('#propRowTemplate').html());
     return this;
 //    this.template = _.template(tpl.get('View'));
 	},
@@ -51,6 +52,7 @@ Lablz.ResourceView = Backbone.View.extend({
 		if (!meta)
 			return this;
 		
+		var html = "";
 		var json = this.model.toJSON();
 		for (var p in json) {
 			var prop = meta[p];
@@ -62,13 +64,16 @@ Lablz.ResourceView = Backbone.View.extend({
 			var propTemplate = Lablz.templates[prop.type];
 			if (propTemplate)
 				json[p] = _.template($(propTemplate).html())({value: json[p]});
+			
+			html += this.propRowTemplate({name: p, value: json[p]});
 //      var propTemplate = tpl.get(prop.type);
 //      if (propTemplate)
 //        json[p] = _.template(propTemplate)({value: json[p]});
 		}
 		
 		var j = {"props": json};
-    $(this.el).html(this.template(j));
+//    $(this.el).html(this.template(j));
+		$(this.el).html(html);
     return this;
   }
 //	,
