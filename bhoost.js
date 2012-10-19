@@ -2011,26 +2011,24 @@ var MobilePageAnimation = {
     animateCSS3(newDiv, "transform",
       "translate(0%, 0%)",
       "transform 0.5s ease-in-out",
-      "translate(" + (isBack ? -1 : 1) * 100 + "%, 0%)");
+      "translate(" + (isBack ? -1 : 1) * 100 + "%, 0%)",
+      MobilePageAnimation._onPageSlidingEnd);
       
     animateCSS3(curDiv, "transform",
       "translate(" + (isBack ? 1 : -1) * 100 + "%, 0%)",
       "transform 0.5s ease-in-out",
       "translate(0%, 0%)",
       MobilePageAnimation._onPageSlidingEnd);
-      
-    
   },
+  
   _onPageSlidingEnd : function(event) {
-    var hiddenPage = getEventTarget(event);
-    removeTransitionCallback(hiddenPage, MobilePageAnimation._onPageSlidingEnd);
+    var page = getEventTarget(event);
+    if (comparePosition(page, Mobile.getCurrentPageDiv()) == 0)
+      return;
     // remove hidden page to avoid several elements with the same ID, for example
-    hiddenPage.parentNode.removeChild(hiddenPage);
-    // assign callback to currently on screen page (without timeout it fires immediately)
-    setTimeout(function() {
-      setTransitionCallback(Mobile.getCurrentPageDiv(), MobilePageAnimation._onPageSlidingEnd);},
-      10);
+    page.parentNode.removeChild(page);
   },
+  
   showDialog : function(div) {
     //  prevent processing of opened dialog in transition callback
     if (this.dlgDivToHide && comparePosition(div, this.dlgDivToHide) == 0) 
