@@ -33,6 +33,7 @@ _.templateSettings = {
 <!--script src="lib/mustache.js"></script-->   
 <script src="lib/IndexedDBShim.min.js"></script>   
 <script src="js/utils.js"></script>   
+<script src="js/base.js"></script>   
 <!-- backboneModels / -->
 <script src="js/models.js"></script>   
 <script src="js/views.js"></script>   

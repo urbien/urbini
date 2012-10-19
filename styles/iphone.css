@@ -46,7 +46,7 @@ body {
   
 .mobile_dlg .rounded_rect_tbl .input, .mobile_dlg .rounded_rect_tbl .isel, .mobile_dlg .rounded_rect_tbl .num, .mobile_dlg .false_input/*, #register .input*/ { width: 100% !important; border: none; }
 #register table, .userLogin { width: 100% !important; max-width: none; }
-#register .input { text-align: left; }
+#register .input { text-align: left; height: 29px; }
 
 .iphone_field { height: 20px; padding-bottom: 10px; }
 .iphone_field input { width: 155px; }

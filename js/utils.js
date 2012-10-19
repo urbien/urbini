@@ -1,6 +1,5 @@
-var Lablz = {};
-Lablz.serverName = "http://mark.obval.com/urbien";
-Lablz.apiUrl = Lablz.serverName + "/api/v1/";
+//Lablz.serverName = "http://mark.obval.com/urbien";
+//Lablz.apiUrl = Lablz.serverName + "/api/v1/";
 
 var Utils = {};
 Utils.getFirstUppercaseCharIdx = function(str) {
@@ -11,6 +10,19 @@ Utils.getFirstUppercaseCharIdx = function(str) {
 	}
 	
 	return -1;
+}
+
+Utils.getType = function(uri) {
+  var qIdx = uri.indexOf("?");
+  if (qIdx != -1)
+    return uri.slice(0, qIdx);
+  
+  var idx = Utils.getFirstUppercaseCharIdx(uri);
+  if (idx == -1)
+    return null;
+    
+  var end = uri.slice(idx).search(/[^a-zA-Z]/);
+  return end == -1 ? uri : uri.slice(0, idx + end);
 }
 
 Utils.getClassName = function(type) {
