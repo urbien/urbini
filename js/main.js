@@ -32,11 +32,6 @@ Lablz.templates = {
 Backbone.View.prototype.close = function(){
   this.remove();
   this.unbind();
-}
-
-Backbone.View.prototype.close = function(){
-  this.remove();
-  this.unbind();
   if (this.onClose){
     this.onClose();
   }
@@ -51,14 +46,20 @@ var AppRouter = Backbone.Router.extend({
     },
 
     list: function (type) {
-      var typeCl = eval('Lablz.' + type) || Lablz.Resource;
-      this.resList = new Lablz.ResourceList({model: typeCl});
+      var model = Lablz.shortNameToModel[type];
+      if (!model)
+        return;
+      
+//      var typeCl = eval('Lablz.' + type) || Lablz.Resource;
+      this.resList = new Lablz.ResourceList({model: model});
       var self = this;
-      var success = function() {
-        app.showView('#sidebar', new Lablz.ResourceListView({model:self.resList}));
-        setTimeout(function() {
-          Lablz.indexedDB.addCollection(self.resList);
-        }, 0);
+      var success = function(collection, resp) {
+        app.showView('#sidebar', new Lablz.ResourceListView({model: collection}));
+        if (collection.lastFetchOrigin == 'server') {
+          setTimeout(function() {
+            Lablz.indexedDB.addCollection(collection);
+          }, 0);
+        }
       };
       var error = function() {
         var str = '';
@@ -73,13 +74,20 @@ var AppRouter = Backbone.Router.extend({
     },
 
     view: function (type, id) {
-      var typeCl = eval('Lablz.' + type);
+      var typeCl = Lablz.shortNameToModel[type];
+      if (!typeCl)
+        return this;
+      
   		this.res = this.resList ? this.resList.get(id) : new typeCl({id: id});
   		this.resView = new Lablz.ResourceView({model:this.res});
   		var self = this;
   		var success = function() {
-        Lablz.indexedDB.addItem(self.res);
   			app.showView('#content', new Lablz.ResourceView({model:self.res}));
+        if (self.res.lastFetchOrigin == 'server') {
+          setTimeout(function() {
+            Lablz.indexedDB.addItem(self.res);
+          }, 0);
+        }
   		};
   		
   		var error = function() {
@@ -96,11 +104,11 @@ var AppRouter = Backbone.Router.extend({
   			success();
     },
 	
-	showView:function (selector, view) {
+	showView: function(selector, view) {
         if (this.currentView)
             this.currentView.close();
 			
-        $(selector).html(view.render().el);
+        $(selector).empty().append(view.render().el);
         this.currentView = view;
         return view;
     },
@@ -118,81 +126,68 @@ Lablz.indexedDB = {};
 Lablz.indexedDB.db = null;
 Lablz.DB_VERSION = 1;
 
-//var LablzDB = {
-//  id: "lablz",
-//  description: "Urbien with Backbone",
-//  migrations: [
-//    {
-//      version: 1,
-//      migrate: function(transaction, next) {
-//        transaction.db.createObjectStore(Lablz.resourceType)
-//        next()
-//      }
-//    },
-//    
-//    {
-//      version: 2,
-//      migrate: function(transaction, next) {
-//        var store
-//
-//        if (!transaction.db.objectStoreNames.contains(Lablz.resourceType)) {
-//          store = transaction.db.createObjectStore(Lablz.resourceType)
-//        } else {
-//          store = transaction.objectStore(Lablz.resourceType)
-//        }
-//
-//        store.createIndex("uriIndex", "_uri", { unique: true })
-//        next()
-//      }
-//    }  
-//  ]
-//}
-
 Lablz.indexedDB.onerror = function(e) {
   console.log(e);
 };
 
 // creates an object store if it doesn't already exists, upgrades db to new version
-Lablz.createObjectStore = function(name, options) {
-  var db = Lablz.indexedDB.db;
-  if (!db || !db.objectStoreNames.contains(storeName)) {
-    Lablz.DB_VERSION++;
-    Lablz.indexedDB.open(name, options);
-  }
-}
+//Lablz.createObjectStore = function(name, options) {
+//  var db = Lablz.indexedDB.db;
+//  if (!db || !db.objectStoreNames.contains(storeName)) {
+//    Lablz.DB_VERSION++;
+//    Lablz.indexedDB.open(name, options);
+//  }
+//}
 
 Lablz.indexedDB.open = function(storeName, options, success, error) { // optional params: "storeName" to create, "options" to create it with
-  var request = indexedDB.open("lablz", Lablz.DB_VERSION);
+  var request = indexedDB.open("lablz");
 
+  request.onblocked = function(event) {
+    alert("Please close all other tabs with this site open!");
+  };
+  
   request.onsuccess = function(e) {
     Lablz.indexedDB.db = e.target.result;
     var db = Lablz.indexedDB.db;
-    if (db.setVersion) {
-      if (db.version != Lablz.DB_VERSION) {
-        console.log("in old setVersion: "+ db.setVersion); // deprecated but needed for Chrome
-        
-        // We can only create Object stores in a setVersion transaction or an onupgradeneeded callback;
-        var req = db.setVersion(Lablz.DB_VERSION);
-        // onsuccess is the only place we can create Object Stores
-        req.onerror = Lablz.indexedDB.onerror;
-        req.onsuccess = function(e) {
-          if (db.objectStoreNames.contains(storeName))
-            db.deleteObjectStore(storeName);
-
-          var store = db.createObjectStore(storeName, options || {keyPath: "_uri"});
-          e.target.transaction.oncomplete = function() {
-//              Lablz.indexedDB.getItems(storeName);
-          };
-        };
-      }
-      else {}
-//        Lablz.indexedDB.getItems();        
-    }
-    else {}
-//      Lablz.indexedDB.getItems();
+    db.onversionchange = function(event) {
+      db.close();
+      alert("A new version of this page is ready. Please reload!");
+    };
     
-    if (success)
-      success();
+    Lablz.DB_VERSION = db.objectStoreNames.contains(storeName) ? db.version : db.version + 1;
+
+    if (db.version == Lablz.DB_VERSION) {
+      if (success)
+        success();
+      
+      return;
+    }
+    
+    if (db.setVersion) {
+      console.log("in old setVersion: "+ db.setVersion); // deprecated but needed for Chrome
+      
+      // We can only create Object stores in a setVersion transaction or an onupgradeneeded callback;
+      var req = db.setVersion(Lablz.DB_VERSION);
+      // onsuccess is the only place we can create Object Stores
+      req.onerror = Lablz.indexedDB.onerror;
+      req.onsuccess = function(e) {
+        if (db.objectStoreNames.contains(storeName))
+          db.deleteObjectStore(storeName);
+
+        var store = db.createObjectStore(storeName, options || {keyPath: "_uri"});
+        e.target.transaction.oncomplete = function() {
+          if (success)
+            success();
+        };
+      };      
+    }
+    else {
+      db.close();
+      var subReq = indexedDB.open("lablz", Lablz.DB_VERSION);
+      subReq.onsuccess = request.onsuccess;
+      subReq.onerror = request.onerror;
+      subReq.onupgradeneeded = request.onupgradeneeded;
+    }
   };
   
   request.onupgradeneeded = function(e) {
@@ -205,10 +200,10 @@ Lablz.indexedDB.open = function(storeName, options, success, error) { // optiona
     var store = db.createObjectStore(storeName, options || {keyPath: "_uri"});
     e.target.transaction.oncomplete = function() {
 //      Lablz.indexedDB.getItems(storeName);
+      if (success)
+        success();
     };
     
-    if (success)
-      success();
   }
   
   request.onerror = function(e) {
@@ -244,7 +239,8 @@ Lablz.indexedDB.addCollection = function(collection) {
 };
 
 Lablz.indexedDB.addItem = function(model) {
-  var type = Lablz.getType(model.get('_uri'));
+//  var type = Lablz.getType(model.get('_uri'));
+  var type = model.className;
   var db = Lablz.indexedDB.db;
   var trans = db.transaction([type], "readwrite");
   var store = trans.objectStore(type);
@@ -281,15 +277,16 @@ Lablz.indexedDB.getItem = function(uri, success, error) {
   if (type == uri)
     return Lablz.indexedDB.getItems(type, success, error);
   
+  var name = Utils.getClassName(type);
   var db = Lablz.indexedDB.db;
-  if (!db || db.objectStoreNames.length == 0)
+  if (!db || db.objectStoreNames.length == 0 || !db.objectStoreNames.contains(name))
     return false;
   
-  var trans = db.transaction(type);
-  var store = trans.objectStore(type);
-  var request = objectStore.get(uri);
+  var trans = db.transaction([name]);
+  var store = trans.objectStore(name);
+  var request = store.get(Utils.getShortUri(uri));
   request.onsuccess = function(e) {
-    if (success && !!e.target.result)
+    if (success)
       success(e.target.result)
   };
   
@@ -307,12 +304,13 @@ Lablz.indexedDB.getItems = function(type, success, error) {
   // var todos = document.getElementById("todoItems");
   // todos.innerHTML = "";
 
+  var name = Utils.getClassName(type);
   var db = Lablz.indexedDB.db;
-  if (!db || db.objectStoreNames.length == 0)
+  if (!db || db.objectStoreNames.length == 0 || !db.objectStoreNames.contains(name))
     return false;
   
-  var trans = db.transaction([type], "readwrite");
-  var store = trans.objectStore(type);
+  var trans = db.transaction([name]);
+  var store = trans.objectStore(name);
 
   // Get everything in the store;
   var results = [];
@@ -339,35 +337,33 @@ Lablz.indexedDB.getItems = function(type, success, error) {
   return true;
 };
 
-// function renderTodo(row) {
-  // var todos = document.getElementById("todoItems");
-  // var li = document.createElement("li");
-  // var a = document.createElement("a");
-  // var t = document.createTextNode(row.text);
-
-  // a.addEventListener("click", function() {
-    // Lablz.indexedDB.deleteItem(row.timeStamp);
-  // }, false);
-
-  // a.textContent = " [Delete]";
-  // li.appendChild(t);
-  // li.appendChild(a);
-  // todos.appendChild(li);
-// }
-
-function addItem(item) {
-  Lablz.indexedDB.addTodo(item);
-}
-
 function init(success, error) {
-  Lablz.indexedDB.open("Urbien", {keyPath: "_uri"}, success, error);
+  var type = window.location.hash.substring(1);
+  if (type.indexOf("view") == 0) {
+    var firstSlash = type.indexOf("/");
+    var secondSlash = type.indexOf("/", firstSlash + 1);
+    type = type.slice(firstSlash + 1, secondSlash);
+  }
+  else {
+    var nonLetterIdx = type.search(/[^a-zA-Z]/);
+    type = nonLetterIdx == -1 ? type : type.slice(0, nonLetterIdx);
+  }
+  
+  Lablz.indexedDB.open(type, {keyPath: "_uri"}, success, error);
 }
 
 //window.addEventListener("DOMContentLoaded", init, false);
 //tpl.loadTemplates(['ListItem', 'View', 'Props', 'string', 'int', 'uri', 'image', 'date'], function() {
     init(function() {
-      app = new AppRouter();
-      Backbone.history.start();
-    });
+//           init();
+           app = new AppRouter();
+           if (typeof jq != 'undefined')
+             Backbone.setDomLibrary(jq);
+           Backbone.history.start();
+         },
+         function() {
+           console.log("failed to init app");
+         }
+    );
 //    $.mobile.pushStateEnabled = false;
 //});

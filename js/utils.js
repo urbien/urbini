@@ -13,6 +13,25 @@ Utils.getFirstUppercaseCharIdx = function(str) {
 	return -1;
 }
 
+Utils.getClassName = function(type) {
+  var sIdx = type.lastIndexOf("/");
+  return sIdx == -1 ? type : type.slice(sIdx + 1);
+}
+
+Utils.getShortUri = function(uri) {
+  var regex = /http\:\/\/www\.hudsonfog\.com\/[a-zA-Z\/]*\/([a-zA-Z]*)\?id=([0-9]*)/;
+  var nameAndId = uri.match(regex);
+  return nameAndId && nameAndId.length == 3 ? nameAndId[1] + '/' + nameAndId[2] : uri;
+}
+
+Utils.getPackagePath = function(type) {
+  var start = "http://www.";
+  var path = type.substring(start.length, type.lastIndexOf("/"));
+  path = path.replace(".com", "");
+  path = path.replace(/\//g, '.');
+  return path;
+}
+
 
 //tpl = { 
 //    // Hash of preloaded templates for the app
