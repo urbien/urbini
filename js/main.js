@@ -142,9 +142,18 @@ Lablz.indexedDB.onerror = function(e) {
 Lablz.indexedDB.open = function(storeName, options, success, error) { // optional params: "storeName" to create, "options" to create it with
   var request = indexedDB.open("lablz");
 
+  request.onblocked = function(event) {
+    alert("Please close all other tabs with this site open!");
+  };
+  
   request.onsuccess = function(e) {
     Lablz.indexedDB.db = e.target.result;
     var db = Lablz.indexedDB.db;
+    db.onversionchange = function(event) {
+      db.close();
+      alert("A new version of this page is ready. Please reload!");
+    };
+    
     Lablz.DB_VERSION = db.objectStoreNames.contains(storeName) ? db.version : db.version + 1;
 
     if (db.version == Lablz.DB_VERSION) {
@@ -173,11 +182,11 @@ Lablz.indexedDB.open = function(storeName, options, success, error) { // optiona
       };      
     }
     else {
+      db.close();
       var subReq = indexedDB.open("lablz", Lablz.DB_VERSION);
       subReq.onsuccess = request.onsuccess;
       subReq.onerror = request.onerror;
       subReq.onupgradeneeded = request.onupgradeneeded;
-//      Lablz.indexedDB.getItems();
     }
   };
   

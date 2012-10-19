@@ -91,41 +91,7 @@ Lablz.ResourceList = Backbone.Collection.extend({
 
 Lablz.models = [packages.Resource];
 
-//packages.hudsonfog.voc.model.company.Contact = packages.Resource.extend({
-//	initialize: function(arguments) {
-//    packages.hudsonfog.voc.model.company.Contact.__super__.initialize.apply(this, arguments);
-//	}
-//},
-//{
-//  type: "http://www.hudsonfog.com/voc/model/company/Contact",
-//  shortName: "Contact",
-//  displayName: "Contact",
-//  properties: _.extend({
-//    firstName: {"type": "string"},
-//    lastName: {"type": "string"},
-//    accessLevel: {"type": "string"},
-//    photo: {"type": "image"},
-//    featured: {"type": "image"},
-//    gender: {"type": "string"},
-//    dateRegistered: {"type": "date"}
-//  }, packages.Resource.properties)
-//});
-//
-//packages.hudsonfog.voc.commerce.urbien.Urbien = packages.hudsonfog.voc.model.company.Contact.extend({
-//	initialize: function() {
-//    packages.hudsonfog.voc.commerce.urbien.Urbien.__super__.initialize.apply(this, arguments);
-//	}
-//},
-//{
-//  type: "http://www.hudsonfog.com/voc/commerce/urbien/Urbien",
-//  shortName: "Urbien",
-//  displayName: "Urbien",
-//  properties: _.extend({
-//    mojoPoints: {"type": "int"}
-//  }, packages.hudsonfog.voc.model.company.Contact.properties)
-//});
-
-/////////////////////////////////////////////////////// PUT MODELS HERE ///////////////////////////////////////////////////// START
+// START /////////////////////////////////////////////////////// PUT MODELS HERE ///////////////////////////////////////////////////// START
 
 _.extend(packages, {hudsonfog: {voc: {commerce: {urbien: {}}}}}); 
 packages.hudsonfog.voc.commerce.urbien.Building = packages.Resource.extend({initialize: function() { 
@@ -193,7 +159,7 @@ packages.hudsonfog.voc.commerce.urbien.BasketballCourt.__super__.initialize.appl
 }); 
 Lablz.models.push(packages.hudsonfog.voc.commerce.urbien.BasketballCourt); 
 
-/////////////////////////////////////////////////////// PUT MODELS HERE ///////////////////////////////////////////////////// END
+// END /////////////////////////////////////////////////////// PUT MODELS HERE ///////////////////////////////////////////////////// END
 
 
 Lablz.shortNameToModel = {};
