@@ -2,20 +2,42 @@
 <html>
 <head>
 <title>Backbone Cellar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"></meta>
+<link rel="stylesheet" href="lib/kitchensink/jq.ui.frosty.css" />   
 </head>
 <body>
+<div id="jQUi">
 
-<div id="header"><span class="title">Urbien</span></div>
+  <div id="header">
+    <a id="backButton" href="javascript:;" class="button">Back</a> 
+    <h1 id="pageTitle">Urbien</h1> 
+  </div>
+  <div id="content">
+  <h2>hey</h2>
 
-<div id="sidebar">
-<div id="rl">
+  <div id="sidebar">
+    <!--div id="rl">
+    </div-->
+  </div>
+  </div>
+  
+  <!--h2>One Urbien at a time</h2-->
+    <div id="navbar">
+       <a target="#welcome" class="icon home">Home</a>
+    </div>
+    <nav >
+        <div class='title'>Home</div>
+        <ul>
+            <li class="icon home mini"><a href="#main">Home</a></li>
+        </ul>
+    </nav>
+    <nav id="second_nav">
+        <div class='title'>Second</div>
+        <ul>
+            <li class="icon info mini"><a href="#about">About</a></li>
+        </ul>
+    </nav>
 </div>
-</div>
-
-<!--h2>One Urbien at a time</h2-->
-<div id="content">
-</div>
-
 <!-- Templates -->
 <script type="text/template" id="stringTemplate">
     <span><%= value %></span>
@@ -34,11 +56,11 @@
 </script>
 
 <script type="text/template" id="imageTemplate">
-    <span><img src="<%= value.indexOf('http') == 0 ? value : Lablz.serverName + '/v/' + value %>" /></span>
+    <span><img src="<%= value.indexOf('http') == 0 ? value : value.indexOf('Image/') == 0 ? Lablz.serverName + value.substring(5) : Lablz.serverName + value %>" /></span>
 </script>
 
 <script type="text/template" id="listItemTemplate">
-	<a href='#view/<%= _uri %>'><%= davDisplayName %></a>
+  <a data-transition='slide' href='#view/<%= _uri %>'><img align="middle" src="<%= typeof mediumImage == 'undefined' ? '' : mediumImage.indexOf('http') == 0 ? mediumImage : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage %>" />&#160;<%= davDisplayName %></a>
 </script>
 
 <script type="text/template" id="viewTemplate">
@@ -54,12 +76,13 @@
 <!-- JavaScript -->
 <!--script src="lib/jquery-1.7.2.js"></script-->
 <script src="lib/jqmobi.js"></script>
+<!-- script src="lib/jq.ui.js"></script -->
 <script src="lib/underscore.js"></script>
 <script src="lib/backbone.js"></script>
 <script src="lib/mustache.js"></script>   
 <script src="lib/IndexedDBShim.min.js"></script>   
 <script src="js/utils.js"></script>   
-<backboneModels />
+<!--backboneModels / -->
 <script src="js/models.js"></script>   
 <script src="js/views.js"></script>   
 <script src="js/main.js"></script>   
