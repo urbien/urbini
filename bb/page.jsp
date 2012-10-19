@@ -24,7 +24,7 @@
 <script src="lib/mustache.js"></script>   
 <script src="lib/IndexedDBShim.min.js"></script>   
 <script src="js/utils.js"></script>   
-<backboneModels />
+<!-- backboneModels / -->
 <script src="js/models.js"></script>   
 <script src="js/views.js"></script>   
 <script src="js/main.js"></script>   
