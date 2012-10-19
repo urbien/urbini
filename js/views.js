@@ -12,8 +12,8 @@ Lablz.ResourceListView = Backbone.View.extend({
   		var elt = $(this.el);
   		this.model.each(function (item) {
         elt.append(new Lablz.ResourceListItemView({model:item}).render().el);
-  		});
-  		
+        });
+        
       return this;
     }
 });

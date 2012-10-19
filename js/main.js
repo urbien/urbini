@@ -140,7 +140,7 @@ Lablz.indexedDB.onerror = function(e) {
 //}
 
 Lablz.indexedDB.open = function(storeName, options, success, error) { // optional params: "storeName" to create, "options" to create it with
-  var request = indexedDB.open("lablz", Lablz.DB_VERSION);
+  var request = indexedDB.open("lablz");
 
   request.onsuccess = function(e) {
     Lablz.indexedDB.db = e.target.result;
@@ -169,7 +169,6 @@ Lablz.indexedDB.open = function(storeName, options, success, error) { // optiona
         e.target.transaction.oncomplete = function() {
           if (success)
             success();
-//              Lablz.indexedDB.getItems(storeName);
         };
       };      
     }
