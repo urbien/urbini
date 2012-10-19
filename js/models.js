@@ -1,11 +1,34 @@
+packages = {};
+
+//var packages = {
+//    hudsonfog: {
+//      voc: {
+//        model: {
+//          company: {}
+//        },
+//        commerce: {
+//          urbien: {}
+//        }
+//      }
+//    }
+//}
+
 // Models
-Lablz.Resource = Backbone.Model.extend({
-//  database: LablzDB,
-//  storeName: LablzDB.id,
+packages.Resource = Backbone.Model.extend({
+  _setUri: function() {
+    var uri = this.get('_uri');
+    if (uri)
+      return this;
+    
+    var id = this.get('id');
+    if (id)
+      this.set('_uri', this.type + "?id=" + id);
+
+    return this;
+  },
 	initialize: function() {
-		_.bindAll(this, 'setProperties', 'getKey', 'parse'); //, 'fetch'); // fixes loss of context for 'this' within methods
-		this.setProperties();
-		var type = this.type || this.get('type');
+		_.bindAll(this, '_setUri', 'getKey'); //, 'fetch'); // fixes loss of context for 'this' within methods
+		var type = this.__proto__.constructor.type || this.get('type');
 		if (!type)
 		  return this;
 		
@@ -19,96 +42,173 @@ Lablz.Resource = Backbone.Model.extend({
 	  }
 	  
     this.urlRoot = Lablz.apiUrl + this.className;
+    if (!this.get('_uri'))
+      this._setUri();
 	},
 	getKey: function() {
 	  return this.get('_uri');
 	},
-	properties: {
-		davDisplayName: {type: "string"}
-	},
-	setProperties: function() {
-		_.extend(this.properties, this.constructor.__super__.properties);
-		return this;
-	},
-	parse: function (response) {
-	  if (!response || response.error)
-	    return {};
-	  else if (response._uri)
-	    return response;
-		
-	  // Lablz.setMetadata(response.metadata);
-	  // this.model.get('type') = response.metadata.type;
-	  return response.data[0];
-	}
-//	,
-//  fetch: function(options) {
-//    return Backbone.Collection.prototype.fetch.call(this, options);
-//  }
+  parse: function (response) {
+    if (!response || response.error)
+      return {};
+      else if (response._uri)
+        return response;
+    
+    return response.data[0];
+  }
+},
+{
+  type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",
+  shortName: "Resource",
+  displayName: "Resource",
+  properties: {
+    davDisplayName: {type: "string"}
+  }
 });
 
 Lablz.ResourceList = Backbone.Collection.extend({
 	initialize: function(metadata) {
-    _.bindAll(this, 'getKey', 'parse'); //, 'fetch'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'getKey'); //, 'fetch'); // fixes loss of context for 'this' within methods
     if (!metadata || !metadata.model)
       throw new Error("resource list must be initialized with model");
     
     this.model = metadata.model;
-    this.type = metadata.type || this.model.prototype.type;
-	  this.className = this.type.substring(this.type.lastIndexOf("/") + 1);
+    this.type = this.model.type;
+	  this.className = this.model.shortName; //.substring(this.type.lastIndexOf("/") + 1);
 	  this.url = Lablz.apiUrl + this.className;
     console.log("init resourceList");
 	},
 	getKey: function() {
-	  return this.className;
+	  return this.type;
 	},
-	parse: function(response) {
-	  if (!response || response.error)
-	    return [];
-		
-	  // Lablz.setMetadata(response.metadata);
-	  // this.model.get('type') = response.metadata.type;
-	  return response instanceof Array ? response : response.data;
-	}
-//	,
-//	fetch: function(options) {
-//	  return Backbone.Collection.prototype.fetch.call(this, options);
+  parse: function(response) {
+    if (!response || response.error)
+      return [];
+    
+    return response instanceof Array ? response : response.data;
+  }
+});
+
+Lablz.models = [packages.Resource];
+
+//packages.hudsonfog.voc.model.company.Contact = packages.Resource.extend({
+//	initialize: function(arguments) {
+//    packages.hudsonfog.voc.model.company.Contact.__super__.initialize.apply(this, arguments);
 //	}
-});
+//},
+//{
+//  type: "http://www.hudsonfog.com/voc/model/company/Contact",
+//  shortName: "Contact",
+//  displayName: "Contact",
+//  properties: _.extend({
+//    firstName: {"type": "string"},
+//    lastName: {"type": "string"},
+//    accessLevel: {"type": "string"},
+//    photo: {"type": "image"},
+//    featured: {"type": "image"},
+//    gender: {"type": "string"},
+//    dateRegistered: {"type": "date"}
+//  }, packages.Resource.properties)
+//});
+//
+//packages.hudsonfog.voc.commerce.urbien.Urbien = packages.hudsonfog.voc.model.company.Contact.extend({
+//	initialize: function() {
+//    packages.hudsonfog.voc.commerce.urbien.Urbien.__super__.initialize.apply(this, arguments);
+//	}
+//},
+//{
+//  type: "http://www.hudsonfog.com/voc/commerce/urbien/Urbien",
+//  shortName: "Urbien",
+//  displayName: "Urbien",
+//  properties: _.extend({
+//    mojoPoints: {"type": "int"}
+//  }, packages.hudsonfog.voc.model.company.Contact.properties)
+//});
 
-Lablz.Contact = Lablz.Resource.extend({
-	type: "http://www.hudsonfog.com/voc/model/company/Contact",
-	properties: {
-		firstName: {"type": "string"},
-		lastName: {"type": "string"},
-		accessLevel: {"type": "string"},
-		photo: {"type": "image"},
-		featured: {"type": "image"},
-		gender: {"type": "string"},
-		dateRegistered: {"type": "date"}
-	},
-	initialize: function(arguments) {
-    _.bindAll(this, 'parse'); // fixes loss of context for 'this' within methods
-		Lablz.Contact.__super__.initialize.apply(this, arguments);
-//		console.log("gave birth to a Contact");
-	}
-});
+/////////////////////////////////////////////////////// PUT MODELS HERE ///////////////////////////////////////////////////// START
 
-Lablz.Urbien = Lablz.Contact.extend({
-	type: "http://www.hudsonfog.com/voc/commerce/urbien/Urbien",
-	className: null,
-	properties: {
-		mojoPoints: {"type": "int"}
-	},
-	initialize: function() {
-    _.bindAll(this, 'parse'); // fixes loss of context for 'this' within methods
-		this.constructor.__super__.initialize.apply(this, arguments);
-//		console.log("gave birth to an Urbien");
-	}
-});
+_.extend(packages, {hudsonfog: {voc: {commerce: {urbien: {}}}}}); 
+packages.hudsonfog.voc.commerce.urbien.Building = packages.Resource.extend({initialize: function() { 
+_.bindAll(this, 'parse'); // fixes loss of context for 'this' within methods 
+packages.hudsonfog.voc.commerce.urbien.Building.__super__.initialize.apply(this, arguments); 
+} 
 
-Lablz.Urbien.prototype.parse = Lablz.Contact.prototype.parse = Lablz.Resource.prototype.parse;
+}, {properties: _.extend({
+  "region": {"type": "string"},
+  "magellan": {"type": "resource"},
+  "dateInitialized": {"type": "date"},
+  "altitude": {"type": "double"},
+  "yearBuilt": {"type": "date"},
+  "geoLocation": {"type": "resource"},
+  "address2": {"type": "string"},
+  "communityDistrict": {"type": "resource"},
+  "investmentInfo": {"type": "boolean"},
+  "bigMediumImage": {"type": "resource"},
+  "bigImage": {"type": "resource"},
+  "cityScape": {"type": "resource"},
+  "city": {"type": "string"},
+  "stakesPercentOwned": {"type": "float"},
+  "distance": {"type": "float"},
+  "area": {"type": "float"},
+  "postalCode": {"type": "string"},
+  "originalImage": {"type": "resource"},
+  "censusBlock": {"type": "resource"},
+  "addressGroup": {"type": "boolean"},
+  "description": {"type": "string"},
+  "mediumImage": {"type": "resource"},
+  "name": {"type": "string"},
+  "smallImage": {"type": "resource"},
+  "censusTract": {"type": "resource"},
+  "park": {"type": "resource"},
+  "neighborhood": {"type": "resource"},
+  "borough": {"type": "resource"},
+  "currentPrice": {"type": "inlineresource"},
+  "boughtOut": {"type": "boolean"},
+  "freeWifi": {"type": "boolean"},
+  "wifi": {"type": "boolean"},
+  "initialPrice": {"type": "inlineresource"},
+  "hasAudio": {"type": "boolean"},
+  "address": {"type": "string"},
+  "county": {"type": "resource"}
+}, packages.Resource.properties)
+,displayName: "City Spot"
+,shortName: "Building"
+,type: "http://www.hudsonfog.com/voc/commerce/urbien/Building"
+}); 
+Lablz.models.push(packages.hudsonfog.voc.commerce.urbien.Building); 
+
+packages.hudsonfog.voc.commerce.urbien.BasketballCourt = packages.hudsonfog.voc.commerce.urbien.Building.extend({initialize: function() { 
+_.bindAll(this, 'parse'); // fixes loss of context for 'this' within methods 
+packages.hudsonfog.voc.commerce.urbien.BasketballCourt.__super__.initialize.apply(this, arguments); 
+} 
+
+}, {properties: _.extend({
+  "parkId": {"type": "string"},
+  "park": {"type": "resource"},
+  "name": {"type": "string"}
+}, packages.hudsonfog.voc.commerce.urbien.Building.properties)
+,displayName: "Basketball court"
+,shortName: "BasketballCourt"
+,type: "http://www.hudsonfog.com/voc/commerce/urbien/BasketballCourt"
+}); 
+Lablz.models.push(packages.hudsonfog.voc.commerce.urbien.BasketballCourt); 
+
+/////////////////////////////////////////////////////// PUT MODELS HERE ///////////////////////////////////////////////////// END
+
+
+Lablz.shortNameToModel = {};
+Lablz.initModels = function() {
+  for (var i = 0; i < Lablz.models.length; i++) {
+    var m = Lablz.models[i];
+    Lablz.shortNameToModel[m.shortName] = m;
+    m.prototype.parse = m.prototype.constructor.__super__.parse;
+  }
+};
+
+Lablz.initModels();
 
 Lablz.defaultSync = function(method, model, options) {
+  model.lastFetchOrigin = 'server';
   Backbone.defaultSync(method, model, options);
 };
 
@@ -150,7 +250,9 @@ Backbone.sync = function(method, model, options) {
           
         // simulate a normal async network call
         setTimeout(function(){
+          model.lastFetchOrigin = 'db';
           options.success(results, 'success', null);
+          Lablz.defaultSync(method, model, options);
         }, 0);
 //      }
     }

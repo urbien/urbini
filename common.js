@@ -2026,11 +2026,10 @@ function hex2rgb(hexColor) {
 // CSS3 animation (a set of functions)
 //********************************************************************
 function animateCSS3(elem, propertyName, newValue, transition, initValue, callback) {
-    var tr = setCSS3Property(elem, "transition");
+    var tr = getTransitionProperty(elem); //setCSS3Property(elem, "transition");
     if (tr == null)
       return false;
-    var wasInitiated = elem.style[tr];
-    if (!wasInitiated) {
+    if (tr == "") {
       setCSS3Property(elem, propertyName, initValue);
       setTransitionProperty(elem, transition,callback);
     }
@@ -2052,6 +2051,9 @@ function setTransitionProperty(element, transitionStr, callback) {
     setTransitionCallback(element, callback);
   return specTransName;
 }
+function getTransitionProperty(elem) {
+  return getCSS3Property(elem, "transition");// setCSS3Property(elem, "transition");
+}      
 // toRemove is not required
 function setTransitionCallback(element, callback, toRemove) {
     if (Browser.webkit)
@@ -2073,10 +2075,24 @@ function setTransitionCallback(element, callback, toRemove) {
 function removeTransitionCallback(element, callback){
   setTransitionCallback(element, callback, true);
 }
-function setTransformProperty(element, transformStr) {
-  return setCSS3Property(element, 'transform', transformStr);
+// inBackground param means without animation; default with animation
+function setTransformProperty(element, transformStr, inBackground) {
+  var trPr = null; 
+  if (inBackground) {
+    trPr = getTransitionProperty(element);
+    if (trPr)
+      setTransitionProperty(element, "");
+  }  
+  var ret = setCSS3Property(element, 'transform', transformStr);
+  if (inBackground && trPr) // trPr is "proved" value
+    setTimeout(function() { setCSS3Property(element, "transition", trPr); }, 10);
+  return ret;
 }
 
+function getCSS3Property(element, propName) {
+  var propName = setCSS3Property(element, propName);
+  return element.style[propName];
+}
 // returns applied CSS3 property in the browser
 // not supply cssStr to get CSS3 property name
 function setCSS3Property(element, propName, cssStr) {
