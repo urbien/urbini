@@ -145,8 +145,7 @@ Lablz.indexedDB.open = function(storeName, options, success, error) { // optiona
   request.onsuccess = function(e) {
     Lablz.indexedDB.db = e.target.result;
     var db = Lablz.indexedDB.db;
-    if (!db.objectStoreNames.contains(storeName))
-      Lablz.DB_VERSION++;
+    Lablz.DB_VERSION = db.objectStoreNames.contains(storeName) ? db.version : db.version + 1;
 
     if (db.version == Lablz.DB_VERSION) {
       if (success)
@@ -348,6 +347,7 @@ function init(success, error) {
 //window.addEventListener("DOMContentLoaded", init, false);
 //tpl.loadTemplates(['ListItem', 'View', 'Props', 'string', 'int', 'uri', 'image', 'date'], function() {
     init(function() {
+//           init();
            app = new AppRouter();
            if (typeof jq != 'undefined')
              Backbone.setDomLibrary(jq);
