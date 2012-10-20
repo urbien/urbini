@@ -13,6 +13,14 @@ var AppRouter = Backbone.Router.extend({
       "view/:type/:id":"view"
   },
 
+  initialize:function () {
+    $('#backButton').on('click', function(event) {
+        window.history.back();
+        return false;
+    });
+    this.firstPage = true;
+  },
+  
   list: function (type) {
     var model = Lablz.shortNameToModel[type];
     if (!model)
@@ -103,16 +111,14 @@ var AppRouter = Backbone.Router.extend({
     $(view.el).attr('data-role', 'page');
     view.render();
     this.currentView = view;
+    var transition = $.mobile.defaultPageTransition;
+    if (this.firstPage) {
+      transition = 'none';
+      this.firstPage = false;
+    }
+    
+    $.mobile.changePage($(view.el), {changeHash:false, transition: transition});
     return view;
-//    $('body').append($(page.el));
-//    var transition = $.mobile.defaultPageTransition;
-//    // We don't want to slide the first page
-//    if (this.firstPage) {
-//      transition = 'none';
-//      this.firstPage = false;
-//    }
-//    
-//    $.mobile.changePage($(page.el), {changeHash:false, transition: transition});
   },
 	
 	showView: function(selector, view) {
