@@ -11,7 +11,7 @@
 <!-- JavaScript -->
 <!--script src="lib/jquery-1.7.2.js"></script-->
 <script src="lib/jqmobi.js"></script>
-<!-- script src="lib/jq.ui.js"></script -->
+<!--script src="lib/jq.ui.js"></script-->
 <script src="lib/underscore.js"></script>
 
 <!--script> 

@@ -21,24 +21,24 @@ var AppRouter = Backbone.Router.extend({
 //      var typeCl = eval('Lablz.' + type) || Lablz.Resource;
     this.resList = new Lablz.ResourceList({model: model});
     this.resView = new Lablz.ResourceListView({model: this.resList});
-    var self = this;
-    var success = function(collection, resp) {
-      app.showView('#sidebar', self.resView);
-      if (collection.lastFetchOrigin == 'server') {
-        setTimeout(function() {
-          Lablz.indexedDB.addCollection(collection);
-        }, 0);
-      }
-    };
-    var error = function() {
-      var str = '';
-      for (var name in arguments) {
-        str += name + ' = ' + arguments[name] + "\n";
-      }
-      alert(str);
-    };
+//    var self = this;
+//    var success = function(collection, resp) {
+//      app.showView('#sidebar', self.resView);
+//      if (collection.lastFetchOrigin == 'server') {
+//        setTimeout(function() {
+//          Lablz.indexedDB.addCollection(collection);
+//        }, 0);
+//      }
+//    };
+//    var error = function() {
+//      var str = '';
+//      for (var name in arguments) {
+//        str += name + ' = ' + arguments[name] + "\n";
+//      }
+//      alert(str);
+//    };
     
-    this.resList.fetch({success: success, error: error});
+    this.resList.fetch();//{success: success, error: error});
 //        $('#sidebar').html(new Lablz.ResourceListView({model:this.resList}).render().el);
   },
 
@@ -50,27 +50,28 @@ var AppRouter = Backbone.Router.extend({
 		this.res = this.resList ? this.resList.get(id) : new typeCl({id: id});
 		this.resView = new Lablz.ResourceView({model:this.res});
 		var self = this;
-		var success = function() {
-			app.showView('#content', self.resView);
-      if (self.res.lastFetchOrigin == 'server') {
-        setTimeout(function() {
-          Lablz.indexedDB.addItem(self.res);
-        }, 0);
-      }
-		};
-		
-		var error = function() {
-			var str = '';
-			for (var name in arguments) {
-				str += name + ' = ' + arguments[name] + "\n";
-			}
-			alert(str);
-		};
+//		var success = function() {
+//			//app.showView('#content', self.resView);
+//		  //self.resView.model.change();
+//      if (self.res.lastFetchOrigin == 'server') {
+//        setTimeout(function() {
+//          Lablz.indexedDB.addItem(self.res);
+//        }, 0);
+//      }
+//		};
+//		
+//		var error = function() {
+//			var str = '';
+//			for (var name in arguments) {
+//				str += name + ' = ' + arguments[name] + "\n";
+//			}
+//			alert(str);
+//		};
 		
 		if (!this.resList)
-			this.res.fetch({"success": success, "error": error});
+			this.res.fetch(); //{"success": success, "error": error});
 		else
-			success();
+			this.res.change(); //success();
   },
 	
 	showView: function(selector, view) {
@@ -82,7 +83,8 @@ var AppRouter = Backbone.Router.extend({
       if (this.currentView)
           this.currentView.close();
 		
-      $(selector).empty().append(view.render().el);
+      //$(selector).empty().append(view.render().el);
+      //view.render();
       this.currentView = view;
       return view;
     },

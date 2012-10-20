@@ -34,9 +34,11 @@ packages.Resource = Backbone.Model.extend({
     if (!this.get('_uri'))
       this._setUri();
   },
+  
   getKey: function() {
     return this.get('_uri');
   },
+  
   parse: function (response) {
     if (lastFetchOrigin == 'db')
       return response;
@@ -126,8 +128,12 @@ Lablz.defaultSync = function(method, model, options) {
 Backbone.defaultSync = Backbone.sync;
 Backbone.sync = function(method, model, options) {
   var key, now, timestamp, refresh;
-  if(method === 'read') {
-    var success = function(results) {
+  if (method !== 'read') {
+    Lablz.defaultSync(method, model, options);
+    return;
+  }
+    
+  var success = function(results) {
 //      refresh = options.forceRefresh;
 //      if (refresh || !timestamp || ((now - timestamp) > this.constants.maxRefresh)) {
 //        // make a network request and store result in local storage
@@ -153,37 +159,34 @@ Backbone.sync = function(method, model, options) {
 //        // call normal backbone sync
 //        Backbone.defaultSync(method, model, options);
 //      } else {
-        // provide data from local storage instead of a network call
-        if (!results || results.length == 0) {
-          Lablz.defaultSync(method, model, options);
-          return;
-        }
-          
-        // simulate a normal async network call
-        setTimeout(function(){
-          model.lastFetchOrigin = 'db';
-          options.success(results, 'success', null);
-          Lablz.defaultSync(method, model, options);
-        }, 0);
-//      }
-    }
-    var error = function(e) {
-      Lablz.defaultSync(method, model, options);      
-    }
-    
-    // only override sync if it is a fetch('read') request
-    key = this.getKey();
-    if (key) {
-//      now = new Date().getTime();
-      if (!Lablz.indexedDB.hasTableFor(key, success, error)) {
-        Lablz.defaultSync(method, model, options);
-        return;
-      }      
-    }
-    else {
+      // provide data from local storage instead of a network call
+    if (!results || results.length == 0) {
       Lablz.defaultSync(method, model, options);
+      return;
     }
-  } else {
+      
+    // simulate a normal async network call
+    setTimeout(function(){
+      model.lastFetchOrigin = 'db';
+      options.success(results, 'success', null);
+      Lablz.defaultSync(method, model, options);
+    }, 0);
+//      }
+  }
+  var error = function(e) {
+    Lablz.defaultSync(method, model, options);      
+  }
+  
+  // only override sync if it is a fetch('read') request
+  key = this.getKey();
+  if (key) {
+//      now = new Date().getTime();
+    if (!Lablz.indexedDB.hasTableFor(key, success, error)) {
+      Lablz.defaultSync(method, model, options);
+      return;
+    }      
+  }
+  else {
     Lablz.defaultSync(method, model, options);
   }
 }
@@ -401,7 +404,7 @@ Lablz.indexedDB.hasTableFor = function(uri, success, error) {
   
   var name = Utils.getClassName(type);
   var db = Lablz.indexedDB.db;
-  if (!db || db.objectStoreNames.contains(name))
+  if (!db || !db.objectStoreNames.contains(name))
     return false;
   
   var trans = db.transaction([name]);
