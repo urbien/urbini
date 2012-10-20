@@ -62,8 +62,7 @@ var AppRouter = Backbone.Router.extend({
     var typeCl = Lablz.shortNameToModel[type];
     if (!typeCl)
       return this;
-    
-    
+        
 		this.res = new typeCl({id: id});
 //		this.resView = new Lablz.ResourceView({model:this.res}).render();
 		this.res.fetch({success: success});
@@ -125,7 +124,8 @@ var AppRouter = Backbone.Router.extend({
       if (this.currentView)
           this.currentView.close();
 		
-      $(selector).empty().append(view.render().el);
+      //$(selector).empty().append(view.render().el);
+      //view.render();
       this.currentView = view;
       return view;
     },

@@ -45,7 +45,7 @@ Lablz.ResourceView = Backbone.View.extend({
 });
 
 Lablz.ResourceListView = Backbone.View.extend({
-//    tagName:'ul',
+    tagName:'ul',
     el: '#sidebar',
 
     initialize:function () {
@@ -78,4 +78,3 @@ Lablz.ResourceListItemView = Backbone.View.extend({
     return this;
   }
 });
-

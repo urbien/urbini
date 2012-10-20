@@ -5,9 +5,10 @@
   </div>
   <div id="content">
     <h2>hey</h2>
-  
+    <div id="resourceView">
+    </div>
     <div id="sidebarDiv">
-      <ul id='sidebar'>
+      <ul id="sidebar">
       </ul>
     </div>
   </div>

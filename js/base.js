@@ -36,9 +36,11 @@ packages.Resource = Backbone.Model.extend({
     if (!this.get('_uri'))
       this._setUri();
   },
+  
   getKey: function() {
     return this.get('_uri');
   },
+  
   parse: function (response) {
     if (lastFetchOrigin == 'db')
       return response;
@@ -180,7 +182,7 @@ Backbone.sync = function(method, model, options) {
 //      } else {
       // provide data from local storage instead of a network call
     if (!results || results.length == 0) {
-      Lablz.defaultSync(method, model, options);
+      runDefault();
       return;
     }
       
