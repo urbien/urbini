@@ -17,6 +17,8 @@ packages.Resource = Backbone.Model.extend({
   },
   initialize: function() {
     _.bindAll(this, '_setUri', 'getKey', 'parse'); // fixes loss of context for 'this' within methods
+    if (this.__proto__.constructor.timestamp)
+      this.bind('change', checkTimestamp);
     var type = this.__proto__.constructor.type || this.get('type');
     if (!type)
       return this;
@@ -43,10 +45,9 @@ packages.Resource = Backbone.Model.extend({
     if (lastFetchOrigin == 'db')
       return response;
     
-    dateLastUpdated = new Date().getTime();
     if (!response || response.error)
       return {};
-    
+
     if (response._uri)
       return response;
     
@@ -59,9 +60,11 @@ packages.Resource = Backbone.Model.extend({
         return error instanceof String ? error : "Please enter a valid " + name;
     }
   }
+  
 //  ,
-//  onValidationError: function(model, error) {
-//    
+//  fetch: function(options) {
+//  
+//    return Backbone.Model.prototype.fetch.call(this, options);
 //  }
 },
 {
@@ -94,15 +97,16 @@ packages.Resource = Backbone.Model.extend({
 
 Lablz.ResourceList = Backbone.Collection.extend({
   initialize: function(metadata) {
-    _.bindAll(this, 'getKey'); //, 'fetch'); // fixes loss of context for 'this' within methods
     if (!metadata || !metadata.model)
       throw new Error("resource list must be initialized with model");
     
+    _.bindAll(this, 'getKey', 'parse', 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
+    this.bind('add', this.onAdd, this);
     this.model = metadata.model;
     this.type = this.model.type;
     this.className = this.model.shortName; //.substring(this.type.lastIndexOf("/") + 1);
     this.url = Lablz.apiUrl + this.className;
-    console.log("init resourceList");
+    console.log("init " + this.className + " resourceList");
   },
   getKey: function() {
     return this.type;
@@ -112,6 +116,21 @@ Lablz.ResourceList = Backbone.Collection.extend({
       return [];
     
     return response instanceof Array ? response : response.data;
+  },
+  onAdd: function(item) {
+    var existing = this.where({_uri: item._uri});
+    if (!existing || !existing.length)
+      return;
+    
+    var timestampProp = this.model.__proto__.constructor.timestamp;
+    if (!timestampProp)
+      return;
+    
+    var dateModified = item[timestampProp];
+    if (dateModified && (!this.has(timestampProp) || dateModified > this.model[timestampProp])) {
+      this.remove(existing);
+      Lablz.indexedDB.addItem(item);
+    }
   }
 });
 
@@ -127,12 +146,14 @@ Lablz.defaultSync = function(method, model, options) {
 
 Backbone.defaultSync = Backbone.sync;
 Backbone.sync = function(method, model, options) {
-  var key, now, timestamp, refresh;
-  if (method !== 'read') {
-    Lablz.defaultSync(method, model, options);
-    return;
+  function runDefault() {
+    return Lablz.defaultSync(method, model, options);
   }
+  
+  if (method !== 'read')
+    return runDefault();
     
+  var key, now, timestamp, refresh;
   var success = function(results) {
 //      refresh = options.forceRefresh;
 //      if (refresh || !timestamp || ((now - timestamp) > this.constants.maxRefresh)) {
@@ -161,34 +182,34 @@ Backbone.sync = function(method, model, options) {
 //      } else {
       // provide data from local storage instead of a network call
     if (!results || results.length == 0) {
-      Lablz.defaultSync(method, model, options);
+      runDefault();
       return;
     }
       
     // simulate a normal async network call
     setTimeout(function(){
+      var success = options.success;
+      options.success = function(resp, status, xhr) {
+        if (success) 
+          return success(resp, status, xhr);
+        
+        runDefault();
+      }
+      
       model.lastFetchOrigin = 'db';
       options.success(results, 'success', null);
-      Lablz.defaultSync(method, model, options);
     }, 0);
-//      }
   }
+  
   var error = function(e) {
-    Lablz.defaultSync(method, model, options);      
+    if (e) console.log("Error fetching data from db: " + e);
+    runDefault();      
   }
   
   // only override sync if it is a fetch('read') request
   key = this.getKey();
-  if (key) {
-//      now = new Date().getTime();
-    if (!Lablz.indexedDB.hasTableFor(key, success, error)) {
-      Lablz.defaultSync(method, model, options);
-      return;
-    }      
-  }
-  else {
-    Lablz.defaultSync(method, model, options);
-  }
+  if (!key || !Lablz.indexedDB.getDataAsync(key, success, error))
+    runDefault();
 }
 
 // END ///////////// Backbone sync override //////////////// END ///
@@ -397,7 +418,7 @@ Lablz.indexedDB.deleteItem = function(uri) {
   };
 };
 
-Lablz.indexedDB.hasTableFor = function(uri, success, error) {
+Lablz.indexedDB.getDataAsync = function(uri, success, error) {
   var type = Utils.getType(uri);
   if (type == uri)
     return Lablz.indexedDB.getItems(type, success, error);
@@ -431,7 +452,7 @@ Lablz.indexedDB.getItems = function(type, success, error) {
 
   var name = Utils.getClassName(type);
   var db = Lablz.indexedDB.db;
-  if (!db || db.objectStoreNames.length == 0 || !db.objectStoreNames.contains(name))
+  if (!db || !db.objectStoreNames.contains(name))
     return false;
   
   var trans = db.transaction([name]);
