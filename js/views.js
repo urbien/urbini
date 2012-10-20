@@ -1,6 +1,7 @@
 // Views
 Lablz.ResourceListView = Backbone.View.extend({
     tagName:'ul',
+    el: '#sidebar',
 
     initialize:function () {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
@@ -36,12 +37,19 @@ Lablz.ResourceListItemView = Backbone.View.extend({
 });
 
 Lablz.ResourceView = Backbone.View.extend({
+  el: '#resourceView',
+  
 	initialize: function() {
 		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
 //		this.template = _.template($('#viewTemplate').html());
+		this.model.bind("change", this.change, this);
 		this.propRowTemplate = _.template($('#propRowTemplate').html());
     return this;
 //    this.template = _.template(tpl.get('View'));
+	},
+	
+	change:function (eventName) {
+	  this.render(eventName);
 	},
 	
   render:function (eventName) {
