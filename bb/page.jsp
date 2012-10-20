@@ -23,6 +23,7 @@
 <script src="lib/backbone.js"></script>
 <!--script src="lib/mustache.js"></script-->   
 <script src="lib/IndexedDBShim.min.js"></script>   
+<script src="js/jqsetup.js"></script>   
 <script src="js/utils.js"></script>   
 <script src="js/base.js"></script>   
 <!-- backboneModels / -->
