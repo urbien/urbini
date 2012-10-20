@@ -29,10 +29,6 @@
         </ul>
     </nav -->
 <!-- Templates -->
-<!-- script type="text/javascript">
-  if (Backbone.history.length != 0)
-    $.ui.showBackButton = true;
-</script -->
 
 <script type="text/template" id="stringTemplate">
     <span>{{ value }}</span>

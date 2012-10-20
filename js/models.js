@@ -1,72 +1,68 @@
-// START /////////////////////////////////////////////////////// PUT MODELS HERE ///////////////////////////////////////////////////// START
-
-Lablz.serverName = 'http://mark.obval.com/urbien';
+Lablz.serverName = 'http://dev.hudsonfog.com/urbien';
 Lablz.apiUrl = Lablz.serverName + '/api/v1/';
-_.extend(packages, {hudsonfog: {voc: {commerce: {urbien: {}}}}}); 
-packages.hudsonfog.voc.commerce.urbien.Building = packages.Resource.extend({initialize: function() { 
+_.extend(packages, {hudsonfog: {voc: {commerce: {trees: {}}}}}); 
+packages.hudsonfog.voc.commerce.trees.Tree = packages.Resource.extend({initialize: function() { 
 _.bindAll(this, 'parse'); // fixes loss of context for 'this' within methods 
-packages.hudsonfog.voc.commerce.urbien.Building.__super__.initialize.apply(this, arguments); 
+packages.hudsonfog.voc.commerce.trees.Tree.__super__.initialize.apply(this, arguments); 
 } 
 
 }, {properties: _.extend({
-  "region": {"type": "string"},
-  "magellan": {"type": "resource"},
-  "dateInitialized": {"type": "date"},
+  "canceled": {"type": "boolean"},
+  "location": {"type": "string"},
   "altitude": {"type": "double"},
-  "yearBuilt": {"type": "date"},
   "geoLocation": {"type": "resource"},
-  "address2": {"type": "string"},
   "communityDistrict": {"type": "resource"},
-  "investmentInfo": {"type": "boolean"},
+  "address2": {"type": "string"},
   "bigMediumImage": {"type": "resource"},
-  "bigImage": {"type": "resource"},
   "cityScape": {"type": "resource"},
+  "dbh": {"type": "int"},
   "city": {"type": "string"},
-  "stakesPercentOwned": {"type": "float"},
+  "mediumImage": {"type": "image"},
+  "longitude": {"type": "double"},
+  "contractNumber": {"type": "string"},
+  "census": {"type": "boolean"},
+  "trunkDiameter": {"type": "float"},
+  "neighborhood": {"type": "resource"},
+  "treeHeight": {"type": "float"},
+  "hilbertValue": {"type": "string"},
+  "country": {"type": "resource"},
+  "youngTree": {"type": "boolean"},
+  "county": {"type": "resource"},
+  "latitude": {"type": "double"},
+  "workOrder": {"type": "resource"},
+  "region": {"type": "string"},
+  "datePlanted": {"type": "inlineresource"},
+  "seasonPlanted": {"type": "string"},
+  "next": {"type": "resource"},
+  "bigImage": {"type": "resource"},
+  "joinField": {"type": "string"},
+  "id": {"type": "int"},
   "distance": {"type": "float"},
-  "area": {"type": "float"},
-  "postalCode": {"type": "string"},
   "originalImage": {"type": "resource"},
   "censusBlock": {"type": "resource"},
-  "addressGroup": {"type": "boolean"},
-  "description": {"type": "string"},
-  "mediumImage": {"type": "resource"},
+  "side": {"type": "string"},
+  "canopyHeight": {"type": "float"},
   "name": {"type": "string"},
   "smallImage": {"type": "resource"},
   "censusTract": {"type": "resource"},
+  "canopyWidth": {"type": "float"},
+  "submittedBy": {"type": "resource"},
+  "treeId": {"type": "string"},
+  "commonName": {"type": "string"},
+  "species": {"type": "resource"},
+  "previous": {"type": "resource"},
   "park": {"type": "resource"},
-  "neighborhood": {"type": "resource"},
   "borough": {"type": "resource"},
-  "currentPrice": {"type": "inlineresource"},
-  "boughtOut": {"type": "boolean"},
-  "freeWifi": {"type": "boolean"},
-  "wifi": {"type": "boolean"},
-  "initialPrice": {"type": "inlineresource"},
-  "hasAudio": {"type": "boolean"},
+  "latinName": {"type": "string"},
+  "join2": {"type": "string"},
+  "treeAdopt": {"type": "boolean"},
+  "ttContract": {"type": "string"},
   "address": {"type": "string"},
-  "county": {"type": "resource"}
+  "latLonArea": {"type": "string"}
 }, packages.Resource.properties)
-,displayName: "City Spot"
-,shortName: "Building"
-,type: "http://www.hudsonfog.com/voc/commerce/urbien/Building"
+,displayName: "Tree"
+,shortName: "Tree"
+,type: "http://www.hudsonfog.com/voc/commerce/trees/Tree"
 }); 
-Lablz.models.push(packages.hudsonfog.voc.commerce.urbien.Building); 
+Lablz.models.push(packages.hudsonfog.voc.commerce.trees.Tree); 
 
-packages.hudsonfog.voc.commerce.urbien.BaseballCourt = packages.hudsonfog.voc.commerce.urbien.Building.extend({initialize: function() { 
-_.bindAll(this, 'parse'); // fixes loss of context for 'this' within methods 
-packages.hudsonfog.voc.commerce.urbien.BaseballCourt.__super__.initialize.apply(this, arguments); 
-} 
-
-}, {properties: _.extend({
-  "parkId": {"type": "string"},
-  "surface": {"type": "string"},
-  "park": {"type": "resource"},
-  "name": {"type": "string"}
-}, packages.hudsonfog.voc.commerce.urbien.Building.properties)
-,displayName: "Baseball Field"
-,shortName: "BaseballCourt"
-,type: "http://www.hudsonfog.com/voc/commerce/urbien/BaseballCourt"
-}); 
-Lablz.models.push(packages.hudsonfog.voc.commerce.urbien.BaseballCourt); 
-
-// END /////////////////////////////////////////////////////// PUT MODELS HERE ///////////////////////////////////////////////////// END

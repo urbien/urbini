@@ -77,7 +77,8 @@ var AppRouter = Backbone.Router.extend({
       if (view == this.currentView) {
         console.log("Hmm...replacing view with itself");
       }
-      
+    
+//      $("#backButton").show();
       if (this.currentView)
           this.currentView.close();
 		
