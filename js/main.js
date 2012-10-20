@@ -126,7 +126,8 @@ var AppRouter = Backbone.Router.extend({
         console.log("Not replacing view with itself");
         return;
       }
-      
+    
+//      $("#backButton").show();
       if (this.currentView)
           this.currentView.close();
 		
