@@ -6,6 +6,7 @@
 
 
 // Router
+var documentReadyCount = 0;
 var AppRouter = Backbone.Router.extend({
 
   routes:{
@@ -14,7 +15,6 @@ var AppRouter = Backbone.Router.extend({
   },
 
   initialize:function () {
-    disableJqueryMobileRouting();
     $('#backButton').on('click', function(event) {
         window.history.back();
         return false;
@@ -161,9 +161,10 @@ if (typeof jq != 'undefined')
   Backbone.setDomLibrary(jq);
 
 $(document).ready(function () {
+  console.log('document ready: ' + documentReadyCount++);
   init(
       function() {
-        console.log('document ready');
+        //console.log('document ready: ' + documentReadyCount);
         Lablz.initModels();
         app = new AppRouter();
         Backbone.history.start();
@@ -174,21 +175,6 @@ $(document).ready(function () {
       }
   );
 });
-
-function disableJqueryMobileRouting() {
-  $(document).bind("mobileinit", function () {
-      console.log('mobileinit');
-      $.mobile.ajaxEnabled = false;
-      $.mobile.linkBindingEnabled = false;
-      $.mobile.hashListeningEnabled = false;
-      $.mobile.pushStateEnabled = false;
-  
-      // Remove page from DOM when it's being replaced
-      $('div[data-role="page"]').live('pagehide', function (event, ui) {
-          $(event.currentTarget).remove();
-      });
-  });
-};
 
 
 //    $.mobile.pushStateEnabled = false;
