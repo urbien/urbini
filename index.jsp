@@ -1,9 +1,8 @@
-<div id="jQUi">
-  <div id="header">
-    <a id="backButton" href="javascript:;" class="button" style="visibility: hidden">Back</a> 
+<div>
+  <div data-role="header">
     <h1 id="pageTitle">Urbien</h1> 
   </div>
-  <div id="content">
+  <div data-role="content">
     <h2>hey</h2>
     <div id="resourceView">
     </div>
@@ -13,22 +12,9 @@
     </div>
   </div>
   
-  <!--h2>One Urbien at a time</h2-->
-    <div id="navbar">
-       <a target="#welcome" class="icon home">Home</a>
-    </div>
-    <!-- nav>
-        <div class='title'>Home</div>
-        <ul>
-            <li class="icon home mini"><a href="#main">Home</a></li>
-        </ul>
-    </nav>
-    <nav id="second_nav">
-        <div class='title'>Second</div>
-        <ul>
-            <li class="icon info mini"><a href="#about">About</a></li>
-        </ul>
-    </nav -->
+  <div data-role="footer">
+     <a target="#welcome" class="icon home">Home</a>
+  </div>
 <!-- Templates -->
 
 <script type="text/template" id="stringTemplate">
