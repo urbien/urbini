@@ -335,11 +335,10 @@ Lablz.indexedDB.open = function(storeNames, options, success, error) { // option
     db.onversionchange = function(event) {
       db.close();
       alert("A new version of this page is ready. Please reload!");
-    };
-    
+    };    
+      
     var newStoreNames = [];
     storeNames = storeNames instanceof String ? [storeNames] : storeNames;
-      
     for (var i = 0; i < storeNames.length; i++) {
       if (!db.objectStoreNames.contains(storeNames[i]))
         newStoreNames.push(storeNames[i])
@@ -389,10 +388,22 @@ Lablz.indexedDB.open = function(storeNames, options, success, error) { // option
     console.log ("going to upgrade our DB!");
     Lablz.indexedDB.db = e.target.result;
     var db = Lablz.indexedDB.db;
-    if (db.objectStoreNames.contains(storeName))
-      db.deleteObjectStore(storeName);
+    var newStoreNames = [];
+    storeNames = storeNames instanceof String ? [storeNames] : storeNames;
+    for (var i = 0; i < storeNames.length; i++) {
+      if (!db.objectStoreNames.contains(storeNames[i]))
+        newStoreNames.push(storeNames[i])
+    }
+    
+    for (var i = 0; i < newStoreNames.length; i++) {
 
-    var store = db.createObjectStore(storeName, options || {keyPath: "_uri"});
+      var name = newStoreNames[i];
+      if (db.objectStoreNames.contains(name))
+        db.deleteObjectStore(name);
+
+      db.createObjectStore(name, options || Lablz.indexedDB.defaultOptions);
+    }
+    
     e.target.transaction.oncomplete = function() {
 //      Lablz.indexedDB.getItems(storeName);
       if (success)
