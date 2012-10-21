@@ -7,7 +7,8 @@ packages.Resource = Backbone.Model.extend({
   idAttribute: "_uri",
   _setUri: function() {
     var uri = this.get('_uri');
-    uri = Utils.getLongUri(uri);
+    var primaryKeys = Utils.getPrimaryKeys(this.__proto__.constructor);
+    uri = Utils.getLongUri(uri, this.type, primaryKeys);
     this.set('_uri', uri);
     return this;
   },
@@ -72,7 +73,8 @@ packages.Resource = Backbone.Model.extend({
   shortName: "Resource",
   displayName: "Resource",
   properties: {
-    davDisplayName: {type: "string"}
+    davDisplayName: {type: "string"},
+    _uri: {type: "string"}
   },
   validateProperty: function(name, value) {
     var meta = properties[name];

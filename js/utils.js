@@ -12,7 +12,21 @@ Utils.getFirstUppercaseCharIdx = function(str) {
 	return -1;
 }
 
-Utils.getLongUri = function(uri, type) {
+Utils.getPrimaryKeys = function(model) {
+  var keys = [];
+  for (var p in model.properties) {
+    if (model.properties[p].annotations && _.contains(model.properties[p].annotations, '@k'))
+      keys.push(p);
+  }
+  
+  return keys;
+//  return _.filter(model.properties, 
+//      function(prop) {
+//        prop.annotations && _.contains(prop.annotations, '@k');
+//      });
+}
+
+Utils.getLongUri = function(uri, type, primaryKeys) {
   if (uri.indexOf('http') == 0) {
     // uri is either already of the right form: http://urbien.com/sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000 or of form http://www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
     if (uri.indexOf(Lablz.serverName + "/" + Lablz.sqlUri) == 0)
@@ -34,8 +48,20 @@ Utils.getLongUri = function(uri, type) {
     // uri is of form Tree/32000
     type = typeof type == 'undefined' ? Utils.getTypeUri(Utils.getType(uri)) : type;
     var sIdx = uri.indexOf("/");
-    uri = uri.substring(0, sIdx) + "?id=" + encodeURIComponent(uri.substring(sIdx + 1));
-    return Utils.getLongUri(uri, type);
+    var longUri = uri.slice(0, sIdx) + "?";
+    if (!primaryKeys)
+      longUri += "id=" + encodeURIComponent(uri.slice(sIdx + 1));
+    else {
+      var vals = uri.slice(sIdx + 1).split('/');
+      if (vals.length != primaryKeys.length)
+        throw new Error('bad uri "' + uri + '" for type "' + type + '"');
+      
+      for (var i = 0; i < primaryKeys.length; i++) {
+        longUri += primaryKeys[i] + "=" + encodeURIComponent(vals[i]);
+      }      
+    }
+    
+    return Utils.getLongUri(longUri, type);
   }
   else 
     return uri;
