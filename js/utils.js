@@ -14,8 +14,8 @@ Utils.getFirstUppercaseCharIdx = function(str) {
 
 Utils.getPrimaryKeys = function(model) {
   var keys = [];
-  for (var p in model.properties) {
-    if (model.properties[p].annotations && _.contains(model.properties[p].annotations, '@k'))
+  for (var p in model.myProperties) {
+    if (model.myProperties[p].annotations && _.contains(model.myProperties[p].annotations, '@k'))
       keys.push(p);
   }
   

@@ -72,7 +72,7 @@ packages.Resource = Backbone.Model.extend({
   type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",
   shortName: "Resource",
   displayName: "Resource",
-  properties: {
+  myProperties: {
     davDisplayName: {type: "string"},
     _uri: {type: "string"}
   },
@@ -104,6 +104,8 @@ packages.Resource = Backbone.Model.extend({
     return true;
   }
 });
+
+packages.Resource.properties = _.clone(packages.Resource.myProperties);
 
 Lablz.ResourceList = Backbone.Collection.extend({
   initialize: function(models, options) {
@@ -299,6 +301,7 @@ Lablz.initModels = function() {
     Lablz.shortNameToModel[m.shortName] = m;
     m.prototype.parse = m.prototype.constructor.__super__.parse;
     m.prototype.validate = m.prototype.constructor.__super__.validate;
+    m.prototype.constructor.properties = _.extend(_.clone(m.prototype.constructor.myProperties), m.prototype.constructor.__super__.constructor.properties);
   }
 };
 
