@@ -7,7 +7,8 @@ packages.Resource = Backbone.Model.extend({
   idAttribute: "_uri",
   _setUri: function() {
     var uri = this.get('_uri');
-    uri = Utils.getLongUri(uri);
+    var primaryKeys = Utils.getPrimaryKeys(this.__proto__.constructor);
+    uri = Utils.getLongUri(uri, this.type, primaryKeys);
     this.set('_uri', uri);
     return this;
   },
@@ -71,8 +72,9 @@ packages.Resource = Backbone.Model.extend({
   type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",
   shortName: "Resource",
   displayName: "Resource",
-  properties: {
-    davDisplayName: {type: "string"}
+  myProperties: {
+    davDisplayName: {type: "string"},
+    _uri: {type: "string"}
   },
   validateProperty: function(name, value) {
     var meta = properties[name];
@@ -102,6 +104,8 @@ packages.Resource = Backbone.Model.extend({
     return true;
   }
 });
+
+packages.Resource.properties = _.clone(packages.Resource.myProperties);
 
 Lablz.ResourceList = Backbone.Collection.extend({
   initialize: function(models, options) {
@@ -297,6 +301,7 @@ Lablz.initModels = function() {
     Lablz.shortNameToModel[m.shortName] = m;
     m.prototype.parse = m.prototype.constructor.__super__.parse;
     m.prototype.validate = m.prototype.constructor.__super__.validate;
+    m.prototype.constructor.properties = _.extend(_.clone(m.prototype.constructor.myProperties), m.prototype.constructor.__super__.constructor.properties);
   }
 };
 
