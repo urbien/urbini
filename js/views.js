@@ -44,9 +44,26 @@ Lablz.ResourceView = Backbone.View.extend({
 //  }
 });
 
+Lablz.ListPage = Backbone.View.extend({
+
+  initialize:function () {
+//      this.template = _.template(tpl.get('report-list'));
+  },
+
+  render:function (eventName) {
+//    $(this.el).html(this.template(this.model.toJSON()));
+//    this.listView = new EmployeeListView      ({el: $('ul', this.el), model: this.model});
+    $(this.el).append('<ul></ul>');
+    this.listView =   new Lablz.ResourceListView({el: $('ul', this.el), model: this.model});
+    this.listView.render();
+    return this;
+  }
+
+});
+
 Lablz.ResourceListView = Backbone.View.extend({
-    tagName:'ul',
-    el: '#sidebar',
+//    tagName:'ul',
+//    el: '#sidebar',
 
     initialize:function () {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
@@ -67,6 +84,7 @@ Lablz.ResourceListView = Backbone.View.extend({
 
 Lablz.ResourceListItemView = Backbone.View.extend({
   tagName:"li",
+  
 	initialize: function() {
     _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
 		this.template = _.template($('#listItemTemplate').html());

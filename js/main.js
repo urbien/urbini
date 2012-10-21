@@ -29,32 +29,13 @@ var AppRouter = Backbone.Router.extend({
     
     var self = this;
     this.resList = new Lablz.ResourceList({model: model});
-    this.resView = new Lablz.ResourceListView({model: this.resList});
+    this.resListPage = new Lablz.ListPage({model: this.resList});
     this.resList.fetch({
         add: false, 
         success: function() {
-          self.changePage(self.resView);
+          self.changePage(self.resListPage);
         }
     });
-//    var self = this;
-//    var success = function(collection, resp) {
-////      app.showView('#sidebar', self.resView);
-//      if (collection.lastFetchOrigin == 'server') {
-//        setTimeout(function() {
-//          Lablz.indexedDB.addCollection(collection);
-//        }, 0);
-//      }
-//    };
-//    var error = function() {
-//      var str = '';
-//      for (var name in arguments) {
-//        str += name + ' = ' + arguments[name] + "\n";
-//      }
-//      alert(str);
-//    };
-    
-//    this.resList.fetch({success: success, error: error});
-//        $('#sidebar').html(new Lablz.ResourceListView({model:this.resList}).render().el);
   },
 
   view: function (type, id) {
@@ -100,6 +81,7 @@ var AppRouter = Backbone.Router.extend({
   },
   
   changePage: function(view) {
+    console.log("change page: " + view.el.tagName + view.el.id);
     if (view == this.currentView) {
       console.log("Not replacing view with itself");
       return;
@@ -111,6 +93,7 @@ var AppRouter = Backbone.Router.extend({
 //    $(selector).empty().append(view.render().el);
     $(view.el).attr('data-role', 'page');
     view.render();
+    $('body').append($(view.el));
     this.currentView = view;
     var transition = $.mobile.defaultPageTransition;
     if (this.firstPage) {
