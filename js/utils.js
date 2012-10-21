@@ -49,7 +49,7 @@ Utils.getLongUri = function(uri, type, primaryKeys) {
     type = typeof type == 'undefined' ? Utils.getTypeUri(Utils.getType(uri)) : type;
     var sIdx = uri.indexOf("/");
     var longUri = uri.slice(0, sIdx) + "?";
-    if (!primaryKeys)
+    if (!primaryKeys  ||  primaryKeys.length == 0)
       longUri += "id=" + encodeURIComponent(uri.slice(sIdx + 1));
     else {
       var vals = uri.slice(sIdx + 1).split('/');
