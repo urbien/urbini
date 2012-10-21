@@ -69,8 +69,8 @@ var AppRouter = Backbone.Router.extend({
       return;
     }
     
-    if (this.currentView)
-      this.currentView.close();
+//    if (this.currentView)
+//      this.currentView.close();
   
 //    $(selector).empty().append(view.render().el);
     $(view.el).attr('data-role', 'page');
