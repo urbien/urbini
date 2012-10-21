@@ -22,15 +22,23 @@
 </script>
 
 <script type="text/template" id="dateTemplate">
-    <span>{{ new Date(value/1000) }}</span>
+    <span>{{ new Date(value / 1000) }}</span>
 </script>
 
 <script type="text/template" id="intTemplate">
     <span>{{ value }}</span>
 </script>
 
+<script type="text/template" id="moneyTemplate">
+  <span>{{ value.currency + value.value }}</span>
+</script>
+
+<script type="text/template" id="complexDateTemplate">
+  <span>{{ new Date(value.date / 1000) }}</span>
+</script>
+
 <script type="text/template" id="uriTemplate">
-    <span><a href="{{ value.indexOf('http') == 0 ? value : Lablz.serverName + '/v/' + value }}">{{ value }}</a></span>
+    <span><a href="{{ value.indexOf('http') == 0 ? value : Lablz.serverName + '/v.html?uri=' + encodeURIComponent(value) }}">{{ value }}</a></span>
 </script>
 
 <script type="text/template" id="imageTemplate">
@@ -38,7 +46,7 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a data-transition='slide' href='#view/{{ _uri }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}" />&#160;{{ davDisplayName }}</a>
+  <a data-transition='slide' href='#view/{{ encodeURIComponent(_uri) }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}" />&#160;{{ davDisplayName }}</a>
 </script>
 
 <script type="text/template" id="propRowTemplate">
