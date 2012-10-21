@@ -15,22 +15,23 @@
 <!--script src="lib/jq.ui.js"></script-->
 <script src="lib/underscore.js"></script>
 
-<!--script> 
+<script> 
  _.templateSettings = {
         interpolate : /\{\{([\s\S]+?)\}\}/g
    };
-replaced with solution from here: http://stackoverflow.com/questions/10597480/boolean-checks-in-underscore-templates   
-</script-->
+</script>
 
-<script>
+<!-- script>
+replaced with solution from here: http://stackoverflow.com/questions/10597480/boolean-checks-in-underscore-templates   
 _.templateSettings = {
         evaluate:    /\{\{(.+?)\}\}/g,          
         interpolate : /\{\{([\s\S]+?)\}\}/g,
         escape: /\{\{-(.+?)\}\}/g
     };
-</script>
+</script -->
 
 <script src="lib/backbone.js"></script>
+<!-- script src="lib/jquery-1.7.2.js"></script -->
 <!--script src="lib/mustache.js"></script-->   
 <script src="lib/IndexedDBShim.min.js"></script>   
 <!-- script src="js/jqsetup.js"></script -->   
