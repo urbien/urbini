@@ -14,6 +14,7 @@ var AppRouter = Backbone.Router.extend({
   },
 
   initialize:function () {
+    disableJqueryMobileRouting();
     $('#backButton').on('click', function(event) {
         window.history.back();
         return false;
@@ -122,20 +123,21 @@ var AppRouter = Backbone.Router.extend({
   },
 	
 	showView: function(selector, view) {
-      if (view == this.currentView) {
-        console.log("Not replacing view with itself");
-        return;
-      }
-    
+    if (view == this.currentView) {
+      console.log("Not replacing view with itself");
+      return;
+    }
+  
 //      $("#backButton").show();
-      if (this.currentView)
-          this.currentView.close();
-		
-      //$(selector).empty().append(view.render().el);
-      //view.render();
-      this.currentView = view;
-      return view;
-    },
+    if (this.currentView)
+        this.currentView.close();
+	
+    //$(selector).empty().append(view.render().el);
+    //view.render();
+    this.currentView = view;
+    return view;
+  },
+  
 });
 
 function init(success, error) {
@@ -172,6 +174,22 @@ $(document).ready(function () {
       }
   );
 });
+
+function disableJqueryMobileRouting() {
+  $(document).bind("mobileinit", function () {
+      console.log('mobileinit');
+      $.mobile.ajaxEnabled = false;
+      $.mobile.linkBindingEnabled = false;
+      $.mobile.hashListeningEnabled = false;
+      $.mobile.pushStateEnabled = false;
+  
+      // Remove page from DOM when it's being replaced
+      $('div[data-role="page"]').live('pagehide', function (event, ui) {
+          $(event.currentTarget).remove();
+      });
+  });
+};
+
 
 //    $.mobile.pushStateEnabled = false;
 //});
