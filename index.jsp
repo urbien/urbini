@@ -1,4 +1,6 @@
 <div>
+<!-- Templates -->
+<script type="text/template" id="resource-list">
   <div data-role="header">
     <h1 id="pageTitle">Urbien</h1> 
   </div>
@@ -15,7 +17,26 @@
   <div data-role="footer">
      <a target="#welcome" class="icon home">Home</a>
   </div>
-<!-- Templates -->
+</script>  
+
+<script type="text/template" id="resource">
+  <div data-role="header">
+    <h1 id="pageTitle">Urbien</h1> 
+  </div>
+  <div data-role="content">
+    <h2>hey</h2>
+    <div id="resourceView">
+    </div>
+    <div id="sidebarDiv">
+      <ul id="sidebar">
+      </ul>
+    </div>
+  </div>
+  
+  <div data-role="footer">
+     <a target="#welcome" class="icon home">Home</a>
+  </div>
+</script>  
 
 <script type="text/template" id="stringTemplate">
     <span>{{ value }}</span>
