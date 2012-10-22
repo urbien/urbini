@@ -69,13 +69,13 @@ Lablz.ResourceView = Backbone.View.extend({
 Lablz.ListPage = Backbone.View.extend({
   initialize:function () {
     _.bindAll(this, 'render');
-//      this.template = _.template(tpl.get('resource-list'));
+      this.template = _.template(tpl.get('resource-list'));
   },
 
   render:function (eventName) {
 //    $(this.el).html(this.template(this.model.toJSON()));
     $(this.el).empty();
-    $(this.el).html(tpl.get('resource-list'));
+    $(this.el).html(this.template(this.model.toJSON()));
 //    this.listView = new EmployeeListView      ({el: $('ul', this.el), model: this.model});
     this.listView = new Lablz.ResourceListView({el: $('ul', this.el), model: this.model});
     this.listView.render();
@@ -87,11 +87,14 @@ Lablz.ListPage = Backbone.View.extend({
 Lablz.ViewPage = Backbone.View.extend({
   initialize: function() {
     _.bindAll(this, 'render');
+    this.template = _.template(tpl.get('resource'));
   },
 
   render:function (eventName) {
-    $(this.el).empty().append('<div></div>');
-    this.view = new Lablz.ResourceView({el: $('div', this.el), model: this.model});
+    $(this.el).empty();
+    $(this.el).html(this.template(this.model.toJSON()));
+//    $(this.el).append('<div></div>');
+    this.view = new Lablz.ResourceView({el: $('ul#resourceView', this.el), model: this.model});
     this.view.render();
     return this;
   }

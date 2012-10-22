@@ -1,17 +1,12 @@
 <div>
 <!-- Templates -->
 <script type="text/template" id="resource-list">
-  <div data-role="header">
-    <h1 id="pageTitle">Urbien</h1> 
+  <div data-role="header"  class="ui-header ui-bar-b" role="banner">
+    <h1 id="pageTitle">{{ this.model.className }}</h1> 
   </div>
-  <div data-role="content">
-    <h2>hey</h2>
-    <div id="resourceView">
-    </div>
-    <div id="sidebarDiv">
-      <ul id="sidebar">
-      </ul>
-    </div>
+  <div  id="sidebarDiv" class="ui-content" data-role="content" data-theme="e" role="main">
+    <ul id="sidebar" data-role="listview" class="ui-listview" data-inset="true" data-theme="c">
+    </ul>
   </div>
   
   <div data-role="footer">
@@ -20,17 +15,13 @@
 </script>  
 
 <script type="text/template" id="resource">
-  <div data-role="header">
-    <h1 id="pageTitle">Urbien</h1> 
+  <div data-role="header"  class="ui-header ui-bar-b" role="banner">
+    <h1 id="pageTitle">{{ davDisplayName }}</h1> 
   </div>
-  <div data-role="content">
-    <h2>hey</h2>
-    <div id="resourceView">
-    </div>
-    <div id="sidebarDiv">
-      <ul id="sidebar">
-      </ul>
-    </div>
+  <div data-role="content" data-theme="e">
+    <img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}"></img> 
+    <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-inset="true" data-role="listview" data-theme="c" id="resourceView">
+    </ul>
   </div>
   
   <div data-role="footer">
@@ -67,13 +58,11 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a data-transition='slide' href='#view/{{ encodeURIComponent(_uri) }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}" />&#160;{{ davDisplayName }}</a>
+  <a data-transition='slide' href='#view/{{ encodeURIComponent(_uri) }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}" />&#160;{{ davDisplayName }}<p>&#160;</p><p>&#160;{{ (typeof latinName == 'undefined') ? '' : latinName }}</p></a>
 </script>
 
 <script type="text/template" id="propRowTemplate">
-  <div>
-    <div class="propRow">{{ name }}: {{ value }}</div>
-  </div>
+    <li class="ui-btn ui-btn-icon-right ui-li-has-arrow ui-li ui-li-has-count ui-li-has-thumb ui-btn-up-c">{{ name }}: {{ value }}</li>
 </script>
 
 <!--script type="text/template" id="viewTemplate">
@@ -86,4 +75,3 @@
 	</div>
 </script-->
 
-</div>
