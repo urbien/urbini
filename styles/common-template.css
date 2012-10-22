@@ -687,7 +687,7 @@ tr.ftSearch td { padding: 0px; }
 .desktop_search .clear_cross { top: 5px; margin: 0 1px; }
 
 .iphone_field .magnify_glass_small { position: relative; top: 3px; cursor: pointer; }
-.iphone_search { border: 2px solid &[PrimaryColor_1];; }
+.iphone_search { border: 2px solid &[PrimaryColor_1];; box-shadow: none; } /* used in mobile version only */
 
 .clear_cross { cursor: pointer; position: relative; visibility: hidden; }
 .desktop_search .clear_cross { margin: 0 2px; top: 15%; }
@@ -1961,7 +1961,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 * html .dat_td .comment { left: 5px; } /* hack for multivalue */
 .field_comment .comment { margin-top: 5px; }
 
-.rounded_rect_tbl .input, #register .input, #register .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input, .false_textarea, .false_empty_field { 
+.rounded_rect_tbl .input/*, #register .input*/, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input, .false_textarea, .false_empty_field { 
   margin: 0px; padding: 1px; min-height: 22px;
   color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; width: 250px; height: auto;
   font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px;
@@ -2055,7 +2055,6 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
   padding: 0;
   margin: 0;
   width: 500%; /* 5 x frame width -> allowas 5 frames; then each frame has width 20% */
-
   position: relative;
   float: left;
   left: 0;
