@@ -72,6 +72,7 @@
       }
       
       // 2.3 common (mobile & desktop)
+      ExecJS.initLoadedJsFiles();
       BacklinkImagesSlideshow.init();
     }
 
