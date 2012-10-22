@@ -1802,3 +1802,8 @@ function errorHandler(msg, url, linenumber) {
 }
 window.onerror = errorHandler;
 */
+
+// remove hash on a page refresh (home mobile page)
+location.hash = "";
+// flag that menu.js was parsed. should be last in the file
+g_loadedJsFiles["menu.js"] = true;
