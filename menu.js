@@ -5035,7 +5035,7 @@ var TouchDlgUtil = {
     
     // hack: on focus inside options selector it moves option panel
     // it is hacked here after transition application
-    if (Browser.gecko && selector.id == "text_entry")  
+    if (Browser.gecko && selector && selector.id == "text_entry")  
       selector = this.focusHolder
     
     if (!selector || !isVisible(selector)) {
