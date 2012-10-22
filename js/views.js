@@ -69,13 +69,14 @@ Lablz.ResourceView = Backbone.View.extend({
 Lablz.ListPage = Backbone.View.extend({
   initialize:function () {
     _.bindAll(this, 'render');
-//      this.template = _.template(tpl.get('report-list'));
+//      this.template = _.template(tpl.get('resource-list'));
   },
 
   render:function (eventName) {
 //    $(this.el).html(this.template(this.model.toJSON()));
+    $(this.el).empty();
+    $(this.el).html(tpl.get('resource-list'));
 //    this.listView = new EmployeeListView      ({el: $('ul', this.el), model: this.model});
-    $(this.el).empty().append('<ul></ul>');
     this.listView = new Lablz.ResourceListView({el: $('ul', this.el), model: this.model});
     this.listView.render();
     return this;
