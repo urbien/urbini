@@ -697,9 +697,9 @@ function getEventTarget(e, expectedTagName) {
     return null;
   // Konqueror: if event target contains text node,
   //they return the text node instead of the element node
-  while (target.nodeType != 1) {
-    target = target.parentNode;
-  }
+//  while (target.nodeType != 1  &&  target.nodeName != "A") {
+//    target = target.parentNode;
+//  }
   if (typeof expectedTagName == 'undefined')
     return target;
   if (!target.tagName || target.tagName.toLowerCase() != expectedTagName.toLowerCase())

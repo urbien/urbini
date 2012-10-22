@@ -1,53 +1,56 @@
-<div id="jQUi">
-  <div id="header">
-    <a id="backButton" href="javascript:;" class="button" style="visibility: hidden">Back</a> 
-    <h1 id="pageTitle">Urbien</h1> 
-  </div>
-  <div id="content">
-    <h2>hey</h2>
-  
-    <div id="sidebar">
-      <!--div id="rl">
-      </div-->
-    </div>
-  </div>
-  
-  <!--h2>One Urbien at a time</h2-->
-    <div id="navbar">
-       <a target="#welcome" class="icon home">Home</a>
-    </div>
-    <!-- nav>
-        <div class='title'>Home</div>
-        <ul>
-            <li class="icon home mini"><a href="#main">Home</a></li>
-        </ul>
-    </nav>
-    <nav id="second_nav">
-        <div class='title'>Second</div>
-        <ul>
-            <li class="icon info mini"><a href="#about">About</a></li>
-        </ul>
-    </nav -->
+<div>
 <!-- Templates -->
-<!-- script type="text/javascript">
-  if (Backbone.history.length != 0)
-    $.ui.showBackButton = true;
-</script -->
+<script type="text/template" id="resource-list">
+  <div data-role="header"  class="ui-header ui-bar-b" role="banner">
+    <h1 id="pageTitle">{{ this.model.className }}</h1> 
+  </div>
+  <div  id="sidebarDiv" class="ui-content" data-role="content" data-theme="e" role="main">
+    <ul id="sidebar" data-role="listview" class="ui-listview" data-inset="true" data-theme="c">
+    </ul>
+  </div>
+  
+  <div data-role="footer">
+     <a target="#welcome" class="icon home">Home</a>
+  </div>
+</script>  
+
+<script type="text/template" id="resource">
+  <div data-role="header"  class="ui-header ui-bar-b" role="banner">
+    <h1 id="pageTitle">{{ davDisplayName }}</h1> 
+  </div>
+  <div data-role="content" data-theme="e">
+    <img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}"></img> 
+    <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-inset="true" data-role="listview" data-theme="c" id="resourceView">
+    </ul>
+  </div>
+  
+  <div data-role="footer">
+     <a target="#welcome" class="icon home">Home</a>
+  </div>
+</script>  
 
 <script type="text/template" id="stringTemplate">
     <span>{{ value }}</span>
 </script>
 
 <script type="text/template" id="dateTemplate">
-    <span>{{ new Date(value/1000) }}</span>
+    <span>{{ new Date(value / 1000) }}</span>
 </script>
 
 <script type="text/template" id="intTemplate">
     <span>{{ value }}</span>
 </script>
 
+<script type="text/template" id="moneyTemplate">
+  <span>{{ value.currency + value.value }}</span>
+</script>
+
+<script type="text/template" id="complexDateTemplate">
+  <span>{{ new Date(value.date / 1000) }}</span>
+</script>
+
 <script type="text/template" id="uriTemplate">
-    <span><a href="{{ value.indexOf('http') == 0 ? value : Lablz.serverName + '/v/' + value }}">{{ value }}</a></span>
+    <span><a href="{{ value.indexOf('http') == 0 ? value : Lablz.serverName + '/v.html?uri=' + encodeURIComponent(value) }}">{{ value }}</a></span>
 </script>
 
 <script type="text/template" id="imageTemplate">
@@ -55,10 +58,14 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a data-transition='slide' href='#view/{{ _uri }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}" />&#160;{{ davDisplayName }}</a>
+  <a data-transition='slide' href='#view/{{ encodeURIComponent(_uri) }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}" />&#160;{{ davDisplayName }}<p>&#160;</p><p>&#160;{{ (typeof latinName == 'undefined') ? '' : latinName }}</p></a>
 </script>
 
-<script type="text/template" id="viewTemplate">
+<script type="text/template" id="propRowTemplate">
+    <li class="ui-btn ui-btn-icon-right ui-li-has-arrow ui-li ui-li-has-count ui-li-has-thumb ui-btn-up-c">{{ name }}: {{ value }}</li>
+</script>
+
+<!--script type="text/template" id="viewTemplate">
 	<div>
 		{{ for (var name in props) { }} 
 			{{ if (props.hasOwnProperty(name)) { }}
@@ -66,6 +73,5 @@
 			{{ } }}
 		{{ } }}
 	</div>
-</script>
+</script-->
 
-</div>
