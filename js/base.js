@@ -545,7 +545,7 @@ Lablz.indexedDB.getDataAsync = function(uri, success, error) {
   
   var trans = db.transaction([name]);
   var store = trans.objectStore(name);
-  var request = store.get(Utils.getShortUri(uri, shortNameToModel[uri]));
+  var request = store.get(Utils.getShortUri(uri, Lablz.shortNameToModel[name]));
   request.onsuccess = function(e) {
     if (success)
       success(e.target.result)
