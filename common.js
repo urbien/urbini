@@ -1280,7 +1280,18 @@ function getElementStyle(elem) {
 var ExecJS = {
   runCodeArr : new Array(),
   isWaitingOnReady : false,
-  
+
+  // called on page loaded
+  // note: g_loadedJsFiles will contain common_en_1350357851000.js and common.js
+  initLoadedJsFiles : function() {
+    this._isLoadedJsProcessed = true;
+    for( var i = 0; i < document.scripts.length; i++) {
+      var src = document.scripts[i].src;
+      if (src)
+        g_loadedJsFiles[src] = true;
+    }
+  },
+
   // default requiredJsFileName = "menu.js"
   runCode : function(jsCode, refObjId, requiredJsFileName) {
     $t = ExecJS;
@@ -1350,23 +1361,9 @@ var ExecJS = {
     setTimeout(function(){ ExecJS._runDivCode(contDiv); }, Browser.mobile ? 700 : 150);
   },
   
-  // called only once to insert all included JS files in a page
-  // note: g_loadedJsFiles will contain common_en_1350357851000.js and common.js
-  _isLoadedJsProcessed : false,
-  _initLoadedJsFiles : function() {
-    this._isLoadedJsProcessed = true;
-    for( var i = 0; i < document.scripts.length; i++) {
-      var src = document.scripts[i].src;
-      if (src)
-        g_loadedJsFiles[src] = true;
-    }
-  },
   _runDivCode : function(contDiv) {
     if(!contDiv)
       return;
-
-    if (!this._isLoadedJsProcessed) 
-      this._initLoadedJsFiles();
     
     var scripts = contDiv.getElementsByTagName('script');
     for( var i = 0; i < scripts.length; i++) {

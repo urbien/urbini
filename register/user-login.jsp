@@ -5,7 +5,7 @@
 .userLogin .rounded_rect_tbl { padding: 5px 10px; }
 .userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
 .userLogin #errorMessage { max-width: 420px; }
-.userLogin .input { height: 25px; 
+.userLogin .input { width: 300px; height: 25px; 
   border-radius: 3px 3px 3px 3px;
    /*
     
