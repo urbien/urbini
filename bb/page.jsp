@@ -36,13 +36,5 @@
 
 <!-- JavaScript -->
 
-
-</head>
-<body>
-	<file />
-
-<!-- JavaScript -->
-
-
 </body>
 </html>
