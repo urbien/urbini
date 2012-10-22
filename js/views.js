@@ -74,7 +74,7 @@ Lablz.ListPage = Backbone.View.extend({
 
   render:function (eventName) {
 //    $(this.el).html(this.template(this.model.toJSON()));
-    $(this.el).empty();
+//    $(this.el).empty();
     $(this.el).html(this.template(this.model.toJSON()));
 //    this.listView = new EmployeeListView      ({el: $('ul', this.el), model: this.model});
     this.listView = new Lablz.ResourceListView({el: $('ul', this.el), model: this.model});
@@ -91,7 +91,7 @@ Lablz.ViewPage = Backbone.View.extend({
   },
 
   render:function (eventName) {
-    $(this.el).empty();
+//    $(this.el).empty();
     $(this.el).html(this.template(this.model.toJSON()));
 //    $(this.el).append('<div></div>');
     this.view = new Lablz.ResourceView({el: $('ul#resourceView', this.el), model: this.model});
