@@ -472,20 +472,6 @@ Lablz.Leaflet = {
     this.densityLegend = legend;
   },
   
-  clearNonShapeProps : function(shapeJson) {
-    'use strict';
-    var props = shapeJson.properties;
-    for (var prop in props) {
-      if (!props.hasOwnProperty(prop))
-        continue;
-        
-      if (prop == 'name' || prop == 'html' || prop == 'width' || prop == 'height' || prop == 'area')
-        continue;
-      
-      props[prop] = undefined;
-    }
-  },
-  
   buildGeoJsonShapeLayers : function(style, lName, autoAdd) {
     'use strict';
     if (!this.shapeJsons || !this.shapeLayerInfos)
@@ -515,10 +501,7 @@ Lablz.Leaflet = {
         var props = nameToProps[j];
         var shapeId = props['id'];
         var shapeJson = this.shapeJsons[shapeId];
-//        var geoJson = shapeJson;
-        var geoJson = names.length == 1 ? shapeJson : JSON.parse(JSON.stringify(shapeJson));
-//          if (names.length == 1) // reuse the shapes from the current layer
-//        this.clearNonShapeProps(geoJson);
+        var geoJson = JSON.parse(JSON.stringify(shapeJson));
         
         for (var prop in props) {
           if (props.hasOwnProperty(prop))
@@ -656,10 +639,10 @@ Lablz.Leaflet = {
 
   setOnAddRemove : function(name, newLayer, minMax) {
     newLayer.onAdd = function(mapObj) {      
+      Lablz.Leaflet.currentLayerName = name;
       this._map = mapObj;
       this.eachLayer(mapObj.addLayer, mapObj);
       if (typeof minMax != 'undefined') {
-        Lablz.Leaflet.currentLayerName = name;
         Lablz.Leaflet.currentLayerDensity = minMax;
         Lablz.Leaflet.addDensityLegend(minMax);
       }      
@@ -732,11 +715,11 @@ Lablz.Leaflet = {
     
   toBasicGeoJsonShape : function(shape) {
     var shapeType = shape.shapeType ? (shape.shapeType.toLowerCase() == 'multipolygon' ? 'MultiPolygon' : 'Polygon') : 'Polygon';
-    return {"type" : "Feature", "properties": {"name" : shape["DAV:displayname"], "html": html}, "geometry": {"type": shapeType, "coordinates": eval('(' + shape.shapeJson + ')')}};
+    return {"type" : "Feature", "properties": {"name" : shape["davDisplayName"], "html": html}, "geometry": {"type": shapeType, "coordinates": eval('(' + shape.shapeJson + ')')}};
   },
 
   toBasicGeoJsonPoint : function(point) {
-    return {"type" : "Feature", "properties": {"name" : point["DAV:displayname"]}, "geometry": {"type": "Point", "coordinates": [point.longitude, point.latitude]}};
+    return {"type" : "Feature", "properties": {"name" : point["davDisplayName"]}, "geometry": {"type": "Point", "coordinates": [point.longitude, point.latitude]}};
   },
   
   getScaledClusterIconCreateFunction: function(color, doScale, showCount) {
@@ -1036,7 +1019,7 @@ Lablz.Leaflet = {
     var hasWidth = typeof width != 'undefined';
     var hasHeight = typeof height != 'undefined';
     var isShort = item._uri.indexOf('http') != 0;
-    var name = type + '<br />' + item["DAV:displayname"] + "<br/>";
+    var name = type + '<br />' + item["davDisplayName"] + "<br/>";
     var html = "<a href='";
     if (isShort)
       html += "v/" + item._uri + (linkToMap ? '?-map=y' : '');
