@@ -59,19 +59,33 @@ Lablz.ResourceView = Backbone.View.extend({
     $(this.el).html(html);
     return this;
   }
-//  ,
-//  navigateToResource() {
-//    Backbone.history.navigate('/' + type + '/' + this.model.toJSON().id, {trigger: true});
-//    return this;
-//  }
+});
+
+Lablz.MapView = Backbone.View.extend({
+  initialize:function () {
+    _.bindAll(this, 'render', 'show', 'hide');
+    this.template = _.template(tpl.get('mapTemplate'));
+  },
+  
+  render:function (eventName) {
+    $(this.el).html(this.template(this.model.toJSON()));
+    return this;
+  },
+  
+  show: function() {
+    return this;
+  },
+  
+  hide: function() {
+    return this;    
+  }
 });
 
 Lablz.ListPage = Backbone.View.extend({
   initialize:function () {
     _.bindAll(this, 'render');
-      this.template = _.template(tpl.get('resource-list'));
+    this.template = _.template(tpl.get('resource-list'));
   },
-
   render:function (eventName) {
 //    $(this.el).html(this.template(this.model.toJSON()));
 //    $(this.el).empty();
@@ -87,6 +101,7 @@ Lablz.ListPage = Backbone.View.extend({
 Lablz.ViewPage = Backbone.View.extend({
   initialize: function() {
     _.bindAll(this, 'render');
+    this.model.on('change', this.render, this);
     this.template = _.template(tpl.get('resource'));
   },
 
@@ -108,10 +123,19 @@ Lablz.ResourceListView = Backbone.View.extend({
     initialize:function () {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
 //      this.bind('change', this.render, this);
-      this.bind('reset', this.render, this);
+      this.model.on('reset', this.render, this);
       return this;
     },
-    
+    events: {
+      'scroll': 'checkScroll'
+    },
+    checkScroll: function () {
+      var triggerPoint = 100; // 100px from the bottom
+        if( !this.isLoading && this.el.scrollTop + this.el.clientHeight + triggerPoint > this.el.scrollHeight ) {
+          this.twitterCollection.page += 1; // Load next page
+          this.loadResults();
+        }
+    },
     render:function (eventName) {
   		var elt = $(this.el);
   		this.model.each(function (item) {
@@ -126,13 +150,18 @@ Lablz.ResourceListItemView = Backbone.View.extend({
   tagName:"li",
   
 	initialize: function() {
-    _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'render', 'onChange'); // fixes loss of context for 'this' within methods
 		this.template = _.template(tpl.get('listItemTemplate'));
+    this.model.on('change', this.render, this);
 		return this;
 	},
 
   render:function (eventName) {
     $(this.el).html(this.template(this.model.toJSON()));
     return this;
+  },
+  
+  onChange: function(item) {
+    item = item;
   }
 });

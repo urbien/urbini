@@ -4,6 +4,8 @@
   <title>Backbone Cellar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"></meta>
   <link rel="stylesheet" href="lib/jquery.mobile-1.2.0.css" />
+  <link rel="stylesheet" href="lib/jquery.mobile.theme-1.2.0.css" />
+  <link rel="stylesheet" href="lib/jquery.mobile.structure-1.2.0.css" />
   <script src="lib/jquery-1.7.2.js"></script>
   <script src="js/jqm-config.js"></script>
   <script src="lib/jquery.mobile-1.2.0.js"></script>
