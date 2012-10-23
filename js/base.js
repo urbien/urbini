@@ -183,7 +183,17 @@ Backbone.sync = function(method, model, options) {
       var toAdd = new Lablz.ResourceList(null, {model: model.model});
       for (var i = 0; i < results.length; i++) {
         var r = results[i];
-        if (!tsProp || !r[tsProp] || r[tsProp] > model.get(r._uri)[tsProp]) {
+        var longUri = Utils.getLongUri(r._uri, model.type);
+        var saved = model.get(longUri)[tsProp];
+//        var saved = $.grep(model.models, function(o) {
+//          return o.id == longUri;
+//        })[0][tsProp];
+        if (typeof saved === "undefined")
+          saved = 0;
+        var newLastModified = r[tsProp];
+        if (typeof newLastModified === "undefined") 
+          newR = 0;
+        if (!tsProp || !newLastModified || newLastModified > saved) {
           toAdd.add(new model.model(r));
         }
       }
