@@ -732,11 +732,11 @@ var LablzLeaflet = {
       
     toBasicGeoJsonShape : function(shape) {
       var shapeType = shape.shapeType ? (shape.shapeType.toLowerCase() == 'multipolygon' ? 'MultiPolygon' : 'Polygon') : 'Polygon';
-      return {"type" : "Feature", "properties": {"name" : shape["DAV:displayname"], "html": html}, "geometry": {"type": shapeType, "coordinates": eval('(' + shape.shapeJson + ')')}};
+      return {"type" : "Feature", "properties": {"name" : shape["davDisplayName"], "html": html}, "geometry": {"type": shapeType, "coordinates": eval('(' + shape.shapeJson + ')')}};
     },
 
     toBasicGeoJsonPoint : function(point) {
-      return {"type" : "Feature", "properties": {"name" : point["DAV:displayname"]}, "geometry": {"type": "Point", "coordinates": [point.longitude, point.latitude]}};
+      return {"type" : "Feature", "properties": {"name" : point["davDisplayName"]}, "geometry": {"type": "Point", "coordinates": [point.longitude, point.latitude]}};
     },
     
     getScaledClusterIconCreateFunction: function(color, doScale, showCount) {
@@ -1036,7 +1036,7 @@ var LablzLeaflet = {
       var hasWidth = typeof width != 'undefined';
       var hasHeight = typeof height != 'undefined';
       var isShort = item._uri.indexOf('http') != 0;
-      var name = type + '<br />' + item["DAV:displayname"] + "<br/>";
+      var name = type + '<br />' + item["davDisplayName"] + "<br/>";
       var html = "<a href='";
       if (isShort)
         html += "v/" + item._uri + (linkToMap ? '?-map=y' : '');
