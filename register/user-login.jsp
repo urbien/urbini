@@ -2,10 +2,10 @@
 
 <!-- style -->
 <style>
-.userLogin .rounded_rect_tbl { padding: 5px 10px; }
-.userLogin .rounded_rect_tbl td { border: none; padding: 1px 10px 8px; }
+.userLogin .rounded_rect_tbl { padding: 3px 10px 10px 10px; }
+.userLogin .rounded_rect_tbl td { border: none; }
 .userLogin #errorMessage { max-width: 420px; }
-.userLogin .input { width: 300px; height: 25px; 
+.userLogin .input { width: 300px !important; height: 25px; 
   border-radius: 3px 3px 3px 3px;
    /*
     
@@ -99,19 +99,10 @@
 	            <text text="Password"/>
 	          </label>
 	        </div>
+	        <a style="float: right;" href="register/password-reminder.html"><span style="font-size: 11px;"><text text="Forgot password?" /></span></a>
         </td>
       </tr>
       <tr>
-      <!--
-        <td></td>
-      -->  
-        <td>
-           <a style="float: right;" href="register/password-reminder.html"><span style="font-size: 11px;"><text text="Forgot password?" /></span></a>
-        </td>
-      </tr>
-      <tr>
-        
-        
       <!--  
       <td align="right"><registration href="y"/></td>
       -->  
