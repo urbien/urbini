@@ -4911,29 +4911,33 @@ var TouchDlgUtil = {
     stopEventPropagation(event);
   },
   
-  // up / down  
+  // up / down
+  arrowNavTimestamp : 0, // prevents interference between arrow and mouse navigation
   _selectRowWithArrow : function(listOfItems, down) {
-    var passToTr = null;  
+    var passToTr = null;
+    var loopToDown = false;  
     // no highlighting before; it goes from Selector
     if (listOfItems.className == "calendar_panel")
       return; // calendar panel does not support key navigation for now
 
+    // 1. no highlighting (probably fosus in the selector)
     if (!this.greyTr) {
       //if (target.id != "item_selector" && target.id != "text_entry")
       //  return;
+      var content = getChildByClassName(listOfItems, "content");
+      var tables = content.getElementsByTagName("table");
+      var fstTbl = getAncestorByClassName(tables[0], "rounded_rect_tbl"); // tables[0];
+      var lastTbl = getAncestorByClassName(tables[tables.length - 1], "rounded_rect_tbl");
 
-      var table = getChildByClassName(listOfItems, "rounded_rect_tbl");
-      if (down) {
-        if (table.className == "rounded_rect_tbl") 
-          passToTr = table.rows[0];
-      }
+      if (down)
+        passToTr = fstTbl.rows[0];//tables[0].rows[0];
       else {
-        table = getLastChild(table.parentNode);
-        if (table.className == "rounded_rect_tbl") 
-          passToTr = table.rows[table.rows.length - 1];
+        passToTr = lastTbl.rows[lastTbl.rows.length - 1];
+        loopToDown = true;
       }
-      
     }
+    // 2. there is highlighted row
+    // 2.1 down arrow
     else if (down) { // down arrow
       passToTr = getNextSibling(this.greyTr);
       if (passToTr == null) {
@@ -4943,6 +4947,7 @@ var TouchDlgUtil = {
           passToTr = nextTable.rows[0];
       }
     }
+    // 2.2 up arrow
     else { // up arrow
       passToTr = getPreviousSibling(this.greyTr);
       if (passToTr == null) {
@@ -4971,18 +4976,17 @@ var TouchDlgUtil = {
         FieldsWithEmptyValue.setFocus(input);
       else
         this._setFocusInFocusHolder();  
-      if (!isElemInViewport(passToTr))
-        passToTr.scrollIntoView(down == false);
+      if (!isElemInViewport(passToTr)) {
+        passToTr.scrollIntoView(down == false && loopToDown == false);
+        window.scrollBy(0, 20 * ((down || loopToDown) ? 1 : -1)); // allows to see that param row is final
+      }  
     }
     else { // go into Selector
       var activePanel = ListBoxesHandler.getCurrentPanelDiv();
+      activePanel.scrollIntoView(true);
       var selector = this.focusSelector(activePanel);
-      if (selector && !isElemInViewport(selector)) {
-        var header = getAncestorByClassName(selector, "header");
-        if (header)
-          header.scrollIntoView(true);  
-      }
     }
+    this.arrowNavTimestamp = (new Date).getTime(); 
   },
   
   _selectMenuItemWithArrow : function(dlg, code) {
@@ -5113,6 +5117,10 @@ var TouchDlgUtil = {
   
   highlightRowGreyOnOver : function(event) {
     var $t = TouchDlgUtil;
+    // prevent interference between arrow and mouse navigation
+    if ((new Date).getTime() - $t.arrowNavTimestamp < 500)
+      return;
+      
     var target = getEventTarget(event);
     var tr = null;
     if (ListBoxesHandler.isFormPanelCurrent())
