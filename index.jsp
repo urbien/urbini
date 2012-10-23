@@ -31,6 +31,10 @@
   </div>
 </script>  
 
+<script type="text/template" id="mapTemplate">
+  <div id="map"></div>
+</script>
+
 <script type="text/template" id="stringTemplate">
     <span>{{ value }}</span>
 </script>

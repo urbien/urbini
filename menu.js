@@ -1910,7 +1910,7 @@ var ListBoxesHandler = {
   },
 
   showOptionsOrClasses : function(popupDiv) {
-    var $t = ListBoxesHandler;
+   var $t = ListBoxesHandler;
     var panel;
     if ($t.toPutInClassifier) {
       panel = $t.classifierPanel;
@@ -5035,7 +5035,7 @@ var TouchDlgUtil = {
     
     // hack: on focus inside options selector it moves option panel
     // it is hacked here after transition application
-    if (Browser.gecko && selector.id == "text_entry")  
+    if (Browser.gecko && selector && selector.id == "text_entry")  
       selector = this.focusHolder
     
     if (!selector || !isVisible(selector)) {
@@ -8254,13 +8254,16 @@ var DragEngine = {
     // no D&D if mousedown in <input>
     if (caughtObj.tagName && caughtObj.tagName.toLowerCase() == "input")
       return;
+    
+    // note: className of SVG elements is SVGAnimatedString object, not string!! 
     // no D&D if mousedown on "icon_btn" class
     var parent = caughtObj.parentNode;  
-    if (parent && parent.className && parent.className.toLowerCase() == "icon_btn")
+    if (parent && typeof parent.className == "string" && parent.className.toLowerCase() == "icon_btn")
       return;
 
-    if((titleObj =  getAncestorById(caughtObj, "titleBar")) == null &&
-        (titleObj =  getAncestorByAttribute(caughtObj, "className", thisObj.classNameArr)) == null )
+    if((titleObj = getAncestorById(caughtObj, "titleBar")) == null || // &&
+        (typeof caughtObj.className == "string" &&
+        (titleObj =  getAncestorByAttribute(caughtObj, "className", thisObj.classNameArr)) == null))
       return;
     
     // possible to define handler as Attribute in html

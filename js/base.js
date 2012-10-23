@@ -5,19 +5,12 @@ var packages = {};
 packages.Resource = Backbone.Model.extend({
   dateLastUpdated: 0,
   idAttribute: "_uri",
-  _setUri: function() {
-    var uri = this.get('_uri');
-    var primaryKeys = Utils.getPrimaryKeys(this.__proto__.constructor);
-    uri = Utils.getLongUri(uri, this.type, primaryKeys);
-    this.set('_uri', uri);
-    return this;
-  },
   initialize: function() {
-    _.bindAll(this, '_setUri', 'getKey', 'parse', 'updateRecord', 'url'); // fixes loss of context for 'this' within methods
-//    if (this.__proto__.constructor.timestamp)
-//      this.bind('change', checkTimestamp);
-    this.bind('change', this.updateRecord);
-    var type = this.__proto__.constructor.type || this.get('type');
+    _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', /*'set',*/ 'updateDB'); // fixes loss of context for 'this' within methods
+    this.initialized = false;
+//    this.bind('change', this.onChange);
+    this.on('change', this.updateDB);
+    var type = this.constructor.type || this.get('type');
     if (!type)
       return this;
     
@@ -31,7 +24,8 @@ packages.Resource = Backbone.Model.extend({
     }
     
     this.urlRoot = Lablz.apiUrl + this.className;
-    this._setUri();
+//    this._setUri();
+    this.initialized = true;
   },  
   url: function() {
     return Lablz.apiUrl + this.className + "?_uri=" + encodeURIComponent(this.get('_uri'));
@@ -39,45 +33,32 @@ packages.Resource = Backbone.Model.extend({
   getKey: function() {
     return this.get('_uri');
   },
-  parse: function (response) {
+  parse: function (resp) {
     if (this.lastFetchOrigin == 'db')
-      return response;
+      return resp;
     
-    if (!response || response.error)
+    if (!resp || resp.error)
       return {};
 
-    if (response._uri)
-      return response;
-    
-    return response.data[0];
+    var uri = resp._uri;
+    resp = uri ? resp : resp.data[0];
+    resp._shortUri = Utils.getShortUri(uri, this.constructor);
+    var primaryKeys = Utils.getPrimaryKeys(this.constructor);
+    resp._uri = Utils.getLongUri(resp._uri, this.type, primaryKeys);
+    return resp;
   },
   validate: function(attrs) {
+    if (!this.initialized || this.lastFetchOrigin == 'db' || (this.collection && this.collection.lastFetchOrigin == 'db'))
+      return;
+    
     for (var name in attrs) {
-      var validated = packages.Resource.validateProperty(name, attrs[name]);
+      var validated = this.validateProperty(name, attrs[name]);
       if (validated !== true)
         return validated instanceof String ? error : "Please enter a valid " + name;
     }
   },
-  updateRecord: function() {
-    Lablz.indexedDB.addItem(this);
-  }
-  
-//  ,
-//  fetch: function(options) {
-//  
-//    return Backbone.Model.prototype.fetch.call(this, options);
-//  }
-},
-{
-  type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",
-  shortName: "Resource",
-  displayName: "Resource",
-  properties: {
-    davDisplayName: {type: "string"},
-    _uri: {type: "string"}
-  },
   validateProperty: function(name, value) {
-    var meta = properties[name];
+    var meta = this.constructor.properties[name];
     if (!meta)
       return true;
     
@@ -89,6 +70,9 @@ packages.Resource = Backbone.Model.extend({
       
     // check annotations
     var anns = meta.annotations;
+    if (!anns)
+      return true;
+    
     for (var i = 0; i < anns.length; i++) {
       var error;
       switch (anns[i]) {
@@ -102,17 +86,46 @@ packages.Resource = Backbone.Model.extend({
     }
     
     return true;
+  },
+  updateDB: function() {
+    if (this.lastFetchOrigin != 'db' && !this.collection) // if this resource is part of a collection, the collection will update the db in bulk
+      Lablz.indexedDB.addItem(this);
+  }
+//  ,
+//  set: function(attrs, options) {
+//    options = options || {};
+////    options.silent = this.lastFetchOrigin == 'db';
+//    return Backbone.Model.prototype.set.call(this, attrs, options);
+//  },  
+//  fetch: function(options) {
+//  
+//    return Backbone.Model.prototype.fetch.call(this, options);
+//  }
+},
+{
+  type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",
+  shortName: "Resource",
+  displayName: "Resource",
+  myProperties: {
+    davDisplayName: {type: "string"},
+    _uri: {type: "string"},
+    _shortUri: {type: "string"}
   }
 });
 
+packages.Resource.properties = _.clone(packages.Resource.myProperties);
+
 Lablz.ResourceList = Backbone.Collection.extend({
+//  page: 1,
+//  resultsPerPage: 10,
   initialize: function(models, options) {
     if (!models && !options.model)
       throw new Error("resource list must be initialized with options.model or an array of models");
     
     _.bindAll(this, 'getKey', 'parse'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
     this.model = options.model || models[0].model;
-    this.bind('add', this.onAdd, this);
+    this.on('add', this.onAdd, this);
+    this.on('reset', this.onReset, this);
 //    this.model = metadata.model;
     this.type = this.model.type;
     this.className = this.model.shortName || this.model.className;
@@ -122,12 +135,25 @@ Lablz.ResourceList = Backbone.Collection.extend({
   getKey: function() {
     return this.type;
   },
+//  url: function() {
+//    this.url = Lablz.apiUrl + this.className + "?$limit=" + this.resultsPerPage + "&$offset=" + ((this.page - 1) * this.resultsPerPage);
+//  },
   parse: function(response) {
     if (!response || response.error)
       return [];
     
     return response instanceof Array ? response : response.data;
+  },
+  onReset: function(model) {
+    console.log("resourceList onReset");
+  },
+  onAdd: function(model) {
+//    console.log("resourceList onAdd");
+  },
+  fetchAll: function(options) { 
+    return Backbone.Model.prototype.fetch.call(this, options);
   }
+
 //  ,
 //  onAdd: function(item) {
 //    if (this.lastFetchOrigin == 'db')
@@ -162,25 +188,17 @@ Lablz.defaultSync = function(method, model, options) {
 Backbone.defaultSync = Backbone.sync;
 Backbone.sync = function(method, model, options) {
   var defSuccess = options.success;
-  var saveOptions = _.extend(_.clone(options), {
-      success: function(resp, status, xhr) {
-        if (resp.error) {
-          console.log("Error in sync: " + resp.error.code + ", " + resp.error.details);
-          return;
-        }
-        
-        var item = model instanceof Backbone.Collection ? resp.data : resp.data[0];
-        if (defSuccess)
-          defSuccess(item, status, xhr);
-        
-        save(item);
-      }
-  });
-  
-  var save = function(results) {
-    if (model instanceof Backbone.Collection) {
-      var tsProp = model.model.timestamp;
-      var toAdd = new Lablz.ResourceList(null, {model: model.model});
+  var save;
+  if (model instanceof Backbone.Collection) {
+      save = function(results) {
+      // only handle collections here as we want to add to db in bulk, as opposed to handling 'add' event in collection and adding one at a time.
+      // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
+      // Alternative is to override Backbone.Collection.reset() method and do some magic there.
+  //    if (!(model instanceof Backbone.Collection))
+  //      return;
+      
+      var tsProp = model.model.timestamp; // model.model is the collection's model 
+      var toAdd = [];
       for (var i = 0; i < results.length; i++) {
         var r = results[i];
         var longUri = Utils.getLongUri(r._uri, model.type);
@@ -198,13 +216,30 @@ Backbone.sync = function(method, model, options) {
         }
       }
       
-      if (toAdd.length)
-        Lablz.indexedDB.addCollection(toAdd);      
+      if (toAdd.length) {
+        for (var i = 0; i < toAdd.length; i++) {
+          var existing = model.get(toAdd[i]._uri);
+          existing && existing.set(toAdd[i]);
+        }
+        
+        Lablz.indexedDB.addItems(toAdd, model.className);
+      }
     }
-    else
-      Lablz.indexedDB.addItem(model);
   }
-  
+
+  var saveOptions = _.extend(_.clone(options), {
+    success: function(resp, status, xhr) {
+      if (resp.error) {
+        console.log("Error in sync: " + resp.error.code + ", " + resp.error.details);
+        return;
+      }
+      
+      var data = model instanceof Backbone.Collection ? resp.data : resp.data[0];
+      defSuccess && defSuccess(data, status, xhr);
+      save && save(data);
+    }
+  });
+    
   var runDefault = function() {
     return Lablz.defaultSync(method, model, saveOptions);
   }
@@ -240,7 +275,7 @@ Backbone.sync = function(method, model, options) {
 //        Backbone.defaultSync(method, model, options);
 //      } else {
       // provide data from local storage instead of a network call
-    if (!results || !results.length) {
+    if (!results || (results instanceof Array && !results.length)) {
       runDefault();
       return;
     }
@@ -307,8 +342,10 @@ Lablz.initModels = function() {
   for (var i = 0; i < Lablz.models.length; i++) {
     var m = Lablz.models[i];
     Lablz.shortNameToModel[m.shortName] = m;
-    m.prototype.parse = m.prototype.constructor.__super__.parse;
-    m.prototype.validate = m.prototype.constructor.__super__.validate;
+    m.prototype.parse = packages.Resource.prototype.parse;
+    m.prototype.validate = packages.Resource.prototype.validate;
+    var superProps = m.__super__.constructor.properties;
+    m.properties = superProps ? _.extend(_.clone(superProps), m.myProperties) : _.clone(m.myProperties);
   }
 };
 
@@ -432,59 +469,62 @@ Lablz.indexedDB.open = function(storeNames, options, success, error) { // option
   };
 };
 
-Lablz.indexedDB.addCollection = function(collection) {
-  if (!collection || !collection.length)
+Lablz.indexedDB.addItems = function(items, className) {
+  if (!items || !items.length)
     return;
   
-  var name = collection.className;
   var db = Lablz.indexedDB.db;
   if (!db)
     return;
   
-  if (!db.objectStoreNames.contains(name)) {
+  if (!db.objectStoreNames.contains(className)) {
     db.close();
-    Lablz.indexedDB.open(name, null, function() {Lablz.indexedDB.addCollection(collection)});
+    Lablz.indexedDB.open(className, null, function() {Lablz.indexedDB.addItems(items, className)});
     return;
   }
   
-  var trans = db.transaction([name], "readwrite");
-  var store = trans.objectStore(name);
-  collection.each(function(item) {
-    var request = store.put(item.toJSON());
+  var trans = db.transaction([className], "readwrite");
+  var store = trans.objectStore(className);
+  _.each(items, function(item) {
+    var request = store.put(item);
   
     request.onsuccess = function(e) {
-  //    Lablz.indexedDB.getItems(type);
+//      console.log("Added item to db: ", e);
     };
   
     request.onerror = function(e) {
-      console.log("Error Adding: ", e);
+      console.log("Error adding item to db: ", e);
     };
   });
 };
 
-Lablz.indexedDB.addItem = function(itemModel, success, error) {
-//  var type = Utils.getType(itemModel.get('_uri'));
-  var name = itemModel.className;
-  var db = Lablz.indexedDB.db;
-  if (!db.objectStoreNames.contains(name)) {
-    db.close();
-    Lablz.indexedDB.open(name, null, function() {Lablz.indexedDB.addItem(itemModel)});
-    return;
-  }
+Lablz.indexedDB.addItem = function(item, className) {
+  Lablz.indexedDB.addItems([item instanceof Backbone.Model ? item.toJSON() : item], className || item.className);
+}
 
-  var trans = db.transaction([name], "readwrite");
-  var store = trans.objectStore(name);
-  var request = store.put(itemModel.toJSON());
-
-  request.onsuccess = function(e) {
-    if (success) success(e);
-  };
-
-  request.onerror = function(e) {
-    console.log("Error Adding: ", e);
-    if (error) error(e);
-  };
-};
+//Lablz.indexedDB.addItem = function(itemModel, success, error) {
+////  var type = Utils.getType(itemModel.get('_uri'));
+//  var name = itemModel.className;
+//  var db = Lablz.indexedDB.db;
+//  if (!db.objectStoreNames.contains(name)) {
+//    db.close();
+//    Lablz.indexedDB.open(name, null, function() {Lablz.indexedDB.addItem(itemModel)});
+//    return;
+//  }
+//
+//  var trans = db.transaction([name], "readwrite");
+//  var store = trans.objectStore(name);
+//  var request = store.put(itemModel.toJSON());
+//
+//  request.onsuccess = function(e) {
+//    if (success) success(e);
+//  };
+//
+//  request.onerror = function(e) {
+//    console.log("Error Adding: ", e);
+//    if (error) error(e);
+//  };
+//};
 
 Lablz.indexedDB.deleteItem = function(uri) {
   var type = Utils.getType(item._uri);
@@ -515,7 +555,7 @@ Lablz.indexedDB.getDataAsync = function(uri, success, error) {
   
   var trans = db.transaction([name]);
   var store = trans.objectStore(name);
-  var request = store.get(Utils.getShortUri(uri));
+  var request = store.get(Utils.getShortUri(uri, Lablz.shortNameToModel[name]));
   request.onsuccess = function(e) {
     if (success)
       success(e.target.result)

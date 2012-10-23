@@ -97,8 +97,11 @@ Utils.getClassName = function(type) {
   return sIdx == -1 ? type : type.slice(sIdx + 1);
 }
 
-Utils.getShortUri = function(uri) {
-  var regex = /http\:\/\/www\.hudsonfog\.com\/[a-zA-Z\/]*\/([a-zA-Z]*)\?id=([0-9]*)/;
+Utils.getShortUri = function(uri, model) {
+  if (model.properties._shortUri == 'unsupported')
+    return uri;
+    
+  var regex = /www\.hudsonfog\.com\/[a-zA-Z\/]*\/([a-zA-Z]*)\?id=([0-9]*)/;
   var nameAndId = uri.match(regex);
   return nameAndId && nameAndId.length == 3 ? nameAndId[1] + '/' + nameAndId[2] : uri;
 }
