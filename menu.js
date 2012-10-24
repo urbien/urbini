@@ -1946,10 +1946,11 @@ var ListBoxesHandler = {
       $t._hideInvisibleParams();
       SlideSwaper.moveForward($t.tray, $t.onOptionsDisplayed);
     }
-    
     // hide options selector (text entry) if number of options is less than 7
-    var optionsNum = getChildByTagName(popupDiv, "table").rows.length;
-    $t.textEntry.parentNode.style.display = (optionsNum > 7) ? "" : "none";
+    if (FieldsWithEmptyValue.isEmptyValue($t.textEntry)) {
+      var optionsNum = getChildByTagName(popupDiv, "table").rows.length;
+      $t.textEntry.parentNode.style.display = (optionsNum > 7) ? "" : "none";
+    }
   },
   
   // RL editor and Fts-Sift
@@ -3304,7 +3305,10 @@ var SlideSwaper = {
     this.isForward = isForward;
 
     var offset = (isForward ? (-20 * (trayPosition + 1)) : 0);
-    if (animateCSS3(tray, "transform",
+    // NOTE: use CSS3 transition with mobile only because
+    // 1) FF has a problem on focus
+    // 2) Chrome takes much resources on CSS3 transition
+    if (Browser.mobile == false || animateCSS3(tray, "transform",
       "translate(" + offset + "%, 0%)",
       "transform 0.5s ease-in-out",
       "translate(0%, 0%)",
@@ -5039,8 +5043,8 @@ var TouchDlgUtil = {
     
     // hack: on focus inside options selector it moves option panel
     // it is hacked here after transition application
-    if (Browser.gecko && selector && selector.id == "text_entry")  
-      selector = this.focusHolder
+    // if (Browser.gecko && selector && selector.id == "text_entry")  
+    //  selector = this.focusHolder
     
     if (!selector || !isVisible(selector)) {
       selector = this.focusHolder;
