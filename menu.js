@@ -10182,11 +10182,21 @@ var BacklinkImagesSlideshow = {
   slideshowArr : null, 
   _init1stTime : true, // hack for Opera(!) where init executed before register
   register : function(sceneId) {
+    
+  // NOTE: delayed slideshow loading does not work with "resourceShow" currently.
+  // So this feature was disabled! (order of slideshow is defferent for "staticShow" and "resourceShow"
+    (new slideshow(document.getElementById(sceneId))).init();
+  
+/*    
     if (this.slideshowArr == null)
       this.slideshowArr = new Array();
     this.slideshowArr.push(new slideshow(document.getElementById(sceneId)));
+*/    
   },
   init : function() {
+  // NOTE: delayed slideshow loading does not work with "resourceShow" currently.
+  // So this feature was disabled! (order of slideshow is defferent for "staticShow" and "resourceShow"
+/*
     var $t = BacklinkImagesSlideshow;
     if ($t._init1stTime) {
       $t._init1stTime = false;
@@ -10197,10 +10207,6 @@ var BacklinkImagesSlideshow = {
     if (!$t.slideshowArr)
       return;
 
-  // NOTE: delayed slideshow loading does not work with "resourceShow" currently.
-  // So this feature was disabled! (order of slideshow is defferent for "staticShow" and "resourceShow"
-
-/*      
     // 1. launch 1st slideshow
     // $t.slideshowArr[$t.slideshowArr.length - 1].init();
     $t.slideshowArr[0].init();
@@ -10217,8 +10223,6 @@ var BacklinkImagesSlideshow = {
       }
     }
 */    
-    for (var i = 0; i < $t.slideshowArr.length; i++)
-      $t.slideshowArr[i].init();
   },
 /*  
   _delayedInit : function() {
@@ -11995,7 +11999,12 @@ var ImageUpload = {
 // callback on image upload from options panel
 function photoUploadCallback(imgUrl, imgName, thumbnail) {
   var optDiv = ListBoxesHandler.getCurrentOptionsList();
-  var optTableBody  = getFirstChild(getChildByClassName(optDiv, "rounded_rect_tbl"));
+  var optTbl = getChildByClassName(optDiv, "rounded_rect_tbl");
+  var optTableBody  = getFirstChild(optTbl);
+  if (!optTableBody) { // empty table
+    optTableBody = document.createElement("tbody");
+    optTbl.appendChild(optTableBody);
+  }
 
   var noChoiceItem = getChildById(optTableBody, "$noValue");
   if (noChoiceItem)
@@ -12012,7 +12021,7 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
     + "<td class=\"menuItemIconEmpty\">"
     + "</td>"
     + "<td class=\"menuItem\">"
-    + "<img align=\"middle\" width=\"124\" src=\""
+    + "<img align=\"middle\" src=\"" // width=\"124\"
     + thumbnail
     + "\"><br>"
     + imgName
