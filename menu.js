@@ -1946,10 +1946,11 @@ var ListBoxesHandler = {
       $t._hideInvisibleParams();
       SlideSwaper.moveForward($t.tray, $t.onOptionsDisplayed);
     }
-    
     // hide options selector (text entry) if number of options is less than 7
-    var optionsNum = getChildByTagName(popupDiv, "table").rows.length;
-    $t.textEntry.parentNode.style.display = (optionsNum > 7) ? "" : "none";
+    if (FieldsWithEmptyValue.isEmptyValue($t.textEntry)) {
+      var optionsNum = getChildByTagName(popupDiv, "table").rows.length;
+      $t.textEntry.parentNode.style.display = (optionsNum > 7) ? "" : "none";
+    }
   },
   
   // RL editor and Fts-Sift
@@ -3265,7 +3266,7 @@ var TagsMgr = {
 ********************************************/
 var SlideSwaper = {
   STEPS_AMT : 12,
-  TIMEOUT : 30, // timeout between steps. On FF3 can not be applied too short timeout.
+  TIMEOUT : 20, // timeout between steps. On FF3 can not be applied too short timeout.
   DISTANCE : 20, // pecents of tray width 
   // ease-in-out // currently used for WebKit in common.css
   BEZIER_POINTS : [[0.0, 0.0], [0.42, 0.0], [0.58, 1.0], [1.0, 1.0]],
@@ -3304,7 +3305,10 @@ var SlideSwaper = {
     this.isForward = isForward;
 
     var offset = (isForward ? (-20 * (trayPosition + 1)) : 0);
-    if (animateCSS3(tray, "transform",
+    // NOTE: use CSS3 transition with mobile only because
+    // 1) FF has a problem on focus
+    // 2) Chrome takes much resources on CSS3 transition
+    if (Browser.mobile == false || animateCSS3(tray, "transform",
       "translate(" + offset + "%, 0%)",
       "transform 0.5s ease-in-out",
       "translate(0%, 0%)",
@@ -5039,8 +5043,8 @@ var TouchDlgUtil = {
     
     // hack: on focus inside options selector it moves option panel
     // it is hacked here after transition application
-    if (Browser.gecko && selector && selector.id == "text_entry")  
-      selector = this.focusHolder
+    // if (Browser.gecko && selector && selector.id == "text_entry")  
+    //  selector = this.focusHolder
     
     if (!selector || !isVisible(selector)) {
       selector = this.focusHolder;
@@ -8269,11 +8273,11 @@ var DragEngine = {
     if (parent && typeof parent.className == "string" && parent.className.toLowerCase() == "icon_btn")
       return;
 
-    if((titleObj = getAncestorById(caughtObj, "titleBar")) == null || // &&
+    if((titleObj = getAncestorById(caughtObj, "titleBar")) == null &&
         (typeof caughtObj.className == "string" &&
-        (titleObj =  getAncestorByAttribute(caughtObj, "className", thisObj.classNameArr)) == null))
+        ((titleObj =  getAncestorByClassName(caughtObj, thisObj.classNameArr)) == null)))
       return;
-    
+ 
     // possible to define handler as Attribute in html
     var dragHandlerStr = titleObj.getAttribute("draghandler");
     // or by class name here
@@ -10178,11 +10182,21 @@ var BacklinkImagesSlideshow = {
   slideshowArr : null, 
   _init1stTime : true, // hack for Opera(!) where init executed before register
   register : function(sceneId) {
+    
+  // NOTE: delayed slideshow loading does not work with "resourceShow" currently.
+  // So this feature was disabled! (order of slideshow is defferent for "staticShow" and "resourceShow"
+    (new slideshow(document.getElementById(sceneId))).init();
+  
+/*    
     if (this.slideshowArr == null)
       this.slideshowArr = new Array();
     this.slideshowArr.push(new slideshow(document.getElementById(sceneId)));
+*/    
   },
   init : function() {
+  // NOTE: delayed slideshow loading does not work with "resourceShow" currently.
+  // So this feature was disabled! (order of slideshow is defferent for "staticShow" and "resourceShow"
+/*
     var $t = BacklinkImagesSlideshow;
     if ($t._init1stTime) {
       $t._init1stTime = false;
@@ -10193,10 +10207,6 @@ var BacklinkImagesSlideshow = {
     if (!$t.slideshowArr)
       return;
 
-  // NOTE: delayed slideshow loading does not work with "resourceShow" currently.
-  // So this feature was disabled! (order of slideshow is defferent for "staticShow" and "resourceShow"
-
-/*      
     // 1. launch 1st slideshow
     // $t.slideshowArr[$t.slideshowArr.length - 1].init();
     $t.slideshowArr[0].init();
@@ -10213,8 +10223,6 @@ var BacklinkImagesSlideshow = {
       }
     }
 */    
-    for (var i = 0; i < $t.slideshowArr.length; i++)
-      $t.slideshowArr[i].init();
   },
 /*  
   _delayedInit : function() {
@@ -11991,7 +11999,12 @@ var ImageUpload = {
 // callback on image upload from options panel
 function photoUploadCallback(imgUrl, imgName, thumbnail) {
   var optDiv = ListBoxesHandler.getCurrentOptionsList();
-  var optTableBody  = getFirstChild(getChildByClassName(optDiv, "rounded_rect_tbl"));
+  var optTbl = getChildByClassName(optDiv, "rounded_rect_tbl");
+  var optTableBody  = getFirstChild(optTbl);
+  if (!optTableBody) { // empty table
+    optTableBody = document.createElement("tbody");
+    optTbl.appendChild(optTableBody);
+  }
 
   var noChoiceItem = getChildById(optTableBody, "$noValue");
   if (noChoiceItem)
@@ -12008,7 +12021,7 @@ function photoUploadCallback(imgUrl, imgName, thumbnail) {
     + "<td class=\"menuItemIconEmpty\">"
     + "</td>"
     + "<td class=\"menuItem\">"
-    + "<img align=\"middle\" width=\"124\" src=\""
+    + "<img align=\"middle\" src=\"" // width=\"124\"
     + thumbnail
     + "\"><br>"
     + imgName
