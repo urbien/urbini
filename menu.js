@@ -8273,11 +8273,11 @@ var DragEngine = {
     if (parent && typeof parent.className == "string" && parent.className.toLowerCase() == "icon_btn")
       return;
 
-    if((titleObj = getAncestorById(caughtObj, "titleBar")) == null || // &&
+    if((titleObj = getAncestorById(caughtObj, "titleBar")) == null &&
         (typeof caughtObj.className == "string" &&
-        (titleObj =  getAncestorByAttribute(caughtObj, "className", thisObj.classNameArr)) == null))
+        ((titleObj =  getAncestorByClassName(caughtObj, thisObj.classNameArr)) == null)))
       return;
-    
+ 
     // possible to define handler as Attribute in html
     var dragHandlerStr = titleObj.getAttribute("draghandler");
     // or by class name here
