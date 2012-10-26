@@ -3265,7 +3265,7 @@ var TagsMgr = {
 * tray contains 2 slides that are swaped
 ********************************************/
 var SlideSwaper = {
-  STEPS_AMT : 12,
+  STEPS_AMT : 8, //12,
   TIMEOUT : 30, // timeout between steps. On FF3 can not be applied too short timeout.
   DISTANCE : 20, // pecents of tray width 
   // ease-in-out // currently used for WebKit in common.css
