@@ -2346,7 +2346,15 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
   margin: 0 2px;
 }
 
-.slides_pager a.current { background-position: center bottom; }
+/* .slides_pager a.current { background-position: center bottom; } */
+.slides_pager a.current {
+  background: &[SecondaryColorA_1];;
+  border: 2px solid #dddddd;
+  border-radius: 11px;
+  height: 11px;
+  width: 11px;
+}
+
 
 #div_SlideShow { position: relative; margin: 10px 10px 10px 2px; float: left; }
 #div_SlideShow .galleryItem_css3 { margin: 0; }
