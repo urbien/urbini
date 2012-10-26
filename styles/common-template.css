@@ -2110,7 +2110,8 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
    font-weight: normal;
    text-shadow: 0 1px 1px rgba(0,0,0,0.25), 2px 0 1px rgba(0,0,0,0.25) !important;
  }
- .icon_btn img { width: 30px; height: 30px; }
+.panel_block .header .icon_btn { font-size: 1px; padding: 3px; }
+.icon_btn img { width: 30px; height: 30px; }
 .icon_btn_symb { -webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), to(rgba(0,0,0,0.8))); }
 .dlg_cross { font-family: Geneva, Tahoma, Arial, Helvetica; font-weight: bold; }
 
