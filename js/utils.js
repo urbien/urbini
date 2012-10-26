@@ -106,6 +106,10 @@ Utils.getShortUri = function(uri, model) {
   return nameAndId && nameAndId.length == 3 ? nameAndId[1] + '/' + nameAndId[2] : uri;
 }
 
+Utils.isA = function(model, interfaceName) {
+  return _.contains(model.interfaces, interfaceName);
+}
+
 Utils.getPackagePath = function(type) {
   var start = "http://www.";
   var path = type.substring(start.length, type.lastIndexOf("/"));

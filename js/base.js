@@ -1,4 +1,4 @@
-var Lablz = {};
+window.Lablz = window.Lablz || {};
 var packages = {};
 
 // START ///////////// Models //////////////// START ///
@@ -7,7 +7,6 @@ packages.Resource = Backbone.Model.extend({
   idAttribute: "_uri",
   initialize: function() {
     _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', /*'set',*/ 'updateDB'); // fixes loss of context for 'this' within methods
-    this.initialized = false;
 //    this.bind('change', this.onChange);
     this.on('change', this.updateDB);
     var type = this.constructor.type || this.get('type');
@@ -25,7 +24,6 @@ packages.Resource = Backbone.Model.extend({
     
     this.urlRoot = Lablz.apiUrl + this.className;
 //    this._setUri();
-    this.initialized = true;
   },  
   url: function() {
     return Lablz.apiUrl + this.className + "?_uri=" + encodeURIComponent(this.get('_uri'));
@@ -48,9 +46,6 @@ packages.Resource = Backbone.Model.extend({
     return resp;
   },
   validate: function(attrs) {
-    if (!this.initialized || this.lastFetchOrigin == 'db' || (this.collection && this.collection.lastFetchOrigin == 'db'))
-      return;
-    
     for (var name in attrs) {
       var validated = this.validateProperty(name, attrs[name]);
       if (validated !== true)
@@ -90,17 +85,27 @@ packages.Resource = Backbone.Model.extend({
   updateDB: function() {
     if (this.lastFetchOrigin != 'db' && !this.collection) // if this resource is part of a collection, the collection will update the db in bulk
       Lablz.indexedDB.addItem(this);
+  },
+  isA: function(interfaceName) {
+    return Utils.isA(this.model, interfaceName);
+  },
+  fetch: function(options) {
+    options = options || {};
+    options.silent = true;
+    return Backbone.Model.prototype.fetch.call(this, options);
   }
+//  ,
+//  loadMap: function() {
+//    var url = url();
+//    url += (url.indexOf("?") == -1 : "?" : "&") + "$map=y";
+//  }
+//  
 //  ,
 //  set: function(attrs, options) {
 //    options = options || {};
 ////    options.silent = this.lastFetchOrigin == 'db';
 //    return Backbone.Model.prototype.set.call(this, attrs, options);
 //  },  
-//  fetch: function(options) {
-//  
-//    return Backbone.Model.prototype.fetch.call(this, options);
-//  }
 },
 {
   type: "http://www.w3.org/TR/1999/PR-rdf-schema-19990303#Resource",
@@ -110,10 +115,15 @@ packages.Resource = Backbone.Model.extend({
     davDisplayName: {type: "string"},
     _uri: {type: "string"},
     _shortUri: {type: "string"}
+  },
+  myInterfaces : {},
+  isA: function(interfaceName) {
+    return Utils.isA(this, interfaceName);
   }
 });
 
 packages.Resource.properties = _.clone(packages.Resource.myProperties);
+packages.Resource.interfaces = _.clone(packages.Resource.myInterfaces);
 
 Lablz.ResourceList = Backbone.Collection.extend({
 //  page: 1,
@@ -152,6 +162,11 @@ Lablz.ResourceList = Backbone.Collection.extend({
   },
   fetchAll: function(options) { 
     return Backbone.Model.prototype.fetch.call(this, options);
+  },
+  fetch: function(options) {
+    options = options || {};
+    options.silent = true;
+    return Backbone.Collection.prototype.fetch.call(this, options);
   }
 
 //  ,
@@ -174,6 +189,22 @@ Lablz.ResourceList = Backbone.Collection.extend({
 //    }
 //  }
 });
+
+Lablz.MapModel = Backbone.Model.extend({
+  initialize: function() {
+    _.bindAll(this, 'parse', 'url'); // fixes loss of context for 'this' within methods
+  },  
+  url: function() {
+    var base = this.get('url');
+    return base + (base.indexOf("?") == -1 ? "?" : "&") + "$map=y";
+  },
+//  getKey: function() {
+//    return this.url();
+//  },
+  parse: function (resp) {
+    return resp;
+  },
+})
 
 // END ///////////// Models //////////////// END ///
 
@@ -212,14 +243,14 @@ Backbone.sync = function(method, model, options) {
         if (typeof newLastModified === "undefined") 
           newR = 0;
         if (!tsProp || !newLastModified || newLastModified > saved) {
-          toAdd.add(new model.model(r));
+          toAdd.push(r); //new model.model(r));
         }
       }
       
       if (toAdd.length) {
         for (var i = 0; i < toAdd.length; i++) {
           var existing = model.get(toAdd[i]._uri);
-          existing && existing.set(toAdd[i]);
+          existing && existing.set(toAdd[i], {silent: true});
         }
         
         Lablz.indexedDB.addItems(toAdd, model.className);
@@ -303,7 +334,7 @@ Backbone.sync = function(method, model, options) {
   }
   
   // only override sync if it is a fetch('read') request
-  key = this.getKey();
+  key = this.getKey && this.getKey();
   if (!key || !Lablz.indexedDB.getDataAsync(key, success, error))
     runDefault();
 }
@@ -346,6 +377,8 @@ Lablz.initModels = function() {
     m.prototype.validate = packages.Resource.prototype.validate;
     var superProps = m.__super__.constructor.properties;
     m.properties = superProps ? _.extend(_.clone(superProps), m.myProperties) : _.clone(m.myProperties);
+    var superInterfaces = m.__super__.constructor.interfaces;
+    m.interfaces = superProps ? _.extend(_.clone(superProps), m.myInterfaces) : _.clone(m.myInterfaces);
   }
 };
 

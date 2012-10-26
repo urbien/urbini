@@ -3266,7 +3266,7 @@ var TagsMgr = {
 ********************************************/
 var SlideSwaper = {
   STEPS_AMT : 12,
-  TIMEOUT : 30, // timeout between steps. On FF3 can not be applied too short timeout.
+  TIMEOUT : 20, // timeout between steps. On FF3 can not be applied too short timeout.
   DISTANCE : 20, // pecents of tray width 
   // ease-in-out // currently used for WebKit in common.css
   BEZIER_POINTS : [[0.0, 0.0], [0.42, 0.0], [0.58, 1.0], [1.0, 1.0]],
@@ -8273,11 +8273,11 @@ var DragEngine = {
     if (parent && typeof parent.className == "string" && parent.className.toLowerCase() == "icon_btn")
       return;
 
-    if((titleObj = getAncestorById(caughtObj, "titleBar")) == null || // &&
+    if((titleObj = getAncestorById(caughtObj, "titleBar")) == null &&
         (typeof caughtObj.className == "string" &&
-        (titleObj =  getAncestorByAttribute(caughtObj, "className", thisObj.classNameArr)) == null))
+        ((titleObj =  getAncestorByClassName(caughtObj, thisObj.classNameArr)) == null)))
       return;
-    
+ 
     // possible to define handler as Attribute in html
     var dragHandlerStr = titleObj.getAttribute("draghandler");
     // or by class name here

@@ -8,6 +8,7 @@
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c">
     </ul>
   </div>
+  <div id="map"></div>
   
   <div data-role="footer">
      <a target="#welcome" class="icon home">Home</a>
@@ -21,7 +22,7 @@
   </div>
   <div data-role="content" data-theme="e">
     <img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}"></img> 
-    <!-- ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-role="listview" data-theme="c" id="resourceView"-->
+    <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-role="listview" data-theme="c" id="resourceView"></ul>
     <ul id="sidebar" data-role="listview" class="ui-listview" data-inset="true" data-theme="c">
     </ul>
   </div>
@@ -32,7 +33,7 @@
 </script>  
 
 <script type="text/template" id="mapTemplate">
-  <div id="map"></div>
+  <!--div id="map"></div-->
 </script>
 
 <script type="text/template" id="stringTemplate">

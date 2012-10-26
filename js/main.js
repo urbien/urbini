@@ -13,7 +13,10 @@ var AppRouter = Backbone.Router.extend({
       ":type":"list",
       "view/:uri":"view"
   },
-
+  l: {},
+  v: {},
+  resources: {},
+  lists: {},
   initialize:function () {
     $('#backButton').on('click', function(event) {
         window.history.back();
@@ -23,19 +26,24 @@ var AppRouter = Backbone.Router.extend({
   },
   
   list: function (type) {
+    if (this.lists[type] && this.l[type]) {
+      this.changePage(this.l[type]);
+      return;
+    }
+    
     var model = Lablz.shortNameToModel[type];
     if (!model)
       return;
     
     var params = type.split('&');
     var self = this;
-    this.resList = new Lablz.ResourceList(null, {model: model});
-    this.resListPage = new Lablz.ListPage({model: this.resList});
-    this.resList.fetch({
+    var list = this.lists[type] = new Lablz.ResourceList(null, {model: model});
+    var listView = this.l[type] = new Lablz.ListPage({model: list});
+    list.fetch({
         add: true, 
         success: function() {
-          self.changePage(self.resListPage);
-          self.loadExtras(params);
+          self.changePage(listView);
+//          self.loadExtras(params);
         }
     });
   },
@@ -43,27 +51,36 @@ var AppRouter = Backbone.Router.extend({
   view: function (uri) {
     var params = uri.split('&');
     uri = decodeURIComponent(params[0]);
-    if (this.resList) {
-      this.changePage(new Lablz.ViewPage({model: this.resList.get(uri)}));
+    if (this.resources[uri] && this.v[uri]) {
+      this.changePage(this.v[uri]);
       return this;
     }
-    
+
     var self = this;
     var type = Utils.getType(uri);
+    if (this.lists[type]) {
+      var res = this.lists[type].get(uri);
+      if (res) {
+        this.v[uri] = new Lablz.ViewPage({model: res});
+        this.changePage(this.v[uri]);
+        return this;
+      }
+    }
+
     uri = Utils.getLongUri(uri, Utils.getTypeUri(type));
     var typeCl = Lablz.shortNameToModel[type];
     if (!typeCl)
       return this;
     
-    this.res = new typeCl({_uri: uri});
-    this.resView = new Lablz.ViewPage({model: this.res});
+    var res = this.resources[uri] = new typeCl({_uri: uri});
+    var view = this.v[uri] = new Lablz.ViewPage({model: res});
     var paintMap;
     var success = function(data) {
-      self.changePage(self.resView);
-      self.loadExtras(params);
+      self.changePage(view);
+//      self.loadExtras(params);
     }
     
-		this.res.fetch({success: success});
+		res.fetch({success: success});
   },
   
   loadExtras: function(params) {
@@ -83,8 +100,6 @@ var AppRouter = Backbone.Router.extend({
       return;
     
     console.log("painting map");
-//    this.mapView = new Lablz.MapView({model: this.res || this.resList});
-//    this.mapView.render();
   },
   
   changePage: function(view) {
@@ -99,9 +114,10 @@ var AppRouter = Backbone.Router.extend({
 //      this.currentView.close();
   
 //    $(selector).empty().append(view.render().el);
-    $(view.el).attr('data-role', 'page');
-    view.render();
-    $('body').append($(view.el));
+    view.$el.attr('data-role', 'page');
+    if (!view.rendered)
+      view.render();
+    $('body').append(view.$el);
     this.currentView = view;
     var transition = $.mobile.defaultPageTransition;
     if (this.firstPage) {
@@ -109,7 +125,7 @@ var AppRouter = Backbone.Router.extend({
       this.firstPage = false;
     }
     
-    $.mobile.changePage($(view.el), {changeHash:false, transition: transition});
+    $.mobile.changePage(view.$el, {changeHash:false, transition: transition});
     return view;
   }
 });
