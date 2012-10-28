@@ -34,6 +34,10 @@
   </div>
 </script>  
 
+<script type="text/template" id="resourceTemplate">
+    <a href="{{ value.indexOf('http') == 0 ? value : Lablz.serverName + '/v/' + value }}">{{ value }}</a>
+</script>
+
 <script type="text/template" id="mapTemplate">
   <!--div id="map"></div-->
 </script>
