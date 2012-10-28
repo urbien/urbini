@@ -1,0 +1,4 @@
+.ui-li-has-thumb .ui-btn-inner a.ui-link-inherit, .ui-li-static.ui-li-has-thumb { padding-left: 90px; }
+.ui-header .ui-btn-left, .ui-header .ui-btn-right {
+  top: 5px;
+}

@@ -11,13 +11,14 @@ var AppRouter = Backbone.Router.extend({
   v: {},
   resources: {},
   lists: {},
-  initialize: function(options) {
-    $('#backButton').on('click', function(event) {
-      window.history.back();
-      return false;
-    });
-    
+  backClicked: false,       
+  initialize: function () {
     this.firstPage = true;
+    $(document).on('click', 'a.back', function(event) {
+      event.preventDefault();
+      AppRouter.backClicked = true;
+      window.history.back();
+    });
   },
 
   map: function (type) {
@@ -144,13 +145,21 @@ var AppRouter = Backbone.Router.extend({
     }
 
     this.currentView = view;
-    var transition = "slide"; //$.mobile.defaultPageTransition;
     if (this.firstPage) {
       transition = 'none';
       this.firstPage = false;
     }
     
-    $.mobile.changePage(view.$el, {changeHash: false, transition: transition});
+    // hot to transition
+    var isReverse = false;
+    var transition = "slide"; //$.mobile.defaultPageTransition;
+    if (AppRouter.backClicked == true) {
+      AppRouter.backClicked = false;
+      isReverse = true;
+    }
+    
+    // perform transition
+    $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse});
     return view;
   }
 });

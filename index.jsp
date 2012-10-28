@@ -1,27 +1,20 @@
 <div>
 <!-- Templates -->
 <script type="text/template" id="resource-list">
-  <!--div id="map" height="400px" width="600px"></div-->
-  <div data-role="header" class="ui-header ui-bar-b" role="banner">
-    <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
+  <div data-role="header" class="ui-header ui-bar-c" role="banner">
     <h1 id="pageTitle">{{ this.model.className }}</h1> 
     <!--div id="mapBtnDiv" class="ui-screen-hidden"><a href="#" id="mapIt" data-icon="map" class="back ui-btn-right">Map It</a></div-->
     <a href="#" id="mapIt" data-icon="map" class="back ui-btn-right ui-screen-hidden">Map It</a>
   </div>
-  <!--div id="listMap" class="map"></div-->
-  <div id="sidebarDiv" class="ui-content" data-role="content" data-theme="e" role="main">
+  <div  id="sidebarDiv" class="ui-content" data-role="content" role="main">
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c">
     </ul>
   </div>
-  <!--div id="map"></div-->
   
   <div data-role="footer">
      <a target="#welcome" class="icon home">Home</a>
   </div>
 </script>  
-<!-- style>
-  .ui-li-has-thumb .ui-btn-inner a.ui-link-inherit .ui-li-static..ui-li-has-thumb { padding-left: 90px; }
-</style -->
 <script type="text/template" id="resource">
   <div data-role="header"  class="ui-header ui-bar-c" role="banner">
     <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
