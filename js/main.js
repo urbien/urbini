@@ -59,7 +59,7 @@ var AppRouter = Backbone.Router.extend({
     var self = this;
     var type = Utils.getType(uri);
     if (this.lists[type]) {
-      var res = this.lists[type].get(uri);
+      var res = this.resources[uri] = this.lists[type].get(uri);
       if (res) {
         this.v[uri] = new Lablz.ViewPage({model: res});
         this.changePage(this.v[uri]);
@@ -115,11 +115,12 @@ var AppRouter = Backbone.Router.extend({
   
 //    $(selector).empty().append(view.render().el);
     view.$el.attr('data-role', 'page');
-    if (!view.rendered)
+    if (!view.rendered) {
       view.render();
-    $('body').append(view.$el);
+      $('body').append(view.$el);
+    }
     this.currentView = view;
-    var transition = $.mobile.defaultPageTransition;
+    var transition = "slide"; //$.mobile.defaultPageTransition;
     if (this.firstPage) {
       transition = 'none';
       this.firstPage = false;
