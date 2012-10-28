@@ -1,10 +1,10 @@
 <div>
 <!-- Templates -->
 <script type="text/template" id="resource-list">
-  <div data-role="header" class="ui-header ui-bar-b" role="banner">
+  <div data-role="header" class="ui-header ui-bar-c" role="banner">
     <h1 id="pageTitle">{{ this.model.className }}</h1> 
   </div>
-  <div  id="sidebarDiv" class="ui-content" data-role="content" data-theme="e" role="main">
+  <div  id="sidebarDiv" class="ui-content" data-role="content" role="main">
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c">
     </ul>
   </div>
@@ -14,9 +14,6 @@
      <a target="#welcome" class="icon home">Home</a>
   </div>
 </script>  
-<!-- style>
-  .ui-li-has-thumb .ui-btn-inner a.ui-link-inherit .ui-li-static..ui-li-has-thumb { padding-left: 90px; }
-</style -->
 <script type="text/template" id="resource">
   <div data-role="header"  class="ui-header ui-bar-c" role="banner">
     <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
