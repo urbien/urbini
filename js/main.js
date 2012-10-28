@@ -4,6 +4,11 @@
 //	return loc.substring(loc.lastIndexOf('/'));
 //})();
 
+$(document).click(function() {
+  Lablz.Navigation.back = false;
+  Lablz.Navigation.fwd = false;
+  return true;
+});
 
 // Router
 var documentReadyCount = 0;
@@ -23,7 +28,7 @@ var AppRouter = Backbone.Router.extend({
         window.history.back();
         return false;
     });
-    
+
     this.firstPage = true;
   },
 
@@ -140,7 +145,8 @@ var AppRouter = Backbone.Router.extend({
       this.firstPage = false;
     }
     
-    $.mobile.changePage(view.$el, {changeHash:false, transition: transition});
+    $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: Lablz.Navigation.back});
+    Lablz.Navigation.reset();
     return view;
   }
 });

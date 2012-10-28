@@ -124,6 +124,48 @@ Utils.getPackagePath = function(type) {
   return path;
 }
 
+Utils.modelToGeoJSON = function(model) {
+  return model.isA("Shape") ? shapeModelToGeoJSON(model) : pointModelToGeoJSON(model);
+}
+
+Utils.pointModelToGeoJSON = function(model) {
+  if (model instanceof Backbone.Collection) {
+    
+  }
+  else {
+  }
+}
+
+Utils.shapeModelToGeoJSON = function(model) {
+  if (model instanceof Backbone.Collection) {
+  }
+  else {
+  }
+  
+  var name = model.className;
+//    geoJson.put("type", "Feature");
+//    JSONObject properties = new JSONObject();
+//    properties.put("name", name);    
+//    Float area = shape.getFloat(Shape._area);
+//    if (area != null)
+//      properties.put("area", area);
+//    HTMLData htmlData = getHTMLForItem(shape, sCl);
+//    properties.put("html", htmlData.html);
+//    if (htmlData.width != null)
+//      properties.put("width", htmlData.width);
+//    if (htmlData.height != null)
+//      properties.put("height", htmlData.height);
+//    
+//    geoJson.put("properties", properties);
+//    JSONObject geometry = new JSONObject();
+//    geometry.put("type", type.toString());
+//    geometry.put("coordinates", coordinates);
+//    geoJson.put("geometry", geometry);
+//  } catch (JSONException j) {
+//    return null;
+//  }
+}
+
 //tpl = { 
 //    // Hash of preloaded templates for the app
 //    templates: {},

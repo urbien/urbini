@@ -1,4 +1,12 @@
 window.Lablz = window.Lablz || {};
+Lablz.Navigation = Lablz.Navigation || {
+  fwd: true, 
+  back: true,
+  reset: function() {
+    this.fwd = this.back = true;
+  }
+};
+
 var packages = {};
 
 // START ///////////// Models //////////////// START ///
