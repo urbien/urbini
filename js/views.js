@@ -250,6 +250,8 @@ Lablz.ListPage = Backbone.View.extend({
     this.listView = new Lablz.ResourceListView({el: $('ul', this.el), model: this.model});
     this.listView.render();
     this.rendered = true;
+    if (!this.$el.parentNode) 
+      $('body').append(this.$el);
     return this;
   }
 });
@@ -279,6 +281,8 @@ Lablz.ViewPage = Backbone.View.extend({
     this.view = new Lablz.ResourceView({el: $('ul#resourceView', this.el), model: this.model});
     this.view.render();
     this.rendered = true;
+    if (!this.$el.parentNode) 
+      $('body').append(this.$el);
     return this;
   }
 

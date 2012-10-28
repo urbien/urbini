@@ -141,7 +141,6 @@ var AppRouter = Backbone.Router.extend({
     view.$el.attr('data-role', 'page');
     if (!view.rendered) {
       view.render();
-      $('body').append(view.$el);
     }
 
     this.currentView = view;
