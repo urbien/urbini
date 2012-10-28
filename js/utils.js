@@ -162,14 +162,14 @@ Utils.getMapItemHTML = function(m) {
       }
       
       medImg = {value: medImg};
-      width && medImg.width = width;
-      height && medImg.height = height;
+      width && (medImg.width = width);
+      height && (medImg.height = height);
       medImg = _.template(tpl.get("imageTemplate"))(medImg);
       return _.template(tpl.get("mapItemTemplate"))({displayName: m.get('davDisplayName'), value: m.get('_uri'), image: medImg})
     }
   }
-  else
-    return _.template(tpl.get("resourceTemplate"))({displayName: m.get('davDisplayName'), value: m.get('_uri')});
+  
+  return _.template(tpl.get("resourceTemplate"))({displayName: m.get('davDisplayName'), value: m.get('_uri')});
 }
 
 Utils.collectionToGeoJSON = function(model) {
@@ -212,6 +212,6 @@ Utils.modelToGeoJSON = function(model) {
     }
   }
   
-  area && json.properties.area = area;
+  area && (json.properties.area = area);
   properties.html = Utils.getMapItemHTML(model);
 }
