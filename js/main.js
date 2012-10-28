@@ -17,12 +17,16 @@ var AppRouter = Backbone.Router.extend({
   v: {},
   resources: {},
   lists: {},
-  initialize:function () {
-    $('#backButton').on('click', function(event) {
-        window.history.back();
-        return false;
-    });
+  backClicked: false, 
+      
+  initialize: function () {
     this.firstPage = true;
+    var self = this;
+    $(document).on('click', 'a.back', function(event) {
+      event.preventDefault();
+      self.backClicked = true;
+      window.history.back();
+    });
   },
   
   list: function (type) {
@@ -120,13 +124,21 @@ var AppRouter = Backbone.Router.extend({
       $('body').append(view.$el);
     }
     this.currentView = view;
-    var transition = "slide"; //$.mobile.defaultPageTransition;
     if (this.firstPage) {
       transition = 'none';
       this.firstPage = false;
     }
     
-    $.mobile.changePage(view.$el, {changeHash:false, transition: transition});
+    // hot to transition
+    var isReverse = false;
+    var transition = "slide"; //$.mobile.defaultPageTransition;
+    if (this.backClicked == true) {
+      this.backClicked = false;
+      isReverse = true;
+    }
+    
+    // perform transition
+    $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse});
     return view;
   }
 });
