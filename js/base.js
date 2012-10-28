@@ -1,11 +1,45 @@
 window.Lablz = window.Lablz || {};
-Lablz.Navigation = Lablz.Navigation || {
-  fwd: true, 
-  back: true,
-  reset: function() {
-    this.fwd = this.back = true;
-  }
-};
+
+//Lablz.Navigation = Lablz.Navigation || {
+//  hIdx: -1,
+//  history: [],
+//  back: false,
+//  fwd: false,
+//  click: false,
+//  push: function() {
+//    if (this.history[this.hIdx] == window.location.hash) // refresh
+//      return;
+//    else if (!this.clickedBrowserButton()) {
+//      this.hIdx++;
+//      this.history = this.history.slice(0, this.hIdx);
+//      this.history.push(window.location.hash);
+//    }
+//  },
+//  reset: function() {
+//    this.click = this.back = this.fwd = false;
+//  },
+//  clickedBrowserButton: function() {
+//    if (this.history.length == 0 || this.click)
+//      return false;
+//    
+//    this.back = this.history[this.hIdx - 1] == window.location.hash;
+//    this.fwd = this.history[this.hIdx + 1] == window.location.hash;
+//  }
+////  detectBackButton : function() {
+////    var currentFragment = Backbone.history.getFragment();
+////    Lablz.Navigation.back = false; // assume no back detected
+////  
+////    if (!Lablz.Navigation.click && currentFragment == Lablz.Navigation.previousFragment)
+////      Lablz.Navigation.back = true;
+////  
+////    Lablz.Navigation.click = false;  // reset
+////    Lablz.Navigation.previousFragment = currentFragment;
+////  }
+//};
+//
+//$(document).click(function(e) {
+//  Lablz.Navigation.click = true;
+//});
 
 var packages = {};
 
@@ -97,9 +131,15 @@ packages.Resource = Backbone.Model.extend({
   isA: function(interfaceName) {
     return Utils.isA(this.constructor, interfaceName);
   },
+  asyncFetch: function(options) {
+    var self = this;
+    setTimeout(function() {
+      self.fetch(options);
+    }, 0);
+  },
   fetch: function(options) {
-    options = options || {};
-    options.silent = true;
+//    options = options || {};
+//    options.silent = true;
     return Backbone.Model.prototype.fetch.call(this, options);
   }
 //  ,
@@ -171,9 +211,16 @@ Lablz.ResourceList = Backbone.Collection.extend({
   fetchAll: function(options) { 
     return Backbone.Model.prototype.fetch.call(this, options);
   },
+  asyncFetch: function(options) {
+    var self = this;
+    setTimeout(function() {
+      self.fetch(options);
+    }, 0);
+  },
   fetch: function(options) {
-    options = options || {};
-    options.silent = true;
+//    options = options || {};
+//    options.silent = true;
+    options = options || {add: true};
     return Backbone.Collection.prototype.fetch.call(this, options);
   }
 
@@ -260,7 +307,7 @@ Backbone.sync = function(method, model, options) {
       if (toAdd.length) {
         for (var i = 0; i < toAdd.length; i++) {
           var existing = model.get(toAdd[i]._uri);
-          existing && existing.set(toAdd[i], {silent: true});
+          existing && existing.set(toAdd[i]); //, {silent: true});
         }
         
         Lablz.indexedDB.addItems(toAdd, model.className);

@@ -1,6 +1,3 @@
-//Lablz.serverName = "http://mark.obval.com/urbien";
-//Lablz.apiUrl = Lablz.serverName + "/api/v1/";
-
 var Utils = {};
 Utils.getFirstUppercaseCharIdx = function(str) {
 	for (var i = 0; i < str.length; i++) {
@@ -124,79 +121,97 @@ Utils.getPackagePath = function(type) {
   return path;
 }
 
-Utils.modelToGeoJSON = function(model) {
-  return model.isA("Shape") ? shapeModelToGeoJSON(model) : pointModelToGeoJSON(model);
+Utils.getShapeType = function(rings) {
+  var depth = Utils.getDepth(rings);
+  switch (depth) {
+  case 1:
+    return "Point";
+  case 2:
+    return null;
+  case 3:
+    return "Polygon";
+  case 4:
+    return "MultiPolygon";
+  default:
+    return null;
+  }
 }
 
-Utils.pointModelToGeoJSON = function(model) {
-  if (model instanceof Backbone.Collection) {
-    
-  }
-  else {
-  }
-}
-
-Utils.shapeModelToGeoJSON = function(model) {
-  if (model instanceof Backbone.Collection) {
-  }
-  else {
+Utils.getDepth = function(arr) {
+  for (var i = 0; i < arr.length; i++) {
+    var type = Object.prototype.toString.call(arr[i]);
+    if (type === '[object Array]')
+      depth = Math.max(depth, Utils.getDepth(arr[i]) + 1);
+    else
+      return depth;
   }
   
-  var name = model.className;
-//    geoJson.put("type", "Feature");
-//    JSONObject properties = new JSONObject();
-//    properties.put("name", name);    
-//    Float area = shape.getFloat(Shape._area);
-//    if (area != null)
-//      properties.put("area", area);
-//    HTMLData htmlData = getHTMLForItem(shape, sCl);
-//    properties.put("html", htmlData.html);
-//    if (htmlData.width != null)
-//      properties.put("width", htmlData.width);
-//    if (htmlData.height != null)
-//      properties.put("height", htmlData.height);
-//    
-//    geoJson.put("properties", properties);
-//    JSONObject geometry = new JSONObject();
-//    geometry.put("type", type.toString());
-//    geometry.put("coordinates", coordinates);
-//    geoJson.put("geometry", geometry);
-//  } catch (JSONException j) {
-//    return null;
-//  }
+  return depth;
 }
 
-//tpl = { 
-//    // Hash of preloaded templates for the app
-//    templates: {},
-// 
-//    // Recursively pre-load all the templates for the app.
-//    // This implementation should be changed in a production environment:
-//    // All the template files should be concatenated in a single file.
-//    loadTemplates: function(names, callback) {
-// 
-//        var that = this;
-// 
-//        var loadTemplate = function(index) {
-//            var name = names[index];
-//            console.log('Loading template: ' + name);
-//            $.get(Lablz.serverName + '/tpls/' + name + '.html', function(data) {
-//                that.templates[name] = data;
-//                index++;
-//                if (index < names.length) {
-//                    loadTemplate(index);
-//                } else {
-//                    callback();
-//                }
-//            });
-//        }
-// 
-//        loadTemplate(0);
-//    },
-// 
-//    // Get template by name from hash of preloaded templates
-//    get: function(name) {
-//        return this.templates[name];
-//    }
-// 
-//};
+Utils.getMapItemHTML = function(m) {
+  if (m.isA("ImageResource")) {
+    var medImg = m.get('mediumImage') || m.get('featured');
+    if (medImg) {
+      var width = m.get('originalWidth');
+      var height = m.get('originalHeight');
+      if (width && height) {
+        var imgOffset = Math.max(width, height) / 205;
+        width = (int)(width / imgOffset);
+        height = (int)(height / imgOffset);
+      }
+      
+      medImg = {value: medImg};
+      width && medImg.width = width;
+      height && medImg.height = height;
+      medImg = _.template(tpl.get("imageTemplate"))(medImg);
+      return _.template(tpl.get("mapItemTemplate"))({displayName: m.get('davDisplayName'), value: m.get('_uri'), image: medImg})
+    }
+  }
+  else
+    return _.template(tpl.get("resourceTemplate"))({displayName: m.get('davDisplayName'), value: m.get('_uri')});
+}
+
+Utils.collectionToGeoJSON = function(model) {
+  var gj = [];
+  _.each(model.models, function(m){
+    gj.put(Utils.modelToGeoJSON(m));
+  })
+  
+  return gj;
+}
+
+Utils.modelToGeoJSON = function(model) {
+  if (model instanceof Backbone.Collection)
+    return Utils.collectionToGeoJSON(model);
+  
+  var isShape = model.isA("Shape");
+  var coords, area;
+  if (isShape) {
+    coords = model.get('shapeJson');
+    area = model.get('area');
+  }
+  else {
+    var lon = model.get('longitude');
+    if (!lon)
+      return null;
+    
+    coords = [lon, model.get('latitude')];  
+  }
+  
+  var type = getShapeType(coords); 
+  var name = model.className + " " + model.davDisplayName;
+  var json = {
+    "type": "Feature",
+    "properties": {
+      "name": "name"
+    },
+    "geometry": {
+      "type": type,
+      "coordinates": coords
+    }
+  }
+  
+  area && json.properties.area = area;
+  properties.html = Utils.getMapItemHTML(model);
+}

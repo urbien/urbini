@@ -19,19 +19,43 @@ tpl = {
  
 };
 
+// Events //
+Lablz.Events = _.extend({}, Backbone.Events);
+Lablz.Events.defaultTapHandler = function(e) {
+  var event = e.originalEvent;
+  var el = event.target;
+  var $el = $(el);
+  if ($el.prop('tagName') != 'A')
+    return true;
+  
+  event.preventDefault();
+  var href = $el.prop('href');
+  Backbone.history.navigate(href.slice(href.indexOf('#') + 1), true);
+}
+
+
 // Views
 Lablz.ResourceView = Backbone.View.extend({
 //  el: $('#content'),
 //  tagName: 'div',
   initialize: function(options) {
-    _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'render', 'tap', 'mapIt', 'fetchMap'); // fixes loss of context for 'this' within methods
     this.propRowTemplate = _.template(tpl.get('propRowTemplate'));
-//    this.model.bind('change', this.render, this);
+    this.model.bind('change', this.render, this);
 //    this.model.bind('reset', this.render, this);
     return this;
   },
-  
+  events: {
+    'tap': 'tap',
+    "click #mapIt": "mapIt"
+  },
+  mapIt: function(e) {
+    e.preventDefault();
+    Lablz.Events.trigger("mapIt", this.model);
+  },
+  tap: Lablz.Events.defaultTapHandler,  
   render:function (eventName) {
+    console.log("render resource");
     var type = this.model.type;
 //    var path = Utils.getPackagePath(type);
     var meta = this.model.__proto__.constructor.properties;
@@ -72,17 +96,37 @@ Lablz.ResourceView = Backbone.View.extend({
     
     var j = {"props": json};
     this.$el.html(html);
+//    var self = this;
+//    if (this.model.isA("Locatable") || this.model.isA("Shape"))
+//      this.fetchMap();
+
     this.rendered = true;
     return this;
+  },
+  fetchMap: function() {
+    this.mapModel = new Lablz.MapModel({model: this.model});
+    mapView = new Lablz.MapView({mapDivId: 'resourceMap', model: this.mapModel});
+    this.mapModel.fetch({success: 
+      function() {
+//        $('body').append($(mapView.render().el));
+        mapView.render();
+      }
+    });
   }
 });
 
 Lablz.MapView = Backbone.View.extend({
   tagName: 'div',
   el: $('#map'),
-  initialize:function () {
-    _.bindAll(this, 'render', 'show', 'hide');
-    this.template = _.template(tpl.get('mapTemplate'));
+  initialize: function (options) {
+    _.bindAll(this, 'render', 'show', 'hide', 'tap', 'toggleMap');
+    Lablz.Events.bind("mapIt", this.toggleMap);
+    if (options) {
+      this.el = options.el;
+      this.mapDivId = options.mapDivId;
+    }
+    
+//    this.template = _.template(tpl.get('mapTemplate'));
     this.ready = false;
     self = this;
 //    $.when(
@@ -96,6 +140,10 @@ Lablz.MapView = Backbone.View.extend({
 //      }
 //    );
   },
+  events: {
+    'tap': 'tap',
+  },
+  tap: Lablz.Events.defaultTapHandler,
   render:function (eventName) {
     if (!this.ready) {
       setTimeout(
@@ -106,16 +154,7 @@ Lablz.MapView = Backbone.View.extend({
       
       return this;
     }
-      
-    var m = this.model;
-    var pLayers = m.get('pointLayers');
-    if (pLayers) {
-      for (var name in pLayers) {
-        Lablz.Leaflet.addDelayedLayer(name, 'addPointsLayer');
-      }
-      
-    }
-    
+          
 //    $('#map').empty();
 //    var init = m.get('init');
 //    if (init) {
@@ -128,15 +167,24 @@ Lablz.MapView = Backbone.View.extend({
 //    }      
 
 //    {disableClusteringAtZoom: Lablz.Leaflet.maxZoom, singleMarkerMode: true, doScale: false, showCount: true, doSpiderfy: false}, null, {doCluster: true, highlight: true, zoom: false, hexColor: undefined}
-    var map = new Lablz.Leaflet;
-    map.pointLayers = this.model.get('pointLayers');
-    map.pointLayerInfos = this.model.get('pointLayerInfos');
-    map.shapeLayers = this.model.get('shapeLayers');
-    map.shapeLayerInfos = this.model.get('shapeLayerInfos');
-    var maxZoom = this.model.get('maxZoom');
-    Lablz.Leaflet.addMap(this.model.get('cloudMadeApiKey'), this.model.get('styleId'), maxZoom, this.model.get('center'), undefined);
+//    this.$el.html(this.template());
+//    this.el = $(this.mapDivId);
+    this.$el.empty();
+//    this.$el.hide();
+    var m = this.model;
+//    var map = new Lablz.Leaflet(this.mapDivId);
+    var map = new Lablz.Leaflet(this.mapDivId);
+    map.pointLayers = m.get('pointLayers');
+    map.pointLayerInfos = m.get('pointLayerInfos');
+    map.shapeLayers = m.get('shapeLayers');
+    map.shapeLayerInfos = m.get('shapeLayerInfos');
+    map.userAskedFor = m.get('userAskedFor');
+    var maxZoom = m.get('maxZoom');
+    map.addMap(m.get('cloudMadeApiKey'), m.get('styleId'), maxZoom, m.get('center'), undefined);
+    
+    var pLayers = m.get('pointLayers');
     if (pLayers) {
-      var clusterStyle = this.model.get('clusterStyle');
+      var clusterStyle = m.get('clusterStyle');
       if (clusterStyle)
         clusterStyle.disableClusteringAtZoom = maxZoom;
       
@@ -147,62 +195,87 @@ Lablz.MapView = Backbone.View.extend({
         if (type === '[object Array]') {
           firstLayerName = name;
           firstLayer = pLayers[name];
-          map.addGeoJsonPoints({name: firstLayer}, null, clusterStyle, null, this.model.get('pointLayersStyle'));
+          map.addGeoJsonPoints({name: firstLayer}, null, clusterStyle, null, m.get('pointLayersStyle'));
         }
         else if (type == '[object Object]')
-          map.addDelayedLayer(name, 'addDensityLayer');
-//          Lablz.Leaflet.addGeoJsonPoints({'Basketball courts (531)': pLayers['Basketball courts (531)']}, 'Basketball courts', clusterStyle, null, this.model.get('pointLayersStyle'));        
+          map.addDelayedLayer(name, 'addPointsLayer');
       }
     }
     
-    var mapBounds = this.model.get('bounds');
-    Lablz.Leaflet.map.fitBounds(mapBounds);
-    Lablz.Leaflet.addSizeButton(el, mapBounds);
-    Lablz.Leaflet.addReZoomButton(mapBounds);
-    var basicInfo = Lablz.Leaflet.addBasicMapInfo(firstLayerName);
-
-    this.$el.html(this.template(this.model.toJSON()));
+    var mapBounds = m.get('bounds');
+    map.fitBounds(mapBounds);
+    map.addSizeButton(this.$el, mapBounds);
+    map.addReZoomButton(mapBounds);
+    var basicInfo = map.addBasicMapInfo(firstLayerName);
+    Lablz.Events.trigger('mapReady', this.model);
     return this;
+  },
+
+  toggleMap: function(e) {
+    this.$el.is(":visible") && this.hide() || this.show();
   },
   
   show: function() {
+    this.$el.show();
     return this;
   },
   
   hide: function() {
+    this.$el.hide();
     return this;    
   }
 });
 
 Lablz.ListPage = Backbone.View.extend({
   initialize:function () {
-    _.bindAll(this, 'render');
+    _.bindAll(this, 'render', 'tap', 'mapIt', 'showMapButton');
+    Lablz.Events.bind("mapReady", this.showMapButton);
     this.template = _.template(tpl.get('resource-list'));
   },
+  events: {
+    'tap': 'tap',
+    'click #mapIt': 'mapIt'
+  },
+  mapIt: function(e) {
+    e.preventDefault();
+    Lablz.Events.trigger("mapIt", this.model);
+  },
+  showMapButton: function(e) {
+    this.$('#mapIt').show();
+  },
+  tap: Lablz.Events.defaultTapHandler,
   render:function (eventName) {
-//    $(this.el).html(this.template(this.model.toJSON()));
-//    $(this.el).empty();
+    console.log("render listPage");
     this.$el.html(this.template(this.model.toJSON()));
-//    this.listView = new EmployeeListView      ({el: $('ul', this.el), model: this.model});
     this.listView = new Lablz.ResourceListView({el: $('ul', this.el), model: this.model});
     this.listView.render();
     this.rendered = true;
     return this;
   }
-
 });
 
 Lablz.ViewPage = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render');
+    _.bindAll(this, 'render', 'tap', 'mapIt', 'showMapButton');
     this.model.on('change', this.render, this);
     this.template = _.template(tpl.get('resource'));
+    Lablz.Events.bind("mapReady", this.showMapButton);
   },
-
+  events: {
+    'tap': 'tap',
+    "click #mapIt": "mapIt"
+  },
+  mapIt: function(e) {
+    e.preventDefault();
+    Lablz.Events.trigger("mapIt", this.model);
+  },
+  showMapButton: function(e) {
+    this.$('#mapIt').show();
+  },
+  tap: Lablz.Events.defaultTapHandler,
   render:function (eventName) {
-//    $(this.el).empty();
+    console.log("render viewPage");
     this.$el.html(this.template(this.model.toJSON()));
-//    $(this.el).append('<div></div>');
     this.view = new Lablz.ResourceView({el: $('ul#resourceView', this.el), model: this.model});
     this.view.render();
     this.rendered = true;
@@ -212,22 +285,36 @@ Lablz.ViewPage = Backbone.View.extend({
 });
 
 Lablz.ResourceListView = Backbone.View.extend({
-//    tagName:'ul',
-//    el: '#sidebar',
     mapView: null,
     mapModel: null,
     initialize:function () {
-      _.bindAll(this, 'render', 'fetchMap'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'fetchMap', 'tap', 'swipe', 'mapIt'); // fixes loss of context for 'this' within methods
       this.model.on('reset', this.render, this);
 //      var self = this;
-//      if (this.model.model.isA("Locatable") || this.model.isA("Shape"))
+//      if (this.model.isA("Locatable") || this.model.isA("Shape"))
 //        this.fetchMap();
       
       return this;
     },
-//    events: {
+    events: {
 //      'scroll': 'checkScroll'
-//    },
+      'tap': 'tap',
+//      'doubletap': 'doubletap',
+//      'taphold': 'taphold',
+//      'transform': 'transform',
+//      'transformstart': 'transformstart',
+//      'transformend': 'transformend',
+      'swipe': 'swipe',
+      'click #mapIt': 'mapIt'
+    },
+    mapIt: function(e) {
+      e.preventDefault();
+      Lablz.Events.trigger("mapIt", this.model);
+    },
+    tap: Lablz.Events.defaultTapHandler,
+    swipe: function(e) {
+      
+    },
 //    checkScroll: function () {
 //      var triggerPoint = 100; // 100px from the bottom
 //        if( !this.isLoading && this.el.scrollTop + this.el.clientHeight + triggerPoint > this.el.scrollHeight ) {
@@ -236,20 +323,34 @@ Lablz.ResourceListView = Backbone.View.extend({
 //        }
 //    },
     render:function (eventName) {
+      console.log("render listView");
   		var elt = this.$el;
+//  		this.model.each(function (item) {
+//        elt.append(new Lablz.ResourceListItemView({model:item}).render().el);
+//      });
+
+  		var frag = document.createDocumentFragment();
   		this.model.each(function (item) {
-        elt.append(new Lablz.ResourceListItemView({model:item}).render().el);
-      });
-        
+  		  frag.appendChild(new Lablz.ResourceListItemView({model:item}).render().el);
+  		});
+  		
+  		elt.append(frag);
+  		
+//  		var mapBtnElt = this.$('mapIt');
+//  		if (mapBtnElt) {
+//  		  this.mapItBtn = new MapItButtonView({el: this.$('mapIt')});
+//  		}
+  		
       this.rendered = true;
   		return this;
     },
     fetchMap: function() {
-      this.mapModel = new Lablz.MapModel({url: this.model.url});
-      mapView = new Lablz.MapView({model: this.mapModel});
+      this.mapModel = new Lablz.MapModel({model: this.collection});
+      mapView = new Lablz.MapView({mapDivId: 'listMap', model: this.mapModel});
       this.mapModel.fetch({success: 
         function() {
-          $('body').append($(mapView.render().el));
+//          $('body').append($(mapView.render().el));
+          mapView.render();
         }
       });
     }
@@ -259,18 +360,17 @@ Lablz.ResourceListItemView = Backbone.View.extend({
   tagName:"li",
   
 	initialize: function() {
-    _.bindAll(this, 'render', 'onChange'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
 		this.template = _.template(tpl.get('listItemTemplate'));
     this.model.on('change', this.render, this);
 		return this;
 	},
-
+  events: {
+    'tap': 'tap',
+  },
+  tap: Lablz.Events.defaultTapHandler,
   render:function (eventName) {
     this.$el.html(this.template(this.model.toJSON()));
     return this;
-  },
-  
-  onChange: function(item) {
-    item = item;
   }
 });

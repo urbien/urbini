@@ -1,15 +1,3 @@
-
-//Lablz.Type = (function () {
-//	var loc = window.location.href;
-//	return loc.substring(loc.lastIndexOf('/'));
-//})();
-
-$(document).click(function() {
-  Lablz.Navigation.back = false;
-  Lablz.Navigation.fwd = false;
-  return true;
-});
-
 // Router
 var documentReadyCount = 0;
 var AppRouter = Backbone.Router.extend({
@@ -23,12 +11,12 @@ var AppRouter = Backbone.Router.extend({
   v: {},
   resources: {},
   lists: {},
-  initialize:function () {
+  initialize: function(options) {
     $('#backButton').on('click', function(event) {
-        window.history.back();
-        return false;
+      window.history.back();
+      return false;
     });
-
+    
     this.firstPage = true;
   },
 
@@ -37,7 +25,6 @@ var AppRouter = Backbone.Router.extend({
     this.mapModel = new Lablz.MapModel({url: Lablz.apiUrl + type});
     this.mapView = new Lablz.MapView({model: this.mapModel});
     this.mapModel.fetch({
-      add: true, 
       success: function() {
         self.changePage(self.mapView);
       }
@@ -45,14 +32,17 @@ var AppRouter = Backbone.Router.extend({
   },
 
   list: function (type) {
+//    Lablz.Navigation.push();
+//    Lablz.Navigation.detectBackButton();
     if (this.lists[type] && this.l[type]) {
+      this.lists[type].asyncFetch();
       this.changePage(this.l[type]);
-      return;
+      return this;
     }
     
     var model = Lablz.shortNameToModel[type];
     if (!model)
-      return;
+      return this;
     
     var params = type.split('&');
     var self = this;
@@ -65,17 +55,30 @@ var AppRouter = Backbone.Router.extend({
 //          self.loadExtras(params);
       }
     });
+    
+    return this;
   },
 
   view: function (uri) {
+//    Lablz.Navigation.push();
+//    Lablz.Navigation.detectBackButton();
     uri = Utils.getLongUri(uri);
-    if (this.resources[uri] && this.v[uri]) {
+    var type = Utils.getType(uri);
+    var res = this.resources[uri];
+    if (!res) {
+      var l = this.lists[type];
+      res = l && l.get(uri);
+    }
+    
+    if (res) {
+      res.asyncFetch();
+      this.resources[uri] = res;
+      this.v[uri] = this.v[uri] || new Lablz.ViewPage({model: res});
       this.changePage(this.v[uri]);
       return this;
     }
-
+    
     var self = this;
-    var type = Utils.getType(uri);
     if (this.lists[type]) {
       var res = this.resources[uri] = this.lists[type].get(uri);
       if (res) {
@@ -85,7 +88,6 @@ var AppRouter = Backbone.Router.extend({
       }
     }
 
-    uri = Utils.getLongUri(uri, Utils.getTypeUri(type));
     var typeCl = Lablz.shortNameToModel[type];
     if (!typeCl)
       return this;
@@ -99,6 +101,7 @@ var AppRouter = Backbone.Router.extend({
     }
     
 		res.fetch({success: success});
+		return this;
   },
   
   loadExtras: function(params) {
@@ -121,9 +124,11 @@ var AppRouter = Backbone.Router.extend({
   },
   
   changePage: function(view) {
+//    var backBtn = Lablz.Navigation.back;
+//    Lablz.Navigation.reset();
+
 //    console.log("change page: " + view.$el.tagName + view.$el.id);
     if (view == this.currentView) {
-//      view.render();
       console.log("Not replacing view with itself");
       return;
     }
@@ -145,8 +150,7 @@ var AppRouter = Backbone.Router.extend({
       this.firstPage = false;
     }
     
-    $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: Lablz.Navigation.back});
-    Lablz.Navigation.reset();
+    $.mobile.changePage(view.$el, {changeHash: false, transition: transition});
     return view;
   }
 });
