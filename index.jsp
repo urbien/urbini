@@ -8,7 +8,7 @@
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c">
     </ul>
   </div>
-  <div id="map"></div>
+  <!--div id="map"></div-->
   
   <div data-role="footer">
      <a target="#welcome" class="icon home">Home</a>
@@ -23,7 +23,7 @@
     <h1 id="pageTitle">{{ davDisplayName }}</h1> 
   </div>
   <div data-role="content">
-    <div align="center"><img align="middle" src="{{ typeof bigImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}"></img></div> 
+    <div align="center"><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}"></img></div> 
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true"></ul>
     <!--ul id="sidebar" data-role="listview" class="ui-listview" data-inset="true" data-theme="c">
     </ul -->
@@ -33,10 +33,6 @@
      <a target="#welcome" class="icon home">Home</a>
   </div>
 </script>  
-
-<script type="text/template" id="resourceTemplate">
-    <a href="{{ value.indexOf('http') == 0 ? value : Lablz.serverName + '/v/' + value }}">{{ value }}</a>
-</script>
 
 <script type="text/template" id="mapTemplate">
   <!--div id="map"></div-->
@@ -59,11 +55,11 @@
 </script>
 
 <script type="text/template" id="complexDateTemplate">
-  <span>{{ new Date(value.date / 1000) }}</span>
+  <span>{{ typeof displayName != 'undefined' ? displayName : new Date(value.date / 1000) }}</span>
 </script>
 
-<script type="text/template" id="uriTemplate">
-    <span><a href="{{ value.indexOf('http') == 0 ? value : Lablz.serverName + '/v.html?uri=' + encodeURIComponent(value) }}">{{ value }}</a></span>
+<script type="text/template" id="resourceTemplate">
+  <span><a href="{{ Lablz.serverName + '/bb#view/' + value }}">{{ typeof displayName == 'undefined' ? value : displayName }}</a></span>
 </script>
 
 <script type="text/template" id="imageTemplate">
@@ -71,7 +67,7 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a href='#view/{{ encodeURIComponent(_uri) }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}" /><h3>{{ davDisplayName }}</h3><p>{{ (typeof latinName == 'undefined') ? '' : latinName }}</p></a>
+  <a href='#view/{{ _uri }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}" /><h3>{{ davDisplayName }}</h3><p>{{ (typeof latinName == 'undefined') ? '' : latinName }}</p></a>
 </script>
 
 <script type="text/template" id="propRowTemplate">

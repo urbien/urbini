@@ -46,9 +46,15 @@ Utils.getLongUri = function(uri, type, primaryKeys) {
   }
   else if (uri.charAt(0).toUpperCase() == uri.charAt(0)) {
     // uri is of form Tree/32000
-    type = typeof type == 'undefined' ? Utils.getTypeUri(Utils.getType(uri)) : type;
+    var typeName = Utils.getType(uri);
+    type = typeof type == 'undefined' ? Utils.getTypeUri(typeName) : type;
     var sIdx = uri.indexOf("/");
     var longUri = uri.slice(0, sIdx) + "?";
+    var model = Lablz.shortNameToModel[typeName];
+    if (!model)
+      return uri;
+    
+    var primaryKeys = Utils.getPrimaryKeys(model);
     if (!primaryKeys  ||  primaryKeys.length == 0)
       longUri += "id=" + encodeURIComponent(uri.slice(sIdx + 1));
     else {
@@ -57,7 +63,7 @@ Utils.getLongUri = function(uri, type, primaryKeys) {
         throw new Error('bad uri "' + uri + '" for type "' + type + '"');
       
       for (var i = 0; i < primaryKeys.length; i++) {
-        longUri += primaryKeys[i] + "=" + encodeURIComponent(vals[i]);
+        longUri += primaryKeys[i] + "=" + vals[i]; // shortUri primary keys are already encoded
       }      
     }
     

@@ -113,8 +113,8 @@ packages.Resource = Backbone.Model.extend({
   displayName: "Resource",
   myProperties: {
     davDisplayName: {type: "string"},
-    _uri: {type: "string"},
-    _shortUri: {type: "string"}
+    _uri: {type: "resource"},
+    _shortUri: {type: "resource"}
   },
   myInterfaces : {}
 });
@@ -355,7 +355,7 @@ Lablz.templates = {
   "int": "intTemplate",
   "email": "emailTemplate",
   "date": "dateTemplate",
-  "uri": "uriTemplate",
+  "resource": "resourceTemplate",
   "Money": "moneyTemplate",
   "ComplexDate": "complexDateTemplate",
   "image": "imageTemplate"
