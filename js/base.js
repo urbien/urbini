@@ -87,7 +87,7 @@ packages.Resource = Backbone.Model.extend({
       Lablz.indexedDB.addItem(this);
   },
   isA: function(interfaceName) {
-    return Utils.isA(this.model, interfaceName);
+    return Utils.isA(this.constructor, interfaceName);
   },
   fetch: function(options) {
     options = options || {};
@@ -113,13 +113,10 @@ packages.Resource = Backbone.Model.extend({
   displayName: "Resource",
   myProperties: {
     davDisplayName: {type: "string"},
-    _uri: {type: "string"},
-    _shortUri: {type: "string"}
+    _uri: {type: "resource"},
+    _shortUri: {type: "resource"}
   },
-  myInterfaces : {},
-  isA: function(interfaceName) {
-    return Utils.isA(this, interfaceName);
-  }
+  myInterfaces : {}
 });
 
 packages.Resource.properties = _.clone(packages.Resource.myProperties);
@@ -148,6 +145,9 @@ Lablz.ResourceList = Backbone.Collection.extend({
 //  url: function() {
 //    this.url = Lablz.apiUrl + this.className + "?$limit=" + this.resultsPerPage + "&$offset=" + ((this.page - 1) * this.resultsPerPage);
 //  },
+  isA: function(interfaceName) {
+    return Utils.isA(this.model, interfaceName);
+  },
   parse: function(response) {
     if (!response || response.error)
       return [];
@@ -191,12 +191,14 @@ Lablz.ResourceList = Backbone.Collection.extend({
 });
 
 Lablz.MapModel = Backbone.Model.extend({
-  initialize: function() {
+  initialize: function(options) {
     _.bindAll(this, 'parse', 'url'); // fixes loss of context for 'this' within methods
+    this.baseUrl = options && options.url;
   },  
+  
   url: function() {
-    var base = this.get('url');
-    return base + (base.indexOf("?") == -1 ? "?" : "&") + "$map=y";
+//    var base = this.get('url');
+    return this.baseUrl + (this.baseUrl.indexOf("?") == -1 ? "?" : "&") + "$map=y";
   },
 //  getKey: function() {
 //    return this.url();
@@ -353,7 +355,7 @@ Lablz.templates = {
   "int": "intTemplate",
   "email": "emailTemplate",
   "date": "dateTemplate",
-  "uri": "uriTemplate",
+  "resource": "resourceTemplate",
   "Money": "moneyTemplate",
   "ComplexDate": "complexDateTemplate",
   "image": "imageTemplate"

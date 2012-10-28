@@ -11,12 +11,14 @@ var AppRouter = Backbone.Router.extend({
 
   routes:{
       ":type":"list",
-      "view/:uri":"view"
+      "view/*path":"view",
+      "map/:type":"map"
   },
   l: {},
   v: {},
   resources: {},
   lists: {},
+
   backClicked: false, 
       
   initialize: function () {
@@ -28,7 +30,19 @@ var AppRouter = Backbone.Router.extend({
       window.history.back();
     });
   },
-  
+
+  map: function (type) {
+    var self = this;
+    this.mapModel = new Lablz.MapModel({url: Lablz.apiUrl + type});
+    this.mapView = new Lablz.MapView({model: this.mapModel});
+    this.mapModel.fetch({
+      add: true, 
+      success: function() {
+        self.changePage(self.mapView);
+      }
+    });    
+  },
+
   list: function (type) {
     if (this.lists[type] && this.l[type]) {
       this.changePage(this.l[type]);
@@ -44,17 +58,16 @@ var AppRouter = Backbone.Router.extend({
     var list = this.lists[type] = new Lablz.ResourceList(null, {model: model});
     var listView = this.l[type] = new Lablz.ListPage({model: list});
     list.fetch({
-        add: true, 
-        success: function() {
-          self.changePage(listView);
+      add: true, 
+      success: function() {
+        self.changePage(listView);
 //          self.loadExtras(params);
-        }
+      }
     });
   },
 
   view: function (uri) {
-    var params = uri.split('&');
-    uri = decodeURIComponent(params[0]);
+    uri = Utils.getLongUri(uri);
     if (this.resources[uri] && this.v[uri]) {
       this.changePage(this.v[uri]);
       return this;
@@ -107,7 +120,7 @@ var AppRouter = Backbone.Router.extend({
   },
   
   changePage: function(view) {
-    console.log("change page: " + view.el.tagName + view.el.id);
+//    console.log("change page: " + view.$el.tagName + view.$el.id);
     if (view == this.currentView) {
 //      view.render();
       console.log("Not replacing view with itself");
@@ -123,6 +136,7 @@ var AppRouter = Backbone.Router.extend({
       view.render();
       $('body').append(view.$el);
     }
+
     this.currentView = view;
     if (this.firstPage) {
       transition = 'none';
