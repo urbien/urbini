@@ -23,10 +23,9 @@ var AppRouter = Backbone.Router.extend({
       
   initialize: function () {
     this.firstPage = true;
-    var self = this;
     $(document).on('click', 'a.back', function(event) {
       event.preventDefault();
-      self.backClicked = true;
+      AppRouter.backClicked = true;
       window.history.back();
     });
   },
@@ -146,8 +145,8 @@ var AppRouter = Backbone.Router.extend({
     // hot to transition
     var isReverse = false;
     var transition = "slide"; //$.mobile.defaultPageTransition;
-    if (this.backClicked == true) {
-      this.backClicked = false;
+    if (AppRouter.backClicked == true) {
+      AppRouter.backClicked = false;
       isReverse = true;
     }
     
