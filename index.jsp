@@ -14,23 +14,29 @@
      <a target="#welcome" class="icon home">Home</a>
   </div>
 </script>  
-
+<!-- style>
+  .ui-li-has-thumb .ui-btn-inner a.ui-link-inherit .ui-li-static..ui-li-has-thumb { padding-left: 90px; }
+</style -->
 <script type="text/template" id="resource">
-  <div data-role="header"  class="ui-header ui-bar-b" role="banner">
+  <div data-role="header"  class="ui-header ui-bar-c" role="banner">
     <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
     <h1 id="pageTitle">{{ davDisplayName }}</h1> 
   </div>
-  <div data-role="content" data-theme="e">
-    <img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}"></img> 
-    <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow" data-role="listview" data-theme="c" id="resourceView"></ul>
-    <ul id="sidebar" data-role="listview" class="ui-listview" data-inset="true" data-theme="c">
-    </ul>
+  <div data-role="content">
+    <div align="center"><img align="middle" src="{{ typeof bigImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}"></img></div> 
+    <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true"></ul>
+    <!--ul id="sidebar" data-role="listview" class="ui-listview" data-inset="true" data-theme="c">
+    </ul -->
   </div>
   
   <div data-role="footer">
      <a target="#welcome" class="icon home">Home</a>
   </div>
 </script>  
+
+<script type="text/template" id="resourceTemplate">
+    <a href="{{ value.indexOf('http') == 0 ? value : Lablz.serverName + '/v/' + value }}">{{ value }}</a>
+</script>
 
 <script type="text/template" id="mapTemplate">
   <!--div id="map"></div-->
@@ -65,11 +71,11 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a href='#view/{{ encodeURIComponent(_uri) }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}" />{{ davDisplayName }}<p>&#160;</p><p>{{ (typeof latinName == 'undefined') ? '' : latinName }}</p></a>
+  <a href='#view/{{ encodeURIComponent(_uri) }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.substring(5) : Lablz.serverName + mediumImage }}" /><h3>{{ davDisplayName }}</h3><p>{{ (typeof latinName == 'undefined') ? '' : latinName }}</p></a>
 </script>
 
 <script type="text/template" id="propRowTemplate">
-    <li class="ui-btn ui-btn-icon-right ui-li-has-arrow ui-li ui-li-has-count ui-li-has-thumb ui-btn-up-c">{{ name }}: {{ value }}</li>
+   <li>{{ name }}<div style="float: right; font-weight: normal;">{{ value }}</div></li>
 </script>
 
 <!--script type="text/template" id="viewTemplate">

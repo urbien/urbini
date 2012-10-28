@@ -127,14 +127,14 @@ var AppRouter = Backbone.Router.extend({
 //      this.currentView.close();
   
 //    $(selector).empty().append(view.render().el);
-    view.$el.attr('data-role', 'page'); //.attr('id', view.el.id);
+    view.$el.attr('data-role', 'page');
     if (!view.rendered) {
       view.render();
       $('body').append(view.$el);
     }
-    
+
     this.currentView = view;
-    var transition = $.mobile.defaultPageTransition;
+    var transition = "slide"; //$.mobile.defaultPageTransition;
     if (this.firstPage) {
       transition = 'none';
       this.firstPage = false;

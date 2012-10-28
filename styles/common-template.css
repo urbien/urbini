@@ -584,7 +584,7 @@ tr.darkPrint   {background-color: #eeeeee;}
   font-size: 11px;
 }
 .writeComment {
-  background: &[BodyBackground];; 
+  background: &[BodyBackgroundColor];; 
   border: 1px solid;
   border-color: lightgrey;
   width: 100%;
@@ -1122,7 +1122,7 @@ div.rightSidebar A {color: inherit}
 .allButton      {border:solid #808080 1px; background-color:#EDF5F5; color: darkblue; font-size:16pt;font-weight:bold; cursor: pointer;}
 .categoryButton {border:solid #e2e2e2 1px; background-color:#f8f4ef; color: darkblue; font-size:12pt;font-weight:bold; cursor: pointer; padding: 10px;}
 /*.itemButton     {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;text-decoration:none; cursor: pointer;}*/
-.itemButton { background: &[BodyBackground];; border: 1px solid &[FTS];; height:40pt; text-decoration:none; cursor: pointer; font-size: 12px; }  
+.itemButton { background: &[BodyBackgroundColor];; border: 1px solid &[FTS];; height:40pt; text-decoration:none; cursor: pointer; font-size: 12px; }  
 
 
 /* Add items styles */
@@ -1336,7 +1336,8 @@ div.contentsRL {
 .num {background-color:fffdc3; border-bottom: 1px solid #C0C9D7; border-left: 1px solid #C0C9D7; border-right: 1px solid #AFC4D5; border-top:1px solid #AFC4D5; color:#000066; height:16px; text-decoration:none; font-size:7pt; vertical-align:middle;}
 
 /* filter line: Search criteria if there was full text search criteria*/
-.ftxt {text-align:left; font-size:9px;}
+.ftxt {text-align:left; font-size:12px; color: #757575}
+#ca, #fl {color: #757575}
 .ftxt1 {border: none; padding: 0px; margin-left: 0; margin-right: 0; vertical-align: middle}
 /* Style for message in data entry for property that was either not set or set incorrectly*/
 /* .msg { position: absolute; margin-top: -29px; } */

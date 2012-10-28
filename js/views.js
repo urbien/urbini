@@ -55,7 +55,16 @@ Lablz.ResourceView = Backbone.View.extend({
       if (propTemplate)
         json[p] = _.template(tpl.get(propTemplate))({value: json[p]});
       
-      html += this.propRowTemplate({name: p, value: json[p]});
+      if (p.charAt(0) == '_')
+        continue;
+      if (p == 'davDisplayName')
+        continue;
+      if (prop.avoidDisplaying)
+        continue;
+      var v = json[p];
+      var val = (prop.type == "resource") ? '<a href="' + Lablz.serverName + "/bb#view/" + v + '">' + v + '</a>' : v;
+        
+      html += this.propRowTemplate({name: prop.label, value: val});
     }
     
     var j = {"props": json};
