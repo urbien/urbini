@@ -1518,6 +1518,7 @@ TD.toolbar {
 }
 
 .menuItemChart, .menuItemChart td { PADDING-RIGHT: 0px; width: 10px; color: &[Alternative_A];; }
+.menuItemChart table { float: right; }
 #common_filter .menuItemChart table td { height: auto; border-radius: 0px; }
 
 .menuItemReset { margin-left: 6px; white-space: nowrap; font-size: 16px; FONT-WEIGHT: bold; vertical-align: middle; }
