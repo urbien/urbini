@@ -10187,11 +10187,11 @@ var BacklinkImagesSlideshow = {
   // So this feature was disabled! (order of slideshow is defferent for "staticShow" and "resourceShow"
     (new slideshow(document.getElementById(sceneId))).init();
   
-/*    
+    
     if (this.slideshowArr == null)
       this.slideshowArr = new Array();
     this.slideshowArr.push(new slideshow(document.getElementById(sceneId)));
-*/    
+    
   },
   init : function() {
   // NOTE: delayed slideshow loading does not work with "resourceShow" currently.
