@@ -68,7 +68,7 @@ var AppRouter = Backbone.Router.extend({
     var res = this.resources[uri];
     if (!res) {
       var l = this.lists[type];
-      res = l && l.get(uri);
+      res = this.resources[uri] = l && l.get(uri);
     }
     
     if (res) {
