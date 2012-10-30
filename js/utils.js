@@ -212,6 +212,23 @@ Utils.modelToGeoJSON = function(model) {
     }
   }
   
-  area && (json.properties.area = area);
+  if (area)
+    json.properties.area = area;
+  
   properties.html = Utils.getMapItemHTML(model);
+}
+
+/**
+ * to be used for model constructors, not instances
+ */
+
+Utils.defaultModelProps = ['__super__', 'prototype', 'extend'];
+Utils.modelToJSON = function(model) {
+  var staticProps = {};
+  for (var prop in model) {
+    if (_.has(model, prop) && !_.contains(Utils.defaultModelProps, prop))
+      staticProps[prop] = model[prop];      
+  }
+  
+  return staticProps;
 }

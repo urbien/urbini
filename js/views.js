@@ -2,7 +2,6 @@ tpl = {
     // Hash of preloaded templates for the app
     templates: {},
  
-    // Recursively pre-load all the templates for the app.
     // This implementation should be changed in a production environment:
     // All the template files should be concatenated in a single file.
     loadTemplates: function() {
@@ -22,17 +21,34 @@ tpl = {
 // Events //
 Lablz.Events = _.extend({}, Backbone.Events);
 Lablz.Events.defaultTapHandler = function(e) {
+  console.log("got tap event");
   var event = e.originalEvent;
   var el = event.target;
   var $el = $(el);
   if ($el.prop('tagName') != 'A')
     return true;
   
-  event.preventDefault();
-  var href = $el.prop('href');
-  Backbone.history.navigate(href.slice(href.indexOf('#') + 1), true);
+  return true;
+//  event.preventDefault();
+//  var href = $el.prop('href');
+//  Backbone.history.navigate(href.slice(href.indexOf('#') + 1), true);
+//  console.log("navigated from tap event");
 }
 
+Lablz.Events.defaultClickHandler = function(e) {
+  console.log("got click event");
+  var event = e.originalEvent;
+  var el = event.target;
+  var $el = $(el);
+  if ($el.prop('tagName') != 'A')
+    return true;
+
+  return true;
+//  event.preventDefault();
+//  var href = $el.prop('href');
+//  Backbone.history.navigate(href.slice(href.indexOf('#') + 1), true);
+//  console.log("navigated from click event");
+}
 
 // Views
 Lablz.ResourceView = Backbone.View.extend({
@@ -46,6 +62,7 @@ Lablz.ResourceView = Backbone.View.extend({
     return this;
   },
   events: {
+    'click': 'click',
     'tap': 'tap',
     "click #mapIt": "mapIt"
   },
@@ -54,6 +71,7 @@ Lablz.ResourceView = Backbone.View.extend({
     Lablz.Events.trigger("mapIt", this.model);
   },
   tap: Lablz.Events.defaultTapHandler,  
+  click: Lablz.Events.defaultClickHandler,  
   render:function (eventName) {
     console.log("render resource");
     var type = this.model.type;
@@ -144,6 +162,7 @@ Lablz.MapView = Backbone.View.extend({
     'tap': 'tap',
   },
   tap: Lablz.Events.defaultTapHandler,
+  click: Lablz.Events.defaultClickHandler,  
   render:function (eventName) {
     if (!this.ready) {
       setTimeout(
@@ -234,7 +253,8 @@ Lablz.ListPage = Backbone.View.extend({
   },
   events: {
     'tap': 'tap',
-    'click #mapIt': 'mapIt'
+    'click #mapIt': 'mapIt',
+    'click': 'click'
   },
   mapIt: function(e) {
     e.preventDefault();
@@ -244,6 +264,7 @@ Lablz.ListPage = Backbone.View.extend({
     this.$('#mapIt').show();
   },
   tap: Lablz.Events.defaultTapHandler,
+  click: Lablz.Events.defaultClickHandler,  
   render:function (eventName) {
     console.log("render listPage");
     this.$el.html(this.template(this.model.toJSON()));
@@ -252,6 +273,7 @@ Lablz.ListPage = Backbone.View.extend({
     this.rendered = true;
     if (!this.$el.parentNode) 
       $('body').append(this.$el);
+    
     return this;
   }
 });
@@ -265,7 +287,8 @@ Lablz.ViewPage = Backbone.View.extend({
   },
   events: {
     'tap': 'tap',
-    "click #mapIt": "mapIt"
+    'click #mapIt': 'mapIt',
+    'click': 'click'
   },
   mapIt: function(e) {
     e.preventDefault();
@@ -275,6 +298,7 @@ Lablz.ViewPage = Backbone.View.extend({
     this.$('#mapIt').show();
   },
   tap: Lablz.Events.defaultTapHandler,
+  click: Lablz.Events.defaultClickHandler,  
   render:function (eventName) {
     console.log("render viewPage");
     this.$el.html(this.template(this.model.toJSON()));
@@ -283,6 +307,23 @@ Lablz.ViewPage = Backbone.View.extend({
     this.rendered = true;
     if (!this.$el.parentNode) 
       $('body').append(this.$el);
+    
+//    $(".back").on('tap', function(e) {
+//      console.log("tap event");
+//    });
+//
+//    $(".back").on('taphold', function(e) {
+//      console.log("taphold event");
+//    });
+//
+//    $(".back").on('swipe', function(e) {
+//      console.log("swipe event");
+//    });
+//
+//    $(".back").on('touchend', function(e) {
+//      console.log("touchend event");
+//    });
+
     return this;
   }
 
@@ -309,13 +350,15 @@ Lablz.ResourceListView = Backbone.View.extend({
 //      'transformstart': 'transformstart',
 //      'transformend': 'transformend',
       'swipe': 'swipe',
-      'click #mapIt': 'mapIt'
+      'click #mapIt': 'mapIt',
+      'click' : 'click'
     },
     mapIt: function(e) {
       e.preventDefault();
       Lablz.Events.trigger("mapIt", this.model);
     },
     tap: Lablz.Events.defaultTapHandler,
+    click: Lablz.Events.defaultClickHandler,  
     swipe: function(e) {
       
     },
@@ -371,8 +414,10 @@ Lablz.ResourceListItemView = Backbone.View.extend({
 	},
   events: {
     'tap': 'tap',
+    'click': 'click'
   },
   tap: Lablz.Events.defaultTapHandler,
+  click: Lablz.Events.defaultClickHandler,  
   render:function (eventName) {
     this.$el.html(this.template(this.model.toJSON()));
     return this;
