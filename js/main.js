@@ -181,7 +181,7 @@ function init(success, error) {
 //    type = nonLetterIdx == -1 ? type : type.slice(0, nonLetterIdx);
 //  }
   
-  Lablz.indexedDB.open(storeNames, null, success, error);
+  Lablz.indexedDB.open(null, success, error);
 }
 
 //window.addEventListener("DOMContentLoaded", init, false);

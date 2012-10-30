@@ -460,31 +460,86 @@ Lablz.indexedDB.onerror = function(e) {
   console.log("db error: " + e);
 };
 
+Lablz.indexedDB.onblocked = function(e) {
+  console.log("db blocked: " + e);
+};
+
+Lablz.indexedDB.modelStoreName = "models";
 Lablz.indexedDB.defaultOptions = {keyPath: '_uri'};
-Lablz.indexedDB.open = function(storeNames, options, success, error) { // optional params: "storeName" to create, "options" to create it with
+Lablz.indexedDB.open = function(options, success, error) { // optional params: "storeName" to create, "options" to create it with
+  var checkedModels = false;
   var request = indexedDB.open("lablz");
+  var mStore = Lablz.indexedDB.modelStoreName;
 
   request.onblocked = function(event) {
     alert("Please close all other tabs with this site open!");
   };
   
-  request.onsuccess = function(e) {
+  var onsuccess;
+  request.onsuccess = onsuccess = function(e) {
     Lablz.indexedDB.db = e.target.result;
     var db = Lablz.indexedDB.db;
     db.onversionchange = function(event) {
       db.close();
       alert("A new version of this page is ready. Please reload!");
     };    
+    
+    if (!checkedModels) {
+      checkedModels = true;
+      updateModels = function() {
+        e.modelsChanged = true;
+        onsuccess(e);
+      }
       
-    var newStoreNames = [];
-    storeNames = storeNames instanceof String ? [storeNames] : storeNames;
-    for (var i = 0; i < storeNames.length; i++) {
-      if (!db.objectStoreNames.contains(storeNames[i]))
-        newStoreNames.push(storeNames[i])
+      if (!db.objectStoreNames.contains(mStore)) {
+        updateModels();
+        return;
+      }
+      
+      Lablz.indexedDB.getItems(Lablz.indexedDB.modelStoreName, function(models) {
+        if (!models || !models.length) {
+          updateModels();
+          return;
+        }
+
+        var snm = Lablz.shortNameToModel;
+        var storedNames = [];
+        for (var i = 0; i < models.length; i++) {
+          var m = models[i];
+          var className = m.shortName;
+          var newM = snm[m.shortName];
+          if (!newM)
+            continue;
+
+          if (!_.isEqual(Utils.modelToJSON(newM), m)) {
+            updateModels();
+            return;
+          }
+          else
+            storedNames.push(className);
+        }
+
+        for (var name in snm) {
+          if (!_.contains(storedNames, name)) {
+            updateModels();
+            return;
+          }
+        }
+
+        onsuccess(e);
+        return;
+      });
+      
+      return;
     }
     
-    Lablz.DB_VERSION = newStoreNames.length == 0 ? db.version : db.version + 1;
+    var newStoreNames = [];
+    for (var name in Lablz.shortNameToModel) {
+      if (!db.objectStoreNames.contains(name))
+        newStoreNames.push(name);
+    }
 
+    Lablz.DB_VERSION = newStoreNames.length || e.modelsChanged ? parseInt(db.version) + 1 : db.version;
     if (db.version == Lablz.DB_VERSION) {
       if (success)
         success();
@@ -499,6 +554,7 @@ Lablz.indexedDB.open = function(storeNames, options, success, error) { // option
       var req = db.setVersion(Lablz.DB_VERSION);
       // onsuccess is the only place we can create Object Stores
       req.onerror = Lablz.indexedDB.onerror;
+      req.onblocked = Lablz.indexedDB.onblocked;
       req.onsuccess = function(e) {
         for (var i = 0; i < newStoreNames.length; i++) {
           var name = newStoreNames[i];
@@ -508,7 +564,13 @@ Lablz.indexedDB.open = function(storeNames, options, success, error) { // option
           db.createObjectStore(name, options || Lablz.indexedDB.defaultOptions);
         }
         
+        if (!e.modelsChanged && !db.objectStoreNames.contains(mStore))
+          db.createObjectStore(mStore, {keyPath: 'type'});
+        
         e.target.transaction.oncomplete = function() {
+          if (!e.modelsChanged)
+            Lablz.indexedDB.addModels();
+
           if (success)
             success();
         };
@@ -559,6 +621,28 @@ Lablz.indexedDB.open = function(storeNames, options, success, error) { // option
   };
 };
 
+Lablz.indexedDB.addModels = function() {
+  var mStore = Lablz.indexedDB.modelStoreName;
+  var snm = Lablz.shortNameToModel;
+  var db = Lablz.indexedDB.db;
+  var trans = db.transaction([mStore], "readwrite");
+  var store = trans.objectStore(mStore);
+  for (var name in snm) {
+    addModel(snm[name]);
+  }
+  
+  function addModel(model) {
+    var request = store.put(Utils.modelToJSON(model));    
+    request.onsuccess = function(e) {
+      console.log("Added model " + model.displayName + " to db: ", e);
+    };
+    
+    request.onerror = function(e) {
+      console.log("Error adding model " + model.displayName + " to db: ", e);
+    };
+  }
+};
+
 Lablz.indexedDB.addItems = function(items, className) {
   if (!items || !items.length)
     return;
@@ -569,7 +653,7 @@ Lablz.indexedDB.addItems = function(items, className) {
   
   if (!db.objectStoreNames.contains(className)) {
     db.close();
-    Lablz.indexedDB.open(className, null, function() {Lablz.indexedDB.addItems(items, className)});
+    Lablz.indexedDB.open(null, function() {Lablz.indexedDB.addItems(items, className)});
     return;
   }
   
