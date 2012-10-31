@@ -10187,11 +10187,11 @@ var BacklinkImagesSlideshow = {
   // So this feature was disabled! (order of slideshow is defferent for "staticShow" and "resourceShow"
     (new slideshow(document.getElementById(sceneId))).init();
   
-/*    
+    
     if (this.slideshowArr == null)
       this.slideshowArr = new Array();
     this.slideshowArr.push(new slideshow(document.getElementById(sceneId)));
-*/    
+    
   },
   init : function() {
   // NOTE: delayed slideshow loading does not work with "resourceShow" currently.
@@ -11771,6 +11771,7 @@ function changeCss(cssTitle, file) {
   }
 }
 // FTS improvements
+// use "switch_text" attribute to switch event target text (like "more" -> "less" ) 
 function showHide(id, event) {
   var tt = document.getElementById(id);
   if (getFirstChild(tt) == null) // not to show empty popup
@@ -11779,6 +11780,14 @@ function showHide(id, event) {
     tt.className = '';
   else
     tt.className = 'hdn';
+  
+  var target = getEventTarget(event);
+  var swt;
+  if (swt = target.getAttribute("switch_text")) {
+    var curText = getTextContent(target);
+    target.innerHTML = swt;
+    target.setAttribute("switch_text", curText);
+  }
   
   return stopEventPropagation(event);
 }

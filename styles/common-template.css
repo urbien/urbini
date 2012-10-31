@@ -683,7 +683,7 @@ tr.ftSearch td { padding: 0px; }
 .iphone_search { border: 2px solid &[PrimaryColor_1];; box-shadow: none; } /* used in mobile version only */
 
 .clear_cross { cursor: pointer; position: relative; visibility: hidden; }
-.desktop_search .clear_cross { margin: 0 2px; top: 15%; }
+.desktop_search .clear_cross { margin: 0 3px; top: 15%; }
 
 .desktop_search .left {
   float: left;
@@ -708,7 +708,7 @@ tr.ftSearch td { padding: 0px; }
     font: bold 16px Helvetica;
     border-width: 0px;
     padding: 0px 0px 0px 0px;
-    margin: 5px 2px 0px 2px;
+    margin: 6px 2px 0px 2px;
  }
  
 .ftSearch .action_btn {
@@ -1518,6 +1518,7 @@ TD.toolbar {
 }
 
 .menuItemChart, .menuItemChart td { PADDING-RIGHT: 0px; width: 10px; color: &[Alternative_A];; }
+.menuItemChart table { float: right; }
 #common_filter .menuItemChart table td { height: auto; border-radius: 0px; }
 
 .menuItemReset { margin-left: 6px; white-space: nowrap; font-size: 16px; FONT-WEIGHT: bold; vertical-align: middle; }
@@ -2299,12 +2300,10 @@ tr.blue_highlighting > td, * html tr.blue_highlighting td {
 }
 
 .rounded_rect_tbl .blue_highlighting .label.rounded_rect_tbl .blue_highlighting .propLabel1, .blue_highlighting .comment, .blue_highlighting input, .blue_highlighting .chosen_values { color: &[Label];; }
-.empty_field, .false_empty_field { color: rgba(&[PrimaryColor_4_text_rgb];, 0.6) !important;}
+.empty_field, .false_empty_field { color: rgba(&[Alternative_A_rgb];, 0.6) !important;}
 .false_empty_field { float: right; font-weight: bold; line-height: 20px; margin-right: 7px; }
-.grey_highlighting .empty_field{ color: rgba(&[Alternative_A_rgb];, 0.6) !important;}
-.rounded_rect_tbl .focused_field { color: rgba(&[Alternative_A_rgb];, 0.4); }
-.iphone_field .focused_field, .focused_field { color: rgba(&[PrimaryColor_4_text_rgb];, 0.4); }
-.ftSearch .focused_field { color: rgba(&[Alternative_A_rgb];, 0.4); }
+.grey_highlighting .empty_field{ color: rgba(&[Alternative_A_rgb];, 0.6)}
+.focused_field { color: rgba(&[Alternative_A_rgb];, 0.2) !important; }
 
 .widget .dragable h2 { margin-bottom: 0px; font-size: 17px; } 
 .widget .containers h2 { margin: 5px 0px 0px 0px; }
