@@ -1,7 +1,7 @@
 <div>
 <!-- Templates -->
 <script type="text/template" id="resource-list">
-  <div data-role="header" class="ui-header ui-bar-c" role="banner">
+  <div data-role="header" class="ui-header ui-bar-c" role="banner" data-position="fixed">
     <h1 id="pageTitle">{{ this.model.className }}</h1> 
     <!--div id="mapBtnDiv" class="ui-screen-hidden"><a href="#" id="mapIt" data-icon="map" class="back ui-btn-right">Map It</a></div-->
     <a href="#" id="mapIt" data-icon="map" class="back ui-btn-right ui-screen-hidden">Map It</a>
@@ -11,12 +11,12 @@
     </ul>
   </div>
   
-  <div data-role="footer">
+  <div data-role="footer" class="ui-footer ui-bar-c" data-position="fixed">
      <a target="#welcome" class="icon home">Home</a>
   </div>
 </script>  
 <script type="text/template" id="resource">
-  <div data-role="header"  class="ui-header ui-bar-c" role="banner">
+  <div data-role="header"  class="ui-header ui-bar-c" role="banner" data-position="fixed">
     <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
     <h1 id="pageTitle">{{ davDisplayName }}</h1> 
     <a href="#" id="mapIt" data-icon="map" class="back ui-btn-right ui-screen-hidden">Map It</a>
