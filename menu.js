@@ -10220,7 +10220,6 @@ var BacklinkImagesSlideshow = {
   },
  
   _delayedInit : function() {
-    console.log("_delayedInit");
     var $t = BacklinkImagesSlideshow;
     for (var i = 1; i < $t.slideshowArr.length; i++)
      $t.slideshowArr[i].init(); 
