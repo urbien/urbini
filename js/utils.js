@@ -44,7 +44,10 @@ Utils.getLongUri = function(uri, type, primaryKeys) {
   else if (uri.charAt(0).toUpperCase() == uri.charAt(0)) {
     // uri is of form Tree/32000
     var typeName = Utils.getType(uri);
-    type = typeof type == 'undefined' ? Utils.getTypeUri(typeName) : type;
+    type = Utils.getTypeUri(typeName);
+    if (!type)
+      return null;
+    
     var sIdx = uri.indexOf("/");
     var longUri = uri.slice(0, sIdx) + "?";
     var model = Lablz.shortNameToModel[typeName];
@@ -75,14 +78,14 @@ Utils.validateEmail = function(email) {
 } 
 
 Utils.getTypeUri = function(typeName) {
-  return Lablz.shortNameToModel[typeName].type;
+  return Lablz.shortNameToModel[typeName] && Lablz.shortNameToModel[typeName].type;
 }
 
 Utils.getType = function(uri) {
   var qIdx = uri.indexOf("?");
   if (qIdx != -1) {
     if (uri.indexOf('http://') == 0)
-      return uri.slice(uri.lastIndexOf("/") + 1, qIdx);
+      return uri.slice(uri.lastIndexOf("/", qIdx) + 1, qIdx);
     else
       return uri.slice(0, qIdx);
   }
@@ -92,7 +95,7 @@ Utils.getType = function(uri) {
     return null;
     
   var end = uri.slice(idx).search(/[^a-zA-Z]/);
-  return end == -1 ? uri : uri.slice(0, idx + end);
+  return end == -1 ? uri.slice(idx) : uri.slice(idx, idx + end);
 }
 
 Utils.getClassName = function(type) {
@@ -119,6 +122,18 @@ Utils.getPackagePath = function(type) {
   path = path.replace(".com", "");
   path = path.replace(/\//g, '.');
   return path;
+}
+
+Utils.addPackage = function(path) {
+  path = path.split(/\./);
+  var current = packages;
+  for (var i = 0; i < path.length; i++) {
+    if (!_.has(current, path[i])) {
+      var pkg = {};
+      current[path[i]] = pkg;
+      current = pkg;
+    }
+  }
 }
 
 Utils.getShapeType = function(rings) {
@@ -150,6 +165,7 @@ Utils.getDepth = function(arr) {
 }
 
 Utils.getMapItemHTML = function(m) {
+  var tpl = Lablz.Templates;
   if (m.isA("ImageResource")) {
     var medImg = m.get('mediumImage') || m.get('featured');
     if (medImg) {
@@ -232,3 +248,36 @@ Utils.modelToJSON = function(model) {
   
   return staticProps;
 }
+
+function wrap(object, method, wrapper) {
+  var fn = object[method];
+    return object[method] = function() {
+    return wrapper.apply(this, [ fn.bind(this) ].concat(
+    Array.prototype.slice.call(arguments)));
+  };
+}
+
+/**
+ * Array that stores only unique elements
+ */
+Utils.UArray = function() {};
+Utils.UArray.prototype.length = 0;
+(function() {
+  var methods = ['push', 'pop', 'shift', 'unshift', 'slice', 'splice', 'join'];
+  for (var i = 0; i < methods.length; i++) { 
+    (function(name) {
+      Utils.UArray.prototype[name] = function() {
+        return Array.prototype[name].apply(this, arguments);
+      };
+    })(methods[i]);
+  }
+})();
+
+wrap(Utils.UArray, 'push',
+  function(original, item) {
+    if (_.contains(this, item))
+      return this;
+    else
+      return original(item);
+  }
+);

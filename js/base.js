@@ -47,28 +47,13 @@ var packages = {};
 packages.Resource = Backbone.Model.extend({
   dateLastUpdated: 0,
   idAttribute: "_uri",
-  initialize: function() {
+  initialize: function(options) {
     _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', /*'set',*/ 'updateDB'); // fixes loss of context for 'this' within methods
-//    this.bind('change', this.onChange);
     this.on('change', this.updateDB);
-    var type = this.constructor.type || this.get('type');
-    if (!type)
-      return this;
-    
-    if (type.indexOf) {
-      this.type = type;
-      this.className = type.substring(type.lastIndexOf("/") + 1);
-    }
-    else {
-      this.className = type.name;
-      this.type = type._uri;
-    }
-    
-    this.urlRoot = Lablz.apiUrl + this.className;
-//    this._setUri();
-  },  
+    options._query && (this.urlRoot += "?" + options._query);
+  },
   url: function() {
-    return Lablz.apiUrl + this.className + "?_uri=" + encodeURIComponent(this.get('_uri'));
+    return Lablz.apiUrl + this.constructor.shortName + "?_uri=" + encodeURIComponent(this.get('_uri'));
   },
   getKey: function() {
     return this.get('_uri');
@@ -78,13 +63,13 @@ packages.Resource = Backbone.Model.extend({
       return resp;
     
     if (!resp || resp.error)
-      return {};
+      return null;
 
     var uri = resp._uri;
     resp = uri ? resp : resp.data[0];
     resp._shortUri = Utils.getShortUri(uri, this.constructor);
     var primaryKeys = Utils.getPrimaryKeys(this.constructor);
-    resp._uri = Utils.getLongUri(resp._uri, this.type, primaryKeys);
+    resp._uri = Utils.getLongUri(resp._uri, this.constructor.type, primaryKeys);
     return resp;
   },
   validate: function(attrs) {
@@ -138,10 +123,17 @@ packages.Resource = Backbone.Model.extend({
     }, 0);
   },
   fetch: function(options) {
+    var self = this;
+//    setTimeout(function() {
+//      self.constructor.fetchModelsForLinkedResources();
+//    }, 100);
+    setTimeout(function() {self.fetchModelsForLinkedResources.call(self.constructor)}, 100);
+    
 //    options = options || {};
 //    options.silent = true;
     return Backbone.Model.prototype.fetch.call(this, options);
   }
+  
 //  ,
 //  loadMap: function() {
 //    var url = url();
@@ -169,6 +161,21 @@ packages.Resource = Backbone.Model.extend({
 
 packages.Resource.properties = _.clone(packages.Resource.myProperties);
 packages.Resource.interfaces = _.clone(packages.Resource.myInterfaces);
+packages.Resource.prototype.fetchModelsForLinkedResources = function() {
+  var linkedModels = [];
+  _.forEach(this.properties, function(p) {
+    var r = p.range;
+    if (r && r.indexOf("http://www.hudsonfog.com/") == 0) {
+      var name = r.slice(r.lastIndexOf("/") + 1);
+      if (!Lablz.shortNameToModel[name])
+        linkedModels.push(name);
+    }
+  });
+  
+  if (linkedModels.length)
+    Lablz.fetchModels(_.uniq(linkedModels));
+}
+
 
 Lablz.ResourceList = Backbone.Collection.extend({
 //  page: 1,
@@ -185,6 +192,7 @@ Lablz.ResourceList = Backbone.Collection.extend({
     this.type = this.model.type;
     this.className = this.model.shortName || this.model.className;
     this.url = Lablz.apiUrl + this.className;
+    options._query && (this.url += "?" + options._query);
     console.log("init " + this.className + " resourceList");
   },
   getKey: function() {
@@ -220,6 +228,8 @@ Lablz.ResourceList = Backbone.Collection.extend({
   fetch: function(options) {
 //    options = options || {};
 //    options.silent = true;
+    var self = this;
+    setTimeout(function() {self.model.prototype.fetchModelsForLinkedResources.call(self.model)}, 100);
     options = options || {add: true};
     return Backbone.Collection.prototype.fetch.call(this, options);
   }
@@ -248,7 +258,8 @@ Lablz.ResourceList = Backbone.Collection.extend({
 Lablz.MapModel = Backbone.Model.extend({
   initialize: function(options) {
     _.bindAll(this, 'parse', 'url'); // fixes loss of context for 'this' within methods
-    this.baseUrl = options && options.url;
+    this.model = options.model;
+    this.baseUrl = this.model.url;
   },  
   
   url: function() {
@@ -276,9 +287,10 @@ Lablz.defaultSync = function(method, model, options) {
 Backbone.defaultSync = Backbone.sync;
 Backbone.sync = function(method, model, options) {
   var defSuccess = options.success;
+  var defErr = options.error;
   var save;
   if (model instanceof Backbone.Collection) {
-      save = function(results) {
+    save = function(results) {
       // only handle collections here as we want to add to db in bulk, as opposed to handling 'add' event in collection and adding one at a time.
       // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
       // Alternative is to override Backbone.Collection.reset() method and do some magic there.
@@ -319,10 +331,18 @@ Backbone.sync = function(method, model, options) {
     success: function(resp, status, xhr) {
       if (resp.error) {
         console.log("Error in sync: " + resp.error.code + ", " + resp.error.details);
+        defErr && defErr(resp.error, status, xhr);
         return;
       }
       
-      var data = model instanceof Backbone.Collection ? resp.data : resp.data[0];
+//      var isCol = model instanceof Backbone.Collection;
+//      var data;
+//      if (resp.error)
+//        data = isCol ? [] : null;
+//      else
+//        data = isCol ? resp.data : resp.data[0];
+      
+      data = model instanceof Backbone.Collection ? resp.data : resp.data[0];
       defSuccess && defSuccess(data, status, xhr);
       save && save(data);
     }
@@ -337,32 +357,7 @@ Backbone.sync = function(method, model, options) {
     
   var key, now, timestamp, refresh;
   var success = function(results) {
-//      refresh = options.forceRefresh;
-//      if (refresh || !timestamp || ((now - timestamp) > this.constants.maxRefresh)) {
-//        // make a network request and store result in local storage
-//        var success = options.success;
-//        options.success = function(resp, status, xhr) {
-//          // check if this is an add request in which case append to local storage data instead of replace
-//          if(options.add && resp.values) {
-//            // clone the response
-//            var newData = JSON.parse(JSON.stringify(resp));
-//            // append values
-//            var prevData = $storage.get(key);
-//            newData.values = prevData.values.concat(resp.values);
-//            // store new data in local storage
-//            $storage.set(key, newData);
-//          } else {
-//            // store resp in local storage
-//            $storage.set(key, resp);
-//          }
-//  //        var now = new Date().getTime();
-//          $storage.set(key + ":_uri", uri);
-//          success(resp, status, xhr);
-//        };
-//        // call normal backbone sync
-//        Backbone.defaultSync(method, model, options);
-//      } else {
-      // provide data from local storage instead of a network call
+    // provide data from indexedDB instead of a network call
     if (!results || (results instanceof Array && !results.length)) {
       runDefault();
       return;
@@ -387,7 +382,7 @@ Backbone.sync = function(method, model, options) {
   
   var error = function(e) {
     if (e) console.log("Error fetching data from db: " + e);
-    runDefault();      
+    runDefault();
   }
   
   // only override sync if it is a fetch('read') request
@@ -424,20 +419,35 @@ Backbone.View.prototype.close = function(){
   }
 }
 
-Lablz.models = [packages.Resource];
+Lablz.models = new Utils.UArray();
+Lablz.models.push(packages.Resource);
 Lablz.shortNameToModel = {};
-Lablz.initModels = function() {
-  for (var i = 0; i < Lablz.models.length; i++) {
-    var m = Lablz.models[i];
+Lablz.typeToModel = {};
+Lablz.initModels = function(models) {
+  models = models || Lablz.models;
+  for (var i = 0; i < models.length; i++) {
+    var m = models[i];
+    if (Lablz.shortNameToModel[m.shortName])
+      continue;
+    
     Lablz.shortNameToModel[m.shortName] = m;
+    Lablz.typeToModel[m.type] = m;
     m.prototype.parse = packages.Resource.prototype.parse;
     m.prototype.validate = packages.Resource.prototype.validate;
     var superProps = m.__super__.constructor.properties;
     m.properties = superProps ? _.extend(_.clone(superProps), m.myProperties) : _.clone(m.myProperties);
     var superInterfaces = m.__super__.constructor.interfaces;
     m.interfaces = superProps ? _.extend(_.clone(superProps), m.myInterfaces) : _.clone(m.myInterfaces);
+    m.prototype.initialize = Lablz.getInit.apply(m);
   }
 };
+
+Lablz.getInit = function() {
+  var self = this;
+  return function() { 
+    self.__super__.initialize.apply(self.__super__, arguments); 
+  }
+}
 
 // END ///////////// Templates and Backbone convenience //////////////// END ///
 
@@ -455,26 +465,32 @@ if ('webkitIndexedDB' in window) {
 Lablz.indexedDB = {};
 Lablz.indexedDB.db = null;
 Lablz.DB_VERSION = 1;
+Lablz.indexedDB.modelStoreOptions = {keyPath: 'type'};
+Lablz.indexedDB.paused = false;
 
 Lablz.indexedDB.onerror = function(e) {
   console.log("db error: " + e);
+};
+
+Lablz.indexedDB.onabort = function(e) {
+  console.log("db abort: " + e);
 };
 
 Lablz.indexedDB.onblocked = function(e) {
   console.log("db blocked: " + e);
 };
 
-Lablz.indexedDB.modelStoreName = "models";
 Lablz.indexedDB.defaultOptions = {keyPath: '_uri'};
-Lablz.indexedDB.open = function(options, success, error) { // optional params: "storeName" to create, "options" to create it with
-  var checkedModels = false;
+Lablz.indexedDB.open = function(options, success, error) {
+  var modelsChanged = false;
   var request = indexedDB.open("lablz");
-  var mStore = Lablz.indexedDB.modelStoreName;
 
   request.onblocked = function(event) {
     alert("Please close all other tabs with this site open!");
   };
-  
+
+  request.onabort = Lablz.indexedDB.onabort;
+
   var onsuccess;
   request.onsuccess = onsuccess = function(e) {
     Lablz.indexedDB.db = e.target.result;
@@ -484,62 +500,8 @@ Lablz.indexedDB.open = function(options, success, error) { // optional params: "
       alert("A new version of this page is ready. Please reload!");
     };    
     
-    if (!checkedModels) {
-      checkedModels = true;
-      updateModels = function() {
-        e.modelsChanged = true;
-        onsuccess(e);
-      }
-      
-      if (!db.objectStoreNames.contains(mStore)) {
-        updateModels();
-        return;
-      }
-      
-      Lablz.indexedDB.getItems(Lablz.indexedDB.modelStoreName, function(models) {
-        if (!models || !models.length) {
-          updateModels();
-          return;
-        }
-
-        var snm = Lablz.shortNameToModel;
-        var storedNames = [];
-        for (var i = 0; i < models.length; i++) {
-          var m = models[i];
-          var className = m.shortName;
-          var newM = snm[m.shortName];
-          if (!newM)
-            continue;
-
-          if (!_.isEqual(Utils.modelToJSON(newM), m)) {
-            updateModels();
-            return;
-          }
-          else
-            storedNames.push(className);
-        }
-
-        for (var name in snm) {
-          if (!_.contains(storedNames, name)) {
-            updateModels();
-            return;
-          }
-        }
-
-        onsuccess(e);
-        return;
-      });
-      
-      return;
-    }
-    
-    var newStoreNames = [];
-    for (var name in Lablz.shortNameToModel) {
-      if (!db.objectStoreNames.contains(name))
-        newStoreNames.push(name);
-    }
-
-    Lablz.DB_VERSION = newStoreNames.length || e.modelsChanged ? parseInt(db.version) + 1 : db.version;
+    modelsChanged = !!Lablz.changedModels.length || !!Lablz.newModels.length;
+    Lablz.DB_VERSION = modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
     if (db.version == Lablz.DB_VERSION) {
       if (success)
         success();
@@ -555,22 +517,11 @@ Lablz.indexedDB.open = function(options, success, error) { // optional params: "
       // onsuccess is the only place we can create Object Stores
       req.onerror = Lablz.indexedDB.onerror;
       req.onblocked = Lablz.indexedDB.onblocked;
-      req.onsuccess = function(e) {
-        for (var i = 0; i < newStoreNames.length; i++) {
-          var name = newStoreNames[i];
-          if (db.objectStoreNames.contains(name))
-            db.deleteObjectStore(name);
-  
-          db.createObjectStore(name, options || Lablz.indexedDB.defaultOptions);
-        }
+      req.onsuccess = function(e2) {
+        if (modelsChanged)
+          Lablz.indexedDB.updateStores();
         
-        if (!e.modelsChanged && !db.objectStoreNames.contains(mStore))
-          db.createObjectStore(mStore, {keyPath: 'type'});
-        
-        e.target.transaction.oncomplete = function() {
-          if (!e.modelsChanged)
-            Lablz.indexedDB.addModels();
-
+        e2.target.transaction.oncomplete = function() {
           if (success)
             success();
         };
@@ -589,59 +540,115 @@ Lablz.indexedDB.open = function(options, success, error) { // optional params: "
     console.log ("going to upgrade our DB!");
     Lablz.indexedDB.db = e.target.result;
     var db = Lablz.indexedDB.db;
-    var newStoreNames = [];
-    storeNames = storeNames instanceof String ? [storeNames] : storeNames;
-    for (var i = 0; i < storeNames.length; i++) {
-      if (!db.objectStoreNames.contains(storeNames[i]))
-        newStoreNames.push(storeNames[i])
-    }
-    
-    for (var i = 0; i < newStoreNames.length; i++) {
-
-      var name = newStoreNames[i];
-      if (db.objectStoreNames.contains(name))
-        db.deleteObjectStore(name);
-
-      db.createObjectStore(name, options || Lablz.indexedDB.defaultOptions);
-    }
+    if (modelsChanged)
+      Lablz.indexedDB.updateStores();
     
     e.target.transaction.oncomplete = function() {
-//      Lablz.indexedDB.getItems(storeName);
       if (success)
         success();
     };
-    
-  }
+  };      
   
   request.onerror = function(e) {
     if (error)
       error(e);
     
     Lablz.indexedDB.onerror(e);
-  };
+  };  
 };
 
-Lablz.indexedDB.addModels = function() {
-  var mStore = Lablz.indexedDB.modelStoreName;
-  var snm = Lablz.shortNameToModel;
+Lablz.indexedDB.loadModels = function(success, error) {
+  var models = [];
   var db = Lablz.indexedDB.db;
-  var trans = db.transaction([mStore], "readwrite");
-  var store = trans.objectStore(mStore);
-  for (var name in snm) {
-    addModel(snm[name]);
-  }
-  
-  function addModel(model) {
-    var request = store.put(Utils.modelToJSON(model));    
-    request.onsuccess = function(e) {
-      console.log("Added model " + model.displayName + " to db: ", e);
-    };
+  var mStore = Lablz.indexedDB.modelStoreName;
+  var transaction = db.transaction([mStore], "readonly");
+  var store = transaction.objectStore(mStore);
+  var cursorRequest = store.openCursor();
+  cursorRequest.onsuccess = function(e) {
+    var result = e.target.result;
+    if (result) {
+      models.push(result.value);
+      result.continue();
+      return;
+    }
+    else
+      success && success();
     
-    request.onerror = function(e) {
-      console.log("Error adding model " + model.displayName + " to db: ", e);
-    };
+//    if (true) {
+//      console.log("got models from db");
+//      success && success();
+//      return;
+//    }
+//    
+//    for (var i = 0; i < models.length; i++) {
+//      var m = models[i];
+//      var pkgPath = Utils.getPackagePath(m.type);
+//      Utils.addPackage(pkgPath);
+//      var superCl = 
+//      Lablz.shortNameToModel[m.shortName] = Backbone.Model.extend(
+//          {
+//            initialize: function() { 
+//              _.bindAll(this, 'parse'); // fixes loss of context for 'this' within methods
+//              eval('packages.' + pkgPath + '.__super__.initialize.apply(this, arguments)');
+////              packages.hudsonfog.voc.commerce.trees.TreeSpecies.__super__.initialize.apply(this, arguments); 
+//            } 
+//          },
+//          m
+//      );
+//    }
+    
+  };
+
+  cursorRequest.onerror = function (e) {
+    error && error(e);
+    
+    Lablz.indexedDB.onerror(e);
   }
-};
+}
+
+Lablz.indexedDB.updateStores = function() {
+  var db = Lablz.indexedDB.db;
+  var models = _.union(Lablz.changedModels, Lablz.newModels);
+  Lablz.changedModels = [];
+  Lablz.newModels = [];
+  for (var i = 0; i < models.length; i++) {
+    var m = models[i];
+    var name = m.shortName;
+    if (db.objectStoreNames.contains(name))
+      db.deleteObjectStore(name);
+    
+    db.createObjectStore(name, Lablz.indexedDB.defaultOptions);
+  }  
+}
+
+//Lablz.indexedDB.addModels = function(models) {
+//  var mStore = Lablz.indexedDB.modelStoreName;
+////  var snm = Lablz.shortNameToModel;
+//  var db = Lablz.indexedDB.db;
+//  var trans = db.transaction([mStore], "readwrite");
+//  var store = trans.objectStore(mStore);
+//  for (var i = 0; i < models.length; i++) {
+//    addModel(models[i]);
+//  }
+//
+//  function addModel(model) {
+//    var request;
+//    try {
+//      request = store.put(model);
+//    } catch (err) {
+////      db.close();
+//      return;
+//    }
+//    
+//    request.onsuccess = function(e) {
+//      console.log("Added model " + model.displayName + " to db: ", e);
+//    };
+//    
+//    request.onerror = function(e) {
+//      console.log("Error adding model " + model.displayName + " to db: ", e);
+//    };    
+//  }
+//};
 
 Lablz.indexedDB.addItems = function(items, className) {
   if (!items || !items.length)
@@ -653,7 +660,11 @@ Lablz.indexedDB.addItems = function(items, className) {
   
   if (!db.objectStoreNames.contains(className)) {
     db.close();
-    Lablz.indexedDB.open(null, function() {Lablz.indexedDB.addItems(items, className)});
+    Lablz.newModels.push(Lablz.shortNameToModel[className]);
+    Lablz.indexedDB.open(null, function() {
+      Lablz.indexedDB.addItems(items, className);
+    });
+    
     return;
   }
   
@@ -721,13 +732,17 @@ Lablz.indexedDB.getDataAsync = function(uri, success, error) {
   var type = Utils.getType(uri);
   if (type == uri)
     return Lablz.indexedDB.getItems(type, success, error);
+  else if (type == null) {
+    if (error) error();
+    return false;
+  }
   
   var name = Utils.getClassName(type);
   var db = Lablz.indexedDB.db;
   if (!db || !db.objectStoreNames.contains(name))
     return false;
   
-  var trans = db.transaction([name]);
+  var trans = db.transaction([name], "readonly");
   var store = trans.objectStore(name);
   var request = store.get(Utils.getShortUri(uri, Lablz.shortNameToModel[name]));
   request.onsuccess = function(e) {
@@ -754,7 +769,7 @@ Lablz.indexedDB.getItems = function(type, success, error) {
   if (!db || !db.objectStoreNames.contains(name))
     return false;
   
-  var trans = db.transaction([name]);
+  var trans = db.transaction([name], "readonly");
   var store = trans.objectStore(name);
 
   // Get everything in the store;
@@ -783,3 +798,87 @@ Lablz.indexedDB.getItems = function(type, success, error) {
 };
 
 // END ///////////// IndexedDB stuff //////////////// END ///
+
+// START /////////// Local Storage //////////// START //
+
+Lablz.changedModels = new Utils.UArray();
+Lablz.newModels = new Utils.UArray();
+Lablz.loadAndUpdateModels = function() {
+  if (!localStorage)
+    return; // TODO: use indexedDB
+  
+  var ttm = Lablz.typeToModel;
+  var stored = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    var key = localStorage.key(i);
+    var newM = ttm[key];
+    if (!newM)
+      continue;
+    
+    var mJson = JSON.parse(localStorage.getItem(key));
+    var newMJson = Utils.modelToJSON(newM);
+    if (!_.isEqual(newMJson, mJson))
+      saveModel(newM, newMJson);
+
+    stored.push(key);
+  }
+
+  var unstored = _.difference(_.keys(ttm), stored);
+  _.each(unstored, function(type) {
+    saveModel(ttm[type], Utils.modelToJSON(ttm[type]), true);
+  });
+  
+  function saveModel(model, modelJson, isNew) {
+    (isNew ? Lablz.newModels : Lablz.changedModels).push(model);
+    localStorage.setItem(model.type, JSON.stringify(modelJson));
+  }
+}
+
+// END /////////// Local Storage //////////// END //
+
+Lablz.serverName = "http://mark.obval.com/urbien";
+Lablz.fetchModels = function(models, success, error) {
+  $.ajax(Lablz.serverName + "/backboneModel?type=" + encodeURIComponent(models.join ? models.join(",") : models), {complete: 
+    function(jqXHR, status) {
+      if (status != 'success') {
+        console.log("couldn't fetch models");
+//        alert("Oops! Couldn't initialize awesomeness!");
+        if (error)
+          error(status);
+        
+        return;
+      }
+        
+      var p = packages;
+      try {
+        eval(jqXHR.responseText);
+      } catch (err) {
+        console.log("couldn't eval response from server");
+        if (error)
+          error();
+        
+        return;
+      }
+      
+      _.extend(packages, p);
+      Lablz.initModels();
+      if (success)
+        success();
+    }
+  });
+}
+
+Lablz.updateModels = function(success, error) {
+  Lablz.loadAndUpdateModels();
+  Lablz.indexedDB.paused = true;
+  if (Lablz.indexedDB.db)
+    Lablz.indexedDB.db.close();
+  
+  var s = success;
+  success = function() {
+    Lablz.indexedDB.paused = false;
+    if (s) s();
+  }
+  
+  Lablz.indexedDB.open(null, success, error);
+}

@@ -21,20 +21,32 @@ var AppRouter = Backbone.Router.extend({
     });
   },
 
-  map: function (type) {
-    var self = this;
-    this.mapModel = new Lablz.MapModel({url: Lablz.apiUrl + type});
-    this.mapView = new Lablz.MapView({model: this.mapModel});
-    this.mapModel.fetch({
-      success: function() {
-        self.changePage(self.mapView);
-      }
-    });    
-  },
+//  map: function (type) {
+//    var self = this;
+//    this.mapModel = new Lablz.MapModel({url: Lablz.apiUrl + type});
+//    this.mapView = new Lablz.MapView({model: this.mapModel});
+//    this.mapModel.fetch({
+//      success: function() {
+//        self.changePage(self.mapView);
+//      }
+//    });    
+//  },
 
-  list: function (type) {
+  list: function (params) {
+    params = params.split("?");
+    var type = decodeURIComponent(params[0]);
+    var self = this;
+    if (!Lablz.shortNameToModel[type]) {
+      Lablz.fetchModels(type, function() {
+        self.list.apply(self, params);
+      });
+      
+      return;
+    }
+    
 //    Lablz.Navigation.push();
 //    Lablz.Navigation.detectBackButton();
+    var query = params.length > 1 ? params[1] : undefined;
     if (this.lists[type] && this.l[type]) {
       this.lists[type].asyncFetch();
       this.changePage(this.l[type]);
@@ -45,9 +57,7 @@ var AppRouter = Backbone.Router.extend({
     if (!model)
       return this;
     
-    var params = type.split('&');
-    var self = this;
-    var list = this.lists[type] = new Lablz.ResourceList(null, {model: model});
+    var list = this.lists[type] = new Lablz.ResourceList(null, {model: model, _query: query});
     var listView = this.l[type] = new Lablz.ListPage({model: list});
     list.fetch({
       add: true, 
@@ -60,17 +70,30 @@ var AppRouter = Backbone.Router.extend({
     return this;
   },
 
-  view: function (uri) {
+  view: function (params) {
+    params = params.split("?");
+    var uri = decodeURIComponent(params[0]);
+    
 //    Lablz.Navigation.push();
 //    Lablz.Navigation.detectBackButton();
-    uri = Utils.getLongUri(uri);
+    var self = this;
     var type = Utils.getType(uri);
+    uri = Utils.getLongUri(uri, type);
+    if (!uri || !Lablz.shortNameToModel[type]) {
+      Lablz.fetchModels(type, function() {
+        self.view.apply(self, params);
+      });
+      
+      return;
+    }
+    
     var res = this.resources[uri];
     if (!res) {
       var l = this.lists[type];
       res = this.resources[uri] = l && l.get(uri);
     }
     
+    var query = params.length > 1 ? params[1] : undefined;
     if (res) {
       res.asyncFetch();
       this.resources[uri] = res;
@@ -79,7 +102,6 @@ var AppRouter = Backbone.Router.extend({
       return this;
     }
     
-    var self = this;
     if (this.lists[type]) {
       var res = this.resources[uri] = this.lists[type].get(uri);
       if (res) {
@@ -93,7 +115,7 @@ var AppRouter = Backbone.Router.extend({
     if (!typeCl)
       return this;
     
-    var res = this.resources[uri] = new typeCl({_uri: uri});
+    var res = this.resources[uri] = new typeCl({_uri: uri, _query: query});
     var view = this.v[uri] = new Lablz.ViewPage({model: res});
     var paintMap;
     var success = function(data) {
@@ -163,45 +185,36 @@ var AppRouter = Backbone.Router.extend({
   }
 });
 
-function init(success, error) {
-  Lablz.initModels();
-  var storeNames = [];
-  for (var name in Lablz.shortNameToModel) {
-    if (storeNames.push(name));
-  }
+function init() {
+  var error = function(e) {
+    console.log("failed to init app, not starting: " + e);
+  };
   
-//  var type = window.location.hash.substring(1);
-//  if (type.indexOf("view") == 0) {
-//    var firstSlash = type.indexOf("/");
-//    var secondSlash = type.indexOf("/", firstSlash + 1);
-//    type = type.slice(firstSlash + 1, secondSlash);
-//  }
-//  else {
-//    var nonLetterIdx = type.search(/[^a-zA-Z]/);
-//    type = nonLetterIdx == -1 ? type : type.slice(0, nonLetterIdx);
-//  }
-  
-  Lablz.indexedDB.open(null, success, error);
+  Lablz.Templates.loadTemplates();
+  Lablz.fetchModels(initModels, function() {
+    Lablz.updateModels(Lablz.startApp, error);
+//    var outOfDateModels = Lablz.loadAndUpdateModels();
+//    Lablz.indexedDB.open(null, Lablz.startApp, error);
+  });
 }
 
 //window.addEventListener("DOMContentLoaded", init, false);
 if (typeof jq != 'undefined')
   Backbone.setDomLibrary(jq);
 
+var app;
+Lablz.startApp = function() {
+  //console.log('document ready: ' + documentReadyCount);
+  if (app !== undefined)
+    return;
+  
+  app = new AppRouter();
+  Backbone.history.start();
+};
+
 $(document).ready(function () {
   console.log('document ready: ' + documentReadyCount++);
-  tpl.loadTemplates();
-  init(
-      function() {
-        //console.log('document ready: ' + documentReadyCount);
-        app = new AppRouter();
-        Backbone.history.start();
-      },
-      
-      function(err) {
-        console.log("failed to init app: " + err);
-      }
-  );
+  init();      
 });
 
 //    $.mobile.pushStateEnabled = false;

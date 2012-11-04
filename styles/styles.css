@@ -2,3 +2,8 @@
 .ui-header .ui-btn-left, .ui-header .ui-btn-right {
   top: 5px;
 }
+
+.map {
+width: 100%;
+height: 500px;
+}

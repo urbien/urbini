@@ -1,4 +1,4 @@
-tpl = { 
+Lablz.Templates = { 
     // Hash of preloaded templates for the app
     templates: {},
  
@@ -21,33 +21,29 @@ tpl = {
 // Events //
 Lablz.Events = _.extend({}, Backbone.Events);
 Lablz.Events.defaultTapHandler = function(e) {
-  console.log("got tap event");
+//  console.log("got tap event");
   var event = e.originalEvent;
   var el = event.target;
   var $el = $(el);
   if ($el.prop('tagName') != 'A')
     return true;
   
-  return true;
-//  event.preventDefault();
-//  var href = $el.prop('href');
-//  Backbone.history.navigate(href.slice(href.indexOf('#') + 1), true);
-//  console.log("navigated from tap event");
+  event.preventDefault();
+  var href = $el.prop('href');
+  Backbone.history.navigate(href.slice(href.indexOf('#') + 1), true);
 }
 
 Lablz.Events.defaultClickHandler = function(e) {
-  console.log("got click event");
+//  console.log("got click event");
   var event = e.originalEvent;
   var el = event.target;
   var $el = $(el);
   if ($el.prop('tagName') != 'A')
     return true;
 
-  return true;
-//  event.preventDefault();
-//  var href = $el.prop('href');
-//  Backbone.history.navigate(href.slice(href.indexOf('#') + 1), true);
-//  console.log("navigated from click event");
+  event.preventDefault();
+  var href = $el.prop('href');
+  Backbone.history.navigate(href.slice(href.indexOf('#') + 1), true);
 }
 
 // Views
@@ -56,7 +52,7 @@ Lablz.ResourceView = Backbone.View.extend({
 //  tagName: 'div',
   initialize: function(options) {
     _.bindAll(this, 'render', 'tap', 'mapIt', 'fetchMap'); // fixes loss of context for 'this' within methods
-    this.propRowTemplate = _.template(tpl.get('propRowTemplate'));
+    this.propRowTemplate = _.template(Lablz.Templates.get('propRowTemplate'));
     this.model.bind('change', this.render, this);
 //    this.model.bind('reset', this.render, this);
     return this;
@@ -103,12 +99,9 @@ Lablz.ResourceView = Backbone.View.extend({
       var propTemplate = Lablz.templates[prop.type];
       if (propTemplate) {
         json[p] = json[p].displayName ? json[p] : {value: json[p]};
-        json[p] = _.template(tpl.get(propTemplate))(json[p]);
+        json[p] = _.template(Lablz.Templates.get(propTemplate))(json[p]);
       }
 
-//      var v = json[p];
-//      var val = (prop.type == "resource") ? '<a href="' + Lablz.serverName + "/bb#view/" + v + '">' + v + '</a>' : v;
-        
       html += this.propRowTemplate({name: prop.label, value: json[p]});
     }
     
@@ -144,14 +137,15 @@ Lablz.MapView = Backbone.View.extend({
       this.mapDivId = options.mapDivId;
     }
     
-//    this.template = _.template(tpl.get('mapTemplate'));
+//    this.template = _.template(Lablz.Templates.get('mapTemplate'));
     this.ready = false;
     self = this;
 //    $.when(
+//      // TODO: check if leaflet css has already been loaded
 //      $.ajax(Lablz.serverName + "/styles/leaflet/" + ($.browser.msie ? "leaflet.ie.css" : "leaflet.css")),
-//      $.ajax(Lablz.serverName + "/leaflet.js"),
-//      $.ajax(Lablz.serverName + "/leaflet.markercluster.js"),
-//      $.ajax(Lablz.serverName + "/maps.js")
+//      ((typeof L != 'undefined' && L.Map) || $.ajax(Lablz.serverName + "/leaflet.js")),
+//      ((typeof L != 'undefined' && L.MarkerClusterGroup) || $.ajax(Lablz.serverName + "/leaflet.markercluster.js")),
+//      (typeof Lablz.Leaflet != 'undefined' || $.ajax(Lablz.serverName + "/maps.js"))
 //    ).then(
 //      function () {
         self.ready = true;
@@ -191,8 +185,7 @@ Lablz.MapView = Backbone.View.extend({
     this.$el.empty();
 //    this.$el.hide();
     var m = this.model;
-//    var map = new Lablz.Leaflet(this.mapDivId);
-    var map = new Lablz.Leaflet(this.mapDivId);
+    var map = Lablz.Leaflet(this.mapDivId);
     map.pointLayers = m.get('pointLayers');
     map.pointLayerInfos = m.get('pointLayerInfos');
     map.shapeLayers = m.get('shapeLayers');
@@ -249,7 +242,7 @@ Lablz.ListPage = Backbone.View.extend({
   initialize:function () {
     _.bindAll(this, 'render', 'tap', 'mapIt', 'showMapButton');
     Lablz.Events.bind("mapReady", this.showMapButton);
-    this.template = _.template(tpl.get('resource-list'));
+    this.template = _.template(Lablz.Templates.get('resource-list'));
   },
   events: {
     'tap': 'tap',
@@ -282,7 +275,7 @@ Lablz.ViewPage = Backbone.View.extend({
   initialize: function() {
     _.bindAll(this, 'render', 'tap', 'mapIt', 'showMapButton');
     this.model.on('change', this.render, this);
-    this.template = _.template(tpl.get('resource'));
+    this.template = _.template(Lablz.Templates.get('resource'));
     Lablz.Events.bind("mapReady", this.showMapButton);
   },
   events: {
@@ -332,6 +325,7 @@ Lablz.ViewPage = Backbone.View.extend({
 Lablz.ResourceListView = Backbone.View.extend({
     mapView: null,
     mapModel: null,
+    page: 1,
     initialize:function () {
       _.bindAll(this, 'render', 'fetchMap', 'tap', 'swipe', 'mapIt'); // fixes loss of context for 'this' within methods
       this.model.on('reset', this.render, this);
@@ -392,11 +386,10 @@ Lablz.ResourceListView = Backbone.View.extend({
   		return this;
     },
     fetchMap: function() {
-      this.mapModel = new Lablz.MapModel({model: this.collection});
+      this.mapModel = new Lablz.MapModel({model: this.model});
       mapView = new Lablz.MapView({mapDivId: 'listMap', model: this.mapModel});
       this.mapModel.fetch({success: 
         function() {
-//          $('body').append($(mapView.render().el));
           mapView.render();
         }
       });
@@ -408,7 +401,7 @@ Lablz.ResourceListItemView = Backbone.View.extend({
   
 	initialize: function() {
     _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
-		this.template = _.template(tpl.get('listItemTemplate'));
+		this.template = _.template(Lablz.Templates.get('listItemTemplate'));
     this.model.on('change', this.render, this);
 		return this;
 	},
