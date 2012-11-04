@@ -453,11 +453,14 @@ var Boost = {
   },
 
   getCurrentPageDiv: function() {
-    var $t = Mobile;
+   var $t = Mobile;
+   var div = null;
     if (!$t.urlToDivs || !$t.currentUrl || !$t.urlToDivs[$t.currentUrl]) {
-      return document.getElementById('mainDiv');
+      div = document.getElementById('mainDiv');
     }
-    return $t.urlToDivs[$t.currentUrl];
+    else
+      div = $t.urlToDivs[$t.currentUrl];    if (!div || !div.parentNode) // in case of login dialog on some not public page      div = getChildByClassName(document.getElementById("mainskin"), "mobile_page");
+    return div;
   },
   showActionMenu : function(event, link) {
     var urlLink = getChildById(this.getCurrentPageDiv(), "action_menu_url_link");
@@ -1289,16 +1292,24 @@ var Boost = {
       
       // init for each new 'mobile' page
       FormProcessor.initForms();
-              
-      // in case of data entry put content in current div, so no sliding effect
-      if (intoCurrentPage)
-        return;
-
+      
+      // currentDiv.parentNode == null in case if login dialog was displayed
+      // after that unlogged user tried to open not public page 
+      if (currentDiv.parentNode) {   
+        // in case of data entry put content in current div, so no sliding effect
+        // for example after login dialog called explicitly
+        if (intoCurrentPage)
+          return;
+      }
+      else
+        currentDiv = Mobile.getCurrentPageDiv();
+        
       $t.onPageLoad(newUrl, div);
       if (Boost.cache && loadedFromCache == false) {
         Boost.log("putting content into cache from " + newUrl);
         Boost.cache.put(newUrl, content);
       }
+
       if (currentDiv != null)
         MobilePageAnimation.showPage(currentDiv, div);
       else {

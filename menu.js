@@ -7629,7 +7629,7 @@ var FtsAutocomplete = {
       TouchDlgUtil.arrowsHandler(e);
       $t.wasVerticalKeyPressed = true;
     }
-    
+
     var greyTr = TouchDlgUtil.getGreyTr();
     if (!greyTr)
       return;
@@ -10179,39 +10179,34 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
 var BacklinkImagesSlideshow = {
   DELAY: 3000,
   MAX_LOOPS: 2,
-  slideshowArr : null, 
-  _init1stTime : true, // hack for Opera(!) where init executed before register
-  register : function(sceneId) {
-    
-  // NOTE: delayed slideshow loading does not work with "resourceShow" currently.
-  // So this feature was disabled! (order of slideshow is defferent for "staticShow" and "resourceShow"
-    (new slideshow(document.getElementById(sceneId))).init();
-  
-/*    
-    if (this.slideshowArr == null)
-      this.slideshowArr = new Array();
-    this.slideshowArr.push(new slideshow(document.getElementById(sceneId)));
-*/    
+  slideshowArr : new Array(), 
+  _initCounter : 0, // use timeout for delayed start
+  register : function(sceneId, idx) {
+    // use index explicitly because callse can come in arbitary order (?!)
+    this.slideshowArr[idx] = (new slideshow(document.getElementById(sceneId)));
   },
+  
   init : function() {
-  // NOTE: delayed slideshow loading does not work with "resourceShow" currently.
-  // So this feature was disabled! (order of slideshow is defferent for "staticShow" and "resourceShow"
-/*
     var $t = BacklinkImagesSlideshow;
-    if ($t._init1stTime) {
-      $t._init1stTime = false;
+    
+    // 1. with delay 0.5 sec before start of 1st slideshow
+    if ($t._initCounter == 0) {
+      $t._initCounter++;
       setTimeout($t.init, 500);
+      return;
+    }
+    // 2.1 start 1st slideshow
+    // 2.2 initialize (download and start) further slideshow after delay 2 sec 
+    else if ($t._initCounter == 1) {
+      $t._initCounter++;
+      $t.slideshowArr[0].init();
+      setTimeout($t.init, 2000);
       return;
     }
 
     if (!$t.slideshowArr)
       return;
 
-    // 1. launch 1st slideshow
-    // $t.slideshowArr[$t.slideshowArr.length - 1].init();
-    $t.slideshowArr[0].init();
-    // 2. download "stored" slides of not 1st slideshow after 1st slideshow was completely downloaded
-    //for (var i = $t.slideshowArr.length - 2; i >= 0; i--) {
     for (var i = 1; i < $t.slideshowArr.length; i++) {
       var slidesStore = getChildByClassName( $t.slideshowArr[i].slideShowSceneDiv.parentNode, "slideShow_store")
       var images = slidesStore.getElementsByTagName("img");
@@ -10222,16 +10217,14 @@ var BacklinkImagesSlideshow = {
         images[n].src = images[n].getAttribute("delayed_src");
       }
     }
-*/    
   },
-/*  
+ 
   _delayedInit : function() {
-    console.log("_delayedInit");
     var $t = BacklinkImagesSlideshow;
-    for (var i = $t.slideshowArr.length - 2; i >= 0; i--)
+    for (var i = 1; i < $t.slideshowArr.length; i++)
      $t.slideshowArr[i].init(); 
   },
-*/
+
   // slide show on a Tab (Edit page) containong one slide show
   onMainThumbClick : function() {
     this.slideshowArr[0].onMainThumbClick();
@@ -11771,6 +11764,7 @@ function changeCss(cssTitle, file) {
   }
 }
 // FTS improvements
+// use "switch_text" attribute to switch event target text (like "more" -> "less" ) 
 function showHide(id, event) {
   var tt = document.getElementById(id);
   if (getFirstChild(tt) == null) // not to show empty popup
@@ -11779,6 +11773,14 @@ function showHide(id, event) {
     tt.className = '';
   else
     tt.className = 'hdn';
+  
+  var target = getEventTarget(event);
+  var swt;
+  if (swt = target.getAttribute("switch_text")) {
+    var curText = getTextContent(target);
+    target.innerHTML = swt;
+    target.setAttribute("switch_text", curText);
+  }
   
   return stopEventPropagation(event);
 }
