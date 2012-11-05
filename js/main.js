@@ -36,7 +36,8 @@ var AppRouter = Backbone.Router.extend({
     params = params.split("?");
     var type = decodeURIComponent(params[0]);
     var self = this;
-    if (!Lablz.shortNameToModel[type]) {
+    var query = params.length > 1 ? params[1] : undefined;
+    if (!query && !Lablz.shortNameToModel[type]) {
       Lablz.fetchModels(type, function() {
         self.list.apply(self, params);
       });
@@ -46,8 +47,7 @@ var AppRouter = Backbone.Router.extend({
     
 //    Lablz.Navigation.push();
 //    Lablz.Navigation.detectBackButton();
-    var query = params.length > 1 ? params[1] : undefined;
-    if (this.lists[type] && this.l[type]) {
+    if (!query && this.lists[type] && this.l[type]) {
       this.lists[type].asyncFetch();
       this.changePage(this.l[type]);
       return this;

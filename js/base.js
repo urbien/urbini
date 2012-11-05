@@ -124,13 +124,7 @@ packages.Resource = Backbone.Model.extend({
   },
   fetch: function(options) {
     var self = this;
-//    setTimeout(function() {
-//      self.constructor.fetchModelsForLinkedResources();
-//    }, 100);
     setTimeout(function() {self.fetchModelsForLinkedResources.call(self.constructor)}, 100);
-    
-//    options = options || {};
-//    options.silent = true;
     return Backbone.Model.prototype.fetch.call(this, options);
   }
   
@@ -192,11 +186,15 @@ Lablz.ResourceList = Backbone.Collection.extend({
     this.type = this.model.type;
     this.className = this.model.shortName || this.model.className;
     this.url = Lablz.apiUrl + this.className;
-    options._query && (this.url += "?" + options._query);
+    if (options._query) {
+      this.query = options._query;
+      this.url += "?" + options._query;
+    }
+    
     console.log("init " + this.className + " resourceList");
   },
   getKey: function() {
-    return this.type;
+    return this.url;
   },
 //  url: function() {
 //    this.url = Lablz.apiUrl + this.className + "?$limit=" + this.resultsPerPage + "&$offset=" + ((this.page - 1) * this.resultsPerPage);
@@ -226,8 +224,6 @@ Lablz.ResourceList = Backbone.Collection.extend({
     }, 0);
   },
   fetch: function(options) {
-//    options = options || {};
-//    options.silent = true;
     var self = this;
     setTimeout(function() {self.model.prototype.fetchModelsForLinkedResources.call(self.model)}, 100);
     options = options || {add: true};
@@ -319,7 +315,7 @@ Backbone.sync = function(method, model, options) {
       if (toAdd.length) {
         for (var i = 0; i < toAdd.length; i++) {
           var existing = model.get(toAdd[i]._uri);
-          existing && existing.set(toAdd[i]); //, {silent: true});
+          existing && existing.set(toAdd[i]);
         }
         
         Lablz.indexedDB.addItems(toAdd, model.className);
@@ -387,7 +383,7 @@ Backbone.sync = function(method, model, options) {
   
   // only override sync if it is a fetch('read') request
   key = this.getKey && this.getKey();
-  if (!key || !Lablz.indexedDB.getDataAsync(key, success, error))
+  if (!key || key.indexOf("?") != -1 || !Lablz.indexedDB.getDataAsync(key, success, error)) // only fetch from db on regular resource list or propfind, with no filter
     runDefault();
 }
 
