@@ -172,13 +172,17 @@ packages.Resource.prototype.fetchModelsForLinkedResources = function() {
 
 
 Lablz.ResourceList = Backbone.Collection.extend({
-//  page: 1,
-//  resultsPerPage: 10,
+  page: 1,
+  perPage: 30,
+  displayPerPage: 15,
+  offset: 0,
+  firstPage: 1,
+  offsetParam: "$offset",
   initialize: function(models, options) {
     if (!models && !options.model)
       throw new Error("resource list must be initialized with options.model or an array of models");
     
-    _.bindAll(this, 'getKey', 'parse'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPage', 'setPerPage'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
     this.model = options.model || models[0].model;
     this.on('add', this.onAdd, this);
     this.on('reset', this.onReset, this);
@@ -186,12 +190,53 @@ Lablz.ResourceList = Backbone.Collection.extend({
     this.type = this.model.type;
     this.className = this.model.shortName || this.model.className;
     this.url = Lablz.apiUrl + this.className;
-    if (options._query) {
-      this.query = options._query;
-      this.url += "?" + options._query;
-    }
+    this.parseQuery(options._query);
     
     console.log("init " + this.className + " resourceList");
+  },
+  getNextPage: function () {
+    if (this.page !== undefined) {
+      this.page += 1;
+      this.pager();
+    }
+  },
+  getPreviousPage: function () {
+    if (this.page !== undefined) {
+      this.page -= 1;
+      this.pager();
+    }
+  },
+  getPage: function(page) {
+    this.page = page;
+    this.pager();
+  },
+  pager: function() {
+    this.fetch();
+  },
+  setPerPage: function(perPage) {
+    this.page = this.firstPage;
+    this.perPage = perPage;
+    this.pager();
+  },
+  parseQuery: function(query) {
+    if (!query)
+      return;
+    
+    var q = query.split("&");
+    for (var i = 0; i < q.length; i++) {
+      if (q[i].indexOf(this.offsetParam) == 0) {
+        this.offset = parseInt(q[i].split("=")[1]); // offset is special because we need it for lookup in db
+        this.page = Math.floor(this.offset / this.perPage) + 1;
+        q.remove(i);
+        query = q.length ? q.join("&") : null;
+        break;
+      }
+    }
+    
+    if (query) {
+      this.query = query;
+      this.url += "?" + query;
+    }
   },
   getKey: function() {
     return this.url;
@@ -206,7 +251,9 @@ Lablz.ResourceList = Backbone.Collection.extend({
     if (!response || response.error)
       return [];
     
-    return response instanceof Array ? response : response.data;
+    this.offset = response.metadata.offset;
+    this.page = Math.floor(this.offset / this.perPage);
+    return response.data;
   },
   onReset: function(model) {
     console.log("resourceList onReset");
@@ -227,6 +274,9 @@ Lablz.ResourceList = Backbone.Collection.extend({
     var self = this;
     setTimeout(function() {self.model.prototype.fetchModelsForLinkedResources.call(self.model)}, 100);
     options = options || {add: true};
+    if (this.offset)
+      options.url = this.url + (this.query ? "&" : "?") + this.offsetParam + "=" + this.offset;
+      
     return Backbone.Collection.prototype.fetch.call(this, options);
   }
 
@@ -339,7 +389,7 @@ Backbone.sync = function(method, model, options) {
 //        data = isCol ? resp.data : resp.data[0];
       
       data = model instanceof Backbone.Collection ? resp.data : resp.data[0];
-      defSuccess && defSuccess(data, status, xhr);
+      defSuccess && defSuccess(resp, status, xhr);
       save && save(data);
     }
   });

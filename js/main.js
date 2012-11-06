@@ -1,22 +1,23 @@
 // Router
 var documentReadyCount = 0;
-var AppRouter = Backbone.Router.extend({
+var App = Backbone.Router.extend({
 
   routes:{
       ":type":"list",
       "view/*path":"view",
       "map/:type":"map"
   },
-  l: {},
-  v: {},
-  resources: {},
-  lists: {},
+  CollectionViews: {},
+  Views: {},
+  Models: {},
+  Collections: {},
+  Paginator: {},
   backClicked: false,       
   initialize: function () {
     this.firstPage = true;
     $(document).on('click', 'a.back', function(event) {
       event.preventDefault();
-      AppRouter.backClicked = true;
+      App.backClicked = true;
       window.history.back();
     });
   },
@@ -37,6 +38,20 @@ var AppRouter = Backbone.Router.extend({
     var type = decodeURIComponent(params[0]);
     var self = this;
     var query = params.length > 1 ? params[1] : undefined;
+    if (query) {
+      var q = query.split("&");
+      for (var i = 0; i < q.length; i++) {
+        if (q[i].indexOf("$page") == 0) {
+          this.page = parseInt(q[i].split("=")[1]); // page is special because we need it for lookup in db
+          q.remove(i);
+          query = q.length ? q.join("&") : null;
+          break;
+        }
+      }
+    }
+    
+    var page = this.page = this.page || 1;
+    
     if (!query && !Lablz.shortNameToModel[type]) {
       Lablz.fetchModels(type, function() {
         self.list.apply(self, params);
@@ -47,9 +62,9 @@ var AppRouter = Backbone.Router.extend({
     
 //    Lablz.Navigation.push();
 //    Lablz.Navigation.detectBackButton();
-    if (!query && this.lists[type] && this.l[type]) {
-      this.lists[type].asyncFetch();
-      this.changePage(this.l[type]);
+    if (!query && this.Collections[type] && this.CollectionViews[type]) {
+      this.Collections[type].asyncFetch({page: page});
+      this.changePage(this.CollectionViews[type], {page: page});
       return this;
     }
     
@@ -57,8 +72,8 @@ var AppRouter = Backbone.Router.extend({
     if (!model)
       return this;
     
-    var list = this.lists[type] = new Lablz.ResourceList(null, {model: model, _query: query});
-    var listView = this.l[type] = new Lablz.ListPage({model: list});
+    var list = this.Collections[type] = new Lablz.ResourceList(null, {model: model, _query: query});
+    var listView = this.CollectionViews[type] = new Lablz.ListPage({model: list});
     list.fetch({
       add: true, 
       success: function() {
@@ -87,26 +102,26 @@ var AppRouter = Backbone.Router.extend({
       return;
     }
     
-    var res = this.resources[uri];
+    var res = this.Models[uri];
     if (!res) {
-      var l = this.lists[type];
-      res = this.resources[uri] = l && l.get(uri);
+      var l = this.Collections[type];
+      res = this.Models[uri] = l && l.get(uri);
     }
     
     var query = params.length > 1 ? params[1] : undefined;
     if (res) {
       res.asyncFetch();
-      this.resources[uri] = res;
-      this.v[uri] = this.v[uri] || new Lablz.ViewPage({model: res});
-      this.changePage(this.v[uri]);
+      this.Models[uri] = res;
+      this.Views[uri] = this.Views[uri] || new Lablz.ViewPage({model: res});
+      this.changePage(this.Views[uri]);
       return this;
     }
     
-    if (this.lists[type]) {
-      var res = this.resources[uri] = this.lists[type].get(uri);
+    if (this.Collections[type]) {
+      var res = this.Models[uri] = this.Collections[type].get(uri);
       if (res) {
-        this.v[uri] = new Lablz.ViewPage({model: res});
-        this.changePage(this.v[uri]);
+        this.Views[uri] = new Lablz.ViewPage({model: res});
+        this.changePage(this.Views[uri]);
         return this;
       }
     }
@@ -115,8 +130,8 @@ var AppRouter = Backbone.Router.extend({
     if (!typeCl)
       return this;
     
-    var res = this.resources[uri] = new typeCl({_uri: uri, _query: query});
-    var view = this.v[uri] = new Lablz.ViewPage({model: res});
+    var res = this.Models[uri] = new typeCl({_uri: uri, _query: query});
+    var view = this.Views[uri] = new Lablz.ViewPage({model: res});
     var paintMap;
     var success = function(data) {
       self.changePage(view);
@@ -174,8 +189,8 @@ var AppRouter = Backbone.Router.extend({
     // hot to transition
     var isReverse = false;
     var transition = "slide"; //$.mobile.defaultPageTransition;
-    if (AppRouter.backClicked == true) {
-      AppRouter.backClicked = false;
+    if (App.backClicked == true) {
+      App.backClicked = false;
       isReverse = true;
     }
     
@@ -208,7 +223,7 @@ Lablz.startApp = function() {
   if (app !== undefined)
     return;
   
-  app = new AppRouter();
+  app = new App();
   Backbone.history.start();
 };
 

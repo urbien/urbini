@@ -1,8 +1,20 @@
-var serverName = "mark.obval.com/urbien"; 
+//var serverName = "mark.obval.com/urbien"; 
 //var serverName = "aurora2.lablz.com";
 //var serverName = "urbien.com";
 //var serverName = "www.obval.com";
 //var serverName = "dev.obval.com";
+var serverName = (function() {     
+  var baseUriO = document.getElementsByTagName('base');
+  if (!baseUri0)
+    throw new Error("unable to deduce server url");
+    
+  var baseUri = "";
+  if (baseUriO)
+    baseUri = baseUriO[0].href;
+  
+  return baseUri;
+})();
+
 var apiUrl = "http://" + serverName + "/api/v1/";
 var secureApiUrl = "https://" + serverName + "/api/v1/";
 var appId;
