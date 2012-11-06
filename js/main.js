@@ -52,7 +52,7 @@ var App = Backbone.Router.extend({
     
     var page = this.page = this.page || 1;
     
-    if (!query && !Lablz.shortNameToModel[type]) {
+    if (!Lablz.shortNameToModel[type]) {
       Lablz.fetchModels(type, function() {
         self.list.apply(self, params);
       });
@@ -180,6 +180,7 @@ var App = Backbone.Router.extend({
       view.render();
     }
 
+    var transition = "slide"; //$.mobile.defaultPageTransition;
     this.currentView = view;
     if (this.firstPage) {
       transition = 'none';
@@ -188,7 +189,6 @@ var App = Backbone.Router.extend({
     
     // hot to transition
     var isReverse = false;
-    var transition = "slide"; //$.mobile.defaultPageTransition;
     if (App.backClicked == true) {
       App.backClicked = false;
       isReverse = true;

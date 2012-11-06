@@ -14,6 +14,7 @@
   
   <div data-role="footer" class="ui-footer ui-bar-c" data-position="fixed">
      <a target="#welcome" class="icon home">Home</a>
+     <a id="nextPage" target="#" class="icon next ui-btn-right">Next</a>
   </div>
 </script>  
 <script type="text/template" id="resource">
