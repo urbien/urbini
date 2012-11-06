@@ -26,15 +26,15 @@
       };
   </script -->
   <script src="lib/backbone.js"></script>
-  <!--script src="lib/IndexedDBShim.min.js"></script-->
-  <script src="lib/IndexedDBPolyfill.js"></script>
-  
-  <!-- LEAFLET -->
+  <script src="lib/IndexedDBShim.min.js"></script>
+  <!--script src="lib/IndexedDBPolyfill.js"></script-->
+  <base />
+  <!-- LEAFLET>
   <link rel="stylesheet" type="text/css" href="styles/leaflet/leaflet.css" />
   <script src="leaflet.js"></script>
   <script src="leaflet.markercluster.js"></script>
   <script src="maps.js"></script>
-  <!-- END LEAFLET -->
+  <END LEAFLET -->
   
   <script src="js/utils.js"></script>   
   <script src="js/base.js"></script>   

@@ -832,7 +832,20 @@ Lablz.loadAndUpdateModels = function() {
 
 // END /////////// Local Storage //////////// END //
 
-Lablz.serverName = "http://mark.obval.com/urbien";
+Lablz.pageUrl = "/bb/index.html";
+Lablz.serverName = (function() {     
+  var baseUriO = document.getElementsByTagName('base');
+  var baseUri = "";
+  if (baseUriO)
+    baseUri = baseUriO[0].href;
+  
+  var pIdx = baseUri.indexOf(Lablz.pageUrl);
+  if (pIdx)
+    baseUri = baseUri.slice(0, pIdx);
+    
+  return baseUri;
+})();
+
 Lablz.fetchModels = function(models, success, error) {
   $.ajax(Lablz.serverName + "/backboneModel?type=" + encodeURIComponent(models.join ? models.join(",") : models), {complete: 
     function(jqXHR, status) {
