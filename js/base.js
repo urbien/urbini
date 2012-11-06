@@ -182,7 +182,7 @@ Lablz.ResourceList = Backbone.Collection.extend({
     if (!models && !options.model)
       throw new Error("resource list must be initialized with options.model or an array of models");
     
-    _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPage', 'setPerPage'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
     this.model = options.model || models[0].model;
     this.on('add', this.onAdd, this);
     this.on('reset', this.onReset, this);
@@ -194,24 +194,27 @@ Lablz.ResourceList = Backbone.Collection.extend({
     
     console.log("init " + this.className + " resourceList");
   },
-  getNextPage: function () {
+  getNextPage: function(options) {
     if (this.page !== undefined) {
-      this.page += 1;
-      this.pager();
+      this.offset += this.perPage;
+      this.pager(options);
     }
   },
   getPreviousPage: function () {
     if (this.page !== undefined) {
-      this.page -= 1;
+      this.offset -= this.perPage;
       this.pager();
     }
   },
-  getPage: function(page) {
-    this.page = page;
+  getPageAtOffset: function(offset) {
+    this.offset = offset;
     this.pager();
   },
-  pager: function() {
-    this.fetch();
+  pager: function(options) {
+    this.page = Math.floor(this.offset / this.perPage) + 1; // first page is page 1 (not 0)
+    options = options || {};
+    options.startAfter = _.last(this.models);
+    this.fetch(options);
   },
   setPerPage: function(perPage) {
     this.page = this.firstPage;
@@ -241,9 +244,6 @@ Lablz.ResourceList = Backbone.Collection.extend({
   getKey: function() {
     return this.url;
   },
-//  url: function() {
-//    this.url = Lablz.apiUrl + this.className + "?$limit=" + this.resultsPerPage + "&$offset=" + ((this.page - 1) * this.resultsPerPage);
-//  },
   isA: function(interfaceName) {
     return Utils.isA(this.model, interfaceName);
   },
@@ -251,9 +251,13 @@ Lablz.ResourceList = Backbone.Collection.extend({
     if (!response || response.error)
       return [];
     
-    this.offset = response.metadata.offset;
-    this.page = Math.floor(this.offset / this.perPage);
-    return response.data;
+    if (response.data) {
+      this.offset = response.metadata.offset;
+      this.page = Math.floor(this.offset / this.perPage);
+      return response.data;
+    }
+    else
+      return response;
   },
   onReset: function(model) {
     console.log("resourceList onReset");
@@ -433,7 +437,14 @@ Backbone.sync = function(method, model, options) {
   
   // only override sync if it is a fetch('read') request
   key = this.getKey && this.getKey();
-  if (!key || key.indexOf("?") != -1 || !Lablz.indexedDB.getDataAsync(key, success, error)) // only fetch from db on regular resource list or propfind, with no filter
+  var dbReqOptions = {
+      key: key, 
+      startAfter: options.startAfter || 1, 
+      success: success,
+      error: error
+  };
+  
+  if (!key || key.indexOf("?") != -1 || !Lablz.indexedDB.getDataAsync(dbReqOptions)) // only fetch from db on regular resource list or propfind, with no filter
     runDefault();
 }
 
@@ -774,10 +785,12 @@ Lablz.indexedDB.deleteItem = function(uri) {
   };
 };
 
-Lablz.indexedDB.getDataAsync = function(uri, success, error) {
+Lablz.indexedDB.getDataAsync = function(options) {
+  var uri = options.key;
   var type = Utils.getType(uri);
-  if (type == uri)
-    return Lablz.indexedDB.getItems(type, success, error);
+  if (Utils.endsWith(uri, type))
+    return Lablz.indexedDB.getItems(options);
+  
   else if (type == null) {
     if (error) error();
     return false;
@@ -806,9 +819,13 @@ Lablz.indexedDB.getDataAsync = function(uri, success, error) {
   return true;
 }
 
-Lablz.indexedDB.getItems = function(type, success, error) {
+Lablz.indexedDB.getItems = function(options) {
   // var todos = document.getElementById("todoItems");
   // todos.innerHTML = "";
+  var type = options.key;
+  var success = options.success;
+  var error = options.error;
+  var startAfter = options.startAfter;
 
   var name = Utils.getClassName(type);
   var db = Lablz.indexedDB.db;
@@ -818,6 +835,10 @@ Lablz.indexedDB.getItems = function(type, success, error) {
   var trans = db.transaction([name], "readonly");
   var store = trans.objectStore(name);
 
+  if (startAfter != 1) {
+    var lowerBoundKeyRange = IDBKeyRange.lowerBound(startAfter);
+  }
+  
   // Get everything in the store;
   var results = [];
   var cursorRequest = store.openCursor();

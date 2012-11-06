@@ -27,7 +27,6 @@
   </script -->
   <script src="lib/backbone.js"></script>
   <script src="lib/IndexedDBShim.min.js"></script>
-  <!--script src="lib/IndexedDBPolyfill.js"></script-->
   <base />
   <!-- LEAFLET>
   <link rel="stylesheet" type="text/css" href="styles/leaflet/leaflet.css" />

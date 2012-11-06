@@ -240,14 +240,28 @@ Lablz.MapView = Backbone.View.extend({
 
 Lablz.ListPage = Backbone.View.extend({
   initialize:function () {
-    _.bindAll(this, 'render', 'tap', 'mapIt', 'showMapButton');
+    _.bindAll(this, 'render', 'tap', 'mapIt', 'showMapButton', 'checkScroll');
     Lablz.Events.bind("mapReady", this.showMapButton);
     this.template = _.template(Lablz.Templates.get('resource-list'));
   },
   events: {
     'tap': 'tap',
     'click #mapIt': 'mapIt',
-    'click': 'click'
+    'click': 'click',
+    'scroll': 'checkScroll'
+  },
+  checkScroll: function () {
+    console.log("scroll event");
+//    var triggerPoint = 100; // 100px from the bottom
+//    if(!this.isLoading && this.el.scrollTop + this.el.clientHeight + triggerPoint > this.el.scrollHeight ) {
+//      this.isLoading = true;
+//      var self = this;
+//      this.collection.getNextPage({
+//        success: function() {
+//          self.isLoading = false;
+//        }
+//      });
+//    }
   },
   mapIt: function(e) {
     e.preventDefault();
@@ -335,18 +349,6 @@ Lablz.ResourceListView = Backbone.View.extend({
       
       return this;
     },
-    events: {
-//      'scroll': 'checkScroll'
-      'tap': 'tap',
-//      'doubletap': 'doubletap',
-//      'taphold': 'taphold',
-//      'transform': 'transform',
-//      'transformstart': 'transformstart',
-//      'transformend': 'transformend',
-      'swipe': 'swipe',
-      'click #mapIt': 'mapIt',
-      'click' : 'click'
-    },
     mapIt: function(e) {
       e.preventDefault();
       Lablz.Events.trigger("mapIt", this.model);
@@ -354,15 +356,8 @@ Lablz.ResourceListView = Backbone.View.extend({
     tap: Lablz.Events.defaultTapHandler,
     click: Lablz.Events.defaultClickHandler,  
     swipe: function(e) {
-      
+      console.log("swipe");
     },
-//    checkScroll: function () {
-//      var triggerPoint = 100; // 100px from the bottom
-//        if( !this.isLoading && this.el.scrollTop + this.el.clientHeight + triggerPoint > this.el.scrollHeight ) {
-//          this.twitterCollection.page += 1; // Load next page
-//          this.loadResults();
-//        }
-//    },
     render:function (eventName) {
       console.log("render listView");
   		var elt = this.$el;

@@ -287,3 +287,8 @@ Array.prototype.remove = function(from, to) {
   this.length = from < 0 ? this.length + from : from;
   return this.push.apply(this, rest);
 };
+
+Utils.endsWith = function(string, pattern) {
+  var d = string.length - pattern.length;
+  return d >= 0 && string.indexOf(pattern, d) === d;
+}
