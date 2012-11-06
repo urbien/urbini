@@ -20,6 +20,10 @@ Lablz.Templates = {
 
 // Events //
 Lablz.Events = _.extend({}, Backbone.Events);
+//$(window).scroll(function() {
+//  Lablz.Events.trigger("windowScroll");
+//});
+
 Lablz.Events.defaultTapHandler = function(e) {
 //  console.log("got tap event");
   var event = e.originalEvent;
@@ -240,7 +244,7 @@ Lablz.MapView = Backbone.View.extend({
 
 Lablz.ListPage = Backbone.View.extend({
   initialize:function () {
-    _.bindAll(this, 'render', 'tap', 'mapIt', 'showMapButton', 'checkScroll');
+    _.bindAll(this, 'render', 'tap', 'mapIt', 'showMapButton');
     Lablz.Events.bind("mapReady", this.showMapButton);
     this.template = _.template(Lablz.Templates.get('resource-list'));
   },
@@ -248,20 +252,10 @@ Lablz.ListPage = Backbone.View.extend({
     'tap': 'tap',
     'click #mapIt': 'mapIt',
     'click': 'click',
-    'scroll': 'checkScroll'
+    'click #nextPage': 'nextPage'
   },
-  checkScroll: function () {
-    console.log("scroll event");
-//    var triggerPoint = 100; // 100px from the bottom
-//    if(!this.isLoading && this.el.scrollTop + this.el.clientHeight + triggerPoint > this.el.scrollHeight ) {
-//      this.isLoading = true;
-//      var self = this;
-//      this.collection.getNextPage({
-//        success: function() {
-//          self.isLoading = false;
-//        }
-//      });
-//    }
+  nextPage: function(e) {
+    Lablz.Events.trigger('nextPage', this.model);    
   },
   mapIt: function(e) {
     e.preventDefault();
@@ -341,11 +335,35 @@ Lablz.ResourceListView = Backbone.View.extend({
     mapModel: null,
     page: 1,
     initialize:function () {
-      _.bindAll(this, 'render', 'fetchMap', 'tap', 'swipe', 'mapIt'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'fetchMap', 'tap', 'swipe', 'mapIt', 'checkScroll', 'getNextPage', 'renderMany', 'renderOne'); // fixes loss of context for 'this' within methods
+      Lablz.Events.bind('nextPage', this.getNextPage);
+      this.model.bind('add', this.renderMany, this);
       this.model.on('reset', this.render, this);
 //      var self = this;
 //      if (this.model.isA("Locatable") || this.model.isA("Shape"))
 //        this.fetchMap();
+      
+      return this;
+    },
+    getNextPage: function() {
+      this.isLoading = true;
+      var self = this;
+      var before = this.model.models.length;
+      var after = function() {
+        self.isLoading = false;
+      };
+      
+      this.model.getNextPage({
+        success: after,
+        error: after
+      });      
+    },
+    checkScroll: function () {
+      var triggerPoint = 100; // 100px from the bottom
+      if(!this.isLoading && this.el.scrollTop + this.el.clientHeight + triggerPoint > this.el.scrollHeight ) {
+        console.log("scroll event");
+//        getNextPage();
+      }
       
       return this;
     },
@@ -358,19 +376,18 @@ Lablz.ResourceListView = Backbone.View.extend({
     swipe: function(e) {
       console.log("swipe");
     },
+    renderOne: function(model) {
+      this.$el.append(new Lablz.ResourceListItemView({model:model}).render().el);
+    },
+    renderMany: function(models) {
+      if (models instanceof Backbone.Model) // one model
+        this.renderOne(models);
+      else
+        _.forEach(models, this.renderOne);
+    },
     render:function (eventName) {
       console.log("render listView");
-  		var elt = this.$el;
-//  		this.model.each(function (item) {
-//        elt.append(new Lablz.ResourceListItemView({model:item}).render().el);
-//      });
-
-  		var frag = document.createDocumentFragment();
-  		this.model.each(function (item) {
-  		  frag.appendChild(new Lablz.ResourceListItemView({model:item}).render().el);
-  		});
-  		
-  		elt.append(frag);
+  		this.renderMany(this.model.models);
   		
 //  		var mapBtnElt = this.$('mapIt');
 //  		if (mapBtnElt) {

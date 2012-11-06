@@ -66,7 +66,10 @@ packages.Resource = Backbone.Model.extend({
       return null;
 
     var uri = resp._uri;
-    resp = uri ? resp : resp.data[0];
+    if (!uri) {      
+      resp = resp.data[0];
+      uri = resp._uri;
+    }
     resp._shortUri = Utils.getShortUri(uri, this.constructor);
     var primaryKeys = Utils.getPrimaryKeys(this.constructor);
     resp._uri = Utils.getLongUri(resp._uri, this.constructor.type, primaryKeys);
@@ -124,7 +127,9 @@ packages.Resource = Backbone.Model.extend({
   },
   fetch: function(options) {
     var self = this;
-    setTimeout(function() {self.fetchModelsForLinkedResources.call(self.constructor)}, 100);
+    setTimeout(function() {
+      self.fetchModelsForLinkedResources.call(self.constructor);
+    }, 100);
     return Backbone.Model.prototype.fetch.call(this, options);
   }
   
@@ -178,33 +183,33 @@ Lablz.ResourceList = Backbone.Collection.extend({
   offset: 0,
   firstPage: 1,
   offsetParam: "$offset",
+  limitParam: "$limit",
+  queryMap: {},
   initialize: function(models, options) {
     if (!models && !options.model)
       throw new Error("resource list must be initialized with options.model or an array of models");
     
-    _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
     this.model = options.model || models[0].model;
     this.on('add', this.onAdd, this);
     this.on('reset', this.onReset, this);
 //    this.model = metadata.model;
     this.type = this.model.type;
     this.className = this.model.shortName || this.model.className;
-    this.url = Lablz.apiUrl + this.className;
+    this.baseUrl = Lablz.apiUrl + this.className;
+    this.url = this.baseUrl;
     this.parseQuery(options._query);
+    this.queryMap[this.limitParam] = this.perPage;
     
     console.log("init " + this.className + " resourceList");
   },
   getNextPage: function(options) {
-    if (this.page !== undefined) {
-      this.offset += this.perPage;
-      this.pager(options);
-    }
+    this.offset += this.perPage;
+    this.pager(options);
   },
   getPreviousPage: function () {
-    if (this.page !== undefined) {
-      this.offset -= this.perPage;
-      this.pager();
-    }
+    this.offset -= this.perPage;
+    this.pager();
   },
   getPageAtOffset: function(offset) {
     this.offset = offset;
@@ -213,7 +218,7 @@ Lablz.ResourceList = Backbone.Collection.extend({
   pager: function(options) {
     this.page = Math.floor(this.offset / this.perPage) + 1; // first page is page 1 (not 0)
     options = options || {};
-    options.startAfter = _.last(this.models);
+    options.startAfter = _.last(this.models).get('_uri');
     this.fetch(options);
   },
   setPerPage: function(perPage) {
@@ -221,25 +226,28 @@ Lablz.ResourceList = Backbone.Collection.extend({
     this.perPage = perPage;
     this.pager();
   },
+  getUrl: function() {
+    return this.baseUrl + (this.queryMap ? "?" + Utils.toQueryString(this.queryMap) : '');
+  },
   parseQuery: function(query) {
     if (!query)
       return;
     
-    var q = query.split("&");
-    for (var i = 0; i < q.length; i++) {
-      if (q[i].indexOf(this.offsetParam) == 0) {
-        this.offset = parseInt(q[i].split("=")[1]); // offset is special because we need it for lookup in db
+    query = query.split("&");
+    var qMap = this.queryMap = this.queryMap || {};
+    for (var i = 0; i < query.length; i++) {
+      var p = query[i].split("=");
+      var name = p[0];
+      var val = p[1];
+      if (query[i] == this.offsetParam) {
+        this.offset = parseInt(value); // offset is special because we need it for lookup in db
         this.page = Math.floor(this.offset / this.perPage) + 1;
-        q.remove(i);
-        query = q.length ? q.join("&") : null;
-        break;
       }
+      else
+        qMap[name] = decodeURIComponent(val);
     }
     
-    if (query) {
-      this.query = query;
-      this.url += "?" + query;
-    }
+    this.url = this.getUrl();
   },
   getKey: function() {
     return this.url;
@@ -276,11 +284,16 @@ Lablz.ResourceList = Backbone.Collection.extend({
   },
   fetch: function(options) {
     var self = this;
-    setTimeout(function() {self.model.prototype.fetchModelsForLinkedResources.call(self.model)}, 100);
-    options = options || {add: true};
+    setTimeout(function() {
+      self.model.prototype.fetchModelsForLinkedResources.call(self.model);
+    }, 100);
+    options = options || {};
+    options.add = true;
+    this.queryMap = this.queryMap || {};
     if (this.offset)
-      options.url = this.url + (this.query ? "&" : "?") + this.offsetParam + "=" + this.offset;
+      this.queryMap[this.offsetParam] = this.offset;
       
+    options.url = this.getUrl();
     return Backbone.Collection.prototype.fetch.call(this, options);
   }
 
@@ -437,12 +450,11 @@ Backbone.sync = function(method, model, options) {
   
   // only override sync if it is a fetch('read') request
   key = this.getKey && this.getKey();
-  var dbReqOptions = {
-      key: key, 
-      startAfter: options.startAfter || 1, 
-      success: success,
-      error: error
-  };
+  var dbReqOptions = {key: key, success: success, error: error};
+  if (model instanceof Backbone.Collection) {
+    dbReqOptions.startAfter = options.startAfter,
+    dbReqOptions.perPage = model.perPage;
+  }
   
   if (!key || key.indexOf("?") != -1 || !Lablz.indexedDB.getDataAsync(dbReqOptions)) // only fetch from db on regular resource list or propfind, with no filter
     runDefault();
@@ -826,6 +838,7 @@ Lablz.indexedDB.getItems = function(options) {
   var success = options.success;
   var error = options.error;
   var startAfter = options.startAfter;
+  var total = options.perPage;
 
   var name = Utils.getClassName(type);
   var db = Lablz.indexedDB.db;
@@ -835,23 +848,25 @@ Lablz.indexedDB.getItems = function(options) {
   var trans = db.transaction([name], "readonly");
   var store = trans.objectStore(name);
 
-  if (startAfter != 1) {
-    var lowerBoundKeyRange = IDBKeyRange.lowerBound(startAfter);
-  }
+  var lowerBound;
+  if (startAfter)
+    lowerBound = IDBKeyRange.lowerBound(startAfter, true);
   
   // Get everything in the store;
   var results = [];
-  var cursorRequest = store.openCursor();
+  var cursorRequest = lowerBound ? store.openCursor(lowerBound) : store.openCursor();
   cursorRequest.onsuccess = function(e) {
     var result = e.target.result;
     if (result) {
       results.push(result.value);
-      result.continue();
+      if (results.length < total) {
+        result.continue();
+        return;
+      }
     }
-    else {
-      if (success)
-        success(results);
-    }
+    
+    if (success)
+      success(results);
   };
 
   cursorRequest.onerror = function (e) {

@@ -291,4 +291,13 @@ Array.prototype.remove = function(from, to) {
 Utils.endsWith = function(string, pattern) {
   var d = string.length - pattern.length;
   return d >= 0 && string.indexOf(pattern, d) === d;
-}
+};
+
+Utils.toQueryString = function(queryMap) {
+  var qStr = '';
+  _.forEach(queryMap, function(val, key) { // yes, it's backwards, not function(key, val), underscore does it like this for some reason
+    qStr += key + '=' + encodeURIComponent(val) + '&';
+  });
+  
+  return qStr.slice(0, qStr.length - 1);
+};
