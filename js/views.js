@@ -382,8 +382,14 @@ Lablz.ResourceListView = Backbone.View.extend({
     renderMany: function(models) {
       if (models instanceof Backbone.Model) // one model
         this.renderOne(models);
-      else
-        _.forEach(models, this.renderOne);
+      else {
+        var frag = document.createDocumentFragment();
+        _.forEach(models, function(model) {
+          frag.appendChild(new Lablz.ResourceListItemView({model:model}).render().el);
+        });
+        
+        this.$el.append(frag);
+      }
     },
     render:function (eventName) {
       console.log("render listView");
