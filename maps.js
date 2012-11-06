@@ -157,33 +157,37 @@ function rgbToHex(r, g, b) {
 }
 
 window.Lablz = window.Lablz || {};
-Lablz.Leaflet = {
-  serverName : null,
-  map : null,
-  maxZoom : 17,
-  pointOfInterest: {},
-  color : null,
-  shapeJsons : {},
-  shapeLayers: {},
-  pointLayers: {},
-  shapeLayerInfos: {},
-  pointLayerInfos: {},
-  infoToLayer: {},
-  nameToType: {},
-  mapInfoObjs : [],
-  layerToDensity : {},
-  currentLayerDensity : null,
-  currentLayerName : null,
-  userAskedFor : {},
-  layerControl : null,
-  getNextColor : function(seed) {
-    var hsv = generateColors(1, seed || (Lablz.Leaflet.color ? Lablz.Leaflet.color[0] : 0.7));
-    Lablz.Leaflet.color = hsv[0]; 
+Lablz.Leaflet = function(mapDivId) {
+  this.mapDivId = mapDivId;
+  this.serverName = null;
+  this.map = null;
+  this.maxZoom = 17;
+  this.pointOfInterest = {};
+  this.color = null;
+  this.shapeJsons = {};
+  this.shapeLayers = {};
+  this.pointLayers = {};
+  this.shapeLayerInfos = {};
+  this.pointLayerInfos = {};
+  this.infoToLayer = {};
+  this.nameToType = {};
+  this.mapInfoObjs = [];
+  this.layerToDensity = {};
+  this.currentLayerDensity = null;
+  this.currentLayerName = null;
+  this.userAskedFor = {};
+  this.layerControl = null;
+//  initialize: function() {
+//    _.bindAll(this, );
+//  },
+  this.getNextColor = function(seed) {
+    var hsv = generateColors(1, seed || (this.color ? this.color[0] : 0.7));
+    this.color = hsv[0]; 
     var rgb = hsv2rgb(hsv[0][0], hsv[0][1], hsv[0][2]);
     return rgbToHex(rgb[0], rgb[1], rgb[2]);
-  },
+  };
   
-  addBasicMapInfo : function(init) {
+  this.addBasicMapInfo = function(init) {
     'use strict';
     var self = this;
     var mapInfo = L.control();
@@ -208,9 +212,9 @@ Lablz.Leaflet = {
     mapInfo.addTo(this.map);
     this.mapInfoObjs.push(mapInfo);
     return mapInfo;
-  },
+  };
 
-  addMapInfo : function(type, subType, areaType, areaUnit) {
+  this.addMapInfo = function(type, subType, areaType, areaUnit) {
     'use strict';
     var info = L.control();
     info.onAdd = function (map) {
@@ -245,97 +249,99 @@ Lablz.Leaflet = {
 
     this.mapInfoObjs.push(info);
     info.addTo(this.map);  
-  },
+  };
 
-  clearInfos : function(e) {
+  this.clearInfos = function(e) {
     'use strict';
-    for (var i = 0; i < Lablz.Leaflet.mapInfoObjs.length; i++) {
-      Lablz.Leaflet.mapInfoObjs[i].update();
+    for (var i = 0; i < this.mapInfoObjs.length; i++) {
+      this.mapInfoObjs[i].update();
     }  
-  },
+  };
 
-  updateInfosForLayer : function(layer) {
+  this.updateInfosForLayer = function(layer) {
     'use strict';
-    for (var i = 0; i < Lablz.Leaflet.mapInfoObjs.length; i++) {
+    for (var i = 0; i < this.mapInfoObjs.length; i++) {
       if (layer.feature.properties)
-        Lablz.Leaflet.mapInfoObjs[i].update(layer.feature.properties);
+        this.mapInfoObjs[i].update(layer.feature.properties);
     }
-  },
+  };
 
-  updateInfosWithHTML : function(html) {
+  this.updateInfosWithHTML = function(html) {
     'use strict';
-    for (var i = 0; i < Lablz.Leaflet.mapInfoObjs.length; i++) {
-      Lablz.Leaflet.mapInfoObjs[i].updateWithHTML(html);
+    for (var i = 0; i < this.mapInfoObjs.length; i++) {
+      this.mapInfoObjs[i].updateWithHTML(html);
     }
-  },
+  };
 
-  updateInfos : function(e) {
+  this.updateInfos = function(e) {
     'use strict';
     var layer = e.target;
-    Lablz.Leaflet.updateInfosForLayer(layer);
-  },
+    this.updateInfosForLayer(layer);
+  };
 
-  highlightFeature : function(e) {
+  this.getHighlightFeatureFunction = function() {
+    var self = this;
+    return function(e) {
+      'use strict';
+       var layer = e.target;
+       layer.setStyle({
+         weight: 5,
+         color: '#666',
+         dashArray: '',
+         fillOpacity: 0.7
+       });
+       
+       if (!L.Browser.ie && !L.Browser.opera) {
+         layer.bringToFront();
+       }
+       
+       if (layer.feature) {
+         self.updateInfosForLayer(layer);
+       }
+    };
+  }
+
+  minResolution = 0.01;
+  this.getLeafletMapTileColor = function(d) {
     'use strict';
-      var layer = e.target;
-
-      layer.setStyle({
-          weight: 5,
-          color: '#666',
-          dashArray: '',
-          fillOpacity: 0.7
-      });
-
-      if (!L.Browser.ie && !L.Browser.opera) {
-          layer.bringToFront();
-      }
-      
-      if (layer.feature) {
-        Lablz.Leaflet.updateInfosForLayer(layer);
-      }
-  },
-
-  minResolution : 0.01,
-  getLeafletMapTileColor : function(d) {
-    'use strict';
-    var minMax = Lablz.Leaflet.currentLayerDensity;
+    var minMax = this.currentLayerDensity;
     var min = minMax[0];
     var max = minMax[1];
-    if (max < Lablz.Leaflet.minResolution)
-      return Lablz.Leaflet.getColorForPercentile(0);
+    if (max < minResolution)
+      return getColorForPercentile(0);
     
     if (min == max)
       min = 0;
 
     var percentile = max == min ? 100 : (d - min) * 100 / (max - min);
-    var color = Lablz.Leaflet.getColorForPercentile(percentile);
+    var color = getColorForPercentile(percentile);
     return color;
-  },
+  };
 
-  percentiles : [0, 10, 20, 40, 66, 75, 90, 95],
+  percentiles = [0, 10, 20, 40, 66, 75, 90, 95];
   
-  getColorForPercentile : function(percentile) {
+  getColorForPercentile = function(percentile) {
     'use strict';
     var color =
-      percentile > Lablz.Leaflet.percentiles[7] ? '#800026' :
-      percentile > Lablz.Leaflet.percentiles[6]  ? '#BD0026' :
-      percentile > Lablz.Leaflet.percentiles[5]  ? '#E31A1C' :
-      percentile > Lablz.Leaflet.percentiles[4]  ? '#FC4E2A' :
-      percentile > Lablz.Leaflet.percentiles[3]   ? '#FD8D3C' :
-      percentile > Lablz.Leaflet.percentiles[2]   ? '#FEB24C' :
-      percentile > Lablz.Leaflet.percentiles[1]   ? '#FED976' : '#FFEDA0';
+      percentile > percentiles[7] ? '#800026' :
+      percentile > percentiles[6]  ? '#BD0026' :
+      percentile > percentiles[5]  ? '#E31A1C' :
+      percentile > percentiles[4]  ? '#FC4E2A' :
+      percentile > percentiles[3]   ? '#FD8D3C' :
+      percentile > percentiles[2]   ? '#FEB24C' :
+      percentile > percentiles[1]   ? '#FED976' : '#FFEDA0';
       
     return color;
-  },
+  };
 
-  simpleDashedStyle : function(feature) {
+  simpleDashedStyle = function(feature) {
     'use strict';
-    var simple = Lablz.Leaflet.simpleStyle(feature);
+    var simple = simpleStyle(feature);
     simple['dashArray'] = '3';
     return simple;
-  },
+  };
 
-  simpleStyle : function(feature) {
+  simpleStyle = function(feature) {
     'use strict';
     return {
         fillColor: '#efefff',
@@ -344,21 +350,24 @@ Lablz.Leaflet = {
         color: '#5555ff',
         fillOpacity: 0.4
     };
-  },
+  };
 
-  leafletDensityMapStyle : function(feature) {
-    'use strict';
-    return {
-        fillColor: Lablz.Leaflet.getLeafletMapTileColor(feature.properties.density),
-        weight: 2,
-        opacity: 1,
-        color: 'white',
-        dashArray: '3',
-        fillOpacity: 0.7
+  this.getLeafletDensityMapStyleFunction = function() {
+    var self = this;
+    return function(feature) {
+      'use strict';
+      return {
+          fillColor: self.getLeafletMapTileColor(feature.properties.density),
+          weight: 2,
+          opacity: 1,
+          color: 'white',
+          dashArray: '3',
+          fillOpacity: 0.7
+      };
     };
-  },
+  }
 
-  addSizeButton : function(mapDiv, bounds) {
+  this.addSizeButton = function(mapDiv, bounds) {
     'use strict';
     var btn = L.control({position: 'bottomleft'});
     btn.onAdd = function (mapObj) {
@@ -373,8 +382,8 @@ Lablz.Leaflet = {
           mapDiv.style.position = 'relative';
           mapDiv.style.height = "";
           document.body.style.overflow = 'auto';
-          var parent = document.getElementById("siteResourceList");
-          parent = parent || document.getElementById("corePageContent");
+          var parent = $("siteResourceList");
+          parent = parent || $("corePageContent");
           parent.insertBefore(mapDiv, getFirstChild(parent));
           div.innerHTML = maxImg;
           mapObj.invalidateSize(true);
@@ -399,9 +408,9 @@ Lablz.Leaflet = {
     }
     
     btn.addTo(this.map);  
-  },
+  };
 
-  addReZoomButton : function(bounds) {
+  this.addReZoomButton = function(bounds) {
     'use strict';
     var rezoom = L.control({position: 'bottomleft'});
     rezoom.onAdd = function (map) {
@@ -415,9 +424,9 @@ Lablz.Leaflet = {
     }
     
     rezoom.addTo(this.map);
-  },
+  };
 
-  addDensityLegend : function(minMax) {
+  this.addDensityLegend = function(minMax) {
     'use strict';
     if (this.densityLegend)
       this.map.removeControl(this.densityLegend);
@@ -441,8 +450,8 @@ Lablz.Leaflet = {
         grades.push(max);
       }
       else {
-        for (var i = 0; i < Lablz.Leaflet.percentiles.length; i++) {
-          var grade = min + (Lablz.Leaflet.percentiles[i] / 100) * range;
+        for (var i = 0; i < percentiles.length; i++) {
+          var grade = min + (percentiles[i] / 100) * range;
           grade = Math.round(multiplier * grade) / multiplier;
           
           if (grades.indexOf(grade) == -1)
@@ -461,7 +470,7 @@ Lablz.Leaflet = {
       
       for (var i = 0; i < grades.length; i++) {
           div.innerHTML +=
-              '<p><i style="background:' + Lablz.Leaflet.getColorForPercentile(100 * ((grades[i] - min) / range + 0.1)) + '"></i> ' +
+              '<p><i style="background:' + getColorForPercentile(100 * ((grades[i] - min) / range + 0.1)) + '"></i> ' +
               grades[i] + (grades[i + 1] ? ' &ndash; ' + grades[i + 1] : '+') + "</p>";
       }
 
@@ -470,9 +479,9 @@ Lablz.Leaflet = {
     
     legend.addTo(this.map);
     this.densityLegend = legend;
-  },
+  };
   
-  buildGeoJsonShapeLayers : function(style, lName, autoAdd) {
+  this.buildGeoJsonShapeLayers = function(style, lName, autoAdd) {
     'use strict';
     if (!this.shapeJsons || !this.shapeLayerInfos)
       return;
@@ -536,25 +545,25 @@ Lablz.Leaflet = {
     }
 
     this.setCurrentLayer(firstLayer || this.currentLayerName);
-  },
+  };
 
-  loadLayer : function(name, layerGroup, callback) {
+  this.loadLayer = function(name, layerGroup, callback) {
     var layerCount = 0;
     layerGroup.eachLayer(
-        function(layer) {
-          layerCount++;
-        }
+      function(layer) {
+        layerCount++;
+      }
     );
     
     if (layerCount > 0)
       return;
     
-    var info = Lablz.Leaflet.shapeLayerInfos[name];
-    info = info || Lablz.Leaflet.pointLayerInfos[name];
-    Lablz.Leaflet.fetchLayer(name, info.query, Lablz.Leaflet[info.toGeoJson], callback);
-  },
+    var info = this.shapeLayerInfos[name];
+    info = info || this.pointLayerInfos[name];
+    this.fetchLayer(name, info.query, this[info.toGeoJson], callback);
+  };
 
-  toggleLayerControl : function(on) {
+  this.toggleLayerControl = function(on) {
     if (!Lablz.Leaflet.layerControl)
       return;
   
@@ -571,39 +580,30 @@ Lablz.Leaflet = {
         overlays.childNodes[i].childNodes[0].disabled = !on;
       }
     }
-  },
+  };
 
 
-  addDelayedLayer : function(name, callback) {
+  this.addDelayedLayer = function(name, callback) {
     var self = this;
     var newLayer = new L.layerGroup();
     newLayer.onAdd = function(mapObj) {
       self.userAskedFor[name] = "y";
-      Lablz.Leaflet.currentLayerName = name;
+      self.currentLayerName = name;
       this._map = mapObj;
-      Lablz.Leaflet.loadLayer(name, newLayer, callback);
+      self.loadLayer(name, newLayer, callback);
       self.toggleLayerControl(false);
-      setTimeout(function () {Lablz.Leaflet.toggleLayerControl(true);}, 5000);
-//        alert('Please wait a moment while we fly in the goodies');
+      setTimeout(function () {self.toggleLayerControl(true);}, 5000);
     };
     
     newLayer.onRemove = function(mapObj) {
       this._map = mapObj;
       newLayer.eachLayer(mapObj.removeLayer, mapObj);
-      if (self.densityLegend)
-        mapObj.removeControl(self.densityLegend);
     };
 
-//      var numLayers = Lablz.Leaflet.pointLayers ? Object.size(Lablz.Leaflet.pointLayers) : 0;
-//      numLayers += Lablz.Leaflet.shapeLayers ? Object.size(Lablz.Leaflet.shapeLayers) : 0;
-//      setTimeout(function() {
-//        Lablz.Leaflet.loadLayer(name, newLayer, callback);
-//      }, 500 * numLayers);
-    
     return newLayer;
-  },
+  };
 
-  mkPointLayerGroup : function(name, geoJsons, layerGroup) {
+  this.mkPointLayerGroup = function(name, geoJsons, layerGroup) {
     var newLayer;
     if (layerGroup) {
       for (var i = 0; i < geoJsons.length; i++) {
@@ -617,9 +617,9 @@ Lablz.Leaflet = {
     
     this.setOnAddRemove(name, newLayer);
     return newLayer;
-  },
+  };
 
-  mkShapeLayerGroup : function(name, geoJson, minMax, style, layerGroup) {
+  this.mkShapeLayerGroup = function(name, geoJson, minMax, style, layerGroup) {
     var self = this;
     var layers = this.addGeoJsonShapes(geoJson, style);
     var newLayer;
@@ -635,16 +635,17 @@ Lablz.Leaflet = {
     
     this.setOnAddRemove(name, newLayer, minMax);
     return newLayer;
-  },
+  };
 
-  setOnAddRemove : function(name, newLayer, minMax) {
+  this.setOnAddRemove = function(name, newLayer, minMax) {
+    var self = this;
     newLayer.onAdd = function(mapObj) {      
       Lablz.Leaflet.currentLayerName = name;
       this._map = mapObj;
       this.eachLayer(mapObj.addLayer, mapObj);
       if (typeof minMax != 'undefined') {
-        Lablz.Leaflet.currentLayerDensity = minMax;
-        Lablz.Leaflet.addDensityLegend(minMax);
+        self.currentLayerDensity = minMax;
+        self.addDensityLegend(minMax);
       }      
     };
     
@@ -652,9 +653,9 @@ Lablz.Leaflet = {
       this._map = mapObj;
       this.eachLayer(mapObj.removeLayer, mapObj);
     };
-  },
+  };
   
-  addGeoJsonShapes : function(geoJsons, style, autoAdd) {
+  this.addGeoJsonShapes = function(geoJsons, style, autoAdd) {
     'use strict';
     var layers = [];
     for (var i = 0; i < geoJsons.length; i++) {
@@ -664,43 +665,50 @@ Lablz.Leaflet = {
     
 //      this.shapeLayers = this.shapeLayers ? this.shapeLayers.concat(layers) : layers;
     return layers;
-  },
+  };
 
-  _getResetHighlight : function(gj) {
+  _getResetHighlight = function(gj) {
+    var self = this;
     return function(e) {
       gj.resetStyle(e.target);
-      Lablz.Leaflet.clearInfos(e);
+      self.clearInfos(e);
     };
-  },
+  };
 
-  getOnEachShapeFeature : function(gj) {
+  this.getOnEachShapeFeature = function(gj) {
+    var self = this;
     return function(feature, layer) {
       layer.on({
-        mouseover: Lablz.Leaflet.highlightFeature,
-        mouseout: Lablz.Leaflet._getResetHighlight,
-        click: Lablz.Leaflet.zoomToFeature
+        mouseover: self.highlightFeature,
+        mouseout: self._getResetHighlight,
+        click: self.zoomToFeature
       });
     };
-  },
+  };
 
-  makeLayerFromGeoJsonShape : function(geoJson, style, autoAdd) {
-    style = style ? style : this.simpleStyle;
+  this.makeLayerFromGeoJsonShape = function(geoJson, style, autoAdd) {
+    style = style ? style : simpleStyle;
     var gj;
+    var self = this;
     var resetHighlight = function(e) {
       gj.resetStyle(e.target);
-      Lablz.Leaflet.clearInfos(e);
+      self.clearInfos(e);
     };
     
     var zoomToFeature = function(e) {
-      Lablz.Leaflet.fitBounds(e.target.getBounds());
+      self.fitBounds(e.target.getBounds());
     }
 
     var onEachFeature = function(feature, layer) {
-      layer.on({
-        mouseover: Lablz.Leaflet.highlightFeature,
+      var settings = {
         mouseout: resetHighlight,
         click: zoomToFeature
-      });
+      };
+      
+      if (typeof style == 'function' || style.highlightFeature)
+        settings.mouseover = self.getHighlightFeatureFunction();
+      
+      layer.on(settings);
     };
 
     gj = L.geoJson(geoJson, {style: style, onEachFeature: onEachFeature});
@@ -711,18 +719,18 @@ Lablz.Leaflet = {
       gj.bindPopup(geoJson.properties.html);
     
     return gj;
-  },
+  };
     
-  toBasicGeoJsonShape : function(shape) {
+  this.toBasicGeoJsonShape = function(shape) {
     var shapeType = shape.shapeType ? (shape.shapeType.toLowerCase() == 'multipolygon' ? 'MultiPolygon' : 'Polygon') : 'Polygon';
     return {"type" : "Feature", "properties": {"name" : shape["davDisplayName"], "html": html}, "geometry": {"type": shapeType, "coordinates": eval('(' + shape.shapeJson + ')')}};
   },
 
-  toBasicGeoJsonPoint : function(point) {
+  this.toBasicGeoJsonPoint = function(point) {
     return {"type" : "Feature", "properties": {"name" : point["davDisplayName"]}, "geometry": {"type": "Point", "coordinates": [point.longitude, point.latitude]}};
-  },
+  };
   
-  getScaledClusterIconCreateFunction: function(color, doScale, showCount) {
+  this.getScaledClusterIconCreateFunction = function(color, doScale, showCount) {
     return function(cluster) {
       var childCount = cluster.getChildCount();
       var children = cluster.getAllChildMarkers();
@@ -746,9 +754,9 @@ Lablz.Leaflet = {
       
       return new L.DivIcon({ html: html, className: 'marker-cluster marker-cluster-tight marker-cluster-green', iconSize: new L.Point(size, size) });
     }
-  },
+  };
 
-  getSimpleClusterIconCreateFunction: function() {
+  this.getSimpleClusterIconCreateFunction = function() {
     return function(cluster) {
       var childCount = cluster.getChildCount();
       var one = childCount == 1;
@@ -782,15 +790,14 @@ Lablz.Leaflet = {
         
       return new L.DivIcon({ html: div + (one ? '' : '<span>' + childCount + '</span>') + '</div>', className: c, iconSize: new L.Point(size, size) });
     }
-  },
+  };
 
-  addGeoJsonPoints : function(nameToGeoJson, type, markerOptions, style, behaviorOptions) {
+  this.addGeoJsonPoints = function(nameToGeoJson, type, markerOptions, style, behaviorOptions) {
     'use strict';
     behaviorOptions = behaviorOptions || {doCluster: false, highlight: false, zoom: false, hexColor: undefined, colorSeed: undefined, icon: undefined};
     var self = this;
-    var style = style ? style : this.simpleStyle;
+    var style = style ? style : simpleStyle;
     var i = 0;
-    var length = Object.size(nameToGeoJson);
     var layer = [];
     for (var name in nameToGeoJson) {
       var g = nameToGeoJson[name];
@@ -800,9 +807,10 @@ Lablz.Leaflet = {
       };
       
       var onEachFeature = function(feature, layer) {
+        var highlightFeature1 = getHighlightFeatureFunction();
         layer.on({
-          mouseover: behaviorOptions.highlight ? highlightFeature : updateInfos,
-          mouseout: behaviorOptions.highlight ? resetHighlight : updateInfos,
+          mouseover: behaviorOptions.highlight ? highlightFeature1 : self.updateInfos,
+          mouseout: behaviorOptions.highlight ? resetHighlight : self.updateInfos,
           click: behaviorOptions.zoom ? zoomToFeature : null
         });
       };
@@ -847,7 +855,7 @@ Lablz.Leaflet = {
         if (feature.properties.height)
           markerStyle.minHeight = feature.properties.height;
           
-        if (Object.size(markerStyle) > 0)
+        if (Lablz.getObjectSize(markerStyle) > 0)
           marker.bindPopup(feature.properties.html, markerStyle);        
         else
           marker.bindPopup(feature.properties.html);
@@ -872,20 +880,20 @@ Lablz.Leaflet = {
       i++;
     }
     
-  },
+  };
 
-  fitBounds : function(mapBounds) {
+  this.fitBounds = function(mapBounds) {
     if (mapBounds)
       this.map.fitBounds(mapBounds);
-  },
+  };
 
-  addMap : function(apiKey, styleId, maxZoom, center, pointOfInterest) {
+  this.addMap = function(apiKey, styleId, maxZoom, center, pointOfInterest) {
     this.maxZoom = maxZoom;
     var cloudmadeUrl = 'http://{s}.tile.cloudmade.com/' + apiKey + '/' + styleId + '/' + '256/{z}/{x}/{y}.png';
     var cloudmadeAttribution = 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2011 CloudMade'
     var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: maxZoom, attribution: cloudmadeAttribution});
     var latlng = new L.LatLng(center[0], center[1]);
-    this.map = new L.Map('map', {center: latlng, zoom: 12, maxZoom: maxZoom, layers: [cloudmade]});
+    this.map = new L.Map(this.mapDivId || 'map', {center: latlng, zoom: 12, maxZoom: maxZoom, layers: [cloudmade]});
     if (!pointOfInterest)
       return;
 
@@ -898,48 +906,49 @@ Lablz.Leaflet = {
       );
     }
     else
-      gj = Lablz.Leaflet.makeLayerFromGeoJsonShape(pointOfInterest, Lablz.Leaflet.simpleStyle, true);
+      this.makeLayerFromGeoJsonShape(pointOfInterest, simpleStyle, true);
     
     gj.addTo(this.map);
-  },
+  };
 
-  addLayersControlToMap : function(radioLayers, checkboxLayers, options) {
+  this.addLayersControlToMap = function(radioLayers, checkboxLayers, options) {
     if ((!radioLayers && !checkboxLayers) ||
-        (Object.size(radioLayers) == 1 && !checkboxLayers))
+        (Lablz.getObjectSize(radioLayers) == 1 && !checkboxLayers))
       return;
     
     options = options || {position: 'topright'};
     this.layerControl = L.control.layers(radioLayers, checkboxLayers, options).addTo(this.map);
-  },
+  };
 
-  addShapesLayer : function(name, shapesArr) {
+  this.addShapesLayer = function(name, shapesArr) {
     Lablz.Leaflet.currentLayerName = name;
     var newLayer = Lablz.Leaflet.mkShapeLayerGroup(name, shapesArr, undefined, undefined, Lablz.Leaflet.shapeLayers[name]).addTo(Lablz.Leaflet.map);      
     Lablz.Leaflet.shapeLayers[name] = newLayer;
-  },
+  };
 
-  addDensityLayer : function(name, propsArr) {
+  this.addDensityLayer = function(name, propsArr, self) {
     var none = !propsArr || propsArr.length == 0;
-    Lablz.Leaflet.shapeLayerInfos[name] = propsArr;
+    self.shapeLayerInfos[name] = propsArr;
     var minMax = none ? [0, 0] : getMinMaxDensityFromPropertiesArray(propsArr);
-    Lablz.Leaflet.setMinMaxDensity(name, minMax);
-    if (Lablz.Leaflet.userAskedFor[name]) {
-      Lablz.Leaflet.currentLayerName = name;
-      Lablz.Leaflet.currentLayerDensity = minMax;
-      Lablz.Leaflet.addDensityLegend(minMax);
+    self.setMinMaxDensity(name, minMax);
+    if (self.userAskedFor[name]) {
+      self.currentLayerName = name;
+      self.currentLayerDensity = minMax;
+      self.addDensityLegend(minMax);
     }
     
-    Lablz.Leaflet.buildGeoJsonShapeLayers(Lablz.Leaflet.leafletDensityMapStyle, name);
-  },
+    self.buildGeoJsonShapeLayers(self.getLeafletDensityMapStyleFunction(), name);
+  };
   
-  addPointsLayer : function(name, geoJsons, type) {
+  this.addPointsLayer = function(name, geoJsons, self) {
     var nameToGJ = {};
     nameToGJ[name] = geoJsons;
-    Lablz.Leaflet.addGeoJsonPoints(nameToGJ, type || name, {disableClusteringAtZoom: Lablz.Leaflet.maxZoom + 1, singleMarkerMode: true, doScale: true, showCount: true, doSpiderfy: false}, null, {doCluster: true, highlight: true, zoom: false, hexColor: Lablz.Leaflet.getNextColor()});      
-  },
+    self.addGeoJsonPoints(nameToGJ, name, {disableClusteringAtZoom: self.maxZoom + 1, singleMarkerMode: true, doScale: true, showCount: true, doSpiderfy: false}, null, {doCluster: true, highlight: true, zoom: false, hexColor: self.getNextColor()});      
+  };
   
-  fetchLayer : function(name, query, toGeoJson, callback) {
-    if (!Lablz.Leaflet.serverName) {
+  this.fetchLayer = function(name, query, toGeoJson, callback) {
+    var self = this;
+    if (!this.serverName) {
       var baseUriO = document.getElementsByTagName('base');
       var baseUri = "";
       if (baseUriO) {
@@ -948,7 +957,7 @@ Lablz.Leaflet = {
           baseUri += "/";
       }
       
-      Lablz.Leaflet.serverName = baseUri;
+      this.serverName = baseUri;
     }
 
     function fetchedLayer(e, div, hotspot, content, url) {
@@ -966,40 +975,40 @@ Lablz.Leaflet = {
       var geoJson = {};
       var propsArr = [];
       for (var i = 0; i < data.length; i++) {
-        var props = toGeoJson(data[i], name);
+        var props = toGeoJson(data[i], name, self);
         if (props)
           propsArr.push(props);
       }
 
       if (typeof callback == 'string')
-        callback = Lablz.Leaflet[callback];
+        callback = self[callback];
       
-      callback(name, propsArr);
-      if (Lablz.Leaflet.userAskedFor)
-        Lablz.Leaflet.userAskedFor[name] = null;
+      callback(name, propsArr, self);
+      if (self.userAskedFor)
+        self.userAskedFor[name] = null;
       
-      Lablz.Leaflet.toggleLayerControl(true);
+      self.toggleLayerControl(true);
     }
     
     var path = query.split("?");
     postRequest(null, this.serverName + "api/v1/" + path[0], path.length > 1 ? path[1] : null, null, null, fetchedLayer);
-    },
+  };
 
-    setMinMaxDensity : function(name, minMax) {
-      this.layerToDensity[name] = minMax;
-    },
-    
-    setCurrentLayer : function(name) {
-      this.currentLayerName = name;
-      this.currentLayerDensity = this.layerToDensity[name];
-    },
-    
-    getMinMaxDensity : function(name) {
-      return this.layerToDensity[name];
-    },
+  this.setMinMaxDensity = function(name, minMax) {
+    this.layerToDensity[name] = minMax;
+  };
+  
+  this.setCurrentLayer = function(name) {
+    this.currentLayerName = name;
+    this.currentLayerDensity = this.layerToDensity[name];
+  };
+  
+  this.getMinMaxDensity = function(name) {
+    return this.layerToDensity[name];
+  };
  
-    setWidthHeight : function(geoJson, width, height) {
-      var hasWidth = typeof width != 'undefined';
+  this.setWidthHeight = function(geoJson, width, height) {
+    var hasWidth = typeof width != 'undefined';
     var hasHeight = typeof height != 'undefined';
     if (!hasWidth || !hasHeight) {
       geoJson.properties.width = 205;
@@ -1011,9 +1020,9 @@ Lablz.Leaflet = {
     height = Math.round(height / offset);
     geoJson.properties.width = width;
     geoJson.properties.height = height;
-  },
+  };
   
-  setHTML : function(type, geoJson, item, img, linkToMap) {
+  this.setHTML = function(type, geoJson, item, img, linkToMap) {
     var width = geoJson.properties.width;
     var height = geoJson.properties.height;
     var hasWidth = typeof width != 'undefined';
@@ -1033,6 +1042,31 @@ Lablz.Leaflet = {
         
     html += "</a>";
     geoJson.properties.html = html;
+  },
+  
+  this.getToGeoJsonFunction = function(clName, shapePropName, countPropName) {
+    var self = this;
+    return function(item, name) { 
+        var shapeUri = item[shapePropName]; 
+        if (!shapeUri) 
+          return null; 
+         
+        var shape = self.shapeJsons[shapeUri]; 
+        if (!shape) 
+          return null; 
+         
+        var props = {}; 
+        props.id = shapeUri; 
+        if (clName)
+          props.type = clName;
+        
+        props.item = item['davDisplayName']; 
+        props.count = item[countPropName || 'COUNT']; 
+        if (typeof props.count != 'undefined' && typeof shape.properties.area != 'undefined') 
+          props.density = props.count * offset / shape.properties.area;
+        
+        return props; 
+      };
   }
 }
 
@@ -1077,6 +1111,15 @@ function getMinMaxDensityFromPropertiesArray(propsArr) {
   
   return [min, max];
 }
+
+Lablz.getObjectSize = function(obj) {
+  var size = 0, key;
+  for (key in obj) {
+    if (obj.hasOwnProperty(key)) size++;
+  }
+  
+  return size;
+};
 
 // concats "two" to "one" in new object
 function merge(one, two) {
