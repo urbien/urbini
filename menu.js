@@ -10188,7 +10188,6 @@ var BacklinkImagesSlideshow = {
   
   init : function() {
     var $t = BacklinkImagesSlideshow;
-    
     // 1. with delay 0.5 sec before start of 1st slideshow
     if ($t._initCounter == 0) {
       $t._initCounter++;
@@ -10198,6 +10197,9 @@ var BacklinkImagesSlideshow = {
     // 2.1 start 1st slideshow
     // 2.2 initialize (download and start) further slideshow after delay 2 sec 
     else if ($t._initCounter == 1) {
+      if ($t.slideshowArr.length == 0)
+        return; // no sliding on a page
+      
       $t._initCounter++;
       $t.slideshowArr[0].init();
       setTimeout($t.init, 2000);
