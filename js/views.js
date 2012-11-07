@@ -252,10 +252,14 @@ Lablz.ListPage = Backbone.View.extend({
     'tap': 'tap',
     'click #mapIt': 'mapIt',
     'click': 'click',
-    'click #nextPage': 'nextPage'
+    'click #nextPage': 'nextPage',
+    'click #aroundMe': 'aroundMe'
   },
   nextPage: function(e) {
     Lablz.Events.trigger('nextPage', this.model);    
+  },
+  aroundMe: function(e) {
+    Lablz.Events.trigger('aroundMe', this.model);    
   },
   mapIt: function(e) {
     e.preventDefault();
@@ -281,7 +285,7 @@ Lablz.ListPage = Backbone.View.extend({
 
 Lablz.ViewPage = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'tap', 'mapIt', 'showMapButton');
+    _.bindAll(this, 'render', 'tap', 'mapIt', 'showMapButton', 'aroundMe');
     this.model.on('change', this.render, this);
     this.template = _.template(Lablz.Templates.get('resource'));
     Lablz.Events.bind("mapReady", this.showMapButton);
@@ -289,7 +293,11 @@ Lablz.ViewPage = Backbone.View.extend({
   events: {
     'tap': 'tap',
     'click #mapIt': 'mapIt',
-    'click': 'click'
+    'click': 'click',
+    'click #aroundMe': 'aroundMe'
+  },
+  aroundMe: function(e) {
+    Lablz.Events.trigger('aroundMe', this.model);    
   },
   mapIt: function(e) {
     e.preventDefault();
@@ -335,15 +343,19 @@ Lablz.ResourceListView = Backbone.View.extend({
     mapModel: null,
     page: 1,
     initialize:function () {
-      _.bindAll(this, 'render', 'fetchMap', 'tap', 'swipe', 'mapIt', 'checkScroll', 'getNextPage', 'renderMany', 'renderOne'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'fetchMap', 'tap', 'swipe', 'mapIt', 'checkScroll', 'getNextPage', 'getAroundMe', 'renderMany', 'renderOne'); // fixes loss of context for 'this' within methods
       Lablz.Events.bind('nextPage', this.getNextPage);
-      this.model.bind('add', this.renderMany, this);
+      Lablz.Events.bind('aroundMe', this.getAroundMe);
+      this.model.bind('add', this.renderOne, this);
       this.model.on('reset', this.render, this);
 //      var self = this;
 //      if (this.model.isA("Locatable") || this.model.isA("Shape"))
 //        this.fetchMap();
       
       return this;
+    },
+    getAroundMe: function() {
+      this.model.getAroundMe();
     },
     getNextPage: function() {
       this.isLoading = true;
@@ -362,7 +374,7 @@ Lablz.ResourceListView = Backbone.View.extend({
       var triggerPoint = 100; // 100px from the bottom
       if(!this.isLoading && this.el.scrollTop + this.el.clientHeight + triggerPoint > this.el.scrollHeight ) {
         console.log("scroll event");
-//        getNextPage();
+        this.getNextPage();
       }
       
       return this;
