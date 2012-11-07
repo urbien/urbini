@@ -161,9 +161,13 @@ packages.Resource = Backbone.Model.extend({
       return;
     }
       
-    var props = this.properties;
-    if (!props.distance || !props.latitude || !props.longitude)
+    var iFaces = this.interfaces;
+    var haveLatLon = _.intersection(iFaces, ['Address','Address1','Distance','OpenGraph']);
+    if (!haveLatLon || !haveLatLon.length)
       return;
+    
+//    if (!props.distance || !props.latitude || !props.longitude)
+//      return;
     
     var self = this;
     navigator.geolocation.getCurrentPosition(
