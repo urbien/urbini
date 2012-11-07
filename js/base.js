@@ -162,8 +162,7 @@ packages.Resource = Backbone.Model.extend({
     }
       
     var iFaces = this.interfaces;
-    var haveLatLon = _.intersection(iFaces, ['Address','Address1','Distance','OpenGraph']);
-    if (!haveLatLon || !haveLatLon.length)
+    if (!_.contains(iFaces, 'Locatable'))
       return;
     
 //    if (!props.distance || !props.latitude || !props.longitude)
