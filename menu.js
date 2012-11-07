@@ -10244,7 +10244,7 @@ var BacklinkImagesSlideshow = {
   },
   // called on a dialoag opening ("buy" dialog)
   stopAutomaticSiding : function() {
-    if (this.slideshowArr)
+    if (this.slideshowArr  &&  this.slideshowArr.length > 0)
       this.slideshowArr[0].stopAutomaticSiding();
   }
 }
