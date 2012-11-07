@@ -33,8 +33,8 @@ var App = Backbone.Router.extend({
 //    });    
 //  },
 
-  list: function (params) {
-    params = params.split("?");
+  list: function (oParams) {
+    var params = oParams.split("?");
     var type = decodeURIComponent(params[0]);
     var self = this;
     var query = params.length > 1 ? params[1] : undefined;
@@ -54,7 +54,7 @@ var App = Backbone.Router.extend({
     
     if (!Lablz.shortNameToModel[type]) {
       Lablz.fetchModels(type, function() {
-        self.list.apply(self, params);
+        self.list.apply(self, [oParams]);
       });
       
       return;
@@ -78,15 +78,15 @@ var App = Backbone.Router.extend({
       add: true, 
       success: function() {
         self.changePage(listView);
-//          self.loadExtras(params);
+//          self.loadExtras(oParams);
       }
     });
     
     return this;
   },
 
-  view: function (params) {
-    params = params.split("?");
+  view: function (oParams) {
+    var params = oParams.split("?");
     var uri = decodeURIComponent(params[0]);
     
 //    Lablz.Navigation.push();
@@ -96,7 +96,7 @@ var App = Backbone.Router.extend({
     uri = Utils.getLongUri(uri, type);
     if (!uri || !Lablz.shortNameToModel[type]) {
       Lablz.fetchModels(type, function() {
-        self.view.apply(self, params);
+        self.view.apply(self, [oParams]);
       });
       
       return;
@@ -135,7 +135,7 @@ var App = Backbone.Router.extend({
     var paintMap;
     var success = function(data) {
       self.changePage(view);
-//      self.loadExtras(params);
+//      self.loadExtras(oParams);
     }
     
 		res.fetch({success: success});

@@ -131,8 +131,7 @@ packages.Resource = Backbone.Model.extend({
       self.fetchModelsForLinkedResources.call(self.constructor);
     }, 100);
     return Backbone.Model.prototype.fetch.call(this, options);
-  }
-  
+  }  
 //  ,
 //  loadMap: function() {
 //    var url = url();
@@ -155,7 +154,39 @@ packages.Resource = Backbone.Model.extend({
     _uri: {type: "resource"},
     _shortUri: {type: "resource"}
   },
-  myInterfaces : {}
+  myInterfaces : {},
+  getAroundMe : function() {
+    if (!navigator.geolocation) {
+      alert("Sorry, your browser does not support geolocation services.");
+      return;
+    }
+      
+    var props = this.properties;
+    if (!props.distance || !props.latitude || !props.longitude)
+      return;
+    
+    var self = this;
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        return self.fetchAroundPosition(position.coords);
+      },
+      function(error) {
+        var lastLocTime = Lablz.userLocation.timestamp;
+        if (lastLocTime && new Date().getTime() - lastLocTime < 1000)
+          fetchAroundPosition(Lablz.userLocation.location);
+        else
+          Lablz.locationError(error);
+      }
+    );
+  },
+  fetchAroundPosition : function(coords) {
+    Lablz.userLocation = {
+      location: coords,
+      timestamp: new Date().getTime()
+    };
+    
+    Backbone.history.navigate(this.shortName + "?$orderBy=distance&$asc=1&latitude=" + coords.latitude + "&longitude=" + coords.longitude);
+  }
 });
 
 packages.Resource.properties = _.clone(packages.Resource.myProperties);
@@ -189,7 +220,7 @@ Lablz.ResourceList = Backbone.Collection.extend({
     if (!models && !options.model)
       throw new Error("resource list must be initialized with options.model or an array of models");
     
-    _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'getAroundMe'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
     this.model = options.model || models[0].model;
     this.on('add', this.onAdd, this);
     this.on('reset', this.onReset, this);
@@ -202,6 +233,9 @@ Lablz.ResourceList = Backbone.Collection.extend({
     this.queryMap[this.limitParam] = this.perPage;
     
     console.log("init " + this.className + " resourceList");
+  },
+  getAroundMe : function() {
+    return this.model.getAroundMe();
   },
   getNextPage: function(options) {
     this.offset += this.perPage;
@@ -977,3 +1011,23 @@ Lablz.updateModels = function(success, error) {
   
   Lablz.indexedDB.open(null, success, error);
 }
+
+
+Lablz.locationError = function(error) {
+  switch (error.code) { 
+   case error.PERMISSION_DENIED:
+     alert("Could not get position as permission was denied.");
+     break;
+   case error.POSITION_UNAVAILABLE:
+     alert("Could not get position as this information is not available at this time.");
+     break;
+    case error.TIMEOUT:
+      alert("Attempt to get position timed out.");
+     break;
+    default:
+     alert("Sorry, an error occurred. Code: " + error.code + " Message: " + error.message);
+     break;  
+    }
+}
+
+Lablz.userLocation = {};

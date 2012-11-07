@@ -4,7 +4,8 @@
   <div data-role="header" class="ui-header ui-bar-c" role="banner" data-position="fixed">
     <h1 id="pageTitle">{{ this.model.className }}</h1> 
     <!--div id="mapBtnDiv" class="ui-screen-hidden"><a href="#" id="mapIt" data-icon="map" class="back ui-btn-right">Map It</a></div-->
-    <a href="#" id="mapIt" data-icon="map" class="back ui-btn-right ui-screen-hidden">Map It</a>
+    <!--a href="#" id="mapIt" data-icon="map" class="back ui-btn-right ui-screen-hidden">Map It</a-->
+    <a id="aroundMe" target="#" class="icon next ui-btn-right">Around Me</a>
   </div>
   <div  id="sidebarDiv" class="ui-content" data-role="content" role="main">
     <div id="listMap"></div>
@@ -21,7 +22,8 @@
   <div data-role="header"  class="ui-header ui-bar-c" role="banner" data-position="fixed">
     <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
     <h1 id="pageTitle">{{ davDisplayName }}</h1> 
-    <a href="#" id="mapIt" data-icon="map" class="back ui-btn-right ui-screen-hidden">Map It</a>
+    <!--a href="#" id="mapIt" data-icon="map" class="back ui-btn-right ui-screen-hidden">Map It</a-->
+    <a id="aroundMe" target="#" class="icon next ui-btn-right">Around Me</a>
   </div>
   <!--div id="resourceMap" class="map"></div-->
   <div data-role="content">
