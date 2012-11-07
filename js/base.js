@@ -161,9 +161,12 @@ packages.Resource = Backbone.Model.extend({
       return;
     }
       
-    var props = this.properties;
-    if (!props.distance || !props.latitude || !props.longitude)
+    var iFaces = this.interfaces;
+    if (!_.contains(iFaces, 'Locatable'))
       return;
+    
+//    if (!props.distance || !props.latitude || !props.longitude)
+//      return;
     
     var self = this;
     navigator.geolocation.getCurrentPosition(
