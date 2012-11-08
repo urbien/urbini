@@ -13392,3 +13392,14 @@ function fullWindowVideo(hotspot, src) {
 
 // flag that menu.js was parsed. should be last in the file
 g_loadedJsFiles["menu.js"] = true;
+
+function extendObj(obj) {
+  var arr = Array.prototype.slice.call(arguments, 1);
+  for (var i = 0; i < arr.length; i++) {
+    for (var prop in arr[i]) {
+      obj[prop] = arr[i][prop];
+    }
+  }
+  
+  return obj;
+};

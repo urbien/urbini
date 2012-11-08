@@ -729,8 +729,21 @@ Lablz.Leaflet = function(mapDivId) {
   this.toBasicGeoJsonPoint = function(point) {
     return {"type" : "Feature", "properties": {"name" : point["davDisplayName"]}, "geometry": {"type": "Point", "coordinates": [point.longitude, point.latitude]}};
   };
+
+  this.getGradientColor = function(range, val) {
+    var r = range[1] - range[0];
+    var percent = (val - range[0]) / r;
+    var hue = percent * 0.33;  // go from green to red  (red = 0, green = 0.33, with yellow/orange in between)
+//    var saturation = Math.abs(percent - 0.5)/0.5;   // fade to white as it approaches 50
+    return hsv2rgb(hue, 1, 0.99);
+  };
   
-  this.getScaledClusterIconCreateFunction = function(color, doScale, showCount) {
+  this.getScaledClusterIconCreateFunction = function(options) {
+    var self = this;
+    var color = options.color;
+    var doScale = options.doScale;
+    var showCount = options.showCount;
+    var gradient = options.gradient;
     return function(cluster) {
       var childCount = cluster.getChildCount();
       var children = cluster.getAllChildMarkers();
@@ -738,7 +751,7 @@ Lablz.Leaflet = function(mapDivId) {
       var size = 40;
       var diameter = 30;
       custom = true;
-      var rgb = hexToRGB(color || getNextColor(Math.random()));
+      var rgb = gradient ? self.getGradientColor(self.gradientInfo.range, children[0].valInRange) : hexToRGB(color || self.getNextColor(Math.random()));
       var background = "background-color: rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", 0.7); color: " + getTextColor(rgb[0], rgb[1], rgb[2]) + ";";
       var zoom = cluster._zoom || 10;
       var width;
@@ -756,7 +769,7 @@ Lablz.Leaflet = function(mapDivId) {
     }
   };
 
-  this.getSimpleClusterIconCreateFunction = function() {
+  this.getSimpleClusterIconCreateFunction = function(options) {
     return function(cluster) {
       var childCount = cluster.getChildCount();
       var one = childCount == 1;
@@ -795,10 +808,18 @@ Lablz.Leaflet = function(mapDivId) {
   this.addGeoJsonPoints = function(nameToGeoJson, type, markerOptions, style, behaviorOptions) {
     'use strict';
     behaviorOptions = behaviorOptions || {doCluster: false, highlight: false, zoom: false, hexColor: undefined, colorSeed: undefined, icon: undefined};
+    var allOptions = extendObj(extendObj({}, markerOptions), behaviorOptions);
     var self = this;
     var style = style ? style : simpleStyle;
     var i = 0;
     var layer = [];
+    function parseRange(r) {
+      var matches = r.match(/([\d\.]+)[^\d]+([\d\.]+)/);
+      var from = parseInt(matches[1]);
+      var to = parseInt(matches[1]);
+      return (from + (to - from) / 2); 
+    }
+    
     for (var name in nameToGeoJson) {
       var g = nameToGeoJson[name];
       var gj;
@@ -823,7 +844,10 @@ Lablz.Leaflet = function(mapDivId) {
 //          color = rgbToHex(color[0], color[1], color[2]);
 //          markerOptions.color = color;
 //        }
-      if (behaviorOptions.hexColor) {
+      if (behaviorOptions.gradient) {
+//        Math.floor((100 - val) * 120 / 100);
+      }
+      else if (behaviorOptions.hexColor) {
         var c = behaviorOptions.hexColor;
         markerOptions.color = c;
         var rgb = hexToRGB(c);
@@ -834,9 +858,9 @@ Lablz.Leaflet = function(mapDivId) {
       var markers;
       if (behaviorOptions.doCluster) {
         if (markerOptions.doScale)
-          markerOptions.iconCreateFunction = self.getScaledClusterIconCreateFunction(markerOptions.color, markerOptions.doScale, markerOptions.showCount);
+          markerOptions.iconCreateFunction = self.getScaledClusterIconCreateFunction(allOptions);
         else
-          markerOptions.iconCreateFunction = self.getSimpleClusterIconCreateFunction();
+          markerOptions.iconCreateFunction = self.getSimpleClusterIconCreateFunction(allOptions);
         
         markers = new L.MarkerClusterGroup(markerOptions);
       }
@@ -860,6 +884,10 @@ Lablz.Leaflet = function(mapDivId) {
         else
           marker.bindPopup(feature.properties.html);
 
+        if (allOptions.gradient) {
+          marker.valInRange = parseRange(name);
+        }
+        
 //          var name = type + ': ' + feature.properties.name;
         marker.on('mouseover', function(e) {self.updateInfosWithHTML(feature.properties.name);});
         marker.on('mouseout', function(e) {self.clearInfos(e);});
