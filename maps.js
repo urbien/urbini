@@ -866,38 +866,7 @@ Lablz.Leaflet = function(mapDivId) {
         markers = new L.MarkerClusterGroup(markerOptions);
       }
       
-      var pointToLayer = function(feature, latlng) {
-        var marker;
-        if (behaviorOptions.icon)
-          marker = L.marker(latlng, {icon: behaviorOptions.icon});
-        else
-          marker = L.marker(latlng);
-        
-        var markerStyle = {};
-        if (feature.properties.width)
-          markerStyle.minWidth = feature.properties.width;
-        
-        if (feature.properties.height)
-          markerStyle.minHeight = feature.properties.height;
-          
-        if (Lablz.getObjectSize(markerStyle) > 0)
-          marker.bindPopup(feature.properties.html, markerStyle);        
-        else
-          marker.bindPopup(feature.properties.html);
-
-        if (allOptions.gradient) {
-          marker.valInRange = parseRange(name);
-        }
-        
-//          var name = type + ': ' + feature.properties.name;
-        marker.on('mouseover', function(e) {self.updateInfosWithHTML(feature.properties.name);});
-        marker.on('mouseout', function(e) {self.clearInfos(e);});
-        if (behaviorOptions.doCluster)
-          markers.addLayer(marker);
-        
-        return behaviorOptions.doCluster ? markers : marker;
-      };
-      
+      var pointToLayer = this.getPointToLayerFunction(name, markers, allOptions);      
       gj = L.geoJson(g, {style: style, pointToLayer: pointToLayer});
       layer.push(gj);
       var newLayer = this.mkPointLayerGroup(name, layer, this.pointLayers[name]);
@@ -910,6 +879,46 @@ Lablz.Leaflet = function(mapDivId) {
     }
     
   };
+  
+  this.getPointToLayerFunction = function(layerName, layer, options) {
+    var valInRange;
+    if (options.gradient) {
+      var r = options.gradient.range;
+      valInRange = r[0] + (r[1] - r[0]) / 2;
+    }
+    
+    return function(feature, latlng) {
+      var marker;
+      if (options.icon)
+        marker = L.marker(latlng, {icon: options.icon});
+      else
+        marker = L.marker(latlng);
+      
+      var markerStyle = {};
+      if (feature.properties.width)
+        markerStyle.minWidth = feature.properties.width;
+      
+      if (feature.properties.height)
+        markerStyle.minHeight = feature.properties.height;
+        
+      if (Lablz.getObjectSize(markerStyle) > 0)
+        marker.bindPopup(feature.properties.html, markerStyle);        
+      else
+        marker.bindPopup(feature.properties.html);
+
+      if (options.gradient) {
+        marker.valInRange = valInRange;
+      }
+      
+//        var name = type + ': ' + feature.properties.name;
+      marker.on('mouseover', function(e) {self.updateInfosWithHTML(feature.properties.name);});
+      marker.on('mouseout', function(e) {self.clearInfos(e);});
+      if (options.doCluster)
+        layer.addLayer(marker);
+      
+      return options.doCluster ? layer : marker;
+    };
+  }
 
   this.fitBounds = function(mapBounds) {
     if (mapBounds)
