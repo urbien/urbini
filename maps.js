@@ -367,10 +367,11 @@ Lablz.Leaflet = function(mapDivId) {
     };
   }
 
-  this.addSizeButton = function(mapDiv, bounds) {
+  this.addSizeButton = function(mapDiv) {
     'use strict';
     var btn = L.control({position: 'bottomleft'});
     btn.onAdd = function (mapObj) {
+      var bounds = mapObj.getBounds();;
       var maxImg = "<img src='icons/map-fullscreen.png' />";
       var minImg = "<img src='icons/map-unfullscreen.png' />";
       var div = L.DomUtil.create('div', 'resize');
@@ -382,8 +383,8 @@ Lablz.Leaflet = function(mapDivId) {
           mapDiv.style.position = 'relative';
           mapDiv.style.height = "";
           document.body.style.overflow = 'auto';
-          var parent = $("siteResourceList");
-          parent = parent || $("corePageContent");
+          var parent = document.getElementById("siteResourceList");
+          parent = parent || document.getElementById("corePageContent");
           parent.insertBefore(mapDiv, getFirstChild(parent));
           div.innerHTML = maxImg;
           mapObj.invalidateSize(true);
@@ -921,7 +922,7 @@ Lablz.Leaflet = function(mapDivId) {
     var cloudmadeAttribution = 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2011 CloudMade'
     var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: maxZoom, attribution: cloudmadeAttribution});
     var latlng = new L.LatLng(center[0], center[1]);
-    this.map = new L.Map(this.mapDivId || 'map', {center: latlng, zoom: 12, maxZoom: maxZoom, layers: [cloudmade]});
+    this.map = new L.Map(this.mapDivId || 'map', {center: latlng, zoom: 10, maxZoom: maxZoom, layers: [cloudmade]});
     if (!pointOfInterest)
       return;
 
