@@ -741,10 +741,11 @@ Lablz.Leaflet = function(mapDivId) {
   
   this.getScaledClusterIconCreateFunction = function(options) {
     var self = this;
-    var color = options.color;
     var doScale = options.doScale;
     var showCount = options.showCount;
     var gradient = options.gradient;
+    var color = options.gradient && options.gradient.color;
+    color = color && hexToRGB(color);
     return function(cluster) {
       var childCount = cluster.getChildCount();
       var children = cluster.getAllChildMarkers();
@@ -752,7 +753,12 @@ Lablz.Leaflet = function(mapDivId) {
       var size = 40;
       var diameter = 30;
       custom = true;
-      var rgb = gradient ? self.getGradientColor(self.gradientInfo.range, children[0].valInRange) : hexToRGB(color || self.getNextColor(Math.random()));
+      var rgb;
+      if (gradient)
+        rgb = color ? color : self.getGradientColor(self.gradientInfo.range, children[0].valInRange);
+      else
+        rgb = hexToRGB(color || self.getNextColor(Math.random()));
+      
       var background = "background-color: rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", 0.7); color: " + getTextColor(rgb[0], rgb[1], rgb[2]) + ";";
       var zoom = cluster._zoom || 10;
       var width;
