@@ -656,7 +656,7 @@ input.xxs {font-size: 10px; color: &[Alternative_A];;}
 
 tr.fts td { /*vertical-align: middle;*/ padding: 2px; color: &[SecondaryColorA_5];; }
 tr.ftSearch td { padding: 0px; }
-.desktop_search { width: 300px; }
+.desktop_search { width: 285px; }
 
 /** iPhone field : used on desktop too!  **/
 .iphone_field {
@@ -699,7 +699,7 @@ tr.ftSearch td { padding: 0px; }
   -webkit-box-shadow:0 0 2px rgba(0, 0, 0, 0.5) inset;
   background: #ffffff;
   width: 210;
-  height: 31px;
+  height: 28px;
 }
 /*.ftsq {  color: &[SecondaryColorA_3];; }*/
 .ftsq {  color: &[PrimaryColor_4_text];; }
@@ -710,6 +710,21 @@ tr.ftSearch td { padding: 0px; }
     padding: 0px 0px 0px 0px;
     margin: 6px 2px 0px 2px;
  }
+#locSearch input {
+    width: 150px;
+    height: 26px; 
+    font: bold 14px Helvetica;
+    border: 0px;
+    padding: 0px 0px 0px 0px;
+    margin: 2px 2px 1px 4px; */
+ }
+ #locSearch {
+  padding-left:1px;
+  box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.5) inset;
+  -moz-box-shadow:0 0 2px rgba(0, 0, 0, 0.5) inset;
+  -webkit-box-shadow:0 0 2px rgba(0, 0, 0, 0.5) inset;
+  background: #ffffff;
+}
  
 .ftSearch .action_btn {
   width: 40px;
@@ -1340,6 +1355,7 @@ div.contentsRL {
 /* filter line: Search criteria if there was full text search criteria*/
 .ftxt {text-align:left; font-size:12px; color: #757575}
 #ca, #fl {color: #757575}
+#ca {cursor: pointer}
 .ftxt1 {border: none; padding: 0px; margin-left: 0; margin-right: 0; vertical-align: middle}
 /* Style for message in data entry for property that was either not set or set incorrectly*/
 /* .msg { position: absolute; margin-top: -29px; } */
