@@ -159,6 +159,7 @@ function rgbToHex(r, g, b) {
 window.Lablz = window.Lablz || {};
 Lablz.Leaflet = function(mapDivId) {
   this.mapDivId = mapDivId;
+  this.defaultStyleId = 22677;
   this.serverName = null;
   this.map = null;
   this.maxZoom = 17;
@@ -383,9 +384,8 @@ Lablz.Leaflet = function(mapDivId) {
           mapDiv.style.position = 'relative';
           mapDiv.style.height = "";
           document.body.style.overflow = 'auto';
-          var parent = document.getElementById("siteResourceList");
-          parent = parent || document.getElementById("corePageContent");
-          parent.insertBefore(mapDiv, getFirstChild(parent));
+          var parent = document.getElementById("siteResourceList") || document.getElementById("corePageContent") || document.getElementById("sidebarDiv") || document.getElementById("resourceView");
+          parent.insertBefore(mapDiv, parent.firstChild);
           div.innerHTML = maxImg;
           mapObj.invalidateSize(true);
           mapObj.fitBounds(bounds);
@@ -808,8 +808,12 @@ Lablz.Leaflet = function(mapDivId) {
 
   this.addGeoJsonPoints = function(nameToGeoJson, type, markerOptions, style, behaviorOptions) {
     'use strict';
+    var extendFunc = typeof extendObj == 'undefined' ? _.extend : extendObj;
+    if (!markerOptions.disableClusteringAtZoom)
+      markerOptions.disableClusteringAtZoom = this.maxZoom;
+    
     behaviorOptions = behaviorOptions || {doCluster: false, highlight: false, zoom: false, hexColor: undefined, colorSeed: undefined, icon: undefined};
-    var allOptions = extendObj(extendObj({}, markerOptions), behaviorOptions);
+    var allOptions = extendFunc(extendFunc({}, markerOptions), behaviorOptions);
     var self = this;
     var style = style ? style : simpleStyle;
     var i = 0;
@@ -910,19 +914,64 @@ Lablz.Leaflet = function(mapDivId) {
     }
     
   };
+  
+  this.getPointToLayerFunction = function(layerName, layer, options) {
+    var self = this;
+    var valInRange;
+    if (options.gradient) {
+      var r = options.gradient.range;
+      valInRange = r[0] + (r[1] - r[0]) / 2;
+    }
+    
+    return function(feature, latlng) {
+      var marker;
+      if (options.icon)
+        marker = L.marker(latlng, {icon: options.icon});
+      else
+        marker = L.marker(latlng);
+      
+      var markerStyle = {};
+      if (feature.properties.width)
+        markerStyle.minWidth = feature.properties.width;
+      
+      if (feature.properties.height)
+        markerStyle.minHeight = feature.properties.height;
+        
+      if (Lablz.getObjectSize(markerStyle) > 0)
+        marker.bindPopup(feature.properties.html, markerStyle);        
+      else
+        marker.bindPopup(feature.properties.html);
+
+      if (options.gradient) {
+        marker.valInRange = valInRange;
+      }
+      
+//        var name = type + ': ' + feature.properties.name;
+      marker.on('mouseover', function(e) {self.updateInfosWithHTML(feature.properties.name);});
+      marker.on('mouseout', function(e) {self.clearInfos(e);});
+      if (options.doCluster)
+        layer.addLayer(marker);
+      
+      return options.doCluster ? layer : marker;
+    };
+  }
 
   this.fitBounds = function(mapBounds) {
     if (mapBounds)
       this.map.fitBounds(mapBounds);
   };
 
-  this.addMap = function(apiKey, styleId, maxZoom, center, pointOfInterest) {
-    this.maxZoom = maxZoom;
-    var cloudmadeUrl = 'http://{s}.tile.cloudmade.com/' + apiKey + '/' + styleId + '/' + '256/{z}/{x}/{y}.png';
+  this.addMap = function(apiKey, settings, pointOfInterest) {
+    this.maxZoom = settings.maxZoom || this.maxZoom;
+    var cloudmadeUrl = 'http://{s}.tile.cloudmade.com/' + apiKey + '/' + (settings.styleId || this.defaultStyleId) + '/' + '256/{z}/{x}/{y}.png';
     var cloudmadeAttribution = 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2011 CloudMade'
-    var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: maxZoom, attribution: cloudmadeAttribution});
-    var latlng = new L.LatLng(center[0], center[1]);
-    this.map = new L.Map(this.mapDivId || 'map', {center: latlng, zoom: 10, maxZoom: maxZoom, layers: [cloudmade]});
+    var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: this.maxZoom, attribution: cloudmadeAttribution});
+    var mapSettings = {center: settings.center, zoom: pointOfInterest ? 10 : 13, maxZoom: this.maxZoom, layers: [cloudmade]};
+    if (settings.bounds)
+      mapSettings.maxBounds = settings.bounds;
+      
+    this.map = new L.Map(this.mapDivId || 'map', mapSettings);
+      
     if (!pointOfInterest)
       return;
 
