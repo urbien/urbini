@@ -422,6 +422,7 @@ Backbone.sync = function(method, model, options) {
           existing && existing.set(toAdd[i]);
         }
         
+        model.trigger('refresh', model);
         Lablz.indexedDB.addItems(toAdd, model.className);
       }
     }
@@ -955,14 +956,14 @@ Lablz.loadAndUpdateModels = function() {
 
 // END /////////// Local Storage //////////// END //
 
-Lablz.pageUrl = "/bb/index.html";
+Lablz.pageRoot = "/bb";
 Lablz.serverName = (function() {     
   var baseUriO = document.getElementsByTagName('base');
   var baseUri = "";
   if (baseUriO)
     baseUri = baseUriO[0].href;
   
-  var pIdx = baseUri.indexOf(Lablz.pageUrl);
+  var pIdx = baseUri.indexOf(Lablz.pageRoot);
   if (pIdx)
     baseUri = baseUri.slice(0, pIdx);
     
