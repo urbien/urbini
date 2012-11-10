@@ -7818,7 +7818,8 @@ var FieldsWithEmptyValue = {
     addEvent(field, "click", this.onclick, false);
     addEvent(field, "keydown", this.onkeydown, false);
     addEvent(field, "blur", this.onblur, false);
-    
+    setTransitionProperty(field, 'color 0.3s ease-in-out');
+
     if (this.hasClearTextCtrl(field))
       addEvent(field, "keyup", this.onkeyup, false);
 

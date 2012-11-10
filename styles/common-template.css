@@ -656,7 +656,8 @@ input.xxs {font-size: 10px; color: &[Alternative_A];;}
 
 tr.fts td { /*vertical-align: middle;*/ padding: 2px; color: &[SecondaryColorA_5];; }
 tr.ftSearch td { padding: 0px; }
-.desktop_search { width: 285px; }
+.desktop_search { width: 300px; }
+.zip_search { width: 150px; }
 
 /** iPhone field : used on desktop too!  **/
 .iphone_field {
@@ -691,6 +692,7 @@ tr.ftSearch td { padding: 0px; }
   -moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
   -webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 }
+.zip_search .left { border-left: 1px solid #dddddd; }
 
 .desktop_search .left_inner {
   padding-left:1px;
@@ -699,40 +701,29 @@ tr.ftSearch td { padding: 0px; }
   -webkit-box-shadow:0 0 2px rgba(0, 0, 0, 0.5) inset;
   background: #ffffff;
   width: 210;
-  height: 28px;
+  height: 31px;
 }
 /*.ftsq {  color: &[SecondaryColorA_3];; }*/
 .ftsq {  color: &[PrimaryColor_4_text];; }
-.desktop_search input { 
-    width: 180px;
-    font: bold 16px Helvetica;
+.desktop_search input, #locSearch input { 
+    font: bold 15px Helvetica;
     border-width: 0px;
     padding: 0px 0px 0px 0px;
-    margin: 6px 2px 0px 2px;
+    margin: 7px 2px 0px 2px;
  }
-#locSearch input {
-    width: 150px;
-    height: 26px; 
-    font: bold 14px Helvetica;
-    border: 0px;
-    padding: 0px 0px 0px 0px;
-    margin: 2px 2px 1px 4px; */
+.desktop_search input { width: 180px; }
+.zip_search input { width: 100px; }  
+#locSearch input { width: 100px; }
+
  }
- #locSearch {
-  padding-left:1px;
-  box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.5) inset;
-  -moz-box-shadow:0 0 2px rgba(0, 0, 0, 0.5) inset;
-  -webkit-box-shadow:0 0 2px rgba(0, 0, 0, 0.5) inset;
-  background: #ffffff;
-}
- 
+
 .ftSearch .action_btn {
   width: 40px;
   border-radius: 15px 0 0 15px;
   margin-left:5px;
 }
 .ftSearch .action_btn a, .ftSearch .action_btn1 a  { display: block; }
-.ftSearch .action_btn img, .ftSearch .action_btn1 img  { width: 22px; height: 22px; margin: 5px 0 0 10px; }
+.ftSearch .action_btn img, .ftSearch .action_btn1 img  { width: 22px; height: 22px; margin: 5px 7px; }
 .ftSearch .action_btn1 {
   width: 40px;
 /*  margin-left: 5px; */
@@ -745,6 +736,7 @@ tr.ftSearch td { padding: 0px; }
   width: 77px;
   cursor: pointer;
 }
+.zip_search .right { width: 45px; }
 
 .desktop_search .right, .ftSearch .action_btn, .ftSearch .action_btn1 {
   height: 31px;
@@ -1884,13 +1876,14 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 .panel_block .header .wide_cell { width: 100%; text-align: center; }
 .panel_block #lists_container { padding: 10px; width: 100%; color: &[Alternative_A];;}
 /* make color blend into the pinstripes */ 
-.panel_block .content { padding: 10px; width: 100%; } 
+.panel_block .content { padding: 10px 10px 0px 10px; width: 100%; } 
 
 #subscribe .content { display: none; }
 
 .rounded_rect_tbl { width: 100%; margin: 5px 0px 5px 0px; border-radius: 10px; background-color: &[PrimaryColor_4];; padding: 0px;
                     /*box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);*/ border: solid &[PrimaryColor_1]; 1px; empty-cells:show; color: &[PrimaryColor_4_text];; }
 .rounded_rect_tbl_bg { background-color: &[PrimaryColor_4];; }
+.submit_btn_container { text-align: center; margin-top: 10px; }
 
 /* the following rules required while item-rows highlighting */
 .rounded_rect_tbl tr:first-child td:first-child { border-radius: 10px 0px 0px 0px; }
@@ -2024,7 +2017,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 
 #menu_Options #hide_icon { top: 15px; left: -4px; }
 /* #pane2 - "plain" dialogs */
-#pane2 .content { padding: 15px 10px; }
+#pane2 .content { padding: 10px; }
 
 .frame {
   width: 100%; /* takes 100% of panel block width */

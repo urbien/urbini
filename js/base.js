@@ -201,7 +201,7 @@ packages.Resource.prototype.fetchModelsForLinkedResources = function() {
     if (r && r.indexOf("http://www.hudsonfog.com/") == 0) {
       var name = r.slice(r.lastIndexOf("/") + 1);
       if (!Lablz.shortNameToModel[name])
-        linkedModels.push(r);
+        linkedModels.push(name);
     }
   });
   
@@ -422,7 +422,6 @@ Backbone.sync = function(method, model, options) {
           existing && existing.set(toAdd[i]);
         }
         
-        model.trigger('refresh', model);
         Lablz.indexedDB.addItems(toAdd, model.className);
       }
     }
@@ -956,13 +955,18 @@ Lablz.loadAndUpdateModels = function() {
 
 // END /////////// Local Storage //////////// END //
 
+Lablz.pageUrl = "/bb/index.html";
 Lablz.serverName = (function() {     
   var baseUriO = document.getElementsByTagName('base');
   var baseUri = "";
   if (baseUriO)
     baseUri = baseUriO[0].href;
   
-  return baseUri.charAt(baseUri.length - 1) == "/" ? baseUri.slice(0, baseUri.length - 1) : baseUri;
+  var pIdx = baseUri.indexOf(Lablz.pageUrl);
+  if (pIdx)
+    baseUri = baseUri.slice(0, pIdx);
+    
+  return baseUri;
 })();
 
 Lablz.fetchModels = function(models, success, error) {
