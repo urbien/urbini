@@ -153,6 +153,7 @@ Utils.getShapeType = function(rings) {
 }
 
 Utils.getDepth = function(arr) {
+  var depth = 1;
   for (var i = 0; i < arr.length; i++) {
     var type = Object.prototype.toString.call(arr[i]);
     if (type === '[object Array]')
@@ -173,8 +174,8 @@ Utils.getMapItemHTML = function(m) {
       var height = m.get('originalHeight');
       if (width && height) {
         var imgOffset = Math.max(width, height) / 205;
-        width = (int)(width / imgOffset);
-        height = (int)(height / imgOffset);
+        width = Math.round(width / imgOffset);
+        height = Math.round(height / imgOffset);
       }
       
       medImg = {value: medImg};
@@ -188,16 +189,18 @@ Utils.getMapItemHTML = function(m) {
   return _.template(tpl.get("resourceTemplate"))({displayName: m.get('davDisplayName'), value: m.get('_uri')});
 }
 
-Utils.collectionToGeoJSON = function(model) {
+Utils.collectionToGeoJSON = function(model, metadata) {
   var gj = [];
   _.each(model.models, function(m){
-    gj.put(Utils.modelToGeoJSON(m));
+    var mGJ = Utils.modelToGeoJSON(m, metadata);
+    if (mGJ)
+      gj.push(mGJ);
   })
   
   return gj;
 }
 
-Utils.modelToGeoJSON = function(model) {
+Utils.modelToGeoJSON = function(model, metadata) {
   if (model instanceof Backbone.Collection)
     return Utils.collectionToGeoJSON(model);
   
@@ -215,23 +218,36 @@ Utils.modelToGeoJSON = function(model) {
     coords = [lon, model.get('latitude')];  
   }
   
-  var type = getShapeType(coords); 
-  var name = model.className + " " + model.davDisplayName;
-  var json = {
-    "type": "Feature",
-    "properties": {
-      "name": "name"
-    },
-    "geometry": {
-      "type": type,
-      "coordinates": coords
+  var type = Utils.getShapeType(coords);
+  if (metadata) {
+    var bbox;
+    if (isShape)
+      bbox = [[model.get('lowestLatitude'), model.get('lowestLongitude')], [model.get('highestLatitude'), model.get('highestLongitude')]];
+    else
+      bbox = [[coords[1], coords[0]], [coords[1], coords[0]]];
+    
+    if (metadata.bbox) {
+      var b = metadata.bbox;
+      b[0][0] = Math.min(b[0][0], bbox[0][0]);
+      b[0][1] = Math.min(b[0][1], bbox[0][1]);
+      b[1][0] = Math.max(b[1][0], bbox[1][0]);
+      b[1][1] = Math.max(b[1][1], bbox[1][1]);
     }
+    else
+      metadata.bbox = bbox; 
   }
   
+  var name = model.constructor.shortName + " " + model.get('davDisplayName');
+  var json = Utils.getBasicGeoJSON(type, coords);
   if (area)
     json.properties.area = area;
   
-  properties.html = Utils.getMapItemHTML(model);
+  json.properties.html = Utils.getMapItemHTML(model);
+  return json;
+}
+
+Utils.getCenterLatLon = function(bbox) {
+  return [(bbox[1][0] + bbox[0][0]) / 2, (bbox[1][1] + bbox[0][1]) / 2];
 }
 
 /**
@@ -239,23 +255,25 @@ Utils.modelToGeoJSON = function(model) {
  */
 
 Utils.defaultModelProps = ['__super__', 'prototype', 'extend'];
-Utils.modelToJSON = function(model) {
+Utils.toJSON = function(obj) {
   var staticProps = {};
-  for (var prop in model) {
-    if (_.has(model, prop) && !_.contains(Utils.defaultModelProps, prop))
-      staticProps[prop] = model[prop];      
+  for (var prop in obj) {
+    if (typeof obj[prop] != 'function' && _.has(obj, prop) && !_.contains(Utils.defaultModelProps, prop)) {
+      var o = obj[prop];
+      staticProps[prop] = typeof o == 'object' ? Utils.toJSON(o) : o;
+    }
   }
   
   return staticProps;
-}
+};
 
-function wrap(object, method, wrapper) {
+Utils.wrap = function(object, method, wrapper) {
   var fn = object[method];
     return object[method] = function() {
     return wrapper.apply(this, [ fn.bind(this) ].concat(
     Array.prototype.slice.call(arguments)));
   };
-}
+};
 
 /**
  * Array that stores only unique elements
@@ -273,7 +291,7 @@ Utils.UArray.prototype.length = 0;
   }
 })();
 
-wrap(Utils.UArray, 'push',
+Utils.wrap(Utils.UArray, 'push',
   function(original, item) {
     if (_.contains(this, item))
       return this;
@@ -300,4 +318,42 @@ Utils.toQueryString = function(queryMap) {
   });
   
   return qStr.slice(0, qStr.length - 1);
+};
+
+Utils.getQueryParams = function() {
+  return Utils.getParamMap(window.location.href);
+};
+
+Utils.getHashParams = function() {
+  var h = window.location.hash;
+  if (!h) 
+    return {};
+  
+  var chopIdx = h.indexOf('?');
+  chopIdx = chopIdx == -1 ? 1 : chopIdx + 1;
+    
+  return h ? Utils.getParamMap(h.slice(chopIdx)) : {};
+};
+
+Utils.getParamMap = function(str, delimiter) {
+  var map = {};
+  _.each(str.split(delimiter || "&"), function(nv) {
+    nv = nv.split("=");
+    map[nv[0]] = decodeURIComponent(nv[1]);
+  });
+  
+  return map;
+};
+
+Utils.getBasicGeoJSON = function(shapeType, coords) {
+  return {
+    "type": "Feature",
+    "properties": {
+      "name": "name"
+    },
+    "geometry": {
+      "type": shapeType,
+      "coordinates": coords
+    }
+  };
 };

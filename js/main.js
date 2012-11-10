@@ -5,7 +5,7 @@ var App = Backbone.Router.extend({
   routes:{
       ":type":"list",
       "view/*path":"view",
-      "map/:type":"map"
+      "map/*type":"map"
   },
   CollectionViews: {},
   Views: {},
@@ -62,7 +62,11 @@ var App = Backbone.Router.extend({
     
 //    Lablz.Navigation.push();
 //    Lablz.Navigation.detectBackButton();
-    if (!query && this.Collections[type] && this.CollectionViews[type]) {
+    var c = this.Collections[type];
+    if (c && !c.loaded)
+      c = null;
+      
+    if (!query && c && this.CollectionViews[type]) {
       this.Collections[type].asyncFetch({page: page});
       this.changePage(this.CollectionViews[type], {page: page});
       return this;
@@ -74,8 +78,8 @@ var App = Backbone.Router.extend({
     
     var list = this.Collections[type] = new Lablz.ResourceList(null, {model: model, _query: query});
     var listView = this.CollectionViews[type] = new Lablz.ListPage({model: list});
-    list.fetch({
-      add: true, 
+    list.syncFetch({
+      add: true,
       success: function() {
         self.changePage(listView);
 //          self.loadExtras(oParams);
@@ -88,6 +92,15 @@ var App = Backbone.Router.extend({
   view: function (oParams) {
     var params = oParams.split("?");
     var uri = decodeURIComponent(params[0]);
+    if (uri == 'profile') {
+      var p = params.length > 1 ? params[1] : '';
+      if (Lablz.userUri)
+        view(Lablz.userUri + "?" + p);
+      else
+        window.location.href = Lablz.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + encodeURIComponent(window.location.href) + "&" + p;
+      
+      return;
+    }
     
 //    Lablz.Navigation.push();
 //    Lablz.Navigation.detectBackButton();
@@ -103,6 +116,9 @@ var App = Backbone.Router.extend({
     }
     
     var res = this.Models[uri];
+    if (res && !res.loaded)
+      res = null;
+    
     if (!res) {
       var l = this.Collections[type];
       res = this.Models[uri] = l && l.get(uri);
@@ -138,7 +154,7 @@ var App = Backbone.Router.extend({
 //      self.loadExtras(oParams);
     }
     
-		res.fetch({success: success});
+		res.syncFetch({success: success});
 		return this;
   },
   
