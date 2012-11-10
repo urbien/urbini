@@ -201,7 +201,7 @@ packages.Resource.prototype.fetchModelsForLinkedResources = function() {
     if (r && r.indexOf("http://www.hudsonfog.com/") == 0) {
       var name = r.slice(r.lastIndexOf("/") + 1);
       if (!Lablz.shortNameToModel[name])
-        linkedModels.push(name);
+        linkedModels.push(r);
     }
   });
   
