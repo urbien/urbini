@@ -956,18 +956,13 @@ Lablz.loadAndUpdateModels = function() {
 
 // END /////////// Local Storage //////////// END //
 
-Lablz.pageRoot = "/bb";
 Lablz.serverName = (function() {     
   var baseUriO = document.getElementsByTagName('base');
   var baseUri = "";
   if (baseUriO)
     baseUri = baseUriO[0].href;
   
-  var pIdx = baseUri.indexOf(Lablz.pageRoot);
-  if (pIdx)
-    baseUri = baseUri.slice(0, pIdx);
-    
-  return baseUri;
+  return baseUri.charAt(baseUri.length - 1) == "/" ? baseUri.slice(0, baseUri.length - 1) : baseUri;
 })();
 
 Lablz.fetchModels = function(models, success, error) {

@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html class="ui-mobile">
 <head>
-  <base />
+  <base href="serverName" />
   <title>Backbone Cellar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"></meta>
   <link rel="stylesheet" href="lib/jquery.mobile-1.2.0.css" />
