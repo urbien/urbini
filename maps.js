@@ -752,7 +752,12 @@ Lablz.Leaflet = function(mapDivId) {
       var size = 40;
       var diameter = 30;
       custom = true;
-      var rgb = gradient ? self.getGradientColor(self.gradientInfo.range, children[0].valInRange) : hexToRGB(color || self.getNextColor(Math.random()));
+      var rgb;
+      if (gradient)
+        rgb = color ? color : self.getGradientColor(self.gradientInfo.range, children[0].valInRange);
+      else
+        rgb = hexToRGB(color || self.getNextColor(Math.random()));
+      
       var background = "background-color: rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", 0.7); color: " + getTextColor(rgb[0], rgb[1], rgb[2]) + ";";
       var zoom = cluster._zoom || 10;
       var width;
@@ -870,38 +875,7 @@ Lablz.Leaflet = function(mapDivId) {
         markers = new L.MarkerClusterGroup(markerOptions);
       }
       
-      var pointToLayer = function(feature, latlng) {
-        var marker;
-        if (behaviorOptions.icon)
-          marker = L.marker(latlng, {icon: behaviorOptions.icon});
-        else
-          marker = L.marker(latlng);
-        
-        var markerStyle = {};
-        if (feature.properties.width)
-          markerStyle.minWidth = feature.properties.width;
-        
-        if (feature.properties.height)
-          markerStyle.minHeight = feature.properties.height;
-          
-        if (Lablz.getObjectSize(markerStyle) > 0)
-          marker.bindPopup(feature.properties.html, markerStyle);        
-        else
-          marker.bindPopup(feature.properties.html);
-
-        if (allOptions.gradient) {
-          marker.valInRange = parseRange(name);
-        }
-        
-//          var name = type + ': ' + feature.properties.name;
-        marker.on('mouseover', function(e) {self.updateInfosWithHTML(feature.properties.name);});
-        marker.on('mouseout', function(e) {self.clearInfos(e);});
-        if (behaviorOptions.doCluster)
-          markers.addLayer(marker);
-        
-        return behaviorOptions.doCluster ? markers : marker;
-      };
-      
+      var pointToLayer = this.getPointToLayerFunction(name, markers, allOptions);      
       gj = L.geoJson(g, {style: style, pointToLayer: pointToLayer});
       layer.push(gj);
       var newLayer = this.mkPointLayerGroup(name, layer, this.pointLayers[name]);
