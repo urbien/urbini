@@ -233,7 +233,7 @@ packages.Resource.prototype.fetchModelsForLinkedResources = function() {
     if (r && r.indexOf("http://www.hudsonfog.com/") == 0) {
       var name = r.slice(r.lastIndexOf("/") + 1);
       if (!Lablz.shortNameToModel[name])
-        linkedModels.push(r);
+        linkedModels.push(name);
     }
   });
   
@@ -989,7 +989,11 @@ Lablz.serverName = (function() {
   if (baseUriO)
     baseUri = baseUriO[0].href;
   
-  return baseUri.charAt(baseUri.length - 1) == "/" ? baseUri.slice(0, baseUri.length - 1) : baseUri;
+  var pIdx = baseUri.indexOf(Lablz.pageUrl);
+  if (pIdx)
+    baseUri = baseUri.slice(0, pIdx);
+    
+  return baseUri;
 })();
 
 Lablz.fetchModels = function(models, success, error) {
