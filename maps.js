@@ -754,7 +754,7 @@ Lablz.Leaflet = function(mapDivId) {
       custom = true;
       var rgb;
       if (gradient)
-        rgb = color ? color : self.getGradientColor(self.gradientInfo.range, children[0].valInRange);
+        rgb = gradient.color ? hexToRGB(gradient.color) : self.getGradientColor(self.gradientInfo.range, children[0].valInRange);
       else
         rgb = hexToRGB(color || self.getNextColor(Math.random()));
       
