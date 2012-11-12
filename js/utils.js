@@ -357,3 +357,22 @@ Utils.getBasicGeoJSON = function(shapeType, coords) {
     }
   };
 };
+Utils.getFormattedDate = function(time) {
+  var date = new Date(parseFloat(time));
+  //(time || "").replace(/-/g,"/").replace(/[TZ]/g," "));
+  var diff = (((new Date()).getTime() - date.getTime()) / 1000);
+  var day_diff = Math.floor(diff / 86400);
+      
+  if (isNaN(day_diff) || day_diff < 0 || day_diff >= 31)
+    return;
+      
+  return day_diff == 0 && (
+    diff < 60 && "just now" ||
+    diff < 120 && "a minute ago" ||
+    diff < 3600 && Math.floor( diff / 60 ) + " minutes ago" ||
+    diff < 7200 && "an hour ago" ||
+    diff < 86400 && Math.floor( diff / 3600 ) + " hours ago") ||
+    day_diff == 1 && "Yesterday" ||
+    day_diff < 7 && day_diff + " days ago" ||
+    day_diff < 31 && Math.ceil( day_diff / 7 ) + " weeks ago";
+ }
