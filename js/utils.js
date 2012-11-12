@@ -218,6 +218,9 @@ Utils.modelToGeoJSON = function(model, metadata) {
     coords = [lon, model.get('latitude')];  
   }
   
+  if (!coords)
+    return null;
+    
   var type = Utils.getShapeType(coords);
   if (metadata) {
     var bbox;

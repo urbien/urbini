@@ -144,9 +144,6 @@ Lablz.MapView = Backbone.View.extend({
     
     this.ready = false;
     self = this;
-    this.getCloudMade = function() {
-      
-    }
     
 //    $.when(
         // TODO: check if leaflet css has already been loaded
@@ -174,6 +171,13 @@ Lablz.MapView = Backbone.View.extend({
         }
       , 100);
       
+      return this;
+    }
+    
+    var m = this.model;
+    m = m instanceof Backbone.Collection ? m.model : m.constructor;
+    if (Utils.isA(m, "Shape")) {
+      this.remove();
       return this;
     }
     

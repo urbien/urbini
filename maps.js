@@ -745,6 +745,7 @@ Lablz.Leaflet = function(mapDivId) {
     var doScale = options.doScale;
     var showCount = options.showCount;
     var gradient = options.gradient;
+
     return function(cluster) {
       var childCount = cluster.getChildCount();
       var children = cluster.getAllChildMarkers();
