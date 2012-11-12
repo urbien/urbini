@@ -15,11 +15,11 @@ var App = Backbone.Router.extend({
   backClicked: false,       
   initialize: function () {
     this.firstPage = true;
-    $(document).on('click', 'a.back', function(event) {
-      event.preventDefault();
-      App.backClicked = true;
-      window.history.back();
-    });
+//    $(document).on('click', 'a.back', function(event) {
+//      event.preventDefault();
+//      App.backClicked = true;
+//      window.history.back();
+//    });
   },
 
 //  map: function (type) {

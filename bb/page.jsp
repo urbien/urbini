@@ -37,7 +37,6 @@
   
   <script src="js/utils.js"></script>   
   <script src="js/base.js"></script>   
-  <!--script src="js/models.js"></script-->
   <!-- FETCH MODELS -->
   <script>
     var initModels = ["BasketballCourt","Borough"];

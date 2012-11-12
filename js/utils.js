@@ -178,7 +178,7 @@ Utils.getMapItemHTML = function(m) {
         height = Math.round(height / imgOffset);
       }
       
-      medImg = {value: medImg};
+      medImg = {value: decodeURIComponent(medImg)};
       width && (medImg.width = width);
       height && (medImg.height = height);
       medImg = _.template(tpl.get("imageTemplate"))(medImg);
@@ -240,8 +240,8 @@ Utils.modelToGeoJSON = function(model, metadata) {
       metadata.bbox = bbox; 
   }
   
-  var name = model.constructor.shortName + " " + model.get('davDisplayName');
   var json = Utils.getBasicGeoJSON(type, coords);
+  json.properties.name = model.constructor.displayName + " " + model.get('davDisplayName');
   if (area)
     json.properties.area = area;
   
@@ -352,7 +352,6 @@ Utils.getBasicGeoJSON = function(shapeType, coords) {
   return {
     "type": "Feature",
     "properties": {
-      "name": "name"
     },
     "geometry": {
       "type": shapeType,
@@ -360,3 +359,19 @@ Utils.getBasicGeoJSON = function(shapeType, coords) {
     }
   };
 };
+
+
+
+/// String prototype extensions
+
+String.prototype.trim = function(){
+  return (this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, ""))
+}
+
+String.prototype.startsWith = function(str) {
+  return (this.match("^"+str)==str)
+}
+
+String.prototype.endsWith = function(str) {
+  return (this.match(str+"$")==str)
+}
