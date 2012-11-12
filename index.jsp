@@ -34,8 +34,11 @@
 </script>
 
 <script type="text/template" id="dateTemplate">
-    <span>{{ new Date(value / 1000) }}</span>
+    <span>{{ Utils.getFormattedDate(value) }}</span>
 </script>
+<!--script type="text/template" id="dateTemplate">
+    <span>{{ new Date(value / 1000) }}</span>
+</script -->
 
 <script type="text/template" id="intTemplate">
     <span>{{ value }}</span>
@@ -46,7 +49,7 @@
 </script>
 
 <script type="text/template" id="complexDateTemplate">
-  <span>{{ typeof displayName != 'undefined' ? displayName : new Date(value.date / 1000) }}</span>
+  <span>{{ typeof displayName != 'undefined' ? displayName : Utils.getFormattedDate(value) }}</span>
 </script>
 
 <script type="text/template" id="resourceTemplate">

@@ -1523,6 +1523,8 @@ function findPosX(obj) {
   var curleft = 0;
   if (obj.offsetParent) {
     while (obj.offsetParent) {
+//      if (_isWrapper(obj)) // hack for div#wrapper
+//        break; 
       curleft += obj.offsetLeft;
       obj = obj.offsetParent;
     }
@@ -1537,6 +1539,8 @@ function findPosY(obj) {
 
   if (obj.offsetParent) {
     while (obj.offsetParent) {
+//      if (_isWrapper(obj)) // hack for div#wrapper
+//        break; 
       curtop += obj.offsetTop;
       obj = obj.offsetParent;
     }
@@ -1863,6 +1867,9 @@ function getObjectUpperLeft(obj){
    */
   obj = obj.offsetParent;
   while (obj) {
+    if (_isWrapper(obj)) // hack for div#wrapper
+      break;     
+        
       x += obj.offsetLeft;
       y += obj.offsetTop;
 
@@ -1882,6 +1889,11 @@ function getObjectUpperLeft(obj){
 
   return {x:x, y:y};
 }// eof getObjectUpperLeft
+
+// hack: div#wrapper has relative position that makes calculation wrong
+function _isWrapper(obj) {
+  return (obj.id == "wrapper" && getElementStyle(obj).position == "relative");
+}
 
 // url can be omitted
 function getUrlParam(url, paramName) {

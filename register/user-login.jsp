@@ -135,7 +135,6 @@ var PromptField = {
     	fields[i].onfocus  = this.handler;
       fields[i].onkeydown  = this.handler;
       fields[i].onblur  = this.handler;
-      console.log(getNextSibling)
       var label = getNextSibling(fields[i]);
       setTransitionProperty(label, "opacity 0.2s linear");
     }
