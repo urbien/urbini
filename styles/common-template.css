@@ -1955,7 +1955,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 .field_comment .comment { margin-top: 5px; }
 
 .rounded_rect_tbl .input, #register .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input, .false_textarea, .false_empty_field { 
-  margin: 0px; padding: 1px; min-height: 22px;
+  margin: 0px; padding: 2px; min-height: 22px;
   color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; width: 250px; height: auto;
   border-radius: 3px;
   font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px;
