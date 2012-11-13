@@ -12,7 +12,7 @@ Utils.getFirstUppercaseCharIdx = function(str) {
 Utils.getPrimaryKeys = function(model) {
   var keys = [];
   for (var p in model.myProperties) {
-    if (_.has(model.myProperties[p], 'http://www.hudsonfog.com/voc/system/fog/Property/primary'))
+    if (_.has(model.myProperties[p], 'primary'))
       keys.push(p);
   }
   
@@ -166,15 +166,45 @@ Utils.getDepth = function(arr) {
 }
 
 Utils.makeProp = function(prop, val) {
+  var cc = prop.colorCoding;
+  if (cc) {
+    cc = Utils.getColorCoding(cc, val);
+    if (cc) {
+      if (cc.startsWith("icons"))
+        val = "<img src=\"" + cc + "\" border=0>&#160;" + val;
+      else
+        val = "<span style='color:" + cc + "'>" + val + "</span>";
+    }
+  }
+  
   var propTemplate = Lablz.Templates.getPropTemplate(prop);
   val = val.displayName ? val : {value: val};
   return _.template(Lablz.Templates.get(propTemplate))(val);
 }
 
+Utils.getColorCoding = function(cc, val) {
+//  getting the color for value. Sample colorCoding annotation: @colorCoding("0-2000 #FF0054; 2000-6000 #c8fd6a; 6001-1000000 #00cc64")
+  var v = parseFloat(val);
+  cc = cc.split(';');
+  for (var i = 0; i < cc.length; i++) {
+    var r2c = cc[i].trim();
+    r2c = r2c.split(/[ ]/);
+    var r = r2c[0].split(/[-]/);
+    r[1] = parseFloat(r[1]);
+    if (v > r[1])
+      continue;
+    
+    if (v > parseFloat(r[0]))
+      return r2c[1];
+  }
+  
+  return null;
+}
+
 Utils.getMapItemHTML = function(m) {
   var tpl = Lablz.Templates;
   var mConstructor = m.constructor;
-  var cols = mConstructor['http://www.hudsonfog.com/voc/system/fog/Class/gridCols'];
+  var cols = mConstructor.gridCols;
   cols = cols && cols.split(',');
   var resourceLink;
   var rows = {};
@@ -187,7 +217,7 @@ Utils.getMapItemHTML = function(m) {
         return;
       
       val = Utils.makeProp(prop, val);
-      if (prop["http://www.hudsonfog.com/voc/system/fog/Property/resourceLink"])
+      if (prop.resourceLink)
         resourceLink = val;
       else
         rows[col] = val;
@@ -426,14 +456,14 @@ Utils.getFormattedDate = function(time) {
 }
 
 Utils.isPropVisible = function(res, prop) {
-  if (prop['http://www.hudsonfog.com/voc/system/fog/Property/avoidDisplaying'])
+  if (prop.avoidDisplaying)
     return false;
   
   var userRole = Lablz.currentUser ? Lablz.currentUser.role || 'contact' : 'guest';
   if (userRole == 'admin')
     return true;
   
-  var ar = prop['http://www.hudsonfog.com/voc/system/fog/Property/allowRoles'];
+  var ar = prop.allowRoles;
   if (ar) {
     if (userRole == 'guest')
       return false;
