@@ -163,7 +163,7 @@ Lablz.Leaflet = function(mapDivId) {
   this.serverName = null;
   this.map = null;
   this.maxZoom = 17;
-  this.pointOfInterest = {};
+  this.pointOfInterest;
   this.color = null;
   this.shapeJsons = {};
   this.shapeLayers = {};
@@ -183,6 +183,7 @@ Lablz.Leaflet = function(mapDivId) {
 //  },
   
   this.finish = function() {
+    var self = this;
     var map = this.map;
     setTimeout(function() {
       map.invalidateSize();
@@ -949,14 +950,15 @@ Lablz.Leaflet = function(mapDivId) {
     var cloudmadeAttribution = 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2011 CloudMade'
     var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: this.maxZoom, attribution: cloudmadeAttribution});
     var mapSettings = {center: settings.center, zoom: pointOfInterest ? 10 : 13, maxZoom: this.maxZoom, layers: [cloudmade]};
-    if (settings.bounds)
-      mapSettings.maxBounds = settings.bounds;
+//    if (settings.bounds)
+//      mapSettings.maxBounds = settings.bounds;
       
     this.map = new L.Map(this.mapDivId || 'map', mapSettings);
       
     if (!pointOfInterest)
       return;
 
+    this.pointOfInterest = pointOfInterest;
     if (pointOfInterest.geometry.type == 'Point') {
       var gj = L.geoJson(pointOfInterest, { 
           onEachFeature: function (feature, layer) {

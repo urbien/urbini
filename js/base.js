@@ -54,7 +54,7 @@ Lablz.getDefaultErrorHandler = function(errorHandler) {
         case 404:
           console.log('no results');
           if (originalModel instanceof Backbone.Model || (originalModel instanceof Backbone.Collection && originalModel.queryMap.length == 0))
-            Backbone.history.navigate((originalModel.shortName || originalModel.constructor.shortName) + "?-errMsg=Oops!+Whatever+you+were+looking+for,we+couldn't+find+it");
+            Backbone.history.navigate((originalModel.shortName || originalModel.constructor.shortName) + "?-errMsg=Oops!+Whatever+you+were+looking+for,we+couldn't+find+it", {trigger: true, replace: true});
           else
             $('errMsg').html("Oops! Whatever you were looking for, we couldn't find it");
             
@@ -187,43 +187,7 @@ packages.Resource = Backbone.Model.extend({
     _uri: {type: "resource"},
     _shortUri: {type: "resource"}
   },
-  myInterfaces : {},
-  getAroundMe : function() {
-    if (!navigator.geolocation) {
-      alert("Sorry, your browser does not support geolocation services.");
-      return;
-    }
-      
-    var model = this instanceof Backbone.Collection ? this.model : this;
-    var iFaces = model.interfaces;
-    if (!_.contains(iFaces, 'Locatable'))
-      return;
-    
-//    if (!props.distance || !props.latitude || !props.longitude)
-//      return;
-    
-    var self = this;
-    navigator.geolocation.getCurrentPosition(
-      function(position) {
-        return model.fetchAroundPosition(position.coords);
-      },
-      function(error) {
-        var lastLocTime = Lablz.userLocation.timestamp;
-        if (lastLocTime && new Date().getTime() - lastLocTime < 1000)
-          model.fetchAroundPosition(Lablz.userLocation.location);
-        else
-          Lablz.locationError(error);
-      }
-    );
-  },
-  fetchAroundPosition : function(coords, item) {
-    Lablz.userLocation = {
-      location: coords,
-      timestamp: new Date().getTime()
-    };
-    
-    Backbone.history.navigate(this.shortName + "?$orderBy=distance&$asc=1&latitude=" + coords.latitude + "&longitude=" + coords.longitude + '&-item=' + (item || 'me'));
-  }
+  myInterfaces : {}
 });
 
 packages.Resource.properties = _.clone(packages.Resource.myProperties);
@@ -469,7 +433,10 @@ Backbone.sync = function(method, model, options) {
       if (toAdd.length) {
         for (var i = 0; i < toAdd.length; i++) {
           var existing = model.get(toAdd[i]._uri);
-          existing && existing.set(toAdd[i]);
+          if (existing)
+            existing.set(toAdd[i]);
+          else
+            model.add(new model.model(toAdd[i]));
         }
         
         model.trigger('refresh', model);
@@ -555,17 +522,6 @@ Backbone.sync = function(method, model, options) {
 
 Backbone.Model.prototype._super = function(funcName){
   return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
-};
-
-Lablz.templates = {
-  "string": "stringTemplate",
-  "int": "intTemplate",
-  "email": "emailTemplate",
-  "date": "dateTemplate",
-  "resource": "resourceTemplate",
-  "Money": "moneyTemplate",
-  "ComplexDate": "complexDateTemplate",
-  "image": "imageTemplate"
 };
 
 Backbone.View.prototype.close = function(){
@@ -656,6 +612,11 @@ Lablz.indexedDB.open = function(options, success, error) {
       db.close();
       alert("A new version of this page is ready. Please reload!");
     };    
+
+    var userChanged = false;
+    if (!db.objectStoreNames.contains('sysinfo')) {
+      userChanged = true;
+    }
     
     modelsChanged = !!Lablz.changedModels.length || !!Lablz.newModels.length;
     Lablz.DB_VERSION = modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
@@ -1027,7 +988,8 @@ Lablz.fetchModels = function(models, success, error) {
   });
 }
 
-Lablz.updateModels = function(success, error) {
+Lablz.updateTables = function(success, error) {
+//  Lablz.checkSysInfo();
   Lablz.loadAndUpdateModels();
   Lablz.indexedDB.paused = true;
   if (Lablz.indexedDB.db)
@@ -1065,6 +1027,22 @@ Lablz.userLocation = {};
 Lablz.Templates = { 
     // Hash of preloaded templates for the app
     templates: {},
+    propTemplates: {
+      "string": "stringPT",
+      "int": "intPT",
+      "float": "intPT",
+      "double": "intPT",
+      "http://www.hudsonfog.com/voc/system/primitiveTypes/emailAddress": "emailPT",
+      "http://www.hudsonfog.com/voc/system/primitiveTypes/phone": "telPT",
+      "http://www.hudsonfog.com/voc/system/primitiveTypes/mobilePhone": "telPT",
+      "http://www.hudsonfog.com/voc/system/fog/Url": "UrlPT",
+      "date": "datePT",
+      "resource": "resourcePT",
+      "http://www.hudsonfog.com/voc/model/company/Money": "moneyPT",
+      "http://www.hudsonfog.com/voc/system/fog/ComplexDate": "complexDatePT",
+      "http://www.hudsonfog.com/voc/model/portal/Image": "imagePT"
+    },
+
  
     // This implementation should be changed in a production environment:
     // All the template files should be concatenated in a single file.
@@ -1078,5 +1056,10 @@ Lablz.Templates = {
     // Get template by name from hash of preloaded templates
     get: function(name) {
       return this.templates[name];
-    } 
+    },
+    
+    getPropTemplate: function(prop) {
+      var f = 'http://www.hudsonfog.com/voc/system/fog/Property/facet';
+      return (prop[f] && this.propTemplates[prop[f]]) || this.propTemplates[prop.range] || this.propTemplates.resource;
+    }
 };

@@ -12,7 +12,7 @@ Utils.getFirstUppercaseCharIdx = function(str) {
 Utils.getPrimaryKeys = function(model) {
   var keys = [];
   for (var p in model.myProperties) {
-    if (model.myProperties[p].annotations && _.contains(model.myProperties[p].annotations, '@k'))
+    if (_.has(model.myProperties[p], 'http://www.hudsonfog.com/voc/system/fog/Property/primary'))
       keys.push(p);
   }
   
@@ -165,8 +165,38 @@ Utils.getDepth = function(arr) {
   return depth;
 }
 
+Utils.makeProp = function(prop, val) {
+  var propTemplate = Lablz.Templates.getPropTemplate(prop);
+  val = val.displayName ? val : {value: val};
+  return _.template(Lablz.Templates.get(propTemplate))(val);
+}
+
 Utils.getMapItemHTML = function(m) {
   var tpl = Lablz.Templates;
+  var mConstructor = m.constructor;
+  var cols = mConstructor['http://www.hudsonfog.com/voc/system/fog/Class/gridCols'];
+  cols = cols && cols.split(',');
+  var resourceLink;
+  var rows = {};
+  if (cols) {
+    _.each(cols, function (col) {
+      col = col.trim();
+      var prop = mConstructor.properties[col];
+      var val = m.get(col);
+      if (!val)
+        return;
+      
+      val = Utils.makeProp(prop, val);
+      if (prop["http://www.hudsonfog.com/voc/system/fog/Property/resourceLink"])
+        resourceLink = val;
+      else
+        rows[col] = val;
+    });
+  }
+
+  resourceLink = resourceLink || m.get('davDisplayName');
+  var data = {resourceLink: resourceLink, uri: m.get('_uri'), rows: rows};
+  
   if (m.isA("ImageResource")) {
     var medImg = m.get('mediumImage') || m.get('featured');
     if (medImg) {
@@ -181,12 +211,12 @@ Utils.getMapItemHTML = function(m) {
       medImg = {value: decodeURIComponent(medImg)};
       width && (medImg.width = width);
       height && (medImg.height = height);
-      medImg = _.template(tpl.get("imageTemplate"))(medImg);
-      return _.template(tpl.get("mapItemTemplate"))({displayName: m.get('davDisplayName'), value: m.get('_uri'), image: medImg})
+      data.image = _.template(tpl.get("imageTemplate"))(medImg);
+      return _.template(tpl.get("mapItemTemplate"))(data);
     }
   }
   
-  return _.template(tpl.get("resourceTemplate"))({displayName: m.get('davDisplayName'), value: m.get('_uri')});
+  return _.template(tpl.get("mapItemTemplate"))(data);
 }
 
 Utils.collectionToGeoJSON = function(model, metadata) {
@@ -208,6 +238,9 @@ Utils.modelToGeoJSON = function(model, metadata) {
   var coords, area;
   if (isShape) {
     coords = model.get('shapeJson');
+    if (!coords)
+      return null;
+    
     area = model.get('area');
   }
   else {
@@ -218,8 +251,6 @@ Utils.modelToGeoJSON = function(model, metadata) {
     coords = [lon, model.get('latitude')];  
   }
   
-  if (!coords)
-    return null;
     
   var type = Utils.getShapeType(coords);
   if (metadata) {
@@ -392,4 +423,35 @@ Utils.getFormattedDate = function(time) {
     day_diff == 1 && "Yesterday" ||
     day_diff < 7 && day_diff + " days ago" ||
     day_diff < 31 && Math.ceil( day_diff / 7 ) + " weeks ago";
- }
+}
+
+Utils.isPropVisible = function(res, prop) {
+  if (prop['http://www.hudsonfog.com/voc/system/fog/Property/avoidDisplaying'])
+    return false;
+  
+  var userRole = Lablz.currentUser ? Lablz.currentUser.role || 'contact' : 'guest';
+  if (userRole == 'admin')
+    return true;
+  
+  var ar = prop['http://www.hudsonfog.com/voc/system/fog/Property/allowRoles'];
+  if (ar) {
+    if (userRole == 'guest')
+      return false;
+    
+    var roles = ar.split(",");
+    for (var i = 0; i < roles.length; i++) {
+      var r = roles[i].trim();
+      if (r == 'admin')
+        return false;
+      else if (r == 'siteOwner')
+        return userRole == 'siteOwner';
+      else {
+        // TODO: implement this
+        
+        return false;
+      }
+    }
+  }
+  
+  return true;
+}

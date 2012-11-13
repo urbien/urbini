@@ -36,7 +36,6 @@ Lablz.ResourceView = Backbone.View.extend({
     _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
     this.propRowTemplate = _.template(Lablz.Templates.get('propRowTemplate'));
     this.model.on('change', this.render, this);
-    Lablz.Events.on('aroundMe', this.getAroundMe);
     return this;
   },
   events: {
@@ -70,23 +69,16 @@ Lablz.ResourceView = Backbone.View.extend({
         continue;
       if (p == 'davDisplayName')
         continue;
-      if (prop.avoidDisplaying)
+      if (!Utils.isPropVisible(json, prop))
         continue;
-      
-      var propTemplate = Lablz.templates[prop.type];
-      if (propTemplate) {
-        json[p] = json[p].displayName ? json[p] : {value: json[p]};
-        json[p] = _.template(Lablz.Templates.get(propTemplate))(json[p]);
-      }
 
-      html += this.propRowTemplate({name: prop.label, value: json[p]});
+      json[p] = Utils.makeProp(prop, json[p]);
+      html += this.propRowTemplate({name: prop.label || prop.displayName, value: json[p]});
     }
     
     var j = {"props": json};
     this.$el.html(html);
     var self = this;
-//    if (this.model.isA("Locatable") || this.model.isA("Shape"))
-//      this.fetchMap();
 
     this.rendered = true;
     return this;
@@ -148,14 +140,15 @@ Lablz.MapView = Backbone.View.extend({
     
     var pMap = Utils.getHashParams();
     var poi = pMap['-item'];
+    var isMe = poi == 'me';
     var latLon; 
     if (poi) {
       coords = [pMap.longitude, pMap.latitude];
       center = [coords[1], coords[0]];
       poi = Utils.getBasicGeoJSON('Point', coords);
-      if (poi == 'me') {
+      if (isMe) {
         poi.properties.name = 'Your location';
-        poi.properties.html = '<a href="' + Lablz.pageRoot + '#profile">You are here</a>';
+        poi.properties.html = '<a href="' + Lablz.pageRoot + '#view/profile">You are here</a>';
       }
     }
       
@@ -207,6 +200,8 @@ Lablz.ListPage = Backbone.View.extend({
     _.bindAll(this, 'render', 'tap', 'showMapButton', 'nextPage', 'click');
     Lablz.Events.on("mapReady", this.showMapButton);
     this.template = _.template(Lablz.Templates.get(this.template));
+//    if (this.model.isA("Locatable") || this.model.isA("Shape"))
+//      this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
   },
   events: {
     'tap': 'tap',
@@ -244,9 +239,11 @@ Lablz.ListPage = Backbone.View.extend({
     
     this.listView = new Lablz.ResourceListView({el: $('ul', this.el), model: this.model});
     this.listView.render();
+//    if (this.mapView)
     if (this.model.isA("Locatable") || this.model.isA("Shape")) {
       this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
-      this.mapView.render();
+      var self = this;
+      setTimeout(self.mapView.render, 100);
     }
     
 //    this.header.$el.trigger('create');    
@@ -314,16 +311,11 @@ Lablz.ResourceListView = Backbone.View.extend({
   page: 1,
   changedViews: [],
   initialize:function () {
-    _.bindAll(this, 'render', 'fetchMap', 'tap', 'swipe', 'checkScroll', 'getNextPage', 'renderMany', 'renderOne', 'refresh', 'changed'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'render', 'tap', 'swipe', 'checkScroll', 'getNextPage', 'renderMany', 'renderOne', 'refresh', 'changed'); // fixes loss of context for 'this' within methods
     Lablz.Events.on('nextPage', this.getNextPage);
     this.model.on('refresh', this.refresh, this);
     this.model.on('add', this.renderOne, this);
     this.model.on('reset', this.render, this);
-//      this.$el.on('create', this.refresh);
-    var self = this;
-    if (this.model.isA("Locatable") || this.model.isA("Shape"))
-      this.fetchMap();
-    
     return this;
   },
   getNextPage: function() {
@@ -355,26 +347,9 @@ Lablz.ResourceListView = Backbone.View.extend({
   },
   refresh: function() {
     var self = this;
-//      _.forEach(this.changedViews, function(view) {
-//        view.unbind();
-//        view.remove();
-//        view.render();
-//        view = new Lablz.ResourceListItemView({model:view.model});
-//        view.render();
-//        self.$el.append(view.render().el);
-//      });
-    
     this.$el.listview();
     this.$el.listview('refresh');
     this.$el.parentNode && this.$el.parentNode.page();
-    
-//      e ? this.$el.listview('refresh') : this.$el.trigger('create');
-//      var self = this;
-//      setTimeout(function() {self.$el.listview()}, 0);
-//      this.$el.trigger('create');
-//      this.$el.listview('refresh');
-//      this.$el.page();
-//      this.$el.html().page();
   },
   changed: function(view) {
     this.changedViews.push(view);
@@ -406,25 +381,9 @@ Lablz.ResourceListView = Backbone.View.extend({
     console.log("render listView");
 		this.renderMany(this.model.models, true);
 		e && this.refresh(e);
-//		if (this.mapView) {
-//		  //setTimeout(this.mapView.render, 100);
-//		  this.mapView.render();
-//		  this.$el.append(this.mapView.$el);
-//		}
 
     this.rendered = true;
 		return this;
-  },
-  fetchMap: function() {
-//      this.mapModel = new Lablz.MapModel({model: this.model});
-//      mapView = new Lablz.MapView({model: this.mapModel});
-//    this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
-//      this.mapModel.fetch({success: 
-//        function() {
-//          $('body').append($(mapView.render().el));
-//        }
-//      });
-    return this;
   }
 });
 
@@ -491,22 +450,59 @@ Lablz.MapItButton = Backbone.View.extend({
 Lablz.AroundMeButton = Backbone.View.extend({
   template: 'aroundMeButtonTemplate',
   events: {
-    'click #aroundMe': 'aroundMe'
+    'click #aroundMe': 'getAroundMe'
   },
   initialize: function(options) {
-    _.bindAll(this, 'render', 'aroundMe');
+    _.bindAll(this, 'render', 'getAroundMe');
     this.template = _.template(Lablz.Templates.get(this.template));
     return this;
   },
-  aroundMe: function(e) {
-//    console.log("clicked aroundMe button");
-//    Lablz.Events.trigger("aroundMe", this.model);
-    this.model.trigger('aroundMe');
-    return this;
-  },
+//  aroundMe: function(e) {
+////    console.log("clicked aroundMe button");
+////    Lablz.Events.trigger("aroundMe", this.model);
+//    this.model.trigger('aroundMe');
+//    return this;
+//  },
   render: function() {
     this.$el.html(this.template());
     return this;
+  },
+  getAroundMe : function() {
+    if (!navigator.geolocation) {
+      alert("Sorry, your browser does not support geolocation services.");
+      return;
+    }
+      
+    var model = this.model instanceof Backbone.Collection ? this.model.model : this.model.constructor;
+    var iFaces = model.interfaces;
+    if (!_.contains(iFaces, 'Locatable'))
+      return;
+    
+//    if (!props.distance || !props.latitude || !props.longitude)
+//      return;
+    
+    var self = this;
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        return self.fetchAroundPosition(position.coords);
+      },
+      function(error) {
+        var lastLocTime = Lablz.userLocation.timestamp;
+        if (lastLocTime && new Date().getTime() - lastLocTime < 1000)
+          self.fetchAroundPosition(Lablz.userLocation.location);
+        else
+          Lablz.locationError(error);
+      }
+    );
+  },
+  fetchAroundPosition : function(coords, item) {
+    var model = this.model instanceof Backbone.Collection ? this.model.model : this.model.constructor
+    Lablz.userLocation = {
+      location: coords,
+      timestamp: new Date().getTime()
+    };
+    
+    Backbone.history.navigate(model.shortName + "?$orderBy=distance&$asc=1&latitude=" + coords.latitude + "&longitude=" + coords.longitude + '&-item=' + (item || 'me'), {trigger: true});
   }
 });
 

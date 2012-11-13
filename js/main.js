@@ -94,10 +94,10 @@ var App = Backbone.Router.extend({
     var uri = decodeURIComponent(params[0]);
     if (uri == 'profile') {
       var p = params.length > 1 ? params[1] : '';
-      if (Lablz.userUri)
-        view(Lablz.userUri + "?" + p);
+      if (Lablz.currentUser)
+        this.view(encodeURIComponent(Lablz.currentUser._uri) + "?" + p);
       else
-        window.location.href = Lablz.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + encodeURIComponent(window.location.href) + "&" + p;
+        window.location.replace(Lablz.serverName + "/register/user-login.html?errMsg=Please+login&returnUri=" + encodeURIComponent(window.location.href) + "&" + p);
       
       return;
     }
@@ -223,7 +223,7 @@ function init() {
   
   Lablz.Templates.loadTemplates();
   Lablz.fetchModels(initModels, function() {
-    Lablz.updateModels(Lablz.startApp, error);
+    Lablz.updateTables(Lablz.startApp, error);
 //    var outOfDateModels = Lablz.loadAndUpdateModels();
 //    Lablz.indexedDB.open(null, Lablz.startApp, error);
   });

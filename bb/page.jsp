@@ -12,20 +12,24 @@
   <script src="js/jqm-config.js"></script>
   <script src="lib/jquery.mobile-1.2.0.js"></script>
   <script src="lib/underscore.js"></script>
-  <script> 
+  <!--script> 
    _.templateSettings = {
           interpolate : /\{\{([\s\S]+?)\}\}/g
      };
-  </script>
+  </script-->
   
-  <!-- script>
-  replaced with solution from here: http://stackoverflow.com/questions/10597480/boolean-checks-in-underscore-templates   
+  <script>
+  //replaced with solution from here: http://stackoverflow.com/questions/10597480/boolean-checks-in-underscore-templates   
+//  _.templateSettings = {
+//          evaluate:    /\{\{(.+?)\}\}/g,          
+//          interpolate : /\{\{([\s\S]+?)\}\}/g,
+//          escape: /\{\{-(.+?)\}\}/g
+//      };
   _.templateSettings = {
-          evaluate:    /\{\{(.+?)\}\}/g,          
-          interpolate : /\{\{([\s\S]+?)\}\}/g,
-          escape: /\{\{-(.+?)\}\}/g
-      };
-  </script -->
+      evaluate:    /\{\{(.+?)\}\}/g,
+      interpolate: /\{\{=(.+?)\}\}/g
+  };
+  </script>
   <script src="lib/backbone.js"></script>
   <script src="lib/IndexedDBShim.min.js"></script>
   <!-- LEAFLET -->
