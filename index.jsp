@@ -34,6 +34,10 @@
     <span>{{ value }}</span>
 </script>
 
+<script type="text/template" id="emailTemplate">
+    <a href="mailto:{{ value }}">{{ value }}</a>
+</script>
+
 <script type="text/template" id="dateTemplate">
     <span>{{ Utils.getFormattedDate(value) }}</span>
 </script>
