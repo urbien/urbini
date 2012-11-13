@@ -21,8 +21,8 @@
 	  cursor: text;
 	  font-size: 13px;
 	  height: 20px;
-	  top: 3px;
-	  left: 3px;
+	  top: 4px;
+	  left: 4px;
 	  line-height: 20px;
 	  padding: 4px;
 	  position: absolute;

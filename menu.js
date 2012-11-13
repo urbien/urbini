@@ -1958,32 +1958,37 @@ var ListBoxesHandler = {
     var scXY = getScrollXY();
     var wndSize = getWindowSize();
     var x, y;
-
+  //  debugger;
+    var wrapperDim = getWrapperCoords();
+    // 1. edit list
     if (this._isEditList) {
-      var leftEdge = findPosX(parent) + scXY[0];
-      x = findPosX(hotspot) - this.panelBlock.clientWidth;
-      y = findPosY(hotspot);
+      var leftEdge = findPosX(parent) + scXY[0] - wrapperDim.left;
+      var rightEdge = leftEdge + wrapperDim.width;
+      x = findPosX(hotspot) + 20 - wrapperDim.left;
+      y = findPosY(hotspot) - this.panelBlock.offsetHeight / 2;
       var pageHeight = wndSize[1] + scXY[1];
-      
-      if (pageHeight > y + this.panelBlock.clientHeight + 30) // show under item
-        y += 30;
-      else 
-        if (y - this.panelBlock.clientHeight - 5 > 0) // flip
-          y -= this.panelBlock.clientHeight + 5;
-        else { // prevent showing over page top edge
+ 
+      // show abow or bellow of hotspot
+      if (x > rightEdge - this.panelBlock.offsetWidth) {
+        x -= this.curParamRow.offsetWidth;
+        if (pageHeight > y + this.panelBlock.offsetHeight + 30) // show under item
+          y += this.panelBlock.offsetHeight / 2 + 30;
+        else if (y - this.panelBlock.offsetHeight - 15 > 0) // flip
+            y -= this.panelBlock.offsetHeight / 2 + 15;
+        else  // prevent showing over page top edge
           y = 0;
-          x -= this.curParamRow.clientWidth;
-        }
+      }
       
       // prevet showing more left than page left edge
       if (x < leftEdge) 
-        x = leftEdge;
+        x = leftEdge + 20;
     }
+    // 2. sift (right side filter)
     else if (this._isFtsSift || this._isOneParamSelection) {
       hotspot = (this._isOneParamSelection) ? DataEntry.getHotspot() : hotspot;
       var hotspotDim = getElementCoords(hotspot, null);
-
-      x = hotspotDim.left + hotspotDim.width + 5;
+      
+      x = hotspotDim.left + hotspotDim.width + 5 - wrapperDim.left;
       y = Math.max(hotspotDim.top - this.optionsPanel.clientHeight / 2, scXY[1] + 5);
       var bottomEdge = wndSize[1] + scXY[1];
   
@@ -1991,6 +1996,7 @@ var ListBoxesHandler = {
         y = Math.max(bottomEdge - this.optionsPanel.clientHeight, scXY[1]) - 5;
     }
 
+    // 3. common code for both cases
     // insure to show on screen //TODO: make it more generic
     var pos = getElemInsideScreenPosition(x, y, this.optionsPanel);
     // reposit parent dialog
