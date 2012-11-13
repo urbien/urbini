@@ -33,7 +33,7 @@ Lablz.Events.defaultClickHandler = function(e) {
 // Views
 Lablz.ResourceView = Backbone.View.extend({
   initialize: function(options) {
-    _.bindAll(this, 'render', 'tap', 'fetchMap'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
     this.propRowTemplate = _.template(Lablz.Templates.get('propRowTemplate'));
     this.model.on('change', this.render, this);
     Lablz.Events.on('aroundMe', this.getAroundMe);
@@ -85,22 +85,12 @@ Lablz.ResourceView = Backbone.View.extend({
     var j = {"props": json};
     this.$el.html(html);
     var self = this;
-    if (this.model.isA("Locatable") || this.model.isA("Shape"))
-      this.fetchMap();
+//    if (this.model.isA("Locatable") || this.model.isA("Shape"))
+//      this.fetchMap();
 
     this.rendered = true;
     return this;
   },
-  fetchMap: function() {
-//    this.mapModel = new Lablz.MapModel({model: this.model});
-//    mapView = new Lablz.MapView({model: this.mapModel});
-//    this.mapModel.fetch({success: 
-//      function() {
-//        $('body').append($(mapView.render().el));
-//        mapView.render();
-//      }
-//    });
-  }
 });
 
 Lablz.MapView = Backbone.View.extend({
@@ -150,6 +140,9 @@ Lablz.MapView = Backbone.View.extend({
     
     var metadata = {};
     var gj = Utils.collectionToGeoJSON(this.model, metadata);
+    if (!gj || !_.size(gj))
+      return;
+    
     var bbox = metadata.bbox;
     var center = Utils.getCenterLatLon(bbox);
     
@@ -168,11 +161,9 @@ Lablz.MapView = Backbone.View.extend({
       
 //    this.$el.html(this.template());
 
-//    var frag = document.createDocumentFragment();
     var div = document.createElement('div');
     div.className = 'map';
     div.id = 'map';
-    div.innerHTML = '<h2>HELLLLLLLLLLLLLLLLLLLLO</h2>';
 
     var map = new Lablz.Leaflet(div);
     map.addMap(Lablz.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);    
@@ -185,18 +176,12 @@ Lablz.MapView = Backbone.View.extend({
     var dName = self.model.displayName;
     dName = dName.endsWith('s') ? dName : dName + 's';
     var basicInfo = map.addBasicMapInfo(dName);
-    Lablz.Events.trigger('mapReady', this.model);
-//    $('body').append(this.$el);
-    console.log('render map');
-
     var frag = document.createDocumentFragment();
     frag.appendChild(div);
-    this.$el.html(frag);
-//    this.$el.trigger('create');
-//    if (!this.$el.parentNode) 
-//      $('body').append(this.$el);    
-    
-//    setTimeout(function(){self.$el.addClass('map');}, 100);
+    this.$el.append(frag);
+    map.finish();
+    Lablz.Events.trigger('mapReady', this.model);
+    console.log('render map');
     
     return this;
   },
@@ -259,6 +244,10 @@ Lablz.ListPage = Backbone.View.extend({
     
     this.listView = new Lablz.ResourceListView({el: $('ul', this.el), model: this.model});
     this.listView.render();
+    if (this.model.isA("Locatable") || this.model.isA("Shape")) {
+      this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
+      this.mapView.render();
+    }
     
 //    this.header.$el.trigger('create');    
     this.listView.$el.trigger('create');
@@ -417,18 +406,22 @@ Lablz.ResourceListView = Backbone.View.extend({
     console.log("render listView");
 		this.renderMany(this.model.models, true);
 		e && this.refresh(e);
-		
+//		if (this.mapView) {
+//		  //setTimeout(this.mapView.render, 100);
+//		  this.mapView.render();
+//		  this.$el.append(this.mapView.$el);
+//		}
+
     this.rendered = true;
 		return this;
   },
   fetchMap: function() {
 //      this.mapModel = new Lablz.MapModel({model: this.model});
 //      mapView = new Lablz.MapView({model: this.mapModel});
-    this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder')});
+//    this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
 //      this.mapModel.fetch({success: 
 //        function() {
 //          $('body').append($(mapView.render().el));
-    setTimeout(this.mapView.render, 100);
 //        }
 //      });
     return this;
@@ -485,7 +478,7 @@ Lablz.MapItButton = Backbone.View.extend({
     return this;
   },
   render: function(options) {
-    if (options.append)
+    if (typeof options !== 'undefined' && options.append)
       this.$el.html(this.$el.html() + this.template());
     else
       this.$el.html(this.template());
