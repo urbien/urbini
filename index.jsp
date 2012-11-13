@@ -3,7 +3,7 @@
 <script type="text/template" id="resource-list">
   <div id="headerDiv"></div>
   <!--div id="map" data-role="none"></div-->
-  <div id="mapHolder" height="200px" width="100%" data-role="none"></div>
+  <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c">
     </ul>
@@ -19,6 +19,7 @@
   <div id="headerDiv"></div>
   <div id="resourceView" data-role="content">
     <div align="center"><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}"></img></div> 
+    <!-- div align="center"><img align="middle" src="{{ typeof mediumImage != 'undefined' ? (mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage) : (typeof featured == 'undefined' ? 'icons/blank.png' : (featured.indexOf('Image/') == 0 ? Lablz.serverName + featured.slice(5) : Lablz.serverName + featured)) }}"></img></div --> 
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true"></ul>
     <!--ul id="sidebar" data-role="listview" class="ui-listview" data-inset="true" data-theme="c">
     </ul -->
@@ -53,11 +54,11 @@
 </script>
 
 <script type="text/template" id="resourceTemplate">
-  <span><a href="{{ Lablz.serverName + '/bb#view/' + encodeURIComponent(value) }}">{{ typeof displayName == 'undefined' ? value : displayName }}</a></span>
+  <span><a href="{{ Lablz.pageRoot + '#view/' + encodeURIComponent(value) }}">{{ typeof displayName == 'undefined' ? value : displayName }}</a></span>
 </script>
 
 <script type="text/template" id="mapItemTemplate">
-<span><a href="{{ Lablz.serverName + '/bb#view/' + encodeURIComponent(value) }}">{{ typeof displayName == 'undefined' ? value : displayName }} {{ image ? '<br />' + image : '' }} </a></span>
+<span><a href="{{ Lablz.pageRoot + '#view/' + encodeURIComponent(value) }}">{{ typeof displayName == 'undefined' ? value : displayName }} {{ image ? '<br />' + image : '' }} </a></span>
 </script>
 
 <script type="text/template" id="imageTemplate">
@@ -66,7 +67,7 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a href='#view/{{ encodeURIComponent(_uri) }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}" /><h3>{{ davDisplayName }}</h3><p>{{ (typeof latinName == 'undefined') ? '' : latinName }}</p></a>
+  <a href = "{{ Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}" /><h3>{{ davDisplayName }}</h3><p>{{ (typeof latinName == 'undefined') ? '' : latinName }}</p></a>
 </script>
 
 <script type="text/template" id="propRowTemplate">
