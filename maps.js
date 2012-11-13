@@ -181,6 +181,13 @@ Lablz.Leaflet = function(mapDivId) {
 //  initialize: function() {
 //    _.bindAll(this, );
 //  },
+  
+  this.finish = function() {
+    var map = this.map;
+    setTimeout(function() {
+      map.invalidateSize();
+    }, 1);
+  }
   this.getNextColor = function(seed) {
     var hsv = generateColors(1, seed || (this.color ? this.color[0] : 0.7));
     this.color = hsv[0]; 
