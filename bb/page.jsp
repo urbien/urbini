@@ -30,6 +30,7 @@
   <script src="lib/IndexedDBShim.min.js"></script>
   <!-- LEAFLET -->
   <link rel="stylesheet" type="text/css" href="styles/leaflet/leaflet.css" />
+  <link rel="stylesheet" type="text/css" href="styles/leaflet/MarkerCluster.Default.css" />
   <script src="leaflet.js"></script>
   <script src="leaflet.markercluster.js"></script>
   <script src="maps.js"></script>
@@ -37,7 +38,6 @@
   
   <script src="js/utils.js"></script>   
   <script src="js/base.js"></script>   
-  <!--script src="js/models.js"></script-->
   <!-- FETCH MODELS -->
   <script>
     var initModels = ["BasketballCourt","Borough"];

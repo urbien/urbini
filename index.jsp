@@ -1,15 +1,10 @@
 <div>
 <!-- Templates -->
 <script type="text/template" id="resource-list">
-  <div data-role="header" class="ui-header ui-bar-c" role="banner" data-position="fixed">
-    <div id="errMsg"></div>
-    <h1 id="pageTitle">{{ this.model.model.displayName }}</h1> 
-    <!--div id="mapBtnDiv" class="ui-screen-hidden"><a href="#" id="mapIt" data-icon="map" class="back ui-btn-right">Map It</a></div-->
-    <a id="mapIt" target="#" data-icon="map" class="back ui-btn-left">Map It</a>
-    <a id="aroundMe" target="#" class="icon next ui-btn-right">Around Me</a>
-  </div>
+  <div id="headerDiv"></div>
+  <!--div id="map" data-role="none"></div-->
+  <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
-    <div id="listMap" class="map" data-role="none"></div>
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c">
     </ul>
   </div>
@@ -19,17 +14,12 @@
      <a id="nextPage" target="#" class="icon next ui-btn-right">Next</a>
   </div>
 </script>  
+
 <script type="text/template" id="resource">
-  <div data-role="header"  class="ui-header ui-bar-c" role="banner" data-position="fixed">
-    <div id="errMsg"></div>
-    <a href="#" data-icon="back" class="back ui-btn-left">Back</a>
-    <h1 id="pageTitle">{{ davDisplayName }}</h1> 
-    <!--a href="#" id="mapIt" data-icon="map" class="back ui-btn-right ui-screen-hidden">Map It</a-->
-    <a id="aroundMe" target="#" class="icon next ui-btn-right">Around Me</a>
-  </div>
+  <div id="headerDiv"></div>
   <div id="resourceView" data-role="content">
-    <!--div id="resourceMap" class="map"></div-->
     <div align="center"><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}"></img></div> 
+    <!-- div align="center"><img align="middle" src="{{ typeof mediumImage != 'undefined' ? (mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage) : (typeof featured == 'undefined' ? 'icons/blank.png' : (featured.indexOf('Image/') == 0 ? Lablz.serverName + featured.slice(5) : Lablz.serverName + featured)) }}"></img></div --> 
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true"></ul>
     <!--ul id="sidebar" data-role="listview" class="ui-listview" data-inset="true" data-theme="c">
     </ul -->
@@ -40,17 +30,20 @@
   </div>
 </script>  
 
-<script type="text/template" id="mapTemplate">
-  <div id="map"></div>
-</script>
-
 <script type="text/template" id="stringTemplate">
     <span>{{ value }}</span>
 </script>
 
-<script type="text/template" id="dateTemplate">
-    <span>{{ new Date(value / 1000) }}</span>
+<script type="text/template" id="emailTemplate">
+    <a href="mailto:{{ value }}">{{ value }}</a>
 </script>
+
+<script type="text/template" id="dateTemplate">
+    <span>{{ Utils.getFormattedDate(value) }}</span>
+</script>
+<!--script type="text/template" id="dateTemplate">
+    <span>{{ new Date(value / 1000) }}</span>
+</script -->
 
 <script type="text/template" id="intTemplate">
     <span>{{ value }}</span>
@@ -61,15 +54,15 @@
 </script>
 
 <script type="text/template" id="complexDateTemplate">
-  <span>{{ typeof displayName != 'undefined' ? displayName : new Date(value.date / 1000) }}</span>
+  <span>{{ typeof displayName != 'undefined' ? displayName : Utils.getFormattedDate(value) }}</span>
 </script>
 
 <script type="text/template" id="resourceTemplate">
-  <span><a href="{{ Lablz.serverName + '/bb#view/' + encodeURIComponent(value) }}">{{ typeof displayName == 'undefined' ? value : displayName }}</a></span>
+  <span><a href="{{ Lablz.pageRoot + '#view/' + encodeURIComponent(value) }}">{{ typeof displayName == 'undefined' ? value : displayName }}</a></span>
 </script>
 
 <script type="text/template" id="mapItemTemplate">
-<span><a href="{{ Lablz.serverName + '/bb#view/' + encodeURIComponent(value) }}">{{ typeof displayName == 'undefined' ? value : displayName }} {{ image ? '<br />' + image : '' }} </a></span>
+<span><a href="{{ Lablz.pageRoot + '#view/' + encodeURIComponent(value) }}">{{ typeof displayName == 'undefined' ? value : displayName }} {{ image ? '<br />' + image : '' }} </a></span>
 </script>
 
 <script type="text/template" id="imageTemplate">
@@ -78,7 +71,7 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a href='#view/{{ encodeURIComponent(_uri) }}'><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}" /><h3>{{ davDisplayName }}</h3><p>{{ (typeof latinName == 'undefined') ? '' : latinName }}</p></a>
+  <a href = "{{ Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{ typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}" /><h3>{{ davDisplayName }}</h3><p>{{ (typeof latinName == 'undefined') ? '' : latinName }}</p></a>
 </script>
 
 <script type="text/template" id="propRowTemplate">
@@ -94,5 +87,30 @@
 		{{ } }}
 	</div>
 </script-->
+
+<script type="text/template" id="mapItButtonTemplate">
+  <a id="mapIt" target="#" data-role="button" data-icon="map" class="icon next">Map It</a>
+</script>
+
+<script type="text/template" id="mapTemplate">
+  <div id="map" class="map" data-role="none"></div>
+</script>
+
+<script type="text/template" id="backButtonTemplate">
+  <a id="back" target="#" data-role="button" data-icon="back" class="back">Back</a>
+</script>
+
+<script type="text/template" id="aroundMeButtonTemplate">
+  <a id="aroundMe" target="#" data-role="button" class="icon next">Around Me</a>
+</script>
+
+<script type="text/template" id="headerTemplate">
+  <div id="header" data-role="header" class="ui-header ui-bar-c" role="banner" data-position="fixed">
+    <div id="headerLeft"></div>
+    <div id="errMsg"></div>
+    <h1 id="pageTitle">{{ this.pageTitle }}</h1>
+    <div id="headerRight"></div>
+  </div>
+</script>
 
 </div>

@@ -71,8 +71,9 @@ Lablz.getDefaultErrorHandler = function(errorHandler) {
 packages.Resource = Backbone.Model.extend({
   idAttribute: "_uri",
   initialize: function(options) {
-    _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', /*'set',*/ 'updateDB', 'fetch', 'syncFetch', 'asyncFetch'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'getKey', 'parse', 'url', 'validate', 'validateProperty', 'updateDB', 'fetch', 'syncFetch', 'asyncFetch'); // fixes loss of context for 'this' within methods
     this.on('change', this.updateDB);
+    this.on('aroundMe', this.constructor.getAroundMe);
     options._query && (this.urlRoot += "?" + options._query);
   },
   url: function() {
@@ -193,7 +194,8 @@ packages.Resource = Backbone.Model.extend({
       return;
     }
       
-    var iFaces = this.interfaces;
+    var model = this instanceof Backbone.Collection ? this.model : this;
+    var iFaces = model.interfaces;
     if (!_.contains(iFaces, 'Locatable'))
       return;
     
@@ -203,12 +205,12 @@ packages.Resource = Backbone.Model.extend({
     var self = this;
     navigator.geolocation.getCurrentPosition(
       function(position) {
-        return self.fetchAroundPosition(position.coords);
+        return model.fetchAroundPosition(position.coords);
       },
       function(error) {
         var lastLocTime = Lablz.userLocation.timestamp;
         if (lastLocTime && new Date().getTime() - lastLocTime < 1000)
-          fetchAroundPosition(Lablz.userLocation.location);
+          model.fetchAroundPosition(Lablz.userLocation.location);
         else
           Lablz.locationError(error);
       }
@@ -255,10 +257,11 @@ Lablz.ResourceList = Backbone.Collection.extend({
     if (!models && !options.model)
       throw new Error("resource list must be initialized with options.model or an array of models");
     
-    _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'getAroundMe', 'syncFetch', 'asyncFetch'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'getKey', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'syncFetch', 'asyncFetch'); //, 'onAdd'); //, 'fetch'); // fixes loss of context for 'this' within methods
     this.model = options.model || models[0].model;
     this.on('add', this.onAdd, this);
     this.on('reset', this.onReset, this);
+    this.on('aroundMe', this.model.getAroundMe);
 //    this.model = metadata.model;
     this.type = this.model.type;
     this.shortName = this.model.shortName || this.model.shortName;
@@ -269,9 +272,6 @@ Lablz.ResourceList = Backbone.Collection.extend({
     this.queryMap[this.limitParam] = this.perPage;
     
     console.log("init " + this.shortName + " resourceList");
-  },
-  getAroundMe : function() {
-    return this.model.getAroundMe();
   },
   getNextPage: function(options) {
     this.offset += this.perPage;
@@ -1061,3 +1061,22 @@ Lablz.locationError = function(error) {
 }
 
 Lablz.userLocation = {};
+
+Lablz.Templates = { 
+    // Hash of preloaded templates for the app
+    templates: {},
+ 
+    // This implementation should be changed in a production environment:
+    // All the template files should be concatenated in a single file.
+    loadTemplates: function() {
+      var elts = $('script[type="text/template"]');
+      for (var i = 0; i < elts.length; i++) {
+        this.templates[elts[i].id] = elts[i].innerHTML;
+      }
+    },
+ 
+    // Get template by name from hash of preloaded templates
+    get: function(name) {
+      return this.templates[name];
+    } 
+};
