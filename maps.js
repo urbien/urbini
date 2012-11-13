@@ -163,7 +163,7 @@ Lablz.Leaflet = function(mapDivId) {
   this.serverName = null;
   this.map = null;
   this.maxZoom = 17;
-  this.pointOfInterest;
+  this.pointOfInterest = {};
   this.color = null;
   this.shapeJsons = {};
   this.shapeLayers = {};
