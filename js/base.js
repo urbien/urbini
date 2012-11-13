@@ -83,7 +83,7 @@ packages.Resource = Backbone.Model.extend({
     return this.get('_uri');
   },
   parse: function (resp) {
-    if (this.lastFetchOrigin == 'db')
+    if (typeof this.lastFetchOrigin == 'undefined'  ||  this.lastFetchOrigin == 'db')
       return resp;
     
     if (!resp || resp.error)
