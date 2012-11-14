@@ -26,6 +26,9 @@ Utils.getPrimaryKeys = function(model) {
 Utils.getLongUri = function(uri, type, primaryKeys) {
   if (uri.indexOf('http') == 0) {
     // uri is either already of the right form: http://urbien.com/sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000 or of form http://www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
+    if (uri.indexOf('?') == -1) // type uri
+      return uri;
+    
     if (uri.indexOf(Lablz.serverName + "/" + Lablz.sqlUri) == 0)
       return uri;
     
@@ -35,6 +38,9 @@ Utils.getLongUri = function(uri, type, primaryKeys) {
   else if (uri.indexOf('/') == -1) {
     // uri is of form Tree?id=32000
     type = typeof type == 'undefined' ? Utils.getTypeUri(uri) : type;
+    if (!type)
+      return null;
+    
     return Utils.getLongUri(type + uri.slice(uri.indexOf('?')), type);
   }
   else if (uri.indexOf('sql') == 0) {
@@ -117,23 +123,31 @@ Utils.isA = function(model, interfaceName) {
 }
 
 Utils.getPackagePath = function(type) {
+  if (type == 'Resource' || type.endsWith('#Resource'))
+    return 'packages';
+  
   var start = "http://www.";
   var path = type.substring(start.length, type.lastIndexOf("/"));
   path = path.replace(".com", "");
   path = path.replace(/\//g, '.');
-  return path;
+  return 'packages.' + path;
 }
 
 Utils.addPackage = function(path) {
   path = path.split(/\./);
   var current = packages;
+  path = path[0] == 'packages' ? path.slice(1) : path;
   for (var i = 0; i < path.length; i++) {
     if (!_.has(current, path[i])) {
       var pkg = {};
       current[path[i]] = pkg;
       current = pkg;
     }
+    else
+      current = current[path[i]];
   }
+  
+  return current;
 }
 
 Utils.getShapeType = function(rings) {
@@ -152,10 +166,14 @@ Utils.getShapeType = function(rings) {
   }
 }
 
+Utils.getObjectType = function(o) {
+  return Object.prototype.toString.call(o);
+}
+
 Utils.getDepth = function(arr) {
   var depth = 1;
   for (var i = 0; i < arr.length; i++) {
-    var type = Object.prototype.toString.call(arr[i]);
+    var type = Utils.getObjectType(arr[i]);
     if (type === '[object Array]')
       depth = Math.max(depth, Utils.getDepth(arr[i]) + 1);
     else
@@ -165,6 +183,9 @@ Utils.getDepth = function(arr) {
   return depth;
 }
 
+/**
+ * @return {name: propName, value: propValue}
+ */
 Utils.makeProp = function(prop, val) {
   var cc = prop.colorCoding;
   if (cc) {
@@ -179,7 +200,7 @@ Utils.makeProp = function(prop, val) {
   
   var propTemplate = Lablz.Templates.getPropTemplate(prop);
   val = val.displayName ? val : {value: val};
-  return _.template(Lablz.Templates.get(propTemplate))(val);
+  return {name: prop.label || prop.displayName, value: _.template(Lablz.Templates.get(propTemplate))(val)};
 }
 
 Utils.getColorCoding = function(cc, val) {
@@ -201,8 +222,8 @@ Utils.getColorCoding = function(cc, val) {
   return null;
 }
 
-Utils.getMapItemHTML = function(m) {
-  var tpl = Lablz.Templates;
+Utils.getGridCols = function(model) {
+  var m = model;
   var mConstructor = m.constructor;
   var cols = mConstructor.gridCols;
   cols = cols && cols.split(',');
@@ -216,16 +237,25 @@ Utils.getMapItemHTML = function(m) {
       if (!val)
         return;
       
-      val = Utils.makeProp(prop, val);
+      var nameVal = Utils.makeProp(prop, val);
+      rows[nameVal.name] = nameVal.value;
       if (prop.resourceLink)
-        resourceLink = val;
-      else
-        rows[col] = val;
+        rows[nameVal.name].resourceLink = true;
+//        resourceLink = nameVal.value;
+//      else
     });
-  }
+  }  
+  
+  return rows;
+}
 
-  resourceLink = resourceLink || m.get('davDisplayName');
-  var data = {resourceLink: resourceLink, uri: m.get('_uri'), rows: rows};
+Utils.getMapItemHTML = function(model) {
+  var tpl = Lablz.Templates;
+  var m = model;
+  var grid = Utils.getGridCols(m);
+
+  var resourceLink = _.filter(grid, function(item) {item.resourceLink}) || m.get('davDisplayName');
+  var data = {resourceLink: resourceLink, uri: m.get('_uri'), rows: grid};
   
   if (m.isA("ImageResource")) {
     var medImg = m.get('mediumImage') || m.get('featured');
@@ -241,7 +271,7 @@ Utils.getMapItemHTML = function(m) {
       medImg = {value: decodeURIComponent(medImg)};
       width && (medImg.width = width);
       height && (medImg.height = height);
-      data.image = _.template(tpl.get("imageTemplate"))(medImg);
+      data.image = _.template(tpl.get("imagePT"))(medImg);
       return _.template(tpl.get("mapItemTemplate"))(data);
     }
   }
@@ -345,7 +375,7 @@ Utils.wrap = function(object, method, wrapper) {
 Utils.UArray = function() {};
 Utils.UArray.prototype.length = 0;
 (function() {
-  var methods = ['push', 'pop', 'shift', 'unshift', 'slice', 'splice', 'join'];
+  var methods = ['push', 'pop', 'shift', 'unshift', 'slice', 'splice', 'join', 'concat', 'clone'];
   for (var i = 0; i < methods.length; i++) { 
     (function(name) {
       Utils.UArray.prototype[name] = function() {
@@ -354,6 +384,31 @@ Utils.UArray.prototype.length = 0;
     })(methods[i]);
   }
 })();
+
+Utils.wrap(Utils.UArray, 'concat',
+  function(original, item) {
+    var type = Object.prototype.toString.call(item);
+    if (type.indexOf('Array') == -1)
+      this.push(item);
+    else {
+      var self = this;
+      _.each(item, function(i) {self.push(i);});
+    }
+  }
+);
+
+Utils.union = function(o1, o2) {
+  var type1 = Utils.getObjectType(o1);
+  var type2 = Utils.getObjectType(o2);
+    
+  var c = type1.indexOf('Array') == -1 && !(o1 instanceof Utils.UArray) ? [c] : o1.slice();    
+  if (type2.indexOf('Array') == -1 && !(o2 instanceof Utils.UArray))
+    return c.push(o2);
+  
+  var self = this;
+  _.each(o2, function(i) {c.push(i);});
+  return c;
+}
 
 Utils.wrap(Utils.UArray, 'push',
   function(original, item) {

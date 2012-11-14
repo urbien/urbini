@@ -47,7 +47,6 @@ Lablz.ResourceView = Backbone.View.extend({
   render:function (eventName) {
     console.log("render resource");
     var type = this.model.type;
-//    var path = Utils.getPackagePath(type);
     var meta = this.model.__proto__.constructor.properties;
     meta = meta || this.model.properties;
     if (!meta)
@@ -73,7 +72,7 @@ Lablz.ResourceView = Backbone.View.extend({
         continue;
 
       json[p] = Utils.makeProp(prop, json[p]);
-      html += this.propRowTemplate({name: prop.label || prop.displayName, value: json[p]});
+      html += this.propRowTemplate(json[p]);
     }
     
     var j = {"props": json};
@@ -159,7 +158,13 @@ Lablz.MapView = Backbone.View.extend({
     div.id = 'map';
 
     var map = new Lablz.Leaflet(div);
-    map.addMap(Lablz.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);    
+    map.addMap(Lablz.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);
+//        , {'load': function() {
+//      Lablz.Events.trigger('mapReady', self.model);
+//      self.$el.append(frag);
+//      console.log('render map');      
+//    }});
+
     var clusterStyle = {singleMarkerMode: true, doScale: false, showCount: true, doSpiderfy: false};
     var style = {doCluster: true, highlight: true, zoom: false};
     var name = self.model.shortName;
@@ -171,11 +176,10 @@ Lablz.MapView = Backbone.View.extend({
     var basicInfo = map.addBasicMapInfo(dName);
     var frag = document.createDocumentFragment();
     frag.appendChild(div);
-    this.$el.append(frag);
     map.finish();
-    Lablz.Events.trigger('mapReady', this.model);
-    console.log('render map');
     
+    Lablz.Events.trigger('mapReady', self.model);
+    self.$el.append(frag);
     return this;
   },
 

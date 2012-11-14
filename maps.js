@@ -944,16 +944,21 @@ Lablz.Leaflet = function(mapDivId) {
       this.map.fitBounds(mapBounds);
   };
 
-  this.addMap = function(apiKey, settings, pointOfInterest) {
+  this.addMap = function(apiKey, settings, pointOfInterest, events) {
     this.maxZoom = settings.maxZoom || this.maxZoom;
     var cloudmadeUrl = 'http://{s}.tile.cloudmade.com/' + apiKey + '/' + (settings.styleId || this.defaultStyleId) + '/' + '256/{z}/{x}/{y}.png';
     var cloudmadeAttribution = 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2011 CloudMade'
     var cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: this.maxZoom, attribution: cloudmadeAttribution});
-    var mapSettings = {center: settings.center, zoom: pointOfInterest ? 10 : 13, maxZoom: this.maxZoom, layers: [cloudmade]};
+    var mapSettings = {center: settings.center, zoom: pointOfInterest ? 10 : 7, maxZoom: this.maxZoom, layers: [cloudmade]};
 //    if (settings.bounds)
 //      mapSettings.maxBounds = settings.bounds;
       
     this.map = new L.Map(this.mapDivId || 'map', mapSettings);
+//    if (events) {
+//      for (var e in events) {
+//        this.map.on('load', function(){console.log('hello')});
+//      }
+//    }
       
     if (!pointOfInterest)
       return;
