@@ -73,7 +73,7 @@ Lablz.ResourceView = Backbone.View.extend({
         groupNameDisplayed = false;
         for (var j=0; j<props.length; j++) {
           var p = props[j].trim();
-          if (!_.has(json, p) || meta["backLink"])
+          if (!_.has(json, p) || _.contains(backlinks, p))
             continue;
           var prop = meta[p];
           if (!prop) {
@@ -100,7 +100,7 @@ Lablz.ResourceView = Backbone.View.extend({
     }
     groupNameDisplayed = false;
     for (var p in json) {
-      if (!_.has(json, p) || (displayedProps  &&  _.contains(displayedProps, p)))
+      if (!_.has(json, p) || (displayedProps  &&  _.contains(displayedProps, p)) ||  _.contains(backlinks, p))
         continue;
       
       var prop = meta[p];
@@ -117,7 +117,7 @@ Lablz.ResourceView = Backbone.View.extend({
         continue;
 
       if (displayedProps.length  &&  !groupNameDisplayed) {
-        html += '<li data-role="collapsible" data-content-theme="c"><h2>Others</h2><ul data-role="listview">'; 
+        html += '<li data-role="collapsible" data-content-theme="c" style="padding:0;border:0;border-collapse:collapse"><h2>Others</h2><ul data-role="listview">'; 
         groupNameDisplayed = true;
       }
       json[p] = Utils.makeProp(prop, json[p]);
