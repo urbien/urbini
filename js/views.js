@@ -35,6 +35,7 @@ Lablz.ResourceView = Backbone.View.extend({
   initialize: function(options) {
     _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
     this.propRowTemplate = _.template(Lablz.Templates.get('propRowTemplate'));
+    this.propGroupsDividerTemplate = _.template(Lablz.Templates.get('propGroupsDividerTemplate'));
     this.model.on('change', this.render, this);
     return this;
   },
@@ -53,10 +54,53 @@ Lablz.ResourceView = Backbone.View.extend({
     if (!meta)
       return this;
     
+    var list = _.toArray(meta);
+    var propGroups = Utils.getPropertiesWith(list, "propertyGroupList");
+    var backlinks = Utils.getPropertiesWith(list, "backLink");
+    var backlinksWithCount = backlinks ? Utils.getPropertiesWith(backlinks, "count") : null;
+    
     var html = "";
     var json = this.model.toJSON();
+
+    var displayedProps = [];
+    var idx = 0;
+    var groupNameDisplayed;
+    if (propGroups) {
+      for (var i=0; i<propGroups.length; i++) {
+        var grMeta = propGroups[i];
+        var pgName = grMeta["displayName"];
+        var props = grMeta["propertyGroupList"].split(",");
+        groupNameDisplayed = false;
+        for (var j=0; j<props.length; j++) {
+          var p = props[j].trim();
+          if (!_.has(json, p) || meta["backLink"])
+            continue;
+          var prop = meta[p];
+          if (!prop) {
+            delete json[p];
+            continue;
+          }
+                
+          if (p.charAt(0) == '_')
+            continue;
+          if (p == 'davDisplayName')
+            continue;
+          if (!Utils.isPropVisible(json, prop))
+            continue;
+
+          displayedProps[idx++] = prop;
+          json[p] = Utils.makeProp(prop, json[p]);
+          if (!groupNameDisplayed) {
+            html += this.propGroupsDividerTemplate({value: pgName});
+            groupNameDisplayed = true;
+          }
+          html += this.propRowTemplate({name: prop.label || prop.displayName, value: json[p]});
+        }
+      }
+    }
+    groupNameDisplayed = false;
     for (var p in json) {
-      if (!_.has(json, p))
+      if (!_.has(json, p) || (displayedProps  &&  _.contains(displayedProps, p)))
         continue;
       
       var prop = meta[p];
@@ -72,9 +116,15 @@ Lablz.ResourceView = Backbone.View.extend({
       if (!Utils.isPropVisible(json, prop))
         continue;
 
+      if (displayedProps.length  &&  !groupNameDisplayed) {
+        html += '<li data-role="collapsible" data-content-theme="c"><h2>Others</h2><ul data-role="listview">'; 
+        groupNameDisplayed = true;
+      }
       json[p] = Utils.makeProp(prop, json[p]);
       html += this.propRowTemplate({name: prop.label || prop.displayName, value: json[p]});
     }
+    if (displayedProps.length  &&  groupNameDisplayed)
+      html += "</ul></li>";
     
     var j = {"props": json};
     this.$el.html(html);
