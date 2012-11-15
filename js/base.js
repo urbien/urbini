@@ -149,6 +149,8 @@ packages.Resource = Backbone.Model.extend({
     setTimeout(function() {
       self.fetch(options);
     }, 0);
+    
+    return this;
   },
   syncFetch: function(options) {
     options = options || {};
@@ -198,8 +200,10 @@ packages.Resource.prototype.fetchModelsForLinkedResources = function() {
     var r = p.range;
     if (r && r.indexOf("http://www.hudsonfog.com/") == 0) {
       var name = r.slice(r.lastIndexOf("/") + 1);
-      if (!Lablz.shortNameToModel[name])
+      if (!Lablz.shortNameToModel[name]) {
+//        Lablz.requiredModels.linkedModels;
         linkedModels.push(name);
+      }
     }
   });
   
@@ -569,7 +573,7 @@ Lablz.initModels = function(models) {
 Lablz.getInit = function() {
   var self = this;
   return function() { 
-    self.__super__.initialize.apply(self.__super__, arguments); 
+    self.__super__.initialize.apply(this, arguments); 
   }
 }
 
@@ -918,6 +922,7 @@ Lablz.indexedDB.getItems = function(options) {
 
 // START /////////// Local Storage //////////// START //
 
+Lablz.requiredModels = {};
 Lablz.changedModels = new Utils.UArray();
 Lablz.newModels = new Utils.UArray();
 Lablz.saveModelsToStorage = function() {
@@ -942,7 +947,7 @@ Lablz.initStoredModels = function(models) {
     if (model.subClassOf != null || model.type.endsWith("#Resource"))
       return true;
     else {
-      Lablz.changedModels.push(model.shortName);
+      Lablz.changedModels.push(model.short);
       return false;
     }
   });
@@ -973,29 +978,25 @@ Lablz.initStoredModels = function(models) {
 }
 
 Lablz.loadStoredModels = function(models) {
-  var ttm = Lablz.typeToModel;
+//  var ttm = Lablz.typeToModel;
+  var r = models ? {models: models} : Lablz.requiredModels;
   if (!localStorage) {
-    _.forEach(ttm, function(model, name) {
-      Lablz.newModels.push(name);
+    _.forEach(r.models, function(model) {
+      Lablz.newModels.push(model.shortName);
     });
     
     return; // TODO: use indexedDB
   }
   
-  var r = models ? {models: models} : Lablz.requiredModels;
   var baseDate = r.lastModified;
   var toLoad = [];
   _.each(r.models, function(model) {
-    var d = baseDate || model.lastModified;
-    var uri = model._uri || model;
-    if (!uri)
-      return;
-      
-    uri = Utils.getLongUri(uri);
-    if (!uri)
+    var uri = model.type || model;
+    if (!uri || !(uri = Utils.getLongUri(uri)))
       return;    
     
     var exists = false;
+    var d = baseDate || model.lastModified;
     if (d) {
       var date = (baseDate && model.lastModified) ? Math.max(baseDate, model.lastModified) : d;
       var stored = localStorage.getItem(uri);
@@ -1003,7 +1004,7 @@ Lablz.loadStoredModels = function(models) {
         exists = true;
         stored = JSON.parse(stored);
         var storedDate = stored._lastModified;
-        if (storedDate && storedDate > date) {
+        if (storedDate && storedDate >= date) {
           toLoad.push(stored);
           return;
         }
@@ -1018,33 +1019,6 @@ Lablz.loadStoredModels = function(models) {
     var unloaded = Lablz.initStoredModels(toLoad);
     _.each(unloaded, function (m) {Lablz.changedModels.push(m)});
   }
-
-//  var stored = [];
-//  for (var i = 0; i < localStorage.length; i++) {
-//    var key = localStorage.key(i);
-//    var newM = ttm[key];
-//    if (!newM)
-//      continue;
-//    
-//    var mJson = JSON.parse(localStorage.getItem(key));
-//    var newMJson = Utils.toJSON(newM);
-//    if (!_.isEqual(newMJson, mJson))
-//      saveModel(newM, newMJson);
-//
-//    stored.push(key);
-//  }
-//
-//  var unstored = _.difference(_.keys(ttm), stored);
-//  _.each(unstored, function(type) {
-//    saveModel(ttm[type], Utils.toJSON(ttm[type]), true);
-//  });
-//  
-//  var now = new Date().getTime();
-//  function saveModel(model, modelJson, isNew) {
-//    (isNew ? Lablz.newModels : Lablz.changedModels).push(model);
-//    modelJson.lastModified = now;
-//    localStorage.setItem(model.type, JSON.stringify(modelJson));
-//  }
 }
 
 // END /////////// Local Storage //////////// END //
@@ -1063,11 +1037,13 @@ Lablz.serverName = (function() {
   return baseUri;
 })();
 
-Lablz.fetchModels = function(models, success, error) {
+Lablz.fetchModels = function(models, options) {
   models = models || Utils.union(Lablz.changedModels, Lablz.newModels);
+  var success = options && options.success;
+  var error = options && options.error;
   if (!models.length) {
     if (success)
-      success();
+      success({fetched: 0});
     
     return;
   }
@@ -1096,11 +1072,29 @@ Lablz.fetchModels = function(models, success, error) {
       
       _.extend(packages, p);
       Lablz.initModels();
-      setTimeout(Lablz.saveModelsToStorage, 100);
       if (success)
         success();
+      
+      setTimeout(Lablz.saveModelsToStorage, 0);
+      setTimeout(Lablz.fetchLinkedModels, 0);
     }
   });
+}
+
+Lablz.fetchLinkedModels = function() {
+  var linked = Lablz.requiredModels.linkedModels;
+  if (!linked)
+    return;
+  
+  Lablz.loadStoredModels(linked);
+  var numModels = Lablz.models.length;
+  var success = function() {
+    if (!(Lablz.models.length - numModels))
+      return;
+    
+    Lablz.initModels();
+    Lablz.saveModelsToStorage();
+  }
 }
 
 Lablz.updateTables = function(success, error) {
