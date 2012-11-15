@@ -18,8 +18,8 @@
 <script type="text/template" id="resource">
   <div id="headerDiv"></div>
   <div id="resourceView" data-role="content">
-    <div align="center"><img align="middle" src="{{= typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}"></img></div> 
-    <!-- div align="center"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage) : (typeof featured == 'undefined' ? 'icons/blank.png' : (featured.indexOf('Image/') == 0 ? Lablz.serverName + featured.slice(5) : Lablz.serverName + featured)) }}"></img></div --> 
+    <!-- div align="center"><img align="middle" src="{{= typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}"></img></div --> 
+    <div align="center"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage) : (typeof featured == 'undefined' ? 'icons/blank.png' : (featured.indexOf('Image/') == 0 ? Lablz.serverName + featured.slice(5) : Lablz.serverName + featured)) }}"></img></div> 
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true"></ul>
     <!--ul id="sidebar" data-role="listview" class="ui-listview" data-inset="true" data-theme="c">
     </ul -->
@@ -35,7 +35,7 @@
 </script>
 
 <script type="text/template" id="emailPT">
-  <span><a href="mailto:{{= value }}">{{= value }}</a></span>
+  <a href="mailto:{{= value }}">{{= value }}</a>
 </script>
 
 <script type="text/template" id="UrlPT">
@@ -104,6 +104,10 @@
 
 <script type="text/template" id="propRowTemplate">
    <li>{{= name }}<div style="float: right; font-weight: normal;">{{= value }}</div></li>
+</script>
+
+<script type="text/template" id="propGroupsDividerTemplate">
+   <li data-role="list-divider">{{= value }}</li>
 </script>
 
 <!--script type="text/template" id="viewTemplate">

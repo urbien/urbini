@@ -475,6 +475,11 @@ Utils.getBasicGeoJSON = function(shapeType, coords) {
     }
   };
 };
+Utils.getPropertiesWith = function(list, annotation) {
+  return _.filter(list, function(item) {
+      return item[annotation] ? item : null;
+    });
+},
 
 /// String prototype extensions
 
