@@ -241,20 +241,11 @@ Lablz.startApp = function() {
 //  }
   
   var models = Lablz.requiredModels.models;
-  var main;
-  for (var name in models) {
-    if (!main)
-      main = name;
-    
-    if (models[name].main)
-      break;
-  }
-  
   app = new App();
   Backbone.history.start();
   
   if (!window.location.hash)
-    app.navigate(main, {trigger: true});
+    app.navigate(_.last(models).shortName, {trigger: true});
 };
 
 $(document).ready(function () {
