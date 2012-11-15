@@ -1,4 +1,5 @@
-  $(document).bind("mobileinit", function () {
+// see: http://jquerymobile.com/test/docs/pages/backbone-require.html
+$(document).bind("mobileinit", function () {
       console.log('mobileinit');
       $.mobile.ajaxEnabled = false;
       $.mobile.linkBindingEnabled = false;
