@@ -203,8 +203,11 @@ packages.Resource.prototype.fetchModelsForLinkedResources = function() {
     }
   });
   
-  if (linkedModels.length)
-    Lablz.fetchModels(_.uniq(linkedModels));
+  if (linkedModels.length) {
+    linkedModels = _.uniq(linkedModels);
+    Lablz.loadStoredModels(linkedModels);
+    Lablz.fetchModels();
+  }
 }
 
 
@@ -534,24 +537,32 @@ Backbone.View.prototype.close = function(){
 
 Lablz.models = new Utils.UArray();
 Lablz.models.push(packages.Resource);
-Lablz.shortNameToModel = {};
+Lablz.shortNameToModel = {'Resource' : packages.Resource};
 Lablz.typeToModel = {};
+
+Lablz.initModel = function(m) {
+  if (Lablz.shortNameToModel[m.shortName])
+    return;
+  
+  Lablz.shortNameToModel[m.shortName] = m;
+  Lablz.typeToModel[m.type] = m;
+  m.prototype.parse = packages.Resource.prototype.parse;
+  m.prototype.validate = packages.Resource.prototype.validate;
+  var superProps = m.__super__.constructor.properties;
+  m.properties = superProps ? _.extend(_.clone(superProps), m.myProperties) : _.clone(m.myProperties);
+  var superInterfaces = m.__super__.constructor.interfaces;
+  m.interfaces = superInterfaces ? _.extend(_.clone(superInterfaces), m.myInterfaces) : _.clone(m.myInterfaces);
+  m.prototype.initialize = Lablz.getInit.apply(m);
+};
+
 Lablz.initModels = function(models) {
   models = models || Lablz.models;
   for (var i = 0; i < models.length; i++) {
     var m = models[i];
     if (Lablz.shortNameToModel[m.shortName])
       continue;
-    
-    Lablz.shortNameToModel[m.shortName] = m;
-    Lablz.typeToModel[m.type] = m;
-    m.prototype.parse = packages.Resource.prototype.parse;
-    m.prototype.validate = packages.Resource.prototype.validate;
-    var superProps = m.__super__.constructor.properties;
-    m.properties = superProps ? _.extend(_.clone(superProps), m.myProperties) : _.clone(m.myProperties);
-    var superInterfaces = m.__super__.constructor.interfaces;
-    m.interfaces = superInterfaces ? _.extend(_.clone(superInterfaces), m.myInterfaces) : _.clone(m.myInterfaces);
-    m.prototype.initialize = Lablz.getInit.apply(m);
+
+    Lablz.initModel(m);
   }
 };
 
@@ -675,63 +686,62 @@ Lablz.indexedDB.open = function(options, success, error) {
   };  
 };
 
-Lablz.indexedDB.loadModels = function(success, error) {
-  var models = [];
-  var db = Lablz.indexedDB.db;
-  var mStore = Lablz.indexedDB.modelStoreName;
-  var transaction = db.transaction([mStore], "readonly");
-  var store = transaction.objectStore(mStore);
-  var cursorRequest = store.openCursor();
-  cursorRequest.onsuccess = function(e) {
-    var result = e.target.result;
-    if (result) {
-      models.push(result.value);
-      result.continue();
-      return;
-    }
-    else
-      success && success();
-    
-//    if (true) {
-//      console.log("got models from db");
-//      success && success();
+//Lablz.indexedDB.loadModels = function(success, error) {
+//  var models = [];
+//  var db = Lablz.indexedDB.db;
+//  var mStore = Lablz.indexedDB.modelStoreName;
+//  var transaction = db.transaction([mStore], "readonly");
+//  var store = transaction.objectStore(mStore);
+//  var cursorRequest = store.openCursor();
+//  cursorRequest.onsuccess = function(e) {
+//    var result = e.target.result;
+//    if (result) {
+//      models.push(result.value);
+//      result.continue();
 //      return;
 //    }
+//    else
+//      success && success();
 //    
-//    for (var i = 0; i < models.length; i++) {
-//      var m = models[i];
-//      var pkgPath = Utils.getPackagePath(m.type);
-//      Utils.addPackage(pkgPath);
-//      var superCl = 
-//      Lablz.shortNameToModel[m.shortName] = Backbone.Model.extend(
-//          {
-//            initialize: function() { 
-//              _.bindAll(this, 'parse'); // fixes loss of context for 'this' within methods
-//              eval('packages.' + pkgPath + '.__super__.initialize.apply(this, arguments)');
-////              packages.hudsonfog.voc.commerce.trees.TreeSpecies.__super__.initialize.apply(this, arguments); 
-//            } 
-//          },
-//          m
-//      );
-//    }
-    
-  };
-
-  cursorRequest.onerror = function (e) {
-    error && error(e);
-    
-    Lablz.indexedDB.onerror(e);
-  }
-}
+////    if (true) {
+////      console.log("got models from db");
+////      success && success();
+////      return;
+////    }
+////    
+////    for (var i = 0; i < models.length; i++) {
+////      var m = models[i];
+////      var pkgPath = Utils.getPackagePath(m.type);
+////      Utils.addPackage(pkgPath);
+////      var superCl = 
+////      Lablz.shortNameToModel[m.shortName] = Backbone.Model.extend(
+////          {
+////            initialize: function() { 
+////              _.bindAll(this, 'parse'); // fixes loss of context for 'this' within methods
+////              eval('packages.' + pkgPath + '.__super__.initialize.apply(this, arguments)');
+//////              packages.hudsonfog.voc.commerce.trees.TreeSpecies.__super__.initialize.apply(this, arguments); 
+////            } 
+////          },
+////          m
+////      );
+////    }
+//    
+//  };
+//
+//  cursorRequest.onerror = function (e) {
+//    error && error(e);
+//    
+//    Lablz.indexedDB.onerror(e);
+//  }
+//}
 
 Lablz.indexedDB.updateStores = function() {
   var db = Lablz.indexedDB.db;
-  var models = _.union(Lablz.changedModels, Lablz.newModels);
+  var models = Utils.union(Lablz.changedModels, Lablz.newModels);
   Lablz.changedModels = [];
   Lablz.newModels = [];
   for (var i = 0; i < models.length; i++) {
-    var m = models[i];
-    var name = m.shortName;
+    var name = models[i];
     if (db.objectStoreNames.contains(name))
       db.deleteObjectStore(name);
     
@@ -910,35 +920,131 @@ Lablz.indexedDB.getItems = function(options) {
 
 Lablz.changedModels = new Utils.UArray();
 Lablz.newModels = new Utils.UArray();
-Lablz.loadAndUpdateModels = function() {
+Lablz.saveModelsToStorage = function() {
   if (!localStorage)
     return; // TODO: use indexedDB
   
-  var ttm = Lablz.typeToModel;
-  var stored = [];
-  for (var i = 0; i < localStorage.length; i++) {
-    var key = localStorage.key(i);
-    var newM = ttm[key];
-    if (!newM)
-      continue;
-    
-    var mJson = JSON.parse(localStorage.getItem(key));
-    var newMJson = Utils.toJSON(newM);
-    if (!_.isEqual(newMJson, mJson))
-      saveModel(newM, newMJson);
+  if (!Lablz.models.length)
+    return;
 
-    stored.push(key);
-  }
+  var now = new Date().getTime();
+  _.each(Lablz.models, function(model) {
+    var modelJson = Utils.toJSON(model);
+    modelJson._lastModified = now;
+    modelJson._super = model.__super__.constructor.type;
+    if (!model.type.endsWith('#Resource'))
+      localStorage.setItem(model.type, JSON.stringify(modelJson));
+  });  
+}
 
-  var unstored = _.difference(_.keys(ttm), stored);
-  _.each(unstored, function(type) {
-    saveModel(ttm[type], Utils.toJSON(ttm[type]), true);
+Lablz.initStoredModels = function(models) {
+  var filtered = _.filter(models, function(model) {
+    if (model.subClassOf != null || model.type.endsWith("#Resource"))
+      return true;
+    else {
+      Lablz.changedModels.push(model.shortName);
+      return false;
+    }
   });
   
-  function saveModel(model, modelJson, isNew) {
-    (isNew ? Lablz.newModels : Lablz.changedModels).push(model);
-    localStorage.setItem(model.type, JSON.stringify(modelJson));
+  if (!filtered.length)
+    return models;
+  
+  var unloaded = [];
+  var snm = Lablz.shortNameToModel;
+  _.each(filtered, function(m) {
+    var sUri = m.subClassOf;
+    var sIdx = sUri.lastIndexOf('/');
+    var superName = sIdx == -1 ? sUri : sUri.slice(sIdx + 1);
+    if (!snm[superName]) {
+      unloaded.push(m.shortName);
+      return;
+    }
+    
+    var pkgPath = Utils.getPackagePath(m.type);
+    var sPath = Utils.getPackagePath(sUri);
+    var pkg = Utils.addPackage(pkgPath);
+    var model = pkg[m.shortName] = eval((sPath ? sPath + '.' : '') + superName).extend({}, m);
+//    var model = eval(pkgPath + '.' + m.shortName + " = " + (sPath ? sPath + '.' : '') + superName + '.extend({},' + m + ');');
+    Lablz.initModel(model);
+  });
+  
+  return unloaded;
+}
+
+Lablz.loadStoredModels = function(models) {
+  var ttm = Lablz.typeToModel;
+  if (!localStorage) {
+    _.forEach(ttm, function(model, name) {
+      Lablz.newModels.push(name);
+    });
+    
+    return; // TODO: use indexedDB
   }
+  
+  var r = models ? {models: models} : Lablz.requiredModels;
+  var baseDate = r.lastModified;
+  var toLoad = [];
+  _.each(r.models, function(model) {
+    var d = baseDate || model.lastModified;
+    var uri = model._uri || model;
+    if (!uri)
+      return;
+      
+    uri = Utils.getLongUri(uri);
+    if (!uri)
+      return;    
+    
+    var exists = false;
+    if (d) {
+      var date = (baseDate && model.lastModified) ? Math.max(baseDate, model.lastModified) : d;
+      var stored = localStorage.getItem(uri);
+      if (stored) {
+        exists = true;
+        stored = JSON.parse(stored);
+        var storedDate = stored._lastModified;
+        if (storedDate && storedDate > date) {
+          toLoad.push(stored);
+          return;
+        }
+      }
+    }
+    
+    (exists ? Lablz.changedModels : Lablz.newModels).push(uri.slice(uri.lastIndexOf("/") + 1));
+    return;
+  });
+  
+  if (toLoad.length) {
+    var unloaded = Lablz.initStoredModels(toLoad);
+    _.each(unloaded, function (m) {Lablz.changedModels.push(m)});
+  }
+
+//  var stored = [];
+//  for (var i = 0; i < localStorage.length; i++) {
+//    var key = localStorage.key(i);
+//    var newM = ttm[key];
+//    if (!newM)
+//      continue;
+//    
+//    var mJson = JSON.parse(localStorage.getItem(key));
+//    var newMJson = Utils.toJSON(newM);
+//    if (!_.isEqual(newMJson, mJson))
+//      saveModel(newM, newMJson);
+//
+//    stored.push(key);
+//  }
+//
+//  var unstored = _.difference(_.keys(ttm), stored);
+//  _.each(unstored, function(type) {
+//    saveModel(ttm[type], Utils.toJSON(ttm[type]), true);
+//  });
+//  
+//  var now = new Date().getTime();
+//  function saveModel(model, modelJson, isNew) {
+//    (isNew ? Lablz.newModels : Lablz.changedModels).push(model);
+//    modelJson.lastModified = now;
+//    localStorage.setItem(model.type, JSON.stringify(modelJson));
+//  }
 }
 
 // END /////////// Local Storage //////////// END //
@@ -958,6 +1064,14 @@ Lablz.serverName = (function() {
 })();
 
 Lablz.fetchModels = function(models, success, error) {
+  models = models || Utils.union(Lablz.changedModels, Lablz.newModels);
+  if (!models.length) {
+    if (success)
+      success();
+    
+    return;
+  }
+  
   $.ajax(Lablz.serverName + "/backboneModel?type=" + encodeURIComponent(models.join ? models.join(",") : models), {complete: 
     function(jqXHR, status) {
       if (status != 'success') {
@@ -982,6 +1096,7 @@ Lablz.fetchModels = function(models, success, error) {
       
       _.extend(packages, p);
       Lablz.initModels();
+      setTimeout(Lablz.saveModelsToStorage, 100);
       if (success)
         success();
     }
@@ -990,7 +1105,7 @@ Lablz.fetchModels = function(models, success, error) {
 
 Lablz.updateTables = function(success, error) {
 //  Lablz.checkSysInfo();
-  Lablz.loadAndUpdateModels();
+//  Lablz.loadAndUpdateModels();
   Lablz.indexedDB.paused = true;
   if (Lablz.indexedDB.db)
     Lablz.indexedDB.db.close();
