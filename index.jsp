@@ -85,7 +85,7 @@
   <ul style="list-style-type:none">
     <li><span><a href="{{= (Lablz.pageRoot + '#view/' + encodeURIComponent(uri)) }}"> {{= resourceLink }} </a></span></li>
     {{ _.forEach(rows, function(val, key) { }} 
-      <li>{{= key }}: {{= val }}</li>
+      <li>{{= key }}: {{= val.value }}</li>
     {{ }); }}
     {{ if (typeof image != 'undefined') { }}
     <span><a href="{{= Lablz.pageRoot + '#view/' + encodeURIComponent(uri) }}"> {{= image ? '<br />' + image : '' }} </a></span>

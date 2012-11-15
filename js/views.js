@@ -65,12 +65,12 @@ Lablz.ResourceView = Backbone.View.extend({
     var idx = 0;
     var groupNameDisplayed;
     if (propGroups) {
-      for (var i=0; i<propGroups.length; i++) {
+      for (var i=0; i < propGroups.length; i++) {
         var grMeta = propGroups[i];
         var pgName = grMeta["displayName"];
         var props = grMeta["propertyGroupList"].split(",");
         groupNameDisplayed = false;
-        for (var j=0; j<props.length; j++) {
+        for (var j = 0; j < props.length; j++) {
           var p = props[j].trim();
           if (!_.has(json, p) || _.contains(backlinks, p))
             continue;
@@ -93,13 +93,14 @@ Lablz.ResourceView = Backbone.View.extend({
             html += this.propGroupsDividerTemplate({value: pgName});
             groupNameDisplayed = true;
           }
-          html += this.propRowTemplate({name: prop.label || prop.displayName, value: json[p]});
+          
+          html += this.propRowTemplate(json[p]);
         }
       }
     }
     groupNameDisplayed = false;
     for (var p in json) {
-      if (!_.has(json, p) || (displayedProps  &&  _.contains(displayedProps, p)) ||  _.contains(backlinks, p))
+      if ((displayedProps  &&  _.contains(displayedProps, meta[p])) ||  _.contains(backlinks, p))
         continue;
       
       var prop = meta[p];
@@ -119,6 +120,7 @@ Lablz.ResourceView = Backbone.View.extend({
         html += '<li data-role="collapsible" data-content-theme="c" style="padding:0;border:0;border-collapse:collapse"><h2>Others</h2><ul data-role="listview">'; 
         groupNameDisplayed = true;
       }
+      
       json[p] = Utils.makeProp(prop, json[p]);
       html += this.propRowTemplate(json[p]);
     }

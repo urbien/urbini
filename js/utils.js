@@ -238,7 +238,7 @@ Utils.getGridCols = function(model) {
         return;
       
       var nameVal = Utils.makeProp(prop, val);
-      rows[nameVal.name] = nameVal.value;
+      rows[nameVal.name] = {value: nameVal.value};
       if (prop.resourceLink)
         rows[nameVal.name].resourceLink = true;
 //        resourceLink = nameVal.value;
@@ -254,7 +254,15 @@ Utils.getMapItemHTML = function(model) {
   var m = model;
   var grid = Utils.getGridCols(m);
 
-  var resourceLink = _.filter(grid, function(item) {item.resourceLink}) || m.get('davDisplayName');
+  var resourceLink;
+  for (var row in grid) {
+    if (grid[row].resourceLink) {
+      resourceLink = grid[row].value;
+      delete grid[row];
+    }
+  }
+  
+  resourceLink = resourceLink || m.get('davDisplayName');
   var data = {resourceLink: resourceLink, uri: m.get('_uri'), rows: grid};
   
   if (m.isA("ImageResource")) {
