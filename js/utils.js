@@ -205,6 +205,7 @@ Utils.makeProp = function(prop, val) {
 
 Utils.getColorCoding = function(cc, val) {
 //  getting the color for value. Sample colorCoding annotation: @colorCoding("0-2000 #FF0054; 2000-6000 #c8fd6a; 6001-1000000 #00cc64")
+  val = val.replace(',', '');
   var v = parseFloat(val);
   cc = cc.split(';');
   for (var i = 0; i < cc.length; i++) {
