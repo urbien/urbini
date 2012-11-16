@@ -657,7 +657,7 @@ input.xxs {font-size: 10px; color: &[Alternative_A];;}
 tr.fts td { /*vertical-align: middle;*/ padding: 2px; color: &[SecondaryColorA_5];; }
 tr.ftSearch td { padding: 0px; }
 .desktop_search { width: 300px; }
-.zip_search { width: 150px; }
+.zip_search { width: 160px; }
 
 /** iPhone field : used on desktop too!  **/
 .iphone_field {
@@ -1738,7 +1738,7 @@ table.printFB {
 .login {background-color: transparent; border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-bottom:1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none; font-size:11px}
 .lButton {background: #F0F2F6;border-bottom: 1px solid #104A7B;border-right: 1px solid #104A7B;border-left: 1px solid #AFC4D5;border-top:1px solid #AFC4D5;color:#000066;height:19px;text-decoration:none;cursor: pointer; font-size:11px}
 */
-.userLogin { width: auto !important; max-width: 350px; color: &[SecondaryColorA_3];; border: 2px solid &[PrimaryColor_1];; padding: 10px;}
+.userLogin { width: auto !important; max-width: 350px; color: &[SecondaryColorA_3];; border: 2px solid &[PrimaryColor_1];; padding: 15px;}
 .userLogin .button, #ropLeft .button { display: block; padding: 7px; margin-top: 4px; text-align: left; font-size: 16px; font-weight: normal; color: &[Color];; }
 .userLogin .button img, #ropLeft .button img { float: left; margin-right: 7px; }
 
@@ -1956,7 +1956,14 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 
 .rounded_rect_tbl .input, #register .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input, .false_textarea, .false_empty_field { 
   margin: 0px; padding: 2px; min-height: 22px;
-  color: &[PrimaryColor_4_text];; background-color: &[PrimaryColor_4];; border: 2px solid &[PrimaryColor_1];; -webkit-appearance: none; width: 250px; height: auto;
+  color: &[PrimaryColor_4_text];;
+  background-color: rgba(&[PrimaryColor_1_rgb]; ,0.2);
+  #filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#33&[PrimaryColor_1_ie];,endColorstr=#33&[PrimaryColor_1_ie];);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#33&[PrimaryColor_1_ie];,endColorstr=#33&[PrimaryColor_1_ie];)";
+  border: 2px solid &[PrimaryColor_1];; 
+  -webkit-appearance: none;
+  width: 250px;
+  height: auto;
   border-radius: 3px;
   font-family:Helvetica,arial,sans-serif; font-size: 1em; font-weight: normal; margin-top: 3px;
 }
@@ -2032,7 +2039,7 @@ div .panel_block #dataEntry .iphone_field { margin-left: 10px; }
 /* show options without form */
 .frame, #siteResourceList .options_panel, #siteResourceList .classifier_panel, #siteResourceList .calendar_panel, #pane2 .content, #siteResourceList .widget .frame, 
     #fts-sift .options_panel, #fts-sift .classifier_panel, #fts-sift .calendar_panel, #pane2 .content, #fts-sift .widget .frame,   
-    .oneparamselection .options_panel, .oneparamselection .classifier_panel, .oneparamselection .calendar_panel, .mobile_dlg, .userLogin
+    .oneparamselection .options_panel, .oneparamselection .classifier_panel, .oneparamselection .calendar_panel, .mobile_dlg, .userLogin, .mobile_dlg #register
   { 
   background-color: &[PrimaryColor_1];;
   background-image: url(../images/skin/iphone/pinstripes.png);
