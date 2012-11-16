@@ -195,18 +195,20 @@ packages.Resource = Backbone.Model.extend({
 packages.Resource.properties = _.clone(packages.Resource.myProperties);
 packages.Resource.interfaces = _.clone(packages.Resource.myInterfaces);
 packages.Resource.prototype.fetchModelsForLinkedResources = function() {
-  var linkedModels = [];
+  var linkedModels = new Utils.UArray();
   _.forEach(this.properties, function(p) {
     var r = p.range;
     if (r && r.indexOf("http://www.hudsonfog.com/") == 0) {
       var name = r.slice(r.lastIndexOf("/") + 1);
-      if (!Lablz.shortNameToModel[name]) {
+      if (Lablz.shortNameToModel[name])
+        return;
+      
 //        Lablz.requiredModels.linkedModels;
-        linkedModels.push(name);
-      }
+      linkedModels.push(name);
     }
   });
   
+  linkedModels = _.filter(Lablz.requiredModels.linkedModels, function(model) {return _.contains(linkedModels, model.shortName)});
   if (linkedModels.length) {
     linkedModels = _.uniq(linkedModels);
     Lablz.loadStoredModels(linkedModels);
@@ -988,7 +990,7 @@ Lablz.loadStoredModels = function(models) {
     return; // TODO: use indexedDB
   }
   
-  var baseDate = r.lastModified;
+  var baseDate = r.lastModified || Lablz.requiredModels.lastModified;
   var toLoad = [];
   _.each(r.models, function(model) {
     var uri = model.type || model;
