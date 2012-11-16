@@ -371,9 +371,8 @@ Utils.toJSON = function(obj) {
 
 Utils.wrap = function(object, method, wrapper) {
   var fn = object[method];
-    return object[method] = function() {
-    return wrapper.apply(this, [ fn.bind(this) ].concat(
-    Array.prototype.slice.call(arguments)));
+  return object[method] = function() {
+    return wrapper.apply(this, [ fn.bind(this) ].concat(Array.prototype.slice.call(arguments)));
   };
 };
 
@@ -383,7 +382,7 @@ Utils.wrap = function(object, method, wrapper) {
 Utils.UArray = function() {};
 Utils.UArray.prototype.length = 0;
 (function() {
-  var methods = ['push', 'pop', 'shift', 'unshift', 'slice', 'splice', 'join', 'concat', 'clone'];
+  var methods = ['push', 'pop', 'shift', 'unshift', 'slice', 'splice', 'join', 'clone', 'concat'];
   for (var i = 0; i < methods.length; i++) { 
     (function(name) {
       Utils.UArray.prototype[name] = function() {
@@ -393,7 +392,7 @@ Utils.UArray.prototype.length = 0;
   }
 })();
 
-Utils.wrap(Utils.UArray, 'concat',
+Utils.wrap(Utils.UArray.prototype, 'concat',
   function(original, item) {
     var type = Object.prototype.toString.call(item);
     if (type.indexOf('Array') == -1)
@@ -418,7 +417,7 @@ Utils.union = function(o1, o2) {
   return c;
 }
 
-Utils.wrap(Utils.UArray, 'push',
+Utils.wrap(Utils.UArray.prototype, 'push',
   function(original, item) {
     if (_.contains(this, item))
       return this;
