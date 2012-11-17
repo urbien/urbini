@@ -2715,7 +2715,7 @@ td #corePageContent { min-height: 600px;}
 .mobile_page .section {padding: 0px;}
 .section * { margin: 0px; }
 .section table.c1 td { vertical-align: top; }
-.section table.c1 td.b1, .section table.c1 td.b2 { padding: 10px 15px 15px 15px; }
+.section table.c1 td.b1, .section table.c1 td.b2 { padding: 0px 15px 15px 15px; }
 .mobile_page .section table.c1 td.b1, .mobile_page .section table.c1 td.b2 { padding: 0px; width: 1%;}
 
 .section table.c1 td.bb1, .section table.c1 td.bb2, .section table.c1 td.bb3 { width: 49%; }
