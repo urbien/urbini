@@ -1140,6 +1140,7 @@ Lablz.Templates = {
     templates: {},
     propTemplates: {
       "string": "stringPT",
+      "boolean": "booleanPT",
       "int": "intPT",
       "float": "intPT",
       "double": "intPT",
@@ -1147,6 +1148,7 @@ Lablz.Templates = {
       "http://www.hudsonfog.com/voc/system/primitiveTypes/phone": "telPT",
       "http://www.hudsonfog.com/voc/system/primitiveTypes/mobilePhone": "telPT",
       "http://www.hudsonfog.com/voc/system/fog/Url": "UrlPT",
+      "http://www.hudsonfog.com/voc/system/primitiveTypes/Duration": "complexDatePT",
       "date": "datePT",
       "resource": "resourcePT",
       "http://www.hudsonfog.com/voc/model/company/Money": "moneyPT",

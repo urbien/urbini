@@ -53,6 +53,10 @@
     <span>{{= new Date(value / 1000) }}</span>
 </script -->
 
+<script type="text/template" id="booleanPT">
+  <span>{{= value }}</span>
+</script>
+
 <script type="text/template" id="intPT">
   <span>{{= value }}</span>
 </script>
@@ -67,6 +71,10 @@
 
 <script type="text/template" id="moneyPT">
   <span>{{= value.currency + value.value }}</span>
+</script>
+
+<script type="text/template" id="durationPT">
+  <span>{{= typeof displayName != 'undefined' ? displayName : Utils.getFormattedDate(value) }}</span>
 </script>
 
 <script type="text/template" id="complexDatePT">
