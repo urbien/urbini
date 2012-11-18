@@ -99,7 +99,7 @@
 	            <text text="Password"/>
 	          </label>
 	        </div>
-	        <a style="float: right;" href="register/password-reminder.html"><span style="font-size: 11px;"><text text="Forgot password?" /></span></a>
+	        <a style="float: right;" href="register/password-reminder.html"><span style="font-size: 11px;"><text text="Forgot password?&#160;" /></span></a>
         </td>
       </tr>
       <tr>

@@ -43,11 +43,12 @@ body {
   -webkit-box-shadow: none;
   opacity: 0.1;
 }
-  
-.mobile_dlg .rounded_rect_tbl .input, .mobile_dlg .rounded_rect_tbl .isel, .mobile_dlg .rounded_rect_tbl .num, .mobile_dlg .false_input/*, #register .input*/ { width: 100% !important; border: none; }
-#register table, .userLogin, #register .userLogin input[type=text] { width: 100% !important; max-width: none; }
-#register .input, #-q { text-align: left; height: 29px; }
 
+#register { height: 100%; }  
+.rounded_rect_tbl .input, .rounded_rect_tbl .isel, .rounded_rect_tbl .num, .false_input/*, #register .input*/ { width: 100% !important; border: none; }
+#register .userLogin .input { width: 255px !important; }
+#register .input, #-q { text-align: left; height: 29px; }
+.userLogin { background: none; border: 0px none; }
 .iphone_field { height: 20px; padding-bottom: 10px; }
 .iphone_field input { width: 155px; }
 

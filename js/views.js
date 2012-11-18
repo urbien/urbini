@@ -35,6 +35,7 @@ Lablz.ResourceView = Backbone.View.extend({
   initialize: function(options) {
     _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
     this.propRowTemplate = _.template(Lablz.Templates.get('propRowTemplate'));
+    this.propGroupsDividerTemplate = _.template(Lablz.Templates.get('propGroupsDividerTemplate'));
     this.model.on('change', this.render, this);
     return this;
   },
@@ -47,16 +48,59 @@ Lablz.ResourceView = Backbone.View.extend({
   render:function (eventName) {
     console.log("render resource");
     var type = this.model.type;
-//    var path = Utils.getPackagePath(type);
     var meta = this.model.__proto__.constructor.properties;
     meta = meta || this.model.properties;
     if (!meta)
       return this;
     
+    var list = _.toArray(meta);
+    var propGroups = Utils.getPropertiesWith(list, "propertyGroupList");
+    var backlinks = Utils.getPropertiesWith(list, "backLink");
+    var backlinksWithCount = backlinks ? Utils.getPropertiesWith(backlinks, "count") : null;
+    
     var html = "";
     var json = this.model.toJSON();
+
+    var displayedProps = [];
+    var idx = 0;
+    var groupNameDisplayed;
+    if (propGroups) {
+      for (var i=0; i < propGroups.length; i++) {
+        var grMeta = propGroups[i];
+        var pgName = grMeta["displayName"];
+        var props = grMeta["propertyGroupList"].split(",");
+        groupNameDisplayed = false;
+        for (var j = 0; j < props.length; j++) {
+          var p = props[j].trim();
+          if (!_.has(json, p) || _.contains(backlinks, p))
+            continue;
+          var prop = meta[p];
+          if (!prop) {
+            delete json[p];
+            continue;
+          }
+                
+          if (p.charAt(0) == '_')
+            continue;
+          if (p == 'davDisplayName')
+            continue;
+          if (!Utils.isPropVisible(json, prop))
+            continue;
+
+          displayedProps[idx++] = prop;
+          json[p] = Utils.makeProp(prop, json[p]);
+          if (!groupNameDisplayed) {
+            html += this.propGroupsDividerTemplate({value: pgName});
+            groupNameDisplayed = true;
+          }
+          
+          html += this.propRowTemplate(json[p]);
+        }
+      }
+    }
+    groupNameDisplayed = false;
     for (var p in json) {
-      if (!_.has(json, p))
+      if ((displayedProps  &&  _.contains(displayedProps, meta[p])) ||  _.contains(backlinks, p))
         continue;
       
       var prop = meta[p];
@@ -72,9 +116,16 @@ Lablz.ResourceView = Backbone.View.extend({
       if (!Utils.isPropVisible(json, prop))
         continue;
 
+      if (displayedProps.length  &&  !groupNameDisplayed) {
+        html += '<li data-role="collapsible" data-content-theme="c" style="padding:0;border:0;border-collapse:collapse"><h2>Others</h2><ul data-role="listview">'; 
+        groupNameDisplayed = true;
+      }
+      
       json[p] = Utils.makeProp(prop, json[p]);
-      html += this.propRowTemplate({name: prop.label || prop.displayName, value: json[p]});
+      html += this.propRowTemplate(json[p]);
     }
+    if (displayedProps.length  &&  groupNameDisplayed)
+      html += "</ul></li>";
     
     var j = {"props": json};
     this.$el.html(html);
@@ -159,7 +210,13 @@ Lablz.MapView = Backbone.View.extend({
     div.id = 'map';
 
     var map = new Lablz.Leaflet(div);
-    map.addMap(Lablz.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);    
+    map.addMap(Lablz.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);
+//        , {'load': function() {
+//      Lablz.Events.trigger('mapReady', self.model);
+//      self.$el.append(frag);
+//      console.log('render map');      
+//    }});
+
     var clusterStyle = {singleMarkerMode: true, doScale: false, showCount: true, doSpiderfy: false};
     var style = {doCluster: true, highlight: true, zoom: false};
     var name = self.model.shortName;
@@ -171,11 +228,10 @@ Lablz.MapView = Backbone.View.extend({
     var basicInfo = map.addBasicMapInfo(dName);
     var frag = document.createDocumentFragment();
     frag.appendChild(div);
-    this.$el.append(frag);
     map.finish();
-    Lablz.Events.trigger('mapReady', this.model);
-    console.log('render map');
     
+    Lablz.Events.trigger('mapReady', self.model);
+    self.$el.append(frag);
     return this;
   },
 

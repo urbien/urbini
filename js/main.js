@@ -15,23 +15,7 @@ var App = Backbone.Router.extend({
   backClicked: false,       
   initialize: function () {
     this.firstPage = true;
-//    $(document).on('click', 'a.back', function(event) {
-//      event.preventDefault();
-//      App.backClicked = true;
-//      window.history.back();
-//    });
   },
-
-//  map: function (type) {
-//    var self = this;
-//    this.mapModel = new Lablz.MapModel({url: Lablz.apiUrl + type});
-//    this.mapView = new Lablz.MapView({model: this.mapModel});
-//    this.mapModel.fetch({
-//      success: function() {
-//        self.changePage(self.mapView);
-//      }
-//    });    
-//  },
 
   list: function (oParams) {
     var params = oParams.split("?");
@@ -53,11 +37,15 @@ var App = Backbone.Router.extend({
     var page = this.page = this.page || 1;
     
     if (!Lablz.shortNameToModel[type]) {
-      Lablz.fetchModels(type, function() {
-        self.list.apply(self, [oParams]);
-      });
+      Lablz.loadStoredModels([type]);
       
-      return;
+      if (!Lablz.shortNameToModel[type]) {
+        Lablz.fetchModels(type, {success: function() {
+          self.list.apply(self, [oParams]);
+        }});
+        
+        return;
+      } 
     }
     
 //    Lablz.Navigation.push();
@@ -108,11 +96,15 @@ var App = Backbone.Router.extend({
     var type = Utils.getType(uri);
     uri = Utils.getLongUri(uri, type);
     if (!uri || !Lablz.shortNameToModel[type]) {
-      Lablz.fetchModels(type, function() {
-        self.view.apply(self, [oParams]);
-      });
-      
-      return;
+      Lablz.loadStoredModels([type]);
+        
+      if (!uri || !Lablz.shortNameToModel[type]) {
+        Lablz.fetchModels(type, {success: function() {
+          self.view.apply(self, [oParams]);
+        }});
+        
+        return;
+      }
     }
     
     var res = this.Models[uri];
@@ -222,11 +214,15 @@ function init() {
   };
   
   Lablz.Templates.loadTemplates();
-  Lablz.fetchModels(initModels, function() {
+  Lablz.loadStoredModels();
+  if (!Lablz.changedModels.length && !Lablz.newModels.length) {
     Lablz.updateTables(Lablz.startApp, error);
-//    var outOfDateModels = Lablz.loadAndUpdateModels();
-//    Lablz.indexedDB.open(null, Lablz.startApp, error);
-  });
+    return;
+  }
+
+  Lablz.fetchModels(null, {success: function() {    
+    Lablz.updateTables(Lablz.startApp, error);
+  }});
 }
 
 //window.addEventListener("DOMContentLoaded", init, false);
@@ -239,8 +235,17 @@ Lablz.startApp = function() {
   if (app !== undefined)
     return;
   
+//  var type = window.location.hash;
+//  if (type) {
+//    type = Utils.getType(type.slice(1));
+//  }
+  
+  var models = Lablz.requiredModels.models;
   app = new App();
   Backbone.history.start();
+  
+  if (!window.location.hash)
+    app.navigate(_.last(models).shortName, {trigger: true});
 };
 
 $(document).ready(function () {

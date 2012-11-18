@@ -42,10 +42,11 @@
   
   <script src="js/utils.js"></script>   
   <script src="js/base.js"></script>   
+  <backboneInitInfo />
   <!-- FETCH MODELS -->
-  <script>
+  <!--script>
     var initModels = ["BasketballCourt","Borough"];
-  </script>
+  </script-->
   <!-- END FETCH MODELS -->
   <script src="js/views.js"></script>   
   <script src="js/main.js"></script>   
