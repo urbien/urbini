@@ -27,6 +27,7 @@
   
   <div data-role="footer">
      <a target="#welcome" class="icon home">Home</a>
+     <!--a id="edit" target="#" class="icon next ui-btn-right">Edit</a-->
   </div>
 </script>  
 
@@ -38,12 +39,24 @@
   <a href="mailto:{{= value }}">{{= value }}</a>
 </script>
 
+<script type="text/template" id="emailPET">
+  <span><input class="email" value="{{= value }}" /></span>
+</script>
+
 <script type="text/template" id="UrlPT">
   <a href="{{= value.href }}">{{= value.linkText }}</a>
 </script>
 
+<script type="text/template" id="UrlPET">
+  <span><input value="{{= value.href }}" /></span>
+</script>
+
 <script type="text/template" id="telPT">
   <a href="tel:{{= value }}">{{= value }}</a>
+</script>
+
+<script type="text/template" id="telPET">
+  <span><input class="tel" value="{{= value }}" /></span>
 </script>
 
 <script type="text/template" id="datePT">
@@ -52,6 +65,10 @@
 <!--script type="text/template" id="datePT">
     <span>{{= new Date(value / 1000) }}</span>
 </script -->
+
+<script type="text/template" id="datePET">
+  <span><input value="{{= new Date(value / 1000) }}" /></span>
+</script>
 
 <script type="text/template" id="booleanPT">
   <span>{{= value }}</span>
@@ -146,11 +163,40 @@
 
 <script type="text/template" id="headerTemplate">
   <div id="header" data-role="header" class="ui-header ui-bar-c" role="banner" data-position="fixed">
-    <div id="headerLeft"></div>
+    <div data-role="controlgroup" data-type="horizontal" id="headerLeft"></div>
     <div id="errMsg"></div>
     <h1 id="pageTitle">{{= this.pageTitle }}</h1>
-    <div id="headerRight"></div>
+    <div data-role="controlgroup" data-type="horizontal" id="headerRight"></div>
+  </div>
+</script>
+
+
+<!--script type="text/template" id="resourceEdit">
+<div id="headerDiv"></div>
+<div id="resourceEditView" data-role="content">
+  <form data-ajax="false" action="#">
+    <ul data-role="listview" data-theme="c" id="resourceEditView" class="action-list" data-inset="true"></ul>
+    <button id="save" target="#" class="ui-btn-left">Save</button>
+    <button id="cancel" target="#" class="ui-btn-right">Cancel</button>
+  </form>
+</div>
+
+<div data-role="footer">
+   <a target="#welcome" class="icon home">Home</a>
+</div>
+</script-->  
+
+<!--script type="text/template" id="stringPET">
+<label for="{{= shortName }}">{{= name }}</label>
+<span><input id="{{= shortName }}" value="{{= value }}" /></span>
+</script-->
+
+<script type="text/template" id="loginTemplate">
+  <div data-role="controlgroup" data-type="horizontal">
+    <a id="back" target="#" data-role="button" data-icon="back" class="back">Back</a>
+    <authenticateByFacebook mobile="y" />
   </div>
 </script>
 
 </div>
+

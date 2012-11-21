@@ -12650,7 +12650,7 @@ var LinkProcessor = {
       }
 
       // append latitude / longitude to url
-      var locDiv = document.getElementById("geoLocation");
+      var locDiv = document.getElementById("postalCodeArea");
       if (locDiv  &&  (a.indexOf("-loc") != -1  ||  a.indexOf("&bUri") == -1)) {
         var loc = locDiv.innerHTML;
         if (loc != null && loc.indexOf(',') != -1) {
@@ -13085,7 +13085,7 @@ function updateLocation(position) {
   newLon = position.coords.longitude;
   lat = lat == null ? newLat : lat;
   lon = lon == null ? newLon : lon;
-  document.getElementById('geoLocation').innerHTML = newLat + ',' + newLon;
+  document.getElementById('postalCodeArea').innerHTML = newLat + ',' + newLon;
   showLocalActivityButtons();
   setTimeout(checkLocation, checkFreq);
 }
@@ -13162,7 +13162,7 @@ function locationError(error) {
 
 function toggleLocationAwareness(on) {
   if (on) {
-    var loc = document.getElementById('geoLocation').innerHTML;
+    var loc = document.getElementById('postalCodeArea').innerHTML;
     if (loc != null && loc.indexOf(',') != -1) {
       var locUrl = addOrReplaceUrlParam(window.location.href, '-loc', loc);
       window.location.replace(addOrReplaceUrlParam(locUrl, '-locSort', 'y'));

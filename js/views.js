@@ -1,9 +1,5 @@
 // Events //
 Lablz.Events = _.extend({}, Backbone.Events);
-//$(window).scroll(function() {
-//  Lablz.Events.trigger("windowScroll");
-//});
-
 Lablz.Events.defaultTapHandler = function(e) {
 //  console.log("got tap event");
   var event = e.originalEvent;
@@ -44,8 +40,8 @@ Lablz.ResourceView = Backbone.View.extend({
     'tap': 'tap',
   },
   tap: Lablz.Events.defaultTapHandler,  
-  click: Lablz.Events.defaultClickHandler,  
-  render:function (eventName) {
+  click: Lablz.Events.defaultClickHandler,
+  render: function(eventName) {
     console.log("render resource");
     var type = this.model.type;
     var meta = this.model.__proto__.constructor.properties;
@@ -127,14 +123,129 @@ Lablz.ResourceView = Backbone.View.extend({
     if (displayedProps.length  &&  groupNameDisplayed)
       html += "</ul></li>";
     
-    var j = {"props": json};
+//    var j = {"props": json};
     this.$el.html(html);
     var self = this;
 
     this.rendered = true;
     return this;
-  },
+  }
 });
+
+//Lablz.ResourceEditView = Backbone.View.extend({
+//  initialize: function(options) {
+//    _.bindAll(this, 'render', 'tap', 'save', 'cancel'); // fixes loss of context for 'this' within methods
+//    this.propRowTemplate = _.template(Lablz.Templates.get('propRowTemplate'));
+//    this.propGroupsDividerTemplate = _.template(Lablz.Templates.get('propGroupsDividerTemplate'));
+//    this.model.on('change', this.render, this);
+//    return this;
+//  },
+//  events: {
+//    'click #save': 'save',
+//    'click #cancel': 'cancel',
+//    'click': 'click',
+//    'tap': 'tap',
+//  },
+//  save: function() {
+//    
+//  },
+//  cancel: function() {
+//    e.preventDefault();
+//    Backbone.history.navigate('view/' + encodeURIComponent(this.model.get('_uri')), {trigger: true, replace: true});
+//    return this;    
+//  },
+//  tap: Lablz.Events.defaultTapHandler,  
+//  click: Lablz.Events.defaultClickHandler,  
+//  render:function (eventName) {
+//    console.log("render resource edit");
+//    var type = this.model.type;
+//    var meta = this.model.__proto__.constructor.properties;
+//    meta = meta || this.model.properties;
+//    if (!meta)
+//      return this;
+//    
+//    var list = _.toArray(meta);
+//    var propGroups = Utils.getPropertiesWith(list, "propertyGroupList");
+//    var backlinks = Utils.getPropertiesWith(list, "backLink");
+//    var backlinksWithCount = backlinks ? Utils.getPropertiesWith(backlinks, "count") : null;
+//    
+//    var html = "";
+//    var json = this.model.toJSON();
+//
+//    var displayedProps = [];
+//    var idx = 0;
+//    var groupNameDisplayed;
+//    if (propGroups) {
+//      for (var i=0; i < propGroups.length; i++) {
+//        var grMeta = propGroups[i];
+//        var pgName = grMeta["displayName"];
+//        var props = grMeta["propertyGroupList"].split(",");
+//        groupNameDisplayed = false;
+//        for (var j = 0; j < props.length; j++) {
+//          var p = props[j].trim();
+//          if (!_.has(json, p) || _.contains(backlinks, p))
+//            continue;
+//          var prop = meta[p];
+//          if (!prop) {
+//            delete json[p];
+//            continue;
+//          }
+//                
+//          if (p.charAt(0) == '_')
+//            continue;
+//          if (p == 'davDisplayName')
+//            continue;
+//          if (!Utils.isPropVisible(json, prop))
+//            continue;
+//
+//          displayedProps[idx++] = prop;
+//          json[p] = Utils.makePropEdit(prop, json[p]);
+//          if (!groupNameDisplayed) {
+//            html += this.propGroupsDividerTemplate({value: pgName});
+//            groupNameDisplayed = true;
+//          }
+//          
+//          html += this.propRowTemplate(json[p]);
+//        }
+//      }
+//    }
+//    
+//    groupNameDisplayed = false;
+//    for (var p in json) {
+//      if ((displayedProps  &&  _.contains(displayedProps, meta[p])) ||  _.contains(backlinks, p))
+//        continue;
+//      
+//      var prop = meta[p];
+//      if (!prop) {
+//        delete json[p];
+//        continue;
+//      }
+//            
+//      if (p.charAt(0) == '_')
+//        continue;
+//      if (p == 'davDisplayName')
+//        continue;
+//      if (!Utils.isPropVisible(json, prop))
+//        continue;
+//
+//      if (displayedProps.length  &&  !groupNameDisplayed) {
+//        html += '<li data-role="collapsible" data-content-theme="c" style="padding:0;border:0;border-collapse:collapse"><h2>Others</h2><ul data-role="listview">'; 
+//        groupNameDisplayed = true;
+//      }
+//      
+//      json[p] = Utils.makePropEdit(prop, json[p]);
+//      html += this.propRowTemplate(json[p]);
+//    }
+//    if (displayedProps.length  &&  groupNameDisplayed)
+//      html += "</ul></li>";
+//    
+//    this.$el.html(html);
+//    var self = this;
+//
+//    this.rendered = true;
+//    return this;
+//  }
+//});
 
 Lablz.MapView = Backbone.View.extend({
 //  template: 'mapTemplate',
@@ -250,6 +361,37 @@ Lablz.MapView = Backbone.View.extend({
   }
 });
 
+Lablz.LoginButtons = Backbone.View.extend({
+  template: 'loginTemplate',
+  initialize: function(options) {
+    _.bindAll(this, 'render');
+    this.template = _.template(Lablz.Templates.get(this.template));    
+    return this;
+  },
+  render: function(options) {
+    if (typeof options !== 'undefined' && options.append)
+      this.$el.append(this.template());
+    else
+      this.$el.html(this.template());
+    
+    _.each(this.$('a'), function(a) {
+      if (a.href) {
+        var base = a.href.split('?');
+        base = base[0];
+        var q = Utils.getQueryParams(a.href);
+        var param = q.state ? 'state' : 'redirect_uri';
+        var returnUri = Utils.getQueryParams(q[param]).returnUri;
+        if (!returnUri) {
+          q[param] = Utils.replaceParam(q[param], 'returnUri', window.location.href);
+          $(a).attr('href', base + '?' + $.param(q));
+        }
+      }
+    });
+    
+    return this;
+  }
+});
+
 Lablz.ListPage = Backbone.View.extend({
   template: 'resource-list',
   initialize:function () {
@@ -282,7 +424,7 @@ Lablz.ListPage = Backbone.View.extend({
     this.$el.html(this.template(this.model.toJSON()));
     var isGeo = this.model.isA("Locatable") || this.model.isA("Shape");
     this.buttons = {
-      left: [Lablz.BackButton],
+      left: [Lablz.LoginButtons],
       right: isGeo ? [Lablz.MapItButton, Lablz.AroundMeButton] : null
     };
     
@@ -315,14 +457,20 @@ Lablz.ListPage = Backbone.View.extend({
 
 Lablz.ViewPage = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'tap', 'showMapButton', 'click');
+    _.bindAll(this, 'render', 'tap', 'showMapButton', 'click', 'edit');
     this.model.on('change', this.render, this);
     this.template = _.template(Lablz.Templates.get('resource'));
     Lablz.Events.on("mapReady", this.showMapButton);
   },
   events: {
+    'click #edit': 'edit',
     'tap': 'tap',
     'click': 'click',
+  },
+  edit: function(e) {
+    e.preventDefault();
+    Backbone.history.navigate('view/' + encodeURIComponent(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
+    return this;
   },
   showMapButton: function(e) {
 //    var mBtn = new Lablz.MapItButton({model: this.model}).render();
@@ -360,6 +508,32 @@ Lablz.ViewPage = Backbone.View.extend({
   }
 
 });
+
+//Lablz.EditPage = Backbone.View.extend({
+//  initialize: function() {
+//    _.bindAll(this, 'render', 'tap', 'click');
+//    this.model.on('change', this.render, this);
+//    this.template = _.template(Lablz.Templates.get('resourceEdit'));
+//  },
+//  events: {
+//    'tap': 'tap',
+//    'click': 'click',
+//  },
+//  tap: Lablz.Events.defaultTapHandler,
+//  click: Lablz.Events.defaultClickHandler,  
+//  render:function (eventName) {
+//    console.log("render editPage");
+//    this.$el.html(this.template(this.model.toJSON()));
+//    this.view = new Lablz.ResourceEditView({el: $('ul#resourceEditView', this.el), model: this.model});
+//    this.view.render();
+//    this.rendered = true;
+//    if (!this.$el.parentNode) 
+//      $('body').append(this.$el);
+//    
+//    return this;
+//  }
+//
+//});
 
 Lablz.ResourceListView = Backbone.View.extend({
   mapView: null,
@@ -494,7 +668,7 @@ Lablz.MapItButton = Backbone.View.extend({
   },
   render: function(options) {
     if (typeof options !== 'undefined' && options.append)
-      this.$el.html(this.$el.html() + this.template());
+      this.$el.append(this.template());
     else
       this.$el.html(this.template());
     
@@ -519,8 +693,12 @@ Lablz.AroundMeButton = Backbone.View.extend({
 //    this.model.trigger('aroundMe');
 //    return this;
 //  },
-  render: function() {
-    this.$el.html(this.template());
+  render: function(options) {
+    if (typeof options !== 'undefined' && options.append)
+      this.$el.append(this.template());
+    else
+      this.$el.html(this.template());
+    
     return this;
   },
   getAroundMe : function() {
@@ -608,6 +786,8 @@ Lablz.Header = Backbone.View.extend({
     }
     
     w = new w({model: this.model, el: this.$(options.id)}).render({append: true});
+//    w = new w({model: this.model}).render();
+//    this.$(options.id).append(w.el);
     w.$(options.domEl).addClass(options.css);
     w.$el.trigger('create');
     return this;
@@ -623,9 +803,9 @@ Lablz.Header = Backbone.View.extend({
   render: function() {
     this.$el.html(this.template());
     var l = this.buttons.left;
-    l && this.makeWidgets(l, {domEl: 'a', id: '#headerLeft', css: 'ui-btn-left'});
+    l && this.makeWidgets(l, {domEl: 'a', id: '#headerLeft'}); //, css: 'ui-btn-left'});
     var r = this.buttons.right;
-    r && this.makeWidgets(r, {domEl: 'a', id: '#headerRight', css: 'ui-btn-right'});
+    r && this.makeWidgets(r, {domEl: 'a', id: '#headerRight'}); //, css: 'ui-btn-right'});
     return this;
   }
 });
