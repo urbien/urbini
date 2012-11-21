@@ -17,7 +17,7 @@
   
   <div id="fts" hide="y"><!--  itype="!http://www.hudsonfog.com/voc/system/changeHistory/Modification"-->
     <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #ddd; border-collapse:collapse;"  itype="!http://www.hudsonfog.com/voc/model/social/Intent">
-  	<tr noInner="y" class="fts" valign="bottom">
+  	<tr noInner="y" class="fts" id="fts1" valign="bottom">
     	<td class="near"><createList itype="http://www.hudsonfog.com/voc/commerce/urbien/OpenGraph" /><showActivityLink/></td><td><fullTextSearchChoice place="middle"/></td><td><filter id="fltr" /></td><td align="right"><pagingResources /></td>
   	</tr>
     <!--tr itype="http://www.hudsonfog.com/voc/system/designer/WebClass">    
