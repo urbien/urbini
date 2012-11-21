@@ -270,7 +270,7 @@ Lablz.ResourceList = Backbone.Collection.extend({
     this.pager();
   },
   getUrl: function() {
-    return this.baseUrl + (this.queryMap ? "?" + Utils.toQueryString(this.queryMap) : '');
+    return this.baseUrl + (this.queryMap ? "?" + $.param(this.queryMap) : '');
   },
   parseQuery: function(query) {
     if (!query)
@@ -592,6 +592,7 @@ if ('webkitIndexedDB' in window) {
 }
 
 //Lablz.resourceType = "Urbien";
+Lablz.currentUser = {};
 Lablz.indexedDB = {};
 Lablz.indexedDB.db = null;
 Lablz.DB_VERSION = 1;
@@ -599,6 +600,9 @@ Lablz.indexedDB.modelStoreOptions = {keyPath: 'type'};
 Lablz.indexedDB.paused = false;
 
 Lablz.indexedDB.onerror = function(e) {
+  Lablz.currentUser._reset = true;
+  Lablz.indexedDB.db.close();
+  Lablz.indexedDB.open();
   console.log("db error: " + e);
 };
 
@@ -606,12 +610,22 @@ Lablz.indexedDB.onabort = function(e) {
   console.log("db abort: " + e);
 };
 
+Lablz.indexedDB.clear = function() {
+  var db = Lablz.indexedDB.db;
+  _.each(db.objectStoreNames, function(name) {            
+    db.deleteObjectStore(name); 
+  })
+  
+  Lablz.currentUser._reset = false;
+}
+
 Lablz.indexedDB.onblocked = function(e) {
   console.log("db blocked: " + e);
 };
 
 Lablz.indexedDB.defaultOptions = {keyPath: '_uri'};
 Lablz.indexedDB.open = function(options, success, error) {
+  var newUser = Lablz.currentUser._reset;
   var modelsChanged = false;
   var request = indexedDB.open("lablz");
 
@@ -636,7 +650,7 @@ Lablz.indexedDB.open = function(options, success, error) {
     }
     
     modelsChanged = !!Lablz.changedModels.length || !!Lablz.newModels.length;
-    Lablz.DB_VERSION = modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
+    Lablz.DB_VERSION = newUser || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
     if (db.version == Lablz.DB_VERSION) {
       if (success)
         success();
@@ -653,6 +667,9 @@ Lablz.indexedDB.open = function(options, success, error) {
       req.onerror = Lablz.indexedDB.onerror;
       req.onblocked = Lablz.indexedDB.onblocked;
       req.onsuccess = function(e2) {
+        if (newUser)
+          Lablz.indexedDB.clear();
+        
         if (modelsChanged)
           Lablz.indexedDB.updateStores();
         
@@ -675,6 +692,9 @@ Lablz.indexedDB.open = function(options, success, error) {
     console.log ("going to upgrade our DB!");
     Lablz.indexedDB.db = e.target.result;
     var db = Lablz.indexedDB.db;
+    if (newUser)
+      Lablz.indexedDB.clear();
+    
     if (modelsChanged)
       Lablz.indexedDB.updateStores();
     
@@ -794,7 +814,7 @@ Lablz.indexedDB.addItems = function(items, className) {
   
   if (!db.objectStoreNames.contains(className)) {
     db.close();
-    Lablz.newModels.push(Lablz.shortNameToModel[className]);
+    Lablz.newModels.push(className);
     Lablz.indexedDB.open(null, function() {
       Lablz.indexedDB.addItems(items, className);
     });
@@ -923,7 +943,27 @@ Lablz.indexedDB.getItems = function(options) {
 // END ///////////// IndexedDB stuff //////////////// END ///
 
 // START /////////// Local Storage //////////// START //
-
+var contactKey = "com.fog.security.contact";
+Lablz.checkUser = function() {
+  if (!localStorage)
+    return; // TODO: use indexedDB
+  
+  var p = localStorage.getItem(contactKey);
+  var c = Lablz.currentUser;
+  if ((p && !c) || (!p && c) || (p && c && JSON.parse(p)._uri != c._uri)) {
+    // clear storage
+    localStorage.clear();
+    if (c) {
+      localStorage.setItem(contactKey, JSON.stringify(c));
+      Lablz.currentUser._reset = true;
+    }
+    else
+      Lablz.currentUser = {_reset: true};
+    
+    return;
+  }
+}
+  
 Lablz.requiredModels = {};
 Lablz.changedModels = new Utils.UArray();
 Lablz.newModels = new Utils.UArray();
@@ -949,7 +989,7 @@ Lablz.initStoredModels = function(models) {
     if (model.subClassOf != null || model.type.endsWith("#Resource"))
       return true;
     else {
-      Lablz.changedModels.push(model.short);
+      Lablz.changedModels.push(model.shortName);
       return false;
     }
   });
@@ -981,6 +1021,9 @@ Lablz.initStoredModels = function(models) {
 
 Lablz.loadStoredModels = function(models) {
 //  var ttm = Lablz.typeToModel;
+  if (Lablz.currentUser._reset)
+    return;
+  
   var r = models ? {models: models} : Lablz.requiredModels;
   if (!localStorage) {
     _.forEach(r.models, function(model) {
@@ -1156,6 +1199,24 @@ Lablz.Templates = {
       "http://www.hudsonfog.com/voc/model/portal/Image": "imagePT"
     },
 
+    propEditTemplates: {
+      "string": "stringPET"
+//      "boolean": "booleanPET",
+//      "int": "intPET",
+//      "float": "intPET",
+//      "double": "intPET",
+//      "http://www.hudsonfog.com/voc/system/primitiveTypes/emailAddress": "emailPET",
+//      "http://www.hudsonfog.com/voc/system/primitiveTypes/phone": "telPET",
+//      "http://www.hudsonfog.com/voc/system/primitiveTypes/mobilePhone": "telPET",
+//      "http://www.hudsonfog.com/voc/system/fog/Url": "UrlPET",
+//      "http://www.hudsonfog.com/voc/system/primitiveTypes/Duration": "complexDatePET",
+//      "date": "datePET",
+//      "resource": "resourcePET",
+//      "http://www.hudsonfog.com/voc/model/company/Money": "moneyPET",
+//      "http://www.hudsonfog.com/voc/system/fog/ComplexDate": "complexDatePET",
+//      "http://www.hudsonfog.com/voc/model/portal/Image": "imagePET"
+    },
+
  
     // This implementation should be changed in a production environment:
     // All the template files should be concatenated in a single file.
@@ -1171,8 +1232,9 @@ Lablz.Templates = {
       return this.templates[name];
     },
     
-    getPropTemplate: function(prop) {
+    getPropTemplate: function(prop, edit) {
+      var t = edit ? this.propEditTemplates : this.propTemplates;
       var f = 'http://www.hudsonfog.com/voc/system/fog/Property/facet';
-      return (prop[f] && this.propTemplates[prop[f]]) || this.propTemplates[prop.range] || this.propTemplates.resource;
+      return (prop[f] && t[prop[f]]) || t[prop.range] || t.string;
     }
 };

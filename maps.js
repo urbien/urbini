@@ -1142,7 +1142,7 @@ function getImageUrl(imgUri, serverName) {
 }
 
 //var Aggregation = {
-//  'TreesBySpeciesAndPostalCode' : {'shape': 'geoLocation', 'nonShape' : 'species', 'count' : 'treesCount'},
+//  'TreesBySpeciesAndPostalCode' : {'shape': 'postalCodeArea', 'nonShape' : 'species', 'count' : 'treesCount'},
 //  'TreesBySpeciesAndCensusBlock' : {'shape': 'censusBlock', 'nonShape' : 'species', 'count' : 'treesCount'},
 //}
 

@@ -4,11 +4,13 @@ var App = Backbone.Router.extend({
 
   routes:{
       ":type":"list",
+//      "edit/*path":"edit",
       "view/*path":"view",
       "map/*type":"map"
   },
   CollectionViews: {},
   Views: {},
+  EditViews: {},
   Models: {},
   Collections: {},
   Paginator: {},
@@ -77,11 +79,22 @@ var App = Backbone.Router.extend({
     return this;
   },
 
-  view: function (oParams) {
-    var params = oParams.split("?");
-    var uri = decodeURIComponent(params[0]);
+  view: function (path) {
+    var params = Utils.getHashParams();
+    var qIdx = path.indexOf("?");
+    var uri, query;
+    if (qIdx == -1) {
+      uri = path;
+      query = '';
+    }
+    else {
+      uri = path.slice(0, qIdx);
+      query = path.slice(qIdx + 1);
+    }
+    
+    uri = decodeURIComponent(uri);
     if (uri == 'profile') {
-      var p = params.length > 1 ? params[1] : '';
+      var p = _.size(params) ? path.slice(qIdx + 1) : '';
       if (Lablz.currentUser)
         this.view(encodeURIComponent(Lablz.currentUser._uri) + "?" + p);
       else
@@ -90,8 +103,6 @@ var App = Backbone.Router.extend({
       return;
     }
     
-//    Lablz.Navigation.push();
-//    Lablz.Navigation.detectBackButton();
     var self = this;
     var type = Utils.getType(uri);
     uri = Utils.getLongUri(uri, type);
@@ -100,7 +111,7 @@ var App = Backbone.Router.extend({
         
       if (!uri || !Lablz.shortNameToModel[type]) {
         Lablz.fetchModels(type, {success: function() {
-          self.view.apply(self, [oParams]);
+          self.view.apply(self, [path]);
         }});
         
         return;
@@ -116,11 +127,13 @@ var App = Backbone.Router.extend({
       res = this.Models[uri] = l && l.get(uri);
     }
     
-    var query = params.length > 1 ? params[1] : undefined;
+    var edit = params['-edit'] == 'y';
+    var views = edit ? this.EditViews : this.Views;
+    var viewPageCl = edit ? Lablz.EditPage : Lablz.ViewPage;
     if (res) {
       res.asyncFetch();
       this.Models[uri] = res;
-      this.Views[uri] = this.Views[uri] || new Lablz.ViewPage({model: res});
+      views[uri] = views[uri] || new viewPageCl({model: res});
       this.changePage(this.Views[uri]);
       return this;
     }
@@ -128,7 +141,7 @@ var App = Backbone.Router.extend({
     if (this.Collections[type]) {
       var res = this.Models[uri] = this.Collections[type].get(uri);
       if (res) {
-        this.Views[uri] = new Lablz.ViewPage({model: res});
+        views[uri] = new viewPageCl({model: res});
         this.changePage(this.Views[uri]);
         return this;
       }
@@ -139,7 +152,7 @@ var App = Backbone.Router.extend({
       return this;
     
     var res = this.Models[uri] = new typeCl({_uri: uri, _query: query});
-    var view = this.Views[uri] = new Lablz.ViewPage({model: res});
+    var view = views[uri] = new viewPageCl({model: res});
     var paintMap;
     var success = function(data) {
       self.changePage(view);
@@ -214,6 +227,7 @@ function init() {
   };
   
   Lablz.Templates.loadTemplates();
+  Lablz.checkUser();
   Lablz.loadStoredModels();
   if (!Lablz.changedModels.length && !Lablz.newModels.length) {
     Lablz.updateTables(Lablz.startApp, error);
@@ -225,20 +239,13 @@ function init() {
   }});
 }
 
-//window.addEventListener("DOMContentLoaded", init, false);
-if (typeof jq != 'undefined')
-  Backbone.setDomLibrary(jq);
+//if (typeof jq != 'undefined')
+//  Backbone.setDomLibrary(jq);
 
 var app;
 Lablz.startApp = function() {
-  //console.log('document ready: ' + documentReadyCount);
   if (app !== undefined)
     return;
-  
-//  var type = window.location.hash;
-//  if (type) {
-//    type = Utils.getType(type.slice(1));
-//  }
   
   var models = Lablz.requiredModels.models;
   app = new App();

@@ -203,6 +203,13 @@ Utils.makeProp = function(prop, val) {
   return {name: prop.label || prop.displayName, value: _.template(Lablz.Templates.get(propTemplate))(val)};
 }
 
+Utils.makePropEdit = function(prop, val) {
+  var propTemplate = Lablz.Templates.getPropTemplate(prop, true);
+  val = val.displayName ? val : {value: val};
+  val.shortName = prop.displayName.toCamelCase();
+  return {name: prop.displayName, value: _.template(Lablz.Templates.get(propTemplate))(val)};
+}
+
 Utils.getColorCoding = function(cc, val) {
 //  getting the color for value. Sample colorCoding annotation: @colorCoding("0-2000 #FF0054; 2000-6000 #c8fd6a; 6001-1000000 #00cc64")
   val = val.replace(',', '');
@@ -438,17 +445,26 @@ Utils.endsWith = function(string, pattern) {
   return d >= 0 && string.indexOf(pattern, d) === d;
 };
 
-Utils.toQueryString = function(queryMap) {
-  var qStr = '';
-  _.forEach(queryMap, function(val, key) { // yes, it's backwards, not function(key, val), underscore does it like this for some reason
-    qStr += key + '=' + encodeURIComponent(val) + '&';
-  });
-  
-  return qStr.slice(0, qStr.length - 1);
-};
+//Utils.toQueryString = function(queryMap) {
+//  var qStr = '';
+//  _.forEach(queryMap, function(val, key) { // yes, it's backwards, not function(key, val), underscore does it like this for some reason
+//    qStr += key + '=' + encodeURIComponent(val) + '&';
+//  });
+//  
+//  return qStr.slice(0, qStr.length - 1);
+//};
 
-Utils.getQueryParams = function() {
-  return Utils.getParamMap(window.location.href);
+Utils.replaceParam = function(url, name, value) {
+  url = url.split('?');
+  var qs = url.length > 1 ? url[1] : url[0];
+  var q = Utils.getQueryParams(qs);
+  q[name] = value;
+  q = $.param(q);
+  return url.length == 1 ? q : [url[0], q].join('?');
+}
+
+Utils.getQueryParams = function(url) {
+  return Utils.getParamMap(url || window.location.href);
 };
 
 Utils.getHashParams = function() {
@@ -463,6 +479,10 @@ Utils.getHashParams = function() {
 };
 
 Utils.getParamMap = function(str, delimiter) {
+  var qIdx = str.indexOf('?');
+  if (qIdx != -1)
+    str = str.slice(qIdx + 1);
+    
   var map = {};
   _.each(str.split(delimiter || "&"), function(nv) {
     nv = nv.split("=");
@@ -497,6 +517,12 @@ String.prototype.trim = function(){
 
 String.prototype.startsWith = function(str) {
   return (this.match("^"+str)==str)
+}
+
+String.prototype.toCamelCase = function(str) {
+  return this.replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
+    return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
+  }).replace(/\s+/g, '');
 }
 
 String.prototype.endsWith = function(str) {
