@@ -4061,12 +4061,15 @@ var DataEntry = {
        parent.appendChild(div);
     }
 
-    setDivVisible(event, div, $t.hotspot, 5, 5);
-
     // dialog contains one "selector" parameter - show its options list immediately
     var arrowTd = getChildByClassName(div, "arrow_td");
-    if (arrowTd && TouchDlgUtil.isSingleParameterInDialog(arrowTd)) {
-      appendClassName(div, "oneparamselection");
+    var isSingleParam = arrowTd && TouchDlgUtil.isSingleParameterInDialog(arrowTd);
+    if (isSingleParam)
+    	appendClassName(div, "oneparamselection"); // append "oneparamselection" before findElements() 
+
+    setDivVisible(event, div, $t.hotspot, 10, 5); // calls findElements() 
+
+    if (isSingleParam) {
       var tr = getChildByClassName(div, "param_tr");
       ListBoxesHandler.processClickParam(null, tr); 
     }
