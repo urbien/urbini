@@ -4061,6 +4061,8 @@ var DataEntry = {
        parent.appendChild(div);
     }
 
+    setDivVisible(event, div, $t.hotspot, 5, 5);
+
     // dialog contains one "selector" parameter - show its options list immediately
     var arrowTd = getChildByClassName(div, "arrow_td");
     if (arrowTd && TouchDlgUtil.isSingleParameterInDialog(arrowTd)) {
@@ -4068,8 +4070,7 @@ var DataEntry = {
       var tr = getChildByClassName(div, "param_tr");
       ListBoxesHandler.processClickParam(null, tr); 
     }
-    
-    setDivVisible(event, div, $t.hotspot, 5, 5);
+
     $t.initDataStr = $t._getFormDataStr(div, true);
     var key = $t._getKey($t.currentUrl);
     $t.dataEntryArr[key] = div;
@@ -10070,7 +10071,7 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
     this.nextSlide = document.createElement("div");
     this.nextSlide.className = "slide";
 //    this.nextSlide.style.zIndex = 1;
-    setTransitionProperty(this.nextSlide, 'opacity 1s ease-in-out');
+    setTransitionProperty(this.nextSlide, 'opacity 1s linear'); // ease-in-out
 
     if (typeof htmlOrObject == "string")
       this.nextSlide.innerHTML = htmlOrObject;
@@ -10108,7 +10109,7 @@ function WidgetSlider(widgetDiv, callbackFinish, callbackHalfFinish) {
     
     // Other browsers: use transition --- 
     if (fast)
-      setTransitionProperty(this.nextSlide, 'opacity 0.2s ease-in-out');
+      setTransitionProperty(this.nextSlide, 'opacity 0.2s linear'); // ease-in-out 
 
     setTransitionCallback(this.nextSlide, this.onSlidingFinish); 
     this.nextSlide.style.zIndex = "1";
