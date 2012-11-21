@@ -2173,6 +2173,8 @@ td.pBGr { background-color: #eeeeee;
 #div_Info a { margin-left: 5px; }
 
 #div_Feed img {max-width: 600px;}
+#div_Feed #feed .lc img {max-width: 14px;}
+#div_Feed #feed img {max-width: 50px;}
 
 /* set left alignment in description TD containing table */
 /*#div_Info table table td { text-align: left; }*/
@@ -2499,6 +2501,10 @@ td #corePageContent { min-height: 600px;}
 #nabs_grid .nab { visibility: hidden; }
 .dList #nabs_grid .nab { visibility: visible; } /* TODO: implement 2 (RL) masonry and delete this rule */
 #nabs_grid .masonry-brick { visibility: visible; }
+.nab .modP .urbien { padding-left: 10px; }
+.nab .modP .urbien img {width: 50px;}
+.nab .nabP .urbien { padding-left: 10px; }
+.nab .nabP .urbien img {width: 50px;}
 
 .gnab { font-size: 11px; }
 .nab .anab .galleryItem_css3 img {max-width: 205px;}
