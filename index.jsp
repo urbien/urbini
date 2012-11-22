@@ -22,11 +22,8 @@
 <script type="text/template" id="resource">
   <div id="headerDiv"></div>
   <div id="resourceView" data-role="content">
-    <!-- div align="center"><img align="middle" src="{{= typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}"></img></div --> 
-    <div align="center"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage) : (typeof featured == 'undefined' ? 'icons/blank.png' : (featured.indexOf('Image/') == 0 ? Lablz.serverName + featured.slice(5) : Lablz.serverName + featured)) }}"></img></div> 
+    <div id="resourceImage"></div>
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true"></ul>
-    <!--ul id="sidebar" data-role="listview" class="ui-listview" data-inset="true" data-theme="c">
-    </ul -->
   </div>
   
   <div data-role="footer">
@@ -123,12 +120,19 @@
 </script>
 
 <script type="text/template" id="imagePT">
-    <span><img src="{{= value.indexOf('http') == 0 ? value : value.indexOf('Image/') == 0 ? Lablz.serverName + value.slice(5) : Lablz.serverName + value }}" /></span>
-    <!--span><img src="{{= value.indexOf('http') == 0 ? value : value.indexOf('Image/') == 0 ? Lablz.serverName + value.slice(5) : Lablz.serverName + value }}" {{= width ? " width='" + width + "'" : '' }} {{= height ? " height='" + height + "'" : '' }} /></span-->
+  <img src="{{= value }}"></img>
 </script>
+<!-- script type="text/template" id="imagePT">
+    {{ if (typeof mediumImage != 'undefined') { }}
+      <span><img src="{{= mediumImage.indexOf('Image/') == 0 ? mediumImage.slice(6) : mediumImage }}"></img></span>
+    {{ } }} 
+    {{ if (typeof featured != 'undefined') { }}
+      <span><img src="{{= featured.indexOf('Image/') == 0 ? featured.slice(6) : featured }}"></img></span>
+    {{ } }}
+</script-->
 
 <script type="text/template" id="listItemTemplate">
-  <a href = "{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}" /><h3>{{= davDisplayName }}</h3><p>{{= (typeof latinName == 'undefined') ? '' : latinName }}</p></a>
+  <a href = "{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}" /><h3>{{= davDisplayName }}</h3></a>
 </script>
 
 <script type="text/template" id="propRowTemplate">
