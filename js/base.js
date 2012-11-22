@@ -54,7 +54,7 @@ Lablz.getDefaultErrorHandler = function(errorHandler) {
         case 404:
           console.log('no results');
           if (originalModel instanceof Backbone.Model || (originalModel instanceof Backbone.Collection && originalModel.queryMap.length == 0))
-            Backbone.history.navigate((originalModel.shortName || originalModel.constructor.shortName) + "?-errMsg=Oops!+Whatever+you+were+looking+for,we+couldn't+find+it", {trigger: true, replace: true});
+            app.navigate((originalModel.shortName || originalModel.constructor.shortName) + "?-errMsg=Oops!+Whatever+you+were+looking+for,we+couldn't+find+it", {trigger: true, replace: true});
           else
             $('errMsg').html("Oops! Whatever you were looking for, we couldn't find it");
             
@@ -625,7 +625,6 @@ Lablz.indexedDB.onblocked = function(e) {
 
 Lablz.indexedDB.defaultOptions = {keyPath: '_uri'};
 Lablz.indexedDB.open = function(options, success, error) {
-  var newUser = Lablz.currentUser._reset;
   var modelsChanged = false;
   var request = indexedDB.open("lablz");
 
@@ -650,7 +649,7 @@ Lablz.indexedDB.open = function(options, success, error) {
     }
     
     modelsChanged = !!Lablz.changedModels.length || !!Lablz.newModels.length;
-    Lablz.DB_VERSION = newUser || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
+    Lablz.DB_VERSION = Lablz.currentUser._reset || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
     if (db.version == Lablz.DB_VERSION) {
       if (success)
         success();
@@ -667,7 +666,7 @@ Lablz.indexedDB.open = function(options, success, error) {
       req.onerror = Lablz.indexedDB.onerror;
       req.onblocked = Lablz.indexedDB.onblocked;
       req.onsuccess = function(e2) {
-        if (newUser)
+        if (Lablz.currentUser._reset)
           Lablz.indexedDB.clear();
         
         if (modelsChanged)
@@ -692,7 +691,7 @@ Lablz.indexedDB.open = function(options, success, error) {
     console.log ("going to upgrade our DB!");
     Lablz.indexedDB.db = e.target.result;
     var db = Lablz.indexedDB.db;
-    if (newUser)
+    if (Lablz.currentUser._reset)
       Lablz.indexedDB.clear();
     
     if (modelsChanged)

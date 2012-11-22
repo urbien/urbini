@@ -10,7 +10,7 @@ Lablz.Events.defaultTapHandler = function(e) {
   
   event.preventDefault();
   var href = $el.prop('href');
-  Backbone.history.navigate(href.slice(href.indexOf('#') + 1), true);
+  app.navigate(href.slice(href.indexOf('#') + 1), true);
 }
 
 Lablz.Events.defaultClickHandler = function(e) {
@@ -23,7 +23,7 @@ Lablz.Events.defaultClickHandler = function(e) {
 
   event.preventDefault();
   var href = $el.prop('href');
-  Backbone.history.navigate(href.slice(href.indexOf('#') + 1), true);
+  app.navigate(href.slice(href.indexOf('#') + 1), true);
 }
 
 // Views
@@ -250,8 +250,9 @@ Lablz.ResourceView = Backbone.View.extend({
 Lablz.MapView = Backbone.View.extend({
 //  template: 'mapTemplate',
   initialize: function (options) {
-    _.bindAll(this, 'render', 'show', 'hide', 'tap', 'toggleMap');
-    Lablz.Events.on("mapIt", this.toggleMap);    
+    _.bindAll(this, 'render', 'show', 'hide', 'tap', 'toggleMap', 'resetMap');
+    Lablz.Events.on("mapIt", this.toggleMap);
+    Lablz.Events.on("changePage", this.resetMap);
 //    this.template = _.template(Lablz.Templates.get(this.template));
     this.ready = false;
     self = this;
@@ -320,7 +321,7 @@ Lablz.MapView = Backbone.View.extend({
     div.className = 'map';
     div.id = 'map';
 
-    var map = new Lablz.Leaflet(div);
+    var map = this.mapper = new Lablz.Leaflet(div);
     map.addMap(Lablz.cloudMadeApiKey, {maxZoom: poi ? 10 : null, center: center, bounds: bbox}, poi);
 //        , {'load': function() {
 //      Lablz.Events.trigger('mapReady', self.model);
@@ -343,11 +344,20 @@ Lablz.MapView = Backbone.View.extend({
     
     Lablz.Events.trigger('mapReady', self.model);
     self.$el.append(frag);
+    this.hide();
     return this;
   },
-
+  resetMap: function() {
+    this.mapper && this.mapper.map.invalidateSize();
+  },
   toggleMap: function(e) {
-    this.$el.is(":visible") && this.hide() || this.show();
+    if (e.active) {
+      this.show();
+      this.resetMap();
+    }
+    else {
+      this.hide();
+    }
   },
   
   show: function() {
@@ -380,10 +390,10 @@ Lablz.LoginButtons = Backbone.View.extend({
         base = base[0];
         var q = Utils.getQueryParams(a.href);
         var param = q.state ? 'state' : 'redirect_uri';
-        var returnUri = Utils.getQueryParams(q[param]).returnUri;
+        var returnUri = U.getQueryParams(q[param]).returnUri;
         if (!returnUri) {
-          q[param] = Utils.replaceParam(q[param], 'returnUri', window.location.href);
-          $(a).attr('href', base + '?' + $.param(q));
+          q[param] = U.replaceParam(q[param], 'returnUri', window.location.href, true);
+          $(a).attr('href', base + '?' + U.getQueryString(q));
         }
       }
     });
@@ -469,7 +479,7 @@ Lablz.ViewPage = Backbone.View.extend({
   },
   edit: function(e) {
     e.preventDefault();
-    Backbone.history.navigate('view/' + encodeURIComponent(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
+    app.navigate('view/' + encodeURIComponent(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
     return this;
   },
   showMapButton: function(e) {
@@ -650,67 +660,109 @@ Lablz.ResourceListItemView = Backbone.View.extend({
   }
 });
 
+Lablz.ToggleButton = Backbone.View.extend({
+  btnId: null,
+  initialize: function(options) {
+    _.bindAll(this, 'setStyle', 'resetStyle');
+    this.active = (options && options.active) || (this.isActive && this.isActive());
+//    this.on('click', this.onclick);
+//    var eName = 'click #' + this.btnId;
+//    this.originalOnclick = this.events[eName];
+//    this.events[eName] = 'onclick';
+    Lablz.Events.on("changePage", this.resetStyle);
+  },
+//  onclick: function(e) {
+//    console.log('clicked toggle button');
+//    return true;
+//    if (this.originalOnclick)
+//      return this[this.originalOnclick].apply(this, arguments);
+//    else
+//      return this;
+//  },
+  isActive: function() {
+    return this.active;
+  },
+  resetStyle: function() {
+    this.active = this.isActive();
+    this.setStyle();
+    return this;
+  },
+  setStyle: function() {
+    if (!this.btnId) {
+      console.log("Toggle button is missing btnId property");
+      return this;
+    }
+    
+    this.$('#' + this.btnId)[this.active ? 'addClass' : 'removeClass']('ui-btn-active');
+  },
+  render: function(options) {
+    if (!this.template)
+      return this;
+    
+    if (typeof options !== 'undefined' && options.append)
+      this.$el.append(this.template());
+    else
+      this.$el.html(this.template());
+    
+    this.resetStyle();
+    return this;
+  }
+});
 
-Lablz.MapItButton = Backbone.View.extend({
+Lablz.MapItButton = Lablz.ToggleButton.extend({
+  btnId: 'mapIt',
   template: 'mapItButtonTemplate',
   events: {
-    'click': 'mapIt'
+    'click #mapIt': 'mapIt'
   },
   initialize: function(options) {
+    this.constructor.__super__.initialize.apply(this, arguments);
+    
     _.bindAll(this, 'render', 'mapIt');
     this.template = _.template(Lablz.Templates.get(this.template));
     return this;
   },
   mapIt: function(e) {
-//    Lablz.Events.trigger("mapIt", this.model);
-    this.model.trigger('mapIt');
-    return this;
-  },
-  render: function(options) {
-    if (typeof options !== 'undefined' && options.append)
-      this.$el.append(this.template());
-    else
-      this.$el.html(this.template());
-    
+    this.active = !this.active;
+    Lablz.Events.trigger('mapIt', {active: this.active});
+    this.resetStyle();
     return this;
   }
 });
 
 
-Lablz.AroundMeButton = Backbone.View.extend({
+Lablz.AroundMeButton = Lablz.ToggleButton.extend({
+  btnId: 'aroundMe',
   template: 'aroundMeButtonTemplate',
   events: {
-    'click #aroundMe': 'getAroundMe'
+    'click #aroundMe': 'toggleAroundMe'
   },
   initialize: function(options) {
-    _.bindAll(this, 'render', 'getAroundMe');
-    this.template = _.template(Lablz.Templates.get(this.template));
-    return this;
-  },
-//  aroundMe: function(e) {
-////    console.log("clicked aroundMe button");
-////    Lablz.Events.trigger("aroundMe", this.model);
-//    this.model.trigger('aroundMe');
-//    return this;
-//  },
-  render: function(options) {
-    if (typeof options !== 'undefined' && options.append)
-      this.$el.append(this.template());
-    else
-      this.$el.html(this.template());
+    this.constructor.__super__.initialize.apply(this, arguments);
     
+    _.bindAll(this, 'render', 'toggleAroundMe');
+    this.template = _.template(Lablz.Templates.get(this.template));        
     return this;
   },
-  getAroundMe : function() {
+  isActive: function() {
+    return window.location.hash.indexOf('-item=me') != -1;
+  },
+  toggleAroundMe : function() {
+    this.active = !this.active;
+    if (!this.active) {
+      app.navigate(this.model.shortName, {trigger: true});
+      return this;
+    }
+    
     if (!navigator.geolocation) {
       alert("Sorry, your browser does not support geolocation services.");
-      return;
+      return this;
     }
       
     var model = this.model instanceof Backbone.Collection ? this.model.model : this.model.constructor;
     var iFaces = model.interfaces;
     if (!_.contains(iFaces, 'Locatable'))
-      return;
+      return this;
     
 //    if (!props.distance || !props.latitude || !props.longitude)
 //      return;
@@ -728,15 +780,18 @@ Lablz.AroundMeButton = Backbone.View.extend({
           Lablz.locationError(error);
       }
     );
+    
+    return this;
   },
   fetchAroundPosition : function(coords, item) {
-    var model = this.model instanceof Backbone.Collection ? this.model.model : this.model.constructor
+    var model = this.model instanceof Backbone.Collection ? this.model.model : this.model.constructor;
     Lablz.userLocation = {
       location: coords,
       timestamp: new Date().getTime()
     };
     
-    Backbone.history.navigate(model.shortName + "?$orderBy=distance&$asc=1&latitude=" + coords.latitude + "&longitude=" + coords.longitude + '&-item=' + (item || 'me'), {trigger: true});
+    app.navigate(model.shortName + "?$orderBy=distance&$asc=1&latitude=" + coords.latitude + "&longitude=" + coords.longitude + '&-item=' + (item || 'me'), {trigger: true});
+    return this;
   }
 });
 

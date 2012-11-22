@@ -1,4 +1,8 @@
 <div>
+<!-- Attributions>
+  Font Awesome - http://fortawesome.github.com/Font-Awesome
+</Attributions-->
+
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <div id="headerDiv"></div>
@@ -163,10 +167,10 @@
 
 <script type="text/template" id="headerTemplate">
   <div id="header" data-role="header" class="ui-header ui-bar-c" role="banner" data-position="fixed">
-    <div data-role="controlgroup" data-type="horizontal" id="headerLeft"></div>
+    <div data-role="controlgroup" data-type="horizontal" id="headerLeft" class="ui-btn-left"></div>
     <div id="errMsg"></div>
     <h1 id="pageTitle">{{= this.pageTitle }}</h1>
-    <div data-role="controlgroup" data-type="horizontal" id="headerRight"></div>
+    <div data-role="controlgroup" data-type="horizontal" id="headerRight" class="ui-btn-right"></div>
   </div>
 </script>
 
@@ -192,10 +196,8 @@
 </script-->
 
 <script type="text/template" id="loginTemplate">
-  <div data-role="controlgroup" data-type="horizontal">
-    <a id="back" target="#" data-role="button" data-icon="back" class="back">Back</a>
-    <authenticateByFacebook mobile="y" />
-  </div>
+  <a id="back" target="#" data-role="button" data-icon="back" class="back">Back</a>
+  <authenticateByFacebook mobile="y" />
 </script>
 
 </div>
