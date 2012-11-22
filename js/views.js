@@ -54,8 +54,36 @@ Lablz.ResourceView = Backbone.View.extend({
     var backlinks = Utils.getPropertiesWith(list, "backLink");
     var backlinksWithCount = backlinks ? Utils.getPropertiesWith(backlinks, "count") : null;
     
-    var html = "";
+    var gridColsStr = this.model.constructor.gridCols;
+    gridCols = gridColsStr ? gridColsStr.replace(' ', '').split(',') : null;
+  
     var json = this.model.toJSON();
+    if (gridCols) {
+      var gridColsCount;
+      for (var i=0; i<gridCols.length; i++) {
+        var p = gridCols[i].trim();
+        if (p == 'DAV:displayname')
+          p = 'displayName';
+        if (!_.has(json, p))
+          continue;
+        gridColsCount++;
+      }
+//      if (gridColsCount != 0) {
+//        this.gridColsView = new Lablz.GridColsView({model: this.model, el: this.$('#gridColsHolder', this.el)});
+//        gridColsView.render();
+//      }
+    }
+    if (Utils.isA(this.model.constructor, 'ImageResource')) {
+      var propVal = json['featured'] || json['mediumImage'];
+      if (typeof propVal != 'undefined') {
+        if (propVal.indexOf('Image') == 0)
+          propVal = propVal.slice(6);
+        var iTemplate = _.template(Lablz.Templates.get('imagePT'));
+        this.$('#resourceImage').html(iTemplate({value: propVal}));
+      }
+    }
+    
+    var html = "";
 
     var displayedProps = [];
     var idx = 0;
@@ -83,7 +111,7 @@ Lablz.ResourceView = Backbone.View.extend({
           if (!Utils.isPropVisible(json, prop))
             continue;
 
-          displayedProps[idx++] = prop;
+          displayedProps[idx++] = p;
           json[p] = Utils.makeProp(prop, json[p]);
           if (!groupNameDisplayed) {
             html += this.propGroupsDividerTemplate({value: pgName});
@@ -96,7 +124,7 @@ Lablz.ResourceView = Backbone.View.extend({
     }
     groupNameDisplayed = false;
     for (var p in json) {
-      if ((displayedProps  &&  _.contains(displayedProps, meta[p])) ||  _.contains(backlinks, p))
+      if (!_.has(json, p) || (displayedProps  &&  _.contains(displayedProps, p)) ||  _.contains(backlinks, p))
         continue;
       
       var prop = meta[p];
@@ -113,7 +141,7 @@ Lablz.ResourceView = Backbone.View.extend({
         continue;
 
       if (displayedProps.length  &&  !groupNameDisplayed) {
-        html += '<li data-role="collapsible" data-content-theme="c" style="padding:0;border:0;border-collapse:collapse"><h2>Others</h2><ul data-role="listview">'; 
+        html += '<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'; 
         groupNameDisplayed = true;
       }
       
@@ -448,7 +476,7 @@ Lablz.ListPage = Backbone.View.extend({
     this.listView = new Lablz.ResourceListView({el: $('ul', this.el), model: this.model});
     this.listView.render();
 //    if (this.mapView)
-    if (this.model.isA("Locatable") || this.model.isA("Shape")) {
+    if (isGeo) {
       this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
       var self = this;
       setTimeout(self.mapView.render, 100);
