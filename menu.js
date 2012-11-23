@@ -10223,7 +10223,7 @@ var BacklinkImagesSlideshow = {
       return;
     }
 
-    if (!$t.slideshowArr)
+    if ($t.slideshowArr.length == 0)
       return;
 
     for (var i = 1; i < $t.slideshowArr.length; i++) {
@@ -10252,16 +10252,16 @@ var BacklinkImagesSlideshow = {
     this.slideshowArr[0].onThumbItemClick(event);
   },
   run : function() {
-    if (this.slideshowArr)
+    if (this.slideshowArr.length != 0)
       this.slideshowArr[0].run();
   },
   stop : function() {
-    if (this.slideshowArr)
+    if (this.slideshowArr.length != 0)
       this.slideshowArr[0].stop();
   },
   // called on a dialoag opening ("buy" dialog)
   stopAutomaticSiding : function() {
-    if (this.slideshowArr  &&  this.slideshowArr.length > 0)
+    if (this.slideshowArr.length != 0)
       this.slideshowArr[0].stopAutomaticSiding();
   }
 }
