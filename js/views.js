@@ -29,19 +29,37 @@ Lablz.Events.defaultClickHandler = function(e) {
 // Views
 Lablz.ResourceView = Backbone.View.extend({
   initialize: function(options) {
-    _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'render', 'tap', 'click', 'refresh'); // fixes loss of context for 'this' within methods
     this.propRowTemplate = _.template(Lablz.Templates.get('propRowTemplate'));
     this.propGroupsDividerTemplate = _.template(Lablz.Templates.get('propGroupsDividerTemplate'));
-    this.model.on('change', this.render, this);
+    this.model.on('change', this.refresh, this);
+//    Lablz.Events.on('refresh', this.refresh);
     return this;
   },
   events: {
     'click': 'click',
     'tap': 'tap',
   },
+  refresh: function() {
+    var collection, modified;
+    if (arguments[0] instanceof Backbone.Collection) {
+      collection = arguments[0];
+      modified = arguments[1];
+      if (collection != this.model.collection || !_.contains(modified, this.model.get('_uri')))
+        return this;
+    }
+    
+    if (this.$el.hasClass('ui-listview')) {
+      this.$('li').detach();
+      this.render();
+      this.$el.listview('refresh');
+    }
+    else
+      this.$el.listview().listview('refresh');
+  },
   tap: Lablz.Events.defaultTapHandler,  
   click: Lablz.Events.defaultClickHandler,
-  render: function(eventName) {
+  render: function(options) {
     console.log("render resource");
     var type = this.model.type;
     var meta = this.model.__proto__.constructor.properties;
@@ -57,6 +75,7 @@ Lablz.ResourceView = Backbone.View.extend({
     var gridColsStr = this.model.constructor.gridCols;
     gridCols = gridColsStr ? gridColsStr.replace(' ', '').split(',') : null;
   
+    var frag = document.createDocumentFragment();
     var json = this.model.toJSON();
     if (gridCols) {
       var gridColsCount;
@@ -68,10 +87,6 @@ Lablz.ResourceView = Backbone.View.extend({
           continue;
         gridColsCount++;
       }
-//      if (gridColsCount != 0) {
-//        this.gridColsView = new Lablz.GridColsView({model: this.model, el: this.$('#gridColsHolder', this.el)});
-//        gridColsView.render();
-//      }
     }
     if (Utils.isA(this.model.constructor, 'ImageResource')) {
       var propVal = json['featured'] || json['mediumImage'];
@@ -79,12 +94,11 @@ Lablz.ResourceView = Backbone.View.extend({
         if (propVal.indexOf('Image') == 0)
           propVal = propVal.slice(6);
         var iTemplate = _.template(Lablz.Templates.get('imagePT'));
-        this.$('#resourceImage').html(iTemplate({value: propVal}));
+        U.addToFrag(frag, '<li><div>' + iTemplate({value: decodeURIComponent(propVal)}) + '</li></div>');
+//        this.$el.append('<div>' + iTemplate({value: decodeURIComponent(propVal)}) + '</div>');
       }
     }
     
-    var html = "";
-
     var displayedProps = [];
     var idx = 0;
     var groupNameDisplayed;
@@ -96,9 +110,10 @@ Lablz.ResourceView = Backbone.View.extend({
         groupNameDisplayed = false;
         for (var j = 0; j < props.length; j++) {
           var p = props[j].trim();
-          if (!_.has(json, p) || _.contains(backlinks, p))
-            continue;
           var prop = meta[p];
+          if (!_.has(json, p) || _.contains(backlinks, prop))
+            continue;
+          
           if (!prop) {
             delete json[p];
             continue;
@@ -114,20 +129,24 @@ Lablz.ResourceView = Backbone.View.extend({
           displayedProps[idx++] = p;
           json[p] = Utils.makeProp(prop, json[p]);
           if (!groupNameDisplayed) {
-            html += this.propGroupsDividerTemplate({value: pgName});
+//            this.$el.append(this.propGroupsDividerTemplate({value: pgName}));
+            U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
             groupNameDisplayed = true;
           }
-          
-          html += this.propRowTemplate(json[p]);
+
+//          this.$el.append(this.propRowTemplate(json[p]));
+          U.addToFrag(frag, this.propRowTemplate(json[p]));
         }
       }
     }
+    
+    var otherLi;
     groupNameDisplayed = false;
     for (var p in json) {
-      if (!_.has(json, p) || (displayedProps  &&  _.contains(displayedProps, p)) ||  _.contains(backlinks, p))
+      var prop = meta[p];
+      if (!_.has(json, p) || (displayedProps  &&  _.contains(displayedProps, p)) ||  _.contains(backlinks, prop))
         continue;
       
-      var prop = meta[p];
       if (!prop) {
         delete json[p];
         continue;
@@ -141,18 +160,28 @@ Lablz.ResourceView = Backbone.View.extend({
         continue;
 
       if (displayedProps.length  &&  !groupNameDisplayed) {
-        html += '<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'; 
+        otherLi = '<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">';
+//        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
         groupNameDisplayed = true;
       }
       
       json[p] = Utils.makeProp(prop, json[p]);
-      html += this.propRowTemplate(json[p]);
+      if (otherLi)
+        otherLi += this.propRowTemplate(json[p]);
+      else
+        U.addToFrag(frag, this.propRowTemplate(json[p]));
+//      this.$el.append(this.propRowTemplate(json[p]));
     }
-    if (displayedProps.length  &&  groupNameDisplayed)
-      html += "</ul></li>";
+    
+    otherLi && U.addToFrag(frag, otherLi);
+//    if (displayedProps.length  &&  groupNameDisplayed)
+//      this.$el.append("</ul></li>");
     
 //    var j = {"props": json};
-    this.$el.html(html);
+//    this.$el.html(html);
+    if (!options || options.setHTML)
+      this.$el.html(frag);
+    
     var self = this;
 
     this.rendered = true;
@@ -407,12 +436,16 @@ Lablz.LoginButtons = Backbone.View.extend({
     return this;
   },
   render: function(options) {
-    if (typeof options !== 'undefined' && options.append)
-      this.$el.append(this.template());
-    else
-      this.$el.html(this.template());
+    var method = options && options.append ? 'append' : 'html';
+    var socials = this.template();
+    if (socials.indexOf('data-socialnet') == -1) {
+      this.$el[method](_.template(Lablz.Templates.get('logoutButtonTemplate'))());
+      return this;
+    }
     
-    _.each(this.$('a'), function(a) {
+    this.$el[method](socials);
+    var btns = this.$('a[data-socialNet]');
+    _.each(btns, function(a) {
       if (a.href) {
         var base = a.href.split('?');
         base = base[0];
@@ -433,8 +466,7 @@ Lablz.LoginButtons = Backbone.View.extend({
 Lablz.ListPage = Backbone.View.extend({
   template: 'resource-list',
   initialize:function () {
-    _.bindAll(this, 'render', 'tap', 'showMapButton', 'nextPage', 'click');
-    Lablz.Events.on("mapReady", this.showMapButton);
+    _.bindAll(this, 'render', 'tap', 'nextPage', 'click');
     this.template = _.template(Lablz.Templates.get(this.template));
 //    if (this.model.isA("Locatable") || this.model.isA("Shape"))
 //      this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
@@ -447,13 +479,6 @@ Lablz.ListPage = Backbone.View.extend({
   nextPage: function(e) {
     Lablz.Events.trigger('nextPage', this.model);    
   },
-  showMapButton: function(e) {
-//    var mBtn = new Lablz.MapItButton({model: this.model, el: this.header.$('#headerRight')}).render();
-//    this.buttons.right.push(mBtn);
-//    this.header.render();
-//    this.header.makeWidget(mBtn);
-//    this.header.$el.trigger('create');
-  },
   tap: Lablz.Events.defaultTapHandler,
   click: Lablz.Events.defaultClickHandler,  
   render:function (eventName) {
@@ -462,7 +487,7 @@ Lablz.ListPage = Backbone.View.extend({
     this.$el.html(this.template(this.model.toJSON()));
     var isGeo = this.model.isA("Locatable") || this.model.isA("Shape");
     this.buttons = {
-      left: [Lablz.LoginButtons],
+      left: [Lablz.BackButton, Lablz.LoginButtons],
       right: isGeo ? [Lablz.MapItButton, Lablz.AroundMeButton] : null
     };
     
@@ -475,15 +500,11 @@ Lablz.ListPage = Backbone.View.extend({
     
     this.listView = new Lablz.ResourceListView({el: $('ul', this.el), model: this.model});
     this.listView.render();
-//    if (this.mapView)
     if (isGeo) {
       this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
       var self = this;
       setTimeout(self.mapView.render, 100);
     }
-    
-//    this.header.$el.trigger('create');    
-    this.listView.$el.trigger('create');
     
     if (!this.$el.parentNode) 
       $('body').append(this.$el);
@@ -495,8 +516,8 @@ Lablz.ListPage = Backbone.View.extend({
 
 Lablz.ViewPage = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'tap', 'showMapButton', 'click', 'edit');
-    this.model.on('change', this.render, this);
+    _.bindAll(this, 'render', 'tap', 'click', 'edit');
+//    this.model.on('change', this.render, this);
     this.template = _.template(Lablz.Templates.get('resource'));
     Lablz.Events.on("mapReady", this.showMapButton);
   },
@@ -510,11 +531,6 @@ Lablz.ViewPage = Backbone.View.extend({
     app.navigate('view/' + encodeURIComponent(this.model.get('_uri')) + "?-edit=y", {trigger: true, replace: true});
     return this;
   },
-  showMapButton: function(e) {
-//    var mBtn = new Lablz.MapItButton({model: this.model}).render();
-//    this.buttons.right.push(mBtn);
-//    this.header.render();
-  },
   tap: Lablz.Events.defaultTapHandler,
   click: Lablz.Events.defaultClickHandler,  
   render:function (eventName) {
@@ -523,7 +539,7 @@ Lablz.ViewPage = Backbone.View.extend({
     
     var isGeo = this.model.isA("Locatable") || this.model.isA("Shape");
     this.buttons = {
-        left: [Lablz.BackButton],
+        left: [Lablz.BackButton, Lablz.LoginButtons],
         right: isGeo ? [Lablz.AroundMeButton] : null,
     };
     
@@ -581,10 +597,36 @@ Lablz.ResourceListView = Backbone.View.extend({
   initialize:function () {
     _.bindAll(this, 'render', 'tap', 'swipe', 'checkScroll', 'getNextPage', 'renderMany', 'renderOne', 'refresh', 'changed'); // fixes loss of context for 'this' within methods
     Lablz.Events.on('nextPage', this.getNextPage);
-    this.model.on('refresh', this.refresh, this);
+    Lablz.Events.on('refresh', this.refresh);
     this.model.on('add', this.renderOne, this);
     this.model.on('reset', this.render, this);
     return this;
+  },
+  refresh: function(model, modified) {
+    if (model != this.model)
+      return this;
+    
+    if (this.$el.hasClass('ui-listview')) {
+      //Element is already initialized
+      var lis = this.$('li').detach();
+      var frag = document.createDocumentFragment();
+      for (var i = 0; i < lis.length; i++) {
+        var m = this.model.models[i];
+        if (_.contains(modified, m.get('_uri'))) {
+          var liView = new Lablz.ResourceListItemView({model: m}).render();
+          frag.appendChild(liView.el);
+        }
+        else
+          frag.appendChild(lis[i]);
+      }
+      
+      this.$el.html(frag);
+//      this.renderMany(this.model.models.slice(0, lis.length));
+      this.$el.listview('refresh');
+    } else {
+      //Element has not been initiliazed
+      this.$el.listview().listview('refresh');
+    }
   },
   getNextPage: function() {
     this.isLoading = true;
@@ -613,22 +655,15 @@ Lablz.ResourceListView = Backbone.View.extend({
   swipe: function(e) {
     console.log("swipe");
   },
-  refresh: function() {
-    var self = this;
-    this.$el.listview();
-    this.$el.listview('refresh');
-    this.$el.parentNode && this.$el.parentNode.page();
-  },
   changed: function(view) {
     this.changedViews.push(view);
   },
   renderOne: function(model) {
     var liView = new Lablz.ResourceListItemView({model:model});
-    liView.on('change', this.changed);
     this.$el.append(liView.render().el);
     return this;
   },
-  renderMany: function(models, init) {
+  renderMany: function(models) {
     if (models instanceof Backbone.Model) // one model
       this.renderOne(models);
     else {
@@ -636,7 +671,6 @@ Lablz.ResourceListView = Backbone.View.extend({
       var frag = document.createDocumentFragment();
       _.forEach(models, function(model) {
         var liView = new Lablz.ResourceListItemView({model:model});
-        liView.on('change', self.changed);
         frag.appendChild(liView.render().el);
       });
       
@@ -647,8 +681,9 @@ Lablz.ResourceListView = Backbone.View.extend({
   },
   render: function(e) {
     console.log("render listView");
-		this.renderMany(this.model.models, true);
-		e && this.refresh(e);
+    this.numDisplayed = 0;
+		this.renderMany(this.model.models);
+//		e && this.refresh(e);
 
     this.rendered = true;
 		return this;
@@ -659,10 +694,11 @@ Lablz.ResourceListItemView = Backbone.View.extend({
   tagName:"li",
   
 	initialize: function(options) {
-    _.bindAll(this, 'render', 'tap', 'changed'); // fixes loss of context for 'this' within methods
+    _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
 		this.template = _.template(Lablz.Templates.get('listItemTemplate'));
-//    this.model.on('change', this.changed, this);
-    this.model.on('change', this.changed, this);
+		
+		// resourceListView will call render on this element
+//    this.model.on('change', this.render, this);
     this.parentView = options && options.parentView;
 		return this;
 	},
@@ -670,20 +706,10 @@ Lablz.ResourceListItemView = Backbone.View.extend({
     'tap': 'tap',
     'click': 'click'
   },
-  changed: function() {
-    this.render.apply(this, arguments);
-    this.trigger('change', this);
-    return this;
-  },
   tap: Lablz.Events.defaultTapHandler,
   click: Lablz.Events.defaultClickHandler,  
   render: function(event) {
-//    var exists = !!this.$el.html();
-//    var parent = exists && this.$el.parentNode;
-//    exists && this.$el.remove();
-      
-    this.$el.html(this.template(this.model.toJSON()));
-//    exists && parent.append(this.$el);
+    this.$el.html(this.template(this.model.toJSON()));    
     return this;
   }
 });
@@ -693,20 +719,8 @@ Lablz.ToggleButton = Backbone.View.extend({
   initialize: function(options) {
     _.bindAll(this, 'setStyle', 'resetStyle');
     this.active = (options && options.active) || (this.isActive && this.isActive());
-//    this.on('click', this.onclick);
-//    var eName = 'click #' + this.btnId;
-//    this.originalOnclick = this.events[eName];
-//    this.events[eName] = 'onclick';
     Lablz.Events.on("changePage", this.resetStyle);
   },
-//  onclick: function(e) {
-//    console.log('clicked toggle button');
-//    return true;
-//    if (this.originalOnclick)
-//      return this[this.originalOnclick].apply(this, arguments);
-//    else
-//      return this;
-//  },
   isActive: function() {
     return this.active;
   },
@@ -826,7 +840,7 @@ Lablz.AroundMeButton = Lablz.ToggleButton.extend({
 Lablz.BackButton = Backbone.View.extend({
   template: 'backButtonTemplate',
   events: {
-    'click': 'back'
+    'click #back': 'back'
   },
   initialize: function(options) {
     _.bindAll(this, 'render', 'back');
@@ -839,8 +853,15 @@ Lablz.BackButton = Backbone.View.extend({
     window.history.back();
     return this;
   },
-  render: function() {
-    this.$el.html(this.template());
+  render: function(options) {
+    if (!this.template)
+      return this;
+    
+    if (typeof options !== 'undefined' && options.append)
+      this.$el.append(this.template());
+    else
+      this.$el.html(this.template());
+    
     return this;
   }
 });
@@ -853,14 +874,6 @@ Lablz.Header = Backbone.View.extend({
     this.template = _.template(Lablz.Templates.get(this.template));
     return this;
   },
-//  events: {
-//    'click': 'clickButton',
-//  },
-//  clickButton: function(e) {
-//    e.preventDefault();
-//    console.log("clicked button: " + e);
-//    return this;
-//  },
   makeWidget: function(options) {
     var w = options.widget;
     if (typeof w != 'function') {
@@ -869,8 +882,6 @@ Lablz.Header = Backbone.View.extend({
     }
     
     w = new w({model: this.model, el: this.$(options.id)}).render({append: true});
-//    w = new w({model: this.model}).render();
-//    this.$(options.id).append(w.el);
     w.$(options.domEl).addClass(options.css);
     w.$el.trigger('create');
     return this;

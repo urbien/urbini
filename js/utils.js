@@ -573,7 +573,7 @@ Utils.getFormattedDate = function(time) {
 }
 
 Utils.isPropVisible = function(res, prop) {
-  if (prop.avoidDisplaying)
+  if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel)
     return false;
   
   var userRole = Lablz.currentUser ? Lablz.currentUser.role || 'contact' : 'guest';
@@ -605,4 +605,12 @@ Utils.isPropVisible = function(res, prop) {
 
 Utils.decode = function(str) {
   return decodeURIComponent(str).replace(/\+/g, ' ');
+}
+
+Utils.toHTMLElement = function(html) {
+  return $(html)[0];
+}
+
+Utils.addToFrag = function(frag, html) {
+  frag.appendChild(U.toHTMLElement(html));
 }

@@ -6,7 +6,6 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <div id="headerDiv"></div>
-  <!--div id="map" data-role="none"></div-->
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c">
@@ -21,9 +20,10 @@
 
 <script type="text/template" id="resource">
   <div id="headerDiv"></div>
-  <div id="resourceView" data-role="content">
-    <div id="resourceImage"></div>
-    <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true"></ul>
+  <div id="resourceViewHolder" data-role="content">
+    
+    <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true">
+    </ul>
   </div>
   
   <div data-role="footer">
@@ -120,7 +120,7 @@
 </script>
 
 <script type="text/template" id="imagePT">
-  <img src="{{= value }}"></img>
+  <img src="{{= Lablz.serverName + '/' + value }}"></img>
 </script>
 <!-- script type="text/template" id="imagePT">
     {{ if (typeof mediumImage != 'undefined') { }}
@@ -165,6 +165,10 @@
   <a id="back" target="#" data-role="button" data-icon="back" class="back">Back</a>
 </script>
 
+<script type="text/template" id="logoutButtonTemplate">
+  <a id="logout" data-role="button" data-icon="logout" class="icon next" href="{{= 'j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent('register/user-login.html?-mobile=y&amp;returnUri=' + encodeURIComponent(window.location.href)) }}">Logout</a>
+</script>
+
 <script type="text/template" id="aroundMeButtonTemplate">
   <a id="aroundMe" target="#" data-role="button" class="icon next">Around Me</a>
 </script>
@@ -200,7 +204,6 @@
 </script-->
 
 <script type="text/template" id="loginTemplate">
-  <a id="back" target="#" data-role="button" data-icon="back" class="back">Back</a>
   <authenticateByFacebook mobile="y" />
 </script>
 

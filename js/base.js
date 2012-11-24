@@ -425,7 +425,7 @@ Backbone.sync = function(method, model, options) {
       for (var i = 0; i < results.length; i++) {
         var r = results[i];
         var longUri = Utils.getLongUri(r._uri, model.type);
-        var saved = model.get(longUri)[tsProp];
+        var saved = model.get(longUri).get(tsProp);
 //        var saved = $.grep(model.models, function(o) {
 //          return o.id == longUri;
 //        })[0][tsProp];
@@ -439,16 +439,19 @@ Backbone.sync = function(method, model, options) {
         }
       }
       
+      var modified = [];
       if (toAdd.length) {
         for (var i = 0; i < toAdd.length; i++) {
           var existing = model.get(toAdd[i]._uri);
-          if (existing)
+          if (existing) {
             existing.set(toAdd[i]);
+            modified.push(toAdd[i]._uri);
+          }
           else
             model.add(new model.model(toAdd[i]));
         }
         
-        model.trigger('refresh', model);
+        Lablz.Events.trigger('refresh', model, modified);
         Lablz.indexedDB.addItems(toAdd, model.shortName);
       }
     }
@@ -1067,7 +1070,7 @@ Lablz.loadStoredModels = function(models) {
 
 // END /////////// Local Storage //////////// END //
 
-Lablz.pageRoot = "bb";
+//Lablz.pageRoot = "app";
 Lablz.serverName = (function() {     
   var baseUriO = document.getElementsByTagName('base');
   var baseUri = "";
@@ -1234,6 +1237,6 @@ Lablz.Templates = {
     getPropTemplate: function(prop, edit) {
       var t = edit ? this.propEditTemplates : this.propTemplates;
       var f = 'http://www.hudsonfog.com/voc/system/fog/Property/facet';
-      return (prop[f] && t[prop[f]]) || t[prop.range] || t.string;
+      return (prop[f] && t[prop[f]]) || t[prop.range] || (edit ? t.string : t.resource);
     }
 };
