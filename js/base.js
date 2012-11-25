@@ -587,8 +587,6 @@ Lablz.getInit = function() {
 
 // START ///////////// IndexedDB stuff //////////////// START ///
 
-window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB;
-
 if ('webkitIndexedDB' in window) {
   window.IDBTransaction = window.webkitIDBTransaction;
   window.IDBKeyRange = window.webkitIDBKeyRange;
@@ -824,7 +822,7 @@ Lablz.indexedDB.addItems = function(items, className) {
     return;
   }
   
-  var trans = db.transaction([className], "readwrite");
+  var trans = db.transaction([className], IDBTransaction.READ_WRITE);
   var store = trans.objectStore(className);
   _.each(items, function(item) {
     var request = store.put(item);
@@ -847,7 +845,7 @@ Lablz.indexedDB.deleteItem = function(uri) {
   var type = Utils.getType(item._uri);
   var name = Utils.getClassName(type);
   var db = Lablz.indexedDB.db;
-  var trans = db.transaction([type], "readwrite");
+  var trans = db.transaction([type], IDBTransaction.READ_WRITE);
   var store = trans.objectStore(type);
   var request = store.delete(uri);
 
@@ -876,7 +874,7 @@ Lablz.indexedDB.getDataAsync = function(options) {
   if (!db || !db.objectStoreNames.contains(name))
     return false;
   
-  var trans = db.transaction([name], "readonly");
+  var trans = db.transaction([name], IDBTransaction.READ_ONLY);
   var store = trans.objectStore(name);
   var request = store.get(Utils.getShortUri(uri, Lablz.shortNameToModel[name]));
   request.onsuccess = function(e) {
@@ -908,7 +906,7 @@ Lablz.indexedDB.getItems = function(options) {
   if (!db || !db.objectStoreNames.contains(name))
     return false;
   
-  var trans = db.transaction([name], "readonly");
+  var trans = db.transaction([name], IDBTransaction.READ_ONLY);
   var store = trans.objectStore(name);
 
   var lowerBound;
