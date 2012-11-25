@@ -613,8 +613,11 @@ Lablz.indexedDB.onabort = function(e) {
 
 Lablz.indexedDB.clear = function() {
   var db = Lablz.indexedDB.db;
+  var rModels = Lablz.requiredModels && _.map(Lablz.requiredModels.models, function(model) {return model.shortName}) || [];
   _.each(db.objectStoreNames, function(name) {            
-    db.deleteObjectStore(name); 
+    db.deleteObjectStore(name);
+    if (_.contains(rModels, name))
+      db.createObjectStore(name, Lablz.indexedDB.defaultOptions);
   })
   
   Lablz.currentUser._reset = false;
@@ -951,8 +954,7 @@ Lablz.checkUser = function() {
   var p = localStorage.getItem(contactKey);
   var c = Lablz.currentUser;
   if ((p && !c) || (!p && c) || (p && c && JSON.parse(p)._uri != c._uri)) {
-    // clear storage
-    localStorage.clear();
+    // no need to clear localStorage, it's only used to store models, which can be shared
     if (c) {
       localStorage.setItem(contactKey, JSON.stringify(c));
       Lablz.currentUser._reset = true;
@@ -960,6 +962,7 @@ Lablz.checkUser = function() {
     else
       Lablz.currentUser = {_reset: true};
     
+    Lablz.newModels = _.filter(_.keys(Lablz.shortNameToModel), function(name) {return name != 'Resource'});
     return;
   }
 }
@@ -1093,7 +1096,8 @@ Lablz.fetchModels = function(models, options) {
     return;
   }
   
-  $.ajax(Lablz.serverName + "/backboneModel?type=" + encodeURIComponent(models.join ? models.join(",") : models), {complete: 
+  var modelsCsv = models.join ? models.join(",") : models;
+  $.ajax(Lablz.serverName + "/backboneModel?type=" + encodeURIComponent(modelsCsv), {complete: 
     function(jqXHR, status) {
       if (status != 'success') {
         console.log("couldn't fetch models");
@@ -1108,7 +1112,7 @@ Lablz.fetchModels = function(models, options) {
       try {
         eval(jqXHR.responseText);
       } catch (err) {
-        console.log("couldn't eval response from server");
+        console.log("couldn't eval response from server. Requested models: " + modelsCsv);
         if (error)
           error();
         
