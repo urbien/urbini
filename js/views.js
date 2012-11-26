@@ -226,10 +226,12 @@ Lablz.ResourceImageView = Backbone.View.extend({
       var ratio = maxH / oHeight;
       w = w * ratio;
     }
+    if (w > maxW - 30)  // padding: 15px
+      w = maxW - 30;
     var iTemplate = "<img src='" + decodeURIComponent(propVal) +"' width='" + w + "'>";
     var li = '<div';
 //    if (w == maxW) 
-//      li += ' style="margin-left: -25px; margin-top: -12px;"';
+//      li += ' style="margin-left: -15px;"';
     
     li += '>';
     li += '<a href="#view/' + encodeURIComponent(this.model.get('_uri')) + '">' + iTemplate + '</a></div>';
