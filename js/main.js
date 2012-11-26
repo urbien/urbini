@@ -4,9 +4,9 @@ var App = Backbone.Router.extend({
 
   routes:{
       ":type":"list",
+      "view/*path":"view"
 //      "edit/*path":"edit",
-      "view/*path":"view",
-      "map/*type":"map"
+//      "map/*type":"map"
   },
   CollectionViews: {},
   Views: {},

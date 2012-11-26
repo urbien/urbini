@@ -92,7 +92,7 @@
 ]]>	  		
 		</script>
 		
-  <cityAdsPixel />
-  <clickburner />
+  <!--cityAdsPixel />
+  <clickburner /-->
   </body>
 </html>

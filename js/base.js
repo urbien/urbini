@@ -587,8 +587,6 @@ Lablz.getInit = function() {
 
 // START ///////////// IndexedDB stuff //////////////// START ///
 
-window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB;
-
 if ('webkitIndexedDB' in window) {
   window.IDBTransaction = window.webkitIDBTransaction;
   window.IDBKeyRange = window.webkitIDBKeyRange;
@@ -615,8 +613,11 @@ Lablz.indexedDB.onabort = function(e) {
 
 Lablz.indexedDB.clear = function() {
   var db = Lablz.indexedDB.db;
+  var rModels = Lablz.requiredModels && _.map(Lablz.requiredModels.models, function(model) {return model.shortName}) || [];
   _.each(db.objectStoreNames, function(name) {            
-    db.deleteObjectStore(name); 
+    db.deleteObjectStore(name);
+    if (_.contains(rModels, name))
+      db.createObjectStore(name, Lablz.indexedDB.defaultOptions);
   })
   
   Lablz.currentUser._reset = false;
@@ -824,7 +825,7 @@ Lablz.indexedDB.addItems = function(items, className) {
     return;
   }
   
-  var trans = db.transaction([className], "readwrite");
+  var trans = db.transaction([className], IDBTransaction.READ_WRITE);
   var store = trans.objectStore(className);
   _.each(items, function(item) {
     var request = store.put(item);
@@ -847,7 +848,7 @@ Lablz.indexedDB.deleteItem = function(uri) {
   var type = Utils.getType(item._uri);
   var name = Utils.getClassName(type);
   var db = Lablz.indexedDB.db;
-  var trans = db.transaction([type], "readwrite");
+  var trans = db.transaction([type], IDBTransaction.READ_WRITE);
   var store = trans.objectStore(type);
   var request = store.delete(uri);
 
@@ -876,7 +877,7 @@ Lablz.indexedDB.getDataAsync = function(options) {
   if (!db || !db.objectStoreNames.contains(name))
     return false;
   
-  var trans = db.transaction([name], "readonly");
+  var trans = db.transaction([name], IDBTransaction.READ_ONLY);
   var store = trans.objectStore(name);
   var request = store.get(Utils.getShortUri(uri, Lablz.shortNameToModel[name]));
   request.onsuccess = function(e) {
@@ -908,7 +909,7 @@ Lablz.indexedDB.getItems = function(options) {
   if (!db || !db.objectStoreNames.contains(name))
     return false;
   
-  var trans = db.transaction([name], "readonly");
+  var trans = db.transaction([name], IDBTransaction.READ_ONLY);
   var store = trans.objectStore(name);
 
   var lowerBound;
@@ -953,8 +954,7 @@ Lablz.checkUser = function() {
   var p = localStorage.getItem(contactKey);
   var c = Lablz.currentUser;
   if ((p && !c) || (!p && c) || (p && c && JSON.parse(p)._uri != c._uri)) {
-    // clear storage
-    localStorage.clear();
+    // no need to clear localStorage, it's only used to store models, which can be shared
     if (c) {
       localStorage.setItem(contactKey, JSON.stringify(c));
       Lablz.currentUser._reset = true;
@@ -962,6 +962,7 @@ Lablz.checkUser = function() {
     else
       Lablz.currentUser = {_reset: true};
     
+    Lablz.newModels = _.filter(_.keys(Lablz.shortNameToModel), function(name) {return name != 'Resource'});
     return;
   }
 }
@@ -1095,7 +1096,8 @@ Lablz.fetchModels = function(models, options) {
     return;
   }
   
-  $.ajax(Lablz.serverName + "/backboneModel?type=" + encodeURIComponent(models.join ? models.join(",") : models), {complete: 
+  var modelsCsv = models.join ? models.join(",") : models;
+  $.ajax(Lablz.serverName + "/backboneModel?type=" + encodeURIComponent(modelsCsv), {complete: 
     function(jqXHR, status) {
       if (status != 'success') {
         console.log("couldn't fetch models");
@@ -1110,7 +1112,7 @@ Lablz.fetchModels = function(models, options) {
       try {
         eval(jqXHR.responseText);
       } catch (err) {
-        console.log("couldn't eval response from server");
+        console.log("couldn't eval response from server. Requested models: " + modelsCsv);
         if (error)
           error();
         

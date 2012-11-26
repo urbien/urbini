@@ -162,7 +162,7 @@
 </script>
 
 <script type="text/template" id="logoutButtonTemplate">
-  <a id="logout" data-role="button" data-icon="logout" class="icon next" href="{{= 'j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent('register/user-login.html?-mobile=y&amp;returnUri=' + encodeURIComponent(window.location.href)) }}">Logout</a>
+  <a id="logout" data-role="button" data-icon="logout" class="icon next" href="{{= 'j_security_check?j_signout=true&amp;returnUri=' + encodeURIComponent(window.location.href) }}">Logout</a>
 </script>
 
 <script type="text/template" id="aroundMeButtonTemplate">
