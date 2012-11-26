@@ -32,3 +32,5 @@
 .ui-icon-live {
   background-image: url(/icons/windows-live-mid.png);
 }
+
+.ui-content .ui-listview-inset { margin: 0; }
