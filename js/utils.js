@@ -23,6 +23,17 @@ Utils.getPrimaryKeys = function(model) {
 //      });
 }
 
+Utils.getCloneOf = function(meta, cloneOf) {
+  var keys = [];
+    for (var p in meta) {
+    if (_.has(meta[p], "cloneOf")  &&  meta[p]['cloneOf'].indexOf(cloneOf) != -1) {
+      keys.push(p);
+    }
+  }
+  
+  return keys;
+}
+
 Utils.getLongUri = function(uri, type, primaryKeys) {
   if (uri.indexOf('http') == 0) {
     // uri is either already of the right form: http://urbien.com/sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000 or of form http://www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
@@ -613,4 +624,20 @@ Utils.toHTMLElement = function(html) {
 
 Utils.addToFrag = function(frag, html) {
   frag.appendChild(U.toHTMLElement(html));
+}
+
+Utils.hasImages = function(models) {
+  var m = models[0];
+  var meta = m.__proto__.constructor.properties;
+  var cloneOf;
+  var hasImgs = Utils.isA(m.constructor, 'ImageResource')  &&  meta != null  &&  (cloneOf = U.getCloneOf(meta, 'ImageResource.mediumImage')).length != 0;
+  if (!hasImgs)
+    return false;
+  hasImgs = false;
+  for (var i = 0; !hasImgs  &&  i < models.length; i++) {
+    var m = models[i];
+    if (m.get(cloneOf))
+      hasImgs = true;
+  }
+  return hasImgs;
 }
