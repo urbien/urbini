@@ -67,37 +67,13 @@ Lablz.ResourceView = Backbone.View.extend({
     if (!meta)
       return this;
     
+    var json = this.model.toJSON();
+    var frag = document.createDocumentFragment();
+
     var list = _.toArray(meta);
     var propGroups = Utils.getPropertiesWith(list, "propertyGroupList");
     var backlinks = Utils.getPropertiesWith(list, "backLink");
     var backlinksWithCount = backlinks ? Utils.getPropertiesWith(backlinks, "count") : null;
-    
-    var gridColsStr = this.model.constructor.gridCols;
-    gridCols = gridColsStr ? gridColsStr.replace(' ', '').split(',') : null;
-  
-    var frag = document.createDocumentFragment();
-    var json = this.model.toJSON();
-    if (gridCols) {
-      var gridColsCount;
-      for (var i=0; i<gridCols.length; i++) {
-        var p = gridCols[i].trim();
-        if (p == 'DAV:displayname')
-          p = 'displayName';
-        if (!_.has(json, p))
-          continue;
-        gridColsCount++;
-      }
-    }
-    if (Utils.isA(this.model.constructor, 'ImageResource')) {
-      var propVal = json['featured'] || json['mediumImage'];
-      if (typeof propVal != 'undefined') {
-        if (propVal.indexOf('Image') == 0)
-          propVal = propVal.slice(6);
-        var iTemplate = _.template(Lablz.Templates.get('imagePT'));
-        U.addToFrag(frag, '<li><div>' + iTemplate({value: decodeURIComponent(propVal)}) + '</li></div>');
-//        this.$el.append('<div>' + iTemplate({value: decodeURIComponent(propVal)}) + '</div>');
-      }
-    }
     
     var displayedProps = [];
     var idx = 0;
@@ -111,7 +87,7 @@ Lablz.ResourceView = Backbone.View.extend({
         for (var j = 0; j < props.length; j++) {
           var p = props[j].trim();
           var prop = meta[p];
-          if (!_.has(json, p) || _.contains(backlinks, prop))
+          if (!_.has(json, p) || _.contains(backlinks, prop)) //  || _.contains(gridCols, p))
             continue;
           
           if (!prop) {
@@ -188,6 +164,82 @@ Lablz.ResourceView = Backbone.View.extend({
     return this;
   }
 });
+
+
+Lablz.ResourceImageView = Backbone.View.extend({
+  initialize: function(options) {
+    _.bindAll(this, 'render', 'tap', 'click'); // fixes loss of context for 'this' within methods
+    return this;
+  },
+  events: {
+    'click': 'click',
+    'tap': 'tap',
+  },
+  tap: Lablz.Events.defaultTapHandler,  
+  click: Lablz.Events.defaultClickHandler,
+  refresh: function() {
+    console.log("refresh resource");
+    return this;
+  },
+  render: function(options) {
+    console.log("render resource");
+    var type = this.model.type;
+    var meta = this.model.__proto__.constructor.properties;
+    meta = meta || this.model.properties;
+    if (!meta)
+      return this;
+    
+    if (!Utils.isA(this.model.constructor, 'ImageResource')) 
+      return this;
+//      var props = U.getCloneOf(meta, 'ImageResource.mediumImage')
+    var props = U.getCloneOf(meta, 'ImageResource.bigImage');
+    if (props.length == 0)
+      props = U.getCloneOf(meta, 'ImageResource.originalImage');
+    if (!props.length) 
+      return this;
+    var json = this.model.toJSON();
+    var propVal = json[props[0]];
+    if (typeof propVal == 'undefined') 
+      return this;
+    var frag = document.createDocumentFragment();
+    var isHorizontal = ($(window).height() < $(window).width());
+
+    if (propVal.indexOf('Image') == 0)
+      propVal = propVal.slice(6);
+//          var iTemplate = _.template(Lablz.Templates.get('imagePT'));
+//          li += '<div><a href="#view/' + encodeURIComponent(this.model.get('_uri')) + '">' + iTemplate({value: decodeURIComponent(propVal)}) + '</a>';
+
+    var maxW = $(window).width();
+    var maxH = $(window).height();
+    var oWidth = json['originalWidth'];
+    var oHeight = json['originalHeight'];
+    var w;
+    var h;
+    if (oWidth > maxW) {
+      var ratio = maxW / oWidth;
+      w = maxW;
+    }
+    else if (oWidth != 0) {
+      w = oWidth;
+    }
+    if (oHeight > maxH) {
+      var ratio = maxH / oHeight;
+      w = w * ratio;
+    }
+    var iTemplate = "<img src='" + decodeURIComponent(propVal) +"' width='" + w + "'>";
+    var li = '<div';
+//    if (w == maxW) 
+//      li += ' style="margin-left: -25px; margin-top: -12px;"';
+    
+    li += '>';
+    li += '<a href="#view/' + encodeURIComponent(this.model.get('_uri')) + '">' + iTemplate + '</a></div>';
+
+    U.addToFrag(frag, li);
+    this.$el.html(frag);
+    return this;
+  }
+});
+
 
 //Lablz.ResourceEditView = Backbone.View.extend({
 //  initialize: function(options) {
@@ -552,6 +604,8 @@ Lablz.ViewPage = Backbone.View.extend({
     
     this.header.$el.trigger('create');
     
+    this.imageView = new Lablz.ResourceImageView({el: $('div#resourceImage', this.el), model: this.model});
+    this.imageView.render();
     this.view = new Lablz.ResourceView({el: $('ul#resourceView', this.el), model: this.model});
     this.view.render();
     this.rendered = true;
@@ -610,11 +664,14 @@ Lablz.ResourceListView = Backbone.View.extend({
       //Element is already initialized
       var lis = this.$('li').detach();
       var frag = document.createDocumentFragment();
+      
+      var hasImgs = U.hasImages(this.model.models);
       for (var i = 0; i < lis.length; i++) {
         var m = this.model.models[i];
         if (_.contains(modified, m.get('_uri'))) {
-          var liView = new Lablz.ResourceListItemView({model: m}).render();
-          frag.appendChild(liView.el);
+          var liView = hasImgs ? new Lablz.ResourceListItemView({model:m, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:m});
+//              new Lablz.ResourceListItemView({model: m}).render();
+          frag.appendChild(liView.render().el);
         }
         else
           frag.appendChild(lis[i]);
@@ -659,7 +716,11 @@ Lablz.ResourceListView = Backbone.View.extend({
     this.changedViews.push(view);
   },
   renderOne: function(model) {
-    var liView = new Lablz.ResourceListItemView({model:model});
+    var meta = model.__proto__.constructor.properties;
+    meta = meta || model.properties;
+
+    var hasImgs = Utils.isA(model.constructor, 'ImageResource')  &&  meta != null  &&  U.getCloneOf(meta, 'ImageResource.mediumImage').length != 0; 
+    var liView = hasImgs ? new Lablz.ResourceListItemView({model:model, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:model});
     this.$el.append(liView.render().el);
     return this;
   },
@@ -668,9 +729,12 @@ Lablz.ResourceListView = Backbone.View.extend({
       this.renderOne(models);
     else {
       var self = this;
+
+      var hasImgs = U.hasImages(models); 
+
       var frag = document.createDocumentFragment();
       _.forEach(models, function(model) {
-        var liView = new Lablz.ResourceListItemView({model:model});
+        var liView = hasImgs ? new Lablz.ResourceListItemView({model:model, hasImages: 'y'}) : new Lablz.ResourceListItemView({model:model});
         frag.appendChild(liView.render().el);
       });
       
@@ -695,7 +759,10 @@ Lablz.ResourceListItemView = Backbone.View.extend({
   
 	initialize: function(options) {
     _.bindAll(this, 'render', 'tap'); // fixes loss of context for 'this' within methods
-		this.template = _.template(Lablz.Templates.get('listItemTemplate'));
+    if (options.hasImages)
+		  this.template = _.template(Lablz.Templates.get('listItemTemplate'));
+    else
+      this.template = _.template(Lablz.Templates.get('listItemTemplateNoImage'));
 		
 		// resourceListView will call render on this element
 //    this.model.on('change', this.render, this);
@@ -709,7 +776,7 @@ Lablz.ResourceListItemView = Backbone.View.extend({
   tap: Lablz.Events.defaultTapHandler,
   click: Lablz.Events.defaultClickHandler,  
   render: function(event) {
-    this.$el.html(this.template(this.model.toJSON()));    
+    this.$el.html(this.template(this.model.toJSON()));
     return this;
   }
 });
