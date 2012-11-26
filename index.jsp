@@ -21,7 +21,7 @@
 <script type="text/template" id="resource">
   <div id="headerDiv"></div>
   <div id="resourceViewHolder" data-role="content">
-    
+    <div id="resourceImage"></div><br/>
     <ul data-role="listview" data-theme="c" id="resourceView" class="action-list" data-inset="true">
     </ul>
   </div>
@@ -120,19 +120,15 @@
 </script>
 
 <script type="text/template" id="imagePT">
-  <img src="{{= Lablz.serverName + '/' + value }}"></img>
+  <img src="{{= value }}"></img>
 </script>
-<!-- script type="text/template" id="imagePT">
-    {{ if (typeof mediumImage != 'undefined') { }}
-      <span><img src="{{= mediumImage.indexOf('Image/') == 0 ? mediumImage.slice(6) : mediumImage }}"></img></span>
-    {{ } }} 
-    {{ if (typeof featured != 'undefined') { }}
-      <span><img src="{{= featured.indexOf('Image/') == 0 ? featured.slice(6) : featured }}"></img></span>
-    {{ } }}
-</script-->
 
 <script type="text/template" id="listItemTemplate">
-  <a href = "{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage == 'undefined' ? 'icons/blank.png' : mediumImage.indexOf('Image/') == 0 ? Lablz.serverName + mediumImage.slice(5) : Lablz.serverName + mediumImage }}" /><h3>{{= davDisplayName }}</h3></a>
+  <a href = "{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? mediumImage.slice(6) : typeof featured != 'undefined' ? featured.slice(6) : 'icons/blank.png'}}" /><h3>{{= davDisplayName }}</h3></a>
+</script>
+
+<script type="text/template" id="listItemTemplateNoImage">
+  <a href = "{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><h3>{{= davDisplayName }}</h3></a>
 </script>
 
 <script type="text/template" id="propRowTemplate">
