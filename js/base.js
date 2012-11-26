@@ -247,6 +247,7 @@ Lablz.ResourceList = Backbone.Collection.extend({
     console.log("init " + this.shortName + " resourceList");
   },
   getNextPage: function(options) {
+    console.log("fetching next page");
     this.offset += this.perPage;
     this.pager(options);
   },
@@ -307,6 +308,9 @@ Lablz.ResourceList = Backbone.Collection.extend({
     
     if (response.data) {
       this.offset = response.metadata.offset;
+      if (this.offset)
+        console.log("received page, offset = " + this.offset);
+      
       this.page = Math.floor(this.offset / this.perPage);
       response = response.data;
     }
@@ -464,16 +468,19 @@ Backbone.sync = function(method, model, options) {
         defErr && defErr(resp.error, status, xhr);
         return;
       }
-      
-//      var isCol = model instanceof Backbone.Collection;
-//      var data;
-//      if (resp.error)
-//        data = isCol ? [] : null;
-//      else
-//        data = isCol ? resp.data : resp.data[0];
-      
-      data = model instanceof Backbone.Collection ? resp.data : resp.data[0];
+
+      var isCol = model instanceof Backbone.Collection;
+      data = isCol ? resp.data : resp.data[0];
       defSuccess && defSuccess(resp, status, xhr);
+      var modified;
+      if (isCol) {
+        var offset = resp.metadata && resp.metadata.offset || 0;
+        modified = _.map(model.models.slice(offset), function(model) {return model.get('_uri')});
+      }
+      else
+        modified = model.get('_uri');
+      
+      Lablz.Events.trigger('refresh', model, modified);
       save && save(data);
     }
   });

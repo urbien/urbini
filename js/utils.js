@@ -626,6 +626,13 @@ Utils.addToFrag = function(frag, html) {
   frag.appendChild(U.toHTMLElement(html));
 }
 
+Utils.getUris = function(model) {
+  if (model instanceof Backbone.Collection)
+    return _.map(model.models, function(model) {return model.get('_uri')});
+  else
+    return [model.get('_uri')];
+}
+
 Utils.hasImages = function(models) {
   var m = models[0];
   var meta = m.__proto__.constructor.properties;
