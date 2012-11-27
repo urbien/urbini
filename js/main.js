@@ -4,9 +4,9 @@ var App = Backbone.Router.extend({
 
   routes:{
       ":type":"list",
+      "view/*path":"view"
 //      "edit/*path":"edit",
-      "view/*path":"view",
-      "map/*type":"map"
+//      "map/*type":"map"
   },
   CollectionViews: {},
   Views: {},
@@ -14,11 +14,17 @@ var App = Backbone.Router.extend({
   Models: {},
   Collections: {},
   Paginator: {},
-  backClicked: false,       
+  backClicked: false,
+  forceRefresh: false,
   initialize: function () {
     this.firstPage = true;
   },
-
+  navigate: function(fragment, options) {
+    this.forceRefresh = options.trigger;
+    var ret = Backbone.Router.prototype.navigate.apply(this, arguments);
+    this.forceRefresh = false;
+    return ret;
+  },
   list: function (oParams) {
     var params = oParams.split("?");
     var type = decodeURIComponent(params[0]);
@@ -37,6 +43,7 @@ var App = Backbone.Router.extend({
     }
     
     var page = this.page = this.page || 1;
+    var force = this.forceRefresh;
     
     if (!Lablz.shortNameToModel[type]) {
       Lablz.loadStoredModels([type]);
@@ -66,8 +73,14 @@ var App = Backbone.Router.extend({
     if (!model)
       return this;
     
-    var list = this.Collections[type] = new Lablz.ResourceList(null, {model: model, _query: query});
-    var listView = this.CollectionViews[type] = new Lablz.ListPage({model: list});
+    var list = new Lablz.ResourceList(null, {model: model, _query: query});    
+    var listView = new Lablz.ListPage({model: list});
+    
+    if (!query) {
+      this.Collections[type] = list;
+      this.CollectionViews[type] = listView;
+    }
+    
     list.syncFetch({
       add: true,
       success: function() {
@@ -217,6 +230,7 @@ var App = Backbone.Router.extend({
     
     // perform transition
     $.mobile.changePage(view.$el, {changeHash:false, transition: transition, reverse: isReverse});
+    Lablz.Events.trigger('changePage');
     return view;
   }
 });

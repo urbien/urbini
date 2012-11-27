@@ -1,4 +1,4 @@
-var Utils = {};
+var Utils = U = {};
 Utils.getFirstUppercaseCharIdx = function(str) {
 	for (var i = 0; i < str.length; i++) {
 		var c = str.charAt(i);
@@ -23,6 +23,17 @@ Utils.getPrimaryKeys = function(model) {
 //      });
 }
 
+Utils.getCloneOf = function(meta, cloneOf) {
+  var keys = [];
+    for (var p in meta) {
+    if (_.has(meta[p], "cloneOf")  &&  meta[p]['cloneOf'].indexOf(cloneOf) != -1) {
+      keys.push(p);
+    }
+  }
+  
+  return keys;
+}
+
 Utils.getLongUri = function(uri, type, primaryKeys) {
   if (uri.indexOf('http') == 0) {
     // uri is either already of the right form: http://urbien.com/sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000 or of form http://www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
@@ -32,16 +43,16 @@ Utils.getLongUri = function(uri, type, primaryKeys) {
     if (uri.indexOf(Lablz.serverName + "/" + Lablz.sqlUri) == 0)
       return uri;
     
-    type = typeof type == 'undefined' ? Utils.getTypeUri(uri) : type;
+    type = typeof type == 'undefined' ? U.getTypeUri(uri) : type;
     return uri.indexOf("http://www.hudsonfog.com") == -1 ? uri : Lablz.serverName + "/" + Lablz.sqlUri + "/" + type.slice(7) + uri.slice(uri.indexOf("?"));
   }
   else if (uri.indexOf('/') == -1) {
     // uri is of form Tree?id=32000
-    type = typeof type == 'undefined' ? Utils.getTypeUri(uri) : type;
+    type = typeof type == 'undefined' ? U.getTypeUri(uri) : type;
     if (!type)
       return null;
     
-    return Utils.getLongUri(type + uri.slice(uri.indexOf('?')), type);
+    return U.getLongUri(type + uri.slice(uri.indexOf('?')), type);
   }
   else if (uri.indexOf('sql') == 0) {
     // uri is of form sql/www.hudsonfog.com/voc/commerce/trees/Tree?id=32000
@@ -49,8 +60,8 @@ Utils.getLongUri = function(uri, type, primaryKeys) {
   }
   else if (uri.charAt(0).toUpperCase() == uri.charAt(0)) {
     // uri is of form Tree/32000
-    var typeName = Utils.getType(uri);
-    type = Utils.getTypeUri(typeName);
+    var typeName = U.getType(uri);
+    type = U.getTypeUri(typeName);
     if (!type)
       return null;
     
@@ -60,7 +71,7 @@ Utils.getLongUri = function(uri, type, primaryKeys) {
     if (!model)
       return uri;
     
-    var primaryKeys = Utils.getPrimaryKeys(model);
+    var primaryKeys = U.getPrimaryKeys(model);
     if (!primaryKeys  ||  primaryKeys.length == 0)
       longUri += "id=" + encodeURIComponent(uri.slice(sIdx + 1));
     else {
@@ -73,7 +84,7 @@ Utils.getLongUri = function(uri, type, primaryKeys) {
       }      
     }
     
-    return Utils.getLongUri(longUri, type);
+    return U.getLongUri(longUri, type);
   }
   else 
     return uri;
@@ -96,7 +107,7 @@ Utils.getType = function(uri) {
       return uri.slice(0, qIdx);
   }
   
-  var idx = Utils.getFirstUppercaseCharIdx(uri);
+  var idx = U.getFirstUppercaseCharIdx(uri);
   if (idx == -1)
     return null;
     
@@ -151,7 +162,7 @@ Utils.addPackage = function(path) {
 }
 
 Utils.getShapeType = function(rings) {
-  var depth = Utils.getDepth(rings);
+  var depth = U.getDepth(rings);
   switch (depth) {
   case 1:
     return "Point";
@@ -173,9 +184,9 @@ Utils.getObjectType = function(o) {
 Utils.getDepth = function(arr) {
   var depth = 1;
   for (var i = 0; i < arr.length; i++) {
-    var type = Utils.getObjectType(arr[i]);
+    var type = U.getObjectType(arr[i]);
     if (type === '[object Array]')
-      depth = Math.max(depth, Utils.getDepth(arr[i]) + 1);
+      depth = Math.max(depth, U.getDepth(arr[i]) + 1);
     else
       return depth;
   }
@@ -189,7 +200,7 @@ Utils.getDepth = function(arr) {
 Utils.makeProp = function(prop, val) {
   var cc = prop.colorCoding;
   if (cc) {
-    cc = Utils.getColorCoding(cc, val);
+    cc = U.getColorCoding(cc, val);
     if (cc) {
       if (cc.startsWith("icons"))
         val = "<img src=\"" + cc + "\" border=0>&#160;" + val;
@@ -245,7 +256,7 @@ Utils.getGridCols = function(model) {
       if (!val)
         return;
       
-      var nameVal = Utils.makeProp(prop, val);
+      var nameVal = U.makeProp(prop, val);
       rows[nameVal.name] = {value: nameVal.value};
       if (prop.resourceLink)
         rows[nameVal.name].resourceLink = true;
@@ -260,7 +271,7 @@ Utils.getGridCols = function(model) {
 Utils.getMapItemHTML = function(model) {
   var tpl = Lablz.Templates;
   var m = model;
-  var grid = Utils.getGridCols(m);
+  var grid = U.getGridCols(m);
 
   var resourceLink;
   for (var row in grid) {
@@ -284,7 +295,7 @@ Utils.getMapItemHTML = function(model) {
         height = Math.round(height / imgOffset);
       }
       
-      medImg = {value: decodeURIComponent(medImg)};
+      medImg = {value: U.decode(medImg)};
       width && (medImg.width = width);
       height && (medImg.height = height);
       data.image = _.template(tpl.get("imagePT"))(medImg);
@@ -298,7 +309,7 @@ Utils.getMapItemHTML = function(model) {
 Utils.collectionToGeoJSON = function(model, metadata) {
   var gj = [];
   _.each(model.models, function(m){
-    var mGJ = Utils.modelToGeoJSON(m, metadata);
+    var mGJ = U.modelToGeoJSON(m, metadata);
     if (mGJ)
       gj.push(mGJ);
   })
@@ -308,7 +319,7 @@ Utils.collectionToGeoJSON = function(model, metadata) {
 
 Utils.modelToGeoJSON = function(model, metadata) {
   if (model instanceof Backbone.Collection)
-    return Utils.collectionToGeoJSON(model);
+    return U.collectionToGeoJSON(model);
   
   var isShape = model.isA("Shape");
   var coords, area;
@@ -328,7 +339,7 @@ Utils.modelToGeoJSON = function(model, metadata) {
   }
   
     
-  var type = Utils.getShapeType(coords);
+  var type = U.getShapeType(coords);
   if (metadata) {
     var bbox;
     if (isShape)
@@ -347,12 +358,12 @@ Utils.modelToGeoJSON = function(model, metadata) {
       metadata.bbox = bbox; 
   }
   
-  var json = Utils.getBasicGeoJSON(type, coords);
+  var json = U.getBasicGeoJSON(type, coords);
   json.properties.name = model.constructor.displayName + " " + model.get('davDisplayName');
   if (area)
     json.properties.area = area;
   
-  json.properties.html = Utils.getMapItemHTML(model);
+  json.properties.html = U.getMapItemHTML(model);
   return json;
 }
 
@@ -368,9 +379,9 @@ Utils.defaultModelProps = ['__super__', 'prototype', 'extend'];
 Utils.toJSON = function(obj) {
   var staticProps = {};
   for (var prop in obj) {
-    if (typeof obj[prop] != 'function' && _.has(obj, prop) && !_.contains(Utils.defaultModelProps, prop)) {
+    if (typeof obj[prop] != 'function' && _.has(obj, prop) && !_.contains(U.defaultModelProps, prop)) {
       var o = obj[prop];
-      staticProps[prop] = typeof o == 'object' ? Utils.toJSON(o) : o;
+      staticProps[prop] = typeof o == 'object' ? U.toJSON(o) : o;
     }
   }
   
@@ -393,14 +404,14 @@ Utils.UArray.prototype.length = 0;
   var methods = ['push', 'pop', 'shift', 'unshift', 'slice', 'splice', 'join', 'clone', 'concat'];
   for (var i = 0; i < methods.length; i++) { 
     (function(name) {
-      Utils.UArray.prototype[name] = function() {
+      U.UArray.prototype[name] = function() {
         return Array.prototype[name].apply(this, arguments);
       };
     })(methods[i]);
   }
 })();
 
-Utils.wrap(Utils.UArray.prototype, 'concat',
+Utils.wrap(U.UArray.prototype, 'concat',
   function(original, item) {
     var type = Object.prototype.toString.call(item);
     if (type.indexOf('Array') == -1)
@@ -413,11 +424,11 @@ Utils.wrap(Utils.UArray.prototype, 'concat',
 );
 
 Utils.union = function(o1, o2) {
-  var type1 = Utils.getObjectType(o1);
-  var type2 = Utils.getObjectType(o2);
+  var type1 = U.getObjectType(o1);
+  var type2 = U.getObjectType(o2);
     
-  var c = type1.indexOf('Array') == -1 && !(o1 instanceof Utils.UArray) ? [c] : o1.slice();    
-  if (type2.indexOf('Array') == -1 && !(o2 instanceof Utils.UArray))
+  var c = type1.indexOf('Array') == -1 && !(o1 instanceof U.UArray) ? [c] : o1.slice();    
+  if (type2.indexOf('Array') == -1 && !(o2 instanceof U.UArray))
     return c.push(o2);
   
   var self = this;
@@ -425,7 +436,7 @@ Utils.union = function(o1, o2) {
   return c;
 }
 
-Utils.wrap(Utils.UArray.prototype, 'push',
+Utils.wrap(U.UArray.prototype, 'push',
   function(original, item) {
     if (_.contains(this, item))
       return this;
@@ -445,7 +456,7 @@ Utils.endsWith = function(string, pattern) {
   return d >= 0 && string.indexOf(pattern, d) === d;
 };
 
-//Utils.toQueryString = function(queryMap) {
+//U.toQueryString = function(queryMap) {
 //  var qStr = '';
 //  _.forEach(queryMap, function(val, key) { // yes, it's backwards, not function(key, val), underscore does it like this for some reason
 //    qStr += key + '=' + encodeURIComponent(val) + '&';
@@ -454,17 +465,20 @@ Utils.endsWith = function(string, pattern) {
 //  return qStr.slice(0, qStr.length - 1);
 //};
 
-Utils.replaceParam = function(url, name, value) {
+Utils.replaceParam = function(url, name, value, sort) {
+  if (!url)
+    return name + '=' + encodeURIComponent(value);
+  
   url = url.split('?');
   var qs = url.length > 1 ? url[1] : url[0];
-  var q = Utils.getQueryParams(qs);
+  var q = U.getQueryParams(qs);
   q[name] = value;
-  q = $.param(q);
+  q = sort ? U.getQueryString(q, sort) : $.param(q);
   return url.length == 1 ? q : [url[0], q].join('?');
 }
 
 Utils.getQueryParams = function(url) {
-  return Utils.getParamMap(url || window.location.href);
+  return U.getParamMap(url || window.location.href);
 };
 
 Utils.getHashParams = function() {
@@ -475,7 +489,7 @@ Utils.getHashParams = function() {
   var chopIdx = h.indexOf('?');
   chopIdx = chopIdx == -1 ? 1 : chopIdx + 1;
     
-  return h ? Utils.getParamMap(h.slice(chopIdx)) : {};
+  return h ? U.getParamMap(h.slice(chopIdx)) : {};
 };
 
 Utils.getParamMap = function(str, delimiter) {
@@ -486,7 +500,7 @@ Utils.getParamMap = function(str, delimiter) {
   var map = {};
   _.each(str.split(delimiter || "&"), function(nv) {
     nv = nv.split("=");
-    map[nv[0]] = decodeURIComponent(nv[1]);
+    map[nv[0]] = U.decode(nv[1]);
   });
   
   return map;
@@ -529,6 +543,26 @@ String.prototype.endsWith = function(str) {
   return (this.match(str+"$")==str)
 }
 
+Utils.getQueryString = function(paramMap, sort) {
+  if (!sort)
+    return $.param(paramMap);
+  
+  var keys = [];
+  for (var i in paramMap) {
+    if (paramMap.hasOwnProperty(i)) {
+      keys.push(i);
+    }
+  }
+  
+  var qs = '';
+  keys.sort();
+  for (i = 0; i < keys.length; i++) {
+    keys[i] = keys[i] + '=' + encodeURIComponent(paramMap[keys[i]]);
+  }
+  
+  return keys.join('&');
+}
+
 Utils.getFormattedDate = function(time) {
   var date = new Date(parseFloat(time));
   //(time || "").replace(/-/g,"/").replace(/[TZ]/g," "));
@@ -550,7 +584,7 @@ Utils.getFormattedDate = function(time) {
 }
 
 Utils.isPropVisible = function(res, prop) {
-  if (prop.avoidDisplaying)
+  if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel)
     return false;
   
   var userRole = Lablz.currentUser ? Lablz.currentUser.role || 'contact' : 'guest';
@@ -578,4 +612,39 @@ Utils.isPropVisible = function(res, prop) {
   }
   
   return true;
+}
+
+Utils.decode = function(str) {
+  return decodeURIComponent(str).replace(/\+/g, ' ');
+}
+
+Utils.toHTMLElement = function(html) {
+  return $(html)[0];
+}
+
+Utils.addToFrag = function(frag, html) {
+  frag.appendChild(U.toHTMLElement(html));
+}
+
+Utils.getUris = function(model) {
+  if (model instanceof Backbone.Collection)
+    return _.map(model.models, function(model) {return model.get('_uri')});
+  else
+    return [model.get('_uri')];
+}
+
+Utils.hasImages = function(models) {
+  var m = models[0];
+  var meta = m.__proto__.constructor.properties;
+  var cloneOf;
+  var hasImgs = Utils.isA(m.constructor, 'ImageResource')  &&  meta != null  &&  (cloneOf = U.getCloneOf(meta, 'ImageResource.mediumImage')).length != 0;
+  if (!hasImgs)
+    return false;
+  hasImgs = false;
+  for (var i = 0; !hasImgs  &&  i < models.length; i++) {
+    var m = models[i];
+    if (m.get(cloneOf))
+      hasImgs = true;
+  }
+  return hasImgs;
 }

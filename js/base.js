@@ -54,7 +54,7 @@ Lablz.getDefaultErrorHandler = function(errorHandler) {
         case 404:
           console.log('no results');
           if (originalModel instanceof Backbone.Model || (originalModel instanceof Backbone.Collection && originalModel.queryMap.length == 0))
-            Backbone.history.navigate((originalModel.shortName || originalModel.constructor.shortName) + "?-errMsg=Oops!+Whatever+you+were+looking+for,we+couldn't+find+it", {trigger: true, replace: true});
+            app.navigate((originalModel.shortName || originalModel.constructor.shortName) + "?-errMsg=Oops!+Whatever+you+were+looking+for,we+couldn't+find+it", {trigger: true, replace: true});
           else
             $('errMsg').html("Oops! Whatever you were looking for, we couldn't find it");
             
@@ -247,6 +247,7 @@ Lablz.ResourceList = Backbone.Collection.extend({
     console.log("init " + this.shortName + " resourceList");
   },
   getNextPage: function(options) {
+    console.log("fetching next page");
     this.offset += this.perPage;
     this.pager(options);
   },
@@ -307,6 +308,9 @@ Lablz.ResourceList = Backbone.Collection.extend({
     
     if (response.data) {
       this.offset = response.metadata.offset;
+      if (this.offset)
+        console.log("received page, offset = " + this.offset);
+      
       this.page = Math.floor(this.offset / this.perPage);
       response = response.data;
     }
@@ -425,7 +429,7 @@ Backbone.sync = function(method, model, options) {
       for (var i = 0; i < results.length; i++) {
         var r = results[i];
         var longUri = Utils.getLongUri(r._uri, model.type);
-        var saved = model.get(longUri)[tsProp];
+        var saved = model.get(longUri).get(tsProp);
 //        var saved = $.grep(model.models, function(o) {
 //          return o.id == longUri;
 //        })[0][tsProp];
@@ -439,16 +443,19 @@ Backbone.sync = function(method, model, options) {
         }
       }
       
+      var modified = [];
       if (toAdd.length) {
         for (var i = 0; i < toAdd.length; i++) {
           var existing = model.get(toAdd[i]._uri);
-          if (existing)
+          if (existing) {
             existing.set(toAdd[i]);
+            modified.push(toAdd[i]._uri);
+          }
           else
             model.add(new model.model(toAdd[i]));
         }
         
-        model.trigger('refresh', model);
+        Lablz.Events.trigger('refresh', model, modified);
         Lablz.indexedDB.addItems(toAdd, model.shortName);
       }
     }
@@ -461,16 +468,19 @@ Backbone.sync = function(method, model, options) {
         defErr && defErr(resp.error, status, xhr);
         return;
       }
-      
-//      var isCol = model instanceof Backbone.Collection;
-//      var data;
-//      if (resp.error)
-//        data = isCol ? [] : null;
-//      else
-//        data = isCol ? resp.data : resp.data[0];
-      
-      data = model instanceof Backbone.Collection ? resp.data : resp.data[0];
+
+      var isCol = model instanceof Backbone.Collection;
+      data = isCol ? resp.data : resp.data[0];
       defSuccess && defSuccess(resp, status, xhr);
+      var modified;
+      if (isCol) {
+        var offset = resp.metadata && resp.metadata.offset || 0;
+        modified = _.map(model.models.slice(offset), function(model) {return model.get('_uri')});
+      }
+      else
+        modified = model.get('_uri');
+      
+      Lablz.Events.trigger('refresh', model, modified);
       save && save(data);
     }
   });
@@ -584,8 +594,6 @@ Lablz.getInit = function() {
 
 // START ///////////// IndexedDB stuff //////////////// START ///
 
-window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB;
-
 if ('webkitIndexedDB' in window) {
   window.IDBTransaction = window.webkitIDBTransaction;
   window.IDBKeyRange = window.webkitIDBKeyRange;
@@ -612,8 +620,11 @@ Lablz.indexedDB.onabort = function(e) {
 
 Lablz.indexedDB.clear = function() {
   var db = Lablz.indexedDB.db;
+  var rModels = Lablz.requiredModels && _.map(Lablz.requiredModels.models, function(model) {return model.shortName}) || [];
   _.each(db.objectStoreNames, function(name) {            
-    db.deleteObjectStore(name); 
+    db.deleteObjectStore(name);
+    if (_.contains(rModels, name))
+      db.createObjectStore(name, Lablz.indexedDB.defaultOptions);
   })
   
   Lablz.currentUser._reset = false;
@@ -625,7 +636,6 @@ Lablz.indexedDB.onblocked = function(e) {
 
 Lablz.indexedDB.defaultOptions = {keyPath: '_uri'};
 Lablz.indexedDB.open = function(options, success, error) {
-  var newUser = Lablz.currentUser._reset;
   var modelsChanged = false;
   var request = indexedDB.open("lablz");
 
@@ -650,7 +660,7 @@ Lablz.indexedDB.open = function(options, success, error) {
     }
     
     modelsChanged = !!Lablz.changedModels.length || !!Lablz.newModels.length;
-    Lablz.DB_VERSION = newUser || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
+    Lablz.DB_VERSION = Lablz.currentUser._reset || modelsChanged ? (isNaN(db.version) ? 1 : parseInt(db.version) + 1) : db.version;
     if (db.version == Lablz.DB_VERSION) {
       if (success)
         success();
@@ -667,7 +677,7 @@ Lablz.indexedDB.open = function(options, success, error) {
       req.onerror = Lablz.indexedDB.onerror;
       req.onblocked = Lablz.indexedDB.onblocked;
       req.onsuccess = function(e2) {
-        if (newUser)
+        if (Lablz.currentUser._reset)
           Lablz.indexedDB.clear();
         
         if (modelsChanged)
@@ -692,7 +702,7 @@ Lablz.indexedDB.open = function(options, success, error) {
     console.log ("going to upgrade our DB!");
     Lablz.indexedDB.db = e.target.result;
     var db = Lablz.indexedDB.db;
-    if (newUser)
+    if (Lablz.currentUser._reset)
       Lablz.indexedDB.clear();
     
     if (modelsChanged)
@@ -822,7 +832,7 @@ Lablz.indexedDB.addItems = function(items, className) {
     return;
   }
   
-  var trans = db.transaction([className], "readwrite");
+  var trans = db.transaction([className], IDBTransaction.READ_WRITE);
   var store = trans.objectStore(className);
   _.each(items, function(item) {
     var request = store.put(item);
@@ -845,7 +855,7 @@ Lablz.indexedDB.deleteItem = function(uri) {
   var type = Utils.getType(item._uri);
   var name = Utils.getClassName(type);
   var db = Lablz.indexedDB.db;
-  var trans = db.transaction([type], "readwrite");
+  var trans = db.transaction([type], IDBTransaction.READ_WRITE);
   var store = trans.objectStore(type);
   var request = store.delete(uri);
 
@@ -874,7 +884,7 @@ Lablz.indexedDB.getDataAsync = function(options) {
   if (!db || !db.objectStoreNames.contains(name))
     return false;
   
-  var trans = db.transaction([name], "readonly");
+  var trans = db.transaction([name], IDBTransaction.READ_ONLY);
   var store = trans.objectStore(name);
   var request = store.get(Utils.getShortUri(uri, Lablz.shortNameToModel[name]));
   request.onsuccess = function(e) {
@@ -906,7 +916,7 @@ Lablz.indexedDB.getItems = function(options) {
   if (!db || !db.objectStoreNames.contains(name))
     return false;
   
-  var trans = db.transaction([name], "readonly");
+  var trans = db.transaction([name], IDBTransaction.READ_ONLY);
   var store = trans.objectStore(name);
 
   var lowerBound;
@@ -951,8 +961,7 @@ Lablz.checkUser = function() {
   var p = localStorage.getItem(contactKey);
   var c = Lablz.currentUser;
   if ((p && !c) || (!p && c) || (p && c && JSON.parse(p)._uri != c._uri)) {
-    // clear storage
-    localStorage.clear();
+    // no need to clear localStorage, it's only used to store models, which can be shared
     if (c) {
       localStorage.setItem(contactKey, JSON.stringify(c));
       Lablz.currentUser._reset = true;
@@ -960,6 +969,7 @@ Lablz.checkUser = function() {
     else
       Lablz.currentUser = {_reset: true};
     
+    Lablz.newModels = _.filter(_.keys(Lablz.shortNameToModel), function(name) {return name != 'Resource'});
     return;
   }
 }
@@ -1068,7 +1078,7 @@ Lablz.loadStoredModels = function(models) {
 
 // END /////////// Local Storage //////////// END //
 
-Lablz.pageRoot = "bb";
+//Lablz.pageRoot = "app";
 Lablz.serverName = (function() {     
   var baseUriO = document.getElementsByTagName('base');
   var baseUri = "";
@@ -1093,7 +1103,8 @@ Lablz.fetchModels = function(models, options) {
     return;
   }
   
-  $.ajax(Lablz.serverName + "/backboneModel?type=" + encodeURIComponent(models.join ? models.join(",") : models), {complete: 
+  var modelsCsv = models.join ? models.join(",") : models;
+  $.ajax(Lablz.serverName + "/backboneModel?type=" + encodeURIComponent(modelsCsv), {complete: 
     function(jqXHR, status) {
       if (status != 'success') {
         console.log("couldn't fetch models");
@@ -1108,7 +1119,7 @@ Lablz.fetchModels = function(models, options) {
       try {
         eval(jqXHR.responseText);
       } catch (err) {
-        console.log("couldn't eval response from server");
+        console.log("couldn't eval response from server. Requested models: " + modelsCsv);
         if (error)
           error();
         
@@ -1235,6 +1246,6 @@ Lablz.Templates = {
     getPropTemplate: function(prop, edit) {
       var t = edit ? this.propEditTemplates : this.propTemplates;
       var f = 'http://www.hudsonfog.com/voc/system/fog/Property/facet';
-      return (prop[f] && t[prop[f]]) || t[prop.range] || t.string;
+      return (prop[f] && t[prop[f]]) || t[prop.range] || (edit ? t.string : t.resource);
     }
 };

@@ -3958,27 +3958,33 @@ var DataEntry = {
       return;
 
     var key = this._getKey(url);
+    var div = this.dataEntryArr[key];
     // show stored data entry 
-    if (this.dataEntryArr[key]) {
+    if (div) {
       if (this.isMkResource(url))
-        this.doStateOnMkResource(this.dataEntryArr[key], true);
+        this.doStateOnMkResource(div, true);
       
       if (Browser.mobile &&
-               getAncestorByTagName(this.dataEntryArr[key], 'body') == null) {
+               getAncestorByTagName(div, 'body') == null) {
         
-      //  document.body.appendChild(this.dataEntryArr[key]);
+      //  document.body.appendChild(div);
         // RTE requires new initialization after insertion into document (?!)
   //      if (!Browser.mobile)
-  //        ExecJS.runDivCode(this.dataEntryArr[key]);
+  //        ExecJS.runDivCode(div);
       }
       // on desktop only hide/show, without append/remove
       if (parentDivId)
-        this.dataEntryArr[key].style.display = "block";
-      else
-        setDivVisible(null, this.dataEntryArr[key], hotspot, 5, 5, null);
+        div.style.display = "block";
+      else {
+        setDivVisible(null, div, hotspot, 5, 5, null);
+        if (div.className.indexOf("oneparamselection") != -1) {
+           var tr = getChildByClassName(div, "param_tr");
+           ListBoxesHandler.processClickParam(null, tr); 
+        }
+      }  
       this.currentUrl = url;
       
-      this.initDataStr = this._getFormDataStr(this.dataEntryArr[key], true);
+      this.initDataStr = this._getFormDataStr(div, true);
     }
     // load data entry 
     else {
@@ -10217,7 +10223,7 @@ var BacklinkImagesSlideshow = {
       return;
     }
 
-    if (!$t.slideshowArr)
+    if ($t.slideshowArr.length == 0)
       return;
 
     for (var i = 1; i < $t.slideshowArr.length; i++) {
@@ -10246,16 +10252,16 @@ var BacklinkImagesSlideshow = {
     this.slideshowArr[0].onThumbItemClick(event);
   },
   run : function() {
-    if (this.slideshowArr)
+    if (this.slideshowArr.length != 0)
       this.slideshowArr[0].run();
   },
   stop : function() {
-    if (this.slideshowArr)
+    if (this.slideshowArr.length != 0)
       this.slideshowArr[0].stop();
   },
   // called on a dialoag opening ("buy" dialog)
   stopAutomaticSiding : function() {
-    if (this.slideshowArr  &&  this.slideshowArr.length > 0)
+    if (this.slideshowArr.length != 0)
       this.slideshowArr[0].stopAutomaticSiding();
   }
 }

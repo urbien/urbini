@@ -13,22 +13,24 @@
   padding:0;border:0;border-collapse:collapse
 }
 
-//.ui-icon-facebook {
-//  background-image: url(/icons/facebook-mid.png);
-//}
-//
-//.ui-icon-twitter {
-//  background-image: url(/icons/twitter-mid.png);
-//}
-//
-//.ui-icon-linkedin {
-//  background-image: url(/icons/linkedin-mid.png);
-//}
-//
-//.ui-icon-tendrilconnect {
-//  background-image: url(/icons/tendril-mid.png);
-//}
-//
-//.ui-icon-live {
-//  background-image: url(/icons/windows-live-mid.png);
-//}
+.ui-icon-facebook {
+  background-image: url(/icons/facebook-mid.png);
+}
+
+.ui-icon-twitter {
+  background-image: url(/icons/twitter-mid.png);
+}
+
+.ui-icon-linkedin {
+  background-image: url(/icons/linkedin-mid.png);
+}
+
+.ui-icon-tendrilconnect {
+  background-image: url(/icons/tendril-mid.png);
+}
+
+.ui-icon-live {
+  background-image: url(/icons/windows-live-mid.png);
+}
+
+.ui-content .ui-listview-inset { margin: 0; }
