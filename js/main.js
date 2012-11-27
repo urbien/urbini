@@ -64,8 +64,8 @@ var App = Backbone.Router.extend({
       c = null;
       
     if (!query && c && this.CollectionViews[type]) {
-      this.Collections[type].asyncFetch({page: page});
       this.changePage(this.CollectionViews[type], {page: page});
+      this.Collections[type].fetch({page: page});
       return this;
     }
     
@@ -81,8 +81,9 @@ var App = Backbone.Router.extend({
       this.CollectionViews[type] = listView;
     }
     
-    list.syncFetch({
+    list.fetch({
       add: true,
+      sync: true,
       success: function() {
         self.changePage(listView);
 //          self.loadExtras(oParams);
@@ -144,10 +145,10 @@ var App = Backbone.Router.extend({
     var views = edit ? this.EditViews : this.Views;
     var viewPageCl = edit ? Lablz.EditPage : Lablz.ViewPage;
     if (res) {
-      res.asyncFetch();
       this.Models[uri] = res;
       views[uri] = views[uri] || new viewPageCl({model: res});
       this.changePage(this.Views[uri]);
+      res.fetch();
       return this;
     }
     
@@ -172,7 +173,7 @@ var App = Backbone.Router.extend({
 //      self.loadExtras(oParams);
     }
     
-		res.syncFetch({success: success});
+		res.fetch({sync:true, success: success});
 		return this;
   },
   

@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="lib/jquery.mobile.structure-1.2.0.css" />
   <!--link rel="stylesheet" href="lib/jqm-icon-pack-2.1.2-fa.css" /-->
   <link rel="stylesheet" href="styles/styles.css"></link>
-  <!--script src="http://jsconsole.com/remote.js?39EE1D1C-F93F-40DC-8E4B-28FD49EFC687"></script-->
   <script src="lib/jquery-1.7.2.js"></script>
   <script src="js/jqm-config.js"></script>
   <script src="lib/jquery.mobile-1.2.0.js"></script>
@@ -33,7 +32,7 @@
   };
   </script>
   <script src="lib/backbone.js"></script>
-  <script src="lib/IndexedDBShim.min.js"></script>
+  <script src="lib/IndexedDBShim.js"></script>
   <!-- LEAFLET -->
   <link rel="stylesheet" type="text/css" href="styles/leaflet/leaflet.css" />
   <link rel="stylesheet" type="text/css" href="styles/leaflet/MarkerCluster.Default.css" />

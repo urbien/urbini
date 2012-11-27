@@ -648,3 +648,14 @@ Utils.hasImages = function(models) {
   }
   return hasImgs;
 }
+
+Utils.deepExtend = function(obj) {
+  _.each(Array.prototype.slice.call(arguments, 1), function(source) {
+    for (var prop in source) {
+      if (obj[prop])
+        U.deepExtend(obj[prop], source[prop]);
+      else
+        obj[prop] = source[prop] || obj[prop];
+    }
+  });
+}
