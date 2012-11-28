@@ -1,29 +1,35 @@
 window.Lablz = window.Lablz || {};
 var packages = {};
 
-Lablz.getDefaultErrorHandler = function(errorHandler) {
-  return function(originalModel, err, options) {
-    if (options.sync) {
-      switch (err.code) {
+Lablz.Error = {
+  NOT_FOUND: "Oops! The page you're looking for doesn't exist.",
+  getDefaultErrorHandler: function(errorHandler) {
+    return function(originalModel, err, options) {
+      if (options.sync) {
+        switch (err.code) {
         case 401: 
           console.log('redirecting to user-login');
           window.location.href = Lablz.serverName + "/register/user-login.html?-mobile=y&errMsg=This+page+is+restricted,+please+login&returnUri=" + encodeURIComponent(window.location.href);
           return;
         case 404:
           console.log('no results');
-          if (originalModel instanceof Backbone.Model || (originalModel instanceof Backbone.Collection && originalModel.queryMap.length == 0))
-            app.navigate((originalModel.shortName || originalModel.constructor.shortName) + "?-errMsg=Oops!+Whatever+you+were+looking+for,we+couldn't+find+it", {trigger: true, replace: true});
+          if (originalModel && (originalModel instanceof Backbone.Model || (originalModel instanceof Backbone.Collection))) // && originalModel.queryMap.length == 0)))
+            app.navigate((originalModel.shortName || originalModel.constructor.shortName), {trigger: true, replace: true, errMsg: "No results were found for your query"});
           else
-            $('errMsg').html("Oops! Whatever you were looking for, we couldn't find it");
-            
+            app.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: Lablz.Error.NOT_FOUND});
+          
           return;
+        default:
+          app.navigate(Lablz.homePage, {trigger: true, replace: true, errMsg: err && err.details || Lablz.Error.NOT_FOUND});
+          return;
+        }
       }
-    }
       
-    if (errorHandler)
-      errorHandler.apply(this, arguments);
-  }
-}
+      if (errorHandler)
+        errorHandler.apply(this, arguments);
+    }
+  }    
+};
 
 // START ///////////// Models //////////////// START ///
 packages.Resource = Backbone.Model.extend({
@@ -109,7 +115,7 @@ packages.Resource = Backbone.Model.extend({
 //    }, 100);
     
     options = options || {};
-    options.error = Lablz.getDefaultErrorHandler(options.error);
+    options.error = Lablz.Error.getDefaultErrorHandler(options.error);
     var success = options.success;
     options.success = function() {
       success && success.apply(self, arguments);
@@ -290,7 +296,7 @@ Lablz.ResourceList = Backbone.Collection.extend({
       this.queryMap[this.offsetParam] = this.offset;
       
     options.url = this.getUrl();
-    options.error = Lablz.getDefaultErrorHandler(options.error);
+    options.error = Lablz.Error.getDefaultErrorHandler(options.error);
     var success = options.success;
     options.success = function() {
       success && success.apply(self, arguments);
@@ -1103,18 +1109,26 @@ Lablz.fetchModels = function(models, options) {
         console.log("couldn't fetch models");
 //        alert("Oops! Couldn't initialize awesomeness!");
         if (error)
-          error(status);
+          error(null, {code: 404, type: status, details: 'couldn\'t reach server'}, options);
         
         return;
       }
         
-//      var p = packages;
       try {
         eval(jqXHR.responseText);
       } catch (err) {
         console.log("couldn't eval response from server. Requested models: " + modelsCsv);
-        if (error)
-          error();
+        if (error) {
+          try {
+            var jErr = JSON.parse(jqXHR.responseText);
+            error(null, jErr.error, options);
+            return;
+          } catch (err1) {
+            console.log("couldn't parse error response: " + jqXHR.responseText);
+          }
+          
+          error(null, null, options);
+        }
         
         return;
       }

@@ -520,7 +520,7 @@ Lablz.LoginButtons = Backbone.View.extend({
 Lablz.ListPage = Backbone.View.extend({
   template: 'resource-list',
   initialize:function () {
-    _.bindAll(this, 'render', 'tap', 'nextPage', 'click');
+    _.bindAll(this, 'render', 'tap', 'nextPage', 'click', 'home');
     this.template = _.template(Lablz.Templates.get(this.template));
 //    if (this.model.isA("Locatable") || this.model.isA("Shape"))
 //      this.mapView = new Lablz.MapView({model: this.model, el: this.$('#mapHolder', this.el)});
@@ -529,6 +529,11 @@ Lablz.ListPage = Backbone.View.extend({
     'tap': 'tap',
     'click': 'click',
     'click #nextPage': 'nextPage',
+    'click #homeBtn': 'home'
+  },
+  home: function() {
+    app.navigate(Lablz.homePage, {trigger: true, replace: false});
+    return this;
   },
   nextPage: function(e) {
     Lablz.Events.trigger('nextPage', this.model);    
@@ -570,7 +575,7 @@ Lablz.ListPage = Backbone.View.extend({
 
 Lablz.ViewPage = Backbone.View.extend({
   initialize: function() {
-    _.bindAll(this, 'render', 'tap', 'click', 'edit');
+    _.bindAll(this, 'render', 'tap', 'click', 'edit', 'home');
 //    this.model.on('change', this.render, this);
     this.template = _.template(Lablz.Templates.get('resource'));
     Lablz.Events.on("mapReady", this.showMapButton);
@@ -579,6 +584,11 @@ Lablz.ViewPage = Backbone.View.extend({
     'click #edit': 'edit',
     'tap': 'tap',
     'click': 'click',
+    'click #homeBtn': 'home'
+  },
+  home: function() {
+    app.navigate(Lablz.homePage, {trigger: true, replace: false});
+    return this;
   },
   edit: function(e) {
     e.preventDefault();
