@@ -448,7 +448,9 @@ td.textCell {
 .nab .anab  { box-shadow: none;}
 .nab .anab span { padding-right: 12px; }
 .nab .nabP { background: #f2f2f2; }
-.nab .nabP td, .nab .modP td { padding: 5px 2px 5px 10px; vertical-align: top;}
+/*.nab .nabP td, .nab .modP td { padding: 5px 2px 5px 10px; vertical-align: top;}*/
+.nab .nabP td { padding: 5px 2px 5px 10px; vertical-align: top;}
+.nabT { padding: 0px 7px 7px 10px; }
 .nab .nabP img  { width: 24px; padding-right: 5px; border: 0; }
 /*.nab .nabP #-inner img  { max-width: 16px; height: 16px;  padding-right: 2px; border: 0; vertical-align: top; }*/
 .nab .nabP #-inner img  { padding-right: 0px; }
@@ -2731,6 +2733,7 @@ td #corePageContent { min-height: 600px;}
 
 .section .section-header {text-align: center; margin-bottom: 45px}
 .section div.intro { font-size: 18px; line-height: 26px; }
+#resourceList .section div.intro a, .section div.intro a { color: #ff5200; } { color: #ff5200; }
 .section h1, .section h2, .section h3, .section h4 {color: black; font-weight: normal;}
 .section h2 {font-size: 33px; line-height: 34px}
 .section h4 {font-size: 18px; line-height: 24px; margin-bottom: 3px;}
@@ -2748,5 +2751,8 @@ td #corePageContent { min-height: 600px;}
 #moreNearby div {padding-top: 17px;}
 #cp td {vertical-align: top;}
 #nearby { cursor: pointer; }
-.leaveAComment img, .commentList img {max-height: 60px;max-width: 60px;}
+.leaveAComment img, .commentList img, #blog .commentList .cl img {max-height: 60px;max-width: 50px;}
+#blog .commentList .cl {padding-left:5px;}
 #blog.leaveAComment img {max-height: 60px;max-width: 60px;}
+.contact { vertical-align: top; }
+.contact img {max-width: 50px; }
