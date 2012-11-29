@@ -10,10 +10,12 @@
   <div id="sidebarDiv" class="ui-content" data-role="content" role="main">
     <ul id="sidebar" data-role="listview" class="ui-listview" data-theme="c">
     </ul>
+    <div id="nabs_grid" class="masonry">
+    </div>
   </div>
   
   <div data-role="footer" class="ui-footer ui-bar-c" data-position="fixed">
-     <a target="#welcome" class="icon home">Home</a>
+     <a id="homeBtn" target="#" class="icon home">Home</a>
      <a id="nextPage" target="#" class="icon next ui-btn-right">Next</a>
   </div>
 </script>  
@@ -27,7 +29,7 @@
   </div>
   
   <div data-role="footer">
-     <a target="#welcome" class="icon home">Home</a>
+     <a id="homeBtn" target="#" class="icon home">Home</a>
      <!--a id="edit" target="#" class="icon next ui-btn-right">Edit</a-->
   </div>
 </script>  
@@ -124,7 +126,7 @@
 </script>
 
 <script type="text/template" id="listItemTemplate">
-  <a href = "{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? mediumImage.slice(6) : typeof featured != 'undefined' ? featured.slice(6) : 'icons/blank.png'}}" /><h3>{{= davDisplayName }}</h3></a>
+  <a href = "{{= Lablz.pageRoot + '#view/' + encodeURIComponent(_uri) }}"><img align="middle" src="{{= typeof mediumImage != 'undefined' ? (mediumImage.indexOf('/Image') == 0 ? mediumImage.slice(6) : mediumImage) : typeof featured != 'undefined' ? (featured.indexOf('Image/') == 0 ? featured.slice(6) : featured) : 'icons/blank.png'}}" /><h3>{{= davDisplayName }}</h3></a>
 </script>
 
 <script type="text/template" id="listItemTemplateNoImage">
@@ -133,6 +135,10 @@
 
 <script type="text/template" id="propRowTemplate">
    <li>{{= name }}<div style="float: right; font-weight: normal;">{{= value }}</div></li>
+</script>
+
+<script type="text/template" id="propRowTemplate2">
+   <li>{{= name }}<div style="font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="propGroupsDividerTemplate">
@@ -201,6 +207,54 @@
 
 <script type="text/template" id="loginTemplate">
   <authenticateByFacebook mobile="y" />
+</script>
+
+<script type="text/template" id="masonry-mod-list-item">
+  <div class="nab nabBoard masonry-brick" style="cursor: default" id="uri0">
+    <div class="anab">
+      <div class="galleryItem_css3">
+        <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
+          <img border="0" src="{{= typeof resourceMediumImage == 'undefined' ? 'icons/blank.png' : resourceMediumImage }}"></img>
+        </a>
+      </div>
+    </div>
+    <table width="100%" class="modP">
+      <tr>
+        <td class="urbien" width="1%">
+          <a href="{{= modifiedBy }}">
+            <img border="0" src="{{= typeof v_modifiedByPhoto != 'undefined' ? v_modifiedByPhoto : icons/blank.png }}"></img>
+          </a>
+        </td>
+        <td>
+          <span class="action">{{= typeof v_action == 'undefined' ? '' : v_action }}</span>&#160;
+          <div id="resourceHolder"><a href="{{= rUri }}" class="pLink">Healthy living</a></div>
+          <br/><br/>&#160;
+          <span class="commentListDate">{{= Utils.getFormattedDate(dateModified) }}</span>
+        </td>
+      </tr>
+    </table>
+    <table width="100%">
+      <tr>
+      <td colspan="2">
+        <div class="lc">
+          <div id="buttons">
+          {{ if (typeof v_showCommentsFor != 'undefined') { }}
+            <a class="lc" href="{{= 'mkResource.html?type=http://www.hudsonfog.com/voc/model/portal/Comment&amp;-commentList=y&amp;bUri=sql%3furi%3d' +  encodeURIComponent(v_showCommentsFor) }}">
+              <img src="http://public.urbien.com/icons/comment.png" title="Comment"></img>
+            </a>&#160;&#160;
+          {{ } }}
+            <a class="lc" href="{{= 'mkResource.html?.vote=Like&-changeInplace=y&type=http://www.hudsonfog.com/voc/aspects/tags/Vote&bUri=http://urbien.com/sql%3furi%3d' + encodeURIComponent(v_showCommentsFor) }}"> 
+              <img src="http://public.urbien.com/icons/like.png" title="Like"></img>
+            </a>&#160;&#160;&#160;
+            <a class='renab' href="nabit?-inPage=y&originalImageUrl=http://urbien.com/wf/ThirtyDayTrial/240BAA89D9A398AEC2A359D2BCCEA7A9/thumbnail/app-as-dragon-on-the-data-gold.jpg_featured.jpg&sourceUrl=http://urbien.com/sql/www.hudsonfog.com/voc/commerce/urbien/ThirtyDayTrial%3fid%3d41118">
+              <img src="http://s3.amazonaws.com/public.urbien.com/icons/pin1.png" />Nab
+            </a>
+          </div>
+        </div>
+      </td>
+      </tr>
+    </table>
+  </div>
 </script>
 
 </div>

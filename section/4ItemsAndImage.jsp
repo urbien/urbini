@@ -5,6 +5,8 @@
     </h2>
     <div class="intro">
       <property name="subTitle" noIcon="y" />
+      <where value="subTitleLink != null">&#160;<property name="subTitleLink" adTitle="See here"/>
+      </where>
     </div>
   </div>
   
