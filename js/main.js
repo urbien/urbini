@@ -296,7 +296,7 @@ Lablz.startApp = function() {
   
   Lablz.homePage = Lablz.homePage || _.last(models).shortName;
   if (!window.location.hash) {
-    app.navigate(Lablz.firstPage, {trigger: true});
+    app.navigate(Lablz.homePage, {trigger: true});
   }
 };
 
