@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="lib/jquery.mobile.structure-1.2.0.css" />
   <!--link rel="stylesheet" href="lib/jqm-icon-pack-2.1.2-fa.css" /-->
   <link rel="stylesheet" href="styles/styles.css"></link>
+  <link rel="stylesheet" href="styles/common-template-m.css"></link>
   <script src="lib/jquery-1.7.2.js"></script>
   <script src="js/jqm-config.js"></script>
   <script src="lib/jquery.mobile-1.2.0.js"></script>
